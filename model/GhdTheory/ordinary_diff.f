@@ -197,6 +197,20 @@
       I_ilj(1,1,2) = 0.d0
       I_ilj(2,2,1) = 0.d0
       I_ilj(2,2,2) = 0.d0
+!
+! for smax > 2, use GHD theory in conjunction with standard Enskog theory (i.e. I_ilj's = 0)
+! This fix is only temporary until these terms are derived by C.M. Hrenya and co-workers.
+!
+      if(s > 2) then
+        do i=1,s
+           do l=1,s
+              do j=1,s
+                 I_ilj(i,l,j) = 0d0
+              enddo
+           enddo
+        enddo
+      endif
+!
 
 !Numerical evaulation of several partial derivatives - p 6.6 of CMH notes.
 !Each of the partial derivatives is with respect to nj, where T and other

@@ -463,11 +463,11 @@
                        tmpdragn, NjE, tmpdrage, NjT,tmpdragt
       DOUBLE PRECISION tmpVel, counter,Mi,Ni,Mj,Nj,tmpdragx,tmpdragy,DIJFE,DIJFN,&
                        prefactorx,prefactory,tmpdragz,prefactorz,DIJFT
-      integer ntrial, s, kk
+      integer ntrial, s, kk, maxFluxS
       double precision tolx, tolf, epgN, rogN, mugN, Vg, Ur(smax), &
 		       vrelSq(smax), rosN(smax), dp(smax), DijN(smax,smax), JoiM(smax),&
 		       beta_cell(smax),beta_ij_cell(smax,smax), vel,velup(smax), &
-                       DijN_H(smax,smax),DijN_A(smax,smax),U_sum,V_sum,tmpvelmix
+                       DijN_H(smax,smax),DijN_A(smax,smax),U_sum,V_sum,tmpvelmix, maxFlux
 
 
 !
@@ -581,6 +581,19 @@
             ENDIF
             if(smax==2) then ! only for binary, how to implement for smax > 2?
 	      JoiX(IJK,2)=-JoiX(IJK,1) 
+            elseif(smax > 2) then
+	      maxFlux = JoiX(IJK,1)
+	      maxFluxS = 1
+	      do s = 2, smax  ! finding species with maximum flux in a cell
+	        if( abs(JoiX(IJK,s)) > abs(maxFlux) ) then
+		  maxFlux = JoiX(IJK,s)
+	          maxFluxS = s
+	        endif
+	      enddo
+	      JoiX(IJK,maxFluxS) = 0d0 ! reset max. flux to zero
+	      do s = 1, smax ! re-calc species with max. flux to satisfy SUM(fluxes) = 0
+	        if(s /= maxFluxS) JoiX(IJK,maxFluxS) = JoiX(IJK,maxFluxS) - JoiX(IJK,s)
+	      enddo
             endif
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -656,6 +669,19 @@
             ENDIF
             if(smax==2) then ! only for binary, how to implement for smax > 2?
               JoiY(IJK,2)=-JoiY(IJK,1)
+            elseif(smax > 2) then
+	      maxFlux = JoiY(IJK,1)
+	      maxFluxS = 1
+	      do s = 2, smax  ! finding species with maximum flux in a cell
+	        if( abs(JoiY(IJK,s)) > abs(maxFlux) ) then
+		  maxFlux = JoiY(IJK,s)
+	          maxFluxS = s
+	        endif
+	      enddo
+	      JoiY(IJK,maxFluxS) = 0d0 ! reset max. flux to zero
+	      do s = 1, smax ! re-calc species with max. flux to satisfy SUM(fluxes) = 0
+	        if(s /= maxFluxS) JoiY(IJK,maxFluxS) = JoiY(IJK,maxFluxS) - JoiY(IJK,s)
+	      enddo
             endif
           
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -731,6 +757,19 @@
             ENDIF
             if(smax==2) then ! only for binary, how to implement for smax > 2?
               JoiZ(IJK,2)=-JoiZ(IJK,1)
+            elseif(smax > 2) then
+	      maxFlux = JoiZ(IJK,1)
+	      maxFluxS = 1
+	      do s = 2, smax  ! finding species with maximum flux in a cell
+	        if( abs(JoiZ(IJK,s)) > abs(maxFlux) ) then
+		  maxFlux = JoiZ(IJK,s)
+	          maxFluxS = s
+	        endif
+	      enddo
+	      JoiZ(IJK,maxFluxS) = 0d0 ! reset max. flux to zero
+	      do s = 1, smax ! re-calc species with max. flux to satisfy SUM(fluxes) = 0
+	        if(s /= maxFluxS) JoiZ(IJK,maxFluxS) = JoiZ(IJK,maxFluxS) - JoiZ(IJK,s)
+	      enddo
             endif
 
 ! if .not. fluid_at(ijk), do nothing (keep old values of velocities). 
