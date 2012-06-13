@@ -1,48 +1,55 @@
-MODULE ambm
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module: ambm                                                        !
+!  Purpose:                                                            !
+!     IMPORTANT:  For using these arrays in a subroutine               !
+!     -lock the module in the beginning of the subroutine              !
+!      call lock_ambm                                                  !
+!     -and unlock the module at the end of the subroutine              !
+!      call unlock_ambm                                                !
+! Contains the following subroutines:                                  !
+!      lock_ambm, unlock_ambm                                          !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-      Use param
-      Use param1
-      Use compar       
-      Use mpi_utility 
+      MODULE ambm
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      USE compar       
+      USE funits 
+!-----------------------------------------------
 
-! IMPORTANT:  For using these arrays in a subroutine
-! lock the module in the beginning of the subroutine
-!   call lock_ambm
-!
-! and unlock the module at the end of the subroutine
-!   call unlock_ambm
-!
-
-!
-!linear equation matrix and vector
+! linear equation matrix and vector
       DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: A_m
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: B_m
-
-!!!HPF$ align A_m(:, *, *) with TT(:)
-!!!HPF$ align B_m(:, *) with TT(:)
-
-
+    
+      LOGICAL :: ambm_locked = .false.
       
-   LOGICAL :: ambm_locked = .false.
-      
-   CONTAINS
+      CONTAINS
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE lock_ambm
-        IF(ambm_locked)Then          
-          if (myPE.eq.PE_IO) then  
-	     Write(*,*)'Error:  Multiple use of ambm (ambm_mod.f)'
-	     call exitMPI(myPE)    
-          end if                 
-	Else
-	  ambm_locked = .true.
-	Endif
+      IF(ambm_locked) THEN
+         IF (DMP_LOG) WRITE(*,*) &
+            'Error:  Multiple use of ambm (ambm_mod.f)'
+         CALL MFIX_EXIT(myPE)
+      ELSE
+         ambm_locked = .true.
+      ENDIF
       END SUBROUTINE lock_ambm
-      
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE unlock_ambm
-        ambm_locked = .false.
+      ambm_locked = .false.
       END SUBROUTINE unlock_ambm
       
-END MODULE ambm                                                          
+      END MODULE ambm
 
-!// Comments on the modifications for DMP version implementation      
-!// Check for termination by the designated I/O processor
+

@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: ADJUST_ROP(ROP, IER)
+!  Subroutine: ADJUST_ROP                                              C
 !  Purpose: Remove small negative values of density.                   C
 !                                                                      C
 !                                                                      C
@@ -12,19 +12,14 @@
 !                                                                      C
 !  Variables referenced:                                               C
 !  Variables modified:                                                 C
-!                                                                      C
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE ADJUST_ROP(ROP, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
-!  Include param.inc file to specify parameter values
-!
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -33,30 +28,28 @@
       USE compar
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Dummy arguments
 !-----------------------------------------------
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
+! density
+      DOUBLE PRECISION, INTENT(INOUT) :: ROP(DIMENSION_3)
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Local variables
+!-----------------------------------------------      
+! Indices
+      INTEGER :: IJK
 !-----------------------------------------------
-!
-!                      Error index
-      INTEGER          IER
-!
-!                      Indices
-      INTEGER          IJK
-!
-!                      density
-      DOUBLE PRECISION ROP(DIMENSION_3)
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-!
-!!!HPF$ independent
+!-----------------------------------------------
+
       DO IJK = ijkstart3, ijkend3 
          IF (FLUID_AT(IJK)) ROP(IJK) = DMAX1(ZERO,ROP(IJK)) 
-      END DO 
+      ENDDO 
+
       RETURN  
       END SUBROUTINE ADJUST_ROP 
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization 
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+

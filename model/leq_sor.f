@@ -1,142 +1,124 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: LEQ_SOR(Vname, Var, A_m, B_m, M, ITMAX, IER)          C
-!  Purpose: Successive over-relaxation method -- Cyclic bc             C
+!  Subroutine: LEQ_SOR                                                 C
+!  Purpose: Solve system of linear system using SOR method             C
+!           Successive over-relaxation                                 C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 19-AUG-96  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
-!                                                                      C
 !  Literature/Document References:                                     C
-!                                                                      C
 !  Variables referenced:                                               C
 !  Variables modified:                                                 C
-!                                                                      C
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-      SUBROUTINE LEQ_SOR(VNAME, VNO, VAR, A_M, B_M, M, ITMAX, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
+
+      SUBROUTINE LEQ_SOR(VNAME, VNO, VAR, A_M, B_M, ITMAX, IER) 
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
       USE matrix 
       USE geometry
       USE indices
-      USE compar        !//d
+      USE compar
       USE sendrecv
       USE leqsol
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Dummy arguments
 !-----------------------------------------------
+! variable name
+      CHARACTER*(*), INTENT(IN) :: Vname
+! variable number (not really used here; see calling subroutine)
+      INTEGER, INTENT(IN) :: VNO
+! variable 
+!     e.g., pp_g, epp, rop_g, rop_s, u_g, u_s, v_g, v_s, w_g,
+!     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G, 
+!     e_Turb_G
+      DOUBLE PRECISION, INTENT(INOUT) :: Var(DIMENSION_3)
+! Septadiagonal matrix A_m
+      DOUBLE PRECISION, INTENT(INOUT) :: &
+                        A_m(DIMENSION_3, -3:3)
+! Vector b_m
+      DOUBLE PRECISION, INTENT(INOUT) :: &
+                        B_m(DIMENSION_3)
+! maximum number of iterations (generally leq_it)
+      INTEGER, INTENT(IN) :: ITMAX      
+! error indicator
+      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Local parameters
 !-----------------------------------------------
-!                      Error index
-      INTEGER          IER
-!
-!                      maximum number of iterations
-      INTEGER          ITMAX
-!                      variable number
-      INTEGER ::          VNO
-!
-!                      phase index
-      INTEGER          M
-!
-!                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-!
-!                      Vector b_m
-      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
-!
-!                      Variable name
-      CHARACTER*(*)    Vname
-!
-!                      Variable
-      DOUBLE PRECISION Var(DIMENSION_3), Var_tmp(DIMENSION_3)
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!
-!                      OVERRELAXATION FACTOR
+! OVERRELAXATION FACTOR
       DOUBLE PRECISION, PARAMETER :: OMEGA = 1.0  !1.2 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      integer          iidebug
+      integer :: iidebug
       parameter( iidebug = 0 )
- 
-! 
-      INTEGER          I, J, K, IJK, ITER, IJK01, IJK02, IJK11, IJK12 
-      DOUBLE PRECISION oAm 
-  
-      double precision :: resid1,resid2,rmax1,rmax2
-
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
-!
-!
-!     Successive Over relaxation method
-!
-!!!$omp parallel do private(IJK,OAM)
-      DO IJK = ijkstart3, ijkend3
+! Local Variables      
+!-----------------------------------------------
+! Variable
+      DOUBLE PRECISION :: Var_tmp(DIMENSION_3)
+! Indices 
+      INTEGER :: I, J, K, IJK
+      INTEGER :: ITER
 
-         IF(.NOT.IS_ON_myPE_owns(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
-!
-         OAM = ONE/A_M(IJK,0,M)
-	  
-         A_M(IJK,0,M) = ONE
-         A_M(IJK,-2,M) = A_M(IJK,-2,M)*OAM 
-         A_M(IJK,-1,M) = A_M(IJK,-1,M)*OAM 
-         A_M(IJK,1,M) = A_M(IJK,1,M)*OAM 
-         A_M(IJK,2,M) = A_M(IJK,2,M)*OAM 
-         A_M(IJK,-3,M) = A_M(IJK,-3,M)*OAM 
-         A_M(IJK,3,M) = A_M(IJK,3,M)*OAM 
-         B_M(IJK,M) = B_M(IJK,M)*OAM 
-      END DO 
+      DOUBLE PRECISION oAm 
+!-------------------------------------------------
+! Include statement functions
+!-------------------------------------------------
+      INCLUDE 'function.inc'
+!-----------------------------------------------
+
+!!$omp parallel do private(IJK,OAM)
+      DO IJK = ijkstart3, ijkend3
+         IF(.NOT.IS_ON_myPE_owns(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE 
+
+         OAM = ONE/A_M(IJK,0)
+         A_M(IJK,0) = ONE
+         A_M(IJK,-2) = A_M(IJK,-2)*OAM 
+         A_M(IJK,-1) = A_M(IJK,-1)*OAM 
+         A_M(IJK,1) = A_M(IJK,1)*OAM 
+         A_M(IJK,2) = A_M(IJK,2)*OAM 
+         A_M(IJK,-3) = A_M(IJK,-3)*OAM 
+         A_M(IJK,3) = A_M(IJK,3)*OAM 
+         B_M(IJK) = B_M(IJK)*OAM 
+      ENDDO 
       
       DO ITER = 1, ITMAX 
-!
-!
-!  SOR procedure
-!
          IF (DO_K) THEN 
-!!!$omp parallel do private(IJK)
+
+!!$omp parallel do private(IJK)
             DO IJK = ijkstart3, ijkend3
-
               IF(.NOT.IS_ON_myPE_owns(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
-              VAR_tmp(IJK) = VAR(IJK) + OMEGA*(B_M(IJK,M)-A_M(IJK,-2,M)*VAR(JM_OF(&
-                  IJK))-A_M(IJK,-1,M)*VAR(IM_OF(IJK))-A_M(IJK,1,M)*VAR(IP_OF(&
-                  IJK))-A_M(IJK,2,M)*VAR(JP_OF(IJK))-A_M(IJK,-3,M)*VAR(KM_OF(&
-                  IJK))-A_M(IJK,3,M)*VAR(KP_OF(IJK))-VAR(IJK)) 
-            END DO 
-
+              VAR_tmp(IJK) = VAR(IJK) + OMEGA*(B_M(IJK)-&
+                 A_M(IJK,-1)*VAR(IM_OF(IJK))-A_M(IJK,1)*VAR(IP_OF(IJK))-&
+                 A_M(IJK,-2)*VAR(JM_OF(IJK))-A_M(IJK,2)*VAR(JP_OF(IJK))-&
+                 A_M(IJK,-3)*VAR(KM_OF(IJK))-A_M(IJK,3)*VAR(KP_OF(IJK))-&
+                 VAR(IJK)) 
+            ENDDO 
          ELSE 
-!!!$omp parallel do private(IJK)
-           DO IJK = ijkstart3, ijkend3
 
+!!$omp parallel do private(IJK)
+           DO IJK = ijkstart3, ijkend3
              IF(.NOT.IS_ON_myPE_owns(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
-             VAR_tmp(IJK) = VAR(IJK) + OMEGA*(B_M(IJK,M)-A_M(IJK,-2,M)*VAR(JM_OF(&
-                  IJK))-A_M(IJK,-1,M)*VAR(IM_OF(IJK))-A_M(IJK,1,M)*VAR(IP_OF(&
-                  IJK))-A_M(IJK,2,M)*VAR(JP_OF(IJK))-VAR(IJK)) 
-           END DO 
+             VAR_tmp(IJK) = VAR(IJK) + OMEGA*(B_M(IJK)-&
+                  A_M(IJK,-2)*VAR(JM_OF(IJK))-A_M(IJK,2)*VAR(JP_OF(IJK))-&
+                  A_M(IJK,-1)*VAR(IM_OF(IJK))-A_M(IJK,1)*VAR(IP_OF(IJK))-&
+                  VAR(IJK)) 
+           ENDDO 
          ENDIF 
 
       call send_recv(var,2)
+      ENDDO 
 
-      END DO 
-
-!!!$omp parallel do private(IJK)
+!!$omp parallel do private(IJK)
       DO IJK = ijkstart3, ijkend3
         VAR(IJK) = VAR_tmp(IJK)
-      END DO 
+      ENDDO 
 
       ITER_TOT(VNO) = ITER
 

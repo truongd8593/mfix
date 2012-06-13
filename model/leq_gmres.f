@@ -1,82 +1,74 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: LEQ_GMRES(Vname, Var, A_m, B_m,                        C
-!                         CMETHOD, TOL, ITMAX, MAX_IT, IER )
-!  Purpose: Solve system of linear system using GMRES                  C
+!  Subroutine: LEQ_GMRES                                               C
+!  Purpose: Solve system of linear system using GMRES method           C
+!           generalized minimal residual                               C
 !                                                                      C
 !  Author: Ed D'Azevedo                               Date: 21-JAN-99  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
-!                                                                      C
 !  Literature/Document References:                                     C
-!                                                                      C
 !  Variables referenced:                                               C
 !  Variables modified:                                                 C
-!                                                                      C
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE LEQ_GMRES(VNAME, VNO, VAR, A_M, B_M, &
-                    cmethod,TOL,ITMAX,MAX_IT,IER)
+                    cmethod, TOL, ITMAX, MAX_IT, IER)
       
 !-----------------------------------------------
-!   M o d u l e s
+! Modules
 !-----------------------------------------------
       USE PARAM
       USE PARAM1
       USE MATRIX
       USE GEOMETRY
       USE INDICES
-
-!//
       USE debug
       USE compar
       USE mpi_utility
-
       IMPLICIT NONE
-
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Dummy arguments
 !-----------------------------------------------
-!
-!
-!                      Error indicator
-      INTEGER          IER
-!
-!                      maximum number of iterations
-      INTEGER          ITMAX
-!
-!                      variable number
-      INTEGER ::          VNO
-!
-!                      maximum number of outer iterations
-      INTEGER          MAX_IT
-!
-!                      convergence tolerance
-      DOUBLE PRECISION TOL
-!
-!                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_M(IJKSTART3:IJKEND3, -3:3)
-!
-!                      Vector b_m
-      DOUBLE PRECISION B_M(IJKSTART3:IJKEND3)
-!
-!                      Variable name
-      CHARACTER*(*)    VNAME
-!
-!                      Variable
-      DOUBLE PRECISION VAR(IJKSTART3:IJKEND3)
-
-!                    sweep direction
-      CHARACTER*4 :: CMETHOD
+! variable name
+      CHARACTER*(*), INTENT(IN) :: Vname
+! variable number (not really used here; see calling subroutine)
+      INTEGER, INTENT(IN) :: VNO
+! variable 
+!     e.g., pp_g, epp, rop_g, rop_s, u_g, u_s, v_g, v_s, w_g,
+!     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G, 
+!     e_Turb_G
+      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3), INTENT(INOUT) :: Var
+! Septadiagonal matrix A_m
+      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3,-3:3), INTENT(INOUT) :: A_m
+! Vector b_m
+      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3), INTENT(INOUT) :: B_m
+! Sweep direction of leq solver (leq_sweep)
+!     e.g., options = 'isis', 'rsrs' (default), 'asas'
+      CHARACTER*(*), INTENT(IN) :: CMETHOD
+! convergence tolerance (generally leq_tol)
+      DOUBLE PRECISION, INTENT(IN) :: TOL
+! maximum number of iterations (generally leq_it)
+      INTEGER, INTENT(IN) :: ITMAX      
+! maximum number of outer iterations
+! (currently set to 1 by calling subroutine-solve_lin_eq)
+      INTEGER, INTENT(IN) :: MAX_IT
+! error indicator
+      INTEGER, INTENT(INOUT) :: IER
+!-------------------------------------------------
+! Local Variables      
 !-------------------------------------------------
       LOGICAL :: IS_BM_ZERO, ALL_IS_BM_ZERO
+!------------------------------------------------- 
+! External subroutines 
+!------------------------------------------------- 
+! These procedures are effectively dummy arguments (procedures as
+! arguments within the subroutine leq_gmres0)
       EXTERNAL LEQ_MATVEC, LEQ_MSOLVE
+!-------------------------------------------------
 
-
-
-!// 
       IS_BM_ZERO = (MAXVAL( ABS(B_M(:)) ) .EQ. ZERO)
       CALL GLOBAL_ALL_AND( IS_BM_ZERO, ALL_IS_BM_ZERO )
 
@@ -85,41 +77,34 @@
           RETURN
       ENDIF
       
-      
-      
-      CALL LEQ_GMRES0( VNAME, VNO, VAR, A_M, B_M,                        &
-	       CMETHOD, TOL, ITMAX, MAX_IT, LEQ_MATVEC, LEQ_MSOLVE, IER )
+      CALL LEQ_GMRES0( VNAME, VNO, VAR, A_M, B_M,  &
+           CMETHOD, TOL, ITMAX, MAX_IT, LEQ_MATVEC, LEQ_MSOLVE, IER )
 
       RETURN
       END SUBROUTINE LEQ_GMRES
 
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: LEQ_GMRES0(Vname, Var, A_m, B_m,                       C
-!                    CMETHOD, TOL, ITMAX, MAX_IT, MATVEC, MSOLVE, IER ) 
+!  Subroutine: LEQ_GMRES0                                              C 
 !  Purpose: Compute residual of linear system                          C
 !                                                                      C
 !  Author: Ed D'Azevedo                               Date: 21-JAN-99  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
-!                                                                      C
 !  Literature/Document References:                                     C
-!                                                                      C
 !  Variables referenced:                                               C
 !  Variables modified:                                                 C
-!                                                                      C
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE LEQ_GMRES0(VNAME, VNO, VAR, A_M, B_M,  &
                             CMETHOD, TOL, ITMAX, MAX_IT, &
                             MATVEC, MSOLVE, IER )
+
 !-----------------------------------------------
-!   M o d u l e s
+! Modules
 !-----------------------------------------------
       USE PARAM
       USE PARAM1
@@ -127,735 +112,590 @@
       USE MATRIX
       USE GEOMETRY
       USE INDICES
-
-!//
       USE debug
       USE funits
       USE gridmap
       USE mpi_utility
-
       IMPLICIT NONE
-
-	INTERFACE
-	DOUBLE PRECISION FUNCTION DOT_PRODUCT_PAR( R1, R2 )
-	DOUBLE PRECISION, INTENT(IN) :: R1(*),R2(*)
-	END FUNCTION DOT_PRODUCT_PAR
-	END INTERFACE
-
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! External functions
 !-----------------------------------------------
-!
-!
-!                      Error indicator
-      INTEGER          IER
-!
-!                      maximum number of iterations
-      INTEGER          ITMAX
-!
-!                      variable number
-      INTEGER ::          VNO
-!
-!                      maximum number of outer iterations
-      INTEGER          MAX_IT
-!
-!
-!                      convergence tolerance
-      DOUBLE PRECISION TOL
-!
-!                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_M(IJKSTART3:IJKEND3, -3:3)
-!
-!                      Vector b_m
-      DOUBLE PRECISION B_M(IJKSTART3:IJKEND3)
-!
-!                      Variable name
-      CHARACTER*(*)    VNAME
-!
-!                      Variable
-      DOUBLE PRECISION VAR(IJKSTART3:IJKEND3)
-
-!                    sweep direction
-      CHARACTER*4 :: CMETHOD
-
+      INTERFACE
+         DOUBLE PRECISION FUNCTION DOT_PRODUCT_PAR( R1, R2 )
+         DOUBLE PRECISION, INTENT(IN) :: R1(*),R2(*)
+         END FUNCTION DOT_PRODUCT_PAR
+      END INTERFACE
 !-----------------------------------------------
-!   L o c a l   V a r i a b l e s
+! Dummy arguments/procedure
+!-----------------------------------------------
+! variable name
+      CHARACTER*(*), INTENT(IN) :: Vname
+! variable number (not really used here-see calling subroutine)
+      INTEGER, INTENT(IN) :: VNO
+! variable 
+!     e.g., pp_g, epp, rop_g, rop_s, u_g, u_s, v_g, v_s, w_g,
+!     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G, 
+!     e_Turb_G
+      DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
+! Septadiagonal matrix A_m
+      DOUBLE PRECISION, INTENT(INOUT) :: A_m(ijkstart3:ijkend3,-3:3)
+! Vector b_m
+      DOUBLE PRECISION, INTENT(INOUT) :: B_m(ijkstart3:ijkend3)
+! Sweep direction of leq solver (leq_sweep)
+!     e.g., options = 'isis', 'rsrs' (default), 'asas'
+      CHARACTER*(*), INTENT(IN) :: CMETHOD
+! convergence tolerance (generally leq_tol)
+      DOUBLE PRECISION, INTENT(IN) :: TOL
+! maximum number of iterations (generally leq_it)
+      INTEGER, INTENT(IN) :: ITMAX
+! maximum number of outer iterations
+      INTEGER, INTENT(IN) :: MAX_IT
+! error indicator
+      INTEGER, INTENT(INOUT) :: IER
+! dummy arguments/procedures set as indicated
+!     matvec->leq_matvec      
+! for preconditioner (leq_pc)
+!     msolve->leq_msolve 
+      EXTERNAL MATVEC, MSOLVE
+!-----------------------------------------------
+! Local parameters
+!-----------------------------------------------
+      INTEGER JDEBUG
+      PARAMETER(JDEBUG=0)
+      DOUBLE PRECISION TOLTRIG
+      PARAMETER(TOLTRIG=1.0D-4)
+!-----------------------------------------------
+! Local variables
 !-----------------------------------------------
 
-	DOUBLE PRECISION V(IJKSTART3:IJKEND3,ITMAX+1)
-	DOUBLE PRECISION H(ITMAX+1,ITMAX)
-	DOUBLE PRECISION CS(ITMAX)
-	DOUBLE PRECISION SN(ITMAX)
-	DOUBLE PRECISION Y(ITMAX)
+      DOUBLE PRECISION V(IJKSTART3:IJKEND3,ITMAX+1)
+      DOUBLE PRECISION H(ITMAX+1,ITMAX)
+      DOUBLE PRECISION CS(ITMAX)
+      DOUBLE PRECISION SN(ITMAX)
+      DOUBLE PRECISION Y(ITMAX)
 
-	DOUBLE PRECISION R(IJKSTART3:IJKEND3)
-	DOUBLE PRECISION TEMP(IJKSTART3:IJKEND3)
-        DOUBLE PRECISION WW(IJKSTART3:IJKEND3)
+      DOUBLE PRECISION R(IJKSTART3:IJKEND3)
+      DOUBLE PRECISION TEMP(IJKSTART3:IJKEND3)
+      DOUBLE PRECISION WW(IJKSTART3:IJKEND3)
+      
+      DOUBLE PRECISION E1(ITMAX+2)
+      DOUBLE PRECISION SS(ITMAX+2)
 
-	DOUBLE PRECISION E1(ITMAX+2)
-	DOUBLE PRECISION SS(ITMAX+2)
+      DOUBLE PRECISION BNRM2, ERROR, ERROR0
+      DOUBLE PRECISION NORM_R0, NORM_R, NORM_W
+      DOUBLE PRECISION INV_NORM_R, NORM_S, NORM_Y
+      DOUBLE PRECISION YII
 
-        DOUBLE PRECISION VY(IJKSTART3:IJKEND3)
-        
+      INTEGER IJK, II, JJ, KK, I, J, K
+      INTEGER RESTRT, M, ITER, MDIM
+      DOUBLE PRECISION DTEMP, DSUM
+      DOUBLE PRECISION MINH, MAXH, CONDH, ALL_MINH, ALL_MAXH
+      DOUBLE PRECISION INV_H_IP1_I
 
-	DOUBLE PRECISION BNRM2, ERROR, ERROR0, NORM_R0, NORM_R, NORM_W
-        DOUBLE PRECISION YII,YJJ
-
-
-        INTEGER IJK, II,JJ,KK, I,J,K, INC 
-        INTEGER RESTRT, M, LDA,  ITER, MDIM
-        DOUBLE PRECISION DTEMP, DSUM, INV_NORM_R, NORM_S
-        DOUBLE PRECISION MINH,MAXH,CONDH,NORM_Y,   ALL_MINH, ALL_MAXH
-        DOUBLE PRECISION INV_H_IP1_I
-
-        LOGICAL IS_BM_ZERO, IS_ERROR, IS_CONVERGED
-        LOGICAL ALL_IS_BM_ZERO, ALL_IS_ERROR, ALL_IS_CONVERGED
+      LOGICAL IS_BM_ZERO, IS_ERROR, IS_CONVERGED
+      LOGICAL ALL_IS_BM_ZERO, ALL_IS_ERROR, ALL_IS_CONVERGED
      
-
-        INTEGER JDEBUG
-        PARAMETER(JDEBUG=0)
-
-
-	DOUBLE PRECISION TOLTRIG
-	PARAMETER(TOLTRIG=1.0D-4)
-
-        CHARACTER*40 NAME
-
-!//
-        double precision, dimension(:), allocatable :: temp_g,v_g
-
-        INCLUDE	 'function.inc'
+      CHARACTER*40 NAME
+!-----------------------------------------------
+! Include statement functions      
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+!-----------------------------------------------
 
 
+! initializing      
+      NAME = 'LEQ_GMRES0 ' // TRIM(VNAME)
+      RESTRT = ITMAX
+      M = RESTRT 
+      ITER = 0
+      IER = 0
 
 
+! clear arrays
+! --------------------------------
+      R(:) = ZERO
+      TEMP(:) = ZERO
 
-        NAME = 'LEQ_GMRES0 ' // TRIM(VNAME)
-	RESTRT = ITMAX
-
-!//
-!//     ------------
-!//     clear arrays
-!//     ------------
-!//
-        R(:) = ZERO
-        TEMP(:) = ZERO
-        E1(:) = ZERO
-        SS(:) = ZERO
-        WW(:) = ZERO
-        VY(:) = ZERO
-        V(:,:) = ZERO
-
-	ITER = 0
-	IER = 0
+      H(:,:) = ZERO
+      CS(:) = ZERO
+      E1(:) = ZERO
+      E1(1) = ONE
+      SS(:) = ZERO
+      SN(:) = ZERO
+      WW(:) = ZERO
+      V(:,:) = ZERO
 
 
-!//
-	BNRM2 = DOT_PRODUCT_PAR( B_M, B_M )
-        BNRM2 = sqrt( BNRM2 )
+      BNRM2 = DOT_PRODUCT_PAR( B_M, B_M )
+      BNRM2 = sqrt( BNRM2 )
 
-        if (idebug.ge.1) then
-	   call write_debug(name, 'bnrm2 = ', bnrm2 )
-	endif
+      if (idebug.ge.1) then
+         call write_debug(name, 'bnrm2 = ', bnrm2 )
+      endif
 
-!//
-        IS_BM_ZERO = BNRM2 .EQ. ZERO
-        CALL GLOBAL_ALL_AND( IS_BM_ZERO, ALL_IS_BM_ZERO )
+      IS_BM_ZERO = BNRM2 .EQ. ZERO
+      CALL GLOBAL_ALL_AND( IS_BM_ZERO, ALL_IS_BM_ZERO )
+      IF (ALL_IS_BM_ZERO) THEN
+        BNRM2 = ONE
+      ENDIF
 
-        IF (ALL_IS_BM_ZERO) THEN
-	   BNRM2 = ONE
-	ENDIF
+! r = M \ (b - A*x)
+! error = norm(r) / bnrm2
+! --------------------------------
 
-!	------------------------
-!	r = M \ (b - A*x)
-!	error = norm(r) / bnrm2
-!	------------------------
+      CALL MATVEC(VNAME, VAR, A_M, R)   ! returns R=A*VAR
 
-	CALL MATVEC( VNAME, VAR, A_M, R )
-
-!//        TEMP(:) = B_M(:) - R(:)
-
-!!!$omp   parallel do private(ii,jj,kk,ijk)
-        DO KK=KSTART,KEND
+!!$omp   parallel do private(ii,jj,kk,ijk)
+      DO KK=KSTART,KEND
         DO JJ=JSTART,JEND
-        DO II=ISTART,IEND
-           IJK = FUNIJK( II,JJ,KK )
-           TEMP(IJK) = B_M(IJK) - R(IJK)
+          DO II=ISTART,IEND
+             IJK = FUNIJK( II,JJ,KK )
+             TEMP(IJK) = B_M(IJK) - R(IJK)
+          ENDDO
         ENDDO
-        ENDDO
-        ENDDO
+      ENDDO
 
-        
-	CALL MSOLVE( VNAME, TEMP, A_M,  R, CMETHOD )
+! Solve A*R(:) = TEMP(:)
+      CALL MSOLVE(VNAME, TEMP, A_M,  R, CMETHOD)   ! returns R
 
+      NORM_R = DOT_PRODUCT_PAR( R, R )
+      NORM_R = SQRT( NORM_R )
 
+      ERROR = NORM_R/BNRM2
+      ERROR0 = ERROR
+      NORM_R0 = NORM_R
 
-
-!//
-        NORM_R = DOT_PRODUCT_PAR( R, R )
-        NORM_R = SQRT( NORM_R )
-
-
-
-	ERROR = NORM_R/BNRM2
-        ERROR0 = ERROR
-	NORM_R0 = NORM_R
-
-        IF (JDEBUG.GE.1) THEN
-           CALL WRITE_DEBUG( NAME,  ' INITIAL ERROR ', ERROR0 )
-           CALL WRITE_DEBUG( NAME,  ' INITIAL RESIDUAL ', NORM_R0)
-	ENDIF
+      IF (JDEBUG.GE.1) THEN
+         CALL WRITE_DEBUG( NAME,  ' INITIAL ERROR ', ERROR0 )
+         CALL WRITE_DEBUG( NAME,  ' INITIAL RESIDUAL ', NORM_R0)
+      ENDIF
 
 
-	M = RESTRT
+! begin iteration
+      DO ITER=1,MAX_IT
+! ---------------------------------------------------------------->>>
 
-	    V(:,:) = ZERO
-	    H(:,:) = ZERO
-	    CS(:) = ZERO
-	    SN(:) = ZERO
-	    E1(:) = ZERO
-	    E1(1) = ONE
+! r = M \ (b-A*x)
+! --------------------------------
+         CALL MATVEC( VNAME, VAR, A_M, R )   ! Returns R=A*VAR
+!        TEMP(:) = B_M(:) - R(:)
+
+!!$omp    parallel do private(ii,jj,kk,ijk)
+         DO KK=KSTART,KEND
+           DO JJ=JSTART,JEND
+             DO II=ISTART,IEND
+                IJK = FUNIJK( II,JJ,KK )
+                TEMP(IJK) = B_M(IJK) - R(IJK)
+             ENDDO
+           ENDDO
+         ENDDO
+
+! Solve A*R(:) = TEMP(:)
+         CALL MSOLVE(VNAME, TEMP, A_M, R, CMETHOD)   ! returns R
+
+         NORM_R =  DOT_PRODUCT_PAR( R, R ) 
+         NORM_R = SQRT( NORM_R )
+         INV_NORM_R = ONE / NORM_R
+
+!         V(:,1) = R(:) * INV_NORM_R
+!!$omp    parallel do private(ii,jj,kk,ijk)
+         DO KK=KSTART,KEND
+           DO JJ=JSTART,JEND
+             DO II=ISTART,IEND
+                IJK = FUNIJK( II,JJ,KK )
+                V(IJK,1) = R(IJK) * INV_NORM_R
+             ENDDO
+           ENDDO
+         ENDDO
+
+         SS(:) = NORM_R * E1(:)
 
 
-!	----------------
-!	begin iteration
-!	----------------
-	DO ITER=1,MAX_IT
+! construct orthonormal basis using Gram-Schmidt
+! ---------------------------------------------------------------->>>
+         DO I=1,M    ! M->restrt->itmax
+! w = M \ (A*V(:,i))
+! --------------------------------
+            CALL MATVEC(VNAME, V(:,I), A_M, TEMP)   ! returns TEMP=A*V
+! Solve A*WW(:) = TEMP(:)            
+            CALL MSOLVE(VNAME, TEMP, A_M, WW, CMETHOD)   ! returns WW
 
-!		---------------
-!		r = M \ (b-A*x)
-!		---------------
+            DO K=1,I
+               DTEMP = DOT_PRODUCT_PAR( WW(:), V(:,K) )
+               H(K,I) = DTEMP
+!               WW(:) = WW(:) - H(K,I)*V(:,K)
 
-		CALL MATVEC( VNAME, VAR, A_M, R )
+!!$omp          parallel do private(ii,jj,kk,ijk)
+               DO KK=KSTART,KEND
+                 DO JJ=JSTART,JEND
+                   DO II=ISTART,IEND
+                      IJK = FUNIJK( II,JJ,KK )
+                      WW(IJK) = WW(IJK) - H(K,I)*V(IJK,K)
+                   ENDDO
+                 ENDDO
+               ENDDO
+            ENDDO
 
-!//             TEMP(:) = B_M(:) - R(:)
+            NORM_W =  DOT_PRODUCT_PAR( WW(:), WW(:) ) 
+            NORM_W = SQRT( NORM_W )
+            H(I+1,I) = NORM_W
+!            V(:,I+1) = WW(:) / H(I+1,I)
+            INV_H_IP1_I = ONE / H(I+1,I)
 
-
-!!!$omp           parallel do private(ii,jj,kk,ijk)
-                DO KK=KSTART,KEND
-                DO JJ=JSTART,JEND
+!!$omp       parallel do private(ii,jj,kk,ijk)
+            DO KK=KSTART,KEND
+              DO JJ=JSTART,JEND
                 DO II=ISTART,IEND
                    IJK = FUNIJK( II,JJ,KK )
-                   TEMP(IJK) = B_M(IJK) - R(IJK)
+                   V(IJK, I+1) = WW(IJK) * INV_H_IP1_I
                 ENDDO
-                ENDDO
-                ENDDO
+              ENDDO
+            ENDDO
 
+! apply Givens rotation
+! --------------------------------
+            DO K=1,I-1
+               DTEMP    =  CS(K)*H(K,I) + SN(K)*H(K+1,I)
+               H(K+1,I) = -SN(K)*H(K,I) + CS(K)*H(K+1,I)
+               H(K,I)   = DTEMP
+            ENDDO
 
+! form i-th rotation matrix approximate residual norm
+! --------------------------------
+            CALL ROTMAT( H(I,I), H(I+1,I), CS(I), SN(I) )
 
-	  	CALL MSOLVE( VNAME, TEMP, A_M, R, CMETHOD )
+            DTEMP = CS(I)*SS(I)
+            SS(I+1) = -SN(I)*SS(I)
+            SS(I) = DTEMP
+            H(I,I) = CS(I)*H(I,I) + SN(I)*H(I+1,I)
+            H(I+1,I) = ZERO
+            ERROR = ABS( SS(I+1) ) / BNRM2
 
+            IS_CONVERGED = (ERROR .LE. TOL*ERROR0)
+            CALL GLOBAL_ALL_AND( IS_CONVERGED, ALL_IS_CONVERGED )
+            IF (ALL_IS_CONVERGED) THEN
+! update approximation and exit
+! --------------------------------
 
-!//
-		    NORM_R =  DOT_PRODUCT_PAR( R, R ) 
-                    NORM_R = SQRT( NORM_R )
+! triangular solve with y = H(1:i,1:i) \ s(1:i)
+! --------------------------------                    
+               MDIM = I
+               DO II=1,MDIM
+                 Y(II) = SS(II)
+               ENDDO
 
-		    INV_NORM_R = ONE / NORM_R
-
-
-!//		    V(:,1) = R(:) * INV_NORM_R
-
-!!!$omp               parallel do private(ii,jj,kk,ijk)
-                    DO KK=KSTART,KEND
-                    DO JJ=JSTART,JEND
-                    DO II=ISTART,IEND
-                       IJK = FUNIJK( II,JJ,KK )
-                       V(IJK,1) = R(IJK) * INV_NORM_R
-                    ENDDO
-                    ENDDO
-                    ENDDO
-
-		    SS(:) = NORM_R * E1(:)
-
-!		----------------------------
-!		construct orthonormal basis
-!		using Gram-Schmidt
-!		----------------------------
-		DO I=1,M
-!		   ------------------
-!		   w = M \ (A*V(:,i))
-!		   ------------------
-
-
-		   CALL MATVEC( VNAME, V(:,I), A_M, TEMP )
-
-			
-
-
-
-		   CALL MSOLVE( VNAME, TEMP, A_M, WW, CMETHOD )
-
-
-
-		       DO K=1,I
-!//
-			    DTEMP = DOT_PRODUCT_PAR( WW(:), V(:,K) )
-                            H(K,I) = DTEMP
-
-!//			    WW(:) = WW(:) - H(K,I)*V(:,K)
-
-
-!!!$omp                       parallel do private(ii,jj,kk,ijk)
-                            DO KK=KSTART,KEND
-                            DO JJ=JSTART,JEND
-                            DO II=ISTART,IEND
-                               IJK = FUNIJK( II,JJ,KK )
-                               WW(IJK) = WW(IJK) - H(K,I)*V(IJK,K)
-                            ENDDO
-                            ENDDO
-                            ENDDO
-
-		       ENDDO
-
-!//
-		   NORM_W =  DOT_PRODUCT_PAR( WW(:), WW(:) ) 
-                   NORM_W = SQRT( NORM_W )
-
-
-		   H(I+1,I) = NORM_W
-
-
-!//	          V(:,I+1) = WW(:) / H(I+1,I)
-
-                  INV_H_IP1_I = ONE / H(I+1,I)
-
-!!!$omp             parallel do private(ii,jj,kk,ijk)
-                  DO KK=KSTART,KEND
-                  DO JJ=JSTART,JEND
-                  DO II=ISTART,IEND
-                     IJK = FUNIJK( II,JJ,KK )
-                     V(IJK, I+1) = WW(IJK) * INV_H_IP1_I
+               DO II=MDIM,1,-1
+                  YII = Y(II)/H(II,II)
+                  Y(II) = YII
+                  DO JJ=1,II-1
+                     Y(JJ) = Y(JJ) - H(JJ,II)*YII
                   ENDDO
-                  ENDDO
+               ENDDO
+
+! double check
+! --------------------------------
+               IF (JDEBUG.GE.1) THEN
+                  MAXH = ABS(H(1,1))
+                  MINH = ABS(H(1,1))
+                  DO II=1,MDIM
+                     MAXH = MAX( MAXH, ABS(H(II,II)) )
+                     MINH = MIN( MINH, ABS(H(II,II)) )
                   ENDDO
 
-!		   -----------------------
-!		   apply Givens rotation
-!		   -----------------------
-		   DO K=1,I-1
-			DTEMP    =  CS(K)*H(K,I) + SN(K)*H(K+1,I)
-			H(K+1,I) = -SN(K)*H(K,I) + CS(K)*H(K+1,I)
-			H(K,I)   = DTEMP
-		   ENDDO
+                  CALL GLOBAL_ALL_MAX( MAXH, ALL_MAXH )
+                  CALL GLOBAL_ALL_MIN( MINH, ALL_MINH )
+                  MAXH = ALL_MAXH
+                  MINH = ALL_MINH
+                  CONDH = MAXH/MINH
 
-!		   --------------------------
-!		   form i-th rotation matrix
-!		   approximate residual norm
-!		   --------------------------
+                  TEMP(1:MDIM) = SS(1:MDIM) - &
+                  MATMUL( H(1:MDIM,1:MDIM ), Y(1:MDIM) )   
+                  DTEMP = DOT_PRODUCT( TEMP(1:MDIM), TEMP(1:MDIM) ) 
+                  DTEMP = SQRT( DTEMP )
 
+                  NORM_S = DOT_PRODUCT( SS(1:MDIM),SS(1:MDIM) )
+                  NORM_S = SQRT( NORM_S )
 
-		   CALL ROTMAT( H(I,I), H(I+1,I), CS(I), SN(I) )
+                  NORM_Y = DOT_PRODUCT( Y(1:MDIM),Y(1:MDIM) )
+                  NORM_Y = SQRT( NORM_Y )
 
-
-		   DTEMP = CS(I)*SS(I)
-		   SS(I+1) = -SN(I)*SS(I)
-		   SS(I) = DTEMP
-
-		   H(I,I) = CS(I)*H(I,I) + SN(I)*H(I+1,I)
-		   H(I+1,I) = ZERO
-
-		   ERROR = ABS( SS(I+1) ) / BNRM2
-
-!//
-                   IS_CONVERGED = (ERROR .LE. TOL*ERROR0)
-                   CALL GLOBAL_ALL_AND( IS_CONVERGED, ALL_IS_CONVERGED )
-
-
-		   IF (ALL_IS_CONVERGED) THEN
-!			-----------------------------
-!			update approximation and exit
-!			-----------------------------
-!			-----------------------
-!			triangular solve with
-!			y = H(1:i,1:i) \ s(1:i)
-!			-----------------------
-		        MDIM = I
-
-			DO II=1,MDIM
-			  Y(II) = SS(II)
-			ENDDO
-
-			DO II=MDIM,1,-1
-			   YII = Y(II)/H(II,II)
-			   Y(II) = YII
-			   DO JJ=1,II-1
-			       Y(JJ) = Y(JJ) - H(JJ,II)*YII
-			   ENDDO
-			ENDDO
-
-                	IF (JDEBUG.GE.1) THEN
-!               	-------------
-!               	double check
-!               	-------------
-			MAXH = ABS(H(1,1))
-			MINH = ABS(H(1,1))
-			DO II=1,MDIM
-			  MAXH = MAX( MAXH, ABS(H(II,II)) )
-			  MINH = MIN( MINH, ABS(H(II,II)) )
-			ENDDO
-
-!//
-                        CALL GLOBAL_ALL_MAX( MAXH, ALL_MAXH )
-                        CALL GLOBAL_ALL_MIN( MINH, ALL_MINH )
-
-		        MAXH = ALL_MAXH
-                        MINH = ALL_MINH
-
-			CONDH = MAXH/MINH
-
-                   	TEMP(1:MDIM) = SS(1:MDIM) - &
-                        	MATMUL( H(1:MDIM,1:MDIM ), Y(1:MDIM) )   
-
-                   	DTEMP = DOT_PRODUCT( TEMP(1:MDIM), TEMP(1:MDIM) ) 
-                   	DTEMP = SQRT( DTEMP )
-
-                   	NORM_S = DOT_PRODUCT( SS(1:MDIM),SS(1:MDIM) )
-                        NORM_S = SQRT( NORM_S )
-
-	
-                   	NORM_Y = DOT_PRODUCT( Y(1:MDIM),Y(1:MDIM) )
-                        NORM_Y = SQRT( NORM_Y )
+                  IS_ERROR = (DTEMP .GT. CONDH*NORM_S)
+                  CALL GLOBAL_ALL_OR( IS_ERROR, ALL_IS_ERROR )
+                  IF (ALL_IS_ERROR) THEN
+                     CALL WRITE_DEBUG(NAME, &
+                        'DTEMP, NORM_S ', DTEMP, NORM_S )
+                     CALL WRITE_DEBUG(NAME, &
+                        'CONDH, NORM_Y ', CONDH, NORM_Y )
+                     CALL WRITE_DEBUG(NAME, &
+                        '** STOP IN LEQ_GMRES ** ')
+                     IER = 999
+                     RETURN
+                  ENDIF
+               ENDIF   ! end if(jdebug>=1)
 
 
-!//
-                        IS_ERROR = (DTEMP .GT. CONDH*NORM_S)
-                        CALL GLOBAL_ALL_OR( IS_ERROR, ALL_IS_ERROR )
-
-                   	IF (ALL_IS_ERROR) THEN
-
-			   CALL WRITE_DEBUG(NAME, &
-                                 'DTEMP, NORM_S ', DTEMP, NORM_S )
-			   CALL WRITE_DEBUG(NAME, &
-                                 'CONDH, NORM_Y ', CONDH, NORM_Y )
-			   CALL WRITE_DEBUG(NAME, &
-                                 '** STOP IN LEQ_GMRES ** ')
-
-
-                           IER = 999
-                           RETURN
-
-
-			ENDIF
-                	ENDIF
-
-
-     
-!//  
-!//
-!//		        VAR(:)=VAR(:)+MATMUL(V(:,1:I),Y(1:I))
-
-
-!!!$omp                   parallel do private(ii,jj,kk,ijk)
-                        DO KK=KSTART,KEND
-                        DO JJ=JSTART,JEND
-                        DO II=ISTART,IEND
-                           IJK = FUNIJK( II,JJ,KK )
-                           VAR(IJK) = VAR(IJK) + &
-                                 DOT_PRODUCT( V(IJK,1:I), Y(1:I) )
-                        ENDDO
-                        ENDDO
-                        ENDDO
-
-
- 			EXIT
-		   ENDIF
-		ENDDO
-
-
-!//
-                IS_CONVERGED = ( ERROR .LE. TOL*ERROR0)
-                CALL GLOBAL_ALL_AND( IS_CONVERGED, ALL_IS_CONVERGED )
-
-
-
-	        IF ( ALL_IS_CONVERGED ) THEN
- 			EXIT
-		ENDIF
-
-!		---------------------
-!		update approximations
-!		---------------------
-
-!		------------------------
-!		y = H(1:m,1:m) \ s(1:m)
-!		x = x + V(:,1:m)*y
-!		r = M \ (b-A*x)
-!		------------------------
-
-
-		MDIM = M
-                DO II=1,MDIM
-		  Y(II) = SS(II)
-                ENDDO
-
-                DO II=MDIM,1,-1
-		   YII = Y(II)/H(II,II)
-                   Y(II) = YII
-                   DO JJ=1,II-1
-		       Y(JJ) = Y(JJ) - H(JJ,II)*YII
+!               VAR(:)=VAR(:)+MATMUL(V(:,1:I),Y(1:I))
+!!$omp          parallel do private(ii,jj,kk,ijk)
+               DO KK=KSTART,KEND
+                 DO JJ=JSTART,JEND
+                   DO II=ISTART,IEND
+                      IJK = FUNIJK( II,JJ,KK )
+                      VAR(IJK) = VAR(IJK) + &
+                         DOT_PRODUCT( V(IJK,1:I), Y(1:I) )
                    ENDDO
-		ENDDO
-		
-
-                        IF (JDEBUG.GE.1) THEN
-!                       -------------
-!                       double check
-!                       -------------
-                        MAXH = ABS(H(1,1))
-                        MINH = ABS(H(1,1))
-                        DO II=1,MDIM
-                          MAXH = MAX( MAXH, ABS(H(II,II)) )
-                          MINH = MIN( MINH, ABS(H(II,II)) )
-                        ENDDO
-                        CONDH = MAXH/MINH
-
-                        TEMP(1:MDIM) = SS(1:MDIM) - &
-                                MATMUL( H(1:MDIM,1:MDIM ), Y(1:MDIM) )
-
-                        DTEMP = DOT_PRODUCT( TEMP(1:MDIM), TEMP(1:MDIM) )
-                        DTEMP = SQRT( DTEMP )
-
-                        NORM_S = DOT_PRODUCT( SS(1:MDIM),SS(1:MDIM) )
-                        NORM_S = SQRT( NORM_S )
-
-                        NORM_Y = DOT_PRODUCT( Y(1:MDIM),Y(1:MDIM) )
-                        NORM_Y = SQRT( NORM_Y )
-
-!//
-                        IS_ERROR = (DTEMP .GT. CONDH*NORM_S)
-                        CALL GLOBAL_ALL_OR( IS_ERROR, ALL_IS_ERROR )
-
-                        IF (ALL_IS_ERROR) THEN
-
-			   CALL WRITE_DEBUG(NAME, &
-                                   'DTEMP, NORM_S ', DTEMP, NORM_S )
-			   CALL WRITE_DEBUG(NAME, &
-                                   'CONDH, NORM_Y ', CONDH, NORM_Y )
-			   CALL WRITE_DEBUG(NAME, &
-                                   '** STOP IN LEQ_GMRES ** ')
-
-                           IER = 999
-                           RETURN
-
-                        ENDIF
-                        ENDIF
-
-
-
-
-!//
-!// 		 VAR(:) = VAR(:) + MATMUL( V(:,1:M), Y(1:M) )
-!//
-
-!!!$omp            parallel do private(ii,jj,kk,ijk)
-                 DO KK=KSTART,KEND
-                 DO JJ=JSTART,JEND
-                 DO II=ISTART,IEND
-                    IJK = FUNIJK( II,JJ,KK )
-                    VAR(IJK) = VAR(IJK) + &
-                             DOT_PRODUCT( V(IJK,1:M), Y(1:M) )
                  ENDDO
-                 ENDDO
-                 ENDDO
+               ENDDO
 
+               EXIT
+            ENDIF   !end if(all_is_converged) 
+         ENDDO   !end do I=1,m (construct orthonormal basis using Gram-Schmidt)
+! ----------------------------------------------------------------<<<
 
+         IS_CONVERGED = ( ERROR .LE. TOL*ERROR0)
+         CALL GLOBAL_ALL_AND( IS_CONVERGED, ALL_IS_CONVERGED )
+         IF ( ALL_IS_CONVERGED ) THEN
+            EXIT
+         ENDIF
 
-		 
-                CALL MATVEC( VNAME, VAR, A_M, R )
+! update approximations
+! --------------------------------
 
+! y = H(1:m,1:m) \ s(1:m)
+! x = x + V(:,1:m)*y
+! r = M \ (b-A*x)
+! --------------------------------
+         MDIM = M
+         DO II=1,MDIM
+            Y(II) = SS(II)
+         ENDDO
 
-!//                TEMP(:) = B_M(:) - R(:)
-
-!!!$omp            parallel do private(ii,jj,kk,ijk)
-                 DO KK=KSTART,KEND
-                 DO JJ=JSTART,JEND
-                 DO II=ISTART,IEND
-                    IJK = FUNIJK( II,JJ,KK )
-                    TEMP(IJK) = B_M(IJK) - R(IJK)
-                 ENDDO
-                 ENDDO
-                 ENDDO
-
-
-
-
-
-                CALL MSOLVE( VNAME, TEMP, A_M, R, CMETHOD )
-
-
-
-		NORM_R =  DOT_PRODUCT_PAR( R, R ) 
-                NORM_R = SQRT( NORM_R )
-
-
-
-		SS(I+1) = NORM_R
-
-		ERROR = SS(I+1) / BNRM2
-
-                IF (JDEBUG.GE.1) THEN
-
-		   CALL WRITE_DEBUG(NAME, 'LEQ_GMRES: I, ITER ', I, ITER)
-		   CALL WRITE_DEBUG(NAME, 'LEQ_GMRES:  ERROR, NORM_R ',  &
-                                          ERROR, NORM_R )
-
-		ENDIF
-
-!//
-                IS_CONVERGED = (ERROR .LE. TOL*ERROR0) 
-                CALL GLOBAL_ALL_AND( IS_CONVERGED, ALL_IS_CONVERGED )
-
-
-		IF (ALL_IS_CONVERGED)  THEN
-			EXIT
-		ENDIF
-
-	   ENDDO
-
-!//
-        IS_ERROR = (ERROR .GT. TOL*ERROR0)
-        CALL GLOBAL_ALL_OR( IS_ERROR, ALL_IS_ERROR )
-
-	IF (ALL_IS_ERROR) THEN
-		IER = 1
-	ENDIF
-
-	IF (JDEBUG.GE.1) THEN
-	    CALL MATVEC( VNAME, VAR, A_M, R )
-
-!//	    R(:) = R(:) - B_M(:)
-
-!!!$omp            parallel do private(ii,jj,kk,ijk)
-            DO KK=KSTART,KEND
-            DO JJ=JSTART,JEND
-            DO II=ISTART,IEND
-               IJK = FUNIJK( II,JJ,KK )
-               R(IJK) = R(IJK) - B_M(IJK)
+         DO II=MDIM,1,-1
+            YII = Y(II)/H(II,II)
+            Y(II) = YII
+            DO JJ=1,II-1
+               Y(JJ) = Y(JJ) - H(JJ,II)*YII
             ENDDO
+         ENDDO
+
+! double check
+! --------------------------------
+         IF (JDEBUG.GE.1) THEN
+            MAXH = ABS(H(1,1))
+            MINH = ABS(H(1,1))
+            DO II=1,MDIM
+              MAXH = MAX( MAXH, ABS(H(II,II)) )
+              MINH = MIN( MINH, ABS(H(II,II)) )
             ENDDO
-            ENDDO
+            CONDH = MAXH/MINH
 
+            TEMP(1:MDIM) = SS(1:MDIM) - &
+               MATMUL( H(1:MDIM,1:MDIM ), Y(1:MDIM) )
 
-	    NORM_R=DOT_PRODUCT_PAR(R,R)
-            NORM_R = SQRT( NORM_R )
+            DTEMP = DOT_PRODUCT( TEMP(1:MDIM), TEMP(1:MDIM) )
+            DTEMP = SQRT( DTEMP )
 
+            NORM_S = DOT_PRODUCT( SS(1:MDIM),SS(1:MDIM) )
+            NORM_S = SQRT( NORM_S )
 
-	    CALL WRITE_DEBUG(NAME, 'ITER, I ', ITER, I )
-	    CALL WRITE_DEBUG(NAME, 'VNAME = ' // VNAME )
-	    CALL WRITE_DEBUG(NAME, 'IER  = ', IER )
+            NORM_Y = DOT_PRODUCT( Y(1:MDIM),Y(1:MDIM) )
+            NORM_Y = SQRT( NORM_Y )
 
-	    CALL WRITE_DEBUG(NAME, 'ERROR0  = ', ERROR0 )
-	    CALL WRITE_DEBUG(NAME, 'NORM_R0  = ', NORM_R0 )
+            IS_ERROR = (DTEMP .GT. CONDH*NORM_S)
+            CALL GLOBAL_ALL_OR( IS_ERROR, ALL_IS_ERROR )
+            IF (ALL_IS_ERROR) THEN
+               CALL WRITE_DEBUG(NAME, &
+                  'DTEMP, NORM_S ', DTEMP, NORM_S )
+               CALL WRITE_DEBUG(NAME, &
+                  'CONDH, NORM_Y ', CONDH, NORM_Y )
+               CALL WRITE_DEBUG(NAME, &
+                  '** STOP IN LEQ_GMRES ** ')
+               IER = 999
+               RETURN
+            ENDIF
+         ENDIF   ! end if(jdebug>=1)
 
-	    CALL WRITE_DEBUG(NAME, 'FINAL ERROR  = ', ERROR )
-	    CALL WRITE_DEBUG(NAME, 'FINAL RESIDAUL ', NORM_R )
-	    CALL WRITE_DEBUG(NAME, 'ERR RATIO ', ERROR/ERROR0 )
-	    CALL WRITE_DEBUG(NAME, 'RESID RATIO ', NORM_R/NORM_R0 )
+!         VAR(:) = VAR(:) + MATMUL( V(:,1:M), Y(1:M) )
+!!$omp    parallel do private(ii,jj,kk,ijk)
+         DO KK=KSTART,KEND
+           DO JJ=JSTART,JEND
+             DO II=ISTART,IEND
+                IJK = FUNIJK( II,JJ,KK )
+                VAR(IJK) = VAR(IJK) + &
+                   DOT_PRODUCT( V(IJK,1:M), Y(1:M) )
+             ENDDO
+           ENDDO
+         ENDDO
+ 
+         CALL MATVEC(VNAME, VAR, A_M, R)   ! returns R=A*VAR
 
-	ENDIF
+!         TEMP(:) = B_M(:) - R(:)
+!!$omp    parallel do private(ii,jj,kk,ijk)
+         DO KK=KSTART,KEND
+           DO JJ=JSTART,JEND
+             DO II=ISTART,IEND
+                IJK = FUNIJK( II,JJ,KK )
+                TEMP(IJK) = B_M(IJK) - R(IJK)
+             ENDDO
+           ENDDO
+         ENDDO
 
+! Solve A*R(:)=TEMP(:)
+         CALL MSOLVE( VNAME, TEMP, A_M, R, CMETHOD)   ! Returns R
+         NORM_R =  DOT_PRODUCT_PAR( R, R ) 
+         NORM_R = SQRT( NORM_R )
 
+         SS(I+1) = NORM_R
+         ERROR = SS(I+1) / BNRM2
 
+         IF (JDEBUG.GE.1) THEN
+            CALL WRITE_DEBUG(NAME, 'LEQ_GMRES: I, ITER ', I, ITER)
+            CALL WRITE_DEBUG(NAME, 'LEQ_GMRES:  ERROR, NORM_R ',  &
+               ERROR, NORM_R )
+         ENDIF
 
-        RETURN
+         IS_CONVERGED = (ERROR .LE. TOL*ERROR0) 
+         CALL GLOBAL_ALL_AND( IS_CONVERGED, ALL_IS_CONVERGED )
+         IF (ALL_IS_CONVERGED)  THEN
+            EXIT
+         ENDIF
 
-	END SUBROUTINE LEQ_GMRES0
+      ENDDO   ! end do iter=1,max_it
+! ----------------------------------------------------------------<<<
 
-!       ==============================================
-        SUBROUTINE ROTMAT(  A, B, C, S )
-	IMPLICIT NONE
-	DOUBLE PRECISION A,B,C,S
+      IS_ERROR = (ERROR .GT. TOL*ERROR0)
+      CALL GLOBAL_ALL_OR( IS_ERROR, ALL_IS_ERROR )
+      IF (ALL_IS_ERROR) THEN
+         IER = 1
+      ENDIF
 
-        DOUBLE PRECISION ONE,ZERO
-        PARAMETER(ONE=1.0D0,ZERO=0.0D0)
-        DOUBLE PRECISION TEMP
+      IF (JDEBUG.GE.1) THEN
+         CALL MATVEC(VNAME, VAR, A_M, R)   ! Returns R=A*VAR
 
-	IF (B.EQ.ZERO) THEN
-            C = ONE
-            S = ZERO
-        ELSE IF (ABS(B) .GT. ABS(A)) THEN
+!         R(:) = R(:) - B_M(:)
+!!$omp    parallel do private(ii,jj,kk,ijk)
+         DO KK=KSTART,KEND
+           DO JJ=JSTART,JEND
+             DO II=ISTART,IEND
+                IJK = FUNIJK( II,JJ,KK )
+                R(IJK) = R(IJK) - B_M(IJK)
+             ENDDO
+           ENDDO
+         ENDDO
 
-           TEMP = A / B
-           S = ONE / SQRT( ONE + TEMP*TEMP )
-           C = TEMP * S
+         NORM_R=DOT_PRODUCT_PAR(R,R)
+         NORM_R = SQRT( NORM_R )
+         CALL WRITE_DEBUG(NAME, 'ITER, I ', ITER, I )
+         CALL WRITE_DEBUG(NAME, 'VNAME = ' // VNAME )
+         CALL WRITE_DEBUG(NAME, 'IER  = ', IER )
+         CALL WRITE_DEBUG(NAME, 'ERROR0  = ', ERROR0 )
+         CALL WRITE_DEBUG(NAME, 'NORM_R0  = ', NORM_R0 )
+         CALL WRITE_DEBUG(NAME, 'FINAL ERROR  = ', ERROR )
+         CALL WRITE_DEBUG(NAME, 'FINAL RESIDAUL ', NORM_R )
+         CALL WRITE_DEBUG(NAME, 'ERR RATIO ', ERROR/ERROR0 )
+         CALL WRITE_DEBUG(NAME, 'RESID RATIO ', NORM_R/NORM_R0 )
+      ENDIF   ! end if (jdebug>=1)
 
-        ELSE
+      RETURN
+      END SUBROUTINE LEQ_GMRES0
 
-           TEMP = B / A
-           C = ONE / SQRT( ONE + TEMP*TEMP )
-           S = TEMP * C
-        ENDIF
-
-
-        RETURN
-        END
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: LEQ_GMRES(Vname, Var, A_m, B_m,                        C
-!                         CMETHOD, TOL, ITMAX, MAX_IT, IER )
-!  Purpose: Verify boundary nodes in A_m  are set correctly
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      SUBROUTINE ROTMAT(  A, B, C, S )
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------        
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+      DOUBLE PRECISION A,B,C,S
+!-----------------------------------------------
+! Local parameters
+!-----------------------------------------------
+      DOUBLE PRECISION ONE,ZERO
+      PARAMETER(ONE=1.0D0,ZERO=0.0D0)
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+      DOUBLE PRECISION TEMP
+!-----------------------------------------------
+
+      IF (B.EQ.ZERO) THEN
+            C = ONE
+            S = ZERO
+      ELSEIF (ABS(B) .GT. ABS(A)) THEN
+           TEMP = A / B
+           S = ONE / SQRT( ONE + TEMP*TEMP )
+           C = TEMP * S
+      ELSE
+           TEMP = B / A
+           C = ONE / SQRT( ONE + TEMP*TEMP )
+           S = TEMP * C
+      ENDIF
+
+      RETURN
+      END
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: Leq_check                                               C
+!  Purpose: Verify boundary nodes in A_m are set correctly             C
 !                                                                      C
 !  Author: Ed D'Azevedo                               Date: 21-JAN-99  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
-!                                                                      C
 !  Literature/Document References:                                     C
-!                                                                      C
 !  Variables referenced:                                               C
 !  Variables modified:                                                 C
-!                                                                      C
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-	subroutine leq_check( vname, A_m )
+      subroutine leq_check( vname, A_m )
+
 !-----------------------------------------------
-!   M o d u l e s
+! Modules
 !-----------------------------------------------
       USE PARAM
       USE PARAM1
       USE MATRIX
       USE GEOMETRY
       USE INDICES
-
-!//
       USE debug
       USE compar
       USE mpi_utility
-
       IMPLICIT NONE
-
-
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Dummy arguments
 !-----------------------------------------------
-!
-!
-!
-!                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_M(IJKSTART3:IJKEND3, -3:3)
-!
-!                      Variable name
-      CHARACTER*(*)    VNAME
-!  --------------
-!  Local variable
-!  --------------
+! Septadiagonal matrix A_m
+      DOUBLE PRECISION, INTENT(INOUT) :: A_M(IJKSTART3:IJKEND3, -3:3)
+! Variable name
+      CHARACTER*(*), INTENT(IN) :: VNAME
+!-----------------------------------------------
+! Local parameters
+!-----------------------------------------------      
+      logical, parameter :: do_reset = .true.
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
       integer, dimension(-3:3) :: ijktable
       integer :: istartl, iendl, jstartl, jendl, kstartl, kendl, elstart, elend
       integer :: i,j,k,el,   ijk,ijk2,   ii,jj,kk
       integer :: nerror, all_nerror
-
       logical :: is_in_k, is_in_j, is_in_i, is_in
       logical :: is_bc_k, is_bc_j, is_bc_i, is_bc, is_ok
-
-      logical, parameter :: do_reset = .true.
-      
-
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
       include 'function.inc'
-
-
-
+!-----------------------------------------------
 
       kstartl = kstart2
       kendl = kend2
@@ -864,90 +704,75 @@
       istartl = istart2
       iendl = iend2
 
-
       if (no_k) then
         kstartl  = 1
         kendl = 1
       endif
-
 
       nerror = 0
 
       do k=kstartl,kendl
       do j=jstartl,jendl
       do i=istartl,iendl
-
          is_in_k = (kstart1 <= k) .and. (k <= kend1)
          is_in_j = (jstart1 <= j) .and. (j <= jend1)
          is_in_i = (istart1 <= i) .and. (i <= iend1)
 
          is_in = is_in_k .and. is_in_j .and. is_in_i
-	 if (is_in) cycle
+         if (is_in) cycle
 
+         ijk = funijk(i,j,k)
+         ijktable( -2 ) = jm_of(ijk)
+         ijktable( -1 ) = im_of(ijk)
+         ijktable(  0 ) = ijk
+         ijktable(  1 ) = ip_of(ijk)
+         ijktable(  2 ) = jp_of(ijk)
 
+         if (.not. no_k) then
+            ijktable( -3 ) = km_of(ijk)
+            ijktable(  3 ) = kp_of(ijk)
+         endif
 
-           ijk = funijk(i,j,k)
+         elstart = -3
+         elend = 3
+         if (no_k) then
+            elstart = -2
+            elend =  2
+         endif
 
-	   ijktable( -2 ) = jm_of(ijk)
-	   ijktable( -1 ) = im_of(ijk)
-	   ijktable(  0 ) = ijk
-           ijktable(  1 ) = ip_of(ijk)
-           ijktable(  2 ) = jp_of(ijk)
+         do el=elstart,elend
+            ijk2 = ijktable( el )
+            kk = k_of(ijk2)
+            jj = j_of(ijk2)
+            ii = i_of(ijk2)
+            is_bc_k = (kk < kstart2) .or. (kk > kend2)
+            is_bc_j = (jj < jstart2) .or. (jj > jend2)
+            is_bc_i = (ii < istart2) .or. (ii > iend2)
+            is_bc = is_bc_k .or. is_bc_j .or. is_bc_i 
+            if (is_bc) then
+               is_ok = (A_m(ijk,el).eq.zero)
+               if (.not.is_ok) then
+                  nerror = nerror + 1
+                  if (do_reset) A_m(ijk,el) = zero
+               endif
+            endif
+         enddo ! do el
+      enddo
+      enddo
+      enddo
 
-           if (.not. no_k) then
-                ijktable( -3 ) = km_of(ijk)
-                ijktable(  3 ) = kp_of(ijk)
-           endif
+      call global_sum( nerror, all_nerror )
+      nerror = all_nerror
 
+      if ((nerror >= 1) .and. (myPE.eq.PE_IO)) then
+         if (do_reset) then
+              call write_debug( 'leq_check: ' // trim( vname ), &
+                        'A_m is reset. nerror = ', nerror )
+         else
+              call write_debug( 'leq_check: ' // trim( vname ), &
+                        'A_m is not reset. nerror = ', nerror )
+         endif
+      endif
 
-	   elstart = -3
-	   elend = 3
-	   if (no_k) then
-		elstart = -2
-		elend =  2
-	   endif
-
-	   do el=elstart,elend
-
-		ijk2 = ijktable( el )
-
-		kk = k_of(ijk2)
-		jj = j_of(ijk2)
-		ii = i_of(ijk2)
-	        
-                is_bc_k = (kk < kstart2) .or. (kk > kend2)
-                is_bc_j = (jj < jstart2) .or. (jj > jend2)
-                is_bc_i = (ii < istart2) .or. (ii > iend2)
-
-		is_bc = is_bc_k .or. is_bc_j .or. is_bc_i 
-
-                if (is_bc) then
-                   is_ok = (A_m(ijk,el).eq.zero)
-                   if (.not.is_ok) then
-                      nerror = nerror + 1
-                      if (do_reset) A_m(ijk,el) = zero
-                   endif
-                endif
-		   
-	    end do ! do el
-
-	end do
-	end do
-	end do
-
-        call global_sum( nerror, all_nerror )
-        nerror = all_nerror
-		
-
-        if ((nerror >= 1) .and. (myPE.eq.PE_IO)) then
-	   if (do_reset) then
-		call write_debug( 'leq_check: ' // trim( vname ), &
-                          'A_m is reset. nerror = ', nerror )
-	   else
-		call write_debug( 'leq_check: ' // trim( vname ), &
-                          'A_m is not reset. nerror = ', nerror )
-	   endif
-	endif
-		
-	return
-	end subroutine leq_check
+      return
+      end subroutine leq_check
