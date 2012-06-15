@@ -218,7 +218,7 @@
 ! zero out R, Rtilde, P, Phat, Svec, Shat, Tvec, V
 ! --------------------------------
       if (use_doloop) then   ! mfix.dat keyword default=false
-!!$omp  parallel do private(ijk)
+!$omp  parallel do private(ijk)
          do ijk=ijkstart3,ijkend3
             R(ijk) = zero
             Rtilde(ijk) = zero
@@ -245,7 +245,7 @@
 ! Scale matrix to have unit diagonal
 ! ---------------------------------------------------------------->>>
       if (do_unit_scaling) then
-!!$omp parallel do private(ijk,i,j,k,oam,aijmax)
+!$omp parallel do private(ijk,i,j,k,oam,aijmax)
          do k = kstart2,kend2
             do i = istart2,iend2
                do j = jstart2,jend2
@@ -1042,10 +1042,10 @@
 !-----------------------------------------------
 
       if (do_k) then
-!!$omp    parallel  do &
-!!$omp&   private(     &
-!!$omp&           ijk,i,j,k, &
-!!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
+!$omp    parallel  do &
+!$omp&   private(     &
+!$omp&           ijk,i,j,k, &
+!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1) collapse (3)
          do k = kstart,kend
             do i = istart,iend
                do j = jstart,jend
@@ -1068,7 +1068,7 @@
          enddo
       else
          k = 1
-!!$omp parallel do private(i,j,ijk,im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
+!$omp parallel do private(i,j,ijk,im1jk,ip1jk,ijm1k,ijp1k) collapse (2)
          do i = istart,iend
             do j = jstart,jend
                IJK = funijk(i,j,k)
@@ -1159,9 +1159,13 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !-----------------------------------------------
+!!$      double precision omp_start, omp_end
+!!$      double precision omp_get_wtime	      
+!       by Tingwen      
+!!$      omp_start=omp_get_wtime()
 
       IF (SETGUESS) THEN
-!!$omp   parallel do private(i,j,k,ijk)
+!$omp   parallel do private(i,j,k,ijk) collapse (3)
          do k = kstart3,kend3
             do i = istart3,iend3
                do j = jstart3,jend3
@@ -1189,10 +1193,14 @@
          IF (NO_K) THEN   ! two dimensional
 
             IF ( DO_ISWEEP ) THEN
-!!$omp   parallel do private(I)
-               DO I=istart,iend
-                  CALL LEQ_ISWEEP(I, Vname, Var, A_m, B_m)
+!$omp   parallel do private(I)   !Not sure why no_k
+               DO I=istart,iend,2
+                  CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
                ENDDO
+!$omp   parallel do private(I)
+               DO I=istart+1,iend,2
+                  CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
+               ENDDO               
             ENDIF
 
          ELSE   ! three dimensional
@@ -1200,7 +1208,7 @@
 
 ! do_all true only for leq_pc='asas'
 ! ---------------------------------------------------------------->>>
-            IF(DO_ALL) THEN                    
+            IF(DO_ALL) THEN        ! redblack for all sweeps, not used by default            
 ! JK Loop
 ! --------------------------------
                j1 = jstart
@@ -1210,14 +1218,15 @@
                jsize = j2-j1+1
                ksize = k2-k1+1
                DO icase = 1, 2
-!!$omp   parallel do private(K,J,JK)
+!$omp   parallel do private(K,J,JK)
                   DO JK=icase, ksize*jsize, 2
                      if (mod(jk,jsize).ne.0) then
                         k = int( jk/jsize ) + k1
                      else
                         k = int( jk/jsize ) + k1 -1
                      endif
-                     j = (jk-1-(k-k1)*jsize) + j1
+                     j = (jk-1-(k-k1)*jsize) + j1 + mod(k,2)
+                     if(j.gt.j2) j=j-j2 + j1 -1                  
                      CALL LEQ_JKSWEEP(J, K, Vname, Var, A_m, B_m)
                   ENDDO
                ENDDO
@@ -1232,14 +1241,15 @@
                isize = i2-i1+1
                jsize = j2-j1+1
                DO icase = 1, 2
-!!$omp   parallel do private(J,I,IJ)
+!$omp   parallel do private(J,I,IJ)
                   DO IJ=icase, jsize*isize, 2
                      if (mod(ij,isize).ne.0) then
                         j = int( ij/isize ) + j1
                      else
                         j = int( ij/isize ) + j1 -1
                      endif
-                     i = (ij-1-(j-j1)*isize) + i1
+                     i = (ij-1-(j-j1)*isize) + i1 + mod(j,2)
+                     if(i.gt.i2) i=i-i2 + i1 -1  
                      CALL LEQ_IJSWEEP(I, J, Vname, Var, A_m, B_m)
                   ENDDO
                ENDDO
@@ -1255,14 +1265,15 @@
                ksize = k2-k1+1
 
                DO icase = 1, 2
-!!$omp   parallel do private(K,I,IK)
+!$omp   parallel do private(K,I,IK)
                   DO IK=icase, ksize*isize, 2
                      if (mod(ik,isize).ne.0) then
                         k = int( ik/isize ) + k1
                      else
                         k = int( ik/isize ) + k1 -1
                      endif
-                     i = (ik-1-(k-k1)*isize) + i1
+                     i = (ik-1-(k-k1)*isize) + i1 + mod(k,2)
+                     if(i.gt.i2) i=i-i2 + i1 -1      
                      CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
                   ENDDO
                ENDDO
@@ -1280,21 +1291,23 @@
                isize = i2-i1+1
                ksize = k2-k1+1
                DO icase = 1, 2
-!!$omp   parallel do private(K,I,IK)
+!$omp   parallel do private(K,I,IK)
                   DO IK=icase, ksize*isize, 2
                      if (mod(ik,isize).ne.0) then
                         k = int( ik/isize ) + k1
                      else
                         k = int( ik/isize ) + k1 -1
                      endif
-                     i = (ik-1-(k-k1)*isize) + i1
+                     i = (ik-1-(k-k1)*isize) + i1 + mod(k,2)
+                     if(i.gt.i2) i=i-i2 + i1 -1
                      CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
                   ENDDO
                ENDDO
             ENDIF   ! end if(do_redblack)
 ! ----------------------------------------------------------------<<<
 
-
+!  Not sure the purpose of us_ikloop
+!  The SMP directives below need review                        !Tingwen Jan 2012
             IF(USE_IKLOOP) THEN  
 ! use_ikloop is currently hard-wired to false (so goto else branch)
 ! ---------------------------------------------------------------->>>
@@ -1330,6 +1343,8 @@
                ENDIF
 ! ----------------------------------------------------------------<<<               
             ELSE   ! else branch of if(use_ikloop)
+!  Not sure the purpose of us_ikloop
+!  The SMP directives below need review                        !Tingwen Jan 2012
 ! ---------------------------------------------------------------->>>
                IF (DO_ISWEEP) THEN
 !!$omp   parallel do private(K,I)
@@ -1358,6 +1373,8 @@
 
 
       ENDDO   ! end do iter=1,niter
+!!$      omp_end=omp_get_wtime()
+!!$      write(*,*)'leq_msolve:',omp_end - omp_start	
 
       RETURN
       END SUBROUTINE LEQ_MSOLVE
@@ -1488,7 +1505,7 @@
       endif
 
 ! diagonal scaling
-!!$omp   parallel do private(i,j,k,ijk)
+!$omp   parallel do private(i,j,k,ijk) collapse (3)
       do k=kstart2,kend2
          do i=istart2,iend2
             do j=jstart2,jend2
@@ -1542,7 +1559,7 @@
 
       if(do_global_sum) then
          prod = 0.0d0
-!!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
+!$omp parallel do private(i,j,k,ijk) reduction(+:prod) collapse (3)
          do k = kstart1, kend1
             do i = istart1, iend1
                do j = jstart1, jend1
@@ -1568,7 +1585,7 @@
          if(myPE.eq.root) then
             prod = 0.0d0
             
-!!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
+!$omp parallel do private(i,j,k,ijk) reduction(+:prod) collapse (3)
             do k = kmin1, kmax1
                do i = imin1, imax1
                   do j = jmin1, jmax1
@@ -1631,7 +1648,7 @@
          
          prod(:) = 0.0d0
          
-!!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
+!$omp parallel do private(i,j,k,ijk) reduction(+:prod) collapse (3)
          do k = kstart1, kend1
             do i = istart1, iend1
                do j = jstart1, jend1
@@ -1660,7 +1677,7 @@
          
          if(myPE.eq.root) then
             prod = 0.0d0
-!!$omp parallel do private(i,j,k,ijk) reduction(+:prod)
+!$omp parallel do private(i,j,k,ijk) reduction(+:prod) collapse (3)
             do k = kmin1, kmax1
                do i = imin1, imax1
                   do j = jmin1, jmax1

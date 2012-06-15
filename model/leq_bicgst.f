@@ -155,6 +155,8 @@
 		      RtildexR, aijmax, Rnorm=0, Rnorm0, Snorm, TOLMIN, pnorm
       LOGICAL :: isconverged
       INTEGER :: i, ii, j, k, ijk, itemp, iter
+!AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
+      INTEGER :: ijk2
       DOUBLE PRECISION, DIMENSION(2) :: TxS_TxT
 
 !-----------------------------------------------
@@ -197,17 +199,18 @@
 !     ---------------------------------------------
       if (use_doloop) then
 
-
-!!!$omp  parallel do private(ijk)
-         do ijk=ijkstart3,ijkend3
-            R(ijk) = zero
-            Rtilde(ijk) = zero
-            P(ijk) = zero
-            Phat(ijk) = zero
-            Svec(ijk) = zero
-            Shat(ijk) = zero
-            Tvec(ijk) = zero
-            V(ijk) = zero
+!AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
+! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 201)
+!$omp  parallel do private(ijk2)
+         do ijk2=ijkstart3,ijkend3
+            R(ijk2) = zero
+            Rtilde(ijk2) = zero
+            P(ijk2) = zero
+            Phat(ijk2) = zero
+            Svec(ijk2) = zero
+            Shat(ijk2) = zero
+            Tvec(ijk2) = zero
+            V(ijk2) = zero
          enddo
 
       else
@@ -229,21 +232,22 @@
       if (do_unit_scaling) then
 !     
 !     Scale matrix to have unit diagonal
-!     
-!!!$omp parallel do private(ijk,i,j,k,oam,aijmax)
+!
+!AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
+! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 233)     
+!$omp parallel do private(ijk2,i,j,k,oam,aijmax) collapse (3)
          do k = kstart2,kend2
             do i = istart2,iend2
                do j = jstart2,jend2
+                  IJK2 = funijk(i,j,k)
 
-                  IJK = funijk(i,j,k)
-
-                  aijmax = maxval(abs(A_M(:,ijk)) )
+                  aijmax = maxval(abs(A_M(:,ijk2)) )
 
                   OAM = one/aijmax
                   
-                  A_M(:,IJK) = A_M(:,IJK)*OAM
+                  A_M(:,IJK2) = A_M(:,IJK2)*OAM
 
-                  B_M(IJK) = B_M(IJK)*OAM
+                  B_M(IJK2) = B_M(IJK2)*OAM
 
                enddo
             enddo
@@ -260,10 +264,11 @@
 
 
       if (use_doloop) then
-
-!!!$omp   parallel do private(ijk)
-         do ijk=ijkstart3,ijkend3
-            R(ijk) = B_m(ijk) - R(ijk)
+!AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
+! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 264)
+!!$omp   parallel do private(ijk2)
+         do ijk2=ijkstart3,ijkend3
+            R(ijk2) = B_m(ijk2) - R(ijk2)
          enddo
       else
          R(:) = B_m(:) - R(:)
@@ -272,10 +277,11 @@
       if(is_serial) then
          Rnorm0 = zero
          if (use_doloop) then
-
-!!!$omp          parallel do private(ijk) reduction(+:Rnorm0)
-            do ijk=ijkstart3,ijkend3
-               Rnorm0 = Rnorm0 + R(ijk)*R(ijk)
+!AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
+! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 276)
+!!$omp          parallel do private(ijk2) reduction(+:Rnorm0)
+            do ijk2=ijkstart3,ijkend3
+               Rnorm0 = Rnorm0 + R(ijk2)*R(ijk2)
             enddo
          else
             Rnorm0 = dot_product(R,R)
@@ -288,10 +294,10 @@
       call random_number(Rtilde(:))
 
       if (use_doloop) then
-
-!!!$omp   parallel do private(ijk)
-         do ijk=ijkstart3,ijkend3
-            Rtilde(ijk) = R(ijk) + (2.0d0*Rtilde(ijk)-1.0d0)*1.0d-6*Rnorm0
+!AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
+!!$omp   parallel do private(ijk2)
+         do ijk2=ijkstart3,ijkend3
+            Rtilde(ijk2) = R(ijk2) + (2.0d0*Rtilde(ijk2)-1.0d0)*1.0d-6*Rnorm0
          enddo
       else
          Rtilde(:) = R(:) + (2.0d0*Rtilde(:)-1.0d0)*1.0d-6*Rnorm0
@@ -309,9 +315,10 @@
          if(is_serial) then
             if (use_doloop) then
                RtildexR = zero
-!!!$omp        parallel do private(ijk) reduction(+:RtildexR)
-               do ijk=ijkstart3,ijkend3
-                  RtildexR = RtildexR + Rtilde(ijk) * R(ijk)
+!AIKE PFUPGRADE 091409	       
+!!$omp        parallel do private(ijk2) reduction(+:RtildexR)
+               do ijk2=ijkstart3,ijkend3
+                  RtildexR = RtildexR + Rtilde(ijk2) * R(ijk2)
                enddo
                rho(i-1) = RtildexR
             else
@@ -342,9 +349,10 @@
 
          if (i .eq. 1) then
             if (use_doloop) then
-!!!$omp        parallel do private(ijk)
-               do ijk=ijkstart3,ijkend3
-                  P(ijk) = R(ijk)
+!AIKE PFUPGRADE 091409	 	    
+!!$omp        parallel do private(ijk2)
+               do ijk2=ijkstart3,ijkend3
+                  P(ijk2) = R(ijk2)
                enddo
             else
                P(:) = R(:)
@@ -352,9 +360,10 @@
          else
             beta(i-1) = ( rho(i-1)/rho(i-2) )*( alpha(i-1) / omega(i-1) )
             if (use_doloop) then
-!!!$omp        parallel do private(ijk)
-               do ijk=ijkstart3,ijkend3
-                  P(ijk) = R(ijk) + beta(i-1)*( P(ijk) - omega(i-1)*V(ijk) )
+!AIKE PFUPGRADE 091409	
+!!$omp        parallel do private(ijk2)
+               do ijk2=ijkstart3,ijkend3
+                  P(ijk2) = R(ijk2) + beta(i-1)*( P(ijk2) - omega(i-1)*V(ijk2) )
                enddo
             else
                P(:) = R(:) + beta(i-1)*( P(:) - omega(i-1)*V(:) )
@@ -373,9 +382,10 @@
          if(is_serial) then
             if (use_doloop) then
                RtildexV = zero
-!!!$omp         parallel do private(ijk) reduction(+:RtildexV)
-               do ijk=ijkstart3,ijkend3
-                  RtildexV = RtildexV + Rtilde(ijk) * V(ijk)
+!AIKE PFUPGRADE 091409		       
+!!$omp         parallel do private(ijk2) reduction(+:RtildexV)
+               do ijk2=ijkstart3,ijkend3
+                  RtildexV = RtildexV + Rtilde(ijk2) * V(ijk2)
                enddo
             else
                RtildexV = dot_product( Rtilde, V )
@@ -389,9 +399,10 @@
          alpha(i) = rho(i-1) / RtildexV
 
          if (use_doloop) then
-!!!$omp     parallel do private(ijk)
-            do ijk=ijkstart3,ijkend3
-               Svec(ijk) = R(ijk) - alpha(i) * V(ijk)
+!AIKE PFUPGRADE 091409	
+!!$omp     parallel do private(ijk2)
+            do ijk2=ijkstart3,ijkend3
+               Svec(ijk2) = R(ijk2) - alpha(i) * V(ijk2)
             enddo
          else
             Svec(:) = R(:) - alpha(i) * V(:)
@@ -405,9 +416,10 @@
             if(is_serial) then
                if (use_doloop) then
                   Snorm = zero
-!!!$omp       parallel do private(ijk) reduction(+:Snorm)
-                  do ijk=ijkstart3,ijkend3
-                     Snorm = Snorm + Svec(ijk) * Svec(ijk)
+!AIKE PFUPGRADE 091409			  
+!!$omp       parallel do private(ijk2) reduction(+:Snorm)
+                  do ijk2=ijkstart3,ijkend3
+                     Snorm = Snorm + Svec(ijk2) * Svec(ijk2)
                   enddo
                else
                   Snorm = dot_product( Svec, Svec )
@@ -421,9 +433,10 @@
 
             if (Snorm <= TOLMIN) then
                if (use_doloop) then
-!!!$omp          parallel do private(ijk)
-                  do ijk=ijkstart3,ijkend3
-                     Var(ijk) = Var(ijk) + alpha(i)*Phat(ijk)
+!AIKE PFUPGRADE 091409		       
+!!$omp          parallel do private(ijk2)
+                  do ijk2=ijkstart3,ijkend3
+                     Var(ijk2) = Var(ijk2) + alpha(i)*Phat(ijk2)
                   enddo
                else
                   Var(:) = Var(:) + alpha(i)*Phat(:)
@@ -439,9 +452,10 @@
 !     print*,'leq_bicgs, initial: ', Vname,' Vnorm ', Rnorm
 
                   if (use_doloop) then
-!!!$omp          parallel do private(ijk)
-                     do ijk=ijkstart3,ijkend3
-                        R(ijk) = B_m(ijk) - R(ijk)
+!AIKE PFUPGRADE 091409			  
+!!$omp          parallel do private(ijk2)
+                     do ijk2=ijkstart3,ijkend3
+                        R(ijk2) = B_m(ijk2) - R(ijk2)
                      enddo
                   else
                      R(:) = B_m(:) - R(:)
@@ -450,9 +464,10 @@
                   if(is_serial) then
                      if (use_doloop) then
                         Rnorm = zero
-!!!$omp            parallel do private(ijk) reduction(+:Rnorm)
-                        do ijk=ijkstart3,ijkend3
-                           Rnorm = Rnorm + R(ijk)*R(ijk)
+!AIKE PFUPGRADE 091409				
+!!$omp            parallel do private(ijk2) reduction(+:Rnorm)
+                        do ijk2=ijkstart3,ijkend3
+                           Rnorm = Rnorm + R(ijk2)*R(ijk2)
                         enddo
                      else
                         Rnorm =  dot_product( R, R ) 
@@ -481,10 +496,11 @@
             if (use_doloop) then
                TxS = zero
                TxT = zero
-!!!$omp  parallel do private(ijk) reduction(+:TxS,TxT)
-               do ijk=ijkstart3,ijkend3
-                  TxS = TxS + Tvec(ijk)  * Svec(ijk)
-                  TxT = TxT + Tvec(ijk)  * Tvec(ijk)
+!AIKE PFUPGRADE 091409		       
+!!$omp  parallel do private(ijk2) reduction(+:TxS,TxT)
+               do ijk2=ijkstart3,ijkend3
+                  TxS = TxS + Tvec(ijk2)  * Svec(ijk2)
+                  TxT = TxT + Tvec(ijk2)  * Tvec(ijk2)
                enddo
             else
                TxS = dot_product( Tvec, Svec )
@@ -505,11 +521,12 @@
 
 
          if (use_doloop) then
-!!!$omp    parallel do private(ijk)
-            do ijk=ijkstart3,ijkend3
-               Var(ijk) = Var(ijk) +                           &
-               alpha(i)*Phat(ijk) + omega(i)*Shat(ijk)
-               R(ijk) = Svec(ijk) - omega(i)*Tvec(ijk)
+!AIKE PFUPGRADE 091409		 
+!!$omp    parallel do private(ijk2)
+            do ijk2=ijkstart3,ijkend3
+               Var(ijk2) = Var(ijk2) +                           &
+               alpha(i)*Phat(ijk2) + omega(i)*Shat(ijk2)
+               R(ijk2) = Svec(ijk2) - omega(i)*Tvec(ijk2)
             enddo
          else
             Var(:) = Var(:) +                           &
@@ -521,9 +538,10 @@
             if(is_serial) then
                if (use_doloop) then
                   Rnorm = zero
-!!!$omp       parallel do private(ijk) reduction(+:Rnorm)
-                  do ijk=ijkstart3,ijkend3
-                     Rnorm = Rnorm + R(ijk) * R(ijk)
+!AIKE PFUPGRADE 091409			  
+!!$omp       parallel do private(ijk2) reduction(+:Rnorm)
+                  do ijk2=ijkstart3,ijkend3
+                     Rnorm = Rnorm + R(ijk2) * R(ijk2)
                   enddo
                else
                   Rnorm =  dot_product(R, R )
@@ -564,9 +582,10 @@
       if (idebugl >= 1) then
          call MATVECt( Vname, Var, A_m, R )
          if (use_doloop) then
-!!!$omp  parallel do private(ijk)
-            do ijk=ijkstart3,ijkend3
-               R(ijk) = R(ijk) - B_m(ijk)
+!AIKE PFUPGRADE 091409		 
+!!$omp  parallel do private(ijk2)
+            do ijk2=ijkstart3,ijkend3
+               R(ijk2) = R(ijk2) - B_m(ijk2)
             enddo
          else
             R(:) = R(:) - B_m(:)
@@ -575,9 +594,10 @@
          if(is_serial) then
             if (use_doloop) then
                Rnorm = zero
-!!!$omp         parallel do private(ijk) reduction(+:Rnorm)
-               do ijk=ijkstart3,ijkend3
-                  Rnorm = Rnorm + R(ijk) * R(ijk)
+!AIKE PFUPGRADE 091409		       
+!!$omp         parallel do private(ijk2) reduction(+:Rnorm)
+               do ijk2=ijkstart3,ijkend3
+                  Rnorm = Rnorm + R(ijk2) * R(ijk2)
                enddo
             else
                Rnorm = dot_product( R,R)
@@ -792,7 +812,7 @@
       NEND = JEND
       NSTART = JSTART
 
-!!!!$omp parallel do private(j,ijk,im1jk,ip1jk,ijkm1,ijkp1)
+!!$omp parallel do private(j,ijk,im1jk,ip1jk,ijkm1,ijkp1)
       DO J=NSTART, NEND
 
 !     IJK = FUNIJK(IMAP_C(I),JMAP_C(J),KMAP_C(K))
@@ -897,8 +917,8 @@
 !-----------------------------------------------
 
 !
-      INTEGER          I,  J, K, IJK, ITER 
-      INTEGER          II,  JJ, KK
+      INTEGER          I,  J, K, IJK, ITER, IJK2
+      INTEGER          II,  JJ, KK      
       DOUBLE PRECISION oAm
 
       integer :: im1jk,ip1jk, ijm1k,ijp1k, ijkm1,ijkp1
@@ -915,32 +935,34 @@
 
       if (do_k) then
 
-!!!$omp    parallel  do &
-!!!$omp&   private(     &
-!!!$omp&           ijk,i,j,k, &
-!!!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
+!AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
+! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 938)
+!$omp    parallel  do &
+!$omp&   private(     &
+!$omp&           ijk2,i,j,k, &
+!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1) collapse (3)
          do k = kstart,kend
             do i = istart,iend
                do j = jstart,jend
 
-                  IJK = funijk(i,j,k)
+                  IJK2 = funijk(i,j,k)
 
-                  im1jk = im_of(ijk)
-                  ip1jk = ip_of(ijk)
-                  ijm1k = jm_of(ijk)
-                  ijp1k = jp_of(ijk)
+                  im1jk = im_of(ijk2)
+                  ip1jk = ip_of(ijk2)
+                  ijm1k = jm_of(ijk2)
+                  ijp1k = jp_of(ijk2)
 !     
-                  ijkm1 = km_of(ijk)
-                  ijkp1 = kp_of(ijk)
+                  ijkm1 = km_of(ijk2)
+                  ijkp1 = kp_of(ijk2)
 
 
-                  AVar(ijk) =      A_m(-3, ijk) * Var(ijkm1)   &
-                  + A_m(-2, ijk) * Var(ijm1k)   &
-                  + A_m(-1, ijk) * Var(im1jk)   &
-                  + A_m(0, ijk) * Var(ijk)     &
-                  + A_m(1, ijk) * Var(ip1jk)   &
-                  + A_m(2, ijk) * Var(ijp1k)   &
-                  + A_m(3, ijk) * Var(ijkp1)
+                  AVar(ijk2) =      A_m(-3, ijk2) * Var(ijkm1)   &
+                  + A_m(-2, ijk2) * Var(ijm1k)   &
+                  + A_m(-1, ijk2) * Var(im1jk)   &
+                  + A_m(0, ijk2) * Var(ijk2)     &
+                  + A_m(1, ijk2) * Var(ip1jk)   &
+                  + A_m(2, ijk2) * Var(ijp1k)   &
+                  + A_m(3, ijk2) * Var(ijkp1)
 
                enddo
             enddo
@@ -948,23 +970,25 @@
 
       else
          k = 1
-!!!$omp parallel do private(i,j,ijk,   im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1)
+!AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
+! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 971)	 
+!$omp parallel do private(i,j,ijk2,im1jk,ip1jk,ijm1k,ijp1k) collapse (2)
          do i = istart,iend
             do j = jstart,jend
 
 
-               IJK = funijk(i,j,k)
+               IJK2 = funijk(i,j,k)
 
 
-               im1jk = im_of(ijk)
-               ip1jk = ip_of(ijk)
-               ijm1k = jm_of(ijk)
-               ijp1k = jp_of(ijk)
-               AVar(ijk) =      A_m(-2, ijk) * Var(ijm1k)   &
-               + A_m(-1, ijk) * Var(im1jk)   &
-               + A_m(0, ijk) * Var(ijk)     &
-               + A_m(1, ijk) * Var(ip1jk)   &
-               + A_m(2, ijk) * Var(ijp1k)
+               im1jk = im_of(ijk2)
+               ip1jk = ip_of(ijk2)
+               ijm1k = jm_of(ijk2)
+               ijp1k = jp_of(ijk2)
+               AVar(ijk2) =      A_m(-2, ijk2) * Var(ijm1k)   &
+               + A_m(-1, ijk2) * Var(im1jk)   &
+               + A_m(0, ijk2) * Var(ijk2)     &
+               + A_m(1, ijk2) * Var(ip1jk)   &
+               + A_m(2, ijk2) * Var(ijp1k)
 
             enddo
          enddo
@@ -1034,7 +1058,7 @@
 !-----------------------------------------------
 
 !     
-      INTEGER ::   IJK, I , J, K , ITER, NITER
+      INTEGER ::   IJK, I , J, K , ITER, NITER, IJK2
       INTEGER ::   I1 , K1 , I2, K2, IK, ISIZE, KSIZE
       INTEGER ::   ICASE
       
@@ -1052,16 +1076,23 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 
+!!$      double precision omp_start, omp_end
+!!$      double precision omp_get_wtime	      
+!       by Tingwen      
+!!$      omp_start=omp_get_wtime()
+
       IF (SETGUESS) THEN
 
-!!!$omp   parallel do private(i,j,k,ijk)
+!AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
+! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 1077)
+!$omp   parallel do private(i,j,k,ijk2) collapse (3)
          do k = kstart3,kend3
             do i = istart3,iend3
                do j = jstart3,jend3
 
-                  IJK = funijk(i,j,k)
+                  IJK2 = funijk(i,j,k)
 
-                  VAR(IJK) = B_M(IJK)
+                  VAR(IJK2) = B_M(IJK2)
 
                enddo
             enddo
@@ -1087,10 +1118,14 @@
          IF (NO_K) THEN
 
             IF ( DO_ISWEEP ) THEN
-!!!$omp   parallel do private(I)
-               DO I=istart,iend
-                  CALL LEQ_ISWEEPt( I, Vname, Var, A_m, B_m )
+!$omp   parallel do private(I)   !Not sure why no_k
+               DO I=istart,iend,2
+                  CALL LEQ_ISWEEPt( I, Vname, Var, A_m, B_m )                  
                ENDDO
+!$omp   parallel do private(I)
+               DO I=istart,iend,2
+                  CALL LEQ_ISWEEPt( I, Vname, Var, A_m, B_m )                  
+               ENDDO               
             ENDIF
 
          ELSE
@@ -1105,20 +1140,22 @@
                ksize = k2-k1+1
 
                DO icase = 1, 2
-!!!$omp   parallel do private(K,I,IK)
+!$omp   parallel do private(K,I,IK)
                   DO IK=icase, ksize*isize, 2
                      if (mod(ik,isize).ne.0) then
                         k = int( ik/isize ) + k1
                      else
                         k = int( ik/isize ) + k1 -1
                      endif
-                     i = (ik-1-(k-k1)*isize) + i1
+                     i = (ik-1-(k-k1)*isize) + i1 + mod(k,2)
+                     if(i.gt.i2) i=i-i2 + i1 -1                     
                      CALL LEQ_IKSWEEPt( I,K, Vname, Var, A_m, B_m )
                   ENDDO
                ENDDO
 
             ENDIF
-
+!  Not sure the purpose of us_ikloop
+!  The SMP directives below need review                        !Tingwen Jan 2012
             IF(USE_IKLOOP) THEN
 
                i1 = istart
@@ -1129,7 +1166,7 @@
                ksize = k2-k1+1
 
                IF (DO_ISWEEP) THEN
-!!!$omp   parallel do private(K,I,IK)
+!!$omp   parallel do private(K,I,IK)
                   DO IK=1, ksize*isize
                      if (mod(ik,isize).ne.0) then
                         k = int( ik/isize ) + k1
@@ -1142,7 +1179,7 @@
                ENDIF
 
                IF (DO_KSWEEP) THEN
-!!!$omp   parallel do private(K,I,IK)
+!!$omp   parallel do private(K,I,IK)
                   DO IK=1, ksize*isize
                      if (mod(ik,ksize).ne.0) then
                         i = int( ik/ksize ) + i1
@@ -1156,9 +1193,10 @@
                ENDIF
 
             ELSE
-
+!  Not sure the purpose of us_ikloop
+!  The SMP directives below need review                        !Tingwen Jan 2012
                IF (DO_ISWEEP) THEN
-!!!$omp   parallel do private(K,I)
+!!$omp   parallel do private(K,I)
                   DO K=kstart,kend
                      DO I=istart,iend
                         CALL LEQ_IKSWEEPt( I,K, Vname, Var, A_m, B_m )
@@ -1167,7 +1205,7 @@
                ENDIF
 
                IF (DO_KSWEEP) THEN
-!!!$omp   parallel do private(K,I)
+!!$omp   parallel do private(K,I)
                   DO I=istart,iend
                      DO K=kstart,kend
                         CALL LEQ_IKSWEEPt( I,K, Vname, Var, A_m, B_m )
@@ -1182,7 +1220,8 @@
          ENDIF
 
       ENDDO
-
+!!$      omp_end=omp_get_wtime()
+!!$      write(*,*)'leq_msolvet:',omp_end - omp_start		
       RETURN
       END SUBROUTINE LEQ_MSOLVEt
 
@@ -1436,7 +1475,7 @@
 
       if (use_doloop) then
 
-!!!$omp  parallel do private(ijk)
+!!$omp  parallel do private(ijk)
          do ijk=ijkstart3,ijkend3
             var(ijk) = b_m(ijk)
          enddo
@@ -1487,15 +1526,16 @@
 
       CHARACTER*4 :: CMETHOD
 
-      integer :: i,j,k, ijk 
+      integer :: i,j,k, ijk, ijk2 
 
       include 'function.inc'
 
       if (use_doloop) then
-
-!!!$omp    parallel do private(ijk)
-         do ijk=ijkstart3,ijkend3
-            var(ijk) = zero
+!AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
+! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 1516)
+!!$omp    parallel do private(ijk2)
+         do ijk2=ijkstart3,ijkend3
+            var(ijk2) = zero
          enddo
       else
          var(:) = ZERO
@@ -1503,13 +1543,15 @@
 
 !     diagonal scaling
 
-!!!$omp   parallel do private(i,j,k,ijk)
+!AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
+! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 1526)
+!$omp   parallel do private(i,j,k,ijk2) collapse (3)
       do k=kstart2,kend2
          do i=istart2,iend2
             do j=jstart2,jend2
 
-               ijk = funijk( i,j,k )
-               var(ijk) = b_m(ijk)/A_m(0,ijk)
+               ijk2 = funijk( i,j,k )
+               var(ijk2) = b_m(ijk2)/A_m(0,ijk2)
 
             enddo
          enddo
