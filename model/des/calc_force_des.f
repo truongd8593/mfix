@@ -146,7 +146,7 @@
 !$omp          dist_old,distmod_old,normal_old,                   &
 !$omp          vrn_old,v_rel_norm_old,                            &
 !$omp          phasei,kn_des,kt_des,etan_des,etat_des,            &
-!$omp          Idim,force_coh,eq_radius,distapart,norm_dist,maggravity)          
+!$omp          Idimn,force_coh,eq_radius,distapart,norm_dist,maggravity)          
 !$omp do reduction(max:NEIGH_MAX,OVERLAP_MAX) schedule (dynamic,50)
 
 

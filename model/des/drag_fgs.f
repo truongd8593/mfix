@@ -503,8 +503,7 @@
 ! pressure and gas-solids drag 
 !----------------------------------------------------------------->>>
 !$omp parallel do private(np,ijk,m,ovol,oeps,ep_sm,  &
-!$omp                     solid_drag,d_force) 
-!$omp schedule (guided,100)    
+!$omp                     solid_drag,d_force) schedule (guided,100)    
       DO NP = 1, MAX_PIP
 ! skipping indices that do not represent particles and ghost particles
          if(.not.pea(np,1)) cycle 
