@@ -1123,7 +1123,7 @@
                   CALL LEQ_ISWEEPt( I, Vname, Var, A_m, B_m )                  
                ENDDO
 !$omp   parallel do private(I)
-               DO I=istart,iend,2
+               DO I=istart+1,iend,2
                   CALL LEQ_ISWEEPt( I, Vname, Var, A_m, B_m )                  
                ENDDO               
             ENDIF
