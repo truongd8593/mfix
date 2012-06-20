@@ -1116,16 +1116,12 @@
          DO_REDBLACK = (CH .EQ. 'R') .OR. (CH .EQ. 'r')
 
          IF (NO_K) THEN
-
+! 2D run no need to enable openmp parallel
             IF ( DO_ISWEEP ) THEN
-!$omp   parallel do private(I)   !Not sure why no_k
-               DO I=istart,iend,2
+!!$omp   parallel do private(I)   
+               DO I=istart,iend,1
                   CALL LEQ_ISWEEPt( I, Vname, Var, A_m, B_m )                  
                ENDDO
-!$omp   parallel do private(I)
-               DO I=istart+1,iend,2
-                  CALL LEQ_ISWEEPt( I, Vname, Var, A_m, B_m )                  
-               ENDDO               
             ENDIF
 
          ELSE
