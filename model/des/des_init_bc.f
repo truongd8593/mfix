@@ -1,7 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: DES_INIT_BC                                            !
-!                                                                      !
+!  Subroutine: DES_INIT_BC                                             !
 !                                                                      !
 !                                                                      !
 !  Author: J.Musser                                   Date: 23-Nov-09  !
@@ -12,6 +11,9 @@
 
       SUBROUTINE DES_INIT_BC
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE compar
       USE constant
       USE des_bc
@@ -23,9 +25,7 @@
       USE param1
       USE physprop
       USE run
-
       IMPLICIT NONE
-
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -34,10 +34,10 @@
       INTEGER HOLD, I         ! Dummy values
       INTEGER RANGE_TOP, RANGE_BOT ! Dummy values
       INTEGER PHASE_CNT        ! Number of solid phases at bc
-      INTEGER PHASE_LIST(MMAX) ! List of phases used in current bc
+      INTEGER PHASE_LIST(DES_MMAX) ! List of phases used in current bc
 
 ! the number of particles injected in a solids time step
-      DOUBLE PRECISION NPMpSEC(MMAX) ! For solid phase m
+      DOUBLE PRECISION NPMpSEC(DES_MMAX) ! For solid phase m
       DOUBLE PRECISION NPpSEC
       DOUBLE PRECISION NPpDT        ! Total for BC
       DOUBLE PRECISION SCALED_VAL
@@ -73,12 +73,12 @@
                MAX_DIA = ZERO
 
 ! Determine if the inlet is mono or polydisperse               
-               DO M=1, MMAX
+               DO M=1, DES_MMAX
                   IF(DES_BC_ROP_s(BCV,M) /= UNDEFINED .AND. &
                      .NOT.COMPARE(DES_BC_ROP_s(BCV,M),ZERO)) THEN
                      PHASE_CNT = PHASE_CNT + 1
                      PHASE_LIST(PHASE_CNT) = M
-                     MAX_DIA = MAX(MAX_DIA,D_P0(M))
+                     MAX_DIA = MAX(MAX_DIA,DES_D_P0(M))
                   ENDIF
                ENDDO
 
@@ -102,7 +102,7 @@
                DO MM=1,PHASE_CNT
                   M = PHASE_LIST(MM)
                   NPMpSEC(M) = (DES_BC_VOLFLOW_s(BCV,M) / &
-                     (PI/6.d0 * D_P0(M)**3))
+                     (PI/6.d0 * DES_D_P0(M)**3))
                   WRITE(*,"(5X,A,I2,A,F9.5)") &
                      'NPMpSEC(',M,'): ',NPMpSEC(M)
 ! calculate the total number of particles per second at the inlet
@@ -206,7 +206,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: DES_MI_CLASSIFY                                        !
+!  Subroutine: DES_MI_CLASSIFY                                         !
 !                                                                      !
 !  Purpose: This subroutine is used to give a classification to the    !
 !  inlet. The classification is used in the placement of new particles !
@@ -221,6 +221,9 @@
       SUBROUTINE DES_MI_CLASSIFY(BCV, BCV_I, MAX_DIA, PHASE_CNT, &
          PHASE_LIST)
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE compar
       USE constant
       USE des_bc
@@ -230,22 +233,24 @@
       USE param1
       USE physprop
       USE run
-
       IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! passed arguments giving index information of the boundary
+      INTEGER, INTENT(IN) :: BCV_I, BCV
+! Max diameter of incoming particles at bc
+      DOUBLE PRECISION, INTENT(IN) :: MAX_DIA
+! Number of solid phases at bc
+      INTEGER, INTENT(IN) :: PHASE_CNT
+! List of phases used in current bc
+      INTEGER, INTENT(IN) :: PHASE_LIST(DES_MMAX)
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
       INTEGER M, MM
-! passed arguments giving index information of the boundary
-      INTEGER BCV_I, BCV
-! Number of solid phases at bc
-      INTEGER PHASE_CNT
-! List of phases used in current bc
-      INTEGER PHASE_LIST(MMAX)
 ! the length of each side of the inlet boundary
       DOUBLE PRECISION LEN1, LEN2
-! Max diameter of incoming particles at bc
-      DOUBLE PRECISION MAX_DIA
 ! temp value of DES_MI_CLASS for comparison tests
       CHARACTER*4 DMC
 !-----------------------------------------------
@@ -555,7 +560,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: DES_BC_VEL_ASSIGN                                      !
+!  Subroutine: DES_BC_VEL_ASSIGN                                       !
 !                                                                      !
 !  Purpose:                                                            !
 !                                                                      !
@@ -568,6 +573,9 @@
       SUBROUTINE DES_BC_VEL_ASSIGN(BCV,BCV_I,LEN1,LEN2,PHASE_CNT,&
          PHASE_LIST)
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE compar
       USE des_bc
       USE discretelement
@@ -575,19 +583,23 @@
       USE geometry
       USE param
       USE physprop
-
       IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! passed arguments giving index information of the boundary
+      INTEGER, INTENT(IN) :: BCV_I, BCV
+! the length of each side of the inlet boundary
+      DOUBLE PRECISION, INTENT(IN) :: LEN1, LEN2
+! Number of solid phases at bc
+      INTEGER, INTENT(IN) :: PHASE_CNT
+! List of phases used in current bc
+      INTEGER, INTENT(IN) :: PHASE_LIST(DES_MMAX)
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! passed arguments giving index information of the boundary
-      INTEGER BCV_I, BCV
-! Number of solid phases at bc
-      INTEGER PHASE_CNT
-! List of phases used in current bc
-      INTEGER PHASE_LIST(MMAX)
-! the length of each side of the inlet boundary
-      DOUBLE PRECISION LEN1, LEN2, BCV_AREA
+! 
+      DOUBLE PRECISION BCV_AREA
 ! the number of trial velocities to test for UI_VEL in a given iteration
       INTEGER, PARAMETER :: NUM_VEL = 100
 ! Dummy index
@@ -648,7 +660,7 @@
       DO MM = 1, PHASE_CNT
          M = PHASE_LIST(MM)
 ! Solids volume fraction for phase M
-         EP_sM = DES_BC_ROP_s(BCV,M)/RO_s(M)
+         EP_sM = DES_BC_ROP_s(BCV,M)/DES_RO_s(M)
 ! Inlet velocity for solids phase M
          TMP_VEL(M) = ( DES_BC_VOLFLOW_s(BCV,M) / &
             BCV_AREA ) / EP_sM
@@ -688,7 +700,7 @@
                DO MM = 1, PHASE_CNT
                   M = PHASE_LIST(MM)
 ! Calculate bulk density value based upon velocity 
-                  CAL_ROPSM = (RO_s(M) * DES_BC_VOLFLOW_s(BCV,M)) / &
+                  CAL_ROPSM = (DES_RO_s(M) * DES_BC_VOLFLOW_s(BCV,M)) / &
                      (STP_VEL * BCV_AREA)
                   ERR_TOT = ERR_TOT+ABS(DES_BC_ROP_s(BCV,M)-CAL_ROPSM)
                ENDDO
@@ -758,7 +770,7 @@
       DO MM = 1, PHASE_CNT
          M = PHASE_LIST(MM)
 ! Calculate bulk density value based upon velocity 
-         CAL_ROPSM = (RO_s(M) * DES_BC_VOLFLOW_s(BCV,M)) / &
+         CAL_ROPSM = (DES_RO_s(M) * DES_BC_VOLFLOW_s(BCV,M)) / &
             (UI_VEL * BCV_AREA)
          ERR_ROPSM =  ABS(DES_BC_ROP_s(BCV,M) - CAL_ROPSM)
          WRITE(*,1255) M, DES_BC_ROP_s(BCV,M), CAL_ROPSM, ERR_ROPSM
@@ -795,7 +807,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: DES_MI_LAYOUT                                          !
+!  Subroutine: DES_MI_LAYOUT                                           !
 !                                                                      !
 !  Purpose:  This routine determines the layout of the mass inlet as   !
 !  either ordered or random based upon the inlet conditions.  This     !
@@ -814,6 +826,9 @@
       SUBROUTINE DES_MI_LAYOUT(LEN1, LEN2, BCV, BCV_I, MAX_DIA,&
                                PHASE_CNT, PHASE_LIST)
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE compar
       USE constant
       USE des_bc
@@ -823,22 +838,23 @@
       USE param1
       USE physprop
       USE run
-
       IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! passed arguments giving the length of the boundary edges
+      DOUBLE PRECISION, INTENT(IN) :: LEN1, LEN2
+! passed arguments giving index information of the boundary
+      INTEGER, INTENT(IN) :: BCV_I, BCV 
+! Max diameter of incoming particles at bc
+      DOUBLE PRECISION, INTENT(IN) :: MAX_DIA
+! Number of solid phases at bc
+      INTEGER, INTENT(IN) :: PHASE_CNT
+! List of phases used in current bc
+      INTEGER, INTENT(IN) :: PHASE_LIST(DES_MMAX)
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! passed arguments giving the length of the boundary edges
-      DOUBLE PRECISION LEN1, LEN2
-! passed arguments giving index information of the boundary
-      INTEGER BCV_I, BCV 
-! Max diameter of incoming particles at bc
-      DOUBLE PRECISION MAX_DIA
-! Number of solid phases at bc
-      INTEGER PHASE_CNT
-! List of phases used in current bc
-      INTEGER PHASE_LIST(MMAX)
-
 ! max number of particle diameters that fit along length of inlet
       INTEGER TMP_LEN1, TMP_LEN2
 
@@ -856,7 +872,6 @@
       INTEGER TMP_INT
 ! Temp variable for DES_MI_CLASS(BCV_I)
       CHARACTER*3 DMCL
-
 ! lower threshold velocities that will work given the flow boundary
 ! specifications:
 ! lower maximum inlet particle velocity (MAXIPV); above which particles
@@ -866,8 +881,8 @@
 ! flagged; above minipv and below maxipv the particle inlet conditions
 ! are adequate but must be carefully controlled
       DOUBLE PRECISION MAXIPV, MINIPV 
-
 !-----------------------------------------------
+
 
       IF(LEN2 == ZERO)THEN   ! 2D domain
 !----------------------------------------------- 
@@ -924,7 +939,7 @@
                   M = PHASE_LIST(MM)
 ! Even though the system is 2D, an area of the inlet is needed for
 ! the following calculation.  This 'depth' is taken as max_dia.
-                  MAX_ROPs = (DES_BC_VOLFLOW_s(BCV,M)*RO_s(M)) / &
+                  MAX_ROPs = (DES_BC_VOLFLOW_s(BCV,M)*DES_RO_s(M)) / &
                      (MINIPV * LEN1 *  MAX_DIA)
                   WRITE(UNIT_LOG,1301) BCV, M, MAX_ROPs
                   WRITE(*,1301) BCV, M, MAX_ROPs
@@ -1019,7 +1034,7 @@
             WRITE(UNIT_LOG,1300)BCV; WRITE(*,1300)BCV
             DO MM = 1, PHASE_CNT
                M = PHASE_LIST(MM)
-               MAX_ROPs = (DES_BC_VOLFLOW_s(BCV,M)*RO_s(M)) / &
+               MAX_ROPs = (DES_BC_VOLFLOW_s(BCV,M)*DES_RO_s(M)) / &
                   (MINIPV * LEN1 * LEN2)
                WRITE(UNIT_LOG,1301)BCV,M,MAX_ROPs
                WRITE(*,1301)BCV,M,MAX_ROPs
@@ -1099,16 +1114,17 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: DES_MI_CELLS                                           !
+!  Subroutine: DES_MI_CELLS                                            !
 !                                                                      !
 !  Purpose:                                                            !
-!    Locate the i, j, k position of the cells encompassing the DES
-!    mass inlet BC so that when particles are injected into the system,
-!    a complete grid search is not necessary to prevent/determine:
-!      1) the injected particle from overlapping with an existing
-!         particle nearby when particle_plcmnt = 'rand'      
-!      2) the i, j, k indices of the newly injected particle on the 
-!         eulerian grid defined by imax, jmax, kmax
+!     Locate the i, j, k position of the cells encompassing the DES    !
+!     mass inlet BC so that when particles are injected into the       !
+!     system a complete grid search is not necessary to                !
+!     prevent/determine:                                               !
+!     1) the injected particle from overlapping with an existing       !
+!        particle nearby when particle_plcmnt = 'rand'                 !
+!     2) the i, j, k indices of the newly injected particle on the     !
+!        eulerian grid defined by imax, jmax, kmax                     !
 !                                                                      !
 !  Author: J.Musser                                   Date:  5-Oct-09  !
 !                                                                      !
@@ -1118,17 +1134,21 @@
 
       SUBROUTINE DES_MI_CELLS(BCV, BCV_I)
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE des_bc
       USE discretelement
       USE geometry
-
       IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! passed arguments giving index information of the boundary
+      INTEGER, INTENT(IN) :: BCV_I, BCV
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! passed arguments giving index information of the boundary
-      INTEGER BCV_I, BCV
-
       INTEGER I,J,K
 ! dummy variable for length calculations
       DOUBLE PRECISION LOCATION
@@ -1208,7 +1228,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: DES_MO_CLASSIFY                                        !
+!  Subroutine: DES_MO_CLASSIFY                                         !
 !                                                                      !
 !  Purpose:                                                            !
 !                                                                      !
@@ -1220,6 +1240,9 @@
 
       SUBROUTINE DES_MO_CLASSIFY(BCV_I, BCV)
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE compar
       USE constant
       USE des_bc
@@ -1229,14 +1252,12 @@
       USE param1
       USE physprop
       USE run
-
       IMPLICIT NONE
-
 !-----------------------------------------------
-! Local variables
+! Dummy arguments
 !-----------------------------------------------
 ! passed arguments giving index information of the boundary
-      INTEGER BCV_I, BCV
+      INTEGER, INTENT(IN) :: BCV_I, BCV
 !-----------------------------------------------
 
 
@@ -1366,9 +1387,10 @@
       END SUBROUTINE DES_MO_CLASSIFY
 
 
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: DES_MIO_PERIODIC                                       !
+!  Subroutine: DES_MIO_PERIODIC                                        !
 !                                                                      !
 !  Purpose: ! Verify that any inlet or outlet is placed at least       !
 !  "SPACER" distace away from a periodic boundary condition. This      !
@@ -1385,39 +1407,36 @@
 
       SUBROUTINE DES_MIO_PERIODIC(BCV,BCV_I,CLASS, MAX_DIA)
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE compar
       USE des_bc
       USE discretelement
       USE funits
       USE geometry
       USE physprop
-
       IMPLICIT NONE
-
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+      INTEGER, INTENT(IN) :: BCV   ! absolute boundary condition number
+      INTEGER, INTENT(IN) :: BCV_I ! index boundary condtion number
+! boundary classification of inlet or outlet (MI or MO)
+      CHARACTER*2, INTENT(IN) :: CLASS
+! Max diameter of incoming particles at bc
+      DOUBLE PRECISION, INTENT(IN) :: MAX_DIA      
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-
-! boundary classification of inlet or outlet (MI or MO)
-      CHARACTER*2 CLASS
-
 ! boundary classification of inlet or outlet (full text for messages)
       CHARACTER*6 IO_ID
-
 ! value of DES_MI/MO_CLASS (boundary plane that MI or MO is 
 ! located on)
       CHARACTER*3 DMC
-
-      INTEGER BCV   ! absolute boundary condition number
-      INTEGER BCV_I ! index boundary condtion number
-
-! Max diameter of incoming particles at bc
-      DOUBLE PRECISION MAX_DIA      
-
 ! buffer space around inlets and outlets with boardering periodic
 ! boundary conditions
       DOUBLE PRECISION SPACER
-
 !-----------------------------------------------
 
       SPACER = 1.05d0 * MAX_DIA

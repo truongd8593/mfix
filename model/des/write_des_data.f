@@ -1,18 +1,23 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: WRITE_DES_DATA                                         C
-!  Purpose: Writing DES output in Paraview format                      
-!                                                                      C
-!                                                                      C
-!  Author: Jay Boyalakuntla                           Date: 26-Jul-06  C
-!  Reviewer: Sreekanth Pannala                        Date: 31-Oct-06  C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: WRITE_DES_DATA                                          !
+!  Purpose: Writing DES output in Paraview format                      !
+!                                                                      !
+!                                                                      !
+!  Author: Jay Boyalakuntla                           Date: 26-Jul-06  !
+!  Reviewer: Sreekanth Pannala                        Date: 31-Oct-06  !
 !                                                                      !
 !  Reviewer: J. Musser                                Date: 20-Apr-10  !
 !  Comments: Split original subroutine into one for ParaView *.vtp     !
 !  files, and a second for TECPLOT files *.dat.                        !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
       SUBROUTINE WRITE_DES_DATA
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE param
       USE param1
       USE parallel
@@ -51,31 +56,35 @@
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!
-!  Module name: WRITE_DES_VTP
-!  Purpose: Writing DES output in Paraview format
-!
-!
-!  Reviewer: Rahul Garg                               Dare: 01-Aug-07
-!  Comments: Added one more output file containing averaged bed height
-!     
-!  Revision : For parallel runs added cumulative and parallel IO 
-!  Author   : Pradeep G.                              
-!  
-!  NOTE: If the system starts with zero particles, ParaView may have
-!  trouble showing the results. To view the results in the current
-!  version of ParaView, Version 3.6.1:
-!    i - load the *.vtp files
-!   ii - filter with glyph (Filters > Common > Glyph)
-!        a - change glyph to sphere
-!        b - change scale mode to scalar
-!        c - check the "Edit" Set Scale Factor Box
-!        d - change the value to 1.0
-!     
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: WRITE_DES_VTP                                           !
+!  Purpose: Writing DES output in Paraview format                      !
+!                                                                      !
+!                                                                      !
+!  Reviewer: Rahul Garg                               Dare: 01-Aug-07  !
+!  Comments: Added one more output file containing averaged bed height !
+!                                                                      !
+!  Revision : For parallel runs added cumulative and parallel IO       !
+!  Author   : Pradeep G.                                               !
+!                                                                      !
+!  NOTE: If the system starts with zero particles, ParaView may have   !
+!  trouble showing the results. To view the results in the current     !
+!  version of ParaView, Version 3.6.1:                                 !
+!    i - load the *.vtp files                                          !
+!   ii - filter with glyph (Filters > Common > Glyph)                  !
+!        a - change glyph to sphere                                    !
+!        b - change scale mode to scalar                               !
+!        c - check the "Edit" Set Scale Factor Box                     !
+!        d - change the value to 1.0                                   !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
       SUBROUTINE WRITE_DES_VTP
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE param
       USE param1
       USE parallel
@@ -91,11 +100,9 @@
       use desmpi
       use cdist
       Use des_thermo
-
       IMPLICIT NONE
-
 !-----------------------------------------------
-! Local Variables
+! Local variables
 !-----------------------------------------------
 ! logical that identifies that the data file has been created
 ! and is already opened (initial checks/writes)
@@ -134,16 +141,13 @@
 
 ! check whether an error occurs in opening a file
       INTEGER ISTAT      
-
 !-----------------------------------------------
-! Functions 
+! Include statement functions 
 !-----------------------------------------------
-!-----------------------------------------------
-
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
-
+!-----------------------------------------------
 
 ! set the file name and unit number and open file 
       if (bdist_io) then 
@@ -174,7 +178,8 @@
 
 ! Write Piece tag and identify the number of particles in the system.
          write(des_unit,"(6x,a,i10.10,a,a)")&
-            '<Piece NumberOfPoints="',pip-ighost_cnt,'" NumberOfVerts="0" ',&
+            '<Piece NumberOfPoints="',pip-ighost_cnt,&
+            '" NumberOfVerts="0" ',&
             'NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="0">'
          write(des_unit,"(9x,a)")&
             '<PointData Scalars="Diameter" Vectors="Velocity">'
@@ -192,10 +197,10 @@
          end do
          write(des_unit,"(12x,a)") '</DataArray>'
 
-! Write the mag. of cohesive force scaled with the weight of the particle.         
+! Write the mag. of cohesive force scaled with the weight of the particle.
          if(use_cohesion) then
-	   write(des_unit,"(12x,a)")&
-              '<DataArray type="Float32" Name="cohesiveForce" format="ascii">'
+           write(des_unit,"(12x,a)")&
+        '<DataArray type="Float32" Name="cohesiveForce" format="ascii">'
            pc = 1
            do l = 1,max_pip
               if(pc.gt.pip) exit
@@ -617,7 +622,6 @@
 
 
 
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
 !  Module name: WRITE_DES_TECPLOT
@@ -688,7 +692,8 @@
 
 ! tmp variables for calculations of axial solids volume fraction, and
 ! granular temperature
-      DOUBLE PRECISION :: AVG_EPS(JMAX2, MMAX), AVG_THETA(JMAX2, MMAX)
+      DOUBLE PRECISION :: AVG_EPS(JMAX2, DES_MMAX),&
+                          AVG_THETA(JMAX2, DES_MMAX)
 
 ! Variables related to gathering info at PE_IO 
       integer llocalcnt,lglocnt,lgathercnts(0:numpes-1),lproc,ltotvar,lcount
@@ -732,7 +737,7 @@
       end if 
       tecplot_findex = tecplot_findex + 1
        
-!write header 
+! write header 
       if (bdist_io .or. mype .eq. pe_io) then 
          if(dimn.eq.3) then 
             write (des_data,'(A)') & 
@@ -746,7 +751,6 @@
 
 ! write data in ditributed mode or as a single file  
       if(bdist_io) then 
-
          pc = 1
          do l = 1,max_pip
             if(pc.gt.pip) exit
@@ -827,225 +831,7 @@
          ' From: write_des_tecplot ',&
          ' message: error opening des tecplot file. terminating run.'
 
-!! Set the file names for the output TECPLOT data
-!      FNAME_DATA = TRIM(RUN_NAME)//'_DES_DATA.dat'
-!      FNAME_EXTRA = TRIM(RUN_NAME)//'_DES_EXTRA.dat'
-!      FNAME_EPS = TRIM(RUN_NAME)//'_AVG_EPS.dat'
 
-!      IF(TECPLOT_FINDEX .GT. 0)THEN
-!
-!         IF(FIRST_PASS) THEN
-!! If the files have not been opened since the start of the simulation
-!! (either because it is the first pass of a new run or a RESTART_1) 
-!! create the files or flag with errors and exit.
-!                 
-!
-!! Check "RUN_NAME"_DES_DATA.dat
-!! the file associated with particle position, velocity, radius,
-!! denisty, and tagged particles.                 
-!!-----------------------------------------------
-!! Determine if the "RUN_NAME"_DES_DATA.dat file exists
-!            F_EXISTS = .FALSE.
-!            INQUIRE(FILE=FNAME_DATA,EXIST=F_EXISTS)
-!
-!            IF (.NOT.F_EXISTS) THEN
-!! If the file does not exist, then create it with the necessary
-!! header information.
-!
-!               OPEN(UNIT=DES_DATA,FILE=FNAME_DATA,status='new')
-!               IF(DIMN.EQ.3) THEN 
-!                  WRITE (DES_DATA, '(9(A,3X),A)')&
-!                  'VARIABLES = ', '"x"', '"y"', '"z"', '"vx"', '"vy"',&
-!                  '"vz"', '"rad"', '"den"', '"mark"'
-!               ELSE 
-!                  WRITE (DES_DATA, '(8(A,3X),A)') &
-!                  'VARIABLES = ', '"x"', '"y"', '"vx"', '"vy"',&
-!                  '"omega"','"rad"', '"den"', '"mark"'
-!               ENDIF
-!
-!            ELSE   
-!! The file exists but first_pass is also true.  Thus, for the file to 
-!! exist it is likely an existing file from a earlier/other run (should
-!! not be in directory if is is a NEW run)
-!               IF(RUN_TYPE .EQ. 'NEW') THEN
-!! To prevent overwriting existing file accidently, exit if the file
-!! exists and this is a NEW run.                      
-!                  WRITE(*,3100) FNAME_DATA
-!                  WRITE(UNIT_LOG, 3100) FNAME_DATA
-!                  CALL MFIX_EXIT(myPE)
-!               ELSE
-!! Open the file for appending of new data (RESTART_1 Case)
-!                  OPEN(UNIT=DES_DATA,FILE=FNAME_DATA,POSITION="append")
-!               ENDIF
-!            ENDIF
-!!-----------------------------------------------
-!
-!
-!! Check "RUN_NAME"_DES_EXTRA.dat
-!! the file associated with extra simulation data: (at current time step)
-!!   MAX_NEIGH: Maximum number of neighbors on any particle
-!!   MAX_OVERLAP: Maximum overlap between any two particles
-!!   GRAN_ENERGY/TEMP: Global granular energy/temperature obtained 
-!!     by averaging over all the particles                        
-!!-----------------------------------------------
-!! Determine if the "RUN_NAME"_DES_EXTRA.dat file exists
-!            F_EXISTS = .FALSE.
-!            INQUIRE(FILE=FNAME_EXTRA,EXIST=F_EXISTS)
-!
-!            IF (.NOT.F_EXISTS) THEN
-!! If the file does not exist, then create it with the necessary
-!! header information.
-!
-!               OPEN(unit=DES_EX,FILE=FNAME_EXTRA, status='new')
-!               WRITE(DES_EX,"(5(A,3X),A)")&
-!               'VARIABLES = ', '"t"', '"MAX_NEIGH"', '"MAX_OVERLAP"',&
-!               '"GRAN_ENERGY"','"GRAN_TEMP"'
-!
-!            ELSE
-!! To prevent overwriting existing files accidently, exit if the file
-!! exists and this is a NEW run.
-!               IF(RUN_TYPE .EQ. 'NEW') THEN
-!                  WRITE(*,3100) FNAME_EXTRA
-!                  WRITE(UNIT_LOG, 3100) FNAME_EXTRA
-!                  CALL MFIX_EXIT(myPE)
-!               ELSE
-!! Open the file for appending of new data (RESTART_1 Case)
-!                  OPEN(UNIT=DES_EX, FILE=FNAME_EXTRA, POSITION="append")
-!               ENDIF
-!            ENDIF
-!!-----------------------------------------------
-!
-!
-!! Check "RUN_NAME"_AVG_EPS.dat
-!! the file associated with axial profile in solids volume fraction and
-!! granular temperature
-!!----------------------------------------------------------------------
-!! Determine if the "RUN_NAME"_AVG_EPS.dat file exists
-!            F_EXISTS = .FALSE. 
-!            INQUIRE(FILE=FNAME_EPS,EXIST=F_EXISTS)
-!
-!            IF (.NOT.F_EXISTS) THEN
-!! If the file does not exist, then create it with the necessary
-!! header information.
-!
-!               OPEN(UNIT=DES_EPS,FILE=FNAME_EPS,status='NEW')
-!               WRITE(TMP_CHAR, *) ""
-!               DO M=1, MMAX
-!                  WRITE(TMP_CHAR,"(A,A,I2.2,A)")&
-!                  TRIM(TMP_CHAR),'"`e_S_,_', M, '",'
-!               ENDDO
-!               DO M=1, MMAX 
-!                  WRITE(TMP_CHAR,"(A,A,I2.2,A)")&
-!                  TRIM(TMP_CHAR), '"`Q_S_,_',M, '",'
-!               ENDDO
-!               WRITE(DES_EPS,"(A,3X,A,3X,A)")&
-!               "VARIABLES =", TRIM(TMP_CHAR), '"y"'
-!
-!            ELSE 
-!! To prevent overwriting existing files accidently, exit if the file
-!! exists and this is a NEW run.
-!               IF(RUN_TYPE .EQ. 'NEW') THEN
-!                  WRITE(*,3100) FNAME_EPS
-!                  WRITE(UNIT_LOG, 3100) FNAME_EPS
-!                  CALL MFIX_EXIT(myPE)
-!               ELSE
-!! Open the file for appending of new data (RESTART_1 Case)
-!                  OPEN(UNIT=DES_EPS,FILE=FNAME_EPS,POSITION="append")
-!               END IF
-!            ENDIF
-!!-----------------------------------------------
-!            
-!! Identify that the files has been created and opened for next pass
-!            FIRST_PASS = .FALSE.
-!         ELSE 
-!! Open each file and mark for appending
-!            OPEN(UNIT= DES_DATA, FILE=FNAME_DATA,  POSITION="append")
-!            OPEN(UNIT=DES_EX,    FILE=FNAME_EXTRA, POSITION="append")
-!            OPEN(UNIT=DES_EPS,   FILE=FNAME_EPS,   POSITION="append")
-!         ENDIF ! end if(FIRST_PASS)/else
-!
-
-!! Write to the "RUN_NAME"_DES_DATA.dat file: particle position, velocity, 
-!! radius, denisty, and tagged particles.        
-!         WRITE (DES_DATA, "(A,ES24.16,A)") 'ZONE T = "', S_TIME, '"'
-!         PC = 1
-!         DO L = 1, MAX_PIP 
-!            IF(PC .GT. PIP) EXIT
-!            IF(.NOT.PEA(L,1)) CYCLE 
-!            IF(DIMN.EQ.3) THEN
-!               WRITE (DES_DATA, '(10(2X,G12.5))')&
-!                  (DES_POS_NEW(L, K), K = 1,DIMN), &  ! particle L position
-!                  (DES_VEL_NEW(L, K), K = 1,DIMN), &  ! particle L velocity
-!                  DES_RADIUS(L), Ro_Sol(L), &  ! radius and density
-!                  MARK_PART(L)  ! flagged by user
-!            ELSE
-!               WRITE (DES_DATA, '(10(2X,G12.5))')&
-!                  (DES_POS_NEW(L, K), K = 1,DIMN), &  ! particle L position
-!                  (DES_VEL_NEW(L, K), K = 1,DIMN), &  ! particle L position
-!                  OMEGA_NEW(L,1), & ! particle L rotation
-!                  DES_RADIUS(L), Ro_Sol(L), &  ! radius and density
-!                  MARK_PART(L)  ! flagged by user
-!            ENDIF
-!            PC = PC + 1
-!         ENDDO
-!! Close the file and keep
-!         CLOSE(DES_DATA, STATUS = "keep")
-!
-!
-!! Write to the "RUN_NAME"_DES_EXTRA.dat file: extra simulation data at 
-!! current time ste including MAX_NEIGH, MAX_OVERLAP, GRAN_ENERGY,
-!! GRAN_TEMP
-!         WRITE(DES_EX,"(G12.5,2X,I4,2X,3(G12.5,2X))")&
-!            S_TIME, NEIGH_MAX, OVERLAP_MAX, &
-!            SUM(GLOBAL_GRAN_ENERGY(1:DIMN)), &
-!            SUM(GLOBAL_GRAN_TEMP(1:DIMN))/(DIMN)
-!! Close the file and keep
-!         CLOSE(DES_EX, STATUS = "keep")
-!
-!
-!! Write to the "RUN_NAME"_AVG_EPS.dat file: axial profiles in solids 
-!! volume fraction and granular temperature of each phase
-!         WRITE(DES_EPS, "(A,I5,A,A,A,I5,A,ES24.16)")&
-!            'ZONE T = "', TECPLOT_FINDEX, '",',& ! Number of passes of routine
-!            'DATAPACKING = POINT,',&
-!            'J=',JMAX, &
-!            'SOLUTIONTIME=', S_TIME
-! 
-!! loop over fluid cells          
-!         DO J = JMIN1, JMAX1
-!            AVG_EPS(J,:) = ZERO 
-!            AVG_THETA(J,:) = ZERO
-!            DO K = KMIN1, KMAX1
-!               DO I = IMIN1, IMAX1
-!                  IJK = FUNIJK(I,J,K)
-!                  DO M = 1, MMAX
-!                     AVG_EPS(J,M) =  AVG_EPS(J,M) + EP_S(IJK,M)
-!                     AVG_THETA(J,M) =  AVG_THETA(J,M) + DES_THETA(IJK,M)
-!                  ENDDO
-!               ENDDO
-!            ENDDO
-!            AVG_EPS(J,:) = AVG_EPS(J,:)/(IMAX*KMAX)
-!            AVG_THETA(J,:) = AVG_THETA(J,:)/(IMAX*KMAX)
-!
-!            WRITE(DES_EPS,"(20(G12.5,2X))")&
-!               (AVG_EPS(J,M), M = 1, MMAX) , &  ! average solids fraction
-!               (AVG_THETA(J,M), M = 1, MMAX), & !
-!               0.5d0*(YN(J)+YN(J-1))
-!         ENDDO
-!! Close the file and keep
-!         CLOSE(DES_EPS, STATUS = "keep")
-!
-!
-!      ENDIF ! if ifi > 0
-!
-!! Index file iteration count
-!      TECPLOT_FINDEX = TECPLOT_FINDEX+1
-!      
-!      RETURN
-! 3100 FORMAT(/1X,70('*')//, ' From: WRITE_DES_TECPLOT',/,' Message: ',&
-!         A, ' already exists in the run',/10X,&
-!         'directory. Run terminated to prevent accidental overwriting',&
-!         /10X,'of files.',/1X,70('*')/)
       END SUBROUTINE WRITE_DES_TECPLOT 
 !-----------------------------------------------
 
@@ -1157,7 +943,7 @@
       ENDIF
 
       WRITE(BH_UNIT, '(10(2X,E20.12))') s_time, &
-         (bed_height(M), M=1,MMAX), height_avg, height_rms
+         (bed_height(M), M=1,DES_MMAX), height_avg, height_rms
 ! Close the file and keep
       CLOSE(BH_UNIT, STATUS="KEEP")
 
@@ -1251,7 +1037,7 @@
       WRITE(GT_UNIT,'(A6,ES24.16)') 'Time=', S_TIME
       WRITE(GT_UNIT,'(A6,2X,3(A6,2X),A8,$)') 'IJK', &
          'I', 'J', 'K', 'NP'
-      DO M = 1,MMAX
+      DO M = 1,DES_MMAX
          WRITE(GT_UNIT,'(7X,A6,I1,$)') 'THETA_',M
       ENDDO
       WRITE(GT_UNIT,*) ''
@@ -1262,7 +1048,7 @@
             K = K_OF(IJK)
             NP = PINC(IJK)
             WRITE(GT_UNIT,'(I6,2X,3(I6,2X),I8,(2X,ES15.5))') &
-               IJK, I, J, K, NP, (DES_THETA(IJK,M), M = 1,MMAX)
+               IJK, I, J, K, NP, (DES_THETA(IJK,M), M = 1,DES_MMAX)
          ENDIF
       ENDDO
 

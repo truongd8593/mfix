@@ -1,15 +1,15 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: CHECK_DES_DATA                                          C
-!  Purpose: DES - Check user input Data                                C
+!  Purpose: Check user input data                                      C
 !                                                                      C
 !                                                                      C
 !  Author: S. Benyahia                                Date: 10-Nov-08  C
 !  Reviewer:                                                           C
 !  Comments: Most all user's input data are checked here               C
-!  Revision : Some of the checks made in des_allocate_arrays are       C
-!             moved here. In addition write statments are now made to  C
-!             log file                                                 C
+!  Revision: Some of the checks made in des_allocate_arrays are        C
+!            moved here. In addition write statments are now made to   C
+!            log file                                                  C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -78,8 +78,10 @@
 ! respective DES variables.  Note that valid values of MMAX, D_P0 and 
 ! RO_s are ensured by check_data_04.
          DES_MMAX = MMAX
-         DES_D_p0(:) = D_p0(:)
-         DES_RO_s(:) = RO_s(:)
+         DO M = 1, DES_MMAX
+            DES_D_p0(M) = D_p0(M)
+            DES_RO_s(M) = RO_s(M)
+         ENDDO
       ENDIF
 
       IF (DES_MMAX == UNDEFINED_I) THEN
@@ -489,29 +491,28 @@
       ENDDO
 
       IF (DES_CONTINUUM_HYBRID) THEN
+! des_continuum_coupled must be true if des_continuum_hybrid              
+         DES_CONTINUUM_COUPLED = .TRUE.
+         WRITE(UNIT_LOG, 1094)
+         CALL MFIX_EXIT(myPE)
 ! DES_CONTINUUM_HYBRID does not work with GHD or QMOMK
          IF (TRIM(KT_TYPE)=='GHD') THEN
-            WRITE(UNIT_LOG, 1091)
+            IF(DMP_LOG) WRITE(UNIT_LOG, 1091)
             CALL MFIX_EXIT(myPE)
          ENDIF
          IF (QMOMK) THEN
-            WRITE(UNIT_LOG, 1092)
+            IF(DMP_LOG) WRITE(UNIT_LOG, 1092)
             CALL MFIX_EXIT(myPE)
          ENDIF
       ENDIF
 
       IF (MPPIC .AND. DES_CONTINUUM_HYBRID) THEN
-         WRITE(UNIT_LOG, 1093)
+         IF(DMP_LOG) WRITE(UNIT_LOG, 1093)
          CALL MFIX_EXIT(myPE)
       ENDIF         
       
 
-      IF(DES_CONTINUUM_COUPLED) THEN
-         IF(TSUJI_DRAG .AND. TRIM(DRAG_TYPE) /= 'SYAM_OBRIEN') THEN
-! TSUJI drag option only available with syam_obrien drag model
-            IF(DMP_LOG) WRITE(UNIT_LOG, 1056)
-         ENDIF  
-      ELSE
+      IF(.NOT.DES_CONTINUUM_COUPLED) THEN
 ! Overwrite user's input in case of DEM (no fluid)
          DES_INTERP_ON = .FALSE. 
       ENDIF
@@ -535,7 +536,7 @@
 ! simulations)
       IF (DES_CONTINUUM_COUPLED .AND. DIMN == 2) THEN
          IF (2.0d0*MAX_RADIUS > ZLENGTH) THEN
-            WRITE(UNIT_LOG, 1036)
+            IF(DMP_LOG) WRITE(UNIT_LOG, 1036)
             CALL MFIX_EXIT(myPE)
          ENDIF
       ENDIF
@@ -658,7 +659,7 @@
          IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A,I5,2X,A,G15.7)') &
            'DES_MMAX = ', DES_MMAX, ' VOL_DOMAIN = ', VOL_DOMAIN
          IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A,/7X,(ES15.7,2X))') &
-            'D_P0(M) = ', D_P0(1:DES_MMAX)
+            'D_P0(M) = ', DES_D_P0(1:DES_MMAX)
          IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A,/7X,(G15.8,2X))') &
             'VOL_FRAC(M) (solids volume fraction of phase M) = ', &
             VOL_FRAC(1:DES_MMAX)
@@ -966,11 +967,6 @@
           'number',/10X,'of particles in the 2D simulation when ',&
           'GENER_PART_CONFIG is T and DIMN = 2.',/1X,70('*'))
 
- 1056 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-          'WARNING: TSUJI_DRAG option only available with ',&
-          'SYAM_OBRIEN',/10X,'drag model.',/1X,70('*'))
-
-     
  1060 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Only the grid based search option is allowed when using',&
          'using',/10X,'Lees & Edwards BC.',/1X,70('*')/)
@@ -1040,6 +1036,10 @@
          'DES_CONTINUUM_HYBRID.',/1X,70('*')/)
  1093 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'MPPIC and DES_CONTINUUM_HYBRID cannot both be TRUE.',&
+         /1X,70('*')/)
+ 1094 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'DES_CONTINUUM_COUPLED must be to true when using ',&
+         'DES_CONTINUUM_HYBRID.',&
          /1X,70('*')/)
 
  2001 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&

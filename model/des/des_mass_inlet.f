@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: DES_MASS_INLET(BCV_I)                                    !
+!  Subroutine: DES_MASS_INLET                                          !
 !                                                                      !
 !  Purpose:  This routine fills in the necessary information for new   !
 !  particles entereing the system.                                     !
@@ -17,6 +17,9 @@
 
       SUBROUTINE DES_MASS_INLET(BCV_I)
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE compar
       USE constant
       USE des_bc
@@ -30,9 +33,11 @@
       use mpi_utility 
       Use des_thermo
       Use des_rxns
- 
       IMPLICIT NONE
-
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+      INTEGER, INTENT(IN) :: BCV_I   ! Boundary Condition ID
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -43,7 +48,7 @@
       INTEGER TMPI            ! Loop counter
       INTEGER NPG             ! Number of particles in cell
       INTEGER NP              ! Particle id. number
-      INTEGER BCV_I, BCV      ! Boundary Condition ID
+      INTEGER BCV             ! Boundary Condition ID
       INTEGER M               ! Mass phase of new particle
       INTEGER N               ! Mass phase species index
 
@@ -66,7 +71,11 @@
       logical :: ltouching
       double precision,dimension(dimn):: lrange_min,lrange_max,lrand3
 !-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
       INCLUDE 'function.inc'
+!-----------------------------------------------
+
       LS = 1
       BCV = DES_BC_MI_ID(BCV_I)
 
@@ -83,7 +92,7 @@
             else
                m = des_bc_poly_layout(bcv_i,1)
             endif
-            lpar_rad = (d_p0(m) * half)
+            lpar_rad = (DES_d_p0(m) * half)
             call des_place_new_particle(bcv_i,lpar_rad,lpar_pos)
          end if 
          call bcast(lpar_rad)
@@ -125,7 +134,7 @@
 
             if(particle_plcmnt(bcv_i) == 'RAND')then
 ! In case of random particle position, check if the inserted particle 
-! overlabs any existing particles; if so then adjust the position  
+! overlaps any existing particles; if so then adjust the position  
 ! set range where particles can be inserted  
                select case (des_mi_class(bcv_i))
                case ('XW','XE', 'YZw','YZe')
@@ -208,10 +217,10 @@
             OMEGA_NEW(NP,:) = 0
 
 ! Set the particle radius value
-            DES_RADIUS(NP) = (D_P0(M) * HALF)
+            DES_RADIUS(NP) = (DES_D_P0(M) * HALF)
 
 ! Set the particle density value
-            RO_Sol(NP) = RO_S(M)
+            RO_Sol(NP) = DES_RO_S(M)
 
 ! Set the particle mass phase
             PIJK(NP,5) = M
@@ -350,90 +359,7 @@
             ENDIF 
             PINC(IJK) = TMPI
          end if 
-! All the computation moved to desgri mod. The following code is not 
-! required 
-!! If using des_neighbor_search option 4 (cell/grid based search) then
-!! determine the i,j,k indices of the cell containing the new particle
-!! based on the mesh for the grid based search. If cell is outside the 
-!! domain then either set the index to 1 or add 2 to the index to 
-!! account for ghost cells.  
-!! Note that this section is probably unnecessary since the routine
-!! particles_in_cell will pickup the same information before neighbor
-!! search is ever called and it is only in the neighbor search routine 
-!! that this information should be needed
-!! ------------------------------------------------------------         
-!         IF (DES_NEIGHBOR_SEARCH .EQ. 4) THEN
-!            SIZEDX = XLENGTH/DESGRIDSEARCH_IMAX
-!            SIZEDY = YLENGTH/DESGRIDSEARCH_JMAX
-!            IF (DIMN .EQ. 2) THEN
-!               SIZEDZ = ONE
-!            ELSE
-!               SIZEDZ = ZLENGTH/DESGRIDSEARCH_KMAX
-!            ENDIF
-!
-!            IF (XPOS < 0) THEN
-!               I = 1
-!            ELSEIF (XPOS >= XLENGTH) THEN
-!               I = DESGS_IMAX2
-!            ELSE         
-!               I = INT(XPOS/SIZEDX)+2
-!            ENDIF
-!
-!            IF (YPOS < 0 ) THEN
-!               J = 1
-!            ELSEIF (YPOS >= YLENGTH) THEN
-!               J = DESGS_JMAX2
-!            ELSE
-!               J = INT(YPOS/SIZEDY)+2
-!            ENDIF
-!
-!            IF (DIMN .EQ. 2) THEN
-!               K = 1
-!            ELSE
-!               IF (ZPOS < 0 ) THEN
-!                  K = 1
-!               ELSEIF (ZPOS >= ZLENGTH) THEN
-!                  K = DESGS_KMAX2
-!               ELSE
-!                  K = INT(ZPOS/SIZEDZ)+2
-!               ENDIF
-!            ENDIF
-!   
-!            DESGRIDSEARCH_PIJK(NP,1) = I
-!            DESGRIDSEARCH_PIJK(NP,2) = J
-!            DESGRIDSEARCH_PIJK(NP,3) = K
-!   
-!! Update the DESGRIDSEARCH_PIC array for new particles. Note that 
-!! is not needed to prevent subsequent particles that are injected
-!! from overlapping with previous particles as the variable PIC is 
-!! used for that.
-!            IF (ASSOCIATED(DESGRIDSEARCH_PIC(I,J,K)%P)) THEN
-!               NPG = SIZE(DESGRIDSEARCH_PIC(I,J,K)%P)
-!               ALLOCATE( HOLDER (NPG) )
-!
-!! store the particle no. id of all particles at the ijk location            
-!               TMPI = 1
-!               DO LL = 1, NPG
-!                  HOLDER(TMPI) = DESGRIDSEARCH_PIC(I,J,K)%P(LL)
-!                  TMPI = TMPI + 1
-!               ENDDO
-!               DEALLOCATE(DESGRIDSEARCH_PIC(I,J,K)%P)
-!   
-!! essentially increasing the no. of particles at the ijk location by 1
-!               ALLOCATE(DESGRIDSEARCH_PIC(I,J,K)%P(TMPI))
-!               DO LL = 1, TMPI - 1
-!                  DESGRIDSEARCH_PIC(I,J,K)%P(LL) = HOLDER(LL)
-!               ENDDO
-!! storing the new particle no. id in the list
-!               DESGRIDSEARCH_PIC(I,J,K)%P(TMPI) = NP
-!               DEALLOCATE(HOLDER)
-!            ELSE
-!! no other particles were at this ijk location
-!               TMPI = 1
-!               ALLOCATE(DESGRIDSEARCH_PIC(I,J,K)%P(TMPI))
-!               DESGRIDSEARCH_PIC(I,J,K)%P(TMPI) = NP
-!            ENDIF 
-!         ENDIF   ! end if des_neighbor_search = 4  
+
 
       ENDDO   ! end loop over the no. of injected particles (NP)
 
@@ -449,7 +375,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: DES_PLACE_NEW_PARTICLE                                 !
+!  Subroutine: DES_PLACE_NEW_PARTICLE                                  !
 !                                                                      !
 !  Purpose:  This routine uses the classification information to place !
 !  a new particle in the proper location.                              !
@@ -462,6 +388,9 @@
 
       SUBROUTINE DES_PLACE_NEW_PARTICLE(BCV_I,lpar_rad,lpar_pos)
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE compar
       USE des_bc
       USE discretelement
@@ -469,16 +398,19 @@
       USE geometry
       USE param1
       USE physprop
-
       IMPLICIT NONE
-! Dummy Variables 
-      double precision lpar_rad
-      double precision, dimension(dimn) :: lpar_pos
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! the associated bc no.      
+      INTEGER, INTENT(IN) :: BCV_I
+      DOUBLE PRECISION, INTENT(IN) :: lpar_rad
+      DOUBLE PRECISION, INTENT(OUT) :: lpar_pos(DIMN)
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! the associated bc no.      
-      INTEGER BCV_I, BCV  
+      INTEGER :: BCV  
 ! a random number between 0-1
       DOUBLE PRECISION RAND1, RAND2
 ! 'lower' x,y,z location of current window
@@ -960,7 +892,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name:  DES_NEW_PARTICLE_TEST                                 !
+!  Subroutine:  DES_NEW_PARTICLE_TEST                                  !
 !                                                                      !
 !  Purpose:  This routine checks if a new particle placed using the    !
 !  random inlet was placed in contact with an existing particle.  If   !
@@ -969,9 +901,9 @@
 !                                                                      !
 !  Author: J.Musser                                   Date: 14-Aug-09  !
 !                                                                      !
-!  Purpose: This routine has to be modified for parallel version
-!           the parameter now accepts the lpar_rad and lpar_pos and tests
-!           if it touches any particles 
+!  Purpose: This routine has to be modified for parallel version       !
+!           the parameter now accepts the lpar_rad and lpar_pos and    !
+!           tests if it touches any particles                          !
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
@@ -989,12 +921,14 @@
       USE physprop
 
       IMPLICIT NONE
-! Dummy variables
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
 ! index of boundary condition 
-      INTEGER BCV_I
-      double precision, dimension(dimn) :: ppar_pos 
-      double precision :: ppar_rad
-      LOGICAL TOUCHING
+      INTEGER, INTENT(IN) :: BCV_I
+      DOUBLE PRECISION, INTENT(IN) :: ppar_pos(DIMN)
+      DOUBLE PRECISION, INTENT(IN) :: ppar_rad
+      LOGICAL, INTENT(INOUT) :: TOUCHING
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -1010,8 +944,10 @@
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
       DOUBLE PRECISION  DISTVEC(DIMN), DIST, R_LM
 !-----------------------------------------------
-
+! Include statement functions
+!-----------------------------------------------
       INCLUDE 'function.inc'
+!-----------------------------------------------
 
       TOUCHING = .FALSE.
 

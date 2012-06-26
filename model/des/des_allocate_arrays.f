@@ -236,7 +236,9 @@
 
 ! force due to gas-pressure gradient 
       ALLOCATE(P_FORCE(DIMENSION_3,DIMN))
-      
+! force due to gas-solids drag on a particle
+      ALLOCATE(GD_FORCE(NPARTICLES,DIMN))
+
 ! Volume averaged solids volume in a computational fluid cell      
       Allocate(  DES_U_s (DIMENSION_3, DES_MMAX) )
       Allocate(  DES_V_s (DIMENSION_3, DES_MMAX) )
@@ -254,6 +256,7 @@
          ALLOCATE(F_SDS(DIMENSION_3,DIMENSION_M,DES_MMAX))
          ALLOCATE(VXF_GDS(DIMENSION_3,DES_MMAX))
          ALLOCATE(VXF_SDS(DIMENSION_3,DIMENSION_M,DES_MMAX))
+         ALLOCATE(SD_FORCE(NPARTICLES,DIMN))
       ENDIF
 ! Bulk density in a computational fluid cell / for communication with
 ! MFIX continuum

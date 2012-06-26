@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: CHECK_DES_THERMO                                       !
+!  Subroutine: CHECK_DES_THERMO                                        !
 !                                                                      !
 !  Purpose:                                                            !
 !                                                                      !
@@ -10,8 +10,12 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
       SUBROUTINE CHECK_DES_THERMO
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       Use compar
       Use des_thermo
       Use discretelement
@@ -19,24 +23,17 @@
       Use interpolation
       Use physprop
       Use run
-
       IMPLICIT NONE
-
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------      
       INTEGER I, M ! dummy loop index
-
 ! Number of processors used. (DES heat transfer is currently limited
 ! to serial runs!)
       INTEGER CHECK_MPI
-
-
 ! The size of the thermodynamic neighborhoods needed for particle-fluid-
 ! particle conduction and radiation.
       DOUBLE PRECISION SZ_PFP, SZ_RAD
-!-----------------------------------------------      
-! Functions
 !-----------------------------------------------      
 
       IF(DMP_LOG) WRITE(*,'(1X,A)') &
@@ -51,7 +48,7 @@
          ENDIF
 
 ! Loop over all solids phases
-         DO M=1,MMAX
+         DO M=1,DES_MMAX
 ! Verify that the thermal conductivity values are physical.
             IF(DES_C_ps0(M) .LT. ZERO)THEN
                IF(DMP_LOG) THEN
@@ -108,7 +105,8 @@
                      WRITE(*,'(6X,A)') &
                         'INVALID DES CONVECTION MODEL (DES_CONV_CORR):'
                      WRITE(*,'(6X,A)')'The available models include:'
-                     WRITE(*,'(9X,A)')'RANZ_1952 - Ranz and Marshall (1952)'
+                     WRITE(*,'(9X,A)') &
+                        'RANZ_1952 - Ranz and Marshall (1952)'
                   ENDIF
                   CALL MFIX_EXIT
             END SELECT
@@ -129,7 +127,7 @@
 ! Particle-particle Conduction:
 !'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
             IF(DES_COND_EQ_PP) THEN
-               DO M=1,MMAX
+               DO M=1,DES_MMAX
 ! Verify that a thermal conductivity value is specified for each solids
 ! phase and that the value is physical.
                   IF(DES_K_S0(M) == UNDEFINED)THEN
@@ -180,14 +178,15 @@
                ENDIF
 
                IF(DMP_LOG) WRITE(*,'(6X,A)')&
-                  'Solving the particle-fluid-particle conduction model.'
+                 'Solving the particle-fluid-particle conduction model.'
 ! A secondary neighborhood is established surrounding a particle to 
 ! determine the neighboring particles for possible particle-fluid-
 ! particle heat transfer.
                FIND_THERMO_NBRHD = .TRUE.
             ELSE
-               IF(DMP_LOG) WRITE(*,'(6X,A)')&
-                  'NOT Solving the particle-fluid-particle conduction model.'
+               IF(DMP_LOG) WRITE(*,'(6X,A,A)')&
+                  'NOT Solving the particle-fluid-particle ',&
+                  'conduction model.'
             ENDIF
 
          ELSE 
@@ -218,7 +217,7 @@
                SB_CONST = 1.355282d0*(10.0d0**(-12))
             ENDIF
 
-            DO M=1,MMAX
+            DO M=1,DES_MMAX
 ! Verify that a emmisivity value is specified for each solids pase
                IF(DES_Em(M) == UNDEFINED)THEN
                   IF(DMP_LOG) THEN

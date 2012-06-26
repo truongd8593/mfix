@@ -1,14 +1,14 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: DES_GRANULAR_TEMPERATURE
-!  Purpose: DES - Calculate the DES granular temperature               
+!  Subroutine: DES_GRANULAR_TEMPERATURE                                C
+!  Purpose: Calculate the DES granular temperature                     C
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer:                                          Date:            C
 !  Revision: For parallel processing modifications are made to         C
-!            accomadate ghost cells                                    C   
-!  Author:   Pradeep G.                                                C  
+!            accomodate ghost cells  (Pradeep G.)                      C
+!                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -26,7 +26,6 @@
       USE compar
       USE sendrecv
       USE physprop
-
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -36,9 +35,9 @@
 ! 
       INTEGER :: M, LL
 ! counter for no. of particles in phase m in cell ijk 
-      INTEGER :: NP_PHASE(DIMENSION_3, MMAX)
+      INTEGER :: NP_PHASE(DIMENSION_3, DES_MMAX)
 ! temporary variable for mth phase granular temperature in cell ijk
-      DOUBLE PRECISION :: TEMP(DIMENSION_3, MMAX)
+      DOUBLE PRECISION :: TEMP(DIMENSION_3, DES_MMAX)
 ! accounted for particles
       INTEGER :: PC             
 ! squared particle velocity v.v
@@ -59,7 +58,7 @@
 ! as the difference between a particles velocity and the corresponding
 ! local mean velocity of that particles species evaluated at the same
 ! instant of time.
-!----------------------------------------------- 
+!----------------------------------------------------------------->>> 
 ! The following calculations are performed on the 'fluid' grid
       TEMP(:,:) = ZERO
       NP_PHASE(:,:) = ZERO
@@ -95,7 +94,7 @@
       DO IJK = IJKSTART3, IJKEND3
          IF(FLUID_AT(IJK)) THEN
 
-            DO M = 1,MMAX
+            DO M = 1,DES_MMAX
                IF (NP_PHASE(IJK,M) > 0 ) THEN
                   DES_THETA(IJK,M) = TEMP(IJK,M)/&
                      DBLE(DIMN*NP_PHASE(IJK,M))
@@ -105,11 +104,12 @@
             ENDDO
          ENDIF
       ENDDO
+!-----------------------------------------------------------------<<<
 
 
 ! Calculate global quantities: granular temperature, kinetic energy,
 ! potential energy and average velocity at the current instant of time
-!-----------------------------------------------
+!----------------------------------------------------------------->>>
 
 ! initialization for calculations
       DES_KE = ZERO
@@ -162,18 +162,21 @@
 
       IF(PIP > 0) GLOBAL_GRAN_ENERGY(:) =  GLOBAL_GRAN_ENERGY(:)/DBLE(PIP)
       IF(PIP > 0) GLOBAL_GRAN_TEMP(:) =  GLOBAL_GRAN_TEMP(:)/DBLE(PIP)
+!-----------------------------------------------------------------<<<
 
       RETURN
 
       END SUBROUTINE DES_GRANULAR_TEMPERATURE
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!
-!  Module name: CALC_DES_BEDHEIGHT
-!  Purpose: Calculate an average bed height for each solids phase
-!  present
-!     
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: CALC_DES_BEDHEIGHT                                      !
+!  Purpose: Calculate an average bed height for each solids phase      !
+!           present                                                    !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE CALC_DES_BEDHEIGHT
 
@@ -206,7 +209,7 @@
 ! volume fraction of phase M in fluid cell
       DOUBLE PRECISION :: EP_SM      
 ! tmp variables for calculations
-      DOUBLE PRECISION :: tmp_num(MMAX), tmp_den(MMAX)
+      DOUBLE PRECISION :: tmp_num(DES_MMAX), tmp_den(DES_MMAX)
 !-----------------------------------------------
 ! Include statement functions      
 !-----------------------------------------------
@@ -219,10 +222,10 @@
       tmp_den(:) = ZERO 
       DO IJK = IJKSTART3, IJKEND3
          J = J_OF(IJK)      
-         DO M = 1, MMAX      
-            IF(ROP_S(IJK,M) > ZERO) THEN
+         DO M = 1, DES_MMAX      
+            IF(DES_ROP_S(IJK,M) > ZERO) THEN
                hcell = 0.5d0*(YN(J)+YN(J-1))
-               EP_SM = ROP_S(IJK,M)/RO_S(M)
+               EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
                tmp_num(M) = tmp_num(M) + EP_SM*hcell*VOL(IJK)
                tmp_den(M) = tmp_den(M) + EP_SM*VOL(IJK)
             ENDIF
@@ -255,4 +258,4 @@
       RETURN
 
       END SUBROUTINE CALC_DES_BEDHEIGHT      
-!-----------------------------------------------            
+

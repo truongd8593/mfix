@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: DES_RRATES(IER)                                        !
+!  Subroutine: DES_RRATES                                              !
 !  Purpose: Calculate reaction rates for various reactions for each    !
 !  particle.                                                           !
 !                                                                      !
@@ -12,10 +12,18 @@
 !  Author:                                            Date: dd-mmm-yy  !
 !  Reviewer:                                          Date: dd-mmm-yy  !
 !                                                                      !
+!  Contains the following functions and subroutines:                   !
+!     TO_PARTICLE                                                      !
+!     TO_FIELD                                                         !
+!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
       SUBROUTINE DES_RRATES(NP, INTERP_IJK, INTERP_WEIGHTS, FOCUS, &
                     CALLER)
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE param 
       USE param1 
       USE parallel 
@@ -29,19 +37,16 @@
       USE constant
       USE funits 
       USE toleranc
-      USE compar        !//d
-      USE sendrecv      !// 400
+      USE compar   
+      USE sendrecv 
       USE usr
-
       USE des_thermo
       USE des_rxns
       USE discretelement
       USE interpolation
-
       IMPLICIT NONE
-     
-
-! Pass Variables
+!-----------------------------------------------
+! Dummy arguments
 !-----------------------------------------------
 ! Particle index number
       INTEGER, INTENT(IN) :: NP
@@ -54,14 +59,13 @@
 ! Indicates which phase is calling for the calculations so that only
 ! the necessary data is calculated
       CHARACTER(len=*)  :: CALLER
-
-! Local Routine Variables - REQUIRED DO NOT EDIT
+!-----------------------------------------------
+! Local variables - REQUIRED DO NOT EDIT
 !-----------------------------------------------
 ! Phase and species indices
       INTEGER L, LM, PARTICLE_PHASE, N
 ! Fluid cell index
       INTEGER IJK
-
 ! Interpolated field quantites
       DOUBLE PRECISION Xg(NMAX(0))
 ! Gas temperature at particle's location (K)
@@ -76,28 +80,28 @@
       DOUBLE PRECISION HOR
 ! Mass generated
       DOUBLE PRECISION MASS_GEN
-
-      DOUBLE PRECISION R_tmp(0:MMAX, 0:MMAX)
-      DOUBLE PRECISION X_tmp(0:MMAX, 0:MMAX, Dimension_n_all)
-
-
+!
+      DOUBLE PRECISION R_tmp(0:DES_MMAX, 0:DES_MMAX)
+      DOUBLE PRECISION X_tmp(0:DES_MMAX, 0:DES_MMAX, Dimension_n_all)
+!
       DOUBLE PRECISION, EXTERNAL :: calc_h
       DOUBLE PRECISION, EXTERNAL :: DES_CALC_H
-
 !......................................................................!
 ! Reaction specific variables:                                         !
 !``````````````````````````````````````````````````````````````````````!
 
-
-                       
-!  Function subroutines
+!-----------------------------------------------
+! Function subroutines
 !-----------------------------------------------
       LOGICAL COMPARE
-
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'usrnlst.inc'
+!-----------------------------------------------
 
 ! Set the mass phase of the particle
       PARTICLE_PHASE = PIJK(NP,5)
@@ -279,14 +283,14 @@
             DO N=1,NMAX(0)
                MASS_GEN = DES_R_gp(N) - DES_RoX_gc(N)*Xg(N)
             ENDDO
-	        ELSE
+         ELSE
 ! If the species equations are not being solved, use the values provided
 ! in the R_tmp array.
-   	        IF(R_tmp(0,PARTICLE_PHASE) .NE. UNDEFINED)THEN
-           		  MASS_GEN = R_tmp(0,PARTICLE_PHASE)
-          		ELSEIF(R_tmp(PARTICLE_PHASE,0) .NE. UNDEFINED)THEN
-        	   	  MASS_GEN = R_tmp(PARTICLE_PHASE,0)
-           	ENDIF
+            IF(R_tmp(0,PARTICLE_PHASE) .NE. UNDEFINED)THEN
+               MASS_GEN = R_tmp(0,PARTICLE_PHASE)
+            ELSEIF(R_tmp(PARTICLE_PHASE,0) .NE. UNDEFINED)THEN
+               MASS_GEN = R_tmp(PARTICLE_PHASE,0)
+            ENDIF
          ENDIF
          CALL TO_FIELD(SUM_R_G, MASS_GEN)
       ENDIF
@@ -311,9 +315,9 @@
                      X_tmp(0,PARTICLE_PHASE,N) * DES_CALC_H(NP,N)
                ENDDO
             ENDIF
-       		ELSEIF(R_tmp(PARTICLE_PHASE,0) .NE. UNDEFINED) THEN
+         ELSEIF(R_tmp(PARTICLE_PHASE,0) .NE. UNDEFINED) THEN
 ! gas phase species >> solids phase species
-		          IF(R_tmp(PARTICLE_PHASE,0) > ZERO) THEN
+            IF(R_tmp(PARTICLE_PHASE,0) > ZERO) THEN
                DO N = 1, DES_NMAX(PARTICLE_PHASE)
                   RxH_xfr = RxH_xfr - R_tmp(PARTICLE_PHASE,0) * &
                      X_tmp(PARTICLE_PHASE,0,N) * DES_CALC_H(NP,N)
@@ -324,7 +328,7 @@
                   RxH_xfr = RxH_xfr - R_tmp(PARTICLE_PHASE,0) * &
                      X_tmp(PARTICLE_PHASE,0,N) * CALC_H(IJK,0,N)
                ENDDO
-      		    ENDIF
+            ENDIF
          ENDIF
 
 ! Calculate heats of reactions
@@ -376,8 +380,7 @@
 
       RETURN
 
-
-   
+ 
  1000 FORMAT(/1X,70('*')/' From: CALC_COEFF',/,' Message:',            &
          ' Discrete species equations are being solve; but no',        &
          ' reactions',/' are specified in the des_rrates.f file. For', &
@@ -393,7 +396,7 @@
 
       CONTAINS
 
-
+   
 !----------------------------------------------------------------------!
 ! Function: TO_PARTICLE - DO NOT EDIT                                  !
 !                                                                      !

@@ -1,14 +1,14 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-! Subroutine: CFASSIGN                                                 C
+!  Subroutine: CFASSIGN                                                C
 !                                                                      C
-! Purpose:                                                             C
-! Assign the necessary values for DEM computation. For example:        C
-! - assigning DEM boundaries from the values entered for MFIX input    C
-!   in mfix.datat                                                      C
-! - assigning DEM gravity vector from MFIX input.                      C
-! - calculating DTSOLID based on particle properties: spring           C
-!   coefficient, damping factor & mass                                 C
+!  Purpose: Assign the necessary values for DEM computation. For       C
+!           example:                                                   C
+!     - assigning DEM boundaries from the values entered for           C
+!       MFIX input in mfix.datat                                       C
+!     - assigning DEM gravity vector from MFIX input.                  C
+!     - calculating DTSOLID based on particle properties: spring       C
+!       coefficient, damping factor & mass                             C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C
@@ -115,7 +115,7 @@
             WRITE(UNIT_LOG,'(2X,A)') 'COLLISION MODEL: Hertzian'
 
 ! particle-particle contact -------------------->
-         DO I=1,MMAX
+         DO I=1,DES_MMAX
             G_MOD(I) = 0.5d0*e_young(I)/(1.d0+v_poisson(I)) ! shear modulus 
             if(dmp_log)write(unit_log,'(2X,A,I5,X,A,X,2(ES15.7))') &
                'E_YOUNG AND V_POISSON FOR M = ', I, '=',&
@@ -123,22 +123,23 @@
          ENDDO
             
          COUNT_E = 0
-         DO I=1,MMAX
-            DO J=I,MMAX
+         DO I=1,DES_MMAX
+            DO J=I,DES_MMAX
 ! Arrange the coefficient of restitution matrix from en_input values
 ! use coef of rest to determine damping coefficient 
                COUNT_E = COUNT_E + 1
                REAL_EN(I,J) = DES_EN_INPUT(COUNT_E)
                REAL_ET(I,J) = DES_ET_INPUT(COUNT_E)            
-               MASS_I = (PI/6.d0)*(D_P0(I)**3)*RO_S(I)
-               MASS_J = (PI/6.d0)*(D_P0(J)**3)*RO_S(J)
+               MASS_I = (PI/6.d0)*(DES_D_P0(I)**3)*DES_RO_S(I)
+               MASS_J = (PI/6.d0)*(DES_D_P0(J)**3)*DES_RO_S(J)
                MASS_EFF = (MASS_I*MASS_J)/(MASS_I+MASS_J)
 ! In the Hertzian model introduce a factor of 2/7 to the effective mass 
 ! for tangential direction to get a reduced mass.  See reference: 
 ! Van der Hoef et al., Advances in Chemical Engineering, 2006, 31, 65-149
 !   (see page 94-95)                
                RED_MASS_EFF = (2.d0/7.d0)*MASS_EFF               
-               R_EFF = 0.5d0*(D_P0(I)*D_P0(J)/(D_P0(I)+D_P0(J)))
+               R_EFF = 0.5d0*(DES_D_P0(I)*DES_D_P0(J)/&
+                  (DES_D_P0(I)+DES_D_P0(J)))
                E_EFF = e_young(I)*e_young(J)/ &
                (e_young(I)*(1.d0-v_poisson(J)**2)+&
                e_young(J)*(1.d0-v_poisson(I)**2))
@@ -179,15 +180,15 @@
 
 ! particle-wall contact -------------------->          
          COUNT_E = 0
-         DO I = 1, MMAX
+         DO I = 1, DES_MMAX
             COUNT_E = COUNT_E + 1  
             REAL_EN_WALL(I) = DES_EN_WALL_INPUT(COUNT_E)
             REAL_ET_WALL(I) = DES_ET_WALL_INPUT(COUNT_E)
-            MASS_I = (PI/6.d0)*(D_P0(I)**3)*RO_S(I)
+            MASS_I = (PI/6.d0)*(DES_D_P0(I)**3)*DES_RO_S(I)
             MASS_J = MASS_I
             MASS_EFF = MASS_I
             RED_MASS_EFF = (2.d0/7.d0)*MASS_I
-            R_EFF = 0.5d0*D_P0(I)
+            R_EFF = 0.5d0*DES_D_P0(I)
             E_EFF = e_young(I)*ew_young/ &
             (e_young(I)*(1.d0-vw_poisson**2)+&
             ew_young*(1.d0-v_poisson(I)**2))
@@ -237,14 +238,14 @@
 
 ! particle-particle contact -------------------->
          COUNT_E = 0
-         DO I = 1, MMAX
-            DO J = I, MMAX
+         DO I = 1, DES_MMAX
+            DO J = I, DES_MMAX
 ! Arrange the coefficient of restitution matrix from en_input values
 ! use coef of rest to determine damping coefficient 
                COUNT_E = COUNT_E + 1
                REAL_EN(I,J) = DES_EN_INPUT(COUNT_E)
-               MASS_I = (PI/6.d0)*(D_P0(I)**3.d0)*RO_S(I)
-               MASS_J = (PI/6.d0)*(D_P0(J)**3.d0)*RO_S(J)
+               MASS_I = (PI/6.d0)*(DES_D_P0(I)**3.d0)*DES_RO_S(I)
+               MASS_J = (PI/6.d0)*(DES_D_P0(J)**3.d0)*DES_RO_S(J)
                MASS_EFF = (MASS_I*MASS_J)/(MASS_I + MASS_J)
                   
                IF (REAL_EN(I,J) .NE. ZERO) THEN               
@@ -272,10 +273,10 @@
 
 ! particle-wall contact -------------------->     
          COUNT_E = 0 
-         DO I = 1, MMAX
+         DO I = 1, DES_MMAX
             COUNT_E = COUNT_E + 1  
             REAL_EN_WALL(I) = DES_EN_WALL_INPUT(COUNT_E)
-            MASS_I = (PI*(D_P0(I)**3)*RO_S(I))/6.d0
+            MASS_I = (PI*(DES_D_P0(I)**3)*DES_RO_S(I))/6.d0
             MASS_J = MASS_I
             MASS_EFF = MASS_I
             IF (REAL_EN_WALL(I) .NE. ZERO) THEN
@@ -302,8 +303,8 @@
 
 
 ! filling rest of arrays (symmetric matrix)
-      DO I = 1, MMAX
-         DO J = I, MMAX
+      DO I = 1, DES_MMAX
+         DO J = I, DES_MMAX
             REAL_EN(J, I) = REAL_EN(I,J)
             REAL_ET(J, I) = REAL_ET(J,I)
             DES_ETAN(J,I) = DES_ETAN(I,J)
@@ -312,8 +313,8 @@
       ENDDO
          
 ! reporting information to logs         
-      DO I = 1, MMAX
-         DO J = I, MMAX
+      DO I = 1, DES_MMAX
+         DO J = I, DES_MMAX
          IF(DMP_LOG) WRITE(UNIT_LOG,'(2X,A,I10,2X,I10,A,2(ES15.7))') &
             'ETAN AND ETAT FOR PAIR ',&
             I, J, ' = ', DES_ETAN(I,J), DES_ETAT(I,J)
@@ -327,13 +328,13 @@
         
          
       IF(MPPIC) THEN 
-         DO M = 1, MMAX 
-            DES_TAU_P(M) = RO_S(M)*(D_P0(M)**2.d0)/(18.d0*MU_g0)
+         DO M = 1, DES_MMAX 
+            DES_TAU_P(M) = DES_RO_S(M)*(DES_D_P0(M)**2.d0)/(18.d0*MU_g0)
             IF(DMP_LOG) WRITE(UNIT_LOG,'(/2X,A,I2,A,G17.8)') &
                'TAU_P FOR ', M,'th SOLID PHASE= ', DES_TAU_P(M)
          ENDDO
 
-         DTSOLID = DTSOLID_FACTOR*MINVAL(DES_TAU_P(1:MMAX))
+         DTSOLID = DTSOLID_FACTOR*MINVAL(DES_TAU_P(1:DES_MMAX))
          DTPIC_TAUP = DTSOLID   !maximum dt for point-particles based on taup
 
          IF(DMP_LOG) THEN 

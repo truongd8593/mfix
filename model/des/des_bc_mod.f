@@ -64,7 +64,8 @@
 ! velocity to the west wall set des_bc_vw_s(1,M) or des_bc_ww_s(1,M), 
 ! respectively (note an x velocity is not valid for a west or east wall).
 ! Since these are user input, they are allocated here with a constant
-! preset size, but their actual size is represented by (nwalls, mmax)
+! preset size, but their actual size is represented by &
+! (nwalls, des_mmax)
       DOUBLE PRECISION DES_BC_Uw_s(DIMENSION_BC, DIM_M) 
       DOUBLE PRECISION DES_BC_Vw_s(DIMENSION_BC, DIM_M)
       DOUBLE PRECISION DES_BC_Ww_s(DIMENSION_BC, DIM_M)

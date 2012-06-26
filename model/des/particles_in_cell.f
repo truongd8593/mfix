@@ -1,20 +1,21 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name:  PARTICLES_IN_CELL                                     C
-!
-!  Purpose: DES - Finding the fluid computational cell in which      
-!           a particle lies, to calculte void fraction and also       
-!           the volume averaged solids velocity of the cell            
-!
+!                                                                      C
+!  Purpose: DES - Finding the fluid computational cell in which        C
+!           a particle lies, to calculate void fraction and also       C
+!           the volume averaged solids velocity of the cell            C
+!           For parallel processing indices are altered and changes    C
+!           to variables related to desgridsearch are made; steps      C
+!                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C 
+!  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C
 !  Reviewer: Rahul Garg                               Date: 01-Aug-07  C
 !  Comments: Removed the separate volume definitions and added pic     C
 !            array formulation and bed height calculation.             C
 !                                                                      C
-!            For parallel processing indices are altered and changes   C
-!            to variables related to desgridsearch are made; steps     C
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE PARTICLES_IN_CELL
@@ -45,13 +46,17 @@
 ! accounted for particles
       INTEGER PC
 ! solids phase no.    
-      INTEGER M
+      INTEGER M, CM
 ! ijk indices      
       INTEGER I, J, K, IJK, IPROC
 ! 1 over volume of fluid cell      
       DOUBLE PRECISION :: OVOL
 ! total volume of mth phase solids in cell and 1 over that value      
-      DOUBLE PRECISION SOLVOLINC(DIMENSION_3,MMAX), OSOLVOL
+      DOUBLE PRECISION SOLVOLINC(DIMENSION_3,DES_MMAX), OSOLVOL
+! solids volume fraction of mth solids phase
+      DOUBLE PRECISION EP_SM
+! total solids volume fraction of continuum solids phases
+      DOUBLE PRECISION SUM_EPS
 ! variables that count/store the number of particles in ijk cell
       INTEGER:: npic, pos
 ! particle count in ijk fluid cell 
@@ -118,9 +123,9 @@
 ! Determining which solids phase a particle belongs based on matching each
 ! particle diameter and density to a solids phase particle diameter and
 ! density                 
-            DO M = 1, MMAX
-               IF(ABS(2.0d0*DES_RADIUS(L)-D_P0(M)).LT.SMALL_NUMBER.AND. &
-               ABS( RO_Sol(L)-RO_S(M)).LT.SMALL_NUMBER) THEN
+            DO M = 1, DES_MMAX
+               IF(ABS(2.0d0*DES_RADIUS(L)-DES_D_P0(M)).LT.SMALL_NUMBER.AND. &
+               ABS( RO_Sol(L)-DES_RO_S(M)).LT.SMALL_NUMBER) THEN
                PIJK(L,5) = M 
                EXIT
                ENDIF
@@ -134,10 +139,10 @@
                   'Particle position = ', DES_POS_NEW(L,:)
                   write(unit_log,'(7X,A,ES15.9,/,7X,A,(ES15.9))')&
                   'Particle diameter = ', 2.0*DES_RADIUS(L),&
-                  'and D_P0(1:MMAX)= ', D_P0(1:MMAX)
+                  'and D_P0(1:MMAX)= ', DES_D_P0(1:DES_MMAX)
                   write(unit_log,'(7X,A,ES15.9,/,7X,A,(ES15.9))')&
                   'Particle density = ', Ro_Sol(L), &
-                  'and RO_s(1:MMAX) = ', RO_S(1:MMAX)
+                  'and RO_s(1:MMAX) = ', DES_RO_S(1:DES_MMAX)
                ENDIF
             ENDIF
 
@@ -438,16 +443,19 @@
 
 
 ! if using drag interpolation then the bulk density and corresponding
-! void fraction should be updated based on the interpolated particle
-! position as is used in the drag calculation.  hence the bulk density
-! should be calculated/updated here using interpolation routines
+! void fraction should be updated based on the new particle position 
+! so it can be reflected in the drag calculation through ep_g.  hence 
+! the bulk density should be calculated/updated here using interpolation
+! routines
 
       
 ! Calculate the cell average solids velocity, the bulk density (if not
 ! des_interp_on and not first_pass), and the void fraction. 
 ! ---------------------------------------------------------------->>>
 !$omp parallel do if(ijkend3 .ge. 2000) default(shared)        &
-!$omp private(ijk,i,j,k,m,osolvol,ovol) !schedule (guided,50)     
+!$omp private(ijk,i,j,k,cm,m,sum_eps,ep_sm,                    &
+!$omp         osolvol,ovol)                                    &
+!$omp !schedule (guided,50)     
       DO IJK = IJKSTART3,IJKEND3
          I = I_OF(IJK)
          J = J_OF(IJK)
@@ -459,11 +467,24 @@
 ! and fluid_at(ijkend3) might be true when in fact it does not belong to
 ! that proc 
 
-         ROP_SO(IJK,:) = ZERO 
-         EP_G(IJK) = ONE
-         
-         DO M = 1, MMAX
+! it is unclear why rop_sO is set here a comment should be added.
+! for now this was changed to be invoked only when using mppic
+! changed to des_rop_so for consistency within dem framework         
+         IF(MPPIC) DES_ROP_SO(IJK,:) = ZERO 
 
+         IF (.NOT.DES_CONTINUUM_HYBRID) THEN
+            EP_G(IJK) = ONE   
+         ELSE
+! summing together total continuum solids volume
+            SUM_EPS = ZERO
+            DO CM = 1,SMAX
+               SUM_EPS = SUM_EPS + EP_S(IJK,CM) 
+            ENDDO
+            EP_G(IJK) = ONE - SUM_EPS
+         ENDIF  ! end if/else (.not.des_continuum_hybrid)
+
+
+         DO M = 1, DES_MMAX
 ! calculating average solids velocity in a fluid cell         
             IF(SOLVOLINC(IJK,M).GT.ZERO) THEN
                OSOLVOL = ONE/SOLVOLINC(IJK,M)   
@@ -474,44 +495,55 @@
                ENDIF
             ENDIF
 
-! calculating bulk density in a fluid cell            
-! this bulk density is based simply on locating a particle center in a
-! corresponding fluid cell.  So this calculation creates discrepancies
-! if interpolated drag calculations are used.  As the interpolated drag
-! will be using oudated void fraction information. In that case the 
+! calculate the bulk density using simple particle in cell center 
+! count.  also evaluate using this method if a dem outlet leaves 
+! system with no particles then
+! This calculation creates a discrepancy in the first_pass if interpolated
+! drag calculations are used. In interpolated drag, the drag
+! calculations in the gas phase are non-interpolated and in the discrete
+! phase the void fraction information will be dated (interpolated rop_s 
+! is only updated in the continuum side of calculation). In that case the
 ! bulk density (and void fraction) should be updated based on the 
 ! interpolation scheme
+
             IF(VOL(IJK).GT.0) THEN 
                OVOL = ONE/(VOL(IJK))
                IF(FIRST_PASS .OR. &
                  ((.NOT.FIRST_PASS).AND.(.NOT.DES_INTERP_ON))) THEN
-                  ROP_S(IJK,M)  = RO_S(M)*SOLVOLINC(IJK,M)*OVOL
+                  DES_ROP_S(IJK,M) = DES_RO_S(M)*SOLVOLINC(IJK,M)*OVOL
                ENDIF
             ENDIF
 
+! assign DEM bulk density value to same variable associated with
+! continuum bulk density to avoid potential issues with original
+! implementation - this will be addressed
+            IF(.NOT.DES_CONTINUUM_HYBRID) &
+               ROP_S(IJK,M) = DES_ROP_S(IJK,M)
+! add comment to address why this is done.
+            IF (MPPIC) DES_ROP_SO(IJK,M) = DES_ROP_S(IJK,M) 
+
 ! calculating void fraction in fluid cell based on solids bulk density       
-            IF(ROP_S(IJK,M) > ZERO) THEN
-               ROP_SO(IJK,M)  = ROP_S(IJK,M) 
-               IF(.not.DES_ONEWAY_COUPLED) EP_G(IJK) = EP_G(IJK) - EP_S(IJK,M)
+            IF(DES_ROP_S(IJK,M) >= ZERO) THEN
+               EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
+               IF(.NOT.DES_ONEWAY_COUPLED) EP_G(IJK) = EP_G(IJK) - EP_SM
                ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
 
 ! ep_g does not matter if granular flow simulation (i.e. no fluid)               
-               IF(EP_G(IJK).LT.ZERO .AND.DES_CONTINUUM_COUPLED.AND.&
+               IF(EP_G(IJK)<ZERO .AND.DES_CONTINUUM_COUPLED.AND.&
                  (.NOT.MPPIC)) THEN 
-
                   IF(DMP_LOG) THEN
                      WRITE(UNIT_LOG,1000)
                      WRITE(UNIT_LOG,1004) IJK, I_OF(IJK), J_OF(IJK), &
-                        EP_S(IJK,M), PINC(IJK)
+                        EP_SM, PINC(IJK)
+                     WRITE(UNIT_LOG,1005) cut_cell_at(ijk)
                      WRITE(UNIT_LOG,1001)
-                     WRITE(UNIT_LOG,*) 'Cut cell? ', cut_cell_at(IJK)
                   ENDIF
                   
                   CALL MFIX_EXIT(myPE)
                ENDIF
 
             ENDIF
-         ENDDO   ! end loop over M=1,MMAX
+         ENDDO   ! end loop over M=1,DES_MMAX
       ENDDO     ! end loop over IJK=ijkstart3,ijkend3
 !$omp end parallel do 
 ! ----------------------------------------------------------------<<<
@@ -536,6 +568,7 @@
  1004 FORMAT(5X,'WARNING: EP_G < 0 at IJK=', I10,' I=', I10, &
          ' J=', I10,/5X,'EP_S=', ES15.9, ' & PINC (number of ',&
          'particles in cell)= ',I10)
+ 1005 FORMAT(5X,'Cut cell? ', L5)
 
  1007 FORMAT(/1X,70('*')//&
          ' From: PARTICLES_IN_CELL -',/,&         
@@ -544,8 +577,7 @@
          '-position: ',ES17.9,4X,A,'-velocity: ',ES17.9,/& 
          1X,70('*')/)
 
-
- 1010     FORMAT(/1X,70('*')//,&
+ 1010 FORMAT(/1X,70('*')//,&
          ' From: PARTICLES_IN_CELL -',/,&         
          ' Message: Particle ',I8,' moved into a',&
          ' ghost cell; from cell with ',A,' index : ',I8,/1X,A,&
@@ -556,7 +588,7 @@
          ' Marking this particle as inactive',/&          
           1X,70('*')/)
 
- 1011     FORMAT(/1X,70('*')//,&
+ 1011 FORMAT(/1X,70('*')//,&
          ' From: PARTICLES_IN_CELL: Particle recovered',&
          ' from ghost cell -',/,&         
          ' Message: Particle ',I8,' had moved into a',&

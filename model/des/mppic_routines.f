@@ -1,4 +1,25 @@
+! contains the following subroutines:
+!   mppic_compute_ps_grad,
+!   mppic_compute_mean_fields,
+!   mppic_compute_mean_fields2, 
+!   mppic_compute_mean_fields_cg,       
+!   mppic_bc_u_s, mppic_bc_v_s, mppic_bc_w_s
+!   mppic_add_fric_force,
+!   mppic_apply_ps_grad,
+!   mppic_avg_eps
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: MPPIC_COMPUTE_PS_GRAD                                   !
+!  Purpose:                                                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
       SUBROUTINE MPPIC_COMPUTE_PS_GRAD
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE param
       USE param1
       USE parallel
@@ -16,7 +37,9 @@
       USE interpolation
       USE mfix_pic
       implicit none 
-      
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
       ! general i, j, k indices
       INTEGER I, J, K, IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM, IDIM, M
       
@@ -28,49 +51,48 @@
       integer :: ii,jj,kk, ipjpk, ijpkp, ipjkp, ipjpkp, I1, J1, K1
 
       double precision :: vol_ijk, vol_ipjk, vol_ijpk, vol_ipjpk
-      double precision :: vol_ijkp, vol_ipjkp, vol_ijpkp, vol_ipjpkp      
-      
+      double precision :: vol_ijkp, vol_ipjkp, vol_ijpkp, vol_ipjpkp
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------      
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
-      
-      if(MPPIC_SOLID_STRESS_SNIDER) then 
+!-----------------------------------------------
 
+      IF(MPPIC_SOLID_STRESS_SNIDER) THEN
          DO IJK = IJKSTART3, IJKEND3
             IF(FLUID_AT(IJK)) THEN
-               P_S(IJK,1) = PSFAC_FRIC_PIC * ((1.d0 - EP_G(IJK))**FRIC_EXP_PIC)/ MAX(EP_G(IJK) - EP_STAR, FRIC_NON_SING_FAC*EP_G(IJK))
-               !write(102,'(2(2x,i4),2(2x,g17.8))') I_OF(IJK), J_OF(IJK), EP_S(IJK,1), P_STAR(IJK) 
+               P_S(IJK,1) = PSFAC_FRIC_PIC * ((1.d0-EP_G(IJK))**FRIC_EXP_PIC)/&
+                  MAX(EP_G(IJK) - EP_STAR, FRIC_NON_SING_FAC*EP_G(IJK))
+               !write(102,'(2(2x,i4),2(2x,g17.8))') I_OF(IJK), J_OF(IJK), &
+                  !DES_ROP_S(IJK,1)/DES_RO_S(1), P_STAR(IJK) 
             ELSE
-               !So that ghost cells have higher pressure 
-               P_S(IJK,1) = PSFAC_FRIC_PIC * ((1.d0 - 0.1d0)**FRIC_EXP_PIC)/ MAX(0.1d0 - EP_STAR, FRIC_NON_SING_FAC*0.1d0)
-
+! So that ghost cells have higher pressure 
+               P_S(IJK,1) = PSFAC_FRIC_PIC * ((1.d0 - 0.1d0)**FRIC_EXP_PIC)/&
+                  MAX(0.1d0 - EP_STAR, FRIC_NON_SING_FAC*0.1d0)
             ENDIF
          ENDDO
-
-
       ELSE 
          DO IJK = IJKSTART3, IJKEND3
-            PS_FORCE_PIC(IJK,:) = ZERO 
-            
+            PS_FORCE_PIC(IJK,:) = ZERO             
             IF(FLUID_AT(IJK)) THEN
                if(EP_G(IJK).lt.ep_star) then 
                   P_S(IJK,1) = one*(one-ep_g(ijk)) 
                else 
                
                   P_S(IJK,1) = ZERO
-               endif
-               
+               endif               
             ELSE
                P_S(IJK,1) = 1.!\*0.d0
             ENDIF
-         ENDDO
-         
+         ENDDO         
       ENDIF
       
       CALL SEND_RECV(P_S,1)
 
-      !Since EP_G is already shared across the processors, the pressure gradient calculation 
-      !can be made a function call so that the extra communication of P_S can be avoided. 
+! Since EP_G is already shared across the processors, the pressure gradient calculation 
+! can be made a function call so that the extra communication of P_S can be avoided. 
 
       !DO k = kstart2, kend1 
       !do j = jstart2, jend1
@@ -78,69 +100,57 @@
       DO IJK = IJKSTART3, IJKEND3
          PS_FORCE_PIC(IJK,:) = ZERO 
          IF(.NOT.FLUID_AT(IJK)) CYCLE 
-
          I = I_OF(IJK)
          J = J_OF(IJK)
          K = K_OF(IJK)
          IPJK = IP_OF(IJK)
          IJPK = JP_OF(IJK)
-         IJKP = KP_OF(IJK)
-         
-          PS_FORCE_PIC(IJK,1) = 2.d0*(P_S(IPJK,1) - P_S(IJK,1))/(DX(I)+DX(I_of(ipjk)))
-         
+         IJKP = KP_OF(IJK)         
+         PS_FORCE_PIC(IJK,1) = 2.d0*(P_S(IPJK,1) - P_S(IJK,1))/(DX(I)+DX(I_of(ipjk)))
          PS_FORCE_PIC(IJK,2) = 2.d0*(P_S(IJPK,1) - P_S(IJK,1))/(DY(j)+Dy(j_of(ijpk)))
          if(dimn.eq.3) PS_FORCE_PIC(IJK,3) = 2.d0*(P_S(IJKP,1) - P_S(IJK,1))/(Dz(k)+Dz(k_of(ijkp)))
-         
       ENDDO
-      !Rahul:
-      !the above will not compute pressure gradients normal to the east, south and bottom faces 
-      !which are very important
+! Rahul:
+! the above will not compute pressure gradients normal to the east, 
+! south and bottom faces which are very important
+
       I1 = 1 
       DO K1 = KSTART3, KEND3
          DO J1 = JSTART3, JEND3
-!//
             IF(I1.NE.ISTART2)   EXIT
-            IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE	    
+            IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE
             IJK = FUNIJK(I1,J1,K1) 
             I = I_OF(IJK)
             J = J_OF(IJK)
             K = K_OF(IJK)
-
             IPJK = IP_OF(IJK)
             PS_FORCE_PIC(IJK,1) = 2.d0*(P_S(IPJK,1) - P_S(IJK,1))/(DX(I)+DX(I_of(ipjk)))
-                     
          ENDDO
       ENDDO
+
       J1 = 1 
       DO K1 = KSTART3, KEND3
          DO I1 = ISTART3, IEND3
-!//
             IF(J1.NE.JSTART2)   EXIT
-            IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE	    
+            IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE
             IJK = FUNIJK(I1,J1,K1) 
             I = I_OF(IJK)
             J = J_OF(IJK)
             K = K_OF(IJK)
-
-
             IJPK = JP_OF(IJK)
             PS_FORCE_PIC(IJK,2) = 2.d0*(P_S(IJPK,1) - P_S(IJK,1))/(DY(j)+Dy(j_of(ijpk)))
-
-         END DO 
-      END DO 
-
+         ENDDO 
+      ENDDO
       IF(DIMN.eq.3) then 
          K1 = 1 
          DO J1 = JSTART3, JEND3
             DO I1 = ISTART3, IEND3
                IF(K1.NE.KSTART2)   EXIT
-               IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE	    
+               IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE
                IJK = FUNIJK(I1,J1,K1) 
                I = I_OF(IJK)
                J = J_OF(IJK)
                K = K_OF(IJK)
-               
-
                IJKP = KP_OF(IJK)
                PS_FORCE_PIC(IJK,3) = 2.d0*(P_S(IJKP,1) - P_S(IJK,1))/(Dz(k)+Dz(k_of(ijkp)))
             END DO 
@@ -165,7 +175,7 @@
          pcell(2) = j-1
          pcell(3) = (3-dimn)*1+(dimn-2)*(k-1) ! =k-1 (in 3d) or =1 (in 2d)
          call set_interpolation_stencil(pcell,iw,ie,js,jn,kb,&
-         ktp,interp_scheme,dimn,ordernew = onew) 
+                      ktp,interp_scheme,dimn,ordernew = onew) 
 
 !Compute velocity at grid nodes and set the geometric stencil 
          avg_factor = 0.25d0*(dimn-2) + 0.5d0*(3-dimn)
@@ -183,8 +193,7 @@
                   vol_ijk = zero 
                   vol_ipjk = zero 
                   vol_ijpk = zero 
-                  vol_ipjpk = zero 
-                  
+                  vol_ipjpk = zero                   
                   vol_ijkp = zero 
                   vol_ipjkp = zero 
                   vol_ijpkp = zero 
@@ -195,13 +204,11 @@
                   if(fluid_at(ijpk))    vol_ijpk  = vol(ijpk) 
                   if(fluid_at(ipjpk))   vol_ipjpk = vol(ipjpk) 
          
-         
                   if(dimn.eq.3) then 
                      ijkp    = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk+1))
                      ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
                      ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
                      ipjpkp  = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk+1))
-                     
 
                      if(fluid_at(ijkp))     vol_ijkp   = vol(ijkp)
                      if(fluid_at(ipjkp))    vol_ipjkp  = vol(ipjkp) 
@@ -222,24 +229,28 @@
                   
                   VOL_TOT_VEC(1) = VOL(CUR_IJK) + VOL(IJPK)
                   VOL_TOT_VEC(2) = VOL(CUR_IJK) + VOL(IPJK)
+
                   
-                  DO M = 1, MMAX
-                     VEL_SOL_STENCIL(i,j,k,1,M) = u_s(cur_ijk,M)*vol(cur_ijk) + u_s(ijpk,M)*vol(ijpk)
-                     
-                     VEL_SOL_STENCIL(i,j,k,2,M) = v_s(cur_ijk,M)*vol(cur_ijk) + v_s(ipjk,M)*vol(ipjk)
+! JG: why are continuum solids velocities used?
+                  DO M = 1, DES_MMAX
+                     VEL_SOL_STENCIL(i,j,k,1,M) = u_s(cur_ijk,M)*vol(cur_ijk) +&
+                        u_s(ijpk,M)*vol(ijpk)                     
+                     VEL_SOL_STENCIL(i,j,k,2,M) = v_s(cur_ijk,M)*vol(cur_ijk) + &
+                        v_s(ipjk,M)*vol(ipjk)
                   ENDDO
+
                   !ep_g(cur_ijk)*vol_ijk+ ep_g(ipjk)*vol_ipjk+ & 
-                  !   &  ep_g(ijpk)*vol_ijpk + ep_g(ipjpk)*vol_ipjpk,
+                  !   ep_g(ijpk)*vol_ijpk + ep_g(ipjpk)*vol_ipjpk,
                   sstencil(i,j,k) = ep_g(cur_ijk)*vol_ijk+ ep_g(ipjk)*vol_ipjk+ & 
-                  &  ep_g(ijpk)*vol_ijpk + ep_g(ipjpk)*vol_ipjpk
+                     ep_g(ijpk)*vol_ijpk + ep_g(ipjpk)*vol_ipjpk
                   
                   psgradstencil(i,j,k,1) = PS_FORCE_PIC(cur_ijk,1)*VOL(CUR_IJK) + PS_FORCE_PIC(ijpk,1)*VOL(IJPK)
-
                   psgradstencil(i,j,k,2) = PS_FORCE_PIC(cur_ijk,2)*VOL(CUR_IJK) + PS_FORCE_PIC(ipjk,2)*VOL(IPJK)
 
                   vstencil(i,j,k,1) = u_g(cur_ijk)*vol(cur_ijk) + u_g(ijpk)*vol(ijpk)
                   vstencil(i,j,k,2) = v_g(cur_ijk)*vol(cur_ijk) + v_g(ipjk)*vol(ipjk)
-                  if(dimn.eq.3) then 
+
+                  IF(DIMN.EQ.3) THEN
                      VOL_TOT_VEC(1) = VOL_TOT_VEC(1) + VOL(IJKP) + VOL(IJPKP)
                      VOL_TOT_VEC(2) = VOL_TOT_VEC(2) + VOL(IJKP) + VOL(IPJKP)
                      VOL_TOT_VEC(2) = VOL(CUR_IJK) + VOL(IPJK) + VOL(IJPK) + VOL(IPJPK)
@@ -258,48 +269,41 @@
                      vstencil(i,j,k,3) = w_g(cur_ijk)*vol(cur_ijk)+&
                      & w_g(ijpk)*vol(ijpk)+w_g(ipjk)*vol(ipjk)+w_g(ipjpk)*vol(ipjpk)
 
-                     DO M = 1, MMAX     
-                        VEL_SOL_STENCIL(i,j,k,1, M) = VEL_SOL_STENCIL(i,j,k,1,M) & 
-                        & + u_s(ijkp,M)*vol(ijkp) + u_s(ijpkp,M)*vol(ijpkp)
-                        VEL_SOL_STENCIL(i,j,k,2, M) = VEL_SOL_STENCIL(i,j,k,2,M) & 
-                        & + v_s(ijkp,M)*vol(ijkp) + v_s(ipjkp,M)*vol(ipjkp)
+                     DO M = 1, DES_MMAX     
+                        VEL_SOL_STENCIL(i,j,k,1, M) = VEL_SOL_STENCIL(i,j,k,1,M) + & 
+                           u_s(ijkp,M)*vol(ijkp) + u_s(ijpkp,M)*vol(ijpkp)
+                        VEL_SOL_STENCIL(i,j,k,2, M) = VEL_SOL_STENCIL(i,j,k,2,M) + & 
+                           v_s(ijkp,M)*vol(ijkp) + v_s(ipjkp,M)*vol(ipjkp)
                         VEL_SOL_STENCIL(i,j,k,3, M) = w_s(cur_ijk,M)*vol(cur_ijk) +&
-                        w_s(ijpk,M)*vol(ijpk)+w_s(ipjk,M)*vol(ipjk)+w_s(ipjpk,M)*vol(ipjpk)
+                           w_s(ijpk,M)*vol(ijpk)+w_s(ipjk,M)*vol(ipjk)+w_s(ipjpk,M)*vol(ipjpk)
                      ENDDO
-                  else 
+                  ELSE
                      psgradstencil(i,j,k,3) = 0.d0
-                     VEL_SOL_STENCIL(i,j,k,3, 1:MMAX) = 0.d0
+                     VEL_SOL_STENCIL(i,j,k,3, 1:DES_MMAX) = 0.d0
                      vstencil(i,j,k,3) = 0.d0
-                                          
-                  endif
+                  ENDIF
+
                   DO IDIM = 1, DIMN 
                      IF(VOL_TOT_VEC(IDIM).GT.ZERO)  THEN 
-                        psgradstencil(i,j,k,idim) = psgradstencil(i,j,k,idim)/VOL_TOT_VEC(idim)
-                        
-                        VEL_SOL_STENCIL(i,j,k,idim, 1:MMAX) = VEL_SOL_STENCIL(i,j,k,idim, 1:MMAX)/VOL_TOT_VEC(idim)
-                        
+                        psgradstencil(i,j,k,idim) = psgradstencil(i,j,k,idim)/VOL_TOT_VEC(idim)                        
+                        VEL_SOL_STENCIL(i,j,k,idim, 1:DES_MMAX) = VEL_SOL_STENCIL(i,j,k,idim, 1:DES_MMAX)/VOL_TOT_VEC(idim)
                         vstencil(i,j,k,idim) = vstencil(i,j,k,idim)/VOL_TOT_VEC(idim)
-
-                        !no need for if as sum of positive numbers can only be zero
-                        !if and only if each one of them are zero 
-                     ENDIF
-                     
+! no need for if as sum of positive numbers can only be zero
+! if and only if each one of them are zero 
+                     ENDIF                     
                   ENDDO
-                                       
                   
                   !write(*,*) 'epg*vol     = ', ep_g(cur_ijk)*vol_ijk, ep_g(ipjk)*vol_ipjk, & 
                   !&  ep_g(ijpk)*vol_ijpk , ep_g(ipjpk)*vol_ipjpk,  ep_g(cur_ijk)*vol_ijk+ ep_g(ipjk)*vol_ipjk+ & 
                   !&  ep_g(ijpk)*vol_ijpk + ep_g(ipjpk)*vol_ipjpk,sstencil(i,j,k)
                      
-                     
                   if(VOL_TOT_SCAL.gt.zero) sstencil(i,j,k) = sstencil(i,j,k)/VOL_TOT_SCAL
-                     
                   
                enddo
             enddo
          enddo
          
-                  !loop through particles in the cell  
+! loop through particles in the cell  
          do nindx = 1,pinc(ijk)
             np = pic(ijk)%p(nindx)
             m = pijk(np,5)
@@ -323,15 +327,25 @@
             
             EPG_P(NP) = ARRAY_DOT_PRODUCT(SSTENCIL(:,:,:),WEIGHTP(:,:,:))
             
-         END DO
-      END DO
+         ENDDO
+      ENDDO
     
-
       END SUBROUTINE MPPIC_COMPUTE_PS_GRAD
 
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: MPPIC_COMPUTE_MEAN_FIELDS                               !
+!  Purpose:                                                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
       SUBROUTINE MPPIC_COMPUTE_MEAN_FIELDS 
-      
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE param
       USE param1
       USE parallel
@@ -356,9 +370,7 @@
 !-----------------------------------------------         
 ! local variable used for debugging
       LOGICAL FOCUS 
-
-
- ! general i, j, k indices
+! general i, j, k indices
       INTEGER I, J, K, IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,&
               IPJPK, IPJKP, IJPKP, IPJPKP, II, JJ, KK, &
 ! Pradeep added following 
@@ -403,44 +415,50 @@
 ! Pradeep temporary indices for periodic boundary adjustments
       integer korder,cur_ijk,nindx
 ! Pradeep introducing volume at grid nodes for backward interpolation 
-      double precision VELG_ARR(DIMN), VELS_ARR(DIMN, MMAX), np_m
+      double precision :: np_m
 
 ! see the discussion for IJK_U ..... in comments       
-      INTEGER  IJK_U, IJK_V, IJK_W, ICUR, JCUR, KCUR
+      INTEGER :: IJK_U, IJK_V, IJK_W, ICUR, JCUR, KCUR
 
       character*100 :: filename
       integer  FLUID_IND      
       double precision :: vol_ijk, vol_ipjk, vol_ijpk, vol_ipjpk
       double precision :: vol_ijkp, vol_ipjkp, vol_ijpkp, vol_ipjpkp
       
-      integer :: epg_min_loc(1), count_nodes_outside, count_nodes_inside, count_nodes_inside_max, COUNT_TEMP
+      integer :: epg_min_loc(1)
+      integer :: count_nodes_outside, &
+                 count_nodes_inside, count_nodes_inside_max
+      integer :: COUNT_TEMP
       double precision :: epg_min2
       
-      double precision :: RESID_WTBAR(MMAX), RESID_BM(DIMN, MMAX), NORM_FACTOR
+      double precision :: RESID_WTBAR(DES_MMAX), RESID_BM(DIMN, DES_MMAX)
+      double precision :: NORM_FACTOR
 !
-!-----------------------------------------------   
-
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
-
+!-----------------------------------------------   
 
      
       MASS_SOL1 = zero
       MASS_SOL2 = zero 
       MASS_SOL3 = zero 
       MASS_SOL4 = zero 
+
       call set_interpolation_scheme(2)
+      
       korder = 1+(dimn-2)
       drag_bm = ZERO
       drag_am = zero 
       wtbar = zero
       if(dimn.eq.2) count_nodes_inside_max = 4
       if(dimn.eq.3) count_nodes_inside_max = 8
+
       IJKLOOP: DO IJK = IJKSTART3,IJKEND3
-         ROP_S(IJK,:) = zero 
+         DES_ROP_S(IJK,:) = zero 
          DES_U_S(IJK, :) = ZERO
          DES_V_S(IJK, :) = ZERO
          if(dimn.eq.3) DES_W_S(IJK, :) = ZERO
@@ -451,10 +469,11 @@
          pcell(1) = i-1
          pcell(2) = j-1
          pcell(3) = (3-dimn)*1+(dimn-2)*(k-1) ! =k-1 (in 3d) or =1 (in 2d)
-         call set_interpolation_stencil(pcell,iw,ie,js,jn,kb,&
-         ktp,interp_scheme,dimn,ordernew = onew) 
 
-!Compute velocity at grid nodes and set the geometric stencil 
+         call set_interpolation_stencil(pcell,iw,ie,js,jn,kb,&
+            ktp,interp_scheme,dimn,ordernew = onew) 
+
+! Compute velocity at grid nodes and set the geometric stencil 
          avg_factor = 0.25d0*(dimn-2) + 0.5d0*(3-dimn)
          count_nodes_outside = 0 
          do k = 1,(3-dimn)*1+(dimn-2)*onew
@@ -487,34 +506,34 @@
 
          count_nodes_inside = count_nodes_inside_max - count_nodes_outside
 
-         !loop through particles in the cell  
+! loop through particles in the cell  
          do nindx = 1,pinc(ijk)
             focus = .false.
             np = pic(ijk)%p(nindx)
             m = pijk(np,5)
             
-            NP_M = ROP_SO(IJK,m)*VOL(IJK)/(ro_s(m)*pvol(np))
+            NP_M = DES_ROP_SO(IJK,m)*VOL(IJK)/(DES_RO_S(M)*pvol(np))
 
             WTP = ONE
             IF(MPPIC) WTP = DES_STAT_WT(NP)
             
             MASS_SOL1 = MASS_SOL1 + PMASS(NP)*WTP
-            if (dimn .eq. 2) then 
+            IF (DIMN.EQ.2) THEN
                call interpolator(gstencil(1:onew,1:onew,1,1:dimn), &
                     vstencil(1:onew,1:onew,1,1:dimn), &
                     des_pos_new(np,1:dimn),JUNK_VAL(1:dimn),  &
                     onew,interp_scheme,weightp)
-            else 
+            ELSE
                call interpolator(gstencil(1:onew,1:onew,1:onew,1:dimn), &
                     vstencil(1:onew,1:onew,1:onew,1:dimn), &
                     des_pos_new(np,1:dimn),JUNK_VAL(1:dimn),  &
                     onew,interp_scheme,weightp)
-            end if
+            ENDIF
             
             do k = 1, (3-dimn)*1+(dimn-2)*onew
                do j = 1, onew
                   do i = 1, onew
-                     ! shift loop index to new variables for manipulation                     
+! shift loop index to new variables for manipulation
                      ii = iw + i-1
                      jj = js + j-1
                      kk = kb + k-1
@@ -525,11 +544,11 @@
                      
                      cur_ijk = funijk(icur, jcur, kcur) !imap_c(ii),jmap_c(jj),kmap_c(kk))
                      
-! should this volume be for current ijk index or always particle index?                        
+! should this volume be for current ijk index or always particle index?
                      vcell = des_vol_node(cur_ijk)
                      ovol = one/vcell
                      
-                     temp1 = weightp(i,j,k)*ro_s(m)*pvol(np)*wtp!*ovol
+                     temp1 = weightp(i,j,k)*DES_RO_S(M)*pvol(np)*wtp!*ovol
                                          
                      wtbar(cur_ijk,m) = wtbar(cur_ijk,m) + temp1 
                      
@@ -562,29 +581,30 @@
                K1 = K-1
                K2 = K
             ENDIF
-         !Convention used to number node numbers is described below 
-         
-         ! i=1, j=2           i=2, j=2
-         !   _____________________
-         !   |                   |
-         !   |  I = 2, J = 2     |
-         !   |___________________|
-         ! i=1, j=1           i=2, j=1
-         !first calculate the residual wtbar and drag_bm that was computed
-         !on nodes that do not belong to the domain
-            RESID_WTBAR(1:MMAX) = ZERO 
-            RESID_BM(1:DIMN, 1:MMAX) = ZERO
+
+! Convention used to number node numbers is described below 
+! i=1, j=2           i=2, j=2
+!   _____________________
+!   |                   |
+!   |  I = 2, J = 2     |
+!   |___________________|
+! i=1, j=1           i=2, j=1
+
+! first calculate the residual wtbar and drag_bm that was computed
+! on nodes that do not belong to the domain
+            RESID_WTBAR(1:DES_MMAX) = ZERO 
+            RESID_BM(1:DIMN, 1:DES_MMAX) = ZERO
             DO KK = K1, K2
                DO JJ = J1, J2
                   DO II = I1, I2
                      IJK2 = funijk(II, JJ, KK) 
                      IF(SCALAR_NODE_ATWALL(IJK2)) THEN 
-                        RESID_WTBAR(1:MMAX) = RESID_WTBAR(1:MMAX) + WTBAR(IJK2,1:MMAX)
-                        WTBAR(IJK2,1:MMAX) = ZERO 
+                        RESID_WTBAR(1:DES_MMAX) = RESID_WTBAR(1:DES_MMAX) + WTBAR(IJK2,1:DES_MMAX)
+                        WTBAR(IJK2,1:DES_MMAX) = ZERO 
                         DO IDIM = 1, DIMN
-                           RESID_BM(IDIM, 1:MMAX) = RESID_BM(IDIM, 1:MMAX) +  & 
-                           & DRAG_BM(IJK2,IDIM, 1:MMAX)
-                           DRAG_BM(IJK2,IDIM, 1:MMAX) = ZERO 
+                           RESID_BM(IDIM, 1:DES_MMAX) = RESID_BM(IDIM, 1:DES_MMAX) +  & 
+                              DRAG_BM(IJK2,IDIM, 1:DES_MMAX)
+                           DRAG_BM(IJK2,IDIM, 1:DES_MMAX) = ZERO 
                         ENDDO
                      ENDIF
                   ENDDO
@@ -592,11 +612,10 @@
             ENDDO
                   
                      
-           ! Now add this residual equally to the remaining nodes
-           ! Pradeep: at the interface drag_am,drag_bm,wtbar has to be added
-           ! send recv will be called and the node values will be added 
-           ! at the junction 
-            
+! Now add this residual equally to the remaining nodes
+! Pradeep: at the interface drag_am,drag_bm,wtbar has to be added
+! send recv will be called and the node values will be added 
+! at the junction             
             NORM_FACTOR = one/real(count_nodes_inside)          
             COUNT_TEMP = 0
             DO KK = K1, K2
@@ -605,9 +624,11 @@
                      IJK2 = funijk(II, JJ, KK) 
                      IF(.NOT.SCALAR_NODE_ATWALL(IJK2)) THEN 
                         COUNT_TEMP = COUNT_TEMP + 1
-                        WTBAR(IJK2,1:MMAX) = WTBAR(IJK2,1:MMAX) + RESID_WTBAR(1:MMAX)*NORM_FACTOR
+                        WTBAR(IJK2,1:DES_MMAX) = WTBAR(IJK2,1:DES_MMAX) + &
+                           RESID_WTBAR(1:DES_MMAX)*NORM_FACTOR
                         DO IDIM = 1, DIMN
-                           DRAG_BM(IJK2,IDIM, 1:MMAX) = DRAG_BM(IJK2,IDIM, 1:MMAX) + RESID_BM(IDIM, 1:MMAX)*NORM_FACTOR
+                           DRAG_BM(IJK2,IDIM, 1:DES_MMAX) = DRAG_BM(IJK2,IDIM, 1:DES_MMAX) + &
+                             RESID_BM(IDIM, 1:DES_MMAX)*NORM_FACTOR
                         ENDDO
                      ENDIF
                   ENDDO
@@ -618,14 +639,14 @@
          ENDIF
          
 
-      END DO IJKLOOP            ! IJK LOOP
+      ENDDO IJKLOOP            ! IJK LOOP
       
       MASS_SOL4 = SUM(WTBAR(:,1))
       CALL DES_ADDNODEVALUES
       
 
       DO IJK = IJKSTART3, IJKEND3
-         DO M = 1, MMAX
+         DO M = 1, DES_MMAX
             IF(WTBAR(IJK,M).GT.ZERO) then
                DRAG_BM(IJK, :, M) = DRAG_BM(IJK, :, M)/WTBAR(IJK, M)
             endif
@@ -646,18 +667,15 @@
             IJMK = FUNIJK(I,J-1,K)
             IMJMK = FUNIJK(I-1,J-1,K) 
 
-            ROP_S(IJK,:) = AVG_FACTOR*(WTBAR(IJK,:)+&
-            WTBAR(IJMK,:) + WTBAR(IMJMK,:) +&
-            WTBAR(IMJK,:))
-
-            
+            DES_ROP_S(IJK,:) = AVG_FACTOR*(WTBAR(IJK,:)+&
+               WTBAR(IJMK,:) + WTBAR(IMJMK,:) +&
+               WTBAR(IMJK,:))
             DES_U_S(IJK,:) = avg_factor*(DRAG_BM(IJK,1,:) + &
-            DRAG_BM(IJMK,1,:) + DRAG_BM(IMJMK,1,:) + &
-            DRAG_BM(IMJK,1,:))
-
+               DRAG_BM(IJMK,1,:) + DRAG_BM(IMJMK,1,:) + &
+               DRAG_BM(IMJK,1,:))
             DES_V_S(IJK,:) = avg_factor*(DRAG_BM(IJK,2,:) + &
-            DRAG_BM(IJMK,2,:) + DRAG_BM(IMJMK,2,:) + &
-            DRAG_BM(IMJK,2,:))
+               DRAG_BM(IJMK,2,:) + DRAG_BM(IMJMK,2,:) + &
+               DRAG_BM(IMJK,2,:))
 
             U_S(IJK,:) = AVG_FACTOR_FACE*(DRAG_BM(IJK,1,:) + DRAG_BM(IJMK, 1,:))
             V_S(IJK,:) = AVG_FACTOR_FACE*(DRAG_BM(IJK,2,:) + DRAG_BM(IMJK, 2,:))
@@ -667,89 +685,72 @@
                IMJKM = FUNIJK(I-1,J,K-1)
                IMJMKM = FUNIJK(I-1,J-1,K-1)
 
-
-               ROP_S(IJK,:) = ROP_S(IJK,:) + AVG_FACTOR*&
-               (WTBAR(IJKM,:) + WTBAR(IJMKM,:) + &
-               WTBAR(IMJMKM,:) + WTBAR(IMJKM,:))
-
+               DES_ROP_S(IJK,:) = DES_ROP_S(IJK,:) + AVG_FACTOR*&
+                  (WTBAR(IJKM,:) + WTBAR(IJMKM,:) + &
+                  WTBAR(IMJMKM,:) + WTBAR(IMJKM,:))
                DES_U_S(ijk,:) = DES_U_S(ijk,:) + avg_factor*&
-               (DRAG_BM(ijkm,1,:) + DRAG_BM(ijmkm,1,:) &
-               + DRAG_BM(imjmkm,1,:)+DRAG_BM(imjkm,1,:))
-               
-               
+                  (DRAG_BM(ijkm,1,:) + DRAG_BM(ijmkm,1,:) &
+                  + DRAG_BM(imjmkm,1,:)+DRAG_BM(imjkm,1,:))
                DES_V_S(ijk,:) = DES_V_S(ijk,:) + avg_factor*&
-               (DRAG_BM(ijkm,2,:) + DRAG_BM(ijmkm,2,:) &
-               + DRAG_BM(imjmkm,2,:)+DRAG_BM(imjkm,2,:) )
-               
+                  (DRAG_BM(ijkm,2,:) + DRAG_BM(ijmkm,2,:) &
+                  + DRAG_BM(imjmkm,2,:)+DRAG_BM(imjkm,2,:) )
                DES_W_S(ijk,:) =  avg_factor*&
-               (DRAG_BM(ijk,3,:) + DRAG_BM(ijmk,3,:) &
-               + DRAG_BM(imjmk,3,:)+DRAG_BM(imjk,3,:) )
-               
+                  (DRAG_BM(ijk,3,:) + DRAG_BM(ijmk,3,:) &
+                  + DRAG_BM(imjmk,3,:)+DRAG_BM(imjk,3,:) )
                DES_W_S(ijk,:) = DES_W_S(ijk,:) + avg_factor*&
-               (DRAG_BM(ijkm,3,:) + DRAG_BM(ijmkm,3,:) &
-               + DRAG_BM(imjmkm,3,:)+DRAG_BM(imjkm,3,:) )
-               
-               
+                  (DRAG_BM(ijkm,3,:) + DRAG_BM(ijmkm,3,:) &
+                  + DRAG_BM(imjmkm,3,:)+DRAG_BM(imjkm,3,:) )
+
+! JG: why is this being done?                  
                U_S(IJK, :) = U_S(IJK,:) + AVG_FACTOR_FACE*(DRAG_BM(IJKM,1,:) + DRAG_BM(IJMKM, 1,:))
                V_S(IJK, :) = V_S(IJK,:) + AVG_FACTOR_FACE*(DRAG_BM(IJKM,2,:) + DRAG_BM(IMJKM, 2,:))
                W_S(IJK, :) = AVG_FACTOR_FACE*(DRAG_BM(IJK,3,:) + DRAG_BM(IMJK, 3,:) + DRAG_BM(IJMK,3,:) + DRAG_BM(IMJMK,3,:))
-
-               
             ENDIF
-!!$            DO M = 1, MMAX
-!!$               IF(ROP_S(IJK,M).GT.ZERO) then 
-!!$                  DES_U_S(IJK,M) = DES_U_S(IJK,M)/ROP_S(IJK,M)
-!!$                  DES_V_S(IJK,M) = DES_V_S(IJK,M)/ROP_S(IJK,M)
-!!$                  if(DIMN.eq.3) DES_W_S(IJK,M) = DES_W_S(IJK,M)/ROP_S(IJK,M)
+
+
+!!$            DO M = 1, DES_MMAX
+!!$               IF(DES_ROP_S(IJK,M).GT.ZERO) then 
+!!$                  DES_U_S(IJK,M) = DES_U_S(IJK,M)/DES_ROP_S(IJK,M)
+!!$                  DES_V_S(IJK,M) = DES_V_S(IJK,M)/DES_ROP_S(IJK,M)
+!!$                  if(DIMN.eq.3) DES_W_S(IJK,M) = DES_W_S(IJK,M)/DES_ROP_S(IJK,M)
 !!$
 !!$               ENDIF
 !!$            ENDDO
 
-            ROP_S(IJK,:) = ROP_S(IJK,:)/VOL(IJK)
+            DES_ROP_S(IJK,:) = DES_ROP_S(IJK,:)/VOL(IJK)
 
             EP_G(IJK) = ONE   
             
-            !MASS_SOL3 = MASS_SOL3 + ROP_SO(IJK, 1)*VOL(IJK)
-            DO M = 1, MMAX
-               
-               IF(ROP_S(IJK,M) > ZERO) THEN
-                  
-                  MASS_SOL2 = MASS_SOL2 + ROP_S(IJK, M)*VOL(IJK)
-                  
-                  
-                  IF(.not.DES_ONEWAY_COUPLED) EP_G(IJK) = EP_G(IJK) - EP_S(IJK,M)
-                  
-                  ROP_SO(IJK,M)  = ROP_S(IJK,M) 
-                  
+            !MASS_SOL3 = MASS_SOL3 + DES_ROP_SO(IJK, 1)*VOL(IJK)
+
+            DO M = 1, DES_MMAX
+               IF(DES_ROP_S(IJK,M) > ZERO) THEN                  
+                  MASS_SOL2 = MASS_SOL2 + DES_ROP_S(IJK, M)*VOL(IJK)
+                  IF(.not.DES_ONEWAY_COUPLED) EP_G(IJK) = EP_G(IJK) - &
+                     DES_ROP_S(IJK,M)/DES_RO_S(M)
+                  DES_ROP_SO(IJK,M)  = DES_ROP_S(IJK,M) 
+
+! if error write to screen and/or exit mfix
                   IF(EP_G(IJK).LT.ZERO .AND. DES_CONTINUUM_COUPLED) THEN 
-                                ! this does not matter if pure granular flow simulation (i.e. no fluid)
                      IF(DMP_LOG)  WRITE(UNIT_LOG, 2000) EP_G(IJK), IJK, &
-                     & I_OF(IJK), J_OF(IJK), K_OF(IJK), &
-                     & EP_S(IJK,M), &
-                     & PINC(IJK), & 
-                     & CUT_CELL_AT(IJK) 
-                     
+                        I_OF(IJK), J_OF(IJK), K_OF(IJK), &
+                        DES_ROP_S(IJK,M)/DES_RO_S(M), PINC(IJK), CUT_CELL_AT(IJK) 
                      if(mype.eq.pe_IO) WRITE(*, 2000) EP_G(IJK), IJK, &
-                     & I_OF(IJK), J_OF(IJK), K_OF(IJK), &
-                     & EP_S(IJK,M), &
-                     & PINC(IJK), & 
-                     & CUT_CELL_AT(IJK) 
-                     
+                        I_OF(IJK), J_OF(IJK), K_OF(IJK), &
+                        DES_ROP_S(IJK,M)/DES_RO_S(M), PINC(IJK), CUT_CELL_AT(IJK) 
                      IF(cartesian_grid) then 
                         CALL WRITE_DES_DATA
                         CALL WRITE_VTK_FILE
                         !if(dmp_log) write(unit_log, *) 'will not terminate the simulation here in normal compute fields'
                         !if(mype.eq.pe_io) write(*, *) 'will not terminate the simulation here in normal compute fields'
                         if(dmp_log) write(unit_log, *) 'Terminal error, stopping the simulation here'
-                        if(mype.eq.pe_io) write(*, *) 'Terminal error, stopping the simulation here'                         
-                        
+                        if(mype.eq.pe_io) write(*, *) 'Terminal error, stopping the simulation here' 
                         call mfix_exit(myPE)
                      ELSE
-                        
                         if(dmp_log) write(unit_log, *) 'Terminal error, stopping the simulation here'
-                        if(mype.eq.pe_io) write(*, *) 'Terminal error, stopping the simulation here'                         
+                        if(mype.eq.pe_io) write(*, *) 'Terminal error, stopping the simulation here'
                         call mfix_exit(myPE)
-                     end IF
+                     ENDIF
                   ENDIF
                   ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
                ENDIF
@@ -766,10 +767,132 @@
       K = K_OF(IJK)
 
       WRITE(*,1014) epg_min2, & 
-      & I_OF(IJK), j_of(ijk), k_of(ijk), &
-      & xe(I) - 0.5*dx(i), yn(J)-0.5*DY(J), zt(K) - 0.5*DZ(K), & 
-      & PINC(IJK), & 
-      & cut_cell_at(ijk),fluid_at(ijk)
+         I_OF(IJK), j_of(ijk), k_of(ijk), &
+         xe(I) - 0.5*dx(i), yn(J)-0.5*DY(J), zt(K) - 0.5*DZ(K), & 
+         PINC(IJK), cut_cell_at(ijk), fluid_at(ijk)
+
+! this routine will apply noslip or free slip BC as per the mfix  convention. 
+! currently, this implies NSW or FSW wall BC's will be re-applied to gas-phase 
+! field as well. This can be changed later on to be more specific to MPPIC case    
+      CALL SET_WALL_BC(IER) 
+      
+      WRITE(*,'(10x,A,4(2x,g17.8))') &
+         'NORM: SOLIDS MASS 1 AND 2 =  ', MASS_SOL1, MASS_SOL2,&
+          MASS_SOL3, MASS_SOL4
+
+      IF(.not.cartesian_grid) RETURN 
+
+
+      DO IJK = ijkstart3, ijkend3
+         I = I_OF(IJK) 
+         J = J_OF(IJK) 
+         K = K_OF(IJK)
+         U_so(IJK, :) = U_s(IJK, :)
+         V_so(IJK, :) = V_s(IJK, :)
+         W_so(IJK, :) = W_s(IJK, :)
+         U_S(IJK, :) = ZERO
+         V_S(IJK, :) = ZERO
+         W_S(IJK, :) = ZERO
+
+         IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE 
+         
+         IF(WALL_U_AT(IJK)) THEN
+            U_S(IJK, :) = ZERO 
+! currently only No slip BC is being set on this mean 
+! solid's velocity field. Later this wall part can be 
+! treated separately and U_S set only for scalar cells 
+! where FLUID_AT(IJK) is true. 
+         ELSE
+            if(.not.FLUID_AT(IJK)) cycle 
+            IPJK = IP_OF(IJK) 
+            IF(FLUID_AT(IPJK)) THEN 
+               DO M = 1, DES_MMAX
+                  U_S(IJK,M) = 0.5d0*(DES_U_S(IJK, M) + DES_U_S(IPJK,M))
+               ENDDO
+            ELSE
+               U_S(IJK,:) = DES_U_S(IJK, :)
+            ENDIF
+         ENDIF
+
+         IF(WALL_V_AT(IJK)) THEN
+            V_S(IJK, :) = ZERO 
+         ELSE
+            if(.not.FLUID_AT(IJK)) cycle 
+            IJPK = JP_OF(IJK) 
+            IF(FLUID_AT(IJPK)) THEN 
+               DO M = 1, DES_MMAX
+                  V_S(IJK,M) = 0.5d0*(DES_V_S(IJK, M) + DES_V_S(IJPK,M))
+               ENDDO
+            ELSE
+               V_S(IJK,:) = DES_V_S(IJK, :)
+            ENDIF
+         ENDIF
+         
+         IF(DIMN.EQ.3) THEN 
+            IF(WALL_W_AT(IJK)) THEN
+               W_S(IJK, :) = ZERO 
+            ELSE
+               if(.not.FLUID_AT(IJK)) cycle 
+               IJKP = KP_OF(IJK) 
+               IF(FLUID_AT(IJKP)) THEN 
+                  DO M = 1, DES_MMAX
+                     W_S(IJK,M) = 0.5d0*(DES_W_S(IJK, M) + DES_W_S(IJKP,M))
+                  ENDDO
+               ELSE
+                  W_S(IJK,:) = DES_W_S(IJK, :)
+               ENDIF
+            ENDIF
+         ENDIF
+      ENDDO
+
+   
+!!$      DO IJK = IJKSTART3, IJKEND3
+!!$         I = I_OF(IJK)
+!!$         J = J_OF(IJK)
+!!$         K = K_OF(IJK)
+!!$         IF(.not.IS_ON_myPE_wobnd(I,J,K)) CYCLE 
+!!$         IPJK = IP_OF(IJK) 
+!!$         IJPK = JP_OF(IJK) 
+!!$         IJKP = KP_OF(IJK) 
+!!$         
+!!$         DO M = 1, DES_MMAX
+!!$            U_S(IJK,M) = 0.5d0*(DES_U_S(IJK, M) + DES_U_S(IPJK,M))
+!!$            V_S(IJK,M) = 0.5d0*(DES_V_S(IJK, M) + DES_V_S(IJPK,M))
+!!$            if(dimn.eq.3) W_S(IJK,M) = 0.5d0*(DES_W_S(IJK, M) + DES_W_S(IJKP,M))
+!!$         ENDDO
+!!$      ENDDO
+      !RETURN 
+      
+      WRITE(filename,'(A,"_",I5.5,".dat")') 'EPS_',myPE
+      OPEN(1000, file = TRIM(filename), form ='formatted',&
+           status='unknown')
+      write(1000,*) 'VARIABLES= ',' "X" ',' "Y" ',' "Z" ',&
+         ' "EPS" ', ' "EPSO" ',' "MEANUS" ', ' "MEANVS" ',&
+         ' "FLUID" ', ' "VOL" ' , ' "MEANU_S" ', ' "MEANV_S" '
+      write(1000,*) 'ZONE F=POINT, I=', (IEND2-ISTART2)+1, &
+          ', J=', JEND2-JSTART2+1, ', K=', KEND2-KSTART2 + 1
+      
+      DO K=KSTART2, KEND2
+         DO J=JSTART2, JEND2
+            DO I=ISTART2, IEND2
+               IJK  = FUNIJK(I,J,K)
+               IF(FLUID_AT(IJK)) THEN 
+                  FLUID_IND = 1
+               ELSE 
+                  FLUID_IND = 0
+               ENDIF               
+               if(dimn.eq.2) zcor = zt(k)
+               if(dimn.eq.3) zcor = zt(k-1) + dz(k)
+               M=1
+               write(1000,'(7(2x,g17.8),(2x,i4),3( 2x, g17.8))') &
+                  XE(I-1)+DX(I), YN(J-1)+DY(J),ZCOR,&
+                  DES_ROP_S(IJK,m)/DES_RO_S(M), DES_ROP_SO(IJK,m)/DES_RO_S(M),&
+                  des_u_s(ijk,m), des_v_s(ijk,m), &
+                  fluid_ind, vol(ijk), U_S(IJK,1), V_S(IJK,1)
+            enddo
+         enddo
+      enddo
+      close(1000, status='keep')
 
 ! 1014 FORMAT(1x,70('*') , / &
  1014 FORMAT(1x,70('*') , / &
@@ -787,134 +910,22 @@
       & /,5X,'No of paricles in cell = ',I10, & 
       & /,5X,'Cut cell ? ', L2,/)
 
-      CALL SET_WALL_BC(IER) 
-      !the above routine will apply noslip or free slip BC as per the mfix  convention. 
-      !currently, this implies NSW or FSW wall BC's will be re-applied to gas-phase 
-      !field as well. This can be changed later on to be more specific to MPPIC case    
-      WRITE(*,'(10x,A,4(2x,g17.8))') 'NORM: SOLIDS MASS 1 AND 2 =  ', MASS_SOL1, MASS_SOL2, MASS_SOL3, MASS_SOL4
-
-      IF(.not.cartesian_grid) return 
-
-      DO IJK = ijkstart3, ijkend3
-         I = I_OF(IJK) 
-         J = J_OF(IJK) 
-         K = K_OF(IJK)
-         U_so(IJK, :) = U_s(IJK, :)
-         V_so(IJK, :) = V_s(IJK, :)
-         W_so(IJK, :) = W_s(IJK, :)
-         U_S(IJK, :) = ZERO
-         V_S(IJK, :) = ZERO
-         W_S(IJK, :) = ZERO
-
-         IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	 
-         
-         IF(WALL_U_AT(IJK)) THEN
-            U_S(IJK, :) = ZERO 
-            !currently only No slip BC is being set on this mean 
-            !solid's velocity field. Later this wall part can be 
-            !treated separately and U_S set only for scalar cells 
-            !where FLUID_AT(IJK) is true. 
-         ELSE
-            if(.not.FLUID_AT(IJK)) cycle 
-
-            IPJK = IP_OF(IJK) 
-            IF(FLUID_AT(IPJK)) THEN 
-               DO M = 1, MMAX
-
-                  U_S(IJK,M) = 0.5d0*(DES_U_S(IJK, M) + DES_U_S(IPJK,M))
-               ENDDO
-            ELSE
-               U_S(IJK,:) = DES_U_S(IJK, :)
-            ENDIF
-         ENDIF
-
-         
-         
-         IF(WALL_V_AT(IJK)) THEN
-            V_S(IJK, :) = ZERO 
-         ELSE
-            if(.not.FLUID_AT(IJK)) cycle 
-
-            IJPK = JP_OF(IJK) 
-            IF(FLUID_AT(IJPK)) THEN 
-               DO M = 1, MMAX
-                  V_S(IJK,M) = 0.5d0*(DES_V_S(IJK, M) + DES_V_S(IJPK,M))
-               ENDDO
-            ELSE
-               V_S(IJK,:) = DES_V_S(IJK, :)
-            ENDIF
-         ENDIF
-
-         
-         IF(DIMN.EQ.3) THEN 
-            IF(WALL_W_AT(IJK)) THEN
-               W_S(IJK, :) = ZERO 
-            ELSE
-               if(.not.FLUID_AT(IJK)) cycle 
-               
-               IJKP = KP_OF(IJK) 
-               IF(FLUID_AT(IJKP)) THEN 
-                  DO M = 1, MMAX
-                     W_S(IJK,M) = 0.5d0*(DES_W_S(IJK, M) + DES_W_S(IJKP,M))
-                  ENDDO
-               ELSE
-                  W_S(IJK,:) = DES_W_S(IJK, :)
-               ENDIF
-            ENDIF
-         ENDIF
-      ENDDO
-
-
-   
-!!$      DO IJK = IJKSTART3, IJKEND3
-!!$         I = I_OF(IJK)
-!!$         J = J_OF(IJK)
-!!$         K = K_OF(IJK)
-!!$         IF(.not.IS_ON_myPE_wobnd(I,J,K)) CYCLE 
-!!$         IPJK = IP_OF(IJK) 
-!!$         IJPK = JP_OF(IJK) 
-!!$         IJKP = KP_OF(IJK) 
-!!$         
-!!$         DO M = 1, MMAX
-!!$            U_S(IJK,M) = 0.5d0*(DES_U_S(IJK, M) + DES_U_S(IPJK,M))
-!!$            V_S(IJK,M) = 0.5d0*(DES_V_S(IJK, M) + DES_V_S(IJPK,M))
-!!$            if(dimn.eq.3) W_S(IJK,M) = 0.5d0*(DES_W_S(IJK, M) + DES_W_S(IJKP,M))
-!!$         ENDDO
-!!$      ENDDO
-
-      !RETURN 
-      
-      WRITE(filename,'(A,"_",I5.5,".dat")') 'EPS_',myPE
-      OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown')
-      write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ',' "EPS" ', ' "EPSO" ',' "MEANUS" ', ' "MEANVS" ', ' "FLUID" ', ' "VOL" ' , ' "MEANU_S" ', ' "MEANV_S" '
-      write(1000,*)'ZONE F=POINT, I=', (IEND2-ISTART2)+1,  ', J=', JEND2-JSTART2+1, ', K=', KEND2-KSTART2 + 1
-      
-      DO K=KSTART2, KEND2
-         DO J=JSTART2, JEND2
-            DO I=ISTART2, IEND2
-               IJK  = FUNIJK(I,J,K)
-               IF(FLUID_AT(IJK)) THEN 
-                  FLUID_IND = 1
-               ELSE 
-                  FLUID_IND = 0
-               END IF
-               
-               if(dimn.eq.2) zcor = zt(k)
-               if(dimn.eq.3) zcor = zt(k-1) + dz(k)
-               M=1
-               write(1000,'(7(2x,g17.8),(2x,i4),3( 2x, g17.8))') XE(I-1)+DX(I), YN(J-1)+DY(J),ZCOR, ROP_S(IJK,m)/ro_s(m), ROP_SO(IJK,m)/ro_s(m), des_u_s(ijk,m), des_v_s(ijk,m), fluid_ind, vol(ijk), U_S(IJK,1), V_S(IJK,1)
-                  
-            enddo
-         enddo
-      enddo
-      close(1000, status='keep')
-      !stop
+      RETURN      
       END SUBROUTINE MPPIC_COMPUTE_MEAN_FIELDS
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: MPPIC_COMPUTE_MEAN_FIELDS2                              !
+!  Purpose:                                                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       
       SUBROUTINE MPPIC_COMPUTE_MEAN_FIELDS2
-      
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE param
       USE param1
       USE parallel
@@ -938,93 +949,92 @@
 ! Local variables
 !-----------------------------------------------         
 ! local variable used for debugging
-      LOGICAL FOCUS 
-
-
- ! general i, j, k indices
-      INTEGER I, J, K, IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,&
-              IPJPK, IPJKP, IJPKP, IPJPKP, II, JJ, KK, &
+      LOGICAL :: FOCUS 
+! general i, j, k indices
+      INTEGER :: I, J, K, IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,&
+                 IPJPK, IPJKP, IJPKP, IPJPKP, II, JJ, KK, &
 ! Pradeep added following 
               IMJMK,IMJKM,IJMKM,IMJMKM
-      INTEGER I1, I2, J1, J2, K1, K2, IDIM, IJK2
+      INTEGER :: I1, I2, J1, J2, K1, K2, IDIM, IJK2
 ! i,j,k indices of the fluid cell the particle resides in minus 1 
 ! (e.g., shifted 1 in west, south, bottom direction)
       INTEGER, DIMENSION(3):: PCELL
 
 ! indices used for interpolation stencil (unclear why IE, JN, KTP are
 ! needed)
-      INTEGER IW, IE, JS, JN, KB, KTP
+      INTEGER :: IW, IE, JS, JN, KB, KTP
 
 ! order of interpolation set in the call to set_interpolation_scheme unless it
 ! is re/set later through the call to set_interpolation_stencil
       INTEGER :: ONEW
 
 ! constant whose value depends on dimension of system      
-      DOUBLE PRECISION AVG_FACTOR, TEMP1, AVG_FACTOR_FACE
+      DOUBLE PRECISION :: AVG_FACTOR, TEMP1
 
 ! index of solid phase that particle NP belongs to      
-      INTEGER M
+      INTEGER :: M
 
 ! volume of fluid cell particle resides in
-      DOUBLE PRECISION VCELL, VCELL2 
+      DOUBLE PRECISION :: VCELL, VCELL2 
 ! one over the solids volume fraction and one over the volume       
-      DOUBLE PRECISION OEPS, OVOL, MASS_SOL1, MASS_SOL2, MASS_SOL3, MASS_SOL4
+      DOUBLE PRECISION :: OEPS, OVOL, MASS_SOL1, MASS_SOL2, MASS_SOL3, MASS_SOL4
 
 ! particle number index, used for looping      
-      INTEGER NP
+      INTEGER :: NP
 
 ! index to track accounted for particles 
-      INTEGER PC 
+      INTEGER :: PC 
 
 ! for error messages      
-      INTEGER IER
+      INTEGER :: IER
 
 ! Statistical weight of the particle. Equal to one for DEM 
-   
-      DOUBLE PRECISION WTP, ZCOR, JUNK_VAL(3)
+      DOUBLE PRECISION :: WTP, ZCOR, JUNK_VAL(3)
 
 ! Pradeep temporary indices for periodic boundary adjustments
-      integer korder,cur_ijk,nindx
+      integer :: korder,cur_ijk,nindx
 ! Pradeep introducing volume at grid nodes for backward interpolation 
-      double precision VELG_ARR(DIMN), VELS_ARR(DIMN, MMAX), np_m
+      double precision :: np_m
 
 ! see the discussion for IJK_U ..... in comments       
-      INTEGER  IJK_U, IJK_V, IJK_W, ICUR, JCUR, KCUR
+      INTEGER :: IJK_U, IJK_V, IJK_W, ICUR, JCUR, KCUR
 
       character*100 :: filename
-      integer  FLUID_IND      
+      integer :: FLUID_IND      
       double precision :: vol_ijk, vol_ipjk, vol_ijpk, vol_ipjpk
       double precision :: vol_ijkp, vol_ipjkp, vol_ijpkp, vol_ipjpkp
       
-      integer :: epg_min_loc(1), count_nodes_outside, count_nodes_inside, count_nodes_inside_max, COUNT_TEMP
+      integer :: epg_min_loc(1), count_nodes_outside, count_nodes_inside, &
+                 count_nodes_inside_max, COUNT_TEMP
       DOUBLE PRECISION :: EPG_MIN2, VOL_SURR
       
-      double precision :: RESID_WTBAR(MMAX), RESID_BM(DIMN, MMAX), NORM_FACTOR
+      double precision :: RESID_WTBAR(DES_MMAX), RESID_BM(DIMN, DES_MMAX)
+      double precision :: NORM_FACTOR
 !
-!-----------------------------------------------   
-
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
-
-
+!-----------------------------------------------
      
       MASS_SOL1 = zero
       MASS_SOL2 = zero 
       MASS_SOL3 = zero 
       MASS_SOL4 = zero 
+
       call set_interpolation_scheme(2)
+
       korder = 1+(dimn-2)
       drag_bm = ZERO
       drag_am = zero 
       wtbar = zero
       if(dimn.eq.2) count_nodes_inside_max = 4
       if(dimn.eq.3) count_nodes_inside_max = 8
+
       IJKLOOP: DO IJK = IJKSTART3,IJKEND3
-         
-         ROP_S(IJK,:) = zero 
+         DES_ROP_S(IJK,:) = zero 
          DES_U_S(IJK, :) = ZERO
          DES_V_S(IJK, :) = ZERO
          if(dimn.eq.3) DES_W_S(IJK, :) = ZERO
@@ -1035,10 +1045,11 @@
          pcell(1) = i-1
          pcell(2) = j-1
          pcell(3) = (3-dimn)*1+(dimn-2)*(k-1) ! =k-1 (in 3d) or =1 (in 2d)
-         call set_interpolation_stencil(pcell,iw,ie,js,jn,kb,&
-         ktp,interp_scheme,dimn,ordernew = onew) 
 
-!Compute velocity at grid nodes and set the geometric stencil 
+         call set_interpolation_stencil(pcell,iw,ie,js,jn,kb,&
+            ktp,interp_scheme,dimn,ordernew = onew) 
+
+! Compute velocity at grid nodes and set the geometric stencil 
          avg_factor = 0.25d0*(dimn-2) + 0.5d0*(3-dimn)
          count_nodes_outside = 0 
          do k = 1,(3-dimn)*1+(dimn-2)*onew
@@ -1070,21 +1081,19 @@
          enddo
          
          count_nodes_outside = 0 
-         !in order to skip the following 
+! in order to skip the following 
          count_nodes_inside = count_nodes_inside_max - count_nodes_outside
 
-         !loop through particles in the cell  
+! loop through particles in the cell  
          do nindx = 1,pinc(ijk)
             focus = .false.
             np = pic(ijk)%p(nindx)
             m = pijk(np,5)
-            
-            NP_M = ROP_SO(IJK,m)*VOL(IJK)/(ro_s(m)*pvol(np))
-
+            NP_M = DES_ROP_SO(IJK,m)*VOL(IJK)/(DES_RO_S(M)*pvol(np))
             WTP = ONE
             IF(MPPIC) WTP = DES_STAT_WT(NP)
-            
             MASS_SOL1 = MASS_SOL1 + PMASS(NP)*WTP
+
             if (dimn .eq. 2) then 
                call interpolator(gstencil(1:onew,1:onew,1,1:dimn), &
                     vstencil(1:onew,1:onew,1,1:dimn), &
@@ -1095,7 +1104,7 @@
                     vstencil(1:onew,1:onew,1:onew,1:dimn), &
                     des_pos_new(np,1:dimn),JUNK_VAL(1:dimn),  &
                     onew,interp_scheme,weightp)
-            end if
+            endif
             
             do k = 1, (3-dimn)*1+(dimn-2)*onew
                do j = 1, onew
@@ -1108,15 +1117,13 @@
                      icur = imap_c(ii)
                      jcur = jmap_c(jj)
                      kcur = kmap_c(kk)
-                     
                      cur_ijk = funijk(icur, jcur, kcur) !imap_c(ii),jmap_c(jj),kmap_c(kk))
                      
 ! should this volume be for current ijk index or always particle index?                        
                      vcell = des_vol_node(cur_ijk)
                      ovol = one/vcell
                      
-                     temp1 = weightp(i,j,k)*ro_s(m)*pvol(np)*wtp!*ovol
-                                         
+                     temp1 = weightp(i,j,k)*DES_RO_S(M)*pvol(np)*wtp!*ovol
                      wtbar(cur_ijk,m) = wtbar(cur_ijk,m) + temp1 
                      
                      drag_bm(cur_ijk, 1:dimn,m) = &
@@ -1127,7 +1134,6 @@
                   enddo
                enddo
             enddo
-            
          enddo          ! pinc(ijk) loop 
          
          
@@ -1148,40 +1154,41 @@
                K1 = K-1
                K2 = K
             ENDIF
-         !Convention used to number node numbers is described below 
-         
-         ! i=1, j=2           i=2, j=2
-         !   _____________________
-         !   |                   |
-         !   |  I = 2, J = 2     |
-         !   |___________________|
-         ! i=1, j=1           i=2, j=1
-         !first calculate the residual wtbar and drag_bm that was computed
-         !on nodes that do not belong to the domain
-            RESID_WTBAR(1:MMAX) = ZERO 
-            RESID_BM(1:DIMN, 1:MMAX) = ZERO
+
+! Convention used to number node numbers is described below 
+! i=1, j=2           i=2, j=2
+!   _____________________
+!   |                   |
+!   |  I = 2, J = 2     |
+!   |___________________|
+! i=1, j=1           i=2, j=1
+
+! first calculate the residual wtbar and drag_bm that was computed
+! on nodes that do not belong to the domain
+            RESID_WTBAR(1:DES_MMAX) = ZERO 
+            RESID_BM(1:DIMN, 1:DES_MMAX) = ZERO
             DO KK = K1, K2
                DO JJ = J1, J2
                   DO II = I1, I2
                      IJK2 = funijk(II, JJ, KK) 
                      IF(SCALAR_NODE_ATWALL(IJK2)) THEN 
-                        RESID_WTBAR(1:MMAX) = RESID_WTBAR(1:MMAX) + WTBAR(IJK2,1:MMAX)
-                        WTBAR(IJK2,1:MMAX) = ZERO 
+                        RESID_WTBAR(1:DES_MMAX) = RESID_WTBAR(1:DES_MMAX) +&
+                           WTBAR(IJK2,1:DES_MMAX)
+                        WTBAR(IJK2,1:DES_MMAX) = ZERO 
                         DO IDIM = 1, DIMN
-                           RESID_BM(IDIM, 1:MMAX) = RESID_BM(IDIM, 1:MMAX) +  & 
-                           & DRAG_BM(IJK2,IDIM, 1:MMAX)
-                           DRAG_BM(IJK2,IDIM, 1:MMAX) = ZERO 
+                           RESID_BM(IDIM, 1:DES_MMAX) = RESID_BM(IDIM, 1:DES_MMAX) +  & 
+                           & DRAG_BM(IJK2,IDIM, 1:DES_MMAX)
+                           DRAG_BM(IJK2,IDIM, 1:DES_MMAX) = ZERO 
                         ENDDO
                      ENDIF
                   ENDDO
                ENDDO
             ENDDO
                   
-                     
-           ! Now add this residual equally to the remaining nodes
-           ! Pradeep: at the interface drag_am,drag_bm,wtbar has to be added
-           ! send recv will be called and the node values will be added 
-           ! at the junction 
+! Now add this residual equally to the remaining nodes
+! Pradeep: at the interface drag_am,drag_bm,wtbar has to be added
+! send recv will be called and the node values will be added 
+! at the junction 
             
             NORM_FACTOR = one/real(count_nodes_inside)          
             COUNT_TEMP = 0
@@ -1191,25 +1198,24 @@
                      IJK2 = funijk(II, JJ, KK) 
                      IF(.NOT.SCALAR_NODE_ATWALL(IJK2)) THEN 
                         COUNT_TEMP = COUNT_TEMP + 1
-                        WTBAR(IJK2,1:MMAX) = WTBAR(IJK2,1:MMAX) + RESID_WTBAR(1:MMAX)*NORM_FACTOR
+                        WTBAR(IJK2,1:DES_MMAX) = WTBAR(IJK2,1:DES_MMAX) +&
+                           RESID_WTBAR(1:DES_MMAX)*NORM_FACTOR
                         DO IDIM = 1, DIMN
-                           DRAG_BM(IJK2,IDIM, 1:MMAX) = DRAG_BM(IJK2,IDIM, 1:MMAX) + RESID_BM(IDIM, 1:MMAX)*NORM_FACTOR
+                           DRAG_BM(IJK2,IDIM, 1:DES_MMAX) = DRAG_BM(IJK2,IDIM, 1:DES_MMAX) + &
+                              RESID_BM(IDIM, 1:DES_MMAX)*NORM_FACTOR
                         ENDDO
                      ENDIF
                   ENDDO
                ENDDO
             ENDDO
-            
             !WRITE(*,*) 'hello: NODES INSIDE AND OUTSIDE', count_nodes_inside, count_nodes_inside_max, one/real(count_temp), norm_factor
          ENDIF
          
-
       END DO IJKLOOP            ! IJK LOOP
       
       MASS_SOL4 = SUM(WTBAR(:,1))
 
       CALL DES_ADDNODEVALUES
-      
       
       DO K = KSTART2, KEND1
          DO J = JSTART2, JEND1
@@ -1218,8 +1224,8 @@
 
                !IF(SCALAR_NODE_ATWALL(IJK)) CYCLE
 
-               !Now going from node to scalar center. Same convention
-               !as sketched earlier 
+! Now going from node to scalar center. Same convention
+! as sketched earlier 
                I1 = I
                I2 = I+1
                J1 = J
@@ -1231,7 +1237,6 @@
                   K1 = K
                   K2 = K+1
                ENDIF
-               
                VOL_SURR = ZERO 
 
                DO KK = K1, K2
@@ -1248,8 +1253,8 @@
                      DO II = I1, I2
                         IJK2 = funijk(II, JJ, KK) 
                         IF(FLUID_AT(IJK2)) THEN 
-                           DO M = 1, MMAX
-                              ROP_S(IJK2, M) = ROP_S(IJK2, M) + WTBAR(IJK,M)*VOL(IJK2)/VOL_SURR
+                           DO M = 1, DES_MMAX
+                              DES_ROP_S(IJK2, M) = DES_ROP_S(IJK2, M) + WTBAR(IJK,M)*VOL(IJK2)/VOL_SURR
                               DES_U_S(IJK2, M) = DES_U_S(IJK2, M) + DRAG_BM(IJK, 1, M)*VOL(IJK2)/VOL_SURR
                               DES_V_S(IJK2, M) = DES_V_S(IJK2, M) + DRAG_BM(IJK, 2, M)*VOL(IJK2)/VOL_SURR
                               IF(DIMN.eq.3) DES_W_S(IJK2, M) = DES_W_S(IJK2, M) + DRAG_BM(IJK, 3, M)*VOL(IJK2)/VOL_SURR
@@ -1265,41 +1270,42 @@
 
       DO IJK = IJKSTART3, IJKEND3
          IF(.not.FLUID_AT(IJK)) cycle
-         DO M = 1, MMAX
-            IF(ROP_S(IJK, M).GT.ZERO) THEN 
-               DES_U_S(IJK, M) = DES_U_S(IJK,M)/ROP_S(IJK, M)
-               DES_V_S(IJK, M) = DES_V_S(IJK,M)/ROP_S(IJK, M)
-               IF(DIMN.eq.3) DES_W_S(IJK, M) = DES_W_S(IJK,M)/ROP_S(IJK, M)
+         DO M = 1, DES_MMAX
+            IF(DES_ROP_S(IJK, M).GT.ZERO) THEN 
+               DES_U_S(IJK, M) = DES_U_S(IJK,M)/DES_ROP_S(IJK, M)
+               DES_V_S(IJK, M) = DES_V_S(IJK,M)/DES_ROP_S(IJK, M)
+               IF(DIMN.eq.3) DES_W_S(IJK, M) = DES_W_S(IJK,M)/DES_ROP_S(IJK, M)
                
-               ROP_S(IJK, M) = ROP_S(IJK, M)/VOL(IJK)
+               DES_ROP_S(IJK, M) = DES_ROP_S(IJK, M)/VOL(IJK)
             ENDIF
          ENDDO
                   
          EP_G(IJK) = ONE   
             
-            !MASS_SOL3 = MASS_SOL3 + ROP_SO(IJK, 1)*VOL(IJK)
-         DO M = 1, MMAX
+            !MASS_SOL3 = MASS_SOL3 + DES_ROP_SO(IJK, 1)*VOL(IJK)
+         DO M = 1, DES_MMAX
             
-            IF(ROP_S(IJK,M) > ZERO) THEN
+            IF(DES_ROP_S(IJK,M) > ZERO) THEN
                
-               MASS_SOL2 = MASS_SOL2 + ROP_S(IJK, M)*VOL(IJK)
+               MASS_SOL2 = MASS_SOL2 + DES_ROP_S(IJK, M)*VOL(IJK)
                
                   
-               IF(.not.DES_ONEWAY_COUPLED) EP_G(IJK) = EP_G(IJK) - EP_S(IJK,M)
+               IF(.not.DES_ONEWAY_COUPLED) EP_G(IJK) = EP_G(IJK) - &
+                  DES_ROP_S(IJK,M)/DES_RO_S(M)
                
-               ROP_SO(IJK,M)  = ROP_S(IJK,M) 
+               DES_ROP_SO(IJK,M)  = DES_ROP_S(IJK,M) 
                
                IF(EP_G(IJK).LT.ZERO .AND. DES_CONTINUUM_COUPLED) THEN 
                                 ! this does not matter if pure granular flow simulation (i.e. no fluid)
                   IF(DMP_LOG)  WRITE(UNIT_LOG, 2000) EP_G(IJK), IJK, &
                   & I_OF(IJK), J_OF(IJK), K_OF(IJK), &
-                  & EP_S(IJK,M), &
+                  & DES_ROP_S(IJK,M)/DES_RO_S(M), &
                   & PINC(IJK), & 
                   & CUT_CELL_AT(IJK) 
                      
                   if(mype.eq.pe_IO) WRITE(*, 2000) EP_G(IJK), IJK, &
                   & I_OF(IJK), J_OF(IJK), K_OF(IJK), &
-                  & EP_S(IJK,M), &
+                  & DES_ROP_S(IJK,M)/DES_RO_S(M), &
                   & PINC(IJK), & 
                   & CUT_CELL_AT(IJK) 
                   
@@ -1308,14 +1314,16 @@
                      CALL WRITE_VTK_FILE
                         !if(dmp_log) write(unit_log, *) 'will not terminate the simulation here in normal compute fields'
                         !if(mype.eq.pe_io) write(*, *) 'will not terminate the simulation here in normal compute fields'
-                     if(dmp_log) write(unit_log, *) 'Terminal error, stopping the simulation here'
-                     if(mype.eq.pe_io) write(*, *) 'Terminal error, stopping the simulation here'                         
-                     
+                     if(dmp_log) write(unit_log, *) &
+                        'Terminal error, stopping the simulation here'
+                     if(mype.eq.pe_io) write(*, *) &
+                        'Terminal error, stopping the simulation here'
                      call mfix_exit(myPE)
                   ELSE
-                        
-                     if(dmp_log) write(unit_log, *) 'Terminal error, stopping the simulation here'
-                     if(mype.eq.pe_io) write(*, *) 'Terminal error, stopping the simulation here'                         
+                     if(dmp_log) write(unit_log, *) &
+                       'Terminal error, stopping the simulation here'
+                     if(mype.eq.pe_io) write(*, *) &
+                        'Terminal error, stopping the simulation here'
                      call mfix_exit(myPE)
                   end IF
                ENDIF
@@ -1333,10 +1341,135 @@
       K = K_OF(IJK)
 
       WRITE(*,1014) epg_min2, & 
-      & I_OF(IJK), j_of(ijk), k_of(ijk), &
-      & xe(I) - 0.5*dx(i), yn(J)-0.5*DY(J), zt(K) - 0.5*DZ(K), & 
-      & PINC(IJK), & 
-      & cut_cell_at(ijk),fluid_at(ijk)
+         I_OF(IJK), j_of(ijk), k_of(ijk), &
+         xe(I)-0.5*dx(i), yn(J)-0.5*DY(J), zt(K) - 0.5*DZ(K), & 
+         PINC(IJK), cut_cell_at(ijk),fluid_at(ijk)
+
+      CALL SET_WALL_BC(IER) 
+! the above routine will apply noslip or free slip BC as per the mfix  convention. 
+! currently, this implies NSW or FSW wall BC's will be re-applied to gas-phase 
+! field as well. This can be changed later on to be more specific to MPPIC case    
+      WRITE(*,'(10x,A,4(2x,g17.8))') 'NORM: SOLIDS MASS 1 AND 2 =  ',&
+         MASS_SOL1, MASS_SOL2, MASS_SOL3, MASS_SOL4
+
+
+      IF(.NOT.cartesian_grid) RETURN
+
+
+      DO IJK = ijkstart3, ijkend3
+         I = I_OF(IJK) 
+         J = J_OF(IJK) 
+         K = K_OF(IJK)
+         U_so(IJK, :) = U_s(IJK, :)
+         V_so(IJK, :) = V_s(IJK, :)
+         W_so(IJK, :) = W_s(IJK, :)
+         U_S(IJK, :) = ZERO
+         V_S(IJK, :) = ZERO
+         W_S(IJK, :) = ZERO
+
+         IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
+         
+         IF(WALL_U_AT(IJK)) THEN
+            U_S(IJK, :) = ZERO 
+            !currently only No slip BC is being set on this mean 
+            !solid's velocity field. Later this wall part can be 
+            !treated separately and U_S set only for scalar cells 
+            !where FLUID_AT(IJK) is true. 
+         ELSE
+            if(.not.FLUID_AT(IJK)) cycle 
+
+            IPJK = IP_OF(IJK) 
+            IF(FLUID_AT(IPJK)) THEN 
+               DO M = 1, DES_MMAX
+                  U_S(IJK,M) = 0.5d0*(DES_U_S(IJK, M) + DES_U_S(IPJK,M))
+               ENDDO
+            ELSE
+               U_S(IJK,:) = DES_U_S(IJK, :)
+            ENDIF
+         ENDIF
+
+         IF(WALL_V_AT(IJK)) THEN
+            V_S(IJK, :) = ZERO 
+         ELSE
+            if(.not.FLUID_AT(IJK)) cycle 
+            IJPK = JP_OF(IJK) 
+            IF(FLUID_AT(IJPK)) THEN 
+               DO M = 1, DES_MMAX
+                  V_S(IJK,M) = 0.5d0*(DES_V_S(IJK, M) + DES_V_S(IJPK,M))
+               ENDDO
+            ELSE
+               V_S(IJK,:) = DES_V_S(IJK, :)
+            ENDIF
+         ENDIF
+
+         IF(DIMN.EQ.3) THEN 
+            IF(WALL_W_AT(IJK)) THEN
+               W_S(IJK, :) = ZERO 
+            ELSE
+               if(.not.FLUID_AT(IJK)) cycle 
+               IJKP = KP_OF(IJK) 
+               IF(FLUID_AT(IJKP)) THEN 
+                  DO M = 1, DES_MMAX
+                     W_S(IJK,M) = 0.5d0*(DES_W_S(IJK, M) + DES_W_S(IJKP,M))
+                  ENDDO
+               ELSE
+                  W_S(IJK,:) = DES_W_S(IJK, :)
+               ENDIF
+            ENDIF
+         ENDIF
+      ENDDO
+
+   
+!!$      DO IJK = IJKSTART3, IJKEND3
+!!$         I = I_OF(IJK)
+!!$         J = J_OF(IJK)
+!!$         K = K_OF(IJK)
+!!$         IF(.not.IS_ON_myPE_wobnd(I,J,K)) CYCLE 
+!!$         IPJK = IP_OF(IJK) 
+!!$         IJPK = JP_OF(IJK) 
+!!$         IJKP = KP_OF(IJK) 
+!!$         
+!!$         DO M = 1, DES_MMAX
+!!$            U_S(IJK,M) = 0.5d0*(DES_U_S(IJK, M) + DES_U_S(IPJK,M))
+!!$            V_S(IJK,M) = 0.5d0*(DES_V_S(IJK, M) + DES_V_S(IJPK,M))
+!!$            if(dimn.eq.3) W_S(IJK,M) = 0.5d0*(DES_W_S(IJK, M) + DES_W_S(IJKP,M))
+!!$         ENDDO
+!!$      ENDDO
+
+      !RETURN 
+      
+      WRITE(filename,'(A,"_",I5.5,".dat")') 'EPS_',myPE
+      OPEN(1000, file = TRIM(filename), form ='formatted',&
+           status='unknown')
+      write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ',' "EPS" ', &
+         ' "EPSO" ',' "MEANUS" ', ' "MEANVS" ', ' "FLUID" ', &
+         ' "VOL" ' , ' "MEANU_S" ', ' "MEANV_S" '
+      write(1000,*)'ZONE F=POINT, I=', (IEND2-ISTART2)+1, &
+         ', J=', JEND2-JSTART2+1, ', K=', KEND2-KSTART2 + 1
+      
+      DO K=KSTART2, KEND2
+         DO J=JSTART2, JEND2
+            DO I=ISTART2, IEND2
+               IJK  = FUNIJK(I,J,K)
+               IF(FLUID_AT(IJK)) THEN 
+                  FLUID_IND = 1
+               ELSE 
+                  FLUID_IND = 0
+               END IF
+               
+               if(dimn.eq.2) zcor = zt(k)
+               if(dimn.eq.3) zcor = zt(k-1) + dz(k)
+               M=1
+               write(1000,'(7(2x,g17.8),(2x,i4),3( 2x, g17.8))') &
+                  XE(I-1)+DX(I), YN(J-1)+DY(J),ZCOR,&
+                  DES_ROP_S(IJK,m)/DES_RO_S(M),DES_ROP_SO(IJK,m)/DES_RO_S(M),&
+                  des_u_s(ijk,m), des_v_s(ijk,m),&
+                  fluid_ind, vol(ijk), U_S(IJK,1), V_S(IJK,1)
+            enddo
+         enddo
+      enddo
+      close(1000, status='keep')
+      !stop
 
 ! 1014 FORMAT(1x,70('*') , / &
  1014 FORMAT( /, &
@@ -1354,134 +1487,21 @@
       & /,5X,'No of paricles in cell = ',I10, & 
       & /,5X,'Cut cell ? ', L2,/)
 
-      CALL SET_WALL_BC(IER) 
-      !the above routine will apply noslip or free slip BC as per the mfix  convention. 
-      !currently, this implies NSW or FSW wall BC's will be re-applied to gas-phase 
-      !field as well. This can be changed later on to be more specific to MPPIC case    
-      WRITE(*,'(10x,A,4(2x,g17.8))') 'NORM: SOLIDS MASS 1 AND 2 =  ', MASS_SOL1, MASS_SOL2, MASS_SOL3, MASS_SOL4
-
-      IF(.not.cartesian_grid) return 
-
-      DO IJK = ijkstart3, ijkend3
-         I = I_OF(IJK) 
-         J = J_OF(IJK) 
-         K = K_OF(IJK)
-         U_so(IJK, :) = U_s(IJK, :)
-         V_so(IJK, :) = V_s(IJK, :)
-         W_so(IJK, :) = W_s(IJK, :)
-         U_S(IJK, :) = ZERO
-         V_S(IJK, :) = ZERO
-         W_S(IJK, :) = ZERO
-
-         IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	 
-         
-         IF(WALL_U_AT(IJK)) THEN
-            U_S(IJK, :) = ZERO 
-            !currently only No slip BC is being set on this mean 
-            !solid's velocity field. Later this wall part can be 
-            !treated separately and U_S set only for scalar cells 
-            !where FLUID_AT(IJK) is true. 
-         ELSE
-            if(.not.FLUID_AT(IJK)) cycle 
-
-            IPJK = IP_OF(IJK) 
-            IF(FLUID_AT(IPJK)) THEN 
-               DO M = 1, MMAX
-
-                  U_S(IJK,M) = 0.5d0*(DES_U_S(IJK, M) + DES_U_S(IPJK,M))
-               ENDDO
-            ELSE
-               U_S(IJK,:) = DES_U_S(IJK, :)
-            ENDIF
-         ENDIF
-
-         
-         
-         IF(WALL_V_AT(IJK)) THEN
-            V_S(IJK, :) = ZERO 
-         ELSE
-            if(.not.FLUID_AT(IJK)) cycle 
-
-            IJPK = JP_OF(IJK) 
-            IF(FLUID_AT(IJPK)) THEN 
-               DO M = 1, MMAX
-                  V_S(IJK,M) = 0.5d0*(DES_V_S(IJK, M) + DES_V_S(IJPK,M))
-               ENDDO
-            ELSE
-               V_S(IJK,:) = DES_V_S(IJK, :)
-            ENDIF
-         ENDIF
-
-         
-         IF(DIMN.EQ.3) THEN 
-            IF(WALL_W_AT(IJK)) THEN
-               W_S(IJK, :) = ZERO 
-            ELSE
-               if(.not.FLUID_AT(IJK)) cycle 
-               
-               IJKP = KP_OF(IJK) 
-               IF(FLUID_AT(IJKP)) THEN 
-                  DO M = 1, MMAX
-                     W_S(IJK,M) = 0.5d0*(DES_W_S(IJK, M) + DES_W_S(IJKP,M))
-                  ENDDO
-               ELSE
-                  W_S(IJK,:) = DES_W_S(IJK, :)
-               ENDIF
-            ENDIF
-         ENDIF
-      ENDDO
-
-
-   
-!!$      DO IJK = IJKSTART3, IJKEND3
-!!$         I = I_OF(IJK)
-!!$         J = J_OF(IJK)
-!!$         K = K_OF(IJK)
-!!$         IF(.not.IS_ON_myPE_wobnd(I,J,K)) CYCLE 
-!!$         IPJK = IP_OF(IJK) 
-!!$         IJPK = JP_OF(IJK) 
-!!$         IJKP = KP_OF(IJK) 
-!!$         
-!!$         DO M = 1, MMAX
-!!$            U_S(IJK,M) = 0.5d0*(DES_U_S(IJK, M) + DES_U_S(IPJK,M))
-!!$            V_S(IJK,M) = 0.5d0*(DES_V_S(IJK, M) + DES_V_S(IJPK,M))
-!!$            if(dimn.eq.3) W_S(IJK,M) = 0.5d0*(DES_W_S(IJK, M) + DES_W_S(IJKP,M))
-!!$         ENDDO
-!!$      ENDDO
-
-      !RETURN 
-      
-      WRITE(filename,'(A,"_",I5.5,".dat")') 'EPS_',myPE
-      OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown')
-      write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ',' "EPS" ', ' "EPSO" ',' "MEANUS" ', ' "MEANVS" ', ' "FLUID" ', ' "VOL" ' , ' "MEANU_S" ', ' "MEANV_S" '
-      write(1000,*)'ZONE F=POINT, I=', (IEND2-ISTART2)+1,  ', J=', JEND2-JSTART2+1, ', K=', KEND2-KSTART2 + 1
-      
-      DO K=KSTART2, KEND2
-         DO J=JSTART2, JEND2
-            DO I=ISTART2, IEND2
-               IJK  = FUNIJK(I,J,K)
-               IF(FLUID_AT(IJK)) THEN 
-                  FLUID_IND = 1
-               ELSE 
-                  FLUID_IND = 0
-               END IF
-               
-               if(dimn.eq.2) zcor = zt(k)
-               if(dimn.eq.3) zcor = zt(k-1) + dz(k)
-               M=1
-               write(1000,'(7(2x,g17.8),(2x,i4),3( 2x, g17.8))') XE(I-1)+DX(I), YN(J-1)+DY(J),ZCOR, ROP_S(IJK,m)/ro_s(m), ROP_SO(IJK,m)/ro_s(m), des_u_s(ijk,m), des_v_s(ijk,m), fluid_ind, vol(ijk), U_S(IJK,1), V_S(IJK,1)
-                  
-            enddo
-         enddo
-      enddo
-      close(1000, status='keep')
-      !stop
       END SUBROUTINE MPPIC_COMPUTE_MEAN_FIELDS2
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: MPPIC_COMPUTE_MEAN_FIELDS_CG                            !
+!  Purpose:                                                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE MPPIC_COMPUTE_MEAN_FIELDS_CG
-      
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------      
       USE param
       USE param1
       USE parallel
@@ -1495,19 +1515,17 @@
       USE quadric
       USE cutcell
       USE vtk
-      
       USE fldvar
-
-
       USE physprop
       USE bc
       USE discretelement
       USE drag
       USE interpolation
       use desmpi 
-
       IMPLICIT NONE
-
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
       INTEGER :: I, J, K,IJK,NINDX,NP,M,NODE,NC, IER, IPJK, IJPK, IJKP
 
       DOUBLE PRECISION :: WTP
@@ -1530,45 +1548,38 @@
       integer  FLUID_IND      
       double precision :: epg_min2
       integer :: epg_min_loc(1)
-!
-!-----------------------------------------------   
-
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
-
+!-----------------------------------------------
 
       CONTRIBUTION_OF_NODE = ZERO 
       CONTRIBUTION_OF_NODE_SOLVEL = ZERO 
       MASS_SOL1 = ZERO 
+
       DO IJK = IJKSTART3,IJKEND3
-         
          IF(.NOT.FLUID_AT(IJK) .OR. PINC(IJK).EQ.0) CYCLE 
          
-         !print*,'==========================================================='
-         !print*,'IJK,  I,J=',IJK,I_OF(IJK),J_OF(IJK)
-
-
+!         print*,'==========================================================='
+!         print*,'IJK,  I,J=',IJK,I_OF(IJK),J_OF(IJK)
 !         print*,'NUMBER_OF_NODES=',NUMBER_OF_NODES(IJK)
 !         DO NODE = 1,NUMBER_OF_NODES(IJK)
 !            print*,'CNCT=',NODE,CONNECTIVITY(IJK,NODE),SCALAR_NODE_XYZ(CONNECTIVITY(IJK,NODE),1),SCALAR_NODE_XYZ(CONNECTIVITY(IJK,NODE),2)
 !         ENDDO
 !         print*,''
+!         print*,'NUMBER OF PARTICLES IN CELL =',PINC(IJK)
 
-         !print*,'NUMBER OF PARTICLES IN CELL =',PINC(IJK)
-
-        !LOOP THROUGH PARTICLES IN THE CELL  
+! LOOP THROUGH PARTICLES IN THE CELL
          DO NINDX = 1,PINC(IJK)
             FOCUS = .FALSE.
             NP = PIC(IJK)%P(NINDX)
             M = PIJK(NP,5)
             
-            
             XP = des_pos_new(np,1)
             YP = des_pos_new(np,2)
-            
             IF(NO_K) THEN
                ZP = des_pos_new(np,3)
             ELSE
@@ -1577,22 +1588,20 @@
 
             WTP = ONE
             IF(MPPIC) WTP = DES_STAT_WT(NP)
-            
             MASS_SOL1 = MASS_SOL1 + PMASS(NP)*WTP
-
             SUM_O_DIST = ZERO
 
-            !print*,'NUMBER_OF_NODES=',NUMBER_OF_NODES(IJK)
+!            print*,'NUMBER_OF_NODES=',NUMBER_OF_NODES(IJK)
             
-            DO NODE = 1,NUMBER_OF_NODES(IJK) ! Distribute the contribution of each particle on the cell nodes
-                                                                ! Based on inverse distance from the particle and each node
-                                                                ! First loop to prepare distribution by computing particle-node distance
+! Distribute the contribution of each particle on the cell nodes
+! Based on inverse distance from the particle and each node
+! First loop to prepare distribution by computing particle-node distance
+            DO NODE = 1,NUMBER_OF_NODES(IJK) 
 
                NC = CONNECTIVITY(IJK,NODE)
                
                XND = SCALAR_NODE_XYZ(NC,1)
                YND = SCALAR_NODE_XYZ(NC,2)
-
                IF(NO_K) THEN
                   ZND = SCALAR_NODE_XYZ(NC,3)
                ELSE
@@ -1601,48 +1610,37 @@
                
                DIST_TO_NODE = DSQRT((XND-XP)**2 + (YND-YP)**2 + (ZND-ZP)**2)
 
-!               IF(DIST_TO_NODE < HALF*D_P0(M)) THEN
+!               IF(DIST_TO_NODE < HALF*DES_D_P0(M)) THEN
                IF(DIST_TO_NODE < 1.0D-12) THEN ! Hard-wired tolerance, maybe need to make it user-defined
                   O_DIST_TO_NODE(NODE) = UNDEFINED
                ELSE
                   O_DIST_TO_NODE(NODE) = ONE / DIST_TO_NODE
-               ENDIF    
-
+               ENDIF
                SUM_O_DIST = SUM_O_DIST + O_DIST_TO_NODE(NODE)
-
-!            print*,'NODE,DIST=',NODE,DIST_TO_NODE
+!               print*,'NODE,DIST=',NODE,DIST_TO_NODE
 
             ENDDO
 
             SUM_OF_WEIGHT = ZERO
-            
-            DO NODE = 1,NUMBER_OF_NODES(IJK)                  ! Second loop to distribute particle contribution onto each node
-
-               NC = CONNECTIVITY(IJK,NODE)
-               
+! Second loop to distribute particle contribution onto each node            
+            DO NODE = 1,NUMBER_OF_NODES(IJK)
+               NC = CONNECTIVITY(IJK,NODE)               
                WEIGHT_ON_NODE = O_DIST_TO_NODE(NODE)/SUM_O_DIST
-               
                SUM_OF_WEIGHT = SUM_OF_WEIGHT + WEIGHT_ON_NODE
-
                !print*,'NODE,WEIGHT=',NODE,WEIGHT_ON_NODE
 
-               !WTBAR(NC,M) = WTBAR(NC,M) + WEIGHT_OF_NODE(NC)*RO_S(M)*OVOL*PVOL(NP)*WTP
+               !WTBAR(NC,M) = WTBAR(NC,M) + WEIGHT_OF_NODE(NC)*DES_RO_S(M)*OVOL*PVOL(NP)*WTP
                OVOL = MAX(ZERO, Ovol_around_node(NC)) 
-
-               TEMP1 =  WEIGHT_ON_NODE * RO_S(M)*PVOL(NP)*WTP*OVOL 
-               CONTRIBUTION_OF_NODE(NC,M) = CONTRIBUTION_OF_NODE(NC,M) + TEMP1 
-               
+               TEMP1 =  WEIGHT_ON_NODE * DES_RO_S(M)*PVOL(NP)*WTP*OVOL 
+               CONTRIBUTION_OF_NODE(NC,M) = CONTRIBUTION_OF_NODE(NC,M) + TEMP1                
                CONTRIBUTION_OF_NODE_SOLVEL(NC, 1:DIMN, M) = CONTRIBUTION_OF_NODE_SOLVEL(NC, 1:DIMN, M) + TEMP1*DES_VEL_NEW(NP, 1:DIMN)
             ENDDO
 
             !print*,'SUM OF WEIGHTH (should be equal to ONE) =',SUM_OF_WEIGHT      
             !read(*,*)
-
             
          ENDDO                  ! PINC(IJK) LOOP 
-      END DO                    ! IJK LOOP
-
-
+      ENDDO                     ! IJK LOOP
 
 !!$      DO IJK = IJKSTART3, IJKEND3 + NUMBER_OF_NEW_POINTS ! Loop over all nodes 
 !!$         IF(Ovol_around_node(IJK)>ZERO) THEN
@@ -1656,15 +1654,15 @@
          I = I_OF(IJK) 
          J = J_OF(IJK) 
          K = K_OF(IJK)
-         IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	 
+         IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
          IF (.NOT.FLUID_AT(IJK)) CYCLE 
-         ROP_SO(IJK,:) = ROP_S(IJK,:)
-         ROP_S(IJK,:) = ZERO 
+         DES_ROP_SO(IJK,:) = DES_ROP_S(IJK,:)
+         DES_ROP_S(IJK,:) = ZERO 
 !         IF(.NOT.FLUID_AT(IJK) .OR. PINC(IJK).EQ.0) CYCLE 
          IF(.NOT.FLUID_AT(IJK)) CYCLE 
          EP_G(IJK) = ONE   
 
-         DO M = 1, MMAX
+         DO M = 1, DES_MMAX
             SUM_CONTRIBUTIONS = ZERO
             SUM_CONTRIB_VEL(1:DIMN) = ZERO 
             DO NODE = 1,NUMBER_OF_NODES(IJK)
@@ -1672,9 +1670,10 @@
                SUM_CONTRIBUTIONS = SUM_CONTRIBUTIONS + CONTRIBUTION_OF_NODE(NC,M)
                SUM_CONTRIB_VEL(1:DIMN) = SUM_CONTRIB_VEL(1:DIMN) +  CONTRIBUTION_OF_NODE_SOLVEL(NC, 1:DIMN, M)
             ENDDO
-            ROP_S(IJK,M) = SUM_CONTRIBUTIONS / NUMBER_OF_NODES(IJK) ! ROP_S in a cellis the average of the ROP_S at the nodes
+            DES_ROP_S(IJK,M) = SUM_CONTRIBUTIONS / NUMBER_OF_NODES(IJK) 
+! DES_ROP_S in a cell is the average of the DES_ROP_S at the nodes
             
-            !below, it is not <Us>, but EP_S*RO_S*<U_s>
+! below, it is not <Us>, but EP_S*RO_S(M)_s>
             DES_U_S(IJK, M) = SUM_CONTRIB_VEL(1)/NUMBER_OF_NODES(IJK)
             DES_V_S(IJK, M) = SUM_CONTRIB_VEL(2)/NUMBER_OF_NODES(IJK)
             IF(DIMN.eq.3) DES_W_S(IJK, M) = SUM_CONTRIB_VEL(3)/NUMBER_OF_NODES(IJK)
@@ -1687,12 +1686,12 @@
 !routine des_addnodevalues, except that the summation needs to be done at the 
 !scalar cell centers, unlike the scalar cell nodes in des_addnodevalues
 
-         !convert EP_S*RO_S*<U_s> to <U_s> by dividing by ROP_S
-         DO M = 1, MMAX
-            IF(ROP_S(IJK,M).GT.ZERO) then 
-               DES_U_S(IJK,M) = DES_U_S(IJK,M)/ROP_S(IJK,M)
-               DES_V_S(IJK,M) = DES_V_S(IJK,M)/ROP_S(IJK,M)
-               if(DIMN.eq.3) DES_W_S(IJK,M) = DES_W_S(IJK,M)/ROP_S(IJK,M)
+! convert EP_S*RO_S*<U_s> to <U_s> by dividing by DES_ROP_S
+         DO M = 1, DES_MMAX
+            IF(DES_ROP_S(IJK,M).GT.ZERO) then 
+               DES_U_S(IJK,M) = DES_U_S(IJK,M)/DES_ROP_S(IJK,M)
+               DES_V_S(IJK,M) = DES_V_S(IJK,M)/DES_ROP_S(IJK,M)
+               if(DIMN.eq.3) DES_W_S(IJK,M) = DES_W_S(IJK,M)/DES_ROP_S(IJK,M)
             ELSE
                DES_U_S(IJK,M) = ZERO 
                DES_V_S(IJK,M) = ZERO 
@@ -1702,56 +1701,48 @@
          ENDDO
          
          
-         DO M = 1, MMAX
+         DO M = 1, DES_MMAX
+            MASS_SOL2 = MASS_SOL2 + DES_ROP_S(IJK,M) * VOL(IJK)
             
-            MASS_SOL2 = MASS_SOL2 + ROP_S(IJK,M) * VOL(IJK)
-            
-            IF(.not.DES_ONEWAY_COUPLED) EP_G(IJK) = EP_G(IJK) - EP_S(IJK,M)
-                  
+            IF(.not.DES_ONEWAY_COUPLED) EP_G(IJK) = EP_G(IJK) - &
+               DES_ROP_S(IJK,M)/DES_RO_S(M)
                   
             IF(EP_G(IJK).LT.ZERO .AND. DES_CONTINUUM_COUPLED) THEN 
                
                CALL WRITE_DES_DATA
                CALL WRITE_VTK_FILE
-            ! this does not matter if pure granular flow simulation (i.e. no fluid)
+! this does not matter if pure granular flow simulation (i.e. no fluid)
                IF(DMP_LOG)  WRITE(UNIT_LOG, 2000) EP_G(IJK), IJK, &
-               & I_OF(IJK), J_OF(IJK), K_OF(IJK), &
-               & xe(I) - 0.5*dx(i), yn(J)-0.5*DY(J), zt(K) - 0.5*DZ(K), & 
-               & EP_S(IJK,M), &
-               & PINC(IJK), & 
-               & CUT_CELL_AT(IJK) , &
-               & VOL(IJK), DX(I_OF(IJK))*DY(J_OF(IJK))*DZ(K_OF(IJK)), (VOL(IJK)/DX(I_OF(IJK))/(DY(J_OF(IJK))*DZ(K_OF(IJK))))*100.
+                  I_OF(IJK), J_OF(IJK), K_OF(IJK), &
+                   xe(I) - 0.5*dx(i), yn(J)-0.5*DY(J), zt(K) - 0.5*DZ(K), & 
+                   DES_ROP_S(IJK,M)/DES_RO_S(M), PINC(IJK), CUT_CELL_AT(IJK), &
+                   VOL(IJK), DX(I_OF(IJK))*DY(J_OF(IJK))*DZ(K_OF(IJK)), &
+                   (VOL(IJK)/DX(I_OF(IJK))/(DY(J_OF(IJK))*DZ(K_OF(IJK))))*100.
                      
                if(mype.eq.pe_IO) WRITE(*, 2000) EP_G(IJK), IJK, &
-               & I_OF(IJK), J_OF(IJK), K_OF(IJK), &
-               & xe(I) - 0.5*dx(i), yn(J)-0.5*DY(J), zt(K) - 0.5*DZ(K), & 
-               & EP_S(IJK,M), &
-               & PINC(IJK), & 
-               & CUT_CELL_AT(IJK), &
-               & VOL(IJK), DX(I_OF(IJK))*DY(J_OF(IJK))*DZ(K_OF(IJK)), (VOL(IJK)/(DX(I_OF(IJK))*DY(J_OF(IJK))*DZ(K_OF(IJK))))*100.
+                  I_OF(IJK), J_OF(IJK), K_OF(IJK), &
+                  xe(I) - 0.5*dx(i), yn(J)-0.5*DY(J), zt(K) - 0.5*DZ(K), & 
+                  DES_ROP_S(IJK,M)/DES_RO_S(M), PINC(IJK), CUT_CELL_AT(IJK), &
+                  VOL(IJK), DX(I_OF(IJK))*DY(J_OF(IJK))*DZ(K_OF(IJK)),&
+                  (VOL(IJK)/(DX(I_OF(IJK))*DY(J_OF(IJK))*DZ(K_OF(IJK))))*100.
                
                         
-               if(dmp_log) write(unit_log, *) 'Terminal error, stopping the simulation here'
-               if(mype.eq.pe_io) write(*, *) 'Terminal error, stopping the simulation here'                         
+               if(dmp_log) write(unit_log, *) &
+                  'Terminal error, stopping the simulation here'
+               if(mype.eq.pe_io) write(*, *) &
+                  'Terminal error, stopping the simulation here'
                call mfix_exit(myPE)
             
             ENDIF
             
             ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
 
-            !print*,'IJK,EPS(IJK,M),EPG=',IJK,EP_S(IJK,M),ONE-EP_S(IJK,M)
+            !print*,'IJK,EPS(IJK,M),EPG=',IJK,&
+               !DES_ROP_S(IJK,M)/DES_RO_S(M),&
+               !ONE-(DES_ROP_S(IJK,M)/DES_RO_S(M))
 
          ENDDO
       ENDDO
-
- 2000 format(/10X, 'Message from CG compute mean fields case', & 
-      & /,10X,'Warning, EP_G    = ', g17.8, 2x, 'LT Zero at IJK',I10, & 
-      & /,10X,'I,J,K            = ', I10, 2X,I10, 2x, I10, & 
-      & /,10x,'XMID, YMID, ZMID = ', 3(2x,g17.8), & 
-      & /,10X,'EP_S             = ', ES15.9, & 
-      & /,10X,'No of paricles in cell = ', I10, & 
-      & /,10X,'Cut cell ? ', L2 , & 
-      & /,10X,'Cell, Uncut cell volume, and % ratio = ', 3(2x,g17.8), /)
 
 
       EPG_MIN2 = MINVAL(EP_G(:))
@@ -1762,24 +1753,20 @@
       K = K_OF(IJK)
 
       WRITE(*,1014) epg_min2, & 
-      & I_OF(IJK), j_of(ijk), k_of(ijk), &
-      & xe(I) - 0.5*dx(i), yn(J)-0.5*DY(J), zt(K) - 0.5*DZ(K), & 
-      & cut_cell_at(ijk),fluid_at(ijk)
+         I_OF(IJK), j_of(ijk), k_of(ijk), &
+         xe(I) - 0.5*dx(i), yn(J)-0.5*DY(J), zt(K) - 0.5*DZ(K), & 
+         cut_cell_at(ijk),fluid_at(ijk)
 
- 1014 FORMAT(1x,70('*') , / &
-      &      10x,'EPGMIN NORMAL = ', 2x,g17.8, / & 
-      &      10x,'EPG_MIN_LOCATION, I, J, K = ', 3(2x,i5),/, &
-      &      10x,'XMID, YMID, ZMID FOR CELL = ', 3(2x,g17.8),/ & 
-      &      10x,'CUT CELL, FLUID AT IJK ?    ', 2(2x, L2),/& 
-      &      1X,70('*')/)      
       call send_recv(ep_g,2)
       call send_recv(rop_g,2)
       call send_recv(des_u_s,2)
       call send_recv(des_v_s,2) 
       if(dimn.eq.3) call send_recv(des_w_s,2) 
-      call send_recv(rop_s,2)
+      call send_recv(des_rop_s,2)
 
-      
+
+
+! JG: why are we looking at continuum solids fields..      
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK) 
          J = J_OF(IJK) 
@@ -1788,8 +1775,7 @@
          V_so(IJK, :) = V_s(IJK, :)
          W_so(IJK, :) = W_s(IJK, :)
          
-         IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE	 
-         
+         IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
          
          IF(WALL_U_AT(IJK)) THEN
             U_S(IJK, :) = ZERO 
@@ -1802,8 +1788,7 @@
 
             IPJK = IP_OF(IJK) 
             IF(FLUID_AT(IPJK)) THEN 
-               DO M = 1, MMAX
-
+               DO M = 1, DES_MMAX
                   U_S(IJK,M) = 0.5d0*(DES_U_S(IJK, M) + DES_U_S(IPJK,M))
                ENDDO
             ELSE
@@ -1811,8 +1796,6 @@
             ENDIF
          ENDIF
 
-         
-         
          IF(WALL_V_AT(IJK)) THEN
             V_S(IJK, :) = ZERO 
          ELSE
@@ -1820,7 +1803,7 @@
 
             IJPK = JP_OF(IJK) 
             IF(FLUID_AT(IJPK)) THEN 
-               DO M = 1, MMAX
+               DO M = 1, DES_MMAX
                   V_S(IJK,M) = 0.5d0*(DES_V_S(IJK, M) + DES_V_S(IJPK,M))
                ENDDO
             ELSE
@@ -1837,7 +1820,7 @@
                
                IJKP = KP_OF(IJK) 
                IF(FLUID_AT(IJKP)) THEN 
-                  DO M = 1, MMAX
+                  DO M = 1, DES_MMAX
                      W_S(IJK,M) = 0.5d0*(DES_W_S(IJK, M) + DES_W_S(IJKP,M))
                   ENDDO
                ELSE
@@ -1856,9 +1839,11 @@
       !print*,PINC(7),PINC(12)
       !print*,'=============================================================='
       !print*,'EP_G with new method'
-      !print*,ONE-EP_S(9,1),ONE-EP_S(14,1),ONE-EP_S(19,1)
-      !print*,ONE-EP_S(8,1),ONE-EP_S(13,1),ONE-EP_S(18,1)
-      !print*,ONE-EP_S(7,1),ONE-EP_S(12,1)
+      !print*,ONE-(DES_ROP_S(9,1)/DES_RO_S(1)),ONE-(DES_ROP_S(14,1)/DES_RO_S(1)),&
+         !ONE-(DES_ROP_S(19,1)/DES_RO_S(1))
+      !print*,ONE-(DES_ROP_S(8,1)/DES_RO_S(1)),ONE-(DES_ROP_S(13,1)/DES_RO_S(1)),&
+         !ONE-(DES_ROP_S(18,1)/DES_RO_S(1))
+      !print*,ONE-(DES_ROP_S(7,1)/DES_RO_S(1)),ONE-(DES_ROP_S(12,1)/DES_RO_S(1))
       !print*,'=============================================================='
       !print*,'EP_G with old method'
       !print*,EP_G(9),EP_G(14),EP_G(19)
@@ -1867,7 +1852,8 @@
       !print*,'=============================================================='
 
     
-      WRITE(*,'(10x,A30,4(2x,g17.8))') 'CG: SOLIDS MASS 1 AND 2 =  ', MASS_SOL1, MASS_SOL2
+      WRITE(*,'(10x,A30,4(2x,g17.8))') 'CG: SOLIDS MASS 1 AND 2 =  ', &
+         MASS_SOL1, MASS_SOL2
       
       !RETURN 
       
@@ -1877,9 +1863,14 @@
       !field as well. This can be changed later on to be more specific to MPPIC case       
       
       WRITE(filename,'(A,"_",I5.5,".dat")') 'CG_EPS_',myPE
-      OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown')
-      write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ',' "EPS" ', ' "EPSO" ',' "MEANUS" ', ' "MEANVS" ', ' "FLUID" ', ' "CUTCELL" ' , ' "VOL" ' , ' "MEANU_S" ', ' "MEANV_S" ', ' "MEANU_SO" ' , ' "MEANV_SO" '
-      write(1000,*)'ZONE F=POINT, I=', (IEND2-ISTART2)+1,  ', J=', JEND2-JSTART2+1, ', K=', KEND2-KSTART2 + 1
+      OPEN(1000, file = TRIM(filename), form ='formatted',&
+           status='unknown')
+      write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ',' "EPS" ',&
+         ' "EPSO" ',' "MEANUS" ', ' "MEANVS" ', ' "FLUID" ',&
+         ' "CUTCELL" ' , ' "VOL" ' , ' "MEANU_S" ', ' "MEANV_S" ',&
+         ' "MEANU_SO" ' , ' "MEANV_SO" '
+      write(1000,*)'ZONE F=POINT, I=', (IEND2-ISTART2)+1, &
+         ', J=', JEND2-JSTART2+1, ', K=', KEND2-KSTART2 + 1
       
       DO K=KSTART2, KEND2
          DO J=JSTART2, JEND2
@@ -1893,18 +1884,48 @@
                if(dimn.eq.2) zcor = zt(k)
                if(dimn.eq.3) zcor = zt(k-1) + dz(k)
                M=1
-               write(1000,'(7(2x,g17.8),2((2x,i4)),3( 2x, g17.8))') XE(I-1)+DX(I), YN(J-1)+DY(J),ZCOR, ROP_S(IJK,m)/ro_s(m), ROP_SO(IJK,m)/ro_s(m), des_u_s(ijk,m), des_v_s(ijk,m), fluid_ind, cutcell_ind, vol(ijk), U_S(IJK,1), V_S(IJK,1), U_so(IJK,1), V_so(IJK, 1) 
-                  
+               write(1000,'(7(2x,g17.8),2((2x,i4)),3( 2x, g17.8))') &
+                  XE(I-1)+DX(I), YN(J-1)+DY(J),ZCOR, DES_ROP_S(IJK,m)/DES_RO_S(M),&
+                  DES_ROP_SO(IJK,m)/DES_RO_S(M), des_u_s(ijk,m), des_v_s(ijk,m), &
+                  fluid_ind, cutcell_ind, vol(ijk), U_S(IJK,1), V_S(IJK,1),&
+                  U_so(IJK,1), V_so(IJK, 1)                   
             enddo
          enddo
       enddo
       close(1000, status='keep')
       !stop
+
+ 2000 format(/10X, 'Message from CG compute mean fields case', & 
+      & /,10X,'Warning, EP_G    = ', g17.8, 2x, 'LT Zero at IJK',I10, & 
+      & /,10X,'I,J,K            = ', I10, 2X,I10, 2x, I10, & 
+      & /,10x,'XMID, YMID, ZMID = ', 3(2x,g17.8), & 
+      & /,10X,'EP_S             = ', ES15.9, & 
+      & /,10X,'No of paricles in cell = ', I10, & 
+      & /,10X,'Cut cell ? ', L2 , & 
+      & /,10X,'Cell, Uncut cell volume, and % ratio = ', 3(2x,g17.8), /)
+
+ 1014 FORMAT(1x,70('*') , / &
+      &      10x,'EPGMIN NORMAL = ', 2x,g17.8, / & 
+      &      10x,'EPG_MIN_LOCATION, I, J, K = ', 3(2x,i5),/, &
+      &      10x,'XMID, YMID, ZMID FOR CELL = ', 3(2x,g17.8),/ & 
+      &      10x,'CUT CELL, FLUID AT IJK ?    ', 2(2x, L2),/& 
+      &      1X,70('*')/)      
       END SUBROUTINE MPPIC_COMPUTE_MEAN_FIELDS_CG
 
 
-    
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: MPPIC_BC_U_S                                            !
+!  Purpose:                                                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
       SUBROUTINE MPPIC_BC_U_S  
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE parallel 
       USE matrix 
       USE scales 
@@ -1924,45 +1945,38 @@
       USE compar   
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Local variables
 !-----------------------------------------------
+! Error index 
+      INTEGER :: IER 
+! Boundary condition 
+      INTEGER ::  L 
+! Indices 
+      INTEGER :: I, J, K, IM, I1, I2, J1, J2, K1, K2, IJK,& 
+                 JM, KM, IJKW, IMJK, IPJK, IP, IJK_WALL
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-! 
-! 
-!                      Error index 
-      INTEGER          IER 
-! 
-!                      Boundary condition 
-      INTEGER          L 
-! 
-!                      Indices 
-      INTEGER          I,  J, K, IM, I1, I2, J1, J2, K1, K2, IJK,& 
-                       JM, KM, IJKW, IMJK, IPJK, IP, IJK_WALL
-! 
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-!
-!
-!  Set the default boundary conditions
-!
+!-----------------------------------------------
+
+
+! Set the default boundary conditions
       IF (DO_K) THEN 
          K1 = 1 
          DO J1 = jmin3,jmax3 
-            DO I1 = imin3, imax3 	 
-   	       IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE	    
+            DO I1 = imin3, imax3
+               IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE
                IJK_WALL = FUNIJK(I1,J1,K1) 
                IJK = FUNIJK(I1,J1,K1+1) 
                U_S(IJK_WALL, :) = -U_S(IJK,:)
             END DO 
          END DO 
-	 
+ 
          K1 = KMAX2 
          DO J1 = jmin3,jmax3 
-            DO I1 = imin3, imax3 	 
-               
-   	       IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE	    
+            DO I1 = imin3, imax3  
+               IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE
                IJK_WALL = FUNIJK(I1,J1,K1) 
                IJK = FUNIJK(I1,J1,K1-1) 
                U_S(IJK_WALL, :) = -U_S(IJK,:)
@@ -1973,8 +1987,7 @@
       J1 = 1 
       DO K1 = kmin3, kmax3 
          DO I1 = imin3, imax3
-            
-            IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE	    
+            IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE
             IJK_WALL = FUNIJK(I1,J1,K1) 
             IJK = FUNIJK(I1,J1+1,K1) 
             U_S(IJK_WALL, :) = -U_S(IJK,:)
@@ -1983,7 +1996,7 @@
       J1 = JMAX2 
       DO K1 = kmin3, kmax3 
          DO I1 = imin3, imax3
-            IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE	    
+            IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE
             IJK_WALL = FUNIJK(I1,J1,K1) 
             IJK = FUNIJK(I1,J1-1,K1) 
             U_S(IJK_WALL, :) = -U_S(IJK,:)
@@ -1992,15 +2005,20 @@
        
       RETURN  
       END SUBROUTINE MPPIC_BC_U_S  
-      
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: MPPIC_BC_V_S                                            !
+!  Purpose:                                                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
       SUBROUTINE MPPIC_BC_V_S  
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
-!  Include param.inc file to specify parameter values
-!
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -2023,34 +2041,27 @@
       USE compar  
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Local variables
 !-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-! 
-! 
-!                      Error index 
+! Error index 
       INTEGER          IER 
-! 
-!                      Boundary condition 
+! Boundary condition 
       INTEGER          L 
-! 
-!                      Indices 
+! Indices 
       INTEGER          I,  J, K, JM, I1, I2, J1, J2, K1, K2, IJK,& 
                        IM, KM, IJKS, IJMK, IJPK, IJK_WALL 
-! 
+!-----------------------------------------------
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-!
-!
-!  Set the default boundary conditions
-!
+!-----------------------------------------------
+
+! Set the default boundary conditions
       IF (DO_K) THEN 
          K1 = 1 
          DO J1 = jmin3,jmax3 
             DO I1 = imin3, imax3 
-   	       IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE		 
+               IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE
                IJK_WALL = FUNIJK(I1,J1,K1)
                IJK = FUNIJK(I1,J1,K1+1)
                V_S(IJK_WALL, :) = -V_S(IJK,:)
@@ -2059,18 +2070,18 @@
          K1 = KMAX2 
          DO J1 = jmin3,jmax3 
             DO I1 = imin3, imax3 
-   	       IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE		 
+               IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE
                IJK_WALL = FUNIJK(I1,J1,K1)
                IJK = FUNIJK(I1,J1,K1-1)
                V_S(IJK_WALL, :) = -V_S(IJK,:)
             END DO 
          END DO 
       ENDIF 
-!
+
       I1 = 1
       DO K1 = kmin3, kmax3 
          DO J1 = jmin3, jmax3 
-            IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE		 
+            IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE
             IJK_WALL = FUNIJK(I1,J1,K1)
             IJK = FUNIJK(I1+1,J1,K1)
             V_S(IJK_WALL, :) = -V_S(IJK,:)
@@ -2079,9 +2090,8 @@
       END DO 
       I1 = IMAX2 
       DO K1 = kmin3, kmax3 
-         DO J1 = jmin3, jmax3 
-             
-            IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE		 
+         DO J1 = jmin3, jmax3              
+            IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE
             IJK_WALL = FUNIJK(I1,J1,K1)
             IJK = FUNIJK(I1-1,J1,K1)
             V_S(IJK_WALL, :) = -V_S(IJK,:)
@@ -2090,16 +2100,19 @@
       END DO
       END SUBROUTINE MPPIC_BC_V_S  
 
-      
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: MPPIC_BC_W_S                                            !
+!  Purpose:                                                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE MPPIC_BC_W_S  
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
-!  Include param.inc file to specify parameter values
-!
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -2122,32 +2135,26 @@
       USE compar  
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Local variables
 !-----------------------------------------------
+! Error index 
+      INTEGER :: IER 
+! Boundary condition 
+      INTEGER :: L 
+! Indices 
+      INTEGER :: I, J, K, KM, I1, I2, J1, J2, K1, K2, IJK,& 
+                 IM, JM, IJKB, IJKM, IJKP, IJK_WALL 
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-! 
-! 
-!                      Error index 
-      INTEGER          IER 
-! 
-!                      Boundary condition 
-      INTEGER          L 
-! 
-!                      Indices 
-      INTEGER          I,  J, K, KM, I1, I2, J1, J2, K1, K2, IJK,& 
-                       IM, JM, IJKB, IJKM, IJKP, IJK_WALL 
-! 
+! Include statement functions
+!----------------------------------------------- 
       INCLUDE 'function.inc'
-!
-!  Set the default boundary conditions
-!
+!-----------------------------------------------
+
+! Set the default boundary conditions
       J1 = 1 
       DO K1 = kmin3,kmax3 
          DO I1 = imin3,imax3 
-   	    IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE	 	    	    
-            
+            IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE
             IJK = FUNIJK(I1,J1+1,K1) 
             IJK_WALL = FUNIJK(I1,J1,K1) 
             W_S(IJK_WALL,:) = -W_S(IJK,:)
@@ -2156,9 +2163,7 @@
       J1 = JMAX2 
       DO K1 = kmin3, kmax3
          DO I1 = imin3, imax3 
-            
-   	    IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE	 	    	    
-            
+           IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE
             IJK = FUNIJK(I1,J1-1,K1) 
             IJK_WALL = FUNIJK(I1,J1,K1) 
             W_S(IJK_WALL,:) = -W_S(IJK,:)
@@ -2166,10 +2171,8 @@
       END DO 
       I1 = 1 
       DO K1 = kmin3, kmax3
-         DO J1 = jmin3, jmax3 
-            
-   	    IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE	 	    	    
-            
+         DO J1 = jmin3, jmax3
+            IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE
             IJK = FUNIJK(I1+1,J1,K1) 
             IJK_WALL = FUNIJK(I1,J1,K1) 
             W_S(IJK_WALL,:) = -W_S(IJK,:)
@@ -2178,9 +2181,7 @@
       I1 = IMAX2 
       DO K1 = kmin3,kmax3 
          DO J1 = jmin3,jmax3 
-            
-   	    IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE	 	    	    
-            
+            IF (.NOT.IS_ON_myPE_owns(I1,J1,K1)) CYCLE
             IJK = FUNIJK(I1-1,J1,K1) 
             IJK_WALL = FUNIJK(I1,J1,K1) 
             W_S(IJK_WALL,:) = -W_S(IJK,:)
@@ -2190,8 +2191,20 @@
       
       END SUBROUTINE MPPIC_BC_W_S  
 
-      
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: MPPIC_ADD_FRIC_FORCE                                    !
+!  Purpose:                                                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!      
+
       subroutine MPPIC_ADD_FRIC_FORCE(NP)
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE param
       USE param1
       USE parallel
@@ -2201,17 +2214,31 @@
       USE des_bc
       USE mpi_utility
       USE cutcell 
-
       IMPLICIT NONE 
+!-----------------------------------------------
+! Dummy arugments
+!-----------------------------------------------
       integer, intent(in) :: np
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------      
       INTEGER :: COUNT, COUNT_BC, IJK_WALL, IJK, idir, idim, I, J, K 
       character*80 :: wall_type 
-      double precision :: vel_norm(dimn), vel_tang(dimn), normal(dimn), tangent(dimn)
-      double precision :: vel_tang_mod, WALL_COOR(DIMN), DIST, WALLCOR_MIN(DIMN), WALLCOR_MAX(DIMN) 
+      double precision :: vel_norm(dimn), vel_tang(dimn), &
+                          normal(dimn), tangent(dimn)
+      double precision :: vel_tang_mod, WALL_COOR(DIMN), DIST, &
+                          WALLCOR_MIN(DIMN), WALLCOR_MAX(DIMN) 
 
-      double precision ::  NORM_CF(3), XPOS, YPOS, ZPOS, max_dist, dist_fun, ramp_fun, FCN 
+      double precision :: NORM_CF(3), XPOS, YPOS, ZPOS, max_dist, &
+                          dist_fun, ramp_fun, FCN 
       logical :: doit 
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------  
       INCLUDE 'function.inc'
+!-----------------------------------------------  
+
+
       IJK = PIJK(NP, 4) 
 
       FC(NP, :) = FC(NP,:) + PMASS(NP) * GRAV(:)
@@ -2303,31 +2330,45 @@
             tangent(:) = zero 
          endif
          
-         !currently only treating those walls for friction that are native 
-         !to this cell 
+! currently only treating those walls for friction that are native 
+! to this cell 
          dist_fun = min(dist/max_dist, 1.d0)
          dist_fun = dist_fun - 1.d0 
          ramp_fun = (1.d0 - exp(dist_fun))/(1.d0-exp(-1.d0))
          
          FC(NP, :) = FC(NP, :) - MEW_W*FCN*TANGENT(:)*ramp_fun
          !write(*,'(A,9(2x,g17.8))') 'vel, norm, tangent', des_vel_new(NP,:), normal(:), tangent(:)
-         if(ramp_fun.lt.zero) write(*,'(A,3(2x,g17.8))') 'dist/maxdist, dist, ramp_fun ', dist_fun+1.d0, dist_fun, ramp_fun
+         if(ramp_fun.lt.zero) write(*,'(A,3(2x,g17.8))') &
+            'dist/maxdist, dist, ramp_fun ', dist_fun+1.d0, &
+            dist_fun, ramp_fun
          if(normal(2).eq.1.d0) then 
-            write(*,'(A,9(2x,g17.8))') 'vel, norm, tangent', des_vel_new(NP,:), normal(:), tangent(:)
-            write(*,'(A,3(2x,g17.8))') 'dist/maxdist, dist, ramp_fun ', dist_fun+1.d0, dist_fun, ramp_fun
-            write(*,'(A,9(2x,g17.8))') 'FC, FCN, FCT', FC(np,:),FCN,  MEW_W*FCN*TANGENT(:)*ramp_fun
+            write(*,'(A,9(2x,g17.8))') 'vel, norm, tangent', &
+               des_vel_new(NP,:), normal(:), tangent(:)
+            write(*,'(A,3(2x,g17.8))') 'dist/maxdist, dist, ramp_fun ',&
+               dist_fun+1.d0, dist_fun, ramp_fun
+            write(*,'(A,9(2x,g17.8))') 'FC, FCN, FCT', FC(np,:),FCN, &
+               MEW_W*FCN*TANGENT(:)*ramp_fun
          !read(*,*)
       endif
       enddo
       
       FC(NP, :) = FC(NP,:) - PMASS(NP) * GRAV(:)
 
-      end subroutine MPPIC_ADD_FRIC_FORCE
+      END SUBROUTINE MPPIC_ADD_FRIC_FORCE
     
-      
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: MPPIC_APPLY_PS_GRAD                                     !
+!  Purpose:                                                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       
       SUBROUTINE MPPIC_APPLY_PS_GRAD
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------      
       USE param
       USE param1
       USE parallel
@@ -2342,43 +2383,59 @@
       USE cutcell
       IMPLICIT NONE
 !-----------------------------------------------
-! Local Variables
+! Local variables
 !-----------------------------------------------
-      INTEGER L, M, IDIM 
-      INTEGER I, J, K, IJK, IJK_C, IJK_OLD, IJK2, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB
+      INTEGER :: L, M, IDIM 
+      INTEGER :: I, J, K, IJK, IJK_C, IJK_OLD, IJK2, IJKE, IJKW, &
+                 IJKN, IJKS, IJKT, IJKB
 
-      DOUBLE PRECISION D(DIMN), DIST, &
-                       NEIGHBOR_SEARCH_DIST, DP_BAR, COEFF_EN, MEANVEL(DIMN), D_GRIDUNITS(3)
+      DOUBLE PRECISION :: D(DIMN), DIST, &
+                          NEIGHBOR_SEARCH_DIST, DP_BAR, &
+                          COEFF_EN, MEANVEL(DIMN), D_GRIDUNITS(3)
 
-      DOUBLE PRECISION DELUP(DIMN), UPRIMETAU(DIMN), UPRIMETAU_INT(DIMN), PS_FORCE(DIMN), VEL_ORIG(DIMN)
+      DOUBLE PRECISION :: DELUP(DIMN), UPRIMETAU(DIMN), &
+                          UPRIMETAU_INT(DIMN), PS_FORCE(DIMN), &
+                          VEL_ORIG(DIMN)
+
 ! index to track accounted for particles  
-      INTEGER PC , epg_min_loc(1)
+      INTEGER :: PC, epg_min_loc(1)
 
 ! Logical for local debug warnings
-      LOGICAL DES_LOC_DEBUG
+      LOGICAL :: DES_LOC_DEBUG
 
 ! maximum distance particles can move in MPPIC 
-      DOUBLE PRECISION MAXDIST_PIC, UPRIMEMOD, UPRIMEMODNEW, signvel
+      DOUBLE PRECISION :: MAXDIST_PIC, UPRIMEMOD, UPRIMEMODNEW, signvel
 
-! dt's in each direction  based on cfl_pic for the mppic case 
+! dt's in each direction based on cfl_pic for the mppic case 
       
-      DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF, MEANUS(DIMN, MMAX), RELVEL(DIMN)
-      DOUBLE PRECISION MEANUS_e(DIMN, MMAX), MEANUS_w(DIMN, MMAX),MEANUS_n(DIMN, MMAX),MEANUS_s(DIMN, MMAX),MEANUS_t(DIMN, MMAX), MEANUS_b(DIMN, MMAX)
-      DOUBLE PRECISION :: DPS_DXE, DPS_DXW, DPS_DYN, DPS_DYS, DPS_DZT, DPS_DZB
-      DOUBLE PRECISION :: XI_EAST, XI_WEST, XI_NORTH, XI_SOUTH, XI_TOP, XI_BOTTOM, epg_min2, velf_part(dimn)
-      INTEGER :: TOT_CASE, case1_count, case2_count, case3_count, case4_count 
+      DOUBLE PRECISION :: DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, &
+                          THREEINTOSQRT2, RAD_EFF, RELVEL(DIMN)
+      DOUBLE PRECISION :: MEANUS(DIMN, DES_MMAX),&
+                          MEANUS_e(DIMN,DES_MMAX),&
+                          MEANUS_w(DIMN,DES_MMAX),&
+                          MEANUS_n(DIMN,DES_MMAX),&
+                          MEANUS_s(DIMN,DES_MMAX),&
+                          MEANUS_t(DIMN,DES_MMAX),&
+                          MEANUS_b(DIMN,DES_MMAX)
+      DOUBLE PRECISION :: DPS_DXE, DPS_DXW, DPS_DYN, DPS_DYS, &
+                          DPS_DZT, DPS_DZB
+      DOUBLE PRECISION :: XI_EAST, XI_WEST, XI_NORTH, XI_SOUTH, &
+                          XI_TOP, XI_BOTTOM, epg_min2, velf_part(dimn)
+      INTEGER :: TOT_CASE, case1_count, case2_count, case3_count, &
+                 case4_count 
       
       LOGICAL :: INSIDE_DOMAIN 
 !-----------------------------------------------
-! Functions 
+! External functions/subroutines
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-
+!-----------------------------------------------
+! Include statement functions
 !-----------------------------------------------      
-      
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
+!-----------------------------------------------
 
       PC = 1
       FOCUS_PARTICLE = -1
@@ -2556,7 +2613,7 @@
          dp_bar = zero 
          DELUP(:) =-( DTSOLID*PS_FORCE(:))
 
-         DELUP(:) = DELUP(:)/ROP_S(IJK_OLD,M)
+         DELUP(:) = DELUP(:)/DES_ROP_S(IJK_OLD,M)
          
          MEANVEL(1) = DES_U_S(IJK_OLD,M)
          MEANVEL(2) = DES_V_S(IJK_OLD,M)
@@ -2708,6 +2765,13 @@
       end SUBROUTINE MPPIC_APPLY_PS_GRAD
 
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: MPPIC_avg_eps                                           !
+!  Purpose:                                                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       subroutine mppic_avg_eps
 
         !this needs to refined futrther. This was taken from somewhere in 
@@ -2740,9 +2804,9 @@
 !!$         IMINUS1 = MAX(I-1, ISTART3)
 !!$         !COUNT_AVG = 1          !1 for ijk itself 
 !!$         !VOL_AVG = VOL(IJK) 
-!!$         !ROP_S(IJK,:) = ROP_SO(IJK, :)*VOL(IJK)
+!!$         !DES_ROP_S(IJK,:) = DES_ROP_SO(IJK, :)*VOL(IJK)
 !!$         VOL_AVG = ZERO 
-!!$         ROP_S(IJK,:) = ZERO 
+!!$         DES_ROP_S(IJK,:) = ZERO 
 !!$         COUNT_AVG = 0
 !!$         DO KK = KMINUS1, KPLUS1
 !!$            DO JJ = JMINUS1, JPLUS1
@@ -2751,21 +2815,22 @@
 !!$
 !!$                  !IF(FLUID_AT(IJK2).AND.(IJK2.NE.IJK)) THEN 
 !!$                  IF(FLUID_AT(IJK2)) THEN 
-!!$                     !if(rop_so(ijk2,1).gt.zero) then 
+!!$                     !if(DES_rop_so(ijk2,1).gt.zero) then 
 !!$                        VOL_AVG = VOL_AVG + VOL(IJK2) 
 !!$                        COUNT_AVG = COUNT_AVG + 1
-!!$                        ROP_S(IJK, :) = ROP_S(IJK, :) + ROP_SO(IJK2, :)*VOL(IJK2)/(ro_s(:)*pvol(1))
+!!$                        DES_ROP_S(IJK, :) = DES_ROP_S(IJK, :) + DES_ROP_SO(IJK2, :)*&
+!!$                           VOL(IJK2)/(DES_RO_S(:)*pvol(1))
 !!$                     !endif
 !!$                  ENDIF
 !!$               ENDDO
 !!$            ENDDO
 !!$         ENDDO
-!!$         ROP_S(IJK,:) = (ROP_S(IJK,:)*(ro_s(:)*pvol(1)))/VOL_AVG !REAL(COUNT_AVG)
-!!$         !ROP_S(IJK,:) = ROP_S(IJK,:)/REAL(COUNT_AVG)
+!!$         DES_ROP_S(IJK,:) = (DES_ROP_S(IJK,:)*(DES_RO_S(:)*pvol(1)))/VOL_AVG !REAL(COUNT_AVG)
+!!$         !DES_ROP_S(IJK,:) = DES_ROP_S(IJK,:)/REAL(COUNT_AVG)
 !!$         SUM_EPS = ZERO
-!!$         DO M = 1, MMAX 
-!!$            MASS_SOL2(M) = MASS_SOL2(M) + ROP_S(IJK,M)*VOL(IJK)
-!!$            SUM_EPS = SUM_EPS + EP_S(IJK,M) 
+!!$         DO M = 1, DES_MMAX 
+!!$            MASS_SOL2(M) = MASS_SOL2(M) + DES_ROP_S(IJK,M)*VOL(IJK)
+!!$            SUM_EPS = SUM_EPS + (DES_ROP_S(IJK,M)/DES_RO_S(M))
 !!$         ENDDO
 !!$
 !!$         !EPG_OLD = EP_G(IJK) 
@@ -2776,8 +2841,11 @@
 !!$         !WRITE(*,*) 'COUNT_AVG = ', COUNT_AVG, EPG_OLD, EP_G(IJK), SUM_EPS
 !!$         IF(EP_G(IJK).LT.ZERO .AND. DES_CONTINUUM_COUPLED) THEN 
 !!$               
-!!$            if(dmp_log) write(unit_log,1012)  IJK, CUT_CELL_AT(IJK), I_OF(IJK), I_OF(IJK), I_OF(IJK), EP_G(IJK), ROP_S(IJK,:)/RO_S(:) 
-!!$            IF(PRINT_DES_SCREEN) write(*,1012)  IJK, CUT_CELL_AT(IJK), I_OF(IJK), I_OF(IJK), I_OF(IJK), EP_G(IJK), ROP_S(IJK,:)/RO_S(:) 
+!!$            if(dmp_log) write(unit_log,1012)  IJK, CUT_CELL_AT(IJK), I_OF(IJK), &
+!!$               I_OF(IJK), I_OF(IJK), EP_G(IJK), DES_ROP_S(IJK,:)/DES_RO_S(:) 
+!!$            IF(PRINT_DES_SCREEN) write(*,1012)  IJK, &
+!!$               CUT_CELL_AT(IJK), I_OF(IJK), I_OF(IJK), &
+!!$               I_OF(IJK), EP_G(IJK), DES_ROP_S(IJK,:)/DES_RO_S(:) 
 !!$            READ(*,*) 
 !!$         ENDIF 
 !!$         ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)

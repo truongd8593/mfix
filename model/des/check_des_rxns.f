@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: CHECK_DES_RXNS                                         !
+!  Subroutine: CHECK_DES_RXNS                                          !
 !                                                                      !
 !  Purpose:                                                            !
 !                                                                      !
@@ -12,15 +12,15 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_DES_RXNS
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------      
       Use compar
       USE des_rxns
       Use discretelement
       Use funits  
-
       Use run
-
       IMPLICIT NONE
-
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -29,9 +29,9 @@
 ! Number of processors used. (DES reactive chemistry is currently limited
 ! to serial runs!)
       INTEGER CHECK_MPI
-
 ! Logical indicating that an error message has been sent to the user.
       LOGICAL WARNED
+!-----------------------------------------------
 
       FIRST_CALL = .TRUE.
 

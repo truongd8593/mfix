@@ -135,16 +135,16 @@
                      DES_BCMI = DES_BCMI + 1
 
                      EPs_tmp = ZERO
-                     DO M=1, MMAX
+                     DO M=1, DES_MMAX
 ! If DES_BC_ROP_s is well defined (defined and not zero), check that either
 ! DES_BC_MASSFLOW or DES_BC_VOLFLOW is also well defined.  If not, flag an
 ! error and exit.
                         IF(DES_BC_ROP_s(BCV,M) /= UNDEFINED .AND. &
                           .NOT. COMPARE(DES_BC_ROP_s(BCV,M),ZERO) ) THEN
 
-! Check that density information is not missing, if so exit.  RO_s is 
+! Check that density information is not missing, if so exit. des_RO_s is 
 ! checked for unrealistic values in check_data_04.f                              
-                           IF(COMPARE(RO_s(M),ZERO))THEN
+                           IF(COMPARE(DES_RO_s(M),ZERO))THEN
                               IF(DMP_LOG) WRITE(UNIT_LOG,1006) M, BCV
                               IF(DMP_LOG) WRITE(*,1006) M, BCV
                               CALL MFIX_EXIT(myPE)
@@ -156,7 +156,7 @@
 ! Both volumetric and mass flow rates have been defined. 
 ! Verify that the values match.
                                  IF(.NOT.COMPARE(DES_BC_VOLFLOW_s(BCV,M),&
-                                   DES_BC_MASSFLOW_s(BCV,M)/RO_s(M))) THEN
+                                   DES_BC_MASSFLOW_s(BCV,M)/DES_RO_s(M))) THEN
                                    IF(DMP_LOG) WRITE(UNIT_LOG,1006) BCV,M
                                    IF(DMP_LOG) WRITE(*,1006) BCV,M
                                     CALL MFIX_EXIT(myPE)
@@ -164,7 +164,7 @@
                               ELSE
 ! Only MASSFLOW was given. Calculate VOLFLOW.
                                  DES_BC_VOLFLOW_s(BCV,M) = &
-                                    DES_BC_MASSFLOW_s(BCV,M)/RO_s(M)
+                                    DES_BC_MASSFLOW_s(BCV,M)/DES_RO_s(M)
                               ENDIF
                            ELSE   ! no mass flow rate is specified
                               IF(DES_BC_VOLFLOW_s(BCV,M) == UNDEFINED) THEN
@@ -176,7 +176,7 @@
                            ENDIF   
 ! Add solids volume to total solds volume to check for overflow
                            EPs_tmp = EPs_tmp + &
-                              (DES_BC_ROP_s(BCV,M)/RO_s(M))
+                              (DES_BC_ROP_s(BCV,M)/DES_RO_S(M))
                         ENDIF  ! endif des_bc_rop_s is well defined
 
 ! Back check that if either DES_BC_MASSFLOW_s or DES_BC_VOLFLOW_s are
@@ -196,7 +196,7 @@
                               CALL MFIX_EXIT(myPE)
                            ENDIF
                         ENDIF
-                     ENDDO   ! end loop of M=1,MMAX
+                     ENDDO   ! end loop of M=1,DES_MMAX
 
                      IF(COMPARE(EPs_tmp,ZERO))THEN
 ! A des inlet has been defined, but there is no specifed flow information

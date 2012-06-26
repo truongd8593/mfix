@@ -396,6 +396,10 @@
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PN !(PARTICLES, MAXNEIGHBORS)
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PV !(PARTICLES, MAXNEIGHBORS)
 
+! Gas-solids drag force on partaicle
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: GD_FORCE
+                        !(PARTICLES,DIMN)      
+
 ! Run time logic.  if calc_fc is true, then the contact forces (FC) are 
 ! updated to include gas-solids drag and gas pressure in the call to 
 ! drag_fgs. calc_fc does not play a role in pure granular flow sims
@@ -440,6 +444,11 @@
 ! particle 'phases'
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: F_SDS
                         !(DIMENSION_3,MMAX,DES_MMAX)
+                        
+! Solids-solids drag force on particle (between continuous solids and
+! discrete particle)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: SD_FORCE
+                        !(PARTICLES,DIMN)
 
 ! the following should probably be local to the subroutine
 ! solve_vel_star they are only needed when invoking the non-interpolated

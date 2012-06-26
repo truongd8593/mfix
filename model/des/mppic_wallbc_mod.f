@@ -1,4 +1,20 @@
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  MODULE: MPPIC_WALLBC                                                C
+!  Purpose:                                                            C
+!                                                                      C
+!  Contains the following subroutines:                                 C
+!     MPPIC_APPLY_WALLBC, MPPIC_MI_BC, MPPIC_FIND_EMPTY_SPOT           C
+!     MPPIC_APPLY_BC2PART, MPPIC_REMOVE_PARTICLE, MPPIC_REFLECT_PART   C
+!     MPPIC_CHECK_IF_INSIDE_DOMAIN, MPPIC_FIND_NEW_CELL                C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       MODULE mppic_wallbc
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE param 
       USE param1 
       USE discretelement   
@@ -15,6 +31,10 @@
       USE fldvar 
       USE mfix_pic
       IMPLICIT NONE
+!-----------------------------------------------
+! Varibles
+!-----------------------------------------------
+
       PRIVATE 
       
       PUBLIC:: mppic_apply_wallbc, MPPIC_FIND_NEW_CELL
@@ -24,13 +44,24 @@
       
       INTEGER :: PIJK_OLD(5), PIJK_INT(5), REFLECT_COUNT 
       DOUBLE PRECISION :: DIST_OFFSET 
+!-----------------------------------------------
+
       CONTAINS 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: MPPIC_APPLY_WALLBC                                      C
+!  Purpose:                                                            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE MPPIC_APPLY_WALLBC
-      
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
       INTEGER :: I, J, K, IJK_CELL, IDIM, NPG, IDIR, IP, NP, IJK
       INTEGER :: COUNT, COUNT_BC , PC, IPROC
-      
 
       INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), LPIP_ADD_COUNT_ALL(0:numPEs-1)
       LOGICAL :: DEBUG_DES_LOCAL, tmp_logical, reflected 
@@ -39,8 +70,12 @@
       DOUBLE PRECISION :: POS_INIT(DIMN)
       
       DOUBLE PRECISION :: NORM_CF(3), XPOS, YPOS, ZPOS, DIST
-      
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
       INCLUDE 'function.inc'
+!-----------------------------------------------
+
       IF(FIRST_PASS) THEN 
          open(1000, file='parts_out_mppic.dat', form="formatted", status="unknown")
          write(1000,*) 'partices outside domain'
@@ -111,7 +146,9 @@
             PIJK_INT(4), PIJK(NP,1:4), (POS_INIT(IDIM), IDIM = 1, DIMN) ,&
             (DES_POS_NEW(NP,IDIM), IDIM = 1, DIMN)
             !IF(NP.Eq.2614) 
-            write(1000,'(A, i10,2x,i3, 2(2x, L1))') 'IJK_CELL, REF COUNT, REF FROM ORIG?   =', IJK_CELL, REFLECT_COUNT, tmp_logical 
+            write(1000,'(A, i10,2x,i3, 2(2x, L1))') &
+               'IJK_CELL, REF COUNT, REF FROM ORIG?   =', &
+               IJK_CELL, REFLECT_COUNT, tmp_logical 
             
             !IF(tmp_logical.and.CUT_CELL_AT(IJK_CELL)) THEN 
             IJK_CELL = PIJK(NP, 4) 
@@ -133,9 +170,14 @@
                write(1000,'(A, 3(2x, g17.8))') 'CUT FACE REFPNT  =', REFP_S(IJK_CELL,1:3)
             ENDIF
             
-            WRITE(1000, '(A/)') '--------------------------------------------------------'
+            WRITE(1000, '(A/)') &
+              '--------------------------------------------------------'
             
-             IF(PRINT_DES_SCREEN)  WRITE(*,'(i10,6(2x,L1), 3(2x,i10))') NP, CUT_CELL_AT(PIJK_OLD(4)), CUT_CELL_AT(PIJK_INT(4)), CUT_CELL_AT(PIJK(NP,4)), FLUID_AT(PIJK_OLD(4)), FLUID_AT(PIJK_INT(4)), FLUID_AT(PIJK(NP,4)), PIJK_OLD(4), PIJK_INT(4), PIJK(NP,4)
+             IF(PRINT_DES_SCREEN)  WRITE(*,'(i10,6(2x,L1), 3(2x,i10))') &
+                NP, CUT_CELL_AT(PIJK_OLD(4)), CUT_CELL_AT(PIJK_INT(4)), &
+                CUT_CELL_AT(PIJK(NP,4)), FLUID_AT(PIJK_OLD(4)),&
+                FLUID_AT(PIJK_INT(4)), FLUID_AT(PIJK(NP,4)), &
+                PIJK_OLD(4), PIJK_INT(4), PIJK(NP,4)
          ENDIF
       END DO PART_LOOP
       
@@ -174,17 +216,28 @@
          !READ(*,*)
       ENDIF
 
-      
-      end SUBROUTINE MPPIC_APPLY_WALLBC
-      
+      END SUBROUTINE MPPIC_APPLY_WALLBC
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: MPPIC_MI_BC                                             C
+!  Purpose:                                                            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE  MPPIC_MI_BC 
       IMPLICIT NONE 
-      
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
       INTEGER :: L, I, J, K, IDIR, IDIM, IPCOUNT, LAST_EMPTY_SPOT, NEW_SPOT
-      INTEGER :: I1, I2, J1, J2, K1, K2, INEW, JNEW, KNEW, IJK, IJK_WALL,  M
+      INTEGER :: I1, I2, J1, J2, K1, K2, INEW, JNEW, KNEW, IJK, IJK_WALL, M
       DOUBLE PRECISION :: WALL_NORM(DIMN), CORD_START(DIMN), DOML(DIMN)
-      DOUBLE PRECISION :: EPS_INFLOW(MMAX), AREA_INFLOW, VEL_INFLOW(DIMN), STAT_WT
-      
+      DOUBLE PRECISION :: AREA_INFLOW, VEL_INFLOW(DIMN), STAT_WT
+
+      DOUBLE PRECISION :: EPS_INFLOW(MMAX)
       DOUBLE PRECISION REAL_PARTS(DIM_M), COMP_PARTS(DIM_M), VEL_NORM_MAG, VOL_INFLOW, VOL_IJK
        
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: RANDPOS
@@ -196,9 +249,12 @@
          type(ty_spotlist),pointer :: next
       end type ty_spotlist
       type(ty_spotlist),pointer :: root_spotlist,cur_spotlist,prev_spotlist
-       
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
       INCLUDE 'function.inc'
-       
+!-----------------------------------------------
+
       PIP_ADD_COUNT = 0 
       LAST_EMPTY_SPOT = 0
       allocate(root_spotlist); nullify(root_spotlist%next)
@@ -288,14 +344,14 @@
 !will be XE(INEW) which corresponds to XE(INEW-1) + DX(INEW). 
                         
                         DO M = 1, MMAX 
-                           EPS_INFLOW(M) = BC_ROP_S(L, M)/RO_S(M)
+                           EPS_INFLOW(M) = BC_ROP_S(L, M)/DES_RO_S(M)
                            VEL_INFLOW(1) = BC_U_S(L, M)
                            VEL_INFLOW(2) = BC_V_S(L, M)
                            IF(DIMN.eq.3) VEL_INFLOW(3) = BC_W_S(L, M)
                            VEL_NORM_MAG = ABS(DOT_PRODUCT(VEL_INFLOW(1:DIMN), WALL_NORM(1:DIMN)))
                            VOL_INFLOW = AREA_INFLOW*VEL_NORM_MAG*DTSOLID
                            
-                           REAL_PARTS(M) = 6.d0*EPS_INFLOW(M)*VOL_INFLOW/(PI*(D_p0(M)**3.d0))
+                           REAL_PARTS(M) = 6.d0*EPS_INFLOW(M)*VOL_INFLOW/(PI*(DES_D_p0(M)**3.d0))
                            COMP_PARTS(M) = zero
                            IF(CONSTANTNPC) THEN 
                               IF(EPS_INFLOW(M).GT.ZERO) COMP_PARTS(M) = REAL(NPC_PIC(M))*VOL_INFLOW/VOL_IJK
@@ -340,9 +396,9 @@
                                  
                                  DES_VEL_NEW(NEW_SPOT, :) = DES_VEL_OLD(NEW_SPOT, :)
                                  
-                                 DES_RADIUS(NEW_SPOT) = D_p0(M)*HALF
+                                 DES_RADIUS(NEW_SPOT) = DES_D_p0(M)*HALF
                                  
-                                 RO_Sol(NEW_SPOT) =  RO_S(M)
+                                 RO_Sol(NEW_SPOT) =  DES_RO_S(M)
                                  
                                  DES_STAT_WT(NEW_SPOT) = STAT_WT 
 
@@ -411,15 +467,31 @@
       imax_global_id = imax_global_id+sum(add_count_all(0:numpes-1))
  
       END SUBROUTINE MPPIC_MI_BC
-    
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: MPPIC_FIND_EMPTY_SPOT                                   C
+!  Purpose:                                                            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE MPPIC_FIND_EMPTY_SPOT(LAST_INDEX, EMPTY_SPOT)
       
-      IMPLICIT NONE 
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
       INTEGER, INTENT(INOUT) :: LAST_INDEX 
-      INTEGER, INTENT(OUT) :: EMPTY_SPOT 
+      INTEGER, INTENT(OUT) :: EMPTY_SPOT
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
       LOGICAL :: SPOT_FOUND
       INTEGER :: LL
-      
+!----------------------------------------------- 
+
       IF(LAST_INDEX.EQ.MAX_PIP) THEN
          IF(DMP_LOG) then 
             WRITE(UNIT_LOG,2001) 
@@ -464,10 +536,24 @@
       & /1X,70('*')/)
       END SUBROUTINE MPPIC_FIND_EMPTY_SPOT
 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: MPPIC_APPLY_BC2PART                                     C
+!  Purpose:                                                            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE  MPPIC_APPLY_BC2PART(LL, IJK_CELL)
       IMPLICIT NONE 
-      
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------      
       INTEGER, INTENT(IN) :: LL, IJK_CELL
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------      
       INTEGER :: I, J, K, IDIM, IDIR, IJK
       INTEGER :: COUNT, COUNT_BC, IJK_WALL
       
@@ -476,10 +562,11 @@
       DOUBLE PRECISION :: NORM_CF(3), XPOS, YPOS, ZPOS
       DOUBLE PRECISION :: XPOS_OLD, YPOS_OLD, ZPOS_OLD, DIST_OLD
       CHARACTER*100 :: WALL_TYPE
-
-
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
       INCLUDE 'function.inc'
-
+!-----------------------------------------------
 
       COUNT_BC = DES_CELLWISE_BCDATA(IJK_CELL)%COUNT_DES_BC 
 
@@ -742,16 +829,30 @@
          & /1X,70('*')/)
 
 
+      END SUBROUTINE MPPIC_APPLY_BC2PART
 
-      END SUBROUTINE  MPPIC_APPLY_BC2PART
 
-      SUBROUTINE MPPIC_REMOVE_PARTICLE(LL) 
-        IMPLICIT NONE
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: MPPIC_REMOVE_PARTICLE                                   C
+!  Purpose:                                                            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      SUBROUTINE MPPIC_REMOVE_PARTICLE(LL)
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
         INTEGER, INTENT(IN) :: LL
-        
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------        
         INTEGER :: II 
-
         LOGICAL ::  REPLACE_PART_FOUND 
+!-----------------------------------------------
+
         REPLACE_PART_FOUND = .TRUE.
         !Don't call this routine in its current form. 
         !this routine will bring the IIth particle to LL's position
@@ -777,12 +878,26 @@
        
         
       END SUBROUTINE MPPIC_REMOVE_PARTICLE
-      
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: MPPIC_REFLECT_PARTICLE                                  C
+!  Purpose:                                                            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE MPPIC_REFLECT_PART(LL, DISTFROMWALL, WALL_NORM)
-              
       IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
       INTEGER, INTENT(IN) :: LL
       DOUBLE PRECISION, INTENT(IN) :: DISTFROMWALL, WALL_NORM(DIMN)
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------      
       !magnitude of pre-collisional normal and tangential velocity components 
       DOUBLE PRECISION :: VEL_NORMMAG_APP, VEL_TANGMAG_APP, TANGENT(DIMN)
       
@@ -797,7 +912,9 @@
 
       DOUBLE PRECISION :: COEFF_REST_EN, COEFF_REST_ET
 
-      DOUBLE PRECISION :: VELMOD, NORMMOD, VELDOTNORM 
+      DOUBLE PRECISION :: VELMOD, NORMMOD, VELDOTNORM
+!-----------------------------------------------
+
 !bring the particle inside the domain 
       REFLECT_COUNT = REFLECT_COUNT + 1 
       DES_POS_NEW(LL, 1:DIMN) = DES_POS_NEW(LL, 1:DIMN) + &
@@ -850,15 +967,32 @@
                   
       END SUBROUTINE MPPIC_REFLECT_PART
 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: MPPIC_CHECK_IF_INSIDE_DOMAIN                            C
+!  Purpose:                                                            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE MPPIC_CHECK_IF_INSIDE_DOMAIN(LL) 
-      
+
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
       INTEGER, INTENT(IN) :: LL 
-      
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
       DOUBLE PRECISION :: XPOS, YPOS, ZPOS, WNORM(3), DISTMOD 
       INTEGER :: I, J, K, IJK
-      
-      
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------      
       INCLUDE 'function.inc'
+!-----------------------------------------------
+
       IJK = PIJK(LL, 4)
 
       INSIDE_DOMAIN = .TRUE.
@@ -896,14 +1030,33 @@
          ENDIF
       ENDIF
       END SUBROUTINE MPPIC_CHECK_IF_INSIDE_DOMAIN
-      SUBROUTINE MPPIC_FIND_NEW_CELL(LL)
-      
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: MPPIC_FIND_NEW_CELL                                     C
+!  Purpose:                                                            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      SUBROUTINE MPPIC_FIND_NEW_CELL(LL)      
       IMPLICIT NONE 
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
       INTEGER, INTENT(IN) :: LL 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
       DOUBLE PRECISION :: XPOS, YPOS, ZPOS 
       INTEGER :: I, J, K, IJK
-      
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
       INCLUDE 'function.inc'
+!-----------------------------------------------
+
       I = PIJK(LL,1)
       J = PIJK(LL,2)
       K = PIJK(LL,3)

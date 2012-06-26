@@ -1,25 +1,27 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: GENERATE_PARTICLE_CONFIG                               C
-!
-!  Purpose: Generate particle configuration based on maximum particle
-!  radius and filling from top to bottom within specified bounds
+!  SUBROUTINE: GENERATE_PARTICLE_CONFIG                                C
+!                                                                      C
+!  Purpose: Generate particle configuration based on maximum particle  C
+!           radius and filling from top to bottom within specified     C
+!           bounds                                                     C
 !                                                                      C
 !                                                                      C
 !  Authors: Rahul Garg                                Date: 01-Aug-07  C
 !  Reviewer: Sreekanth Pannala                        Date: 23-Oct-08  C
 !  Comments: Added a new routine for clarity of functions              C
-!  Revision: Modified subroutine for parallel processing 
+!                                                                      C
+!  Revision: Modified subroutine for parallel processing               C
 !  Authour : Pradeep G                                Date:28-Feb-11   C
-
-!  Revision: Added a new subroutine GENERATE_PARTICLE_CONFIG_MPPIC
-!  for generating particle position distribution for MPPIC 
-!  Author: Rahul Garg                                 Date: 3-May-2011
+!                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE GENERATE_PARTICLE_CONFIG
-      
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE param1
       USE geometry
       USE funits
@@ -35,11 +37,11 @@
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------       
+!-----------------------------------------------
       INTEGER :: L, M
       INTEGER :: lproc_parcount
       double precision lmax_dia,lfac,xp,yp,zp 
-!-----------------------------------------------       
+!-----------------------------------------------
 
         
       IF(MPPIC) THEN 
@@ -53,7 +55,7 @@
 ! initializing particle count      
       lproc_parcount = 0
 ! setting a local value of maximum diameter      
-      lmax_dia = maxval(d_p0(1:MMAX))
+      lmax_dia = maxval(DES_D_p0(1:DES_MMAX))
       lfac =1.05 
 ! setting particle seed spacing grid to be slightly greater than
 ! the maximum particle diameter. seed at ~particle radii
@@ -64,7 +66,7 @@
       IF (DIMN .EQ. 2) THEN
 
 ! looping of specified number of solids phases
-         DO M = 1, MMAX
+         DO M = 1, DES_MMAX
 ! looping over calculated number of particles in mth solids phase 
             DO L = 1, PART_MPHASE(M)
 ! if current seed location within simulation domain boundaries based on
@@ -73,8 +75,8 @@
                    YP.GE.YN(jstart1-1) .AND. YP.LT.YN(jend1) ) THEN
                   lproc_parcount = lproc_parcount + 1
                   pea(lproc_parcount,1) = .true.
-                  des_radius(lproc_parcount) = d_p0(m)*half 
-                  ro_sol(lproc_parcount) = ro_s(m)
+                  des_radius(lproc_parcount) = DES_D_p0(M)*half 
+                  ro_sol(lproc_parcount) = DES_RO_S(M)
                   des_pos_new(lproc_parcount,1) = xp 
                   des_pos_new(lproc_parcount,2) = yp 
                ENDIF 
@@ -87,12 +89,12 @@
                   yp = yp + lmax_dia*lfac 
                ENDIF
             ENDDO  ! end loop over number of particles in phase M
-         ENDDO   ! end loop over MMAX
+         ENDDO   ! end loop (m=1,des_mmax)
 
       ELSE   ! three dimensions
 
 ! looping of specified number of solids phases              
-         DO M=1,MMAX
+         DO M=1,DES_MMAX
 ! looping over calculated number of particles in mth solids phase          
             DO L=1,PART_MPHASE(M)
 ! if current seed location within simulation domain boundaries based on
@@ -102,8 +104,8 @@
                    ZP.GE.ZT(kstart1-1) .AND. ZP.LT.ZT(kend1)) THEN
                   lproc_parcount = lproc_parcount + 1
                   pea(lproc_parcount,1) = .true.
-                  des_radius(lproc_parcount) = d_p0(m)*half 
-                  ro_sol(lproc_parcount) = ro_s(m)
+                  des_radius(lproc_parcount) = DES_D_p0(M)*half 
+                  ro_sol(lproc_parcount) = DES_RO_S(M)
                   des_pos_new(lproc_parcount,1) = xp 
                   des_pos_new(lproc_parcount,2) = yp 
                   des_pos_new(lproc_parcount,3) = zp 
@@ -123,7 +125,7 @@
                   ENDIF
                ENDIF 
             ENDDO  ! end loop over number of particles in phase M
-         ENDDO   ! end loop over MMAX
+         ENDDO   ! end loop (m=1,des_mmax)
       ENDIF   ! end if/else (dimn==2)
 
 ! setting pip to particle count
@@ -157,10 +159,18 @@
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!
-!      
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C      
+!                                                                      C
+!  Subroutine: GENERATE_PARTICLE_CONFIG_MMPPIC                         C
+!  Purpose: generates particle position distribution for MPPIC         C
+!  Author: Rahul Garg                                 Date: 3-May-2011 C      
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE GENERATE_PARTICLE_CONFIG_MPPIC
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------      
       USE param 
       USE param1
       USE geometry
@@ -178,18 +188,20 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------       
-      INTEGER L, I, J, K, M, IDIM , IJK
-      INTEGER PART_COUNT, CNP_CELL_COUNT, IPCOUNT
-      DOUBLE PRECISION  DOML(DIMN), CORD_START(DIMN), REAL_PARTS(DIM_M), STAT_WT
-      INTEGER LPROC_PARCOUNT
-      DOUBLE PRECISION VOLIJK
+      INTEGER :: L, I, J, K, M, IDIM , IJK
+      INTEGER :: PART_COUNT, CNP_CELL_COUNT, IPCOUNT
+      DOUBLE PRECISION :: DOML(DIMN), CORD_START(DIMN) 
+      DOUBLE PRECISION :: REAL_PARTS(DIM_M), STAT_WT
+      INTEGER :: LPROC_PARCOUNT
+      DOUBLE PRECISION :: VOLIJK
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: RANDPOS
 !-----------------------------------------------  
-
+! Include statement functions
+!-----------------------------------------------  
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
-
+!-----------------------------------------------  
       
       IF(dmp_log.and.debug_des) WRITE(unit_log,'(3X,A)') &
       '---------- START GENERATE_PARTICLE_CONFIG MPPIC ---------->'
@@ -206,7 +218,7 @@
                DOML(1) = DX(I)
                DOML(2) = DY(J)
                IF(DIMN.EQ.3) DOML(3) = DZ(K)
-               DO M = 1, MMAX 
+               DO M = 1, DES_MMAX 
                   CNP_CELL_COUNT = CNP_ARRAY(IJK, M)
                   IF(CNP_CELL_COUNT.EQ.0) CYCLE 
                   ALLOCATE(RANDPOS(CNP_CELL_COUNT, DIMN))
@@ -216,7 +228,11 @@
                   ENDDO
 
                   VOLIJK = VOL(IJK)
-                  REAL_PARTS(M) = 6.d0*EP_S(IJK,M)*VOLIJK/(PI*(D_p0(M)**3.d0))
+                 
+! JG: this appears to be based on setting ep_s from two-fluid model
+! this should be replaced with a true dem quantity                 
+                  REAL_PARTS(M) = 6.d0*EP_S(IJK,M)*VOLIJK/&
+                     (PI*(DES_D_p0(M)**3.d0))
                   
                   IF(CONSTANTNPC) THEN 
 ! calculate the statistical weight for CP's belonging to this solids
@@ -240,8 +256,8 @@
                         
                         DES_VEL_NEW(PART_COUNT + IPCOUNT, :) =  ZERO
                         DES_VEL_OLD(PART_COUNT + IPCOUNT, :) =  ZERO
-                        DES_RADIUS(PART_COUNT + IPCOUNT) = D_p0(M)*HALF
-                        RO_Sol(PART_COUNT + IPCOUNT) = RO_S(M)
+                        DES_RADIUS(PART_COUNT + IPCOUNT) = DES_D_p0(M)*HALF
+                        RO_Sol(PART_COUNT + IPCOUNT) = DES_RO_S(M)
                      
                         DES_STAT_WT(PART_COUNT + IPCOUNT) = STAT_WT
 
@@ -274,13 +290,13 @@
 
       WRITE(*,*) 'FROM pe =', mype, 'PIP = ', PIP
 
-      IF(PART_COUNT.NE.SUM(CNP_PIC(1:MMAX))) THEN 
+      IF(PART_COUNT.NE.SUM(CNP_PIC(1:DES_MMAX))) THEN 
          IF(DMP_LOG) THEN 
             WRITE(UNIT_LOG,*) 'ERROR IN GENERATE_PARTICLE_CONFIG_MPPIC'
             WRITE(UNIT_LOG,*) &
           & 'NUMBER OF PARTICLES INITIALIZED (', PART_COUNT, '), NOT &
           & EQUAL TO EARLIER CALCULATED TOTAL NUMBER OF PARTICLES (', & 
-          & SUM(CNP_PIC(1:MMAX)), ' )'
+          & SUM(CNP_PIC(1:DES_MMAX)), ' )'
 
             WRITE(UNIT_LOG,*) 'TERMINAL ERROR: STOPPING'
          ENDIF

@@ -1676,7 +1676,7 @@
 !-----------------------------------------------
 
 ! fill the temporary buffer   
-      do lm = 1,mmax
+      do lm = 1,DES_mmax
          call des_exchangenode(wtbar(:,lm),padd=.true.)
          call des_exchangenode(drag_am(:,lm),padd=.true.)
          do li =1,dimn

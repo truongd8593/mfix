@@ -145,7 +145,7 @@
                   B_M(IJK,0) = B_M(IJK,0) + tmp_B
 
                ENDIF   ! end if (fluid_at(ijk))
-            ENDDO   ! end do loop (m=1,mmax)
+            ENDDO   ! end do loop (m=1,des_mmax)
          ENDDO   !   end do loop (ijk=ijkstart3,ijkend3)
 !$omp end parallel do 
 
@@ -202,7 +202,7 @@
                   B_M(IJK,0) = B_M(IJK,0) + tmp_B
 
                ENDIF   ! end if (fluid_at(ijk))
-            ENDDO   ! end do loop (m=1,mmax)
+            ENDDO   ! end do loop (m=1,des_mmax)
          ENDDO   !   end do loop (ijk=ijkstart3,ijkend3)
 !$omp end parallel do 
           
@@ -257,7 +257,7 @@
                   B_M(IJK,0) = B_M(IJK,0) + tmp_B
                   
                ENDIF   ! end if (fluid_at(ijk))
-            ENDDO   ! end do loop (m=1,mmax)
+            ENDDO   ! end do loop (m=1,des_mmax)
          ENDDO   !   end do loop (ijk=ijkstart3,ijkend3)
 !$omp end parallel do 
 
