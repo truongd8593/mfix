@@ -1727,8 +1727,8 @@ qcache=auto "
 
 	    FORTRAN_CMD=gfortran
             LINK_CMD=gfortran
-#	    libs_d=" odepack.a blas90.a dgtsv90.a"
-#	    libs="odepack.a blas90.a  dgtsv90.a"
+	    libs_d=" odepack.a blas90.a dgtsv90.a"
+	    libs="odepack.a blas90.a  dgtsv90.a"
 
 	    ;;
 	       
