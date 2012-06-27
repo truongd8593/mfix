@@ -574,7 +574,7 @@ ln -sf "$mpi_include/mpif.h" .
            ;;
          11 )
            echo " "
-           echo "Gfortran"
+           echo "Gfortran on 64 bit machine"
            opsys="Linux_64_gfort"
            ;;
          *)
@@ -682,7 +682,7 @@ ln -sf "$mpi_include/mpif.h" .
            ;;
          4 )
            echo " "
-           echo "Intel Linux Fortran Compiler version 9.X selected"
+           echo "GFortran Compiler on 32 bit machine selected"
            opsys="Linux_gfortran"
            ;;
          *)
@@ -1711,10 +1711,28 @@ qcache=auto "
 
     Linux_64_gfort )
 
-            FORTRAN_CMD=gfortran
+    case $dmp_version in
+	    y|Y )
+	    FORTRAN_CMD=mpif90
+	    LINK_CMD="mpif90 "
+#	    libs_d=" odepack.a blas90.a dgtsv90.a"
+#	    libs="odepack.a blas90.a   dgtsv90.a"
+         
+            libs_d="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib64 "
+            libs="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib64 "
+
+	    ;;
+
+	    *)
+
+	    FORTRAN_CMD=gfortran
             LINK_CMD=gfortran
-            libs_d="odepack.a blas90.a dgtsv90.a"
-            libs="odepack.a blas90.a dgtsv90.a"
+#	    libs_d=" odepack.a blas90.a dgtsv90.a"
+#	    libs="odepack.a blas90.a  dgtsv90.a"
+
+	    ;;
+	       
+    esac
 
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -1732,9 +1750,27 @@ qcache=auto "
             ;;
 
     Linux_gfortran )
+    
+    case $dmp_version in
+	    y|Y )
+	    FORTRAN_CMD=mpif90
+	    LINK_CMD="mpif90 "
+#	    libs_d=" odepack.a blas90.a dgtsv90.a"
+#	    libs="odepack.a blas90.a   dgtsv90.a"
 
-            FORTRAN_CMD=gfortran
+	    ;;
+
+	    *)
+
+	    FORTRAN_CMD=gfortran
             LINK_CMD=gfortran
+#	    libs_d=" odepack.a blas90.a dgtsv90.a"
+#	    libs="odepack.a blas90.a  dgtsv90.a"
+
+	    ;;
+	       
+    esac
+
             libs_d="odepack.a blas90.a dgtsv90.a"
             libs="odepack.a blas90.a dgtsv90.a"
 
