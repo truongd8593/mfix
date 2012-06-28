@@ -18,7 +18,8 @@
 !    desmpi_sendrecv_wait, desmpi_gatherv, desmpi_scatterv
 !    des_scatter_particle, des_restart_map, desmpi_check_sendrecvbuf,
 !    desmpi_pack_ghostpar, desmpi_unpack_ghostpar, desmpi_cleanup, 
-!    desmpi_pack_parcross, desmpi_unpack_parcross, des_addnodevalues,
+!    desmpi_pack_parcross, desmpi_unpack_parcross, 
+!    des_addnodevalues, des_addnodevalues2,
 !    des_gather_d,l,i, des_gatherwrite_d,l,i, des_writepar_d,l,i
 !    des_scatter_d,l,i, des_readscatter_d,l,i, 
 !    des_restart_neigh, redim_par, des_dbgmpi    
@@ -725,7 +726,7 @@
                   end if 
                end do 
                if (lpar_proc(lcurpar).eq.-1) then 
-                  WRITE(*,501) lcurpar                       
+                  WRITE(*,501) lcurpar
                   call des_mpi_stop
                endif 
             enddo 
@@ -1653,11 +1654,12 @@
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_addnodevalues 
-! Purpose          : This routine is specially used for drag_fgs 
-!                    The backward interpolation in drag_fgs  
-!                    computes the grid node values of drag_am and drag_bm 
-!                    node values are from istart2 to iend1; hence spereate
-!                    module is created to exchange node values 
+! Purpose          : This routine is specially used for des_drag_gs 
+!                    The backward interpolation in des_drag_gs computes 
+!                    the grid node values of drag_am and drag_bm 
+!                    node values are from istart2 to iend1;
+!                    hence a separate module is created to exchange
+!                    node values 
 !                      
 ! Parameters       : None  
 !------------------------------------------------------------------------
@@ -1676,8 +1678,7 @@
 !-----------------------------------------------
 
 ! fill the temporary buffer   
-      do lm = 1,DES_mmax
-         call des_exchangenode(wtbar(:,lm),padd=.true.)
+      do lm = 1,DES_MMAX
          call des_exchangenode(drag_am(:,lm),padd=.true.)
          do li =1,dimn
             call des_exchangenode(drag_bm(:,li,lm),padd=.true.)
@@ -1691,10 +1692,8 @@
             lijkmin = funijk(1,lj,lk)
             lijkmax = funijk(imax1,lj,lk)
             drag_am(lijkmin,:) = drag_am(lijkmin,:)+drag_am(lijkmax,:)  
-            wtbar(lijkmin,:) = wtbar(lijkmin,:)+wtbar(lijkmax,:)  
             drag_bm(lijkmin,:,:) = drag_bm(lijkmin,:,:)+drag_bm(lijkmax,:,:)  
             drag_am(lijkmax,:) = drag_am(lijkmin,:)
-            wtbar(lijkmax,:) = wtbar(lijkmin,:)
             drag_bm(lijkmax,:,:) = drag_bm(lijkmin,:,:)
          end do 
          end do 
@@ -1705,24 +1704,20 @@
             lijkmin = funijk(li,1,lk)
             lijkmax = funijk(li,jmax1,lk)
             drag_am(lijkmin,:) = drag_am(lijkmin,:)+drag_am(lijkmax,:)  
-            wtbar(lijkmin,:) = wtbar(lijkmin,:)+wtbar(lijkmax,:)  
-            drag_bm(lijkmin,:,:) = drag_bm(lijkmin,:,:)+drag_bm(lijkmax,:,:)  
+            drag_bm(lijkmin,:,:) = drag_bm(lijkmin,:,:)+drag_bm(lijkmax,:,:)
             drag_am(lijkmax,:) = drag_am(lijkmin,:)
-            wtbar(lijkmax,:) = wtbar(lijkmin,:)
             drag_bm(lijkmax,:,:) = drag_bm(lijkmin,:,:)
          end do 
          end do 
       end if 
-      if (des_periodic_walls_z .and. nodesk.eq.1 .and. dimn .eq. 3) then 
+      if (des_periodic_walls_z .and. nodesk.eq.1 .and. dimn .eq. 3) then
          do li = istart2,iend2
          do lj = jstart2,jend2
             lijkmin = funijk(li,lj,1)
             lijkmax = funijk(li,lj,kmax1)
             drag_am(lijkmin,:) = drag_am(lijkmin,:)+drag_am(lijkmax,:)  
-            wtbar(lijkmin,:) = wtbar(lijkmin,:)+wtbar(lijkmax,:)  
             drag_bm(lijkmin,:,:) = drag_bm(lijkmin,:,:)+drag_bm(lijkmax,:,:)  
             drag_am(lijkmax,:) = drag_am(lijkmin,:)
-            wtbar(lijkmax,:) = wtbar(lijkmin,:)
             drag_bm(lijkmax,:,:) = drag_bm(lijkmin,:,:)
          end do 
          end do 
@@ -1731,6 +1726,73 @@
       return 
 
       end subroutine des_addnodevalues
+
+
+!------------------------------------------------------------------------
+! Subroutine       : des_addnodevalues2
+! Purpose          : This routine is specially used for calc_des_rop_s 
+!                    The backward interpolation in calc_des_rop_s computes 
+!                    the grid node values of wtbar
+!                    node values are from istart2 to iend1;
+!                    hence a separate module is created to exchange
+!                    node values 
+!                      
+! Parameters       : None  
+!------------------------------------------------------------------------
+      subroutine des_addnodevalues2()
+!-----------------------------------------------
+      implicit none
+!-----------------------------------------------
+! local variables 
+!-----------------------------------------------
+      integer :: lm,ijk,lface,lijkmin,lijkmax
+      integer :: linode,ljnode,lknode,lijknode
+!-----------------------------------------------
+! include statement functions      
+!-----------------------------------------------
+      include 'function.inc'
+!-----------------------------------------------
+
+! fill the temporary buffer   
+      do lm = 1,DES_MMAX
+         call des_exchangenode(wtbar(:,lm),padd=.true.)
+      end do 
+
+! adjust for periodic boundaries with no domain decomposition 
+      if (des_periodic_walls_x .and. nodesi.eq.1) then 
+         do lk = kstart2,kend2
+         do lj = jstart2,jend2
+            lijkmin = funijk(1,lj,lk)
+            lijkmax = funijk(imax1,lj,lk)
+            wtbar(lijkmin,:) = wtbar(lijkmin,:)+wtbar(lijkmax,:)  
+            wtbar(lijkmax,:) = wtbar(lijkmin,:)
+         end do 
+         end do 
+      end if 
+      if (des_periodic_walls_y .and. nodesj.eq.1) then 
+         do lk = kstart2,kend2
+         do li = istart2,iend2
+            lijkmin = funijk(li,1,lk)
+            lijkmax = funijk(li,jmax1,lk)
+            wtbar(lijkmin,:) = wtbar(lijkmin,:)+wtbar(lijkmax,:)  
+            wtbar(lijkmax,:) = wtbar(lijkmin,:)
+         end do 
+         end do 
+      end if 
+      if (des_periodic_walls_z .and. nodesk.eq.1 .and. dimn .eq. 3) then 
+         do li = istart2,iend2
+         do lj = jstart2,jend2
+            lijkmin = funijk(li,lj,1)
+            lijkmax = funijk(li,lj,kmax1)
+            wtbar(lijkmin,:) = wtbar(lijkmin,:)+wtbar(lijkmax,:)  
+            wtbar(lijkmax,:) = wtbar(lijkmin,:)
+         end do 
+         end do 
+      end if 
+
+      return 
+
+      end subroutine des_addnodevalues2
 
 
 !------------------------------------------------------------------------
@@ -2462,11 +2524,11 @@
 ! subroutine       : des_dbgmpi 
 ! Purpose          : For printing the flags and values set for interface
 !                    communication   
-! Paramtere        : ptype - based on this following info is printed to
+! Parameters       : ptype - based on this following info is printed to
 !                    the file 
 !                    1 - interface flags 
-!                    2- send buffer for ghost particles
-!                    3 - recv buffer for ghosr particles 
+!                    2 - send buffer for ghost particles
+!                    3 - recv buffer for ghost particles 
 !                    4 - particle information 
 !                    5 - send buffer for particles exchanging processor
 !                    6 - particles info  

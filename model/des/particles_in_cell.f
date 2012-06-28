@@ -1,22 +1,23 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name:  PARTICLES_IN_CELL                                     C
-!                                                                      C
-!  Purpose: DES - Finding the fluid computational cell in which        C
-!           a particle lies, to calculate void fraction and also       C
-!           the volume averaged solids velocity of the cell            C
-!           For parallel processing indices are altered and changes    C
-!           to variables related to desgridsearch are made; steps      C
-!                                                                      C
-!                                                                      C
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C
-!  Reviewer: Rahul Garg                               Date: 01-Aug-07  C
-!  Comments: Removed the separate volume definitions and added pic     C
-!            array formulation and bed height calculation.             C
-!                                                                      C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: PARTICLES_IN_CELL                                       !
+!                                                                      !
+!  Purpose:                                                            !
+!     - For each particle find the computational fluid cell            !
+!       containing the particle center.                                !
+!     - Calculate the bulk density in each computational fluid         !
+!       cell.                                                          !
+!     - Calculate the volume average solids velocity in each           !
+!       computational fluid cell.                                      !
+!     - For parallel processing indices are altered                    !
+!                                                                      !
+!                                                                      !
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  !
+!  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  !
+!  Reviewer: Rahul Garg                               Date: 01-Aug-07  !
+!                                                                      !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE PARTICLES_IN_CELL
 
@@ -401,9 +402,10 @@
       ENDIF
 
 
-! Assign/allocate the variable PIC(IJK)%p(:). For each cell compare 
-! the number of current particles in the cell to what was in the
-! cell previously.  If different reallocate.  Store the particle ids
+! Assign/allocate the variable PIC(IJK)%p(:). For each computational
+! fluid cell compare the number of current particles in the cell to
+! what was in the cell previously.  If different reallocate.  Store
+! the particle ids
 ! ---------------------------------------------------------------->>>
 !$omp parallel do if(ijkend3 .ge. 2000) default(shared)           &
 !$omp private(ijk,npic) !schedule (guided,50)     
@@ -445,9 +447,8 @@
 ! if using drag interpolation then the bulk density and corresponding
 ! void fraction should be updated based on the new particle position 
 ! so it can be reflected in the drag calculation through ep_g.  hence 
-! the bulk density should be calculated/updated here using interpolation
-! routines
-
+! the bulk density is calculated/updated here using interpolation routines
+      IF (DES_INTERP_ON .AND. PIP >0)  CALL CALC_DES_ROP_S
       
 ! Calculate the cell average solids velocity, the bulk density (if not
 ! des_interp_on and not first_pass), and the void fraction. 
@@ -498,20 +499,10 @@
 ! calculate the bulk density using simple particle in cell center 
 ! count.  also evaluate using this method if a dem outlet leaves 
 ! system with no particles then
-! This calculation creates a discrepancy in the first_pass if interpolated
-! drag calculations are used. In interpolated drag, the drag
-! calculations in the gas phase are non-interpolated and in the discrete
-! phase the void fraction information will be dated (interpolated rop_s 
-! is only updated in the continuum side of calculation). In that case the
-! bulk density (and void fraction) should be updated based on the 
-! interpolation scheme
-
             IF(VOL(IJK).GT.0) THEN 
                OVOL = ONE/(VOL(IJK))
-               IF(FIRST_PASS .OR. &
-                 ((.NOT.FIRST_PASS).AND.(.NOT.DES_INTERP_ON))) THEN
+               IF(PIP == 0 .OR. .NOT.DES_INTERP_ON) &
                   DES_ROP_S(IJK,M) = DES_RO_S(M)*SOLVOLINC(IJK,M)*OVOL
-               ENDIF
             ENDIF
 
 ! assign DEM bulk density value to same variable associated with

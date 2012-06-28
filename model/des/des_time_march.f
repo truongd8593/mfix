@@ -1,19 +1,20 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!     Subroutine: DES_TIME_MARCH                                       C
-!                                                                      C
-!     Purpose: Called in model/time_march.f to do DES calculations     C
-!              Main DEM driver routine                                 C
-!                                                                      C
-!                                                                      C
-!     Author: Jay Boyalakuntla                        Date: 21-Jun-04  C
-!     Reviewer: Sreekanth Pannala                     Date: 09-Nov-06  C
-!     Reviewer: Rahul Garg                            Date: 01-Aug-07  C
-!     Pradeep: do_nsearch has to be set for calling neighbour. Since   C
-!              this flag is used during exchange it has to be set      C
-!              before calling particle in cell                         C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!     Subroutine: DES_TIME_MARCH                                       !
+!                                                                      !
+!     Purpose: Main DEM driver routine                                 !
+!                                                                      !
+!     Author: Jay Boyalakuntla                        Date: 21-Jun-04  !
+!     Reviewer: Sreekanth Pannala                     Date: 09-Nov-06  !
+!     Reviewer: Rahul Garg                            Date: 01-Aug-07  !
+!                                                                      !
+!     Comments:                                                        !
+!        Called in model/time_march.f to do DEM calculations.          !
+!        do_nsearch has to be set for calling neighbour. Since         !
+!        this flag is used during exchange it has to be set before     !
+!        calling particle_in_cell (Pradeep G.)                         !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE DES_TIME_MARCH
      
@@ -239,14 +240,6 @@
               IF(DMP_LOG) write(*,'(3X,A,X,ES15.7)') &
                   'DTSOLID =', DTSOLID
             ENDIF
-! Toggle flag so the mean fields are calculated only at the last DEM
-! time step
-            CALC_FC = .TRUE.
-            IF(DES_INTERP_ON .AND. NN.EQ.FACTOR) THEN 
-               CALLFROMDES = .FALSE.
-            ELSE 
-               CALLFROMDES = .TRUE.
-            ENDIF
          ELSE   ! else if (des_continuum_coupled)
             IF(DEBUG_DES) THEN
                IF(DMP_LOG) WRITE(*,'(3X,A,X,I10,X,A,X,ES15.7)') &
@@ -259,7 +252,10 @@
 ! regardless of number of particles 
          IF(MPPIC) THEN 
             CALL MPPIC_COMPUTE_PS_GRAD            
-            IF(DES_CONTINUUM_COUPLED) CALL DRAG_FGS
+            IF(DES_CONTINUUM_COUPLED) THEN
+               CALL CALC_DES_DRAG_GS
+               CALL CALC_DES_ROP_S
+            ENDIF
             CALL CFUPDATEOLD
          ELSE 
             CALL CALC_FORCE_DES

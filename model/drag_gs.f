@@ -14,7 +14,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
      
-      SUBROUTINE DRAG_GS(M, IER) !DISCRETE_FLAG, IER) 
+      SUBROUTINE DRAG_GS(M, DISCRETE_FLAG, IER) 
 
 !-----------------------------------------------
 ! Modules
@@ -46,8 +46,7 @@
 ! routine that the solid phase index M refers to the indice of a
 ! discrete 'phase' not a continuous phase so that the appropriate
 ! variables are referenced.
-!      LOGICAL, INTENT(IN) :: DISCRETE_FLAG
-       LOGICAL :: DISCRETE_FLAG      
+      LOGICAL, INTENT(IN) :: DISCRETE_FLAG
 !-----------------------------------------------
 ! Local parameters
 !-----------------------------------------------
@@ -111,8 +110,6 @@
 !!$omp&  VREL, UGC, VGC, WGC, Re, V_rm, A, B) &
 !!$omp&  schedule(static)
 
-      discrete_flag =.false.
-
       DO IJK = ijkstart3, ijkend3
 
          IF (FLUIDorP_FLOW_AT(IJK)) THEN 
@@ -122,15 +119,23 @@
             IJMK = JM_OF(IJK) 
             IJKM = KM_OF(IJK) 
 
-! assign local variables: DP_loc, EPs_loc, and MAXM.
-! These represent arrays for the particle diameter, solids volume
-! fraction, and number of particle types                 
+! assign local variables for DP_locm EPs_loc, and MAXM.  The former
+! represent arrays for the particle diameter, solids volume fraction, 
+! and the latter the number of particle types                 
             IF (.NOT.DES_CONTINUUM_HYBRID) THEN
-               MAXM = SMAX
-               DO CM = 1,SMAX
-                  DP_loc(CM) = D_p(IJK,CM)
-                  EPs_loc(CM) = EP_S(IJK,CM)
-               ENDDO
+               IF (DES_CONTINUUM_COUPLED) THEN
+                  MAXM = DES_MMAX
+                  DO DM = 1,MAXM
+                     DP_loc(DM) = DES_D_p0(DM)
+                     EPs_loc(DM) = DES_ROP_S(IJK,DM)/DES_RO_S(DM) 
+                  ENDDO
+               ELSE
+                  MAXM = SMAX
+                  DO CM = 1,MAXM
+                     DP_loc(CM) = D_p(IJK,CM)
+                     EPs_loc(CM) = EP_S(IJK,CM)
+                  ENDDO
+               ENDIF
             ELSE   ! des_continuum_hybrid branch
 ! for the hybrid model store the diameters of both discrete and
 ! continuous phases in a single new local variable.  likewise with the
@@ -145,9 +150,8 @@
                      DP_loc(DM) = DES_D_p0(DM)         
                      EPs_loc(DM) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
                   ENDDO
-                  L=DES_MMAX 
                   DO CM = 1,SMAX
-                     L = L + 1
+                     L = DES_MMAX + CM
                      DP_loc(L) = D_P(IJK,CM)
                      EPs_loc(L) = EP_S(IJK,CM)
                   ENDDO
@@ -159,9 +163,8 @@
                      DP_loc(CM) = D_p(IJK,CM)         
                      EPs_loc(CM) = EP_S(IJK,CM)
                   ENDDO
-                  L=SMAX 
                   DO DM = 1,DES_MMAX
-                     L = L + 1
+                     L = SMAX + DM
                      DP_loc(L) = DES_D_p0(DM)
                      EPs_loc(L) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
                   ENDDO          
@@ -173,6 +176,7 @@
             VGC = AVG_Y_N(V_G(IJMK),V_G(IJK)) 
             WGC = AVG_Z_T(W_G(IJKM),W_G(IJK)) 
             IF(DES_CONTINUUM_COUPLED) THEN
+! note given current dem setup these are not defined for p_flow_at!
                USCM = DES_U_S(IJK,M)
                VSCM = DES_V_S(IJK,M)
                WSCM = DES_W_S(IJK,M)
@@ -189,17 +193,17 @@
 ! drag, in other routines the value of viscosity at a pressure boundary
 ! always has a zero value.
             IF (P_FLOW_AT(IJK)) THEN
-               IF( FLUID_AT(EAST_OF(IJK) )) THEN
+               IF( FLUID_AT(EAST_OF(IJK)) ) THEN
                   Mu = MU_G(EAST_OF(IJK))
-               ELSE IF ( FLUID_AT(WEST_OF(IJK)) ) THEN
+               ELSEIF ( FLUID_AT(WEST_OF(IJK)) ) THEN
                   Mu = MU_G(WEST_OF(IJK))
-               ELSE IF ( FLUID_AT(NORTH_OF(IJK)) ) THEN
+               ELSEIF ( FLUID_AT(NORTH_OF(IJK)) ) THEN
                   Mu = MU_G(NORTH_OF(IJK))
-               ELSE IF ( FLUID_AT(SOUTH_OF(IJK)) ) THEN
+               ELSEIF ( FLUID_AT(SOUTH_OF(IJK)) ) THEN
                   Mu = MU_G(SOUTH_OF(IJK))
-               ELSE IF ( FLUID_AT(TOP_OF(IJK)) ) THEN
+               ELSEIF ( FLUID_AT(TOP_OF(IJK)) ) THEN
                   Mu = MU_G(TOP_OF(IJK))
-               ELSE IF ( FLUID_AT(BOTTOM_OF(IJK)) ) THEN
+               ELSEIF ( FLUID_AT(BOTTOM_OF(IJK)) ) THEN
                   Mu = MU_G(BOTTOM_OF(IJK))
                ENDIF
             ELSE
@@ -228,7 +232,7 @@
             DPA = ONE / tmp_sum
             Y_i = DP_loc(M)/DPA
 
-! assign variables for short dummy arguments
+! assign aliases for easy reference
             EPg = EP_G(IJK)
             ROg = RO_G(IJK)
             ROPg = ROP_G(IJK)
@@ -241,7 +245,7 @@
             ELSEIF (EPg == ZERO) THEN  
 ! this case will already be caught in most drag subroutines whenever
 ! RE==0 (for correlations in which RE includes EPg). however, this will
-! prevent potential divisions by zero in some models by setting it now.           
+! prevent potential divisions by zero in some models by setting it now.
                DgA = ZERO   
             ELSE
                SELECT CASE(TRIM(DRAG_TYPE))
@@ -256,7 +260,7 @@
                        DPA)
                CASE ('GIDASPOW_BLEND')
                   CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                    DPM)
+                       DPM)
                CASE ('GIDASPOW_BLEND_PCF')
                   CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,&
                        DPA)
@@ -349,20 +353,31 @@
                ENDIF
             ENDIF   !end if/else trim(drag_type=='hys')
 
-            F_gs(IJK, M) = (ONE - UR_F_gs)*F_gs(IJK,M) + &
-               UR_F_gs*F_gstmp
+! Determine drag force coefficient accounting for any under relaxation
+            IF (DES_CONTINUUM_HYBRID .AND. DISCRETE_FLAG) THEN
+               F_GDS(IJK,M) = (ONE - UR_F_gs)*F_GDS(IJK,M) + &
+                  UR_F_gs*F_gstmp
+            ELSE
+               F_GS(IJK,M) = (ONE - UR_F_gs)*F_GS(IJK, M) + &
+                  UR_F_gs*F_gstmp
+            ENDIF
 
             IF(TRIM(KT_TYPE) == 'GHD') THEN
-              IF(M==1) THEN
-                F_gs(IJK,MMAX) = F_gs(IJK,M)
-              ELSE
-                F_gs(IJK,MMAX) = F_gs(IJK,MMAX) + F_gs(IJK,M)
-              ENDIF
+               IF(M==1) THEN
+                  F_gs(IJK,MMAX) = F_gs(IJK,M)
+               ELSE
+                  F_gs(IJK,MMAX) = F_gs(IJK,MMAX) + F_gs(IJK,M)
+               ENDIF
             ENDIF
          
          ELSE   ! .not.(fluidorp_flow_at(ijk)) branch
 
-            F_gs(IJK,M) = ZERO 
+            IF (DES_CONTINUUM_HYBRID .AND. DISCRETE_FLAG) THEN
+               F_GDS(IJK,M) = ZERO
+            ELSE
+               F_GS(IJK,M) = ZERO 
+            ENDIF
+
             IF(TRIM(KT_TYPE) == 'GHD') F_gs(IJK, MMAX) = ZERO
 
          ENDIF   ! end if (fluidorp_flow_at(ijk))

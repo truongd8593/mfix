@@ -84,33 +84,39 @@
 ! Alberto Passalacqua:  QMOMB       
       IF (QMOMK) RETURN
 
-      DO M = 1, SMAX 
-         IF(.NOT.(DES_INTERP_ON)) THEN
-! des_interp_on is F if discrete_element is F
-            IF (DRAGD(0,M) .AND. RO_G0/=ZERO) THEN 
-               CALL DRAG_GS (M, IER)
-            ENDIF
-         ENDIF
+! calculate drag between continuum phases and discrete particles
+! (gas-particle & solids-particle)
+      IF (DES_CONTINUUM_COUPLED) THEN
+         CALL DES_DRAG_GS
+      ENDIF
 
-         IF(.NOT.(DISCRETE_ELEMENT)) THEN 
+
+! calculate drag between continuum phases (gas-solid & solids-solids)      
+      IF (.NOT.DES_CONTINUUM_COUPLED .OR. DES_CONTINUUM_HYBRID) THEN
+         DISCRETE_FLAG = .FALSE.   ! only matters if des_continuum_hybrid   
+         DO M = 1, SMAX 
+            IF (DRAGD(0,M) .AND. RO_G0/=ZERO) THEN 
+               CALL DRAG_GS (M, DISCRETE_FLAG, IER)
+            ENDIF
             IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
-               DO L = 1, MMAX
+               DO L = 1, SMAX
                   IF (DRAGD(L,M)) CALL CALC_IA_NONEP_DRAG_SS (L,M,IER)
                ENDDO
             ELSEIF (TRIM(KT_TYPE) /= 'GHD') THEN  ! do nothing for GHD theory
                DO L = 1, M - 1 
-                  IF (DRAGD(L,M)) CALL DRAG_SS (L, M, IER) 
-               ENDDO 
+                  IF (DRAGD(L,M)) CALL DRAG_SS (L, M, IER)
+               ENDDO
             ENDIF
-         ENDIF
-      ENDDO 
-      
-      IF(DES_INTERP_ON) THEN 
-! des_interp_on can only be set to T if discrete_element is T
-         CALC_FC = .FALSE. 
-         CALLFROMDES = .FALSE.
-         CALL DRAG_FGS
+         ENDDO
       ENDIF
+
+
+! calculate drag between continuum solids and discrete solids
+! for now non-interpolated solid-solid version is only option
+      IF(DES_CONTINUUM_HYBRID) THEN   
+!         CALL DES_DRAG_SS
+      ENDIF         
+ 
 
       RETURN  
       END SUBROUTINE CALC_DRAG 

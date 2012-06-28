@@ -400,18 +400,6 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: GD_FORCE
                         !(PARTICLES,DIMN)      
 
-! Run time logic.  if calc_fc is true, then the contact forces (FC) are 
-! updated to include gas-solids drag and gas pressure in the call to 
-! drag_fgs. calc_fc does not play a role in pure granular flow sims
-      LOGICAL CALC_FC
-
-! Run time logic. if callfromdes is true, then the pertinent mean fields
-! (in this case ROP_S and F_GS) are not computed/updated in the call to
-! drag_fgs.  it is done to speed up the simulation. callfromdes does
-! not play a role in pure granular flow sims and is only relevant when
-! des_interp_on is set to T
-      LOGICAL CALLFROMDES      
-
 ! Dynamic information related to computational (eulerian) fluid grid
 !----------------------------------------------------------------->>>
 ! Dynamic variable. for each ijk computational fluid cell store the 
@@ -444,7 +432,6 @@
 ! particle 'phases'
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: F_SDS
                         !(DIMENSION_3,MMAX,DES_MMAX)
-                        
 ! Solids-solids drag force on particle (between continuous solids and
 ! discrete particle)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: SD_FORCE

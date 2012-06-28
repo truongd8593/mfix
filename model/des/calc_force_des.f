@@ -1,16 +1,16 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!
-!  Subroutine: CALC_FORCE_DES
-!  Purpose: Calculate contact force and torque on particle from
-!           particle-particle and particle-wall collisions. Treats 
-!           wall interaction also as a two-particle interaction but
-!           accounting for the wall properties      
-!
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04
-!  Reviewer: Sreekanth Pannala                        Date: 06-Dec-06
-!  Reviewer: Rahul Garg                               Date: 02-Aug-07
-!
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: CALC_FORCE_DES                                          !
+!  Purpose: Calculate contact force and torque on particle from        !
+!           particle-particle and particle-wall collisions. Treats     !
+!           wall interaction also as a two-particle interaction but    !
+!           accounting for the wall properties                         !
+!                                                                      !
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  !
+!  Reviewer: Sreekanth Pannala                        Date: 06-Dec-06  !
+!  Reviewer: Rahul Garg                               Date: 02-Aug-07  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE CALC_FORCE_DES
 
@@ -786,10 +786,14 @@
 ! end loop over paticles LL
 ! ----------------------------------------------------------------<<<
 
-
-
+! Calculate gas-solids drag force on particle 
       IF(DES_CONTINUUM_COUPLED) THEN
-         CALL DRAG_FGS
+         CALL CALC_DES_DRAG_GS
+      ENDIF
+
+! Calculate solids-solids drag force on particle 
+      IF (DES_CONTINUUM_HYBRID) THEN
+!         CALL CALC_DES_DRAG_SS
       ENDIF
 
 ! The square-well model is still available in the model/cohesion directory.
