@@ -505,11 +505,6 @@
                   DES_ROP_S(IJK,M) = DES_RO_S(M)*SOLVOLINC(IJK,M)*OVOL
             ENDIF
 
-! assign DEM bulk density value to same variable associated with
-! continuum bulk density to avoid potential issues with original
-! implementation - this will be addressed
-            IF(.NOT.DES_CONTINUUM_HYBRID) &
-               ROP_S(IJK,M) = DES_ROP_S(IJK,M)
 ! add comment to address why this is done.
             IF (MPPIC) DES_ROP_SO(IJK,M) = DES_ROP_S(IJK,M) 
 

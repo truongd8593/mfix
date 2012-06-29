@@ -524,13 +524,6 @@
                     (wtbar(ijkm,:) + wtbar(ijmkm,:) + &
                     wtbar(imjmkm,:)+wtbar(imjkm,:) )
             ENDIF
-! to more closely mimic current implementation
-! (should be able to remove this...)            
-            IF (.NOT. DES_CONTINUUM_HYBRID) THEN
-               DO M = 1,DES_MMAX
-                  ROP_S(IJK,M) = DES_ROP_S(IJK,M)
-               ENDDO
-            ENDIF                       
          ENDIF   ! end if (fluid_at(ijk))
          
       ENDDO   ! end do loop (ijk=ijkstart3,ijkend3)
