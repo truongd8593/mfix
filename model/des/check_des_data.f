@@ -492,9 +492,10 @@
 
       IF (DES_CONTINUUM_HYBRID) THEN
 ! des_continuum_coupled must be true if des_continuum_hybrid              
-         DES_CONTINUUM_COUPLED = .TRUE.
-         WRITE(UNIT_LOG, 1094)
-         CALL MFIX_EXIT(myPE)
+         IF(.NOT.DES_CONTINUUM_COUPLED) THEN
+            WRITE(UNIT_LOG, 1094)
+            CALL MFIX_EXIT(myPE)
+         ENDIF
 ! DES_CONTINUUM_HYBRID does not work with GHD or QMOMK
          IF (TRIM(KT_TYPE)=='GHD') THEN
             IF(DMP_LOG) WRITE(UNIT_LOG, 1091)
@@ -1038,7 +1039,7 @@
          'MPPIC and DES_CONTINUUM_HYBRID cannot both be TRUE.',&
          /1X,70('*')/)
  1094 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'DES_CONTINUUM_COUPLED must be to true when using ',&
+         'DES_CONTINUUM_COUPLED must be to true when using ',/10X&
          'DES_CONTINUUM_HYBRID.',&
          /1X,70('*')/)
 

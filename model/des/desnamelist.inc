@@ -2,7 +2,7 @@
 
 ! USE discretelement
 	DISCRETE_ELEMENT, DES_CONTINUUM_COUPLED, DES_INTERP_ON, &
-	 DES_ONEWAY_COUPLED, &
+	DES_ONEWAY_COUPLED, &
         TSUJI_DRAG, DES_INTG_METHOD, DES_CONTINUUM_HYBRID,&
 	PARTICLES, DIMN, NFACTOR, &
 	GENER_PART_CONFIG, VOL_FRAC, DES_EPS_XSTART,&
@@ -19,7 +19,8 @@
 ! Used for quadtree or octree neighbor search methods
 	MQUAD_FACTOR, QLM, QLN, INIT_QUAD_COUNT,&
 	
-! Particle properties	
+! Particle properties
+        DES_D_p0, DES_RO_s, DES_MMAX,&
         KN, KN_W, KT_FAC, KT_W_FAC, MEW, MEW_W, & 
         DES_EN_INPUT, DES_ET_INPUT, DES_ETAT_FAC, &
         DES_EN_WALL_INPUT, DES_ET_WALL_INPUT, DES_ETAT_W_FAC, &
