@@ -447,6 +447,22 @@
                         !(DIMENSION_3,DES_MMAX)
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: VXF_SDS
                         !(DIMENSION_3,MMAX,DES_MMAX)
+
+! the contribution of solids-particle drag to the mth phase continuum 
+! solids momentum A matrix (center coefficient)
+!      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: sdrag_am 
+                        !(DIMENSION_3,MMAX,DES_MMAX)
+! the contribution of solids-particle drag to the to mth phase continuum
+! solids momentum B vector
+!      DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: sdrag_bm 
+                        !(DIMENSION_3,DIMN,MMAX,DES_MMAX)
+! mth phase continuum solids velocity at particle position
+!      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE ::vel_sp 
+                        !(PARTICLES,3)
+! the solids-particle drag coefficient                        
+!      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: f_sp
+                        !(MMAX,PARTICLES)
+
 !-----------------------------------------------------------------<<<
 
 
@@ -461,8 +477,10 @@
 ! fluid velocity at particle position
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::vel_fp 
                         !(PARTICLES,3)
+!                        
       DOUBLE PRECISION, DIMENSION(:,:,:), POINTER :: weightp
                         !(DIMENSION_3,DES_MMAX)
+! the gas-particle drag coefficient                        
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: f_gp
                         !(PARTICLES)
       DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: wtderivp

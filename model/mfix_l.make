@@ -1003,10 +1003,8 @@ odepack.a : ODEPACK.o
 ODEPACK.o : ODEPACK.F
 	$(FORTRAN_CMD) $(FORT_FLAGS3) ODEPACK.F
 ambm.mod : ambm_mod.f \
-            param.mod \
-            param1.mod \
             compar.mod \
-            mpi_utility.mod 
+            funits.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ambm_mod.f 
 bc.mod : bc_mod.f \
             param.mod \
@@ -1181,12 +1179,12 @@ time_cpu.mod : time_cpu_mod.f \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) time_cpu_mod.f 
 tmp_array1.mod : tmp_array1_mod.f \
-            param.mod \
-            param1.mod 
+            compar.mod \
+            funits.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) tmp_array1_mod.f 
 tmp_array.mod : tmp_array_mod.f \
-            param.mod \
-            param1.mod 
+            compar.mod \
+            funits.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) tmp_array_mod.f 
 toleranc.mod : toleranc_mod.f \
             param.mod \
@@ -2751,10 +2749,11 @@ drag_ss.$(OBJ_EXT) : drag_ss.f \
             sendrecv.mod \
             drag.mod \
             discretelement.mod \
+            run.mod \
+            ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s1.inc                                                    \
             ep_s2.inc                                                   
 eosg.$(OBJ_EXT) : eosg.f \
             param.mod \
@@ -4576,6 +4575,7 @@ utilities.$(OBJ_EXT) : utilities.f \
             constant.mod \
             run.mod \
             compar.mod \
+            discretelement.mod \
             toleranc.mod \
             mpi_utility.mod \
             ep_s1.inc                                                    \
@@ -6042,11 +6042,11 @@ drag_fgs.$(OBJ_EXT) : ./des/drag_fgs.f \
             sendrecv.mod \
             discretelement.mod \
             cutcell.mod \
-            constant.mod \
-            drag.mod \
             interpolation.mod \
             desmpi.mod \
             mfix_pic.mod \
+            constant.mod \
+            drag.mod \
             ur_facs.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
@@ -6150,9 +6150,7 @@ mppic_routines.$(OBJ_EXT) : ./des/mppic_routines.f \
             mppic_wallbc.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
-            fun_avg2.inc                                                 \
-            ep_s1.inc                                                    \
-            ep_s2.inc                                                   
+            fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/mppic_routines.f 
 neighbour.$(OBJ_EXT) : ./des/neighbour.f \
             param1.mod \
