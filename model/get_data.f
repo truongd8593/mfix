@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: GET_DATA                                               C
+!  SUBROUTINE: GET_DATA                                                C
 !  Purpose: read and verify input data, open files                     C
 !                                                                      C
 !  Author: P. Nicoletti                               Date: 04-DEC-91  C
@@ -14,14 +14,12 @@
 !  Revision Number: 2                                                  C
 !  Purpose: Add CALL to SET_L_scale                                    C
 !  Author: W. Sams                                    Date: 10-MAY-94  C
-!  Review:                                            Date: dd-mmm-yy  C
-!
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
 !  Revision Number:                                                    C
 !  Purpose:  call GRIDMAP_INIT to handle the domain decomposition and  C
 !            arrangement of all appropriate indices.                   C
 !            Introduced MPI_Barrier for RESTART file read situation    C
-!            (see comment !//S  )
-!
 !  Author:   Aeolus Res. Inc.                         Date: 04-SEP-99  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
@@ -30,21 +28,18 @@
 !  kinetic equation                                                    C
 !  Author: Alberto Passalacqua - Fox Research Group   Date: 02-Dec-09  C
 !								       C
-!								       C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced: RUN_NAME, RUN_TYPE, ID_VERSION, ID_NODE       C
 !  Variables modified: None                                            C
-!                                                                      C
 !  Local variables: None                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE GET_DATA 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -55,26 +50,17 @@
       USE discretelement
       USE leqsol
       USE parallel
-! QMOMK - Alberto Passalacqua
       USE qmom_kinetic_equation
-! QMOMK - End
-      
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Local variables
 !-----------------------------------------------
+! shift DX, DY and DZ values 
+      LOGICAL :: SHIFT 
+      LOGICAL :: CYCLIC_X_BAK, CYCLIC_Y_BAK, CYCLIC_Z_BAK, &
+                 CYLINDRICAL_BAK
 !-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!                    Shift or not shift DX, DY and DZ values 
-      LOGICAL        SHIFT 
-      LOGICAL        CYCLIC_X_BAK, CYCLIC_Y_BAK, CYCLIC_Z_BAK, CYLINDRICAL_BAK
-
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
+! External functions
 !-----------------------------------------------
       LOGICAL , EXTERNAL :: COMPARE
 !-----------------------------------------------
@@ -92,8 +78,8 @@
          CALL MFIX_EXIT(myPE) 
       ENDIF
 
+! Check parallel namelist variables
       CALL CHECK_DATA_00
-
 
 ! Set constants
       CALL SET_CONSTANTS 
@@ -150,17 +136,16 @@
 
       CALL ALLOCATE_ARRAYS    
 
-      ! QMOMK - Alberto Passalacqua
-      ! Allocating arrays for QMOMK
+! Alberto Passalacqua - QMOMK
       IF (QMOMK) THEN
          CALL QMOMK_ALLOCATE_ARRAYS
-      END IF
-      ! QMOMK - End
+      ENDIF
+
+
       IF (RUN_NAME == UNDEFINED_C) THEN 
          WRITE (*, 1000) 
          CALL MFIX_EXIT(myPE) 
       ENDIF 
-
 
 ! open files
       IF (RUN_TYPE == 'RESTART_3') THEN 
@@ -175,7 +160,6 @@
       ELSE IF (RUN_TYPE == 'RESTART_4') THEN 
          RUN_TYPE = 'RESTART_2' 
          CALL OPEN_FILES (RUN_NAME, RUN_TYPE, N_SPX) 
-
          CALL READ_RES0  
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  
 
@@ -215,11 +199,6 @@
 ! CHEM & ISAT: check rxns (nan xie)
       CALL CHECK_DATA_CHEM      
 
-! Rahul: consolidated all DEM intialization related calls in mfix.f 
-      IF(DISCRETE_ELEMENT) THEN
-        !do nothing here 
-      ENDIF
-
 
 ! close .LOG file
       CALL END_LOG 
@@ -236,7 +215,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CHECK_DATA_00                                          C
+!  SUBROUTINE: CHECK_DATA_00                                           C
 !  Purpose: check the distributed parallel namelist variables          C
 !                                                                      C
 !  Author: P. Nicoletti                               Date: 14-DEC-99  C
@@ -250,33 +229,19 @@
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced:  NODESI , NODESJ , NODESK                     C
-!                         DT, RUN_TYPE                                 C
 !  Variables modified: None                                            C
-!                                                                      C
 !  Local variables: None                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CHECK_DATA_00
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param1 
       USE compar
-
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-
 !-----------------------------------------------
 
       IF( numPEs > 1 ) then
@@ -292,10 +257,7 @@
       IF (NODESJ .EQ. UNDEFINED_I) NODESJ = 1
       IF (NODESK .EQ. UNDEFINED_I) NODESK = 1
 
-
       RETURN  
       END SUBROUTINE CHECK_DATA_00
  
-!// Comments on the modifications for DMP version implementation      
-!// 300 Partition the domain and set indices
-!//PAR_I/O enforce barrier here
+

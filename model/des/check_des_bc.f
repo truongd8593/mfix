@@ -291,7 +291,8 @@
 ! Inlet/outlet for MPPIC are based off the regular mfix declarations, 
 ! and so des_bcmi could still be zero.
       IF (PARTICLES == 0) THEN
-         IF(DES_BCMI == 0 .AND. (.NOT.MPPIC))THEN
+         IF(DES_BCMI == 0 .AND. (.NOT.MPPIC) .AND. &
+            (.NOT.DES_CONTINUUM_HYBRID))THEN
             IF(DMP_LOG) THEN
                WRITE(UNIT_LOG, 1009)
                WRITE(*, 1009)

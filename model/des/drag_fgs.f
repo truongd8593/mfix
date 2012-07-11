@@ -583,12 +583,7 @@
       INTEGER :: IPJK, IJPK, IJKP, IMJK, IJMK, IJKM
 ! see the discussion for IJK_U ..... in comments       
       INTEGER :: IJK_U, IJK_V, IJK_W
-! average fluid velocity in x, y, z direction at scalar cell center      
-      DOUBLE PRECISION :: UGC, VGC, WGC
-! average continuum solids velocity in x, y, z direction at scalar
-! cell center
-      DOUBLE PRECISION :: USC, VSC, WSC
-! average fluid and solid velocity in array form
+! average fluid and solid velocity at scalar cell center in array form
       DOUBLE PRECISION :: VELG_ARR(DIMN), &
                           VELDS_ARR(DES_MMAX, DIMN)
 ! local drag force
@@ -618,7 +613,6 @@
 !-----------------------------------------------
 
 
-
 ! initializing
       GS_DRAG(:,:,:) = ZERO
       GD_FORCE(:,:) = ZERO
@@ -637,7 +631,7 @@
 
 !$omp parallel do default(shared)                                 &
 !$omp private(ijk,i,j,k,imjk,ijmk,ijkm,ijk_u,ijk_v,ijk_w,         &
-!$omp         ugc,vgc,wgc,velg_arr,velds_arr,                     &
+!$omp         velg_arr,velds_arr,                                 &
 !$omp         m,oeps,ep_sm,gs_drag)                               &
 !$omp schedule (guided,50)
       DO IJK = IJKSTART3, IJKEND3
@@ -666,37 +660,34 @@
 
          IF(PINC(IJK).GT.0) THEN
 
-! average fluid velocity at scalar cell center
+! average fluid velocity at scalar cell center in array form
             IF(CUT_U_TREATMENT_AT(IJK_U)) THEN
-               UGC = (Theta_Ue_bar(IJK_U)*U_G(IJK_U) + &
-                      Theta_Ue(IJK_U)    *U_G(IP_OF(IJK_U)))
+               VELG_ARR(1) = (Theta_Ue_bar(IJK_U)*U_G(IJK_U) + &
+                              Theta_Ue(IJK_U)    *U_G(IP_OF(IJK_U)))
             ELSE 
-               UGC = HALF * (U_G(IJK_U) + U_G(IP_OF(IJK_U)))
-               !UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)                  
+               VELG_ARR(1) = HALF * (U_G(IJK_U) + U_G(IP_OF(IJK_U)))
+               !VELG_ARR(1) = AVG_X_E(U_G(IMJK),U_G(IJK),I)                  
             ENDIF
                
             IF(CUT_V_TREATMENT_AT(IJK_V)) THEN
-               VGC = (Theta_Vn_bar(IJK_V)*V_G(IJK_V) + &
-                      Theta_Vn(IJK_V)    *V_G(JP_OF(IJK_V)))
+               VELG_ARR(2) = (Theta_Vn_bar(IJK_V)*V_G(IJK_V) + &
+                              Theta_Vn(IJK_V)    *V_G(JP_OF(IJK_V)))
             ELSE
-               VGC = HALF * (V_G(IJK_V) + V_G(JP_OF(IJK_V)))
-               !VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))                  
+               VELG_ARR(2) = HALF * (V_G(IJK_V) + V_G(JP_OF(IJK_V)))
+               !VELG_ARR(2) = AVG_Y_N(V_G(IJMK),V_G(IJK))                  
             ENDIF
 
-            VELG_ARR(1) = UGC
-            VELG_ARR(2) = VGC
             VELDS_ARR(:,1) = DES_U_S(IJK,:)
             VELDS_ARR(:,2) = DES_V_S(IJK,:)
 
             IF(DIMN.EQ.3) THEN
                IF(CUT_W_TREATMENT_AT(IJK_W)) THEN
-                  WGC = (Theta_Wt_bar(IJK_W)*W_G(IJK_W) + &
-                         Theta_Wt(IJK_W)    * W_G(KP_OF(IJK_W)))
+                  VELG_ARR(3) = (Theta_Wt_bar(IJK_W)*W_G(IJK_W) + &
+                                 Theta_Wt(IJK_W)    * W_G(KP_OF(IJK_W)))
                ELSE 
-                  WGC = HALF * (W_G(IJK_W) + W_G(KP_OF(IJK_W)))
-                  !WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
+                  VELG_ARR(3) = HALF * (W_G(IJK_W) + W_G(KP_OF(IJK_W)))
+                  !VELG_ARR(3) = AVG_Z_T(W_G(IJKM),W_G(IJK))
                ENDIF
-               VELG_ARR(3) = WGC
                VELDS_ARR(:,3) = DES_W_S(IJK,:)               
             ENDIF
 
@@ -773,9 +764,6 @@
 
       ENDDO   ! end do loop (np=1,max_pip)
 !$omp end parallel do
-
-
-
 
       RETURN
       END SUBROUTINE CALC_DES_DRAG_GS_NONINTERP
@@ -874,7 +862,7 @@
 ! velocity and the fluid velocity interpolated to particle
 ! position. 
 !----------------------------------------------------------------->>>
-! initializations
+! initializing
       gd_force(:,:) = ZERO
 
 ! avg_factor=0.25 (in 3D) or =0.5 (in 2D)
@@ -1360,9 +1348,9 @@
             ENDIF   ! end if (dimn.eq.3)
          ELSE   ! else branch of if (fluid_at(ijk))
             IF (DES_CONTINUUM_HYBRID) THEN
-               F_GDS(IJK,M) = ZERO
+               F_GDS(IJK,:) = ZERO
             ELSE
-               F_GS(IJK,M) = ZERO
+               F_GS(IJK,:) = ZERO
             ENDIF
          ENDIF   ! end if/else (fluid_at(ijk))
 
@@ -1709,10 +1697,7 @@
       INTEGER :: IPJK, IJPK, IJKP, IMJK, IJMK, IJKM
 ! see the discussion for IJK_U ..... in comments       
       INTEGER :: IJK_U, IJK_V, IJK_W
-! average solids velocity in x, y, z direction at scalar
-! cell center
-      DOUBLE PRECISION :: USCM, VSCM, WSCM, USDM, VSDM, WSDM
-! average solids velocity in array form
+! average solids velocity at scalar cell center in array form
       DOUBLE PRECISION :: VELCS_ARR(DIMN), &
                           VELDS_ARR(DIMN)
 ! local drag force
@@ -1763,7 +1748,6 @@
 
 !$omp parallel do default(shared)                                 &
 !$omp private(ijk,i,j,k,imjk,ijmk,ijkm,ijk_u,ijk_v,ijk_w,         &
-!$omp         uscm,vscm,wscm,usdm,vsdm,wsdm,                      &
 !$omp         velds_arr,velcs_arr,vrel,ss_drag,ldss,              &
 !$omp         dm,cm,m,l,epg,eps,ep_sm,epsodp,oeps,                &
 !$omp         d_pm,d_pl,ro_l,ro_m,g0_ml)                          &
@@ -1781,53 +1765,60 @@
 
          IF(PINC(IJK).GT.0) THEN
 
-            DO CM = 1, MMAX
-               DO DM = 1, DES_MMAX
-                  EP_SM = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
+            DO DM = 1, DES_MMAX
+               EP_SM = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
 
-                  IF(EP_SM.GT.ZERO) THEN               
+               IF(EP_SM.GT.ZERO) THEN               
 
-! calculating the cell center average continuum and discrete solids 
-! velocities. no manipulation is needed for the discrete soldis 
-! velocities since these are already determined at cell centers
-                     IF(CUT_U_TREATMENT_AT(IJK_U)) THEN
-                        USCM = (Theta_Ue_bar(IJK_U)*U_S(IJK_U,CM) + &
-                                Theta_Ue(IJK_U)    *U_S(IP_OF(IJK_U),CM))
-                     ELSE 
-                        USCM = AVG_X_E(U_S(IMJK,CM),U_S(IJK,CM),I) 
-                     ENDIF
-                     IF(CUT_V_TREATMENT_AT(IJK_V)) THEN
-                        VSCM = (Theta_Vn_bar(IJK_V)*V_S(IJK_V,CM) + &
-                                Theta_Vn(IJK_V)    *V_S(JP_OF(IJK_V),CM))
-                     ELSE
-                        VSCM = AVG_Y_N(V_S(IJMK,CM),V_S(IJK,CM))
-                     ENDIF
-                     USDM = DES_U_S(IJK,DM)
-                     VSDM = DES_V_S(IJK,DM)
-
-! calculating the relative velocity in 2D (overwrite if 3D)
-                     VREL = SQRT((USCM-USDM)**2 + (VSCM-VSDM)**2)
+! calculate the cell center average continuum solids velocities. 
+! no manipulation is needed for the discrete solids velocities 
+! since these are already determined at cell centers
+! ---------------------------------------------------------------->>>
 
 ! defining array form of average solids velocity
-                     VELCS_ARR(1) = USCM
-                     VELCS_ARR(2) = VSCM
-                     VELDS_ARR(1) = USDM
-                     VELDS_ARR(2) = VSDM
+                  VELDS_ARR(1) = DES_U_S(IJK,DM)
+                  VELDS_ARR(2) = DES_V_S(IJK,DM)
+                  IF(DIMN.EQ.3) THEN
+                     VELDS_ARR(3) = DES_W_S(IJK,DM)
+                  ENDIF
+
+                  DO CM = 1, MMAX
+                     IF(CUT_U_TREATMENT_AT(IJK_U)) THEN
+                        VELCS_ARR(1) = &
+                           (Theta_Ue_bar(IJK_U)*U_S(IJK_U,CM) + &
+                            Theta_Ue(IJK_U)    *U_S(IP_OF(IJK_U),CM))
+                     ELSE 
+                        VELCS_ARR(1) = & 
+                           AVG_X_E(U_S(IMJK,CM),U_S(IJK,CM),I)
+                     ENDIF
+                     IF(CUT_V_TREATMENT_AT(IJK_V)) THEN
+                        VELCS_ARR(2) = &
+                           (Theta_Vn_bar(IJK_V)*V_S(IJK_V,CM) + &
+                            Theta_Vn(IJK_V)    *V_S(JP_OF(IJK_V),CM))
+                     ELSE
+                        VELCS_ARR(2) = &
+                           AVG_Y_N(V_S(IJMK,CM),V_S(IJK,CM))
+                     ENDIF
+
+! calculating the relative velocity in 2D (overwrite if 3D)
+                     VREL = SQRT((VELCS_ARR(1)-VELDS_ARR(1))**2+&
+                                 (VELCS_ARR(2)-VELDS_ARR(2))**2)
 
                      IF(DIMN.EQ.3) THEN
                         IF(CUT_W_TREATMENT_AT(IJK_W)) THEN
-                           WSCM = (Theta_Wt_bar(IJK_W)*W_S(IJK_W,CM) + &
-                                   Theta_Wt(IJK_W)    * W_S(KP_OF(IJK_W),CM))
+                           VELCS_ARR(3) = &
+                              (Theta_Wt_bar(IJK_W)*W_S(IJK_W,CM) + &
+                               Theta_Wt(IJK_W)    * W_S(KP_OF(IJK_W),CM))
                         ELSE 
-                           WSCM = AVG_Z_T(W_S(IJKM,CM),W_S(IJK,CM))
+                           VELCS_ARR(3) = &
+                              AVG_Z_T(W_S(IJKM,CM),W_S(IJK,CM))
                         ENDIF
-                        WSDM = DES_W_S(IJK,DM)
-! calculating the relative velocity in 3D                     
-                        VREL = SQRT((USCM-USDM)**2 + (VSCM-VSDM)**2 +&
-                                    (WSCM-WSDM)**2)
-                     VELCS_ARR(3) = WSCM
-                     VELDS_ARR(3) = WSDM
+! calculating the relative velocity in 3D (overwrite 2D calculation)
+                        VREL = SQRT((VELCS_ARR(1)-VELDS_ARR(1))**2+&
+                                    (VELCS_ARR(2)-VELDS_ARR(2))**2+&
+                                    (VELCS_ARR(3)-VELDS_ARR(3))**2)
                      ENDIF
+! ----------------------------------------------------------------<<<
 
 
 ! Update the solids-solids drag coefficient
@@ -1844,7 +1835,7 @@
 ! more effectively.
                      EPSoDP = ZERO
                      DO M = 1, MMAX
-                        EPS = EP_s(IJK, M)
+                        EPS = EP_s(IJK,M)
                         EPSoDP = EPSoDP + EPS / D_p(IJK,M)
                      ENDDO
                      DO L = 1, DES_MMAX
@@ -1868,17 +1859,18 @@
 ! ----------------------------------------------------------------<<<
 
 
-! calculating the solids-solids drag force on discrete solids 'phase m'
-                     OEPS = ONE/EP_SM
+! calculating the accumulated solids-solids drag force on discrete 
+! solids phase dm
+                     SS_DRAG(IJK,DM,:) = SS_DRAG(IJK,DM,:) + &
+                        -F_SDS(IJK,CM,DM)*(VELDS_ARR(:)-VELCS_ARR(:))
 
-                     SS_DRAG(IJK,DM,:) = -F_SDS(IJK,CM,DM)*&
-                           (VELDS_ARR(:)-VELCS_ARR(:))
+                  ENDDO   ! end do loop (cm=1,mmax)
 
-                     SS_DRAG(IJK,DM,:) = SS_DRAG(IJK,DM,:)*OEPS
+                  OEPS = ONE/EP_SM
+                  SS_DRAG(IJK,DM,:) = SS_DRAG(IJK,DM,:)*OEPS
 
-                  ENDIF  ! end if ep_sm>0
-               ENDDO   ! end do loop (dm=1,des_mmax)
-            ENDDO   ! end do (cm=1,mmax)
+               ENDIF  ! end if ep_sm>0
+            ENDDO   ! end do loop (dm=1,des_mmax)
 
          ENDIF      ! end if(pinc(ijk).gt.0)
 

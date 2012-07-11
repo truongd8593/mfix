@@ -175,7 +175,8 @@
             UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I) 
             VGC = AVG_Y_N(V_G(IJMK),V_G(IJK)) 
             WGC = AVG_Z_T(W_G(IJKM),W_G(IJK)) 
-            IF(DES_CONTINUUM_COUPLED) THEN
+            IF((DES_CONTINUUM_COUPLED .AND. .NOT.DES_CONTINUUM_HYBRID) .OR. &
+               (DES_CONTINUUM_HYBRID .AND. DISCRETE_FLAG)) THEN
 ! note given current dem setup these are not defined for p_flow_at!
                USCM = DES_U_S(IJK,M)
                VSCM = DES_V_S(IJK,M)

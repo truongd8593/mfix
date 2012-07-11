@@ -793,7 +793,7 @@
 
 ! Calculate solids-solids drag force on particle 
       IF (DES_CONTINUUM_HYBRID) THEN
-!         CALL CALC_DES_DRAG_SS
+         CALL CALC_DES_DRAG_SS
       ENDIF
 
 ! The square-well model is still available in the model/cohesion directory.

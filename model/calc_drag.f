@@ -84,12 +84,6 @@
 ! Alberto Passalacqua:  QMOMB       
       IF (QMOMK) RETURN
 
-! calculate drag between continuum phases and discrete particles
-! (gas-particle & solids-particle)
-      IF (DES_CONTINUUM_COUPLED) THEN
-         CALL DES_DRAG_GS
-      ENDIF
-
 
 ! calculate drag between continuum phases (gas-solid & solids-solids)      
       IF (.NOT.DES_CONTINUUM_COUPLED .OR. DES_CONTINUUM_HYBRID) THEN
@@ -110,11 +104,16 @@
          ENDDO
       ENDIF
 
+! calculate drag between continuum phases and discrete particles
+! (gas-particle & solids-particle)
+      IF (DES_CONTINUUM_COUPLED) THEN
+         CALL DES_DRAG_GS
+      ENDIF
 
 ! calculate drag between continuum solids and discrete solids
 ! for now non-interpolated solid-solid version is only option
       IF(DES_CONTINUUM_HYBRID) THEN   
-!         CALL DES_DRAG_SS
+         CALL DES_DRAG_SS
       ENDIF         
  
 
