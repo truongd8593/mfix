@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CHECK_CONVERGENCE(NIT, errorpercent, MUSTIT, IER)      C
+!  Subroutine: CHECK_CONVERGENCE                                       C
 !  Purpose: Monitor convergence                                        C
 !                                                                      C
 !                                                                      C
@@ -12,19 +12,14 @@
 !                                                                      C
 !  Variables referenced:                                               C
 !  Variables modified:                                                 C
-!                                                                      C
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE CHECK_CONVERGENCE(NIT, errorpercent, MUSTIT, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
-!  Include param.inc file to specify parameter values
-!
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -37,89 +32,91 @@
       USE mpi_utility
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Local parameters
 !-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!Maximum % error allowed in fluid continuity
+! Maximum % error allowed in fluid continuity
 !      DOUBLE PRECISION, PARAMETER :: MaxErrorPercent = 1.0E-6  
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Dummy arguments
 !-----------------------------------------------
-!
-!                      Iteration number
-      INTEGER          NIT
-!
-!                      whether to iterate (1) or not (0).
-      INTEGER          MUSTIT
-!
-!                      Error index
-      INTEGER          IER
-!
-!                      %error in fluid mass balance
-      DOUBLE PRECISION errorpercent
-!!
-!                      sum of residuals
-      DOUBLE PRECISION SUM, SUM_T, SUM_X, SUM_Th
-!
-!                      max of residuals
-      DOUBLE PRECISION maxres
-!
-!                      index
-      INTEGER          L, M, maxL, maxM, N, maxN
-!
-!                      to indicate undefined residual in species eq at the
-!                      begining of iterations
-      LOGICAL          NO_RESID
-!
-!                      to check upper bound (speed of sound) limit for gas and
-!                      solids velocity components
-      LOGICAL          CHECK_VEL_BOUND
+! Iteration number
+      INTEGER, INTENT(IN) :: NIT
+! %error in fluid mass balance
+      DOUBLE PRECISION, INTENT(IN) :: errorpercent
+! value tells whether to iterate (1) or not (0).
+      INTEGER, INTENT(INOUT) :: MUSTIT
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
-!
-!//SP
+! Local variables
+!-----------------------------------------------
+! sum of residuals
+      DOUBLE PRECISION :: SUM, SUM_T, SUM_X, SUM_Th
+! max of residuals
+      DOUBLE PRECISION :: maxres
+! index
+      INTEGER :: L, M, maxL, maxM, N, maxN
+! to indicate undefined residual in species eq at the
+! begining of iterations
+      LOGICAL :: NO_RESID
+! to check upper bound (speed of sound) limit for gas and
+! solids velocity components
+      LOGICAL :: CHECK_VEL_BOUND
+!-----------------------------------------------
+
+! sum the residuals from correction equation (pressure and/or
+! solids), continuity equations (gas and/or solids) and momentum
+! equations (gas and solids)
+
+! add pressure correction residual      
 !      if(abs(errorpercent) > MaxErrorPercent)then
         SUM = RESID(RESID_P,0) 
 !      else
 !        SUM = zero
 !      endif
 
-      if(MMAX > 0) SUM = SUM + RESID(RESID_P,1) 
-!
+
+! add solids correction residual 
+      IF(MMAX > 0) SUM = SUM + RESID(RESID_P,1) 
+
+! add continuity equation residuals      
       DO M = 0, MMAX 
          SUM = SUM + RESID(RESID_RO,M) 
-      END DO 
+      ENDDO 
+! add momentum equation residuals      
       DO M = 0, MMAX 
          SUM = SUM + RESID(RESID_U,M) 
-      END DO 
+      ENDDO 
       DO M = 0, MMAX 
          SUM = SUM + RESID(RESID_V,M) 
-      END DO 
+      ENDDO 
       IF (DO_K) THEN 
          DO M = 0, MMAX 
             SUM = SUM + RESID(RESID_W,M) 
-         END DO 
+         ENDDO 
       ENDIF 
-!
+!      call global_all_sum(SUM)
+
+
+! sum the granular energy equation residuals      
       SUM_Th = zero
       IF (GRANULAR_ENERGY) THEN 
          DO M = 1, MMAX 
             SUM_Th = SUM_Th + RESID(RESID_TH,M) 
-         END DO 
+         ENDDO 
       ENDIF 
       
-!//SP
-!    call global_all_sum(SUM)
-!
+
+! sum the energy equation residuals      
       SUM_T = ZERO 
       IF (ENERGY_EQ) THEN 
          DO M = 0, MMAX 
             SUM_T = SUM_T + RESID(RESID_T,M) 
          END DO 
       ENDIF 
-!//SP
-!    call global_all_sum(SUM_T)
+!      call global_all_sum(SUM_T)
+
+! sum the species equation residuals      
       SUM_X = ZERO 
       NO_RESID = .FALSE. 
       DO M = 0, MMAX 
@@ -127,16 +124,14 @@
             DO N = 1, NMAX(M) 
                IF (RESID(RESID_X+(N-1),M) == UNDEFINED) NO_RESID = .TRUE. 
                SUM_X = SUM_X + RESID(RESID_X+(N-1),M) 
-            END DO 
+            ENDDO 
          ENDIF 
-      END DO 
-!//SP
-!    call global_all_sum(SUM_X)
+      ENDDO 
+!      call global_all_sum(SUM_X)
       IF (NO_RESID) SUM_X = TOL_RESID_X + ONE 
       
-!
-!  Find the variable with maximum residual
-!
+
+! find the variable with maximum residual
       IF (RESID_INDEX(MAX_RESID_INDEX,1) == UNDEFINED_I) THEN 
          MAXRES = ZERO 
          DO L = 1, NRESID 
@@ -161,9 +156,9 @@
                MAXN 
          ENDIF 
       ENDIF 
-!
-!  Detect whether the run is stalled
-!
+
+! detect whether the run is stalled :  every 5 iterations check whether 
+! the total residual has decreased
       IF (DETECT_STALL) THEN 
          IF (MOD(NIT,5) == 0) THEN 
             IF (NIT > 10) THEN 
@@ -175,23 +170,23 @@
             SUM5_RESID = SUM 
          ENDIF 
       ENDIF 
-!
-!    total residual
-!
+
+! total residual
       IF(NIT == 1) THEN
-        MUSTIT = 1
-	RETURN
+         MUSTIT = 1
+         RETURN
       ENDIF
       
+
       IF(SUM<=TOL_RESID .AND. SUM_T<=TOL_RESID_T .AND. &
          RESID(RESID_sc,0)<=TOL_RESID_Scalar .AND. SUM_X<=TOL_RESID_X &
-	  .AND. RESID(RESID_ke,0)<=TOL_RESID_K_Epsilon &
-          .AND. SUM_Th <=TOL_RESID_Th)THEN 
+        .AND. RESID(RESID_ke,0)<=TOL_RESID_K_Epsilon &
+        .AND. SUM_Th <=TOL_RESID_Th)THEN 
          MUSTIT = 0                              !converged 
-      ELSE IF (SUM>=TOL_DIVERGE .OR. SUM_T>=TOL_DIVERGE .OR.&
-                RESID(RESID_sc,0)>= TOL_DIVERGE .OR. SUM_X>=TOL_DIVERGE&
-            .OR. RESID(RESID_ke,0)>= TOL_DIVERGE &
-            .OR. SUM_Th >= TOL_DIVERGE ) THEN 
+      ELSEIF (SUM>=TOL_DIVERGE .OR. SUM_T>=TOL_DIVERGE .OR.&
+              RESID(RESID_sc,0)>= TOL_DIVERGE .OR. SUM_X>=TOL_DIVERGE&
+              .OR. RESID(RESID_ke,0)>= TOL_DIVERGE &
+              .OR. SUM_Th >= TOL_DIVERGE ) THEN 
          IF (NIT /= 1) THEN 
             MUSTIT = 2                           !diverged 
          ELSE 
@@ -200,13 +195,19 @@
       ELSE 
          MUSTIT = 1                              !not converged 
       ENDIF 
-!
-      IF(CHECK_VEL_BOUND()) THEN
-        MUSTIT = 2 !divergence 
-      ENDIF 
-!
+
+
+! only check velocity if any of the momentum equations are solved
+      DO M = 0,MMAX
+         IF (MOMENTUM_X_EQ(M) .OR. MOMENTUM_Y_EQ(M) .OR. &
+             MOMENTUM_Z_EQ(M)) THEN
+            IF(CHECK_VEL_BOUND()) MUSTIT = 2     !divergence 
+            EXIT  ! only need to call check_vel_bound once
+         ENDIF
+      ENDDO
+
+
       RETURN  
       END SUBROUTINE CHECK_CONVERGENCE 
       
-!// Comments on the modifications for DMP version implementation            
-!// 400 Added mpi_utility module and other global reduction (bcast) calls
+
