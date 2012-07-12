@@ -505,6 +505,10 @@
             IF(DMP_LOG) WRITE(UNIT_LOG, 1092)
             CALL MFIX_EXIT(myPE)
          ENDIF
+         IF (C_F==UNDEFINED .AND. MMAX>0 .AND. DES_MMAX >0) THEN
+            IF(DMP_LOG) WRITE(UNIT_LOG, 1095)
+            CALL MFIX_EXIT(myPE)
+         ENDIF                 
       ENDIF
 
       IF (MPPIC .AND. DES_CONTINUUM_HYBRID) THEN
@@ -1042,6 +1046,10 @@
          'DES_CONTINUUM_COUPLED must be to true when using ',/10X&
          'DES_CONTINUUM_HYBRID.',&
          /1X,70('*')/)
+ 1095 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'C_F must be defined when DES_CONTINUUM_HYBRID TRUE ',/10X,&
+         'and both continuum and discrete solids phases are ',&
+         'present'/10X,'(MAX>=1 and DES_MMAX>=1).',/1X,70('*')/)
 
  2001 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Looks like a 3-D case (IMAX, JMAX & KMAX all >1) ',&
