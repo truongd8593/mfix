@@ -100,11 +100,11 @@
  
   BC_TYPE          =  'MI'     'PO'
 
-  BC_EP_g          =  1.0        1.0
+  BC_EP_g          =  1.0 
 
-  BC_U_g           =  2*0.0 
-  BC_V_g           =  2*1.0 
-  BC_W_g           =  2*0.0
+  BC_U_g           =  0.0 
+  BC_V_g           =  1.0 
+  BC_W_g           =  0.0
 
   BC_P_g           = 2*0
 
