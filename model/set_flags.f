@@ -406,6 +406,8 @@
 ! internal surface.
          IF (WALL_AT(IJK)) THEN 
 ! ---------------------------------------------------------------->>>                 
+! the default is equivalent to an impermeable surface and these cells
+! will be treated as such in the momentum routines
             FLAG_E(IJK) = 0 
             FLAG_N(IJK) = 0 
             FLAG_T(IJK) = 0 

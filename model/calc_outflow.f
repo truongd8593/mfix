@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CALC_OUTFLOW(L)                                        C
+!  Subroutine: CALC_OUTFLOW                                            C
 !  Purpose: Calculate mass and volumetric out flow rates from an       C
 !           outflow boundary                                           C
 !                                                                      C
@@ -20,13 +20,11 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE CALC_OUTFLOW(L) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -38,28 +36,27 @@
       USE compar
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Dummy arguments
 !-----------------------------------------------
+! Boundary condition number
+      INTEGER, INTENT(IN) :: L
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Local variables
 !-----------------------------------------------
-!
-!                      Indices
-      INTEGER          I, J, K, IJK
-!
-!                      Solids phase
-      INTEGER          M
-!
-      INTEGER IJK2
-!
-!  Passed variables
-!                      Boundary condition number
-      INTEGER          L
+! Indices
+      INTEGER :: I, J, K, IJK
+! Solids phase
+      INTEGER :: M
+! ijk index of fluid cell adjacent to boundary cell
+      INTEGER :: IJK2
+!-----------------------------------------------
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'ep_s2.inc'
-!
+!-----------------------------------------------
+
       BC_OUT_N(L) = BC_OUT_N(L) + 1 
       DO K = BC_K_B(L), BC_K_T(L) 
          DO J = BC_J_S(L), BC_J_N(L) 
@@ -99,7 +96,8 @@
                   IJK2 = KP_OF(IJK) 
                   BC_MOUT_G(L)=BC_MOUT_G(L)+DX(I)*DY(J)*W_G(IJK)*ROP_G(IJK2) 
                   BC_VOUT_G(L) = BC_VOUT_G(L) + DX(I)*DY(J)*W_G(IJK)*EP_G(IJK2) 
-               END SELECT 
+               END SELECT
+
                DO M = 1, MMAX 
                   SELECT CASE (TRIM(BC_PLANE(L)))
                   CASE ('W')  
@@ -139,9 +137,11 @@
                      BC_VOUT_S(L,M) = BC_VOUT_S(L,M) + DX(I)*DY(J)*W_S(IJK,M)*&
                         EP_S(IJK2,M) 
                   END SELECT 
-               END DO 
-            END DO 
-         END DO 
-      END DO 
+               ENDDO   ! end do loop m = 1,mmax
+
+            ENDDO   ! end do loop (i=bc_i_w(l), bc_i_e(l))
+         ENDDO   ! end do loop (j=bc_j_s(l), bc_j_n(l)) 
+      ENDDO   ! end do loop (k=bc_k_b(l), bc_k_t(l)) 
+
       RETURN  
       END SUBROUTINE CALC_OUTFLOW 

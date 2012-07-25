@@ -1,7 +1,8 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: MOD_BC_I(BC, I_w, I_e, J_s, K_b, PLANE)                C
+!  Subroutine: MOD_BC_I                                                C
 !  Purpose: modify the "I" values for the b.c. plane                   C
+!     This is a yz plane                                               C
 !                                                                      C
 !  Author: P. Nicoletti                               Date: 10-DEC-91  C
 !  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 27-JAN-92  C
@@ -13,19 +14,16 @@
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced: ICBC_FLAG                                     C
-!  Variables modified: None                                            C
-!                                                                      C
-!  Local variables: IJK1, IJK                                         C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE MOD_BC_I(BC, I_W, I_E, J_S, K_B, PLANE) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -37,61 +35,63 @@
       USE compar 
       USE mpi_utility 
       IMPLICIT NONE
+
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Dummy arguments
 !-----------------------------------------------
+! boundary condition index
+      INTEGER, INTENT(IN) :: BC
+! i cell indices defining location of yz plane
+      INTEGER, INTENT(INOUT) :: I_w, I_e
+! south/bottom j,k cell indices of yz plane
+      INTEGER, INTENT(IN) :: J_s, K_b
+! the flow surface plane
+      CHARACTER, INTENT(OUT) :: PLANE
+
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Local variables
 !-----------------------------------------------
-!
-!              boundary condition index
-      INTEGER  BC
-!
-!              calculated cell indices in I,J,K directions
-      INTEGER  I_w, I_e, J_s, K_b
-!
-!               the flow surface plane
-      CHARACTER PLANE
-!
-! local variables
-!
-!              'IJK' indices
+!     'IJK' indices
       INTEGER  IJK1 , IJK, bcast_root
+
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
-!// SP
-    IF(IS_ON_myPE_owns(I_W,J_S,K_B)) then
-      bcast_root = myPE
-      call global_all_sum(bcast_root)
-    ELSE
-      bcast_root = 0
-      call global_all_sum(bcast_root)
-    ENDIF
+! Include statement functions
+!-----------------------------------------------
+    INCLUDE 'function.inc'
+!-----------------------------------------------
 
-    IF(IS_ON_myPE_owns(I_W,J_S,K_B)) then
-      IJK1 = FUNIJK(I_W,J_S,K_B) 
-      IJK = FUNIJK(I_W + 1,J_S,K_B) 
-      IF (WALL_ICBC_FLAG(IJK1) .AND. ICBC_FLAG(IJK)(1:1)=='.') THEN 
-         I_W = I_W 
-         I_E = I_E 
-         PLANE = 'E' 
-      ELSE IF (WALL_ICBC_FLAG(IJK) .AND. ICBC_FLAG(IJK1)(1:1)=='.') THEN 
-         I_W = I_W + 1 
-         I_E = I_E + 1 
-         PLANE = 'W' 
-      ELSE 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1000) BC, I_W, I_E, J_S, K_B, ICBC_FLAG(IJK1), &
-            ICBC_FLAG(IJK) 
-         call mfix_exit(myPE)  
-      ENDIF 
-    ENDIF
+      IF(IS_ON_myPE_owns(I_W,J_S,K_B)) then
+         bcast_root = myPE
+         call global_all_sum(bcast_root)
+      ELSE
+         bcast_root = 0
+         call global_all_sum(bcast_root)
+      ENDIF
 
-!/SP
+      IF(IS_ON_myPE_owns(I_W,J_S,K_B)) THEN
+         IJK1 = FUNIJK(I_W,J_S,K_B)
+         IJK = FUNIJK(I_W + 1,J_S,K_B) 
+         IF (WALL_ICBC_FLAG(IJK1) .AND. ICBC_FLAG(IJK)(1:1)=='.') THEN 
+! flow in/out on west boundary (fluid cell on east)
+            I_W = I_W 
+            I_E = I_E 
+            PLANE = 'E' 
+         ELSEIF (WALL_ICBC_FLAG(IJK) .AND. ICBC_FLAG(IJK1)(1:1)=='.') THEN 
+! flow in/out on east boundary (fluid cell on west)
+            I_W = I_W + 1 
+            I_E = I_E + 1 
+            PLANE = 'W' 
+         ELSE 
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1000) BC, I_W, I_E, J_S, K_B, ICBC_FLAG(IJK1), &
+               ICBC_FLAG(IJK) 
+            call mfix_exit(myPE)  
+         ENDIF 
+      ENDIF
+
       CALL bcast(I_W,bcast_root)
       CALL bcast(I_E,bcast_root)
       CALL bcast(PLANE,bcast_root)
-!
+
       RETURN  
  1000 FORMAT(/70('*')//'From: MOD_BC_I'/'Message: Cannot locate the ',&
          'flow plane for boundary condition ',I3,/' I West   = ',I3,/&
@@ -101,6 +101,3 @@
          ' May be no IC was specified for the fluid cell.',/70('*')/) 
       END SUBROUTINE MOD_BC_I 
       
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!// 400 Added mpi_utility module and other global reduction (bcast) calls

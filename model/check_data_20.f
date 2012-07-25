@@ -324,15 +324,9 @@
 
                   IF (.NOT.DISCRETE_ELEMENT) THEN
 ! check the sum of volume fractions. 
-! for discrete element simulations the solids continuum variable rop_s
-! is essentially 'borrowed' and its value is not based on the actual 
-! particle configuration until the discrete element portion of the 
-! simulation has been called. so its value may not even be specified 
-! at this point in the code (i.e., if run_type==new it will not be 
-! specified).
-! for the hybrid model the solids volume fraction of the discrete phase
-! will generally not yet have been accounted for so these checks will
-! have no meaning at this point
+! it would seem that this check is somewhat redundant with check_data_07
+! for mass inflow cells (flag=20) and with check_data_06 for most
+! fluid/solid IC cells (flag=1)
 
                      DIF = ONE - EP_G(IJK) 
                      IF (SMAX > 0) THEN 
@@ -367,6 +361,15 @@
                     ENDIF ! for SMAX > 0
 
                  ELSE   ! else if discrete_element
+! for discrete element simulations the solids continuum variable rop_s
+! is essentially borrowed. that is, its value is not based on the actual
+! particle configuration until the discrete element portion of the 
+! simulation has been called. so its value may not even be specified 
+! at this point in the code (i.e., if run_type==new it will not be 
+! specified).
+! similarly, for the hybrid model the solids volume fraction of any
+! discrete phases will generally not yet be accounted. so these checks
+! will have no meaning at this point
 
 ! ep_g must have a value > 0 and < 1 
                     IF (EP_G(IJK) < ZERO .OR. EP_G(IJK) > ONE) THEN 
