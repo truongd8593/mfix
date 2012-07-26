@@ -52,7 +52,7 @@
   EP_star = 0.42   
 #
 # The solids species, which is not needed, but included to avoid error message
-  SPECIES_NAME(3) = 'Al2O3'                                                             
+  SPECIES_NAME(3) = 'AL2O3'                                                             
 #                                                                               
 # Initial Conditions Section                                                    
 #                                                                               

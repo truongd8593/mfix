@@ -55,7 +55,7 @@
   EP_star = 0.4
   
   NMAX(1) = 2
-  SPECIES_NAME(3) = 'H2O(L)' 'Al2O3' !'SiO2(Lqz)' !
+  SPECIES_NAME(3) = 'H2O(L)' 'AL2O3' !'SiO2(Lqz)' !
   
   C(1) = 0.002  #reaction rate coefficient  
 
