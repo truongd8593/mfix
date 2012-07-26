@@ -11,9 +11,9 @@
   MMAX = 2
   NMAX(1)= 5
   NMAX(2)= 4
-  SPECIES_NAME(6) = 'AL2O3(S)'   'ZnCl2'  'Fe(OH)2'  'Fixed Carbon' 
+  SPECIES_NAME(6) = 'AL2O3'   'ZnCl2'  'Fe(OH)2'  'Fixed Carbon' 
   SPECIES_NAME(10) = 'Volatile Matter'
-  SPECIES_NAME(11) = 'SiS2  Solid'  'C6H11  2M-4en3yl'   'SiHCL3' 'SiH4'
+  SPECIES_NAME(11) = 'SiS2  Solid'  'C6H11  2M-4en3yl'   'SiHCL3' 'SiH4  Silane'
 
   MW_s(1,5) = 63  !override the molecular weight read from the database
 
