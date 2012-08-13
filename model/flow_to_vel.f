@@ -2,6 +2,9 @@
 !                                                                      C
 !  Subroutine: FLOW_TO_VEL                                             C
 !  Purpose: Convert volumetric and mass flow rates to velocities       C
+!     A specified mass flow rate is first converted to volumetric      C
+!     flow rate. The volumetric flow rate is then converted to a       C
+!     velocity.                                                        C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 28-JUL-92  C
 !  Reviewer: W. Rogers                                Date: 11-DEC-92  C
@@ -58,6 +61,9 @@
       LOGICAL, EXTERNAL :: COMPARE 
 !-----------------------------------------------
 
+! initialize
+      VOLFLOW = UNDEFINED
+
       CONVERTED = .FALSE. 
       DO BCV = 1, DIMENSION_BC 
          IF (BC_DEFINED(BCV)) THEN 
@@ -65,12 +71,13 @@
                 BC_TYPE(BCV)=='MASS_OUTFLOW') THEN 
 
 ! If gas mass flow is defined convert it to volumetric flow
+! ---------------------------------------------------------------->>>
                IF (BC_MASSFLOW_G(BCV) /= UNDEFINED) THEN 
                   IF (RO_G0 /= UNDEFINED) THEN 
                      VOLFLOW = BC_MASSFLOW_G(BCV)/RO_G0 
                   ELSE 
                      IF (BC_P_G(BCV)/=UNDEFINED .AND. &
-                         BC_T_G(BCV)/=UNDEFINED) THEN 
+                         BC_T_G(BCV)/=UNDEFINED) THEN
                         IF (MW_AVG == UNDEFINED) THEN 
                            MW = CALC_MW(BC_X_G,DIMENSION_BC,BCV,NMAX(0),MW_G) 
                         ELSE 
@@ -78,8 +85,21 @@
                         ENDIF 
                         VOLFLOW = BC_MASSFLOW_G(BCV)/&
                            EOSG(MW,(BC_P_G(BCV)-P_REF),BC_T_G(BCV))
-                     ELSE 
-                        IF (BC_TYPE(BCV) == 'MASS_OUTFLOW') THEN 
+                          
+                     ELSE
+! for mass_inflow, check_data_07 has already required that either ro_g0
+! be defined or bc_p_g and bc_t_g be defined. So this branch will never
+! be entered when mass_inflow. if mass_outflow, ro_g0 and either bc_p_g, 
+! or bc_t_g, or both, must be undefined.
+! if the code comes through this branch without exiting and massflow is
+! non-zero, then volflow will remain undefined.
+
+                        IF (BC_TYPE(BCV) == 'MASS_OUTFLOW') THEN ! this check seems unnecessary
+
+! if no mass flow through the boundary, the volume flow is zero.
+! otherwise check that the value of velocity component through the
+! boundary plane is defined, and is non-zero (otherwise would be caught
+! by bc_massflow_g == zero branch)
                            IF (BC_MASSFLOW_G(BCV) == ZERO) THEN 
                               VOLFLOW = ZERO 
                            ELSEIF (BC_PLANE(BCV)=='W' .OR. &
@@ -106,16 +126,19 @@
                                     BCV, 'BC_W_g' 
                                  call mfix_exit(myPE)  
                               ENDIF 
-                           ENDIF 
-                        ELSE 
+                           ENDIF
+                        ELSE   ! else branch if(bc_type='mass_outflow')
+! not sure how this branch will be reached by mass_inflow
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1020) BCV 
-                           call mfix_exit(myPE)  
-                        ENDIF 
+                           call mfix_exit(myPE)
+                        ENDIF   ! end if (bc_type(bcv)=='mass_outflow')
                      ENDIF 
-                  ENDIF 
+                  ENDIF   ! end if/else (ro_g0 /=undefined)
 
 ! If volumetric flow is also specified compare both
                   IF (BC_VOLFLOW_G(BCV) /= UNDEFINED) THEN 
+! volflow may be undefined for mass_outflow boundaries wherein ro_g0 and
+! either bc_p_g, or bc_t_g, or both, were undefined.                       
                      IF (.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_G(BCV))) THEN 
                         IF(DMP_LOG)WRITE (UNIT_LOG, 1000) BCV, &
                            VOLFLOW, BC_VOLFLOW_G(BCV) 
@@ -125,16 +148,34 @@
                      BC_VOLFLOW_G(BCV) = VOLFLOW 
                   ENDIF 
                ENDIF   ! end if (bc_massflow_g(bcv) /= undefined)
+! end gas mass flow conversion to volumetric flow               
+! ----------------------------------------------------------------<<<
+
+
 
 ! If gas volumetric flow is defined convert it to velocity
+! ---------------------------------------------------------------->>>
                IF (BC_VOLFLOW_G(BCV) /= UNDEFINED) THEN 
 
-                  IF (BC_EP_G(BCV) /= UNDEFINED) THEN 
+                  IF (BC_EP_G(BCV) /= UNDEFINED) THEN
+! volumetric flow rate and void fraction at the boundary are specified
+! (known) so that the corresponding gas velocity through the boundary
+! plane may be calculated. 
                      VEL = BC_VOLFLOW_G(BCV)/(BC_AREA(BCV)*BC_EP_G(BCV))
-                  ELSE 
-                     RETURN                      !Error caught in Check_data_07 
+                  ELSE  
+! for mass_inflow, check_data_07 has already required that bc_ep_g be
+! defined (i.e., this section will not happen for MI). For mass_outflow
+! the routine will exit here if bc_ep_g is not defined.  However, for
+! this MO the boundary velocities must also be set or mfix will exit due
+! to later checks in check_data_07.
+                     RETURN          
                   ENDIF 
 
+! if the user also defined the boundary velocity through the plane, then
+! check that the calculated value agrees with the specified value. if
+! the user did not define the boundary velocity through the plane, then
+! if mass_inflow set the value of the boundary velocity to the
+! calculated value. otherwise do nothing.
                   CONVERTED = .TRUE. 
                   SELECT CASE (TRIM(BC_PLANE(BCV)))  
                   CASE ('W')  
@@ -265,23 +306,31 @@
                      ENDIF 
                   END SELECT    ! end select (trim(bc_plane(bcv))
                ENDIF   ! end if (bc_volflow_g(bcv)/=undefined)
-               
+! end gas volumetric flow conversion to velocity
+! ----------------------------------------------------------------<<<               
 
-               
-               IF (.NOT.DISCRETE_ELEMENT .OR. (DISCRETE_ELEMENT &
-                   .AND. DES_CONTINUUM_HYBRID)) THEN
-! The following quantities should not be required for DEM simulations
-! To ensure this is the case leave them undefined in mfix.dat
+
+
+! DEM simulations do not employ variables for continuum solids. So do
+! not perform checks on unnecessary data.
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
 
 ! Do flow conversions for solids phases
-               DO M = 1, MMAX 
+               DO M = 1, SMAX 
+
+! initialize
+                  VOLFLOW = UNDEFINED
 
 ! If solids mass flow is defined convert it to volumetric flow
+! ---------------------------------------------------------------->>>
                   IF (BC_MASSFLOW_S(BCV,M) /= UNDEFINED) THEN 
+
                      IF (RO_S(M) /= UNDEFINED) THEN 
+! RO_S must be defined for solids phases (see check_data_04).
                         VOLFLOW = BC_MASSFLOW_S(BCV,M)/RO_S(M) 
                      ELSE 
-                        RETURN    !  This error will be caught in a previous routine 
+! this section should never happen (redundant).
+                        RETURN    
                      ENDIF 
 
 ! If volumetric flow is also specified compare both
@@ -295,18 +344,38 @@
                         BC_VOLFLOW_S(BCV,M) = VOLFLOW 
                      ENDIF 
                   ENDIF   ! end if (bc_massflow_s(bcv,m)/=undefined)
+! end solids mass flow conversion to volumetric flow
+! ----------------------------------------------------------------<<<
 
-! bulk density must be explicitly defined for hybrid model
-                  IF (.NOT.DES_CONTINUUM_HYBRID) THEN
-                     IF (BC_ROP_S(BCV,M)==UNDEFINED .AND. MMAX==1) &
-                        BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S(M)
-                  ELSE
-                     RETURN   ! errors are caught in check_data_07
+                  
+! if possible, define bulk density based on ep_g. note if mass_outflow,
+! bc_ep_g may still be undefined at this point wherein bc_rop_s would 
+! become set as 1-undefined. to avoid this issue, a check for bc_ep_g 
+! defined was added. note if mass_inflow, check_data_07 later performs
+! the same calculations as below but with additional checks.
+                  IF (BC_ROP_S(BCV,M) == UNDEFINED .AND. &
+                     BC_EP_G(BCV) /= UNDEFINED ) THEN 
+                     IF (BC_EP_G(BCV) == ONE) THEN 
+                         BC_ROP_S(BCV,M) = ZERO 
+                     ELSEIF (SMAX == 1 .AND. &
+                              .NOT.DES_CONTINUUM_HYBRID) THEN 
+! bulk density must be explicitly defined for hybrid model and cannot be
+! defined from 1-bc_ep_g
+                         BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S(M)
+                     ENDIF
                   ENDIF
+! note bc_rop_s may still be undefined at this point
 
+
+! If solids volumetric flow is defined convert it to velocity
+! ---------------------------------------------------------------->>>
                   IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN 
+
                      IF (BC_ROP_S(BCV,M) /= UNDEFINED) THEN 
-                        EPS = BC_ROP_S(BCV,M)/RO_S(M) 
+                        EPS = BC_ROP_S(BCV,M)/RO_S(M)
+! volumetric flow rate and solids volume fraction at the boundary are
+! specified (known) so that the corresponding solids velocity through
+! the boundary plane may be calculated. 
                         IF (EPS /= ZERO) THEN 
                            VEL = BC_VOLFLOW_S(BCV,M)/(BC_AREA(BCV)*EPS) 
                         ELSE 
@@ -316,16 +385,23 @@
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1250) BCV, M 
                               call mfix_exit(myPE)  
                            ENDIF 
-                        ENDIF 
-                     ELSE 
+                        ENDIF
+                     ELSE   ! bc_rop_s is undefined
                         IF (BC_VOLFLOW_S(BCV,M) == ZERO) THEN 
                            VEL = ZERO 
                         ELSE 
+! if bc_rop_s is undefined and bc_volflow_s is not zero exit MFIX with
+! error                                
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1260) BCV, M 
                            call mfix_exit(myPE)  
                         ENDIF 
                      ENDIF   
 
+! if the user also defined the boundary velocity through the plane, then
+! check that the calculated value agrees with the specified value. if
+! the user did not define the boundary velocity through the plane, then
+! if mass_inflow set the value of the boundary velocity to the
+! calculated value. otherwise do nothing.
                      CONVERTED = .TRUE. 
                      SELECT CASE (TRIM(BC_PLANE(BCV)))  
                      CASE ('W')  
@@ -456,7 +532,10 @@
                         ENDIF 
                      END SELECT    ! end select (trim(bc_plane(bcv))
                   ENDIF   ! end if (bc_volflow_s(bcv,m) /= undefined)
-               ENDDO   ! end do m = 1,mmax
+! end solids volumetric flow conversion to velocity
+! ----------------------------------------------------------------<<<
+
+               ENDDO   ! end do m = 1,smax
                ENDIF   ! end if (.not.discrete_element)
 
             ENDIF   ! end if (bc_type(bcv)=='mass_inflow' or 'mass_outflow')

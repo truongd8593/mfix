@@ -2,11 +2,10 @@
 !                                                                      C
 !  Subroutine: CHECK_DATA_20                                           C
 !  Purpose:                                                            C
-!     - check whether all field variables are initialized              C
-!     - check whether the sum of volume fractions is 1.0 and           C
-!       and EP_g >= EP_star.                                           C
+!     - check whether field variables are initialized in all cells     C
+!     - check whether the sum of void and volume fractions is 1.0      C
+!       in all fluid and mass inflow cells                             C
 !     - check whether mu_gmax is specified if k_epsilon or l_scale     C
-!     - set miscellaneous constants                                    C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 30-JAN-92  C
 !  Reviewer: P. Nicoletti, W. Rogers, S. Venkatesan   Date: 31-JAN-92  C
@@ -93,7 +92,9 @@
       ABORT = .FALSE. 
       NONZERO = .FALSE. 
 
-! Check whether all field variables are initialized
+! Check whether all field variables are initialized in all fluid cells
+! and flow boundary cells
+! ---------------------------------------------------------------->>>
       DO K = kstart2, kend2 
          DO J = jstart2, jend2 
             DO I = istart2, iend2 
@@ -220,8 +221,7 @@
 ! check solids phase fields. these quantities are specified via the
 ! subroutines set_ic and set_bc0/set_bc1 that employ the initial and
 ! boundary conditions set in the mfix.dat.  
-                  IF (.NOT.DISCRETE_ELEMENT .OR. (DISCRETE_ELEMENT &
-                      .AND. DES_CONTINUUM_HYBRID)) THEN
+                  IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
                      DO M = 1, SMAX 
                         IF (ROP_S(IJK,M) == UNDEFINED) THEN 
                            IF (.NOT.ABORT) THEN 
@@ -302,12 +302,17 @@
                            ENDDO 
                         ENDIF
                      ENDDO   ! end do m=1,smax
-                  ENDIF      ! if (.not.discrete_element)
+                  ENDIF      ! if (.not.discrete_element .or.
+                             !     des_continuum_hybrid)
 
                ENDIF   ! IF (.NOT.WALL_AT(IJK)) THEN  
             ENDDO   ! end do I = istart2, iend2 
          ENDDO    ! end do J =j start2, jend2 
       ENDDO   ! end do K = kstart2, kend2 
+
+! end check whether all field variables are initialized in all fluid
+! cells and flow boundary cells
+! ----------------------------------------------------------------<<<
 
       IF (ABORT) THEN 
          IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 
@@ -315,19 +320,23 @@
       ENDIF 
 
 
+! Additional check for fluid or mass inflow cells
+! ---------------------------------------------------------------->>>
       DO K = kstart2, kend2 
          DO J = jstart2, jend2 
             DO I = istart2, iend2 
                IJK = FUNIJK(I,J,K) 
-! for cells with fluid or solids or for mass inflow cells
+
                IF (FLAG(IJK)==1 .OR. FLAG(IJK)==20) THEN 
 
-                  IF (.NOT.DISCRETE_ELEMENT) THEN
-! check the sum of volume fractions. 
-! it would seem that this check is somewhat redundant with check_data_07
-! for mass inflow cells (flag=20) and with check_data_06 for most
-! fluid/solid IC cells (flag=1)
+! Check whether L_scale is non-zero anywhere
+                  IF (L_SCALE(IJK) /= ZERO) NONZERO = .TRUE. 
 
+
+! check the sum of volume fractions. 
+! this seems redundant with the existing checks in check_data_06 for 
+! fluid cells (flag=1) and with check_data_07 for MI cells (flag=20).  
+                  IF (.NOT.DISCRETE_ELEMENT) THEN
                      DIF = ONE - EP_G(IJK) 
                      IF (SMAX > 0) THEN 
                         DIF = DIF - SUM(ROP_S(IJK,:SMAX)/RO_S(:SMAX)) 
@@ -358,36 +367,34 @@
                            ENDIF 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1150) I, J, K
                         ENDIF  
-                    ENDIF ! for SMAX > 0
+                     ENDIF ! for SMAX > 0
 
-                 ELSE   ! else if discrete_element
-! for discrete element simulations the solids continuum variable rop_s
-! is essentially borrowed. that is, its value is not based on the actual
-! particle configuration until the discrete element portion of the 
-! simulation has been called. so its value may not even be specified 
-! at this point in the code (i.e., if run_type==new it will not be 
-! specified).
-! similarly, for the hybrid model the solids volume fraction of any
-! discrete phases will generally not yet be accounted. so these checks
-! will have no meaning at this point
+                  ELSE   ! else if discrete_element
+
+! for discrete element simulations any solids bulk density is not yet
+! assigned. that is, the particle configuration is not known until the
+! discrete element portion of the simulation is invoked. (so if 
+! run_type==new it will not be specified). so checking that the sum of
+! void and volume fractions equal 1 is not meaningful yet. this holds
+! true for the hybrid model.
 
 ! ep_g must have a value > 0 and < 1 
-                    IF (EP_G(IJK) < ZERO .OR. EP_G(IJK) > ONE) THEN 
-                       IF (.NOT.ABORT) THEN 
-                          IF(DMP_LOG)WRITE (UNIT_LOG, 1075) 
-                          ABORT = .TRUE. 
-                       ENDIF 
-                       IF(DMP_LOG)WRITE (UNIT_LOG, 1150) I, J, K
-                    ENDIF
-                 ENDIF ! end if/else (.not.discrete_element)
-
-!  Check whether L_scale is non-zero anywhere
-                  IF (L_SCALE(IJK) /= ZERO) NONZERO = .TRUE. 
+                     IF (EP_G(IJK) < ZERO .OR. EP_G(IJK) > ONE) THEN 
+                        IF (.NOT.ABORT) THEN 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1075) 
+                           ABORT = .TRUE. 
+                        ENDIF 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1150) I, J, K
+                     ENDIF
+                  ENDIF ! end if/else (.not.discrete_element)
 
                ENDIF   ! IF (FLAG(IJK)==1 .OR. FLAG(IJK)==20) THEN 
             ENDDO   ! I = istart2, iend2 
          ENDDO    ! J =j start2, jend2 
       ENDDO   ! K = kstart2, kend2 
+! end additional checks for fluid or mass inflow cells
+! ----------------------------------------------------------------<<<
+
 
       IF (ABORT) THEN 
          IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 

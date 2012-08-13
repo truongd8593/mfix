@@ -11,15 +11,28 @@
 !  Author: M. Syamlal                                 Date: 23-OCT-92  C
 !  Reviewer: M. Syamlal                               Date: 11-DEC-92  C
 !                                                                      C
+!                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced: BC_DEFINED, BC_I_w, BC_I_e, BC_J_s, BC_J_n,   C
-!                        BC_K_b, BC_K_t, BC_TYPE, TIME, DT, BC_TIME,   C
-!                        BC_V_g, BC_V_gh, BC_V_gl, BC_DT_l, BC_DT_h,   C
-!                        BC_PLANE, IMAX2, JMAX2, KMAX2                 C
-!  Variables modified: BC_V_g, BC_TIME, I, J, K, IJK, V_g              C
+!                        BC_K_b, BC_K_t, BC_TYPE, BC_TIME, BC_PLANE,   C
+!                        TIME, TSTOP, DT, BC_TIME, BC_DT_0, SMAX,      C
+!                        BC_JET_G, BC_JET_GH, BC_JET_GL, BC_DT_H,      C
+!                        BC_DT_L, KT_TYPE,                             C
 !                                                                      C
-!  Local variables: L, IJK2, I1, I2, J1, J2, K1, K2                    C
+!  Variables modified:                                                 C
+!     For MI: BC_TIME, BC_JET_G, U_g, V_g, W_g                         C
+!     FOR PI: nothing                                                  C
+!     For PO, O: BC_TIME, BC_MOUT_G, BC_VOUT_G, BC_OUT_N               C
+!                BC_MOUT_S, BC_VOUT_S                                  C
+!     For MO: BC_TIME, BC_MOUT_G, BC_VOUT_G, BC_OUT_N                  C
+!             BC_MOUT_S, BC_VOUT_S,                                    C
+!             BC_U_g, BC_V_g, BC_W_g, BC_U_S, BC_V_S, BC_W_S,          C
+!             U_g, V_g, W_g, U_s, V_s, W_s                             C
+!     For PO, O & MO: set_outflow is called which modifies many        C
+!                     quantities                                       C
+!                                                                      C
+!  Local variables: IJK, IJK2, I, J, K I1, I2, J1, J2, K1, K2, L, M    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -43,11 +56,13 @@
 ! Local variables
 !-----------------------------------------------
 ! Indices 
-      INTEGER :: I, J, K, IJK, IPJK, M 
+      INTEGER :: I, J, K, IJK 
+! IJK index for setting velocity bc 
+      INTEGER :: IJK2 
+! Solids phase index
+      INTEGER :: M 
 ! Local index for boundary condition 
       INTEGER :: L 
-! Index for setting V velocity b.c. 
-      INTEGER :: IJK2 
 ! Starting and ending I index 
       INTEGER :: I1, I2 
 ! Starting and ending J index 
@@ -77,7 +92,8 @@
 
                CALL SET_OUTFLOW (L, I1, I2, J1, J2, K1, K2) 
 
-               CALL CALC_OUTFLOW (L) 
+               CALL CALC_OUTFLOW (L)
+
 ! Calculate and accumulate the actual mass and volume outflow               
                IF (TIME + 0.1d0*DT>=BC_TIME(L) .OR. TIME+0.1d0*DT>=TSTOP) THEN 
                   BC_TIME(L) = TIME + BC_DT_0(L) 
@@ -191,7 +207,7 @@
 ! boundaries according to user specifications with any modifications
 ! from the above calculations.  If a W, S, or B plane (i.e., fluid cell
 ! is west, south or bottom of boundary cell) then define the velocity of
-! the fluid cell according to the boundary velocity
+! the fluid cell according to the boundary velocity.
                   DO K = BC_K_B(L), BC_K_T(L) 
                      DO J = BC_J_S(L), BC_J_N(L) 
                         DO I = BC_I_W(L), BC_I_E(L) 
@@ -233,57 +249,63 @@
                                  W_S(IJK,M) = BC_W_S(L,M) 
                               END SELECT 
                            ENDDO  
-! for GHD theory to compute mixture BC of velocity and density
+
+! for GHD theory to compute mixture BC of velocity
+! bulk density is set by set_outflow                           
                            IF(TRIM(KT_TYPE) == 'GHD') THEN
-                             ROP_S(IJK,MMAX) = ZERO
-                             U_S(IJK,MMAX) =  ZERO 
-                             V_S(IJK,MMAX) =  ZERO 
-                             W_S(IJK,MMAX) =  ZERO 
-                             U_S(IJK2,MMAX) =  ZERO 
-                             V_S(IJK2,MMAX) =  ZERO 
-                             W_S(IJK2,MMAX) =  ZERO 
-                             DO M = 1, SMAX 
-                                ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + ROP_S(IJK,M)
-                                SELECT CASE (TRIM(BC_PLANE(L)))  
-                                CASE ('W')  
-                                   IJK2 = IM_OF(IJK) 
-                                   U_S(IJK2,MMAX) =  U_S(IJK2,MMAX) + BC_U_S(L,M)*ROP_S(IJK2,M)
-                                CASE ('E')  
-                                   IJK2 = IP_OF(IJK)
-                                   U_S(IJK,MMAX) =  U_S(IJK,MMAX) + BC_U_S(L,M)*ROP_S(IJK2,M)
-                                CASE ('S')  
-                                   IJK2 = JM_OF(IJK) 
-                                   V_S(IJK2,MMAX) =  V_S(IJK2,MMAX) + BC_V_S(L,M)*ROP_S(IJK2,M)
-                                CASE ('N')  
-                                   IJK2 = JP_OF(IJK)
-                                   V_S(IJK,MMAX) =  V_S(IJK,MMAX) + BC_V_S(L,M)*ROP_S(IJK2,M)
-                                CASE ('B')  
-                                   IJK2 = KM_OF(IJK) 
-                                   W_S(IJK2,MMAX) =  W_S(IJK2,MMAX) + BC_W_S(L,M)*ROP_S(IJK2,M)
-                                CASE ('T')  
-                                   IJK2 = KP_OF(IJK)
-                                   W_S(IJK,MMAX) =  W_S(IJK,MMAX) + BC_W_S(L,M)*ROP_S(IJK2,M)
-                                END SELECT 
-                             END DO 
-                             SELECT CASE (TRIM(BC_PLANE(L)))  
-                             CASE ('W')  
-                                IJK2 = IM_OF(IJK) 
-                                U_S(IJK2,MMAX) =  U_S(IJK2,MMAX) / ROP_S(IJK,MMAX)
-                             CASE ('E')  
-                                U_S(IJK,MMAX) =  U_S(IJK,MMAX) / ROP_S(IJK,MMAX)
-                             CASE ('S')  
-                                IJK2 = JM_OF(IJK) 
-                                V_S(IJK2,MMAX) =  V_S(IJK2,MMAX) / ROP_S(IJK,MMAX)
-                             CASE ('N')  
-                                V_S(IJK,MMAX) =  V_S(IJK,MMAX) / ROP_S(IJK,MMAX)
-                             CASE ('B')  
-                                IJK2 = KM_OF(IJK) 
-                                W_S(IJK2,MMAX) =  W_S(IJK2,MMAX) / ROP_S(IJK,MMAX)
-                             CASE ('T')  
-                                W_S(IJK,MMAX) =  W_S(IJK,MMAX) / ROP_S(IJK,MMAX)
-                             END SELECT 
-                           ENDIF
-! end of modifications for GHD theory
+                              U_S(IJK,MMAX) =  ZERO 
+                              V_S(IJK,MMAX) =  ZERO 
+                              W_S(IJK,MMAX) =  ZERO 
+                              U_S(IJK2,MMAX) =  ZERO 
+                              V_S(IJK2,MMAX) =  ZERO 
+                              W_S(IJK2,MMAX) =  ZERO 
+                              DO M = 1, SMAX 
+                                 SELECT CASE (TRIM(BC_PLANE(L)))  
+                                 CASE ('W')  
+                                    IJK2 = IM_OF(IJK) 
+                                    U_S(IJK2,MMAX) =  U_S(IJK2,MMAX) + &
+                                       BC_U_S(L,M)*ROP_S(IJK2,M)
+                                 CASE ('E')  
+                                    IJK2 = IP_OF(IJK)
+                                    U_S(IJK,MMAX) =  U_S(IJK,MMAX) + &
+                                       BC_U_S(L,M)*ROP_S(IJK2,M)
+                                 CASE ('S')  
+                                    IJK2 = JM_OF(IJK) 
+                                    V_S(IJK2,MMAX) =  V_S(IJK2,MMAX) + &
+                                       BC_V_S(L,M)*ROP_S(IJK2,M)
+                                 CASE ('N')  
+                                    IJK2 = JP_OF(IJK)
+                                    V_S(IJK,MMAX) =  V_S(IJK,MMAX) + &
+                                       BC_V_S(L,M)*ROP_S(IJK2,M)
+                                 CASE ('B')  
+                                    IJK2 = KM_OF(IJK) 
+                                    W_S(IJK2,MMAX) =  W_S(IJK2,MMAX) + &
+                                       BC_W_S(L,M)*ROP_S(IJK2,M)
+                                 CASE ('T')  
+                                    IJK2 = KP_OF(IJK)
+                                    W_S(IJK,MMAX) =  W_S(IJK,MMAX) + &
+                                       BC_W_S(L,M)*ROP_S(IJK2,M)
+                                 END SELECT 
+                              ENDDO 
+                              SELECT CASE (TRIM(BC_PLANE(L)))  
+                              CASE ('W')  
+                                 IJK2 = IM_OF(IJK) 
+                                 U_S(IJK2,MMAX) =  U_S(IJK2,MMAX) / ROP_S(IJK,MMAX)
+                              CASE ('E')  
+                                 U_S(IJK,MMAX) =  U_S(IJK,MMAX) / ROP_S(IJK,MMAX)
+                              CASE ('S')  
+                                 IJK2 = JM_OF(IJK) 
+                                 V_S(IJK2,MMAX) =  V_S(IJK2,MMAX) / ROP_S(IJK,MMAX)
+                              CASE ('N')  
+                                 V_S(IJK,MMAX) =  V_S(IJK,MMAX) / ROP_S(IJK,MMAX)
+                              CASE ('B')  
+                                 IJK2 = KM_OF(IJK) 
+                                 W_S(IJK2,MMAX) =  W_S(IJK2,MMAX) / ROP_S(IJK,MMAX)
+                              CASE ('T')  
+                                 W_S(IJK,MMAX) =  W_S(IJK,MMAX) / ROP_S(IJK,MMAX)
+                              END SELECT 
+                           ENDIF   ! end if (trim(kt_type)='ghd')
+
                                            
                         ENDDO 
                      ENDDO 

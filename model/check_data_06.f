@@ -57,7 +57,7 @@
       INTEGER :: I_w, I_e, J_s, J_n, K_b, K_t
       INTEGER :: I, J, K, IJK
       INTEGER :: M, N, IER
-      DOUBLE PRECISION SUM, SUM_EP, old_value, DP_TMP(MMAX)
+      DOUBLE PRECISION SUM, SUM_EP
 
 !-----------------------------------------------
 ! External functions
@@ -303,6 +303,7 @@
 ! Check the specification of physical quantities 
 ! GAS PHASE Quantities
 ! -------------------------------------------->>>
+! check that gas phase velocity components are initialized
                IF (IC_U_G(ICV) == UNDEFINED) THEN 
                   IF (NO_I) THEN 
                      IC_U_G(ICV) = ZERO 
@@ -328,10 +329,14 @@
                   ENDIF 
                ENDIF 
 
+! check that gas phase void fraction is initialized
                IF (IC_EP_G(ICV) == UNDEFINED) THEN 
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'IC_EP_g', ICV 
                   call mfix_exit(myPE) 
                ENDIF 
+
+! check that if the gas phase pressure is initialized and the gas is
+! compressible that the gas phase pressure is not zero or negative
                IF (IC_P_G(ICV) /= UNDEFINED) THEN 
                   IF (RO_G0==UNDEFINED .AND. IC_P_G(ICV)<=ZERO) THEN 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1010) ICV, IC_P_G(ICV) 
@@ -357,12 +362,17 @@
                   ENDIF 
                ENDIF 
 
-! if gas species are defined, calculate sum of the mass fractions
-               SUM = ZERO 
+! check sum of the gas species mass fractions
+! sum together those gas phase species mass fractions that are defined
+               SUM = ZERO
                DO N = 1, NMAX(0) 
-                  IF (IC_X_G(ICV,N) /= UNDEFINED) SUM = SUM + IC_X_G(ICV,N) 
+                  IF (IC_X_G(ICV,N) /= UNDEFINED) &
+                     SUM = SUM + IC_X_G(ICV,N) 
                ENDDO 
-! if no gas species are defined then warn user
+! if the gas phase has more than one species, then set any undefined
+! species mass fractions to zero. Warn the user if the sum of species 
+! mass fractions is not one and indicate which species is undefined
+! (mfix will exit in next check).   
                DO N = 1, NMAX(0) 
                   IF (IC_X_G(ICV,N) == UNDEFINED) THEN 
                      IF (.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)&
@@ -403,47 +413,44 @@
 ! -------------------------------------------->>>
                IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
 
+! at this point ic_ep_g must be defined
                   SUM_EP = IC_EP_G(ICV) 
                   DO M = 1, SMAX 
-
-                     IF (.NOT.DES_CONTINUUM_HYBRID) THEN
-                        IF (IC_ROP_S(ICV,M) == UNDEFINED) THEN 
-                           IF (IC_EP_G(ICV) == ONE) THEN 
-                              IC_ROP_S(ICV,M) = ZERO 
-                           ELSEIF (SMAX == 1) THEN 
-                              IC_ROP_S(ICV,M) = (ONE - IC_EP_G(ICV))*RO_S(M)
-                           ELSE 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
-                                 'IC_ROP_s', ICV, M 
-                              call mfix_exit(myPE) 
-                           ENDIF 
-                        ENDIF 
-                     ELSE
-! bulk density must be explicitly defined for hybrid model 
-                        IF (IC_ROP_S(ICV,M) == UNDEFINED) THEN 
+                     IF (IC_ROP_S(ICV,M) == UNDEFINED) THEN 
+                        IF (IC_EP_G(ICV) == ONE) THEN 
+                           IC_ROP_S(ICV,M) = ZERO 
+                        ELSEIF (SMAX == 1 .AND. &
+                                .NOT.DES_CONTINUUM_HYBRID) THEN 
+                           IC_ROP_S(ICV,M) = (ONE - IC_EP_G(ICV))*RO_S(M)
+                        ELSE
+! bulk density must be explicitly defined for hybrid model and cannot be
+! defined from 1-ic_ep_g
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
                               'IC_ROP_s', ICV, M 
                            call mfix_exit(myPE) 
                         ENDIF
                      ENDIF
-
+! at this point ic_rop_s must be defined
 ! sum of void fraction and solids volume fractions                  
                      SUM_EP = SUM_EP + IC_ROP_S(ICV,M)/RO_S(M) 
 
-! if solids phase M species are defined, calculate sum of the mass fractions                  
+! check sum of the solids phase m species mass fractions                  
                      SUM = ZERO 
-                     DO N = 1, NMAX(M) 
+                     DO N = 1, NMAX(M)
+! sum together those solids phase M species mass fractions that are
+! defined
                         IF(IC_X_S(ICV,M,N)/=UNDEFINED) &
                            SUM=SUM+IC_X_S(ICV,M,N) 
                      ENDDO
-! if no solids M present and no species are defined for phase M then set
-! mass fraction of species 1 to one                
+! if no solids phase M present and no species are defined for phase M 
+! then set mass fraction of solids phase M species 1 to one                
                      IF (IC_ROP_S(ICV,M)==ZERO .AND. SUM==ZERO) THEN 
                         IC_X_S(ICV,M,1) = ONE 
                         SUM = ONE 
                      ENDIF 
-! if no solids species for phase M are defined, warn user (only if
-! solids phase M is present)
+! set any undefined species mass fractions to zero. Warn the user if 
+! the sum of species mass fractions is not one and indicate which 
+! species is undefined (mfix will exit in next check). 
                      DO N = 1, NMAX(M) 
                         IF (IC_X_S(ICV,M,N) == UNDEFINED) THEN 
                            IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)&
@@ -457,6 +464,7 @@
                         IF (SPECIES_EQ(M)) call mfix_exit(myPE)  
                      ENDIF 
 
+! check that solids phase m velocity components are initialized
                      IF (IC_U_S(ICV,M) == UNDEFINED) THEN 
                         IF (IC_ROP_S(ICV,M)==ZERO .OR. NO_I) THEN 
                            IC_U_S(ICV,M) = ZERO 
@@ -528,20 +536,14 @@
                            call mfix_exit(myPE)
                      ENDIF 
                   ELSE
-! in hybrid model discrete particles are present but are not yet known
-! to the system so sum_ep is not necessarily one at this point
+! sum_ep not necessarily one at this point since discrete particles
+! present in hybrid model
                      IF (SUM_EP>ONE .OR. SUM_EP<ZERO) THEN 
                         IF(DMP_LOG)WRITE (UNIT_LOG, 1130) ICV 
                         call mfix_exit(myPE)
                      ENDIF
                   ENDIF
-
-! else branch if(.not.discrete_element.or.des_continuum_hybrid)
-! i.e., discrete_element=T and des_continuum_hybrid=F                  
-               ELSE   
-
-! at this point the volume fraction of discrete particles is not known
-! so only checks on ep_g can be conducted                       
+               ELSE   ! discrete_element and .not.des_continuum_hybrid
                   SUM_EP = IC_EP_G(ICV)                        
                   IF (SUM_EP>ONE .OR. SUM_EP<ZERO) THEN 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1130) ICV 

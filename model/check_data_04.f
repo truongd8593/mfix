@@ -40,6 +40,13 @@
       CHARACTER*85 LONG_STRING      
 !-----------------------------------------------
 
+! this will overwrite inadvertant user setting of this variable before 
+! going into check_data routines (notably 06 and 07) which rely on this
+! logical
+      IF(.NOT.DISCRETE_ELEMENT) THEN
+         DES_CONTINUUM_HYBRID = .FALSE.
+      ENDIF
+
       IF (DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_HYBRID) THEN
 ! override possible user settings on the following continuum flags
 
@@ -68,7 +75,6 @@
 ! those quantities are now done in check_des_data
          RETURN
       ENDIF
-
 
 ! Check MMAX
       IF (MMAX<0 .OR. MMAX>DIM_M) THEN 

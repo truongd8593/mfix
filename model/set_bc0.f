@@ -155,18 +155,20 @@
                   IJK = BOUND_FUNIJK(I,J,K) 
 
                   IF (WALL_AT(IJK)) THEN
+! this conditional is probably unnecessary since this section already
+! falls under the 'wall' if/else branch for the bc_type check...
                      IF(BC_Tw_g(L) /= UNDEFINED)&
                         T_g(IJK) = BC_Tw_g(L) 
-                     IF(MMAX > 0) & 
-                        WHERE(BC_Tw_s(L,:MMAX) /= UNDEFINED)&
-                          T_s(IJK,:MMAX) = BC_Tw_s(L,:MMAX) 
+                     IF(SMAX > 0) & 
+                        WHERE(BC_Tw_s(L,:SMAX) /= UNDEFINED)&
+                          T_s(IJK,:SMAX) = BC_Tw_s(L,:SMAX) 
                      IF(MMAX > 0) & 
                         WHERE(BC_Thetaw_m(L,:MMAX) /= UNDEFINED)&
                           Theta_m(IJK,:MMAX) = BC_Thetaw_m(L,:MMAX) 
                      IF(NMAX(0) > 0) & 
                         WHERE (BC_Xw_G(L,:NMAX(0)) /= UNDEFINED) X_G(IJK,:&
                           NMAX(0)) = BC_Xw_G(L,:NMAX(0))
-                     DO M = 1, MMAX 
+                     DO M = 1, SMAX 
                         IF(NMAX(M) > 0) & 
                         WHERE (BC_Xw_s(L, M, :NMAX(M)) /= UNDEFINED) X_s(IJK,M,:&
                           NMAX(M)) = BC_Xw_s(L, M, :NMAX(M))
@@ -196,11 +198,9 @@
                   BC_OUT_N(L) = 0 
                   BC_MOUT_G(L) = ZERO 
                   BC_VOUT_G(L) = ZERO 
-                  M = 1 
-                  IF (MMAX > 0) THEN 
-                     BC_MOUT_S(L,:MMAX) = ZERO 
-                     BC_VOUT_S(L,:MMAX) = ZERO 
-                     M = MMAX + 1 
+                  IF (SMAX > 0) THEN 
+                     BC_MOUT_S(L,:SMAX) = ZERO 
+                     BC_VOUT_S(L,:SMAX) = ZERO 
                   ENDIF 
                   BC_JET_G(L) = BC_JET_G0(L) 
                   IF (BC_JET_G(L) /= UNDEFINED) THEN 
@@ -231,26 +231,44 @@
                   IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                   IJK = BOUND_FUNIJK(I,J,K) 
 
+! this conditional may still be necessary to avoid cyclic boundaries.
+! cyclic boundaries would fall under this branch but are considered 
+! 'wall_at'
                   IF (.NOT.WALL_AT(IJK)) THEN 
 
-! setting p_outflow_at or outflow_at boundary conditions                       
-! ---------------------------------------------------------------->>>                          
+! setting p_outflow_at or outflow_at boundary conditions
+! ---------------------------------------------------------------->>>
                      IF (P_OUTFLOW_AT(IJK) .OR. OUTFLOW_AT(IJK)) THEN
+
+! Why check if the bc quantity for the field variable is defined before
+! performing the assignment?: 
+! For a new run the field variable will be undefined in these locations
+! so any check is irrelevant. However, for a restart run the field
+! variable in the boundary cell may have an existing value based on the
+! flow field. In this case, the check acts to maintain the existing value
+! unless given a user defined BC value. This is unlike the PI, MI and MO 
+! treatment where the values of field variables in boundary cells are
+! strictly overwritten regardless if the BC is defined. In addition, 
+! check_data_07 basically ensures such quantities will be defined for 
+! MI or PI if they are required.
 
                         P_STAR(IJK) = ZERO 
                         P_G(IJK) = SCALE(BC_P_G(L)) 
                         IF (BC_EP_G(L) /= UNDEFINED) EP_G(IJK) = BC_EP_G(L) 
-                        IF (BC_T_G(L) /= UNDEFINED) then
+! unless gas flow is entering back into the domain and ep_g in the
+! boundary cell is defined, t_g will be set to its adjacent fluid cell
+! value in set_bc1. so why do this here? if during the initial start-up,
+! the gas has backflow and ep_g is defined then t_g may be undefined in
+! the boundary.. otherwise this seems unnecessary?
+                        IF (BC_T_G(L) /= UNDEFINED) THEN
                           T_G(IJK) = BC_T_G(L) 
                         ELSE
-                          T_g(IJK) = TMIN
+                          T_G(IJK) = TMIN
                         ENDIF
  
-                        N = 1 
                         IF (NMAX(0) > 0) THEN 
                           WHERE (BC_X_G(L,:NMAX(0)) /= UNDEFINED) &
                             X_G(IJK,:NMAX(0)) = BC_X_G(L,:NMAX(0)) 
-                          N = NMAX(0) + 1 
                         ENDIF 
   
                         IF (NScalar > 0) THEN 
@@ -265,7 +283,7 @@
                             E_Turb_G(IJK) = BC_E_Turb_G(L)
                         ENDIF
  
-                        DO M = 1, MMAX 
+                        DO M = 1, SMAX 
                           IF (BC_ROP_S(L,M) /= UNDEFINED) &
                             ROP_S(IJK,M) = BC_ROP_S(L,M) 
                           IF(BC_T_S(L,M)/=UNDEFINED) &
@@ -273,11 +291,9 @@
                           IF (BC_THETA_M(L,M) /= UNDEFINED) &
                             THETA_M(IJK,M) = BC_THETA_M(L,M) 
 
-                          N = 1 
                           IF (NMAX(M) > 0) THEN 
                             WHERE (BC_X_S(L,M,:NMAX(M)) /= UNDEFINED) &
                               X_S(IJK,M,:NMAX(M)) = BC_X_S(L,M,:NMAX(M))
-                            N = NMAX(M) + 1 
                           ENDIF 
                         ENDDO 
 
@@ -306,22 +322,32 @@
 ! setting for p_inflow, mass_inflow or mass_outflow boundary
 ! conditions
 ! ---------------------------------------------------------------->>>
+
+! Unlike PO or O boundary condition branch above, in this branch no
+! checks are made to determine if the BC is defined before it is
+! assigned to the field variable. However, check_data_07 generally
+! ensures such BC quantities will be defined if they are needed for 
+! PI and MI boundaries.
+
                         P_STAR(IJK) = ZERO 
-                        EP_G(IJK) = BC_EP_G(L) 
                         P_G(IJK) = SCALE(BC_P_G(L)) 
+                        EP_G(IJK) = BC_EP_G(L)
                         T_G(IJK) = BC_T_G(L) 
 
                         IF (NMAX(0) > 0) THEN 
                           X_G(IJK,:NMAX(0)) = BC_X_G(L,:NMAX(0)) 
                         ENDIF 
+
                         IF (NScalar > 0) THEN 
                           Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar) 
                         ENDIF  
+
                         IF (K_Epsilon) THEN 
                           K_Turb_G(IJK) = BC_K_Turb_G(L) 
                           E_Turb_G(IJK) = BC_E_Turb_G(L)
                         ENDIF
-                        DO M = 1, MMAX 
+
+                        DO M = 1, SMAX 
                           ROP_S(IJK,M) = BC_ROP_S(L,M) 
                           T_S(IJK,M) = BC_T_S(L,M) 
                           THETA_M(IJK,M) = BC_THETA_M(L,M) 
@@ -352,15 +378,13 @@
                         V_G(IJK2) = BC_V_G(L) 
                         W_G(IJK3) = BC_W_G(L) 
  
-                        M = 1 
                         IF (MMAX > 0) THEN 
-                           U_S(IJK,:MMAX) = BC_U_S(L,:MMAX) 
-                           V_S(IJK,:MMAX) = BC_V_S(L,:MMAX) 
-                           W_S(IJK,:MMAX) = BC_W_S(L,:MMAX) 
-                           U_S(IJK1,:MMAX) = BC_U_S(L,:MMAX) 
-                           V_S(IJK2,:MMAX) = BC_V_S(L,:MMAX) 
-                           W_S(IJK3,:MMAX) = BC_W_S(L,:MMAX) 
-                           M = MMAX + 1 
+                           U_S(IJK,:SMAX) = BC_U_S(L,:SMAX) 
+                           V_S(IJK,:SMAX) = BC_V_S(L,:SMAX) 
+                           W_S(IJK,:SMAX) = BC_W_S(L,:SMAX) 
+                           U_S(IJK1,:SMAX) = BC_U_S(L,:SMAX) 
+                           V_S(IJK2,:SMAX) = BC_V_S(L,:SMAX) 
+                           W_S(IJK3,:SMAX) = BC_W_S(L,:SMAX) 
                         ENDIF 
 
 ! for GHD theory to compute mixture BC of velocity and density
@@ -409,10 +433,13 @@
 
 
                         IF (.NOT.MASS_OUTFLOW_AT(IJK)) THEN 
+! this is addressed in later call to set_mw_mix_g, so why do it?
                            IF (MW_AVG == UNDEFINED) MW_MIX_G(IJK) = &
-                             CALC_MW(X_G,DIMENSION_3,IJK,NMAX(0),MW_G) 
-                           IF (RO_G0 == UNDEFINED) RO_G(IJK) = &
+                             CALC_MW(X_G,DIMENSION_3,IJK,NMAX(0),MW_G)
+! this is addressed in later call to set_ro_g, so why do it?
+                          IF (RO_G0 == UNDEFINED) RO_G(IJK) = &
                              EOSG(MW_MIX_G(IJK),P_G(IJK),T_G(IJK)) 
+! this is also addressed in later call to set_ro_g, so why do it?
                            ROP_G(IJK) = EP_G(IJK)*RO_G(IJK) 
                         ENDIF 
 
