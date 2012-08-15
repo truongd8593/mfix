@@ -26,7 +26,7 @@
 !     If the outflow boundary is on the W, S or B side of the domain   C
 !     and the component of velocity through the plane is defined then  C
 !     this routine will NOT modify it (i.e., its value from the        C
-!     linear equation solver will be maintained).                      C
+!     momentum solver is maintained).                                  C
 !                                                                      C
 !  Local variables: IJK, I, J, K, M, FIJK                              C
 !                                                                      C
@@ -72,7 +72,7 @@
 ! index for a fluid cell adjacent to the boundary cell 
       INTEGER :: FIJK 
 ! alias for gas and solids velocity
-      DOUBLE PRECISION :: RVEL_G, RVEL_S(DIMENSION_M)      
+      DOUBLE PRECISION :: RVEL_G, RVEL_S(DIMENSION_M)
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -313,8 +313,8 @@
 
                   IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
                      DO M = 1, MMAX
-                        U_S(IJK,:MMAX) = U_S(FIJK,:MMAX) 
-                        V_S(IJK,:MMAX) = V_S(FIJK,:MMAX) 
+                        U_S(IJK,M) = U_S(FIJK,M) 
+                        V_S(IJK,M) = V_S(FIJK,M) 
                         IF (W_S(IJK,M) == UNDEFINED) THEN 
                            IF (ROP_S(IJK,M) > ZERO) THEN 
                               W_S(IJK,M) = ROP_S(FIJK,M)*&
@@ -388,8 +388,8 @@
 ! for an outflow on the eastern boundary this is the u component of
 ! velocity while for an outflow on the western boundary this is the
 ! -u component, etc. 
-      INTEGER, INTENT(IN) :: RVEL_G
-      INTEGER, INTENT(IN), DIMENSION(DIMENSION_M) :: RVEL_S
+      DOUBLE PRECISION, INTENT(IN) :: RVEL_G
+      DOUBLE PRECISION, INTENT(IN), DIMENSION(DIMENSION_M) :: RVEL_S
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -415,13 +415,13 @@
                
       IF (RVEL_G >=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN 
 ! initially ep_g may be undefined (the initial step of a new run) but
-! otherw ep_g should always be defined. so this if effectively checks 
+! otherwise ep_g should always be defined. so this if effectively checks 
 ! for backflow, and if backflow occurs skip these assignments. 
 
          IF (BC_TYPE(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(FIJK)
          T_G(IJK) = T_G(FIJK) 
          IF (NMAX(0) > 0) &
-         X_G(IJK,:NMAX(0)) = X_G(FIJK,:NMAX(0)) 
+            X_G(IJK,:NMAX(0)) = X_G(FIJK,:NMAX(0)) 
          MW_MIX_G(IJK) = MW_MIX_G(FIJK) 
 ! At this point, P_g, T_g and MW_MIX_G have been defined at IJK based on
 ! their values at FIJK      
@@ -430,7 +430,7 @@
       ENDIF 
       P_STAR(IJK) = P_STAR(FIJK) 
 
-! setting scalar quantities                   
+! setting scalar quantities
       DO N = 1, NScalar
          M = Phase4Scalar(N)
          IF(M == 0)Then
@@ -444,7 +444,7 @@
          ENDIF
       ENDDO
 
-! setting turbulence quantities                  
+! setting turbulence quantities
       IF(K_Epsilon) THEN
          IF (RVEL_G >= ZERO) THEN 
             K_Turb_G(IJK) = K_Turb_G(FIJK)
