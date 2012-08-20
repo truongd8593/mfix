@@ -6,6 +6,7 @@
 !     - compute area of boundary surfaces (GET_BC_AREA)                C
 !     - convert mass and volumetric flows to velocities (FLOW_TO_VEL)  C
 !     - check specification of physical quantities                     C 
+!  Comments:                                                           C
 !                                                                      C
 !  Author: P. Nicoletti                               Date: 10-DEC-91  C
 !  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 27-JAN-92  C
@@ -233,13 +234,21 @@
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_T_g', BCV 
                   call mfix_exit(myPE)
                ENDIF 
+
                IF (SPECIES_EQ(0) .OR. RO_G0==UNDEFINED .AND. &
                    MW_AVG==UNDEFINED) THEN 
+! if gas phase species equations are solved or the gas is compressible
+! and the average molecular weight is undefined then check sum of 
+! the species mass fractions
                   SUM = ZERO 
+! sum together those gas phase species mass fractions that are defined
                   DO N = 1, NMAX(0) 
                      IF (BC_X_G(BCV,N) /= UNDEFINED) &
                         SUM = SUM + BC_X_G(BCV,N) 
                   ENDDO 
+! set any undefined species mass fractions to zero. Warn the user if 
+! the sum of species mass fractions is not one and indicate which 
+! species is undefined (mfix will exit in next check).             
                   DO N = 1, NMAX(0) 
                      IF (BC_X_G(BCV,N) == UNDEFINED) THEN 
                         IF (.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)&
@@ -247,6 +256,7 @@
                         BC_X_G(BCV,N) = ZERO 
                      ENDIF 
                   ENDDO 
+! if sum of the gas phase species mass fraction not 1...
                   IF (.NOT.COMPARE(ONE,SUM)) THEN 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1065) BCV 
                      call mfix_exit(myPE)
@@ -270,6 +280,23 @@
 
             CASE ('MASS_INFLOW')  
 ! -------------------------------------------->>>
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+! Comments:                                                            C
+!     The velocities at the inflow face are fixed and the momentum     C
+!     equations are not solved in the inflow cells. Since the flow is  C
+!     into the domain all other scalars that are used need to be       C
+!     specified (e.g., mass fractions, void fraction, etc.,)           C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+               IF (K_Epsilon .AND. BC_K_Turb_G(BCV) == UNDEFINED) THEN
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_K_Turb_G', BCV 
+                  call mfix_exit(myPE) 
+               ENDIF   
+               IF (K_Epsilon .AND. BC_E_Turb_G(BCV) == UNDEFINED) THEN
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_E_Turb_G', BCV 
+                  call mfix_exit(myPE) 
+               ENDIF 
 
                IF (BC_U_G(BCV) == UNDEFINED) THEN 
                   IF (NO_I) THEN 
@@ -295,16 +322,9 @@
                      call mfix_exit(myPE)
                   ENDIF 
                ENDIF  
-               IF (K_Epsilon .AND. BC_K_Turb_G(BCV) == UNDEFINED) THEN
-                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_K_Turb_G', BCV 
-                  call mfix_exit(myPE) 
-               ENDIF   
-               IF (K_Epsilon .AND. BC_E_Turb_G(BCV) == UNDEFINED) THEN
-                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_E_Turb_G', BCV 
-                  call mfix_exit(myPE) 
-               ENDIF 
 
-! Check whether the bc velocity components have the correct sign
+! If non-zero, check whether the velocity component through the boundary
+! plane has the correct sign.
                SELECT CASE (BC_PLANE(BCV))  
                CASE ('W')  
                   IF (BC_U_G(BCV) > ZERO) THEN 
@@ -344,51 +364,53 @@
                   ENDIF 
                END SELECT ! end select case (bc_plane(bcv))
 
-               IF(.NOT.DISCRETE_ELEMENT .OR. (DISCRETE_ELEMENT &
-                  .AND. DES_CONTINUUM_HYBRID)) THEN
 
+! DEM simulations do not employ variables for continuum solids. So do
+! not perform checks on unnecessary data.
+               IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+
+! at this point bc_ep_g must be defined
                   SUM_EP = BC_EP_G(BCV) 
                   DO M = 1, SMAX 
-
-                     IF (.NOT.DES_CONTINUUM_HYBRID) THEN
-                        IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
-                           IF (BC_EP_G(BCV) == ONE) THEN 
-                              BC_ROP_S(BCV,M) = ZERO 
-                           ELSEIF (SMAX == 1) THEN 
-                              BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S(M) 
-                           ELSE 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
-                                 'BC_ROP_s', BCV, M 
-                              call mfix_exit(myPE)
-                           ENDIF 
-                        ENDIF
-                     ELSE
-! bulk density must be explicitly defined for hybrid model 
-                        IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
+! the following check on bc_rop_s is redundant with code in flow_to_vel,
+! except that the latter has no calls for MFIX to exit
+                     IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
+                        IF (BC_EP_G(BCV) == ONE) THEN 
+                           BC_ROP_S(BCV,M) = ZERO 
+                        ELSEIF (SMAX == 1 .AND. &
+                                .NOT.DES_CONTINUUM_HYBRID) THEN 
+! bulk density must be explicitly defined for hybrid model and cannot be
+! defined from 1-bc_ep_g
+                           BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S(M)
+                        ELSE
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
                               'BC_ROP_s', BCV, M 
                            call mfix_exit(myPE)
                         ENDIF
                      ENDIF
-
+! at this point bc_rop_s must be defined
 ! sum of void fraction and solids volume fractions
                      SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S(M) 
 
                      IF (SPECIES_EQ(M)) THEN 
-! if solids phase M species are defined, calculate sum of the mass fractions
+! if solids phase M species equations are solved, check sum of the
+! solids phase M species mass fractions
                         SUM = ZERO 
                         DO N = 1, NMAX(M) 
+! sum together those solids phase M species mass fractions that are
+! defined
                            IF(BC_X_S(BCV,M,N)/=UNDEFINED) &
                               SUM=SUM+BC_X_S(BCV,M,N) 
                         ENDDO 
-! if no solids M present and no species are defined for phase M then set
-! mass fraction of species 1 to one                     
+! if no solids phase M present and no solids M species are defined then
+! set the mass fraction of solids phase M species 1 to one
                         IF (BC_ROP_S(BCV,M)==ZERO .AND. SUM==ZERO) THEN 
                             BC_X_S(BCV,M,1) = ONE 
                             SUM = ONE 
                         ENDIF 
-! if no solids species for phase M are defined, warn user (only if
-! solids phase M is present)                     
+! set any undefined species mass fractions to zero. Warn the user if 
+! the sum of species mass fractions is not one and indicate which 
+! species is undefined (mfix will exit in next check). 
                         DO N = 1, NMAX(M) 
                            IF (BC_X_S(BCV,M,N) == UNDEFINED) THEN 
                               IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG) &
@@ -403,6 +425,27 @@
                         ENDIF 
                      ENDIF  ! end if (species_eq(m)) 
 
+                     IF (ENERGY_EQ .AND. BC_T_S(BCV,M)==UNDEFINED) THEN 
+                        IF (BC_ROP_S(BCV,M) == ZERO) THEN 
+                           BC_T_S(BCV,M) = BC_T_G(BCV) 
+                        ELSE 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
+                              'BC_T_s', BCV, M 
+                           call mfix_exit(myPE)
+                        ENDIF 
+                     ENDIF 
+
+                     IF (GRANULAR_ENERGY .AND. &
+                         BC_THETA_M(BCV,M)==UNDEFINED) THEN 
+                        IF (BC_ROP_S(BCV,M) == ZERO) THEN 
+                           BC_THETA_M(BCV,M) = ZERO 
+                        ELSE 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
+                              'BC_Theta_m', BCV, M 
+                           call mfix_exit(myPE)
+                        ENDIF 
+                     ENDIF 
+                                    
                      IF (BC_U_S(BCV,M) == UNDEFINED) THEN 
                         IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_I) THEN 
                            BC_U_S(BCV,M) = ZERO 
@@ -430,28 +473,9 @@
                            call mfix_exit(myPE)
                         ENDIF 
                      ENDIF 
-                     IF (ENERGY_EQ .AND. BC_T_S(BCV,M)==UNDEFINED) THEN 
-                        IF (BC_ROP_S(BCV,M) == ZERO) THEN 
-                           BC_T_S(BCV,M) = BC_T_G(BCV) 
-                        ELSE 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
-                              'BC_T_s', BCV, M 
-                           call mfix_exit(myPE)
-                        ENDIF 
-                     ENDIF 
 
-                     IF (GRANULAR_ENERGY .AND. &
-                         BC_THETA_M(BCV,M)==UNDEFINED) THEN 
-                        IF (BC_ROP_S(BCV,M) == ZERO) THEN 
-                           BC_THETA_M(BCV,M) = ZERO 
-                        ELSE 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
-                              'BC_Theta_m', BCV, M 
-                           call mfix_exit(myPE)
-                        ENDIF 
-                     ENDIF 
-
-! Check whether the bc velocity components have the correct sign
+! If non-zero, check whether the velocity component through the boundary
+! plane has the correct sign.
                      SELECT CASE (TRIM(BC_PLANE(BCV)))  
                      CASE ('W')  
                         IF (BC_U_S(BCV,M) > ZERO) THEN 
@@ -490,7 +514,9 @@
                            CALL MFIX_EXIT(myPE) 
                         ENDIF 
                      END SELECT   ! end select case (bc_plane(bcv))
-                  ENDDO   ! end do loop m=1,mmax
+
+                  ENDDO   ! end do loop m=1,smax
+
 
 ! check sum of gas void fraction and all solids volume fractions
                   IF (.NOT.DES_CONTINUUM_HYBRID) THEN
@@ -506,13 +532,15 @@
                         call mfix_exit(myPE)
                      ENDIF
                   ENDIF
-               ELSE   ! else branch if(.not.discrete_element)
+               ELSE   ! discrete_element and .not.des_continuum_hybrid
                   SUM_EP = BC_EP_G(BCV)
                   IF (SUM_EP>ONE .OR. SUM_EP<ZERO) THEN 
                      IF(DMP_LOG) WRITE (UNIT_LOG, 1130) BCV 
                      call mfix_exit(myPE)
                   ENDIF
-               ENDIF   ! end if/else (.not.discrete_element)
+               ENDIF   ! end if/else (.not.discrete_element .or.
+                       !               des_continuum_hybrid)
+
        
                DO N = 1, NScalar
                   IF (BC_Scalar(BCV,N) == UNDEFINED) THEN 
@@ -526,7 +554,16 @@
 
             CASE ('MASS_OUTFLOW')  
 ! -------------------------------------------->>>
-
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+! Comments:                                                            C
+!     The velocities at the outflow face are fixed and the momentum    C
+!     equations are not solved in the outflow cells. Since the flow    C
+!     is out of the domain none of the other scalars should need to    C
+!     be specified (e.g., mass fractions, vodi fraction, etc.,).       C
+!     Such values will become defined according to their adjacent      C
+!     fluid cell                                                       C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
                IF (BC_DT_0(BCV) == UNDEFINED) THEN 
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_DT_0', BCV 
                    call mfix_exit(myPE)  
@@ -556,7 +593,8 @@
                   ENDIF 
                ENDIF 
 
-! Check whether the bc velocity components have the correct sign
+! If non-zero, check whether the velocity component through the boundary
+! plane has the correct sign.
                SELECT CASE (TRIM(BC_PLANE(BCV)))  
                CASE ('W')  
                   IF (BC_U_G(BCV) < ZERO) THEN 
@@ -596,8 +634,9 @@
                   ENDIF 
                END SELECT   ! end select case (bc_plane(bcv)) 
 
-               IF (.NOT.DISCRETE_ELEMENT .OR. (DISCRETE_ELEMENT .AND. &
-                   DES_CONTINUUM_HYBRID)) THEN
+! DEM simulations do not employ variables for continuum solids. So do
+! not perform checks on unnecessary data.               
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
                   DO M = 1, SMAX 
                      IF (BC_U_S(BCV,M) == UNDEFINED) THEN 
                         IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_I) THEN 
@@ -627,7 +666,8 @@
                         ENDIF 
                      ENDIF 
 
-! Check whether the bc velocity components have the correct sign
+! If non-zero, check whether the velocity component through the boundary
+! plane has the correct sign.
                      SELECT CASE (TRIM(BC_PLANE(BCV)))  
                      CASE ('W')  
                         IF (BC_U_S(BCV,M) < ZERO) THEN 
@@ -667,14 +707,27 @@
                         ENDIF 
                      END SELECT   ! end select case (bc_plane(bcv))
                   ENDDO   ! end loop over (m=1,smax)
-               ENDIF   ! end if (.not.discrete_element)
+               ENDIF   ! end if (.not.discrete_element .or.
+                       !         des_continuum_hybrid)
 ! case mass_outflow
 ! --------------------------------------------<<<
 
 
             CASE ('P_INFLOW')  
 ! -------------------------------------------->>>
-
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+! Comments:                                                            C
+!     Unlike the MI boundary, for the PI boundary the velocities at    C
+!     the inflow face are calculated by solving the momentum eqns      C
+!     and are not fixed. In this way, the PI is similar to the PO      C
+!     except that the flow is into the domain and hence all other      C
+!     scalars (e.g., mass fractions, void fraction, temperature,       C
+!     etc.,) at the inflow cells need to be specified. To satisfy      C
+!     the error routines at the start of the simulation, both the      C
+!     tangential and normal components at the inflow also need to      C
+!     be specified. The velocities values essentially serve as IC.     C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
                IF (BC_EP_G(BCV) == UNDEFINED) THEN 
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_EP_g', BCV 
                   call mfix_exit(myPE)  
@@ -692,46 +745,56 @@
                   call mfix_exit(myPE)  
                ENDIF 
 
+! if gas species equations are solved then check sum of the gas species
+! mass fractions
                IF (SPECIES_EQ(0)) THEN 
                   SUM = ZERO 
+! sum together those gas phase species mass fractions that are defined
                   DO N = 1, NMAX(0) 
-                     SUM = SUM + BC_X_G(BCV,N) 
+                     IF (BC_X_G(BCV,N) /= UNDEFINED) &
+                        SUM = SUM + BC_X_G(BCV,N) 
+                  ENDDO 
+! set any undefined species mass fractions to zero. Warn the user if 
+! the sum of species mass fractions is not one and indicate which 
+! species is undefined (mfix will exit in next check).           
+                  DO N = 1, NMAX(0) 
                      IF (BC_X_G(BCV,N) == UNDEFINED) THEN 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1060) BCV, N 
-                        call mfix_exit(myPE)  
+                        IF (.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)&
+                           WRITE (UNIT_LOG, 1060) BCV, N 
+                        BC_X_G(BCV,N) = ZERO 
                      ENDIF 
                   ENDDO 
+! if sum of the gas phase species mass fraction not 1...                  
                   IF (.NOT.COMPARE(ONE,SUM)) THEN 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1065) BCV 
                      call mfix_exit(myPE)  
                   ENDIF 
                ENDIF 
 
-               IF (.NOT.DISCRETE_ELEMENT .OR. (DISCRETE_ELEMENT .AND. &
-                   DES_CONTINUUM_HYBRID)) THEN
+! DEM simulations do not employ variables for continuum solids. So do
+! not perform checks on unnecessary data.
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
 
+! at this point bc_ep_g must be defined
+                  SUM_EP = BC_EP_G(BCV) 
                   DO M = 1, SMAX 
-
-                     IF (.NOT.DES_CONTINUUM_HYBRID) THEN
-                        IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
-                           IF (BC_EP_G(BCV) == ONE) THEN 
-                              BC_ROP_S(BCV,M) = ZERO 
-                           ELSEIF (SMAX == 1) THEN 
-                              BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S(M) 
-                           ELSE 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
-                                 'BC_ROP_s', BCV, M 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                        ENDIF 
-                     ELSE
-! bulk density must be explicitly defined for hybrid model                             
-                        IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
+                     IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
+                        IF (BC_EP_G(BCV) == ONE) THEN 
+                           BC_ROP_S(BCV,M) = ZERO 
+                        ELSEIF (SMAX == 1 .AND. &
+                                .NOT.DES_CONTINUUM_HYBRID) THEN 
+! bulk density must be explicitly defined for hybrid model and cannot be
+! defined from 1-bc_ep_g                           
+                           BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S(M)
+                        ELSE
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
                               'BC_ROP_s', BCV, M 
                            call mfix_exit(myPE)  
                         ENDIF                                 
                      ENDIF
+! at this point bc_rop_s must be defined
+! sum of void fraction and solids volume fractions
+                     SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S(M)
 
                      IF (ENERGY_EQ .AND. BC_T_S(BCV,M)==UNDEFINED) THEN 
                         IF (BC_ROP_S(BCV,M) == ZERO) THEN 
@@ -742,28 +805,64 @@
                            call mfix_exit(myPE)  
                         ENDIF 
                      ENDIF 
+
                      IF (SPECIES_EQ(M)) THEN 
+! if solids phase M species equations are solved, check sum of the
+! solids phase M species mass fractions
                         SUM = ZERO 
                         DO N = 1, NMAX(M) 
-                           IF (BC_X_S(BCV,M,N) == UNDEFINED) THEN 
-                              IF (BC_ROP_S(BCV,M) == ZERO) THEN 
-                                 BC_X_S(BCV,M,N) = ZERO 
-                              ELSE 
-                                 IF(DMP_LOG)WRITE (UNIT_LOG, 1110) BCV, M, N 
-                                 call mfix_exit(myPE)  
-                              ENDIF 
-                           ENDIF 
-                           SUM = SUM + BC_X_S(BCV,M,N) 
+! sum together those solids phase M species mass fractions that are
+! defined
+                           IF(BC_X_S(BCV,M,N)/=UNDEFINED) &
+                              SUM=SUM+BC_X_S(BCV,M,N) 
                         ENDDO 
-                        IF (.NOT.COMPARE(ONE,SUM)) THEN 
-                           IF (SUM /= ZERO) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1120) BCV, M 
-                              call mfix_exit(myPE)  
-                           ENDIF 
+! if no solids phase M present and no solids phase M species are defined 
+! then set the mass fraction of solids phase M species 1 to one
+                        IF (BC_ROP_S(BCV,M)==ZERO .AND. SUM==ZERO) THEN 
+                            BC_X_S(BCV,M,1) = ONE 
+                            SUM = ONE 
                         ENDIF 
-                     ENDIF 
+! set any undefined species mass fractions to zero. Warn the user if 
+! the sum of species mass fractions is not one and indicate which 
+! species is undefined (mfix will exit in next check).
+                        DO N = 1, NMAX(M) 
+                           IF (BC_X_S(BCV,M,N) == UNDEFINED) THEN 
+                              IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG) &
+                                 WRITE (UNIT_LOG,1110)BCV,M,N 
+                              BC_X_S(BCV,M,N) = ZERO 
+                           ENDIF 
+                        ENDDO 
+! if sum of solids phase M species mass fraction not 1...
+                        IF (.NOT.COMPARE(ONE,SUM)) THEN 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1120) BCV, M 
+                           call mfix_exit(myPE)
+                        ENDIF 
+                     ENDIF  ! end if (species_eq(m)) 
+
                   ENDDO   ! end loop over (m=1,smax)
-               ENDIF    ! end if (.not.discrete_element)
+
+! check sum of gas void fraction and all solids volume fractions
+                  IF (.NOT.DES_CONTINUUM_HYBRID) THEN
+                     IF (.NOT.COMPARE(ONE,SUM_EP)) THEN 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1125) BCV 
+                        call mfix_exit(myPE)  
+                     ENDIF 
+                  ELSE
+! sum_ep not necessarily one at this point since discrete particles
+! present in hybrid model
+                     IF (SUM_EP>ONE .OR. SUM_EP<ZERO) THEN 
+                        IF(DMP_LOG) WRITE (UNIT_LOG, 1130) BCV 
+                        call mfix_exit(myPE)
+                     ENDIF
+                  ENDIF
+               ELSE   ! discrete_element and .not.des_continuum_hybrid
+                  SUM_EP = BC_EP_G(BCV)
+                  IF (SUM_EP>ONE .OR. SUM_EP<ZERO) THEN 
+                     IF(DMP_LOG) WRITE (UNIT_LOG, 1130) BCV 
+                     call mfix_exit(myPE)
+                  ENDIF
+               ENDIF   ! end if/else (.not.discrete_element .or.
+                       !               des_continuum_hybrid)
 
                DO N = 1, NScalar
                   IF (BC_Scalar(BCV,N) == UNDEFINED) THEN 
@@ -772,6 +871,64 @@
                      CALL MFIX_EXIT(myPE)
                   ENDIF 
                ENDDO
+
+
+! Check that velocities are also specified. These are essentially used
+! as initial conditions for the boundary region. If they are not
+! specified then a deafult value is set here otherwise check_data_20 
+! will complain and cause MFIX to exit.
+               IF (BC_U_G(BCV) == UNDEFINED) THEN 
+                  BC_U_G(BCV) = ZERO 
+                  IF (.NOT.NO_I) THEN                   
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1011) 'BC_U_g', BCV 
+                  ENDIF
+               ENDIF 
+               IF (BC_V_G(BCV) == UNDEFINED) THEN 
+                  BC_V_G(BCV) = ZERO 
+                  IF (.NOT.NO_J) THEN                   
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1011) 'BC_V_g', BCV 
+                  ENDIF
+               ENDIF 
+               IF (BC_W_G(BCV) == UNDEFINED) THEN 
+                  BC_W_G(BCV) = ZERO 
+                  IF (.NOT.NO_K) THEN
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1011) 'BC_W_g', BCV 
+                  ENDIF
+               ENDIF  
+
+! DEM simulations do not employ variables for continuum solids. So do
+! not perform checks on unnecessary data.               
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+                  DO M = 1, SMAX 
+                     IF (BC_U_S(BCV,M) == UNDEFINED) THEN 
+                        BC_U_S(BCV,M) = ZERO
+                        IF(BC_ROP_S(BCV,M) == UNDEFINED) THEN
+! do nothing                                
+                        ELSEIF (BC_ROP_S(BCV,M) >= ZERO .AND. .NOT.NO_I) THEN
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1111) &
+                              'BC_U_s', BCV, M 
+                        ENDIF 
+                     ENDIF 
+                     IF (BC_V_S(BCV,M) == UNDEFINED) THEN 
+                        BC_V_S(BCV,M) = ZERO
+                        IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
+                        ELSEIF (BC_ROP_S(BCV,M)>=ZERO .AND. .NOT.NO_J) THEN 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1111) &
+                              'BC_V_s', BCV, M 
+                        ENDIF 
+                     ENDIF 
+                     IF (BC_W_S(BCV,M) == UNDEFINED) THEN 
+                        BC_W_S(BCV,M) = ZERO 
+                        IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN
+                        ELSEIF (BC_ROP_S(BCV,M)>=ZERO .AND. .NOT.NO_K) THEN 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1111) &
+                              'BC_W_s', BCV, M 
+                        ENDIF 
+                     ENDIF 
+                  ENDDO   ! end loop over (m=1,smax)
+               ENDIF   ! end if (.not.discrete_element .or.
+                       !         des_continuum_hybrid)
+
 ! case p_inflow               
 ! --------------------------------------------<<<
 
@@ -804,9 +961,84 @@
 
             END SELECT   ! end select case (bc_type(bcv))
 
-! JFD: MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
+! it is unclear whether specifying bc_ep_g or bc_rop_s at the boundary
+! is physical? Should it be prevented in the first place? Do their
+! values matter (play a role in the solution) or are they largely 
+! inconsequential? 
+            IF (BC_TYPE(BCV) == 'OUTFLOW' .OR. &
+                BC_TYPE(BCV) == 'MASS_OUTFLOW' .OR. &
+                BC_TYPE(BCV) == 'P_OUTFLOW') THEN
+
+! if bc_ep_g is defined at a PO, MO or O boundary, then the sum of ep_g
+! and ep_s at the boundary may not equal one given the following code
+! in the subroutine set_outflow (see code for details). therefore if
+! bc_ep_g is is defined and any solids are present, provide the user
+! with a warning.
+               IF (BC_EP_G(BCV) /= UNDEFINED) THEN
+                  SUM_EP = BC_EP_G(BCV)
+
+! Unclear how the discrete solids volume fraction can be dictated at 
+! the boundary, so it is currently prevented!
+                  IF (DISCRETE_ELEMENT) THEN
+                     IF ((.NOT.DES_CONTINUUM_HYBRID .AND. &
+                         (DES_MMAX >0 .OR. SMAX>0)) .OR. &
+                         (DES_CONTINUUM_HYBRID .AND. &
+                         (DES_MMAX >0))) THEN
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1101) &
+                           BC_TYPE(BCV), BCV
+                        call mfix_exit(myPE)
+                     ENDIF
+                  ENDIF
+! by this point the code has checked that no discrete solids are present
+! otherwise the routine will have exited
+
+
+                  IF (.NOT.DISCRETE_ELEMENT .OR. &
+                      DES_CONTINUUM_HYBRID) THEN 
+                     DO M = 1, SMAX 
+                        IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
+                           IF (BC_EP_G(BCV) == ONE) THEN 
+! what does it mean to force the bulk density to zero at the
+! boundary...?
+                              BC_ROP_S(BCV,M) = ZERO 
+                           ELSEIF (SMAX == 1 ) THEN 
+! no discrete solids are present so a bulk density can be defined from 
+! 1-bc_ep_g even for hybrid model
+                              BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S(M)
+                           ELSE
+! bc_ep_g is defined but some bc_rop_s(m) are undefined.
+! in this ep_p in the outflow boundary will be based on the user defined
+! value of bc_ep_g, while rop_s would become based on the adjacent fluid
+! cell. consequently, no check ensures the result is consistent with
+! a requirement for ep_g+ep_s=1.
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1102) &
+                                 'BC_ROP_s', BCV, M 
+                              call mfix_exit(myPE)
+                           ENDIF
+! by this point, bc_rop_s must be defined
+! check that sum of void fraction and solids volume fractions
+                           SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S(M) 
+                        ENDIF
+                     ENDDO
+
+                     IF (.NOT.COMPARE(ONE,SUM_EP)) THEN 
+! if both variables are completely defined they should sum to 1.
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1125) BCV 
+                           call mfix_exit(myPE)  
+                     ENDIF
+
+                  ENDIF   ! end if/else (.not.discrete_element .or.
+                       !               des_continuum_hybrid)
+
+               ENDIF   ! end if (bc_ep_g(bcv) /= undefined)
+
+            ENDIF   ! end if (bc_type(bcv)== 'mass_outflow', 'outflow'
+                    ! or 'p_outflow')
+
+
+! elseif branch from if (bc_defined(bcv))
          ELSEIF ( (BC_TYPE(BCV) /= 'DUMMY') .AND. & 
-                  (BC_TYPE(BCV)(1:2) /= 'CG') ) THEN    ! elseif branch from if (bc_defined(bcv))
+                  (BC_TYPE(BCV)(1:2) /= 'CG') ) THEN    
 
 ! Check whether BC values are specified for undefined BC locations
             IF (BC_U_G(BCV) /= UNDEFINED) THEN 
@@ -840,8 +1072,7 @@
                ENDIF 
             ENDDO 
 
-            IF (.NOT.DISCRETE_ELEMENT .OR. (DISCRETE_ELEMENT .AND. &
-                DES_CONTINUUM_HYBRID)) THEN
+            IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
                DO M = 1, SMAX 
                   IF (BC_ROP_S(BCV,M) /= UNDEFINED) THEN 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1300) &
@@ -930,9 +1161,8 @@
                   ENDIF 
                ENDIF   ! end if (bc_type(bcv)=='par_slip_wall')
 
-               IF (.NOT.DISCRETE_ELEMENT .OR. (DISCRETE_ELEMENT .AND. &
-                   DES_CONTINUUM_HYBRID)) THEN
-                  IF (BC_TYPE(BCV)=='PAR_SLIP_WALL' .OR. BC_JJ_PS(BCV)==1) THEN 
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+                  IF (BC_TYPE(BCV)=='PAR_SLIP_WALL' .OR. BC_JJ_PS(BCV)==1) THEN
                      DO M = 1, MMAX
                         IF (BC_UW_S(BCV,M) == UNDEFINED) THEN 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_Uw_s', BCV, M 
@@ -952,7 +1182,7 @@
                         ENDIF 
                      ENDDO 
                   ENDIF   ! end if (bc_type(bcv)=='par_slip_wall' or bc_jj_ps(bcv)==1)
-               ENDIF   ! end if (.not.discrete_element)
+               ENDIF   ! end if (.not.discrete_element .or. des_continuum_hybrid)
 
                IF (ENERGY_EQ) THEN 
                   IF (BC_HW_T_G(BCV) < ZERO) THEN 
@@ -970,8 +1200,7 @@
                      call mfix_exit(myPE)  
                   ENDIF 
 
-                  IF (.NOT.DISCRETE_ELEMENT .OR. (DISCRETE_ELEMENT &
-                      .AND. DES_CONTINUUM_HYBRID)) THEN
+                  IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
                      DO M = 1, SMAX 
                         IF (BC_HW_T_S(BCV,M) < ZERO) THEN 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1103) 'BC_hw_T_s', BCV, M 
@@ -988,11 +1217,10 @@
                            call mfix_exit(myPE)  
                         ENDIF 
                      ENDDO 
-                  ENDIF   ! end if (.not.discrete_element)
+                  ENDIF   ! end if (.not.discrete_element .or. des_continuum_hybrid)
                ENDIF   ! end if (energy_eq)
 
-               IF (.NOT. DISCRETE_ELEMENT .OR. (DISCRETE_ELEMENT &
-                   .AND. DES_CONTINUUM_HYBRID)) THEN
+               IF (.NOT. DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
                   IF (GRANULAR_ENERGY .AND. BC_JJ_PS(BCV)==0) THEN 
                      DO M = 1, MMAX 
                         IF (BC_HW_THETA_M(BCV,M) < ZERO) THEN 
@@ -1014,7 +1242,7 @@
                         ENDIF 
                      ENDDO 
                   ENDIF   ! end if (granular_energy .and. bc_jj_ps(bcv)==0)
-               ENDIF    ! end if (.not.discrete_element)
+               ENDIF    ! end if (.not.discrete_element .or. des_continuum_hybrid)
 
                IF (SPECIES_EQ(0)) THEN 
                   DO N = 1, NMAX(0) 
@@ -1035,8 +1263,7 @@
                   ENDDO 
                ENDIF   ! end if (species_eq(0))
 
-               IF (.NOT.DISCRETE_ELEMENT .OR. (DISCRETE_ELEMENT &
-                   .AND. DES_CONTINUUM_HYBRID)) THEN
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
                   DO M = 1, SMAX 
                      IF (SPECIES_EQ(M)) THEN 
                         DO N = 1, NMAX(M) 
@@ -1060,7 +1287,7 @@
                         ENDDO 
                      ENDIF    ! end if (species_eq(m))
                   ENDDO    ! end loop over (m=1,smax)
-               ENDIF   ! end if (.not.discrete_element)
+               ENDIF   ! end if (.not.discrete_element .or. des_continuum_hybrid)
   
                DO N = 1, NScalar
                   IF (BC_HW_Scalar(BCV,N) < ZERO) THEN 
@@ -1131,6 +1358,9 @@
          ') = ',G12.5,/&
          ' Pressure should be greater than zero for compressible flow',/1X,70(&
          '*')/) 
+ 1011 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,&
+         ') not specified.',/1X,'These serve as initial values in ',&
+         'the boundary region. Set to 0 by default',/1X,70('*')/) 
  1050 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
          ' - ',A,' should be ',A,' zero.',/1X,70('*')/) 
  1060 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC_X_g(',I2,',',I2&
@@ -1139,6 +1369,16 @@
          ' - Sum of gas mass fractions is NOT equal to one',/1X,70('*')/) 
  1100 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I1,&
          ') not specified',/1X,70('*')/) 
+ 1101 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: For ', &
+         'BC_TYPE= ', A, ' BC_EP_G(',I2,') should not be defined',/1X,&
+         'or the sum of the volume fractions may not equal one',&
+         /1X,70('*')/)
+ 1102 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: For ',& 
+         'BC_TYPE= ', A, ' Since BC_EP_G('I2,') is defined,',/1X,&
+         'BC_ROP_S should also be defined to ensure that the ',&
+         'sum of their',/1X, 'volume fractions will equal one',&
+         /1X,70('*')/)
+
  1103 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I1,&
          ') value is unphysical',/1X,70('*')/) 
  1104 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I2,&
@@ -1147,6 +1387,9 @@
          ',',I2,') value is unphysical',/1X,70('*')/) 
  1110 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC_X_s(',I2,',',I2&
          ,',',I2,') not specified',/1X,70('*')/) 
+ 1111 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I1,&
+         ') not specified.',/1X,'These serve as initial values in ',&
+         'the boundary region. Set to 0 by default',/1X,70('*')/) 
  1120 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
          ' - Sum of solids-',I1,' mass fractions is NOT equal to one',/1X,70(&
          '*')/) 
@@ -1171,8 +1414,4 @@
  1420 FORMAT(/1X,70('*')/) 
       END SUBROUTINE CHECK_DATA_07 
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!// 220 Use local FUNIJK for triple DO i,j,k loop
-!// 350 1206 change do loop limits: 1,kmax2->kmin3,kmax3      
-!// 990 Replace STOP with exitMPI to terminate all processors
+
