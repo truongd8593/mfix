@@ -383,11 +383,13 @@
       INTEGER, INTENT(IN) :: IJK
 ! ijk index for adjacent fluid cell
       INTEGER, INTENT(IN) :: FIJK
-! value of the component of gas and solids velocity through the bc 
-! plane dot with the outward normal of that plane. so for example,
-! for an outflow on the eastern boundary this is the u component of
-! velocity while for an outflow on the western boundary this is the
-! -u component, etc. 
+! the gas or solids velocity in the fluid cell adjacent to the boundary
+! cell dot with the outward normal of that bc plane; defines the gas or
+! solids velocity component normal to the bc plane as positive when it
+! is flowing into the bc cell from the fluid cell. so, for example, for
+! an outflow on the eastern boundary this is the u component of velocity
+! while for an outflow on the western boundary this is the -u component,
+! etc. 
       DOUBLE PRECISION, INTENT(IN) :: RVEL_G
       DOUBLE PRECISION, INTENT(IN), DIMENSION(DIMENSION_M) :: RVEL_S
 !-----------------------------------------------
@@ -492,7 +494,10 @@
          ROP_S(IJK,MMAX) = SUM_ROPS
       ENDIF
 
-      IF (DISCRETE_ELEMENT) THEN
+! this section must be skipped until after the initial setup of the
+! discrete element portion of the simulation (set_bc1 is called once
+! before the initial setup).
+      IF (DISCRETE_ELEMENT .AND. ALLOCATED(DES_ROP_S)) THEN
          DO M = 1, DES_MMAX 
 ! unlike in the two fluid model, in the discrete element model it is 
 ! possible to actually calculate the bulk density in a flow boundary

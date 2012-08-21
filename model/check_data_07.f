@@ -980,21 +980,12 @@
 ! Unclear how the discrete solids volume fraction can be dictated at 
 ! the boundary, so it is currently prevented!
                   IF (DISCRETE_ELEMENT) THEN
-                     IF ((.NOT.DES_CONTINUUM_HYBRID .AND. &
-                         (DES_MMAX >0 .OR. SMAX>0)) .OR. &
-                         (DES_CONTINUUM_HYBRID .AND. &
-                         (DES_MMAX >0))) THEN
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1101) &
-                           BC_TYPE(BCV), BCV
-                        call mfix_exit(myPE)
-                     ENDIF
-                  ENDIF
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1101) &
+                        BC_TYPE(BCV), BCV
+                     call mfix_exit(myPE)
+                  ELSE
 ! by this point the code has checked that no discrete solids are present
 ! otherwise the routine will have exited
-
-
-                  IF (.NOT.DISCRETE_ELEMENT .OR. &
-                      DES_CONTINUUM_HYBRID) THEN 
                      DO M = 1, SMAX 
                         IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
                            IF (BC_EP_G(BCV) == ONE) THEN 
@@ -1027,8 +1018,7 @@
                            call mfix_exit(myPE)  
                      ENDIF
 
-                  ENDIF   ! end if/else (.not.discrete_element .or.
-                       !               des_continuum_hybrid)
+                  ENDIF   ! end if/else (.not.discrete_element)
 
                ENDIF   ! end if (bc_ep_g(bcv) /= undefined)
 
