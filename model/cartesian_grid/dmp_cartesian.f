@@ -67,6 +67,10 @@
       call send_recv(DELZ_Wt,2)
       call send_recv(DELZ_Wb,2)
 
+      call send_recv(X_U,2)
+      call send_recv(Y_U,2)
+      call send_recv(Z_U,2)
+
       call send_recv(X_U_ec,2)
       call send_recv(Y_U_ec,2)
       call send_recv(Z_U_ec,2)
@@ -78,6 +82,10 @@
       call send_recv(X_U_tc,2)
       call send_recv(Y_U_tc,2)
       call send_recv(Z_U_tc,2)
+
+      call send_recv(X_V,2)
+      call send_recv(Y_V,2)
+      call send_recv(Z_V,2)
 
       call send_recv(X_V_ec,2)
       call send_recv(Y_V_ec,2)
@@ -91,6 +99,10 @@
       call send_recv(Y_V_tc,2)
       call send_recv(Z_V_tc,2)
 
+      call send_recv(X_W,2)
+      call send_recv(Y_W,2)
+      call send_recv(Z_W,2)
+
       call send_recv(X_W_ec,2)
       call send_recv(Y_W_ec,2)
       call send_recv(Z_W_ec,2)
@@ -103,6 +115,7 @@
       call send_recv(Y_W_tc,2)
       call send_recv(Z_W_tc,2)
 
+      call send_recv(DELH_Scalar,2)
       call send_recv(DELH_U,2)
       call send_recv(DELH_V,2)
       call send_recv(DELH_W,2)
