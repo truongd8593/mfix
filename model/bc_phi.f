@@ -94,6 +94,7 @@
 !=======================================================================
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
+      LOGICAL ::ALONG_GLOBAL_GHOST_LAYER
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -102,142 +103,151 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
+
+      IF(.NOT.CARTESIAN_GRID) THEN                ! Only setup default walls
+                                                   ! we we are not using cutcells
+                                                   ! to avoid conflict
+
 !
 !  Set up the default walls as non-conducting.
 !
-      IF (DO_K) THEN 
-         K1 = 1 
+         IF (DO_K) THEN 
+            K1 = 1 
 !!!$omp    parallel do private(IJK, J1, I1)
-         DO J1 = jmin3, jmax3 
+            DO J1 = jmin3, jmax3 
+               DO I1 = imin3, imax3 
+      	       IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+                  IJK = FUNIJK(I1,J1,K1) 
+                  IF (DEFAULT_WALL_AT(IJK)) THEN 
+!
+                     A_M(KP_OF(IJK),B,M) = ZERO 
+!
+                     A_M(IJK,E,M) = ZERO 
+                     A_M(IJK,W,M) = ZERO 
+                     A_M(IJK,N,M) = ZERO 
+                     A_M(IJK,S,M) = ZERO 
+                     A_M(IJK,T,M) = ONE 
+                     A_M(IJK,B,M) = ZERO 
+                     A_M(IJK,0,M) = -ONE 
+                     B_M(IJK,M) = ZERO 
+                  ENDIF 
+               END DO 
+            END DO 
+            K1 = KMAX2 
+!!!$omp    parallel do private(IJK, J1, I1)
+            DO J1 = jmin3, jmax3 
+               DO I1 = imin3, imax3 
+      	       IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+                  IJK = FUNIJK(I1,J1,K1) 
+                  IF (DEFAULT_WALL_AT(IJK)) THEN 
+!
+                     A_M(KM_OF(IJK),T,M) = ZERO 
+!
+                     A_M(IJK,E,M) = ZERO 
+                     A_M(IJK,W,M) = ZERO 
+                     A_M(IJK,N,M) = ZERO 
+                     A_M(IJK,S,M) = ZERO 
+                     A_M(IJK,T,M) = ZERO 
+                     A_M(IJK,B,M) = ONE 
+                     A_M(IJK,0,M) = -ONE 
+                     B_M(IJK,M) = ZERO 
+                  ENDIF 
+               END DO 
+            END DO 
+         ENDIF 
+!
+         J1 = 1 
+!!!$omp    parallel do private(IJK, K1, I1)
+         DO K1 = kmin3, kmax3 
             DO I1 = imin3, imax3 
-   	       IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+      	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
                IJK = FUNIJK(I1,J1,K1) 
                IF (DEFAULT_WALL_AT(IJK)) THEN 
 !
-                  A_M(KP_OF(IJK),B,M) = ZERO 
+                  A_M(JP_OF(IJK),S,M) = ZERO 
 !
                   A_M(IJK,E,M) = ZERO 
                   A_M(IJK,W,M) = ZERO 
-                  A_M(IJK,N,M) = ZERO 
+                  A_M(IJK,N,M) = ONE 
                   A_M(IJK,S,M) = ZERO 
-                  A_M(IJK,T,M) = ONE 
+                  A_M(IJK,T,M) = ZERO 
                   A_M(IJK,B,M) = ZERO 
                   A_M(IJK,0,M) = -ONE 
                   B_M(IJK,M) = ZERO 
                ENDIF 
             END DO 
          END DO 
-         K1 = KMAX2 
-!!!$omp    parallel do private(IJK, J1, I1)
-         DO J1 = jmin3, jmax3 
+         
+         J1 = JMAX2 
+!!!$omp    parallel do private(IJK, K1, I1)
+         DO K1 = kmin3, kmax3 
             DO I1 = imin3, imax3 
-   	       IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+      	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
                IJK = FUNIJK(I1,J1,K1) 
                IF (DEFAULT_WALL_AT(IJK)) THEN 
 !
-                  A_M(KM_OF(IJK),T,M) = ZERO 
+                  A_M(JM_OF(IJK),N,M) = ZERO 
 !
                   A_M(IJK,E,M) = ZERO 
                   A_M(IJK,W,M) = ZERO 
                   A_M(IJK,N,M) = ZERO 
-                  A_M(IJK,S,M) = ZERO 
+                  A_M(IJK,S,M) = ONE 
                   A_M(IJK,T,M) = ZERO 
-                  A_M(IJK,B,M) = ONE 
+                  A_M(IJK,B,M) = ZERO 
                   A_M(IJK,0,M) = -ONE 
                   B_M(IJK,M) = ZERO 
                ENDIF 
             END DO 
          END DO 
-      ENDIF 
-!
-      J1 = 1 
-!!!$omp    parallel do private(IJK, K1, I1)
-      DO K1 = kmin3, kmax3 
-         DO I1 = imin3, imax3 
-   	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
-            IJK = FUNIJK(I1,J1,K1) 
-            IF (DEFAULT_WALL_AT(IJK)) THEN 
-!
-               A_M(JP_OF(IJK),S,M) = ZERO 
-!
-               A_M(IJK,E,M) = ZERO 
-               A_M(IJK,W,M) = ZERO 
-               A_M(IJK,N,M) = ONE 
-               A_M(IJK,S,M) = ZERO 
-               A_M(IJK,T,M) = ZERO 
-               A_M(IJK,B,M) = ZERO 
-               A_M(IJK,0,M) = -ONE 
-               B_M(IJK,M) = ZERO 
-            ENDIF 
-         END DO 
-      END DO 
-      
-      J1 = JMAX2 
-!!!$omp    parallel do private(IJK, K1, I1)
-      DO K1 = kmin3, kmax3 
-         DO I1 = imin3, imax3 
-   	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
-            IJK = FUNIJK(I1,J1,K1) 
-            IF (DEFAULT_WALL_AT(IJK)) THEN 
-!
-               A_M(JM_OF(IJK),N,M) = ZERO 
-!
-               A_M(IJK,E,M) = ZERO 
-               A_M(IJK,W,M) = ZERO 
-               A_M(IJK,N,M) = ZERO 
-               A_M(IJK,S,M) = ONE 
-               A_M(IJK,T,M) = ZERO 
-               A_M(IJK,B,M) = ZERO 
-               A_M(IJK,0,M) = -ONE 
-               B_M(IJK,M) = ZERO 
-            ENDIF 
-         END DO 
-      END DO 
 
-      I1 = imin2 
+         I1 = imin2 
 !!!$omp    parallel do private(IJK, K1, J1)
-      DO K1 = kmin3, kmax3 
-         DO J1 = jmin3, jmax3 
-   	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
-            IJK = FUNIJK(I1,J1,K1) 
-            IF (DEFAULT_WALL_AT(IJK)) THEN 
+         DO K1 = kmin3, kmax3 
+            DO J1 = jmin3, jmax3 
+      	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+               IJK = FUNIJK(I1,J1,K1) 
+               IF (DEFAULT_WALL_AT(IJK)) THEN 
 !
-               A_M(IP_OF(IJK),W,M) = ZERO 
+                  A_M(IP_OF(IJK),W,M) = ZERO 
 !
-               A_M(IJK,E,M) = ONE 
-               A_M(IJK,W,M) = ZERO 
-               A_M(IJK,N,M) = ZERO 
-               A_M(IJK,S,M) = ZERO 
-               A_M(IJK,T,M) = ZERO 
-               A_M(IJK,B,M) = ZERO 
-               A_M(IJK,0,M) = -ONE 
-               B_M(IJK,M) = ZERO 
-            ENDIF 
+                  A_M(IJK,E,M) = ONE 
+                  A_M(IJK,W,M) = ZERO 
+                  A_M(IJK,N,M) = ZERO 
+                  A_M(IJK,S,M) = ZERO 
+                  A_M(IJK,T,M) = ZERO 
+                  A_M(IJK,B,M) = ZERO 
+                  A_M(IJK,0,M) = -ONE 
+                  B_M(IJK,M) = ZERO 
+               ENDIF 
+            END DO 
          END DO 
-      END DO 
 
-      I1 = IMAX2 
+         I1 = IMAX2 
 !!!$omp    parallel do private(IJK, K1, J1)
-      DO K1 = kmin3, kmax3 
-         DO J1 = jmin3, jmax3 
-   	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
-            IJK = FUNIJK(I1,J1,K1) 
-            IF (DEFAULT_WALL_AT(IJK)) THEN 
+         DO K1 = kmin3, kmax3 
+            DO J1 = jmin3, jmax3 
+      	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+               IJK = FUNIJK(I1,J1,K1) 
+               IF (DEFAULT_WALL_AT(IJK)) THEN 
 !
-               A_M(IM_OF(IJK),E,M) = ZERO 
+                  A_M(IM_OF(IJK),E,M) = ZERO 
 !
-               A_M(IJK,E,M) = ZERO 
-               A_M(IJK,W,M) = ONE 
-               A_M(IJK,N,M) = ZERO 
-               A_M(IJK,S,M) = ZERO 
-               A_M(IJK,T,M) = ZERO 
-               A_M(IJK,B,M) = ZERO 
-               A_M(IJK,0,M) = -ONE 
-               B_M(IJK,M) = ZERO 
-            ENDIF 
+                  A_M(IJK,E,M) = ZERO 
+                  A_M(IJK,W,M) = ONE 
+                  A_M(IJK,N,M) = ZERO 
+                  A_M(IJK,S,M) = ZERO 
+                  A_M(IJK,T,M) = ZERO 
+                  A_M(IJK,B,M) = ZERO 
+                  A_M(IJK,0,M) = -ONE 
+                  B_M(IJK,M) = ZERO 
+               ENDIF 
+            END DO 
          END DO 
-      END DO 
-      
+         
+
+      ENDIF  !(.NOT.CARTESIAN_GRID)
+
+
       !first set the bc for walls then overwrite where ever inflow/outflows are
       !defined so that the order in which the bcs are defined in the data file
       !does not matter.  Here set wall bcs . . .
@@ -432,10 +442,17 @@
 
       DO IJK = ijkstart3, ijkend3
 
-         IF(BLOCKED_CELL_AT(IJK)) THEN
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
+         I = I_OF(IJK)
+         J = J_OF(IJK)
+         K = K_OF(IJK)
+
+!         ALONG_GLOBAL_GHOST_LAYER = (I==IMIN3).OR.(I==IMAX3).OR.(J==JMIN3).OR.(J==JMAX3)
+         ALONG_GLOBAL_GHOST_LAYER = (I<IMIN1).OR.(I>IMAX1).OR.(J<JMIN1).OR.(J>JMAX1)
+
+         IF(DO_K) ALONG_GLOBAL_GHOST_LAYER = ALONG_GLOBAL_GHOST_LAYER.OR.(K<KMIN1).OR.(K>KMAX1)
+
+         IF(BLOCKED_CELL_AT(IJK).OR.ALONG_GLOBAL_GHOST_LAYER) THEN
+
             IM = IM1(I) 
             JM = JM1(J) 
             KM = KM1(K) 
@@ -446,11 +463,11 @@
             A_M(IJK,T,M) = ZERO 
             A_M(IJK,B,M) = ZERO 
             A_M(IJK,0,M) = -ONE 
-            B_M(IJK,M) = VAR(IJK) 
+            B_M(IJK,M) = -VAR(IJK) 
 
-            IF (CUT_CELL_AT(EAST_OF(IJK))) THEN 
+            IF (CUT_CELL_AT(IP_OF(IJK))) THEN 
 
-               BCV = BC_ID(EAST_OF(IJK))
+               BCV = BC_ID(IP_OF(IJK))
 
                IF(BCV > 0 ) THEN
                   BCT = BC_TYPE(BCV)
@@ -473,9 +490,9 @@
 
                ENDIF
 
-            ELSE IF (CUT_CELL_AT(WEST_OF(IJK))) THEN  
+            ELSE IF (CUT_CELL_AT(IM_OF(IJK))) THEN  
 
-               BCV = BC_ID(WEST_OF(IJK))
+               BCV = BC_ID(IM_OF(IJK))
 
                IF(BCV > 0 ) THEN
                   BCT = BC_TYPE(BCV)
@@ -500,9 +517,9 @@
                ENDIF
 
 
-            ELSE IF (CUT_CELL_AT(NORTH_OF(IJK))) THEN  
+            ELSE IF (CUT_CELL_AT(JP_OF(IJK))) THEN  
 
-               BCV = BC_ID(NORTH_OF(IJK))
+               BCV = BC_ID(JP_OF(IJK))
 
                IF(BCV > 0 ) THEN
                   BCT = BC_TYPE(BCV)
@@ -526,9 +543,9 @@
 
                ENDIF
 
-            ELSE IF (CUT_CELL_AT(SOUTH_OF(IJK))) THEN  
+            ELSE IF (CUT_CELL_AT(JM_OF(IJK))) THEN  
 
-               BCV = BC_ID(SOUTH_OF(IJK))
+               BCV = BC_ID(JM_OF(IJK))
 
                IF(BCV > 0 ) THEN
                   BCT = BC_TYPE(BCV)
@@ -552,9 +569,9 @@
 
                ENDIF
 
-            ELSE IF (CUT_CELL_AT(TOP_OF(IJK))) THEN  
+            ELSE IF (CUT_CELL_AT(KP_OF(IJK))) THEN  
 
-               BCV = BC_ID(TOP_OF(IJK))
+               BCV = BC_ID(KP_OF(IJK))
 
                IF(BCV > 0 ) THEN
                   BCT = BC_TYPE(BCV)
@@ -578,9 +595,9 @@
 
                ENDIF
 
-            ELSE IF (CUT_CELL_AT(BOTTOM_OF(IJK))) THEN  
+            ELSE IF (CUT_CELL_AT(KM_OF(IJK))) THEN  
 
-               BCV = BC_ID(BOTTOM_OF(IJK))
+               BCV = BC_ID(KM_OF(IJK))
 
                IF(BCV > 0 ) THEN
                   BCT = BC_TYPE(BCV)
