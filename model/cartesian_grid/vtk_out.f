@@ -3401,7 +3401,7 @@
             allocate (GLOBAL_I_OF(1))
             allocate (GLOBAL_J_OF(1))
             allocate (GLOBAL_K_OF(1))
-            allocate (GLOBAL_CONNECTIVITY(1,1))     
+            allocate (GLOBAL_CONNECTIVITY(1,15))     
             allocate (GLOBAL_NUMBER_OF_NODES(1))    
             allocate (GLOBAL_INTERIOR_CELL_AT(1))   
             allocate (GLOBAL_BLOCKED_CELL_AT(1))    
@@ -3417,10 +3417,16 @@
          GLOBAL_VAR_ALLOCATED = .TRUE.
  
       ENDIF
-
-      call gatherv_1d( X_NEW_POINT, NUMBER_OF_NEW_POINTS, GLOBAL_X_NEW_POINT, rcount, disp, PE_IO, ierr )
-      call gatherv_1d( Y_NEW_POINT, NUMBER_OF_NEW_POINTS, GLOBAL_Y_NEW_POINT, rcount, disp, PE_IO, ierr )
-      call gatherv_1d( Z_NEW_POINT, NUMBER_OF_NEW_POINTS, GLOBAL_Z_NEW_POINT, rcount, disp, PE_IO, ierr )
+      
+      IF(numPEs==1) THEN  ! Serial run
+         GLOBAL_X_NEW_POINT(1:NUMBER_OF_NEW_POINTS) =  X_NEW_POINT(1:NUMBER_OF_NEW_POINTS)
+         GLOBAL_Y_NEW_POINT(1:NUMBER_OF_NEW_POINTS) =  Y_NEW_POINT(1:NUMBER_OF_NEW_POINTS)
+         IF(DO_K) GLOBAL_Z_NEW_POINT(1:NUMBER_OF_NEW_POINTS) =  Z_NEW_POINT(1:NUMBER_OF_NEW_POINTS)
+      ELSE !Parallel run
+         call gatherv_1d( X_NEW_POINT, NUMBER_OF_NEW_POINTS, GLOBAL_X_NEW_POINT, rcount, disp, PE_IO, ierr )
+         call gatherv_1d( Y_NEW_POINT, NUMBER_OF_NEW_POINTS, GLOBAL_Y_NEW_POINT, rcount, disp, PE_IO, ierr )
+         call gatherv_1d( Z_NEW_POINT, NUMBER_OF_NEW_POINTS, GLOBAL_Z_NEW_POINT, rcount, disp, PE_IO, ierr )
+      ENDIF
 
       call global_sum(NUMBER_OF_NEW_POINTS, GLOBAL_NUMBER_OF_NEW_POINTS,  PE_IO, ierr )
 

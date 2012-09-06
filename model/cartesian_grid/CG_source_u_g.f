@@ -228,25 +228,16 @@
 
             IF(NOC_UG) THEN
 
+               I = I_OF(IJK) 
                J = J_OF(IJK) 
                K = K_OF(IJK)
 
-               IM = I - 1 
-               JM = J - 1 
-               KM = K - 1
-
-               IP = I + 1 
-               JP = J + 1 
-               KP = K + 1
-
-    
-               IMJK = FUNIJK(IM,J,K)
-               IJMK = FUNIJK(I,JM,K)
-               IPJK = FUNIJK(IP,J,K)
-               IJPK = FUNIJK(I,JP,K)
-               IJKP = FUNIJK(I,J,KP)
-               IJKM = FUNIJK(I,J,KM)
-
+               IMJK = IM_OF(IJK)
+               IJMK = JM_OF(IJK)
+               IJKM = KM_OF(IJK)
+               IPJK = IP_OF(IJK)
+               IJPK = JP_OF(IJK)
+               IJKP = KP_OF(IJK)
 
                Ue = Theta_Ue_bar(IJK)  * U_g(IJK)  + Theta_Ue(IJK)  * U_g(IPJK)
                Uw = Theta_Ue_bar(IMJK) * U_g(IMJK) + Theta_Ue(IMJK) * U_g(IJK)
@@ -255,8 +246,6 @@
                Us = Theta_Un_bar(IJMK) * U_g(IJMK) + Theta_Un(IJMK) * U_g(IJK)
 
      
-               IPJK = IP_OF(IJK) 
-               IJPK = JP_OF(IJK) 
                IJKE = EAST_OF(IJK) 
 
                IF (WALL_AT(IJK)) THEN 

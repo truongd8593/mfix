@@ -749,8 +749,8 @@
             INTERSECT_X(IMJK) = .FALSE.
             INTERSECT_Y(IMJK)  = .FALSE.
             INTERSECT_Y(IMJPK) = .FALSE.
-            INTERSECT_Z(IMJK)  = .FALSE.
-            INTERSECT_Z(IMJKP) = .FALSE.
+            IF(DO_K) INTERSECT_Z(IMJK)  = .FALSE.
+            IF(DO_K) INTERSECT_Z(IMJKP) = .FALSE.
 
             SNAP(IMJK) = .TRUE.
                 
@@ -770,8 +770,8 @@
             INTERSECT_X(IPJK) = .FALSE.
             INTERSECT_Y(IJK)  = .FALSE.
             INTERSECT_Y(IJPK) = .FALSE.
-            INTERSECT_Z(IJK)  = .FALSE.
-            INTERSECT_Z(IJKP) = .FALSE.
+            IF(DO_K) INTERSECT_Z(IJK)  = .FALSE.
+            IF(DO_K) INTERSECT_Z(IJKP) = .FALSE.
 
             SNAP(IJK) = .TRUE.
                 
@@ -813,8 +813,8 @@
             INTERSECT_X(IPJMK) = .FALSE.
             INTERSECT_Y(IJK)  = .FALSE.
             INTERSECT_Y(IJMK) = .FALSE.
-            INTERSECT_Z(IJMK)  = .FALSE.
-            INTERSECT_Z(IJMKP) = .FALSE.
+            IF(DO_K) INTERSECT_Z(IJMK)  = .FALSE.
+            IF(DO_K) INTERSECT_Z(IJMKP) = .FALSE.
 
             SNAP(IJMK) = .TRUE.
                 
@@ -833,8 +833,8 @@
             INTERSECT_X(IPJK) = .FALSE.
             INTERSECT_Y(IJK)  = .FALSE.
             INTERSECT_Y(IJPK) = .FALSE.
-            INTERSECT_Z(IJK)  = .FALSE.
-            INTERSECT_Z(IJKP) = .FALSE.
+            IF(DO_K) INTERSECT_Z(IJK)  = .FALSE.
+            IF(DO_K) INTERSECT_Z(IJKP) = .FALSE.
 
             SNAP(IJK) = .TRUE.
                 

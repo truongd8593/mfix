@@ -248,23 +248,12 @@
 
                   IF(NOC_WS) THEN
 
-                     J = J_OF(IJK) 
-                     K = K_OF(IJK)
-
-                     IM = I - 1 
-                     JM = J - 1 
-                     KM = K - 1
-
-                     IP = I + 1 
-                     JP = J + 1 
-                     KP = K + 1
-    
-                     IMJK = FUNIJK(IM,J,K)
-                     IJMK = FUNIJK(I,JM,K)
-                     IPJK = FUNIJK(IP,J,K)
-                     IJPK = FUNIJK(I,JP,K)
-                     IJKP = FUNIJK(I,J,KP)
-                     IJKM = FUNIJK(I,J,KM)
+                     IMJK = IM_OF(IJK)
+                     IJMK = JM_OF(IJK)
+                     IJKM = KM_OF(IJK)
+                     IPJK = IP_OF(IJK)
+                     IJPK = JP_OF(IJK)
+                     IJKP = KP_OF(IJK)
 
                      We = Theta_We_bar(IJK)  * W_S(IJK,M)  + Theta_We(IJK)  * W_S(IPJK,M)
                      Ww = Theta_We_bar(IMJK) * W_S(IMJK,M) + Theta_We(IMJK) * W_S(IJK,M)
@@ -275,8 +264,6 @@
                      Wt = Theta_Wt_bar(IJK)  * W_S(IJK,M)  + Theta_Wt(IJK)  * W_S(IJKP,M)
                      Wb = Theta_Wt_bar(IJKM) * W_S(IJKM,M) + Theta_Wt(IJKM) * W_S(IJK,M)
       
-                     IPJK = IP_OF(IJK) 
-                     IJPK = JP_OF(IJK) 
                      IJKE = EAST_OF(IJK) 
 
                      ijkt = top_of(ijk)

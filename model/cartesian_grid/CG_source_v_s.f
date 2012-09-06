@@ -249,20 +249,12 @@
                   IF(NOC_VS) THEN
 
 
-                     IM = I - 1 
-                     JM = J - 1 
-                     KM = K - 1
-
-                     IP = I + 1 
-                     JP = J + 1 
-                     KP = K + 1
-    
-                     IMJK = FUNIJK(IM,J,K)
-                     IJMK = FUNIJK(I,JM,K)
-                     IPJK = FUNIJK(IP,J,K)
-                     IJPK = FUNIJK(I,JP,K)
-                     IJKP = FUNIJK(I,J,KP)
-                     IJKM = FUNIJK(I,J,KM)
+                     IMJK = IM_OF(IJK)
+                     IJMK = JM_OF(IJK)
+                     IJKM = KM_OF(IJK)
+                     IPJK = IP_OF(IJK)
+                     IJPK = JP_OF(IJK)
+                     IJKP = KP_OF(IJK)
 
                      Vn = Theta_Vn_bar(IJK)  * V_S(IJK,M)  + Theta_Vn(IJK)  * V_S(IJPK,M)
                      Vs = Theta_Vn_bar(IJMK) * V_S(IJMK,M) + Theta_Vn(IJMK) * V_S(IJK,M)
@@ -270,15 +262,6 @@
                      Ve = Theta_Ve_bar(IJK)  * V_S(IJK,M)  + Theta_Ve(IJK)  * V_S(IPJK,M)
                      Vw = Theta_Ve_bar(IMJK) * V_S(IMJK,M) + Theta_Ve(IMJK) * V_S(IJK,M)
 
-                     IPJK = IP_OF(IJK)
-                     IMJK = IM_OF(IJK)
-                     IJPK = JP_OF(IJK)
-                     IJMK = JM_OF(IJK)
-                     IJKP = KP_OF(IJK)
-                     IJKM = KM_OF(IJK)
-                     I = I_OF(IJK) 
-                     J = J_OF(IJK) 
-                     K = K_OF(IJK)     
                      IJKN = NORTH_OF(IJK) 
                      IF (WALL_AT(IJK)) THEN 
                         IJKC = IJKN 
