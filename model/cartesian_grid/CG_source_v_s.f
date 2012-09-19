@@ -277,6 +277,7 @@
                      IJKWN = NORTH_OF(IJKW) 
                      IMJPK = JP_OF(IMJK) 
 
+                     KM = KM1(K) 
                      IJKT = TOP_OF(IJK) 
                      IJKTN = NORTH_OF(IJKT) 
 

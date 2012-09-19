@@ -247,6 +247,7 @@
                ENDIF 
 
                IP = IP1(I) 
+               IM = IM1(I) 
                IJKN = NORTH_OF(IJK) 
                IJKNE = EAST_OF(IJKN)
 
