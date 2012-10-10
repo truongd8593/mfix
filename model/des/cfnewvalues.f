@@ -6,10 +6,6 @@
 !           position, angular velocity etc                            
 !
 !                                                                      C
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!  Reviewer:                                          Date:            C
-!                                                                      C 
-!
 !  Comments: Implements Eqns 1, 2, 3, 4 & 5  from the following paper:
 !    Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical
 !    simulation of plug glow of cohesionless particles in a
@@ -51,7 +47,7 @@
 
       IF(MPPIC) THEN 
          IF(MPPIC_SOLID_STRESS_SNIDER) THEN 
-            CALL CFNEWVALUES_MPPIC_SINDER 
+            CALL CFNEWVALUES_MPPIC_SNIDER 
          ELSE
 ! call the coloring function like approach 
             CALL CFNEWVALUES_MPPIC
@@ -152,15 +148,13 @@
 
       RETURN
       END SUBROUTINE CFNEWVALUES
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CFNEWVALUES_MPPIC_SINDER                               C
+!  Module name: CFNEWVALUES_MPPIC_SNIDER                               C
 !
 !                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C     
-      SUBROUTINE CFNEWVALUES_MPPIC_SINDER 
+      SUBROUTINE CFNEWVALUES_MPPIC_SNIDER 
 
       USE param
       USE param1
@@ -173,8 +167,9 @@
       USE mpi_utility
       USE mppic_wallbc
       USE fldvar
-      
+      USE cutcell
       USE mfix_pic 
+      USE randomno
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -201,11 +196,15 @@
       DOUBLE PRECISION :: DPS_DXE, DPS_DXW, DPS_DYN, DPS_DYS, DPS_DZT, DPS_DZB
       DOUBLE PRECISION :: XI_EAST, XI_WEST, XI_NORTH, XI_SOUTH, XI_TOP, XI_BOTTOM, epg_min2, velf_part(dimn)
       
-      LOGICAL :: DELETE_PART
+      LOGICAL :: DELETE_PART, INSIDE_DOMAIN
       INTEGER :: PIP_DEL_COUNT, count_bc 
 
       DOUBLE PRECISION MEANUS_e(DIMN, MMAX), MEANUS_w(DIMN, MMAX),MEANUS_n(DIMN, MMAX),MEANUS_s(DIMN, MMAX),MEANUS_t(DIMN, MMAX), MEANUS_b(DIMN, MMAX)      
       INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), PIJK_OLD(5), epg_min_loc(1)
+
+      
+      double precision  sig_u, mean_u,ymid 
+      double precision, allocatable, dimension(:,:) ::  rand_vel
 !-----------------------------------------------
 ! Functions 
 !-----------------------------------------------
@@ -230,6 +229,13 @@
       !EPG_MIN2 = MINVAL(EP_G(:))
       !epg_min_loc = MINLOC(EP_G)
       !IJK = epg_min_loc(1)
+      
+      allocate(rand_vel(MAX_PIP, DIMN))
+      do idim = 1, dimn 
+         mean_u = zero
+         sig_u = 1.d0 
+         CALL NOR_RNO(RAND_VEL(1:MAX_PIP, IDIM), MEAN_U, SIG_U)
+      enddo
 
       DO L = 1, MAX_PIP
          DELETE_PART = .false. 
@@ -283,6 +289,12 @@
 
          DES_VEL_NEW(L,:) = (DES_VEL_OLD(L,:) + & 
          & FC(L,:)*DTSOLID)/(1.d0+DP_BAR*DTSOLID)
+         
+         do idim = 1, dimn 
+            SIG_U = 0.05D0
+            rand_vel(L, idim)  = sig_u*DES_VEL_NEW(L, IDIM)*rand_vel(L, idim) 
+         enddo
+
 
          IF(L.EQ.FOCUS_PARTICLE) THEN 
             
@@ -336,35 +348,45 @@
                               
           DIST = SQRT(DES_DOTPRDCT(D,D))
 
-          IF(DIST.GT.MEAN_FREE_PATH) THEN 
-          !WRITE(*,*) 'UPRIME OLD =  ', UPRIMETAU(:)
-          !WRITE(*,*) 'DIST GT MEAN FREE PATH= ', DIST, MEAN_FREE_PATH
-
-             DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + &
-             DES_VEL_NEW(L,:)*DTSOLID*MEAN_FREE_PATH/DIST
-
-             D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
-             
-             DIST = SQRT(DES_DOTPRDCT(D,D))
-             !WRITE(*,*) 'new moved distance  = ', dist,1. -  ep_g(ijk)
-          ENDIF
-
 
          CALL MPPIC_FIND_NEW_CELL(L)
 
          IJK = PIJK(L,4)
          
-         IF(EP_G(IJK).LT.ep_star.and.fluid_at(ijk)) THEN !.and.(ijk.ne.ijk_old)) then 
-            DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
-            DES_VEL_NEW(L,:) = 0.8d0*DES_VEL_NEW(L,:)
+         INSIDE_DOMAIN = .true. 
+         
+         INSIDE_DOMAIN = FLUID_AT(IJK)
+         
+         IF(EP_G(IJK).LT.EP_STAR.and.INSIDE_DOMAIN.and.IJK.NE.IJK_OLD) then 
             
-            
-            !DES_POS_NEW(L,:) = DES_POS_OLD(L,:)+ rand_vel(L, :)*dtsolid 
-            
+            IF(CUT_CELL_AT(IJK)) then 
+               DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
+               DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + rand_vel(L, :)*dtsolid 
+               DES_VEL_NEW(L,:) = 0.8d0*DES_VEL_NEW(L,:)
+            ELSE
+               !IF(IJK.NE.IJK_OLD) THEN 
+               DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
+               DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + rand_vel(L, :)*dtsolid 
+               DES_VEL_NEW(L,:) = 0.8d0*DES_VEL_NEW(L,:)
+               !ENDIF
+            ENDIF
          ENDIF
-         
-         
+
          PIJK(L,:) = PIJK_OLD(:)
+         DIST = SQRT(DES_DOTPRDCT(D,D))
+
+          IF(DIST.GT.MEAN_FREE_PATH) THEN 
+          !WRITE(*,*) 'UPRIME OLD = ', UPRIMETAU(:)
+          !WRITE(*,*) 'DIST GT MEAN FREE PATH= ', DIST, MEAN_FREE_PATH
+
+             DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + &
+             DES_VEL_NEW(L,:)*DTSOLID*MEAN_FREE_PATH/DIST
+
+             !D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
+             
+                                !DIST = SQRT(DES_DOTPRDCT(D,D))
+             !WRITE(*,*) 'new moved distance  = ', dist,1. -  ep_g(ijk)
+          ENDIF
                
 
          D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
@@ -403,6 +425,7 @@
             PEA(L,1) = .false. 
             PIP_DEL_COUNT = PIP_DEL_COUNT + 1
          ENDIF
+         IF (DES_LOC_DEBUG) WRITE(*,1001)
       ENDDO
 
       
@@ -414,14 +437,10 @@
          LPIP_DEL_COUNT_ALL(mype) = PIP_DEL_COUNT 
          CALL GLOBAL_ALL_SUM(LPIP_DEL_COUNT_ALL) 
          IF((DMP_LOG).AND.SUM(LPIP_DEL_COUNT_ALL(:)).GT.0) THEN 
-            IF(PRINT_DES_SCREEN) WRITE(*,'(/,2x,A,2x,i10,/,A)') & 
-         'TOTAL NUMBER OF PARTS STEPPING MORE THAN ONE GRID SPACE = ', &
-                SUM(LPIP_DEL_COUNT_ALL(:)), 'THIS SHOULD NOT HAPPEN &
+            IF(PRINT_DES_SCREEN) WRITE(*,'(/,2x,A,2x,i10,/,A)') 'TOTAL NUMBER OF PARTS STEPPING MORE THAN ONE GRID SPACE = ', SUM(LPIP_DEL_COUNT_ALL(:)), 'THIS SHOULD NOT HAPPEN &
                  & FREQUENTLY: MONITOR THIS MESSAGE'
 
-            WRITE(UNIT_LOG,'(/,2x,A,2x,i10,/,A)') &
-         'TOTAL NUMBER OF PARTS  STEPPING MORE THAN ONE GRID SPACEC= ',&
-             SUM(LPIP_DEL_COUNT_ALL(:)), 'THIS SHOULD NOT HAPPEN &
+            WRITE(UNIT_LOG,'(/,2x,A,2x,i10,/,A)') 'TOTAL NUMBER OF PARTS  STEPPING MORE THAN ONE GRID SPACEC= ', SUM(LPIP_DEL_COUNT_ALL(:)), 'THIS SHOULD NOT HAPPEN &
                  & FREQUENTLY: MONITOR THIS MESSAGE'
             !DO IPROC = 0, NUMPES-1 
             !   WRITE(UNIT_LOG, '(/,A,i4,2x,A,2x,i5)') 'PARTICLES OUTSIDE DOMAIN (PIC)  ON PROC:', IPROC,' EQUAL TO', LPIP_DEL_COUNT_ALL(IPROC)
@@ -445,9 +464,17 @@
 
 
       ENDIF
+ 1000 FORMAT(3X,'---------- FROM CFNEWVALUES ---------->')
+ 1001 FORMAT(3X,'<---------- END CFNEWVALUES ----------')  
 
+ 1002 FORMAT(/1X,70('*')//&
+         ' From: CFNEWVALUES -',/&
+         ' Message: Particle ',I10, ' moved a distance ', ES17.9, &
+         ' during a',/10X, 'single solids time step, which is ',&
+         ' greater than',/10X,'its radius: ', ES17.9)
+ 1003 FORMAT(1X,70('*')/)         
 
- 2001  FORMAT(/1X,70('*'),//,10X,  & 
+2001  FORMAT(/1X,70('*'),//,10X,  & 
            & 'MOVEMENT UNDESIRED IN CFNEWVALUES: PARTICLE', i5, /,10X, &
            & ' MOVED MORE THAN A GRID SPACING IN ONE TIME STEP', /,10X, & 
            & 'MOVEMENT IN GRID UNITS = ', 3(2x, g17.8),/,10X,  &
@@ -466,13 +493,10 @@
 
 
       RETURN
-      END SUBROUTINE CFNEWVALUES_MPPIC_SINDER 
+      END SUBROUTINE CFNEWVALUES_MPPIC_SNIDER 
 
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC      
+      
       SUBROUTINE CFNEWVALUES_MPPIC
-
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C     
 
       USE param
       USE param1
@@ -509,24 +533,21 @@
 
 ! dt's in each direction  based on cfl_pic for the mppic case 
       
-      DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, &
-                       THREEINTOSQRT2, RAD_EFF, MEANUS(DIMN, MMAX), POS_Z
+      DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF, MEANUS(DIMN, MMAX), POS_Z
       DOUBLE PRECISION :: DPS_DXE, DPS_DXW, DPS_DYN, DPS_DYS, DPS_DZT, DPS_DZB
-      DOUBLE PRECISION :: XI_EAST, XI_WEST, XI_NORTH, XI_SOUTH,&
-                          XI_TOP, XI_BOTTOM, epg_min2, velf_part(dimn)
+      DOUBLE PRECISION :: XI_EAST, XI_WEST, XI_NORTH, XI_SOUTH, XI_TOP, XI_BOTTOM, epg_min2, velf_part(dimn), VELP_INT(DIMN)
       
       LOGICAL :: DELETE_PART, INSIDE_DOMAIN
       INTEGER :: PIP_DEL_COUNT, count_bc 
 
-      DOUBLE PRECISION MEANUS_e(DIMN, MMAX), MEANUS_w(DIMN, MMAX), &
-                       MEANUS_n(DIMN, MMAX),MEANUS_s(DIMN, MMAX), &
-                       MEANUS_t(DIMN, MMAX), MEANUS_b(DIMN, MMAX)      
+      DOUBLE PRECISION MEANUS_e(DIMN, MMAX), MEANUS_w(DIMN, MMAX),MEANUS_n(DIMN, MMAX),MEANUS_s(DIMN, MMAX),MEANUS_t(DIMN, MMAX), MEANUS_b(DIMN, MMAX)      
       INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), PIJK_OLD(5), epg_min_loc(1)
       
-      double precision  sig_u, mean_u,ymid 
+      double precision  sig_u, mean_u,ymid, part_taup,  DTPIC_MIN_X,  DTPIC_MIN_Y,  DTPIC_MIN_Z
       double precision, allocatable, dimension(:,:) ::  rand_vel
 
       double precision :: norm1, norm2, norm3 
+      Logical :: OUTER_STABILITY_COND, DES_FIXED_BED
 !-----------------------------------------------
 ! Functions 
 !-----------------------------------------------
@@ -537,10 +558,14 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
-
+      OUTER_STABILITY_COND = .false.
+      DES_FIXED_BED = .false. 
       PC = 1
       FOCUS_PARTICLE = -1
       DTPIC_CFL = LARGE_NUMBER 
+      DTPIC_MIN_X =  LARGE_NUMBER
+      DTPIC_MIN_Y =  LARGE_NUMBER
+      DTPIC_MIN_Z =  LARGE_NUMBER
       
       if(dimn.eq.2) THREEINTOSQRT2 = 2.D0*SQRT(2.D0)
       if(dimn.eq.3) THREEINTOSQRT2 = 3.D0*SQRT(2.D0)
@@ -557,6 +582,8 @@
          sig_u = 1.d0 
          CALL NOR_RNO(RAND_VEL(1:MAX_PIP, IDIM), MEAN_U, SIG_U)
       enddo
+      !WRITE(*, '(A,2x,3(g17.8))') 'FC MIN AND MAX IN Z = ', MINVAL(FC(:,3)), MAXVAL(FC(:,3))
+      !WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'FC MIN AND MAX IN Z = ', MINVAL(FC(:,3)), MAXVAL(FC(:,3))
 
       DO L = 1, MAX_PIP
          DELETE_PART = .false. 
@@ -574,6 +601,8 @@
             FC(L,:) = ZERO
          ENDIF
          
+         IF(DES_FIXED_BED) FC(L,:) = ZERO
+         
          !DP_BAR is the D_p in the Snider paper (JCP, vol 170, 523-549, 2001) 
          !By comparing the MFIX and equations in those papers, 
          !D_p = Beta/(EP_S*RHOP)
@@ -586,83 +615,72 @@
          
          if(.not.MPPIC_PDRAG_IMPLICIT) DP_BAR = ZERO 
          M = PIJK(L,5)
-         IJK = PIJK(L,4)
-               
+         IJK = PIJK(L,4)             
          IJK_OLD = IJK
+         PIJK_OLD(:) = PIJK(L,:)
+
          I = I_OF(IJK)
          J = J_OF(IJK)
          K = K_OF(IJK)
          VEL_ORIG(:) = DES_VEL_NEW(L,:)
 
+         
          DES_VEL_NEW(L,:) = (DES_VEL_OLD(L,:) + & 
          & FC(L,:)*DTSOLID)/(1.d0+DP_BAR*DTSOLID)
 
-         MEANVEL(1) = des_u_s(ijk,m)
-         MEANVEL(2) = des_v_s(ijk,m)
-         IF(DIMN.EQ.3) MEANVEL(3) = DES_W_S(IJK,M)
-
+         IF(DES_FIXED_BED) DES_VEL_NEW(L, :) = ZERO
          
-                                !if(mod(L,400).eq.0) write(*,'(A,2x,10(2x,g17.8))') 'rand vel = ', rand_vel(1,:), sig_u
-         do idim = 1, dimn 
-            SIG_U = 0.005D0*MEANVEL(IDIM) 
-            !DES_VEL_NEW(L, idim) = DES_VEL_NEW(L, idim) + sig_u*rand_vel(pc, idim ) 
-            
-            SIG_U = 0.005D0!*MEANVEL(IDIM) 
-            rand_vel(L, idim)  = sig_u*DES_VEL_NEW(L, IDIM)*rand_vel(L, idim) 
-            !DES_VEL_NEW(L, idim) = DES_VEL_NEW(L, idim) + rand_vel(pc, idim) 
-         enddo
+         !MPPIC_VPTAU(L,:) = DES_VEL_NEW(L,:)
+
+         VELP_INT(:) = DES_VEL_NEW(L,:)
+
+         MEANVEL(1) = DES_U_S(IJK_OLD,M)
+         MEANVEL(2) = DES_V_S(IJK_OLD,M)
+         IF(DIMN.EQ.3) MEANVEL(3) = DES_W_S(IJK_OLD,M)   
          
-      ENDDO
-
-      IF(.not.DES_ONEWAY_COUPLED) CALL MPPIC_APPLY_PS_GRAD
-
-      
-      PC = 1 
-      DO L = 1, MAX_PIP
-         DELETE_PART = .false. 
-! pradeep: skip ghost particles
-         if(pc.gt.pip) exit
-         if(.not.pea(l,1)) cycle 
-         pc = pc+1
-         if(pea(l,4)) cycle 
-
-         DES_LOC_DEBUG = .FALSE.
-
-               
-         M = PIJK(L,5)
-         
-         IJK = PIJK(L,4)
-         IJK_OLD = IJK 
-         PIJK_OLD(:) = PIJK(L,:)
-
-
-         UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(L,1:DIMN), DES_VEL_NEW(L, 1:DIMN)))
-               
          RAD_EFF = DES_RADIUS(L) 
          !RAD_EFF = (DES_STAT_WT(L)**(1.d0/3.d0))*DES_RADIUS(L)
          MEAN_FREE_PATH  = MAX(1.d0/(1.d0-EP_STAR), 1.d0/(1.D0-EP_G(IJK_OLD)))
-         MEAN_FREE_PATH = MEAN_FREE_PATH*RAD_EFF/THREEINTOSQRT2
+         MEAN_FREE_PATH  = MEAN_FREE_PATH*RAD_EFF/THREEINTOSQRT2
                
-         IF(UPRIMEMOD*DTSOLID.GT.MEAN_FREE_PATH) then 
-            DES_VEL_NEW(L,:) = (DES_VEL_NEW(L,:)/UPRIMEMOD)*MEAN_FREE_PATH/DTSOLID
-         ENDIF
+         DO IDIM = 1, DIMN 
+            !SIG_U = 0.05D0*MEANVEL(IDIM) 
+            !DES_VEL_NEW(L, IDIM) = DES_VEL_NEW(L, IDIM) + SIG_U*RAND_VEL(L, IDIM ) 
+            !PART_TAUP = RO_Sol(L)*((2.d0*DES_RADIUS(L))**2.d0)/(18.d0* MU_G(IJK))
+            SIG_U = 0.005D0      !*MEANVEL(IDIM) 
+            RAND_VEL(L, IDIM)  = SIG_U*RAND_VEL(L, IDIM)*DES_VEL_NEW(L, IDIM)
+            IF(DES_FIXED_BED) RAND_VEL(L,IDIM) = ZERO 
+            !rand_vel(L, idim)  = sig_u*rand_vel(L, idim)/part_taup
+            !rand_vel(L, idim)  = sig_u* mean_free_path*rand_vel(L, idim)/part_taup
+            DES_VEL_NEW(L, idim) = DES_VEL_NEW(L, idim) + rand_vel(L, idim) 
+         enddo
 
+         !DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + VELP_INT(:)*DTSOLID
+         
+                                !if(mod(L,400).eq.0) write(*,'(A,2x,10(2x,g17.8))') 'rand vel = ', rand_vel(1,:), sig_u
+         
+      
+         IF(.not.DES_ONEWAY_COUPLED.and.(.not.des_fixed_bed)) CALL MPPIC_APPLY_PS_GRAD_PART(L)
+
+         
+         UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(L,1:DIMN), DES_VEL_NEW(L, 1:DIMN)))
+
+         !IF(UPRIMEMOD*DTSOLID.GT.MEAN_FREE_PATH) then 
+         !   DES_VEL_NEW(L,:) = (DES_VEL_NEW(L,:)/UPRIMEMOD)*MEAN_FREE_PATH/DTSOLID
+         !ENDIF
+         
          DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + &
-         DES_VEL_NEW(L,:)*DTSOLID + rand_vel(L, :)*dtsolid 
+         DES_VEL_NEW(L,:)*DTSOLID !+ rand_vel(L, :)*dtsolid 
          
-         D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
-         
-         IJK_OLD = PIJK(L,4)
-         
+         IF(DES_FIXED_BED) DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
+
          CALL MPPIC_FIND_NEW_CELL(L)
 
-         
          IJK = PIJK(L,4)
          
          !IF((EP_G(IJK).LT.0.35.and.fluid_at(ijk)).or.(ep_g(ijk_old).lt.0.35)) then !.and.(ijk.ne.ijk_old)) then 
          !IF((EP_G(IJK).LT.EP_STAR.and.fluid_at(ijk)).and.(ijk.ne.ijk_old)) then 
          INSIDE_DOMAIN = .true. 
-
          INSIDE_DOMAIN = FLUID_AT(IJK)
 
          IF(CUT_CELL_AT(IJK)) THEN 
@@ -678,37 +696,42 @@
 
          !IF((EP_G(IJK).LT.EP_STAR.and.INSIDE_DOMAIN)) then 
          !IF(EP_G(IJK).LT.EP_STAR.and.INSIDE_DOMAIN) then  
-         IF(EP_G(IJK).LT.EP_STAR.and.INSIDE_DOMAIN.and.IJK.NE.IJK_OLD) then 
+         IF(1.d0 - EP_G(IJK).GT. 1.3d0*(1.d0 - EP_STAR).and.INSIDE_DOMAIN.and.IJK.NE.IJK_OLD.and.OUTER_STABILITY_COND) then 
             
             IF(CUT_CELL_AT(IJK)) then 
                DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
-               DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + rand_vel(L, :)*dtsolid 
+               DES_POS_NEW(L,:) = DES_POS_OLD(L,:) !+ rand_vel(L, :)*dtsolid 
                DES_VEL_NEW(L,:) = 0.8d0*DES_VEL_NEW(L,:)
+               !DES_VEL_NEW(L,:) = VELP_INT(:)
             ELSE
-               !IF(IJK.NE.IJK_OLD) THEN 
-                  DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
-                  DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + rand_vel(L, :)*dtsolid 
-                  DES_VEL_NEW(L,:) = 0.8d0*DES_VEL_NEW(L,:)
-               !ENDIF
+               DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
+               !DES_POS_NEW(L,:) = DES_POS_OLD(L,:) !+ rand_vel(L, :)*dtsolid 
+               DES_VEL_NEW(L,:) = 0.8d0*DES_VEL_NEW(L,:)
+               !DES_VEL_NEW(L,:) = VELP_INT(:)
             ENDIF
          ENDIF
-         
-         
+                 
          PIJK(L,:) = PIJK_OLD(:)
+         
+         D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
+
          DIST = SQRT(DES_DOTPRDCT(D,D))
 
-          IF(DIST.GT.MEAN_FREE_PATH) THEN 
+         !IF(DIST.GT.MEAN_FREE_PATH) THEN 
           !WRITE(*,*) 'UPRIME OLD = ', UPRIMETAU(:)
           !WRITE(*,*) 'DIST GT MEAN FREE PATH= ', DIST, MEAN_FREE_PATH
 
+         !    DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + &
+         !    DES_VEL_NEW(L, :)*DTSOLID*MEAN_FREE_PATH/DIST
+             
              !DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + &
-             !DES_VEL_NEW(L,:)*DTSOLID*MEAN_FREE_PATH/DIST
+             !VELP_INT(:)*DTSOLID*MEAN_FREE_PATH/DIST
 
-             !D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
+                                !D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
              
                                 !DIST = SQRT(DES_DOTPRDCT(D,D))
              !WRITE(*,*) 'new moved distance  = ', dist,1. -  ep_g(ijk)
-          ENDIF
+        !  ENDIF
 
 
 
@@ -736,8 +759,15 @@
                   WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'rand_vel = ', rand_vel(L,:)
                   WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(l,:)
                   WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(L,:)
-                  
+                  WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'FC          = ', FC(L,:)
+
                   WRITE(*, 2001) L, D_GRIDUNITS(:), DES_VEL_NEW(L,:)
+                  
+                  WRITE(*, '(A,2x,3(g17.8))') 'rand_vel = ', rand_vel(L,:)
+                  WRITE(*, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(l,:)
+                  WRITE(*, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(L,:)
+                  WRITE(*, '(A,2x,3(g17.8))') 'FC          = ', FC(L,:)
+                  read(*,*) 
                   DELETE_PART = .true. 
                      
                ENDIF
@@ -745,61 +775,72 @@
             END IF
                
          END DO
-         IF(.not.DELETE_PART) DTPIC_CFL = MIN(DTPIC_CFL, DTPIC_TMPX, DTPIC_TMPY, DTPIC_TMPZ)
+         
+         IF(.not.DELETE_PART) then 
+            DTPIC_CFL = MIN(DTPIC_CFL, DTPIC_TMPX, DTPIC_TMPY, DTPIC_TMPZ)
+            DTPIC_MIN_X = MIN(DTPIC_MIN_X, DTPIC_TMPX)
+            DTPIC_MIN_Y = MIN(DTPIC_MIN_Y, DTPIC_TMPY)
+            DTPIC_MIN_Z = MIN(DTPIC_MIN_Z, DTPIC_TMPZ)
+         ENDIF
          FC(L,:) = ZERO
 
          IF(DELETE_PART) THEN 
             PEA(L,1) = .false. 
             PIP_DEL_COUNT = PIP_DEL_COUNT + 1
          ENDIF
+         IF (DES_LOC_DEBUG) WRITE(*,1001)
       ENDDO
 
 
       DEALLOCATE(RAND_VEL)      
 
-      IF(MPPIC) THEN 
-         CALL global_all_max(DTPIC_CFL)
-         PIP = PIP - PIP_DEL_COUNT
-         
-         LPIP_DEL_COUNT_ALL(:) = 0
-         LPIP_DEL_COUNT_ALL(mype) = PIP_DEL_COUNT 
-         CALL GLOBAL_ALL_SUM(LPIP_DEL_COUNT_ALL) 
-         IF((DMP_LOG).AND.SUM(LPIP_DEL_COUNT_ALL(:)).GT.0) THEN 
-            IF(PRINT_DES_SCREEN) WRITE(*,'(/,2x,A,2x,i10,/,A)') &
-         'TOTAL NUMBER OF PARTS STEPPING MORE THAN ONE GRID SPACE = ',&
-             SUM(LPIP_DEL_COUNT_ALL(:)), 'THIS SHOULD NOT HAPPEN &
-                 & FREQUENTLY: MONITOR THIS MESSAGE'
+      CALL global_all_max(DTPIC_CFL)
+      PIP = PIP - PIP_DEL_COUNT
+      
+      LPIP_DEL_COUNT_ALL(:) = 0
+      LPIP_DEL_COUNT_ALL(mype) = PIP_DEL_COUNT 
+      CALL GLOBAL_ALL_SUM(LPIP_DEL_COUNT_ALL) 
+      IF((DMP_LOG).AND.SUM(LPIP_DEL_COUNT_ALL(:)).GT.0) THEN 
+         IF(PRINT_DES_SCREEN) WRITE(*,'(/,2x,A,2x,i10,/,A)') 'TOTAL NUMBER OF PARTS STEPPING MORE THAN ONE GRID SPACE = ', SUM(LPIP_DEL_COUNT_ALL(:)), 'THIS SHOULD NOT HAPPEN &
+         & FREQUENTLY: MONITOR THIS MESSAGE'
 
-            WRITE(UNIT_LOG,'(/,2x,A,2x,i10,/,A)') &
-       'TOTAL NUMBER OF PARTS  STEPPING MORE THAN ONE GRID SPACEC= ', &
-            SUM(LPIP_DEL_COUNT_ALL(:)), 'THIS SHOULD NOT HAPPEN &
-                 & FREQUENTLY: MONITOR THIS MESSAGE'
-            !DO IPROC = 0, NUMPES-1 
-            !   WRITE(UNIT_LOG, '(/,A,i4,2x,A,2x,i5)') 'PARTICLES OUTSIDE DOMAIN (PIC)  ON PROC:', IPROC,' EQUAL TO', LPIP_DEL_COUNT_ALL(IPROC)
-            !ENDDO
+         WRITE(UNIT_LOG,'(/,2x,A,2x,i10,/,A)') 'TOTAL NUMBER OF PARTS  STEPPING MORE THAN ONE GRID SPACEC= ', SUM(LPIP_DEL_COUNT_ALL(:)), 'THIS SHOULD NOT HAPPEN &
+         & FREQUENTLY: MONITOR THIS MESSAGE'
+         !DO IPROC = 0, NUMPES-1 
+         !   WRITE(UNIT_LOG, '(/,A,i4,2x,A,2x,i5)') 'PARTICLES OUTSIDE DOMAIN (PIC)  ON PROC:', IPROC,' EQUAL TO', LPIP_DEL_COUNT_ALL(IPROC)
+         !ENDDO
             
-         ENDIF
-
-         DTPIC_MAX = MIN(DTPIC_CFL, DTPIC_TAUP)
-
-         IF(DTSOLID.GT.DTPIC_MAX) THEN 
-            !IF(DMP_LOG) WRITE(UNIT_LOG, 2001) DTSOLID
-            IF(myPE.eq.pe_IO) WRITE(*, 2004) DTSOLID
-         ELSEIF(DTSOLID.LT.DTPIC_MAX) THEN 
-
-            !IF(DMP_LOG) WRITE(UNIT_LOG, 2002) DTSOLID
-            IF(myPE.eq.pe_IO) WRITE(*, 2002) DTPIC_MAX
-         ELSE
-            !WRITE(*,'(A40,2x,g17.8)') 'DT
-            !IF(mype.eq.pe_IO) WRITE(*,2003) DTSOLID
-         END IF
-
-
       ENDIF
+      
+      DTPIC_MAX = MIN(DTPIC_CFL, DTPIC_TAUP)
+      
+      IF(DTSOLID.GT.DTPIC_MAX) THEN 
+         !IF(DMP_LOG) WRITE(UNIT_LOG, 2001) DTSOLID
+         IF(myPE.eq.pe_IO) WRITE(*, 2004) DTSOLID
+      ELSEIF(DTSOLID.LT.DTPIC_MAX) THEN 
+         
+         !IF(DMP_LOG) WRITE(UNIT_LOG, 2002) DTSOLID
+         IF(myPE.eq.pe_IO) WRITE(*, 2002) DTPIC_MAX
+      ELSE
+        !WRITE(*,'(A40,2x,g17.8)') 'DT
+        !IF(mype.eq.pe_IO) WRITE(*,2003) DTSOLID
+      END IF
+      
+      WRITE(UNIT_LOG, '(10x,A,2x,3(g17.8))') 'DTPIC MINS IN EACH DIRECTION = ', DTPIC_MIN_X, DTPIC_MIN_Y, DTPIC_MIN_Z
+      WRITE(*, '(10x,A,2x,3(g17.8))') 'DTPIC MINS IN EACH DIRECTION = ', DTPIC_MIN_X, DTPIC_MIN_Y, DTPIC_MIN_Z
 
 
+ 1000 FORMAT(3X,'---------- FROM CFNEWVALUES ---------->')
+ 1001 FORMAT(3X,'<---------- END CFNEWVALUES ----------')  
 
- 2001  FORMAT(/1X,70('*'),//,10X,  & 
+ 1002 FORMAT(/1X,70('*')//&
+         ' From: CFNEWVALUES -',/&
+         ' Message: Particle ',I10, ' moved a distance ', ES17.9, &
+         ' during a',/10X, 'single solids time step, which is ',&
+         ' greater than',/10X,'its radius: ', ES17.9)
+ 1003 FORMAT(1X,70('*')/)         
+
+2001  FORMAT(/1X,70('*'),//,10X,  & 
            & 'MOVEMENT UNDESIRED IN CFNEWVALUES: PARTICLE', i5, /,10X, &
            & ' MOVED MORE THAN A GRID SPACING IN ONE TIME STEP', /,10X, & 
            & 'MOVEMENT IN GRID UNITS = ', 3(2x, g17.8),/,10X,  &
