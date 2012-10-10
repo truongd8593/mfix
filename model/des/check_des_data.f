@@ -138,8 +138,7 @@
          CALL MFIX_EXIT(myPE)
       ENDIF
 
-! this flag appears to be used in mppic routines only ?
-! unclear why not replace with just full_log and dmp_log      
+! want separate flag to toggle between screen output for the discrete modules
       PRINT_DES_SCREEN = (FULL_LOG.AND.myPE.EQ.pe_IO)
       PRINT_DES_SCREEN = .TRUE.
       IF(DMP_LOG) WRITE(UNIT_LOG,1001) PRINT_DES_SCREEN
@@ -166,10 +165,9 @@
          CALL MFIX_EXIT(myPE)
       ENDIF
 
-! Not sure what this check was designed for since imax, kmax, and jmax
-! shouldn't necessarily matter for a pure granular case; this should be
-! clarified by whomever added the check      
       IF(IMAX.GT.1.AND.JMAX.GT.1.AND.KMAX.GT.1) THEN 
+! this check will make sure DIMN is correctly set to 3
+! for a truly 3-D case. 
          IF(DIMN.NE.3) THEN 
             IF(DMP_LOG)  WRITE(*,2001) DIMN 
             CALL MFIX_EXIT(myPE)
@@ -456,7 +454,21 @@
             ENDIF
          ENDDO
 
-! check particle-wall normal restitution coefficient (moved below)
+! check particle-wall normal restitution coefficient (needed by all
+! current collision models)
+! MPPIC has separate key words now for the particle-wall interaction
+         DO M = 1, DES_MMAX
+            IF(DES_EN_WALL_INPUT(M) == UNDEFINED) THEN
+               IF(DMP_LOG) WRITE (UNIT_LOG, 1009)
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+         ENDDO
+         DO M = 1, DES_MMAX
+            IF(DES_EN_WALL_INPUT(M) > ONE .OR. DES_EN_WALL_INPUT(M) < ZERO) THEN
+               IF(DMP_LOG) WRITE (UNIT_LOG, 1013)
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+         ENDDO
 
 ! check coefficient friction 
          IF(MEW /= UNDEFINED .AND. MEW_W /= UNDEFINED) THEN
@@ -475,20 +487,6 @@
 ! ----------------------------------------------------------------<<<
 
 
-! check particle-wall normal restitution coefficient (needed by all
-! current collision models and MPPIC)
-      DO M = 1, DES_MMAX
-         IF(DES_EN_WALL_INPUT(M) == UNDEFINED) THEN
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1009)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDDO
-      DO M = 1, DES_MMAX
-         IF(DES_EN_WALL_INPUT(M) > ONE .OR. DES_EN_WALL_INPUT(M) < ZERO) THEN
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1013)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDDO
 
       IF (DES_CONTINUUM_HYBRID) THEN
 ! des_continuum_coupled must be true if des_continuum_hybrid              
@@ -547,6 +545,7 @@
       ENDIF
 
 
+
 ! If run_type is not 'NEW' then force the gener_part_config to .false. 
 ! This will prevent overwriting over the number of particles which could
 ! have potentially changed depending on inlet/outlet      
@@ -555,8 +554,8 @@
          IF(DMP_LOG) WRITE(UNIT_LOG, 1037)
          IF(DMP_LOG) WRITE(*, 1037)
       ENDIF
-
-
+     
+       
 ! If gener_part_config ensure various quantities are defined and valid
 ! ---------------------------------------------------------------->>>
       IF(TRIM(RUN_TYPE).EQ. 'NEW' .AND. GENER_PART_CONFIG .AND.&
@@ -678,6 +677,69 @@
 ! Check quantities related to MPPIC      
 ! ---------------------------------------------------------------->>>
       IF(MPPIC) THEN 
+
+! For MPPIC, the periodicity is based on the continuum variables such 
+! as cyclic_x, cyclic_x_pd, etc. 
+         
+         IF(CYCLIC_X.OR.CYCLIC_X_PD .OR.CYCLIC_Y.OR.CYCLIC_Y_PD .OR.CYCLIC_Z.OR.CYCLIC_Z_PD ) THEN 
+         
+            IF(myPE.eq.pe_IO) WRITE(*,2005) 
+            IF(DMP_LOG) WRITE(UNIT_LOG,2005) 
+
+         
+            DES_PERIODIC_WALLS = .true. 
+            DES_PERIODIC_WALLS_X = CYCLIC_X.OR.CYCLIC_X_PD
+            DES_PERIODIC_WALLS_Y = CYCLIC_Y.OR.CYCLIC_Y_PD 
+            DES_PERIODIC_WALLS_Z = CYCLIC_Z.OR.CYCLIC_Z_PD 
+            
+            IF(myPE.eq.pe_IO) WRITE(*,2006)  DES_PERIODIC_WALLS, &
+            DES_PERIODIC_WALLS_X, DES_PERIODIC_WALLS_Y, DES_PERIODIC_WALLS_Z
+            IF(DMP_LOG) WRITE(UNIT_LOG,2006)  DES_PERIODIC_WALLS, &
+            DES_PERIODIC_WALLS_X, DES_PERIODIC_WALLS_Y, DES_PERIODIC_WALLS_Z     
+
+      ENDIF
+! check particle-wall normal restitution coefficient
+         IF(MPPIC_COEFF_EN_WALL == UNDEFINED) THEN
+            if(dmp_log) WRITE (UNIT_LOG, 2002) 'MPPIC_COEFF_EN_WALL'
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+         IF(MPPIC_COEFF_ET_WALL == UNDEFINED) THEN
+            if(dmp_log) WRITE (UNIT_LOG, 2002) 'MPPIC_COEFF_ET_WALL'
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+         IF(MPPIC_COEFF_EN == UNDEFINED) THEN
+            if(dmp_log) WRITE (UNIT_LOG, 2004) 'MPPIC_COEFF_EN'
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+         IF(MPPIC_COEFF_EN2 == UNDEFINED) THEN
+            if(dmp_log) WRITE (UNIT_LOG, 2004) 'MPPIC_COEFF_EN2'
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+         IF(MPPIC_COEFF_EN_WALL > ONE .OR. MPPIC_COEFF_EN_WALL < ZERO) THEN
+            if(dmp_log) WRITE (UNIT_LOG, 2003) 'MPPIC_COEFF_EN_WALL'
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+         
+         IF(MPPIC_COEFF_ET_WALL > ONE .OR. MPPIC_COEFF_ET_WALL < ZERO) THEN
+            if(dmp_log) WRITE (UNIT_LOG, 2003) 'MPPIC_COEFF_ET_WALL'
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+        
+         IF(MPPIC_COEFF_EN > ONE .OR. MPPIC_COEFF_EN < ZERO) THEN
+            if(dmp_log) WRITE (UNIT_LOG, 2003) 'MPPIC_COEFF_EN'
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+         IF(MPPIC_COEFF_EN2 > ONE .OR. MPPIC_COEFF_EN2 < ZERO) THEN
+            if(dmp_log) WRITE (UNIT_LOG, 2003) 'MPPIC_COEFF_EN2'
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+
          IF(MPPIC_SOLID_STRESS_SNIDER) WRITE(UNIT_LOG,*) &
             'USING THE SNIDER MODEL FOR SOLID STRESS AND THE ',&
             'INTEGRATION APPROACH'
@@ -701,18 +763,31 @@
 ! unclear why this cannot be one - other than the user may be unaware 
 ! that a depth has been set (a value of one implies default setting) 
                IF (DZ(1) == ONE) THEN
-                  WRITE(*,'(5X,A,A,/5X,A,A)') &
-                     'For DIMN = 2, specify a value for DZ(1) or ',&
-                     'ZLENGTH in mfix.dat which is not',&
-                     'equal to one. If you want it to be one then ',&
-                     'set it close to one but not exactly one'
-
                   IF(mype.eq.pe_IO) WRITE(*,'(5X,A,A,/5X,A,A)') &
                      'For DIMN = 2, specify a value for DZ(1) or ',&
                      'ZLENGTH in mfix.dat which is not',&
                      'equal to one. If you want it to be one then ',&
                      'set it close to one but not exactly one'
+
+                  IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A,A,/5X,A,A)') &
+                     'For DIMN = 2, specify a value for DZ(1) or ',&
+                     'ZLENGTH in mfix.dat which is not',&
+                     'equal to one. If you want it to be one then ',&
+                     'set it close to one but not exactly one'
                   CALL mfix_exit(mype)
+               ENDIF
+
+               IF (DZ(1) .NE. ZLENGTH) THEN 
+!this condition will probably never occur. Redundancy doesn't hurt, however!
+                  
+                  if(myPE.eq.pe_IO) then 
+                     WRITE(*,'(5X,A,/5x,A)') 'For DIMN = 2, DZ(1) and ZLENGTH are used interchangeably', ' Specify same values for DZ(1) and Zlength'  
+                     WRITE(*,'(5x, 2(A20,2x, g17.8))') 'DZ(1) = ', DZ(1), 'ZLENGTH = ', ZLENGTH
+                  ENDIF
+                  if(DMP_LOG) then 
+                     WRITE(UNIT_LOG,'(5X,A,/5x,A)') 'For DIMN = 2, DZ(1) and ZLENGTH are used interchangeably', ' Specify same values for DZ(1) and Zlength'  
+                     WRITE(UNIT_LOG,'(5x, 2(A20,2x, g17.8))') 'DZ(1) = ', DZ(1), 'ZLENGTH = ', ZLENGTH
+                  ENDIF
                ENDIF
             ENDIF
 
@@ -751,10 +826,39 @@
 ! ----------------------------------------------------------------<<<
 
 
+      IF(MPPIC.OR.CARTESIAN_GRID) then
+         IF(.not.INTERP_DES_MEAN_FIELDS) then 
+            IF(myPe.eq.pe_IO) WRITE(*,'(2(10X,A,/))') 'MPPIC OR CG CASE DETECTED:', &
+            'MEAN DES FIELDS WILL BE OBTAINED BY BACKWARD INTERPOLATION'
+            IF(DMP_LOG) WRITE(UNIT_LOG,'(2(10X,A,/))') 'MPPIC OR CG CASE DETECTED:', & 
+            'MEAN DES FIELDS WILL BE OBTAINED BY BACKWARD INTERPOLATION'
+            
+            INTERP_DES_MEAN_FIELDS = .TRUE.
+         ENDIF
+      ELSE
+         IF(INTERP_DES_MEAN_FIELDS) then 
+            IF(myPe.eq.pe_IO) WRITE(*,'(/,10X, A, L4, (/,10X,A))') & 
+            'INTERP_DES_MEAN_FIELDS INPUT OBTAINED = ', INTERP_DES_MEAN_FIELDS, &
+            'MEAN DES FIELDS WILL BE OBTAINED BY BACKWARD INTERPOLATION'
+
+            IF(DMP_LOG) WRITE(UNIT_LOG,'(/,10X, A, L4, (/,10X,A))') & 
+            'INTERP_DES_MEAN_FIELDS INPUT OBTAINED = ', INTERP_DES_MEAN_FIELDS, &
+            'MEAN DES FIELDS WILL BE OBTAINED BY BACKWARD INTERPOLATION'
+         ELSE
+            IF(myPe.eq.pe_IO) WRITE(*,'(/,10X, A, L4, (/,10X,A))') & 
+            'INTERP_DES_MEAN_FIELDS INPUT OBTAINED = ', INTERP_DES_MEAN_FIELDS, &
+            'MEAN DES FIELDS WILL BE OBTAINED BY SIMPLE CELL AVERAGES'
+
+            IF(DMP_LOG) WRITE(UNIT_LOG,'(/,10X, A, L4, (/,10X,A))') & 
+            'INTERP_DES_MEAN_FIELDS INPUT OBTAINED = ', INTERP_DES_MEAN_FIELDS, &
+            'MEAN DES FIELDS WILL BE OBTAINED BY SIMPLE CELL AVERAGES'
+         ENDIF
+      ENDIF
+            
 ! the entire checking and setting up indices for desgridsearch
 ! moved to desgrid_mod to accomodate parallelization
 ! this is now conducted regardless of neighbor search option      
-      CALL desgrid_check()
+      CALL DESGRID_CHECK()
 
       
       IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(1X,A)')&
@@ -1054,5 +1158,29 @@
  2001 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Looks like a 3-D case (IMAX, JMAX & KMAX all >1) ',&
          'but DIMN equal to ',I1,/1X,70('*')/)
+
+ 2002    FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'Particle-wall restitution coefficient:  ',  A, &
+         /10X,'not specified in mfix.dat for the MPPIC model',&
+         /1X,70('*')/)
+
+ 2003    FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'Unphysical ( > 1 or < 0) values of:  ', A, &
+         /1X,70('*')/)
+
+ 2004    FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'Friction restitution coefficient:  ',  A, &
+         /10X,'not specified in mfix.dat for the MPPIC model',&
+         /1X,70('*')/)
+ 2005    FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ', &
+         'MPPIC Case: One of the cyclic_flags found to be true', /10X, & 
+         'from  continuum flags, so forcing des_periodic_walls to true')
+
+ 2006    FORMAT(/10X,'Updated Periodicity related flags:', /10X,&
+         'DES_PERIODIC_WALLS   :', L4, /10X, &
+         'DES_PERIODIC_WALLS_X :', L4, /10X, &
+         'DES_PERIODIC_WALLS_Y :', L4, /10X, &
+         'DES_PERIODIC_WALLS_Z :', L4, /10X, &
+         /1X,70('*')/)
 
          END SUBROUTINE CHECK_DES_DATA
