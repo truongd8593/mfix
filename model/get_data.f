@@ -51,6 +51,7 @@
       USE leqsol
       USE parallel
       USE qmom_kinetic_equation
+      USE mfix_pic
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -111,6 +112,37 @@
          LEQ_METHOD(3:9) = 1
       ENDIF
 
+      IF(DISCRETE_ELEMENT) THEN
+! make these checks here before the other continuum check routines are called.      
+         IF(DES_CONTINUUM_HYBRID.AND.MPPIC) then 
+            if(myPE.eq.pe_IO) WRITE(*,'(3(/,2x,A))') 'DISCRETE ELEMENT IS TRUE', &
+            'BUT BOTH DES_CONTINUUM_HYBRID AND MPPIC CANNOT BE SET TO TRUE', &
+            'Problem in input file; TERMINAL ERROR: exiting the simulation'
+            
+            if(DMP_LOG) WRITE(UNIT_LOG,'(3(/,2x,A))') 'DISCRETE ELEMENT IS TRUE', &
+            'BUT BOTH DES_CONTINUUM_HYBRID AND MPPIC CANNOT BE SET TO TRUE', &
+            'Problem in input file; TERMINAL ERROR: exiting the simulation'
+            
+            CALL MFIX_EXIT(myPE) 
+         ENDIF
+
+      ELSE
+         
+! If discrete_element is .false. then overwrite the following user DES
+! logicals which may be set to true in the input file.  Only need to set
+! those that may impact continuum aspects 
+         DES_CONTINUUM_COUPLED = .FALSE.
+         DES_INTERP_ON = .FALSE.
+         DES_CONTINUUM_HYBRID = .FALSE.
+         TSUJI_DRAG = .FALSE.
+         PRINT_DES_DATA = .FALSE.
+         MPPIC = .FALSE. 
+         DES_ONEWAY_COUPLED = .false. 
+         USE_COHESION = .FALSE.
+         SQUARE_WELL = .FALSE.
+         VAN_DER_WAALS = .FALSE. 
+	 WALL_VDW_OUTER_CUTOFF = ZERO ! for the algorithm to work without cohesion
+      ENDIF
 
 ! Partition the domain and set indices
       call SET_MAX2
