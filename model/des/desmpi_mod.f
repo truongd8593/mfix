@@ -268,7 +268,20 @@
       allocate(ighost_updated(max_pip))
 
 ! call node exchange init in case  
-      if(des_interp_on) call des_setnodeindices
+! this could be needed if des_interp_on is true (i.e., drag is interpolated)
+! or INTERP_DES_MEAN_FIELDS is true (i.e., mean fields are interpolated)
+      IF(DES_INTERP_ON.or.INTERP_DES_MEAN_FIELDS) then 
+         IF(DMP_LOG) WRITE(UNIT_LOG, '(/,5x,A,/,5x,A,/)') 'In desmpi_mod, & 
+         setting the node indices &
+         for MPI communication', 'of nodal information needed for backward &
+         interpolation' 
+         IF(myPE.eq.pe_IO) WRITE(*, '(/,5x,A,/,5x,A,/)') 'In desmpi_mod, & 
+         setting the node indices &
+         for MPI communication', 'of nodal information needed for backward &
+         interpolation' 
+         call des_setnodeindices
+         ENDIF
+
 
 ! set the communication flags 
       call desmpi_setcomm 
@@ -1653,6 +1666,79 @@
 
 
 !------------------------------------------------------------------------
+! Subroutine       : des_addnodevalues_mean_fields 
+! Purpose          : This routine is specially used for computing mean
+!                    fields by backward interpolation.
+!                      
+! Parameters       : None  
+!------------------------------------------------------------------------
+      subroutine des_addnodevalues_mean_fields()
+!-----------------------------------------------
+      implicit none
+!-----------------------------------------------
+! local variables 
+!-----------------------------------------------
+      integer :: lm,ijk,lface,lijkmin,lijkmax
+      integer :: linode,ljnode,lknode,lijknode
+!-----------------------------------------------
+! include statement functions      
+!-----------------------------------------------
+      include 'function.inc'
+!-----------------------------------------------
+
+! fill the temporary buffer   
+      DO LM = 1,DES_MMAX
+         CALL DES_EXCHANGENODE(DES_ROPS_NODE(:,LM),PADD=.TRUE.)
+         DO LI =1,DIMN
+            CALL DES_EXCHANGENODE(DES_VEL_NODE(:,LI,LM),PADD=.TRUE.)
+         END DO 
+      END DO 
+
+! adjust for periodic boundaries with no domain decomposition 
+      if (des_periodic_walls_x .and. nodesi.eq.1) then 
+         do lk = kstart2,kend2
+         do lj = jstart2,jend2
+            lijkmin = funijk(1,lj,lk)
+            lijkmax = funijk(imax1,lj,lk)
+            des_rops_node(lijkmin,:)  = des_rops_node(lijkmin,:)+des_rops_node(lijkmax,:)  
+            des_vel_node(lijkmin,:,:) = des_vel_node(lijkmin,:,:)+des_vel_node(lijkmax,:,:)  
+            des_rops_node(lijkmax,:)  = des_rops_node(lijkmin,:)
+            des_vel_node(lijkmax,:,:) = des_vel_node(lijkmin,:,:)
+         end do 
+         end do 
+      end if 
+      if (des_periodic_walls_y .and. nodesj.eq.1) then 
+         do lk = kstart2,kend2
+         do li = istart2,iend2
+            lijkmin = funijk(li,1,lk)
+            lijkmax = funijk(li,jmax1,lk)
+            des_rops_node(lijkmin,:)  = des_rops_node(lijkmin,:)+des_rops_node(lijkmax,:)  
+            des_vel_node(lijkmin,:,:) = des_vel_node(lijkmin,:,:)+des_vel_node(lijkmax,:,:)
+            des_rops_node(lijkmax,:)  = des_rops_node(lijkmin,:)
+            des_vel_node(lijkmax,:,:) = des_vel_node(lijkmin,:,:)
+         end do 
+         end do 
+      end if 
+      if (des_periodic_walls_z .and. nodesk.eq.1 .and. dimn .eq. 3) then
+         do li = istart2,iend2
+         do lj = jstart2,jend2
+            lijkmin = funijk(li,lj,1)
+            lijkmax = funijk(li,lj,kmax1)
+            des_rops_node(lijkmin,:)  = des_rops_node(lijkmin,:)+des_rops_node(lijkmax,:)  
+            des_vel_node(lijkmin,:,:) = des_vel_node(lijkmin,:,:)+des_vel_node(lijkmax,:,:)  
+            des_rops_node(lijkmax,:)  = des_rops_node(lijkmin,:)
+            des_vel_node(lijkmax,:,:) = des_vel_node(lijkmin,:,:)
+         end do 
+         end do 
+      end if 
+
+      return 
+
+      end subroutine des_addnodevalues_mean_fields
+
+
+
+!------------------------------------------------------------------------
 ! Subroutine       : des_addnodevalues 
 ! Purpose          : This routine is specially used for des_drag_gs 
 !                    The backward interpolation in des_drag_gs computes 
@@ -1732,7 +1818,7 @@
 ! Subroutine       : des_addnodevalues2
 ! Purpose          : This routine is specially used for calc_des_rop_s 
 !                    The backward interpolation in calc_des_rop_s computes 
-!                    the grid node values of wtbar
+!                    the grid node values of des_rops_node
 !                    node values are from istart2 to iend1;
 !                    hence a separate module is created to exchange
 !                    node values 
@@ -1755,7 +1841,7 @@
 
 ! fill the temporary buffer   
       do lm = 1,DES_MMAX
-         call des_exchangenode(wtbar(:,lm),padd=.true.)
+         call des_exchangenode(des_rops_node(:,lm),padd=.true.)
       end do 
 
 ! adjust for periodic boundaries with no domain decomposition 
@@ -1764,8 +1850,8 @@
          do lj = jstart2,jend2
             lijkmin = funijk(1,lj,lk)
             lijkmax = funijk(imax1,lj,lk)
-            wtbar(lijkmin,:) = wtbar(lijkmin,:)+wtbar(lijkmax,:)  
-            wtbar(lijkmax,:) = wtbar(lijkmin,:)
+            des_rops_node(lijkmin,:) = des_rops_node(lijkmin,:)+des_rops_node(lijkmax,:)  
+            des_rops_node(lijkmax,:) = des_rops_node(lijkmin,:)
          end do 
          end do 
       end if 
@@ -1774,8 +1860,8 @@
          do li = istart2,iend2
             lijkmin = funijk(li,1,lk)
             lijkmax = funijk(li,jmax1,lk)
-            wtbar(lijkmin,:) = wtbar(lijkmin,:)+wtbar(lijkmax,:)  
-            wtbar(lijkmax,:) = wtbar(lijkmin,:)
+            des_rops_node(lijkmin,:) = des_rops_node(lijkmin,:)+des_rops_node(lijkmax,:)  
+            des_rops_node(lijkmax,:) = des_rops_node(lijkmin,:)
          end do 
          end do 
       end if 
@@ -1784,8 +1870,8 @@
          do lj = jstart2,jend2
             lijkmin = funijk(li,lj,1)
             lijkmax = funijk(li,lj,kmax1)
-            wtbar(lijkmin,:) = wtbar(lijkmin,:)+wtbar(lijkmax,:)  
-            wtbar(lijkmax,:) = wtbar(lijkmin,:)
+            des_rops_node(lijkmin,:) = des_rops_node(lijkmin,:)+des_rops_node(lijkmax,:)  
+            des_rops_node(lijkmax,:) = des_rops_node(lijkmin,:)
          end do 
          end do 
       end if 
