@@ -45,7 +45,9 @@
 
 ! coefficeient of restituion used in MPPIC case in the 
 ! frictional regime 
-      DOUBLE PRECISION :: MPPIC_COEFF_EN
+      DOUBLE PRECISION :: MPPIC_COEFF_EN, MPPIC_COEFF_EN2
+      
+      DOUBLE PRECISION :: MPPIC_COEFF_EN_WALL, MPPIC_COEFF_ET_WALL 
       INTEGER NPC_PIC(DIM_M)
 
 ! statistical weight or number of real particles per computational 
@@ -59,6 +61,9 @@
 ! Statistical weight of each particle
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_STAT_WT
 
+!     logical variable to decide if special treatment is needed or not
+!     in the direction of gravity in the frictional stress tensor
+      LOGICAL :: MPPIC_GRAV_TREATMENT
       
 ! Particle response time scale for each phase 
       DOUBLE PRECISION :: DES_TAU_P(DIM_M)
@@ -72,12 +77,16 @@
 ! and maximum velocity of particles 
       DOUBLE PRECISION CFL_PIC, DTPIC_CFL, DTPIC_TAUP
 
+      DOUBLE PRECISION :: DTSOLID_ORIG
 ! solid pressure gradient 
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PS_GRAD
 
 ! flag to turn on implicit treatment of drag force term in particle 
 ! trajectory evolution equation
       LOGICAL MPPIC_PDRAG_IMPLICIT 
+      
+! the impulse velocity for the MPPIC collisions 
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: MPPIC_VPTAU 
 
  
       end MODULE MFIX_PIC
