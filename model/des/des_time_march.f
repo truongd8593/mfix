@@ -14,6 +14,11 @@
 !        this flag is used during exchange it has to be set before     !
 !        calling particle_in_cell (Pradeep G.)                         !
 !                                                                      !
+!     Reviewer: Rahul Garg                            Date: 01-Aug-12  !
+!     Comments:                                                        !
+!        Moved the MPPIC time integrator to a separate subroutine to   !
+!        decrease the clutter.                                         !
+!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE DES_TIME_MARCH
@@ -48,7 +53,6 @@
       USE sendrecv
       USE des_bc
       USE cutcell 
-      USE mppic_wallbc
       USE mfix_pic
       Use des_thermo
       Use des_rxns
@@ -102,11 +106,15 @@
       INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
+      IF(MPPIC) THEN 
+         CALL MPPIC_TIME_MARCH
+         RETURN
+      ENDIF
 
 
 ! if first_pass
 !----------------------------------------------------------------->>>
-      IF(FIRST_PASS.AND..NOT.MPPIC) THEN 
+      IF(FIRST_PASS) THEN 
          IF(DMP_LOG) WRITE(UNIT_LOG,'(1X,A)')&
             '---------- FIRST PASS DES_TIME_MARCH ---------->'
          S_TIME = ZERO
@@ -210,15 +218,8 @@
             DES_SPX_DT
       ENDIF
 
-      IF(MPPIC) THEN 
-! compute the gas-phase pressure gradient at the beginning of the 
-! des loop as the gas-phase pressure field will not change during 
-! des calls
-         IF(DES_CONTINUUM_COUPLED) CALL COMPUTE_PG_GRAD
-      ELSE
-         IF(DES_CONTINUUM_COUPLED) CALL COMPUTE_PG_GRAD
-      ENDIF 
-
+      IF(DES_CONTINUUM_COUPLED) CALL COMPUTE_PG_GRAD
+      
 ! Main DEM time loop
 !----------------------------------------------------------------->>>
       DO NN = 1, FACTOR 
@@ -250,17 +251,8 @@
          
 ! communication between processors have to take place all the time;
 ! regardless of number of particles 
-         IF(MPPIC) THEN 
-            CALL MPPIC_COMPUTE_PS_GRAD            
-            IF(DES_CONTINUUM_COUPLED) THEN
-               CALL CALC_DES_DRAG_GS
-               CALL CALC_DES_ROP_S
-            ENDIF
-            CALL CFUPDATEOLD
-         ELSE 
-            CALL CALC_FORCE_DES
-         ENDIF
-    
+         CALL CALC_FORCE_DES
+         
 ! Loop over all particles ---------------------------------------->>>
          PC = 1
          DO NP = 1, MAX_PIP
@@ -322,9 +314,6 @@
 ! End Loop over all particles ------------------------------------<<<
 
 
-! Impose the wall-particle boundary condition for mp-pic case 
-         IF(MPPIC) CALL MPPIC_APPLY_WALLBC 
-
 ! For systems with inlets/outlets check to determine if a particle has
 ! fully entered or exited the domain.  If the former, remove the status
 ! of 'new' and if the latter, remove the particle.
@@ -335,7 +324,7 @@
             DO_NSEARCH = .TRUE.
          CALL PARTICLES_IN_CELL
             
-         IF (DO_NSEARCH.AND.(.NOT.MPPIC)) THEN
+         IF (DO_NSEARCH) THEN
             IF(DEBUG_DES) THEN 
                IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,I10,/,5X,A,I10)') &
                   'Calling NEIGHBOUR: during iteration NN =', NN
@@ -430,30 +419,6 @@
          DTSOLID = TMP_DTS
          TMP_DTS = ZERO
       ENDIF
-
-      IF(MPPIC) THEN 
-         IF(DMP_LOG) WRITE(UNIT_LOG, 2000) DTSOLID, &
-            DTPIC_CFL, DTPIC_TAUP, MIN(DTPIC_CFL, DTPIC_TAUP)
-         IF(myPE.eq.pe_IO) WRITE(*, 2000) DTSOLID, & 
-            DTPIC_CFL, DTPIC_TAUP, MIN(DTPIC_CFL, DTPIC_TAUP)
-
-         DTPIC_MAX = MIN(DTPIC_CFL, DTPIC_TAUP)
-
-         IF(DTSOLID.GT.DTPIC_MAX) THEN 
-            IF(DMP_LOG) WRITE(UNIT_LOG, 2001) DTSOLID
-            IF(myPE.eq.pe_IO) WRITE(*, 2001) DTPIC_MAX
-            DTSOLID = DTPIC_MAX
-         ELSEIF(DTSOLID.LT.DTPIC_MAX) THEN 
-
-            IF(DMP_LOG) WRITE(UNIT_LOG, 2002) DTSOLID
-            IF(myPE.eq.pe_IO) WRITE(*, 2002) DTPIC_MAX
-            DTSOLID = DTPIC_MAX
-         ELSE
-            IF(DMP_LOG) WRITE(UNIT_LOG, 2003) DTSOLID 
-            IF(mype.eq.pe_IO) WRITE(*,2003) DTSOLID
-         ENDIF
-      ENDIF
-
       
       IF(.NOT.DES_CONTINUUM_COUPLED)THEN
          IF(DMP_LOG) WRITE(UNIT_LOG,'(1X,A)')&
@@ -470,22 +435,6 @@
  1999    FORMAT(/1X,70('- '),//,10X,  & 
          & 'DEM SIMULATION CALLED ', 2x, i5, 2x, 'times this fluid step', /10x &
          & 'S_TIME, DT, DTSOLID and PIP = ', 3(2x,g17.8),2x, i10)
-
- 2000 FORMAT(/10x, & 
-      & 'ADAPTING DTSOLID FOR MPPIC', /10x, &
-      & 'DTSOLID CURRENT  = ', g17.8, /10x,  &
-      & 'DTPIC_CFL :  = ', g17.8, /10x,  &
-      & 'DTPIC TAUP:  = ', g17.8, /10x, &
-      & 'DTPIC_MAX :  = ', g17.8)
-
- 2001 FORMAT(/10x, & 
-      & 'REDUCING CURRENT DTSOLID TO', g17.8)
-      
- 2002 FORMAT(/10x, & 
-      & 'INCREASING CURRENT DTSOLID TO', g17.8)
-
- 2003 FORMAT(/10x, & 
-      & 'DTSOLID REMAINS UNCHANGED AT = ', g17.8)
 
       RETURN
 
