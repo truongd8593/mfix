@@ -51,7 +51,7 @@
       IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(3X,A)') &
          '---------- START CFASSIGN ---------->'
 
-! compute the volume of nodes - more description would be nice
+! compute the volume of nodes - more description coming later
       CALL compute_volume_of_nodes
 
       TCOLL = LARGE_NUMBER
@@ -104,6 +104,7 @@
 !-----------------------------------------------------------------<<<
 
 
+!-------------------------------------------------------        
 ! Calculate collision parameters
 !----------------------------------------------------------------->>>
       IF(DMP_LOG.AND..NOT.MPPIC) WRITE(UNIT_LOG,'(/2X,A,A)') &
@@ -170,6 +171,7 @@
                hert_kt(J,I) = hert_kt(I,J)
                
                TCOLL_TMP = PI/SQRT(hert_kn(I,J)/MASS_EFF - ((DES_ETAN(I,J)/MASS_EFF)**2)/4.d0)
+               TCOLL = MIN(TCOLL_TMP, TCOLL) 
                   
                IF(DMP_LOG) &
                   WRITE(UNIT_LOG,'(2X,A,I5,X,I5,X,A,X,2(ES15.7))') &
@@ -354,11 +356,30 @@
       END SUBROUTINE CFASSIGN
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-! subroutine: compute_volume_of_nodes
-! Purpose:  please provide more apt description 
-! can the algorithm/logic of this routine be simplified?
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C      
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+! subroutine: compute_volume_of_nodes                                      C
+! Author: Rahul Garg                                                       C
+! Dare: Dec 20, 2011                                                       C
+! Purpose:  Due to the staggered grid, the interpolaiton of mean fields    C     
+! is always first done at the nodes (of the scalar cell) for any quantity. C
+! For a quantity like drag force or ep_s, one needs to assign a geometric  C
+! volume to a node. In the past this was done on-the-fly in drag_fgs.f.    C
+! VCELL was the variable that was used and it used to be incorrecty set to C
+! the volume of the scalar cell that the particle belongs to.              C
+! This will be ok for uniform grid and will not hold for non-uniform grids.C
+! In addition, at the edges (in 2-D, the node volume is only half of       C
+! the standard cell volume. And for corner (in 2-D), it is only one fourth.C
+! This was also done on-the-fly earlier                                    C
+! But again the volume of the cell was used, which was not correct         C
+! also not extendable to cut-cell. So this routine computes the geoemetric C
+! volume of the nodes.                                                     C
+!                                                                          C
+! des_vol_node_ratio was defined in order to develop an estimation         C 
+! algorithm for computing mean fields when Cartesian grid is on.           C
+! Subsequently, another algorithm was developed that negated the need for  C
+! des_vol_node_ratio.                                                      C
+! However, still keeping this variable for now (RG: July 27, 2012)         C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C      
 
       SUBROUTINE compute_volume_of_nodes
 
@@ -418,8 +439,16 @@
          jraw = j_of(ijk)
          kraw = k_of(ijk)
 
+
+ 
 ! start at 1 (ghost cell) and go to last fluid cell. why start at a
 ! ghost cell and not a fluid cell?
+! See below
+
+! Since we are interested in nodes making up the interpolation stencil,
+! their numbering goes from 1 to iend1.
+! Think of a case with IMAX = 3. Here the nodes where the interpolation will be 
+! done will run from 1 (=istart2) to 4 (=iend1).          
          IF(iraw.LT.istart2 .OR. iraw.GT.iend1) CYCLE
          IF(jraw.LT.jstart2 .OR. jraw.GT.jend1) CYCLE 
          IF(kraw.LT.kstart2 .OR. kraw.GT.kend1) CYCLE 
@@ -524,7 +553,8 @@
          ENDIF
 
       ENDDO   ! end do ijk=ijkstart3,ijkend3
-
+      
+      RETURN
 ! reporting information      
       WRITE(filename,'(A,"_",I5.5,".dat")') 'VOL_NODE_',myPE
       OPEN(1000,file=TRIM(filename),form ='formatted',status='unknown')
