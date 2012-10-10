@@ -32,6 +32,7 @@
       USE constant
       USE discretelement
       USE funits 
+      USE mfix_pic
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -40,14 +41,9 @@
       CHARACTER*85 LONG_STRING      
 !-----------------------------------------------
 
-! this will overwrite inadvertant user setting of this variable before 
-! going into check_data routines (notably 06 and 07) which rely on this
-! logical
-      IF(.NOT.DISCRETE_ELEMENT) THEN
-         DES_CONTINUUM_HYBRID = .FALSE.
-      ENDIF
 
-      IF (DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_HYBRID) THEN
+      IF ((DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_HYBRID) & 
+      .OR. (DISCRETE_ELEMENT .AND. MPPIC) ) THEN
 ! override possible user settings on the following continuum flags
 
 ! Set close_packed to true to prevent possible issues stemming from the
@@ -68,6 +64,11 @@
 ! thoroughly turned off when DEM is invoked
          NMAX(1:DIM_M) = 1
 
+         IF(DMP_LOG) WRITE(UNIT_LOG, '(4(/2x,A))') &
+         'Currently setting max number of', &
+         'species index (NMAX) to one for all solids phases in check_data_04.f.', &
+         'Any future development related to reactions in discrete element', &
+         'should remove this override'
 ! The quantities checked in this routine are generally specific to the
 ! continuum model and not needed for the DEM.  So in the DEM the user
 ! should not need to specify such quantities.  However, valid values of

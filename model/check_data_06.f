@@ -41,6 +41,7 @@
       USE sendrecv    
       USE rxns
       USE discretelement      
+      USE mfix_pic
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -411,7 +412,7 @@
 
 ! SOLIDS PHASE Quantities               
 ! -------------------------------------------->>>
-               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID.OR.MPPIC) THEN
 
 ! at this point ic_ep_g must be defined
                   SUM_EP = IC_EP_G(ICV) 
@@ -632,7 +633,7 @@
 
 ! SOLIDS PHASE quantities
 ! -------------------------------------------->>>
-            IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+            IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID .OR. MPPIC) THEN
 
                DO M = 1, DIMENSION_M 
                   IF (IC_ROP_S(ICV,M) /= UNDEFINED) THEN 

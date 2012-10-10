@@ -47,6 +47,7 @@
       USE compar
       USE sendrecv
       USE discretelement
+      USE mfix_pic
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Parameters
@@ -367,7 +368,9 @@
 
 ! DEM simulations do not employ variables for continuum solids. So do
 ! not perform checks on unnecessary data.
-               IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+! However, MPPIC initilization and BC's are based on continuum only, So do
+! perform these checks 
+               IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID.OR.MPPIC) THEN
 
 ! at this point bc_ep_g must be defined
                   SUM_EP = BC_EP_G(BCV) 
@@ -636,7 +639,9 @@
 
 ! DEM simulations do not employ variables for continuum solids. So do
 ! not perform checks on unnecessary data.               
-               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+! However, MPPIC initilization and BC's are based on continuum only, So do
+! perform these checks 
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID.OR.MPPIC) THEN
                   DO M = 1, SMAX 
                      IF (BC_U_S(BCV,M) == UNDEFINED) THEN 
                         IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_I) THEN 
@@ -773,7 +778,9 @@
 
 ! DEM simulations do not employ variables for continuum solids. So do
 ! not perform checks on unnecessary data.
-               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+! However, MPPIC initilization and BC's are based on continuum only, So do
+! perform these checks 
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID.OR.MPPIC) THEN
 
 ! at this point bc_ep_g must be defined
                   SUM_EP = BC_EP_G(BCV) 
@@ -898,7 +905,9 @@
 
 ! DEM simulations do not employ variables for continuum solids. So do
 ! not perform checks on unnecessary data.               
-               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+! However, MPPIC initilization and BC's are based on continuum only, So do
+! perform these checks 
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID.OR.MPPIC) THEN
                   DO M = 1, SMAX 
                      IF (BC_U_S(BCV,M) == UNDEFINED) THEN 
                         BC_U_S(BCV,M) = ZERO
@@ -1062,7 +1071,7 @@
                ENDIF 
             ENDDO 
 
-            IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+            IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID .OR. MPPIC) THEN
                DO M = 1, SMAX 
                   IF (BC_ROP_S(BCV,M) /= UNDEFINED) THEN 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1300) &
@@ -1151,7 +1160,7 @@
                   ENDIF 
                ENDIF   ! end if (bc_type(bcv)=='par_slip_wall')
 
-               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID.OR.MPPIC) THEN
                   IF (BC_TYPE(BCV)=='PAR_SLIP_WALL' .OR. BC_JJ_PS(BCV)==1) THEN
                      DO M = 1, MMAX
                         IF (BC_UW_S(BCV,M) == UNDEFINED) THEN 
@@ -1190,7 +1199,7 @@
                      call mfix_exit(myPE)  
                   ENDIF 
 
-                  IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+                  IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID .OR. MPPIC) THEN
                      DO M = 1, SMAX 
                         IF (BC_HW_T_S(BCV,M) < ZERO) THEN 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1103) 'BC_hw_T_s', BCV, M 
@@ -1210,7 +1219,7 @@
                   ENDIF   ! end if (.not.discrete_element .or. des_continuum_hybrid)
                ENDIF   ! end if (energy_eq)
 
-               IF (.NOT. DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+               IF (.NOT. DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID .OR. MPPIC) THEN
                   IF (GRANULAR_ENERGY .AND. BC_JJ_PS(BCV)==0) THEN 
                      DO M = 1, MMAX 
                         IF (BC_HW_THETA_M(BCV,M) < ZERO) THEN 
@@ -1253,7 +1262,7 @@
                   ENDDO 
                ENDIF   ! end if (species_eq(0))
 
-               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID .OR. MPPIC) THEN
                   DO M = 1, SMAX 
                      IF (SPECIES_EQ(M)) THEN 
                         DO N = 1, NMAX(M) 
