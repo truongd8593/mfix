@@ -12,9 +12,6 @@
 !     - For parallel processing indices are altered                    !
 !                                                                      !
 !                                                                      !
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  !
-!  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  !
-!  Reviewer: Rahul Garg                               Date: 01-Aug-07  !
 !                                                                      !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
@@ -47,18 +44,10 @@
 ! accounted for particles
       INTEGER PC
 ! solids phase no.    
-      INTEGER M, CM
+      INTEGER M
 ! ijk indices      
       INTEGER I, J, K, IJK, IPROC
-! 1 over volume of fluid cell      
-      DOUBLE PRECISION :: OVOL
-! total volume of mth phase solids in cell and 1 over that value      
-      DOUBLE PRECISION SOLVOLINC(DIMENSION_3,DES_MMAX), OSOLVOL
-! solids volume fraction of mth solids phase
-      DOUBLE PRECISION EP_SM
-! total solids volume fraction of continuum solids phases
-      DOUBLE PRECISION SUM_EPS
-! variables that count/store the number of particles in ijk cell
+! variables that count/store the number of particles in i, j, k cell
       INTEGER:: npic, pos
 ! particle count in ijk fluid cell 
       INTEGER, DIMENSION(DIMENSION_3):: particle_count
@@ -76,6 +65,9 @@
       INTEGER :: NNODES
 ! IER for error reporting
       INTEGER IER 
+      INTEGER epg_min_loc(1)
+      double precision :: epg_min2
+      
 !$      double precision omp_start1, omp_end1
 !$      double precision omp_get_wtime	      
 !-----------------------------------------------
@@ -90,11 +82,6 @@
 ! following quantities are reset every call to particles_in_cell
       PIP_DEL_COUNT = 0 
       PINC(:) = 0
-      SOLVOLINC(:,:) = ZERO
-      DES_U_s(:,:) = ZERO
-      DES_V_s(:,:) = ZERO
-      DES_W_s(:,:) = ZERO
-
       IF(FIRST_PASS) THEN
          IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(3X,A)') &
             '---------- START FIRST PASS PARTICLES_IN_CELL ---------->'
@@ -251,7 +238,7 @@
 ! in MPPIC a particle can lie on the surface of the wall as only the 
 ! centers are tracked.
                   IF(I.EQ.IEND1+1.AND. &
-                    (XPOS >= XE(IEND1-1) .AND. XPOS <= XE(IEND1)) )THEN
+                  (XPOS >= XE(IEND1-1) .AND. XPOS <= XE(IEND1)) )THEN
 ! This could happen if the cell adjacent to the ghost cell is a cut-cell
 ! and due to some tolerance issues, the particle is not detected outside
 ! the system. This will be a rare occurence, but it may occur and there
@@ -263,15 +250,15 @@
 ! 2. rather than deactivating the particle, reflect the particle
 !    inside the domain using the ghost cell bc's instead of cut-face bc 
                     
-                     IF(DMP_LOG) WRITE(UNIT_LOG,1011) L,'I',I,'X',&
-                        XPOS,DES_POS_OLD(L,1),'X',DES_VEL_NEW(L,1)
-                      PIJK(L,1) = IEND1
+                    IF(DMP_LOG) WRITE(UNIT_LOG,1011) L,'I',I,'X',&
+                    XPOS,DES_POS_OLD(L,1),'X',DES_VEL_NEW(L,1)
+                    PIJK(L,1) = IEND1
                   ELSE
-                     WRITE(*,*) 'PIC: PIJK = ', PIJK(L,:)
                      IF(DMP_LOG) WRITE(UNIT_LOG,1010) L,'I',I,'X',&
-                        XPOS,DES_POS_OLD(L,1),'X',DES_VEL_NEW(L,1),&
-                        DES_VEL_OLD(L,1), MPPIC, CARTESIAN_GRID, &
-                        CUT_CELL_AT(IJK), FLUID_AT(IJK)
+                     XPOS,DES_POS_OLD(L,1),'X',DES_VEL_NEW(L,1),&
+                     DES_VEL_OLD(L,1), CUT_CELL_AT(IJK), &
+                     FLUID_AT(IJK)
+
                      PIP_DEL_COUNT = PIP_DEL_COUNT + 1 
                      PEA(L,1) = .false. 
                      CYCLE 
@@ -292,10 +279,11 @@
                      PIJK(L,2) = JEND1
                   ELSE
                      IF(DMP_LOG) WRITE(UNIT_LOG,1010) L,'J',J,'Y',&
-                        YPOS,DES_POS_OLD(L,2),'Y',DES_VEL_NEW(L,2),&
-                        DES_VEL_OLD(L,2), MPPIC, CARTESIAN_GRID,&
-                        CUT_CELL_AT(IJK), FLUID_AT(IJK)
-                        PIP_DEL_COUNT = PIP_DEL_COUNT + 1 
+                     YPOS,DES_POS_OLD(L,2),'Y',DES_VEL_NEW(L,2),&
+                     DES_VEL_OLD(L,2), CUT_CELL_AT(IJK),&
+                     FLUID_AT(IJK)
+
+                     PIP_DEL_COUNT = PIP_DEL_COUNT + 1 
                      PEA(L,1) = .false. 
                      CYCLE
                   ENDIF
@@ -316,8 +304,9 @@
                   ELSE
                      IF(DMP_LOG) WRITE(UNIT_LOG,1010) L,'K',K,'Z',&
                      ZPOS,DES_POS_OLD(L,2),'Z',DES_VEL_NEW(L,3),&
-                     DES_VEL_OLD(L,3), MPPIC, CARTESIAN_GRID, &
-                     CUT_CELL_AT(IJK), FLUID_AT(IJK)
+                     DES_VEL_OLD(L,3), CUT_CELL_AT(IJK), &
+                     FLUID_AT(IJK)
+
                      PIP_DEL_COUNT = PIP_DEL_COUNT + 1 
                      PEA(L,1) = .false. 
                      CYCLE 
@@ -332,41 +321,19 @@
          ENDIF   ! end if(.not.pea(l,2) and .not.pea(l.3)) then
 ! End checks on particle movement         
 ! ----------------------------------------------------------------<<<         
-
+! Assigning PIJK(L,4) now that particles have been located on the fluid
+         I = PIJK(L,1)
+         J = PIJK(L,2)
+         K = PIJK(L,3)
+         
+	 IJK = FUNIJK(I,J,K)
+		 
+         PIJK(L,4) = IJK
+         PINC(IJK) = PINC(IJK) + 1
       ENDDO   ! end loop over l = 1,particles
 !$omp end parallel do 
 ! ----------------------------------------------------------------<<<  
 
-
-! Assigning PIJK(L,4) now that particles have been located on the fluid
-! grid and summing accumulation terms for calculating a cell average 
-! solids phase velocity
-! ---------------------------------------------------------------->>>
-      PC = 1
-      DO L = 1, MAX_PIP
-         IF(PC.GT.PIP) EXIT
-         IF(.NOT.PEA(L,1)) CYCLE
-         PC = PC + 1
-         IF(PEA(L,4)) CYCLE
-         
-         I = PIJK(L,1)
-         J = PIJK(L,2)
-         K = PIJK(L,3)
-         IJK = FUNIJK(I,J,K)
-         PIJK(L,4) = IJK        
-
-         PINC(IJK) = PINC(IJK) + 1
-         M = PIJK(L,5)
-
-         WTP = ONE
-         IF(MPPIC) WTP = DES_STAT_WT(L) 
-         SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) +  PVOL(L)*WTP
-         DES_U_S(IJK,M) = DES_U_S(IJK,M) + PVOL(L)*DES_VEL_NEW(L,1)*WTP
-         DES_V_S(IJK,M) = DES_V_S(IJK,M) + PVOL(L)*DES_VEL_NEW(L,2)*WTP
-         IF(DIMN.EQ.3) DES_W_S(IJK,M) = DES_W_S(IJK,M) + &
-            PVOL(L)*DES_VEL_NEW(L,3)*WTP
-
-      ENDDO   ! end loop over L = 1,particles
 ! ----------------------------------------------------------------<<<
 
 
@@ -444,34 +411,164 @@
 ! ----------------------------------------------------------------<<<
 
 
-! if using drag interpolation then the bulk density and corresponding
-! void fraction should be updated based on the new particle position 
-! so it can be reflected in the drag calculation through ep_g.  hence 
-! the bulk density is calculated/updated here using interpolation routines
-      IF (DES_INTERP_ON .AND. PIP >0)  CALL CALC_DES_ROP_S
+      IF(INTERP_DES_MEAN_FIELDS) then 
+         CALL COMP_MEAN_FIELDS_INTERP
+      ELSE
+         CALL COMP_MEAN_FIELDS_ZERO_ORDER
+      ENDIF
+
+      IF(MPPIC) THEN 
+         NNODES = NODESI*NODESJ*NODESK
+         IF (NNODES.EQ.1 ) THEN
+            EPG_MIN2 = MINVAL(EP_G(:))
+            epg_min_loc = MINLOC(EP_G(:))
+            IJK = epg_min_loc(1)
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
+            WRITE(*,1014) epg_min2, & 
+            & I_OF(IJK), j_of(ijk), k_of(ijk), &
+            & xe(I) - 0.5*dx(i), yn(J)-0.5*DY(J), zt(K) - 0.5*DZ(K), & 
+            & PINC(IJK), & 
+            & cut_cell_at(ijk),fluid_at(ijk)
+         ENDIF
+      ENDIF
+         
+
+
       
-! Calculate the cell average solids velocity, the bulk density (if not
-! des_interp_on and not first_pass), and the void fraction. 
-! ---------------------------------------------------------------->>>
+      FIRST_PASS = .FALSE.
+
+ 1000 FORMAT(3X,'---------- FROM PARTICLES_IN_CELL ---------->')
+ 1001 FORMAT(3X,'<---------- END PARTICLES_IN_CELL ----------') 
+
+ 1006 FORMAT(/1X,70('*')//&
+         ' Message: Particle ',I8,' moved into a',&
+         ' ghost cell; from cell with ',A,' index : ',I8,/1X,A,&
+         '-position: ',ES17.9,4X,A,'-velocity: ',ES17.9,/&
+         1X,70('*')/)
+
+ 1007 FORMAT(/1X,70('*')//&
+         ' From: PARTICLES_IN_CELL -',/,&         
+         ' Message: Particle ',I8,' moved into a',&
+         ' ghost cell; from cell with ',A,' index : ',I8,/1X,A,&
+         '-position: ',ES17.9,4X,A,'-velocity: ',ES17.9,/& 
+         1X,70('*')/)
+
+ 1010     FORMAT(/1X,70('*')//&
+         ' From: PARTICLES_IN_CELL -',/,&         
+         ' Message: Particle ',I8,' moved into a',&
+         ' ghost cell from cell with ',A,' index : ',I8,/1X,A,&
+         '-position new and old: ',2(ES17.9,4X),A,/& 
+         '-velocity new and old: ',2(ES17.9,4x),/& 
+         ' CUT_CELL and FLUID AT IJK_OLD ?', 2(L2,2x),/& 
+         ' Marking this particle as inactive',/&          
+          1X,70('*')/)
+
+ 1011 FORMAT(/1X,70('*')//,&
+         ' From: PARTICLES_IN_CELL: Particle recovered',&
+         ' from ghost cell -',/,&         
+         ' Message: Particle ',I8,' had moved into a',&
+         ' ghost cell; from cell with ',A,' index : ',I8,/1X,A,&
+         '-position new and old: ',2(ES17.9,4X),A,'-velocity: ',&
+          ES17.9,/1X,70('*')/)
+
+ 1014 FORMAT( /, &
+      &      10x,'EPGMIN NORMAL = ', 2x,g17.8, / & 
+      &      10x,'EPG_MIN_LOCATION, I, J, K = ', 3(2x,i5),/, &
+      &      10x,'XMID, YMID, ZMID FOR CELL = ', 3(2x,g17.8),/ & 
+      &      10x,'No of paricles in cell = ',I10, & 
+      &      10x,'CUT CELL, FLUID AT IJK ?    ', 2(2x, L2)) !,/& 
+!      &      1X,70('*')/)
+     
+      RETURN
+      END SUBROUTINE PARTICLES_IN_CELL
+
+
+      SUBROUTINE COMP_MEAN_FIELDS_ZERO_ORDER
+      USE param
+      USE param1
+      USE fldvar
+      USE geometry
+      USE indices
+      USE physprop
+      USE compar
+      USE parallel
+      USE sendrecv
+      USE discretelement
+      use desgrid 
+      use desmpi
+      USE mfix_pic      
+      !-----------------------------------------------
+! Local Variables
+!-----------------------------------------------
+! particle no.
+      INTEGER L
+! accounted for particles
+      INTEGER PC
+! solids phase no.    
+      INTEGER M, CM 
+! ijk indices      
+      INTEGER I, J, K, IJK, IPROC, IJK2
+      INTEGER  IJKE, IJKW, IJKN, IJKS, IJKT, IJKB
+! 1 over volume of fluid cell      
+      DOUBLE PRECISION :: OVOL
+! total volume of mth phase solids in cell and 1 over that value      
+      DOUBLE PRECISION SOLVOLINC(DIMENSION_3,MMAX), OSOLVOL
+! solids volume fraction of mth solids phase
+      DOUBLE PRECISION EP_SM
+! total solids volume fraction of continuum solids phases
+      DOUBLE PRECISION SUM_EPS
+      
+! Logical for local debug warnings
+      LOGICAL DES_LOC_DEBUG
+
+      INCLUDE 'function.inc'
+      INCLUDE 'ep_s1.inc'
+      INCLUDE 'ep_s2.inc'
+
+      SOLVOLINC(:,:) = ZERO
+      DES_U_s(:,:) = ZERO
+      DES_V_s(:,:) = ZERO
+      DES_W_s(:,:) = ZERO
+
+!!$      omp_start1=omp_get_wtime()	  
+!!$omp single private(l,wtp,i,j,k,ijk,m) !,omp_tp1,omp_tp2,omp_tp3)
+      PC = 1
+      DO L = 1, MAX_PIP
+         IF(PC.GT.PIP) EXIT
+         IF(.NOT.PEA(L,1)) CYCLE
+         PC = PC + 1
+         IF(PEA(L,4)) CYCLE
+         
+         I = PIJK(L,1)
+         J = PIJK(L,2)
+         K = PIJK(L,3)
+         IJK = FUNIJK(I,J,K)
+         
+         M = PIJK(L,5)
+
+         WTP = ONE
+         IF(MPPIC) WTP = DES_STAT_WT(L) 
+         SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) +  PVOL(L)*WTP
+         DES_U_S(IJK,M) = DES_U_S(IJK,M) + PVOL(L)*DES_VEL_NEW(L,1)*WTP
+         DES_V_S(IJK,M) = DES_V_S(IJK,M) + PVOL(L)*DES_VEL_NEW(L,2)*WTP
+         IF(DIMN.EQ.3) DES_W_S(IJK,M) = DES_W_S(IJK,M) + & 
+         PVOL(L)*DES_VEL_NEW(L,3)*WTP
+
+      ENDDO      ! end loop over L = 1,particles
+
+! Calculate the cell average solids velocity, the bulk density,
+! and the void fraction. 
+
 !$omp parallel do if(ijkend3 .ge. 2000) default(shared)        &
 !$omp private(ijk,i,j,k,cm,m,sum_eps,ep_sm,                    &
 !$omp         osolvol,ovol)                                    &
-!$omp !schedule (guided,50)     
-      DO IJK = IJKSTART3,IJKEND3
+      DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
          J = J_OF(IJK)
          K = K_OF(IJK)
-
-         IF(.NOT.FLUID_AT(IJK).OR..NOT.IS_ON_myPE_owns(I,J,K)) CYCLE 
-! Note that for cut-cell, it is important to check both fluid_at and
-! is_on_mype_owns.  Fluid_at is not enough as it is shared between procs
-! and fluid_at(ijkend3) might be true when in fact it does not belong to
-! that proc 
-
-! it is unclear why rop_sO is set here a comment should be added.
-! for now this was changed to be invoked only when using mppic
-! changed to des_rop_so for consistency within dem framework         
-         IF(MPPIC) DES_ROP_SO(IJK,:) = ZERO 
+         IF(.NOT.FLUID_AT(IJK)) CYCLE 
 
          IF (.NOT.DES_CONTINUUM_HYBRID) THEN
             EP_G(IJK) = ONE   
@@ -485,8 +582,7 @@
          ENDIF  ! end if/else (.not.des_continuum_hybrid)
 
 
-         DO M = 1, DES_MMAX
-! calculating average solids velocity in a fluid cell         
+          DO M = 1, DES_MMAX
             IF(SOLVOLINC(IJK,M).GT.ZERO) THEN
                OSOLVOL = ONE/SOLVOLINC(IJK,M)   
                DES_U_s(IJK,M) = DES_U_s(IJK,M)*OSOLVOL
@@ -501,13 +597,10 @@
 ! system with no particles then
             IF(VOL(IJK).GT.0) THEN 
                OVOL = ONE/(VOL(IJK))
-               IF(PIP == 0 .OR. .NOT.DES_INTERP_ON) &
-                  DES_ROP_S(IJK,M) = DES_RO_S(M)*SOLVOLINC(IJK,M)*OVOL
+               !IF(PIP == 0 .OR. .NOT.DES_INTERP_ON) &
+               DES_ROP_S(IJK,M) = DES_RO_S(M)*SOLVOLINC(IJK,M)*OVOL
             ENDIF
-
-! add comment to address why this is done.
-            IF (MPPIC) DES_ROP_SO(IJK,M) = DES_ROP_S(IJK,M) 
-
+            
 ! calculating void fraction in fluid cell based on solids bulk density       
             IF(DES_ROP_S(IJK,M) >= ZERO) THEN
                EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
@@ -515,78 +608,633 @@
                ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
 
 ! ep_g does not matter if granular flow simulation (i.e. no fluid)               
-               IF(EP_G(IJK)<ZERO .AND.DES_CONTINUUM_COUPLED.AND.&
-                 (.NOT.MPPIC)) THEN 
+               IF(EP_G(IJK)<ZERO .AND.DES_CONTINUUM_COUPLED) THEN 
                   IF(DMP_LOG) THEN
                      WRITE(UNIT_LOG,1000)
                      WRITE(UNIT_LOG,1004) IJK, I_OF(IJK), J_OF(IJK), &
                         EP_SM, PINC(IJK)
-                     WRITE(UNIT_LOG,1005) cut_cell_at(ijk)
                      WRITE(UNIT_LOG,1001)
                   ENDIF
                   
                   CALL MFIX_EXIT(myPE)
                ENDIF
-
             ENDIF
+
          ENDDO   ! end loop over M=1,DES_MMAX
       ENDDO     ! end loop over IJK=ijkstart3,ijkend3
 !$omp end parallel do 
-! ----------------------------------------------------------------<<<
 
-      FIRST_PASS = .FALSE.
-
-      IF(MPPIC) THEN 
-         CALL MPPIC_COMPUTE_MEAN_FIELDS2
-         NNODES = NODESI*NODESJ*NODESK
-         IF (NNODES.EQ.1 .AND. DMP_LOG) THEN
-! writing out useful information on minimum epg
-! Currently, it is only valid for serial runs.                 
-            WRITE(UNIT_LOG,1014) I_OF(IJK), j_of(ijk), k_of(ijk), &
-               xe(I)-0.5*dx(i), yn(J)-0.5*DY(J), zt(K)-0.5*DZ(K), & 
-               cut_cell_at(ijk),fluid_at(ijk)
-         ENDIF 
-      ENDIF 
-      
- 1000 FORMAT(3X,'---------- FROM PARTICLES_IN_CELL ---------->')
- 1001 FORMAT(3X,'<---------- END PARTICLES_IN_CELL ----------') 
+            
+ 1000 FORMAT(3X,'---------- FROM COMPUTE_MEAN_FIELDS_ZERO_ORDER ---------->')      
+ 1001 FORMAT(3X,'<--------- END COMPUTE_MEAN_FIELDS_ZERO_ORDER ----------') 
 
  1004 FORMAT(5X,'WARNING: EP_G < 0 at IJK=', I10,' I=', I10, &
          ' J=', I10,/5X,'EP_S=', ES15.9, ' & PINC (number of ',&
          'particles in cell)= ',I10)
- 1005 FORMAT(5X,'Cut cell? ', L5)
-
- 1007 FORMAT(/1X,70('*')//&
-         ' From: PARTICLES_IN_CELL -',/,&         
-         ' Message: Particle ',I8,' moved into a',&
-         ' ghost cell; from cell with ',A,' index : ',I8,/1X,A,&
-         '-position: ',ES17.9,4X,A,'-velocity: ',ES17.9,/& 
-         1X,70('*')/)
-
- 1010 FORMAT(/1X,70('*')//,&
-         ' From: PARTICLES_IN_CELL -',/,&         
-         ' Message: Particle ',I8,' moved into a',&
-         ' ghost cell; from cell with ',A,' index : ',I8,/1X,A,&
-         '-position new and old: ',2(ES17.9,4X),A,/& 
-         '-velocity new and old: ',ES17.9,/& 
-         ' MPPIC and Cartesian Grid ?', 2(L2,2x),/& 
-         ' CUT_CELL and FLUID AT IJK ?', 2(L2,2x),/& 
-         ' Marking this particle as inactive',/&          
-          1X,70('*')/)
-
- 1011 FORMAT(/1X,70('*')//,&
-         ' From: PARTICLES_IN_CELL: Particle recovered',&
-         ' from ghost cell -',/,&         
-         ' Message: Particle ',I8,' had moved into a',&
-         ' ghost cell; from cell with ',A,' index : ',I8,/1X,A,&
-         '-position new and old: ',2(ES17.9,4X),A,'-velocity: ',&
-          ES17.9,/1X,70('*')/)
-
- 1014 FORMAT(10x,'EPG_MIN_LOCATION, I, J, K = ', 3(2X,I5),/,10X, &
-         'XMID, YMID, ZMID FOR CELL = ', 3(2X,G17.8),/,10X, & 
-         'CUT CELL, FLUID AT IJK ?    ', 2(2X, L2), /)
-
-      RETURN
-      END SUBROUTINE PARTICLES_IN_CELL
 
 
+    END SUBROUTINE COMP_MEAN_FIELDS_ZERO_ORDER
+    
+    SUBROUTINE COMP_MEAN_FIELDS_INTERP
+
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE physprop
+      USE fldvar
+      USE run
+      USE geometry
+      USE indices
+      USE bc
+      USE compar
+      USE sendrecv
+      USE discretelement
+      USE drag
+      USE interpolation
+      use desmpi 
+      USE cutcell 
+      USE mfix_pic
+      USE mpi_utility
+      IMPLICIT NONE
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------         
+! local variable used for debugging
+      LOGICAL :: FOCUS 
+! general i, j, k indices
+      INTEGER :: I, J, K, IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,&
+                 IPJPK, IPJKP, IJPKP, IPJPKP, II, JJ, KK, &
+! Pradeep added following 
+              IMJMK,IMJKM,IJMKM,IMJMKM
+      INTEGER :: I1, I2, J1, J2, K1, K2, IDIM, IJK2
+! i,j,k indices of the fluid cell the particle resides in minus 1 
+! (e.g., shifted 1 in west, south, bottom direction)
+      INTEGER, DIMENSION(3):: PCELL
+
+! indices used for interpolation stencil (unclear why IE, JN, KTP are
+! needed)
+      INTEGER :: IW, IE, JS, JN, KB, KTP
+
+! order of interpolation set in the call to set_interpolation_scheme unless it
+! is re/set later through the call to set_interpolation_stencil
+      INTEGER :: ONEW
+
+! constant whose value depends on dimension of system      
+      DOUBLE PRECISION :: AVG_FACTOR, TEMP1, AVG_FACTOR_FACE
+
+
+! index of solid phase that particle NP belongs to      
+      INTEGER :: M
+
+! one over the solids volume fraction and one over the volume       
+      DOUBLE PRECISION :: OEPS, MASS_SOL1, MASS_SOL2, MASS_SOL3, MASS_SOL4, & 
+                       MASS_SOL5
+
+! sum of mass_sol1 and mass_sol2 across all processors
+      DOUBLE PRECISION :: MASS_SOL1_ALL, MASS_SOL2_ALL
+      
+
+! particle number index, used for looping      
+      INTEGER :: NP
+
+! index to track accounted for particles 
+      INTEGER :: PC 
+
+! for error messages      
+      INTEGER :: IER
+
+! Statistical weight of the particle. Equal to one for DEM 
+      DOUBLE PRECISION :: WTP, ZCOR, JUNK_VAL(3)
+
+! Pradeep temporary indices for periodic boundary adjustments
+      integer :: korder,cur_ijk,nindx
+! Pradeep introducing volume at grid nodes for backward interpolation 
+      double precision :: VELG_ARR(DIMN), VELS_ARR(DIMN, DES_MMAX)
+
+! see the discussion for IJK_U ..... in comments       
+      INTEGER :: IJK_U, IJK_V, IJK_W, ICUR, JCUR, KCUR
+
+      
+      integer :: COUNT_NODES_OUTSIDE, COUNT_NODES_INSIDE, &
+                 COUNT_NODES_INSIDE_MAX, COUNT_TEMP
+      DOUBLE PRECISION :: VOL_SURR
+      
+      double precision :: RESID_ROPS(DES_MMAX), RESID_VEL(DIMN, DES_MMAX)
+      double precision :: NORM_FACTOR
+      
+                                !
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+      INCLUDE 'fun_avg1.inc'
+      INCLUDE 'fun_avg2.inc'
+            
+      MASS_SOL1 = ZERO
+      MASS_SOL2 = ZERO 
+      MASS_SOL1_ALL = ZERO 
+      MASS_SOL2_ALL = ZERO 
+      KORDER = 1+(DIMN-2)
+
+      DO IJK = IJKSTART3,IJKEND3
+         DES_VEL_NODE(IJK, :, :) = ZERO
+         DES_ROPS_NODE(IJK, :) = ZERO
+         IF(FLUID_AT(IJK)) then
+            DES_ROP_S(IJK,:) = zero 
+            DES_U_S(IJK, :) = ZERO
+            DES_V_S(IJK, :) = ZERO
+            IF(DIMN.EQ.3) DES_W_S(IJK, :) = ZERO
+         ENDIF
+      ENDDO
+
+      IF(DIMN.EQ.2) COUNT_NODES_INSIDE_MAX = 4
+      IF(DIMN.EQ.3) COUNT_NODES_INSIDE_MAX = 8
+      
+      CALL SET_INTERPOLATION_SCHEME(2)
+
+      IJKLOOP: DO IJK = IJKSTART3,IJKEND3
+
+! Cycle this cell if not in the fluid domain or if it contains no
+! particle/parcel
+
+         IF(.NOT.FLUID_AT(IJK) .OR. PINC(IJK).EQ.0) CYCLE 
+
+         I = I_OF(IJK)
+         J = J_OF(IJK)
+         K = K_OF(IJK)
+         
+         IF(.NOT.IS_ON_myPE_owns(I, J, K)) THEN 
+
+! Since PINC array count reflects only the acutal particles and does not 
+! include the ghost particles, therefore, PINC can only be non-zero
+! for scalar cells that belong to this processor. Below is just
+! a sanity check that will ensure the error is flagged if the 
+! logic is broken elsewhere in the code.             
+            IF(DMP_LOG) then 
+               WRITE(UNIT_LOG,*) 'Critical Error in compute_mean_fields_interp:', &
+               'This cell does not belong to this proc ', myPE
+ 
+               WRITE(UNIT_LOG,'(A,10(2x,i5))') 'PINC in I, J, K, IJP, NP = ', & 
+               I_OF(IJK), J_OF(IJK), K_OF(IJK), PINC(IJK), &
+               PINC(IM_OF(IJK)), PINC(IP_OF(IJK))
+            ENDIF
+
+            
+            WRITE(*,*) 'Critical Error in compute_mean_fields_interp:', &
+            'This cell does not belong to this proc ', myPE, & 
+            'Exiting the code, check the log file for details'
+
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+         PCELL(1) = I-1
+         PCELL(2) = J-1
+         PCELL(3) = (3-DIMN)*1+(DIMN-2)*(K-1) ! =K-1 (IN 3D) OR =1 (IN 2D)
+
+         CALL SET_INTERPOLATION_STENCIL(PCELL,IW,IE,JS,JN,KB,&
+            KTP,INTERP_SCHEME,DIMN,ORDERNEW = ONEW) 
+
+! Compute velocity at grid nodes and set the geometric stencil 
+         AVG_FACTOR = 0.25D0*(DIMN-2) + 0.5D0*(3-DIMN)
+         COUNT_NODES_OUTSIDE = 0 
+
+         DO K = 1,(3-DIMN)*1+(DIMN-2)*ONEW
+            DO J = 1,ONEW
+               DO I = 1,ONEW
+                  II = IW + I-1
+                  JJ = JS + J-1
+                  KK = KB + K-1
+                  CUR_IJK = funijk(IMAP_C(II),JMAP_C(JJ),KMAP_C(KK))
+                  IPJK    = funijk(IMAP_C(II+1),JMAP_C(JJ),KMAP_C(KK))
+                  IJPK    = funijk(IMAP_C(II),JMAP_C(JJ+1),KMAP_C(KK))
+                  IPJPK   = funijk(IMAP_C(II+1),JMAP_C(JJ+1),KMAP_C(KK))
+                  IF(DIMN.EQ.3) THEN 
+                     IJKP    = funijk(IMAP_C(II),JMAP_C(JJ),KMAP_C(KK+1))
+                     IJPKP   = funijk(IMAP_C(II),JMAP_C(JJ+1),KMAP_C(KK+1))
+                     IPJKP   = funijk(IMAP_C(II+1),JMAP_C(JJ),KMAP_C(KK+1))
+                     IPJPKP  = funijk(IMAP_C(II+1),JMAP_C(JJ+1),KMAP_C(KK+1))
+                  ENDIF
+                  GSTENCIL(I,J,K,1) = XE(II)
+                  GSTENCIL(I,J,K,2) = YN(JJ)
+                  GSTENCIL(I,J,K,3) = ZT(KK)*(DIMN-2) + DZ(1)*(3-DIMN)
+                  VSTENCIL(I,J,K,:) = ZERO 
+                  IF(CARTESIAN_GRID) THEN 
+                     IF(SCALAR_NODE_ATWALL(CUR_IJK)) COUNT_NODES_OUTSIDE = &
+                     & COUNT_NODES_OUTSIDE + 1 
+                  ENDIF
+               ENDDO
+            ENDDO
+         ENDDO
+         
+         COUNT_NODES_INSIDE = COUNT_NODES_INSIDE_MAX - COUNT_NODES_OUTSIDE
+
+! loop through particles in the cell  
+         DO NINDX = 1,PINC(IJK)
+            FOCUS = .FALSE.
+            NP = PIC(IJK)%P(NINDX)
+            M = PIJK(NP,5)
+
+            IF(PEA(NP, 4)) THEN 
+               IF(DMP_LOG) THEN 
+                  !Some sanity checks 
+                  WRITE(UNIT_LOG,*) 'ENCOUNTERED A GHOST PARTICLE IN COMPUTE_MEAN_FIELDS_INTERP'
+                  WRITE(UNIT_LOG,'(A,10(2x,i5))') 'PINC in I, J, K, IJP, NP = ', I_OF(IJK), J_OF(IJK), K_OF(IJK), PINC(IJK), PINC(IM_OF(IJK)), PINC(IP_OF(IJK))
+               ENDIF
+               WRITE(*,*) 'ENCOUNTERED A GHOST PARTICLE IN COMPUTE_MEAN_FIELDS_INTERP'
+               WRITE(*,'(A,10(2x,i5))') 'PINC in I, J, K, IJP, NP = ', I_OF(IJK), J_OF(IJK), K_OF(IJK), PINC(IJK), PINC(IM_OF(IJK)), PINC(IP_OF(IJK))
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+
+            WTP = ONE
+            IF(MPPIC) WTP = DES_STAT_WT(NP)
+            MASS_SOL1 = MASS_SOL1 + PMASS(NP)*WTP
+
+            IF (DIMN .EQ. 2) THEN 
+               CALL INTERPOLATOR(GSTENCIL(1:ONEW,1:ONEW,1,1:DIMN), &
+                    VSTENCIL(1:ONEW,1:ONEW,1,1:DIMN), &
+                    DES_POS_NEW(NP,1:DIMN),JUNK_VAL(1:DIMN),  &
+                    ONEW,INTERP_SCHEME,WEIGHTP)
+            ELSE 
+               CALL INTERPOLATOR(GSTENCIL(1:ONEW,1:ONEW,1:ONEW,1:DIMN), &
+                    VSTENCIL(1:ONEW,1:ONEW,1:ONEW,1:DIMN), &
+                    DES_POS_NEW(NP,1:DIMN),JUNK_VAL(1:DIMN),  &
+                    ONEW,INTERP_SCHEME,WEIGHTP)
+            ENDIF
+            
+            DO K = 1, (3-DIMN)*1+(DIMN-2)*ONEW
+               DO J = 1, ONEW
+                  DO I = 1, ONEW
+                     ! shift loop index to new variables for manipulation                     
+                     II = IW + I-1
+                     JJ = JS + J-1
+                     KK = KB + K-1
+
+                     ICUR = IMAP_C(II)
+                     JCUR = JMAP_C(JJ)
+                     KCUR = KMAP_C(KK)
+                     CUR_IJK = funijk(ICUR, JCUR, KCUR) 
+                     
+                     TEMP1 = WEIGHTP(I,J,K)*DES_RO_S(M)*PVOL(NP)*WTP
+
+                     DES_ROPS_NODE(CUR_IJK,M) = DES_ROPS_NODE(CUR_IJK,M) + TEMP1 
+                     
+                     DES_VEL_NODE(CUR_IJK, 1:DIMN,M) = &
+                     DES_VEL_NODE(CUR_IJK, 1:DIMN,M) + TEMP1*DES_VEL_NEW(NP, 1:DIMN)
+
+                     !DES_VEL_NODE(CUR_IJK, 1:DIMN,M) = &
+                     !DES_VEL_NODE(CUR_IJK, 1:DIMN,M) + TEMP1*MPPIC_VPTAU(NP, 1:DIMN)
+                     
+                  ENDDO
+               ENDDO
+            ENDDO
+         enddo          ! pinc(ijk) loop 
+         
+         
+! this part will only be invoked for cutcell cases since then only
+! count_nodes_inside could be less than max nodes.
+! In this case, for the 
+! scalar nodes that do not reside in the domain, their contribution
+! is added to a residual array which is subsequently redistribited equally
+! to the nodes that are in the fluid domain. This is done to conserve mass.       
+         IF(COUNT_NODES_INSIDE.LT.COUNT_NODES_INSIDE_MAX) THEN 
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
+            
+            I1 = I-1
+            I2 = I
+            J1 = J-1
+            J2 = J
+
+! K1 = K if DIMN = 2, amd K1 = K-1 DIMN = 3
+
+            K1 = (3-DIMN)*K+(DIMN-2)*(K-1)
+            K2 = K
+
+
+! Convention used to number node numbers is described below 
+! i=1, j=2           i=2, j=2
+!   _____________________
+!   |                   |
+!   |  I = 2, J = 2     |
+!   |___________________|
+! i=1, j=1           i=2, j=1
+
+! first calculate the residual des_rops_node and des_vel_node that was computed
+! on nodes that do not belong to the domain
+            RESID_ROPS(1:DES_MMAX) = ZERO 
+            RESID_VEL(1:DIMN, 1:DES_MMAX) = ZERO
+            DO KK = K1, K2
+               DO JJ = J1, J2
+                  DO II = I1, I2
+                     IJK2 = funijk(II, JJ, KK) 
+                     IF(SCALAR_NODE_ATWALL(IJK2)) THEN 
+                        RESID_ROPS(1:DES_MMAX) = RESID_ROPS(1:DES_MMAX) +&
+                           DES_ROPS_NODE(IJK2,1:DES_MMAX)
+                        DES_ROPS_NODE(IJK2,1:DES_MMAX) = ZERO 
+                        DO IDIM = 1, DIMN
+                           RESID_VEL(IDIM, 1:DES_MMAX) = RESID_VEL(IDIM, 1:DES_MMAX) +  & 
+                           & DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX)
+                           DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX) = ZERO 
+                        ENDDO
+                     ENDIF
+                  ENDDO
+               ENDDO
+            ENDDO
+                  
+! Now add this residual equally to the remaining nodes
+            
+            NORM_FACTOR = ONE/REAL(COUNT_NODES_INSIDE)          
+            COUNT_TEMP = 0
+            DO KK = K1, K2
+               DO JJ = J1, J2
+                  DO II = I1, I2
+                     IJK2 = funijk(II, JJ, KK) 
+                     IF(.NOT.SCALAR_NODE_ATWALL(IJK2)) THEN 
+                        COUNT_TEMP = COUNT_TEMP + 1
+                        DES_ROPS_NODE(IJK2,1:DES_MMAX) = DES_ROPS_NODE(IJK2,1:DES_MMAX) +&
+                           RESID_ROPS(1:DES_MMAX)*NORM_FACTOR
+                        DO IDIM = 1, DIMN
+                           DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX) = DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX) + &
+                              RESID_VEL(IDIM, 1:DES_MMAX)*NORM_FACTOR
+                        ENDDO
+                     ENDIF
+                  ENDDO
+               ENDDO
+            ENDDO
+            !WRITE(*,*) 'hello: NODES INSIDE AND OUTSIDE', count_nodes_inside, count_nodes_inside_max, one/real(count_temp), norm_factor
+         ENDIF
+         
+      END DO IJKLOOP            ! IJK LOOP
+      
+      !MASS_SOL4 = SUM(DES_ROPS_NODE(:,1))
+
+! At the interface des_rops_node (and other nodal arrays)
+! have to be added since particles 
+! across the processors will contribute to the same scalar node. 
+
+! send recv will be called and the node values will be added 
+! at the junction. des_rops_node is altered by the routine when
+! periodic boundaries are invoked
+
+      CALL DES_ADDNODEVALUES_MEAN_FIELDS
+      
+      !MASS_SOL5 = SUM(DES_ROPS_NODE(:,1))
+      DO K = KSTART2, KEND1
+         DO J = JSTART2, JEND1
+            DO I = ISTART2, IEND1
+               IJK = funijk(I,J,K)
+
+
+! Now going from node to scalar center. Same convention
+! as sketched earlier 
+               I1 = I
+               I2 = I+1
+               J1 = J
+               J2 = J+1
+               K1 = K
+               K2 = (3-DIMN)*K+(DIMN-2)*(K+1)
+
+               VOL_SURR = ZERO 
+
+               DO KK = K1, K2
+                  DO JJ = J1, J2
+                     DO II = I1, I2
+                        IJK2 = funijk(II, JJ, KK) 
+                        IF(FLUID_AT(IJK2)) VOL_SURR = VOL_SURR+VOL(IJK2)
+                     ENDDO
+                  ENDDO
+               ENDDO
+! Explanation by RG: 08/17/2012
+ 
+! the approach used here is to make it general enough for cutcells to be
+! included as well. 
+! In the past, volume of the node (by array des_vol_node)
+! was used to first scale the
+! nodal values based on node volume. These nodal values were then subsequently 
+! equally added to compute the cell centered values for the scalar cell.
+! Since, for example, the volume of edge node in 2-D 
+! will be half of the internal nodes, the edge node
+! will contribute double (when compared with internal cells) 
+! to the scalar cells it shares. This was accomplished by volume of node 
+! earlier. Now it is done by this ratio VOL(IJK2)/VOL_SUR, where vol(ijk2) is the 
+! volume of the scalar cell in consideration, and vol_surr is the sum of 
+! volumes of all the scalar cells that have this node as the common node. 
+! This does not change anything but is generic enough to include cut-cells
+               DO KK = K1, K2
+                  DO JJ = J1, J2
+                     DO II = I1, I2
+                        IJK2 = funijk(II, JJ, KK) 
+                        IF(FLUID_AT(IJK2)) THEN 
+                           DO M = 1, DES_MMAX
+                              DES_ROP_S(IJK2, M) = DES_ROP_S(IJK2, M) + &
+                              DES_ROPS_NODE(IJK,M)*VOL(IJK2)/VOL_SURR
+                              
+                              DES_U_S(IJK2, M) = DES_U_S(IJK2, M) + & 
+                              DES_VEL_NODE(IJK, 1, M)*VOL(IJK2)/VOL_SURR
+                              
+                              DES_V_S(IJK2, M) = DES_V_S(IJK2, M) + & 
+                              DES_VEL_NODE(IJK, 2, M)*VOL(IJK2)/VOL_SURR
+                              
+                              IF(DIMN.eq.3) DES_W_S(IJK2, M) = DES_W_S(IJK2, M) + & 
+                              DES_VEL_NODE(IJK, 3, M)*VOL(IJK2)/VOL_SURR
+
+                           ENDDO
+                        ENDIF
+                     ENDDO
+                  ENDDO
+               ENDDO
+            ENDDO
+         ENDDO
+      ENDDO
+      
+      
+      DO IJK = IJKSTART3, IJKEND3
+         IF(.not.FLUID_AT(IJK)) cycle
+         I = I_OF(IJK)
+         J = J_OF(IJK)
+         K = K_OF(IJK)
+       
+         DO M = 1, DES_MMAX
+            IF(DES_ROP_S(IJK, M).GT.ZERO) THEN 
+               DES_U_S(IJK, M) = DES_U_S(IJK,M)/DES_ROP_S(IJK, M)
+               DES_V_S(IJK, M) = DES_V_S(IJK,M)/DES_ROP_S(IJK, M)
+               IF(DIMN.eq.3) DES_W_S(IJK, M) = DES_W_S(IJK,M)/DES_ROP_S(IJK, M)
+               
+! Finally divide by scalar cell volume to obtain \eps * \rho_s
+               DES_ROP_S(IJK, M) = DES_ROP_S(IJK, M)/VOL(IJK)
+
+! Note that for cut-cell, it is important to check both fluid_at and
+! is_on_mype_owns.  Fluid_at is not enough as it is shared between procs
+! and fluid_at(ijkend3) might be true when in fact it does not belong to
+! that proc 
+               IF(IS_ON_myPE_owns(I, J, K)) MASS_SOL2 = MASS_SOL2 + & 
+               DES_ROP_S(IJK, M)*VOL(IJK)
+               
+               !WRITE(*,*) 'ROP_S = ', DES_ROP_S(IJK, M), DES_ROP_S(IJK, M)/DES_RO_S(M)
+
+            ENDIF
+         ENDDO   ! end loop over M=1,DES_MMAX
+      ENDDO                     ! end loop over IJK=ijkstart3,ijkend3
+
+
+! RG: Aug, 20, 2012. 
+! DES_ROP_S is not exchanged across the interface. ROP_S and EP_G are done 
+! at the end of the DEM time step in des_time_march.f. To check with 
+! Janine in this regard. 
+
+! Decoupling the computation of ep_g and rop_g from the computation
+! of des_rop_s. In the current implementation, des_rop_s (or rop_s) 
+! and epg and also rop_g are first calculated and then sent 
+! received. However, ep_g (and also rop_g) are simply functions of 
+! des_rop_s. Therefore, once des_rop_s is sent received, ep_g and 
+! rop_g can be correctly computed even for the ghost cells; thus, not
+! requiring additional send_recv calls for ep_g and rop_g.       
+
+      IF(MPPIC) then 
+! share the des_rop_s array across the processors          
+         CALL SEND_RECV(DES_ROP_S,2)
+! and then compute the epg and rop_g arrays. This will negate the
+! need for further communication of these arrays.          
+         CALL COMP_EPG_ROP_G_FROM_ROP_S
+
+         CALL SEND_RECV(DES_U_S,2)
+         CALL SEND_RECV(DES_V_S,2) 
+         IF(DIMN.EQ.3) CALL SEND_RECV(DES_W_S,2) 
+! Now calculate Eulerian mean velocity fields like U_S, V_S, and W_S. 
+! The Eulerian velocity field is used to set up the stencil to interpolate
+! mean solid velocity at the parcel's location. DES_U_S could have also been
+! used, but that also would have require the communication at this stage.
+! The final interpolated value does not change if the stencil is formed by
+! first obtaining face centered Eulerian velocities (U_S, etc.) 
+! and then computing the node velocities from them or
+! directly computing the node velocities from 
+! cell centered average velocity field (DES_U_S, etc.). We are using the
+! first approach as it is more natural to set BC's on solid velocity field
+! in the face centered represenation (U_S, etc.)
+
+         IF(.NOT.CARTESIAN_GRID) THEN 
+            CALL MPPIC_COMP_EULERIAN_VELS_NON_CG
+         ELSE
+            CALL MPPIC_COMP_EULERIAN_VELS_CG
+         ENDIF
+
+      ELSE
+! RG: 8/20/2012
+! According to the current implementation, in DEM the mean fields 
+! are communicated (i.e., sent received) subsequent to inner DEM 
+! time steps. Since the number of these inner time steps could be large 
+! in DEM, and the cell centered DES mean fields (such as des_rop_s, 
+! des_u_s, etc.) in the ghost cells (across processor
+! boundaries) are anyway not used during these substeps, 
+! the sent receive of these mean fields 
+! at the end of DEM substeps does not result in any error. 
+         CALL COMP_EPG_ROP_G_FROM_ROP_S
+! It should be noted above that the ep_g values in the ghost cells 
+! are not correct and if any future development requires the correct
+! value of ep_g in ghost cells during DEM substeps, a send_recv
+! of des_rop_s should be done before calling the above routine. This will
+! impose a substantial penalty on computational time since communication
+! overheads will go up. 
+!
+      ENDIF
+      
+! turn on the below statements to check if the mass is conserved 
+! between discrete and continuum representations. Should be turned to
+! false for any production runs.      
+      IF(DES_REPORT_MASS_INTERP) then 
+         CALL GLOBAL_SUM(MASS_SOL1, MASS_SOL1_ALL)
+         CALL GLOBAL_SUM(MASS_SOL2, MASS_SOL2_ALL)
+         if(myPE.eq.pe_IO) then
+            WRITE(*,'(10x,A,4(2x,g17.8))') & 
+                 'SOLIDS MASS DISCRETE AND CONTINUUM =  ', & 
+                 MASS_SOL1_ALL, MASS_SOL2_ALL
+         ENDIF
+      ENDIF
+      END SUBROUTINE COMP_MEAN_FIELDS_INTERP
+
+      SUBROUTINE COMP_EPG_ROP_G_FROM_ROP_S
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE geometry
+      USE funits
+      USE indices
+      USE compar
+      USE physprop
+      USE fldvar
+      USE discretelement
+      USE cutcell 
+      USE mfix_pic
+      
+      implicit none 
+! general i, j, k indices
+      INTEGER :: IJK
+
+      INTEGER :: CM, M
+! solids volume fraction of mth solids phase
+      DOUBLE PRECISION EP_SM
+! total solids volume fraction of continuum solids phases
+      DOUBLE PRECISION SUM_EPS
+
+      INCLUDE 'function.inc'
+      INCLUDE 'fun_avg1.inc'
+      INCLUDE 'fun_avg2.inc'
+      INCLUDE 'ep_s1.inc'
+      INCLUDE 'ep_s2.inc'
+      
+!$omp parallel do if(ijkend3 .ge. 2000) default(shared)        &
+!$omp private(ijk,cm,m,sum_eps,ep_sm)     
+      DO IJK = IJKSTART3, IJKEND3
+         IF(.not.FLUID_AT(IJK)) cycle
+         IF (.NOT.DES_CONTINUUM_HYBRID) THEN
+            EP_G(IJK) = ONE   
+         ELSE
+! summing together total continuum solids volume
+            SUM_EPS = ZERO
+            DO CM = 1,SMAX
+               SUM_EPS = SUM_EPS + EP_S(IJK,CM) 
+            ENDDO
+            EP_G(IJK) = ONE - SUM_EPS
+         ENDIF  ! end if/else (.not.des_continuum_hybrid)
+         
+         DO M = 1, DES_MMAX
+            IF(DES_ROP_S(IJK, M).GT.ZERO) THEN 
+! calculating void fraction in fluid cell based on solids bulk density       
+
+               EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
+               IF(.NOT.DES_ONEWAY_COUPLED) EP_G(IJK) = EP_G(IJK) - EP_SM
+               ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
+
+! ep_g does not matter if granular flow simulation (i.e. no fluid)
+              IF(EP_G(IJK)<ZERO .AND.DES_CONTINUUM_COUPLED) THEN 
+                  IF(DMP_LOG) THEN
+                     WRITE(UNIT_LOG,1004) EP_G(IJK), IJK, I_OF(IJK), & 
+                     J_OF(IJK), K_OF(IJK), EP_SM, PINC(IJK), CUT_CELL_AT(IJK)
+                  ENDIF
+                  IF(mype.eq.pe_IO) WRITE(*,1004) EP_G(IJK), IJK, I_OF(IJK), &
+                  J_OF(IJK), K_OF(IJK), EP_SM, PINC(IJK), CUT_CELL_AT(IJK)
+                  
+                  IF(CARTESIAN_GRID) THEN 
+                     CALL WRITE_DES_DATA
+                     CALL WRITE_VTK_FILE
+                  ENDIF
+                     
+                  CALL MFIX_EXIT(myPE)
+               ENDIF
+            ENDIF
+         ENDDO                  ! end loop over M=1,DES_MMAX
+      ENDDO                     ! end loop over IJK=ijkstart3,ijkend3
+!$omp end parallel do 
+ 1004 FORMAT(/5X, 'Message from comp_epg_rop_g_from_rop_s', & 
+      /,5X,'Warning, EP_G = ', g17.8, 2x, 'LT Zero at IJK', I20, & 
+      /,5X,'I,J,K = ', I10, 2X, I10, 2x, I10, & 
+      /,5X,'EP_S=', ES15.9, &
+      /,5X,'PINC (number of particles in cell)= ',I10, & 
+      /,5X,'Cut cell ? ', L2,/)
+
+
+      END subroutine COMP_EPG_ROP_G_FROM_ROP_S
+      
