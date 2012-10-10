@@ -1,7 +1,10 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  MODULE: MPPIC_WALLBC                                                C
-!  Purpose:                                                            C
+!  Author: Rahul Garg                               Date: 08/20/2012   C
+!  Purpose: Implement wall boundary conditions for MPPIC case          C
+!  Wall reflection, inflow and outflow BC's are implemented here       C
+!                                                                      C
 !                                                                      C
 !  Contains the following subroutines:                                 C
 !     MPPIC_APPLY_WALLBC, MPPIC_MI_BC, MPPIC_FIND_EMPTY_SPOT           C
@@ -952,16 +955,16 @@
 
 !post collisional velocities  
                   
-      COEFF_REST_EN = REAL_EN_WALL(PIJK(LL,5))
+      !COEFF_REST_EN = REAL_EN_WALL(PIJK(LL,5))
+      COEFF_REST_EN = MPPIC_COEFF_EN_WALL
       !if(ep_g(PIJK(LL,4)).lt.0.42) coeff_rest_en = 1.05
       VEL_NORM_SEP(1:DIMN) = -COEFF_REST_EN*VEL_NORM_APP(1:DIMN) 
 
       VEL_TANG_SEP(1:DIMN) = VEL_TANG_APP(1:DIMN) 
 
-      !IF(MEW_W.GT.ZERO) THEN 
-      COEFF_REST_ET = 1.d0!REAL_ET_WALL(PIJK(LL,5))
+      COEFF_REST_ET = MPPIC_COEFF_ET_WALL
+
       VEL_TANG_SEP(1:DIMN) = COEFF_REST_ET*VEL_TANG_APP(1:DIMN) 
-      !ENDIF
 
       DES_VEL_NEW(LL, 1:DIMN) = VEL_NORM_SEP(1:DIMN) + VEL_TANG_SEP(1:DIMN)
                   
