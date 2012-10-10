@@ -229,7 +229,8 @@
 
                   VOLIJK = VOL(IJK)
                  
-! JG: this appears to be based on setting ep_s from two-fluid model
+! this is based ep_s that would be set based on IC_EPS from
+! two-fluid IC specification. 
 ! this should be replaced with a true dem quantity                 
                   REAL_PARTS(M) = 6.d0*EP_S(IJK,M)*VOLIJK/&
                      (PI*(DES_D_p0(M)**3.d0))
@@ -288,8 +289,16 @@
 ! setting pip to part_count 
       PIP = PART_COUNT 
 
-      WRITE(*,*) 'FROM pe =', mype, 'PIP = ', PIP
-
+      IF(DMP_LOG) WRITE(UNIT_LOG,'(2X, A,/,10X, A, i5, /,2X, A, i10,/)') &
+      'In GENERATE_PARTICLE_CONFIG MPPIC ',  & 
+      'FROM pe =', mype, & 
+      'NUMBER OF PARCELS INITIATED ON THIS PROC = ', PIP
+      
+      WRITE(*,'(2X, A,/,10X, A, i5, /,2X, A, i10,/)') &
+      'In GENERATE_PARTICLE_CONFIG MPPIC ',  & 
+      'FROM pe =', mype, & 
+      'NUMBER OF PARCELS INITIATED ON THIS PROC = ', PIP
+      
       IF(PART_COUNT.NE.SUM(CNP_PIC(1:DES_MMAX))) THEN 
          IF(DMP_LOG) THEN 
             WRITE(UNIT_LOG,*) 'ERROR IN GENERATE_PARTICLE_CONFIG_MPPIC'
