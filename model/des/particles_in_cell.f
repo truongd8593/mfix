@@ -563,7 +563,7 @@
 
 !$omp parallel do if(ijkend3 .ge. 2000) default(shared)        &
 !$omp private(ijk,i,j,k,cm,m,sum_eps,ep_sm,                    &
-!$omp         osolvol,ovol)                                    &
+!$omp         osolvol,ovol)                                    
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
          J = J_OF(IJK)
