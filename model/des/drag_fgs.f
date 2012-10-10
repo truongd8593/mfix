@@ -357,7 +357,7 @@
 !-----------------------------------------------
 
 ! initializing
-      wtbar = ZERO
+      des_rops_node = ZERO
 ! avg_factor=0.25 (in 3D) or =0.5 (in 2D)
       AVG_FACTOR = 0.250d0*(DIMN-2) + 0.50d0*(3-DIMN)
 
@@ -448,7 +448,7 @@
             WTP = ONE
             IF(MPPIC) WTP = DES_STAT_WT(NP)
 
-! Calculating wtbar so des_rop_s, and in turn, ep_g can be updated 
+! Calculating des_rops_node so des_rop_s, and in turn, ep_g can be updated 
 !----------------------------------------------------------------->>>
             M = pijk(np,5)
             DO k = 1, (3-dimn)*1+(dimn-2)*onew
@@ -471,7 +471,7 @@
                      ovol = one/vcell
 
 !!$omp critical                 
-                     wtbar(cur_ijk,m) = wtbar(cur_ijk,m) + &
+                     des_rops_node(cur_ijk,m) = des_rops_node(cur_ijk,m) + &
                           weightp(i,j,k) *DES_ro_s(m)*ovol*pvol(np)*WTP
 !!$omp end critical                             
                   ENDDO
@@ -484,11 +484,11 @@
 !!$      omp_end=omp_get_wtime()
 !!$      write(*,*)'drag_interp:',omp_end - omp_start  
 
-! At the interface wtbar has to be added
+! At the interface des_rops_node has to be added
 ! send recv will be called and the node values will be added 
-! at the junction. wtbar is altered by the routine when
+! at the junction. des_rops_node is altered by the routine when
 ! periodic boundaries are invoked
-      call des_addnodevalues2
+      call des_addnodevalues_mean_fields
 !-----------------------------------------------------------------<<<
 
 
@@ -513,16 +513,16 @@
             ijmk = funijk(imap_c(i),jmap_c(j-1),kmap_c(k))
             imjmk = funijk(imap_c(i-1),jmap_c(j-1),kmap_c(k))
             DES_rop_s(ijk,:) = avg_factor*&
-                (wtbar(ijk,:)   + wtbar(ijmk,:) + &
-                 wtbar(imjmk,:) + wtbar(imjk,:) )
+                (des_rops_node(ijk,:)   + des_rops_node(ijmk,:) + &
+                 des_rops_node(imjmk,:) + des_rops_node(imjk,:) )
             IF(dimn.EQ.3) THEN
                ijkm = funijk(imap_c(i),jmap_c(j),kmap_c(k-1))
                imjkm = funijk(imap_c(i-1),jmap_c(j),kmap_c(k-1))
                ijmkm = funijk(imap_c(i),jmap_c(j-1),kmap_c(k-1))
                imjmkm = funijk(imap_c(i-1),jmap_c(j-1),kmap_c(k-1))
                DES_rop_s(ijk,:) = DES_rop_s(ijk,:) + avg_factor*&
-                    (wtbar(ijkm,:)   + wtbar(ijmkm,:) + &
-                     wtbar(imjmkm,:) + wtbar(imjkm,:) )
+                    (des_rops_node(ijkm,:)   + des_rops_node(ijmkm,:) + &
+                     des_rops_node(imjmkm,:) + des_rops_node(imjkm,:) )
             ENDIF
          ELSE   ! else branch of if (fluid_at(ijk))
             DES_ROP_S(IJK,:) = ZERO
@@ -863,6 +863,9 @@
 ! position. 
 !----------------------------------------------------------------->>>
 ! initializing
+! RG: I do not understand the need for this large array. It is not 
+! used anywhere else except the same subroutine it is calculated. 
+! A local single rank array (like in the old implementation) was just fine
       gd_force(:,:) = ZERO
 
 ! avg_factor=0.25 (in 3D) or =0.5 (in 2D)
