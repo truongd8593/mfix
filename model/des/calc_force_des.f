@@ -23,6 +23,7 @@
       USE geometry
       USE compar
       USE constant
+      USE cutcell
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -113,6 +114,10 @@
 !-----------------------------------------------      
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
 !-----------------------------------------------      
+      IF(CARTESIAN_GRID) THEN 
+         CALL CALC_FORCE_DES_CUTCELL
+         RETURN
+      ENDIF
 
 
 ! initialize local variables
