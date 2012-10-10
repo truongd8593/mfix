@@ -29,6 +29,7 @@
       USE is
       USE compar   
       USE discretelement
+      USE mfix_pic
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -69,7 +70,7 @@
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 
 
-      IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+      IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID .OR.MPPIC) THEN
          DO M = 1, MMAX 
 !!$omp  parallel do private( ISV,  IMJK, IJMK, IJKM)
             DO IJK = ijkstart3, ijkend3
