@@ -37,6 +37,8 @@
       DISCRETE_ELEMENT = .FALSE.
       DES_CONTINUUM_COUPLED = .FALSE.
       DES_INTERP_ON = .FALSE.
+      INTERP_DES_MEAN_FIELDS = .false.
+      DES_REPORT_MASS_INTERP = .false. 
       TSUJI_DRAG = .FALSE.
       DES_INTG_METHOD = 'EULER'
       USE_COHESION = .FALSE.
@@ -190,13 +192,19 @@
 
       MAX_DES_BC_CELL = 4
       MPPIC_SOLID_STRESS_SNIDER = .false. 
-      MPPIC_COEFF_EN = 0.0
-      MPPIC_PDRAG_IMPLICIT = .false. 
+      MPPIC_COEFF_EN = UNDEFINED
+      MPPIC_COEFF_EN2 = UNDEFINED 
+      MPPIC_COEFF_EN_WALL = UNDEFINED
+      MPPIC_COEFF_ET_WALL = UNDEFINED
 
+      MPPIC_PDRAG_IMPLICIT = .false. 
+      MPPIC_GRAV_TREATMENT = .true. 
+      
       PSFAC_FRIC_PIC = 100 
       FRIC_EXP_PIC = 2.5
       FRIC_NON_SING_FAC = 1E-07
-      
+      CFL_PIC = 0.1 
+
 ! J.Musser : des energy equations
       DES_ENERGY_EQ = .FALSE.
       DES_CONV_EQ = .TRUE.
@@ -221,6 +229,6 @@
       DES_MW_s(:DIM_M, :DIM_N_s) = UNDEFINED
       DES_SPECIES_NAME(:) = UNDEFINED_C
       REACTION_MODEL = 'SHRINKING_CORE'
-
+      
       RETURN
       END SUBROUTINE DES_INIT_NAMELIST
