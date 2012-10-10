@@ -341,13 +341,11 @@
 ! If discrete_element is .false. then overwrite the following user DES
 ! logicals which may be set to true in the input file.  Only need to set
 ! those that may impact continuum aspects 
-         DES_CONTINUUM_COUPLED = .FALSE.
-         DES_INTERP_ON = .FALSE.
-         DES_CONTINUUM_HYBRID = .FALSE.
-         TSUJI_DRAG = .FALSE.
-         PRINT_DES_DATA = .FALSE.
-         MPPIC = .FALSE. 
-         DES_ONEWAY_COUPLED = .false. 
+
+! RG: This has been moved to get_data right after reading of namelists.
+! This will ensure that correct des related flags are set when other
+! continuum check_data routines (such as check_data_04, ....06, ...07, ...20) 
+! are called 
       ENDIF
 
       IF (QMOMK) THEN
