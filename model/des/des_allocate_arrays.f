@@ -25,6 +25,7 @@
       USE mfix_pic
       Use des_thermo
       Use des_rxns      
+      USE cutcell 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -166,6 +167,8 @@
       Allocate(  FC (NPARTICLES,DIMN) )
       Allocate(  FN (NPARTICLES,DIMN) )
       Allocate(  FT (NPARTICLES,DIMN) )
+      Allocate(  FTAN (DIMN) )
+      Allocate(  FNORM (DIMN) )
 
 ! Torque     
       IF(DIMN.EQ.3) THEN 
@@ -228,12 +231,16 @@
       IF(DES_INTERP_ON) THEN
          ALLOCATE(DRAG_AM(DIMENSION_3, DES_MMAX))
          ALLOCATE(DRAG_BM(DIMENSION_3, DIMN, DES_MMAX))
-         ALLOCATE(WTBAR(DIMENSION_3, DES_MMAX))
          ALLOCATE(VEL_FP(NPARTICLES,3))
          ALLOCATE(F_gp(NPARTICLES ))  
          F_gp(1:NPARTICLES)  = ZERO
       ENDIF
 
+      IF(INTERP_DES_MEAN_FIELDS) THEN 
+         ALLOCATE(DES_ROPS_NODE(DIMENSION_3, DES_MMAX))
+         ALLOCATE(DES_VEL_NODE(DIMENSION_3, DIMN, DES_MMAX))
+      ENDIF
+      
 ! force due to gas-pressure gradient 
       ALLOCATE(P_FORCE(DIMENSION_3,DIMN))
 ! force due to gas-solids drag on a particle
@@ -265,16 +272,12 @@
 
 ! MP-PIC related 
       IF(MPPIC) THEN 
-! mppic requries the following but if des_interp_on is false
-! then these quantities will not be allocated               
-         IF (.NOT.DES_INTERP_ON) THEN
-            ALLOCATE(DRAG_AM(DIMENSION_3, DES_MMAX))
-            ALLOCATE(DRAG_BM(DIMENSION_3, DIMN, DES_MMAX))
-            ALLOCATE(WTBAR(DIMENSION_3,  DES_MMAX))
-            ALLOCATE(VEL_FP(NPARTICLES,3))
-            ALLOCATE(F_gp(NPARTICLES ))  
-            F_gp(1:NPARTICLES)  = ZERO
+         IF(.NOT.ALLOCATED(F_GP)) THEN
+            ALLOCATE(F_GP(NPARTICLES ))  
+            F_GP(1:NPARTICLES)  = ZERO
          ENDIF
+         
+         IF(.NOT.ALLOCATED(VEL_FP)) ALLOCATE(VEL_FP(NPARTICLES,3))
 
          Allocate(PS_FORCE_PIC(DIMENSION_3, DIMN))
          ALLOCATE(DES_STAT_WT(NPARTICLES))         
@@ -282,6 +285,7 @@
          ALLOCATE(PS_GRAD(NPARTICLES, DIMN))         
          ALLOCATE(AVGSOLVEL_P(NPARTICLES, DIMN))
          ALLOCATE(EPG_P(NPARTICLES))
+!         ALLOCATE(MPPIC_VPTAU(NPARTICLES, DIMN))
       ENDIF 
 
 
