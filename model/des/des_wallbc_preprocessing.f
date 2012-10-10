@@ -6,6 +6,7 @@
       USE run
       USE compar      
       USE discretelement
+      USE mfix_pic
       USE cutcell
       
       USE indices
@@ -14,6 +15,7 @@
       USE geometry
       USE bc
       USE funits 
+      
       IMPLICIT NONE 
       INTEGER :: I, II, IPLUS1, IMINUS1 ! X-coordinate loop indices
       INTEGER :: J, JJ, JPLUS1, JMINUS1   ! Y-coordinate loop indices
@@ -60,17 +62,17 @@
                   IF(CARTESIAN_GRID) THEN 
                      IF(CUT_CELL_AT(IJK))  THEN 
 
-                     !If cartesian grid and cut_cell, set it to false for now
-                     !and then later check if this ghost cell wall should also 
-                     !be classfied as a wall. This is done in routine CHECK_IF_GHOST_CELL_WALL_NEEDED
-                     !where all the vertices of the ghost cell wall are tested for lying inside 
-                     !of the cut-face. If any of the vertices lie inside of the cut-face, then
-                     !the ghost cell wall should also be included as a wall 
+! If cartesian grid and cut_cell, set it to false for now
+! and then later check if this ghost cell wall should also 
+! be classfied as a wall. This is done in routine CHECK_IF_GHOST_CELL_WALL_NEEDED
+! where all the vertices of the ghost cell wall are tested for lying inside 
+! of the cut-face. If any of the vertices lie inside of the cut-face, then
+! the ghost cell wall should also be included as a wall 
 
-                     !Also remember that a cut-cell will always take 
-                      !precedence in this case and the normal-wall condition 
-                     !will only be included in list of BC's if the cut-face 
-                      !leaves a part of this wall in the fluid domain 
+! Also remember that a cut-cell will always take 
+! precedence in this case and the normal-wall condition 
+! will only be included in list of BC's if the cut-face 
+! leaves a part of this wall in the fluid domain 
                         
                      
                         ADD_GHOST_CELL_WALL = .FALSE.
@@ -87,7 +89,9 @@
                         YCOR(4) = YG_N(J)
                         ZCOR(4) = ZG_T(K) - DZ(K)
                         
-                        CALL CHECK_IF_GHOST_CELL_WALL_NEEDED(IJK, IJK_WALL, XCOR(1:4), YCOR(1:4), ZCOR(1:4), NORM_DIST(1:4), NORM_VEC(1:4,1:3), ADD_GHOST_CELL_WALL)
+                        CALL CHECK_IF_GHOST_CELL_WALL_NEEDED(IJK, IJK_WALL, & 
+                        XCOR(1:4), YCOR(1:4), ZCOR(1:4), NORM_DIST(1:4), &
+                        NORM_VEC(1:4,1:3), ADD_GHOST_CELL_WALL)
                         
                         WALL_TYPE = 'CUT_FACE'
                         CALL DES_ADD_WALLBC_TO_CELL(IJK, IJK, WALL_NORM, WALL_TYPE)
@@ -137,7 +141,9 @@
                         YCOR(4) = YG_N(J)
                         ZCOR(4) = ZG_T(K) - DZ(K)
                         
-                        CALL CHECK_IF_GHOST_CELL_WALL_NEEDED(IJK, IJK_WALL, XCOR(1:4), YCOR(1:4), ZCOR(1:4), NORM_DIST(1:4), NORM_VEC(1:4,1:3), ADD_GHOST_CELL_WALL)
+                        CALL CHECK_IF_GHOST_CELL_WALL_NEEDED(IJK, IJK_WALL, & 
+                        XCOR(1:4), YCOR(1:4), ZCOR(1:4), NORM_DIST(1:4), &
+                        NORM_VEC(1:4,1:3), ADD_GHOST_CELL_WALL)
                         
                         WALL_TYPE = 'CUT_FACE'
                         
@@ -191,7 +197,9 @@
                         
                         XCOR(4) = XG_E(I) 
                         ZCOR(4) = ZG_T(K) - DZ(K)
-                        CALL CHECK_IF_GHOST_CELL_WALL_NEEDED(IJK, IJK_WALL, XCOR(1:4), YCOR(1:4), ZCOR(1:4), NORM_DIST(1:4), NORM_VEC(1:4,1:3), ADD_GHOST_CELL_WALL)
+                        CALL CHECK_IF_GHOST_CELL_WALL_NEEDED(IJK, IJK_WALL, & 
+                        XCOR(1:4), YCOR(1:4), ZCOR(1:4), NORM_DIST(1:4), &
+                        NORM_VEC(1:4,1:3), ADD_GHOST_CELL_WALL)
                         
                         WALL_TYPE = 'CUT_FACE'
                         
@@ -387,7 +395,8 @@
                   !   WRITE(*,'(A, 5(2x,i4))' ) 'IJK =' , IJK, I, J, K
                   !   READ(*,*) 
                   !ENDIF
-                  IF(SMALL_CELL_AT(IJK)) CALL ADD_SMALL_CELL_BC(IJK)
+                  !do not add the small cell for the soft spring case 
+                  IF(SMALL_CELL_AT(IJK).and.MPPIC) CALL ADD_SMALL_CELL_BC(IJK)
 
                   IF(.NOT.FLUID_AT(IJK)) CYCLE 
                   LOOP_OVER = .FALSE.
@@ -430,22 +439,15 @@
                            IJK2 = FUNIJK(II,JJ,KK)
                            IF(CUT_CELL_AT(IJK2).and.FLUID_AT(IJK2)) THEN 
                               WALL_TYPE = 'CUT_FACE'
-                              !IF(CUT_CELL_AT(IJK).AND.MPPIC) THEN 
-                                 
-                              !If MPPIC, then do not add any cut-face as a BC to a cutcell. 
-                              !only add the new cut-face (if only certain conditions are 
-                              !met in the routine below) to non cutcells adjacent to cut-cells
-                              !ELSE 
                               CALL CHECK_IF_TOADD_THIS_CUT_FACE(IJK, IJK2, WALL_NORM, WALL_TYPE, ADD_THIS_CUT_FACE)
                               IF(ADD_THIS_CUT_FACE) CALL DES_ADD_WALLBC_TO_CELL(IJK, IJK2, WALL_NORM, WALL_TYPE)
-                              !ENDIF
                            ENDIF
                         ENDDO
                      ENDDO
                   ENDDO
 
                   COUNT_BC  = DES_CELLWISE_BCDATA(IJK)%COUNT_DES_BC
-                  !IF(COUNT_BC.GE.2.AND.CUT_CELL_AT(IJK)) CALL REORDER_BCS_FOR_CUTCELL(IJK)
+                  IF(COUNT_BC.GE.2.AND.CUT_CELL_AT(IJK).AND.(.NOT.MPPIC)) CALL REORDER_BCS_FOR_CUTCELL(IJK)
                   !IF(COUNT_BC.GE.2.and.(.NOT.CUT_CELL_AT(IJK))) CALL CHECK_NON_CUTCELLBC(IJK)
                   !IF(COUNT_BC.GE.2) WRITE(*,*) 'BC GE 2', COUNT_BC, CUT_CELL_AT(IJK)
                   
@@ -462,8 +464,16 @@
             ELSEIF (BC_TYPE(L)=='P_OUTFLOW' ) THEN 
                !CYCLE 
                IF(.not.BC_APPLY_TO_MPPIC(L)) THEN 
-                  IF(DMP_LOG) write(unit_log,'(2x,A,/2x,A,2x,i4,2x,A,/2x,A)') 'FROM des_wallbc_preprocessing', 'Pressure outflow  BC # ', L, ' will not be applied to the discrete phase', 'i.e., particles will not exit the domain from this boundary plane'
-                  IF(PRINT_DES_SCREEN) write(*,'(2x,A,/2x,A,2x,i4,2x,A,/2x,A)') 'FROM des_wallbc_preprocessing', 'Pressure outflow  BC # ', L, ' will not be applied to the discrete phase', 'i.e., particles will not exit the domain from this boundary plane'
+                  IF(DMP_LOG) write(unit_log,'(2x,A,/2x,A,2x,i4,2x,A,/2x,A)') & 
+                  'FROM des_wallbc_preprocessing', 'Pressure outflow  BC # ', L, &
+                  ' will not be applied to the discrete phase', &
+                  'i.e., particles will not exit the domain from this boundary plane'
+
+                  IF(PRINT_DES_SCREEN) & 
+                  write(*,'(2x,A,/2x,A,2x,i4,2x,A,/2x,A)') & 
+                  'FROM des_wallbc_preprocessing', 'Pressure outflow  BC # ', L, &
+                  ' will not be applied to the discrete phase', & 
+                  'i.e., particles will not exit the domain from this boundary plane'
                   
                   !read(*,*) 
                   CYCLE
@@ -496,31 +506,32 @@
                            KNEW = K-1
                         END SELECT 
 
-!Rahul:
-!confusing ? I know! A little explanation on the logic here. 
-!If a pressure outflow BC is specified, then it is important 
-!to flag fluid cells from where particles can exit. Recall that 
-!earlier all fluid (emphasis on fluid) cells next to ghost cells
-!were set up as normal walls for particle reflection. Now need to
-!look at the specified exits and RE-flag (emphasis on RE) the 
-!fluid cells appropriately. 
-!in the mfix convention, if the northmost face (Y=ylength) is 
-!specified 
-!as PO, then J1 = J2 = IMAX+2 or IMAX2, which is the ghost cell.
-!Since the BC plane is at the bottom of this ghost cell, BC_PLane
-!is set as 'S' in the native mfix pre-processing. 
+! Rahul:
+! confusing ? I know! A little explanation on the logic here. 
+! If a pressure outflow BC is specified, then it is important 
+! to flag fluid cells from where particles can exit. Recall that 
+! earlier all fluid (emphasis on fluid) cells next to ghost cells
+! were set up as normal walls for particle reflection. Now need to
+! look at the specified exits and RE-flag (emphasis on RE) the 
+! fluid cells appropriately. 
+! in the mfix convention, if the northmost face (Y=ylength) is 
+! specified 
+! as PO, then J1 = J2 = IMAX+2 or IMAX2, which is the ghost cell.
+! Since the BC plane is at the bottom of this ghost cell, BC_PLane
+! is set as 'S' in the native mfix pre-processing. 
 
-                                !
-                        IJK = FUNIJK(INEW,JNEW,KNEW) !this is the cell where the new bc will go 
+                        IJK = FUNIJK(INEW,JNEW,KNEW) 
+! This is the cell where the new bc will go 
 
                         IF (.NOT.IS_ON_myPE_wobnd(INEW, JNEW, KNEW)) CYCLE
-                        !for periodic BC's, the east, bottom or southmost cells (i.e., i=1 
-                        !or j = 1, or k = 1, will be flagged as fluid
-                        !and the following fluid_at(IJK) test alone will not 
-                        !be enough to avoid replacement error below.
-!However, this IJK could also fall in a non-fluid cell for cut-cell and there
-!will be an error in finding the replacement. 
-!Therefore, if IJK is not a fluid cell then do not bother and cycle.
+! For periodic BC's, the east, bottom or southmost cells (i.e., i=1 
+! or j = 1, or k = 1, will be flagged as fluid
+! and the following fluid_at(IJK) test alone will not 
+! be enough to avoid replacement error below.
+
+! However, this IJK could also fall in a non-fluid cell for cut-cell and there
+! will be an error in finding the replacement. 
+! Therefore, if IJK is not a fluid cell then do not bother and cycle.
 
                         IF(.not.FLUID_AT(IJK)) CYCLE 
                         !WRITE(*,*) 'BC_PLANE  = ', TRIM(BC_PLANE(L)), J1, J2
@@ -650,7 +661,80 @@
          end IF
       end DO
       
+      !
       
+      write(filename,'(A,"_",A,"_",I5.5,".dat")') TRIM(RUN_NAME), 'DES_WALL_BC',myPE
+      OPEN(1001, file = TRIM(filename), form ='formatted')
+      
+      DO K=KSTART2, KEND2
+         DO J=JSTART2, JEND2
+            DO I=ISTART2, IEND2
+               CELL_ID = FUNIJK(I,J,K)
+               COUNT_BC = DES_CELLWISE_BCDATA(CELL_ID)%COUNT_DES_BC 
+
+               IF(COUNT_BC.eq.0) CYCLE 
+
+               WRITE(1001, '("**************************************************")')
+
+               write(1001, '(2X, "CELL IJK, I, J, K =        = ", i20, 2x, 4(2x,i10))') CELL_ID, I_OF(CELL_ID), J_OF(CELL_ID), K_OF(CELL_ID)
+               IF(CARTESIAN_GRID) write(1001, '(2x, "FLUID, CUTCELL, SMALL CELL ? ", 3(2x, L4))') FLUID_AT(CELL_ID), CUT_CELL_AT(CELL_ID), SMALL_CELL_AT(CELL_ID)
+               WRITE(1001, '(2x, "TOTAL BCs                  = ", 3(2x, i10))') COUNT_BC
+               DO COUNT = 1, COUNT_BC 
+         
+                  IJK_TEMP = DES_CELLWISE_BCDATA(CELL_ID)%BDRY_LIST(COUNT)%IJK_SCAL 
+                  WALL_TYPE_TEMP = DES_CELLWISE_BCDATA(CELL_ID)%BDRY_LIST(COUNT)%DES_BC_TYPE
+                  NORMAL_TEMP = ZERO 
+                  IF(TRIM(WALL_TYPE_TEMP).eq.'CUT_FACE') NORMAL_TEMP(1:3) = NORMAL_S(IJK_TEMP,1:3)
+                  IF(TRIM(WALL_TYPE_TEMP).eq.'NORMAL_WALL') NORMAL_TEMP(1:DIMN) = DES_CELLWISE_BCDATA(CELL_ID)%BDRY_LIST(COUNT)%NORMAL(1:DIMN) 
+                  IF(TRIM(WALL_TYPE_TEMP).eq.'CUT_FACE_LINE') NORMAL_TEMP(1:DIMN) = DES_CELLWISE_BCDATA(CELL_ID)%BDRY_LIST(COUNT)%NORMAL(1:DIMN) 
+                  
+                  SELECT CASE (TRIM(WALL_TYPE_TEMP))
+                  CASE('NORMAL_WALL')
+                     WRITE(1001, '("----------------------------------------------------")')
+                     WRITE(1001, '(2x, "BC #                 = ", 3(2x, i10))') COUNT
+                     WRITE(1001, '(2x, "BC TYPE              = ", (2x, A20))') TRIM(WALL_TYPE_TEMP)
+                     WRITE(1001, '(2x, "BC IJK, I, J, K      = ", i20, 2x, 4(2x,i10))') IJK_TEMP, I_OF(IJK_TEMP), J_OF(IJK_TEMP), K_OF(IJK_TEMP)
+                     WRITE(1001, '(2x, "BC NORMAL            = ", 3(2x, g17.8))') NORMAL_TEMP(1:DIMN)
+
+                     !WRITE(1001, '("----------------------------------------------------")')
+                     
+                  CASE('CUT_FACE') 
+                     
+                     WRITE(1001, '("----------------------------------------------------")')
+                     WRITE(1001, '(2x, "BC #                 = ", 3(2x, i10))') COUNT
+                     WRITE(1001, '(2x, "BC TYPE              = ", (2x, A20))') TRIM(WALL_TYPE_TEMP)
+                     WRITE(1001, '(2x, "BC IJK, I, J, K      = ", i20, 2x, 4(2x,i10))') IJK_TEMP, I_OF(IJK_TEMP), J_OF(IJK_TEMP), K_OF(IJK_TEMP)
+                     WRITE(1001, '(2x, "FLUID, CUTCELL, SMALL CELL ? ", 3(2x, L4))') FLUID_AT(IJK_TEMP), CUT_CELL_AT(IJK_TEMP), SMALL_CELL_AT(IJK_TEMP)
+                     WRITE(1001, '(2x, "BC NORMAL            = ", 3(2x, g17.8))') NORMAL_TEMP(1:DIMN)
+                     
+                     !WRITE(1001, '("----------------------------------------------------")')
+                     
+                     
+                  CASE('CUT_FACE_LINE') 
+                     
+                     WRITE(1001, '("----------------------------------------------------")')
+                     WRITE(1001, '(2x, "BC #                 = ", 3(2x, i10))') COUNT
+                     WRITE(1001, '(2x, "BC TYPE              = ", (2x, A20))') TRIM(WALL_TYPE_TEMP)
+                     WRITE(1001, '(2x, "BC IJK, I, J, K      = ", i20, 2x, 4(2x,i10))') IJK_TEMP, I_OF(IJK_TEMP), J_OF(IJK_TEMP), K_OF(IJK_TEMP)
+                     WRITE(1001, '(2x, "FLUID, CUTCELL, SMALL CELL ? ", 3(2x, L4))') FLUID_AT(IJK_TEMP), CUT_CELL_AT(IJK_TEMP), SMALL_CELL_AT(IJK_TEMP)
+                     WRITE(1001, '(2x, "BC NORMAL            = ", 3(2x, g17.8))') NORMAL_TEMP(1:DIMN)
+                     WRITE(1001, '(2x, "CNOT                 = ", 3(2x, g17.8))') DES_CELLWISE_BCDATA(CELL_ID)%BDRY_LIST(COUNT)%CNOT(1:3)
+                     WRITE(1001, '(2x, "VEC                  = ", 3(2x, g17.8))') DES_CELLWISE_BCDATA(CELL_ID)%BDRY_LIST(COUNT)%VEC(1:3)
+
+                     !WRITE(1001, '("----------------------------------------------------")')
+
+                  CASE DEFAULT
+                  end SELECT
+                  
+               ENDDO
+            end DO
+         end DO
+      end DO
+      
+      close(1001, status = 'keep')
+
+      
+!      RETURN 
       write(filename,'(A,"_",I5.5,".dat")') 'CUTCELL_IDEN',myPE
       OPEN(1000, file = TRIM(filename), form ='formatted')
       write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ',' "CUCELL" ', ' "INTCELL" ', ' "FLUID" ', ' "BC" ', ' "VOL" ' 
@@ -684,13 +768,14 @@
                   ELSE
                      BCELL_IND = 0 
                   ENDIF 
-
-                  write(1000,'(3(2x,g17.8),4(2x,i4), 2x, g17.8)') XE(I),YN(J),ZT(K), CUTCELL_IND, INTCELL_IND ,FLUID_IND, BCELL_IND, VOL(IJK) ! DES_CELLWISE_BCDATA(IJK)%COUNT_DES_BC!,  (DES_CELLWISE_BCDATA(IJK)%COUNT_DES_BC)*1
+                  
+!                  write(1000,'(3(2x,g17.8),4(2x,i4), 2x, g17.8)') XE(I),YN(J),ZT(K), CUTCELL_IND, INTCELL_IND ,FLUID_IND, BCELL_IND, VOL(IJK) ! DES_CELLWISE_BCDATA(IJK)%COUNT_DES_BC!,  (DES_CELLWISE_BCDATA(IJK)%COUNT_DES_BC)*1
+                  write(1000,'(3(2x,i10),4(2x,i4), 2x, g17.8)') (I),(J),(K), CUTCELL_IND, INTCELL_IND ,FLUID_IND, BCELL_IND, VOL(IJK) ! DES_CELLWISE_BCDATA(IJK)%COUNT_DES_BC!,  (DES_CELLWISE_BCDATA(IJK)%COUNT_DES_BC)*1
                enddo
             enddo
          enddo
          
-         ELSE 
+      ELSE 
             
             DO K=KSTART2, KEND2
                DO J=JSTART2, JEND2
@@ -737,7 +822,7 @@
             & 'BC_K    : ', i4, /10X, &
             & 'NORMAL  : ', 3(2x,g17.8))
       
-      STOP
+      CALL mfix_exit(mype)
       RETURN
       END SUBROUTINE DES_WALLBC_PREPROCSSING
 
@@ -838,7 +923,7 @@
        USE physprop
        USE parallel
        USE geometry
-
+       USE mfix_pic
        IMPLICIT NONE 
        !Cell_id is the IJK of the cell to which the new bc is being considered for addition
        !wall_cell_id is the IJK of the cell where the new bc is present 
@@ -870,6 +955,10 @@
        DOUBLE PRECISION :: XREF_FACE(6), YREF_FACE(6), ZREF_FACE(6), NORMAL_FACE(6,3), NORM_ANG, MIDWAY_PT(3)
 
        DOUBLE PRECISION :: TOL_DELH_DIAG, TOL_DELH_DIAG_DIST
+       
+       !distance in grid units
+       DOUBLE PRECISION :: DIST_GU_OLD, DIST_GU_NEW
+
        LOGICAL :: DEBUG_LOCAL 
        
        DEBUG_LOCAL = .false. 
@@ -979,8 +1068,11 @@
 
              !If the new cut-face has a negative distance from any one of the vertices of a normal cell, then reject this wall bc 
 
-             IF(DIST_NEW.LT.ZERO) RETURN
-             !The above shud ideally have some tolerance in terms of the radius of the particle 
+             !!IF(DIST_NEW.LT.ZERO) RETURN
+             !Rahul: change on Jan 23, 2012.
+             !the non-cut cells will only exclude cut-faces that have normal's 
+             !within tolerance 
+             
           ENDDO VERTLOOP1
        ENDIF
 
@@ -1001,7 +1093,7 @@
              ! one being added 
              
              !NORM_ANG = 180.d0*(ACOS(NORM_SQ))/PI
-             IF(NORM_SQ.GT.TOL_NORM_ANG) THEN 
+             IF(NORM_SQ.GT.TOL_NORM_ANG.and.CUT_CELL_AT(CELL_ID).and..true.) THEN 
 !!$                WRITE(*,*) '***************************************************************'
 !!$                WRITE(*,*) 'THE CURRENT CUT-CELL WITH THE SAME NORMAL ALREADY EXISTS'
 !!$                ! WRITE(*,*) 'WALL_TYPE OLD AND NEW= ', TRIM(WALL_TYPE_TEMP), TRIM(DES_WALL_TYPE)
@@ -1016,9 +1108,43 @@
 !!$                WRITE(*,'(A,3(2x,i4))') 'I, J, K OLD = ', I_OF(IJK_TEMP), J_OF(IJK_TEMP), K_OF(IJK_TEMP)
 !!$                WRITE(*,'(A,3(2x,i4))') 'I, J, K NEW = ', I_OF(WALL_CELL_ID), J_OF(WALL_CELL_ID), K_OF(WALL_CELL_ID)                      
 !!$                WRITE(*,*) '*********************************************************************'
-                RETURN
-             ENDIF
-          end IF CUTFACE
+                IF(CUT_CELL_AT(CELL_ID)) THEN 
+                   RETURN
+                ELSE
+                   !compare the distance in grid units. 
+                   !keep the closer one
+                   DIST_GU_OLD = ABS(I_OF(CELL_ID)-I_OF(IJK_TEMP)) + ABS(J_OF(CELL_ID)-J_OF(IJK_TEMP))
+                   
+                   IF(DIMN.Eq.3) DIST_GU_OLD = DIST_GU_OLD + ABS(K_OF(CELL_ID)-K_OF(IJK_TEMP))
+                   DIST_GU_NEW = ABS(I_OF(CELL_ID)-I_OF(WALL_CELL_ID)) + ABS(J_OF(CELL_ID)-J_OF(WALL_CELL_ID))
+                   
+                   IF(DIMN.Eq.3) DIST_GU_NEW = DIST_GU_NEW + ABS(K_OF(CELL_ID)-K_OF(WALL_CELL_ID))
+                   
+                   IF(DIST_GU_NEW.LT.DIST_GU_OLD) then
+                      
+                      !replace ijk_scal information for the existing
+                      !BC with the newer bc ijk
+                      DES_CELLWISE_BCDATA(CELL_ID)%BDRY_LIST(COUNT)%IJK_SCAL = WALL_CELL_ID
+                      DEBUG_LOCAL = .false.
+                      IF(DEBUG_LOCAL.and.dmp_log) THEN
+                         WRITE(*,*) 'REPLACING NEARLY SAME NORMALS WITH CLOSER CUT-FACE'
+                         WRITE(*,*) 'CUT_FACE CELL ? = ', CUT_CELL_AT(CELL_ID)
+                         WRITE(*,'(A,3(2x,g17.8))') 'NORMAL OLD =', NORM1_OLD, NORM2_OLD, NORM3_OLD
+                         WRITE(*,'(A,3(2x,g17.8))') 'NORMAL NEW =', NORM1_NEW, NORM2_NEW, NORM3_NEW
+
+                         WRITE(*,'(A,3(2x,i4))') 'I, J, K NAT = ', I, J, K
+                         WRITE(*,'(A,3(2x,i4))') 'I, J, K OLD = ', I_OF(IJK_TEMP), J_OF(IJK_TEMP), K_OF(IJK_TEMP)
+                         WRITE(*,'(A,3(2x,i4))') 'I, J, K NEW = ', I_OF(WALL_CELL_ID), J_OF(WALL_CELL_ID), K_OF(WALL_CELL_ID)
+                         READ(*,*)
+                      ENDIF
+                      DEBUG_LOCAL = .false.
+                   ELSE
+                      !nothing more to do. Exit this routine 
+                      RETURN 
+                   ENDIF
+                ENDIF
+             end IF
+          END IF CUTFACE
        end DO
 
 
@@ -1042,15 +1168,12 @@
           ENDIF
 
           
-          !if the code has not returned so far, compare the perpendicular distance 
-          !of all vertices of this cell from the new and old cut-faces. 
-          !If the distance from the new cut-face is less than the distance from 
-          !the old cut-face from any of the vertices, then do not add this new cut-face.
+          !if the code has not returned so far, compare the perpendicular distance of all vertices of this cell from the new and old cut-faces. If the distance from the new cut-face is less than the distance from the old cut-face from any of the vertices, then do not add this new cut-face.
           
           ATLEAST_ONEINSIDE = .false.
           FORCE_INTPOINT_INSIDE = .TRUE. 
           
-300       CONTINUE 
+          ! 300      CONTINUE 
           
           VERTLOOP:  DO COUNT2 = 1, COUNT_VERT_LOOP
              !First find the normal distance from the vertex to the existing cut-face 
@@ -1064,7 +1187,7 @@
              YINT_OLD  = YCOR(COUNT2) - DIST_OLD*NORM2_OLD
              ZINT_OLD  = ZCOR(COUNT2) - DIST_OLD*NORM3_OLD
              
-             !at sharp edges the intersection point my lie outside of the cell containing the cut-face... and this point as a result mmight lie on the wrong side of the cut-face being considered
+             !at sharp edges the intersection point might lie outside of the cell containing the cut-face... and this point as a result mmight lie on the wrong side of the cut-face being considered
              !if the new cut-face is indeed before the existing cut-face then it will show up this way from other vertices where the intersection point will also lie within the cell 
              INT_OUTSIDECELL = .false.
              
@@ -1091,19 +1214,25 @@
              ELSE
                 IF(DIST_NEW.LT.ZERO.OR.DIST_NEW_INT.LT.ZERO)  REJECT_NEW = .true.
              ENDIF
-             
-             REJECT_NEW = REJECT_NEW.AND.ATLEAST_ONEINSIDE 
-             !Reject the new cut-face only if at-least one intersection point has been found 
-             !inside the cell. If this does not happen then this loop will be repated with 
-             !FORCE_INTPOINT_INSIDE = .false. and ATLEAST_ONEINSIDE  = .true.
-             
-             
-             !Im changing the logic here to 
-             
 
+             IF(FORCE_INTPOINT_INSIDE) THEN 
+                REJECT_NEW = REJECT_NEW.AND.ATLEAST_ONEINSIDE 
+                !reject will be true only if the intersection point is found 
+                !to be inside the cell 
+             ELSE
+                !If this does not happen then this loop will be repeated with 
+                !FORCE_INTPOINT_INSIDE = .false. 
+                !Jan 23, 2012. 
+                !not anymore, this loop will not be retested by setting 
+                !force_point_inside = .false.
+                !rather the distances will be compared from a point 
+                !midway on line joining the reference points on the two
+                !cut-faces
+             ENDIF
+             
              
              IF(REJECT_NEW) THEN
-                !DEBUG_LOCAL = .true.
+                DEBUG_LOCAL = .false.
                 IF(DEBUG_LOCAL.and.dmp_log) THEN
                    WRITE(*,*) 
                    WRITE(*,*) '*********************************************************************'
@@ -1124,11 +1253,11 @@
                    
                    WRITE(*,'(A,3(2x,g17.8))') 'EAST NORTH AND TOP OF THE CELL =', XG_E(I), YG_N(J), ZG_T(K)
                    WRITE(*,'(A,3(2x,g17.8))') 'WEST SOUTH AND BOTTOM OF THE CELL =', XG_E(I)-DX(I), YG_N(J)-DY(J), ZG_T(K) - DZ(K)
-                   WRITE(*,*) 'VERTEX NUMBER = ', COUNT2
+                   WRITE(*,*) 'VERTEX NUMBER = ', COUNT2, MPPIC
                    !IF(I.EQ.2) read(*,*) !.and.J.eq.25) read(*,*)
                    !IF(.NOT.FORCE_INTPOINT_INSIDE) READ(*,*)
                    
-                   !DEBUG_LOCAL = .false.
+                   DEBUG_LOCAL = .false.
                 ENDIF
                 IF(DIST_OLD.EQ.UNDEFINED.OR.DIST_NEW.EQ.UNDEFINED) THEN 
                    
@@ -1145,17 +1274,18 @@
                    CALL mfix_exit(mype)
                 ENDIF
                 
+                !IF(MPPIC) RETURN
                 RETURN
-                   
                 !what follows below is more relevant for soft spring like
                 !collions where convex edge has to be replaced by a line
                 !which is the intersection of planes 
 
-
+                write(*,*) 'now will try to add cut-face line for this case'
                 NORM_SQ = NORM1_OLD*NORM1_NEW + NORM2_OLD*NORM2_NEW + NORM3_OLD*NORM3_NEW
                 
                 IF(NORM_SQ.GT.TOL_CONVEX_ANGLE) THEN
-                   !do not add cut-face-line as a new bc 
+                   write(*,*) 'not adding as the convex angle threshold not reached' 
+                                !do not add cut-face-line as a new bc 
                    RETURN 
                 ELSE
                    IJK_TEMP2  = WALL_CELL_ID
@@ -1171,7 +1301,7 @@
                    
                    det = coeff_a1*coeff_b2 - coeff_a2*coeff_b1
                    IF(ABS(DET).LT.0.00001) THEN
-                      WRITE(*,*) 'ERROR MESSAGE FROM CHECK_NON_CUTCELLBC'
+                      WRITE(*,*) 'ERROR MESSAGE FROM CHECK_IF_TOADD_THIS_CUT_FACE'
                       WRITE(*,*) 'PLANES DO NOT INTERSECT AS DETERMINANT NEARLY EQUAL TO ZERO', DET
                       WRITE(*,'(A35, 3(2x,g17.8))') 'COeff for first plane  = ', coeff_a1,coeff_b1, coeff_c1
                       WRITE(*,'(A35, 3(2x,g17.8))') 'COeff for second plane  = ', coeff_a2,coeff_b2, coeff_c2
@@ -1182,7 +1312,7 @@
                       WRITE(*,'(A35, 3(2x,g17.8))') 'NORMAL 2 =', NORMAL_S(IJK_TEMP2,: )
                       
                       WRITE(*,*) 'TERMINAL ERROR: STOPPING'
-                      STOP
+                      call mfix_exit(myPE)
                    ENDIF
                    
                    ROOTX = (COEFF_C1*COEFF_B2 - COEFF_C2*COEFF_B1)/DET
@@ -1203,7 +1333,7 @@
                    DES_WALL_TYPE_FINAL = 'CUT_FACE_LINE'
                    WALL_CELL_ID_FINAL = IJK_TEMP
                    IF(NORM_MAG.LT.0.99) THEN
-                      WRITE(*,*) 'ERROR MESSAGE FROM CHECK_NON_CUTCELLBC'
+                      WRITE(*,*) 'ERROR MESSAGE FROM CHECK_IF_TOADD_THIS_CUT_FACE'
                       WRITE(*,*) 'NEW NORMAL MAGNITUDE NE 1', NORM_MAG
                       WRITE(*,*) 'NOMRAL_AVG = ', NORM_AVG(:)
                       WRITE(*,*) 'TERMINAL ERROR: STOPPING'
@@ -1226,6 +1356,7 @@
                    
                    
                    WRITE(*,'(80(A))') '***********************************************************************'
+                   !goto 500
                    NORMAL_FACE(6,:) = 0.d0
                    !East face 
                    XREF_FACE(1) = XG_E(I)
@@ -1277,7 +1408,9 @@
                            &  NORMAL_FACE(COUNT3,2) * (PTXYZ_ON_LINE(2) - YREF_FACE(COUNT3)) + &
                            &  NORMAL_FACE(COUNT3,3) * (PTXYZ_ON_LINE(3) - ZREF_FACE(COUNT3)) 
                       
-                      IF(DISTFROMLINE.LT.TOL_LINEINT) THEN 
+                      !IF(DISTFROMLINE.LT.TOL_LINEINT) THEN 
+                         
+                      IF(DISTFROMLINE.LT.ZERO) THEN 
                          WRITE(*,*) 'INTERSECTION POINT OUTSIDE THE CELL '
                          WRITE(*,*) 'FACE NUMBER  = ', COUNT3, TOL_LINEINT
                          
@@ -1292,6 +1425,7 @@
                       end IF
                    END DO FACELOOP
                    
+                   goto 500 
                    !also check if the same bc type with the same attributes does not already exist
                    DO COUNTBCIN = 1, COUNT_BC 
                       IJK_TEMP2 = DES_CELLWISE_BCDATA(CELL_ID)%BDRY_LIST(COUNTBCIN)%IJK_SCAL
@@ -1314,6 +1448,8 @@
                             !read(*,*)
                             RETURN
                          end IF
+
+500                      continue 
                       end IF CUTFACELINE
                    end DO
                       
@@ -1325,8 +1461,9 @@
              END IF
           end DO VERTLOOP
              
-          IF(.NOT.ATLEAST_ONEINSIDE) THEN
-             
+          IF(.NOT.REJECT_NEW.AND.(FORCE_INTPOINT_INSIDE.AND.(.NOT.ATLEAST_ONEINSIDE))) THEN
+             !redo the checking but this time do not require the 
+             !intersection point to lie inside the cell 
              !DEBUG_LOCAL  = .false.
              
              IF(DMP_LOG.and.debug_local) WRITE(UNIT_LOG, 2002) I, J, K, & 
@@ -1339,6 +1476,17 @@
              & I_OF(WALL_CELL_ID), J_OF(WALL_CELL_ID), K_OF(WALL_CELL_ID), &
              & REFP_S(IJK_TEMP, 1:3), REFP_S(WALL_CELL_ID, 1:3) 
              
+             !Jan 23, 2012. 
+             !Rahul: Don't rerun with this condition. This can lead to 
+             !wrong conclusions in regions of sharp curvature.  
+
+             !FORCE_INTPOINT_INSIDE = .FALSE. 
+             
+             !GOTO 300   
+             
+             !midway point lies mid-way on the line joining the reference points 
+             !on the two cut-faces in question. 
+
              MIDWAY_PT(1:3) = 0.5d0*(REFP_S(IJK_TEMP, 1:3) + REFP_S(WALL_CELL_ID, 1:3))
           
              CALL GET_DEL_H_DES(IJK_TEMP,'SCALAR',MIDWAY_PT(1), MIDWAY_PT(2), MIDWAY_PT(3), & 
@@ -1366,34 +1514,34 @@
           
              IF(DIST_OLD.LT.ZERO.OR.DIST_NEW.LT.ZERO) RETURN 
            
-             ATLEAST_ONEINSIDE = .TRUE.
-             FORCE_INTPOINT_INSIDE = .FALSE. 
-             
-             GOTO 300
           ENDIF
        end IF CUT_CELL_SPECIAL
        
-       
-       ! made it here.. deserves to be added 
+       !gave him no chance, but made it here...
+       !.. deserves to be added :-)
 
        ADD_THIS_CUT_FACE  = .TRUE. 
-       !reset the wall variables just in case if they were 
-       !modified during the call to this routine 
+       IF(TRIM(DES_WALL_TYPE_FINAL).eq.'CUT_FACE_LINE') ADD_THIS_CUT_FACE  = .false. 
+       RETURN
+       !as this case will be added below in this routine only. 
 
+       
+       !reset the wall variables just in case if they were 
+       !modified during the call to this routine (like, for example, 
+       !the cut-face-line BC changed the attributes. 
        WALL_NORM(:) = WALL_NORM_FINAL(:) 
        WALL_CELL_ID = WALL_CELL_ID_FINAL 
-       
        DES_WALL_TYPE = DES_WALL_TYPE_FINAL
+       
 
-       RETURN 
-
+       
        SELECT CASE (TRIM(DES_WALL_TYPE_FINAL)) 
           !Rahul:
           !for the case of cut_face_line, add this BC 
           !in this routine only as cnot is not a global
           !array. This can be fixed later but right not 
           !i do not care as this case will not pop up
-          !for the MPPIC case. For the DEM, this can 
+          !for the MPPIC case. For the DEM, this can be
           !improved upon later. 
        CASE('CUT_FACE_LINE')
           ADD_THIS_CUT_FACE  = .FALSE. 
@@ -1462,14 +1610,15 @@
        
 
  2002  FORMAT(/1X,70('*'),//,1X,  & 
-       & 'NOT A SINGLE INTERSECTION POINT IN THE CELL', /1x, & 
-       & 'NOW DECIDING BASED ON THE POINT MID-WAY BETWEEN CUT FACES IN QUESTION', /1x, &
+       & 'NOT REJECTED BUT NOT A SINGLE INTERSECTION POINT IN THE CELL', /1x, & 
+       & 'CHECKING BASED ON THE POINT MID-WAY BETWEEN CUT FACES IN QUESTION', /1x, &
        & 'I, J, K NAT = ', 3(2x, i5), /1X, &
        & 'I, J, K OLD = ', 3(2x, i5), /1X, &
        & 'I, J, K NEW = ', 3(2x, i5), /1X, &
        & 'REF PT OLD  = ', 3(2x, g17.8), /1X, &
        & 'REF PT NEW  = ', 3(2x, g17.8), /1X, & 
        & /1X,70('*')/)       
+
      END SUBROUTINE CHECK_IF_TOADD_THIS_CUT_FACE
      
        SUBROUTINE DES_ADD_WALLBC_TO_CELL(CELL_ID, WALL_CELL_ID, WALL_NORM, DES_WALL_TYPE)
@@ -1492,10 +1641,11 @@
        INTEGER, INTENT(IN) :: WALL_CELL_ID
        DOUBLE PRECISION, DIMENSION(DIMN), INTENT(IN) :: WALL_NORM
        CHARACTER*100, INTENT(IN) :: DES_WALL_TYPE 
-       INTEGER :: COUNT_BC, IJK_TEMP, COUNT 
+       INTEGER :: COUNT_BC, IJK_TEMP, COUNT , IJK
        CHARACTER*100 :: WALL_TYPE_TEMP
        DOUBLE PRECISION :: NORMAL_TEMP(3)
        LOGICAL :: SMALL_CELL 
+       INCLUDE 'function.inc'
        COUNT_BC = DES_CELLWISE_BCDATA(CELL_ID)%COUNT_DES_BC
        
        SMALL_CELL = .false. 
@@ -1520,8 +1670,8 @@
 
        IF(COUNT_BC.GT.MAX_DES_BC_CELL) THEN
           IF(DMP_LOG) THEN 
-             WRITE(UNIT_LOG, 1036) MAX_DES_BC_CELL, CELL_ID, I_OF(CELL_ID), J_OF(CELL_ID), K_OF(CELL_ID)
-             IF(myPE.eq.pe_IO) WRITE(*, 1036) MAX_DES_BC_CELL, CELL_ID, I_OF(CELL_ID), J_OF(CELL_ID), K_OF(CELL_ID)
+             WRITE(UNIT_LOG, 1036) MAX_DES_BC_CELL, CELL_ID, I_OF(CELL_ID), J_OF(CELL_ID), K_OF(CELL_ID), IS_ON_myPE_owns(I_OF(CELL_ID), J_OF(CELL_ID), K_OF(CELL_ID))
+             IF(myPE.eq.pe_IO) WRITE(*, 1036) MAX_DES_BC_CELL, CELL_ID, I_OF(CELL_ID), J_OF(CELL_ID), K_OF(CELL_ID), IS_ON_myPE_owns(I_OF(CELL_ID), J_OF(CELL_ID), K_OF(CELL_ID))
 
              WRITE(UNIT_LOG, *) 'EXISTING BCs FOR THIS CELL', '   CELL CUT_CELL ?', CUT_CELL_AT(CELL_ID)
              IF(myPE.eq.pe_IO) WRITE(*, *) 'EXISTING BCs FOR THIS CELL', '   CELL CUT_CELL ?', CUT_CELL_AT(CELL_ID)
@@ -1543,7 +1693,8 @@
             & 'ERROR MESSAGE FROM DES_ADD_WALLBC_TO_CELL', /10x, & 
             & 'INCREASE MAX_DES_BC_CELL from the current value of', i3, /10x, &
             & 'HAPPENING FOR CELL IJK, I, J, K = ', 4(2x, i5), /10X, &
-            & 'TERMINAL ERROR: STOPPING', &
+            & 'TERMINAL ERROR: STOPPING', /10X,  &
+            & 'IS ON MY PROCESSOR ? = ', L5,  &
             & /1X,70('*')/)
 
 1037   FORMAT(  & 
@@ -1713,15 +1864,16 @@
         !wall_cell_id is the IJK of the cell where the new bc is present 
         INTEGER, INTENT(IN) :: CELL_ID
         !Local variables
-        
+        INTEGER, PARAMETER :: MAX_BC = 10
         INTEGER :: COUNT_BC, IJK_TEMP, COUNT, COUNT_BC_OLD
-        INTEGER ::  IJK_ARR_TEMP(6), COUNT_BC_NEW, MAX_DIST_LOC(1), MAX_DIST2_LOC(1),  COUNT_CUT_FACE_LINE
+        INTEGER ::  IJK_ARR_TEMP(MAX_BC), COUNT_BC_NEW, MAX_DIST_LOC(1), MAX_DIST2_LOC(1),  COUNT_CUT_FACE_LINE
         
-        CHARACTER*100 :: WALL_TYPE_ARR_TEMP(6), WALL_TYPE_ARR_TEMP2(6), WALL_TYPE_TEMP 
-        DOUBLE PRECISION :: NORMAL_ARR_TEMP(6, DIMN), CNOT_ARR_TEMP(6, 3), VEC_ARR_TEMP(6,3)
-        LOGICAL :: REORDER, BC_REORDER_ARR(6)
+        CHARACTER*100 :: WALL_TYPE_ARR_TEMP(MAX_BC), WALL_TYPE_ARR_TEMP2(MAX_BC), WALL_TYPE_TEMP 
+        DOUBLE PRECISION :: NORMAL_ARR_TEMP(MAX_BC, DIMN), CNOT_ARR_TEMP(MAX_BC, 3), VEC_ARR_TEMP(MAX_BC,3)
+        LOGICAL :: REORDER, BC_REORDER_ARR(MAX_BC)
+
+
         COUNT_BC = DES_CELLWISE_BCDATA(CELL_ID)%COUNT_DES_BC
-        
         NORMAL_ARR_TEMP = ZERO
         CNOT_ARR_TEMP = ZERO
         VEC_ARR_TEMP = ZERO
@@ -1740,7 +1892,12 @@
         IF(.NOT.REORDER) RETURN 
 
         BC_REORDER_ARR = .FALSE.
-                
+        
+        IF(COUNT_BC.GT.MAX_BC) THEN 
+           WRITE(UNIT_LOG, '(A, i5, A, i5, A,/, A)') 'SIZE OF TEMP ARRAYS', MAX_BC, ' IN REORDER_BCS_FOR_CUTCELL SMALLER THAN COUNT_BC ( = ', COUNT_BC, ' ) FOR THIS CELL', 'TERMINAL ERROR: STOPPING'
+           IF(PRINT_DES_SCREEN) WRITE(*, '(A, i5, A, i5, A,/, A)') 'SIZE OF TEMP ARRAYS', MAX_BC, ' IN REORDER_BCS_FOR_CUTCELL SMALLER THAN COUNT_BC ( = ', COUNT_BC, ' ) FOR THIS CELL', 'TERMINAL ERROR: STOPPING'
+           CALL mfix_exit(myPE)
+        ENDIF
         
         DO COUNT = 1, COUNT_BC 
            IJK_TEMP = DES_CELLWISE_BCDATA(CELL_ID)%BDRY_LIST(COUNT)%IJK_SCAL
@@ -1771,7 +1928,7 @@
 
               
            CASE DEFAULT
-              WRITE(*,*)' EROR IN SUBROUTINE CHECK_NON_CUTCELLBC'
+              WRITE(*,*)' EROR IN SUBROUTINE REORDER_BCS_FOR_CUTCELL'
               WRITE(*,*)'UNKNOWN TYPE OF DES_WALL_TYPE:',TRIM(WALL_TYPE_ARR_TEMP(COUNT))
               WRITE(*,*)'ACCEPTABLE TYPES ARE:' 
               WRITE(*,*)'NORMAL_WALL' 
@@ -2498,7 +2655,9 @@
        IMPLICIT NONE 
        
        INTEGER :: LCURPAR,LPIP_ALL(0:NUMPES-1),LGLOBAL_ID, LGHOST_CNT_ALL(0:NUMPES-1), LL, PIP_INIT, PIP_FINAL
-
+       INTEGER :: IJK, K
+       INCLUDE 'function.inc'
+      
        IF(mype.eq.pe_IO) THEN 
           WRITE(*,*) 'DELETING PARTICLES OUTSIDE THE CUT-FACE BCs'
        ENDIF
@@ -2509,6 +2668,31 @@
        !MPPIC, in the current implementation that is the case
        !First reset the pip on each processor to reflect only 
        !the particles present on that proc. 
+       DO LL = 1, MAX_PIP
+          IF(.NOT.PEA(LL,1)) CYCLE  
+          IF(PEA(LL,4)) CYCLE  
+          PIJK(LL, 1) = DES_GETINDEXFROMPOS(ISTART1,IEND1,DES_POS_NEW(LL,1),XE(1:size(XE,1)),'X','I')
+          PIJK(LL, 2) = DES_GETINDEXFROMPOS(JSTART1,JEND1,DES_POS_NEW(LL,2),YN(1:size(YN,1)),'Y','J')
+          PIJK(LL, 3) = 1
+          IF(DIMN.eq.3) PIJK(LL, 3) = DES_GETINDEXFROMPOS(KSTART1,KEND1,DES_POS_NEW(LL,3),ZT(1:size(ZT,1)),'Z','K')
+          PIJK(LL, 4) = FUNIJK(PIJK(LL, 1), PIJK(LL, 2), PIJK(LL, 3))         
+       ENDDO
+      !**********DELETE START 
+
+      !OPEN(UNIT=24,FILE='PARTICLES_BEFORE_DEL.dat',&
+      !STATUS='REPLACE')
+      !WRITE(24, *) '"X"', '"Y"', '"Z"', '"Dp"', '"I"', '"J"', '"K"', '"IJK"'
+      !DO LL = 1, MAX_PIP
+      !   IF(.NOT.PEA(LL,1)) CYCLE  
+      !   IF(PEA(LL,4)) CYCLE  
+
+      ! WRITE(24,'(4(2x, g17.8), 4(2x, i20))')&
+      !   (DES_POS_NEW(LL,K),K=1,DIMN), 2.d0*DES_RADIUS(LL), PIJK(LL, 1:4)
+      !ENDDO
+      !CLOSE(24)
+      !call mfix_exit(mype)
+      
+      !**********DELETE END 
 
        DO LL = PIP - IGHOST_CNT + 1, PIP, 1 
           !deactivate the particle and also reset its ghost 
@@ -2565,20 +2749,6 @@
        END DO
 
        
-       !Call particles in cell again for consistency 
-       !CALL PARTICLES_IN_CELL
-       !now the particles_in_cell will be called after this routine 
-       !from the make_arrays_des only
-
-       !Rahul: Question for pradeep. Shud we call this here. 
-       !im not sure. btu the send_recv in DEM modules are in 
-       !Des_time_marchCG
-       !call send_recv(ep_g,2)
-       !call send_recv(rop_g,2)
-       !call send_recv(des_u_s,2)
-       !call send_recv(des_v_s,2) 
-       !if(dimn.eq.3) call send_recv(des_w_s,2) 
-       !call send_recv(rop_s,2)
 
 !!$       LGHOST_CNT_ALL = 0 
 !!$       LGHOST_CNT_ALL(MYPE) = IGHOST_CNT
@@ -2601,8 +2771,8 @@
 
        if(myPE.EQ.pe_IO) THEN 
           WRITE(*,'(A, i10)') 'INITIAL TOTAL NUMBER OF PARTICLES IN THE SYSTEM = ', PIP_INIT
-          WRITE(*,'(A, i10)') 'FINAL TOTAL NUMBER OF PARTICLES IN THE SYSTEM = ', PIP_FINAL
           WRITE(*,'(A, i10)') 'NUMBER OF PARTICLES DELETED = ', PIP_INIT -  PIP_FINAL
+          WRITE(*,'(A, i10)') 'FINAL TOTAL NUMBER OF PARTICLES IN THE SYSTEM = ', PIP_FINAL
        ENDIF
           
        END SUBROUTINE CG_DEL_OUTOFDOMAIN_PARTS
@@ -2748,7 +2918,7 @@
        DOUBLE PRECISION :: NORMAL_MAG, NORM_DOT, TEMP_DOT
        CHARACTER*100 :: WALL_TYPE 
        INTEGER :: COUNT_DELETE, PIP_OLD, TMP2, TMP1
-       LOGICAL :: DELETE_PART
+       LOGICAL :: DELETE_PART, PRINT_PART
        
        DOUBLE PRECISION X1MINX0(3), X2MINX1(3), TEMP_CROSSP(3), X1(3)
        CHARACTER*100 :: FILENAME
@@ -2770,7 +2940,23 @@
          
          IJK = PIJK(LL,4)
          COUNT_BC = DES_CELLWISE_BCDATA(IJK)%COUNT_DES_BC
-         
+         I = I_OF(IJK)
+         J = J_OF(IJK)
+         K = K_OF(IJK)
+         print_part = .false.
+         IF(K.eq.kend1) print_part = .true.
+         !IF(PRINT_PART) THEN 
+            
+         !   WRITE(*,'(A,3(2x,i4))') 'I, J, K NAT = ', I, J, K
+         !   DO COUNT = 1, COUNT_BC 
+         !      IJK_WALL = DES_CELLWISE_BCDATA(IJK)%BDRY_LIST(COUNT)%IJK_SCAL
+         !      WALL_TYPE = DES_CELLWISE_BCDATA(IJK)%BDRY_LIST(COUNT)%DES_BC_TYPE
+               
+         !      WRITE(*,*) 'WALL TYPE = ', TRIM(WALL_TYPE)
+         !      WRITE(*,'(A,3(2x,i4))') 'I, J, K WALL = ', I_OF(IJK_WALL), J_OF(IJK_WALL), K_OF(IJK_WALL)                      
+         !   ENDDO
+         !   READ(*,*) 
+         !ENDIF
          FLUID: IF(FLUID_AT(IJK)) THEN
             !Check if any of the particles are overlapping with the walls 
             !this will include the normal ghost cell walls and also the cut cells 
@@ -2781,8 +2967,9 @@
                IJK_WALL = DES_CELLWISE_BCDATA(IJK)%BDRY_LIST(COUNT)%IJK_SCAL
                WALL_TYPE = DES_CELLWISE_BCDATA(IJK)%BDRY_LIST(COUNT)%DES_BC_TYPE
                
+               IF(TRIM(WALL_TYPE).EQ.'NORMAL_WALL'.or.TRIM(WALL_TYPE).EQ.'OUTFLOW') WALL_TYPE = 'NORMAL_WALL'
+
                SELECT CASE (TRIM(WALL_TYPE)) 
-               
                CASE('NORMAL_WALL')
                   NORMAL(1:DIMN) = DES_CELLWISE_BCDATA(IJK)%BDRY_LIST(COUNT)%NORMAL(1:DIMN)
                   !perpendicular distance from center of Lth particle
@@ -2880,16 +3067,35 @@
                   
                   IF(DISTMOD.LT.ZERO) DELETE_PART = .TRUE.
                CASE DEFAULT
-                     WRITE(*,*)' EROR IN LIST_PARTILCES_TOBE_DELETED:'
-                     WRITE(*,*)'UNKNOWN TYPE OF DES_WALL_TYPE:',WALL_TYPE
-                     WRITE(*,*)'ACCEPTABLE TYPES ARE:' 
-                     WRITE(*,*)'NORMAL_WALL' 
-                     WRITE(*,*)'CUT_FACE' 
-                     WRITE(*,*)'CUT_FACE_LINE' 
-                     WRITE(*,*) 'TERMINAL ERROR: STOPPING'
-                     STOP
-                  END SELECT
+                  TEMPX = DES_POS_NEW(LL,1)
+                  TEMPY = DES_POS_NEW(LL,2)
+                  TEMPZ = 0.d0 
+                  IF(DIMN.EQ.3) TEMPZ = DES_POS_NEW(LL,3)
 
+                  WRITE(*, 1001) mype, TRIM(WALL_TYPE), IJK, I_OF(IJK), & 
+                  & J_OF(IJK), K_OF(IJK), IJK_WALL, I_OF(IJK_WALL), J_OF(IJK_WALL), K_OF(IJK_WALL),  &
+                  & TEMPX, TEMPY, TEMPZ
+
+                  if(DMP_LOG) WRITE(UNIT_LOG, 1001) mype, TRIM(WALL_TYPE), IJK, I_OF(IJK), & 
+                  & J_OF(IJK), K_OF(IJK), IJK_WALL, I_OF(IJK_WALL), J_OF(IJK_WALL), K_OF(IJK_WALL),  &
+                  & TEMPX, TEMPY, TEMPZ
+
+                  
+ 1001             FORMAT( 10x,'FROM PROC = ', 2x, i10, /10x, &
+                  & 'EROR IN LIST_PARTILCES_TOBE_DELETED:' , /10x, &
+                  & 'UNKNOWN TYPE OF DES_WALL_TYPE:', 2x, A, /10x, &
+                  & 'PARTICLE CELL ATTRIBUTES (IJK, I, J, K)', 4(2x,i10) , /10x, &
+                  & 'WALL CELL ATTRIBUTES     (IJK, I, J, K)', 4(2x,i10) , /10x, &
+                  & 'PARTICLE POSITION CORDINATES', 3(2x,g17.8) , /10x, &
+                  & 'ACCEPTABLE TYPES ARE:' , /10x, &
+                  & 'NORMAL_WALL' , /10x, &
+                  & 'CUT_FACE' , /10x, &
+                  & 'CUT_FACE_LINE' , /10x, &                  
+                  & 'TERMINAL ERROR: STOPPING' , /)
+      
+                  CALL mfix_exit(mype) 
+                  END SELECT
+                  
                END DO CHECK_BC
                
                IF(DELETE_PART) THEN 
