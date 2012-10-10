@@ -38,6 +38,7 @@
       USE funits 
       USE compar 
       USE discretelement
+      USE mfix_pic
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -308,12 +309,14 @@
                ENDIF   ! end if (bc_volflow_g(bcv)/=undefined)
 ! end gas volumetric flow conversion to velocity
 ! ----------------------------------------------------------------<<<               
-
-
-
-! DEM simulations do not employ variables for continuum solids. So do
-! not perform checks on unnecessary data.
-               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+               
+               IF (.NOT.DISCRETE_ELEMENT .OR. (DISCRETE_ELEMENT &
+                   .AND. DES_CONTINUUM_HYBRID).OR. (DISCRETE_ELEMENT &
+                   .AND. MPPIC)) THEN
+! The following quantities should not be required for DEM simulations
+! To ensure this is the case leave them undefined in mfix.dat
+! MPPIC BC's are based on Two Fluid Model based specification. 
+! So call the below for MPPIC. 
 
 ! Do flow conversions for solids phases
                DO M = 1, SMAX 
