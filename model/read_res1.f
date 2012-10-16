@@ -87,10 +87,6 @@
          allocate (array2(1))
       end if
 
-!// Reset global scratch arrays
-      array1(:) = Undefined
-      array2(:) = Undefined
-
 !      call MPI_barrier(MPI_COMM_WORLD,mpierr)
 !
 !     Use DT from data file if DT_FAC is set to 1.0
@@ -134,24 +130,24 @@
 
 
 !
-      call readScatterRes(EP_G,array2, array1, NEXT_REC)
+      call readScatterRes(EP_G,array2, array1, 0, NEXT_REC)
 
-      call readScatterRes(P_G,array2, array1, NEXT_REC)
+      call readScatterRes(P_G,array2, array1, 0, NEXT_REC)
 
-      call readScatterRes(P_STAR,array2, array1, NEXT_REC)
+      call readScatterRes(P_STAR,array2, array1, 1, NEXT_REC)
 
-      call readScatterRes(RO_G,array2, array1, NEXT_REC)
+      call readScatterRes(RO_G,array2, array1, 0, NEXT_REC)
 
-      call readScatterRes(ROP_G,array2, array1, NEXT_REC)
+      call readScatterRes(ROP_G,array2, array1, 0, NEXT_REC)
 
-      call readScatterRes(T_G,array2, array1, NEXT_REC)
+      call readScatterRes(T_G,array2, array1, 1, NEXT_REC)
 !
 
       IF (VERSION_NUMBER < 1.15) THEN 
-         call readScatterRes (T_s(:,1),array2, array1, NEXT_REC)
+         call readScatterRes (T_s(:,1),array2, array1, 1, NEXT_REC)
 
          IF (MMAX >= 2) THEN 
-            call readScatterRes (T_s(:,2),array2, array1, NEXT_REC)
+            call readScatterRes (T_s(:,2),array2, array1, 1, NEXT_REC)
          ELSE 
             if (myPE == PE_IO) &
                    CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
@@ -160,49 +156,49 @@
 
       IF (VERSION_NUMBER >= 1.05) THEN 
          DO N = 1, NMAX(0) 
-            call readScatterRes (X_g(:,n),array2, array1, NEXT_REC)
+            call readScatterRes (X_g(:,n),array2, array1, 1, NEXT_REC)
          END DO 
       ENDIF 
 
-      call readScatterRes(U_G, array2, array1, NEXT_REC)
-      call readScatterRes(V_G, array2, array1, NEXT_REC)
-      call readScatterRes(W_G, array2, array1, NEXT_REC)
+      call readScatterRes(U_G, array2, array1, 0, NEXT_REC)
+      call readScatterRes(V_G, array2, array1, 0, NEXT_REC)
+      call readScatterRes(W_G, array2, array1, 0, NEXT_REC)
 !
       DO LC = 1, MMAX 
-         call readScatterRes(ROP_S(:,LC), array2, array1, NEXT_REC)
+         call readScatterRes(ROP_S(:,LC), array2, array1, 0, NEXT_REC)
 
          IF (VERSION_NUMBER >= 1.15) THEN
-            call readScatterRes(T_S(:,LC), array2, array1, NEXT_REC)
+            call readScatterRes(T_S(:,LC), array2, array1, 1, NEXT_REC)
          END IF
-         call readScatterRes(U_S(:,LC), array2, array1, NEXT_REC)
-         call readScatterRes(V_S(:,LC), array2, array1, NEXT_REC)
-         call readScatterRes(W_S(:,LC), array2, array1, NEXT_REC)
+         call readScatterRes(U_S(:,LC), array2, array1, 0, NEXT_REC)
+         call readScatterRes(V_S(:,LC), array2, array1, 0, NEXT_REC)
+         call readScatterRes(W_S(:,LC), array2, array1, 0, NEXT_REC)
 
          IF (VERSION_NUMBER >= 1.2) then
-            call readScatterRes(THETA_M(:,LC), array2, array1, NEXT_REC)
+            call readScatterRes(THETA_M(:,LC), array2, array1, 1, NEXT_REC)
          end if
          IF (VERSION_NUMBER >= 1.05) THEN 
             DO N = 1, NMAX(LC) 
-               call readScatterRes(X_S(:,LC,N), array2, array1, NEXT_REC)
+               call readScatterRes(X_S(:,LC,N), array2, array1, 1, NEXT_REC)
             END DO 
          ENDIF 
       END DO 
 
       IF (VERSION_NUMBER >= 1.3) THEN
         DO N = 1, NScalar 
-          call readScatterRes(Scalar(:,N), array2, array1, NEXT_REC)
+          call readScatterRes(Scalar(:,N), array2, array1, 1, NEXT_REC)
         END DO 
       ENDIF
 
       IF (VERSION_NUMBER >= 1.4) THEN
-        call readScatterRes(GAMA_RG, array2, array1, NEXT_REC)
+        call readScatterRes(GAMA_RG, array2, array1, 1, NEXT_REC)
  
-        call readScatterRes(T_RG, array2, array1, NEXT_REC)
+        call readScatterRes(T_RG, array2, array1, 0, NEXT_REC)
 
         DO LC = 1, MMAX 
-          call readScatterRes(GAMA_RS(1,LC), array2, array1, NEXT_REC)
+          call readScatterRes(GAMA_RS(1,LC), array2, array1, 1, NEXT_REC)
 
-          call readScatterRes(T_RS(1,LC), array2, array1, NEXT_REC)
+          call readScatterRes(T_RS(1,LC), array2, array1, 0, NEXT_REC)
 
         ENDDO 
       ELSE
@@ -215,13 +211,13 @@
 
       IF (VERSION_NUMBER >= 1.5) THEN
         DO N = 1, nRR 
-          call readScatterRes(ReactionRates(:,N), array2, array1, NEXT_REC)
+          call readScatterRes(ReactionRates(:,N), array2, array1, 1, NEXT_REC)
         END DO 
       ENDIF 
 
       IF (VERSION_NUMBER >= 1.6 .AND. K_Epsilon) THEN 
-          call readScatterRes(K_Turb_G, array2, array1, NEXT_REC)
-          call readScatterRes(E_Turb_G, array2, array1, NEXT_REC)
+          call readScatterRes(K_Turb_G, array2, array1, 1, NEXT_REC)
+          call readScatterRes(E_Turb_G, array2, array1, 1, NEXT_REC)
       ENDIF
 !------------------------------------------------------------------------
 !
@@ -245,7 +241,7 @@
       RETURN  
       END SUBROUTINE READ_RES1 
       
-      subroutine readScatterRes(VAR, array2, array1, NEXT_REC)
+      subroutine readScatterRes(VAR, array2, array1, init, NEXT_REC)
         USE geometry
         USE funits 
         USE compar      
@@ -256,7 +252,17 @@
         double precision, dimension(ijkmax2) :: array1       
         double precision, dimension(ijkmax3) :: array2     
         double precision, dimension(DIMENSION_3) :: VAR
+        INTEGER :: init  ! define VAR initialization, 0: undefin, 1: zero
         INTEGER :: NEXT_REC 
+
+!// Reset global scratch arrays
+        if( init==0 ) then
+	  array1(:) = Undefined
+          array2(:) = Undefined
+        else
+	  array1(:) = zero
+          array2(:) = zero
+        endif
 	   
 	if (.not.bDist_IO .or. bStart_with_one_RES) then 
          if (myPE == PE_IO) then
