@@ -64,9 +64,14 @@
       DIMENSION_3L  = ijksize3_all(myPE)      
       DIMENSION_M   = MAX(1, MMAX)
       DIMENSION_4   = (kend4-kstart4+1)*(jend4-jstart4+1)*(iend4-istart4+1)
-      
+
       DIMENSION_N_g = 1
-      IF(NMAX(0) .NE. UNDEFINED_I)DIMENSION_N_g = NMAX(0)
+      IF(USE_RRATES) THEN
+          IF(NMAX(0) .NE. UNDEFINED_I)DIMENSION_N_g = NMAX(0)
+      ELSE
+          IF(NMAX_g .NE. UNDEFINED_I)DIMENSION_N_g = NMAX_g
+      ENDIF
+
       
 ! to reduce allocation space when doing post_mfix
       if (bDoing_postmfix) then
@@ -77,11 +82,17 @@
 
       DIMENSION_N_s = 1
       DO M = 1, MMAX
-        IF(NMAX(M) .NE. UNDEFINED_I)DIMENSION_N_s = MAX(DIMENSION_N_s, NMAX(M))
+         IF(USE_RRATES) THEN
+            IF(NMAX(M) .NE. UNDEFINED_I) &
+               DIMENSION_N_s = MAX(DIMENSION_N_s, NMAX(M))
+         ELSE
+            IF(NMAX_s(M) .NE. UNDEFINED_I) &
+               DIMENSION_N_s = MAX(DIMENSION_N_s, NMAX_s(M))
+         ENDIF
       ENDDO
       
       DIMENSION_LM    = (DIMENSION_M * (DIMENSION_M-1) / 2)+1
-      DIMENSION_N_all = DIMENSION_N_g + DIMENSION_M * DIMENSION_N_s
+      DIMENSION_N_all = max(DIMENSION_N_g, DIMENSION_N_s)
       DIMENSION_Scalar = NScalar
 !add by rong
       DIM_Scalar2 = 2*NScalar
@@ -277,14 +288,13 @@
       Allocate(  SUM_R_g (DIMENSION_3p) )
       Allocate(  SUM_R_s (DIMENSION_3p, DIMENSION_M) )
       Allocate(  R_phase (DIMENSION_3, DIMENSION_LM+DIMENSION_M-1) )
-      Allocate(  MW_all (DIMENSION_N_all) )
-      Allocate(  SPECIES_ID2N(DIMENSION_N_all, 2) )
-      Allocate(  SPECIES_N2IDg(DIMENSION_N_g) )
-      Allocate(  SPECIES_N2IDs(DIMENSION_M, DIMENSION_N_s) )
+
+! Undefined indicates that no reaction block was found in the deck file.
+      IF(NO_OF_RXNS .NE. UNDEFINED_I) &
+         Allocate( REACTION( NO_OF_RXNS ))
       
 !scalars
-      
-      IF(DIMENSION_Scalar /= 0)then
+      IF(DIMENSION_Scalar /= 0) then
         Allocate(  Scalar_c (DIMENSION_3p,  DIMENSION_Scalar) )
         Allocate(  Scalar_p (DIMENSION_3p,  DIMENSION_Scalar) )
         Allocate(  Dif_Scalar (DIMENSION_3p, DIMENSION_Scalar) )
