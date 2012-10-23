@@ -312,6 +312,7 @@ mfix.exe : \
     usr2.$(OBJ_EXT) \
     usr3.$(OBJ_EXT) \
     usr_init_namelist.$(OBJ_EXT) \
+    usr_rates.$(OBJ_EXT) \
     usr_write_out0.$(OBJ_EXT) \
     usr_write_out1.$(OBJ_EXT) \
     utilities.$(OBJ_EXT) \
@@ -765,6 +766,7 @@ mfix.exe : \
     usr3.$(OBJ_EXT) \
     usr_init_namelist.$(OBJ_EXT) \
     usr_mod.$(OBJ_EXT) \
+    usr_rates.$(OBJ_EXT) \
     usr_write_out0.$(OBJ_EXT) \
     usr_write_out1.$(OBJ_EXT) \
     utilities.$(OBJ_EXT) \
@@ -1136,7 +1138,10 @@ param.mod : param_mod.f
 	$(FORTRAN_CMD) $(FORT_FLAGS) param_mod.f 
 parse.mod : parse_mod.f \
             param.mod \
-            param1.mod 
+            param1.mod \
+            funits.mod \
+            compar.mod \
+            rxns.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) parse_mod.f 
 pgcor.mod : pgcor_mod.f \
             param.mod \
@@ -2171,14 +2176,18 @@ check_data_04.$(OBJ_EXT) : check_data_04.f \
             constant.mod \
             discretelement.mod \
             funits.mod \
-            mfix_pic.mod 
+            mfix_pic.mod \
+            compar.mod \
+            rxns.mod 
 check_data_05.$(OBJ_EXT) : check_data_05.f \
+            compar.mod \
             param.mod \
             param1.mod \
             physprop.mod \
             funits.mod \
             run.mod \
-            indices.mod 
+            indices.mod \
+            rxns.mod 
 check_data_06.$(OBJ_EXT) : check_data_06.f \
             param.mod \
             param1.mod \
@@ -2235,7 +2244,9 @@ check_data_09.$(OBJ_EXT) : check_data_09.f \
             rxns.mod \
             indices.mod \
             funits.mod \
-            compar.mod 
+            compar.mod \
+            parse.mod \
+            mfix_directory_path.inc                                     
 check_data_20.$(OBJ_EXT) : check_data_20.f \
             param.mod \
             param1.mod \
@@ -3337,10 +3348,11 @@ out_bin_512r.$(OBJ_EXT) : out_bin_512r.f \
 out_bin_r.$(OBJ_EXT) : out_bin_r.f \
             param.mod 
 parse_line.$(OBJ_EXT) : parse_line.f \
+            compar.mod \
             param.mod \
             param1.mod \
             parse.mod \
-            compar.mod 
+            rxns.mod 
 parse_resid_string.$(OBJ_EXT) : parse_resid_string.f \
             param.mod \
             param1.mod \
@@ -3349,11 +3361,12 @@ parse_resid_string.$(OBJ_EXT) : parse_resid_string.f \
             funits.mod \
             compar.mod 
 parse_rxn.$(OBJ_EXT) : parse_rxn.f \
+            compar.mod \
+            funits.mod \
             param.mod \
             param1.mod \
             parse.mod \
-            rxns.mod \
-            compar.mod 
+            rxns.mod 
 partial_elim.$(OBJ_EXT) : partial_elim.f \
             param.mod \
             param1.mod \
@@ -3509,6 +3522,7 @@ rrates0.$(OBJ_EXT) : rrates0.f \
             funits.mod \
             compar.mod \
             sendrecv.mod \
+            parse.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -3526,8 +3540,7 @@ rrates.$(OBJ_EXT) : rrates.f \
             constant.mod \
             funits.mod \
             compar.mod \
-            sendrecv.mod \
-            function.inc                                                
+            sendrecv.mod 
 rrates_init.$(OBJ_EXT) : rrates_init.f \
             param.mod \
             param1.mod \
@@ -4570,9 +4583,34 @@ usr1.$(OBJ_EXT) : usr1.f \
 usr2.$(OBJ_EXT) : usr2.f \
             usr.mod 
 usr3.$(OBJ_EXT) : usr3.f \
-            usr.mod 
+            usr.mod \
+            fldvar.mod 
 usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
             usr.mod 
+usr_rates.$(OBJ_EXT) : usr_rates.f \
+            param.mod \
+            param1.mod \
+            parallel.mod \
+            fldvar.mod \
+            rxns.mod \
+            energy.mod \
+            geometry.mod \
+            run.mod \
+            indices.mod \
+            physprop.mod \
+            constant.mod \
+            funits.mod \
+            compar.mod \
+            sendrecv.mod \
+            toleranc.mod \
+            usr.mod \
+            species.inc                                                  \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            ep_s2.inc                                                    \
+            fun_avg2.inc                                                 \
+            usrnlst.inc                                                 
 usr_write_out0.$(OBJ_EXT) : usr_write_out0.f 
 usr_write_out1.$(OBJ_EXT) : usr_write_out1.f 
 utilities.$(OBJ_EXT) : utilities.f \

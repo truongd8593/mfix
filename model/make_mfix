@@ -2198,6 +2198,20 @@ esac
        touch $mach_check
     fi
 
+#-----------------------------------------------------------------------
+# J. Musser - preprocessing for chemical reactions.         2012-10-08 #
+#-----------------------------------------------------------------------
+  cd $run_dir
+
+
+# Only execute if the run directory contains usr_rates.f
+  if [ -f "usr_rates.f" ]; then
+    source $mfix/rxn_preproc.sh
+  fi
+
+#-----------------------------------------------------------------------
+# END J. Musser - preprocessing for chemical reactions.     2012-10-08 #
+#-----------------------------------------------------------------------
 
 	    
     

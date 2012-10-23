@@ -33,13 +33,31 @@
       USE discretelement
       USE funits 
       USE mfix_pic
+      USE compar
+      USE rxns
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
       INTEGER :: LC, N
       CHARACTER*85 LONG_STRING      
+
+! Flag that the user was already warned why a call to the thermo-
+! chemical database is being made.
+      LOGICAL WARNED_USR
+
+! Flag that the energy equations are solved and specified solids phase
+! specific heat is undefined.
+! If true, a call to the thermochemical database is made.
+      LOGICAL EEQ_CPS
+
+! Flag that the solids phase species equations are solved and the 
+! molecular weight for a species are not given in the data file.
+! If true, a call to the thermochemical database is made.
+      LOGICAL SEQ_MWs
 !-----------------------------------------------
+
 
 
       IF ((DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_HYBRID) & 
@@ -184,10 +202,45 @@
          ENDDO
       ENDDO
 
-
-! Check NMAX - nmax(M) must be defined if species_eq(M) true
-! Only need to check species for real phases (for GHD theory) 
-      DO LC = 1, MMAX 
+! Check NMAX_s: The number of solids phase species should be defined
+! in NMAX_s. However, for legacy access, (USE_RRATES = .T.) the number
+! of species will appear in NMAX(m). 
+! --> NMAX(M) must be defined if species_eq(M) true. 
+! --> Only need to check species for real phases (for GHD theory) 
+      DO LC = 1, MMAX
+! If the legacy connection for reaction rates is not being used, check
+! to see if the number of species was provided under NMAX(M).
+         IF(.NOT.USE_RRATES) THEN
+            IF(NMAX_s(LC) == UNDEFINED_I) THEN
+               IF(NMAX(LC) /= UNDEFINED_I) THEN
+! The number of solids phase species was given in NMAX. Warn the user
+! to use the correct variable. Copy the old variable entry to the new
+! variable name for later pre-processing and continue.
+                  IF(DMP_LOG) THEN
+                     WRITE(*,1056)LC
+                     WRITE(UNIT_LOG,1056)LC
+                  ENDIF
+                  NMAX_s(LC) = NMAX(LC)
+               ENDIF
+! If for whatever reason, the number of species are given in both
+! variables, make sure they match.
+            ELSEIF(NMAX(LC) /= UNDEFINED_I .AND. &
+               NMAX_s(LC) /= UNDEFINED_I) THEN
+! The two varaibles do not match. Flag the error and exit.
+               IF(NMAX(LC) /= NMAX_s(LC)) THEN
+                  IF(DMP_LOG) THEN
+                     WRITE(*,1055)LC
+                     WRITE(UNIT_LOG,1055)LC
+                     CALL MFIX_EXIT(myPE)
+                  ENDIF
+               ENDIF
+            ELSE
+! Copy the new keyword entry into the runtime variable.
+               NMAX(LC) = NMAX_s(LC)
+            ENDIF
+         ENDIF
+! If the number of solids phase species wasn't given in either keyword,
+! Give the error and exit.
          IF (NMAX(LC) == UNDEFINED_I) THEN 
             IF (SPECIES_EQ(LC)) THEN 
                CALL ERROR_ROUTINE ('check_data_04', &
@@ -205,27 +258,92 @@
          ENDIF 
       ENDDO 
 
+! Flag indicating if the user was already warned.
+      WARNED_USR = .FALSE.
+! Flag that the energy equations are solved and specified solids phase
+! specific heat is undefined.
+      EEQ_CPS = .FALSE.
+      IF(ENERGY_EQ .AND. C_PS0 == UNDEFINED) EEQ_CPS = .TRUE.
+
 ! Check MW_s if solids species are present    
-      DO LC = 1, SMAX 
-         IF (SPECIES_EQ(LC)) THEN 
-            DO N = 1, NMAX(LC) 
+      DO LC = 1, SMAX
+! Initialize flag indicating the database was read for a species.
+         rDatabase(LC,:) = .FALSE.
+         DO N = 1, NMAX(LC)
+! Legacy code may use 'hard coded' functions for specific heat and
+! therefore should avoid the follow check.
+            IF(.NOT.USE_RRATES) THEN
+! Flag that the solids phase species equations are solved and the 
+! molecular weight for a species are not given in the data file.
+               SEQ_MWs = .FALSE.
+               IF(SPECIES_EQ(LC) .AND. MW_S(LC,N) == UNDEFINED)        &
+                  SEQ_MWs = .TRUE.
+
+! The thermodynamic data base provides the specific heat, molecular
+! weights, and heat of formation.
+! Check the thermodynamic database if:
+!   1) the energy equation is solved and constant solids phase specific
+!      heat isn't given. (EEQ_CPS = .TRUE.)
+!   2) the species energy equation is solved and the molecular weights
+!      for the solids phase species are not given. (SEQ_MWs = .TRUE.)
+! A final thermochemical check is preformed in check_data_09. If neither
+! of the above conditions result in species data being read from the
+! database AND a particular species is referenced by a chemical equation
+! then a call to read_database is forced.
+               IF(EEQ_CPS  .OR. SEQ_MWs) THEN
+! Notify the user of the reason the thermochemical database is used.
+                  IF(.NOT.WARNED_USR) THEN
+                     IF(EEQ_CPS .AND. myPE .EQ. PE_IO) THEN
+                        WRITE(*,1058)
+                        WRITE(UNIT_LOG,1058)
+                     ENDIF
+                     IF(SEQ_MWs .AND. myPE .EQ. PE_IO) THEN
+                        WRITE(*,1059)LC
+                        WRITE(UNIT_LOG,1059)LC
+                     ENDIF
+! Set a flag to prevent the user from getting the same message over
+! and over again.
+                     WARNED_USR = .TRUE.
+                  ENDIF
+! Flag that the species name is not provided.
+                  IF(SPECIES_s(LC,N) == UNDEFINED_C) THEN
+                     IF(myPE .EQ. PE_IO) THEN
+                        WRITE(*,1060) LC, N
+                        WRITE(UNIT_LOG,1060) LC, N
+                     ENDIF
+                     CALL MFIX_EXIT(myPE)
+                  ENDIF
+! Read the database.
+                  IF(myPE .EQ. PE_IO) THEN
+                     WRITE(*,1061) LC, N
+                     WRITE(UNIT_LOG,1061) LC, N
+                  ENDIF
+                  CALL READ_DATABASE('TFM', LC, N, SPECIES_s(LC,N),   &
+                     MW_S(LC,N))
+! Flag variable to stating that the database was read.
+                  rDatabase(LC,N) = .TRUE.
+! Flag the legacy variable to prevent re-reading the database.
+                  DATABASE_READ = .TRUE.
+               ENDIF
+            ELSE
+! This is a legacy check.
                IF (MW_S(LC,N) == UNDEFINED) THEN 
                   CALL ERROR_ROUTINE ('check_data_04', &
                      'Species molecular weight undefined', 0, 2) 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1410) LC, N 
-                  !CALL ERROR_ROUTINE (' ', ' ', 1, 3) no need to abort as they will be read from database
-               ENDIF 
-            ENDDO 
-            DO N = NMAX(LC) + 1, DIM_N_S 
-               IF (MW_S(LC,N) /= UNDEFINED) THEN 
-                  CALL ERROR_ROUTINE ('check_data_04', &
-                     'MW_s defined for N > NMAX(m)', 0, 2) 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1410) LC, N 
-                  CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
-               ENDIF 
-            ENDDO 
-         ENDIF 
-      ENDDO 
+                     !CALL ERROR_ROUTINE (' ', ' ', 1, 3) no need to abort as they will be read from database
+               ENDIF
+            ENDIF ! USE_RRATES
+         ENDDO ! Loop over species
+         DO N = NMAX(LC) + 1, DIM_N_S 
+            IF (MW_S(LC,N) /= UNDEFINED) THEN 
+               CALL ERROR_ROUTINE ('check_data_04', &
+                  'MW_s defined for N > NMAX(m)', 0, 2) 
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1410) LC, N 
+               CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
+            ENDIF 
+         ENDDO 
+      ENDDO ! Loop over solids phases
 
 ! CHECK MU_s0
       IF (MU_S0 < ZERO) THEN 
@@ -267,6 +385,41 @@
  1045 FORMAT(1X,/,1X,'NMAX is not specified for solids phase',I2) 
  1050 FORMAT(1X,/,1X,'NMAX(',I2,')   in  mfix.dat = ',I6,/,1X,&
          'DIM_N_s in  param.inc  = ',I6,/) 
+
+ 1055 FORMAT(/1X,70('*')/' From: CHECK_DATA_04',/                      &
+         ' Message: NMAX_s and NMAX are both given for solids phase ', &
+         I2,' in the',/' data file and do not match. NMAX is a legacy',&
+         ' variable and is not',/' required. Please correct the data', &
+         ' file.',/1X,70('*')/)
+
+ 1056 FORMAT(/1X,70('*')/' From: CHECK_DATA_04',/                      &
+         ' Message: NMAX is specified for solids phase ',I2,'. This',  &
+         ' is a legacy',/' variable, and NMAX_s should be used.',      &
+         ' Copying NMAX to NMAX_s.',/1X,70('*')/)
+
+ 1058 FORMAT(/1X,70('*')/' From: CHECK_DATA_04',/                      &
+         ' Message: The energy equations are being solved (ENERGY_EQ)',&
+         ', and the',/' specified constant solids specific heat is',   &
+         ' undefined (C_PS0). Thus,',/' the thermochemical database',  &
+         ' will be used to gather specific heat data',/' on the',      &
+         ' individual soids phase species.',/1X,70('*')/)
+
+ 1059 FORMAT(/1X,70('*')/' From: CHECK_DATA_04',/                      &
+         ' Message: Solids phase ',I2,' species equations are being',  &
+         ' solved, and one',/' or more species molecular weights are', &
+         ' undefined. Thus, the thermo-',/' chemical database will be',&
+         ' used to gather molecular weight data on the',/' solids',    &
+         ' phase speicies.',/1X,70('*')/)
+
+ 1060 FORMAT(/1X,70('*')/'  From: CHECK_DATA_04',/                     &
+         ' Message: Solids phase ',I2,' species ',I2,' name',          &
+         ' (SPECIES_s) is undefined.',/' Please correct the data file.'&
+         ,/1X,70('*')/)
+
+ 1061 FORMAT(/'  Searching thermochemical databases for solids phase ',&
+         I2,', species ',I2)
+
+
  1100 FORMAT(1X,/,1X,'D_p0(',I2,') in mfix.dat = ',G12.5) 
  1200 FORMAT(1X,/,1X,'D_p0(',I2,') = ',G12.5,/,1X,'MMAX in mfix = ',I2,/) 
  1300 FORMAT(1X,/,1X,'RO_s(',I2,') in mfix.dat = ',G12.5) 

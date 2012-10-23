@@ -69,8 +69,8 @@
 
 ! 1.6 Solids phase section
 ! ---------------------------------------------------------------->>>
-             MU_s0, D_p0, RO_s, EP_star, MMAX, NMAX, MW_s, CLOSE_PACKED,&
-             K_s0, C_ps0, DIF_s0,&
+             MU_s0, D_p0, RO_s, EP_star, MMAX, MW_s, CLOSE_PACKED,&
+             K_s0, C_ps0, DIF_s0, NMAX_g, NMAX_s, &
 ! ----------------------------------------------------------------<<<
 
 
@@ -121,8 +121,10 @@
 
 ! 1.10 Chemical reactions
 ! ---------------------------------------------------------------->>>
-             SPECIES_NAME, &
-	     CALL_DI, CALL_GROW, CALL_ISAT, ISATdt,&
+             USE_RRATES, &
+             SPECIES_g, SPECIES_s, &
+             SPECIES_ALIAS_g, SPECIES_ALIAS_s, &
+	            CALL_DI, CALL_GROW, CALL_ISAT, ISATdt,&
 ! ----------------------------------------------------------------<<<
 
 ! 1.11 parallel related
@@ -135,6 +137,12 @@
 
 ! Distributed IO (version 1) related variables
              bDist_IO , bStart_with_one_RES , &
+! ----------------------------------------------------------------<<<
+
+! Legacy variables
+! ---------------------------------------------------------------->>>
+            NMAX, & ! Legacy access
+            SPECIES_NAME, &  ! Legacy variable
 ! ----------------------------------------------------------------<<<
 
 ! Misc

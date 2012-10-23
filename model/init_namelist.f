@@ -324,6 +324,19 @@
       MW_S = UNDEFINED
       EP_STAR = UNDEFINED 
 
+      NMAX_g = UNDEFINED_I
+      SPECIES_g(:) = UNDEFINED_C
+      SPECIES_ALIAS_g(:) = UNDEFINED_C
+
+      NMAX_s(:) = UNDEFINED_I
+      SPECIES_s(:,:) = UNDEFINED_C
+      SPECIES_ALIAS_s(:,:) = UNDEFINED_C
+
+
+      USE_RRATES = .FALSE.
+! NO_OF_RXNS is not a keyword. However, it is initialized here so that
+! if there are no reactions, this value is assigned.
+      NO_OF_RXNS = UNDEFINED_I
 
 ! INITIALIZE THE INITIAL CONDITIONS
       DO LC = 1, DIMENSION_IC 
