@@ -261,6 +261,7 @@
             ROX_gc(IJK,:NMAX(0))*X_g(IJK,:NMAX(0)))
       ELSE
          DO H=1, NO_OF_RXNS
+            IF(Reaction(H)%nPhases <= 0) CYCLE
             DO M=1, MMAX
                LM = 1 + ((M-1)*M)/2
                SUM_R_G(IJK) = SUM_R_G(IJK) + &
@@ -276,6 +277,7 @@
                RoX_sc(IJK,M,:NMAX(M))*X_s(IJK,M,:NMAX(M)))
          ELSE
             DO H=1, NO_OF_RXNS
+               IF(Reaction(H)%nPhases <= 0) CYCLE
                DO L=0, M-1
                   LM = 1 + L + ((M-1)*M)/2
                   SUM_R_S(IJK,M) = SUM_R_S(IJK,M) - &
