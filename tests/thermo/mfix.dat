@@ -1,130 +1,260 @@
-# This is not a real run; Certain values are printed out from rrates to test the reading
-# of thermo properties and heat of reaction calculation; then the code is made to exit.
-# Data are read from this file as well as from mfix/model/thermochemical/BURCAT.THR
+!                                                                               
+!  Spouted Bed Combustor
+!
+!  Author: E.F. Modeler               Date: 9-28-94
+!  Modified: J. Musser                Date: 9-17-12
+!    ,
+  RUN_NAME  = 'Thermo test'
+  DESCRIPTION  = 'Reaction Thermodynamics Test'
 
-  RUN_NAME = 'Thermo test'
-  DESCRIPTION = 'Test the reading of thermochemical database.'
+#_______________________________________________________________
+# RUN CONTROL SECTION
 
-  NMAX(0)= 5
-  SPECIES_NAME = 'CH4'  'CO2'   'O2'  'H2O'  'N2'
-
-  MMAX = 2
-  NMAX(1)= 5
-  NMAX(2)= 4
-  SPECIES_NAME(6) = 'AL2O3'   'ZnCl2'  'Fe(OH)2'  'Fixed Carbon' 
-  SPECIES_NAME(10) = 'Volatile Matter'
-  SPECIES_NAME(11) = 'SiS2  Solid'  'C6H11  2M-4en3yl'   'SiHCL3' 'SiH4  Silane'
-
-  MW_s(1,5) = 63  !override the molecular weight read from the database
-
-
-
-! Most of the rest of the datafile is to get MFIX not to quit before rrates.
-
+  UNITS    = 'cgs'
   RUN_TYPE = 'new'
-  UNITS = 'cgs'
-  TIME  = 0.0    TSTOP = 25.    DT = 1.0E-4 
-  ENERGY_EQ = .TRUE.
-  SPECIES_EQ = .TRUE.    .FALSE.
+  TIME     = 0.0
+  TSTOP    = 0.1
+  DT       = 1.0E-4
 
-  DEF_COR = .true.
-  MAX_NIT = 100
-  
-  Norm_g = 0.
-  
-  C(1) = 1.0E10  ! reaction rate coefficient
+  GRAVITY  = 980.7
 
-#
-# Geometry Section
-#
-  COORDINATES = 'Cartesian'
+  ENERGY_EQ  = .T.
 
-  XLENGTH  =  10.   IMAX = 1
-  YLENGTH  =  2.   JMAX = 10  
-  NO_K = .true.
-  ZLENGTH  =  10.   KMAX = 1 
+  SPECIES_EQ     = .T.  .T.  .T.  .T.
+  MOMENTUM_X_EQ  = .F.  .F.  .F.  .F.
+  MOMENTUM_Y_EQ  = .F.  .F.  .F.  .F.
+  MOMENTUM_Z_EQ  = .F.  .F.  .F.  .F.
 
-#
-# Gas-phase Section
-#
-#
+#_______________________________________________________________
+# NUMERICAL SECTION
 
-  MU_g0 = 1.8E-4
-  Dif_g0 = 0.
+  NORM_G  = 0.0
+  NORM_S  = 0.0
 
-#
-# Solids-phase Section
-#
+#_______________________________________________________________
+# GEOMETRY SECTION 
 
-  C_e = 0.8  C_f = 0.3  Phi = 30.   EP_star = 0.4
-  D_p0 = 1  1
-  RO_s = 1  1
-#
-# Initial Conditions Section
-#
-       !              
-  IC_X_w           =  0.0      
-  IC_X_e           =  10.0 
-  IC_Y_s           =  0.0  
-  IC_Y_n           =  2. 
+  COORDINATES = 'cartesian'
+
+  XLENGTH  = 1.0
+  IMAX     = 1
+
+  ZLENGTH  = 1.0
+  KMAX     = 1
+
+  YLENGTH  = 1.0
+  JMAX     = 1
+
+
+#_______________________________________________________________
+# MATERIAL SECTION
+
+# GAS SECTION
+#------------------------------------------//
+
+  NMAX_g = 9
+
+  SPECIES_g(1) = 'N2  REF ELEMENT   '   SPECIES_ALIAS_g(1) = 'N2'
+  SPECIES_g(2) = 'O2 REF ELEMENT    '   SPECIES_ALIAS_g(2) = 'O2'
+  SPECIES_g(3) = 'H2O'                  SPECIES_ALIAS_g(3) = 'H2O'
+  SPECIES_g(4) = 'CO'                   SPECIES_ALIAS_g(4) = 'CO'
+  SPECIES_g(5) = 'CO2'                  SPECIES_ALIAS_g(5) = 'CO2'
+  SPECIES_g(6) = 'H2 REF ELEMENT    '   SPECIES_ALIAS_g(6) = 'H2'
+  SPECIES_g(7) = 'CH4'                  SPECIES_ALIAS_g(7) = 'CH4'
+  SPECIES_g(8) = 'Tar'                  SPECIES_ALIAS_g(8) = 'TAR'
+  SPECIES_g(9) = 'Fixed Carbon'         SPECIES_ALIAS_g(9) = 'GSOOT'
  
-  IC_EP_g          =  1.0
-  IC_T_g	   = 1000.
- 
-  IC_U_g           = 0.0   
-  IC_V_g           = 0.0
-  IC_X_g(1,1)      = 0.0463    !1 mole CH4
-  IC_X_g(1,3)      = 0.2222     !2.4 moles O2
-  IC_X_g(1,5)      = 0.7315    !9.03 moles N2
+!  MW_g - Obtained from Burcat and Ruscic databse
+!  MW_AVG - Calculated from individual species
 
-#
-#  Boundary Conditions Section
-#
-       !             Inlet       Outlet
-  BC_X_w           =  0.0        0.0
-  BC_X_e           =  10.0       10.0 
-  BC_Y_s           =  0.0       2.00
-  BC_Y_n           =  0.0       2.00
- 
-  BC_TYPE          = 'MI'        'PO'
+# PARTICLE SECTION
+#------------------------------------------//
 
-  BC_EP_g          =  1.0   
+  MMAX = 3  ! Number of solids phases
 
-  BC_U_g           =  0.0    
-  BC_V_g           =  10.
+! Solids phase 1
+!------------------------------------------//
+  D_p0(1) = 0.1   ! (cm)
+  RO_s(1) = 1.0   ! (g/cm)
 
-  BC_P_g           = 1.013E6       1.013E6
+  NMAX_s(1) = 4
 
-  BC_T_g           = 298.         
-
-  BC_X_g(1,1)      = 0.0463    !1 mole CH4
-  BC_X_g(1,3)      = 0.2222     !2.4 moles O2
-  BC_X_g(1,5)      = 0.7315    !9.03 moles N2
+  SPECIES_s(1,1) = 'Fixed Carbon'      SPECIES_ALIAS_s(1,1) = 'FC1'
+  SPECIES_s(1,2) = 'Volatile Matter'   SPECIES_ALIAS_s(1,2) = 'VM'
+  SPECIES_s(1,3) = 'H2O(L)'            SPECIES_ALIAS_s(1,3) = 'MOISTURE'
+  SPECIES_s(1,4) = 'Coal Ash'          SPECIES_ALIAS_s(1,4) = 'ASH1'
 
 
-#
-#  Output Control
-#
-  out_dt = 1.
+! Solids phase 2
+!------------------------------------------//
+  D_p0(2) = 0.1   ! (cm)
+  RO_s(2) = 1.0   ! (g/cm)
+
+  NMAX_s(2) = 2
+  SPECIES_s(2,1) = 'Fixed Carbon'   SPECIES_ALIAS_s(2,1) = 'FC2'
+  SPECIES_s(2,2) = 'Coal Ash'       SPECIES_ALIAS_s(2,2) = 'ASH2'
+
+! Solids phase 2
+!------------------------------------------//
+  D_p0(3) = 0.1   ! (cm)
+  RO_s(3) = 1.0   ! (g/cm)
+
+  NMAX_s(3) = 2
+  SPECIES_s(3,1) = 'Fixed Carbon'   SPECIES_ALIAS_s(3,1) = 'SSOOT'
+  SPECIES_s(3,2) = 'Coal Ash'       SPECIES_ALIAS_s(3,2) = 'FLYASH'
+
+
+  EP_star = 0.50    ! Packed bed void fraction
+  e       = 0.8
+  C_f     = 0.1
+  Phi     = 30.0
+
+  YU_STANDISH = .TRUE. ! compute ep_star using Yu_Standish correlation
+
+
+#_______________________________________________________________
+# INITIAL CONDITIONS SECTION
+
+  IC_X_w(1) = 0.0
+  IC_X_e(1) = 1.0
+
+  IC_Y_s(1) = 0.0
+  IC_Y_n(1) = 1.0
+
+  IC_Z_b(1) = 0.0
+  IC_Z_t(1) = 1.0
+
+  IC_P_g(1)  = 1.01325d6 ! -> 1atm
+
+! Gas phase
+!------------------------------------------//
+  IC_EP_g(1) = 0.7
+
+  IC_X_g(1,1) = 0.2d0   ! N2 
+  IC_X_g(1,2) = 0.1d0   ! O2
+  IC_X_g(1,3) = 0.1d0   ! H2O
+  IC_X_g(1,4) = 0.1d0   ! CO
+  IC_X_g(1,5) = 0.1d0   ! CO2
+  IC_X_g(1,6) = 0.1d0   ! H2
+  IC_X_g(1,7) = 0.1d0   ! CH4
+  IC_X_g(1,8) = 0.1d0   ! Tar
+  IC_X_g(1,9) = 0.1d0   ! Soot
+
+  IC_T_g(1)  = 500.0     ! (K)
+
+  IC_U_g(1) = 0.0   ! (cm/sec)
+  IC_V_g(1) = 0.0   ! (cm/sec)
+  IC_W_g(1) = 0.0   ! (cm/sec)
+
+! Solids phase 1
+!------------------------------------------//
+  IC_ROP_s(1,1) = 0.1
+
+  IC_X_s(1,1,1) = 0.25 ! Fixed Carbon
+  IC_X_s(1,1,2) = 0.25 ! Volatile Matter
+  IC_X_s(1,1,3) = 0.25 ! Moistuer
+  IC_X_s(1,1,4) = 0.25 ! Ash
+
+  IC_T_s(1,1)  = 500.0 ! (K) -> 30C
+
+  IC_U_s(1,1) = 0.0   ! (cm/sec)
+  IC_V_s(1,1) = 0.0   ! (cm/sec)
+  IC_W_s(1,1) = 0.0   ! (cm/sec)
+
+! Solids phase 2
+!------------------------------------------//
+  IC_ROP_s(1,2) = 0.1
+
+  IC_X_s(1,2,1) = 0.50 ! Fixed Carbon
+  IC_X_s(1,2,2) = 0.50 ! Ash
+
+  IC_T_s(1,2)  = 400.0 ! (K)
+
+  IC_U_s(1,2) = 0.0   ! (cm/sec)
+  IC_V_s(1,2) = 0.0   ! (cm/sec)
+  IC_W_s(1,2) = 0.0   ! (cm/sec)
+
+! Solids phase 3
+!------------------------------------------//
+  IC_ROP_s(1,3) = 0.1
+
+  IC_X_s(1,3,1) = 0.50 ! Fixed Carbon (Soot)
+  IC_X_s(1,3,2) = 0.50 ! Ash (FlyAsh)
+
+  IC_T_s(1,3)  = 600.0 ! (K)
+
+  IC_U_s(1,3) = 0.0   ! (cm/sec)
+  IC_V_s(1,3) = 0.0   ! (cm/sec)
+  IC_W_s(1,3) = 0.0   ! (cm/sec)
+
+#_______________________________________________________________
+# CHEMICAL REACTION SECTION
+
+  @(RXNS)
+
+    Char_Combustion1 { chem_eq = "2FC1 + O2 --> 2CO"}
+
+    Char_Combustion2 { chem_eq = "2FC2 + O2 --> 2CO"}
+
+    Char_Combustion3 { chem_eq = '2.2FC1 + O2 --> 2CO + 0.2sSoot'}
+
+    CH4_Combustion { chem_eq = "CH4 + 2O2 --> CO2 + 2H2O" }
+
+    CH4_Catalytic1 { chem_eq = "CH4 + 2O2 + 0.FC1 --> CO2 + 2H2O" }
+
+    CH4_Catalytic2 { chem_eq = "CH4 + 2O2 --> CO2 + 2H2O + 0.FC1" }
+
+    CH4_Catalytic3 { chem_eq = "CH4 + 2O2 + 0.FC1 --> CO2 + 2H2O + 0.FC1" }
+
+    Char_to_Char { chem_eq = 'FC1 --> FC2' }  ! Hot --> Cold
+
+    Ash_to_Ash { chem_eq = 'Ash2 --> FlyAsh' } ! Cold --> Hot
+
+    Skippy_RxN { chem_eq = 'None' }
+
+  @(END)
+
+
+#_______________________________________________________________
+# OUTPUT CONTROL SECTION
+
+  OUT_DT = 0.10
   RES_DT = 0.01
-        !
-        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g    Theta_m  Scalar
-        !      P_star    V_g  V_s            T_s1 X_s
-        !                W_g  W_s            T_s2
-  SPX_DT = 100. 100.     0.1  100.  100.      .1   .1   100.      100.
 
-  FULL_LOG = .true.
-  NLOG   = 25
-  
-    RESID_STRING = 'P0' 'V0' 'T0' 'T1' 'X001'
+  SPX_DT(1)  = 0.05   ! EP_g 
+  SPX_DT(2)  = 0.05   ! P_g, P_star 
+  SPX_DT(3)  = 0.05   ! U_g, V_g, W_g
+  SPX_DT(4)  = 0.05   ! U_s, V_s, W_s
+  SPX_DT(5)  = 0.05   ! ROP_s
+  SPX_DT(6)  = 0.05   ! T_g, T_s
+  SPX_DT(7)  = 0.05   ! X_g, X_s
+  SPX_DT(8)  = 100.   ! theta
+  SPX_DT(9)  = 100.   ! Scalar
+  SPX_DT(10) = 0.01   ! Reaction Rates
+
+  RESID_STRING  = 'P0' 'V0', 'V1', 'V2', 'T0', 'T1', 'T2'
+
+  nRR = 7 ! Number of reaction rates to write to .SPA
+
+  NLOG = 100
+  FULL_LOG = .T.
+  WRITE_DASHBOARD = .T.
+
+! Use to check mass balance for debugging. Slows down simulation and
+! should not be used for production runs.
+  Report_Mass_Balance_Dt = 0.05
 
 
+#_______________________________________________________________
+# PARALLELIZATION CONTROLS
+
+  NODESI  = 1     NODESJ  = 1     NODESK  = 1
+
+
+#_______________________________________________________________
 THERMO DATA
 
-The following are coal pseudo species specifications.  Replace these
-with appropriate coal properties.  Also define the Hf298 values (the fifteenth
-coefficient.).  The readme file describes the data format.
-Fixed Carbon               WARNING!       0.S   200.000  6000.000  B  12.00000 1
+Fixed Carbon               WARNING!       0.S   200.000  6000.000  B  12.01100 1
 -7.94079328E-01 8.09779756E-03-6.56398654E-06 1.84781958E-09 0.00000000E+00    2
  0.00000000E+00 0.00000000E+00-7.94079328E-01 8.09779756E-03-6.56398654E-06    3
  1.84781958E-09 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    4
@@ -133,8 +263,19 @@ Volatile Matter            WARNING!       0.S   200.000  6000.000  B  56.00000 1
  4.91181845E+00 2.28260066E-02 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
  0.00000000E+00 0.00000000E+00 4.91181845E+00 2.28260066E-02 0.00000000E+00    3
  0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    4
- 
-Coal Ash                   WARNING!       0.S   200.000  6000.000  B 120.00000 1
+
+H2O(L)            L 8/89H  2.O  1.   0.   0.L   273.150  6000.000  C  18.01528 1
+ 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+ 0.00000000E+00 0.00000000E+00 7.25575005E+01-6.62445402E-01 2.56198746E-03    3
+-4.36591923E-06 2.78178981E-09-4.18865499E+04-2.88280137E+02-3.43772513E+04    4
+
+Coal Ash                   WARNING!       0.S   200.000  6000.000  B  56.00000 1
  8.70769880E+00 8.45407650E-03 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
  0.00000000E+00 0.00000000E+00 8.70769880E+00 8.45407650E-03 0.00000000E+00    3
  0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    4
+
+Tar                        WARNING!       0.S   200.000  6000.000  B 144.00000 1
+ 3.26085808E+01 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+ 0.00000000E+00 0.00000000E+00 3.26085808E+01 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 9.87654321E-99    4
+
