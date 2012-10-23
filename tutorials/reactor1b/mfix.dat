@@ -22,7 +22,7 @@
    LEQ_METHOD = 7*2
    LEQ_SWEEP = 'isis'
 
-
+   USE_RRATES = .T.
 
 ! Geometry Section
 !
