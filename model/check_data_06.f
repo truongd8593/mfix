@@ -70,12 +70,6 @@
       INCLUDE 'function.inc'
 !-----------------------------------------------
 
-
-! Read thermochemical database
-      If(.not.database_read .and. species_name(1) /= UNDEFINED_C) &
-        call read_database(IER)
-
-
 ! Initialize the icbc_flag array.  If not a NEW run then do not
 ! check the initial conditions.
        DO K = Kstart3, Kend3       
