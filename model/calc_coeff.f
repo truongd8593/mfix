@@ -75,7 +75,8 @@
       ENDIF
       
       RRATE = .FALSE.      
-      IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
+      IF (NO_OF_RXNS > 0) RRATE = .TRUE. 
+      IF (USE_RRATES) RRATE = .TRUE. 
       DENSITY(:MMAX) = .TRUE. 
  
 ! Rong
@@ -241,27 +242,20 @@
       INTEGER :: IER
 !-----------------------------------------------
 
-
 ! Calculate reaction rates and interphase mass transfer
-      IF (RRATE) THEN 
-         IF (NO_OF_RXNS > 0) THEN 
-            CALL RRATES0 (IER)             !rxns defined in mfix.dat and rrates0.f 
-         ELSE
-            IER = 0 
-            CALL RRATES (IER)              !rxns defined in rrates.f 
-! If rrates.f has not been modified and there are no discrete (DES)
-! reactions, flag error and exit.
-            IF(IER .EQ. 1 .AND. .NOT.ANY_DES_SPECIES_EQ) THEN
-              CALL START_LOG 
-              IF(DMP_LOG)WRITE (UNIT_LOG, 1000)
-              CALL END_LOG 
-              call mfix_exit(myPE)  
+      IF(RRATE) THEN
+! Legacy hook: Calculate reactions from rrates.f.
+         IF(USE_RRATES) THEN
+            CALL RRATES (IER)
+            IF(IER .EQ. 1) THEN
+               CALL START_LOG
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1000)
+               CALL END_LOG 
+               CALL MFIX_EXIT(myPE)  
             ENDIF
-
+         ELSE
+            CALL RRATES0 (IER)
          ENDIF
-      ELSE
-! In case mass exchage w/o chemical rxn (e.g., evaporation) occur
-        CALL RRATES (IER)           
       ENDIF 
 
       IF(DISCRETE_ELEMENT .AND. ANY_DES_SPECIES_EQ) &

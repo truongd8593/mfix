@@ -34,9 +34,14 @@
 #
 # Gas-phase Section
 #
-  SPECIES_NAME = 'O3'  'O2'  'N2'
-  NMAX(0)= 3
   MU_g0 = 1.8E-4
+
+  NMAX_g = 3
+  SPECIES_g(1) = 'O3'   SPECIES_ALIAS_g(1) = 'O3'
+  SPECIES_g(2) = 'O2'   SPECIES_ALIAS_g(2) = 'O2'
+  SPECIES_g(3) = 'N2'   SPECIES_ALIAS_g(3) = 'N2'
+
+
 #
 # Solids-phase Section
 #
@@ -46,8 +51,7 @@
   e       = 0.8
   Phi     = 30.0
   EP_star = 0.48
-  !The solids species, which is not needed, but included to avoid error message 
-  SPECIES_NAME(4) = 'Al2O3'  
+
 #
 # Initial Conditions Section
 #
@@ -100,6 +104,15 @@
   BC_X_g(1,1)      = 0.1
   BC_X_g(1,2)      = 0.2097
   BC_X_g(1,3)      = 0.6903
+
+#_______________________________________________________________
+# CHEMICAL REACTION SECTION
+
+  @(RXNS)
+
+    Ozone_Decomp { chem_eq = "O3 --> 1.5O2" }
+
+  @(END)
 
 #
 #  Output Control
