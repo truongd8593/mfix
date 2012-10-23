@@ -40,8 +40,12 @@
 # Gas-phase Section
 #
   MU_g0 = 0.01
-  NMAX(0) = 2
-  SPECIES_NAME = 'H2O' 'AIR'
+
+  NMAX_g = 2
+  SPECIES_g(1) = 'H2O'      SPECIES_ALIAS_g(1) = 'Vapor'
+  SPECIES_g(2) = 'AIR   '   SPECIES_ALIAS_g(2) = 'Air'
+
+
 #
 # Solids-phase Section
 #
@@ -54,8 +58,10 @@
   Phi     = 0.0
   EP_star = 0.4
   
-  NMAX(1) = 2
-  SPECIES_NAME(3) = 'H2O(L)' 'AL2O3' !'SiO2(Lqz)' !
+  NMAX_s(1) = 2
+  SPECIES_s(1,1) = 'H2O(L)'   SPECIES_ALIAS_s(1,1) = 'liquid'
+  SPECIES_s(1,2) = 'AL2O3'    SPECIES_ALIAS_s(1,2) = 'AL2O2'
+
   
   C(1) = 0.002  #reaction rate coefficient  
 
@@ -89,6 +95,16 @@
    
   IC_X_s(1,1,1)      =  0.1
   IC_X_s(1,1,2)      =  0.9 
+
+
+#_______________________________________________________________
+# CHEMICAL REACTION SECTION
+
+  @(RXNS)
+
+    Drying { chem_eq = "Liquid --> Vapor" }
+
+  @(END)
 
 
 #

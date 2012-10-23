@@ -35,11 +35,11 @@
 #                                                                               
 # Gas-phase Section                                                             
 #   
-  SPECIES_NAME = 'O3'  'O2'   
-  NMAX(0) = 2 
-#  MW_g(1) = 10. 30.
-#  MW_avg = 29.   
-           
+
+  NMAX_g = 2
+  SPECIES_g(1) = 'O3'                   SPECIES_ALIAS_g(1) = 'O3'
+  SPECIES_g(2) = 'O2 REF ELEMENT    '   SPECIES_ALIAS_g(2) = 'O2'
+          
   MU_g0 = 1.8E-4                                                                
 #                                                                               
 # Solids-phase Section                                                          
@@ -52,7 +52,8 @@
   EP_star = 0.42   
 #
 # The solids species, which is not needed, but included to avoid error message
-  SPECIES_NAME(3) = 'AL2O3'                                                             
+  SPECIES_s(1,1) = 'AL2O3'                                                             
+
 #                                                                               
 # Initial Conditions Section                                                    
 #                                                                               
@@ -105,6 +106,20 @@
   BC_DT_h          =  0.2                                                       
   BC_Jet_gl        = 25.9                                                       
   BC_DT_l          =  0.9                                                       
+
+
+#_______________________________________________________________
+# CHEMICAL REACTION SECTION
+
+  @(RXNS)
+
+    O2_to_O3 { chem_eq = "3.0*O2 --> 2.0*O3" }
+
+  @(END)
+
+
+
+
 #                                                                               
 #  Output Control                                                               
 #                  

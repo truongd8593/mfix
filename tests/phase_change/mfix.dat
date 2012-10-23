@@ -28,8 +28,14 @@
 #                                                                               
 # Gas-phase Section                                                             
 #                                                                               
-  MU_g0 = 1.8E-4                                                                
-  MW_avg = 29.                                                                  
+  MU_g0 = 1.8E-4
+  MW_AVG = 29.0
+
+  NMAX_g = 1
+  SPECIES_g(1) = 'H2O'      SPECIES_ALIAS_g(1) = 'Gas'
+  MW_g(1) = 29.0
+
+
 #                                                                               
 # Solids-phase Section                                                          
 #                                                                               
@@ -38,7 +44,13 @@
                                                                                 
   e       = 0.8                                                                 
   Phi     = 0.0                                                                 
-  EP_star = 0.42                                                                
+  EP_star = 0.42
+
+  NMAX_s(1) = 1
+  SPECIES_s(1,1) = 'H2O(L)'   SPECIES_ALIAS_s(1,1) = 'Solid'
+
+  MW_s(1,1) = 29.0
+
 #                                                                               
 # Initial Conditions Section                                                    
 #                                                                               
@@ -70,7 +82,18 @@
                                                                                 
   BC_TYPE          =  'PO'                                        
                                                                                 
-  BC_P_g           = 1.013E6                                 
+  BC_P_g           = 1.013E6
+
+#_______________________________________________________________
+# CHEMICAL REACTION SECTION
+
+  @(RXNS)
+
+    Phase_Change { chem_eq = "Solid --> Gas" }
+
+  @(END)
+
+
                                                                                 
 #                                                                               
 #  Output Control                                                               

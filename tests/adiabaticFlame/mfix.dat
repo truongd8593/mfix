@@ -49,9 +49,14 @@
 # Gas-phase Section
 #
   MU_g0 = 0.01
-  NMAX(0) = 5
-  #The following order should agree with that in species_indices.inc
-  SPECIES_NAME = 'CH4' 'O2' 'CO2' 'H2O' 'N2'
+
+  NMAX_g = 5
+  SPECIES_g(1) = 'CH4'                  SPECIES_ALIAS_g(1) = 'CH4'
+  SPECIES_g(2) = 'O2 REF ELEMENT    '   SPECIES_ALIAS_g(2) = 'O2'
+  SPECIES_g(3) = 'CO2'                  SPECIES_ALIAS_g(3) = 'CO2'
+  SPECIES_g(4) = 'H2O'                  SPECIES_ALIAS_g(4) = 'H2O'
+  SPECIES_g(5) = 'N2  REF ELEMENT   '   SPECIES_ALIAS_g(5) = 'N2'
+
 
   C(1) = 200000.  #reaction rate coefficient  
 #
@@ -84,6 +89,16 @@
   IC_X_g(1,4)      =  0.0
   IC_X_g(1,5)      =  0.731512556
    
+
+#_______________________________________________________________
+# CHEMICAL REACTION SECTION
+
+  @(RXNS)
+
+    CH4_Comb { chem_eq = "CH4 + 2O2 --> CO2 + 2H2O" }
+
+  @(END)
+
 
 #
 #  Output Control
