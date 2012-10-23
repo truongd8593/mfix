@@ -54,7 +54,7 @@
 ! thermodynamic databases.
          IF (DES_C_PS0(M) == UNDEFINED) THEN
 ! Read the thermodynamic database if it has not already been done.
-            IF(.NOT.DATABASE_READ) CALL READ_DATABASE(IER)
+            IF(.NOT.DATABASE_READ) CALL READ_DATABASE0(IER)
             DES_C_PS(NP) = ZERO
 ! Calculate the specific heat based on the species composition of the
 ! particle and the data from the thermodynamic databases.

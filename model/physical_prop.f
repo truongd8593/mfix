@@ -108,7 +108,7 @@
 ! Average molecular weight: Xg1/Mw1 + Xg2/Mw2 + Xg3/Mw3 + ....
 !                 MW = CALC_MW(X_g, DIMENSION_3, IJK, NMAX(0), MW_g)
 
-                  IF(.NOT.database_read) call read_database(IER)
+                  IF(.NOT.database_read) call read_database0(IER)
 ! calculating the average molecular weight of the fluid
                   MW = ZERO
                   N = 1
@@ -148,7 +148,7 @@
 ! Constant pressure specific heat of air in cal/g.K
 ! 1 Cal = 4.183925 J
             IF (SP_HEAT(0) .AND. C_PG0==UNDEFINED) THEN
-               IF(.NOT.database_read) call read_database(IER)
+               IF(.NOT.database_read) call read_database0(IER)
 
 ! calculating an average specific heat of the fluid               
 !             IF(C(23) == ONE) THEN
@@ -210,7 +210,7 @@
 ! Specific heat of solids (Ash =  0.310713 cal/g.K)
 !    Dobran et al., 1991
                   IF (SP_HEAT(M) .AND. C_PS0==UNDEFINED) THEN
-                     IF(.NOT.database_read) call read_database(IER)
+                     IF(.NOT.database_read) call read_database0(IER)
                      C_PS(IJK, M) = ZERO
                      DO N = 1, NMAX(M)
                         C_PS(IJK, M) = C_PS(IJK,M) + X_s(IJK,M,N) * &

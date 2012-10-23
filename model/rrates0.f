@@ -7,9 +7,10 @@
 !  Author: M. Syamlal                                 Date: 3-10-98    C
 !  Reviewer:                                          Date:            C
 !                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
+!  Revision Number: 1                                                  C
+!  Purpose:Replaced routines with new proceedures for automated        C
+!          reaction rate calculations.                                 C
+!  Author: J. Musser                                  Date: 10-Oct-12  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
 !  Literature/Document References:                                     C
@@ -24,11 +25,8 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-!
       SUBROUTINE RRATES0(IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
+
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
@@ -46,6 +44,8 @@
       USE funits 
       USE compar 
       USE sendrecv 
+      Use parse
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -56,234 +56,247 @@
 !
 !                      Error index
       INTEGER          IER
-!
-!                      Local phase and species indices
-      INTEGER          L, LM, M, N, LR, ID
 
-!                      cell index
-      INTEGER          IJK
+      INTEGER IJK  ! fluid cell index
+      INTEGER H    ! Reaction loop counter
+      INTEGER L, M ! Global Phase index loop counters
+      INTEGER N    ! Global species index
+      INTEGER lN   ! Local reaction speices index/loop counter
+      INTEGER LM   ! 
 
-      DOUBLE PRECISION stmw, ex, Tr, EP, RATE(DIMENSION_RXN) 
+      INTEGER mXfr ! Global phase index for mass transfer
+
+! User-defined reaction rates returned from USR_RATES
+      DOUBLE PRECISION RATES(NO_OF_RXNS)
+
+      DOUBLE PRECISION lRate
+
+      DOUBLE PRECISION RxH(0:MMAX, 0:MMAX)
+      DOUBLE PRECISION lHoRg, LHoRs(1:MMAX)
+
+! External functions for calculating enthalpy (cal/gram)
+      DOUBLE PRECISION, EXTERNAL ::CALC_H
+      DOUBLE PRECISION, EXTERNAL ::CALC_H0
+
+! External Function for comparing two numbers.
+      LOGICAL, EXTERNAL :: COMPARE
+
+
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'ep_s2.inc'
-!
-!
-!     Initialize arrays to zero
-      CALL ZERO_ARRAY (SUM_R_G, IER) 
-      CALL ZERO_ARRAY (HOR_G, IER) 
-      DO N = 1, NMAX(0) 
-         CALL ZERO_ARRAY (R_GP(1,N), IER) 
-         CALL ZERO_ARRAY (ROX_GC(1,N), IER) 
-      END DO 
-      DO M = 1, MMAX 
-         CALL ZERO_ARRAY (SUM_R_S(1,M), IER) 
-         CALL ZERO_ARRAY (HOR_S(1,M), IER) 
-         DO N = 1, NMAX(M) 
-            CALL ZERO_ARRAY (R_SP(1,M,N), IER) 
-            CALL ZERO_ARRAY (ROX_SC(1,M,N), IER) 
-         END DO 
-      END DO 
-  
 
-      DO L = 0, MMAX 
-        DO M = L + 1, MMAX 
-          LM = L + 1 + (M - 1)*M/2 
-          CALL ZERO_ARRAY (R_PHASE(1,LM), IER) 
-        ENDDO
+
+! Initialize global storage arrays to zero
+!---------------------------------------------------------------------//
+      SUM_R_G(:) = ZERO
+      HOR_G(:) = ZERO
+      R_GP(:,:) = ZERO
+      ROX_GC(:,:) = ZERO
+      SUM_R_S(:,:) = ZERO
+      HOR_S(:,:) = ZERO
+      R_SP(:,:,:) = ZERO
+      ROX_SC(:,:,:) = ZERO
+      R_PHASE(:,:) = ZERO
+
+! Loop over each fluid cell.
+      DO IJK = ijkstart3, ijkend3 
+      IF (FLUID_AT(IJK)) THEN 
+
+      RATES(:) = ZERO
+
+! Calculate user defined reaction rates.
+      CALL USR_RATES(IJK, RATES)
+
+! Loop over reactions.
+      RXN_LP: DO H = 1, NO_OF_RXNS
+
+! Skip empty reactions
+         IF(Reaction(H)%nSpecies == 0) CYCLE RXN_LP
+         IF(COMPARE(RATES(H),ZERO)) CYCLE RXN_LP
+
+! Initialize local loop arrays
+         lHoRg = ZERO
+         lHoRs(:) = ZERO
+         RxH(:,:) = ZERO
+
+! Calculate the rate of formation/consumption for each species.
+!---------------------------------------------------------------------//
+         DO lN = 1, Reaction(H)%nSpecies
+! Global phase index.
+            M = Reaction(H)%Species(lN)%pMap
+! Global species index.
+            N = Reaction(H)%Species(lN)%sMap
+! Index for interphase mass transfer. For a gas/solid reaction, the 
+! index is stored with the gas phase. For solid/solid mass transfer
+! the index is stored with the source phase.
+            mXfr = Reaction(H)%Species(lN)%mXfr
+            lRate = RATES(H) * Reaction(H)%Species(lN)%MWxStoich
+! Gas Phase:
+            IF(M == 0) THEN
+! Consumption of gas phase species.
+               IF(lRate < ZERO) THEN
+                  IF(X_g(IJK,N) > SMALL_NUMBER) THEN
+                     RoX_gc(IJK,N) = RoX_gc(IJK,N) - lRate/X_g(IJK,N)
+                  ELSE
+                     RoX_gc(IJK,N) = 1.0d-9
+                  ENDIF
+! Enthalpy transfer associated with mass transfer. (gas/solid)
+                  IF(M /= mXfr) RxH(M,mXfr) =  RxH(M,mXfr) + &
+                     lRate * CALC_H0(T_G(IJK),0,N)
+               ELSE
+! Formation of gas phase species.
+                  R_gp(IJK,N) = R_gp(IJK,N) + lRate
+! Enthalpy transfer associated with mass transfer. (gas/solid)
+                  IF(M /= mXfr) RxH(M,mXfr) =  RxH(M,mXfr) + &
+                     lRate * CALC_H0(T_s(IJK,mXfr),0,N)
+               ENDIF
+! Solids Phase M:
+            ELSE
+! Consumption of solids phase species.
+               IF(lRate < ZERO) THEN
+                  IF(X_s(IJK,M,N) > SMALL_NUMBER) THEN
+                     RoX_sc(IJK,M,N) = &
+                        RoX_sc(IJK,M,N) - lRate/X_s(IJK,M,N)
+                  ELSE
+                     RoX_sc(IJK,M,N) = 1.0d-9
+                  ENDIF
+! Enthalpy transfer associated with mass transfer. (solid/solid) This
+! is only calculated from the source (reactant) material.
+                  IF(M /= mXfr) THEN
+                     IF(M < mXfr) THEN
+                        RxH(M,mXfr) =  RxH(M,mXfr) + lRate * &
+                          Reaction(H)%Species(lN)%xXfr * CALC_H(IJK,M,N)
+                     ELSE
+                        RxH(mXfr,M) =  RxH(mXfr,M) - lRate * &
+                          Reaction(H)%Species(lN)%xXfr * CALC_H(IJK,M,N)
+                     ENDIF
+                  ENDIF
+               ELSE
+! Formation of solids phase species.
+                  R_sp(IJK,M,N) = R_sp(IJK,M,N) + lRate
+               ENDIF
+            ENDIF
+         ENDDO ! Loop of species
+
+
+! Calculate and store the heat of reaction.
+!---------------------------------------------------------------------//
+         IF(ENERGY_EQ) THEN
+! Automated heat of reaction calculations
+            IF(Reaction(H)%Calc_DH) THEN
+! Loop over reaction species.
+               DO lN = 1, Reaction(H)%nSpecies
+! Global phase index.
+                  M = Reaction(H)%Species(lN)%pMap
+! Global species index.
+                  N = Reaction(H)%Species(lN)%sMap
+! Rate of formation/consumption for speices N
+                  lRate = RATES(H) * Reaction(H)%Species(lN)%MWxStoich
+! Gas phase enthalpy chnage from energy equation derivation.
+                  IF(M == 0) THEN
+                     lHORg = lHORg + CALC_H(IJK,0,N) * lRate
+! Solid phase enthalpy change from energy equation derivation.
+                  ELSE
+                     lHORs(M) = lHORs(M) + CALC_H(IJK,M,N) * lRate
+                  ENDIF
+               ENDDO
+
+! Complete the skew-symettric for enthalpy transfer with mass transfer
+               DO M=1, MMAX
+                   DO L=0, M-1
+                    RxH(M,L) = - RxH(L,M)
+                  ENDDO
+               ENDDO
+! Apply enthalpy transfer associated with mass transfer to get the
+! complete heat of reaction of heat phse for Reaction H.
+               DO L=0, MMAX
+                  DO M = 0, MMAX
+                     IF(L == M) CYCLE
+                     IF(L == 0) THEN
+                        lHORg = lHORg - RxH(L,M)
+                     ELSE
+                        lHORs(L) = lHORs(L) - RxH(L,M)
+                     ENDIF
+                  ENDDO
+               ENDDO
+
+! Convert the heat of reaction to the appropriate units (if SI), and 
+! store in the global array.
+               IF(UNITS == 'SI') THEN
+                  HOR_g(IJK) = HOR_g(IJK) + 4.183925d3*lHORg
+                  DO M=1,MMAX
+                     HOR_s(IJK,M) = HOR_s(IJK,M) + 4.183925d3*lHORs(M)
+                  ENDDO
+               ELSE
+                  HOR_g(IJK) = HOR_g(IJK) + lHORg
+                  DO M=1,MMAX
+                     HOR_s(IJK,M) = HOR_s(IJK,M) + lHORs(M)
+                  ENDDO
+               ENDIF
+            ELSE
+! User-defined heat of reaction.
+               HOR_g(IJK) = Reaction(H)%HoR(0) * RATES(H)
+               DO M=1, MMAX
+                  HOR_s(IJK,M) = Reaction(H)%HoR(M) * RATES(H)
+               ENDDO
+            ENDIF
+         ENDIF
+
+! Update rate of interphase mass transfer.
+!---------------------------------------------------------------------//
+          DO LM=1, (DIMENSION_LM+DIMENSION_M-1)
+             R_PHASE(IJK,LM) = R_PHASE(IJK,LM) + &
+                RATES(H) * Reaction(H)%rPHASE(LM)
+          ENDDO
+      ENDDO RXN_LP ! Loop over reactions.
+
+
+! Calculate the toal rate of formation and consumption for each species.
+!---------------------------------------------------------------------//
+      IF(SPECIES_EQ(0)) THEN
+         SUM_R_G(IJK) = SUM( &
+            R_gp(IJK,:NMAX(0)) - &
+            ROX_gc(IJK,:NMAX(0))*X_g(IJK,:NMAX(0)))
+      ELSE
+         DO H=1, NO_OF_RXNS
+            DO M=1, MMAX
+               LM = 1 + ((M-1)*M)/2
+               SUM_R_G(IJK) = SUM_R_G(IJK) + &
+                  RATES(H) * Reaction(H)%rPHASE(LM)
+            ENDDO
+         ENDDO
+      ENDIF
+
+      DO M=1, MMAX
+         IF(SPECIES_EQ(M)) THEN
+            SUM_R_S(IJK,M) = SUM( &
+               R_sp(IJK,M,:NMAX(M)) - &
+               RoX_sc(IJK,M,:NMAX(M))*X_s(IJK,M,:NMAX(M)))
+         ELSE
+            DO H=1, NO_OF_RXNS
+               DO L=0, M-1
+                  LM = 1 + L + ((M-1)*M)/2
+                  SUM_R_S(IJK,M) = SUM_R_S(IJK,M) - &
+                     RATES(H) * Reaction(H)%rPHASE(LM)
+               ENDDO
+               DO L=M+1, MMAX
+                  LM = 1 + M + ((L-1)*L)/2
+                  SUM_R_S(IJK,M) = SUM_R_S(IJK,M) + &
+                     RATES(H) * Reaction(H)%rPHASE(LM)
+               ENDDO
+            ENDDO
+
+         ENDIF
       ENDDO
 
-!!!!$omp  parallel do private( IJK, L, LM, M, N, LR, ID, stmw, ex, Tr, EP, RATE )
-      DO IJK = ijkstart3, ijkend3 
-      
-         IF (FLUID_AT(IJK)) THEN 
-!
-!
-!  Define the reaction rates and enthalpy changes due to reaction
-!  (not given in the data file) at the end of Section 1.
-!
-!1111111111111111111111111111111111111111111111111111111111111111111111111111111
-!
-! 1. Write the rates of various reactions:
-!
-            DO LR = 1, NO_OF_RXNS 
-!
-               IF (GOT_RATE(LR)) THEN 
-!
-                  IF (RATE_M4T(LR) == 0) THEN 
-                     TR = T_G(IJK) 
-                     EP = EP_G(IJK) 
-                  ELSE 
-                     TR = T_S(IJK,RATE_M4T(LR)) 
-                     EP = EP_S(IJK,RATE_M4T(LR)) 
-                  ENDIF 
-!
-                  IF (EP > ZERO) THEN 
-                     RATE(LR) = RATE_FAC(LR,1)*TR**RATE_FAC(LR,2)*EXP((-&
-                        RATE_FAC(LR,3)/TR))*EP 
-!
-                     DO ID = 1, N_ALL 
-                        EX = RATE_EXP(LR,ID) 
-                        IF (EX /= ZERO) THEN 
-!
-                           M = SPECIES_ID2N(ID,1) 
-                           N = SPECIES_ID2N(ID,2) 
-!
-                           IF (M == 0) THEN 
-                              RATE(LR) = RATE(LR)*(RO_G(IJK)*X_G(IJK,N)/MW_G(N)&
-                                 )**EX 
-                           ELSE 
-                              RATE(LR) = RATE(LR)*(RO_S(M)*X_S(IJK,M,N)/MW_S(M,&
-                                 N))**EX 
-                           ENDIF 
-!
-                        ENDIF 
-                     END DO 
-                  ELSE 
-                     RATE(LR) = ZERO 
-                  ENDIF 
-!
-               ELSE 
-                  RATE(LR) = UNDEFINED 
-               ENDIF 
-            END DO 
-            DO LR = 1, NO_OF_RXNS 
-!
-               IF (RATE(LR) /= UNDEFINED) THEN 
-!
-                  DO ID = 1, N_ALL 
-                     STMW = STOICHXMW(LR,ID) 
-                     IF (STMW /= ZERO) THEN 
-!
-                        M = SPECIES_ID2N(ID,1) 
-                        N = SPECIES_ID2N(ID,2) 
-!
-                        IF (M == 0) THEN 
-                           IF (STMW > ZERO) THEN !production 
-                              R_GP(IJK,N) = R_GP(IJK,N) + RATE(LR)*STMW 
-!
-                           ELSE 
-!                                            !consumption
-                              IF (X_G(IJK,N) > SMALL_NUMBER) ROX_GC(IJK,N)&
-                                     = ROX_GC(IJK,N) - RATE(LR)*STMW/X_G(IJK,N)
-				     
-			      ! Although the following is a better linearization of the
-			      ! reaction term than the above, it makes the calculation of SUM_R_G
-			      ! nearly impossible and makes the rates calculated here inconsistent
-			      ! with the rrates.f way of implementing reaction rates.  So it is not chosen.
-                              !EX = RATE_EXP(LR,ID) 
-                              !IF (EX <= ONE) THEN 
-                              !   IF (X_G(IJK,N) > SMALL_NUMBER) ROX_GC(IJK,N)&
-                              !       = ROX_GC(IJK,N) - RATE(LR)*STMW/X_G(IJK,N) 
-                              !ELSE 
-                              !   R_GP(IJK,N) = R_GP(IJK,N) - (EX - ONE)*RATE(LR&
-                              !      )*STMW 
-                              !   IF (X_G(IJK,N) > SMALL_NUMBER) ROX_GC(IJK,N)&
-                              !       = ROX_GC(IJK,N) - EX*RATE(LR)*STMW/X_G(IJK&
-                              !      ,N) 
-                              !ENDIF 
-!
-                           ENDIF 
-                        ELSE 
-                           IF (STMW > ZERO) THEN !production 
-                              R_SP(IJK,M,N) = R_SP(IJK,M,N) + RATE(LR)*STMW 
-!
-                           ELSE 
-!                                            !consumption
-!
-                              IF (X_S(IJK,M,N) > SMALL_NUMBER) ROX_SC(IJK,M,&
-                                    N) = ROX_SC(IJK,M,N) - RATE(LR)*STMW/X_S(&
-                                         IJK,M,N)
-					 
-			      ! see the comments in the gas-section above.
-                              !EX = RATE_EXP(LR,ID) 
-                              !IF (EX <= ONE) THEN 
-                              !   IF (X_S(IJK,M,N) > SMALL_NUMBER) ROX_SC(IJK,M,&
-                              !      N) = ROX_SC(IJK,M,N) - RATE(LR)*STMW/X_S(&
-                              !      IJK,M,N) 
-                              !ELSE 
-                              !   R_SP(IJK,M,N) = R_SP(IJK,M,N) - (EX - ONE)*&
-                              !      RATE(LR)*STMW 
-                              !   IF (X_S(IJK,M,N) > SMALL_NUMBER) ROX_SC(IJK,M,&
-                              !      N) = ROX_SC(IJK,M,N) - EX*RATE(LR)*STMW/X_S&
-                              !      (IJK,M,N) 
-                              !ENDIF 
-!
-                           ENDIF 
-                        ENDIF 
-!
-                     ENDIF 
-                  END DO 
-               ELSE 
-                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) LR, RXN_NAME(LR) 
-                  call mfix_exit(myPE)  
-               ENDIF 
-            END DO 
-            DO LR = 1, NO_OF_RXNS 
-!
-               M = RATE_M4T(LR) 
-               IF (M == 0) THEN 
-                  HOR_G(IJK) = HOR_G(IJK) + RATE(LR)*DELTA_H(LR) 
-               ELSE 
-                  HOR_S(IJK,M) = HOR_S(IJK,M) + RATE(LR)*DELTA_H(LR) 
-               ENDIF 
-            END DO 
-            IF (SPECIES_EQ(0)) THEN 
-               N = 1 
-               IF (NMAX(0) > 0) THEN 
-                  SUM_R_G(IJK) = SUM_R_G(IJK) + SUM(R_GP(IJK,:NMAX(0))-ROX_GC(&
-                     IJK,:NMAX(0))*X_G(IJK,:NMAX(0))) 
-                  N = NMAX(0) + 1 
-               ENDIF 
-            ENDIF 
-!
-            DO M = 1, MMAX 
-               IF (SPECIES_EQ(M)) THEN 
-                  N = 1 
-                  IF (NMAX(M) > 0) THEN 
-                     SUM_R_S(IJK,M) = SUM_R_S(IJK,M) + SUM(R_SP(IJK,M,:NMAX(M))&
-                        -ROX_SC(IJK,M,:NMAX(M))*X_S(IJK,M,:NMAX(M))) 
-                     N = NMAX(M) + 1 
-                  ENDIF 
-               ENDIF 
-            END DO 
-            DO L = 0, MMAX 
-               DO M = L + 1, MMAX 
-                  LM = L + 1 + (M - 1)*M/2 
-                  R_PHASE(IJK,LM) = ZERO 
-               END DO 
-            END DO 
-            DO LR = 1, NO_OF_RXNS 
-               DO L = 0, MMAX 
-                  DO M = L + 1, MMAX 
-                     LM = L + 1 + (M - 1)*M/2 
-                     IF (R_TEMP(LR,L,M) /= UNDEFINED) THEN 
-                        R_PHASE(IJK,LM) = R_PHASE(IJK,LM) + R_TEMP(LR,L,M)*RATE&
-                           (LR) 
-                     ELSE IF (R_TEMP(LR,M,L) /= UNDEFINED) THEN 
-                        R_PHASE(IJK,LM) = R_PHASE(IJK,LM) - R_TEMP(LR,M,L)*RATE&
-                           (LR) 
-                     ELSE 
-                        CALL START_LOG 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1010) L, M 
-                        CALL END_LOG 
-                        call mfix_exit(myPE)  
-                     ENDIF 
-                  END DO 
-               END DO 
-            END DO 
-         ENDIF 
-      END DO 
-      
-      RETURN  
- 1000 FORMAT(/1X,70('*')//' From: RRATES0',/' Error: ',&
-         'Reaction rate for reaction ',I2,' (',A,') not specified',/1X,70('*')/&
-         ) 
- 1010 FORMAT(/1X,70('*')//' From: RRATES0',/&
-         ' Error: Mass transfer between phases ',I2,' and ',I2,&
-         ' (R_temp) not specified',/1X,70('*')/) 
-!
+
+      ENDIF  ! Fluid_At(IJK)
+      END DO ! IJK
+
+      RETURN
+
       END SUBROUTINE RRATES0 
 
 !// Comments on the modifications for DMP version implementation      

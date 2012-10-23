@@ -124,6 +124,8 @@
 !
 !                      Total number of gas or solids species
       INTEGER          NMAX(0:DIM_M)
+      INTEGER          NMAX_g ! Number of gas phase species
+      INTEGER          NMAX_s(DIM_M) ! Number of solids phase species
 !
 !                      Molecular weight of gas species
       DOUBLE PRECISION MW_g (DIM_N_g)

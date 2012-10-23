@@ -820,6 +820,16 @@ read delete_files
  /bin/cp -f -p ../model/sc_p_g2.inc .
  /bin/cp -f -p ../model/des/desnamelist.inc des/
 
+ set `pwd`
+ mfix=`echo $1 | sed 's/\/post_mfix/\/model/`
+# Write mfix/model path into the file mfix_directory_path.inc
+ if grep -qs "     CHARACTER(len=132) :: MFIX_PATH = '$mfix'" mfix_directory_path.inc
+ then
+   echo " "
+ else
+   echo "     CHARACTER(len=132) :: MFIX_PATH = '$mfix'" > mfix_directory_path.inc
+ fi
+
  if [ -d qmomk ]; then
     /bin/cp -f -p ../model/qmomk/qmomknamelist.inc qmomk/
  else

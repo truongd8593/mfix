@@ -5,9 +5,10 @@
 !                                                                      C
 !  Author: P. Nicoletti                               Date: 30-JUN-97  C
 !                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
+!  Revision Number: 1                                                  C
+!  Purpose: This routine was complete rewritten as part of the effort  C
+!  to simplify reaction inputs in MFiX.
+!  Author: J. Musser                                  Date: 01-Oct-12  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
 !  Literature/Document References:                                     C
@@ -18,1125 +19,772 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-      SUBROUTINE PARSE_RXN(LINE, LMAX) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
+      SUBROUTINE PARSE_RXN(LINE, lName, lChemEq, lDH, lFDH)
+
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parse 
-      USE rxns
       USE compar
+      USE funits  
+      USE param 
+      USE param1 
+      USE parse
+
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER LMAX 
-      CHARACTER LINE*(*) 
+
+! Input line from mfix.dat.
+      CHARACTER(len=*), INTENT(IN) :: LINE
+
+! Array of reaction names.
+      CHARACTER(len=*), DIMENSION(DIMENSION_RXN) :: lName
+! Array of Chemical reaction equations.
+      CHARACTER(len=*), DIMENSION(DIMENSION_RXN) :: lChemEq
+! Array of User defined heat of reactions.
+      DOUBLE PRECISION, DIMENSION(DIMENSION_RXN) :: lDH
+! Array of User defined heat of reaction phase partitions.
+      DOUBLE PRECISION, DIMENSION(DIMENSION_RXN, 0:DIM_M) :: lFDH
+
+
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NF, IER, NUM_LEFT, SPECIES_INDEX, I, IS 
-      REAL :: VALUE 
-      CHARACTER, DIMENSION(MAX_FIELDS) :: FIELD*25 
-      CHARACTER :: RXN_ID*10 
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-      INTEGER , EXTERNAL :: GET_RXN_NO 
-      REAL , EXTERNAL :: DO_ARITH 
-      LOGICAL , EXTERNAL :: ISRATE, ISDH, ISRXN, GET_RXN_ID 
-!-----------------------------------------------
-!
-!
-!
-!
-!
-      IER = 0 
-!
-      DO I = 1, MAX_FIELDS 
-         FIELD(I) = ' ' 
-      END DO 
-!
-!  Preprocess the string
-!
-      CALL REMOVE_CHAR ('(', LINE, LMAX)         !remove ( 
-      CALL REMOVE_CHAR (')', LINE, LMAX)         !remove ) 
-!
-!
-!  Look for a RXN keyword
-!
-!     Does it start with the rate key word?
-      IF (ISRATE(LINE,LMAX)) THEN 
-!
-         IF (READING_RATE) CALL CLOSE_READING_RATE 
-         IF (READING_RXN) CALL CLOSE_READING_RXN 
-!
-!       yes -- set state to rate -- new rate expresion
-         READING_RATE = .TRUE. 
-         FOUND_M4T = .FALSE. 
-         FOUND_PREEXP = .FALSE. 
-         FOUND_TEXP = .FALSE. 
-         FOUND_ACTEMP = .FALSE. 
-!
-         CALL REMOVE_RATE (LINE, LMAX) 
-!
-         IF (GET_RXN_ID(LINE,LMAX,RXN_ID)) THEN  !rxn identifier found 
-            RXN_NO = GET_RXN_NO(RXN_ID) 
-            IF (GOT_RATE(RXN_NO)) THEN 
-               WRITE (*, 1010) RXN_ID, LINE(1:LMAX) 
+
+      CHARACTER, PARAMETER :: CT_BEG = '{'
+      CHARACTER, PARAMETER :: CT_END = '}'
+
+! Positions of braces {...}
+      INTEGER bIDX, eIDX
+! Reaction Name
+      CHARACTER*128 INPUT
+! Index of reaction.
+      INTEGER IDX
+! Integer for phase loops
+      INTEGER M
+
+
+! Copy line to input for processing.
+      INPUT = TRIM(ADJUSTL(LINE))
+
+! Look for the start and end of a reaction construct by checking for
+! left and right braces.
+      bIDX = INDEX(INPUT,CT_BEG)
+      eIDX = INDEX(INPUT,CT_END)
+
+! If not already inside/reading from a reaction construct, check to see
+! if this is the start of a construct.
+      IF(.NOT.IN_CONSTRUCT) THEN
+
+! An identifier for the end of a construct was found.
+         IF(eIDX .GT. 0) THEN
+            IF(eIDX .GT. bIDX) THEN
+! The reaction construct is specified in a single line.
+! rxn_name { A + B --> AB }
+               IDX = getReactionIndex('NEW')
+! Pull off the reaction construct name.
+               CALL getName(INPUT,(bIDX-1), lNAME(IDX))
+! Process the rest of the line.
+               IF(isFracDH(INPUT(bIDX+1:eIDX-1)))THEN
+                  WRITE(*, 1002) 'FracDH', trim(adjustl(INPUT))
+                  WRITE(*, 1000)
+                  CALL MFIX_EXIT(myPE)
+               ELSEIF(isDH(INPUT(bIDX+1:eIDX-1)))THEN
+                  WRITE (*, 1002) 'DH', trim(adjustl(INPUT))
+                  WRITE(*, 1000)
+                  CALL MFIX_EXIT(myPE)
+               ELSEIF(.NOT.isChemEq(INPUT(bIDX+1:eIDX-1)))THEN
+                  WRITE (*, 1003) trim(adjustl(INPUT))
+                  WRITE(*, 1000)
+                  CALL MFIX_EXIT(myPE)
+               ENDIF
+               CALL getChemEq(INPUT(bIDX+1:eIDX-1), lChemEq(IDX))
+            ELSE
+! The format given in the deck file is incorrect. Brace mismatch.
+               WRITE(*, 1001) trim(adjustl(LINE))
+               WRITE(*, 1000)
                CALL MFIX_EXIT(myPE)
-            ELSE 
-               GOT_RATE(RXN_NO) = .TRUE. 
-            ENDIF 
-!
-         ELSE                                    !rxn identifier not found -- error 
-!
-            WRITE (*, 1000) LINE(1:LMAX) 
+            ENDIF
+         ELSE
+! This is the start of a reaction construct.
+            IF(bIDX .GT. 0) THEN
+! Get the reaction index.
+               IDX = getReactionIndex('NEW')
+! Extract the reaction name.
+               CALL getName(INPUT,(bIDX-1), lNAME(IDX))
+! Process any data.
+               IF(LEN_TRIM(ADJUSTL(INPUT(bIDX+1:eIDX-1))) .GT. 0)      &
+                 CALL readConstruct(INPUT(bIDX+1:eIDX-1),              &
+                    lChemEq(IDX), lDH(IDX), lFDH(IDX,:))
+               IN_CONSTRUCT = .TRUE.
+            ELSE
+! Format Error.
+               WRITE(*, 1004), trim(adjustl(INPUT))
+               WRITE(*, 1000)
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+         ENDIF
+      ELSE
+
+         IF(bIDX .GT. 0) THEN
+! Format Error.
+            WRITE(*, 1005) trim(adjustl(INPUT))
+            WRITE(*, 1000)
             CALL MFIX_EXIT(myPE)
-!
-         ENDIF 
-!
-!
-!
-!     Does it start with the DH (delta H) keyword ?
-      ELSE IF (ISDH(LINE,LMAX)) THEN 
-         IF (READING_RATE) CALL CLOSE_READING_RATE 
-         IF (READING_RXN) CALL CLOSE_READING_RXN 
-!
-         CALL REMOVE_DH (LINE, LMAX) 
-!
-         IF (GET_RXN_ID(LINE,LMAX,RXN_ID)) THEN  !rxn identifier found 
-            RXN_NO = GET_RXN_NO(RXN_ID) 
-         ELSE                                    !rxn identifier not found -- error 
-!
-            WRITE (*, 1000) LINE(1:LMAX) 
+! This is the last line of the reaction construct which may or may not
+! contain additional data.
+         ELSEIF(eIDX .GT. 0) THEN
+           IDX = getReactionIndex()
+           CALL readConstruct(INPUT(bIDX+1:eIDX-1), lChemEq(IDX),      &
+              lDH(IDX), lFDH(IDX,:))
+            IN_CONSTRUCT = .FALSE.
+
+! Reading from somewhere inside of a reaction construct.
+         ELSE
+           IDX = getReactionIndex()
+           CALL readConstruct(INPUT(bIDX+1:), lChemEq(IDX),            &
+              lDH(IDX), lFDH(IDX,:))
+         ENDIF
+      ENDIF
+
+      RETURN
+
+ 1001 FORMAT(//1X,70('*')/' From: PARSE_RXN',/                         &
+         ' Error 1001: Mismatch of braces "{...}" in reaction ',       &
+         ' construct.',//' INPUT: ',A)
+
+ 1002 FORMAT(//1X,70('*')/' From: PARSE_RXN',/                         &
+         ' Error 1002: Input format error in reaction construct.',     &
+         ' Opening and',/' closing braces were found on the same line',&
+         ' along with the',/' keyword ',A,'.',/' Single line',         &
+         ' constructs can only contain a chemcial equation.',//        &
+         ' INPUT: ',A,//                                               &
+         ' Example 1: RXN_NAME { chem_eq = "A + B --> AB" }',//        &
+         ' Example 2: RXN_NAME {',/14X,'chem_eq = "A + B --> AB"',/14X,&
+         'DH = 2.5d4',/14X,'fracDH(0) = 1.0',/12X,'}')
+
+ 1003 FORMAT(//1X,70('*')/' From: PARSE_RXN',/                         &
+         ' Error 1003: Input format error in reaction construct.',     &
+         ' Opening and',/' closing braces were found on the same line',&
+         ' and chem_eq was NOT found.',/' Single line constructs can', &
+         ' only contain a chemcial equation.',//' INPUT: ',A,//        &
+         ' Example 1: RXN_NAME { chem_eq = "A + B --> AB" }',//        &
+         ' Example 2: RXN_NAME {',/14X,'chem_eq = "A + B --> AB"',/14X,&
+         'DH = 2.5d4',/14X,'fracDH(0) = 1.0',/12X,'}')
+
+ 1004 FORMAT(//1X,70('*')/' From: PARSE_RXN',/                         &
+         ' Error 1004: Data within the reaction block was identified', &
+         ' outside of a',/' reaction construct. ',//' INPUT: ',A)
+
+ 1005 FORMAT(//1X,70('*')/' From: PARSE_RXN',/                         &
+         ' Error 1005: The start of a new reaction construct was',     &
+         ' found before the',/' closing of the previous construct.',// &
+         ' INPUT: ',A)
+
+ 1000 FORMAT(/' Please refer to the Readme file on the required input',&
+         ' format and make',/' the necessary corrections to the data', &
+         ' file.',/1X,70('*')//)
+
+      CONTAINS
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+!  Function name: getReactionIndex()                                   !
+!                                                                      !
+!  Purpose: Extract the reaction name from a construct.                !
+!                                                                      !
+!  Variables referenced: None                                          !
+!                                                                      !
+!  Variables modified: None                                            !
+!                                                                      !
+!  Local variables: None                                               !
+!                                                                      !
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+      INTEGER FUNCTION getReactionIndex(STAT)
+
+      use rxns
+
+      IMPLICIT NONE
+
+      CHARACTER(len=*), INTENT(IN), OPTIONAL :: STAT
+
+      IF(.NOT.PRESENT(STAT)) THEN
+         getReactionIndex = NO_OF_RXNS
+
+      ELSE
+         IF(STAT == 'NEW') THEN
+! Increment the number of reactions processed from the data file and
+! return the new value as the index of the reactoin being processed.
+            NO_OF_RXNS = NO_OF_RXNS + 1
+            getReactionIndex = NO_OF_RXNS
+         ELSE
+            WRITE(*,*) ' Unknown status'
             CALL MFIX_EXIT(myPE)
-         ENDIF 
-!
-         CALL GET_FIELDS (LINE, NF, FIELD, NUM_LEFT, IER) 
-!
-!
-         IS = 1 
-!
-!       Read enthalpy change due to rxn
-         DELTA_H(RXN_NO) = DO_ARITH(FIELD(IS),LEN(FIELD(IS)),IER) 
-         IF (IER /= 0) THEN 
-            WRITE (*, 1060) LINE(1:LMAX) 
-            CALL MFIX_EXIT(myPE)
-         ENDIF 
-!
-         RETURN  
-!
-!
-!     If none of the above is it the reaction scheme?
-      ELSE IF (ISRXN(LINE,LMAX)) THEN 
-!
-         IF (READING_RATE) CALL CLOSE_READING_RATE 
-         IF (READING_RXN) CALL CLOSE_READING_RXN 
-!
-!       rxn identifier found -- set state to rxn -- new rxn
-         READING_RXN = .TRUE. 
-         FOUND_RHS = .FALSE. 
-         BACKWARD_RXN = .FALSE. 
-         IF (GET_RXN_ID(LINE,LMAX,RXN_ID)) THEN  !rxn identifier found 
-!
-            RXN_NO = GET_RXN_NO(RXN_ID) 
-            IF (GOT_RXN(RXN_NO)) THEN 
-               WRITE (*, 1020) RXN_ID, LINE(1:LMAX) 
-               CALL MFIX_EXIT(myPE)
-            ELSE 
-               GOT_RXN(RXN_NO) = .TRUE. 
-            ENDIF 
-!
-         ELSE 
-!         rxn identifier not found -- error
-            WRITE (*, 1000) LINE(1:LMAX) 
-            CALL MFIX_EXIT(myPE)
-         ENDIF 
-      ELSE 
-         IF ( .NOT.READING_RXN .AND.  .NOT.READING_RATE) THEN 
-            WRITE (*, 1050) LINE(1:LMAX) 
-            CALL MFIX_EXIT(myPE)
-         ENDIF 
-!
-      ENDIF 
-!
-!  Parse the reaction string and find the stoichiometry
-!
-!
-      IF (READING_RXN) THEN 
-!
-         CALL REMOVE_CHAR (' ', LINE, LMAX)      !remove spaces 
-         CALL REMOVE_CHAR ('	', LINE, LMAX)      !remove tabs 
-         CALL REMOVE_CHAR ('-', LINE, LMAX)      !remove - 
-!
-!       detect backward rxn specification
-         IF (INDEX(LINE(1:LMAX),'<') /= 0) THEN 
-            BACKWARD_RXN = .TRUE. 
-            CALL REMOVE_CHAR ('<', LINE, LMAX)   !remove < 
-         ENDIF 
-!
-         CALL GET_FIELDS (LINE, NF, FIELD, NUM_LEFT, IER) 
-!
-         DO I = 1, NUM_LEFT 
-            CALL GET_COEF (FIELD(I), SPECIES_INDEX, VALUE, IER) 
-!
-            IF (IER == 1) THEN 
-               WRITE (*, 1051) FIELD(I), LINE(1:LMAX) 
-               CALL MFIX_EXIT(myPE)
-            ELSE IF (IER == 2) THEN 
-               WRITE (*, 1052) FIELD(I), LINE(1:LMAX) 
-               CALL MFIX_EXIT(myPE)
-            ENDIF 
-!
-!                                                !reactant
-            STOICH(RXN_NO,SPECIES_INDEX) = STOICH(RXN_NO,SPECIES_INDEX) - VALUE 
-!
-         END DO 
-         DO I = NUM_LEFT + 1, NF 
-            CALL GET_COEF (FIELD(I), SPECIES_INDEX, VALUE, IER) 
-!
-            IF (IER == 1) THEN 
-               WRITE (*, 1051) FIELD(I), LINE(1:LMAX) 
-               CALL MFIX_EXIT(myPE)
-            ELSE IF (IER == 2) THEN 
-               WRITE (*, 1052) FIELD(I), LINE(1:LMAX) 
-               CALL MFIX_EXIT(myPE)
-            ENDIF 
-!
-!                                                !product
-            STOICH(RXN_NO,SPECIES_INDEX) = STOICH(RXN_NO,SPECIES_INDEX) + VALUE 
-!
-         END DO 
-!
-      ENDIF 
-!
-!
-!  Parse the rate string and determine the rate expression
-!
-      IF (READING_RATE) THEN 
-         CALL REMOVE_CHAR ('[', LINE, LMAX)      !remove [ 
-         CALL REMOVE_CHAR (']', LINE, LMAX)      !remove ] 
-         CALL REMOVE_CHAR ('+', LINE, LMAX)      !remove + 
-         CALL GET_FIELDS (LINE, NF, FIELD, NUM_LEFT, IER) 
-!
-!
-         IS = 1 
-!
-!
-!       Which temperature to use in the rate expression?
-         IF ( .NOT.FOUND_M4T .AND. IS<=NF) THEN 
-            RATE_M4T(RXN_NO) = DO_ARITH(FIELD(IS),LEN(FIELD(IS)),IER) 
-            IF (IER /= 0) THEN 
-               WRITE (*, 1060) LINE(1:LMAX) 
-               CALL MFIX_EXIT(myPE)
-            ENDIF 
-            FOUND_M4T = .TRUE. 
-            IS = IS + 1 
-         ENDIF 
-!
-!
-!       Preexponential factor
-         IF ( .NOT.FOUND_PREEXP .AND. IS<=NF) THEN 
-            RATE_FAC(RXN_NO,1) = DO_ARITH(FIELD(IS),LEN(FIELD(IS)),IER) 
-            IF (IER /= 0) THEN 
-               WRITE (*, 1062) LINE(1:LMAX) 
-               CALL MFIX_EXIT(myPE)
-            ENDIF 
-            FOUND_PREEXP = .TRUE. 
-            IS = IS + 1 
-         ENDIF 
-!
-!
-!       Tempearture exponent
-         IF ( .NOT.FOUND_TEXP .AND. IS<=NF) THEN 
-            RATE_FAC(RXN_NO,2) = DO_ARITH(FIELD(IS),LEN(FIELD(IS)),IER) 
-            IF (IER /= 0) THEN 
-               WRITE (*, 1064) LINE(1:LMAX) 
-               CALL MFIX_EXIT(myPE)
-            ENDIF 
-            FOUND_TEXP = .TRUE. 
-            IS = IS + 1 
-         ENDIF 
-!
-!
-!       Activation temperature
-         IF ( .NOT.FOUND_ACTEMP .AND. IS<=NF) THEN 
-            RATE_FAC(RXN_NO,3) = DO_ARITH(FIELD(IS),LEN(FIELD(IS)),IER) 
-            IF (IER /= 0) THEN 
-               WRITE (*, 1066) LINE(1:LMAX) 
-               CALL MFIX_EXIT(myPE)
-            ENDIF 
-            FOUND_ACTEMP = .TRUE. 
-            IS = IS + 1 
-         ENDIF 
-!
-         DO I = IS, NF 
-            CALL GET_EXPONENT (FIELD(I), SPECIES_INDEX, VALUE, IER) 
-!
-            IF (IER == 1) THEN 
-               WRITE (*, 1051) FIELD(I), LINE(1:LMAX) 
-               CALL MFIX_EXIT(myPE)
-            ELSE IF (IER == 2) THEN 
-               WRITE (*, 1052) FIELD(I), LINE(1:LMAX) 
-               CALL MFIX_EXIT(myPE)
-            ENDIF 
-!
-            RATE_EXP(RXN_NO,SPECIES_INDEX) = VALUE 
-         END DO 
-      ENDIF 
-      RETURN  
- 1000 FORMAT(/1X,70('*')//' From: PARSE_RXN',/&
-         ' Message: No reaction id for the rate expression: ',/9X,A,/1X,70('*')&
-         /) 
-!
- 1010 FORMAT(/1X,70('*')//' From: PARSE_RXN',/&
-         ' Message: Duplicate rate expression for: ',A,/9X,A,/1X,70('*')/) 
-!
- 1020 FORMAT(/1X,70('*')//' From: PARSE_RXN',/&
-         ' Message: Duplicate reaction scheme for : ',A,/9X,A,/1X,70('*')/) 
-!
- 1050 FORMAT(/1X,70('*')//' From: PARSE_RXN',/&
-         ' Message: No reaction or rate label found: ',/9X,A,/1X,70('*')/) 
-!
- 1051 FORMAT(/1X,70('*')//' From: PARSE_RXN',/' Error: Undefined Species: ',A,/9X,&
-         'in: ',A,/1X,70('*')/) 
-!
- 1052 FORMAT(/1X,70('*')//' From: PARSE_RXN',/&
-         ' Error: Error reading coefficient: ',A,/9X,'in: ',A,/1X,70('*')/) 
-!
- 1060 FORMAT(/1X,70('*')//' From: PARSE_RXN',/&
-         ' Message: The first term in a rate expression should be',&
-         ' the index for phase temperature. ',/9X,A,/1X,70('*')/) 
-!
- 1062 FORMAT(/1X,70('*')//' From: PARSE_RXN',/&
-         ' Message: The second term in a rate expression should be',&
-         ' the preexponential factor. ',/9X,A,/1X,70('*')/) 
-!
- 1064 FORMAT(/1X,70('*')//' From: PARSE_RXN',/&
-         ' Message: The third term in a rate expression should be',&
-         ' the temperature exponent. ',/9X,A,/1X,70('*')/) 
-!
- 1066 FORMAT(/1X,70('*')//' From: PARSE_RXN',/&
-         ' Message: The fourth term in a rate expression should be',&
-         ' the activation temperature. ',/9X,A,/1X,70('*')/) 
-!
-      END SUBROUTINE PARSE_RXN 
-!
-!
-      LOGICAL FUNCTION ISRATE (LINE, LMAX) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parse 
-      USE rxns 
-      use compar 
+         ENDIF
+      ENDIF
+
+      RETURN
+      END FUNCTION getReactionIndex
+
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+!  Function name: readConstruct(IN, ChemEq, uDH, uFDH)                 !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      !
+!  Variables referenced: None                                          !
+!                                                                      !
+!  Variables modified: None                                            !
+!                                                                      !
+!  Local variables: None                                               !
+!                                                                      !
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+      SUBROUTINE readConstruct(IN, ChemEq, uDH, uFDH)
+
       IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER LMAX 
-      CHARACTER LINE*(*) 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER :: K, KR 
-!-----------------------------------------------
-!
-!
-      ISRATE = .FALSE. 
-      K = INDEX(LINE,':') 
-      IF (K > 0) THEN 
-         KR = INDEX(LINE(1:K),'RATE') 
-         IF (KR/=0 .AND. K-KR>4) ISRATE = .TRUE. 
-      ENDIF 
-!
-      RETURN  
-!
-      END FUNCTION ISRATE 
-!
-!
-!
-!
-!
-      LOGICAL FUNCTION ISDH (LINE, LMAX) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parse 
-      USE rxns 
-      use compar 
-      IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER LMAX 
-      CHARACTER LINE*(*) 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER :: K, KR 
-!-----------------------------------------------
-!
-!
-      ISDH = .FALSE. 
-      K = INDEX(LINE,':') 
-      IF (K > 0) THEN 
-         KR = INDEX(LINE(1:K),'DH') 
-         IF (KR/=0 .AND. K-KR>2) ISDH = .TRUE. 
-      ENDIF 
-!
-      RETURN  
-!
-      END FUNCTION ISDH 
-!
-!
-!
-      LOGICAL FUNCTION ISRXN (LINE, LMAX) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parse 
-      USE rxns 
-      use compar 
-      IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER LMAX 
-      CHARACTER LINE*(*) 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER :: K 
-!-----------------------------------------------
-!
-!
-      ISRXN = .FALSE. 
-      K = INDEX(LINE,':') 
-      IF (K > 1) ISRXN = .TRUE. 
-!
-      RETURN  
-!
-      END FUNCTION ISRXN 
-!
-!
-!
-      SUBROUTINE CLOSE_READING_RXN 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parse 
-      USE rxns
-      use compar 
-      IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER :: L, RXN_NO_BACK 
-      CHARACTER :: RXN_ID*10 
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-      INTEGER , EXTERNAL :: GET_RXN_NO 
-!-----------------------------------------------
-!
-!
-      READING_RXN = .FALSE. 
-!
-!     create a backward rxn stoichiometry, if specified
-!
-      IF (BACKWARD_RXN) THEN 
-!
-!       create a backward reaction name by appending '<'
-         RXN_ID = RXN_NAME(RXN_NO) 
-         L = INDEX(RXN_ID,' ')                   !append a < or 
-         IF (L == 0) L = LEN(RXN_ID)             !substitute the last char 
-         RXN_ID(L:L) = '<' 
-         RXN_NO_BACK = GET_RXN_NO(RXN_ID) 
-!
-!       copy the inverse stoichiometry of forward rxn
-         STOICH(RXN_NO_BACK,:DIM_N_ALL)=-STOICH(RXN_NO,:DIM_N_ALL) 
-         GOT_RXN(RXN_NO_BACK) = .TRUE. 
-         GOT_RATE(RXN_NO_BACK) = .FALSE. 
-      ENDIF 
-!
-      RETURN  
-      END SUBROUTINE CLOSE_READING_RXN 
-!
-!
-!
-      SUBROUTINE CLOSE_READING_RATE 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parse 
-      USE rxns 
-      use compar 
-      IMPLICIT NONE
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!-----------------------------------------------
-      READING_RATE = .FALSE. 
-      RETURN  
-      END SUBROUTINE CLOSE_READING_RATE 
-!
-      SUBROUTINE REMOVE_RATE(LINE, LMAX) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parse 
-      USE rxns 
-      use compar 
-      IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER LMAX 
-      CHARACTER LINE*(*) 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER :: K, KR 
-!-----------------------------------------------
-!
-!
-      K = INDEX(LINE,':') 
-      KR = INDEX(LINE(1:K),'RATE') 
-      LINE(KR:LMAX-4) = LINE(KR+4:LMAX) 
-      LINE(LMAX-4:LMAX) = ' ' 
-      LMAX = LMAX - 4 
-!
-      RETURN  
-!
-      END SUBROUTINE REMOVE_RATE 
-!
-!
-!
-      SUBROUTINE REMOVE_DH(LINE, LMAX) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parse 
-      USE rxns 
-      use compar 
-      IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER LMAX 
-      CHARACTER LINE*(*) 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER :: K, KR 
-!-----------------------------------------------
-!
-!
-      K = INDEX(LINE,':') 
-      KR = INDEX(LINE(1:K),'DH') 
-      LINE(KR:LMAX-2) = LINE(KR+2:LMAX) 
-      LINE(LMAX-2:LMAX) = ' ' 
-      LMAX = LMAX - 2 
-!
-      RETURN  
-!
-      END SUBROUTINE REMOVE_DH 
-!
-!
-      LOGICAL FUNCTION GET_RXN_ID (LINE, LMAX, RXN_ID) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parse 
-      USE rxns 
-      use compar 
-      IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER LMAX 
-      CHARACTER LINE*(*), RXN_ID*10 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER :: K 
-!-----------------------------------------------
-!
-!
-      GET_RXN_ID = .FALSE. 
-!
-      K = INDEX(LINE,':') 
-      CALL REMOVE_CHAR (' ', LINE(1:K), K)       !remove spaces 
-!
-      K = INDEX(LINE,':') 
-      CALL REMOVE_CHAR ('	', LINE(1:K), K)       !remove tabs 
-!
-      K = INDEX(LINE,':') 
-      IF (K > 1) GET_RXN_ID = .TRUE. 
-!
-      RXN_ID = LINE(1:K-1) 
-      LINE(1:LMAX-K) = LINE(K+1:LMAX) 
-      LINE(LMAX-K+1:LMAX) = ' ' 
-!
-      RETURN  
-!
-      END FUNCTION GET_RXN_ID 
-!
-!
-      INTEGER FUNCTION GET_RXN_NO (RXN_ID) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parse 
-      USE rxns
-      use compar 
-      IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      CHARACTER RXN_ID*10 
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER :: L 
-!-----------------------------------------------
-!
-!
-!
-      DO L = 1, NO_OF_RXNS 
-         IF (RXN_ID == RXN_NAME(L)) THEN         !existing reaction 
-            GET_RXN_NO = L 
-            RETURN  
-         ENDIF 
-      END DO 
-!
-      NO_OF_RXNS = NO_OF_RXNS + 1                ! new reaction 
-      IF (NO_OF_RXNS > DIMENSION_RXN) THEN 
-         WRITE (*, 1010) DIMENSION_RXN 
+
+! Input string being parsed.
+      CHARACTER(len=*), INTENT(IN) :: IN
+! Chemical equation.
+      CHARACTER(len=*), INTENT(OUT) :: ChemEq
+! User defined heat of reaction.
+      DOUBLE PRECISION, INTENT(OUT) :: uDH
+! User defined splitting of heat of reaction
+      DOUBLE PRECISION, INTENT(OUT) :: uFDH(0:DIM_M)
+
+! The input line contains no additional data. 
+      IF(LEN_TRIM(ADJUSTL(IN)) == 0) RETURN
+
+! The input contains chemical equation data.
+      IF(MORE_ChemEq .OR. isChemEq(IN)) THEN
+         CALL getChemEq(IN, ChemEq)
+! The input contains heat of reaction parsing data.
+      ELSEIF(isFracDH(IN)) THEN
+         CALL getFracDH(IN, uFDH(:))
+! The input contains heat of reaction data.
+      ELSEIF(isDH(IN)) THEN
+         CALL getDH(IN, uDH)
+! The entry doesn't match any of the keywords.
+      ELSE
+! Unidentified keyword.
+         WRITE(*, 1001) trim(adjustl(IN))
+         WRITE(*, 1000)
          CALL MFIX_EXIT(myPE)
-      ENDIF 
-      RXN_NAME(NO_OF_RXNS) = RXN_ID 
-      GOT_RXN(NO_OF_RXNS) = .FALSE. 
-      GOT_RATE(NO_OF_RXNS) = .FALSE. 
-      GET_RXN_NO = NO_OF_RXNS 
-!
-      STOICH(GET_RXN_NO,:DIM_N_ALL) = ZERO 
-      RATE_EXP(GET_RXN_NO,:DIM_N_ALL) = ZERO 
-!
-      RETURN  
- 1010 FORMAT(/1X,70('*')//' From: get_rxn_no',/&
-         ' Message: Number of reactions must not exceed ',I5,&
-         '.  See param.inc.',/1X,70('*')/) 
-!
-      END FUNCTION GET_RXN_NO 
-!
-!
-!
-!
-!
-! ****************************************************************
-! ************************** GET_FIELDS **************************
-! ****************************************************************
-!
-      SUBROUTINE GET_FIELDS(LINE, NF, FIELD, NUM_LEFT, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parse 
-      USE rxns 
-      use compar 
-      IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER NF, NUM_LEFT, IER 
-      CHARACTER LINE*(*) 
-      CHARACTER, DIMENSION(*) :: FIELD*(*) 
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER :: IER_0, I, N, K, IND_GR 
-!-----------------------------------------------
-!
-!
-!
-!
-!
-!             Return Flags
-!
-!
-!
-!
-      IER = 0                                    !initialize error flag 
-      NF = 0                                     !initialize field counter 
-      I = 0                                      !set initial character location in line string 
-!
-!
-      IND_GR = INDEX(LINE,'>')                   ! index of ">" 
-      IF (IND_GR > 0) THEN 
-         FOUND_RHS = .TRUE. 
-      ELSE IF (.NOT.FOUND_RHS) THEN 
-         IND_GR = LEN(LINE) 
-      ENDIF 
-!
-!     Read all the fields in the line
-!
-      NUM_LEFT = 0 
-      DO K = 1, MAX_FIELDS 
-         CALL GET_NEXT_FIELD (LINE, I, N, FIELD(K), IND_GR, NUM_LEFT, IER_0) 
-         IF (IER_0 == (-1)) GO TO 999            !read last field 
-         NF = NF + 1 
-         I = N 
-      END DO 
-!
-      IER = -1                                   ! too many fields 
-!
-!
-  999 CONTINUE 
-      IF (NF == 0) IER = -1 
-      RETURN                                     ! no fields 
-      END SUBROUTINE GET_FIELDS 
-!
-! ****************************************************************
-! ************************** GET_NEXT_FIELD **********************
-! ****************************************************************
-!
-      subroutine get_next_field(line,istart,iend,field,ind_gr,num_left,ier) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      use param 
-      use param1 
-      use parse 
-      use rxns 
-      implicit none
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      integer istart, iend, ind_gr, num_left, ier 
-      character line*(*), field*(*) 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      integer :: n, i, i1, i2, i2a, i2b, i2c, i2d 
-!-----------------------------------------------
-!
-!
-      n = len(line)                              !number of characters in line string 
-      do i = istart + 1, n 
-!        find the first character that's not a blank,+,>, and tab
-         if (line(i:i)/=' ' .and. line(i:i)/='+' .and. line(i:i)/='	' .and. &
-            line(i:i)/='>') then 
-            i1 = i 
-            go to 50 
-         endif 
-      end do 
-      ier = -1                                   !couldn't find another character, error 
-      return  
-   50 continue 
-      i2a = index(line(i1:n),' ')                !location of next space 
-      i2b = index(line(i1:n),'+')                !location of next + 
-      i2c = index(line(i1:n),'	')                !location of next tab 
-      i2d = index(line(i1:n),'>')                !location of next > 
-!
-      i2 = i2a 
-      if (i2b > 0) i2 = min(i2,i2b) 
-      if (i2c > 0) i2 = min(i2,i2c) 
-      if (i2d > 0) i2 = min(i2,i2d) 
-!
-!     found last field in the line
-      if (i2 == 0) then 
-         field = line(i1:n) 
-         iend = n 
-         ier = 0 
-         if (i1 < ind_gr) num_left = num_left + 1! actually ... 
-         return                                  ! this would be an error 
-      endif 
-!
-!     specify end of field and field characters
-      iend = i1 + i2 - 2                         !set end of field 
-      field = line(i1:iend) 
-      if (i1 < ind_gr) num_left = num_left + 1 
-      ier = 0 
-!
-      return  
-      end subroutine get_next_field 
-!
-! ********************************************************************
-! **************************** get_coef *****************************
-! ********************************************************************
-!
-      SUBROUTINE GET_COEF(FIELD, SPECIES_INDEX, VALUE, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parse 
-      USE rxns
-      use compar 
-      IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER SPECIES_INDEX, IER 
-      REAL VALUE 
-      CHARACTER FIELD*(*) 
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER :: I, K, SPECIES_LEN, FIELD_LEN 
-      CHARACTER :: TMP_FIELD*25 
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-      INTEGER , EXTERNAL :: COMPARE_STRING 
-      REAL , EXTERNAL :: DO_ARITH 
-!-----------------------------------------------
-!
-!
-      IER = 0 
-!
-      DO I = 1, DIM_N_ALL 
-         K = COMPARE_STRING(FIELD,SPECIES_NAME(I)) 
-         IF (K > 0) THEN 
-!
-	    IER = 0
-            SPECIES_INDEX = I 
-            TMP_FIELD = FIELD(1:K-1)             ! needed for PC - why ?? Don't know 
-            IF (TMP_FIELD == ' ') THEN           ! special processing if blank 
-               VALUE = 1.0 
-               RETURN  
-            ENDIF 
-            VALUE = DO_ARITH(TMP_FIELD,K - 1,IER) 
-!            IF (IER /= 0) IER = 2 
-            IF (IER == 0)  RETURN  
-         ENDIF 
-      END DO 
-!
-      IER = 1 
-      SPECIES_INDEX = -1                         ! error 
-      RETURN  
-      END SUBROUTINE GET_COEF 
-!
-!
-! ********************************************************************
-! **************************** get_exponent *********************
-! ********************************************************************
-!
-      SUBROUTINE GET_EXPONENT(FIELD, SPECIES_INDEX, VALUE, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parse 
-      USE rxns
-      use compar 
-      IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER SPECIES_INDEX, IER 
-      REAL VALUE 
-      CHARACTER FIELD*(*) 
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER :: I, K, KE, SPECIES_LEN, FIELD_LEN 
-      CHARACTER :: TMP_FIELD*25 
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-      INTEGER , EXTERNAL :: COMPARE_STRING 
-      REAL , EXTERNAL :: DO_ARITH 
-!-----------------------------------------------
-!
-!
-!
-      IER = 0 
-!
-      KE = INDEX(FIELD,'^') 
-      IF (KE == 0) THEN                          ! special processing if blank 
-         VALUE = 1.0 
+      ENDIF
+
+      RETURN
+
+ 1001 FORMAT(//1X,70('*')/' From: PARSE_RXN --> readConstruct',/       &
+         ' Error 1001: Unidentified keyword in reaction construct.'//, &
+         ' INPUT: ',A)
+
+ 1000 FORMAT(/' Please refer to the Readme file on the required input',&
+         ' format and make',/' the necessary corrections to the data', &
+         ' file.',/1X,70('*')//)
+
+      END SUBROUTINE readConstruct
+
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+!  Function name: isChemEq(INPUT)                                      !
+!                                                                      !
+!  Purpose: Checks if the line contains the chemical Eq.               !
+!                                                                      !
+!  Variables referenced: None                                          !
+!                                                                      !
+!  Variables modified: None                                            !
+!                                                                      !
+!  Local variables: None                                               !
+!                                                                      !
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+      LOGICAL FUNCTION isChemEq(INPUT)
+
+! Input line.
+      CHARACTER(len=*), INTENT(IN) :: INPUT
+
+! Check to see if the line contains 'END'
+      IF (INDEX(LINE(1:),"CHEM_EQ") == 0) THEN 
+! 'CHEM_EQ' was not found. This line does not contains a chemical eq.
+         isChemEq = .FALSE. 
       ELSE 
-         FIELD_LEN = LEN(FIELD) 
-         TMP_FIELD = FIELD(KE+1:FIELD_LEN) 
-         FIELD(KE:FIELD_LEN) = ' ' 
-         VALUE = DO_ARITH(TMP_FIELD,FIELD_LEN - KE,IER) 
-         IF (IER /= 0) IER = 2 
+! 'CHEM_EQ' was found. This line contains all or part of a chemical eq.
+         isChemEq = .TRUE. 
       ENDIF 
-!
-      DO I = 1, DIM_N_ALL 
-         K = COMPARE_STRING(FIELD,SPECIES_NAME(I)) 
-         IF (K == 1) THEN 
-            SPECIES_INDEX = I 
-            RETURN  
-         ENDIF 
-      END DO 
-!
-      IER = 1 
-      SPECIES_INDEX = -1                         ! error 
+
+      END FUNCTION isChemEq
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+!  Function name: isDH(INPUT)                                          !
+!                                                                      !
+!  Purpose: Checks if the line contains user defined heat of reaction. !
+!                                                                      !
+!  Variables referenced: None                                          !
+!                                                                      !
+!  Variables modified: None                                            !
+!                                                                      !
+!  Local variables: None                                               !
+!                                                                      !
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+      LOGICAL FUNCTION isDH(INPUT)
+
+! Input line.
+      CHARACTER(len=*), INTENT(IN) :: INPUT
+
+! Check to see if the line contains 'END'
+      IF (INDEX(LINE(1:),"DH") == 0) THEN 
+! 'DH' was not found. This line does not contains a heat of reaction.
+         isDH = .FALSE. 
+      ELSE 
+! 'DH' was found. This line contains the heat of reaction
+         isDH = .TRUE. 
+      ENDIF 
+
+      END FUNCTION isDH
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+!  Function name: isDH(INPUT)                                          !
+!                                                                      !
+!  Purpose: Checks if the line contains user defined heat of reaction. !
+!                                                                      !
+!  Variables referenced: None                                          !
+!                                                                      !
+!  Variables modified: None                                            !
+!                                                                      !
+!  Local variables: None                                               !
+!                                                                      !
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+      LOGICAL FUNCTION isFracDH(INPUT)
+
+! Input line.
+      CHARACTER(len=*), INTENT(IN) :: INPUT
+
+! Check to see if the line contains 'END'
+      IF (INDEX(LINE(1:),"FRACDH") == 0) THEN 
+! 'FRACDH' was not found.
+         isFracDH = .FALSE. 
+      ELSE 
+! 'FRACDH' was found.
+         isFracDH = .TRUE. 
+      ENDIF 
+
+      END FUNCTION isFracDH
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+!  Subroutine name: get_ChemEq(INPUT, lNAME, IER)                      !
+!                                                                      !
+!  Purpose: Extract the reaction name from a construct.                !
+!                                                                      !
+!  Variables referenced: None                                          !
+!                                                                      !
+!  Variables modified: None                                            !
+!                                                                      !
+!  Local variables: None                                               !
+!                                                                      !
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+      SUBROUTINE getName(INPUT, rPOS, lNAME)
+
+! Input line.
+      CHARACTER(len=*), INTENT(IN) :: INPUT
+! End of search location for reaction name.
+      INTEGER, INTENT(IN) :: rPOS
+! Name of reaction pulled from input.
+      CHARACTER*32, INTENT(OUT) :: lNAME
+
+      INTEGER NAME_LEN
+
+! Initialize the return value.
+      lNAME = ''
+! Verify that the name is not too long. This should be caught by
+! preprocessing of the data file. However, if the user changed the
+! reaction name after compiling (an error check for later) this check
+! prevents and overflow error.
+      NAME_LEN = len_trim(adjustl(INPUT(1:rPOS)))
+      IF(NAME_LEN .GT. 32) THEN
+         WRITE(*, 1001) trim(adjustl(INPUT))
+         WRITE(*, 1000)
+         CALL MFIX_EXIT(myPE)
+! Verify that the name was not deleted after compiling.
+! prevents and overflow error.
+      ELSEIF(NAME_LEN .EQ. 0) THEN
+         WRITE(*, 1002) trim(adjustl(INPUT))
+         WRITE(*, 1000)
+         CALL MFIX_EXIT(myPE)
+      ELSE
+         lNAME = trim(adjustl(INPUT(1:rPOS)))
+      ENDIF
+
+! There shouldn't be any crazy characters at this point because the
+! code should fail to compile if the reaction names are not defined
+! or contain invalid characters.
+
+ 1001 FORMAT(//1X,70('*')/' From: PARSE_RXN --> get_ChemEq',/          &
+         ' Error 1001: Reaction name too long! Reaaction names are',   &
+         ' limited to 32',/' characters.',//' Reaction Name: ',A)
+
+ 1002 FORMAT(//1X,70('*')/' From: PARSE_RXN --> get_ChemEq',/          &
+         ' Error 1002: Unable to determine reaction name.',//          &
+         ' INPUT: ',A)
+
+ 1000 FORMAT(/' Please refer to the Readme file on the required input',&
+         ' format and make',/' the necessary corrections to the data', &
+         ' file.',/1X,70('*')//)
+
       RETURN  
-      END SUBROUTINE GET_EXPONENT 
-!
-!
-! *************************************************************
-! ************************* compare_string *********************
-! *************************************************************
-!
-      integer function compare_string (line, pattern) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      use param 
-      use param1 
-      use parse 
-      use rxns 
-      use compar 
-      implicit none
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      character line*(*), pattern*(*) 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      integer :: line_len, fill, lpat, lnext, i 
-!-----------------------------------------------
-      fill = index(pattern,' ') - 1 
-!
-      lpat = index(line,pattern(1:fill)) 
-!
-!     only a space is allowed after the pattern
-      if (lpat /= 0) then 
-         line_len = len(line) 
-         lnext = lpat + fill 
-         if (line_len >= lnext) then 
-            if (line(lnext:lnext) /= ' ') lpat = 0 
-         endif 
-      endif 
-!
-      compare_string = lpat 
-      return  
-      end function compare_string 
-!
-!
-! *************************************************************
-! ************************* remove_char *********************
-! *************************************************************
-!
-      subroutine remove_char(ch, line, nl) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      use param 
-      use param1 
-      use parse 
-      use rxns 
-      use compar 
-      implicit none
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      integer nl 
-      character ch, line*(*) 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      integer :: i 
-!-----------------------------------------------
-!
-!
-      do i = nl - 1, 1, -1 
-         if (line(i:i) == ch) then 
-            line(i:nl-1) = line(i+1:nl) 
-            line(nl:nl) = ' ' 
-         endif 
-      end do 
-!
-      return  
-      end subroutine remove_char 
-!
-!
-!
-!
-      REAL FUNCTION DO_ARITH (LINE, LMAX, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
+      END SUBROUTINE getName
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+!  Subroutine name: getDH(INPUT, lDH)                                  !
+!                                                                      !
+!  Purpose: Extract the reaction name from a construct.                !
+!                                                                      !
+!  Variables referenced: None                                          !
+!                                                                      !
+!  Variables modified: None                                            !
+!                                                                      !
+!  Local variables: None                                               !
+!                                                                      !
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+      SUBROUTINE getDH(INPUT, lDH)
+
+! Input line.
+      CHARACTER(len=*), INTENT(IN) :: INPUT
+! Name of reaction pulled from input.
+      DOUBLE PRECISION, INTENT(OUT) :: lDH
+
+
+      INTEGER POS, lP, rP, lQ
+      INTEGER lLMAX
+! read/write output status
+      INTEGER IOS
+! Phase Index
+      INTEGER pIDX
+
+      lLMAX = LEN_TRIM(INPUT)
+
+      IF(INDEX(INPUT,"DH") .EQ. 0) THEN
+         WRITE (*, 1100) trim(adjustl(INPUT))
+         WRITE(*, 1000)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
+      lQ = INDEX(INPUT(:lLMAX),'=')
+
+      IF(lQ .EQ. 0) THEN
+         WRITE (*, 1001) trim(adjustl(INPUT))
+         WRITE(*, 1000)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
+! Convert the entrying into an double precision value.
+      READ(INPUT(lQ+1:),*,IOSTAT=IOS) lDH
+      IF(IOS .NE. 0) THEN
+         WRITE(*, 1002) trim(adjustl(INPUT))
+         WRITE(*, 1000)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
+
+ 1001 FORMAT(//1X,70('*')/' From: PARSE_RXN --> getDH',/               &
+         ' Error 1001: Input format error for DH.',//' INPUT: ',A)
+
+ 1002 FORMAT(//1X,70('*')/' From: PARSE_RXN --> getDH',/               &
+         ' Error 1002: Unable to determine DH value from input.',/     &
+         ' Cannot convert specified value to double precision value.',/&
+         /' INPUT: ',A)
+
+ 1000 FORMAT(/' Please refer to the Readme file on the required input',&
+         ' format and make',/' the necessary corrections to the data', &
+         ' file.',/1X,70('*')//)
+
+ 1100 FORMAT(//1X,70('*')/' From: PARSE_RXN',/                         &
+         ' Error 1105: DH was initially located within the input line',&
+         /' however its location cannot be determined.',&
+         ' INPUT: ',A)
+
+      RETURN
+      END SUBROUTINE getDH
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+!  Subroutine name: getfracDH(INPUT, lChemEq)                          !
+!                                                                      !
+!  Purpose: Extract the reaction name from a construct.                !
+!                                                                      !
+!  Variables referenced: None                                          !
+!                                                                      !
+!  Variables modified: None                                            !
+!                                                                      !
+!  Local variables: None                                               !
+!                                                                      !
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+      SUBROUTINE getFracDH(INPUT, lFracDH)
+
       USE param 
       USE param1 
-      USE parse 
-      USE rxns 
-      USE compar 
+
       IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER LMAX, IER 
-      CHARACTER LINE*(*) 
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER :: L, LSUB 
-      REAL :: VALUE, SUB_VALUE 
-      CHARACTER :: OPERATION, SUB_STR*80 
-!-----------------------------------------------
-!
-!
-      IER = 0 
-      DO_ARITH = 986754321.E23 
-      VALUE = 1.0 
-      OPERATION = '*' 
-      LSUB = 1 
-      DO L = 1, LMAX 
-         IF (LINE(L:L)=='*' .OR. LINE(L:L)=='/') THEN 
-!
-            IF (LSUB == 1) THEN 
-               WRITE (*, 1015) LINE(1:LMAX) 
-               IER = 1 
-               RETURN  
-            ENDIF 
-!
-            READ (SUB_STR(1:LSUB-1), *, ERR=900) SUB_VALUE 
-!
-            IF (OPERATION == '*') THEN 
-               VALUE = VALUE*SUB_VALUE 
-            ELSE IF (OPERATION == '/') THEN 
-               VALUE = VALUE/SUB_VALUE 
-            ENDIF 
-!
-            LSUB = 1 
-!
-            OPERATION = LINE(L:L) 
-!
-         ELSE IF (LINE(L:L) == ' ') THEN 
-!                                                !e
-         ELSE IF (ICHAR(LINE(L:L))>=48 .AND. ICHAR(LINE(L:L))<=57 .OR. ICHAR(&
-               LINE(L:L))==43 .OR. ICHAR(LINE(L:L))==45 .OR. ICHAR(LINE(L:L))==&
-               46 .OR. ICHAR(LINE(L:L))==69 .OR. ICHAR(LINE(L:L))==101) THEN 
-            SUB_STR(LSUB:LSUB) = LINE(L:L) 
-            LSUB = LSUB + 1 
-         ELSE 
-!            WRITE (*, 1015) LINE(1:LMAX) 
-            IER = 1 
-            RETURN  
-         ENDIF 
-      END DO 
-      READ (SUB_STR(1:LSUB-1), *, ERR=900) SUB_VALUE 
-!
-      IF (OPERATION == '*') THEN 
-         VALUE = VALUE*SUB_VALUE 
-      ELSE IF (OPERATION == '/') THEN 
-         VALUE = VALUE/SUB_VALUE 
-      ENDIF 
-!
-      DO_ARITH = VALUE 
+
+! Input line.
+      CHARACTER(len=*), INTENT(IN) :: INPUT
+! Name of reaction pulled from input.
+      DOUBLE PRECISION, INTENT(OUT) :: lFracDH(0:DIM_M)
+
+
+      INTEGER POS, lP, rP, lQ
+      INTEGER lLMAX
+! read/write output status
+      INTEGER IOS
+! Phase Index
+      INTEGER pIDX
+
+      lLMAX = LEN_TRIM(INPUT)
+      POS = INDEX(INPUT,"FRACDH")
+
+      IF(POS == 0) THEN
+         WRITE (*, 1100) trim(adjustl(INPUT))
+         WRITE(*, 1100)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
+      lP = INDEX(INPUT(:lLMAX),'(')
+      rP = INDEX(INPUT(:lLMAX),')')
+      lQ = INDEX(INPUT(:lLMAX),'=')
+
+      IF(lP .EQ. rP .AND. lP .EQ. ZERO) THEN
+         WRITE(*, 1001) trim(adjustl(INPUT))
+         WRITE(*, 1000)
+         CALL MFIX_EXIT(myPE)
+      ELSEIF(lP .GE. rP) THEN
+         WRITE(*, 1002) trim(adjustl(INPUT))
+         WRITE(*, 1000)
+         CALL MFIX_EXIT(myPE)
+      ELSEIF(rP .GE. lQ) THEN
+         WRITE(*, 1002) trim(adjustl(INPUT))
+         WRITE(*, 1000)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+! Convert the entrying into an integer value.
+      READ(INPUT(lP+1:rP-1),*,IOSTAT=IOS) pIDX
+      IF(IOS .NE. 0) THEN
+         WRITE(*, 1003) trim(adjustl(INPUT))
+         WRITE(*, 1000)
+         CALL MFIX_EXIT(myPE)
+      ELSEIF(pIDX .LT. 0 .OR. pIDX .GT. DIM_M)THEN
+         WRITE(*, 1004) trim(adjustl(INPUT))
+         WRITE(*, 1000)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
+! Convert the entrying into an double precision value.
+      READ(INPUT(lQ+1:),*,IOSTAT=IOS) lFracDH(pIDX)
+      IF(IOS .NE. 0) THEN
+         WRITE(*, 1005)trim(adjustl(INPUT))
+         WRITE(*, 1000)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
+      RETURN
+
+ 1001 FORMAT(//1X,70('*')/' From: PARSE_RXN --> getFracDH',/           &
+         ' Error 1001: Unable to determine phase association for',     &
+         ' fracDH. When',/' specifying heat of reaction (DH), the',    &
+         ' fraction of DH assigned to',/' each phase must be',         &
+         ' given explicitly.',//' Example: fracDH(0) = 0.25  ! 25% of',&
+         ' DH is assigned to gas phase',/'          fracDH(1) = 0.75 ',&
+         ' ! 75% of DH is assigned to solids phase 1',//' Note:',      &
+         ' fracDH(0) + fracDH(1) + ... + frachDH(M) == 1.0',//         &
+         ' INPUT: ',A)
+
+ 1002 FORMAT(//1X,70('*')/' From: PARSE_RXN --> getFracDH',/           &
+         ' Error 1002: Input format error for fracDH.',//              &
+         ' INPUT: ',A)
+
+ 1003 FORMAT(//1X,70('*')/' From: PARSE_RXN --> getFracDH',/           &
+         ' Error 1003: Unable to determine phase index for fracDH.',//&
+         ' INPUT: ',A)
+
+ 1004 FORMAT(//1X,70('*')/' From: PARSE_RXN --> getFracDH',/           &
+         ' Error 1004: Phase index for fracDH exceeds DIM_M!',//       &
+         ' INPUT: ',A)
+
+ 1005 FORMAT(//1X,70('*')/' From: PARSE_RXN --> getFracDH',/           &
+         ' Error 1005: Unable to determine fracDH value from input.',/ &
+         ' Cannot convert specified value to double precision value.',/&
+         /' INPUT: ',A)
+
+
+ 1000 FORMAT(/' Please refer to the Readme file on the required input',&
+         ' format and make',/' the necessary corrections to the data', &
+         ' file.',/1X,70('*')//)
+
+ 1100 FORMAT(//1X,70('*')/' From: PARSE_RXN',/                         &
+         ' Error 1105: fracDH was initially located within the',       &
+         ' input line,',/' however its location cannot be determined.',&
+         ' INPUT: ',A)
+
+
+
+      END SUBROUTINE getFracDH
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+!  Subroutine name: getChemEq(INPUT, lChemEq)                          !
+!                                                                      !
+!  Purpose: Extract the reaction name from a construct.                !
+!                                                                      !
+!  Variables referenced: None                                          !
+!                                                                      !
+!  Variables modified: None                                            !
+!                                                                      !
+!  Local variables: None                                               !
+!                                                                      !
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+      SUBROUTINE getChemEq(IN, lChemEq)
+
+      IMPLICIT NONE
+
+! Input line.
+      CHARACTER(len=*), INTENT(IN) :: IN
+! Name of reaction pulled from input.
+      CHARACTER(len=*), INTENT(OUT) :: lChemEq
+
+! read/write output status
+      INTEGER IOS
+
+      INTEGER POS, lPOS, rPOS, ldP, lsP, aPOS
+      INTEGER lLMAX
+
+! Chemical equations start with the keyword: CHEM_EQ. If this is not a
+! continuation of the previous line, search for the keyword and
+! flag an error if not found.
+      IF(.NOT.MORE_ChemEq) THEN
+         lLMAX = LEN_TRIM(IN)
+         POS = INDEX(IN,"CHEM_EQ")
+
+         IF(POS == 0) THEN
+            WRITE (*, 1105) 'Chem_Eq'
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+! Initialize
+         lChemEq = ''
+! Update POS to skip over the keyword: CHEM_EQ
+         POS = POS+7
+      ELSE
+         POS = 1
+      ENDIF
+
+! Search for quote marks bounding the chemcial equation.
+      ldP = POS + INDEX(IN(POS:),'"')  ! double quote "
+      lsP = POS + INDEX(IN(POS:),"'")  ! single quote '
+
+      IF(ldP .GT. POS .AND. lsP .EQ. POS) THEN
+! The chemical equation is bounded by double quotes
+         lPOS = ldP
+! Search for the second quote mark.
+         rPOS = lPOS + INDEX(IN(lPOS+1:),'"')
+      ELSEIF(ldP .EQ. POS .AND. lsP .GT. POS) THEN
+! The chemical equation is bounded by single quotes
+         lPOS = lsP
+! Search for the second quote mark.
+         rPOS = lPOS + INDEX(IN(lPOS+1:),"'")
+      ELSE
+! Different errors are thrown depending if this is a continuation 
+! (MORE_ChemEq) or the start of a chemical equation.
+         IF(.NOT.MORE_ChemEq) THEN
+            WRITE(*, 1001) trim(adjustl(IN))
+            WRITE(*, 1000)
+         ELSE
+            IF(isFracDH(IN)) THEN
+              WRITE(*, 1002) 'Keyword fracDH was found inside',        &
+                 ' the chemcial equation!', trim(adjustl(IN))
+              WRITE(*, 1000)
+            ELSEIF(isDH(IN)) THEN
+              WRITE(*, 1002) 'Keyword DH was found inside',            &
+                 ' the chemcial equation!', trim(adjustl(IN))
+              WRITE(*, 1000)
+            ELSE
+              WRITE(*, 1002) 'Unbalanced or missing parentheses', '',  &
+                 trim(adjustl(IN))
+              WRITE(*, 1000)
+            ENDIF
+         ENDIF
+         CALL MFIX_EXIT(myPE)
+      ENDIF      
+
+! Mismatch/Unbalanced parentheses
+      IF(lPOS .EQ. rPOS) THEN
+! Different errors are thrown depending if this is a continuation 
+! (MORE_ChemEq) or the start of a chemical equation.
+         IF(.NOT.MORE_ChemEq) THEN
+            WRITE(*, 1001) trim(adjustl(IN))
+            WRITE(*, 1000)
+         ELSE
+           WRITE(*, 1002) 'Unbalanced or missing parentheses', '',  &
+              trim(adjustl(IN))
+           WRITE(*, 1000)
+         ENDIF
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
+! Search for an ampersand.
+      aPOS = lPOS + INDEX(IN(lPOS+1:),'&')
+! An ampersand was found.
+      IF(aPOS .GT. lPOS) THEN
+         MORE_ChemEq = .TRUE.
+! The ampersand should be further to the right than the last quote mark.
+         IF(aPOS .LE. rPOS) THEN
+            WRITE(*, 1003) trim(adjustl(IN))
+            WRITE(*, 1000)
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+      ELSE
+         MORE_ChemEq = .FALSE.
+      ENDIF
+
+! Store the chemical equation.
+      WRITE(lChemEq,"(A,1X,A)",IOSTAT=IOS) trim(lChemEq), &
+         trim(adjustl(IN(lPOS:rPOS-1)))
+      IF(IOS .NE. 0) THEN
+         WRITE(*, 1004) trim(lChemEq), trim(adjustl(IN))
+         WRITE(*, 1000)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
       RETURN  
-!
-  900 CONTINUE 
-      WRITE (*, 1010) SUB_STR(1:LSUB-1) 
-      IER = 2 
-      RETURN  
-!
- 1010 FORMAT(/1X,70('*')//' From: DO_ARITH',/&
-         ' Message: Error reading the input string: ',/9X,A,/1X,70('*')/) 
-!
- 1015 FORMAT(/1X,70('*')//' From: DO_ARITH',/&
-         ' Message: Invalid operator in the input string: ',/9X,A,/1X,70('*')/) 
-      END FUNCTION DO_ARITH 
+
+ 1001 FORMAT(//1X,70('*')/' From: PARSE_RXN --> getChemEq',/           &
+         ' Error 1001: Unbalanced or missing parentheses for chem_eq.',&
+         //' INPUT: ',A,//' Example 1: RXN_NAME { chem_eq = ',         &
+         '"A + B --> AB" }',//' Example 2: RXN_NAME {',/14X,           &
+         'chem_eq = "A + B --> AB"',/14X, 'DH = 2.5d4',/14X,           &
+         'fracDH(0) = 1.0',/12X,'}')
+
+ 1002 FORMAT(//1X,70('*')/' From: PARSE_RXN --> getChemEq',/           &
+         ' Error 1002: Chemcial equation continuation input error.',   &
+         //'  > ',2A//' INPUT: ',A)
+
+ 1003 FORMAT(//1X,70('*')/' From: PARSE_RXN --> getChemEq',/           &
+         ' Error 1003: Input format error for chem_eq. An amperand',   &
+         ' (&)',/' was located within the parentheses.',//' INPUT: ',A)
+
+ 1004 FORMAT(//1X,70('*')/' From: PARSE_RXN --> getChemEq',/           &
+         ' Error 1004: Unable to process chemical equation input.',/   &
+         ' A possible error is variable overflow as the total length', &
+         ' is limited',/' to 512 characters.',//' lChemEq: ',A,//      &
+         ' INPUT: ',A)
+
+ 1000 FORMAT(/' Please refer to the Readme file on the required input',&
+         ' format and make',/' the necessary corrections to the data', &
+         ' file.',/1X,70('*')//)
+
+ 1105 FORMAT(//1X,70('*')/' From: PARSE_RXN --> getChemEq',/           &
+         ' Error 1105: chem_eq was initially located within the',      &
+         ' input line,',/' however its location cannot be determined.',&
+         ' INPUT: ',A)
+
+      END SUBROUTINE getChemEq
+
+      END SUBROUTINE PARSE_RXN

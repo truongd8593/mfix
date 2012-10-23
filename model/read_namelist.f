@@ -239,7 +239,13 @@
 ! Make upper case all except species names     
       if(index(LINE_STRING,'SPECIES_NAME') == 0 .AND. &
          index(LINE_STRING,'species_name') == 0 .AND. &
-         index(LINE_STRING,'Species_Name') == 0       &
+         index(LINE_STRING,'Species_Name') == 0 .AND. &
+         index(LINE_STRING,'SPECIES_g') == 0 .AND. &
+         index(LINE_STRING,'Species_g') == 0 .AND. &
+         index(LINE_STRING,'species_g') == 0 .AND. &
+         index(LINE_STRING,'SPECIES_s') == 0 .AND. &
+         index(LINE_STRING,'Species_s') == 0 .AND. &
+         index(LINE_STRING,'species_s') == 0       &
          ) &
             CALL MAKE_UPPER_CASE (LINE_STRING, LINE_LEN) 
       IF(LINE_STRING(1:11) == 'THERMO DATA')  GOTO 500  !All subsequent lines are thermochemical data
@@ -317,19 +323,6 @@
      
       IF (E /= UNDEFINED) C_E = E 
 
-
-      DO L = 1, NO_OF_RXNS 
-! Do all the rxns have a rate defined?
-         IF (.NOT.GOT_RATE(L)) THEN 
-            WRITE (*, 1610) myPE,RXN_NAME(L) 
-            call mfix_exit(myPE) 
-         ENDIF 
-! Do all the rxns have a stoichiometry defined?
-         IF (.NOT.GOT_RXN(L)) THEN 
-            WRITE (*, 1620) myPE,RXN_NAME(L) 
-            call mfix_exit(myPE) 
-         ENDIF 
-      ENDDO 
 
       RETURN  
      

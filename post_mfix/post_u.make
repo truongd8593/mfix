@@ -220,13 +220,14 @@ post_mfix : \
     get_cut_cell_flags.$(OBJ_EXT) \
     get_cut_cell_volume_area.$(OBJ_EXT) \
     get_master.$(OBJ_EXT) \
-    get_poly_data.$(OBJ_EXT) \
-    get_stl_data.$(OBJ_EXT) \
     set_Odxyz.$(OBJ_EXT) \
     vtk_out.$(OBJ_EXT) \
     write_progress_bar.$(OBJ_EXT) \
     dmp_cartesian.$(OBJ_EXT) \
     set_geometry1.$(OBJ_EXT) \
+    read_database.$(OBJ_EXT) \
+    readTherm.$(OBJ_EXT) \
+    get_values.$(OBJ_EXT) \
     
 	$(LINK_CMD) $(LINK_FLAGS) \
     ambm_mod.$(OBJ_EXT) \
@@ -447,20 +448,19 @@ post_mfix : \
     get_cut_cell_flags.$(OBJ_EXT) \
     get_cut_cell_volume_area.$(OBJ_EXT) \
     get_master.$(OBJ_EXT) \
-    get_poly_data.$(OBJ_EXT) \
-    get_stl_data.$(OBJ_EXT) \
     set_Odxyz.$(OBJ_EXT) \
     vtk_out.$(OBJ_EXT) \
     write_progress_bar.$(OBJ_EXT) \
     dmp_cartesian.$(OBJ_EXT) \
     set_geometry1.$(OBJ_EXT) \
+    read_database.$(OBJ_EXT) \
+    readTherm.$(OBJ_EXT) \
+    get_values.$(OBJ_EXT) \
   -o post_mfix $(LIB_FLAGS)
   
 AMBM.mod : ../model/ambm_mod.f \
-            PARAM.mod \
-            PARAM1.mod \
             COMPAR.mod \
-            MPI_UTILITY.mod 
+            FUNITS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/ambm_mod.f 
 BC.mod : ../model/bc_mod.f \
             PARAM.mod \
@@ -555,7 +555,10 @@ PARAM.mod : ../model/param_mod.f
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/param_mod.f 
 PARSE.mod : ../model/parse_mod.f \
             PARAM.mod \
-            PARAM1.mod 
+            PARAM1.mod \
+            FUNITS.mod \
+            COMPAR.mod \
+            RXNS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/parse_mod.f 
 PGCOR.mod : ../model/pgcor_mod.f \
             PARAM.mod \
@@ -606,12 +609,12 @@ TIME_CPU.mod : ../model/time_cpu_mod.f \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/time_cpu_mod.f 
 TMP_ARRAY1.mod : ../model/tmp_array1_mod.f \
-            PARAM.mod \
-            PARAM1.mod 
+            COMPAR.mod \
+            FUNITS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/tmp_array1_mod.f 
 TMP_ARRAY.mod : ../model/tmp_array_mod.f \
-            PARAM.mod \
-            PARAM1.mod 
+            COMPAR.mod \
+            FUNITS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/tmp_array_mod.f 
 TOLERANC.mod : ../model/toleranc_mod.f \
             PARAM.mod \
@@ -946,15 +949,20 @@ check_data_04.$(OBJ_EXT) : ../model/check_data_04.f \
             PHYSPROP.mod \
             CONSTANT.mod \
             DISCRETELEMENT.mod \
-            FUNITS.mod 
+            FUNITS.mod \
+            MFIX_PIC.mod \
+            COMPAR.mod \
+            RXNS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/check_data_04.f 
 check_data_05.$(OBJ_EXT) : ../model/check_data_05.f \
+            COMPAR.mod \
             PARAM.mod \
             PARAM1.mod \
             PHYSPROP.mod \
             FUNITS.mod \
             RUN.mod \
-            INDICES.mod 
+            INDICES.mod \
+            RXNS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/check_data_05.f 
 check_one_axis.$(OBJ_EXT) : ../model/check_one_axis.f \
             PARAM.mod \
@@ -1333,17 +1341,19 @@ out_time.$(OBJ_EXT) : out_time.f \
             COMPAR.mod \
             function.inc                                                
 parse_line.$(OBJ_EXT) : ../model/parse_line.f \
+            COMPAR.mod \
             PARAM.mod \
             PARAM1.mod \
             PARSE.mod \
-            COMPAR.mod 
+            RXNS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/parse_line.f 
 parse_rxn.$(OBJ_EXT) : ../model/parse_rxn.f \
+            COMPAR.mod \
+            FUNITS.mod \
             PARAM.mod \
             PARAM1.mod \
             PARSE.mod \
-            RXNS.mod \
-            COMPAR.mod 
+            RXNS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/parse_rxn.f 
 print_out.$(OBJ_EXT) : print_out.f \
             PARAM.mod \
@@ -2065,53 +2075,6 @@ get_master.$(OBJ_EXT) : ../model/cartesian_grid/get_master.f \
             QUADRIC.mod \
             CUTCELL.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/get_master.f 
-get_poly_data.$(OBJ_EXT) : ../model/cartesian_grid/get_poly_data.f \
-            PARAM.mod \
-            PARAM1.mod \
-            PHYSPROP.mod \
-            FLDVAR.mod \
-            RUN.mod \
-            SCALARS.mod \
-            FUNITS.mod \
-            RXNS.mod \
-            COMPAR.mod \
-            MPI_UTILITY.mod \
-            PROGRESS_BAR.mod \
-            POLYGON.mod \
-            PARALLEL.mod \
-            CONSTANT.mod \
-            TOLERANC.mod \
-            GEOMETRY.mod \
-            INDICES.mod \
-            SENDRECV.mod \
-            QUADRIC.mod \
-            CUTCELL.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/get_poly_data.f 
-get_stl_data.$(OBJ_EXT) : ../model/cartesian_grid/get_stl_data.f \
-            PARAM.mod \
-            PARAM1.mod \
-            PHYSPROP.mod \
-            FLDVAR.mod \
-            RUN.mod \
-            SCALARS.mod \
-            FUNITS.mod \
-            RXNS.mod \
-            COMPAR.mod \
-            MPI_UTILITY.mod \
-            PROGRESS_BAR.mod \
-            STL.mod \
-            VTK.mod \
-            QUADRIC.mod \
-            CONSTANT.mod \
-            BC.mod \
-            CUTCELL.mod \
-            PARALLEL.mod \
-            TOLERANC.mod \
-            GEOMETRY.mod \
-            INDICES.mod \
-            SENDRECV.mod \
-            STL.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/get_stl_data.f 
 set_Odxyz.$(OBJ_EXT) : ../model/cartesian_grid/set_Odxyz.f \
             PARAM.mod \
             PARAM1.mod \
@@ -2198,3 +2161,19 @@ set_geometry1.$(OBJ_EXT) : ../model/set_geometry1.f \
             COMPAR.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/set_geometry1.f 
+read_database.$(OBJ_EXT) : ../model/read_database.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PHYSPROP.mod \
+            CONSTANT.mod \
+            COMPAR.mod \
+            RXNS.mod \
+            FUNITS.mod \
+            DISCRETELEMENT.mod \
+            DES_RXNS.mod \
+            mfix_directory_path.inc                                     
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/read_database.f 
+readTherm.$(OBJ_EXT) : ../model/thermochemical/readTherm.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/thermochemical/readTherm.f 
+get_values.$(OBJ_EXT) : ../model/thermochemical/get_values.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/thermochemical/get_values.f 

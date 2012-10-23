@@ -216,10 +216,11 @@ usr_input_mod.f
 ../model/cartesian_grid/get_cut_cell_flags.f
 ../model/cartesian_grid/get_cut_cell_volume_area.f
 ../model/cartesian_grid/get_master.f
-../model/cartesian_grid/get_poly_data.f
-../model/cartesian_grid/get_stl_data.f
 ../model/cartesian_grid/set_Odxyz.f
 ../model/cartesian_grid/vtk_out.f
 ../model/cartesian_grid/write_progress_bar.f
 ../model/cartesian_grid/dmp_cartesian.f
 ../model/set_geometry1.f
+../model/read_database.f
+../model/thermochemical/readTherm.f
+../model/thermochemical/get_values.f

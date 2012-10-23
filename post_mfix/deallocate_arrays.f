@@ -231,10 +231,6 @@
       Deallocate(  SUM_R_g  )
       Deallocate(  SUM_R_s  )
       Deallocate(  R_phase  )
-      Deallocate(  MW_all  )
-      Deallocate(  SPECIES_ID2N )
-      Deallocate(  SPECIES_N2IDg )
-      Deallocate(  SPECIES_N2IDs )
       
 !scalars
       IF(DIMENSION_Scalar /= 0)then
