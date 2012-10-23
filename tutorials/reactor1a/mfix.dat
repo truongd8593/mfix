@@ -46,9 +46,13 @@
 !
   MU_g0 = 1.8E-4
   DIF_g0 = 0.0
-  NMAX(0) = 3
-  SPECIES_NAME = 'A'  'R'  'Inert'
-  MW_g         = 27.   9.   27.
+
+  NMAX_g = 3
+
+  SPECIES_g(1) = 'A'       SPECIES_ALIAS_g(1) = 'A'
+  SPECIES_g(2) = 'R'       SPECIES_ALIAS_g(2) = 'R'
+  SPECIES_g(3) = 'Inert'   SPECIES_ALIAS_g(3) = 'Inert'
+
 
 !
 ! Solids-phase Section
@@ -132,18 +136,22 @@
 !  volume occupied by solids
 
 
-@( RXNS -- Start chemical reactions input )
+#_______________________________________________________________________
+# CHEMICAL REACTION SECTION
 
-        r1:  A ->  3 R
+! The reaction rate expression has been entered in user-defined 
+! subroutine usr_rates.f.  Select a set of constants for various rxn orders.
 
-    !select (uncomment) one of the following rate expressions
+!  C =  31.6E-5     0.5  !half order
+!  C =  0.0728843   1.0  !first order
+  C =  5001.09     2.0  !second order
 
-!    rate r1:  0    31.6E-05     0     0   [A]^(1/2)
-!    rate r1:  0    0.0728843    0     0   [A]
-    rate r1:  0    5001.09      0     0   [A]^(2)
+  @(RXNS)
 
+    AtoR { chem_eq = "A --> 3R" }
 
-@( END  -- End chemical reactions input )
+  @(END)
+
 
 
 THERMO DATA
