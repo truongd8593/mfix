@@ -60,13 +60,13 @@
 ! Number of gas speices
       INTEGER, INTENT(IN) :: lNg
 ! Gas phase species aliases
-      CHARACTER(len=8), DIMENSION(DIM_N_g), INTENT(IN) :: lSAg
+      CHARACTER(len=32), DIMENSION(DIM_N_g), INTENT(IN) :: lSAg
 ! Number of solids phases
       INTEGER, INTENT(IN) :: lM
 ! Number of species in each solids phase.
       INTEGER, DIMENSION(DIM_M), INTENT(IN) :: lNs
 ! Solids phase speices aliases.
-      CHARACTER(len=8), DIMENSION(DIM_M, DIM_N_s), INTENT(IN) :: lSAs
+      CHARACTER(len=32), DIMENSION(DIM_M, DIM_N_s), INTENT(IN) :: lSAs
 ! User defined heat of reaction.
       DOUBLE PRECISION, INTENT(IN) :: lDH
 ! User defined heat of reaction partition.
@@ -76,7 +76,7 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Alias, phase, species, stoich coeff :: Reactants    Products
-      CHARACTER*8, DIMENSION(50)      :: rAlias    ,  pAlias
+      CHARACTER*32, DIMENSION(50)     :: rAlias    ,  pAlias
       INTEGER, DIMENSION(50)          :: rPhase    ,  pPhase
       INTEGER, DIMENSION(50)          :: rSpecies  ,  pSpecies
       DOUBLE PRECISION, DIMENSION(50) :: rCoeff    ,  pCoeff
@@ -485,7 +485,7 @@
 ! The number of individual species found in lSpecies.
       INTEGER, INTENT(OUT) :: lNo
 ! Species Aliases from the chemical equation.
-      CHARACTER*8, DIMENSION(50), INTENT(OUT) :: lAlias
+      CHARACTER*32, DIMENSION(50), INTENT(OUT) :: lAlias
 ! Stoichiometric coefficient pulled from the chemical equation.
       DOUBLE PRECISION, DIMENSION(50), INTENT(OUT) :: lCoeff
 
@@ -565,7 +565,7 @@
 ! Ending position for substring analysis.
       INTEGER, INTENT(IN) :: lEnd
 ! Species Aliases from the chemical equation.
-      CHARACTER*8, INTENT(OUT) :: lAlias
+      CHARACTER*32, INTENT(OUT) :: lAlias
 ! Stoichiometric coefficient pulled from the chemical equation.
       DOUBLE PRECISION, INTENT(OUT) :: lCoeff
 
@@ -727,13 +727,13 @@
 ! Number of gas speices
       INTEGER, INTENT(IN) :: lNg
 ! Gas phase species aliases
-      CHARACTER(len=8), DIMENSION(DIM_N_g), INTENT(IN) :: lSAg
+      CHARACTER(len=32), DIMENSION(DIM_N_g), INTENT(IN) :: lSAg
 ! Number of solids phases
       INTEGER, INTENT(IN) :: lM
 ! Number of species in each solids phase.
       INTEGER, DIMENSION(DIM_M), INTENT(IN) :: lNs
 ! Solids phase speices aliases.
-      CHARACTER(len=8), DIMENSION(DIM_M, DIM_N_s), INTENT(IN) :: lSAs
+      CHARACTER(len=32), DIMENSION(DIM_M, DIM_N_s), INTENT(IN) :: lSAs
 
       LOGICAL, INTENT(OUT) :: lBA(0:(DIMENSION_N_g + lM*DIMENSION_N_s))
 
@@ -800,17 +800,17 @@
 ! Number of gas speices
       INTEGER, INTENT(IN) :: lNg
 ! Gas phase species aliases
-      CHARACTER(len=8), DIMENSION(DIM_N_g), INTENT(IN) :: lSAg
+      CHARACTER(len=32), DIMENSION(DIM_N_g), INTENT(IN) :: lSAg
 ! Number of solids phases
       INTEGER, INTENT(IN) :: lM
 ! Number of species in each solids phase.
       INTEGER, DIMENSION(DIM_M), INTENT(IN) :: lNs
 ! Solids phase speices aliases.
-      CHARACTER(len=8), DIMENSION(DIM_M, DIM_N_s), INTENT(IN) :: lSAs
+      CHARACTER(len=32), DIMENSION(DIM_M, DIM_N_s), INTENT(IN) :: lSAs
 ! Number of products (or reactants)
       INTEGER, INTENT(IN) :: lNo
 ! Species Alaises pulled from the chemical equation.
-      CHARACTER*8, DIMENSION(50), INTENT(IN) :: lAlias
+      CHARACTER*32, DIMENSION(50), INTENT(IN) :: lAlias
 
       DOUBLE PRECISION, DIMENSION(50), INTENT(IN) :: lCoeff
 
@@ -909,11 +909,11 @@
 
 ! Pass Arguments:
 !---------------------------------------------------------------------//
-      CHARACTER*8, INTENT(IN) :: lSA, ceSA
+      CHARACTER*32, INTENT(IN) :: lSA, ceSA
 
 ! Local Variables:
 !---------------------------------------------------------------------//
-      CHARACTER*8 tlSA
+      CHARACTER*32 tlSA
 
 ! Copy species alias.
       tlSA = lSA

@@ -43,11 +43,11 @@
 
 ! Gas phase species names (database) and aliases
       CHARACTER(len=18) SPECIES_g(DIM_N_g) ! database name
-      CHARACTER(len=8)  SPECIES_ALIAS_g(DIM_N_g) ! alias
+      CHARACTER(len=32)  SPECIES_ALIAS_g(DIM_N_g) ! alias
 
 ! Solids phase species names (database) and aliases
       CHARACTER(len=18) SPECIES_s(DIM_M, DIM_N_s) ! database name
-      CHARACTER(len=8)  SPECIES_ALIAS_s(DIM_M, DIM_N_s) ! alias
+      CHARACTER(len=32)  SPECIES_ALIAS_s(DIM_M, DIM_N_s) ! alias
 ! 
 
 ! The following data types are used to group chemical reaction data.

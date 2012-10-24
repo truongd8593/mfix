@@ -134,8 +134,13 @@ echo "  chemical reaction data..."
     p=$(echo $p | cut -d "#" -f1 | cut -d "!" -f1)
 
 # Pull off SPECIES_ALIAS lines.
-    p1g=$(echo $p | grep -io "species_alias_g.*") # gas phase
-    p1s=$(echo $p | grep -io "species_alias_s.*") # solids phases
+    p1g=$(echo $p | grep -i 'species_alias_g')
+    p1g=$(echo $p1g | sed 's/.*\(species_alias_g.*\)/\1/gI')
+    p1g=$(echo $p1g | sed 's/species_g.*//gI')
+
+    p1s=$(echo $p | grep -i "species_alias_s.*") # solids phases
+    p1s=$(echo $p1s | sed 's/.*\(species_alias_s.*\)/\1/gI')
+    p1s=$(echo $p1s | sed 's/species_s.*//gI')  
 
 # Process gas phase species aliases.
 #-----------------------------------------------------------------------
@@ -151,7 +156,7 @@ echo "  chemical reaction data..."
 # Loop over compound entries
       for p1a in "${splst[@]}"; do
 # Ensure that the speices aliases adhead to Fortran variable naming.
-        check_val "Species Alias" $p1a 8
+        check_val "Species Alias" $p1a 32
 # Calculate the species index (for compound entries)
         nsindex=$((sindex+lc))
 # Write the species alias link to the include file
@@ -175,7 +180,7 @@ echo "  chemical reaction data..."
 # Loop over compound entries
       for p1b in "${splst[@]}"; do
 # Ensure that the speices aliases adhead to Fortran variable naming.
-        check_val "Species Alias" $p1b 8
+        check_val "Species Alias" $p1b 32
 # Calculate the species index (for compound entries)
         nsphase=$((sphase+lc))
 # Write the species alias link to the include file
@@ -245,4 +250,3 @@ if [[ "$call_stop" = "true" ]]; then
 fi
 
 echo -e "\n  Reaction data was successfully processed. "
-
