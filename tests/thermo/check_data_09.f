@@ -660,13 +660,13 @@
          ENDIF
       ENDDO
 
-      OPEN(6,FILE='POST_Thermo.dat', status='NEW')
+      OPEN(678,FILE='POST_Thermo.dat', status='NEW')
 ! Loop over reaction data pulled from data file.
       DO L=1, NO_OF_RXNS
          This => Reaction(L)
          CALL WRITE_RXN_SUMMARY()
       ENDDO
-      CLOSE(6)
+      CLOSE(678)
 
 
       RETURN
@@ -1095,6 +1095,7 @@
 
       CHARACTER*72, OUTPUT
       CHARACTER*72, full, divided, empty
+      CHARACTER*32 lSP
 
 ! External Function for comparing two numbers.
       LOGICAL, EXTERNAL :: COMPARE
@@ -1141,7 +1142,6 @@
          CALL WRITE0(divided)
       ENDIF
 
-
       DO lN = 1, This%nSpecies
 
          M = This%Species(lN)%pMap
@@ -1150,14 +1150,24 @@
          WRITE(OUTPUT,2006)
 
          IF(M == 0) THEN
-            lS = (9-int(len_trim(SPECIES_ALIAS_g(N))/2))
-            lE = lS + len_trim(SPECIES_ALIAS_g(N))
-            OUTPUT(lS:lE) = trim(SPECIES_ALIAS_g(N))
+            IF(len_trim(SPECIES_ALIAS_g(N)) > 8) THEN
+               lSP = SPECIES_ALIAS_g(N)
+               OUTPUT(5:13) = lSP(1:8)
+            ELSE
+              lS = (9-int(len_trim(SPECIES_ALIAS_g(N))/2))
+              lE = lS + len_trim(SPECIES_ALIAS_g(N))
+               OUTPUT(lS:lE) = trim(SPECIES_ALIAS_g(N))
+            ENDIF
             WRITE(OUTPUT(32:35),"(A)") 'Gas'
          ELSE
-            lS = (9-int(len_trim(SPECIES_ALIAS_s(M,N))/2))
-            lE = lS + len_trim(SPECIES_ALIAS_s(M,N))
-            OUTPUT(lS:lE) = trim(SPECIES_ALIAS_s(M,N))
+            IF(len_trim(SPECIES_ALIAS_s(M,N)) > 8) THEN
+               lSP = SPECIES_ALIAS_s(M,N)
+               OUTPUT(5:13) = lSP(1:8)
+            ELSE
+               lS = (9-int(len_trim(SPECIES_ALIAS_s(M,N))/2))
+               lE = lS + len_trim(SPECIES_ALIAS_s(M,N))
+               OUTPUT(lS:lE) = trim(SPECIES_ALIAS_s(M,N))
+            ENDIF
             WRITE(OUTPUT(30:36),"(A,I2)") 'Solid',M
          ENDIF
          WRITE(OUTPUT(43:44),"(I2)") N
@@ -1224,7 +1234,7 @@
 
       IF(myPE == PE_IO) THEN
          WRITE(*,*) trim(LINE)
-         WRITE(6,*) trim(LINE)
+         WRITE(678,*) trim(LINE)
       ENDIF
 
       END SUBROUTINE WRITE0
