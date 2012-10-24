@@ -781,7 +781,7 @@
       INTEGER lM1, lN1
       INTEGER lM2, lN2
 
-      CHARACTER(len=8) lSA1, lSA2
+      CHARACTER(len=32) lSA1, lSA2
 
 ! Set variables for error messages.
       lM1 = 0
