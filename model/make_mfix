@@ -2203,9 +2203,12 @@ esac
 #-----------------------------------------------------------------------
   cd $run_dir
 
-
 # Only execute if the run directory contains usr_rates.f
-  if [ -f "usr_rates.f" ]; then
+  if [ -f "usr_rates.f" -o -f "des/usr_rates_dpm.f" ]; then
+    echo -n "  User defined reaction files: "
+    if [ -f "usr_rates.f" ]; then echo -n "usr_rates.f "; fi
+    if [ -f "des/usr_rates_dpm.f" ]; then echo -n "usr_rates_dpm.f "; fi
+    echo -e "\n  Pre-processing mfix.dat file for chemical reaction data..."
     source $mfix/rxn_preproc.sh
   fi
 
