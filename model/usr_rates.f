@@ -6,7 +6,9 @@
 !                                                                      !
 !  Author: J.Musser                                   Date: 10-Oct-12  !
 !                                                                      !
-!  Comments: Write reaction rates in units of moles/sec.cm^3.          !
+!  Comments: Write reaction rates in units of moles/sec.cm^3 (cgs) or  !
+!  modles/sec.m^3 (SI). Units should match those specified in the data !
+!  file.
 !                                                                      !
 !  Example reaction: Methane combustion                                !
 !                                                                      !
@@ -24,7 +26,8 @@
 !    RATES(CH4_Comb) = 2.0d5 * EP_g(IJK) * c_O2 * c_CH4                !
 !``````````````````````````````````````````````````````````````````````!
 !  * Species alias and reaction names given in the data file can be    !
-!    used in reference to a species index.                             !
+!    used in reference to the reaction index in RATES and a species    !
+!    index in gas/solids phase variables.                              !
 !                                                                      !
 !  * Additional information is provided in section 4.11 of the code    !
 !    Readme.                                                           !
@@ -46,18 +49,15 @@
       USE funits
       USE compar
       USE sendrecv
-
       USE toleranc
       USE usr
 
       IMPLICIT NONE
 
-
       INTEGER, INTENT(IN) :: IJK
 
       DOUBLE PRECISION, DIMENSION(NO_OF_RXNS), INTENT(OUT) :: RATES
 
-!-----------------------------------------------
       INCLUDE 'species.inc'
 
       INCLUDE 'ep_s1.inc'
