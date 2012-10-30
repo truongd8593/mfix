@@ -94,6 +94,9 @@
 !// Logical function to identify a fluid cell in global coordiantes
       LOGICAL          FLUID_AT_G
 
+      INTEGER, DIMENSION(8) :: ACCEPTABLE_DEFAULT_WALL
+      LOGICAL :: GLOBAL_CORNER
+
       INCLUDE 'sc_p_g1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'sc_p_g2.inc'
@@ -101,7 +104,26 @@
 !  Set the boundary conditions.
 
       CALL CHECK_BC_FLAGS
- 
+
+!
+!  Define global corners as acceptable default walls
+!  These cells should never be used
+!
+
+      ACCEPTABLE_DEFAULT_WALL(1) = FUNIJK(IMIN3,JMIN3,KMIN3)
+      ACCEPTABLE_DEFAULT_WALL(2) = FUNIJK(IMAX3,JMIN3,KMIN3)
+      ACCEPTABLE_DEFAULT_WALL(3) = FUNIJK(IMIN3,JMAX3,KMIN3)
+      ACCEPTABLE_DEFAULT_WALL(4) = FUNIJK(IMAX3,JMAX3,KMIN3)
+      ACCEPTABLE_DEFAULT_WALL(5) = FUNIJK(IMIN3,JMIN3,KMAX3)
+      ACCEPTABLE_DEFAULT_WALL(6) = FUNIJK(IMAX3,JMIN3,KMAX3)
+      ACCEPTABLE_DEFAULT_WALL(7) = FUNIJK(IMIN3,JMAX3,KMAX3)
+      ACCEPTABLE_DEFAULT_WALL(8) = FUNIJK(IMAX3,JMAX3,KMAX3)
+
+!      DO N = 1,8
+!         print*,'acceptable default=',ACCEPTABLE_DEFAULT_WALL(N)
+!      ENDDO
+
+
       DO IJK = ijkstart3, ijkend3
 
          L = BC_ID(IJK)
@@ -311,6 +333,35 @@
 
 
             ENDIF
+         ENDIF
+
+
+
+
+         IF(DEFAULT_WALL_AT(IJK)) THEN
+
+!            print*,'Default_wall_at IJK=',IJK,I_OF(IJK),J_OF(IJK),K_OF(IJK)
+
+            GLOBAL_CORNER = .FALSE.
+            DO N = 1,8
+               IF(IJK==ACCEPTABLE_DEFAULT_WALL(N)) GLOBAL_CORNER = .TRUE.
+            ENDDO
+
+            IF(.NOT.GLOBAL_CORNER.AND..NOT.BLOCKED_CELL_AT(IJK)) THEN
+
+               ICBC_FLAG(IJK)(2:3) = 'CG'
+
+               IF((MyPE == PE_IO).AND.PRINT_WARNINGS) THEN
+                  WRITE(*,*) 'WARNING: DEFAULT WALL DETECTED AT I,J,K = ',I_OF(IJK),J_OF(IJK),K_OF(IJK) ,BLOCKED_CELL_AT(IJK)
+                  WRITE(*,*) '         WHEN USING CARTESIAN GRID CUT-CELL FEATURE.'
+                  WRITE(*,*) '         DEFAULT WALLS ARE NOT ALLOWED WITH CUT-CELLS.'
+                  WRITE(*,*) '         THE DEFAULT WALL WAS REMOVED ALONG THIS CELL.'
+                  WRITE(*,*) ''
+               ENDIF   
+!               CALL MFIX_EXIT(MYPE) 
+
+            ENDIF
+
          ENDIF
 
 
