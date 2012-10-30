@@ -451,11 +451,8 @@
 
          IF(DO_K) ALONG_GLOBAL_GHOST_LAYER = ALONG_GLOBAL_GHOST_LAYER.OR.(K<KMIN1).OR.(K>KMAX1)
 
-         IF(BLOCKED_CELL_AT(IJK).OR.ALONG_GLOBAL_GHOST_LAYER) THEN
+         IF(BLOCKED_CELL_AT(IJK)) THEN
 
-            IM = IM1(I) 
-            JM = JM1(J) 
-            KM = KM1(K) 
             A_M(IJK,E,M) = ZERO 
             A_M(IJK,W,M) = ZERO 
             A_M(IJK,N,M) = ZERO 
@@ -464,6 +461,22 @@
             A_M(IJK,B,M) = ZERO 
             A_M(IJK,0,M) = -ONE 
             B_M(IJK,M) = -VAR(IJK) 
+
+         ENDIF
+
+         IF(BLOCKED_CELL_AT(IJK).OR.ALONG_GLOBAL_GHOST_LAYER) THEN
+
+            IM = IM1(I) 
+            JM = JM1(J) 
+            KM = KM1(K) 
+!            A_M(IJK,E,M) = ZERO 
+!            A_M(IJK,W,M) = ZERO 
+!            A_M(IJK,N,M) = ZERO 
+!            A_M(IJK,S,M) = ZERO 
+!            A_M(IJK,T,M) = ZERO 
+!            A_M(IJK,B,M) = ZERO 
+!            A_M(IJK,0,M) = -ONE 
+!            B_M(IJK,M) = -VAR(IJK) 
 
             IF (CUT_CELL_AT(IP_OF(IJK))) THEN 
 
@@ -619,11 +632,40 @@
                      B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L)) 
                   ENDIF 
 
-               ENDIF
+               ENDIF  ! BCT
 
-            ENDIF 
+            ENDIF ! Cut cell next to blocked cell
+
+         ENDIF ! blocked cell
+
+         IF(CUT_CELL_AT(IJK)) THEN
+    
+          
+            BCV = BC_ID(IJK)
+                   
+            IF(BCV > 0 ) THEN
+               BCT = BC_TYPE(BCV)
+            ELSE
+               BCT = 'NONE'
+            ENDIF
+             
+            IF (BCT=='CG_MI'.OR.BCT=='CG_PO') THEN
+                         
+               L = BCV
+               A_M(IJK,E,M) = ZERO
+               A_M(IJK,W,M) = ZERO
+               A_M(IJK,N,M) = ZERO
+               A_M(IJK,S,M) = ZERO
+               A_M(IJK,T,M) = ZERO 
+               A_M(IJK,B,M) = ZERO
+               A_M(IJK,0,M) = -ONE
+               B_M(IJK,M) = -BC_PHIF(L)
+               
+
+            ENDIF
 
          ENDIF
+
 
       ENDDO
 
