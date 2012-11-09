@@ -224,3 +224,4 @@ usr_input_mod.f
 ../model/read_database.f
 ../model/thermochemical/readTherm.f
 ../model/thermochemical/get_values.f
+../model/rxn_com_mod.f

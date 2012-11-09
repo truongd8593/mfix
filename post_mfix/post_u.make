@@ -79,6 +79,7 @@ post_mfix : \
     DES_IC.mod \
     DES_THERMO.mod \
     DES_RXNS.mod \
+    RXN_COM.mod \
     machine.$(OBJ_EXT) \
     allocate_arrays.$(OBJ_EXT) \
     any_more_data.$(OBJ_EXT) \
@@ -456,6 +457,7 @@ post_mfix : \
     read_database.$(OBJ_EXT) \
     readTherm.$(OBJ_EXT) \
     get_values.$(OBJ_EXT) \
+    rxn_com_mod.$(OBJ_EXT) \
   -o post_mfix $(LIB_FLAGS)
   
 AMBM.mod : ../model/ambm_mod.f \
@@ -558,7 +560,7 @@ PARSE.mod : ../model/parse_mod.f \
             PARAM1.mod \
             FUNITS.mod \
             COMPAR.mod \
-            RXNS.mod 
+            RXN_COM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/parse_mod.f 
 PGCOR.mod : ../model/pgcor_mod.f \
             PARAM.mod \
@@ -586,7 +588,8 @@ RUN.mod : ../model/run_mod.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/run_mod.f 
 RXNS.mod : ../model/rxns_mod.f \
             PARAM.mod \
-            PARAM1.mod 
+            PARAM1.mod \
+            RXN_COM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/rxns_mod.f 
 SCALARS.mod : ../model/scalars_mod.f \
             PARAM.mod \
@@ -764,8 +767,16 @@ DES_THERMO.mod : ../model/des/des_thermo_mod.f \
             PARAM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_thermo_mod.f 
 DES_RXNS.mod : ../model/des/des_rxns_mod.f \
-            PARAM.mod 
+            PARAM.mod \
+            RXN_COM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_rxns_mod.f 
+RXN_COM.mod : ../model/rxn_com_mod.f \
+            PARAM.mod \
+            PARAM1.mod \
+            COMPAR.mod \
+            FUNITS.mod \
+            mfix_directory_path.inc                                     
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/rxn_com_mod.f 
 machine.$(OBJ_EXT) : machine.f \
             MACHINE.mod \
             PARAM.mod \
@@ -803,7 +814,8 @@ allocate_arrays.$(OBJ_EXT) : ../model/allocate_arrays.f \
             MCHEM.mod \
             GHDTHEORY.mod \
             KINTHEORY.mod \
-            CDIST.mod 
+            CDIST.mod \
+            DES_RXNS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/allocate_arrays.f 
 any_more_data.$(OBJ_EXT) : any_more_data.f \
             PARAM.mod \
@@ -1342,6 +1354,7 @@ out_time.$(OBJ_EXT) : out_time.f \
             function.inc                                                
 parse_line.$(OBJ_EXT) : ../model/parse_line.f \
             COMPAR.mod \
+            DES_RXNS.mod \
             PARAM.mod \
             PARAM1.mod \
             PARSE.mod \
