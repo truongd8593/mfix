@@ -28,7 +28,6 @@
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
       Use usr
-      USE fldvar
       IMPLICIT NONE
 !-----------------------------------------------
 !
@@ -43,12 +42,5 @@
 !
 !  Insert user-defined code here
 !
-      OPEN(6,FILE='POST_Aflame.dat')
-      write(6,'(A,G10.3)') 'Adiabatic Flame Temperature = ', T_g(5)
-      write(6,'(A,G10.3)') 'P_g = ', P_g(5)
-      write(6,'(A,G10.3,A,G10.3)') 'CH4=', X_g(5, 1), ' O2=', X_g(5, 2)
-      write(6,'(A,G10.3,A,G10.3)') 'CO2=', X_g(5, 3), ' H2O=', X_g(5, 4)
-      write(6,'(A,G10.3)') 'N2 =', X_g(5, 5)
-      CLOSE(6)
       RETURN  
       END SUBROUTINE USR3 
