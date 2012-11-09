@@ -336,7 +336,6 @@
 ! ---------------------------------------------------------------->>>
 ! BEGIN Thermodynamic Allocation      
       IF(DES_ENERGY_EQ)THEN
-
 ! Particle temperature
          Allocate( DES_T_s_OLD( NPARTICLES ) )
          Allocate( DES_T_s_NEW( NPARTICLES ) )
@@ -345,24 +344,13 @@
 ! Species mass fractions comprising a particle. This array may not be
 ! needed for all thermo problems.
          Allocate( DES_X_s( NPARTICLES, MAX_DES_NMAX) )
-! Convection Specific arrays
-         IF(DES_CONV_EQ) &
-            Allocate( Qcv( NPARTICLES ) )
-! Conduction Specific arrays
-         IF(DES_COND_EQ_PP) &
-            Allocate( Qpp( NPARTICLES ) )
-! Conduction Specific arrays
-         IF(DES_COND_EQ_PFP) &
-            Allocate( Qpfp( NPARTICLES ) )
-! Radiation Specific arrays
-         IF(DES_RADI_EQ) &
-            Allocate( Qrd( NPARTICLES ) )
-! Stores number of neighbors based on neighbor search
-         IF(FIND_THERMO_NBRHD) &
-            Allocate( THERMO_NBRHD( NPARTICLES, MAXNEIGHBORS ) )
+! Total rate of heat transfer to individual particles.
+         Allocate( Q_Source( NPARTICLES ) )
+! Average solids temperature in fluid cell
+         Allocate(avgDES_T_s(DIMENSION_3) )
 ! Allocate the history variables for Adams-Bashforth integration
          IF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') &
-            Allocate( Qtotal_OLD( NPARTICLES ) )
+            Allocate( Q_Source0( NPARTICLES ) )
       ENDIF
 ! End Thermodynamic Allocation
 ! ----------------------------------------------------------------<<<
@@ -375,6 +363,15 @@
          Allocate( DES_R_sp( NPARTICLES, MAX_DES_NMAX) )
 ! Rate of solids phase consumption for each species
          Allocate( DES_R_sc( NPARTICLES, MAX_DES_NMAX) )
+
+
+         Allocate( DES_R_gp( DIMENSION_3, DIMENSION_N_g ) )
+         Allocate( DES_R_gc( DIMENSION_3, DIMENSION_N_g ) )
+         Allocate( DES_SUM_R_g( DIMENSION_3 ) )
+         Allocate( DES_R_PHASE( DIMENSION_3, DIMENSION_LM+DIMENSION_M-1 ) )
+         Allocate( DES_HOR_g( DIMENSION_3 ) )
+
+
 ! Allocate the history variables for Adams-Bashforth integration
          IF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') THEN
 ! Rate of chnage of particle mass
@@ -385,16 +382,6 @@
 
 ! Energy generation from reaction (cal/sec)
          Allocate( Qint( NPARTICLES ) )
-         IF( TRIM(REACTION_MODEL) == 'SHRINKING_CORE')THEN
-! Radius of unreacted core
-            Allocate( CORE_RAD( NPARTICLES ) )
-! Density of unreacted core
-            Allocate( CORE_RHO( NPARTICLES ) )
-! Allocate the history variables for Adams-Bashforth integration
-            IF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') &
-! Rate of chnage of radius of unreacted core
-               Allocate( dRdt_OLD( NPARTICLES ) )
-         ENDIF
       ENDIF
 ! End Species Allocation
 ! ----------------------------------------------------------------<<<

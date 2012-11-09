@@ -59,7 +59,6 @@
 !-----------------------------------------------
 
 
-
       IF ((DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_HYBRID) & 
       .OR. (DISCRETE_ELEMENT .AND. MPPIC) ) THEN
 ! override possible user settings on the following continuum flags
@@ -78,20 +77,10 @@
          MOMENTUM_Y_EQ(1:DIM_M) = .FALSE.
          MOMENTUM_Z_EQ(1:DIM_M) = .FALSE. 
 
-! This quantity needs to be set until additional subroutines can be more
-! thoroughly turned off when DEM is invoked
-         NMAX(1:DIM_M) = 1
+! Check continuum solids phase species data. Clear anything that was
+! specified and warn the user.
+         CALL CHECK_04_TFM_DEM()
 
-         IF(DMP_LOG) WRITE(UNIT_LOG, '(4(/2x,A))') &
-         'Currently setting max number of', &
-         'species index (NMAX) to one for all solids phases in check_data_04.f.', &
-         'Any future development related to reactions in discrete element', &
-         'should remove this override'
-! The quantities checked in this routine are generally specific to the
-! continuum model and not needed for the DEM.  So in the DEM the user
-! should not need to specify such quantities.  However, valid values of
-! mmax, d_p0 and ro_s are still needed for dem.  The corresponding of
-! those quantities are now done in check_des_data
          RETURN
       ENDIF
 
@@ -434,3 +423,122 @@
  1530 FORMAT(1X,/,1X,'DIF_s0   in mfix.dat = ',G12.5)
 
       END SUBROUTINE CHECK_DATA_04 
+
+
+!----------------------------------------------------------------------!
+! Subroutine: CHECK_04_TFM_DEM                                         !
+! Purpose: Clear solids phase species data from continuum variables    !
+! and notify the user.                                                 !
+!                                                                      !
+! Author: J. Musser                                  Date: 02-NOV-12   !
+! Reviewer:                                          Date:             !
+!                                                                      !
+! Literature/Document References: MFiX Readme                          !
+!                                                                      !
+! Variables modified: NMAX(1:DIM_M), NMAX_s(:), SPECIES_S(:,:),        !
+!                     SPECIES_ALIAS_S(:,:)                             !
+!                                                                      !
+!----------------------------------------------------------------------!
+      SUBROUTINE CHECK_04_TFM_DEM()
+
+      USE compar
+      USE funits 
+      USE param 
+      USE param1 
+      USE physprop
+      USE rxns
+
+      IMPLICIT NONE
+
+! Flag indicating if the user was warned.
+      LOGICAL WARNED_USR0, WARNED_USR1
+! Loop indices
+      INTEGER lM, lN ! Phase, Species
+
+! Flag indicating if the user was warned.
+      WARNED_USR0 = .FALSE.
+      DO lM = 1, DIM_M
+         WARNED_USR1 = .FALSE.
+! Check if continuum phase variables are specified.
+         IF(NMAX_s(lM) /= UNDEFINED_I .OR. &
+            NMAX(lM) /= UNDEFINED_I) THEN
+            IF(.NOT.WARNED_USR0 .AND. myPE == PE_IO) THEN
+               WRITE(*,1001)
+               WRITE(*,1101) lM
+               WRITE(UNIT_LOG,1001)
+               WRITE(UNIT_LOG,1101) lM
+            ELSEIF(.NOT.WARNED_USR1 .AND. myPE == PE_IO) THEN
+               WRITE(*,1101) lM
+               WRITE(UNIT_LOG,1101) lM
+            ENDIF
+! Clear the entry.
+            NMAX(lM) = 0
+            NMAX_s(lM) = 0
+! Set message flags.
+            WARNED_USR0 = .TRUE.
+            WARNED_USR1 = .TRUE.
+         ELSE
+! In a DEM simulation, MMAX can be used to specify the number of
+! discrete solids phases. These values are set to zero for to aid 
+! routines that loop over solids phase species. 
+            NMAX(lM) = 0
+            NMAX_s(lM) = 0
+         ENDIF
+
+         DO lN = 1, DIM_N_S
+! Verify that a species name was not provided.
+            IF(SPECIES_s(lM,lN) /= UNDEFINED_C) THEN
+               IF(.NOT.WARNED_USR0 .AND. myPE == PE_IO) THEN
+                  WRITE(*,1001)
+                  WRITE(*,1101) lM
+                  WRITE(UNIT_LOG,1001)
+                  WRITE(UNIT_LOG,1101) lM
+               ELSEIF(.NOT.WARNED_USR1 .AND. myPE == PE_IO) THEN
+                  WRITE(*,1101) lM
+                  WRITE(UNIT_LOG,1101) lM
+               ENDIF
+! Clear the entry.
+               SPECIES_s(lM,lN) = UNDEFINED_C
+! Set message flags.
+               WARNED_USR0 = .TRUE.
+               WARNED_USR1 = .TRUE.
+            ENDIF
+! Verify that a species alias was not provided.
+            IF(SPECIES_ALIAS_s(lM,lN) /= UNDEFINED_C) THEN
+               IF(.NOT.WARNED_USR0 .AND. myPE == PE_IO) THEN
+                  WRITE(*,1001)
+                  WRITE(*,1101) lM
+                  WRITE(UNIT_LOG,1001)
+                  WRITE(UNIT_LOG,1101) lM
+               ELSEIF(.NOT.WARNED_USR1 .AND. myPE == PE_IO) THEN
+                  WRITE(*,1101) lM
+                  WRITE(UNIT_LOG,1101) lM
+               ENDIF
+! Clear the entry.
+               SPECIES_ALIAS_s(lM,lN) = UNDEFINED_C
+! Set message flags.
+               WARNED_USR0 = .TRUE.
+               WARNED_USR1 = .TRUE.
+           ENDIF
+         ENDDO
+      ENDDO
+
+      IF(WARNED_USR0 .AND. myPE == PE_IO) THEN
+         WRITE(*,1201)
+         WRITE(UNIT_LOG,1201)
+      ENDIF
+
+ 1001 FORMAT(/1X,70('*')/' From: CHECK_DATA_04 --> CHECK_04_TFM_DEM',/ &
+         ' Warning 1001: Inconsistent input in the data file. A',      &
+         ' discrete element',/' model (DEM/MPPIC) is used and species',&
+         ' information for the following',/' TFM solids phases are',   &
+         ' specified.'/)
+
+ 1101 FORMAT(' TFM Solids Phase: ',I2)
+
+ 1201 FORMAT(/' The species information for the above solids phases',  &
+         ' is being cleared.',/' Please refer to the Readme file for', &
+         ' information on specifying discrete',/' phase species.',/    &
+         1X,70('*')/)
+
+      END SUBROUTINE CHECK_04_TFM_DEM

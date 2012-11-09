@@ -10,198 +10,173 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DES_REACTION_MODEL(NP, FOCUS)
+      SUBROUTINE DES_REACTION_MODEL
 
+      USE compar
       Use constant
       Use des_rxns
       Use des_thermo
       Use discretelement
+      USE geometry
+      USE indices
       Use param1
 
       IMPLICIT NONE
 
 ! Passed variables
 !-----------------------------------------------
-! Index value of particle
-      INTEGER, INTENT(IN) :: NP
-! Logical indicating that the specified particle is of special interest
-      LOGICAL, INTENT(IN) :: FOCUS
+! None
 
 ! Local variables
 !-----------------------------------------------  
+! Index of neighbor particle of particle I such that I < J
+      INTEGER IJK
+! Index value of particle
+      INTEGER lNP, NP
 ! index of solids phase and species
-      INTEGER M, N, NN
+      INTEGER M, N
 ! total rate of consumption/production of species (g/sec)
       DOUBLE PRECISION SUM_DES_R_sc, SUM_DES_Rs
 ! masses of species comprising the particle (g)
-      DOUBLE PRECISION S_MASS( DES_NMAX(PIJK(NP,5)) )
+      DOUBLE PRECISION S_MASS( DES_NMAX_s(MAX_DES_NMAX) )
 
-      DOUBLE PRECISION PERCENT_REDUCE
-      LOGICAL REDUCED
-      LOGICAL ALL_GONE( DES_NMAX(PIJK(NP,5)) )
+      LOGICAL ALL_GONE( DES_NMAX_s(MAX_DES_NMAX) )
 
       DOUBLE PRECISION, PARAMETER :: P43 = 4.0d0/3.0d0
-      DOUBLE PRECISION DELTA_CORE
-      DOUBLE PRECISION DOM, K1, K2, K3, K4
 
-      DOUBLE PRECISION dMdt, dXdt, dRdt
+      DOUBLE PRECISION dMdt, dXdt, dXMdt, dXMdt_DTs
 
 ! Logical for Adams-Bashfort integration.
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 
-! Initialize local variables
-      M = PIJK(NP,5)
+! Functions
+!---------------------------------------------------------------------//
+      INCLUDE 'function.inc'
 
-! Return to the calling routine if the species equation for this mass
-! phase is not being solved.
-      IF(.NOT.DES_SPECIES_EQ(M))RETURN
+
+      IF(.NOT.ANY_DES_SPECIES_EQ) RETURN
+
+! Loop over fluid cells.
+!---------------------------------------------------------------------//
+      IJK_LP: DO IJK = IJKSTART3, IJKEND3
+         IF(.NOT.FLUID_AT(IJK)) CYCLE IJK_LP
+         IF(PINC(IJK) == 0) CYCLE IJK_LP
+
+! Loop over all particles in cell IJK.
+!---------------------------------------------------------------------//
+         lNP_LP: DO lNP = 1, PINC(IJK)
+            NP = PIC(IJK)%p(lNP)
+! Skip indices that do not represent particles
+            IF(.NOT.PEA(NP,1)) CYCLE lNP_LP
+! Skip indices that represent ghost particles
+            IF(PEA(NP,4)) CYCLE lNP_LP
+
+! Set the particle phase index
+            M = PIJK(NP,5)
+! Skip particles when not solving species equations
+            IF(.NOT.DES_SPECIES_EQ(M)) CYCLE lNP_LP
 
 ! Check to see if any of the reaction rate will consume more than the
 ! available species in the particle.
-      REDUCED = .TRUE.
-      ALL_GONE(:) = .FALSE.
-      DO WHILE(REDUCED)
+!---------------------------------------------------------------------//
 ! Initialize local variables
-         SUM_DES_Rs = ZERO
-         SUM_DES_R_sc = ZERO
+            SUM_DES_Rs = ZERO
+            SUM_DES_R_sc = ZERO
+            ALL_GONE(:) = .FALSE.
 ! Reset the flag
-         REDUCED = .FALSE.
-         DO N=1,DES_NMAX(M)
+            DO N=1,DES_NMAX_s(M)
 ! Calculate the current mass of species N in the particle
-            S_MASS(N) = DES_X_s(NP,N) * PMASS(NP)
-            IF((S_MASS(N) - DTSOLID*DES_R_sc(NP,N)) < ZERO) THEN
-! Flag that the consumption and production rates need reduced
-               REDUCED = .TRUE.
-! Indicate that the last of the species is gone.
-               ALL_GONE(N) = .TRUE.
-! Calculate the amount of reduction needed
-               PERCENT_REDUCE =  S_MASS(N)/(DTSOLID*DES_R_sc(NP,N))
-! Reduce the production/consumption rates for each species
-               DO NN=1,DES_NMAX(M)
-                  DES_R_sc(NP,NN) = DES_R_sc(NP,NN)*PERCENT_REDUCE
-                  DES_R_sp(NP,NN) = DES_R_sp(NP,NN)*PERCENT_REDUCE
-               ENDDO
-            ELSE
+               S_MASS(N) = DES_X_s(NP,N) * PMASS(NP)
+! Calculte the amount of species N mass that is produced/consumed.
+!    dXMdt_DTs > 0 :: Net production in mass units
+!    dXMdt_DTs < 0 :: Net consumption in mass units
+               dXMdt_DTs = (DES_R_sp(NP,N)-DES_R_sc(NP,N))*DTSOLID
+! Check to see if the amount of solids phase species N consumed will
+! be larger than the amount of available solids.
+               IF((S_MASS(N) + dXMdt_DTs) < ZERO) THEN
+! Indicate that all of species is consumed.
+                  ALL_GONE(N) = .TRUE.
+! Limit the consumption rate so that only the amount of species mass
+! that the particle contains is consumed.
+                  dXMdt = S_MASS(N)/DTSOLID
 ! Calculate the total rate of change in particle mass
-               SUM_DES_Rs = SUM_DES_Rs + (DES_R_sp(NP,N)-DES_R_sc(NP,N))
+                  SUM_DES_Rs = SUM_DES_Rs + dXMdt
 ! Calculate the total rate of consumption
-               SUM_DES_R_sc = SUM_DES_R_sc + DES_R_sc(NP,N)
-            ENDIF
-         ENDDO
-      ENDDO
+                  SUM_DES_R_sc = SUM_DES_R_sc + dXMdt
+               ELSE
+! Calculate the total particle mass rate of change (mass/time)
+                  SUM_DES_Rs = SUM_DES_Rs + (DES_R_sp(NP,N)-DES_R_sc(NP,N))
+! Calculate the total rate of consumption (mass/time)
+                  SUM_DES_R_sc = SUM_DES_R_sc + DES_R_sc(NP,N)
+               ENDIF
+            ENDDO
 
 ! Update the particle's mass.
 ! The mass of the particle is updated first so that it can be used in 
 ! updating the species mass percent of the particle.
-!-----------------------------------------------------------------------
-      dMdt = SUM_DES_Rs
-      IF (TRIM(DES_INTG_METHOD) .EQ. 'EULER') THEN 
+!---------------------------------------------------------------------//
+            dMdt = SUM_DES_Rs
 ! First-order method: Euler
-         PMASS(NP) = PMASS(NP) + DTSOLID*dMdt
-      ELSEIF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH')THEN
+            IF(INTG_EULER) THEN
+               PMASS(NP) = PMASS(NP) + DTSOLID*dMdt
 ! Second-order Adams-Bashforth scheme
-         IF(FIRST_PASS)THEN
-            PMASS(NP) = PMASS(NP) + DTSOLID*dMdt
-         ELSE
-            PMASS(NP) = PMASS(NP) + DTSOLID * &
-               (1.50d0*dMdt-0.5d0*dMdt_OLD(NP))
-         ENDIF
+            ELSEIF(INTG_ADAMS_BASHFORTH) THEN
+               IF(FIRST_PASS) dMdt_OLD(NP) = dMdt
+               PMASS(NP) = PMASS(NP) + DTSOLID * &
+                  (1.50d0*dMdt - 0.5d0*dMdt_OLD(NP))
 ! Store the current value as the old value.
-         dMdt_OLD(NP) = dMdt
-      ENDIF
-
+               dMdt_OLD(NP) = dMdt
+            ENDIF
 
 ! Update the species mass percent
-!-----------------------------------------------------------------------
-      DO N=1,DES_NMAX(M)
-         IF(.NOT.ALL_GONE(N))THEN
-            dXdt = ( (DES_R_sp(NP,N)-DES_R_sc(NP,N)) - DES_X_s(NP,N) * &
-               SUM_DES_Rs)/PMASS(NP)
-            IF (TRIM(DES_INTG_METHOD) .EQ. 'EULER') THEN 
-! First-order method: Euler
-               DES_X_s(NP,N) = DES_X_s(NP,N) + DTSOLID*dXdt
-            ELSEIF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH')THEN
-! Second-order Adams-Bashforth scheme
-               IF(FIRST_PASS)THEN
-                  DES_X_s(NP,N) = DES_X_s(NP,N) + DTSOLID*dXdt
+!---------------------------------------------------------------------//
+            DO N=1,DES_NMAX_s(M)
+               IF(ALL_GONE(N))THEN
+                  DES_X_s(NP,N) = ZERO
                ELSE
-                  DES_X_s(NP,N) = DES_X_s(NP,N) + DTSOLID * &
-                     (1.50d0*dXdt - 0.5d0*dXdt_OLD(NP,N))
-               ENDIF
-! Store the current value as the old value.
-               dXdt_OLD(NP,N) = dXdt
-            ENDIF
-         ELSE
-            DES_X_s(NP,N) = ZERO
-         ENDIF
-      ENDDO
-
-
-
-
-! Shrinking core model.
-!-----------------------------------------------------------------------
-      IF(TRIM(REACTION_MODEL) == 'SHRINKING_CORE')THEN
-         IF(SUM_DES_R_sc /= ZERO)THEN
-            DOM = 4.0d0*Pi*CORE_Rho(NP)*(CORE_RAD(NP))**2
-! Restrict the the size of the denominator to prevent floating point
-! issues.
-            IF( DOM > 1.0d-6)THEN
-! Advance the solution to the core's radius
-               dRdt = (-SUM_DES_R_sc)/DOM
-               IF (TRIM(DES_INTG_METHOD) .EQ. 'EULER') THEN 
+                  dXdt = ((DES_R_sp(NP,N) - DES_R_sc(NP,N)) - &
+                     DES_X_s(NP,N) * SUM_DES_Rs)/PMASS(NP)
 ! First-order method: Euler
-                  DELTA_CORE = DTSOLID*dRdt
-               ELSEIF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH')THEN
+                  IF(INTG_EULER) THEN
+                     DES_X_s(NP,N) = DES_X_s(NP,N) + DTSOLID*dXdt
 ! Second-order Adams-Bashforth scheme
-                  IF(FIRST_PASS)THEN
-                     FIRST_PASS = .FALSE.
-                     DELTA_CORE = DTSOLID*dRdt
-                  ELSE
-                     DELTA_CORE = DTSOLID * &
-                        (1.5d0*dRdt - 0.5d0*dRdt_OLD(NP))
+                  ELSEIF(INTG_ADAMS_BASHFORTH) THEN
+                     IF(FIRST_PASS) dXdt_OLD(NP,N) = dXdt
+                     DES_X_s(NP,N) = DES_X_s(NP,N) + DTSOLID * &
+                        (1.50d0*dXdt - 0.5d0*dXdt_OLD(NP,N))
+! Store the current value as the old value.
+                     dXdt_OLD(NP,N) = dXdt
                   ENDIF
-! Store the current value as the old value.
-                  dRdt_OLD(NP) = dRdt
                ENDIF
-! If the radius will remain postive, update it's value
-               IF((CORE_RAD(NP) + DELTA_CORE) > ZERO)THEN
-                  CORE_RAD(NP) = CORE_RAD(NP) + DELTA_CORE
-               ELSE
-! To prevent the radius from being less than zero, limit value to zero.
-                  CORE_RAD(NP) = ZERO
-               ENDIF
-            ELSE
-! To prevent the radius from being less than zero, limit value to zero.
-               CORE_RAD(NP) = ZERO
+            ENDDO
+
+! Variable density
+!---------------------------------------------------------------------//
+            IF(RM_VARIABLE_DENSITY) THEN
+! update variables
+               RO_Sol(NP) = PMASS(NP)/PVOL(NP)
+
+! Shrinking particle
+!---------------------------------------------------------------------//
+            ELSEIF(RM_SHRINKING_PARTICLE) THEN
+               DES_RADIUS(NP) = &
+                  (PMASS(NP)/(P43*Pi*Ro_Sol(NP)))**(1.0d0/3.0d0)
+! update variables
+               PVOL(NP) = PMASS(NP)/Ro_Sol(NP)
             ENDIF
-         ENDIF
-! update variables
-         RO_Sol(NP) = PMASS(NP)/PVOL(NP)
-
-! Shrinking particle model.
-!-----------------------------------------------------------------------
-      ELSEIF(TRIM(REACTION_MODEL) == 'SHRINKING_PARTICLE')THEN
-         DES_RADIUS(NP) = (PMASS(NP)/(P43*Pi*Ro_Sol(NP)))**(1.0d0/3.0d0)
-! update variables
-         PVOL(NP) = PMASS(NP)/Ro_Sol(NP)
-
-! Progressive conversion model
-!-----------------------------------------------------------------------
-      ELSEIF(TRIM(REACTION_MODEL) == 'PROGRESSIVE_CONVERSION')THEN
-! update variables
-         RO_Sol(NP) = PMASS(NP)/PVOL(NP)
-      ENDIF
 
 ! Update one over the particle's moment of inertia
-      OMOI(NP) = 5.0d0 / (2.0d0 * PMASS(NP) * DES_RADIUS(NP)**2) 
+            OMOI(NP) = 5.0d0 / (2.0d0 * PMASS(NP) * DES_RADIUS(NP)**2) 
+
+         ENDDO lNP_LP ! End loop over all particles
+      ENDDO IJK_LP ! End loop over fluid cells
 
 ! Clear the necessary variables.
-      DES_R_sp(NP,:) = ZERO
-      DES_R_sc(NP,:) = ZERO
+      DES_R_sp(:,:) = ZERO
+      DES_R_sc(:,:) = ZERO
 
 ! Flag that the first pass is over
-      IF(FIRST_PASS) FIRST_PASS = .FALSE.
+      FIRST_PASS = .FALSE.
 
       RETURN
       END SUBROUTINE DES_REACTION_MODEL

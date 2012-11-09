@@ -54,11 +54,10 @@
 ! thermodynamic databases.
          IF (DES_C_PS0(M) == UNDEFINED) THEN
 ! Read the thermodynamic database if it has not already been done.
-            IF(.NOT.DATABASE_READ) CALL READ_DATABASE0(IER)
             DES_C_PS(NP) = ZERO
 ! Calculate the specific heat based on the species composition of the
 ! particle and the data from the thermodynamic databases.
-            DO N = 1, DES_NMAX(M)
+            DO N = 1, DES_NMAX_s(M)
     	          DES_C_PS(NP) = DES_C_PS(NP) + DES_X_s(NP,N) *           &
                   calc_CpoR(DES_T_s_NEW(NP), DES_Thigh_s(M, N),        &
  		               DES_Tlow_s(M, N), DES_Tcom_s(M, N),                  &

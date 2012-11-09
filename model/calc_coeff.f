@@ -240,7 +240,15 @@
 !-----------------------------------------------
 ! error index
       INTEGER :: IER
+
+! For DEM simulations that do not have a homogeneous gas phase reaction,
+! the gas phase arrays phase change arrays need to be cleared in 
+! CALC_RRATE_DES. Other
+      LOGICAL CLEAR_ARRAYS
+
 !-----------------------------------------------
+
+      CLEAR_ARRAYS = .TRUE.
 
 ! Calculate reaction rates and interphase mass transfer
       IF(RRATE) THEN
@@ -255,11 +263,12 @@
             ENDIF
          ELSE
             CALL RRATES0 (IER)
+            CLEAR_ARRAYS = .FALSE.
          ENDIF
       ENDIF 
 
       IF(DISCRETE_ELEMENT .AND. ANY_DES_SPECIES_EQ) &
-         CALL CALC_RRATE_DES
+         CALL CALC_RRATE_DES(CLEAR_ARRAYS)
 
       RETURN  
  1000 FORMAT(/1X,70('*')//' From: CALC_COEFF',/,&

@@ -94,8 +94,6 @@
          des_pos_old(:,:) = des_pos_new(:,:)
          des_vel_old(:,:) = des_vel_new(:,:)
          DES_VEL_OOLD(:,:) = DES_VEL_NEW(:,:)
-! setting an initial radius for reacting particles
-         IF(ANY_DES_SPECIES_EQ) CORE_RAD(:) = DES_RADIUS(:)
 
 ! overriding initial particle velocities with velocities assigned from a
 ! Gaussian distribution based on usr specified standard deviation and

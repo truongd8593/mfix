@@ -519,8 +519,6 @@
                lsearch_rad = factor_RLM*(des_radius(lcurpar)+des_radius(lneigh))
                ldistvec = des_pos_new(lcurpar,:)-des_pos_new(lneigh,:)
                ldist = sqrt(dot_product(ldistvec,ldistvec))
-! J.Musser - Secondary list for heat transfer
-               IF(FIND_THERMO_NBRHD) CALL THERMO_NBR(lcurpar,lneigh,ldist)
                if (ldist.gt.lsearch_rad) cycle 
                lneighcnt = lneighcnt + 1
                if(lneighcnt .gt. MN) then 

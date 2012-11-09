@@ -18,6 +18,7 @@
 !-----------------------------------------------
       Use compar
       Use des_thermo
+      Use des_rxns
       Use discretelement
       Use funits  
       Use interpolation
@@ -27,290 +28,213 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------      
-      INTEGER I, M ! dummy loop index
-! Number of processors used. (DES heat transfer is currently limited
-! to serial runs!)
-      INTEGER CHECK_MPI
-! The size of the thermodynamic neighborhoods needed for particle-fluid-
-! particle conduction and radiation.
-      DOUBLE PRECISION SZ_PFP, SZ_RAD
+
+! Loop index
+      INTEGER M, N ! Phase, Species
+
+! Flag that the user was already warned why a call to the thermo-
+! chemical database is being made.
+      LOGICAL WARNED_USR
+
+! Flag that the energy equations are solved and specified solids phase
+! specific heat is undefined.
+! If true, a call to the thermochemical database is made.
+      LOGICAL EEQ_CPS
+
+! Flag that the solids phase species equations are solved and the 
+! molecular weight for a species are not given in the data file.
+! If true, a call to the thermochemical database is made.
+      LOGICAL SEQ_MWs
 !-----------------------------------------------      
 
       IF(DMP_LOG) WRITE(*,'(1X,A)') &
          '---------- START CHECK_DES_THERMO ---------->'
 
-      IF(DES_ENERGY_EQ)THEN
+! Set the flag identifying that at least one of the species equations
+! are being solved.
+      ANY_DES_SPECIES_EQ = ANY(DES_SPECIES_EQ(:DES_MMAX))
 
-         IF((RUN_TYPE .NE. 'NEW') .AND. DMP_LOG)THEN
-            WRITE(UNIT_LOG,1004)
-            WRITE(*,1004)
+! Initialize MAX_DES_NMAX. This is the maximum number of species found
+! over all solids phases. This is used for allocating DES_X_s
+      MAX_DES_NMAX = 1
+
+! Loop over all solids phases
+      DO M=1,DES_MMAX
+! Verify that the thermal conductivity values are physical.
+         IF(DES_C_ps0(M) .LT. ZERO)THEN
+            IF(DMP_LOG) THEN
+               WRITE(UNIT_LOG,1001)'DES_C_ps0','unphysical',M
+               WRITE(*,1001)'DES_C_ps0','unphysical',M
+            ENDIF
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+! Verify that the thermal conductivity values are physical and defined.
+         IF(DES_K_s0(M) .LT. ZERO)THEN
+            IF(DMP_LOG) THEN
+               WRITE(UNIT_LOG,1001)'DES_K_s0','unphysical',M
+               WRITE(*,1001)'DES_K_s0','unphysical',M
+            ENDIF
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+! Verify that a emmisivity value is specified for each solids pase
+         IF(DES_Em(M) .LT. ZERO .OR. &
+            DES_Em(M) .GT. ONE) THEN
+            IF(DMP_LOG) THEN
+               WRITE(UNIT_LOG,1001)'DES_Em','unphysical',M
+               WRITE(*,1001)'DES_Em','unphysical',M
+            ENDIF
             CALL MFIX_EXIT(myPE)
          ENDIF
 
-! Loop over all solids phases
-         DO M=1,DES_MMAX
-! Verify that the thermal conductivity values are physical.
-            IF(DES_C_ps0(M) .LT. ZERO)THEN
-               IF(DMP_LOG) THEN
-                  WRITE(UNIT_LOG,1001)'DES_C_ps0','unphysical',M
-                  WRITE(*,1001)'DES_C_ps0','unphysical',M
+! Check required values.
+         IF(DES_COND_EQ .AND. DES_K_s0(M) == UNDEFINED) THEN
+            IF(DMP_LOG) THEN
+               WRITE(UNIT_LOG,1001)'DES_K_s0','undefined',M
+               WRITE(*,1001)'DES_K_s0','undefined',M
+            ENDIF
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+         IF(DES_RADI_EQ .AND. DES_Em(M) == UNDEFINED) THEN
+            IF(DMP_LOG) THEN
+               WRITE(UNIT_LOG,1001)'DES_Em','undefined',M
+               WRITE(*,1001)'DES_Em','undefined',M
+            ENDIF
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+! Flag indicating if the user was already warned.
+         WARNED_USR = .FALSE.
+! Flag that the energy equations are solved and specified solids phase
+! specific heat is undefined.
+         EEQ_CPS = .FALSE.
+         IF(DES_ENERGY_EQ .AND. DES_C_PS0(M) == UNDEFINED)             &
+            EEQ_CPS = .TRUE.
+
+         DES_rDatabase(M,:) = .FALSE.
+
+
+! Check DES_NMAX_s - This value must be defined if solving species eqs
+         IF (DES_NMAX_s(M) == UNDEFINED_I) THEN 
+! If the species equation is being solved, then the user must specify
+! the number of species in the discrete solids phase.
+            IF (DES_SPECIES_EQ(M)) THEN 
+               IF(DMP_LOG) THEN 
+                  WRITE(*,1006) M
+                  WRITE(UNIT_LOG,1006) M
                ENDIF
                CALL MFIX_EXIT(myPE)
+            ELSE 
+! Set the species count to be 1 if the speices count is not being 
+! solved.
+               DES_NMAX_s(M) = 1 
             ENDIF
-! Verify that the thermal conductivity values are physical and defined.
-            IF(DES_K_s0(M) .LT. ZERO)THEN
-               IF(DMP_LOG) THEN
-                  WRITE(UNIT_LOG,1001)'DES_K_s0','unphysical',M
-                  WRITE(*,1001)'DES_K_s0','unphysical',M
-               ENDIF
-               CALL MFIX_EXIT(myPE)
-            ELSEIF(DES_K_s0(M) == UNDEFINED)THEN
-               IF(DMP_LOG) THEN
-                  WRITE(UNIT_LOG,1001)'DES_K_s0','undefined',M
-                  WRITE(*,1001)'DES_K_s0','undefined',M
-               ENDIF
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-         ENDDO
-
-! Convection Equation:
-!'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-         IF(DES_CONV_EQ) THEN
-! Ensure that the continuum energy equations will be solved.
-            IF(.NOT.ENERGY_EQ)THEN
-               IF(DMP_LOG) WRITE(*,1000)
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-
-            IF(DMP_LOG) WRITE(*,'(6X,A)') &
-               'DES convection model will be solved.'
-
-            SELECT CASE(TRIM(DES_CONV_CORR))
-! Verify the selected convective heat transfer coefficient model
-               CASE ('RANZ_1952')
-                  ! Ranz, W.E. and Marshall, W.R., "Frication and transfer 
-                  ! coefficients for single particles and packed beds," 
-                  ! Chemical Engineering Science, Vol. 48, No. 5, pp 247-253,
-                  ! 1925
-! The Ranz and Marshall correlation needs no additional input from the
-! user.
-                  IF(DMP_LOG) WRITE(*,'(9X,A,A)') &
-                     'Heat transfer coefficient',&
-                     ' model: Ranz and Marshall (1952)'
-
-! If the heat transfer coefficient correlation provided by the user does
-! not match one of the models outlined above, flag the error and exit.
-               CASE DEFAULT
-                  IF(DMP_LOG) THEN
-                     WRITE(*,'(6X,A)') &
-                        'INVALID DES CONVECTION MODEL (DES_CONV_CORR):'
-                     WRITE(*,'(6X,A)')'The available models include:'
-                     WRITE(*,'(9X,A)') &
-                        'RANZ_1952 - Ranz and Marshall (1952)'
-                  ENDIF
-                  CALL MFIX_EXIT
-            END SELECT
-
-
          ELSE
-            IF(DMP_LOG) WRITE(*,'(6X,A)') &
-               'DES convection model will NOT be solved.'
-         ENDIF ! END convection model checks
+! Ensure that the number of species specified by the user is below the
+! max limit.
+            IF (DES_NMAX_s(M) > DIM_N_S) THEN
+               IF(DMP_LOG) THEN 
+                  WRITE(*,1005) M, DIM_N_S
+                  WRITE(UNIT_LOG,1005) M, DIM_N_S
+               ENDIF
+               CALL MFIX_EXIT(myPE)
+            ENDIF 
+            MAX_DES_NMAX = MAX(MAX_DES_NMAX, DES_NMAX_s(M))
+         ENDIF
 
+         DO N = 1, DES_NMAX_s(M)
+            SEQ_MWs = .FALSE.
+            IF(DES_SPECIES_EQ(M) .AND. DES_MW_S(M,N) == UNDEFINED)     &
+               SEQ_MWs = .TRUE.
 
-! Conduction Equations:
-!'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-         IF(DES_COND_EQ) THEN
-            IF(DMP_LOG) WRITE(*,'(6X,A)') &
-               'DES conduction model will be solved.'
-
-! Particle-particle Conduction:
-!'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-            IF(DES_COND_EQ_PP) THEN
-               DO M=1,DES_MMAX
-! Verify that a thermal conductivity value is specified for each solids
-! phase and that the value is physical.
-                  IF(DES_K_S0(M) == UNDEFINED)THEN
-                     IF(DMP_LOG) THEN
-                        WRITE(UNIT_LOG,1001)'DES_K_s0','undefined',M
-                        WRITE(*,1001)'DES_K_s0','undefined',M
-                     ENDIF
-                     CALL MFIX_EXIT(myPE)
-                  ELSEIF(DES_K_S0(M) .LT. ZERO) THEN
-                     IF(DMP_LOG) THEN
-                        WRITE(UNIT_LOG,1001)'DES_K_s0','unphysical',M
-                        WRITE(*,1001)'DES_K_s0','unphysical',M
-                     ENDIF
-                     CALL MFIX_EXIT(myPE)
-                  ENDIF
-               ENDDO
-               IF(DMP_LOG) WRITE(*,'(6X,A)')&
-                  'Solving the particle-particle conduction model.'
-! A secondary neighborhood is established surrounding a particle to 
-! determine the neighboring particles for possible particle-particle
-! heat transfer.
-               FIND_THERMO_NBRHD = .TRUE.
-            ELSE
-               IF(DMP_LOG) WRITE(*,'(5X,A)')&
-                  'NOT Solving the particle-particle conduction model.'
-            ENDIF
-
-! Particle-fluid-particle Conduction:
-!'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-            IF(DES_COND_EQ_PFP) THEN
-! Verify that either the simulation is coupled with a gas-phase
-! simulation or that K_g0 has been provided in the dat file.
-               IF(K_G0 == UNDEFINED .AND. &
-                  .NOT.DES_CONTINUUM_COUPLED)THEN
-                  IF(DMP_LOG) THEN
+! The thermodynamic data base provides the specific heat, molecular
+! weights, and heat of formation.
+! Check the thermodynamic database if:
+!   1) the energy equation is solved and constant solids phase specific
+!      heat isn't given. (EEQ_CPS = .TRUE.)
+!   2) the species energy equation is solved and the molecular weights
+!      for the solids phase species are not given. (SEQ_MWs = .TRUE.)
+! A final thermochemical check is preformed in check_des_rxns. If
+! neither of the above conditions result in species data being read from
+! the database AND a particular species is referenced by a chemical
+! equation then a call to read_database is forced.
+            IF(EEQ_CPS .OR. SEQ_MWs) THEN
+! Notify the user of the reason the thermochemical database is used.
+               IF(.NOT.WARNED_USR) THEN
+                  IF(EEQ_CPS .AND. DMP_LOG) THEN
                      WRITE(*,1002)
                      WRITE(UNIT_LOG,1002)
                   ENDIF
-                  CALL MFIX_EXIT(myPE)
-               ENDIF
-
-! Set the default value for the minimum distance separating particles'
-! surfaces.
-               IF(DES_MIN_COND_DIST == UNDEFINED)THEN
-                  DES_MIN_COND_DIST = 1.0D-04 ! cm
-                  IF (UNITS == 'SI') DES_MIN_COND_DIST = &
-                     DES_MIN_COND_DIST/100.0  ! m
-               ENDIF
-
-               IF(DMP_LOG) WRITE(*,'(6X,A)')&
-                 'Solving the particle-fluid-particle conduction model.'
-! A secondary neighborhood is established surrounding a particle to 
-! determine the neighboring particles for possible particle-fluid-
-! particle heat transfer.
-               FIND_THERMO_NBRHD = .TRUE.
-            ELSE
-               IF(DMP_LOG) WRITE(*,'(6X,A,A)')&
-                  'NOT Solving the particle-fluid-particle ',&
-                  'conduction model.'
-            ENDIF
-
-         ELSE 
-            IF(DMP_LOG) WRITE(*,'(6X,A)') &
-               'DES conduction model will NOT be solved.'
-! Set the logicals for the conduction sub-models to false.
-! This should not be needed, but is done for precaution.
-            DES_COND_EQ_PFP = .FALSE.
-            DES_COND_EQ_PP  = .FALSE.
-
-         ENDIF ! END conduction model checks
-
-! Radiation Equation:
-!'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-         IF(DES_RADI_EQ) THEN
-            IF(DMP_LOG) WRITE(*,'(6X,A)') &
-               'DES radiation model will be solved.'
-! A secondary neighborhood is established surrounding a particle to 
-! determine the neighboring particles for possible radiative 
-! heat transfer.
-            FIND_THERMO_NBRHD = .TRUE.
-! Set the value of the Stefan-Boltzman Constant based on the untis
-            IF(UNITS == 'SI')THEN
-!              W/((m^2).K^4)
-               SB_CONST = 5.6704d0*(10.0d0**(-8))
-            ELSE
-!              cal/((cm^2).sec.K^4)
-               SB_CONST = 1.355282d0*(10.0d0**(-12))
-            ENDIF
-
-            DO M=1,DES_MMAX
-! Verify that a emmisivity value is specified for each solids pase
-               IF(DES_Em(M) == UNDEFINED)THEN
-                  IF(DMP_LOG) THEN
-                     WRITE(UNIT_LOG,1001)'DES_Em','undefined',M
-                     WRITE(*,1001)'DES_Em','undefined',M
+                  IF(SEQ_MWs .AND. DMP_LOG) THEN
+                     WRITE(*,1003) M
+                     WRITE(UNIT_LOG,1003) M
                   ENDIF
-                  CALL MFIX_EXIT(myPE)
-               ELSEIF(DES_Em(M) .LT. ZERO .OR. &
-                  DES_Em(M) .GT. ONE) THEN
+! Set a flag to prevent the user from getting the same message over
+! and over again.
+                  WARNED_USR = .TRUE.
+               ENDIF
+! Flag that the species name is not provided.
+               IF(DES_SPECIES_s(M,N) == UNDEFINED_C) THEN
                   IF(DMP_LOG) THEN
-                     WRITE(UNIT_LOG,1001)'DES_Em','unphysical',M
-                     WRITE(*,1001)'DES_Em','unphysical',M
+                     WRITE(*,1004) M, N
+                     WRITE(UNIT_LOG,1004) M, N
                   ENDIF
                   CALL MFIX_EXIT(myPE)
                ENDIF
-            ENDDO
-         ELSE
-            IF(DMP_LOG) WRITE(*,'(6X,A)') &
-               'DES radiation model will NOT be solved.'
-         ENDIF ! END radiation model checks
 
-! Calculate the size of the thermodynamic neighbor (if needed)
-         IF( FIND_THERMO_NBRHD) THEN
-            SZ_PFP = ZERO
-! If solving conductive  heat transfer, the minimum neighborhood size
-! is [1.3]*DES_RADIUS by default. A buffer of 0.1 is added to ensure
-! that the neighbor is seen as soon as possible. The size of the fluid
-! lens for particle-fluid-particle heat transfer can be adjusted by 
-! specifying a different value in the mfix.dat file.
-            IF(DES_COND_EQ_PP .OR. DES_COND_EQ_PFP) &
-               SZ_PFP = MAX_RADIUS * ( 2.05d0 + FLPC )
-            SZ_RAD = ZERO
-! If radiation heat transfer is solved, the radius of the radiative
-! heat transfer domain is [3.0]*DES_RADIUS by default. The size of the
-! radiative heat transfer domain on the particle may be adjusted by
-! specifying a new value in the mfix.dat file.
-            IF(DES_RADI_EQ) &
-               SZ_RAD = MAX_RADIUS * RDPC
-            NBRHD_SZ = MAX( SZ_PFP, SZ_RAD )
-            IF(DMP_LOG) WRITE(*,'(6X,A,F10.6)') &
-               'Radius of thermodynamic neighborhood is ',NBRHD_SZ
-         ENDIF ! FIND_THERMO_NBRHD
+! Read the database.
+               IF(DMP_LOG) THEN
+                  WRITE(*,1100) M, N
+                  WRITE(UNIT_LOG,1100) M, N
+               ENDIF
+               CALL READ_DATABASE('DEM', M, N, DES_SPECIES_s(M,N),     &
+                  DES_MW_S(M,N))
+! Flag variable to stating that the database was read.
+               DES_rDatabase(M,N) = .TRUE.
+            ENDIF
 
-! Check the number of processors. DES reactive chemistry is currently 
-! limited to serial runs.
-         CHECK_MPI = NODESI * NODESJ * NODESK
-         IF(CHECK_MPI.NE.1) THEN
-            WRITE (UNIT_LOG, 1003)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-
-      ELSE ! DES_ENERGY_EQ
-
-         IF(DMP_LOG) WRITE(*,'(6X,A)') &
-            'DES energy equations are not being solved.'
-
-! Reinitialize the heat transfer logicals to false.
-         DES_CONV_EQ = .FALSE.
-         DES_COND_EQ = .FALSE.
-         DES_RADI_EQ = .FALSE.
-
-         DES_COND_EQ_PFP = .FALSE.
-         DES_COND_EQ_PP  = .FALSE.
-
-      ENDIF ! DES_ENERGY_EQ
+         ENDDO ! DES_NMAX_s
+      ENDDO ! DES_MMAX
 
       IF(DMP_LOG) WRITE(*,'(1X,A)')&
          '<---------- END CHECK_DES_THERMO ----------'
 
       RETURN
 
- 1000 FORMAT(/1X,70('*')/, ' From: CHECK_DES_THERMO',/, ' Message: ',&
-         'The DES convection model requires that the energy ', &
-         'equations',/1X,'(ENERGY_EQ) for the continuum phase must ',&
-         'also be solved.',/1X,70('*')/)
+ 1001 FORMAT(/1X,70('*')/, ' From: CHECK_DES_THERMO',/,' Error 1001: ',&
+         A,' is ',A,' for discrete solids phase ',I2,/' Please',       &
+         ' correct the data file.',/1X,70('*')/)
 
- 1001 FORMAT(/1X,70('*')/, ' From: CHECK_DES_THERMO',/, ' Message: ',&
-         A,' is ',A,' for solids phase ',I2,'. Check mfix.dat.', &
-         /1X,70('*')/)
+ 1002 FORMAT(/1X,70('*')/' From: CHECK_DES_THERMO',/' Message 1002:',  &
+         ' The discrete phase energy equations are being solved',/     &
+         ' (DES_ENERGY_EQ) and the specified constant solids specific',&
+         ' heat is',/' undefined (DES_C_PS0). Thus, the',              &
+         ' thermochemical database will be used',/' to gather',        &
+         ' specific heat data on the individual soids phase species.',/&
+         1X,70('*')/)
 
- 1002 FORMAT(/1X,70('*')/,' From: CHECK_DES_THERMO',/,' Message:',     &
-      ' The particle-fluid-particle model requires that either a'/,    &
-      ' simulation be coupled with a gas-phase simultion or that',     &
-      ' K_g0 be',/,' provided in the mfix.dat file. Check mfix.dat.',  &
-      /1X,70('*')/)
+ 1003 FORMAT(/1X,70('*')/' From: CHECK_DES_THERMO',/' Message 1003:',  &
+         ' Discrete solids phase ',I2,' species equations are being',/ &
+         ' solved, and one or more species molecular weights are',     &
+         ' undefined. Thus,',/' the thermochemical database will be',  &
+         ' used to gather molecular weight',/' data on the solids',    &
+         ' phase speicies.',/1X,70('*')/)
 
- 1003 FORMAT(/1X,70('*')/ ' From: CHECK_DES_THERMO',/' Message: ',&
-         'DES heat transfer modules are currently limited to serial',/&
-         ' runs. Set nodesi, modesj, and nodesk to 1 in the mfix.dat',&
-         ' file.',/1X,70('*')/)
+ 1004 FORMAT(/1X,70('*')/' From: CHECK_DES_THERMO',/' Error 1004:',    &
+         ' Discrete solids phase ',I2,' species ',I3,' name',          &
+         ' (DES_SPECIES_s)',/' is undefined. Please correct the data', &
+         ' file. ',/1X,70('*')/)
 
- 1004 FORMAT(/1X,70('*')/ ' From: CHECK_DES_THERMO',/' Message: ',&
-         'urrently, the DEM heat transfer models are not capable of',/&
-         ' being restarted.',/1X,70('*')/)
+ 1005 FORMAT(/1X,70('*')/, ' From: CHECK_DES_RXNS',/, ' Error 1005:',  &
+         ' DES_NMAX_s is too large for discrete phase ',I2,'.',        &
+         ' The maximum',/' number of species is ',I3,'.',/1X,70('*')/)
+
+ 1006 FORMAT(/1X,70('*')/, ' From: CHECK_DES_RXNS',/, ' Error 1006:',  &
+         ' Number of species for discrete phase ',I2,' is not',        &
+         ' specified.',/1X,70('*')/)
+
+
+ 1100 FORMAT(/'  Searching thermochemical databases for discrete',     &
+         ' solids phase ',I2,', species ',I2)
 
       END SUBROUTINE CHECK_DES_THERMO

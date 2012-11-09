@@ -73,7 +73,6 @@
 ! Assign the initial values for the specified models.
             CALL SET_DES_TEMPERATURE(I,ICV,M)
             CALL SET_DES_MASS_FRACTION(I,ICV,M)
-            CALL SET_DES_CORE_DENSITY(I,ICV,M)
          ELSE
             IF(DIMN == 2) Z_POS = 0.0d0
             WRITE(*,1000)I, X_POS, Y_POS, Z_POS
@@ -146,7 +145,7 @@
 
 ! Verify that the species mass fraction sums to one.
       SUM = ZERO
-      DO N=1,DES_NMAX(M)
+      DO N=1,DES_NMAX_s(M)
          IF(DES_IC_X_s(ICV,M,N) /= UNDEFINED) THEN
             DES_X_s(I,N) = DES_IC_X_s(ICV,M,N)
             SUM = SUM + DES_IC_X_s(ICV,M,N)
@@ -171,44 +170,5 @@
 
       END SUBROUTINE SET_DES_MASS_FRACTION
 
-
-!......................................................................!
-! Subroutine: SET_DES_CORE_DENSITY                                     !
-!                                                                      !
-! Purpose: Set the denisty of shrinking, unreacted core of a partile.  !
-!``````````````````````````````````````````````````````````````````````!
-      SUBROUTINE SET_DES_CORE_DENSITY(I,ICV,M)
-      INTEGER, INTENT(IN) :: I, ICV, M
-! Error indicating that an error has been specified to the user.
-      LOGICAL, SAVE :: WARNED = .FALSE.
-
-! Set the density of the unreacted core for reactive gas-solid flows.
-! This value is *optional* but effects how the radius of the core
-! changes during a reaction. If a value is not provided in the mfix.dat
-! file, the density of the particle is assigned to the core.
-      IF(.NOT.DES_SPECIES_EQ(M) .OR. TRIM(REACTION_MODEL) /= &
-         'SHRINKING_CORE') RETURN
-
-      IF(DES_IC_CORE_Rho(ICV,M) == UNDEFINED) THEN
-         IF(.NOT.WARNED)THEN
-            WRITE(*,1000)
-            WRITE(UNIT_LOG,1000)
-            WARNED = .TRUE.
-         ENDIF
-         CORE_Rho(I) = RO_Sol(I)
-      ELSE
-         CORE_Rho(I) = DES_IC_CORE_Rho(ICV,M)
-      ENDIF
-
-      RETURN
-
- 1000 FORMAT(/1X,70('*')/,' From: SET_DES_IC',/, ' Message: Some or',  &
-         ' all of the discrete solids phases do not have an',/         &
-         ' initial core density defined. This effects how the',        &
-         ' shrinking,',/,' unreacted core model behaves.',/,' The',    &
-         ' core density will be set to the particle density.',/,       &
-         1X,70('*')/)
-
-      END SUBROUTINE SET_DES_CORE_DENSITY
 
       END SUBROUTINE DES_SET_IC

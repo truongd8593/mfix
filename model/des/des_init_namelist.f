@@ -136,7 +136,6 @@
       DES_BC_MASSFLOW_s(:,:) = UNDEFINED
       DES_BC_TYPE(:) = UNDEFINED_C
       DES_BC_ROP_s(:,:) = UNDEFINED
-      DES_BC_CORE_Rho(:,:) = UNDEFINED
       DES_BC_T_s(:,:) = UNDEFINED
       DES_BC_X_s(:,:,:) = UNDEFINED
       FORCE_ORD_BC = .FALSE.
@@ -164,7 +163,6 @@
       DES_IC_Z_t(:) = UNDEFINED
       DES_IC_T_s(:,:) = UNDEFINED
       DES_IC_X_s(:,:,:) = UNDEFINED
-      DES_IC_CORE_Rho(:,:) = UNDEFINED
 
       DTSOLID = UNDEFINED
       DTSOLID_FACTOR = 0.1D0
@@ -217,7 +215,6 @@
 
       DES_MIN_COND_DIST = UNDEFINED
       FLPC = 1.0d0/5.0d0
-      RDPC = 3.0d0
 
       DES_K_s0(:) = UNDEFINED
       DES_C_ps0(:) = UNDEFINED
@@ -225,10 +222,11 @@
 
 ! J.Musser : species equations (reactive chemistry)
       DES_SPECIES_EQ(:) = .FALSE.
-      DES_NMAX(:) = UNDEFINED_I 
-      DES_MW_s(:DIM_M, :DIM_N_s) = UNDEFINED
-      DES_SPECIES_NAME(:) = UNDEFINED_C
-      REACTION_MODEL = 'SHRINKING_CORE'
-      
+      DES_NMAX_s(:) = UNDEFINED_I 
+      DES_MW_s(:,:) = UNDEFINED
+      DES_SPECIES_s(:,:) = UNDEFINED_C
+      DES_SPECIES_ALIAS_s(:,:) = UNDEFINED_C
+      REACTION_MODEL = 'VARIABLE_DENSITY'
+
       RETURN
       END SUBROUTINE DES_INIT_NAMELIST

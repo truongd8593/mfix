@@ -33,12 +33,6 @@
       NEIGHBOURS(:,:) = -1
       NEIGHBOURS(:,1) = 0
       
-! Stores number of neighbors based on neighbor search
-      IF(FIND_THERMO_NBRHD) THEN
-         THERMO_NBRHD(:,:) = -1
-         THERMO_NBRHD(:,1) = 0
-      ENDIF
-      
       IF (DES_NEIGHBOR_SEARCH.EQ.1) THEN
          CALL NSQUARE
       ELSE

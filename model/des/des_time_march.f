@@ -90,11 +90,6 @@
 
 ! Logical to see whether this is the first entry to this routine
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
-
-! Variables needed for calculating new interpolation quantities for
-! species and energy equations
-      INTEGER INTERP_IJK(2**DIMN)
-      DOUBLE PRECISION INTERP_WEIGHTS(2**DIMN)
       
 ! Identifies that the indicated particle is of interest for debugging
       LOGICAL FOCUS
@@ -155,6 +150,8 @@
                   IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A)') &
                      'END DEM settling period'
                ENDIF   ! end if coupled and no cohesion
+! Calculate the average solids temperature in each fluid cell
+               CALL SET_INIT_avgTs
 
 ! this write_des_data is needed to properly show the initial state of
 ! the simulation (granular or coupled). In the coupled case, the
@@ -219,7 +216,10 @@
       ENDIF
 
       IF(DES_CONTINUUM_COUPLED) CALL COMPUTE_PG_GRAD
-      
+      IF(ANY_DES_SPECIES_EQ) CALL ZERO_RRATE_DES
+
+      IF(CALL_USR) CALL USR0_DES
+
 ! Main DEM time loop
 !----------------------------------------------------------------->>>
       DO NN = 1, FACTOR 
@@ -252,66 +252,17 @@
 ! communication between processors have to take place all the time;
 ! regardless of number of particles 
          CALL CALC_FORCE_DES
-         
-! Loop over all particles ---------------------------------------->>>
-         PC = 1
-         DO NP = 1, MAX_PIP
-            IF(PC .GT. PIP) EXIT
-            IF(.NOT.PEA(NP,1)) CYCLE
-            IF(PEA(NP,4)) CYCLE
+! Calculate energy sources and rates of formation/consumption of
+! solids phase species.
+         CALL CALC_THERMO_DES
 
-! Reset the debug flag
-            FOCUS = .FALSE.
-! Set the debugging flag
-            IF(DEBUG_DES .AND. NP.EQ.FOCUS_PARTICLE) FOCUS = .TRUE.
+         IF(CALL_USR) CALL USR1_DES
 
-! Calculate time dependent physical properties
-            CALL DES_PHYSICAL_PROP(NP, FOCUS)
-! Calculate cell-center interpolation weights and determine the 
-! associated IJK values for the cells accounting for boundary
-! conditions.
-            IF(DES_INTERP_ON .AND. &
-               (ANY_DES_SPECIES_EQ .OR. DES_CONV_EQ)) THEN
-               INTERP_IJK(:) = -1
-               INTERP_WEIGHTS(:) = ZERO
-               CALL INTERPOLATE_CC(NP, INTERP_IJK, INTERP_WEIGHTS, &
-                  FOCUS)
-            ENDIF
-! Calculate thermodynamic energy exchange
-            IF(DES_ENERGY_EQ) CALL CALC_THERMO_DES(NP, &
-               INTERP_IJK, INTERP_WEIGHTS, FOCUS)
-! Calculate reaction rates and interphase mass transfer
-            IF(ANY_DES_SPECIES_EQ) CALL DES_RRATES(NP, &
-               INTERP_IJK, INTERP_WEIGHTS, FOCUS, 'SOLIDS')
-! Increment the particle counter
-            PC = PC + 1
-         ENDDO
-! End loop over all particles ------------------------------------<<<    
-            
          CALL CFNEWVALUES
-    
-! Loop over all particles ---------------------------------------->>>
-         PC = 1
-         DO NP = 1, MAX_PIP
-            IF(PC .GT. PIP) EXIT
-            IF(.NOT.PEA(NP,1)) CYCLE
-            IF(PEA(NP,4)) CYCLE            
-
-! Reset the debug flag
-            FOCUS = .FALSE.
-! Set the debugging flag
-            IF(DEBUG_DES .AND. NP.EQ.FOCUS_PARTICLE) FOCUS = .TRUE.
-
-! Update particle temperature
-            IF(DES_ENERGY_EQ) &
-               CALL DES_THERMO_NEWVALUES(NP, FOCUS)
+! Update particle temperatures
+         CALL DES_THERMO_NEWVALUES
 ! Update particle from reactive chemistry process.
-            IF(DES_SPECIES_EQ(PIJK(NP,5))) &
-               CALL DES_REACTION_MODEL(NP, FOCUS)
-! Increment the particle counter
-            PC = PC + 1
-         ENDDO
-! End Loop over all particles ------------------------------------<<<
+         CALL DES_REACTION_MODEL
 
 
 ! For systems with inlets/outlets check to determine if a particle has
@@ -396,6 +347,8 @@
             ENDDO
          ENDIF
 
+         IF(CALL_USR) CALL USR2_DES
+
 ! Report some statistics on overlap and neighbors to screen log
          IF ( (S_TIME+0.1d0*DTSOLID >= DES_TMP_TIME) .OR. &
               ( (S_TIME+0.1d0*DTSOLID >= TSTOP) .AND. &
@@ -409,6 +362,7 @@
 ! END DEM time loop
 !-----------------------------------------------------------------<<<      
 
+      IF(CALL_USR) CALL USR3_DES
 
 ! When coupled, and if needed, reset the discrete time step accordingly
       IF(DT.LT.DTSOLID_TMP) THEN

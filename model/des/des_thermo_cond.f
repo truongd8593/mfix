@@ -28,37 +28,33 @@
 !       no 4, pp 868-884, 2009.                                        !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DES_CONDUCTION(I,J,C_DIST,FOCUS)
+      SUBROUTINE DES_CONDUCTION(I, iM, iIJK, FOCUS)
 
-      Use constant
-      Use des_thermo
-      Use discretelement
-      Use fldvar
-      Use funits
-      Use param1
-      Use physprop
+      use constant
+      use des_thermo
+      use discretelement
+      use funits
+      use physprop
 
       IMPLICIT NONE
 
-! Index value of particle I and it's neighbor J
-      INTEGER, INTENT(IN) :: I, J
-! Distance between the particles centers
-      DOUBLE PRECISION, INTENT(IN) :: C_DIST
-! Logical used for debugging
+! Passed variables
+!---------------------------------------------------------------------//
+! Index of particle being looped over
+      INTEGER, INTENT(IN) :: I
+! Index of fluid cell containing particle I
+      INTEGER, INTENT(IN) :: iIJK
+! Solid phase indices for the given particles
+      INTEGER, INTENT(IN) :: iM
+! Indicates that debugging information for the particle
       LOGICAL, INTENT(IN) :: FOCUS
 
-!-----------------------------------------------
 ! Local variables
-!-----------------------------------------------
-! Index of fluid cell containing the center of particle I
-      INTEGER IJK
-! Dummy integer indices for functions
-      INTEGER K, L
+!---------------------------------------------------------------------//
+! Index of neighbor particle
+      INTEGER JJ, J ! local, global
 ! Solid phase indices for the given particles
-      INTEGER I_M, J_M
-
-! Distance between the particles surfaces
-      DOUBLE PRECISION S_DIST
+      INTEGER jM
 ! Radius of smaller particle
       DOUBLE PRECISION MIN_RAD
 ! Radius of larger particle
@@ -73,87 +69,113 @@
       DOUBLE PRECISION RD_IN
 ! The radius of the fluid lens containing the larger particle
       DOUBLE PRECISION LENS_RAD
-! Surface area of particle
-      DOUBLE PRECISION A_S
-! Thermo
-      DOUBLE PRECISION Kg
+! Temperature difference between two particles
+      DOUBLE PRECISION DeltaTp
+! Distance between the centers of particle I and particle J (component)
+      DOUBLE PRECISION DISTVEC(DIMN)
+! Distance between the centers of particle I and particle J (magnitude)
+      DOUBLE PRECISION CENTER_DIST
+! Effective thermal conductivity
+      DOUBLE PRECISION lK_eff
+! Radius of contact area
+      DOUBLE PRECISION lRadius
 
-! Identify the fluid cell containing particle I
-      IJK = PIJK(I,4)
+! Functions
+!---------------------------------------------------------------------//
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
+
+! Distance between particle centers
+      IF(NEIGHBOURS(I,1).GT.0) THEN
+         NEIGH_LP: DO JJ = 2, NEIGHBOURS(I,1)+1
+! Set the index of the neighbor particle
+            J = NEIGHBOURS(I,JJ)
+! Skip the neighbor if it does not exist (should not be a problem)
+            IF(.NOT.PEA(J,1) ) CYCLE NEIGH_LP
+! Only do conduction calculations for particles with an index value
+! higher than the current particle. The opposite heat transfer will be
+! applied to the neighbor.
+            IF(J.GT.I) THEN
+! Calculate the center distance between the two particles
+               DISTVEC(:) = DES_POS_NEW(I,:) - DES_POS_NEW(J,:)
+               CENTER_DIST = SQRT(DES_DOTPRDCT(DISTVEC,DISTVEC))
 
 ! Identify the solid phases of each particle
-      I_M = PIJK(I,5)
-      J_M = PIJK(J,5)
+               jM = PIJK(J,5)
 
 ! Determine the radius of the larger and smaller particle
-      MIN_RAD = MIN(DES_RADIUS(I), DES_RADIUS(J))
-      MAX_RAD = MAX(DES_RADIUS(I), DES_RADIUS(J))
+               MIN_RAD = MIN(DES_RADIUS(I), DES_RADIUS(J))
+               MAX_RAD = MAX(DES_RADIUS(I), DES_RADIUS(J))
 
 ! Initialize the rates of conductive heat transfer
-      Q_pp = ZERO
-      Q_pfp = ZERO
+               Q_pp = ZERO
+               Q_pfp = ZERO
+
+               DeltaTp = DES_T_s_NEW(J) - DES_T_s_NEW(I)
 
 ! Calculate the particle-particle conduction 
 ! REF: Batchelor and O'Brien, 1977 (MODIFIED)
-      IF(DES_COND_EQ_PP .AND. C_DIST < (MAX_RAD + MIN_RAD) ) THEN
-         Q_pp = 2.0d0 * K_eff(DES_K_s0(I_M),DES_K_s0(J_M)) * &
-               (DES_T_s_NEW(J) - DES_T_s_NEW(I)) * &
-               RADIUS(MAX_RAD, MIN_RAD)
-! Assign the heat flux to both particles.
-         Qpp(I)  = Qpp(I)  + Q_pp
-         Qpp(J)  = Qpp(J)  - Q_pp
-      ENDIF
+!---------------------------------------------------------------------//
+               IF(DES_COND_EQ_PP .AND. &
+                  (CENTER_DIST < (MAX_RAD + MIN_RAD)) ) THEN
+! Effective thermal conductivity
+                 lK_eff = K_eff(DES_K_s0(iM),DES_K_s0(jM))
+! Effective contact area's radius
+                 lRadius = RADIUS(MAX_RAD, MIN_RAD)
+! Inter-particle heat transfer
+                  Q_pp = 2.0d0 * lK_eff * lRadius * DeltaTp
+! Assign the inter-particle heat transfer to both particles.
+                  Q_Source(I)  = Q_Source(I) + Q_pp
+                  Q_Source(J)  = Q_Source(J) - Q_pp
+               ENDIF
 
 ! Calculate the particle-fluid-particle conduction 
 ! REF: Rong and Horio, 1999 (MODIFIED)
-      IF(DES_COND_EQ_PFP)THEN
+               IF(DES_COND_EQ_PFP)THEN
+!---------------------------------------------------------------------//
 ! Calculate the radius of the fluid lens surrounding the larger particle
-         LENS_RAD = MAX_RAD * (1.0D0 + FLPC)
+! Default FLPC = 0.2
+                  LENS_RAD = MAX_RAD * (1.0D0 + FLPC)
 
-! Calculate the outer radial distance (thickness) of the region for
-! particle-fluid-particle heat conduction.
-         RD_OUT = RADIUS( LENS_RAD, MIN_RAD)
+! Calculate the outer radial distance of the region for particle-fluid-
+! particle heat conduction.
+                  RD_OUT = RADIUS( LENS_RAD, MIN_RAD)
 ! If the value returned is less than zero, then the fluid lens
 ! surrounding the larger particle does not intersect with the surface
 ! of the smaller particle. In this case, particle-fluild-particle
 ! conduction does not occur.
-         IF( RD_OUT .GT. ZERO)THEN
+                  IF(RD_OUT .GT. ZERO)THEN
 ! Calculate the distance from the line connecting the particles' centers
 ! to the point of contact between the two particles. This value is
 ! zero if the particles are not touching and is the radius of the 
 ! shared contact area otherwise.
-            RD_IN = ZERO
-            IF(C_DIST < (MAX_RAD + MIN_RAD) ) &
-               RD_IN = RADIUS(MAX_RAD, MIN_RAD)
-
-! Thermal conductivity of gas phase
-            IF(DES_CONTINUUM_COUPLED)THEN
-               Kg = K_g(IJK)
-            ELSE
-               Kg = K_g0
-            ENDIF
+                     RD_IN = ZERO
+                     IF(CENTER_DIST < (MAX_RAD + MIN_RAD) ) &
+                        RD_IN = RADIUS(MAX_RAD, MIN_RAD)
 ! Calculate the rate of heat transfer between the particles through the
 ! fluid using adaptive Simpson's rule to manage the integral.
-            Q_pfp = Kg * (DES_T_s_NEW(J)-DES_T_s_NEW(I)) * &
-               ADPT_SIMPSON(RD_IN,RD_OUT)
-         ELSE
+                     Q_pfp = K_g(iIJK) * DeltaTp * &
+                        ADPT_SIMPSON(RD_IN,RD_OUT)
+                  ELSE
 ! Particles are not close enough to engage in particle-fluid-particle
 ! heat transfer.
-            Q_pfp = ZERO
-         ENDIF ! RD_OUT > ZERO
+                     Q_pfp = ZERO
+                  ENDIF ! RD_OUT > ZERO
 ! Assign the heat flux to both particles.
-         Qpfp(I) = Qpfp(I) + Q_pfp
-         Qpfp(J) = Qpfp(J) - Q_pfp
-      ENDIF
+                  Q_Source(I) = Q_Source(I) + Q_pfp
+                  Q_Source(J) = Q_Source(J) - Q_pfp
+               ENDIF
 
 ! Write debug messages
-      IF(DEBUG_DES .AND. FOCUS)THEN
-         WRITE(*,"(//5X,A)")'From: DES_CONDUCTION -'
-         WRITE(*,"(8X,A,D12.6)")'Tp: ',DES_T_s_NEW(I)
-         WRITE(*,"(8X,A,D12.6)")'Qpp: ',Q_pp
-         WRITE(*,"(8X,A,D12.6)")'Qpfp: ',Q_pfp
-         WRITE(*,"(5X,25('-')/)")
-      ENDIF
+               IF(FOCUS)THEN
+                  WRITE(*,"(//5X,A)")'From: DES_CONDUCTION -'
+                  WRITE(*,"(8X,A,D12.6)")'Tp: ',DES_T_s_NEW(I)
+                  WRITE(*,"(8X,A,D12.6)")'Qpp: ',Q_pp
+                  WRITE(*,"(8X,A,D12.6)")'Qpfp: ',Q_pfp
+                  WRITE(*,"(5X,25('-')/)")
+               ENDIF
+            ENDIF ! J>I
+         ENDDO NEIGH_LP! Looping over neighbors
+      ENDIF  ! neighbors > 0
 
       RETURN
 
@@ -162,6 +184,7 @@
          'detials!',/70('*'))
 
  1001 FORMAT(1X,70('*'))
+
 
       CONTAINS
 
@@ -174,6 +197,9 @@
 !   2) radius delineating particle-fluid-particle region.              !
 !......................................................................!
       DOUBLE PRECISION FUNCTION RADIUS(R1, R2)
+
+      IMPLICIT NONE
+
 ! Radius values
       DOUBLE PRECISION, INTENT(IN) :: R1, R2
 ! Distance between particle centers
@@ -182,7 +208,7 @@
       DOUBLE PRECISION VALUE
 
 ! Calculate
-      VALUE = (R1**2 - R2**2 + C_DIST**2)/(2.0d0 * R1 * C_DIST)
+      VALUE = (R1**2 - R2**2 + CENTER_DIST**2)/(2.0d0 * R1 * CENTER_DIST)
 ! Check to ensure that VALUE is less than or equal to one. If VALUE is
 ! greater than one, the triangle inequality has been violated. Therefore
 ! there is no intersection between the fluid lens surrounding the larger
@@ -207,6 +233,9 @@
 ! particles with conductivities K1 and K2                              !
 !......................................................................!
       DOUBLE PRECISION FUNCTION K_eff(K1, K2)
+
+      IMPLICIT NONE
+
 ! Thermal conductivities
       DOUBLE PRECISION, INTENT(IN) :: K1, K2
 
@@ -233,9 +262,12 @@
 !          be for the quadrature routine to converge.                  !
 !......................................................................!
       DOUBLE PRECISION FUNCTION F(R)
+
+      IMPLICIT NONE
+
       DOUBLE PRECISION, INTENT(IN) :: R
 
-      F = (2.0d0*Pi*R)/MAX((C_DIST - SQRT(MAX_RAD**2-R**2) - &
+      F = (2.0d0*Pi*R)/MAX((CENTER_DIST - SQRT(MAX_RAD**2-R**2) - &
          SQRT(MIN_RAD**2-R**2)), DES_MIN_COND_DIST)
 
       IF( F.NE.F)PRINT*,'F IS NAN'
@@ -253,6 +285,8 @@
 !          message will be written to the log file to notify the user. !
 !......................................................................!
       DOUBLE PRECISION FUNCTION ADPT_SIMPSON(A, B)
+
+      IMPLICIT NONE
 
 ! Bounds of integration
       DOUBLE PRECISION, INTENT(IN) :: A, B
@@ -339,6 +373,5 @@
          /1X,70('*'))
 
       END FUNCTION ADPT_SIMPSON
-
 
       END SUBROUTINE DES_CONDUCTION

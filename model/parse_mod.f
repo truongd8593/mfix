@@ -5,7 +5,6 @@
       USE funits 
       USE compar
 
-
       IMPLICIT NONE
 
 ! Strings indicating arithmetic operation and reaction blocks.
@@ -13,11 +12,15 @@
       CHARACTER*1, PARAMETER :: END_STR = ')'     ! end
 
 ! Strings indicating reaction blocks.
-      CHARACTER*4, PARAMETER :: RXN_BLK = 'RXNS'  ! start block
-      CHARACTER*3, PARAMETER :: END_BLK = 'END'   ! end block
+      CHARACTER*4, PARAMETER :: RXN_BLK     = 'RXNS'      ! start block
+      CHARACTER*8, PARAMETER :: DES_RXN_BLK = 'DES_RXNS'  ! start block
+      CHARACTER*3, PARAMETER :: END_BLK     = 'END'       ! end block
 
       LOGICAL READING_RXN
       LOGICAL READING_RATE
+
+      LOGICAL DES_RXN
+      LOGICAL TFM_RXN
 
 ! Logical indicating that the start of a reaction construct has
 ! been identified.
@@ -35,6 +38,20 @@
 ! User defined heat of reaction partitions.
       DOUBLE PRECISION,   DIMENSION(:,:), ALLOCATABLE :: usrfDH
 
+
+! Logical indicating that the start of a reaction construct has
+! been identified.
+      LOGICAL IN_DES_CONSTRUCT
+
+! Reaction names
+      CHARACTER(len=32),  DIMENSION(:),   ALLOCATABLE :: DES_RXN_NAME
+! Chemcial Equations
+      CHARACTER(len=256), DIMENSION(:),   ALLOCATABLE :: DES_RXN_CHEM_EQ
+! User defined heat of reaction
+      DOUBLE PRECISION,   DIMENSION(:),   ALLOCATABLE :: DES_usrDH
+! User defined heat of reaction partitions.
+      DOUBLE PRECISION,   DIMENSION(:,:), ALLOCATABLE :: DES_usrfDH
+
       CONTAINS
 
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
@@ -51,7 +68,9 @@
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
       SUBROUTINE setReaction(RxN, lNg, lSAg, lM, lNs, lSAs, lDH, lfDH)
 
-      use rxns
+      use rxn_com
+
+      IMPLICIT NONE
 
 ! Pass Arguments:
 !---------------------------------------------------------------------//
@@ -71,7 +90,6 @@
       DOUBLE PRECISION, INTENT(IN) :: lDH
 ! User defined heat of reaction partition.
       DOUBLE PRECISION, DIMENSION(0:DIM_M), INTENT(IN) :: lfDH
-
 
 ! Local Variables:
 !---------------------------------------------------------------------//
@@ -266,6 +284,8 @@
 !                                                                      !
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
       SUBROUTINE checkSplit(lName, lChemEq, lrEnd, lpStart, lSkip)
+
+      IMPLICIT NONE
 
 ! Pass Arguments:
 !---------------------------------------------------------------------//
@@ -472,6 +492,8 @@
       SUBROUTINE splitEntries(lName, lChemEq, lStart, lEnd, lNo,       &
          lAlias, lCoeff)
 
+      IMPLICIT NONE
+
 ! Pass Arguments:
 !---------------------------------------------------------------------//
 ! Chemical reaction name.
@@ -553,6 +575,8 @@
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
       SUBROUTINE splitAliasAndCoeff(lName, lChemEq, lStart, lEnd,      &
          lAlias, lCoeff)
+
+      IMPLICIT NONE
 
 ! Pass Arguments:
 !---------------------------------------------------------------------//
@@ -724,6 +748,8 @@
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
       SUBROUTINE checkBlankAliases(lNg, lSAg, lM, lNs, lSAs, lBA)
 
+      IMPLICIT NONE
+
 ! Number of gas speices
       INTEGER, INTENT(IN) :: lNg
 ! Gas phase species aliases
@@ -788,8 +814,9 @@
       SUBROUTINE mapAliases(lName, lChemEq, lNg, lSAg, lM, lNs, lSAs,  &
          lNo, lAlias, lCoeff, lSgn, lStart, lBA, lRxN)
 
-      use rxns
+      use rxn_com
 
+      IMPLICIT NONE
 
 ! Pass Arguments:
 !---------------------------------------------------------------------//
@@ -907,6 +934,8 @@
 !......................................................................!
       LOGICAL FUNCTION checkMatch(lSA, ceSA)
 
+      IMPLICIT NONE
+
 ! Pass Arguments:
 !---------------------------------------------------------------------//
       CHARACTER*32, INTENT(IN) :: lSA, ceSA
@@ -938,6 +967,8 @@
 !                                                                      !
 !......................................................................!
       SUBROUTINE updateMap(lnP, lpMap, llNoP)
+
+      IMPLICIT NONE
 
 ! Pass Arguments:
 !---------------------------------------------------------------------//
@@ -973,6 +1004,8 @@
 !                                                                      !
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
       SUBROUTINE writeBA(FUNIT)
+
+      IMPLICIT NONE
 
 ! File unit
       INTEGER, OPTIONAL, INTENT(IN) :: FUNIT
@@ -1037,6 +1070,8 @@
 !                                                                      !
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
       CHARACTER(len=512) FUNCTION setFlag(fill, flg1, flg2) RESULT(OUT)
+
+      IMPLICIT NONE
 
 ! Pass Arguments:
 !---------------------------------------------------------------------//

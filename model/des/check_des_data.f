@@ -128,14 +128,35 @@
                CALL MFIX_EXIT(myPE)
             ENDIF
          ENDDO
+
       ENDIF   ! end if/else(des_mmax==undefined_i)
 ! End checks on DES_MMAX, density and diameter      
 ! ----------------------------------------------------------------<<<
+
+! Set flags for energy equations
+         CALL CHECK_DES_ENERGY
+! Check thermodynamic properties of discrete solids.
+         CALL CHECK_DES_THERMO
 
 
       IF(COORDINATES == 'CYLINDRICAL') THEN
          IF(DMP_LOG) WRITE (UNIT_LOG, 1000)
          CALL MFIX_EXIT(myPE)
+      ENDIF
+
+! Verify that there are no internal obstacles.
+      IF(.NOT.CARTESIAN_GRID) THEN
+         DO K = KSTART1, KEND1 
+            DO J = JSTART1, JEND1
+               DO I = ISTART1, IEND1 
+                  IJK  = FUNIJK(I,J,K)
+                  IF(.NOT.FLUID_AT(IJK)) THEN
+                     IF(DMP_LOG) WRITE(*,2010)
+                     CALL MFiX_EXIT(myPE)
+                  ENDIF
+               ENDDO
+            ENDDO
+         ENDDO
       ENDIF
 
 ! want separate flag to toggle between screen output for the discrete modules
@@ -304,12 +325,26 @@
       ENDIF
 
 ! Check for valid integration method
+      IF (TRIM(DES_INTG_METHOD) == 'ADAMS_BASHFORTH') THEN
+         INTG_ADAMS_BASHFORTH = .TRUE.
+         INTG_EULER = .FALSE.
+      ELSEIF(TRIM(DES_INTG_METHOD) == 'EULER') THEN
+         INTG_ADAMS_BASHFORTH = .FALSE.
+         INTG_EULER = .TRUE.
+! stop if the specified integration method is unavailable
+      ELSE
+         IF(DMP_LOG) WRITE (UNIT_LOG, 1034)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
+! Check for valid integration method
       IF (TRIM(DES_INTG_METHOD) /= 'ADAMS_BASHFORTH' .AND. &
           TRIM(DES_INTG_METHOD) /= 'EULER') THEN
 ! stop if the specified integration method is unavailable
          IF(DMP_LOG) WRITE (UNIT_LOG, 1034)
          CALL MFIX_EXIT(myPE)
       ENDIF
+
 
 
 ! Check settings for collision models
@@ -1182,5 +1217,9 @@
          'DES_PERIODIC_WALLS_Y :', L4, /10X, &
          'DES_PERIODIC_WALLS_Z :', L4, /10X, &
          /1X,70('*')/)
+
+ 2010 FORMAT(/1X,70('*')/' From: CHECK_DES_DATA',/'Error 2010:',       &
+         ' DES simulations cannot have defined internal obstacles.',/  &
+         ' Please correct the data file.', 1X,70('*')/)
 
          END SUBROUTINE CHECK_DES_DATA

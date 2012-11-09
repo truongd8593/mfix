@@ -194,7 +194,8 @@
 !   'euler' first-order scheme (default)
 !   'adams_bashforth' second-order scheme (by T.Li)
       CHARACTER*64 DES_INTG_METHOD 
-
+      LOGICAL INTG_ADAMS_BASHFORTH
+      LOGICAL INTG_EULER
 
 ! Value of solids time step based on particle properties
       DOUBLE PRECISION DTSOLID

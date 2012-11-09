@@ -6,51 +6,65 @@
 !                                                                      !
 !  Author: J.Musser                                   Date: 25-Jun-10  !
 !                                                                      !
-!  CommenT_ENV:                                                           !
-!                                                                      !
-!  REF: Batchelor and O'Brien, "Thermal or electrical conduction       !
-!       through a granular material," Proceedings of the Royal Society !
-!       of London. Series A, Mathematical and Physical Sciences,       !
-!       Vol. 355, no 1682, pp. 313-333, July 1977.                     !
+!  Commen:                                                             !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DES_RADIATION(I, T_ENV, FOCUS)
+      SUBROUTINE DES_RADIATION(I, iM, iIJK, FOCUS)
 
       Use constant
       Use des_thermo
       Use discretelement
+      Use fldvar
       Use param1
 
       IMPLICIT NONE
 
-! Index value of particle I
+! Passed variables
+!---------------------------------------------------------------------//
+! Global index of particle
       INTEGER, INTENT(IN) :: I
-! Average solids temperature in radiation domain
-      DOUBLE PRECISION, INTENT(IN) :: T_ENV
+! Solid phase of particle I
+      INTEGER, INTENT(IN) :: iM
+! Fluid cell index containing particle I
+      INTEGER, INTENT(IN) :: iIJK
 ! Logical used for debugging
       LOGICAL, INTENT(IN) :: FOCUS
 
-!-----------------------------------------------
 ! Local variables
-!-----------------------------------------------
-! file name
-      CHARACTER*64 :: FNAME
-! logical used for testing is the data file already exists
-      LOGICAL :: F_EXISTS
+!---------------------------------------------------------------------//
 ! Surface area of particle
       DOUBLE PRECISION A_S
+! Radiative heat transfer
+      DOUBLE PRECISION Qrd
+! Environment temperature
+      DOUBLE PRECISION Tenv
+
+! Functions
+!---------------------------------------------------------------------//
+! External Function for comparing two numbers.
+      LOGICAL, EXTERNAL :: COMPARE
+
+
+
+! Set the environment temperature.
+      IF(COMPARE(EP_g(iIJK),ONE)) THEN
+         Tenv = T_g(iIJK)
+      ELSE
+         Tenv = EP_g(iIJK)*T_g(iIJK) + (ONE-EP_g(iIJK))*avgDES_T_s(iIJK)
+      ENDIF
 
 ! Calculate the surface area of the particle
-      A_S = 4.0d0 * Pi * DES_RADIUS(I)**2
+      A_S = 4.0d0 * Pi * DES_RADIUS(I) * DES_RADIUS(I)
+! Calculate the heat source.
+      Qrd = SB_CONST * A_s * DES_EM(iM) * (Tenv**4 - (DES_T_s_NEW(I))**4)
+! Update the thermal source term.
+      Q_Source(I) = Q_Source(I) + Qrd
 
-      Qrd(I) = SB_CONST * A_s * DES_EM(PIJK(I,5)) * &
-         (T_ENV**4 - (DES_T_s_NEW(I))**4)
-
-      IF(DEBUG_DES .AND. FOCUS)THEN
+      IF(FOCUS)THEN
          WRITE(*,"(//5X,A)")'From: DES_RADIATION -'
          WRITE(*,"(8X,A,D12.6)")'Tp: ',DES_T_s_NEW(I)
-         WRITE(*,"(8X,A,D12.6)")'T_ENV: ',T_ENV
-         WRITE(*,"(8X,A,D12.6)")'Qrd: ',Qrd(I)
+         WRITE(*,"(8X,A,D12.6)")'Tenv: ',Tenv
+         WRITE(*,"(8X,A,D12.6)")'Qrd: ',Qrd
          WRITE(*,"(5X,25('-')/)")
       ENDIF
 

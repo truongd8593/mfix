@@ -313,24 +313,6 @@
 	        ENDDO   ! M=1, MMAX
       ENDIF
 
-! Read species data for discrete solids phases.
-!-----------------------------------------------------------------------
-      IF(DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID)THEN
-       	 DO M = 1, DES_MMAX
-            DO N = 1, DES_NMAX(M)
-	              DES_Nsp = DES_Nsp + 1
-! If a species name was not specified in mfix.dat, flag error and exit.
-	              IF(DES_SPECIES_NAME(DES_Nsp) == UNDEFINED_C)THEN
-                  WRITE(*,1011)'discrete', M, N ! screen
-                  IF(DMP_LOG) WRITE(UNIT_LOG,1011)'discrete', M, N
-	                 CALL MFIX_EXIT(mypE)
-	              ENDIF
-               CALL READ_DATABASE('DEM', M, N, &
-                  SPECIES_NAME(Nsp), DES_MW_s(M,N))
-	           ENDDO   ! N=1, NMAX(M)
-	        ENDDO   ! M=1, MMAX
-      ENDIF
-
       RETURN  
 
 ! Error Messages

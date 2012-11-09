@@ -10,11 +10,14 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DES_THERMO_NEWVALUES(NP, FOCUS)
+      SUBROUTINE DES_THERMO_NEWVALUES
 
+      USE compar
       Use des_thermo
       Use des_rxns
       Use discretelement
+      USE geometry
+      USE indices
       Use param1
       Use physprop
 
@@ -22,131 +25,172 @@
 
 ! Passed variables
 !-----------------------------------------------
-! Index value of particle
-      INTEGER, INTENT(IN) :: NP
-! Logical indicating that the particle is of special interst
-      LOGICAL, INTENT(IN) :: FOCUS
+! NONE
 
 ! Local variables
-!-----------------------------------------------  
-
-! index of solids phase
-      INTEGER M
-! Total amount of energy transfer TO the particle NP. If this value is
-! positive, then the particle is heating, if it is negative, then the 
-! particle is cooling.
-      DOUBLE PRECISION  Qtotal
-
-      DOUBLE PRECISION Qtotal_MAX
-      DOUBLE PRECISION Qpp_MAX, Qpfp_MAX, Qcv_MAX, Qrd_MAX, Qint_MAX
-
+!---------------------------------------------------------------------//
+! Index of neighbor particle of particle I such that I < J
+      INTEGER IJK
+! Loop index for particles.
+      INTEGER NP, lNP
 ! Logical for Adams-Bashfort integration.
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
-      LOGICAL NOISY
+! Sum of particle temperatures in fluid cell.
+      DOUBLE PRECISION SUM_T_s
 
-! Initialize local variables
-      Qcv_MAX = ZERO
-      Qpp_MAX = ZERO
-      Qpfp_MAX = ZERO
-      Qrd_MAX = ZERO
-      Qint_MAX = ZERO
-      Qtotal_MAX = ZERO
+! Functions
+!---------------------------------------------------------------------//
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
+      INCLUDE 'function.inc'
 
-! Initialize variables
-      Qtotal = ZERO
-      M = PIJK(NP,5)
 
-! Particle-fluid convection
-      IF(DES_CONV_EQ)THEN 
-         Qtotal = Qtotal + Qcv(NP)
-         Qcv_MAX = MAX( ABS(Qcv(NP)), Qcv_MAX)
-! Clear storage variable
-         Qcv(NP) = ZERO
+      IF(.NOT.DES_ENERGY_EQ) RETURN
+
+! Second-order Adams-Bashforth scheme defaults to Euler on first pass.
+      IF(FIRST_PASS) THEN
+         IF(trim(DES_INTG_METHOD).NE.'EULER') &
+            Q_Source0(:) = Q_Source(:)/ (PMASS(:) * DES_C_ps(:))
+         FIRST_PASS = .FALSE.
       ENDIF
 
-! Particle-particle conduction
-      IF(DES_COND_EQ_PP) THEN
-         Qtotal = Qtotal + Qpp(NP)
-         Qpp_MAX = MAX( ABS(Qpp(NP)), Qpp_MAX)
-! Clear storage variable
-         Qpp(NP) = ZERO
-      ENDIF
+! Clear the average solids temperature for all fluid cells.
+      avgDES_T_s(:) = ZERO
 
-! Particle-fluid-particle conduction
-      IF(DES_COND_EQ_PFP)THEN
-         Qtotal = Qtotal + Qpfp(NP)
-         Qpfp_MAX = MAX( ABS(Qpfp(NP)), Qpfp_MAX)
-! Clear storage variable
-         Qpfp(NP) = ZERO
-      ENDIF
+! Loop over fluid cells.
+!---------------------------------------------------------------------//
+      IJK_LP: DO IJK = IJKSTART3, IJKEND3
+         IF(.NOT.FLUID_AT(IJK)) CYCLE IJK_LP
+         IF(PINC(IJK) == 0) CYCLE IJK_LP
 
-! Energy from radiation
-      IF(DES_RADI_EQ)THEN
-         Qtotal = Qtotal + Qrd(NP)
-         Qrd_MAX = MAX( ABS(Qrd(NP)), Qrd_MAX)
-! Clear storage variable
-         Qrd(NP) = ZERO
-      ENDIF
+! Initialize local solids temperature.
+         SUM_T_s = ZERO
 
-! Energy from reaction
-      IF(DES_SPECIES_EQ(M))THEN
-         Qtotal = Qtotal - Qint(NP)
-         Qint_MAX = MAX( ABS(Qint(NP)), Qint_MAX)
-! Clear storage variable
-         Qint(NP) = ZERO
-      ENDIF
-
-      Qtotal_MAX = MAX( ABS(Qtotal), Qtotal_MAX)
-
+! Loop over all particles in cell IJK.
+!---------------------------------------------------------------------//
+         lNP_LP: DO lNP = 1, PINC(IJK)
+            NP = PIC(IJK)%p(lNP)
+! Skip indices that do not represent particles
+            IF(.NOT.PEA(NP,1)) CYCLE lNP_LP
+! Skip indices that represent ghost particles
+            IF(PEA(NP,4)) CYCLE lNP_LP
 ! Advance particle position, velocity
-      IF (TRIM(DES_INTG_METHOD) .EQ. 'EULER') THEN 
-! First-order method              
-
-!----------------------------------------------------------------------->>> REMOVE JM
-         IF(DES_T_s_OLD(NP) .NE. DES_T_s_OLD(NP)) THEN
-            WRITE(*,*)'   DES_T_s_OLD NAN FOR NP: ',NP
-            STOP
-         ENDIF
-         IF(Qtotal .NE. Qtotal) THEN
-            WRITE(*,*)'   Qtotal NAN FOR NP: ',NP
-            WRITE(*,*)'      Qcv  : ',Qcv(NP)
-            WRITE(*,*)'      Qpp  : ',Qpp(NP)
-            WRITE(*,*)'      Qpfp : ',Qpfp(NP)
-            WRITE(*,*)'      Qrd  : ',Qrd(NP)
-            WRITE(*,*)'      Qint : ',Qint(NP)
-            STOP
-         ENDIF            
-         
-         IF(PMASS(NP) .NE. PMASS(NP))THEN
-            WRITE(*,*)'   PMASS NAN FOR NP: ',NP
-            STOP
-         ENDIF
-
-         IF(DES_C_ps(NP) .NE. DES_C_ps(NP))THEN
-            WRITE(*,*)'   DES_C_ps NAN FOR NP: ',NP
-            STOP
-         ENDIF
-!-----------------------------------------------------------------------<<<
-         DES_T_s_NEW(NP) = DES_T_s_OLD(NP) + &
-            DTSOLID*(Qtotal / ( PMASS(NP) * DES_C_ps(NP) ))
-      ELSEIF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') THEN
+            IF (trim(DES_INTG_METHOD) .EQ. 'EULER') THEN
+! First-order method
+               DES_T_s_NEW(NP) = DES_T_s_OLD(NP) + &
+                  DTSOLID*(Q_Source(NP) / (PMASS(NP) * DES_C_ps(NP)))
+            ELSE
 ! Second-order Adams-Bashforth scheme
-         IF(FIRST_PASS)THEN
-            FIRST_PASS = .FALSE.
-            DES_T_s_NEW(NP) = DES_T_s_OLD(NP) + &
-               DTSOLID*(Qtotal / ( PMASS(NP) * DES_C_ps(NP) ))
-            Qtotal_OLD(NP) = Qtotal / (PMASS(NP)*DES_C_ps(NP))
-         ELSE
-            DES_T_s_NEW(NP) = DES_T_s_OLD(NP) + &
-              ( 1.5d0 * (Qtotal/(PMASS(NP)*DES_C_ps(NP))) - &
-                0.5d0 * Qtotal_OLD(NP) ) * DTSOLID
-            Qtotal_OLD(NP) = Qtotal / (PMASS(NP)*DES_C_ps(NP))
-         ENDIF
-      ENDIF
+               DES_T_s_NEW(NP) = DES_T_s_OLD(NP) + &
+                  (1.5d0 * (Q_Source(NP)/(PMASS(NP)*DES_C_ps(NP))) - &
+                   0.5d0 * Q_Source0(NP)) * DTSOLID
+               Q_Source0(NP) = Q_Source(NP) / (PMASS(NP) * DES_C_ps(NP))
+            ENDIF
+
+! Write out the debugging information.
+            IF(DEBUG_DES) THEN
+               IF(DMP_LOG) THEN
+                  IF(NP == FOCUS_PARTICLE) THEN
+                     WRITE(*,"(//5X,A)")'From: DES_THERMO_NEWVALUES -'
+                     WRITE(*,"(8X,A,D12.6)")'Tp:  ',DES_T_s_NEW(NP)
+                     WRITE(*,"(8X,A,D12.6)")'Tp0: ',DES_T_s_OLD(NP)
+                     WRITE(*,"(8X,A,D12.6)")'Qsrc:',Q_Source(NP)
+                     WRITE(*,"(5X,25('-')/)")
+                  ENDIF
+               ENDIF
+            ENDIF
 
 ! Update the old temperature value
-      DES_T_s_OLD(NP) = DES_T_s_NEW(NP)
+            DES_T_s_OLD(NP) = DES_T_s_NEW(NP)
+! Update the sum of particle temperatures in fluid cell IJK.
+            SUM_T_s = SUM_T_s + DES_T_s_NEW(NP)
+         ENDDO lNP_LP ! End loop over all particles
+! Average solids temperature in fluid cell IJK. The average method 
+! (over particles) will need changed for Hybrid model (area? volume?).
+         avgDES_T_s(IJK) = SUM_T_s/PINC(IJK)
+
+      ENDDO IJK_LP ! End loop over fluid cells
+
+      Q_Source(:) = ZERO
 
       RETURN
+
       END SUBROUTINE DES_THERMO_NEWVALUES
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: SET_INIT_avgTs                                         !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      !
+!                                                                      !
+!  Author: J.Musser                                   Date: 06-NOV-12  !
+!                                                                      !
+!  Comments:                                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE SET_INIT_avgTs
+
+      USE compar
+      Use des_thermo
+      Use des_rxns
+      Use discretelement
+      USE geometry
+      USE indices
+      Use param1
+      Use physprop
+
+      IMPLICIT NONE
+
+! Passed variables
+!-----------------------------------------------
+! NONE
+
+! Local variables
+!---------------------------------------------------------------------//
+! Index of neighbor particle of particle I such that I < J
+      INTEGER IJK
+! Loop index for particles.
+      INTEGER NP, lNP
+! Sum of particle temperatures in fluid cell.
+      DOUBLE PRECISION SUM_T_s
+
+! Functions
+!---------------------------------------------------------------------//
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
+      INCLUDE 'function.inc'
+
+      IF(.NOT.DES_ENERGY_EQ) RETURN
+
+! Clear the average solids temperature for all fluid cells.
+      avgDES_T_s(:) = ZERO
+
+! Loop over fluid cells.
+!---------------------------------------------------------------------//
+      IJK_LP: DO IJK = IJKSTART3, IJKEND3
+         IF(.NOT.FLUID_AT(IJK)) CYCLE IJK_LP
+         IF(PINC(IJK) == 0) CYCLE IJK_LP
+
+! Initialize local solids temperature.
+         SUM_T_s = ZERO
+
+! Loop over all particles in cell IJK.
+!---------------------------------------------------------------------//
+         lNP_LP: DO lNP = 1, PINC(IJK)
+            NP = PIC(IJK)%p(lNP)
+! Skip indices that do not represent particles
+            IF(.NOT.PEA(NP,1)) CYCLE lNP_LP
+! Skip indices that represent ghost particles
+            IF(PEA(NP,4)) CYCLE lNP_LP
+! Update the sum of particle temperatures in fluid cell IJK.
+            SUM_T_s = SUM_T_s + DES_T_s_NEW(NP)
+         ENDDO lNP_LP ! End loop over all particles
+! Average solids temperature in fluid cell IJK. The average method 
+! (over particles) will need changed for Hybrid model (area? volume?).
+         avgDES_T_s(IJK) = SUM_T_s/PINC(IJK)
+
+      ENDDO IJK_LP ! End loop over fluid cells
+
+      RETURN
+
+      END SUBROUTINE SET_INIT_avgTs

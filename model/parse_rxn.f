@@ -19,7 +19,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE PARSE_RXN(LINE, lName, lChemEq, lDH, lFDH)
+      SUBROUTINE PARSE_RXN(LINE, lNoOfRxns, lName, lChemEq, lDH, lFDH)
 
 !-----------------------------------------------
 !   M o d u l e s 
@@ -33,16 +33,17 @@
       IMPLICIT NONE
 
 ! Input line from mfix.dat.
-      CHARACTER(len=*), INTENT(IN) :: LINE
-
+      CHARACTER(len=*), INTENT(INOUT) :: LINE
 ! Array of reaction names.
-      CHARACTER(len=*), DIMENSION(DIMENSION_RXN) :: lName
+      INTEGER, INTENT(INOUT) :: lNoOfRxns
+! Array of reaction names.
+      CHARACTER(len=*), INTENT(INOUT), DIMENSION(DIMENSION_RXN) :: lName
 ! Array of Chemical reaction equations.
-      CHARACTER(len=*), DIMENSION(DIMENSION_RXN) :: lChemEq
+      CHARACTER(len=*), INTENT(INOUT), DIMENSION(DIMENSION_RXN) :: lChemEq
 ! Array of User defined heat of reactions.
-      DOUBLE PRECISION, DIMENSION(DIMENSION_RXN) :: lDH
+      DOUBLE PRECISION, INTENT(INOUT), DIMENSION(DIMENSION_RXN) :: lDH
 ! Array of User defined heat of reaction phase partitions.
-      DOUBLE PRECISION, DIMENSION(DIMENSION_RXN, 0:DIM_M) :: lFDH
+      DOUBLE PRECISION, INTENT(INOUT), DIMENSION(DIMENSION_RXN, 0:DIM_M) :: lFDH
 
 
 !-----------------------------------------------
@@ -82,7 +83,7 @@
             IF(eIDX .GT. bIDX) THEN
 ! The reaction construct is specified in a single line.
 ! rxn_name { A + B --> AB }
-               IDX = getReactionIndex('NEW')
+               IDX = getReactionIndex(lNoOfRxns, 'NEW')
 ! Pull off the reaction construct name.
                CALL getName(INPUT,(bIDX-1), lNAME(IDX))
 ! Process the rest of the line.
@@ -110,7 +111,7 @@
 ! This is the start of a reaction construct.
             IF(bIDX .GT. 0) THEN
 ! Get the reaction index.
-               IDX = getReactionIndex('NEW')
+               IDX = getReactionIndex(lNoOfRxns, 'NEW')
 ! Extract the reaction name.
                CALL getName(INPUT,(bIDX-1), lNAME(IDX))
 ! Process any data.
@@ -135,14 +136,14 @@
 ! This is the last line of the reaction construct which may or may not
 ! contain additional data.
          ELSEIF(eIDX .GT. 0) THEN
-           IDX = getReactionIndex()
+           IDX = getReactionIndex(lNoOfRxns)
            CALL readConstruct(INPUT(bIDX+1:eIDX-1), lChemEq(IDX),      &
               lDH(IDX), lFDH(IDX,:))
             IN_CONSTRUCT = .FALSE.
 
 ! Reading from somewhere inside of a reaction construct.
          ELSE
-           IDX = getReactionIndex()
+           IDX = getReactionIndex(lNoOfRxns)
            CALL readConstruct(INPUT(bIDX+1:), lChemEq(IDX),            &
               lDH(IDX), lFDH(IDX,:))
          ENDIF
@@ -200,23 +201,25 @@
 !  Local variables: None                                               !
 !                                                                      !
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
-      INTEGER FUNCTION getReactionIndex(STAT)
+      INTEGER FUNCTION getReactionIndex(lNOR, STAT)
 
       use rxns
 
       IMPLICIT NONE
-
+! Number of reactions.
+      INTEGER, INTENT(INOUT) :: lNOR
+! Status
       CHARACTER(len=*), INTENT(IN), OPTIONAL :: STAT
 
       IF(.NOT.PRESENT(STAT)) THEN
-         getReactionIndex = NO_OF_RXNS
+         getReactionIndex = lNOR
 
       ELSE
          IF(STAT == 'NEW') THEN
 ! Increment the number of reactions processed from the data file and
 ! return the new value as the index of the reactoin being processed.
-            NO_OF_RXNS = NO_OF_RXNS + 1
-            getReactionIndex = NO_OF_RXNS
+            lNOR = lNOR + 1
+            getReactionIndex = lNOR
          ELSE
             WRITE(*,*) ' Unknown status'
             CALL MFIX_EXIT(myPE)

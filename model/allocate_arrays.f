@@ -45,6 +45,8 @@
       USE ghdtheory
       use kintheory
       Use cdist
+      Use des_rxns
+
       IMPLICIT NONE
 
 !-----------------------------------------------     
@@ -90,7 +92,11 @@
                DIMENSION_N_s = MAX(DIMENSION_N_s, NMAX_s(M))
          ENDIF
       ENDDO
-      
+      DO M = 1, DIM_M
+         IF(DES_NMAX_s(M) .NE. UNDEFINED_I) &
+            DIMENSION_N_s = MAX(DIMENSION_N_s, DES_NMAX_s(M))
+      ENDDO
+
       DIMENSION_LM    = (DIMENSION_M * (DIMENSION_M-1) / 2)+1
       DIMENSION_N_all = max(DIMENSION_N_g, DIMENSION_N_s)
       DIMENSION_Scalar = NScalar

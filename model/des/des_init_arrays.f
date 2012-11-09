@@ -128,17 +128,10 @@
          DES_T_s_NEW(:) = UNDEFINED
          DES_C_PS(:) = UNDEFINED
          DES_X_s(:,:) = ZERO
-         IF(DES_CONV_EQ) Qcv(:) = ZERO
-         IF(DES_COND_EQ_PP) Qpp(:) = ZERO
-         IF(DES_COND_EQ_PFP) Qpfp(:) = ZERO
-         IF(DES_RADI_EQ) Qrd(:) = ZERO
-
-         IF(FIND_THERMO_NBRHD) THEN
-            THERMO_NBRHD(:,:) = -1
-            THERMO_NBRHD(:,1) = 0
-         ENDIF
+         Q_Source(:) = ZERO
+         avgDES_T_s(:) = ZERO
          IF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') &
-            Qtotal_OLD(:) = ZERO
+            Q_Source0(:) = ZERO
       ENDIF
 
       IF(ANY_DES_SPECIES_EQ)THEN

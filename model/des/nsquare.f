@@ -151,11 +151,6 @@
                ENDIF
 
             ENDIF
-
-! Determine if the particle is in the thermodynamic neighborhood of
-! the specified particle.
-            IF(FIND_THERMO_NBRHD) CALL THERMO_NBR(L,LL,DIST)
-
             PNPC = PNPC - 1
          ENDDO   ! end loop over LL
 

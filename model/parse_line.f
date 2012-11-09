@@ -27,6 +27,7 @@
 !   M o d u l e s 
 !-----------------------------------------------
       USE compar   
+      USE des_rxns
       USE param 
       USE param1 
       USE parse 
@@ -84,29 +85,46 @@
 ! This is the end of a reaction block, but either no reaction block
 ! initializer '@(RXNS)' preceded it, or the preceding reaction block
 ! was already closed by another '@(END) statement.
-            IF(.NOT.RXN_FLAG) WRITE (*, 1010) myPE,LINE(1:LMAX) 
+            IF(.NOT.RXN_FLAG) THEN
+               WRITE (*, 1010)
+               CALL MFiX_EXIT(0)
+            ENDIF
+
 ! Set flags indicating that no additional rate information will be
 ! processed.
-            RXN_FLAG = .FALSE. 
-            READ_FLAG = .FALSE. 
+            RXN_FLAG = .FALSE.
+            READ_FLAG = .FALSE.
             CALL END_PARSE_RXN()
             RETURN  
          ENDIF 
 
 ! Check to see if this is the start of a reaction block.
-         IF (START_RXN(LINE(LSTART:LEND),LEND-LSTART)) THEN 
+         IF (START_DES_RXN(LINE(LSTART:LEND),LEND-LSTART)) THEN
+            DES_RXN = .TRUE.
+            RXN_FLAG = .TRUE.
+            READ_FLAG = .FALSE.
+! Initialize logicals for parsing reaction data.
+            CALL INIT_PARSE_DES_RXN()
+            RETURN
+         ELSEIF(START_RXN(LINE(LSTART:LEND),LEND-LSTART)) THEN 
+            TFM_RXN = .TRUE.
             RXN_FLAG = .TRUE. 
             READ_FLAG = .FALSE.
 ! Initialize logicals for parsing reaction data.
             CALL INIT_PARSE_RXN()
-            RETURN  
+            RETURN
          ENDIF 
-!
       ENDIF ! IF (LSTART /= 0) THEN 
-!
-      IF (RXN_FLAG) THEN 
-         CALL PARSE_RXN (LINE, RXN_NAME, RXN_CHEM_EQ, usrDH, usrfDH)
 
+
+      IF(TFM_RXN) THEN
+         CALL PARSE_RXN (LINE, NO_OF_RXNS, RXN_NAME, RXN_CHEM_EQ,      &
+            usrDH, usrfDH)
+         READ_FLAG = .FALSE. 
+         RETURN  
+      ELSEIF(DES_RXN) THEN
+         CALL PARSE_RXN (LINE, NO_OF_DES_RXNS, DES_RXN_NAME,           &
+            DES_RXN_CHEM_EQ, DES_usrDH, DES_usrfDH)
          READ_FLAG = .FALSE. 
          RETURN  
       ENDIF 
@@ -122,9 +140,9 @@
          'the input line,',/' but no ending parenthesis was located:',/&
          ' INPUT: ',A,/1X,70('*')//)
 
- 1010 FORMAT(/1X,70('*')//'(PE ',I6,'): From: PARSE_LINE',/&
-         ' Message: END keyword before a start keyword in line: ',/9X,A,/1X,70(&
-         '*')/) 
+ 1010 FORMAT(/1X,70('*')/': From: PARSE_LINE',/&
+         ' Error: END keyword before a start keyword in line: ',       &
+          /1X,A,/1X,70('*')/) 
 
 
       CONTAINS
@@ -168,6 +186,44 @@
 
       RETURN  
       END FUNCTION START_RXN 
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+!  Function name: START_RXN(LINE, LMAX)                                !
+!                                                                      !
+!  Purpose: Returns a value of TRUE if this is the start of a reaction !
+!           block. Otherwise, the return value is FALSE.               !
+!                                                                      !
+!  Author: J. Musser                                  Date: 31-Oct-12  !
+!                                                                      !
+!  Reviewer:                                          Date: dd-mmm-yy  !
+!                                                                      !
+!  Literature/Document References: None                                !
+!                                                                      !
+!  Variables referenced: RXN_BLK - string indicating a reaction block  !
+!                                                                      !
+!  Variables modified: None                                            !
+!                                                                      !
+!  Local variables: None                                               !
+!                                                                      !
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+      LOGICAL FUNCTION START_DES_RXN (LINE, LMAX) 
+
+! Input line containing an '@(' statment.
+      CHARACTER(len=*), INTENT(IN) :: LINE
+! Length of of LINE.
+      INTEGER LMAX
+
+! Check to see if the line contains 'RXNS'
+      IF (INDEX(LINE(1:LMAX),DES_RXN_BLK) == 0) THEN 
+! 'RXNS' was not found. This is not the start of a reaction block.
+         START_DES_RXN = .FALSE. 
+      ELSE
+! 'RXNS' was found. This is the start of a reaction block.
+         START_DES_RXN = .TRUE. 
+      ENDIF 
+
+      RETURN  
+      END FUNCTION START_DES_RXN 
 
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
 !  Function name: END_RXN(LINE, LMAX)                                  !
@@ -234,29 +290,110 @@
 ! longer necessary.
 !-----------------------------------------------------------------------
 ! Reaction Names: Allocate/Initialize
+      IF(Allocated( RXN_NAME )) GoTo 100
       Allocate( RXN_NAME( DIMENSION_RXN ))
       RXN_NAME(:) = ''
 ! Chemcial Equations: Allocate/Initialize
+      IF(Allocated( RXN_CHEM_EQ )) GoTo 100
       Allocate( RXN_CHEM_EQ( DIMENSION_RXN ))
       RXN_CHEM_EQ(:) = ''
 ! User defined heat of reaction: Allocate/Initialize
+      IF(Allocated( usrDH )) GoTo 100
       Allocate( usrDH( DIMENSION_RXN ))
       usrDH(:) = UNDEFINED
 ! User defined heat of reaction partitions: Allocate/Initialize
+      IF(Allocated( usrfDH )) GoTo 100
       Allocate( usrfDH( DIMENSION_RXN, 0:DIM_M ))
       usrfDH(:,:) = UNDEFINED
-
 ! Logical indicating that the code is in the middle of parsing a 
 ! reaction construct.
       IN_CONSTRUCT = .FALSE.
-! Flag indicating that the chemical equation is specified over
-! multiple lines.
-      MORE_ChemEq = .FALSE.
 ! Number of reactions found in data file.
       NO_OF_RXNS = 0
 
+! Flag indicating that the chemical equation is specified over
+! multiple lines.
+      MORE_ChemEq = .FALSE.
+
       RETURN
+
+ 100  WRITE(*,1001)
+      WRITE(*,1000)
+      CALL MFiX_EXIT(0)
+
+ 1001 FORMAT(/1X,70('*')/' From: PARSE_LINE --> INIT_PARSE_RXN',/      &
+         ' Error 1001: More than one reaction block has been located!',&
+         ' A data file',/' can only contain one reaction block',       &
+         ' [@(RXNS)...@(END)].'/)
+
+ 1000 FORMAT(' Please refer to the Readme file for chemcial equation', &
+         ' input formats',/' and correct the data file.',/1X,70('*')/)
+
       END SUBROUTINE INIT_PARSE_RXN
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+!  Function name: INIT_PARSE_DES_RXN()                                 !
+!                                                                      !
+!  Purpose: Initialize variables for the DES reaction parser.          !
+!                                                                      !
+!  Author: J. Musser                                  Date: 14-SPT-12  !
+!                                                                      !
+!  Variables referenced: None                                          !
+!                                                                      !
+!  Variables modified:                                                 !
+!                                                                      !
+!  Local variables: None                                               !
+!                                                                      !
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+      SUBROUTINE INIT_PARSE_DES_RXN()
+
+! Allocate the necessary storage arrays for chemical reaction data
+! read from the data file. These arrays are 'allocatable' so that after
+! processing in CHECK_DATA_09, they can be deallocated as they are no
+! longer necessary.
+!-----------------------------------------------------------------------
+! Reaction Names: Allocate/Initialize
+      IF(Allocated( DES_RXN_NAME )) GoTo 100
+      Allocate( DES_RXN_NAME( DIMENSION_RXN ))
+      DES_RXN_NAME(:) = ''
+! Chemcial Equations: Allocate/Initialize
+      IF(Allocated( DES_RXN_CHEM_EQ )) GoTo 100
+      Allocate( DES_RXN_CHEM_EQ( DIMENSION_RXN ))
+      DES_RXN_CHEM_EQ(:) = ''
+! User defined heat of reaction: Allocate/Initialize
+      IF(Allocated( DES_usrDH )) GoTo 100
+      Allocate( DES_usrDH( DIMENSION_RXN ))
+      DES_usrDH(:) = UNDEFINED
+! User defined heat of reaction partitions: Allocate/Initialize
+      IF(Allocated( DES_usrfDH )) GoTo 100
+      Allocate( DES_usrfDH( DIMENSION_RXN, 0:DIM_M ))
+      DES_usrfDH(:,:) = UNDEFINED
+! Logical indicating that the code is in the middle of parsing a 
+! reaction construct.
+      IN_DES_CONSTRUCT = .FALSE.
+! Number of reactions found in data file.
+      NO_OF_DES_RXNS = 0
+
+! Flag indicating that the chemical equation is specified over
+! multiple lines.
+      MORE_ChemEq = .FALSE.
+
+      RETURN
+
+ 100  WRITE(*,1001)
+      WRITE(*,1000)
+      CALL MFiX_EXIT(0)
+
+ 1001 FORMAT(/1X,70('*')/' From: PARSE_LINE --> INIT_PARSE_DES_RXN',/  &
+         ' Error 1001: More than one DES reaction block has been',     &
+         ' located! A data',/' file can only contain one reaction',    &
+         ' block [@(DES_RXNS)...@(END)].'/)
+
+ 1000 FORMAT(' Please refer to the Readme file for chemcial equation', &
+         ' input formats',/' and correct the data file.',/1X,70('*')/)
+
+      END SUBROUTINE INIT_PARSE_DES_RXN
 
 
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
@@ -279,6 +416,8 @@
 
       READING_RXN = .FALSE.
       READING_RATE = .FALSE.
+      DES_RXN = .FALSE.
+      TFM_RXN = .FALSE.
 
       RETURN
       END SUBROUTINE END_PARSE_RXN

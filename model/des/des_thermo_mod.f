@@ -14,7 +14,6 @@
 
       USE param
 
-
 ! Run time logicals
 !--------------------------
 ! Slove DES Energy Equations
@@ -45,13 +44,6 @@
 ! Default [RANZ_1952]
       CHARACTER*24 :: DES_CONV_CORR
 
-! Specifies that a thermodynamic neighborhood for a particle be
-! determined. This neighborhood can be much larger than the one
-! established for determining collisions. It is used in conduction and
-! radiation models.
-      LOGICAL FIND_THERMO_NBRHD
-
-
 ! Particle properties
 !--------------------------
 ! Particle temperature at current time step (S_TIME)
@@ -73,48 +65,31 @@
       DOUBLE PRECISION DES_Em(DIM_M)
 ! Stefan-Boltzmann Constant
       DOUBLE PRECISION SB_CONST
+! Bulk solids temperature for radiative heat transfer
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: avgDES_T_s
 
 
 ! Rates of heat transfer
 !--------------------------
-! Heat transfer TO the particle from the fluid. This value will be positive
-! when the particle is heating  and negative when the particle is cooling.
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Qcv !(PARTICLES)
-! Heat transfer TO the particle from neighboring particles via the particle-
-! particle conduction model. This value will be positive when the particle is
-! heating  and negative when the particle is cooling.
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Qpp !(PARTICLES)
-! Heat transfer TO the particle from neighboring particles via the particle-
-! fluid-particle model. This value will be positive when the particle is
-! heating  and negative when the particle is cooling.
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Qpfp !(PARTICLES)
-! Heat transfer TO the particle from neighboring particles via radiation
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Qrd !(PARTICLES)
 ! Internal heat generation resulting from a chemical reaction
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Qint !(PARTICLES)
+! Heat transfer source to the particle.
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Q_Source
 ! Previous time step's rate of heat transfer. Used for Adams-Bashforth
 ! time integration scheme
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Qtotal_OLD
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Q_Source0
 
 ! Thermodynamic Neighborhood
 !--------------------------
-! Thermodynamic neighborhood. This is the list of particles around a 
-! particle that may transfer energy with the given particle.
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: THERMO_NBRHD ! (PARTICLES, MAXNEIGHBORS)
-! This is the size of the thermodynamic neighborhood. Is is based on the
-! maximum particle radius and the FLPC and RDPC
-      DOUBLE PRECISION NBRHD_SZ
 ! Fluid Lens Proportion Constant used to calculate the radius of the
 ! fluid lens that surrounds the particle for particle-fluid-particle
 ! conduction.  Default [ 0.2 ]
       DOUBLE PRECISION FLPC
-! Radius of the radiation domain in relation of the particle diameter.
-! Default [ 3.0 ] * DES_RADIUS(-)
-      DOUBLE PRECISION RDPC
 ! Mininum separation distance between the surface of two contacting
 ! particles. This value is used to remove the singluarity that the
 ! particle-fluid-particle conduciton model develops at the contact
 ! interface. [4.0x10^(-10) meters]
       DOUBLE PRECISION DES_MIN_COND_DIST
+
 
       END MODULE DES_THERMO
