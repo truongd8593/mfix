@@ -48,6 +48,8 @@
       USE compar      
       USE gridmap
       USE discretelement
+      USE des_thermo
+      USE des_rxns
       USE leqsol
       USE parallel
       USE qmom_kinetic_equation
@@ -143,6 +145,7 @@
          VAN_DER_WAALS = .FALSE. 
        	 WALL_VDW_OUTER_CUTOFF = ZERO ! for the algorithm to work without cohesion
          DES_CONV_EQ = .FALSE. ! No convection - ref by SOLVE_ENERGY_EQ
+         ANY_DES_SPECIES_EQ = .FALSE.
       ENDIF
 
 ! Partition the domain and set indices
