@@ -141,7 +141,8 @@
          USE_COHESION = .FALSE.
          SQUARE_WELL = .FALSE.
          VAN_DER_WAALS = .FALSE. 
-	 WALL_VDW_OUTER_CUTOFF = ZERO ! for the algorithm to work without cohesion
+       	 WALL_VDW_OUTER_CUTOFF = ZERO ! for the algorithm to work without cohesion
+         DES_CONV_EQ = .FALSE. ! No convection - ref by SOLVE_ENERGY_EQ
       ENDIF
 
 ! Partition the domain and set indices
