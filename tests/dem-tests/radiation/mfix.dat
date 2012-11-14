@@ -1,11 +1,11 @@
 # Run-control section
 # -----------------------------
-  RUN_NAME = 'Qpp_VV' 
-  DESCRIPTION = 'two stacked particles with contact conduction'
+  RUN_NAME = 'QRD_VV' 
+  DESCRIPTION = 'radiation between three particles'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
-  TIME  =  0.0 
-  TSTOP = 1000.0
+  TIME  =   0.0 
+  TSTOP = 300.0
   DT = 1.0e-4
   DT_MAX = 2E-4
 
@@ -22,6 +22,7 @@
 
   GRAVITY = 980.665D0    ! [980.665d0 in set_constants]
 
+  CALL_USR = .T.
 
 # Geometry Section
 # -----------------------------
@@ -93,17 +94,17 @@
   IC_W_g(1)        =  0.0           
 
   IC_P_g(1)        =  0.0           
-  IC_T_g(1)        =  273.
+  IC_T_g(1)        =  400.
 
 
 #  Output Control
 # -----------------------------
-  RES_DT = 10.0     ! interval at which restart (.RES) file is updated
-  OUT_DT = 10.0     ! interval at which standard output (.OUT) file is updated
+  RES_DT = 2.0     ! interval at which restart (.RES) file is updated
+  OUT_DT = 2.0     ! interval at which standard output (.OUT) file is updated
   NLOG = 25          ! interval in no. of time steps at which (.LOG) file is written
 
 ! Interval at which .SPX files are written 
-  SPX_DT(1)  = 10.0     ! Void fraction (EP_g)
+  SPX_DT(1)  = 2.0     ! Void fraction (EP_g)
   SPX_DT(2)  = 10000.0     ! Gas and solids pressure (P_g, P_star)
   SPX_DT(3)  = 10000.0     ! Gas velocity (U_g, V_g, W_g)
   SPX_DT(4)  = 10000.0     ! Solids velocity (U_s, V_s, W_s)
@@ -144,10 +145,8 @@
 ! Solve energy equations for DES [.FALSE.]
   DES_ENERGY_EQ = .TRUE.
     DES_CONV_EQ = .FALSE.
-    DES_COND_EQ = .TRUE.
-      DES_COND_EQ_PP  = .TRUE.
-      DES_COND_EQ_PFP = .FALSE.
-    DES_RADI_EQ = .FALSE.
+    DES_COND_EQ = .FALSE.
+    DES_RADI_EQ = .TRUE.
 
 !              Cold       Hot
   DES_K_s0 =  0.131453  0.002008  ! Conductivity  :: cal/(sec.cm.K)
@@ -196,5 +195,5 @@
   DES_ETAT_W_FAC  = 0  !@(1/2)  ! damping coefficient factor = ETAT_W/ETAN_W   [1/2]
 
   PRINT_DES_DATA = .FALSE. ! write DEM data : *.vtp files
-  DES_RES_DT = 10.0       
-  DES_SPX_DT = 10.0       ! interval to write *.vtp files in pure DEM simulation
+  DES_RES_DT = 2.0       
+  DES_SPX_DT = 2.0       ! interval to write *.vtp files in pure DEM simulation
