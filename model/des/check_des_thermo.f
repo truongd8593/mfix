@@ -22,8 +22,10 @@
       Use discretelement
       Use funits  
       Use interpolation
+      Use param1
       Use physprop
       Use run
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -76,15 +78,6 @@
             ENDIF
             CALL MFIX_EXIT(myPE)
          ENDIF
-! Verify that a emmisivity value is specified for each solids pase
-         IF(DES_Em(M) .LT. ZERO .OR. &
-            DES_Em(M) .GT. ONE) THEN
-            IF(DMP_LOG) THEN
-               WRITE(UNIT_LOG,1001)'DES_Em','unphysical',M
-               WRITE(*,1001)'DES_Em','unphysical',M
-            ENDIF
-            CALL MFIX_EXIT(myPE)
-         ENDIF
 
 ! Check required values.
          IF(DES_COND_EQ .AND. DES_K_s0(M) == UNDEFINED) THEN
@@ -95,6 +88,7 @@
             CALL MFIX_EXIT(myPE)
          ENDIF
 
+! Verify that a emmisivity value is specified for each solids pase
          IF(DES_RADI_EQ .AND. DES_Em(M) == UNDEFINED) THEN
             IF(DMP_LOG) THEN
                WRITE(UNIT_LOG,1001)'DES_Em','undefined',M
