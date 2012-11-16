@@ -1,60 +1,30 @@
 !######################################################################!
-!  Author: J.Musser                                 Date:   2012-11-15 !
+!  Author: J.Musser                                 Date:   2012-11-16 !
 !                                                                      !
-!  Purpose: These simulations are constructed to reflect the classical !
-!  wet-bulb phenomenon whereby energy loss from evaporation is offset  !
-!  by energy absorption from the environment.                          !
+!  Purpose: This simulation reflects 'Run 03' from Kulic and Rhodes.   !
+!  A single droplet is suspended in a humidified air/water vapor       !
+!  stream.                                                             !
 !                                                                      !
-!  Setup: A single droplet is suspended in a humidified air stream     !
-!  with an initial temperature equal to the air temperature (30C).     !
-!  Fifteen seconds of physical time is simulated to ensure the droplet !
-!  achieves a steady-state (SS) temperature. The SS temperature should !
-!  compare with the theoretical wet-bulb temperature.                  !
-!                                                                      !
-!  Boundary and initial conditions are provided for 11 cases. The      !
-!  relative humidity of the air ranges from 0% to 100% in increments   !
-!  of 10%.                                                             !
-!                                                                      !
-!  Note:                                                               !
-!  > Steady-state and theoretical wet-bulb temperatures are provided   !
-!    in the following table for comparison.                            !
-!  > The default test cases is for 50% relative humidity.              !
-!                                                                      !
-!  |----------------------------------------------------------------|  !
-!  | Relative | Mass fractions (Xg) | Mass Flow | Wet-Bulb | DEM-SS |  !
-!  | Humidity |---------------------|    Rate   |   Temp   |  Temp  |  !
-!  | (Tg=30C) |    Air   |    H2O   |  (g/sec)  |    (C)   |   (C)  |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |    0%    | 1.000000 | 0.000000 |  0.349315 |   10.5   |   9.49 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |   10%    | 0.997390 | 0.002610 |  0.348762 |   13.2   |  12.43 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |   20%    | 0.994771 | 0.005229 |  0.348208 |   15.7   |  15.10 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |   30%    | 0.992144 | 0.007856 |  0.347655 |   18.0   |  17.51 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |   40%    | 0.989509 | 0.010491 |  0.347102 |   20.1   |  19.72 |  !
-!  ******************************************************************  !
-!  *   50%    * 0.986865 * 0.013135 *  0.346548 *   22.0   *  21.76 *  !
-!  ******************************************************************  !
-!  |   60%    | 0.984212 | 0.015788 |  0.345995 |   23.8   |  23.64 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |   70%    | 0.981552 | 0.018448 |  0.345442 |   25.5   |  25.39 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |   80%    | 0.978882 | 0.021118 |  0.344888 |   27.1   |  27.02 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |   90%    | 0.976204 | 0.023796 |  0.344335 |   28.6   |  28.56 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |  100%    | 0.973518 | 0.026482 |  0.343781 |   30.0   |  30.00 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
+!  The droplet temperature is recorded for comparison with reported    !
+!  experimental data [1,2].                                            !
 !                                                                      !
 !  References:                                                         !
-!  A.F. Mills. 1999. Basic Heat and Mass Transfer. Prentice Hall, USA. !
+!``````````````````````````````````````````````````````````````````````!
+!  1. E.Kulic and E.Rhodes. (1977) "Direct contact condensation from   !
+!     Air-Steam mixtures on a single droplet," The Canadian Journal of !
+!     Chemical Engineering, Vol. 55, 131-137.                          !
+!                                                                      !
+!  2.  E. Kulic (1976). An experimental and theoretical study of simul-!
+!     taneous heat and mass transfer applided to steam dousing.        !
+!     University of Waterloo, Ph.D. Thesis.                            !
+!                                                                      !
+!  3. A.F. Mills. 1999. Basic Heat and Mass Transfer. Prentice Hall,   !
+!     USA.                                                             !
 !                                                                      !
 !######################################################################!
 
   RUN_NAME  = 'KR_03'
-  DESCRIPTION  = 'Condensation: Kulic and Rhodese, Run 03'
+  DESCRIPTION  = 'Condensation: Kulic and Rhodes, Run 03'
 
 #_______________________________________________________________
 # RUN CONTROL SECTION
