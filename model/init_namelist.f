@@ -95,6 +95,11 @@
       C_FAC = UNDEFINED
       FPFOI = .FALSE.
       GRANULAR_ENERGY = .FALSE.
+!     do not use revised JJ BC 
+      BC_JJ_M = .false.
+      PHIP_OUT_JJ=.false.
+      PHIP_OUT_ITER=0
+      
       K_Epsilon = .FALSE.
       Added_Mass = .FALSE.
       M_AM = UNDEFINED_I
@@ -213,6 +218,9 @@
       C_F = UNDEFINED 
       PHI = UNDEFINED 
       PHIP = 0.6D0 
+! specularity coefficient as r->0
+      k4phi = undefined	
+      phip0 = undefined            
       E_W = 1.D0 
       PHI_W = UNDEFINED 
       EPS_F_MIN = 0.5D0 

@@ -894,6 +894,9 @@
       DOUBLE PRECISION :: c_star, zeta0_star, nu_eta_star, press_star, &
                           gamma_star, eta_k_star, eta_star, eta0
 !----------------------------------------------- 
+      DOUBLE PRECISION PHIP_JJ ! Variable specularity coefficient
+!-----------------------------------------------                           
+!----------------------------------------------- 
 
 ! This is done here similar to bc_theta to avoid small negative values of
 ! Theta coming most probably from linear solver
@@ -920,9 +923,13 @@
          D_PM = DP_avg(M)
          M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
          NU_PM = (EPS(M)*RO_S(M))/M_PM
- 
+	 if(.NOT. BC_JJ_M)then    
          F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*RO_s(M)*EPS(M)*g0(M))/&
             (6.d0*(ONE-ep_star_avg))
+         else
+         F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M)/M_PM)*PI*RO_s(M)*EPS(M)*g0(M))/&
+            (6.d0*(ONE-ep_star_avg)) 
+         endif
 
 ! This is from Wen-Yu correlation, you can put here your own single particle drag
          Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
@@ -1003,9 +1010,13 @@
          D_PM = DP_avg(M)
          M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
          NU_PM = (EPS(M)*RO_S(M))/M_PM
-
+         if(.NOT. BC_JJ_M)then	
          F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*RO_s(M)*EPS(M)*g0(M))/&
             (6.d0*(ONE-ep_star_avg))
+         else
+         F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M))*PI*RO_s(M)*EPS(M)*g0(M))/&
+            (6.d0*(ONE-ep_star_avg))         	 
+         endif
 
 ! This is from Wen-Yu correlation, you can put here your own single particle drag
          Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
@@ -1085,9 +1096,14 @@
             ENDIF !VSLIP == ZERO
 
          ELSE   ! if(.not.jenkins)
- 
+
+            if(.NOT. BC_JJ_M)then   
             F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*RO_s(M)*EPS(M)*g0(M))&
                /(6d0*(ONE-ep_star_avg))
+            else
+            F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3d0*TH(M))*Pi*RO_s(M)*EPS(M)*g0(M))&
+               /(6d0*(ONE-ep_star_avg))            	    
+            endif
 
          ENDIF   ! end if(Jenkins)/else 
  
@@ -1650,6 +1666,9 @@
       DOUBLE PRECISION :: c_star, zeta0_star, nu_eta_star, press_star, &
                           gamma_star, eta_k_star, eta_star, eta0
 !----------------------------------------------- 
+      DOUBLE PRECISION PHIP_JJ ! Variable specularity coefficient
+!-----------------------------------------------                           
+!----------------------------------------------- 
 
 ! This is done here similar to bc_theta to avoid small negative values of
 ! Theta coming most probably from linear solver
@@ -1677,8 +1696,13 @@
          M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
          NU_PM = (EPS(M)*RO_S(M))/M_PM
  
-         F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*RO_s(M)*EPS(M)*g0(M))/&
-            (6.d0*(ONE-ep_star_avg))
+	  if(.NOT. BC_JJ_M)then          
+          F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*RO_s(M)*EPS(M)*g0(M))/&
+               (6.d0*(ONE-ep_star_avg))
+          else
+          F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M)/M_PM)*PI*RO_s(M)*EPS(M)*g0(M))/&
+               (6.d0*(ONE-ep_star_avg))          	  
+          endif            
 
 ! This is from Wen-Yu correlation, you can put here your own single particle drag
          Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
@@ -1760,8 +1784,13 @@
          M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
          NU_PM = (EPS(M)*RO_S(M))/M_PM
 
-         F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*RO_s(M)*EPS(M)*g0(M))/&
-            (6.d0*(ONE-ep_star_avg))
+          if(.NOT. BC_JJ_M)then	
+          F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*RO_s(M)*EPS(M)*g0(M))/&
+               (6.d0*(ONE-ep_star_avg))
+          else
+          F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M))*PI*RO_s(M)*EPS(M)*g0(M))/&
+               (6.d0*(ONE-ep_star_avg))
+          endif          	              
 
 ! This is from Wen-Yu correlation, you can put here your own single particle drag
          Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
@@ -1842,8 +1871,13 @@
 
          ELSE   ! if(.not.jenkins)
  
-            F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*RO_s(M)*EPS(M)*g0(M))&
-               /(6d0*(ONE-ep_star_avg))
+	       if(.NOT. BC_JJ_M)then  
+	       F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*RO_s(M)*EPS(M)*g0(M))&
+		    /(6d0*(ONE-ep_star_avg))
+	       else
+	       F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3d0*TH(M))*Pi*RO_s(M)*EPS(M)*g0(M))&
+		    /(6d0*(ONE-ep_star_avg))               	       
+	       endif               
 
          ENDIF   ! end if(Jenkins)/else 
  

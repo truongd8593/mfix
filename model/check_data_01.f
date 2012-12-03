@@ -214,7 +214,31 @@
            CALL Mfix_exit(0) 
         ENDIF
       ENDIF
-
+!     k4phi, phip0 for variable specularity coefficient      
+      if(BC_JJ_M)then
+      	if(phi_w .eq. UNDEFINED) &
+	CALL ERROR_ROUTINE ('check_data_01','Need to specify phi_w when BC_JJ_M is TRUE',1,1)
+	WRITE (UNIT_LOG, 1505)e_w
+	WRITE (UNIT_LOG, 1506)tan(phi_w*Pi/180.d0)	
+	
+       	k4phi = 7.d0/2.d0*tan(phi_w*Pi/180.d0)*(1.d0+e_w)
+	if(phip0 .eq. UNDEFINED)then
+	phip0=- 0.0012596340709032689 + 0.10645510095633175*k4phi - 0.04281476447854031*k4phi**2 &
+	      + 0.009759402181229842*k4phi**3 - 0.0012508257938705263*k4phi**4         &
+	      + 0.00008369829630479206*k4phi**5 - 0.000002269550565981776*k4phi**6
+!   if k4phi is less than 0.2, the analytical expression for phi is used to estimate the phi at r->0
+            if(k4phi .le. 0.2d0)then
+            phip0=0.09094568176225006*k4phi
+            endif
+	WRITE (UNIT_LOG, 1507)phip0       
+	endif
+	
+	if(phip0 .lt. 0)then
+		CALL ERROR_ROUTINE ('check_data_01','phip0 less than zero',1,1)
+		call mfix_exit(0)
+	endif           	      
+      end if
+      
 
       RETURN  
  1500 FORMAT(/1X,70('*')//' From: CHECK_DATA_01',/' Message: ',&
@@ -232,4 +256,13 @@
  1504 FORMAT(/1X,70('*')//' From: CHECK_DATA_01',/' Message: ',&
          'GHD theory may not be valid for more than two solids phases',/&
          'it requires further development.',/1X,70('*')/) 
+ 1505 FORMAT(/1X,70('*')//' From: CHECK_DATA_01',/' Message: ',&
+         'BC_JJ_M is TRUE, particle-wall restitution coefficient is' &
+          ,G12.5,/1X,70('*')/) 
+ 1506 FORMAT(/1X,70('*')//' From: CHECK_DATA_01',/' Message: ',&
+         'BC_JJ_M is TRUE, particle-wall friction coefficient is' &
+          ,G12.5,/1X,70('*')/)           
+ 1507 FORMAT(/1X,70('*')//' From: CHECK_DATA_01',/' Message: ',&
+         'No input for phip0 available, working expression is used' &
+          ,G12.5,/1X,70('*')/)           
       END SUBROUTINE CHECK_DATA_01 

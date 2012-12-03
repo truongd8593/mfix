@@ -186,7 +186,7 @@
    50 CONTINUE 
       MUSTIT = 0 
       NIT = NIT + 1 
-
+      PHIP_OUT_ITER=NIT ! To record the output of phip
 ! mechanism to set the normalization factor for the correction
 ! after the first iteration to the corresponding residual found 
 ! in the first iteration

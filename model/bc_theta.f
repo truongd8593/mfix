@@ -313,7 +313,8 @@
       USE bc
       USE compar 
       USE toleranc        
-      USE mpi_utility    
+      USE mpi_utility
+      USE rxns            
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -328,6 +329,8 @@
       INTEGER, INTENT(IN) ::  L      
 ! Granular energy coefficient
       DOUBLE PRECISION, INTENT(INOUT) :: Gw, Hw, Cw
+! Variable specularity coefficient  
+     DOUBLE PRECISION PHIP_JJ 
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
@@ -687,7 +690,14 @@
                        g0EPs_avg, TH_avg,Mu_g_avg,RO_g_avg, &
                        DP_avg, K_12_avg,Tau_12_avg,VREL,VSLIPSQ,VWDOTN,&
                        GNUWDOTN,GTWDOTN,M,Gw,Hw,Cw,L)
-
+!
+!     Output the variable specularity coefficient 
+!     This only work for one solid phase
+      if(BC_JJ_M .and. PHIP_OUT_JJ)then
+      	if(PHIP_OUT_ITER.eq.1)then
+      		ReactionRates(IJK1,1)= PHIP_JJ(dsqrt(VSLIPSQ),TH_avg(1))
+      	endif
+      endif
       RETURN
       END SUBROUTINE CALC_THETA_BC
  
@@ -821,7 +831,7 @@
 !----------------------------------------------- 
 ! Function subroutines
 !----------------------------------------------- 
-
+      DOUBLE PRECISION PHIP_JJ 
 !-----------------------------------------------
  
       IF(TH(M) .LE. ZERO)THEN
@@ -986,8 +996,13 @@
 ! of granular temperature)
          HW = (PI*DSQRT(3.d0)/(4.d0*(ONE-ep_star_avg)))*(1.d0-e_w*e_w)*&
             RO_s(M)*EPS(M)*g0(M)*DSQRT(TH(M)/M_PM)
-         CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*PHIP*RO_s(M)*&
-            EPS(M)*g0(M)*DSQRT(TH(M)*M_PM)*VSLIPSQ
+          if(.NOT. BC_JJ_M)then                
+          CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*PHIP*RO_s(M)*&
+               EPS(M)*g0(M)*DSQRT(TH(M)*M_PM)*VSLIPSQ
+          else
+          CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*PHIP_JJ(dsqrt(vslipsq),th(m))*RO_s(M)*&
+               EPS(M)*g0(M)*DSQRT(TH(M)*M_PM)*VSLIPSQ
+          endif
 
 ! Note that the velocity term is not included here because it should
 ! become zero when dotted with the outward normal (i.e. no solids 
@@ -1069,8 +1084,13 @@
          HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*(1d0-e_w*e_w)*&
             RO_s(M)*EPS(M)*g0(M)*DSQRT(TH(M))
  
-         CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*RO_s(M)*&
-            EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
+          if(.NOT. BC_JJ_M)then 
+          CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*RO_s(M)*&
+               EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
+          else
+          CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP_JJ(dsqrt(vslipsq),th(m))*RO_s(M)*&
+               EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
+	  endif
 
 ! transport coefficient of the Mth solids phase associated
 ! with gradient in volume fraction in heat flux
@@ -1184,8 +1204,13 @@
 
             HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*(1d0-e_w*e_w)*&
                RO_s(M)*EPS(M)*g0(M)*DSQRT(TH(M))
-            CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*RO_s(M)*&
-               EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
+               if(.NOT. BC_JJ_M)then 
+               CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*RO_s(M)*&
+                    EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
+               else
+               CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP_JJ(dsqrt(vslipsq),th(m))*RO_s(M)*&
+                    EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ  
+               endif	
 
          ENDIF   ! end if(Jenkins)/else
 
@@ -1195,3 +1220,29 @@
       RETURN
       END SUBROUTINE THETA_HW_CW
 
+!----------------------------------------------------------------------------
+!Module name phip_jj
+!calculate the specularity coefficient for JJ boundary conditions
+!Author: Tingwen Li
+!Reference:
+!T. Li and S. Benyahia, Revisiting Johnson and Jackson boundary conditions 
+!for granular flows, AIChE Journal, DOI: 10.1002/aic.12728
+!----------------------------------------------------------------------------
+
+	double precision function phip_jj(uslip,g_theta)
+	use constant  !e_w, phi_w, PI
+	implicit none
+	double precision uslip,g_theta,r4phi
+	
+!	k4phi=7.d0/2.d0*mu4phi*(1.d0+e_w)
+	r4phi=uslip/dsqrt(3.d0*g_theta)
+	
+	if(r4phi .le. 4.d0*k4phi/7.d0/dsqrt(6.d0*PI)/phip0)then
+		phip_jj=-7.d0*dsqrt(6.d0*PI)*phip0**2/8.d0/k4phi*r4phi+phip0
+        else
+        	phip_jj=2.d0/7.d0*k4phi/r4phi/dsqrt(6.d0*PI)
+	endif
+
+	return      	
+	end
+	      

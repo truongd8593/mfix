@@ -68,7 +68,10 @@
 !		       PHIP  = Specularity coefficient associated with
 !                              particle wall collisions
       DOUBLE PRECISION PHIP
- 
+!                      PHIP0 specularity coefficient for r->0 
+      double precision phip0
+!                      k4phi k=7/2*mu*(1+e_w)
+      double precision k4phi 
 !	               e_w   = particle-wall coefficient of restitution	
       DOUBLE PRECISION e_w
  

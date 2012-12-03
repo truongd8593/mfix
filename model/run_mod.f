@@ -128,6 +128,12 @@
 
 ! If .TRUE. use Jenkins small friction BC
       LOGICAL          JENKINS
+!                      If .TRUE. use revised phip for JJ BC 
+      LOGICAL		BC_JJ_M
+!                      If .TRUE. output PHIP to JJ_PHIP.dat
+      LOGICAL		PHIP_OUT_JJ
+!  			used to write specularity
+      INTEGER		PHIP_OUT_ITER
 
 ! If .TRUE. use Yu and Standish correlation to
 ! compute ep_star

@@ -51,6 +51,7 @@
 	     UR_FAC, UR_F_gs, UR_Kth_sml, &	     
              DEF_COR, FPFOI, C_FAC, &
              chi_scheme, CN_ON, &
+             BC_JJ_M, PHIP_OUT_JJ,PHIP0, &  !Variable specularity coefficient              
 ! ----------------------------------------------------------------<<<
 
 
