@@ -36,6 +36,7 @@
       USE indices
       USE scalars
       USE funits
+      USE rxns
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -236,7 +237,12 @@
 	if(phip0 .lt. 0)then
 		CALL ERROR_ROUTINE ('check_data_01','phip0 less than zero',1,1)
 		call mfix_exit(0)
-	endif           	      
+	endif  
+	if(PHIP_OUT_JJ)then
+		if(nRR.lt.1) &
+		CALL ERROR_ROUTINE ('check_data_01','nRR should be at least 1 for storing specularity',1,1)
+		write(UNIT_LOG, 1508)	
+	endif
       end if
       
 
@@ -264,5 +270,8 @@
           ,G12.5,/1X,70('*')/)           
  1507 FORMAT(/1X,70('*')//' From: CHECK_DATA_01',/' Message: ',&
          'No input for phip0 available, working expression is used' &
-          ,G12.5,/1X,70('*')/)           
+          ,G12.5,/1X,70('*')/)          
+ 1508 FORMAT(/1X,70('*')//' From: CHECK_DATA_01',/' Message: ',&
+         'Specularity will be stored as the first element of ReactionRates array in WALL CELLs,', /&
+         ,1X,'please avoid overwriting it when reacting flow is simulated',/1X,70('*')/)                     
       END SUBROUTINE CHECK_DATA_01 
