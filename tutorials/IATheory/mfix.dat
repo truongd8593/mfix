@@ -12,10 +12,17 @@
   DESCRIPTION = 'Binary mixture using IA theory'
   RUN_TYPE = 'NEW'
   UNITS = 'cgs'
-  TIME  =0.0  TSTOP = 60.0   DT = 1.0e-4 
+  TIME  =0.0  TSTOP = 200.0   DT = 1.0e-4 
   DT_MIN = 1.0e-8
   ENERGY_EQ = .FALSE.
   SPECIES_EQ = .FALSE.     .FALSE. .FALSE.
+  
+  MOMENTUM_X_eq(1) = .false. ! by not solving x-mom we obtain a steady-state.
+  momentum_y_eq(1) = .true.
+  MOMENTUM_X_eq(2) = .false.
+  momentum_y_eq(2) = .true.
+  MOMENTUM_X_eq(0) = .false.
+  momentum_y_eq(0) = .true.
 
   GRANULAR_ENERGY = .TRUE.
   
@@ -24,19 +31,18 @@
   RDF_TYPE = 'LEBOWITZ'  ! this is default radial distribution function
 
 
-   MOMENTUM_X_EQ =  3*.T.
-   MOMENTUM_Y_EQ =  3*.T.
 
   Flux_g = 0.65226 !for superficial gas velocity of 550 cm/s
 
    GRAVITY = 981
-   MAX_NIT = 100 !high NIT for convergence
-
    
-   DISCRETIZE = 9*2
-   DEF_COR = .T.
-   NORM_G = 0.0
-   TOL_RESID = 1D-06
+   TOL_RESID  = 1d-4
+   NORM_g = 0.0d0
+   NORM_s = 0.0d0
+   MAX_NIT = 50
+   LEQ_IT = 9*300
+   LEQ_TOL = 9*1D-06
+
    
 #
 # Geometry Section
@@ -79,7 +85,7 @@
   e_w       = 0.7   !  particle-wall collisions
   C_f       = 0.0d0
   
-  PHIP    = 0.0001     ! specularity coefficient              
+  PHIP    = 0.2     ! high specularity for steady-state simulation              
   
   Phi     = 30
   EP_star = 0.44d0
