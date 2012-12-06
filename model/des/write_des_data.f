@@ -212,6 +212,22 @@
            write(des_unit,"(12x,a)") '</DataArray>'        
          endif
 
+! Write the temperature data.
+         IF(DES_ENERGY_EQ) THEN
+            WRITE(DES_UNIT,"(12X,2A)") '<DataArray type="Float32" ',&
+               'Name="Temperature" format="ascii">'
+            pc = 1
+            do l = 1,max_pip
+               if(pc.gt.pip) exit
+               if(.not.pea(l,1)) cycle 
+               pc = pc+1
+               if(pea(l,4)) cycle 
+               write (des_unit,"(15x,es12.6)") DES_T_s_NEW(L)
+            end do
+! Write end tag
+            WRITE(DES_UNIT,"(12X,A)") '</DataArray>'
+         ENDIF
+
 ! Write velocity data. Force to three dimensions. So for 2D runs, a 
 ! dummy value of zero is supplied as the 3rd point.
          write(des_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
@@ -323,19 +339,17 @@
 
 !-----------------------
 ! Write the temperature data.
-         IF((MYPE .EQ. PE_IO) .AND. DES_ENERGY_EQ) THEN
-            WRITE(DES_UNIT,"(12X,A)")&
-               '<DataArray type="Float32" Name="Temperature" format="ascii">'
-            PC = 1
-            DO L = 1, MAX_PIP
-               IF(PC .GT. PIP) EXIT
-               IF(.NOT.PEA(L,1)) CYCLE
-               WRITE (DES_UNIT,"(15X,ES12.6)") (real(DES_T_s_NEW(L)))
-               PC = PC + 1
-            END DO
+         IF(DES_ENERGY_EQ) THEN
+            call des_gather(DES_T_s_NEW)
+            IF(MYPE .EQ. PE_IO) THEN
+               WRITE(DES_UNIT,"(12X,2A)") '<DataArray type="Float32" ',&
+                  'Name="Temperature" format="ascii">'
+               WRITE(des_unit,"(15x,es12.6)") &
+                  ((drootbuf(l)),l=1,lglocnt)
 ! Write end tag
-            WRITE(DES_UNIT,"(12X,A)") '</DataArray>'
-        ENDIF
+               WRITE(DES_UNIT,"(12X,A)") '</DataArray>'
+            ENDIF
+         ENDIF
 
 ! Write velocity data.
          ltemp_array = 0.0 
