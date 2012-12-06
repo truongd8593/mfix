@@ -35,6 +35,9 @@
       use desmpi
       USE cutcell 
       USE mfix_pic
+      USE des_rxns
+      USE run
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -67,6 +70,9 @@
       INTEGER IER 
       INTEGER epg_min_loc(1)
       double precision :: epg_min2
+! Difference between a particles diameter (density) and the diameter
+! (density) of a phase specified in the data file.
+      DOUBLE PRECISION dDp, dRho
       
 !$      double precision omp_start1, omp_end1
 !$      double precision omp_get_wtime	      
@@ -108,29 +114,36 @@
         
          IF(FIRST_PASS) THEN 
 
-! Determining which solids phase a particle belongs based on matching each
-! particle diameter and density to a solids phase particle diameter and
-! density                 
-            DO M = 1, DES_MMAX
-               IF(ABS(2.0d0*DES_RADIUS(L)-DES_D_P0(M)).LT.SMALL_NUMBER.AND. &
-               ABS( RO_Sol(L)-DES_RO_S(M)).LT.SMALL_NUMBER) THEN
-               PIJK(L,5) = M 
-               EXIT
-               ENDIF
-            ENDDO
-            IF(PIJK(L,5).EQ.0) THEN
-               IF(DMP_LOG) THEN
-                  write(unit_log,'(5X,A,A,I10)') &
-                  'Problem determining the solids ',&
-                  'association for particle: ',L
-                  write(unit_log,'(7X,A,(ES15.9))') &
-                  'Particle position = ', DES_POS_NEW(L,:)
-                  write(unit_log,'(7X,A,ES15.9,/,7X,A,(ES15.9))')&
-                  'Particle diameter = ', 2.0*DES_RADIUS(L),&
-                  'and D_P0(1:MMAX)= ', DES_D_P0(1:DES_MMAX)
-                  write(unit_log,'(7X,A,ES15.9,/,7X,A,(ES15.9))')&
-                  'Particle density = ', Ro_Sol(L), &
-                  'and RO_s(1:MMAX) = ', DES_RO_S(1:DES_MMAX)
+! Determining the solids phase of each particle by matching the diameter
+! and density to those specified in the data file. Since reacting flows
+! may change a particle's density (variable_density) or diameter 
+! (shrinking_particle), each particle's phase is stored in the restart
+! when solving the species equations.
+            IF((RUN_TYPE == 'NEW') .OR. .NOT.ANY_DES_SPECIES_EQ) THEN
+               M_LP: DO M = 1, DES_MMAX
+                  dDp  = ABS(2.0d0*DES_RADIUS(L)-DES_D_P0(M))
+                  dRho = ABS( RO_Sol(L)-DES_RO_S(M))
+                  IF( dDp < SMALL_NUMBER .AND. dRho < SMALL_NUMBER) THEN
+                     PIJK(L,5) = M
+                     EXIT M_LP
+                  ENDIF
+               ENDDO M_LP
+
+               IF(PIJK(L,5) == 0) THEN
+                  IF(DMP_LOG) THEN
+                     write(unit_log,'(5X,A,A,I10)') &
+                        'Problem determining the solids ',&
+                        'association for particle: ',L
+                     write(unit_log,'(7X,A,(ES15.9))') &
+                        'Particle position = ', DES_POS_NEW(L,:)
+                     write(unit_log,'(7X,A,ES15.9,/,7X,A,(ES15.9))')&
+                        'Particle diameter = ', 2.0*DES_RADIUS(L),&
+                        'and D_P0(1:MMAX)= ', DES_D_P0(1:DES_MMAX)
+                     write(unit_log,'(7X,A,ES15.9,/,7X,A,(ES15.9))')&
+                        'Particle density = ', Ro_Sol(L), &
+                        'and RO_s(1:MMAX) = ', DES_RO_S(1:DES_MMAX)
+                  ENDIF
+                  CALL MFIX_EXIT(myPE)
                ENDIF
             ENDIF
 
@@ -266,6 +279,7 @@
                ELSE   ! not mppic
                   IF(DMP_LOG) WRITE(UNIT_LOG,1007) L,'I',I,'X',&
                      XPOS,'X',DES_VEL_NEW(L,1)
+                  CALL WRITE_DES_DATA
                   CALL MFIX_EXIT(MYPE)
                ENDIF   ! end if/else mppic
             ENDIF
@@ -290,6 +304,7 @@
                ELSE   ! not mppic
                   IF(DMP_LOG) WRITE(UNIT_LOG,1007) L,'J',J,'Y',&
                      YPOS,'Y',DES_VEL_NEW(L,2)
+                  CALL WRITE_DES_DATA
                   CALL MFIX_EXIT(MYPE)
                ENDIF   ! end if/else mppic
             ENDIF 
@@ -314,6 +329,7 @@
                ELSE
                   IF(DMP_LOG) WRITE(UNIT_LOG,1007) L,'K',K,'Z',&
                      ZPOS,'Z',DES_VEL_NEW(L,3)
+                  CALL WRITE_DES_DATA
                   CALL MFIX_EXIT(MYPE)
                ENDIF
             ENDIF

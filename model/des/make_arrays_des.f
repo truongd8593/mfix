@@ -26,6 +26,8 @@
       USE geometry 
       USE des_ic
       USE des_rxns
+      USE des_thermo
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -60,6 +62,11 @@
 
       IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(1X,A)')&
          '---------- START MAKE_ARRAYS_DES ---------->'
+
+
+      WRITE(UNIT_LOG,'(1X,A)')&
+         '---------- START MAKE_ARRAYS_DES ---------->'
+
 
 ! If no particles are in the system then there is no need to read 
 ! particle_input.dat or call generate_particle_config. Note, if no 
@@ -113,6 +120,7 @@
          omega_old(:,:)   = omega_new(:,:)
          des_pos_old(:,:) = des_pos_new(:,:)
          des_vel_old(:,:) = des_vel_new(:,:)
+
       ELSEIF (RUN_TYPE == 'RESTART_2') THEN 
          IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A)') &
             'Restart 2 is not implemented with DES'
@@ -150,8 +158,11 @@
 ! done only during first call to particles_in_cell. 
 ! Call this before particles_in_cell as EP_G is computed which 
 ! might become less than zero if the particles outside the domain 
-! are not removed first       
-      IF(CARTESIAN_GRID) CALL CG_DEL_OUTOFDOMAIN_PARTS
+! are not removed first.
+! JM: Added RUN_TYPE check to prevent particles from being deleted 
+! during a restart.
+      IF(RUN_TYPE == 'NEW' .AND. CARTESIAN_GRID) &
+         CALL CG_DEL_OUTOFDOMAIN_PARTS
 
 ! do_nsearch should be set before calling particle in cell  
       DO_NSEARCH =.TRUE.
@@ -234,6 +245,11 @@
 
       IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(1X,A)')&
          '<---------- END MAKE_ARRAYS_DES ----------'
+
+
+      WRITE(UNIT_LOG,'(1X,A)')&
+         '<---------- END MAKE_ARRAYS_DES ----------'
+
 
       RETURN
 

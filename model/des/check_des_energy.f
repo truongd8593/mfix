@@ -62,12 +62,6 @@
          CALL MFIX_EXIT(myPE)
       ENDIF
 
-      IF((RUN_TYPE .NE. 'NEW') .AND. DMP_LOG)THEN
-         WRITE(UNIT_LOG,1004)
-         WRITE(*,1004)
-         CALL MFIX_EXIT(myPE)
-      ENDIF
-
 ! Convection Equation:
 !'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
       IF(DES_CONV_EQ) THEN
