@@ -38,9 +38,9 @@
 ! total rate of consumption/production of species (g/sec)
       DOUBLE PRECISION SUM_DES_R_sc, SUM_DES_Rs
 ! masses of species comprising the particle (g)
-      DOUBLE PRECISION S_MASS( DES_NMAX_s(MAX_DES_NMAX) )
+      DOUBLE PRECISION S_MASS( MAX_DES_NMAX )
 
-      LOGICAL ALL_GONE( DES_NMAX_s(MAX_DES_NMAX) )
+      LOGICAL ALL_GONE( MAX_DES_NMAX )
 
       DOUBLE PRECISION, PARAMETER :: P43 = 4.0d0/3.0d0
 
@@ -52,7 +52,6 @@
 ! Functions
 !---------------------------------------------------------------------//
       INCLUDE 'function.inc'
-
 
       IF(.NOT.ANY_DES_SPECIES_EQ) RETURN
 
@@ -83,6 +82,7 @@
             SUM_DES_Rs = ZERO
             SUM_DES_R_sc = ZERO
             ALL_GONE(:) = .FALSE.
+
 ! Reset the flag
             DO N=1,DES_NMAX_s(M)
 ! Calculate the current mass of species N in the particle
