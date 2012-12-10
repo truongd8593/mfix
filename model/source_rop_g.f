@@ -113,6 +113,8 @@
                ENDIF 
             ENDIF 
          ELSE 
+! set the value of rop_g in all wall and flow boundary cells to what is
+! known for that cell
             A_M(IJK,E,0) = ZERO 
             A_M(IJK,W,0) = ZERO 
             A_M(IJK,N,0) = ZERO 

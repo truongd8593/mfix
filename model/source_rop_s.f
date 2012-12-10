@@ -114,7 +114,9 @@
 !!$omp             end critical
                ENDIF 
             ENDIF 
-         ELSE 
+         ELSE
+! set the value of rop_s in all wall and flow boundary cells to what is
+! known for that cell
             A_M(IJK,E,M) = ZERO 
             A_M(IJK,W,M) = ZERO 
             A_M(IJK,N,M) = ZERO 

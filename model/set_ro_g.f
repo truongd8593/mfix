@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SET_RO_g                                               C
+!  Subroutine: SET_RO_g                                                C
 !  Purpose: Initialize the gas densities                               C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 21-JAN-92  C
@@ -14,23 +14,16 @@
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced: IJKMAX2, MW_AVG, P_g, T_g, EP_g, RO_g         C
-!                                                                      C
-!  Variables modified: RO_g, ROP_g, IJK                                C
-!                                                                      C
-!  Local variables: NONE                                               C
+!  Variables referenced: MW_MIX_g, P_g, T_g, EP_g, RO_g0               C
+!  Variables modified: RO_g, ROP_g                                     C
+!  Local variables: IJK                                                C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE SET_RO_G 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
-!
-!  Include param.inc file to specify parameter values
-!
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -41,49 +34,52 @@
       USE constant
       USE indices
       USE compar       
-   
-
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
+! Local variables
 !-----------------------------------------------
       INTEGER :: IJK
 !-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
+! External functions
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: EOSG 
 !-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
       INCLUDE 'function.inc'
-!
-      IF (RO_G0 == UNDEFINED) THEN 
+!-----------------------------------------------
 
-!!!!$omp parallel do private(IJK)  
+
+      IF (RO_G0 == UNDEFINED) THEN   ! compressible case
+
+!!$omp parallel do private(IJK)  
          DO IJK = ijkstart3, ijkend3 
+! calculate ro_g and rop_g in all fluid and flow boundary cells 
             IF (.NOT.WALL_AT(IJK)) THEN 
+! set_bc0 will have already defined ro_g and rop_g in MI and PI 
+! boundary cells (redundant-remove in set_bc0?)
                RO_G(IJK) = EOSG(MW_MIX_G(IJK),P_G(IJK),T_G(IJK)) 
                ROP_G(IJK) = EP_G(IJK)*RO_G(IJK) 
             ENDIF 
-         END DO 
-      ELSE 
+         ENDDO 
 
-!!!!$omp   parallel do private(ijk)  
+      ELSE   ! incompressible case
+
+!!$omp   parallel do private(ijk)  
          DO IJK = ijkstart3, ijkend3 
             IF (.NOT.WALL_AT(IJK)) THEN 
+! assign ro_g and calculate rop_g in all fluid and flow boundary cells
+! set_constprop will have already defined ro_g in fluid and flow
+! boundary cells (redundant- remove here?)
                RO_G(IJK) = RO_G0 
+! set_bc0 will have already defined rop_g in MI and PI boundary cells
+! (redundant-remove in set_bc0?)
                ROP_G(IJK) = EP_G(IJK)*RO_G(IJK) 
             ENDIF 
-         END DO 
+         ENDDO 
       ENDIF 
 
       RETURN  
       END SUBROUTINE SET_RO_G 
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+

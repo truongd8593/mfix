@@ -216,7 +216,11 @@
                ENDIF 
             ENDIF 
 
-         ELSE   ! .not.fluid_at(ijk)
+         ELSE   ! if/else branch .not.fluid_at(ijk)
+! set the value (correction) in all wall and flow boundary cells to zero
+! note the matrix coefficients and source vector should already be zero
+! from the initialization of A and B but the following ensures the zero
+! value.
             A_M(IJK,E,0) = ZERO 
             A_M(IJK,W,0) = ZERO 
             A_M(IJK,N,0) = ZERO 
@@ -240,12 +244,12 @@
       ENDIF
 
 
+! make correction for compressible flows      
       IF (RO_G0 == UNDEFINED) THEN 
-        fac = UR_FAC(1)  !since p_g = p_g* + ur_fac * pp_g
+         fac = UR_FAC(1)  !since p_g = p_g* + ur_fac * pp_g
 
 ! loezos
-      incr=0
-
+         incr=0
 !         CALL CALC_XSI(DISCRETIZE(1),ROP_G,U_G,V_G,W_G,XSI_E,XSI_N,XSI_T,incr) 
 
 !!$omp    parallel do                                                     &
@@ -257,14 +261,13 @@
                A_M(IJK,0,0) = A_M(IJK,0,0) - &
                   fac*DROODP_G(RO_G(IJK),P_G(IJK))*&
                   EP_G(IJK)*VOL(IJK)*ODT
-       
+
 ! Although the following is a better approximation for high speed flows because
 ! it considers density changes in the neighboring cells, the code runs faster
 ! without it for low speed flows.  The gas phase mass balance cannot be
 ! maintained to machine precision with the following approximation. If the
 ! following lines are uncommented, the calc_xsi call above should also be
 ! uncommented
-  
 !               IMJK = IM_OF(IJK) 
 !               IJMK = JM_OF(IJK) 
 !               IJKM = KM_OF(IJK) 
@@ -297,16 +300,15 @@
 !                     P_G(IJKB))*(ONE - XSI_T(IJKM))*W_G(IJKM)*AXY(IJKM) 
 !               ENDIF 
 !
-            ENDIF 
-         ENDDO 
-      ENDIF 
+            ENDIF   !end if (fluid_at(ijk))
+         ENDDO    ! end do (ijk=ijkstart3,ijkend3)
+      ENDIF   ! end if (ro_g0 == undefined); i.e., compressible flow
 
 
 ! Remove the asymmetry in matrix caused by the pressure outlet or inlet
 ! boundaries.  Because the P' at such boundaries is zero we may set the
 ! coefficient in the neighboring fluid cell to zero without affecting
 ! the linear equation set. 
-
 !!$omp    parallel do                                                     &
 !!$omp&   private(IJK,IMJK, IPJK, IJMK, IJPK, IJKM, IJKP)
       DO IJK = ijkstart3, ijkend3 
@@ -317,6 +319,7 @@
             IJPK = JP_OF(IJK) 
             IJKM = KM_OF(IJK)
             IJKP = KP_OF(IJK)
+! Cutting the neighbor link between fluid cell and adjacent p_flow_at cell
             if(p_flow_at(imjk)) A_m(IJK, w, 0) = ZERO
             if(p_flow_at(ipjk)) A_m(IJK, e, 0) = ZERO
             if(p_flow_at(ijmk)) A_m(IJK, s, 0) = ZERO
@@ -329,12 +332,10 @@
 
 ! Specify P' to zero at a certain location for incompressible flows and
 ! cyclic boundary conditions.
-
 ! Parallel implementation of fixing a pressure at a point
       I = I_OF_G(IJK_P_G)
       J = J_OF_G(IJK_P_G)
       K = K_OF_G(IJK_P_G)
-
       IF(IS_ON_myPE_OWNS(I,J,K)) THEN
          IF (IJK_P_G /= UNDEFINED_I) THEN 
             IJK_P_G_LOCAL = FUNIJK(I,J,K)
@@ -348,6 +349,7 @@
             B_M(IJK_P_G_LOCAL,0) = ZERO 
          ENDIF 
       ENDIF
+
 
 ! Nan Xie: CHEM & ISAT 
       IF (CALL_DI .or. CALL_ISAT) THEN

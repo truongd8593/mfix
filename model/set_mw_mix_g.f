@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SET_MW_MIX_g                                           C
+!  Subroutine: SET_MW_MIX_g                                            C
 !  Purpose: calculate gas mixture molecular weights                    C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 19-OCT-92  C
@@ -9,22 +9,15 @@
 !  Literature/Document References:                                     C
 !                                                                      C
 !  Variables referenced: IJKMAX2, X_g                                  C
-!                                                                      C
 !  Variables modified: MW_MIX_g                                        C
-!                                                                      C
 !  Local variables: NONE                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE SET_MW_MIX_G 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
-!
-!  Include param.inc file to specify parameter values
-!
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -37,33 +30,32 @@
       USE compar  
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
+! Local variables
 !-----------------------------------------------
       INTEGER :: IJK
 !-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
+! External functions
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: CALC_MW 
+      DOUBLE PRECISION, EXTERNAL :: CALC_MW 
+!-----------------------------------------------
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-!
+!-----------------------------------------------
+
       IF (MW_AVG /= UNDEFINED) RETURN  
 
-!!!!$omp parallel do private(ijk) &
-!!!!$omp schedule(dynamic,chunk_size)
+!!$omp parallel do private(ijk) &
+!!$omp schedule(dynamic,chunk_size)
       DO IJK = ijkstart3, ijkend3 
-         IF (.NOT.WALL_AT(IJK)) MW_MIX_G(IJK) = CALC_MW(X_G,DIMENSION_3,IJK,NMAX(0)&
-            ,MW_G) 
-      END DO 
+! calculate mw_mix_g in all fluid and flow boundary cells
+! set_bc0 will have already defined mw_mix_g in MI and PI boundary cells
+! (redundant-remove in set_bc0?)     
+         IF (.NOT.WALL_AT(IJK)) MW_MIX_G(IJK) = &
+            CALC_MW(X_G,DIMENSION_3,IJK,NMAX(0),MW_G) 
+      ENDDO 
+
       RETURN  
       END SUBROUTINE SET_MW_MIX_G 
       
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+

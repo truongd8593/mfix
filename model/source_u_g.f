@@ -2,10 +2,10 @@
 !                                                                      C
 !  Subroutine: SOURCE_U_g                                              C
 !  Purpose: Determine source terms for U_g momentum eq. The terms      C
-!  appear in the center coefficient and RHS vector.    The center      C
-!  coefficient and source vector are negative.  The off-diagonal       C
-!  coefficients are positive.                                          C
-!  The drag terms are excluded from the source at this stage.          C
+!     appear in the center coefficient and RHS vector. The center      C
+!     coefficient and source vector are negative.  The off-diagonal    C
+!     coefficients are positive.                                       C
+!     The drag terms are excluded from the source at this stage.       C
 !                                                                      C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 14-MAY-96  C
@@ -165,6 +165,8 @@
             A_M(IJK,B,M) = ZERO 
             A_M(IJK,0,M) = -ONE 
             B_M(IJK,M) = ZERO 
+! set velocity equal to that of west or east cell if solids are present
+! in those cells else set velocity equal to known value 
             IF (EP_G(WEST_OF(IJK)) > DIL_EP_S) THEN 
                A_M(IJK,W,M) = ONE 
             ELSE IF (EP_G(EAST_OF(IJK)) > DIL_EP_S) THEN 
@@ -446,12 +448,13 @@
 
 
 ! Set the default boundary conditions
-! This default setting is the where bc_type='dummy' conditions are
-! handled. Note that the east and west zy planes do not have to be 
-! explictly addressed for the u-momentum equation. In this direction
-! the velocities are defined at the wall (staggered grid) and they are 
-! defined as zero for a no penetration condition (see zero_norm_vel
-! and code under ip_at_e branch in the source routine).       
+! The NS default setting is the where bc_type='dummy' or any default 
+! (i.e., bc_type=undefined) wall boundary regions are handled. Note that
+! the east and west zy planes do not have to be explictly addressed for
+! the u-momentum equation. In this direction the velocities are defined
+! at the wall (due staggered grid). They are defined as zero for a 
+! no penetration condition (see zero_norm_vel subroutine and code under
+! the ip_at_e branch in the above source routine).
 ! ---------------------------------------------------------------->>>
       IF (DO_K) THEN 
 ! bottom xy plane
@@ -461,7 +464,8 @@
                IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
                IJK = FUNIJK(I1,J1,K1)
                IF (NS_WALL_AT(IJK)) THEN 
-! Setting the wall velocity to zero
+! Setting the wall velocity to zero (set the boundary cell value equal
+! and opposite to the adjacent fluid cell value)
                   A_M(IJK,E,M) = ZERO 
                   A_M(IJK,W,M) = ZERO 
                   A_M(IJK,N,M) = ZERO 
@@ -471,7 +475,8 @@
                   A_M(IJK,0,M) = -ONE 
                   B_M(IJK,M) = ZERO 
                ELSEIF (FS_WALL_AT(IJK)) THEN
-! Setting the wall velocity equal to the adjacent fluid velocity
+! Setting the wall velocity equal to the adjacent fluid velocity (set
+! the boundary cell value equal to adjacent fluid cell value)
                   A_M(IJK,E,M) = ZERO 
                   A_M(IJK,W,M) = ZERO 
                   A_M(IJK,N,M) = ZERO 
@@ -513,7 +518,7 @@
          ENDDO 
       ENDIF   ! end if (do_k)
 
-! south xz plane      
+! south xz plane 
       J1 = 1 
       DO K1 = kmin3, kmax3 
          DO I1 = imin3, imax3
@@ -660,7 +665,7 @@
                         IJK = FUNIJK(I,J,K) 
                         IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells
                         JM = JM1(J) 
-                        KM = KM1(K) 
+                        KM = KM1(K)
                         A_M(IJK,E,M) = ZERO 
                         A_M(IJK,W,M) = ZERO 
                         A_M(IJK,N,M) = ZERO 
@@ -912,7 +917,8 @@
                   ENDDO 
                ENDDO
             ENDIF   ! end if/else (bc_type)
-                    ! ns, fs, psw, p_inflow, p_outflow, or outflow/else
+                    ! ns, fs, psw; else
+                    ! p_inflow, p_outflow, or outflow; else
 ! end setting of 'else' flow boundary conditions
 ! (mass_inflow/mass_outflow)
 ! ----------------------------------------------------------------<<<
