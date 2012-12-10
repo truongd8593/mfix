@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SET_FLUIDBED_P                                         C
+!  Subroutine: SET_FLUIDBED_P                                          C
 !  Purpose: Set the pressure field inside the bed assuming a fluidized C
 !           bed with gravity acting the -ve y-direction                C
 !                                                                      C
@@ -13,28 +13,27 @@
 !  Author: M. Syamlal                                 Date:  6-MAR-92  C
 !  Reviewer: M. Syamlal                               Date: 11-DEC-92  C
 !  Revision Number: 2                                                  C
-!  Purpose: Set pressure drop for cyclic boundary condition w/ pr. dropC
+!  Purpose: Set pressure drop for cyclic boundary condition w/         C
+!           pressure drop                                              C
 !  Author: M. Syamlal                                 Date: 29-APR-94  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced:BC_DEFINED, BC_TYPE, P_OUTFLOW, BC_P_g, KMAX1, C
-!                       IMAX1, DX, DY, DZ, G, EP_g, MW_AVG, T_g, MMAX, C
-!                       ROP_s, IMIN1, KMIN1, JMIN1, X                  C
-!                                                                      C
-!  Variables modified: P_g, IJK, I, J, K                               C
-!                                                                      C
-!  Local variables: PJ, BED_WEIGHT, AREA, dAREA                        C
-!  IS_ON_MYPE_K, IS_ON_MYPE_I
+!  Variables referenced: BC_DEFINED, BC_TYPE, IC_P_g, BC_P_g           C
+!                        EP_g, MW_MIX_G, RO_g0, T_g,                   C
+!                        SMAX, ROP_s,                                  C
+!                        DX, DY, DZ, BFY_G, DELP_X, DELP_Y, DELP_Z,    C
+!                        DO_I, DO_J, DO_K, IMIN1, KMIN1, JMIN1, IMAX1, C
+!                        IMAX2, JMAX1, JMAX2, KMAX1, KMAX2             C
+!  Variables modified: P_g                                             C
+!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE SET_FLUIDBED_P 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
 
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -53,46 +52,40 @@
       USE discretelement
       IMPLICIT NONE
 !-----------------------------------------------
-!   L o c a l   V a r i a b l e s
+! Local variables
 !-----------------------------------------------
- 
 ! indices 
-      INTEGER          I, J, K, IJK, M 
- 
+      INTEGER :: I, J, K, IJK, M 
 ! Local loop counter 
-      INTEGER          L 
- 
+      INTEGER :: L 
 ! Gas pressure at the axial location j 
-      DOUBLE PRECISION PJ 
- 
+      DOUBLE PRECISION :: PJ 
 ! Bed weight per unit area 
-      DOUBLE PRECISION BED_WEIGHT 
- 
+      DOUBLE PRECISION :: BED_WEIGHT 
 ! Total area of a x-z plane 
-      DOUBLE PRECISION AREA 
- 
+      DOUBLE PRECISION :: AREA 
 ! x-z plane area of one cell 
-      DOUBLE PRECISION dAREA 
- 
+      DOUBLE PRECISION :: dAREA 
 ! Average pressure drop per unit length 
-      DOUBLE PRECISION DPoDX, DPoDY, DPoDZ 
-
+      DOUBLE PRECISION :: DPoDX, DPoDY, DPoDZ 
 ! New Bound Checking variables
-      LOGICAL IS_ON_MYPE_K, IS_ON_MYPE_I
- 
+      LOGICAL :: IS_ON_MYPE_K, IS_ON_MYPE_I
 !-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
+! External functions
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: EOSG 
+      DOUBLE PRECISION, EXTERNAL :: EOSG 
+!-----------------------------------------------
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'sc_p_g1.inc'
       INCLUDE 'b_force1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'b_force2.inc'
       INCLUDE 'sc_p_g2.inc'
+!-----------------------------------------------
 
-
-! If all initial pressures are specified, then return.
+! If any initial pressures are unspecified skip next section
+! calculations. 
       DO L = 1, DIMENSION_IC 
          IF (IC_DEFINED(L)) THEN 
             IF (IC_P_G(L) == UNDEFINED) GOTO 60 
@@ -100,6 +93,11 @@
          ENDIF 
       ENDDO 
 
+! Here the pressure in each cell is determined from a specified pressure
+! drop across the domain length. This section requires that the pressure
+! is already defined in all initial condition regions (otherwise this
+! section would be skipped)
+! ---------------------------------------------------------------->>>
       IF (DO_I .AND. DELP_X/=UNDEFINED) THEN 
          DPODX = DELP_X/XLENGTH 
          PJ = PJ - DPODX*HALF*(DX(IMAX1)+DX(IMAX2)) 
@@ -147,29 +145,35 @@
             ENDDO 
          ENDDO 
       ENDIF 
+! ----------------------------------------------------------------<<<
+      GOTO 100   ! pressure in all intial condition region cells was defined
 
-      GOTO 100
+   60 CONTINUE   ! pressure in an initial condition region cell was undefined
 
 
-   60 CONTINUE 
-
-!  Search for an outflow boundary condition where pressure is specified
+! ---------------------------------------------------------------->>>
+! Search for an outflow boundary condition where pressure is specified
       PJ = UNDEFINED 
       DO L = 1, DIMENSION_BC 
-         IF (BC_DEFINED(L) .AND. BC_TYPE(L)=='P_OUTFLOW') PJ = BC_P_G(L) 
+         IF (BC_DEFINED(L) .AND. BC_TYPE(L)=='P_OUTFLOW') PJ = BC_P_G(L)
       ENDDO 
 
       IF (PJ == UNDEFINED) THEN 
+! either a PO was not specified and/or a PO was specified but not the
+! pressure at the outlet              
          IF (RO_G0 /= UNDEFINED) THEN 
 ! If incompressible flow set P_g to zero
             DO IJK = IJKSTART3, IJKEND3 
                IF (FLUID_AT(IJK)) P_G(IJK) = ZERO 
-            END DO 
-
+            ENDDO 
             GOTO 100 
 
-         ELSE 
+         ELSE   ! compressible case
+
 ! Error condition -- no pressure outflow boundary condition is specified
+! if a case is compressible and pressure in any of the initial
+! conditions regions is unspecified, then a PO is effectively required
+! (i.e., is specifies a bc_p_g). 
             CALL START_LOG 
             IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
             CALL MFIX_EXIT(myPE) 
@@ -206,8 +210,8 @@
 ! This code is turned off for DEM runs until the value of rop_s can be
 ! ensured valid values for a DEM run at this point in the code.  
                   IF (.NOT.DISCRETE_ELEMENT) THEN
-                     DO M = 1, MMAX 
-                        BED_WEIGHT = BED_WEIGHT - DY(J)*BFY_S(IJK,1)*ROP_S(IJK,M)*&
+                     DO M = 1, SMAX 
+                        BED_WEIGHT = BED_WEIGHT - DY(J)*BFY_S(IJK,M)*ROP_S(IJK,M)*&
                            DAREA 
                      ENDDO 
                   ENDIF  ! end if (.not.discrete_element)
@@ -229,6 +233,8 @@
             ENDDO    ! end do (i=imin1,imax1)
          ENDDO   ! end do (k = kmin1,kmax1)
       ENDDO   ! end do (j=jmax2,jimn1, -1)
+! end setting an undefined pressure in an initial condition region 
+! ----------------------------------------------------------------<<<
 
   100 CONTINUE
 
