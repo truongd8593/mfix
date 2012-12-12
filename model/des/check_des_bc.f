@@ -299,7 +299,7 @@
             ENDIF
             CALL MFIX_EXIT(myPE)
          ENDIF
-         WRITE(*,'(5X,A)') &
+         IF (DMP_LOG) WRITE(*,'(5X,A)') &
             'Run initiated with no particles in the system'
       ENDIF
 

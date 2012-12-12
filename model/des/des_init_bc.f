@@ -103,13 +103,13 @@
                   M = PHASE_LIST(MM)
                   NPMpSEC(M) = (DES_BC_VOLFLOW_s(BCV,M) / &
                      (PI/6.d0 * DES_D_P0(M)**3))
-                  WRITE(*,"(5X,A,I2,A,F9.5)") &
+                  IF (DMP_LOG) WRITE(*,"(5X,A,I2,A,F12.1)") &
                      'NPMpSEC(',M,'): ',NPMpSEC(M)
 ! calculate the total number of particles per second at the inlet
                      NPpSEC = NPpSEC + NPMpSEC(M)
                ENDDO
 
-               WRITE(*,"(5X,A,F12.6)") 'NPpSEC: ',NPpSEC
+               IF (DMP_LOG) WRITE(*,"(5X,A,F12.1)") 'NPpSEC: ',NPpSEC
 
 ! For polydisperse inlets, construct the DES_POLY_LAYOUT array
                IF(DES_BC_POLY(BCV_I)) THEN
@@ -141,7 +141,7 @@
                   PI_COUNT(BCV_I) = CEILING(real(NPpDT))
                ENDIF
 
-               WRITE(*,"(5X,A,F12.6)") 'NPpDT: ',NPpDT
+               IF (DMP_LOG) WRITE(*,"(5X,A,F12.2)") 'NPpDT: ',NPpDT
 
 ! Calculate des mass inlet time; time between injection.  If the run
 ! type is RESTART_1, DES_MI_TIME will be picked up from the restart file
@@ -150,7 +150,7 @@
                   DES_MI_TIME(BCV_I) = TIME +&
                      dble(PI_FACTOR(BCV_I)) * DTSOLID 
                ENDIF
-               WRITE(*,1000) BCV, NPpDT, PI_FACTOR(BCV_I),&
+               IF (DMP_LOG) WRITE(*,1000) BCV, NPpDT, PI_FACTOR(BCV_I),&
                   PI_COUNT(BCV_I), DES_MI_TIME(BCV_I)
 
 ! Classify boundary condition and verify appropriate solids velocity
@@ -515,21 +515,27 @@
 ! No XW, XE, YZw or YZe inlet with X direction periodic walls
          IF((DMC == 'XW'  .OR. DMC == 'XE'  .OR. &
              DMC == 'YZw' .OR. DMC == 'YZe') .AND. DES_PERIODIC_WALLS_X) THEN
-            WRITE(UNIT_LOG, 1202) BCV, 'DES_PERIODIC_WALLS_X'
-            WRITE(*, 1202) BCV, 'DES_PERIODIC_WALLS_X'
+            IF (DMP_LOG) THEN
+               WRITE(UNIT_LOG, 1202) BCV, 'DES_PERIODIC_WALLS_X'
+               WRITE(*, 1202) BCV, 'DES_PERIODIC_WALLS_X'
+            ENDIF
             CALL MFIX_EXIT(myPE)
          ENDIF
 ! No YS, YN, XZs or XZn inlet with Y direction periodic walls
          IF((DMC == 'YS'  .OR. DMC == 'YN' .OR. &
              DMC == 'XZs' .OR. DMC == 'XZn') .AND. DES_PERIODIC_WALLS_Y) THEN
-            WRITE(UNIT_LOG, 1202 )BCV, 'DES_PERIODIC_WALLS_Y'
-            WRITE(*, 1202) BCV, 'DES_PERIODIC_WALLS_Y'
+            IF (DMP_LOG) THEN
+               WRITE(UNIT_LOG, 1202 )BCV, 'DES_PERIODIC_WALLS_Y'
+               WRITE(*, 1202) BCV, 'DES_PERIODIC_WALLS_Y'
+            ENDIF
             CALL MFIX_EXIT(myPE)
          ENDIF
 ! No XYb or XYt inlet with Z direction periodic walls
          IF((DMC == 'XYb' .OR. DMC == 'XYt') .AND. DES_PERIODIC_WALLS_Z) THEN
-            WRITE (UNIT_LOG, 1202) BCV, 'DES_PERIODIC_WALLS_Z'
-            WRITE (*, 1202) BCV, 'DES_PERIODIC_WALLS_Z'
+            IF (DMP_LOG) THEN
+               WRITE (UNIT_LOG, 1202) BCV, 'DES_PERIODIC_WALLS_Z'
+               WRITE (*, 1202) BCV, 'DES_PERIODIC_WALLS_Z'
+            ENDIF
             CALL MFIX_EXIT(myPE)
          ENDIF
       ENDIF
@@ -719,7 +725,7 @@
 ! Loop control to prevent hang up. * This should not be necessary *
             LC_EXIT = LC_EXIT +1
             IF(LC_EXIT > 100) THEN
-               WRITE(*,1256) BCV
+               IF (DMP_LOG)  WRITE(*,1256) BCV
                EXIT
             ENDIF
          ENDDO
@@ -743,44 +749,46 @@
          ELSEIF(DMCL == 'XYt')THEN
             DES_BC_W_s(BCV) = -UI_VEL
          ELSE
-            WRITE(*,1257) BCV, DMCL 
+            IF (DMP_LOG) WRITE(*,1257) BCV, DMCL 
             CALL MFIX_EXIT(myPE)
          ENDIF
       ENDDO
 
 ! Output the new data values (screen/log file)
-      WRITE(*,1249)
+      IF (DMP_LOG) THEN
+         WRITE(*,1249)
 ! Table Header
-      WRITE(*,1250) BCV
-      WRITE(*,1251) UI_VEL
-      WRITE(*,1252)
-      WRITE(UNIT_LOG,1250)BCV
-      WRITE(UNIT_LOG,1251)UI_VEL
-      WRITE(UNIT_LOG,1252)
+         WRITE(*,1250) BCV
+         WRITE(*,1251) UI_VEL
+         WRITE(*,1252)
+         WRITE(UNIT_LOG,1250)BCV
+         WRITE(UNIT_LOG,1251)UI_VEL
+         WRITE(UNIT_LOG,1252)
 
 ! Column Labels
-      WRITE(*,1253)
-      WRITE(*,1254)
-      WRITE(*,1253)
-      WRITE(UNIT_LOG,1253)
-      WRITE(UNIT_LOG,1254)
-      WRITE(UNIT_LOG,1253)
+         WRITE(*,1253)
+         WRITE(*,1254)
+         WRITE(*,1253)
+         WRITE(UNIT_LOG,1253)
+         WRITE(UNIT_LOG,1254)
+         WRITE(UNIT_LOG,1253)
 
 ! Fill Table Rows
-      DO MM = 1, PHASE_CNT
-         M = PHASE_LIST(MM)
+         DO MM = 1, PHASE_CNT
+            M = PHASE_LIST(MM)
 ! Calculate bulk density value based upon velocity 
-         CAL_ROPSM = (DES_RO_s(M) * DES_BC_VOLFLOW_s(BCV,M)) / &
-            (UI_VEL * BCV_AREA)
-         ERR_ROPSM =  ABS(DES_BC_ROP_s(BCV,M) - CAL_ROPSM)
-         WRITE(*,1255) M, DES_BC_ROP_s(BCV,M), CAL_ROPSM, ERR_ROPSM
-         WRITE(*,1253)
-         WRITE(UNIT_LOG,1255) M, DES_BC_ROP_s(BCV,M), CAL_ROPSM, &
-            ERR_ROPSM
-         WRITE(UNIT_LOG,1253)
-      ENDDO
-      WRITE(*,"(//)")
-      WRITE(UNIT_LOG,"(//)")
+            CAL_ROPSM = (DES_RO_s(M) * DES_BC_VOLFLOW_s(BCV,M)) / &
+               (UI_VEL * BCV_AREA)
+            ERR_ROPSM =  ABS(DES_BC_ROP_s(BCV,M) - CAL_ROPSM)
+            WRITE(*,1255) M, DES_BC_ROP_s(BCV,M), CAL_ROPSM, ERR_ROPSM
+            WRITE(*,1253)
+            WRITE(UNIT_LOG,1255) M, DES_BC_ROP_s(BCV,M), CAL_ROPSM, &
+               ERR_ROPSM
+            WRITE(UNIT_LOG,1253)
+         ENDDO
+         WRITE(*,"(//)")
+         WRITE(UNIT_LOG,"(//)")
+      ENDIF
 
  1249 FORMAT(//,5X,'From: DES_BC_VEL_ASSIGN - ')
  1250 FORMAT(5X,'|<--- Boundary Condition ',I2,1X,26('-'),'>|')
@@ -933,19 +941,25 @@
 ! The inlet velocity is too low to satisfy the other inlet conditions.
 ! Determine maximum possible ROP_s values that will satisfy the inlet
 ! conditions. Flag error, prompt with new values, and exit.
-               WRITE(UNIT_LOG,1300) BCV
-               WRITE(*,1300) BCV
+               IF (DMP_LOG) THEN
+                  WRITE(UNIT_LOG,1300) BCV
+                  WRITE(*,1300) BCV
+               ENDIF
                DO MM = 1, PHASE_CNT
                   M = PHASE_LIST(MM)
 ! Even though the system is 2D, an area of the inlet is needed for
 ! the following calculation.  This 'depth' is taken as max_dia.
                   MAX_ROPs = (DES_BC_VOLFLOW_s(BCV,M)*DES_RO_s(M)) / &
                      (MINIPV * LEN1 *  MAX_DIA)
-                  WRITE(UNIT_LOG,1301) BCV, M, MAX_ROPs
-                  WRITE(*,1301) BCV, M, MAX_ROPs
+                  IF (DMP_LOG) THEN
+                     WRITE(UNIT_LOG,1301) BCV, M, MAX_ROPs
+                     WRITE(*,1301) BCV, M, MAX_ROPs
+                  ENDIF
                ENDDO
-               WRITE(UNIT_LOG,1302)
-               WRITE(*,1302)
+               IF (DMP_LOG) THEN
+                  WRITE(UNIT_LOG,1302)
+                  WRITE(*,1302)
+               ENDIF
                CALL MFIX_EXIT(myPE)
             ENDIF
 
@@ -1031,16 +1045,23 @@
 ! The inlet velocity is too low to satisfy the other inlet conditions.
 ! Determine maximum possible ROP_s values that will satisfy the inlet
 ! conditions. Flag error, propt with new values, and exit.
-            WRITE(UNIT_LOG,1300)BCV; WRITE(*,1300)BCV
+            IF (DMP_LOG) THEN
+               WRITE(UNIT_LOG,1300)BCV
+               WRITE(*,1300)BCV
+            ENDIF
             DO MM = 1, PHASE_CNT
                M = PHASE_LIST(MM)
                MAX_ROPs = (DES_BC_VOLFLOW_s(BCV,M)*DES_RO_s(M)) / &
                   (MINIPV * LEN1 * LEN2)
-               WRITE(UNIT_LOG,1301)BCV,M,MAX_ROPs
-               WRITE(*,1301)BCV,M,MAX_ROPs
+               IF (DMP_LOG) THEN
+                  WRITE(UNIT_LOG,1301)BCV,M,MAX_ROPs
+                  WRITE(*,1301)BCV,M,MAX_ROPs
+               ENDIF
             ENDDO
-            WRITE(UNIT_LOG,1302)
-            WRITE(*,1302)
+            IF (DMP_LOG) THEN
+               WRITE(UNIT_LOG,1302)
+               WRITE(*,1302)
+            ENDIF
             CALL MFIX_EXIT(myPE)
          ENDIF
 
@@ -1088,7 +1109,7 @@
       ENDIF   ! endif len2 == zero
 
 
-      WRITE(*,1303) BCV, LEN1, LEN2, TMP_LEN1, TMP_LEN2,&
+      IF (DMP_LOG) WRITE(*,1303) BCV, LEN1, LEN2, TMP_LEN1, TMP_LEN2,&
          MAXIPV, MINIPV, PARTICLE_PLCMNT(BCV_I)
 
 
@@ -1360,22 +1381,28 @@
 ! No Xew outlet with X direction periodic walls
       IF((DES_MO_CLASS(BCV_I) == 'XW' .OR. DES_MO_CLASS(BCV_I) == 'XE') &
           .AND. DES_PERIODIC_WALLS_X) THEN
-         WRITE (UNIT_LOG, 1500) BCV, 'DES_PERIODIC_WALLS_X'
-         WRITE (*, 1500) BCV, 'DES_PERIODIC_WALLS_X'
+         IF (DMP_LOG) THEN
+            WRITE (UNIT_LOG, 1500) BCV, 'DES_PERIODIC_WALLS_X'
+            WRITE (*, 1500) BCV, 'DES_PERIODIC_WALLS_X'
+         ENDIF
          CALL MFIX_EXIT(myPE)
       ENDIF
 ! No Ysn outlet with Y direction periodic walls
       IF((DES_MO_CLASS(BCV_I) == 'YS' .OR. DES_MO_CLASS(BCV_I) == 'YN') &
           .AND. DES_PERIODIC_WALLS_Y) THEN
-         WRITE (UNIT_LOG, 1500) BCV, 'DES_PERIODIC_WALLS_Y'
-         WRITE (*, 1500) BCV, 'DES_PERIODIC_WALLS_Y'
+         IF (DMP_LOG) THEN
+            WRITE (UNIT_LOG, 1500) BCV, 'DES_PERIODIC_WALLS_Y'
+            WRITE (*, 1500) BCV, 'DES_PERIODIC_WALLS_Y'
+         ENDIF
          CALL MFIX_EXIT(myPE)
       ENDIF
 ! No Zbt outlet with Z direction periodic walls
       IF((DES_MO_CLASS(BCV_I) == 'ZB' .OR. DES_MO_CLASS(BCV_I) == 'ZT') &
           .AND. DES_PERIODIC_WALLS_Z) THEN
-         WRITE (UNIT_LOG, 1500) BCV, 'DES_PERIODIC_WALLS_Z'
-         WRITE (*, 1500) BCV, 'DES_PERIODIC_WALLS_Z'
+         IF (DMP_LOG) THEN
+            WRITE (UNIT_LOG, 1500) BCV, 'DES_PERIODIC_WALLS_Z'
+            WRITE (*, 1500) BCV, 'DES_PERIODIC_WALLS_Z'
+         ENDIF
          CALL MFIX_EXIT(myPE)
       ENDIF
 
@@ -1455,16 +1482,20 @@
          IF(DES_PERIODIC_WALLS_Y) THEN
             IF(DES_BC_Y_s(BCV) < SPACER .OR. &
                DES_BC_Y_n(BCV) > (YLENGTH - SPACER)) THEN
-               WRITE(UNIT_LOG, 1600) IO_ID, BCV, 'Y'
-               WRITE(*, 1600) IO_ID, BCV, 'Y'
+               IF (DMP_LOG) THEN
+                  WRITE(UNIT_LOG, 1600) IO_ID, BCV, 'Y'
+                  WRITE(*, 1600) IO_ID, BCV, 'Y'
+               ENDIF
                CALL MFIX_EXIT(myPE)
             ENDIF
          ENDIF
          IF(DES_PERIODIC_WALLS_Z) THEN
             IF(DES_BC_Z_b(BCV) < SPACER .OR. &
                DES_BC_Z_t(BCV) > (ZLENGTH - SPACER)) THEN
-               WRITE(UNIT_LOG, 1600) IO_ID, BCV, 'Z'
-               WRITE(*, 1600) IO_ID, BCV, 'Z'
+               IF (DMP_LOG) THEN
+                  WRITE(UNIT_LOG, 1600) IO_ID, BCV, 'Z'
+                  WRITE(*, 1600) IO_ID, BCV, 'Z'
+               ENDIF
                CALL MFIX_EXIT(myPE)
             ENDIF
          ENDIF
@@ -1475,16 +1506,20 @@
          IF(DES_PERIODIC_WALLS_X) THEN
             IF(DES_BC_X_w(BCV) < SPACER .OR. &
                DES_BC_X_e(BCV) > (XLENGTH - SPACER)) THEN
-               WRITE(UNIT_LOG, 1600) IO_ID, BCV, 'X'
-               WRITE(*, 1600) IO_ID, BCV, 'X'
+               IF (DMP_LOG) THEN
+                  WRITE(UNIT_LOG, 1600) IO_ID, BCV, 'X'
+                  WRITE(*, 1600) IO_ID, BCV, 'X'
+               ENDIF
                CALL MFIX_EXIT(myPE)
             ENDIF
          ENDIF
          IF(DES_PERIODIC_WALLS_Z) THEN
             IF(DES_BC_Z_b(BCV) < SPACER .OR. &
                DES_BC_Z_t(BCV) > (ZLENGTH - SPACER)) THEN
-               WRITE(UNIT_LOG, 1600) IO_ID, BCV, 'Z'
-               WRITE(*, 1600) IO_ID, BCV, 'Z'
+               IF (DMP_LOG) THEN
+                  WRITE(UNIT_LOG, 1600) IO_ID, BCV, 'Z'
+                  WRITE(*, 1600) IO_ID, BCV, 'Z'
+               ENDIF
                CALL MFIX_EXIT(myPE)
             ENDIF
          ENDIF
@@ -1495,16 +1530,20 @@
          IF(DES_PERIODIC_WALLS_X) THEN
             IF(DES_BC_X_w(BCV) < SPACER .OR. &
                DES_BC_X_e(BCV) > (XLENGTH - SPACER)) THEN
-               WRITE(UNIT_LOG, 1600) IO_ID, BCV, 'X'
-               WRITE(*, 1600) IO_ID, BCV, 'X'
+               IF (DMP_LOG) THEN
+                  WRITE(UNIT_LOG, 1600) IO_ID, BCV, 'X'
+                  WRITE(*, 1600) IO_ID, BCV, 'X'
+               ENDIF
                CALL MFIX_EXIT(myPE)
             ENDIF
          ENDIF
          IF(DES_PERIODIC_WALLS_Y) THEN
             IF(DES_BC_Y_s(BCV) < SPACER .OR. &
                DES_BC_Y_n(BCV) > (YLENGTH - SPACER)) THEN
-               WRITE(UNIT_LOG, 1600) IO_ID, BCV, 'Y'
-               WRITE(*, 1600) IO_ID, BCV, 'Y'
+               IF (DMP_LOG) THEN
+                  WRITE(UNIT_LOG, 1600) IO_ID, BCV, 'Y'
+                  WRITE(*, 1600) IO_ID, BCV, 'Y'
+               ENDIF
                CALL MFIX_EXIT(myPE)
             ENDIF
          ENDIF
