@@ -97,6 +97,7 @@
          end if 
          call bcast(lpar_rad)
          call bcast(lpar_pos)
+         call bcast(m)
 
          imax_global_id = imax_global_id + 1
          lglobal_id = imax_global_id 

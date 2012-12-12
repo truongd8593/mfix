@@ -502,6 +502,7 @@
 !$omp           ldistvec,ldist) schedule (dynamic,50)       
       do lcurpar =1,max_pip
          if (.not. pea(lcurpar,1)) cycle 
+         if (pea(lcurpar,2)) cycle 
          if (pea(lcurpar,4)) cycle 
          lneighcnt = 0
          lijk = dg_pijk(lcurpar)
