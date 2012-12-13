@@ -1245,7 +1245,7 @@
 ! post asynchronous receives
 ! ---------------------------------------------------------------->>>
       if (lidebug.ge.1) then
-         write_debug(name, 'post asynchronous receives, nrecv = ', &
+         call write_debug(name, 'post asynchronous receives, nrecv = ', &
             nrecv)
       endif
 
