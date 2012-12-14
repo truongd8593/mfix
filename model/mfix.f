@@ -327,24 +327,15 @@
 
 ! Initialization of DEM quantities: set initial conditions (bulk
 ! density, velocities), boundary conditions (mass inlet/outlet),
-! physical constants, PIC, ..
-! This is best perform once all the fluid geometry information has been
-! obtained and initial fields set.
+! physical constants, PIC, ...
+! This is best performed once all the fluid geometry information 
+! has been obtained and initial fields set.
       IF(DISCRETE_ELEMENT) THEN
          CALL CHECK_DES_DATA
          CALL CHECK_DES_RXNS
          CALL CHECK_DES_IC
          CALL CHECK_DES_BC
          CALL MAKE_ARRAYS_DES
-      ELSE
-! If discrete_element is .false. then overwrite the following user DES
-! logicals which may be set to true in the input file.  Only need to set
-! those that may impact continuum aspects 
-
-! RG: This has been moved to get_data right after reading of namelists.
-! This will ensure that correct des related flags are set when other
-! continuum check_data routines (such as check_data_04, ....06, ...07, ...20) 
-! are called 
       ENDIF
 
       IF (QMOMK) THEN

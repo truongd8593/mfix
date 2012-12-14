@@ -130,9 +130,12 @@
 
       ELSE
          
-! If discrete_element is .false. then overwrite the following user DES
-! logicals which may be set to true in the input file.  Only need to set
-! those that may impact continuum aspects 
+! If discrete_element is .false. then overwrite the following user 
+! DES logicals which may be set to true in the input file.  Only need
+! to set those that may impact continuum aspects
+! This is placed here (after reading of namelists) to ensure that
+! correct dem related flags are set when other continuum check_data
+! routines (such as check_data_04, ....06, ...07, ...20) are called          
          DES_CONTINUUM_COUPLED = .FALSE.
          DES_INTERP_ON = .FALSE.
          DES_CONTINUUM_HYBRID = .FALSE.
@@ -140,10 +143,6 @@
          PRINT_DES_DATA = .FALSE.
          MPPIC = .FALSE. 
          DES_ONEWAY_COUPLED = .false. 
-         USE_COHESION = .FALSE.
-         SQUARE_WELL = .FALSE.
-         VAN_DER_WAALS = .FALSE. 
-       	 WALL_VDW_OUTER_CUTOFF = ZERO ! for the algorithm to work without cohesion
          DES_CONV_EQ = .FALSE. ! No convection - ref by SOLVE_ENERGY_EQ
          ANY_DES_SPECIES_EQ = .FALSE.
       ENDIF
