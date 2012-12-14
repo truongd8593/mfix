@@ -305,8 +305,11 @@
 ! variable for bed height of solids phase M      
       ALLOCATE(BED_HEIGHT(DES_MMAX))
 
-
-
+! variable used to identify whether a particle had been put into a
+! cluster
+      IF (DES_CALC_CLUSTER) THEN
+         ALLOCATE(InACluster(NPARTICLES))               
+      ENDIF
      
 ! ---------------------------------------------------------------->>>
 ! BEGIN COHESION       

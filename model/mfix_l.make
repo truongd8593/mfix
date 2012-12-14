@@ -65,6 +65,7 @@ mfix.exe : \
     vtk.mod \
     mchem.mod \
     des_bc.mod \
+    des_cluster.mod \
     desgrid.mod \
     des_ic.mod \
     desmpi.mod \
@@ -426,6 +427,7 @@ mfix.exe : \
     check_des_thermo.$(OBJ_EXT) \
     des_allocate_arrays.$(OBJ_EXT) \
     des_check_particle.$(OBJ_EXT) \
+    des_cluster_identification.$(OBJ_EXT) \
     des_functions.$(OBJ_EXT) \
     des_granular_temperature.$(OBJ_EXT) \
     des_init_arrays.$(OBJ_EXT) \
@@ -900,6 +902,8 @@ mfix.exe : \
     des_allocate_arrays.$(OBJ_EXT) \
     des_bc_mod.$(OBJ_EXT) \
     des_check_particle.$(OBJ_EXT) \
+    des_cluster_identification.$(OBJ_EXT) \
+    des_cluster_mod.$(OBJ_EXT) \
     des_functions.$(OBJ_EXT) \
     des_granular_temperature.$(OBJ_EXT) \
     desgrid_mod.$(OBJ_EXT) \
@@ -1284,6 +1288,11 @@ mchem.mod : ./chem/mchem_mod.f \
 des_bc.mod : ./des/des_bc_mod.f \
             param.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_bc_mod.f 
+des_cluster.mod : ./des/des_cluster_mod.f \
+            param.mod \
+            param1.mod \
+            compar.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_cluster_mod.f 
 desgrid.mod : ./des/desgrid_mod.f \
             param1.mod \
             funits.mod \
@@ -1697,6 +1706,7 @@ bc_theta.$(OBJ_EXT) : bc_theta.f \
             compar.mod \
             mpi_utility.mod \
             turb.mod \
+            rxns.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -2174,7 +2184,8 @@ check_data_01.$(OBJ_EXT) : check_data_01.f \
             physprop.mod \
             indices.mod \
             scalars.mod \
-            funits.mod 
+            funits.mod \
+            rxns.mod 
 check_data_02.$(OBJ_EXT) : check_data_02.f \
             param.mod \
             param1.mod \
@@ -2873,6 +2884,8 @@ get_data.$(OBJ_EXT) : get_data.f \
             compar.mod \
             gridmap.mod \
             discretelement.mod \
+            des_thermo.mod \
+            des_rxns.mod \
             leqsol.mod \
             parallel.mod \
             qmom_kinetic_equation.mod \
@@ -5896,6 +5909,7 @@ check_des_thermo.$(OBJ_EXT) : ./des/check_des_thermo.f \
             discretelement.mod \
             funits.mod \
             interpolation.mod \
+            param1.mod \
             physprop.mod \
             run.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_thermo.f 
@@ -5930,6 +5944,11 @@ des_check_particle.$(OBJ_EXT) : ./des/des_check_particle.f \
             physprop.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_check_particle.f 
+des_cluster_identification.$(OBJ_EXT) : ./des/des_cluster_identification.f \
+            discretelement.mod \
+            run.mod \
+            des_cluster.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_cluster_identification.f 
 des_functions.$(OBJ_EXT) : ./des/des_functions.f \
             param.mod \
             param1.mod \
@@ -6244,6 +6263,7 @@ make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
             geometry.mod \
             des_ic.mod \
             des_rxns.mod \
+            des_thermo.mod \
             cdist.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/make_arrays_des.f 
@@ -6341,8 +6361,9 @@ particles_in_cell.$(OBJ_EXT) : ./des/particles_in_cell.f \
             desmpi.mod \
             cutcell.mod \
             mfix_pic.mod \
-            constant.mod \
+            des_rxns.mod \
             run.mod \
+            constant.mod \
             bc.mod \
             drag.mod \
             interpolation.mod \
@@ -6375,6 +6396,8 @@ read_des_restart.$(OBJ_EXT) : ./des/read_des_restart.f \
             discretelement.mod \
             run.mod \
             des_bc.mod \
+            des_rxns.mod \
+            des_thermo.mod \
             desmpi.mod \
             machine.mod \
             cdist.mod \
@@ -6528,10 +6551,12 @@ write_des_data.$(OBJ_EXT) : ./des/write_des_data.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/write_des_data.f 
 write_des_restart.$(OBJ_EXT) : ./des/write_des_restart.f \
             param1.mod \
+            compar.mod \
             discretelement.mod \
             run.mod \
             des_bc.mod \
-            compar.mod \
+            des_rxns.mod \
+            des_thermo.mod \
             desmpi.mod \
             machine.mod \
             cdist.mod \

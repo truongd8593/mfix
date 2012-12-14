@@ -286,10 +286,6 @@
 ! Update time to reflect changes 
          S_TIME = S_TIME + DTSOLID
 
-! When coupled the granular temperature subroutine is only calculated at end 
-! of the current DEM simulation 
-         IF(DES_CONTINUUM_COUPLED .AND. NN.EQ.FACTOR) &
-            CALL DES_GRANULAR_TEMPERATURE
 
 ! When coupled, all write calls are made in time_march (the continuum 
 ! portion) according to user settings for spx_time and res_time.
@@ -310,6 +306,8 @@
 ! Granular temperature subroutine should be called/calculated when
 ! writing DES data 
                   CALL DES_GRANULAR_TEMPERATURE
+                  IF (DES_CALC_BEDHEIGHT) CALL CALC_DES_BEDHEIGHT
+                  IF (DES_CALC_CLUSTER) CALL IDENTIFY_SYSTEM_CLUSTERS()
                   CALL WRITE_DES_DATA
                   IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,X,ES15.5)') &
                      'DES data file written at time =', S_TIME
@@ -363,6 +361,14 @@
 !-----------------------------------------------------------------<<<      
 
       IF(CALL_USR) CALL USR3_DES
+
+! When coupled the granular temperature subroutine is only calculated at end 
+! of the current DEM simulation 
+      IF(DES_CONTINUUM_COUPLED) THEN
+         CALL DES_GRANULAR_TEMPERATURE()
+         IF (DES_CALC_BEDHEIGHT) CALL CALC_DES_BEDHEIGHT()
+         IF (DES_CALC_CLUSTER) CALL IDENTIFY_SYSTEM_CLUSTERS()     
+      ENDIF
 
 ! When coupled, and if needed, reset the discrete time step accordingly
       IF(DT.LT.DTSOLID_TMP) THEN

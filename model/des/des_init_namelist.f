@@ -178,6 +178,10 @@
 
 ! flag whether calculate bed height of a phase      
       DES_CALC_BEDHEIGHT = .FALSE.
+
+! flag whether to invoke cluster identification algorithm
+      DES_CALC_CLUSTER = .FALSE.
+      CLUSTER_LENGTH_CUTOFF = UNDEFINED      
  
 ! flag whether to use automatic particle configuration
       GENER_PART_CONFIG = .FALSE.

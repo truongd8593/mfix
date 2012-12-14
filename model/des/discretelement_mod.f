@@ -612,9 +612,24 @@
       LOGICAL, DIMENSION(:), ALLOCATABLE :: TOBE_DELETED
       
 
+! Start Cluster Identification
+!----------------------------------------------------------------->>>
+! keyword determining whether to activate cluster identification
+! algorithm
+      LOGICAL :: DES_CALC_CLUSTER
+
+! the maximum distance between two particles for them to be 
+! considered a cluster      
+      DOUBLE PRECISION :: Cluster_Length_Cutoff
+
+! indicates whether particle is currently in a cluster. this allows us
+! to skip particles that have already been identified as in a cluster
+      LOGICAL, DIMENSION(:), ALLOCATABLE :: InACluster
+!-----------------------------------------------------------------<<<
+
 
 ! Start Cohesion
-!----------------------------------------------------------------->>>      
+!----------------------------------------------------------------->>>
 ! Includes square-well type model and a van der waals type model
 
 ! Switch to turn cohesion on and off (set in mfix.dat)

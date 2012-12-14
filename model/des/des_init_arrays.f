@@ -115,6 +115,10 @@
          PostCohesive (:) = ZERO
       ENDIF
 
+      IF(DES_CALC_CLUSTER) THEN
+         InACluster(:) = .FALSE.
+      ENDIF
+
 ! J.Musser: DEM particle tracking quantity
       PEA(:,:) = .FALSE.
 ! J.Musser: DEM inlet/outlet quantity      

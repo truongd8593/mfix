@@ -50,7 +50,7 @@
       INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
-      IF (DES_CALC_BEDHEIGHT) CALL CALC_DES_BEDHEIGHT      
+
 
 ! Calculate a local species granular temperature for current instant of
 ! time.  Note that the following calculation of species granular

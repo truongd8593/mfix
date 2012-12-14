@@ -133,6 +133,18 @@
 ! End checks on DES_MMAX, density and diameter      
 ! ----------------------------------------------------------------<<<
 
+! Determine the maximum particle size in the system (MAX_RADIUS), which
+! in turn is used for various tasks        
+      MAX_DIAM = ZERO
+      MIN_DIAM = LARGE_NUMBER
+      DO M = 1,DES_MMAX
+         MAX_DIAM = MAX(MAX_DIAM, DES_D_P0(M))
+         MIN_DIAM = MIN(MIN_DIAM, DES_D_P0(M))
+       ENDDO
+      MAX_RADIUS = 0.5d0*MAX_DIAM
+      MIN_RADIUS = 0.5d0*MIN_DIAM
+
+
 ! Set flags for energy equations
          CALL CHECK_DES_ENERGY
 ! Check thermodynamic properties of discrete solids.
@@ -226,7 +238,12 @@
             IF (WALL_VDW_INNER_CUTOFF .EQ. UNDEFINED .AND. &
                 WALL_HAMAKER_CONSTANT .EQ. UNDEFINED) THEN
                IF(DMP_LOG) WRITE(UNIT_LOG,1085)
-               CALL MFIX_EXIT(myPE)         
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+            IF (FACTOR_RLM < &
+                1.d0+VDW_OUTER_CUTOFF/(2.d0*MAX_RADIUS)) THEN
+               IF(DMP_LOG) WRITE(UNIT_LOG,1100)
+               IF(DMP_LOG) WRITE(*,1100)
             ENDIF
          ENDIF                
       ELSE
@@ -236,6 +253,25 @@
           VAN_DER_WAALS = .FALSE.
       ENDIF
 ! end check settings on cohesion model
+! ----------------------------------------------------------------<<<
+
+
+! Check settings on cluster identification
+! ---------------------------------------------------------------->>>
+
+      IF(DES_CALC_CLUSTER) THEN
+         IF(CLUSTER_LENGTH_CUTOFF .EQ. UNDEFINED) THEN
+            IF(DMP_LOG) WRITE(UNIT_LOG,1101)
+            IF(DMP_LOG) WRITE(*,1101)
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+         IF(FACTOR_RLM < &
+            1.d0+CLUSTER_LENGTH_CUTOFF/(2.d0*MAX_RADIUS)) THEN
+            IF(DMP_LOG) WRITE(UNIT_LOG,1102)
+            IF(DMP_LOG) WRITE(*,1102)
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+      ENDIF
 ! ----------------------------------------------------------------<<<
 
 
@@ -556,18 +592,6 @@
       ENDIF
 
 
-! Determine the maximum particle size in the system (MAX_RADIUS), which
-! in turn is used for various tasks        
-      MAX_DIAM = ZERO
-      MIN_DIAM = LARGE_NUMBER
-      DO M = 1,DES_MMAX
-         MAX_DIAM = MAX(MAX_DIAM, DES_D_P0(M))
-         MIN_DIAM = MIN(MIN_DIAM, DES_D_P0(M))
-       ENDDO
-      MAX_RADIUS = 0.5d0*MAX_DIAM
-      MIN_RADIUS = 0.5d0*MIN_DIAM
-
-
 ! Check that the depth of the simulation in 2D exceeds the largest 
 ! particle size to ensure correct calculation of volume fraction.  This
 ! is important for coupled simulations (not essential for pure granular
@@ -578,7 +602,6 @@
             CALL MFIX_EXIT(myPE)
          ENDIF
       ENDIF
-
 
 
 ! If run_type is not 'NEW' then force the gener_part_config to .false. 
@@ -1189,6 +1212,17 @@
          'C_F must be defined when DES_CONTINUUM_HYBRID TRUE ',/10X,&
          'and both continuum and discrete solids phases are ',&
          'present'/10X,'(MAX>=1 and DES_MMAX>=1).',/1X,70('*')/)
+
+ 1100 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'WARNING: VDW_OUTER_CUTOFF outside of neighbor ',/10X,&
+         'search distance. Increase FACTOR_RLM.',/1X,70('*')/) 
+ 1101 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'ERROR: CLUSTER_LENGTH_CUTOFF must be defined when ',/10X,&
+         'using function DES_CALC_CLUSTER.',/1X,70('*')/)          
+ 1102 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'WARNING: CLUSTER_LENGTH_CUTOFF outside of neighbor ',/10X,&
+         'search distance. Increase FACTOR_RLM.',/1X,70('*')/) 
+
 
  2001 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Looks like a 3-D case (IMAX, JMAX & KMAX all >1) ',&
