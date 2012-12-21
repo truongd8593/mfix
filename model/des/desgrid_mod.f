@@ -26,27 +26,58 @@
 !----------------------------------------------- 
 
 ! variables related to global block structure 
-      integer  :: dg_imin1,dg_imin2,dg_jmin1,dg_jmin2,dg_kmin1,dg_kmin2, &
-                  dg_imax1,dg_imax2,dg_jmax1,dg_jmax2,dg_kmax1,dg_kmax2 
+!---------------------------------------------------------------------//
+      integer  :: dg_imin1, dg_imax1, &
+                  dg_imin2, dg_imax2
+
+      integer  :: dg_jmin1, dg_jmax1, &
+                  dg_jmin2, dg_jmax2
+
+      integer  :: dg_kmin1, dg_kmax1, &
+                  dg_kmin2, dg_kmax2 
 
 ! variables contain information of local indices of all processors
-      integer,dimension (:),allocatable ::  &
-                  dg_istart1_all,dg_istart2_all,dg_iend1_all,dg_iend2_all, &
-                  dg_jstart1_all,dg_jstart2_all,dg_jend1_all,dg_jend2_all, &
-                  dg_kstart1_all,dg_kstart2_all,dg_kend1_all,dg_kend2_all, &
-                  dg_isize_all,dg_jsize_all,dg_ksize_all
+!---------------------------------------------------------------------//
+      integer,dimension (:),allocatable ::      &
+                  dg_istart1_all, dg_iend1_all, &
+                  dg_istart2_all, dg_iend2_all, &
+                  dg_isize_all
+
+      integer,dimension (:),allocatable ::      &
+                  dg_jstart1_all, dg_jend1_all, &
+                  dg_jstart2_all, dg_jend2_all, &
+                  dg_jsize_all
+
+      integer,dimension (:),allocatable ::      &
+                  dg_kstart1_all, dg_kend1_all, &
+                  dg_kstart2_all, dg_kend2_all, &
+                  dg_ksize_all
 
 ! variables relate to processor specific details
-      integer  :: dg_istart1,dg_istart2,dg_jstart1,dg_jstart2,dg_kstart1,dg_kstart2, &
-                  dg_iend1,dg_iend2,dg_jend1,dg_jend2,dg_kend1,dg_kend2
-      integer  :: dg_ijkstart2,dg_ijkend2,dg_ijksize2
+!---------------------------------------------------------------------//
+      integer  :: dg_istart,  dg_iend,  &
+                  dg_istart1, dg_iend1, &
+                  dg_istart2, dg_iend2
+
+      integer  :: dg_jstart,  dg_jend,  &
+                  dg_jstart1, dg_jend1, &
+                  dg_jstart2, dg_jend2
+
+      integer  :: dg_kstart,  dg_kend,  &
+                  dg_kstart1, dg_kend1, &
+                  dg_kstart2, dg_kend2
+
+      integer  :: dg_ijkstart2, dg_ijkend2, dg_ijksize2
+
 
 ! variables related to processor domain size  
-      double precision :: dg_xstart,dg_xend,dg_ystart,dg_yend,dg_zstart,dg_zend, &
-                          dg_dxinv,dg_dyinv,dg_dzinv 
+!---------------------------------------------------------------------//
+      double precision :: dg_xstart, dg_xend, dg_dxinv
+      double precision :: dg_ystart, dg_yend, dg_dyinv
+      double precision :: dg_zstart, dg_zend, dg_dzinv 
 
 ! Variables related to cyclic boundary  used in desgrid_functions  
-      integer,dimension(:,:),allocatable :: dg_cycoffset,icycoffset
+      integer,dimension(:,:),allocatable :: dg_cycoffset, icycoffset
 
 ! particle in cell related variable 
       type iap2
@@ -57,13 +88,13 @@
       integer, dimension(:), allocatable :: dg_pijk,dg_pijkprv 
 
 ! constants required for functions computing local and global ijkvalues   
-      integer dg_c1_gl,dg_c2_gl,dg_c3_gl,dg_c1_lo,dg_c2_lo,dg_c3_lo
+      integer dg_c1_gl, dg_c2_gl, dg_c3_gl  ! global
+      integer dg_c1_lo, dg_c2_lo, dg_c3_lo  ! local
+
       integer, dimension(:), allocatable :: dg_c1_all,dg_c2_all,dg_c3_all
 
 
-
       contains 
-
 
 
 !------------------------------------------------------------------------
@@ -89,14 +120,30 @@
 
 
 ! set indices for all processors 
-     allocate (dg_istart1_all(0:numpes-1),dg_istart2_all(0:numpes-1),dg_iend1_all(0:numpes-1),dg_iend2_all(0:numpes-1), &
-               dg_jstart1_all(0:numpes-1),dg_jstart2_all(0:numpes-1),dg_jend1_all(0:numpes-1),dg_jend2_all(0:numpes-1), &
-               dg_kstart1_all(0:numpes-1),dg_kstart2_all(0:numpes-1),dg_kend1_all(0:numpes-1),dg_kend2_all(0:numpes-1), &
-               dg_isize_all(0:nodesi-1),dg_jsize_all(0:nodesj-1),dg_ksize_all(0:nodesk-1))
-     dg_istart1_all=0;dg_istart2_all=0;dg_iend1_all=0;dg_iend2_all=0
-     dg_jstart1_all=0;dg_jstart2_all=0;dg_jend1_all=0;dg_jend2_all=0
-     dg_kstart1_all=0;dg_kstart2_all=0;dg_kend1_all=0;dg_kend2_all=0
-     dg_isize_all=0;dg_jsize_all=0;dg_ksize_all=0
+     allocate (dg_istart1_all(0:numpes-1), dg_iend1_all(0:numpes-1))
+     allocate (dg_istart2_all(0:numpes-1), dg_iend2_all(0:numpes-1))
+     allocate (dg_isize_all(0:nodesi-1))
+
+     allocate (dg_jstart1_all(0:numpes-1), dg_jend1_all(0:numpes-1))
+     allocate (dg_jstart2_all(0:numpes-1), dg_jend2_all(0:numpes-1))
+     allocate (dg_jsize_all(0:nodesj-1))
+
+     allocate (dg_kstart1_all(0:numpes-1), dg_kend1_all(0:numpes-1))
+     allocate (dg_kstart2_all(0:numpes-1), dg_kend2_all(0:numpes-1))
+     allocate (dg_ksize_all(0:nodesk-1))
+
+
+     dg_istart1_all=0; dg_iend1_all=0
+     dg_istart2_all=0; dg_iend2_all=0
+     dg_isize_all=0
+
+     dg_jstart1_all=0; dg_jend1_all=0
+     dg_jstart2_all=0; dg_jend2_all=0
+     dg_jsize_all=0
+
+     dg_kstart1_all=0; dg_kend1_all=0
+     dg_kstart2_all=0; dg_kend2_all=0
+     dg_ksize_all=0
 
        
 ! set grid size based on user input desgridsearch_<ijk>max 
@@ -210,6 +257,21 @@
       dg_kstart1 = dg_kstart1_all(mype)
       dg_kend1 = dg_kend1_all(mype)
       dg_kend2 = dg_kend2_all(mype)
+
+!	Defining new set of varaibles to define upper and lower bound of the
+! indices to include actual physical boundaries of the problem.
+      dg_istart = dg_istart1;   dg_iend = dg_iend1
+      dg_jstart = dg_jstart1;   dg_jend = dg_jend1
+      dg_kstart = dg_kstart1;   dg_kend = dg_kend1
+
+      if(dg_istart .eq. dg_imin1) dg_istart = dg_imin2
+      if(dg_iend   .eq. dg_imax1) dg_iend   = dg_imax2
+
+      if(dg_jstart .eq. dg_jmin1) dg_jstart = dg_jmin2
+      if(dg_jend   .eq. dg_jmax1) dg_jend   = dg_jmax2
+
+      if(dg_kstart .eq. dg_kmin1) dg_kstart = dg_kmin2
+      if(dg_kend   .eq. dg_kmax1) dg_kend   = dg_kmax2
 
 ! set constants required for dg_funijk dg_funijk_gl for all processors 
       allocate(dg_c1_all(0:numpes-1),dg_c2_all(0:numpes-1),dg_c3_all(0:numpes-1))     
