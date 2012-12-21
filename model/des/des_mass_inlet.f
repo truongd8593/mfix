@@ -63,6 +63,7 @@
       DOUBLE PRECISION XPOS, YPOS, ZPOS      
 ! size of mesh for grid based search      
       DOUBLE PRECISION SIZEDX, SIZEDY, SIZEDZ       
+      INTEGER lli, llj, llk
 ! Pradeep altering the structure 
       double precision lpar_rad 
       double precision, dimension(dimn) :: lpar_pos
@@ -74,12 +75,14 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
+      include 'des/desgrid_functions.inc' 
 !-----------------------------------------------
 
       LS = 1
       BCV = DES_BC_MI_ID(BCV_I)
 
-      DO IP = 1, PI_COUNT(BCV_I) !Loop over the particles being injected
+! Loop over the particles being injected
+      PLoop: DO IP = 1, PI_COUNT(BCV_I)
 
 ! Pradeep - altering the loop structure 
 ! First the particle is assigned its position and type ; Based on the position
@@ -101,6 +104,27 @@
 
          imax_global_id = imax_global_id + 1
          lglobal_id = imax_global_id 
+
+! This is a temporary fix for des inlets when running in dmp mode. A
+! better fix is to restructure the inlet pre-processing so that only
+! processes 'owning' the section of the domain containing the inlet
+! operate seed particles into that region. The current fix has all
+! processes seeding the new particle, then only the process that
+! contains the new particle continues whereas all other processes 
+! cycle the particle loop.
+         lli = min(dg_iend2,max(dg_istart2,iofpos(lpar_pos(1))))
+         llj = min(dg_jend2,max(dg_jstart2,jofpos(lpar_pos(2))))
+         if(no_k) then 
+            llk = 1 
+         else 
+            llk = min(dg_kend2,max(dg_kstart2,kofpos(lpar_pos(3))))
+         end if
+         if((dg_istart > lli) .or. (lli > dg_iend) .or. &
+            (dg_jstart > llj) .or. (llj > dg_jend) .or. &
+            (dg_kstart > llk) .or. (llk > dg_kend)) then
+            cycle PLoop
+         endif
+
 
          lflag = .false. 
          select case (des_mi_class(bcv_i))
@@ -351,7 +375,7 @@
          end if 
 
 
-      ENDDO   ! end loop over the no. of injected particles (NP)
+      ENDDO PLoop  ! end loop over the no. of injected particles (NP)
 
  1000 FORMAT(/1X,70('*')//,' From: DES_MASS_INLET -',/&
          ' Message: Maximum number of particles in the system MAX_PIS',&
