@@ -650,9 +650,8 @@
 
         ijk1 = ijkstart3
         ijk2 = ijkend3
-        string = gbuf(1)
 
-        lenchar = len(trim(string))
+        lenchar = len(gbuf(1))
 
         if(myPE.eq.lroot) then
           allocate(gbuf_pack(ijkmax3,lenchar))
@@ -1295,9 +1294,8 @@
 
         ijk1 = ijkstart3
         ijk2 = ijkend3
-	string = lbuf(1)
 
-	lenchar = len(trim(string))
+        lenchar = len(lbuf(1))
 
         if(myPE.eq.lroot) then
         allocate(gbuf_pack(ijkmax3,lenchar))
