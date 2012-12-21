@@ -174,8 +174,8 @@
 !-----------------------------------------------
 
 ! dbg      
-!      write(*,'(/3X,A,F8.2,/)') &
-!         'IDENTIFY_SYSTEM_CLUSTERS CALLED at time', time
+      if(mype == pe_io) write(*,'(/3X,A,F8.2,/)') &
+         'IDENTIFY_SYSTEM_CLUSTERS CALLED at time', time
 
 ! initializing      
       ClusterCount = 0
@@ -214,10 +214,10 @@
 
       ENDDO
       
-!      CALL PRINT_CLUSTERS()
+      CALL PRINT_CLUSTERS()
       CALL DELETE_CLUSTERS()
 
 ! dbg      
-!      write(*,'(3X,A)') 'END IDENTIFY_SYSTEM_CLUSTERS CALLED'
+      if(mype == pe_io) write(*,'(3X,A)') 'END IDENTIFY_SYSTEM_CLUSTERS CALLED'
       RETURN
       END SUBROUTINE IDENTIFY_SYSTEM_CLUSTERS

@@ -367,7 +367,9 @@
       IF(DES_CONTINUUM_COUPLED) THEN
          CALL DES_GRANULAR_TEMPERATURE()
          IF (DES_CALC_BEDHEIGHT) CALL CALC_DES_BEDHEIGHT()
-         IF (DES_CALC_CLUSTER) CALL IDENTIFY_SYSTEM_CLUSTERS()     
+! the call to identify clusters is now done in time_march, uncomment
+! line below to compute clusters each fluid time step.
+!         IF (DES_CALC_CLUSTER) CALL IDENTIFY_SYSTEM_CLUSTERS()     
       ENDIF
 
 ! When coupled, and if needed, reset the discrete time step accordingly

@@ -6,8 +6,10 @@
 !  condition.                                                          !
 !                                                                      !
 !  Author: J.Galvin, J.Musser                         Date:  Nov-12    !
+!  Modified: S. Benyahia                              Date:  Dec-12    !
 !                                                                      !
-!  Comments:                                                           !
+!  Comments: Info on clusters such as average void fraction, Re and    !
+!  Comments: cluster size can now be printed from this file            !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       MODULE DES_CLUSTER
@@ -16,9 +18,12 @@
 !-----------------------------------------------
 ! Modules      
 !-----------------------------------------------
-      Use param
-      Use param1
-      use compar
+      USE param
+      USE param1
+      USE compar
+      USE fldvar
+      USE physprop
+      USE discretelement
       IMPLICIT NONE
 !-----------------------------------------------
 
@@ -302,33 +307,143 @@
       SUBROUTINE PRINT_CLUSTERS
 
       INTEGER cL, pL
+      INTEGER I, J, K, IJK, L, M, xLmin, yLmin, zLmin, xLmax, yLmax, zLmax
+      DOUBLE PRECISION avg_epg, avg_ug, avg_vg, avg_wg, &
+                       avg_us, avg_vs, avg_ws, avg_Re, avg_Slip
+      DOUBLE PRECISION xpos_min, ypos_min, zpos_min, xpos_max, ypos_max, zpos_max
+      DOUBLE PRECISION clXsize, clYsize, clZsize, clDiameter
+      LOGICAL countThisCluster
 
       TYPE(CLUSTER_TYPE), POINTER :: cluster
       TYPE(PARTICLE_TYPE), POINTER :: particle
 
       NULLIFY(cluster)
 
+      open (unit=201,file='clusterInfo.dat',status='unknown',position='append')
       if(.NOT.associated(CLUSTER_LL)) THEN
-         write(201,"(/2X,A)")'No clusters to print!'
+         if(mype == pe_io) write(201,"(/2X,A)")'No clusters to print!'
       else
-         write(201,"(//2X,A, I7)")'Number of clusters:', ClusterCount
-         write(201,"(/4X,A,4X,A,/)") 'Cluster', &
-            'Number of particles in cluster'
+         if(mype == pe_io) write(201,"(/)")  ! skip one line to identify new entry
          
          do cL = 1, ClusterCount
             CALL getNextCluster(cluster)
-            write(201,"(4X,I7,4X,I7)") cluster%ID, cluster%ParticleCount
             NULLIFY(particle)
-            if(cluster%ParticleCount > 1) then
-               do pL = 1, cluster%ParticleCount
+! only clusters with more than 3 particles are processed
+            if(cluster%ParticleCount > 3) then
+               avg_epg = zero
+	       avg_ug = zero
+	       avg_vg = zero
+	       avg_wg = zero
+	       avg_us = zero
+	       avg_vs = zero
+	       avg_ws = zero
+	       avg_Re = zero
+	       xpos_min = large_number  ! initiating cluster minimum x-pos
+	       ypos_min = large_number
+	       zpos_min = large_number
+	       xpos_max = zero          ! initiating cluster maximum x-pos
+	       ypos_max = zero
+	       zpos_max = zero
+! need to know particle index to add particle radius to cluster	
+	       xLmin = 0
+	       yLmin = 0
+	       zLmin = 0
+	       xLmax = 0
+	       yLmax = 0
+	       zLmax = 0
+	       countThisCluster = .true.
+	       LOOP_PL : do pL = 1, cluster%ParticleCount
                   CALL GetNextParticle(cluster, particle)
-! dbg                  
-!                  write(*,"(6X,A,I7)")'Particle: ',particle%ID
-               enddo
+		  L = particle%ID
+                  I = PIJK(L,1)
+                  J = PIJK(L,2)
+                  K = PIJK(L,3)
+                  IJK = PIJK(L,4)
+		  if(IJK == 0) then
+		    countThisCluster = .false.
+		    EXIT LOOP_PL ! do not account for clusters across processors
+		  endif
+                  M = PIJK(L,5)
+		  avg_epg = avg_epg + ep_g(ijk)
+		  avg_ug = avg_ug + u_g(ijk)
+		  avg_vg = avg_vg + v_g(ijk)
+		  avg_wg = avg_wg + w_g(ijk)
+		  avg_us = avg_us + DES_VEL_NEW(L,1)
+		  avg_vs = avg_vs + DES_VEL_NEW(L,2)
+		  avg_ws = avg_ws + DES_VEL_NEW(L,3)
+
+! calculating an average Re like the one below or by using average quantities
+! doesn't seem to make much difference.
+		  avg_Re = avg_Re + ep_g(ijk) * dsqrt((u_g(ijk)-DES_VEL_NEW(L,1))**2 + &
+		  (v_g(ijk)-DES_VEL_NEW(L,2))**2 +(w_g(ijk)-DES_VEL_NEW(L,3))**2) * &
+		  (2d0*DES_RADIUS(L)) / MU_g(ijk)
+!
+! now determining the size of a cluster	  
+		  if(DES_POS_NEW(L,1) < xpos_min) then
+		     xpos_min = DES_POS_NEW(L,1)
+		     xLmin = L
+		  endif
+		  if(DES_POS_NEW(L,2) < ypos_min) then
+		     ypos_min = DES_POS_NEW(L,2)
+		     yLmin = L
+		  endif
+		  if(DES_POS_NEW(L,3) < zpos_min) then
+		     zpos_min = DES_POS_NEW(L,3)
+		     zLmin = L
+		  endif
+		  
+		  if(DES_POS_NEW(L,1) > xpos_max) then
+		     xpos_max = DES_POS_NEW(L,1)
+		     xLmax = L
+		  endif
+		  if(DES_POS_NEW(L,2) > ypos_max) then
+		     ypos_max = DES_POS_NEW(L,2)
+		     yLmax = L
+		  endif
+		  if(DES_POS_NEW(L,3) > zpos_max) then
+		     zpos_max = DES_POS_NEW(L,3)
+		     zLmax = L
+		  endif
+
+               enddo LOOP_PL
+	       if(countThisCluster) then
+	         avg_epg = avg_epg / cluster%ParticleCount
+	         avg_ug = avg_ug / cluster%ParticleCount
+	         avg_vg = avg_vg / cluster%ParticleCount
+	         avg_wg = avg_wg / cluster%ParticleCount
+	         avg_us = avg_us / cluster%ParticleCount
+	         avg_vs = avg_vs / cluster%ParticleCount
+	         avg_ws = avg_ws / cluster%ParticleCount
+	         avg_Re = avg_Re / cluster%ParticleCount
+	         avg_Slip = dsqrt((avg_ug-avg_us)**2 + (avg_vg-avg_vs)**2 +(avg_wg-avg_ws)**2)
+	         clXsize = xpos_max - xpos_min + DES_RADIUS(xLmin) + DES_RADIUS(xLmax)
+	         clYsize = ypos_max - ypos_min + DES_RADIUS(yLmin) + DES_RADIUS(yLmax)
+	         clZsize = zpos_max - zpos_min + DES_RADIUS(zLmin) + DES_RADIUS(zLmax)
+
+! Cluster diameter is calculated by using an equivalent circle diameter
+! of an ellipse in each plane. Then weighting this area by the slip
+! velocity normal to it. This in effect gives a hydrodynamic diameter
+! of the cluster.
+	         clDiameter = dsqrt( clYsize*clZsize*(avg_ug-avg_us)**2 + & 
+	                             clXsize*clZsize*(avg_vg-avg_vs)**2 + &
+                                     clXsize*clYsize*(avg_wg-avg_ws)**2 ) / &
+			             avg_Slip
+
+! the scaling below was commented so to use an average diameter for poly cases
+!	         clDiameter = clDiameter/(2d0*DES_RADIUS(xLmax))
+
+! Below we are writing average properties associated with a cluster:
+! cluster ID, particles count in cluster, viod fraction, Re number, 
+! slip velocity, and cluster diameter. Anything else can be calculated
+! and written if wanted.
+                write(201,"(4X,I7,4X,I7, 4(1X,G13.6))") cluster%ID, cluster%ParticleCount, &
+	           avg_epg, avg_Re, avg_Slip, clDiameter
+	       endif
             endif
          enddo
 ! point cluster to first cluster in linked list of clusters
       endif
+      close (unit=201)
 
       END SUBROUTINE PRINT_CLUSTERS
 

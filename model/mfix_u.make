@@ -1291,7 +1291,10 @@ DES_BC.mod : ./des/des_bc_mod.f \
 DES_CLUSTER.mod : ./des/des_cluster_mod.f \
             PARAM.mod \
             PARAM1.mod \
-            COMPAR.mod 
+            COMPAR.mod \
+            FLDVAR.mod \
+            PHYSPROP.mod \
+            DISCRETELEMENT.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_cluster_mod.f 
 DESGRID.mod : ./des/desgrid_mod.f \
             PARAM1.mod \
