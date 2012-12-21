@@ -332,7 +332,8 @@
          Allocate(  PostCohesive (NPARTICLES) )
          
       ENDIF
-! END COHESION      
+! END COHESION   
+      IF(DES_CALC_CLUSTER) Allocate(  PostCluster (NPARTICLES) )
 ! ----------------------------------------------------------------<<<
 
 

@@ -117,6 +117,7 @@
 
       IF(DES_CALC_CLUSTER) THEN
          InACluster(:) = .FALSE.
+	 PostCluster(:) = ZERO
       ENDIF
 
 ! J.Musser: DEM particle tracking quantity

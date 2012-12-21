@@ -319,6 +319,7 @@
 
       NULLIFY(cluster)
 
+      PostCluster(:) = ZERO  ! initialize to zero
       open (unit=201,file='clusterInfo.dat',status='unknown',position='append')
       if(.NOT.associated(CLUSTER_LL)) THEN
          if(mype == pe_io) write(201,"(/2X,A)")'No clusters to print!'
@@ -363,6 +364,7 @@
 		    countThisCluster = .false.
 		    EXIT LOOP_PL ! do not account for clusters across processors
 		  endif
+		  PostCluster(L) = float(cluster%ParticleCount)
                   M = PIJK(L,5)
 		  avg_epg = avg_epg + ep_g(ijk)
 		  avg_ug = avg_ug + u_g(ijk)

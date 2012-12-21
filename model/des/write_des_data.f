@@ -212,6 +212,21 @@
            write(des_unit,"(12x,a)") '</DataArray>'        
          endif
 
+! Write the cluster size associated with each particle id.
+         if(DES_CALC_CLUSTER) then
+           write(des_unit,"(12x,a)")&
+        '<DataArray type="Float32" Name="clusterSize" format="ascii">'
+           pc = 1
+           do l = 1,max_pip
+              if(pc.gt.pip) exit
+              if(.not.pea(l,1)) cycle 
+              pc = pc+1
+              if(pea(l,4)) cycle 
+              write (des_unit,"(15x,es12.6)") (PostCluster(l))
+           end do
+           write(des_unit,"(12x,a)") '</DataArray>'        
+         endif
+
 ! Write the temperature data.
          IF(DES_ENERGY_EQ) THEN
             WRITE(DES_UNIT,"(12X,2A)") '<DataArray type="Float32" ',&
@@ -335,7 +350,18 @@
               write (des_unit,"(15x,es12.6)") ((drootbuf(l)),l=1,lglocnt)
               write(des_unit,"(12x,a)") '</DataArray>'
            endif    
-         endif    ! for cohesion
+         endif    ! for cohesion     
+
+! associate each particle with the size of cluster for visualization. 
+         if(DES_CALC_CLUSTER) then
+           call des_gather(PostCluster)
+           if (mype.eq.pe_io) then 
+              write(des_unit,"(12x,a)")&
+                 '<DataArray type="Float32" Name="ClusterSize" format="ascii">'
+              write (des_unit,"(15x,es12.6)") ((drootbuf(l)),l=1,lglocnt)
+              write(des_unit,"(12x,a)") '</DataArray>'
+           endif    
+         endif    ! for clusters
 
 !-----------------------
 ! Write the temperature data.

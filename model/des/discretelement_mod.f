@@ -661,6 +661,8 @@
                         !(PARTICLES,DIMN)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PostCohesive 
                         !(PARTICLES)
+! Store cluster information array for postprocessing
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PostCluster 
 
 ! Variables for van der waals cohesion calculations:      
 ! Surface energy used to calculate cohesive force for low separation distances
