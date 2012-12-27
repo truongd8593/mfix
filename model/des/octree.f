@@ -30,7 +30,7 @@
 
       IF(INQC.EQ.INIT_QUAD_COUNT) THEN
          
-         CALL INIT_OCT(PARTICLES)         
+         CALL INIT_OCT
          DO I = 1, PARTICLES
             PQ = 1
             CALL ADD_OCT(I,PQ)
