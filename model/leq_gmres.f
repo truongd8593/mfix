@@ -122,7 +122,8 @@
 !-----------------------------------------------
       INTERFACE
          DOUBLE PRECISION FUNCTION DOT_PRODUCT_PAR( R1, R2 )
-         DOUBLE PRECISION, INTENT(IN) :: R1(*),R2(*)
+         use compar
+         DOUBLE PRECISION, INTENT(IN), DIMENSION(ijkstart3:ijkend3) :: R1, R2
          END FUNCTION DOT_PRODUCT_PAR
       END INTERFACE
 !-----------------------------------------------
