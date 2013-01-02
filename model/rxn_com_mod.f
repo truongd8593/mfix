@@ -157,9 +157,9 @@
  1001 FORMAT(/1X,70('*')/' From: ',A,' --> RXN_COM -->',               &
          ' checkDulpicateAliases',/' Error 1001: Non-unique species',  &
          ' aliases. Species aliases must be unique',/' so that',       &
-         ' chemcial equation entries can be linked to a specific',     &
+         ' chemical equation entries can be linked to a specific',     &
          ' phase.',//' Please refer to the Readme file for specifying',&
-         ' chemcial reactions.'/)
+         ' chemical reactions.'/)
 
  1101 FORMAT(' Phase: ',I2,', Species: ',I3,' - Alias: ',A)
 
@@ -1210,7 +1210,7 @@
          ' calcInterphaseTxfr',/' Error 1002: Reaction complexity',    &
          ' exceeds implementation capabilities.',/' Unable to',        &
          ' determine unambiguously interphase heat or mass transfer.', &
-         //' Reaction: ',A,//' Consider splitting the chemcial',       &
+         //' Reaction: ',A,//' Consider splitting the chemical',       &
          ' reaction equation into two or more',/' separate equations.',&
          ' The same reaction rate calculated in usr_rates',/' can be', &
          ' used for the multiple reactions to ensure mass')

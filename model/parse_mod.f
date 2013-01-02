@@ -31,7 +31,7 @@
 
 ! Reaction names
       CHARACTER(len=32),  DIMENSION(:),   ALLOCATABLE :: RXN_NAME
-! Chemcial Equations
+! chemical Equations
       CHARACTER(len=256), DIMENSION(:),   ALLOCATABLE :: RXN_CHEM_EQ
 ! User defined heat of reaction
       DOUBLE PRECISION,   DIMENSION(:),   ALLOCATABLE :: usrDH
@@ -45,7 +45,7 @@
 
 ! Reaction names
       CHARACTER(len=32),  DIMENSION(:),   ALLOCATABLE :: DES_RXN_NAME
-! Chemcial Equations
+! chemical Equations
       CHARACTER(len=256), DIMENSION(:),   ALLOCATABLE :: DES_RXN_CHEM_EQ
 ! User defined heat of reaction
       DOUBLE PRECISION,   DIMENSION(:),   ALLOCATABLE :: DES_usrDH
@@ -109,7 +109,7 @@
 ! Sum of user specified heat of reaction partitions. If fracDH is set
 ! by the user, they must sum to one over all phases.
       DOUBLE PRECISION sumFDH
-! Local storage for chemcial equations, left-adjusted and trimmed
+! Local storage for chemical equations, left-adjusted and trimmed
       CHARACTER*512 lChemEq
 ! Local storage for reaction name, left-adjusted and trimmed
       CHARACTER*32  lName
@@ -124,7 +124,7 @@
 
       LOGICAL blankAlias(0:(DIMENSION_N_g + lM*DIMENSION_N_s))
 
-! Initialize local reaction name and chemcial equation variables.
+! Initialize local reaction name and chemical equation variables.
       lName = trim(adjustl(RxN%Name))
       lChemEq = trim(adjustl(RxN%ChemEq))
 
@@ -252,7 +252,7 @@
 
  1000 FORMAT(/1X,70('*')/' From: From: setReaction:',/                 &
          ' Message: Heat of reaction is proportioned to a phase not',  &
-         ' referenced',/' by the chemcial equation for reaction ',A,'.')
+         ' referenced',/' by the chemical equation for reaction ',A,'.')
 
  1001 FORMAT(/' If this is a catalytic reaction, reference one of the',&
          ' species of the',/' catalyst phase within the chemical',     &
@@ -262,7 +262,7 @@
          ' Message: The heat of reaction partitions (fracDH) to all',  &
          ' phases do',/' not sum to one for reaction ',A,'.')
 
- 1010 FORMAT(' Please refer to the Readme file for chemcial equation', &
+ 1010 FORMAT(' Please refer to the Readme file for chemical equation', &
          ' input formats',/' and correct the data file.',/1X,70('*')/)
 
 
@@ -273,7 +273,7 @@
 !  Function name: checkSplit                                           !
 !                                                                      !
 !  Purpose: Determine the location of reactatns and products within    !
-!  the chemcial equation. If the entry is NONE, flag that the reaction !
+!  the chemical equation. If the entry is NONE, flag that the reaction !
 !  is to be skipped for further processing.                            !
 !                                                                      !
 !  Variables referenced: None                                          !
@@ -329,7 +329,7 @@
 ! Search for the first and last instances of equal signs.
       tEqs = INDEX(lChemEq,"=", BACK=.FALSE.)
       hEqs = INDEX(lChemEq,"=", BACK=.TRUE.)
-! Search for < (as part of <-- or <-->). Illegal chemcial equation.
+! Search for < (as part of <-- or <-->). Illegal chemical equation.
       hRArr = INDEX(lChemEq,"<", BACK=.FALSE.)
       tRArr = INDEX(lChemEq,"-", BACK=.TRUE.)
 
@@ -458,9 +458,9 @@
 
  1000 FORMAT(/1X,70('*')/' From: From: setReaction --> checkSplit',/   &
          ' Message: Error in determining the reactants and products',  &
-         ' in the',/' chemcial equation for reaction ',A,'.')
+         ' in the',/' chemical equation for reaction ',A,'.')
 
- 1001 FORMAT(' Please refer to the Readme file for chemcial equation', &
+ 1001 FORMAT(' Please refer to the Readme file for chemical equation', &
          ' input formats',/' and correct the data file.',/1X,70('*')/)
 
  1002 FORMAT(/1X,A,' operators were found!')
@@ -718,18 +718,18 @@
 
  1000 FORMAT(/1X,70('*')/' From: From: setReaction -->',               &
          ' splitAliasAndCoeff',/' Message: Error determining the',     &
-         ' stoichiometric coefficient in the',/' chemcial equation',   &
+         ' stoichiometric coefficient in the',/' chemical equation',   &
          ' for reaction ',A,'.')
 
 
- 1001 FORMAT(' Please refer to the Readme file for chemcial equation', &
+ 1001 FORMAT(' Please refer to the Readme file for chemical equation', &
          ' input formats',/' and correct the data file.',/1X,70('*')/)
 
  1002 FORMAT(/1X,A,' operators were found!')
 
  1003 FORMAT(/1X,70('*')/' From: From: setReaction -->',               &
          ' splitAliasAndCoeff',/' Message: Error determining the',     &
-         ' speices in the chemcial equation for',/' reaction ',A,'.'/)
+         ' speices in the chemical equation for',/' reaction ',A,'.'/)
 
  1010 FORMAT(/' Chemical Equation: ',A,/1X, A/)
 
@@ -913,7 +913,7 @@
          ' Message: Unable to match species ',A,' in the chemical',    &
          ' equation for ',/' reaction ',A,'.')
 
- 1001 FORMAT(/' Please refer to the Readme file for chemcial equation',&
+ 1001 FORMAT(/' Please refer to the Readme file for chemical equation',&
          ' input formats',/' and correct the data file.',/1X,70('*')/)
 
  1010 FORMAT(/' Chemical Equation: ',A,/1X, A/)
@@ -957,7 +957,7 @@
 !......................................................................!
 !  Function name: updateMap                                            !
 !                                                                      !
-!  Purpose: Flags that the passed phase is part of the chemcial        !
+!  Purpose: Flags that the passed phase is part of the chemical        !
 !  reaction. If the phase was not already noted, the number of phases  !
 !  in the reaction is increased and the flag set true. Additionally,   !
 !  The number of species (either product or reactant) for the phase    !
