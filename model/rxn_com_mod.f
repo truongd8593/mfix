@@ -632,7 +632,7 @@
       CHARACTER(len=*), INTENT(IN) :: CALLER
 
 ! Data structure for storing reaction data.
-      TYPE(REACTION_BLOCK), POINTER, INTENT(IN) :: RxN
+      TYPE(REACTION_BLOCK), POINTER, INTENT(INOUT) :: RxN
 
       DOUBLE PRECISION, INTENT(OUT) :: lnMT(0:DIM_M)
       INTEGER, INTENT(OUT) :: IER
@@ -737,7 +737,7 @@
       CHARACTER(len=*), INTENT(IN) :: CALLER
 
 ! Data structure for storing reaction data.
-      TYPE(REACTION_BLOCK), POINTER, INTENT(IN) :: RxN
+      TYPE(REACTION_BLOCK), POINTER, INTENT(INOUT) :: RxN
 
       DOUBLE PRECISION, INTENT(IN) :: lnMT(0:DIM_M)
 ! Energy equation flag
