@@ -340,7 +340,16 @@
                   IF (.NOT.DISCRETE_ELEMENT) THEN
                      DIF = ONE - EP_G(IJK) 
                      IF (SMAX > 0) THEN 
-                        DIF = DIF - SUM(ROP_S(IJK,:SMAX)/RO_S(:SMAX)) 
+!QX RO_S changed to RO_S0
+                        SELECT CASE (TRIM(RUN_TYPE))  
+                        CASE ('NEW')  
+                           DIF = DIF - SUM(ROP_S(IJK,:MMAX)/RO_S(:MMAX))
+                        CASE ('RESTART_1')  
+                           DIF = DIF - SUM(ROP_S(IJK,:MMAX)/RO_SV(IJK,:MMAX))
+                        CASE DEFAULT
+                     END SELECT 
+!end
+                     M = SMAX + 1 
 
                         IF (ABS(DIF) > SMALL_NUMBER) THEN 
                            IF (.NOT.ABORT) THEN 

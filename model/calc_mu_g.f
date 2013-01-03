@@ -158,8 +158,8 @@
 ! I'm not very confident about this correction in Peirano paper, but it's made
 ! available here, uncomment to use it. sof@fluent.com --> 02/01/05
 !               IF(SIMONIN .AND. F_GS(IJK,1) > small_number) THEN
-!                  Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
-!                  X_21 = Ep_s(IJK,M)*RO_s(M)/(EP_g(IJK)*RO_g(IJK))
+!                  Tau_12_st = Ep_s(IJK,M)*RO_SV(M)/F_GS(IJK,1)
+!                  X_21 = Ep_s(IJK,M)*RO_SV(M)/(EP_g(IJK)*RO_g(IJK))
 ! new definition of C_mu (equation A.12, Peirano et al. (2002) Powder tech. 122,69-82)
 !                  IF( K_12(ijk)/(2.0D0*K_Turb_G(IJK)) < ONE) &
 !                     C_MU = C_MU/(ONE+ 0.314D0*X_21*Tau_12_st / Tau_1(ijk) * &
@@ -168,7 +168,9 @@
 
 ! On the other hand, I used this correction found in Ahmadi paper (Cao and Ahmadi)	       
                IF(AHMADI .AND. F_GS(IJK,1) > small_number) THEN
-                  Tau_12_st = Ep_s(IJK,M)*RO_s(M)/F_GS(IJK,1)
+!QX
+                  Tau_12_st = Ep_s(IJK,M)*RO_SV(IJK,M)/F_GS(IJK,1)
+
                   C_MU = C_MU/(ONE+ Tau_12_st/Tau_1(ijk) * &
                          (EP_s(IJK,M)/(ONE-EP_star_array(ijk)))**3)
                ENDIF

@@ -67,7 +67,12 @@
 !     For D_p
 !       
       NSpec = NSpec + MMAX
-!
+!begin by Q.X
+      IF(SOLID_RO_V) THEN 
+      !For RO_SV of each solid phase
+         NSpec = NSpec + MMAX
+      ENDIF
+!end by Q.X
       RXN_source_g = ZERO
       RXN_source_s = ZERO
 

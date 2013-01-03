@@ -13,6 +13,9 @@
  
 !	               Trace of D_s at previous timestep
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  trD_s_Co 
+!QX
+!	               Trace of D_s at previous time
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  trD_s_Co2
 !
 !     JEG Added 
 !     University of Colorado, Hrenya Research Group

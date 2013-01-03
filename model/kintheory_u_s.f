@@ -147,7 +147,9 @@
       DO IJK = IJKSTART3, IJKEND3
      
          D_PM = D_P(IJK,M) 
-         M_PM = (Pi/6d0)*D_PM**3 * RO_S(M)
+!QX
+         M_PM = (Pi/6d0)*D_PM**3 * RO_SV(IJK,M)
+
          I = I_OF(IJK) 
          IJKE = EAST_OF(IJK) 
          EPSA = AVG_X(EP_S(IJK,M),EP_S(IJKE,M),I)            
@@ -256,7 +258,8 @@
 ! Momentum source associated with the difference in the gradients in
 ! number density of solids phase m and all other solids phases
                   D_PL = D_P(IJK,L) 
-                  M_PL = (PI/6.d0)*D_PL**3 * RO_S(L)
+!QX
+                  M_PL = (PI/6.d0)*D_PL**3 * RO_SV(IJK,L)
 
                   NU_PM_pE = ROP_S(IJKE,M)/M_PM
                   NU_PM_pW = ROP_S(IJK,M)/M_PM

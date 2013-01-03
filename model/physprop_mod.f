@@ -52,6 +52,13 @@
 !
 !                      Particle densities
       DOUBLE PRECISION RO_s  (DIM_M)
+!QX:                   Field densities (solids density at IJK for phase M)
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: RO_SV
+!                      Previous-time-step value of local density of solid phase
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: RO_SVo
+!                      Previous-time value of local density of solid phase
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: RO_SVo2
+!end
 !
 !                      Specified constant solids viscosity
       DOUBLE PRECISION MU_s0
@@ -132,6 +139,10 @@
 !
 !                      Molecular weight of solids species
       DOUBLE PRECISION MW_s (DIM_M, DIM_N_s)
+!
+!QX
+!                      Density of solid species
+      DOUBLE PRECISION RO_SS (DIM_M, DIM_N_s)
 !
 !                      Molecular weight of gas mixture
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MW_MIX_g 

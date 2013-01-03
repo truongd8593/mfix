@@ -56,6 +56,10 @@
 !//  only do this routine if the root processor
 !//SP
 !     if (myPE.ne.PE_IO) return
+!QX
+!     restart with new dt
+      RESTART_REACTION = .FALSE.
+!end
 !
       ADJUST_DT = .FALSE.                     !No need to iterate again
       IF (DT==UNDEFINED .OR. DT<ZERO) RETURN 
@@ -143,6 +147,9 @@
 !
             DT = DT*DT_FAC 
 !
+!QX smaller dt and reiterating
+          if(DT > 0.8d0 * DT_OLD) then
+
             IF (FULL_LOG) THEN 
 !//SP
 	      IF(myPE.eq.PE_IO) then
@@ -156,8 +163,27 @@
                CALL END_LOG 
             ENDIF 
 !
-            CALL RESET_NEW 
+            CALL RESET_NEW(0) 
             ADJUST_DT = .TRUE.                   !Iterate again with new dt 
+
+         elseif (DT .le. 0.8d0 * DT_OLD) then
+            ADJUST_DT = .FALSE.                   !NOT Iterate again with new dt 
+            RESTART_REACTION = .TRUE.           ! re-iterate reaction with new dt
+
+            IF (FULL_LOG) THEN 
+!//SP
+	      IF(myPE.eq.PE_IO) then
+               WRITE (*, '(12X,A,G11.5,9X,A)') ' Dt=', DT, &
+                  ' Re-iterate reaction            :-(' 
+	      ENDIF
+!
+               CALL START_LOG 
+               IF(DMP_LOG)WRITE (UNIT_LOG, '(12X,A,G11.5,9X,A)') ' Dt=', DT, &
+                  ' Re-iterate reaction            :-(' 
+               CALL END_LOG 
+            ENDIF 
+         endif
+!end
 
 !AE TIME 041601 Cut the timestep into half for 2nd order accurate time implementation
 !            IF (CN_ON.AND.NSTEP>1) DT = 0.5D0*DT      

@@ -133,7 +133,8 @@
                      SUMVF = SUMVF + EPS
                   ENDDO
                ENDIF
-               ROP_S(IJK,MCPl) = (EPCP - SUMVF)*RO_S(MCPl) 
+!QX
+               ROP_S(IJK,MCPl) = (EPCP - SUMVF)*RO_SV(IJK,MCPl) 
             ENDIF 
 !-----------------------------------------------------------------<<<
 
@@ -171,7 +172,7 @@
                  VOL_M = PI*D_P0(M)**3/6d0 
                  IF (M /= MF) THEN
                    SUMVF = SUMVF + EP_S(IJK,M) 
-                   ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + RO_S(M)*EP_S(IJK,M) 
+                   ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + RO_SV(IJK,M)*EP_S(IJK,M) 
                  ENDIF
               ENDDO 
             ELSE
@@ -205,7 +206,8 @@
                ROP_G(IJK) = EP_G(IJK)*RO_G(IJK) 
             ELSE 
 ! else correct the volume fraction of the solids phase that was marked
-               ROP_S(IJK,MF) = (ONE - SUMVF)*RO_S(MF) 
+!QX
+               ROP_S(IJK,MF) = (ONE - SUMVF)*RO_SV(IJK,MF) 
             ENDIF 
 !-----------------------------------------------------------------<<<
 

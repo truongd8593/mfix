@@ -114,18 +114,22 @@
 ! Check RO_s      
 ! Only need to check for real phases (for GHD theory) 
       DO LC = 1, SMAX 
+!QX: RO_S changed to RO_S0
          IF (RO_S(LC)<ZERO .OR. RO_S(LC)==UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_data_04', &
-               'RO_s not specified or unphysical', 0, 2) 
+               'RO_s0 not specified or unphysical', 0, 2) 
                IF(DMP_LOG)WRITE (UNIT_LOG, 1300) LC, RO_S(LC) 
+!end
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       ENDDO 
-      DO LC = SMAX + 1, DIM_M 
+      DO LC = SMAX + 1, DIM_M
+!QX 
          IF (RO_S(LC) /= UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_data_04', &
-               'too many RO_s values specified', 0, 2) 
+               'too many RO_s0 values specified', 0, 2) 
                IF(DMP_LOG)WRITE (UNIT_LOG, 1400) LC, RO_S(LC), MMAX 
+!end
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       ENDDO 
@@ -411,8 +415,9 @@
 
  1100 FORMAT(1X,/,1X,'D_p0(',I2,') in mfix.dat = ',G12.5) 
  1200 FORMAT(1X,/,1X,'D_p0(',I2,') = ',G12.5,/,1X,'MMAX in mfix = ',I2,/) 
- 1300 FORMAT(1X,/,1X,'RO_s(',I2,') in mfix.dat = ',G12.5) 
- 1400 FORMAT(1X,/,1X,'RO_s(',I2,') = ',G12.5,/,1X,'MMAX in mfix = ',I2,/) 
+!QX
+ 1300 FORMAT(1X,/,1X,'RO_S(',I2,') in mfix.dat = ',G12.5) 
+ 1400 FORMAT(1X,/,1X,'RO_S(',I2,') = ',G12.5,/,1X,'MMAX in mfix = ',I2,/) 
  1410 FORMAT(1X,/,1X,'Solids phase = ',I2,'   Species = ',I3) 
  1420 FORMAT(1X,/,1X,'Solids phase = ',I2,' is not Close_Packed.',/,&
          ' With Model B all solids phases should have that property')

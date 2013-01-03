@@ -305,7 +305,8 @@
                           DO M = 1, SMAX 
                             IF (BC_ROP_S(L,M) /= UNDEFINED) THEN
                               ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + BC_ROP_S(L,M) 
-                              nM = BC_ROP_S(L,M)*6d0/(PI*D_p(IJK,M)**3*RO_S(M))
+!QX
+                              nM = BC_ROP_S(L,M)*6d0/(PI*D_p(IJK,M)**3*RO_SV(IJK,M))
                               nTOT = nTOT + nM
                               IF (BC_THETA_M(L,M) /= UNDEFINED) THETA_M(IJK,MMAX) = &
                                  THETA_M(IJK,MMAX) + nM*BC_THETA_M(L,M) 
@@ -400,7 +401,8 @@
                            W_S(IJK3,MMAX) =  ZERO 
                            DO M = 1, SMAX 
                               ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + BC_ROP_S(L,M) 
-                              nM = BC_ROP_S(L,M)*6d0/(PI*D_p(IJK,M)**3*RO_S(M))
+!QX
+                              nM = BC_ROP_S(L,M)*6d0/(PI*D_p(IJK,M)**3*RO_SV(IJK,M))
                               nTOT = nTOT + nM
                               THETA_M(IJK,MMAX) = THETA_M(IJK,MMAX) + nM*BC_THETA_M(L,M) 
                               U_S(IJK,MMAX) = U_S(IJK,MMAX) + BC_ROP_S(L,M)*BC_U_S(L,M) 

@@ -150,6 +150,31 @@
       Allocate(  ROP_go (DIMENSION_3p) )
       Allocate(  ROP_s (DIMENSION_3, DIMENSION_M) )
       Allocate(  ROP_so (DIMENSION_3p, DIMENSION_M) )
+!QX
+      Allocate(  RO_SV (DIMENSION_3, DIMENSION_M) )
+      Allocate(  RO_SVo (DIMENSION_3p, DIMENSION_M) )
+      Allocate(  EP_SS(DIMENSION_3,DIMENSION_M,DIMENSION_N_S) )
+      Allocate(  ERR_ARRAY(DIMENSION_3,DIMENSION_M) )
+      Allocate(  RO_SVo2 (DIMENSION_3, DIMENSION_M) )
+
+      Allocate(  EP_go2 (DIMENSION_3) )
+      Allocate(  P_go2 (DIMENSION_3) )
+      Allocate(  RO_go2 (DIMENSION_3) )
+      Allocate(  ROP_go2 (DIMENSION_3) )
+      Allocate(  ROP_so2 (DIMENSION_3, DIMENSION_M) )
+      Allocate(  T_go2 (DIMENSION_3) )
+      Allocate(  T_so2 (DIMENSION_3, DIMENSION_M) )
+      Allocate(  X_go2 (DIMENSION_3, DIMENSION_N_g) )
+      Allocate(  X_so2 (DIMENSION_3, DIMENSION_M, DIMENSION_N_s) )
+      Allocate(  U_go2 (DIMENSION_3) )
+      Allocate(  U_so2 (DIMENSION_3, DIMENSION_M) )
+      Allocate(  V_go2 (DIMENSION_3) )
+      Allocate(  V_so2 (DIMENSION_3, DIMENSION_M) )
+      Allocate(  W_go2 (DIMENSION_3) )
+      Allocate(  W_so2 (DIMENSION_3, DIMENSION_M) )
+      Allocate(  P_staro2 (DIMENSION_3) )
+      Allocate(  THETA_mo2 (DIMENSION_3, DIMENSION_M) )
+
       Allocate(  T_g (DIMENSION_3) )
       Allocate(  T_s (DIMENSION_3, DIMENSION_M) )
       Allocate(  T_go (DIMENSION_3p) )
@@ -186,11 +211,16 @@
         Allocate(  K_Turb_Go (DIMENSION_3p) )
         Allocate(  E_Turb_G (DIMENSION_3) )
         Allocate(  E_Turb_Go (DIMENSION_3p) )
+!QX
+        Allocate(  K_Turb_Go2 (DIMENSION_3) )
+        Allocate(  E_Turb_Go2 (DIMENSION_3) )
       ENDIF
       
       IF(DIMENSION_Scalar /= 0) THEN
         Allocate(  Scalar (DIMENSION_3,  DIMENSION_Scalar) )
         Allocate(  Scalaro (DIMENSION_3p, DIMENSION_Scalar) )
+        Allocate(  Scalaro2 (DIMENSION_3, DIMENSION_Scalar) )
+
       ENDIF
 
 
@@ -326,7 +356,8 @@
       ALLocate(  beta_a( DIM_Scalar,DIM_Scalar))
       ALLocate(  ystart( 1:DIM_Scalar2))
 !     ALLocate(  g_a( 1:DIMENSION_Scalar))
- 
+!QX
+      Allocate(  D_po2 (DIMENSION_3, DIMENSION_M) )
 
 ! K-Epsilon Turbulence model
 ! sof (02/01/05): must use k-epsilon model with Simonin or Ahmadi models
@@ -375,7 +406,7 @@
       Allocate(  trD_s_C (DIMENSION_3, DIMENSION_M) )
       Allocate(  trD_s2 (DIMENSION_3, DIMENSION_M) )
       Allocate(  trD_s_Co (DIMENSION_3, DIMENSION_M) )
-
+      Allocate(  trD_s_Co2 (DIMENSION_3, DIMENSION_M) )
 !visc_g
       Allocate(  trD_g(DIMENSION_3) )
       Allocate(  MU_gt (DIMENSION_3) )

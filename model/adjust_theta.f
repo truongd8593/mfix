@@ -67,12 +67,14 @@
 
               IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
                 D_PM = D_P(IJK,M)
-                M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
+!QX
+                M_PM = (PI/6.d0)*(D_PM**3)*RO_SV(IJK,M)
               ELSE
                 M_PM = ZERO
                 DO L = 1,SMAX
                   D_PM = D_P(IJK,L)
-                  M_PM = M_PM +(PI/6.d0)*(D_PM**3)*RO_S(L)
+!QX
+                  M_PM = M_PM +(PI/6.d0)*(D_PM**3)*RO_SV(IJK,L)
                 ENDDO
                 M_PM = M_PM/DBLE(SMAX)
               ENDIF 

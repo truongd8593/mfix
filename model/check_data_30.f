@@ -587,7 +587,10 @@
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1330) I, J, K, M, C_PS(IJK,M) 
                               ABORT = .TRUE. 
                            ENDIF 
-                           IF (T_S(IJK,M)<=TMIN .OR. T_S(IJK,M)>=TMAX) THEN 
+!
+!QX
+                        IF ( (T_S(IJK,M)<=TMIN .OR. T_S(IJK,M)>=TMAX) &
+                             .and. ROP_S(IJK,M) .gt. 1.D-16) THEN 
                               IF (.NOT.MESSAGE) THEN 
                                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                                  MESSAGE = .TRUE. 

@@ -38,12 +38,17 @@
 !
 !                      Controlling parameters for ISATAB
       INTEGER          ITOL, JT, IOPT
+!QX
+      LOGICAL          mchem_istate
+!end
 !
 !============================================================
 !     The part that user must modify
 !     user define the tolerances for ODEPACK according ITOL
-!
-      DOUBLE PRECISION RTOL, ATOL(12)
+      DOUBLE PRECISION RTOL
+!QX 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: ATOL
+
 !============================================================
 
       END MODULE MCHEM

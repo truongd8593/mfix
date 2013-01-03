@@ -167,6 +167,10 @@
       DO LC = 1, MMAX 
          call readScatterRes(ROP_S(:,LC), array2, array1, 0, NEXT_REC)
 
+!QX
+         call readScatterRes(RO_SV(:,LC), array2, array1, 0, NEXT_REC)
+!end
+
          IF (VERSION_NUMBER >= 1.15) THEN
             call readScatterRes(T_S(:,LC), array2, array1, 1, NEXT_REC)
          END IF

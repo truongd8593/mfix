@@ -76,6 +76,8 @@
 ! Average scalars modified to include all solid phases
       DOUBLE PRECISION :: EPs_avg(DIMENSION_M), DP_avg(DIMENSION_M),&
                           TH_avg(DIMENSION_M), AVGX1, AVGX2, smallTheta
+!QX
+      DOUBLE PRECISION ROS_AVG(DIMENSION_M)
 ! Average Simonin and Ahmadi variables (sof)
       DOUBLE PRECISION :: K_12_avg, Tau_12_avg, Tau_1_avg
 ! Average velocities
@@ -155,6 +157,8 @@
           DP_avg(MM)  = AVG_X(D_P(IJK2,MM), D_P(IJK2E,MM), I_OF(IJK2))
           g0EPs_avg   = g0EPs_avg + G_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, MM) &
              * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
+!QX
+          ROs_avg(MM) = AVG_X(RO_SV(IJK2, MM), RO_SV(IJK2E, MM), I_OF(IJK2))
           IF (.NOT.GRANULAR_ENERGY) THEN
             TH_avg(MM) = AVG_X(THETA_M(IJK2,MM), THETA_M(IJK2E,MM), I_OF(IJK2))
             IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
@@ -355,6 +359,8 @@
            DP_avg(MM)  = AVG_Y(D_p(IJK2,MM), D_p(IJK2N,MM), J_OF(IJK2))
            g0EPs_avg   = g0EPs_avg + G_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), M, MM) &
                         * AVG_Y(EP_s(IJK2, MM), EP_s(IJK2N, MM), J_OF(IJK2))
+!QX
+             Ros_avg(MM) = AVG_Y(RO_SV(IJK2, MM), RO_SV(IJK2N, MM), J_OF(IJK2))
           IF(.NOT.GRANULAR_ENERGY) THEN                        
             TH_avg(MM) = AVG_Y(THETA_M(IJK2,MM), THETA_M(IJK2N,MM), J_OF(IJK2))
             IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
@@ -566,6 +572,8 @@
            DP_avg(MM)  = AVG_Z(D_p(IJK2,MM), D_p(IJK2T,MM), K_OF(IJK2))
            g0EPs_avg   = g0EPs_avg + G_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, MM) &
                        * AVG_Z(EP_s(IJK2, MM), EP_s(IJK2T, MM), K_OF(IJK2))
+!QX
+             ROs_avg(MM) = AVG_Z(RO_SV(IJK2,MM), RO_SV(IJK2T,MM), K_OF(IJK2))
            IF(.NOT.GRANULAR_ENERGY) THEN
               TH_avg(MM) = AVG_Z(THETA_M(IJK2,MM), THETA_M(IJK2T,MM), K_OF(IJK2))
               IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
@@ -768,13 +776,15 @@
            S_DDOT_S, S_dd)
  
         CALL CALC_Gw_Hw_Cw(g0(M), EPs_avg(M), EPg_avg, ep_star_avg, &
-           g0EPs_avg, TH_avg(M), Mu_g_avg, RO_g_avg, &
+!QX
+           g0EPs_avg, TH_avg(M), Mu_g_avg, RO_g_avg, ROs_avg, &
            DP_avg(M), K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP,&
            DEL_DOT_U, S_DDOT_S, S_dd, VELS, WVELS, M, gw, hw, cw)
       ELSE
          GW = 1D0               
          Hw = F_Hw(g0, EPs_avg, EPg_avg, ep_star_avg, &
-            g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+!QX
+            g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, ROs_avg, &
             DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
          CW = HW*WVELS            
       ENDIF
@@ -816,7 +826,8 @@
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       DOUBLE PRECISION FUNCTION F_HW(g0,EPS,EPG, ep_star_avg, &
-                                     g0EPs_avg,TH,Mu_g_avg,RO_g_avg,&
+!QX
+                                     g0EPs_avg,TH,Mu_g_avg,RO_g_avg,ROs_avg, &
                                      DP_avg,K_12_avg, Tau_12_avg, Tau_1_avg, &
                                      VREL, VSLIP, M)
  
@@ -849,6 +860,8 @@
       DOUBLE PRECISION, INTENT(IN) :: Mu_g_avg
 ! Average gas density
       DOUBLE PRECISION, INTENT(IN) :: RO_g_avg
+!QX: Average solids density
+      DOUBLE PRECISION, INTENT(IN) ::ROS_avg(DIMENSION_M)
 ! Average particle diameter of each solids phase
       DOUBLE PRECISION, INTENT(IN) :: DP_avg(DIMENSION_M)
 ! Average cross-correlation K_12 and lagrangian integral time-scale
@@ -918,16 +931,17 @@
       IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN  
 
 ! Use original IA theory if SWITCH_IA is false
-         IF(.NOT. SWITCH_IA) g0EPs_avg = EPS(M)*RO_S(M)
+!QX: RO_S repplaced by ROS_avg(M)
+         IF(.NOT. SWITCH_IA) g0EPs_avg = EPS(M)*ROS_avg(M)
 
          D_PM = DP_avg(M)
-         M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
-         NU_PM = (EPS(M)*RO_S(M))/M_PM
+         M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
+         NU_PM = (EPS(M)*ROS_avg(M))/M_PM
 	 if(.NOT. BC_JJ_M)then    
-         F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*RO_s(M)*EPS(M)*g0(M))/&
+         F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*EPS(M)*g0(M))/&
             (6.d0*(ONE-ep_star_avg))
          else
-         F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M)/M_PM)*PI*RO_s(M)*EPS(M)*g0(M))/&
+         F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*EPS(M)*g0(M))/&
             (6.d0*(ONE-ep_star_avg)) 
          endif
 
@@ -942,7 +956,7 @@
          IF(VREL == ZERO) DgA = LARGE_NUMBER
          Beta = EPS(M)*DgA !this is equivalent to F_gs(ijk,m)
 
-         Mu = (5.d0/96.d0)*D_PM* RO_S(M)*DSQRT(PI*TH(M)/M_PM)
+         Mu = (5.d0/96.d0)*D_PM* ROS_avg(M)*DSQRT(PI*TH(M)/M_PM)
 
          IF(.NOT.SWITCH_IA .OR. RO_g_avg == ZERO)THEN
             Mu_star = Mu
@@ -950,7 +964,7 @@
             MU_star = ZERO
          ELSE
             Mu_star = Mu*EPS(M)*g0(M)/ (g0EPs_avg+ 2.0d0*DgA*Mu / &
-               (RO_S(M)**2 *(TH(M)/M_PM)))
+               (ROS_avg(M)**2 *(TH(M)/M_PM)))
          ENDIF
 
          MU_s_MM = (Mu_star/g0(M))*(1.d0+(4.d0/5.d0)*(1.d0+C_E)*g0EPs_avg)**2
@@ -958,10 +972,10 @@
 
          DO LL = 1, SMAX
             D_PL = DP_avg(LL)
-            M_PL = (PI/6.d0)*(D_PL**3.)*RO_S(LL)
+            M_PL = (PI/6.d0)*(D_PL**3.)*ROS_avg(LL)
             MPSUM = M_PM + M_PL
             DPSUMo2 = (D_PM+D_PL)/2.d0
-            NU_PL = (EPS(LL)*RO_S(LL))/M_PL
+            NU_PL = (EPS(LL)*ROS_avg(LL))/M_PL
 
             IF ( LL .eq. M) THEN
                Ap_lm = MPSUM/(2.d0)
@@ -1008,13 +1022,13 @@
       ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
 
          D_PM = DP_avg(M)
-         M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
-         NU_PM = (EPS(M)*RO_S(M))/M_PM
+         M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
+         NU_PM = (EPS(M)*ROS_avg(M))/M_PM
          if(.NOT. BC_JJ_M)then	
-         F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*RO_s(M)*EPS(M)*g0(M))/&
+         F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*EPS(M)*g0(M))/&
             (6.d0*(ONE-ep_star_avg))
          else
-         F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M))*PI*RO_s(M)*EPS(M)*g0(M))/&
+         F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*EPS(M)*g0(M))/&
             (6.d0*(ONE-ep_star_avg))         	 
          endif
 
@@ -1062,9 +1076,9 @@
          ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
             Mu_star = ZERO               
          ELSE
-            Mu_star = RO_S(M)*EPS(M)*G0(M)*TH(M)*eta0 / &
-               ( RO_S(M)*EPS(M)*G0(M)*TH(M) + &
-               (2.d0*DgA*eta0/RO_S(M)) )     ! Note dgA is ~F_gs/ep_s
+            Mu_star = ROS_avg(M)*EPS(M)*G0(M)*TH(M)*eta0 / &
+               ( ROS_avg(M)*EPS(M)*G0(M)*TH(M) + &
+               (2.d0*DgA*eta0/ROS_avg(M)) )     ! Note dgA is ~F_gs/ep_s
          ENDIF
    
 !  shear viscosity in Mth solids phase  (add to frictional part)
@@ -1087,27 +1101,27 @@
 ! I understand it from soil mechanic papers, i.e., G.I. Tardos, powder
 ! Tech. 92 (1997), 61-74. See his equation (1). Define Phi_w in mfix.dat!
 ! here F_2 divided by VSLIP to use the same bc as Johnson&Jackson
-                F_2 = tan_Phi_w*RO_s(M)*EPS(M)* &
+                F_2 = tan_Phi_w*ROS_avg(M)*EPS(M)* &
                   ((ONE + 4.0D0*g0EPs_avg) + HALF*(ONE -C_e*C_e))*TH(M)/VSLIP
 
             ELSE
 ! Simonin or granular models use same solids pressure
-               F_2 = tan_Phi_w*RO_s(M)*EPS(M)*(1d0+ 4.D0 * Eta *g0EPs_avg)*TH(M)/VSLIP
+               F_2 = tan_Phi_w*ROS_avg(M)*EPS(M)*(1d0+ 4.D0 * Eta *g0EPs_avg)*TH(M)/VSLIP
             ENDIF !VSLIP == ZERO
 
          ELSE   ! if(.not.jenkins)
 
             if(.NOT. BC_JJ_M)then   
-            F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*RO_s(M)*EPS(M)*g0(M))&
+            F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*ROS_avg(M)*EPS(M)*g0(M))&
                /(6d0*(ONE-ep_star_avg))
             else
-            F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3d0*TH(M))*Pi*RO_s(M)*EPS(M)*g0(M))&
+            F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3d0*TH(M))*Pi*ROS_avg(M)*EPS(M)*g0(M))&
                /(6d0*(ONE-ep_star_avg))            	    
             endif
 
          ENDIF   ! end if(Jenkins)/else 
  
-         Mu = (5d0*DSQRT(Pi*TH(M))*DP_avg(M)*RO_s(M))/96d0
+         Mu = (5d0*DSQRT(Pi*TH(M))*DP_avg(M)*ROS_avg(M))/96d0
          Mu_b = (256d0*Mu*EPS(M)*g0EPs_avg)/(5d0*Pi)
 
 ! This is from Wen-Yu correlation, you can put here your own single particle drag 
@@ -1131,8 +1145,8 @@
          ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
             MU_star = ZERO
          ELSE
-            Mu_star = RO_S(M)*EPS(M)* g0(M)*TH(M)* Mu/ &
-               (RO_S(M)*g0EPs_avg*TH(M) + 2.0d0*DgA/RO_S(M)* Mu)
+            Mu_star = ROS_avg(M)*EPS(M)* g0(M)*TH(M)* Mu/ &
+               (ROS_avg(M)*g0EPs_avg*TH(M) + 2.0d0*DgA/ROS_avg(M)* Mu)
          ENDIF
  
          Mu_s = ((2d0+ALPHA)/3d0)*((Mu_star/(Eta*(2d0-Eta)*&
@@ -1141,7 +1155,7 @@
             g0EPs_avg)+(0.6d0*Mu_b*Eta))
  
 ! particle relaxation time
-         Tau_12_st = RO_s(M)/(DgA+small_number)
+         Tau_12_st = ROS_avg(M)/(DgA+small_number)
 
          IF(SIMONIN) THEN !see calc_mu_s for explanation of these definitions
             Sigma_c = (ONE+ C_e)*(3.d0-C_e)/5.d0
@@ -1153,7 +1167,7 @@
                  (ONE+ zeta_c_2*EPS(M)*g0(M)))*Tau_2
             Mu_2_Col = 8.D0/5.D0*EPS(M)*g0(M)*Eta* (MU_2_T_Kin+ &
                   DP_avg(M)*DSQRT(TH(M)/PI))
-            Mu_s = EPS(M)*RO_s(M)*(MU_2_T_Kin + Mu_2_Col)
+            Mu_s = EPS(M)*ROS_avg(M)*(MU_2_T_Kin + Mu_2_Col)
 
          ELSEIF(AHMADI) THEN
             IF(EPS(M) < (ONE-ep_star_avg)) THEN
@@ -1164,7 +1178,7 @@
             ENDIF
             Mu_s = Tmp_Ahmadi_Const &
                *0.1045D0*(ONE/g0(M)+3.2D0*EPS(M)+12.1824D0*g0(M)*EPS(M)*EPS(M))  &
-               *DP_avg(M)*RO_s(M)* DSQRT(TH(M))
+               *DP_avg(M)*ROS_avg(M)* DSQRT(TH(M))
          ENDIF
         
       ENDIF    ! end if for kinetic theory type
@@ -1251,6 +1265,8 @@
 !                      Average scalars modified to include all solid phases
       DOUBLE PRECISION EPs_avg(DIMENSION_M), DP_avg(DIMENSION_M),&
                        TH_avg(DIMENSION_M)
+!QX
+      DOUBLE PRECISION ROS_AVG(DIMENSION_M)
 !
 !                      Average Simonin and Ahmadi variables (sof)
       DOUBLE PRECISION K_12_avg, Tau_12_avg, Tau_1_avg
@@ -1327,6 +1343,8 @@
                DP_avg(MM)  = (VOL(IJK)*D_P(IJK, MM) + VOL(IJK2)*D_P(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                g0EPs_avg   = g0EPs_avg + G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM) &
                            * (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
+!QX
+               ROS_AVG(MM) = (VOL(IJK)*RO_SV(IJK, MM) + VOL(IJK2)*RO_SV(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
 
 !               IF(GRANULAR_ENERGY) THEN
 !                  TH_avg(MM) = AVG_Y(&  ! not converted to CG
@@ -1380,7 +1398,7 @@
 	                  + (WSCM-BC_WW_S(L,M))**2 )
  
             CALL GET_CG_F2(g0, EPs_avg, EPg_avg, ep_star_avg, &
-	              g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+	              g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, ROS_AVG,&
 	              DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, &
                       VREL, VSLIP, M,F_2)
 
@@ -1402,6 +1420,9 @@
                DP_avg(MM)  = (VOL(IJK)*D_P(IJK, MM) + VOL(IJK2)*D_P(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                g0EPs_avg   = g0EPs_avg + G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM) &
                            * (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
+!QX
+               ROS_avg(MM) = (VOL(IJK)*RO_SV(IJK, MM) + VOL(IJK2)*RO_SV(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
+!end QX
 !
 !               IF(GRANULAR_ENERGY) THEN  ! not converted to CG
 !                   TH_avg(MM) = AVG_Y(&
@@ -1457,7 +1478,7 @@
 
 
             CALL GET_CG_F2(g0, EPs_avg, EPg_avg, ep_star_avg, &
-	              g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+	              g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, ROS_AVG,&
 	              DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, &
                       VREL, VSLIP, M,F_2)
 
@@ -1471,7 +1492,8 @@
             Mu_g_avg = (VOL(IJK)*Mu_g(IJK) + VOL(IJK2)*Mu_g(IJK2))/(VOL(IJK) + VOL(IJK2))
             RO_g_avg = (VOL(IJK)*RO_g(IJK) + VOL(IJK2)*RO_g(IJK2))/(VOL(IJK) + VOL(IJK2))
             g0EPs_avg = ZERO
-  
+!QX
+               ROS_avg(MM) = (VOL(IJK)*RO_SV(IJK, MM) + VOL(IJK2)*RO_SV(IJK2, MM))/(VOL(IJK) + VOL(IJK2))  
 !
 	    DO MM = 1, MMAX
                g0(MM)      = G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM)
@@ -1534,7 +1556,7 @@
 
 
             CALL GET_CG_F2(g0, EPs_avg, EPg_avg, ep_star_avg, &
-	              g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+	              g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, ROS_AVG,&
 	              DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, &
                       VREL, VSLIP, M,F_2)
 
@@ -1587,7 +1609,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE GET_CG_F2(g0,EPS,EPG, ep_star_avg, &
-                                     g0EPs_avg,TH,Mu_g_avg,RO_g_avg,&
+                                     g0EPs_avg,TH,Mu_g_avg,RO_g_avg,Ros_avg, &
                                      DP_avg,K_12_avg, Tau_12_avg, Tau_1_avg, &
                                      VREL, VSLIP, M,F_2)
 
@@ -1621,6 +1643,8 @@
       DOUBLE PRECISION, INTENT(IN) :: Mu_g_avg
 ! Average gas density
       DOUBLE PRECISION, INTENT(IN) :: RO_g_avg
+!QX: Average solids density
+      DOUBLE PRECISION, INTENT(IN) :: ROS_avg(DIMENSION_M)
 ! Average particle diameter of each solids phase
       DOUBLE PRECISION, INTENT(IN) :: DP_avg(DIMENSION_M)
 ! Average cross-correlation K_12 and lagrangian integral time-scale
@@ -1690,17 +1714,18 @@
       IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN  
 
 ! Use original IA theory if SWITCH_IA is false
-         IF(.NOT. SWITCH_IA) g0EPs_avg = EPS(M)*RO_S(M)
+!QX: RO_S repplaced by ROS_avg(M)
+         IF(.NOT. SWITCH_IA) g0EPs_avg = EPS(M)*ROS_avg(M)
 
          D_PM = DP_avg(M)
-         M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
-         NU_PM = (EPS(M)*RO_S(M))/M_PM
+         M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
+         NU_PM = (EPS(M)*ROS_avg(M))/M_PM
  
 	  if(.NOT. BC_JJ_M)then          
-          F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*RO_s(M)*EPS(M)*g0(M))/&
+          F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*EPS(M)*g0(M))/&
                (6.d0*(ONE-ep_star_avg))
           else
-          F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M)/M_PM)*PI*RO_s(M)*EPS(M)*g0(M))/&
+          F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*EPS(M)*g0(M))/&
                (6.d0*(ONE-ep_star_avg))          	  
           endif            
 
@@ -1715,7 +1740,7 @@
          IF(VREL == ZERO) DgA = LARGE_NUMBER
          Beta = EPS(M)*DgA !this is equivalent to F_gs(ijk,m)
 
-         Mu = (5.d0/96.d0)*D_PM* RO_S(M)*DSQRT(PI*TH(M)/M_PM)
+         Mu = (5.d0/96.d0)*D_PM* ROS_avg(M)*DSQRT(PI*TH(M)/M_PM)
 
          IF(.NOT.SWITCH_IA .OR. RO_g_avg == ZERO)THEN
             Mu_star = Mu
@@ -1723,7 +1748,7 @@
             MU_star = ZERO
          ELSE
             Mu_star = Mu*EPS(M)*g0(M)/ (g0EPs_avg+ 2.0d0*DgA*Mu / &
-               (RO_S(M)**2 *(TH(M)/M_PM)))
+               (ROS_avg(M)**2 *(TH(M)/M_PM)))
          ENDIF
 
          MU_s_MM = (Mu_star/g0(M))*(1.d0+(4.d0/5.d0)*(1.d0+C_E)*g0EPs_avg)**2
@@ -1731,10 +1756,10 @@
 
          DO LL = 1, SMAX
             D_PL = DP_avg(LL)
-            M_PL = (PI/6.d0)*(D_PL**3.)*RO_S(LL)
+            M_PL = (PI/6.d0)*(D_PL**3.)*ROS_avg(LL)
             MPSUM = M_PM + M_PL
             DPSUMo2 = (D_PM+D_PL)/2.d0
-            NU_PL = (EPS(LL)*RO_S(LL))/M_PL
+            NU_PL = (EPS(LL)*ROS_avg(LL))/M_PL
 
             IF ( LL .eq. M) THEN
                Ap_lm = MPSUM/(2.d0)
@@ -1781,14 +1806,14 @@
       ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
 
          D_PM = DP_avg(M)
-         M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
-         NU_PM = (EPS(M)*RO_S(M))/M_PM
+         M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
+         NU_PM = (EPS(M)*ROS_avg(M))/M_PM
 
           if(.NOT. BC_JJ_M)then	
-          F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*RO_s(M)*EPS(M)*g0(M))/&
+          F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*EPS(M)*g0(M))/&
                (6.d0*(ONE-ep_star_avg))
           else
-          F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M))*PI*RO_s(M)*EPS(M)*g0(M))/&
+          F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*EPS(M)*g0(M))/&
                (6.d0*(ONE-ep_star_avg))
           endif          	              
 
@@ -1836,9 +1861,9 @@
          ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
             Mu_star = ZERO               
          ELSE
-            Mu_star = RO_S(M)*EPS(M)*G0(M)*TH(M)*eta0 / &
-               ( RO_S(M)*EPS(M)*G0(M)*TH(M) + &
-               (2.d0*DgA*eta0/RO_S(M)) )     ! Note dgA is ~F_gs/ep_s
+            Mu_star = ROS_avg(M)*EPS(M)*G0(M)*TH(M)*eta0 / &
+               ( ROS_avg(M)*EPS(M)*G0(M)*TH(M) + &
+               (2.d0*DgA*eta0/ROS_avg(M)) )     ! Note dgA is ~F_gs/ep_s
          ENDIF
    
 !  shear viscosity in Mth solids phase  (add to frictional part)
@@ -1861,27 +1886,27 @@
 ! I understand it from soil mechanic papers, i.e., G.I. Tardos, powder
 ! Tech. 92 (1997), 61-74. See his equation (1). Define Phi_w in mfix.dat!
 ! here F_2 divided by VSLIP to use the same bc as Johnson&Jackson
-               F_2 = tan_Phi_w*RO_s(M)*EPS(M)* &
+               F_2 = tan_Phi_w*ROS_avg(M)*EPS(M)* &
                   ((ONE + 4.0D0*g0EPs_avg) + HALF*(ONE -C_e*C_e))*TH(M)/VSLIP
 
             ELSE
 ! Simonin or granular models use same solids pressure
-               F_2 = tan_Phi_w*RO_s(M)*EPS(M)*(1d0+ 4.D0 * Eta *g0EPs_avg)*TH(M)/VSLIP
+               F_2 = tan_Phi_w*ROS_avg(M)*EPS(M)*(1d0+ 4.D0 * Eta *g0EPs_avg)*TH(M)/VSLIP
             ENDIF !VSLIP == ZERO
 
          ELSE   ! if(.not.jenkins)
  
 	       if(.NOT. BC_JJ_M)then  
-	       F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*RO_s(M)*EPS(M)*g0(M))&
+	       F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*ROS_avg(M)*EPS(M)*g0(M))&
 		    /(6d0*(ONE-ep_star_avg))
 	       else
-	       F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3d0*TH(M))*Pi*RO_s(M)*EPS(M)*g0(M))&
+	       F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3d0*TH(M))*Pi*ROS_avg(M)*EPS(M)*g0(M))&
 		    /(6d0*(ONE-ep_star_avg))               	       
 	       endif               
 
          ENDIF   ! end if(Jenkins)/else 
  
-         Mu = (5d0*DSQRT(Pi*TH(M))*DP_avg(M)*RO_s(M))/96d0
+         Mu = (5d0*DSQRT(Pi*TH(M))*DP_avg(M)*ROS_avg(M))/96d0
          Mu_b = (256d0*Mu*EPS(M)*g0EPs_avg)/(5d0*Pi)
 
 ! This is from Wen-Yu correlation, you can put here your own single particle drag 
@@ -1905,8 +1930,8 @@
          ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
             MU_star = ZERO
          ELSE
-            Mu_star = RO_S(M)*EPS(M)* g0(M)*TH(M)* Mu/ &
-               (RO_S(M)*g0EPs_avg*TH(M) + 2.0d0*DgA/RO_S(M)* Mu)
+            Mu_star = ROS_avg(M)*EPS(M)* g0(M)*TH(M)* Mu/ &
+               (ROS_avg(M)*g0EPs_avg*TH(M) + 2.0d0*DgA/ROS_avg(M)* Mu)
          ENDIF
  
          Mu_s = ((2d0+ALPHA)/3d0)*((Mu_star/(Eta*(2d0-Eta)*&
@@ -1915,7 +1940,7 @@
             g0EPs_avg)+(0.6d0*Mu_b*Eta))
  
 ! particle relaxation time
-         Tau_12_st = RO_s(M)/(DgA+small_number)
+         Tau_12_st = ROS_avg(M)/(DgA+small_number)
 
          IF(SIMONIN) THEN !see calc_mu_s for explanation of these definitions
             Sigma_c = (ONE+ C_e)*(3.d0-C_e)/5.d0
@@ -1927,7 +1952,7 @@
                  (ONE+ zeta_c_2*EPS(M)*g0(M)))*Tau_2
             Mu_2_Col = 8.D0/5.D0*EPS(M)*g0(M)*Eta* (MU_2_T_Kin+ &
                   DP_avg(M)*DSQRT(TH(M)/PI))
-            Mu_s = EPS(M)*RO_s(M)*(MU_2_T_Kin + Mu_2_Col)
+            Mu_s = EPS(M)*ROS_avg(M)*(MU_2_T_Kin + Mu_2_Col)
 
          ELSEIF(AHMADI) THEN
             IF(EPS(M) < (ONE-ep_star_avg)) THEN
@@ -1938,7 +1963,7 @@
             ENDIF
             Mu_s = Tmp_Ahmadi_Const &
                *0.1045D0*(ONE/g0(M)+3.2D0*EPS(M)+12.1824D0*g0(M)*EPS(M)*EPS(M))  &
-               *DP_avg(M)*RO_s(M)* DSQRT(TH(M))
+               *DP_avg(M)*ROS_avg(M)* DSQRT(TH(M))
          ENDIF
         
       ENDIF    ! end if for kinetic theory type

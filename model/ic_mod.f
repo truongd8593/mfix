@@ -92,6 +92,10 @@
 !                      Initial macroscopic density of solids phases in a
 !                      specified region
       DOUBLE PRECISION IC_ROP_s (DIMENSION_IC, DIM_M)
+!QX
+!                      Initail density of solids phases in a specified region
+      DOUBLE PRECISION IC_RO_s_L (DIMENSION_IC, DIM_M)
+!end
 !
 !                      Initial gas phase temperature in a specified region
       DOUBLE PRECISION IC_T_g (DIMENSION_IC)

@@ -14,6 +14,7 @@
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
+      Use run
       IMPLICIT NONE
 !-----------------------------------------------
 !     G l o b a l   P a r a m e t e r s
@@ -46,7 +47,9 @@
 !                      Loop indice
       INTEGER          NL, NM
 
-!
+!begin by Q.X
+      IF(SOLID_RO_V) RETURN
+!end by Q.X
 !
       NX  = NEQ(1)
       IJK = NEQ(2)

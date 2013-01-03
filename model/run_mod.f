@@ -276,4 +276,18 @@
 ! for m = 1 then carnahan and starling rdf used
       CHARACTER(64)    RDF_TYPE 
 
+!QX
+!                      Previous Start-time of the run.
+      DOUBLE PRECISION TIME_OLD
+!                      Previous Time step.
+      DOUBLE PRECISION DT_OLD
+!                      Option to restart iteration with lower time step 
+!                      when diverging due to strong chemical source term
+      LOGICAL          RESTART_REACTION
+
+      DOUBLE PRECISION TIME_isat_OLD
+!                       Option to turn on the variable solids density model
+      LOGICAL          SOLID_RO_V
+!end
+
       END MODULE RUN

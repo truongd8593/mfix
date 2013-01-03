@@ -106,7 +106,8 @@
 
                   EPCOR = EP_S(IJK,M) + EPP(IJK) 
                ENDIF 
-               ROP_S(IJK,M) = MAX(ZERO,RO_S(M)*EPCOR) 
+!QX               
+               ROP_S(IJK,M) = MAX(ZERO,RO_SV(IJK,M)*EPCOR) 
             ENDIF 
          ENDDO 
 ! end correct solids volume fraction

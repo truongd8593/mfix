@@ -103,6 +103,9 @@
           call send_recv(V_g,2)
           call send_recv(W_g,2)
           call send_recv(ROP_S,2)
+!QX
+      call send_recv(RO_S,2)
+!QX
           call send_recv(T_S,2)
           call send_recv(U_S,2)
           call send_recv(V_S,2)
@@ -148,7 +151,9 @@
       DO LC = 1, MMAX 
 !
         call gatherWriteRes (ROP_s(:,LC),array2, array1, NEXT_REC)  !//d pnicol
-        
+!QX
+        call gatherWriteRes (RO_SV(:,LC),array2, array1, NEXT_REC)  !//d pnicol
+!end
 !
         call gatherWriteRes (T_s(:,LC),array2, array1, NEXT_REC)  !//d pnicol
 !

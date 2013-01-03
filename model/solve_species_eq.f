@@ -71,7 +71,9 @@
       DOUBLE PRECISION :: SUM_R_S_temp(DIMENSION_3, DIMENSION_M) 
 ! tmp array to pass to set_chi
       DOUBLE PRECISION :: X_s_temp(DIMENSION_3, DIMENSION_N_s) 
-
+!
+!QX
+      DOUBLE PRECISION EP_SS_L_TOT
 ! temporary use of global arrays:
 ! array1 (locally s_p) 
 ! source lhs: coefficient of dependent variable
@@ -258,6 +260,34 @@
 !               call out_array(X_s(1,m,LN), 'X_s')
 
             END DO 
+
+!QX
+            IF (M == 2 ) THEN
+               DO IJK = ijkstart3, ijkend3
+                  IF (FLUID_AT(IJK)) THEN 
+                     EP_SS_L_TOT = 0.D0
+                     DO LN = 1,NMAX(M)
+!                       vol fraction 
+                        EP_SS(IJK,M,LN) = ( ROP_S(IJK,M) * X_S(IJK,M,LN) )/&
+                             ( RO_SS(M,LN) )
+                        EP_SS_L_TOT = EP_SS_L_TOT + EP_SS(IJK,M,LN)
+                     ENDDO
+                     IF(EP_SS_L_TOT .GT. 0.D0) THEN
+!                       phase density
+                        RO_SV(IJK,M) = ROP_S(IJK,M)/EP_SS_L_TOT
+                     ENDIF
+
+                     if(ROP_s(IJK,M) .eq. 0.E0) then
+                        if(RO_SV(IJK,M) .eq. 0.d0) then
+                           write(*,*) 'WARNING: zero ro_s in solve_species_eq.f'
+                        endif
+                     endif
+
+                  ENDIF
+               ENDDO
+            ENDIF
+!end
+
             if(chi_scheme) call unset_chi(IER)
          ENDIF ! check for any species in phase m
       END DO ! for m = 1, mmax

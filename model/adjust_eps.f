@@ -74,7 +74,8 @@
                   EPSUM = ZERO 
 		  epsMix = ZERO
                   DO M = 1, SMAX 
-                     epSolid = ROP_S(IJK,M)/RO_S(M)
+!QX
+                     epSolid = ROP_S(IJK,M)/RO_SV(IJK,M)
 		     epsMix = epsMix +  epSolid
 		     IF (epSolid < ZERO_EP_S) THEN 
 

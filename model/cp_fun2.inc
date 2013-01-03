@@ -33,7 +33,6 @@
 !      CPN2(XXX)= ( 6.5d0 + 0.001d0*XXX )/28.d0
       CPNH3(XXX)= ( 6.7d0 + 0.0063d0*XXX )/17.d0
 !     Perry & Chilton,  page 3-136 (tar oils - 200 C)
-      CPTAR(XXX)= 0.45d0
 !     Smith & Van Ness (1959), p. 122 (Table 5-1)
       CPC2H4(XXX)= (2.83d0 + 28.6D-3*XXX - 8.726D-6*XXX**2)/28.d0
       CPC2H6(XXX)= (2.247d0 + 38.2D-3*XXX - 11.05D-6*XXX**2)/30.d0
@@ -58,3 +57,9 @@
       
       CPSi(XXX)     = 0.1442d0  !?
       CPAl2O3(XXX)  = 0.1442d0  !?
+!QX
+
+      CPGAS(XXX)    = 0.263d0 !(cal/g K)
+      CPTAR(XXX)    = 0.598d0 !(cal/g K)
+      CPBIO(XXX)    = 0.55d0  !(cal/g K)
+      CPBIOCHAR(XXX)   = 1.6d0/4.1868d0 !(cal/g K)

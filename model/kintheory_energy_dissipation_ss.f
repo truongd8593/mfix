@@ -59,7 +59,9 @@
           IF ( FLUID_AT(IJK) ) THEN
 !
                D_PM = D_P(IJK,M)
-               M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
+!QX
+               M_PM = (PI/6.d0)*(D_PM**3)*RO_SV(IJK,M)
+
                NU_PM = ROP_S(IJK,M)/M_PM
 
                DO L = 1, MMAX
@@ -67,7 +69,9 @@
                     LM = FUNLM(L,M)
 ! 
                     D_PL = D_P(IJK,L)
-                    M_PL = (PI/6.d0)*(D_PL**3)*RO_S(L)
+
+                    M_PL = (PI/6.d0)*(D_PL**3)*RO_SV(IJK,L)
+
                     MPSUM = M_PM + M_PL
                     DPSUMo2 = (D_PM+D_PL)/2.d0
                     NU_PL = ROP_S(IJK,L)/M_PL

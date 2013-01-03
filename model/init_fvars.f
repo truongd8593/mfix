@@ -102,6 +102,9 @@
             IF (NMAX(M) > 0) THEN 
                X_S(IJKSTART3:IJKEND3,M,:NMAX(M)) = ZERO 
             ENDIF 
+!QX
+            RO_SV(IJKSTART3:IJKEND3,M) = 1.d0
+
          ENDIF 
       END DO 
       RETURN  

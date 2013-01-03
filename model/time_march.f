@@ -81,6 +81,9 @@
       USE vtk
       USE qmom_kinetic_equation
       USE dashboard
+!QX
+      USE indices
+      USE bc
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local parameters
@@ -551,7 +554,8 @@
 
      
 ! Update previous-time-step values of field variables
-      CALL UPDATE_OLD 
+!QX
+      CALL UPDATE_OLD(0) 
 
 ! Calculate coefficients
       CALL CALC_COEFF_ALL (0, IER) 
@@ -621,6 +625,9 @@
 
      
 ! Adjust time step and reiterate if necessary
+!QX
+      DT_OLD = DT
+!end
       DO WHILE (ADJUST_DT(IER,NIT))
          CALL ITERATE (IER, NIT) 
       ENDDO
@@ -641,7 +648,19 @@
          IF(AUTO_RESTART) AUTOMATIC_RESTART = .TRUE.
          RETURN
       ENDIF
-
+!!
+!QX restarting
+300      continue
+         IF (RESTART_REACTION) THEN
+            TIME = TIME_OLD
+            TIME_ISAT = TIME_ISAT_OLD
+            CALL RESET_NEW(1)  ! reset and restart
+         ELSE
+            TIME_OLD = TIME
+            TIME_ISAT_OLD = TIME_ISAT
+            CALL UPDATE_OLD(1)
+         ENDIF
+!end QX     
       
 ! Check over mass and elemental balances.  This routine is not active by default.
 ! Edit the routine and specify a reporting interval to activate it.
@@ -659,6 +678,8 @@
 ! Advance the time step and continue
       IF (CALL_ISAT .OR. CALL_DI) THEN 
          CALL MCHEM_TIME_MARCH
+!QX  reduce chemistry dt and restart
+         if(RESTART_REACTION) goto 300
       ENDIF
       IF (CALL_DQMOM) CALL USR_DQMOM
 

@@ -295,6 +295,11 @@
              ENDDO
           ENDIF   ! end if/else (mmax==1 .and. mcp /= undefined)
 
+!QX
+!     Solve species mass balance equations
+          CALL SOLVE_SPECIES_EQ (IER)
+!end
+
           IF(TRIM(KT_TYPE) .eq. 'GHD') CALL ADJUST_EPS_GHD
           CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
 
@@ -375,8 +380,12 @@
          ENDIF
       ENDIF
       
+!QX
+! solved after continuity eq
 ! Solve species mass balance equations
-      CALL SOLVE_SPECIES_EQ (IER) 
+!      CALL SOLVE_SPECIES_EQ (IER) 
+!
+!end
 
 ! Solve other scalar transport equations
       IF(NScalar /= 0) CALL SOLVE_Scalar_EQ (IER) 

@@ -381,8 +381,9 @@
 ! Body force
                   IF (MODEL_B) THEN 
                      IF (TRIM(KT_TYPE) /= 'GHD') THEN
-                       DRO1 = (RO_S(M)-RO_G(IJK))*EP_S(IJK,M) 
-                       DRO2 = (RO_S(M)-RO_G(IJKN))*EP_S(IJKN,M) 
+!QX                     
+                       DRO1 = (RO_SV(IJK,M)-RO_G(IJK))*EP_S(IJK,M) 
+                       DRO2 = (RO_SV(IJK,M)-RO_G(IJKN))*EP_S(IJKN,M) 
                        DROA = AVG_Y(DRO1,DRO2,J) 
                        VBF = DROA*BFY_S(IJK,M) 
                      ELSE ! GHD and M = MMAX

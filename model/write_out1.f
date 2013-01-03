@@ -92,6 +92,15 @@
          call gather (ROP_s(:,LC),array1,root)    !//
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'ROP_s') 
+!QX
+         if (LC == 2) then
+            if (myPE == PE_IO) WRITE (UNIT_OUT, *) 'solid phase ', LC, 'at t= ', TIME 
+            call gather (RO_SV(:,LC),array1,root)
+            if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'RO_S')
+            call gather (ERR_ARRAY(:,LC),array1,root)
+            if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'ERR_EPS')            
+         endif
+!end
       END DO 
       if (myPE == PE_IO) WRITE (UNIT_OUT, 1500) CHAR(12), TIME 
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here

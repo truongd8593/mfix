@@ -345,6 +345,8 @@
 ! Average scalars modified to include all solid phases
       DOUBLE PRECISION :: EPs_avg(DIMENSION_M), DP_avg(DIMENSION_M), &
                           TH_avg(DIMENSION_M)
+!QX
+      DOUBLE PRECISION ROs_avg(DIMENSION_M)
 ! Average Simonin variables
       DOUBLE PRECISION :: K_12_avg, Tau_12_avg
 ! values of U_sm, V_sm, W_sm at appropriate place on boundary wall
@@ -405,6 +407,8 @@
          EPs_avg(MM) = EP_s(IJK2,MM)
          DP_avg(MM)  = D_P(IJK2,MM)
          g0EPs_avg   = g0EPs_avg + G_0(IJK2, M, MM)*EP_s(IJK2,MM)
+!QX
+         ROs_avg(MM) = RO_SV(IJK2,MM)
       ENDDO
 
 
@@ -687,7 +691,7 @@
       VREL = DSQRT( (UGC-USCM)**2 + (VGC-VSCM)**2 + (WGC-WSCM)**2 )
 
       CALL THETA_Hw_Cw(g0, EPs_avg, EPg_avg, ep_star_avg, &
-                       g0EPs_avg, TH_avg,Mu_g_avg,RO_g_avg, &
+                       g0EPs_avg, TH_avg,Mu_g_avg,RO_g_avg, ROs_avg, &
                        DP_avg, K_12_avg,Tau_12_avg,VREL,VSLIPSQ,VWDOTN,&
                        GNUWDOTN,GTWDOTN,M,Gw,Hw,Cw,L)
 !
@@ -736,7 +740,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE THETA_HW_CW(g0,EPS,EPG, ep_star_avg, &
-                             g0EPs_avg,TH,Mu_g_avg,RO_g_avg, DP_avg, &
+                             g0EPs_avg,TH,Mu_g_avg,RO_g_avg, ROs_avg, DP_avg, &
                              K_12_avg,Tau_12_avg,VREL,VSLIPSQ,VWDOTN,&
                              GNUWDOTN,GTWDOTN,M,GW,HW,CW,L)
 
@@ -771,6 +775,8 @@
       DOUBLE PRECISION, INTENT(IN) :: Mu_g_avg
 ! Average gas density
       DOUBLE PRECISION, INTENT(IN) :: RO_g_avg
+!QX
+      DOUBLE PRECISION, INTENT(IN) :: ROS_avg(DIMENSION_M)
 ! Average particle diameter of each solids phase
       DOUBLE PRECISION, INTENT(IN) :: DP_avg(DIMENSION_M)
 ! Average cross-correlation K_12 and lagrangian integral time-scale
@@ -846,18 +852,19 @@
       IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
 
 ! Use original IA theory if SWITCH_IA is false
-         IF(.NOT. SWITCH_IA) g0EPs_avg = EPS(M)*RO_S(M)
+!QX: !Dimenson of RO_S was changed
+          IF(.NOT. SWITCH_IA) g0EPs_avg = EPS(M)*ROS_avg(M)
 
          D_PM = DP_avg(M)        
-         M_PM = (PI/6.d0)*(D_PM**3.)*RO_S(M)
-         NU_PM = (EPS(M)*RO_S(M))/M_PM
+         M_PM = (PI/6.d0)*(D_PM**3.)*ROS_avg(M)
+         NU_PM = (EPS(M)*ROS_avg(M))/M_PM
 
          K_s_sum = ZERO
          Kvel_s_sum = ZERO
          Knu_s_sum = ZERO
          Kth_s_sum = ZERO
 
-         Kgran = (75.d0/384.d0)*RO_s(M)*D_PM*DSQRT(Pi*TH(M)/M_PM)
+         Kgran = (75.d0/384.d0)*ROs_avg(M)*D_PM*DSQRT(Pi*TH(M)/M_PM)
 
 ! This is from Wen-Yu correlation, you can put here your own single particle drag 
          Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
@@ -876,7 +883,7 @@
             Kgran_star = ZERO
          ELSE
             Kgran_star = Kgran*g0(M)*EPS(M)/ &
-               (g0EPs_avg+ 1.2d0*DgA*Kgran / (RO_S(M)**2 *(TH(M)/M_PM)))
+               (g0EPs_avg+ 1.2d0*DgA*Kgran / (ROS_avg(M)**2 *(TH(M)/M_PM)))
          ENDIF
 
          K_s_MM = (Kgran_star/(M_PM*g0(M)))*&  ! Kth doesn't include the mass.
@@ -884,10 +891,10 @@
 
          DO LL = 1, SMAX
             D_PL = DP_avg(LL)
-            M_PL = (PI/6.d0)*(D_PL**3.)*RO_S(LL)
+            M_PL = (PI/6.d0)*(D_PL**3.)*ROS_avg(LL)
             MPSUM = M_PM + M_PL
             DPSUMo2 = (D_PM+D_PL)/2.d0
-            NU_PL = (EPS(LL)*RO_S(LL))/M_PL
+            NU_PL = (EPS(LL)*ROS_avg(LL))/M_PL
 
             IF ( LL .eq. M) THEN
                K_s_sum = K_s_sum + K_s_MM
@@ -995,12 +1002,12 @@
 ! of granular temperature (JJ BC do not have mass in definition
 ! of granular temperature)
          HW = (PI*DSQRT(3.d0)/(4.d0*(ONE-ep_star_avg)))*(1.d0-e_w*e_w)*&
-            RO_s(M)*EPS(M)*g0(M)*DSQRT(TH(M)/M_PM)
+            ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M)/M_PM)
           if(.NOT. BC_JJ_M)then                
-          CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*PHIP*RO_s(M)*&
+          CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*PHIP*ROs_avg(M)*&
                EPS(M)*g0(M)*DSQRT(TH(M)*M_PM)*VSLIPSQ
           else
-          CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*PHIP_JJ(dsqrt(vslipsq),th(m))*RO_s(M)*&
+          CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*PHIP_JJ(dsqrt(vslipsq),th(m))*ROs_avg(M)*&
                EPS(M)*g0(M)*DSQRT(TH(M)*M_PM)*VSLIPSQ
           endif
 
@@ -1022,8 +1029,8 @@
 
       ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
          D_PM = DP_avg(M)        
-         M_PM = (PI/6.d0)*(D_PM**3.)*RO_S(M)
-         NU_PM = (EPS(M)*RO_S(M))/M_PM
+         M_PM = (PI/6.d0)*(D_PM**3.)*ROS_avg(M)
+         NU_PM = (EPS(M)*ROS_avg(M))/M_PM
 
 ! This is from Wen-Yu correlation, you can put here your own single particle drag
          Re_g = EPG*RO_g_avg*DP_avg(M)*VREL/Mu_g_avg
@@ -1072,9 +1079,9 @@
          ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
             Kgran_star = ZERO
          ELSE
-            Kgran_star = RO_S(M)*EPS(M)* G0(M)*TH(M)* kappa0/ &
-               (RO_S(M)*G0(M)*EPS(M)*TH(M) + &
-               1.2d0*DgA*kappa0/RO_S(M))     ! Note dgA is ~F_gs/ep_s
+            Kgran_star = ROS_avg(M)*EPS(M)* G0(M)*TH(M)* kappa0/ &
+               (ROS_avg(M)*G0(M)*EPS(M)*TH(M) + &
+               1.2d0*DgA*kappa0/ROs_avg(M))     ! Note dgA is ~F_gs/ep_s
          ENDIF
   
 ! setting the coefficients for JJ BC         
@@ -1082,13 +1089,13 @@
          GW = Kgran_star * kappa_star
 
          HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*(1d0-e_w*e_w)*&
-            RO_s(M)*EPS(M)*g0(M)*DSQRT(TH(M))
+            ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))
  
           if(.NOT. BC_JJ_M)then 
-          CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*RO_s(M)*&
+          CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*ROs_avg(M)*&
                EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
           else
-          CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP_JJ(dsqrt(vslipsq),th(m))*RO_s(M)*&
+          CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP_JJ(dsqrt(vslipsq),th(m))*ROs_avg(M)*&
                EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
 	  endif
 
@@ -1109,7 +1116,7 @@
       ELSE   ! No modifications to original mfix if 
              ! IA or GD99 theories are not used
  
-         Kgran = 75d0*RO_s(M)*DP_avg(M)*DSQRT(Pi*TH(M))/(48*Eta*(41d0-33d0*Eta))
+         Kgran = 75d0*ROs_avg(M)*DP_avg(M)*DSQRT(Pi*TH(M))/(48*Eta*(41d0-33d0*Eta))
  
          Re_g = EPG*RO_g_avg*DP_avg(M)*VREL/Mu_g_avg
          IF (Re_g.lt.1000d0) THEN
@@ -1122,7 +1129,7 @@
          Beta = SWITCH*EPS(M)*DgA
 
 ! particle relaxation time
-         Tau_12_st = RO_s(M)/(DgA+small_number)
+         Tau_12_st = ROs_avg(M)/(DgA+small_number)
  
 ! SWITCH enables us to turn on/off the modification to the
 ! particulate phase viscosity. If we want to simulate gas-particle
@@ -1134,9 +1141,9 @@
          ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
             Kgran_star = ZERO
          ELSE
-            Kgran_star = RO_S(M)*EPS(M)* g0(M)*TH(M)* Kgran/ &
-               (RO_S(M)*g0EPs_avg*TH(M) + &
-               1.2d0*SWITCH*DgA/RO_S(M)* Kgran)
+            Kgran_star = ROs_avg(M)*EPS(M)* g0(M)*TH(M)* Kgran/ &
+               (ROs_avg(M)*g0EPs_avg*TH(M) + &
+               1.2d0*SWITCH*DgA/ROs_avg(M)* Kgran)
          ENDIF
  
          K_1 = Kgran_star/g0(M)*(&
@@ -1163,10 +1170,10 @@
             Kappa_Col = 18.d0/5.d0*EPS(M)*g0(M)*Eta* (Kappa_kin+ &
                5.d0/9.d0*DP_avg(M)*DSQRT(TH(M)/PI))
 
-            K_1 =  EPS(M)*RO_s(M)*(Kappa_kin + Kappa_Col)
+            K_1 =  EPS(M)*ROs_avg(M)*(Kappa_kin + Kappa_Col)
  
          ELSEIF(AHMADI) THEN
-            K_1 =  0.1306D0*RO_s(M)*DP_avg(M)*(ONE+C_e**2)* (  &
+            K_1 =  0.1306D0*ROs_avg(M)*DP_avg(M)*(ONE+C_e**2)* (  &
                ONE/g0(M)+4.8D0*EPS(M)+12.1184D0 *EPS(M)*EPS(M)*g0(M) )*&
                DSQRT(TH(M))
 
@@ -1181,34 +1188,34 @@
             IF(AHMADI) THEN
 ! Ahmadi model uses different solids pressure model
                HW = 3.D0/8.D0*DSQRT(3.D0*TH(M))*((1d0-e_w))*&
-                  RO_s(M)*EPS(M)*((ONE + 4.0D0*g0EPs_avg) +&
+                  ROs_avg(M)*EPS(M)*((ONE + 4.0D0*g0EPs_avg) +&
                   HALF*(ONE -C_e*C_e))
 
 ! the coefficient mu in Jenkins paper is defined as tan_Phi_w, that's how
 ! I understand it from soil mechanic papers, i.e., G.I. Tardos, powder
 ! Tech. 92 (1997), 61-74. See his equation (1). Define Phi_w in mfix.dat!
                CW = tan_Phi_w*tan_Phi_w*(ONE+e_w)*21.d0/16.d0*&
-                  DSQRT(3.D0*TH(M)) *RO_s(M)*EPS(M)*&
+                  DSQRT(3.D0*TH(M)) *ROs_avg(M)*EPS(M)*&
                   ((ONE + 4.0D0*g0EPs_avg) + HALF*(ONE -C_e*C_e))*TH(M)
 
             ELSE  
 ! Simonin or granular models use same solids pressure
                HW = 3.D0/8.D0*DSQRT(3.*TH(M))*((1d0-e_w))*&
-                  RO_s(M)*EPS(M)*(1d0+ 4.D0*Eta*g0EPs_avg)
+                  ROs_avg(M)*EPS(M)*(1d0+ 4.D0*Eta*g0EPs_avg)
                CW = tan_Phi_w*tan_Phi_w*(ONE+e_w)*21.D0/16.D0*&
-                  DSQRT(3.D0*TH(M))*RO_s(M)*EPS(M)*&
+                  DSQRT(3.D0*TH(M))*ROs_avg(M)*EPS(M)*&
                   (1d0+ 4.D0*Eta*g0EPs_avg)*TH(M)
             ENDIF   ! end if for Ahmadi
  
          ELSE   ! if(.not.jenkins) branch
 
             HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*(1d0-e_w*e_w)*&
-               RO_s(M)*EPS(M)*g0(M)*DSQRT(TH(M))
+               ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))
                if(.NOT. BC_JJ_M)then 
-               CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*RO_s(M)*&
+               CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*ROs_avg(M)*&
                     EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
                else
-               CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP_JJ(dsqrt(vslipsq),th(m))*RO_s(M)*&
+               CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP_JJ(dsqrt(vslipsq),th(m))*ROs_avg(M)*&
                     EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ  
                endif	
 

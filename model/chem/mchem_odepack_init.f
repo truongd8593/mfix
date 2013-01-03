@@ -14,6 +14,7 @@
 !   M o d u l e s 
 !-----------------------------------------------
       USE mchem
+      USE run
       IMPLICIT NONE
 !
 !-----------------------------------------------
@@ -48,16 +49,36 @@
 ! 
       INTEGER         NL
 !
-      ITOL = 2
-      RTOL = 1.0D-3
-      DO NL = 1, 12
-         ATOL(NL) = 1.0D-5
-      END DO
+!     The part that user must modify
+!     user define the tolerances for ODEPACK according ITOL
 
-      ATOL(2) = 1.0d-2
-      ATOL(9) = 1.0d-2      
-      JT     =1
-      IOPT   = 0
+      IF(.NOT. SOLID_RO_V) THEN !constant particle density
+         IF(.NOT. (allocated(ATOL))) allocate(ATOL(12))
+         ITOL = 2
+         RTOL = 1.0D-3
+         DO NL = 1, 12
+            ATOL(NL) = 1.0D-5
+         END DO
+
+         ATOL(2) = 1.0d-2
+         ATOL(9) = 1.0d-2      
+         JT     =1
+         IOPT   = 0
+      ENDIF
+!QX
+      IF(SOLID_RO_V) THEN !variable particle density
+         IF(.NOT. (allocated(ATOL))) allocate(ATOL(25))
+         ITOL = 2
+         RTOL = 1.0D-3
+         
+         DO NL = 1, 25
+            ATOL(NL) = 1.0D-5
+         END DO
+
+         JT     =2
+         
+         IOPT   = 1
+      ENDIF
 
       RETURN
       END SUBROUTINE MCHEM_ODEPACK_INIT

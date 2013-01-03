@@ -332,6 +332,12 @@
       MW_S = UNDEFINED
       EP_STAR = UNDEFINED 
 
+!QX
+!     density of each component
+      RO_SS = UNDEFINED
+      SOLID_RO_V = .FALSE.
+!end
+
       NMAX_g = UNDEFINED_I
       SPECIES_g(:) = UNDEFINED_C
       SPECIES_ALIAS_g(:) = UNDEFINED_C

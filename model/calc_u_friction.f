@@ -71,6 +71,8 @@
 ! Average scalars
       DOUBLE PRECISION :: EP_avg, EPg_avg, TH_avg, Mu_g_avg, RO_g_avg,Dp_avg
       DOUBLE PRECISION :: AVGX1, AVGX2, smallTheta
+!QX
+      DOUBLE PRECISION ROS_avg
 ! void fraction at packing
       DOUBLE PRECISION :: ep_star_avg
 ! Average Simonin and Ahmadi variables (sof)
@@ -134,6 +136,8 @@
         Mu_g_avg = AVG_X(Mu_g(IJK2), Mu_g(IJK2E), I_OF(IJK2))
         RO_g_avg = AVG_X(RO_g(IJK2), RO_g(IJK2E), I_OF(IJK2))
         DP_avg   = AVG_X(D_P(IJK2,M), D_P(IJK2E,M), I_OF(IJK2))
+!QX
+        ROs_avg = AVG_X(RO_SV(IJK2, M), RO_SV(IJK2E, M), I_OF(IJK2))
 
         IF(.NOT.GRANULAR_ENERGY) THEN
            TH_avg = AVG_X(THETA_M(IJK2,M), THETA_M(IJK2E,M), I_OF(IJK2))
@@ -326,6 +330,8 @@
         Mu_g_avg = AVG_Y(Mu_g(IJK2), Mu_g(IJK2N), J_OF(IJK2))
         RO_g_avg = AVG_Y(RO_g(IJK2), RO_g(IJK2N), J_OF(IJK2))
         DP_avg   = AVG_Y(D_P(IJK2,M), D_P(IJK2N,M), J_OF(IJK2))
+!QX
+        ROs_avg = AVG_Y(RO_SV(IJK2, M), RO_SV(IJK2N, M), J_OF(IJK2))
 
         IF(.NOT.GRANULAR_ENERGY) THEN
            TH_avg = AVG_Y(THETA_M(IJK2,M), THETA_M(IJK2N,M), J_OF(IJK2))
@@ -533,7 +539,9 @@
         ep_star_avg = AVG_Z(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
         Mu_g_avg = AVG_Z(Mu_g(IJK2), Mu_g(IJK2T), K_OF(IJK2))
         RO_g_avg =  AVG_Z(RO_g(IJK2), RO_g(IJK2T), K_OF(IJK2))
-        DP_avg   = AVG_Z(D_P(IJK2,M), D_P(IJK2T,M), K_OF(IJK2))         
+        DP_avg   = AVG_Z(D_P(IJK2,M), D_P(IJK2T,M), K_OF(IJK2))    
+!QX
+        ROs_avg = AVG_Z(RO_SV(IJK2, M), RO_SV(IJK2T, M), K_OF(IJK2))     
 
         IF(.NOT.GRANULAR_ENERGY) THEN
            TH_avg = AVG_Z(THETA_M(IJK2,M), THETA_M(IJK2T,M), K_OF(IJK2))
@@ -745,7 +753,7 @@
            S_DDOT_S, S_dd)
  
         CALL CALC_Gw_Hw_Cw(g0, EP_avg, EPg_avg, ep_star_avg, &
-           g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, &
+           g0EP_avg, TH_avg, Mu_g_avg, RO_g_avg, ROs_avg, &
            DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP,&
            DEL_DOT_U, S_DDOT_S, S_dd, VELS, WVELS, M, gw, hw, cw)
       ENDIF
@@ -779,7 +787,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
  
       SUBROUTINE CALC_Gw_Hw_Cw(g0, EPS, EPG, ep_star_avg, &
-            g0EP_avg, TH, Mu_g_avg, RO_g_avg, &
+            g0EP_avg, TH, Mu_g_avg, RO_g_avg, ROs_avg, &
             DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP,&
             DEL_U, S_S, S_dd, VEL, W_VEL, M, gw, hw, cw)
 
@@ -813,6 +821,8 @@
       DOUBLE PRECISION, INTENT(IN) :: Mu_g_avg
 ! Average gas density
       DOUBLE PRECISION, INTENT(IN) :: RO_g_avg
+!QX: Average solids density
+      DOUBLE PRECISION, INTENT(IN) :: ROS_avg
 ! Average particle diameter of each solids phase
       DOUBLE PRECISION, INTENT(IN) :: DP_avg
 ! Average cross-correlation K_12 and lagrangian integral time-scale
@@ -906,25 +916,27 @@
 ! I understand it from soil mechanic papers, i.e., G.I. Tardos, powder
 ! Tech. 92 (1997), 61-74. See his equation (1). Define Phi_w in mfix.dat!
 ! here F_2 divided by VSLIP to use the same bc as Johnson&Jackson
-              F_2 = tan_Phi_w*RO_s(M)*EPS* &
+
+!QX: RO_S(M) replaced by ROS_avg
+              F_2 = tan_Phi_w*ROS_avg*EPS* &
                  ((ONE + 4.0D0*g0EP_avg) + HALF*(ONE -C_e*C_e))*TH/VSLIP
 
            ELSE
 ! Simonin or granular models use same solids pressure
-              F_2 = tan_Phi_w*RO_s(M)*EPS*(1d0+ 4.D0 * Eta *g0EP_avg)*TH/VSLIP
+              F_2 = tan_Phi_w*ROS_avg*EPS*(1d0+ 4.D0 * Eta *g0EP_avg)*TH/VSLIP
            ENDIF   ! end if(Ahmadi)
 
         ENDIF ! endif(vslip==0)
 
       ELSE    ! if(.not.jenkins)
 
-         F_2 = (PHIP*DSQRT(3d0*TH)*Pi*RO_s(M)*EPS*g0_loc)&
+         F_2 = (PHIP*DSQRT(3d0*TH)*Pi*ROS_avg*EPS*g0_loc)&
               /(6d0*(ONE-ep_star_avg))
 
       ENDIF   ! end if(Jenkins)/else 
  
 
-      Mu = (5d0*DSQRT(Pi*TH)*Dp_avg*RO_s(M))/96d0 
+      Mu = (5d0*DSQRT(Pi*TH)*Dp_avg*ROS_avg)/96d0 
       Mu_b = (256d0*Mu*EPS*g0EP_avg)/(5d0*Pi) 
 
 ! This is from Wen-Yu correlation, you can put here your own single particle drag 
@@ -948,8 +960,8 @@
       ELSEIF(TH .LT. SMALL_NUMBER)THEN
          MU_star = ZERO
       ELSE
-         Mu_star = RO_S(M)*EPS* g0_loc*TH* Mu/ &
-            (RO_S(M)*g0EP_avg*TH + 2.0d0*SWITCH*DgA/RO_S(M)* Mu)
+         Mu_star = ROS_avg*EPS* g0_loc*TH* Mu/ &
+            (ROS_avg*g0EP_avg*TH + 2.0d0*SWITCH*DgA/ROS_avg* Mu)
       ENDIF
 
       Mu_s = ((2d0+ALPHA)/3d0)*((Mu_star/(Eta*(2d0-Eta)*&
@@ -958,7 +970,7 @@
                    g0EP_avg)+(0.6d0*Mu_b*Eta))
 
 ! particle relaxation time
-      Tau_12_st = RO_s(M)/(DgA+small_number)
+      Tau_12_st = ROS_avg/(DgA+small_number)
 
       IF(SIMONIN) THEN !see calc_mu_s for explanation of these definitions
 
@@ -971,7 +983,7 @@
                      (ONE+ zeta_c_2*EPS*g0_loc))*Tau_2
          Mu_2_Col = 8.D0/5.D0*EPS*g0_loc*Eta* (MU_2_T_Kin+ &
                    Dp_avg*DSQRT(TH/PI))
-         Mu_s = EPS*RO_s(M)*(MU_2_T_Kin + Mu_2_Col)
+         Mu_s = EPS*ROS_avg*(MU_2_T_Kin + Mu_2_Col)
       ELSEIF(AHMADI) THEN
          IF(EPS < (ONE-ep_star_avg)) THEN
             Tmp_Ahmadi_Const = &
@@ -981,7 +993,7 @@
          ENDIF
          Mu_s = Tmp_Ahmadi_Const &
              *0.1045D0*(ONE/g0_loc+3.2D0*EPS+12.1824D0*g0_loc*EPS*EPS)  &
-             *Dp_avg*RO_s(M)* DSQRT(TH)
+             *Dp_avg*ROS_avg* DSQRT(TH)
       ENDIF
  
 ! Calculating frictional terms
@@ -991,7 +1003,7 @@
          ZETA = 1d0
       ELSE
          IF (SAVAGE.EQ.1) THEN    !form of Savage
-            ZETA = ((48d0*Eta*(1d0-Eta)*RO_s(M)*EPS*EPS*g0_loc*&
+            ZETA = ((48d0*Eta*(1d0-Eta)*ROS_avg*EPS*EPS*g0_loc*&
                     (TH**1.5d0))/&
                     (SQRT_Pi*Dp_avg*2d0*Mu_s))**0.5d0 
          ELSEIF (SAVAGE.EQ.0)  THEN !S:S form
