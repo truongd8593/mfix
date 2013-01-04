@@ -168,7 +168,7 @@
          call readScatterRes(ROP_S(:,LC), array2, array1, 0, NEXT_REC)
 
 !QX
-         call readScatterRes(RO_SV(:,LC), array2, array1, 0, NEXT_REC)
+         IF(SOLID_RO_V) call readScatterRes(RO_SV(:,LC), array2, array1, 0, NEXT_REC)
 !end
 
          IF (VERSION_NUMBER >= 1.15) THEN
