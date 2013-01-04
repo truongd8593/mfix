@@ -127,7 +127,7 @@
             DO IJK = ijkstart3, ijkend3
 
                D_PM = D_P(IJK,M)
-               M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
+               M_PM = (PI/6.d0)*(D_PM**3)*RO_SV(IJK,M)
 
 ! In Iddir & Arastoopour (2005) the granular temperature includes 
 ! mass of the particle in the definition.
@@ -192,7 +192,7 @@
                       EP_g(IJK) .LT. EP_g_blend_start(ijk)) THEN 
 
                      D_PM = D_P(IJK,M)
-                     M_PM = (PI/6.d0)*(D_PM**3)*RO_S(M)
+                     M_PM = (PI/6.d0)*(D_PM**3)*RO_SV(IJK,M)
                      A_M(IJK,1,M) = ZERO 
                      A_M(IJK,-1,M) = ZERO 
                      A_M(IJK,2,M) = ZERO 
@@ -252,7 +252,7 @@
          DO IJK = ijkstart3, ijkend3
 
             DO L = 1,SMAX
-               M_PM = (PI/6.d0)*(D_P(IJK,L)**3)*RO_S(L)
+               M_PM = (PI/6.d0)*(D_P(IJK,L)**3)*RO_SV(IJK,L)
                TOT_SUM_RS(IJK) = TOT_SUM_RS(IJK) + SUM_R_S(IJK,L)/M_PM
                TOT_NO(IJK) = TOT_NO(IJK) + ROP_SO(IJK,L)/M_PM
                IF (FLUID_AT(IJK)) TOT_EPS(IJK) = TOT_EPS(IJK) + EP_S(IJK,L)

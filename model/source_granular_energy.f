@@ -109,7 +109,7 @@
           VSLIP = DSQRT(VSLIP) 
 
           SOURCERHS = SOURCERHS + (SWITCH*81D0*EP_S(IJK,M)*(MU_G(IJK)*VSLIP)**2D0/(&
-              G_0(IJK,M,M)*D_P(IJK,M)**3D0*RO_S(M)*(PI*THETA_M(IJK,M)+SMALL_NUMBER)**&
+              G_0(IJK,M,M)*D_P(IJK,M)**3D0*RO_SV(IJK,M)*(PI*THETA_M(IJK,M)+SMALL_NUMBER)**&
               0.5D0))*VOL(IJK) 
 
       ENDIF
@@ -337,7 +337,7 @@
       WsM_p = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M) )
  
       D_PM = D_P(IJK,M) 
-      M_PM = (Pi/6.d0)*D_PM**3 * RO_S(M)
+      M_PM = (Pi/6.d0)*D_PM**3 * RO_SV(IJK,M)
       NU_PM_p = ROP_S(IJK,M)/M_PM
       NU_PM_E = ROP_S(IJKE,M)/M_PM
       NU_PM_W = ROP_S(IJKW,M)/M_PM
@@ -363,7 +363,7 @@
 
       DO L = 1, MMAX
           D_PL = D_P(IJK,L) 
-          M_PL = (Pi/6.d0)*D_PL**3 * RO_S(L)
+          M_PL = (Pi/6.d0)*D_PL**3 * RO_SV(IJK,L)
           NU_PL_p = ROP_S(IJK,L)/M_PL
           NU_PL_E = ROP_S(IJKE,L)/M_PL
           NU_PL_W = ROP_S(IJKW,L)/M_PL
@@ -650,7 +650,7 @@
       S15b_rhs = ZERO
 
       D_PM = D_P(IJK,M) 
-      M_PM = (Pi/6.d0)*D_PM**3 * RO_S(M)
+      M_PM = (Pi/6.d0)*D_PM**3 * RO_SV(IJK,M)
       NU_PM_p = ROP_S(IJK,M)/M_PM
       NU_PM_E = ROP_S(IJKE,M)/M_PM
       NU_PM_W = ROP_S(IJKW,M)/M_PM
@@ -728,7 +728,7 @@
 
 !     production by gas-particle slip: Koch & Sangani (1999)
           Kslip = SWITCH*81.d0*EP_s(IJK,M)*(MU_G(IJK)*VSLIP)**2.d0 / &
-               (G_0(IJK,M,M)*D_P(IJK,M)**3.D0*RO_S(M)*DSQRT(PI)) 
+               (G_0(IJK,M,M)*D_P(IJK,M)**3.D0*RO_SV(IJK,M)*DSQRT(PI)) 
 
           Tslip_rhs = 1.5d0*Kslip/(THETA_M(IJK,M)+SMALL_NUMBER)*VOL(IJK)  
           Tslip_lhs = 0.5d0*Kslip/( (THETA_M(IJK,M)+SMALL_NUMBER)**1.5d0)*VOL(IJK)
