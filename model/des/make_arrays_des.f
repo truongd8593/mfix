@@ -58,7 +58,7 @@
       call desgrid_init 
       call desmpi_init       
 
-      IF(CARTESIAN_GRID) CALL DES_WALLBC_PREPROCSSING 
+      IF(CARTESIAN_GRID.or.MPPIC) CALL DES_WALLBC_PREPROCSSING 
 
       IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(1X,A)')&
          '---------- START MAKE_ARRAYS_DES ---------->'
