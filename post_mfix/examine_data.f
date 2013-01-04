@@ -259,7 +259,7 @@
       INTEGER      I, J, K, IJK, M, N   
       REAL         DELm, DELl, FAC1, FAC2 
 !
-      REAL              TIME_REAL(N_SPX), TIME_FOUND, TIME_NOW, TIME_OLD
+      REAL              TIME_REAL(N_SPX), TIME_FOUND, TIME_NOW !, TIME_OLD
       INTEGER           REC_POINTER(N_SPX)
       LOGICAL           READ_SPX(N_SPX) , AT_EOF(N_SPX)
 !
