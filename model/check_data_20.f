@@ -222,7 +222,9 @@
 ! check solids phase fields. these quantities are specified via the
 ! subroutines set_ic and set_bc0/set_bc1 that employ the initial and
 ! boundary conditions set in the mfix.dat.  
-                  IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID.OR.MPPIC) THEN
+                  IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+! dont need the values at the ghost walls for setting pressure outflow 
+! BC's for MPPIC. so not checking this for MPPIC
                      DO M = 1, SMAX 
                         IF (ROP_S(IJK,M) == UNDEFINED) THEN 
                            IF (.NOT.ABORT) THEN 
