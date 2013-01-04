@@ -134,7 +134,7 @@
                ENDIF
                IF (D_P0(M)/=UNDEFINED)  D_P(IJK,M)=D_P0(M)
 !QX
-               RO_SV(IJK,M) = RO_S(M)
+               IF (RO_S(M)/=UNDEFINED) RO_SV(IJK,M) = RO_S(M)
             ENDIF 
 
 ! set ep_star_array to user input ep_star in all cells. sof--> Nov-17-05
