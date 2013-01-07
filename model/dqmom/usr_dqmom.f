@@ -100,7 +100,7 @@
                  
             IF (FLUID_AT(IJK)) THEN
                DO I=1,Nscalar
-                ystart(I)=ROP_s(IJK,I)/RO_s(I)
+                ystart(I)=ROP_s(IJK,I)/RO_sv(IJK,I)
                ENDDO
                  
 
@@ -130,7 +130,7 @@
                
 
                DO I=1,Nscalar
-               ROP_s(IJK,I) = ystart(I)*RO_s(I)
+               ROP_s(IJK,I) = ystart(I)*RO_sv(IJK,I)
                Scalar(IJK,I) = ystart(I+Nscalar)
                ENDDO
 
