@@ -11,7 +11,7 @@
   DESCRIPTION = 'particle free fall'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
-  TIME  =0.0  TSTOP = 5.0 
+  TIME  =0.0  TSTOP = 0.5 
   DT = 1.0e-4
   DT_MAX = 2E-4
   ENERGY_EQ = .FALSE.
@@ -20,6 +20,7 @@
   MOMENTUM_Y_EQ = .FALSE.  .FALSE.
   MOMENTUM_Z_EQ = .FALSE.  .FALSE.
 
+  CALL_USR = .TRUE.
 
 # Numeric Section
   DISCRETIZE = 9*2
