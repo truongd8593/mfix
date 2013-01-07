@@ -297,7 +297,7 @@
 
 !QX
 !     Solve species mass balance equations
-          CALL SOLVE_SPECIES_EQ (IER)
+          IF(SOLID_RO_V) CALL SOLVE_SPECIES_EQ (IER)
 !end
 
           IF(TRIM(KT_TYPE) .eq. 'GHD') CALL ADJUST_EPS_GHD
@@ -381,9 +381,9 @@
       ENDIF
       
 !QX
-! solved after continuity eq
+! solved after continuity eq when solids density is not constant
 ! Solve species mass balance equations
-!      CALL SOLVE_SPECIES_EQ (IER) 
+      IF(.NOT.SOLID_RO_V) CALL SOLVE_SPECIES_EQ (IER) 
 !
 !end
 
