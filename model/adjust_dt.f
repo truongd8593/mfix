@@ -148,7 +148,7 @@
             DT = DT*DT_FAC 
 !
 !QX smaller dt and reiterating
-          if(DT > 0.8d0 * DT_OLD) then
+!          if(DT > 0.8d0 * DT_OLD) then
 
             IF (FULL_LOG) THEN 
 !//SP
@@ -166,7 +166,8 @@
             CALL RESET_NEW(0) 
             ADJUST_DT = .TRUE.                   !Iterate again with new dt 
 
-         elseif (DT .le. 0.8d0 * DT_OLD) then
+!         elseif (DT .le. 0.8d0 * DT_OLD) then
+         if (SOLID_RO_V.AND.DT .le. 0.8d0 * DT_OLD) then
             ADJUST_DT = .FALSE.                   !NOT Iterate again with new dt 
             RESTART_REACTION = .TRUE.           ! re-iterate reaction with new dt
 
