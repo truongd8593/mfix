@@ -84,7 +84,7 @@
 
 !QX
 !     use under_relax factor
-         CALL UNDER_RELAX_S (ROP_G, A_M, B_M, 0, UR_FAC(2), IER) 
+         IF(SOLID_RO_V) CALL UNDER_RELAX_S (ROP_G, A_M, B_M, 0, UR_FAC(2), IER) 
 
 
 ! solving gas continuity            
@@ -120,7 +120,7 @@
 !
 !QX
 !           use under_relax factor
-            CALL UNDER_RELAX_S (ROP_S(1,M), A_M, B_M, M, UR_FAC(2), IER)
+         IF(SOLID_RO_V) CALL UNDER_RELAX_S (ROP_S(1,M), A_M, B_M, M, UR_FAC(2), IER)
 
          CALL ADJUST_LEQ (RESID(RESID_RO,M), LEQ_IT(2), LEQ_METHOD(2),&
             LEQI, LEQM, IER) 
