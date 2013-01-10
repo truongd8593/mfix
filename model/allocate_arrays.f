@@ -68,12 +68,17 @@
       DIMENSION_4   = (kend4-kstart4+1)*(jend4-jstart4+1)*(iend4-istart4+1)
 
       DIMENSION_N_g = 1
-      IF(USE_RRATES) THEN
+! If we use the old (legacy) rrate file or if we are running post_mfix,
+! arrays should be allocated based on NMAX(0), because post_mfix reads 
+! NMAX(0) from the .RES file, but it doesn't read USE_RRATES nor NMAX_g.
+! The same logic applies to DIMENSION_N_s a few lines below.
+
+      IF(USE_RRATES.or.bDoing_postmfix) THEN
           IF(NMAX(0) .NE. UNDEFINED_I)DIMENSION_N_g = NMAX(0)
       ELSE
           IF(NMAX_g .NE. UNDEFINED_I)DIMENSION_N_g = NMAX_g
       ENDIF
-
+  
       
 ! to reduce allocation space when doing post_mfix
       if (bDoing_postmfix) then
@@ -84,7 +89,7 @@
 
       DIMENSION_N_s = 1
       DO M = 1, MMAX
-         IF(USE_RRATES) THEN
+         IF(USE_RRATES.or.bDoing_postmfix) THEN  ! See comments for DIMENSION_N_g above
             IF(NMAX(M) .NE. UNDEFINED_I) &
                DIMENSION_N_s = MAX(DIMENSION_N_s, NMAX(M))
          ELSE
