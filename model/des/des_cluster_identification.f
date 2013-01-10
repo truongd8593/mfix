@@ -54,6 +54,8 @@
 ! distance between particle surfaces
       DOUBLE PRECISION :: DistApart
 
+      LOGICAL recursiveSearch
+
       TYPE(PARTICLE_TYPE), POINTER :: particle  
 !-----------------------------------------------
 ! Functions
@@ -69,12 +71,17 @@
       IF(NEIGHBOURS(BaseParticle,1)>0) THEN
 ! looping over base particle neighbors..
          DO L = 2, NEIGHBOURS(BaseParticle,1)+1
+
 ! defining particle index of neighboring particle
             SearchParticle = NEIGHBOURS(BaseParticle,L)
-! checking only those particles that ‘exist’
+
+! checking only those particles that 'exist'
             IF(PEA(SearchParticle,1)) THEN
 ! skipping particles that are in a cluster
-               IF(InACluster(SearchParticle)) CYCLE  
+               IF(InACluster(SearchParticle)) THEN
+                  IF(.NOT.PEA(SearchParticle,4)) CYCLE  
+               ENDIF
+
 ! calculating distance between surface of search particle and base
 ! particle
                R_LM = des_radius(SearchParticle)+des_radius(BaseParticle)
@@ -86,14 +93,16 @@
                IF(DistApart<Cluster_Length_Cutoff) THEN 
 ! adding search particle to cluster of base particle                    
                   CALL ADD_PARTICLE_TO_CLUSTER(BaseCluster,SearchParticle)
-! flag neighbor particle as belonging to a cluster               
+! flag neighbor particle as belonging to a cluster
                   InACluster(SearchParticle) = .TRUE.
+                  IF(.NOT.PEA(SearchParticle,4)) THEN
 ! adding search particle to a list that tracks each subsequent base
 ! particle
-                  CALL ADD_PARTICLE_TO_PSEARCHHISTORY(particle,SearchParticle)
+                     CALL ADD_PARTICLE_TO_PSEARCHHISTORY(particle,SearchParticle)
 ! repeating routine with new BaseParticle=SearchParticle
-                  CALL CHECK_BASE_PARTICLE_NEIGHBORS(BaseCluster,&
-                     SearchParticle)
+                     CALL CHECK_BASE_PARTICLE_NEIGHBORS(BaseCluster,&
+                        SearchParticle)
+                  endif
                ENDIF
             ENDIF  ! endif pea(searchparticle,1)
 ! continue loop with current base particle until we reach a search 
@@ -183,8 +192,10 @@
       InACluster(:) = .FALSE.
 
       DO L = 1, MAX_PIP
+
          IF (.NOT.PEA(L,1)) CYCLE  ! check if particle exists (cycle if not)
-         IF (PEA(L,4)) CYCLE       ! check if ghost particle (cycle if ghost)
+         IF (PEA(L,4)) CYCLE    ! check if ghost particle (cycle if ghost)
+
          IF(.NOT.InACluster(L)) THEN    ! checking if particle already belongs to a cluster
 ! creating a cluster
             CALL CREATE_CLUSTER(cluster)
