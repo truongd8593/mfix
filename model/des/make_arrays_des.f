@@ -64,10 +64,6 @@
          '---------- START MAKE_ARRAYS_DES ---------->'
 
 
-      WRITE(UNIT_LOG,'(1X,A)')&
-         '---------- START MAKE_ARRAYS_DES ---------->'
-
-
 ! If no particles are in the system then there is no need to read 
 ! particle_input.dat or call generate_particle_config. Note, if no 
 ! particles are in the system and no dem inlet is specified, then 
@@ -244,10 +240,6 @@
 
 
       IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(1X,A)')&
-         '<---------- END MAKE_ARRAYS_DES ----------'
-
-
-      WRITE(UNIT_LOG,'(1X,A)')&
          '<---------- END MAKE_ARRAYS_DES ----------'
 
 
