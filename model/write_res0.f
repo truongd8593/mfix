@@ -85,7 +85,7 @@
       integer :: work_around(100)
 !
 !                loop counters
-      INTEGER :: LC, L, N
+      INTEGER :: LC, L, N, M
 !
 !                Pointer to the next record
       INTEGER :: NEXT_RECA 
@@ -105,7 +105,7 @@
       !       The value should also be consistent with the check
       !       in read_res0
       
-      VERSION = 'RES = 01.6' 
+      VERSION = 'RES = 01.8' 
 !
 !     Add new data entries at the end of the file and identify version no.
 
@@ -382,6 +382,21 @@
 !     Version 1.6 -- write k and epsilon in write_res1 and spx1
       WRITE (UNIT_RES, REC=NEXT_RECA) K_epsilon  
       NEXT_RECA = NEXT_RECA + 1 
+
+!
+!     Version 1.7 -- write CALL_DI and CALL_ISAT
+      WRITE (UNIT_RES, REC=NEXT_RECA) CALL_DI, CALL_ISAT
+      NEXT_RECA = NEXT_RECA + 1 
+
+!
+!     Version 1.8 -- write SOLID_RO_V and densities of each solids species
+      WRITE (UNIT_RES, REC=NEXT_RECA) SOLID_RO_V
+      NEXT_RECA = NEXT_RECA + 1 
+      DO LC = 1, MMAX 
+         WRITE (UNIT_RES, REC=NEXT_RECA) (RO_SS(LC,N),N=1,NMAX(LC))
+         NEXT_RECA = NEXT_RECA + 1 
+      END DO 
+
 
 !
 !  Add new write statements above this line.  Remember to update NEXT_RECA.

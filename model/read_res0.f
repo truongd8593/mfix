@@ -120,7 +120,8 @@
     if (myPE == PE_IO ) then
       READ (UNIT_RES, REC=1) VERSION 
       READ (VERSION(6:512), *) VERSION_NUMBER 
-      IF (VERSION_NUMBER > 1.6) THEN 
+
+      IF (VERSION_NUMBER > 1.8) THEN 
          WRITE (*, *) ' Update Subroutine read_res0' 
          CALL SLUMBER 
 !         STOP  
@@ -1186,19 +1187,46 @@
           Call_DQMOM =.FALSE.
         ENDIF 
 !
-!     CHEM & ISAT begin (nan xie)
-!        IF (VERSION_NUMBER >= 1.599) THEN 
+!           Version 1.7 -- CHEM & ISAT begin (nan xie)
+        IF (VERSION_NUMBER >= 1.699) THEN 
           if (myPE == PE_IO) then
             READ (UNIT_RES, REC=NEXT_RECA) CALL_DI, CALL_ISAT
             NEXT_RECA = NEXT_RECA + 1 
 	  ENDIF
           call bcast(CALL_DI,PE_IO) !//PAR_I/O BCAST0d 
           call bcast(CALL_ISAT,PE_IO)
-!        ELSE
-!          CALL_DI = .false.
-!          CALL_ISAT = .false.
-!        ENDIF 
+        ELSE
+          CALL_DI = .false.
+          CALL_ISAT = .false.
+        ENDIF 
 !     CHEM & ISAT end (nan xie)
+!
+!
+!           Version 1.8 -- SOLID_RO_V and densities of each solids species
+!
+        IF (VERSION_NUMBER >= 1.799) THEN 
+          if (myPE == PE_IO) then
+             READ (UNIT_RES, REC=NEXT_RECA) SOLID_RO_V
+             NEXT_RECA = NEXT_RECA + 1 
+             DO LC = 1, MMAX 
+                READ (UNIT_RES, REC=NEXT_RECA) (RO_SS(LC,N),N=1,NMAX(LC))
+                NEXT_RECA = NEXT_RECA + 1 
+             END DO 
+
+            NEXT_RECA = NEXT_RECA + 1 
+            if (doingPost .and. (.NOT.SOLID_RO_V)) then
+               DO LC = 1, MMAX 
+                  RO_SV(:,LC) = RO_S(LC)
+                END DO 
+            end if
+	  ENDIF
+        ELSE
+          SOLID_RO_V = .false.
+          DO LC = 1, MMAX 
+             RO_SV(:,LC) = RO_S(LC)
+          END DO 
+
+        ENDIF 
 !
 !  Add new read statements above this line.  Remember to update NEXT_RECA.
 !  Remember to update the version number check near begining of this subroutine.
