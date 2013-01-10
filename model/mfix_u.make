@@ -1294,7 +1294,13 @@ DES_CLUSTER.mod : ./des/des_cluster_mod.f \
             COMPAR.mod \
             FLDVAR.mod \
             PHYSPROP.mod \
-            DISCRETELEMENT.mod 
+            DISCRETELEMENT.mod \
+            MPI_UTILITY.mod \
+            DESMPI_WRAPPER.mod \
+            DESMPI.mod \
+            PARALLEL.mod \
+            SENDRECV.mod \
+            RUN.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_cluster_mod.f 
 DESGRID.mod : ./des/desgrid_mod.f \
             PARAM1.mod \
@@ -3881,7 +3887,9 @@ solve_continuity.$(OBJ_EXT) : solve_continuity.f \
             RESIDUAL.mod \
             CONT.mod \
             LEQSOL.mod \
-            AMBM.mod 
+            AMBM.mod \
+            UR_FACS.mod \
+            RUN.mod 
 solve_energy_eq.$(OBJ_EXT) : solve_energy_eq.f \
             PARAM.mod \
             PARAM1.mod \
@@ -4579,7 +4587,9 @@ time_march.$(OBJ_EXT) : time_march.f \
             CUTCELL.mod \
             VTK.mod \
             QMOM_KINETIC_EQUATION.mod \
-            DASHBOARD.mod 
+            DASHBOARD.mod \
+            INDICES.mod \
+            BC.mod 
 transfer.$(OBJ_EXT) : transfer.f \
             PARAM.mod \
             PARAM1.mod \
@@ -5580,7 +5590,8 @@ fex.$(OBJ_EXT) : ./chem/fex.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/fex.f 
 g_derivs.$(OBJ_EXT) : ./chem/g_derivs.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/g_derivs.f 
-jac.$(OBJ_EXT) : ./chem/jac.f 
+jac.$(OBJ_EXT) : ./chem/jac.f \
+            RUN.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/jac.f 
 mchem_init.$(OBJ_EXT) : ./chem/mchem_init.f \
             PARAM1.mod \
@@ -5589,7 +5600,8 @@ mchem_init.$(OBJ_EXT) : ./chem/mchem_init.f \
             MCHEM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/mchem_init.f 
 mchem_odepack_init.$(OBJ_EXT) : ./chem/mchem_odepack_init.f \
-            MCHEM.mod 
+            MCHEM.mod \
+            RUN.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/mchem_odepack_init.f 
 mchem_time_march.$(OBJ_EXT) : ./chem/mchem_time_march.f \
             RUN.mod \
@@ -6027,7 +6039,8 @@ des_mass_inlet.$(OBJ_EXT) : ./des/des_mass_inlet.f \
             MPI_UTILITY.mod \
             DES_THERMO.mod \
             DES_RXNS.mod \
-            function.inc                                                
+            function.inc                                                 \
+            des/desgrid_functions.inc                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_mass_inlet.f 
 des_physical_prop.$(OBJ_EXT) : ./des/des_physical_prop.f \
             DES_RXNS.mod \
