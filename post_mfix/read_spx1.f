@@ -38,6 +38,11 @@
       Use scalars
       Use rxns
       Use machine
+
+
+      Use indices
+      Use compar
+
       IMPLICIT NONE
 !
 ! passed arguments
@@ -59,7 +64,7 @@
 ! local variables
 !
 !             loop counters
-      INTEGER LC,N
+      INTEGER LC,M,N,IJK
 !
 !             Pointer to the next record
       INTEGER NEXT_REC , num_recs
@@ -67,9 +72,12 @@
       integer :: gas_species_index , solid_species_index , solid_index
       logical :: bRead_all
 
+      DOUBLE PRECISION :: SUM_XoRO
+
       common /fast_sp7/ gas_species_index , solid_species_index , &
                          solid_index , bRead_all
 
+      include 'function.inc'
  
       num_recs = 1 + ijkmax2 / nwords_r
       if (mod(ijkmax2,nwords_r) .eq. 0) num_recs = num_recs - 1
@@ -275,6 +283,33 @@
 270        CONTINUE
 300      CONTINUE
          REC_POINTER(7) = NEXT_REC
+
+!        Compute solids density from true densities of each species
+
+         IF(SOLID_RO_V) THEN
+            DO M = 1,MMAX  ! Loop over solids phases
+               IF(SPECIES_EQ(M)) THEN  ! only when species eq. was solved
+                  DO IJK = IJKSTART3, IJKEND3 ! Loop over all cells
+                     IF(FLUID_AT(IJK)) THEN ! Only of fluid cells
+
+                        SUM_XoRO = ZERO
+                        DO N = 1, NMAX(M)  ! Loop over species
+                           SUM_XoRO = SUM_XoRO + X_S(IJK,M,N)/RO_SS(M,N)
+                        ENDDO ! N Loop (species) 
+                        IF(SUM_XoRO>ZERO) THEN
+                           RO_SV(IJK,M) = ONE / SUM_XoRO
+                        ELSE
+                           WRITE(*,*)'Error computing solids density'
+                          WRITE(*,*)' at I,J,K=', I_OF(IJK),J_OF(IJK),K_OF(IJK)
+                        ENDIF
+
+                     ENDIF  ! Fluid cell
+                  ENDDO ! IJK Loop
+               ENDIF ! species eq.
+            ENDDO ! LC loop (solids phases)
+         ENDIF ! SOLID_RO_V
+
+
       END IF
 
 

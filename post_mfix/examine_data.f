@@ -723,7 +723,13 @@
       IF(VAR_NO .GE. 11 .AND. VAR_NO .LE. 13) THEN
         READ_SPX(6) = .TRUE.    ! T_g, T_s, T_s2
       ENDIF
-      IF(VAR_NO .GE. 14 .AND. VAR_NO .LE. 21) THEN
+!     When the solids density is not constant, it is computed
+!     from solids species mass fractions
+!     This is needed for volumetric flow rates VFLOW_sx, VFLOW_sy or VFLOW_sz
+!     because EP_S is needed and EP_S = RO_PS / RO_SV
+!     RO_PS is read from the SP5 file, but RO_SV is not saved anywhere
+      IF((VAR_NO .GE. 14 .AND. VAR_NO .LE. 21) .OR. &
+         (SOLID_RO_V.AND.(VAR_NO .GE. 31 .AND. VAR_NO .LE. 33))    ) THEN
         READ_SPX(7) = .TRUE.    ! X_g, X_s
       ENDIF
       
