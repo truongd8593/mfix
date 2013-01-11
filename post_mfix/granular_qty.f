@@ -138,7 +138,8 @@
       END DO
       READ_SPX(1)       = .TRUE.
       READ_SPX(4)       = .TRUE.
-      IF(MMAX .GT. 1)READ_SPX(5) = .TRUE.
+      IF(MMAX .GT. 1.OR.SOLID_RO_V) READ_SPX(5) = .TRUE.
+      IF(SOLID_RO_V) READ_SPX(7) = .TRUE.  ! Will compute solids density
 !
       IF(TIME_START .LT. TIME_IN_RES) THEN
         CALL SEEK_TIME(READ_SPX, TIME_START, REC_POINTER, TIME_NOW)
@@ -159,7 +160,7 @@
 !
       IF (TIME_NOW .LT. ZERO) GOTO 1000
       IF (TIME_NOW .LT. TIME_START) GOTO 100
-      IF(MMAX .EQ. 1) THEN
+      IF(MMAX .EQ. 1.AND.(.NOT.SOLID_RO_V))  THEN
         DO IJK = 1, IJKMAX2
           ROP_s(IJK, 1) = RO_s(1) * (1. - EP_g(IJK))
         END DO
@@ -174,7 +175,7 @@
       IF(CALC_GT) THEN
          DO IJK = 1, IJKMAX2
            IF( FLUID_AT(IJK) ) THEN
-             K_1m = 2.D0 * (ONE + C_e) * RO_s(MM) * G_0(IJK, MM, MM)
+             K_1m = 2.D0 * (ONE + C_e) * RO_sv(IJK,MM) * G_0(IJK, MM, MM)
              IF(K_1m .NE. 0.0 .AND. EP_s(IJK,MM) .NE. 0.0) THEN
                Tmp(IJK) = P_s(IJK,MM)/K_1m/EP_s(IJK, MM)**2
              ELSE

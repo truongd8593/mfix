@@ -1253,7 +1253,7 @@
       IF (TIME_NOW .LT. TIME_START) GOTO 100
       TIME_OLD = TIME_NOW
 !
-      IF(MMAX .EQ. 1) THEN
+      IF(MMAX .EQ. 1.AND.(.NOT.SOLID_RO_V)) THEN
         IF (VAR_NO .EQ. 10 .OR.&
          (VAR_NO .GE. 19 .AND. VAR_NO .LE. 21) .OR.&
          (VAR_NO .GE. 25 .AND. VAR_NO .LE. 27) .OR. &

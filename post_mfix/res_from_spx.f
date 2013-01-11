@@ -152,7 +152,7 @@
           CALL CALC_EP_g(IJK)
 	END DO
       ELSE
-         if(mmax .gt. 1)Then
+         if(mmax .gt. 1.OR.SOLID_RO_V)Then
            WRITE(*,'(A)')' Cannot update SP5 file. Modify Post_mfix'
            return
          endif
