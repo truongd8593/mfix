@@ -1205,7 +1205,7 @@
          'MPPIC and DES_CONTINUUM_HYBRID cannot both be TRUE.',&
          /1X,70('*')/)
  1094 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'DES_CONTINUUM_COUPLED must be to true when using ',/10X&
+         'DES_CONTINUUM_COUPLED must be to true when using ',/10X,&
          'DES_CONTINUUM_HYBRID.',&
          /1X,70('*')/)
  1095 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
