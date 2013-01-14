@@ -346,7 +346,7 @@
                         SELECT CASE (TRIM(RUN_TYPE))  
                         CASE ('NEW')  
                            DIF = DIF - SUM(ROP_S(IJK,:MMAX)/RO_S(:MMAX))
-                        CASE ('RESTART_1')  
+                        CASE ('RESTART_1', 'RESTART_2')  
                            DIF = DIF - SUM(ROP_S(IJK,:MMAX)/RO_SV(IJK,:MMAX))
                         CASE DEFAULT
                      END SELECT 
