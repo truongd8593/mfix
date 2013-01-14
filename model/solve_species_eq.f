@@ -262,19 +262,17 @@
             END DO 
 
 !QX
-            IF (M == 2 ) THEN
+!JFD          
+            IF (SOLID_RO_V) THEN
                DO IJK = ijkstart3, ijkend3
                   IF (FLUID_AT(IJK)) THEN 
-                     EP_SS_L_TOT = 0.D0
+                     EP_SS_L_TOT = ZERO
                      DO LN = 1,NMAX(M)
-!                       vol fraction 
-                        EP_SS(IJK,M,LN) = ( ROP_S(IJK,M) * X_S(IJK,M,LN) )/&
-                             ( RO_SS(M,LN) )
-                        EP_SS_L_TOT = EP_SS_L_TOT + EP_SS(IJK,M,LN)
+                        EP_SS_L_TOT = EP_SS_L_TOT + X_S(IJK,M,LN) / RO_SS(M,LN)
                      ENDDO
-                     IF(EP_SS_L_TOT .GT. 0.D0) THEN
+                     IF(EP_SS_L_TOT .GT. ZERO) THEN
 !                       phase density
-                        RO_SV(IJK,M) = ROP_S(IJK,M)/EP_SS_L_TOT
+                        RO_SV(IJK,M) = ONE/EP_SS_L_TOT
                      ENDIF
 
                      if(ROP_s(IJK,M) .eq. 0.E0) then
@@ -283,8 +281,11 @@
                         endif
                      endif
 
-                  ENDIF
-               ENDDO
+                  ENDIF  ! Fluid cell
+               ENDDO  ! IJK Loop
+
+
+
             ENDIF
 !end
 
