@@ -1168,7 +1168,10 @@
           ENDIF
 
           
-          !if the code has not returned so far, compare the perpendicular distance of all vertices of this cell from the new and old cut-faces. If the distance from the new cut-face is less than the distance from the old cut-face from any of the vertices, then do not add this new cut-face.
+          !if the code has not returned so far, compare the perpendicular 
+          !distance of all vertices of this cell from the new and old cut-faces. 
+          !If the distance from the new cut-face is less than the distance 
+          !from the old cut-face from any of the vertices, then do not add this new cut-face.
           
           ATLEAST_ONEINSIDE = .false.
           FORCE_INTPOINT_INSIDE = .TRUE. 
