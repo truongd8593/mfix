@@ -1203,7 +1203,13 @@ ln -sf "$mpi_include/mpif.h" .
             compile3="-O1 -Mdalign -c -I. -Mnosave -Mfixed -Mrecursive -Mreentrant -byteswapio "
             link="  "
             MODULE_CODE=1
-                                                                                
+   
+            compile_common_d="-c -I. -Mnosave -byteswapio"     
+            debug_common="-g -Mbounds -Mchkptr -Mchkfpstk -Mchkstk -Ktrap=fp"   
+            compile_d=" $debug_common -Mfreeform $compile_common_d"   
+            compile_d2=" $debug_common -Mfreeform $compile_common_d"    
+            compile_d3=" $debug_common $compile_common_d"     
+            link_d=" "   
                                                                                 
 #           ------------------
 #           flags for inlining
