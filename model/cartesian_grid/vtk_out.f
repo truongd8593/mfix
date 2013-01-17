@@ -168,7 +168,7 @@
                         VAR_NAME = ADJUSTL(SPECIES_NAME(SPECIES_COUNTER))
                         LT = LEN_TRIM(ADJUSTL(SPECIES_NAME(SPECIES_COUNTER)))
                         VAR_NAME = VAR_NAME(1:LT)//'_Solids_mass_fractions_'//TRIM(ADJUSTL(SUBM))//'_'//ADJUSTL(SUBN)
-                     CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,X_g(:,N),PASS)
+                     CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,X_s(:,M,N),PASS)
                      END DO
                   END DO  
 
