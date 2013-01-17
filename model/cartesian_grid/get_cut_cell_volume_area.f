@@ -563,8 +563,8 @@
                      ENDIF
                   ENDDO
                   IF(BC_ID(IJK)>0) THEN
-                     IF(BC_TYPE(BC_ID(IJK))  == 'CG_MI') EXIT
-!                     IF(BC_TYPE(BC_ID(IJK))  == 'CG_NSW') EXIT
+!                     IF(BC_TYPE(BC_ID(IJK))  == 'CG_MI') EXIT
+                     IF(BC_TYPE(BC_ID(IJK))  == 'CG_NSW') EXIT
                   ENDIF
                ENDDO
             ENDIF
