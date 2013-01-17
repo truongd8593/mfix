@@ -270,7 +270,12 @@
                ENDIF
 
 
-               IF(TOTAL_NUMBER_OF_INTERSECTIONS==-1) F_NODE(0) = -ONE
+!  Uncomment the line below to force the cell to be a fluid cell
+!  Currently, F_NODE(0) > 0 ==> Blocked cell
+!             F_NODE(0) < 0 ==> Fluid cell
+
+!               IF(TOTAL_NUMBER_OF_INTERSECTIONS==-1) F_NODE(0) = -ONE
+
                BC_ID(IJK) = 0
 
 !               IF(F_NODE(0) < TOL_F) THEN
