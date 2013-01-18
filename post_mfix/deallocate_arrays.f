@@ -92,6 +92,31 @@
       Deallocate(  ROP_go  )
       Deallocate(  ROP_s  )
       Deallocate(  ROP_so  )
+
+      Deallocate(  RO_SV )
+      Deallocate(  RO_SVo )
+      Deallocate(  EP_SS )
+      Deallocate(  ERR_ARRAY )
+      Deallocate(  RO_SVo2 )
+         
+      Deallocate(  EP_go2 )
+      Deallocate(  P_go2  )
+      Deallocate(  RO_go2 )
+      Deallocate(  ROP_go2 )
+      Deallocate(  ROP_so2 )
+      Deallocate(  T_go2  )
+      Deallocate(  T_so2 )
+      DeAllocate(  X_go2 )
+      Deallocate(  X_so2 )
+      Deallocate(  U_go2 )
+      Deallocate(  U_so2 )
+      Deallocate(  V_go2 )
+      Deallocate(  V_so2 )
+      Deallocate(  W_go2 )
+      Deallocate(  W_so2 )
+      Deallocate(  P_staro2 )
+      Deallocate(  THETA_mo2 )
+
       Deallocate(  T_g  )
       Deallocate(  T_s  )
       Deallocate(  T_go  )
@@ -125,11 +150,15 @@
       IF(DIMENSION_Scalar /= 0)then
         Deallocate(  Scalar  )
         Deallocate(  Scalaro  )
+        Deallocate(  Scalaro2  )
       ENDIF
       
       IF(K_Epsilon)then
         Deallocate(  K_Turb_G  )
         Deallocate(  E_Turb_G  )
+
+        Deallocate(  K_Turb_Go2 )
+        Deallocate(  E_Turb_Go2 )
       ENDIF
 
 !geometry
@@ -255,6 +284,8 @@
       deaLLocate(  beta_a)
       deaLLocate(  ystart)
 
+      Deallocate(  D_po2 )
+
 !tau_g
       Deallocate(  TAU_U_g )
       Deallocate(  TAU_V_g )
@@ -282,6 +313,7 @@
       Deallocate(  trD_s_C  )
       Deallocate(  trD_s2  )
       Deallocate(  trD_s_Co  )
+      Deallocate(  trD_s_Co2  )
 
 !visc_g
       Deallocate(  trD_g )
