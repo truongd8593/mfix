@@ -1,0 +1,485 @@
+!  Fluidized Bed with Central Jet Simulation
+!  Loosely based on Tsuji et al., PT, 1993 article
+!  Continuum for gas phase
+!  Three setups depending on model description for solids
+!    -continuum for solids phase
+!    -dem for solids phase
+!    -hybrid for solids phase described by continuum and discrete
+
+                          
+!*********************************************************************
+! Run Control                             
+!*********************************************************************                                                          
+  RUN_NAME    = 'R'            
+  DESCRIPTION = 'fluid bed with central jet'
+  RUN_TYPE    = 'NEW'             
+
+  UNITS  = 'CGS' ! Units for data input/output
+
+  TIME        = 0.0            ! start time
+  TSTOP       = 1.0            ! stop time 
+  DT          = 5E-4           ! initial step size
+  DT_MAX      = 1E-4           ! maximum step size
+  DT_MIN      = 1E-8  ![1E-6]  ! minimum step size
+!  DT_FAC      = 1.0
+
+! Solve momentum equations
+!                    Gas      Sld 1
+  MOMENTUM_X_EQ  =  .TRUE.   .TRUE.  !.FALSE.
+  MOMENTUM_Y_EQ  =  .TRUE.   .TRUE.  !.FALSE.
+  MOMENTUM_Z_EQ  = .FALSE.   .FALSE.
+
+! Solve energy equations
+  ENERGY_EQ  = .FALSE.
+
+! Solve species equations
+!                 Gas     Sld 1
+  SPECIES_EQ  = .FALSE.   .FALSE.
+
+! Solve granular energy equation (pde)
+  GRANULAR_ENERGY = .FALSE.
+
+! Friction/plastic stress models
+  FRICTION  = .FALSE.
+  SCHAEFFER  = .FALSE.
+
+! Drag model
+  DRAG_TYPE = 'GIDASPOW'
+
+
+!*********************************************************************
+! Numerical Parameters                        
+!*********************************************************************
+
+! maximum number of iterations
+  MAX_NIT = 500          ! [500]
+
+!  TOL_RESID   = 1.0E-4   ! max. continuity+momentum residual at 
+!                           convergence [1E-3]
+!  TOL_RESID_X = 1.0E-4   ! max. species balance residual at 
+!                           convergence [1E-4]
+
+! factor to normalize gas continuity equation residual 
+!     [-] : normalization uses residual from first iteration 
+!      0  : normalization based on dominate term in continuity eqn
+  NORM_g = 0.0      
+
+! equation numbers for numerical settings
+!    1 : gas pressure
+!    2 : solids volume fraction
+!    3 : gas and solids u-momentum
+!    4 : gas and solids v-momentum
+!    5 : gas and solids w-momentum
+!    6 : gas and solids temperatures
+!    7 : species mass fractions
+!    8 : granular temperature
+!    9 : user-defined scalar
+
+! Discretization scheme
+!  DISCRETIZE  = 9*2 
+!                [0] : First-order upwinding
+!                 1  : First-order upwinding (using down-wind factors)
+!                 2  : Superbee (recommended method)
+!                 3  : SMART
+!                 4  : ULTRA-Quick
+!                 5  : QUICKEST (does not work)
+!                 6  : MUSCL
+!                 7  : van Leer
+!                 8  : Minmod
+
+! Under relaxation factors 
+!      [UR_FAC(1,6,9)=0.8]
+!      [UR_FAC(2,3,4,5,8)=0.5]
+!      [UR_FAC(7)=1]
+!  UR_FAC(1) 	= 0.5 ! gas pressure            [0.8]
+!  UR_FAC(2)    = 0.5 ! solids volume fraction  [0.5]
+!  UR_FAC(3) 	= 0.3 ! gas/solids u-momentum   [0.5]
+!  UR_FAC(4) 	= 0.3 ! gas/solids v-momentum   [0.5]
+!  UR_FAC(5) 	= 0.5 ! gas/solids w-momentum   [0.5]
+!  UR_FAC(6) 	= 0.8 ! gas/solids temperature  [0.8]
+!  UR_FAC(7) 	= 1.0 ! species mass fractions  [1.0]
+!  UR_FAC(8) 	= 1.0 ! granular temperature    [0.5]
+!  UR_FAC(9) 	= 1.0 ! user-defined scalar     [0.8]
+
+! Number of iterations in the linear equation solver
+!      [LEQ_IT(1,2)=20]
+!      [LEQ_IT(3-5)=5]
+!      [LEQ_IT(6-9)=15]
+!  LEQ_IT = 9*300 
+
+! Method used in the linear equation solver
+!  LEQ_METHOD = 9*2
+!                1  : SOR
+!               [2] : BiCGSTAB
+!                3  : GMRES
+!                5  : CG
+
+! The tolerance in the linear equation solver  [1.0D-4]
+!  LEQ_TOL = 9*1D-6
+
+! The preconditioner used for the sweeps in the linear equation solver
+!  LEQ_PC = 9*'NONE'
+!             [LINE] : line relaxation
+!              DIAG  : diagonal scaling
+!              NONE  : no preconditioner
+
+! The sweep direction for linear equation solver. 
+!    Note leq_sweep only matters if either (leq_method=3) or
+!    (leq_method=2 or 5 .AND. leq_pc='line') otherwise this 
+!    setting has no effect
+  LEQ_SWEEP(1) = 9*'ISIS' 
+!                   ISIS  : 1 sweep with do IK loop followed by 
+!                           send_recv
+!                  [RSRS] : 1 red-black sweep with do IK loop 
+!                           followed by send_recv 
+!                   ASAS  : 1 red-black sweep with do IK loop 
+!                           followed by do JK followed by IJ 
+!                           followed by send_recv
+
+
+! If true used deferred correction method for implementing higher order
+! discretization.  Otherwise use down-wind factor method (default)
+!   DEF_COR = .TRUE.  ! [.FALSE.]
+
+
+!*********************************************************************
+! Geometry and Discretization
+!*********************************************************************
+
+! Coordinates used in the simulation
+!     a) CARTESIAN
+!     b) CYLINDRICAL
+  COORDINATES = 'CARTESIAN'
+
+  XLENGTH  =   15.0    IMAX  =  15
+  YLENGTH  =   90.0    JMAX  =  45
+  ZLENGTH  =   0.40   !KMAX  =  5   ! particle diameter for 2D DEM cases
+  NO_K     = .TRUE.                 ! 2D, no k direction
+
+  GRAVITY  = 981.0    ! gravitational acceleration [y-direction]
+
+
+!*********************************************************************
+! Gas Phase
+!*********************************************************************
+
+  MU_g0  =  1.8E-4    ! constant viscosity (poise or Pa.s)
+! the molecular weight or density must be specified (or species names).
+! if density is specified then the molecular weight will be ignored.
+! specifying molecular weight allows for compressibility but requires
+! setting the pressure and temperature in IC and BC regions
+!  MW_AVG  =  28.8      ! average molecular weight 
+  RO_g0  =  1.205E-3  ! constant density 
+
+
+!*********************************************************************
+! Solid Phase
+!*********************************************************************
+
+  MMAX  =  1         ! number of solids phase
+  D_p0  =  0.4       ! particle diameter 
+  RO_s  =  2.7       ! particle density
+
+  e    = 0.9         ! coefficient of restitution p-p
+  Phi  = 30.0        ! angle of internal friction (in degrees)
+  EP_star  = 0.42    ! Packed bed void fraction
+!  C_f  = 0.1        ! coefficient of friction between unlike cont solids
+                     ! and is also used to describe interaction between
+                     ! continuum and discrete solids for hybrid model
+
+  DES_CONTINUUM_HYBRID = .TRUE.
+  DES_MMAX = 1
+  DES_RO_S = 2.7
+  DES_D_p0 = 0.4
+
+  
+!*********************************************************************
+! Initial Conditions
+!*********************************************************************
+! bed --------------------
+  IC_X_w(1)      =   0.0
+  IC_X_e(1)      =  15.0
+  IC_Y_s(1)      =   0.0
+  IC_Y_n(1)      =  30.0  
+                      
+  IC_EP_g(1)     =   0.553  !1.0
+  IC_U_g(1)      =   0.0
+  IC_V_g(1)      =  @(280.0/0.553)
+  IC_T_g(1)      = 298.0   ! allows for compressibility
+!  IC_P_g(1)      =  1013250.0 
+
+  IC_ROP_s(1,1)  =   @(0.2236*2.7)   ! other solids is DEM
+  IC_U_s(1,1)    =   0.0
+  IC_V_s(1,1)    =   0.0
+  IC_Theta_m(1,1)=   10.0  ! granular temperature 
+ 
+! freeboard --------------------
+  IC_X_w(2)      =   0.0
+  IC_X_e(2)      =  15.0
+  IC_Y_s(2)      =  30.0
+  IC_Y_n(2)      =  90.0  
+
+  IC_EP_g(2)     =   1.0
+  IC_U_g(2)      =   0.0
+  IC_V_g(2)      = 280.0
+  IC_T_g(2)      = 298.0   ! allows for compressibility
+!  IC_P_g(2)      =  1013250.0 
+
+  IC_ROP_s(2,1)  =   0.0   ! other solids is DEM
+  IC_U_s(2,1)    =   0.0
+  IC_V_s(2,1)    =   0.0
+  IC_Theta_m(1,1)=   0.0  ! granular temperature 
+
+
+!*********************************************************************
+! Boundary Conditions
+!*********************************************************************
+! Central jet --------------------
+  BC_X_w(1)      =   7.0
+  BC_X_e(1)      =   8.0
+  BC_Y_s(1)      =   0.0
+  BC_Y_n(1)      =   0.0
+  BC_TYPE(1)     =  'MI'
+
+  BC_EP_g(1)     =  1.0
+  BC_U_g(1)      =  0.0
+  BC_V_g(1)      =  4200
+  BC_P_g(1)      = 1013250.0
+  BC_T_g(1)      = 298.0   ! allows for compressibility
+
+  BC_ROP_s(1,1)  =  0.0
+!  BC_U_s(1,1)    =   0.0
+!  BC_V_s(1,1)    =   0.0
+
+! Secondary flow 1 --------------------
+  BC_X_w(2)      =  0.0
+  BC_X_e(2)      =  7.0
+  BC_Y_s(2)      =  0.0
+  BC_Y_n(2)      =  0.0
+  BC_TYPE(2)     = 'MI'
+
+  BC_EP_g(2)     =  1.0
+  BC_U_g(2)      =  0.0
+  BC_V_g(2)      =  0.0
+  BC_P_g(2)      = 1013250.0
+  BC_T_g(2)      = 298.0   ! allows for compressibility
+
+  BC_ROP_s(2,1)  =  0.0
+!  BC_U_s(2,1)    =   0.0
+!  BC_V_s(2,1)    =   0.0
+
+
+! Secondary flow 2 --------------------
+  BC_X_w(3)      =  8.0
+  BC_X_e(3)      =  15.0
+  BC_Y_s(3)      =  0.0
+  BC_Y_n(3)      =  0.0
+  BC_TYPE(3)     = 'MI'
+
+  BC_EP_g(3)     =  1.0
+  BC_U_g(3)      =  0.0
+  BC_V_g(3)      =  0.0
+  BC_P_g(3)      = 1013250.0
+  BC_T_g(3)      = 298.0   ! allows for compressibility
+
+  BC_ROP_s(3,1)  =  0.0
+!  BC_U_s(3,1)    =   0.0
+!  BC_V_s(3,1)    =   0.0
+ 
+
+! Exit -------------------- 
+  BC_X_w(4)      =  0.0 
+  BC_X_e(4)      =  15.0
+  BC_Y_s(4)      =  90.0
+  BC_Y_n(4)      =  90.0
+  BC_TYPE(4)     =  'PO' 
+  BC_P_g(4)      =  1013250.0
+
+
+! Walls  -------------------- 
+!                      West        East     
+  BC_X_w(5)   =         0.0       15.0
+  BC_X_e(5)   =         0.0       15.0
+  BC_Y_s(5)   =         0.0        0.0
+  BC_Y_n(5)   =        90.0       90.0
+  BC_TYPE(5)  =        'PSW'      'PSW'
+
+! johnson and jackson partial slip BC
+! 0: do not use johnson and jackson partial slip BC
+  BC_JJ_PS(5) =          0
+  BC_JJ_PS(6) =          0 
+!                   [0]  : if granular_energy=.false.
+!                          do not use johnson and jackson partial slip bc
+!                   [1]  : if granular_energy=.true.
+!                          use johnson and jackson partial slip bc 
+!                    2  : set wall velocity for momentum 
+!                         if vw set to zero this is no slip for momentum
+!                         partial implementation of jj bc for granular energy
+!                    3  : free slip/zero flux for momentum
+!                         zero flux for granular energy 
+
+! set up no slip for gas momentum
+! for no slip : leave hw undefined and set vw to zero
+! for free slip : define hw as 0; (vw must also be set but doesn't matter)
+!   BC_hw_g(5) =           0.0 
+  BC_Uw_g(5)   =           0.0 
+  BC_Vw_g(5)   =           0.0 
+!   BC_hw_g(6) =           0.0 
+  BC_Uw_g(6)   =           0.0 
+  BC_Vw_g(6)   =           0.0 
+
+! set up free slip for solids momentum
+! for no slip : leave hw undefined and set vw to zero
+! for free slip : define hw as 0; (vw must also be set but doesn't matter)
+  BC_hw_s(5,1) =           0.0
+  BC_Uw_s(5,1) =           0.0
+  BC_Vw_s(5,1) =           0.0
+  BC_hw_s(6,1) =           0.0
+  BC_Uw_s(6,1) =           0.0
+  BC_Vw_s(6,1) =           0.0
+
+! setup zero flux for granular energy
+! for zero wall theta: leave hw undefined set tw to zero 
+! (cw must also be set but doesn't matter) 
+! (like an isothermal wall with set theta, thetaw, of 0)
+! for zero flux theta: define hw as 0; set cw to 0
+! (thetaw must also be set but doesn't matter)
+! (like an adiabatic wall with set flux, cw, of 0)
+  BC_Thetaw_m(5,1) = 0.0
+  BC_hw_theta_m(5,1) = 0.0
+  BC_C_theta_m(5,1) = 0.0
+  BC_Thetaw_m(6,1) = 0.0
+  BC_hw_theta_m(6,1) = 0.0
+  BC_C_theta_m(6,1) = 0.0
+
+
+!*********************************************************************
+! Discrete Element Model (DEM) Control
+!*********************************************************************
+  DISCRETE_ELEMENT  = .TRUE.
+  DES_CONTINUUM_COUPLED  = .TRUE. ! Coupled gas/solid model
+  DES_INTERP_ON  = .TRUE.         ! interpolate for drag force
+!  INTERP_DES_MEAN_FIELDS = .TRUE.  ! interpolate mean fields (volume frac)
+
+  PARTICLES = 1200            ! Number of particles in the system.
+  MAX_PIS = 1200  
+
+  PARTICLES_FACTOR = 1.2   ! expand size of particle arrays by an arbitrary factor 
+                           ! (factor usually needs to be increased when running in
+                           !  parallel)  [1.2]
+
+! DES Initial Condition
+!--------------------------------------
+  NFACTOR = 0            ! length of dem settling period in no. of loops
+
+! get initial particle config from particle_input.dat 
+
+! generate a packed particle configuration in specified region
+  GENER_PART_CONFIG  = .FALSE. 
+  VOL_FRAC  = 0.2234    ! gives ~1200 particles
+  DES_EPS_XSTART  = 15
+  DES_EPS_YSTART  = 30
+  DES_EPS_ZSTART  = 0.4
+
+  PVEL_StDev = 0    ! stdev of velocity distribution (not used if stdev is zero)  
+  PVEL_mean  = 0.0  ! mean of velocity distribution (not used if stdev is zero)   
+
+
+! DES Boundary Condition 
+!--------------------------------------
+  DES_PERIODIC_WALLS  = .FALSE.
+  WALLDTSPLIT  = .TRUE.      ! wall interaction as two-particle interaction
+  DIMN  = 2                  ! number of dimensions in simulation 
+
+
+! Neighbor Search Parameters
+!--------------------------------------
+  DES_NEIGHBOR_SEARCH  = 4 ! Particle neighbor search method
+!   [1] : N-Square
+!    4  : Cell linked-list based algorithm
+
+  NEIGHBOR_SEARCH_N  = 2 ! solids time steps between neighbor search
+  MN  = 20               ! maximum number of neighbors allowed per particle
+
+  FACTOR_RLM = 1.2   ! factor by which search radius is increased. [1.2] 
+
+
+! DES Particle Properties 
+! (particle-particle, particle-wall collision model parameters)
+!--------------------------------------
+  KN = 1.0d+6               ! normal inter-particle collision spring constant (dyne/cm)
+  KT_FAC = @(2/7)           ! tangential spring factor = KT/KN    [2/7]
+  KN_W = 1.0d+6             ! normal particle-wall collision spring constant (dyne/cm)
+  KT_W_FAC = @(2/7)         ! Tangential spring factor = KT_W/KN_W   [2/7]
+
+! to get closer match between dem and continuum set no friction!
+  MEW = 0.0                 ! inter-particle friction coeffienct
+  MEW_W = 0.0               ! particle-wall friction coefficient
+
+! to get closer match at BC set no dissipation (zero granular T flux?)
+  DES_EN_INPUT = 0.9        ! particle-particle rest coef
+  DES_EN_WALL_INPUT = 1.0   ! particle-wall rest coef
+
+  DES_ETAT_FAC = @(1/2)     ! damping coefficient factor = ETAT/ETAN   [1/2]
+  DES_ETAT_W_FAC = 1        ! damping coefficient factor = ETAT_W/ETAN_W   [1/2]
+
+! hybrid: interaction
+  C_F = 0.1
+
+
+! DES Output Control
+!--------------------------------------
+  PRINT_DES_DATA = .T.    ! write DEM data as *.vtp files
+  DES_RES_DT = 1E-2       
+  DES_SPX_DT = 1E-2       ! interval to write *.vtp files in pure DEM simulation
+                          ! otherwise follows spx_dt(1)
+
+
+!*********************************************************************
+!  Output Control
+!*********************************************************************
+! Interval at which standard output (.OUT) file is updated
+  OUT_DT  = 5.0E-2
+
+! Interval at which .SPX files are updated.
+! spx_dt(1) also controls dem output frequency for coupled cases
+  SPX_DT(1)  =  2.0E-2   ! Void fraction (EP_g)
+  SPX_DT(2)  =  2.0E-2   ! Gas and solids pressure (P_g, P_star)
+  SPX_DT(3)  =  2.0E-2   ! Gas velocity (U_g, V_g, W_g)
+  SPX_DT(4)  =  2.0E-2   ! Solids velocity (U_s, V_s, W_s)
+  SPX_DT(5)  =  2.0E-2   ! Solids density (ROP_s)
+  SPX_DT(6)  =  1.0E+2   ! Gas and solids temp. (T_g, T_s1, T_s2)
+  SPX_DT(7)  =  1.0E+2   ! Gas and solids mass fractions (X_g, X_s)
+  SPX_DT(8)  =  1.0E+2   ! Granular Temperature (G)
+  SPX_DT(9)  =  1.0E+2   ! User defined scalars
+
+! Interval at which restart (.RES) file is updated.
+  RES_DT     =  1.0E-2
+
+! Interval in number of time steps at which .LOG file is written.
+  NLOG  = 25
+
+! If .TRUE., display the residuals on the screen and messages about
+! convergence on the screen and in the .LOG file. [.FALSE.]
+  FULL_LOG  = .TRUE.
+
+! Specify residuals to be printed as 4-character strings.
+! The first character specifies the field variable.
+!     P: pressure    R: density     U: u-velocity,     V: v-velocity
+!     W: w-velocity  T: temperture  G: granular temp.
+!     X: species mass fraction
+! The second nnumber specifies the phase.
+!     0: Gas
+! The last two numbers specify the species index.
+
+  RESID_STRING  = 'P0' 'P1' 'U0' 'V0' 'U1' 'V1'
+
+!*********************************************************************
+! Parallelization Controls
+!*********************************************************************
+
+! Number of grid blocks in X/Y/Z directions (i,j,k) for a distributed
+! memory parallel machine
+  NODESI = 1   NODESJ = 1   NODESK = 1
+
+
