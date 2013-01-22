@@ -9,7 +9,7 @@
 # M. Syamlal and P. Nicoletti                  9-27-94
 # A. Gel (Aeolus Research) revision            8-31-05
 #
-vers="2012-1"
+vers="2013-1"
 # Flag variable for compiling with Pentium 4 specific optimization flags   
 # Set to 0 to avoid Pentium 4 specific optimizations
 P4_OPTIMIZE=1
@@ -27,10 +27,19 @@ echo "  questions to compile mfix. This is how mfix must be compiled initially."
 echo "  1) on unix machines     >  sh    mfix/model/make_mfix"
 echo "  2) on NT using PGI bash >  bash  mfix/model/make_mfix"
 echo ""
+echo "  Use the -default flag to recompile with the default options: "
+echo "  -Serial,optimized code"
+echo "  -Re-compilation of source files is not forced"
+echo "  -GNU Fortran compiler"
+echo "  Example                 >  sh    mfix/model/make_mfix -default"
+echo ""
 echo "  Use the -repeat flag to recompile with the same options as the "
 echo "  last compilation. This flag allows users to skip the manual input"
 echo "  when regular input has been completed once."
 echo "  Example                 >  sh    mfix/model/make_mfix -repeat"
+echo ""
+echo "  Use the -long flag to display all compiler options."
+echo "  Example                 >  sh    mfix/model/make_mfix -long"
 echo ""
 echo "  Use the -clean flag before doing a fresh compilation. This option will"
 echo "  remove all .o, .a and .mod files from the model directory."
@@ -42,9 +51,11 @@ echo ""
 echo "  Use the -help flag to display this help message."
 echo "  Example                 >  sh    mfix/model/make_mfix -help"
 echo ""
-echo "  Shortcuts: use -r instead of -repeat"
+echo "  Shortcuts: use -d instead of -default"
+echo "             use -r instead of -repeat"
 echo "             use -c instead of -clean"
 echo "             use -h instead of -help"
+echo "             use -l instead of -long"
 echo " ======================================================================"
 echo ""
 echo ""
@@ -60,6 +71,7 @@ ARGC=$#
 
 ARG1=$1
 
+
 # Show usage and exit if too many arguments are given
 if [ $ARGC -gt $MAXARGS ]; then  
   echo "Too many arguments (Maximum is $MAXARGS)"
@@ -68,13 +80,6 @@ if [ $ARGC -gt $MAXARGS ]; then
 fi
 
 
-echo "*******************************************"
-echo
-echo NETCDF_FLIB =
-echo
-echo $NETCDF_FLIB
-echo
-echo "*******************************************"
 
 
 #============ TAU related settings ===================
@@ -96,13 +101,13 @@ echo "*******************************************"
 # To set to true, change this to 1. By default it is set to false (0).
 DO_ISAT=0
 #
-echo
-echo 
-echo "*******************************************"
-echo "* Creating the MFIX-executable mfix.exe   *"
-echo "*                Version $vers              *"
-echo "*******************************************"
-echo
+#echo
+#echo 
+#echo "*******************************************"
+#echo "* Creating the MFIX-executable mfix.exe   *"
+#echo "*                Version $vers              *"
+#echo "*******************************************"
+#echo
 
 #
 # Get run directory name
@@ -114,6 +119,27 @@ set `pwd` ; run_dir=$1
 mfix=`echo $0 | sed 's/\/make_mfix//'`
 cd $mfix
 set `pwd` ; mfix=$1
+
+#cat makefile_header.txt
+
+echo "=============================================================="
+echo ""
+echo "       MFIX: Multiphase Flow with Intephase eXchanges"
+echo ""
+echo "                      mfix.netl.doe.gov"
+echo ""
+echo "                        Version 2013-1"
+echo ""
+echo "=============================================================="
+echo " Creating the MFIX-executable mfix.exe"
+
+
+DPO_BASE=`echo $mfix | sed 's/\/model//'`
+
+#echo "DPO_BASE=$DPO_BASE"
+cd $mfix
+set `pwd` ; mfix=$1
+
 
 if test $mfix = $run_dir 
 then
@@ -140,20 +166,68 @@ case $ARG1 in
 
   "-clean"|"-c" )
 
-  echo "Cleaning files from previous compilation..."
-  rm -f $mfix/*.o
-  rm -f $mfix/*.a
-  rm -f $mfix/*.mod
-  echo "Done."
-  exit
+  if [ -e last_compilation_options ]; then
+
+      echo "Cleaning files from previous compilation..."
+      
+      echo "Grabbing object and module files directory path from compilation"
+      
+      set `cat last_compilation_options` ; smp_version=$1 ; dmp_version=$2 ; dbg_version=$3 ; auto_compile=$4 ; mpi_include=$5 ; cygwin_compiler=$6 ; lnx_compiler=$7 ; DPO=$8
+    
+      
+      echo -e "Object and module files directory path: \n $DPO \n"
+
+      if test -d ${DPO}
+	  then
+	  echo -e "Object file directory \n $DPO \n exists, so deleting object, module files. \n"
+	  rm -f ${DPO}/*.o
+	  rm -f ${DPO}/*.a
+	  rm -f ${DPO}/*.mod
+	  echo "Done."
+	  exit
+      else
+	  echo -e "Object file directory does not exist, so nothing to clean \n, \n exiting"
+	  exit 
+      fi
+      
+  else
+      echo "No previous compilation options found."
+      exit
+  fi
 
   ;;
+
+  "-default"|"-d" )
+
+  echo "Compiling with default options..."
+
+    echo "  -Serial,optimized code"
+    echo "  -Re-compilation of source files is not forced"
+    echo "  -GNU Fortran compiler"
+    smp_version="n" 
+    dmp_version="n" 
+    dbg_version="n" 
+    auto_compile="n" 
+    mpi_include="" 
+    cygwin_compiler=2
+    lnx_compiler=1 
+    input_needed=0
+  ;;
+
+
+  "-long"|"-l" )
+
+  echo " All compilation options will be shown"
+  EXPERT_ON=1
+
+  ;;
+
 
   "-repeat"|"-r" )
 
   if [ -e last_compilation_options ]; then
    echo "Recompiling from previous known options..."
-   set `cat last_compilation_options` ; smp_version=$1 ; dmp_version=$2 ; dbg_version=$3 ; auto_compile=$4 ; mpi_include=$5 ; cygwin_compiler=$6 ; lnx_compiler=$7
+   set `cat last_compilation_options` ; smp_version=$1 ; dmp_version=$2 ; dbg_version=$3 ; auto_compile=$4 ; mpi_include=$5 ; cygwin_compiler=$6 ; lnx_compiler=$7 
 
 
     echo "smp_version     = "$smp_version 
@@ -163,6 +237,7 @@ case $ARG1 in
     echo "mpi_include     = "$mpi_include 
     echo "cygwin_compiler = "$cygwin_compiler
     echo "lnx_compiler    = "$lnx_compiler 
+    
     input_needed=0
   
   else
@@ -170,19 +245,40 @@ case $ARG1 in
    exit
   fi
   ;;
-  
+
+
   "") 
-#     Proceed with the regular user input
+#     Proceed with the regular user input, hiding some compilation options reserved for expert users
+
+  echo " Some expert compilation options will be hidden"
+  echo " To show all compilation options, use -long or -l as argument"
+  EXPERT_ON=0
+
   ;;
 
   *)
-   echo "Unknown flag. Acceptable flags are -repeat, -r, -clean, -c, -help, -h."
+   echo "Unknown flag. Acceptable flags are"
+   echo "-clean"
+   echo "-c"
+   echo "-default"
+   echo "-d"
+   echo "-help"
+   echo "-h"
+   echo "-long"
+   echo "-l"
+   echo " -repeat"
+   echo " -r"
+
+
    exit
 
 
   ;;
 esac
 
+
+echo ""
+echo " Hard-coded options:"
 
 ########################################################################
 #                                netCDF - start                        #
@@ -200,7 +296,7 @@ USE_NETCDF=0
 
 if test $USE_NETCDF = 1
 then
-	echo "using netcdf"
+	echo "- netcdf:      ON"
 	NETCDF_HOME=/nfs/home/netcdf/netcdf-4.0
 
 	NETCDF_INCLUDES="-I$NETCDF_HOME/fortran -I$NETCDF_HOME/f90 -I$NETCDF_HOME/libsrc"
@@ -214,7 +310,7 @@ then
 		echo "copying netcdf files"
 	fi
 else
-	echo "not using netcdf"
+	echo "- netcdf:      OFF"
 	cmp -s $mfix/MFIX_netcdf_constants.fi  $mfix/netcdf/noop/MFIX_netcdf_constants.fi 
 	if test $? = 1
 	then
@@ -243,7 +339,35 @@ else
         NETCDF_FLIB=" "
 fi
 
-#                                netCDF - end                          #
+
+########################################################################
+#                                ISAT option echo                      #
+  if test $DO_ISAT = 1
+  then
+     echo "- ISAT:        ON"
+  else
+     echo "- ISAT:        OFF"
+  fi
+########################################################################
+
+########################################################################
+#                                TAU option echo                       #
+  if [ "$USE_TAU" ]
+  then
+     echo "- TAU:         ON"
+  else
+     echo "- TAU:         OFF"
+  fi
+########################################################################
+
+########################################################################
+#                                PENTIUM 4 option echo                 #
+  if test $P4_OPTIMIZE = 1
+  then
+     echo "- P4_OPTIMIZE: ON"
+  else
+     echo "- P4_OPTIMIZE: OFF"
+  fi
 ########################################################################
 
 
@@ -255,15 +379,106 @@ else
   echo "     CHARACTER(len=132) :: MFIX_PATH = '$mfix'" > mfix_directory_path.inc
 fi
 
-if test $input_needed = 1
-  then
-  echo -n "Do you need SMP version? (y/n) [no] "
-  read smp_version
 
-  echo
-  echo -n "Do you need DMP version? (y/n) [no] "
-  read dmp_version
-fi
+
+if test $input_needed = 1
+    then
+    echo "=============================================================="
+    echo " Mode of execution:"
+    echo "=============================================================="
+    echo "[1] Serial"
+    echo "[2] Parallel, Shared Memory (SMP)"
+    echo "[3] Parallel, Distributed Memory (DMP)"
+    echo "[4] Parallel, Hybrid (SMP+DMP)"
+    echo " "
+    echo -n "Select the mode of execution [1] : "
+    read mode_of_execution
+    
+    case $mode_of_execution in
+	1 )
+        smp_version=n
+        dmp_version=n
+        ;;
+	2 )
+        smp_version=y
+        dmp_version=n
+        ;;
+	3 )
+        smp_version=n
+        dmp_version=y
+        ;;
+	4 )
+        smp_version=y
+        dmp_version=y
+        ;;
+	* )
+        smp_version=n
+        dmp_version=n
+        ;;
+    esac
+    
+    echo ""
+    echo "=============================================================="
+    echo " Level of Optimization:"
+    echo "=============================================================="
+    echo "[0] None (Debug mode)"
+    echo "[x] Level 1 (not available)"
+    echo "[x] Level 2 (not available)"
+    echo "[3] Level 3 (most agressive)"
+    echo " "
+    echo -n "Select the level of optimization [3] : "
+    read level_of_optimization
+    
+    case $level_of_optimization in
+	0 )
+        dbg_version=y
+        ;;
+	1 )
+        echo "Level 1 option is not available"
+        echo "Reverting to default (Level 3) option."
+        dbg_version=n
+        ;;
+	2 )
+        echo "Level 2 option is not available"
+        echo "Reverting to default (Level 3) option."
+        dbg_version=n
+        ;;
+	3 )
+        dbg_version=n
+        ;;
+	* )
+        dbg_version=n
+        ;;
+    esac
+
+    echo ""
+    echo "=============================================================="
+    echo "Option to re-compile source files in run directory:"
+    echo "=============================================================="
+    echo "[1] Do not force re-compilation"
+    echo "[2] Force re-compilation"
+    echo " "
+    echo -n "Select Option to re-compile source files in run directory [1] : "
+    read re_compile_option
+
+    case $re_compile_option in
+	1 )
+        auto_compile="n"
+        ;;
+	2 )
+        auto_compile="y"
+        ;;
+	* )
+        auto_compile="n"
+        ;;
+    esac
+
+fi #test $input_needed = 1
+
+
+
+    
+
 #
 #------------------------------------------------------------------------
 # Define machine dependent flags and copy machine dependent files
@@ -311,38 +526,25 @@ then
   fi
 fi
 
-if test $input_needed = 1 
-then
-  echo -n "Do you need debug version? (y/n) [no] "
-  read dbg_version
-  echo
-  echo -n "Force re-compilation of source files in run directory? (y/n) [no] "
-  read auto_compile
-fi
 
-case $auto_compile in
-  y|Y|n|N) 
-  ;;
 
-  *) 
-  auto_compile="n"
-  ;;
-esac
 
- 
 case $dmp_version in
   y|Y )
 
   if test $input_needed = 1
   then
-    mpi_include="/usr/include"
+#    mpi_include="/usr/include"
+
+    mpi_include=`mpif90 -showme:incdirs` 
 
     echo
     echo -n "checking for mpif.h in the default directory $mpi_include"
     if test -f "$mpi_include/mpif.h"
     then
       echo
-      echo -n "using mpif.h from $mpi_include"
+#      echo -n "using mpif.h from $mpi_include"
+      echo -n "mpif.h was found."
     else
       echo
       echo -n "input the location of the directory where mpif.h resides: "
@@ -351,7 +553,7 @@ case $dmp_version in
   fi
   ;;
   *)
- dmp_version="n"
+  dmp_version="n"
   mpi_include="$mfix/dmp_modules/mpi_donothing"
   echo " "
   echo " "
@@ -369,6 +571,38 @@ case $dmp_version in
   ;;
 esac
 ln -sf "$mpi_include/mpif.h" .
+
+
+EXEC_FILE=mfix.exe
+DPO=OBJECT_FILES
+
+case $dbg_version in
+    y|Y)
+    DPO=${DPO}_DBG
+#      EXEC_FILE=${EXEC_FILE}_dbg.exe
+    ;;
+    *)  
+    DPO=${DPO}_OPT
+#      EXEC_FILE=${EXEC_FILE}_opt.exe
+esac
+
+case $dmp_version in
+    y|Y)
+    DPO=${DPO}_DMP
+    ;;
+    *)  
+    echo 
+esac
+
+case $smp_version in
+    y|Y)
+    DPO=${DPO}_SMP
+    ;;
+    *)  
+    echo 
+esac
+
+makefile_append=""
 
 #-----
 # Check if the mpif.h header is LAM/MPI header file or MPICH
@@ -396,227 +630,266 @@ ln -sf "$mpi_include/mpif.h" .
 #  Check if the system is a Linux system, if yes then ask the user which 
 #  compiler to use    
 #
-    cygwin_compiler=2
-    if test $opsys = "MINGW32_NT-5.1"
-    then
-       echo
-       echo
-       echo "CYGWIN 6.0 on Windows Detected"
-       echo
-       echo "=============================================================="
-       echo "MFIX Compilation directives available for following compilers:"
-       echo "=============================================================="
-       echo " [1] g95"
-       echo " [2] gfortran"       
-       echo " "
-       if test $input_needed = 1
-       then
-         echo -n "Select the compiler to compile MFIX? [2] "
-         read cygwin_compiler
-       fi
-       case $cygwin_compiler in
-         1 )
-           echo " "
-           echo "g95 compiler selected"
-           opsys="MINGW32_NT-5.1-g95"
-           ;;
-         * )
-           cygwin_compiler=2
-           echo " "
-           echo "gfortran Compiler selected"
-           opsys="MINGW32_NT-5.1-gfortran"
-           ;;
-         esac
-    fi
-
-    if test $opsys = "CYGWIN_NT-6.0"
-    then
-       echo
-       echo
-       echo "CYGWIN 6.0 on Windows Detected"
-       echo
-       echo "=============================================================="
-       echo "MFIX Compilation directives available for following compilers:"
-       echo "=============================================================="
-       echo " [1] g95"
-       echo " [2] gfortran"       
-       echo " "
-       if test $input_needed = 1
-       then
-         echo -n "Select the compiler to compile MFIX? [2] "
-         read cygwin_compiler
-       fi
-       case $cygwin_compiler in
-         1 )
-           echo " "
-           echo "g95 compiler selected"
-           opsys="CYGWIN_NT-6.0-g95"
-           ;;
-         * )
-           cygwin_compiler=2
-           echo " "
-           echo "gfortran Compiler selected"
-           opsys="CYGWIN_NT-6.0-gfortran"
-           ;;
-         esac
-    fi
-
-    if test $opsys = "CYGWIN_NT-5.1"
-    then
-       echo
-       echo
-       echo "CYGWIN 5.1 on Windows Detected"
-       echo
-       echo "=============================================================="
-       echo "MFIX Compilation directives available for following compilers:"
-       echo "=============================================================="
-       echo " [1] g95"
-       echo " [2] gfortran"       
-       echo " "
-       if test $input_needed = 1
-       then
-         echo -n "Select the compiler to compile MFIX? [2] "
-         read cygwin_compiler
-       fi
-       case $cygwin_compiler in
-         1 )
-           echo " "
-           echo "g95 compiler selected"
-           opsys="CYGWIN_NT-5.1-g95"
-           ;;
-         * )
-           cygwin_compiler=2
-           echo " "
-           echo "gfortran Compiler selected"
-           opsys="CYGWIN_NT-5.1-gfortran"
-           ;;
-         esac
-    fi
-	        
-    if test $opsys = "Linux"
-    then
-      if test $proctyp = "x86_64"
+  cygwin_compiler=2
+  if test $opsys = "MINGW32_NT-5.1"
       then
-       echo
-       echo
-       echo "64 bit Linux system detected, please select compiler."
-       echo
-       echo "=============================================================="
-       echo "MFIX Compilation directives available for following compilers:"
-       echo "=============================================================="
-       echo " [1] Intel Fortran Compiler (IFORT - FCE for 64 bit)"
-       echo " [2] Intel Fortran Compiler (IFORT - FCE for 64 bit) on AMD Opteron"       
-       echo " [3] Portland Group Linux Fortran Compiler (pgf90)"
-       echo " [4] PathScale compiler (pathf90)"
-       echo " [5] Portland Group Linux Fortran Compiler (pgf90) on AMD Opteron"              
-       echo " [6] Portland Group Linux Fortran Compiler (pgf90) on Cray XT3 at PSC"       
-       echo " [7] Portland Group Linux Fortran Compiler (pgf90) on Cray XT4 at NCCS"        
-       echo " [8] PathScale Compiler (pathf90) on Cray XT4 at NCCS"        
-       echo " [9] Pathscale Compiler (pathf90) on Cray XT4 at NERSC"
-       echo " [10] IBM Fortran Compiler (xlf90) on Blue Gene at ANL ALCF"
-       echo " [11] gfortran"
-       echo " "
-       if test $input_needed = 1
-       then
-         echo -n "Select the compiler to compile MFIX? [1] "
-         read lnx_compiler
-       fi
-       case $lnx_compiler in
-         1 )
-           echo " "
-           echo "Intel Compiler selected"
-           opsys="Linux_64_intel"
-           ;;
-         2 )
-           echo " "
-           echo "Intel Compiler selected for AMD Opteron"
-           opsys="Linux_64_intel_amd64"
-           ;;
-         3 )
-           echo " "
-           echo "Portland Group Linux Fortran Compiler selected"
-           opsys="Linux_64_pgi"
-           ;;
-         4 )
-           echo " "
-           echo "PathScale Compiler selected"
-           opsys="Linux_64_pscale"
-           ;;
-         5 )
-           echo " "
-           echo "Portland Group Linux Fortran Compiler for AMD Opteron selected"
-           opsys="Linux_64_pgi_amd64"
-           ;;
-         6 )
-           echo " "
-           echo "Portland Group Linux Fortran Compiler for Cray XT3 at PSC selected"
-           opsys="Linux_64_pgi_xt_psc"
-           ;;
-         7 )
-           echo " "
-           echo "Portland Group Linux Fortran Compiler for Cray XT4 at NCCS selected"
-           opsys="Linux_64_pgi_xt_nccs"
-           ;;
-         8 )
-           echo " "
-           echo "PathScale Compiler (pathf90) on Cray XT4 at NCCS selected"
-           opsys="Linux_64_pscale_xt_nccs"
-           ;;
-         9 )
-           echo " "
-           echo "PathScale Compiler (pathf90) on Cray XT4 at NERSC selected"
-           opsys="Linux_64_pscale_xt_nersc"
-           ;;
-         10 )
-           echo " "
-           echo "IBM Fortran Compiler (xlf90) on Blue Gene at ANL ALCF"
-           opsys="Linux_64_xlf_anl"
-           ;;
-         11 )
-           echo " "
-           echo "Gfortran on 64 bit machine"
-           opsys="Linux_64_gfort"
-           ;;
-         *)
-           lnx_compiler=1
-           echo " "
-           echo "Intel Compiler selected"
-           opsys="Linux_64_intel"
-           ;;
-         esac
-	        
-         if test $opsys = "Linux_64_intel" -o $opsys = "Linux_64_intel_amd64"
-         then
+      echo
+      echo
+      echo "CYGWIN 6.0 on Windows Detected"
+      echo
+      echo "=============================================================="
+      echo "MFIX Compilation directives available for following compilers:"
+      echo "=============================================================="
+      echo " [1] g95"
+      echo " [2] gfortran"       
+      echo " "
+      if test $input_needed = 1
+	  then
+	  echo -n "Select the compiler to compile MFIX? [2] "
+	  read cygwin_compiler
+      fi
+      case $cygwin_compiler in
+	  1 )
+	  echo " "
+	  echo "g95 compiler selected"
+	  opsys="MINGW32_NT-5.1-g95"
+	  makefile_append="_gfor"
+	  DPO=${DPO}_GFOR
 
+	  ;;
+	  * )
+	  cygwin_compiler=2
+	  echo " "
+	  echo "gfortran Compiler selected"
+	  opsys="MINGW32_NT-5.1-gfortran"
+	  makefile_append="_gfor"
+	  DPO=${DPO}_GFOR
+	  ;;
+      esac
+  fi #test $opsys = "MINGW32_NT-5.1"
+
+  if test $opsys = "CYGWIN_NT-6.0"
+      then
+      echo
+      echo
+      echo "CYGWIN 6.0 on Windows Detected"
+      echo
+      echo "=============================================================="
+      echo "MFIX Compilation directives available for following compilers:"
+      echo "=============================================================="
+      echo " [1] g95"
+      echo " [2] gfortran"       
+      echo " "
+      if test $input_needed = 1
+	  then
+	  echo -n "Select the compiler to compile MFIX? [2] "
+	  read cygwin_compiler
+      fi
+      case $cygwin_compiler in
+	  1 )
+	  echo " "
+	  echo "g95 compiler selected"
+	  opsys="CYGWIN_NT-6.0-g95"
+	  makefile_append="_gfor"
+	  DPO=${DPO}_GFOR
+	  ;;
+	  * )
+	  cygwin_compiler=2
+	  echo " "
+	  echo "gfortran Compiler selected"
+	  opsys="CYGWIN_NT-6.0-gfortran"
+	  makefile_append="_gfor"
+	  DPO=${DPO}_GFOR
+	  ;;
+      esac
+  fi #test $opsys = "CYGWIN_NT-6.0"
+
+  if test $opsys = "CYGWIN_NT-5.1"
+      then
+      echo
+      echo
+      echo "CYGWIN 5.1 on Windows Detected"
+      echo
+      echo "=============================================================="
+      echo "MFIX Compilation directives available for following compilers:"
+      echo "=============================================================="
+      echo " [1] g95"
+      echo " [2] gfortran"       
+      echo " "
+      if test $input_needed = 1
+	  then
+	  echo -n "Select the compiler to compile MFIX? [2] "
+	  read cygwin_compiler
+      fi
+      case $cygwin_compiler in
+	  1 )
+	  echo " "
+	  echo "g95 compiler selected"
+	  opsys="CYGWIN_NT-5.1-g95"
+	  makefile_append="_gfor"
+	  DPO=${DPO}_GFOR
+	  ;;
+	  * )
+	  cygwin_compiler=2
+	  echo " "
+	  echo "gfortran Compiler selected"
+	  opsys="CYGWIN_NT-5.1-gfortran"
+	  makefile_append="_gfor"
+	  DPO=${DPO}_GFOR
+	  ;;
+      esac
+  fi #test $opsys = "CYGWIN_NT-5.1"
+	        
+  if test $opsys = "Linux"
+      then
+      if test $proctyp = "x86_64"
+	  then
+	  if test $input_needed = 1
+	      then
+	      echo
+	      echo
+	      echo "64 bit Linux system detected, please select compiler."
+	      echo
+	      echo "=============================================================="
+	      echo "MFIX Compilation directives available for following compilers:"
+	      echo "=============================================================="
+	      
+	      echo "  [1] GNU (gfortran) version 4.3 and above "
+	      echo "  [2] Portland Group (pgf90) version 11.7 and above"
+	      echo "  [3] Intel (ifort) version 11.1 and above "
+	      
+
+	      if test $EXPERT_ON = 1
+		  then
+		  
+		  echo "  [4] Intel (ifort) on AMD Opteron"       
+		  echo "  [5] PathScale (pathf90)"
+		  echo "  [6] Portland Group (pgf90) on AMD Opteron"              
+		  echo "  [7] Portland Group (pgf90) on Cray XT3 at PSC"       
+		  echo "  [8] Portland Group (pgf90) on Cray XT4 at NCCS"        
+		  echo "  [9] PathScale (pathf90) on Cray XT4 at NCCS"        
+		  echo " [10] Pathscale (pathf90) on Cray XT4 at NERSC"
+		  echo " [11] IBM Fortran (xlf90) on Blue Gene at ANL ALCF"
+		  
+	      fi
+
+	      echo " "
+	      echo -n "Select the compiler to compile MFIX? [1] "
+	      read lnx_compiler
+	  fi #test $input_needed = 1
+	  
+	  case $lnx_compiler in
+
+	      1 )
+	      echo " "
+	      echo "Gfortran on 64 bit machine"
+	      opsys="Linux_64_gfort"
+	      makefile_append="_gfor"
+	      DPO=${DPO}_GFOR
+	      ;;
+	      2 )
+	      echo " "
+	      echo "Portland Group Linux Fortran Compiler selected"
+	      opsys="Linux_64_pgi"
+	      DPO=${DPO}_PGI
+	      ;;
+	      3 )
+	      echo " "
+	      echo "Intel Compiler selected"
+	      opsys="Linux_64_intel"
+	      DPO=${DPO}_INTEL
+	      ;;
+	      4 )
+	      echo " "
+	      echo "Intel Compiler selected for AMD Opteron"
+	      opsys="Linux_64_intel_amd64"
+	      DPO=${DPO}_INTEL_AMD64
+	      ;;
+	      5 )
+	      echo " "
+	      echo "PathScale Compiler selected"
+	      opsys="Linux_64_pscale"
+	      DPO=${DPO}_PATH
+	      ;;
+	      6 )
+	      echo " "
+	      echo "Portland Group Linux Fortran Compiler for AMD Opteron selected"
+	      opsys="Linux_64_pgi_amd64"
+	      DPO=${DPO}_PGI_AMD64
+	      ;;
+	      7 )
+	      echo " "
+	      echo "Portland Group Linux Fortran Compiler for Cray XT3 at PSC selected"
+	      opsys="Linux_64_pgi_xt_psc"
+	      DPO=${DPO}_PGI_CRAYXT3
+	      ;;
+	      8 )
+	      echo " "
+	      echo "Portland Group Linux Fortran Compiler for Cray XT4 at NCCS selected"
+	      opsys="Linux_64_pgi_xt_nccs"
+	      DPO=${DPO}_PGI_CRAYXT4
+	      ;;
+	      9 )
+	      echo " "
+	      echo "PathScale Compiler (pathf90) on Cray XT4 at NCCS selected"
+	      opsys="Linux_64_pscale_xt_nccs"
+	      DPO=${DPO}_PATH_CRAYXT4
+	      ;;
+	      10 )
+	      echo " "
+	      echo "PathScale Compiler (pathf90) on Cray XT4 at NERSC selected"
+	      opsys="Linux_64_pscale_xt_nersc"
+	      DPO=${DPO}_PATH_CRAYXT4
+	      ;;
+	      11 )
+	      echo " "
+	      echo "IBM Fortran Compiler (xlf90) on Blue Gene at ANL ALCF"
+	      opsys="Linux_64_xlf_anl"
+	      DPO=${DPO}_IBM_BG
+	      ;;
+	      * )
+	      echo " "
+	      echo "Gfortran on 64 bit machine"
+	      opsys="Linux_64_gfort"
+	      makefile_append="_gfor"
+	      DPO=${DPO}_GFOR
+	      #Set the lnx_compiler flag to default so that last_compilation_flag file is consistent
+	      lnx_compiler=1
+	      ;;
+	  esac #lnx_compiler
+	        
+	  if test $opsys = "Linux_64_intel" -o $opsys = "Linux_64_intel_amd64"
+	      then
+	      
               echo "______    If you get 'ifort: Command not found'   _______"
               echo "IFORT environment variables are not defined"
               echo " "
               echo "Please add the following in your shell and rerun make_mfix"
               echo "for .cshrc 'source path_to_fce_9.0/bin/ifortvars.csh'"
               echo "for .kshrc or .bashrc 'source path_to_fce_9.0/bin/ifortvars.sh'"
-         fi
+	  fi
 
-         if test $opsys = "Linux_64_pgi"
-	 then
-           if [ "$PGI" ]
-           then                                                                    
-              echo " "
-            else
-	      echo "______     Environment variable ERROR          _______"
-	      echo "Environment variable for Portland Group is not defined !"
-	      echo " "
-	      echo "Please define the following in your shell and rerun make_mfix"
-	      echo " setenv PGI your_path_of_PGI_root_directory"
-	      exit
-	    fi
-         fi	    
+	  if test $opsys = "Linux_64_pgi"
+	      then
+	      if [ "$PGI" ]
+		  then                                                                    
+		  echo " "
+	      else
+		  echo "______     Environment variable ERROR          _______"
+		  echo "Environment variable for Portland Group is not defined !"
+		  echo " "
+		  echo "Please define the following in your shell and rerun make_mfix"
+		  echo " setenv PGI your_path_of_PGI_root_directory"
+		  exit
+	      fi
+	  fi	    
 
         # Temporarily disable PSCALE and ACML env variable check
         #if test $opsys = "Linux_64_pscale"
 	#then
         #   if [ "$PSCALE" ]
         #   then                                                                    
-              echo " "
+	  echo " "
         #    else
         #      echo "______     Environment variable ERROR          _______"
 	#      echo "Environment variable for PathScale is not defined !"
@@ -646,57 +919,83 @@ ln -sf "$mpi_include/mpif.h" .
 
       else    # test $opsys = "Linux" branch
 
-       echo
-       echo
-       echo "32 bit Linux system detected, please select compiler."
-       echo
-       echo "=============================================================="
-       echo "MFIX Compilation directives available for following compilers:"
-       echo "=============================================================="
-       echo " [1] Portland Group Linux Fortran Compiler (pgf90)"
-       echo " [2] Intel Fortran Compiler version 9.X (ifort) "
-       echo " [3] Intel Fortran Compiler version 10.X (ifort)"
-       echo " [4] GNU Gfortran"
-       echo " "
-       if test $input_needed = 1
-       then
-         echo -n "Select the compiler to compile MFIX? [2] "
-         read lnx_compiler
-       fi
+	  echo
+	  echo
+	  echo "32 bit Linux system detected, please select compiler."
+	  echo
+	  echo "=============================================================="
+	  echo "MFIX Compilation directives available for following compilers:"
+	  echo "=============================================================="
+	  echo " [1] GNU Gfortran"
+	  echo " [2] Portland Group Linux Fortran Compiler (pgf90)"
+	  echo " [3] Intel Fortran Compiler version 9.X (ifort) "
+	  echo " [4] Intel Fortran Compiler version 10.X (ifort)"
 
-       case $lnx_compiler in
-         1 )
-           echo " "
-           echo "Portland Group Linux Fortran Compiler selected"
-           opsys="Linux_pgi"
-           ;;
-         3 )
-           echo " "
-           echo "Intel Linux Fortran Compiler version 10.X selected"
-           opsys="Linux_ifc10"
-           ;;
-         2 )
-           echo " "
-           echo "Intel Linux Fortran Compiler version 9.X selected"
-           opsys="Linux_ifc9"
-           ;;
-         4 )
-           echo " "
-           echo "GFortran Compiler on 32 bit machine selected"
-           opsys="Linux_gfortran"
-           ;;
-         *)
-           lnx_compiler=2
-           echo " "
-           echo "Intel Linux Fortran Compiler version 9.X selected"
-           opsys="Linux_ifc9"
-           ;;
-       esac
+	  echo " "
+	  if test $input_needed = 1
+	      then
+	      echo -n "Select the compiler to compile MFIX? [1] "
+	      read lnx_compiler
+	  fi
+
+	  case $lnx_compiler in
+	      1 )
+	      echo " "
+	      echo "GFortran Compiler on 32 bit machine selected"
+	      opsys="Linux_gfortran"
+	      makefile_append="_gfor"
+	      DPO=${DPO}_GFOR
+	      ;;
+	      2 )
+	      echo " "
+	      echo "Portland Group Linux Fortran Compiler selected"
+	      opsys="Linux_pgi"
+	      DPO=${DPO}_PGI
+	      ;;
+	      3 )
+	      echo " "
+	      echo "Intel Linux Fortran Compiler version 9.X selected"
+	      opsys="Linux_ifc9"
+	      DPO=${DPO}_IFC9
+	      ;;
+	      4 )
+	      echo " "
+	      echo "Intel Linux Fortran Compiler version 10.X selected"
+	      opsys="Linux_ifc10"
+	      DPO=${DPO}_IFC10
+	      ;;
+	      *)
+	      lnx_compiler=1
+	      echo " "
+	      echo "GFortran Compiler on 32 bit machine selected"
+	      opsys="Linux_gfortran"
+	      makefile_append="_gfor"
+	      DPO=${DPO}_GFOR
+	      ;;
+	  esac
            
       fi   # end of test $opsys = "Linux" branch
-    else
-       echo  
-    fi
+
+  else
+      echo  
+
+  fi # test $opsys = "Linux"
+
+
+  DPO=${DPO_BASE}/$DPO/
+       #exit
+  echo -e "Directory for Object and module files: \n $DPO \n"
+	
+  if test -d $DPO
+      then
+      echo -e "Object file directory \n $DPO \n already exists \n"
+  else
+      echo -e "Object file directory \n $DPO \n does not exist, making a new one \n"
+      mkdir $DPO       
+  fi
+  
+	
+  
 
 #  Note: 
 #    compile3 and compile_d3 flags are passed to makefile for compiling
@@ -780,7 +1079,7 @@ ln -sf "$mpi_include/mpif.h" .
 #	    ------------------
 #	    flags for inlining
 #	    ------------------
-	    inline_objs="compare.o eosg.o discretize.o "
+	    inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
 	    inline_files="compare.f eosg.f discretize.f "
 	    inline_flags="-qipa=inline=auto -Q $inline_files"
 	    preinline_flags=" "
@@ -814,7 +1113,8 @@ ln -sf "$mpi_include/mpif.h" .
 #           ------------------
 #           flags for inlining
 #           ------------------
-            inline_objs="compare.o eosg.o discretize.o "
+	    
+	    inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
             inline_files="compare.f eosg.f discretize.f "
 #            inline_flags=" -INLINE:must=compare_:file=compare.o -INLINE:must=eosg_:file=eosg.o -INLINE:must=phi_c_of_:file=discretize.o"
 	    inline_flags=" -IPA -INLINE:must=compare_,eosg_,phi_c_of_,xsi_:file=compare.o,eosg.o,discretize.o "
@@ -851,9 +1151,16 @@ ln -sf "$mpi_include/mpif.h" .
 	    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d="-lblas odepack.a blas90.a dgtsv90.a"
-            libs="-lblas odepack.a blas90.a dgtsv90.a"
+            libs_d="-lblas ${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a"
+            libs="-lblas ${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a"
     
+            if test $? = 127
+            then
+               echo "Error: The PGI Fortran (pgf90) compiler not found on your system."
+               exit
+            fi
+
+
             OBJ_EXT=o
             FORTRAN_EXT=f
 	    omp="-mp"
@@ -871,7 +1178,7 @@ ln -sf "$mpi_include/mpif.h" .
 #           ------------------
 #           flags for inlining
 #           ------------------
-            inline_objs="compare.o eosg.o discretize.o "
+	    inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
             inline_files="compare.f eosg.f discretize.f "
             inline_flags=" "
 #            inline_flags=" -Minline=size:10 -Minfo=inline $inline_files"
@@ -924,9 +1231,22 @@ ln -sf "$mpi_include/mpif.h" .
                              libs_d="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
                              libs="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
                            else
-                             libs_d="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
-                             libs="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
+                             libs_d=" ${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a -L $MPIHOME/lib -lmpich"
+                             libs="${DPO}odepack.a ${DPO}blas90.a   ${DPO}dgtsv90.a -L $MPIHOME/lib -lmpich"
                            fi
+
+
+                           echo "MPI library:"
+                           mpif90 -v
+
+                           
+                          if test $? = 127 
+                          then
+                             echo "Error: The MPI library was not found on your system."
+                             exit
+                          fi
+
+
                            ;;
                      mpi_intel )
                            FORTRAN_CMD=mpiifort
@@ -956,6 +1276,16 @@ ln -sf "$mpi_include/mpif.h" .
                              libs="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
                            fi
 
+                           echo "MPI library:"
+                           mpif90 -v
+
+                          if test $? = 127 
+                          then
+                             echo "Error: The MPI library was not found on your system."
+                             exit
+                          fi
+
+
                            ;;
                      esac
 
@@ -976,22 +1306,33 @@ ln -sf "$mpi_include/mpif.h" .
               *)
                       FORTRAN_CMD=ifort
                       LINK_CMD=ifort
+
                       if [ "$ACML" ]
                       then                                                                    
-                         libs_d="odepack.a -L $ACML/ifort64/lib -lacml -lacml_mv $NETCDF_LIBS"
-                         libs="odepack.a -L $ACML/ifort64/lib -lacml -lacml_mv $NETCDF_LIBS"
+                         libs_d=" ${DPO}odepack.a -L $ACML/ifort64/lib -lacml -lacml_mv $NETCDF_LIBS"
+                         libs="${DPO}odepack.a -L $ACML/ifort64/lib -lacml -lacml_mv $NETCDF_LIBS"
 		      else 
-                         libs_d="odepack.a blas90.a dgtsv90.a $NETCDF_LIBS"
-                         libs="odepack.a blas90.a dgtsv90.a $NETCDF_LIBS"
+			  libs_d=" ${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a $NETCDF_LIBS "
+                          libs="${DPO}odepack.a ${DPO}blas90.a   ${DPO}dgtsv90.a $NETCDF_LIBS "
 		      fi		      
                       if [ "$MKLROOT" ]
                       then
-                         libs_d="odepack.a $NETCDF_LIBS -L $MKLROOT/lib/em64t -lmkl_lapack -lmkl_em64t -lmkl_core -lvml -lguide -lpthread"
-                         libs="odepack.a $NETCDF_LIBS -L $MKLROOT/lib/em64t -lmkl_lapack -lmkl_em64t -lmkl_core -lvml -lguide -lpthread"
+                         libs_d=" ${DPO}odepack.a $NETCDF_LIBS -L $MKLROOT/lib/em64t -lmkl_lapack -lmkl_em64t -lmkl_core -lvml -lguide -lpthread"
+                         libs=" ${DPO}odepack.a $NETCDF_LIBS -L $MKLROOT/lib/em64t -lmkl_lapack -lmkl_em64t -lmkl_core -lvml -lguide -lpthread"
                       else
-                         libs_d="odepack.a blas90.a dgtsv90.a $NETCDF_LIBS "
-                         libs="odepack.a blas90.a dgtsv90.a $NETCDF_LIBS "
+			  libs_d=" ${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a $NETCDF_LIBS "
+                          libs="${DPO}odepack.a ${DPO}blas90.a   ${DPO}dgtsv90.a $NETCDF_LIBS "
                       fi
+
+                      echo "Intel Fortran (ifort) ion:"
+                      ifort -v
+ 
+                      if test $? = 127
+                      then
+                         echo "Error: The Intel Fortran (ifort) compiler was not found on your system."
+                         exit
+                      fi
+
                 ;;
               esac	  
                                                                                 
@@ -1078,8 +1419,8 @@ ln -sf "$mpi_include/mpif.h" .
 #           ------------------
 #           flags for inlining
 #           ------------------
-            inline_objs="compare.o eosg.o discretize.o "
-            inline_files="compare.f eosg.f discretize.f "
+	    inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
+	    inline_files="compare.f eosg.f discretize.f "
             inline_flags=" "
             preinline_flags="  "
             ;;
@@ -1123,8 +1464,8 @@ ln -sf "$mpi_include/mpif.h" .
                          libs_d="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
                          libs="odepack.a -L $MPIHOME/lib -lmpich -L $MPIHOME/include -L $ACML/ifort64/lib -lacml -lacml_mv"
 		      else
-                         libs_d="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
-                         libs="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
+                         libs_d="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a -L $MPIHOME/lib -lmpich"
+                         libs="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a -L $MPIHOME/lib -lmpich"
 		      fi
 
                 ;;
@@ -1136,8 +1477,8 @@ ln -sf "$mpi_include/mpif.h" .
                          libs_d="odepack.a -L $ACML/ifort64/lib -lacml -lacml_mv"
                          libs="odepack.a -L $ACML/ifort64/lib -lacml -lacml_mv"
 		      else
-                         libs_d="odepack.a blas90.a dgtsv90.a"
-                         libs="odepack.a blas90.a dgtsv90.a"
+                         libs_d="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a"
+                         libs="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a"
 		      fi		      
                 ;;
               esac	  
@@ -1166,8 +1507,8 @@ ln -sf "$mpi_include/mpif.h" .
 #           ------------------
 #           flags for inlining
 #           ------------------
-            inline_objs="compare.o eosg.o discretize.o "
-            inline_files="compare.f eosg.f discretize.f "
+	    inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
+	    inline_files="compare.f eosg.f discretize.f "
             inline_flags=" "
             preinline_flags="  "
             ;;
@@ -1183,14 +1524,29 @@ ln -sf "$mpi_include/mpif.h" .
               y|Y )
                         FORTRAN_CMD=mpif90
                         LINK_CMD=mpif90
+
+                        echo "MPI library:"
+                        mpif90 -v
+
                 ;;
               *)
                         FORTRAN_CMD=pgf90
                         LINK_CMD=pgf90
+
+                        echo "PGI Fortran (pgf90) compiler version:"
+                        pgf90 -V
+
+                        if test $? = 127
+                        then
+                           echo "Error: The PGI Fortran (pgf90) compiler not found on your system."
+                           exit
+                        fi
+
+
                 ;;
               esac                                                                                
-            libs_d="odepack.a blas90.a dgtsv90.a $NETCDF_FLIB"
-            libs="odepack.a blas90.a dgtsv90.a $NETCDF_FLIB"
+            libs_d="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a $NETCDF_FLIB"
+            libs="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a $NETCDF_FLIB"
                                                                                 
                                                                                 
             OBJ_EXT=o
@@ -1214,9 +1570,8 @@ ln -sf "$mpi_include/mpif.h" .
 #           ------------------
 #           flags for inlining
 #           ------------------
-            inline_objs="compare.o eosg.o discretize.o "
-            inline_files="compare.f eosg.f discretize.f "
-            inline_flags=" "
+	    inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o"
+	    inline_files="compare.f eosg.f discretize.f"
 #            inline_flags=" -Minline=size:10 -Minfo=inline $inline_files"
             preinline_flags="  "
             ;;
@@ -1283,8 +1638,8 @@ ln -sf "$mpi_include/mpif.h" .
 #           ------------------
 #           flags for inlining
 #           ------------------
-            inline_objs="compare.o equal.o eosg.o discretize.o "
-            inline_files="compare.f equal.f eosg.f discretize.f "
+	    inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
+	    inline_files="compare.f equal.f eosg.f discretize.f "
 #            inline_flags=" "
             inline_flags=" -Minline=size:10 -Minfo=inline $inline_files"
             preinline_flags="  "
@@ -1357,8 +1712,8 @@ ln -sf "$mpi_include/mpif.h" .
 #           ------------------
 #           flags for inlining
 #           ------------------
-            inline_objs="compare.o equal.o eosg.o discretize.o "
-            inline_files="compare.f equal.f eosg.f discretize.f "
+	    inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
+	    inline_files="compare.f equal.f eosg.f discretize.f "
             inline_flags=" -Minline=size:10 -Minfo=inline $inline_files"
             preinline_flags="  "
             ;;
@@ -1438,8 +1793,9 @@ ln -sf "$mpi_include/mpif.h" .
 #           ------------------
 #           flags for inlining
 #           ------------------
-            inline_objs="compare.o equal.o eosg.o discretize.o "
-            inline_files="compare.f equal.f eosg.f discretize.f "
+	    inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
+
+	    inline_files="compare.f equal.f eosg.f discretize.f "
             inline_flags=" -Minline=size:10 -Minfo=inline $inline_files"
             preinline_flags="  "
             ;;
@@ -1495,7 +1851,7 @@ ln -sf "$mpi_include/mpif.h" .
 #           ------------------
 #           flags for inlining
 #           ------------------
-            inline_objs="compare.o eosg.o discretize.o "
+	    inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
             inline_files="compare.f eosg.f discretize.f "
             inline_flags=" "
             preinline_flags="  "
@@ -1563,7 +1919,7 @@ ln -sf "$mpi_include/mpif.h" .
 #           ------------------
 #           flags for inlining
 #           ------------------
-            inline_objs="compare.o eosg.o discretize.o "
+	    inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
             inline_files="compare.f eosg.f discretize.f "
             inline_flags=" "
             preinline_flags="  "
@@ -1629,7 +1985,7 @@ ln -sf "$mpi_include/mpif.h" .
 #           ------------------
 #           flags for inlining
 #           ------------------
-            inline_objs="compare.o eosg.o discretize.o "
+	    inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
             inline_files="compare.f eosg.f discretize.f "
             inline_flags=" "
             preinline_flags="  "
@@ -1707,8 +2063,8 @@ qcache=auto "
 #           ------------------
 #           flags for inlining
 #           ------------------
-            inline_objs="compare.o eosg.o discretize.o "
-            inline_files="compare.f eosg.f discretize.f "
+	    inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
+	    inline_files="compare.f eosg.f discretize.f "
             inline_flags="-qipa=inline=auto -Q $inline_files"
             preinline_flags=" "
             
@@ -1716,6 +2072,7 @@ qcache=auto "
             ;;
 
     Linux_64_gfort )
+           mach_file="LINUX.F"
 
     case $dmp_version in
 	    y|Y )
@@ -1724,8 +2081,17 @@ qcache=auto "
 #	    libs_d=" odepack.a blas90.a dgtsv90.a"
 #	    libs="odepack.a blas90.a   dgtsv90.a"
          
-            libs_d="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib64 "
-            libs="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib64 "
+	    libs_d=" ${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a -L $MPIHOME/lib64 "
+	    libs="${DPO}odepack.a ${DPO}blas90.a   ${DPO}dgtsv90.a -L $MPIHOME/lib64 "
+
+            echo "MPI library:"
+            mpif90 -v
+
+            if test $? = 127 
+            then
+               echo "Error: The MPI library was not found on your system."
+               exit
+            fi
 
 	    ;;
 
@@ -1733,8 +2099,17 @@ qcache=auto "
 
 	    FORTRAN_CMD=gfortran
             LINK_CMD=gfortran
-	    libs_d=" odepack.a blas90.a dgtsv90.a"
-	    libs="odepack.a blas90.a  dgtsv90.a"
+	    libs_d=" ${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a"
+	    libs="${DPO}odepack.a ${DPO}blas90.a   ${DPO}dgtsv90.a"
+
+            echo "GNU Fortran (gfortran) compiler version:"
+            gfortran -v
+
+            if test $? = 127
+            then
+               echo "Error: The GNU Fortran (gfortran) compiler was not found on your system."
+               exit
+            fi
 
 	    ;;
 	       
@@ -1756,7 +2131,7 @@ qcache=auto "
             ;;
 
     Linux_gfortran )
-    
+#gfortran for the linux 32 bit version     
     case $dmp_version in
 	    y|Y )
 	    FORTRAN_CMD=mpif90
@@ -1764,21 +2139,36 @@ qcache=auto "
 #	    libs_d=" odepack.a blas90.a dgtsv90.a"
 #	    libs="odepack.a blas90.a   dgtsv90.a"
 
+
+       if test $? = 127 
+       then
+          echo "Error: The MPI library was not found on your system."
+          exit
+       fi
+
 	    ;;
 
 	    *)
 
 	    FORTRAN_CMD=gfortran
-            LINK_CMD=gfortran
+       LINK_CMD=gfortran
 #	    libs_d=" odepack.a blas90.a dgtsv90.a"
 #	    libs="odepack.a blas90.a  dgtsv90.a"
+
+
+       if test $? = 127
+       then
+          echo "Error: The GNU Fortran (gfortran) compiler was not found on your system."
+          exit
+       fi
+
 
 	    ;;
 	       
     esac
-
-            libs_d="odepack.a blas90.a dgtsv90.a"
-            libs="odepack.a blas90.a dgtsv90.a"
+    
+    	    libs_d=" ${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a"
+	    libs="${DPO}odepack.a ${DPO}blas90.a   ${DPO}dgtsv90.a"
 
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -1798,6 +2188,7 @@ qcache=auto "
 
                                                	    	    
     Linux_ifc9 | Linux_ifc10 )
+#intel compiler setting for 32 bit linux machine 
           #-----------
           #  Set MPI library used as Intel's MPI library uses mpiifort instead of mpif90
           #-----------
@@ -1828,11 +2219,11 @@ qcache=auto "
                            LINK_CMD="mpif90 -lsvml"
                            if [ "$ACML" ]
                            then
-                             libs_d="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
-                             libs="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
+                             libs_d=" ${DPO}odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
+                             libs="${DPO}odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
                            else
-                             libs_d="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
-                             libs="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
+                             libs_d="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a -L $MPIHOME/lib -lmpich"
+                             libs="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a -L $MPIHOME/lib -lmpich"
                            fi
                            ;;
                      mpi_intel )
@@ -1840,11 +2231,11 @@ qcache=auto "
                            LINK_CMD="mpiifort -lsvml"
                            if [ "$MKLROOT" ]
                            then
-                             libs_d="odepack.a -L $MPICH_DIR/lib -lmpi -L $MKLROOT/lib/32 -lmkl_solver -lmkl_lapack -lvml -lguide"
-                             libs="odepack.a -L $MPICH_DIR/lib -lmpi -L $MKLROOT/lib/32 -lmkl_solver -lmkl_lapack -lvml -lguide"
+                             libs_d="${DPO}odepack.a -L $MPICH_DIR/lib -lmpi -L $MKLROOT/lib/32 -lmkl_solver -lmkl_lapack -lvml -lguide"
+                             libs="${DPO}odepack.a -L $MPICH_DIR/lib -lmpi -L $MKLROOT/lib/32 -lmkl_solver -lmkl_lapack -lvml -lguide"
                            else
-                             libs_d="odepack.a -L $MPICH_DIR/lib -lmpi blas90.a dgtsv90.a "
-                             libs="odepack.a -L $MPICH_DIR/lib -lmpi blas90.a dgtsv90.a "
+                             libs_d="${DPO}odepack.a -L $MPICH_DIR/lib -lmpi ${DPO}blas90.a ${DPO}dgtsv90.a "
+                             libs="${DPO}odepack.a -L $MPICH_DIR/lib -lmpi ${DPO}blas90.a ${DPO}dgtsv90.a "
                            fi
                            ;;
                      * )
@@ -1852,14 +2243,21 @@ qcache=auto "
                            LINK_CMD="mpif90 -lsvml"
                            if [ "$ACML" ]
                            then
-                             libs_d="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
-                             libs="odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
+                             libs_d="${DPO}odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
+                             libs="${DPO}odepack.a -L $MPIHOME/lib -lmpich -L $ACML/ifort64/lib -lacml -lacml_mv"
                            else
-                             libs_d="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
-                             libs="odepack.a blas90.a dgtsv90.a -L $MPIHOME/lib -lmpich"
+                             libs_d="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a -L $MPIHOME/lib -lmpich"
+                             libs="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a -L $MPIHOME/lib -lmpich"
                            fi
                            ;;
-                     esac
+                   esac
+
+                   if test $? = 127 
+                   then
+                      echo "Error: The MPI library was not found on your system."
+                      exit
+                   fi
+
                 ;;
               *)
                   case $opsys in
@@ -1876,6 +2274,14 @@ qcache=auto "
                            LINK_CMD="ifort -lsvml"
                            ;;
                     esac
+
+
+                   if test $? = 127
+                   then
+                      echo "Error: The Intel Fortran (ifort) compiler was not found on your system."
+                      exit
+                   fi
+
                 ;;
             esac
 
@@ -1883,8 +2289,8 @@ qcache=auto "
             FORTRAN_EXT=f
             omp="-openmp -assume cc_omp"
 
-            libs_d='odepack.a blas90.a dgtsv90.a'
-            libs='odepack.a blas90.a dgtsv90.a'
+            libs_d='${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a'
+            libs='${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a'
 	    
 
          #============================
@@ -2011,8 +2417,8 @@ qcache=auto "
           # ------------------
           # flags for inlining
           # ------------------
-            inline_objs="compare.o eosg.o discretize.o "
-          # inline_objs=" "
+	    inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
+	     # inline_objs=" "
 
             inline_files="compare.f eosg.f discretize.f "
           # inline_files=" "
@@ -2027,8 +2433,8 @@ qcache=auto "
    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d="odepack.a blas90.a dgtsv90.a"
-            libs="odepack.a blas90.a dgtsv90.a"
+            libs_d="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a"
+            libs="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a"
 	       
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -2048,9 +2454,9 @@ qcache=auto "
    
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-            libs_d="odepack.a blas90.a dgtsv90.a"
-            libs="odepack.a blas90.a dgtsv90.a"
-	       
+	    libs_d="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a"
+            libs="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a"
+   
             OBJ_EXT=o
             FORTRAN_EXT=f
 	    omp="-mp"
@@ -2069,8 +2475,8 @@ qcache=auto "
    
             FORTRAN_CMD=g95
             LINK_CMD=g95
-            libs_d="odepack.a blas90.a dgtsv90.a"
-            libs="odepack.a blas90.a dgtsv90.a"
+	    libs_d="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a"
+            libs="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a"
 	       
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -2090,8 +2496,9 @@ qcache=auto "
 
             FORTRAN_CMD=gfortran-4
             LINK_CMD=gfortran-4
-            libs_d="odepack.a blas90.a dgtsv90.a"
-            libs="odepack.a blas90.a dgtsv90.a"
+
+	    libs_d="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a"
+            libs="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a"
 
             OBJ_EXT=o
             FORTRAN_EXT=f
@@ -2113,9 +2520,9 @@ qcache=auto "
 
             FORTRAN_CMD=gfortran
             LINK_CMD=gfortran
-            libs_d="odepack.a blas90.a dgtsv90.a"
-            libs="odepack.a blas90.a dgtsv90.a"
 
+	    libs_d="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a"
+            libs="${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a"
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-mp"
@@ -2542,10 +2949,10 @@ echo "******************************************************"
 	echo
 	echo -n '******************************************************'
 	echo
-        /bin/cp -f mfix_l.make mfix_l_not.make
+        /bin/cp -f mfix_l.make${makefile_append} mfix_l_not.make
 	ex mfix_l_not.make < dmp_modules/ex.commands
 	ex mfix_l_not.make < des/ex.commands
-	/bin/cp -f mfix_u.make mfix_u_not.make
+	/bin/cp -f mfix_u.make${makefile_append} mfix_u_not.make
 	ex mfix_u_not.make < dmp_modules/ex.commands
 	ex mfix_u_not.make < des/ex.commands
 
@@ -2598,7 +3005,9 @@ echo "******************************************************"
   esac
 
   echo "\n Compiling inline files . . ."
-  
+#  echo "USE_TAU = $USE_TAU "
+  export DPO
+  export EXEC_FILE
   export FORT_FLAGS
   export FORT_FLAGS2
   export FORT_FLAGS3  
@@ -2971,17 +3380,17 @@ echo "******************************************************"
     echo $mpi_include >>  last_compilation_options
     echo $cygwin_compiler >>  last_compilation_options
     echo $lnx_compiler >>  last_compilation_options
+    echo ${DPO} >>  last_compilation_options
 
 
-
-
+    
 
   case $MODULE_CODE in
   0)
   	case $dmp_version in
   	y|Y )
-   	    echo "make -f mfix_u.make $inline_objs"
-   	    make -f mfix_u.make $inline_objs
+   	    echo "make -f mfix_u.make${makefile_append} $inline_objs"
+   	    make -f mfix_u.make${makefile_append} $inline_objs
    	 ;;
   	*)
    	    echo "make -f mfix_u_not.make $inline_objs"
@@ -2992,8 +3401,8 @@ echo "******************************************************"
   1)
   	case $dmp_version in
   	y|Y )
-   	    echo "make -f mfix_l.make $inline_objs"
-   	    make -f mfix_l.make $inline_objs
+   	    echo "make -f mfix_l.make${makefile_append} $inline_objs"
+   	    make -f mfix_l.make${makefile_append} $inline_objs
    	 ;;
   	*)
    	    echo "make -f mfix_l_not.make $inline_objs"
@@ -3034,7 +3443,9 @@ echo "******************************************************"
   esac
 
   echo "\nPlease wait . . ."
-  
+
+  export DPO
+  export EXEC_FILE
   export FORT_FLAGS
   export FORT_FLAGS2
   export FORT_FLAGS3  
@@ -3053,24 +3464,25 @@ echo "******************************************************"
   0)
   	case $dmp_version in
   	y|Y )
-   	    echo "make -f mfix_u.make mfix.exe"
-   	    make -f mfix_u.make mfix.exe
+   	    echo "make -f mfix_u.make${makefile_append} $EXEC_FILE" 
+   	    make -f mfix_u.make${makefile_append} $EXEC_FILE
    	 ;;
   	*)
-   	    echo "make -f mfix_u_not.make mfix.exe"
-   	    make -f mfix_u_not.make mfix.exe
+   	    echo "make -f mfix_u_not.make $EXEC_FILE"
+   	    make -f mfix_u_not.make $EXEC_FILE
    	 ;;
   	esac
    ;;
   1)
   	case $dmp_version in
   	y|Y )
-   	    echo "make -f mfix_l.make mfix.exe"
-   	    make -f mfix_l.make mfix.exe
+   	    echo "make -f mfix_l.make${makefile_append} $EXEC_FILE "
+   	    make -f mfix_l.make${makefile_append} $EXEC_FILE
    	 ;;
   	*)
-   	    echo "make -f mfix_l_not.make mfix.exe"
-   	    make -f mfix_l_not.make mfix.exe
+   	    echo "make -f mfix_l_not.make $EXEC_FILE "
+   	    make -f mfix_l_not.make $EXEC_FILE
+# 1>${run_dir}/err 2>${run_dir}/out
    	 ;;
   	esac
    ;;
@@ -3078,7 +3490,7 @@ echo "******************************************************"
 
   if test $? = 0
   then
-    /bin/cp -f mfix.exe $run_dir
+    /bin/cp -f $EXEC_FILE $run_dir
     echo
 
     case $dmp_version in
