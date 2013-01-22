@@ -54,11 +54,11 @@ C
       WRITE (30,'(A,A)')  '.$(FORTRAN_EXT).$(OBJ_EXT):'
       WRITE (30,'(A,A)')  '	$(FORTRAN_CMD) $(FORT_FLAGS) $<'
       WRITE (30,*) ' '
-      WRITE (30,'(A,A)')  'mfix.exe : ' , BACK
+      WRITE (30,'(A,A)')  '$(EXEC_FILE) : ' , BACK
       WRITE (31,'(A,A)')  '.$(FORTRAN_EXT).$(OBJ_EXT):'
       WRITE (31,'(A,A)')  '	$(FORTRAN_CMD) $(FORT_FLAGS) $<'
       WRITE (31,*) ' '
-      WRITE (31,'(A,A)')  'mfix.exe : ' , BACK
+      WRITE (31,'(A,A)')  '$(EXEC_FILE) : ' , BACK
 c
 c put the MODS first in the mfix.exe dependency list
 c
@@ -67,10 +67,10 @@ c
          CALL NO_PATH(NOEXT, WoPATH, N, N1)
          j = index(WoPATH,'_mod.')
          call make_upper_case(WoPATH(1:n1-4),n1-4)
-         WRITE (30,'(A,A,A,A)') '    ' , WoPATH(1:N1-4),'.mod ',
+         WRITE (30,'(A,A,A,A)') '    $(DPO)' , WoPATH(1:N1-4),'.mod ',
      &                                     BACK
          call make_lower_case(WoPATH(1:n1-4),n1-4)
-         WRITE (31,'(A,A,A,A)') '    ' , WoPATH(1:N1-4),'.mod ',
+         WRITE (31,'(A,A,A,A)') '    $(DPO)' , WoPATH(1:N1-4),'.mod ',
      &                                     BACK
       END DO
 c
@@ -81,14 +81,14 @@ c
 	 if (j.eq.0) then
            CALL NO_EXT(FN(I),NOEXT,N)
            CALL NO_PATH(NOEXT, WoPATH, N, N1)
-           WRITE (30,'(A,A,A,A)') '    ' , WoPATH(1:N1),'.$(OBJ_EXT) ',
-     &                                     BACK
-           WRITE (31,'(A,A,A,A)') '    ' , WoPATH(1:N1),'.$(OBJ_EXT) ',
-     &                                     BACK
+           WRITE (30,'(A,A,A,A)') '    $(DPO)' , WoPATH(1:N1), 
+     &          '.$(OBJ_EXT) ', BACK
+           WRITE (31,'(A,A,A,A)') '    $(DPO)' , WoPATH(1:N1), 
+     &          '.$(OBJ_EXT) ', BACK
          endif
       END DO
-      write (30,'(a)') '    blas90.a odepack.a dgtsv90.a'
-      write (31,'(a)') '    blas90.a odepack.a dgtsv90.a'
+      write (30,'(a)') '    $(DPO)blas90.a $(DPO)odepack.a $(DPO)dgtsv90.a'
+      write (31,'(a)') '    $(DPO)blas90.a $(DPO)odepack.a $(DPO)dgtsv90.a'
 C
 C  mfix.exe link statement ( all object files + $(LIB_FLAGS) )
 C
@@ -97,49 +97,49 @@ C
       DO I = 1,NFILES
          CALL NO_EXT(FN(I),NOEXT,N)
          CALL NO_PATH(NOEXT, WoPATH, N, N1)
-         WRITE (30,'(A,A,A,A)') '    ' , WoPATH(1:N1),
+         WRITE (30,'(A,A,A,A)') '    $(DPO)' , WoPATH(1:N1),
      &                               '.$(OBJ_EXT) ',  BACK
-         WRITE (31,'(A,A,A,A)') '    ' , WoPATH(1:N1),
+         WRITE (31,'(A,A,A,A)') '    $(DPO)' , WoPATH(1:N1),
      &                               '.$(OBJ_EXT) ',  BACK
       END DO
-      WRITE (30,*) ' -o mfix.exe $(LIB_FLAGS)'
+      WRITE (30,*) ' -o $(EXEC_FILE) $(LIB_FLAGS)'
       WRITE (30,*) ' '            
-      WRITE (31,*) ' -o mfix.exe $(LIB_FLAGS)'
+      WRITE (31,*) ' -o $(EXEC_FILE) $(LIB_FLAGS)'
       WRITE (31,*) ' ' 
 c
 c source code dependencies   ... blas90.a
 c
-      write (30,'(a)') 'blas90.a : BLAS.o'
-      write (30,'(a)') '	ar cr blas90.a BLAS.o'
-      write (30,'(a)') 'BLAS.o : BLAS.F'           
-      WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F'
-      write (31,'(a)') 'blas90.a : BLAS.o'
-      write (31,'(a)') '	ar cr blas90.a BLAS.o'
-      write (31,'(a)') 'BLAS.o : BLAS.F'           
-      WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F'
+      write (30,'(a)') '$(DPO)blas90.a : $(DPO)BLAS.o'
+      write (30,'(a)') '	ar cr $(DPO)blas90.a $(DPO)BLAS.o'
+      write (30,'(a)') '$(DPO)BLAS.o : BLAS.F'           
+      WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F -o $(DPO)BLAS.o'
+      write (31,'(a)') '$(DPO)blas90.a : $(DPO)BLAS.o'
+      write (31,'(a)') '	ar cr $(DPO)blas90.a $(DPO)BLAS.o'
+      write (31,'(a)') '$(DPO)BLAS.o : BLAS.F'           
+      WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F -o $(DPO)BLAS.o'
 c
 c source code dependencies   ... dgtsv90.a
 c
-      write (30,'(a)') 'dgtsv90.a : DGTSV.o'
-      write (30,'(a)') '	ar cr dgtsv90.a DGTSV.o'
-      write (30,'(a)') 'DGTSV.o : DGTSV.F'           
-      WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) DGTSV.F'
-      write (31,'(a)') 'dgtsv90.a : DGTSV.o'
-      write (31,'(a)') '	ar cr dgtsv90.a DGTSV.o'
-      write (31,'(a)') 'DGTSV.o : DGTSV.F'           
-      WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) DGTSV.F'
+      write (30,'(a)') '$(DPO)dgtsv90.a : $(DPO)DGTSV.o'
+      write (30,'(a)') '	ar cr $(DPO)dgtsv90.a $(DPO)DGTSV.o'
+      write (30,'(a)') '$(DPO)DGTSV.o : DGTSV.F'           
+      WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) DGTSV.F -o $(DPO)DGTSV.o'
+      write (31,'(a)') '$(DPO)dgtsv90.a : $(DPO)DGTSV.o'
+      write (31,'(a)') '	ar cr $(DPO)dgtsv90.a $(DPO)DGTSV.o'
+      write (31,'(a)') '$(DPO)DGTSV.o : DGTSV.F'           
+      WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) DGTSV.F -o $(DPO)DGTSV.o'
 C
 c
 c source code dependencies   ... odepack.a
 c
-      write (30,'(a)') 'odepack.a : ODEPACK.o'
-      write (30,'(a)') '	ar cr odepack.a ODEPACK.o'
-      write (30,'(a)') 'ODEPACK.o : ODEPACK.F'           
-      WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS3) ODEPACK.F'
-      write (31,'(a)') 'odepack.a : ODEPACK.o'
-      write (31,'(a)') '	ar cr odepack.a ODEPACK.o'
-      write (31,'(a)') 'ODEPACK.o : ODEPACK.F'           
-      WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS3) ODEPACK.F'
+      write (30,'(a)') '$(DPO)odepack.a : $(DPO)ODEPACK.o'
+      write (30,'(a)') '	ar cr $(DPO)odepack.a $(DPO)ODEPACK.o'
+      write (30,'(a)') '$(DPO)ODEPACK.o : ODEPACK.F'           
+      WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS3) ODEPACK.F -o $(DPO)ODEPACK.o'
+      write (31,'(a)') '$(DPO)odepack.a : $(DPO)ODEPACK.o'
+      write (31,'(a)') '	ar cr $(DPO)odepack.a $(DPO)ODEPACK.o'
+      write (31,'(a)') '$(DPO)ODEPACK.o : ODEPACK.F'           
+      WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS3) ODEPACK.F -o $(DPO)ODEPACK.o'
 C
 C  source code Dependencies  ... MODULES
 C
@@ -149,36 +149,37 @@ C
          CALL GET_INC_FILES(NOEXT,N,IN,NINC)
 	 call get_use_files(noext,n,inuse,nuse)
          j = index(WoPATH(1:N1),'_mod')
+
          IF (NINC+NUSE.EQ.0) THEN
             call make_upper_case(WoPATH(1:j-1),j-1)
-            WRITE (30,'(A,A,A,A)') 
+            WRITE (30,'(A,A,A,A,A)') '$(DPO)',
      &                WoPATH(1:J-1),'.mod : ' , NOEXT(1:N),'.f '
             call make_lower_case(WoPATH(1:j-1),j-1)
-            WRITE (31,'(A,A,A,A)') 
+            WRITE (31,'(A,A,A,A,A)') '$(DPO)',
      &                WoPATH(1:J-1),'.mod : ' , NOEXT(1:N),'.f '
          ELSE
             call make_upper_case(WoPATH(1:j-1),j-1)
-            WRITE (30,'(A,A,A,A,A)') 
+            WRITE (30,'(A,A,A,A,A,A)') '$(DPO)',
      &          WoPATH(1:J-1),'.mod : ' , NOEXT(1:N),'.f ',BACK
             call make_lower_case(WoPATH(1:j-1),j-1)
-            WRITE (31,'(A,A,A,A,A)') 
+            WRITE (31,'(A,A,A,A,A,A)') '$(DPO)',
      &          WoPATH(1:J-1),'.mod : ' , NOEXT(1:N),'.f ',BACK
             CALL UNIQUE_FILES(INUSE,NUSE)
             DO II = 1,NUSE
                call get_num_chars(inuse(ii),j)
                if (ii.eq.nuse .and. ninc.eq.0) then
                   call make_upper_case(inuse(ii)(1:j),j)
-                  WRITE (30,*) '           ' , INUSE(II)(1:j),
+                  WRITE (30,*) '           $(DPO)' , INUSE(II)(1:j),
      &                                                 '.mod '
                   call make_lower_case(inuse(ii)(1:j),j)
-                  WRITE (31,*) '           ' , INUSE(II)(1:j),
+                  WRITE (31,*) '           $(DPO)' , INUSE(II)(1:j),
      &                                                 '.mod '
                else
                   call make_upper_case(inuse(ii)(1:j),j)
-                  WRITE (30,*) '           ' , INUSE(II)(1:j),
+                  WRITE (30,*) '           $(DPO)' , INUSE(II)(1:j),
      &                                                 '.mod ',BACK
                   call make_lower_case(inuse(ii)(1:j),j)
-                  WRITE (31,*) '           ' , INUSE(II)(1:j),
+                  WRITE (31,*) '           $(DPO)' , INUSE(II)(1:j),
      &                                                 '.mod ',BACK
                end if
             END DO
@@ -193,11 +194,17 @@ C
                end if
             END DO
          END IF
+         
+         j = index(WoPATH(1:N1),'_mod')
+         call make_lower_case(WoPATH(1:j-1),j-1)
 
-         WRITE (30,'(A,A,A)')
-     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f '
-         WRITE (31,'(A,A,A)')
-     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f '
+!         WRITE(*,*)'WOPATH = ', WOPATH(1:J-1), J
+         WRITE (30,'(A,A,A,A,A,A)')
+     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ', 
+     &        ' -o $(DPO)', WoPATH(1:J-1), '_mod.$(OBJ_EXT) -module $(DPO)'
+         WRITE (31,'(A,A,A,A,A,A)')
+     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ', 
+     &        ' -o $(DPO)',  WoPATH(1:J-1),  '_mod.$(OBJ_EXT) -module $(DPO)'
       END DO
 C
 C  source code Dependencies (object files)
@@ -210,31 +217,31 @@ C
          CALL GET_INC_FILES(NOEXT,N,IN,NINC)
 	 call get_use_files(noext,n,inuse,nuse)
          IF (NINC+NUSE.EQ.0) THEN
-            WRITE (30,'(A,A,A,A,A)') 
+            WRITE (30,'(A,A,A,A,A,A)') '$(DPO)',
      &                WoPATH(1:N1),'.$(OBJ_EXT) : ' , NOEXT(1:N),'.f '
-            WRITE (31,'(A,A,A,A,A)') 
+            WRITE (31,'(A,A,A,A,A,A)') '$(DPO)',
      &                WoPATH(1:N1),'.$(OBJ_EXT) : ' , NOEXT(1:N),'.f '
          ELSE
-            WRITE (30,'(A,A,A,A,A)') 
+            WRITE (30,'(A,A,A,A,A,A)') '$(DPO)',
      &          WoPATH(1:N1),'.$(OBJ_EXT) : ' , NOEXT(1:N),'.f ',BACK
-            WRITE (31,'(A,A,A,A,A)') 
+            WRITE (31,'(A,A,A,A,A,A)') '$(DPO)',
      &          WoPATH(1:N1),'.$(OBJ_EXT) : ' , NOEXT(1:N),'.f ',BACK
             CALL UNIQUE_FILES(INUSE,NUSE)
             DO II = 1,NUSE
                call get_num_chars(inuse(ii),j)
                if (ii.eq.nuse .and. ninc.eq.0) then
                   call make_upper_case(inuse(ii)(1:j),j)
-                  WRITE (30,*) '           ' , INUSE(II)(1:j),
+                  WRITE (30,*) '           $(DPO)' , INUSE(II)(1:j),
      &                                                 '.mod '
                   call make_lower_case(inuse(ii)(1:j),j)
-                  WRITE (31,*) '           ' , INUSE(II)(1:j),
+                  WRITE (31,*) '           $(DPO)' , INUSE(II)(1:j),
      &                                                 '.mod '
                else
                   call make_upper_case(inuse(ii)(1:j),j)
-                  WRITE (30,*) '           ' , INUSE(II)(1:j),
+                  WRITE (30,*) '           $(DPO)' , INUSE(II)(1:j),
      &                                                 '.mod ',BACK
                   call make_lower_case(inuse(ii)(1:j),j)
-                  WRITE (31,*) '           ' , INUSE(II)(1:j),
+                  WRITE (31,*) '           $(DPO)' , INUSE(II)(1:j),
      &                                                 '.mod ',BACK
                end if
             END DO
@@ -250,6 +257,14 @@ C
             END DO
          END IF
 
+        WRITE (30,'(A,A,A,A,A,A)')
+     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ', 
+     &        ' -o $(DPO)', WoPATH(1:N1),   '.$(OBJ_EXT) -module $(DPO)'
+        WRITE (31,'(A,A,A,A,A,A)')
+     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ', 
+     &        ' -o $(DPO)', WoPATH(1:N1),  '.$(OBJ_EXT) -module $(DPO)'
+ 
+
 !
 ! for files in subdirectories compilation rule needs 
 !        to be stated explicitly
@@ -259,18 +274,21 @@ C
 !
 !     for PGI compilers (needs -O1 optimization flag)
 !
-         IF(N1 .LT. N) THEN      
-           WRITE (30,'(A,A,A)')
-     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f '
-           WRITE (31,'(A,A,A)')
-     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f '
-         ENDIF
+!         IF(N1 .LT. N) THEN      
+!           WRITE (30,'(A,A,A)')
+!     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f '
+!           WRITE (31,'(A,A,A)')
+!     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f '
+!         ENDIF
          IF(fn(i).eq.'mark_phase_4_cor.f' .or.
      &      fn(i).eq.'calc_vol_fr.f') THEN      
-           WRITE (30,'(A,A,A)')
-     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f '
-           WRITE (31,'(A,A,A)')
-     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f '
+
+        WRITE (30,'(A,A,A,A,A,A)')
+     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ', 
+     &        ' -o $(DPO)', WoPATH(1:N1),   '.$(OBJ_EXT) -module $(DPO)'
+        WRITE (31,'(A,A,A,A,A,A)')
+     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ', 
+     &        ' -o $(DPO)', WoPATH(1:N1),  '.$(OBJ_EXT) -module $(DPO)'
          ENDIF
  5189    continue
       END DO
