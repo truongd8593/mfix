@@ -641,7 +641,7 @@
       DOUBLE PRECISION rSUM, pSUM
       DOUBLE PRECISION MWxStoich
 
-      INTEGER sprCount
+      INTEGER sprCount, sprIndex
 
       DOUBLE PRECISION, PARAMETER :: massBalanceTol = 1.0d-3
 
@@ -674,6 +674,16 @@
             rSUM = rSUM - MWxStoich
             IF(M /= 0) THEN
                sprCount = sprCount + 1
+               IF(sprCount == 1) THEN
+                  sprIndex = M
+! Verify that there is at most one solids phase fule (reactant).
+               ELSEIF( M /= sprIndex) THEN
+                  IF(DMP_LOG) THEN
+                     WRITE(*,1002) trim(CALLER), trim(RxN%Name)
+                     WRITE(UNIT_LOG,1002) trim(CALLER), trim(RxN%Name)
+                     IER = 1
+                  ENDIF
+               ENDIF
             ENDIF
          ELSE
             pSUM = pSUM + MWxStoich
@@ -684,14 +694,6 @@
          IF(DMP_LOG) THEN
             WRITE(*,1001) trim(CALLER), trim(RxN%Name), rSUM, pSUM
             WRITE(UNIT_LOG,1001) trim(CALLER), trim(RxN%Name), rSUM,pSUM
-            IER = 1
-         ENDIF
-      ENDIF
-! Verify that there is at most one solids phase fule (reactant).
-      IF(sprCount > 1) THEN
-         IF(DMP_LOG) THEN
-            WRITE(*,1002) trim(CALLER), trim(RxN%Name)
-            WRITE(UNIT_LOG,1002) trim(CALLER), trim(RxN%Name)
             IER = 1
          ENDIF
       ENDIF
