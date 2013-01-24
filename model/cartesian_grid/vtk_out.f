@@ -153,9 +153,14 @@
                   SPECIES_COUNTER = 0
                   DO N = 1,NMAX(0)
                      WRITE(SUBN,*)N
-                     SPECIES_COUNTER = SPECIES_COUNTER + 1
-                     VAR_NAME = ADJUSTL(SPECIES_NAME(SPECIES_COUNTER))
-                     LT = LEN_TRIM(ADJUSTL(SPECIES_NAME(SPECIES_COUNTER)))
+                     IF(USE_RRATES) THEN
+                        SPECIES_COUNTER = SPECIES_COUNTER + 1
+                        VAR_NAME = ADJUSTL(SPECIES_NAME(SPECIES_COUNTER))
+                        LT = LEN_TRIM(ADJUSTL(SPECIES_NAME(SPECIES_COUNTER)))
+                     ELSE
+                        VAR_NAME = ADJUSTL(SPECIES_ALIAS_g(N))
+                        LT = LEN_TRIM(ADJUSTL(SPECIES_ALIAS_g(N)))
+                     ENDIF
                      VAR_NAME = VAR_NAME(1:LT)//'_Gas_mass_fractions_'//ADJUSTL(SUBN)
                      CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,X_g(:,N),PASS)
                   END DO
@@ -164,9 +169,14 @@
                      WRITE(SUBM,*)M
                      DO N = 1,NMAX(M)
                         WRITE(SUBN,*)N
-                        SPECIES_COUNTER = SPECIES_COUNTER + 1
-                        VAR_NAME = ADJUSTL(SPECIES_NAME(SPECIES_COUNTER))
-                        LT = LEN_TRIM(ADJUSTL(SPECIES_NAME(SPECIES_COUNTER)))
+                        IF(USE_RRATES) THEN
+                           SPECIES_COUNTER = SPECIES_COUNTER + 1
+                           VAR_NAME = ADJUSTL(SPECIES_NAME(SPECIES_COUNTER))
+                           LT = LEN_TRIM(ADJUSTL(SPECIES_NAME(SPECIES_COUNTER)))
+                        ELSE
+                           VAR_NAME = ADJUSTL(SPECIES_ALIAS_s(M,N))
+                           LT = LEN_TRIM(ADJUSTL(SPECIES_ALIAS_s(M,N)))
+                        ENDIF
                         VAR_NAME = VAR_NAME(1:LT)//'_Solids_mass_fractions_'//TRIM(ADJUSTL(SUBM))//'_'//ADJUSTL(SUBN)
                      CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,X_s(:,M,N),PASS)
                      END DO
@@ -181,10 +191,8 @@
 
                
                CASE (9)
-                  SPECIES_COUNTER = 0
                   DO N = 1,NSCALAR
                      WRITE(SUBN,*)N
-                     SPECIES_COUNTER = SPECIES_COUNTER + 1
                      VAR_NAME = 'Scalar_'//ADJUSTL(SUBN)
                      CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,Scalar(:,N),PASS)
                   END DO
