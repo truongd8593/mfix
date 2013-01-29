@@ -237,9 +237,10 @@
                ENDIF
             ELSE
 ! User-defined heat of reaction.
-               HOR_g(IJK) = Reaction(H)%HoR(0) * RATES(H)
+               HOR_g(IJK) = HOR_g(IJK) + Reaction(H)%HoR(0) * RATES(H)
                DO M=1, MMAX
-                  HOR_s(IJK,M) = Reaction(H)%HoR(M) * RATES(H)
+                  HOR_s(IJK,M) = HOR_s(IJK,M) &
+                     + Reaction(H)%HoR(M) * RATES(H)
                ENDDO
             ENDIF
          ENDIF
