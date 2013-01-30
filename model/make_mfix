@@ -981,6 +981,10 @@ makefile_append=""
 
   fi # test $opsys = "Linux"
 
+  echo 'Overwriting DPO_BASE to parent directory (..)'
+
+  DPO_BASE='..'
+
 
   DPO=${DPO_BASE}/$DPO/
        #exit
