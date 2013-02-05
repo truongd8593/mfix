@@ -8,7 +8,6 @@
       use parallel_mpi
       use mpi_utility
       use compar 
-
       interface des_mpi_irecv
       module procedure des_mpi_irecv_db
       end interface 
@@ -141,10 +140,39 @@
 ! Subroutine       : des_mpi_stop
 ! Purpose          : Wrapper class for mpi_abort
 !------------------------------------------------------------------------
-      subroutine des_mpi_stop
+      subroutine des_mpi_stop(myid)
+      
+      USE funits
       implicit none 
-      write(*,*) "Error in processor :",mype
-      call mpi_abort(mpi_comm_world)
+      
+      integer, optional, intent(in) :: myid
+
+      INTEGER :: mylid, ERRORCODE
+
+      if (.not. present(myid)) then
+         mylid = myPE
+      else
+         mylid = myid
+      endif
+      
+      write(*,100) mylid
+      write(UNIT_LOG,100) mylid
+      
+ 100  format(/,'*****************',&
+      '********************************************',/, &
+      '(PE ',I2,') : A fatal error occurred in des routines',/,9X, &
+      '*.LOG file may contain other error messages ',/,'*****************', &
+      '********************************************',/)
+  
+      call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
+      call MPI_ABORT(MPI_COMM_WORLD, ERRORCODE, mpierr)
+      write(*,"('(PE ',I2,') : MPI_ABORT return = ',I2)") &
+      mylid,mpierr
+      
+      call MPI_Finalize(mpierr)
+      
+      STOP 'MPI terminated from des_mpi_stop'
+
       end subroutine 
 
       end module 
