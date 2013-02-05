@@ -2076,14 +2076,12 @@ qcache=auto "
             ;;
 
     Linux_64_gfort )
-           mach_file="LINUX.F"
+    mach_file="LINUX.F"
 
     case $dmp_version in
 	    y|Y )
 	    FORTRAN_CMD=mpif90
 	    LINK_CMD="mpif90 "
-#	    libs_d=" odepack.a blas90.a dgtsv90.a"
-#	    libs="odepack.a blas90.a   dgtsv90.a"
          
 	    libs_d=" ${DPO}odepack.a ${DPO}blas90.a ${DPO}dgtsv90.a -L $MPIHOME/lib64 "
 	    libs="${DPO}odepack.a ${DPO}blas90.a   ${DPO}dgtsv90.a -L $MPIHOME/lib64 "
@@ -2122,13 +2120,13 @@ qcache=auto "
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-mp"
-            compile_d="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -g "
-            compile_d2="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -g "
-            compile_d3="-c -I. -fconvert='big-endian' -g "
+            compile_d="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -I$mpi_include -I$DPO -g "
+            compile_d2="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -I$mpi_include -I$DPO -g "
+            compile_d3="-c -I. -fconvert='big-endian' -I$mpi_include -I$DPO -g "
             link_d="-g"
-            compile="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -I$mpi_include -O3 "
-            compile2="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -I$mpi_include -O1 "
-            compile3="-c -I. -fconvert='big-endian' -I$mpi_include -O1 "
+            compile="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -I$mpi_include -I$DPO -O3 "
+            compile2="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -I$mpi_include -I$DPO -O1 "
+            compile3="-c -I. -fconvert='big-endian' -I$mpi_include -I$DPO -O1 "
             link=" "
             MODULE_CODE=1
 
