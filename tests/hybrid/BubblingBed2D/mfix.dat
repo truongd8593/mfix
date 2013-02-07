@@ -324,7 +324,7 @@
   DISCRETE_ELEMENT  = .TRUE.
   DES_CONTINUUM_COUPLED  = .TRUE. ! Coupled gas/solid model
   DES_INTERP_ON  = .TRUE.         ! interpolate for drag force
-!  INTERP_DES_MEAN_FIELDS = .TRUE.  ! interpolate mean fields (volume frac)
+  DES_INTERP_MEAN_FIELDS = .TRUE.  ! interpolate mean fields (volume frac)
 
   PARTICLES = 1200            ! Number of particles in the system.
   MAX_PIS = 1200  
