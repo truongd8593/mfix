@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SET_WALL_BC(IER)                                       C
+!  Subroutine: SET_WALL_BC                                             C
 !  Purpose: Set wall boundary conditions                               C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 29-JAN-92  C
@@ -11,28 +11,27 @@
 !  Author: M. Syamlal                                 Date: 23-OCT-92  C
 !  Reviewer: M. Syamlal                               Date: 11-DEC-92  C
 !  Revision Number: 2                                                  C
-!  Purpose:Revised for MFIX 2.0.  This sub routine is different from   C
-!          old set_wall_bc.
+!  Purpose: Revised for MFIX 2.0. This subroutine is different from    C
+!           old set_wall_bc.                                           C
 !  Author: M. Syamlal                                 Date: 18-JUL-96  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced: BC_DEFINED, BC_I_w, BC_I_e, BC_J_s, BC_J_n,   C
-!                        BC_K_b, BC_K_t, BC_TYPE, TIME, DT, BC_TIME,   C
-!                        BC_V_g, BC_V_gh, BC_V_gl, BC_DT_l, BC_DT_h,   C
-!                        BC_PLANE, IMAX2, JMAX2, KMAX2                 C
-!  Variables modified: BC_V_g, BC_TIME, I, J, K, IJK, V_g              C
+!  Variables referenced: BC_DEFINED, BC_TYPE, BC_JJ_PS, BC_I_w,        C
+!                        BC_I_e, BC_J_s, BC_J_n, BC_K_b, BC_K_t,       C
+!                        ISTART3, IEND3, JSTART3, JEND3, KSTART3,      C
+!                        KEND3, ISTART2, IEND2, JSTART2, JEND2,        C
+!                        KSTART2, KEND3, IMAX2, JMAX2, KMAX2, MMAX,    C
+!                        W_g, W_S in fluid cell adjacent to wall cell  C
+!  Variables modified: W_g, W_S in wall cell                           C
 !                                                                      C
-!  Local variables: L, IJK2, I1, I2, J1, J2, K1, K2                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE SET_WALL_BC(IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -46,190 +45,159 @@
       USE compar    
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Dummy arguments
 !-----------------------------------------------
+! error index 
+      INTEGER, INTENT(INOUT) :: IER 
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Local variables
 !-----------------------------------------------
-! 
-!                      error index 
-      INTEGER          IER 
+! Local index for boundary condition 
+      INTEGER :: L 
+! indices 
+      INTEGER :: IJK, IPJK 
+! Starting & ending I index 
+      INTEGER :: I1, I2 
+! Starting & ending J index 
+      INTEGER :: J1, J2
+! Starting and ending K index 
+      INTEGER :: K1, K2
 !-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-! 
-!                      Local index for boundary condition 
-      INTEGER          L 
-! 
-!                      Index for setting V velocity b.c. 
-      INTEGER          IJK2 
-! 
-!                      indices 
-      INTEGER          IJK, IPJK, M 
-! 
-!                      Starting I index 
-      INTEGER          I1 
-! 
-!                      Ending I index 
-      INTEGER          I2 
-! 
-!                      Starting J index 
-      INTEGER          J1 
-! 
-!                      Ending J index 
-      INTEGER          J2 
-! 
-!                      Starting K index 
-      INTEGER          K1 
-! 
-!                      Ending K index 
-      INTEGER          K2 
-! 
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-!
-!  Set the boundary conditions
-!
+!-----------------------------------------------
+
+
+! Set the boundary conditions
       DO L = 1, DIMENSION_BC 
          IF (BC_DEFINED(L)) THEN 
-!
-!  The range of boundary cells
-!
+
+! The range of boundary cells
             I1 = BC_I_W(L) 
             I2 = BC_I_E(L) 
             J1 = BC_J_S(L) 
             J2 = BC_J_N(L) 
             K1 = BC_K_B(L) 
             K2 = BC_K_T(L) 
-!
+
             SELECT CASE (TRIM(BC_TYPE(L)))
-            CASE ('FREE_SLIP_WALL')  
-!  Because of a 7-30-04 mod it is no longer necessary to pass the sign as ONE or -ONE 
-!  Set velocities for the range of boundary cells.  Use 1.0 as the sign
-!  to make the velocity at the cell equal to that at the fluid cell.
-!
-               CALL SET_WALL_BC1 (I1, I2, J1, J2, K1, K2, BC_JJ_PS(L), ONE) 
-!
-            CASE ('NO_SLIP_WALL')  
-!
-!  Set velocities for the range of boundary cells.  Use -1.0 as the sign
-!  to make the velocity at the cell equal to that at the fluid cell.
-!
-               CALL SET_WALL_BC1 (I1, I2, J1, J2, K1, K2, BC_JJ_PS(L), (-ONE)) 
-!
-            CASE ('PAR_SLIP_WALL')  
-!             updating the boundary velocity may improve convergence
+               CASE ('FREE_SLIP_WALL')  
+                  CALL SET_WALL_BC1 (I1, I2, J1, J2, K1, K2, &
+                                     BC_JJ_PS(L)) 
+
+               CASE ('NO_SLIP_WALL')  
+                  CALL SET_WALL_BC1 (I1, I2, J1, J2, K1, K2, &
+                                     BC_JJ_PS(L)) 
+
+               CASE ('PAR_SLIP_WALL')  
+! updating the boundary velocity may improve convergence
             END SELECT 
          ENDIF 
-      END DO 
-      
-      K1 = 1 
+      ENDDO 
 
+
+! The above section did not address bc_type=undefined (which by default
+! is either a ns wall, or if i=1 and cylindrical, a fs wall) or
+! bc_type='dummy' conditions. The section below will handle both events
+! since default_wall_at will register as true
+      K1 = 1 
       DO J1 = JSTART3, JEND3
          DO I1 = ISTART3, IEND3
-            IF(K1.NE.KSTART2)   EXIT
-            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    
+            IF(K1.NE.KSTART2) EXIT
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
             IJK = FUNIJK(I1,J1,K1) 
-            IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, J1, J1, K1, K1&
-               , 0, (-ONE)) 
-         END DO 
-      END DO 
+            IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1,&
+                J1, J1, K1, K1, 0) 
+         ENDDO 
+      ENDDO 
 
+! top xy-plane      
       K1 = KMAX2 
       DO J1 = JSTART3, JEND3
          DO I1 = ISTART3, IEND3
-!// 
-            IF(K1.NE.KEND2)   EXIT
-            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    
-	    
+            IF(K1.NE.KEND2) EXIT
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
             IJK = FUNIJK(I1,J1,K1) 
-            IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, J1, J1, K1, K1&
-               , 0, (-ONE)) 
-         END DO 
-      END DO 
+            IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, &
+               J1, J1, K1, K1, 0) 
+         ENDDO 
+      ENDDO 
+
+! south xz-plane 
       J1 = 1 
       DO K1 = KSTART3, KEND3
          DO I1 = ISTART3, IEND3
-!//
-            IF(J1.NE.JSTART2)   EXIT
-            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    
-	    
+            IF(J1.NE.JSTART2) EXIT
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
             IJK = FUNIJK(I1,J1,K1) 
-            IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, J1, J1, K1, K1&
-               , 0, (-ONE)) 
-         END DO 
-      END DO 
+            IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, &
+                J1, J1, K1, K1, 0) 
+         ENDDO 
+      ENDDO 
+
+! north xz-plane
       J1 = JMAX2 
       DO K1 = KSTART3, KEND3
          DO I1 = ISTART3, IEND3
-!//
-            IF(J1.NE.JEND2)   EXIT
-            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    
-	    
+            IF(J1.NE.JEND2) EXIT
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
             IJK = FUNIJK(I1,J1,K1) 
-            IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, J1, J1, K1, K1&
-               , 0, (-ONE)) 
-         END DO 
-      END DO 
+            IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, &
+               J1, J1, K1, K1, 0) 
+         ENDDO 
+      ENDDO 
+
+! west zy-plane
       I1 = 1 
       DO K1 = KSTART3, KEND3
          DO J1 = JSTART3, JEND3
-!//
-            IF(I1.NE.ISTART2)   EXIT
-            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    
+            IF(I1.NE.ISTART2) EXIT
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
             IJK = FUNIJK(I1,J1,K1) 
+            IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, &
+                J1, J1, K1, K1, 0) 
 
-!
-            IF (DEFAULT_WALL_AT(IJK)) THEN 
-!
-               IF (NS_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, J1, J1, K1, K1, &
-                  0, (-ONE)) 
-               IF(FS_WALL_AT(IJK))CALL SET_WALL_BC1(I1,I1,J1,J1,K1,K1,0,ONE) 
-            ENDIF 
-!
-!  For cylindrical coordinates the azimuthal component should be zero at center
-!
+! For cylindrical coordinates the azimuthal component should be zero
+! at center (this forces no-slip for the azimuthal component at what
+! is a free-slip wall)
             IF (CYLINDRICAL .AND. XMIN==ZERO) THEN 
                IPJK = IP_OF(IJK) 
                W_G(IJK) = -W_G(IPJK) 
-               M = 1 
                IF (MMAX > 0) THEN 
                   W_S(IJK,:MMAX) = -W_S(IPJK,:MMAX) 
-                  M = MMAX + 1 
                ENDIF 
             ENDIF 
-         END DO 
-      END DO 
+         ENDDO 
+      ENDDO
+
+! east zy-plane
       I1 = IMAX2 
       DO K1 = KSTART3, KEND3
          DO J1 = JSTART3, JEND3
-!//
-            IF(I1.NE.IEND2)   EXIT
-            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE	    
-	    
+            IF(I1.NE.IEND2) EXIT
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE    
             IJK = FUNIJK(I1,J1,K1) 
-            IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, J1, J1, K1, K1&
-               , 0, (-ONE)) 
-         END DO 
-      END DO 
+            IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, &
+                J1, J1, K1, K1, 0) 
+         ENDDO 
+      ENDDO 
       RETURN  
       END SUBROUTINE SET_WALL_BC 
-!
-!
+
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SET_WALL_BC1(II1, II2, JJ1, JJ2, KK1, KK2, BC_JJ_PSL, &C
-!                                                SIGN0)                C
+!  Subroutine: SET_WALL_BC1                                            C
+!                                                                      C
 !  Purpose: Set U, V, and W components for the specified cells by      C
-!           copying the same or negative values from near by fluid cellC
+!           copying the same or negative values from near by fluid     C
+!           cell                                                       C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 21-JAN-92  C
-!  Reviewer:M. Syamlal, S. Venkatesan, P. Nicoletti,  Date: 29-JAN-92  C
-!           W. Rogers                                                  C
-!                 (name changed to set_wall_bc1)                       C
+!  Reviewer: M. Syamlal, S. Venkatesan, P. Nicoletti  Date: 29-JAN-92  C
+!            W. Rogers                                                 C
+!                                                                      C
 !  Revision Number:                                                    C
 !  Purpose:                                                            C
 !  Author:                                            Date: dd-mmm-yy  C
@@ -237,21 +205,18 @@
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced: V_s, W_s, U_s                                 C
+!  Variables referenced: V_g, W_g, U_g, V_s, W_s, U_s in fluid cell    C
+!                        adjacent to wall cell                         C
+!  Variables modified: V_g, W_g, U_g, V_s, W_s, U_s in wall cell       C
 !                                                                      C
-!  Variables modified: I, J, K, V_g, W_g, U_g                          C
-!                                                                      C
-!  Local variables: SIGN, LWALL, LFLUID, I1, I2, J1, J2, K1, K2        C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE SET_WALL_BC1(II1, II2, JJ1, JJ2, KK1, KK2, &
-                                           BC_JJ_PSL, SIGN0) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
+                              BC_JJ_PSL) 
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -265,50 +230,34 @@
       USE compar  
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Dummy arguments
 !-----------------------------------------------
+! Starting and ending I index 
+      INTEGER, INTENT(IN) :: II1, II2
+! Starting and ending J index 
+      INTEGER, INTENT(IN) :: JJ1, JJ2
+! Starting and ending K index 
+      INTEGER, INTENT(IN) :: KK1, KK2
+! Johnson-Jackson boundary condition: 0= no, 1=yes 
+      INTEGER, INTENT(IN) :: BC_JJ_PSL 
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Local variables
 !-----------------------------------------------
-! 
-!                      Starting I index 
-      INTEGER          II1 
-! 
-!                      Ending I index 
-      INTEGER          II2 
-! 
-!                      Starting J index 
-      INTEGER          JJ1 
-! 
-!                      Ending J index 
-      INTEGER          JJ2 
-! 
-!                      Starting K index 
-      INTEGER          KK1 
-! 
-!                      Ending K index 
-      INTEGER          KK2 
-  
-!                      Johnson-Jackson boundary condition: 0= no, 1=yes 
-      INTEGER          BC_JJ_PSL 
-! 
-!                      Sign with legal values +1 or -1; The passed variable (SIGN0)
-!                      is not needed because of 7-30-04 modification
-      DOUBLE PRECISION SIGN0, SIGN 
-! 
-!                      Local indices near wall cell 
-      INTEGER          I, J, K 
-      INTEGER          IJK, IMJK, IJMK, IJKM, IPJK, IJPK, IJKP 
-      INTEGER          I1, I2, J1, J2, K1, K2
-  
-!                      Locall index for a fluid cell near the wall cell 
-      INTEGER          LFLUID 
-! 
+! Sign with legal values +1 or -1
+      DOUBLE PRECISION :: SIGN0
+! Local indices near wall cell 
+      INTEGER :: I, J, K 
+      INTEGER :: IJK, IMJK, IJMK, IJKM, IPJK, IJPK, IJKP 
+      INTEGER :: I1, I2, J1, J2, K1, K2
+! Local index for a fluid cell near the wall cell 
+      INTEGER :: LFLUID 
+!-----------------------------------------------
+! Include statement functions 
 !-----------------------------------------------
       INCLUDE 'function.inc'
-!
-!// Limit I1, I2 and all to local processor first ghost layer
+!-----------------------------------------------
 
+! Limit I1, I2 and all to local processor first ghost layer
       I1 = II1
       I2 = II2
       J1 = JJ1
@@ -327,14 +276,15 @@
          DO J = J1, J2 
             DO I = I1, I2 
                IJK = FUNIJK(I,J,K)
-	       
-	       !7-30-04 modification 
-	       IF(NS_WALL_AT(IJK))THEN
-	         SIGN = -ONE
-	       ELSE
-                 SIGN = ONE
-	       ENDIF
-	       
+       
+               IF(NS_WALL_AT(IJK))THEN
+                  SIGN0 = -ONE
+               ELSE
+! note fs_wall occurs for default_wall_at at i==1 if cylindrical and 
+! xmin=zero
+                  SIGN0 = ONE
+               ENDIF
+       
                IF (WALL_AT(IJK)) THEN 
                   IMJK = IM_OF(IJK) 
                   IJMK = JM_OF(IJK) 
@@ -342,118 +292,110 @@
                   IPJK = IP_OF(IJK) 
                   IJPK = JP_OF(IJK) 
                   IJKP = KP_OF(IJK) 
-!
-!         Fluid cell at West
-!
+
+! Fluid cell at West
                   IF (.NOT.WALL_AT(IMJK)) THEN 
                      LFLUID = IMJK 
-!                                                   Wall cell at North
+! Wall cell at North
                      IF (WALL_AT(IJPK)) THEN 
-                        V_G(IJK) = SIGN*V_G(LFLUID) 
-                        IF(BC_JJ_PSL==0)CALL EQUAL(V_S,IJK,SIGN,V_S,LFLUID) 
+                        V_G(IJK) = SIGN0*V_G(LFLUID) 
+                        IF(BC_JJ_PSL==0) CALL EQUAL(V_S,IJK,SIGN0,V_S,LFLUID) 
                      ENDIF 
-!                                                   Wall cell at Top
+! Wall cell at Top
                      IF (WALL_AT(IJKP)) THEN 
-                        W_G(IJK) = SIGN*W_G(LFLUID) 
-                        IF(BC_JJ_PSL==0)CALL EQUAL(W_S,IJK,SIGN,W_S,LFLUID) 
+                        W_G(IJK) = SIGN0*W_G(LFLUID) 
+                        IF(BC_JJ_PSL==0) CALL EQUAL(W_S,IJK,SIGN0,W_S,LFLUID) 
                      ENDIF 
                   ENDIF 
-!
-!         Fluid cell at East
-!
+
+! Fluid cell at East
                   IF (.NOT.WALL_AT(IPJK)) THEN 
                      LFLUID = IPJK 
-!                                                   Wall cell at North
+! Wall cell at North
                      IF (WALL_AT(IJPK)) THEN 
-                        V_G(IJK) = SIGN*V_G(LFLUID) 
-                        IF(BC_JJ_PSL==0)CALL EQUAL(V_S,IJK,SIGN,V_S,LFLUID) 
+                        V_G(IJK) = SIGN0*V_G(LFLUID) 
+                        IF(BC_JJ_PSL==0) CALL EQUAL(V_S,IJK,SIGN0,V_S,LFLUID) 
                      ENDIF 
-!                                                   Wall cell at Top
+! Wall cell at Top
                      IF (WALL_AT(IJKP)) THEN 
-                        W_G(IJK) = SIGN*W_G(LFLUID) 
-                        IF(BC_JJ_PSL==0)CALL EQUAL(W_S,IJK,SIGN,W_S,LFLUID) 
+                        W_G(IJK) = SIGN0*W_G(LFLUID) 
+                        IF(BC_JJ_PSL==0) CALL EQUAL(W_S,IJK,SIGN0,W_S,LFLUID) 
                      ENDIF 
                   ENDIF 
-!
-!         Fluid cell at South
-!
+
+
+! Fluid cell at South
                   IF (.NOT.WALL_AT(IJMK)) THEN 
                      LFLUID = IJMK 
-!                                                   Wall cell at East
+! Wall cell at East
                      IF (WALL_AT(IPJK)) THEN 
-                        U_G(IJK) = SIGN*U_G(LFLUID) 
-                        IF(BC_JJ_PSL==0)CALL EQUAL(U_S,IJK,SIGN,U_S,LFLUID) 
+                        U_G(IJK) = SIGN0*U_G(LFLUID) 
+                        IF(BC_JJ_PSL==0) CALL EQUAL(U_S,IJK,SIGN0,U_S,LFLUID) 
                      ENDIF 
-!                                                   Wall cell at Top
+! Wall cell at Top
                      IF (WALL_AT(IJKP)) THEN 
-                        W_G(IJK) = SIGN*W_G(LFLUID) 
-                        IF(BC_JJ_PSL==0)CALL EQUAL(W_S,IJK,SIGN,W_S,LFLUID) 
+                        W_G(IJK) = SIGN0*W_G(LFLUID) 
+                        IF(BC_JJ_PSL==0) CALL EQUAL(W_S,IJK,SIGN0,W_S,LFLUID) 
                      ENDIF 
                   ENDIF 
-!
-!         Fluid cell at North
-!
+
+! Fluid cell at North
                   IF (.NOT.WALL_AT(IJPK)) THEN 
                      LFLUID = IJPK 
-!                                                   Wall cell at East
+! Wall cell at East
                      IF (WALL_AT(IPJK)) THEN 
-                        U_G(IJK) = SIGN*U_G(LFLUID) 
-                        IF(BC_JJ_PSL==0)CALL EQUAL(U_S,IJK,SIGN,U_S,LFLUID) 
+                        U_G(IJK) = SIGN0*U_G(LFLUID) 
+                        IF(BC_JJ_PSL==0) CALL EQUAL(U_S,IJK,SIGN0,U_S,LFLUID) 
                      ENDIF 
-!                                                   Wall cell at Top
+! Wall cell at Top
                      IF (WALL_AT(IJKP)) THEN 
-                        W_G(IJK) = SIGN*W_G(LFLUID) 
-                        IF(BC_JJ_PSL==0)CALL EQUAL(W_S,IJK,SIGN,W_S,LFLUID) 
+                        W_G(IJK) = SIGN0*W_G(LFLUID) 
+                        IF(BC_JJ_PSL==0) CALL EQUAL(W_S,IJK,SIGN0,W_S,LFLUID) 
                      ENDIF 
                   ENDIF 
+
+
                   IF (DO_K) THEN 
-!
-!           Fluid cell at Bottom
-!
+! Fluid cell at Bottom
                      IF (.NOT.WALL_AT(IJKM)) THEN 
                         LFLUID = IJKM 
-!                                                   Wall cell at East
+! Wall cell at East
                         IF (WALL_AT(IPJK)) THEN 
-                           U_G(IJK) = SIGN*U_G(LFLUID) 
-                           IF (BC_JJ_PSL == 0) CALL EQUAL (U_S, IJK, SIGN, U_S&
-                              , LFLUID) 
+                           U_G(IJK) = SIGN0*U_G(LFLUID) 
+                           IF (BC_JJ_PSL == 0) CALL EQUAL(U_S, IJK, &
+                              SIGN0, U_S, LFLUID) 
                         ENDIF 
-!                                                   Wall cell at North
+! Wall cell at North
                         IF (WALL_AT(IJPK)) THEN 
-                           V_G(IJK) = SIGN*V_G(LFLUID) 
-                           IF (BC_JJ_PSL == 0) CALL EQUAL (V_S, IJK, SIGN, V_S&
-                              , LFLUID) 
+                           V_G(IJK) = SIGN0*V_G(LFLUID) 
+                           IF (BC_JJ_PSL == 0) CALL EQUAL(V_S, IJK, &
+                              SIGN0, V_S, LFLUID) 
                         ENDIF 
                      ENDIF 
-!
-!           Fluid cell at Top
-!
+
+! Fluid cell at Top
                      IF (.NOT.WALL_AT(IJKP)) THEN 
                         LFLUID = IJKP 
-!                                                   Wall cell at East
+! Wall cell at East
                         IF (WALL_AT(IPJK)) THEN 
-                           U_G(IJK) = SIGN*U_G(LFLUID) 
-                           IF (BC_JJ_PSL == 0) CALL EQUAL (U_S, IJK, SIGN, U_S&
-                              , LFLUID) 
+                           U_G(IJK) = SIGN0*U_G(LFLUID) 
+                           IF (BC_JJ_PSL == 0) CALL EQUAL(U_S, IJK, &
+                              SIGN0, U_S, LFLUID) 
                         ENDIF 
-!                                                   Wall cell at North
+! Wall cell at North
                         IF (WALL_AT(IJPK)) THEN 
-                           V_G(IJK) = SIGN*V_G(LFLUID) 
-                           IF (BC_JJ_PSL == 0) CALL EQUAL (V_S, IJK, SIGN, V_S&
-                              , LFLUID) 
+                           V_G(IJK) = SIGN0*V_G(LFLUID) 
+                           IF (BC_JJ_PSL == 0) CALL EQUAL(V_S, IJK, &
+                              SIGN0, V_S, LFLUID) 
                         ENDIF 
                      ENDIF 
-                  ENDIF 
-               ENDIF 
-            END DO 
-         END DO 
-      END DO 
+                  ENDIF   ! end if (do_k) 
+
+               ENDIF   ! end if (wall_at(ijk))
+            ENDDO   ! end do loop (i = i1, i2)
+         ENDDO   ! end do loop (j = j1, j2) 
+      ENDDO   ! end do loop (k = k1, k2) 
+
       RETURN  
       END SUBROUTINE SET_WALL_BC1 
 
-
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!// 350 Changed do loop limits: 1,kmax2->kstart3,kend3      
-!// 360 Check if i,j,k resides on current processor
-!//     Limit I1, I2 and all to local processor first ghost layer
