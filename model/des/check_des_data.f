@@ -739,13 +739,13 @@
 ! For MPPIC, the periodicity is based on the continuum variables such 
 ! as cyclic_x, cyclic_x_pd, etc. 
          
-         IF(CYCLIC_X.OR.CYCLIC_X_PD .OR.CYCLIC_Y.OR.CYCLIC_Y_PD .OR.CYCLIC_Z.OR.CYCLIC_Z_PD ) THEN 
+         IF(CYCLIC_X.OR.CYCLIC_X_PD.OR.CYCLIC_Y.OR.CYCLIC_Y_PD.OR.&
+            CYCLIC_Z.OR.CYCLIC_Z_PD ) THEN 
          
             IF(myPE.eq.pe_IO) WRITE(*,2005) 
             IF(DMP_LOG) WRITE(UNIT_LOG,2005) 
-
          
-            DES_PERIODIC_WALLS = .true. 
+            DES_PERIODIC_WALLS = .TRUE. 
             DES_PERIODIC_WALLS_X = CYCLIC_X.OR.CYCLIC_X_PD
             DES_PERIODIC_WALLS_Y = CYCLIC_Y.OR.CYCLIC_Y_PD 
             DES_PERIODIC_WALLS_Z = CYCLIC_Z.OR.CYCLIC_Z_PD 
@@ -838,13 +838,21 @@
                IF (DZ(1) .NE. ZLENGTH) THEN 
 !this condition will probably never occur. Redundancy doesn't hurt, however!
                   
-                  if(myPE.eq.pe_IO) then 
-                     WRITE(*,'(5X,A,/5x,A)') 'For DIMN = 2, DZ(1) and ZLENGTH are used interchangeably', ' Specify same values for DZ(1) and Zlength'  
-                     WRITE(*,'(5x, 2(A20,2x, g17.8))') 'DZ(1) = ', DZ(1), 'ZLENGTH = ', ZLENGTH
+                  IF(myPE.eq.pe_IO) THEN
+                     WRITE(*,'(5X,A,/5x,A)') &
+                        'For DIMN = 2, DZ(1) and ZLENGTH are used ',&
+                        'interchangeably', ' Specify same values for ',&
+                        'DZ(1) and ZLENGTH'  
+                     WRITE(*,'(5X,2(A20,2X,G17.8))') &
+                        'DZ(1) = ', DZ(1), 'ZLENGTH = ', ZLENGTH
                   ENDIF
-                  if(DMP_LOG) then 
-                     WRITE(UNIT_LOG,'(5X,A,/5x,A)') 'For DIMN = 2, DZ(1) and ZLENGTH are used interchangeably', ' Specify same values for DZ(1) and Zlength'  
-                     WRITE(UNIT_LOG,'(5x, 2(A20,2x, g17.8))') 'DZ(1) = ', DZ(1), 'ZLENGTH = ', ZLENGTH
+                  IF(DMP_LOG) THEN
+                     WRITE(UNIT_LOG,'(5X,A,/5x,A)') &
+                        'For DIMN = 2, DZ(1) and ZLENGTH are used ',&
+                        'interchangeably', ' Specify same values for ',&
+                        'DZ(1) and ZLENGTH'  
+                     WRITE(UNIT_LOG,'(5X,2(A20,2X,G17.8))') &
+                        'DZ(1) = ', DZ(1), 'ZLENGTH = ', ZLENGTH
                   ENDIF
                ENDIF
             ENDIF
@@ -885,31 +893,34 @@
 
 
       IF(MPPIC.OR.CARTESIAN_GRID) then
-         IF(.not.INTERP_DES_MEAN_FIELDS) then 
-            IF(myPe.eq.pe_IO) WRITE(*,'(2(10X,A,/))') 'MPPIC OR CG CASE DETECTED:', &
-            'MEAN DES FIELDS WILL BE OBTAINED BY BACKWARD INTERPOLATION'
-            IF(DMP_LOG) WRITE(UNIT_LOG,'(2(10X,A,/))') 'MPPIC OR CG CASE DETECTED:', & 
-            'MEAN DES FIELDS WILL BE OBTAINED BY BACKWARD INTERPOLATION'
-            
-            INTERP_DES_MEAN_FIELDS = .TRUE.
+         IF(.NOT.DES_INTERP_MEAN_FIELDS) THEN
+            DES_INTERP_MEAN_FIELDS = .TRUE.
+            IF(myPe.EQ.pe_IO) WRITE(*,'(2(10X,A,/))') &
+               'MPPIC OR CG CASE DETECTED:', 'Mean DES fields will be ',&
+               'obtained by backward interpolation '
+            IF(DMP_LOG) WRITE(UNIT_LOG,'(2(10X,A,/))') &
+               'MPPIC OR CG CASE DETECTED:', 'Mean DES fields will be ',&
+               'obtained by backward interpolation '
          ENDIF
       ELSE
-         IF(INTERP_DES_MEAN_FIELDS) then 
-            IF(myPe.eq.pe_IO) WRITE(*,'(/,10X, A, L4, (/,10X,A))') & 
-            'INTERP_DES_MEAN_FIELDS INPUT OBTAINED = ', INTERP_DES_MEAN_FIELDS, &
-            'MEAN DES FIELDS WILL BE OBTAINED BY BACKWARD INTERPOLATION'
-
+         IF(DES_INTERP_MEAN_FIELDS) THEN 
+            IF(myPe.EQ.pe_IO) WRITE(*,'(/,10X,A,L4,(/,10X,A))') & 
+               'For DES_INTERP_MEAN_FIELDS = ', &
+               DES_INTERP_MEAN_FIELDS, 'Mean DES fields will be ',&
+               'obtained by backward interpolation'
             IF(DMP_LOG) WRITE(UNIT_LOG,'(/,10X, A, L4, (/,10X,A))') & 
-            'INTERP_DES_MEAN_FIELDS INPUT OBTAINED = ', INTERP_DES_MEAN_FIELDS, &
-            'MEAN DES FIELDS WILL BE OBTAINED BY BACKWARD INTERPOLATION'
+               'For DES_INTERP_MEAN_FIELDS = ',& 
+               DES_INTERP_MEAN_FIELDS, 'Mean DES fields will be ',&
+               'obtained by backward interpolation'
          ELSE
             IF(myPe.eq.pe_IO) WRITE(*,'(/,10X, A, L4, (/,10X,A))') & 
-            'INTERP_DES_MEAN_FIELDS INPUT OBTAINED = ', INTERP_DES_MEAN_FIELDS, &
-            'MEAN DES FIELDS WILL BE OBTAINED BY SIMPLE CELL AVERAGES'
-
+               'For DES_INTERP_MEAN_FIELDS = ',&
+               DES_INTERP_MEAN_FIELDS, 'Mean DES fields will be ',&
+               'obtained by simple cell averaging'
             IF(DMP_LOG) WRITE(UNIT_LOG,'(/,10X, A, L4, (/,10X,A))') & 
-            'INTERP_DES_MEAN_FIELDS INPUT OBTAINED = ', INTERP_DES_MEAN_FIELDS, &
-            'MEAN DES FIELDS WILL BE OBTAINED BY SIMPLE CELL AVERAGES'
+               'For DES_INTERP_MEAN_FIELDS = ', &
+               DES_INTERP_MEAN_FIELDS, 'Mean DES fields will be ',&
+               'obtained by simple cell averaging'
          ENDIF
       ENDIF
             

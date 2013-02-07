@@ -269,9 +269,9 @@
 
 ! call node exchange init in case  
 ! this could be needed if des_interp_on is true (i.e., drag is interpolated)
-! or INTERP_DES_MEAN_FIELDS is true (i.e., mean fields are interpolated)
-      IF(DES_INTERP_ON.or.INTERP_DES_MEAN_FIELDS) then 
-         IF(DMP_LOG) WRITE(UNIT_LOG, '(/,5x,A,/,5x,A,/)') 'In desmpi_mod, & 
+! or DES_INTERP_MEAN_FIELDS is true (i.e., mean fields are interpolated)
+      IF(DES_INTERP_ON.OR.DES_INTERP_MEAN_FIELDS) THEN
+         IF(DMP_LOG) WRITE(UNIT_LOG,'(/,5x,A,/,5x,A,/)') 'In desmpi_mod, & 
          setting the node indices &
          for MPI communication', 'of nodal information needed for backward &
          interpolation' 

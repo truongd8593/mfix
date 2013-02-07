@@ -398,7 +398,7 @@
 ! calculating mean fields using either interpolation methods or a simple
 ! cell average technique. the void fraction is also calculated during
 ! this step
-      IF(INTERP_DES_MEAN_FIELDS) THEN 
+      IF(DES_INTERP_MEAN_FIELDS) THEN 
          CALL COMP_MEAN_FIELDS_INTERP
       ELSE
          CALL COMP_MEAN_FIELDS_ZERO_ORDER

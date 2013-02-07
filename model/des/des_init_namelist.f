@@ -37,7 +37,7 @@
       DISCRETE_ELEMENT = .FALSE.
       DES_CONTINUUM_COUPLED = .FALSE.
       DES_INTERP_ON = .FALSE.
-      INTERP_DES_MEAN_FIELDS = .false.
+      DES_INTERP_MEAN_FIELDS = .TRUE.
       DES_REPORT_MASS_INTERP = .false. 
       TSUJI_DRAG = .FALSE.
       DES_INTG_METHOD = 'EULER'
@@ -140,6 +140,9 @@
       DES_BC_X_s(:,:,:) = UNDEFINED
       FORCE_ORD_BC = .FALSE.
 
+! for cohesion:
+      COHESION_DEBUG = UNDEFINED_I
+      
 ! for cohesion: squarewell
       MASTER_WELL_DEPTH = UNDEFINED
       MASTER_WALL_WELL_DEPTH = UNDEFINED

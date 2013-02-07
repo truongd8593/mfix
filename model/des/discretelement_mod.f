@@ -176,7 +176,7 @@
 ! and mean solids velocity) are obtained by interpolation or by the more
 ! crude cell artihmetic averages. For MPPIC, this will switch will always
 ! be true. 
-      LOGICAL INTERP_DES_MEAN_FIELDS
+      LOGICAL DES_INTERP_MEAN_FIELDS
 
 ! Flag to check if mass is conserved between discrete and continuum 
 ! representations when mean fields are computed by backward interpolation.
@@ -681,11 +681,6 @@
 
 ! Switch to run debugging on and off
       INTEGER COHESION_DEBUG
-      INTEGER COHESION_DEBUG_START
-! Specific particle to target in debugging
-      INTEGER COH_DEBUG_PARTICLE
-! Specific time step to target in debugging
-      INTEGER COH_DEBUG_STEP
 
 ! Number of search grids in the x-, y-, and z-direction
       INTEGER SEARCH_GRIDS(3)
