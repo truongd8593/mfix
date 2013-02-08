@@ -387,9 +387,9 @@ if test $input_needed = 1
     echo " Mode of execution:"
     echo "=============================================================="
     echo "[1] Serial"
-    echo "[2] Parallel, Shared Memory (SMP)"
+    echo "[x] Parallel, Shared Memory (SMP) - Temporarily unavailable"
     echo "[3] Parallel, Distributed Memory (DMP)"
-    echo "[4] Parallel, Hybrid (SMP+DMP)"
+    echo "[x] Parallel, Hybrid (SMP+DMP) - Temporarily unavailable"
     echo " "
     echo -n "Select the mode of execution [1] : "
     read mode_of_execution
@@ -400,18 +400,27 @@ if test $input_needed = 1
         dmp_version=n
         ;;
 	2 )
-        smp_version=y
+        echo "SMP option is temporarily unavailable."
+        echo "Reverting to default option (serial)."
+        smp_version=n
         dmp_version=n
+#        smp_version=y
+#        dmp_version=n
         ;;
 	3 )
         smp_version=n
         dmp_version=y
         ;;
 	4 )
-        smp_version=y
-        dmp_version=y
+        echo "Hybrid option is temporarily unavailable."
+        echo "Reverting to default option (serial)."
+        smp_version=n
+        dmp_version=n
+#        smp_version=y
+#        dmp_version=y
         ;;
 	* )
+        echo "Serial mode of execution was selected."
         smp_version=n
         dmp_version=n
         ;;
