@@ -2115,7 +2115,7 @@ qcache=auto "
 
             echo "GNU Fortran (gfortran) compiler version:"
             gfortran -v
-
+	    mpi_include=""
             if test $? = 127
             then
                echo "Error: The GNU Fortran (gfortran) compiler was not found on your system."
@@ -2138,6 +2138,9 @@ qcache=auto "
             compile3="-c -I. -fconvert='big-endian' -I$mpi_include -I$DPO -O1 "
             link=" "
             MODULE_CODE=1
+	    
+	    inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
+	    inline_files="compare.f eosg.f discretize.f "
 
             ;;
 
