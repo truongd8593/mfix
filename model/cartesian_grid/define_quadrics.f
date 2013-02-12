@@ -106,10 +106,21 @@
       DOUBLE PRECISION, DIMENSION(1,1) :: TEMP_1x1
       INTEGER :: Q,Q_ID,BCID
       LOGICAL :: CLIP_X,CLIP_Y,CLIP_Z,CLIP_FLAG
+      LOGICAL :: PIECE_X,PIECE_Y,PIECE_Z,PIECE_FLAG
       CHARACTER (LEN = 7) :: METHOD
 
 !======================================================================
 
+       PIECE_X = (piece_xmin(Q_ID) <= x1).AND.( x1 <= piece_xmax(Q_ID))
+       PIECE_Y = (piece_ymin(Q_ID) <= x2).AND.( x2 <= piece_ymax(Q_ID))
+       PIECE_Z = (piece_zmin(Q_ID) <= x3).AND.( x3 <= piece_zmax(Q_ID))
+ 
+       PIECE_FLAG = (PIECE_X.AND.PIECE_Y.AND.PIECE_Z)
+
+       IF(.NOT.PIECE_FLAG) THEN
+          f = UNDEFINED
+          RETURN
+       ENDIF
 
        CLIP_X = (clip_xmin(Q_ID) <= x1).AND.( x1 <= clip_xmax(Q_ID))
        CLIP_Y = (clip_ymin(Q_ID) <= x2).AND.( x2 <= clip_ymax(Q_ID))
