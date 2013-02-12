@@ -755,13 +755,13 @@
             IF(DMP_LOG) WRITE(UNIT_LOG,2006)  DES_PERIODIC_WALLS, &
             DES_PERIODIC_WALLS_X, DES_PERIODIC_WALLS_Y, DES_PERIODIC_WALLS_Z     
 
-      ENDIF
+         ENDIF
 ! check particle-wall normal restitution coefficient
          IF(MPPIC_COEFF_EN_WALL == UNDEFINED) THEN
             if(dmp_log) WRITE (UNIT_LOG, 2002) 'MPPIC_COEFF_EN_WALL'
             CALL MFIX_EXIT(myPE)
          ENDIF
-
+         
          IF(MPPIC_COEFF_ET_WALL == UNDEFINED) THEN
             if(dmp_log) WRITE (UNIT_LOG, 2002) 'MPPIC_COEFF_ET_WALL'
             CALL MFIX_EXIT(myPE)
@@ -799,12 +799,46 @@
 
 
          IF(MPPIC_SOLID_STRESS_SNIDER) WRITE(UNIT_LOG,*) &
-            'USING THE SNIDER MODEL FOR SOLID STRESS AND THE ',&
-            'INTEGRATION APPROACH'
+         'USING THE SNIDER MODEL FOR SOLID STRESS AND THE ',&
+         'INTEGRATION APPROACH'
          IF(MPPIC_SOLID_STRESS_SNIDER.AND.PRINT_DES_SCREEN) &
-            WRITE(*,*) 'USING THE SNIDER MODEL FOR SOLID STRESS AND ',&
-            'THE INTEGRATION APPROACH'
-              
+         WRITE(*,*) 'USING THE SNIDER MODEL FOR SOLID STRESS AND ',&
+         'THE INTEGRATION APPROACH'
+         
+
+         IF(MPPIC_CONSTANTNPC.AND.MPPIC_CONSTANTWT) then 
+            WRITE(UNIT_LOG, 2011)
+            if(PRINT_DES_SCREEN) WRITE(*, 2011)
+            call  mfix_exit(mype)
+         ENDIF
+
+         IF(.not.MPPIC_CONSTANTNPC.AND.(.not.MPPIC_CONSTANTWT)) then 
+            WRITE(UNIT_LOG, 2012)
+            if(PRINT_DES_SCREEN) WRITE(*, 2012)
+            call  mfix_exit(mype)
+         ENDIF
+
+         IF(MPPIC_CONSTANTNPC) then 
+            DO M = 1, DES_MMAX
+               IF(NPC_PIC(M).Eq.UNDEFINED_I) then 
+                  WRITE(UNIT_LOG, 2013) M
+                  if(PRINT_DES_SCREEN) WRITE(*, 2013) M
+                  call  mfix_exit(mype)
+               ENDIF
+            ENDDO
+         ENDIF
+         
+         IF(MPPIC_CONSTANTWT) then 
+            DO M = 1, DES_MMAX
+               IF(STATWT_PIC(M).Eq.UNDEFINED) then 
+                  WRITE(UNIT_LOG, 2014) M
+                  if(PRINT_DES_SCREEN) WRITE(*, 2014) M
+                  call  mfix_exit(mype)
+               ENDIF
+            ENDDO
+         ENDIF
+
+      
 ! cnp_array(ijk, 0) will contain the cumulative number of real 
 ! particles later in the handling of inflow BC for MPPIC. See 
 ! the mppic_mi_bc in mppic_wallbc_mod.f 
@@ -868,11 +902,11 @@
                      DO M = 1, DES_MMAX
                         REAL_PARTS(M) = 6.d0*EP_S(IJK,M)*VOLIJK/&
                            (PI*(D_p0(M)**3.d0))
-                        IF(CONSTANTNPC) THEN 
+                        IF(MPPIC_CONSTANTNPC) THEN 
                            COMP_PARTS(M) = NPC_PIC(M)
                            IF(CUT_CELL_AT(IJK)) COMP_PARTS(M) = &
                             INT(VOLIJK*real(COMP_PARTS(M))/VOLIJK_UNCUT)
-                        ELSEIF(CONSTANTWT) THEN
+                        ELSEIF(MPPIC_CONSTANTWT) THEN
                            COMP_PARTS(M) = MAX(1,INT(REAL_PARTS(M)/REAL(STATWT_PIC(M))))
                         ENDIF
                         
@@ -1284,5 +1318,29 @@
  2010 FORMAT(/1X,70('*')/' From: CHECK_DES_DATA',/'Error 2010:',       &
          ' DES simulations cannot have defined internal obstacles.',/  &
          ' Please correct the data file.', 1X,70('*')/)
+         
+ 2011    FORMAT(/1X,70('*')/' From: CHECK_DES_DATA',/' Error 2011:',       &
+         ' In MPPIC model, both MPPIC_CONSTANTNPC and MPPIC_CONSTANTWT', /,  & 
+         ' set to TRUE. Set at least one to false. See MFIX readme', /,  &
+         ' Please correct the data file. Exiting.', /,1X,70('*')/)
+
+ 2012    FORMAT(/1X,70('*')/' From: CHECK_DES_DATA',/' Error 2012:',       &
+         ' In MPPIC model, both MPPIC_CONSTANTNPC and MPPIC_CONSTANTWT', /,  & 
+         ' set to false. Set at least one to true. See MFIX readme', /,  &
+         ' Please correct the data file. Exiting.', /,1X,70('*')/)
+
+ 2013    FORMAT(/1X,70('*')/' From: CHECK_DES_DATA',/' Error 2013:',       &
+         ' In MPPIC model, MPPIC_CONSTANTNPC specified', &
+         ' but NPC_PIC undefined', /,&
+         ' for phase', I4, /, &
+         ' See MFIX readme', /,  &
+         ' Please correct the data file. Exiting.',/, 1X,70('*')/)
+
+ 2014    FORMAT(/1X,70('*')/' From: CHECK_DES_DATA',/' Error 2014:',       &
+         ' In MPPIC model, MPPIC_CONSTANTWT specified', &
+         ' but STATWT_PIC undefined', /,&
+         ' for phase', I4, /, &
+         ' See MFIX readme.', /,  &
+         ' Please correct the data file. Exiting.',/, 1X,70('*')/)
 
          END SUBROUTINE CHECK_DES_DATA

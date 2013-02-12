@@ -356,9 +356,9 @@
                            
                            REAL_PARTS(M) = 6.d0*EPS_INFLOW(M)*VOL_INFLOW/(PI*(DES_D_p0(M)**3.d0))
                            COMP_PARTS(M) = zero
-                           IF(CONSTANTNPC) THEN 
+                           IF(MPPIC_CONSTANTNPC) THEN 
                               IF(EPS_INFLOW(M).GT.ZERO) COMP_PARTS(M) = REAL(NPC_PIC(M))*VOL_INFLOW/VOL_IJK
-                           ELSEIF(CONSTANTWT) THEN
+                           ELSEIF(MPPIC_CONSTANTWT) THEN
                               COMP_PARTS(M) = REAL_PARTS(M)/REAL(STATWT_PIC(M))
                            ENDIF
                            CNP_ARRAY(IJK,0) = CNP_ARRAY(IJK,0) + REAL_PARTS(M)
@@ -378,13 +378,13 @@
                                  CALL UNI_RNO(RANDPOS(1:CNP_CELL_COUNT, IDIM))
                               ENDDO
 
-                              IF(CONSTANTNPC) THEN 
+                              IF(MPPIC_CONSTANTNPC) THEN 
                                  !calculate the statistical weight
                                  !for CP's belonging to this 
                                  !solid phase 
 
                                  STAT_WT = REAL_PARTS(M)/REAL(CNP_CELL_COUNT)
-                              ELSEIF(CONSTANTWT) THEN
+                              ELSEIF(MPPIC_CONSTANTWT) THEN
                                  STAT_WT = STATWT_PIC(M) 
                               ENDIF
                               

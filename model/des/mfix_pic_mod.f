@@ -41,7 +41,7 @@
 ! to initially seed the particles based on constant number of
 ! particles per cell or constant statistical weight of each particle 
 ! number of particles per cell for the case of CONSTANTNPC
-      LOGICAL :: CONSTANTNPC, CONSTANTWT
+      LOGICAL :: MPPIC_CONSTANTNPC, MPPIC_CONSTANTWT
 
 ! coefficeient of restituion used in MPPIC case in the 
 ! frictional regime 

@@ -205,9 +205,16 @@
       MPPIC_PDRAG_IMPLICIT = .false. 
       MPPIC_GRAV_TREATMENT = .true. 
       
+      MPPIC_CONSTANTNPC  = .false. 
+      NPC_PIC(:) = UNDEFINED_I
+      MPPIC_CONSTANTWT = .false. 
+      STATWT_PIC(:) = UNDEFINED
+      
+      
       PSFAC_FRIC_PIC = 100 
       FRIC_EXP_PIC = 2.5
       FRIC_NON_SING_FAC = 1E-07
+
       CFL_PIC = 0.1 
 
 ! J.Musser : des energy equations

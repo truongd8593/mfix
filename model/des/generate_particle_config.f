@@ -235,11 +235,11 @@
                   REAL_PARTS(M) = 6.d0*EP_S(IJK,M)*VOLIJK/&
                      (PI*(DES_D_p0(M)**3.d0))
                   
-                  IF(CONSTANTNPC) THEN 
+                  IF(MPPIC_CONSTANTNPC) THEN 
 ! calculate the statistical weight for CP's belonging to this solids
 ! phase
                      STAT_WT = REAL_PARTS(M)/REAL(CNP_CELL_COUNT)
-                  ELSEIF(CONSTANTWT) THEN
+                  ELSEIF(MPPIC_CONSTANTWT) THEN
 ! although the weight was specified in the input file, the integer 
 ! number of CP's requires recalculating statistical weight. This 
 ! slightly different statistical weight will ensure that the initial 
