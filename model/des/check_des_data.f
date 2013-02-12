@@ -902,6 +902,24 @@
                'MPPIC OR CG CASE DETECTED:', 'Mean DES fields will be ',&
                'obtained by backward interpolation '
          ENDIF
+
+      ELSE IF(DES_CONTINUUM_COUPLED.and.DES_INTERP_ON) then 
+! in the previous versions, ep_s was obtained by interpolation in des_interp_on was 
+! true. 
+! For backward compatibility, des_interp_mean_fieldsis forced to true
+! if des_interp_on is true 
+
+         IF(.not.DES_INTERP_MEAN_FIELDS) then 
+            IF(myPe.eq.pe_IO) WRITE(*,'(2(10X,A,/))') &
+            'DES_INTERP_ON TRUE FOR DEM CASE:', &
+            'Mean DES fields will be obtained by backward interpolation'
+            IF(DMP_LOG) WRITE(UNIT_LOG,'(2(10X,A,/))') & 
+            'DES_INTERP_ON TRUE  FOR DEM CASE:', & 
+            'Mean DES fields will be obtained by backward interpolation'
+
+            DES_INTERP_MEAN_FIELDS= .TRUE.
+         ENDIF
+         
       ELSE
          IF(DES_INTERP_MEAN_FIELDS) THEN 
             IF(myPe.EQ.pe_IO) WRITE(*,'(/,10X,A,L4,(/,10X,A))') & 
