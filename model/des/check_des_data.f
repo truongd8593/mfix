@@ -762,10 +762,10 @@
             CALL MFIX_EXIT(myPE)
          ENDIF
          
-         IF(MPPIC_COEFF_ET_WALL == UNDEFINED) THEN
-            if(dmp_log) WRITE (UNIT_LOG, 2002) 'MPPIC_COEFF_ET_WALL'
-            CALL MFIX_EXIT(myPE)
-         ENDIF
+         !IF(MPPIC_COEFF_ET_WALL == UNDEFINED) THEN
+         !   if(dmp_log) WRITE (UNIT_LOG, 2002) 'MPPIC_COEFF_ET_WALL'
+         !   CALL MFIX_EXIT(myPE)
+         !ENDIF
 
          IF(MPPIC_COEFF_EN == UNDEFINED) THEN
             if(dmp_log) WRITE (UNIT_LOG, 2004) 'MPPIC_COEFF_EN'
