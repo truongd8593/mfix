@@ -767,8 +767,8 @@
          !   CALL MFIX_EXIT(myPE)
          !ENDIF
 
-         IF(MPPIC_COEFF_EN == UNDEFINED) THEN
-            if(dmp_log) WRITE (UNIT_LOG, 2004) 'MPPIC_COEFF_EN'
+         IF(MPPIC_COEFF_EN1 == UNDEFINED) THEN
+            if(dmp_log) WRITE (UNIT_LOG, 2004) 'MPPIC_COEFF_EN1'
             CALL MFIX_EXIT(myPE)
          ENDIF
 
@@ -787,8 +787,8 @@
             CALL MFIX_EXIT(myPE)
          ENDIF
         
-         IF(MPPIC_COEFF_EN > ONE .OR. MPPIC_COEFF_EN < ZERO) THEN
-            if(dmp_log) WRITE (UNIT_LOG, 2003) 'MPPIC_COEFF_EN'
+         IF(MPPIC_COEFF_EN1 > ONE .OR. MPPIC_COEFF_EN1 < ZERO) THEN
+            if(dmp_log) WRITE (UNIT_LOG, 2003) 'MPPIC_COEFF_EN1'
             CALL MFIX_EXIT(myPE)
          ENDIF
 

@@ -147,9 +147,9 @@
       IF(DMP_LOG)       WRITE(UNIT_LOG,'(/10x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', TIME_LOOP_COUNT, PIP
       IF(mype.eq.pe_IO) WRITE(*,'(/10x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', TIME_LOOP_COUNT, PIP
 
-      IJK_BOT = funijk(imin1, 2,kmin1)
-      IJK_TOP = funijk(imin1, jmax1, kmin1)
-      WRITE(*,'(/10X, A, 3(2x,g17.8))') 'MPPIC: PRES BOTTOM, TOP, AND DIFF KPA', P_G(IJK_BOT)/10000.d0, P_G(IJK_TOP)/10000.d0, (P_G(IJK_BOT) -  P_G(IJK_TOP))/10000.d0
+!      IJK_BOT = funijk(imin1, 2,kmin1)
+!      IJK_TOP = funijk(imin1, jmax1, kmin1)
+!      WRITE(*,'(/10X, A, 3(2x,g17.8))') 'MPPIC: PRES BOTTOM, TOP, AND DIFF KPA', P_G(IJK_BOT)/10000.d0, P_G(IJK_TOP)/10000.d0, (P_G(IJK_BOT) -  P_G(IJK_TOP))/10000.d0
       !WRITE(*,'(/10X, A, 3(2x,g17.8))') 'PRES BOTTOM, TOP, AND DIFF ', P_G(IJK_BOT), P_G(IJK_TOP), P_G(IJK_BOT) -  P_G(IJK_TOP)
       IF(.NOT.DES_CONTINUUM_COUPLED)then 
          if(dmp_log)write(unit_log,'(1X,A)')&
@@ -399,7 +399,7 @@
 
       M = PIJK(L,5)
       IJK = PIJK(L,4)             
-      COEFF_EN  = MPPIC_COEFF_EN
+      COEFF_EN  = MPPIC_COEFF_EN1
       COEFF_EN2 = MPPIC_COEFF_EN2
       
       VEL_ORIG(1:DIMN) = DES_VEL_NEW(L,1:DIMN)
@@ -3320,7 +3320,7 @@
          IJKT = KP_OF(IJK)
          IJKB = KM_OF(IJK)
          
-         COEFF_EN = MPPIC_COEFF_EN
+         COEFF_EN = MPPIC_COEFF_EN1
 
          XI_EAST = ZERO
          XI_WEST = ZERO

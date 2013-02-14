@@ -282,7 +282,7 @@
          I = I_OF(IJK)
          J = J_OF(IJK)
          K = K_OF(IJK)
-         COEFF_EN =  MPPIC_COEFF_EN 
+         COEFF_EN =  MPPIC_COEFF_EN1
          UPRIMETAU(:) = ZERO
 
          VEL_ORIG(:) = DES_VEL_NEW(L,:)

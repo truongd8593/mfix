@@ -45,7 +45,7 @@
 
 ! coefficeient of restituion used in MPPIC case in the 
 ! frictional regime 
-      DOUBLE PRECISION :: MPPIC_COEFF_EN, MPPIC_COEFF_EN2
+      DOUBLE PRECISION :: MPPIC_COEFF_EN1, MPPIC_COEFF_EN2
       
       DOUBLE PRECISION :: MPPIC_COEFF_EN_WALL, MPPIC_COEFF_ET_WALL 
       INTEGER NPC_PIC(DIM_M)
