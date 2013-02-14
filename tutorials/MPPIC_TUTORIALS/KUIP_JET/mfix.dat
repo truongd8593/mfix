@@ -1,0 +1,257 @@
+!  Central jet Fluidized Bed Simulation
+!  MPPIC for solid phase and Kinetic theory of gas phase                                            
+!  Fluidized bed with a central jet                                      
+
+! Refer to Readme for the problem description and other details
+! For more details refer to PhD thesis (Dec 2003) of Jay Boyalakuntla
+! It is made available in MFIX documents
+                           
+! Run-control section                                                           
+  RUN_NAME 		= 'mppic_kuipers'             
+  DESCRIPTION 		= 'fluid bed with single central jet'          
+  RUN_TYPE 		= 'NEW'             
+  UNITS 		= 'cgs'
+  TIME  		= 0.0			!start time
+  TSTOP 		= 30.0 
+  DT 			= 5E-4			!time step
+  DT_MAX                = 1E-3
+!  DT_FAC = 1.0
+
+  ENERGY_EQ 		= .FALSE.		!do not solve energy eq
+  SPECIES_EQ 		= .FALSE.    .FALSE. 	!do not solve species eq
+
+  MOMENTUM_X_EQ(1) = .FALSE. 
+  MOMENTUM_Y_EQ(1) = .FALSE.
+  MOMENTUM_Z_EQ(1) = .FALSE.
+  DRAG_TYPE = 'GIDASPOW'
+
+  GRAVITY = 980
+
+  NORM_g 		= 0
+  NORM_s 		= 0
+
+  DISCRETIZE(1) = 9*2	
+  MAX_NIT = 250
+  TOL_RESID = 1.E-3
+
+
+
+! Geometry Section 
+  COORDINATES 		= 'cartesian' 
+  XLENGTH  		=   57.0	        !X length	
+  DX = 37*0.75, 2*0.75, 37*0.75
+  IMAX 			=   76			!cells in i direction
+  YLENGTH  		=   100.0		!height
+  JMAX 			=   100 			!cells in j direction
+  ZLENGTH = 1.5
+  KMAX = 2
+!  DZ(1)                 = 1.5                 !Define DZ to be particle
+!  NO_K     		= .TRUE. 		!2D, no k direction
+                                                !for 2D DEM cases
+  MW_avg                = 29.0
+
+  desgridsearch_imax = 60
+  desgridsearch_jmax = 100
+
+! Gas-phase Section 
+  MU_g0 		= 1.8E-4		!constant gas viscosity
+  !RO_g0			= 1.205E-3		!constant gas density
+
+
+ 
+! Solids-phase Section
+  MMAX                  = 1
+  RO_s    		= 2.66           	!solids density
+  D_p0    		= 0.05                   !particle diameter
+  e       		= 0.9 			!restitution coefficient
+  Phi    		= 30.0			!angle of internal friction
+  EP_star 		= 0.38			!void fraction at minimum
+						!  fluidization
+! EP_star is used in MPPIC model as well to check for maximum packing
+
+  
+! Initial Conditions Section 
+! 1. bed
+  IC_X_w(1)           	=  0.0   0.0		!domain
+  IC_X_e(1)           	=  57.0	 57 	! 0 < x < 15, 0 < y < 30
+  IC_Y_s(1)          	=  0.0   50.0
+  IC_Y_n(1)           	=  50    100.0
+  IC_Z_b(1)          	=  0.0   0.0
+  IC_Z_t(1)           	=  1.5    1.50
+                                	! initial values in the region
+  IC_EP_g		=  0.40     1.d0
+
+  IC_U_g(1)           	=  0.0	 0.0	! x-dir gas velocity
+  IC_V_g(1)          	=  25.0 0.0 	! y-dir gas velocity
+  IC_W_g(1)          	=  0.0 0.0 	! y-dir gas velocity
+
+
+  IC_U_s(1,1)          	=  0.0	 0.0	! x-dir gas velocity
+  IC_U_s(1,2)          	=  0.0   0.0 	! y-dir gas velocity
+
+  IC_V_s(1,1)          	=  0.0	 0.0	! x-dir gas velocity
+  IC_V_s(1,2)          	=  0.0   0.0 	! y-dir gas velocity
+
+
+  IC_W_s(1,1)          	=  0.0	 0.0	! x-dir gas velocity
+  IC_W_s(1,2)          	=  0.0   0.0 	! y-dir gas velocity
+
+  IC_P_g(1)             =  1e6   1e6
+  IC_T_g(1)             =  298.0    298.0
+ 
+ 
+
+
+
+!  Boundary Conditions Section
+! 1. Central jet
+  BC_X_w(1)		=  27.75		! central jet
+  BC_X_e(1)		=  29.25		! 7 < x < 8, y = 0
+  BC_Y_s(1)		=  0.0
+  BC_Y_n(1)		=  0.0
+  BC_Z_b(1)		=  0.0
+  BC_Z_t(1)		=  1.50
+  BC_TYPE(1)		= 'MI'		!specified mass inflow
+
+  BC_EP_g(1)		=  1.0
+  BC_U_g(1)		=  0.0
+  BC_V_g(1)		=  1000	        !inlet jet vel
+  BC_W_g(1)		=  0	        !inlet jet vel
+  BC_P_g(1)		=  1e6
+  BC_T_g(1)             =  298.0  
+
+! 1. Background flow
+  BC_X_w(2)		=  0.
+  BC_X_e(2)		=  27.75		! 7 < x < 8, y = 0
+  BC_Y_s(2)		=  0.0
+  BC_Y_n(2)		=  0.0
+  BC_Z_b(2)		=  0.0
+  BC_Z_t(2)		=  1.50
+  BC_TYPE(2)		= 'MI'		!specified mass inflow
+
+  BC_EP_g(2)		=  1.0
+  BC_U_g(2)		=  0.0
+  BC_V_g(2)		=  25	        !inlet jet vel
+  BC_W_g(2)		=  0.0	        !inlet jet vel
+  BC_P_g(2)		=  1e6
+  BC_T_g(2)             =  298.0  
+
+! 1. Background flow 2
+  BC_X_w(3)		=  29.25
+  BC_X_e(3)		=  57		! 7 < x < 8, y = 0
+  BC_Y_s(3)		=  0.0
+  BC_Y_n(3)		=  0.0
+  BC_Z_b(3)		=  0.0
+  BC_Z_t(3)		=  1.50
+  BC_TYPE(3)		= 'MI'		!specified mass inflow
+
+  BC_EP_g(3)		=  1.0
+  BC_U_g(3)		=  0.0
+  BC_V_g(3)		=  25	        !inlet jet vel
+  BC_W_g(3)		=  0.0	        !inlet jet vel
+  BC_P_g(3)		=  1e6
+  BC_T_g(3)             =  298.0  
+
+       ! 2. Exit
+  BC_X_w(4)		=  0.0		! top exit
+  BC_X_e(4)		=  57.0	        ! 0 < x < 15, y = 90
+  BC_Y_s(4)		=  100.0
+  BC_Y_n(4)		=  100.0
+  BC_Z_b(4)		=  0.0
+  BC_Z_t(4)		=  1.50
+  BC_TYPE(4)		=  'PO' 	!specified pressure outflow
+  BC_P_g(4)		=  1e6
+  BC_T_g(4)             =  298.0  
+
+  BC_APPLY_TO_MPPIC(4)	= .f.
+
+! DES INPUT
+
+  DISCRETE_ELEMENT = .TRUE. 
+  DIMN = 3        
+  MAX_PIS = 5000
+ 
+  MPPIC = .t.	
+
+! First and second coefficients of restituion for the 
+! frictional stres in MPPIC model 
+! See the MPPIC model theory guide 
+
+  MPPIC_COEFF_EN1 = 0.5
+  MPPIC_COEFF_EN2 = 0.5  	    
+
+! Normal coefficient of friction for the parcel-wall 
+! collision in MPPIC model 
+  MPPIC_COEFF_EN_WALL = 0.5
+
+! Flag for implicit treatment of drag in parcel evolution equation
+! in MPPIC model. Any advantage of it over the explicit treatment 
+! has not been well studied so far
+
+  MPPIC_PDRAG_IMPLICIT = .t.
+
+! For initial seeding of parcels, seed equal number of 
+! parcels per cell 
+  MPPIC_CONSTANTNPC = .T.
+
+! For initial seeind and when MPPIC_CONSTANTNPC is true, 
+! set this flag for specifying number of parcels per cell 
+  NPC_PIC(1) = 5
+
+! CFL used to set the time-step size in parcel evoltion equations
+! under MPPIC model
+  CFL_PIC = 0.05
+
+  PVEL_StDev = 1.d0
+
+  PRINT_DES_DATA = .t.		
+
+! For performing gas-solids coupled simulations. 
+  DES_CONTINUUM_COUPLED = .TRUE.
+
+! Flag to choose if the drag force on parcels (and as well
+! as on the Eulerian grid) is obtained by interpolation or not.
+  DES_INTERP_ON = .f.
+
+
+! Flag to decide if initial parcel config is read in or 
+! generated by the code itself
+  GENER_PART_CONFIG = .t.
+
+
+! Output Control
+!
+  OUT_DT 		= 10		!write text file BUB01.OUT
+					!  every 0.1s
+  RES_DT 		= 0.5		!write binary restart file
+					!  BUB01.RES every 0.01 s
+  NLOG   		= 25 		!write logfile BUB01.LOG
+					!every 25 time steps
+  FULL_LOG 		= .TRUE. 	!display residuals on screen
+
+
+!SPX_DT values determine how often SPx files are written.  Here BUB01.SP1, which
+!contains void fraction (EP_g), is written every 0.01 s, BUB01.SP2, which contains
+! gas and solids pressure (P_g, P_star), is written every 0.1 s, and so forth.
+!
+        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
+        !      P_star    V_g  V_s            T_s  X_s     Theta   Scalar 
+        !                W_g  W_s
+      
+  SPX_DT = 0.05  0.1       0.5   0.5  100    100.5   100.5     100.  500.                                                                           
+!  The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
+  
+  NODESI = 1   NODESJ = 1   NODESK = 1
+
+!  Sweep Direction
+
+LEQ_SWEEP(1) = 'ISIS' 
+LEQ_SWEEP(2) = 'ISIS'  
+LEQ_SWEEP(3) = 'ISIS' 
+LEQ_SWEEP(4) = 'ISIS'  
+LEQ_SWEEP(5) = 'ISIS'  
+LEQ_SWEEP(6) = 'ISIS'  
+LEQ_SWEEP(7) = 'ISIS' 
+LEQ_SWEEP(8) = 'ISIS'  
+LEQ_SWEEP(9) = 'ISIS'
+
