@@ -2129,7 +2129,7 @@ qcache=auto "
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-mp"
-            compile_d="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -I$mpi_include -I$DPO -g "
+            compile_d="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -fbounds-check -I$mpi_include -I$DPO -g "
             compile_d2="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -I$mpi_include -I$DPO -g "
             compile_d3="-c -I. -fconvert='big-endian' -I$mpi_include -I$DPO -g "
             link_d="-g"
