@@ -119,7 +119,7 @@
       endif
 
 ! set the version.release of the software
-      ID_VERSION = '2012-1'
+      ID_VERSION = '2013-1'
 
 
 ! set automatic restart flag to false
