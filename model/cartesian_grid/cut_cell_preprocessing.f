@@ -689,14 +689,6 @@
       J = J_OF(IJK) 
       K = K_OF(IJK) 
 
-      IF(I<IMIN1) RETURN
-      IF(I>IMAX1) RETURN
-      IF(J<JMIN1) RETURN
-      IF(J>JMAX1) RETURN
-      IF(K<KMIN1) RETURN
-      IF(K>KMAX1) RETURN
-
-
       IM = I - 1 
       JM = J - 1 
       KM = K - 1
@@ -746,13 +738,15 @@
             ENDIF
 
             INTERSECT_X(IJK)  = .FALSE.
-            INTERSECT_X(IMJK) = .FALSE.
-            INTERSECT_Y(IMJK)  = .FALSE.
-            INTERSECT_Y(IMJPK) = .FALSE.
-            IF(DO_K) INTERSECT_Z(IMJK)  = .FALSE.
-            IF(DO_K) INTERSECT_Z(IMJKP) = .FALSE.
+            IF(I>=IMIN1) THEN
+               INTERSECT_X(IMJK) = .FALSE.
+               INTERSECT_Y(IMJK)  = .FALSE.
+               INTERSECT_Y(IMJPK) = .FALSE.
+               IF(DO_K) INTERSECT_Z(IMJK)  = .FALSE.
+               IF(DO_K) INTERSECT_Z(IMJKP) = .FALSE.
 
-            SNAP(IMJK) = .TRUE.
+               SNAP(IMJK) = .TRUE.
+            ENDIF
                 
          ENDIF
 
@@ -767,13 +761,14 @@
 
 
             INTERSECT_X(IJK)  = .FALSE.
-            INTERSECT_X(IPJK) = .FALSE.
             INTERSECT_Y(IJK)  = .FALSE.
-            INTERSECT_Y(IJPK) = .FALSE.
             IF(DO_K) INTERSECT_Z(IJK)  = .FALSE.
-            IF(DO_K) INTERSECT_Z(IJKP) = .FALSE.
-
             SNAP(IJK) = .TRUE.
+
+            IF(I<=IMAX1) INTERSECT_X(IPJK) = .FALSE.
+            IF(J<=JMAX1) INTERSECT_Y(IJPK) = .FALSE.
+            IF(DO_K.AND.(K<=KMAX1)) INTERSECT_Z(IJKP) = .FALSE.
+
                 
          ENDIF
 
@@ -809,14 +804,16 @@
                WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
             ENDIF
 
-            INTERSECT_X(IJMK)  = .FALSE.
-            INTERSECT_X(IPJMK) = .FALSE.
             INTERSECT_Y(IJK)  = .FALSE.
-            INTERSECT_Y(IJMK) = .FALSE.
-            IF(DO_K) INTERSECT_Z(IJMK)  = .FALSE.
-            IF(DO_K) INTERSECT_Z(IJMKP) = .FALSE.
+            IF(J>=JMIN1) THEN
+               INTERSECT_X(IJMK)  = .FALSE.
+               INTERSECT_X(IPJMK) = .FALSE.
+               INTERSECT_Y(IJMK) = .FALSE.
+               IF(DO_K) INTERSECT_Z(IJMK)  = .FALSE.
+               IF(DO_K) INTERSECT_Z(IJMKP) = .FALSE.
 
-            SNAP(IJMK) = .TRUE.
+               SNAP(IJMK) = .TRUE.
+            ENDIF
                 
          ENDIF
 
@@ -830,13 +827,14 @@
             ENDIF 
 
             INTERSECT_X(IJK)  = .FALSE.
-            INTERSECT_X(IPJK) = .FALSE.
             INTERSECT_Y(IJK)  = .FALSE.
-            INTERSECT_Y(IJPK) = .FALSE.
             IF(DO_K) INTERSECT_Z(IJK)  = .FALSE.
-            IF(DO_K) INTERSECT_Z(IJKP) = .FALSE.
-
             SNAP(IJK) = .TRUE.
+
+            IF(I<=IMAX1) INTERSECT_X(IPJK) = .FALSE.
+            IF(J<=JMAX1) INTERSECT_Y(IJPK) = .FALSE.
+            IF(DO_K.AND.(K<=KMAX1)) INTERSECT_Z(IJKP) = .FALSE.
+
                 
          ENDIF
 
@@ -871,14 +869,17 @@
                   WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
                ENDIF 
 
-               INTERSECT_X(IJKM)  = .FALSE.
-               INTERSECT_X(IPJKM) = .FALSE.
-               INTERSECT_Y(IJKM)  = .FALSE.
-               INTERSECT_Y(IJPKM) = .FALSE.
                INTERSECT_Z(IJK)  = .FALSE.
-               INTERSECT_Z(IJKM) = .FALSE.
+
+               IF(K>=KMIN1) THEN
+                  INTERSECT_X(IJKM)  = .FALSE.
+                  INTERSECT_X(IPJKM) = .FALSE.
+                  INTERSECT_Y(IJKM)  = .FALSE.
+                  INTERSECT_Y(IJPKM) = .FALSE.
+                  INTERSECT_Z(IJKM) = .FALSE.
                    
-               SNAP(IJKM) = .TRUE.
+                  SNAP(IJKM) = .TRUE.
+               ENDIF
 
             ENDIF
 
@@ -892,13 +893,14 @@
                ENDIF
 
                INTERSECT_X(IJK)  = .FALSE.
-               INTERSECT_X(IPJK) = .FALSE.
                INTERSECT_Y(IJK)  = .FALSE.
-               INTERSECT_Y(IJPK) = .FALSE.
                INTERSECT_Z(IJK)  = .FALSE.
-               INTERSECT_Z(IJKP) = .FALSE.
-
                SNAP(IJK) = .TRUE.
+
+               IF(I<=IMAX1) INTERSECT_X(IPJK) = .FALSE.
+               IF(J<=JMAX1) INTERSECT_Y(IJPK) = .FALSE.
+               IF(K<=KMAX1) INTERSECT_Z(IJKP) = .FALSE.
+
                    
             ENDIF
 
