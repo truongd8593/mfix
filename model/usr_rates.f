@@ -7,7 +7,7 @@
 !  Author: J.Musser                                   Date: 10-Oct-12  !
 !                                                                      !
 !  Comments: Write reaction rates in units of moles/sec.cm^3 (cgs) or  !
-!  modles/sec.m^3 (SI). Units should match those specified in the data !
+!  kmoles/sec.m^3 (SI). Units should match those specified in the data !
 !  file.
 !                                                                      !
 !  Example reaction: Methane combustion                                !
@@ -29,7 +29,7 @@
 !    used in reference to the reaction index in RATES and a species    !
 !    index in gas/solids phase variables.                              !
 !                                                                      !
-!  * Additional information is provided in section 4.11 of the code    !
+!  * Additional information is provided in section 5.11 of the code    !
 !    Readme.                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
