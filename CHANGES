@@ -1,29 +1,18 @@
-Changes from MFIX2010-1 (Date: 02/02/2010) to MFIX2012-1 (Date: 01/19/2012)
+Changes from MFIX2012-1 (Date: 01/19/2012) to MFIX2013-1 (Date: 03/05/2013)
+
 
 New features added:
 -------------------
 
+* Hybrid model 
+   o Ability to describe different solids phases in either Eulerian or Lagrangian frames
+
+* MPPIC (Multi-Phase Particle in Cell)
+  o Eulerian model for carrier phase coupled with particle-in-cell (PIC) based discrete representation for dispersed phase
+  o Tentative release to handle cut-cells
+
 * DEM
-  o DMP Parallelization (MPI)
-  o SMP Parallelization (OpenMP)
-  o Mass inlet and outlet boundary conditions
-  o Heat transfer and DES reactive chemistry
-  o Cohesion van der Waals force calculation with/without Rumpf corrections to asperities on surface of particles
-
-* Virtual mass
-  O Virtual mass force acts to increase the inertia of the dispersed phase, which tends to stabilize simulations of bubbly gas-liquid flows
-
-* GHD (Garzo, Hrenya, and Dufty) granular kinetic theory
-  o The GHD model solves mixture momentum and granular energy equations instead of the individual solids phases equations
-
-* Cartesian Grid cut cell technique
-  o Partial slip boundary condition
-  o K-epsilon wall functions
-  o Energy equation
-  o Geometry input from STL file and Gambit msh file (3D)
-  
-* Quadrature method of moments (QMOM)
-  o Solves moment transport equations for the particle phase [1]
+  o Tentative release to handle cut-cells
 
 
 
@@ -31,51 +20,74 @@ Changes in existing features:
 -----------------------------
 
 * Bug fixes and enhancements:
-  o Gfortran compilation: various format statement and line continuation were modified to accommodate gfortran
-  o Chi scheme
-    - Bug fix: ensure species mass fractions add to one
-    - Enhancement: vanishing species no longer degrade the 2nd order scheme to FOU
+  o Makefile: improved user input
+    - Improved user input
+    - Object files are stored in dedicated directories to speed-up recompilation
+
+* Reaction rate input
+  o New user-friendly input method to define chemical reactions in input file
+  o Simplification of user-defined reaction rate specification
+  o Heats of reaction are automatically calculated
+
+* Parallel execution
+  o SMP mode of execution was turned off due to current assesment of OpenMP directives
+
+* Cartesian Grid cut cell technique
+  o Improvement in handling geometry intersections
+  o Geometry input from multiple STL files
+
+
+
+* Documentation:
+----------------
 
 * Updated documents:
-  o Readme file [2]
-  o DEM documentation [3]
-  o Cartesian grid documentation [4]
-  o Summary of MFIX equations [5]
+  o Readme file [1]
+  o Cartesian grid documentation [2]
+
+* New documents:
+  o MMPIC documentation [3]
+  o MPI verification [4]
+  o Compiler study [5]
 
 
 
 Under Development:
 ------------------
 
-* MPPIC: Multi-Phase Particle in Cell
-* Application of Cartesian cut-cell technique to DEM
-* Variable solids density
+* Stiff solver: Automatic parsing to elimnate user-input for Direct Integration method
+
+* Variable solids density 
+  o Ability to have solids density vary as a function of species composition (Eulerian/Eulerian solver)
+
+* Parallel execution
+  o Updated OpenMP directives
 
 
 
 Project Metrics:
 ----------------
 
-* Change from 2010-1 Release:
-  o 50 new files
-  o Nearly 38,000 new lines of code (around 23,000 excluding comments and blank lines)
+* Change from 2012-1 Release:
+  o 20 new files
+  o Over 11,000 new lines of code (around 7,000 excluding comments and blank lines)
 
-* 2012-1 Total count:
-  o Files: 519 
-  o Lines: 181092
-  o Blank Lines: 23108
-  o Code Lines: 107651
-  o Comment Lines: 53285
-  o Statements: 80529
+* 2013-1 Total count:
+  o Files: 539
+  o Lines: 192,460
+  o Blank Lines: 25,376
+  o Code Lines: 114,993
+  o Comment Lines: 55,510
+  o Statements: 85,098
 
 
 
 References:
 -----------
-1.https://mfix.netl.doe.gov/documentation/qmomk_doc_2012-1.pdf
-2.https://mfix.netl.doe.gov/documentation/Readme.pdf
-3.https://mfix.netl.doe.gov/documentation/dem_doc_2012-1.pdf
-4.https://mfix.netl.doe.gov/documentation/Cartesian_grid_user_guide.pdf
-5.https://mfix.netl.doe.gov/documentation/MfixEquations2012-1.pdf
+[1] https://mfix.netl.doe.gov/documentation/Readme.pdf
+[2] https://mfix.netl.doe.gov/documentation/Cartesian_grid_user_guide.pdf
+[3] https://mfix.netl.doe.gov/documentation/mfix_pic_doc.pdf
+[4] https://mfix.netl.doe.gov/documentation/MPI_verification_for_MFIX.pdf
+[5] https://mfix.netl.doe.gov/documentation/MFIX_results_sensitivity_to_Fortran_compilers.pdf
 
 
