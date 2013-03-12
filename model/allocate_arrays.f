@@ -76,7 +76,11 @@
       IF(USE_RRATES.or.bDoing_postmfix) THEN
           IF(NMAX(0) .NE. UNDEFINED_I)DIMENSION_N_g = NMAX(0)
       ELSE
-          IF(NMAX_g .NE. UNDEFINED_I)DIMENSION_N_g = NMAX_g
+         IF(NMAX_g == UNDEFINED_I) THEN
+            IF(NMAX(0) /= UNDEFINED_I) DIMENSION_N_g = NMAX(0)
+         ELSE
+            DIMENSION_N_g = NMAX_g
+         ENDIF
       ENDIF
   
       
@@ -93,8 +97,12 @@
             IF(NMAX(M) .NE. UNDEFINED_I) &
                DIMENSION_N_s = MAX(DIMENSION_N_s, NMAX(M))
          ELSE
-            IF(NMAX_s(M) .NE. UNDEFINED_I) &
+            IF(NMAX_s(M) == UNDEFINED_I) THEN
+               IF(NMAX(M) /= UNDEFINED_I) DIMENSION_N_s = &
+                  MAX(DIMENSION_N_s, NMAX(M))
+            ELSE
                DIMENSION_N_s = MAX(DIMENSION_N_s, NMAX_s(M))
+            ENDIF
          ENDIF
       ENDDO
       DO M = 1, DIM_M
