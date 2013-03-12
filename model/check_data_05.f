@@ -191,7 +191,18 @@
 ! Flag that the average molecular weight and constant gas density are
 ! undefined.
          MWg_ROg = .FALSE.
-         IF(MW_AVG == UNDEFINED .AND. RO_G0==UNDEFINED) MWg_ROg = .TRUE.
+         IF(MW_AVG == UNDEFINED) THEN
+            DO N=1,NMAX(0)
+               IF(MW_g(N) == UNDEFINED) MWg_ROg = .TRUE.
+            ENDDO
+         ENDIF
+         IF(MWg_ROg .AND. RO_G0==UNDEFINED) THEN
+            MWg_ROg = .TRUE.
+         ELSE
+            MWg_ROg = .FALSE.
+         ENDIF
+
+
 ! Loop over the gas phase species
          DO N = 1, NMAX(0)
             SEQ_MWg = .FALSE.
@@ -239,10 +250,11 @@
                CALL READ_DATABASE('TFM', 0, N, SPECIES_g(N),MW_g(N))
 ! Flag variable to stating that the database was read.
                rDatabase(0,N) = .TRUE.
-! Flag the legacy variable.
-               DATABASE_READ = .TRUE.
             ENDIF 
          ENDDO
+! Flag the legacy variable.
+         DATABASE_READ = .TRUE.
+
 ! Verify that no molecular weight data was given for species that do
 ! not exist.
          DO N = NMAX(0) + 1, DIMENSION_N_G 
