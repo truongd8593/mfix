@@ -16,44 +16,43 @@ call_rxn_stop="false"
 rxn_fmt_err="false"
 
 rxn_dup_err="false"
-declare -a all_aliases
+all_aliases="_Blank"
+alias_count=0
+duplicate_aliases=""
 
 format_err() {
-  echo -e "\n"
+  echo " "
   echo "  *********************************************************************"
   echo "  * Species aliases and reaction names must be FORTRAN variable name  *"
   echo "  * compliant: alphanumeric/underscore combinations with the first    *"
   echo "  * character being a letter. Please correct the variable name in the *"
   echo "  * mfix.dat file and usr_rates files as needed.                      *"
   echo "  *********************************************************************"
-  echo -e "\n\n"
+  echo " "
+  echo " "
   return
 }
 
 duplicate_err() {
-  echo -e "\n"
+  echo " "
   echo "  *********************************************************************"
   echo "  * Species aliases and reaction names must be UNIQUE. Two or more    *"
   echo "  * entries were found to be identical. Please correct these entries  *"
   echo "  * in the mfix.dat and usr_rates files as needed.                    *"
   echo "  *                                                                   *"
 
-  spaceTmplt="  * Duplicate entry:                                                  *"
-
-# Identify the duplicate entries.
-  alias_count=${#all_aliases[@]}
-  i=0
-  while (( i++ < "$alias_count" )); do
-    j=$((i+1))
-    while (( j++ < "$alias_count" )); do
-      if [[ "${all_aliases[$i]}" = "${all_aliases[$j]}" ]]; then
-        dup=${all_aliases[$i]}
-        echo "  * Duplicate entry: $dup${spaceTmplt:$((21 + ${#dup}))}"
-      fi
+  for dup in $duplicate_aliases; do
+    lmsg="  * Duplicate entry: $dup"
+    lc=$((21 + ${#dup}))
+    while test $lc -lt 70; do
+      lmsg=$lmsg" "
+      lc=$((lc+1))
     done
+    echo "$lmsg*"
   done
+
   echo "  *********************************************************************"
-  echo -e "\n"
+  echo " "
 
   return
 }
@@ -67,35 +66,41 @@ check_val () {
 # Clean up any trailing white spaces.
   v1=$(echo $2 | sed -e 's/^ $//g')
   v2=$(echo $2 | sed -e 's/[^[:alnum:]|_]//g')
+# v3 is empty if the first character is a letter.
+  v3=$(echo $v1 | cut -c 1 | grep '[^a-zA-Z]')
 # Verify that there are no special characters in the name.
-  if [[ "$v1" != "$v2" ]]; then
-    echo -e "  * Format Error - Invalid $1: $2"
+  if [ "$v1" != "$v2" ]; then
+    echo " "
+    echo "  * Format Error - Invalid $1: $2"
 # Verify that the first character is a letter
     call_stop="true"
     rxn_fmt_err="true"
-  elif [ ! -z "$(echo ${v1:0:1} | grep '[^a-zA-Z]')" ]; then
-    echo -e "  * Format Error - Invalid $1: $2"
+#  elif [ ! -z "$(echo ${v1:0:1} | grep '[^a-zA-Z]')" ]; then
+  elif [ ! -z "$v3" ]; then
+    echo " "
+    echo "  * Format Error - Invalid $1: $2"
     call_stop="true"
     rxn_fmt_err="true"
   elif [ ${#v1} -gt $3 ]; then
-    echo -e "  * Format Error - $1: $2 is too long! $3 character limit."
+    echo " "
+    echo "  * Format Error - $1: $2 is too long! $3 character limit."
     call_stop="true"
     rxn_fmt_err="true"
   fi
 
 # Verify that the alias is not a duplicate.
-  for fndAlias in "${all_aliases[@]}"; do
-    if [[ "$fndAlias" = "$2" ]]; then
+  for fndAlias in $all_aliases; do
+    if [ "$fndAlias" = "$2" ]; then
 # Duplicate entries flag an error and force make_mfix to exit
       call_stop="true"
       rxn_dup_err="true"
+      duplicate_aliases=$duplicate_aliases" "$2
     fi
   done
 
 # Unique entries are addeed to an array for later comparison.
-  alias_count=${#all_aliases[@]}
-  aIndex=$((alias_count+1))
-  all_aliases[$aIndex]=$2
+  all_aliases=$all_aliases" "$2
+  alias_count=$((alias_count+1))
 
   return
 }
@@ -154,12 +159,12 @@ else
       sindex=$(echo $p1g | cut -d "(" -f2 | cut -d ")" -f1)
 # Get the species alias.
       salias=$(echo $p1g | cut -d "=" -f2 | tr -d "'" | tr -d "\"")
-# Split compound entries into an array.
-      IFS=', ' read -r -a splst <<< $salias 
+# Replace any commas with spaces.
+      salias=$(echo $salias | tr "," " ")
 # Initialize the loop counter
       lc="0"
 # Loop over compound entries
-      for p1a in "${splst[@]}"; do
+      for p1a in $salias; do
 # Ensure that the speices aliases adhead to Fortran variable naming.
         check_val "Species Alias" $p1a 32
 # Calculate the species index (for compound entries)
@@ -180,12 +185,12 @@ else
       sindex=$(echo $p1s_des | cut -d "," -f2 | cut -d ")" -f1)
 # Get the species alias.
       salias=$(echo $p1s_des | cut -d "=" -f2 | tr -d "'" | tr -d "\"")
-# Split compound entries into an array.
-      IFS=', ' read -r -a splst <<< $salias 
+# Replace any commas with spaces.
+      salias=$(echo $salias | tr "," " ")
 # Initialize the loop counter
       lc="0"
 # Loop over compound entries
-      for p1b in "${splst[@]}"; do
+      for p1b in $salias; do
 # Ensure that the speices aliases adhead to Fortran variable naming.
         check_val "Species Alias" $p1b 32
 # Calculate the species index (for compound entries)
@@ -204,12 +209,12 @@ else
       sindex=$(echo $p1s | cut -d "," -f2 | cut -d ")" -f1)
 # Get the species alias.
       salias=$(echo $p1s | cut -d "=" -f2 | tr -d "'" | tr -d "\"")
-# Split compound entries into an array.
-      IFS=', ' read -r -a splst <<< $salias 
+# Replace any commas with spaces.
+      salias=$(echo $salias | tr "," " ")
 # Initialize the loop counter
       lc="0"
 # Loop over compound entries
-      for p1b in "${splst[@]}"; do
+      for p1b in $salias; do
 # Ensure that the speices aliases adhead to Fortran variable naming.
         check_val "Species Alias" $p1b 32
 # Calculate the species index (for compound entries)
@@ -229,9 +234,9 @@ else
 
 # Find the end of a reaction block.
     if [ ! -z "$p2END" ]; then
-      if [[ "$in_rxn_block" = "true" ]]; then
+      if [ "$in_rxn_block" = "true" ]; then
         in_rxn_block="false"
-      elif [[ "$in_des_rxn_block" = "true" ]]; then
+      elif [ "$in_des_rxn_block" = "true" ]; then
         in_des_rxn_block="false"
       else
         echo "  Found the end of a reaction block without finding start"
@@ -239,7 +244,7 @@ else
         exit
       fi
     elif [ ! -z "$p2TFM" ]; then
-      if [[ "$in_des_rxn_block" = "true" ]]; then
+      if [ "$in_des_rxn_block" = "true" ]; then
         echo "  Found the start of a TFM reaction block while"
         echo "  still inside a DPM reaction block!"
         echo "  Fatal Error: Killing make_mfix"
@@ -249,7 +254,7 @@ else
         in_rxn_block="true"
       fi
     elif [ ! -z "$p2DPM" ]; then
-      if [[ "$in_rxn_block" = "true" ]]; then
+      if [ "$in_rxn_block" = "true" ]; then
         echo "  Found the start of a DPM reaction block while"
         echo "  still inside a TFM reaction block!"
         echo "  Fatal Error: Killing make_mfix"
@@ -260,7 +265,7 @@ else
       fi
 
 # If already processing a TFM reaction block.
-    elif [[ "$in_rxn_block" = "true" ]]; then
+    elif [ "$in_rxn_block" = "true" ]; then
       if [ ! -z "$(echo $p | grep "{")" ]; then
 # Take the name that precedes the start of the reaction construct {
         rx_name=$(echo $p | cut -d "{" -f1)
@@ -268,7 +273,7 @@ else
         rx_cnt=$((rx_cnt+1))
         echo "      INTEGER, PARAMETER :: $rx_name = $rx_cnt" >> $sfile
       fi
-    elif [[ "$in_des_rxn_block" = "true" ]]; then
+    elif [ "$in_des_rxn_block" = "true" ]; then
       if [ ! -z "$(echo $p | grep "{")" ]; then
 # Take the name that precedes the start of the reaction construct {
         rx_name=$(echo $p | cut -d "{" -f1)
@@ -282,24 +287,32 @@ fi
 
 # If there are no continuum phase reactions and there are no discrete
 # phase reactions, delete sfile.
-if [[ "$fnd_rxn" = "false" && "$fnd_des_rxn" = "false" ]]; then
+if test "$fnd_rxn" = "false" && test "$fnd_des_rxn" = "false" ; then
   rm "$sfile"
 fi
 
 # Report any format errors
-if [[ "$rxn_fmt_err" = "true" ]]; then
+if test "$rxn_fmt_err" = "true"; then
   format_err
 fi
 # Report any duplicate entries (species aliases/reaction names)
-if [[ "$rxn_dup_err" = "true" ]]; then
+if test "$rxn_dup_err" = "true"; then
   duplicate_err
 fi
 
-if [[ "$call_stop" = "true" ]]; then
-  echo -e "\n\n  An input error for chemical reactions was detected."
+if test "$call_stop" = "true"; then
+  echo " "
+  echo " "
+  echo "  An input error for chemical reactions was detected."
   echo "  Please correct the error and execute make_mfix again."
-  echo -e "  Exiting make_mfix.\n\n"
+  echo "  Exiting make_mfix."
+  echo " "
+  echo " "
   exit
 fi
 
-echo -e "\n  Reaction data was successfully processed. "
+unset IFS
+
+echo " "
+echo "  Reaction data was successfully processed. "
+echo " "
