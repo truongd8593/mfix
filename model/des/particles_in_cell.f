@@ -101,9 +101,14 @@
 ! composite ijk index. If first_pass, also assigning PIJK(L,5) the
 ! solids phase index of particle.
 ! ---------------------------------------------------------------->>>
-
-!$omp parallel do default(shared)                               &
-!$omp private(l,m,xpos,ypos,zpos,i,j,k,ijk) schedule (guided,50)  
+!Handan Liu commented here on Jan 16 2013 and revised as below:
+! 1)directly adding the directives in this loop will result in the datarace;
+! 2)adding 'critical' at ‘PINC(IJK)=PINC(IJK)+1’ can work for OpenMP;
+! 3)but the total time for OpenMP is much longer than that without OpenMP
+!   directives in this loop. So OpenMP directives were removed in this loop.
+! ----------------------------------------------------------------<<<<
+!!$omp parallel do default(shared)                               &
+!!$omp private(l,m,xpos,ypos,zpos,i,j,k,ijk) schedule (guided,50)  
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
          IF(.NOT.PEA(L,1)) CYCLE
@@ -335,9 +340,11 @@
          K = PIJK(L,3)
          IJK = FUNIJK(I,J,K)
          PIJK(L,4) = IJK
+!!$omp critical		!Handan Liu added here for testing 			 
          PINC(IJK) = PINC(IJK) + 1
+!!$omp end critical		 
       ENDDO   ! end loop over L = 1,particles
-!$omp end parallel do 
+!!$omp end parallel do 
 ! ----------------------------------------------------------------<<<  
 
 
@@ -733,7 +740,10 @@
       double precision :: RESID_ROPS(DES_MMAX), &
                           RESID_VEL(DIMN, DES_MMAX)
       double precision :: NORM_FACTOR
-      
+!Handan Liu added on Jan 17 2013     
+	  DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
+	  DOUBLE PRECISION, DIMENSION(6,6,6) :: weight_ft
+	  DOUBLE PRECISION :: desposnew(dimn)      
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -772,7 +782,16 @@
 ! order and allocates arrays necessary for interpolation      
       CALL SET_INTERPOLATION_SCHEME(2)
 
-      IJKLOOP: DO IJK = IJKSTART3,IJKEND3
+!Handan Liu added on Jan 17 2013	  
+!$omp	parallel do default(shared)									&
+!$omp	private(IJK,I,J,K,PCELL,AVG_FACTOR,COUNT_NODES_OUTSIDE,		&
+!$omp		COUNT_NODES_INSIDE,COUNT_NODES_INSIDE_MAX,II,JJ,		&
+!$omp		KK,IW,IE,JS,JN,KB,KTP,CUR_IJK,IPJK,IJPK,IPJPK,IJKP,		&
+!$omp		gst_tmp,vst_tmp,JUNK_VAL,desposnew,weight_ft,			&				
+!$omp		nindx,np,wtp,m,icur,jcur,kcur,TEMP1,MASS_SOL1,I1, I2,	&
+!$omp		J1, J2, K1, K2, IDIM, IJK2, RESID_ROPS,RESID_VEL)
+      !IJKLOOP: DO IJK = IJKSTART3,IJKEND3	! Removed by Handan Liu
+      DO IJK = IJKSTART3,IJKEND3
 
 ! Cycle this cell if not in the fluid domain or if it contains no
 ! particle/parcel
@@ -830,10 +849,17 @@
                      IPJPKP  = funijk(IMAP_C(II+1),JMAP_C(JJ+1),KMAP_C(KK+1))
                   ENDIF
 
-                  GSTENCIL(I,J,K,1) = XE(II)
-                  GSTENCIL(I,J,K,2) = YN(JJ)
-                  GSTENCIL(I,J,K,3) = ZT(KK)*(DIMN-2) + DZ(1)*(3-DIMN)
-                  VSTENCIL(I,J,K,:) = ZERO 
+!Handan Liu added on Jan 17 2013 as following section
+!===================================================================<<< Handan Liu				  
+!                  GSTENCIL(I,J,K,1) = XE(II)
+!                  GSTENCIL(I,J,K,2) = YN(JJ)
+!                  GSTENCIL(I,J,K,3) = ZT(KK)*(DIMN-2) + DZ(1)*(3-DIMN)
+!                  VSTENCIL(I,J,K,:) = ZERO 
+                  GST_TMP(I,J,K,1) = XE(II)
+                  GST_TMP(I,J,K,2) = YN(JJ)
+                  GST_TMP(I,J,K,3) = ZT(KK)*(DIMN-2) + DZ(1)*(3-DIMN)
+                  VST_TMP(I,J,K,:) = ZERO
+!===================================================================>>> Handan Liu	
 
                   IF(CARTESIAN_GRID) THEN 
                      IF(SCALAR_NODE_ATWALL(CUR_IJK)) COUNT_NODES_OUTSIDE = &
@@ -870,17 +896,27 @@
                CALL MFIX_EXIT(myPE)
             ENDIF
 
-            IF (DIMN .EQ. 2) THEN 
-               CALL INTERPOLATOR(GSTENCIL(1:ONEW,1:ONEW,1,1:DIMN), &
-                    VSTENCIL(1:ONEW,1:ONEW,1,1:DIMN), &
-                    DES_POS_NEW(NP,1:DIMN),JUNK_VAL(1:DIMN),  &
-                    ONEW,INTERP_SCHEME,WEIGHTP)
-            ELSE 
-               CALL INTERPOLATOR(GSTENCIL(1:ONEW,1:ONEW,1:ONEW,1:DIMN), &
-                    VSTENCIL(1:ONEW,1:ONEW,1:ONEW,1:DIMN), &
-                    DES_POS_NEW(NP,1:DIMN),JUNK_VAL(1:DIMN),  &
-                    ONEW,INTERP_SCHEME,WEIGHTP)
-            ENDIF
+!Handan Liu added on Jan 17 2013 as following section
+!===================================================================<<< Handan Liu
+!            IF (DIMN .EQ. 2) THEN 
+!               CALL INTERPOLATOR(GSTENCIL(1:ONEW,1:ONEW,1,1:DIMN), &
+!                    VSTENCIL(1:ONEW,1:ONEW,1,1:DIMN), &
+!                    DES_POS_NEW(NP,1:DIMN),JUNK_VAL(1:DIMN),  &
+!                    ONEW,INTERP_SCHEME,WEIGHTP)
+!            ELSE 
+!               CALL INTERPOLATOR(GSTENCIL(1:ONEW,1:ONEW,1:ONEW,1:DIMN), &
+!                    VSTENCIL(1:ONEW,1:ONEW,1:ONEW,1:DIMN), &
+!                    DES_POS_NEW(NP,1:DIMN),JUNK_VAL(1:DIMN),  &
+!                    ONEW,INTERP_SCHEME,WEIGHTP)
+!            ENDIF
+            if (dimn .eq. 2) then
+			   desposnew(1:2) = des_pos_new(np,1:2)
+			   call DRAG_INTERPLATION_2D(gst_tmp,vst_tmp,desposnew,JUNK_VAL,weight_ft)
+			else 
+			   desposnew(1:3) = des_pos_new(np,1:3)
+			   call DRAG_INTERPLATION_3D(gst_tmp,vst_tmp,desposnew,JUNK_VAL,weight_ft)				
+			endif
+!===================================================================>>> Handan Liu 
 
             M = PIJK(NP,5)
             WTP = ONE
@@ -904,7 +940,8 @@
                      CUR_IJK = funijk(ICUR, JCUR, KCUR) 
 
 ! comment: is this missing division by volume of the node (~cell) 
-                     TEMP1 = WEIGHTP(I,J,K)*DES_RO_S(M)*PVOL(NP)*WTP
+                     !TEMP1 = WEIGHTP(I,J,K)*DES_RO_S(M)*PVOL(NP)*WTP
+					 TEMP1 = WEIGHT_FT(I,J,K)*DES_RO_S(M)*PVOL(NP)*WTP					 
                      DES_ROPS_NODE(CUR_IJK,M) = DES_ROPS_NODE(CUR_IJK,M) + TEMP1 
                      DES_VEL_NODE(CUR_IJK, 1:DIMN,M) = &
                         DES_VEL_NODE(CUR_IJK, 1:DIMN,M) + TEMP1*DES_VEL_NEW(NP, 1:DIMN)
@@ -1002,8 +1039,9 @@
             ENDIF
          ENDIF   ! end if (cartesian_grid)
 !-----------------------------------------------------------------<<<
-      ENDDO IJKLOOP   ! end do ijkloop (ijk=ijkstart3,ijkend3)
-     
+      !ENDDO IJKLOOP   ! end do ijkloop (ijk=ijkstart3,ijkend3)
+      ENDDO
+!$omp end parallel do     
 
 ! At the interface des_rops_node has to be added since particles 
 ! across the processors will contribute to the same scalar node. 
@@ -1035,7 +1073,11 @@
 ! vol_sur is the sum of all the scalar cell volumes that have this node
 ! as the common node.
 
-! looping over all fluid cells      
+! looping over all fluid cells    
+!Handan Liu added here on Feb. 28 2013
+!$omp 	parallel do default(shared)		&
+!$omp   private(K,J,I,IJK,I1,I2,J1,J2,K1,K2,	&
+!$omp			II,JJ,KK,IJK2,M)   
       DO K = KSTART2, KEND1
          DO J = JSTART2, JEND1
             DO I = ISTART2, IEND1
@@ -1085,8 +1127,12 @@
             ENDDO   ! end do (i=istart2,iend1)
          ENDDO   ! end do (j=jstart2,jend1)
       ENDDO   ! end do (k=kstart2,kend1)
+!$omp end parallel do		  
 !-----------------------------------------------------------------<<<      
-      
+
+!Handan Liu added here on Feb. 28 2013
+!$omp 	parallel do default(shared)		&
+!$omp   private(K,J,I,IJK,M)       
       DO IJK = IJKSTART3, IJKEND3
          IF(.not.FLUID_AT(IJK)) cycle
          I = I_OF(IJK)
@@ -1114,7 +1160,7 @@
             ENDIF
          ENDDO   ! end loop over M=1,DES_MMAX
       ENDDO                     ! end loop over IJK=ijkstart3,ijkend3
-
+!$omp end parallel do
 
 ! RG: Aug, 20, 2012. 
 ! ------------------------------------------------------------------- 

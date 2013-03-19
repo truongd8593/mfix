@@ -67,9 +67,10 @@
 !-----------------------------------------------
 ! Septadiagonal matrix A_m 
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
+      DOUBLE PRECISION A_m_tmp(DIMENSION_3, -3:3, 0:DIMENSION_M)	!Handan Liu added on September 20 2012 
  
 ! Vector b_m 
-      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
+      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Error index 
       INTEGER          IER 
 !-----------------------------------------------
@@ -105,6 +106,7 @@
 ! virtual (added) mass
       DOUBLE PRECISION :: F_vir, ROP_MA, Uge, Ugw, Vgb, Vgt, Wge,&
                           Wgw, Wgn, Wgs, Wgt, Wgb
+      DOUBLE PRECISION :: F_vir_tmp1, F_vir_tmp2	!Handan Liu added on September 20 2012					  
 ! error message 
       CHARACTER*80     LINE
 ! FOR CALL_DI and CALL_ISAT = .true.
@@ -139,6 +141,19 @@
 !!!$omp& IMJK,IJKP,IMJKP,  UGT,VCOA,VCOB, &
 !!!$omp& IJKE,IJKW,IJKTE,IJKTW,IM,IPJK, &
 !!!$omp& CTE,CTW,SXZB,  EPMUOX,VXZA,VXZB )
+
+!Handan Liu added on Sep. 20 2012, then modified March 1 2013:
+!===================================================================<<< Handan Liu
+!$omp  parallel do default(shared)									&
+!$omp  private(I, J, K, IJK, IMJK, IJMK, IJKM, IJKP, IPJK, IMJKP,	&
+!$omp		   IJPK, IJMKP, IJKT, EPStmp, epsMix, epsMixT, ISV,	L,	&
+!$omp		   EPSA, EPSE, EPSW, EPSN, EPSS, EPST, EPSB, PGT, 		&
+!$omp		   SDP, SDPS, SUM_EPS_CP, ROPSA, V0, ROP_MA, F_vir, MM,	&	
+!$omp		   A_M_tmp, F_vir_tmp1, F_vir_tmp2, 					&
+!$omp		   Uge, Ugw, Vgb, Vgt, Wge, Wgw, Wgn, Wgs, Wgt, Wgb,	&
+!$omp		   Ugt, VMTtmp, VMT, DRO1, DRO2, DROA, VBF, Ghd_drag, 	&
+!$omp		   avgRop, HYS_drag, avgDrag, VCOA, VCOB, CTE, CTW, 	&
+!$omp		   SXZB, IM, VXZA,VXZB, EPMUOX, IJKE,IJKW,IJKTE,IJKTW)
 
             DO IJK = ijkstart3, ijkend3 
                 I = I_OF(IJK) 
@@ -329,9 +344,12 @@
 ! VIRTUAL MASS SECTION (explicit terms)
 ! adding transient term dWg/dt to virtual mass term		    
                   F_vir = ZERO
+!Handan Liu changed on Sep. 20 2012, then modified on March 1 2013:
+!===================================================================<< Handan Liu				  
                   IF(Added_Mass .AND. M == M_AM .AND.&
                     (.NOT.CUT_W_TREATMENT_AT(IJK))) THEN        
-                     F_vir = ( (W_g(IJK) - W_gO(IJK)) )*ODT*VOL_W(IJK)
+                     !F_vir = ( (W_g(IJK) - W_gO(IJK)) )*ODT*VOL_W(IJK)
+					 F_vir_tmp1 = ( (W_g(IJK) - W_gO(IJK)) )*ODT*VOL_W(IJK)
 
 ! defining gas-particles velocity at momentum cell faces (or scalar cell center)
                      Wgb = AVG_Z_T(W_g(IJKM),W_g(IJK))
@@ -346,16 +364,22 @@
                      Wgs = AVG_Y(W_g(IJMK),W_g(IJK),JM1(J))
                      Wgn = AVG_Y(W_g(IJK),W_g(IJPK),J)
 
-                     IF (CYLINDRICAL) F_vir = F_vir + &
+                     !IF (CYLINDRICAL) F_vir = F_vir + &
+                     !   Ugt*W_g(IJK)*OX(I) ! Coriolis force
+                     IF (CYLINDRICAL) F_vir_tmp2 = F_vir_tmp1 + &
                         Ugt*W_g(IJK)*OX(I) ! Coriolis force
-                     
+						
 ! adding convective terms (U dW/dx + V dW/dy + W dW/dz) to virtual mass.
-                     F_vir = F_vir + W_g(IJK)*OX(I) * (Wgt - Wgb)*AXY(IJK) + &
+                     !F_vir = F_vir + W_g(IJK)*OX(I) * (Wgt - Wgb)*AXY(IJK) + &
+                     !   Ugt*(Wge - Wgw)*AYZ(IJK) + &
+                     !   AVG_Z(Vgb,Vgt,K) * (Wgn - Wgs)*AXZ(IJK)
+                     !F_vir = F_vir * Cv * ROP_MA
+                     F_vir_tmp2 = F_vir_tmp1 + W_g(IJK)*OX(I) * (Wgt - Wgb)*AXY(IJK) + &
                         Ugt*(Wge - Wgw)*AYZ(IJK) + &
                         AVG_Z(Vgb,Vgt,K) * (Wgn - Wgs)*AXZ(IJK)
-                     F_vir = F_vir * Cv * ROP_MA
+                     F_vir = F_vir_tmp2 * Cv * ROP_MA					 
                   ENDIF
-
+!===================================================================>> Handan Liu
 ! Interphase mass transfer
                   IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
                      VMTtmp = ZERO
@@ -457,10 +481,16 @@
 ! (mu/x)*(dw/dx) part of tau_xz/x
                      EPMUOX = AVG_Z(MU_S(IJK,M),MU_S(IJKT,M),K)*OX(I) 
                      VXZB = ZERO 
-                     A_M(IJK,E,M) = A_M(IJK,E,M) + HALF*EPMUOX*ODX_E(I)*&
+!Handan Liu changed on Sep. 20 2012, then modified on March 1 2013:
+!===================================================================<< Handan Liu					 
+                     !A_M(IJK,E,M) = A_M(IJK,E,M) + HALF*EPMUOX*ODX_E(I)*&
+                     !      VOL_W(IJK) 
+                     !A_M(IJK,W,M) = A_M(IJK,W,M) - HALF*EPMUOX*ODX_E(IM)*&
+                     !      VOL_W(IJK)
+                     A_M_tmp(IJK,E,M) = A_M(IJK,E,M) + HALF*EPMUOX*ODX_E(I)*&
                            VOL_W(IJK) 
-                     A_M(IJK,W,M) = A_M(IJK,W,M) - HALF*EPMUOX*ODX_E(IM)*&
-                           VOL_W(IJK)
+                     A_M_tmp(IJK,W,M) = A_M(IJK,W,M) - HALF*EPMUOX*ODX_E(IM)*&
+                           VOL_W(IJK)						   
 
 ! -(mu/x)*(w/x) part of tau_xz/x
                      VXZA = EPMUOX*OX(I) 
@@ -473,13 +503,19 @@
                   ENDIF 
 
 ! Collect the terms
-                  A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+&
+!                  A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+&
+!                     A_M(IJK,N,M)+A_M(IJK,S,M)+A_M(IJK,T,M)+&
+!                     A_M(IJK,B,M)+(V0+ZMAX(VMT)+VCOA+VXZA)*&
+!                     VOL_W(IJK)+ CTE - CTW) 
+!                  A_M(IJK,E,M) = A_M(IJK,E,M) - CTE
+!                  A_M(IJK,W,M) = A_M(IJK,W,M) + CTW  
+                  A_M(IJK,0,M) = -(A_M_tmp(IJK,E,M)+A_M(IJK,W,M)+&
                      A_M(IJK,N,M)+A_M(IJK,S,M)+A_M(IJK,T,M)+&
                      A_M(IJK,B,M)+(V0+ZMAX(VMT)+VCOA+VXZA)*&
                      VOL_W(IJK)+ CTE - CTW) 
-                  A_M(IJK,E,M) = A_M(IJK,E,M) - CTE
-                  A_M(IJK,W,M) = A_M(IJK,W,M) + CTW  
-
+                  A_M(IJK,E,M) = A_M_tmp(IJK,E,M) - CTE
+                  A_M(IJK,W,M) = A_M_tmp(IJK,W,M) + CTW  
+!
                   B_M(IJK,M) = B_m(IJK, M) - (SDP + SDPS + &
                      TAU_W_S(IJK,M) + SXZB + F_vir + &
                      ( (V0+ZMAX((-VMT)))*W_SO(IJK,M)+ &
@@ -490,9 +526,11 @@
                   ELSEIF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
                     B_M(IJK,M) = B_M(IJK,M) - Ghd_drag*VOL_W(IJK)
                   ENDIF
-
+				  
                 ENDIF   ! end branching on cell type (sip/ip/dilute/block/else branches)
             ENDDO   ! end do loop over ijk
+!$omp end parallel do
+!==============================================================>> Handan Liu 
 
 ! modifications for cartesian grid implementation
             IF(CARTESIAN_GRID) CALL CG_SOURCE_W_S(A_M, B_M, M, IER)

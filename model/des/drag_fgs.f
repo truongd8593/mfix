@@ -35,6 +35,18 @@
 !        (except for changes when interpolation is used)
 !      - The field variable ep_g will be updated as particles
 
+! Commented by Handan Liu on August 2012.
+! 1. Added two new subroutines in the end to calculate interpolation, 
+!	 i.e. DRAG_INTERPLATION_2D and DRAG_INTERPLATION_3D, 
+!	 to replace invoking 'interpolator' interface module, 
+!	 which will introduce global variables; thus cause datarace for OpenMP. 
+! 2. Set the temporary variables 'desposnew(dimn),velfp(dimn)' (small arrays) as private 
+!	 to replace the global variables desposnew(np,dimn),velfp(np,dimn) (big arrays)  
+! 	 to avoid datarace; and save the calculating time.
+! 3. Set temporary array 'weight_ft' to replace the pointer 'weightp' (global) 
+!	 in 'interpolator', which leads datarace for OpenMP.
+! 4. Set temporary variables 'gst_tmp,vst_tmp' as private to replace global variables 
+!	 'gstencil,vstencil' to avoid datarace and segmentation fault.
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -350,11 +362,19 @@
       DOUBLE PRECISION :: WTP     
 ! for error messages      
       INTEGER :: IER
+!	  
+!Handan Liu added temporary variables on April 20 2012
+	  DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
+	  DOUBLE PRECISION, DIMENSION(6,6,6) :: weight_ft
+	  DOUBLE PRECISION :: velfp(3), desposnew(dimn)	  
+!	  
 !-----------------------------------------------   
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !-----------------------------------------------
+!$      double precision omp_start, omp_end
+!$      double precision omp_get_wtime
 
 ! initializing
       des_rops_node = ZERO
@@ -368,14 +388,21 @@
 ! There is some issue associated to gstencil, vstencil which are 
 ! allocable variables
 
-!!$      omp_start=omp_get_wtime()
+!$      omp_start=omp_get_wtime()
 !!$omp parallel do default(shared)                                 &
 !!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,                 &
 !!$omp         avg_factor,ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,        &
 !!$omp         ijpkp,ipjkp,ipjpkp,ijkp,icur,jcur,kcur              &
 !!$omp         gstencil,vstencil,nindx,onew,                       &
 !!$omp         focus,np,wtp,weightp,ovol,m,vcell)                  &
-!!$omp schedule (guided,50)           	
+!!$omp schedule (guided,50)
+
+!Handan Liu modified the following do-loop on Jan 20 2012. 
+!$omp parallel do default(shared)                                 	&
+!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,				&
+!$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,gst_tmp,vst_tmp,		&
+!$omp         ijpkp,ipjkp,ipjpkp,ijkp,velfp,desposnew,weight_ft,	&
+!$omp         nindx,np,focus,wtp,m,icur,jcur,kcur,ovol,vcell)            	
       DO ijk = ijkstart3,ijkend3
          if(.not.fluid_at(ijk) .or. pinc(ijk).eq.0) cycle 
          i = i_of(ijk)
@@ -405,45 +432,73 @@
                   ipjk    = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk))
                   ijpk    = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk))
                   ipjpk   = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk))
-               
-                  gstencil(i,j,k,1) = xe(ii)
-                  gstencil(i,j,k,2) = yn(jj)
-                  gstencil(i,j,k,3) = zt(kk)*(dimn-2) + dz(1)*(3-dimn)
-                  vstencil(i,j,k,1) = avg_factor*(u_g(cur_ijk)+u_g(ijpk))
-                  vstencil(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk)) 
-                  IF(dimn.EQ.3) THEN                  
+! Revise by Handan Liu for OpenMP implementation
+!===================================================================<< Handan Liu
+!                  gstencil(i,j,k,1) = xe(ii)
+!                  gstencil(i,j,k,2) = yn(jj)
+!                  gstencil(i,j,k,3) = zt(kk)*(dimn-2) + dz(1)*(3-dimn)
+!                  vstencil(i,j,k,1) = avg_factor*(u_g(cur_ijk)+u_g(ijpk))
+!                  vstencil(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk)) 
+!                  IF(dimn.EQ.3) THEN                  
+!                     ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
+!                     ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
+!                     ipjpkp  = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk+1))
+!                     ijkp    = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk+1))
+!                     vstencil(i,j,k,1) = vstencil(i,j,k,1)+avg_factor*(u_g(ijkp) + u_g(ijpkp))
+!                     vstencil(i,j,k,2) = vstencil(i,j,k,2)+avg_factor*(v_g(ijkp) + v_g(ipjkp))
+!                     vstencil(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
+!                          w_g(ijpk)+w_g(ipjk)+w_g(ipjpk))
+!                  ELSE 
+!                     vstencil(i,j,k,3) = 0.d0
+                  gst_tmp(i,j,k,1) = xe(ii)
+                  gst_tmp(i,j,k,2) = yn(jj)
+                  gst_tmp(i,j,k,3) = zt(kk)*(dimn-2) + dz(1)*(3-dimn)
+                  vst_tmp(i,j,k,1) = avg_factor*(u_g(cur_ijk)+u_g(ijpk))
+                  vst_tmp(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk))
+
+                  if(dimn.eq.3) then 
                      ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
                      ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
                      ipjpkp  = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk+1))
                      ijkp    = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk+1))
-
-                     vstencil(i,j,k,1) = vstencil(i,j,k,1)+avg_factor*(u_g(ijkp) + u_g(ijpkp))
-                     vstencil(i,j,k,2) = vstencil(i,j,k,2)+avg_factor*(v_g(ijkp) + v_g(ipjkp))
-                     vstencil(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
+					 vst_tmp(i,j,k,1) = vst_tmp(i,j,k,1) + avg_factor*(u_g(ijkp) + u_g(ijpkp))
+                     vst_tmp(i,j,k,2) = vst_tmp(i,j,k,2) + avg_factor*(v_g(ijkp) + v_g(ipjkp))
+                     vst_tmp(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
                           w_g(ijpk)+w_g(ipjk)+w_g(ipjpk))
-                  ELSE 
-                     vstencil(i,j,k,3) = 0.d0
+                  else
+                     vst_tmp(i,j,k,3) = 0.d0
                   ENDIF
                ENDDO
             ENDDO
          ENDDO
-
+!===================================================================>> Handan Liu
 ! looping through particles in the cell  
          DO nindx = 1,pinc(ijk)
-            np = pic(ijk)%p(nindx)            
-  
-            IF (DIMN .EQ. 2) THEN
-               CALL interpolator(gstencil(1:onew,1:onew,1,1:dimn), &
-                    vstencil(1:onew,1:onew,1,1:dimn), &
-                    des_pos_new(np,1:dimn),vel_fp(np,1:dimn),  &
-                    onew,interp_scheme,weightp)
-            ELSE
-               CALL interpolator(gstencil(1:onew,1:onew,1:onew,1:dimn), &
-                    vstencil(1:onew,1:onew,1:onew,1:dimn), &
-                    des_pos_new(np,1:dimn),vel_fp(np,1:dimn),  &
-                    onew,interp_scheme,weightp)
-            ENDIF
-
+            np = pic(ijk)%p(nindx)  
+			
+! Revised by Handan Liu for OpenMP implementation 
+!===================================================================<< Handan Liu
+!            IF (DIMN .EQ. 2) THEN
+!               CALL interpolator(gstencil(1:onew,1:onew,1,1:dimn), &
+!                    vstencil(1:onew,1:onew,1,1:dimn), &
+!                    des_pos_new(np,1:dimn),vel_fp(np,1:dimn),  &
+!                    onew,interp_scheme,weightp)
+!            ELSE
+!               CALL interpolator(gstencil(1:onew,1:onew,1:onew,1:dimn), &
+!                    vstencil(1:onew,1:onew,1:onew,1:dimn), &
+!                    des_pos_new(np,1:dimn),vel_fp(np,1:dimn),  &
+!                    onew,interp_scheme,weightp)
+!            ENDIF
+            if (dimn .eq. 2) then
+			   desposnew(1:2) = des_pos_new(np,1:2)
+			   call DRAG_INTERPLATION_2D(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
+			else 
+			   desposnew(1:3) = des_pos_new(np,1:3)
+			   call DRAG_INTERPLATION_3D(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)				
+			endif
+			vel_fp(np,:) = velfp(:)
+!===================================================================>> Handan Liu			
+			
             focus = .false.
             WTP = ONE
             IF(MPPIC) WTP = DES_STAT_WT(NP)
@@ -472,18 +527,21 @@
 
 !!$omp critical                 
                      des_rops_node(cur_ijk,m) = des_rops_node(cur_ijk,m) + &
-                          weightp(i,j,k) *DES_ro_s(m)*ovol*pvol(np)*WTP
-!!$omp end critical                             
+                          !weightp(i,j,k) *DES_ro_s(m)*ovol*pvol(np)*WTP
+!Handan Liu revised on Jan 15 2013
+                          weight_ft(i,j,k) *DES_ro_s(m)*ovol*pvol(np)*WTP
+!!$omp end critical
                   ENDDO
                ENDDO
             ENDDO
          ENDDO   ! end do (nindx = 1,pinc(ijk))
 
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
-!!$omp end parallel do
-!!$      omp_end=omp_get_wtime()
+!$omp end parallel do
+!$      omp_end=omp_get_wtime()
 !!$      write(*,*)'drag_interp:',omp_end - omp_start  
 
+		
 ! At the interface des_rops_node has to be added
 ! send recv will be called and the node values will be added 
 ! at the junction. des_rops_node is altered by the routine when
@@ -529,6 +587,7 @@
          ENDIF
       ENDDO   ! end do loop (ijk=ijkstart3,ijkend3)
 !$omp end parallel do 
+
 !-----------------------------------------------------------------<<<
 
       RETURN   
@@ -840,12 +899,20 @@
       DOUBLE PRECISION :: AVG_FACTOR
 ! for error messages      
       INTEGER :: IER
+
+!Handan Liu added temporary variables on April 20 2012
+	  DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
+	  DOUBLE PRECISION, DIMENSION(6,6,6) :: weight_ft
+	  DOUBLE PRECISION :: velfp(3), desposnew(dimn)
+	  DOUBLE PRECISION :: D_FORCE(DIMN)
+!	  
 !-----------------------------------------------   
 ! Include statement functions
 !-----------------------------------------------   
       INCLUDE 'function.inc'
 !----------------------------------------------- 
-
+!$      double precision omp_start, omp_end
+!$      double precision omp_get_wtime
 ! NON-INTERPOLATED fluid-solids drag:
 ! Calculate the gas solids drag force on a particle using the cell 
 ! averaged particle velocity and the cell average fluid velocity
@@ -884,7 +951,14 @@
 !!$omp         avg_factor,ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,        &
 !!$omp         gstencil,vstencil,ijpkp,ipjkp,ipjpkp,ijkp,nindx,    &
 !!$omp         focus,np,weightp,m)                                 &
-!!$omp schedule (guided,50)           	
+!!$omp schedule (guided,50)
+
+!Handan Liu modified the following do-loop on Jan 20 2013. 
+!$omp parallel do default(shared)                                 	&
+!$omp private(ijk, i, j, k, pcell, iw, ie, js, jn, kb, ktp,		&
+!$omp         onew, ii, jj, kk,cur_ijk, ipjk, ijpk, ipjpk,		&
+!$omp         gst_tmp, vst_tmp, velfp, desposnew, ijpkp, ipjkp,	&
+!$omp         ipjpkp,ijkp,nindx,np,weight_ft,d_force)            	
       DO ijk = ijkstart3,ijkend3
          if(.not.fluid_at(ijk) .or. pinc(ijk).eq.0) cycle 
          i = i_of(ijk)
@@ -915,29 +989,46 @@
                   ipjk    = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk))
                   ijpk    = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk))
                   ipjpk   = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk))
-               
-                  gstencil(i,j,k,1) = xe(ii)
-                  gstencil(i,j,k,2) = yn(jj)
-                  gstencil(i,j,k,3) = zt(kk)*(dimn-2) + dz(1)*(3-dimn)
-                  vstencil(i,j,k,1) = avg_factor*(u_g(cur_ijk)+u_g(ijpk))
-                  vstencil(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk)) 
-                  IF(DIMN.EQ.3) THEN
+! Revise by Handan Liu for OpenMP implementation
+!===================================================================<< Handan Liu
+!                  gstencil(i,j,k,1) = xe(ii)
+!                  gstencil(i,j,k,2) = yn(jj)
+!                  gstencil(i,j,k,3) = zt(kk)*(dimn-2) + dz(1)*(3-dimn)
+!                  vstencil(i,j,k,1) = avg_factor*(u_g(cur_ijk)+u_g(ijpk))
+!                  vstencil(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk)) 
+!                  IF(DIMN.EQ.3) THEN
+!                     ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
+!                     ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
+!                     ipjpkp  = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk+1))
+!                     ijkp    = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk+1))
+!                     vstencil(i,j,k,1) = vstencil(i,j,k,1)+avg_factor*(u_g(ijkp) + u_g(ijpkp))
+!                     vstencil(i,j,k,2) = vstencil(i,j,k,2)+avg_factor*(v_g(ijkp) + v_g(ipjkp))
+!                     vstencil(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
+!                          w_g(ijpk)+w_g(ipjk)+w_g(ipjpk))
+!                  ELSE
+!                     vstencil(i,j,k,3) = 0.d0
+                  gst_tmp(i,j,k,1) = xe(ii)
+                  gst_tmp(i,j,k,2) = yn(jj)
+                  gst_tmp(i,j,k,3) = zt(kk)*(dimn-2) + dz(1)*(3-dimn)
+                  vst_tmp(i,j,k,1) = avg_factor*(u_g(cur_ijk)+u_g(ijpk))
+                  vst_tmp(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk))
+
+                  if(dimn.eq.3) then 
                      ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
                      ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
                      ipjpkp  = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk+1))
                      ijkp    = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk+1))
-
-                     vstencil(i,j,k,1) = vstencil(i,j,k,1)+avg_factor*(u_g(ijkp) + u_g(ijpkp))
-                     vstencil(i,j,k,2) = vstencil(i,j,k,2)+avg_factor*(v_g(ijkp) + v_g(ipjkp))
-                     vstencil(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
+					 vst_tmp(i,j,k,1) = vst_tmp(i,j,k,1) + avg_factor*(u_g(ijkp) + u_g(ijpkp))
+                     vst_tmp(i,j,k,2) = vst_tmp(i,j,k,2) + avg_factor*(v_g(ijkp) + v_g(ipjkp))
+                     vst_tmp(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
                           w_g(ijpk)+w_g(ipjk)+w_g(ipjpk))
-                  ELSE
-                     vstencil(i,j,k,3) = 0.d0
+                  else
+                     vst_tmp(i,j,k,3) = 0.d0
                   ENDIF
                ENDDO
             ENDDO
          ENDDO
-
+!===================================================================>> Handan Liu
 ! loop through particles in the cell
 ! interpolate the fluid velocity (VEL_FP) to the particle's position.
          DO nindx = 1,PINC(IJK)
@@ -945,19 +1036,30 @@
 ! skipping indices that do not represent particles and ghost particles
             if(.not.pea(np,1)) cycle
             if(pea(np,4)) cycle
-
-            IF (DIMN .EQ. 2) THEN
-               CALL interpolator(gstencil(1:onew,1:onew,1,1:dimn), &
-                    vstencil(1:onew,1:onew,1,1:dimn), &
-                    des_pos_new(np,1:dimn),vel_fp(np,1:dimn),  &
-                    onew,interp_scheme,weightp)
-            ELSE
-               CALL interpolator(gstencil(1:onew,1:onew,1:onew,1:dimn), &
-                    vstencil(1:onew,1:onew,1:onew,1:dimn), &
-                    des_pos_new(np,1:dimn),vel_fp(np,1:dimn),  &
-                    onew,interp_scheme,weightp)
-            ENDIF
-
+			
+! Revised by Handan Liu for OpenMP implementation 
+!===================================================================<< Handan Liu
+!            IF (DIMN .EQ. 2) THEN
+!               CALL interpolator(gstencil(1:onew,1:onew,1,1:dimn), &
+!                    vstencil(1:onew,1:onew,1,1:dimn), &
+!                    des_pos_new(np,1:dimn),vel_fp(np,1:dimn),  &
+!                    onew,interp_scheme,weightp)
+!            ELSE
+!               CALL interpolator(gstencil(1:onew,1:onew,1:onew,1:dimn), &
+!                    vstencil(1:onew,1:onew,1:onew,1:dimn), &
+!                    des_pos_new(np,1:dimn),vel_fp(np,1:dimn),  &
+!                    onew,interp_scheme,weightp)
+!            ENDIF
+            if (dimn .eq. 2) then
+			   desposnew(1:2) = des_pos_new(np,1:2)
+			   call DRAG_INTERPLATION_2D(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
+			else 
+			   desposnew(1:3) = des_pos_new(np,1:3)
+			   call DRAG_INTERPLATION_3D(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)				
+			endif
+			vel_fp(np,:) = velfp(:)
+!===================================================================>> Handan Liu			
+!
 ! Calculate the particle centered drag coefficient (F_GP) using the
 ! particle velocity and the interpolated gas velocity.  Note F_GP
 ! obtained from des_drag_gp subroutine is given as:
@@ -971,15 +1073,23 @@
 ! Calculate the gas-solids drag force on the particle
             IF(MPPIC .AND. MPPIC_PDRAG_IMPLICIT) THEN
 ! implicit treatment of the drag term for mppic 
-               GD_FORCE(NP,:) = F_GP(NP)*(VEL_FP(NP,:))
+!------------------------------------------------------------------<<<< Handan Liu
+! Handan Liu set D_FORCE(:) to replace GD_FORCE(:,:) 	
+!	in order to reduce the calculation time			on Jan 14 2013
+               !GD_FORCE(NP,:) = F_GP(NP)*(VEL_FP(NP,:))
+			   D_FORCE(:) = F_GP(NP)*(VEL_FP(NP,:))	
             ELSE
 ! default case
-               GD_FORCE(NP,:) = F_GP(NP)*(VEL_FP(NP,:)-DES_VEL_NEW(NP,:))
+               !GD_FORCE(NP,:) = F_GP(NP)*(VEL_FP(NP,:)-DES_VEL_NEW(NP,:))
+			   D_FORCE(:) = F_GP(NP)*(VEL_FP(NP,:)-DES_VEL_NEW(NP,:))	
             ENDIF
 
 ! Update the contact forces (FC) on the particle to include gas
 ! pressure and gas-solids drag 
-            FC(NP,:) = FC(NP,:) + GD_FORCE(NP,:)
+            !FC(NP,:) = FC(NP,:) + GD_FORCE(NP,:)
+			FC(NP,:) = FC(NP,:) + D_FORCE(:)
+			GD_FORCE(NP,:) = D_FORCE(:)			
+!------------------------------------------------------------------>>>>	Handan Liu		
             IF(.NOT.MODEL_B) THEN
 ! P_force is evaluated as -dp/dx 
                FC(NP,:) = FC(NP,:) + p_force(ijk,:)*pvol(NP)
@@ -988,9 +1098,10 @@
          ENDDO       ! end do (nindx = 1,pinc(ijk))
 
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
-!!$omp end parallel do
+!$omp end parallel do
 !!$      omp_end=omp_get_wtime()
 !!$      write(*,*)'drag_interp:',omp_end - omp_start  
+
 !-----------------------------------------------------------------<<<
 
       RETURN   
@@ -1095,14 +1206,19 @@
 ! discrete 'phase' not a continuous phase so that the appropriate
 ! variables are referenced.  
       LOGICAL :: DISCRETE_FLAG
+!Handan Liu added temporary variables on April 20 2012
+	  DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
+	  DOUBLE PRECISION, DIMENSION(6,6,6) :: weight_ft
+	  DOUBLE PRECISION :: velfp(3), desposnew(dimn)
+	  
 !-----------------------------------------------   
 ! Include statement functions
 !-----------------------------------------------   
       INCLUDE 'function.inc'
 !-----------------------------------------------
 
-!!$      double precision omp_start, omp_end
-!!$      double precision omp_get_wtime	      
+!$      double precision omp_start, omp_end
+!$      double precision omp_get_wtime	      
 
 !!$      omp_start=omp_get_wtime()
 
@@ -1125,7 +1241,6 @@
 !-----------------------------------------------------------------<<<
 !!$      omp_end=omp_get_wtime()
 !!$      write(*,*)'drag_interp_off:',omp_end - omp_start 
-
 
 ! INTERPOLATED fluid-solids drag (the rest of this routine):
 ! Calculate the fluid solids drag coefficient using the particle 
@@ -1155,6 +1270,14 @@
 !!$omp         focus,np,wtp,weightp,ovol,m,nindx,                  &
 !!$omp         drag_bm_tmp)                                        &
 !!$omp schedule (guided,50)
+
+!Handan Liu modified the following do-loop on Jan 15 2013. 
+!$omp parallel do default(shared)                                 	&
+!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,				&
+!$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,						&
+!$omp         gst_tmp,vst_tmp,velfp,desposnew,ijpkp,ipjkp,			&
+!$omp         ipjpkp,ijkp,nindx,focus,np,wtp,m,weight_ft,			&
+!$omp		  icur,jcur,kcur,vcell,ovol,drag_bm_tmp) 
       DO IJK = IJKSTART3,IJKEND3
          IF(.NOT.FLUID_AT(IJK) .OR. PINC(IJK)==0) cycle 
          i = i_of(ijk)
@@ -1185,29 +1308,46 @@
                   ipjk    = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk))
                   ijpk    = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk))
                   ipjpk   = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk))
-               
-                  gstencil(i,j,k,1) = xe(ii)
-                  gstencil(i,j,k,2) = yn(jj)
-                  gstencil(i,j,k,3) = zt(kk)*(dimn-2) + dz(1)*(3-dimn)
-                  vstencil(i,j,k,1) = avg_factor*(u_g(cur_ijk)+u_g(ijpk))
-                  vstencil(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk)) 
-                  IF(DIMN.EQ.3) THEN
+! Revised by Handan Liu for OpenMP implementation
+!===================================================================<< Handan Liu               
+!                  gstencil(i,j,k,1) = xe(ii)
+!                  gstencil(i,j,k,2) = yn(jj)
+!                  gstencil(i,j,k,3) = zt(kk)*(dimn-2) + dz(1)*(3-dimn)
+!                  vstencil(i,j,k,1) = avg_factor*(u_g(cur_ijk)+u_g(ijpk))
+!                  vstencil(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk)) 
+!                  IF(DIMN.EQ.3) THEN
+!                     ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
+!                     ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
+!                     ipjpkp  = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk+1))
+!                     ijkp    = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk+1))
+!                     vstencil(i,j,k,1) = vstencil(i,j,k,1)+avg_factor*(u_g(ijkp) + u_g(ijpkp))
+!                     vstencil(i,j,k,2) = vstencil(i,j,k,2)+avg_factor*(v_g(ijkp) + v_g(ipjkp))
+!                     vstencil(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
+!                          w_g(ijpk)+w_g(ipjk)+w_g(ipjpk))
+!                  ELSE
+!                     vstencil(i,j,k,3) = 0.d0
+                  gst_tmp(i,j,k,1) = xe(ii)
+                  gst_tmp(i,j,k,2) = yn(jj)
+                  gst_tmp(i,j,k,3) = zt(kk)*(dimn-2) + dz(1)*(3-dimn)
+                  vst_tmp(i,j,k,1) = avg_factor*(u_g(cur_ijk)+u_g(ijpk))
+                  vst_tmp(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk))
+
+                  if(dimn.eq.3) then 
                      ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
                      ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
                      ipjpkp  = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk+1))
                      ijkp    = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk+1))
-
-                     vstencil(i,j,k,1) = vstencil(i,j,k,1)+avg_factor*(u_g(ijkp) + u_g(ijpkp))
-                     vstencil(i,j,k,2) = vstencil(i,j,k,2)+avg_factor*(v_g(ijkp) + v_g(ipjkp))
-                     vstencil(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
+					 vst_tmp(i,j,k,1) = vst_tmp(i,j,k,1) + avg_factor*(u_g(ijkp) + u_g(ijpkp))
+                     vst_tmp(i,j,k,2) = vst_tmp(i,j,k,2) + avg_factor*(v_g(ijkp) + v_g(ipjkp))
+                     vst_tmp(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
                           w_g(ijpk)+w_g(ipjk)+w_g(ipjpk))
-                  ELSE
-                     vstencil(i,j,k,3) = 0.d0
+                  else
+                     vst_tmp(i,j,k,3) = 0.d0
                   ENDIF
                ENDDO
             ENDDO
          ENDDO
-
+!===================================================================>> Handan Liu
 ! loop through particles in the cell
 ! interpolate the fluid velocity (VEL_FP) to the particle's position.
          DO nindx = 1,PINC(IJK)
@@ -1215,19 +1355,30 @@
 ! skipping indices that do not represent particles and ghost particles
             if(.not.pea(np,1)) cycle
             if(pea(np,4)) cycle
-
-            IF (DIMN .EQ. 2) THEN
-               CALL interpolator(gstencil(1:onew,1:onew,1,1:dimn), &
-                    vstencil(1:onew,1:onew,1,1:dimn), &
-                    des_pos_new(np,1:dimn),vel_fp(np,1:dimn),  &
-                    onew,interp_scheme,weightp)
-            ELSE
-               CALL interpolator(gstencil(1:onew,1:onew,1:onew,1:dimn), &
-                    vstencil(1:onew,1:onew,1:onew,1:dimn), &
-                    des_pos_new(np,1:dimn),vel_fp(np,1:dimn),  &
-                    onew,interp_scheme,weightp)
-            ENDIF
-
+			
+! Revised by Handan Liu for OpenMP implementation 
+!===================================================================<< Handan Liu			
+!            IF (DIMN .EQ. 2) THEN
+!               CALL interpolator(gstencil(1:onew,1:onew,1,1:dimn), &
+!                    vstencil(1:onew,1:onew,1,1:dimn), &
+!                    des_pos_new(np,1:dimn),vel_fp(np,1:dimn),  &
+!                    onew,interp_scheme,weightp)
+!            ELSE
+!               CALL interpolator(gstencil(1:onew,1:onew,1:onew,1:dimn), &
+!                    vstencil(1:onew,1:onew,1:onew,1:dimn), &
+!                    des_pos_new(np,1:dimn),vel_fp(np,1:dimn),  &
+!                    onew,interp_scheme,weightp)
+!            ENDIF
+            if (dimn .eq. 2) then
+			   desposnew(1:2) = des_pos_new(np,1:2)
+			   call DRAG_INTERPLATION_2D(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
+			else 
+			   desposnew(1:3) = des_pos_new(np,1:3)
+			   call DRAG_INTERPLATION_3D(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)				
+			endif
+			vel_fp(np,:) = velfp(:)
+!===================================================================>> Handan Liu
+!			
 ! Calculate the particle centered drag coefficient (F_GP) using the
 ! particle velocity and the interpolated gas velocity.  Note F_GP
 ! obtained from des_drag_gp subroutine is given as:
@@ -1238,8 +1389,6 @@
             CALL DES_DRAG_GP(NP, VEL_FP(NP,1:DIMN), &
                DES_VEL_NEW(NP,1:DIMN))
 !-----------------------------------------------------------------<<<
-
-
 ! Calculate the corresponding gas solids drag force that is used in 
 ! the gas phase momentum balances.               
 !----------------------------------------------------------------->>>
@@ -1269,18 +1418,21 @@
 
 ! first remove the velocity component at this grid point from the vel_fp
                      drag_bm_tmp(1:dimn) = vel_fp(np, 1:dimn) - &
-                          weightp(i,j,k)*vstencil(i,j,k, 1:dimn)
+                          !weightp(i,j,k)*vstencil(i,j,k, 1:dimn)	!Handan Liu revised on Jan 15 2013
+						  weight_ft(i,j,k)*vst_tmp(i,j,k, 1:dimn)
 ! now find the remaning drag force
                      drag_bm_tmp(1:dimn) = des_vel_new(np,1:dimn) !- drag_bm_tmp(1:dimn)
 
 !!$omp critical
                      drag_am(cur_ijk,m) = drag_am(cur_ijk,m) + &
-                          f_gp(np)*weightp(i,j,k)*ovol*wtp
+                          !f_gp(np)*weightp(i,j,k)*ovol*wtp		!Handan Liu revised on Jan 15 2013
+						  f_gp(np)*weight_ft(i,j,k)*ovol*wtp
 
                      drag_bm(cur_ijk, 1:dimn,m) = &
                           drag_bm(cur_ijk,1:dimn,m) + &
                           f_gp(np) * drag_bm_tmp(1:dimn) * &
-                          weightp(i,j,k)*ovol*wtp 
+                          !weightp(i,j,k)*ovol*wtp 		!Handan Liu revised on Jan 15 2013
+						  weight_ft(i,j,k)*ovol*wtp
 !!$omp end critical
                   ENDDO
                ENDDO
@@ -1289,7 +1441,7 @@
          ENDDO   ! end do (nindx = 1,pinc(ijk))
 
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
-!!$omp end parallel do
+!$omp end parallel do
 !!$      omp_end=omp_get_wtime()
 !!$      write(*,*)'drag_interp:',omp_end - omp_start  
 
@@ -1300,14 +1452,12 @@
 ! quantities are needed at the time of this call.
       call des_addnodevalues
 !-----------------------------------------------------------------<<<
-
-
 ! Calculate/update the cell centered drag coefficient F_GS for use 
 ! in the pressure correction equation
 !----------------------------------------------------------------->>>
 ! avg_factor=0.125 (in 3D) or =0.25 (in 2D)
       AVG_FACTOR = 0.125D0*(DIMN-2) + 0.25D0*(3-DIMN)
-
+	  
 !$omp parallel do default(shared)                               &
 !$omp private(ijk,i,j,k,imjk,ijmk,imjmk,ijkm,imjkm,ijmkm,       & 
 !$omp         imjmkm)                                           &
@@ -1902,8 +2052,6 @@
 
 
 
-
-
       RETURN
       END SUBROUTINE CALC_DES_DRAG_SS_NONINTERP
 
@@ -2216,6 +2364,152 @@
 
       END SUBROUTINE DES_DRAG_SS 
 
+	  
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!  Module name: DRAG_INTERPLATION_2D									C 
+!																		C
+!  Purpose: DES - Calculte the interpolation of weights and velocity	C        
+!           of particles. Replace 'interpolator' interface for          C  
+! 			OpenMP implementation. 										C
+!                                                                    	C
+!  Author: Handan Liu	                           Date: 10-May-2012	C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
+	SUBROUTINE DRAG_INTERPLATION_2D(gsten,vsten,despos,velfp,weightfactor)
+
+	  IMPLICIT NONE
+
+      DOUBLE PRECISION, DIMENSION(2,2,1,3), INTENT(in):: gsten
+	  DOUBLE PRECISION, DIMENSION(2,2,1,3), INTENT(in):: vsten
+      DOUBLE PRECISION, DIMENSION(2), INTENT(in):: despos
+      DOUBLE PRECISION, DIMENSION(3), INTENT(out) :: velfp
+!      INTEGER, INTENT(in):: neworder
+!      CHARACTER*5 :: interpscheme
+      DOUBLE PRECISION, DIMENSION(6,6,6) :: weightfactor
+!      INTEGER :: vec_size, nv	!, iorig
+      INTEGER:: i, j
+	  DOUBLE PRECISION, DIMENSION(2) :: xxval, yyval	!, zval
+	  DOUBLE PRECISION, DIMENSION(1) :: dxx, dyy	!,dz	
+      DOUBLE PRECISION, DIMENSION(2):: zetaa
+
+		dxx(1) = gsten(2,1,1,1) - gsten(1,1,1,1)
+		dyy(1) = gsten(1,2,1,2) - gsten(1,1,1,2)
+		zetaa(1:2) = despos(1:2) - gsten(1,1,1,1:2)
+		zetaa(1) = zetaa(1)/dxx(1)
+		zetaa(2) = zetaa(2)/dyy(1)
+		do i=1,2
+			select case(i)
+			  case(1)
+				xxval(1)=1-zetaa(1)
+				yyval(1)=1-zetaa(2)
+			  case(2)
+				xxval(2)=zetaa(1)
+				yyval(2)=zetaa(2)
+			end select
+		enddo
+		  
+		weightfactor = 0.0d0
+		do j=1,2
+			do i=1,2
+				weightfactor(i,j,1) = xxval(i)*yyval(j)
+			enddo
+		enddo
+	
+		velfp(1:3) = 0.d0
+		do j=1,2
+			do i=1,2
+				velfp(1) = velfp(1) + vsten(i,j,1,1)*weightfactor(i,j,1)
+				velfp(2) = velfp(2) + vsten(i,j,1,2)*weightfactor(i,j,1)
+			enddo
+		enddo
+
+	END SUBROUTINE DRAG_INTERPLATION_2D
+	
+	  
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!  Module name: DRAG_INTERPLATION_3D									C 
+!																		C
+!  Purpose: DES - Calculte the interpolation of weights and velocity	C        
+!           of particles. Replace 'interpolator' interface for          C  
+! 			OpenMP implementation. 										C
+!                                                                    	C
+!  Author: Handan Liu	                           Date: 18-August-2012	C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+
+	SUBROUTINE DRAG_INTERPLATION_3D(gsten,vsten,despos,velfp,weightfactor)
+  
+	  IMPLICIT NONE
+	  
+      DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(in):: gsten
+	  DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(in):: vsten
+      DOUBLE PRECISION, DIMENSION(3), INTENT(in):: despos
+      DOUBLE PRECISION, DIMENSION(3), INTENT(out) :: velfp
+	  DOUBLE PRECISION interp_scl
+	  DOUBLE PRECISION, DIMENSION(3) :: interp_vec
+!      INTEGER, INTENT(in):: neworder
+!      CHARACTER*5 :: interpscheme
+      DOUBLE PRECISION, DIMENSION(6,6,6), INTENT(out) :: weightfactor
+      INTEGER :: vec_size, nv	!, iorig
+      INTEGER :: i, j, k
+
+	  DOUBLE PRECISION, DIMENSION(2) :: xxval, yyval, zzval
+	  DOUBLE PRECISION, DIMENSION(1) :: dxx, dyy, dzz	
+      DOUBLE PRECISION, DIMENSION(3) :: zetaa
+
+		dxx(1) = gsten(2,1,1,1) - gsten(1,1,1,1)
+		dyy(1) = gsten(1,2,1,2) - gsten(1,1,1,2)
+		dzz(1) = gsten(1,1,2,3) - gsten(1,1,1,3)
+		zetaa(1:3) = despos(1:3) - gsten(1,1,1,1:3)
+		zetaa(1) = zetaa(1)/dxx(1)
+		zetaa(2) = zetaa(2)/dyy(1)
+		zetaa(3) = zetaa(3)/dzz(1)
+		do i=1,2
+			select case(i)
+			  case(1)
+				xxval(1)=1-zetaa(1)
+				yyval(1)=1-zetaa(2)
+				zzval(1)=1-zetaa(3)
+			  case(2)
+				xxval(2)=zetaa(1)
+				yyval(2)=zetaa(2)
+				zzval(2)=zetaa(3)
+			end select
+		enddo
+		  
+		weightfactor = 0.0d0
+		do k=1,2
+			do j=1,2
+				do i=1,2
+					weightfactor(i,j,k) = xxval(i)*yyval(j)*zzval(k)
+				enddo
+			enddo
+		enddo
+
+		interp_scl = 0.0
+		do k=1,2
+			do j=1,2
+				do i=1,2
+					interp_scl = interp_scl + vsten(i,j,k,1)*weightfactor(i,j,k)
+				enddo
+			enddo
+		enddo
+		velfp(1) = interp_scl
+
+		vec_size = SIZE(vsten,4)
+		do nv=2,vec_size
+			interp_vec(nv) = 0.0		
+			do k=1,2
+				do j=1,2
+					do i=1,2
+						interp_vec(nv) = interp_vec(nv) + vsten(i,j,k,nv)*weightfactor(i,j,k)
+					enddo
+				enddo
+			enddo
+		enddo	
+		velfp(2) = interp_vec(2)
+		velfp(3) = interp_vec(3)
+		
+	END SUBROUTINE DRAG_INTERPLATION_3D
+	
 
 

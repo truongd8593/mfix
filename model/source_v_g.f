@@ -91,6 +91,8 @@
       DOUBLE PRECISION HYS_drag, avgDrag
 ! virtual (added) mass
       DOUBLE PRECISION F_vir, ROP_MA, Vsn, Vss, U_se, Usw, Vse, Vsw, Wst, Wsb, Vst, Vsb
+	  DOUBLE PRECISION F_vir_tmp1, F_vir_tmp2		!Handan Liu added July 19 2012
+!	  
 ! loezos: shear terms
       DOUBLE PRECISION VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
       DOUBLE PRECISION SRT
@@ -125,6 +127,16 @@
 !!$omp&  PGN, ROGA, MUGA, ROPGA, EPGA,VSH_n,VSH_s,VSH_e,VSH_w,&
 !!$omp&  VSH_p,Source_conv, SRT ) &
 !!$omp&  schedule(static)
+
+!! Handan Liu added on July 19 2012
+!$omp  parallel do default(shared)									&
+!$omp  private(I, J, K, IJK, IJKN, IMJK, IPJK, IJMK, IJPK, IMJPK,  	&
+!$omp			IJKM, IJPKM, IJKP, EPGA, PGN, SDP, ROPGA, ROGA, 	&
+!$omp           ROP_MA, V0, ISV, MUGA, Vpm, Vmt, Vbf, L, IM,		&
+!$omp 			Vsn, Vss, U_se, Usw, Vse, Vsw, Wst, Wsb, Vst, 		&
+!$omp			Vsb, F_vir, Ghd_drag, F_vir_tmp1, F_vir_tmp2, 		&
+!$omp           avgRop, avgDrag, HYS_drag,VSH_n, VSH_s, VSH_e, 		&
+!$omp			VSH_w, VSH_p, Source_conv, SRT)	
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK) 
          J = J_OF(IJK) 
@@ -236,9 +248,12 @@
 ! VIRTUAL MASS SECTION (explicit terms)
 ! adding transient term dVs/dt to virtual mass term		    
             F_vir = ZERO
+!Handan Liu added on July 19 2012 as following section
+!===================================================================<< Handan Liu			
             IF(Added_Mass.AND.(.NOT.CUT_V_TREATMENT_AT(IJK))) THEN 
-               F_vir = ( (V_s(IJK,M_AM) - V_sO(IJK,M_AM)) )*ODT*VOL_V(IJK)
-
+               !F_vir = ( (V_s(IJK,M_AM) - V_sO(IJK,M_AM)) )*ODT*VOL_V(IJK)
+			   F_vir_tmp1 = ( (V_s(IJK,M_AM) - V_sO(IJK,M_AM)) )*ODT*VOL_V(IJK)
+!			   
 ! defining gas-particles velocity at momentum cell faces (or scalar cell center)     
                Vss = AVG_Y_N(V_S(IJMK,M_AM),V_s(IJK,M_AM))
                Vsn = AVG_Y_N(V_s(IJK,M_AM),V_s(IJPK,M_AM))  
@@ -251,15 +266,18 @@
                   Wsb = AVG_Y(W_s(IJKM,M_AM),W_s(IJPKM,M_AM),J)
                   Vst = AVG_Z(V_s(IJK,M_AM),V_s(IJKP,M_AM),KP1(K))
                   Vsb = AVG_Z(V_s(IJKM,M_AM),V_s(IJK,M_AM),K)
-                  F_vir = F_vir + AVG_Z_T(Wsb,Wst)*OX(I) * (Vst - Vsb)*AXY(IJK)
+                  !F_vir = F_vir + AVG_Z_T(Wsb,Wst)*OX(I) * (Vst - Vsb)*AXY(IJK)
+				  F_vir_tmp2 = F_vir_tmp1 + AVG_Z_T(Wsb,Wst)*OX(I) * (Vst - Vsb)*AXY(IJK)				  
                ENDIF
-
 ! adding convective terms (U dV/dx + V dV/dy) to virtual mass; W dV/dz added above.
-               F_vir = F_vir + V_s(IJK,M_AM)*(Vsn - Vss)*AXZ(IJK) + &
+               !F_vir = F_vir + V_s(IJK,M_AM)*(Vsn - Vss)*AXZ(IJK) + &
+               !   AVG_X_E(Usw,U_se,IP1(I))*(Vse - Vsw)*AYZ(IJK)
+               !F_vir = F_vir * Cv * ROP_MA
+               F_vir_tmp2 = F_vir_tmp1 + V_s(IJK,M_AM)*(Vsn - Vss)*AXZ(IJK) + &
                   AVG_X_E(Usw,U_se,IP1(I))*(Vse - Vsw)*AYZ(IJK)
-               F_vir = F_vir * Cv * ROP_MA
+               F_vir = F_vir_tmp2 * Cv * ROP_MA			   
             ENDIF
-
+!===================================================================>> Handan Liu
 ! pressure drop through porous media
             IF (SIP_AT_N(IJK)) THEN 
                ISV = IS_ID_AT_N(IJK) 
@@ -335,6 +353,7 @@
             B_M(IJK,M) = B_M(IJK,M) - F_vir ! adding explicit-part of virtual mass force.
          ENDIF 
       ENDDO 
+!$omp end parallel do
 
 ! modifications for cartesian grid implementation 
       IF(CARTESIAN_GRID) CALL CG_SOURCE_V_G(A_M, B_M, IER)

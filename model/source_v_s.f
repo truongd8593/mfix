@@ -104,6 +104,8 @@
 ! virtual (added) mass
       DOUBLE PRECISION :: F_vir, ROP_MA, Vgn, Vgs, Uge, Ugw, Vge,&
                           Vgw, Wgt, Wgb, Vgt, Vgb
+      DOUBLE PRECISION :: F_vir_tmp1, F_vir_tmp2	!Handan Liu added July 12 2012
+						  
 ! terms for shear (loezos)
       DOUBLE PRECISION :: VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
       DOUBLE PRECISION :: SRT
@@ -139,6 +141,16 @@
 !!!$omp&  PGN,DRO1,DRO2,DROA, Vbf, ROPSA, EPSA, EPStmp, VSH_n,VSH_s,VSH_e,&
 !!!$omp&  VSH_w,VSH_p,Source_conv, SRT,SUM_EPS_CP,MM) &
 !!!$omp&  schedule(static)
+!Handan Liu added on July 12 2012, then modified March 1 2013:
+!===================================================================<<< Handan Liu
+!$omp  parallel do default(shared)												&
+!$omp  private( I, J, K, IJK, IJKN, IMJK, IPJK, IJMK, IJPK, IMJPK, IJKM,		&
+!$omp			IJPKM,IJKP,ISV, epsMix, epsMixN, EPStmp, EPSA, EPSw, EPSe,		&
+!$omp			EPSn, EPSs, EPSt, EPSb, PGN, Sdp, SUM_EPS_CP, Sdps, MM, 		&
+!$omp			ROPSA,V0, ROP_MA, L, Vgn, Vgs, 	Uge, Ugw, Vge, Vgw, Wgt, 		&
+!$omp			Wgb, Vgt, Vgb, F_vir,  VMT, VMTtmp,	F_vir_tmp1, F_vir_tmp2,		&
+!$omp 			DRO1, DRO2, DROA, Vbf, avgRop, Ghd_drag, HYS_drag, avgDrag,		&
+!$omp			VSH_n, VSH_s, VSH_e, VSH_w, VSH_p, Source_conv, SRT)
             DO IJK = ijkstart3, ijkend3
 
                 I = I_OF(IJK) 
@@ -335,9 +347,12 @@
 ! VIRTUAL MASS SECTION (explicit terms)
 ! adding transient term dvg/dt to virtual mass term	    
                   F_vir = ZERO
+!Handan Liu changed on July 12 2012, then modified on March 1 2013:
+!===================================================================<< Handan Liu				  
                   IF(Added_Mass .AND. M==M_AM .AND.&
                     (.NOT.CUT_V_TREATMENT_AT(IJK))) THEN        
-                     F_vir = ( (V_g(IJK) - V_gO(IJK)) )*ODT*VOL_V(IJK)
+                     !F_vir = ( (V_g(IJK) - V_gO(IJK)) )*ODT*VOL_V(IJK)
+					 F_vir_tmp1 = ( (V_g(IJK) - V_gO(IJK)) )*ODT*VOL_V(IJK)
 
 ! defining gas-particles velocity at momentum cell faces (or scalar cell center)    
                      Vgs = AVG_Y_N(V_G(IJMK),V_G(IJK))  
@@ -351,17 +366,21 @@
                         Wgb = AVG_Y(W_g(IJKM),W_g(IJPKM),J)
                         Vgt = AVG_Z(V_g(IJK),V_g(IJKP),KP1(K))
                         Vgb = AVG_Z(V_g(IJKM),V_g(IJK),K)
-                        F_vir = F_vir + AVG_Z_T(Wgb,Wgt)*OX(I) * &
-                           (Vgt - Vgb)*AXY(IJK)
+                        !F_vir = F_vir + AVG_Z_T(Wgb,Wgt)*OX(I) * &
+                        !   (Vgt - Vgb)*AXY(IJK)
+                        F_vir_tmp2 = F_vir_tmp1 + AVG_Z_T(Wgb,Wgt)*OX(I) * &
+                           (Vgt - Vgb)*AXY(IJK)						   
                      ENDIF
 
 ! adding convective terms (U dV/dx + V dV/dy) to virtual mass; W dV/dz added above.
-                     F_vir = F_vir + V_g(IJK)*(Vgn - Vgs)*AXZ(IJK) + &
+                     !F_vir = F_vir + V_g(IJK)*(Vgn - Vgs)*AXZ(IJK) + &
+                     !   AVG_X_E(Ugw,Uge,IP1(I))*(Vge - Vgw)*AYZ(IJK)
+                     !F_vir = F_vir * Cv * ROP_MA
+                     F_vir_tmp2 = F_vir_tmp1 + V_g(IJK)*(Vgn - Vgs)*AXZ(IJK) + &
                         AVG_X_E(Ugw,Uge,IP1(I))*(Vge - Vgw)*AYZ(IJK)
-                     F_vir = F_vir * Cv * ROP_MA
+                     F_vir = F_vir_tmp2 * Cv * ROP_MA					 
                   ENDIF
-
-
+!===================================================================>> Handan Liu
 ! Interphase mass transfer
                   IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
                      VMTtmp = ZERO
@@ -452,6 +471,7 @@
 
                 ENDIF   ! end branching on cell type (sip/ip/dilute/block/else branches)
             ENDDO   ! end do loop over ijk
+!$omp end parallel do
 
 ! modifications for cartesian grid implementation            
             IF(CARTESIAN_GRID) CALL CG_SOURCE_V_S(A_M, B_M, M, IER)

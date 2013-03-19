@@ -97,6 +97,8 @@
 ! virtual (added) mass
       DOUBLE PRECISION :: F_vir, ROP_MA, U_se, Usw, Vsw, Vse, Usn,&
                           Uss, Wsb, Wst, Wse, Usb, Ust
+	  DOUBLE PRECISION :: F_vir_tmp1, F_vir_tmp2		!Handan Liu added July 19 2012
+	  
 ! error message 
       CHARACTER*80     LINE 
 ! FOR CALL_DI and CALL_ISAT = .true.
@@ -128,6 +130,17 @@
 !!$omp&                  ISV, Sdp, V0, Vpm, Vmt, Vbf,              &
 !!$omp&                  Vcf, EPMUGA, VTZA, WGE, PGE, ROGA,        &
 !!$omp&                  MUGA, ROPGA, EPGA )
+!!$      omp_start=omp_get_wtime()
+
+!! Handan Liu added the directives here on July 19 2012
+!$omp  parallel do default(shared)									&
+!$omp  private(I, J, K, IJK, IJKE, IJKM, IPJK, IMJK, IPJKM,     	&
+!$omp			IJMK, IPJMK, IJPK, IJKP, EPGA, PGE, SDP, ROPGA,		&
+!$omp           ROGA, ROP_MA, V0, ISV, MUGA, Vpm, Vmt, Vbf,         &
+!$omp 			U_se, Usw, Vsw, Vse, Usn, Uss, Wsb, Wst, Wse,		&
+!$omp			F_vir, Usb, Ust, F_vir_tmp1, F_vir_tmp2, 			&
+!$omp			Ghd_drag, L, IM, avgRop,HYS_drag, avgDrag, 			&
+!$omp			WGE, Vcf, EPMUGA, VTZA)	
       DO IJK = ijkstart3, ijkend3 
          I = I_OF(IJK) 
          J = J_OF(IJK)
@@ -244,9 +257,12 @@
 ! VIRTUAL MASS SECTION (explicit terms)
 ! adding transient term dvg/dt - dVs/dt to virtual mass term
             F_vir = ZERO
+! Handan Liu added on July 19 2012 as following section
+!===================================================================<< Handan Liu			
             IF(Added_Mass.AND.(.NOT.CUT_U_TREATMENT_AT(IJK))) THEN        
-              F_vir = ( (U_s(IJK,M_AM) - U_sO(IJK,M_AM)) )*ODT*VOL_U(IJK)
-
+              !F_vir = ( (U_s(IJK,M_AM) - U_sO(IJK,M_AM)) )*ODT*VOL_U(IJK)
+			   F_vir_tmp1 = ( (U_s(IJK,M_AM) - U_sO(IJK,M_AM)) )*ODT*VOL_U(IJK)
+!			   
 ! defining gas-particles velocity at momentum cell faces (or scalar cell center)    
               Usw = AVG_X_E(U_S(IMJK,M_AM),U_s(IJK,M_AM),I)
               U_se = AVG_X_E(U_s(IJK,M_AM),U_s(IPJK,M_AM),IP1(I))
@@ -260,16 +276,20 @@
                  Wse = AVG_X(Wsb,Wst,I)
                  Usb = AVG_Z(U_s(IJKM,M_AM),U_s(IJK,M_AM),KM1(K))
                  Ust = AVG_Z(U_s(IJK,M_AM),U_s(IJKP,M_AM),K)
-                 F_vir = F_vir + Wse*OX_E(I) * (Ust - Usb) *AXY(IJK)
-                 IF (CYLINDRICAL) F_vir = F_vir - Wse**2*OX_E(I) ! centrifugal force
+				 !F_vir = F_vir + Wse*OX_E(I) * (Ust - Usb) *AXY(IJK)
+				  F_vir_tmp2 = F_vir_tmp1 + Wse*OX_E(I) * (Ust - Usb) *AXY(IJK)
+				  IF (CYLINDRICAL) F_vir_tmp2 = F_vir_tmp1 - Wse**2*OX_E(I)
+                 !IF (CYLINDRICAL) F_vir = F_vir - Wse**2*OX_E(I) ! centrifugal force
               ENDIF
-
 ! adding convective terms (U dU/dx + V dU/dy + W dU/dz) to virtual mass
-              F_vir = F_vir + U_s(IJK,M_AM)*(U_se - Usw)*AYZ(IJK) + &
+              !F_vir = F_vir + U_s(IJK,M_AM)*(U_se - Usw)*AYZ(IJK) + &
+              !   AVG_X(Vsw,Vse,I) * (Usn - Uss)*AXZ(IJK)
+              !F_vir = F_vir * Cv * ROP_MA
+              F_vir_tmp2 = F_vir_tmp1 + U_s(IJK,M_AM)*(U_se - Usw)*AYZ(IJK) + &
                  AVG_X(Vsw,Vse,I) * (Usn - Uss)*AXZ(IJK)
-              F_vir = F_vir * Cv * ROP_MA
+              F_vir = F_vir_tmp2 * Cv * ROP_MA			  
             ENDIF
-
+!===================================================================>> Handan Liu
 ! pressure drop through porous media
             IF (SIP_AT_E(IJK)) THEN 
                ISV = IS_ID_AT_E(IJK) 
@@ -350,7 +370,8 @@
 
          ENDIF   ! end branching on cell type (ip/dilute/block/else branches)
       ENDDO   ! end do loop over ijk
-
+!$omp end parallel do
+	  
 ! modifications for cartesian grid implementation 
       IF(CARTESIAN_GRID) CALL CG_SOURCE_U_G(A_M, B_M, IER)
 ! modifications for bc

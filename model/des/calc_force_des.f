@@ -132,11 +132,10 @@
          PostCohesive (:) = ZERO
       ENDIF
 
-
 !$omp   parallel default(shared)                                  & 
 !$omp   private(ll,fts1,fts2,fns1,fns2,ft_tmp,pft_tmp,            &
 !$omp          PARTICLE_SLIDE,nlim,                               &
-!$omp          n_nocon,ni,iw,wallcontact,i,             &
+!$omp          n_nocon,ni,iw,wallcontact,i,						  &
 !$omp          already_neighbours,neigh_l,                        &
 !$omp          WALL_POS,WALL_VEL,                                 &
 !$omp          r_lm,dist,distmod,frac_overlap1,normal,            &
@@ -151,8 +150,11 @@
 !$omp          dist_old,distmod_old,normal_old,                   &
 !$omp          vrn_old,v_rel_norm_old,                            &
 !$omp          phasei,kn_des,kt_des,etan_des,etat_des,            &
-!$omp          Idimn,force_coh,eq_radius,distapart,norm_dist,maggravity)          
-!$omp do reduction(max:NEIGH_MAX,OVERLAP_MAX) schedule (dynamic,50)
+!!$omp          Idimn,force_coh,eq_radius,distapart,norm_dist,maggravity)          
+!!$omp do reduction(max:NEIGH_MAX,OVERLAP_MAX) schedule (dynamic,50)
+! Revised by Handan Liu on Jan 17 2013
+!$omp          Idimn,force_coh,eq_radius,distapart,norm_dist)
+!$omp do reduction(max:NEIGH_MAX) schedule (dynamic,50)
 
 
 ! Looping over all particles in the processor      

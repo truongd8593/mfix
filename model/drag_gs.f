@@ -110,6 +110,13 @@
 !!$omp&  VREL, UGC, VGC, WGC, Re, V_rm, A, B) &
 !!$omp&  schedule(static)
 
+!Handan Liu added openmp on Feb 5 2013
+!$omp  parallel do default(shared)				& 
+!$omp  private( I,  IJK, IMJK, IJMK, IJKM, DM, MAXM, DP_loc, EPs_loc, CM,	&
+!$omp		  L, UGC, VGC, WGC, USCM, VSCM, WSCM, VREL, Mu, phis, DPA,		&
+!$omp		  tmp_sum, tmp_fac, Y_i, EPg, ROg, ROPg, EP_SM, DPM, DgA, 		&
+!$omp		  USCM_HYS, VSCM_HYS, WSCM_HYS, F_gstmp, F_cor)
+
       DO IJK = ijkstart3, ijkend3
 
          IF (FLUIDorP_FLOW_AT(IJK)) THEN 

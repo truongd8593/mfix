@@ -124,7 +124,7 @@
 
 !			virtual (added) mass
       DOUBLE PRECISION F_vir, ROP_MA, U_se, Usw, Ust, Vsb, Vst, Wse, Wsw, Wsn, Wss, Wst, Wsb
-
+	  DOUBLE PRECISION F_vir_tmp1, F_vir_tmp2		!Handan Liu added on August 22 2012
 ! 
 !                      error message 
       CHARACTER*80     LINE 
@@ -169,7 +169,16 @@
 !!!$omp  parallel do private( I, J, K, IJK, IJKT, ISV, Sdp, V0, Vpm, Vmt, Vbf, &
 !!!$omp&  PGT, ROGA, IMJK, IJKP, IMJKP, IJKW, IJKTE, IJKTW, IM, IPJK,  &
 !!!$omp&  CTE, CTW, SXZB, EPMUOX, VXZA, VXZB, UGT, VCOA, VCOB, IJKE,&
-!!!$omp&  MUGA, ROPGA, EPGA, LINE) 
+!!!$omp&  MUGA, ROPGA, EPGA, LINE)
+
+!! Handan Liu added the directives here on August 22 2012
+!$omp  parallel do default(shared)									&
+!$omp  private( I, J, K, IJK, IJKT, IJKM, IJKP, IMJK, IPJK,	IJMK,	&
+!$omp			IMJKP, IJPK, IJMKP, EPGA, PGT, Sdp, ROPGA, ROGA,	&
+!$omp 			V0, F_vir, ISV, MUGA, Vpm, F_vir_tmp1, F_vir_tmp2,	&
+!$omp			Vmt, Vbf, Ghd_drag, avgRop, HYS_drag, avgDrag, 		&   
+!$omp			VXZA, VXZB,  VCOA, VCOB, CTE, CTW, UGT,IJKW,    	&
+!$omp			IJKTE, IJKTW, IM, SXZB, EPMUOX, IJKE, MM, L) 
       DO IJK = ijkstart3, ijkend3 
          I = I_OF(IJK) 
          J = J_OF(IJK) 
@@ -276,7 +285,7 @@
 !         Added mass implicit transient term {Cv eps rop_g dW/dt}
                IF(Added_Mass) THEN
 	         ROP_MA = AVG_Z(ROP_g(IJK)*EP_s(IJK,M_AM),ROP_g(IJKT)*EP_s(IJKT,M_AM),K)
-		 V0 = V0 + Cv * ROP_MA * ODT
+			 V0 = V0 + Cv * ROP_MA * ODT
                ENDIF
             ELSE
 !       Volumetric forces
@@ -287,16 +296,19 @@
 !         Added mass implicit transient term {Cv eps rop_g dW/dt}
                IF(Added_Mass) THEN
                  ROP_MA = (VOL(IJK)*ROP_g(IJK)*EP_s(IJK,M_AM) + VOL(IJKT)*ROP_g(IJKT)*EP_s(IJKT,M_AM))/(VOL(IJK) + VOL(IJKT))
-		 V0 = V0 + Cv * ROP_MA * ODT
+				 V0 = V0 + Cv * ROP_MA * ODT
                ENDIF
             ENDIF
 !
 !!! BEGIN VIRTUAL MASS SECTION (explicit terms)
 ! adding transient term dWs/dt to virtual mass term		    
 	    F_vir = ZERO
+!Handan Liu added on August 22 2012 as following section
+!===================================================================<< Handan Liu			
 	    IF(Added_Mass.AND.(.NOT.CUT_W_TREATMENT_AT(IJK))) THEN        
-	      F_vir = ( (W_s(IJK,M_AM) - W_sO(IJK,M_AM)) )*ODT*VOL_W(IJK)
-!
+	      !F_vir = ( (W_s(IJK,M_AM) - W_sO(IJK,M_AM)) )*ODT*VOL_W(IJK)
+		  F_vir_tmp1 = ( (W_s(IJK,M_AM) - W_sO(IJK,M_AM)) )*ODT*VOL_W(IJK)
+!			
 ! defining gas-particles velocity at momentum cell faces (or scalar cell center)
 	      Wsb = AVG_Z_T(W_S(IJKM,M_AM),W_s(IJK,M_AM))
 	      Wst = AVG_Z_T(W_s(IJK,M_AM),W_s(IJKP,M_AM))  
@@ -313,15 +325,17 @@
 	      Wsn = AVG_Y(W_s(IJK,M_AM),W_s(IJPK,M_AM),J)
 !
 ! adding convective terms (U dW/dx + V dW/dy + W dW/dz) to virtual mass.
-	      F_vir = F_vir + W_s(IJK,M_AM)*OX(I) * (Wst - Wsb)*AXY(IJK) + &
+	      !F_vir = F_vir + W_s(IJK,M_AM)*OX(I) * (Wst - Wsb)*AXY(IJK) + &
+		  F_vir_tmp2 = F_vir_tmp1 + W_s(IJK,M_AM)*OX(I) * (Wst - Wsb)*AXY(IJK) + &
 	              Ust*(Wse - Wsw)*AYZ(IJK) + &
 		      AVG_Z(Vsb,Vst,K) * (Wsn - Wss)*AXZ(IJK)
 	      
-	      IF (CYLINDRICAL) F_vir = F_vir + Ust*W_s(IJK,M_AM)*OX(I) ! Coriolis force
-	    
-	      F_vir = F_vir * Cv * ROP_MA
+	      !IF (CYLINDRICAL) F_vir = F_vir + Ust*W_s(IJK,M_AM)*OX(I) ! Coriolis force
+		  !F_vir = F_vir * Cv * ROP_MA
+	      IF (CYLINDRICAL) F_vir = F_vir_tmp2 + Ust*W_s(IJK,M_AM)*OX(I) ! Coriolis force
+	      F_vir = F_vir_tmp2 * Cv * ROP_MA
 	    ENDIF
-!
+!===================================================================>> Handan Liu
 !!! END VIRTUAL MASS SECTION
 
 

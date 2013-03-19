@@ -382,8 +382,14 @@
       INCLUDE 'ep_s2.inc'  
 !----------------------------------------------- 
 
-      DO 200 IJK = ijkstart3, ijkend3   
+!      DO 200 IJK = ijkstart3, ijkend3   	!Commented by Handan Liu July 12 2012
+!Handan Liu added OpenMP on July 12 2012
+!$omp parallel do default(shared)						&
+!$omp private(IJK, K_1m, K_2m, K_3m, K_4m, K_5m,		&
+!$omp 		  aq, bq, cq, EP_sxSQRTHETA, EP_s2xTHETA)  
      
+       DO IJK = ijkstart3, ijkend3
+	   
          IF ( FLUID_AT(IJK) ) THEN
 
             IF(EP_g(IJK) .GE. EP_g_blend_start(IJK)) THEN
@@ -442,8 +448,10 @@
             ENDIF
 
          Endif                  ! Fluid_at
- 200  Continue                  ! outer IJK loop
-      
+! 200  Continue                  ! outer IJK loop
+      ENDDO
+!$omp end parallel do
+	      
       RETURN
       END
 !-----------------------------------------------   
@@ -1755,8 +1763,6 @@
 !     Shear related reciprocal time scale
       DOUBLE PRECISION SRT
 
-
-
 !-----------------------------------------------          
 !     Functions
 !-----------------------------------------------          
@@ -1806,8 +1812,20 @@
 
       IF (SHEAR) SRT=(2d0*V_sh/XLENGTH)
 
-      DO 200 IJK = ijkstart3, ijkend3       
-     
+!Handan Liu added OpenMP on Feb 4 2013	  
+      !DO 200 IJK = ijkstart3, ijkend3  	  
+!$omp  parallel do default(shared)													&
+!$omp  private( I, J, K, IJK, IM, JM, KM, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT, 		&
+!$omp			IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, IMJPK, IMJMK, IMJKM,IMJKP,		&
+!$omp			IJPKM, IJMKM, IJMKP, IPJMK, IPJKM, U_s_N, U_s_S, U_s_T, U_s_B,  	&
+!$omp			V_s_E, V_s_W, V_s_T, V_s_B, W_s_N, W_s_S, W_s_E, W_s_W, U_s_C,  	&
+!$omp  			W_s_C, D_s, L, Usl_N, Usl_S, Usl_T, Usl_B, Vsl_E, Vsl_W, Vsl_T,		&
+!$omp			Vsl_B, Wsl_n, Wsl_S, Wsl_E, Wsl_W, Usl_C, Wsl_C, D_sl, 				&
+!$omp			UGC, VGC, WGC, USCM, VSCM, WSCM, SqrtVs, SqrtVgMinusVs, 			&
+!$omp			DEP_soDX, DEP_soDY, DEP_soXDZ, M_s, I1, I2)       
+
+      DO IJK = ijkstart3, ijkend3  	 
+	  
          IF ( FLUID_AT(IJK) ) THEN
      
 !------------------------------------------------------------------------
@@ -1953,11 +1971,18 @@
 
 ! Calculate trace of the square of D_s
             trD_s2(IJK,M) = 0.D0 !Initialize the totalizer
-            DO 20 I1 = 1,3
-               DO 10 I2 = 1,3
+!            DO 20 I1 = 1,3
+!               DO 10 I2 = 1,3
+!                  trD_s2(IJK,M) = trD_s2(IJK,M) + D_s(I1,I2)*D_s(I1,I2)
+! 10            CONTINUE
+! 20         CONTINUE
+!Handan Liu changed here
+            DO I1 = 1,3
+               DO I2 = 1,3
                   trD_s2(IJK,M) = trD_s2(IJK,M) + D_s(I1,I2)*D_s(I1,I2)
- 10            CONTINUE
- 20         CONTINUE
+			   ENDDO
+		    ENDDO
+ 
 ! use this fact to prevent underflow during theta calculation
            IF (trD_s2(IJK,M) == zero)trD_s_C(IJK,M) = zero 
 
@@ -2065,12 +2090,20 @@
 ! Calculate trace of the D_sl dot D_sm 
 ! (normal matrix multiplication)
                         trD_s2_ip(IJK,M,L) = 0.D0 !Initialize the totalizer
-                        DO 50 I1 = 1,3
-                         DO 60 I2 = 1,3
+!                        DO 50 I1 = 1,3
+!                         DO 60 I2 = 1,3
+!                              trD_s2_ip(IJK,M,L) = trD_s2_ip(IJK,M,L)+&
+!                                   D_sl(I1,I2)*D_s(I1,I2)  
+! 60                      CONTINUE
+! 50                     CONTINUE
+!Handan Liu changed here
+                        DO I1 = 1,3
+                         DO I2 = 1,3
                               trD_s2_ip(IJK,M,L) = trD_s2_ip(IJK,M,L)+&
                                    D_sl(I1,I2)*D_s(I1,I2)  
- 60                      CONTINUE
- 50                     CONTINUE
+                         ENDDO
+                        ENDDO
+						
                      ELSE
                         trD_s2_ip(IJK,M,L) = trD_s2_ip(IJK,L,M)
                      ENDIF ! for L > M
@@ -2146,18 +2179,27 @@
                      M_s(3,3) = DEP_soXDZ * DEP_soXDZ
                      trM_s(IJK)    = M_s(1,1) + M_s(2,2) + M_s(3,3)
                      trDM_s(IJK) = ZERO
-                     DO 40 I1 = 1,3
-                        DO 30 I2 = 1,3
+!                     DO 40 I1 = 1,3
+!                        DO 30 I2 = 1,3
+!                           trDM_s(IJK) = trDM_s(IJK) + D_s(I1,I2)*M_s(I1,I2)
+! 30                     CONTINUE
+! 40                  CONTINUE
+!Handan Liu changed here
+!--------
+                     DO I1 = 1,3
+                        DO I2 = 1,3
                            trDM_s(IJK) = trDM_s(IJK) + D_s(I1,I2)*M_s(I1,I2)
- 30                     CONTINUE
- 40                  CONTINUE
-
+                        ENDDO
+                     ENDDO 
+!--------	
                   ENDIF
                ENDIF
             ENDIF
 
          Endif                  ! Fluid_at
- 200  Continue                  ! outer IJK loop
+!200  Continue                  ! outer IJK loop
+      ENDDO
+!$omp end parallel do
       
       Return
       End 
