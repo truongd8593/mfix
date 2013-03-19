@@ -387,9 +387,9 @@ if test $input_needed = 1
     echo " Mode of execution:"
     echo "=============================================================="
     echo "[1] Serial"
-    echo "[x] Parallel, Shared Memory (SMP) - Temporarily unavailable"
+    echo "[2] Parallel, Shared Memory (SMP)"
     echo "[3] Parallel, Distributed Memory (DMP)"
-    echo "[x] Parallel, Hybrid (SMP+DMP) - Temporarily unavailable"
+    echo "[4] Parallel, Hybrid (SMP+DMP)"
     echo " "
     echo -n "Select the mode of execution [1] : "
     read mode_of_execution
@@ -400,24 +400,24 @@ if test $input_needed = 1
         dmp_version=n
         ;;
 	2 )
-        echo "SMP option is temporarily unavailable."
-        echo "Reverting to default option (serial)."
-        smp_version=n
+#       echo "SMP option is temporarily unavailable."
+#       echo "Reverting to default option (serial)."
+#       smp_version=n
+#       dmp_version=n
+        smp_version=y
         dmp_version=n
-#        smp_version=y
-#        dmp_version=n
         ;;
 	3 )
         smp_version=n
         dmp_version=y
         ;;
 	4 )
-        echo "Hybrid option is temporarily unavailable."
-        echo "Reverting to default option (serial)."
-        smp_version=n
-        dmp_version=n
-#        smp_version=y
-#        dmp_version=y
+#        echo "Hybrid option is temporarily unavailable."
+#        echo "Reverting to default option (serial)."
+#        smp_version=n
+#        dmp_version=n
+        smp_version=y
+        dmp_version=y
         ;;
 	* )
         echo "Serial mode of execution was selected."
@@ -2128,7 +2128,7 @@ qcache=auto "
 
             OBJ_EXT=o
             FORTRAN_EXT=f
-            omp="-mp"
+            omp="-fopenmp"
             compile_d="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -fbounds-check -I$mpi_include -I$DPO -g "
             compile_d2="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -I$mpi_include -I$DPO -g "
             compile_d3="-c -I. -fconvert='big-endian' -I$mpi_include -I$DPO -g "
