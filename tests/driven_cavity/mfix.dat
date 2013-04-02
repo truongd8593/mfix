@@ -26,7 +26,7 @@
   NO_K     = .TRUE.
 
   MAX_NIT = 5000
-  TOL_RESID  = 1.E-3
+  TOL_RESID  = 1.E-5
 
   ur_fac(2) = 0.8
 
@@ -101,5 +101,4 @@
 # DMP control
   
   NODESI = 1   NODESJ = 1   NODESK = 1
-
 
