@@ -1011,6 +1011,12 @@
       USE cutcell
       USE polygon
       USE stl
+
+
+      USE mpi_utility
+
+
+
       
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -1033,6 +1039,13 @@
       DOUBLE PRECISION :: CURRENT_F,dotproduct
 
       INTEGER :: IJK2,CURRENT_I,CURRENT_J,CURRENT_K
+
+      INTEGER :: N_UNDEFINED, N_PROP
+      INTEGER, PARAMETER :: N_PROPMAX=1000
+      LOGICAL:: F_FOUND
+
+
+
 
 !      CHARACTER (LEN=3) :: CAD_PROPAGATE_ORDER
 
@@ -1552,111 +1565,104 @@
 ! in order defined by CAD_PROPAGATE_ORDER (outer loop)
 
 
-
-      DO IJK = IJKSTART3, IJKEND3,-1   ! <-----------------------------   Disabled 
-
-         IF(F_AT(IJK)<ZERO) THEN
-
-            CURRENT_I = I_OF(IJK)
-            CURRENT_J = J_OF(IJK)
-            CURRENT_K = K_OF(IJK)
-
-            DO I=CURRENT_I-1,ISTART3,-1
-               IJK2 = FUNIJK(I,CURRENT_J,CURRENT_K)
-               IF(F_AT(IJK2)==UNDEFINED) THEN
-                  F_AT(IJK2)=-ONE
-               ELSE
-                  EXIT
-               ENDIF
-            ENDDO
-
-            DO I=CURRENT_I+1,IEND3
-               IJK2 = FUNIJK(I,CURRENT_J,CURRENT_K)
-               IF(F_AT(IJK2)==UNDEFINED) THEN
-                  F_AT(IJK2)=-ONE
-               ELSE
-                  EXIT
-               ENDIF
-            ENDDO
-
-            DO J=CURRENT_J-1,JSTART3,-1
-               IJK2 = FUNIJK(CURRENT_I,J,CURRENT_K)
-               IF(F_AT(IJK2)==UNDEFINED) THEN
-                  F_AT(IJK2)=-ONE
-               ELSE
-                  EXIT
-               ENDIF
-            ENDDO
-
-            DO J=CURRENT_J+1,JEND3
-               IJK2 = FUNIJK(CURRENT_I,J,CURRENT_K)
-               IF(F_AT(IJK2)==UNDEFINED) THEN
-                  F_AT(IJK2)=-ONE
-               ELSE
-                  EXIT
-               ENDIF
-            ENDDO
-
-            DO K=CURRENT_K-1,KSTART3,-1
-               IJK2 = FUNIJK(CURRENT_I,CURRENT_J,K)
-               IF(F_AT(IJK2)==UNDEFINED) THEN
-                  F_AT(IJK2)=-ONE
-               ELSE
-                  EXIT
-               ENDIF
-            ENDDO
-
-            DO K=CURRENT_K+1,KEND3
-               IJK2 = FUNIJK(CURRENT_I,CURRENT_J,K)
-               IF(F_AT(IJK2)==UNDEFINED) THEN
-                  F_AT(IJK2)=-ONE
-               ELSE
-                  EXIT
-               ENDIF
-            ENDDO
-
-
-         ENDIF
-
-
-
-
-      END DO
-
-
-
-
-
-
-
-
-
-
-!  CAD_PROPAGATE_ORDER = 'KKK' !'KIJ'
-
+      call send_recv(F_AT,2)
 
 
       SELECT CASE (CAD_PROPAGATE_ORDER)  
+
+
+      CASE ('   ')
+
+
+         N_UNDEFINED = UNDEFINED_I
+
+         N_PROP = 0
+
+         DO WHILE(N_UNDEFINED>0) 
+
+            N_UNDEFINED = 0
+
+            N_PROP = N_PROP + 1
+
+            DO IJK = IJKSTART3, IJKEND3
+
+               IF(INTERIOR_CELL_AT(IJK).AND.F_AT(IJK)==UNDEFINED) THEN
+
+                  N_UNDEFINED = N_UNDEFINED + 1 
+
+               ENDIF
+
+            ENDDO
+
+
+            DO IJK = IJKSTART3, IJKEND3
+
+               IF(INTERIOR_CELL_AT(IJK).AND.F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+
+
+                     IMJK = IM_OF(IJK)
+                     IF(F_AT(IMJK)==UNDEFINED.AND.F_AT(IMJK)/=ZERO)  F_AT(IMJK)=F_AT(IJK)
+
+                     IPJK = IP_OF(IJK)
+                     IF(F_AT(IPJK)==UNDEFINED.AND.F_AT(IPJK)/=ZERO)  F_AT(IPJK)=F_AT(IJK)    
+
+                     IJMK = JM_OF(IJK)
+                     IF(F_AT(IJMK)==UNDEFINED.AND.F_AT(IJMK)/=ZERO)  F_AT(IJMK)=F_AT(IJK)
+
+                     IJPK = JP_OF(IJK)
+                     IF(F_AT(IJPK)==UNDEFINED.AND.F_AT(IJPK)/=ZERO)  F_AT(IJPK)=F_AT(IJK)
+
+                     IJKM = KM_OF(IJK)
+                     IF(F_AT(IJKM)==UNDEFINED.AND.F_AT(IJKM)/=ZERO)  F_AT(IJKM)=F_AT(IJK)
+
+                     IJKP = KP_OF(IJK)
+                     IF(F_AT(IJKP)==UNDEFINED.AND.F_AT(IJKP)/=ZERO)  F_AT(IJKP)=F_AT(IJK)
+
+
+               ENDIF
+
+            ENDDO
+
+
+            call send_recv(F_AT,2)
+
+            IF(N_PROP>N_PROPMAX.AND.N_UNDEFINED>0) THEN
+
+               WRITE(*,*)'UNABLE TO PROPAGATE F_AT ARRAY FROM myPE=.', MyPE
+               CALL MFIX_EXIT(myPE)
+
+            ENDIF
+
+
+         ENDDO ! WHILE Loop
+
+
+         call send_recv(F_AT,2)
+
 
       CASE ('IJK')  
 
          DO I=ISTART3,IEND3
             DO K=KSTART3,KEND3
+               F_FOUND = .FALSE.
                DO J=JSTART3,JEND3
                   IJK=FUNIJK(I,J,K)
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
                      EXIT                
                   ENDIF         
                ENDDO
-               DO J=JSTART3,JEND3
-                  IJK=FUNIJK(I,J,K)
-                  IF(F_AT(IJK)==UNDEFINED) THEN
-                     F_AT(IJK)=CURRENT_F
-                  ELSEIF(F_AT(IJK)/=ZERO) THEN
-                     CURRENT_F = F_AT(IJK)
-                  ENDIF
-               ENDDO
+               IF(F_FOUND) THEN
+                  DO J=JSTART3,JEND3
+                     IJK=FUNIJK(I,J,K)
+                     IF(F_AT(IJK)==UNDEFINED) THEN
+                        F_AT(IJK)=CURRENT_F
+                     ELSEIF(F_AT(IJK)/=ZERO) THEN
+                        CURRENT_F = F_AT(IJK)
+                     ENDIF
+                  ENDDO
+               ENDIF
             ENDDO
          ENDDO
 
@@ -1664,35 +1670,42 @@
 
          DO J=JSTART3,JEND3
             DO I=ISTART3,IEND3
+               F_FOUND = .FALSE.
                DO K=KSTART3,KEND3
                   IJK=FUNIJK(I,J,K)
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
                      EXIT                
                   ENDIF         
                ENDDO
-               DO K=KSTART3,KEND3
-                  IJK=FUNIJK(I,J,K)
-                  IF(F_AT(IJK)==UNDEFINED) THEN
-                     F_AT(IJK)=CURRENT_F
-                  ELSEIF(F_AT(IJK)/=ZERO) THEN
-                     CURRENT_F = F_AT(IJK)
-                  ENDIF
-               ENDDO
+               IF(F_FOUND) THEN
+                  DO K=KSTART3,KEND3
+                     IJK=FUNIJK(I,J,K)
+                     IF(F_AT(IJK)==UNDEFINED) THEN
+                        F_AT(IJK)=CURRENT_F
+                     ELSEIF(F_AT(IJK)/=ZERO) THEN
+                        CURRENT_F = F_AT(IJK)
+                     ENDIF
+                  ENDDO
+               ENDIF
             ENDDO
          ENDDO
 
          call send_recv(F_AT,2)
 
          DO K=KSTART3,KEND3
-               DO J=JSTART3,JEND3
-                  DO I=ISTART3,IEND3
-                     IJK=FUNIJK(I,J,K)
-                     IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
-                        CURRENT_F = F_AT(IJK)
-                        EXIT                
-                     ENDIF         
-                  ENDDO
+            DO J=JSTART3,JEND3
+               F_FOUND = .FALSE.
+               DO I=ISTART3,IEND3
+                  IJK=FUNIJK(I,J,K)
+                  IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     F_FOUND = .TRUE.
+                     CURRENT_F = F_AT(IJK)
+                     EXIT                
+                  ENDIF         
+               ENDDO
+               IF(F_FOUND) THEN
                   DO I=ISTART3,IEND3
                      IJK=FUNIJK(I,J,K)
                      IF(F_AT(IJK)==UNDEFINED) THEN
@@ -1701,8 +1714,9 @@
                         CURRENT_F = F_AT(IJK)
                      ENDIF
                   ENDDO
-               ENDDO
+               ENDIF
             ENDDO
+         ENDDO
 
          call send_recv(F_AT,2)
 
@@ -1710,21 +1724,25 @@
 
          DO J=JSTART3,JEND3
             DO I=ISTART3,IEND3
+               F_FOUND = .FALSE.
                DO K=KSTART3,KEND3
                   IJK=FUNIJK(I,J,K)
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
                      EXIT                
                   ENDIF         
                ENDDO
-               DO K=KSTART3,KEND3
-                  IJK=FUNIJK(I,J,K)
-                  IF(F_AT(IJK)==UNDEFINED) THEN
-                     F_AT(IJK)=CURRENT_F
-                  ELSEIF(F_AT(IJK)/=ZERO) THEN
-                     CURRENT_F = F_AT(IJK)
-                  ENDIF
-               ENDDO
+               IF(F_FOUND) THEN
+                  DO K=KSTART3,KEND3
+                     IJK=FUNIJK(I,J,K)
+                     IF(F_AT(IJK)==UNDEFINED) THEN
+                        F_AT(IJK)=CURRENT_F
+                     ELSEIF(F_AT(IJK)/=ZERO) THEN
+                        CURRENT_F = F_AT(IJK)
+                     ENDIF
+                  ENDDO
+               ENDIF
             ENDDO
          ENDDO
 
@@ -1732,21 +1750,25 @@
 
          DO K=KSTART3,KEND3
             DO J=JSTART3,JEND3
+               F_FOUND = .FALSE.
                DO I=ISTART3,IEND3
                   IJK=FUNIJK(I,J,K)
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
                      EXIT                
                   ENDIF         
                ENDDO
-               DO I=ISTART3,IEND3
-                  IJK=FUNIJK(I,J,K)
-                  IF(F_AT(IJK)==UNDEFINED) THEN
-                     F_AT(IJK)=CURRENT_F
-                  ELSEIF(F_AT(IJK)/=ZERO) THEN
-                     CURRENT_F = F_AT(IJK)
-                  ENDIF
-               ENDDO
+               IF(F_FOUND) THEN
+                  DO I=ISTART3,IEND3
+                     IJK=FUNIJK(I,J,K)
+                     IF(F_AT(IJK)==UNDEFINED) THEN
+                        F_AT(IJK)=CURRENT_F
+                     ELSEIF(F_AT(IJK)/=ZERO) THEN
+                        CURRENT_F = F_AT(IJK)
+                     ENDIF
+                  ENDDO
+               ENDIF
             ENDDO
          ENDDO
 
@@ -1754,45 +1776,54 @@
 
          DO I=ISTART3,IEND3
             DO K=KSTART3,KEND3
+               F_FOUND = .FALSE.
                DO J=JSTART3,JEND3
                   IJK=FUNIJK(I,J,K)
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
                      EXIT                
                   ENDIF         
                ENDDO
-               DO J=JSTART3,JEND3
-                  IJK=FUNIJK(I,J,K)
-                  IF(F_AT(IJK)==UNDEFINED) THEN
-                     F_AT(IJK)=CURRENT_F
-                  ELSEIF(F_AT(IJK)/=ZERO) THEN
-                     CURRENT_F = F_AT(IJK)
-                  ENDIF
-               ENDDO
+               IF(F_FOUND) THEN
+                  DO J=JSTART3,JEND3
+                     IJK=FUNIJK(I,J,K)
+                     IF(F_AT(IJK)==UNDEFINED) THEN
+                        F_AT(IJK)=CURRENT_F
+                     ELSEIF(F_AT(IJK)/=ZERO) THEN
+                        CURRENT_F = F_AT(IJK)
+                     ENDIF
+                  ENDDO
+               ENDIF
             ENDDO
          ENDDO
 
          call send_recv(F_AT,2)
+
 
       CASE ('KIJ')  
 
          DO K=KSTART3,KEND3
             DO J=JSTART3,JEND3
+               F_FOUND = .FALSE.
                DO I=ISTART3,IEND3
                   IJK=FUNIJK(I,J,K)
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
                      EXIT                
                   ENDIF         
                ENDDO
-               DO I=ISTART3,IEND3
-                  IJK=FUNIJK(I,J,K)
-                  IF(F_AT(IJK)==UNDEFINED) THEN
-                     F_AT(IJK)=CURRENT_F
-                  ELSEIF(F_AT(IJK)/=ZERO) THEN
-                     CURRENT_F = F_AT(IJK)
-                  ENDIF
-               ENDDO
+               IF(F_FOUND) THEN
+                  DO I=ISTART3,IEND3
+                     IJK=FUNIJK(I,J,K)
+                     IF(F_AT(IJK)==UNDEFINED) THEN
+                        F_AT(IJK)=CURRENT_F
+                     ELSEIF(F_AT(IJK)/=ZERO) THEN
+                        CURRENT_F = F_AT(IJK)
+                     ENDIF
+                  ENDDO
+               ENDIF
             ENDDO
          ENDDO
 
@@ -1800,21 +1831,25 @@
 
          DO I=ISTART3,IEND3
             DO K=KSTART3,KEND3
+               F_FOUND = .FALSE.
                DO J=JSTART3,JEND3
                   IJK=FUNIJK(I,J,K)
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
                      EXIT                
                   ENDIF         
                ENDDO
-               DO J=JSTART3,JEND3
-                  IJK=FUNIJK(I,J,K)
-                  IF(F_AT(IJK)==UNDEFINED) THEN
-                     F_AT(IJK)=CURRENT_F
-                  ELSEIF(F_AT(IJK)/=ZERO) THEN
-                     CURRENT_F = F_AT(IJK)
-                  ENDIF
-               ENDDO
+               IF(F_FOUND) THEN
+                  DO J=JSTART3,JEND3
+                     IJK=FUNIJK(I,J,K)
+                     IF(F_AT(IJK)==UNDEFINED) THEN
+                        F_AT(IJK)=CURRENT_F
+                     ELSEIF(F_AT(IJK)/=ZERO) THEN
+                        CURRENT_F = F_AT(IJK)
+                     ENDIF
+                  ENDDO
+               ENDIF
             ENDDO
          ENDDO
 
@@ -1822,21 +1857,25 @@
 
          DO J=JSTART3,JEND3
             DO I=ISTART3,IEND3
+               F_FOUND = .FALSE.
                DO K=KSTART3,KEND3
                   IJK=FUNIJK(I,J,K)
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
+                     F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
                      EXIT                
                   ENDIF         
                ENDDO
-               DO K=KSTART3,KEND3
-                  IJK=FUNIJK(I,J,K)
-                  IF(F_AT(IJK)==UNDEFINED) THEN
-                     F_AT(IJK)=CURRENT_F
-                  ELSEIF(F_AT(IJK)/=ZERO) THEN
-                     CURRENT_F = F_AT(IJK)
-                  ENDIF
-               ENDDO
+               IF(F_FOUND) THEN
+                  DO K=KSTART3,KEND3
+                     IJK=FUNIJK(I,J,K)
+                     IF(F_AT(IJK)==UNDEFINED) THEN
+                        F_AT(IJK)=CURRENT_F
+                     ELSEIF(F_AT(IJK)/=ZERO) THEN
+                        CURRENT_F = F_AT(IJK)
+                     ENDIF
+                  ENDDO
+               ENDIF
             ENDDO
          ENDDO
 
