@@ -5,7 +5,6 @@ post_mfix : \
     AMBM.mod \
     BC.mod \
     CDIST.mod \
-    COEFF.mod \
     CONSTANT.mod \
     CONT.mod \
     CORREL.mod \
@@ -21,7 +20,7 @@ post_mfix : \
     KINTHEORY.mod \
     LEQSOL.mod \
     MACHINE.mod \
-    MCHEM.mod \
+    STIFF_CHEM.mod \
     MFLUX.mod \
     MFIX_NETCDF.mod \
     OUTPUT.mod \
@@ -234,7 +233,6 @@ post_mfix : \
     ambm_mod.$(OBJ_EXT) \
     bc_mod.$(OBJ_EXT) \
     cdist_mod.$(OBJ_EXT) \
-    coeff_mod.$(OBJ_EXT) \
     constant_mod.$(OBJ_EXT) \
     cont_mod.$(OBJ_EXT) \
     correl_mod.$(OBJ_EXT) \
@@ -251,7 +249,7 @@ post_mfix : \
     leqsol_mod.$(OBJ_EXT) \
     machine_mod.$(OBJ_EXT) \
     machine.$(OBJ_EXT) \
-    mchem_mod.$(OBJ_EXT) \
+    stiff_chem_mod.$(OBJ_EXT) \
     mflux_mod.$(OBJ_EXT) \
     mfix_netcdf_mod.$(OBJ_EXT) \
     output_mod.$(OBJ_EXT) \
@@ -470,10 +468,6 @@ BC.mod : ../model/bc_mod.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/bc_mod.f 
 CDIST.mod : ../model/cdist_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cdist_mod.f 
-COEFF.mod : ../model/coeff_mod.f \
-            PARAM.mod \
-            PARAM1.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/coeff_mod.f 
 CONSTANT.mod : ../model/constant_mod.f \
             PARAM.mod \
             PARAM1.mod 
@@ -529,9 +523,8 @@ LEQSOL.mod : ../model/leqsol_mod.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/leqsol_mod.f 
 MACHINE.mod : ../model/machine_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/machine_mod.f 
-MCHEM.mod : ../model/chem/mchem_mod.f \
-            PARAM.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/chem/mchem_mod.f 
+STIFF_CHEM.mod : chem/stiff_chem_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) chem/stiff_chem_mod.f 
 MFLUX.mod : ../model/mflux_mod.f \
             PARAM.mod \
             PARAM1.mod 
@@ -623,10 +616,10 @@ TOLERANC.mod : ../model/toleranc_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/toleranc_mod.f 
-TRACE.mod :  ../model/trace_mod.f \
+TRACE.mod : ../model/trace_mod.f \
             PARAM.mod \
             PARAM1.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS)  ../model/trace_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/trace_mod.f 
 TURB.mod : ../model/turb_mod.f \
             PARAM.mod \
             PARAM1.mod 
@@ -655,8 +648,8 @@ XSI_ARRAY.mod : ../model/xsi_array_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/xsi_array_mod.f 
-PROGRESS_BAR.mod :  ../model/cartesian_grid/progress_bar_mod.f 
-	$(FORTRAN_CMD) $(FORT_FLAGS)  ../model/cartesian_grid/progress_bar_mod.f 
+PROGRESS_BAR.mod : ../model/cartesian_grid/progress_bar_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/progress_bar_mod.f 
 QUADRIC.mod : ../model/cartesian_grid/quadric_mod.f \
             PARAM.mod \
             PARAM1.mod 
@@ -786,7 +779,6 @@ allocate_arrays.$(OBJ_EXT) : ../model/allocate_arrays.f \
             PARAM.mod \
             PARAM1.mod \
             AMBM.mod \
-            COEFF.mod \
             CONT.mod \
             DRAG.mod \
             ENERGY.mod \
@@ -811,7 +803,6 @@ allocate_arrays.$(OBJ_EXT) : ../model/allocate_arrays.f \
             XSI_ARRAY.mod \
             VSHEAR.mod \
             MFLUX.mod \
-            MCHEM.mod \
             GHDTHEORY.mod \
             KINTHEORY.mod \
             CDIST.mod \
@@ -994,7 +985,6 @@ deallocate_arrays.$(OBJ_EXT) : deallocate_arrays.f \
             PARAM.mod \
             PARAM1.mod \
             AMBM.mod \
-            COEFF.mod \
             CONT.mod \
             DRAG.mod \
             ENERGY.mod \
@@ -1018,7 +1008,6 @@ deallocate_arrays.$(OBJ_EXT) : deallocate_arrays.f \
             XSI_ARRAY.mod \
             VSHEAR.mod \
             MFLUX.mod \
-            MCHEM.mod \
             KINTHEORY.mod \
             GHDTHEORY.mod 
 cartesian_grid_init_namelist.$(OBJ_EXT) : ../model/cartesian_grid/cartesian_grid_init_namelist.f \
@@ -1286,6 +1275,7 @@ init_namelist.$(OBJ_EXT) : ../model/init_namelist.f \
             COMPAR.mod \
             PARALLEL.mod \
             CDIST.mod \
+            STIFF_CHEM.mod \
             namelist.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/init_namelist.f 
 interp_res.$(OBJ_EXT) : interp_res.f \
@@ -1403,6 +1393,7 @@ read_namelist.$(OBJ_EXT) : ../model/read_namelist.f \
             DES_IC.mod \
             DES_THERMO.mod \
             DES_RXNS.mod \
+            STIFF_CHEM.mod \
             CDIST.mod \
             QUADRIC.mod \
             CUTCELL.mod \
@@ -1437,7 +1428,8 @@ read_res0.$(OBJ_EXT) : ../model/read_res0.f \
             RXNS.mod \
             COMPAR.mod \
             MPI_UTILITY.mod \
-            FLDVAR.mod 
+            FLDVAR.mod \
+            STIFF_CHEM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/read_res0.f 
 read_res1.$(OBJ_EXT) : ../model/read_res1.f \
             PARAM.mod \
@@ -1473,7 +1465,10 @@ read_spx1.$(OBJ_EXT) : read_spx1.f \
             POST3D.mod \
             SCALARS.mod \
             RXNS.mod \
-            MACHINE.mod 
+            MACHINE.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            function.inc                                                
 remove_comment.$(OBJ_EXT) : ../model/remove_comment.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/remove_comment.f 
 res_from_spx.$(OBJ_EXT) : res_from_spx.f \
@@ -1652,7 +1647,8 @@ write_res0.$(OBJ_EXT) : ../model/write_res0.f \
             CDIST.mod \
             COMPAR.mod \
             MPI_UTILITY.mod \
-            SENDRECV.mod 
+            SENDRECV.mod \
+            STIFF_CHEM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/write_res0.f 
 write_res1.$(OBJ_EXT) : ../model/write_res1.f \
             PARAM.mod \
@@ -1746,8 +1742,8 @@ shear_viscosity.$(OBJ_EXT) : ../model/GhdTheory/shear_viscosity.f
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/shear_viscosity.f 
 thermal_diffusivity.$(OBJ_EXT) : ../model/GhdTheory/thermal_diffusivity.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/thermal_diffusivity.f 
-mass_mobility.$(OBJ_EXT) :  ../model/GhdTheory/mass_mobility.f 
-	$(FORTRAN_CMD) $(FORT_FLAGS)  ../model/GhdTheory/mass_mobility.f 
+mass_mobility.$(OBJ_EXT) : ../model/GhdTheory/mass_mobility.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/mass_mobility.f 
 thermal_conductivity.$(OBJ_EXT) : ../model/GhdTheory/thermal_conductivity.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/thermal_conductivity.f 
 thermal_mobility.$(OBJ_EXT) : ../model/GhdTheory/thermal_mobility.f 
@@ -1967,7 +1963,8 @@ cut_cell_preprocessing.$(OBJ_EXT) : ../model/cartesian_grid/cut_cell_preprocessi
             FLDVAR.mod \
             POLYGON.mod \
             STL.mod \
-            STL.mod 
+            STL.mod \
+            MPI_UTILITY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/cut_cell_preprocessing.f 
 eval_usr_fct.$(OBJ_EXT) : ../model/cartesian_grid/eval_usr_fct.f \
             PARAM.mod \

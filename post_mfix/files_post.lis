@@ -1,7 +1,6 @@
 ../model/ambm_mod.f 
 ../model/bc_mod.f 
 ../model/cdist_mod.f 
-../model/coeff_mod.f 
 ../model/constant_mod.f 
 ../model/cont_mod.f 
 correl_mod.f 
@@ -18,7 +17,7 @@ correl_mod.f
 ../model/leqsol_mod.f 
 ../model/machine_mod.f 
 machine.f 
-../model/chem/mchem_mod.f 
+chem/stiff_chem_mod.f 
 ../model/mflux_mod.f 
 ../model/mfix_netcdf_mod.f 
 ../model/output_mod.f 
@@ -41,7 +40,7 @@ post3d_mod.f
 ../model/tmp_array1_mod.f 
 ../model/tmp_array_mod.f 
 ../model/toleranc_mod.f 
- ../model/trace_mod.f 
+../model/trace_mod.f 
 ../model/turb_mod.f 
 ../model/ur_facs_mod.f 
 ../model/usr_mod.f 
@@ -68,7 +67,7 @@ calc_vol.f
 ../model/check_one_axis.f 
 ../model/compare.f 
 deallocate_arrays.f 
- ../model/cartesian_grid/progress_bar_mod.f 
+../model/cartesian_grid/progress_bar_mod.f 
 ../model/cartesian_grid/quadric_mod.f 
 ../model/cartesian_grid/stl_mod.f
 ../model/cartesian_grid/vtk_mod.f 
@@ -169,7 +168,7 @@ usr_input.f
 ../model/GhdTheory/bulk_viscosity.f
 ../model/GhdTheory/shear_viscosity.f
 ../model/GhdTheory/thermal_diffusivity.f
- ../model/GhdTheory/mass_mobility.f
+../model/GhdTheory/mass_mobility.f
 ../model/GhdTheory/thermal_conductivity.f
 ../model/GhdTheory/thermal_mobility.f
 ../model/GhdTheory/ordinary_diff.f

@@ -16,7 +16,6 @@
       USE param 
       USE param1
       Use ambm
-      Use coeff
       Use cont
       Use drag
       Use energy
@@ -40,7 +39,6 @@
       Use xsi_array
       Use vshear
       Use mflux
-      Use mchem
       use kintheory
       use ghdtheory
       IMPLICIT NONE
@@ -53,17 +51,6 @@
 !ambm
       Deallocate( A_m )
       Deallocate( B_m )
-
-!coeff      
-      Deallocate( DENSITY )
-      Deallocate( PSIZE )
-      Deallocate( SP_HEAT )
-      Deallocate( VISC )
-      Deallocate( COND )
-      Deallocate( DIFF )
-      Deallocate( DRAGCOEF )
-      Deallocate( HEAT_TR)
-      Deallocate( GRAN_DISS)
 
 !cont
       Deallocate( DO_CONT )
@@ -99,24 +86,6 @@
       Deallocate(  ERR_ARRAY )
       Deallocate(  RO_SVo2 )
          
-      Deallocate(  EP_go2 )
-      Deallocate(  P_go2  )
-      Deallocate(  RO_go2 )
-      Deallocate(  ROP_go2 )
-      Deallocate(  ROP_so2 )
-      Deallocate(  T_go2  )
-      Deallocate(  T_so2 )
-      DeAllocate(  X_go2 )
-      Deallocate(  X_so2 )
-      Deallocate(  U_go2 )
-      Deallocate(  U_so2 )
-      Deallocate(  V_go2 )
-      Deallocate(  V_so2 )
-      Deallocate(  W_go2 )
-      Deallocate(  W_so2 )
-      Deallocate(  P_staro2 )
-      Deallocate(  THETA_mo2 )
-
       Deallocate(  T_g  )
       Deallocate(  T_s  )
       Deallocate(  T_go  )
@@ -150,15 +119,11 @@
       IF(DIMENSION_Scalar /= 0)then
         Deallocate(  Scalar  )
         Deallocate(  Scalaro  )
-        Deallocate(  Scalaro2  )
       ENDIF
       
       IF(K_Epsilon)then
         Deallocate(  K_Turb_G  )
         Deallocate(  E_Turb_G  )
-
-        Deallocate(  K_Turb_Go2 )
-        Deallocate(  E_Turb_Go2 )
       ENDIF
 
 !geometry
@@ -268,8 +233,6 @@
         Deallocate(  Dif_Scalar  )      
       ENDIF
 
-      Deallocate( N_sh )
-
 !dqmom
       deallocate(  D_p  )
       deallocate(  D_po )
@@ -283,8 +246,6 @@
       deallocate(  omega)
       deaLLocate(  beta_a)
       deaLLocate(  ystart)
-
-      Deallocate(  D_po2 )
 
 !tau_g
       Deallocate(  TAU_U_g )
