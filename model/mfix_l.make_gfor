@@ -9,7 +9,6 @@ $(EXEC_FILE) : \
     $(DPO)cdist.mod \
     $(DPO)check.mod \
     $(DPO)chischeme.mod \
-    $(DPO)coeff.mod \
     $(DPO)constant.mod \
     $(DPO)cont.mod \
     $(DPO)corner.mod \
@@ -63,7 +62,7 @@ $(EXEC_FILE) : \
     $(DPO)quadric.mod \
     $(DPO)stl.mod \
     $(DPO)vtk.mod \
-    $(DPO)mchem.mod \
+    $(DPO)stiff_chem.mod \
     $(DPO)des_bc.mod \
     $(DPO)des_cluster.mod \
     $(DPO)desgrid.mod \
@@ -375,19 +374,8 @@ $(EXEC_FILE) : \
     $(DPO)update_dashboard.$(OBJ_EXT) \
     $(DPO)vtk_out.$(OBJ_EXT) \
     $(DPO)write_progress_bar.$(OBJ_EXT) \
-    $(DPO)calc_jacobian.$(OBJ_EXT) \
-    $(DPO)check_data_chem.$(OBJ_EXT) \
-    $(DPO)dgpadm.$(OBJ_EXT) \
-    $(DPO)exponential.$(OBJ_EXT) \
-    $(DPO)fex.$(OBJ_EXT) \
-    $(DPO)g_derivs.$(OBJ_EXT) \
-    $(DPO)jac.$(OBJ_EXT) \
-    $(DPO)mchem_init.$(OBJ_EXT) \
-    $(DPO)mchem_odepack_init.$(OBJ_EXT) \
-    $(DPO)mchem_time_march.$(OBJ_EXT) \
-    $(DPO)misat_table_init.$(OBJ_EXT) \
-    $(DPO)react.$(OBJ_EXT) \
-    $(DPO)usrfg.$(OBJ_EXT) \
+    $(DPO)check_data_odepack.$(OBJ_EXT) \
+    $(DPO)stiff_chem_rrates.$(OBJ_EXT) \
     $(DPO)add_part_to_link_list.$(OBJ_EXT) \
     $(DPO)calc_app_coh_force.$(OBJ_EXT) \
     $(DPO)calc_cap_coh_force.$(OBJ_EXT) \
@@ -576,7 +564,6 @@ $(EXEC_FILE) : \
     $(DPO)check_plane.$(OBJ_EXT) \
     $(DPO)chischeme_mod.$(OBJ_EXT) \
     $(DPO)cn_extrapol.$(OBJ_EXT) \
-    $(DPO)coeff_mod.$(OBJ_EXT) \
     $(DPO)compare.$(OBJ_EXT) \
     $(DPO)constant_mod.$(OBJ_EXT) \
     $(DPO)cont_mod.$(OBJ_EXT) \
@@ -848,20 +835,9 @@ $(EXEC_FILE) : \
     $(DPO)vtk_mod.$(OBJ_EXT) \
     $(DPO)vtk_out.$(OBJ_EXT) \
     $(DPO)write_progress_bar.$(OBJ_EXT) \
-    $(DPO)calc_jacobian.$(OBJ_EXT) \
-    $(DPO)check_data_chem.$(OBJ_EXT) \
-    $(DPO)dgpadm.$(OBJ_EXT) \
-    $(DPO)exponential.$(OBJ_EXT) \
-    $(DPO)fex.$(OBJ_EXT) \
-    $(DPO)g_derivs.$(OBJ_EXT) \
-    $(DPO)jac.$(OBJ_EXT) \
-    $(DPO)mchem_init.$(OBJ_EXT) \
-    $(DPO)mchem_mod.$(OBJ_EXT) \
-    $(DPO)mchem_odepack_init.$(OBJ_EXT) \
-    $(DPO)mchem_time_march.$(OBJ_EXT) \
-    $(DPO)misat_table_init.$(OBJ_EXT) \
-    $(DPO)react.$(OBJ_EXT) \
-    $(DPO)usrfg.$(OBJ_EXT) \
+    $(DPO)check_data_odepack.$(OBJ_EXT) \
+    $(DPO)stiff_chem_mod.$(OBJ_EXT) \
+    $(DPO)stiff_chem_rrates.$(OBJ_EXT) \
     $(DPO)add_part_to_link_list.$(OBJ_EXT) \
     $(DPO)calc_app_coh_force.$(OBJ_EXT) \
     $(DPO)calc_cap_coh_force.$(OBJ_EXT) \
@@ -1069,10 +1045,6 @@ $(DPO)chischeme.mod : chischeme_mod.f \
             $(DPO)compar.mod \
             $(DPO)sendrecv.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) chischeme_mod.f  -o $(DPO)chischeme_mod.$(OBJ_EXT) -J$(DPO)
-$(DPO)coeff.mod : coeff_mod.f \
-            $(DPO)param.mod \
-            $(DPO)param1.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) coeff_mod.f  -o $(DPO)coeff_mod.$(OBJ_EXT) -J$(DPO)
 $(DPO)constant.mod : constant_mod.f \
             $(DPO)param.mod \
             $(DPO)param1.mod 
@@ -1237,9 +1209,7 @@ $(DPO)ur_facs.mod : ur_facs_mod.f \
             $(DPO)param.mod \
             $(DPO)param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ur_facs_mod.f  -o $(DPO)ur_facs_mod.$(OBJ_EXT) -J$(DPO)
-$(DPO)usr.mod : usr_mod.f \
-            $(DPO)param.mod \
-            $(DPO)param1.mod 
+$(DPO)usr.mod : usr_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr_mod.f  -o $(DPO)usr_mod.$(OBJ_EXT) -J$(DPO)
 $(DPO)visc_g.mod : visc_g_mod.f \
             $(DPO)param.mod \
@@ -1282,9 +1252,19 @@ $(DPO)vtk.mod : ./cartesian_grid/vtk_mod.f \
             $(DPO)param.mod \
             $(DPO)param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/vtk_mod.f  -o $(DPO)vtk_mod.$(OBJ_EXT) -J$(DPO)
-$(DPO)mchem.mod : ./chem/mchem_mod.f \
-            $(DPO)param.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/mchem_mod.f  -o $(DPO)mchem_mod.$(OBJ_EXT) -J$(DPO)
+$(DPO)stiff_chem.mod : ./chem/stiff_chem_mod.f \
+            $(DPO)funits.mod \
+            $(DPO)output.mod \
+            $(DPO)run.mod \
+            $(DPO)mpi_utility.mod \
+            $(DPO)fldvar.mod \
+            $(DPO)param1.mod \
+            $(DPO)physprop.mod \
+            $(DPO)constant.mod \
+            function.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                   
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/stiff_chem_mod.f  -o $(DPO)stiff_chem_mod.$(OBJ_EXT) -J$(DPO)
 $(DPO)des_bc.mod : ./des/des_bc_mod.f \
             $(DPO)param.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_bc_mod.f  -o $(DPO)des_bc_mod.$(OBJ_EXT) -J$(DPO)
@@ -1334,7 +1314,8 @@ $(DPO)desmpi.mod : ./des/desmpi_mod.f \
 $(DPO)desmpi_wrapper.mod : ./des/desmpi_wrapper_mod.f \
             $(DPO)parallel_mpi.mod \
             $(DPO)mpi_utility.mod \
-            $(DPO)compar.mod 
+            $(DPO)compar.mod \
+            $(DPO)funits.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/desmpi_wrapper_mod.f  -o $(DPO)desmpi_wrapper_mod.$(OBJ_EXT) -J$(DPO)
 $(DPO)des_rxns.mod : ./des/des_rxns_mod.f \
             $(DPO)param.mod \
@@ -1654,7 +1635,6 @@ $(DPO)allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
             $(DPO)param.mod \
             $(DPO)param1.mod \
             $(DPO)ambm.mod \
-            $(DPO)coeff.mod \
             $(DPO)cont.mod \
             $(DPO)drag.mod \
             $(DPO)energy.mod \
@@ -1679,7 +1659,6 @@ $(DPO)allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
             $(DPO)xsi_array.mod \
             $(DPO)vshear.mod \
             $(DPO)mflux.mod \
-            $(DPO)mchem.mod \
             $(DPO)ghdtheory.mod \
             $(DPO)kintheory.mod \
             $(DPO)cdist.mod \
@@ -2403,7 +2382,6 @@ $(DPO)check_mass_balance.$(OBJ_EXT) : check_mass_balance.f \
             $(DPO)mpi_utility.mod \
             $(DPO)output.mod \
             $(DPO)check.mod \
-            $(DPO)mchem.mod \
             $(DPO)mflux.mod \
             $(DPO)xsi_array.mod \
             $(DPO)parallel.mod \
@@ -3141,6 +3119,7 @@ $(DPO)init_namelist.$(OBJ_EXT) : init_namelist.f \
             $(DPO)compar.mod \
             $(DPO)parallel.mod \
             $(DPO)cdist.mod \
+            $(DPO)stiff_chem.mod \
             namelist.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) init_namelist.f  -o $(DPO)init_namelist.$(OBJ_EXT) -J$(DPO)
 $(DPO)init_resid.$(OBJ_EXT) : init_resid.f \
@@ -3162,7 +3141,6 @@ $(DPO)iterate.$(OBJ_EXT) : iterate.f \
             $(DPO)funits.mod \
             $(DPO)time_cpu.mod \
             $(DPO)pscor.mod \
-            $(DPO)coeff.mod \
             $(DPO)leqsol.mod \
             $(DPO)visc_g.mod \
             $(DPO)pgcor.mod \
@@ -3176,6 +3154,8 @@ $(DPO)iterate.$(OBJ_EXT) : iterate.f \
             $(DPO)vtk.mod \
             $(DPO)dashboard.mod \
             $(DPO)qmom_kinetic_equation.mod \
+            $(DPO)stiff_chem.mod \
+            $(DPO)rxns.mod \
             $(DPO)bc.mod \
             $(DPO)constant.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) iterate.f  -o $(DPO)iterate.$(OBJ_EXT) -J$(DPO)
@@ -3570,10 +3550,7 @@ $(DPO)partial_elim.$(OBJ_EXT) : partial_elim.f \
             $(DPO)compar.mod \
             $(DPO)drag.mod \
             $(DPO)fldvar.mod \
-            $(DPO)run.mod \
-            function.inc                                                 \
-            fun_avg1.inc                                                 \
-            fun_avg2.inc                                                
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) partial_elim.f  -o $(DPO)partial_elim.$(OBJ_EXT) -J$(DPO)
 $(DPO)physical_prop.$(OBJ_EXT) : physical_prop.f \
             $(DPO)param.mod \
@@ -3643,6 +3620,7 @@ $(DPO)read_namelist.$(OBJ_EXT) : read_namelist.f \
             $(DPO)des_ic.mod \
             $(DPO)des_thermo.mod \
             $(DPO)des_rxns.mod \
+            $(DPO)stiff_chem.mod \
             $(DPO)cdist.mod \
             $(DPO)quadric.mod \
             $(DPO)cutcell.mod \
@@ -3677,7 +3655,8 @@ $(DPO)read_res0.$(OBJ_EXT) : read_res0.f \
             $(DPO)rxns.mod \
             $(DPO)compar.mod \
             $(DPO)mpi_utility.mod \
-            $(DPO)fldvar.mod 
+            $(DPO)fldvar.mod \
+            $(DPO)stiff_chem.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) read_res0.f  -o $(DPO)read_res0.$(OBJ_EXT) -J$(DPO)
 $(DPO)read_res1.$(OBJ_EXT) : read_res1.f \
             $(DPO)param.mod \
@@ -3726,6 +3705,7 @@ $(DPO)rrates0.$(OBJ_EXT) : rrates0.f \
             $(DPO)compar.mod \
             $(DPO)sendrecv.mod \
             $(DPO)parse.mod \
+            $(DPO)usr.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
@@ -3747,16 +3727,10 @@ $(DPO)rrates.$(OBJ_EXT) : rrates.f \
             $(DPO)sendrecv.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) rrates.f  -o $(DPO)rrates.$(OBJ_EXT) -J$(DPO)
 $(DPO)rrates_init.$(OBJ_EXT) : rrates_init.f \
-            $(DPO)param.mod \
-            $(DPO)param1.mod \
-            $(DPO)parallel.mod \
-            $(DPO)fldvar.mod \
-            $(DPO)rxns.mod \
             $(DPO)energy.mod \
-            $(DPO)geometry.mod \
-            $(DPO)indices.mod \
-            $(DPO)compar.mod \
-            function.inc                                                
+            $(DPO)param1.mod \
+            $(DPO)rxns.mod \
+            $(DPO)stiff_chem.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) rrates_init.f  -o $(DPO)rrates_init.$(OBJ_EXT) -J$(DPO)
 $(DPO)scalar_prop.$(OBJ_EXT) : scalar_prop.f \
             $(DPO)param.mod \
@@ -4772,7 +4746,6 @@ $(DPO)time_march.$(OBJ_EXT) : time_march.f \
             $(DPO)pgcor.mod \
             $(DPO)pscor.mod \
             $(DPO)cont.mod \
-            $(DPO)coeff.mod \
             $(DPO)tau_g.mod \
             $(DPO)tau_s.mod \
             $(DPO)visc_g.mod \
@@ -4786,7 +4759,6 @@ $(DPO)time_march.$(OBJ_EXT) : time_march.f \
             $(DPO)compar.mod \
             $(DPO)time_cpu.mod \
             $(DPO)discretelement.mod \
-            $(DPO)mchem.mod \
             $(DPO)leqsol.mod \
             $(DPO)mpi_utility.mod \
             $(DPO)cdist.mod \
@@ -4796,7 +4768,8 @@ $(DPO)time_march.$(OBJ_EXT) : time_march.f \
             $(DPO)qmom_kinetic_equation.mod \
             $(DPO)dashboard.mod \
             $(DPO)indices.mod \
-            $(DPO)bc.mod 
+            $(DPO)bc.mod \
+            $(DPO)stiff_chem.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) time_march.f  -o $(DPO)time_march.$(OBJ_EXT) -J$(DPO)
 $(DPO)transfer.$(OBJ_EXT) : transfer.f \
             $(DPO)param.mod \
@@ -4845,10 +4818,43 @@ $(DPO)update_old.$(OBJ_EXT) : update_old.f \
             $(DPO)scalars.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) update_old.f  -o $(DPO)update_old.$(OBJ_EXT) -J$(DPO)
 $(DPO)usr0.$(OBJ_EXT) : usr0.f \
-            $(DPO)usr.mod 
+            $(DPO)param.mod \
+            $(DPO)param1.mod \
+            $(DPO)usr.mod \
+            $(DPO)compar.mod \
+            $(DPO)fldvar.mod \
+            $(DPO)parallel.mod \
+            $(DPO)geometry.mod \
+            $(DPO)run.mod \
+            $(DPO)indices.mod \
+            $(DPO)sendrecv.mod \
+            $(DPO)physprop.mod \
+            $(DPO)cutcell.mod \
+            function.inc                                                 \
+            species.inc                                                 
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr0.f  -o $(DPO)usr0.$(OBJ_EXT) -J$(DPO)
 $(DPO)usr1.$(OBJ_EXT) : usr1.f \
-            $(DPO)usr.mod 
+            $(DPO)param.mod \
+            $(DPO)param1.mod \
+            $(DPO)parallel.mod \
+            $(DPO)fldvar.mod \
+            $(DPO)rxns.mod \
+            $(DPO)energy.mod \
+            $(DPO)geometry.mod \
+            $(DPO)run.mod \
+            $(DPO)indices.mod \
+            $(DPO)physprop.mod \
+            $(DPO)constant.mod \
+            $(DPO)funits.mod \
+            $(DPO)compar.mod \
+            $(DPO)sendrecv.mod \
+            $(DPO)toleranc.mod \
+            $(DPO)usr.mod \
+            ep_s1.inc                                                    \
+            fun_avg1.inc                                                 \
+            function.inc                                                 \
+            ep_s2.inc                                                    \
+            fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr1.f  -o $(DPO)usr1.$(OBJ_EXT) -J$(DPO)
 $(DPO)usr2.$(OBJ_EXT) : usr2.f \
             $(DPO)usr.mod 
@@ -5139,7 +5145,8 @@ $(DPO)write_res0.$(OBJ_EXT) : write_res0.f \
             $(DPO)cdist.mod \
             $(DPO)compar.mod \
             $(DPO)mpi_utility.mod \
-            $(DPO)sendrecv.mod 
+            $(DPO)sendrecv.mod \
+            $(DPO)stiff_chem.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) write_res0.f  -o $(DPO)write_res0.$(OBJ_EXT) -J$(DPO)
 $(DPO)write_res1.$(OBJ_EXT) : write_res1.f \
             $(DPO)param.mod \
@@ -5817,70 +5824,26 @@ $(DPO)write_progress_bar.$(OBJ_EXT) : ./cartesian_grid/write_progress_bar.f \
             $(DPO)parallel.mod \
             $(DPO)sendrecv.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/write_progress_bar.f  -o $(DPO)write_progress_bar.$(OBJ_EXT) -J$(DPO)
-$(DPO)calc_jacobian.$(OBJ_EXT) : ./chem/calc_jacobian.f \
+$(DPO)check_data_odepack.$(OBJ_EXT) : ./chem/check_data_odepack.f \
+            $(DPO)compar.mod \
+            $(DPO)funits.mod \
             $(DPO)param1.mod \
-            $(DPO)mchem.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/calc_jacobian.f  -o $(DPO)calc_jacobian.$(OBJ_EXT) -J$(DPO)
-$(DPO)check_data_chem.$(OBJ_EXT) : ./chem/check_data_chem.f \
-            $(DPO)param1.mod \
-            $(DPO)run.mod \
-            $(DPO)mpi_utility.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/check_data_chem.f  -o $(DPO)check_data_chem.$(OBJ_EXT) -J$(DPO)
-$(DPO)dgpadm.$(OBJ_EXT) : ./chem/dgpadm.f 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/dgpadm.f  -o $(DPO)dgpadm.$(OBJ_EXT) -J$(DPO)
-$(DPO)exponential.$(OBJ_EXT) : ./chem/exponential.f 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/exponential.f  -o $(DPO)exponential.$(OBJ_EXT) -J$(DPO)
-$(DPO)fex.$(OBJ_EXT) : ./chem/fex.f \
-            $(DPO)run.mod \
             $(DPO)physprop.mod \
-            $(DPO)toleranc.mod \
-            $(DPO)usr.mod \
-            $(DPO)mchem.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/fex.f  -o $(DPO)fex.$(OBJ_EXT) -J$(DPO)
-$(DPO)g_derivs.$(OBJ_EXT) : ./chem/g_derivs.f 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/g_derivs.f  -o $(DPO)g_derivs.$(OBJ_EXT) -J$(DPO)
-$(DPO)jac.$(OBJ_EXT) : ./chem/jac.f \
-            $(DPO)run.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/jac.f  -o $(DPO)jac.$(OBJ_EXT) -J$(DPO)
-$(DPO)mchem_init.$(OBJ_EXT) : ./chem/mchem_init.f \
-            $(DPO)param1.mod \
             $(DPO)run.mod \
-            $(DPO)physprop.mod \
-            $(DPO)mchem.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/mchem_init.f  -o $(DPO)mchem_init.$(OBJ_EXT) -J$(DPO)
-$(DPO)mchem_odepack_init.$(OBJ_EXT) : ./chem/mchem_odepack_init.f \
-            $(DPO)mchem.mod \
-            $(DPO)run.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/mchem_odepack_init.f  -o $(DPO)mchem_odepack_init.$(OBJ_EXT) -J$(DPO)
-$(DPO)mchem_time_march.$(OBJ_EXT) : ./chem/mchem_time_march.f \
-            $(DPO)run.mod \
-            $(DPO)physprop.mod \
+            $(DPO)rxns.mod \
+            $(DPO)stiff_chem.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/check_data_odepack.f  -o $(DPO)check_data_odepack.$(OBJ_EXT) -J$(DPO)
+$(DPO)stiff_chem_rrates.$(OBJ_EXT) : ./chem/stiff_chem_rrates.f \
             $(DPO)fldvar.mod \
             $(DPO)rxns.mod \
-            $(DPO)mpi_utility.mod \
-            $(DPO)toleranc.mod \
-            $(DPO)mchem.mod \
+            $(DPO)run.mod \
+            $(DPO)physprop.mod \
+            $(DPO)stiff_chem.mod \
+            $(DPO)sendrecv.mod \
             ep_s1.inc                                                    \
             function.inc                                                 \
             ep_s2.inc                                                   
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/mchem_time_march.f  -o $(DPO)mchem_time_march.$(OBJ_EXT) -J$(DPO)
-$(DPO)misat_table_init.$(OBJ_EXT) : ./chem/misat_table_init.f \
-            $(DPO)mchem.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/misat_table_init.f  -o $(DPO)misat_table_init.$(OBJ_EXT) -J$(DPO)
-$(DPO)react.$(OBJ_EXT) : ./chem/react.f \
-            $(DPO)param1.mod \
-            $(DPO)toleranc.mod \
-            $(DPO)fldvar.mod \
-            $(DPO)physprop.mod \
-            $(DPO)rxns.mod \
-            $(DPO)run.mod \
-            $(DPO)mchem.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/react.f  -o $(DPO)react.$(OBJ_EXT) -J$(DPO)
-$(DPO)usrfg.$(OBJ_EXT) : ./chem/usrfg.f \
-            $(DPO)param1.mod \
-            $(DPO)run.mod \
-            $(DPO)mchem.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/usrfg.f  -o $(DPO)usrfg.$(OBJ_EXT) -J$(DPO)
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/stiff_chem_rrates.f  -o $(DPO)stiff_chem_rrates.$(OBJ_EXT) -J$(DPO)
 $(DPO)add_part_to_link_list.$(OBJ_EXT) : ./cohesion/add_part_to_link_list.f \
             $(DPO)discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/add_part_to_link_list.f  -o $(DPO)add_part_to_link_list.$(OBJ_EXT) -J$(DPO)
@@ -6164,7 +6127,8 @@ $(DPO)check_des_rxns.$(OBJ_EXT) : ./des/check_des_rxns.f \
             $(DPO)param1.mod \
             $(DPO)parse.mod \
             $(DPO)physprop.mod \
-            $(DPO)rxns.mod 
+            $(DPO)rxns.mod \
+            $(DPO)stiff_chem.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_rxns.f  -o $(DPO)check_des_rxns.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_des_thermo.$(OBJ_EXT) : ./des/check_des_thermo.f \
             $(DPO)compar.mod \
@@ -6396,7 +6360,6 @@ $(DPO)des_time_march.$(OBJ_EXT) : ./des/des_time_march.f \
             $(DPO)pgcor.mod \
             $(DPO)pscor.mod \
             $(DPO)cont.mod \
-            $(DPO)coeff.mod \
             $(DPO)tau_g.mod \
             $(DPO)tau_s.mod \
             $(DPO)visc_g.mod \
@@ -6543,7 +6506,6 @@ $(DPO)mppic_routines.$(OBJ_EXT) : ./des/mppic_routines.f \
             $(DPO)pgcor.mod \
             $(DPO)pscor.mod \
             $(DPO)cont.mod \
-            $(DPO)coeff.mod \
             $(DPO)tau_g.mod \
             $(DPO)tau_s.mod \
             $(DPO)visc_g.mod \
@@ -7152,7 +7114,6 @@ $(DPO)qmomk_time_march.$(OBJ_EXT) : ./qmomk/qmomk_time_march.f \
             $(DPO)fldvar.mod \
             $(DPO)geometry.mod \
             $(DPO)cont.mod \
-            $(DPO)coeff.mod \
             $(DPO)tau_g.mod \
             $(DPO)tau_s.mod \
             $(DPO)visc_g.mod \
