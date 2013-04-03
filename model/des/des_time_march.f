@@ -36,7 +36,6 @@
       USE pgcor
       USE pscor
       USE cont
-      USE coeff
       USE tau_g
       USE tau_s
       USE visc_g

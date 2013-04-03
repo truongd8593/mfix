@@ -19,7 +19,6 @@ SUBROUTINE QMOMK_TIME_MARCH
   USE fldvar
   USE geometry
   USE cont
-  USE coeff
   USE tau_g
   USE tau_s
   USE visc_g
