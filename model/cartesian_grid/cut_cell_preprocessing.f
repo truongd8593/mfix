@@ -1045,11 +1045,10 @@
       LOGICAL:: F_FOUND
 
 
-
-
 !      CHARACTER (LEN=3) :: CAD_PROPAGATE_ORDER
 
       include "function.inc"
+
 
       N_FACET_AT = 0
       LIST_FACET_AT = 0
@@ -1180,26 +1179,36 @@
          ENDIF
 
 
+
+
          DO K=K1,K2
             DO J=J1,J2
                DO I=I1,I2
 
                   IJK = FUNIJK(I,J,K)
 
-                  IP = I + 1 
-                  JP = J + 1 
-                  KP = K + 1 
 
-                  IMJK = IM_OF(IJK)
-                  IPJK = IP_OF(IJK)    
-                  IJMK = JM_OF(IJK)
-                  IJPK = JP_OF(IJK)
-                  IJKM = KM_OF(IJK)
-                  IJKP = KP_OF(IJK)
+                  IM = MAX0(I - 1 ,ISTART3)
+                  JM = MAX0(J - 1 ,JSTART3)
+                  KM = MAX0(K - 1 ,KSTART3)
 
-                  IJPKP = JP_OF(IJKP)
-                  IPJKP = IP_OF(IJKP)
-                  IPJPK = IP_OF(IJPK)
+                  IP = MIN0(I + 1 ,IEND3)
+                  JP = MIN0(J + 1 ,JEND3)
+                  KP = MIN0(K + 1 ,KEND3)
+
+
+                  IMJK = FUNIJK(IM,J,K)
+                  IPJK = FUNIJK(IP,J,K)
+                  IJMK = FUNIJK(I,JM,K)
+                  IJPK = FUNIJK(I,JP,K)
+                  IJKM = FUNIJK(I,J,KM)
+                  IJKP = FUNIJK(I,J,KP)
+
+                  IJPKP = FUNIJK(I,JP,KP)
+                  IPJKP = FUNIJK(IP,J,KP)
+                  IPJPK = FUNIJK(IP,JP,K)
+
+
 
 !======================================================================
 !  Get coordinates of eight nodes
@@ -1305,6 +1314,7 @@
                         IF(JP<=J2) BC_ID(IJPK) = BC_ID_STL_FACE(N)
                         IF(KP<=K2) BC_ID(IJKP) = BC_ID_STL_FACE(N) 
                         IF(JP<=J2.AND.KP<=K2)BC_ID(IJPKP) = BC_ID_STL_FACE(N)  
+
 
                      ENDIF
 
@@ -1570,7 +1580,6 @@
 
       SELECT CASE (CAD_PROPAGATE_ORDER)  
 
-
       CASE ('   ')
 
 
@@ -1638,6 +1647,9 @@
 
 
          call send_recv(F_AT,2)
+
+
+
 
 
       CASE ('IJK')  
@@ -1803,6 +1815,8 @@
 
       CASE ('KIJ')  
 
+
+
          DO K=KSTART3,KEND3
             DO J=JSTART3,JEND3
                F_FOUND = .FALSE.
@@ -1853,6 +1867,7 @@
             ENDDO
          ENDDO
 
+
          call send_recv(F_AT,2)
 
          DO J=JSTART3,JEND3
@@ -1878,6 +1893,7 @@
                ENDIF
             ENDDO
          ENDDO
+
 
          call send_recv(F_AT,2)
 
