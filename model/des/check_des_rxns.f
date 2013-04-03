@@ -26,6 +26,7 @@
       Use parse
       Use physprop
       USE rxns
+      USE stiff_chem, only : STIFF_CHEMISTRY
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -79,17 +80,9 @@
          WRITE (UNIT_LOG, 9001)
          CALL MFIX_EXIT(myPE)
       ENDIF
-! ISAT is a TFM reaction model not for DES.
-      IF(CALL_ISAT) THEN
-         IF(DMP_LOG) THEN
-            write(*,9002)
-            write(*,1000)
-            write(UNIT_LOG,9002)
-            write(UNIT_LOG,1000)
-         ENDIF
-         CALL MFiX_EXIT(myPE)
-! DI is a TFM reaction model not for DES.
-      ELSEIF(CALL_DI) THEN
+
+! Stiff chemistry solver is a TFM reaction model not for DES.
+      IF(STIFF_CHEMISTRY) THEN
          IF(DMP_LOG) THEN
             write(*,9003)
             write(*,1000)
@@ -357,13 +350,8 @@
          /' Set nodesi, nodesj, and nodesk to 1 in the mfix.dat file.',&
          /1X,70('*')/)
 
- 9002 FORMAT(/1X,70('*')/' From: CHECK_DES_RXNS',/' Error 9002:',      &
-         ' Inconsistent user input. ISAT for chemical reactions',/     &
-         ' is not defined for DES.')
-
  9003 FORMAT(/1X,70('*')/' From: CHECK_DES_RXNS',/' Error 9003:',      &
-         ' Inconsistent user input. DI for chemical reactions',/       &
-         ' is not defined for DES.')
-
+         ' Inconsistent user input. STIFF_CHEMISTRY for chemical',/    &
+         ' reactions is not defined for DES.')
 
       END SUBROUTINE CHECK_DES_RXNS
