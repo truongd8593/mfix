@@ -54,7 +54,7 @@
         endif
 
         if(nodesj.ne.1) then
-           write(*,*) 'the preconditioner for the linear solver might ',&
+           IF(myPE==PE_IO) write(*,*) 'the preconditioner for the linear solver might ',&
              'not be very efficient with decomposition in y direction'
         endif
 
