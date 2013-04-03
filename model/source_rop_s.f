@@ -57,19 +57,11 @@
       INTEGER :: I, J, K, IJK, IMJK, IJMK, IJKM 
 ! error message 
       CHARACTER*80     LINE 
-! FOR CALL_DI and CALL_ISAT = .true.
-      DOUBLE PRECISION :: SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !-----------------------------------------------
-
-! Nan Xie: CHEM & ISAT 
-      IF (CALL_DI .or. CALL_ISAT) THEN
-         SUM_R_S_temp = SUM_R_S
-         SUM_R_S = ZERO
-      ENDIF
 
 !!$omp  parallel do private( I, J, K, IJK, IMJK, IJMK, IJKM,  DEL_V, &
 !!$omp&  Src, LINE) &
@@ -128,11 +120,6 @@
          ENDIF 
       ENDDO
 
-! Nan Xie: CHEM & ISAT 
-      IF (CALL_DI .or. CALL_ISAT) THEN
-         SUM_R_S = SUM_R_S_temp
-      ENDIF
- 
       RETURN  
       END SUBROUTINE SOURCE_ROP_S 
 

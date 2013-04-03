@@ -62,83 +62,12 @@
 !QX
       DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: EP_SS 
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: ERR_ARRAY
-!
-! for values at old TIME
-!
-!                      Previous-time-step value of Void fraction
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  EP_go2
-!
-!                      Previous-time-step value of Gas pressure
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  P_go2
-!
-!                      Previous-time-step value of Gas density
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  RO_go2
-!
-!                      Previous-time-step value of macroscopic gas density
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  ROP_go2
-!
-!                      Previous-time-step value of macroscopic density of
-!                      solids phases
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  ROP_so2
-!                      Macroscopic density of particle diameter
-!
-!                      Previous-time-step value of particle diameter
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  D_po2
-!
-!                      Previous-time-step value of Gas phase temperature
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  T_go2
-!
-!                      Previous-time-step value of Solids phase temperature
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  T_so2
-!
-!                      Previous-time-step value of Gas species mass fraction
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  X_go2
-!
-!                      Previous-time-step value of Solids species mass fraction
-      DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE ::  X_so2
-!
-!                      Previous-time-step value of x-component of gas velocity
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  U_go2
-!
-!                      Previous-time-step value of x-component of solids phase
-!                      velocity
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  U_so2
-!
-!                      Previous time-step value of y-component of gas velocity
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  V_go2
-!
-!                      Previous time-step value of y-component of solids phase
-!                      velocity
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  V_so2
-!
-!                      Previous time-step value of z-component of gas velocity
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  W_go2
-!
-!                      Previous time-step value of z-component of solids phase
-!                      velocity
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  W_so2
-!
-!                      Previous-time-step value of Solids pressure that maintains EP_g >= EP_star
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  P_staro2
-!
-!                      Previous-time-step value of Granular temperature of mth phase
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  THETA_mo2
-!
-!                      User-defined Scalars
-!                      Previous time-step value of User-defined Scalars
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  Scalaro2
-!
-!                      Previous time-step value of K and Epsilon
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  K_Turb_Go2
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  E_Turb_Go2
-!end
+
 !                      Macroscopic density of particle diameter
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  D_p 
 !
 !                      Previous-time-step value of particle diameter
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  D_po 
-
-
 
 !                      Gas phase temperature
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  T_g 

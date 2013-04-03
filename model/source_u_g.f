@@ -101,8 +101,6 @@
 	  
 ! error message 
       CHARACTER*80     LINE 
-! FOR CALL_DI and CALL_ISAT = .true.
-      DOUBLE PRECISION :: SUM_R_G_temp(DIMENSION_3)
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -117,13 +115,6 @@
 
       M = 0 
       IF (.NOT.MOMENTUM_X_EQ(0)) RETURN  
-
-! CHEM & ISAT (nan xie)
-! Set the source terms zero
-      IF (CALL_DI .or. CALL_ISAT) THEN
-         SUM_R_G_temp = SUM_R_G
-         SUM_R_G = ZERO
-      ENDIF
 
 
 !!$omp    parallel do private(I, IJK, IJKE, IJKM, IPJK, IPJKM,     &
@@ -379,11 +370,6 @@
 ! modifications for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SOURCE_U_G_BC(A_M, B_M, IER)
 
-
-! CHEM & ISAT (nan xie)
-      IF (CALL_DI .or. CALL_ISAT) THEN
-         SUM_R_G = SUM_R_G_temp
-      ENDIF  
 
       RETURN  
       END SUBROUTINE SOURCE_U_G 

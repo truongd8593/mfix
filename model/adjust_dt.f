@@ -24,7 +24,6 @@
 !-----------------------------------------------
       USE param 
       USE param1 
-!//d      USE funits 
       USE run
       USE output
       USE compar      
@@ -56,11 +55,7 @@
 !//  only do this routine if the root processor
 !//SP
 !     if (myPE.ne.PE_IO) return
-!QX
-!     restart with new dt
-      RESTART_REACTION = .FALSE.
-!end
-!
+
       ADJUST_DT = .FALSE.                     !No need to iterate again
       IF (DT==UNDEFINED .OR. DT<ZERO) RETURN 
       
@@ -71,141 +66,110 @@
          STEPS_TOT = 0 
          NITOS = 0. 
          NIT_TOT = 0 
-!
-!     Iterate gave converged results
-      ELSE IF (IER == 0) THEN 
 
-!AE TIME 041601 Set back the timestep to original size which was
-!               halved previously for 2nd order accurate time implementation
-!         IF (CN_ON.AND.NSTEP>1) DT = 2.D0*DT      
-         IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
-          (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
-	     DT = 2.D0*DT      
+! Iterate successfully converged.
+!---------------------------------------------------------------------//
+      ELSE IF(IER == 0) THEN
 
-         IF (STEPS_TOT >= STEPS_MIN) THEN 
-            NITOS_NEW = DBLE(NIT_TOT)/(STEPS_TOT*DT) 
-            IF (NITOS_NEW > NITOS) DT_DIR = DT_DIR*(-1) 
-!
+!AE TIME 041601: Set back the timestep to original size which was
+! halved previously for 2nd order accurate time implementation.
+         IF((CN_ON.AND.NSTEP>1 .AND. RUN_TYPE == 'NEW') .OR. & 
+            (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
+            DT = 2.D0*DT
+
+         IF(STEPS_TOT >= STEPS_MIN) THEN
+            NITOS_NEW = DBLE(NIT_TOT)/(STEPS_TOT*DT)
+            IF (NITOS_NEW > NITOS) DT_DIR = DT_DIR*(-1)
             STEPS_TOT = 0 
             NITOS = NITOS_NEW 
             NIT_TOT = 0 
-!
             IF (DT_DIR > 0) THEN 
                DT = MIN(DT_MAX,DT/DT_FAC) 
             ELSE 
                DT = DT*DT_FAC 
             ENDIF 
-!//SP
             IF (FULL_LOG.and.myPE.eq.PE_IO) &
-            WRITE (*, *) 'DT = ', DT, '  NIT/s = ', NINT(NITOS) 
+               WRITE (*, *) 'DT = ', DT, '  NIT/s = ', NINT(NITOS) 
          ELSE 
             STEPS_TOT = STEPS_TOT + 1 
             NIT_TOT = NIT_TOT + NIT 
          ENDIF 
-         ADJUST_DT = .FALSE.                     !No need to iterate again 
+! No need to iterate again 
+         ADJUST_DT = .FALSE.
 
-!AE TIME 041601 Cut the timestep into half for 2nd order accurate time implementation
-!         IF (CN_ON.AND.NSTEP>1) DT = 0.5D0*DT      
-         IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
-          (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
-	      DT = 0.5D0*DT      
+!AE TIME 041601: Cut the timestep into half for 2nd order accurate
+! time implementation.
+         IF((CN_ON.AND.NSTEP>1 .AND. RUN_TYPE == 'NEW') .OR. & 
+            (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
+            DT = 0.5D0*DT
 
-
-!
-!     No convergence in iterate
+! Iterate failed to converge.
+!---------------------------------------------------------------------//
       ELSE 
-!
-!AE TIME 041601 Set back the timestep to original size which was
-!               halved previously for 2nd order accurate time implementation
-!         IF (CN_ON.AND.NSTEP>1) DT = 2.D0*DT      
+!AE TIME 041601: Set back the timestep to original size which was
+! halved previously for 2nd order accurate time implementation
          IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
-          (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
-              DT = 2.D0*DT 
+            (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
+            DT = 2.D0*DT
 
+! The step size has decreased to the minimum.
          IF (DT < DT_MIN) THEN 
-!//SP
             IF(AUTO_RESTART) THEN
-              LINE(1) = 'DT < DT_MIN.  Recovery not possible! Trying Automatic Restart'
-	    ELSE
-	      LINE(1) = 'DT < DT_MIN.  Recovery not possible!'
-	    ENDIF
+               LINE(1) = 'DT < DT_MIN.  Recovery not possible! Trying Automatic Restart'
+	      ELSE
+	         LINE(1) = 'DT < DT_MIN.  Recovery not possible!'
+	      ENDIF
             IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, *) LINE(1) 
             CALL WRITE_ERROR ('ADJUST_DT', LINE, 1) 
 !           CALL MFIX_EXIT(myPE)
+
+! The time step cannot be reduced the step size is fixed.
          ELSE IF (DT_FAC >= ONE) THEN 
             LINE(1) = 'DT_FAC >= 1.  Recovery not possible!' 
-!//SP
             IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, *) LINE(1) 
             CALL WRITE_ERROR ('ADJUST_DT', LINE, 1) 
             CALL MFIX_EXIT(myPE)
          ELSE 
-!
+
+! Reduce the step size.
             DT_DIR = -1 
             STEPS_TOT = 0 
             NITOS = 0. 
             NIT_TOT = 0 
-!
             DT = DT*DT_FAC 
-!
-!QX smaller dt and reiterating
-!          if(DT > 0.8d0 * DT_OLD) then
 
-            IF (FULL_LOG) THEN 
-!//SP
-	      IF(myPE.eq.PE_IO) then
-               WRITE (*, '(12X,A,G11.5,9X,A)') ' Dt=', DT, &
-                  ' Recovered            :-)' 
-	      ENDIF
-!
+            IF (FULL_LOG) THEN
+               IF(myPE.eq.PE_IO) then
+                  WRITE (*, '(12X,A,G11.5,9X,A)') &
+                     ' Dt=', DT, ' Recovered            :-)' 
+               ENDIF
                CALL START_LOG 
-               IF(DMP_LOG)WRITE (UNIT_LOG, '(12X,A,G11.5,9X,A)') ' Dt=', DT, &
-                  ' Recovered            :-)' 
+               IF(DMP_LOG)WRITE (UNIT_LOG, '(12X,A,G11.5,9X,A)') &
+                  ' Dt=', DT, ' Recovered            :-)' 
                CALL END_LOG 
             ENDIF 
-!
-            CALL RESET_NEW(0) 
-            ADJUST_DT = .TRUE.                   !Iterate again with new dt 
+            CALL RESET_NEW
+! Iterate again with new dt 
+            ADJUST_DT = .TRUE.
 
-!         elseif (DT .le. 0.8d0 * DT_OLD) then
-         if (SOLID_RO_V.AND.DT .le. 0.8d0 * DT_OLD) then
-            ADJUST_DT = .FALSE.                   !NOT Iterate again with new dt 
-            RESTART_REACTION = .TRUE.           ! re-iterate reaction with new dt
 
-            IF (FULL_LOG) THEN 
-!//SP
-	      IF(myPE.eq.PE_IO) then
-               WRITE (*, '(12X,A,G11.5,9X,A)') ' Dt=', DT, &
-                  ' Re-iterate reaction            :-(' 
-	      ENDIF
-!
-               CALL START_LOG 
-               IF(DMP_LOG)WRITE (UNIT_LOG, '(12X,A,G11.5,9X,A)') ' Dt=', DT, &
-                  ' Re-iterate reaction            :-(' 
-               CALL END_LOG 
-            ENDIF 
-         endif
-!end
-
-!AE TIME 041601 Cut the timestep into half for 2nd order accurate time implementation
-!            IF (CN_ON.AND.NSTEP>1) DT = 0.5D0*DT      
+!AE TIME 041601: Cut the timestep into half for 2nd order accurate
+! time implementation.
             IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 
-              (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
-	          DT = 0.5D0*DT      
+               (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP>=(NSTEPRST+1)))&
+	         DT = 0.5D0*DT      
          ENDIF 
-!
-!
-!       get courant numbers and max p_star for the diverged iteration
+
+! Get courant numbers and max p_star for the diverged iteration.
 !        call get_stats(IER)
-!
+
       ENDIF 
 
 !AIKEDEBUG Get the min. Courant number displayed.
 !      call get_stats(IER)
 
-!
       ODT = ONE/DT 
 
-!
       call bcast (dt,root)
       call bcast (odt,root)
 !

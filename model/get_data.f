@@ -54,6 +54,7 @@
       USE parallel
       USE qmom_kinetic_equation
       USE mfix_pic
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -230,10 +231,7 @@
       CALL CHECK_DATA_08                         ! Internal surfaces section 
       CALL CHECK_DATA_09                         ! Chemical reactions section       
 
-
-! CHEM & ISAT: check rxns (nan xie)
-      CALL CHECK_DATA_CHEM      
-
+      CALL CHECK_DATA_ODEPACK                    ! Stiff Chemistry Solver
 
 ! close .LOG file
       CALL END_LOG 

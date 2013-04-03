@@ -46,7 +46,6 @@
       USE funits 
       USE time_cpu 
       USE pscor
-      USE coeff
       USE leqsol 
       USE visc_g
       USE pgcor
@@ -60,6 +59,9 @@
       USE vtk
       USE dashboard
       USE qmom_kinetic_equation
+      USE stiff_chem, only : STIFF_CHEMISTRY
+      USE rxns,       only : USE_RRATES, NO_OF_RXNS
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -94,7 +96,20 @@
       DOUBLE PRECISION :: Vavg 
       DOUBLE PRECISION :: errorpercent(0:MMAX)
       LOGICAL :: ABORT_IER
-      CHARACTER*4 TUNIT 
+      CHARACTER*4 TUNIT
+
+! Calculation Flags:                                       Used By:
+      LOGICAL :: DENSITY(0:DIMENSION_M)                ! PHYSICAL_PROP
+      LOGICAL :: PSIZE(0:DIMENSION_M)                  ! PHYSICAL_PROP
+      LOGICAL :: SP_HEAT(0:DIMENSION_M)                ! PHYSICAL_PROP
+      LOGICAL :: VISC(0:DIMENSION_M)                   ! TRANSPORT_PROP
+      LOGICAL :: COND(0:DIMENSION_M)                   ! TRANSPORT_PROP
+      LOGICAL :: DIFF(0:DIMENSION_M)                   ! TRANSPORT_PROP
+      LOGICAL :: GRAN_DISS(0:DIMENSION_M)              ! TRANSPORT_PROP
+      LOGICAL :: DRAGCOEF(0:DIMENSION_M,0:DIMENSION_M) ! EXCHANGE
+      LOGICAL :: HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M) ! EXCHANGE
+      LOGICAL :: WALL_TR                               ! EXCHANGE
+ 
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
@@ -208,15 +223,14 @@
       IF (CALL_USR) CALL USR2 
 
 
-! Calculate coefficients.  First turn off all flags.  Then explicitly set
-! flags for all the quantities that need to be calculated.
+! Calculate coefficients.  First turn off all flags.  Then explicitly
+! set flags for each quantities that need to be calculated.
       CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
-               GRAN_DISS, RRATE, DRAGCOEF, HEAT_TR, WALL_TR, IER)
+         GRAN_DISS, DRAGCOEF, HEAT_TR, WALL_TR, IER)
 
-      IF (Call_DQMOM) PSIZE(1:SMAX)=.TRUE.
-!      IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
+      IF(Call_DQMOM) PSIZE(1:SMAX)=.TRUE.
       WALL_TR = .TRUE. 
-      IF (ENERGY_EQ) THEN 
+      IF(ENERGY_EQ) THEN 
          SP_HEAT(:SMAX) = .TRUE. 
          COND(:SMAX) = .TRUE. 
          HEAT_TR(:SMAX,:SMAX) = .TRUE. 
@@ -225,12 +239,9 @@
       DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
       VISC(0) = RECALC_VISC_G 
       VISC(1:MMAX) = .TRUE. 
-
-      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP' .OR. &
-          TRIM(KT_TYPE) .EQ. 'GD_99') THEN
+      IF(TRIM(KT_TYPE) .EQ. 'IA_NONEP' .OR. &
+         TRIM(KT_TYPE) .EQ. 'GD_99')        &
          GRAN_DISS(:MMAX) = .TRUE.
-      ENDIF
-
       CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
       CALL TRANSPORT_PROP (VISC, COND, DIFF, GRAN_DISS, IER) 
       CALL EXCHANGE (DRAGCOEF, HEAT_TR, WALL_TR, IER) 
@@ -244,24 +255,21 @@
 ! Solve starred velocity components
       CALL SOLVE_VEL_STAR (IER) 
 
-! Calculate density and reaction rates. Do not change reaction rate anywhere
-! else within this iteration loop.  Fluid density can be changed after the 
-! pressure correction step.
-      CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
-               GRAN_DISS, RRATE, DRAGCOEF, HEAT_TR, WALL_TR, IER)
-      IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
-      IF (ANY_SPECIES_EQ) RRATE = .TRUE.
-       
-      CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
-      IF (Neg_RHO_G) THEN
-         MUSTIT = 2                              !indicates divergence 
-         Neg_RHO_G = .FALSE.
-         IF(FULL_LOG.and.myPE.eq.PE_IO) &
-            WRITE(*,6000)'Negative gas density detected.'   ! JFD
-         IF(DT/=UNDEFINED)GO TO 1000  
+! Recalculate the gas phase density, then calculate chemical reactions.
+      IF (RO_G0 == UNDEFINED) THEN
+         CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF,  &
+            GRAN_DISS, DRAGCOEF, HEAT_TR, WALL_TR, IER)
+         DENSITY(0) = .TRUE. 
+         CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
+         IF(Neg_RHO_G) THEN
+            MUSTIT = 2                              !indicates divergence 
+            Neg_RHO_G = .FALSE.
+            IF(FULL_LOG .and. myPE.eq.PE_IO) WRITE(*,6000) &
+               'Negative gas density detected.'   ! JFD
+            IF(DT/=UNDEFINED)GO TO 1000  
+         ENDIF
       ENDIF
-      CALL CALC_RRATE(RRATE)
-
+      CALL CALC_RRATE
 
 ! Solve solids volume fraction correction equation for close-packed
 ! solids phases
@@ -335,18 +343,19 @@
          CALL CORRECT_0 (IER) 
       ENDIF
      
+! Recalculate gas phase density.
       IF (RO_G0 == UNDEFINED) THEN
-        PSIZE(1:MMAX)=.FALSE.
-        SP_HEAT(:MMAX) = .FALSE. 
-        DENSITY(0) = .TRUE. 
-        CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
-        IF (Neg_RHO_G) THEN
-           MUSTIT = 2                              !indicates divergence 
-           Neg_RHO_G = .FALSE.
-           IF(FULL_LOG.and.DMP_LOG) &
-              WRITE(*,6000)'Negative gas density detected.' ! JFD
-           IF(DT/=UNDEFINED) GOTO 1000  
-        ENDIF 
+         CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF,  &
+            GRAN_DISS, DRAGCOEF, HEAT_TR, WALL_TR, IER)
+         DENSITY(0) = .TRUE.
+         CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
+         IF (Neg_RHO_G) THEN
+            MUSTIT = 2                             !indicates divergence 
+            Neg_RHO_G = .FALSE.
+            IF(FULL_LOG.and.DMP_LOG) &
+               WRITE(*,6000)'Negative gas density detected.' ! JFD
+            IF(DT/=UNDEFINED) GOTO 1000  
+         ENDIF 
       ENDIF 
 
 

@@ -65,6 +65,7 @@
       USE compar           !//
       USE mpi_utility      !// for gather
       USE sendrecv         !// for filling the boundary information
+      USE stiff_chem
 !//       USE tmp_array    !// no longer using these arrays
       IMPLICIT NONE
 !-----------------------------------------------
@@ -384,8 +385,8 @@
       NEXT_RECA = NEXT_RECA + 1 
 
 !
-!     Version 1.7 -- write CALL_DI and CALL_ISAT
-      WRITE (UNIT_RES, REC=NEXT_RECA) CALL_DI, CALL_ISAT
+!     Version 1.7 -- write STIFF_CHEMISTRY and CALL_ISAT
+      WRITE (UNIT_RES, REC=NEXT_RECA) STIFF_CHEMISTRY, CALL_ISAT
       NEXT_RECA = NEXT_RECA + 1 
 
 !

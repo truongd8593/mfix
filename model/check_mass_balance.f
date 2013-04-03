@@ -38,7 +38,6 @@
       USE mpi_utility  
       USE output
       USE check
-      USE mchem
       USE mflux
       IMPLICIT NONE
 !-----------------------------------------------
@@ -193,17 +192,9 @@
                 flux_in_X_g(L, N) = flux_in_X_g(L, N) + fin * dt_prev
               ENDIF 
             END DO
-!
-!     CHEM & ISAT begin (nan xie)
-!
-            IF (CALL_ISAT .OR. CALL_DI) THEN
-               Integral_R_g(N) = Integral_R_g(N) + Accumulation(RXN_source_g(N)) * dt_prev 
-            ELSE
-               Integral_R_g(N) = Integral_R_g(N) + (Accumulation(R_gp(1,N)) - &
-	                                Accumulation_sp(ROX_gc(1,N), X_g(1,N)) )* dt_prev 
-            END IF
-!     CHEM & ISAT end (nan xie)
 
+             Integral_R_g(N) = Integral_R_g(N) + (Accumulation(R_gp(1,N)) - &
+                Accumulation_sp(ROX_gc(1,N), X_g(1,N)) )* dt_prev 
           END DO 
 	ENDIF
 
@@ -234,16 +225,8 @@
                 ENDIF 
               END DO
 
-!     CHEM & ISAT begin (nan xie)
-!	    
-              IF (CALL_ISAT .OR. CALL_DI) THEN
-                 Integral_R_s(M, N) = Integral_R_s(M, N) + Accumulation(RXN_source_s(M,N)) * dt_prev 
-              ELSE
-                 Integral_R_s(M, N) = Integral_R_s(M, N) + (Accumulation(R_sp(1,M,N)) - &
-	                                            Accumulation_sp(ROX_sc(1,M,N), X_s(1,M,N)) )* dt_prev                  
-              END IF
-!     CHEM & ISAT end (nan xie)
-
+               Integral_R_s(M, N) = Integral_R_s(M, N) + (Accumulation(R_sp(1,M,N)) - &
+                  Accumulation_sp(ROX_sc(1,M,N), X_s(1,M,N)) )* dt_prev                  
             END DO 
 	  ENDIF
         END DO 

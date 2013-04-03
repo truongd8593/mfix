@@ -58,7 +58,6 @@
       USE pgcor
       USE pscor
       USE cont
-      USE coeff
       USE tau_g
       USE tau_s
       USE visc_g
@@ -72,7 +71,6 @@
       USE compar     
       USE time_cpu  
       USE discretelement  
-      USE mchem
       USE leqsol
       use mpi_utility
       USE cdist
@@ -81,9 +79,10 @@
       USE vtk
       USE qmom_kinetic_equation
       USE dashboard
-!QX
       USE indices
       USE bc
+      USE stiff_chem, only : STIFF_CHEMISTRY, STIFF_CHEM_SOLVER
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local parameters
@@ -112,7 +111,7 @@
 ! Time at which special output is to be written 
       DOUBLE PRECISION :: USR_TIME (DIMENSION_USR) 
 ! Loop indices 
-      INTEGER :: L, M , I, IJK
+      INTEGER :: L, M , I, IJK, N
 ! Error index 
       INTEGER :: IER 
 ! Number of iterations 
@@ -131,7 +130,19 @@
 ! not used remove after verification
       INTEGER :: CHKBATCHQ_FLAG
       LOGICAL :: bWrite_netCDF_files
-     
+
+! Calculation Flags:                                       Used By:
+      LOGICAL :: DENSITY(0:DIMENSION_M)                ! PHYSICAL_PROP
+      LOGICAL :: PSIZE(0:DIMENSION_M)                  ! PHYSICAL_PROP
+      LOGICAL :: SP_HEAT(0:DIMENSION_M)                ! PHYSICAL_PROP
+      LOGICAL :: VISC(0:DIMENSION_M)                   ! TRANSPORT_PROP
+      LOGICAL :: COND(0:DIMENSION_M)                   ! TRANSPORT_PROP
+      LOGICAL :: DIFF(0:DIMENSION_M)                   ! TRANSPORT_PROP
+      LOGICAL :: GRAN_DISS(0:DIMENSION_M)              ! TRANSPORT_PROP
+      LOGICAL :: DRAGCOEF(0:DIMENSION_M,0:DIMENSION_M) ! EXCHANGE
+      LOGICAL :: HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M) ! EXCHANGE
+      LOGICAL :: WALL_TR                               ! EXCHANGE
+
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
@@ -142,6 +153,7 @@
 
       LOGICAL , EXTERNAL :: ADJUST_DT 
 !-----------------------------------------------
+
      
       IF(AUTOMATIC_RESTART) RETURN
      
@@ -223,36 +235,44 @@
 ! Parse residual strings
       CALL PARSE_RESID_STRING (IER) 
 
-     
 ! Call user-defined subroutine to set constants, check data, etc.
       IF (CALL_USR) CALL USR0 
      
-! CHEM & ISAT (Nan Xie)
-      IF (CALL_DI) THEN 
-         CALL MCHEM_INIT
-         CALL MCHEM_ODEPACK_INIT
-      ENDIF
-      IF (CALL_ISAT) THEN 
-         CALL MCHEM_INIT
-         CALL MCHEM_ODEPACK_INIT
-         CALL MISAT_TABLE_INIT
-      ENDIF
-
-
       CALL RRATES_INIT(IER)
 
       DO M=1, MMAX 
          CALL ZERO_ARRAY (F_gs(1,M), IER)
       ENDDO
 
-
 ! Calculate all the coefficients once before entering the time loop
       IF(DISCRETE_ELEMENT.AND.(.NOT.DES_CONTINUUM_COUPLED)) THEN
-! do not calculate unneeded coefficients in granular simulations 
+! Calculate coefficients.  Everything but chemical reactions.
       ELSEIF(TRIM(KT_TYPE) == UNDEFINED_C) THEN
-         CALL CALC_COEFF_ALL (0, IER) 
-      ENDIF
+         CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
+            GRAN_DISS, DRAGCOEF, HEAT_TR, WALL_TR, IER)
 
+         IF (Call_DQMOM) PSIZE(1:SMAX)=.TRUE.
+         IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
+         WALL_TR = .TRUE. 
+         IF (ENERGY_EQ) THEN 
+            SP_HEAT(:SMAX) = .TRUE. 
+            COND(:SMAX) = .TRUE. 
+            HEAT_TR(:SMAX,:SMAX) = .TRUE. 
+         ENDIF 
+         IF(ANY_SPECIES_EQ) DIFF(:SMAX) = .TRUE.
+         DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
+         VISC(0) = RECALC_VISC_G 
+         VISC(1:MMAX) = .TRUE. 
+
+         IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP' .OR. &
+             TRIM(KT_TYPE) .EQ. 'GD_99') THEN
+            GRAN_DISS(:MMAX) = .TRUE.
+         ENDIF
+
+         CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
+         CALL TRANSPORT_PROP (VISC, COND, DIFF, GRAN_DISS, IER) 
+         CALL EXCHANGE (DRAGCOEF, HEAT_TR, WALL_TR, IER) 
+      ENDIF
      
 ! Remove undefined values at wall cells for scalars
       CALL UNDEF_2_0 (ROP_G, IER) 
@@ -270,7 +290,7 @@
       CALL ZERO_ARRAY (E_N, IER) 
       CALL ZERO_ARRAY (E_T, IER) 
 
-     
+    
 ! Initialize adjust_ur
       dummy = ADJUST_DT(100, 0)
 
@@ -524,6 +544,7 @@
          ENDIF 
       ENDIF
 
+
       IF (DT == UNDEFINED) THEN 
          IF (FINISH) THEN 
             RETURN  
@@ -554,8 +575,7 @@
 
      
 ! Update previous-time-step values of field variables
-!QX
-      CALL UPDATE_OLD(0) 
+      CALL UPDATE_OLD
 
 ! Calculate coefficients
       CALL CALC_COEFF_ALL (0, IER) 
@@ -588,8 +608,7 @@
          IF (DNCHECK < 256) DNCHECK = DNCHECK*2 
          NCHECK = NCHECK + DNCHECK 
 ! Upate the reaction rates for checking
-         IF (ANY_SPECIES_EQ) RRATE = .TRUE. 
-         CALL CALC_RRATE(RRATE)
+         CALL CALC_RRATE
          CALL CHECK_DATA_30 
       ENDIF 
 
@@ -613,7 +632,7 @@
       
      
 ! Advance the solution in time by iteratively solving the equations 
-      CALL ITERATE (IER, NIT)
+ 150  CALL ITERATE (IER, NIT)
       IF(AUTOMATIC_RESTART) RETURN
       
 ! Just to Check for NaN's, Uncomment the following lines and also lines  
@@ -623,11 +642,6 @@
 !      X_vavg = VAVG_W_G ()
 !      IF(AUTOMATIC_RESTART) RETURN
 
-     
-! Adjust time step and reiterate if necessary
-!QX
-      DT_OLD = DT
-!end
       DO WHILE (ADJUST_DT(IER,NIT))
          CALL ITERATE (IER, NIT) 
       ENDDO
@@ -648,19 +662,15 @@
          IF(AUTO_RESTART) AUTOMATIC_RESTART = .TRUE.
          RETURN
       ENDIF
-!!
-!QX restarting
-300      continue
-         IF (RESTART_REACTION) THEN
-            TIME = TIME_OLD
-            TIME_ISAT = TIME_ISAT_OLD
-            CALL RESET_NEW(1)  ! reset and restart
-         ELSE
-            TIME_OLD = TIME
-            TIME_ISAT_OLD = TIME_ISAT
-            CALL UPDATE_OLD(1)
+
+! Stiff Chemistry Solver. 
+      IF(STIFF_CHEMISTRY) THEN
+         CALL STIFF_CHEM_SOLVER(DT, IER)
+         IF(IER /= 0) THEN
+            dummy = ADJUST_DT(IER, NIT)
+            GOTO 150
          ENDIF
-!end QX     
+      ENDIF
       
 ! Check over mass and elemental balances.  This routine is not active by default.
 ! Edit the routine and specify a reporting interval to activate it.
@@ -673,16 +683,7 @@
 ! Alberto Passalacqua: QMOMK  
       IF (QMOMK) CALL QMOMK_TIME_MARCH
 
-
-! Nan Xie: CHEM & ISAT 
-! Advance the time step and continue
-      IF (CALL_ISAT .OR. CALL_DI) THEN 
-         CALL MCHEM_TIME_MARCH
-!QX  reduce chemistry dt and restart
-         if(RESTART_REACTION) goto 300
-      ENDIF
       IF (CALL_DQMOM) CALL USR_DQMOM
-
 
 ! Advance the time step and continue
       IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. & 

@@ -17,8 +17,8 @@
 !  Local variables: NONE                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-      SUBROUTINE RESET_NEW(reitreaction)
+      SUBROUTINE RESET_NEW
+
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -35,6 +35,7 @@
       USE trace
       USE run
       USE scalars
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -51,15 +52,9 @@
 !
 !                    error index
       INTEGER :: IER
-!QX
-      INTEGER :: reitreaction
+
 !-----------------------------------------------
-!
-!
-!QX
-!normal case
-      if(reitreaction .eq. 0) then
-!end
+
       EP_G(:) = EP_GO(:) 
       P_G(:) = P_GO(:) 
       P_STAR(:) = P_STARO(:) 
@@ -106,60 +101,8 @@
           RO_SV(:,M) = RO_SVO(:,M)
         ENDIF 
       END DO 
-!
-!QX
-! reiterate case
-      elseif (reitreaction .eq. 1) then
-         EP_G(:) = EP_GO2(:)
-         P_G(:) = P_GO2(:) 
-         P_STAR(:) = P_STARO2(:) 
-         RO_G(:) = RO_GO2(:) 
-         ROP_G(:) = ROP_GO2(:) 
-         U_G(:) = U_GO2(:) 
-         V_G(:) = V_GO2(:) 
-         W_G(:) = W_GO2(:) 
-         IF (ENERGY_EQ) T_G(:) = T_GO2(:) 
-         IF (SPECIES_EQ(0)) THEN 
-            IF (NMAX(0) > 0) THEN 
-               X_G(:,:NMAX(0)) = X_GO2(:,:NMAX(0)) 
-            ENDIF
-         ENDIF
-      
-         IF (NScalar > 0) THEN 
-            Scalar(:,:NScalar) = ScalarO2(:,:NScalar) 
-         ENDIF
 
-         IF (K_Epsilon) THEN 
-            K_Turb_G(:) = K_Turb_GO2(:) 
-            E_Turb_G(:) = E_Turb_GO2(:)
-         ENDIF
-
-         DO M = 1, MMAX 
-            ROP_S(:,M) = ROP_SO2(:,M) 
-! add by rong
-            If (Call_DQMOM) D_P(:,M)=D_Po2(:,M)
-!       If (NScalar>0) ome(:,M)=ome_o(:,M)
-! add by rong
-            IF (ENERGY_EQ) T_S(:,M) = T_SO2(:,M) 
-            IF (GRANULAR_ENERGY) THEN 
-               THETA_M(:,M) = THETA_MO2(:,M) 
-               TRD_S_C(:,M) = TRD_S_CO2(:,M)
-            ENDIF
-            U_S(:,M) = U_SO2(:,M) 
-            V_S(:,M) = V_SO2(:,M) 
-            W_S(:,M) = W_SO2(:,M) 
-            IF (SPECIES_EQ(M)) THEN 
-               IF (NMAX(M) > 0) THEN 
-                  X_S(:,M,:NMAX(M)) = X_SO2(:,M,:NMAX(M)) 
-               ENDIF
-               RO_SV(:,M) = RO_SVO2(:,M)
-            ENDIF
-         END DO
-      endif
-!end
-!     
 !     Recalculate all coefficients
-
       CALL CALC_COEFF_ALL (0, IER)
  
       RETURN  

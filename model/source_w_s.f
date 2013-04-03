@@ -109,8 +109,6 @@
       DOUBLE PRECISION :: F_vir_tmp1, F_vir_tmp2	!Handan Liu added on September 20 2012					  
 ! error message 
       CHARACTER*80     LINE
-! FOR CALL_DI and CALL_ISAT = .true.
-      DOUBLE PRECISION :: SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------      
@@ -126,13 +124,6 @@
       DO M = 1, MMAX  
         IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
           IF (MOMENTUM_Z_EQ(M)) THEN 
-
-! CHEM & ISAT (nan xie)
-! Set the source terms zero
-            IF (CALL_DI .or. CALL_ISAT) THEN
-              SUM_R_S_temp = SUM_R_S
-              SUM_R_S = ZERO
-            ENDIF
 
 
 !!!$omp  parallel do &
@@ -537,11 +528,6 @@
 ! modifications for bc
             CALL SOURCE_W_S_BC (A_M, B_M, M, IER) 
             IF(CARTESIAN_GRID) CALL CG_SOURCE_W_S_BC(A_M, B_M, M, IER)
-
-! CHEM & ISAT (nan xie)
-            IF (CALL_DI .or. CALL_ISAT) THEN
-               SUM_R_S = SUM_R_S_temp
-            ENDIF
 
           ENDIF   ! end if (momentum_z_eq)
         ENDIF   ! end if for ghd theory

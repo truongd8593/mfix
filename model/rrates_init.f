@@ -13,48 +13,48 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-!
       SUBROUTINE RRATES_INIT(IER) 
-      USE param 
-      USE param1 
-      USE parallel 
-      USE fldvar
-      USE rxns
-      USE energy
-      USE geometry
-      USE indices
-      USE compar       
-      IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!                      Error index
-      INTEGER          IER
-!
-!                      cell index
-      INTEGER          IJK
-!C
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-      
-!!!$omp  parallel do private(ijk)
-      DO IJK = IJKSTART3, IJKEND3 
-      
-         R_gp(IJK, :) = ZERO
-         RoX_gc(IJK, :) = ZERO
-         R_sp(IJK, :, :) = ZERO
-         RoX_sc(IJK, :, :) = ZERO
-         SUM_R_G(IJK) = ZERO 
-         HOR_G(IJK) = ZERO
-         SUM_R_S(IJK, :) = ZERO 
-         HOR_S(IJK, :) = ZERO 
-	 R_PHASE(IJK, :) = ZERO
-	 
-      END DO
+
+! Global Variables:
+!---------------------------------------------------------------------//
+      use energy,     only : HOR_g, HOR_s
+      use param1,     only : ZERO
+      use rxns,       only : R_gp, RoX_gc, SUM_R_g
+      use rxns,       only : R_sp, RoX_sc, SUM_R_s
+      use rxns,       only : R_PHASE, NO_OF_RXNS, USE_RRATES, RRATE
+      use stiff_chem, only : STIFF_CHEMISTRY
+
+      implicit none
+
+! Passed Variables:
+!----------------------------------------------------------------------!
+! Error index
+      INTEGER, intent(INOUT) :: IER
+
+! Local Variables:
+!----------------------------------------------------------------------!
+! NONE
+
+! Flag for invoking reaction rate calculations.
+      RRATE = .FALSE.
+      IF(NO_OF_RXNS > 0)  RRATE = .TRUE.   ! automated mass balance
+      IF(USE_RRATES)      RRATE = .TRUE.   ! legacy hook
+      IF(STIFF_CHEMISTRY) RRATE = .FALSE.  ! stiff chemistry solver
+
+! Gas phase source terms:
+      R_gp    = ZERO  ! Rate of species formation
+      RoX_gc  = ZERO  ! Rate of species consumption (divided X_g)
+      SUM_R_G = ZERO  ! Net rate of gas formation/consumption
+      HOR_G   = ZERO  ! Heat of reaction
+
+! Solids phase source terms:
+      R_sp    = ZERO  ! Rate of species formation
+      RoX_sc  = ZERO  ! Rate of species consumption (divided X_s)
+      SUM_R_S = ZERO  ! Net rate of solids formation/consumption
+      HOR_S   = ZERO  ! Heat of reaction
+
+! Interphase mass transfer.
+      R_PHASE = ZERO
+
       RETURN
       END

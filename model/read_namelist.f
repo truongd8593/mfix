@@ -95,6 +95,8 @@
       USE des_ic
       USE des_thermo
       USE des_rxns
+      USE stiff_chem
+
 !DISTIO
       USE cdist
 !=======================================================================

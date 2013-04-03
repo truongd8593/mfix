@@ -88,9 +88,7 @@
       INTEGER          LEQM, LEQI 
       
       character*8      Vname
-!
-      DOUBLE PRECISION SUM_R_G_temp(DIMENSION_3)
-      DOUBLE PRECISION SUM_R_S_temp(DIMENSION_3, DIMENSION_M)   
+
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -102,17 +100,7 @@
       
       call lock_ambm
       call lock_tmp_array
-!
-!     CHEM & ISAT begin (nan xie)
-! Set the source terms zero
-         SUM_R_G_temp = SUM_R_G
-         SUM_R_S_temp = SUM_R_S
 
-         SUM_R_G = ZERO
-         SUM_R_S = ZERO
-!  
- !     CHEM & ISAT end (nan xie)
-!   
       RESID(RESID_sc,0) = ZERO
       NUM_RESID(RESID_sc,0) = ZERO
       DEN_RESID(RESID_sc,0) = ZERO
@@ -258,14 +246,6 @@
 !
          END IF 
       END DO 
-!
-!     CHEM & ISAT begin (nan xie)
-!
-         SUM_R_G = SUM_R_G_temp
-         SUM_R_S = SUM_R_S_temp
-!      
-!     CHEM & ISAT end (nan xie)
-!      
 
       call unlock_ambm
       call unlock_tmp_array

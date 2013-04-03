@@ -111,8 +111,6 @@
       DOUBLE PRECISION :: SRT
 ! error message 
       CHARACTER*80     LINE(2) 
-! FOR CALL_DI and CALL_ISAT = .true.
-      DOUBLE PRECISION :: SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -129,13 +127,6 @@
       DO M = 1, MMAX 
         IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
           IF (MOMENTUM_Y_EQ(M)) THEN 
-
-! CHEM & ISAT (nan xie)
-! Set the source terms zero
-            IF (CALL_DI .or. CALL_ISAT) THEN
-               SUM_R_S_temp = SUM_R_S
-               SUM_R_S = ZERO
-            ENDIF
 
 !!!$omp  parallel do private( I, J, K, IJK, IJKN, ISV, Sdp, Sdps, V0, Vmt, &
 !!!$omp&  PGN,DRO1,DRO2,DROA, Vbf, ROPSA, EPSA, EPStmp, VSH_n,VSH_s,VSH_e,&
@@ -479,11 +470,6 @@
             CALL SOURCE_V_S_BC (A_M, B_M, M, IER) 
             IF(CARTESIAN_GRID) CALL CG_SOURCE_V_S_BC(A_M, B_M, M, IER)
 
-! CHEM & ISAT (nan xie)
-            IF (CALL_DI .or. CALL_ISAT) THEN
-              SUM_R_S = SUM_R_S_temp
-            ENDIF
-    
           ENDIF   ! end if (momentum_y_eq) 
         ENDIF   ! end if for GHD Theory
       ENDDO   ! end do loop over mmax

@@ -25,7 +25,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE UPDATE_OLD(ia)
+      SUBROUTINE UPDATE_OLD
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
@@ -43,6 +43,7 @@
       USE trace
       USE visc_s
       USE scalars
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -57,11 +58,7 @@
 !                    Indices
 !
       INTEGER ::  M
-!QX
-      INTEGER ::  ia
 !-----------------------------------------------
-!normal case
-      if(ia .eq. 0) then
 
       EP_GO(:) = EP_G(:) 
       P_GO(:) = P_G(:) 
@@ -109,58 +106,6 @@
                ENDIF 
             ENDIF 
       END DO 
-!
-!QX
-!reiterate reaction case
-      elseif (ia .eq. 1) then
-      EP_GO2(:) = EP_G(:) 
-      P_GO2(:) = P_G(:) 
-      P_STARO2(:) = P_STAR(:) 
-      RO_GO2(:) = RO_G(:) 
-      ROP_GO2(:) = ROP_G(:) 
-      U_GO2(:) = U_G(:) 
-      V_GO2(:) = V_G(:) 
-      W_GO2(:) = W_G(:) 
-      IF (ENERGY_EQ) T_GO2(:) = T_G(:) 
-        IF (SPECIES_EQ(0)) THEN 
-          IF (NMAX(0) > 0) THEN 
-             X_GO2(:,:NMAX(0)) = X_G(:,:NMAX(0)) 
-          ENDIF 
-      ENDIF 
-      
-      IF (NScalar > 0) THEN 
-        ScalarO2(:,:NScalar) = Scalar(:,:NScalar) 
-      ENDIF
-      
-      IF (K_Epsilon) THEN 
-        K_Turb_GO2(:) = K_Turb_G(:)
-        E_Turb_GO2(:) = E_Turb_G(:)
-      ENDIF
 
-!!$omp parallel do private(M,IJK,N)
-      DO M = 1, MMAX 
-            ROP_SO2(:,M) = ROP_S(:,M) 
-! add by rong
-       IF(Call_DQMOM) D_Po2(:,M)=D_P(:,M)
-!      IF (NScalar>0) ome_o(:,M)=ome(:,M)
-! add by rong 
-            IF (ENERGY_EQ) T_SO2(:,M) = T_S(:,M) 
-            IF (GRANULAR_ENERGY) THEN 
-               THETA_MO2(:,M) = THETA_M(:,M) 
-               TRD_S_CO2(:,M) = TRD_S_C(:,M) 
-            ENDIF 
-            U_SO2(:,M) = U_S(:,M) 
-            V_SO2(:,M) = V_S(:,M) 
-            W_SO2(:,M) = W_S(:,M) 
-            IF (SPECIES_EQ(M)) THEN 
-               IF (NMAX(M) > 0) THEN 
-                  X_SO2(:,M,:NMAX(M)) = X_S(:,M,:NMAX(M)) 
-                  RO_SVO2(:,M) = RO_SV(:,M) 
-               ENDIF 
-            ENDIF 
-      END DO 
-      endif
-!end
-!
       RETURN  
       END SUBROUTINE UPDATE_OLD 

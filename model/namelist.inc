@@ -124,10 +124,11 @@
 
 ! 1.10 Chemical reactions
 ! ---------------------------------------------------------------->>>
-             USE_RRATES, &
-             SPECIES_g, SPECIES_s, &
-             SPECIES_ALIAS_g, SPECIES_ALIAS_s, &
-	            CALL_DI, CALL_GROW, CALL_ISAT, ISATdt,&
+            USE_RRATES, &
+            SPECIES_g, SPECIES_s, &
+            SPECIES_ALIAS_g, SPECIES_ALIAS_s, &
+            STIFF_CHEMISTRY, &
+
 ! ----------------------------------------------------------------<<<
 
 ! 1.11 parallel related
@@ -146,6 +147,7 @@
 ! ---------------------------------------------------------------->>>
             NMAX, & ! Legacy access
             SPECIES_NAME, &  ! Legacy variable
+            CALL_DI, CALL_GROW, CALL_ISAT, ISATdt, &
 ! ----------------------------------------------------------------<<<
 
 ! Misc

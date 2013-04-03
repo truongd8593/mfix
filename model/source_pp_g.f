@@ -71,9 +71,6 @@
       DOUBLE PRECISION bma, bme, bmw, bmn, bms, bmt, bmb, bmr
 ! loezos: used for including shearing
       integer :: incr
-! FOR CALL_DI and CALL_ISAT = .true.
-      DOUBLE PRECISION :: SUM_R_G_temp(DIMENSION_3)
-      DOUBLE PRECISION :: SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
 ! error message 
       CHARACTER*80     LINE(1) 
 ! temporary use of global arrays:
@@ -120,17 +117,6 @@
             ENDIF
          ENDDO 
       ENDIF
-
-
-! Nan Xie: CHEM & ISAT begin
-! Set the source terms zero
-      IF (CALL_DI .or. CALL_ISAT) THEN
-         SUM_R_G_temp = SUM_R_G
-         SUM_R_S_temp = SUM_R_S
-         SUM_R_G = ZERO
-         SUM_R_S = ZERO
-      ENDIF
-
 
 ! Calculate convection-diffusion fluxes through each of the faces
 
@@ -348,13 +334,6 @@
             A_M(IJK_P_G_LOCAL,0,0) = -ONE 
             B_M(IJK_P_G_LOCAL,0) = ZERO 
          ENDIF 
-      ENDIF
-
-
-! Nan Xie: CHEM & ISAT 
-      IF (CALL_DI .or. CALL_ISAT) THEN
-         SUM_R_G = SUM_R_G_temp
-         SUM_R_S = SUM_R_S_temp
       ENDIF
 
       call unlock_xsi_array

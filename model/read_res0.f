@@ -66,7 +66,7 @@
       USE compar      
       USE mpi_utility
       USE fldvar
-
+      USE stiff_chem
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1187,21 +1187,20 @@
           Call_DQMOM =.FALSE.
         ENDIF 
 !
-!           Version 1.7 -- CHEM & ISAT begin (nan xie)
+!           Version 1.7 -- Stiff Chemistry
         IF (VERSION_NUMBER >= 1.699) THEN 
-          if (myPE == PE_IO) then
-            READ (UNIT_RES, REC=NEXT_RECA) CALL_DI, CALL_ISAT
-            NEXT_RECA = NEXT_RECA + 1 
-	  ENDIF
-          call bcast(CALL_DI,PE_IO) !//PAR_I/O BCAST0d 
-          call bcast(CALL_ISAT,PE_IO)
+           IF (myPE == PE_IO) then
+              READ (UNIT_RES, REC=NEXT_RECA) STIFF_CHEMISTRY, CALL_ISAT
+              NEXT_RECA = NEXT_RECA + 1 
+           ENDIF
+           call bcast(STIFF_CHEMISTRY,PE_IO)
+           call bcast(CALL_ISAT,PE_IO)
         ELSE
-          CALL_DI = .false.
-          CALL_ISAT = .false.
+           STIFF_CHEMISTRY = .FALSE.
+           CALL_DI = .FALSE.
+           CALL_ISAT = .FALSE.
         ENDIF 
-!     CHEM & ISAT end (nan xie)
-!
-!
+
 !           Version 1.8 -- SOLID_RO_V and densities of each solids species
 !
         IF (VERSION_NUMBER >= 1.799) THEN 

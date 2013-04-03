@@ -32,6 +32,7 @@
       USE compar
       USE ur_facs 
       USE run
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -51,8 +52,6 @@
 ! Flags to tell whether to calculate or not
       LOGICAL :: VISC(0:DIMENSION_M), COND(0:DIMENSION_M),&
                  DIFF(0:DIMENSION_M)
-! Flag for Reaction rates
-      LOGICAL :: RRATE
 ! Flag for exchange functions
       LOGICAL :: DRAGCOEF(0:DIMENSION_M, 0:DIMENSION_M),&
                  HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
@@ -73,47 +72,41 @@
         UR_Kth_smltmp = UR_Kth_sml
         UR_Kth_sml = ONE        
       ENDIF
-      
-      RRATE = .FALSE.      
-      IF (NO_OF_RXNS > 0) RRATE = .TRUE. 
-      IF (USE_RRATES) RRATE = .TRUE. 
-      DENSITY(:MMAX) = .TRUE. 
- 
-! Rong
-      IF (Call_DQMOM) THEN
-         PSIZE(:MMAX) = .TRUE. 
-      ELSE
-         PSIZE(:MMAX) = .FALSE.         
-      ENDIF
 
-      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP' .OR. TRIM(KT_TYPE) .EQ. 'GD_99') THEN
-          GRAN_DISS(:MMAX) = .TRUE.
-      ELSE
-          GRAN_DISS(:MMAX) = .FALSE.
-      ENDIF
 
-      WALL_TR = .TRUE. 
+      CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, &
+           DIFF, GRAN_DISS, DRAGCOEF, HEAT_TR, WALL_TR, IER) 
+
+      IF(CALL_DQMOM)                          &! Used by PHYSICAL_PROP
+         PSIZE(:MMAX) = .TRUE.
+
+      WALL_TR = .TRUE.                         ! Used by EXCHANGE
+
       IF (ENERGY_EQ) THEN 
-         SP_HEAT(:MMAX) = .TRUE. 
-         COND(:MMAX) = .TRUE. 
-         HEAT_TR(:MMAX,:MMAX) = .TRUE. 
-      ELSE 
-         SP_HEAT(:MMAX) = .FALSE. 
-         COND(:MMAX) = .FALSE. 
-         HEAT_TR(:MMAX,:MMAX) = .FALSE. 
+         SP_HEAT(:MMAX) = .TRUE.               ! Used by PHYSICAL_PROP
+         COND(:MMAX) = .TRUE.                  ! Used by TRANSPORT_PROP
+         HEAT_TR(:MMAX,:MMAX) = .TRUE.         ! Used by EXCHANGE
       ENDIF 
 
-      VISC(:MMAX) = .TRUE. 
-      DIFF(:MMAX) = .FALSE.
-      
-      IF (ANY_SPECIES_EQ) DIFF(:MMAX) = .TRUE. 
-      
-      DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
-      IF (RO_G0 /= UNDEFINED) DENSITY(0) = .FALSE. 
-      IF (MU_S0 /= UNDEFINED) VISC(1:MMAX) = .FALSE. 
+      IF (ANY_SPECIES_EQ)                     &! Used by TRANSPORT_PROP
+         DIFF(:MMAX) = .TRUE. 
+
+      DRAGCOEF(:MMAX,:MMAX) = .TRUE.           ! Used by EXCHANGE
+
+      IF(RO_G0 == UNDEFINED)                  &! Used in PHYSICAL_PROP
+         DENSITY(0) = .TRUE. 
+
+      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP'       &! Used by TRANSPORT_PROP 
+         .OR. TRIM(KT_TYPE) .EQ. 'GD_99')     &
+         GRAN_DISS(:MMAX) = .TRUE.
+
+! Viscosity for gas phase is set differently in iterate.
+      VISC(0) = .TRUE.                         ! Used by TRANSPORT_PROP
+      IF (MU_S0 == UNDEFINED)                 &! Used by TRANSPORT_PROP
+         VISC(1:MMAX) = .TRUE. 
 
       CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
-          GRAN_DISS, RRATE, DRAGCOEF, HEAT_TR, WALL_TR, IER)
+          GRAN_DISS, DRAGCOEF, HEAT_TR, WALL_TR, IER)
 
 ! Now restore all underrelaxation factors for coefficient
 ! calculations to their original value
@@ -147,7 +140,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CALC_COEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
-            GRAN_DISS, RRATE,DRAG, HEAT_TR, WALL_TR, IER) 
+            GRAN_DISS, DRAG, HEAT_TR, WALL_TR, IER) 
 
 !-----------------------------------------------
 ! Modules
@@ -170,8 +163,6 @@
       LOGICAL, INTENT(INOUT) :: VISC(0:DIMENSION_M), &
                                 COND(0:DIMENSION_M),&
                                 DIFF(0:DIMENSION_M)
-! reaction rates
-      LOGICAL, INTENT(INOUT) :: RRATE
 ! exchange functions
       LOGICAL, INTENT(INOUT) :: DRAG(0:DIMENSION_M, 0:DIMENSION_M),&
                                 HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
@@ -194,7 +185,7 @@
       CALL TRANSPORT_PROP (VISC, COND, DIFF, GRAN_DISS, IER) 
 
 ! Calculate reaction rates and interphase mass transfer
-      CALL CALC_RRATE(RRATE)
+      CALL CALC_RRATE
 
 ! Calculate interphase momentum, and energy transfers
       CALL EXCHANGE (DRAG, HEAT_TR, WALL_TR, IER) 
@@ -202,7 +193,7 @@
 ! Reset all flags.  The flags need to be set every time this routine is
 ! called.
       CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
-           GRAN_DISS, RRATE, DRAG, HEAT_TR, WALL_TR, IER)
+           GRAN_DISS, DRAG, HEAT_TR, WALL_TR, IER)
 
       RETURN  
       END SUBROUTINE CALC_COEFF 
@@ -216,25 +207,21 @@
 !           mass transfer. if present, calculate discrete reactions    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
-      SUBROUTINE CALC_RRATE(RRATE) 
+      SUBROUTINE CALC_RRATE
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE rxns
-      USE funits 
-      USE compar
-      USE discretelement
-      USE des_rxns
+      USE rxns,           only : RRATE, USE_RRATES
+      USE funits,         only : DMP_LOG, UNIT_LOG 
+      USE compar,         only : myPE
+      USE discretelement, only : DISCRETE_ELEMENT
+      USE des_rxns,       only : ANY_DES_SPECIES_EQ
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! reaction rates
-      LOGICAL, INTENT(IN) :: RRATE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -248,8 +235,9 @@
 
 !-----------------------------------------------
 
-      CLEAR_ARRAYS = .TRUE.
 
+
+      CLEAR_ARRAYS = .TRUE.
 ! Calculate reaction rates and interphase mass transfer
       IF(RRATE) THEN
 ! Legacy hook: Calculate reactions from rrates.f.
@@ -257,7 +245,7 @@
             CALL RRATES (IER)
             IF(IER .EQ. 1) THEN
                CALL START_LOG
-               IF(DMP_LOG)WRITE (UNIT_LOG, 1000)
+               IF(DMP_LOG) WRITE (UNIT_LOG, 1000)
                CALL END_LOG 
                CALL MFIX_EXIT(myPE)  
             ENDIF
@@ -290,7 +278,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, &
-           DIFF, GRAN_DISS, RRATE, DRAG, HEAT_TR, WALL_TR, IER) 
+           DIFF, GRAN_DISS, DRAG, HEAT_TR, WALL_TR, IER) 
 
 !----------------------------------------------- 
 ! Modules 
@@ -310,8 +298,6 @@
       LOGICAL, INTENT(INOUT) :: VISC(0:DIMENSION_M), &
                                 COND(0:DIMENSION_M),&
                                 DIFF(0:DIMENSION_M)
-! reaction rates
-      LOGICAL, INTENT(INOUT) :: RRATE
 ! exchange functions
       LOGICAL, INTENT(INOUT) :: DRAG(0:DIMENSION_M, 0:DIMENSION_M),&
                                 HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
@@ -328,7 +314,6 @@
 !-----------------------------------------------
 
 ! Reset all flags
-      RRATE = .FALSE. 
       WALL_TR = .FALSE. 
       DENSITY(:MMAX) = .FALSE. 
       PSIZE(:MMAX) = .FALSE. 

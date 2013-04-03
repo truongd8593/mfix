@@ -42,14 +42,8 @@
 ! Error index
       INTEGER          IER
 
-! These use functions external to this routine for rates calculations
-      IF(CALL_DI.OR.CALL_ISAT) THEN
-         IER = 0
-         RETURN
-      ELSE 
-         IER = 1
-         RETURN
-      ENDIF
+! Return on error as the file is empty.
+      IER = 1
 
       RETURN  
       END SUBROUTINE RRATES 

@@ -57,7 +57,9 @@
       USE scalars
       USE compar
       USE parallel
-      USE cdist      
+      USE cdist
+      USE stiff_chem
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -525,11 +527,12 @@
       IS_SERIAL = .TRUE.
       USE_DOLOOP = .FALSE.
 
-! Nan Xie: CHEM & ISAT
-      CALL_DI = .FALSE.
-      CALL_GROW = .FALSE.
-      CALL_ISAT = .FALSE.  
-      ISATdt    = UNDEFINED
+! Stiff Chemistry Solver:
+      STIFF_CHEMISTRY = .FALSE.
+      CALL_DI   = .FALSE.      ! Legacy Keyword
+      CALL_GROW = .FALSE.      ! Legacy Keyword
+      CALL_ISAT = .FALSE.      ! Legacy Keyword
+      ISATdt    = UNDEFINED    ! Legacy Keyword
 
       bWrite_netCDF(:) = .false.
 

@@ -255,16 +255,6 @@
 
        common /run_dp/ time      !for Linux
 
-! Nan Xie: CHEM & ISAT 
-! If .TRUE. call ODEPACK
-      LOGICAL          CALL_DI
-! If .TRUE. calculate the change of diameter due to grow
-      LOGICAL          CALL_GROW
-! If .TRUE. call isat subroutines
-      LOGICAL          CALL_ISAT
-! time step for isat calculation
-      DOUBLE PRECISION ISATdt
-
 ! kinetic theory model: see calc_mu_s for details
 ! for m > 1 option is IA_nonep, GHD,
 ! for m = 1 option is GD_99
@@ -276,17 +266,7 @@
 ! for m = 1 then carnahan and starling rdf used
       CHARACTER(64)    RDF_TYPE 
 
-!QX
-!                      Previous Start-time of the run.
-      DOUBLE PRECISION TIME_OLD
-!                      Previous Time step.
-      DOUBLE PRECISION DT_OLD
-!                      Option to restart iteration with lower time step 
-!                      when diverging due to strong chemical source term
-      LOGICAL          RESTART_REACTION
-
-      DOUBLE PRECISION TIME_isat_OLD
-!                       Option to turn on the variable solids density model
+! Flag to invoke the variable solids density model.
       LOGICAL          SOLID_RO_V
 !end
 

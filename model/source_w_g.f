@@ -129,8 +129,6 @@
 !                      error message 
       CHARACTER*80     LINE 
 !
-!     FOR CALL_DI and CALL_ISAT = .true.
-      DOUBLE PRECISION SUM_R_G_temp(DIMENSION_3)
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -156,16 +154,7 @@
 !
       M = 0 
       IF (.NOT.MOMENTUM_Z_EQ(0)) RETURN  
-!
-!     CHEM & ISAT begin (nan xie)
-! Set the source terms zero
-      IF (CALL_DI .or. CALL_ISAT) THEN
-         SUM_R_G_temp = SUM_R_G
-         SUM_R_G = ZERO
-      END IF
-!     CHEM & ISAT end (nan xie)
-! 
-!
+
 !!!$omp  parallel do private( I, J, K, IJK, IJKT, ISV, Sdp, V0, Vpm, Vmt, Vbf, &
 !!!$omp&  PGT, ROGA, IMJK, IJKP, IMJKP, IJKW, IJKTE, IJKTW, IM, IPJK,  &
 !!!$omp&  CTE, CTW, SXZB, EPMUOX, VXZA, VXZB, UGT, VCOA, VCOB, IJKE,&
@@ -494,13 +483,7 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 
-!
-!     CHEM & ISAT begin (nan xie)
-      IF (CALL_DI .or. CALL_ISAT) THEN
-         SUM_R_G = SUM_R_G_temp
-      END IF  
-!     CHEM & ISAT end (nan xie)
-!
+
       RETURN  
       END SUBROUTINE SOURCE_W_G 
 !

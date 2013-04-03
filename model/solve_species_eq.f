@@ -66,9 +66,6 @@
       INTEGER :: IJK, IMJK, IJMK, IJKM 
 ! linear equation solver method and iterations 
       INTEGER :: LEQM, LEQI 
-! FOR CALL_DI or CALL_ISAT = .true.
-      DOUBLE PRECISION :: SUM_R_G_temp(DIMENSION_3)
-      DOUBLE PRECISION :: SUM_R_S_temp(DIMENSION_3, DIMENSION_M) 
 ! tmp array to pass to set_chi
       DOUBLE PRECISION :: X_s_temp(DIMENSION_3, DIMENSION_N_s) 
 !
@@ -107,15 +104,6 @@
       call lock_ambm       ! locks arrys a_m and b_m
       call lock_tmp_array  ! locks array1,array2,array3,array4
                            ! (locally s_p, s_c, eps, vxgama) 
-
-! nan xie: CHEM & ISAT 
-! Set the source terms zero
-      IF (CALL_DI .or. CALL_ISAT) THEN
-         SUM_R_G_temp = SUM_R_G
-         SUM_R_S_temp = SUM_R_S
-         SUM_R_G = ZERO
-         SUM_R_S = ZERO
-      END IF 
 
 
 ! Fluid phase species mass balance equations
@@ -295,13 +283,6 @@
 ! end solids phases species equations      
 ! ----------------------------------------------------------------<<<
       
-
-! nan xie: CHEM & ISAT
-      IF (CALL_DI .or. CALL_ISAT) THEN
-         SUM_R_G = SUM_R_G_temp
-         SUM_R_S = SUM_R_S_temp
-      END IF
-
       call unlock_ambm
       call unlock_tmp_array
 

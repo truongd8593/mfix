@@ -110,8 +110,6 @@
       DOUBLE PRECISION :: Src 
 ! error message 
       CHARACTER*80     LINE(1) 
-! FOR CALL_DI and CALL_ISAT = .true.
-      DOUBLE PRECISION :: SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
 ! terms of bm expression
       DOUBLE PRECISION :: bma, bme, bmw, bmn, bms, bmt, bmb, bmr
 !-----------------------------------------------
@@ -134,13 +132,6 @@
 ! pack (i.e. close_packed=T) and the index of the solids phase that is
 ! used to form the solids correction equation. 
          M = MCP
-      ENDIF
-
-! Nan Xie: CHEM & ISAT 
-! Set the source terms zero
-      IF (CALL_DI .or. CALL_ISAT) THEN
-         SUM_R_S_temp = SUM_R_S
-         SUM_R_S = ZERO
       ENDIF
 
 !!$omp    parallel do                                            &
@@ -321,11 +312,6 @@
          ENDIF 
       ENDDO 
 
-! Nan Xie: CHEM & ISAT
-      IF (CALL_DI .or. CALL_ISAT) THEN
-         SUM_R_S = SUM_R_S_temp
-      ENDIF
-
       RETURN  
       END SUBROUTINE CONV_SOURCE_EPP0 
 
@@ -395,8 +381,6 @@
       DOUBLE PRECISION :: Src 
 ! face value of ROP_s 
       DOUBLE PRECISION :: ROP_sf 
-! FOR CALL_DI and CALL_ISAT = .true.
-      DOUBLE PRECISION :: SUM_R_S_temp(DIMENSION_3, DIMENSION_M)
 ! terms of bm expression
       DOUBLE PRECISION :: bma, bme, bmw, bmn, bms, bmt, bmb, bmr
 ! error message 
@@ -446,14 +430,6 @@
             ENDIF
          ENDDO  
       ENDIF
-
-! Nan Xie: CHEM & ISAT 
-! Set the source terms zero
-      IF (CALL_DI .or. CALL_ISAT) THEN
-         SUM_R_S_temp = SUM_R_S
-         SUM_R_S = ZERO
-      ENDIF
-
 
 !!$omp parallel do                                                      &   
 !!$omp&   private(I, J, K, IJK, IPJK, IJPK, IJKP,                &
@@ -582,11 +558,6 @@
             B_M(IJK,0) = ZERO 
          ENDIF 
       ENDDO
-
-! Nan Xie: CHEM & ISAT 
-      IF (CALL_DI .OR. CALL_ISAT) THEN
-         SUM_R_S = SUM_R_S_temp
-      ENDIF
 
 ! Loezos:
       IF (SHEAR) THEN

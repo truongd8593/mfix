@@ -70,7 +70,7 @@
       LOGICAL          MESSAGE
 !
 !                      sum of mass fractions or reaction rates
-      DOUBLE PRECISION SUM
+      DOUBLE PRECISION lSUM
 !
 !                      Logical variable to set, if there is a message
       LOGICAL          MESSAGE_X_g
@@ -157,12 +157,10 @@
       COUNT_RXNSUM0  = 0
       COUNT_RXNSUM1  = 0
 
-      DO L = 0, MMAX
-         MESSAGE_masstr(L) = .false.
-         masstr_MAX(L)     = ZERO
-         COUNT_masstr0(L)  = 0
-         COUNT_masstr1(L)  = 0
-      END DO 
+      MESSAGE_masstr = .false.
+      masstr_MAX     = ZERO
+      COUNT_masstr0  = 0
+      COUNT_masstr1  = 0
 !
 
       MESSAGE_X_G = .FALSE. 
@@ -199,458 +197,513 @@
          DO J = JSTART2, JEND2 
             DO I = ISTART2, IEND2 
                IJK = FUNIJK(I,J,K) 
-               IF (.NOT.WALL_AT(IJK)) THEN 
-	                 IF(FLOW_AT(IJK)) THEN
-		 !  The diffusivities must be zero in inflow and outflow
-		 !  cells
+               IF (.NOT.WALL_AT(IJK)) THEN
+
+! Verify that inflow/outflow cells do not contain physical properties
+! for the following variables.
+!---------------------------------------------------------------------//
+                  IF(FLOW_AT(IJK)) THEN
+! Turbulent viscosity of fluid phase.
                      IF(MU_gt(IJK) /= ZERO) THEN
                         IF (.NOT.MESSAGE) THEN 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                         ENDIF 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1140) I, J, K, MU_gt(IJK), 'MU_gt' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1140) &
+                           I, J, K, MU_gt(IJK), 'MU_gt'
                         ABORT = .TRUE. 
-		                   ENDIF
-		   
+                     ENDIF
+! Granular second coefficient of viscosity.
                      IF(LAMBDA_gt(IJK) /= ZERO) THEN
                         IF (.NOT.MESSAGE) THEN 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                         ENDIF 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1140) I, J, K, LAMBDA_gt(IJK), 'LAMBDA_gt' 
-                        ABORT = .TRUE. 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1140) &
+                           I, J, K, LAMBDA_gt(IJK), 'LAMBDA_gt'
+                        ABORT = .TRUE.
                  	   ENDIF
-		   
+! Gas conductivity.
                      IF(K_g(IJK) /= ZERO) THEN
                         IF (.NOT.MESSAGE) THEN 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                         ENDIF 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1140) I, J, K, K_g(IJK), 'K_g' 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1140) &
+                           I, J, K, K_g(IJK), 'K_g'
                         ABORT = .TRUE. 
-                		   ENDIF
-		   
-		                   DO N = 1, NMAX(0)
+                     ENDIF
+! Diffusivity of gas species N.
+                     DO N = 1, NMAX(0)
                         IF( DIF_g(IJK, N) /= ZERO) THEN
                            IF (.NOT.MESSAGE) THEN 
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                               MESSAGE = .TRUE. 
                            ENDIF 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1140) I, J, K, DIF_g(IJK, N), 'DIF_g' 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1140) &
+                              I, J, K, DIF_g(IJK, N), 'DIF_g'
                            ABORT = .TRUE. 
                         ENDIF
-		                   ENDDO
-		   
+                     ENDDO
+
                      IF(.NOT.DISCRETE_ELEMENT)then
-   		                   DO M = 1, MMAX
+                        DO M = 1, MMAX
+! Granular first coefficient of (shear) viscosity.
                            IF(MU_s(IJK, M) /= ZERO) THEN
                               IF (.NOT.MESSAGE) THEN 
                                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                                  MESSAGE = .TRUE. 
                               ENDIF 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1140) I, J, K, MU_s(IJK, M), 'MU_s' 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1140) &
+                                 I, J, K, MU_s(IJK, M), 'MU_s'
                               ABORT = .TRUE. 
-    		                     ENDIF
-		   
+                           ENDIF
+! Granular second coefficient of viscosity.
                            IF(LAMBDA_s(IJK, M) /= ZERO) THEN
                               IF (.NOT.MESSAGE) THEN 
                                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                                  MESSAGE = .TRUE. 
                               ENDIF 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1140) I, J, K, LAMBDA_s(IJK, M), 'LAMBDA_s' 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1140) &
+                                 I, J, K, LAMBDA_s(IJK, M), 'LAMBDA_s'
                               ABORT = .TRUE. 
                      	     ENDIF
-		   
+! Solids thermal conductivity.
                            IF(K_s(IJK, M) /= ZERO) THEN
                               IF (.NOT.MESSAGE) THEN 
                                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                                  MESSAGE = .TRUE. 
                               ENDIF 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1140) I, J, K, K_s(IJK, M), 'K_s' 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1140) &
+                                 I, J, K, K_s(IJK, M), 'K_s'
                               ABORT = .TRUE. 
-                    		     ENDIF
-		   
+                           ENDIF
+! Diffusivity of solids phase M, species N.
                            DO N = 1, NMAX(M)
                               IF( DIF_s(IJK, M, N) /= ZERO) THEN
                                  IF (.NOT.MESSAGE) THEN 
-                                    IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
+                                    IF(DMP_LOG)WRITE (UNIT_LOG, 1000) &
+                                       TIME
                                     MESSAGE = .TRUE. 
                                  ENDIF 
-                                 IF(DMP_LOG)WRITE (UNIT_LOG, 1140) I, J, K, DIF_s(IJK, M, N), 'DIF_s' 
+                                 IF(DMP_LOG)WRITE (UNIT_LOG, 1140) &
+                                    I, J, K, DIF_s(IJK, M, N), 'DIF_s' 
                                  ABORT = .TRUE. 
-	                  	          ENDIF
-		                         ENDDO
-                   		   ENDDO
+                              ENDIF
+                           ENDDO
+                        ENDDO
                      ENDIF
-            		    ENDIF
-!
-!   Gas viscosity, conductivity and specific heat must be positive
+                  ENDIF
+
+! Verify that fluid cells have physical values for the following
+! Gas phase variables.
+!---------------------------------------------------------------------//
+!   Gas viscosity must be non-negative.
                   IF (MU_G(IJK) < ZERO) THEN 
                      IF (.NOT.MESSAGE) THEN 
                         IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                         MESSAGE = .TRUE. 
                      ENDIF 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1110) I, J, K, MU_G(IJK) 
+                     IF(DMP_LOG)WRITE (UNIT_LOG,1110) I, J, K, MU_G(IJK) 
                      ABORT = .TRUE. 
-                  ENDIF 
-!
+                  ENDIF
+! Mixture molecular weight must be positive.
                   IF (MW_MIX_G(IJK) <= ZERO) THEN 
                      IF (.NOT.MESSAGE) THEN 
                         IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                         MESSAGE = .TRUE. 
                      ENDIF 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1111) I, J, K, MW_MIX_G(IJK) 
+                     IF(DMP_LOG) WRITE (UNIT_LOG, 1111) &
+                        I, J, K, MW_MIX_G(IJK) 
                      ABORT = .TRUE. 
-                  ENDIF 
-!
-                  IF (ENERGY_EQ) THEN 
+                  ENDIF
+
+! Verify thermodynamic properties when solving energy equations:
+                  IF(ENERGY_EQ) THEN 
+! Gas conductivity must be non-negative.
                      IF (K_G(IJK) < ZERO) THEN 
                         IF (.NOT.MESSAGE) THEN 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                         ENDIF 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1120) I, J, K, K_G(IJK) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1120) &
+                           I, J, K, K_G(IJK) 
                         ABORT = .TRUE. 
                      ENDIF 
-!
+! Gas phase specific heat must be positive.
                      IF (C_PG(IJK) <= ZERO) THEN 
                         IF (.NOT.MESSAGE) THEN 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                         ENDIF 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1130) I, J, K, C_PG(IJK) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1130) &
+                           I, J, K, C_PG(IJK)
+                        ABORT = .TRUE. 
+                     ENDIF
+! Verify that the gas phase temperature is within the bounds.
+                     IF(T_G(IJK)<=TMIN .OR. T_G(IJK)>=TMAX) THEN
+                        IF (.NOT.MESSAGE) THEN 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
+                           MESSAGE = .TRUE. 
+                        ENDIF 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1400) &
+                           I, J, K, T_G(IJK)
                         ABORT = .TRUE. 
                      ENDIF 
                   ENDIF 
-		   
-              		  DO N = 1, NMAX(0)
+
+! Diffusivity of gas species N must be non-negative.
+                  DO N = 1, NMAX(0)
                      IF( DIF_g(IJK, N) < ZERO) THEN
                         IF (.NOT.MESSAGE) THEN 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                         ENDIF 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1131) I, J, K, DIF_g(IJK, N) 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1131) &
+                           I, J, K, DIF_g(IJK, N) 
                         ABORT = .TRUE. 
-		                   ENDIF
-		                ENDDO
-		   
-!
-!  Sum of over all reaction rates for phases should be zero
-!
-                  IF(.NOT.DISCRETE_ELEMENT)THEN
-                     SUM = SUM_R_G(IJK) 
-                     IF (MMAX > 0) THEN 
-                        DO M = 1, MMAX 
-                           SUM = SUM + SUM_R_S(IJK,M)
-                        END DO 
                      ENDIF
-                     IF (ABS(SUM) > SMALL_NUMBER) THEN
-                        MESSAGE_rxnsum = .true.
-		                      if(abs(sum) > abs(RXNSUM_MAX))then
-		                         RXNSUM_MAX   = sum
-		                         I_RXNSUM_MAX = i
-		                         J_RXNSUM_MAX = j
-		                         K_RXNSUM_MAX = k
-   		                   endif
+                  ENDDO
+
+! Verify that the gas phase mass fractons sum to one.
+                  IF (SPECIES_EQ(0)) THEN 
+                     lSUM = ZERO 
+                     N = 1 
+                     lSUM = sum(   X_G(IJK,1:NMAX(0))   )
+                     IF (ABS(ONE - lSUM) > TOL_COM) THEN 
                         IF (.NOT.MESSAGE) THEN 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                         ENDIF 
-!                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) I, J, K, SUM 
-                        IF (ABS(SUM) > TOL_COM) then
-		                         COUNT_RXNSUM1 = COUNT_RXNSUM1 + 1
-                  		       ABORT = .TRUE.
-                 		     else
-                 		        COUNT_RXNSUM0 = COUNT_RXNSUM0 + 1
-		                      endif
+                        MESSAGE_X_G = .TRUE. 
                      ENDIF 
-!  The net production of each phase should match the total mass transferred
-!  from the other phases
-                     DO L = 0, MMAX 
-                        IF (L == 0) THEN 
-                           SUM = SUM_R_G(IJK) 
-                        ELSE 
-                           SUM = SUM_R_S(IJK,L) 
-                        ENDIF 
-                        DO M = 0, MMAX 
-                           IF (M > L) THEN 
-                              LM = L + 1 + (M - 1)*M/2 
-                              SUM = SUM - R_PHASE(IJK,LM) 
-                           ELSE IF (L > M) THEN 
-                              LM = M + 1 + (L - 1)*L/2 
-                              SUM = SUM + R_PHASE(IJK,LM) 
-                           ENDIF 
-                        END DO 
-                        IF (ABS(SUM) > SMALL_NUMBER) THEN
-		                         MESSAGE_masstr(L) = .true. 
-		                         if(abs(sum) > abs(masstr_MAX(L)))then
-		                            masstr_MAX(L)   = sum
-		                            I_masstr_MAX(L) = i
-   	 	                        J_masstr_MAX(L) = j
- 		                           K_masstr_MAX(L) = k
-		                         endif
-                           IF (.NOT.MESSAGE) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
-                              MESSAGE = .TRUE. 
-                           ENDIF 
-!                           IF(DMP_LOG)WRITE (UNIT_LOG, 1101) I, J, K, L, SUM 
-                           IF(ABS(SUM) > TOL_COM) then
-                  		          COUNT_masstr1(L) = COUNT_masstr1(L) + 1
-                         			  ABORT = .TRUE. 
-                        			ELSE
-                		            COUNT_masstr0(L) = COUNT_masstr0(L) + 1
-	                        		ENDIF
-                        ENDIF 
-                     END DO 
-                  ENDIF
+                     IF (lSUM < SUM_MIN_G) THEN 
+                        SUM_MIN_G = lSUM 
+                        I_MIN_G = I 
+                        J_MIN_G = J 
+                        K_MIN_G = K 
+                     ELSE IF (lSUM > SUM_MAX_G) THEN 
+                        SUM_MAX_G = lSUM 
+                        I_MAX_G = I 
+                        J_MAX_G = J 
+                        K_MAX_G = K 
+                     ENDIF 
+                     IF (lSUM < 0.9) THEN         ! < 0.9 
+                        COUNT_G(1) = COUNT_G(1) + 1 
+                     ELSE IF (lSUM < 0.99) THEN   ! 0.9    - 0.99 
+                        COUNT_G(2) = COUNT_G(2) + 1 
+                     ELSE IF (lSUM < 0.999) THEN  ! 0.99   - 0.999 
+                        COUNT_G(3) = COUNT_G(3) + 1 
+                     ELSE IF (lSUM < 0.9999) THEN ! 0.999  - 0.9999 
+                        COUNT_G(4) = COUNT_G(4) + 1 
+                     ELSE IF (lSUM < 1.0001) THEN ! 0.9999 - 1.0001 
+                        COUNT_G(5) = COUNT_G(5) + 1 
+                     ELSE IF (lSUM < 1.001) THEN  ! 1.0001 - 1.001 
+                        COUNT_G(6) = COUNT_G(6) + 1 
+                     ELSE IF (lSUM < 1.01) THEN   ! 1.001  - 1.01 
+                        COUNT_G(7) = COUNT_G(7) + 1 
+                     ELSE IF (lSUM < 1.1) THEN    ! 1.01   - 1.1 
+                        COUNT_G(8) = COUNT_G(8) + 1 
+                     ELSE                        ! > 1.1 
+                        COUNT_G(9) = COUNT_G(9) + 1 
+                     ENDIF 
+                  ENDIF 
 
-
-!  R_gp, RoX_gc, R_sp, and RoX_sc must be non-negative
-                  IF(SPECIES_EQ(0))THEN
-                     DO N = 1, NMAX(0) 
-                        IF (R_GP(IJK,N) < ZERO) THEN 
-                           IF (.NOT.MESSAGE) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
-                              MESSAGE = .TRUE. 
-                           ENDIF 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1103) I, J, K, R_GP(IJK,N), N 
-                           ABORT = .TRUE. 
-                        ENDIF 
-                        IF (ROX_GC(IJK,N) < ZERO) THEN 
-                           IF (.NOT.MESSAGE) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
-                              MESSAGE = .TRUE. 
-                           ENDIF 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1104) I, J, K, ROX_GC(IJK,N), N 
-                           ABORT = .TRUE. 
-                        ENDIF 
-                     END DO 
-                  ENDIF
 
                   IF(.NOT.DISCRETE_ELEMENT)THEN
                      DO M = 1, MMAX 
-                        IF(SPECIES_EQ(M))THEN
-                           DO N = 1, NMAX(M) 
-                              IF (R_SP(IJK,M,N) < ZERO) THEN 
+
+! Verify that fluid cells have physical values for the following
+! Solids phase M variables.
+!---------------------------------------------------------------------//
+! Solids viscosity should be non-negativel.
+                        IF (MU_S(IJK,M) < ZERO) THEN 
+                           IF (.NOT.MESSAGE) THEN 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
+                              MESSAGE = .TRUE. 
+                           ENDIF 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1310) &
+                              I, J, K, M, MU_S(IJK,M)
+                           ABORT = .TRUE. 
+                        ENDIF 
+
+! Verify thermodynamic properties when solving energy equations:
+                        IF (ENERGY_EQ) THEN
+! Thermal conductivity must be non-negative.
+                           IF (K_S(IJK,M) < ZERO) THEN 
+                              IF (.NOT.MESSAGE) THEN 
+                                 IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
+                                 MESSAGE = .TRUE. 
+                              ENDIF 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1320) &
+                                 I, J, K, M, K_S(IJK,M) 
+                              ABORT = .TRUE. 
+                           ENDIF 
+! Solids specific heat must be positive.
+                           IF (C_PS(IJK,M) <= ZERO) THEN 
+                              IF (.NOT.MESSAGE) THEN 
+                                 IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
+                                 MESSAGE = .TRUE. 
+                              ENDIF 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1330) &
+                                 I, J, K, M, C_PS(IJK,M) 
+                              ABORT = .TRUE. 
+                           ENDIF 
+! Verify that the solids temperature is within the required bounds.
+                           IF((T_S(IJK,M)<=TMIN .OR. &
+                              T_S(IJK,M)>=TMAX)) THEN
+                              IF (.NOT.MESSAGE) THEN 
+                                 IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
+                                 MESSAGE = .TRUE. 
+                              ENDIF 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1410) &
+                                 I, J, K, M, T_S(IJK,M)
+                              ABORT = .TRUE. 
+                           ENDIF 
+                        ENDIF
+
+                        DO N = 1, NMAX(M)
+                           IF( DIF_s(IJK, M, N) < ZERO) THEN
+                              IF (.NOT.MESSAGE) THEN 
+                                 IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
+                                 MESSAGE = .TRUE. 
+                              ENDIF 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1331) &
+                                 I, J, K, M, DIF_s(IJK, M, N)
+                              ABORT = .TRUE. 
+                           ENDIF
+                        ENDDO
+
+!  Sum of solids mass fractions should be one
+                        IF (SPECIES_EQ(M)) THEN 
+                           lSUM = sum(X_S(IJK,M,1:NMAX(M)) )
+
+                           IF (ROP_S(IJK,M) /= ZERO) THEN 
+                              IF (ABS(ONE - lSUM) > TOL_COM) THEN 
                                  IF (.NOT.MESSAGE) THEN 
                                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                                     MESSAGE = .TRUE. 
                                  ENDIF 
-                                 IF(DMP_LOG)WRITE (UNIT_LOG, 1105) I, J, K, M, R_SP(IJK,M,N), N 
-                                 ABORT = .TRUE. 
-                              ENDIF 
-                              IF (ROX_SC(IJK,M,N) < ZERO) THEN 
-                                  IF (.NOT.MESSAGE) THEN 
-                                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
-                                     MESSAGE = .TRUE. 
-                                  ENDIF 
-                                  IF(DMP_LOG)WRITE(UNIT_LOG,1106)I,J,K,M,ROX_SC(IJK,M,N),N 
-                                  ABORT = .TRUE. 
-                               ENDIF 
-                            END DO 
-                         ENDIF
-                      END DO 
-                  ENDIF
-
-!  Sum of gas mass fractions should be one
-                   IF (SPECIES_EQ(0)) THEN 
-                      SUM = ZERO 
-                      N = 1 
-                      IF (NMAX(0) > 0) THEN
-                         DO N = 1, NMAX(0)
-                            SUM = SUM + X_G(IJK,N) 
-                         END DO 
-                         N = NMAX(0) + 1 
-                      ENDIF 
-                      IF (ABS(ONE - SUM) > TOL_COM) THEN 
-                         IF (.NOT.MESSAGE) THEN 
-                            IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
-                            MESSAGE = .TRUE. 
-                         ENDIF 
-                         MESSAGE_X_G = .TRUE. 
-                      ENDIF 
-                      IF (SUM < SUM_MIN_G) THEN 
-                         SUM_MIN_G = SUM 
-                         I_MIN_G = I 
-                         J_MIN_G = J 
-                         K_MIN_G = K 
-                      ELSE IF (SUM > SUM_MAX_G) THEN 
-                         SUM_MAX_G = SUM 
-                         I_MAX_G = I 
-                         J_MAX_G = J 
-                         K_MAX_G = K 
-                      ENDIF 
-                      IF (SUM < 0.9) THEN         ! < 0.9 
-                         COUNT_G(1) = COUNT_G(1) + 1 
-                      ELSE IF (SUM < 0.99) THEN   ! 0.9    - 0.99 
-                         COUNT_G(2) = COUNT_G(2) + 1 
-                      ELSE IF (SUM < 0.999) THEN  ! 0.99   - 0.999 
-                         COUNT_G(3) = COUNT_G(3) + 1 
-                      ELSE IF (SUM < 0.9999) THEN ! 0.999  - 0.9999 
-                         COUNT_G(4) = COUNT_G(4) + 1 
-                      ELSE IF (SUM < 1.0001) THEN ! 0.9999 - 1.0001 
-                         COUNT_G(5) = COUNT_G(5) + 1 
-                      ELSE IF (SUM < 1.001) THEN  ! 1.0001 - 1.001 
-                         COUNT_G(6) = COUNT_G(6) + 1 
-                      ELSE IF (SUM < 1.01) THEN   ! 1.001  - 1.01 
-                         COUNT_G(7) = COUNT_G(7) + 1 
-                      ELSE IF (SUM < 1.1) THEN    ! 1.01   - 1.1 
-                         COUNT_G(8) = COUNT_G(8) + 1 
-                      ELSE                        ! > 1.1 
-                         COUNT_G(9) = COUNT_G(9) + 1 
-                      ENDIF 
-                   ENDIF 
-
-                   IF(.NOT.DISCRETE_ELEMENT)THEN
-                      DO M = 1, MMAX 
-!  Sum of solids mass fractions should be one
-                         IF (SPECIES_EQ(M)) THEN 
-                            SUM = ZERO 
-                            N = 1 
-                            IF (NMAX(M) > 0) THEN 
-                               DO N = 1, NMAX(M) 
-                                  SUM = SUM + X_S(IJK,M,N) 
-                               END DO 
-                               N = NMAX(M) + 1 
-                            ENDIF 
-                            IF (ROP_S(IJK,M) /= ZERO) THEN 
-                               IF (ABS(ONE - SUM) > TOL_COM) THEN 
-                                  IF (.NOT.MESSAGE) THEN 
-                                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
-                                     MESSAGE = .TRUE. 
-                                  ENDIF 
-                                  MESSAGE_X_S(M) = .TRUE. 
-                               ENDIF 
-                               IF (SUM < SUM_MIN_S(M)) THEN 
-                                  SUM_MIN_S(M) = SUM 
+                                 MESSAGE_X_S(M) = .TRUE. 
+                              ENDIF
+                               IF (lSUM < SUM_MIN_S(M)) THEN 
+                                  SUM_MIN_S(M) = lSUM 
                                   I_MIN_S(M) = I 
                                   J_MIN_S(M) = J 
                                   K_MIN_S(M) = K 
-                               ELSE IF (SUM > SUM_MAX_S(M)) THEN 
-                                  SUM_MAX_S(M) = SUM 
+                               ELSE IF (lSUM > SUM_MAX_S(M)) THEN 
+                                  SUM_MAX_S(M) = lSUM 
                                   I_MAX_S(M) = I 
                                   J_MAX_S(M) = J 
                                   K_MAX_S(M) = K 
                                ENDIF 
-                               IF (SUM < 0.9) THEN   ! < 0.9 
+                               IF (lSUM < 0.9) THEN   ! < 0.9 
                                   COUNT_S(M,1) = COUNT_S(M,1) + 1 
 !                                                ! 0.9    - 0.99
-                               ELSE IF (SUM < 0.99) THEN 
+                               ELSE IF (lSUM < 0.99) THEN 
                                   COUNT_S(M,2) = COUNT_S(M,2) + 1 
 !                                                ! 0.99   - 0.999
-                               ELSE IF (SUM < 0.999) THEN 
+                               ELSE IF (lSUM < 0.999) THEN 
                                   COUNT_S(M,3) = COUNT_S(M,3) + 1 
 !                                                ! 0.999  - 0.9999
-                               ELSE IF (SUM < 0.9999) THEN 
+                               ELSE IF (lSUM < 0.9999) THEN 
                                   COUNT_S(M,4) = COUNT_S(M,4) + 1 
 !                                                ! 0.9999 - 1.0001
-                               ELSE IF (SUM < 1.0001) THEN 
+                               ELSE IF (lSUM < 1.0001) THEN 
                                   COUNT_S(M,5) = COUNT_S(M,5) + 1 
 !                                                ! 1.0001 - 1.001
-                               ELSE IF (SUM < 1.001) THEN 
+                               ELSE IF (lSUM < 1.001) THEN 
                                   COUNT_S(M,6) = COUNT_S(M,6) + 1 
 !                                                ! 1.001  - 1.01
-                               ELSE IF (SUM < 1.01) THEN 
+                               ELSE IF (lSUM < 1.01) THEN 
                                   COUNT_S(M,7) = COUNT_S(M,7) + 1 
 !                                                ! 1.01   - 1.1
-                               ELSE IF (SUM < 1.1) THEN 
+                               ELSE IF (lSUM < 1.1) THEN 
                                   COUNT_S(M,8) = COUNT_S(M,8) + 1 
                                ELSE                  ! > 1.1 
                                   COUNT_S(M,9) = COUNT_S(M,9) + 1 
                               ENDIF 
                            ENDIF 
                         ENDIF 
-!
-!   Solids viscosity, conductivity and specific heat must be positive
-                        IF (MU_S(IJK,M) < ZERO) THEN 
-                           IF (.NOT.MESSAGE) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
-                              MESSAGE = .TRUE. 
-                           ENDIF 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1310) I, J, K, M, MU_S(IJK,M) 
-                           ABORT = .TRUE. 
-                        ENDIF 
-                        IF (ENERGY_EQ) THEN 
-                           IF (K_S(IJK,M) < ZERO) THEN 
-                              IF (.NOT.MESSAGE) THEN 
-                                 IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
-                                 MESSAGE = .TRUE. 
-                              ENDIF 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1320) I, J, K, M, K_S(IJK,M) 
-                              ABORT = .TRUE. 
-                           ENDIF 
-                           IF (C_PS(IJK,M) <= ZERO) THEN 
-                              IF (.NOT.MESSAGE) THEN 
-                                 IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
-                                 MESSAGE = .TRUE. 
-                              ENDIF 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1330) I, J, K, M, C_PS(IJK,M) 
-                              ABORT = .TRUE. 
-                           ENDIF 
-!
-!QX
-                        IF ( (T_S(IJK,M)<=TMIN .OR. T_S(IJK,M)>=TMAX) &
-                             .and. ROP_S(IJK,M) .gt. 1.D-16) THEN 
-                              IF (.NOT.MESSAGE) THEN 
-                                 IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
-                                 MESSAGE = .TRUE. 
-                              ENDIF 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1410) I, J, K, M, T_S(IJK,M) 
-                              ABORT = .TRUE. 
-                           ENDIF 
-                        ENDIF 
-                 		     DO N = 1, NMAX(M)
-                           IF( DIF_s(IJK, M, N) < ZERO) THEN
-                              IF (.NOT.MESSAGE) THEN 
-                                 IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
-                                 MESSAGE = .TRUE. 
-                              ENDIF 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1331) I, J, K, M, DIF_s(IJK, M, N) 
-                              ABORT = .TRUE. 
-		                         ENDIF
-		                      ENDDO
-                     END DO 
-                  ENDIF
 
-!-------------------------------------------------------------
+                     ENDDO ! Loop over solids phases.
+                  ENDIF ! IF(.NOT.DISCRETE_ELEMENT)
 
-                  IF (ENERGY_EQ) THEN 
-                     IF (T_G(IJK)<=TMIN .OR. T_G(IJK)>=TMAX) THEN 
+! Verify that the net interphase mass transfer rates sum to zero.
+! This check is not needed when using the stiff chemistry solver.
+!---------------------------------------------------------------------//
+                  IF(RRATE)THEN
+
+! The rate of interphase mass transfer must sum to zero over all phases.
+                     lSUM = SUM_R_G(IJK) 
+                     IF (MMAX > 0) THEN 
+                        DO M = 1, MMAX 
+                           lSUM = lSUM + SUM_R_S(IJK,M)
+                        END DO 
+                     ENDIF
+                     IF (ABS(lSUM) > SMALL_NUMBER) THEN
+                        MESSAGE_rxnsum = .true.
+                           IF(abs(lSUM) > abs(RXNSUM_MAX)) THEN
+                              RXNSUM_MAX   = lSUM
+                              I_RXNSUM_MAX = i
+                              J_RXNSUM_MAX = j
+                              K_RXNSUM_MAX = k
+                           endif
                         IF (.NOT.MESSAGE) THEN 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
                            MESSAGE = .TRUE. 
                         ENDIF 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1400) I, J, K, T_G(IJK) 
-                        ABORT = .TRUE. 
-                     ENDIF 
-                  ENDIF 
-               ENDIF 
-            END DO 
-         END DO 
-      END DO
-       
-      call global_all_or(MESSAGE_rxnsum)
-      IF (MESSAGE_rxnsum) THEN 
-	        call global_all_sum(COUNT_RXNSUM0)
-       	 call global_all_sum(COUNT_RXNSUM1)
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1415) COUNT_RXNSUM0, COUNT_RXNSUM1, &
+! Forced exist if an imbalance exceeds the tollerance.
+                        IF (ABS(lSUM) > TOL_COM) then
+                           COUNT_RXNSUM1 = COUNT_RXNSUM1 + 1
+                           ABORT = .TRUE.
+                        ELSE
+! Count the number of cells that do not sum to one, but are below the
+! tollerance for force and exit.
+                           COUNT_RXNSUM0 = COUNT_RXNSUM0 + 1
+                        ENDIF
+                     ENDIF
+
+! Verify that the net rate of production (SUM_R_x) matches the the total
+! amount of mass transferred from other phases.
+                     DO L = 0, MMAX
+                        IF (L == 0) THEN 
+                           lSUM = SUM_R_G(IJK) 
+                        ELSE 
+                           lSUM = SUM_R_S(IJK,L) 
+                        ENDIF 
+                        DO M = 0, MMAX 
+                           IF (M > L) THEN 
+                              LM = L + 1 + (M - 1)*M/2 
+                              lSUM = lSUM - R_PHASE(IJK,LM) 
+                           ELSE IF (L > M) THEN 
+                              LM = M + 1 + (L - 1)*L/2 
+                              lSUM = lSUM + R_PHASE(IJK,LM) 
+                           ENDIF 
+                        END DO
+
+                        IF (ABS(lSUM) > SMALL_NUMBER) THEN
+                           MESSAGE_masstr(L) = .true. 
+                           IF(abs(lSUM) > abs(masstr_MAX(L))) THEN
+                              masstr_MAX(L) = lSUM
+                              I_masstr_MAX(L) = i
+                              J_masstr_MAX(L) = j
+                              K_masstr_MAX(L) = k
+                           ENDIF
+                           IF (.NOT.MESSAGE) THEN 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
+                              MESSAGE = .TRUE. 
+                           ENDIF
+
+! Force an exit if an imbalance exceeds the tollerance.
+                           IF(ABS(lSUM) > TOL_COM) then
+                              COUNT_masstr1(L) = COUNT_masstr1(L) + 1
+                              ABORT = .TRUE. 
+                           ELSE
+! Count the number of cells that do not sum to one, but are below the
+! tollerance for force and exit.
+                              COUNT_masstr0(L) = COUNT_masstr0(L) + 1
+                           ENDIF
+                        ENDIF 
+                     END DO
+
+
+                     IF(SPECIES_EQ(0))THEN
+! Verify that the rates of formation and consumption adhear to the
+! expected coding restraints. (non-negative)
+                        DO N = 1, NMAX(0)
+! Rates of production must be non-negative.
+                           IF (R_GP(IJK,N) < ZERO) THEN
+                              IF (.NOT.MESSAGE) THEN 
+                                 IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
+                                 MESSAGE = .TRUE. 
+                              ENDIF 
+                              IF(DMP_LOG) WRITE (UNIT_LOG, 1103) &
+                                 I, J, K, R_GP(IJK,N), N 
+                              ABORT = .TRUE. 
+                           ENDIF
+! Rates of consumption must be non-negative. 
+                           IF (ROX_GC(IJK,N) < ZERO) THEN 
+                              IF (.NOT.MESSAGE) THEN 
+                                 IF(DMP_LOG)WRITE (UNIT_LOG, 1000) TIME 
+                                 MESSAGE = .TRUE. 
+                              ENDIF 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1104) &
+                                 I, J, K, ROX_GC(IJK,N), N 
+                              ABORT = .TRUE. 
+                           ENDIF 
+                        END DO 
+                     ENDIF
+
+! Verify that the rates of formation and consumption adhear to the
+! expected coding restraints. (non-negative)
+                     IF(.NOT.DISCRETE_ELEMENT)THEN
+                        DO M = 1, MMAX 
+                           IF(SPECIES_EQ(M))THEN
+                              DO N = 1, NMAX(M) 
+! Rates of production must be non-negative.
+                                 IF (R_SP(IJK,M,N) < ZERO) THEN 
+                                    IF (.NOT.MESSAGE) THEN 
+                                       IF(DMP_LOG)WRITE (UNIT_LOG,1000)&
+                                          TIME 
+                                       MESSAGE = .TRUE. 
+                                    ENDIF 
+                                    IF(DMP_LOG)WRITE (UNIT_LOG, 1105) &
+                                       I, J, K, M, R_SP(IJK,M,N), N 
+                                    ABORT = .TRUE. 
+                                 ENDIF 
+! Rates of consumption must be non-negative. 
+                                 IF (ROX_SC(IJK,M,N) < ZERO) THEN 
+                                    IF (.NOT.MESSAGE) THEN 
+                                       IF(DMP_LOG)WRITE (UNIT_LOG,1000)&
+                                          TIME 
+                                       MESSAGE = .TRUE. 
+                                    ENDIF 
+                                    IF(DMP_LOG)WRITE(UNIT_LOG,1106) &
+                                       I,J,K,M,ROX_SC(IJK,M,N),N 
+                                    ABORT = .TRUE. 
+                                 ENDIF 
+                              END DO 
+                           ENDIF
+                        END DO 
+                     ENDIF
+                  ENDIF ! End reaction checks
+
+
+               ENDIF ! IF(.NOT.WALL_AT(IJK))
+            ENDDO ! DO I = ISTART2, IEND2 
+         ENDDO ! DO J = JSTART2, JEND2 
+      ENDDO ! DO K = KSTART2, KEND2 
+
+
+! Combine all error messages associated with reaction imbalances.
+!---------------------------------------------------------------------//
+      CALL global_all_or(MESSAGE_rxnsum)
+      IF(MESSAGE_rxnsum) THEN 
+         CALL global_all_sum(COUNT_RXNSUM0)
+         CALL global_all_sum(COUNT_RXNSUM1)
+         IF(DMP_LOG)WRITE(UNIT_LOG, 1415) COUNT_RXNSUM0, COUNT_RXNSUM1,&
             RXNSUM_MAX, I_RXNSUM_MAX, J_RXNSUM_MAX, K_RXNSUM_MAX 
       ENDIF 
 
+! Combine all error messages associated with mass transfer.
+!---------------------------------------------------------------------//
       DO L = 0, MMAX
-         call global_all_or(MESSAGE_masstr(L))
+         CALL global_all_or(MESSAGE_masstr(L))
          IF (MESSAGE_masstr(L)) THEN
-        	   call global_all_sum(COUNT_masstr0(L))
-        	   call global_all_sum(COUNT_masstr1(L))
+            CALL global_all_sum(COUNT_masstr0(L))
+            CALL global_all_sum(COUNT_masstr1(L))
             IF(DMP_LOG)WRITE (UNIT_LOG, 1420) L, COUNT_masstr0(L), &
                COUNT_masstr1(L), masstr_MAX(L), I_masstr_MAX(L), &
                J_masstr_MAX(L), K_masstr_MAX(L) 
          ENDIF 
       ENDDO
-      
-      call global_all_or(MESSAGE_X_G)
+
+! Combine all error messages associated invalid species mass fractions.
+!---------------------------------------------------------------------//
+      CALL global_all_or(MESSAGE_X_G)
       IF (MESSAGE_X_G) THEN 
-       	 call global_all_sum(COUNT_G)
+         CALL global_all_sum(COUNT_G)
          SUM_COUNT = 0 
          DO L = 1, 9 
             SUM_COUNT = SUM_COUNT + COUNT_G(L) 
@@ -658,13 +711,14 @@
          IF(DMP_LOG)WRITE (UNIT_LOG, 1430) 
          FR_COUNT = DBLE(COUNT_G)/DBLE(SUM_COUNT) 
          L = 10 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1432) (COUNT_G(L),FR_COUNT(L),L=1,9) 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1434) SUM_MIN_G, I_MIN_G, J_MIN_G, K_MIN_G 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1436) SUM_MAX_G, I_MAX_G, J_MAX_G, K_MAX_G 
+         IF(DMP_LOG)WRITE(UNIT_LOG, 1432) (COUNT_G(L),FR_COUNT(L),L=1,9) 
+         IF(DMP_LOG)WRITE(UNIT_LOG, 1434) SUM_MIN_G, &
+            I_MIN_G, J_MIN_G, K_MIN_G 
+         IF(DMP_LOG)WRITE(UNIT_LOG, 1436) SUM_MAX_G, &
+            I_MAX_G, J_MAX_G, K_MAX_G 
       ENDIF 
-!
       DO M = 1, MMAX 
-         call global_all_or(MESSAGE_X_S(M))
+         CALL global_all_or(MESSAGE_X_S(M))
          IF (MESSAGE_X_S(M)) THEN 
             call global_all_sum(COUNT_S(M,:))
             SUM_COUNT = 0 
@@ -675,29 +729,31 @@
             IF(DMP_LOG)WRITE (UNIT_LOG, 1440) M 
             FR_COUNT = DBLE(COUNT_S(M,:))/DBLE(SUM_COUNT) 
             L = 10 
-            IF(DMP_LOG)WRITE (UNIT_LOG, 1442) (COUNT_S(M,L),FR_COUNT(L),L=1,9) 
-            IF(DMP_LOG)WRITE (UNIT_LOG, 1444) SUM_MIN_S(M), I_MIN_S(M), J_MIN_S(M), &
-               K_MIN_S(M) 
-            IF(DMP_LOG)WRITE (UNIT_LOG, 1446) SUM_MAX_S(M), I_MAX_S(M), J_MAX_S(M), &
-               K_MAX_S(M) 
+            IF(DMP_LOG) WRITE(UNIT_LOG, 1442) &
+               (COUNT_S(M,L),FR_COUNT(L),L=1,9) 
+            IF(DMP_LOG) WRITE(UNIT_LOG, 1444) &
+               SUM_MIN_S(M), I_MIN_S(M), J_MIN_S(M), K_MIN_S(M)
+            IF(DMP_LOG) WRITE(UNIT_LOG, 1446) &
+               SUM_MAX_S(M), I_MAX_S(M), J_MAX_S(M), K_MAX_S(M) 
          ENDIF 
       END DO 
-      IF (MESSAGE .AND. DMP_LOG)WRITE (UNIT_LOG, 1500) 
-!
-      CALL END_LOG 
-      IF(ABORT) then
+      IF (MESSAGE .AND. DMP_LOG) WRITE(UNIT_LOG, 1500) 
+      CALL END_LOG
 
-         if(.not.dmp_log)then
-!enable dmp_log, open logfile, and redo the check (goto 1), so that this PE can
-!  write the error message before aborting
-            call open_pe_log(ier)
-         	  dmp_log = .true.
-	           GOTO 1 
+! Enable dmp_log, open logfile, and redo the check. This will allow 
+! the process that generated the error to write out specific error info.
+!---------------------------------------------------------------------//
+
+      IF(ABORT) THEN
+         IF(.NOT.dmp_log) THEN
+            CALL open_pe_log(ier)
+            dmp_log = .true.
+            GOTO 1
          ELSE
             CALL MFIX_EXIT(myPE)
-       	 ENDIF
+         ENDIF
       ENDIF
-!
+
       RETURN  
  1000 FORMAT(/1X,70('*')//' From: CHECK_DATA_30',5X,'Time = ',G12.5,/&
          ' Message: One or more of the following errors detected:',/&
