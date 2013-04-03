@@ -1289,6 +1289,7 @@
 
          WRITE(PVTU_UNIT,100) '  </PUnstructuredGrid>'
          WRITE(PVTU_UNIT,100) '</VTKFile>'
+         CLOSE(PVTU_UNIT)
       ENDIF
 
 
