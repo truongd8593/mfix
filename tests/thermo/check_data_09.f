@@ -60,26 +60,6 @@
       foundDPM = .FALSE.
       IF(DISCRETE_ELEMENT .OR. MPPIC) foundDPM = .TRUE.
 
-! ISAT has a different implementation for reactions.
-      IF(CALL_ISAT) THEN
-         IF(myPE == PE_IO) THEN
-            write(*,1013)
-            write(*,1000)
-            write(UNIT_LOG,1013)
-            write(UNIT_LOG,1000)
-         ENDIF
-         CALL MFiX_EXIT(myPE)
-! DI has a different implementation for reactions.
-      ELSEIF(CALL_DI) THEN
-         IF(myPE == PE_IO) THEN
-            write(*,1014)
-            write(*,1000)
-            write(UNIT_LOG,1014)
-            write(UNIT_LOG,1000)
-         ENDIF
-         CALL MFiX_EXIT(myPE)
-      ENDIF
-
 ! Initialize flag indicating if the user was already warned.
       WARNED_USR(:) = .FALSE.
 
@@ -270,15 +250,5 @@
          ' Inconsistent user input. Energy equations are NOT being',/  &
          ' solved and a user defined heat of reaction was detected',   &
          ' for chemical',/' reaction ',A,'.')
-
- 1013 FORMAT(/1X,70('*')/' From: CHECK_DATA_09',/' Error 1013:',       &
-         ' Inconsistent user input. ISAT for chemical reactions',/     &
-         ' require a different input method thaN non-ISAT reactions.')
-
-
- 1014 FORMAT(/1X,70('*')/' From: CHECK_DATA_09',/' Error 1014:',       &
-         ' Inconsistent user input. Direct Integration for chemical',/ &
-         ' reactions require a different input method thaN non-ISAT',  &
-         ' reactions.')
 
       END SUBROUTINE CHECK_DATA_09
