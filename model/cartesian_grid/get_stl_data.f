@@ -996,14 +996,18 @@
 
       IJKC = IJK_OF_NODE(NODE)
 
-      IF(IJKC>DIMENSION_3) THEN
+      IF(IJKC<1.OR.IJKC>DIMENSION_3) THEN
 
-         print*,'myPE        =',myPE
-         print*,'DIMENSION_3 =',DIMENSION_3
-         print*,'IJKC        =',IJKC
-         print*,'IJK         =',IJK
-         print*,'I,J,K       =',I_OF(IJK),J_OF(IJK),K_OF(IJK)
-         print*,'NODE        =',NODE
+!         print*,'myPE        =',myPE
+!         print*,'DIMENSION_3 =',DIMENSION_3
+!         print*,'IJKC        =',IJKC
+!         print*,'IJK         =',IJK
+!         print*,'I,J,K       =',I_OF(IJK),J_OF(IJK),K_OF(IJK)
+!         print*,'NODE        =',NODE
+
+!     Leave f_stl as undefined if we are out of bounds
+!     This can happen at I=1 and NODE=4 for example
+         RETURN
 
       ENDIF
 
