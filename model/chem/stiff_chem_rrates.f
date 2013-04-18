@@ -13,13 +13,19 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-      use fldvar,     only : EP_g, RO_g, T_g, X_g     ! Gas Phase
-      use fldvar,     only : ROP_S, T_s, X_s, D_p     ! Solids Phases
+      use fldvar,     only : EP_g, RO_g, T_g, X_g, ROP_g
+      use fldvar,     only : ROP_S, T_s, X_s, D_p, ROP_s
 
+      use physprop,   only : RO_s, C_pg, C_ps, MMAX, NMAX, RO_sv
       use rxns,       only : REACTION, NO_OF_RXNS
       use run,        only : SPECIES_EQ, UNITS
-      use physprop,   only : RO_s, C_pg, C_ps, MMAX, NMAX, RO_sv
+      use stiff_chem, only : NEQ_DIMN, ODE_DIMN_all
       use stiff_chem, only : CALL_GROW, mapODEtoMFIX
+
+      use toleranc,   only : ZERO_EP_s
+
+
+      use compar,   only : myPE
 
       use sendrecv
 
@@ -29,53 +35,55 @@
 !---------------------------------------------------------------------//
 ! (1) Number of ODEs to be solve
 ! (2) Fluid cell index
-      INTEGER, intent(in) :: lNEQ(2)
+      INTEGER, intent(in) :: lNEQ(NEQ_DIMN)
 ! Independent variable (not used) 
       INTEGER, intent(in) :: lTime
 ! Array of dependent variable initial values.
-      DOUBLE PRECISION, dimension(lNEQ(1)), intent(in)  :: Y
+      DOUBLE PRECISION, dimension(ODE_DIMN_all), intent(in)  :: Y
 ! Rate of change of dependent variables.
-      DOUBLE PRECISION, dimension(lNEQ(1)), intent(out) :: YDOT
+      DOUBLE PRECISION, dimension(ODE_DIMN_all), intent(out) :: YDOT
 
 ! Local Variables:
 !---------------------------------------------------------------------//
-      INTEGER IJK  ! Fluid Cell Index
-      INTEGER H    ! Reaction loop counter
-      INTEGER L, M ! Global Phase index loop counters
-      INTEGER N    ! Global species index
-      INTEGER lN   ! Local reaction speices index/loop counter
-      INTEGER mXfr ! Global phase index for mass transfer
+      INTEGER :: IJK  ! Fluid Cell Index
+      INTEGER :: H    ! Reaction loop counter
+      INTEGER :: L, M ! Global Phase index loop counters
+      INTEGER :: N    ! Global species index
+      INTEGER :: lN   ! Local reaction speices index/loop counter
+      INTEGER :: mXfr ! Global phase index for mass transfer
 
 ! User-defined reaction rates returned from USR_RATES
-      DOUBLE PRECISION RATES(NO_OF_RXNS)
+      DOUBLE PRECISION :: RATES(NO_OF_RXNS)
 ! Rate of formation (+) or consumption (-) of a species (GENERIC).
-      DOUBLE PRECISION lRate
+      DOUBLE PRECISION :: lRate
 ! Rate of formation (+) or consumption (-) of each gas phase species.
 ! > Accumulative over all reactions.
-      DOUBLE PRECISION lRg(DIMENSION_N_g)
+      DOUBLE PRECISION :: lRg(DIMENSION_N_g)
 ! Rate of formation (+) or consumption (-) of each gas phase species.
 ! > Single reaction.
-      DOUBLE PRECISION rRg(DIMENSION_N_g)
+      DOUBLE PRECISION :: rRg(DIMENSION_N_g)
 ! Net rate of change of gas phase material.
-      DOUBLE PRECISION sumlRg
+      DOUBLE PRECISION :: sumlRg
 ! Heat of reaction assigned to gas phase for a reaction.
-      DOUBLE PRECISION rHORg
+      DOUBLE PRECISION :: rHORg
 ! Cummulative heat of reaction assigned to gas phase.
-      DOUBLE PRECISION lHORg
+      DOUBLE PRECISION :: lHORg
 ! Rate of formation (+) or consumption (-) of each solids phase species.
 ! > Accumulative over all reactions.
-      DOUBLE PRECISION lRs(DIMENSION_M, DIMENSION_N_s)
+      DOUBLE PRECISION :: lRs(DIMENSION_M, DIMENSION_N_s)
 ! Rate of formation (+) or consumption (-) of each solids phase species.
 ! > Single reaction.
-      DOUBLE PRECISION rRs(DIMENSION_M, DIMENSION_N_s)
+      DOUBLE PRECISION :: rRs(DIMENSION_M, DIMENSION_N_s)
 ! Net rate of change of solids phase material.
-      DOUBLE PRECISION sumlRs(DIMENSION_M)
+      DOUBLE PRECISION :: sumlRs(DIMENSION_M)
 ! Heat of reaction assigned to the solids phase for a reaction.
-      DOUBLE PRECISION rHORs(DIMENSION_M)
+      DOUBLE PRECISION :: rHORs(DIMENSION_M)
 ! Cummulative heat of reaction assinged to the solids phase.
-      DOUBLE PRECISION lHORs(DIMENSION_M)
+      DOUBLE PRECISION :: lHORs(DIMENSION_M)
 ! Rate of interphase enthalpy transfer due to mass transfer.
-      DOUBLE PRECISION RxH(0:DIMENSION_M, 0:DIMENSION_M)
+      DOUBLE PRECISION :: RxH(0:DIMENSION_M, 0:DIMENSION_M)
+
+      DOUBLE PRECISION :: sumlRsoROs
 
 ! Loop index for ODEs
       INTEGER :: Node
@@ -83,11 +91,14 @@
       INTEGER :: iErr
 
 ! Reaction limiters.
-      DOUBLE PRECISION, parameter :: speciesLimiter = 1.0d-6
+      DOUBLE PRECISION, parameter :: speciesLimiter = 1.0d-7
 
 ! External Function for comparing two numbers.
       LOGICAL, external :: COMPARE
       DOUBLE PRECISION, external :: CALC_H0, CALC_H
+
+      LOGICAL, save :: reportedNaN = .FALSE.
+      LOGICAL :: foundNaN
 
 ! UDF for Reaction Rates:
       external USR_RATES
@@ -98,15 +109,15 @@
       include 'ep_s2.inc'
 
 ! Initialize variables:
-      IJK   = lNEQ(2)
-      RATES = ZERO
-      YDOT  = ZERO
+      IJK    = lNEQ(2)
+      RATES  = ZERO
+      YDOT   = ZERO
 
       lRg = ZERO; sumlRg = ZERO; lHORg = ZERO
       lRs = ZERO; sumlRs = ZERO; lHORs = ZERO
 
 ! Map the current ODE independent variables to MFIX variables.
-      CALL mapODEtoMFIX(IJK, Y)
+      CALL mapODEtoMFIX(lNEQ, Y)
 
 ! Calculate user defined reaction rates.
       CALL USR_RATES(IJK, RATES)
@@ -236,7 +247,7 @@
             IF(UNITS == 'SI') THEN
                lHORg = lHORg + 4.183925d3*rHORg
                DO M=1,MMAX
-                  lHORs = lHORs + 4.183925d3*rHORs(M)
+                  lHORs(M) = lHORs(M) + 4.183925d3*rHORs(M)
                ENDDO
             ELSE
                lHORg = lHORg + rHORg
@@ -248,78 +259,71 @@
 ! User-defined heat of reaction.
             lHORg = Reaction(H)%HoR(0) * RATES(H)
             DO M=1, MMAX
-               lHORs = Reaction(H)%HoR(M) * RATES(H)
+               lHORs(M) = Reaction(H)%HoR(M) * RATES(H)
             ENDDO
          ENDIF
 
       ENDDO RXN_LP ! Loop over reactions.
 
-      sumlRg = sum(lRg)
-      DO M=1, MMAX
-         sumlRs(M) = sum(lRs(M,:))
-      ENDDO
 
+      sumlRg = sum(lRg)
+
+
+      sumlRs = 0.0d0
+      sumlRsoROs = 0.0d0
+      DO M=1, MMAX
+         IF(lNEQ(2+M) == 1) THEN
+            sumlRs(M) = sum(lRs(M,:))
+            sumlRsoROs = sumlRsoROs + sumlRs(M)/RO_s(M)
+         ENDIF
+      ENDDO
 
 
 !<<<--------------------------  ODE Setup  ------------------------->>>!
 
-! Gas Phase Variables:
-!---------------------------------------------------------------------//
+      Node = 1
+
 ! Density:  RO_g
-      YDOT(1) = (sumlRg + RO_g(IJK)*sum(sumlRs(:)/RO_s(:)))/EP_G(IJK)
+      YDOT(Node) = (sumlRg + RO_g(IJK)*sumlRsoROs)/EP_G(IJK)
+      Node = Node + 1
+
 ! Temperature: T_g
-      YDOT(2) = -lHORg/(EP_G(IJK)*RO_g(IJK)*C_pg(IJK))
+      YDOT(Node) = -lHORg/(ROP_g(IJK)*C_pg(IJK))
+      Node = Node + 1
+
 ! Species mass fractions: X_g
       DO N=1,NMAX(0)
-         Node = 2 + N
-         YDOT(Node) = (lRg(N) - X_g(IJK,N)*sumlRg)/(EP_G(IJK)*RO_g(IJK))
+         YDOT(Node) = (lRg(N) - X_g(IJK,N)*sumlRg)/(ROP_g(IJK))
+         Node = Node + 1
       ENDDO
 
-      Node = 3+NMAX(0)
 
-! Solids Phase Variables:
-!---------------------------------------------------------------------//
-      DO M = 1, MMAX
-         IF(SPECIES_EQ(M)) THEN
-            IF(COMPARE(EP_S(IJK,1),ZERO)) THEN
-! Solids volume fraction.
-               YDOT(Node) = ZERO
-               Node = Node + 1
-! Solids temperature.
-               YDOT(Node) = ZERO
-               Node = Node + 1
-! Solids phase species mass fractions.
-               DO N=1,NMAX(M)
-                  YDOT(Node) = ZERO
-                  Node = Node + 1
-               ENDDO
-! Solids phase diameter.
-               IF(CALL_GROW) THEN
-                  YDOT(Node) = ZERO
-                  Node = Node + 1
-               ENDIF
-            ELSE
-! Solids volume fraction: EP_s
-               YDOT(Node) = sumlRs(M)/RO_S(M)
-               Node = Node + 1
 ! Temperature: T_s
-               YDOT(Node) = -lHORs(M)/(EP_S(IJK,M)*RO_s(M)*C_ps(IJK,M))
-               Node = Node + 1
+      DO M = 1, MMAX
+         IF(ROP_s(IJK,M) > 1.0d-8) THEN
+            YDOT(Node) = -lHORs(M)/(ROP_s(IJK,M)*C_ps(IJK,M))
+         ELSE
+            YDOT(Node) = 0.0d0
+         ENDIF
+         Node = Node + 1
+      ENDDO
+
+
+      DO M = 1, MMAX
+         IF(lNEQ(2+M) == 1) THEN
+! Solids bulk density: ROP_s
+            YDOT(Node) = sumlRs(M)
+            Node = Node + 1
+
 ! Species Mass Fraction: X_s
-               DO N=1, NMAX(M)
-                  YDOT(Node) = (lRs(M,N) - X_s(IJK,M,N)*sumlRs(M)) /   &
-                     (EP_S(IJK,M)*RO_s(M))
-                  Node = Node + 1
-               ENDDO
-! Particle Diameter: Dp
-               IF(CALL_GROW) THEN
-                  YDOT(Node) = (ONE/(3.0d0*EP_S(IJK,M)*RO_S(M))) *     &
-                     D_P(IJK,M)*sumlRs(M)
-                  Node = Node + 1
-               ENDIF
-            ENDIF
+            DO N=1, NMAX(M)
+               YDOT(Node) = (lRs(M,N) - X_s(IJK,M,N)*sumlRs(M)) /      &
+                  ROP_s(IJK,M)
+               Node = Node + 1
+            ENDDO
          ENDIF
       ENDDO
+
 
       RETURN
       END SUBROUTINE STIFF_CHEM_RRATES

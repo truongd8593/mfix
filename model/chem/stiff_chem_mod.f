@@ -21,8 +21,14 @@
 
 ! ODEPACK Controlling parameters:
 !---------------------------------------------------------------------//
-! Dimension of ODEs solved in ISAT or DI
-      INTEGER :: ODE_DIMN
+! Dimension of ODEs solved in stiff solver.
+      INTEGER :: ODE_DIMN_all
+! Dimension of ODEs solved in stiff solver for gas phase only.
+      INTEGER :: ODE_DIMN_g
+
+! Dimension of ODEs solved in stiff solver for gas phase only.
+      INTEGER :: NEQ_DIMN
+
 ! Indicates type of Error control.
       INTEGER :: ODE_ITOL
 ! Relative error tolerance paramter.
@@ -83,9 +89,9 @@
       use output,   only : FULL_LOG
       use run,      only : TIME
 
-      USE indices
-
-      USE mpi_utility   
+!      use indices
+      use mpi_utility   
+      use stiff_chem_dbg
 
       implicit none
 
@@ -98,15 +104,19 @@
 
 ! Local Variables:
 !----------------------------------------------------------------------!
+! Error flag -> Integration failed in one or more fluid cells.
+      LOGICAL :: lErr_l   ! local
+      LOGICAL :: gErr_l   ! global
 
 ! Fluid Cell Index
       INTEGER :: IJK
-! ODEs solved in ISAT or DI                             
-      DOUBLE PRECISION, dimension(ODE_DIMN) :: ODE_VARS
+! The maximum number of ODEs to solve.
+      DOUBLE PRECISION, dimension(ODE_DIMN_all) :: ODE_VARS
 
 ! (1) :: Number of ODEs
 ! (2) :: Fluid cell index (IJK) passed into ODEPACK
-      INTEGER, dimension(2) :: lNEQ
+! (:) :: Flag for solving solid phase M density and species equations.
+      INTEGER, dimension(NEQ_DIMN) :: lNEQ
 ! Start time for integration
       DOUBLE PRECISION :: lT
 ! Stop time for integration
@@ -116,7 +126,7 @@
 ! Relative error tolerance paramter.
       DOUBLE PRECISION :: lRTOL(1)
 ! Absolue error tolerance parameter. (Dimension (ODE_DIMN))
-      DOUBLE PRECISION :: lATOL(ODE_DIMN)
+      DOUBLE PRECISION :: lATOL(ODE_DIMN_all)
 ! Index specifying the ODEPACK task.
       INTEGER :: lITASK
 ! Specifies the state of ODEPACK
@@ -136,26 +146,34 @@
 ! Jacobian type indicator.
       INTEGER :: lJT
 
+! The number of attempts of a specific fluid cell.
+      INTEGER :: lAtps
+
+      LOGICAL :: lReset
+
       INCLUDE 'function.inc'
 
-      lNEQ(1) = ODE_DIMN
+      lErr_l = .FALSE.
+
+      IF(FULL_LOG) CALL INIT_ODE_STATS()
 
       IJK_LP: DO IJK = IJKSTART3, IJKEND3
          IF(FLUID_AT(IJK)) THEN
 
+            lAtps = 0
+            lReset = .FALSE.
 
-! Map MFIX variables to ODE variables.
-            CALL mapMFIXtoODE(IJK, ODE_VARS)
+! Forced restset of tolerance values.
+            lRTOL = ODE_RTOL
+            lATOL = ODE_ATOL
 
-! Set the Fluid Cell IJK value
-            lNEQ(2) = IJK
+! Increment the attempts counter.
+  50        lAtps = lAtps + 1
 
 ! Forced restset to initial values.
             lT    = 0.0d0
             lTOUT = ODE_DT
             lITOL = ODE_ITOL
-            lRTOL = ODE_RTOL
-            lATOL = ODE_ATOL
             lLRW  = ODE_LRW
             lLIW  = ODE_LIW
             lJT   = ODE_JT
@@ -163,65 +181,120 @@
 ! Fixed parameters
             lITASK  = 1
             lISTATE = 1
-            lIOPT   = 0
+            lIOPT   = 1
+
+! Calculate the number of ODEs to solve.
+            CALL CALC_ODE_COEFF(lNEQ, IJK)
+
+! Clear the work arrays.
+            IWORK = 0
+            RWORK = ZERO
+
+! The maximum number of internal steps ODEPACK may use to integrate over
+! the time interval. The default value is 500.
+            IWORK(6) = 500000
 
             IF(CALC_REACTIONS(IJK)) THEN
+
+
+!               write(*,"(3x,'Reaction in ',I4)") IJK
+
+! Map MFIX variables to ODE variables.
+               CALL mapMFIXtoODE(lNEQ, ODE_VARS)
+
+! Store a copy of the original field variables. This allows for these
+! values to be 'reset' in the event that the stiff solver fails.
+               CALL ODE_UPDATE_OLD(ODE_DIMN_all, ODE_VARS)
+
+! Clear the error flag.
+ 100           iErr = 0
+
 ! Integrate flow field variables to incorporate reactions.
- 100           CALL DLSODA(STIFF_CHEM_RRATES, lNEQ, ODE_VARS, lT,      &
+               CALL DLSODA(STIFF_CHEM_RRATES, lNEQ, ODE_VARS, lT,      &
                   lTOUT, lITOL, lRTOL, lATOL, lITASK, lISTATE, lIOPT,  &
                   RWORK, lLRW, IWORK, lLIW, lJAC, lJT)
 
-               IF(lISTATE == -1 ) THEN
-                  write(*,"(/,3x,A,4(3x,I4))")                         &
-                     'ODEPACK: Additional Iterations Needed --> ',     &
-                     lISTATE, IJK, I_OF(IJK), J_OF(IJK)
-                  write(*,"(3x,'lT: ',g15.8,3x,'lTOUT: ',g15.8)")      &
-                     lT, lTOUT
-                  lISTATE = 2
-                  GoTo 100
-               ELSEIF(lISTATE /= 2) THEN
-!                  iErr = 2
-!                  EXIT IJK_LP
-!                  WRITE(*,1000) TIME, TIME+lTOUT, ODE_DT
-                  write(*,"(/,3x,'ODEPACK: Failure --> ',4(3x,I4))")   &
-                     lISTATE, IJK, I_OF(IJK), J_OF(IJK)
-                  write(*,"(3x,'lT: ',g15.8,3x,'lTOUT: ',g15.8)")      &
-                     lT, lTOUT
-               ENDIF
-            ENDIF
-! Map ODE variables to MFIX variables.
-            iErr = 0
-            CALL mapODEtoMFIX(IJK, ODE_VARS)
-         ENDIF
+! Verify that the results are well defined.
+               CALL CHECK_ODE_DATA(NEQ_DIMN, lNEQ, ODE_DIMN_all,       &
+                  ODE_VARS, lISTATE, iErr)
+
+! Successfully Integrated ODEs.
+               IF(iErr == 0) THEN
+                  lReset = .FALSE.
+! Additional integration steps are needed (lT < lTOUT).
+               ELSEIF(iErr == -1) THEN
+! Reste the state flag and keep integrating.
+                     lISTATE = 2
+                     goto 100
+
+! Too much accuracy was requested.
+               ELSEIF(iErr == -2) THEN
+                  IF(lAtps < 3) THEN
+! Write to the error log file.
+                     IF(ODE_DEBUG_LEVEL >= 2) CALL WRITE_ODE_LOG(iErr, &
+                        NEQ_DIMN, lNEQ, ODE_DIMN_all, ODE_VARS)
+! Reset the ODE variable array.
+                     CALL ODE_RESET(ODE_DIMN_all, ODE_VARS, lAtps)
+! Reset the field variables.
+                     CALL mapODEtoMFIX(lNEQ, ODE_VARS)
+! Loosen the convergence criteria and try again.
+                     lRTOL = ODE_RTOL*10.0d0
+                     lATOL = ODE_ATOL*10.0d0
+                     goto 50
+                  ELSE
+! Write to the error log file.
+                     IF(ODE_DEBUG_LEVEL >= 1) CALL WRITE_ODE_LOG(iErr, &
+                        NEQ_DIMN, lNEQ, ODE_DIMN_all, ODE_VARS)
+! Set the flag to reset the field variables to the initial values.
+                     lReset = .TRUE.
+                  ENDIF
+! All other errors.
+               ELSE
+! Tighten the convergence criteria and try again.
+                  IF(lAtps < 3) THEN
+! Write to the error log file.
+                     IF(ODE_DEBUG_LEVEL >= 2) CALL WRITE_ODE_LOG(iErr, &
+                        NEQ_DIMN, lNEQ, ODE_DIMN_all, ODE_VARS)
+! Reset the ODE variable array.
+                     CALL ODE_RESET(ODE_DIMN_all, ODE_VARS, lAtps)
+! Rest the filed variables to their original values.
+               CALL mapODEtoMFIX(lNEQ, ODE_VARS)
+! Reduce the tolerances and try again.
+                     lRTOL = ODE_RTOL/(10.0d0**lAtps)
+                     lATOL = ODE_ATOL/(10.0d0**lAtps)
+                     goto 50
+                  ELSE
+! Write to the error log file.
+                     IF(ODE_DEBUG_LEVEL >= 1) CALL WRITE_ODE_LOG(iErr, &
+                        NEQ_DIMN, lNEQ, ODE_DIMN_all, ODE_VARS)
+! Set the flag to reset the field variables to the initial values.
+                     lReset = .TRUE.
+                  ENDIF
+
+               ENDIF ! IF(iErr == 0)
+
+! Reset the field variables.
+               if(lReset) CALL ODE_RESET(ODE_DIMN_all, ODE_VARS, lAtps)
+! Store the results in the field variables.
+               CALL mapODEtoMFIX(lNEQ, ODE_VARS)
+! Collect solver stats.
+               IF(FULL_LOG) CALL UPDATE_ODE_STATS(lNEQ, NEQ_DIMN,      &
+                  IWORK(11), ODE_DIMN_all, lAtps)
+
+
+            ENDIF  ! EndIF CALC_REACTIONS
+         ENDIF  ! IF(CALC_REACTIONS(IJK))
       END DO IJK_LP ! End Loop over fluiod Cells, IJK
 
+      gErr_l = .FALSE.
+!      CALL GLOBAL_ALL_OR(lErr_l, gErr_l)
+!     IF(gErr_l) CALL WRITE_VTU_FILE
 
-! Error Handeling:
-!---------------------------------------------------------------------//
-!      IF(iErr == 2) THEN
-!         IF (FULL_LOG) THEN
-!            IF (myPE.EQ.PE_IO) WRITE(*,1000) TIME, TIME+lTOUT, ODE_DT
-!         ENDIF 
-!         WRITE(*,1000) TIME, TIME+lTOUT, ODE_DT
-!         WRITE(*,"(' PE: ',I3,5x,'IJK: ',I6)") myPE, IJK
-!
-!         IF(WRITE_DASHBOARD) THEN
-!            RUN_STATUS = 'Diverged/stalled...'
-!            N_DASHBOARD = N_DASHBOARD + 1 
-!            IF(MOD(N_DASHBOARD,F_DASHBOARD)==0) THEN
-!               TLEFT = (TSTOP - TIME)*CPUOS 
-!               CALL GET_TUNIT (TLEFT, TUNIT) 
-!               CALL UPDATE_DASHBOARD(NIT,TLEFT,TUNIT)
-!            ENDIF
-!         ENDIF
-!      ENDIF
+      IF(FULL_LOG) CALL WRITE_ODE_STATS()
 
+      iErr = 0
 
-      RETURN  
-
- 1000 FORMAT(/,' Chemical Reaction diverged/stalled   :-(',/' Time =', &
-         F10.4,3x,'ODE Time = ',F10.4, 3x, 'DT = ',G10.4,/)
-
+      RETURN
       END SUBROUTINE STIFF_CHEM_SOLVER
 
 
@@ -237,7 +310,7 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE mapMFIXtoODE(IJK, VARS)
+      SUBROUTINE mapMFIXtoODE(lNEQ, VARS)
 
 
 ! Global Variables:
@@ -254,9 +327,9 @@
 ! Passed Variables:
 !----------------------------------------------------------------------!
 ! Fluid cell index
-      INTEGER, intent(in) :: IJK
+      INTEGER, intent(in) :: lNEQ(NEQ_DIMN)
 ! ODE Variables.
-      DOUBLE PRECISION, dimension(ODE_DIMN), intent(out) :: VARS
+      DOUBLE PRECISION, intent(out) :: VARS(ODE_DIMN_all)
 
 ! Local Variables:
 !----------------------------------------------------------------------!
@@ -266,35 +339,40 @@
 ! ODE Equation Counter
       INTEGER :: Node
 
+! Fluid cell index
+      INTEGER :: IJK
+
 ! Wrapper functions for solids phase volume fraction.
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
 
+! Initialize.
+      Node = 1
+      IJK = lNEQ(2)
+      VARS = 0.0d0
+
 ! Gas phase density.
-      VARS(1) = RO_G(IJK)
+      VARS(Node) = RO_G(IJK);              Node = Node + 1
 ! Gas phase temperature.
-      VARS(2) = T_G(IJK)
+      VARS(Node) = T_G(IJK);               Node = Node + 1
 ! Gas phase species mass fractions.
       DO N=1,NMAX(0)
-         Node = 2 + N
-         VARS(Node) = X_G(IJK,N)
+         VARS(Node) = X_G(IJK,N);          Node = Node + 1
       ENDDO
 
-      Node = 3+NMAX(0)
-      DO M = 1, MMAX
-         IF(SPECIES_EQ(M)) THEN
-! Solids volume fraction.
-            VARS(Node) = EP_S(IJK,M);      Node = Node + 1
 ! Solids temperature.
-            VARS(Node) = T_S(IJK,M);       Node = Node + 1
+      DO M = 1, MMAX
+         VARS(Node) = T_S(IJK,M);          Node = Node + 1
+      ENDDO
+
+      DO M = 1, MMAX
+         IF(lNEQ(2+M) == 1) THEN
+! Solids volume fraction.
+            VARS(Node) = ROP_S(IJK,M);     Node = Node + 1
 ! Solids phase species mass fractions.
             DO N=1,NMAX(M)
                VARS(Node) = X_S(IJK,M,N);  Node = Node + 1
             ENDDO
-! Solids phase diameter.
-            IF(CALL_GROW) THEN
-               VARS(Node) = D_P(IJK,M);    Node = Node + 1
-            ENDIF
          ENDIF
       ENDDO   
 
@@ -313,7 +391,7 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE mapODEtoMFIX(IJK, VARS)
+      SUBROUTINE mapODEtoMFIX(lNEQ, VARS)
 
       use constant, only : GAS_CONST
       use fldvar,   only : EP_g, RO_g, T_g, X_g, P_g
@@ -321,48 +399,87 @@
       use param1,   only : ONE
       use physprop, only : NMAX, C_pg, MW_g, MW_MIX_g
       use physprop, only : MMAX, C_ps, MW_s, RO_s, RO_sv
-      use run,      only : SPECIES_EQ
+
+      use compar,   only : myPE, PE_IO
 
       implicit none
 
-      INTEGER, intent(in) :: IJK
-      DOUBLE PRECISION, dimension(ODE_DIMN), intent(in) :: VARS
+      INTEGER, intent(in) :: lNEQ(NEQ_DIMN)
+      DOUBLE PRECISION, intent(in) :: VARS(ODE_DIMN_all)
 
+! Fluid Cell index.
+      INTEGER :: IJK
       INTEGER :: L, M, N, Node
 
+      INTEGER :: countNaN
+      LOGICAL :: writeMsg
+
+      IJK = lNEQ(2)
+
+      countNaN = 0
+      writeMsg = .FALSE.
+      NaN_lp: do l=1, ode_dimn_all
+         if(isNaN(VARS(l))) then
+            countNaN = countNan + 1
+            writeMsg = .TRUE.
+         endif
+      enddo NaN_lp
+
+
+      if(writeMsg) then
+         write(*,"(3x,'From MapODEtoMFIX: NaNs Found! :: ',3(3x,I4))") myPE, IJK, countNaN
+         if(countNaN < ode_dimn_all) then
+            do l=1, ode_dimn_all
+               if(isNaN(VARS(l))) write(*,"(5x,' NaN in Var ',I2)") l
+            enddo
+
+            write(*,"(3x,'ODE Flags: ',I3)")lNEQ(1)
+            DO M=1, MMAX
+               write(*,"(3x,'Phase ',I3,': ',I3,3x,'ROPs: ',g18.6)")M, lNEQ(2+M), ROP_s(IJK,M)
+            enddo
+         endif
+         stop
+      endif
+
+
+      Node = 1
+
 ! Gas phase density.
-      RO_G(IJK) = VARS(1)
+      RO_G(IJK) = VARS(Node);                     Node = Node + 1
 ! Gas phase temperature.
-      T_G(IJK) = VARS(2)
+      T_G(IJK) = VARS(Node);                      Node = Node + 1
 ! Gas phase species mass fractions.
       DO N=1,NMAX(0)
-         Node = 2 + N
-         X_G(IJK,N) = VARS(Node)
+         X_G(IJK,N) = VARS(Node);                 Node = Node + 1
       ENDDO
 
-      Node = 3+NMAX(0)
-      DO M = 1, MMAX
-         IF(SPECIES_EQ(M)) THEN
-! Solids volume fraction.
-            ROP_S(IJK,M) = VARS(Node) * RO_S(M);  Node = Node + 1
 ! Solids temperature.
+      DO M = 1, MMAX
+         IF(ROP_s(IJK,M) > 1.0d-8) &
             T_S(IJK,M) = VARS(Node);              Node = Node + 1
+      ENDDO   
+
+! Only map back what was calculated.
+      DO M = 1, MMAX
+         IF(lNEQ(2+M) == 1) THEN
+! Solids volume fraction. (Constant Solids Density)
+            ROP_S(IJK,M) = VARS(Node);            Node = Node + 1
 ! Solids phase species mass fractions.
             DO N=1,NMAX(M)
                X_S(IJK,M,N) = VARS(Node);         Node = Node + 1
             ENDDO
-! Solids phase diameter.
-            IF(CALL_GROW) THEN
-               D_P(IJK,M)  = VARS(Node);          Node = Node + 1
-            ENDIF
          ENDIF
       ENDDO   
 
-! Calculate the gas volume fraction from solids volume fractions.
-      EP_G(IJK) = ONE - sum(ROP_S(IJK,1:MMAX)/RO_S(1:MMAX))
+! Calculate the gas volume fraction from solids volume fractions. Only
+! update it's value if the solids equations are being solved.
+      IF(sum(lNEQ(3:)) > 0) EP_G(IJK) = &
+         ONE - sum(ROP_S(IJK,1:MMAX)/RO_S(1:MMAX))
+
 ! Calculate the mixture molecular weight.
       MW_MIX_G(IJK) = sum(X_G(IJK,1:NMAX(0))/MW_g(1:NMAX(0)))
       MW_MIX_G(IJK) = ONE/MW_MIX_G(IJK)
+
 ! Calculate the gas phase pressure.
       P_G(IJK) = (RO_G(IJK)*GAS_CONST*T_G(IJK))/MW_MIX_G(IJK)
 
@@ -383,7 +500,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       LOGICAL FUNCTION CALC_REACTIONS(IJK)
 
-      use param1, only : SMALL_NUMBER
       use rxns,   only : NO_OF_RXNS
 
       implicit none
@@ -391,6 +507,8 @@
       INTEGER, intent(in) :: IJK
 
       DOUBLE PRECISION :: RATES(NO_OF_RXNS)
+
+      DOUBLE PRECISION, parameter :: rLimit = 1.0d-8
 
 ! Initialize
       RATES = 0.0d0
@@ -401,9 +519,73 @@
 ! If there is little to no reaction in the cell, then set the ODE
 ! Time to zero to avoid calling the stiff solver.
       CALC_REACTIONS = .TRUE.
-      if(COMPARE(sum(RATES),SMALL_NUMBER)) CALC_REACTIONS = .FALSE.
+      if(maxval(RATES) < rLimit) CALC_REACTIONS = .FALSE.
+
 
       RETURN
       END FUNCTION CALC_REACTIONS
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: CALC_DIMN_ODE                                          !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      !
+!  Author: J.Musser                                   Date: 07-Feb-13  !
+!                                                                      !
+!  Comments:                                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE CALC_ODE_COEFF(lNEQ, IJK)
+
+      use fldvar,     only : ROP_s
+      use physprop,   only : MMAX, RO_sv
+      use run,        only : SPECIES_EQ
+
+      implicit none
+
+      INTEGER, intent(in)  :: IJK
+      INTEGER, intent(out) :: lNEQ(NEQ_DIMN)
+
+      INTEGER :: M
+
+      LOGICAL :: USE_SOLIDS_ODEs
+
+      INCLUDE 'ep_s1.inc'
+      INCLUDE 'ep_s2.inc'
+
+! Initialize.
+      USE_SOLIDS_ODEs = .FALSE.
+      lNEQ(2) = IJK
+      lNEQ(3:) = 0
+
+!       write(*,"(/3x,'IJK: ',I4)") IJK
+!       DO M=1,MMAX
+!          write(*,"(3x,'Phase: ',I2)") M
+!          write(*,"(3x,'EP_s: ',g18.6)") EP_s(IJK,M) 
+!          write(*,"(3x,'ROP_s:',g18.6)") ROP_S(IJK,M)
+!          write(*,"(3x,'RO_SV:',g18.6)") RO_SV(IJK,M)
+!       ENDDO
+
+! If there is little to no solids in the cell, then set the ODE
+! dimension to gas phase only.
+      DO M=1, MMAX
+         IF(SPECIES_EQ(M) .AND. (EP_s(IJK,M) > 1.0d-6)) THEN
+            lNEQ(2+M) = 1
+            USE_SOLIDS_ODEs = .TRUE.
+         ENDIF
+      ENDDO
+
+      IF(USE_SOLIDS_ODEs)THEN
+         lNEQ(1) = ODE_DIMN_all
+      ELSE
+         lNEQ(1) = ODE_DIMN_g
+         lNEQ(3:) = 0
+      ENDIF
+
+
+      RETURN
+      END SUBROUTINE CALC_ODE_COEFF
 
       END MODULE STIFF_CHEM
