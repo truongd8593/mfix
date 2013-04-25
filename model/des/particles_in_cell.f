@@ -762,7 +762,6 @@
       AVG_FACTOR = 0.25D0*(DIMN-2) + 0.5D0*(3-DIMN)
 
 ! cartesian_grid related quantities
-      COUNT_NODES_OUTSIDE = 0 
       IF(DIMN.EQ.2) COUNT_NODES_INSIDE_MAX = 4
       IF(DIMN.EQ.3) COUNT_NODES_INSIDE_MAX = 8
 
@@ -831,6 +830,7 @@
          CALL SET_INTERPOLATION_STENCIL(PCELL,IW,IE,JS,JN,KB,&
             KTP,INTERP_SCHEME,DIMN,ORDERNEW = ONEW) 
 
+         COUNT_NODES_OUTSIDE = 0 
 ! Computing/setting the geometric stencil 
          DO K = 1,(3-DIMN)*1+(DIMN-2)*ONEW
             DO J = 1,ONEW

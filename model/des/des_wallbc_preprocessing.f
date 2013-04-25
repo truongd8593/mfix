@@ -2673,11 +2673,13 @@
        !the particles present on that proc. 
        DO LL = 1, MAX_PIP
           IF(.NOT.PEA(LL,1)) CYCLE  
-          IF(PEA(LL,4)) CYCLE  
-          PIJK(LL, 1) = DES_GETINDEXFROMPOS(ISTART1,IEND1,DES_POS_NEW(LL,1),XE(1:size(XE,1)),'X','I')
-          PIJK(LL, 2) = DES_GETINDEXFROMPOS(JSTART1,JEND1,DES_POS_NEW(LL,2),YN(1:size(YN,1)),'Y','J')
+          IF(PEA(LL,4)) CYCLE       
+          PIJK(LL, 1) = DES_GETINDEXFROMPOS(ISTART1,IEND1,DES_POS_NEW(LL,1),XE(1:size(XE,1)-1),'X','I')
+          !-1 above since xe ranges from 0:IMAX3, so size is imax3 + 1.
+          !therefore, (1:size(xe,1)) will give 1:imax3 + 1, resulting in a seg error.
+          PIJK(LL, 2) = DES_GETINDEXFROMPOS(JSTART1,JEND1,DES_POS_NEW(LL,2),YN(1:size(YN,1)-1),'Y','J')
           PIJK(LL, 3) = 1
-          IF(DIMN.eq.3) PIJK(LL, 3) = DES_GETINDEXFROMPOS(KSTART1,KEND1,DES_POS_NEW(LL,3),ZT(1:size(ZT,1)),'Z','K')
+          IF(DIMN.eq.3) PIJK(LL, 3) = DES_GETINDEXFROMPOS(KSTART1,KEND1,DES_POS_NEW(LL,3),ZT(1:size(ZT,1)-1),'Z','K')
           PIJK(LL, 4) = FUNIJK(PIJK(LL, 1), PIJK(LL, 2), PIJK(LL, 3))         
        ENDDO
       !**********DELETE START 
