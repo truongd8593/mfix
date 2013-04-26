@@ -385,34 +385,38 @@
             WRITE (UNIT_OUT, 1610) L 
             WRITE (UNIT_OUT, 1611) BC_TYPE(L) 
             SELECT CASE (TRIM(BC_TYPE(L)))
-            CASE ('MASS_INFLOW')  
+            CASE ('MASS_INFLOW','CG_MI')  
                WRITE (UNIT_OUT, 1612) 
             CASE ('MASS_OUTFLOW')  
                WRITE (UNIT_OUT, 1613) 
             CASE ('P_INFLOW')  
                WRITE (UNIT_OUT, 1614) 
-            CASE ('P_OUTFLOW')  
+            CASE ('P_OUTFLOW','CG_PO')  
                WRITE (UNIT_OUT, 1615) 
-            CASE ('FREE_SLIP_WALL')  
+            CASE ('FREE_SLIP_WALL','CG_FSW')  
                WRITE (UNIT_OUT, 1616) 
-            CASE ('NO_SLIP_WALL')  
+            CASE ('NO_SLIP_WALL','CG_NSW')  
                WRITE (UNIT_OUT, 1617) 
-            CASE ('PAR_SLIP_WALL')  
+            CASE ('PAR_SLIP_WALL','CG_PSW')  
                WRITE (UNIT_OUT, 1618) 
             CASE ('OUTFLOW')  
                WRITE (UNIT_OUT, 1619) 
             END SELECT 
-            LOC(1) = LOCATION(BC_I_W(L),XMIN,DX) - HALF*DX(BC_I_W(L)) 
-            LOC(2) = LOCATION(BC_I_E(L),XMIN,DX) + HALF*DX(BC_I_E(L)) 
-            LOC(3) = LOCATION(BC_J_S(L),ZERO,DY) - HALF*DY(BC_J_S(L)) 
-            LOC(4) = LOCATION(BC_J_N(L),ZERO,DY) + HALF*DY(BC_J_N(L)) 
-            LOC(5) = LOCATION(BC_K_B(L),ZERO,DZ) - HALF*DZ(BC_K_B(L)) 
-            LOC(6) = LOCATION(BC_K_T(L),ZERO,DZ) + HALF*DZ(BC_K_T(L)) 
-            WRITE (UNIT_OUT, 1620) BC_X_W(L), LOC(1), BC_X_E(L), LOC(2), BC_Y_S&
+            IF (BC_TYPE(L)(1:2)/='CG') THEN
+               LOC(1) = LOCATION(BC_I_W(L),XMIN,DX) - HALF*DX(BC_I_W(L)) 
+               LOC(2) = LOCATION(BC_I_E(L),XMIN,DX) + HALF*DX(BC_I_E(L)) 
+               LOC(3) = LOCATION(BC_J_S(L),ZERO,DY) - HALF*DY(BC_J_S(L)) 
+               LOC(4) = LOCATION(BC_J_N(L),ZERO,DY) + HALF*DY(BC_J_N(L)) 
+               LOC(5) = LOCATION(BC_K_B(L),ZERO,DZ) - HALF*DZ(BC_K_B(L)) 
+               LOC(6) = LOCATION(BC_K_T(L),ZERO,DZ) + HALF*DZ(BC_K_T(L)) 
+               WRITE (UNIT_OUT, 1620) BC_X_W(L), LOC(1), BC_X_E(L), LOC(2), BC_Y_S&
                (L), LOC(3), BC_Y_N(L), LOC(4), BC_Z_B(L), LOC(5), BC_Z_T(L), &
                LOC(6) 
-            WRITE (UNIT_OUT, 1630) BC_I_W(L), BC_I_E(L), BC_J_S(L), BC_J_N(L), &
+               WRITE (UNIT_OUT, 1630) BC_I_W(L), BC_I_E(L), BC_J_S(L), BC_J_N(L), &
                BC_K_B(L), BC_K_T(L) 
+            ENDIF
+            WRITE (UNIT_OUT,1635)  BC_AREA(L)
+
             IF (BC_EP_G(L) /= UNDEFINED) WRITE (UNIT_OUT, 1640) BC_EP_G(L) 
             IF (BC_P_G(L) /= UNDEFINED) WRITE (UNIT_OUT, 1641) BC_P_G(L) 
             IF (BC_T_G(L) /= UNDEFINED) WRITE (UNIT_OUT, 1642) BC_T_G(L) 
@@ -709,6 +713,7 @@
          'J index of cell at north  (BC_J_n) = ',I4,/,9X,&
          'K index of cell at bottom (BC_K_b) = ',I4,/,9X,&
          'K index of cell at top    (BC_K_t) = ',I4) 
+ 1635 FORMAT(9X,'Boundary area = ',G12.5) 
  1640 FORMAT(9X,'Void fraction (BC_EP_g) = ',G12.5) 
  1641 FORMAT(9X,'Gas pressure (BC_P_g) = ',G12.5) 
  1642 FORMAT(9X,'Gas temperature (BC_T_g) = ',G12.5) 

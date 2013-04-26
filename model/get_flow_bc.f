@@ -76,7 +76,7 @@
 
          IF (BC_DEFINED(BCV)) THEN 
             IF (.NOT.(BC_TYPE(BCV)=='FREE_SLIP_WALL' .OR. BC_TYPE(BCV)==&
-               'NO_SLIP_WALL' .OR. BC_TYPE(BCV)=='PAR_SLIP_WALL')) THEN 
+               'NO_SLIP_WALL' .OR. BC_TYPE(BCV)=='PAR_SLIP_WALL'.OR.BC_TYPE(BCV)(1:2)=='CG')) THEN 
 
                X_CONSTANT = .TRUE. 
                Y_CONSTANT = .TRUE. 

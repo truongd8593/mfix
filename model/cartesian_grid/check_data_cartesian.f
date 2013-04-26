@@ -1528,32 +1528,6 @@
       include "function.inc"
 
      
-! Compute the Area of each boundary condition for cut cells
-
-       DO BCV = 1, DIMENSION_BC 
-          IF (BC_TYPE(BCV)(1:2)=='CG') BC_AREA(BCV) = ZERO
-       ENDDO
-
-      DO IJK = IJKSTART3, IJKEND3
-         IF(CUT_CELL_AT(IJK)) THEN              
-            BCV = BC_ID(IJK)
-            IF(BCV > 0 ) THEN
-               BCT = BC_TYPE(BCV)
-               BC_AREA(BCV) = BC_AREA(BCV) + Area_CUT(IJK)
-            ENDIF
-         ENDIF
-      END DO
-
-!      IF (myPE == PE_IO) THEN
-!          DO BCV = 1, DIMENSION_BC 
-!             IF (BC_DEFINED(BCV).OR.BC_TYPE(BCV)(1:2)=='CG') THEN 
-!                WRITE(*,100) 'BOUNDARY CONDITION ID   :',BCV
-!                WRITE(*,110) 'BOUNDARY CONDITION TYPE :',BC_TYPE(BCV)
-!                WRITE(*,120) 'BOUNDARY CONDITION AREA :',BC_AREA(BCV)
-!             ENDIF
-!          ENDDO
-!       ENDIF
-
 
       DO BCV = 1, DIMENSION_BC 
 

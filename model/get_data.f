@@ -54,7 +54,7 @@
       USE parallel
       USE qmom_kinetic_equation
       USE mfix_pic
-
+      USE cutcell
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -227,7 +227,8 @@
       CALL CHECK_DATA_04                         ! solid phase section 
       CALL CHECK_DATA_05                         ! gas phase section 
       CALL CHECK_DATA_06                         ! initial condition section 
-      CALL CHECK_DATA_07                         ! boundary condition section 
+!      IF(.NOT.CARTESIAN_GRID) CALL CHECK_DATA_07                         ! boundary condition section 
+       CALL CHECK_DATA_07                         ! boundary condition section 
       CALL CHECK_DATA_08                         ! Internal surfaces section 
       CALL CHECK_DATA_09                         ! Chemical reactions section       
 

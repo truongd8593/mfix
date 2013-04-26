@@ -48,6 +48,7 @@
       USE sendrecv
       USE discretelement
       USE mfix_pic
+      USE cutcell
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Parameters
@@ -108,11 +109,11 @@
          IF (BC_K_T(BCV) /= UNDEFINED_I) BC_DEFINED(BCV) = .TRUE. 
          IF (BC_TYPE(BCV) == 'DUMMY') BC_DEFINED(BCV) = .FALSE. 
 ! JFD: MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-         IF (BC_TYPE(BCV) == 'CG_NSW') BC_DEFINED(BCV) = .FALSE. 
-         IF (BC_TYPE(BCV) == 'CG_FSW') BC_DEFINED(BCV) = .FALSE. 
-         IF (BC_TYPE(BCV) == 'CG_PSW') BC_DEFINED(BCV) = .FALSE. 
-         IF (BC_TYPE(BCV) == 'CG_MI') BC_DEFINED(BCV) = .FALSE. 
-         IF (BC_TYPE(BCV) == 'CG_PO') BC_DEFINED(BCV) = .FALSE. 
+         IF (BC_TYPE(BCV) == 'CG_NSW') BC_DEFINED(BCV) = .TRUE. 
+         IF (BC_TYPE(BCV) == 'CG_FSW') BC_DEFINED(BCV) = .TRUE. 
+         IF (BC_TYPE(BCV) == 'CG_PSW') BC_DEFINED(BCV) = .TRUE. 
+         IF (BC_TYPE(BCV) == 'CG_MI') BC_DEFINED(BCV) = .TRUE. 
+         IF (BC_TYPE(BCV) == 'CG_PO') BC_DEFINED(BCV) = .TRUE. 
 
         IF(BC_TYPE(BCV) /= UNDEFINED_C.AND.BC_TYPE(BCV) /= 'DUMMY') THEN
             RECOGNIZED_BC_TYPE = .FALSE.
@@ -131,7 +132,7 @@
             ENDIF
          ENDIF
 
-         IF (BC_DEFINED(BCV)) THEN 
+         IF (BC_DEFINED(BCV).AND.BC_TYPE(BCV)(1:2)/='CG') THEN 
 
             IF (BC_X_W(BCV)==UNDEFINED .AND. BC_I_W(BCV)==UNDEFINED_I) THEN 
                IF (NO_I) THEN 
@@ -269,7 +270,7 @@
       ENDDO      ! end loop over (bcv=1,dimension_bc)
 
 ! Convert mass and volumetric flows to velocities 
-      CALL FLOW_TO_VEL 
+      CALL FLOW_TO_VEL(.TRUE.) 
 
 
 ! Following section to check quantities for flow type boundaries

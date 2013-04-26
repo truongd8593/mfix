@@ -21,7 +21,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE FLOW_TO_VEL 
+      SUBROUTINE FLOW_TO_VEL(DO_VEL_CHECK)
 
 !-----------------------------------------------
 ! Modules
@@ -39,6 +39,7 @@
       USE compar 
       USE discretelement
       USE mfix_pic
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -52,7 +53,7 @@
 ! Solids phase volume fraction 
       DOUBLE PRECISION :: EPS 
 ! Whether any volumetric flow conversion was done 
-      LOGICAL :: CONVERTED 
+      LOGICAL :: CONVERTED,DO_VEL_CHECK 
 ! Average molecular weight 
       DOUBLE PRECISION :: MW 
 !-----------------------------------------------
@@ -61,6 +62,19 @@
       DOUBLE PRECISION, EXTERNAL :: EOSG, CALC_MW 
       LOGICAL, EXTERNAL :: COMPARE 
 !-----------------------------------------------
+
+! When both flow rates and velocities are specified, a consistency check is done
+! The first time flow_to_vel is called in 
+! by setting the logical DO_VEL_CHECK to .TRUE.
+! If cut-cells are not used, flow_to_vel is only called once.
+! When cut-cells are used, flow_to_vel is called another time after
+! the cut-cell preprocessing stage. During, the second call, the velocity check 
+! should not be performed, because the velocity assigned suring the first call
+! will not match the flow rate. Therfore, when called from cut_cell_preprocessing.f
+! DO_VEL_CHECK is set to .FALSE.
+
+
+
 
 ! initialize
       VOLFLOW = UNDEFINED
@@ -106,7 +120,7 @@
                            ELSEIF (BC_PLANE(BCV)=='W' .OR. &
                                    BC_PLANE(BCV)=='E') THEN 
                               IF (BC_U_G(BCV)==UNDEFINED .OR. &
-                                  BC_U_G(BCV)==ZERO) THEN 
+                                  BC_U_G(BCV)/=ZERO) THEN 
                                  IF(DMP_LOG)WRITE (UNIT_LOG, 1010)&
                                     BCV, 'BC_U_g' 
                                  call mfix_exit(myPE)  
@@ -114,7 +128,7 @@
                            ELSEIF (BC_PLANE(BCV)=='N' .OR. &
                                    BC_PLANE(BCV)=='S') THEN 
                               IF (BC_V_G(BCV)==UNDEFINED .OR. &
-                                  BC_V_G(BCV)==ZERO) THEN 
+                                  BC_V_G(BCV)/=ZERO) THEN 
                                  IF(DMP_LOG)WRITE (UNIT_LOG, 1010) &
                                     BCV, 'BC_V_g' 
                                  call mfix_exit(myPE)  
@@ -122,7 +136,7 @@
                            ELSEIF (BC_PLANE(BCV)=='T' .OR. &
                                    BC_PLANE(BCV)=='B') THEN 
                               IF (BC_W_G(BCV)==UNDEFINED .OR. &
-                                  BC_W_G(BCV)==ZERO) THEN 
+                                  BC_W_G(BCV)/=ZERO) THEN 
                                  IF(DMP_LOG)WRITE (UNIT_LOG, 1010) &
                                     BCV, 'BC_W_g' 
                                  call mfix_exit(myPE)  
@@ -180,7 +194,7 @@
                   CONVERTED = .TRUE. 
                   SELECT CASE (TRIM(BC_PLANE(BCV)))  
                   CASE ('W')  
-                     IF (BC_U_G(BCV) /= UNDEFINED) THEN 
+                     IF (BC_U_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
                         IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
                             .NOT.COMPARE((-VEL),BC_U_G(BCV))) THEN 
                            IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV,&
@@ -201,7 +215,7 @@
                         ENDIF 
                      ENDIF 
                   CASE ('E')  
-                     IF (BC_U_G(BCV) /= UNDEFINED) THEN 
+                     IF (BC_U_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
                         IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
                             .NOT.COMPARE(VEL,BC_U_G(BCV))) THEN 
                            IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV, VEL,&
@@ -222,7 +236,7 @@
                         ENDIF 
                      ENDIF 
                   CASE ('S')  
-                     IF (BC_V_G(BCV) /= UNDEFINED) THEN 
+                     IF (BC_V_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
                         IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
                             .NOT.COMPARE((-VEL),BC_V_G(BCV))) THEN 
                            IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV,&
@@ -243,7 +257,7 @@
                         ENDIF 
                      ENDIF 
                   CASE ('N')  
-                     IF (BC_V_G(BCV) /= UNDEFINED) THEN 
+                     IF (BC_V_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
                         IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
                             .NOT.COMPARE(VEL,BC_V_G(BCV))) THEN 
                            IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV, VEL,&
@@ -264,7 +278,7 @@
                         ENDIF 
                      ENDIF 
                   CASE ('B')  
-                     IF (BC_W_G(BCV) /= UNDEFINED) THEN 
+                     IF (BC_W_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
                         IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND.  &
                             .NOT.COMPARE((-VEL),BC_W_G(BCV))) THEN 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1100) BCV,&
@@ -285,7 +299,7 @@
                         ENDIF 
                      ENDIF 
                   CASE ('T')  
-                     IF (BC_W_G(BCV) /= UNDEFINED) THEN 
+                     IF (BC_W_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
                         IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
                             .NOT.COMPARE(VEL,BC_W_G(BCV))) THEN 
                            IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV, VEL,&
@@ -408,7 +422,7 @@
                      CONVERTED = .TRUE. 
                      SELECT CASE (TRIM(BC_PLANE(BCV)))  
                      CASE ('W')  
-                        IF (BC_U_S(BCV,M) /= UNDEFINED) THEN 
+                        IF (BC_U_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
                            IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
                                .NOT.COMPARE((-VEL),BC_U_S(BCV,M))) THEN 
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
@@ -429,7 +443,7 @@
                            ENDIF 
                         ENDIF 
                      CASE ('E')  
-                        IF (BC_U_S(BCV,M) /= UNDEFINED) THEN 
+                        IF (BC_U_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
                            IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
                                .NOT.COMPARE(VEL,BC_U_S(BCV,M))) THEN 
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
@@ -450,7 +464,7 @@
                            ENDIF 
                         ENDIF 
                      CASE ('S')  
-                        IF (BC_V_S(BCV,M) /= UNDEFINED) THEN 
+                        IF (BC_V_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
                            IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
                                .NOT.COMPARE((-VEL),BC_V_S(BCV,M))) THEN 
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
@@ -471,7 +485,7 @@
                            ENDIF 
                         ENDIF 
                      CASE ('N')  
-                        IF (BC_V_S(BCV,M) /= UNDEFINED) THEN 
+                        IF (BC_V_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
                            IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
                                .NOT.COMPARE(VEL,BC_V_S(BCV,M))) THEN 
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
@@ -492,7 +506,7 @@
                            ENDIF 
                         ENDIF 
                      CASE ('B')  
-                        IF (BC_W_S(BCV,M) /= UNDEFINED) THEN 
+                        IF (BC_W_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
                            IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
                                .NOT.COMPARE((-VEL),BC_W_S(BCV,M))) THEN 
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
@@ -513,7 +527,7 @@
                            ENDIF 
                         ENDIF 
                      CASE ('T')  
-                        IF (BC_W_S(BCV,M) /= UNDEFINED) THEN 
+                        IF (BC_W_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
                            IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
                                .NOT.COMPARE(VEL,BC_W_S(BCV,M))) THEN 
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
