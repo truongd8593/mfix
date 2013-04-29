@@ -224,3 +224,5 @@ usr_input_mod.f
 ../model/thermochemical/readTherm.f
 ../model/thermochemical/get_values.f
 ../model/rxn_com_mod.f
+../model/get_bc_area.f
+../model/flow_to_vel.f

@@ -2315,6 +2315,7 @@ $(DPO)check_data_07.$(OBJ_EXT) : check_data_07.f \
             $(DPO)SENDRECV.mod \
             $(DPO)DISCRETELEMENT.mod \
             $(DPO)MFIX_PIC.mod \
+            $(DPO)CUTCELL.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) check_data_07.f  -o $(DPO)check_data_07.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_data_08.$(OBJ_EXT) : check_data_08.f \
@@ -2974,7 +2975,13 @@ $(DPO)get_bc_area.$(OBJ_EXT) : get_bc_area.f \
             $(DPO)PARAM1.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)BC.mod \
-            $(DPO)COMPAR.mod 
+            $(DPO)COMPAR.mod \
+            $(DPO)PARALLEL.mod \
+            $(DPO)INDICES.mod \
+            $(DPO)SENDRECV.mod \
+            $(DPO)MPI_UTILITY.mod \
+            $(DPO)CUTCELL.mod \
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) get_bc_area.f  -o $(DPO)get_bc_area.$(OBJ_EXT) -module $(DPO)
 $(DPO)get_data.$(OBJ_EXT) : get_data.f \
             $(DPO)PARAM.mod \
@@ -2989,7 +2996,8 @@ $(DPO)get_data.$(OBJ_EXT) : get_data.f \
             $(DPO)LEQSOL.mod \
             $(DPO)PARALLEL.mod \
             $(DPO)QMOM_KINETIC_EQUATION.mod \
-            $(DPO)MFIX_PIC.mod 
+            $(DPO)MFIX_PIC.mod \
+            $(DPO)CUTCELL.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) get_data.f  -o $(DPO)get_data.$(OBJ_EXT) -module $(DPO)
 $(DPO)get_eq.$(OBJ_EXT) : get_eq.f \
             $(DPO)PARAM.mod \
@@ -5534,8 +5542,7 @@ $(DPO)cut_cell_preprocessing.$(OBJ_EXT) : ./cartesian_grid/cut_cell_preprocessin
             $(DPO)FLDVAR.mod \
             $(DPO)POLYGON.mod \
             $(DPO)STL.mod \
-            $(DPO)STL.mod \
-            $(DPO)MPI_UTILITY.mod 
+            $(DPO)STL.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/cut_cell_preprocessing.f  -o $(DPO)cut_cell_preprocessing.$(OBJ_EXT) -module $(DPO)
 $(DPO)deallocate_cut_cell_arrays.$(OBJ_EXT) : ./cartesian_grid/deallocate_cut_cell_arrays.f \
             $(DPO)PARAM.mod \

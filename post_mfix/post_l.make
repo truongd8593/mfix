@@ -228,6 +228,8 @@ post_mfix : \
     read_database.$(OBJ_EXT) \
     readTherm.$(OBJ_EXT) \
     get_values.$(OBJ_EXT) \
+    get_bc_area.$(OBJ_EXT) \
+    flow_to_vel.$(OBJ_EXT) \
     
 	$(LINK_CMD) $(LINK_FLAGS) \
     ambm_mod.$(OBJ_EXT) \
@@ -456,6 +458,8 @@ post_mfix : \
     readTherm.$(OBJ_EXT) \
     get_values.$(OBJ_EXT) \
     rxn_com_mod.$(OBJ_EXT) \
+    get_bc_area.$(OBJ_EXT) \
+    flow_to_vel.$(OBJ_EXT) \
   -o post_mfix $(LIB_FLAGS)
   
 ambm.mod : ../model/ambm_mod.f \
@@ -2187,3 +2191,31 @@ readTherm.$(OBJ_EXT) : ../model/thermochemical/readTherm.f
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/thermochemical/readTherm.f 
 get_values.$(OBJ_EXT) : ../model/thermochemical/get_values.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/thermochemical/get_values.f 
+get_bc_area.$(OBJ_EXT) : ../model/get_bc_area.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            bc.mod \
+            compar.mod \
+            parallel.mod \
+            indices.mod \
+            sendrecv.mod \
+            mpi_utility.mod \
+            cutcell.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/get_bc_area.f 
+flow_to_vel.$(OBJ_EXT) : ../model/flow_to_vel.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            fldvar.mod \
+            physprop.mod \
+            run.mod \
+            bc.mod \
+            scales.mod \
+            indices.mod \
+            funits.mod \
+            compar.mod \
+            discretelement.mod \
+            mfix_pic.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/flow_to_vel.f 
