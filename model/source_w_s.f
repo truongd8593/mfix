@@ -486,6 +486,10 @@
 ! -(mu/x)*(w/x) part of tau_xz/x
                      VXZA = EPMUOX*OX(I) 
                   ELSE 
+
+                     A_M_tmp(IJK,E,M) = A_M(IJK,E,M)
+                     A_M_tmp(IJK,W,M) = A_M(IJK,W,M)
+
                      VCOA = ZERO 
                      VCOB = ZERO 
                      SXZB = ZERO 
