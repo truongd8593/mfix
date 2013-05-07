@@ -261,7 +261,7 @@
          ENDIF 
          IF(ANY_SPECIES_EQ) DIFF(:SMAX) = .TRUE.
          DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
-         VISC(0) = RECALC_VISC_G 
+         VISC(0) = .TRUE. 
          VISC(1:MMAX) = .TRUE. 
 
          IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP' .OR. &
