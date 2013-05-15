@@ -218,7 +218,7 @@
                         IJK2 = KM_OF(IJK) 
                         BC_AREA(BCV) = BC_AREA(BCV) + AXY(IJK2)
                      CASE ('T')  
-                        BC_AREA(BCV) = BC_AREA(BCV) + AXY(IJK2)
+                        BC_AREA(BCV) = BC_AREA(BCV) + AXY(IJK)
                      END SELECT 
                   END DO 
                END DO 
