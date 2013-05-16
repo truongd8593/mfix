@@ -5542,7 +5542,8 @@ $(DPO)cut_cell_preprocessing.$(OBJ_EXT) : ./cartesian_grid/cut_cell_preprocessin
             $(DPO)fldvar.mod \
             $(DPO)polygon.mod \
             $(DPO)stl.mod \
-            $(DPO)stl.mod 
+            $(DPO)stl.mod \
+            $(DPO)mpi_utility.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/cut_cell_preprocessing.f  -o $(DPO)cut_cell_preprocessing.$(OBJ_EXT) -module $(DPO)
 $(DPO)deallocate_cut_cell_arrays.$(OBJ_EXT) : ./cartesian_grid/deallocate_cut_cell_arrays.f \
             $(DPO)param.mod \
