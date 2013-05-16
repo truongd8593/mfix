@@ -257,9 +257,9 @@
             ENDIF
          ELSE
 ! User-defined heat of reaction.
-            lHORg = Reaction(H)%HoR(0) * RATES(H)
+            lHORg = lHORg + Reaction(H)%HoR(0) * RATES(H)
             DO M=1, MMAX
-               lHORs(M) = Reaction(H)%HoR(M) * RATES(H)
+               lHORs(M) = lHORs(M) + Reaction(H)%HoR(M) * RATES(H)
             ENDDO
          ENDIF
 
