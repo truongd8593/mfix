@@ -613,7 +613,120 @@
 
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name:  GET_DISTANCE_TO_WALL                                  C
+!  Purpose: Finds the distance fraom any scalar cell to the closest    C
+!  wall                                                                C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 16-May-13  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE GET_DISTANCE_TO_WALL
+    
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices
+      USE compar
+      USE sendrecv
+      USE quadric
+      USE cutcell
+      
+      IMPLICIT NONE
+!      CHARACTER (LEN=*) :: TYPE_OF_CELL
+      DOUBLE PRECISION:: X0,Y0,Z0,XREF,YREF,ZREF
+      INTEGER :: IJK,I,J,K,N,IJK_CUT
+      DOUBLE PRECISION :: Del_H,Diagonal
+      DOUBLE PRECISION :: Nx,Ny,Nz
 
+      DOUBLE PRECISION :: D_TO_CUT
+
+      INTEGER :: N_CUT_CELLS
+      INTEGER :: LIST_OF_CUT_CELLS(DIMENSION_3)
+
+           
+      include "function.inc"   
+
+!======================================================================
+!  Get a list of cut cells 
+!======================================================================
+
+      N_CUT_CELLS = 0
+
+      DO IJK = IJKSTART3, IJKEND3
+
+         IF(CUT_CELL_AT(IJK)) THEN
+
+         N_CUT_CELLS = N_CUT_CELLS + 1
+
+         LIST_OF_CUT_CELLS(N_CUT_CELLS) = IJK
+            
+
+         ENDIF
+
+      ENDDO
+
+
+!======================================================================
+!  Brute force: Loop through all scalar cells
+!  compute the distance to each cut cell and take the minimum  
+!======================================================================
+
+
+      DO IJK = IJKSTART3, IJKEND3
+
+
+         IF(INTERIOR_CELL_AT(IJK)) THEN
+
+            DWALL(IJK) = UNDEFINED
+
+!======================================================================
+!  Get coordinates of cell center
+!======================================================================
+
+            CALL GET_CELL_NODE_COORDINATES(IJK,'SCALAR')
+
+            X0 = X_NODE(0)
+            Y0 = Y_NODE(0)
+            Z0 = Z_NODE(0)
+
+            DO N = 1,N_CUT_CELLS
+
+               IJK_CUT = LIST_OF_CUT_CELLS(N)
+
+               Xref = REFP_S(IJK_CUT,1)
+               Yref = REFP_S(IJK_CUT,2)
+               Zref = REFP_S(IJK_CUT,3)  
+
+               D_TO_CUT = DSQRT((X0 - Xref)**2 + (Y0 - Yref)**2 + (Z0 - Zref)**2)
+
+
+               IF(D_TO_CUT<DWALL(IJK)) DWALL(IJK) = D_TO_CUT
+
+
+            ENDDO
+
+
+         ENDIF
+
+      END DO
+
+
+
+      RETURN
+
+
+      END SUBROUTINE GET_DISTANCE_TO_WALL
 
 
 

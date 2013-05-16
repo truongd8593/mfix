@@ -241,6 +241,9 @@
                   CALL WRITE_SCALAR_IN_VTU_BIN('BC_ID',DP_BC_ID,PASS)
 
                   DeAllocate(DP_BC_ID)
+
+               CASE (102)
+                  CALL WRITE_SCALAR_IN_VTU_BIN('DISTANCE_TO_WALL',DWALL,PASS)
     
                CASE(999)
                   Allocate(IJK_ARRAY(DIMENSION_3))

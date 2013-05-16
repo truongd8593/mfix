@@ -307,6 +307,8 @@
 
       Allocate(  F_AT (DIMENSION_3) )
 
+      Allocate(  DWALL (DIMENSION_3) )
+
  
       RETURN
       END SUBROUTINE ALLOCATE_CUT_CELL_ARRAYS 

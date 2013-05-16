@@ -112,6 +112,8 @@
 
       CALL CG_FLOW_TO_VEL
 
+      CALL GET_DISTANCE_TO_WALL
+
       CALL CPU_TIME (CPU_PP_END)
 
       IF(myPE == PE_IO) THEN
