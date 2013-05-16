@@ -624,6 +624,7 @@
 
 ! File properticles (for cluster bound particles only)
       double precision, dimension(:),   allocatable :: lEpg
+      double precision, dimension(:),   allocatable :: lRog
       double precision, dimension(:),   allocatable :: lMug
       double precision, dimension(:,:), allocatable :: lVel_g
 
@@ -654,6 +655,7 @@
 
 ! Get field variable data from all processes.
       call getClusterFieldData(Ep_g, lEpg)
+      call getClusterFieldData(RO_G, lRog)
       call getClusterFieldData(Mu_g, lMug)
       call getClusterFieldData(U_g, V_g, W_g, lVel_g)
 
@@ -744,7 +746,7 @@
                   avgVel_s = avgVel_s + lVel_s(L,:)
                   avgVel_g = avgVel_g + lVel_g(L,:)
                   avgEpg = avgEpg + lEpg(L)
-                  avgRe = avgRe + lEpg(L)*lSlip*2.0d0*lRad(L)/lMug(L)
+                  avgRe = avgRe + lRog(L)*lEpg(L)*lSlip*2.0d0*lRad(L)/lMug(L)
 
 ! Store the cluster size with the particle. (Output data in vtk files.)
                   lPost(L) = float(cThis%size)
@@ -815,6 +817,7 @@
       if(allocated(lVel_s)) deallocate(lVel_s)
 
       if(allocated(lEpg)) deallocate(lEpg)
+      if(allocated(lRog)) deallocate(lRog)
       if(allocated(lMug)) deallocate(lMug)
       if(allocated(lVel_g)) deallocate(lVel_g)
 
