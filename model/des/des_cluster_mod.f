@@ -719,12 +719,12 @@
                   lSlip = zero
                   do lc4=1, 2*(3-DIMN) + 3*(DIMN - 2)
 ! Calculate the cluster's dimensions:
-                     if(lPos(L,lc4) < posMin(lc4)) then
-                        posMin(lc4) = lPos(L,lc4)
+                     if((lPos(L,lc4)-lRad(L)) < posMin(lc4)) then
+                        posMin(lc4) = lPos(L,lc4)-lRad(L)
                         lMin(lc4) = L
                      endif
-                     if(lPos(L,lc4) > posMax(lc4)) then
-                        posMax(lc4) = lPos(L,lc4)
+                     if((lPos(L,lc4)+lRad(L)) > posMax(lc4)) then
+                        posMax(lc4) = lPos(L,lc4)+lRad(L)
                         lMax(lc4) = L
                      endif
 ! Calculate the slip velocity.
@@ -775,8 +775,7 @@
                clSize = zero
                do lc4=1, 2*(3-DIMN) + 3*(DIMN - 2)
                   avgSlip = avgSlip + (avgVel_g(lc4)-avgVel_s(lc4))**2
-                  clSize(lc4) = (posMax(lc4) + lRad(lMin(lc4)))  &
-                      - (posMin(lc4) + lRad(lMax(lc4)))
+                  clSize(lc4) = posMax(lc4) - posMin(lc4)
                enddo
                avgSlip = dsqrt(avgSlip)
 
