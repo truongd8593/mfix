@@ -373,8 +373,8 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !-----------------------------------------------
-!$      double precision omp_start, omp_end
-!$      double precision omp_get_wtime
+!!$      double precision omp_start, omp_end
+!!$      double precision omp_get_wtime
 
 ! initializing
       des_rops_node = ZERO
@@ -388,7 +388,7 @@
 ! There is some issue associated to gstencil, vstencil which are 
 ! allocable variables
 
-!$      omp_start=omp_get_wtime()
+!!$      omp_start=omp_get_wtime()
 !!$omp parallel do default(shared)                                 &
 !!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,                 &
 !!$omp         avg_factor,ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,        &
@@ -398,11 +398,12 @@
 !!$omp schedule (guided,50)
 
 !Handan Liu modified the following do-loop on Jan 20 2012. 
-!$omp parallel do default(shared)                                 	&
+!$omp parallel default(shared) 	                                	&
 !$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,				&
 !$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,gst_tmp,vst_tmp,		&
 !$omp         ijpkp,ipjkp,ipjpkp,ijkp,velfp,desposnew,weight_ft,	&
-!$omp         nindx,np,focus,wtp,m,icur,jcur,kcur,ovol,vcell)            	
+!$omp         nindx,np,focus,wtp,m,icur,jcur,kcur,ovol,vcell)  
+!$omp do reduction(+:des_rops_node)          	
       DO ijk = ijkstart3,ijkend3
          if(.not.fluid_at(ijk) .or. pinc(ijk).eq.0) cycle 
          i = i_of(ijk)
@@ -491,10 +492,12 @@
 !            ENDIF
             if (dimn .eq. 2) then
 			   desposnew(1:2) = des_pos_new(np,1:2)
-			   call DRAG_INTERPLATION_2D(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
+			   call DRAG_INTERPLATION_2D(gst_tmp(1:onew,1:onew,1,1:dimn),&
+					vst_tmp(1:onew,1:onew,1,1:dimn),desposnew,velfp,weight_ft)
 			else 
 			   desposnew(1:3) = des_pos_new(np,1:3)
-			   call DRAG_INTERPLATION_3D(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)				
+			   call DRAG_INTERPLATION_3D(gst_tmp(1:onew,1:onew,1:onew,1:dimn),&
+					vst_tmp(1:onew,1:onew,1:onew,1:dimn),desposnew,velfp,weight_ft)				
 			endif
 			vel_fp(np,:) = velfp(:)
 !===================================================================>> Handan Liu			
@@ -537,8 +540,8 @@
          ENDDO   ! end do (nindx = 1,pinc(ijk))
 
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
-!$omp end parallel do
-!$      omp_end=omp_get_wtime()
+!$omp end parallel
+!!$      omp_end=omp_get_wtime()
 !!$      write(*,*)'drag_interp:',omp_end - omp_start  
 
 		
@@ -911,8 +914,8 @@
 !-----------------------------------------------   
       INCLUDE 'function.inc'
 !----------------------------------------------- 
-!$      double precision omp_start, omp_end
-!$      double precision omp_get_wtime
+!!$      double precision omp_start, omp_end
+!!$      double precision omp_get_wtime
 ! NON-INTERPOLATED fluid-solids drag:
 ! Calculate the gas solids drag force on a particle using the cell 
 ! averaged particle velocity and the cell average fluid velocity
@@ -1051,13 +1054,15 @@
 !                    onew,interp_scheme,weightp)
 !            ENDIF
             if (dimn .eq. 2) then
-			   desposnew(1:2) = des_pos_new(np,1:2)
-			   call DRAG_INTERPLATION_2D(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
-			else 
-			   desposnew(1:3) = des_pos_new(np,1:3)
-			   call DRAG_INTERPLATION_3D(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)				
-			endif
-			vel_fp(np,:) = velfp(:)
+               desposnew(1:2) = des_pos_new(np,1:2)
+               call DRAG_INTERPLATION_2D(gst_tmp(1:onew,1:onew,1,1:dimn),&
+               vst_tmp(1:onew,1:onew,1,1:dimn),desposnew,velfp,weight_ft)
+            else 
+               desposnew(1:3) = des_pos_new(np,1:3)
+               call DRAG_INTERPLATION_3D(gst_tmp(1:onew,1:onew,1:onew,1:dimn),&
+               vst_tmp(1:onew,1:onew,1:onew,1:dimn),desposnew,velfp,weight_ft)				
+            endif
+            vel_fp(np,:) = velfp(:)
 !===================================================================>> Handan Liu			
 !
 ! Calculate the particle centered drag coefficient (F_GP) using the
@@ -1077,24 +1082,24 @@
 ! Handan Liu set D_FORCE(:) to replace GD_FORCE(:,:) 	
 !	in order to reduce the calculation time			on Jan 14 2013
                !GD_FORCE(NP,:) = F_GP(NP)*(VEL_FP(NP,:))
-			   D_FORCE(:) = F_GP(NP)*(VEL_FP(NP,:))	
+               D_FORCE(:) = F_GP(NP)*(VEL_FP(NP,:))	
             ELSE
 ! default case
                !GD_FORCE(NP,:) = F_GP(NP)*(VEL_FP(NP,:)-DES_VEL_NEW(NP,:))
-			   D_FORCE(:) = F_GP(NP)*(VEL_FP(NP,:)-DES_VEL_NEW(NP,:))	
+               D_FORCE(1:DIMN) = F_GP(NP)*(VEL_FP(NP,1:DIMN)-DES_VEL_NEW(NP,1:DIMN))	
             ENDIF
 
 ! Update the contact forces (FC) on the particle to include gas
 ! pressure and gas-solids drag 
             !FC(NP,:) = FC(NP,:) + GD_FORCE(NP,:)
-			FC(NP,:) = FC(NP,:) + D_FORCE(:)
-			GD_FORCE(NP,:) = D_FORCE(:)			
-!------------------------------------------------------------------>>>>	Handan Liu		
+            FC(NP,:) = FC(NP,:) + D_FORCE(:)
+            GD_FORCE(NP,:) = D_FORCE(:)			
+
             IF(.NOT.MODEL_B) THEN
 ! P_force is evaluated as -dp/dx 
                FC(NP,:) = FC(NP,:) + p_force(ijk,:)*pvol(NP)
             ENDIF               
-
+!------------------------------------------------------------------>>>>	Handan Liu		
          ENDDO       ! end do (nindx = 1,pinc(ijk))
 
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
@@ -1207,18 +1212,18 @@
 ! variables are referenced.  
       LOGICAL :: DISCRETE_FLAG
 !Handan Liu added temporary variables on April 20 2012
-	  DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
-	  DOUBLE PRECISION, DIMENSION(6,6,6) :: weight_ft
-	  DOUBLE PRECISION :: velfp(3), desposnew(dimn)
-	  
+      DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
+      DOUBLE PRECISION, DIMENSION(6,6,6) :: weight_ft
+      DOUBLE PRECISION :: velfp(3), desposnew(dimn)
+      
 !-----------------------------------------------   
 ! Include statement functions
 !-----------------------------------------------   
       INCLUDE 'function.inc'
 !-----------------------------------------------
 
-!$      double precision omp_start, omp_end
-!$      double precision omp_get_wtime	      
+!!$      double precision omp_start, omp_end
+!!$      double precision omp_get_wtime	      
 
 !!$      omp_start=omp_get_wtime()
 
@@ -1271,13 +1276,15 @@
 !!$omp         drag_bm_tmp)                                        &
 !!$omp schedule (guided,50)
 
-!Handan Liu modified the following do-loop on Jan 15 2013. 
-!$omp parallel do default(shared)                                 	&
+!Handan Liu modified the following do-loop on Jan 15 2013, 
+!	again modified on May 9 2013
+!$omp parallel default(shared)	                                 	&
 !$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,				&
 !$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,						&
 !$omp         gst_tmp,vst_tmp,velfp,desposnew,ijpkp,ipjkp,			&
 !$omp         ipjpkp,ijkp,nindx,focus,np,wtp,m,weight_ft,			&
 !$omp		  icur,jcur,kcur,vcell,ovol,drag_bm_tmp) 
+!$omp do reduction(+:drag_am) reduction(+:drag_bm)
       DO IJK = IJKSTART3,IJKEND3
          IF(.NOT.FLUID_AT(IJK) .OR. PINC(IJK)==0) cycle 
          i = i_of(ijk)
@@ -1371,10 +1378,12 @@
 !            ENDIF
             if (dimn .eq. 2) then
 			   desposnew(1:2) = des_pos_new(np,1:2)
-			   call DRAG_INTERPLATION_2D(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
+			   call DRAG_INTERPLATION_2D(gst_tmp(1:onew,1:onew,1,1:dimn),&
+					vst_tmp(1:onew,1:onew,1,1:dimn),desposnew,velfp,weight_ft)
 			else 
 			   desposnew(1:3) = des_pos_new(np,1:3)
-			   call DRAG_INTERPLATION_3D(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)				
+			   call DRAG_INTERPLATION_3D(gst_tmp(1:onew,1:onew,1:onew,1:dimn),&
+					vst_tmp(1:onew,1:onew,1:onew,1:dimn),desposnew,velfp,weight_ft)					
 			endif
 			vel_fp(np,:) = velfp(:)
 !===================================================================>> Handan Liu
@@ -1418,21 +1427,21 @@
 
 ! first remove the velocity component at this grid point from the vel_fp
                      drag_bm_tmp(1:dimn) = vel_fp(np, 1:dimn) - &
-                          !weightp(i,j,k)*vstencil(i,j,k, 1:dimn)	!Handan Liu revised on Jan 15 2013
-						  weight_ft(i,j,k)*vst_tmp(i,j,k, 1:dimn)
+                     !weightp(i,j,k)*vstencil(i,j,k, 1:dimn)	!Handan Liu revised on Jan 15 2013
+                     weight_ft(i,j,k)*vst_tmp(i,j,k, 1:dimn)
 ! now find the remaning drag force
                      drag_bm_tmp(1:dimn) = des_vel_new(np,1:dimn) !- drag_bm_tmp(1:dimn)
 
 !!$omp critical
                      drag_am(cur_ijk,m) = drag_am(cur_ijk,m) + &
-                          !f_gp(np)*weightp(i,j,k)*ovol*wtp		!Handan Liu revised on Jan 15 2013
-						  f_gp(np)*weight_ft(i,j,k)*ovol*wtp
+                     !f_gp(np)*weightp(i,j,k)*ovol*wtp		!Handan Liu revised on Jan 15 2013
+                     f_gp(np)*weight_ft(i,j,k)*ovol*wtp
 
                      drag_bm(cur_ijk, 1:dimn,m) = &
-                          drag_bm(cur_ijk,1:dimn,m) + &
-                          f_gp(np) * drag_bm_tmp(1:dimn) * &
-                          !weightp(i,j,k)*ovol*wtp 		!Handan Liu revised on Jan 15 2013
-						  weight_ft(i,j,k)*ovol*wtp
+                     drag_bm(cur_ijk,1:dimn,m) + &
+                     f_gp(np) * drag_bm_tmp(1:dimn) * &
+                     !weightp(i,j,k)*ovol*wtp 		!Handan Liu revised on Jan 15 2013
+                     weight_ft(i,j,k)*ovol*wtp
 !!$omp end critical
                   ENDDO
                ENDDO
@@ -1441,10 +1450,10 @@
          ENDDO   ! end do (nindx = 1,pinc(ijk))
 
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
-!$omp end parallel do
+!$omp end parallel
 !!$      omp_end=omp_get_wtime()
 !!$      write(*,*)'drag_interp:',omp_end - omp_start  
-
+	
 ! At the interface drag_am and drag_bm have to be added
 ! send recv will be called and the node values will be added 
 ! at the junction. drag_am are drag_bm are altered by the 
@@ -2375,55 +2384,59 @@
 !  Author: Handan Liu	                           Date: 10-May-2012	C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
-	SUBROUTINE DRAG_INTERPLATION_2D(gsten,vsten,despos,velfp,weightfactor)
-
-	  IMPLICIT NONE
+      SUBROUTINE DRAG_INTERPLATION_2D(gsten,vsten,despos,velfp,weightfactor)
+      
+      IMPLICIT NONE
 
       DOUBLE PRECISION, DIMENSION(2,2,1,3), INTENT(in):: gsten
-	  DOUBLE PRECISION, DIMENSION(2,2,1,3), INTENT(in):: vsten
+      DOUBLE PRECISION, DIMENSION(2,2,1,3), INTENT(in):: vsten
       DOUBLE PRECISION, DIMENSION(2), INTENT(in):: despos
       DOUBLE PRECISION, DIMENSION(3), INTENT(out) :: velfp
+      DOUBLE PRECISION interp_scl	  
 !      INTEGER, INTENT(in):: neworder
 !      CHARACTER*5 :: interpscheme
       DOUBLE PRECISION, DIMENSION(6,6,6) :: weightfactor
 !      INTEGER :: vec_size, nv	!, iorig
       INTEGER:: i, j
-	  DOUBLE PRECISION, DIMENSION(2) :: xxval, yyval	!, zval
-	  DOUBLE PRECISION, DIMENSION(1) :: dxx, dyy	!,dz	
+      DOUBLE PRECISION, DIMENSION(2) :: xxval, yyval !, zval
+      DOUBLE PRECISION, DIMENSION(1) :: dxx, dyy !,dz	
       DOUBLE PRECISION, DIMENSION(2):: zetaa
 
-		dxx(1) = gsten(2,1,1,1) - gsten(1,1,1,1)
-		dyy(1) = gsten(1,2,1,2) - gsten(1,1,1,2)
-		zetaa(1:2) = despos(1:2) - gsten(1,1,1,1:2)
-		zetaa(1) = zetaa(1)/dxx(1)
-		zetaa(2) = zetaa(2)/dyy(1)
-		do i=1,2
-			select case(i)
-			  case(1)
-				xxval(1)=1-zetaa(1)
-				yyval(1)=1-zetaa(2)
-			  case(2)
-				xxval(2)=zetaa(1)
-				yyval(2)=zetaa(2)
-			end select
-		enddo
-		  
-		weightfactor = 0.0d0
-		do j=1,2
-			do i=1,2
-				weightfactor(i,j,1) = xxval(i)*yyval(j)
-			enddo
-		enddo
-	
-		velfp(1:3) = 0.d0
-		do j=1,2
-			do i=1,2
-				velfp(1) = velfp(1) + vsten(i,j,1,1)*weightfactor(i,j,1)
-				velfp(2) = velfp(2) + vsten(i,j,1,2)*weightfactor(i,j,1)
-			enddo
-		enddo
-
-	END SUBROUTINE DRAG_INTERPLATION_2D
+      dxx(1) = gsten(2,1,1,1) - gsten(1,1,1,1)
+      dyy(1) = gsten(1,2,1,2) - gsten(1,1,1,2)
+      zetaa(1:2) = despos(1:2) - gsten(1,1,1,1:2)
+      zetaa(1) = zetaa(1)/dxx(1)
+      zetaa(2) = zetaa(2)/dyy(1)
+      do i=1,2
+         select case(i)
+      case(1)
+         xxval(1)=1-zetaa(1)
+         yyval(1)=1-zetaa(2)
+      case(2)
+         xxval(2)=zetaa(1)
+         yyval(2)=zetaa(2)
+      end select
+      enddo
+      
+      velfp(1:3) = 0.d0		
+      weightfactor = 0.0d0
+      interp_scl = 0.0
+      do j=1,2
+         do i=1,2
+            weightfactor(i,j,1) = xxval(i)*yyval(j)
+            interp_scl = interp_scl + vsten(i,j,1,1)*weightfactor(i,j,1)
+         enddo
+      enddo
+      velfp(1) = interp_scl		
+      
+      do j=1,2
+         do i=1,2
+                                !velfp(1) = velfp(1) + vsten(i,j,1,1)*weightfactor(i,j,1)
+            velfp(2) = velfp(2) + vsten(i,j,1,2)*weightfactor(i,j,1)
+         enddo
+      enddo
+      
+      END SUBROUTINE DRAG_INTERPLATION_2D
 	
 	  
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -2436,80 +2449,80 @@
 !  Author: Handan Liu	                           Date: 18-August-2012	C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
-	SUBROUTINE DRAG_INTERPLATION_3D(gsten,vsten,despos,velfp,weightfactor)
-  
-	  IMPLICIT NONE
-	  
+      SUBROUTINE DRAG_INTERPLATION_3D(gsten,vsten,despos,velfp,weightfactor)
+      
+      IMPLICIT NONE
+      
       DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(in):: gsten
-	  DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(in):: vsten
+      DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(in):: vsten
       DOUBLE PRECISION, DIMENSION(3), INTENT(in):: despos
       DOUBLE PRECISION, DIMENSION(3), INTENT(out) :: velfp
-	  DOUBLE PRECISION interp_scl
-	  DOUBLE PRECISION, DIMENSION(3) :: interp_vec
+      DOUBLE PRECISION interp_scl
+      DOUBLE PRECISION, DIMENSION(3) :: interp_vec
 !      INTEGER, INTENT(in):: neworder
 !      CHARACTER*5 :: interpscheme
       DOUBLE PRECISION, DIMENSION(6,6,6), INTENT(out) :: weightfactor
       INTEGER :: vec_size, nv	!, iorig
       INTEGER :: i, j, k
 
-	  DOUBLE PRECISION, DIMENSION(2) :: xxval, yyval, zzval
-	  DOUBLE PRECISION, DIMENSION(1) :: dxx, dyy, dzz	
+      DOUBLE PRECISION, DIMENSION(2) :: xxval, yyval, zzval
+      DOUBLE PRECISION, DIMENSION(1) :: dxx, dyy, dzz	
       DOUBLE PRECISION, DIMENSION(3) :: zetaa
-
-		dxx(1) = gsten(2,1,1,1) - gsten(1,1,1,1)
-		dyy(1) = gsten(1,2,1,2) - gsten(1,1,1,2)
-		dzz(1) = gsten(1,1,2,3) - gsten(1,1,1,3)
-		zetaa(1:3) = despos(1:3) - gsten(1,1,1,1:3)
-		zetaa(1) = zetaa(1)/dxx(1)
-		zetaa(2) = zetaa(2)/dyy(1)
-		zetaa(3) = zetaa(3)/dzz(1)
-		do i=1,2
-			select case(i)
-			  case(1)
-				xxval(1)=1-zetaa(1)
-				yyval(1)=1-zetaa(2)
-				zzval(1)=1-zetaa(3)
-			  case(2)
-				xxval(2)=zetaa(1)
-				yyval(2)=zetaa(2)
-				zzval(2)=zetaa(3)
-			end select
-		enddo
-		  
-		weightfactor = 0.0d0
-		do k=1,2
-			do j=1,2
-				do i=1,2
-					weightfactor(i,j,k) = xxval(i)*yyval(j)*zzval(k)
-				enddo
-			enddo
-		enddo
-
-		interp_scl = 0.0
-		do k=1,2
-			do j=1,2
-				do i=1,2
-					interp_scl = interp_scl + vsten(i,j,k,1)*weightfactor(i,j,k)
-				enddo
-			enddo
-		enddo
-		velfp(1) = interp_scl
-
-		vec_size = SIZE(vsten,4)
-		do nv=2,vec_size
-			interp_vec(nv) = 0.0		
-			do k=1,2
-				do j=1,2
-					do i=1,2
-						interp_vec(nv) = interp_vec(nv) + vsten(i,j,k,nv)*weightfactor(i,j,k)
-					enddo
-				enddo
-			enddo
-		enddo	
-		velfp(2) = interp_vec(2)
-		velfp(3) = interp_vec(3)
+      
+      dxx(1) = gsten(2,1,1,1) - gsten(1,1,1,1)
+      dyy(1) = gsten(1,2,1,2) - gsten(1,1,1,2)
+      dzz(1) = gsten(1,1,2,3) - gsten(1,1,1,3)
+      zetaa(1:3) = despos(1:3) - gsten(1,1,1,1:3)
+      zetaa(1) = zetaa(1)/dxx(1)
+      zetaa(2) = zetaa(2)/dyy(1)
+      zetaa(3) = zetaa(3)/dzz(1)
+      do i=1,2
+         select case(i)
+      case(1)
+         xxval(1)=1-zetaa(1)
+         yyval(1)=1-zetaa(2)
+         zzval(1)=1-zetaa(3)
+      case(2)
+         xxval(2)=zetaa(1)
+         yyval(2)=zetaa(2)
+         zzval(2)=zetaa(3)
+      end select
+      enddo
+      
+      weightfactor = 0.0d0
+      do k=1,2
+         do j=1,2
+            do i=1,2
+               weightfactor(i,j,k) = xxval(i)*yyval(j)*zzval(k)
+            enddo
+         enddo
+      enddo
+      
+      interp_scl = 0.0
+      do k=1,2
+         do j=1,2
+            do i=1,2
+               interp_scl = interp_scl + vsten(i,j,k,1)*weightfactor(i,j,k)
+            enddo
+         enddo
+      enddo
+      velfp(1) = interp_scl
+      
+      vec_size = SIZE(vsten,4)
+      do nv=2,vec_size
+         interp_vec(nv) = 0.0		
+         do k=1,2
+            do j=1,2
+               do i=1,2
+                  interp_vec(nv) = interp_vec(nv) + vsten(i,j,k,nv)*weightfactor(i,j,k)
+               enddo
+            enddo
+         enddo
+      enddo	
+      velfp(2) = interp_vec(2)
+      velfp(3) = interp_vec(3)
 		
-	END SUBROUTINE DRAG_INTERPLATION_3D
+      END SUBROUTINE DRAG_INTERPLATION_3D
 	
 
 

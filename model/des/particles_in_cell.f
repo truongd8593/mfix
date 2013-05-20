@@ -72,8 +72,8 @@
 ! (density) of a phase specified in the data file.
       DOUBLE PRECISION dDp, dRho
       
-!$      double precision omp_start1, omp_end1
-!$      double precision omp_get_wtime	      
+!!$      double precision omp_start, omp_end
+!!$      double precision omp_get_wtime	      
 !-----------------------------------------------
 ! Include statement functions      
 !-----------------------------------------------
@@ -103,12 +103,17 @@
 ! ---------------------------------------------------------------->>>
 !Handan Liu commented here on Jan 16 2013 and revised as below:
 ! 1)directly adding the directives in this loop will result in the datarace;
-! 2)adding 'critical' at �PINC(IJK)=PINC(IJK)+1� can work for OpenMP;
+! 2)adding 'critical' at ÂPINC(IJK)=PINC(IJK)+1Â can work for OpenMP;
 ! 3)but the total time for OpenMP is much longer than that without OpenMP
 !   directives in this loop. So OpenMP directives were removed in this loop.
 ! ----------------------------------------------------------------<<<<
 !!$omp parallel do default(shared)                               &
 !!$omp private(l,m,xpos,ypos,zpos,i,j,k,ijk) schedule (guided,50)  
+!!$      omp_start=omp_get_wtime()
+!$omp parallel default(shared)            &
+!$omp private(l,m,xpos,ypos,zpos,i,j,k,ijk)
+!$omp do reduction(+:PINC) schedule (guided,50)  
+
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
          IF(.NOT.PEA(L,1)) CYCLE
@@ -345,6 +350,8 @@
 !!$omp end critical		 
       ENDDO   ! end loop over L = 1,particles
 !!$omp end parallel do 
+!$omp end parallel 
+
 ! ----------------------------------------------------------------<<<  
 
 
@@ -752,7 +759,6 @@
       INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
-
 ! initializing            
       MASS_SOL1 = ZERO
       MASS_SOL2 = ZERO 
@@ -782,13 +788,15 @@
       CALL SET_INTERPOLATION_SCHEME(2)
 
 !Handan Liu added on Jan 17 2013	  
-!$omp	parallel do default(shared)									&
-!$omp	private(IJK,I,J,K,PCELL,AVG_FACTOR,COUNT_NODES_OUTSIDE,		&
-!$omp		COUNT_NODES_INSIDE,COUNT_NODES_INSIDE_MAX,II,JJ,		&
-!$omp		KK,IW,IE,JS,JN,KB,KTP,CUR_IJK,IPJK,IJPK,IPJPK,IJKP,		&
-!$omp		gst_tmp,vst_tmp,JUNK_VAL,desposnew,weight_ft,			&				
-!$omp		nindx,np,wtp,m,icur,jcur,kcur,TEMP1,MASS_SOL1,I1, I2,	&
-!$omp		J1, J2, K1, K2, IDIM, IJK2, RESID_ROPS,RESID_VEL)
+!$omp	parallel default(shared)								&
+!$omp	private(IJK,I,J,K,PCELL,COUNT_NODES_INSIDE,II,JJ,KK,IW,	&
+!$omp		IE,JS,JN,KB,KTP,ONEW,CUR_IJK,IPJK,IJPK,IPJPK,IJKP,	&
+!$omp		IJPKP,IPJKP,IPJPKP,gst_tmp,vst_tmp,nindx,np,wtp,m,	&
+!$omp		JUNK_VAL,desposnew,weight_ft,icur,jcur,kcur,TEMP1,	&	
+!$omp		I1, I2, J1, J2, K1, K2, IDIM,IJK2,NORM_FACTOR,		&
+!$omp		RESID_ROPS,RESID_VEL)
+!$omp	do reduction(+:COUNT_NODES_OUTSIDE) reduction(+:MASS_SOL1)	
+!!$omp	reduction(+:DES_ROPS_NODE) reduction(+:DES_VEL_NODE)
       !IJKLOOP: DO IJK = IJKSTART3,IJKEND3	! Removed by Handan Liu
       DO IJK = IJKSTART3,IJKEND3
 
@@ -910,12 +918,14 @@
 !                    ONEW,INTERP_SCHEME,WEIGHTP)
 !            ENDIF
             if (dimn .eq. 2) then
-			   desposnew(1:2) = des_pos_new(np,1:2)
-			   call DRAG_INTERPLATION_2D(gst_tmp,vst_tmp,desposnew,JUNK_VAL,weight_ft)
-			else 
-			   desposnew(1:3) = des_pos_new(np,1:3)
-			   call DRAG_INTERPLATION_3D(gst_tmp,vst_tmp,desposnew,JUNK_VAL,weight_ft)				
-			endif
+               desposnew(1:2) = des_pos_new(np,1:2)
+               call DRAG_INTERPLATION_2D(gst_tmp(1:onew,1:onew,1,1:dimn),&
+               vst_tmp(1:onew,1:onew,1,1:dimn),desposnew,JUNK_VAL(1:DIMN),weight_ft)
+            else 
+               desposnew(1:3) = des_pos_new(np,1:3)
+               call DRAG_INTERPLATION_3D(gst_tmp(1:onew,1:onew,1:onew,1:dimn),&
+               vst_tmp(1:onew,1:onew,1:onew,1:dimn),desposnew,JUNK_VAL(1:DIMN),weight_ft)				   
+            endif
 !===================================================================>>> Handan Liu 
 
             M = PIJK(NP,5)
@@ -941,7 +951,7 @@
 
 ! comment: is this missing division by volume of the node (~cell) 
                      !TEMP1 = WEIGHTP(I,J,K)*DES_RO_S(M)*PVOL(NP)*WTP
-					 TEMP1 = WEIGHT_FT(I,J,K)*DES_RO_S(M)*PVOL(NP)*WTP					 
+                     TEMP1 = WEIGHT_FT(I,J,K)*DES_RO_S(M)*PVOL(NP)*WTP					 
                      DES_ROPS_NODE(CUR_IJK,M) = DES_ROPS_NODE(CUR_IJK,M) + TEMP1 
                      DES_VEL_NODE(CUR_IJK, 1:DIMN,M) = &
                         DES_VEL_NODE(CUR_IJK, 1:DIMN,M) + TEMP1*DES_VEL_NEW(NP, 1:DIMN)
@@ -1015,14 +1025,14 @@
                   
 ! now add this residual equally to the remaining nodes
                NORM_FACTOR = ONE/REAL(COUNT_NODES_INSIDE)
-               COUNT_TEMP = 0
+               !COUNT_TEMP = 0
                DO KK = K1, K2
                   DO JJ = J1, J2
                      DO II = I1, I2
                         IJK2 = funijk(II, JJ, KK)
 
                         IF(.NOT.SCALAR_NODE_ATWALL(IJK2)) THEN 
-                           COUNT_TEMP = COUNT_TEMP + 1
+                           !COUNT_TEMP = COUNT_TEMP + 1
                            DES_ROPS_NODE(IJK2,1:DES_MMAX) = &
                               DES_ROPS_NODE(IJK2,1:DES_MMAX) + &
                               RESID_ROPS(1:DES_MMAX)*NORM_FACTOR
@@ -1041,8 +1051,8 @@
 !-----------------------------------------------------------------<<<
       !ENDDO IJKLOOP   ! end do ijkloop (ijk=ijkstart3,ijkend3)
       ENDDO
-!$omp end parallel do     
-
+!$omp end parallel   
+ 
 ! At the interface des_rops_node has to be added since particles 
 ! across the processors will contribute to the same scalar node. 
 ! sendrecv will be called and the node values will be added 
@@ -1077,12 +1087,10 @@
 !Handan Liu added here on Feb. 28 2013
 !$omp 	parallel do default(shared)		&
 !$omp   private(K,J,I,IJK,I1,I2,J1,J2,K1,K2,	&
-!$omp			II,JJ,KK,IJK2,M)   
+!$omp			II,JJ,KK,IJK2,M,VOL_SURR)   collapse (3)
       DO K = KSTART2, KEND1
          DO J = JSTART2, JEND1
             DO I = ISTART2, IEND1
-
-
                IJK = funijk(I,J,K)
                I1 = I
                I2 = I+1
@@ -1097,7 +1105,7 @@
                DO KK = K1, K2
                   DO JJ = J1, J2
                      DO II = I1, I2
-                        IJK2 = funijk(II, JJ, KK) 
+                        IJK2 = funijk(IMAP_C(II), JMAP_C(JJ), KMAP_C(KK))
                         IF(FLUID_AT(IJK2)) VOL_SURR = VOL_SURR+VOL(IJK2)
                      ENDDO
                   ENDDO
@@ -1107,8 +1115,13 @@
                DO KK = K1, K2
                   DO JJ = J1, J2
                      DO II = I1, I2
-                        IJK2 = funijk(II, JJ, KK) 
-                        IF(FLUID_AT(IJK2)) THEN 
+
+                        IJK2 = funijk(IMAP_C(II), JMAP_C(JJ), KMAP_C(KK))
+                        IF(FLUID_AT(IJK2).and.(IS_ON_myPE_wobnd(II, JJ, KK))) THEN 
+! Since the data in the ghost cells is spurious anyway and overwritten during 
+! subsequent send receives, do not compute any value here as this will 
+! mess up the total mass value that is computed below to ensure mass conservation
+! between Lagrangian and continuum representations 
                            DO M = 1, DES_MMAX
                               DES_ROP_S(IJK2, M) = DES_ROP_S(IJK2, M) + &
                                  DES_ROPS_NODE(IJK,M)*VOL(IJK2)/VOL_SURR
@@ -1127,12 +1140,12 @@
             ENDDO   ! end do (i=istart2,iend1)
          ENDDO   ! end do (j=jstart2,jend1)
       ENDDO   ! end do (k=kstart2,kend1)
-!$omp end parallel do		  
+		  
 !-----------------------------------------------------------------<<<      
 
 !Handan Liu added here on Feb. 28 2013
 !$omp 	parallel do default(shared)		&
-!$omp   private(K,J,I,IJK,M)       
+!$omp   private(K,J,I,IJK,M) reduction(+:MASS_SOL2)      
       DO IJK = IJKSTART3, IJKEND3
          IF(.not.FLUID_AT(IJK)) cycle
          I = I_OF(IJK)
@@ -1149,10 +1162,10 @@
                DES_ROP_S(IJK, M) = DES_ROP_S(IJK, M)/VOL(IJK)
 
 ! Note that for cut-cell, it is important to check both fluid_at and
-! is_on_mype_owns.  Fluid_at is not enough as it is shared between procs
+! is_on_mype_wobnd.  Fluid_at is not enough as it is shared between procs
 ! and fluid_at(ijkend3) might be true when in fact it does not belong to
 ! that proc 
-               IF(IS_ON_myPE_owns(I, J, K)) MASS_SOL2 = MASS_SOL2 + & 
+               IF(IS_ON_myPE_wobnd(I, J, K)) MASS_SOL2 = MASS_SOL2 + & 
                DES_ROP_S(IJK, M)*VOL(IJK)
                
                !WRITE(*,*) 'ROP_S = ', DES_ROP_S(IJK, M), DES_ROP_S(IJK, M)/DES_RO_S(M)
@@ -1286,7 +1299,7 @@
 !-----------------------------------------------
 
 !$omp parallel do if(ijkend3 .ge. 2000) default(shared)        &
-!$omp private(ijk,cm,m,sum_eps,ep_sm)     
+!$omp private(ijk,cm,m,sum_eps,ep_sm)    
       DO IJK = IJKSTART3, IJKEND3
          IF(.NOT.FLUID_AT(IJK)) CYCLE
          
