@@ -210,6 +210,8 @@
                      ELSE 
                         IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
                            BC_U_G(BCV) = -VEL 
+                           BC_V_G(BCV) = ZERO 
+                           BC_W_G(BCV) = ZERO 
                         ELSE 
                            BC_U_G(BCV) = VEL 
                         ENDIF 
@@ -231,6 +233,8 @@
                      ELSE 
                         IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
                            BC_U_G(BCV) = VEL 
+                           BC_V_G(BCV) = ZERO
+                           BC_W_G(BCV) = ZERO
                         ELSE 
                            BC_U_G(BCV) = -VEL 
                         ENDIF 
@@ -251,7 +255,9 @@
                         ENDIF 
                      ELSE 
                         IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
+                           BC_U_G(BCV) = ZERO 
                            BC_V_G(BCV) = -VEL 
+                           BC_W_G(BCV) = ZERO 
                         ELSE 
                            BC_V_G(BCV) = VEL 
                         ENDIF 
@@ -272,7 +278,9 @@
                         ENDIF 
                      ELSE 
                         IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
+                           BC_U_G(BCV) = ZERO
                            BC_V_G(BCV) = VEL 
+                           BC_W_G(BCV) = ZERO
                         ELSE 
                            BC_V_G(BCV) = -VEL 
                         ENDIF 
@@ -293,6 +301,8 @@
                         ENDIF 
                      ELSE 
                         IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
+                           BC_U_G(BCV) = ZERO 
+                           BC_V_G(BCV) = ZERO 
                            BC_W_G(BCV) = -VEL 
                         ELSE 
                            BC_W_G(BCV) = VEL 
@@ -314,6 +324,8 @@
                         ENDIF 
                      ELSE 
                         IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
+                           BC_U_G(BCV) = ZERO
+                           BC_V_G(BCV) = ZERO
                            BC_W_G(BCV) = VEL 
                         ELSE 
                            BC_W_G(BCV) = -VEL 
@@ -438,6 +450,8 @@
                         ELSE 
                            IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
                               BC_U_S(BCV,M) = -VEL 
+                              BC_V_S(BCV,M) = ZERO 
+                              BC_W_S(BCV,M) = ZERO 
                            ELSE 
                               BC_U_S(BCV,M) = VEL 
                            ENDIF 
@@ -459,6 +473,8 @@
                         ELSE 
                            IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
                               BC_U_S(BCV,M) = VEL 
+                              BC_V_S(BCV,M) = ZERO 
+                              BC_W_S(BCV,M) = ZERO 
                            ELSE 
                               BC_U_S(BCV,M) = -VEL 
                            ENDIF 
@@ -479,7 +495,9 @@
                            ENDIF 
                         ELSE 
                            IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
+                              BC_U_S(BCV,M) = ZERO 
                               BC_V_S(BCV,M) = -VEL 
+                              BC_W_S(BCV,M) = ZERO 
                            ELSE 
                               BC_V_S(BCV,M) = VEL 
                            ENDIF 
@@ -500,7 +518,9 @@
                            ENDIF 
                         ELSE 
                            IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
+                              BC_U_S(BCV,M) = ZERO
                               BC_V_S(BCV,M) = VEL 
+                              BC_W_S(BCV,M) = ZERO
                            ELSE 
                               BC_V_S(BCV,M) = -VEL 
                            ENDIF 
@@ -521,6 +541,8 @@
                            ENDIF 
                         ELSE 
                            IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
+                              BC_U_S(BCV,M) = ZERO 
+                              BC_V_S(BCV,M) = ZERO 
                               BC_W_S(BCV,M) = -VEL 
                            ELSE 
                               BC_W_S(BCV,M) = VEL 
@@ -542,6 +564,8 @@
                            ENDIF 
                         ELSE 
                            IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
+                              BC_U_S(BCV,M) = ZERO 
+                              BC_V_S(BCV,M) = ZERO 
                               BC_W_S(BCV,M) = VEL 
                            ELSE 
                               BC_W_S(BCV,M) = -VEL 
