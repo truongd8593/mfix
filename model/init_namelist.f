@@ -58,8 +58,7 @@
       USE compar
       USE parallel
       USE cdist
-      USE stiff_chem
-
+      USE stiff_chem          !added by Sebastien Dartevelle, LANL, May 2013
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -101,7 +100,15 @@
       BC_JJ_M = .false.
       PHIP_OUT_JJ=.false.
       PHIP_OUT_ITER=0
-      
+
+ !
+ !SUBGRID model stuffs, Sebastien Dartevelel, LANL, May 2013
+      SUBGRID_Igci = .FALSE.          !Igci & Sundar/Princeton's subgrid model
+      SUBGRID_Milioli = .FALSE.       !Milioli & Sundar/Princeton's subgrid model
+      SUBGRID_Wall = .FALSE.          !by default do not calculate the effects of the wall upon the filtered model
+      filter_size_ratio = 2.0D0       !filter_size_ratio, which must be defined when SUBGRID = .T. is by default equal to TWO
+ !
+ !
       K_Epsilon = .FALSE.
       Added_Mass = .FALSE.
       M_AM = UNDEFINED_I
@@ -221,6 +228,10 @@
       PHI = UNDEFINED 
       PHIP = 0.6D0 
 ! specularity coefficient as r->0
+!
+!!    IF ( (SUBGRID_Igci .OR. SUBGRID_Milioli) .AND. SUBGRID_Wall) PHIP = 0.0D0         !it must be ZEROED with any Filter models as we only take FREE_Slip wall for the time being
+!                                                                                       !Sebastien Dartevelle, LANL, May 2013
+!
       k4phi = undefined	
       phip0 = undefined            
       E_W = 1.D0 

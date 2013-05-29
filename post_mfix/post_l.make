@@ -873,11 +873,11 @@ calc_mu_s.$(OBJ_EXT) : ../model/calc_mu_s.f \
             drag.mod \
             kintheory.mod \
             ur_facs.mod \
+            cutcell.mod \
             parallel.mod \
             visc_g.mod \
             is.mod \
             sendrecv.mod \
-            cutcell.mod \
             function.inc                                                 \
             ep_s1.inc                                                    \
             ep_s2.inc                                                    \

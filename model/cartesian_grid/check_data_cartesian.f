@@ -688,6 +688,16 @@
       ENDIF
 
 
+!
+!Sebastien MAY 2013, added SUBGRID conditions to be used in MFIX
+      IF (SUBGRID_Igci .OR. SUBGRID_Milioli) THEN   !SUBGRID/LES model has some conditions with it
+         IF (SUBGRID_Wall .AND. .NOT.CARTESIAN_GRID) &
+            CALL ERROR_ROUTINE ('check_data_01', &
+            'For any SUBGRID Models with Subgrid Wall effect calculation, you must use Cartesian MFIX Cut-Cell capabilities enabled',1,1)
+      ENDIF
+!
+!
+
 !======================================================================
 ! Data initialization for Dashboard
 !======================================================================

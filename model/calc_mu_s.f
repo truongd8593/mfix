@@ -133,7 +133,11 @@
       ! for the granular temperature
       IF (.NOT. QMOMK) THEN
          IF(.NOT.GRANULAR_ENERGY) then
-            call gt_algebraic(M,IER) !algebraic granular energy equation
+            if(.NOT.SUBGRID_Igci .AND. .NOT.SUBGRID_Milioli) then           !!!!Sebastien Dartevelle, LANL, March May 2013, Filter model
+              call gt_algebraic(M,IER)                                        !algebraic granular energy equation
+            else
+              call subgrid_model(M,IER)                                       !not algebraic theta, then take a subgrid LES model route
+            endif
          ELSE                   !granular energy transport equation
             IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
                CALL gt_pde_ia_nonep(M,IER) ! complete polydisperse IA theory
@@ -154,7 +158,6 @@
       
       IF(BLENDING_STRESS) THEN
          DO 200 IJK = ijkstart3, ijkend3
-    
             blend =  blend_function(IJK)
             Mu_s_c(IJK,M) = Mu_s_v(IJK)
             Mu_s(IJK,M) = (1.0d0-blend)*Mu_s_p(IJK) &
@@ -180,9 +183,8 @@
 ! plastic, viscous or frictional components)
             ALPHA_s(IJK,M) = (1.0d0-blend)*ALPHA_s_p(IJK) &
                 + blend*ALPHA_s_v(IJK) + ALPHA_s_f(IJK)
- 200     ENDDO  
-
-        ELSE   ! else branch of if(blending_stress)
+200      ENDDO
+      ELSE   ! else branch of if(blending_stress), no blending stress then we have
          Mu_s_c(:,M) = Mu_s_v(:)
          Mu_s(:,M) = Mu_s_p(:) + Mu_s_v(:) + Mu_s_f(:)
      
@@ -191,7 +193,6 @@
          
          P_s_c(:,M) = P_s_v(:)
          P_s(:,M) = P_s_p(:) + P_s_v(:) + P_s_f(:)
-     
       ENDIF  ! end if/else (blending_stress)
       
       RETURN
@@ -1568,6 +1569,212 @@
 !-----------------------------------------------
 
 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+      Subroutine subgrid_model(M, IER)
+!by Sebastien Dartevelle, LANL, May 2012-2013
+!-----------------------------------------------
+!     Modules 
+!-----------------------------------------------
+      USE param
+      USE param1
+      USE geometry
+      USE compar
+      USE fldvar
+      USE vshear
+      USE indices
+      USE visc_s
+      USE physprop
+      USE run
+      USE constant
+      USE cutcell                 !this is needed for distance to Wall function, Sebastien Dartevelle, LANL, May 2013
+      IMPLICIT NONE
+!-----------------------------------------------  
+!     Local Variables
+!-----------------------------------------------  
+!     Error index
+      INTEGER :: IER
+!
+!     Index
+      INTEGER :: IJK, I, J, K
+!
+!     Solid Phase Index
+      INTEGER :: M
+!
+!Igci models
+      DOUBLE PRECISION :: Mu_sub,ps_sub
+      DOUBLE PRECISION :: pressurefac
+      DOUBLE PRECISION :: viscosityfac,ps_kinetic,ps_total, extra_visfactor
+      DOUBLE PRECISION :: mu_kinetic,mu_total
+!Milioli model
+      DOUBLE PRECISION :: cvisc_pot,cvisc_num,cvisc_den,Cvisc
+      DOUBLE PRECISION :: cpress_pot,cpress_num,cpress_den,Cpress
+!For Distance to the Wall efects
+      DOUBLE PRECISION, PARAMETER :: a222=9.14d0, b222=0.345d0, a333=5.69d0, b333=0.228d0
+!Factor functions to correct subgrid effects from the wall
+      DOUBLE PRECISION :: factor2, factor3
+!The inverse Froude number, or dimensionless Filtersize
+      DOUBLE PRECISION :: Inv_Froude
+!Dimensionless Distance to the Wall
+      DOUBLE PRECISION :: x_d
+!One Particle Terminal Settling Velocity
+      DOUBLE PRECISION :: vt
+!the filter size which is a function of each grid cell volume
+      DOUBLE PRECISION :: filtersize
+!----------------------------------------------- 
+!     Include statement functions
+!----------------------------------------------- 
+      INCLUDE 'function.inc'
+      INCLUDE 'ep_s1.inc'
+      INCLUDE 'ep_s2.inc'
+      INCLUDE 'fun_avg1.inc'
+      INCLUDE 'fun_avg2.inc'
+!  
+   DO 200 IJK = ijkstart3, ijkend3
+    IF ( FLUID_AT(IJK) ) THEN
+            I = I_OF(IJK) 
+            J = J_OF(IJK) 
+            K = K_OF(IJK) 
+!		
+        !Particle Terminal  Settling Velocity: vt = g*d^2*(Rho_s - Rho_g) / 18 * Mu_g
+          vt = GRAVITY*D_p0(M)*D_p0(M)*(RO_S(M) - RO_g(IJK)) / (18.0d0*MU_G(IJK))
+        !
+        !FilterSIZE calculation for each specific gridcell volume
+          filtersize = filter_size_ratio * (VOL(IJK)**(ONE/3.0d0))
+        !
+	    !Dimensionless Inverse of Froude number
+          Inv_Froude =  filtersize * GRAVITY / vt**2       !
+        !
+        !Wall Correction Factors:
+              if(.NOT.SUBGRID_Wall) then
+                   Factor2 = ONE   !for P_s
+                   Factor3 = ONE   !for Mu_s
+                   !No wall correction, it does not do anything
+              else !only valid for free slip wall
+              !  Dimnesionless distance to the Wall
+                 x_d = DWALL(IJK) * GRAVITY / vt**2               !
+              !  Wall function for pressure
+                 Factor2 = ONE / ( ONE + a222 * (EXP(-b222*x_d)) )
+              !  Wall function for viscosity
+                 Factor3 = ONE / ( ONE + a333 * (EXP(-b333*x_d)) )
+              endif
+!
+       IF (SUBGRID_Igci) THEN
+       !Various factor needed:
+          pressurefac=0.48*(Inv_Froude**0.86)*(1-EXP(-Inv_Froude/1.4))
+          viscosityfac=0.37*(Inv_Froude**1.22)
+          Extra_visfactor=(0.28*(Inv_Froude**0.43)+1)**-1
+       !
+          IF (EP_s(IJK,M) .LE. 0.02) THEN
+               	Mu_kinetic=1720*(EP_s(IJK,m)**4)-215*(EP_s(IJK,m)**3)+9.81*(EP_s(IJK,m)**2)-0.207*EP_s(IJK,m)+0.00254
+          ELSE IF (EP_s(IJK,M) .LE. 0.2) THEN
+              	Mu_kinetic=2.72*(EP_s(IJK,m)**4)-1.55*(EP_s(IJK,m)**3)+0.329*(EP_s(IJK,m)**2)-0.0296*EP_s(IJK,m)+0.00136
+          ELSE IF (EP_s(IJK,M) .LE. 0.6095) THEN
+              	Mu_kinetic=-0.0128*(EP_s(IJK,m)**3)+0.0107*(EP_s(IJK,m)**2)-0.0005*EP_s(IJK,m)+0.000335
+          ELSE
+              	Mu_kinetic=23.6*(EP_s(IJK,m)**2)-28.0*EP_s(IJK,m)+8.30
+          END IF
+!
+          IF (EP_s(IJK,M) .LE. 0.0131) THEN
+              	Ps_kinetic=-10.4*(EP_s(IJK,m)**2)+0.310*EP_s(IJK,m)
+          ELSE IF (EP_s(IJK,M) .LE. 0.290) THEN
+              	Ps_kinetic=-0.185*(EP_s(IJK,m)**3)+0.0660*(EP_s(IJK,m)**2)-0.000183*EP_s(IJK,m)+0.00232
+          ELSE IF (EP_s(IJK,M) .LE. 0.595) THEN
+              	Ps_kinetic=-0.00978*EP_s(IJK,m)+0.00615
+          ELSE
+              	Ps_kinetic=-6.62*(EP_s(IJK,m)**3)+49.5*(EP_s(IJK,m)**2)-50.3*EP_s(IJK,m)+13.8
+          END IF
+!
+          Ps_sub=pressurefac*(EP_s(IJK,M)-0.59)*(-1.69*EP_s(IJK,M)-4.61*(EP_s(IJK,M)**2)+11*(EP_s(IJK,M)**3))
+!
+          IF (Ps_sub .GE. ZERO) THEN
+             Ps_total=Ps_kinetic+Ps_sub 
+          ELSE
+             Ps_total=Ps_kinetic  
+          END IF
+!
+          Mu_sub=Extra_visfactor*viscosityfac*(EP_s(IJK,M)-0.59)*(-1.22*EP_s(IJK,M)-0.7*(EP_s(IJK,M)**2)-2*(EP_s(IJK,M)**3))
+!      
+          IF (Mu_sub .GE. ZERO) THEN
+             Mu_total=Mu_kinetic+Mu_sub 
+          ELSE
+             Mu_total=Mu_kinetic  
+          END IF
+         !
+         !!shear Viscosity
+          Mu_s_v(IJK)=(Mu_total*Factor3*(vt**3)*RO_S(M)/GRAVITY)
+          IF (Mu_s_v(IJK) .LE. SMALL_NUMBER) Mu_s_v(IJK) = SMALL_NUMBER           !arbitrary value in case it/MU_Total gets negative (it should not happen unless filtersize becomes unrelastic w.r.t. gridsize)
+         !
+         !!Pressure
+          P_s_v(IJK)=(Ps_total*Factor2*(vt**2)*RO_S(M))
+          IF (P_s_v(IJK) .LE. SMALL_NUMBER) P_s_v(IJK) = SMALL_NUMBER             !arbitrary value in case it/MU_Total gets negative (it should not happen unless filtersize becomes unrelastic w.r.t. gridsize)
+         !
+         !!second viscosity, assuming the bulk viscosity is ZERO
+          lambda_s_v(IJK) = (-2.0d0/3.0d0)*Mu_s_v(IJK)
+         !
+         !Granular temperature is Zeroed in the LES/Subgrid model
+          THETA_m(IJK, M) = ZERO
+!
+!
+    ELSE           !then SUBGRID_Milioli is true, Subgrid/Filter model from Milioli et al., 2013
+!Cvisc:
+      cvisc_pot=(0.59-(ONE-EP_g(IJK)))
+      cvisc_num=(0.7*(ONE-EP_g(IJK))*cvisc_pot)
+      cvisc_den=(0.8+(17.0*cvisc_pot*cvisc_pot*cvisc_pot))
+      if ((ONE-EP_g(IJK)) .GE. ZERO .AND. (ONE-EP_g(IJK)) .LE. 0.59) then
+         cvisc=(cvisc_num/cvisc_den)
+      else
+         cvisc=ZERO
+      end if 
+!
+!aCvisc:
+ !     if ((ONE-EP_g(IJK)) .GE. ZERO .AND. (ONE-EP_g(IJK)) .LE. 0.59) then
+ !        acvisc(IJK)=(0.7*(ONE-EP_g(IJK))*(0.59-(ONE-EP_g(IJK))))/(0.8+17.0*(0.59-(1.0-EP_g(IJK)))*(0.59-(ONE-EP_g(IJK)))*(0.59-(ONE-EP_g(IJK))))
+ !     else
+ !        acvisc(IJK)=ZERO
+ !     end if
+!
+!Cpress:
+      cpress_pot=(0.59-(ONE-EP_g(IJK)))
+      cpress_num=(0.4*(ONE-EP_g(IJK))*cpress_pot)
+      cpress_den=(0.5+(13.0*cpress_pot*cpress_pot*cpress_pot))
+      if ((ONE-EP_g(IJK)) .GE. ZERO .AND. (ONE-EP_g(IJK)) .LE. 0.59) then
+         cpress=(cpress_num/cpress_den)
+      else
+         cpress=ZERO
+      end if
+!
+!aCpress
+ !     if ((ONE-EP_g(IJK)) .GE. ZERO .AND. (ONE-EP_g(IJK)) .LE. 0.59) then
+ !        acpress(IJK)=(0.4*(ONE-EP_g(IJK))*(0.59-(ONE-EP_g(IJK))))/(0.5+13.0*(0.59-(ONE-EP_g(IJK)))*(0.59-(ONE-EP_g(IJK)))*(0.59-(ONE-EP_g(IJK))))
+ !     else
+ !        acpress(IJK)=ZERO
+ !     end if
+         !
+         !!Solid filtered Pressure
+          P_s_v(IJK)= RO_s(M) * Inv_froude**(2/7) * filtersize**2 * DSQRT( I2_devD_s(IJK) )**2 * cpress * Factor2    !16/7-2=2/7 in [Pa or kg/m.s2]
+          IF (P_s_v(IJK) .LE. SMALL_NUMBER) P_s_v(IJK)= SMALL_NUMBER             !arbitrary value in case it gets negative (it should not happen unless filtersize becomes unrelastic w.r.t. gridsize)
+         !
+         !!Solid filtered shear Viscosity
+          Mu_s_v(IJK)= RO_s(M) * filtersize**2 * DSQRT( I2_devD_s(IJK) ) * cvisc * Factor3                           !kg/m.s
+          IF (Mu_s_v(IJK) .LE. SMALL_NUMBER) Mu_s_v(IJK)= SMALL_NUMBER           !arbitrary value in case it gets negative (it should not happen unless filtersize becomes unrelastic w.r.t. gridsize)
+         !
+         !!Solid second viscosity, assuming the bulk viscosity is ZERO
+          lambda_s_v(IJK) = (-2.0d0/3.0d0)*Mu_s_v(IJK)
+         !
+         !!Granular temperature is Zeroed in all LES/Subgrid model
+          THETA_m(IJK, M) = ZERO
+!
+      ENDIF      !end of SUBGRID_Igci/SUBGRID_Milioli   
+!
+    ENDIF   !end of if Fluid_at(IJK)
+!
+ 200  Continue       !outer IJK loop
+      Return
+      End
+!
+!----------------------------------------------- 
+
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       Subroutine add_shear(M) 
@@ -1955,7 +2162,6 @@
             D_s(3,2) = D_s(2,3)
             D_s(3,3) = ( W_s(IJK,M) - W_s(IJKM,M) ) * (oX(I)*oDZ(K)) +&
                 U_s_C * oX(I)
-
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -2203,5 +2409,4 @@
       
       Return
       End 
-!----------------------------------------------- 
-
+!-----------------------------------------------

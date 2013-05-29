@@ -135,6 +135,43 @@
          CALL ERROR_ROUTINE ('check_data_01', &
          'Cannot set both K_Epsilon = .T. and L_SCALE0 /= ZERO',1,1)
 
+
+
+!
+!Sebastien May 2013, added SUBGRID conditions to be used in MFIX
+      IF (SUBGRID_Igci .OR. SUBGRID_Milioli) THEN   !SUBGRID/LES model has some conditions with it
+         IF (SUBGRID_Igci .AND. SUBGRID_Milioli) &
+            CALL ERROR_ROUTINE ('check_data_01', &
+            'For SUBGRID Models, you must have EITHER the model from Igci or from Milioli but not both at the same time',1,1)
+         IF (GRANULAR_ENERGY .OR. AHMADI .OR. SIMONIN .OR. K_Epsilon) &
+            CALL ERROR_ROUTINE ('check_data_01', &
+            'For any SUBGRID Models, GRANULAR_ENERGY and RANS turbulence formulations must be all turned FALSE',1,1)
+         IF (DRAG_TYPE /= 'WEN_YU') &
+            CALL ERROR_ROUTINE ('check_data_01', &
+            'For any SUBGRID Models, only WEN_YU Drag formulation can be used (at least for now)',1,1)
+         IF (filter_size_ratio .LE. ZERO) &
+            CALL ERROR_ROUTINE ('check_data_01', &
+            'For any SUBGRID Models, you must correctly and physically defined the size of the LES filter ratio (by default, it is set equal to TWO)', &
+            ', ie., filtersize = DOUBLE PRECISION number',1,1)
+         IF (BLENDING_STRESS) &
+            CALL ERROR_ROUTINE ('check_data_01', &
+            'For any SUBGRID Models, BLENDING_STRESS must be turned FALSE',1,1)
+         IF (FRICTION) &
+            CALL ERROR_ROUTINE ('check_data_01', &
+            'For any SUBGRID Models, FRICTION must be turned FALSE',1,1)
+         IF (SHEAR) &
+            CALL ERROR_ROUTINE ('check_data_01', &
+            'For any SUBGRID Models, SHEAR must be turned FALSE',1,1)
+         IF ( SUBGRID_Wall .AND. (PHIP .NE. 0.0d0) ) &                      
+            CALL ERROR_ROUTINE ('check_data_01', &
+            'For any SUBGRID Models with Wall Corrections, PHIP, wall specularity coefficient, must be ZERO',1,1)
+      ELSEIF (.NOT.SUBGRID_Igci .AND. .NOT.SUBGRID_Milioli .AND. SUBGRID_Wall) THEN
+            CALL ERROR_ROUTINE ('check_data_01', &
+            'You cannot have Subgrid Wall effect calculation without a SUBGRID model selected; please pick either the model from Igci or from Milioli',1,1)
+      ENDIF
+!
+!
+
 ! Check that phase number where added mass applies is properly defined.
       IF (ADDED_MASS) THEN
          LONG_STRING = 'Must set disperse phase number M_AM where &

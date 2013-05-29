@@ -270,4 +270,17 @@
       LOGICAL          SOLID_RO_V
 !end
 
+!
+!Sebastien Dartevelle, LANL, May 2013
+!                      IF .TRUE. incorporate subgrid correction: IGCI Model
+      LOGICAL          SUBGRID_Igci
+!                      IF .TRUE. incorporate subgrid correction: Milioli Model added by Sebastien Dartevelle, LANL, 5/13/2013
+      LOGICAL          SUBGRID_Milioli
+!                      IF .TRUE. incorporate the wall effects upon the clauclation of the filtered/subgrid Viscosity, Solid Pressure, and Gas-Solid drag
+      LOGICAL          SUBGRID_Wall
+! This is the ratio of the FilterSize to the GridSize: 
+      DOUBLE PRECISION filter_size_ratio
+!---End of Sebastien Dartevelle, LANL
+
+!
       END MODULE RUN

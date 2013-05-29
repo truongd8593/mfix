@@ -34,6 +34,7 @@
       USE discretelement
       USE ur_facs 
       USE funits
+      USE cutcell                 !this is needed for distance to Wall function, Sebastien Dartevelle, LANL, May 2013
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -95,6 +96,16 @@
 ! void fraction, gas density, gas bulk density, solids volume fraction
 ! particle diameter      
       DOUBLE PRECISION :: EPG, ROg, ROPg, EP_SM, DPM
+! solid density and filtersize
+      DOUBLE PRECISION :: ROs, filtersize, factor1               !added for subgrid model, Sebastien Dartevelle, LANL, May 2013
+!Dimensionless Distance to the Wall
+      DOUBLE PRECISION :: x_d
+!Inverse Froude Number, or Dimensionless FilterSize
+      DOUBLE PRECISION :: Inv_Froude
+!One Particle Terminal Settling Velocity
+      DOUBLE PRECISION :: vt
+!For Distance from the wall effects:
+      DOUBLE PRECISION, PARAMETER :: a22=6.0d0, b22=0.295d0       !added for subgrid model, Sebastien Dartevelle, LANL, May 2013; those values are only correct for FREE-Slip walls
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -104,17 +115,13 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
-
-!!$omp  parallel do private( I,  IJK, IMJK, IJMK, IJKM, &
-!!$omp&  USCM, VSCM, WSCM, &
-!!$omp&  VREL, UGC, VGC, WGC, Re, V_rm, A, B) &
-!!$omp&  schedule(static)
-
-!Handan Liu added openmp on Feb 5 2013
+!
+!Handan Liu added openmp on Feb 5 2013 ..... added ROs, factor1, vt, x_d, Inv_Froude, and filtersize for subgrid model, Sebastien Dartevelle, LANL, May 2013
 !$omp  parallel do default(shared)				& 
-!$omp  private( I,  IJK, IMJK, IJMK, IJKM, DM, MAXM, DP_loc, EPs_loc, CM,	&
-!$omp		  L, UGC, VGC, WGC, USCM, VSCM, WSCM, VREL, Mu, phis, DPA,		&
-!$omp		  tmp_sum, tmp_fac, Y_i, EPg, ROg, ROPg, EP_SM, DPM, DgA, 		&
+!$omp  private( I,  IJK, IMJK, IJMK, IJKM, DM, MAXM, DP_loc, EPs_loc, CM,               &
+!$omp		  L, UGC, VGC, WGC, USCM, VSCM, WSCM, VREL, Mu, phis, DPA,                  &
+!$omp		  tmp_sum, tmp_fac, Y_i, EPg, ROg, ROPg, EP_SM, DPM, DgA, ROs,              &
+!$omp		  vt, x_d, filtersize, factor1, Inv_Froude,                                 &
 !$omp		  USCM_HYS, VSCM_HYS, WSCM_HYS, F_gstmp, F_cor)
 
       DO IJK = ijkstart3, ijkend3
@@ -246,7 +253,34 @@
             ROPg = ROP_G(IJK)
             EP_SM = EPs_loc(M)
             DPM = DP_loc(M)
-
+!
+!Sebastien Dartevelle, LANL, May 2013
+!The subgrid model requires these quantities:
+        !Particle Terminal  Settling Velocity: vt = g*d^2*(Rho_s - Rho_g) / 18 * Mu_g
+          vt = GRAVITY*D_p0(M)*D_p0(M)*(RO_S(M) - RO_g(IJK)) / (18.0d0*MU_G(IJK))
+        !
+        !FilterSIZE calculation for each specific gridcell volume
+          filtersize = filter_size_ratio * (VOL(IJK)**(ONE/3.0d0))
+        !
+	    !Dimensionless Inverse of Froude number
+          Inv_Froude =  filtersize * GRAVITY / vt**2
+        !
+        !Solid Densities
+          ROs  = RO_s(M)
+        !
+        !Wall Correction Factors:
+              if(.NOT.SUBGRID_Wall) then
+                   Factor1 = ONE   !for drag
+                   !No wall correction, it does not do anything
+              else
+                !Dimnesionless distance to the Wall
+                   x_d = DWALL(IJK) * GRAVITY / vt**2    
+                !
+                !Correction Factor near the wall
+                   Factor1 = ONE / ( ONE + a22 * (EXP(-b22*x_d)) )         !decrease expononentionaly away from the wall; only for FREE-Slip Wall!!
+              endif                                                        !More complex model could be impleted with JJ wall model 
+!
+!
 ! determine the drag coefficient
             IF (EP_SM <= ZERO) THEN 
                DgA = ZERO 
@@ -273,11 +307,9 @@
                   CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,&
                        DPA)
                CASE ('WEN_YU')
-                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROPg,VREL,&
-                       DPM)
+                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROg,ROPg,ROs,Inv_Froude,factor1,vt,VREL,DPM)          !added ROs,Inv_Froude,factor1, and vt for subgrid model, Sebastien Dartevelle, LANL, May 2013
                CASE ('WEN_YU_PCF')
-                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROPg,VREL,&
-                       DPA)
+                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROg,ROPg,ROs,Inv_Froude,factor1,vt,VREL,DPA)          !added ROs,Inv_Froude,factor1, and vt for subgrid model, Sebastien Dartevelle, LANL, May 2013
                CASE ('KOCH_HILL')
                   CALL DRAG_KOCH_HILL(DgA,EPg,Mu,ROPg,VREL,&
                        DPM,DPM,phis)
@@ -353,11 +385,11 @@
                   DgA = ONE/(Y_i*Y_i) * DgA * F_cor 
                ENDIF
 
-! Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
+! Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g); all other models, eg., Wen_Yu
                IF(Model_B)THEN
                   F_gstmp = DgA * EP_SM/EPg
                ELSE
-                  F_gstmp = DgA * EP_SM
+                  F_gstmp = DgA * EP_SM                     !3D buoyancy model
                ENDIF
             ENDIF   !end if/else trim(drag_type=='hys')
 
@@ -724,15 +756,16 @@
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
-      SUBROUTINE DRAG_WEN_YU(lDgA,EPg,Mug,ROPg,VREL,&
-                 DPM)
-
+      SUBROUTINE DRAG_WEN_YU(lDgA,EPg,Mug,ROg,ROPg,ROs,Inv_Froude,factor1,vt,VREL,DPM)                                    !or DRAG_WEN_YU_PCF
+                                                         !added ROs,Inv_Froude,factor1, and vt for subgrid model, Sebastien Dartevelle, LANL, May 2013
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
       USE param 
       USE param1
       USE constant
+      USE run              !for subgrid purposes, Sebastien Dartevelle, LANL, 3/21/2013
+      USE physprop         !for subgrid purposes, Sebastien Dartevelle, LANL, 3/21/2013
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -743,8 +776,12 @@
       DOUBLE PRECISION, INTENT(IN) :: EPg
 ! gas laminar viscosity 
       DOUBLE PRECISION, INTENT(IN) :: Mug
+! gas density
+      DOUBLE PRECISION, INTENT(IN) :: ROg
 ! gas density*EP_g
-      DOUBLE PRECISION, INTENT(IN) :: ROPg      
+      DOUBLE PRECISION, INTENT(IN) :: ROPg
+! solid density
+      DOUBLE PRECISION, INTENT(IN) :: ROs
 ! Magnitude of gas-solids relative velocity 
       DOUBLE PRECISION, INTENT(IN) :: VREL
 ! particle diameter of solids phase M or
@@ -758,28 +795,187 @@
 ! Single sphere drag coefficient 
       DOUBLE PRECISION :: C_d 
 !-----------------------------------------------
-
+!
+!************************************************************************
+!     Declaration of variables relevant to the SUBGRID drag correlation
+!************************************************************************
+!The correcting function into the drag
+      DOUBLE PRECISION :: func1
+!This function corrective for wall efects
+      DOUBLE PRECISION :: factor1
+!Igci model:
+      DOUBLE PRECISION :: GG_phip,h_phip,h_phip2,c_function,f_filter
+!Milioli model:
+      DOUBLE PRECISION :: h1,henv,hlin
+!Inverse Froude Number, or Dimensionless FilterSize
+      DOUBLE PRECISION :: Inv_Froude
+!Dimensionless Slip Velocity = VREL/vt
+      DOUBLE PRECISION :: Vslip
+!One Particle Terminal Settling Velocity, Stokes' formulation
+      DOUBLE PRECISION :: vt
+!Just the solid fraction
+      DOUBLE PRECISION :: EPs
+!***********************************************************
+!      End of variable definition for SUBGRID drag relation
+!***********************************************************
+!
+!
       IF(Mug > ZERO) THEN
 ! Note the presence of gas volume fraction in ROPG
          RE = DPM*VREL*ROPg/Mug
       ELSE
          RE = LARGE_NUMBER 
       ENDIF      
-
-      IF(RE <= 1000D0)THEN
-         C_d = (24.D0/(RE+SMALL_NUMBER)) * &
-               (ONE + 0.15D0*RE**0.687D0)
+!
+      IF(RE <= 1000.0D0)THEN
+         C_d = (24.D0/(RE+SMALL_NUMBER)) * (ONE + 0.15D0*RE**0.687D0)
       ELSE
          C_d = 0.44D0
       ENDIF
+!
+        !Solid Volumetric fraction
+          EPs = ONE - EPg
+!
+	!Filtered model starts here:
+       IF (SUBGRID_Igci) THEN  
+        !a filter function needed in Igci Filtered/subgrid Model [dimensionless]
+          f_filter=(Inv_Froude**1.6)/((Inv_Froude**1.6)+0.4)       !
+!    
+          IF (EPs .LT. 0.0012) THEN
+              	h_phip=2.7*(EPs**0.234)
+          ELSE IF (EPs .LT. 0.014) THEN
+              	h_phip=-0.019*(EPs**-0.455)+0.963
+          ELSE IF (EPs .LT. 0.25) THEN
+              	h_phip=0.868*EXP((-0.38*EPs))-0.176*EXP((-119.2*EPs))
+          ELSE IF (EPs .LT. 0.455) THEN
+              	h_phip=-4.59*(10**-5)*EXP((19.75*EPs))+0.852*EXP((-0.268*EPs))
+          ELSE IF (EPs .LE. 0.59) THEN
+              	h_phip=(EPs-0.59)*(-1501*(EPs**3)+2203*(EPs**2)-1054*EPs+162)
+          ELSE
+           		h_phip=ZERO
+          END IF
+!
+          IF (EPs .LT. 0.18) THEN
+              	GG_phip=(EPs**0.24)*(1.48+EXP(-18*EPs))
+          ELSE
+              	GG_phip=ONE
+          END IF
+!
+          h_phip2=h_phip*GG_phip     
+          c_function=-h_phip2*f_filter
+          Func1=(1+c_function)
+!
+     ELSEIF (SUBGRID_Milioli) THEN
+     !Dimensionless SLip Velocity between phases
+        Vslip = VREL / vt
 
-      lDgA = 0.75D0 * C_d*VREL*ROPg*EPg**(-2.65D0) / DPM
+      if (Inv_Froude .LE. 1.0280D0) then
+       h1=(1.076+0.12*Vslip-(0.02/(Vslip+0.01)))*EPs+(0.084+0.09*Vslip-(0.01/(0.1*Vslip+0.01)))
+      if (EPs .LE. 0.53) then
+         henv=(6.8*(ONE+EPs)*(EPs**0.3))/((10.0*(EPs**1.5)+5.0))
+      elseif (EPs .GT. 0.53 .AND. EPs .LE. 0.65) then
+         henv=((2.23*((0.65-EPs)**(0.45)))/((ONE/EPs)-1.0))
+      elseif (EPs .GT. 0.65) then
+         henv=ZERO
+      end if
+
+      elseif (Inv_Froude .GT. 1.0280D0 .AND. Inv_Froude .LE. 2.0560D0) then
+       h1=((1.268-(0.2*Vslip)+(0.14/(Vslip+0.01)))*EPs)+(0.385+0.09*Vslip-(0.05/(0.2*Vslip+0.01)))
+      if (EPs .LE. 0.53) then
+         henv=(8.6*(1.0+EPs)*(EPs**0.2))/((10.0*EPs)+6.3)
+      elseif (EPs .GT. 0.53 .AND. EPs .LE. 0.65) then
+         henv=(0.423*((0.65-EPs)**0.3))/(1.0-(EPs**0.4))
+      elseif (EPs .GT. 0.65) then
+         henv=ZERO
+      end if
+
+      elseif (Inv_Froude .GT. 2.0560D0 .AND. Inv_Froude .LE. 4.1120D0) then
+       h1=(((0.018*Vslip+0.1)/(0.14*Vslip+0.01))*EPs)+(0.9454-(0.09/(0.2*Vslip+0.01)))
+      if (EPs .LE. 0.50) then
+         henv=(7.9*(1.0+EPs)*(EPs**0.2))/(10.0*(EPs**0.9)+5.0)
+      elseif (EPs .GT. 0.50 .AND. EPs .LE. 0.63) then
+         henv=(0.705*((0.63-EPs)**0.3))/(1.0-(EPs**0.7))
+      elseif (EPs .GT. 0.63) then
+         henv=ZERO
+      end if
+
+      elseif (Inv_Froude .GT. 4.1120D0 .AND. Inv_Froude .LE. 8.2240D0) then
+       h1=((0.05*Vslip+0.3)/(0.4*Vslip+0.06))*EPs+(0.9466-(0.05/(0.11*Vslip+0.01)))
+      if (EPs .LE. 0.45) then
+         henv=(7.9*(1.0+EPs)*(EPs**0.2))/((10.0*(EPs**0.6))+3.6)
+      elseif (EPs .GT. 0.45 .AND. EPs .LE. 0.57) then
+         henv=(0.78*((0.57-EPs)**0.2))/(1.0-(EPs**0.9))
+      elseif (EPs .GT. 0.57) then
+         henv=ZERO
+      end if
+
+      elseif (Inv_Froude .GT. 8.2240D0 .AND. Inv_Froude .LE. 12.3360D0) then
+       h1=((1.3*Vslip+2.2)/(5.2*Vslip+0.07))*EPs+(0.9363-(0.11/(0.3*Vslip+0.01)))
+      if (EPs .LE. 0.35) then
+         henv=(7.6*(1.0+EPs)*(EPs**0.2))/((10.0*(EPs**0.6))+3.3)
+      elseif (EPs .GT. 0.35 .AND. EPs .LE. 0.55) then
+         henv=(0.81*((0.55-EPs)**0.3))/(1.0-(EPs**0.7))
+      elseif (EPs .GT. 0.55) then
+         henv=ZERO
+      end if
+
+      elseif (Inv_Froude .GT. 12.3360D0 .AND. Inv_Froude .LE. 16.4480D0) then
+       h1=((2.6*Vslip+4.0)/(10.0*Vslip+0.08))*EPs+(0.926-(0.17/(0.5*Vslip+0.01)))
+      if (EPs .LE. 0.25) then
+         henv=(8.4*(1.0+EPs)*(EPs**0.2))/((10.0*(EPs**0.5))+3.3)
+      elseif (EPs .GT. 0.25 .AND. EPs .LE. 0.52) then
+         henv=(1.01*((0.52-EPs)**0.03))/(1.0-(EPs**0.9))
+      elseif (EPs .GT.0.52) then
+         henv=ZERO
+      end if
+
+      elseif (Inv_Froude .GT. 16.4480D0 .AND. Inv_Froude .LE. 20.560D0) then
+       h1=((2.5*Vslip+4.0)/(10.0*Vslip+0.08))*EPs+(0.9261-(0.17/(0.5*Vslip+0.01)))
+      if (EPs .LE. 0.25) then
+      henv=(8.4*(1.0+EPs)*(EPs**0.2))/((10.0*(EPs**0.5))+3.3)
+      elseif (EPs .GT. 0.25 .AND. EPs .LE. 0.52) then
+         henv=(1.065*((0.52-EPs)**0.3))/(1.0-EPs)
+      elseif (EPs .GT.0.52) then
+         henv=ZERO
+      end if
+
+      elseif (Inv_Froude .GT. 20.560D0) then
+       h1=((1.6*Vslip+4.0)/(7.9*Vslip+0.08))*EPs+(0.9394-(0.22/(0.6*Vslip+0.01)))
+      if (EPs .LE. 0.25) then
+         henv=(9.0*(1.0+EPs)*(EPs**0.15))/(10.0*(EPs**0.45)+4.2)
+      elseif (EPs .GT. 0.25 .AND. EPs .LE. 0.52) then
+         henv=(0.91*((0.52-EPs)**0.4))/(1.0-(EPs**0.6))
+      elseif (EPs .GT.0.52) then
+         henv=ZERO
+      end if
+
+      end if
+
+      if (h1 .GT. ZERO) then
+         hlin=h1
+      else
+         hlin=ZERO
+      end if
+
+      if (Inv_Froude .LT. 1.0280D0) then
+         Func1 = ONE                           !for very small filtered size, the drag wont be changed: Func1 = 1.0 - H where H = 0.0
+      else
+         Func1 = ONE - MIN(henv,hlin)          !MIN(henv,hlin) is H in Milioli paper, 2013
+      end if
+!
+    !!  Func1=EPs*(ONE-hmili)      !Filtered drag = (1 - H)*Microscopic_drag; it is strange Milioli takes EPs
+!
+     ELSE   !then there is no SUBGRID modification of the drag model
+          Func1   = ONE    !doesn't do anything
+          !& Factor1 is set to ONE because there is no subgrid model selected
+     END IF    !end of IF THEN SUBGRID 
+!
+!
+      lDgA = (Func1 * Factor1) * 0.75D0 * C_d * VREL * ROPg * EPg**(-2.65D0) / DPM
       IF (RE == ZERO) lDgA = ZERO
                
       RETURN
-      END SUBROUTINE DRAG_WEN_YU
-
-
+      END SUBROUTINE DRAG_WEN_YU            !or DRAG_WEN_YU_PCF
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1138,7 +1334,3 @@
 
       RETURN
       END SUBROUTINE DRAG_HYS
-
-
- 
-     

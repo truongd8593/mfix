@@ -150,6 +150,17 @@
             CALL_DI, CALL_GROW, CALL_ISAT, ISATdt, &
 ! ----------------------------------------------------------------<<<
 
+
+
+! Subgrid Model
+! ---------------------------------------------------------------->>>
+!start sebastien, May 2013
+            SUBGRID_Igci, SUBGRID_Milioli, filter_size_ratio, SUBGRID_Wall, &
+!end Sebastien
+! ----------------------------------------------------------------<<<
+
+
+
 ! Misc
              bWrite_netCDF
 
