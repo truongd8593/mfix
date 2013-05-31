@@ -14,15 +14,12 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 ! Handan Liu wrote below:		!Jan 22 2013
-! Compiling SMP mode by Intel compiler 11.1, occurs errors.
-! Tracing in leq_bicsg.f, the error is in leq_matvec due to collapse-clause 
-!      and no '!$omp end parallel do'.
 ! The modification is as below:
-!	Removing 'collapse' in all loops in this routine. 
-!	Adding '!$omp end paralle do' in the end of loops.
 !	Adding a loop of 2D RSRS sweep and parallelizing for OpenMP.
-!	Adding other openmp directives in related loops.
-!	Removing 'use_doloop'. There isn't this keyword in Readme document.
+!	Splitting the existing 3D RSRS loop into two loops for OpenMP 
+!		due to data dependency 
+!	Adding openmp directives in all loops in leq_bicgs0.
+!	Setting 'use_doloop = ture' to activate using do-loop.
 !
       SUBROUTINE LEQ_BICGS(VNAME, VNO, VAR, A_M, B_m, cmethod, &
                            TOL, PC, ITMAX, IER)
@@ -223,12 +220,13 @@
       omega(:)  = zero
       rho(:)    = zero
 
-
-
+	  use_doloop = .TRUE.	! set true by Handan Liu for OpenMP do-loop
+	  
+! Adding all by Handan Liu
 ! zero out R, Rtilde, P, Phat, Svec, Shat, Tvec, V
 ! --------------------------------
       if (use_doloop) then   ! mfix.dat keyword default=false	
-!$omp  parallel do private(ijk)
+!$omp  parallel do default(shared) private(ijk)
          do ijk=ijkstart3,ijkend3
             R(ijk) = zero
             Rtilde(ijk) = zero
@@ -239,7 +237,7 @@
             Tvec(ijk) = zero
             V(ijk) = zero
          enddo
-!$omp  end parallel do		 !Added by Handan Liu
+
       else
          R(:) = zero
          Rtilde(:) = zero
@@ -256,7 +254,7 @@
 ! Scale matrix to have unit diagonal
 ! ---------------------------------------------------------------->>>
       if (do_unit_scaling) then
-!$omp parallel do private(ijk,i,j,k,oam,aijmax)
+!$omp parallel do default(shared) private(ijk,i,j,k,oam,aijmax)
          do k = kstart2,kend2
             do i = istart2,iend2
                do j = jstart2,jend2
@@ -268,7 +266,6 @@
                enddo
             enddo
          enddo
-!$omp  end parallel do		 !Added by Handan Liu		 
       endif
 ! ----------------------------------------------------------------<<<
 
@@ -280,7 +277,7 @@
       call MATVEC(Vname, Var, A_M, R)   ! returns R=A*Var
 
       if (use_doloop) then   ! mfix.dat keyword default=false
-!!$omp   parallel do private(ijk)
+!$omp parallel do default(shared) private(ijk)
          do ijk=ijkstart3,ijkend3
             R(ijk) = B_m(ijk) - R(ijk)
          enddo
@@ -291,7 +288,7 @@
       if(is_serial) then
          Rnorm0 = zero
          if (use_doloop) then   ! mfix.dat keyword default=false
-!!$omp          parallel do private(ijk) reduction(+:Rnorm0)
+!$omp parallel do default(shared) private(ijk) reduction(+:Rnorm0)
             do ijk=ijkstart3,ijkend3
                Rnorm0 = Rnorm0 + R(ijk)*R(ijk)
             enddo
@@ -311,7 +308,7 @@
       call random_number(Rtilde(:))
 
       if (use_doloop) then   ! mfix.dat keyword default=false
-!!$omp   parallel do private(ijk)
+!$omp parallel do default(shared) private(ijk)
          do ijk=ijkstart3,ijkend3
             Rtilde(ijk) = R(ijk) + (2.0d0*Rtilde(ijk)-1.0d0)*1.0d-6*Rnorm0
          enddo
@@ -333,7 +330,7 @@
          if(is_serial) then
             if (use_doloop) then   ! mfix.dat keyword default=false
                RtildexR = zero
-!!$omp        parallel do private(ijk) reduction(+:RtildexR)
+!$omp parallel do default(shared) private(ijk) reduction(+:RtildexR)
                do ijk=ijkstart3,ijkend3
                   RtildexR = RtildexR + Rtilde(ijk) * R(ijk)
                enddo
@@ -365,18 +362,17 @@
          if (i .eq. 1) then
             if (use_doloop) then
 !!$omp        parallel do private(ijk)
-!$omp parallel do default(shared) private(ijk)	!by Handan Liu
+!$omp parallel do default(shared) private(ijk)	
                do ijk=ijkstart3,ijkend3
                   P(ijk) = R(ijk)
                enddo
-!$omp end parallel do
             else
                P(:) = R(:)
             endif
          else
             beta(i-1) = ( rho(i-1)/rho(i-2) )*( alpha(i-1) / omega(i-1) )
             if (use_doloop) then
-!!$omp        parallel do private(ijk)
+!$omp parallel do default(shared) private(ijk)
                do ijk=ijkstart3,ijkend3
                   P(ijk) = R(ijk) + beta(i-1)*( P(ijk) - omega(i-1)*V(ijk) )
                enddo
@@ -395,7 +391,7 @@
          if(is_serial) then
             if (use_doloop) then
                RtildexV = zero
-!!$omp         parallel do private(ijk) reduction(+:RtildexV)
+!$omp  parallel do default(shared) private(ijk) reduction(+:RtildexV)
                do ijk=ijkstart3,ijkend3
                   RtildexV = RtildexV + Rtilde(ijk) * V(ijk)
                enddo
@@ -416,11 +412,11 @@
 ! --------------------------------
          if (use_doloop) then
 !!$omp     parallel do private(ijk)
-!$omp parallel do default(shared) private(ijk)		!by Handan Liu
+!$omp parallel do default(shared) private(ijk)	
             do ijk=ijkstart3,ijkend3
                Svec(ijk) = R(ijk) - alpha(i) * V(ijk)
             enddo
-!$omp end parallel do
+!!$omp end parallel do
          else
             Svec(:) = R(:) - alpha(i) * V(:)
          endif ! use_doloop
@@ -433,7 +429,7 @@
             if(is_serial) then
                if (use_doloop) then
                   Snorm = zero
-!!$omp       parallel do private(ijk) reduction(+:Snorm)
+!$omp parallel do default(shared) private(ijk) reduction(+:Snorm)
                   do ijk=ijkstart3,ijkend3
                      Snorm = Snorm + Svec(ijk) * Svec(ijk)
                   enddo
@@ -449,7 +445,7 @@
 
             if (Snorm <= TOLMIN) then
                if (use_doloop) then
-!!$omp          parallel do private(ijk)
+!$omp parallel do default(shared) private(ijk)
                   do ijk=ijkstart3,ijkend3
                      Var(ijk) = Var(ijk) + alpha(i)*Phat(ijk)
                   enddo
@@ -465,7 +461,7 @@
 !                  print*,'leq_bicgs, initial: ', Vname,' Vnorm ', Rnorm
 
                   if (use_doloop) then
-!!$omp          parallel do private(ijk)
+!$omp parallel do default(shared) private(ijk)
                      do ijk=ijkstart3,ijkend3
                         R(ijk) = B_m(ijk) - R(ijk)
                      enddo
@@ -476,7 +472,7 @@
                   if(is_serial) then
                      if (use_doloop) then
                         Rnorm = zero
-!!$omp            parallel do private(ijk) reduction(+:Rnorm)
+!$omp parallel do default(shared) private(ijk) reduction(+:Rnorm)
                         do ijk=ijkstart3,ijkend3
                            Rnorm = Rnorm + R(ijk)*R(ijk)
                         enddo
@@ -506,7 +502,7 @@
             if (use_doloop) then
                TxS = zero
                TxT = zero
-!!$omp  parallel do private(ijk) reduction(+:TxS,TxT)
+!$omp  parallel do default(shared) private(ijk) reduction(+:TxS,TxT)
                do ijk=ijkstart3,ijkend3
                   TxS = TxS + Tvec(ijk)  * Svec(ijk)
                   TxT = TxT + Tvec(ijk)  * Tvec(ijk)
@@ -535,7 +531,7 @@
 ! compute new guess for Var
 ! --------------------------------
          if (use_doloop) then
-!!$omp    parallel do private(ijk)
+!$omp parallel do default(shared) private(ijk)
             do ijk=ijkstart3,ijkend3
                Var(ijk) = Var(ijk) +  &
                   alpha(i)*Phat(ijk) + omega(i)*Shat(ijk)
@@ -553,7 +549,7 @@
             if(is_serial) then
                if (use_doloop) then
                   Rnorm = zero
-!!$omp       parallel do private(ijk) reduction(+:Rnorm)
+!$omp parallel do default(shared) private(ijk) reduction(+:Rnorm)
                   do ijk=ijkstart3,ijkend3
                      Rnorm = Rnorm + R(ijk) * R(ijk)
                   enddo
@@ -597,7 +593,7 @@
       if (idebugl >= 1) then
          call MATVEC(Vname, Var, A_m, R)   ! returns R=A*Var
          if (use_doloop) then
-!!$omp  parallel do private(ijk)
+!$omp  parallel do default(shared) private(ijk)
             do ijk=ijkstart3,ijkend3
                R(ijk) = R(ijk) - B_m(ijk)
             enddo
@@ -608,7 +604,7 @@
          if(is_serial) then
             if (use_doloop) then
                Rnorm = zero
-!!$omp         parallel do private(ijk) reduction(+:Rnorm)
+!$omp parallel do default(shared) private(ijk) reduction(+:Rnorm)
                do ijk=ijkstart3,ijkend3
                   Rnorm = Rnorm + R(ijk) * R(ijk)
                enddo
@@ -731,7 +727,6 @@
 
       RETURN
       END SUBROUTINE LEQ_ISWEEP
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1060,7 +1055,7 @@
 !$omp    parallel  do &
 !$omp&   private(     &
 !$omp&           ijk,i,j,k, &
-!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1) 		!collapse (3)	!--by Handan Liu
+!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1) collapse (3)
          do k = kstart,kend
             do i = istart,iend
                do j = jstart,jend
@@ -1081,10 +1076,10 @@
                enddo
             enddo
          enddo
-!$omp end parallel do		! Added by Handan Liu		 
+ 
       else
          k = 1
-!$omp parallel do private(i,j,ijk,im1jk,ip1jk,ijm1k,ijp1k) 	!collapse (2)	!-- by Handan Liu
+!$omp parallel do private(i,j,ijk,im1jk,ip1jk,ijm1k,ijp1k) collapse (2)
          do i = istart,iend
             do j = jstart,jend
                IJK = funijk(i,j,k)
@@ -1099,7 +1094,7 @@
                           + A_m(ijk, 2) * Var(ijp1k)
             enddo
          enddo
-!$omp end parallel do		!Added by Handan Liu		 
+		 
       endif
 
       call send_recv(Avar,nlayers_bicgs)
@@ -1171,6 +1166,7 @@
       CHARACTER :: CH
       LOGICAL :: DO_ISWEEP, DO_JSWEEP, DO_KSWEEP
       LOGICAL :: DO_SENDRECV, DO_REDBLACK, DO_ALL
+
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -1182,7 +1178,7 @@
 !!$      omp_start=omp_get_wtime()
 
       IF (SETGUESS) THEN
-!$omp   parallel do private(i,j,k,ijk) 		!collapse (3)	!--by Handan Liu
+!$omp   parallel do private(i,j,k,ijk) 	
          do k = kstart3,kend3
             do i = istart3,iend3
                do j = jstart3,jend3
@@ -1191,7 +1187,7 @@
                enddo
             enddo
          enddo
-!$omp end parallel do		!Added by Handan Liu		 
+ 
          call send_recv(var,nlayers_bicgs)
       ENDIF
 
@@ -1210,7 +1206,8 @@
 
          IF (NO_K) THEN   ! two dimensional
 ! 2D run no need to enable openmp parallel
-            IF ( DO_ISWEEP ) THEN
+            !IF ( DO_ISWEEP ) THEN
+            IF ( DO_ISWEEP .and. nodesj.eq.1) THEN		!Added by Handan Liu
 !!$omp   parallel do private(I)   
                DO I=istart,iend,1
                   CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
@@ -1218,17 +1215,15 @@
             ENDIF
 ! ----------------------------------------------------------------<<<			
 ! Handan Liu added 2D RSRS sweep and parallelized this loop on Jan 22 2013:
-		    IF (DO_REDBLACK) THEN
-!$omp parallel do private(I) 
-               DO I=istart,iend,2
-                  CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
-               ENDDO
-!$omp end parallel do
-!$omp parallel do private(I) 
-               DO I=istart+1,iend,2
-                  CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
-               ENDDO
-!$omp end parallel do 
+		    IF (DO_REDBLACK .and. nodesj.eq.1) THEN
+!$omp parallel do private(I)
+			      DO I=istart,iend,2
+				     CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
+                  ENDDO
+!$omp parallel do private(I)
+                  DO I=istart+1,iend,2
+                     CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
+                  ENDDO
             ENDIF
 ! ---------------------------------------------------------------->>>			
          ELSE   ! three dimensional
@@ -1246,7 +1241,7 @@
                jsize = j2-j1+1
                ksize = k2-k1+1
                DO icase = 1, 2
-!$omp   parallel do private(K,J,JK)
+!!$omp   parallel do private(K,J,JK)
                   DO JK=icase, ksize*jsize, 2
                      if (mod(jk,jsize).ne.0) then
                         k = int( jk/jsize ) + k1
@@ -1257,7 +1252,7 @@
                      if(j.gt.j2) j=j-j2 + j1 -1                  
                      CALL LEQ_JKSWEEP(J, K, Vname, Var, A_m, B_m)
                   ENDDO
-!$omp end parallel do		!Added by Handan Liu				  
+				  
                ENDDO
                call send_recv(var,nlayers_bicgs)
 
@@ -1270,7 +1265,7 @@
                isize = i2-i1+1
                jsize = j2-j1+1
                DO icase = 1, 2
-!$omp   parallel do private(J,I,IJ)
+!!$omp   parallel do private(J,I,IJ)
                   DO IJ=icase, jsize*isize, 2
                      if (mod(ij,isize).ne.0) then
                         j = int( ij/isize ) + j1
@@ -1281,7 +1276,7 @@
                      if(i.gt.i2) i=i-i2 + i1 -1  
                      CALL LEQ_IJSWEEP(I, J, Vname, Var, A_m, B_m)
                   ENDDO
-!$omp end parallel do		!Added by Handan Liu				  
+				  
                ENDDO
                call send_recv(var,nlayers_bicgs)
 
@@ -1295,7 +1290,7 @@
                ksize = k2-k1+1
 
                DO icase = 1, 2
-!$omp   parallel do private(K,I,IK)
+!!$omp   parallel do private(K,I,IK)
                   DO IK=icase, ksize*isize, 2
                      if (mod(ik,isize).ne.0) then
                         k = int( ik/isize ) + k1
@@ -1306,7 +1301,7 @@
                      if(i.gt.i2) i=i-i2 + i1 -1      
                      CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
                   ENDDO
-!$omp end parallel do		!Added by Handan Liu				  
+			  
                ENDDO
             ENDIF ! end DO_ALL
 ! ----------------------------------------------------------------<<<
@@ -1321,20 +1316,48 @@
                k2 = kend
                isize = i2-i1+1
                ksize = k2-k1+1
-               DO icase = 1, 2
-!$omp   parallel do private(K,I,IK)
-                  DO IK=icase, ksize*isize, 2
-                     if (mod(ik,isize).ne.0) then
-                        k = int( ik/isize ) + k1
-                     else
-                        k = int( ik/isize ) + k1 -1
-                     endif
-                     i = (ik-1-(k-k1)*isize) + i1 + mod(k,2)
-                     if(i.gt.i2) i=i-i2 + i1 -1
-                     CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
-                  ENDDO
-!$omp end parallel do		!Added by Handan Liu				  
-               ENDDO
+               !DO icase = 1, 2
+!!$omp   parallel do private(K,I,IK)
+!                  DO IK=icase, ksize*isize, 2
+!                     if (mod(ik,isize).ne.0) then
+!                        k = int( ik/isize ) + k1
+!                     else
+!                        k = int( ik/isize ) + k1 -1
+!                     endif
+!                     i = (ik-1-(k-k1)*isize) + i1 + mod(k,2)
+!                     if(i.gt.i2) i=i-i2 + i1 -1
+!                     CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
+!                  ENDDO
+!               ENDDO
+
+! Handan Liu split above loop for OpenMP at May 22 2013, as below:
+!$omp parallel do default(shared) private(I,K) schedule(auto)
+            DO K=1,ksize
+			   IF(mod(k,2).ne.0)THEN
+				  DO I=2,isize,2
+				    CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
+				  ENDDO
+			   ELSE
+				  DO I=1,isize,2
+				    CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
+				  ENDDO
+			   ENDIF
+		    ENDDO
+!$omp end parallel do				  
+!$omp parallel do default(shared) private(I,K) schedule(auto)
+            DO K=1,ksize
+			   IF(mod(k,2).ne.0)THEN
+				  DO I=1,isize,2
+				    CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
+				  ENDDO
+			   ELSE
+				  DO I=2,isize,2
+				    CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
+				  ENDDO
+			   ENDIF
+		    ENDDO
+!$omp end parallel do				
+				
             ENDIF   ! end if(do_redblack)
 ! ----------------------------------------------------------------<<<
 
@@ -1380,7 +1403,7 @@
 ! ---------------------------------------------------------------->>>
 ! ----------------------------------------------------------------<<< 
 ! Handan Liu explained on Jan 22 2013:
-! After testing, DO_ISWEEP is used for 3D ISIS, so need to be paralleled for openmp
+! 3D DO_ISWEEP here is used for 3D ISIS sweep, and paralleled for openmp
 ! ----------------------------------------------------------------<<<
                IF (DO_ISWEEP) THEN
 !!$omp   parallel do private(K,I)
@@ -1543,7 +1566,7 @@
       endif
 
 ! diagonal scaling
-!$omp   parallel do private(i,j,k,ijk) 		!collapse (3)  --by Handan Liu 
+!$omp   parallel do private(i,j,k,ijk) 	collapse (3)  
       do k=kstart2,kend2
          do i=istart2,iend2
             do j=jstart2,jend2
@@ -1552,7 +1575,7 @@
             enddo
          enddo
       enddo
-!$omp end parallel do
+
       call send_recv(var,nlayers_bicgs)
 
       return
@@ -1597,7 +1620,7 @@
 
       if(do_global_sum) then
          prod = 0.0d0
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod) 		!collapse (3) --by Handan Liu
+!$omp parallel do private(i,j,k,ijk) reduction(+:prod) 	collapse (3) 
          do k = kstart1, kend1
             do i = istart1, iend1
                do j = jstart1, jend1
@@ -1607,7 +1630,7 @@
                enddo
             enddo
          enddo
-!$omp end parallel do		 !Added by Handan Liu 
+
          call global_all_sum(prod, dot_product_par)
 
       else
@@ -1624,7 +1647,7 @@
          if(myPE.eq.root) then
             prod = 0.0d0
             
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod) 		!collapse (3)  --by Handan Liu
+!$omp parallel do private(i,j,k,ijk) reduction(+:prod) 	collapse (3)  
             do k = kmin1, kmax1
                do i = imin1, imax1
                   do j = jmin1, jmax1
@@ -1634,7 +1657,7 @@
                   enddo
                enddo
             enddo
-!$omp end parallel do		!Added by Handan Liu 	
+
          endif
          call bcast( prod)
          
@@ -1688,7 +1711,7 @@
          
          prod(:) = 0.0d0
          
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod) 		!collapse (3) ---by Handan Liu
+!$omp parallel do private(i,j,k,ijk) reduction(+:prod)  collapse (3) 
          do k = kstart1, kend1
             do i = istart1, iend1
                do j = jstart1, jend1
@@ -1699,7 +1722,7 @@
                enddo
             enddo
          enddo
-!$omp end parallel do		!Added by Handan Liu 
+
          call global_all_sum(prod, dot_product_par2)
 
       else
@@ -1718,7 +1741,7 @@
          
          if(myPE.eq.root) then
             prod = 0.0d0
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod) 		!collapse (3)	---by Handan Liu
+!$omp parallel do private(i,j,k,ijk) reduction(+:prod) 	collapse (3)
             do k = kmin1, kmax1
                do i = imin1, imax1
                   do j = jmin1, jmax1
@@ -1729,7 +1752,6 @@
                   enddo
                enddo
             enddo
-!$omp end parallel do			!Added by Handan Liu 			
          endif
          call bcast( prod)
          
