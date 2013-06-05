@@ -30,7 +30,7 @@
   
   RDF_TYPE = 'LEBOWITZ'  ! this is default radial distribution function
 
-
+  LEQ_SWEEP = 9*'NONE'
 
   Flux_g = 0.65226 !for superficial gas velocity of 550 cm/s
 
