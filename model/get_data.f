@@ -228,9 +228,10 @@
       CALL CHECK_DATA_05                         ! gas phase section 
       CALL CHECK_DATA_06                         ! initial condition section 
 !      IF(.NOT.CARTESIAN_GRID) CALL CHECK_DATA_07                         ! boundary condition section 
-       CALL CHECK_DATA_07                         ! boundary condition section 
+      CALL CHECK_DATA_07                         ! boundary condition section 
       CALL CHECK_DATA_08                         ! Internal surfaces section 
       CALL CHECK_DATA_09                         ! Chemical reactions section       
+      CALL CHECK_DATA_10
 
       CALL CHECK_DATA_ODEPACK                    ! Stiff Chemistry Solver
 
