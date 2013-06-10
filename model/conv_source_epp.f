@@ -576,3 +576,109 @@
       END SUBROUTINE CONV_SOURCE_EPP1 
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: POINT_SOURCE_EPP                                        C
+!  Purpose: Adds point sources to the solids volume fraction           C
+!           correction equation.                                       C
+!                                                                      C
+!  Notes: The off-diagonal coefficients are positive. The center       C
+!         coefficient and the source vector are negative. See          C
+!         conv_Pp_g                                                    C
+!                                                                      C
+!  Author: J. Musser                                  Date: 10-JUN-13  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE POINT_SOURCE_EPP(B_M, B_MMAX, IER) 
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      USE parallel 
+      USE matrix 
+      USE physprop
+      USE fldvar
+      USE rxns
+      USE run
+      USE geometry
+      USE indices
+      USE pgcor
+      USE ps
+      USE compar    
+      USE ur_facs 
+      USE constant
+      USE cutcell
+      USE quadric
+      use pscor
+
+! To be removed upon complete integration of point source routines.
+      use bc
+      use usr
+
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! Vector b_m 
+      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M) 
+! maximum term in b_m expression
+      DOUBLE PRECISION, INTENT(INOUT) :: B_mmax(DIMENSION_3, 0:DIMENSION_M) 
+
+! Error index 
+      INTEGER, INTENT(INOUT) :: IER 
+
+!----------------------------------------------- 
+! Local Variables
+!----------------------------------------------- 
+
+! Indices 
+      INTEGER :: IJK, I, J, K
+      INTEGER :: BCV, M
+
+! terms of bm expression
+      DOUBLE PRECISION :: pSource
+
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+!-----------------------------------------------
+
+      IF (MCP == UNDEFINED_I) THEN
+! this error should be caught earlier in the routines so that this
+! branch should never be entered
+         RETURN
+      ELSE  
+! the lowest solids phase index of those solids phases that can close 
+! pack (i.e. close_packed=T) and the index of the solids phase that is
+! used to form the solids correction equation. 
+         M = MCP
+      ENDIF
+
+
+      BC_LP: do BCV = 50, DIMENSION_BC
+         if(POINT_SOURCES(BCV) == 0) cycle BC_LP
+
+         do k = BC_K_B(BCV), BC_K_T(BCV)
+         do j = BC_J_S(BCV), BC_J_N(BCV)
+         do i = BC_I_W(BCV), BC_I_E(BCV)
+
+            ijk = funijk(i,j,k)
+            if(fluid_at(ijk)) then
+               pSource =  BC_MASSFLOW_S(BCV,M) * &
+                  (VOL(IJK)/PS_VOLUME(BCV))
+
+               B_M(IJK,0) = B_M(IJK,0) - pSource 
+               B_MMAX(IJK,0) = max(abs(B_MMAX(IJK,0)), abs(B_M(IJK,0))) 
+            endif
+         enddo
+         enddo
+         enddo
+
+      enddo BC_LP
+
+      RETURN
+      END SUBROUTINE POINT_SOURCE_EPP
