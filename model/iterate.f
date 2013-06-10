@@ -120,8 +120,7 @@
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, &
                                     VAVG_U_S, VAVG_V_S, VAVG_W_S
-! use the subroutine from machine.f
-      EXTERNAL CPU_TIME   
+
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------

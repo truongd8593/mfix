@@ -90,10 +90,6 @@
 !$      INTEGER omp_get_thread_num      
 
 !-----------------------------------------------
-! External functions
-!-----------------------------------------------
-      external cpu_time
-!-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'

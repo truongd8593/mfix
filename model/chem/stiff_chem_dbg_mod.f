@@ -236,10 +236,6 @@
 
       CHARACTER*64 :: lFile
 
-! use the subroutine from machine.f
-      external CPU_TIME   
-
-
       if(myPE == PE_IO) &
          write(*,"(/3x,'Entering the stiff chemistry solver...',$)")
 
@@ -362,17 +358,6 @@
 
       DOUBLE PRECISION :: lODE_EndTime, lODE_RunTime
 
-! use the subroutine from machine.f
-      external CPU_TIME   
-
-! Update screen message.
-      IF(myPE == PE_IO) WRITE(*,"(2x,'DONE.',/)")
-
-
-      CALL CPU_TIME(lODE_EndTime)
-      lODE_RunTime = lODE_EndTime - ODE_StartTime
-
-
 ! Collect stats on min/max number of steps.
       minNST_all = 0; CALL global_sum(minNST, minNST_all)
       maxNST_all = 0; CALL global_sum(maxNST, maxNST_all)
@@ -397,6 +382,12 @@
 
 ! Display stiff solver summary.
       IF(myPE == PE_IO) THEN
+
+! Update screen message.
+         WRITE(*,"(2x,'DONE.',/)")
+
+         CALL CPU_TIME(lODE_EndTime)
+         lODE_RunTime = lODE_EndTime - ODE_StartTime
 
 ! Report Min/Max steps:
          lMsg0=''; write(lMsg0,*) minval(minNST_all)

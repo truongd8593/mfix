@@ -1,14 +1,14 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: MACHINE_CONS                                           C
-!  Purpose: set the machine constants    ( LINUX ABSOFT ONLY )         C
+!  Purpose: set the machine constants    ( SGI ONLY )                  C
 !                                                                      C
 !  Author: P. Nicoletti                               Date: 28-JAN-92  C
 !  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date:            C
 !                                                                      C
-!  Revision Number: 1                                                  C
-!  Purpose: Modify to make it work for Absoft 7.5 ProFortran compiler  C
-!  Author: Aeolus Research, Inc. (Aytekin Gel)        Date: 12-APR-02  C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
 !  Literature/Document References:                                     C
@@ -67,8 +67,6 @@
       INTEGER DAT(8)
       CHARACTER*10 DATE, TIM, ZONE
 
-
-! Intel Linux compiler supports this function thru it's portability library
       CALL DATE_AND_TIME(DATE, TIM, ZONE, DAT)
       ID_YEAR   = DAT(1)
       ID_MONTH  = DAT(2)
@@ -76,10 +74,10 @@
       ID_HOUR   = DAT(5)
       ID_MINUTE = DAT(6)
       ID_SECOND = DAT(7)
-
-       
-
-! Intel Linux compiler supports this function thru it's portability library
+      
+!     For SGI only
+!      CALL GETHOSTNAME(ID_NODE,64)
+!     For Linux with Portland Group compilers
       call hostnm(ID_NODE)      
 !
       RETURN
@@ -106,43 +104,42 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CPU_TIME(CPU)
+!      SUBROUTINE CPU_TIME(CPU)
 !
-      IMPLICIT NONE
+!      IMPLICIT NONE
 !
 ! passed arguments
 !
 !                      cpu time since start of run
-      DOUBLE PRECISION CPU
-      
-      INTEGER, SAVE :: COUNT_OLD=0, WRAP=0
+!      DOUBLE PRECISION CPU
+!      
+!      INTEGER, SAVE :: COUNT_OLD=0, WRAP=0
 !
 ! local variables
 !
-
-!                       clock cycle
-      INTEGER           COUNT
-
-!                       number of cycles per second
-      INTEGER           COUNT_RATE
-      
-!                       max number of cycles, after which count is reset to 0
-      INTEGER           COUNT_MAX
-
 !
-! Intel Linux compiler supports this function thru it's portability library
-      CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
-      IF(COUNT_OLD .GT. COUNT) THEN
-        WRAP = WRAP + 1
-      ENDIF
-      COUNT_OLD = COUNT
-      
-      CPU           = DBLE(COUNT)/DBLE(COUNT_RATE) &
-                     + DBLE(WRAP) * DBLE(COUNT_MAX)/DBLE(COUNT_RATE)
+!                       clock cycle
+!      INTEGER           COUNT
+!
+!                       number of cycles per second
+!      INTEGER           COUNT_RATE
+!      
+!                       max number of cycles, after which count is reset to 0
+!      INTEGER           COUNT_MAX
+!
+!      CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
+!      IF(COUNT_OLD .GT. COUNT) THEN
+!        WRAP = WRAP + 1
+!      ENDIF
+!      COUNT_OLD = COUNT
+!     
+!      CPU           = DBLE(COUNT)/DBLE(COUNT_RATE) &
+!                     + DBLE(WRAP) * DBLE(COUNT_MAX)/DBLE(COUNT_RATE)
+!
+!      RETURN
+!      END
 
 
-      RETURN
-      END
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: START_LOG                                              C
@@ -194,7 +191,7 @@
       SUBROUTINE END_LOG
       USE funits
       IMPLICIT NONE
-      IF(DMP_LOG) CALL FLUSH (UNIT_LOG)
+      IF(DMP_LOG)CALL FLUSH (UNIT_LOG)
       RETURN
       END
 !
