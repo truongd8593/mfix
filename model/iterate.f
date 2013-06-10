@@ -98,6 +98,11 @@
       LOGICAL :: ABORT_IER
       CHARACTER*4 TUNIT
 
+! Flag indicating which error message to print when run diverges.
+      INTEGER :: lErrMsg
+! Error Message
+      CHARACTER*32 :: lMsg
+
 ! Calculation Flags:                                       Used By:
       LOGICAL :: DENSITY(0:DIMENSION_M)                ! PHYSICAL_PROP
       LOGICAL :: PSIZE(0:DIMENSION_M)                  ! PHYSICAL_PROP
@@ -262,10 +267,8 @@
          DENSITY(0) = .TRUE. 
          CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
          IF(Neg_RHO_G) THEN
-            MUSTIT = 2                              !indicates divergence 
+            MUSTIT = 2;  lErrMsg = 1
             Neg_RHO_G = .FALSE.
-            IF(FULL_LOG .and. myPE.eq.PE_IO) WRITE(*,6000) &
-               'Negative gas density detected.'   ! JFD
             IF(DT/=UNDEFINED)GO TO 1000  
          ENDIF
       ENDIF
@@ -303,24 +306,27 @@
              ENDDO
           ENDIF   ! end if/else (mmax==1 .and. mcp /= undefined)
 
-!QX
-!     Solve species mass balance equations
-          IF(SOLID_RO_V) CALL SOLVE_SPECIES_EQ (IER)
-!end
+! Solve species mass balance equations. The call to SOLVE_SPECIES_EQ	
+! is moved up in iterate for variable solids density.
+          IF(SOLID_RO_V) THEN
+             CALL SOLVE_SPECIES_EQ (IER)
+! If the linear solver diverges, flag the error and reduce time-step
+! to prevent unphysical values from propogating.
+             IF(IER == -100) THEN
+                MUSTIT = 2; lErrMsg = 3
+                IF(DT/=UNDEFINED)GO TO 1000
+             ENDIF
+          ENDIF
 
           IF(TRIM(KT_TYPE) .eq. 'GHD') CALL ADJUST_EPS_GHD
           CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
-
           abort_ier = ier.eq.1
           CALL global_all_or(abort_ier)
           IF (abort_ier) THEN 
               ier = 1
-              MUSTIT = 2                           !indicates divergence 
-              IF(FULL_LOG.and.myPE.eq.PE_IO) &
-                 WRITE(*,6000)'Negative void fraction detected.'  ! JFD
+              MUSTIT = 2;  lErrMsg = 2
               IF(DT/=UNDEFINED) GOTO 1000 
           ENDIF 
-
         ENDIF  ! endif (mmax >0)
       ENDIF  ! end if (.not.discrete_element)
 
@@ -350,10 +356,8 @@
          DENSITY(0) = .TRUE.
          CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
          IF (Neg_RHO_G) THEN
-            MUSTIT = 2                             !indicates divergence 
+            MUSTIT = 2; lErrMsg = 1
             Neg_RHO_G = .FALSE.
-            IF(FULL_LOG.and.DMP_LOG) &
-               WRITE(*,6000)'Negative gas density detected.' ! JFD
             IF(DT/=UNDEFINED) GOTO 1000  
          ENDIF 
       ENDIF 
@@ -373,7 +377,15 @@
       IF(CARTESIAN_GRID) CALL CG_SET_OUTFLOW
 
 ! Solve energy equations
-      IF (ENERGY_EQ) CALL SOLVE_ENERGY_EQ (IER) 
+      IF (ENERGY_EQ) THEN
+         CALL SOLVE_ENERGY_EQ (IER) 
+! If the linear solver diverges, flag the error and reduce time-step
+! to prevent unphysical values from propogating.
+         IF(IER == -100) THEN
+            MUSTIT = 2; lErrMsg = 4
+            IF(DT/=UNDEFINED)GO TO 1000
+         ENDIF
+      ENDIF
 
 ! Solve granular energy equation
       IF(.NOT.DISCRETE_ELEMENT .OR. &
@@ -389,12 +401,17 @@
          ENDIF
       ENDIF
       
-!QX
-! solved after continuity eq when solids density is not constant
-! Solve species mass balance equations
-      IF(.NOT.SOLID_RO_V) CALL SOLVE_SPECIES_EQ (IER) 
-!
-!end
+
+! Solve species mass balance equations (constant solid density)
+      IF(.NOT.SOLID_RO_V) THEN
+         CALL SOLVE_SPECIES_EQ (IER)
+! If the linear solver diverges, flag the error and reduce time-step
+! to prevent unphysical values from propogating.
+         IF(IER == -100) THEN
+            MUSTIT = 2; lErrMsg = 3
+            IF(DT/=UNDEFINED)GO TO 1000
+         ENDIF
+      ENDIF
 
 ! Solve other scalar transport equations
       IF(NScalar /= 0) CALL SOLVE_Scalar_EQ (IER) 
@@ -523,11 +540,27 @@
          IF (FULL_LOG) THEN 
             CALL START_LOG 
             CALL CALC_RESID_MB(1, errorpercent)
-            IF(DMP_LOG) WRITE(UNIT_LOG,5200) TIME, DT, NIT, errorpercent(0) 
+
+            IF(lErrMsg == 1) THEN
+               lMsg = 'Negative gas density detected'
+            ELSEIF(lErrMsg == 2) THEN
+               lMsg = 'Negative void fraction detected'
+            ELSEIF(lErrMsg == 3) THEN
+               lMsg = 'Species Equation diverged'
+            ELSEIF(lErrMsg == 4) THEN
+               lMsg = 'Energy Equation diverged'
+            ELSE
+               lMsg = 'Run diverged/stalled'
+            ENDIF
+
+            IF(DMP_LOG) WRITE(UNIT_LOG,5200) TIME, DT, NIT, &
+               errorpercent(0), trim(adjustl(lMsg))
             CALL END_LOG 
 
-            IF (myPE.EQ.PE_IO) WRITE(*,5200) TIME, DT, NIT, errorpercent(0)
+            IF (myPE.EQ.PE_IO) WRITE(*,5200) TIME, DT, NIT, &
+               errorpercent(0), trim(adjustl(lMsg))
          ENDIF 
+
 
 ! JFD: modification for cartesian grid implementation
          IF(WRITE_DASHBOARD) THEN
@@ -577,7 +610,7 @@
  5060 FORMAT(5X,'Average ',A,I2,A,G12.5) 
  5100 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT>',I3,' Sm= ',G10.5, 'MbErr%=', G10.4) 
  5200 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',&
-      I3,'MbErr%=', G10.4, ': Run diverged/stalled :-(') 
+      I3,'MbErr%=', G10.4, ': ',A,' :-(') 
  6000 FORMAT(1X,A) 
 
       END SUBROUTINE ITERATE 

@@ -49,6 +49,9 @@
       USE discretelement 
       USE des_thermo
       USE mflux     
+      USE mpi_utility      
+      USE sendrecv 
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -71,6 +74,9 @@
       INTEGER :: IJK, I, J, K 
 ! linear equation solver method and iterations 
       INTEGER :: LEQM, LEQI 
+
+! Local/Global error flags.
+      LOGICAL :: lDiverged, gDiverged
 
 ! temporary use of global arrays:
 ! arraym1 (locally vxgama) 
@@ -98,6 +104,9 @@
       INCLUDE 'ep_s2.inc'
       INCLUDE 'radtn2.inc'
 !-----------------------------------------------
+
+! Initialize error flag.
+      lDiverged = .FALSE.
 
       call lock_ambm         ! locks arrys a_m and b_m
       call lock_tmp_array    ! locks arraym1 (locally vxgama) 
@@ -255,6 +264,8 @@
 
       CALL SOLVE_LIN_EQ ('T_g', 6, T_G, A_M, B_M, 0, LEQI, LEQM, &
          LEQ_SWEEP(6), LEQ_TOL(6), LEQ_PC(6), IER)  
+! Check for linear solver divergence.
+      IF(ier == -2) lDiverged = .TRUE.
 
 ! bound temperature in any fluid or flow boundary cells
       DO IJK = IJKSTART3, IJKEND3
@@ -271,6 +282,9 @@
          CALL SOLVE_LIN_EQ ('T_s', 6, T_S(1,M), A_M, B_M, M, LEQI, &
             LEQM, LEQ_SWEEP(6), LEQ_TOL(6), LEQ_PC(6), IER) 
 
+! Check for linear solver divergence.
+         IF(ier == -2) lDiverged = .TRUE.
+
 ! bound temperature in any fluid or flow boundary cells
          DO IJK = IJKSTART3, IJKEND3
             IF(.NOT.WALL_AT(IJK))&
@@ -281,6 +295,15 @@
       call unlock_ambm
       call unlock_tmp_array
       call unlock_tmp_array1
+
+! If the linear solver diverged, temperatures may take on unphysical
+! values. To prevent them from propogating through the domain or
+! causing failure in other routines, force an exit from iterate and
+! reduce the time step.
+
+      CALL GLOBAL_ALL_OR(lDiverged, gDiverged)
+      if(gDiverged) IER = -100
+
       
       RETURN  
       END SUBROUTINE SOLVE_ENERGY_EQ 

@@ -68,8 +68,10 @@
       INTEGER :: LEQM, LEQI 
 ! tmp array to pass to set_chi
       DOUBLE PRECISION :: X_s_temp(DIMENSION_3, DIMENSION_N_s) 
-!
-!QX
+
+! Local/Global error flags.
+      LOGICAL :: lDiverged, gDiverged
+
       DOUBLE PRECISION EP_SS_L_TOT
 ! temporary use of global arrays:
 ! array1 (locally s_p) 
@@ -100,11 +102,13 @@
       INCLUDE 'function.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
+
+! Initialize error flag.
+      lDiverged = .FALSE.
      
       call lock_ambm       ! locks arrys a_m and b_m
       call lock_tmp_array  ! locks array1,array2,array3,array4
                            ! (locally s_p, s_c, eps, vxgama) 
-
 
 ! Fluid phase species mass balance equations
 ! ---------------------------------------------------------------->>>
@@ -164,6 +168,8 @@
             CALL SOLVE_LIN_EQ ('X_g', 7, X_G(1,LN), A_M, B_M, 0, &
                LEQI, LEQM, LEQ_SWEEP(7), LEQ_TOL(7), LEQ_PC(7), IER) 
 
+! Check for linear solver divergence.
+            IF(ier == -2) lDiverged = .TRUE.
             CALL BOUND_X (X_G(1,LN), IJKMAX2, IER) 
 
          ENDDO    ! end do loop (ln = 1, nmax(0)
@@ -244,13 +250,15 @@
 
                CALL SOLVE_LIN_EQ ('X_s', 7, X_S(1,M,LN), A_M, B_M, M,&
                   LEQI, LEQM, LEQ_SWEEP(7), LEQ_TOL(7), LEQ_PC(7), IER) 
+
+! Check for linear solver divergence.
+               IF(ier == -2) lDiverged = .TRUE.
+
                CALL BOUND_X (X_S(1,M,LN), IJKMAX2, IER) 
 !               call out_array(X_s(1,m,LN), 'X_s')
 
             END DO 
 
-!QX
-!JFD          
             IF (SOLID_RO_V) THEN
                DO IJK = ijkstart3, ijkend3
                   IF (FLUID_AT(IJK)) THEN 
@@ -283,6 +291,14 @@
 ! end solids phases species equations      
 ! ----------------------------------------------------------------<<<
       
+
+! If the linear solver diverged, species mass fractions may take on
+! unphysical values. To prevent them from propogating through the domain
+! or causing failure in other routines, force an exit from iterate and
+! reduce the time step.
+      CALL GLOBAL_ALL_OR(lDiverged, gDiverged)
+      if(gDiverged) IER = -100
+
       call unlock_ambm
       call unlock_tmp_array
 
