@@ -1220,4 +1220,90 @@
       END SUBROUTINE JJ_BC_W_S 
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: POINT_SOURCE_W_S                                        C
+!  Purpose: Adds point sources to the solids W-Momentum equation.      C
+!                                                                      C
+!  Author: J. Musser                                  Date: 10-JUN-13  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE POINT_SOURCE_W_S(A_M, B_M, IER) 
 
+      use compar    
+      use constant
+      use fldvar
+      use geometry
+      use indices
+      use physprop
+      use ps
+      use run
+
+! To be removed upon complete integration of point source routines.
+      use bc
+      use usr
+
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! Septadiagonal matrix A_m 
+      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
+
+! Vector b_m 
+      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M) 
+
+! Error index 
+      INTEGER, INTENT(INOUT) :: IER 
+
+!----------------------------------------------- 
+! Local Variables
+!----------------------------------------------- 
+
+! Indices 
+      INTEGER :: IJK, I, J, K
+      INTEGER :: IJKN, IJPK
+      INTEGER :: BCV, M
+
+! terms of bm expression
+      DOUBLE PRECISION :: pSource
+
+      include 'function.inc'
+
+      do M=1, MMAX
+
+      BC_LP: do BCV = 50, DIMENSION_BC
+         if(POINT_SOURCES(BCV) == 0) cycle BC_LP
+         if(abs(BC_W_s(BCV,M)) < small_number) cycle BC_LP
+
+         do k = BC_K_B(BCV), BC_K_T(BCV)
+         do j = BC_J_S(BCV), BC_J_N(BCV)
+         do i = BC_I_W(BCV), BC_I_E(BCV)
+
+            ijk = funijk(i,j,k)
+            if(BC_W_s(BCV,M) < 0.0d0) ijk = BOTTOM_OF(ijk)
+
+            if(fluid_at(ijk)) then
+               if(A_M(IJK,0,M) == -ONE .AND.                           &
+                  B_M(IJK,M) == -W_s(IJK,M)) then
+                  B_M(IJK,M) = -BC_W_s(BCV,M) * PS_VEL_MAG_S(BCV,M)
+               else
+                  pSource = BC_MASSFLOW_S(BCV,M) * BC_W_s(BCV,M) *     &
+                     (VOL(IJK)/PS_VOLUME(BCV))
+
+                  A_M(IJK,0,M) = A_M(IJK,0,M) - pSource 
+                  B_M(IJK,M) = B_M(IJK,M) -                            &
+                     pSource * PS_VEL_MAG_S(BCV,M)
+               endif
+            endif
+         enddo
+         enddo
+         enddo
+
+         enddo BC_LP
+
+      enddo ! do M=1, MMAX
+
+      RETURN
+      END SUBROUTINE POINT_SOURCE_W_S

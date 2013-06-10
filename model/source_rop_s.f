@@ -123,3 +123,82 @@
       RETURN  
       END SUBROUTINE SOURCE_ROP_S 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: POINT_SOURCE_ROP_S                                      C
+!  Purpose: Adds point sources to the solids continuity equation.      C
+!                                                                      C
+!                                                                      C
+!  Author: J. Musser                                  Date: 10-JUN-13  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE POINT_SOURCE_ROP_S(B_M, M, IER) 
+
+      use compar    
+      use constant
+      use geometry
+      use indices
+      use physprop
+      use ps
+      use run
+
+! To be removed upon complete integration of point source routines.
+      use bc
+      use usr
+
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! Vector b_m 
+      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M) 
+! Solids phase index.
+      INTEGER, INTENT(IN) :: M
+
+! Error index 
+      INTEGER, INTENT(INOUT) :: IER 
+
+!----------------------------------------------- 
+! Local Variables
+!----------------------------------------------- 
+
+! Indices 
+      INTEGER :: IJK, I, J, K
+      INTEGER :: BCV
+
+! terms of bm expression
+      DOUBLE PRECISION :: pSource
+
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+!-----------------------------------------------
+      BC_LP: do BCV = 50, DIMENSION_BC
+         if(POINT_SOURCES(BCV) == 0) cycle BC_LP
+
+         do k = BC_K_B(BCV), BC_K_T(BCV)
+         do j = BC_J_S(BCV), BC_J_N(BCV)
+         do i = BC_I_W(BCV), BC_I_E(BCV)
+
+            ijk = funijk(i,j,k)
+            if(fluid_at(ijk)) then
+
+               pSource =  BC_MASSFLOW_S(BCV,M) * &
+                  (VOL(IJK)/PS_VOLUME(BCV))
+
+
+               if(pSource /= 0.0d0) write(*,"(3x,'Ok then... now what?')")
+
+
+               B_M(IJK,M) = B_M(IJK,M) - pSource 
+            endif
+         enddo
+         enddo
+         enddo
+
+      enddo BC_LP
+
+      RETURN
+      END SUBROUTINE POINT_SOURCE_ROP_S

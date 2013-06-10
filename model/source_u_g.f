@@ -1010,4 +1010,83 @@
       RETURN  
       END SUBROUTINE Wall_Function
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: POINT_SOURCE_U_G                                        C
+!  Purpose: Adds point sources to the gas phase U-momentum equation.   C
+!                                                                      C
+!  Author: J. Musser                                  Date: 10-JUN-13  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE POINT_SOURCE_U_G(A_M, B_M, IER) 
+
+      use compar    
+      use constant
+      use geometry
+      use indices
+      use physprop
+      use ps
+      use run
+
+! To be removed upon complete integration of point source routines.
+      use bc
+      use usr
+
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! Septadiagonal matrix A_m 
+      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
+! Vector b_m 
+      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M) 
+! Error index 
+      INTEGER, INTENT(INOUT) :: IER 
+!----------------------------------------------- 
+! Local Variables
+!----------------------------------------------- 
+
+! Indices 
+      INTEGER :: IJK, I, J, K
+      INTEGER :: IJKE, IPJK
+      INTEGER :: BCV, M
+
+! terms of bm expression
+      DOUBLE PRECISION :: pSource
+
+      INCLUDE 'function.inc'
+
+      M = 0
+
+! Calculate the mass going into each IJK cell. This is done for each 
+! call in case the point source is time dependent.
+      BC_LP: do BCV = 50, DIMENSION_BC
+         if(POINT_SOURCES(BCV) == 0) cycle BC_LP
+         if(abs(BC_U_g(BCV)) < small_number) cycle BC_LP
+
+         do k = BC_K_B(BCV), BC_K_T(BCV)
+         do j = BC_J_S(BCV), BC_J_N(BCV)
+         do i = BC_I_W(BCV), BC_I_E(BCV)
+
+            ijk = funijk(i,j,k)
+            if(BC_U_g(BCV) < ZERO) ijk = WEST_OF(IJK)
+
+            if(fluid_at(ijk)) then
+
+               pSource =  BC_MASSFLOW_G(BCV) * (VOL(IJK)/PS_VOLUME(BCV))
+
+               A_M(IJK,0,M) = A_M(IJK,0,M) - pSource 
+               B_M(IJK,M) = B_M(IJK,M) - pSource *                     &
+                  BC_U_g(BCV) * PS_VEL_MAG_g(BCV)
+
+            endif
+         enddo
+         enddo
+         enddo
+      enddo BC_LP
+
+      RETURN
+      END SUBROUTINE POINT_SOURCE_U_G
+
 

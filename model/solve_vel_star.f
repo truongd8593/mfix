@@ -58,6 +58,8 @@
       USE compar
       USE discretelement
       USE qmom_kinetic_equation
+      use ps
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -135,10 +137,12 @@
 
 ! calculate the source terms for the gas and solids phase u-momentum
 ! equations
-      CALL SOURCE_U_G (A_M, B_M, IER) 
+      CALL SOURCE_U_G (A_M, B_M, IER)
+      IF(POINT_SOURCE) CALL POINT_SOURCE_U_G (A_M, B_M, IER) 
       IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
          DES_CONTINUUM_HYBRID) THEN
          CALL SOURCE_U_S (A_M, B_M, IER) 
+         IF(POINT_SOURCE) CALL POINT_SOURCE_U_S (A_M, B_M, IER)
       ENDIF
 
 ! evaluate local variable vxf_gs and vxf_ss.  both terms are sent to the
@@ -273,10 +277,13 @@
       ENDIF
 
       CALL SOURCE_V_G (A_M, B_M, IER) 
+      IF(POINT_SOURCE) CALL POINT_SOURCE_V_G (A_M, B_M, IER)
+
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
       IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
          DES_CONTINUUM_HYBRID) THEN
          CALL SOURCE_V_S (A_M, B_M, IER)
+         IF(POINT_SOURCE) CALL POINT_SOURCE_V_S (A_M, B_M, IER)
       END IF 
 
       CALL VF_GS_Y (VXF_GS, IER)
@@ -407,10 +414,12 @@
          ENDIF
 
          CALL SOURCE_W_G (A_M, B_M, IER) 
+         IF(POINT_SOURCE) CALL POINT_SOURCE_W_G (A_M, B_M, IER)
 !         call write_ab_m(a_m, b_m, ijkmax2, 0, ier)    
          IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
             DES_CONTINUUM_HYBRID) THEN
             CALL SOURCE_W_S (A_M, B_M, IER) 
+            IF(POINT_SOURCE) CALL POINT_SOURCE_W_S (A_M, B_M, IER)
          ENDIF
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 

@@ -51,6 +51,7 @@
       USE mflux     
       USE mpi_utility      
       USE sendrecv 
+      USE ps
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -175,6 +176,12 @@
 ! set the source terms in a and b matrix equation form
       CALL SOURCE_PHI (S_P, S_C, EP_G, T_G, 0, A_M, B_M, IER) 
 
+! add point sources
+      IF(POINT_SOURCE) CALL POINT_SOURCE_ENERGY_EQ (T_g, DIM_N_g, &
+         Thigh_g, Tlow_g, Tcom_g, Ahigh_g, Alow_g, MW_g, BC_T_g,  &
+         BC_X_g, BC_MASSFLOW_g, 0, A_M, B_M, IER)
+
+
       DO M = 1, TMP_SMAX 
          DO IJK = IJKSTART3, IJKEND3
             I = I_OF(IJK)
@@ -231,6 +238,13 @@
 
 ! set the source terms in a and b matrix equation form
          CALL SOURCE_PHI (S_P, S_C, EPS, T_S(1,M), M, A_M, B_M, IER) 
+
+! Add point sources.
+         IF(POINT_SOURCE) CALL POINT_SOURCE_ENERGY_EQ (T_s(:,M),       &
+            DIM_N_s, Thigh_s(M,:), Tlow_s(M,:), Tcom_s(M,:),           &
+            Ahigh_s(:,M,:), Alow_s(:,M,:), MW_s, BC_T_s(:,M),          &
+            BC_X_s(:,M,:), BC_MASSFLOW_s(:,M), M, A_M, B_M, IER)
+
       ENDDO   ! end do (m=1,tmp_smax)
 
 ! use partial elimination on interphase heat transfer term
@@ -308,3 +322,141 @@
       RETURN  
       END SUBROUTINE SOLVE_ENERGY_EQ 
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: POINT_SOURCE_ENERGY_EQ                                  C
+
+!  Purpose: Adds point sources to the energy equations.                C
+!                                                                      C
+!  Author: J. Musser                                  Date: 10-JUN-13  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE POINT_SOURCE_ENERGY_EQ(T_x, lDIM_N, Thigh, Tlow, &
+         Tcom, Ahigh, Alow, lMW, BC_T, BC_X, BC_FLOW, M, A_M, B_M, IER) 
+
+      use compar    
+      use constant
+      use geometry
+      use indices
+      use physprop
+      use ps
+      use run
+
+! To be removed upon complete integration of point source routines.
+      use bc
+      use usr
+
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+
+      INTEGER, intent(in) :: lDIM_N
+
+      DOUBLE PRECISION, intent(in) :: Thigh(lDIM_N)
+      DOUBLE PRECISION, intent(in) :: Tlow( lDIM_N)
+      DOUBLE PRECISION, intent(in) :: Tcom(lDIM_N)
+      DOUBLE PRECISION, intent(in) :: Ahigh(7, lDIM_N)
+      DOUBLE PRECISION, intent(in) :: Alow( 7, lDIM_N)
+      DOUBLE PRECISION, intent(in) :: lMW(lDIM_N)
+
+! Vector b_m 
+      DOUBLE PRECISION, INTENT(IN) :: T_x(DIMENSION_3) 
+
+
+! maximum term in b_m expression
+      DOUBLE PRECISION, INTENT(IN) :: BC_T(DIMENSION_BC)
+      DOUBLE PRECISION, INTENT(IN) :: BC_X(DIMENSION_BC, lDIM_N)
+
+! maximum term in b_m expression
+      DOUBLE PRECISION, INTENT(IN) :: BC_FLOW(DIMENSION_BC) 
+
+      INTEGER, intent(in) :: M
+
+! Septadiagonal matrix A_m 
+      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
+
+! Vector b_m 
+      DOUBLE PRECISION, intent(INOUT) :: B_M(DIMENSION_3, 0:DIMENSION_M) 
+
+! Error index 
+      INTEGER, intent(INOUT) :: IER 
+
+!----------------------------------------------- 
+! Local Variables
+!----------------------------------------------- 
+
+! Indices 
+      INTEGER :: IJK, I, J, K
+      INTEGER :: BCV, N
+
+! terms of bm expression
+      DOUBLE PRECISION pSource, lMass
+
+      DOUBLE PRECISION intCp_Tijk, intCp_Tref
+
+
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+!-----------------------------------------------
+
+! External function. Integrates the temperature-dependent specific 
+! heat from zero to T.
+      DOUBLE PRECISION, EXTERNAL :: calc_ICpoR
+
+
+      BC_LP: do BCV = 50, DIMENSION_BC
+         if(POINT_SOURCES(BCV) == 0) cycle BC_LP
+
+         do k = BC_K_B(BCV), BC_K_T(BCV)
+         do j = BC_J_S(BCV), BC_J_N(BCV)
+         do i = BC_I_W(BCV), BC_I_E(BCV)
+            ijk = funijk(i,j,k)
+            if(fluid_at(ijk)) then
+
+
+               if(A_M(IJK,0,M) == -ONE .AND. B_M(IJK,M) == -T_x(IJK)) then
+                  B_M(IJK,M) = -BC_T(BCV)
+               else
+
+                  lMass = BC_FLOW(BCV) * (VOL(IJK)/PS_VOLUME(BCV))
+
+                  pSource = 0.0d0
+                  do N=1,NMAX(M)
+
+! Part of the thermal source: 0K --> T_BC
+                     intCp_Tref = calc_ICpOR(BC_T(BCV), Thigh(N),  &
+                        Tlow(N), Tcom(N), Ahigh(1,N), Alow(1,N)) * &
+                        (GAS_CONST_cal / lMW(N))
+
+! Part of the thermal source: 0K --> T_x(IJK)
+                     intCp_Tijk = calc_ICpOR(T_x(IJK), Thigh(N),    &
+                        Tlow(N), Tcom(N), Ahigh(1,N), Alow(1,N)) *  &
+                        (GAS_CONST_cal / lMW(N))
+
+! Total Thermal Source: T_BC --> T_x
+                     pSource = pSource + lMass * BC_X(BCV,N) * &
+                        (intCp_Tijk - intCp_Tref)
+
+                  enddo
+
+                  if(UNITS == 'SI') pSource = pSource * 4.183925d3
+
+               endif
+
+
+            endif
+
+         enddo
+         enddo
+         enddo
+
+      enddo BC_LP
+
+
+      RETURN
+      END SUBROUTINE POINT_SOURCE_ENERGY_EQ

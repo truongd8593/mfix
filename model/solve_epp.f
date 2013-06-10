@@ -34,6 +34,8 @@
       USE physprop
       Use ambm
       Use tmp_array1, B_mMAX => ARRAYm1
+      use ps
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local parameters
@@ -102,6 +104,9 @@
       ENDIF
 
       CALL CONV_SOURCE_EPP (A_M, B_M, B_mmax, IER) 
+
+! Add point source contributions.
+      IF(POINT_SOURCE) CALL POINT_SOURCE_EPP (B_M, B_mmax, IER)
 
 !      call check_ab_m(a_m, b_m, 0, .false., ier)
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)

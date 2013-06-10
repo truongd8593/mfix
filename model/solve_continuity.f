@@ -30,9 +30,10 @@
       USE cont
       USE leqsol
       Use ambm 
-!QX
       USE ur_facs
       use run
+      use ps
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -104,6 +105,7 @@
 ! forming the matrix equation         
          CALL CONV_ROP_S (A_M, B_M, M, IER) 
          CALL SOURCE_ROP_S (A_M, B_M, M, IER) 
+         IF(POINT_SOURCE) CALL POINT_SOURCE_ROP_S (B_M, M, IER)
 
          CALL CALC_RESID_C (ROP_S(1,M), A_M, B_M, M, &
             NUM_RESID(RESID_RO,M), DEN_RESID(RESID_RO,M), &

@@ -1039,7 +1039,85 @@
       RETURN  
       END SUBROUTINE SOURCE_W_G_BC  
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!// 350 Changed do loop limits: 1,kmax2->kmin3,kmax3      
-!// 360 Check if i,j,k resides on current processor
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: POINT_SOURCE_W_G                                        C
+!  Purpose: Adds point sources to the gas phase W-Momentum equation.   C
+!                                                                      C
+!  Author: J. Musser                                  Date: 10-JUN-13  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE POINT_SOURCE_W_G(A_M, B_M, IER) 
+
+      use compar    
+      use constant
+      use geometry
+      use indices
+      use physprop
+      use ps
+      use run
+
+! To be removed upon complete integration of point source routines.
+      use bc
+      use usr
+
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! Septadiagonal matrix A_m 
+      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
+
+! Vector b_m 
+      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M) 
+
+! Error index 
+      INTEGER, INTENT(INOUT) :: IER 
+
+!----------------------------------------------- 
+! Local Variables
+!----------------------------------------------- 
+
+! Indices 
+      INTEGER :: IJK, I, J, K
+      INTEGER :: IJKN, IJPK
+      INTEGER :: BCV, M
+
+! terms of bm expression
+      DOUBLE PRECISION :: pSource
+
+      include 'function.inc'
+
+      M = 0
+
+! Calculate the mass going into each IJK cell. This is done for each 
+! call in case the point source is time dependent.
+      BC_LP: do BCV = 50, DIMENSION_BC
+         if(POINT_SOURCES(BCV) == 0) cycle BC_LP
+         if(abs(BC_W_g(BCV)) < small_number) cycle BC_LP
+
+         do k = BC_K_B(BCV), BC_K_T(BCV)
+         do j = BC_J_S(BCV), BC_J_N(BCV)
+         do i = BC_I_W(BCV), BC_I_E(BCV)
+
+            ijk = funijk(i,j,k)
+            if(BC_W_g(BCV) < ZERO) ijk = BOTTOM_OF(IJK)
+
+            if(fluid_at(ijk)) then
+
+               pSource =  BC_MASSFLOW_G(BCV) * BC_W_g(BCV) * &
+                  (VOL(IJK)/PS_VOLUME(BCV))
+
+               A_M(IJK,0,M) = A_M(IJK,0,M) - pSource
+               B_M(IJK,M) = B_M(IJK,M) - pSource * PS_VEL_MAG_g(BCV)
+            endif
+         enddo
+         enddo
+         enddo
+
+      enddo BC_LP
+
+      RETURN
+      END SUBROUTINE POINT_SOURCE_W_G
