@@ -486,6 +486,7 @@
 !                  print*,'leq_bicgs, initial: ', Vname,' Rnorm ', Rnorm
                endif            ! idebugl >= 1
 
+               isConverged = .TRUE.
                EXIT
             endif               ! end if (Snorm <= TOLMIN)
          endif                  ! end if (.not.minimize_dotproducts)
@@ -622,7 +623,7 @@
          ' L-2', Rnorm/Rnorm0
       endif   ! end if(idebugl >=1)
 
-      isconverged = (real(Rnorm) <= TOL*Rnorm0);
+      if(.NOT.isConverged) isconverged = (real(Rnorm) <= TOL*Rnorm0);
 !     write(*,*) '***',iter, isconverged, Rnorm, TOL, Rnorm0, myPE
       IER = 0
       if (.not.isconverged) then
