@@ -204,6 +204,7 @@
 !-----------------------------------------------------------------
    50 CONTINUE 
       MUSTIT = 0 
+      lErrMsg = -1
       NIT = NIT + 1 
       PHIP_OUT_ITER=NIT ! To record the output of phip
 ! mechanism to set the normalization factor for the correction
