@@ -440,13 +440,13 @@
                      Tlow(N), Tcom(N), Ahigh(1,N), Alow(1,N)) *  &
                      (GAS_CONST_cal / lMW(N))
 
+                  if(UNITS == 'SI') pSource = pSource * 4.183925d3
+
 ! Total Thermal Source: T_BC --> T_x
                   pSource = pSource + lMass * BC_X(BCV,N) * &
                      (intCp_Tijk - intCp_Tref)
 
                enddo
-
-               if(UNITS == 'SI') pSource = pSource * 4.183925d3
 
             endif
 
