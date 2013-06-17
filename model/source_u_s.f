@@ -1195,6 +1195,8 @@
       INTEGER :: IJKE, IPJK
       INTEGER :: BCV, M
 
+      INTEGER :: lIE, lIW
+
 ! terms of bm expression
       DOUBLE PRECISION :: pSource
 
@@ -1204,40 +1206,51 @@
 
 ! Calculate the mass going into each IJK cell. This is done for each 
 ! call in case the point source is time dependent.
-         BC_LP: do BCV = 50, DIMENSION_BC
-            if(POINT_SOURCES(BCV) == 0) cycle BC_LP
-            if(abs(BC_U_s(BCV,M)) < small_number) cycle BC_LP
+      BC_LP: do BCV = 50, DIMENSION_BC
+         if(POINT_SOURCES(BCV) == 0) cycle BC_LP
+         if(abs(BC_U_s(BCV,M)) < small_number) cycle BC_LP
 
-            do k = BC_K_B(BCV), BC_K_T(BCV)
-            do j = BC_J_S(BCV), BC_J_N(BCV)
-            do i = BC_I_W(BCV), BC_I_E(BCV)
+         if(BC_U_s(BCV,M) < 0.0d0) then
+            lIW = BC_I_W(BCV) - 1
+            lIE = BC_I_E(BCV) - 1
+         else
+            lIW = BC_I_W(BCV)
+            lIE = BC_I_E(BCV)
+         endif
 
-               ijk = funijk(i,j,k)
-               if(BC_U_s(BCV,M) < 0.0d0) ijk = WEST_OF(ijk)
+         do k = BC_K_B(BCV), BC_K_T(BCV)
+         do j = BC_J_S(BCV), BC_J_N(BCV)
+         do i = lIW, lIE
 
-               if(fluid_at(ijk)) then
+            if(.NOT.IS_ON_myPE_plus2layers(I,J,K)) cycle
 
-                  if(A_M(IJK,0,M) == -ONE .AND.                        &
-                    B_M(IJK,M) == -U_s(IJK,M)) then
-                    B_M(IJK,M) = -BC_U_s(BCV,M) * PS_VEL_MAG_S(BCV,M)
-                  else
-                     pSource =  BC_MASSFLOW_S(BCV,M) *  &
-                        (VOL(IJK)/PS_VOLUME(BCV))
+            ijk = funijk(i,j,k)
+            if(.NOT.fluid_at(ijk)) cycle
 
-                     A_M(IJK,0,M) = A_M(IJK,0,M) - pSource 
-                     B_M(IJK,M) = B_M(IJK,M) - pSource *               &
-                        BC_U_s(BCV,M) * PS_VEL_MAG_S(BCV,M)
-                  endif
-               endif
+            if(A_M(IJK,0,M) == -ONE .AND.                              &
+              B_M(IJK,M) == -U_s(IJK,M)) then
+              B_M(IJK,M) = -BC_U_s(BCV,M) * PS_VEL_MAG_S(BCV,M)
+            else
+               pSource =  BC_MASSFLOW_S(BCV,M) *  &
+                  (VOL(IJK)/PS_VOLUME(BCV))
 
-            enddo
-            enddo
-            enddo
+               B_M(IJK,M) = B_M(IJK,M) - pSource *                     &
+                  BC_U_s(BCV,M) * PS_VEL_MAG_S(BCV,M)
+            endif
 
-         enddo BC_LP
+         enddo
+         enddo
+         enddo
+
+      enddo BC_LP
 
       enddo ! do M=1, MMAX
 
 
       RETURN
       END SUBROUTINE POINT_SOURCE_U_S
+
+!               A_M(IJK,0,M) = A_M(IJK,0,M) - pSource 
+!              write(*,"(3x,'Process ',I2,'  IJK: ', I4,'  Us values: ',2(2x,g11.5))") &
+!               myPE, IJK, pSource,  pSource * BC_U_s(BCV,M) * PS_VEL_MAG_s(BCV,M)
+

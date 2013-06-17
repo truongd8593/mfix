@@ -1189,6 +1189,8 @@
       INTEGER :: IJKN, IJPK
       INTEGER :: BCV, M
 
+      INTEGER :: lJN, lJS
+
 ! terms of bm expression
       DOUBLE PRECISION :: pSource
 
@@ -1200,27 +1202,34 @@
          if(POINT_SOURCES(BCV) == 0) cycle BC_LP
          if(abs(BC_V_s(BCV,M)) < small_number) cycle BC_LP
 
+         if(BC_V_s(BCV,M) < 0.0d0) then
+            lJS = BC_J_S(BCV) - 1
+            lJN = BC_J_N(BCV) - 1
+         else
+            lJS = BC_J_S(BCV)
+            lJN = BC_J_N(BCV)
+         endif
+
          do k = BC_K_B(BCV), BC_K_T(BCV)
-         do j = BC_J_S(BCV), BC_J_N(BCV)
+         do j = lJS, lJN
          do i = BC_I_W(BCV), BC_I_E(BCV)
 
+            if(.NOT.IS_ON_myPE_plus2layers(I,J,K)) cycle
+
             ijk = funijk(i,j,k)
-            if(BC_V_s(BCV,M) < 0.0d0) ijk = SOUTH_OF(ijk)
+            if(.NOT.fluid_at(ijk)) cycle
 
-            if(fluid_at(ijk)) then
-               if(A_M(IJK,0,M) == -ONE .AND.                           &
-                  B_M(IJK,M) == -V_s(IJK,M)) then
-                  B_M(IJK,M) = -BC_V_s(BCV,M) * PS_VEL_MAG_S(BCV,M)
-               else
-                  pSource = BC_MASSFLOW_S(BCV,M) *      &
-                     (VOL(IJK)/PS_VOLUME(BCV))
+            if(A_M(IJK,0,M) == -ONE .AND.                              &
+               B_M(IJK,M) == -V_s(IJK,M)) then
+               B_M(IJK,M) = -BC_V_s(BCV,M) * PS_VEL_MAG_S(BCV,M)
+            else
+               pSource = BC_MASSFLOW_S(BCV,M) *                        &
+                  (VOL(IJK)/PS_VOLUME(BCV))
 
-                  A_M(IJK,0,M) = A_M(IJK,0,M) - pSource 
-                  B_M(IJK,M) = B_M(IJK,M) - pSource *                  &
-                     BC_V_s(BCV,M) * PS_VEL_MAG_S(BCV,M)
-
-               endif
+               B_M(IJK,M) = B_M(IJK,M) - pSource *                     &
+                  BC_V_s(BCV,M) * PS_VEL_MAG_S(BCV,M)
             endif
+
          enddo
          enddo
          enddo
@@ -1232,3 +1241,10 @@
 
       RETURN
       END SUBROUTINE POINT_SOURCE_V_S
+
+
+!               A_M(IJK,0,M) = A_M(IJK,0,M) - pSource 
+
+!               write(*,"(3x,'Process ',I2,'  IJK: ', I4,'  Vs values: ',2(2x,g11.5))") &
+!                  myPE, IJK, pSource,  pSource * BC_V_s(BCV,M) * PS_VEL_MAG_s(BCV,M)
+

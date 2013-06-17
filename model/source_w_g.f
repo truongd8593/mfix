@@ -1085,6 +1085,9 @@
       INTEGER :: IJKN, IJPK
       INTEGER :: BCV, M
 
+      INTEGER :: lKT, lKB
+
+
 ! terms of bm expression
       DOUBLE PRECISION :: pSource
 
@@ -1098,21 +1101,28 @@
          if(POINT_SOURCES(BCV) == 0) cycle BC_LP
          if(abs(BC_W_g(BCV)) < small_number) cycle BC_LP
 
-         do k = BC_K_B(BCV), BC_K_T(BCV)
+         if(BC_W_g(BCV) < ZERO) then
+            lKB = BC_K_B(BCV)-1
+            lKT = BC_K_T(BCV)-1
+         else
+            lKB = BC_K_B(BCV)
+            lKT = BC_K_T(BCV)
+         endif
+
+         do k = lKB, lKT
          do j = BC_J_S(BCV), BC_J_N(BCV)
          do i = BC_I_W(BCV), BC_I_E(BCV)
 
+            if(.NOT.IS_ON_myPE_plus2layers(I,J,K)) cycle
+
             ijk = funijk(i,j,k)
-            if(BC_W_g(BCV) < ZERO) ijk = BOTTOM_OF(IJK)
+            if(.NOT.fluid_at(ijk)) cycle
 
-            if(fluid_at(ijk)) then
+            pSource =  BC_MASSFLOW_G(BCV) * (VOL(IJK)/PS_VOLUME(BCV))
 
-               pSource =  BC_MASSFLOW_G(BCV) * BC_W_g(BCV) * &
-                  (VOL(IJK)/PS_VOLUME(BCV))
+            B_M(IJK,M) = B_M(IJK,M) - pSource * &
+               BC_W_g(BCV) * PS_VEL_MAG_g(BCV)
 
-               A_M(IJK,0,M) = A_M(IJK,0,M) - pSource
-               B_M(IJK,M) = B_M(IJK,M) - pSource * PS_VEL_MAG_g(BCV)
-            endif
          enddo
          enddo
          enddo
@@ -1121,3 +1131,9 @@
 
       RETURN
       END SUBROUTINE POINT_SOURCE_W_G
+
+!               A_M(IJK,0,M) = A_M(IJK,0,M) - pSource 
+
+!               write(*,"(3x,'Process ',I2,'  IJK: ', I4,'  Wg values: ',2(2x,g11.5))") &
+!                  myPE, IJK, pSource,  pSource * BC_W_g(BCV) * PS_VEL_MAG_g(BCV)
+

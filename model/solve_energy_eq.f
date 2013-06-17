@@ -415,39 +415,38 @@
          do k = BC_K_B(BCV), BC_K_T(BCV)
          do j = BC_J_S(BCV), BC_J_N(BCV)
          do i = BC_I_W(BCV), BC_I_E(BCV)
+
+            if(.NOT.IS_ON_myPE_plus2layers(I,J,K)) cycle
+
             ijk = funijk(i,j,k)
-            if(fluid_at(ijk)) then
+            if(.NOT.fluid_at(ijk)) cycle
 
+            if(A_M(IJK,0,M) == -ONE .AND. B_M(IJK,M) == -T_x(IJK)) then
+               B_M(IJK,M) = -BC_T(BCV)
+            else
 
-               if(A_M(IJK,0,M) == -ONE .AND. B_M(IJK,M) == -T_x(IJK)) then
-                  B_M(IJK,M) = -BC_T(BCV)
-               else
+               lMass = BC_FLOW(BCV) * (VOL(IJK)/PS_VOLUME(BCV))
 
-                  lMass = BC_FLOW(BCV) * (VOL(IJK)/PS_VOLUME(BCV))
-
-                  pSource = 0.0d0
-                  do N=1,NMAX(M)
+               pSource = 0.0d0
+               do N=1,NMAX(M)
 
 ! Part of the thermal source: 0K --> T_BC
-                     intCp_Tref = calc_ICpOR(BC_T(BCV), Thigh(N),  &
-                        Tlow(N), Tcom(N), Ahigh(1,N), Alow(1,N)) * &
-                        (GAS_CONST_cal / lMW(N))
+                  intCp_Tref = calc_ICpOR(BC_T(BCV), Thigh(N),  &
+                     Tlow(N), Tcom(N), Ahigh(1,N), Alow(1,N)) * &
+                     (GAS_CONST_cal / lMW(N))
 
 ! Part of the thermal source: 0K --> T_x(IJK)
-                     intCp_Tijk = calc_ICpOR(T_x(IJK), Thigh(N),    &
-                        Tlow(N), Tcom(N), Ahigh(1,N), Alow(1,N)) *  &
-                        (GAS_CONST_cal / lMW(N))
+                  intCp_Tijk = calc_ICpOR(T_x(IJK), Thigh(N),    &
+                     Tlow(N), Tcom(N), Ahigh(1,N), Alow(1,N)) *  &
+                     (GAS_CONST_cal / lMW(N))
 
 ! Total Thermal Source: T_BC --> T_x
-                     pSource = pSource + lMass * BC_X(BCV,N) * &
-                        (intCp_Tijk - intCp_Tref)
+                  pSource = pSource + lMass * BC_X(BCV,N) * &
+                     (intCp_Tijk - intCp_Tref)
 
-                  enddo
+               enddo
 
-                  if(UNITS == 'SI') pSource = pSource * 4.183925d3
-
-               endif
-
+               if(UNITS == 'SI') pSource = pSource * 4.183925d3
 
             endif
 

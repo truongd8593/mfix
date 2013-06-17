@@ -391,19 +391,20 @@
          do k = BC_K_B(BCV), BC_K_T(BCV)
          do j = BC_J_S(BCV), BC_J_N(BCV)
          do i = BC_I_W(BCV), BC_I_E(BCV)
+
+            if(.NOT.IS_ON_myPE_plus2layers(I,J,K)) cycle
+
             ijk = funijk(i,j,k)
-            if(fluid_at(ijk)) then
+            if(.NOT.fluid_at(ijk)) cycle
 
+            if(A_M(IJK,0,M) == -ONE .AND. &
+               B_M(IJK,M) == -X_x(IJK)) then
+               B_M(IJK,M) = -BC_X(BCV)
 
-               if(A_M(IJK,0,M) == -ONE .AND. B_M(IJK,M) == -X_x(IJK))  &
-                  B_M(IJK,M) = -BC_X(BCV)
-
+            else
                pSource = BC_FLOW(BCV) * (VOL(IJK)/PS_VOLUME(BCV))
-
                A_M(IJK,0,M) = A_M(IJK,0,M) - pSource
-
                B_M(IJK,M) = B_M(IJK,M) - BC_X(BCV) * pSource 
-
             endif
 
          enddo
