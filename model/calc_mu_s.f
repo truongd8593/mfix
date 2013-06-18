@@ -1998,24 +1998,26 @@
 !     !!!$omp&  MU_STAR,MU_B,MU,M,IJPKM,IJMKM,IJMKP,IPJMK,IPJKM,IMJKM,IMJKP,IMJMK, &
 !     !!!$omp&  EP_sxSQRTHETA, EP_s2xTHETA )  
       
-      Mu_s(:,M)     = ZERO
-      LAMBDA_s(:,M) = ZERO
-      ALPHA_s(:,M)  = ZERO
-      Mu_s_v(:)     = ZERO
-      Mu_b_v(:)     = ZERO
-      LAMBDA_s_v(:) = ZERO
-      ALPHA_s_v(M)  = ZERO
-      Mu_s_p(:)     = ZERO
-      LAMBDA_s_p(:) = ZERO
-      ALPHA_s_p(M)  = ZERO
-      Mu_s_f(:)     = ZERO
-      LAMBDA_s_f(:) = ZERO
-      ALPHA_s_f(M)  = ZERO
+      IF(MU_s0 == UNDEFINED) THEN ! fixes a bug noted by VTech
+        Mu_s(:,M)     = ZERO
+        LAMBDA_s(:,M) = ZERO
+        ALPHA_s(:,M)  = ZERO
+        Mu_s_v(:)     = ZERO
+        Mu_b_v(:)     = ZERO
+        LAMBDA_s_v(:) = ZERO
+        ALPHA_s_v(M)  = ZERO
+        Mu_s_p(:)     = ZERO
+        LAMBDA_s_p(:) = ZERO
+        ALPHA_s_p(M)  = ZERO
+        Mu_s_f(:)     = ZERO
+        LAMBDA_s_f(:) = ZERO
+        ALPHA_s_f(M)  = ZERO
 
-      P_s(:,M) = ZERO
-      P_s_v(:) = ZERO
-      P_s_f(:) = ZERO
-      P_s_p(:) = ZERO
+        P_s(:,M) = ZERO
+        P_s_v(:) = ZERO
+        P_s_f(:) = ZERO
+        P_s_p(:) = ZERO
+      ENDIF
 
       IF (SHEAR) SRT=(2d0*V_sh/XLENGTH)
 
