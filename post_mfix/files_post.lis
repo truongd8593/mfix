@@ -29,6 +29,7 @@ chem/stiff_chem_mod.f
 ../model/physprop_mod.f 
 post3d_mod.f 
 ../model/pscor_mod.f 
+../model/ps_mod.f
 ../model/residual_mod.f 
 ../model/run_mod.f 
 ../model/rxns_mod.f 

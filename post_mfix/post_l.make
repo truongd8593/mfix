@@ -32,6 +32,7 @@ post_mfix : \
     physprop.mod \
     post3d.mod \
     pscor.mod \
+    ps.mod \
     residual.mod \
     run.mod \
     rxns.mod \
@@ -263,6 +264,7 @@ post_mfix : \
     physprop_mod.$(OBJ_EXT) \
     post3d_mod.$(OBJ_EXT) \
     pscor_mod.$(OBJ_EXT) \
+    ps_mod.$(OBJ_EXT) \
     residual_mod.$(OBJ_EXT) \
     run_mod.$(OBJ_EXT) \
     rxns_mod.$(OBJ_EXT) \
@@ -575,6 +577,9 @@ pscor.mod : ../model/pscor_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/pscor_mod.f 
+ps.mod : ../model/ps_mod.f \
+            param.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/ps_mod.f 
 residual.mod : ../model/residual_mod.f \
             param.mod \
             param1.mod 
@@ -1265,6 +1270,7 @@ init_namelist.$(OBJ_EXT) : ../model/init_namelist.f \
             geometry.mod \
             ic.mod \
             bc.mod \
+            ps.mod \
             fldvar.mod \
             constant.mod \
             indices.mod \
@@ -1377,6 +1383,7 @@ read_namelist.$(OBJ_EXT) : ../model/read_namelist.f \
             ic.mod \
             is.mod \
             bc.mod \
+            ps.mod \
             fldvar.mod \
             constant.mod \
             indices.mod \
@@ -1875,14 +1882,7 @@ check_data_cartesian.$(OBJ_EXT) : ../model/cartesian_grid/check_data_cartesian.f
             vtk.mod \
             polygon.mod \
             dashboard.mod \
-            stl.mod \
-            fldvar.mod \
-            scales.mod \
-            parallel.mod \
-            toleranc.mod \
-            geometry.mod \
-            sendrecv.mod \
-            function.inc                                                
+            stl.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/check_data_cartesian.f 
 get_poly_data.$(OBJ_EXT) : ../model/cartesian_grid/get_poly_data.f \
             param.mod \
