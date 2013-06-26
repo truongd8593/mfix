@@ -1240,10 +1240,6 @@
       use ps
       use run
 
-! To be removed upon complete integration of point source routines.
-      use bc
-      use usr
-
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1263,8 +1259,7 @@
 
 ! Indices 
       INTEGER :: IJK, I, J, K
-      INTEGER :: IJKN, IJPK
-      INTEGER :: BCV, M
+      INTEGER :: PSV, M
 
       INTEGER :: lKT, lKB
 
@@ -1275,21 +1270,21 @@
 
       do M=1, MMAX
 
-      BC_LP: do BCV = 50, DIMENSION_BC
-         if(POINT_SOURCES(BCV) == 0) cycle BC_LP
-         if(abs(BC_W_s(BCV,M)) < small_number) cycle BC_LP
+      PS_LP: do PSV = 1, DIMENSION_PS
+         if(.NOT.PS_DEFINED(PSV)) cycle PS_LP
+         if(abs(PS_W_s(PSV,M)) < small_number) cycle PS_LP
 
-         if(BC_W_s(BCV,M) < ZERO) then
-            lKB = BC_K_B(BCV)-1
-            lKT = BC_K_T(BCV)-1
+         if(PS_W_s(PSV,M) < ZERO) then
+            lKB = PS_K_B(PSV)-1
+            lKT = PS_K_T(PSV)-1
          else
-            lKB = BC_K_B(BCV)
-            lKT = BC_K_T(BCV)
+            lKB = PS_K_B(PSV)
+            lKT = PS_K_T(PSV)
          endif
 
          do k = lKB, lKT
-         do j = BC_J_S(BCV), BC_J_N(BCV)
-         do i = BC_I_W(BCV), BC_I_E(BCV)
+         do j = PS_J_S(PSV), PS_J_N(PSV)
+         do i = PS_I_W(PSV), PS_I_E(PSV)
 
             if(.NOT.IS_ON_myPE_plus2layers(I,J,K)) cycle
 
@@ -1299,27 +1294,22 @@
 
             if(A_M(IJK,0,M) == -ONE .AND.                           &
                B_M(IJK,M) == -W_s(IJK,M)) then
-               B_M(IJK,M) = -BC_W_s(BCV,M) * PS_VEL_MAG_S(BCV,M)
+               B_M(IJK,M) = -PS_W_s(PSV,M) * PS_VEL_MAG_S(PSV,M)
             else
-               pSource = BC_MASSFLOW_S(BCV,M) *                     &
-                  (VOL(IJK)/PS_VOLUME(BCV))
+               pSource = PS_MASSFLOW_S(PSV,M) *                     &
+                  (VOL(IJK)/PS_VOLUME(PSV))
 
                B_M(IJK,M) = B_M(IJK,M) - pSource *                  &
-                  BC_W_s(BCV,M) * PS_VEL_MAG_S(BCV,M)
+                  PS_W_s(PSV,M) * PS_VEL_MAG_S(PSV,M)
             endif
 
          enddo
          enddo
          enddo
 
-         enddo BC_LP
+         enddo PS_LP
 
       enddo ! do M=1, MMAX
 
       RETURN
       END SUBROUTINE POINT_SOURCE_W_S
-
-!                  A_M(IJK,0,M) = A_M(IJK,0,M) - pSource 
-!               write(*,"(3x,'Process ',I2,'  IJK: ', I4,'  Ws values: ',2(2x,g11.5))") &
-!                  myPE, IJK, pSource,  pSource * BC_W_s(BCV,M) * PS_VEL_MAG_s(BCV,M)
-

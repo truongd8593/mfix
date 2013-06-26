@@ -155,9 +155,9 @@
 ! set the source terms in a and b matrix form
             CALL SOURCE_PHI (S_P, S_C, EP_G, X_G(1,LN), 0, A_M, B_M, IER)
 
-! Add point souce contriubtions.
-            IF(POINT_SOURCE) CALL POINT_SOURCE_SPECIES_EQ (X_G(1,LN), &
-               BC_X_G(:,LN), BC_MASSFLOW_G(:), 0, A_M, B_M, IER)
+! Add point sources.
+            IF(POINT_SOURCE) CALL POINT_SOURCE_PHI (X_G(1,LN), &
+               PS_X_G(:,LN), PS_MASSFLOW_G, 0, A_M, B_M, IER)
 
             CALL CALC_RESID_S (X_G(1,LN), A_M, B_M, 0, &
                NUM_RESID(RESID_X+(LN-1),0), &
@@ -234,8 +234,9 @@
 
                CALL SOURCE_PHI (S_P, S_C, EPS, X_S(1,M,LN), M, A_M, B_M, IER)
 
-               IF(POINT_SOURCE) CALL POINT_SOURCE_SPECIES_EQ(X_S(1,M,LN), &
-                  BC_X_S(:,M,LN), BC_MASSFLOW_S(:,M), M, A_M, B_M, IER)
+! Add point sources.
+               IF(POINT_SOURCE) CALL POINT_SOURCE_PHI (X_S(1,M,LN), &
+                  PS_X_S(:,M,LN), PS_MASSFLOW_S(:,M), M, A_M, B_M, IER)
 
                CALL CALC_RESID_S (X_S(1,M,LN), A_M, B_M, M, &
                   NUM_RESID(RESID_X+(LN-1),M), &
@@ -313,106 +314,3 @@
 
       RETURN  
       END SUBROUTINE SOLVE_SPECIES_EQ 
-      
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: POINT_SOURCE_SPECIES_EQ                                 C
-!  Purpose: Adds point sources to the species equations.               C
-!                                                                      C
-!                                                                      C
-!  Author: J. Musser                                  Date: 10-JUN-13  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE POINT_SOURCE_SPECIES_EQ(X_x, BC_X, BC_FLOW, M, &
-         A_M, B_M, IER) 
-
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      use compar
-      use fldvar
-      use funits
-      use geometry
-      use indices
-      use physprop
-      use ps
-      use run
-      use toleranc
-
-! To be removed upon complete integration of point source routines.
-      use bc
-      use usr
-
-      IMPLICIT NONE
-!-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
-! Septadiagonal matrix A_m 
-      DOUBLE PRECISION, intent(in) :: X_x(DIMENSION_3)
-
-! maximum term in b_m expression
-      DOUBLE PRECISION, INTENT(IN) :: BC_X(DIMENSION_BC)
-
-! maximum term in b_m expression
-      DOUBLE PRECISION, INTENT(IN) :: BC_FLOW(DIMENSION_BC) 
-
-      INTEGER, intent(in) :: M
-
-! Septadiagonal matrix A_m 
-      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
-
-! Vector b_m 
-      DOUBLE PRECISION, INTENT(INOUT) :: B_M(DIMENSION_3, 0:DIMENSION_M) 
-
-! Error index 
-      INTEGER, INTENT(INOUT) :: IER 
-
-!----------------------------------------------- 
-! Local Variables
-!----------------------------------------------- 
-
-! Indices 
-      INTEGER :: IJK, I, J, K
-      INTEGER :: BCV
-
-! terms of bm expression
-      DOUBLE PRECISION pSource
-
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!-----------------------------------------------
-      BC_LP: do BCV = 50, DIMENSION_BC
-         if(POINT_SOURCES(BCV) == 0) cycle BC_LP
-
-         do k = BC_K_B(BCV), BC_K_T(BCV)
-         do j = BC_J_S(BCV), BC_J_N(BCV)
-         do i = BC_I_W(BCV), BC_I_E(BCV)
-
-            if(.NOT.IS_ON_myPE_plus2layers(I,J,K)) cycle
-
-            ijk = funijk(i,j,k)
-            if(.NOT.fluid_at(ijk)) cycle
-
-            if(A_M(IJK,0,M) == -ONE .AND. &
-               B_M(IJK,M) == -X_x(IJK)) then
-               B_M(IJK,M) = -BC_X(BCV)
-
-            else
-               pSource = BC_FLOW(BCV) * (VOL(IJK)/PS_VOLUME(BCV))
-               A_M(IJK,0,M) = A_M(IJK,0,M) - pSource
-               B_M(IJK,M) = B_M(IJK,M) - BC_X(BCV) * pSource 
-            endif
-
-         enddo
-         enddo
-         enddo
-
-      enddo BC_LP
-
-
-      RETURN
-      END SUBROUTINE POINT_SOURCE_SPECIES_EQ

@@ -274,6 +274,7 @@ $(EXEC_FILE) : \
     $(DPO)set_max2.$(OBJ_EXT) \
     $(DPO)set_mw_mix_g.$(OBJ_EXT) \
     $(DPO)set_outflow.$(OBJ_EXT) \
+    $(DPO)set_ps.$(OBJ_EXT) \
     $(DPO)set_ro_g.$(OBJ_EXT) \
     $(DPO)set_wall_bc.$(OBJ_EXT) \
     $(DPO)shift_dxyz.$(OBJ_EXT) \
@@ -716,6 +717,7 @@ $(EXEC_FILE) : \
     $(DPO)set_max2.$(OBJ_EXT) \
     $(DPO)set_mw_mix_g.$(OBJ_EXT) \
     $(DPO)set_outflow.$(OBJ_EXT) \
+    $(DPO)set_ps.$(OBJ_EXT) \
     $(DPO)set_ro_g.$(OBJ_EXT) \
     $(DPO)set_wall_bc.$(OBJ_EXT) \
     $(DPO)shift_dxyz.$(OBJ_EXT) \
@@ -1151,7 +1153,8 @@ $(DPO)pscor.mod : pscor_mod.f \
             $(DPO)param.mod \
             $(DPO)param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) pscor_mod.f  -o $(DPO)pscor_mod.$(OBJ_EXT) -module $(DPO)
-$(DPO)ps.mod : ps_mod.f 
+$(DPO)ps.mod : ps_mod.f \
+            $(DPO)param.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ps_mod.f  -o $(DPO)ps_mod.$(OBJ_EXT) -module $(DPO)
 $(DPO)residual.mod : residual_mod.f \
             $(DPO)param.mod \
@@ -2353,7 +2356,14 @@ $(DPO)check_data_09.$(OBJ_EXT) : check_data_09.f \
             $(DPO)rxns.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) check_data_09.f  -o $(DPO)check_data_09.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_data_10.$(OBJ_EXT) : check_data_10.f \
-            $(DPO)ps.mod 
+            $(DPO)param.mod \
+            $(DPO)run.mod \
+            $(DPO)physprop.mod \
+            $(DPO)ps.mod \
+            $(DPO)compar.mod \
+            $(DPO)geometry.mod \
+            $(DPO)mpi_utility.mod \
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) check_data_10.f  -o $(DPO)check_data_10.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_data_20.$(OBJ_EXT) : check_data_20.f \
             $(DPO)param.mod \
@@ -3148,6 +3158,7 @@ $(DPO)init_namelist.$(OBJ_EXT) : init_namelist.f \
             $(DPO)geometry.mod \
             $(DPO)ic.mod \
             $(DPO)bc.mod \
+            $(DPO)ps.mod \
             $(DPO)fldvar.mod \
             $(DPO)constant.mod \
             $(DPO)indices.mod \
@@ -3643,6 +3654,7 @@ $(DPO)read_namelist.$(OBJ_EXT) : read_namelist.f \
             $(DPO)ic.mod \
             $(DPO)is.mod \
             $(DPO)bc.mod \
+            $(DPO)ps.mod \
             $(DPO)fldvar.mod \
             $(DPO)constant.mod \
             $(DPO)indices.mod \
@@ -4042,6 +4054,29 @@ $(DPO)set_outflow.$(OBJ_EXT) : set_outflow.f \
             ep_s1.inc                                                    \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) set_outflow.f  -o $(DPO)set_outflow.$(OBJ_EXT) -module $(DPO)
+$(DPO)set_ps.$(OBJ_EXT) : set_ps.f \
+            $(DPO)param.mod \
+            $(DPO)run.mod \
+            $(DPO)physprop.mod \
+            $(DPO)ps.mod \
+            $(DPO)compar.mod \
+            $(DPO)geometry.mod \
+            $(DPO)mpi_utility.mod \
+            $(DPO)bc.mod \
+            $(DPO)constant.mod \
+            $(DPO)cutcell.mod \
+            $(DPO)fldvar.mod \
+            $(DPO)ic.mod \
+            $(DPO)indices.mod \
+            $(DPO)mflux.mod \
+            $(DPO)parallel.mod \
+            $(DPO)param1.mod \
+            $(DPO)sendrecv.mod \
+            $(DPO)toleranc.mod \
+            $(DPO)usr.mod \
+            $(DPO)rxns.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) set_ps.f  -o $(DPO)set_ps.$(OBJ_EXT) -module $(DPO)
 $(DPO)set_ro_g.$(OBJ_EXT) : set_ro_g.f \
             $(DPO)param.mod \
             $(DPO)param1.mod \

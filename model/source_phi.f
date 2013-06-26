@@ -260,3 +260,110 @@
       RETURN  
       END SUBROUTINE SOURCE_PHI 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: POINT_SOURCE_PHI                                        C
+!                                                                      C
+!  Purpose: Adds point sources to the scalar equations.                C
+!                                                                      C
+!  Author: J. Musser                                  Date: 10-JUN-13  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE POINT_SOURCE_PHI(PHI, PS_PHI, PS_FLOW,  &
+         M, A_M, B_M, IER) 
+
+      use compar
+
+      use geometry
+      use indices
+      use physprop
+      use ps
+      use run
+
+! To be removed upon complete integration of point source routines.
+      use bc
+      use usr
+
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+
+! Vector b_m 
+      DOUBLE PRECISION, INTENT(IN) :: PHI(DIMENSION_3) 
+
+
+! maximum term in b_m expression
+      DOUBLE PRECISION, INTENT(IN) :: PS_PHI(DIMENSION_BC)
+
+! maximum term in b_m expression
+      DOUBLE PRECISION, INTENT(IN) :: PS_FLOW(DIMENSION_BC) 
+
+      INTEGER, intent(in) :: M
+
+! Septadiagonal matrix A_m 
+      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
+
+! Vector b_m 
+      DOUBLE PRECISION, intent(INOUT) :: B_M(DIMENSION_3, 0:DIMENSION_M) 
+
+! Error index 
+      INTEGER, intent(INOUT) :: IER 
+
+!----------------------------------------------- 
+! Local Variables
+!----------------------------------------------- 
+
+! Indices 
+      INTEGER :: IJK, I, J, K
+      INTEGER :: PSV, N
+
+! terms of bm expression
+      DOUBLE PRECISION pSource, lMass
+
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+!-----------------------------------------------
+
+! External function. Integrates the temperature-dependent specific 
+! heat from zero to T.
+      DOUBLE PRECISION, EXTERNAL :: calc_ICpoR
+
+      PSV_LP: do PSV = 1, DIMENSION_PS
+
+         if(.NOT.PS_DEFINED(PSV)) cycle PSV_LP
+         if(abs(PS_FLOW(PSV)) < small_number) cycle PSV_LP
+
+         do k = PS_K_B(PSV), PS_K_T(PSV)
+         do j = PS_J_S(PSV), PS_J_N(PSV)
+         do i = PS_I_W(PSV), PS_I_E(PSV)
+
+            if(.NOT.IS_ON_myPE_plus2layers(I,J,K)) cycle
+
+            ijk = funijk(i,j,k)
+            if(.NOT.fluid_at(ijk)) cycle
+
+            if(A_M(IJK,0,M) == -ONE .AND. B_M(IJK,M) == -PHI(IJK)) then
+               B_M(IJK,M) = -PS_PHI(PSV)
+            else
+
+! Calculate the mass flow rate for this cell. (mass/time)
+               pSource = PS_FLOW(PSV) * (VOL(IJK)/PS_VOLUME(PSV))
+
+               A_M(IJK,0,M) = A_M(IJK,0,M) - pSource
+               B_M(IJK,M) = B_M(IJK,M) - PS_PHI(PSV) * pSource 
+
+            endif
+
+         enddo
+         enddo
+         enddo
+
+      enddo PSV_LP
+
+
+      RETURN
+      END SUBROUTINE POINT_SOURCE_PHI

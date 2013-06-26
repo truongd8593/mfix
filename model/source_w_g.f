@@ -1059,10 +1059,6 @@
       use ps
       use run
 
-! To be removed upon complete integration of point source routines.
-      use bc
-      use usr
-
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1082,8 +1078,7 @@
 
 ! Indices 
       INTEGER :: IJK, I, J, K
-      INTEGER :: IJKN, IJPK
-      INTEGER :: BCV, M
+      INTEGER :: PSV, M
 
       INTEGER :: lKT, lKB
 
@@ -1097,43 +1092,37 @@
 
 ! Calculate the mass going into each IJK cell. This is done for each 
 ! call in case the point source is time dependent.
-      BC_LP: do BCV = 50, DIMENSION_BC
-         if(POINT_SOURCES(BCV) == 0) cycle BC_LP
-         if(abs(BC_W_g(BCV)) < small_number) cycle BC_LP
+      PS_LP: do PSV = 1, DIMENSION_PS
+         if(.NOT.PS_DEFINED(PSV)) cycle PS_LP
+         if(abs(PS_W_g(PSV)) < small_number) cycle PS_LP
 
-         if(BC_W_g(BCV) < ZERO) then
-            lKB = BC_K_B(BCV)-1
-            lKT = BC_K_T(BCV)-1
+         if(PS_W_g(PSV) < ZERO) then
+            lKB = PS_K_B(PSV)-1
+            lKT = PS_K_T(PSV)-1
          else
-            lKB = BC_K_B(BCV)
-            lKT = BC_K_T(BCV)
+            lKB = PS_K_B(PSV)
+            lKT = PS_K_T(PSV)
          endif
 
          do k = lKB, lKT
-         do j = BC_J_S(BCV), BC_J_N(BCV)
-         do i = BC_I_W(BCV), BC_I_E(BCV)
+         do j = PS_J_S(PSV), PS_J_N(PSV)
+         do i = PS_I_W(PSV), PS_I_E(PSV)
 
             if(.NOT.IS_ON_myPE_plus2layers(I,J,K)) cycle
 
             ijk = funijk(i,j,k)
             if(.NOT.fluid_at(ijk)) cycle
 
-            pSource =  BC_MASSFLOW_G(BCV) * (VOL(IJK)/PS_VOLUME(BCV))
+            pSource =  PS_MASSFLOW_G(PSV) * (VOL(IJK)/PS_VOLUME(PSV))
 
             B_M(IJK,M) = B_M(IJK,M) - pSource * &
-               BC_W_g(BCV) * PS_VEL_MAG_g(BCV)
+               PS_W_g(PSV) * PS_VEL_MAG_g(PSV)
 
          enddo
          enddo
          enddo
 
-      enddo BC_LP
+      enddo PS_LP
 
       RETURN
       END SUBROUTINE POINT_SOURCE_W_G
-
-!               A_M(IJK,0,M) = A_M(IJK,0,M) - pSource 
-
-!               write(*,"(3x,'Process ',I2,'  IJK: ', I4,'  Wg values: ',2(2x,g11.5))") &
-!                  myPE, IJK, pSource,  pSource * BC_W_g(BCV) * PS_VEL_MAG_g(BCV)
-

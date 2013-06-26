@@ -299,6 +299,10 @@
 ! Set initial conditions
       CALL SET_IC 
 
+! Set point sources.
+      CALL SET_PS
+
+
 ! Set boundary conditions
       CALL ZERO_NORM_VEL 
       CALL SET_BC0 

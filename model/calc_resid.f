@@ -213,6 +213,11 @@
       USE compar      
       USE mpi_utility
       USE run 
+
+      USE fldvar
+      USE physprop
+      USE toleranc
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -257,7 +262,9 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
+      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
+      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 ! initializing
@@ -278,6 +285,12 @@
 
       DO IJK = ijkstart3, ijkend3
          IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+
+         if(M/=0) then
+            if(EP_S(IJK,M) <= DIL_EP_s) CYCLE
+         endif
+
+
          IF (FLUID_AT(IJK) .AND. ABS(VAR(IJK)) > TOL) THEN 
             IMJK = IM_OF(IJK) 
             IJMK = JM_OF(IJK) 
@@ -745,6 +758,10 @@
       USE compar 
       USE mpi_utility 
       USE run 
+      USE fldvar
+      USE physprop
+      USE toleranc
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -790,10 +807,18 @@
       DOUBLE PRECISION :: MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
       INTEGER :: IJK_RESID_GL(0:numPEs-1), IJK_RESID_L(0:numPEs-1)
       INTEGER :: nproc
+
+! Solids volume fraction at face
+      DOUBLE PRECISION :: EPSA
+
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
+      INCLUDE 'ep_s1.inc'
+      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
+      INCLUDE 'fun_avg2.inc'
+      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 ! initializing      
@@ -812,7 +837,12 @@
 !!$omp&  REDUCTION(+:NUM, DEN,NCELLS )  
       DO IJK = ijkstart3, ijkend3
         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
-      
+
+         if(m/=0) then
+            EPSA = AVG_X(EP_S(IJK,M),EP_S(EAST_OF(IJK),M),I_OF(IJK))
+            if(EPSA <= DIL_EP_s) CYCLE
+         endif
+
          IF (.NOT.IP_AT_E(IJK)) THEN 
             IMJK = IM_OF(IJK) 
             IJMK = JM_OF(IJK) 
@@ -937,6 +967,10 @@
       USE compar   
       USE mpi_utility  
       USE run 
+      USE fldvar
+      USE physprop
+      USE toleranc
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -982,10 +1016,17 @@
       DOUBLE PRECISION :: MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
       INTEGER :: IJK_RESID_GL(0:numPEs-1), IJK_RESID_L(0:numPEs-1)
       INTEGER :: nproc
+! Solids volume fraction at face
+      DOUBLE PRECISION :: EPSA
+
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
+      INCLUDE 'ep_s1.inc'
+      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
+      INCLUDE 'fun_avg2.inc'
+      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 ! initializing      
@@ -1004,6 +1045,11 @@
 !!$omp&  REDUCTION(+:NUM, DEN, NCELLS)  
       DO IJK = ijkstart3, ijkend3 
         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+
+         if(m/=0) then
+            EPSA = AVG_Y(EP_S(IJK,M),EP_S(NORTH_OF(IJK),M),J_OF(IJK)) 
+            if(EPSA <= DIL_EP_s) CYCLE
+         endif
 
          IF (.NOT.IP_AT_N(IJK)) THEN 
             IMJK = IM_OF(IJK) 
@@ -1132,6 +1178,10 @@
       USE compar   
       USE mpi_utility  
       USE run 
+      USE fldvar
+      USE physprop
+      USE toleranc
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1177,10 +1227,17 @@
       DOUBLE PRECISION :: MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
       INTEGER :: IJK_RESID_GL(0:numPEs-1), IJK_RESID_L(0:numPEs-1)
       INTEGER :: nproc
+! Solids volume fraction at face
+      DOUBLE PRECISION :: EPSA
+
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
+      INCLUDE 'ep_s1.inc'
+      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
+      INCLUDE 'fun_avg2.inc'
+      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 ! initializing
@@ -1199,7 +1256,12 @@
 !!$omp&  REDUCTION(+:NUM, DEN,NCELLS )  
       DO IJK = ijkstart3, ijkend3
         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
-      
+
+         if(m/=0) then
+            EPSA = AVG_Z(EP_S(IJK,M),EP_S(TOP_OF(IJK),M),K_OF(IJK)) 
+            if(EPSA <= DIL_EP_s) CYCLE
+         endif
+
          IF (.NOT.IP_AT_T(IJK)) THEN 
             IMJK = IM_OF(IJK)
             IJMK = JM_OF(IJK) 

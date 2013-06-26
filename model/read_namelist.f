@@ -75,6 +75,7 @@
       USE ic
       USE is
       USE bc
+      USE ps
       USE fldvar
       USE constant
       USE indices

@@ -44,6 +44,7 @@
       USE geometry
       USE ic
       USE bc
+      USE ps
       USE fldvar
       USE constant
       USE indices
@@ -507,6 +508,39 @@
       BC_HW_X_S = UNDEFINED 
       BC_XW_S = UNDEFINED 
       BC_C_X_S = UNDEFINED 
+
+! Point Source:
+      PS_X_W = UNDEFINED 
+      PS_X_E = UNDEFINED 
+      PS_Y_S = UNDEFINED 
+      PS_Y_N = UNDEFINED 
+      PS_Z_B = UNDEFINED 
+      PS_Z_T = UNDEFINED 
+      PS_I_W = UNDEFINED_I 
+      PS_I_E = UNDEFINED_I 
+      PS_J_S = UNDEFINED_I 
+      PS_J_N = UNDEFINED_I 
+      PS_K_B = UNDEFINED_I 
+      PS_K_T = UNDEFINED_I 
+
+      PS_U_G = UNDEFINED 
+      PS_V_G = UNDEFINED 
+      PS_W_G = UNDEFINED 
+
+      PS_MASSFLOW_G = UNDEFINED 
+
+      PS_T_G = UNDEFINED 
+      PS_X_G = UNDEFINED 
+
+      PS_U_S = UNDEFINED 
+      PS_V_S = UNDEFINED 
+      PS_W_S = UNDEFINED 
+
+      PS_MASSFLOW_S = UNDEFINED 
+
+      PS_T_S = UNDEFINED 
+      PS_X_S = UNDEFINED 
+
 
       DO LC = 1, DIMENSION_IS 
          IS_X_W(LC) = UNDEFINED 

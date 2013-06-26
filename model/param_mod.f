@@ -65,6 +65,11 @@
 !                      modified if this dimension is made greater than 999.
       INTEGER, PARAMETER          :: DIMENSION_IS = 500
 !
+!                      Maximum number of items for specifying point
+!                      sources
+      INTEGER, PARAMETER          :: DIMENSION_PS = 500
+
+!
 !                      Maximum number of solids phases that can be read
       INTEGER, PARAMETER          :: DIM_M = 10
 !

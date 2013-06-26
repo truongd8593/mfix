@@ -113,6 +113,16 @@
              BC_Scalar,&
 	     BC_K_Turb_G, BC_E_Turb_G, &
 	     Flux_g, &
+
+! ----------------------------------------------------------------<<<
+
+! 1.X Point Sources
+! ---------------------------------------------------------------->>>
+             PS_X_w, PS_X_e, PS_Y_s, PS_Y_n, PS_Z_b, PS_Z_t,&
+             PS_I_w, PS_I_e, PS_J_s, PS_J_n, PS_K_b, PS_K_t,&
+             PS_U_g, PS_V_g, PS_W_g, PS_MASSFLOW_g, &
+             PS_U_s, PS_V_s, PS_W_s, PS_MASSFLOW_s, &
+             PS_T_g, PS_T_s, PS_X_g, PS_X_s,&
 ! ----------------------------------------------------------------<<<
 
 ! 1.9 Internal surfaces section
