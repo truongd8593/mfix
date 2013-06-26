@@ -257,13 +257,17 @@
 !Sebastien Dartevelle, LANL, May 2013
 !The subgrid model requires these quantities:
         !Particle Terminal  Settling Velocity: vt = g*d^2*(Rho_s - Rho_g) / 18 * Mu_g
-          vt = GRAVITY*D_p0(M)*D_p0(M)*(RO_S(M) - RO_g(IJK)) / (18.0d0*MU_G(IJK))
+          vt = GRAVITY*D_p0(M)*D_p0(M)*(RO_S(M) - RO_g(IJK)) / (18.0d0*MU)
         !
         !FilterSIZE calculation for each specific gridcell volume
           filtersize = filter_size_ratio * (VOL(IJK)**(ONE/3.0d0))
         !
 	    !Dimensionless Inverse of Froude number
-          Inv_Froude =  filtersize * GRAVITY / vt**2
+          if(abs(vt) > small_number) then
+             Inv_Froude =  filtersize * GRAVITY / vt**2
+          else
+             Inv_Froude =  LARGE_NUMBER
+          endif
         !
         !Solid Densities
           ROs  = RO_s(M)
