@@ -119,19 +119,16 @@
          CALL MFIX_EXIT(myPE)
       ENDIF
 
-
 ! The stiff chemistry solver only needs to loop over physical cells
 ! owned by a process (e.g., not ghost cells). To avoid having a 
 ! triple do loop, this array is populated to identify the cells that
 ! are not owned.
       ALLOCATE( notOwner(DIMENSION_3) ); notOwner = .TRUE.
-      do k=kstart3, kend3
-      do j=jstart3, jend3
-      do i=istart3, iend3
+      do k=kstart, kend
+      do j=jstart, jend
+      do i=istart, iend
          ijk = funijk(i,j,k)
-         if(fluid_at(ijk)) then
-            if(IS_ON_myPE_owns(i,j,k)) notOwner(IJK) = .FALSE.
-         endif
+         notOwner(IJK) = .FALSE.
       enddo
       enddo
       enddo
