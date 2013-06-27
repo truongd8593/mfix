@@ -41,8 +41,6 @@
 
       iErr = 0
 
-      write(*,"(//3x,'Checking Point Source data:')")
-
 ! DETERMINE WHICH BOUNDARY CONDITION INDICES HAVE VALUES
       PSV_LP: do PSV = 1, DIMENSION_PS
 
@@ -63,9 +61,6 @@
 
 ! Flag that one or more point sources has been detected.
          POINT_SOURCE = .TRUE.
-
-         write(*,"(5x,'Point Source found:',I3)") PSV
-
 
 ! West Face.
          if(PS_I_W(PSV)==UNDEFINED_I) then
@@ -219,8 +214,6 @@
          CALL CHECK_PS_ENERGY(PSV, 0, PS_MASSFLOW_g(PSV), PS_T_g(PSV), &
             iErr)
 
-         write(*,"(3x,'Done checking gas phase')")
-
 ! Solids Phases:
 !-----------------------------------------------------------------------
          M_LP: do M=1,MMAX
@@ -236,8 +229,6 @@
             CALL CHECK_PS_ENERGY(PSV, M, PS_MASSFLOW_s(PSV,M),         &
                PS_T_s(PSV,M), iErr)
 
-            write(*,"(3x,'Done checking solids phase',I2)")M
-
          enddo M_LP
 
       enddo PSV_LP
@@ -247,18 +238,13 @@
          CALL mfix_exit(myPE)
       endif
 
-
       return
-
-
 
  1000 FORMAT(/' Please correct the mfix.dat file.',/1X,70('*')/) 
 
  1001 FORMAT(/1X,70('*')/' From: CHECK_DATA_10 -',                     &
          ' Invalid specifications for point source ',I3,'.',/          &
          ' Error: 1001: Neither ',A,' are defined!')
-
-
 
  1002 FORMAT(/1X,70('*')/' From: CHECK_DATA_10',/' Error 1002:',       &
          ' Invalid specifications for point source ',I3,'!',/1x,A,     &
@@ -269,12 +255,6 @@
          ' Invalid specifications for point source ',I3,'!',/          &
          ' The velocity of ',A,' is undefined:'/' PS_U_',A1,&
          ' = PS_V_',A1,' = PS_W_',A1,' = UNDEFINED.')
-
- 
-! 1001 FORMAT(/1X,70('*')/' From: CHECK_DATA_10',/' Error 1001:',       &
-!         ' Invalid specifications for point source ',I3,'!',/1x,A,     &
-!         ' are not specified!.') 
-
 
  9999 FORMAT(2/,' One or more fatal errors found in check_data_10.',&
          ' Calling MFIX_EXIT.',/)
