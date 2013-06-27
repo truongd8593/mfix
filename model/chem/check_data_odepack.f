@@ -17,28 +17,66 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-      use compar,     only : myPe
-      use funits,     only : UNIT_LOG
-      use param1,     only : ZERO, UNDEFINED
-      use physprop,   only : RO_G0
-      use run,        only : ENERGY_EQ, SPECIES_EQ
-      use rxns,       only : SUM_R_g, SUM_R_s
-      use stiff_chem, only : CALL_ISAT, CALL_DI, STIFF_CHEMISTRY, ISATDT
+! File unit of log file.
+      use funits, only: UNIT_LOG
+! Dimension of IJK arrays.
+      use param, only: DIMENSION_3
+! Double precision zero.
+      use param1, only: ZERO
+! Double precision value for undefined variables.
+      use param1, only: UNDEFINED
+! Constant gas phase density
+      use physprop, only : RO_G0
+! Runtime logical for solving energy equations.
+      use run, only: ENERGY_EQ
+! Run time logical for solving species equations.
+      use run, only: SPECIES_EQ
+! Net rate of gas phase production/consumption
+      use rxns, only: SUM_R_g
+! Net rate of solids phase production/consumption
+      use rxns, only: SUM_R_s
+! Run time logical for using stiff chemistry solver
+      use stiff_chem, only: STIFF_CHEMISTRY
+! Run time logicals for identifying cells owned by myPE
+      use stiff_chem, only: notOwner
+
+! Legacy Global Variables:
+!---------------------------------------------------------------------//
+! Run time logical for using ISAT (legacy)
+      use stiff_chem, only: CALL_ISAT
+! Run time logical for using direct integration (legacy)
+      use stiff_chem, only: CALL_DI
+! Time step for using ISAT (legacy)
+      use stiff_chem, only: ISATDT
+
+! Full access to the following modules:
+!---------------------------------------------------------------------//
+      use compar
+      use geometry
+      use indices
 
       implicit none
 
+! Local Variables:
+!---------------------------------------------------------------------//
+      INTEGER :: I, J, K, IJK
+
+      include 'function.inc'
+
 ! Error - ISAT is no longer available.
       IF(CALL_ISAT) THEN
-!         IF(DMP_LOG) THEN
+         IF(myPE == PE_IO) THEN
             WRITE(*,1001); WRITE(*,1000)
             WRITE(UNIT_LOG,1001); WRITE(UNIT_LOG,1000)
-!         ENDIF
+         ENDIF
          CALL MFIX_EXIT(myPE)
       END IF
 
       IF(CALL_DI .AND. .NOT.STIFF_CHEMISTRY) THEN
-         WRITE(*,1003); WRITE(*,1000)
-         WRITE(UNIT_LOG,1003); WRITE(UNIT_LOG,1000)
+         IF(myPE == PE_IO) then
+            WRITE(*,1003); WRITE(*,1000)
+            WRITE(UNIT_LOG,1003); WRITE(UNIT_LOG,1000)
+         ENDIF
          CALL MFIX_EXIT(myPE)
       ENDIF
 
@@ -51,37 +89,52 @@
 
 ! Energy equations must be solved.
       IF(.NOT.ENERGY_EQ) THEN
-!         IF(DMP_LOG) THEN
+         IF(myPE == PE_IO) THEN
             WRITE(*,1004)'ENERGY_EQ = .FALSE.'
             WRITE(*,1000)
             WRITE(UNIT_LOG,1004)'ENERGY_EQ = .FALSE.'
             WRITE(UNIT_LOG,1000)
-!         ENDIF
+         ENDIF
          CALL MFIX_EXIT(myPE)
       ENDIF
 
 
       IF(RO_G0 /= UNDEFINED) THEN
-!         IF(DMP_LOG) THEN
+         IF(myPE == PE_IO) THEN
             WRITE(*,1003)'RO_G0 /= UNDEFINED'
             WRITE(*,1000)
             WRITE(UNIT_LOG,1003)'RO_G0 /= UNDEFINED'
             WRITE(UNIT_LOG,1000)
-!         ENDIF
+         ENDIF
          CALL MFIX_EXIT(myPE)
       ENDIF
 
       IF(.NOT.SPECIES_EQ(0)) THEN
-!         IF(DMP_LOG) THEN
+         IF(myPE == PE_IO) THEN
             WRITE(*,1003)'SPECIES_EQ(0) = .FALSE.'
             WRITE(*,1000)
             WRITE(UNIT_LOG,1003)'SPECIES_EQ(0) = .FALSE.'
             WRITE(UNIT_LOG,1000)
-!         ENDIF
+         ENDIF
          CALL MFIX_EXIT(myPE)
       ENDIF
 
 
+! The stiff chemistry solver only needs to loop over physical cells
+! owned by a process (e.g., not ghost cells). To avoid having a 
+! triple do loop, this array is populated to identify the cells that
+! are not owned.
+      ALLOCATE( notOwner(DIMENSION_3) ); notOwner = .TRUE.
+      do k=kstart3, kend3
+      do j=jstart3, jend3
+      do i=istart3, iend3
+         ijk = funijk(i,j,k)
+         if(fluid_at(ijk)) then
+            if(IS_ON_myPE_owns(i,j,k)) notOwner(IJK) = .FALSE.
+         endif
+      enddo
+      enddo
+      enddo
 
 
 

@@ -17,7 +17,8 @@
       LOGICAL :: STIFF_CHEMISTRY
 ! Flag to invoke the variable solids diameter model.
       LOGICAL :: CALL_GROW
-
+! Flag indicating if cell IJK is own by myPE.
+      LOGICAL, dimension(:), allocatable :: notOwner
 
 ! ODEPACK Controlling parameters:
 !---------------------------------------------------------------------//
@@ -89,7 +90,6 @@
       use output,   only : FULL_LOG
       use run,      only : TIME
 
-!      use indices
       use mpi_utility   
       use stiff_chem_dbg
 
@@ -158,6 +158,7 @@
       IF(FULL_LOG) CALL INIT_ODE_STATS()
 
       IJK_LP: DO IJK = IJKSTART3, IJKEND3
+         IF(notOwner(IJK)) cycle IJK_LP
          IF(FLUID_AT(IJK)) THEN
 
             lAtps = 0
@@ -286,9 +287,12 @@
          ENDIF  ! IF(CALC_REACTIONS(IJK))
       END DO IJK_LP ! End Loop over fluiod Cells, IJK
 
-      gErr_l = .FALSE.
+!      gErr_l = .FALSE.
 !      CALL GLOBAL_ALL_OR(lErr_l, gErr_l)
-!     IF(gErr_l) CALL WRITE_VTU_FILE
+!      IF(gErr_l) CALL WRITE_VTU_FILE
+
+
+      CALL FINALIZE_STIFF_SOLVER()
 
       IF(FULL_LOG) CALL WRITE_ODE_STATS()
 
@@ -587,5 +591,70 @@
 
       RETURN
       END SUBROUTINE CALC_ODE_COEFF
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: FINALIZE_STIFF_SOLVER                                  !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      !
+!  Author: J.Musser                                   Date: 07-Feb-13  !
+!                                                                      !
+!  Comments:                                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE FINALIZE_STIFF_SOLVER
+
+      use constant, only : GAS_CONST
+      use fldvar,   only : EP_g, RO_g, T_g, X_g, P_g
+      use fldvar,   only : ROP_S, T_s, X_s
+      use physprop, only : NMAX
+      use physprop, only : MMAX
+
+      use param1,   only : ONE
+      use physprop, only : MW_g, MW_MIX_g
+
+
+
+      use compar
+      use mpi_utility
+      use sendrecv
+
+      implicit none
+
+      INTEGER :: IJK  ! Fluid Cell index.
+      INTEGER :: M    ! Solids phase index
+      INTEGER :: N    ! Species index
+
+
+      CALL send_recv(RO_G,2)
+      CALL send_recv(T_G,2)
+
+      DO N=1,NMAX(0)
+         CALL send_recv(X_G(:,N),2)
+      ENDDO
+
+      DO M = 1, MMAX
+! Solids temperature.
+         CALL send_recv(T_S(:,M),2)
+! Solids volume fraction. (Constant Solids Density)
+         CALL send_recv(ROP_S(:,M),2)
+! Solids phase species mass fractions.
+         DO N=1,NMAX(M)
+            CALL send_recv(X_S(:,M,N),2)
+         ENDDO
+      ENDDO   
+
+      DO IJK = ijkStart3, ijkEnd3
+! Calculate the mixture molecular weight.
+         MW_MIX_G(IJK) = sum(X_G(IJK,1:NMAX(0))/MW_g(1:NMAX(0)))
+         MW_MIX_G(IJK) = ONE/MW_MIX_G(IJK)
+! Calculate the gas phase pressure.
+         P_G(IJK) = (RO_G(IJK)*GAS_CONST*T_G(IJK))/MW_MIX_G(IJK)
+      ENDDO
+
+      RETURN
+      END SUBROUTINE FINALIZE_STIFF_SOLVER
 
       END MODULE STIFF_CHEM
