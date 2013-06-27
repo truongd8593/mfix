@@ -694,7 +694,7 @@
 !$omp parallel do default(shared)                                 &
 !$omp private(ijk,i,j,k,imjk,ijmk,ijkm,ijk_u,ijk_v,ijk_w,         &
 !$omp         velg_arr,velds_arr,                                 &
-!$omp         m,oeps,ep_sm,gs_drag)                               &
+!$omp         m,oeps,ep_sm)                               &
 !$omp schedule (guided,50)
       DO IJK = IJKSTART3, IJKEND3
          I = I_OF(IJK)
@@ -784,7 +784,7 @@
 !$omp end parallel do          
 
 
-!$omp parallel do private(np,ijk,m,gs_drag,oeps,ep_sm)             &
+!$omp parallel do private(np,ijk,m,oeps,ep_sm)             &
 !$omp schedule (guided,100)    
       DO NP = 1, MAX_PIP
 ! skipping indices that do not represent particles and ghost particles

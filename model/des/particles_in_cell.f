@@ -111,7 +111,7 @@
 !!$omp private(l,m,xpos,ypos,zpos,i,j,k,ijk) schedule (guided,50)  
 !!$      omp_start=omp_get_wtime()
 !$omp parallel default(shared)            &
-!$omp private(l,m,xpos,ypos,zpos,i,j,k,ijk)
+!$omp private(l,m,xpos,ypos,zpos,i,j,k,ijk,ddp,drho)
 !$omp do reduction(+:PINC) schedule (guided,50)  
 
       DO L = 1, MAX_PIP
