@@ -101,18 +101,19 @@
 ! composite ijk index. If first_pass, also assigning PIJK(L,5) the
 ! solids phase index of particle.
 ! ---------------------------------------------------------------->>>
-!Handan Liu commented here on Jan 16 2013 and revised as below:
-! 1)directly adding the directives in this loop will result in the datarace;
-! 2)adding 'critical' at ÂPINC(IJK)=PINC(IJK)+1Â can work for OpenMP;
-! 3)but the total time for OpenMP is much longer than that without OpenMP
-!   directives in this loop. So OpenMP directives were removed in this loop.
+!Handan Liu commented here on June 6 2013 and revised as below:
+! 1)Directly adding the directives in this loop will result in the datarace;
+! 2)Using Reduction-clause for PINC to avoid race condition for OpenMP
+!   at 'PINC(IJK)=PINC(IJK)+1';
+! 3)Using Reduction-clause for PIP_DEL_COUNT for OpenMP
+!   at 'PIP_DEL_COUNT = PIP_DEL_COUNT + 1' for MPPIC. 
 ! ----------------------------------------------------------------<<<<
 !!$omp parallel do default(shared)                               &
 !!$omp private(l,m,xpos,ypos,zpos,i,j,k,ijk) schedule (guided,50)  
 !!$      omp_start=omp_get_wtime()
 !$omp parallel default(shared)            &
-!$omp private(l,m,xpos,ypos,zpos,i,j,k,ijk,ddp,drho)
-!$omp do reduction(+:PINC) schedule (guided,50)  
+!$omp private(l,m,xpos,ypos,zpos,i,j,k,ijk,dDp,dRho)
+!$omp do reduction(+:PINC) reduction(+:PIP_DEL_COUNT) schedule (guided,50)  
 
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
@@ -345,9 +346,9 @@
          K = PIJK(L,3)
          IJK = FUNIJK(I,J,K)
          PIJK(L,4) = IJK
-!!$omp critical		!Handan Liu added here for testing 			 
+		 
          PINC(IJK) = PINC(IJK) + 1
-!!$omp end critical		 
+		 
       ENDDO   ! end loop over L = 1,particles
 !!$omp end parallel do 
 !$omp end parallel 
@@ -735,7 +736,7 @@
 ! sum of mass_sol1 and mass_sol2 across all processors     
       DOUBLE PRECISION :: MASS_SOL1_ALL, MASS_SOL2_ALL
       
-      DOUBLE PRECISION :: TEMP1
+      DOUBLE PRECISION :: TEMP1(MAX_PIP)
 
 ! for error messages      
       INTEGER :: IER
@@ -787,12 +788,12 @@
 ! order and allocates arrays necessary for interpolation      
       CALL SET_INTERPOLATION_SCHEME(2)
 
-!Handan Liu added on Jan 17 2013	  
+!Handan Liu added on Jan 17 2013; again on June 2013	  
 !$omp	parallel default(shared)								&
 !$omp	private(IJK,I,J,K,PCELL,COUNT_NODES_INSIDE,II,JJ,KK,IW,	&
 !$omp		IE,JS,JN,KB,KTP,ONEW,CUR_IJK,IPJK,IJPK,IPJPK,IJKP,	&
 !$omp		IJPKP,IPJKP,IPJPKP,gst_tmp,vst_tmp,nindx,np,wtp,m,	&
-!$omp		JUNK_VAL,desposnew,weight_ft,icur,jcur,kcur,TEMP1,	&	
+!$omp		JUNK_VAL,desposnew,weight_ft,icur,jcur,kcur,		&	
 !$omp		I1, I2, J1, J2, K1, K2, IDIM,IJK2,NORM_FACTOR,		&
 !$omp		RESID_ROPS,RESID_VEL)
 !$omp	do reduction(+:COUNT_NODES_OUTSIDE) reduction(+:MASS_SOL1)	
@@ -838,7 +839,7 @@
          CALL SET_INTERPOLATION_STENCIL(PCELL,IW,IE,JS,JN,KB,&
             KTP,INTERP_SCHEME,DIMN,ORDERNEW = ONEW) 
 
-         COUNT_NODES_OUTSIDE = 0 
+!         COUNT_NODES_OUTSIDE = 0 		! commented by Handan Liu because using reduction
 ! Computing/setting the geometric stencil 
          DO K = 1,(3-DIMN)*1+(DIMN-2)*ONEW
             DO J = 1,ONEW
@@ -951,10 +952,12 @@
 
 ! comment: is this missing division by volume of the node (~cell) 
                      !TEMP1 = WEIGHTP(I,J,K)*DES_RO_S(M)*PVOL(NP)*WTP
-                     TEMP1 = WEIGHT_FT(I,J,K)*DES_RO_S(M)*PVOL(NP)*WTP					 
-                     DES_ROPS_NODE(CUR_IJK,M) = DES_ROPS_NODE(CUR_IJK,M) + TEMP1 
+! Changed TEMP1 as an array TEMP1(NP) to ensure different TEMP1 
+! for each particle in an ijk cell <June 18 2013>
+                     TEMP1(NP) = WEIGHT_FT(I,J,K)*DES_RO_S(M)*PVOL(NP)*WTP					 
+                     DES_ROPS_NODE(CUR_IJK,M) = DES_ROPS_NODE(CUR_IJK,M) + TEMP1(NP) 
                      DES_VEL_NODE(CUR_IJK, 1:DIMN,M) = &
-                        DES_VEL_NODE(CUR_IJK, 1:DIMN,M) + TEMP1*DES_VEL_NEW(NP, 1:DIMN)
+                        DES_VEL_NODE(CUR_IJK, 1:DIMN,M) + TEMP1(NP)*DES_VEL_NEW(NP, 1:DIMN)
                   ENDDO
                ENDDO
             ENDDO
@@ -1032,7 +1035,7 @@
                         IJK2 = funijk(II, JJ, KK)
 
                         IF(.NOT.SCALAR_NODE_ATWALL(IJK2)) THEN 
-                           !COUNT_TEMP = COUNT_TEMP + 1
+                           !COUNT_TEMP = COUNT_TEMP + 1		!commented by Handan Liu 
                            DES_ROPS_NODE(IJK2,1:DES_MMAX) = &
                               DES_ROPS_NODE(IJK2,1:DES_MMAX) + &
                               RESID_ROPS(1:DES_MMAX)*NORM_FACTOR
