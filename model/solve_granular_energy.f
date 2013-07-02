@@ -48,13 +48,15 @@
       Use ambm
       Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3
       USE compar      
-      USE mflux     
+      USE mflux
+      USE mpi_utility
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
 ! Error index 
-      INTEGER          IER 
+      INTEGER :: gIER, IER 
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -85,6 +87,14 @@
 ! coefficient between solids phases
       DOUBLE PRECISION :: VxTC_ss(DIMENSION_3,DIMENSION_LM)
 
+! Arrays for storing errors:
+! 140 - Linear Eq diverged
+! 141 - Unphysical values
+! 14x - Unclassified
+      INTEGER :: Err_l(0:numPEs-1)  ! local
+      INTEGER :: Err_g(0:numPEs-1)  ! global
+
+
 ! temporary use of global arrays:
 ! array1 (locally s_p) 
 ! source vector: coefficient of dependent variable
@@ -112,6 +122,10 @@
       call lock_ambm       ! locks arrys a_m and b_m
       call lock_tmp_array  ! locks array1,array2,array3
                            ! (locally s_p, s_c, eps) 
+
+! Initialize error flags.
+      Err_l = 0
+
 
       smallTheta = (to_SI)**4 * ZERO_EP_S
 
@@ -232,10 +246,13 @@
                LEQI, LEQM, LEQ_SWEEP(8), LEQ_TOL(8),  LEQ_PC(8), IER) 
 !            call out_array(Theta_m(1,m), 'Theta_m')
 
+! Check for linear solver divergence.
+            IF(ier == -2) Err_l(myPE) = 140
+
 ! Remove very small negative values of theta caused by leq solvers
             CALL ADJUST_THETA (M, IER)
 ! large negative granular temp -> divergence 
-            IF (IER /= 0) RETURN    
+            IF (IER /= 0) Err_l(myPE) = 141
 
          ENDDO   ! end do loop (m=1,mmax)
 ! if(trim(kt_type) .eq. 'ia_nonep')         
@@ -317,10 +334,15 @@
             LEQI, LEQM, LEQ_SWEEP(8), LEQ_TOL(8),  LEQ_PC(8), IER) 
 !         call out_array(Theta_m(1,m), 'Theta_m')
 
+! Check for linear solver divergence.
+            IF(ier == -2) Err_l(myPE) = 140
+
 ! Remove very small negative values of theta caused by leq solvers
-          CALL ADJUST_THETA (M, IER) 
-! large negative granular temp -> divergence
-          IF (IER /= 0) RETURN       
+            CALL ADJUST_THETA (M, IER)
+! large negative granular temp -> divergence 
+            IF (IER /= 0) Err_l(myPE) = 141
+
+
 ! elseif(trim(kt_type) .eq. 'ghd')
 ! ----------------------------------------------------------------<<<
 
@@ -420,10 +442,13 @@
                LEQI, LEQM, LEQ_SWEEP(8), LEQ_TOL(8),  LEQ_PC(8), IER) 
 !            call out_array(Theta_m(1,m), 'Theta_m')
 
+! Check for linear solver divergence.
+            IF(ier == -2) Err_l(myPE) = 140
+
 ! Remove very small negative values of theta caused by leq solvers
             CALL ADJUST_THETA (M, IER)
 ! large negative granular temp -> divergence 
-            IF (IER /= 0) RETURN
+            IF (IER /= 0) Err_l(myPE) = 141
 
          ENDDO   ! end do loop (m=1,mmax)
 
@@ -432,6 +457,11 @@
 ! ----------------------------------------------------------------<<<      
       call unlock_ambm
       call unlock_tmp_array
+
+
+      CALL global_all_sum(Err_l, Err_g)
+      IER = maxval(Err_g)
+
 
       RETURN  
       END SUBROUTINE SOLVE_GRANULAR_ENERGY

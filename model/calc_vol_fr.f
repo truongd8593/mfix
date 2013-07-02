@@ -40,6 +40,8 @@
       USE compar 
       USE sendrecv 
       USE discretelement
+      USE mpi_utility
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -82,6 +84,13 @@
       INTEGER :: M
 ! Indices
       INTEGER :: IJK      
+
+! Arrays for storing errors:
+! 110 - Negative volume fraciton
+! 11x - Unclassified
+      INTEGER :: Err_l(0:numPEs-1)  ! local
+      INTEGER :: Err_g(0:numPEs-1)  ! global
+
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -92,8 +101,8 @@
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
-! initialization
-      IER = 0 
+! Initialize error flag.
+      Err_l = 0
 
 !!$omp  parallel do private(MCPl, EPCP, SUMVF, MF, M) &
 !!$omp&  schedule(static)
@@ -198,11 +207,9 @@
 ! fraction of all solids phases
                EP_G(IJK) = ONE - SUMVF 
 
-               IF (EP_G(IJK) < ZERO) THEN
-!!$omp              critical
-                   IER = 1 
-!!$omp              end critical
-               ENDIF
+! Set error flag for negative volume fraction.
+               IF (EP_G(IJK) < ZERO) Err_l(myPE) = 110
+
                ROP_G(IJK) = EP_G(IJK)*RO_G(IJK) 
             ELSE 
 ! else correct the volume fraction of the solids phase that was marked
@@ -217,6 +224,10 @@
       CALL send_recv(EP_G, 2)
       CALL send_recv(ROP_G, 2)
       CALL send_recv(ROP_S, 2)
+
+      CALL global_all_sum(Err_l, Err_g)
+      IER = maxval(Err_g)
+
       
       RETURN  
       END SUBROUTINE CALC_VOL_FR 

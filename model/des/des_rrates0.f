@@ -94,7 +94,6 @@
 !---------------------------------------------------------------------//
 ! Enthalpy calculations (cal/gram)
       DOUBLE PRECISION, EXTERNAL ::CALC_H
-      DOUBLE PRECISION, EXTERNAL ::CALC_H0
       DOUBLE PRECISION, EXTERNAL ::DES_CALC_H0
 ! Compare two numbers.
       LOGICAL, EXTERNAL :: COMPARE
@@ -148,12 +147,12 @@
                      lRgc(N) = 1.0d-9
                   ENDIF
 ! Enthalpy transfer associated with mass transfer. (gas/solid)
-                  IF(M /= mXfr) RxH = RxH + lRate*CALC_H0(T_g(IJK),0,N)
+                  IF(M /= mXfr) RxH = RxH + lRate*CALC_H(T_g(IJK),0,N)
                ELSE
 ! Formation of gas phase species.
                   lRgp(N) = lRgp(N) + lRate
 ! Enthalpy transfer associated with mass transfer. (gas/solid)
-                  IF(M /= mXfr) RxH = RxH + lRate*CALC_H0(lTp,0,N)
+                  IF(M /= mXfr) RxH = RxH + lRate*CALC_H(lTp,0,N)
                ENDIF
 ! Discrete Solids Phase:
             ELSE
@@ -184,7 +183,7 @@
                      DES_Reaction(H)%Species(lN)%MWxStoich
 ! Gas phase enthalpy chnage from energy equation derivation.
                   IF(M == 0) THEN
-                     llHORg = llHORg + CALC_H(IJK,0,N) * lRate
+                     llHORg = llHORg + CALC_H(T_g(IJK),0,N) * lRate
 ! Solid phase enthalpy change from energy equation derivation.
                   ELSE
                      lHORs = lHORs + DES_CALC_H0(NP,N) * lRate

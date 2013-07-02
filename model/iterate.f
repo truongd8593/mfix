@@ -103,18 +103,6 @@
 ! Error Message
       CHARACTER*32 :: lMsg
 
-! Calculation Flags:                                       Used By:
-      LOGICAL :: DENSITY(0:DIMENSION_M)                ! PHYSICAL_PROP
-      LOGICAL :: PSIZE(0:DIMENSION_M)                  ! PHYSICAL_PROP
-      LOGICAL :: SP_HEAT(0:DIMENSION_M)                ! PHYSICAL_PROP
-      LOGICAL :: VISC(0:DIMENSION_M)                   ! TRANSPORT_PROP
-      LOGICAL :: COND(0:DIMENSION_M)                   ! TRANSPORT_PROP
-      LOGICAL :: DIFF(0:DIMENSION_M)                   ! TRANSPORT_PROP
-      LOGICAL :: GRAN_DISS(0:DIMENSION_M)              ! TRANSPORT_PROP
-      LOGICAL :: DRAGCOEF(0:DIMENSION_M,0:DIMENSION_M) ! EXCHANGE
-      LOGICAL :: HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M) ! EXCHANGE
-      LOGICAL :: WALL_TR                               ! EXCHANGE
- 
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
@@ -199,12 +187,13 @@
 ! JFD: modification for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SET_OUTFLOW
 
+! Default/Generic Error message
+      lMsg = 'Run diverged/stalled'
 
 ! Begin iterations
 !-----------------------------------------------------------------
    50 CONTINUE 
       MUSTIT = 0 
-      lErrMsg = -1
       NIT = NIT + 1 
       PHIP_OUT_ITER=NIT ! To record the output of phip
 ! mechanism to set the normalization factor for the correction
@@ -227,29 +216,9 @@
 ! every iteration
       IF (CALL_USR) CALL USR2 
 
-
-! Calculate coefficients.  First turn off all flags.  Then explicitly
-! set flags for each quantities that need to be calculated.
-      CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
-         GRAN_DISS, DRAGCOEF, HEAT_TR, WALL_TR, IER)
-
-      IF(Call_DQMOM) PSIZE(1:SMAX)=.TRUE.
-      WALL_TR = .TRUE. 
-      IF(ENERGY_EQ) THEN 
-         SP_HEAT(:SMAX) = .TRUE. 
-         COND(:SMAX) = .TRUE. 
-         HEAT_TR(:SMAX,:SMAX) = .TRUE. 
-      ENDIF 
-      IF(ANY_SPECIES_EQ) DIFF(:SMAX) = .TRUE.
-      DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
-      VISC(0) = RECALC_VISC_G 
-      VISC(1:MMAX) = .TRUE. 
-      IF(TRIM(KT_TYPE) .EQ. 'IA_NONEP' .OR. &
-         TRIM(KT_TYPE) .EQ. 'GD_99')        &
-         GRAN_DISS(:MMAX) = .TRUE.
-      CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
-      CALL TRANSPORT_PROP (VISC, COND, DIFF, GRAN_DISS, IER) 
-      CALL EXCHANGE (DRAGCOEF, HEAT_TR, WALL_TR, IER) 
+! Calculate coefficients, excluding density.
+      CALL CALC_COEFF(IER, 1)
+      goto( 1000 ), IER_MANAGER(IER)
 
 ! Diffusion coefficient and source terms for user-defined scalars
       IF(NScalar /= 0) CALL SCALAR_PROP(IER) 
@@ -258,76 +227,58 @@
       IF(K_Epsilon) CALL K_Epsilon_PROP(IER)
 
 ! Solve starred velocity components
-      CALL SOLVE_VEL_STAR (IER) 
+      CALL SOLVE_VEL_STAR(IER)
 
-! Recalculate the gas phase density, then calculate chemical reactions.
-      IF (RO_G0 == UNDEFINED) THEN
-         CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF,  &
-            GRAN_DISS, DRAGCOEF, HEAT_TR, WALL_TR, IER)
-         DENSITY(0) = .TRUE. 
-         CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
-         IF(Neg_RHO_G) THEN
-            MUSTIT = 2;  lErrMsg = 1
-            Neg_RHO_G = .FALSE.
-            IF(DT/=UNDEFINED)GO TO 1000  
-         ENDIF
-      ENDIF
+! Calculate the gas phase density.
+      CALL PHYSICAL_PROP(IER, 0)
+      goto( 1000 ), IER_MANAGER(IER)
+
+! Calculate chemical reactions.
       CALL CALC_RRATE
 
 ! Solve solids volume fraction correction equation for close-packed
 ! solids phases
       IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
          DES_CONTINUUM_HYBRID) THEN
-        IF (MMAX > 0) THEN
+         IF (MMAX > 0) THEN
 
-          IF(MMAX == 1 .AND. MCP /= UNDEFINED_I)THEN 
+            IF(MMAX == 1 .AND. MCP /= UNDEFINED_I)THEN 
 ! if second phase (m=1) can overpack (e.g., bubbles) then solve its
 ! continuity equation
-             CALL CALC_K_CP (K_CP, IER)
-             CALL SOLVE_EPP (NORMS, RESS, IER)
-             CALL CORRECT_1 (IER) 
-          ELSE
-             DO M=1,SMAX ! mmax -> smax for GHD theory
-! if one chooses to revert back to old mark_phase_4_cor wherein the
+               CALL CALC_K_CP (K_CP, IER)
+               CALL SOLVE_EPP (NORMS, RESS, IER)
+               CALL CORRECT_1 (IER) 
+            ELSE
+
+! If one chooses to revert back to old mark_phase_4_cor wherein the
 ! continuity of the gas phase can get marked to be solved then this 
 ! loop should start at 0.
-
-!   	        IF (M .EQ. MCP) THEN
+               DO M=1,SMAX ! mmax -> smax for GHD theory
 ! Volume fraction correction technique for one of the solids phase
 ! is not implemented.  This will only slow down convergence.
-               IF (.FALSE.) THEN    
-                  CALL CALC_K_CP (K_CP, IER)
-                  CALL SOLVE_EPP (NORMS, RESS, IER)
-                  CALL CORRECT_1 (IER) 
-               ELSE
-                  CALL SOLVE_CONTINUITY(M,IER)
-               ENDIF
+!   	            IF (M .EQ. MCP) THEN
+!                     CALL CALC_K_CP (K_CP, IER)
+!                     CALL SOLVE_EPP (NORMS, RESS, IER)
+!                     CALL CORRECT_1 (IER) 
+!                  ELSE
+                     CALL SOLVE_CONTINUITY(M,IER)
+!                 ENDIF
+               ENDDO
+            ENDIF   ! end if/else (mmax==1 .and. mcp /= undefined)
 
-             ENDDO
-          ENDIF   ! end if/else (mmax==1 .and. mcp /= undefined)
 
-! Solve species mass balance equations. The call to SOLVE_SPECIES_EQ	
-! is moved up in iterate for variable solids density.
-          IF(SOLID_RO_V) THEN
-             CALL SOLVE_SPECIES_EQ (IER)
-! If the linear solver diverges, flag the error and reduce time-step
-! to prevent unphysical values from propogating.
-             IF(IER == -100) THEN
-                MUSTIT = 2; lErrMsg = 3
-                IF(DT/=UNDEFINED)GO TO 1000
-             ENDIF
-          ENDIF
 
-          IF(TRIM(KT_TYPE) .eq. 'GHD') CALL ADJUST_EPS_GHD
-          CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
-          abort_ier = ier.eq.1
-          CALL global_all_or(abort_ier)
-          IF (abort_ier) THEN 
-              ier = 1
-              MUSTIT = 2;  lErrMsg = 2
-              IF(DT/=UNDEFINED) GOTO 1000 
-          ENDIF 
-        ENDIF  ! endif (mmax >0)
+!**********************************************************************!
+!                                                                      !
+!          ------> Need to update solids density here <------          !
+!                                                                      !
+!**********************************************************************!
+
+
+            IF(TRIM(KT_TYPE) .eq. 'GHD') CALL ADJUST_EPS_GHD
+            CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER)
+            goto( 1000 ), IER_MANAGER(IER)
+         ENDIF  ! endif (mmax >0)
       ENDIF  ! end if (.not.discrete_element)
 
 
@@ -335,8 +286,8 @@
 ! solved
       IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
          DES_CONTINUUM_HYBRID) THEN
-        IF (MMAX > 0 .AND. .NOT.FRICTION) &
-           CALL CALC_P_STAR (EP_G, P_STAR, IER)
+         IF (MMAX > 0 .AND. .NOT.FRICTION) &
+            CALL CALC_P_STAR (EP_G, P_STAR, IER)
       ENDIF
 
 ! Calculate the face values of densities.
@@ -346,22 +297,12 @@
 ! Solve fluid pressure correction equation
          CALL SOLVE_PP_G (NORMG, RESG, IER) 
 ! Correct pressure, velocities, and density
-         CALL CORRECT_0 (IER) 
+         CALL CORRECT_0 (IER)
       ENDIF
-     
-! Recalculate gas phase density.
-      IF (RO_G0 == UNDEFINED) THEN
-         CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF,  &
-            GRAN_DISS, DRAGCOEF, HEAT_TR, WALL_TR, IER)
-         DENSITY(0) = .TRUE.
-         CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
-         IF (Neg_RHO_G) THEN
-            MUSTIT = 2; lErrMsg = 1
-            Neg_RHO_G = .FALSE.
-            IF(DT/=UNDEFINED) GOTO 1000  
-         ENDIF 
-      ENDIF 
 
+! Recalculate gas phase density.
+      CALL PHYSICAL_PROP(IER, 0)
+      goto( 1000 ), IER_MANAGER(IER)
 
 ! Update wall velocities: 
 ! modified by sof to force wall functions so even when NSW or FSW are 
@@ -379,39 +320,20 @@
 ! Solve energy equations
       IF (ENERGY_EQ) THEN
          CALL SOLVE_ENERGY_EQ (IER) 
-! If the linear solver diverges, flag the error and reduce time-step
-! to prevent unphysical values from propogating.
-         IF(IER == -100) THEN
-            MUSTIT = 2; lErrMsg = 4
-            IF(DT/=UNDEFINED)GO TO 1000
-         ENDIF
+         goto( 1000 ), IER_MANAGER(IER)
       ENDIF
 
 ! Solve granular energy equation
-      IF(.NOT.DISCRETE_ELEMENT .OR. &
-         DES_CONTINUUM_HYBRID) THEN
-         IER = 0
-         IF (GRANULAR_ENERGY) CALL SOLVE_GRANULAR_ENERGY (IER) 
-         ABORT_IER = IER.eq.1
-         CALL GLOBAL_ALL_OR(ABORT_IER)
-         IF (ABORT_IER) THEN
-            IER = 1
-            MUSTIT = 2                              !indicates divergence 
-            IF(DT/=UNDEFINED) GOTO 1000 
+      IF (GRANULAR_ENERGY) THEN
+         IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+            CALL SOLVE_GRANULAR_ENERGY (IER) 
+            goto( 1000 ), IER_MANAGER(IER)
          ENDIF
       ENDIF
       
-
-! Solve species mass balance equations (constant solid density)
-      IF(.NOT.SOLID_RO_V) THEN
-         CALL SOLVE_SPECIES_EQ (IER)
-! If the linear solver diverges, flag the error and reduce time-step
-! to prevent unphysical values from propogating.
-         IF(IER == -100) THEN
-            MUSTIT = 2; lErrMsg = 3
-            IF(DT/=UNDEFINED)GO TO 1000
-         ENDIF
-      ENDIF
+! Solve species mass balance equations.
+      CALL SOLVE_SPECIES_EQ (IER)
+      goto( 1000 ), IER_MANAGER(IER)
 
 ! Solve other scalar transport equations
       IF(NScalar /= 0) CALL SOLVE_Scalar_EQ (IER) 
@@ -452,7 +374,7 @@
          IF (DT==UNDEFINED .AND. NIT==1) GOTO 50   !Iterations converged 
 
 ! Perform checks and dump to screen every NLOG time steps
-         IF (MOD(NSTEP,NLOG) == 0) THEN 
+         IF (MOD(NSTEP,NLOG) == 0) THEN
             CALL CPU_TIME (CPU_NOW)
             CPUOS = (CPU_NOW - CPU_NLOG)/(TIME - TIME_NLOG) 
             CPU_NLOG = CPU_NOW 
@@ -541,18 +463,6 @@
             CALL START_LOG 
             CALL CALC_RESID_MB(1, errorpercent)
 
-            IF(lErrMsg == 1) THEN
-               lMsg = 'Negative gas density detected'
-            ELSEIF(lErrMsg == 2) THEN
-               lMsg = 'Negative void fraction detected'
-            ELSEIF(lErrMsg == 3) THEN
-               lMsg = 'Species Equation diverged'
-            ELSEIF(lErrMsg == 4) THEN
-               lMsg = 'Energy Equation diverged'
-            ELSE
-               lMsg = 'Run diverged/stalled'
-            ENDIF
-
             IF(DMP_LOG) WRITE(UNIT_LOG,5200) TIME, DT, NIT, &
                errorpercent(0), trim(adjustl(lMsg))
             CALL END_LOG 
@@ -612,6 +522,107 @@
  5200 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',&
       I3,'MbErr%=', G10.4, ': ',A,' :-(') 
  6000 FORMAT(1X,A) 
+
+
+      contains
+
+!----------------------------------------------------------------------!
+! Function: IER_Manager                                                !
+!                                                                      !
+! Purpose: Identify and account for errors from called subroutines.    !
+!                                                                      !
+! Reserved Error Blocks:                                               !
+!                                                                      !
+! [ 100,  109]: PHYSICAL_PROP                                          !
+! [ 110,  119]: CALC_VOL_FR                                            !
+! [ 120,  129]: SOLVE_ENERGY_EQ                                        !
+! [ 130,  139]: SOLVE_SPECIES_EQ                                       !
+! [ 140,  149]: SOLVE_GRANULAR_ENERGY                                  !
+!                                                                      !
+!----------------------------------------------------------------------!
+      INTEGER FUNCTION IER_MANAGER(lErr)
+
+      INTEGER, intent(in) :: lErr
+
+! Default case: do nothing.
+      IF(IER < 100) THEN
+         IER_MANAGER = 0
+         return
+
+
+! Errors reported from PHYSICAL_PROP
+!```````````````````````````````````````````````````````````````````````
+      ELSEIF(IER <  110) THEN
+         IF(IER ==  100) THEN
+            lMsg = 'Negative gas density detected'
+            MUSTIT = 2
+         ELSE
+            lMsg = 'UCE in PHYSICAL_PROP'
+            MUSTIT = 2
+         ENDIF
+
+
+! Errors reported from CALC_VOL_FR
+!```````````````````````````````````````````````````````````````````````
+      ELSEIF(IER <  120) THEN
+         IF(IER ==  110) THEN
+            lMsg = 'Negative void fraction detected'
+            MUSTIT = 2
+         ELSE
+            lMsg = 'UCE in CALC_VOL_FR'
+            MUSTIT = 2
+         ENDIF
+
+
+! Errors reported from SOLVE_ENERGY_EQ
+!```````````````````````````````````````````````````````````````````````
+      ELSEIF(IER <  130) THEN
+         IF(IER ==  120) THEN
+            lMsg = 'Energy Equation diverged'
+            MUSTIT = 2
+         ELSE
+            lMsg = 'UCE in SOLVE_ENERGY_EQ'
+            MUSTIT = 2
+         ENDIF
+
+
+! Errors reported from SOLVE_SPECIES_EQ
+!```````````````````````````````````````````````````````````````````````
+      ELSEIF(IER <  140) THEN
+         IF(IER ==  130) THEN
+            lMsg = 'Species Equation diverged'
+            MUSTIT = 2
+         ELSE
+            lMsg = 'UCE in SOLVE_SPECIES_EQ'
+            MUSTIT = 2
+         ENDIF
+
+
+! Errors reported from SOLVE_GRANULAR_ENERGY
+!```````````````````````````````````````````````````````````````````````
+      ELSEIF(IER <  150) THEN
+         IF(IER ==  140) THEN
+            lMsg = 'Granular Energy Eq diverged'
+            MUSTIT = 2
+         ELSE
+            lMsg = 'UCE in SOLVE_GRANULAR_ENERGY'
+            MUSTIT = 2
+         ENDIF
+
+! Unclassified Errors
+!```````````````````````````````````````````````````````````````````````
+      ELSE
+         lMsg = 'Run diverged/stalled with UCE'
+
+      ENDIF
+
+
+      IF(DT == UNDEFINED) IER_MANAGER = 0
+
+      return
+      END FUNCTION IER_MANAGER
+
+
 
       END SUBROUTINE ITERATE 
 
@@ -779,7 +790,8 @@
 
 5400 FORMAT(/1X,70('*')//' From: GoalSeekMassFlux',/&
       ' Message: Number of outer iterations exceeded ', I4,/1X,70('*')/) 
-5500  Format('  Time=', G12.5, ' MassFluxIterations=', I4, ' DelP=', G12.5, ' Gas Flux=', G12.5)
+5500  Format('  Time=', G12.5, ' MassFluxIterations=', I4, ' DelP=', &
+      G12.5, ' Gas Flux=', G12.5)
     
       END SUBROUTINE GoalSeekMassFlux
  

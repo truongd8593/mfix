@@ -71,8 +71,13 @@
 ! tmp array to pass to set_chi
       DOUBLE PRECISION :: X_s_temp(DIMENSION_3, DIMENSION_N_s) 
 
-! Local/Global error flags.
-      LOGICAL :: lDiverged, gDiverged
+! Arrays for storing errors:
+! 130 - Gas phase species equation diverged
+! 131 - Solids phase species equation diverged
+! 13x - Unclassified
+      INTEGER :: Err_l(0:numPEs-1)  ! local
+      INTEGER :: Err_g(0:numPEs-1)  ! global
+
 
       DOUBLE PRECISION EP_SS_L_TOT
 ! temporary use of global arrays:
@@ -105,12 +110,12 @@
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
-! Initialize error flag.
-      lDiverged = .FALSE.
-     
       call lock_ambm       ! locks arrys a_m and b_m
       call lock_tmp_array  ! locks array1,array2,array3,array4
                            ! (locally s_p, s_c, eps, vxgama) 
+
+! Initialize error flag.
+      Err_l = 0
 
 ! Fluid phase species mass balance equations
 ! ---------------------------------------------------------------->>>
@@ -175,7 +180,8 @@
                LEQI, LEQM, LEQ_SWEEP(7), LEQ_TOL(7), LEQ_PC(7), IER) 
 
 ! Check for linear solver divergence.
-            IF(ier == -2) lDiverged = .TRUE.
+               IF(ier == -2) Err_l(myPE) = 130
+
             CALL BOUND_X (X_G(1,LN), IJKMAX2, IER) 
 
          ENDDO    ! end do loop (ln = 1, nmax(0)
@@ -262,7 +268,7 @@
                   LEQI, LEQM, LEQ_SWEEP(7), LEQ_TOL(7), LEQ_PC(7), IER) 
 
 ! Check for linear solver divergence.
-               IF(ier == -2) lDiverged = .TRUE.
+               IF(ier == -2) Err_l(myPE) = 131
 
                CALL BOUND_X (X_S(1,M,LN), IJKMAX2, IER) 
 !               call out_array(X_s(1,m,LN), 'X_s')
@@ -301,16 +307,16 @@
 ! end solids phases species equations      
 ! ----------------------------------------------------------------<<<
       
+      call unlock_ambm
+      call unlock_tmp_array
+
 
 ! If the linear solver diverged, species mass fractions may take on
 ! unphysical values. To prevent them from propogating through the domain
 ! or causing failure in other routines, force an exit from iterate and
 ! reduce the time step.
-      CALL GLOBAL_ALL_OR(lDiverged, gDiverged)
-      if(gDiverged) IER = -100
-
-      call unlock_ambm
-      call unlock_tmp_array
+      CALL global_all_sum(Err_l, Err_g)
+      IER = maxval(Err_g)
 
       RETURN  
       END SUBROUTINE SOLVE_SPECIES_EQ 

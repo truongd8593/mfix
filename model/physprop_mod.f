@@ -52,13 +52,13 @@
 !
 !                      Particle densities
       DOUBLE PRECISION RO_s  (DIM_M)
-!QX:                   Field densities (solids density at IJK for phase M)
+!                      Field densities (solids density at IJK for phase M)
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: RO_SV
 !                      Previous-time-step value of local density of solid phase
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: RO_SVo
 !                      Previous-time value of local density of solid phase
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: RO_SVo2
-!end
+!   
 !
 !                      Specified constant solids viscosity
       DOUBLE PRECISION MU_s0
@@ -140,21 +140,39 @@
 !                      Molecular weight of solids species
       DOUBLE PRECISION MW_s (DIM_M, DIM_N_s)
 !
-!QX
 !                      Density of solid species
       DOUBLE PRECISION RO_SS (DIM_M, DIM_N_s)
 !
 !                      Molecular weight of gas mixture
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MW_MIX_g 
 !
-!                      Coefficients for high and low temperature ranges, heat of formation at T_ref K
+! Coefficients for high and low temperature ranges, heat of formation at T_ref K
 !                      and the temperature ranges for calculating thermochemical properties
       LOGICAL :: DATABASE_READ = .FALSE.
-      DOUBLE PRECISION Ahigh_g(7, DIM_N_g), Alow_g(7, DIM_N_g), HfrefoR_g(DIM_N_g)
-      DOUBLE PRECISION Thigh_g(DIM_N_g), Tlow_g(DIM_N_g), Tcom_g(DIM_N_g), IC_PGrefoR(DIM_N_g)
-      DOUBLE PRECISION Ahigh_s(7, DIM_M, DIM_N_s), Alow_s(7, DIM_M, DIM_N_s), HfrefoR_s(DIM_M, DIM_N_s)
-      DOUBLE PRECISION Thigh_s(DIM_M, DIM_N_s), Tlow_s(DIM_M, DIM_N_s), Tcom_s(DIM_M, DIM_N_s)
-      DOUBLE PRECISION IC_PsrefoR(DIM_M, DIM_N_s)
+
+
+! Polynomical coefficients for calculating specific heat.
+      DOUBLE PRECISION Alow (7,0:DIM_M, DIM_N) ! Tlow --> Tcom
+      DOUBLE PRECISION Ahigh(7,0:DIM_M, DIM_N) ! Tcom --> Thigh
+
+! Range where the polynomials are valid.
+      DOUBLE PRECISION Thigh(0:DIM_M, DIM_N) ! Upper bound
+      DOUBLE PRECISION Tlow (0:DIM_M, DIM_N) ! Lower bound
+      DOUBLE PRECISION Tcom (0:DIM_M, DIM_N) ! Switch from low to high
+
+! Heat of formation at Tref divided by the gas constant.
+      DOUBLE PRECISION HfrefoR(0:DIM_M, DIM_N)
+! Reference
+      DOUBLE PRECISION ICpoR_l(0:DIM_M, DIM_N)
+      DOUBLE PRECISION ICpoR_h(0:DIM_M, DIM_N)
+
+
+
+!      DOUBLE PRECISION Ahigh_g(7, DIM_N_g), Alow_g(7, DIM_N_g), HfrefoR_g(DIM_N_g)
+!      DOUBLE PRECISION Thigh_g(DIM_N_g), Tlow_g(DIM_N_g), Tcom_g(DIM_N_g), IC_PGrefoR(DIM_N_g)
+!      DOUBLE PRECISION Ahigh_s(7, DIM_M, DIM_N_s), Alow_s(7, DIM_M, DIM_N_s), HfrefoR_s(DIM_M, DIM_N_s)
+!      DOUBLE PRECISION Thigh_s(DIM_M, DIM_N_s), Tlow_s(DIM_M, DIM_N_s), Tcom_s(DIM_M, DIM_N_s)
+!      DOUBLE PRECISION IC_PsrefoR(DIM_M, DIM_N_s)
  
  
 !!!HPF$ align MU_g(:) with TT(:)

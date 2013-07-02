@@ -64,7 +64,18 @@
 
 ! External function. Integrates the temperature-dependent specific 
 ! heat from zero to Tref.
-      DOUBLE PRECISION, EXTERNAL ::calc_ICpoR
+      DOUBLE PRECISION, EXTERNAL :: calc_ICpoR
+      DOUBLE PRECISION, EXTERNAL :: DES_calc_ICpoR
+! Tcom +/- SMALL_NUMBER: This is done so that the specific heat poly-
+! nomail can be evaluate at Tcom with the high and low coefficients.
+      DOUBLE PRECISION :: xTc
+
+! Various integrations of the specific heat polynomials:
+      DOUBLE PRECISION :: ICpoR_TrL  ! 0.0 --> Tref using Alow
+      DOUBLE PRECISION :: ICpoR_TcL  ! 0.0 --> Tcom using Alow
+      DOUBLE PRECISION :: ICpoR_TcH  ! 0.0 --> Tcom using Ahigh
+
+      LOGICAL :: testCp = .FALSE.
 
 ! Initialize the file unit to be used.
       FUNIT = UNIT_DAT  ! .dat file unit
@@ -110,55 +121,47 @@
          IER = 0
 
          IF(MODEL == "TFM") THEN
-! Get gas phase species data.
-            IF(lM == 0) THEN
+            CALL READ_THERM(FUNIT, lName, Thigh(lM,lN), Tlow(lM,lN),&
+               Tcom(lM,lN), dbMW, Ahigh(:,lM,lN), Alow(:,lM,lN),    &
+               HfrefoR(lM,lN), IER)
 
-               CALL READ_THERM(FUNIT, lName, Thigh_g(lN), Tlow_g(lN),  &
-                  Tcom_g(lN), dbMW, Ahigh_g(:,lN), Alow_g(:,lN),       &
-                  HfrefoR_g(lN), IER)
-
-            	  IF(IER == 0)THEN
+            IF(IER == 0) THEN
 ! If the user did not supply a value for the gas phase molecular weight
 ! in the mfix.dat file, use the value from the database.
-                  IF(lMW == UNDEFINED) lMW = dbMW
+               IF(lMW == UNDEFINED) lMW = dbMW
 ! There are a number of species with Tlow as 300, for which the
 ! following calculation will produce an error because T_ref = 298.  So
 ! slightly extend validity of the correaltion.
-                  IF(ABS(Tlow_g(lN)-T_ref)<=2.0D0 .AND. &
-                     Tlow_g(lN) > T_ref) Tlow_g(lN) = T_ref
-! Calculate the integral of specific heat from zero to Tref.
-                  IC_PgrefoR(lN) = calc_ICpoR(T_ref, Thigh_g(lN),      &
-                     Tlow_g(lN), Tcom_g(lN), Ahigh_g(:,lN),Alow_g(:,lN))
-               ENDIF
+               IF(ABS(Tlow(lM,lN)-T_ref)<=2.0D0 .AND. &
+                  Tlow(lM,lN) > T_ref) Tlow(lM,lN) = T_ref
 
-! Get solids phase species data.
-            ELSE
-! Read the database.
-               CALL READ_THERM(FUNIT, lName, Thigh_s(lM,lN),           &
-                  Tlow_s(lM,lN), Tcom_s(lM,lN), dbMW, Ahigh_s(:,lM,lN),&
-                  Alow_s(:,lM,lN), HfrefoR_s(lM,lN), IER)
-            	  IF(IER == 0)THEN
-! If the user did not supply a value for the gas phase molecular weight
-! in the mfix.dat file, use the value from the database.
-                  IF(lMW == UNDEFINED) lMW = dbMW
-! There are a number of species with Tlow as 300, for which the
-! following calculation will produce an error because T_ref = 298.  So
-! slightly extend validity of the correaltion.
-                  IF(abs(Tlow_s(lM,lN)-T_ref)<=2.0D0 .AND. &
-                     Tlow_s(lM,lN) > T_ref) Tlow_s(lM,lN) = T_ref
-! Calculate the integral of specific heat from zero to Tref.
-                  IC_PsrefoR(lM,lN) = calc_ICpoR(T_ref, Thigh_s(lM,lN),&
-                     Tlow_s(lM,lN), Tcom_s(lM,lN), Ahigh_s(:,lM,lN),&
-                     Alow_s(:,lM,lN))
-               ENDIF
+! Initialize the reference integrals.
+               ICpoR_l(lM,lN) = ZERO
+               ICpoR_h(lM,lN) = ZERO
+
+! Calculate the integral of specific heat from zero to Tref using the
+! Alow coefficients.
+               ICpoR_TrL = calc_ICpoR(T_ref, lM, lN, IER)
+! Calculate the integral of specific heat from zero to Tcom using the 
+! Alow coefficients.
+               xTc = Tcom(lM,lN)-SMALL_NUMBER
+               ICpoR_TcL = calc_ICpoR(xTc, lM, lN, IER)
+! Calculate the integral of specific heat from zero to Tcom using the 
+! Ahigh coefficients.
+               xTc = Tcom(lM,lN)+SMALL_NUMBER
+               ICpoR_TcH = calc_ICpoR(xTc, lM, lN, IER)
+
+! Store the integrals in global variables.
+               ICpoR_l(lM,lN) = ICpoR_TrL
+               ICpoR_h(lM,lN) = ICpoR_TcL - ICpoR_TcH - ICpoR_TrL
             ENDIF
 ! Get DEM solids phase species data.
          ELSEIF(MODEL == "DEM") THEN
 ! Read the database.
-            CALL Read_Therm(FUNIT, lName, DES_Thigh_s(lM,lN),          &
-               DES_Tlow_s(lM,lN), DES_Tcom_s(lM,lN), dbMW,             &
-               DES_Ahigh_s(1,lM,lN), DES_Alow_s(1,lM,lN),              &
-               DES_HfrefoR_s(lM,lN), IER)
+            CALL Read_Therm(FUNIT, lName, DES_Thigh(lM,lN),            &
+               DES_Tlow(lM,lN), DES_Tcom(lM,lN), dbMW,                 &
+               DES_Ahigh(1,lM,lN), DES_Alow(1,lM,lN),                  &
+               DES_HfrefoR(lM,lN), IER)
             IF(IER == 0)THEN
 ! If the user did not supply a value for the solids phase molecular
 ! weight of species in the mfix.dat file, use the value from the database.
@@ -166,14 +169,33 @@
 ! There are a number of species with Tlow as 300, for which the
 ! following calculation will produce an error because T_ref = 298.  So
 ! slightly extend validity of the correaltion.
-               IF( abs(DES_Tlow_s(lM,lN)-T_ref) <= 2.0D0 .AND.         &
-                  DES_Tlow_s(lM,lN) > T_ref )                          &
-                  DES_Tlow_s(lM,lN) = T_ref
-! Calculate and store DES_C_PSoR at ref tempature
-               DES_IC_PSrefoR(lM,lN) = calc_ICpoR(T_ref,               &
-                  DES_Thigh_s(lM,lN), DES_Tlow_s(lM,lN),               &
-                  DES_Tcom_s(lM,lN), DES_Ahigh_s(1,lM,lN),             &
-                  DES_Alow_s(1,lM,lN))
+               IF( abs(DES_Tlow(lM,lN)-T_ref) <= 2.0D0 .AND.           &
+                  DES_Tlow(lM,lN) > T_ref )                            &
+                  DES_Tlow(lM,lN) = T_ref
+
+! Initialize the reference integrals.
+               DES_ICpoR_l(lM,lN) = ZERO
+               DES_ICpoR_h(lM,lN) = ZERO
+
+! Calculate the integral of specific heat from zero to Tref using the
+! Alow coefficients.
+               ICpoR_TrL = DES_calc_ICpoR(T_ref, lM, lN, IER)
+! Calculate the integral of specific heat from zero to Tcom using the 
+! Alow coefficients.
+               xTc = DES_Tcom(lM,lN)-SMALL_NUMBER
+               ICpoR_TcL = DES_calc_ICpoR(xTc, lM, lN, IER)
+! Calculate the integral of specific heat from zero to Tcom using the 
+! Ahigh coefficients.
+               xTc = DES_Tcom(lM,lN)+SMALL_NUMBER
+               ICpoR_TcH = DES_calc_ICpoR(xTc, lM, lN, IER)
+
+! Store the integrals in global variables.
+               DES_ICpoR_l(lM,lN) = ICpoR_TrL
+               DES_ICpoR_h(lM,lN) = ICpoR_TcL - ICpoR_TcH - ICpoR_TrL
+
+
+
+
             ENDIF
          ELSE
 ! No other models have been set to use the thermochemical database.
@@ -191,6 +213,8 @@
                WRITE(UNIT_LOG,1001) 'Found!'
             ENDIF
             ErrorFlag = .FALSE.
+
+            if(testCP) CALL writeCp(MODEL, lM, lN, lName, lMW)
             EXIT
         ELSEIF(myPE == PE_IO) THEN
             WRITE(*,1001) 'Not found.'
@@ -325,3 +349,91 @@
          ' species ',I3,'.',/' Check mfix.dat.',/1X,70('*')/)
 
       END SUBROUTINE READ_DATABASE0
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: read_database(Ier)                                     C
+!  Purpose: read thermochemical database                               C
+!                                                                      C
+!  Author: M. Syamlal                                 Date: 21-OCT-05  C
+!                                                                      C
+!  Modification 1: J. Musser                          Date: 02-May-11  C
+!  Purpose: Provided support for DEM access to database.               C
+!                                                                      C
+!  Modification 2: J. Musser                          Date: 02-Oct-12  C
+!  Purpose: Calls to READ_DATABASE were moved to CHECK_DATA_04/05      C
+!  duing input data integrity checks for the gas and solids phases.    C
+!  Rather than looping through all species for each phase, the model   C
+!  (TFM/DEM), phase index, species index, species name, and molecular  C
+!  weight are passed as dummy arguments so that only infomration for   C
+!  referenced species (lName) is obtained.                             C                             C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE writeCp(MODEL, lM, lN, lName, lMW)
+
+
+      USE physprop
+      USE compar
+
+! Universal gas constant in cal/mol.K
+      use constant, only: RGAS => GAS_CONST_cal
+
+      IMPLICIT NONE
+
+! Indicates the model. TFM, DEM
+      CHARACTER(len=*), INTENT(IN) :: MODEL
+
+! Phase and species indices
+      INTEGER, INTENT(IN) :: lM, lN
+! Species name from data file.
+      CHARACTER(len=*), INTENT(IN) :: lName
+! Species molecular weight from the data file (if any)
+      DOUBLE PRECISION, INTENT(in) :: lMW
+
+      INTEGER :: IER1, IER2, lc
+
+      DOUBLE PRECISION :: T
+      DOUBLE PRECISION :: lCP, lICP
+
+      DOUBLE PRECISION, EXTERNAL :: calc_CpoR
+      DOUBLE PRECISION, EXTERNAL :: calc_ICpoR
+
+
+      IF(MODEL == "DEM") return
+
+
+      write(*,"(2/,3x,'Specific Heat report for ',A)")trim(lName)
+
+      write(*,"(/12x,'Low',9x,'High')")
+      write(*,"(6x,'T',3x,g11.5,2x,g11.5)") Tlow(lM,lN), Thigh(lM,lN)
+      DO lc=1,5
+         write(*,"(4x,'A(',I1,')',2(2x,g11.5))") lc, &
+            Alow(lc,lM,lN), Ahigh(lc,lM,lN)
+      ENDDO
+      write(*,"('')")
+      write(*,"(5x,'Tcom: ',g11.5)")Tcom(lM,lN)
+      write(*,"('')")
+
+      write(*,"(5x,'Temperature',8x,'Cp',11x,'ICp')")
+
+      T = 300
+      DO WHILE(T <= Thigh(lM,lN))
+
+         IER1 = 0
+         IER2 = 0
+
+         write(*,"(7x,g11.5,$)") T
+         lCP  = calc_CpoR(T, lM, lN, IER1) * RGAS / lMW
+         lICP = calc_ICpoR(T, lM, lN, IER2) * RGAS / lMW
+         write(*,"(2(3x,g11.5),$)")lCP, lICP
+
+         IF(IER1 /= 0) write(*,"(3x,'Cp Error!',$)")
+         IF(IER2 /= 0) write(*,"(3x,'ICp Error!',$)")
+         write(*,"('')")
+
+         T = T + 100.0
+      ENDDO
+
+      write(*,"('')")
+      END SUBROUTINE writeCp

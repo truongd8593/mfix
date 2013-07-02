@@ -19,75 +19,54 @@
 !  Local variables: None                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE TRANSPORT_PROP(IER)
 
-      SUBROUTINE TRANSPORT_PROP(VISC, COND, DIFF, GRAN_DISS, IER) 
+! Global Variables:
+!----------------------------------------------------------------------
+! Number of solids phases.
+      use physprop, only: MMAX
+! Flags for calculating viscosity.
+      use coeff, only: VISC
+! Flags for calculating conductivity.
+      use coeff, only: COND
+! Flags for calculating diffusivity.
+      use coeff, only: DIFF
+! Flags for calculating particle-particle energy dissipation.
+      use coeff, only: GRAN_DISS
+! Kinetic theory model.
+      use run, only: KT_TYPE
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE fldvar
-      USE physprop
-      USE geometry
-      USE indices
-      USE run
-      USE toleranc 
-      USE compar
-      USE discretelement
-      IMPLICIT NONE
-!-----------------------------------------------
+      implicit none
+
 ! Dummy arguments
-!-----------------------------------------------
-! Flags to tell whether to calculate or not
-      LOGICAL, INTENT(IN) ::  VISC(0:DIMENSION_M), &
-                              COND(0:DIMENSION_M), &
-                              DIFF(0:DIMENSION_M)
-! Flags to tell whether to calculate or not
-      LOGICAL, INTENT(IN) :: GRAN_DISS(0:DIMENSION_M)
+!-----------------------------------------------------------------------
 !  Error index
-      INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+      INTEGER, intent(inout) :: IER
+
 ! Local variables
-!-----------------------------------------------
-! Phase index
-      INTEGER :: M                
-!-----------------------------------------------
+!-----------------------------------------------------------------------
+! Loop counter
+      INTEGER :: M ! Solids phase
 
-! Fluid viscosity
-      IF (VISC(0)) CALL CALC_MU_G (IER) 
 
-! Fluid conductivity
-      IF (COND(0)) CALL CALC_K_G (IER) 
+      IF (VISC(0)) CALL CALC_MU_G (IER)    ! Fluid viscosity
+      IF (COND(0)) CALL CALC_K_G (IER)     ! Fluid conductivity
+      IF (DIFF(0)) CALL CALC_DIF_G (IER)   ! Fluid diffusivity
 
-! Fluid diffusivity
-      IF (DIFF(0)) CALL CALC_DIF_G (IER) 
-
-! note that the code could be changed so that the logical flags
-! directing this routine are appropriately set for the discrete_element
-! case
-      IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
-         DO M = 1, MMAX 
-! Solids conductivity
-            IF (COND(M)) CALL CALC_K_S (M, IER) 
-
-! Solids viscosity
-            IF (VISC(M)) CALL CALC_MU_S (M, IER) 
-
-! Solids diffusivity
-            IF (DIFF(M)) CALL CALC_DIF_S (M, IER) 
+      DO M = 1, MMAX
+         IF (COND(M)) CALL CALC_K_S (M, IER)   ! Solids conductivity
+         IF (VISC(M)) CALL CALC_MU_S (M, IER)  ! Solids viscosity
+         IF (DIFF(M)) CALL CALC_DIF_S (M, IER) ! Solids diffusivity
 
 ! Particle-Particle Energy Dissipation
-            IF (GRAN_DISS(M)) THEN
-               IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
-                  CALL CALC_IA_NONEP_ENERGY_DISSIPATION_SS(M, IER)
-               ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
-                  CALL CALC_GD_99_ENERGY_DISSIPATION_SS(M, IER)
-               ENDIF
+         IF (GRAN_DISS(M)) THEN
+            IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
+               CALL CALC_IA_NONEP_ENERGY_DISSIPATION_SS(M, IER)
+            ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
+               CALL CALC_GD_99_ENERGY_DISSIPATION_SS(M, IER)
             ENDIF
-         ENDDO   ! end do (m=1,mmax)
-      ENDIF   ! end if (.not.discrete_element .or des_continuum_hybrid)
-      
-      RETURN  
-      END SUBROUTINE TRANSPORT_PROP 
+         ENDIF
+      ENDDO
 
+      RETURN  
+      END SUBROUTINE TRANSPORT_PROP

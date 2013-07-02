@@ -184,18 +184,39 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE ODEPACK_INIT
 
-      use physprop,       only : MMAX, NMAX
-      use run,            only : SOLID_RO_V, SPECIES_EQ
-      use stiff_chem_dbg, only : INIT_ODE_STATS0
+! Global Variables:
+!---------------------------------------------------------------------//
+      use physprop, only: MMAX
+      use physprop, only: NMAX
 
-      use stiff_chem
+      use run, only: SPECIES_EQ
+
+      use stiff_chem, only: NEQ_DIMN
+      use stiff_chem, only: ODE_DIMN_g
+      use stiff_chem, only: ODE_DIMN_all
+
+      use stiff_chem, only: ODE_ITOL
+      use stiff_chem, only: ODE_RTOL
+      use stiff_chem, only: ODE_ATOL
+
+      use stiff_chem, only: ODE_LRW
+      use stiff_chem, only: ODE_LIW
+      use stiff_chem, only: ODE_JT
+
+      use stiff_chem, only: VARIABLE_DENSITY
+
+      use stiff_chem_dbg, only: ALLOCATE_STIFF_CHEM_DBG
+      use stiff_chem_stats, only: ALLOCATE_STIFF_CHEM_STATS
 
       implicit none
 
+
+! Local Variables:
+!---------------------------------------------------------------------//
       INTEGER :: LRN, LRS
       INTEGER :: M, N_VAR
 
-
+! Number of ODEs (maximum)
       NEQ_DIMN = 2 + MMAX
 
 ! Dimension of ODEs solved if only the gas phase is present:
@@ -203,7 +224,6 @@
       ODE_DIMN_g = 2 + NMAX(0)
 ! Solids temperature excluding for all phases.
       ODE_DIMN_g = ODE_DIMN_g + MMAX
-
 
 ! Calculate the total number of ODEs that are solve.
       ODE_DIMN_all = ODE_DIMN_g
@@ -233,8 +253,10 @@
 ! Jacobian type indicator.
       ODE_JT = 2 ! Internally generated.
 
-!
-      CALL INIT_ODE_STATS0(ODE_DIMN_all)
+      VARIABLE_DENSITY = .FALSE.
+
+      CALL ALLOCATE_STIFF_CHEM_DBG(ODE_DIMN_all)
+      CALL ALLOCATE_STIFF_CHEM_STATS
 
       return
       END SUBROUTINE ODEPACK_INIT

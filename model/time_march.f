@@ -81,6 +81,7 @@
       USE dashboard
       USE indices
       USE bc
+      USE coeff
       USE stiff_chem, only : STIFF_CHEMISTRY, STIFF_CHEM_SOLVER
 
       IMPLICIT NONE
@@ -130,18 +131,6 @@
 ! not used remove after verification
       INTEGER :: CHKBATCHQ_FLAG
       LOGICAL :: bWrite_netCDF_files
-
-! Calculation Flags:                                       Used By:
-      LOGICAL :: DENSITY(0:DIMENSION_M)                ! PHYSICAL_PROP
-      LOGICAL :: PSIZE(0:DIMENSION_M)                  ! PHYSICAL_PROP
-      LOGICAL :: SP_HEAT(0:DIMENSION_M)                ! PHYSICAL_PROP
-      LOGICAL :: VISC(0:DIMENSION_M)                   ! TRANSPORT_PROP
-      LOGICAL :: COND(0:DIMENSION_M)                   ! TRANSPORT_PROP
-      LOGICAL :: DIFF(0:DIMENSION_M)                   ! TRANSPORT_PROP
-      LOGICAL :: GRAN_DISS(0:DIMENSION_M)              ! TRANSPORT_PROP
-      LOGICAL :: DRAGCOEF(0:DIMENSION_M,0:DIMENSION_M) ! EXCHANGE
-      LOGICAL :: HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M) ! EXCHANGE
-      LOGICAL :: WALL_TR                               ! EXCHANGE
 
 !-----------------------------------------------
 ! External functions
@@ -240,39 +229,14 @@
      
       CALL RRATES_INIT(IER)
 
+! Calculate all the coefficients once before entering the time loop
+      CALL INIT_COEFF(IER)
+      IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_COUPLED) &
+         CALL CALC_COEFF(IER, 2)
+
       DO M=1, MMAX 
          CALL ZERO_ARRAY (F_gs(1,M), IER)
       ENDDO
-
-! Calculate all the coefficients once before entering the time loop
-      IF(DISCRETE_ELEMENT.AND.(.NOT.DES_CONTINUUM_COUPLED)) THEN
-! Calculate coefficients.  Everything but chemical reactions.
-      ELSEIF(TRIM(KT_TYPE) == UNDEFINED_C) THEN
-         CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
-            GRAN_DISS, DRAGCOEF, HEAT_TR, WALL_TR, IER)
-
-         IF (Call_DQMOM) PSIZE(1:SMAX)=.TRUE.
-         IF (RO_G0 == UNDEFINED) DENSITY(0) = .TRUE. 
-         WALL_TR = .TRUE. 
-         IF (ENERGY_EQ) THEN 
-            SP_HEAT(:SMAX) = .TRUE. 
-            COND(:SMAX) = .TRUE. 
-            HEAT_TR(:SMAX,:SMAX) = .TRUE. 
-         ENDIF 
-         IF(ANY_SPECIES_EQ) DIFF(:SMAX) = .TRUE.
-         DRAGCOEF(:MMAX,:MMAX) = .TRUE. 
-         VISC(0) = .TRUE. 
-         VISC(1:MMAX) = .TRUE. 
-
-         IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP' .OR. &
-             TRIM(KT_TYPE) .EQ. 'GD_99') THEN
-            GRAN_DISS(:MMAX) = .TRUE.
-         ENDIF
-
-         CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER)
-         CALL TRANSPORT_PROP (VISC, COND, DIFF, GRAN_DISS, IER) 
-         CALL EXCHANGE (DRAGCOEF, HEAT_TR, WALL_TR, IER) 
-      ENDIF
      
 ! Remove undefined values at wall cells for scalars
       CALL UNDEF_2_0 (ROP_G, IER) 

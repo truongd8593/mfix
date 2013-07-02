@@ -25,7 +25,8 @@
       ENDIF
  
  !      Call Read_Therm(PATH, 'N2', Thigh, Tlow, Tcom, Ahigh, Alow, Hf298oR)
-      Call Read_Therm(funit, SPECIES, Thigh, Tlow, Tcom, MW, Ahigh, Alow, Hf298oR, IER)
+      Call Read_Therm(funit, SPECIES, Thigh, Tlow, Tcom, MW, Ahigh, &
+         Alow, Hf298oR, IER)
       IF(IER /= 0) GOTO 200
       
       print *, SPECIES
@@ -45,10 +46,12 @@
       print *, Cp1, h1, h2
       CLOSE(UNIT=funit)
       STOP
-200   PRINT *, 'READ_Therm_tester: Species ', TRIM(SPECIES), ' not found in Database!'
+200   PRINT *, 'READ_Therm_tester: Species ', &
+         TRIM(SPECIES), ' not found in Database!'
       STOP
 500   PRINT *, 'READ_Therm_tester: Cannot Open file ', TRIM(THERM), '!'
-      PRINT *, 'Check path or copy mfix/model/thermochemical/', TRIM(THERM), ' into run directory'
+      PRINT *, 'Check path or copy mfix/model/thermochemical/', &
+         TRIM(THERM), ' into run directory'
       STOP       
       END Subroutine READ_Therm_tester
 
@@ -60,7 +63,8 @@
 !                                                                        C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  C
 !     
-      SUBROUTINE READ_Therm(funit, Sp, Thigh, Tlow, Tcom, MW, Ahigh, Alow, Hf298oR, IER) 
+      SUBROUTINE READ_Therm(funit, Sp, Thigh, Tlow, Tcom, MW, Ahigh, &
+         Alow, Hf298oR, IER) 
 !     
 !-----------------------------------------------
 !     M o d u l e s 
@@ -125,116 +129,415 @@
 100   IER = 1
       RETURN
             
-300   PRINT *, 'READ_Therm: Error reading coefficients for Species ', TRIM(LINE_STRING(1:18))
+300   PRINT *, 'READ_Therm: Error reading coefficients for Species ', &
+         TRIM(LINE_STRING(1:18))
       STOP       
      
       END SUBROUTINE READ_Therm 
       
-      
-      Double Precision Function calc_CpoR(T, Thigh, Tlow, Tcom, Ahigh, Alow) 
-      !Cp/R
-      
-      IMPLICIT NONE
-      DOUBLE PRECISION Ahigh(7), Alow(7)
-      DOUBLE PRECISION Thigh, Tlow, Tcom
-      DOUBLE PRECISION T
-      
-      If(T > Thigh .or. T < Tlow)then
-        print *, 'Calc_Cp: Temperature ', T, ' not in the range: ', Tlow, Thigh
-        STOP
-      elseif (T < Tcom) then
-        calc_CpoR = (((Alow(5)*T +Alow(4))*T + Alow(3))*T + Alow(2))*T + Alow(1)
-      else
-        calc_CpoR = (((Ahigh(5)*T +Ahigh(4))*T + Ahigh(3))*T + Ahigh(2))*T + Ahigh(1)
+!**********************************************************************!
+! Function: calc_CpoR                                                  !
+! Purpose: Evaluate the polynomial form of the specific heat.          !
+!                                                                      !
+!**********************************************************************!
+      DOUBLE PRECISION FUNCTION  calc_CpoR(T, M, N, IER)
+
+! Polynomial coefficients
+      use physprop, only: Ahigh  ! for T in [Tcom, Thigh]
+      use physprop, only: Alow   ! for T in [Tlow, Tcom)
+      use physprop, only: Thigh  ! Upper bound of use
+      use physprop, only: Tlow   ! Lower bound of use
+      use physprop, only: Tcom   ! Switch from low to high coeffs
+
+      implicit none
+
+! Dummy Arguments:
+!-----------------------------------------------------------------------
+! Evaluation temperaure (K)
+      DOUBLE PRECISION, intent(in) :: T
+! Phase index.
+      INTEGER, intent(in) :: M
+! Species index.
+      INTEGER, intent(in) :: N
+! Error Flag.
+      INTEGER, intent(inout) :: IER
+
+! External Functions:
+!-----------------------------------------------------------------------
+      DOUBLE PRECISION , EXTERNAL :: calc_CpoR0
+
+! Local Variables:
+!-----------------------------------------------------------------------
+! Bounded temperature.
+      DOUBLE PRECISION :: xT
+
+! Initialize the bounded temperature and error flag.
+      xT = T
+      IER = 0
+
+! Verify that the temperature is in a valid range.
+      if(T > Thigh(M,N)) THEN
+        xT = Thigh(M,N)
+        IER = 101
+      elseif(T < Tlow(M,N)) THEN
+        xT = Tlow(M,N)
+        IER = 102
       endif
+
+! Evaluate the polynomial form.
+      IF(T < Tcom(M,N))THEN
+        calc_CpoR = calc_CpoR0(xT, Alow(1:5,M,N))
+      ELSE
+        calc_CpoR = calc_CpoR0(xT, Ahigh(1:5,M,N))
+      ENDIF
       
       RETURN
-               
-      END Function calc_CpoR 
-      
-      Double Precision Function calc_ICpoR(T, Thigh, Tlow, Tcom, Ahigh, Alow) 
-      ! integral_0_to_T(Cp/R*dT)
-      
-      IMPLICIT NONE
-      DOUBLE PRECISION Ahigh(7), Alow(7)
-      DOUBLE PRECISION Thigh, Tlow, Tcom
-      DOUBLE PRECISION T, ICpoRT
-      
-      If(T > Thigh .or. T < Tlow)then
-        print *, 'Calc_ICp: Temperature ', T, ' not in the range: ', Tlow, Thigh
-        STOP
-      elseif (T < Tcom) then
-        ICpoRT = (((Alow(5)*T/5.D0 + Alow(4)/4.D0)*T + Alow(3)/3.D0)*T + Alow(2)/2.D0)*T + Alow(1)
-      else
-        ICpoRT = (((Ahigh(5)*T/5.D0 + Ahigh(4)/4.D0)*T + Ahigh(3)/3.D0)*T + Ahigh(2)/2.D0)*T + Ahigh(1)
+      END Function calc_CpoR
+
+
+!**********************************************************************!
+! Function: calc_CpoR                                                  !
+! Purpose: Evaluate the polynomial form of the specific heat.          !
+!                                                                      !
+!**********************************************************************!
+      DOUBLE PRECISION FUNCTION  DES_calc_CpoR(T, M, N, IER)
+
+! Polynomial coefficients
+      use des_rxns, only: DES_Ahigh  ! for T in [Tcom, Thigh]
+      use des_rxns, only: DES_Alow   ! for T in [Tlow, Tcom)
+      use des_rxns, only: DES_Thigh  ! Upper bound of use
+      use des_rxns, only: DES_Tlow   ! Lower bound of use
+      use des_rxns, only: DES_Tcom   ! Switch from low to high coeffs
+
+      implicit none
+
+! Dummy Arguments:
+!-----------------------------------------------------------------------
+! Evaluation temperaure (K)
+      DOUBLE PRECISION, intent(in) :: T
+! Phase index.
+      INTEGER, intent(in) :: M
+! Species index.
+      INTEGER, intent(in) :: N
+! Error Flag.
+      INTEGER, intent(inout) :: IER
+
+! External Functions:
+!-----------------------------------------------------------------------
+      DOUBLE PRECISION , EXTERNAL :: calc_CpoR0
+
+! Local Variables:
+!-----------------------------------------------------------------------
+! Bounded temperature.
+      DOUBLE PRECISION :: xT
+
+! Initialize the bounded temperature and error flag.
+      xT = T
+      IER = 0
+
+! Verify that the temperature is in a valid range.
+      if(T > DES_Thigh(M,N)) THEN
+        xT = DES_Thigh(M,N)
+        IER = 101
+      elseif(T < DES_Tlow(M,N)) THEN
+        xT = DES_Tlow(M,N)
+        IER = 102
       endif
-      
-      calc_ICpoR = T * ICpoRT
+
+! Evaluate the polynomial form.
+      IF(T < DES_Tcom(M,N))THEN
+        DES_calc_CpoR = calc_CpoR0(xT, DES_Alow(1:5,M,N))
+      ELSE
+        DES_calc_CpoR = calc_CpoR0(xT, DES_Ahigh(1:5,M,N))
+      ENDIF
       
       RETURN
-      END Function calc_ICpoR 
-      
-      
-      
-      Double Precision Function calc_H0oR(T, Thigh, Tlow, Tcom, Ahigh, Alow) 
-      ! H0/R
-      
-      IMPLICIT NONE
-      DOUBLE PRECISION Ahigh(7), Alow(7)
-      DOUBLE PRECISION Thigh, Tlow, Tcom
-      DOUBLE PRECISION T, H0oT, ICp
-      DOUBLE PRECISION calc_ICpoR
-      
-      ICp = calc_ICpoR(T, Thigh, Tlow, Tcom, Ahigh, Alow)
-      If (T < Tcom) then
-        calc_H0oR = ICp + Alow(6)
-      else
-        calc_H0oR = ICp + Ahigh(6)
-      endif
+      END Function DES_calc_CpoR
+
+
+!**********************************************************************!
+! Function: calc_CpoR0                                                 !
+! Purpose: Evaluate the polynomial form of the specific heat.          !
+!                                                                      !
+!**********************************************************************!
+      DOUBLE PRECISION FUNCTION  calc_CpoR0(T, A)
+
+      implicit none
+
+! Dummy Arguments:
+!-----------------------------------------------------------------------
+! Evaluation temperaure (K)
+      DOUBLE PRECISION, intent(in) :: T
+! Polynomial coefficients.
+      DOUBLE PRECISION, intent(in) :: A(1:5)
+
+! Evaluate the polynomial.
+      calc_CpoR0 = (((A(5)*T +A(4))*T + A(3))*T + A(2))*T + A(1)
       
       RETURN
-      END Function calc_H0oR 
+      END Function calc_CpoR0
+
+
+!**********************************************************************!
+! Function: calc_ICpoR                                                 !
+! Purpose: Integrate the polynomial form of the specific heat.         !
+!                                                                      !
+!**********************************************************************!
+      DOUBLE PRECISION FUNCTION calc_ICpoR(T, M, N, IER)
+
+      use physprop, only: Ahigh
+      use physprop, only: Thigh
+      use physprop, only: ICpoR_h
+      use physprop, only: Alow
+      use physprop, only: Tlow
+      use physprop, only: ICpoR_l
+      use physprop, only: Tcom
+
+      implicit none
+
+! Dummy Arguments:
+!-----------------------------------------------------------------------
+! Evaluation temperaure (K)
+      DOUBLE PRECISION, intent(in) :: T
+! Phase index.
+      INTEGER, intent(in) :: M
+! Species index.
+      INTEGER, intent(in) :: N
+! Error Flag.
+      INTEGER, intent(inout) :: IER
+
+! External Functions:
+!-----------------------------------------------------------------------
+      DOUBLE PRECISION , EXTERNAL :: calc_ICpoR0
+
+! Local Variables.
+!-----------------------------------------------------------------------
+      DOUBLE PRECISION :: xT
+!-----------------------------------------------------------------------
+
+! Initialize the bounded temperature and error flag.
+      xT = T
+      IER = 0
+
+! Verify that the temperature is in a valid range.
+      if(T > Thigh(M,N)) THEN
+        xT = Thigh(M,N)
+        IER = 101
+      elseif(T < Tlow(M,N)) THEN
+        xT = Tlow(M,N)
+        IER = 102
+      endif
+
+! Integrate the polynomial from 0.0 to T.
+      if (xT < Tcom(M,N)) then
+        calc_ICpoR = calc_ICpoR0(xT, Alow(1:5,M,N),  ICpoR_l(M,N))
+      else
+        calc_ICpoR = calc_ICpoR0(xT, Ahigh(1:5,M,N), ICpoR_h(M,N))
+      endif
+
+      RETURN
+      END FUNCTION calc_ICpoR
+
+
+
+
+!**********************************************************************!
+! Function: calc_ICpoR                                                 !
+! Purpose: Integrate the polynomial form of the specific heat.         !
+!                                                                      !
+!**********************************************************************!
+      DOUBLE PRECISION FUNCTION DES_calc_ICpoR(T, M, N, IER)
+
+      use des_rxns, only: DES_Ahigh
+      use des_rxns, only: DES_Thigh
+      use des_rxns, only: DES_ICpoR_h
+      use des_rxns, only: DES_Alow
+      use des_rxns, only: DES_Tlow
+      use des_rxns, only: DES_ICpoR_l
+      use des_rxns, only: DES_Tcom
+
+      
+      implicit none
+
+! Dummy Arguments:
+!-----------------------------------------------------------------------
+! Evaluation temperaure (K)
+      DOUBLE PRECISION, intent(in) :: T
+
+      INTEGER, intent(in) :: M
+      INTEGER, intent(in) :: N
+
+! Error Flag.
+      INTEGER, intent(inout) :: IER
+
+! External Functions:
+!-----------------------------------------------------------------------
+      DOUBLE PRECISION , EXTERNAL :: calc_ICpoR0
+
+! Local Variables.
+!-----------------------------------------------------------------------
+      DOUBLE PRECISION :: xT
+!-----------------------------------------------------------------------
+
+! Initialize the bounded temperature and error flag.
+      xT = T
+      IER = 0
+
+! Verify that the temperature is in a valid range.
+      if(T > DES_Thigh(M,N)) THEN
+        xT = DES_Thigh(M,N)
+        IER = 101
+      elseif(T < DES_Tlow(M,N)) THEN
+        xT = DES_Tlow(M,N)
+        IER = 102
+      endif
+
+! Integrate the polynomial from 0.0 to T.
+      if (xT < DES_Tcom(M,N)) then
+        DES_calc_ICpoR = calc_ICpoR0(xT, DES_Alow(1:5,M,N),  DES_ICpoR_l(M,N))
+      else
+        DES_calc_ICpoR = calc_ICpoR0(xT, DES_Ahigh(1:5,M,N), DES_ICpoR_h(M,N))
+      endif
+
+      RETURN
+      END FUNCTION DES_calc_ICpoR
+
+
+!**********************************************************************!
+! Function: calc_ICpoR                                                 !
+! Purpose: Integrate the polynomial form of the specific heat.         !
+!                                                                      !
+!**********************************************************************!
+      DOUBLE PRECISION FUNCTION calc_ICpoR0(T, A, REF_ICpoR)
+
+      implicit none
+
+! Dummy Arguments:
+!-----------------------------------------------------------------------
+! Evaluation temperaure (K)
+      DOUBLE PRECISION, intent(in) :: T
+! Polynomial coefficients.
+      DOUBLE PRECISION, intent(in) :: A(1:5)
+! Referece Integral
+      DOUBLE PRECISION, intent(in) :: REF_ICpoR
+
+! Local Variables.
+!-----------------------------------------------------------------------
+! Integral of specific heat polynomial (from 0 to T) over T
+      DOUBLE PRECISION ICpoRT
+
+!-----------------------------------------------------------------------
+
+      ICpoRT = (((A(5)*T/5.0d0 + A(4)/4.0d0)*T + A(3)/3.0d0)*T +       &
+         A(2)/2.0d0)*T + A(1)
+
+      calc_ICpoR0 = T*ICpoRT - REF_ICpoR
+
+      RETURN
+      END FUNCTION calc_ICpoR0
+
+
+
+!**********************************************************************!
+! Function: calc_H0oR                                                  !
+! Purpose: Calculate the heat of formation from the first six poly-    !
+!          nomial coefficients.                                        !
+!                                                                      !
+! >>> This function is currently unused.                               !
+!                                                                      !
+!**********************************************************************!
+      DOUBLE PRECISION FUNCTION calc_H0oR(T, Th, Tl, Tc, Ah, Al) 
+      
+      implicit none
+
+! Dummy Arguments:
+!-----------------------------------------------------------------------
+! Polynomial coefficients. (High/Low)
+      DOUBLE PRECISION, intent(in) :: Ah(7), Al(7)
+! Temperature ranges of polynomials.
+      DOUBLE PRECISION, intent(in) :: Th   ! Max temp (for Ahigh)
+      DOUBLE PRECISION, intent(in) :: Tl   ! Min temp (for Alow)
+      DOUBLE PRECISION, intent(in) :: Tc   ! switch from low to high
+! Evaluation temperaure (K)
+      DOUBLE PRECISION, intent(in) :: T
+
+! External Functions:
+!-----------------------------------------------------------------------
+      DOUBLE PRECISION, EXTERNAL ::calc_ICpoR
+
+! Local Variables.
+!-----------------------------------------------------------------------
+! Integral of specific heat polynomial (from 0 to T)
+      DOUBLE PRECISION ICp
+
+      ICp = calc_ICpoR(T, Th, Tl, Tc, Ah, Al)
+      If (T < Tc) then
+        calc_H0oR = ICp + Al(6)
+      else
+        calc_H0oR = ICp + Ah(6)
+      endif
+      
+      return
+      END FUNCTION calc_H0oR 
      
-      subroutine replaceTab(C)
-      IMPLICIT NONE
-      CHARACTER(*) C
-      INTEGER I
+
+!**********************************************************************!
+! SUBROUTINE: replaceTab                                               !
+! Purpose: Replace all instances of a tab with a single space.         !
+!**********************************************************************!
+      SUBROUTINE replaceTab(C)
+
+      implicit none
+
+! Dummy Arguments:
+!-----------------------------------------------------------------------
+! Incoming string that will have tabs removed.
+      CHARACTER(len=*) :: C
+
+! Local Variables:
+!-----------------------------------------------------------------------
+! Loop counter
+      INTEGER :: I
+
       DO I = 1, len(C)
         IF(C(I:I) == '	')C(I:I)=' '
       ENDDO
+
       RETURN
-      END subroutine replaceTab
+      END SUBROUTINE replaceTab
       
-      subroutine trimTab(C)
-      IMPLICIT NONE
-      CHARACTER(*) C
-      INTEGER I
-      LOGICAL tabFound
+
+!**********************************************************************!
+! SUBROUTINE: trimTab                                                  !
+! Purpose: Search a string for the first instance of a tab. The        !
+!          location of the tab and all remaing string entries are      !
+!          replaced with blank spaces.                                 !
+!**********************************************************************!
+      SUBROUTINE trimTab(C)
+
+      implicit none
+
+! Dummy Arguments:
+!-----------------------------------------------------------------------
+! Incoming string that will have tabs removed.
+      CHARACTER(len=*) :: C
+
+! Local Variables:
+!-----------------------------------------------------------------------
+! Loop counter
+      INTEGER :: I
+! Logical indicating that a tab was located.
+      LOGICAL :: tabFound
+
+! Initialize flag
       tabFound = .FALSE.
+
+! Look at each entry of the string. Once a tab is located, the rest of 
+! the string is replaced by blank spaces.
       DO I = 1, len(C)
         IF(C(I:I) == '	')tabFound = .TRUE.
         if(tabFound) C(I:I)=' '
       ENDDO
+
       RETURN
-      END subroutine trimTab
-      
-      subroutine stripTab(C)
-      IMPLICIT NONE
-      CHARACTER(*) C
-      CHARACTER C1*20
-      INTEGER I, I1
-      I1 = 1
-      DO I = 1, len(C)
-        IF(C(I:I) /= '	')C1(I1:I1)=C(I:I)
-        I1 = I1+1
-      ENDDO
-      DO I = 1, len(C)
-        IF(I < I1) THEN
-          C(I:I)=C1(I:I)
-        ELSE
-          C(I:I)=' '
-        ENDIF
-      ENDDO
-      RETURN
-      END subroutine stripTab
-       
+      END SUBROUTINE trimTab

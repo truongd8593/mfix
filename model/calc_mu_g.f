@@ -146,12 +146,12 @@
 
             C_MU = 9D-02
 
-! Molecular viscosity
-            IF (MU_G0 == UNDEFINED) &
-               MU_G(IJK) = to_SI*1.7D-4*(T_G(IJK)/273.0D0)**1.5D0*&
-                           (383.D0/(T_G(IJK)+110.D0))   !in Poise or Pa.s
-               MU_GT(IJK) = MU_G(IJK) 
-               LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
+! Molecular viscosity   (in Poise or Pa.s)
+            IF (MU_G0 == UNDEFINED) MU_G(IJK) = to_SI*1.7D-4 * &
+               (T_G(IJK)/273.0D0)**1.5D0 * (383.D0/(T_G(IJK)+110.D0)) 
+
+            MU_GT(IJK) = MU_G(IJK) 
+            LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
 
             IF (K_Epsilon) THEN
 

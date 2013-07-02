@@ -100,7 +100,11 @@
             IF (C_PG0 /= UNDEFINED) C_PG(IJK) = C_PG0 
             IF (MW_AVG /= UNDEFINED) MW_MIX_G(IJK) = MW_AVG 
             IF(FLUID_AT(IJK)) THEN
-               IF (MU_G0 /= UNDEFINED) MU_G(IJK) = MU_G0 
+               IF (MU_G0 /= UNDEFINED) THEN
+                  MU_G(IJK) = MU_G0
+                  MU_GT(IJK) = MU_G0
+                  LAMBDA_GT(IJK) = -(2.0d0/3.0d0)*MU_G0
+               ENDIF
                IF (K_G0 /= UNDEFINED) K_G(IJK) = K_G0 
                IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = DIF_G0 
             ENDIF
@@ -118,7 +122,6 @@
                K_S(IJK,M) = ZERO 
                C_PS(IJK,M) = ZERO 
                D_p(IJK,M)=D_P0(M)
-!QX
                RO_SV(IJK,M) = RO_S(M)
             ELSE 
                IF (C_PS0 /= UNDEFINED) C_PS(IJK,M) = C_PS0 
@@ -133,7 +136,6 @@
                   IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
                ENDIF
                IF (D_P0(M)/=UNDEFINED)  D_P(IJK,M)=D_P0(M)
-!QX
                IF (RO_S(M)/=UNDEFINED) RO_SV(IJK,M) = RO_S(M)
             ENDIF 
 

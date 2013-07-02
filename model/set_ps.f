@@ -51,14 +51,12 @@
             PS_V_g(PSV), PS_W_g(PSV))
 
          CALL CALC_PS_CpxMFLOW(PS_CpxMFLOW_g(PSV), PS_MASSFLOW_g(PSV), &
-            PS_T_g(PSV), PS_X_g(PSV,:), 0, C_PG0, DIM_N_g, Thigh_g,    &
-            Tlow_g, Tcom_g, Ahigh_g, Alow_g, MW_g)
+            PS_T_g(PSV), PS_X_g(PSV,:), 0, C_PG0, DIM_N_g, MW_g)
 
          do M=1, MMAX
             CALL CALC_PS_CpxMFLOW(PS_CpxMFLOW_s(PSV,M),                &
                PS_MASSFLOW_s(PSV,M), PS_T_s(PSV,M), PS_X_s(PSV,M,:), M,&
-               C_PS0, DIM_N_s, Thigh_s(M,:), Tlow_s(M,:), Tcom_s(M,:), &
-               Ahigh_s(:,M,:), Alow_s(:,M,:), MW_s(M,:))
+               C_PS0, DIM_N_s, MW_s(M,:))
          enddo
 
 
@@ -153,7 +151,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CALC_PS_CpxMFLOW(CpxMFLOW, PS_MFLOW, PS_T, PS_X, lM, &
-         Cp0, lDIM_N, lTh, lTl, lTc, lAh, lAl, lMW)
+         Cp0, lDIM_N, lMW)
 
       use constant, only: GAS_CONST_cal
 
@@ -167,10 +165,6 @@
       INTEGER, intent(in) :: lM
       INTEGER, intent(in) :: lDIM_N
 
-      DOUBLE PRECISION, intent(in) :: lAh(7,lDIM_N),   lTh(lDIM_N)
-      DOUBLE PRECISION, intent(in) :: lAl(7,lDIM_N),   lTl(lDIM_N)
-
-      DOUBLE PRECISION, intent(in) :: lTc(lDIM_N)
       DOUBLE PRECISION, intent(in) :: lMW(lDIM_N)
 
       INTEGER :: IER
@@ -191,7 +185,7 @@
          CpxMFLOW = ZERO
          do N = 1, NMAX(lM)
             CpxMFLOW = CpxMFLOW + PS_X(N) * (GAS_CONST_cal / lMW(N)) * &
-              calc_CpoR(PS_T, lTh(N), lTl(N), lTc(N), lAh(1,N),lAl(1,N)) 
+              calc_CpoR(PS_T, lM, N, IER) 
          enddo
       else
          CpxMFLOW = Cp0

@@ -76,7 +76,6 @@
 
 ! External functions for calculating enthalpy (cal/gram)
       DOUBLE PRECISION, EXTERNAL ::CALC_H
-      DOUBLE PRECISION, EXTERNAL ::CALC_H0
 
 ! External Function for comparing two numbers.
       LOGICAL, EXTERNAL :: COMPARE
@@ -143,14 +142,14 @@
                      RoX_gc(IJK,N) = 1.0d-9
                   ENDIF
 ! Enthalpy transfer associated with mass transfer. (gas/solid)
-                  IF(M /= mXfr) RxH(M,mXfr) =  RxH(M,mXfr) + &
-                     lRate * CALC_H0(T_G(IJK),0,N)
+                  IF(M /= mXfr) RxH(M,mXfr) =  RxH(M,mXfr) +           &
+                     lRate * CALC_H(T_G(IJK),0,N)
                ELSE
 ! Formation of gas phase species.
                   R_gp(IJK,N) = R_gp(IJK,N) + lRate
 ! Enthalpy transfer associated with mass transfer. (gas/solid)
-                  IF(M /= mXfr) RxH(M,mXfr) =  RxH(M,mXfr) + &
-                     lRate * CALC_H0(T_s(IJK,mXfr),0,N)
+                  IF(M /= mXfr) RxH(M,mXfr) =  RxH(M,mXfr) +           &
+                     lRate * CALC_H(T_s(IJK,mXfr),0,N)
                ENDIF
 ! Solids Phase M:
             ELSE
@@ -166,11 +165,13 @@
 ! is only calculated from the source (reactant) material.
                   IF(M /= mXfr) THEN
                      IF(M < mXfr) THEN
-                        RxH(M,mXfr) =  RxH(M,mXfr) + lRate * &
-                          Reaction(H)%Species(lN)%xXfr * CALC_H(IJK,M,N)
+                        RxH(M,mXfr) =  RxH(M,mXfr) + lRate *           &
+                          Reaction(H)%Species(lN)%xXfr *               &
+                          CALC_H(T_s(IJK,M),M,N)
                      ELSE
-                        RxH(mXfr,M) =  RxH(mXfr,M) - lRate * &
-                          Reaction(H)%Species(lN)%xXfr * CALC_H(IJK,M,N)
+                        RxH(mXfr,M) =  RxH(mXfr,M) - lRate *           &
+                          Reaction(H)%Species(lN)%xXfr *               &
+                          CALC_H(T_s(IJK,M),M,N)
                      ENDIF
                   ENDIF
                ELSE
@@ -196,10 +197,10 @@
                   lRate = RATES(H) * Reaction(H)%Species(lN)%MWxStoich
 ! Gas phase enthalpy chnage from energy equation derivation.
                   IF(M == 0) THEN
-                     lHORg = lHORg + CALC_H(IJK,0,N) * lRate
+                     lHORg = lHORg + CALC_H(T_g(IJK),0,N) * lRate
 ! Solid phase enthalpy change from energy equation derivation.
                   ELSE
-                     lHORs(M) = lHORs(M) + CALC_H(IJK,M,N) * lRate
+                     lHORs(M) = lHORs(M) + CALC_H(T_s(IJK,M),M,N)*lRate
                   ENDIF
                ENDDO
 
@@ -300,8 +301,4 @@
 
       RETURN
 
-      END SUBROUTINE RRATES0 
-
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+      END SUBROUTINE RRATES0

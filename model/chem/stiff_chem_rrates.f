@@ -11,23 +11,64 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE STIFF_CHEM_RRATES(lNEQ, lTime, Y, YDOT)
 
+! External Module Procedures:
+!---------------------------------------------------------------------//
+      use stiff_chem_maps, only: mapODEtoMFIX
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Maximum number of solids phases
+      use param, only: DIMENSION_M
+! Maximum number of gas species
+      use param, only: DIMENSION_N_g
+! Maximum number of solid species
+      use param, only: DIMENSION_N_s
+
+      use param1, only: ZERO
+
 ! Global Variables:
 !---------------------------------------------------------------------//
-      use fldvar,     only : EP_g, RO_g, T_g, X_g, ROP_g
-      use fldvar,     only : ROP_S, T_s, X_s, D_p, ROP_s
+! Number of solids phases
+      use physprop, only: MMAX
+! Number of species
+      use physprop, only: NMAX
 
-      use physprop,   only : RO_s, C_pg, C_ps, MMAX, NMAX, RO_sv
-      use rxns,       only : REACTION, NO_OF_RXNS
-      use run,        only : SPECIES_EQ, UNITS
-      use stiff_chem, only : NEQ_DIMN, ODE_DIMN_all
-      use stiff_chem, only : CALL_GROW, mapODEtoMFIX
+! Gas Phase
+!--------------------------------------------//
+!Temperature
+      use fldvar, only: T_g
+! Species Mass Fractions
+      use fldvar, only: X_g
+! Gas Phase apparent density
+      use fldvar, only: ROP_g
+! Gas phase specific heat
+      use physprop, only: C_pg
 
-      use toleranc,   only : ZERO_EP_s
+! Solids Phases
+!--------------------------------------------//
+! Temperatures
+      use fldvar, only: T_s
+! Species mass fractions
+      use fldvar, only: X_s
+! Material densities
+      use physprop, only: RO_s
+! Apparent densities
+      use fldvar, only: ROP_s
+! Specific heats
+      use physprop, only: C_ps
 
 
-      use compar,   only : myPE
 
-      use sendrecv
+      use rxns, only: REACTION
+      use rxns, only: NO_OF_RXNS
+
+      use run, only: SPECIES_EQ
+      use run, only: UNITS
+
+
+      use stiff_chem, only: ODE_DIMN_all
+      use stiff_chem, only: NEQ_DIMN
+
 
       implicit none
 
@@ -51,6 +92,7 @@
       INTEGER :: N    ! Global species index
       INTEGER :: lN   ! Local reaction speices index/loop counter
       INTEGER :: mXfr ! Global phase index for mass transfer
+      INTEGER :: Node ! Variable index
 
 ! User-defined reaction rates returned from USR_RATES
       DOUBLE PRECISION :: RATES(NO_OF_RXNS)
@@ -62,8 +104,6 @@
 ! Rate of formation (+) or consumption (-) of each gas phase species.
 ! > Single reaction.
       DOUBLE PRECISION :: rRg(DIMENSION_N_g)
-! Net rate of change of gas phase material.
-      DOUBLE PRECISION :: sumlRg
 ! Heat of reaction assigned to gas phase for a reaction.
       DOUBLE PRECISION :: rHORg
 ! Cummulative heat of reaction assigned to gas phase.
@@ -74,8 +114,6 @@
 ! Rate of formation (+) or consumption (-) of each solids phase species.
 ! > Single reaction.
       DOUBLE PRECISION :: rRs(DIMENSION_M, DIMENSION_N_s)
-! Net rate of change of solids phase material.
-      DOUBLE PRECISION :: sumlRs(DIMENSION_M)
 ! Heat of reaction assigned to the solids phase for a reaction.
       DOUBLE PRECISION :: rHORs(DIMENSION_M)
 ! Cummulative heat of reaction assinged to the solids phase.
@@ -83,41 +121,38 @@
 ! Rate of interphase enthalpy transfer due to mass transfer.
       DOUBLE PRECISION :: RxH(0:DIMENSION_M, 0:DIMENSION_M)
 
-      DOUBLE PRECISION :: sumlRsoROs
-
-! Loop index for ODEs
-      INTEGER :: Node
 ! Error Flag. Used to supress checks in mapODEtoMFIX.
       INTEGER :: iErr
+
+
+! Net rate of change of gas phase material.
+      DOUBLE PRECISION :: sumlRg
+! Net rate of change of solids phase material.
+      DOUBLE PRECISION :: sumlRs(DIMENSION_M)
+! Net rate of change of solid phase material divided by density.
+      DOUBLE PRECISION :: sumlRsoROs
+
 
 ! Reaction limiters.
       DOUBLE PRECISION, parameter :: speciesLimiter = 1.0d-7
 
 ! External Function for comparing two numbers.
       LOGICAL, external :: COMPARE
-      DOUBLE PRECISION, external :: CALC_H0, CALC_H
-
-      LOGICAL, save :: reportedNaN = .FALSE.
-      LOGICAL :: foundNaN
+      DOUBLE PRECISION, external :: CALC_H
 
 ! UDF for Reaction Rates:
       external USR_RATES
-
-!-----------------------------------------------
-      include 'ep_s1.inc'
-      include 'function.inc'
-      include 'ep_s2.inc'
 
 ! Initialize variables:
       IJK    = lNEQ(2)
       RATES  = ZERO
       YDOT   = ZERO
 
-      lRg = ZERO; sumlRg = ZERO; lHORg = ZERO
-      lRs = ZERO; sumlRs = ZERO; lHORs = ZERO
+      lRg = ZERO; lHORg = ZERO
+      lRs = ZERO; lHORs = ZERO
 
 ! Map the current ODE independent variables to MFIX variables.
-      CALL mapODEtoMFIX(lNEQ, Y)
+      CALL mapODEtoMFIX(NEQ_DIMN, lNEQ, ODE_DIMN_all, Y)
 
 ! Calculate user defined reaction rates.
       CALL USR_RATES(IJK, RATES)
@@ -154,7 +189,7 @@
                      rRg(N) = rRg(N) + lRate
 ! Enthalpy transfer associated with mass transfer. (gas/solid)
                      IF(M /= mXfr) RxH(M,mXfr) =  RxH(M,mXfr) + &
-                        lRate * CALC_H0(T_G(IJK),0,N)
+                        lRate * CALC_H(T_G(IJK),0,N)
                   ELSE
 ! There is an insignificant amount of reactant. Skip this reaction.
                      CYCLE RXN_LP
@@ -164,7 +199,7 @@
                   rRg(N) = rRg(N) + lRate
 ! Enthalpy transfer associated with mass transfer. (gas/solid)
                   IF(M /= mXfr) RxH(M,mXfr) =  RxH(M,mXfr) + &
-                     lRate * CALC_H0(T_s(IJK,mXfr),0,N)
+                     lRate * CALC_H(T_s(IJK,mXfr),0,N)
                ENDIF
 ! Solids Phase M:
             ELSE
@@ -177,11 +212,11 @@
                      IF(M /= mXfr) THEN
                         IF(M < mXfr) THEN
                            RxH(M,mXfr) =  RxH(M,mXfr) +                &
-                              lRate * CALC_H(IJK,M,N) *                &
+                              lRate * CALC_H(T_s(IJK,M),M,N) *         &
                               Reaction(H)%Species(lN)%xXfr
                         ELSE
                            RxH(mXfr,M) =  RxH(mXfr,M) -                &
-                             lRate * CALC_H(IJK,M,N) *                 &
+                             lRate * CALC_H(T_s(IJK,M),M,N) *          &
                              Reaction(H)%Species(lN)%xXfr
                         ENDIF
                      ENDIF
@@ -216,10 +251,10 @@
                lRate = RATES(H) * Reaction(H)%Species(lN)%MWxStoich
 ! Gas phase enthalpy chnage from energy equation derivation.
                IF(M == 0) THEN
-                  rHORg = rHORg + lRate * CALC_H0(T_g(IJK),0,N)
+                  rHORg = rHORg + lRate * CALC_H(T_g(IJK),0,N)
 ! Solid phase enthalpy change from energy equation derivation.
                ELSE
-                  rHORs(M) = rHORs(M) + lRate * CALC_H0(T_s(IJK,M),M,N)
+                  rHORs(M) = rHORs(M) + lRate * CALC_H(T_s(IJK,M),M,N)
                ENDIF
             ENDDO
 
@@ -257,18 +292,24 @@
             ENDIF
          ELSE
 ! User-defined heat of reaction.
-            lHORg = lHORg + Reaction(H)%HoR(0) * RATES(H)
+            lHORg = Reaction(H)%HoR(0) * RATES(H)
             DO M=1, MMAX
-               lHORs(M) = lHORs(M) + Reaction(H)%HoR(M) * RATES(H)
+               lHORs(M) = Reaction(H)%HoR(M) * RATES(H)
             ENDDO
          ENDIF
 
       ENDDO RXN_LP ! Loop over reactions.
 
 
+
+
+! Calculate and store the heat of reaction.
+!---------------------------------------------------------------------//
+
+! Calculate the net change for the gas phase.
       sumlRg = sum(lRg)
 
-
+! Calculate the net change for solids phases.
       sumlRs = 0.0d0
       sumlRsoROs = 0.0d0
       DO M=1, MMAX
@@ -279,12 +320,13 @@
       ENDDO
 
 
-!<<<--------------------------  ODE Setup  ------------------------->>>!
-
+! Calculate and store the heat of reaction.
+!---------------------------------------------------------------------//
+! Initialize counter.
       Node = 1
 
-! Density:  RO_g
-      YDOT(Node) = (sumlRg + RO_g(IJK)*sumlRsoROs)/EP_G(IJK)
+! Density:  ROP_g
+      YDOT(Node) = sumlRg
       Node = Node + 1
 
 ! Temperature: T_g
@@ -314,16 +356,14 @@
 ! Solids bulk density: ROP_s
             YDOT(Node) = sumlRs(M)
             Node = Node + 1
-
 ! Species Mass Fraction: X_s
             DO N=1, NMAX(M)
-               YDOT(Node) = (lRs(M,N) - X_s(IJK,M,N)*sumlRs(M)) /      &
+               YDOT(Node) = (lRs(M,N) - X_s(IJK,M,N)*sumlRs(M)) /     &
                   ROP_s(IJK,M)
                Node = Node + 1
             ENDDO
          ENDIF
       ENDDO
-
 
       RETURN
       END SUBROUTINE STIFF_CHEM_RRATES

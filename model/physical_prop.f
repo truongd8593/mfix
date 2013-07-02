@@ -26,211 +26,175 @@
 !  Local variables: None                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE PHYSICAL_PROP(IER, LEVEL)
 
-      SUBROUTINE PHYSICAL_PROP(DENSITY, PSIZE, SP_HEAT, IER) 
+      use compar
+      use funits 
+      use geometry
+      use indices
+      use mpi_utility
+      use param1 
+      use physprop
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
-      USE fldvar
-      USE physprop
-      USE geometry
-      USE indices
-      USE run
-      USE toleranc 
-      USE constant
-      USE scalars
-      USE compar 
-      USE funits 
-      USE usr         
-      USE mpi_utility
-      USE discretelement
-      USE cutcell 
-      IMPLICIT NONE
-!-----------------------------------------------
-! Global parameters
-!-----------------------------------------------
-! gas constant
-      DOUBLE PRECISION, PARAMETER :: RGAS = 1.987207D0  !cal/mol.K
-!-----------------------------------------------
+      use coeff, only: DENSITY  ! Density
+      use coeff, only: SP_HEAT  ! Specific heat 
+      use coeff, only: PSIZE    ! Particle diameter
+
+      implicit none
+
 ! Dummy arguments
-!-----------------------------------------------
-! Flags to tell whether to calculate or not
-      LOGICAL, INTENT(IN) :: DENSITY(0:DIMENSION_M), &
-                             PSIZE(0:DIMENSION_M),&
-                             SP_HEAT(0:DIMENSION_M) 
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+!-----------------------------------------------------------------------
+! Global error Flag.
+      INTEGER, intent(inout) :: IER
+      INTEGER, intent(in) :: LEVEL
+
 ! Local variables
-!-----------------------------------------------
-! Indices
-      INTEGER :: IJK, IMJK, IJMK, IJKM, I
-! solids phase index and species index      
-      INTEGER :: M, N
-! average molecular weight
-      DOUBLE PRECISION :: MW
-      LOGICAL :: ALL_IS_ERROR
-! alias for gas temperature
-      DOUBLE PRECISION :: TGX
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: EOSG, calc_CpoR,&
-                                    calc_ICpoR
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'usrnlst.inc'
-      INCLUDE 'cp_fun1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
-!-----------------------------------------------
+!-----------------------------------------------------------------------
+! Arrays for storing errors:
+! 100 - Negative gas phase density
+! 101 - Invalid temperature in calc_CpoR
+! 10x - Unclassified
+      INTEGER :: Err_l(0:numPEs-1)  ! local
+      INTEGER :: Err_g(0:numPEs-1)  ! global
+
+! Initialize error flags.
+      Err_l = 0
+
+! Calculate density only. This is invoked several times within iterate,
+! making it the most frequently called.
+      if(LEVEL == 0) then
+         if(DENSITY(0)) CALL PHYSICAL_PROP_ROg
+         if(any(DENSITY(1:DIMENSION_M))) CALL PHYSICAL_PROP_ROs
+
+! Calculate everything except density. This is called at the start of
+! each iteration.
+      elseif(LEVEL == 1) then
+         if(SP_HEAT(0)) CALL PHYSICAL_PROP_CPg
+         if(any(SP_HEAT(1:DIMENSION_M))) CALL PHYSICAL_PROP_CPs
+         if(any(PSIZE(1:DIMENSION_M))) CALL PHYSICAL_PROP_Dp
 
 
-!!$omp  parallel do private(IJK, MW, N)  
-      DO IJK = IJKSTART3, IJKEND3 
-         IF (.NOT.WALL_AT(IJK)) THEN 
-            TGX = T_g(IJK)
-
-
-! Fluid Density
-! ---------------------------------------------------------------->>>
-            IF (DENSITY(0)) THEN 
-               IF (MW_AVG == UNDEFINED) THEN 
-
-! Average molecular weight: Xg1/Mw1 + Xg2/Mw2 + Xg3/Mw3 + ....
-!                 MW = CALC_MW(X_g, DIMENSION_3, IJK, NMAX(0), MW_g)
-
-                  IF(.NOT.database_read) call read_database0(IER)
-! calculating the average molecular weight of the fluid
-                  MW = ZERO
-                  N = 1
-                  IF (NMAX(0) > 0) THEN
-                     MW = MW + SUM(X_G(IJK,:NMAX(0))/MW_G(:NMAX(0)))
-                     N = NMAX(0) + 1
-                  ENDIF
-                  MW = ONE/MAX(MW,OMW_MAX)
-                  MW_MIX_G(IJK) = MW
-! calculating the fluid density and bulk density
-                  RO_G(IJK) = EOSG(MW,P_G(IJK),T_G(IJK))
-                  ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
-               ELSE
-                  RO_G(IJK) = EOSG(MW_AVG,P_G(IJK),T_G(IJK))
-                  ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
-               ENDIF
-       
-               IF(RO_G(IJK) < ZERO) THEN
-                  IF(CARTESIAN_GRID) THEN 
-                     WRITE(*,1001) I_OF(IJK), J_OF(IJK), K_OF(IJK), &
-                        RO_G(IJK), P_G(IJK), T_G(IJK), CUT_CELL_AT(IJK), & 
-                        SMALL_CELL_AT(IJK), xg_e(I_OF(IJK)), &
-                        yg_n(J_of(ijk)), zg_t(k_of(ijk))
-                  ELSE
-                     WRITE(*,1000) I_OF(IJK), J_OF(IJK), K_OF(IJK), &
-                        RO_G(IJK), P_G(IJK), T_G(IJK)
-                  ENDIF
-                  Neg_RHO_G = .TRUE. !this will reduce dt instead of exiting
-               ENDIF
-            ENDIF
-! ----------------------------------------------------------------<<<
-
-
-
-! Fluid specific heat
-! ---------------------------------------------------------------->>>
-! Constant pressure specific heat of air in cal/g.K
-! 1 Cal = 4.183925 J
-            IF (SP_HEAT(0) .AND. C_PG0==UNDEFINED) THEN
-               IF(.NOT.database_read) call read_database0(IER)
-
-! calculating an average specific heat of the fluid               
-!             IF(C(23) == ONE) THEN
-                C_PG(IJK) = ZERO
-                DO N = 1, NMAX(0)
-                   C_PG(IJK) = C_PG(IJK) + X_g(IJK,N) *&
-                      calc_CpoR(T_G(IJK),Thigh_g(N),Tlow_g(N),Tcom_g(N),&
-                      Ahigh_g(1,N),Alow_g(1,N)) * RGAS / MW_g(N) 
-                ENDDO
-!             ELSE
-!                C_pg(IJK) =  X_g(IJK,CH4)*CPCH4(TGX)  &
-!                   + X_g(IJK,CO2)*CPCO2(TGX)  &
-!                   + X_g(IJK,O2)*CPO2(TGX) + X_g(IJK,H2O)*CPH2O(TGX) &
-!                   + X_g(IJK,N2)*CPN2(TGX) 
-!             ENDIF
-      
-              IF (UNITS == 'SI') C_PG(IJK) = 4183.925D0*C_PG(IJK)    !in J/kg K
-            ENDIF   ! end if (sp_heat(0) .and. c_pg0=undefined)
-
-         ENDIF   ! end if (.not.wall_at(ijk))
-      ENDDO   ! end do (ijk=ijkstart3,ijkend3)
-! ----------------------------------------------------------------<<<
+! Calculate everything. This is invoked via calc_coeff_all as part of
+! the initialization (before starting the time march) and at the start
+! of each step step thereafter.
+      elseif(LEVEL == 2) then
+         if(DENSITY(0)) CALL PHYSICAL_PROP_ROg
+         if(SP_HEAT(0)) CALL PHYSICAL_PROP_CPg
+         if(any(DENSITY(1:DIMENSION_M))) CALL PHYSICAL_PROP_ROs
+         if(any(SP_HEAT(1:DIMENSION_M))) CALL PHYSICAL_PROP_CPs
+         if(any(PSIZE(1:DIMENSION_M))) CALL PHYSICAL_PROP_Dp
+      endif
 
 
 ! In case of negative density force exit from the physical property
 ! calculation routine and reduce the time step
-      CALL GLOBAL_ALL_OR(Neg_RHO_G, ALL_IS_ERROR)
-      IF(ALL_IS_ERROR) THEN
-         Neg_RHO_G = .TRUE.
-         RETURN
+      CALL global_all_sum(Err_l, Err_g)
+      IER = maxval(Err_g)
+      if(IER == 0) return
+
+
+! Error handeling. - Local.
+!-----------------------------------------------------------------------
+! An invalid temperature was found by calc_CpoR. This is a fatal run-
+! time error and forces a call to MFIX_EXIT.
+      IF(IER == 101) then
+         if(myPE == PE_IO) then
+            write(*,2000)
+            write(UNIT_LOG,2000)
+         endif
+         CALL MFIX_EXIT(myPE)
       ENDIF
 
+      return
 
-! if using a discrete element model then quantities related to the
-! continuum solids phase do not need to be calculated. note that the
-! code could be changed so that the logical flags directing this
-! routine are appropriately set for the discrete element case
-      IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+ 2000 FORMAT(/1X,70('*')/' From: PHYSICAL_PROP',/' Fatal Error 2000:', &
+         ' calc_CpoR reporetd an invalid temperature.',/,'See Cp.log', &
+         ' for details. Calling MFIX_EXIT.',/1X,70('*')/) 
 
-!!$omp  parallel do private(IJK)           
-         DO IJK = IJKSTART3, IJKEND3 
-            DO M=1,MMAX             
-               IF (.NOT.WALL_AT(IJK)) THEN
+      contains
 
-! rong : diameter
-! ---------------------------------------------------------------->>>
-                  IF (CALL_DQMOM) THEN            
-                     IF(PSIZE(M)) THEN 
-                        N=phase4scalar(M) ! can N /= M ? (sof)
-                        IF(EP_s(IJK,N)>small_number) D_p(IJK,M)= Scalar(IJK,N)
-                     ENDIF   ! end if (psize(m))
-                  ENDIF   ! end if (call_dqmom)
-! ----------------------------------------------------------------<<<
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: PHYSICAL_PROP_ROg                                       C
+!  Purpose: Calculate the gas phase density.                           C
+!                                                                      C
+!  Author: J. Musser                                  Date: 28-JUN-13  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE PHYSICAL_PROP_ROg
 
-! Solids specific heat
-! ---------------------------------------------------------------->>>
-! Specific heat of solids (Coal = 0.3 cal/g.K)
-!    Perry & Chilton(1973) -- Table 3-201 on page 3-136
-! Specific heat of solids (Ash =  0.310713 cal/g.K)
-!    Dobran et al., 1991
-                  IF (SP_HEAT(M) .AND. C_PS0==UNDEFINED) THEN
-                     IF(.NOT.database_read) call read_database0(IER)
-                     C_PS(IJK, M) = ZERO
-                     DO N = 1, NMAX(M)
-                        C_PS(IJK, M) = C_PS(IJK,M) + X_s(IJK,M,N) * &
-                           calc_CpoR(T_S(IJK,M),Thigh_s(M,N),&
-                           Tlow_s(M,N),Tcom_s(M,N),Ahigh_s(1,M,N),&
-                           Alow_s(1,M,N)) * RGAS / MW_s(M,N) 
-                     ENDDO
-!                     C_PS(IJK,M) = 0.310713d0
-                     IF (UNITS == 'SI') C_PS(IJK,M) = 4183.925D0*C_PS(IJK,M)    !in J/kg K
-                  ENDIF   ! end if (sp_heat(m) .and. c_ps0==undefined)
-! ----------------------------------------------------------------<<<
 
-               ENDIF   ! end if (.not.wall_at(ijk))
-               
-            ENDDO   ! end do (m=1,mmax)
-         ENDDO   ! end do (ijk=ijkstart3,ijkend3)
+! Global variables:
+!-----------------------------------------------------------------------
+! Gas phase species mass fractions.
+      use fldvar, only: X_g
+! Gas phase temperature.
+      use fldvar, only: T_g
+! Gas phase density (compressible).
+      use fldvar, only: RO_g
+! Gas phase pressure.
+      use fldvar, only: P_g
+! Gas phase volume fraction.
+      use fldvar, only: EP_g
+! Gas phase material density.
+      use fldvar, only: ROP_g
+! Maximum value for molecular weight (divided by one)
+      use toleranc, only: OMW_MAX
 
-      ENDIF   ! end if (.not.discrete_element)
-              
-      RETURN 
+      use cutcell 
+
+      implicit none
+
+! Local Variables:
+!-----------------------------------------------------------------------
+! Average molecular weight
+      DOUBLE PRECISION :: MW
+
+! Loop indicies
+      INTEGER :: IJK   ! Computational cell
+      INTEGER :: M     ! Solids phase
+      INTEGER :: N     ! Species index
+
+! Equation of State - GAS
+      DOUBLE PRECISION, EXTERNAL :: EOSG
+
+      include 'function.inc'
+
+! Average molecular weight: Xg1/Mw1 + Xg2/Mw2 + Xg3/Mw3 + ....
+      IF(.NOT.database_read) call read_database0(IER)
+
+      IJK_LP: DO IJK = IJKSTART3, IJKEND3 
+         IF(WALL_AT(IJK)) cycle IJK_LP
+
+         IF (MW_AVG == UNDEFINED) THEN 
+! Calculating the average molecular weight of the fluid.
+            MW = SUM(X_G(IJK,:NMAX(0))/MW_G(:NMAX(0)))
+            MW = ONE/MAX(MW,OMW_MAX)
+            MW_MIX_G(IJK) = MW
+! Calculate the fluid density and bulk density
+            RO_G(IJK) = EOSG(MW,P_G(IJK),T_G(IJK))
+            ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
+         ELSE
+            RO_G(IJK) = EOSG(MW_AVG,P_G(IJK),T_G(IJK))
+            ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
+         ENDIF
+       
+         IF(RO_G(IJK) < ZERO) THEN
+            Err_l(myPE) = 100
+            IF(CARTESIAN_GRID) THEN 
+               WRITE(*,1001) I_OF(IJK), J_OF(IJK), K_OF(IJK), &
+                  RO_G(IJK), P_G(IJK), T_G(IJK), CUT_CELL_AT(IJK), & 
+                  SMALL_CELL_AT(IJK), xg_e(I_OF(IJK)), &
+                  yg_n(J_of(ijk)), zg_t(k_of(ijk))
+            ELSE
+               WRITE(*,1000) I_OF(IJK), J_OF(IJK), K_OF(IJK), &
+                  RO_G(IJK), P_G(IJK), T_G(IJK)
+            ENDIF
+         ENDIF
+      ENDDO IJK_LP
+
+      RETURN
 
  1000 FORMAT(1X,'Message from: PHYSICAL_PROP',/& 
             'WARNING: Gas density negative in this cell: ', /&
@@ -248,4 +212,218 @@
             'East, North, and Top coodinate = ', 3(2x, g17.8), / & 
             'Suggestion: Lower UR_FAC(1) in mfix.dat')
 
-      END SUBROUTINE PHYSICAL_PROP 
+      END SUBROUTINE PHYSICAL_PROP_ROg
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: PHYSICAL_PROP_ROs                                       C
+!  Purpose: Calculate solids phase (variable) density.                 C
+!                                                                      C
+!  Author: J. Musser                                  Date: 28-JUN-13  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE PHYSICAL_PROP_ROs
+
+      implicit none
+
+      RETURN
+      END SUBROUTINE PHYSICAL_PROP_ROs
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: PHYSICAL_PROP_CPg                                       C
+!  Purpose: Calculate the gas phase constant pressure specific heat.   C
+!                                                                      C
+!  Author: J. Musser                                  Date: 28-JUN-13  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+! Notes:                                                               C
+!  > Unit conversion: 1 cal = 4.183925 J                               C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE PHYSICAL_PROP_CPg
+
+! Global Variables:
+!-----------------------------------------------------------------------
+! Universal gas constant in cal/mol.K
+      use constant, only: RGAS => GAS_CONST_cal
+! Maximum value for molecular weight (divided by one)
+      use toleranc, only: OMW_MAX
+! Gas phase species mass fractions.
+      use fldvar, only: X_g
+! Gas phase temperature.
+      use fldvar, only: T_g
+! Units: CGS/SI
+      use run, only: UNITS
+
+      implicit none
+
+! Local Variables:
+!-----------------------------------------------------------------------
+! Species specific heat.
+      DOUBLE PRECISION :: lCp
+! Error flag returned from calc_CpoR
+      INTEGER :: lCP_Err
+! Average molecular weight
+      DOUBLE PRECISION :: MW
+! Loop indicies
+      INTEGER :: IJK   ! Computational cell
+      INTEGER :: M     ! Solids phase
+      INTEGER :: N     ! Species index
+
+! Function to evaluate Cp polynomial.
+      DOUBLE PRECISION, EXTERNAL :: calc_CpoR
+
+      include 'function.inc'
+
+!-----------------------------------------------------------------------
+
+! Ensure that the database was read. This *should* have been caught by
+! check_data_05 but this call remains to prevent an accident.
+      IF(.NOT.database_read) CALL read_database0(IER)
+
+      lCP_Err = 0
+
+      IJK_LP: DO IJK = IJKSTART3, IJKEND3 
+         IF(WALL_AT(IJK)) CYCLE IJK_LP
+! Calculating an average specific heat for the fluid.
+         C_PG(IJK) = ZERO
+         DO N = 1, NMAX(0)
+            lCp = calc_CpoR(T_G(IJK), 0, N, lCP_Err)
+            C_PG(IJK) = C_PG(IJK) + X_g(IJK,N) * lCp * RGAS / MW_g(N) 
+         ENDDO
+      ENDDO IJK_LP
+
+! The database calculation always returns cal/g.K thus the following
+! conversion is needed if using SI units. ** Vector operation
+      IF(UNITS == 'SI') C_PG = 4.183925d3 * C_PG  !in J/kg K
+
+      RETURN
+      END SUBROUTINE PHYSICAL_PROP_CPg
+
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: PHYSICAL_PROP_CPs                                       C
+!  Purpose: Calculate solids phase constant pressure specific heat.    C
+!                                                                      C
+!  Author: J. Musser                                  Date: 28-JUN-13  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE PHYSICAL_PROP_CPs
+
+! Universal gas constant in cal/mol.K
+      use constant, only: RGAS => GAS_CONST_cal
+! Units: CGS/SI
+      use run, only: UNITS
+      use toleranc, only: OMW_MAX
+      use fldvar, only: T_s
+      use fldvar, only: X_s
+
+      implicit none
+
+      DOUBLE PRECISION :: lCp
+
+! Loop indicies
+      INTEGER :: IJK   ! Computational cell
+      INTEGER :: M     ! Solids phase
+      INTEGER :: N     ! Species index
+
+! Local error flag indicating that the Cp is out of range.
+      INTEGER :: lCP_Err
+
+! Function to evaluate Cp polynomial.
+      DOUBLE PRECISION, EXTERNAL :: calc_CpoR
+
+      include 'function.inc'
+
+! Ensure that the database was read. This *should* have been caught by
+! check_data_05 but this call remains to prevent an accident.
+      IF(.NOT.database_read) CALL read_database0(IER)
+
+      lCP_Err = 0
+
+      M_LP: DO M=1, MMAX
+         IJK_LP: DO IJK = IJKSTART3, IJKEND3 
+            IF(WALL_AT(IJK)) CYCLE IJK_LP
+! Calculating an average specific heat for the fluid.
+            C_PS(IJK, M) = ZERO
+
+            DO N = 1, NMAX(M)
+               lCp = calc_CpoR(T_S(IJK,M), M, N, lCP_Err)
+               C_PS(IJK,M) = C_PS(IJK,M) + X_s(IJK,M,N) * &
+                  (lCp * RGAS / MW_s(M,N))
+            ENDDO
+
+         ENDDO IJK_LP
+      ENDDO M_LP
+
+! The database calculation always returns cal/g.K thus the following
+! conversion is needed if using SI units. ** Vector operation
+      IF(UNITS == 'SI') C_PS(:,M) = 4.183925d3 * C_PS(:,M)  !in J/kg K
+
+      END SUBROUTINE PHYSICAL_PROP_CPs
+
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: PHYSICAL_PROP_CPs                                       C
+!  Purpose: Calculate solids phase constant pressure specific heat.    C
+!                                                                      C
+!  Author: J. Musser                                  Date: 28-JUN-13  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE PHYSICAL_PROP_Dp
+
+      use run, only: CALL_DQMOM
+
+      use fldvar, only: scalar
+      use scalars, only: phase4scalar
+
+      use fldvar, only: ROP_s
+      use fldvar, only: D_p
+
+      implicit none
+
+! Loop indicies
+      INTEGER :: IJK   ! Computational cell
+      INTEGER :: M     ! Solids phase
+
+! Map from true index to map.
+      INTEGER :: lM
+
+      include 'ep_s1.inc'
+      include 'function.inc'
+      include 'ep_s2.inc'
+
+
+      IF(.NOT.CALL_DQMOM) return
+
+      M_LP: DO M=1, MMAX
+
+         lM = phase4scalar(M) ! Map from scalar eq to solids phase
+
+         IF(.NOT.PSIZE(M)) CYCLE M_LP
+         IJK_LP: DO IJK = IJKSTART3, IJKEND3 
+            IF(WALL_AT(IJK)) CYCLE IJK_LP
+
+            IF(EP_s(IJK,lM) > small_number) D_p(IJK,M)= Scalar(IJK,lM)
+
+         ENDDO IJK_LP
+      ENDDO M_LP
+
+      return
+      END SUBROUTINE PHYSICAL_PROP_Dp
+
+
+      END SUBROUTINE PHYSICAL_PROP

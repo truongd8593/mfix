@@ -76,8 +76,13 @@
 ! linear equation solver method and iterations 
       INTEGER :: LEQM, LEQI 
 
-! Local/Global error flags.
-      LOGICAL :: lDiverged, gDiverged
+! Arrays for storing errors:
+! 120 - Gas phase energy equation diverged
+! 121 - Solids energy equation diverged
+! 12x - Unclassified
+      INTEGER :: Err_l(0:numPEs-1)  ! local
+      INTEGER :: Err_g(0:numPEs-1)  ! global
+
 
 ! temporary use of global arrays:
 ! arraym1 (locally vxgama) 
@@ -106,13 +111,12 @@
       INCLUDE 'radtn2.inc'
 !-----------------------------------------------
 
-! Initialize error flag.
-      lDiverged = .FALSE.
-
       call lock_ambm         ! locks arrys a_m and b_m
       call lock_tmp_array    ! locks arraym1 (locally vxgama) 
       call lock_tmp_array1   ! locks array1, array2, array3 
                              ! (locally s_p, s_c, eps) 
+! Initialize error flags.
+      Err_l = 0
 
       TMP_SMAX = SMAX
       IF(DISCRETE_ELEMENT) THEN
@@ -275,7 +279,7 @@
       CALL SOLVE_LIN_EQ ('T_g', 6, T_G, A_M, B_M, 0, LEQI, LEQM, &
          LEQ_SWEEP(6), LEQ_TOL(6), LEQ_PC(6), IER)  
 ! Check for linear solver divergence.
-      IF(ier == -2) lDiverged = .TRUE.
+      IF(ier == -2) Err_l(myPE) = 120
 
 ! bound temperature in any fluid or flow boundary cells
       DO IJK = IJKSTART3, IJKEND3
@@ -293,7 +297,7 @@
             LEQM, LEQ_SWEEP(6), LEQ_TOL(6), LEQ_PC(6), IER) 
 
 ! Check for linear solver divergence.
-         IF(ier == -2) lDiverged = .TRUE.
+         IF(ier == -2) Err_l(myPE) = 121
 
 ! bound temperature in any fluid or flow boundary cells
          DO IJK = IJKSTART3, IJKEND3
@@ -310,9 +314,8 @@
 ! values. To prevent them from propogating through the domain or
 ! causing failure in other routines, force an exit from iterate and
 ! reduce the time step.
-
-      CALL GLOBAL_ALL_OR(lDiverged, gDiverged)
-      if(gDiverged) IER = -100
+      CALL global_all_sum(Err_l, Err_g)
+      IER = maxval(Err_g)
 
       
       RETURN  

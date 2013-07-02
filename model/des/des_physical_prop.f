@@ -17,6 +17,9 @@
       Use physprop
       Use run
 
+! Universal gas constant in cal/mol.K
+      use constant, only: RGAS => GAS_CONST_cal
+
       IMPLICIT NONE
 
 ! Passed Variables
@@ -29,18 +32,18 @@
 
 ! Local Variables
 !-----------------------------------------------------------------------
-! Gas constant
-      DOUBLE PRECISION, PARAMETER :: RGAS = 1.987207D0  !cal/mol.K
 ! Dummy indices
       INTEGER M, N
 ! error indicator
       INTEGER IER
 
+      DOUBLE PRECISION :: lCPoR
+
 ! External fuctions
 !-----------------------------------------------------------------------
 ! Calculate the specific heat from polynomical data obtained from the
 ! thermodynamic databases.
-      DOUBLE PRECISION , EXTERNAL :: calc_CpoR
+      DOUBLE PRECISION , EXTERNAL :: DES_calc_CpoR
 
 ! Get the solids phase of the particle
       M = PIJK(NP,5)
@@ -58,11 +61,9 @@
 ! Calculate the specific heat based on the species composition of the
 ! particle and the data from the thermodynamic databases.
             DO N = 1, DES_NMAX_s(M)
-    	          DES_C_PS(NP) = DES_C_PS(NP) + DES_X_s(NP,N) *           &
-                  calc_CpoR(DES_T_s_NEW(NP), DES_Thigh_s(M, N),        &
- 		               DES_Tlow_s(M, N), DES_Tcom_s(M, N),                  &
-                  DES_Ahigh_s(1,M,N), DES_Alow_s(1,M,N))*              &
-                  RGAS/DES_MW_s(M,N)
+               lCPoR = DES_calc_CpoR(DES_T_s_NEW(NP), M, N,IER)
+    	          DES_C_PS(NP) = DES_C_PS(NP) +                          &
+                  lCpoR * DES_X_s(NP,N) * RGAS / DES_MW_s(M,N)
             ENDDO
 ! Convert to SI units if needed.
             IF (UNITS == 'SI') DES_C_PS(NP) = 4183.925D0*DES_C_PS(NP)

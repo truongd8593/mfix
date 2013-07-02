@@ -2187,7 +2187,9 @@ read_database.$(OBJ_EXT) : ../model/read_database.f \
             DES_RXNS.mod \
             mfix_directory_path.inc                                     
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/read_database.f 
-readTherm.$(OBJ_EXT) : ../model/thermochemical/readTherm.f 
+readTherm.$(OBJ_EXT) : ../model/thermochemical/readTherm.f \
+            PHYSPROP.mod \
+            DES_RXNS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/thermochemical/readTherm.f 
 get_values.$(OBJ_EXT) : ../model/thermochemical/get_values.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/thermochemical/get_values.f 

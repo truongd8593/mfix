@@ -1,202 +1,118 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: CALC_COEFF_ALL                                          C
-!  Purpose: Sets logical values of local flags that in turn tells the  C
-!           code whether to perform the indicated type of calculation  C
-!           if the value of the flag is true.  Specifically this       C
-!           routine directs calculation of all physical and transport  C
-!           properties, reaction rates and exchange rates.             C
-!                                                                      C
-!  Author: M. Syamlal                                 Date: 25-AUG-05  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!  Local variables:                                                    C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
+!                                                                      !
+!  Subroutine: CALC_COEFF_ALL                                          !
+!  Purpose: This routine directs the calculation of all physical and   !
+!           transport properties, exchange rates, and reaction rates.  !
+!                                                                      !
+!  Author: M. Syamlal                                 Date: 25-AUG-05  !
+!  Reviewer:                                          Date:            !
+!                                                                      !
+!  Literature/Document References:                                     !
+!                                                                      !
+!  Variables referenced:                                               !
+!  Variables modified:                                                 !
+!  Local variables:                                                    !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_COEFF_ALL(FLAG, IER) 
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE physprop
-      USE rxns
-      USE funits 
-      USE compar
-      USE ur_facs 
-      USE run
+! Global variables:
+!-----------------------------------------------------------------------
+! Double precision: 1.0d0
+      use param1, only: ONE
+! Under relaxation factor for gas-solids drag coefficient
+      use ur_facs, only: UR_F_gs
+! Under relaxation factor solid conductivity coefficient for IA theory
+      use ur_facs, only: UR_kth_sml
 
-      IMPLICIT NONE
-!-----------------------------------------------
+      implicit none
+
 ! Dummy arguments
-!-----------------------------------------------
-! FLAG = 0, overwrite the coeff arrays, as for example at
-!           the beginning of a time step
+!-----------------------------------------------------------------------
+! FLAG = 0, overwrite the coeff arrays, (e.g. start of a time step)
 ! FLAG = 1, do not overwrite
-      INTEGER, INTENT(IN) :: FLAG
+      INTEGER, intent(in) :: FLAG
 ! Error index
-      INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+      INTEGER, intent(inout) :: IER
+
 ! Local variables
 !-----------------------------------------------
-! Flags to tell whether to calculate or not
-      LOGICAL :: DENSITY(0:DIMENSION_M), PSIZE(0:DIMENSION_M),&
-                 SP_HEAT(0:DIMENSION_M)
-! Flags to tell whether to calculate or not
-      LOGICAL :: VISC(0:DIMENSION_M), COND(0:DIMENSION_M),&
-                 DIFF(0:DIMENSION_M)
-! Flag for exchange functions
-      LOGICAL :: DRAGCOEF(0:DIMENSION_M, 0:DIMENSION_M),&
-                 HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
-                 WALL_TR
-! Flags to tell whether to calculate or not:
-! a granular energy dissipation term
-      LOGICAL :: GRAN_DISS(0:DIMENSION_M)
-! Temporary storage 
-      DOUBLE PRECISION :: UR_F_gstmp, UR_kth_smltmp
-!-----------------------------------------------
+! Under relaxation factor for gas-solids drag coefficient
+      DOUBLE PRECISION :: loc_UR_F_gs ! Local copy
+! Under relaxation factor solid conductivity coefficient for IA theory
+      DOUBLE PRECISION :: loc_UR_kth_sml ! Local copy
 
-! First set any under relaxation factors for coefficient calculations
-! to 1 and change them to user defined values after the call to
-! calc_coefficient
+!-----------------------------------------------------------------------
+
+! 1) Backup user-defined coefficient relaxation factors.
+! 2) Set user-defined coefficient relaxation factors to 1.
+! Note that 'FLAG' is hard coded to 0 in time march and reset_new.
       IF(FLAG == 0) THEN
-        UR_F_gstmp = UR_F_gs
-        UR_F_gs = ONE
-        UR_Kth_smltmp = UR_Kth_sml
-        UR_Kth_sml = ONE        
+        loc_UR_F_gs = UR_F_gs;          UR_F_gs = ONE
+        loc_UR_Kth_sml = UR_Kth_sml;    UR_Kth_sml = ONE        
       ENDIF
 
+! Calculate all physical properties, transport properties, and exchange
+! rates.
+      CALL CALC_COEFF(IER, 2)
 
-      CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, &
-           DIFF, GRAN_DISS, DRAGCOEF, HEAT_TR, WALL_TR, IER) 
+! Calculate reaction rates and interphase mass transfer.
+      CALL CALC_RRATE(IER)
 
-      IF(CALL_DQMOM)                          &! Used by PHYSICAL_PROP
-         PSIZE(:MMAX) = .TRUE.
-
-      WALL_TR = .TRUE.                         ! Used by EXCHANGE
-
-      IF (ENERGY_EQ) THEN 
-         SP_HEAT(:MMAX) = .TRUE.               ! Used by PHYSICAL_PROP
-         COND(:MMAX) = .TRUE.                  ! Used by TRANSPORT_PROP
-         HEAT_TR(:MMAX,:MMAX) = .TRUE.         ! Used by EXCHANGE
-      ENDIF 
-
-      IF (ANY_SPECIES_EQ)                     &! Used by TRANSPORT_PROP
-         DIFF(:MMAX) = .TRUE. 
-
-      DRAGCOEF(:MMAX,:MMAX) = .TRUE.           ! Used by EXCHANGE
-
-      IF(RO_G0 == UNDEFINED)                  &! Used in PHYSICAL_PROP
-         DENSITY(0) = .TRUE. 
-
-      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP'       &! Used by TRANSPORT_PROP 
-         .OR. TRIM(KT_TYPE) .EQ. 'GD_99')     &
-         GRAN_DISS(:MMAX) = .TRUE.
-
-! Viscosity for gas phase is set differently in iterate.
-      VISC(0) = .TRUE.                         ! Used by TRANSPORT_PROP
-      IF (MU_S0 == UNDEFINED)                 &! Used by TRANSPORT_PROP
-         VISC(1:MMAX) = .TRUE. 
-
-      CALL CALC_COEFF (DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
-          GRAN_DISS, DRAGCOEF, HEAT_TR, WALL_TR, IER)
-
-! Now restore all underrelaxation factors for coefficient
-! calculations to their original value
+! Restore all coefficient underrelaxation factors to original values.
       IF(FLAG == 0) THEN
-        UR_F_gs = UR_F_gstmp
-        UR_Kth_sml = UR_Kth_smltmp
+        UR_F_gs = loc_UR_F_gs
+        UR_Kth_sml = loc_UR_Kth_sml
       ENDIF
      
-      RETURN  
+      RETURN
       END SUBROUTINE CALC_COEFF_ALL
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: CALC_COEFF_ALL                                          !
+!  Purpose: This routine directs the calculation of all physical and   !
+!           transport properties, and exchange rates.                  !
+!                                                                      !
+!  Author: M. Syamlal                                 Date: 25-AUG-05  !
+!  Reviewer:                                          Date:            !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!  Literature/Document References:                                     !
+!                                                                      !
+!  Variables referenced:                                               !
+!  Variables modified:                                                 !
+!  Local variables:                                                    !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE CALC_COEFF(IER, pLevel)
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: CALC_COEFF                                              C
-!  Purpose: Calculate physical and transport properties, reaction      C
-!           rates and exchange rates as directed by the respective     C
-!           flags                                                      C
-!                                                                      C
-!  Author: M. Syamlal                                 Date: 23-APR-96  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!  Local variables:                                                    C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      implicit none
 
-      SUBROUTINE CALC_COEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
-            GRAN_DISS, DRAG, HEAT_TR, WALL_TR, IER) 
-
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE physprop
-      USE rxns
-      USE funits 
-      USE compar
-      IMPLICIT NONE
-!-----------------------------------------------
 ! Dummy arguments
-!-----------------------------------------------
-! density, particle size, specific heat
-      LOGICAL, INTENT(INOUT) :: DENSITY(0:DIMENSION_M),&
-                                PSIZE(0:DIMENSION_M),&
-                                SP_HEAT(0:DIMENSION_M)
-! vicosity, conductivity, diffusivity
-      LOGICAL, INTENT(INOUT) :: VISC(0:DIMENSION_M), &
-                                COND(0:DIMENSION_M),&
-                                DIFF(0:DIMENSION_M)
-! exchange functions
-      LOGICAL, INTENT(INOUT) :: DRAG(0:DIMENSION_M, 0:DIMENSION_M),&
-                                HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
-                                WALL_TR
-! a granular energy dissipation term
-      LOGICAL, INTENT(INOUT) :: GRAN_DISS(0:DIMENSION_M)
-! error index
-      INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
-! Local variables      
-!-----------------------------------------------
-! Loop indices
-      INTEGER :: L, M
-!-----------------------------------------------
+!-----------------------------------------------------------------------
+! Error index
+      INTEGER, intent(inout) :: IER
+! Level to calculate physical properties.
+! 0) Only density
+! 1) Eveything but density
+! 2) All physical properties
+      INTEGER, intent(in) :: pLevel
+!-----------------------------------------------------------------------
 
-! Calculate physical properties
-      CALL PHYSICAL_PROP (DENSITY, PSIZE, SP_HEAT, IER) 
+! Calculate physical properties: (density, specific heat, diameter)
+      CALL PHYSICAL_PROP(IER, pLevel)
 
-! Calculate Transport properties
-      CALL TRANSPORT_PROP (VISC, COND, DIFF, GRAN_DISS, IER) 
+! Calculate transport properties: (conductivity, diffusivity, ect)
+      CALL TRANSPORT_PROP(IER)
 
-! Calculate reaction rates and interphase mass transfer
-      CALL CALC_RRATE
+! Calculate interphase coeffs: (momentum and energy)
+      CALL EXCHANGE(IER)
 
-! Calculate interphase momentum, and energy transfers
-      CALL EXCHANGE (DRAG, HEAT_TR, WALL_TR, IER) 
-
-! Reset all flags.  The flags need to be set every time this routine is
-! called.
-      CALL TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, DIFF, &
-           GRAN_DISS, DRAG, HEAT_TR, WALL_TR, IER)
-
-      RETURN  
-      END SUBROUTINE CALC_COEFF 
+      RETURN
+      END SUBROUTINE CALC_COEFF
 
 
 
@@ -207,7 +123,7 @@
 !           mass transfer. if present, calculate discrete reactions    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CALC_RRATE
+      SUBROUTINE CALC_RRATE(IER)
 
 !-----------------------------------------------
 ! Modules
@@ -225,8 +141,8 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! error index
-      INTEGER :: IER
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
 
 ! For DEM simulations that do not have a homogeneous gas phase reaction,
 ! the gas phase arrays phase change arrays need to be cleared in 
@@ -234,8 +150,6 @@
       LOGICAL CLEAR_ARRAYS
 
 !-----------------------------------------------
-
-
 
       CLEAR_ARRAYS = .TRUE.
 ! Calculate reaction rates and interphase mass transfer
@@ -266,64 +180,4 @@
          ' and remove the initial section that returns IER=1.'&
          ,/1X,70('*')/) 
 
-      END SUBROUTINE CALC_RRATE 
-
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: TurnoffCoeff                                            C
-!  Purpose: Reset all flags to false                                   C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
-      SUBROUTINE TurnOffCOEFF(DENSITY, PSIZE, SP_HEAT, VISC, COND, &
-           DIFF, GRAN_DISS, DRAG, HEAT_TR, WALL_TR, IER) 
-
-!----------------------------------------------- 
-! Modules 
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE physprop
-      IMPLICIT NONE
-!----------------------------------------------- 
-! Dummy arguments
-!-----------------------------------------------
-! density, particle size distribution, specific heat      
-      LOGICAL, INTENT(INOUT) :: DENSITY(0:DIMENSION_M),&
-                                PSIZE(0:DIMENSION_M),&
-                                SP_HEAT(0:DIMENSION_M)
-! viscosity, conductivity, diffusivity                                
-      LOGICAL, INTENT(INOUT) :: VISC(0:DIMENSION_M), &
-                                COND(0:DIMENSION_M),&
-                                DIFF(0:DIMENSION_M)
-! exchange functions
-      LOGICAL, INTENT(INOUT) :: DRAG(0:DIMENSION_M, 0:DIMENSION_M),&
-                                HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M),&
-                                WALL_TR
-! a granular energy dissipation term
-      LOGICAL, INTENT(INOUT) :: GRAN_DISS(0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
-!----------------------------------------------- 
-! Variables/Arguments
-!----------------------------------------------- 
-! Loop indices
-      INTEGER :: L, M
-!-----------------------------------------------
-
-! Reset all flags
-      WALL_TR = .FALSE. 
-      DENSITY(:MMAX) = .FALSE. 
-      PSIZE(:MMAX) = .FALSE. 
-      SP_HEAT(:MMAX) = .FALSE. 
-      VISC(:MMAX) = .FALSE. 
-      COND(:MMAX) = .FALSE. 
-      DIFF(:MMAX) = .FALSE.
-      GRAN_DISS(:MMAX) = .FALSE.  
-      DRAG(:MMAX,:MMAX) = .FALSE. 
-      HEAT_TR(:MMAX,:MMAX) = .FALSE. 
-
-      RETURN  
-      END SUBROUTINE TurnOffCOEFF 
+      END SUBROUTINE CALC_RRATE

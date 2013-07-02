@@ -19,19 +19,16 @@
 
 ! Subroutine Access:
 !---------------------------------------------------------------------//
-      PUBLIC :: ODE_UPDATE_OLD,   &
-                ODE_RESET,        &
-                INIT_ODE_STATS0,  &
-                INIT_ODE_STATS,   &
-                UPDATE_ODE_STATS, &
-                WRITE_ODE_STATS,  &
-                CHECK_ODE_DATA,   &
-                WRITE_ODE_LOG
+      PUBLIC :: ALLOCATE_STIFF_CHEM_DBG
 
+      PUBLIC :: UPDATE_ODE_OLD
+      PUBLIC :: RESET_ODE
+
+      PUBLIC :: CHECK_ODE_DATA
+      PUBLIC :: WRITE_ODE_LOG
 
 ! Routine used to compare to values.
       LOGICAL, external :: COMPARE
-
 
 ! Static variables/parameters.
 !---------------------------------------------------------------------//
@@ -41,61 +38,38 @@
 ! 2 - Aggressive
       INTEGER :: ODE_DEBUG_LEVEL = 2
 
-! Frequency to report the number of steps distribution.
-      INTEGER, parameter :: reportNST_Freq = 10
-
 ! File unit for ODE Error Log.
       INTEGER, parameter :: OEL_Unit = 6589
-
-
-! Variables updated once each call to the stiff solver.
-!---------------------------------------------------------------------//
-! Frequency to report the number of steps distribution.
-      INTEGER :: reportNST
-      INTEGER :: failedCount_total
-
-! Variables updated every IJK loop cycle.
-!---------------------------------------------------------------------//
 
 ! Original field variables. Used to reset after failed integration.
       DOUBLE PRECISION, allocatable :: ODE_VARS_o(:)
 
-! The minimum number of integrations needed (over all IJK)
-      INTEGER, allocatable :: minNST(:)                     ! local
-      INTEGER, allocatable :: minNST_all(:)                 ! global
-
-! The maximum number of integrations needed (over all IJK)
-      INTEGER, allocatable :: maxNST(:)                     ! local
-      INTEGER, allocatable :: maxNST_all(:)                 ! global
-
-! An array that stores the distrubtion of the number of steps needed
-! to integrate ODES.
-      INTEGER, allocatable :: countNST(:)                   ! local
-      INTEGER, allocatable :: countNST_all(:)               ! global
-
-! Number of cells that only have homogeneous chemical reactions.
-      INTEGER, allocatable :: lHomogeneous(:)               ! local
-      INTEGER, allocatable :: lHomogeneous_all(:)           ! global
-
-! Number of cells that only have homogeneous and/or heterogeneous
-! chemical reactions.
-      INTEGER, allocatable :: lHeterogeneous(:)             ! local
-      INTEGER, allocatable :: lHeterogeneous_all(:)         ! global
-
-! Number of cells that failed to successfully integration ODEs.
-      INTEGER, allocatable :: failedCount(:)                ! local
-      INTEGER, allocatable :: failedCount_all(:)            ! global
-
-! Maximum number of attempts to integrate.
-      INTEGER, allocatable :: maxAttempts(:)                ! local
-      INTEGER, allocatable :: maxAttempts_all(:)            ! global
-
-
-
-      DOUBLE PRECISION :: ODE_StartTime
       LOGICAL :: PRINT_ERR_HEADER
 
       contains
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: ALLOCATE_STIFF_CHEM_STATS                              !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      !
+!  Author: J.Musser                                   Date:            !
+!                                                                      !
+!  Comments:                                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE ALLOCATE_STIFF_CHEM_DBG(lODE_DIMN)
+
+      implicit none
+
+! The number ODEs (maximum).
+      INTEGER, intent(in) :: lODE_DIMN
+
+      allocate( ODE_VARS_o(lODE_DIMN) )
+
+      RETURN
+      END SUBROUTINE ALLOCATE_STIFF_CHEM_DBG
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -108,7 +82,7 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE ODE_UPDATE_OLD(lODE_DIMN, lODE_VARS)
+      SUBROUTINE UPDATE_ODE_OLD(lODE_DIMN, lODE_VARS)
 
       implicit none
 
@@ -121,8 +95,7 @@
       ODE_VARS_o = lODE_VARS
 
       RETURN
-      END SUBROUTINE ODE_UPDATE_OLD
-
+      END SUBROUTINE UPDATE_ODE_OLD
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -135,9 +108,11 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE ODE_RESET(lDIMN, lVARS, lAtps)
+      SUBROUTINE RESET_ODE(lDIMN, lVARS, lAtps)
 
-      use compar,     only : myPE
+      use compar, only: myPE
+
+      use stiff_chem_stats, only: failedCount
 
       implicit none
 
@@ -154,317 +129,8 @@
       IF(lAtps == 3) failedCount(myPE) = failedCount(myPE) + 1
 
       RETURN
-      END SUBROUTINE ODE_RESET
+      END SUBROUTINE RESET_ODE
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Module name: INIT_ODE_STATS0                                        !
-!                                                                      !
-!  Purpose:                                                            !
-!                                                                      !
-!  Author: J.Musser                                   Date:            !
-!                                                                      !
-!  Comments:                                                           !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE INIT_ODE_STATS0(lODE_DIMN)
-
-      use compar,     only : numPEs
-
-      implicit none
-
-! The number ODEs (maximum).
-      INTEGER, intent(in) :: lODE_DIMN
-
-      reportNST = 1
-      failedCount_total = 0
-
-      allocate( ODE_VARS_o(lODE_DIMN) )
-
-
-! The minimum number of integrations needed (over all IJK)
-      allocate( minNST(0:numPEs-1))      ! local
-      allocate( minNST_all(0:numPEs-1) )  ! global
-
-! The maximum number of integrations needed (over all IJK)
-      allocate( maxNST(0:numPEs-1) )     ! local
-      allocate( maxNST_all(0:numPEs-1) ) ! global
-
-! An array that stores the distrubtion of the number of steps needed
-! to integrate ODES.
-      allocate( countNST(7) )     ! local
-      allocate( countNST_all(7) ) ! global
-
-! Number of cells that only have homogeneous chemical reactions.
-      allocate( lHomogeneous(0:numPEs-1) )     ! local
-      allocate( lHomogeneous_all(0:numPEs-1) ) ! global
-
-! Number of cells that only have homogeneous and/or heterogeneous
-! chemical reactions.
-      allocate( lHeterogeneous(0:numPEs-1) )     ! local
-      allocate( lHeterogeneous_all(0:numPEs-1) ) ! global
-
-! Number of cells that failed to successfully integration ODEs.
-      allocate( failedCount(0:numPEs-1) )     ! local
-      allocate( failedCount_all(0:numPEs-1) ) ! global
-
-! Maximum number of attempts to integrate.
-      allocate( maxAttempts(0:numPEs-1) )     ! local
-      allocate( maxAttempts_all(0:numPEs-1) ) ! global
-
-
-      RETURN
-      END SUBROUTINE INIT_ODE_STATS0
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Module name: INIT_ODE_STATS                                         !
-!                                                                      !
-!  Purpose:                                                            !
-!                                                                      !
-!  Author: J.Musser                                   Date:            !
-!                                                                      !
-!  Comments:                                                           !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE INIT_ODE_STATS
-
-      use compar,   only : myPE, PE_IO
-
-      implicit none
-
-      CHARACTER*64 :: lFile
-
-      if(myPE == PE_IO) &
-         write(*,"(/3x,'Entering the stiff chemistry solver...',$)")
-
-      PRINT_ERR_HEADER = .TRUE.
-
-      maxNST = 0
-      minNST = 0
-      minNST(myPE) = 5000
-      maxAttempts = 0
-
-      IF(reportNST == 1) then
-         countNST = 0
-         countNST_all = 0
-      ENDIF
-
-      failedCount = 0
-      lHomogeneous = 0
-      lHeterogeneous = 0
-
-
-      CALL CPU_TIME(ODE_StartTime)
-
-
-      IF(ODE_DEBUG_LEVEL >= 1) THEN
-         lFile = ''; write(lFile,"('StiffChem_',I2.2,'.log')")myPE
-         open(OEL_Unit, file=lFile, status='unknown', position='append')
-      ENDIF
-
-
-      END SUBROUTINE INIT_ODE_STATS
-
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Module name: CALC_ODE_STATS                                         !
-!                                                                      !
-!  Purpose:                                                            !
-!                                                                      !
-!  Author: J.Musser                                   Date:            !
-!                                                                      !
-!  Comments:                                                           !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE UPDATE_ODE_STATS(lNEQ, lNEQ_DIMN, lNST, lODE_DIMN, &
-         lAtps)
-
-      use compar,   only : myPE, PE_IO
-
-      implicit none
-
-! The number of steps needed to integrate.
-      INTEGER, intent(in) :: lNEQ_DIMN
-
-! (1) :: Number of ODEs
-! (2) :: Fluid cell index (IJK) passed into ODEPACK
-      INTEGER, dimension(lNEQ_DIMN), intent(in) :: lNEQ
-! The number of steps needed to integrate.
-      INTEGER, intent(in) :: lNST
-! The number ODEs (maximum).
-      INTEGER, intent(in) :: lODE_DIMN
-
-! The number of attempts.
-      INTEGER, intent(in) :: lAtps
-
-
-      IF(lNEQ(1) == lODE_DIMN) THEN
-         lHeterogeneous(myPE) = lHeterogeneous(myPE) + 1
-      ELSE
-         lHomogeneous(myPE) = lHomogeneous(myPE) + 1
-      ENDIF
-
-      maxAttempts(myPE) = max(lAtps, maxAttempts(myPE))
-
-      minNST(myPE) = min(minNST(myPE), lNST)
-      maxNST(myPE) = max(maxNST(myPE), lNST)
-
-      IF (lNST <           10) THEN
-         countNST(1) = countNST(1) + 1 
-      ELSE IF (lNST <     100) THEN
-         countNST(2) = countNST(2) + 1 
-      ELSE IF (lNST <    1000) THEN
-         countNST(3) = countNST(3) + 1 
-      ELSE IF (lNST <   10000) THEN
-         countNST(4) = countNST(4) + 1 
-      ELSE IF (lNST <  100000) THEN
-         countNST(5) = countNST(5) + 1 
-      ELSE IF (lNST < 1000000) THEN
-         countNST(6) = countNST(6) + 1 
-      ELSE
-         countNST(7) = countNST(7) + 1 
-      ENDIF
-
-
-      RETURN
-      END SUBROUTINE UPDATE_ODE_STATS
-
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!  Module name: WRITE_ODE_STATS                                        !
-!                                                                      !
-!  Purpose:                                                            !
-!                                                                      !
-!  Author: J.Musser                                   Date:            !
-!                                                                      !
-!  Comments:                                                           !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE WRITE_ODE_STATS
-
-      use compar,   only : myPE, PE_IO
-
-      use mpi_utility
-
-      implicit none
-
-! Message buffer.
-      CHARACTER*64 :: lMsg0, lMsg1
-
-      DOUBLE PRECISION :: lODE_EndTime, lODE_RunTime
-
-! Collect stats on min/max number of steps.
-      minNST_all = 0; CALL global_sum(minNST, minNST_all)
-      maxNST_all = 0; CALL global_sum(maxNST, maxNST_all)
-
-! Collect stats on the number of cells with pure homogeneous reactions.
-      lHomogeneous_all = 0;
-      CALL global_sum(lHomogeneous, lHomogeneous_all)
-
-! Collect stats on the number of cells with heterogeneous and 
-! homogeneous reactions.
-      lHeterogeneous_all = 0
-      CALL global_sum(lHeterogeneous, lHeterogeneous_all)
-
-! Collect stats on the maximum number of integration attempts.
-      maxAttempts_all = 0
-      CALL global_sum(maxAttempts, maxAttempts_all)
-
-! Collect stats on the number of failed integrations.
-      failedCount_all = 0
-      CALL global_sum(failedCount, failedCount_all)
-
-
-! Display stiff solver summary.
-      IF(myPE == PE_IO) THEN
-
-! Update screen message.
-         WRITE(*,"(2x,'DONE.',/)")
-
-         CALL CPU_TIME(lODE_EndTime)
-         lODE_RunTime = lODE_EndTime - ODE_StartTime
-
-! Report Min/Max steps:
-         lMsg0=''; write(lMsg0,*) minval(minNST_all)
-         lMsg1=''; write(lMsg1,*) maxval(maxNST_all)
-         write(*,1000)  trim(adjustl(lMsg0)), trim(adjustl(lMsg1))
-
-! Report Homogeneous/Heterogeneous reactions:
-         lMsg0=''; write(lMsg0,*) sum(lHomogeneous_all)
-         lMsg1=''; write(lMsg1,*) sum(lHeterogeneous_all)
-         write(*,1001) trim(adjustl(lMsg0)), trim(adjustl(lMsg1))
-
-! Report Max attempts:
-         lMsg0=''; write(lMsg0,*) maxval(maxAttempts_all)
-         write(*,1004)  trim(adjustl(lMsg0))
-
-
-! Report failed integrations:
-         failedCount_total = failedCount_total + sum(failedCount_all)
-
-         lMsg0=''; write(lMsg0,*) sum(failedCount_all)
-         lMsg1=''; write(lMsg1,*) failedCount_total
-         write(*,1002) trim(adjustl(lMsg0)), trim(adjustl(lMsg1))
-
-
-         IF(lODE_RunTime > 3.6d3) THEN
-            lMsg0=''; write(lMsg0,"(f8.4)") lODE_RunTime/3.6d3
-            lMsg1='hrs'
-         ELSEIF(lODE_RunTime > 6.0d1) THEN
-            lMsg0=''; write(lMsg0,"(f8.4)") lODE_RunTime/6.0d1
-            lMsg1='min'
-         ELSE
-            lMsg0=''; write(lMsg0,"(f8.4)") lODE_RunTime
-            lMsg1='sec'
-         ENDIF
-         write(*,1003) trim(adjustl(lMsg0)), trim(adjustl(lMsg1))
-
-      ENDIF
-
-
-      if(reportNST == reportNST_Freq) then
-! Collect the number of steps distrubutions.
-         countNST_all = 0;
-         CALL global_sum(countNST, countNST_all)
-
-         countNST_all = int(countNST_all/reportNST_Freq)
-
-         if(myPE == PE_IO) then
-            write(*,"(/5x,'Average Integration Distrubution:')")
-            write(*,"(7x,'NST <      10: ', I6)")countNST_all(1)
-            write(*,"(7x,'NST <     100: ', I6)")countNST_all(2)
-            write(*,"(7x,'NST <    1000: ', I6)")countNST_all(3)
-            write(*,"(7x,'NST <   10000: ', I6)")countNST_all(4)
-            write(*,"(7x,'NST <  100000: ', I6)")countNST_all(5)
-            write(*,"(7x,'NST < 1000000: ', I6)")countNST_all(6)
-            write(*,"(7x,'NST > 1000000: ', I6)")countNST_all(7)
-         endif
-! Reset the reporting counter.
-         reportNST = 1
-      else
-! Increment the reporting counter.
-         reportNST = reportNST + 1
-      endif
-
-      if(myPE == PE_IO)write(*,"(/' ')")
-
-
-      close(OEL_Unit)
-
-      RETURN
-
- 1000 Format(5x,'Minimum/Maximum number of steps over all cells: ',A,'/',A)
- 1001 Format(5x,'Number of cells with Homogeneous/Heterogeneous reactions: ',A,'/',A)
- 1002 Format(5x,'Number of Current/Cumulative failed integrations: ',A,'/',A)
- 1003 Format(5x,'CPU Time Used: ',A,' ',A)
- 1004 Format(5x,'Maximum number of integration attempts: ',A)
-
-      END SUBROUTINE WRITE_ODE_STATS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -607,8 +273,6 @@
             ENDDO
          ENDIF
       ENDDO   
-
-
       
       RETURN
       END SUBROUTINE CHECK_ODE_DATA
@@ -651,7 +315,21 @@
 
       DOUBLE PRECISION :: ddt_lVARS(loD)
 
+      CHARACTER*32 :: lFile
+
+      LOGICAL :: lExist
+
       IJK = lNEQ(2)
+
+      lFile = ''; write(lFile,"('StiffChem_',I2.2,'.log')") myPE
+
+      inquire(file=lFile,exist=lExist)
+      if(lExist) then
+         open(OEL_Unit,file=trim(adjustl(lFile)), position='append')
+      else
+         open(OEL_Unit,file=trim(adjustl(lFile)), status='new')
+      endif
+
 
       if(PRINT_ERR_HEADER) then
          WRITE(OEL_Unit,9000) Time

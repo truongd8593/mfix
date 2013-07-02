@@ -102,13 +102,17 @@
 
 ! Thermochemical data for discrese solids phases:
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION DES_Thigh_s(DIM_M, DIM_N_s)
-      DOUBLE PRECISION DES_Tlow_s(DIM_M, DIM_N_s)
-      DOUBLE PRECISION DES_Tcom_s(DIM_M, DIM_N_s)
-      DOUBLE PRECISION DES_Ahigh_s(7, DIM_M, DIM_N_s)
-      DOUBLE PRECISION DES_Alow_s(7, DIM_M, DIM_N_s)
-      DOUBLE PRECISION DES_HfrefoR_s(DIM_M, DIM_N_s)
-      DOUBLE PRECISION DES_IC_PSrefoR(DIM_M, DIM_N_s)
+      DOUBLE PRECISION DES_Thigh(DIM_M, DIM_N)
+      DOUBLE PRECISION DES_Tlow(DIM_M, DIM_N)
+      DOUBLE PRECISION DES_Tcom(DIM_M, DIM_N)
+      DOUBLE PRECISION DES_Ahigh(7, DIM_M, DIM_N)
+      DOUBLE PRECISION DES_Alow(7, DIM_M, DIM_N)
+      DOUBLE PRECISION DES_HfrefoR(DIM_M, DIM_N)
+
+      DOUBLE PRECISION DES_ICpoR_l(DIM_M, DIM_N)
+      DOUBLE PRECISION DES_ICpoR_h(DIM_M, DIM_N)
+
+!      DOUBLE PRECISION DES_IC_PSrefoR(DIM_M, DIM_N_s)
 
 
       END MODULE DES_RXNS
