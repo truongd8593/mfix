@@ -150,7 +150,6 @@
 ! Ahigh coefficients.
                xTc = Tcom(lM,lN)+SMALL_NUMBER
                ICpoR_TcH = calc_ICpoR(xTc, lM, lN, IER)
-
 ! Store the integrals in global variables.
                ICpoR_l(lM,lN) = ICpoR_TrL
                ICpoR_h(lM,lN) = ICpoR_TcL - ICpoR_TcH - ICpoR_TrL
@@ -192,10 +191,6 @@
 ! Store the integrals in global variables.
                DES_ICpoR_l(lM,lN) = ICpoR_TrL
                DES_ICpoR_h(lM,lN) = ICpoR_TcL - ICpoR_TcH - ICpoR_TrL
-
-
-
-
             ENDIF
          ELSE
 ! No other models have been set to use the thermochemical database.
@@ -238,10 +233,11 @@
 
       RETURN  
 
+
 ! Messages
 !-----------------------------------------------------------------------
- 1000 FORMAT(4X,'Checking for thermochemical data in ',A)
- 1001 FORMAT(4X,'Status: ',A)
+ 1000 FORMAT(5X,'Checking ',A,$)
+ 1001 FORMAT(1X,' :: ',A)
 
 ! Error Flags
 !-----------------------------------------------------------------------
@@ -250,7 +246,7 @@
          ' thermochemical databases.')
  1011 FORMAT(/' SUGGESTION: Search the database for the exact species',&
          ' name. The',/' species names are case sensitive and should', &
-         ' mathch the names in',/' BURCAT.THR exactly excluding',      &
+         ' match the names in',/' BURCAT.THR exactly excluding',       &
          ' trailing blanks and tabs. Also verify',/' that the data',   &
          ' section in the mfix.dat file (if any) is below a line',/    &
          ' that starts with THERMO DATA.',//' Database location:',     &

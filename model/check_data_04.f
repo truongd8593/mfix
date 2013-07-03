@@ -56,6 +56,10 @@
 ! molecular weight for a species are not given in the data file.
 ! If true, a call to the thermochemical database is made.
       LOGICAL SEQ_MWs
+
+! Flag indicating that the thermochemical database header was output 
+! to the screen. (Miminize messages)
+      LOGICAL thermoHeader
 !-----------------------------------------------
 
 
@@ -114,22 +118,18 @@
 ! Check RO_s      
 ! Only need to check for real phases (for GHD theory) 
       DO LC = 1, SMAX 
-!QX: RO_S changed to RO_S0
          IF (RO_S(LC)<ZERO .OR. RO_S(LC)==UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_data_04', &
                'RO_s0 not specified or unphysical', 0, 2) 
                IF(DMP_LOG)WRITE (UNIT_LOG, 1300) LC, RO_S(LC) 
-!end
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       ENDDO 
       DO LC = SMAX + 1, DIM_M
-!QX 
          IF (RO_S(LC) /= UNDEFINED) THEN 
             CALL ERROR_ROUTINE ('check_data_04', &
                'too many RO_s0 values specified', 0, 2) 
                IF(DMP_LOG)WRITE (UNIT_LOG, 1400) LC, RO_S(LC), MMAX 
-!end
             CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
          ENDIF 
       ENDDO 
@@ -253,6 +253,8 @@
 
 ! Flag indicating if the user was already warned.
       WARNED_USR = .FALSE.
+! Flag indicating the search header was already written.
+      thermoHeader = .FALSE.
 ! Flag that the energy equations are solved and specified solids phase
 ! specific heat is undefined.
       EEQ_CPS = .FALSE.
@@ -308,8 +310,13 @@
                   ENDIF
 ! Read the database.
                   IF(myPE .EQ. PE_IO) THEN
-                     WRITE(*,1061) LC, N
-                     WRITE(UNIT_LOG,1061) LC, N
+                     IF(.NOT.thermoHeader) THEN
+                        WRITE(*,1061) LC
+                        WRITE(UNIT_LOG,1061) LC
+                        thermoHeader = .TRUE.
+                     ENDIF
+                     WRITE(*,1062) N, trim(SPECIES_s(LC,N))
+                     WRITE(UNIT_LOG,1062) N, trim(SPECIES_s(LC,N))
                   ENDIF
                   CALL READ_DATABASE('TFM', LC, N, SPECIES_s(LC,N),   &
                      MW_S(LC,N))
@@ -410,7 +417,9 @@
          ,/1X,70('*')/)
 
  1061 FORMAT(/'  Searching thermochemical databases for solids phase ',&
-         I2,', species ',I2)
+         I2,' species data')
+
+ 1062 FORMAT(2x,'>',I3,': Species: ',A)
 
 
  1100 FORMAT(1X,/,1X,'D_p0(',I2,') in mfix.dat = ',G12.5) 

@@ -66,6 +66,9 @@
 ! chemical database is being made.
       LOGICAL WARNED_USR
 
+! Flag indicating that the thermochemical database header was output 
+! to the screen. (Miminize messages)
+      LOGICAL thermoHeader
 
 !-----------------------------------------------
 
@@ -184,6 +187,8 @@
          rDatabase(0,:) = .FALSE.
 ! Flag indicating if the user was already warned.
          WARNED_USR = .FALSE.
+! Flag indicating the search header was already written.
+         thermoHeader = .FALSE.
 ! Flag that the energy equations are solved and specified solids phase
 ! specific heat is undefined.
          EEQ_CPG = .FALSE.
@@ -201,7 +206,6 @@
          ELSE
             MWg_ROg = .FALSE.
          ENDIF
-
 
 ! Loop over the gas phase species
          DO N = 1, NMAX(0)
@@ -244,8 +248,13 @@
                ENDIF
 ! Read the database.
                IF(myPE .EQ. PE_IO) THEN
-                  WRITE(*,1058) N
-                  WRITE(UNIT_LOG,1058) N
+                  IF(.NOT.thermoHeader) THEN
+                     WRITE(*,1058)
+                     WRITE(UNIT_LOG,1058)
+                     thermoHeader = .TRUE.
+                  ENDIF
+                  WRITE(*,1059) N, trim(SPECIES_g(N))
+                  WRITE(UNIT_LOG,1059) N, trim(SPECIES_g(N))
                ENDIF
                CALL READ_DATABASE('TFM', 0, N, SPECIES_g(N),MW_g(N))
 ! Flag variable to stating that the database was read.
@@ -372,8 +381,9 @@
          /1X,70('*')/)
 
  1058 FORMAT(/'  Searching thermochemical databases for gas phase',    &
-         ' species ',I2)
+         ' species data')
 
+ 1059 FORMAT(2x,'>',I3,': Species: ',A)
 
  1100 FORMAT(1X,/,1X,'MU_g0   in mfix.dat = ',G12.5) 
  1110 FORMAT(1X,/,1X,'K_g0   in mfix.dat = ',G12.5) 
