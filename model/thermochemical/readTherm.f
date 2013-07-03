@@ -115,14 +115,22 @@
         READ(UNIT=funit, FMT='(A)',ERR=100,END=100)LINE_STRING
         ss = LINE_STRING(1:18)
         call trimTab(ss)
+
       END DO
 !      print *, LINE_STRING
+
        
       call get_values(LINE_STRING, Tlow, Thigh, MW)
-      Tcom = 1000.D0
+
+! Tcom is almost always 1000K, however there are a few species where
+! this value is too high and causes a problem (e.g., liquid water). 
+! Therefore, set Tcom = Thigh when Thigh < 1000K.
+      Tcom = min(1.0d3, Thigh)
       READ(UNIT=funit, FMT='(5E15.0)',ERR=300,END=300)Ahigh(1:5)
       READ(UNIT=funit, FMT='(5E15.0)',ERR=300,END=300)Ahigh(6:7), Alow(1:3)
       READ(UNIT=funit, FMT='(5E15.0)',ERR=300,END=300)Alow(4:7), Hf298oR
+
+
       
       RETURN
       ! species not found or THERMO DATA not found!
