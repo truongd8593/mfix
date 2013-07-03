@@ -216,7 +216,7 @@
 ! every iteration
       IF (CALL_USR) CALL USR2 
 
-! Calculate coefficients, excluding density.
+! Calculate coefficients, excluding density and reactions.
       CALL CALC_COEFF(IER, 1)
       goto( 1000 ), IER_MANAGER(IER)
 
@@ -548,17 +548,20 @@
       IF(IER < 100) THEN
          IER_MANAGER = 0
          return
+      ENDIF
 
+! Errors with an index greater than 100 will force an exit from iterate
+! and in turn, reduce the step-size, and restart the time-step.
+      IER_MANAGER = 1
+      MUSTIT = 2
 
 ! Errors reported from PHYSICAL_PROP
 !```````````````````````````````````````````````````````````````````````
-      ELSEIF(IER <  110) THEN
+      IF(IER <  110) THEN
          IF(IER ==  100) THEN
             lMsg = 'Negative gas density detected'
-            MUSTIT = 2
          ELSE
             lMsg = 'UCE in PHYSICAL_PROP'
-            MUSTIT = 2
          ENDIF
 
 
@@ -567,10 +570,8 @@
       ELSEIF(IER <  120) THEN
          IF(IER ==  110) THEN
             lMsg = 'Negative void fraction detected'
-            MUSTIT = 2
          ELSE
             lMsg = 'UCE in CALC_VOL_FR'
-            MUSTIT = 2
          ENDIF
 
 
@@ -579,10 +580,8 @@
       ELSEIF(IER <  130) THEN
          IF(IER ==  120) THEN
             lMsg = 'Energy Equation diverged'
-            MUSTIT = 2
          ELSE
             lMsg = 'UCE in SOLVE_ENERGY_EQ'
-            MUSTIT = 2
          ENDIF
 
 
@@ -591,10 +590,8 @@
       ELSEIF(IER <  140) THEN
          IF(IER ==  130) THEN
             lMsg = 'Species Equation diverged'
-            MUSTIT = 2
          ELSE
             lMsg = 'UCE in SOLVE_SPECIES_EQ'
-            MUSTIT = 2
          ENDIF
 
 
@@ -603,17 +600,14 @@
       ELSEIF(IER <  150) THEN
          IF(IER ==  140) THEN
             lMsg = 'Granular Energy Eq diverged'
-            MUSTIT = 2
          ELSE
             lMsg = 'UCE in SOLVE_GRANULAR_ENERGY'
-            MUSTIT = 2
          ENDIF
 
 ! Unclassified Errors
 !```````````````````````````````````````````````````````````````````````
       ELSE
          lMsg = 'Run diverged/stalled with UCE'
-
       ENDIF
 
 
