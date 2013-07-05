@@ -64,6 +64,9 @@
       DOUBLE PRECISION RXNA, Trxn
       DOUBLE PRECISION, EXTERNAL ::calc_h
 !
+      DOUBLE PRECISION :: refT_M
+      DOUBLE PRECISION :: refT_L
+
 !-----------------------------------------------
       INCLUDE 'function.inc'
       
@@ -244,31 +247,39 @@
 
             IF(ENERGY_EQ) THEN ! calculate heat of reactions only if energy eq. are solved
             DO M = 0, MMAX-1
- 	      DO L = M+1, MMAX
+               if(m==0) then
+                  refT_M = T_G(IJK)
+               else
+                  refT_M = T_S(IJK,M)
+               endif
+            DO L = M+1, MMAX
+               refT_L = T_S(IJK,L)
+
+
 	        RxH_xfr(M, L) = zero 
 	        IF(R_tmp(M,L) .NE. UNDEFINED)THEN
 		   IF(R_tmp(M,L) > ZERO) then ! phase-M is generated from phase-L
                      DO N = 1, NMAX(M)
                        RxH_xfr(M, L) =  RxH_xfr(M, L) + R_tmp(M,L) * X_tmp(M,L, N) * &
-			                              CALC_H(IJK, M, N)
+			                              CALC_H(refT_M, M, N)
 	                   
                      END DO 
 		   else    ! phase-L is generated from phase-M
                      DO N = 1, NMAX(L)
                        RxH_xfr(M, L) =  RxH_xfr(M, L) + R_tmp(M,L) * X_tmp(M,L, N) * &
-			                              CALC_H(IJK, L, N)
+			                              CALC_H(refT_L, L, N)
                      END DO
 		   endif
 		ELSEIF(R_tmp(L,M) .NE. UNDEFINED)THEN
 		   IF(R_tmp(L,M)> ZERO) then ! phase-L is generated from phase-M
                      DO N = 1, NMAX(L)
                        RxH_xfr(M, L) =  RxH_xfr(M, L) - R_tmp(L,M) * X_tmp(L,M, N) * &
-			                              CALC_H(IJK, L, N) 
+			                              CALC_H(refT_L, L, N) 
                      END DO
 		   else ! phase-M is generated from phase-L
                      DO N = 1, NMAX(M)
                        RxH_xfr(M, L) =  RxH_xfr(M, L) - R_tmp(L,M) * X_tmp(L,M, N) * &
-			                              CALC_H(IJK, M, N)
+			                              CALC_H(refT_M, M, N)
                      END DO 
 		   endif
 	        ENDIF
@@ -287,7 +298,7 @@
             HOR_G(IJK) = zero
             DO N = 1, NMAX(0)
               HOR_G(IJK) = HOR_G(IJK) + &
-	         (R_gp(IJK, N) - RoX_gc(IJK, N) * X_g(IJK, N)) * CALC_H(IJK, 0, N)
+	         (R_gp(IJK, N) - RoX_gc(IJK, N) * X_g(IJK, N)) * CALC_H(T_G(IJK), 0, N)
             END DO 
             DO L = 1, MMAX
 	      HOR_G(IJK) = HOR_G(IJK) - RxH_xfr(0, L)
@@ -298,7 +309,8 @@
               HOR_s(IJK, M) = zero
               DO N = 1, NMAX(M)
                 HOR_s(IJK, M) = HOR_s(IJK, M) + &
-		  (R_sp(IJK, M, N) - RoX_sc(IJK, M, N) * X_s(IJK, M, N)) * CALC_H(IJK, M, N)
+		  (R_sp(IJK, M, N) - RoX_sc(IJK, M, N) * X_s(IJK, M, N)) * &
+              CALC_H(T_S(IJK,M), M, N)
               END DO 
               DO L = 0, MMAX
 	        if(M .NE. L) HOR_s(IJK, M) = HOR_s(IJK, M) - RxH_xfr(M, L)
