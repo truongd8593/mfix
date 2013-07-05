@@ -206,6 +206,7 @@
          CALL WRITE_RXN_SUMMARY(This, SPECIES_ALIAS_g(:), &
             SPECIES_ALIAS_s(:,:))
       ENDDO
+      CLOSE(678)
 
 
       RETURN

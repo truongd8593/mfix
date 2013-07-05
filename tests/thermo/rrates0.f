@@ -65,6 +65,8 @@
 
       INTEGER mXfr ! Global phase index for mass transfer
 
+      INTEGER, parameter :: lUnit = 668
+
 ! User-defined reaction rates returned from USR_RATES
       DOUBLE PRECISION RATES(NO_OF_RXNS)
 
@@ -73,9 +75,7 @@
       DOUBLE PRECISION RxH(0:MMAX, 0:MMAX)
       DOUBLE PRECISION lHoRg, LHoRs(1:MMAX)
 
-
-      DOUBLE PRECISION, EXTERNAL ::calc_h
-      DOUBLE PRECISION, EXTERNAL ::CALC_H0
+      DOUBLE PRECISION, EXTERNAL ::CALC_H
 
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
@@ -107,9 +107,9 @@
         ENDDO
       ENDDO
 
-      OPEN(6,FILE='POST_Thermo.dat',access='APPEND')
+      OPEN(lUnit,FILE='POST_Thermo.dat',access='APPEND')
 
-      write(6,"(3X,A,17X,A,3(11X,A))")'Reaction','HORg', 'HORs1', 'HORs2', 'HORs3'
+      write(lUnit,"(3X,A,17X,A,3(11X,A))")'Reaction','HORg', 'HORs1', 'HORs2', 'HORs3'
 
 
 ! Loop over each fluid cell.
@@ -156,13 +156,13 @@
                   ENDIF
 ! Enthalpy transfer associated with mass transfer. (gas/solid)
                   IF(M /= mXfr) RxH(M,mXfr) =  RxH(M,mXfr) + &
-                     lRate * CALC_H0(T_G(IJK),0,N)
+                     lRate * CALC_H(T_G(IJK),0,N)
                ELSE
 ! Formation of gas phase species.
                   R_gp(IJK,N) = R_gp(IJK,N) + lRate
 ! Enthalpy transfer associated with mass transfer. (gas/solid)
                   IF(M /= mXfr) RxH(M,mXfr) =  RxH(M,mXfr) + &
-                     lRate * CALC_H0(T_s(IJK,mXfr),0,N)
+                     lRate * CALC_H(T_s(IJK,mXfr),0,N)
                ENDIF
 ! Solids Phase M:
             ELSE
@@ -180,10 +180,12 @@
                   IF(M /= mXfr) THEN
                      IF(M < mXfr) THEN
                         RxH(M,mXfr) =  RxH(M,mXfr) + lRate * &
-                          Reaction(H)%Species(lN)%xXfr * CALC_H(IJK,M,N)
+                          Reaction(H)%Species(lN)%xXfr * &
+                          CALC_H(T_s(IJK,M),M,N)
                      ELSE
                         RxH(mXfr,M) =  RxH(mXfr,M) - lRate * &
-                          Reaction(H)%Species(lN)%xXfr * CALC_H(IJK,M,N)
+                          Reaction(H)%Species(lN)%xXfr * &
+                          CALC_H(T_s(IJK,M),M,N)
                      ENDIF
                   ENDIF
                ELSE
@@ -209,10 +211,10 @@
                   lRate = RATES(H) * Reaction(H)%Species(lN)%MWxStoich
 ! Gas phase enthalpy chnage from energy equation derivation.
                   IF(M == 0) THEN
-                     lHORg = lHORg + CALC_H(IJK,0,N) * lRate
+                     lHORg = lHORg + CALC_H(T_G(IJK),0,N) * lRate
 ! Solid phase enthalpy change from energy equation derivation.
                   ELSE
-                     lHORs(M) = lHORs(M) + CALC_H(IJK,M,N) * lRate
+                     lHORs(M) = lHORs(M) + CALC_H(T_s(IJK,M),M,N)* lRate
                   ENDIF
                ENDDO
 
@@ -236,7 +238,7 @@
                ENDDO
 
 
-      write(6,"(3X,A,4(3X,G12.3))")Reaction(H)%Name(1:18), lHORg, lHORs(1:3)
+      write(lUnit,"(3X,A,4(3X,G12.3))")Reaction(H)%Name(1:18), lHORg, lHORs(1:3)
 
 
 ! Convert the heat of reaction to the appropriate units (if SI), and 
@@ -309,9 +311,9 @@
          ENDIF
       ENDDO
 
-      write(6,"(90('-'))")
-      write(6,"(3X,A,16X,G12.3,3(3X,G12.3))")'Total', HOR_g(IJK), HOR_s(IJK,1:3)
-      close(6)
+      write(lUnit,"(90('-'))")
+      write(lUnit,"(3X,A,16X,G12.3,3(3X,G12.3))")'Total', HOR_g(IJK), HOR_s(IJK,1:3)
+      close(lUnit)
       CALL MFiX_EXIT(myPE)
 
       ENDIF  ! Fluid_At(IJK)
