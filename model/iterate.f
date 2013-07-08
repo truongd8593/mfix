@@ -234,7 +234,7 @@
       goto( 1000 ), IER_MANAGER(IER)
 
 ! Calculate chemical reactions.
-      CALL CALC_RRATE
+      CALL CALC_RRATE(IER)
 
 ! Solve solids volume fraction correction equation for close-packed
 ! solids phases
