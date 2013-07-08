@@ -46,13 +46,14 @@
 
 ! Passed Variables:
 !---------------------------------------------------------------------//
+! Passed array dimensions
+      INTEGER, intent(in) :: lnD  ! lNEQ
+      INTEGER, intent(in) :: loD  ! lVars
+
 ! (1) Number of ODEs to be solve
 ! (2) Fluid cell index
-      INTEGER, intent(in) :: lnD
       INTEGER, intent(in) :: lNEQ(lnD)
-
 ! Array of dependent variable initial values.
-      INTEGER, intent(in) :: loD
       DOUBLE PRECISION, intent(out)  :: lVars(loD)
 
 
@@ -75,7 +76,7 @@
       Node = 1
 
 ! Gas phase density.
-      lVars(Node) = ROP_G(IJK);              Node = Node + 1
+      lVars(Node) = ROP_G(IJK);             Node = Node + 1
 ! Gas phase temperature.
       lVars(Node) = T_G(IJK);               Node = Node + 1
 ! Gas phase species mass fractions.
@@ -122,12 +123,6 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-      use constant, only : GAS_CONST
-
-      use fldvar,   only : EP_g
-
-      use fldvar,   only : P_g
-      use fldvar,   only : RO_g
       use fldvar,   only : ROP_g
       use fldvar,   only : ROP_S
       use fldvar,   only : T_g
@@ -135,19 +130,8 @@
       use fldvar,   only : X_g
       use fldvar,   only : X_s
 
-      use param1,   only : ONE
-
-      use physprop, only : C_pg
-      use physprop, only : C_ps
-
       use physprop, only : MMAX
-      use physprop, only : MW_g
-      use physprop, only : MW_MIX_g
-      use physprop, only : MW_s
       use physprop, only : NMAX
-
-      use physprop, only : RO_s
-      use physprop, only : RO_sv
 
       use compar,   only : myPE
       use compar,   only : PE_IO
@@ -174,11 +158,16 @@
       INTEGER :: IJK
       INTEGER :: L
 
+! Loop indicies:
+      INTEGER :: M    ! phase
+      INTEGER :: N    ! species
+      INTEGER :: Node ! ODE Equation Counter
+
       INTEGER :: countNaN
       LOGICAL :: writeMsg
 
-      IJK = lNEQ(2)
 
+      IJK = lNEQ(2)
 
       countNaN = 0
       writeMsg = .FALSE.
@@ -199,42 +188,11 @@
                if(isNaN(lVars(l))) write(*,"(5x,' NaN in Var ',I2)") l
             enddo
          endif
-
       endif
 
-
-!      IF(VARIABLE_DENSITY) THEN
-
-!      ELSE
-         CALL mapODEtoMFIX0
-!      ENDIF
-
-      RETURN
-
-      contains
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Module name: mapODEtoMFIX                                           !
-!                                                                      !
-!  Purpose:                                                            !
-!                                                                      !
-!  Author: J.Musser                                   Date: 07-Feb-13  !
-!                                                                      !
-!  Comments:                                                           !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE mapODEtoMFIX0
-
-      implicit none
-
-! Local Variables:
-!---------------------------------------------------------------------//
-! Loop indicies:
-      INTEGER :: M  ! phase
-      INTEGER :: N  ! species
-! ODE Equation Counter
-      INTEGER :: Node
-
+! Directly map the ODE values into the field variable names.
+!-----------------------------------------------------------------------
+! Initialize the loop counter for ODEs.
       Node = 1
 
 ! Gas phase density.
@@ -264,10 +222,68 @@
          ENDIF
       ENDDO   
 
+!      IF(VARIABLE_DENSITY) THEN
+
+!      ELSE
+         CALL mapODEtoMFIX_ROs0
+!      ENDIF
+
+      RETURN
+
+      contains
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: mapODEtoMFIX                                           !
+!                                                                      !
+!  Purpose: Finish mapping ODE result into MFIX field variables. This  !
+!           routine is for constant solids density.                    !
+!                                                                      !
+!  Author: J.Musser                                   Date: 07-Feb-13  !
+!                                                                      !
+!  Comments:                                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE mapODEtoMFIX_ROs0  ! Constant solids density
+
+      use constant, only : GAS_CONST
+
+      use fldvar,   only : P_g
+      use fldvar,   only : RO_g
+
+      use fldvar,   only : EP_g
+      use physprop, only : MW_g
+      use physprop, only : MW_MIX_g
+      use physprop, only : MW_s
+
+      use param1,   only : ONE
+      use param1,   only : LARGE_NUMBER
+      use param1,   only : SMALL_NUMBER
+
+      use physprop, only : RO_s
+      use physprop, only : RO_sv
+
+!      use physprop, only : C_pg
+!      use physprop, only : C_ps
+
+
+
+      implicit none
+
 ! Calculate the gas volume fraction from solids volume fractions. Only
 ! update it's value if the solids equations are being solved.
       IF(sum(lNEQ(3:)) > 0) EP_G(IJK) = &
          ONE - sum(ROP_S(IJK,1:MMAX)/RO_S(1:MMAX))
+
+! Gas phase bulk density is updated within the stiff solver (lVar(1)).
+! Now that the gas phase volume fraction is updated, the gas phase 
+! density can be backed out. RO_g * EP_g = ROP_g
+      IF(EP_g(IJK) > small_number) THEN
+         RO_g(IJK) = ROP_g(IJK) / EP_g(IJK)
+      ELSE
+! This case shouldn't happen, however 'LARGE_NUMBER' is used to aid
+! in tracking errors should this somehow become and issue.
+         RO_g(IJK) = LARGE_NUMBER
+      ENDIF
 
 ! Calculate the mixture molecular weight.
       MW_MIX_G(IJK) = sum(X_G(IJK,1:NMAX(0))/MW_g(1:NMAX(0)))
@@ -277,7 +293,23 @@
       P_G(IJK) = (RO_G(IJK)*GAS_CONST*T_G(IJK))/MW_MIX_G(IJK)
 
       RETURN
-      END SUBROUTINE mapODEtoMFIX0
+      END SUBROUTINE mapODEtoMFIX_ROs0
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: mapODEtoMFIX_ROs                                       !
+!                                                                      !
+!  Purpose: Finish mapping ODE result into MFIX field variables. This  !
+!           routine is for constant solids density.                    !
+!                                                                      !
+!  Author: J.Musser                                   Date: 07-Feb-13  !
+!                                                                      !
+!  Comments:                                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE mapODEtoMFIX_ROs  ! Variable solids density
+      END SUBROUTINE mapODEtoMFIX_ROs  ! Variable solids density
+
 
       END SUBROUTINE mapODEtoMFIX
       END MODULE STIFF_CHEM_MAPS
