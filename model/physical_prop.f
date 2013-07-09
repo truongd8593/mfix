@@ -346,7 +346,7 @@
 
 ! The database calculation always returns cal/g.K thus the following
 ! conversion is needed if using SI units. ** Vector operation
-      IF(UNITS == 'SI') C_PS(:,M) = 4.183925d3 * C_PS(:,M)  !in J/kg K
+      IF(UNITS == 'SI') C_PS = 4.183925d3 * C_PS  !in J/kg K
 
       END SUBROUTINE PHYSICAL_PROP_CPs
 
