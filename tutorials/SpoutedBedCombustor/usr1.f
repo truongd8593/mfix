@@ -69,7 +69,7 @@
 !
 !$omp  parallel do private(IJK)  
          DO IJK = IJKSTART3, IJKEND3 
-            IF (.NOT.WALL_AT(IJK)) THEN 
+            IF (FLUID_AT(IJK)) THEN 
 	      I = I_OF(IJK)
               IMJK  = IM_OF(IJK)
               IJMK  = JM_OF(IJK)

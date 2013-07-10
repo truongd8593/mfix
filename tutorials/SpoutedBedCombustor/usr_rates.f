@@ -136,7 +136,7 @@
 ! Combustion_s1: 2FC1 + O2 --> 2CO  (g-mol/cm^3.sec)
 !```````````````````````````````````````````````````````````````````````
 ! Calculate the ratio of outer diamter and unreacted core diameter.
-         IF(X_s(IJK,1,FC1) .GT. ZERO) THEN
+         IF(X_s(IJK,1,Ash1) .GT. ZERO) THEN
             R_D1 = (X_s(IJK,1,FC1) * PAA / &
                (X_s(IJK,1,Ash1) * PAFC))**(1.0d0/3.0d0)
             R_D1 = MIN(ONE, R_D1)
@@ -170,7 +170,7 @@
 ! Combustion_s2: 2FC2 + O2 --> 2CO  (g-mol/cm^3.sec)
 !```````````````````````````````````````````````````````````````````````
 ! Calculate the ratio of outer diamter and unreacted core diameter.
-         IF(X_s(IJK,2,FC2) .GT. ZERO) THEN
+         IF(X_s(IJK,2,Ash2) .GT. ZERO) THEN
             R_D2 = (X_s(IJK,2,FC2) * PAA / &
                (X_s(IJK,2,Ash2) * PAFC))**(1.0d0/3.0d0)
             R_D2 = MIN(ONE, R_D2)
