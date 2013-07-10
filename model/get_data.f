@@ -55,6 +55,8 @@
       USE qmom_kinetic_equation
       USE mfix_pic
       USE cutcell
+      USE dashboard
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -237,6 +239,22 @@
 
 ! close .LOG file
       CALL END_LOG 
+
+!======================================================================
+! Data initialization for Dashboard
+!======================================================================
+      INIT_TIME = TIME
+      SMMIN =  LARGE_NUMBER
+      SMMAX = -LARGE_NUMBER
+            
+      DTMIN =  LARGE_NUMBER                                                                                                                        
+      DTMAX = -LARGE_NUMBER
+             
+      NIT_MIN = MAX_NIT
+      NIT_MAX = 0
+             
+      N_DASHBOARD = 0
+
 
       RETURN  
 
