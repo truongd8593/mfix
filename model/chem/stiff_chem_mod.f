@@ -388,8 +388,10 @@
 ! dimension to gas phase only.
       DO M=1, MMAX
          IF(SPECIES_EQ(M)) THEN
-            lNEQ(2+M) = 1
-            IF(EP_s(IJK,M) > 1.0d-6) USE_SOLIDS_ODEs = .TRUE.
+            IF(EP_s(IJK,M) > 1.0d-6) THEN
+               USE_SOLIDS_ODEs = .TRUE.
+               lNEQ(2+M) = 1
+            ENDIF
          ENDIF
       ENDDO
 
@@ -418,15 +420,37 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE FINALIZE_STIFF_SOLVER
 
+! Gas phase volume fraction
+      use fldvar, only : EP_g
+! Gas phase denisty
+      use fldvar, only: RO_g, ROP_g
+! Gas phase pressure
+      use fldvar, only: P_g
+! Gas phase temperature
+      use fldvar, only: T_g
+! Gas phase species mass fraction
+      use fldvar, only: X_g
+! Molecular weight of each gas phase species
+      use physprop, only : MW_g
+! Gas phase mixture molecular weight.
+      use physprop, only : MW_MIX_g
+
+! Solids phase bulk density
+      use fldvar, only: ROP_S
+! Solids phase temperature
+      use fldvar, only: T_s
+! Solids phase species mass fractions
+      use fldvar, only: X_s
+
+! Number of solids phases
+      use physprop, only: MMAX
+! Number of species in each phase.
+      use physprop, only: NMAX
+
+! Double precision:  ONE = 1.0d0
+      use param1, only: ONE
+! Universal gas constant
       use constant, only : GAS_CONST
-      use fldvar,   only : EP_g, RO_g, T_g, X_g, P_g
-      use fldvar,   only : ROP_S, T_s, X_s
-      use physprop, only : NMAX
-      use physprop, only : MMAX
-
-      use param1,   only : ONE
-      use physprop, only : MW_g, MW_MIX_g
-
 
 
       use compar
@@ -435,16 +459,24 @@
 
       implicit none
 
+! Local loop indicies.
       INTEGER :: IJK  ! Fluid Cell index.
       INTEGER :: M    ! Solids phase index
       INTEGER :: N    ! Species index
 
+! Error flag - Unused but needed for call to BOUND_X.
+      INTEGER :: IER
 
+      INCLUDE 'function.inc'
+
+      CALL send_recv(EP_G,2)
       CALL send_recv(RO_G,2)
+      CALL send_recv(ROP_G,2)
       CALL send_recv(T_G,2)
 
       DO N=1,NMAX(0)
          CALL send_recv(X_G(:,N),2)
+         CALL BOUND_X (X_G(1,N), IJKMAX2, IER) 
       ENDDO
 
       DO M = 1, MMAX
@@ -455,10 +487,12 @@
 ! Solids phase species mass fractions.
          DO N=1,NMAX(M)
             CALL send_recv(X_S(:,M,N),2)
+            CALL BOUND_X (X_S(1,M,N), IJKMAX2, IER) 
          ENDDO
       ENDDO   
 
       DO IJK = ijkStart3, ijkEnd3
+         IF(.NOT.FLUID_AT(IJK)) CYCLE
 ! Calculate the mixture molecular weight.
          MW_MIX_G(IJK) = sum(X_G(IJK,1:NMAX(0))/MW_g(1:NMAX(0)))
          MW_MIX_G(IJK) = ONE/MW_MIX_G(IJK)

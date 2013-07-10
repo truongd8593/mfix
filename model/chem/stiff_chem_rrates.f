@@ -65,10 +65,8 @@
       use run, only: SPECIES_EQ
       use run, only: UNITS
 
-
       use stiff_chem, only: ODE_DIMN_all
       use stiff_chem, only: NEQ_DIMN
-
 
       implicit none
 
@@ -129,9 +127,6 @@
       DOUBLE PRECISION :: sumlRg
 ! Net rate of change of solids phase material.
       DOUBLE PRECISION :: sumlRs(DIMENSION_M)
-! Net rate of change of solid phase material divided by density.
-      DOUBLE PRECISION :: sumlRsoROs
-
 
 ! Reaction limiters.
       DOUBLE PRECISION, parameter :: speciesLimiter = 1.0d-7
@@ -292,9 +287,9 @@
             ENDIF
          ELSE
 ! User-defined heat of reaction.
-            lHORg = Reaction(H)%HoR(0) * RATES(H)
+            lHORg = lHORg + Reaction(H)%HoR(0) * RATES(H)
             DO M=1, MMAX
-               lHORs(M) = Reaction(H)%HoR(M) * RATES(H)
+               lHORs(M) = lHORs(M) + Reaction(H)%HoR(M) * RATES(H)
             ENDDO
          ENDIF
 
@@ -311,12 +306,8 @@
 
 ! Calculate the net change for solids phases.
       sumlRs = 0.0d0
-      sumlRsoROs = 0.0d0
       DO M=1, MMAX
-         IF(lNEQ(2+M) == 1) THEN
-            sumlRs(M) = sum(lRs(M,:))
-            sumlRsoROs = sumlRsoROs + sumlRs(M)/RO_s(M)
-         ENDIF
+         IF(lNEQ(2+M) == 1) sumlRs(M) = sum(lRs(M,:))
       ENDDO
 
 

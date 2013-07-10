@@ -164,8 +164,11 @@
 
       CALL CPU_TIME(ODE_StartTime)
 
+      Hetrgns = 0
+      Homogns = 0
+
       if(myPE == PE_IO) &
-         write(*,"(/3x,'Entering the stiff chemistry solver...',$)")
+         write(*,"(/3x,'Integrating stiff chemistry...',$)")
 
       RETURN
       END SUBROUTINE INIT_STIFF_CHEM_STATS
@@ -341,11 +344,11 @@
 
          if(myPE == PE_IO) then
             write(*,"(/5x,'Average Integration Distrubution:')")
-            write(*,"(7x,'NST <      10: ', I6)")countNST_all(1)
-            write(*,"(7x,'NST <     100: ', I6)")countNST_all(2)
-            write(*,"(7x,'NST <    1000: ', I6)")countNST_all(3)
-            write(*,"(7x,'NST <   10000: ', I6)")countNST_all(4)
-            write(*,"(7x,'NST >  100000: ', I6)")countNST_all(5)
+            write(*,"(7x,'NST < 10^1: ', I6)")countNST_all(1)
+            write(*,"(7x,'NST < 10^2: ', I6)")countNST_all(2)
+            write(*,"(7x,'NST < 10^3: ', I6)")countNST_all(3)
+            write(*,"(7x,'NST < 10^4: ', I6)")countNST_all(4)
+            write(*,"(7x,'NST > 10^5: ', I6)")countNST_all(5)
          endif
 ! Reset the reporting counter.
          reportNST = 1
