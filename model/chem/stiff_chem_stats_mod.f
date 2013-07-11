@@ -352,6 +352,9 @@
          endif
 ! Reset the reporting counter.
          reportNST = 1
+! Clear out old data.
+         countNST = 0
+         countNST_all = 0
       else
 ! Increment the reporting counter.
          reportNST = reportNST + 1
