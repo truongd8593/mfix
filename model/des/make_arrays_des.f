@@ -87,8 +87,8 @@
          do lcurpar  = 1,pip 
             lglobal_id = lglobal_id + 1
             iglobal_id(lcurpar) = lglobal_id 
+            imax_global_id = iglobal_id(pip)
          end do 
-         imax_global_id = iglobal_id(pip)
          call global_all_max(imax_global_id)
 
 ! setting the old values 
