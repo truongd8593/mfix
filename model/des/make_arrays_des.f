@@ -84,6 +84,7 @@
          lpip_all(mype) = pip 
          call global_all_sum(lpip_all)
          lglobal_id = sum(lpip_all(0:mype-1))
+         imax_global_id = 0
          do lcurpar  = 1,pip 
             lglobal_id = lglobal_id + 1
             iglobal_id(lcurpar) = lglobal_id 
