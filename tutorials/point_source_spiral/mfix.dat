@@ -141,7 +141,7 @@
 
   PS_T_g(1)          =  315.00       ! (K)
 
-  PS_MASSFLOW_g(1)   =    8.0469d-5  ! (kg/cm^3)
+  PS_MASSFLOW_g(1)   =    8.0469d-5  ! (kg/sec)
   PS_U_g(1)          =    0.15       ! (m/sec)
   PS_V_g(1)          =    0.00       ! (m/sec)
   PS_W_g(1)          =    0.00       ! (m/sec)
@@ -149,7 +149,7 @@
   PS_X_g(1,1)        =    0.00       ! N2
   PS_X_g(1,2)        =    1.00       ! N2
 
-  PS_MASSFLOW_s(1,1) =    8.2575d-4  ! (kg/cm^3)  
+  PS_MASSFLOW_s(1,1) =    8.2575d-4  ! (kg/sec)  
   PS_U_s(1,1)        =    0.15       ! (m/sec)
   PS_V_s(1,1)        =    0.00       ! (m/sec)
   PS_W_s(1,1)        =    0.00       ! (m/sec)
