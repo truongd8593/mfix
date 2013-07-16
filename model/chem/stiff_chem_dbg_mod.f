@@ -36,7 +36,7 @@
 ! 0 - None
 ! 1 - Limited
 ! 2 - Aggressive
-      INTEGER :: ODE_DEBUG_LEVEL = 2
+      INTEGER :: ODE_DEBUG_LEVEL = 1
 
 ! File unit for ODE Error Log.
       INTEGER, parameter :: OEL_Unit = 6589
