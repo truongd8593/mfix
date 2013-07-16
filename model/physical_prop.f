@@ -141,6 +141,8 @@
       use fldvar, only: ROP_g
 ! Maximum value for molecular weight (divided by one)
       use toleranc, only: OMW_MAX
+! Run time flag for generating negative gas density log files
+      use run, only: REPORT_NEG_DENSITY
 
       implicit none
 
@@ -185,7 +187,7 @@
 
          IF(RO_G(IJK) < ZERO) THEN
             Err_l(myPE) = 100
-            CALL ROgErr_LOG(IJK, wHeader)
+            IF(REPORT_NEG_DENSITY)CALL ROgErr_LOG(IJK, wHeader)
          ENDIF
       ENDDO IJK_LP
 

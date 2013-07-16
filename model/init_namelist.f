@@ -581,6 +581,10 @@
 
       bWrite_netCDF(:) = .false.
 
+
+! Debug flags
+      REPORT_NEG_DENSITY = .FALSE.
+
       CALL DES_INIT_NAMELIST
 
 ! Initialize QMOMK namelist

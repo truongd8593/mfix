@@ -149,6 +149,11 @@
 	     icheck_bicgs, &
              solver_statistics, opt_parallel , &
 
+! Additional Debug Flags
+! ---------------------------------------------------------------->>>
+             REPORT_NEG_DENSITY, &
+
+
 ! Distributed IO (version 1) related variables
              bDist_IO , bStart_with_one_RES , &
 ! ----------------------------------------------------------------<<<
