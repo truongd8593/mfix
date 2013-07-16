@@ -6,7 +6,7 @@
 # To run the script , type the following at the prompt: sh ./sysinfo.sh
 # To redirect the output to a file, type: sh ./sysinfo.sh > sysinfo.txt
 # When requesting help related to MFIX installation, please send the
-# file sysinfo.txt to the mfix-help mailing list at mfix-help@netl.doe.gov
+# file sysinfo.txt to the mfix-help mailing list at mfix-help@mfix.netl.doe.gov
 # along with a description of the issue.
 
 
