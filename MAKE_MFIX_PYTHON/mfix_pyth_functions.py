@@ -32,11 +32,7 @@ def set_machinefile(opsys):
         machfile = "OSF1.f"
     elif "AIX" in opsys:
         machfile = "AIX.F"
-    cmd = "chmod +w " +  "machine.f"
-    #print cmd 
-    subprocess.call(cmd, shell = True)
-    cmd  = "/bin/cp -f " + machfile + " machine.f"
-    subprocess.call(cmd , shell = True)
+  
     return machfile
     
 def read_compilation_flags(comp_options_file_loc):       

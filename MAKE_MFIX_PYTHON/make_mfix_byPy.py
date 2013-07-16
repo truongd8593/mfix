@@ -17,6 +17,7 @@ import subprocess
 import shutil 
 import comp_flags 
 import time 
+import filecmp
 
 def hold():
     junk = raw_input("Enter to continue ") 
@@ -223,8 +224,16 @@ with open(comp_options_file_loc, "w") as opt_file:
         opt_file.write(optname + "   " + str(value) + " " +  "\n")
     
 machfile=mfix_pyth_functions.set_machinefile(opsys)
-print "machine file overwritten with: ", machfile
-time.sleep(1)
+if filecmp.cmp(machfile, "machine.f"):
+    print "No need to overwrite the machine file"
+else:
+    print "machine file overwritten with: ", machfile
+    cmd = "chmod +w " +  "machine.f"
+    subprocess.call(cmd, shell = True)
+    cmd  = "/bin/cp -f " + machfile + " machine.f"
+    subprocess.call(cmd , shell = True)
+    time.sleep(1)
+    
 
 #print "mpi_include = ", mpi_include
 
