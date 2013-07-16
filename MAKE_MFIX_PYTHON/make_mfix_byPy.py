@@ -23,7 +23,6 @@ def hold():
     return
 
 vers="2013-1"
-mfix_pyth_functions.mfix_print_version(vers)
     
 run_dir = os.getcwd()
 
@@ -52,8 +51,6 @@ mfix_base = python_utils_base.replace("/MAKE_MFIX_PYTHON", "/")
 
 tools_dir = python_utils_base.replace("/MAKE_MFIX_PYTHON", "/tools/")
 
-print " run_dir:{0:<s}\n python util directory:{1:<s} \n mfix directory:{2:<s}".format(run_dir, python_utils_base, mfix)
-print " tools dir :{0:<s}".format(tools_dir)
 if os.path.samefile(run_dir, mfix ):
     print "*** Execute this command from any directory other than the current directory!"
     print "*** It is usually executed from a run directory containing user defined files." 
@@ -63,10 +60,6 @@ if os.path.samefile(run_dir, mfix ):
 opsys    = subprocess.check_output(['uname', '-s']).rstrip()
 proctype = subprocess.check_output(['uname', '-p']).rstrip()
 
-print "Operating system detected as: ", opsys
-print "Processor type   detected as: ", proctype 
-print "Continuing with MFIX build ......."
-time.sleep(2)# To allow users the chance to read this everything so far
 
 optim_level_choices_tup = ('O1', 'O2', 'O3')
 compiler_choices_tup = ('gfortran', 'ifort', 'pgi', 'pathscale', 'user1', 'user2')
@@ -170,6 +163,13 @@ if (not optim_mode) & (not debug_mode):
     exit()
 
 
+mfix_pyth_functions.mfix_print_version(vers)
+print " run_dir:{0:<s}\n python util directory:{1:<s} \n mfix directory:{2:<s}".format(run_dir, python_utils_base, mfix)
+print " tools dir :{0:<s}".format(tools_dir)
+print "Operating system detected as: ", opsys
+print "Processor type   detected as: ", proctype 
+print "Continuing with MFIX build ......."
+time.sleep(2)# To allow users the chance to read this everything so far
 
 #since the parser does not formce presence of at least one mode of compilation option, 
 #check for the same for both fresh and repeat flag cases. 
