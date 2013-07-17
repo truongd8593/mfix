@@ -233,9 +233,18 @@ else:
     cmd  = "/bin/cp -f " + machfile + " machine.f"
     subprocess.call(cmd , shell = True)
     time.sleep(1)
-    
 
-#print "mpi_include = ", mpi_include
+#now check for reaction rate files in the run directory
+usr_rate_file = os.path.join(run_dir, "usr_rates.f")    
+des_usr_rate_file = os.path.join(run_dir, "des/usr_rates_des.f")    
+
+if os.path.isfile(usr_rate_file) or os.path.isfile(des_usr_rate_file):
+    print "  Detected User defined reaction files in the run directory: "
+    if os.path.isfile(usr_rate_file): print "usr_rates.f "
+    if os.path.isfile(des_usr_rate_file): print "des/usr_rates_des.f "
+    print "  Pre-processing mfix.dat file for chemical reaction data..."        
+    cmd = "cd " +  run_dir + ";" + "/bin/sh " + os.path.join(mfix, "rxn_preproc.sh")    
+    subprocess.call(cmd, shell = True)
 
 name = "comp_flags." + flags_file
 F = __import__(name, fromlist=["*"])
