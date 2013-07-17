@@ -89,8 +89,6 @@
             if(IS_ON_myPE_owns(I, J, K)) then
                ijk = funijk(i,j,k)
 
-               write(*,"(3x,I9,2x,I2,2x,g11.5)") ijk, myPE, vol(ijk)
-
                if(fluid_at(ijk)) &
                   lData_dp(myPE) = lData_dp(myPE) + VOL(IJK)
             endif
