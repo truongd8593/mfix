@@ -35,18 +35,20 @@
 !        (except for changes when interpolation is used)
 !      - The field variable ep_g will be updated as particles
 
-! Commented by Handan Liu on August 2012.
+! Commented by Handan Liu on August 2012, revised at June 2013.
 ! 1. Added two new subroutines in the end to calculate interpolation, 
 !	 i.e. DRAG_INTERPLATION_2D and DRAG_INTERPLATION_3D, 
 !	 to replace invoking 'interpolator' interface module, 
-!	 which will introduce global variables; thus cause datarace for OpenMP. 
-! 2. Set the temporary variables 'desposnew(dimn),velfp(dimn)' (small arrays) as private 
-!	 to replace the global variables desposnew(np,dimn),velfp(np,dimn) (big arrays)  
+!	 which will introduce global variables; thus cause datarace with OpenMP. 
+! 2. Set the intermediate variables 'desposnew(dimn),velfp(dimn)' (small arrays) as private 
+!	 to replace the global variables des_pos_new(np,dimn),vel_fp(np,dimn) (big arrays)  
 ! 	 to avoid datarace; and save the calculating time.
-! 3. Set temporary array 'weight_ft' to replace the pointer 'weightp' (global) 
-!	 in 'interpolator', which leads datarace for OpenMP.
-! 4. Set temporary variables 'gst_tmp,vst_tmp' as private to replace global variables 
+! 3. Set the intermediate array 'weight_ft' to replace the pointer 'weightp' (global) 
+!	 in 'interpolator', which leads errors with OpenMP.
+! 4. Set the intermediate variables 'gst_tmp & vst_tmp' as private to replace global variables 
 !	 'gstencil,vstencil' to avoid datarace and segmentation fault.
+! 5. Set the intermediate variable D_FORCE(dimn) in CALC_DES_DRAG_GS to replace  	
+!	 GD_FORCE(np,dimn) in order to reduce the calculation time	at Jan 14 2013
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -397,7 +399,7 @@
 !!$omp         focus,np,wtp,weightp,ovol,m,vcell)                  &
 !!$omp schedule (guided,50)
 
-!Handan Liu modified the following do-loop on Jan 20 2012. 
+!Handan Liu modified the following do-loop on Jan 20 2013. 
 !$omp parallel default(shared) 	                                	&
 !$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,				&
 !$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,gst_tmp,vst_tmp,		&
@@ -937,7 +939,7 @@
 ! used anywhere else except the same subroutine it is calculated. 
 ! A local single rank array (like in the old implementation) was just fine
       gd_force(:,:) = ZERO
-
+      vel_fp = ZERO
 ! avg_factor=0.25 (in 3D) or =0.5 (in 2D)
       AVG_FACTOR = 0.250d0*(DIMN-2) + 0.50d0*(3-DIMN)
 
@@ -1082,7 +1084,7 @@
 ! Handan Liu set D_FORCE(:) to replace GD_FORCE(:,:) 	
 !	in order to reduce the calculation time			on Jan 14 2013
                !GD_FORCE(NP,:) = F_GP(NP)*(VEL_FP(NP,:))
-               D_FORCE(:) = F_GP(NP)*(VEL_FP(NP,:))	
+               D_FORCE(1:DIMN) = F_GP(NP)*(VEL_FP(NP,1:DIMN))	
             ELSE
 ! default case
                !GD_FORCE(NP,:) = F_GP(NP)*(VEL_FP(NP,:)-DES_VEL_NEW(NP,:))
@@ -1092,12 +1094,13 @@
 ! Update the contact forces (FC) on the particle to include gas
 ! pressure and gas-solids drag 
             !FC(NP,:) = FC(NP,:) + GD_FORCE(NP,:)
-            FC(NP,:) = FC(NP,:) + D_FORCE(:)
-            GD_FORCE(NP,:) = D_FORCE(:)			
+            FC(NP,1:DIMN) = FC(NP,1:DIMN) + D_FORCE(1:DIMN)
+            GD_FORCE(NP,1:DIMN) = D_FORCE(1:DIMN)			
 
             IF(.NOT.MODEL_B) THEN
 ! P_force is evaluated as -dp/dx 
-               FC(NP,:) = FC(NP,:) + p_force(ijk,:)*pvol(NP)
+               !FC(NP,:) = FC(NP,:) + p_force(ijk,:)*pvol(NP)
+               FC(NP,1:DIMN) = FC(NP,1:DIMN) + p_force(ijk,1:DIMN)*pvol(NP)
             ENDIF               
 !------------------------------------------------------------------>>>>	Handan Liu		
          ENDDO       ! end do (nindx = 1,pinc(ijk))
@@ -1255,14 +1258,13 @@
 ! initializations 
       drag_am = ZERO
       drag_bm = ZERO
-
+      vel_fp = ZERO
 ! avg_factor=0.25 (in 3D) or =0.5 (in 2D)
       AVG_FACTOR = 0.250d0*(DIMN-2) + 0.50d0*(3-DIMN)
 
 ! sets several quantities including interp_scheme, scheme, and 
 ! order and allocates arrays necessary for interpolation
       call set_interpolation_scheme(2)
-
 ! There is some issue associated to gstencil, vstencil which are
 ! allocatable variables
 
@@ -1362,7 +1364,6 @@
 ! skipping indices that do not represent particles and ghost particles
             if(.not.pea(np,1)) cycle
             if(pea(np,4)) cycle
-			
 ! Revised by Handan Liu for OpenMP implementation 
 !===================================================================<< Handan Liu			
 !            IF (DIMN .EQ. 2) THEN
@@ -1420,7 +1421,7 @@
                      jcur = jmap_c(jj)
                      kcur = kmap_c(kk)
                      cur_ijk = funijk(icur, jcur, kcur) 
-                     
+
 ! Replacing the volume of cell to volume at the node
                      vcell = des_vol_node(cur_ijk)
                      ovol = one/vcell
@@ -1446,14 +1447,13 @@
                   ENDDO
                ENDDO
             ENDDO
-
          ENDDO   ! end do (nindx = 1,pinc(ijk))
 
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 !$omp end parallel
 !!$      omp_end=omp_get_wtime()
 !!$      write(*,*)'drag_interp:',omp_end - omp_start  
-	
+
 ! At the interface drag_am and drag_bm have to be added
 ! send recv will be called and the node values will be added 
 ! at the junction. drag_am are drag_bm are altered by the 
@@ -2377,9 +2377,9 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !  Module name: DRAG_INTERPLATION_2D									C 
 !																		C
-!  Purpose: DES - Calculte the interpolation of weights and velocity	C        
-!           of particles. Replace 'interpolator' interface for          C  
-! 			OpenMP implementation. 										C
+!  Purpose: DES - Calculte the fluid velocity interpolated at the  	    C        
+!           particle's location and weights. Replace 'interpolator'     C  
+! 			interface for OpenMP implementation. 						C
 !                                                                    	C
 !  Author: Handan Liu	                           Date: 10-May-2012	C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -2393,13 +2393,12 @@
       DOUBLE PRECISION, DIMENSION(2), INTENT(in):: despos
       DOUBLE PRECISION, DIMENSION(3), INTENT(out) :: velfp
       DOUBLE PRECISION interp_scl	  
-!      INTEGER, INTENT(in):: neworder
-!      CHARACTER*5 :: interpscheme
+
       DOUBLE PRECISION, DIMENSION(6,6,6) :: weightfactor
-!      INTEGER :: vec_size, nv	!, iorig
+
       INTEGER:: i, j
-      DOUBLE PRECISION, DIMENSION(2) :: xxval, yyval !, zval
-      DOUBLE PRECISION, DIMENSION(1) :: dxx, dyy !,dz	
+      DOUBLE PRECISION, DIMENSION(2) :: xxval, yyval 
+      DOUBLE PRECISION, DIMENSION(1) :: dxx, dyy 	
       DOUBLE PRECISION, DIMENSION(2):: zetaa
 
       dxx(1) = gsten(2,1,1,1) - gsten(1,1,1,1)
@@ -2431,7 +2430,6 @@
       
       do j=1,2
          do i=1,2
-                                !velfp(1) = velfp(1) + vsten(i,j,1,1)*weightfactor(i,j,1)
             velfp(2) = velfp(2) + vsten(i,j,1,2)*weightfactor(i,j,1)
          enddo
       enddo
@@ -2442,9 +2440,9 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !  Module name: DRAG_INTERPLATION_3D									C 
 !																		C
-!  Purpose: DES - Calculte the interpolation of weights and velocity	C        
-!           of particles. Replace 'interpolator' interface for          C  
-! 			OpenMP implementation. 										C
+!  Purpose: DES - Calculte the fluid velocity interpolated at the  	    C        
+!           particle's location and weights. Replace 'interpolator'     C  
+! 			interface for OpenMP implementation. 						C
 !                                                                    	C
 !  Author: Handan Liu	                           Date: 18-August-2012	C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -2524,5 +2522,3 @@
 		
       END SUBROUTINE DRAG_INTERPLATION_3D
 	
-
-

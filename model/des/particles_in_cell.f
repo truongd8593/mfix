@@ -795,9 +795,8 @@
 !$omp		IJPKP,IPJKP,IPJPKP,gst_tmp,vst_tmp,nindx,np,wtp,m,	&
 !$omp		JUNK_VAL,desposnew,weight_ft,icur,jcur,kcur,		&	
 !$omp		I1, I2, J1, J2, K1, K2, IDIM,IJK2,NORM_FACTOR,		&
-!$omp		RESID_ROPS,RESID_VEL)
-!$omp	do reduction(+:COUNT_NODES_OUTSIDE) reduction(+:MASS_SOL1)	
-!!$omp	reduction(+:DES_ROPS_NODE) reduction(+:DES_VEL_NODE)
+!$omp		RESID_ROPS,RESID_VEL,COUNT_NODES_OUTSIDE)
+!$omp do reduction(+:MASS_SOL1) reduction(+:DES_ROPS_NODE,DES_VEL_NODE)
       !IJKLOOP: DO IJK = IJKSTART3,IJKEND3	! Removed by Handan Liu
       DO IJK = IJKSTART3,IJKEND3
 
@@ -839,7 +838,7 @@
          CALL SET_INTERPOLATION_STENCIL(PCELL,IW,IE,JS,JN,KB,&
             KTP,INTERP_SCHEME,DIMN,ORDERNEW = ONEW) 
 
-!         COUNT_NODES_OUTSIDE = 0 		! commented by Handan Liu because using reduction
+         COUNT_NODES_OUTSIDE = 0 		
 ! Computing/setting the geometric stencil 
          DO K = 1,(3-DIMN)*1+(DIMN-2)*ONEW
             DO J = 1,ONEW
@@ -858,12 +857,6 @@
                      IPJPKP  = funijk(IMAP_C(II+1),JMAP_C(JJ+1),KMAP_C(KK+1))
                   ENDIF
 
-!Handan Liu added on Jan 17 2013 as following section
-!===================================================================<<< Handan Liu				  
-!                  GSTENCIL(I,J,K,1) = XE(II)
-!                  GSTENCIL(I,J,K,2) = YN(JJ)
-!                  GSTENCIL(I,J,K,3) = ZT(KK)*(DIMN-2) + DZ(1)*(3-DIMN)
-!                  VSTENCIL(I,J,K,:) = ZERO 
                   GST_TMP(I,J,K,1) = XE(II)
                   GST_TMP(I,J,K,2) = YN(JJ)
                   GST_TMP(I,J,K,3) = ZT(KK)*(DIMN-2) + DZ(1)*(3-DIMN)
@@ -905,19 +898,6 @@
                CALL MFIX_EXIT(myPE)
             ENDIF
 
-!Handan Liu added on Jan 17 2013 as following section
-!===================================================================<<< Handan Liu
-!            IF (DIMN .EQ. 2) THEN 
-!               CALL INTERPOLATOR(GSTENCIL(1:ONEW,1:ONEW,1,1:DIMN), &
-!                    VSTENCIL(1:ONEW,1:ONEW,1,1:DIMN), &
-!                    DES_POS_NEW(NP,1:DIMN),JUNK_VAL(1:DIMN),  &
-!                    ONEW,INTERP_SCHEME,WEIGHTP)
-!            ELSE 
-!               CALL INTERPOLATOR(GSTENCIL(1:ONEW,1:ONEW,1:ONEW,1:DIMN), &
-!                    VSTENCIL(1:ONEW,1:ONEW,1:ONEW,1:DIMN), &
-!                    DES_POS_NEW(NP,1:DIMN),JUNK_VAL(1:DIMN),  &
-!                    ONEW,INTERP_SCHEME,WEIGHTP)
-!            ENDIF
             if (dimn .eq. 2) then
                desposnew(1:2) = des_pos_new(np,1:2)
                call DRAG_INTERPLATION_2D(gst_tmp(1:onew,1:onew,1,1:dimn),&
@@ -950,7 +930,6 @@
                      KCUR = KMAP_C(KK)
                      CUR_IJK = funijk(ICUR, JCUR, KCUR) 
 
-! comment: is this missing division by volume of the node (~cell) 
                      !TEMP1 = WEIGHTP(I,J,K)*DES_RO_S(M)*PVOL(NP)*WTP
 ! Changed TEMP1 as an array TEMP1(NP) to ensure different TEMP1 
 ! for each particle in an ijk cell <June 18 2013>
@@ -1028,14 +1007,12 @@
                   
 ! now add this residual equally to the remaining nodes
                NORM_FACTOR = ONE/REAL(COUNT_NODES_INSIDE)
-               !COUNT_TEMP = 0
                DO KK = K1, K2
                   DO JJ = J1, J2
                      DO II = I1, I2
                         IJK2 = funijk(II, JJ, KK)
 
                         IF(.NOT.SCALAR_NODE_ATWALL(IJK2)) THEN 
-                           !COUNT_TEMP = COUNT_TEMP + 1		!commented by Handan Liu 
                            DES_ROPS_NODE(IJK2,1:DES_MMAX) = &
                               DES_ROPS_NODE(IJK2,1:DES_MMAX) + &
                               RESID_ROPS(1:DES_MMAX)*NORM_FACTOR
