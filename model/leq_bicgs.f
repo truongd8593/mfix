@@ -210,7 +210,7 @@
 
 ! these scalars should not be necessary to initialize but done as failsafe      
       rnorm = ZERO
-      rnorm0 = ZERO
+      rnorm0 = ZERO 
       snorm = ZERO
       pnorm = ZERO
 
@@ -221,8 +221,8 @@
       rho(:)    = zero
 
 	  use_doloop = .TRUE.	! set true by Handan Liu for OpenMP do-loop
-	  
-! Adding all by Handan Liu
+
+! Adding all by Handan Liu	  
 ! zero out R, Rtilde, P, Phat, Svec, Shat, Tvec, V
 ! --------------------------------
       if (use_doloop) then   ! mfix.dat keyword default=false	
@@ -485,9 +485,8 @@
                   endif
 !                  print*,'leq_bicgs, initial: ', Vname,' Rnorm ', Rnorm
                endif            ! idebugl >= 1
-
-               isConverged = .TRUE.
-               EXIT
+			   isConverged = .TRUE.
+			   EXIT
             endif               ! end if (Snorm <= TOLMIN)
          endif                  ! end if (.not.minimize_dotproducts)
 
@@ -623,6 +622,7 @@
          ' L-2', Rnorm/Rnorm0
       endif   ! end if(idebugl >=1)
 
+!      isconverged = (real(Rnorm) <= TOL*Rnorm0);
       if(.NOT.isConverged) isconverged = (real(Rnorm) <= TOL*Rnorm0);
 !     write(*,*) '***',iter, isconverged, Rnorm, TOL, Rnorm0, myPE
       IER = 0
@@ -1307,17 +1307,16 @@
             ENDIF ! end DO_ALL
 ! ----------------------------------------------------------------<<<
 
-
 ! do_redblack only true leq_pc='rsrs'
 ! ---------------------------------------------------------------->>>
             IF(DO_REDBLACK) THEN
-               i1 = istart
-               k1 = kstart
-               i2 = iend
-               k2 = kend
-               isize = i2-i1+1
-               ksize = k2-k1+1
-               !DO icase = 1, 2
+               !i1 = istart
+               !k1 = kstart
+               !i2 = iend
+               !k2 = kend
+               !isize = i2-i1+1
+               !ksize = k2-k1+1
+!               DO icase = 1, 2
 !!$omp   parallel do private(K,I,IK)
 !                  DO IK=icase, ksize*isize, 2
 !                     if (mod(ik,isize).ne.0) then
@@ -1330,36 +1329,36 @@
 !                     CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
 !                  ENDDO
 !               ENDDO
-
-! Handan Liu split above loop for OpenMP at May 22 2013, as below:
+!             ELSE
+! Handan Liu split above loop for OpenMP at May 22 2013, modified at July 17
 !$omp parallel do default(shared) private(I,K) schedule(auto)
-            DO K=1,ksize
-			   IF(mod(k,2).ne.0)THEN
-				  DO I=2,isize,2
-				    CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
-				  ENDDO
-			   ELSE
-				  DO I=1,isize,2
-				    CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
-				  ENDDO
-			   ENDIF
-		    ENDDO
+               DO k=kstart,kend
+			     IF(mod(k,2).ne.0)THEN
+				    DO I=istart+1,iend,2
+				      CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
+				    ENDDO
+			     ELSE
+				    DO I=istart,iend,2
+				      CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
+				    ENDDO
+			     ENDIF
+		       ENDDO
 !$omp end parallel do				  
 !$omp parallel do default(shared) private(I,K) schedule(auto)
-            DO K=1,ksize
-			   IF(mod(k,2).ne.0)THEN
-				  DO I=1,isize,2
-				    CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
-				  ENDDO
-			   ELSE
-				  DO I=2,isize,2
-				    CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
-				  ENDDO
-			   ENDIF
-		    ENDDO
+               DO k=kstart,kend
+			     IF(mod(k,2).ne.0)THEN
+				   DO I=istart,iend,2
+				     CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
+				   ENDDO
+			     ELSE
+				   DO I=istart+1,iend,2
+				     CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
+				   ENDDO
+			     ENDIF
+		       ENDDO
 !$omp end parallel do				
-				
-            ENDIF   ! end if(do_redblack)
+
+            ENDIF   	! end if(do_redblack)
 ! ----------------------------------------------------------------<<<
 
 !  Not sure the purpose of us_ikloop
@@ -1402,19 +1401,13 @@
 !  Not sure the purpose of us_ikloop
 !  The SMP directives below need review                        !Tingwen Jan 2012
 ! ---------------------------------------------------------------->>>
-! ----------------------------------------------------------------<<< 
-! Handan Liu explained on Jan 22 2013:
-! 3D DO_ISWEEP here is used for 3D ISIS sweep, and paralleled for openmp
-! ----------------------------------------------------------------<<<
                IF (DO_ISWEEP) THEN
 !!$omp   parallel do private(K,I)
-!$omp   parallel do default(shared) private(K,I)
                   DO K=kstart,kend
                      DO I=istart,iend
                         CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
                      ENDDO
                   ENDDO
-!$omp end parallel do				  
                ENDIF
                IF (DO_KSWEEP) THEN
 !!$omp   parallel do private(K,I)
