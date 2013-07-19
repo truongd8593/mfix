@@ -617,6 +617,23 @@
             ENDIF
 
 
+            IF (BC_ID(IJK)>0) THEN
+
+               IF (BC_TYPE(BC_ID(IJK))(1:2)  /= 'CG')  THEN
+                  WRITE(*,'(/1X,A)')'ERROR: INVALID BOUNDARY CONDITION ASSIGNED TO A CUT CELL.'
+                  WRITE(*,'(/1X,A,I9,I6)')'IJK, MyPE = ', IJK,myPE
+                  WRITE(*,'(1X,A,I6)')'BC_ID  = ',BC_ID(IJK) 
+                  WRITE(*,'(1X,A,A)')'BC_TYPE = ',BC_TYPE(BC_ID(IJK))
+                  WRITE(*,'(1X,A)')'VALID BC_TYPE FOR CUT CELLS ARE: CG_NSW, CG_FSW, CG_PSW, CG_MI, and CG_PO'
+                  WRITE(*,'(/1X,A)')'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  call mfix_exit(myPE)
+               ENDIF
+
+
+            ENDIF
+
+
+
 !            Reordering connectivity such that polygon is defined appropriately for 2D vtk file
 
             IF(NO_K) THEN
