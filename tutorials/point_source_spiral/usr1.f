@@ -28,32 +28,37 @@
 
       use ps
       use constant
-      use geometry
       use physprop
       use run
       use usr
 
       IMPLICIT NONE
 
-      DOUBLE PRECISION :: lRad,   lTime
+      DOUBLE PRECISION :: lRad
+
+      DOUBLE PRECISION :: lU, lV, lW
+
+
       INTEGER :: M
 
-      lTime = time
-      do while (lTime > 3.0d0)
-         lTime = lTime - 3.0d0
-      enddo
+! One reveloution over a three second period.
+      lRad = (2.0d0*Pi*time)/3.0d0
 
-      lRad = 2.0d0*Pi*(lTime/3.0d0)
+! Calculate the normalized velocity components.
+      lV = (1.2d0/1.5d0)
+      lU = (0.9d0/1.5d0)*cos(lRad)
+      lW = (0.9d0/1.5d0)*sin(lRad)
 
-! Calculate the normalized velocity vectors for all phases.
-      PS_V_g(1) = 0.12d0/0.15d0
-      PS_U_g(1) = cos(lRad)/0.15d0
-      PS_W_g(1) = sin(lRad)/0.15d0
+! Update the gas phase components.
+      PS_V_g(1) = lV
+      PS_U_g(1) = lU
+      PS_W_g(1) = lW
 
+! Update the solids phase components.
       do M=1,MMAX
-         PS_V_s(1,M) = 0.12d0/0.15d0
-         PS_U_s(1,M) = 0.09d0*cos(lRad)/0.15d0
-         PS_W_s(1,M) = 0.09d0*sin(lRad)/0.15d0
+         PS_V_s(1,M) = lV
+         PS_U_s(1,M) = lU
+         PS_W_s(1,M) = lW
       enddo
 
       RETURN  

@@ -1,6 +1,6 @@
 ########################################################################
 #  Point Source: Spiral 3D                                             #
-#  Run Time ~ 4.75 Hours                                               #
+#  Run Time ~ 20 Min                                                   #
 ########################################################################
 
 #_______________________________________________________________________
@@ -13,7 +13,7 @@
 
   Time   =  0.00
   Tstop  =  3.00   ! Simulation length
-  DT     = 1.0E-5  ! Initial time step-size
+  DT     = 1.0E-4  ! Initial time step-size
   DT_MAX = 1.0E-3  ! Maximum time step-size
   DT_MIN = 1.0E-6  ! Minimum time step-size
 
@@ -43,9 +43,9 @@
 
   COORDINATES = 'cartesian'
 
-  XLENGTH = 0.30   IMAX =  30
-  YLENGTH = 0.30   JMAX =  30
-  ZLENGTH = 0.30   KMAX =  30
+  XLENGTH = 0.30   IMAX =  15
+  YLENGTH = 0.30   JMAX =  15
+  ZLENGTH = 0.30   KMAX =  15
 
   GRAVITY = 0.0
 #_______________________________________________________________________
@@ -130,19 +130,19 @@
 
 ! Point Source:
 !---------------------------------------------------------------------//
-  PS_I_w(1)          =    16   ! (m)
-  PS_I_e(1)          =    16   ! (m)
+  PS_X_w(1)          =    0.15   ! (m)
+  PS_X_e(1)          =    0.15   ! (m)
 
-  PS_J_s(1)          =    16   ! (m)
-  PS_J_n(1)          =    16   ! (m)
+  PS_Y_s(1)          =    0.15   ! (m)
+  PS_Y_n(1)          =    0.15   ! (m)
 
-  PS_K_b(1)          =    16   ! (m)
-  PS_K_t(1)          =    16   ! (m)
+  PS_Z_b(1)          =    0.15   ! (m)
+  PS_Z_t(1)          =    0.15   ! (m)
 
   PS_T_g(1)          =  315.00       ! (K)
 
   PS_MASSFLOW_g(1)   =    8.0469d-5  ! (kg/sec)
-  PS_U_g(1)          =    0.15       ! (m/sec)
+  PS_U_g(1)          =    1.50       ! (m/sec)
   PS_V_g(1)          =    0.00       ! (m/sec)
   PS_W_g(1)          =    0.00       ! (m/sec)
 
@@ -150,7 +150,7 @@
   PS_X_g(1,2)        =    1.00       ! N2
 
   PS_MASSFLOW_s(1,1) =    8.2575d-4  ! (kg/sec)  
-  PS_U_s(1,1)        =    0.15       ! (m/sec)
+  PS_U_s(1,1)        =    1.50       ! (m/sec)
   PS_V_s(1,1)        =    0.00       ! (m/sec)
   PS_W_s(1,1)        =    0.00       ! (m/sec)
 
