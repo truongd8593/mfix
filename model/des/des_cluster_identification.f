@@ -217,11 +217,19 @@
 ! create routine where if cluster is only 1 particle size big delete
 ! it.
          CALL GetTopCluster(cluster)
+         if(associated(cluster)) then
          IF (cluster%ParticleCount == 1) THEN
             CALL DeleteTopCluster(cluster)
 ! I don't think this routine call is necessary but it is a fail-safe..            
-            CALL DELETE_PSEARCHHISTORY            
+            CALL DELETE_PSEARCHHISTORY
+         ELSEIF(cluster%ParticleCount == 2) THEN
+          if(.NOT.PEA(cluster%Particle_LL%ID,4) .AND.                &
+               .NOT.PEA(cluster%Particle_LL%next_particle%ID,4)) then
+               CALL DeleteTopCluster(cluster)
+               CALL DELETE_PSEARCHHISTORY
+          endif
          ENDIF
+         endif !for associate
 
       ENDDO
       
