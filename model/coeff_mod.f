@@ -57,6 +57,8 @@
       use visc_g, only: RECALC_VISC_G
 ! Run-time flag for invoking discrete element model
       use discretelement, only: DISCRETE_ELEMENT
+! Run-time flag for gas/DEM coupling
+      use discretelement, only: DES_CONTINUUM_COUPLED
 ! Run-time flag for invoking TFM/DEM hybrid model
       use discretelement, only: DES_CONTINUUM_HYBRID
 ! Run-time flag invoking QMOM theory
@@ -71,6 +73,8 @@
       use physprop, only: MMAX
 ! Number to determined unspecified double percision entries.
       use param1, only: UNDEFINED
+! Constant value gas viscosity.
+      use physprop, only: MU_g0
 
       implicit none
 
@@ -79,8 +83,10 @@
 ! Error flag.
       INTEGER, intent(inout) :: IER
 
-! Invoke debug routine:
+
+! Local Variables.
 !-----------------------------------------------------------------------
+! Invoke debug routine:
       LOGICAL, parameter :: dbg_coeffs = .FALSE.
 
 
@@ -157,6 +163,20 @@
       ENDIF   ! end if (.not.discrete_element .or des_continuum_hybrid)
 
       if(dbg_coeffs) CALL DEBUG_COEFF
+
+! Invoke calc_coeff.
+      IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_COUPLED) THEN
+! If gas viscosity is undefined and the flag for calculating gas
+! viscosity is turned off: Turn it on and make the call to calc_coeff.
+! Once viscosity values have been calculated (i.e., an initial value
+! is calculated), turn the flag off again so it isn't recalculated.
+         IF(MU_g0 == UNDEFINED .AND. .NOT.VISC(0)) THEN
+            VISC(0) = .TRUE.; CALL CALC_COEFF(IER, 2)
+            VISC(0) = .FALSE.
+         ELSE
+            CALL CALC_COEFF(IER, 2)
+         ENDIF
+      ENDIF
 
       END SUBROUTINE INIT_COEFF
 

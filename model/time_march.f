@@ -231,8 +231,6 @@
 
 ! Calculate all the coefficients once before entering the time loop
       CALL INIT_COEFF(IER)
-      IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_COUPLED) &
-         CALL CALC_COEFF(IER, 2)
 
       DO M=1, MMAX 
          CALL ZERO_ARRAY (F_gs(1,M), IER)
