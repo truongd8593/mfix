@@ -835,7 +835,7 @@
          lxmin(lproc) = xe(istart1_all(lproc)-1)
          lxmax(lproc) = xe(iend1_all(lproc))  
          lymin(lproc) = yn(jstart1_all(lproc)-1)
-         lymax(lproc) = yn(jend1_all(lproc))  
+         lymax(lproc) = yn(jend1_all(lproc))
          lzmin(lproc) = zt(kstart1_all(lproc)-1)
          lzmax(lproc) = zt(kend1_all(lproc))    
       end do  
@@ -843,20 +843,34 @@
 ! can lie outside the domain and not ghost particles 
       if (des_mio) then 
          do lproc= 0,numpes-1
-            if(des_mi_x .or. des_mo_x) then 
-               if(istart1_all(lproc).eq.imin1) lxmin(lproc) = xe(istart1_all(lproc)-2) 
-               if(iend1_all(lproc).eq.imax1) lxmax(lproc) = xe(iend1_all(lproc)+1) 
-            end if
-            if(des_mi_y .or. des_mo_y) then 
-               if(jstart1_all(lproc).eq.jmin1) lymin(lproc) = yn(jstart1_all(lproc)-2) 
-               if(jend1_all(lproc).eq.jmax1) lymax(lproc) = yn(jend1_all(lproc)+1) 
-            end if
-            if(des_mi_z .or. des_mo_z) then 
-               if(kstart1_all(lproc).eq.kmin1) lzmin(lproc) = zt(kstart1_all(lproc)-2) 
-               if(kend1_all(lproc).eq.kmax1) lzmax(lproc) = zt(kend1_all(lproc)+1) 
-            end if
+!            if(des_mi_x .or. des_mo_x) then 
+               if(istart1_all(lproc).eq.imin1) then
+                  lxmin(lproc) = xe(istart1_all(lproc)-2) 
+               endif
+               if(iend1_all(lproc).eq.imax1) then
+                  lxmax(lproc) = xe(iend1_all(lproc)+1) 
+               endif
+!            end if
+!            if(des_mi_y .or. des_mo_y) then 
+               if(jstart1_all(lproc).eq.jmin1) then
+                  lymin(lproc) = yn(jstart1_all(lproc)-2) 
+               end if
+               if(jend1_all(lproc).eq.jmax1) then
+                  lymax(lproc) = yn(jend1_all(lproc)+1) 
+               end if
+!            end if
+!            if(des_mi_z .or. des_mo_z) then 
+               if(kstart1_all(lproc).eq.kmin1) then
+                  lzmin(lproc) = zt(kstart1_all(lproc)-2) 
+               end if
+               if(kend1_all(lproc).eq.kmax1) then
+                  lzmax(lproc) = zt(kend1_all(lproc)+1) 
+               end if
+!            end if
          end do  
       end if  
+
+
 
 ! set the packet size for transfer  
       lpacketsize = dimn
@@ -898,8 +912,10 @@
                   end if 
                end do 
                if (irestartmap(lcurpar).eq.-1) then 
-                  WRITE(*,601) lcurpar
-                  call des_mpi_stop
+                  WRITE(*,611) lcurpar
+                  irestartmap(lcurpar) = PE_IO
+
+!                  call des_mpi_stop
                endif 
             enddo 
          endif  ! if (no_k)
@@ -953,6 +969,13 @@
  601  FORMAT(/2X,'From: DES_RESTART_MAP: (1)',/2X,&
          'ERROR: Unable to locate the particle (no. ',I10,&
          ') inside the domain')
+
+ 611  FORMAT(/2X,'From: DES_RESTART_MAP: (1)',/2X,&
+         'ERROR: Unable to locate the particle (no. ',I10,&
+         ') inside the domain'/,2x,'... DELETE IT!')
+
+
+
  602  FORMAT(/2X,'From: DES_RESTART_MAP: ',/2X,&
          'ERROR: Particles in the processor ',I10,&
          'exceeds MAX_PIP', I10) 

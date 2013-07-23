@@ -36,6 +36,9 @@
       integer lmax_pip 
 !-----------------------------------------------
 
+      CHARACTER*32 :: lMsg
+      INTEGER :: lc1, lc2, lc3, lc4
+
       ltor_dimn = 1 + (dimn-2)*2 
  
 ! Create the restart file name and open. A restart can either be
@@ -429,6 +432,26 @@
       end if   ! end if/else bdist_io
 !-----------------------------------------------------------------<<<
 
+      IF(myPE == PE_IO) write(*,"(2/,3x,'Checking for stray particles!')")
+      do lc1 = 1, MAX_PIP
+         if(.NOT.PEA(lc1,1)) cycle ! No particle here
+         if(PEA(lc1,2)) cycle      ! Don't care about new particles
+         if(PEA(lc1,3)) cycle      ! Don't care about exiting particles
+         if(PEA(lc1,4)) cycle      ! Don't care about ghost particles
+
+         if(DES_POS_NEW(lc1,1) .lt. xe(istart1_all(myPE)-1)      .OR. &
+            DES_POS_NEW(lc1,1) .ge. xe(iend1_all(myPE))          .OR. &  
+            DES_POS_NEW(lc1,2) .lt. yn(jstart1_all(myPE)-1)      .OR. &
+            DES_POS_NEW(lc1,2) .ge. yn(jend1_all(myPE))          .OR. &
+            DES_POS_NEW(lc1,3) .lt. zt(kstart1_all(myPE)-1)      .OR. &
+            DES_POS_NEW(lc1,3) .ge. zt(kend1_all(myPE))) then
+
+            lMsg=''; write(lMsg,*) lc1
+            write(*,"(5x,'Particle ',A,' is stray! - Delete it.')") trim(lMsg)
+            CALL delete_par_from_res(lc1)
+         endif
+      enddo 
+
 ! Copy values from "NEW" arrays to "OLD" arrays.
 ! Higher order integration (Adams-Bashforth) will default to Euler for
 ! the first time step since 'OLD' arrays values were not stored.
@@ -441,3 +464,119 @@
       if(bdist_io .or.mype .eq. pe_io) close(lres_unit)
 
       end subroutine des_read_restart 
+
+
+
+!---------------------------------------------------------------------//
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!---------------------------------------------------------------------//
+      subroutine delete_par_from_res(NP)
+
+      USE compar
+      USE constant
+      USE des_bc
+      USE discretelement
+      USE funits
+      USE geometry
+      USE indices
+      USE param1
+      USE physprop
+
+      IMPLICIT NONE
+
+      INTEGER :: NP            ! Particle Index
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+      INTEGER I,J,K,IJK       ! Unused indices at this time
+      INTEGER PC              ! Loop counter
+      INTEGER NPT             ! Temp Particle Index
+! Tmp holder of particle position
+      DOUBLE PRECISION XPOS, YPOS, ZPOS
+
+! Loop indices used for clearing forces associated with exiting particles
+      INTEGER NLIMNP, NLIM, NEIGHNP, NLIM_NEIGHNP
+      
+! Logical for local debug warnings
+      LOGICAL DES_LOC_DEBUG
+
+      PEA(NP,:) = .FALSE.
+              
+      DES_POS_OLD(NP,:) = ZERO
+      DES_POS_NEW(NP,:) = ZERO
+      DES_VEL_OLD(NP,:) = ZERO
+      DES_VEL_NEW(NP,:) = ZERO
+      OMEGA_OLD(NP,:) = ZERO
+      OMEGA_NEW(NP,:) = ZERO
+      DES_RADIUS(NP) = ZERO
+      PMASS(NP) = ZERO
+      PVOL(NP) = ZERO
+      RO_Sol(NP) = ZERO
+      OMOI(NP) = ZERO
+
+      FC(NP,:) = ZERO
+      FN(NP,:) = ZERO
+      FT(NP,:) = ZERO
+      TOW(NP,:) = ZERO
+
+      PN(NP,:) = -1
+      PN(NP,1) = 0
+      PV(NP,:) = 1
+      PFT(NP,:,:) = ZERO
+      PPOS(NP,:) = ZERO
+
+! Note that if particle NP has any neighbors then the particle NP will
+! still exist in the neighbor's neighbours list.  This information would
+! eventually be cleared in the second call to calc_force_des following
+! the removal of NP but is forceably removed here to keep the dem
+! inlet/outlet code self contained (does not rely on other code)
+      NEIGHBOURS(NP,:) = -1
+      NEIGHBOURS(NP,1) = 0 
+               
+! Clear particle NP from any other neighboring particles lists               
+      IF (NEIGHBOURS(NP,1) > 0) THEN
+         NLIMNP = NEIGHBOURS(NP,1)+1
+                
+! Cycle through all neighbours of particle NP
+         DO I = 2, NLIMNP
+            NEIGHNP = NEIGHBOURS(NP,I)
+
+! If any neighbor particle has a lower index than NP then the contact 
+! force history will be stored with that particle and needs to be cleared
+            IF (NEIGHNP < NP) THEN
+               IF (PN(NEIGHNP,1) > 0) THEN
+                  NLIM = PN(NEIGHNP,1)+1
+                  DO J = 2, NLIM
+                     NPT = PN(NEIGHNP,J)
+                     IF (NPT .NE. NP) CYCLE   ! find particle NP in NEIGHNP list
+                     PN(NEIGHNP,J:(MAXNEIGHBORS-1)) = &
+                        PN(NEIGHNP,(J+1):MAXNEIGHBORS)
+                     PV(NEIGHNP,J:(MAXNEIGHBORS-1)) = &
+                        PV(NEIGHNP,(J+1):MAXNEIGHBORS)
+                     PFT(NEIGHNP,J:(MAXNEIGHBORS-1),:) = &
+                        PFT(NEIGHNP,(J+1):MAXNEIGHBORS,:)
+                     PN(NEIGHNP,1) = PN(NEIGHNP,1) -1
+                  ENDDO
+               ENDIF
+            ENDIF
+
+            NLIM_NEIGHNP = NEIGHBOURS(NEIGHNP,1)+1
+! Find where particle NP is stored in its neighbours (NEIGHNP) lists
+! and remove particle NP from the list
+            DO J = 2, NLIM_NEIGHNP
+               NPT = NEIGHBOURS(NEIGHNP,J)
+               IF (NPT .NE. NP) CYCLE  ! find particle NP in NEIGHNP list
+               NEIGHBOURS(NEIGHNP,1) = NEIGHBOURS(NEIGHNP,1)-1
+               NEIGHBOURS(NEIGHNP,J:(MN-1)) = NEIGHBOURS(NEIGHNP,(J+1):MN)
+            ENDDO
+         ENDDO
+      ENDIF  
+
+      PIP = PIP - 1
+! Do not increment PC since PIP has been decremented.
+
+      end subroutine
