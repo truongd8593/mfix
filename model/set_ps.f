@@ -33,7 +33,7 @@
       DOUBLE PRECISION, allocatable :: lData_dp(:)
       DOUBLE PRECISION, allocatable :: gData_dp(:)
 
-      LOGICAL, parameter :: dbg_PS = .TRUE.
+      LOGICAL, parameter :: dbg_PS = .FALSE.
 
       INCLUDE 'function.inc'
 
