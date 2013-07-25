@@ -33,7 +33,7 @@
       DOUBLE PRECISION, allocatable :: lData_dp(:)
       DOUBLE PRECISION, allocatable :: gData_dp(:)
 
-      LOGICAL, parameter :: dbg_PS = .FALSE.
+      LOGICAL, parameter :: dbg_PS = .TRUE.
 
       INCLUDE 'function.inc'
 
@@ -47,13 +47,16 @@
 
 
 ! Calculate the velocity magnitude and normalize the axial components.
-         CALL CALC_PS_VEL_MAG(PS_VEL_MAG_g(PSV), PS_U_g(PSV),       &
+         CALL CALC_PS_VEL_MAG(PS_VEL_MAG_g(PSV), PS_U_g(PSV),          &
             PS_V_g(PSV), PS_W_g(PSV))
 
          CALL CALC_PS_CpxMFLOW(PS_CpxMFLOW_g(PSV), PS_MASSFLOW_g(PSV), &
             PS_T_g(PSV), PS_X_g(PSV,:), 0, C_PG0, DIM_N_g, MW_g)
 
          do M=1, MMAX
+            CALL CALC_PS_VEL_MAG(PS_VEL_MAG_s(PSV,M), PS_U_s(PSV,M),   &
+               PS_V_s(PSV,M), PS_W_s(PSV,M))
+
             CALL CALC_PS_CpxMFLOW(PS_CpxMFLOW_s(PSV,M),                &
                PS_MASSFLOW_s(PSV,M), PS_T_s(PSV,M), PS_X_s(PSV,M,:), M,&
                C_PS0, DIM_N_s, MW_s(M,:))
