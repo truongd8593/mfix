@@ -1601,6 +1601,9 @@
 ! tmp local variable for the solids volume fraction of solids
 ! phase M (continuous or discrete)
       DOUBLE PRECISION :: EPs_loc(2*DIM_M)
+! tmp local variable for the particle density of solids
+! phase M (continuous or discrete)
+      DOUBLE PRECISION :: ROs_loc(2*DIM_M)      
 ! correction factors for implementing polydisperse drag model 
 ! proposed by van der Hoef et al. (2005)
       DOUBLE PRECISION :: F_cor, tmp_sum, tmp_fac
@@ -1611,8 +1614,8 @@
 ! total solids volume fraction
       DOUBLE PRECISION :: phis
 ! aliases for void fraction, gas density, gas bulk density,
-! solids volume fraction, particle diameter      
-      DOUBLE PRECISION :: EPG, ROg, ROPg, EP_SM, DPM
+! solids volume fraction, particle diameter, particle density     
+      DOUBLE PRECISION :: EPG, ROg, ROPg, EP_SM, DPM, ROs
 !-----------------------------------------------    
 ! Include statement functions
 !-----------------------------------------------  
@@ -1634,6 +1637,7 @@
          DO DM = 1,MAXM
             DP_loc(DM) = DES_D_p0(DM)
             EPs_loc(DM) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
+            ROs_loc(DM) = DES_RO_S(DM)            
          ENDDO
       ELSE   ! des_continuum_hybrid branch
 ! For the hybrid model the diameters and solids volume fractions of
@@ -1645,11 +1649,13 @@
          DO DM = 1,DES_MMAX
             DP_loc(DM) = DES_D_p0(DM)
             EPs_loc(DM) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
+            ROs_loc(DM) = DES_RO_S(DM)
          ENDDO
          DO CM = 1,SMAX
             L = DES_MMAX + CM
             DP_loc(L) = D_P(IJK,CM)
             EPs_loc(L) = EP_S(IJK,CM)
+            ROs_loc(L) = RO_S(CM)            
          ENDDO
       ENDIF   ! end if/else (.not.des_continuum_hybrid)
 
@@ -1719,6 +1725,7 @@
       ROPg = ROP_G(IJK)
       EP_SM = EPs_loc(M)
       DPM = DP_loc(M)
+      ROs = ROs_loc(M)
 
 ! determine the drag coefficient
       IF (EP_SM <= ZERO) THEN 

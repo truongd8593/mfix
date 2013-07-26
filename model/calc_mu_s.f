@@ -1,73 +1,62 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!
-!     Module name: CALC_MU_s(M, IER)
-!     Purpose: Calculate granular stress terms:
-!        grnaular viscosity, bulk viscosity, solids pressure, granular
-!        conductivity
-
-!     Author: W. Rogers                                  Date: 04-mar-92
-!     Reviewer: M. Syamlal                               Date: 16-MAR-92
-
-!     Revision Number: 1
-!     Purpose: Modifications for cylindrical geometry
-!     Author: M. Syamlal                                 Date: 15-MAY-92
-
-!     Revision Number: 2
-!     Purpose: Add volume-weighted averaging statement functions for
-!     variable grid capability
-!     Author:  W. Rogers                                 Date: 21-JUL-92
-!     Reviewer: P. Nicoletti                             Date: 11-DEC-92
-
-!     Revision Number: 3
-!     Purpose: Add frictional-flow stress terms
-!     Author: M. Syamlal                                 Date: 10-FEB-93
-
-!     Revision Number: 4
-!     Purpose: Add Boyle-Massoudi stress terms
-!     Author: M. Syamlal                                 Date: 2-NOV-95
-
-!     Revision Number: 5
-!     Purpose: MFIX 2.0 mods  (old name CALC_THETA)
-!     Author: M. Syamlal                                 Date: 24-APR_96
-
-!     Author: Kapil Agrawal, Princeton University        Date: 6-FEB-98
-!     Revision Number: 6
-!     Purpose: Add calculation of viscosities and conductivities for use
-!     with granular temperature PDE. New common block contained
-!     in 'trace.inc' contains trD_s_C(DIMENSION_3, DIMENSION_M)
-!     and trD_s2(DIMENSION_3, DIMENSION_M)
-
-!     Author: Anuj Srivastava, Princeton University      Date: 20-APR-98
-!     Revision Number:7
-!     Purpose: Add calculation of frictional stress terms
-
-!     Author: Sofiane Benyahia, Fluent Inc.      Date: 02-01-05
-!     Revision Number:8
-!     Purpose: Add Simonin and Ahmadi models
-!     Literature/Document References:
-!     1- Simonin, O., 1996. Combustion and turbulence in two-phase flows.
-!     Von Karman institute for fluid dynamics, lecture series 1996-02
-!     2- Balzer, G., Simonin, O., Boelle, A., and Lavieville, J., 1996.
-!     A unifying modelling approach for the numerical prediction of
-!     dilute and dense gas-solid two phase flow. CFB5, 5th int. conf.
-!     on circulating fluidized beds, Beijing, China.
-!     3- Cao, J. and Ahmadi, G., 1995. Gas-particle two-phase turbulent 
-!     flow in a vertical duct. Int. J. Multiphase Flow, vol. 21 No. 6
-!     pp. 1203-1228.                                                 
-
-!     Author: Sreekanth Pannala, ORNL            Date: 10-08-05
-!     Revision Number:9
-!     Purpose: Rewrite different modules to increase modularity
-
-!     Variables referenced: 
-!     Variables modified: 
-!     Local variables: 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!                                                                      C
+!  Subroutine: CALC_MU_s                                               C
+!  Purpose: Calculate granular stress terms (granular viscosity        C
+!     bulk viscosity, solids pressure) & granular conductivity         C
+!                                                                      C
+!  Author: W. Rogers                                Date: 04-mar-92    C
+!  Reviewer: M. Syamlal                             Date: 16-MAR-92    C
+!                                                                      C
+!  Revision Number: 1                                                  C
+!  Purpose: Modifications for cylindrical geometry                     C
+!  Author: M. Syamlal                               Date: 15-MAY-92    C
+!                                                                      C
+!  Revision Number: 2                                                  C
+!  Purpose: Add volume-weighted averaging statement functions for      C
+!     variable grid capability                                         C
+!  Author:  W. Rogers                               Date: 21-JUL-92    C
+!  Reviewer: P. Nicoletti                           Date: 11-DEC-92    C
+!                                                                      C
+!  Revision Number: 4                                                  C
+!  Purpose: Add Boyle-Massoudi stress terms                            C
+!  Author: M. Syamlal                               Date: 2-NOV-95     C
+!                                                                      C
+!  Revision Number: 5                                                  C
+!  Purpose: MFIX 2.0 mods  (old name CALC_THETA)                       C
+!  Author: M. Syamlal                               Date: 24-APR-96    C
+!                                                                      C
+!  Author: Sreekanth Pannala, ORNL                  Date: 10-08-05     C
+!  Revision Number:X                                                   C
+!  Purpose: Rewrite different modules to increase modularity           C
+!                                                                      C
+!  Author: QX, Iowa State                                              C
+!  Revision Number:X                                                   C
+!  Purpose: Variable density- changed RO_S(M) to RO_SV(IJK,M)          C
+!                                                                      C
+!  Author: Handan Liu                                                  C
+!  Revision Number:X                                                   C
+!  Purpose: Added OpenMP to some routines - gt_algebraic,              C
+!     init_mu_s                                                        C
+!                                                                      C
+!  Comments:                                                           C
+!     GRANULAR_ENERGY = .FALSE.                                        C
+!        EP_g < EP_star   -->    friction_schaeffer                    C
+!        EP_g >= EP_star  -->    viscous (algebraic)                   C
+!                                                                      C
+!     GRANULAR_ENERGY = .TRUE.                                         C
+!        FRICTION = .TRUE.                                             C
+!           EP_s(IJK,M) > EPS_f_min  -->  friction + viscous(pde)      C
+!           EP_s(IJK,M) < EP_f_min   -->  viscous (pde)                C
+!        FRICTION = .FALSE.                                            C
+!           EP_g < EP_star  -->  friction_schaeffer + viscous(pde)     C
+!           EP_g >= EP_star -->  viscous (pde)                         C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
      
       SUBROUTINE CALC_MU_s(M, IER)
 
 !-----------------------------------------------
-!     Modules 
+! Modules 
 !----------------------------------------------- 
       USE run
       USE vshear
@@ -78,26 +67,28 @@
       USE compar
       USE indices
       USE geometry
-! QMOMK - Alberto Passalacqua
       USE qmom_kinetic_equation
-! QMOMK - End
       Implicit NONE
 !-----------------------------------------------
-!     Local variables
+! Dummy arguments
 !-----------------------------------------------
-!     Error index
-      INTEGER          IER
-!     Solids Phase
-      INTEGER          M, IJK
-!     Blend Factor
-      Double Precision blend
-
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+! error index
+      INTEGER, INTENT(INOUT) :: IER
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+! cell index
+      INTEGER :: IJK      
+! blend factor
+      DOUBLE PRECISION :: BLEND
 !----------------------------------------------- 
-!     Functions
+! Functions
 !-----------------------------------------------       
-      DOUBLE PRECISION , EXTERNAL :: BLEND_FUNCTION
+      DOUBLE PRECISION, EXTERNAL :: BLEND_FUNCTION
 !----------------------------------------------- 
-!     Include statement functions
+! Include statement functions
 !-----------------------------------------------      
       Include 'function.inc'
 !-----------------------------------------------
@@ -108,53 +99,44 @@
       IF (SHEAR) CALL add_shear(M)
 
 ! Initialize/calculate all the quantities needed for various options
-      CALL init_mu_s(M, IER)    
+      CALL INIT_MU_S(M, IER)    
      
       IF (SHEAR) call remove_shear(M)
 
       IF(MU_s0 /= UNDEFINED) RETURN ! constant solids viscosity case 
 
-! GRANULAR_ENERGY = .FALSE.
-!   EP_g < EP_star   -->    friction_schaeffer
-!   EP_g >= EP_star  -->    viscous (algebraic)
-      
-! GRANULAR_ENERGY = .TRUE.
-!    FRICTION = .TRUE.
-!       EP_s(IJK,M) > EPS_f_min  -->  friction + viscous(pde)
-!       EP_s(IJK,M) < EP_f_min   -->  viscous (pde)
-!    FRICTION = .FALSE.
-!       EP_g < EP_star  -->  friction_schaeffer + viscous(pde)
-!       EP_g >= EP_star -->  viscous (pde)
-     
-     
 ! Viscous-flow stress tensor
-      ! QMOMK - Alberto Passalacqua
-      ! Added check to exclude both the algebraic and the PD equation
-      ! for the granular temperature
       IF (.NOT. QMOMK) THEN
+! if QMOMK then do not solve algebraic or PDE form of granular 
+! temperature governing equation
          IF(.NOT.GRANULAR_ENERGY) then
-            if(.NOT.SUBGRID_Igci .AND. .NOT.SUBGRID_Milioli) then           !!!!Sebastien Dartevelle, LANL, March May 2013, Filter model
-              call gt_algebraic(M,IER)                                        !algebraic granular energy equation
-            else
-              call subgrid_model(M,IER)                                       !not algebraic theta, then take a subgrid LES model route
-            endif
-         ELSE                   !granular energy transport equation
+            IF(SUBGRID_TYPE /= UNDEFINED_C) THEN
+               IF (TRIM(SUBGRID_TYPE) .EQ. 'IGCI') THEN
+                  CALL SUBGRID_STRESS_IGCI(M, IER)
+               ELSEIF (TRIM(SUBGRID_TYPE) .EQ. 'MILIOLI') THEN
+                  CALL SUBGRID_STRESS_MILIOLI(M, IER)
+               ENDIF                    
+            ELSE
+              call gt_algebraic(M,IER)   ! algebraic granular energy equation
+            ENDIF
+         ELSE   ! granular energy transport equation
             IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
                CALL gt_pde_ia_nonep(M,IER) ! complete polydisperse IA theory
             ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
                CALL gt_pde_gd_99(M,IER) ! monodisperse GD theory
             ELSEIF (TRIM(KT_TYPE) == 'GHD') THEN
-               CALL TRANSPORT_COEFF_GHD(M,IER) ! GHD theory for mixture temperature               
+               CALL TRANSPORT_COEFF_GHD(M,IER) ! GHD theory for mixture temperature
             ELSE
                CALL gt_pde(M,IER) ! This is also used whith Simonin or Ahmadi models
             ENDIF
          ENDIF
       ENDIF
-      ! QMOMK - End
     
 ! Frictional stress tensors
-      IF (SCHAEFFER .AND. CLOSE_PACKED(M)) call friction_schaeffer(M,IER) ! Schaeffer's Frictional Formulation
-      IF (FRICTION .AND. CLOSE_PACKED(M)) call friction_princeton(M,IER) ! Princeton's frictional implementation
+! Schaeffer's frictional formulation      
+      IF (SCHAEFFER .AND. CLOSE_PACKED(M)) call friction_schaeffer(M,IER)
+! Princeton's frictional implementation
+      IF (FRICTION .AND. CLOSE_PACKED(M)) call friction_princeton(M,IER) 
       
       IF(BLENDING_STRESS) THEN
          DO 200 IJK = ijkstart3, ijkend3
@@ -183,7 +165,7 @@
 ! plastic, viscous or frictional components)
             ALPHA_s(IJK,M) = (1.0d0-blend)*ALPHA_s_p(IJK) &
                 + blend*ALPHA_s_v(IJK) + ALPHA_s_f(IJK)
-200      ENDDO
+ 200     ENDDO
       ELSE   ! else branch of if(blending_stress), no blending stress then we have
          Mu_s_c(:,M) = Mu_s_v(:)
          Mu_s(:,M) = Mu_s_p(:) + Mu_s_v(:) + Mu_s_f(:)
@@ -196,17 +178,24 @@
       ENDIF  ! end if/else (blending_stress)
       
       RETURN
-
-      END
-!-----------------------------------------------
+      END SUBROUTINE CALC_MU_s
 
 
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: FRICTION_SCHAEFFER                                      C
+!  Purpose: Add frictional-flow stress terms                           C
+!                                                                      C
+!  Author: M. Syamlal                               Date: 10-FEB-93    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       Subroutine friction_schaeffer(M, IER)
 
 !-----------------------------------------------
-!     Modules 
+! Modules 
 !-----------------------------------------------      
       USE param
       USE param1
@@ -220,27 +209,32 @@
       USE run
       USE constant
       IMPLICIT NONE
-
 !-----------------------------------------------
-!    Variables 
-!----------------------------------------------- 
-!     Index
-      INTEGER          IJK
-!     Solids phase
-      INTEGER          M, MM
-!     Maximum value of solids viscosity in poise
-      DOUBLE PRECISION MAX_MU_s
+! Dummy arguments
+!-----------------------------------------------
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+! error index
+      INTEGER, INTENT(INOUT) :: IER
+!-----------------------------------------------
+! Local parameters
+!-----------------------------------------------
+! maximum value of solids viscosity in poise
+      DOUBLE PRECISION :: MAX_MU_s
       PARAMETER (MAX_MU_s = 1000.D0)
-     
-!     Sum of all solids volume fractions
-      DOUBLE PRECISION   SUM_EPS_CP
-     
-!     Factor in frictional-flow stress terms
-      DOUBLE PRECISION qxP_s
-!     Error index
-      INTEGER          IER     
+!-----------------------------------------------
+! Local variables 
+!-----------------------------------------------
+! cell index
+      INTEGER :: IJK
+! solids phase index
+      INTEGER :: MM
+! sum of all solids volume fractions
+      DOUBLE PRECISION :: SUM_EPS_CP
+! factor in frictional-flow stress terms
+      DOUBLE PRECISION :: qxP_s
 !----------------------------------------------- 
-!     Include statement functions
+! Include statement functions
 !-----------------------------------------------      
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
@@ -286,7 +280,7 @@
 !-----------------------------------------------------------------------
 ! Schaeffer (1987)
      
-               qxP_s            = SQRT( (4.D0 * Sin2_Phi) * I2_devD_s(IJK))
+               qxP_s           = SQRT( (4.D0 * Sin2_Phi) * I2_devD_s(IJK))
                MU_s_p(IJK)     = P_star(IJK) * Sin2_Phi&
                    / (qxP_s + SMALL_NUMBER) &
                    *(EP_S(IJK,M)/SUM_EPS_CP) ! added by sof for consistency
@@ -299,21 +293,24 @@
 ! in solve_granular_energy.f to avoid convergence problems. (sof)
                IF(.NOT.GRANULAR_ENERGY) THETA_m(IJK, M) = ZERO
             ENDIF
-         ENDIF ! Fluid_at
-! end Schaeffer
+         ENDIF   ! end if (fluid_at(ijk)
 
- 200  Continue                  ! outer IJK loop
+
+ 200  CONTINUE   ! outer IJK loop
       
       RETURN
-      END
-!-----------------------------------------------   
+      END SUBROUTINE FRICTION_SCHAEFFER
 
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       Subroutine Gt_algebraic (M, IER)
 
 !-----------------------------------------------
-!     Modules 
+! Modules 
 !-----------------------------------------------        
       USE param
       USE param1
@@ -328,53 +325,45 @@
       USE constant
       USE trace
       IMPLICIT NONE
-
 !-----------------------------------------------
-!    Variables 
+! Dummy arguments
+!-----------------------------------------------
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+! error index
+      INTEGER, INTENT(INOUT) :: IER
+!-----------------------------------------------
+! Local variables 
 !----------------------------------------------- 
-!     Index
-      INTEGER          IJK
-!     Solids phase
-      INTEGER          M, MM
-     
-!     Sum of all solids volume fractions
-      DOUBLE PRECISION   SUM_EPS_CP
-!     Error index
-      INTEGER          IER     
-     
-!     Coefficients of quadratic equation
-      DOUBLE PRECISION aq, bq, cq
-     
-!     Constant in equation for mth solids phase pressure
-      DOUBLE PRECISION K_1m
-     
-!     Constant in equation for mth solids phase bulk viscosity
-      DOUBLE PRECISION K_2m
-     
-!     Constant in equation for mth solids phase viscosity
-      DOUBLE PRECISION K_3m
-     
-!     Constant in equation for mth solids phase dissipation
-      DOUBLE PRECISION K_4m
-     
-!     Constant in Boyle-Massoudi stress term
-      DOUBLE PRECISION K_5m
-     
-!     Factor in frictional-flow stress terms
-      DOUBLE PRECISION qxP_s
-     
-!     Value of EP_s * SQRT( THETA )for Mth solids phase
-!     continuum
-      DOUBLE PRECISION EP_sxSQRTHETA
-     
-!     Value of EP_s * EP_s * THETA for Mth solids phase
-!     continuum
-      DOUBLE PRECISION EP_s2xTHETA,temp_local
-     
+! cell index
+      INTEGER :: IJK
+! solids phase index
+      INTEGER :: MM
+! Sum of all solids volume fractions
+      DOUBLE PRECISION :: SUM_EPS_CP
+! Coefficients of quadratic equation
+      DOUBLE PRECISION :: aq, bq, cq
+! Constant in equation for mth solids phase pressure
+      DOUBLE PRECISION :: K_1m
+! Constant in equation for mth solids phase bulk viscosity
+      DOUBLE PRECISION :: K_2m
+! Constant in equation for mth solids phase viscosity
+      DOUBLE PRECISION :: K_3m
+! Constant in equation for mth solids phase dissipation
+      DOUBLE PRECISION :: K_4m
+! Constant in Boyle-Massoudi stress term
+      DOUBLE PRECISION :: K_5m
+! Factor in frictional-flow stress terms
+      DOUBLE PRECISION :: qxP_s
+! Value of EP_s * SQRT( THETA )for Mth solids phase continuum
+      DOUBLE PRECISION :: EP_sxSQRTHETA
+! Value of EP_s * EP_s * THETA for Mth solids phase continuum
+      DOUBLE PRECISION :: EP_s2xTHETA, temp_local
 !----------------------------------------------- 
 !     Functions
 !----------------------------------------------- 
-      DOUBLE PRECISION G_0
+! radial distribution function      
+      DOUBLE PRECISION, EXTERNAL :: G_0
 !----------------------------------------------- 
 !     Include statement functions
 !----------------------------------------------- 
@@ -383,21 +372,18 @@
       INCLUDE 'ep_s2.inc'  
 !----------------------------------------------- 
 
-!      DO 200 IJK = ijkstart3, ijkend3   	!Commented by Handan Liu July 12 2012
-!Handan Liu added OpenMP on July 12 2012
-!$omp parallel do default(shared)						&
-!$omp private(IJK, K_1m, K_2m, K_3m, K_4m, K_5m,		&
-!$omp 		  aq, bq, cq, EP_sxSQRTHETA, EP_s2xTHETA)  
+!$omp parallel do default(shared)                                    &
+!$omp private(IJK, K_1m, K_2m, K_3m, K_4m, K_5m,                     &
+!$omp         aq, bq, cq, EP_sxSQRTHETA, EP_s2xTHETA)  
      
        DO IJK = ijkstart3, ijkend3
-	   
+   
          IF ( FLUID_AT(IJK) ) THEN
 
             IF(EP_g(IJK) .GE. EP_g_blend_start(IJK)) THEN
 
 ! Calculate K_1m, K_2m, K_3m, K_4m
-!QX RO_SV(M) changed to RO_SV(IJK,M)
-               K_1m = 2.D0 * (ONE + C_e) * RO_SV(IJK,M) * G_0(IJK, M,M)
+               K_1m = 2.D0 * (ONE + C_e) * RO_SV(IJK,M) * G_0(IJK, M, M)
                K_3m = HALF * D_p(IJK,M) * RO_SV(IJK,M) * (&
                    ( (SQRT_PI / (3.D0*(3.D0 - C_e))) *&
                    (HALF*(3d0*C_e+ONE) + 0.4D0*(ONE + C_e)*(3.D0*C_e - ONE)*&
@@ -422,10 +408,9 @@
                ENDIF
      
 ! Calculate EP_sxSQRTHETA and EP_s2xTHETA
-!QX
                temp_local = bq**2 - 4.D0 * aq * cq
                EP_sxSQRTHETA = (-bq + SQRT(temp_local))&
-               / ( 2.D0 * K_4m )
+                  / ( 2.D0 * K_4m )
                EP_s2xTHETA = EP_sxSQRTHETA * EP_sxSQRTHETA
                
                IF(EP_s(IJK,M) > SMALL_NUMBER)THEN
@@ -448,22 +433,51 @@
                ALPHA_s(IJK, M) = -K_5m * EP_s2xTHETA
             ENDIF
 
-         Endif                  ! Fluid_at
-! 200  Continue                  ! outer IJK loop
+         ENDIF   ! Fluid_at
       ENDDO
 !$omp end parallel do
-	      
+
       RETURN
-      END
-!-----------------------------------------------   
+      END SUBROUTINE GT_ALGEBRAIC
 
 
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: GT_PDE                                                  C
+!  Purpose: Calculate granular stress terms (viscosity, bulk viscosity C
+!     solids pressure) & granular conductivity                         C
+!                                                                      C
+!  Author: Kapil Agrawal, Princeton University      Date: 6-FEB-98     C
+!                                                                      C
+!  Revision Number:1                                                   C
+!  Purpose: Add Simonin and Ahmadi models                              C
+!  Author: Sofiane Benyahia, Fluent Inc.            Date: 02-01-05     C
+!                                                                      C
+!  Literature/Document References:                                     C
+!     Lun, C.K.K., S.B. Savage, D.J. Jeffrey, and N. Chepurniy,        C
+!        Kinetic theories for granular flow - inelastic particles in   C
+!        Couette-flow and slightly inelastic particles in a general    C
+!        flow field. Journal of Fluid Mechanics, 1984. 140(MAR):       C
+!        p. 223-256                                                    C
+!                                                                      C
+!     Simonin, O., 1996. Combustion and turbulence in two-phase flows, C
+!        Von Karman institute for fluid dynamics, lecture series,      C
+!        1996-02                                                       C
+!     Balzer, G., Simonin, O., Boelle, A., and Lavieville, J., 1996,   C
+!        A unifying modelling approach for the numerical prediction    C
+!        of dilute and dense gas-solid two phase flow. CFB5, 5th int.  C
+!        conf. on circulating fluidized beds, Beijing, China.          C
+!     Cao, J. and Ahmadi, G., 1995, Gas-particle two-phase turbulent   C
+!        flow in a vertical duct. Int. J. Multiphase Flow, vol. 21,    C
+!        No. 6, pp. 1203-1228.                                         C
+!                                                                      C      
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       Subroutine gt_pde (M, IER)
 
 !-----------------------------------------------
-!     Modules 
+! Modules 
 !-----------------------------------------------      
       USE param
       USE param1
@@ -480,50 +494,49 @@
       USE turb
       USE drag
       IMPLICIT NONE
-
 !-----------------------------------------------
-!     Local variables
+! Dummy arguments
 !-----------------------------------------------
-!     Index
-      INTEGER          IJK, I, J, K
-!     
-!     Solids phase
-      INTEGER          M, MM
-!     
-!     Error index
-      INTEGER          IER     
-!     
-!     Use to compute MU_s(IJK,M) & Kth_S(IJK,M)
-      DOUBLE PRECISION Mu_star, Kth, Kth_star
-!     
-!     defining parametrs for Simonin and Ahmadi models
-      DOUBLE PRECISION Tau_12_st, Tau_2_c, Tau_2, Zeta_r, C_Beta
-      DOUBLE PRECISION Sigma_c, Zeta_c, Omega_c, Zeta_c_2, C_mu, X_21, Nu_t
-      DOUBLE PRECISION MU_2_T_Kin, Mu_2_Col, Kappa_kin, Kappa_Col
-      DOUBLE PRECISION Tmp_Ahmadi_Const
-      DOUBLE PRECISION DGA, C_d, Re
-!     
-!     Sum of ep_s * g_0
-      DOUBLE PRECISION   SUM_EpsGo
-      
-!     SWITCH enables us to turn on/off the modification to the
-!     particulate phase viscosity. If we want to simulate gas-particle
-!     flow then SWITCH=1 to incorporate the effect of drag on the
-!     particle viscosity. If we want to simulate granular flow
-!     without the effects of an interstitial gas, SWITCH=0.
-!     (Same for conductivity)
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+! error index
+      INTEGER, INTENT(INOUT) :: IER
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+! cell indices
+      INTEGER :: IJK, I, J, K
+! solids phase index
+      INTEGER :: MM
+! use to compute MU_s(IJK,M) & Kth_S(IJK,M)
+      DOUBLE PRECISION :: Mu_star, Kth, Kth_star
+! defining parametrs for Simonin and Ahmadi models
+      DOUBLE PRECISION :: Tau_12_st, Tau_2_c, Tau_2, Zeta_r, C_Beta
+      DOUBLE PRECISION :: Sigma_c, Zeta_c, Omega_c, Zeta_c_2, C_mu, X_21, Nu_t
+      DOUBLE PRECISION :: MU_2_T_Kin, Mu_2_Col, Kappa_kin, Kappa_Col
+      DOUBLE PRECISION :: Tmp_Ahmadi_Const
+!
+      DOUBLE PRECISION :: DGA, C_d, Re
+! sum of ep_s * g_0
+      DOUBLE PRECISION :: SUM_EpsGo
 
-      DOUBLE PRECISION SRT
+! SWITCH enables us to turn on/off the modification to the
+! particulate phase viscosity. If we want to simulate gas-particle
+! flow then SWITCH=1 to incorporate the effect of drag on the
+! particle viscosity. If we want to simulate granular flow
+! without the effects of an interstitial gas, SWITCH=0.
+! (Same for conductivity)
 
 !-----------------------------------------------      
-!     Functions
+! Functions
 !-----------------------------------------------     
-      DOUBLE PRECISION G_0
-!     dg0/dep
-      DOUBLE PRECISION DG_0DNU
+! radial distribution function
+      DOUBLE PRECISION, EXTERNAL :: G_0
+! dg0/dep
+      DOUBLE PRECISION, EXTERNAL :: DG_0DNU
 
 !-----------------------------------------------
-!     Include statement functions
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
@@ -538,8 +551,9 @@
          IF ( FLUID_AT(IJK) ) THEN
      
 ! Defining a single particle drag coefficient (similar to one defined in drag_gs)
-            Re = D_p(IJK,M)*VREL_array(IJK)*ROP_G(IJK)/(MU_G(IJK) + small_number)
-            IF(Re .LE. 1000D0)THEN
+            RE = D_p(IJK,M)*VREL_array(IJK)*ROP_G(IJK)/&
+               (MU_G(IJK) + SMALL_NUMBER)
+            IF(RE .LE. 1000D0)THEN
                C_d = (24.D0/(Re+SMALL_NUMBER)) * (ONE + 0.15D0 * Re**0.687D0)
             ELSE
                C_d = 0.44D0
@@ -547,8 +561,8 @@
 
 ! This is from Wen-Yu correlation, you can put here your own single particle drag
             DgA = 0.75D0 * C_d * VREL_array(IJK) * ROP_g(IJK) / D_p(IJK,M)
-            IF(VREL_array(IJK) == ZERO) DgA = LARGE_NUMBER !for 1st iteration and 1st time step
-
+! set value for 1st iteration and 1st time step
+            IF(VREL_array(IJK) == ZERO) DgA = LARGE_NUMBER 
 
 ! Define some time scales and constants related to Simonin and Ahmadi models
             IF(SIMONIN .OR. AHMADI) THEN
@@ -751,24 +765,34 @@
 !     &            + 2*G_0(IJK,M,M))*Theta_m(IJK,M)
 !--------------------------------------------------------------------
 
-         Endif                  ! Fluid_at
- 200  Continue                  ! outer IJK loop
+         ENDIF   ! Fluid_at
+ 200  CONTINUE   ! outer IJK loop
       
 
-      Return
-      End
-!----------------------------------------------- 
+      RETURN
+      END SUBROUTINE GT_PDE
 
 
 
-!     JEG Added 
-!     Implement kinetic theory of Garzo and Dufty (1999) 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: GT_PDE_GD_99                                            C
+!  Purpose: Implement kinetic theory of Garzo and Dufty (1999) for     C
+!     calculation of granular stress terms and granular conductivity   C
+!                                                                      C
+!  Author: Janine E. Galvin                                            C
+!                                                                      C
+!  Literature/Document References:                                     C
+!    Garzo, V., and Dufty, J., Homogeneous cooling state for a         C
+!    granular mixture, Physical Review E, 1999, Vol 60 (5), 5706-      C
+!    5713                                                              C
+!                                                                      C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
       Subroutine gt_pde_gd_99 (M, IER)
 
 !-----------------------------------------------
-!     Modules 
+! Modules 
 !-----------------------------------------------  
       USE param
       USE param1
@@ -787,43 +811,47 @@
       use kintheory
       IMPLICIT NONE
 !-----------------------------------------------
-!     Local variables
-!-----------------------------------------------  
-!                      Index
-      INTEGER          IJK, I, J, K
-!     
-!                      Solids phase
-      INTEGER          M, L 
-!     
-!     Error index
-      INTEGER          IER     
-!     
-!     Use to compute MU_s(IJK,M) & Kth_S(IJK,M)
-      DOUBLE PRECISION Mu_star, Kth_star
-!
-      DOUBLE PRECISION DGA, C_d, Re
-
-      DOUBLE PRECISION D_PM, M_PM, NU_PM
-      DOUBLE PRECISION c_star, zeta0_star, nu_eta_star, &
-                       gamma_star, eta_k_star, eta_star, eta0, &
-                       kappa0, nu_kappa_star, kappa_k_star, &
-                       qmu_k_star, qmu_star, kappa_star, press_star
-
-!     SWITCH enables us to turn on/off the modification to the
-!     particulate phase viscosity. If we want to simulate gas-particle
-!     flow then SWITCH=1 to incorporate the effect of drag on the
-!     particle viscosity. If we want to simulate granular flow
-!     without the effects of an interstitial gas, SWITCH=0.
-!     (Same for conductivity)
-
-!----------------------------------------------- 
-!     Functions
-!----------------------------------------------- 
-      DOUBLE PRECISION G_0
-!     dg0/dep
-      DOUBLE PRECISION DG_0DNU
+! Dummy arguments
 !-----------------------------------------------
-!     Include statement functions
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+! error index
+      INTEGER, INTENT(INOUT) :: IER
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+! cell Indices
+      INTEGER :: IJK, I, J, K
+! solids phase index
+      INTEGER :: L 
+! Use to compute MU_s(IJK,M) & Kth_S(IJK,M)
+      DOUBLE PRECISION :: Mu_star, Kth_star
+!
+      DOUBLE PRECISION :: DGA, C_d, Re
+!
+      DOUBLE PRECISION :: D_PM, M_PM, NU_PM
+!
+      DOUBLE PRECISION :: c_star, zeta0_star, nu_eta_star, &
+                          gamma_star, eta_k_star, eta_star, eta0, &
+                          kappa0, nu_kappa_star, kappa_k_star, &
+                          qmu_k_star, qmu_star, kappa_star, press_star
+
+! SWITCH enables us to turn on/off the modification to the
+! particulate phase viscosity. If we want to simulate gas-particle
+! flow then SWITCH=1 to incorporate the effect of drag on the
+! particle viscosity. If we want to simulate granular flow
+! without the effects of an interstitial gas, SWITCH=0.
+! (Same for conductivity)
+
+!----------------------------------------------- 
+! Functions
+!----------------------------------------------- 
+! radial distribution function
+      DOUBLE PRECISION, EXTERNAL :: G_0
+! dg0/dep
+      DOUBLE PRECISION, EXTERNAL :: DG_0DNU
+!-----------------------------------------------
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
@@ -968,23 +996,36 @@
                ENDIF
 
 
-          ENDIF     ! Fluid_at
- 200  Continue     ! outer IJK loop
+          ENDIF   ! Fluid_at
+ 200  CONTINUE   ! outer IJK loop
 
-      Return
-      End
-!----------------------------------------------- 
-
+      RETURN
+      END SUBROUTINE GT_PDE_GD_99
 
 
-!     JEG Added 
-!     Implement complete kinetic theory of Iddir & Arastoopour (2005) 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: GT_PDE_IA_NONEP                                         C
+!  Purpose: Implement kinetic theory of Iddir & Arastoopour (2005) for C
+!     calculation of granular stress terms and granular conductivity   C
+!                                                                      C
+!  Author: Janine E. Galvin, Univeristy of Colorado                    C
+!                                                                      C
+!  Literature/Document References:                                     C
+!     Iddir, Y.H., PhD Modeling of the multiphase mixture of particles C
+!        using the kinetic theory approach, PhD Dissertation in        C
+!        Chemical Engineering, Illinois Institute of Technology, 2004  C
+!     Iddir, Y.H., H. Arastoopour, and C.M. Hrenya, Analysis of binary C
+!        and ternary granular mixtures behavior using the kinetic      C
+!        theory approach. Powder Technology, 2005, p. 117-125.         C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       Subroutine gt_pde_ia_nonep (M, IER)
 
 !-----------------------------------------------
-!     Modules 
+! Modules 
 !-----------------------------------------------  
       USE param
       USE param1
@@ -1004,47 +1045,48 @@
       USE ur_facs
       IMPLICIT NONE
 !-----------------------------------------------
-!     Local variables
+! Dummy arguments
+!-----------------------------------------------
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+! error index
+      INTEGER, INTENT(INOUT) :: IER
+!-----------------------------------------------
+! Local variables
 !-----------------------------------------------  
-!                      Index
-      INTEGER          IJK, I, J, K
-     
-!                      Solids phase
-      INTEGER          M, L 
-     
-!                      Error index
-      INTEGER          IER     
-     
-!                      Use to compute MU_s(IJK,M) & Kth_S(IJK,M)
-      DOUBLE PRECISION Mu_star, Mu_s_dil, Kth_star, K_s_dil, XI_star
-
-!                      variables for Iddir equipartition model
-      DOUBLE PRECISION P_s_sum, P_s_MM, P_s_LM
-      DOUBLE PRECISION MU_common_term, K_common_term
-      DOUBLE PRECISION Mu_sM_sum, MU_s_MM, MU_s_LM, MU_sM_LM, MU_sL_LM
-      DOUBLE PRECISION XI_sM_sum, XI_s_v
-      DOUBLE PRECISION M_PM, M_PL, MPSUM, NU_PL, NU_PM, D_PM, D_PL, DPSUMo2
-      DOUBLE PRECISION Ap_lm, Dp_lm, R0p_lm, R1p_lm, R8p_lm, R9p_lm, Bp_lm,&
-                       R5p_lm, R6p_lm, R7p_lm
-      DOUBLE PRECISION K_s_sum, K_s_MM, K_s_LM
-      DOUBLE PRECISION Re, C_d, DgA
-     
-!     Sum of ep_s * g_0
-      DOUBLE PRECISION  SUM_EpsGo
-
-!     Current value of Kth_sl_ip (i.e., without underrelaxation)
-      DOUBLE PRECISION Kth_sL_iptmp 
+! cell indices
+      INTEGER :: IJK, I, J, K
+! solids phase index
+      INTEGER :: L 
+! use to compute MU_s(IJK,M) & Kth_S(IJK,M)
+      DOUBLE PRECISION :: Mu_star, Mu_s_dil, Kth_star, K_s_dil, XI_star
+! variables for Iddir equipartition model
+      DOUBLE PRECISION :: P_s_sum, P_s_MM, P_s_LM
+      DOUBLE PRECISION :: MU_common_term, K_common_term
+      DOUBLE PRECISION :: Mu_sM_sum, MU_s_MM, MU_s_LM, MU_sM_LM, MU_sL_LM
+      DOUBLE PRECISION :: XI_sM_sum, XI_s_v
+      DOUBLE PRECISION :: M_PM, M_PL, MPSUM, NU_PL, NU_PM, D_PM, D_PL, DPSUMo2
+      DOUBLE PRECISION :: Ap_lm, Dp_lm, R0p_lm, R1p_lm, R8p_lm, R9p_lm, Bp_lm,&
+                          R5p_lm, R6p_lm, R7p_lm
+      DOUBLE PRECISION :: K_s_sum, K_s_MM, K_s_LM
+!      
+      DOUBLE PRECISION :: Re, C_d, DgA
+! Sum of ep_s * g_0
+      DOUBLE PRECISION :: SUM_EpsGo
+! Current value of Kth_sl_ip (i.e., without underrelaxation)
+      DOUBLE PRECISION :: Kth_sL_iptmp 
 !----------------------------------------------- 
 !     Function subroutines
 !----------------------------------------------- 
-      DOUBLE PRECISION G_0
+! radial distribution function
+      DOUBLE PRECISION, EXTERNAL :: G_0
 !-----------------------------------------------
 !     Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
-!-----------------------------------------------     
+!-----------------------------------------------
      
       DO 200 IJK = ijkstart3, ijkend3
           I = I_OF(IJK)
@@ -1221,7 +1263,7 @@
 
 ! find the granular conductivity in Mth solids phase      
 !----------------------------------- 
-             K_s_sum = ZERO
+            K_s_sum = ZERO
 
             K_s_dil = (75.d0/384.d0)*D_PM* RO_SV(IJK,M)*&
                  DSQRT(PI*Theta_m(IJK,M)/M_PM)
@@ -1383,20 +1425,35 @@
 ! granular conductivity in Mth solids phase
              Kth_s(IJK,M) = K_s_sum
 
-          ENDIF     ! Fluid_at
- 200  Continue     ! outer IJK loop
+          ENDIF   ! Fluid_at
+ 200  CONTINUE   ! outer IJK loop
 
-      Return
-      End
-!----------------------------------------------- 
-
+      RETURN
+      END SUBROUTINE GT_PDE_IA_NONEP
 
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: FRICTION_PRINCETON                                      C
+!  Purpose: Calculate frictional contributions to granular stress      C
+!     terms based on model by Srivastava & Sundaresan (2003)           C
+!                                                                      C
+!  Author: Anuj Srivastava, Princeton University    Date: 20-APR-98    C
+!                                                                      C
+!  Literature/Document References:                                     C
+!     Srivastava, A., and Sundaresan, S., Analysis of a frictional-    C
+!        kinetic model for gas-particle flow, Powder Technology,       C
+!        2003, 129, 72-85.                                             C
+!     Benyahia, S., Validation study of two continuum granular         C
+!        frictional flow theories, Industrial & Engineering Chemistry  C
+!        Research, 2008, 47, 8926-8932.                                C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      
       Subroutine Friction_princeton(M, IER)
 
 !-----------------------------------------------
-!     Modules 
+! Modules 
 !-----------------------------------------------      
       USE param
       USE param1
@@ -1411,44 +1468,45 @@
       USE constant
       USE trace
       IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+! error index
+      INTEGER, INTENT(INOUT) :: IER
 !----------------------------------------------- 
-!     Local Variables
-!-----------------------------------------------       
-!     Index
-      INTEGER          IJK
-!
-!     Solids phase
-      INTEGER          M, MM
-!
-!     Used to compute frictional terms
-      DOUBLE PRECISION Chi, Pc, Mu_zeta,Phin,PfoPc, N_Pff
-!
-      DOUBLE PRECISION ZETA
-!     
-!     Sum of all solids volume fractions
-      DOUBLE PRECISION   SUM_EPS_CP
-!     
+! Local variables
+!-----------------------------------------------
+! cell index
+      INTEGER :: IJK
+! solids phase index
+      INTEGER :: MM
+! used to compute frictional terms
+      DOUBLE PRECISION :: Chi, Pc, Mu_zeta,Phin,PfoPc, N_Pff
+      DOUBLE PRECISION :: ZETA
+! sum of all solids volume fractions
+      DOUBLE PRECISION :: SUM_EPS_CP
 !     parameters in pressure linearization; simple averaged Dp
-      DOUBLE PRECISION   dpc_dphi, dp_avg
-!
-!     Error index
-      INTEGER          IER     
+      DOUBLE PRECISION :: dpc_dphi, dp_avg
 !-----------------------------------------------
-!     Function subroutines
+! Function subroutines
 !-----------------------------------------------
-      DOUBLE PRECISION G_0
+! radial distribution function      
+      DOUBLE PRECISION, EXTERNAL :: G_0
 !-----------------------------------------------
-!     Include statement functions
-!-----------------------------------------------      
+! Include statement functions
+!-----------------------------------------------
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
-!-----------------------------------------------     
+!----------------------------------------------- 
+
       DO 200 IJK = ijkstart3, ijkend3       
      
          IF ( FLUID_AT(IJK) ) THEN
 
-! close_packed was added for concistency with the Schaeffer model
+! close_packed was added for consistency with the Schaeffer model
 ! I'm also extending this model in the case where more than 1 solids
 ! phase are used (not completed yet). sof May24 2005.
 
@@ -1465,52 +1523,52 @@
 ! end of part copied
      
                   IF (SAVAGE.EQ.1) THEN !form of Savage (not to be used with GHD theory)
-                     Mu_zeta =&
-                     ((2d0+ALPHA)/3d0)*((Mu_s_v(IJK)/(Eta*(2d0-Eta)*&
-                     G_0(IJK,M,M)))*(1d0+1.6d0*Eta*EP_s(IJK,M)*&
-                     G_0(IJK,M,M))*(1d0+1.6d0*Eta*(3d0*Eta-2d0)*&
-                     EP_s(IJK,M)*G_0(IJK,M,M))+(0.6d0*Mu_b_v(IJK)*Eta))
-                     
-                     ZETA =&
-                     ((48d0*Eta*(1d0-Eta)*RO_SV(IJK,M)*EP_s(IJK,M)*&
-                     EP_s(IJK,M)*G_0(IJK,M,M)*&
-                     (Theta_m(IJK,M)**1.5d0))/&
-                     (SQRT_Pi*D_p(IJK,M)*2d0*Mu_zeta))**0.5d0
+                     Mu_zeta = &
+                        ((2d0+ALPHA)/3d0)*((Mu_s_v(IJK)/(Eta*(2d0-Eta)*&
+                        G_0(IJK,M,M)))*(1d0+1.6d0*Eta*EP_s(IJK,M)*&
+                        G_0(IJK,M,M))*(1d0+1.6d0*Eta*(3d0*Eta-2d0)*&
+                        EP_s(IJK,M)*G_0(IJK,M,M))+(0.6d0*Mu_b_v(IJK)*Eta))
+                     ZETA = &
+                        ((48d0*Eta*(1d0-Eta)*RO_SV(IJK,M)*EP_s(IJK,M)*&
+                        EP_s(IJK,M)*G_0(IJK,M,M)*&
+                        (Theta_m(IJK,M)**1.5d0))/&
+                        (SQRT_Pi*D_p(IJK,M)*2d0*Mu_zeta))**0.5d0
                      
                   ELSEIF (SAVAGE.EQ.0) THEN !S:S form
                      ZETA = (SMALL_NUMBER +&
-                     trD_s2(IJK,M) - ((trD_s_C(IJK,M)*&
-                     trD_s_C(IJK,M))/3.d0))**0.5d0
+                        trD_s2(IJK,M) - ((trD_s_C(IJK,M)*&
+                        trD_s_C(IJK,M))/3.d0))**0.5d0
                      
                   ELSE          !combined form
                      IF(TRIM(KT_TYPE) == 'GHD') THEN
-		       ZETA = ((Theta_m(IJK,M)/dp_avg**2) +&
-                       (trD_s2(IJK,M) - ((trD_s_C(IJK,M)*&
-                       trD_s_C(IJK,M))/3.d0)))**0.5d0
+                       ZETA = ((Theta_m(IJK,M)/dp_avg**2) +&
+                          (trD_s2(IJK,M) - ((trD_s_C(IJK,M)*&
+                          trD_s_C(IJK,M))/3.d0)))**0.5d0
                      ELSE
-		       ZETA = ((Theta_m(IJK,M)/D_p(IJK,M)**2) +&
-                       (trD_s2(IJK,M) - ((trD_s_C(IJK,M)*&
-                       trD_s_C(IJK,M))/3.d0)))**0.5d0
-                     ENDIF
-                     
+                       ZETA = ((Theta_m(IJK,M)/D_p(IJK,M)**2) +&
+                          (trD_s2(IJK,M) - ((trD_s_C(IJK,M)*&
+                          trD_s_C(IJK,M))/3.d0)))**0.5d0
+                     ENDIF                     
                   ENDIF
+
                   
                   IF ((ONE-EP_G(IJK)) .GT. ((ONE-ep_star_array(ijk))-delta)) THEN
-!
 ! Linearized form of Pc; this is more stable and provides continuous function.
-                    
-                     dpc_dphi = (to_SI*Fr)*((delta**5)*(2d0*(ONE-ep_star_array(IJK)-delta) - &
-                         2d0*eps_f_min)+((ONE-ep_star_array(ijk)-delta)-eps_f_min)*(5*delta**4))/(delta**10)
+                     dpc_dphi = (to_SI*Fr)*((delta**5)*(2d0*(ONE-&
+                         ep_star_array(IJK)-delta) - 2d0*eps_f_min)+&
+                         ((ONE-ep_star_array(ijk)-delta)-eps_f_min)*&
+                         (5*delta**4))/(delta**10)
 
-                     Pc = (to_SI*Fr)*(((ONE-ep_star_array(IJK)-delta) - EPS_f_min)**N_Pc)/(delta**D_Pc)
-
-                     Pc = Pc + dpc_dphi*((ONE-EP_G(IJK))+delta-(ONE-ep_star_array(IJK)))
+                     Pc = (to_SI*Fr)*(((ONE-ep_star_array(IJK)-delta) -&
+                        EPS_f_min)**N_Pc)/(delta**D_Pc)
+                     Pc = Pc + dpc_dphi*((ONE-EP_G(IJK))+delta-(ONE-&
+                        ep_star_array(IJK)))
 
                    ! Pc = 1d25*(((ONE-EP_G(IJK))- (ONE-ep_star_array(ijk)))**10d0) ! old commented Pc
                   ELSE
-                     Pc = (to_SI*Fr)*(((ONE-EP_G(IJK)) - EPS_f_min)**N_Pc)/&
-                     (((ONE-ep_star_array(ijk)) - (ONE-EP_G(IJK)) +&
-                     SMALL_NUMBER)**D_Pc)
+                     Pc = (to_SI*Fr)*(((ONE-EP_G(IJK)) - EPS_f_min)**N_Pc) / &
+                        (((ONE-ep_star_array(ijk)) - (ONE-EP_G(IJK)) +&
+                        SMALL_NUMBER)**D_Pc)
                   ENDIF
  
                   IF (trD_s_C(IJK,M) .GE. ZERO) THEN
@@ -1520,61 +1578,77 @@
                   ENDIF
                   
                   IF ((trD_s_C(IJK,M)/(ZETA*N_Pff*DSQRT(2d0)&
-                  *Sin_Phi)) .GT. 1d0) THEN
+                       *Sin_Phi)) .GT. 1d0) THEN
                     P_s_f(IJK) =ZERO
-                    PfoPc = ZERO
-                  
+                    PfoPc = ZERO                  
                   ELSEIF(trD_s_C(IJK,M) == ZERO) THEN
-                    
                     P_s_f(IJK) = Pc
-                    PfoPc = ONE
-                  
+                    PfoPc = ONE                  
                   ELSE
-                  
                     P_s_f(IJK) = Pc*(1d0 - (trD_s_C(IJK,M)/(ZETA&
-                    *N_Pff*DSQRT(2d0)*Sin_Phi)))**(N_Pff-1d0)
+                       *N_Pff*DSQRT(2d0)*Sin_Phi)))**(N_Pff-1d0)
                   
                     PfoPc = (1d0 - (trD_s_C(IJK,M)/(ZETA&
-                    *N_Pff*DSQRT(2d0)*Sin_Phi)))**(N_Pff-1d0)
-                 ENDIF
+                       *N_Pff*DSQRT(2d0)*Sin_Phi)))**(N_Pff-1d0)
+                  ENDIF
               
                   Chi = DSQRT(2d0)*P_s_f(IJK)*Sin_Phi*(N_Pff - (N_Pff-1d0)*&
-                 (PfoPc)**(1d0/(N_Pff-1d0)))
+                     (PfoPc)**(1d0/(N_Pff-1d0)))
  
-                 IF (Chi < ZERO) THEN
-                    P_s_f(IJK) = Pc*((N_Pff/(N_Pff-1d0))**(N_Pff-1d0))
-                    Chi = ZERO
-                 ENDIF
+                  IF (Chi < ZERO) THEN
+                     P_s_f(IJK) = Pc*((N_Pff/(N_Pff-1d0))**(N_Pff-1d0))
+                     Chi = ZERO
+                  ENDIF
                
-                 Mu_s_f(IJK) = Chi/(2d0*ZETA)
-                 Lambda_s_f(IJK) = -2d0*Mu_s_f(IJK)/3d0
+                  Mu_s_f(IJK) = Chi/(2d0*ZETA)
+                  Lambda_s_f(IJK) = -2d0*Mu_s_f(IJK)/3d0
      
 ! modification of the stresses in case of more than one solids phase are used (sof)
 ! This is NOT done when mixture mom. eq. are solved (i.e. for GHD theory)
-                 IF(TRIM(KT_TYPE) /= 'GHD') THEN
-                    P_s_f(IJK) = P_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
-                    Mu_s_f(IJK) = Mu_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
-                    Lambda_s_f(IJK) = Lambda_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
-                 ENDIF
-
+                  IF(TRIM(KT_TYPE) /= 'GHD') THEN
+                     P_s_f(IJK) = P_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
+                     Mu_s_f(IJK) = Mu_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
+                     Lambda_s_f(IJK) = Lambda_s_f(IJK) * (EP_S(IJK,M)/SUM_EPS_CP)
+                  ENDIF
                
-               ENDIF
-
-         Endif                  ! Fluid_at
- 200  Continue                  ! outer IJK loop
+            ENDIF   ! end if ep_g < 1-eps_f_min
+         ENDIF   ! Fluid_at
+ 200  CONTINUE   ! outer IJK loop
       
 
-      Return
-      End
+      RETURN
+      END SUBROUTINE FRICTION_PRINCETON
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: SUBGRID_STRESS_IGCI                                     C
+!  Purpose: Calculate solids viscosity and pressure using subgrid      C
+!     model                                                            C
+!                                                                      C
+!  Author: Sebastien Dartevelle, LANL, May 2013                        C
+!                                                                      C
+!  Revision: 1                                                         C
+!  Purpose: Minor changes & make consistent with variable density      C
+!     feature.                                                         C
+!  Author: Janine Galvin, June 2013                                    C
+!                                                                      C
+!  Literature/Document References:                                     C
+!     Igci, Y., Pannala, S., Benyahia, S., & Sundaresan S.,            C
+!        Validation studies on filtered model equations for gas-       C
+!        particle flows in risers, Industrial & Engineering Chemistry  C
+!        Research, 2012, 51(4), 2094-2103                              C
+!                                                                      C
+!  Comments:                                                           C
+!     Still needs to be reviewed for accuracy with source material     C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      Subroutine subgrid_stress_igci(M, IER)
+
 !-----------------------------------------------
-
-
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-      Subroutine subgrid_model(M, IER)
-!by Sebastien Dartevelle, LANL, May 2012-2013
-!-----------------------------------------------
-!     Modules 
+! Modules 
 !-----------------------------------------------
       USE param
       USE param1
@@ -1587,199 +1661,405 @@
       USE physprop
       USE run
       USE constant
-      USE cutcell                 !this is needed for distance to Wall function, Sebastien Dartevelle, LANL, May 2013
       IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+! error index
+      INTEGER, INTENT(INOUT) :: IER
+!----------------------------------------------- 
+! Local variables
 !-----------------------------------------------  
-!     Local Variables
-!-----------------------------------------------  
-!     Error index
-      INTEGER :: IER
-!
-!     Index
+! cell indices
       INTEGER :: IJK, I, J, K
-!
-!     Solid Phase Index
-      INTEGER :: M
-!
-!Igci models
+! Igci models
       DOUBLE PRECISION :: Mu_sub,ps_sub
       DOUBLE PRECISION :: pressurefac
       DOUBLE PRECISION :: viscosityfac,ps_kinetic,ps_total, extra_visfactor
       DOUBLE PRECISION :: mu_kinetic,mu_total
-!Milioli model
-      DOUBLE PRECISION :: cvisc_pot,cvisc_num,cvisc_den,Cvisc
-      DOUBLE PRECISION :: cpress_pot,cpress_num,cpress_den,Cpress
-!For Distance to the Wall efects
-      DOUBLE PRECISION, PARAMETER :: a222=9.14d0, b222=0.345d0, a333=5.69d0, b333=0.228d0
-!Factor functions to correct subgrid effects from the wall
-      DOUBLE PRECISION :: factor2, factor3
-!The inverse Froude number, or dimensionless Filtersize
+! factors to correct subgrid effects from the wall
+      DOUBLE PRECISION :: wfactor_Ps, wfactor_mus
+! the inverse Froude number, or dimensionless Filtersize
       DOUBLE PRECISION :: Inv_Froude
-!Dimensionless Distance to the Wall
-      DOUBLE PRECISION :: x_d
-!One Particle Terminal Settling Velocity
+! one particle terminal settling velocity
       DOUBLE PRECISION :: vt
-!the filter size which is a function of each grid cell volume
+! the filter size which is a function of each grid cell volume
       DOUBLE PRECISION :: filtersize
 !----------------------------------------------- 
-!     Include statement functions
+! Include statement functions
 !----------------------------------------------- 
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
-!  
-   DO 200 IJK = ijkstart3, ijkend3
-    IF ( FLUID_AT(IJK) ) THEN
+!----------------------------------------------- 
+  
+      DO IJK = ijkstart3, ijkend3
+
+         IF ( FLUID_AT(IJK) ) THEN
             I = I_OF(IJK) 
             J = J_OF(IJK) 
             K = K_OF(IJK) 
-!		
-        !Particle Terminal  Settling Velocity: vt = g*d^2*(Rho_s - Rho_g) / 18 * Mu_g
-          vt = GRAVITY*D_p0(M)*D_p0(M)*(RO_S(M) - RO_g(IJK)) / (18.0d0*MU_G(IJK))
-        !
-        !FilterSIZE calculation for each specific gridcell volume
-          filtersize = filter_size_ratio * (VOL(IJK)**(ONE/3.0d0))
-        !
-	    !Dimensionless Inverse of Froude number
-          Inv_Froude =  filtersize * GRAVITY / vt**2       !
-        !
-        !Wall Correction Factors:
-              if(.NOT.SUBGRID_Wall) then
-                   Factor2 = ONE   !for P_s
-                   Factor3 = ONE   !for Mu_s
-                   !No wall correction, it does not do anything
-              else !only valid for free slip wall
-              !  Dimnesionless distance to the Wall
-                 x_d = DWALL(IJK) * GRAVITY / vt**2               !
-              !  Wall function for pressure
-                 Factor2 = ONE / ( ONE + a222 * (EXP(-b222*x_d)) )
-              !  Wall function for viscosity
-                 Factor3 = ONE / ( ONE + a333 * (EXP(-b333*x_d)) )
-              endif
-!
-       IF (SUBGRID_Igci) THEN
-       !Various factor needed:
-          pressurefac=0.48*(Inv_Froude**0.86)*(1-EXP(-Inv_Froude/1.4))
-          viscosityfac=0.37*(Inv_Froude**1.22)
-          Extra_visfactor=(0.28*(Inv_Froude**0.43)+1)**-1
-       !
-          IF (EP_s(IJK,M) .LE. 0.02) THEN
-               	Mu_kinetic=1720*(EP_s(IJK,m)**4)-215*(EP_s(IJK,m)**3)+9.81*(EP_s(IJK,m)**2)-0.207*EP_s(IJK,m)+0.00254
-          ELSE IF (EP_s(IJK,M) .LE. 0.2) THEN
-              	Mu_kinetic=2.72*(EP_s(IJK,m)**4)-1.55*(EP_s(IJK,m)**3)+0.329*(EP_s(IJK,m)**2)-0.0296*EP_s(IJK,m)+0.00136
-          ELSE IF (EP_s(IJK,M) .LE. 0.6095) THEN
-              	Mu_kinetic=-0.0128*(EP_s(IJK,m)**3)+0.0107*(EP_s(IJK,m)**2)-0.0005*EP_s(IJK,m)+0.000335
-          ELSE
-              	Mu_kinetic=23.6*(EP_s(IJK,m)**2)-28.0*EP_s(IJK,m)+8.30
-          END IF
-!
-          IF (EP_s(IJK,M) .LE. 0.0131) THEN
-              	Ps_kinetic=-10.4*(EP_s(IJK,m)**2)+0.310*EP_s(IJK,m)
-          ELSE IF (EP_s(IJK,M) .LE. 0.290) THEN
-              	Ps_kinetic=-0.185*(EP_s(IJK,m)**3)+0.0660*(EP_s(IJK,m)**2)-0.000183*EP_s(IJK,m)+0.00232
-          ELSE IF (EP_s(IJK,M) .LE. 0.595) THEN
-              	Ps_kinetic=-0.00978*EP_s(IJK,m)+0.00615
-          ELSE
-              	Ps_kinetic=-6.62*(EP_s(IJK,m)**3)+49.5*(EP_s(IJK,m)**2)-50.3*EP_s(IJK,m)+13.8
-          END IF
-!
-          Ps_sub=pressurefac*(EP_s(IJK,M)-0.59)*(-1.69*EP_s(IJK,M)-4.61*(EP_s(IJK,M)**2)+11*(EP_s(IJK,M)**3))
-!
-          IF (Ps_sub .GE. ZERO) THEN
-             Ps_total=Ps_kinetic+Ps_sub 
-          ELSE
-             Ps_total=Ps_kinetic  
-          END IF
-!
-          Mu_sub=Extra_visfactor*viscosityfac*(EP_s(IJK,M)-0.59)*(-1.22*EP_s(IJK,M)-0.7*(EP_s(IJK,M)**2)-2*(EP_s(IJK,M)**3))
-!      
-          IF (Mu_sub .GE. ZERO) THEN
-             Mu_total=Mu_kinetic+Mu_sub 
-          ELSE
-             Mu_total=Mu_kinetic  
-          END IF
-         !
-         !!shear Viscosity
-          Mu_s_v(IJK)=(Mu_total*Factor3*(vt**3)*RO_S(M)/GRAVITY)
-          IF (Mu_s_v(IJK) .LE. SMALL_NUMBER) Mu_s_v(IJK) = SMALL_NUMBER           !arbitrary value in case it/MU_Total gets negative (it should not happen unless filtersize becomes unrelastic w.r.t. gridsize)
-         !
-         !!Pressure
-          P_s_v(IJK)=(Ps_total*Factor2*(vt**2)*RO_S(M))
-          IF (P_s_v(IJK) .LE. SMALL_NUMBER) P_s_v(IJK) = SMALL_NUMBER             !arbitrary value in case it/MU_Total gets negative (it should not happen unless filtersize becomes unrelastic w.r.t. gridsize)
-         !
-         !!second viscosity, assuming the bulk viscosity is ZERO
-          lambda_s_v(IJK) = (-2.0d0/3.0d0)*Mu_s_v(IJK)
-         !
-         !Granular temperature is Zeroed in the LES/Subgrid model
-          THETA_m(IJK, M) = ZERO
-!
-!
-    ELSE           !then SUBGRID_Milioli is true, Subgrid/Filter model from Milioli et al., 2013
-!Cvisc:
-      cvisc_pot=(0.59-(ONE-EP_g(IJK)))
-      cvisc_num=(0.7*(ONE-EP_g(IJK))*cvisc_pot)
-      cvisc_den=(0.8+(17.0*cvisc_pot*cvisc_pot*cvisc_pot))
-      if ((ONE-EP_g(IJK)) .GE. ZERO .AND. (ONE-EP_g(IJK)) .LE. 0.59) then
-         cvisc=(cvisc_num/cvisc_den)
-      else
-         cvisc=ZERO
-      end if 
-!
-!aCvisc:
- !     if ((ONE-EP_g(IJK)) .GE. ZERO .AND. (ONE-EP_g(IJK)) .LE. 0.59) then
- !        acvisc(IJK)=(0.7*(ONE-EP_g(IJK))*(0.59-(ONE-EP_g(IJK))))/(0.8+17.0*(0.59-(1.0-EP_g(IJK)))*(0.59-(ONE-EP_g(IJK)))*(0.59-(ONE-EP_g(IJK))))
- !     else
- !        acvisc(IJK)=ZERO
- !     end if
-!
-!Cpress:
-      cpress_pot=(0.59-(ONE-EP_g(IJK)))
-      cpress_num=(0.4*(ONE-EP_g(IJK))*cpress_pot)
-      cpress_den=(0.5+(13.0*cpress_pot*cpress_pot*cpress_pot))
-      if ((ONE-EP_g(IJK)) .GE. ZERO .AND. (ONE-EP_g(IJK)) .LE. 0.59) then
-         cpress=(cpress_num/cpress_den)
-      else
-         cpress=ZERO
-      end if
-!
-!aCpress
- !     if ((ONE-EP_g(IJK)) .GE. ZERO .AND. (ONE-EP_g(IJK)) .LE. 0.59) then
- !        acpress(IJK)=(0.4*(ONE-EP_g(IJK))*(0.59-(ONE-EP_g(IJK))))/(0.5+13.0*(0.59-(ONE-EP_g(IJK)))*(0.59-(ONE-EP_g(IJK)))*(0.59-(ONE-EP_g(IJK))))
- !     else
- !        acpress(IJK)=ZERO
- !     end if
-         !
-         !!Solid filtered Pressure
-          P_s_v(IJK)= RO_s(M) * Inv_froude**(2/7) * filtersize**2 * DSQRT( I2_devD_s(IJK) )**2 * cpress * Factor2    !16/7-2=2/7 in [Pa or kg/m.s2]
-          IF (P_s_v(IJK) .LE. SMALL_NUMBER) P_s_v(IJK)= SMALL_NUMBER             !arbitrary value in case it gets negative (it should not happen unless filtersize becomes unrelastic w.r.t. gridsize)
-         !
-         !!Solid filtered shear Viscosity
-          Mu_s_v(IJK)= RO_s(M) * filtersize**2 * DSQRT( I2_devD_s(IJK) ) * cvisc * Factor3                           !kg/m.s
-          IF (Mu_s_v(IJK) .LE. SMALL_NUMBER) Mu_s_v(IJK)= SMALL_NUMBER           !arbitrary value in case it gets negative (it should not happen unless filtersize becomes unrelastic w.r.t. gridsize)
-         !
-         !!Solid second viscosity, assuming the bulk viscosity is ZERO
-          lambda_s_v(IJK) = (-2.0d0/3.0d0)*Mu_s_v(IJK)
-         !
-         !!Granular temperature is Zeroed in all LES/Subgrid model
-          THETA_m(IJK, M) = ZERO
-!
-      ENDIF      !end of SUBGRID_Igci/SUBGRID_Milioli   
-!
-    ENDIF   !end of if Fluid_at(IJK)
-!
- 200  Continue       !outer IJK loop
-      Return
-      End
-!
+
+! initialize
+            wfactor_Ps = ONE   ! for P_S
+            wfactor_mus = ONE   ! for MU_s
+
+! particle terminal settling velocity: vt = g*d^2*(Rho_s - Rho_g) / 18 * Mu_g
+            vt = GRAVITY*D_p0(M)*D_p0(M)*(RO_SV(IJK,M) - RO_g(IJK)) / &
+               (18.0d0*MU_G(IJK))
+
+! FilterSIZE calculation for each specific gridcell volume
+            filtersize = filter_size_ratio * (VOL(IJK)**(ONE/3.0d0))
+
+! dimensionless inverse of Froude number
+            Inv_Froude =  filtersize * GRAVITY / vt**2     
+
+! various factor needed:
+            pressurefac = 0.48d0*(Inv_Froude**0.86)*&
+               (ONE-EXP(-Inv_Froude/1.4))
+            viscosityfac = 0.37d0*(Inv_Froude**1.22)
+            Extra_visfactor = ONE/(0.28d0*(Inv_Froude**0.43)+ONE)
+
+            IF (EP_s(IJK,M) .LE. 0.0131) THEN
+               Ps_kinetic = -10.4d0*(EP_s(IJK,m)**2)+0.31d0*EP_s(IJK,m)
+            ELSEIF (EP_s(IJK,M) .LE. 0.290) THEN
+               Ps_kinetic = -0.185d0*(EP_s(IJK,m)**3)+&
+                  0.066d0*(EP_s(IJK,m)**2)-0.000183d0*EP_s(IJK,m)+&
+                  0.00232d0
+            ELSEIF (EP_s(IJK,M) .LE. 0.595) THEN
+               Ps_kinetic = -0.00978d0*EP_s(IJK,m)+0.00615d0
+            ELSE
+               Ps_kinetic = -6.62d0*(EP_s(IJK,m)**3)+&
+                  49.5d0*(EP_s(IJK,m)**2)-50.3d0*EP_s(IJK,m)+13.8d0
+            ENDIF
+
+            Ps_sub = pressurefac*(EP_s(IJK,M)-0.59d0)*&
+               (-1.69d0*EP_s(IJK,M)-4.61d0*(EP_s(IJK,M)**2)+&
+               11.d0*(EP_s(IJK,M)**3))
+
+            IF (Ps_sub .GE. ZERO) THEN
+               Ps_total=Ps_kinetic+Ps_sub 
+            ELSE
+               Ps_total=Ps_kinetic  
+            ENDIF
+
+            IF (EP_s(IJK,M) .LE. 0.02) THEN
+               Mu_kinetic = 1720.d0*(EP_s(IJK,m)**4)-&
+                  215.d0*(EP_s(IJK,m)**3) + 9.81d0*(EP_s(IJK,m)**2)-&
+                  0.207d0*EP_s(IJK,m)+0.00254d0
+            ELSEIF (EP_s(IJK,M) .LE. 0.2) THEN
+               Mu_kinetic = 2.72d0*(EP_s(IJK,m)**4)-&
+                  1.55d0*(EP_s(IJK,m)**3)+0.329d0*(EP_s(IJK,m)**2)-&
+                  0.0296d0*EP_s(IJK,m)+0.00136d0
+            ELSEIF (EP_s(IJK,M) .LE. 0.6095) THEN
+               Mu_kinetic = -0.0128d0*(EP_s(IJK,m)**3)+&
+                  0.0107d0*(EP_s(IJK,m)**2)-0.0005d0*EP_s(IJK,m)+&
+                  0.000335d0
+            ELSE
+               Mu_kinetic = 23.6d0*(EP_s(IJK,m)**2)-&
+                  28.0d0*EP_s(IJK,m)+8.30d0
+            ENDIF
+
+            Mu_sub = Extra_visfactor*viscosityfac*&
+               (EP_s(IJK,M)-0.59d0)*(-1.22d0*EP_s(IJK,M)-&
+               0.7d0*(EP_s(IJK,M)**2)-2.d0*(EP_s(IJK,M)**3))
+   
+            IF (Mu_sub .GE. ZERO) THEN
+               Mu_total = Mu_kinetic+Mu_sub 
+            ELSE
+               Mu_total = Mu_kinetic  
+            ENDIF
+
+            IF (SUBGRID_WALL) THEN
+               CALL SUBGRID_STRESS_WALL(wfactor_Ps,wfactor_Mus,vt,IJK)
+            ENDIF
+
+! pressure
+            P_s_v(IJK) = Ps_total * wfactor_Ps * (vt**2) * &
+               RO_SV(IJK,M)
+
+! shear viscosity
+            Mu_s_v(IJK) = Mu_total * wfactor_mus * (vt**3) * &
+               RO_SV(IJK,M)/GRAVITY
+         
+! set an arbitrary value in case value gets negative (this should 
+! not happen unless filtersize becomes unrelastic w.r.t. gridsize)
+            IF (P_s_v(IJK) .LE. SMALL_NUMBER) P_s_v(IJK) = SMALL_NUMBER
+            IF (Mu_s_v(IJK) .LE. SMALL_NUMBER) Mu_s_v(IJK)= SMALL_NUMBER
+
+! solid second viscosity, assuming the bulk viscosity is ZERO
+            lambda_s_v(IJK) = (-2.0d0/3.0d0)*Mu_s_v(IJK)
+
+! granular temperature is zeroed in all LES/Subgrid model
+            THETA_m(IJK, M) = ZERO
+            
+         ENDIF   ! endif (fluid_at(IJK))
+         
+      ENDDO   ! outer IJK loop
+
+      RETURN
+      END SUBROUTINE SUBGRID_STRESS_IGCI
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: SUBGRID_STRESS_MILIOLI                                  C
+!  Purpose: Calculate solids viscosity and pressure using subgrid      C
+!     model                                                            C
+!                                                                      C
+!  Author: Sebastien Dartevelle, LANL, May 2013                        C
+!                                                                      C
+!  Revision: 1                                                         C
+!  Purpose: Minor changes & make consistent with variable density      C
+!     feature.                                                         C
+!  Author: Janine Galvin, June 2013                                    C
+!                                                                      C
+!  Literature/Document References:                                     C
+!     Milioli, C. C., et al., Filtered two-fluid models of fluidized   C
+!        gas-particle flows: new constitutive relations, AICHE J,      C
+!        doi: 10.1002/aic.14130                                        C
+!                                                                      C
+!  Comments:                                                           C
+!     Still needs to be reviewed for accuracy with source material     C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+
+      Subroutine subgrid_stress_MILIOLI(M, IER)
+
+!-----------------------------------------------
+! Modules 
+!-----------------------------------------------
+      USE param
+      USE param1
+      USE geometry
+      USE compar
+      USE fldvar
+      USE vshear
+      USE indices
+      USE visc_s
+      USE physprop
+      USE run
+      USE constant
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+! error index
+      INTEGER, INTENT(INOUT) :: IER
+!----------------------------------------------- 
+! Local variables
+!-----------------------------------------------  
+! cell indices
+      INTEGER :: IJK, I, J, K
+! Milioli model
+      DOUBLE PRECISION :: cvisc_pot,cvisc_num,cvisc_den,Cvisc
+      DOUBLE PRECISION :: cpress_pot,cpress_num,cpress_den,Cpress
+! factor functions to correct subgrid effects from the wall
+      DOUBLE PRECISION :: wfactor_Ps, wfactor_mus
+! the inverse Froude number, or dimensionless Filtersize
+      DOUBLE PRECISION :: Inv_Froude
+! one particle terminal settling velocity
+      DOUBLE PRECISION :: vt
+! the filter size which is a function of each grid cell volume
+      DOUBLE PRECISION :: filtersize
+!----------------------------------------------- 
+! Include statement functions
+!----------------------------------------------- 
+      INCLUDE 'function.inc'
+      INCLUDE 'ep_s1.inc'
+      INCLUDE 'ep_s2.inc'
+      INCLUDE 'fun_avg1.inc'
+      INCLUDE 'fun_avg2.inc'
+!----------------------------------------------- 
+  
+      DO IJK = ijkstart3, ijkend3
+
+         IF ( FLUID_AT(IJK) ) THEN
+            I = I_OF(IJK) 
+            J = J_OF(IJK) 
+            K = K_OF(IJK) 
+
+! initialize
+            wfactor_Ps = ONE   ! for P_S
+            wfactor_mus = ONE   ! for MU_s
+
+! particle terminal settling velocity: vt = g*d^2*(Rho_s - Rho_g) / 18 * Mu_g
+            vt = GRAVITY*D_p0(M)*D_p0(M)*(RO_SV(IJK,M) - RO_g(IJK)) / &
+               (18.0d0*MU_G(IJK))
+
+! FilterSIZE calculation for each specific gridcell volume
+            filtersize = filter_size_ratio * (VOL(IJK)**(ONE/3.0d0))
+
+! dimensionless inverse of Froude number
+            Inv_Froude =  filtersize * GRAVITY / vt**2     
+
+! Cvisc:
+            cvisc_pot = (0.59d0-(ONE-EP_g(IJK)))
+            cvisc_num = (0.7d0*(ONE-EP_g(IJK))*cvisc_pot)
+            cvisc_den = (0.8d0+(17.d0*cvisc_pot*cvisc_pot*cvisc_pot))
+            IF ((ONE-EP_g(IJK)) .GE. ZERO .AND. &
+                (ONE-EP_g(IJK)) .LE. 0.59) THEN
+               cvisc=(cvisc_num/cvisc_den)
+            ELSE
+               cvisc=ZERO
+            ENDIF
+
+! aCvisc:
+!            IF ((ONE-EP_g(IJK)) .GE. ZERO .AND. &
+!                (ONE-EP_g(IJK)) .LE. 0.59) THEN
+!               acvisc(IJK) = (0.7d0*(ONE-EP_g(IJK))*(0.59d0-&
+!                  (ONE-EP_g(IJK))))/(0.8d0+17.d0*(0.59d0-&
+!                  (ONE-EP_g(IJK)))*(0.59d0-(ONE-EP_g(IJK)))*&
+!                  (0.59d0-(ONE-EP_g(IJK))))
+!            ELSE
+!               acvisc(IJK)=ZERO
+!            ENDIF
+
+! Cpress:
+            cpress_pot = (0.59d0-(ONE-EP_g(IJK)))
+            cpress_num = (0.4d0*(ONE-EP_g(IJK))*cpress_pot)
+            cpress_den = (0.5d0+(13.d0*cpress_pot*cpress_pot*cpress_pot))
+            IF ((ONE-EP_g(IJK)) .GE. ZERO .AND. &
+                (ONE-EP_g(IJK)) .LE. 0.59) THEN
+               cpress = (cpress_num/cpress_den)
+            ELSE
+               cpress = ZERO
+            ENDIF
+
+! aCpress
+!            IF ((ONE-EP_g(IJK)) .GE. ZERO .AND. &
+!                (ONE-EP_g(IJK)) .LE. 0.59) THEN
+!                acpress(IJK) = (0.4d0*(ONE-EP_g(IJK))*(0.59d0-&
+!                   (ONE-EP_g(IJK))))/(0.5d0+13.d0*(0.59d0-&
+!                   (ONE-EP_g(IJK)))*(0.59d0-(ONE-EP_g(IJK)))*&
+!                   (0.59d0-(ONE-EP_g(IJK))))
+!            ELSE
+!            acpress(IJK)=ZERO
+!            ENDIF
+
+            IF (SUBGRID_WALL) THEN
+               CALL SUBGRID_STRESS_WALL(wfactor_Ps,wfactor_Mus,vt,IJK)
+            ENDIF
+
+! solid filtered pressure
+            P_s_v(IJK) = RO_sV(IJK,M) * Inv_froude**(2/7) * &
+               filtersize**2 * DSQRT( I2_devD_s(IJK) )**2 * &
+               cpress * wfactor_Ps    !16/7-2=2/7 in [Pa or kg/m.s2]
+
+! solids filtered shear viscosity
+            Mu_s_v(IJK) = RO_sV(IJK,M) * filtersize**2 * &
+               DSQRT( I2_devD_s(IJK) ) * cvisc * wfactor_mus  ! [kg/m.s]
+
+! set an arbitrary value in case value gets negative (this should 
+! not happen unless filtersize becomes unrelastic w.r.t. gridsize)
+            IF (P_s_v(IJK) .LE. SMALL_NUMBER) P_s_v(IJK) = SMALL_NUMBER
+            IF (Mu_s_v(IJK) .LE. SMALL_NUMBER) Mu_s_v(IJK)= SMALL_NUMBER
+
+! solid second viscosity, assuming the bulk viscosity is ZERO
+            lambda_s_v(IJK) = (-2.0d0/3.0d0)*Mu_s_v(IJK)
+
+! granular temperature is zeroed in all LES/Subgrid model
+            THETA_m(IJK, M) = ZERO
+            
+         ENDIF   ! endif (fluid_at(IJK))
+         
+
+      ENDDO   ! outer IJK loop
+
+      RETURN
+      END SUBROUTINE SUBGRID_STRESS_MILIOLI
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: SUBGRID_STRESS_WALL                                     C
+!  Purpose: Calculate subgrid corrections arising from wall to solids  C
+!     viscosity and pressure.                                          C
+!                                                                      C
+!  Author: Sebastien Dartevelle, LANL, May 2013                        C
+!                                                                      C
+!  Revision: 1                                                         C
+!  Author: Janine Galvin, June 2013                                    C
+!                                                                      C
+!  Literature/Document References:                                     C
+!     Igci, Y., and Sundaresan, S., Verification of filtered two-      C
+!        fluid models for gas-particle flows in risers, AICHE J.,      C
+!        2011, 57 (10), 2691-2707.                                     C
+!                                                                      C
+!  Comments: Currently only valid for free-slip wall but no checks     C
+!     are made to ensure user has selected free-slip wall when this    C
+!     option is invoked                                                C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      Subroutine subgrid_stress_wall(lfactor_ps, lfactor_mus, vt, &
+                 IJK)
+
+!-----------------------------------------------
+! Modules 
+!-----------------------------------------------
+      USE param
+      USE param1
+      USE constant, only : GRAVITY
+      USE cutcell, only : DWALL
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! factor to correct the solids pressure 
+      DOUBLE PRECISION, INTENT(OUT) :: lfactor_ps
+! factor to correct the solids viscosity
+      DOUBLE PRECISION, INTENT(OUT) :: lfactor_mus
+! one particle terminal settling velocity
+      DOUBLE PRECISION, INTENT(IN) :: vt
+! current ijk index
+      INTEGER, INTENT(IN) :: IJK
+!-----------------------------------------------
+! Local parameters
+!-----------------------------------------------
+! values are only correct for free-slip walls
+      DOUBLE PRECISION, PARAMETER :: aps=9.14d0, bps=0.345d0,&
+                                     amus=5.69d0, bmus=0.228d0      
+!----------------------------------------------- 
+! Local variables
+!-----------------------------------------------  
+! dimensionless distance to the wall
+      DOUBLE PRECISION :: x_d
 !----------------------------------------------- 
 
+! initialize
+      lfactor_ps = ONE
+      lfactor_mus = ONE
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+! dimensionless distance to the Wall
+      x_d = DWALL(IJK) * GRAVITY / vt**2  
+! wall function for pressure
+      lfactor_Ps = ONE / ( ONE + aps * (EXP(-bps*x_d)) )
+! wall function for viscosity
+      lfactor_mus = ONE / ( ONE + amus * (EXP(-bmus*x_d)) )
+
+      RETURN
+      END SUBROUTINE SUBGRID_STRESS_WALL
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       Subroutine add_shear(M) 
+
 !-----------------------------------------------
-!     Modules 
+! Modules 
 !-----------------------------------------------
       USE param
       USE param1
@@ -1790,14 +2070,17 @@
       USE indices
       IMPLICIT NONE
 !-----------------------------------------------
-!     Local variables
+! Dummy arguments
 !-----------------------------------------------
-!     Index
-      INTEGER          IJK
-!     Solids phase
-      INTEGER          M
-!-----------------------------------------------     
-!     Include statement functions
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+! cell index
+      INTEGER :: IJK
+!-----------------------------------------------
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !-----------------------------------------------
@@ -1806,20 +2089,21 @@
       DO IJK= ijkstart3, ijkend3         
          IF (FLUID_AT(IJK)) THEN  
             V_s(ijk,m)=V_s(IJK,m)+VSH(IJK)
-         END IF
+         ENDIF
       ENDDO
 
-      Return
-      End                       ! add_shear
-!-----------------------------------------------
+      RETURN
+      END SUBROUTINE ADD_SHEAR
 
 
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       Subroutine remove_shear(M)
 
 !-----------------------------------------------
-!     Modules 
+! Modules 
 !-----------------------------------------------
       USE param
       USE param1
@@ -1829,16 +2113,18 @@
       USE vshear
       USE indices
       IMPLICIT NONE
-
 !-----------------------------------------------
-!     Local variables
+! Dummy arguments
 !-----------------------------------------------
-!     Index
-      INTEGER          IJK
-!     Solids phase
-      INTEGER          M
-!-----------------------------------------------    
-!     Include statement functions
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+! cell index
+      INTEGER :: IJK
+!-----------------------------------------------
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !-----------------------------------------------
@@ -1850,17 +2136,24 @@
          ENDIF
       ENDDO
 
-      Return
-      End                       ! remove_shear
-!-----------------------------------------------
+      RETURN
+      END SUBROUTINE REMOVE_SHEAR
 
 
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+! Subroutine: INIT_MU_S                                                C
+!                                                                      C
+! Revision:                                                            C
+! Handan Liu added OpenMP, 2012-2013                                   C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       Subroutine init_mu_s (M,IER)
 
 !-----------------------------------------------
-!     Modules 
+! Modules 
 !-----------------------------------------------     
       USE param 
       USE param1 
@@ -1881,100 +2174,78 @@
       Use vshear
       USE compar
       USE sendrecv
-
       USE cutcell
-
       IMPLICIT NONE
-
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+! error index
+      INTEGER, INTENT(INOUT) :: IER
+!-----------------------------------------------
+! Local variables
 !-----------------------------------------------  
-!     Local Variables
-!-----------------------------------------------  
-!     Error index
-      INTEGER          IER
-!     
-!     Strain rate tensor components for mth solids phase
-      DOUBLE PRECISION D_s(3,3), D_sl(3,3)
-!     
-!     U_s at the north face of the THETA cell-(i, j+1/2, k)
-      DOUBLE PRECISION U_s_N, Usl_N
-!     
-!     U_s at the south face of the THETA cell-(i, j-1/2, k)
-      DOUBLE PRECISION U_s_S, Usl_S
-!     
-!     U_s at the top face of the THETA cell-(i, j, k+1/2)
-      DOUBLE PRECISION U_s_T, Usl_T
-!     
-!     U_s at the bottom face of the THETA cell-(i, j, k-1/2)
-      DOUBLE PRECISION U_s_B, Usl_B
-!     
-!     U_s at the center of the THETA cell-(i, j, k)
-!     Calculated for Cylindrical coordinates only.
-      DOUBLE PRECISION U_s_C, Usl_C
-!     
-!     V_s at the east face of the THETA cell-(i+1/2, j, k)
-      DOUBLE PRECISION V_s_E, Vsl_E
-!     
-!     V_s at the west face of the THETA cell-(i-1/2, j, k)
-      DOUBLE PRECISION V_s_W, Vsl_W
-!     
-!     V_s at the top face of the THETA cell-(i, j, k+1/2)
-      DOUBLE PRECISION V_s_T, Vsl_T
-!     
-!     V_s at the bottom face of the THETA cell-(i, j, k-1/2)
-      DOUBLE PRECISION V_s_B, Vsl_B
-!     
-!     W_s at the east face of the THETA cell-(i+1/2, j, k)
-      DOUBLE PRECISION W_s_E, Wsl_E
-!     
-!     W_s at the west face of the THETA cell-(1-1/2, j, k)
-      DOUBLE PRECISION W_s_W, Wsl_W
-!     
-!     W_s at the north face of the THETA cell-(i, j+1/2, k)
-      DOUBLE PRECISION W_s_N, Wsl_N
-!     
-!     W_s at the south face of the THETA cell-(i, j-1/2, k)
-      DOUBLE PRECISION W_s_S, Wsl_S
-!     
-!     W_s at the center of the THETA cell-(i, j, k).
-!     Calculated for Cylindrical coordinates only.
-      DOUBLE PRECISION W_s_C, Wsl_C
-!     
-!     Cell center value of solids and gas velocities 
-      DOUBLE PRECISION USCM, UGC, VSCM, VGC, WSCM, WGC, SqrtVs, SqrtVgMinusVs 
-!     
-!     Local DO-LOOP counters and phase index
-      INTEGER          I1, I2, MM
-!     
-!     d(EP_sm)/dX
-      DOUBLE PRECISION DEP_soDX
-!     
-!     d(EP_sm)/dY
-      DOUBLE PRECISION DEP_soDY
-!     
-!     d(EP_sm)/XdZ
-      DOUBLE PRECISION DEP_soXDZ
-!     
-!     Solids volume fraction gradient tensor
-      DOUBLE PRECISION M_s(3,3)
-!     
-!     Indices
-      INTEGER          I, J, K, IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP,&
-      IJKW, IJKE, IJKS, IJKN, IJKB, IJKT,&
-      IM, JM, KM
-      INTEGER          IMJPK, IMJMK, IMJKP, IMJKM, IPJKM, IPJMK, IJMKP,&
-      IJMKM, IJPKM
-!     
-!     Solids phase
-      INTEGER          M, L
-!     
-!     Shear related reciprocal time scale
-      DOUBLE PRECISION SRT
+! Strain rate tensor components for mth solids phase
+      DOUBLE PRECISION :: D_s(3,3), D_sl(3,3)
+! U_s at the north face of the THETA cell-(i, j+1/2, k)
+      DOUBLE PRECISION :: U_s_N, Usl_N
+! U_s at the south face of the THETA cell-(i, j-1/2, k)
+      DOUBLE PRECISION :: U_s_S, Usl_S
+! U_s at the top face of the THETA cell-(i, j, k+1/2)
+      DOUBLE PRECISION :: U_s_T, Usl_T
+! U_s at the bottom face of the THETA cell-(i, j, k-1/2)
+      DOUBLE PRECISION :: U_s_B, Usl_B
+! U_s at the center of the THETA cell-(i, j, k)
+! Calculated for Cylindrical coordinates only.
+      DOUBLE PRECISION :: U_s_C, Usl_C
+! V_s at the east face of the THETA cell-(i+1/2, j, k)
+      DOUBLE PRECISION :: V_s_E, Vsl_E
+! V_s at the west face of the THETA cell-(i-1/2, j, k)
+      DOUBLE PRECISION :: V_s_W, Vsl_W
+! V_s at the top face of the THETA cell-(i, j, k+1/2)
+      DOUBLE PRECISION :: V_s_T, Vsl_T
+! V_s at the bottom face of the THETA cell-(i, j, k-1/2)
+      DOUBLE PRECISION :: V_s_B, Vsl_B
+! W_s at the east face of the THETA cell-(i+1/2, j, k)
+      DOUBLE PRECISION :: W_s_E, Wsl_E
+! W_s at the west face of the THETA cell-(1-1/2, j, k)
+      DOUBLE PRECISION :: W_s_W, Wsl_W
+! W_s at the north face of the THETA cell-(i, j+1/2, k)
+      DOUBLE PRECISION :: W_s_N, Wsl_N
+! W_s at the south face of the THETA cell-(i, j-1/2, k)
+      DOUBLE PRECISION :: W_s_S, Wsl_S
+! W_s at the center of the THETA cell-(i, j, k).
+! Calculated for Cylindrical coordinates only.
+      DOUBLE PRECISION :: W_s_C, Wsl_C
+! Cell center value of solids and gas velocities 
+      DOUBLE PRECISION :: USCM, UGC, VSCM, VGC, WSCM, WGC,&
+                          SqrtVs, SqrtVgMinusVs 
+! Local DO-LOOP counters and phase index
+      INTEGER :: I1, I2, MM
+! d(EP_sm)/dX
+      DOUBLE PRECISION :: DEP_soDX
+! d(EP_sm)/dY
+      DOUBLE PRECISION :: DEP_soDY
+! d(EP_sm)/XdZ
+      DOUBLE PRECISION :: DEP_soXDZ
+! Solids volume fraction gradient tensor
+      DOUBLE PRECISION :: M_s(3,3)
+! Indices
+      INTEGER :: I, J, K, IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP,&
+                 IJKW, IJKE, IJKS, IJKN, IJKB, IJKT,&
+                 IM, JM, KM
+      INTEGER :: IMJPK, IMJMK, IMJKP, IMJKM, IPJKM, IPJMK, IJMKP,&
+                 IJMKM, IJPKM
+! solids phase index
+      INTEGER :: L
+! shear related reciprocal time scale
+      DOUBLE PRECISION :: SRT
 
 !-----------------------------------------------          
 !     Functions
 !-----------------------------------------------          
-      DOUBLE PRECISION G_0
-      double precision calc_ep_star    
+      DOUBLE PRECISION, EXTERNAL :: G_0
 !----------------------------------------------- 
 !     Include statement functions
 !----------------------------------------------- 
@@ -1987,17 +2258,6 @@
       INCLUDE 's_pr2.inc'
 !----------------------------------------------- 
 
-!     !!!$omp  parallel do &
-!     !!!$omp& private(IMJPK, I, J, K, IJK,  IMJK, IPJK, IJMK, IJPK, IJKM, &
-!     !!!$omp&  IJKP, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT, IM, JM, KM, &
-!     !!!$omp&  U_s_N, U_s_S, U_s_T, U_s_B, V_s_E, V_s_W, V_s_T, V_s_B, W_s_N, &
-!     !!!$omp&  W_s_S, W_s_E, W_s_W, U_s_C, W_s_C, D_s, I2_devD_s, trD_s_C, &
-!     !!!$omp&  qxP_s, trD_s2, K_1m, K_2m, K_3m, K_4m, K_5m, aq, bq, cq, &
-!     !!!$omp&  DEP_soDX, DEP_soDY, DEP_soXDZ, M_s, I1, I2, &
-!     !!!$omp&  KTH_STAR,KTH,CHI,PFOPC,PC,ZETA,MU_ZETA,PF,&
-!     !!!$omp&  MU_STAR,MU_B,MU,M,IJPKM,IJMKM,IJMKP,IPJMK,IPJKM,IMJKM,IMJKP,IMJMK, &
-!     !!!$omp&  EP_sxSQRTHETA, EP_s2xTHETA )  
-      
       IF(MU_s0 == UNDEFINED) THEN ! fixes a bug noted by VTech
         Mu_s(:,M)     = ZERO
         LAMBDA_s(:,M) = ZERO
@@ -2021,26 +2281,19 @@
 
       IF (SHEAR) SRT=(2d0*V_sh/XLENGTH)
 
-!Handan Liu added OpenMP on Feb 4 2013	  
-      !DO 200 IJK = ijkstart3, ijkend3  	  
-!$omp  parallel do default(shared)													&
-!$omp  private( I, J, K, IJK, IM, JM, KM, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT, 		&
-!$omp			IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, IMJPK, IMJMK, IMJKM,IMJKP,		&
-!$omp			IJPKM, IJMKM, IJMKP, IPJMK, IPJKM, U_s_N, U_s_S, U_s_T, U_s_B,  	&
-!$omp			V_s_E, V_s_W, V_s_T, V_s_B, W_s_N, W_s_S, W_s_E, W_s_W, U_s_C,  	&
-!$omp  			W_s_C, D_s, L, Usl_N, Usl_S, Usl_T, Usl_B, Vsl_E, Vsl_W, Vsl_T,		&
-!$omp			Vsl_B, Wsl_n, Wsl_S, Wsl_E, Wsl_W, Usl_C, Wsl_C, D_sl, 				&
-!$omp			UGC, VGC, WGC, USCM, VSCM, WSCM, SqrtVs, SqrtVgMinusVs, 			&
-!$omp			DEP_soDX, DEP_soDY, DEP_soXDZ, M_s, I1, I2)       
+!$omp  parallel do default(shared)                                             &
+!$omp  private( I, J, K, IJK, IM, JM, KM, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT,  &
+!$omp           IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, IMJPK, IMJMK, IMJKM,IMJKP, &
+!$omp           IJPKM, IJMKM, IJMKP, IPJMK, IPJKM, U_s_N, U_s_S, U_s_T, U_s_B, &
+!$omp           V_s_E, V_s_W, V_s_T, V_s_B, W_s_N, W_s_S, W_s_E, W_s_W, U_s_C, &
+!$omp           W_s_C, D_s, L, Usl_N, Usl_S, Usl_T, Usl_B, Vsl_E, Vsl_W, Vsl_T,&
+!$omp           Vsl_B, Wsl_n, Wsl_S, Wsl_E, Wsl_W, Usl_C, Wsl_C, D_sl,         &
+!$omp           UGC, VGC, WGC, USCM, VSCM, WSCM, SqrtVs, SqrtVgMinusVs,        &
+!$omp           DEP_soDX, DEP_soDY, DEP_soXDZ, M_s, I1, I2)       
 
-      DO IJK = ijkstart3, ijkend3  	 
-	  
+      DO IJK = ijkstart3, ijkend3 
+
          IF ( FLUID_AT(IJK) ) THEN
-     
-!------------------------------------------------------------------------
-!     CALL SET_INDEX1(IJK, I, J, K, IMJK, IPJK, IJMK, IJPK,
-!     &                       IJKM, IJKP, IJKW, IJKE, IJKS, IJKN,
-!     &                       IJKB, IJKT, IM, JM, KM)
             I = I_OF(IJK)
             J = J_OF(IJK)
             K = K_OF(IJK)
@@ -2133,24 +2386,22 @@
      
 ! Check for IS surfaces and modify solids velocity-comp accordingly
             IF(ANY_IS_DEFINED) THEN
-              IF(IS_AT_N(IJK) .AND. .NOT.WALL_AT(IJPK)) U_s_N = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
-              IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) U_s_S = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
-              IF(IS_AT_T(IJK) .AND. .NOT.WALL_AT(IJKP)) U_s_T = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
-              IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) U_s_B = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
-              IF(IS_AT_E(IJK) .AND. .NOT.WALL_AT(IPJK)) V_s_E = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
-              IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) V_s_W = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
-              IF(IS_AT_T(IJK) .AND. .NOT.WALL_AT(IJKP)) V_s_T = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
-              IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) V_s_B = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
-              IF(IS_AT_N(IJK) .AND. .NOT.WALL_AT(IJPK)) W_s_N = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
-              IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) W_s_S = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
-              IF(IS_AT_E(IJK) .AND. .NOT.WALL_AT(IPJK)) W_s_E = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
-              IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) W_s_W = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
+               IF(IS_AT_N(IJK)  .AND. .NOT.WALL_AT(IJPK)) U_s_N = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
+               IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) U_s_S = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
+               IF(IS_AT_T(IJK)  .AND. .NOT.WALL_AT(IJKP)) U_s_T = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
+               IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) U_s_B = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
+               IF(IS_AT_E(IJK)  .AND. .NOT.WALL_AT(IPJK)) V_s_E = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
+               IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) V_s_W = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
+               IF(IS_AT_T(IJK)  .AND. .NOT.WALL_AT(IJKP)) V_s_T = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
+               IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) V_s_B = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
+               IF(IS_AT_N(IJK)  .AND. .NOT.WALL_AT(IJPK)) W_s_N = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
+               IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) W_s_S = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
+               IF(IS_AT_E(IJK)  .AND. .NOT.WALL_AT(IPJK)) W_s_E = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
+               IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) W_s_W = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
             ENDIF
-     
+
 ! Find components of Mth solids phase continuum strain rate
 ! tensor, D_s, at center of THETA cell-(i, j, k)
-
-
             D_s(1,1) = ( U_s(IJK,M) - U_s(IMJK,M) ) * oDX(I)
             D_s(1,2) = HALF * ( (U_s_N - U_s_S) * oDY(J) +&
                 (V_s_E - V_s_W) * oDX(I) )
@@ -2164,42 +2415,28 @@
             D_s(3,2) = D_s(2,3)
             D_s(3,3) = ( W_s(IJK,M) - W_s(IJKM,M) ) * (oX(I)*oDZ(K)) +&
                 U_s_C * oX(I)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
 
-            IF(CUT_CELL_AT(IJK))  CALL CG_CALC_VEL_S_GRAD(IJK,M,D_s, IER) 
-
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+            IF(CUT_CELL_AT(IJK))  CALL CG_CALC_VEL_S_GRAD(IJK,M,D_s, IER)
 
 ! Calculate the trace of D_s
             trD_s_C(IJK,M) = D_s(1,1) + D_s(2,2) + D_s(3,3)
 
 ! Calculate trace of the square of D_s
             trD_s2(IJK,M) = 0.D0 !Initialize the totalizer
-!            DO 20 I1 = 1,3
-!               DO 10 I2 = 1,3
-!                  trD_s2(IJK,M) = trD_s2(IJK,M) + D_s(I1,I2)*D_s(I1,I2)
-! 10            CONTINUE
-! 20         CONTINUE
-!Handan Liu changed here
             DO I1 = 1,3
                DO I2 = 1,3
                   trD_s2(IJK,M) = trD_s2(IJK,M) + D_s(I1,I2)*D_s(I1,I2)
-			   ENDDO
-		    ENDDO
+               ENDDO
+            ENDDO
  
 ! use this fact to prevent underflow during theta calculation
-           IF (trD_s2(IJK,M) == zero)trD_s_C(IJK,M) = zero 
-
+            IF (trD_s2(IJK,M) == zero)trD_s_C(IJK,M) = zero 
 
 ! The trace of D_sm dot D_sl is required in the implementation of
 ! Iddir's (2004) kinetic theory 
             IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
                DO L = 1,MMAX
-                  IF (L .ne. M) THEN
+                  IF (L .NE. M) THEN
                      IF (L > M) THEN !done because trD_s2_ip(IJK,M,L) is symmetric, sof.
                         Usl_N = AVG_Y(&                    !i, j+1/2, k
                             AVG_X_E(U_s(IMJK, L), U_s(IJK, L), I),&
@@ -2264,20 +2501,32 @@
                         ENDIF
 
 ! Check for IS surfaces and modify solids velocity-comp accordingly
-            IF(ANY_IS_DEFINED) THEN
-              IF(IS_AT_N(IJK)  .AND. .NOT.WALL_AT(IJPK)) Usl_N = AVG_X_E(U_s(IMJK, L), U_s(IJK, L), I)
-              IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) Usl_S = AVG_X_E(U_s(IMJK, L), U_s(IJK, L), I)
-              IF(IS_AT_T(IJK)  .AND. .NOT.WALL_AT(IJKP)) Usl_T = AVG_X_E(U_s(IMJK, L), U_s(IJK, L), I)
-              IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) Usl_B = AVG_X_E(U_s(IMJK, L), U_s(IJK, L), I)
-              IF(IS_AT_E(IJK)  .AND. .NOT.WALL_AT(IPJK)) Vsl_E = AVG_Y_N(V_s(IJMK, L), V_s(IJK, L))
-              IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) Vsl_W = AVG_Y_N(V_s(IJMK, L), V_s(IJK, L))
-              IF(IS_AT_T(IJK)  .AND. .NOT.WALL_AT(IJKP)) Vsl_T = AVG_Y_N(V_s(IJMK, L), V_s(IJK, L))
-              IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) Vsl_B = AVG_Y_N(V_s(IJMK, L), V_s(IJK, L))
-              IF(IS_AT_N(IJK)  .AND. .NOT.WALL_AT(IJPK)) Wsl_N = AVG_Z_T(W_s(IJKM, L), W_s(IJK, L))
-              IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) Wsl_S = AVG_Z_T(W_s(IJKM, L), W_s(IJK, L))
-              IF(IS_AT_E(IJK)  .AND. .NOT.WALL_AT(IPJK)) Wsl_E = AVG_Z_T(W_s(IJKM, L), W_s(IJK, L))
-              IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) Wsl_W = AVG_Z_T(W_s(IJKM, L), W_s(IJK, L))
-            ENDIF
+                        IF(ANY_IS_DEFINED) THEN
+                           IF(IS_AT_N(IJK)  .AND. .NOT.WALL_AT(IJPK)) &
+                              Usl_N = AVG_X_E(U_s(IMJK,L),U_s(IJK,L), I)
+                           IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) &
+                              Usl_S = AVG_X_E(U_s(IMJK,L),U_s(IJK,L), I)
+                           IF(IS_AT_T(IJK)  .AND. .NOT.WALL_AT(IJKP)) &
+                              Usl_T = AVG_X_E(U_s(IMJK,L),U_s(IJK,L), I)
+                           IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) &
+                              Usl_B = AVG_X_E(U_s(IMJK,L),U_s(IJK,L), I)
+                           IF(IS_AT_E(IJK)  .AND. .NOT.WALL_AT(IPJK)) &
+                              Vsl_E = AVG_Y_N(V_s(IJMK,L),V_s(IJK,L))
+                           IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) &
+                              Vsl_W = AVG_Y_N(V_s(IJMK,L),V_s(IJK,L))
+                           IF(IS_AT_T(IJK)  .AND. .NOT.WALL_AT(IJKP)) &
+                              Vsl_T = AVG_Y_N(V_s(IJMK,L),V_s(IJK,L))
+                           IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) &
+                              Vsl_B = AVG_Y_N(V_s(IJMK,L),V_s(IJK,L))
+                           IF(IS_AT_N(IJK)  .AND. .NOT.WALL_AT(IJPK)) &
+                              Wsl_N = AVG_Z_T(W_s(IJKM,L),W_s(IJK,L))
+                           IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) &
+                              Wsl_S = AVG_Z_T(W_s(IJKM,L),W_s(IJK,L))
+                           IF(IS_AT_E(IJK)  .AND. .NOT.WALL_AT(IPJK)) &
+                              Wsl_E = AVG_Z_T(W_s(IJKM,L),W_s(IJK,L))
+                           IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) &
+                              Wsl_W = AVG_Z_T(W_s(IJKM,L),W_s(IJK,L))
+                        ENDIF
 
 ! Find components of Lth solids phase continuum strain rate
 ! tensor, D_sl, at center of THETA cell-(i, j, k) 
@@ -2297,29 +2546,22 @@
      
 ! Calculate trace of the D_sl dot D_sm 
 ! (normal matrix multiplication)
-                        trD_s2_ip(IJK,M,L) = 0.D0 !Initialize the totalizer
-!                        DO 50 I1 = 1,3
-!                         DO 60 I2 = 1,3
-!                              trD_s2_ip(IJK,M,L) = trD_s2_ip(IJK,M,L)+&
-!                                   D_sl(I1,I2)*D_s(I1,I2)  
-! 60                      CONTINUE
-! 50                     CONTINUE
-!Handan Liu changed here
+                        trD_s2_ip(IJK,M,L) = 0.D0 ! initialize 
                         DO I1 = 1,3
-                         DO I2 = 1,3
+                           DO I2 = 1,3
                               trD_s2_ip(IJK,M,L) = trD_s2_ip(IJK,M,L)+&
-                                   D_sl(I1,I2)*D_s(I1,I2)  
-                         ENDDO
+                                 D_sl(I1,I2)*D_s(I1,I2)  
+                           ENDDO
                         ENDDO
-						
-                     ELSE
+
+                     ELSE   ! elseif (m<=m)
                         trD_s2_ip(IJK,M,L) = trD_s2_ip(IJK,L,M)
-                     ENDIF ! for L > M
-                  ELSE
-                       trD_s2_ip(IJK,M,M) = trD_s2(IJK,M)
-                  ENDIF !for m NE L
-               ENDDO
-             ENDIF ! if kt_type = IA theory
+                     ENDIF ! end if/else (l>m)
+                  ELSE   ! elseif (L=M)   
+                     trD_s2_ip(IJK,M,M) = trD_s2(IJK,M)
+                  ENDIF   ! end if/else (m.NE.l)
+               ENDDO   ! end do (l=1,mmax)
+            ENDIF   ! endif (kt_type = IA theory)
 
 
 ! Start definition of Relative Velocity
@@ -2350,15 +2592,15 @@
                SqrtVgMinusVs = SQRT((UGC-USCM)**2+(VGC-VSCM)**2+(WGC-WSCM)**2)
                IF(SqrtVs > Small_Number .AND. SqrtVgMinusVs > &
                   Small_Number .AND. EP_S(IJK,1) > ZERO_EP_S) THEN
-                  Cos_Theta(IJK) = ((UGC-USCM)*USCM+(VGC-VSCM)*VSCM+(WGC-WSCM)*WSCM)/ &
-                  (SqrtVgMinusVs * SqrtVs)
+                  Cos_Theta(IJK) = ((UGC-USCM)*USCM+(VGC-VSCM)*VSCM+&
+                     (WGC-WSCM)*WSCM)/ (SqrtVgMinusVs * SqrtVs)
                ELSE
                   Cos_Theta(IJK) = ZERO ! no solids -> tau_12 = tau_1
                ENDIF
             ENDIF
 
-
-            IF(.NOT.GRANULAR_ENERGY) THEN !algebraic granular energy equation
+            IF(.NOT.GRANULAR_ENERGY) THEN 
+! algebraic granular energy equation                    
                IF(EP_g(IJK) .GE. EP_star_array(IJK)) THEN
 ! Boyle-Massoudi Stress term
                   IF(V_ex .NE. ZERO) THEN
@@ -2376,39 +2618,31 @@
                          ( EP_s(IJK, M) - EP_s(IJKB, M) ) * oX(I)*oDZ_T(KM)&
                          * ( ONE / ( (oDZ_T(K)/oDZ_T(KM)) + ONE ) ) ) /&
                          X(I)
-                     M_s(1,1) = DEP_soDX * DEP_soDX
-                     M_s(1,2) = DEP_soDX * DEP_soDY
-                     M_s(1,3) = DEP_soDX * DEP_soXDZ
-                     M_s(2,1) = DEP_soDX * DEP_soDY
-                     M_s(2,2) = DEP_soDY * DEP_soDY
-                     M_s(2,3) = DEP_soDY * DEP_soXDZ
-                     M_s(3,1) = DEP_soDX * DEP_soXDZ
-                     M_s(3,2) = DEP_soDY * DEP_soXDZ
-                     M_s(3,3) = DEP_soXDZ * DEP_soXDZ
-                     trM_s(IJK)    = M_s(1,1) + M_s(2,2) + M_s(3,3)
-                     trDM_s(IJK) = ZERO
-!                     DO 40 I1 = 1,3
-!                        DO 30 I2 = 1,3
-!                           trDM_s(IJK) = trDM_s(IJK) + D_s(I1,I2)*M_s(I1,I2)
-! 30                     CONTINUE
-! 40                  CONTINUE
-!Handan Liu changed here
-!--------
-                     DO I1 = 1,3
-                        DO I2 = 1,3
-                           trDM_s(IJK) = trDM_s(IJK) + D_s(I1,I2)*M_s(I1,I2)
-                        ENDDO
-                     ENDDO 
-!--------	
-                  ENDIF
-               ENDIF
-            ENDIF
+                      M_s(1,1) = DEP_soDX * DEP_soDX
+                      M_s(1,2) = DEP_soDX * DEP_soDY
+                      M_s(1,3) = DEP_soDX * DEP_soXDZ
+                      M_s(2,1) = DEP_soDX * DEP_soDY
+                      M_s(2,2) = DEP_soDY * DEP_soDY
+                      M_s(2,3) = DEP_soDY * DEP_soXDZ
+                      M_s(3,1) = DEP_soDX * DEP_soXDZ
+                      M_s(3,2) = DEP_soDY * DEP_soXDZ
+                      M_s(3,3) = DEP_soXDZ * DEP_soXDZ
+                      trM_s(IJK)    = M_s(1,1) + M_s(2,2) + M_s(3,3)
+                      trDM_s(IJK) = ZERO
+                      DO I1 = 1,3
+                         DO I2 = 1,3
+                            trDM_s(IJK) = trDM_s(IJK) + D_s(I1,I2)*M_s(I1,I2)
+                         ENDDO
+                      ENDDO 
+                  ENDIF   ! end if(v_ex .ne. zero)
+               ENDIF   ! end if (ep_g >=ep_star_array)
+            ENDIF   ! end if (.not.granular_energy)
 
-         Endif                  ! Fluid_at
-!200  Continue                  ! outer IJK loop
-      ENDDO
+
+         ENDIF   ! end if (fluid_at)
+      ENDDO   ! end outer IJK loop
 !$omp end parallel do
       
-      Return
-      End 
-!-----------------------------------------------
+      RETURN
+      END SUBROUTINE INIT_MU_S 
+

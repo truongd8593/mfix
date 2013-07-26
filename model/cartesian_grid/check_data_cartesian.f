@@ -11,11 +11,11 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE CHECK_DATA_CARTESIAN
-!
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -37,33 +37,18 @@
       USE polygon
       USE dashboard
       USE stl
-
-
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
+! Local variables
 !-----------------------------------------------
       INTEGER :: G,I,J,IJK,Q
       Character*80  Line(1)
       DOUBLE PRECISION :: norm, tan_half_angle
       CHARACTER(LEN=9) :: GR
 !-----------------------------------------------
-!
+
 
       IF(.NOT.CARTESIAN_GRID) RETURN
-
-!      IF(GRANULAR_ENERGY) THEN
-!         WRITE(*,*)'INPUT ERROR: CARTESIAN GRID OPTION NOT CURRENTLY'
-!         WRITE(*,*)'AVALAIBLE WHEN SOLVING GRANULAR ENERGY EQUATION.'
-!         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
-!         CALL MFIX_EXIT(MYPE)
-!      ENDIF
 
       IF(DISCRETE_ELEMENT) THEN
          IF(MyPE == PE_IO) THEN
@@ -87,37 +72,40 @@
          IF(DO_K) THEN 
             CALL GET_STL_DATA
          ELSE
-            IF(MyPE == PE_IO) WRITE(*,*) 'ERROR: STL METHOD VALID ONLY IN 3D.'
+            IF(MyPE == PE_IO) WRITE(*,*) &
+               'ERROR: STL METHOD VALID ONLY IN 3D.'
             CALL MFIX_EXIT(MYPE) 
          ENDIF
          IF(N_QUADRIC > 0) THEN
-            IF(MyPE == PE_IO) WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND STL INPUT ARE SPECIFIED.'
-            IF(MyPE == PE_IO) WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE INPUT.'
+            IF(MyPE == PE_IO) WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND ',&
+               'STL INPUT ARE SPECIFIED.'
+            IF(MyPE == PE_IO) WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE ',&
+               'OF SURFACE INPUT.'
             CALL MFIX_EXIT(MYPE) 
          ENDIF
-!         IF(STL_BC_ID == UNDEFINED_I) THEN
-!            IF(MyPE == PE_IO) WRITE(*,*) 'ERROR: STL_BC_ID NOT DEFINED.'
-!            CALL MFIX_EXIT(MYPE) 
-!         ENDIF
       ENDIF
 
       IF(USE_MSH.AND.(.NOT.USE_STL)) THEN
          IF(DO_K) THEN 
             CALL GET_MSH_DATA
          ELSE
-            IF(MyPE == PE_IO) WRITE(*,*) 'ERROR: MSH METHOD VALID ONLY IN 3D.'
+            IF(MyPE == PE_IO) WRITE(*,*) &
+               'ERROR: MSH METHOD VALID ONLY IN 3D.'
             CALL MFIX_EXIT(MYPE) 
          ENDIF
          IF(N_QUADRIC > 0) THEN
-            IF(MyPE == PE_IO) WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND MSH INPUT ARE SPECIFIED.'
-            IF(MyPE == PE_IO) WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE INPUT.'
+            IF(MyPE == PE_IO) WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND ',&
+               'MSH INPUT ARE SPECIFIED.'
+            IF(MyPE == PE_IO) WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE ',&
+               'OF SURFACE INPUT.'
             CALL MFIX_EXIT(MYPE) 
          ENDIF
       ENDIF
 
       IF(USE_POLYGON) THEN
          IF(DO_K) THEN 
-            IF(MyPE == PE_IO) WRITE(*,*) 'ERROR: POLYGON METHOD VALID ONLY IN 2D.'
+            IF(MyPE == PE_IO) WRITE(*,*) 'ERROR: POLYGON METHOD ',&
+               'VALID ONLY IN 2D.'
             CALL MFIX_EXIT(MYPE) 
          ELSE
             CALL GET_POLY_DATA
@@ -127,14 +115,16 @@
       IF(N_QUADRIC > 0) THEN
          IF(N_POLYGON > 0) THEN 
             IF(MyPE == PE_IO) THEN
-               WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND POLYGON(S) DEFINED.'
+               WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND POLYGON(S) ',&
+                  'DEFINED.'
                WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE INPUT.'
             ENDIF
             CALL MFIX_EXIT(MYPE) 
          ENDIF
          IF(N_USR_DEF > 0) THEN 
             IF(MyPE == PE_IO) THEN
-               WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND USER-DEFINED FUNTION DEFINED.'
+               WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND USER-DEFINED ',&
+                  'FUNTION DEFINED.'
                WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE.'
             ENDIF
             CALL MFIX_EXIT(MYPE) 
@@ -170,7 +160,8 @@
       ELSE
          IF((N_POLYGON > 0).AND.(N_USR_DEF > 0)) THEN 
             IF(MyPE == PE_IO) THEN
-               WRITE(*,*) 'ERROR: POLYGON(S) AND USER-DEFINED FUNTION DEFINED.'
+               WRITE(*,*) 'ERROR: POLYGON(S) AND USER-DEFINED ',&
+                  'FUNTION DEFINED.'
                WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE.'
             ENDIF
             CALL MFIX_EXIT(MYPE) 
@@ -180,9 +171,12 @@
       
       IF(N_QUADRIC > DIM_QUADRIC) THEN
          IF(MyPE == PE_IO) THEN
-            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF N_QUADRIC =', N_QUADRIC
-            WRITE(*,*)'MAXIMUM ACCEPTABLE VALUE IS DIM_QUADRIC =', DIM_QUADRIC
-            WRITE(*,*)'CHANGE MAXIMUM VALUE IN QUADRIC_MOD.F IF NECESSARY.'
+            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF N_QUADRIC =', &
+               N_QUADRIC
+            WRITE(*,*)'MAXIMUM ACCEPTABLE VALUE IS DIM_QUADRIC =', &
+               DIM_QUADRIC
+            WRITE(*,*)'CHANGE MAXIMUM VALUE IN QUADRIC_MOD.F ',&
+               'IF NECESSARY.'
             WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
          ENDIF
          CALL MFIX_EXIT(MYPE)
@@ -201,11 +195,13 @@
                lambda_y(Q) = lambda_y(Q)
                lambda_z(Q) = lambda_z(Q)
                
-               norm = dsqrt(lambda_x(Q)**2 + lambda_y(Q)**2 + lambda_z(Q)**2)
+               norm = dsqrt(lambda_x(Q)**2 + lambda_y(Q)**2 + &
+                            lambda_z(Q)**2)
 
                IF(norm < TOL_F) THEN
                   IF(MyPE == PE_IO) THEN
-                     WRITE(*,*)'INPUT ERROR: QUADRIC:', Q, ' HAS ZERO COEFFICIENTS.'
+                     WRITE(*,*)'INPUT ERROR: QUADRIC:', Q, &
+                        ' HAS ZERO COEFFICIENTS.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
                   CALL MFIX_EXIT(MYPE)             
@@ -217,7 +213,8 @@
                lambda_y(Q) = n_y(Q)
                lambda_z(Q) = n_z(Q)
 
-               norm = dsqrt(lambda_x(Q)**2 + lambda_y(Q)**2 + lambda_z(Q)**2)
+               norm = dsqrt(lambda_x(Q)**2 + lambda_y(Q)**2 + &
+                            lambda_z(Q)**2)
 
                IF( norm > TOL_F) THEN
                   lambda_x(Q) = lambda_x(Q) / norm
@@ -225,20 +222,23 @@
                   lambda_z(Q) = lambda_z(Q) / norm
                ELSE
                   IF(MyPE == PE_IO) THEN
-                     WRITE(*,*)'INPUT ERROR: PLANE:', Q, ' HAS ZERO NORMAL VECTOR.'
+                     WRITE(*,*)'INPUT ERROR: PLANE:', Q, &
+                        ' HAS ZERO NORMAL VECTOR.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
                   CALL MFIX_EXIT(MYPE)             
                ENDIF
 
-              dquadric(Q) = - (lambda_x(Q)*t_x(Q) + lambda_y(Q)*t_y(Q) + lambda_z(Q)*t_z(Q))
+              dquadric(Q) = - (lambda_x(Q)*t_x(Q) + lambda_y(Q)*t_y(Q) + &
+                 lambda_z(Q)*t_z(Q))
 
             CASE ('X_CYL_INT')   ! The quadric is predefined as a cylinder, along x-axis
                                  ! Internal flow
 
                IF( Radius(Q) <= ZERO) THEN
                   IF(MyPE == PE_IO) THEN
-                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
+                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, &
+                        ' HAS ZERO RADIUS.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
                   CALL MFIX_EXIT(MYPE)             
@@ -254,7 +254,8 @@
 
                IF( Radius(Q) <= ZERO) THEN
                   IF(MyPE == PE_IO) THEN
-                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
+                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, &
+                        ' HAS ZERO RADIUS.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
                   CALL MFIX_EXIT(MYPE)             
@@ -270,7 +271,8 @@
 
                IF( Radius(Q) <= ZERO) THEN
                   IF(MyPE == PE_IO) THEN
-                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
+                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, &
+                        ' HAS ZERO RADIUS.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
                   CALL MFIX_EXIT(MYPE)             
@@ -287,7 +289,8 @@
 
                IF( Radius(Q) <= ZERO) THEN
                   IF(MyPE == PE_IO) THEN
-                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
+                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, &
+                        ' HAS ZERO RADIUS.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
                   CALL MFIX_EXIT(MYPE)             
@@ -303,7 +306,8 @@
 
                IF( Radius(Q) <= ZERO) THEN
                   IF(MyPE == PE_IO) THEN
-                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
+                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, &
+                        ' HAS ZERO RADIUS.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
                   CALL MFIX_EXIT(MYPE)             
@@ -319,7 +323,8 @@
 
                IF( Radius(Q) <= ZERO) THEN
                   IF(MyPE == PE_IO) THEN
-                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, ' HAS ZERO RADIUS.'
+                     WRITE(*,*)'INPUT ERROR: CYLINDER:', Q, &
+                        ' HAS ZERO RADIUS.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
                   CALL MFIX_EXIT(MYPE)             
@@ -334,7 +339,8 @@
                                   ! Internal flow
 
                IF( Radius(Q) <= ZERO) THEN
-                  WRITE(*,*)'INPUT ERROR: SPHERE:', Q, ' HAS INVALID RADIUS.'
+                  WRITE(*,*)'INPUT ERROR: SPHERE:', Q, &
+                     ' HAS INVALID RADIUS.'
                   WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   CALL MFIX_EXIT(MYPE)             
                ELSE
@@ -348,7 +354,8 @@
                                   ! External flow
 
                IF( Radius(Q) <= ZERO) THEN
-                  WRITE(*,*)'INPUT ERROR: SPHERE:', Q, ' HAS INVALID RADIUS.'
+                  WRITE(*,*)'INPUT ERROR: SPHERE:', Q, &
+                     ' HAS INVALID RADIUS.'
                   WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   CALL MFIX_EXIT(MYPE)             
                ELSE
@@ -364,7 +371,8 @@
 
             IF(HALF_ANGLE(Q) <= ZERO .OR. HALF_ANGLE(Q) >= 90.0) THEN
                   IF(MyPE == PE_IO) THEN
-                     WRITE(*,*)'INPUT ERROR: CONE:', Q, ' HAS INCORRECT HALF-ANGLE.'
+                     WRITE(*,*)'INPUT ERROR: CONE:', Q, &
+                        ' HAS INCORRECT HALF-ANGLE.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
                   CALL MFIX_EXIT(MYPE)             
@@ -381,7 +389,8 @@
 
             IF(HALF_ANGLE(Q) <= ZERO .OR. HALF_ANGLE(Q) >= 90.0) THEN
                   IF(MyPE == PE_IO) THEN
-                     WRITE(*,*)'INPUT ERROR: CONE:', Q, ' HAS INCORRECT HALF-ANGLE.'
+                     WRITE(*,*)'INPUT ERROR: CONE:', Q, &
+                        ' HAS INCORRECT HALF-ANGLE.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
                   CALL MFIX_EXIT(MYPE)             
@@ -398,7 +407,8 @@
 
             IF(HALF_ANGLE(Q) <= ZERO .OR. HALF_ANGLE(Q) >= 90.0) THEN
                   IF(MyPE == PE_IO) THEN
-                     WRITE(*,*)'INPUT ERROR: CONE:', Q, ' HAS INCORRECT HALF-ANGLE.'
+                     WRITE(*,*)'INPUT ERROR: CONE:', Q, &
+                        ' HAS INCORRECT HALF-ANGLE.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
                   CALL MFIX_EXIT(MYPE)             
@@ -418,7 +428,8 @@
 
             CASE DEFAULT
                IF(MyPE == PE_IO) THEN
-                  WRITE(*,*)'INPUT ERROR: QUADRIC:', Q, ' HAS INCORRECT FORM: ',quadric_form(Q)
+                  WRITE(*,*)'INPUT ERROR: QUADRIC:', Q, &
+                     ' HAS INCORRECT FORM: ',quadric_form(Q)
                   WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                ENDIF
                CALL MFIX_EXIT(MYPE)             
@@ -427,7 +438,8 @@
 
          IF(BC_ID_Q(Q) == UNDEFINED_I) THEN
             IF(MyPE == PE_IO) THEN
-               WRITE(*,*)'INPUT ERROR: QUADRIC:', Q, ' HAS NO ASSIGNED BC ID.'
+               WRITE(*,*)'INPUT ERROR: QUADRIC:', Q, &
+                  ' HAS NO ASSIGNED BC ID.'
                WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
             ENDIF
             CALL MFIX_EXIT(MYPE)
@@ -688,15 +700,6 @@
       ENDIF
 
 
-!
-!Sebastien MAY 2013, added SUBGRID conditions to be used in MFIX
-      IF (SUBGRID_Igci .OR. SUBGRID_Milioli) THEN   !SUBGRID/LES model has some conditions with it
-         IF (SUBGRID_Wall .AND. .NOT.CARTESIAN_GRID) &
-            CALL ERROR_ROUTINE ('check_data_01', &
-            'For any SUBGRID Models with Subgrid Wall effect calculation, you must use Cartesian MFIX Cut-Cell capabilities enabled',1,1)
-      ENDIF
-!
-!
 
 !======================================================================
 ! Data initialization for Dashboard
@@ -731,11 +734,11 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE CHECK_BC_FLAGS
-!
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -749,39 +752,30 @@
       USE compar             
       USE mpi_utility        
       USE bc
-      
+     
       USE fldvar
       USE cutcell
       USE quadric
       USE vtk
       USE polygon
       USE dashboard
-
-
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
+! Local variables
 !-----------------------------------------------
       INTEGER :: I,J,IJK,IJKW,IJKS,IJKB,M,N
       INTEGER :: IJKWW,IJKSS,IJKBB
       INTEGER :: BCV,BCV_U,BCV_V,BCV_W
       Character*80  Line(1)
 !-----------------------------------------------
-!
       DOUBLE PRECISION SUM, SUM_EP
 !-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
+! External Functions
 !-----------------------------------------------
       LOGICAL , EXTERNAL :: COMPARE 
 !-----------------------------------------------
       INCLUDE 'function.inc'
-
+!-----------------------------------------------
 !======================================================================
 ! Boundary conditions
 !======================================================================

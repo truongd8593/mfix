@@ -128,19 +128,17 @@
 
 ! If .TRUE. use Jenkins small friction BC
       LOGICAL          JENKINS
-!                      If .TRUE. use revised phip for JJ BC 
-      LOGICAL		BC_JJ_M
-!                      If .TRUE. output PHIP to JJ_PHIP.dat
-      LOGICAL		PHIP_OUT_JJ
-!  			used to write specularity
-      INTEGER		PHIP_OUT_ITER
+! If .TRUE. use revised phip for JJ BC 
+      LOGICAL           BC_JJ_M
+! If .TRUE. output PHIP to JJ_PHIP.dat
+      LOGICAL           PHIP_OUT_JJ
+! to write specularity
+      INTEGER           PHIP_OUT_ITER
 
-! If .TRUE. use Yu and Standish correlation to
-! compute ep_star
+! If .TRUE. use Yu and Standish correlation to compute ep_star
       LOGICAL          YU_STANDISH
 
-! If .TRUE. use Fedors and Landel correlation to
-! compute ep_star
+! If .TRUE. use Fedors and Landel correlation to compute ep_star
       LOGICAL          FEDORS_LANDEL
 
 ! If .TRUE. solve species balance equations
@@ -152,15 +150,15 @@
 ! If .TRUE. call user-defined subroutines
       LOGICAL          CALL_USR
 
-!  If .TRUE. solve population balance  equations
+! If .TRUE. solve population balance  equations
       LOGICAL          Call_DQMOM
 
 ! If .TRUE. use Model-B momentum equations
       LOGICAL          Model_B
 
 ! Drag model: see drag_gs for full options 
-! syam_obrien (default & Umf corrected if C(2) and C(3) are defined), 
-! gidaspow, Wen_Yu, koch_hill, BVK, HYS
+! default is syam_obrien (may enforce a corrected Umf by defining
+! drag_c1 and drag_d1 accordingly)
       CHARACTER(64)    DRAG_TYPE
       
 ! Parameter used to calculate lubrication interactions between 
@@ -271,19 +269,17 @@
 
 ! Flag to invoke the variable solids density model.
       LOGICAL          SOLID_RO_V
-!end
 
-!
-!Sebastien Dartevelle, LANL, May 2013
-!                      IF .TRUE. incorporate subgrid correction: IGCI Model
-      LOGICAL          SUBGRID_Igci
-!                      IF .TRUE. incorporate subgrid correction: Milioli Model added by Sebastien Dartevelle, LANL, 5/13/2013
-      LOGICAL          SUBGRID_Milioli
-!                      IF .TRUE. incorporate the wall effects upon the clauclation of the filtered/subgrid Viscosity, Solid Pressure, and Gas-Solid drag
+! Sebastien Dartevelle, LANL, May 2013
+! filtered/subgrid corrections to the drag coefficient & granular 
+! stress terms including granular viscosity and solids pressure
+! current options are 'igci' and 'milioli'
+      CHARACTER(64)    SUBGRID_TYPE
+! flag to incorporate the wall effects upon the calculation of the 
+! subgrid solids viscosity, solids pressure, and gas-solids drag
       LOGICAL          SUBGRID_Wall
-! This is the ratio of the FilterSize to the GridSize: 
+! the ratio of the FilterSize to the GridSize
       DOUBLE PRECISION filter_size_ratio
-!---End of Sebastien Dartevelle, LANL
 
-!
+
       END MODULE RUN

@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: INIT_NAMELIST                                          C
+!  Subroutine: INIT_NAMELIST                                           C
 !  Purpose: initialize the NAMELIST variables                          C
 !                                                                      C
 !  Author: P. Nicoletti                               Date: 26-NOV-91  C
@@ -59,7 +59,7 @@
       USE compar
       USE parallel
       USE cdist
-      USE stiff_chem          !added by Sebastien Dartevelle, LANL, May 2013
+      USE stiff_chem
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -97,19 +97,17 @@
       C_FAC = UNDEFINED
       FPFOI = .FALSE.
       GRANULAR_ENERGY = .FALSE.
-!     do not use revised JJ BC 
+! do not use revised JJ BC 
       BC_JJ_M = .false.
       PHIP_OUT_JJ=.false.
       PHIP_OUT_ITER=0
 
- !
- !SUBGRID model stuffs, Sebastien Dartevelel, LANL, May 2013
-      SUBGRID_Igci = .FALSE.          !Igci & Sundar/Princeton's subgrid model
-      SUBGRID_Milioli = .FALSE.       !Milioli & Sundar/Princeton's subgrid model
-      SUBGRID_Wall = .FALSE.          !by default do not calculate the effects of the wall upon the filtered model
-      filter_size_ratio = 2.0D0       !filter_size_ratio, which must be defined when SUBGRID = .T. is by default equal to TWO
- !
- !
+
+! SUBGRID model, Sebastien Dartevelel, LANL, May 2013
+      SUBGRID_TYPE = UNDEFINED_C
+      SUBGRID_Wall = .FALSE.          
+      filter_size_ratio = 2.0D0       
+
       K_Epsilon = .FALSE.
       Added_Mass = .FALSE.
       M_AM = UNDEFINED_I
@@ -228,12 +226,7 @@
       C_F = UNDEFINED 
       PHI = UNDEFINED 
       PHIP = 0.6D0 
-! specularity coefficient as r->0
-!
-!!    IF ( (SUBGRID_Igci .OR. SUBGRID_Milioli) .AND. SUBGRID_Wall) PHIP = 0.0D0         !it must be ZEROED with any Filter models as we only take FREE_Slip wall for the time being
-!                                                                                       !Sebastien Dartevelle, LANL, May 2013
-!
-      k4phi = undefined	
+      k4phi = undefined
       phip0 = undefined            
       E_W = 1.D0 
       PHI_W = UNDEFINED 
@@ -346,11 +339,9 @@
       MW_S = UNDEFINED
       EP_STAR = UNDEFINED 
 
-!QX
-!     density of each component
+! QX: density of each solids phase
       RO_SS = UNDEFINED
       SOLID_RO_V = .FALSE.
-!end
 
       NMAX_g = UNDEFINED_I
       SPECIES_g(:) = UNDEFINED_C

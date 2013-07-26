@@ -14,10 +14,11 @@
              BLENDING_STRESS, TANH_BLEND, SIGM_BLEND, &
              SHEAR, V_sh,&
              DRAG_TYPE, MODEL_B, lam_HYS, drag_c1, drag_d1, &
+             SUBGRID_TYPE, filter_size_ratio, SUBGRID_Wall, & 
              GRANULAR_ENERGY, KT_TYPE, RDF_TYPE, &
              YU_STANDISH, FEDORS_LANDEL, Added_Mass, M_AM, &
 
-! AEOLUS: see run_mod for details
+! see run_mod for details
              CHK_BATCHQ_END, BATCH_WALLCLOCK, TERM_BUFFER,&
 
 ! ----------------------------------------------------------------<<<
@@ -28,10 +29,10 @@
              USR_DT, USR_TYPE, USR_VAR, USR_FORMAT, USR_EXT,&
              USR_X_w , USR_X_e , USR_Y_s , USR_Y_n ,&
              USR_Z_b , USR_Z_t, NLOG, FULL_LOG, RESID_STRING,&
-	     report_mass_balance_dt, &
-! AEOLUS: see output_mod for details
+	     report_mass_balance_dt, nRR, &
+
+! see output_mod for details
              DBGPRN_LAYOUT, ENABLE_DMP_LOG, &
-             nRR, &
 ! ----------------------------------------------------------------<<<
 
 
@@ -51,7 +52,7 @@
 	     UR_FAC, UR_F_gs, UR_Kth_sml, &	     
              DEF_COR, FPFOI, C_FAC, &
              chi_scheme, CN_ON, &
-             BC_JJ_M, PHIP_OUT_JJ,PHIP0, &  !Variable specularity coefficient              
+             BC_JJ_M, PHIP_OUT_JJ, PHIP0, &
 ! ----------------------------------------------------------------<<<
 
 
@@ -72,8 +73,7 @@
 ! ---------------------------------------------------------------->>>
              MU_s0, D_p0, RO_s, EP_star, MMAX, MW_s, CLOSE_PACKED,&
              K_s0, C_ps0, DIF_s0, NMAX_g, NMAX_s, &
-!QX
-             SOLID_RO_V,RO_SS,&
+             SOLID_RO_V, RO_SS,&
 ! ----------------------------------------------------------------<<<
 
 
@@ -113,7 +113,6 @@
              BC_Scalar,&
 	     BC_K_Turb_G, BC_E_Turb_G, &
 	     Flux_g, &
-
 ! ----------------------------------------------------------------<<<
 
 ! 1.X Point Sources
@@ -138,7 +137,6 @@
             SPECIES_g, SPECIES_s, &
             SPECIES_ALIAS_g, SPECIES_ALIAS_s, &
             STIFF_CHEMISTRY, &
-
 ! ----------------------------------------------------------------<<<
 
 ! 1.11 parallel related
@@ -152,8 +150,6 @@
 ! Additional Debug Flags
 ! ---------------------------------------------------------------->>>
              REPORT_NEG_DENSITY, &
-
-
 ! Distributed IO (version 1) related variables
              bDist_IO , bStart_with_one_RES , &
 ! ----------------------------------------------------------------<<<
@@ -166,16 +162,8 @@
 ! ----------------------------------------------------------------<<<
 
 
-
-! Subgrid Model
-! ---------------------------------------------------------------->>>
-!start sebastien, May 2013
-            SUBGRID_Igci, SUBGRID_Milioli, filter_size_ratio, SUBGRID_Wall, &
-!end Sebastien
-! ----------------------------------------------------------------<<<
-
-
-
 ! Misc
+! ---------------------------------------------------------------->>>
              bWrite_netCDF
+! ----------------------------------------------------------------<<<
 
