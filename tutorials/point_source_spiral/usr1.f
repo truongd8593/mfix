@@ -45,9 +45,9 @@
       lRad = (2.0d0*Pi*time)/3.0d0
 
 ! Calculate the normalized velocity components.
-      lV = (1.2d0/1.5d0)
-      lU = (0.9d0/1.5d0)*cos(lRad)
-      lW = (0.9d0/1.5d0)*sin(lRad)
+      lV = (0.12d0/0.15d0)
+      lU = (0.09d0/0.15d0)*cos(lRad)
+      lW = (0.09d0/0.15d0)*sin(lRad)
 
 ! Update the gas phase components.
       PS_V_g(1) = lV
