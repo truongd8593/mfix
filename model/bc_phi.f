@@ -1,7 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: BC_phi(VAR, BC_phif, BC_Phiw, BC_hw_Phi, BC_C_Phi, M,  C
-!                              A_m, B_m, IER)                          C
+!  Subroutine: BC_phi                                                  C
 !  Purpose: Set up the phi boundary conditions                         C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 30-APR-97  C
@@ -11,265 +10,249 @@
 !  Reviewer:                                          Date:            C
 !  Purpose: include the variable (VAR) in the interface                C
 !                                                                      C
-!                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-      SUBROUTINE BC_PHI(VAR, BC_PHIF,BC_PHIW,BC_HW_PHI,BC_C_PHI,M,A_M,B_M,IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
-!  Include param.inc file to specify parameter values
-!
+
+      SUBROUTINE BC_PHI(VAR, BC_PHIF, BC_PHIW, BC_HW_PHI, &
+                        BC_C_PHI, M, A_M, B_M, IER) 
+
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
-      USE parallel 
       USE matrix 
-      USE scales 
-      USE constant
-      USE toleranc 
-      USE run
-      USE physprop
-      USE fldvar
-      USE visc_s
       USE geometry
-      USE output
       USE indices
       USE bc
       USE compar    
-
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      USE cutcell
-      USE quadric
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+      USE cutcell, only : CARTESIAN_GRID, CG_SAFE_MODE
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Dummy arguments
+!-----------------------------------------------      
+! The field variable being solved for:
+!     e.g., T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G, 
+!     e_Turb_G 
+      DOUBLE PRECISION, INTENT(IN) :: VAR(DIMENSION_3)
+! Boundary conditions specifications
+! bc_phif = flow boundary value
+! bc_phiw = wall boundary value
+! bc_hw_phi = transfer coefficient 
+!      = 0 value means specified flux (neumann type)
+!      = undefined value means specified wall value (dirichlet type)
+!      = other value means mixed type 
+! bc_C_phi = transfer flux   
+      DOUBLE PRECISION, INTENT(IN) :: BC_phif(DIMENSION_BC), &
+                                      BC_Phiw(DIMENSION_BC), &
+                                      BC_hw_Phi(DIMENSION_BC), &
+                                      BC_C_Phi(DIMENSION_BC)
+! Phase index
+      INTEGER, INTENT(IN) :: M
+! Septadiagonal matrix A_m
+      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
+! Vector b_m
+      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
+! Error index 
+      INTEGER, INTENT(INOUT) :: IER 
 !-----------------------------------------------
+! Local variables
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Boundary condition index
+      INTEGER :: L
+! Indices
+      INTEGER :: I, J, K, I1, I2, J1, J2, K1, K2, IJK, &
+                 IM, JM, KM
 !-----------------------------------------------
-!
-!                      Error index
-      INTEGER          IER
-!
-!                      Boundary condition
-      INTEGER          L
-!
-!                      Indices
-      INTEGER          I,  J, K, I1, I2, J1, J2, K1, K2, IJK, &
-                      IM, JM, KM
-!
-!                      Solids phase
-      INTEGER          M
-!
-!                      The field variable being solved for
-      DOUBLE PRECISION VAR(DIMENSION_3)
-!
-!                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-!
-!                      Vector b_m
-      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
-!
-!                      Boundary conditions
-      DOUBLE PRECISION BC_phif(DIMENSION_BC), BC_Phiw(DIMENSION_BC), &
-                      BC_hw_Phi(DIMENSION_BC), BC_C_Phi(DIMENSION_BC)
+! Include statement functions
 !-----------------------------------------------
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT
-      LOGICAL ::ALONG_GLOBAL_GHOST_LAYER
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
+!-----------------------------------------------
 
-      IF(.NOT.CARTESIAN_GRID) THEN                ! Only setup default walls
-                                                   ! we we are not using cutcells
-                                                   ! to avoid conflict
 
-!
-!  Set up the default walls as non-conducting.
-!
-         IF (DO_K) THEN 
-            K1 = 1 
-!!!$omp    parallel do private(IJK, J1, I1)
-            DO J1 = jmin3, jmax3 
-               DO I1 = imin3, imax3 
-      	       IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
-                  IJK = FUNIJK(I1,J1,K1) 
-                  IF (DEFAULT_WALL_AT(IJK)) THEN 
-!
-                     A_M(KP_OF(IJK),B,M) = ZERO 
-!
-                     A_M(IJK,E,M) = ZERO 
-                     A_M(IJK,W,M) = ZERO 
-                     A_M(IJK,N,M) = ZERO 
-                     A_M(IJK,S,M) = ZERO 
-                     A_M(IJK,T,M) = ONE 
-                     A_M(IJK,B,M) = ZERO 
-                     A_M(IJK,0,M) = -ONE 
-                     B_M(IJK,M) = ZERO 
-                  ENDIF 
-               END DO 
-            END DO 
-            K1 = KMAX2 
-!!!$omp    parallel do private(IJK, J1, I1)
-            DO J1 = jmin3, jmax3 
-               DO I1 = imin3, imax3 
-      	       IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
-                  IJK = FUNIJK(I1,J1,K1) 
-                  IF (DEFAULT_WALL_AT(IJK)) THEN 
-!
-                     A_M(KM_OF(IJK),T,M) = ZERO 
-!
-                     A_M(IJK,E,M) = ZERO 
-                     A_M(IJK,W,M) = ZERO 
-                     A_M(IJK,N,M) = ZERO 
-                     A_M(IJK,S,M) = ZERO 
-                     A_M(IJK,T,M) = ZERO 
-                     A_M(IJK,B,M) = ONE 
-                     A_M(IJK,0,M) = -ONE 
-                     B_M(IJK,M) = ZERO 
-                  ENDIF 
-               END DO 
-            END DO 
-         ENDIF 
-!
-         J1 = 1 
-!!!$omp    parallel do private(IJK, K1, I1)
-         DO K1 = kmin3, kmax3 
+
+! Set up the default walls (i.e., bc_type='dummy' or undefined/default
+! boundaries) as non-conducting...
+! ---------------------------------------------------------------->>>
+      IF(.NOT.CARTESIAN_GRID) THEN 
+! when setting up default walls do not use cutcells to avoid conflict
+
+      IF (DO_K) THEN 
+! bottom xy plane
+         K1 = 1 
+!!$omp    parallel do private(IJK, J1, I1)
+         DO J1 = jmin3, jmax3 
             DO I1 = imin3, imax3 
-      	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+               IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
                IJK = FUNIJK(I1,J1,K1) 
+
                IF (DEFAULT_WALL_AT(IJK)) THEN 
-!
-                  A_M(JP_OF(IJK),S,M) = ZERO 
-!
+! Cutting the neighbor link between fluid cell and wall cell
+                  A_M(KP_OF(IJK),B,M) = ZERO 
+! Setting the wall value equal to the adjacent fluid cell value (set
+! the boundary cell value equal to adjacent fluid cell value)
                   A_M(IJK,E,M) = ZERO 
                   A_M(IJK,W,M) = ZERO 
-                  A_M(IJK,N,M) = ONE 
+                  A_M(IJK,N,M) = ZERO 
                   A_M(IJK,S,M) = ZERO 
-                  A_M(IJK,T,M) = ZERO 
+                  A_M(IJK,T,M) = ONE 
                   A_M(IJK,B,M) = ZERO 
                   A_M(IJK,0,M) = -ONE 
                   B_M(IJK,M) = ZERO 
                ENDIF 
-            END DO 
-         END DO 
-         
-         J1 = JMAX2 
-!!!$omp    parallel do private(IJK, K1, I1)
-         DO K1 = kmin3, kmax3 
+            ENDDO 
+         ENDDO 
+
+! top xy plane
+         K1 = KMAX2 
+!!$omp    parallel do private(IJK, J1, I1)
+         DO J1 = jmin3, jmax3 
             DO I1 = imin3, imax3 
-      	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+               IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
                IJK = FUNIJK(I1,J1,K1) 
-               IF (DEFAULT_WALL_AT(IJK)) THEN 
-!
-                  A_M(JM_OF(IJK),N,M) = ZERO 
-!
+               IF (DEFAULT_WALL_AT(IJK)) THEN
+! Cutting the neighbor link between fluid cell and wall cell
+                  A_M(KM_OF(IJK),T,M) = ZERO 
+! Setting the wall value equal to the adjacent fluid cell value
                   A_M(IJK,E,M) = ZERO 
-                  A_M(IJK,W,M) = ZERO 
-                  A_M(IJK,N,M) = ZERO 
-                  A_M(IJK,S,M) = ONE 
-                  A_M(IJK,T,M) = ZERO 
-                  A_M(IJK,B,M) = ZERO 
-                  A_M(IJK,0,M) = -ONE 
-                  B_M(IJK,M) = ZERO 
-               ENDIF 
-            END DO 
-         END DO 
-
-         I1 = imin2 
-!!!$omp    parallel do private(IJK, K1, J1)
-         DO K1 = kmin3, kmax3 
-            DO J1 = jmin3, jmax3 
-      	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
-               IJK = FUNIJK(I1,J1,K1) 
-               IF (DEFAULT_WALL_AT(IJK)) THEN 
-!
-                  A_M(IP_OF(IJK),W,M) = ZERO 
-!
-                  A_M(IJK,E,M) = ONE 
                   A_M(IJK,W,M) = ZERO 
                   A_M(IJK,N,M) = ZERO 
                   A_M(IJK,S,M) = ZERO 
                   A_M(IJK,T,M) = ZERO 
-                  A_M(IJK,B,M) = ZERO 
+                  A_M(IJK,B,M) = ONE 
                   A_M(IJK,0,M) = -ONE 
                   B_M(IJK,M) = ZERO 
                ENDIF 
-            END DO 
-         END DO 
+            ENDDO 
+         ENDDO 
+      ENDIF 
 
-         I1 = IMAX2 
-!!!$omp    parallel do private(IJK, K1, J1)
-         DO K1 = kmin3, kmax3 
-            DO J1 = jmin3, jmax3 
-      	    IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
-               IJK = FUNIJK(I1,J1,K1) 
-               IF (DEFAULT_WALL_AT(IJK)) THEN 
-!
-                  A_M(IM_OF(IJK),E,M) = ZERO 
-!
-                  A_M(IJK,E,M) = ZERO 
-                  A_M(IJK,W,M) = ONE 
-                  A_M(IJK,N,M) = ZERO 
-                  A_M(IJK,S,M) = ZERO 
-                  A_M(IJK,T,M) = ZERO 
-                  A_M(IJK,B,M) = ZERO 
-                  A_M(IJK,0,M) = -ONE 
-                  B_M(IJK,M) = ZERO 
-               ENDIF 
-            END DO 
-         END DO 
-         
+! south xz plane
+      J1 = 1 
+!!$omp    parallel do private(IJK, K1, I1)
+      DO K1 = kmin3, kmax3 
+         DO I1 = imin3, imax3 
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+            IJK = FUNIJK(I1,J1,K1) 
+            IF (DEFAULT_WALL_AT(IJK)) THEN 
+! Cutting the neighbor link between fluid cell and wall cell
+               A_M(JP_OF(IJK),S,M) = ZERO 
+! Setting the wall value equal to the adjacent fluid cell value
+               A_M(IJK,E,M) = ZERO 
+               A_M(IJK,W,M) = ZERO 
+               A_M(IJK,N,M) = ONE 
+               A_M(IJK,S,M) = ZERO 
+               A_M(IJK,T,M) = ZERO 
+               A_M(IJK,B,M) = ZERO 
+               A_M(IJK,0,M) = -ONE 
+               B_M(IJK,M) = ZERO 
+            ENDIF 
+         ENDDO 
+      ENDDO 
 
-      ENDIF  !(.NOT.CARTESIAN_GRID)
+! north xz plane
+      J1 = JMAX2 
+!!$omp    parallel do private(IJK, K1, I1)
+      DO K1 = kmin3, kmax3 
+         DO I1 = imin3, imax3 
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+            IJK = FUNIJK(I1,J1,K1) 
+            IF (DEFAULT_WALL_AT(IJK)) THEN 
+! Cutting the neighbor link between fluid cell and wall cell
+               A_M(JM_OF(IJK),N,M) = ZERO 
+! Setting the wall value equal to the adjacent fluid cell value
+               A_M(IJK,E,M) = ZERO 
+               A_M(IJK,W,M) = ZERO 
+               A_M(IJK,N,M) = ZERO 
+               A_M(IJK,S,M) = ONE 
+               A_M(IJK,T,M) = ZERO 
+               A_M(IJK,B,M) = ZERO 
+               A_M(IJK,0,M) = -ONE 
+               B_M(IJK,M) = ZERO 
+            ENDIF 
+         ENDDO 
+      ENDDO 
+
+! west yz plane 
+      I1 = imin2 
+!!$omp    parallel do private(IJK, K1, J1)
+      DO K1 = kmin3, kmax3 
+         DO J1 = jmin3, jmax3 
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+            IJK = FUNIJK(I1,J1,K1) 
+            IF (DEFAULT_WALL_AT(IJK)) THEN 
+! Cutting the neighbor link between fluid cell and wall cell
+               A_M(IP_OF(IJK),W,M) = ZERO 
+! Setting the wall value equal to the adjacent fluid cell value
+               A_M(IJK,E,M) = ONE 
+               A_M(IJK,W,M) = ZERO 
+               A_M(IJK,N,M) = ZERO 
+               A_M(IJK,S,M) = ZERO 
+               A_M(IJK,T,M) = ZERO 
+               A_M(IJK,B,M) = ZERO 
+               A_M(IJK,0,M) = -ONE 
+               B_M(IJK,M) = ZERO 
+            ENDIF 
+         ENDDO 
+      ENDDO 
+
+! east yz plane 
+      I1 = IMAX2 
+!!$omp    parallel do private(IJK, K1, J1)
+      DO K1 = kmin3, kmax3 
+         DO J1 = jmin3, jmax3 
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+            IJK = FUNIJK(I1,J1,K1) 
+            IF (DEFAULT_WALL_AT(IJK)) THEN 
+! Cutting the neighbor link between fluid cell and wall cell
+               A_M(IM_OF(IJK),E,M) = ZERO 
+! Setting the wall value equal to the adjacent fluid cell value
+               A_M(IJK,E,M) = ZERO 
+               A_M(IJK,W,M) = ONE 
+               A_M(IJK,N,M) = ZERO 
+               A_M(IJK,S,M) = ZERO 
+               A_M(IJK,T,M) = ZERO 
+               A_M(IJK,B,M) = ZERO 
+               A_M(IJK,0,M) = -ONE 
+               B_M(IJK,M) = ZERO 
+            ENDIF 
+         ENDDO 
+      ENDDO 
+
+      ENDIF   !(.NOT.CARTESIAN_GRID)
+
+! End setting the default boundary conditions
+! ----------------------------------------------------------------<<<
 
 
-      !first set the bc for walls then overwrite where ever inflow/outflows are
-      !defined so that the order in which the bcs are defined in the data file
-      !does not matter.  Here set wall bcs . . .
+! Set user defined wall boundary conditions
+! ---------------------------------------------------------------->>>
       DO L = 1, DIMENSION_BC 
          IF (BC_DEFINED(L)) THEN 
-            IF (BC_TYPE(L)=='NO_SLIP_WALL' .OR. BC_TYPE(L)=='FREE_SLIP_WALL'&
-                .OR. BC_TYPE(L)=='PAR_SLIP_WALL') THEN 
+            IF (BC_TYPE(L)=='NO_SLIP_WALL' .OR. &
+                BC_TYPE(L)=='FREE_SLIP_WALL' .OR. &
+                BC_TYPE(L)=='PAR_SLIP_WALL') THEN 
                I1 = BC_I_W(L) 
                I2 = BC_I_E(L) 
                J1 = BC_J_S(L) 
                J2 = BC_J_N(L) 
                K1 = BC_K_B(L) 
                K2 = BC_K_T(L) 
-!!!$omp    parallel do private(IJK, K, J, I, IM, JM, KM)
+!!$omp    parallel do private(IJK, K, J, I, IM, JM, KM)
                DO K = K1, K2 
                   DO J = J1, J2 
-                     DO I = I1, I2 		     
-               	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                     DO I = I1, I2
+                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         IJK = FUNIJK(I,J,K) 
                         IM = IM1(I) 
                         JM = JM1(J) 
                         KM = KM1(K) 
+! first set the boundary cell value equal to the known value in that 
+! cell
                         A_M(IJK,E,M) = ZERO 
                         A_M(IJK,W,M) = ZERO 
                         A_M(IJK,N,M) = ZERO 
@@ -277,19 +260,24 @@
                         A_M(IJK,T,M) = ZERO 
                         A_M(IJK,B,M) = ZERO 
                         A_M(IJK,0,M) = -ONE 
-                        B_M(IJK,M) = VAR(IJK) 
+                        B_M(IJK,M) = VAR(IJK)
+! second modify the matrix equation according to the user specified
+! boundary condition
                         IF (FLUID_AT(EAST_OF(IJK))) THEN 
-                           IF (BC_HW_PHI(L) == UNDEFINED) THEN 
+                           IF (BC_HW_PHI(L) == UNDEFINED) THEN
+! specified wall value (i.e., dirichlet type boundary)
                               A_M(IJK,E,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_PHIW(L) 
-                           ELSE 
+                           ELSE
+! if bc_hw__phi=0 then specified flux boundary (i.e., neumann type
+! boundary) otherwise a mixed type boundary
                               A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODX_E(I)) 
                               A_M(IJK,E,M) = -(HALF*BC_HW_PHI(L)-ODX_E(I)) 
-                              B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L&
-                                 )) 
+                              B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+&
+                                             BC_C_PHI(L)) 
                            ENDIF 
-                        ELSE IF (FLUID_AT(WEST_OF(IJK))) THEN 
+                        ELSEIF (FLUID_AT(WEST_OF(IJK))) THEN 
                            IF (BC_HW_PHI(L) == UNDEFINED) THEN 
                               A_M(IJK,W,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
@@ -297,10 +285,10 @@
                            ELSE 
                               A_M(IJK,W,M) = -(HALF*BC_HW_PHI(L)-ODX_E(IM)) 
                               A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODX_E(IM)) 
-                              B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L&
-                                 )) 
+                              B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+&
+                                             BC_C_PHI(L)) 
                            ENDIF 
-                        ELSE IF (FLUID_AT(NORTH_OF(IJK))) THEN 
+                        ELSEIF (FLUID_AT(NORTH_OF(IJK))) THEN 
                            IF (BC_HW_PHI(L) == UNDEFINED) THEN 
                               A_M(IJK,N,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
@@ -308,10 +296,10 @@
                            ELSE 
                               A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODY_N(J)) 
                               A_M(IJK,N,M) = -(HALF*BC_HW_PHI(L)-ODY_N(J)) 
-                              B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L&
-                                 )) 
+                              B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+&
+                                             BC_C_PHI(L)) 
                            ENDIF 
-                        ELSE IF (FLUID_AT(SOUTH_OF(IJK))) THEN 
+                        ELSEIF (FLUID_AT(SOUTH_OF(IJK))) THEN 
                            IF (BC_HW_PHI(L) == UNDEFINED) THEN 
                               A_M(IJK,S,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
@@ -319,10 +307,10 @@
                            ELSE 
                               A_M(IJK,S,M) = -(HALF*BC_HW_PHI(L)-ODY_N(JM)) 
                               A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODY_N(JM)) 
-                              B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L&
-                                 )) 
+                              B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+&
+                                             BC_C_PHI(L)) 
                            ENDIF 
-                        ELSE IF (FLUID_AT(TOP_OF(IJK))) THEN 
+                        ELSEIF (FLUID_AT(TOP_OF(IJK))) THEN 
                            IF (BC_HW_PHI(L) == UNDEFINED) THEN 
                               A_M(IJK,T,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
@@ -330,63 +318,77 @@
                            ELSE 
                               A_M(IJK,0,M)=-(HALF*BC_HW_PHI(L)+OX(I)*ODZ_T(K)) 
                               A_M(IJK,T,M)=-(HALF*BC_HW_PHI(L)-OX(I)*ODZ_T(K)) 
-                              B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L&
-                                 )) 
+                              B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+&
+                                             BC_C_PHI(L)) 
                            ENDIF 
-                        ELSE IF (FLUID_AT(BOTTOM_OF(IJK))) THEN 
+                        ELSEIF (FLUID_AT(BOTTOM_OF(IJK))) THEN 
                            IF (BC_HW_PHI(L) == UNDEFINED) THEN 
                               A_M(IJK,B,M) = -HALF 
                               A_M(IJK,0,M) = -HALF 
                               B_M(IJK,M) = -BC_PHIW(L) 
                            ELSE 
-                              A_M(IJK,B,M) = -(HALF*BC_HW_PHI(L)-OX(I)*ODZ_T(KM&
-                                 )) 
-                              A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+OX(I)*ODZ_T(KM&
-                                 )) 
-                              B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L&
-                                 )) 
+                              A_M(IJK,B,M) = -(HALF*BC_HW_PHI(L)-&
+                                               OX(I)*ODZ_T(KM)) 
+                              A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+&
+                                               OX(I)*ODZ_T(KM)) 
+                              B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+&
+                                             BC_C_PHI(L)) 
                            ENDIF 
                         ENDIF 
-                     END DO 
-                  END DO 
-               END DO 
-            ENDIF 
-         ENDIF 
-      END DO 
+                     ENDDO 
+                  ENDDO 
+               ENDDO 
+           ENDIF   ! end if (ns, fs, psw)
+         ENDIF   ! end if (bc_defined)
+      ENDDO   ! end L do loop over dimension_bc
+! end setting of wall boundary conditions
+! ----------------------------------------------------------------<<<
       
-      
-      !. . . then set bcs for non-wall cells
+
+! Set user defined boundary conditions for non-wall cells 
+! Setting p_inflow, p_outflow, mass_outflow or outflow flow boundary
+! conditions
+! ---------------------------------------------------------------->>>      
       DO L = 1, DIMENSION_BC 
          IF (BC_DEFINED(L)) THEN 
-            IF (BC_TYPE(L)=='NO_SLIP_WALL' .OR. BC_TYPE(L)=='FREE_SLIP_WALL'&
-                .OR. BC_TYPE(L)=='PAR_SLIP_WALL') THEN 
-               !Dummy statement to do nothing.  The bcs were set in the previous loop
-		I1 = 1  
-            ELSE IF (BC_TYPE(L)=='P_INFLOW' .OR. BC_TYPE(L)=='P_OUTFLOW' .OR. &
-                  BC_TYPE(L)=='MASS_OUTFLOW' .OR. BC_TYPE(L)=='OUTFLOW') THEN 
+            IF (BC_TYPE(L)=='NO_SLIP_WALL' .OR. &
+                BC_TYPE(L)=='FREE_SLIP_WALL' .OR. &
+                BC_TYPE(L)=='PAR_SLIP_WALL') THEN 
+! Dummy statement to do nothing.  The bcs were set in the previous loop
+                I1 = 1  
+            ELSEIF (BC_TYPE(L)=='P_INFLOW' .OR. &
+                    BC_TYPE(L)=='P_OUTFLOW' .OR. &
+                    BC_TYPE(L)=='MASS_OUTFLOW' .OR. &
+                    BC_TYPE(L)=='OUTFLOW') THEN 
                I1 = BC_I_W(L) 
                I2 = BC_I_E(L) 
                J1 = BC_J_S(L) 
                J2 = BC_J_N(L) 
                K1 = BC_K_B(L) 
                K2 = BC_K_T(L) 
-!!!$omp    parallel do private(IJK, K, J, I)
+!!$omp    parallel do private(IJK, K, J, I)
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2 
- 	       	        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                       IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         IJK = FUNIJK(I,J,K) 
+! first set the flow boundary cell value equal to zero
                         A_M(IJK,E,M) = ZERO 
                         A_M(IJK,W,M) = ZERO 
                         A_M(IJK,N,M) = ZERO 
                         A_M(IJK,S,M) = ZERO 
                         A_M(IJK,T,M) = ZERO 
                         A_M(IJK,B,M) = ZERO 
-!
+                        A_M(IJK,0,M) = -ONE 
+                        B_M(IJK,M) = ZERO 
+! now set the flow boundary cell value equal to the adjacent fluid
+! cell value
                         SELECT CASE (TRIM(BC_PLANE(L)))  
-                        CASE ('E')  
+                        CASE ('E') 
+! fluid cell on the east side
                            A_M(IJK,E,M) = ONE 
-                        CASE ('W')  
+                        CASE ('W')
+! fluid cell on the west side                                
                            A_M(IJK,W,M) = ONE 
                         CASE ('N')  
                            A_M(IJK,N,M) = ONE 
@@ -397,25 +399,32 @@
                         CASE ('B')  
                            A_M(IJK,B,M) = ONE 
                         END SELECT 
-!
-                        A_M(IJK,0,M) = -ONE 
-                        B_M(IJK,M) = ZERO 
-                     END DO 
-                  END DO 
-               END DO 
+                     ENDDO 
+                  ENDDO 
+               ENDDO 
+! end setting p_inflow, p_outflow, mass_outflow or outflow flow boundary
+! conditions
+! ----------------------------------------------------------------<<<
+
             ELSE 
+
+! Setting bc that are defined but not nsw, fsw, psw, p_inflow,
+! p_outflow, mass_outflow or outflow (at this time, this section 
+! addresses mass_inflow type boundaries)
+! ----------------------------------------------------------------<<<
                I1 = BC_I_W(L) 
                I2 = BC_I_E(L) 
                J1 = BC_J_S(L) 
                J2 = BC_J_N(L) 
                K1 = BC_K_B(L) 
                K2 = BC_K_T(L) 
-!!!$omp    parallel do private(IJK, K, J, I)
+!!$omp    parallel do private(IJK, K, J, I)
                DO K = K1, K2 
                   DO J = J1, J2 
                      DO I = I1, I2 
- 	                IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE			
+                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         IJK = FUNIJK(I,J,K) 
+! setting the value in the boundary cell equal to what is known
                         A_M(IJK,E,M) = ZERO 
                         A_M(IJK,W,M) = ZERO 
                         A_M(IJK,N,M) = ZERO 
@@ -425,34 +434,114 @@
                         A_M(IJK,0,M) = -ONE
 !                        B_M(IJK,M) = -BC_PHIF(L)  !does not allow the profile to be changed, e.g., from usr1
                         B_M(IJK,M) = -VAR(IJK)
-                     END DO 
-                  END DO 
-               END DO 
-            ENDIF 
-         ENDIF 
-      END DO 
+                     ENDDO 
+                  ENDDO 
+               ENDDO 
+            ENDIF   ! end if/else (bc_type)
+                    ! ns, fs, psw; else
+                    ! p_inflow, p_outflow, mass_outflow or outflow; else
+! end setting of 'else' flow boundary conditions (mass_inflow)
+! ----------------------------------------------------------------<<<
+
+         ENDIF   ! end if (bc_defined)
+      ENDDO   ! end L do loop over dimension_bc
 
 
 
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      
-      IF((.NOT.CARTESIAN_GRID).OR.(CG_SAFE_MODE(1)==1)) RETURN
+! modifications for cartesian grid implementation
+      IF(CARTESIAN_GRID .AND. .NOT.(CG_SAFE_MODE(1)==1)) &
+         CALL BC_PHI_CG(VAR, BC_PHIF, BC_PHIW, BC_HW_PHI, &
+                        BC_C_PHI, M, A_M, B_M, IER)
+
+
+      RETURN  
+      END SUBROUTINE BC_PHI
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: BC_PHI_CG                                               C
+!  Purpose: Modify boundary conditions for cartesian grid cut-cell     C
+!           implementation                                             C
+!                                                                      C
+!  Author: Jeff Dietiker                                               C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE BC_PHI_CG(VAR, BC_PHIF, BC_PHIW, BC_HW_PHI, &
+                        BC_C_PHI, M, A_M, B_M, IER) 
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      USE matrix 
+      USE geometry
+      USE indices
+      USE bc
+      USE compar    
+      USE cutcell
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! The field variable being solved for:
+!     e.g., T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G, 
+!     e_Turb_G 
+      DOUBLE PRECISION, INTENT(IN) :: VAR(DIMENSION_3)
+! Boundary conditions specifications
+! bc_phif = flow boundary value
+! bc_phiw = wall boundary value
+! bc_hw_phi = transfer coefficient 
+!      = 0 value means specified flux (neumann type)
+!      = undefined value means specified wall value (dirichlet type)
+!      = other value means mixed type 
+! bc_C_phi = transfer flux   
+      DOUBLE PRECISION, INTENT(IN) :: BC_phif(DIMENSION_BC), &
+                                      BC_Phiw(DIMENSION_BC), &
+                                      BC_hw_Phi(DIMENSION_BC), &
+                                      BC_C_Phi(DIMENSION_BC)
+! Phase index
+      INTEGER, INTENT(IN) :: M
+! Septadiagonal matrix A_m
+      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
+! Vector b_m
+      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
+! Error index 
+      INTEGER, INTENT(INOUT) :: IER 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+! Indices
+      INTEGER :: I, J, K, IJK, IM, JM, KM
+! Boundary condition index
+      INTEGER :: L
+! Boundary identifiers
+      INTEGER :: BCV
+      CHARACTER(LEN=9) :: BCT
+
+      LOGICAL :: ALONG_GLOBAL_GHOST_LAYER
+
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
+      INCLUDE 'fun_avg1.inc'
+      INCLUDE 'function.inc'
+      INCLUDE 'fun_avg2.inc'
+!-----------------------------------------------
+
 
       DO IJK = ijkstart3, ijkend3
-
          I = I_OF(IJK)
          J = J_OF(IJK)
          K = K_OF(IJK)
 
-!         ALONG_GLOBAL_GHOST_LAYER = (I==IMIN3).OR.(I==IMAX3).OR.(J==JMIN3).OR.(J==JMAX3)
          ALONG_GLOBAL_GHOST_LAYER = (I<IMIN1).OR.(I>IMAX1).OR.(J<JMIN1).OR.(J>JMAX1)
 
          IF(DO_K) ALONG_GLOBAL_GHOST_LAYER = ALONG_GLOBAL_GHOST_LAYER.OR.(K<KMIN1).OR.(K>KMAX1)
 
          IF(BLOCKED_CELL_AT(IJK)) THEN
-
+! setting the value in the boundary cell equal to what is known                 
             A_M(IJK,E,M) = ZERO 
             A_M(IJK,W,M) = ZERO 
             A_M(IJK,N,M) = ZERO 
@@ -461,27 +550,16 @@
             A_M(IJK,B,M) = ZERO 
             A_M(IJK,0,M) = -ONE 
             B_M(IJK,M) = -VAR(IJK) 
-
          ENDIF
 
-         IF(BLOCKED_CELL_AT(IJK).OR.ALONG_GLOBAL_GHOST_LAYER) THEN
 
+         IF(BLOCKED_CELL_AT(IJK).OR.ALONG_GLOBAL_GHOST_LAYER) THEN
             IM = IM1(I) 
             JM = JM1(J) 
             KM = KM1(K) 
-!            A_M(IJK,E,M) = ZERO 
-!            A_M(IJK,W,M) = ZERO 
-!            A_M(IJK,N,M) = ZERO 
-!            A_M(IJK,S,M) = ZERO 
-!            A_M(IJK,T,M) = ZERO 
-!            A_M(IJK,B,M) = ZERO 
-!            A_M(IJK,0,M) = -ONE 
-!            B_M(IJK,M) = -VAR(IJK) 
 
             IF (CUT_CELL_AT(IP_OF(IJK))) THEN 
-
                BCV = BC_ID(IP_OF(IJK))
-
                IF(BCV > 0 ) THEN
                   BCT = BC_TYPE(BCV)
                ELSE
@@ -489,7 +567,6 @@
                ENDIF
 
                IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
-
                   L = BCV
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN 
                      A_M(IJK,E,M) = -HALF 
@@ -498,15 +575,12 @@
                   ELSE 
                      A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODX_E(I)) 
                      A_M(IJK,E,M) = -(HALF*BC_HW_PHI(L)-ODX_E(I)) 
-                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L)) 
-                  ENDIF 
-
+                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L))
+                  ENDIF
                ENDIF
 
-            ELSE IF (CUT_CELL_AT(IM_OF(IJK))) THEN  
-
+            ELSEIF (CUT_CELL_AT(IM_OF(IJK))) THEN
                BCV = BC_ID(IM_OF(IJK))
-
                IF(BCV > 0 ) THEN
                   BCT = BC_TYPE(BCV)
                ELSE
@@ -514,9 +588,7 @@
                ENDIF
 
                IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
-
                   L = BCV
-
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN 
                      A_M(IJK,W,M) = -HALF 
                      A_M(IJK,0,M) = -HALF 
@@ -524,16 +596,12 @@
                   ELSE 
                      A_M(IJK,W,M) = -(HALF*BC_HW_PHI(L)-ODX_E(IM)) 
                      A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODX_E(IM)) 
-                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L)) 
-                  ENDIF 
-
+                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L))
+                  ENDIF
                ENDIF
 
-
-            ELSE IF (CUT_CELL_AT(JP_OF(IJK))) THEN  
-
+            ELSEIF (CUT_CELL_AT(JP_OF(IJK))) THEN
                BCV = BC_ID(JP_OF(IJK))
-
                IF(BCV > 0 ) THEN
                   BCT = BC_TYPE(BCV)
                ELSE
@@ -541,9 +609,7 @@
                ENDIF
 
                IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
-
                   L = BCV
-
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN 
                      A_M(IJK,N,M) = -HALF 
                      A_M(IJK,0,M) = -HALF 
@@ -551,15 +617,12 @@
                   ELSE 
                      A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODY_N(J)) 
                      A_M(IJK,N,M) = -(HALF*BC_HW_PHI(L)-ODY_N(J)) 
-                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L)) 
+                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L))
                   ENDIF 
-
                ENDIF
 
-            ELSE IF (CUT_CELL_AT(JM_OF(IJK))) THEN  
-
+            ELSEIF (CUT_CELL_AT(JM_OF(IJK))) THEN
                BCV = BC_ID(JM_OF(IJK))
-
                IF(BCV > 0 ) THEN
                   BCT = BC_TYPE(BCV)
                ELSE
@@ -567,9 +630,7 @@
                ENDIF
 
                IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
-
                   L = BCV
-
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN 
                      A_M(IJK,S,M) = -HALF 
                      A_M(IJK,0,M) = -HALF 
@@ -577,15 +638,12 @@
                   ELSE 
                      A_M(IJK,S,M) = -(HALF*BC_HW_PHI(L)-ODY_N(JM)) 
                      A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODY_N(JM)) 
-                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L)) 
-                  ENDIF 
-
+                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L))
+                  ENDIF
                ENDIF
 
-            ELSE IF (CUT_CELL_AT(KP_OF(IJK))) THEN  
-
+            ELSEIF (CUT_CELL_AT(KP_OF(IJK))) THEN
                BCV = BC_ID(KP_OF(IJK))
-
                IF(BCV > 0 ) THEN
                   BCT = BC_TYPE(BCV)
                ELSE
@@ -593,9 +651,7 @@
                ENDIF
 
                IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
-
                   L = BCV
-
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN 
                      A_M(IJK,T,M) = -HALF 
                      A_M(IJK,0,M) = -HALF 
@@ -603,15 +659,12 @@
                   ELSE 
                      A_M(IJK,0,M)=-(HALF*BC_HW_PHI(L)+OX(I)*ODZ_T(K)) 
                      A_M(IJK,T,M)=-(HALF*BC_HW_PHI(L)-OX(I)*ODZ_T(K)) 
-                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L)) 
-                  ENDIF 
-
+                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L))
+                  ENDIF
                ENDIF
 
-            ELSE IF (CUT_CELL_AT(KM_OF(IJK))) THEN  
-
+            ELSEIF (CUT_CELL_AT(KM_OF(IJK))) THEN
                BCV = BC_ID(KM_OF(IJK))
-
                IF(BCV > 0 ) THEN
                   BCT = BC_TYPE(BCV)
                ELSE
@@ -619,30 +672,24 @@
                ENDIF
 
                IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
-
                   L = BCV
-
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN 
                      A_M(IJK,B,M) = -HALF 
                      A_M(IJK,0,M) = -HALF 
                      B_M(IJK,M) = -BC_PHIW(L) 
                   ELSE 
-                     A_M(IJK,B,M) = -(HALF*BC_HW_PHI(L)-OX(I)*ODZ_T(KM)) 
-                     A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+OX(I)*ODZ_T(KM)) 
-                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L)) 
-                  ENDIF 
-
+                     A_M(IJK,B,M) = -(HALF*BC_HW_PHI(L)-OX(I)*ODZ_T(KM))
+                     A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+OX(I)*ODZ_T(KM))
+                     B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L))
+                  ENDIF
                ENDIF  ! BCT
 
-            ENDIF ! Cut cell next to blocked cell
+            ENDIF   ! end if/else cut cell next to blocked cell
 
-         ENDIF ! blocked cell
+         ENDIF   ! end if (blocked_cell_at(ijk))
 
-         IF(CUT_CELL_AT(IJK)) THEN
-    
-          
-            BCV = BC_ID(IJK)
-                   
+         IF(CUT_CELL_AT(IJK)) THEN          
+            BCV = BC_ID(IJK)                   
             IF(BCV > 0 ) THEN
                BCT = BC_TYPE(BCV)
             ELSE
@@ -650,7 +697,6 @@
             ENDIF
              
             IF (BCT=='CG_MI'.OR.BCT=='CG_PO') THEN
-                         
                L = BCV
                A_M(IJK,E,M) = ZERO
                A_M(IJK,W,M) = ZERO
@@ -660,24 +706,13 @@
                A_M(IJK,B,M) = ZERO
                A_M(IJK,0,M) = -ONE
                B_M(IJK,M) = -BC_PHIF(L)
-               
-
             ENDIF
-
          ENDIF
 
+      ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 
-      ENDDO
-
-
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
 
       RETURN  
-      END SUBROUTINE BC_PHI 
+      END SUBROUTINE BC_PHI_CG
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization 
-!// 350 1206 change do loop limits: 1,kmax2->kmin3,kmax3      
-!// 360 Check if i,j,k resides on current processor
+
