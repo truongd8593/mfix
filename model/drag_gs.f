@@ -828,7 +828,7 @@
       USE param1
       USE run, only : filter_size_ratio, SUBGRID_WALL
       USE constant, only : GRAVITY
-      USE geometry, only : VOL
+      USE geometry, only : VOL,AXY,DO_K
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -875,7 +875,12 @@
 ! particle terminal settling velocity: vt = g*d^2*(Rho_s - Rho_g) / 18 * Mu_g
       vt = GRAVITY*DPM*DPM*(ROs - ROg) / (18.0d0*Mug)
 ! filter size calculation for each specific gridcell volume
-      filtersize = filter_size_ratio * (VOL(IJK)**(ONE/3.0d0))
+      IF(DO_K) THEN
+         filtersize = filter_size_ratio * (VOL(IJK)**(ONE/3.0d0))
+      ELSE
+         filtersize = filter_size_ratio * DSQRT(AXY(IJK))
+      ENDIF
+
 ! dimensionless inverse of Froude number
       IF(ABS(vt) > SMALL_NUMBER) THEN
          Inv_Froude =  filtersize * GRAVITY / vt**2
@@ -959,7 +964,7 @@
       USE param1
       USE run, only : filter_size_ratio, SUBGRID_WALL
       USE constant, only : GRAVITY
-      USE geometry, only : VOL
+      USE geometry, only : VOL,AXY,DO_K
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1009,7 +1014,11 @@
 ! particle terminal settling velocity: vt = g*d^2*(Rho_s - Rho_g) / 18 * Mu_g
       vt = GRAVITY*DPM*DPM*(ROs - ROg) / (18.0d0*Mug)
 ! filter size calculation for each specific gridcell volume
-      filtersize = filter_size_ratio * (VOL(IJK)**(ONE/3.0d0))
+      IF(DO_K) THEN
+         filtersize = filter_size_ratio * (VOL(IJK)**(ONE/3.0d0))
+      ELSE
+         filtersize = filter_size_ratio * DSQRT(AXY(IJK))
+      ENDIF
 ! dimensionless inverse of Froude number
       IF(ABS(vt) > SMALL_NUMBER) THEN
          Inv_Froude =  filtersize * GRAVITY / vt**2

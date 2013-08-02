@@ -1713,7 +1713,12 @@
                (18.0d0*MU_G(IJK))
 
 ! FilterSIZE calculation for each specific gridcell volume
-            filtersize = filter_size_ratio * (VOL(IJK)**(ONE/3.0d0))
+            IF(DO_K) THEN  
+               filtersize = filter_size_ratio * (VOL(IJK)**(ONE/3.0d0))
+            ELSE
+               filtersize = filter_size_ratio * DSQRT(AXY(IJK))
+            ENDIF
+
 
 ! dimensionless inverse of Froude number
             Inv_Froude =  filtersize * GRAVITY / vt**2     
@@ -1896,7 +1901,11 @@
                (18.0d0*MU_G(IJK))
 
 ! FilterSIZE calculation for each specific gridcell volume
-            filtersize = filter_size_ratio * (VOL(IJK)**(ONE/3.0d0))
+            IF(DO_K) THEN  
+               filtersize = filter_size_ratio * (VOL(IJK)**(ONE/3.0d0))
+            ELSE
+               filtersize = filter_size_ratio * DSQRT(AXY(IJK))
+            ENDIF
 
 ! dimensionless inverse of Froude number
             Inv_Froude =  filtersize * GRAVITY / vt**2     
