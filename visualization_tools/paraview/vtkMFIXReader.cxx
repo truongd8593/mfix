@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    $RCSfile$
+  Module:    vtkMFIXReader.cxx
 
   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
@@ -12,9 +12,9 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// Thanks to Phil Nicoletti and Brian Dotson at the National Energy 
-// Technology Laboratory who developed this class.
-// Please address all comments to Brian Dotson (brian.dotson@netl.doe.gov)
+// Thanks to Phil Nicoletti, Terry Jordan and Brian Dotson at the 
+// National Energy Technology Laboratory who developed this class.
+// Please address all comments to Terry Jordan (terry.jordan@netl.doe.gov)
 //
 
 #include "vtkMFIXReader.h"
@@ -38,7 +38,6 @@
 #include "vtkStreamingDemandDrivenPipeline.h"
 #include "vtkStringArray.h"
 
-vtkCxxRevisionMacro(vtkMFIXReader, "$Revision$");
 vtkStandardNewMacro(vtkMFIXReader);
 
 //----------------------------------------------------------------------------
@@ -75,7 +74,6 @@ vtkMFIXReader::vtkMFIXReader()
   this->FileExtension[10] = 'B';
   this->VersionNumber = 0;
 
-  this->CellDataArray = NULL;
   this->CellDataArraySelection = vtkDataArraySelection::New();
   this->Points = vtkPoints::New();
   this->Mesh = vtkUnstructuredGrid::New();
@@ -88,7 +86,7 @@ vtkMFIXReader::vtkMFIXReader()
   this->Dy = vtkDoubleArray::New();
   this->Dz = vtkDoubleArray::New();
   this->TempI = vtkIntArray::New();
-  this->TempD = vtkDoubleArray::New();   
+  this->TempD = vtkDoubleArray::New();
   this->Flag = vtkIntArray::New();
   this->VariableNames = vtkStringArray::New();
   this->VariableComponents = vtkIntArray::New();
@@ -119,10 +117,14 @@ vtkMFIXReader::~vtkMFIXReader()
     delete [] this->FileName;
     }
 
+  if( this->CellDataArray )
+  {
   for (int j = 0; j <= this->VariableNames->GetMaxId(); j++)
     {
     this->CellDataArray[j]->Delete();
     }
+    delete [] this->CellDataArray;
+  }
 
   this->CellDataArraySelection->Delete();
   this->Points->Delete();
@@ -150,12 +152,6 @@ vtkMFIXReader::~vtkMFIXReader()
   this->Maximum->Delete();
   this->VectorLength->Delete();
   this->SPXTimestepIndexTable->Delete();
-
-  if (this->CellDataArray)
-    {
-    delete [] this->CellDataArray;
-    }
-
 }
 
 //----------------------------------------------------------------------------
@@ -169,7 +165,42 @@ int vtkMFIXReader::RequestData(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
   vtkDebugMacro( << "Reading MFIX file");
 
+  // Save the time value in the output data information.
+  int length = outInfo->Length(vtkStreamingDemandDrivenPipeline::TIME_STEPS());
+  double* steps = outInfo->Get(vtkStreamingDemandDrivenPipeline::TIME_STEPS());
+
+  if (outInfo->Has( vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP()))
+    {
+    // Get the requested time step. We only support requests of a single time
+    // step in this reader right now
+    double requestedTimeStep =
+      outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP());
+
+
+    //find the timestep with the closest value
+    int cnt=0;
+    int closestStep=0;
+    double minDist=-1;
+    for (cnt=0;cnt<length;cnt++)
+      {
+      double tdist=(steps[cnt]-requestedTimeStep>requestedTimeStep-steps[cnt])?
+        steps[cnt]-requestedTimeStep:
+        requestedTimeStep-steps[cnt];
+      if (minDist<0 || tdist<minDist)
+        {
+        minDist=tdist;
+        closestStep=cnt;
+        }
+      }
+    this->CurrentTimeStep=closestStep;
+    }
+  else
+    {
+    this->CurrentTimeStep = this->TimeStep;
+    }
+
   this->MakeMesh(output);
+  output->GetInformation()->Set(vtkDataObject::DATA_TIME_STEP(), steps[this->CurrentTimeStep]);
   return 1;
 }
 
@@ -177,12 +208,12 @@ int vtkMFIXReader::RequestData(
 void vtkMFIXReader::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
-  os << indent << "File Name: " 
+  os << indent << "File Name: "
      << (this->FileName ? this->FileName : "(none)") << "\n";
   os << indent << "Number Of Nodes: " << this->NumberOfPoints << endl;
   os << indent << "Number Of Cells: " << this->NumberOfCells << endl;
   os << indent << "Number Of Cell Fields: " << this->NumberOfCellFields << endl;
-  os << indent << "Time Step Range: " 
+  os << indent << "Time Step Range: "
      << this->TimeStepRange[0] << " - " << this->TimeStepRange[1]
      << endl;
   os << indent << "Time Step: " << this->TimeStep << endl;
@@ -194,7 +225,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
 {
   output->Allocate();
 
-  if (this->MakeMeshFlag == 0) 
+  if (this->MakeMeshFlag == 0)
     {
     //Points->SetNumberOfPoints((this->IMaximum2+1)
       // *(this->JMaximum2+1)*(this->KMaximum2+1));
@@ -388,7 +419,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
             this->AQuad->GetPointIds()->SetId( 1, point0+1);
             this->AQuad->GetPointIds()->SetId( 2, point0+2+this->IMaximum2);
             this->AQuad->GetPointIds()->SetId( 3, point0+1+this->IMaximum2);
-            this->Mesh->InsertNextCell(this->AQuad->GetCellType(), 
+            this->Mesh->InsertNextCell(this->AQuad->GetCellType(),
               this->AQuad->GetPointIds());
             }
           point0++;
@@ -428,23 +459,23 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
                 this->AHexahedron->GetPointIds()->
                   SetId( 6, (point0+2+this->IMaximum2 +
                   ((this->IMaximum2+1)*(this->JMaximum2+1))) -
-                  ((this->IMaximum2+1)*(this->JMaximum2+1) 
+                  ((this->IMaximum2+1)*(this->JMaximum2+1)
                   * (this->KMaximum2-2)));
                 this->AHexahedron->GetPointIds()->
                   SetId( 7, (point0+1+this->IMaximum2 +
-                  ((this->IMaximum2+1)*(this->JMaximum2+1)))- 
+                  ((this->IMaximum2+1)*(this->JMaximum2+1)))-
                   ((this->IMaximum2+1)*(this->JMaximum2+1)
                   *(this->KMaximum2-2)));
-                this->Mesh->InsertNextCell(this->AHexahedron->GetCellType(), 
+                this->Mesh->InsertNextCell(this->AHexahedron->GetCellType(),
                   this->AHexahedron->GetPointIds());
                 }
               else if ((k != (this->KMaximum2-2)) && (i != 1))
                 {
                 this->AHexahedron->GetPointIds()->SetId( 0, point0);
                 this->AHexahedron->GetPointIds()->SetId( 1, point0+1);
-                this->AHexahedron->GetPointIds()->SetId( 2, 
+                this->AHexahedron->GetPointIds()->SetId( 2,
                   point0+1+((this->IMaximum2+1)*(this->JMaximum2+1)));
-                this->AHexahedron->GetPointIds()->SetId( 3, 
+                this->AHexahedron->GetPointIds()->SetId( 3,
                   point0+((this->IMaximum2+1)*(this->JMaximum2+1)));
                 this->AHexahedron->GetPointIds()->
                   SetId( 4, point0+1+this->IMaximum2);
@@ -456,7 +487,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
                 this->AHexahedron->GetPointIds()->
                   SetId( 7, point0+1+this->IMaximum2+
                   ((this->IMaximum2+1)*(this->JMaximum2+1)));
-                this->Mesh->InsertNextCell(this->AHexahedron->GetCellType(), 
+                this->Mesh->InsertNextCell(this->AHexahedron->GetCellType(),
                   this->AHexahedron->GetPointIds());
                 }
               else if ( (k != (this->KMaximum2-2)) && (i == 1))
@@ -473,7 +504,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
                 this->AWedge->GetPointIds()->
                   SetId( 5, point0+2+this->IMaximum2+
                   ((this->IMaximum2+1)*(this->JMaximum2+1)));
-                this->Mesh->InsertNextCell(this->AWedge->GetCellType(), 
+                this->Mesh->InsertNextCell(this->AWedge->GetCellType(),
                   this->AWedge->GetPointIds());
                 }
               else if (( k == (this->KMaximum2-2)) && (i == 1))
@@ -490,10 +521,10 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
                   SetId( 4, point0+2+this->IMaximum2);
                 this->AWedge->GetPointIds()->
                   SetId( 5, (point0+2+this->IMaximum2 +
-                  ((this->IMaximum2+1)*(this->JMaximum2+1))) 
+                  ((this->IMaximum2+1)*(this->JMaximum2+1)))
                   -((this->IMaximum2+1)
                   *(this->JMaximum2+1)*(this->KMaximum2-2)));
-                this->Mesh->InsertNextCell(this->AWedge->GetCellType(), 
+                this->Mesh->InsertNextCell(this->AWedge->GetCellType(),
                   this->AWedge->GetPointIds());
                 }
               }
@@ -518,7 +549,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
             this->AQuad->GetPointIds()->SetId( 1, point0+1);
             this->AQuad->GetPointIds()->SetId( 2, point0+2+this->IMaximum2);
             this->AQuad->GetPointIds()->SetId( 3, point0+1+this->IMaximum2);
-            this->Mesh->InsertNextCell(this->AQuad->GetCellType(), 
+            this->Mesh->InsertNextCell(this->AQuad->GetCellType(),
               this->AQuad->GetPointIds());
             }
           point0++;
@@ -527,7 +558,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
         point0++;
         }
       }
-    else 
+    else
       {
       for (int k = 0; k < this->KMaximum2; k++)
         {
@@ -553,9 +584,9 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
                 SetId( 6, point0+2+this->IMaximum2 +
                 ((this->IMaximum2+1)*(this->JMaximum2+1)));
               this->AHexahedron->GetPointIds()->
-                SetId( 7, point0+1+this->IMaximum2 + 
+                SetId( 7, point0+1+this->IMaximum2 +
                 ((this->IMaximum2+1)*(this->JMaximum2+1)));
-              this->Mesh->InsertNextCell(this->AHexahedron->GetCellType(), 
+              this->Mesh->InsertNextCell(this->AHexahedron->GetCellType(),
                 this->AHexahedron->GetPointIds());
               }
             point0++;
@@ -568,7 +599,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
       }
 
 
-    this->CellDataArray = new vtkFloatArray 
+    this->CellDataArray = new vtkFloatArray
       * [this->VariableNames->GetMaxId()+2];
     for (int j = 0; j <= this->VariableNames->GetMaxId(); j++)
       {
@@ -581,7 +612,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
     this->MakeMeshFlag = 1;
     }
 
-  output->DeepCopy(this->Mesh);  // If mesh has already 
+  output->DeepCopy(this->Mesh);  // If mesh has already
                                  // been made copy it to output
   int first = 0;
   for (int j = 0; j <= this->VariableNames->GetMaxId(); j++)
@@ -590,7 +621,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output)
       {
       if (this->VariableComponents->GetValue(j) == 1)
         {
-        this->GetVariableAtTimestep( j, this->TimeStep, CellDataArray[j]);
+        this->GetVariableAtTimestep( j, this->CurrentTimeStep, CellDataArray[j]);
         }
       else
         {
@@ -655,7 +686,7 @@ int vtkMFIXReader::RequestInformation(
     this->NumberOfCells = this->IJKMaximum2;
     this->NumberOfCellFields = this->VariableNames->GetMaxId()+1;
     this->NumberOfTimeSteps = this->MaximumTimestep;
-    this->TimeStepRange[0] = 0;  
+    this->TimeStepRange[0] = 0;
     this->TimeStepRange[1] = this->NumberOfTimeSteps-1;
     this->RequestInformationFlag = 1;
     this->GetAllTimes(outputVector);
@@ -706,26 +737,36 @@ void vtkMFIXReader::EnableAllCellArrays()
   this->CellDataArraySelection->EnableAllArrays();
 }
 
+#if !defined(VTK_LEGACY_REMOVE)
 //----------------------------------------------------------------------------
-void vtkMFIXReader::GetCellDataRange(int cellComp, int index, 
+void vtkMFIXReader::GetCellDataRange(int cellComp, int /* index */,
      float *min, float *max)
 {
-  if (index >= this->VectorLength->GetValue(cellComp) || index < 0)
-    {
-    index = 0;  // if wrong index, set it to zero
-    }
+#if !defined(VTK_LEGACY_SILENT)
+  vtkGenericWarningMacro("vtkMFIXReader::GetCellDataRange with \"index\" was deprecated in VTK 6.0");
+#endif
+
+  *min = this->Minimum->GetValue(cellComp);
+  *max = this->Maximum->GetValue(cellComp);
+}
+#endif
+
+//----------------------------------------------------------------------------
+void vtkMFIXReader::GetCellDataRange(int cellComp, float *min, float *max)
+{
   *min = this->Minimum->GetValue(cellComp);
   *max = this->Maximum->GetValue(cellComp);
 }
 
 //----------------------------------------------------------------------------
-void vtkMFIXReader::SetProjectName (char *infile) {
-  int len = strlen(infile);
+void vtkMFIXReader::SetProjectName (const char *infile)
+{
+  int len = static_cast<int>(strlen(infile));
   strncpy(this->RunName, infile, len-4);
 }
 
 //----------------------------------------------------------------------------
-void vtkMFIXReader::RestartVersionNumber(char* buffer)
+void vtkMFIXReader::RestartVersionNumber(const char* buffer)
 {
   char s1[512];
   char s2[512];
@@ -743,43 +784,57 @@ void vtkMFIXReader::GetInt(istream& in, int &val)
 //----------------------------------------------------------------------------
 void vtkMFIXReader::SwapInt(int &value)
 {
-  static char Swapped[4];
-  int * Addr = &value;
-  Swapped[0]=*((char*)Addr+3);
-  Swapped[1]=*((char*)Addr+2);
-  Swapped[2]=*((char*)Addr+1);
-  Swapped[3]=*((char*)Addr  );
-  value = *(reinterpret_cast<int*>(Swapped));
+  int result = ((value & 0x00FF) << 24) |
+               ((value & 0xFF00) << 8) |
+               ((value >> 8) & 0xFF00) |
+               ((value >> 24) & 0x00FF);
+  value = result;
 }
 
 //----------------------------------------------------------------------------
 void vtkMFIXReader::SwapDouble(double &value)
 {
-  static char Swapped[8];
-  double * Addr = &value;
+  union Swap
+    {
+    double valDouble;
+    unsigned char valByte[8];
+    };
 
-  Swapped[0]=*((char*)Addr+7);
-  Swapped[1]=*((char*)Addr+6);
-  Swapped[2]=*((char*)Addr+5);
-  Swapped[3]=*((char*)Addr+4);
-  Swapped[4]=*((char*)Addr+3);
-  Swapped[5]=*((char*)Addr+2);
-  Swapped[6]=*((char*)Addr+1);
-  Swapped[7]=*((char*)Addr  );
-  value = *(reinterpret_cast<double*>(Swapped));
+  Swap source;
+  source.valDouble = value;
+
+  Swap result;
+  result.valByte[0] = source.valByte[7];
+  result.valByte[1] = source.valByte[6];
+  result.valByte[2] = source.valByte[5];
+  result.valByte[3] = source.valByte[4];
+  result.valByte[4] = source.valByte[3];
+  result.valByte[5] = source.valByte[2];
+  result.valByte[6] = source.valByte[1];
+  result.valByte[7] = source.valByte[0];
+
+  value = result.valDouble;
 }
 
 //----------------------------------------------------------------------------
 void vtkMFIXReader::SwapFloat(float &value)
 {
-  static char Swapped[4];
-  float * Addr = &value;
+  union Swap
+    {
+    float valFloat;
+    unsigned char valByte[4];
+    };
 
-  Swapped[0]=*((char*)Addr+3);
-  Swapped[1]=*((char*)Addr+2);
-  Swapped[2]=*((char*)Addr+1);
-  Swapped[3]=*((char*)Addr  );
-  value = *(reinterpret_cast<float*>(Swapped));
+  Swap source;
+  source.valFloat = value;
+
+  Swap result;
+  result.valByte[0] = source.valByte[3];
+  result.valByte[1] = source.valByte[2];
+  result.valByte[2] = source.valByte[1];
+  result.valByte[3] = source.valByte[0];
+
+  value = result.valFloat;
 }
 
 //----------------------------------------------------------------------------
@@ -817,7 +872,7 @@ void vtkMFIXReader::GetBlockOfDoubles(istream& in, vtkDoubleArray *v, int n)
     in.read( (char*)&tempArray , 512 );
     for (int j=0; j<numberOfDoublesInBlock; ++j)
       {
-      if (c < n) 
+      if (c < n)
         {
         double temp = tempArray[j];
         this->SwapDouble(temp);
@@ -877,6 +932,7 @@ void vtkMFIXReader::GetBlockOfFloats(istream& in, vtkFloatArray *v, int n)
     numberOfRecords = 1 + n/numberOfFloatsInBlock;
     }
 
+  bool modified = false;
   int c = 0;
   int cnt = 0;
   for (int i=0; i<numberOfRecords; ++i)
@@ -884,18 +940,23 @@ void vtkMFIXReader::GetBlockOfFloats(istream& in, vtkFloatArray *v, int n)
     in.read( (char*)&tempArray , 512 );
     for (int j=0; j<numberOfFloatsInBlock; ++j)
       {
-      if (c < n) 
+      if (c < n)
         {
         float temp = tempArray[j];
         this->SwapFloat(temp);
-        if ( this->Flag->GetValue(c) < 10) 
+        if ( this->Flag->GetValue(c) < 10)
           {
           v->InsertValue(cnt, temp);
           cnt++;
+          modified = true;
           }
         ++c;
         }
       }
+    }
+  if( modified )
+    {
+    v->Modified();
     }
 }
 
@@ -955,7 +1016,7 @@ void vtkMFIXReader::ReadRestartFile()
     // 15 ints ... 4 doubles = 92 bytes
     this->SkipBytes(in,420);
     }
-  else if (strcmp(this->Version, "RES = 01.01") == 0 || 
+  else if (strcmp(this->Version, "RES = 01.01") == 0 ||
            strcmp(this->Version, "RES = 01.02") == 0)
     {
     this->GetInt(in,this->IMinimum1);
@@ -1130,7 +1191,7 @@ void vtkMFIXReader::ReadRestartFile()
     {
     this->GetBlockOfDoubles (in, this->C, this->DimensionC);
 
-    for (int lc=0; lc<DimensionC; ++lc) 
+    for (int lc=0; lc<DimensionC; ++lc)
       {
       in.read(this->DataBuffer,512);  // c_name[]
       }
@@ -1141,8 +1202,8 @@ void vtkMFIXReader::ReadRestartFile()
       }
     else
       {
-      // what is the diff between this and above ??? 
-      for (int lc=0; lc<this->MMAX+1; ++lc) 
+      // what is the diff between this and above ???
+      for (int lc=0; lc<this->MMAX+1; ++lc)
         {
         int temp;
         this->GetInt(in,temp);
@@ -1168,7 +1229,7 @@ void vtkMFIXReader::ReadRestartFile()
   in.read(this->DataBuffer,120);      // run_name , description
   in.read(this->Units,16);        // Units
   in.read(this->DataBuffer,16);       // run_type
-  in.read(this->CoordinateSystem,16);  // CoordinateSystem 
+  in.read(this->CoordinateSystem,16);  // CoordinateSystem
 
   this->SkipBytes(in,512-168);
 
@@ -1179,7 +1240,7 @@ void vtkMFIXReader::ReadRestartFile()
   int ic = 0;
   for (int i=0; i<17; ++i)
     {
-    if (this->Units[i] != ' ') 
+    if (this->Units[i] != ' ')
       {
       tempCharArray[ic++] = this->Units[i];
       }
@@ -1235,7 +1296,7 @@ void vtkMFIXReader::ReadRestartFile()
     {
     this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc);  // ic_t_s(1,1)
     this->GetBlockOfDoubles(in,this->TempD,this->DimensionIc);  // ic_t_s(1,2)
-                                                                // or ic_tmp 
+                                                                // or ic_tmp
     }
 
   if (this->VersionNumber >= 1.04)
@@ -1378,7 +1439,7 @@ void vtkMFIXReader::ReadRestartFile()
 
     if (this->VersionNumber >= 1.07)
       {
-      for (int i=0; i<this->MMAX; ++i) 
+      for (int i=0; i<this->MMAX; ++i)
         {
         this->GetBlockOfDoubles(in,this->TempD,this->DimensionIs);//is_vel_s
         }
@@ -1537,6 +1598,14 @@ void vtkMFIXReader::ReadRestartFile()
       this->BkEpsilon = true;
       }
     }
+  if (this->VersionNumber >= 1.7999)
+    {
+    for( int i = 0; i < this->MMAX; ++i)
+      {
+      this->SkipBytes(in,512);
+      }
+    }
+  in.close();
 }
 
 //----------------------------------------------------------------------------
@@ -1850,14 +1919,15 @@ void vtkMFIXReader::CreateVariableNames()
             }
           break;
         default:
-          cout << "unknown SPx file : " << i << "\n";
+          vtkWarningMacro(<< "unknown SPx file : " << i << "\n");
           break;
         }
       }
-    else 
+    else
       {
       this->SpxFileExists->InsertValue(i, 0);
       }
+    in.close();
     }
 }
 
@@ -1929,7 +1999,7 @@ void vtkMFIXReader::GetTimeSteps()
     if (in) // file exists
       {
       in.clear();
-      in.seekg( 1024, ios::beg ); 
+      in.seekg( 1024, ios::beg );
       in.read( (char*)&nextRecord,sizeof(int) );
       this->SwapInt(nextRecord);
       in.read( (char*)&numberOfRecords,sizeof(int) );
@@ -1937,7 +2007,7 @@ void vtkMFIXReader::GetTimeSteps()
 
       switch (i+1)
         {
-        case 1: 
+        case 1:
           {
           numberOfVariables = 1;
           break;
@@ -1977,7 +2047,7 @@ void vtkMFIXReader::GetTimeSteps()
         case 7:
           {
           numberOfVariables = this->NMax->GetValue(0);
-          for (int m=0; m<this->MMAX; ++m)
+          for (int m=0; m<=this->MMAX; ++m)
             {
             numberOfVariables += this->NMax->GetValue(m);
             }
@@ -2010,11 +2080,12 @@ void vtkMFIXReader::GetTimeSteps()
 
       for(int j=0; j<numberOfVariables; j++)
         {
-        this->VariableTimesteps->InsertValue(cnt, 
+        this->VariableTimesteps->InsertValue(cnt,
           (nextRecord-4)/numberOfRecords);
         cnt++;
         }
       }
+    in.close();
     }
 }
 
@@ -2038,7 +2109,7 @@ void vtkMFIXReader::MakeTimeStepTable(int numberOfVariables)
                             (float)this->VariableTimesteps->GetValue(i) + 0.5);
         timestep++;
         }
-      if (timestep > this->VariableTimesteps->GetValue(i)) 
+      if (timestep > this->VariableTimesteps->GetValue(i))
         {
         timestep = this->VariableTimesteps->GetValue(i);
         }
@@ -2047,7 +2118,7 @@ void vtkMFIXReader::MakeTimeStepTable(int numberOfVariables)
 }
 
 //----------------------------------------------------------------------------
-void vtkMFIXReader::GetVariableAtTimestep(int vari , int tstep, 
+void vtkMFIXReader::GetVariableAtTimestep(int vari , int tstep,
   vtkFloatArray *v)
 {
   // This routine opens and closes the file for each request.
@@ -2123,6 +2194,7 @@ void vtkMFIXReader::GetVariableAtTimestep(int vari , int tstep,
 #endif
   in.seekg(nBytesSkip,ios::beg);
   this->GetBlockOfFloats (in, v, this->IJKMaximum2);
+  in.close();
 }
 
 //----------------------------------------------------------------------------
@@ -2141,8 +2213,8 @@ void vtkMFIXReader::MakeSPXTimeStepIndexTable(int nvars)
       spx = this->VariableIndexToSPX->GetValue(i);
       NumberOfVariablesInSPX = this->SPXToNVarTable->GetValue(spx);
       int skip = this->VariableToSkipTable->GetValue(i);
-      int index = (3*512) + (timestep-1) * 
-        ((NumberOfVariablesInSPX*this->SPXRecordsPerTimestep*512)+512) + 
+      int index = (3*512) + (timestep-1) *
+        ((NumberOfVariablesInSPX*this->SPXRecordsPerTimestep*512)+512) +
         512 + (skip*this->SPXRecordsPerTimestep*512);
       int ind = (i*this->MaximumTimestep) + j;
       SPXTimestepIndexTable->InsertValue(ind, index);
@@ -2172,7 +2244,7 @@ void vtkMFIXReader::GetNumberOfVariablesInSPXFiles()
     {
     for(int i=0;i<this->VariableNames->GetMaxId()+1;i++)
       {
-      if ((this->VariableIndexToSPX->GetValue(i) == j) 
+      if ((this->VariableIndexToSPX->GetValue(i) == j)
         && (this->VariableComponents->GetValue(i) == 1))
         {
         NumberOfVariablesInSPX++;
@@ -2187,7 +2259,7 @@ void vtkMFIXReader::GetNumberOfVariablesInSPXFiles()
 }
 
 //----------------------------------------------------------------------------
-void vtkMFIXReader::FillVectorVariable( int xindex, int yindex, 
+void vtkMFIXReader::FillVectorVariable( int xindex, int yindex,
   int zindex, vtkFloatArray *v)
 {
   for(int i=0;i<=this->CellDataArray[xindex]->GetMaxId();i++)
@@ -2196,10 +2268,11 @@ void vtkMFIXReader::FillVectorVariable( int xindex, int yindex,
     v->InsertComponent(i, 1, this->CellDataArray[yindex]->GetValue(i));
     v->InsertComponent(i, 2, this->CellDataArray[zindex]->GetValue(i));
     }
+  v->Modified();
 }
 
 //----------------------------------------------------------------------------
-void vtkMFIXReader::ConvertVectorFromCylindricalToCartesian( int xindex, 
+void vtkMFIXReader::ConvertVectorFromCylindricalToCartesian( int xindex,
   int zindex)
 {
   int count = 0;
@@ -2238,7 +2311,7 @@ void vtkMFIXReader::ConvertVectorFromCylindricalToCartesian( int xindex,
 }
 
 //----------------------------------------------------------------------------
-void vtkMFIXReader::GetAllTimes(vtkInformationVector *outputVector) 
+void vtkMFIXReader::GetAllTimes(vtkInformationVector *outputVector)
 {
   int max = 0;
   int maxVar = 0;
@@ -2312,9 +2385,9 @@ void vtkMFIXReader::GetAllTimes(vtkInformationVector *outputVector)
   ifstream tfile(fileName);
 #endif
 
-  int numberOfVariablesInSPX = 
+  int numberOfVariablesInSPX =
     this->SPXToNVarTable->GetValue(this->VariableIndexToSPX->GetValue(maxVar));
-  int offset = 512-(int)sizeof(float) + 
+  int offset = 512-(int)sizeof(float) +
     512*(numberOfVariablesInSPX*SPXRecordsPerTimestep);
   tfile.clear();
   tfile.seekg( 3*512, ios::beg ); // first time
@@ -2330,8 +2403,13 @@ void vtkMFIXReader::GetAllTimes(vtkInformationVector *outputVector)
     }
 
   vtkInformation* outInfo = outputVector->GetInformationObject(0);
-  outInfo->Set(vtkStreamingDemandDrivenPipeline::TIME_STEPS(), 
+  outInfo->Set(vtkStreamingDemandDrivenPipeline::TIME_STEPS(),
     steps, this->NumberOfTimeSteps);
+  double timeRange[2];
+  timeRange[0] = steps[0];
+  timeRange[1] = steps[this->NumberOfTimeSteps - 1];
+  outInfo->Set(vtkStreamingDemandDrivenPipeline::TIME_RANGE(), timeRange, 2);
 
+  tfile.close();
   delete [] steps;
 }
