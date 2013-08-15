@@ -1055,6 +1055,7 @@
          do lpicloc =1,dg_pic(lijk)%isize    
             lbuf = lpar_cnt*lpacketsize+ibufoffset
             lcurpar = dg_pic(lijk)%p(lpicloc)
+            if(pea(lcurpar,4) .and. .not.ighost_updated(lcurpar) ) cycle 
             dsendbuf(lbuf,pface) = iglobal_id(lcurpar);lbuf = lbuf +1 
             dsendbuf(lbuf,pface) = dg_ijkconv(lijk,pface,ineighproc(pface))
             lbuf = lbuf +1 
