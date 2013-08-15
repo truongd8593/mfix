@@ -225,7 +225,7 @@
      
       LINE_NO = 0
  100  CONTINUE 
-      READ (UNIT_DAT, 1100, END=500) LINE_STRING
+      READ (UNIT_DAT,"(A)", END=500) LINE_STRING
       LINE_NO = LINE_NO + 1 
      
       LINE_LEN = SEEK_COMMENT(LINE_STRING,LEN(LINE_STRING)) - 1 
@@ -265,9 +265,8 @@
       IF (READ_FLAG) THEN 
 !        OPEN(UNIT=UNIT_TMP, STATUS='SCRATCH', ERR=900) 
          OPEN(UNIT=UNIT_TMP, FILE='scr'//fbname, STATUS='UNKNOWN', ERR=900)
-         WRITE (UNIT_TMP, 1000) 
-         WRITE (UNIT_TMP, 1100) LINE_STRING(1:LINE_LEN) 
-         WRITE (UNIT_TMP, 1200) 
+         WRITE (UNIT_TMP,"('&INPUT_DATA ',A,'/')") &
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))
          REWIND (UNIT=UNIT_TMP) 
 !     READ (UNIT_TMP,NML=INPUT_DATA,ERR=930,END=930)  ! Use this for FPS
          READ (UNIT_TMP, NML=INPUT_DATA, ERR=400, END=930) 
@@ -275,43 +274,32 @@
  400     CONTINUE 
          IF (POST == 1) GO TO 410 
          REWIND (UNIT=UNIT_TMP) !If called from POST_MFIX ignore the error 
-         WRITE (UNIT_TMP, 1010) 
-         WRITE (UNIT_TMP, 1100) LINE_STRING(1:LINE_LEN) 
-         WRITE (UNIT_TMP, 1200) 
+         WRITE (UNIT_TMP,"('&DES_INPUT_DATA ',A,'/')") &
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))
          REWIND (UNIT=UNIT_TMP) 
          READ (UNIT_TMP, NML=DES_INPUT_DATA, ERR=410, END=930) 
          GO TO 440 
  410     CONTINUE 
          IF (POST == 1) GO TO 420 
          REWIND (UNIT=UNIT_TMP) !If called from POST_MFIX ignore the error 
-         WRITE (UNIT_TMP, 1020) 
-         WRITE (UNIT_TMP, 1100) LINE_STRING(1:LINE_LEN) 
-         WRITE (UNIT_TMP, 1200) 
+         WRITE (UNIT_TMP,"('&USR_INPUT_DATA ',A,'/')") &
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))
          REWIND (UNIT=UNIT_TMP) 
          READ (UNIT_TMP, NML=USR_INPUT_DATA, ERR=420, END=930) 
          GO TO 440
  420     CONTINUE 
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
          IF (POST == 1) GO TO 430 
          REWIND (UNIT=UNIT_TMP) !If called from POST_MFIX ignore the error 
-         WRITE (UNIT_TMP, 1030) 
-         WRITE (UNIT_TMP, 1100) LINE_STRING(1:LINE_LEN) 
-         WRITE (UNIT_TMP, 1200) 
+         WRITE (UNIT_TMP,"('&CARTESIAN_GRID_INPUT_DATA ',A,'/')") &
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))
          REWIND (UNIT=UNIT_TMP) 
          READ (UNIT_TMP, NML=CARTESIAN_GRID_INPUT_DATA, ERR=430, END=930) 
          GO TO 440 
  430     CONTINUE 
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-! QMOMK - Alberto Passalacqua
          IF (POST == 1) GO TO 440 
          REWIND (UNIT=UNIT_TMP) !If called from POST_MFIX ignore the error 
-         WRITE (UNIT_TMP, 1040) 
-         WRITE (UNIT_TMP, 1100) LINE_STRING(1:LINE_LEN) 
-         WRITE (UNIT_TMP, 1200) 
+         WRITE (UNIT_TMP,"('&QMOMK_INPUT_DATA ',A,'/')") &
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))
          REWIND (UNIT=UNIT_TMP) 
          READ (UNIT_TMP, NML=QMOMK_INPUT_DATA, ERR=930, END=930)  
  440     CONTINUE 
@@ -341,21 +329,6 @@
       WRITE (*, 1600) LINE_NO, LINE_STRING(1:LINE_LEN) 
       CALL MFIX_EXIT(myPE) 
      
- 1000 FORMAT(1X,'$INPUT_DATA') 
- 1010 FORMAT(1X,'$DES_INPUT_DATA') 
- 1020 FORMAT(1X,'$USR_INPUT_DATA') 
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
- 1030 FORMAT(1X,'$CARTESIAN_GRID_INPUT_DATA') 
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-! QMOMK - Alberto Passalacqua
- 1040 FORMAT(1X,'$QMOMK_INPUT_DATA')
-! QMOMK - End
- 1100 FORMAT(A) 
- 1200 FORMAT(1X,'$END') 
  1300 FORMAT(/1X,70('*')//' From: READ_NAMELIST',/' Message: ',&
       'Line Number:', I4, ' in mfix.dat has data past column 80',&
       /1X,A80,/1X,70('*')/) 
