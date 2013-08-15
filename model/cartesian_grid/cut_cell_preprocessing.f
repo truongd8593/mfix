@@ -719,6 +719,23 @@
       IPJKM = FUNIJK(IP,J,KM)
       IJPKM = FUNIJK(I,JP,KM)
 
+
+      IF(IMJK<1.OR.IMJK>DIMENSION_3) IMJK = IJK
+      IF(IPJK<1.OR.IPJK>DIMENSION_3) IPJK = IJK
+      IF(IJMK<1.OR.IJMK>DIMENSION_3) IJMK = IJK
+      IF(IJPK<1.OR.IJPK>DIMENSION_3) IJPK = IJK
+      IF(IJKM<1.OR.IJKM>DIMENSION_3) IJKM = IJK
+      IF(IJKP<1.OR.IJKP>DIMENSION_3) IJKP = IJK
+
+      IF(IMJPK<1.OR.IMJPK>DIMENSION_3) IMJPK = IJK
+      IF(IMJKP<1.OR.IMJKP>DIMENSION_3) IMJKP = IJK
+
+      IF(IPJMK<1.OR.IPJMK>DIMENSION_3) IPJMK = IJK
+      IF(IJMKP<1.OR.IJMKP>DIMENSION_3) IJMKP = IJK
+
+      IF(IPJKM<1.OR.IPJKM>DIMENSION_3) IPJKM = IJK
+      IF(IJPKM<1.OR.IJPKM>DIMENSION_3) IJPKM = IJK
+
 !======================================================================
 !  Clean Intersection with Edge 7 (node 7-8, Face North-Top):
 !======================================================================
