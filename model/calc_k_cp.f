@@ -58,7 +58,6 @@
 ! Other variables
       DOUBLE PRECISION :: Pc, DPcoDEPs, Mu, Mu_b, Mu_zeta, ZETA
       DOUBLE PRECISION :: F2, DF2oDEPs, Pf, Pfmax, N_Pff
-      DOUBLE PRECISION :: Pc_tmp	!Handan Liu on July 23 2012	
 ! Blend Factor
       Double Precision :: blend
 !-----------------------------------------------
@@ -96,15 +95,9 @@
 ! by definition M must be close_packed (this is a redundant check)
       IF(CLOSE_PACKED(M)) THEN
 
-!!$omp     parallel do  firstprivate(M) &
-!!$omp&    private( IJK, &
-!!$omp&             Pc, DPcoDEPS, Mu, Mu_b, Mu_zeta, ZETA, &
-!!$omp&             F2, DF2oDEPs, Pf, Pfmax )
-
-!Handan Liu added on July 23 2012
-!$omp    parallel do default(shared)				&
-!$omp    private( IJK, DPcoDEPS, Pc, Pc_tmp,		&
-!$omp             Mu, Mu_b, Mu_zeta, ZETA, N_Pff,	&
+!$omp    parallel do default(shared)                  &
+!$omp    private( IJK, DPcoDEPS, Pc,                  &
+!$omp             Mu, Mu_b, Mu_zeta, ZETA, N_Pff,     &
 !$omp             F2, DF2oDEPs, Pf, Pfmax, blend )
 
          DO IJK = ijkstart3, ijkend3
@@ -126,16 +119,10 @@
                           ((ONE-ep_star_array(ijk)-delta)-eps_f_min)*&
                           (5*delta**4))/(delta**10)
 
-                       !Pc = (to_SI*Fr)*&
-                       !   ( ((ONE-ep_star_array(IJK)-delta)-&
-                       !   EPS_f_min)**N_Pc )/(delta**D_Pc)
-                       !Pc = Pc + DPcoDEPS*( (ONE-EP_G(IJK))+delta-&
-                       !   (ONE-ep_star_array(IJK)))
-!Handan Liu modified on July 23 2012	
-                       Pc_tmp = (to_SI*Fr)*&
+                       Pc = (to_SI*Fr)*&
                           ( ((ONE-ep_star_array(IJK)-delta)-&
                           EPS_f_min)**N_Pc )/(delta**D_Pc)
-                       Pc = Pc_tmp + DPcoDEPS*( (ONE-EP_G(IJK))+delta-&
+                       Pc = Pc + DPcoDEPS*( (ONE-EP_G(IJK))+delta-&
                           (ONE-ep_star_array(IJK)))
 						  
 !                        Pc = 1d25*( ((ONE-EP_G(IJK)) - &

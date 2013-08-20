@@ -1,11 +1,11 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SOURCE_W_s                                             C
-!  Purpose: Determine source terms for W_s momentum eq. The terms      C
-!  appear in the center coefficient and RHS vector.    The center      C
-!  coefficient and source vector are negative.  The off-diagonal       C
-!  coefficients are positive.                                          C
-!  The drag terms are excluded from the source at this stage.          C
+!  Subroutine: SOURCE_W_s                                              C
+!  Purpose: Determine source terms for W_g momentum eq. The terms      C
+!     appear in the center coefficient and RHS vector. The center      C
+!     coefficient and source vector are negative.  The off-diagonal    C
+!     coefficients are positive.                                       C
+!     The drag terms are excluded from the source at this stage.       C
 !                                                                      C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 17-JUN-96  C
@@ -18,16 +18,13 @@
 !  Author: K. Agrawal, Princeton University           Date: 24-JAN-98  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
 !  Revision Number: 2                                                  C
 !  Purpose: To incorporate Cartesian grid modifications                C
 !  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
 !                                                                      C
-!  Local variables:                                                    C
+!  Literature/Document References:                                     C
+!                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -66,13 +63,11 @@
 ! Dummy Arguments
 !-----------------------------------------------
 ! Septadiagonal matrix A_m 
-      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
-      DOUBLE PRECISION A_m_tmp(DIMENSION_3, -3:3, 0:DIMENSION_M)	!Handan Liu added on September 20 2012 
- 
+      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m 
-      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
+      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Error index 
-      INTEGER          IER 
+      INTEGER, INTENT(INOUT) :: IER 
 !-----------------------------------------------
 ! Local Variables 
 !-----------------------------------------------
@@ -104,14 +99,13 @@
 ! Source terms for HYS drag relation
       DOUBLE PRECISION :: HYS_drag, avgDrag
 ! virtual (added) mass
-      DOUBLE PRECISION :: F_vir, ROP_MA, Uge, Ugw, Vgb, Vgt, Wge,&
+      DOUBLE PRECISION :: F_vir, ROP_MA, Uge, Ugw, Vgb, Vgt, Wge, &
                           Wgw, Wgn, Wgs, Wgt, Wgb
-      DOUBLE PRECISION :: F_vir_tmp1, F_vir_tmp2	!Handan Liu added on September 20 2012					  
 ! error message 
       CHARACTER*80     LINE
 !-----------------------------------------------
 ! Include statement functions
-!-----------------------------------------------      
+!-----------------------------------------------
       INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
@@ -122,30 +116,21 @@
 !-----------------------------------------------
 
       DO M = 1, MMAX  
-        IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+        IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. &
+                                        M==MMAX)) THEN
           IF (MOMENTUM_Z_EQ(M)) THEN 
 
 
-!!!$omp  parallel do &
-!!!$omp& private(IJK, I, J, K, IJKT, EPSA, EPStmp, ISV, &
-!!!$omp& PGT,SDP,SDPS,   ROPSA,V0,VMT,   DRO1,DRO2,DROA,VBF, &
-!!!$omp& IMJK,IJKP,IMJKP,  UGT,VCOA,VCOB, &
-!!!$omp& IJKE,IJKW,IJKTE,IJKTW,IM,IPJK, &
-!!!$omp& CTE,CTW,SXZB,  EPMUOX,VXZA,VXZB )
-
-!Handan Liu added on Sep. 20 2012, then modified March 1 2013:
-!===================================================================<<< Handan Liu
-!$omp  parallel do default(shared)									&
-!$omp  private(I, J, K, IJK, IMJK, IJMK, IJKM, IJKP, IPJK, IMJKP,	&
-!$omp		   IJPK, IJMKP, IJKT, EPStmp, epsMix, epsMixT, ISV,	L,	&
-!$omp		   EPSA, EPSE, EPSW, EPSN, EPSS, EPST, EPSB, PGT, 		&
-!$omp		   SDP, SDPS, SUM_EPS_CP, ROPSA, V0, ROP_MA, F_vir, MM,	&	
-!$omp		   A_M_tmp, F_vir_tmp1, F_vir_tmp2, 					&
-!$omp		   Uge, Ugw, Vgb, Vgt, Wge, Wgw, Wgn, Wgs, Wgt, Wgb,	&
-!$omp		   Ugt, VMTtmp, VMT, DRO1, DRO2, DROA, VBF, Ghd_drag, 	&
-!$omp		   avgRop, HYS_drag, avgDrag, VCOA, VCOB, CTE, CTW, 	&
-!$omp		   SXZB, IM, VXZA,VXZB, EPMUOX, IJKE,IJKW,IJKTE,IJKTW)
-
+!$omp  parallel do default(shared)                                   &
+!$omp  private(I, J, K, IJK, IMJK, IJMK, IJKM, IJKP, IPJK, IMJKP,    &
+!$omp         IJPK, IJMKP, IJKT, IJKE, IJKW, IJKTE, IJKTW, IM,       &
+!$omp         ISV, EPStmp, epsMix, epsMixT, EPSA, EPSE, EPSW, EPSN,  &
+!$omp         EPSS, EPST, EPSB, SUM_EPS_CP, PGT, SDP, SDPS, ROPSA,   &
+!$omp         V0, ROP_MA, MM, L, F_vir,                              &
+!$omp         Uge, Ugw, Vgb, Vgt, Wge, Wgw, Wgn, Wgs, Wgt, Wgb,      &
+!$omp         Ugt, VMTtmp, VMT, DRO1, DRO2, DROA, VBF, Ghd_drag,     cd&
+!$omp         avgRop, HYS_drag, avgDrag, VCOA, VCOB, CTE, CTW,       &
+!$omp         SXZB, VXZA, VXZB, EPMUOX)
             DO IJK = ijkstart3, ijkend3 
                 I = I_OF(IJK) 
                 J = J_OF(IJK) 
@@ -161,23 +146,23 @@
                 IJKT = TOP_OF(IJK)
 
                 IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN ! with ghd theory, m = mmax
-                  EPStmp = ZERO     
-                  epsMix = ZERO
-                  epsMixT= ZERO   
-                  DO L = 1, SMAX
-                    EPStmp = EPStmp + AVG_Z(EP_S(IJK,L),EP_S(IJKT,L),K)  
-                    epsMix  = epsMix  + EP_S(IJK,L) ! epsMix, epsMixT to be used for modelB
-                    epsMixT = epsMixT + EP_S(IJKT,L)
-                    IF(IP_AT_T(IJK)) THEN
-                       W_S(IJK,L) = ZERO
-                    ELSEIF(SIP_AT_T(IJK)) THEN 
-                       ISV = IS_ID_AT_T(IJK)
-                       W_S(IJK,L) = IS_VEL_S(ISV,L)
-                    ENDIF
-                  ENDDO
-                  EPSA = EPStmp
+                   EPStmp = ZERO     
+                   epsMix = ZERO
+                   epsMixT= ZERO   
+                   DO L = 1, SMAX
+                      EPStmp = EPStmp + AVG_Z(EP_S(IJK,L),EP_S(IJKT,L),K) 
+                      epsMix  = epsMix  + EP_S(IJK,L) ! epsMix, epsMixT to be used for model B
+                      epsMixT = epsMixT + EP_S(IJKT,L)
+                      IF(IP_AT_T(IJK)) THEN
+                         W_S(IJK,L) = ZERO
+                      ELSEIF(SIP_AT_T(IJK)) THEN 
+                         ISV = IS_ID_AT_T(IJK)
+                         W_S(IJK,L) = IS_VEL_S(ISV,L)
+                      ENDIF
+                   ENDDO
+                   EPSA = EPStmp
                 ELSE                  
-                  EPSA = AVG_Z(EP_S(IJK,M),EP_S(IJKT,M),K) 
+                   EPSA = AVG_Z(EP_S(IJK,M),EP_S(IJKT,M),K) 
                 ENDIF
 
 ! Impermeable internal surface                
@@ -190,6 +175,7 @@
                   A_M(IJK,B,M) = ZERO 
                   A_M(IJK,0,M) = -ONE 
                   B_M(IJK,M) = ZERO
+
 ! Semi-permeable internal surface
                 ELSEIF (SIP_AT_T(IJK)) THEN 
                   A_M(IJK,E,M) = ZERO 
@@ -201,6 +187,7 @@
                   A_M(IJK,0,M) = -ONE 
                   ISV = IS_ID_AT_T(IJK) 
                   B_M(IJK,M) = -IS_VEL_S(ISV,M) 
+
 ! Dilute flow
                 ELSEIF (EPSA <= DIL_EP_S) THEN 
                   A_M(IJK,E,M) = ZERO 
@@ -248,6 +235,7 @@
                     A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+ &
                                      A_M(IJK,S,M)+A_M(IJK,T,M)+A_M(IJK,B,M))
                   ENDIF
+
 ! Cartesian grid implementation
                ELSEIF (BLOCKED_W_CELL_AT(IJK)) THEN 
                   A_M(IJK,E,M) = ZERO 
@@ -258,9 +246,9 @@
                   A_M(IJK,B,M) = ZERO 
                   A_M(IJK,0,M) = -ONE 
                   B_M(IJK,M) = ZERO 
+
 ! Normal case
                 ELSE 
-
 
 ! Surface forces:
 ! Pressure term
@@ -312,7 +300,8 @@
                      V0 = AVG_Z(ROP_SO(IJK,M),ROP_SO(IJKT,M),K)*ODT  
 ! Added mass implicit transient term {Cv eps rop_g dW/dt}
                      IF(Added_Mass .AND. M == M_AM) THEN
-                       ROP_MA = AVG_Z(ROP_g(IJK)*EP_s(IJK,M),ROP_g(IJKT)*EP_s(IJKT,M),K)
+                       ROP_MA = AVG_Z(ROP_g(IJK)*EP_s(IJK,M),&
+                                      ROP_g(IJKT)*EP_s(IJKT,M),K)
                        V0 = V0 + Cv * ROP_MA * ODT
                      ENDIF
                   ELSE
@@ -335,42 +324,34 @@
 ! VIRTUAL MASS SECTION (explicit terms)
 ! adding transient term dWg/dt to virtual mass term		    
                   F_vir = ZERO
-!Handan Liu changed on Sep. 20 2012, then modified on March 1 2013:
-!===================================================================<< Handan Liu				  
                   IF(Added_Mass .AND. M == M_AM .AND.&
-                    (.NOT.CUT_W_TREATMENT_AT(IJK))) THEN        
-                     !F_vir = ( (W_g(IJK) - W_gO(IJK)) )*ODT*VOL_W(IJK)
-					 F_vir_tmp1 = ( (W_g(IJK) - W_gO(IJK)) )*ODT*VOL_W(IJK)
+                     (.NOT.CUT_W_TREATMENT_AT(IJK))) THEN        
+                     F_vir = ( (W_g(IJK) - W_gO(IJK)) )*ODT*VOL_W(IJK)
 
 ! defining gas-particles velocity at momentum cell faces (or scalar cell center)
-                     Wgb = AVG_Z_T(W_g(IJKM),W_g(IJK))
-                     Wgt = AVG_Z_T(W_g(IJK),W_g(IJKP))  
-                     Uge = AVG_Z(U_g(IJK),U_g(IJKP),K)
-                     Ugw = AVG_Z(U_g(IMJK),U_g(IMJKP),K)
-                     Ugt = AVG_X_E(Ugw,Uge,IP1(I))
-                     Wge = AVG_X(W_g(IJK),W_g(IPJK),IP1(I))
-                     Wgw = AVG_X(W_g(IMJK),W_g(IJK),I)
-                     Vgb = AVG_Y_N(V_g(IJMK),V_g(IJK))  
-                     Vgt = AVG_Y_N(V_g(IJMKP),V_g(IJKP)) 
-                     Wgs = AVG_Y(W_g(IJMK),W_g(IJK),JM1(J))
-                     Wgn = AVG_Y(W_g(IJK),W_g(IJPK),J)
+                      Wgb = AVG_Z_T(W_g(IJKM),W_g(IJK))
+                      Wgt = AVG_Z_T(W_g(IJK),W_g(IJKP))  
+                      Uge = AVG_Z(U_g(IJK),U_g(IJKP),K)
+                      Ugw = AVG_Z(U_g(IMJK),U_g(IMJKP),K)
+                      Ugt = AVG_X_E(Ugw,Uge,IP1(I))
+                      Wge = AVG_X(W_g(IJK),W_g(IPJK),IP1(I))
+                      Wgw = AVG_X(W_g(IMJK),W_g(IJK),I)
+                      Vgb = AVG_Y_N(V_g(IJMK),V_g(IJK))  
+                      Vgt = AVG_Y_N(V_g(IJMKP),V_g(IJKP)) 
+                      Wgs = AVG_Y(W_g(IJMK),W_g(IJK),JM1(J))
+                      Wgn = AVG_Y(W_g(IJK),W_g(IJPK),J)
 
-                     !IF (CYLINDRICAL) F_vir = F_vir + &
-                     !   Ugt*W_g(IJK)*OX(I) ! Coriolis force
-                     IF (CYLINDRICAL) F_vir_tmp2 = F_vir_tmp1 + &
-                        Ugt*W_g(IJK)*OX(I) ! Coriolis force
-						
+! Coriolis force
+                     IF (CYLINDRICAL) F_vir = F_vir + &
+                        Ugt*W_g(IJK)*OX(I) 
+
 ! adding convective terms (U dW/dx + V dW/dy + W dW/dz) to virtual mass.
-                     !F_vir = F_vir + W_g(IJK)*OX(I) * (Wgt - Wgb)*AXY(IJK) + &
-                     !   Ugt*(Wge - Wgw)*AYZ(IJK) + &
-                     !   AVG_Z(Vgb,Vgt,K) * (Wgn - Wgs)*AXZ(IJK)
-                     !F_vir = F_vir * Cv * ROP_MA
-                     F_vir_tmp2 = F_vir_tmp1 + W_g(IJK)*OX(I) * (Wgt - Wgb)*AXY(IJK) + &
-                        Ugt*(Wge - Wgw)*AYZ(IJK) + &
+                     F_vir = F_vir + W_g(IJK)*OX(I) * &
+                        (Wgt - Wgb)*AXY(IJK) + Ugt*(Wge - Wgw)*AYZ(IJK) + &
                         AVG_Z(Vgb,Vgt,K) * (Wgn - Wgs)*AXZ(IJK)
-                     F_vir = F_vir_tmp2 * Cv * ROP_MA					 
+                     F_vir = F_vir * Cv * ROP_MA
                   ENDIF
-!===================================================================>> Handan Liu
+
 ! Interphase mass transfer
                   IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
                      VMTtmp = ZERO
@@ -390,7 +371,6 @@
 ! Body force
                   IF (MODEL_B) THEN 
                      IF (TRIM(KT_TYPE) /= 'GHD') THEN
-!QX                     
                        DRO1 = (RO_SV(IJK,M)-RO_G(IJK))*EP_S(IJK,M) 
                        DRO2 = (RO_SV(IJK,M)-RO_G(IJKT))*EP_S(IJKT,M) 
                        DROA = AVG_Z(DRO1,DRO2,K) 
@@ -472,23 +452,18 @@
 ! (mu/x)*(dw/dx) part of tau_xz/x
                      EPMUOX = AVG_Z(MU_S(IJK,M),MU_S(IJKT,M),K)*OX(I) 
                      VXZB = ZERO 
-!Handan Liu changed on Sep. 20 2012, then modified on March 1 2013:
-!===================================================================<< Handan Liu					 
                      !A_M(IJK,E,M) = A_M(IJK,E,M) + HALF*EPMUOX*ODX_E(I)*&
                      !      VOL_W(IJK) 
                      !A_M(IJK,W,M) = A_M(IJK,W,M) - HALF*EPMUOX*ODX_E(IM)*&
                      !      VOL_W(IJK)
-                     A_M_tmp(IJK,E,M) = A_M(IJK,E,M) + HALF*EPMUOX*ODX_E(I)*&
+                     A_M(IJK,E,M) = A_M(IJK,E,M) + HALF*EPMUOX*ODX_E(I)*&
                            VOL_W(IJK) 
-                     A_M_tmp(IJK,W,M) = A_M(IJK,W,M) - HALF*EPMUOX*ODX_E(IM)*&
-                           VOL_W(IJK)						   
+                     A_M(IJK,W,M) = A_M(IJK,W,M) - HALF*EPMUOX*ODX_E(IM)*&
+                           VOL_W(IJK)
 
 ! -(mu/x)*(w/x) part of tau_xz/x
                      VXZA = EPMUOX*OX(I) 
                   ELSE 
-
-                     A_M_tmp(IJK,E,M) = A_M(IJK,E,M)
-                     A_M_tmp(IJK,W,M) = A_M(IJK,W,M)
 
                      VCOA = ZERO 
                      VCOB = ZERO 
@@ -504,13 +479,13 @@
 !                     VOL_W(IJK)+ CTE - CTW) 
 !                  A_M(IJK,E,M) = A_M(IJK,E,M) - CTE
 !                  A_M(IJK,W,M) = A_M(IJK,W,M) + CTW  
-                  A_M(IJK,0,M) = -(A_M_tmp(IJK,E,M)+A_M(IJK,W,M)+&
+                  A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+&
                      A_M(IJK,N,M)+A_M(IJK,S,M)+A_M(IJK,T,M)+&
                      A_M(IJK,B,M)+(V0+ZMAX(VMT)+VCOA+VXZA)*&
                      VOL_W(IJK)+ CTE - CTW) 
-                  A_M(IJK,E,M) = A_M_tmp(IJK,E,M) - CTE
-                  A_M(IJK,W,M) = A_M_tmp(IJK,W,M) + CTW  
-!
+                  A_M(IJK,E,M) = A_M(IJK,E,M) - CTE
+                  A_M(IJK,W,M) = A_M(IJK,W,M) + CTW  
+
                   B_M(IJK,M) = B_m(IJK, M) - (SDP + SDPS + &
                      TAU_W_S(IJK,M) + SXZB + F_vir + &
                      ( (V0+ZMAX((-VMT)))*W_SO(IJK,M)+ &
@@ -521,11 +496,11 @@
                   ELSEIF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
                     B_M(IJK,M) = B_M(IJK,M) - Ghd_drag*VOL_W(IJK)
                   ENDIF
-				  
+
                 ENDIF   ! end branching on cell type (sip/ip/dilute/block/else branches)
             ENDDO   ! end do loop over ijk
 !$omp end parallel do
-!==============================================================>> Handan Liu 
+
 
 ! modifications for cartesian grid implementation
             IF(CARTESIAN_GRID) CALL CG_SOURCE_W_S(A_M, B_M, M, IER)
@@ -540,25 +515,23 @@
       RETURN  
       END SUBROUTINE SOURCE_W_S 
 
+
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SOURCE_W_s_BC                                          C
-!  Purpose: Determine source terms for W_s momentum eq. The terms      C
-!  appear in the center coefficient and RHS vector.    The center      C
-!  coefficient and source vector are negative.  The off-diagonal       C
-!  coefficients are positive.                                          C
-!  The drag terms are excluded from the source at this stage.          C
+!  Subroutine: SOURCE_W_s_BC                                           C
+!  Purpose: Determine source terms for U_g momentum eq. The terms      C
+!     appear in the center coefficient and RHS vector.  The center     C
+!     coefficient and source vector are negative.  The off-diagonal    C
+!     coefficients are positive.                                       C
+!     The drag terms are excluded from the source at this stage.       C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 17-JUN-96  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !                                                                      C
-!  Literature/Document References:                                     C
+!  Comments: see source_w_g_bc for more detailed in-code comments      C
 !                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -1026,16 +999,17 @@
       END SUBROUTINE SOURCE_W_S_BC 
 
 
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: JJ_BC_W_s                                              C
+!  Subroutine: JJ_BC_W_s                                               C
 !  Purpose: Implement Johnson and Jackson boundary condition           C
 !                                                                      C
 !  Author: K. Agrawal, A. Srivastava,                 Date: 14-APR-98  C
 !          Princeton University                                        C
 !  Reviewer:                                          Date:            C
 !                                                                      C
-! 
+!                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -1097,7 +1071,7 @@
             DO I = I1, I2 
                IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                IJK = FUNIJK(I,J,K) 
-               IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells
+               IF (.NOT.WALL_AT(IJK)) CYCLE  ! skip redefined cells
                IM = IM1(I) 
                JM = JM1(J) 
                A_M(IJK,E,M) = ZERO 
@@ -1231,6 +1205,9 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE POINT_SOURCE_W_S(A_M, B_M, IER) 
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------      
       use compar    
       use constant
       use fldvar
@@ -1239,35 +1216,30 @@
       use physprop
       use ps
       use run
-
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
 ! Septadiagonal matrix A_m 
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
-
 ! Vector b_m 
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M) 
-
 ! Error index 
       INTEGER, INTENT(INOUT) :: IER 
-
 !----------------------------------------------- 
-! Local Variables
+! Local variables
 !----------------------------------------------- 
-
 ! Indices 
       INTEGER :: IJK, I, J, K
       INTEGER :: PSV, M
-
       INTEGER :: lKT, lKB
-
 ! terms of bm expression
       DOUBLE PRECISION :: pSource
-
+!----------------------------------------------- 
+! Include statements functions
+!-----------------------------------------------
       include 'function.inc'
-
+!-----------------------------------------------
       do M=1, MMAX
 
       PS_LP: do PSV = 1, DIMENSION_PS

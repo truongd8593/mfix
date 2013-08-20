@@ -373,7 +373,7 @@
 !----------------------------------------------- 
 
 !$omp parallel do default(shared)                                    &
-!$omp private(IJK, K_1m, K_2m, K_3m, K_4m, K_5m,                     &
+!$omp private(IJK, K_1m, K_2m, K_3m, K_4m, K_5m, temp_local,         &
 !$omp         aq, bq, cq, EP_sxSQRTHETA, EP_s2xTHETA)  
      
        DO IJK = ijkstart3, ijkend3

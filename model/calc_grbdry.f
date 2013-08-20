@@ -1,8 +1,9 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CALC_GRBDRY
-!  Purpose: Main controller subroutine for calculating coefficients
-!   for momentum boundary conditions using kinetic & frictional theory
+!  Subroutine: CALC_GRBDRY                                             C
+!  Purpose: Main controller subroutine for calculating coefficients    C
+!     for momentum boundary conditions using kinetic & frictional      C
+!     theory                                                           C
 !                                                                      C
 !  Author: K. Agrawal & A. Srivastava, Princeton Univ. Date: 19-JAN-98 C
 !  Reviewer:                                           Date:           C
@@ -10,10 +11,6 @@
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -50,7 +47,7 @@
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
 ! Index corresponding to boundary condition
-      INTEGER, INTENT(IN) ::  L      
+      INTEGER, INTENT(IN) ::  L 
 ! Wall momentum coefficients:
 ! 1st term on LHS
       DOUBLE PRECISION, INTENT(INOUT) :: Gw
@@ -76,7 +73,6 @@
 ! Average scalars modified to include all solid phases
       DOUBLE PRECISION :: EPs_avg(DIMENSION_M), DP_avg(DIMENSION_M),&
                           TH_avg(DIMENSION_M), AVGX1, AVGX2, smallTheta
-!QX
       DOUBLE PRECISION ROS_AVG(DIMENSION_M)
 ! Average Simonin and Ahmadi variables (sof)
       DOUBLE PRECISION :: K_12_avg, Tau_12_avg, Tau_1_avg
@@ -152,17 +148,16 @@
 
         g0EPs_avg = ZERO             
         DO MM = 1, SMAX
-          g0(MM)      = G_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, MM)
-          EPs_avg(MM) = AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
-          DP_avg(MM)  = AVG_X(D_P(IJK2,MM), D_P(IJK2E,MM), I_OF(IJK2))
-          g0EPs_avg   = g0EPs_avg + G_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, MM) &
-             * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
-!QX
-          ROs_avg(MM) = AVG_X(RO_SV(IJK2, MM), RO_SV(IJK2E, MM), I_OF(IJK2))
-          IF (.NOT.GRANULAR_ENERGY) THEN
-            TH_avg(MM) = AVG_X(THETA_M(IJK2,MM), THETA_M(IJK2E,MM), I_OF(IJK2))
-            IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
-          ENDIF
+           g0(MM)      = G_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, MM)
+           EPs_avg(MM) = AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
+           DP_avg(MM)  = AVG_X(D_P(IJK2,MM), D_P(IJK2E,MM), I_OF(IJK2))
+           g0EPs_avg   = g0EPs_avg + G_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, MM) &
+                       * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
+           ROs_avg(MM) = AVG_X(RO_SV(IJK2, MM), RO_SV(IJK2E, MM), I_OF(IJK2))
+           IF (.NOT.GRANULAR_ENERGY) THEN
+              TH_avg(MM) = AVG_X(THETA_M(IJK2,MM), THETA_M(IJK2E,MM), I_OF(IJK2))
+              IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
+           ENDIF
         ENDDO
 
         WVELS = BC_Uw_s(L,M)
@@ -359,12 +354,11 @@
            DP_avg(MM)  = AVG_Y(D_p(IJK2,MM), D_p(IJK2N,MM), J_OF(IJK2))
            g0EPs_avg   = g0EPs_avg + G_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), M, MM) &
                         * AVG_Y(EP_s(IJK2, MM), EP_s(IJK2N, MM), J_OF(IJK2))
-!QX
-             Ros_avg(MM) = AVG_Y(RO_SV(IJK2, MM), RO_SV(IJK2N, MM), J_OF(IJK2))
-          IF(.NOT.GRANULAR_ENERGY) THEN                        
-            TH_avg(MM) = AVG_Y(THETA_M(IJK2,MM), THETA_M(IJK2N,MM), J_OF(IJK2))
-            IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
-          ENDIF
+           ROS_avg(MM) = AVG_Y(RO_SV(IJK2, MM), RO_SV(IJK2N, MM), J_OF(IJK2))
+           IF(.NOT.GRANULAR_ENERGY) THEN                        
+              TH_avg(MM) = AVG_Y(THETA_M(IJK2,MM), THETA_M(IJK2N,MM), J_OF(IJK2))
+              IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
+           ENDIF
         ENDDO
 
         WVELS = BC_Vw_s(L, M)
@@ -572,8 +566,7 @@
            DP_avg(MM)  = AVG_Z(D_p(IJK2,MM), D_p(IJK2T,MM), K_OF(IJK2))
            g0EPs_avg   = g0EPs_avg + G_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, MM) &
                        * AVG_Z(EP_s(IJK2, MM), EP_s(IJK2T, MM), K_OF(IJK2))
-!QX
-             ROs_avg(MM) = AVG_Z(RO_SV(IJK2,MM), RO_SV(IJK2T,MM), K_OF(IJK2))
+           ROs_avg(MM) = AVG_Z(RO_SV(IJK2,MM), RO_SV(IJK2T,MM), K_OF(IJK2))
            IF(.NOT.GRANULAR_ENERGY) THEN
               TH_avg(MM) = AVG_Z(THETA_M(IJK2,MM), THETA_M(IJK2T,MM), K_OF(IJK2))
               IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
@@ -776,14 +769,12 @@
            S_DDOT_S, S_dd)
  
         CALL CALC_Gw_Hw_Cw(g0(M), EPs_avg(M), EPg_avg, ep_star_avg, &
-!QX
            g0EPs_avg, TH_avg(M), Mu_g_avg, RO_g_avg, ROs_avg, &
            DP_avg(M), K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP,&
            DEL_DOT_U, S_DDOT_S, S_dd, VELS, WVELS, M, gw, hw, cw)
       ELSE
          GW = 1D0               
          Hw = F_Hw(g0, EPs_avg, EPg_avg, ep_star_avg, &
-!QX
             g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, ROs_avg, &
             DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
          CW = HW*WVELS            
@@ -796,37 +787,42 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: F_HW
-
+!  Function: F_HW                                                      C
+!                                                                      C
 !  Purpose: Function for hw                                            C
 !                                                                      C
 !  Author: K. Agrawal & A. Srivastava, Princeton Univ. Date: 24-JAN-98 C
 !  Reviewer:                                           Date:           C
 !                                                                      C
-!                                                                      C
 !  Modified: Sofiane Benyahia, Fluent Inc.             Date: 02-FEB-05 C
 !  Purpose: Include conductivity defined by Simonin and Ahmadi         C
 !           Also included Jenkins small frictional limit               C
 !                                                                      C
-!  Literature/Document References: See calcmu_s.f for ref. on Simonin  C
-!  and Ahmadi models; for Jenkins BC: Jenkins and Louge, Phys. fluids  C
-!  9 (10), 2835. See equation (2) in the paper                         C
-!                                                  
-
-!  Additional Notes:
-!    The current implementation of the IA (2005) kinetic theory and 
-!    the GD (1999) kinetic theory do not incorporate ahmadi or simonin
-!    additions nor jenkins small frictional bc mdoel
-
-!    The granular momentum BC is written as the normal vector dot the
-!    stress tensor.  Besides the gradient in velocity of phase M, the
-!    stress tensor expression may contain several additional terms that 
-!    would need to be accounted for when satisfying the BC.  These
-!    modifications have NOT been rigorously addressed.
-
+!  Literature/Document References:                                     C
+!     Johnson, P. C., and Jackson, R., Frictional-collisional          C
+!        constitutive relations for granular materials, with           C
+!        application to plane shearing, Journal of Fluid Mechanics,    C
+!        1987, 176, pp. 67-93                                          C
+!     Jenkins, J. T., and Louge, M. Y., On the flux of fluctuating     C
+!        energy in a collisional grain flow at a flat frictional wall, C
+!        Physics of Fluids, 1997, 9(10), pp. 2835-2840                 C
+!                                                                      C
+!     See calc_mu_s.f for references on kinetic theory models          C
+!     See calc_mu_s.f for references on Ahmadi and Simonin models      C
+!                                                                      C
+!  Additional Notes:                                                   C
+!    The current implementations of the IA (2005) and GD (1999)        C
+!    kinetic theories do not incorporate ahmadi or simonin additions   C
+!    nor the jenkins small frictional bc model                         C
+!                                                                      C
+!    The granular momentum BC is written as the normal vector dot the  C
+!    stress tensor.  Besides the gradient in velocity of phase M, the  C
+!    stress tensor expression may contain several additional terms     C
+!    that would need to be accounted for when satisfying the BC. These C
+!    modifications have NOT been rigorously addressed.                 C
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       DOUBLE PRECISION FUNCTION F_HW(g0,EPS,EPG, ep_star_avg, &
-!QX
                                      g0EPs_avg,TH,Mu_g_avg,RO_g_avg,ROs_avg, &
                                      DP_avg,K_12_avg, Tau_12_avg, Tau_1_avg, &
                                      VREL, VSLIP, M)
@@ -860,8 +856,8 @@
       DOUBLE PRECISION, INTENT(IN) :: Mu_g_avg
 ! Average gas density
       DOUBLE PRECISION, INTENT(IN) :: RO_g_avg
-!QX: Average solids density
-      DOUBLE PRECISION, INTENT(IN) ::ROS_avg(DIMENSION_M)
+! Average solids density
+      DOUBLE PRECISION, INTENT(IN) :: ROS_avg(DIMENSION_M)
 ! Average particle diameter of each solids phase
       DOUBLE PRECISION, INTENT(IN) :: DP_avg(DIMENSION_M)
 ! Average cross-correlation K_12 and lagrangian integral time-scale
@@ -907,9 +903,11 @@
       DOUBLE PRECISION :: c_star, zeta0_star, nu_eta_star, press_star, &
                           gamma_star, eta_k_star, eta_star, eta0
 !----------------------------------------------- 
-      DOUBLE PRECISION PHIP_JJ ! Variable specularity coefficient
-!-----------------------------------------------                           
+! Functions
 !----------------------------------------------- 
+! Variable specularity coefficient
+      DOUBLE PRECISION :: PHIP_JJ 
+!-----------------------------------------------                           
 
 ! This is done here similar to bc_theta to avoid small negative values of
 ! Theta coming most probably from linear solver
@@ -937,13 +935,14 @@
          D_PM = DP_avg(M)
          M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
          NU_PM = (EPS(M)*ROS_avg(M))/M_PM
-	 if(.NOT. BC_JJ_M)then    
-         F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*EPS(M)*g0(M))/&
-            (6.d0*(ONE-ep_star_avg))
-         else
-         F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*EPS(M)*g0(M))/&
-            (6.d0*(ONE-ep_star_avg)) 
-         endif
+
+         IF(.NOT. BC_JJ_M) THEN
+            F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*EPS(M)*&
+               g0(M))/(6.d0*(ONE-ep_star_avg))
+         ELSE
+            F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M)/M_PM)*PI*&
+               ROS_avg(M)*EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg)) 
+         ENDIF
 
 ! This is from Wen-Yu correlation, you can put here your own single particle drag
          Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
@@ -1024,13 +1023,13 @@
          D_PM = DP_avg(M)
          M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
          NU_PM = (EPS(M)*ROS_avg(M))/M_PM
-         if(.NOT. BC_JJ_M)then	
-         F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*EPS(M)*g0(M))/&
-            (6.d0*(ONE-ep_star_avg))
-         else
-         F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*EPS(M)*g0(M))/&
-            (6.d0*(ONE-ep_star_avg))         	 
-         endif
+         IF(.NOT. BC_JJ_M) THEN
+            F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*EPS(M)*&
+               g0(M))/(6.d0*(ONE-ep_star_avg))
+         ELSE
+            F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M))*PI*&
+               ROS_avg(M)*EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg))
+         ENDIF
 
 ! This is from Wen-Yu correlation, you can put here your own single particle drag
          Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
@@ -1111,13 +1110,13 @@
 
          ELSE   ! if(.not.jenkins)
 
-            if(.NOT. BC_JJ_M)then   
-            F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*ROS_avg(M)*EPS(M)*g0(M))&
-               /(6d0*(ONE-ep_star_avg))
-            else
-            F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3d0*TH(M))*Pi*ROS_avg(M)*EPS(M)*g0(M))&
-               /(6d0*(ONE-ep_star_avg))            	    
-            endif
+            IF(.NOT. BC_JJ_M) THEN
+               F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*ROS_avg(M)*EPS(M)*&
+                  g0(M))/(6d0*(ONE-ep_star_avg))
+            ELSE
+               F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3d0*TH(M))*Pi*&
+                  ROS_avg(M)*EPS(M)*g0(M))/(6d0*(ONE-ep_star_avg))
+            ENDIF
 
          ENDIF   ! end if(Jenkins)/else 
  
@@ -1192,20 +1191,13 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CG_CALC_GRBDRY
+!  Subroutine CG_CALC_GRBDRY                                           C
 !  Purpose: Calculate hw and cw for kinetic theory boundary conditions C
-!           Cut cell version
+!           Cut cell version                                           C
 !                                                                      C
 !  Author: K. Agrawal & A. Srivastava, Princeton Univ. Date: 19-JAN-98 C
 !  Reviewer:                                           Date:           C
 !                                                                      C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -1246,66 +1238,45 @@
 !-----------------------------------------------
 ! Local Variables      
 !-----------------------------------------------
-!
-!                      IJK indices 
+! IJK indices 
       INTEGER          IJK1, IJK2
-!
-!                      Other indices
+! Other indices
       INTEGER          IJK2E, IPJK2, IPJKM2, IPJKP2, IPJMK2, IPJPK2
       INTEGER          IJK2N, IJPK2, IJPKM2, IJPKP2, IMJPK2
       INTEGER          IJK2T, IJKP2, IJMKP2, IMJKP2
- 
-!
-!                      Average scalars
+! Average scalars
       DOUBLE PRECISION EPg_avg, Mu_g_avg, RO_g_avg
-      
-!              Average void fraction at packing
+! Average void fraction at packing
       DOUBLE PRECISION ep_star_avg
-!
-!                      Average scalars modified to include all solid phases
+! Average scalars modified to include all solid phases
       DOUBLE PRECISION EPs_avg(DIMENSION_M), DP_avg(DIMENSION_M),&
                        TH_avg(DIMENSION_M)
-!QX
+! Average solids density
       DOUBLE PRECISION ROS_AVG(DIMENSION_M)
-!
-!                      Average Simonin and Ahmadi variables (sof)
+! Average Simonin and Ahmadi variables (sof)
       DOUBLE PRECISION K_12_avg, Tau_12_avg, Tau_1_avg
-!
-!                      Average velocities
+! Average velocities
       DOUBLE PRECISION WGC1, WGC2, WGCM, VGC1, VGC2, UGC1, UGC2
-!
-!                      Solids phase index
+! Solids phase index
       INTEGER          MM
-!
-!                      Wall momentum or granular energy coefficient
+! Wall momentum or granular energy coefficient
       DOUBLE PRECISION Hw
-!
-!                      values of U_sm, V_sm, W_sm at appropriate place
-!                      on boundary wall
+! values of U_sm, V_sm, W_sm at appropriate place on boundary wall
       DOUBLE PRECISION USCM, VSCM,WSCM
       DOUBLE PRECISION USCM1,USCM2,VSCM1,VSCM2,WSCM1,WSCM2
-!
-!                      values of U_g, V_g, W_g at appropriate place
-!                      on boundary wall
+! values of U_g, V_g, W_g at appropriate place on boundary wall
       DOUBLE PRECISION UGC, VGC, WGC
-!
-!                      Magnitude of gas-solids relative velocity
+! Magnitude of gas-solids relative velocity
       DOUBLE PRECISION VREL
-!
-!              slip velocity between wall and particles for Jenkins bc (sof)
+! slip velocity between wall and particles for Jenkins bc (sof)
       DOUBLE PRECISION VSLIP
-!
-!                      radial distribution function at contact
+! radial distribution function at contact
       DOUBLE PRECISION g0(DIMENSION_M)
-!
-!                      Sum of eps*G_0
+! Sum of eps*G_0
       DOUBLE PRECISION g0EPs_avg 
-!
-!                      Error message
+! Error message
       CHARACTER*80     LINE
-!
- 
-!              Average Radial distribution function
+! Radial distribution function
       DOUBLE PRECISION g_0AVG
 !----------------------------------------------- 
 ! Function subroutines
@@ -1343,7 +1314,6 @@
                DP_avg(MM)  = (VOL(IJK)*D_P(IJK, MM) + VOL(IJK2)*D_P(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                g0EPs_avg   = g0EPs_avg + G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM) &
                            * (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
-!QX
                ROS_AVG(MM) = (VOL(IJK)*RO_SV(IJK, MM) + VOL(IJK2)*RO_SV(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
 
 !               IF(GRANULAR_ENERGY) THEN
@@ -1354,21 +1324,21 @@
 !               ELSE
                    TH_avg(MM)  = (VOL(IJK)*Theta_m(IJK,MM) + VOL(IJK2)*Theta_m(IJK2,MM))/(VOL(IJK) + VOL(IJK2))
 !               ENDIF
-!
+
             ENDDO
 
-	    IF(SIMONIN .OR. AHMADI) THEN  ! not converted to CG
+            IF(SIMONIN .OR. AHMADI) THEN  ! not converted to CG
 ! added for Simonin and Ahmadi model (sof)
-               K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))	    
-               Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))	    
+               K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))
+               Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))
                Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
-	    ELSE
-	       K_12_avg = ZERO    
-               Tau_12_avg = ZERO	    
+             ELSE
+               K_12_avg = ZERO    
+               Tau_12_avg = ZERO
                Tau_1_avg = ZERO
-	    ENDIF
+             ENDIF
  
-!         Calculate velocity components at i+1/2, j+1/2, k (relative to IJK1)  ! not converted to CG
+! Calculate velocity components at i+1/2, j+1/2, k (relative to IJK1)  ! not converted to CG
             UGC  = AVG_Y(U_g(IJK1), U_g(IJK2),J_OF(IJK1))
             VGC  = AVG_X(V_g(IJK1), V_g(IPJMK2),I_OF(IJK1))
             WGC1 = AVG_X(AVG_Z_T(W_g(KM_OF(IJK2)), W_g(IJK2)),&
@@ -1387,19 +1357,18 @@
                          AVG_Z_T(W_s(KM_OF(IPJMK2),M),W_s(IPJMK2,M)),&
                          I_OF(IJK1))
             WSCM = AVG_Y(WSCM2, WSCM1, J_OF(IJK1))
-!
-!         magnitude of gas-solids relative velocity
-!
-            VREL =&
-            DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
-!
+
+! magnitude of gas-solids relative velocity
+            VREL = DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + &
+                          (WGC - WSCM)**2 )
+
 ! slip velocity for use in Jenkins bc (sof)	  
-	    VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
-	                  + (WSCM-BC_WW_S(L,M))**2 )
+           VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+                       + (WSCM-BC_WW_S(L,M))**2 )
  
             CALL GET_CG_F2(g0, EPs_avg, EPg_avg, ep_star_avg, &
-	              g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, ROS_AVG,&
-	              DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, &
+                      g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, ROS_AVG,&
+                       DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, &
                       VREL, VSLIP, M,F_2)
 
 
@@ -1407,23 +1376,20 @@
 
             IJK2 = NORTH_OF(IJK)
 
-	    EPg_avg = (VOL(IJK)*EP_g(IJK) + VOL(IJK2)*EP_g(IJK2))/(VOL(IJK) + VOL(IJK2))
+            EPg_avg = (VOL(IJK)*EP_g(IJK) + VOL(IJK2)*EP_g(IJK2))/(VOL(IJK) + VOL(IJK2))
             ep_star_avg = (VOL(IJK)*EP_star_array(IJK) + VOL(IJK2)*EP_star_array(IJK2))/(VOL(IJK) + VOL(IJK2))
             Mu_g_avg = (VOL(IJK)*Mu_g(IJK) + VOL(IJK2)*Mu_g(IJK2))/(VOL(IJK) + VOL(IJK2))
             RO_g_avg = (VOL(IJK)*RO_g(IJK) + VOL(IJK2)*RO_g(IJK2))/(VOL(IJK) + VOL(IJK2))
             g0EPs_avg = ZERO
   
-!
-	    DO MM = 1, MMAX
+            DO MM = 1, MMAX
                g0(MM)      = G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM)
                EPs_avg(MM) = (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                DP_avg(MM)  = (VOL(IJK)*D_P(IJK, MM) + VOL(IJK2)*D_P(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                g0EPs_avg   = g0EPs_avg + G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM) &
                            * (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
-!QX
                ROS_avg(MM) = (VOL(IJK)*RO_SV(IJK, MM) + VOL(IJK2)*RO_SV(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
-!end QX
-!
+
 !               IF(GRANULAR_ENERGY) THEN  ! not converted to CG
 !                   TH_avg(MM) = AVG_Y(&
 !                                AVG_X(Theta_m(IJK1,MM), Theta_m(IPJMK2,MM), I_OF(IJK1)),&
@@ -1431,23 +1397,22 @@
 !                                J_OF(IJK1))
 !               ELSE
                    TH_avg(MM)  = (VOL(IJK)*Theta_m(IJK,MM) + VOL(IJK2)*Theta_m(IJK2,MM))/(VOL(IJK) + VOL(IJK2))
-
 !               ENDIF
-!
+
             ENDDO
 
-	    IF(SIMONIN .OR. AHMADI) THEN  ! not converted to CG
+            IF(SIMONIN .OR. AHMADI) THEN  ! not converted to CG
 ! added for Simonin and Ahmadi model (sof)
-               K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))	    
-               Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))	    
+               K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))
+               Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))
                Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
-	    ELSE
-	       K_12_avg = ZERO    
-               Tau_12_avg = ZERO	    
+            ELSE
+               K_12_avg = ZERO    
+               Tau_12_avg = ZERO
                Tau_1_avg = ZERO
-	    ENDIF
+            ENDIF
  
-!         Calculate velocity components at i+1/2, j+1/2, k (relative to IJK1)    ! not converted to CG
+! Calculate velocity components at i+1/2, j+1/2, k (relative to IJK1)    ! not converted to CG
             UGC  = AVG_Y(U_g(IJK1), U_g(IJK2),J_OF(IJK1))
             VGC  = AVG_X(V_g(IJK1), V_g(IPJMK2),I_OF(IJK1))
             WGC1 = AVG_X(AVG_Z_T(W_g(KM_OF(IJK2)), W_g(IJK2)),&
@@ -1466,20 +1431,20 @@
                          AVG_Z_T(W_s(KM_OF(IPJMK2),M),W_s(IPJMK2,M)),&
                          I_OF(IJK1))
             WSCM = AVG_Y(WSCM2, WSCM1, J_OF(IJK1))
-!
-!         magnitude of gas-solids relative velocity
-!
-            VREL =&
-            DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
-!
+
+! magnitude of gas-solids relative velocity
+
+            VREL = DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + &
+                          (WGC - WSCM)**2 )
+
 ! slip velocity for use in Jenkins bc (sof)	  
-	    VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
-	                  + (WSCM-BC_WW_S(L,M))**2 )
+            VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+                        + (WSCM-BC_WW_S(L,M))**2 )
 
 
             CALL GET_CG_F2(g0, EPs_avg, EPg_avg, ep_star_avg, &
-	              g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, ROS_AVG,&
-	              DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, &
+                      g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, ROS_AVG,&
+                      DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, &
                       VREL, VSLIP, M,F_2)
 
 
@@ -1487,21 +1452,20 @@
 
             IJK2 = TOP_OF(IJK)
 
-	    EPg_avg = (VOL(IJK)*EP_g(IJK) + VOL(IJK2)*EP_g(IJK2))/(VOL(IJK) + VOL(IJK2))
+            EPg_avg = (VOL(IJK)*EP_g(IJK) + VOL(IJK2)*EP_g(IJK2))/(VOL(IJK) + VOL(IJK2))
             ep_star_avg = (VOL(IJK)*EP_star_array(IJK) + VOL(IJK2)*EP_star_array(IJK2))/(VOL(IJK) + VOL(IJK2))
             Mu_g_avg = (VOL(IJK)*Mu_g(IJK) + VOL(IJK2)*Mu_g(IJK2))/(VOL(IJK) + VOL(IJK2))
             RO_g_avg = (VOL(IJK)*RO_g(IJK) + VOL(IJK2)*RO_g(IJK2))/(VOL(IJK) + VOL(IJK2))
             g0EPs_avg = ZERO
-!QX
-               ROS_avg(MM) = (VOL(IJK)*RO_SV(IJK, MM) + VOL(IJK2)*RO_SV(IJK2, MM))/(VOL(IJK) + VOL(IJK2))  
-!
-	    DO MM = 1, MMAX
+            ROS_avg(MM) = (VOL(IJK)*RO_SV(IJK, MM) + VOL(IJK2)*RO_SV(IJK2, MM))/(VOL(IJK) + VOL(IJK2))  
+
+            DO MM = 1, MMAX
                g0(MM)      = G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM)
                EPs_avg(MM) = (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                DP_avg(MM)  = (VOL(IJK)*D_P(IJK, MM) + VOL(IJK2)*D_P(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                g0EPs_avg   = g0EPs_avg + G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM) &
                            * (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
-!
+
 !               IF(GRANULAR_ENERGY) THEN  ! not converted to CG
 !                   TH_avg(MM) = AVG_Y(&
 !                                AVG_X(Theta_m(IJK1,MM), Theta_m(IPJMK2,MM), I_OF(IJK1)),&
@@ -1509,23 +1473,22 @@
 !                                J_OF(IJK1))
 !               ELSE
                    TH_avg(MM)  = (VOL(IJK)*Theta_m(IJK,MM) + VOL(IJK2)*Theta_m(IJK2,MM))/(VOL(IJK) + VOL(IJK2))
-
 !               ENDIF
-!
+
             ENDDO
 
-	    IF(SIMONIN .OR. AHMADI) THEN  ! not converted to CG
+            IF(SIMONIN .OR. AHMADI) THEN  ! not converted to CG
 ! added for Simonin and Ahmadi model (sof)
-               K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))	    
-               Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))	    
+               K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))  
+               Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))
                Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
-	    ELSE
-	       K_12_avg = ZERO    
-               Tau_12_avg = ZERO	    
+            ELSE
+               K_12_avg = ZERO    
+               Tau_12_avg = ZERO
                Tau_1_avg = ZERO
-	    ENDIF
+            ENDIF
  
-!         Calculate velocity components at i+1/2, j+1/2, k (relative to IJK1)    ! not converted to CG
+! Calculate velocity components at i+1/2, j+1/2, k (relative to IJK1)    ! not converted to CG
             UGC  = AVG_Y(U_g(IJK1), U_g(IJK2),J_OF(IJK1))
             VGC  = AVG_X(V_g(IJK1), V_g(IPJMK2),I_OF(IJK1))
             WGC1 = AVG_X(AVG_Z_T(W_g(KM_OF(IJK2)), W_g(IJK2)),&
@@ -1544,20 +1507,18 @@
                          AVG_Z_T(W_s(KM_OF(IPJMK2),M),W_s(IPJMK2,M)),&
                          I_OF(IJK1))
             WSCM = AVG_Y(WSCM2, WSCM1, J_OF(IJK1))
-!
-!         magnitude of gas-solids relative velocity
-!
-            VREL =&
-            DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
-!
-! slip velocity for use in Jenkins bc (sof)	  
-	    VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
-	                  + (WSCM-BC_WW_S(L,M))**2 )
 
+! magnitude of gas-solids relative velocity
+            VREL = DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + &
+                          (WGC - WSCM)**2 )
+
+! slip velocity for use in Jenkins bc (sof)	  
+            VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+                        + (WSCM-BC_WW_S(L,M))**2 )
 
             CALL GET_CG_F2(g0, EPs_avg, EPg_avg, ep_star_avg, &
-	              g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, ROS_AVG,&
-	              DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, &
+                      g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, ROS_AVG,&
+                      DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, &
                       VREL, VSLIP, M,F_2)
 
 
@@ -1577,9 +1538,11 @@
 
       END SUBROUTINE CG_CALC_GRBDRY
  
+
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: GET_CG_F2                                            C
+!  Subroutine: GET_CG_F2                                               C
 !  Purpose: Compute F_2 for cut cell version                           C
 !                                                                      C
 !  Author: K. Agrawal & A. Srivastava, Princeton Univ. Date: 24-JAN-98 C
@@ -1590,24 +1553,23 @@
 !  Purpose: Include conductivity defined by Simonin and Ahmadi         C
 !           Also included Jenkins small frictional limit               C
 !                                                                      C
-!  Literature/Document References: See calcmu_s.f for ref. on Simonin  C
-!  and Ahmadi models; for Jenkins BC: Jenkins and Louge, Phys. fluids  C
-!  9 (10), 2835. See equation (2) in the paper                         C
+!  Literature/Document References:                                     C
+!     See calc_mu_s.f for ref. on Simonin and Ahmadi models            C
+!     For Jenkins BC: Jenkins and Louge, Phys. fluids, 9 (10), 2835.   C
+!        See equation (2) in the paper                                 C
 !                                                                      C
-
-!  Additional Notes:
-!    The current implementation of the IA (2005) kinetic theory and 
-!    the GD (1999) kinetic theory do not incorporate ahmadi or simonin
-!    additions nor jenkins small frictional bc mdoel
-
-!    The granular momentum BC is written as the normal vector dot the
-!    stress tensor.  Besides the gradient in velocity of phase M, the
-!    stress tensor expression may contain several additional terms that 
-!    would need to be accounted for when satisfying the BC.  These
-!    modifications have NOT been rigorously addressed.
-
+!  Additional Notes:                                                   C
+!    The current implementations of the IA (2005) and GD (1999)        C
+!    kinetic theories do not incorporate ahmadi or simonin additions   C
+!    nor the jenkins small frictional bc model                         C
+!                                                                      C
+!    The granular momentum BC is written as the normal vector dot the  C
+!    stress tensor.  Besides the gradient in velocity of phase M, the  C
+!    stress tensor expression may contain several additional terms     C
+!    that would need to be accounted for when satisfying the BC. These C
+!    modifications have NOT been rigorously addressed.                 C
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE GET_CG_F2(g0,EPS,EPG, ep_star_avg, &
                                      g0EPs_avg,TH,Mu_g_avg,RO_g_avg,Ros_avg, &
                                      DP_avg,K_12_avg, Tau_12_avg, Tau_1_avg, &
@@ -1690,9 +1652,11 @@
       DOUBLE PRECISION :: c_star, zeta0_star, nu_eta_star, press_star, &
                           gamma_star, eta_k_star, eta_star, eta0
 !----------------------------------------------- 
-      DOUBLE PRECISION PHIP_JJ ! Variable specularity coefficient
-!-----------------------------------------------                           
+! Functions 
 !----------------------------------------------- 
+! Variable specularity coefficient
+      DOUBLE PRECISION :: PHIP_JJ 
+!-----------------------------------------------                           
 
 ! This is done here similar to bc_theta to avoid small negative values of
 ! Theta coming most probably from linear solver
@@ -1714,20 +1678,19 @@
       IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN  
 
 ! Use original IA theory if SWITCH_IA is false
-!QX: RO_S repplaced by ROS_avg(M)
          IF(.NOT. SWITCH_IA) g0EPs_avg = EPS(M)*ROS_avg(M)
 
          D_PM = DP_avg(M)
          M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
          NU_PM = (EPS(M)*ROS_avg(M))/M_PM
  
-	  if(.NOT. BC_JJ_M)then          
-          F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*EPS(M)*g0(M))/&
-               (6.d0*(ONE-ep_star_avg))
-          else
-          F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*EPS(M)*g0(M))/&
-               (6.d0*(ONE-ep_star_avg))          	  
-          endif            
+         IF(.NOT. BC_JJ_M) THEN
+            F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*&
+               EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg))
+         ELSE
+            F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M)/M_PM)*&
+               PI*ROS_avg(M)*EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg))
+         ENDIF
 
 ! This is from Wen-Yu correlation, you can put here your own single particle drag
          Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
@@ -1809,13 +1772,13 @@
          M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
          NU_PM = (EPS(M)*ROS_avg(M))/M_PM
 
-          if(.NOT. BC_JJ_M)then	
-          F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*EPS(M)*g0(M))/&
-               (6.d0*(ONE-ep_star_avg))
-          else
-          F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*EPS(M)*g0(M))/&
-               (6.d0*(ONE-ep_star_avg))
-          endif          	              
+         IF(.NOT. BC_JJ_M) THEN
+            F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*EPS(M)*&
+               g0(M))/ (6.d0*(ONE-ep_star_avg))
+         ELSE
+            F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M))*PI*&
+               ROS_avg(M)*EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg))
+         ENDIF      
 
 ! This is from Wen-Yu correlation, you can put here your own single particle drag
          Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
@@ -1896,13 +1859,13 @@
 
          ELSE   ! if(.not.jenkins)
  
-	       if(.NOT. BC_JJ_M)then  
-	       F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*ROS_avg(M)*EPS(M)*g0(M))&
-		    /(6d0*(ONE-ep_star_avg))
-	       else
-	       F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3d0*TH(M))*Pi*ROS_avg(M)*EPS(M)*g0(M))&
-		    /(6d0*(ONE-ep_star_avg))               	       
-	       endif               
+            IF(.NOT. BC_JJ_M) THEN
+               F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*ROS_avg(M)*EPS(M)*&
+                  g0(M))/(6d0*(ONE-ep_star_avg))
+            ELSE
+               F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3d0*TH(M))*PI*&
+                  ROS_avg(M)*EPS(M)*g0(M))/(6d0*(ONE-ep_star_avg))
+            ENDIF
 
          ENDIF   ! end if(Jenkins)/else 
  

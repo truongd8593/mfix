@@ -1,26 +1,28 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: BC_THETA( M, A_m, B_m, IER)                            C
+!  Subroutine: BC_THETA                                                C
 !                                                                      C
-!  Purpose: Implementation of Johnson & Jackson boundary conditions    C
-!  for the pseudo-thermal temperature.                                 C
-
-!  Notes:
-!    If BC_JJ_PS = 3, then set the wall temperature equal to the 
-!    adjacent fluid cell temperature (i.e. zero flux) 
-!    IF BC_JJ_PS = 1, then set the wall temperature based on 
-!    Johnson and Jackson Pseudo-thermal temp B.C. 
-!    IF BC_JJ_PS !=1, !=3 and >0, then set the wall temperature
-!    based on Johnson and Jackson Pseudo-thermal temp B.C. without
-!    the generation term
-
+!  Purpose: Calculate boundary conditions for the temperature/         C
+!     granular energy equation                                         C
 !                                                                      C
 !  Author: Kapil Agrawal, Princeton University        Date: 14-MAR-98  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !                                                                      C
 !  Literature/Document References:                                     C
-!
+!     Johnson, P. C., and Jackson, R., Frictional-collisional          C
+!        constitutive relations for granular materials, with           C
+!        application to plane shearing, Journal of Fluid Mechanics,    C
+!        1987, 176, pp. 67-93                                          C
+!                                                                      C
+!  Notes:                                                              C
+!    If BC_JJ_PS = 3, then set the wall temperature equal to the       C
+!       adjacent fluid cell temperature (i.e. zero flux)               C
+!    IF BC_JJ_PS = 1, then set the wall temperature based on           C
+!       Johnson and Jackson Pseudo-thermal temp BC                     C
+!    IF BC_JJ_PS !=1, !=3 and >0, then set the wall temperature        C
+!      based on Johnson and Jackson Pseudo-thermal temp BC without     C
+!       the generation term                                            C
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
@@ -49,7 +51,7 @@
       USE mpi_utility    
       IMPLICIT NONE
 !-----------------------------------------------
-! Dummy Arguments
+! Dummy arguments
 !-----------------------------------------------
 ! Solids phase index
       INTEGER :: M
@@ -60,7 +62,7 @@
 ! Error index
       INTEGER :: IER
 !-----------------------------------------------
-! Local Variables
+! Local variables
 !-----------------------------------------------
 ! Boundary condition
       INTEGER :: L
@@ -282,7 +284,7 @@
  
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CALC_THETA_BC(IJK1,IJK2,FCELL,M,L,Gw,Hw,Cw)            C
+!  Subroutine: CALC_THETA_BC                                           C
 !                                                                      C
 !  Purpose: Implementation of Johnson & Jackson boundary conditions    C
 !  for the pseudo-thermal temperature.                                 C
@@ -329,8 +331,6 @@
       INTEGER, INTENT(IN) ::  L      
 ! Granular energy coefficient
       DOUBLE PRECISION, INTENT(INOUT) :: Gw, Hw, Cw
-! Variable specularity coefficient  
-     DOUBLE PRECISION PHIP_JJ 
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
@@ -345,7 +345,7 @@
 ! Average scalars modified to include all solid phases
       DOUBLE PRECISION :: EPs_avg(DIMENSION_M), DP_avg(DIMENSION_M), &
                           TH_avg(DIMENSION_M)
-!QX
+! Average density of solids phase M
       DOUBLE PRECISION ROs_avg(DIMENSION_M)
 ! Average Simonin variables
       DOUBLE PRECISION :: K_12_avg, Tau_12_avg
@@ -371,6 +371,11 @@
       DOUBLE PRECISION :: g0(DIMENSION_M)
 ! Sum of eps*G_0
       DOUBLE PRECISION :: g0EPs_avg, G_0
+!----------------------------------------------- 
+! External functions
+!----------------------------------------------- 
+! Variable specularity coefficient  
+      DOUBLE PRECISION :: PHIP_JJ 
 !----------------------------------------------- 
 ! Include statements functions
 !----------------------------------------------- 
@@ -407,7 +412,6 @@
          EPs_avg(MM) = EP_s(IJK2,MM)
          DP_avg(MM)  = D_P(IJK2,MM)
          g0EPs_avg   = g0EPs_avg + G_0(IJK2, M, MM)*EP_s(IJK2,MM)
-!QX
          ROs_avg(MM) = RO_SV(IJK2,MM)
       ENDDO
 
@@ -609,7 +613,7 @@
 ! to ijk2
             IJK3 = TOP_OF(IJK2)
             GNUWDOTN(MM) = -1.d0*(6.d0/(PI*DP_avg(MM)))*&
-                 (EP_s(IJK3,MM)-EP_s(IJK2,MM))*oX(I_of(IJK2))*oDZ_T(K_OF(IJK2))     
+                 (EP_s(IJK3,MM)-EP_s(IJK2,MM))*oX(I_of(IJK2))*oDZ_T(K_OF(IJK2))
 
 ! gradient in granular temperature at wall (i,j,k+1/2 relative to ijk1) 
 ! dot with the normal vector at the wall.
@@ -654,7 +658,7 @@
 ! to ijk2
             IJK3 = BOTTOM_OF(IJK2)
             GNUWDOTN(MM) = 1.d0*(6.d0/(PI*DP_avg(MM)))*&
-                 (EP_s(IJK2,MM)-EP_s(IJK3,MM))*oX(I_of(IJK3))*oDZ_T(K_OF(IJK3))     
+                 (EP_s(IJK2,MM)-EP_s(IJK3,MM))*oX(I_of(IJK3))*oDZ_T(K_OF(IJK3))
 
 ! gradient in granular temperature at wall (i,j,k+1/2 relative to ijk2) 
 ! dot with the normal vector at the wall.
@@ -694,14 +698,15 @@
                        g0EPs_avg, TH_avg,Mu_g_avg,RO_g_avg, ROs_avg, &
                        DP_avg, K_12_avg,Tau_12_avg,VREL,VSLIPSQ,VWDOTN,&
                        GNUWDOTN,GTWDOTN,M,Gw,Hw,Cw,L)
-!
-!     Output the variable specularity coefficient 
-!     This only work for one solid phase
-      if(BC_JJ_M .and. PHIP_OUT_JJ)then
-      	if(PHIP_OUT_ITER.eq.1)then
-      		ReactionRates(IJK1,1)= PHIP_JJ(dsqrt(VSLIPSQ),TH_avg(1))
-      	endif
-      endif
+
+! Output the variable specularity coefficient.  Currently only works
+! for one solids phase                       
+      IF(BC_JJ_M .and. PHIP_OUT_JJ) THEN
+         IF(PHIP_OUT_ITER.eq.1) THEN
+            ReactionRates(IJK1,1)= PHIP_JJ(dsqrt(VSLIPSQ),TH_avg(1))
+         ENDIF
+      ENDIF
+
       RETURN
       END SUBROUTINE CALC_THETA_BC
  
@@ -709,7 +714,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SUBROUTINE THETA_HW_CW
+!  Subroutine: SUBROUTINE THETA_HW_CW                                  C
 !  Purpose: Subroutine for gw, hw and cw                               C
 !                                                                      C
 !  Author: Kapil Agrawal, Princeton University         Date: 15-MAR-98 C
@@ -721,22 +726,26 @@
 !  Purpose: Include conductivity defined by Simonin and Ahmadi         C
 !           Also included Jenkins small frictional limit               C
 !                                                                      C
-!  Literature/Document References: See calcmu_s.f for ref. on Simonin  C
-!  and Ahmadi models; for Jenkins BC: Jenkins and Louge, Phys. fluids  C
-!  9 (10), 2835. See equation (3) in the paper                         C
-!           
-!  Additional Notes:
-!    The current implementation of the IA (2005) kinetic theory and 
-!    the GD (1999) kinetic theory do not incorporate ahmadi or simonin
-!    additions nor jenkins small frictional bc mdoel
-
-!    The granular energy BC is written as the normal vector dot the
-!    heat flux.  In granular kinetic theory the expression for heat 
-!    flux generally contains terms beyond the gradient in temperature.
-!    Thus to rigorously implement the granualr energy BC would require
-!    accounting for the additional terms.  Such modifications were
-!    not done for the kinetic theories here.
-!
+!  Literature/Document References:                                     C
+!     Jenkins, J. T., and Louge, M. Y., On the flux of fluctuating     C
+!        energy in a collisional grain flow at a flat frictional wall, C
+!        Physics of Fluids, 1997, 9(10), pp. 2835-2840                 C
+!                                                                      C
+!     See calc_mu_s.f for references on kinetic theory models          C
+!     See calc_mu_s.f for references on Ahmadi and Simonin models      C
+!                                                                      C
+!  Additional Notes:                                                   C
+!     The current implementation of the IA (2005) kinetic theory and   C
+!     the GD (1999) kinetic theory do not incorporate ahmadi or        C
+!     simonin additions, nor the jenkins small frictional bc model     C
+!                                                                      C
+!     The granular energy BC is written as the normal vector dot the   C
+!     heat flux. In granular kinetic theory the expression for heat    C
+!     flux generally contains terms beyond the gradient in temp.       C
+!     So, to rigorously implement the granualr energy BC requires      C
+!     accounting for the additional terms. Such modifications were     C
+!     not done for the kinetic theories here.                          C
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE THETA_HW_CW(g0,EPS,EPG, ep_star_avg, &
@@ -775,7 +784,7 @@
       DOUBLE PRECISION, INTENT(IN) :: Mu_g_avg
 ! Average gas density
       DOUBLE PRECISION, INTENT(IN) :: RO_g_avg
-!QX
+! Average density of solids phase M
       DOUBLE PRECISION, INTENT(IN) :: ROS_avg(DIMENSION_M)
 ! Average particle diameter of each solids phase
       DOUBLE PRECISION, INTENT(IN) :: DP_avg(DIMENSION_M)
@@ -837,7 +846,8 @@
 !----------------------------------------------- 
 ! Function subroutines
 !----------------------------------------------- 
-      DOUBLE PRECISION PHIP_JJ 
+! variable specularity coefficient
+      DOUBLE PRECISION :: PHIP_JJ 
 !-----------------------------------------------
  
       IF(TH(M) .LE. ZERO)THEN
@@ -852,7 +862,6 @@
       IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
 
 ! Use original IA theory if SWITCH_IA is false
-!QX: !Dimenson of RO_S was changed
           IF(.NOT. SWITCH_IA) g0EPs_avg = EPS(M)*ROS_avg(M)
 
          D_PM = DP_avg(M)        
@@ -1003,13 +1012,15 @@
 ! of granular temperature)
          HW = (PI*DSQRT(3.d0)/(4.d0*(ONE-ep_star_avg)))*(1.d0-e_w*e_w)*&
             ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M)/M_PM)
-          if(.NOT. BC_JJ_M)then                
-          CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*PHIP*ROs_avg(M)*&
+
+         IF(.NOT. BC_JJ_M) THEN
+            CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*PHIP*&
+               ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M)*M_PM)*VSLIPSQ
+         ELSE
+            CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*&
+               PHIP_JJ(DSQRT(vslipsq),TH(M))*ROs_avg(M)*&
                EPS(M)*g0(M)*DSQRT(TH(M)*M_PM)*VSLIPSQ
-          else
-          CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*PHIP_JJ(dsqrt(vslipsq),th(m))*ROs_avg(M)*&
-               EPS(M)*g0(M)*DSQRT(TH(M)*M_PM)*VSLIPSQ
-          endif
+         ENDIF
 
 ! Note that the velocity term is not included here because it should
 ! become zero when dotted with the outward normal (i.e. no solids 
@@ -1091,13 +1102,14 @@
          HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*(1d0-e_w*e_w)*&
             ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))
  
-          if(.NOT. BC_JJ_M)then 
-          CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*ROs_avg(M)*&
+         IF(.NOT. BC_JJ_M) THEN
+            CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*&
+               ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
+         ELSE
+            CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*&
+               PHIP_JJ(DSQRT(vslipsq),TH(M))*ROs_avg(M)*&
                EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
-          else
-          CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP_JJ(dsqrt(vslipsq),th(m))*ROs_avg(M)*&
-               EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
-	  endif
+         ENDIF
 
 ! transport coefficient of the Mth solids phase associated
 ! with gradient in volume fraction in heat flux
@@ -1211,13 +1223,15 @@
 
             HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*(1d0-e_w*e_w)*&
                ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))
-               if(.NOT. BC_JJ_M)then 
-               CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*ROs_avg(M)*&
-                    EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
-               else
-               CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP_JJ(dsqrt(vslipsq),th(m))*ROs_avg(M)*&
-                    EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ  
-               endif	
+
+            IF(.NOT. BC_JJ_M) THEN
+               CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*&
+                  ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
+            ELSE
+               CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*&
+                  PHIP_JJ(DSQRT(vslipsq),TH(M))*ROs_avg(M)*&
+                  EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ  
+            ENDIF
 
          ENDIF   ! end if(Jenkins)/else
 
@@ -1227,29 +1241,50 @@
       RETURN
       END SUBROUTINE THETA_HW_CW
 
-!----------------------------------------------------------------------------
-!Module name phip_jj
-!calculate the specularity coefficient for JJ boundary conditions
-!Author: Tingwen Li
-!Reference:
-!T. Li and S. Benyahia, Revisiting Johnson and Jackson boundary conditions 
-!for granular flows, AIChE Journal, DOI: 10.1002/aic.12728
-!----------------------------------------------------------------------------
 
-	double precision function phip_jj(uslip,g_theta)
-	use constant  !e_w, phi_w, PI
-	implicit none
-	double precision uslip,g_theta,r4phi
-	
-!	k4phi=7.d0/2.d0*mu4phi*(1.d0+e_w)
-	r4phi=uslip/dsqrt(3.d0*g_theta)
-	
-	if(r4phi .le. 4.d0*k4phi/7.d0/dsqrt(6.d0*PI)/phip0)then
-		phip_jj=-7.d0*dsqrt(6.d0*PI)*phip0**2/8.d0/k4phi*r4phi+phip0
-        else
-        	phip_jj=2.d0/7.d0*k4phi/r4phi/dsqrt(6.d0*PI)
-	endif
 
-	return      	
-	end
-	      
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Function: PHIP_JJ                                                   C
+!  Purpose: Calculate the specularity coefficient for JJ BC            C
+!                                                                      C
+!  Author: Tingwen Li                                                  C
+!                                                                      C
+!                                                                      C
+!  Literature/Document References:                                     C
+!     Li, T., and Benyahia, S., Revisiting Johnson and Jackson         C
+!        boundary conditions for granular flows, AIChE Journal, 2012,  C
+!        Vol 58 (7), pp. 2058-2068                                     C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+
+      DOUBLE PRECISION FUNCTION phip_jj(uslip,g_theta)
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      use constant, only : e_w, PI, k4phi, phip0
+      implicit none
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+      double precision, INTENT(IN) :: uslip
+      double precision, INTENT(IN) :: g_theta
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+      double precision :: r4phi
+!-----------------------------------------------
+
+      !k4phi=7.d0/2.d0*mu4phi*(1.d0+e_w)
+      r4phi=uslip/dsqrt(3.d0*g_theta)
+
+      IF(r4phi .le. 4.d0*k4phi/7.d0/dsqrt(6.d0*PI)/phip0) THEN
+         phip_jj=-7.d0*dsqrt(6.d0*PI)*phip0**2/8.d0/k4phi*r4phi+phip0
+      ELSE
+         phip_jj=2.d0/7.d0*k4phi/r4phi/dsqrt(6.d0*PI)
+      ENDIF
+
+      RETURN
+
+      END FUNCTION PHIP_JJ

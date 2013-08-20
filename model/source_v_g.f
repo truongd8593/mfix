@@ -2,10 +2,10 @@
 !                                                                      C
 !  Subroutine: SOURCE_V_g                                              C
 !  Purpose: Determine source terms for V_g momentum eq. The terms      C
-!  appear in the center coefficient and RHS vector.    The center      C
-!  coefficient and source vector are negative.  The off-diagonal       C
-!  coefficients are positive.                                          C
-!  The drag terms are excluded from the source at this stage           C
+!     appear in the center coefficient and RHS vector.    The center   C
+!     coefficient and source vector are negative.  The off-diagonal    C
+!     coefficients are positive.                                       C
+!     The drag terms are excluded from the source at this stage        C
 !                                                                      C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 7-JUN-96   C
@@ -15,12 +15,9 @@
 !  Purpose: To incorporate Cartesian grid modifications                C
 !  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
+!                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -70,32 +67,32 @@
       INTEGER :: I, J, K, IJK, IJKN, &
                  IMJK, IPJK, IJMK, IJPK, IJKP, IJKM, IMJPK, IJPKM
 ! Phase index 
-      INTEGER :: M, L, IM
+      INTEGER :: M, L, MM
 ! Internal surface 
       INTEGER :: ISV 
 ! Pressure at north cell 
-      DOUBLE PRECISION PgN 
+      DOUBLE PRECISION :: PgN 
 ! Average volume fraction 
-      DOUBLE PRECISION EPGA 
+      DOUBLE PRECISION :: EPGA 
 ! Average density 
-      DOUBLE PRECISION ROPGA, ROGA 
+      DOUBLE PRECISION :: ROPGA, ROGA 
 ! Average viscosity 
-      DOUBLE PRECISION MUGA 
+      DOUBLE PRECISION :: MUGA 
 ! Source terms (Surface) 
-      DOUBLE PRECISION Sdp 
+      DOUBLE PRECISION :: Sdp 
 ! Source terms (Volumetric) 
-      DOUBLE PRECISION V0, Vpm, Vmt, Vbf 
+      DOUBLE PRECISION :: V0, Vpm, Vmt, Vbf 
 ! Source terms (Volumetric) for GHD theory
-      DOUBLE PRECISION Ghd_drag, avgRop
+      DOUBLE PRECISION :: Ghd_drag, avgRop
 ! Source terms for HYS drag relation
-      DOUBLE PRECISION HYS_drag, avgDrag
+      DOUBLE PRECISION :: HYS_drag, avgDrag
 ! virtual (added) mass
-      DOUBLE PRECISION F_vir, ROP_MA, Vsn, Vss, U_se, Usw, Vse, Vsw, Wst, Wsb, Vst, Vsb
-	  DOUBLE PRECISION F_vir_tmp1, F_vir_tmp2		!Handan Liu added July 19 2012
-!	  
+      DOUBLE PRECISION :: ROP_MA, Vsn, Vss, U_se, Usw, Vse, Vsw, &
+                          Wst, Wsb, Vst, Vsb
+      DOUBLE PRECISION :: F_vir
 ! loezos: shear terms
-      DOUBLE PRECISION VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
-      DOUBLE PRECISION SRT
+      DOUBLE PRECISION :: VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
+      DOUBLE PRECISION :: SRT
 ! error message 
       CHARACTER*80     LINE 
 !-----------------------------------------------
@@ -110,24 +107,19 @@
       INCLUDE 'b_force2.inc'
 !-----------------------------------------------
 
+! Set reference phase to gas
       M = 0 
+
       IF (.NOT.MOMENTUM_Y_EQ(0)) RETURN  
 
 
-!!$omp  parallel do private( I, J, K, IJK, IJKN, ISV, Sdp, V0, Vpm, Vmt, Vbf, &
-!!$omp&  PGN, ROGA, MUGA, ROPGA, EPGA,VSH_n,VSH_s,VSH_e,VSH_w,&
-!!$omp&  VSH_p,Source_conv, SRT ) &
-!!$omp&  schedule(static)
-
-!! Handan Liu added on July 19 2012
-!$omp  parallel do default(shared)									&
-!$omp  private(I, J, K, IJK, IJKN, IMJK, IPJK, IJMK, IJPK, IMJPK,  	&
-!$omp			IJKM, IJPKM, IJKP, EPGA, PGN, SDP, ROPGA, ROGA, 	&
-!$omp           ROP_MA, V0, ISV, MUGA, Vpm, Vmt, Vbf, L, IM,		&
-!$omp 			Vsn, Vss, U_se, Usw, Vse, Vsw, Wst, Wsb, Vst, 		&
-!$omp			Vsb, F_vir, Ghd_drag, F_vir_tmp1, F_vir_tmp2, 		&
-!$omp           avgRop, avgDrag, HYS_drag,VSH_n, VSH_s, VSH_e, 		&
-!$omp			VSH_w, VSH_p, Source_conv, SRT)	
+!$omp  parallel do default(shared)                                   &
+!$omp  private(I, J, K, IJK, IJKN, IMJK, IPJK, IJMK, IJPK, IMJPK,    &
+!$omp          IJKM, IJPKM, IJKP, EPGA, PGN, SDP, ROPGA, ROGA,       &
+!$omp          ROP_MA, V0, ISV, MUGA, Vpm, Vmt, Vbf, L, MM,          &
+!$omp          Vsn, Vss, U_se, Usw, Vse, Vsw, Wst, Wsb, Vst,         &
+!$omp          Vsb, F_vir, Ghd_drag, avgRop, avgDrag, HYS_drag,      &
+!$omp          VSH_n, VSH_s, VSH_e, VSH_w, VSH_p, Source_conv, SRT)
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK) 
          J = J_OF(IJK) 
@@ -197,13 +189,15 @@
                IF(.NOT.CUT_V_TREATMENT_AT(IJK)) THEN
                   SDP = -P_SCALE*(PGN - P_G(IJK))*AXZ(IJK) 
                ELSE
-                  SDP = -P_SCALE*(PGN * A_VPG_N(IJK)  - P_G(IJK) * A_VPG_S(IJK) )
+                  SDP = -P_SCALE*(PGN * A_VPG_N(IJK) - &
+                                  P_G(IJK) * A_VPG_S(IJK) )
                ENDIF
             ELSE 
                IF(.NOT.CUT_V_TREATMENT_AT(IJK)) THEN
                   SDP = -P_SCALE*EPGA*(PGN - P_G(IJK))*AXZ(IJK) 
                ELSE
-                  SDP = -P_SCALE*EPGA*(PGN * A_VPG_N(IJK)  - P_G(IJK) * A_VPG_S(IJK) )
+                  SDP = -P_SCALE*EPGA*(PGN * A_VPG_N(IJK) - &
+                                       P_G(IJK) * A_VPG_S(IJK) )
                ENDIF
             ENDIF 
 
@@ -215,7 +209,8 @@
                V0 = AVG_Y(ROP_GO(IJK),ROP_GO(IJKN),J)*ODT 
 ! Added mass implicit transient term {Cv eps rop_g dV/dt}
                IF(Added_Mass) THEN
-                 ROP_MA = AVG_Y(ROP_g(IJK)*EP_s(IJK,M_AM),ROP_g(IJKN)*EP_s(IJKN,M_AM),J)
+                 ROP_MA = AVG_Y(ROP_g(IJK)*EP_s(IJK,M_AM),&
+                                ROP_g(IJKN)*EP_s(IJKN,M_AM),J)
                  V0 = V0 + Cv * ROP_MA * ODT
                ENDIF
             ELSE
@@ -239,12 +234,10 @@
 ! VIRTUAL MASS SECTION (explicit terms)
 ! adding transient term dVs/dt to virtual mass term		    
             F_vir = ZERO
-!Handan Liu added on July 19 2012 as following section
-!===================================================================<< Handan Liu			
             IF(Added_Mass.AND.(.NOT.CUT_V_TREATMENT_AT(IJK))) THEN 
-               !F_vir = ( (V_s(IJK,M_AM) - V_sO(IJK,M_AM)) )*ODT*VOL_V(IJK)
-			   F_vir_tmp1 = ( (V_s(IJK,M_AM) - V_sO(IJK,M_AM)) )*ODT*VOL_V(IJK)
-!			   
+               F_vir = ((V_s(IJK,M_AM) - V_sO(IJK,M_AM)))*&
+                  ODT*VOL_V(IJK)
+
 ! defining gas-particles velocity at momentum cell faces (or scalar cell center)     
                Vss = AVG_Y_N(V_S(IJMK,M_AM),V_s(IJK,M_AM))
                Vsn = AVG_Y_N(V_s(IJK,M_AM),V_s(IJPK,M_AM))  
@@ -257,25 +250,22 @@
                   Wsb = AVG_Y(W_s(IJKM,M_AM),W_s(IJPKM,M_AM),J)
                   Vst = AVG_Z(V_s(IJK,M_AM),V_s(IJKP,M_AM),KP1(K))
                   Vsb = AVG_Z(V_s(IJKM,M_AM),V_s(IJK,M_AM),K)
-                  !F_vir = F_vir + AVG_Z_T(Wsb,Wst)*OX(I) * (Vst - Vsb)*AXY(IJK)
-				  F_vir_tmp2 = F_vir_tmp1 + AVG_Z_T(Wsb,Wst)*OX(I) * (Vst - Vsb)*AXY(IJK)				  
+                  F_vir = F_vir + AVG_Z_T(Wsb,Wst)*OX(I) * &
+                     (Vst - Vsb)*AXY(IJK)
                ENDIF
 ! adding convective terms (U dV/dx + V dV/dy) to virtual mass; W dV/dz added above.
-               !F_vir = F_vir + V_s(IJK,M_AM)*(Vsn - Vss)*AXZ(IJK) + &
-               !   AVG_X_E(Usw,U_se,IP1(I))*(Vse - Vsw)*AYZ(IJK)
-               !F_vir = F_vir * Cv * ROP_MA
-               F_vir_tmp2 = F_vir_tmp1 + V_s(IJK,M_AM)*(Vsn - Vss)*AXZ(IJK) + &
+               F_vir = F_vir + V_s(IJK,M_AM)*(Vsn - Vss)*AXZ(IJK) + &
                   AVG_X_E(Usw,U_se,IP1(I))*(Vse - Vsw)*AYZ(IJK)
-               F_vir = F_vir_tmp2 * Cv * ROP_MA			   
+               F_vir = F_vir * Cv * ROP_MA
             ENDIF
-!===================================================================>> Handan Liu
+
 ! pressure drop through porous media
             IF (SIP_AT_N(IJK)) THEN 
                ISV = IS_ID_AT_N(IJK) 
                MUGA = AVG_Y(MU_G(IJK),MU_G(IJKN),J) 
                VPM = MUGA/IS_PC(ISV,1) 
-               IF (IS_PC(ISV,2) /= ZERO) VPM = VPM + HALF*IS_PC(ISV,2)*ROPGA*ABS(&
-                  V_G(IJK)) 
+               IF (IS_PC(ISV,2) /= ZERO) VPM = VPM + HALF*IS_PC(ISV,2)*&
+                   ROPGA*ABS(V_G(IJK)) 
             ELSE 
                VPM = ZERO 
             ENDIF 
@@ -284,7 +274,8 @@
             IF(.NOT.CUT_V_TREATMENT_AT(IJK)) THEN 
               VMT = AVG_Y(SUM_R_G(IJK),SUM_R_G(IJKN),J) 
             ELSE
-               VMT = (VOL(IJK)*SUM_R_G(IJK) + VOL(IJKN)*SUM_R_G(IJKN))/(VOL(IJK) + VOL(IJKN))  
+               VMT = (VOL(IJK)*SUM_R_G(IJK) + VOL(IJKN)*SUM_R_G(IJKN))/&
+                  (VOL(IJK) + VOL(IJKN))  
             ENDIF
 
 ! Body force
@@ -308,11 +299,11 @@
             avgDrag = ZERO
             HYS_drag = ZERO
             IF (TRIM(DRAG_TYPE) .EQ. 'HYS' .AND. TRIM(KT_TYPE) /= 'GHD') THEN
-               DO IM=1,MMAX
+               DO MM=1,MMAX
                   DO L = 1,MMAX
-                     IF (L /= IM) THEN
-                        avgDrag = AVG_Y(beta_ij(IJK,IM,L),beta_ij(IJKN,IM,L),J)
-                        HYS_drag = HYS_drag + avgDrag * (V_g(ijk) - V_s(IJK,L))
+                     IF (L /= MM) THEN
+                        avgDrag = AVG_Y(beta_ij(IJK,MM,L),beta_ij(IJKN,MM,L),J)
+                        HYS_drag = HYS_drag + avgDrag * (V_g(IJK) - V_s(IJK,L))
                      ENDIF
                   ENDDO
                ENDDO        
@@ -341,7 +332,8 @@
             B_M(IJK,M) = B_M(IJK,M) - (SDP + TAU_V_G(IJK) + &
                Source_conv + ((V0+ZMAX((-VMT)))*V_GO(IJK) + VBF + &
                Ghd_drag + HYS_drag)*VOL_V(IJK) ) 
-            B_M(IJK,M) = B_M(IJK,M) - F_vir ! adding explicit-part of virtual mass force.
+! adding explicit-part of virtual mass force
+            B_M(IJK,M) = B_M(IJK,M) - F_vir 
          ENDIF 
       ENDDO 
 !$omp end parallel do
@@ -361,21 +353,15 @@
 !                                                                      C
 !  Subroutine: SOURCE_V_g_BC                                           C
 !  Purpose: Determine source terms for V_g momentum eq. The terms      C
-!  appear in the center coefficient and RHS vector. The center         C
-!  coefficient and source vector are negative.  The off-diagonal       C
-!  coefficients are positive.                                          C
-!  The drag terms are excluded from the source at this stage           C
+!     appear in the center coefficient and RHS vector. The center      C
+!     coefficient and source vector are negative.  The off-diagonal    C
+!     coefficients are positive.                                       C
+!     The drag terms are excluded from the source at this stage        C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 7-JUN-96   C
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -421,7 +407,7 @@
 ! Indices 
       INTEGER :: I, J, K, JM, I1, I2, J1, J2, K1, K2, IJK, & 
                  IM, KM, IJKS, IJMK, IJPK 
-! Solids phase 
+! Phase index
       INTEGER :: M 
 ! Turbulent shear stress
       DOUBLE PRECISION :: W_F_Slip 
@@ -589,7 +575,7 @@
                      DO I = I1, I2 
                         IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         IJK = FUNIJK(I,J,K) 
-                        IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells
+                        IF (.NOT.WALL_AT(IJK)) CYCLE  ! skip redefined cells
                         A_M(IJK,E,M) = ZERO 
                         A_M(IJK,W,M) = ZERO 
                         A_M(IJK,N,M) = ZERO 
@@ -623,7 +609,7 @@
                      DO I = I1, I2 
                         IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         IJK = FUNIJK(I,J,K) 
-                        IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells
+                        IF (.NOT.WALL_AT(IJK)) CYCLE  ! skip redefined cells
                         A_M(IJK,E,M) = ZERO 
                         A_M(IJK,W,M) = ZERO 
                         A_M(IJK,N,M) = ZERO 
@@ -657,7 +643,7 @@
                      DO I = I1, I2 
                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         IJK = FUNIJK(I,J,K) 
-                        IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells
+                        IF (.NOT.WALL_AT(IJK)) CYCLE  ! skip redefined cells
                         IM = IM1(I) 
                         KM = KM1(K) 
                         A_M(IJK,E,M) = ZERO 
@@ -715,9 +701,9 @@
 
 ! Setting wall boundary conditions when K_EPSILON
             ELSEIF (BC_TYPE(L) == 'PAR_SLIP_WALL'   .OR.  &
-                     BC_TYPE(L) == 'NO_SLIP_WALL'    .OR.  &
-                     BC_TYPE(L) == 'FREE_SLIP_WALL'  .AND. &
-                     K_Epsilon )THEN
+                    BC_TYPE(L) == 'NO_SLIP_WALL'    .OR.  &
+                    BC_TYPE(L) == 'FREE_SLIP_WALL'  .AND. &
+                    K_Epsilon )THEN
                I1 = BC_I_W(L) 
                I2 = BC_I_E(L) 
                J1 = BC_J_S(L) 
@@ -729,7 +715,7 @@
                      DO I = I1, I2 
                         IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         IJK = FUNIJK(I,J,K) 
-                        IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells
+                        IF (.NOT.WALL_AT(IJK)) CYCLE  ! skip redefined cells
                         IM = IM1(I) 
                         KM = KM1(K) 
                         A_M(IJK,E,M) = ZERO 
@@ -770,7 +756,6 @@
 ! Setting p_inflow or p_outflow flow boundary conditions
 ! ---------------------------------------------------------------->>>
             ELSE IF (BC_TYPE(L)=='P_INFLOW' .OR. BC_TYPE(L)=='P_OUTFLOW') THEN 
-
                IF (BC_PLANE(L) == 'S') THEN 
 ! if the fluid cell is on the south side of the outflow/inflow boundary
 ! then set the velocity in the boundary cell equal to the velocity of 
@@ -920,6 +905,7 @@
       END SUBROUTINE SOURCE_V_G_BC 
 
 
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: POINT_SOURCE_V_G                                        C
@@ -945,29 +931,27 @@
 !-----------------------------------------------
 ! Septadiagonal matrix A_m 
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
-
 ! Vector b_m 
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M) 
-
 ! Error index 
       INTEGER, INTENT(INOUT) :: IER 
-
 !----------------------------------------------- 
 ! Local Variables
 !----------------------------------------------- 
-
 ! Indices 
       INTEGER :: IJK, I, J, K
       INTEGER :: IJKN, IJPK
       INTEGER :: PSV, M
-
       INTEGER :: lJN, lJS
-
 ! terms of bm expression
       DOUBLE PRECISION :: pSource
+!----------------------------------------------- 
+! Include statement functions
+!----------------------------------------------- 
+      INCLUDE 'function.inc'
+!----------------------------------------------- 
 
-      include 'function.inc'
-
+! Set reference phase to gas
       M = 0
 
 ! Calculate the mass going into each IJK cell. This is done for each 

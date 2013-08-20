@@ -1,11 +1,11 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SOURCE_V_s                                             C
+!  Subroutine name: SOURCE_V_s                                         C
 !  Purpose: Determine source terms for V_s momentum eq. The terms      C
-!  appear in the center coefficient and RHS vector.    The center      C
-!  coefficient and source vector are negative.  The off-diagonal       C
-!  coefficients are positive.                                          C
-!  The drag terms are excluded from the source at this stage.          C
+!     appear in the center coefficient and RHS vector.    The center   C
+!     coefficient and source vector are negative.  The off-diagonal    C
+!     coefficients are positive.                                       C
+!     The drag terms are excluded from the source at this stage.       C
 !                                                                      C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 7-JUN-96   C
@@ -18,16 +18,13 @@
 !  Author: K. Agrawal, Princeton University           Date: 24-JAN-98  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
 !  Revision Number: 2                                                  C
 !  Purpose: To incorporate Cartesian grid modifications                C
 !  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
 !                                                                      C
-!  Local variables:                                                    C
+!  Literature/Document References:                                     C
+!                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -67,18 +64,18 @@
 ! Dummy Arguments
 !-----------------------------------------------
 ! Septadiagonal matrix A_m 
-      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
+      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
  
 ! Vector b_m 
-      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M) 
+      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Error index 
-      INTEGER          IER 
+      INTEGER, INTENT(INOUT) :: IER 
 !-----------------------------------------------
 ! Local Variables 
 !-----------------------------------------------
 ! Indices 
-      INTEGER ::  I, J, K, IJK, IMJK, IJMK, IJKM, IJKN, &
-                  IPJK, IJPK, IJKP, IMJPK, IJPKM
+      INTEGER :: I, J, K, IJK, IMJK, IJMK, IJKM, IJKN, &
+                 IPJK, IJPK, IJKP, IMJPK, IJPKM
 ! Phase index 
       INTEGER :: M, MM, L
 ! Internal surface 
@@ -102,10 +99,9 @@
 ! Source terms for HYS drag relation
       DOUBLE PRECISION :: HYS_drag, avgDrag
 ! virtual (added) mass
-      DOUBLE PRECISION :: F_vir, ROP_MA, Vgn, Vgs, Uge, Ugw, Vge,&
+      DOUBLE PRECISION :: ROP_MA, Vgn, Vgs, Uge, Ugw, Vge,&
                           Vgw, Wgt, Wgb, Vgt, Vgb
-      DOUBLE PRECISION :: F_vir_tmp1, F_vir_tmp2	!Handan Liu added July 12 2012
-						  
+      DOUBLE PRECISION :: F_vir
 ! terms for shear (loezos)
       DOUBLE PRECISION :: VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
       DOUBLE PRECISION :: SRT
@@ -125,23 +121,20 @@
 
 
       DO M = 1, MMAX 
-        IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+        IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. &
+                                        M==MMAX)) THEN
           IF (MOMENTUM_Y_EQ(M)) THEN 
 
-!!!$omp  parallel do private( I, J, K, IJK, IJKN, ISV, Sdp, Sdps, V0, Vmt, &
-!!!$omp&  PGN,DRO1,DRO2,DROA, Vbf, ROPSA, EPSA, EPStmp, VSH_n,VSH_s,VSH_e,&
-!!!$omp&  VSH_w,VSH_p,Source_conv, SRT,SUM_EPS_CP,MM) &
-!!!$omp&  schedule(static)
-!Handan Liu added on July 12 2012, then modified March 1 2013:
-!===================================================================<<< Handan Liu
-!$omp  parallel do default(shared)												&
-!$omp  private( I, J, K, IJK, IJKN, IMJK, IPJK, IJMK, IJPK, IMJPK, IJKM,		&
-!$omp			IJPKM,IJKP,ISV, epsMix, epsMixN, EPStmp, EPSA, EPSw, EPSe,		&
-!$omp			EPSn, EPSs, EPSt, EPSb, PGN, Sdp, SUM_EPS_CP, Sdps, MM, 		&
-!$omp			ROPSA,V0, ROP_MA, L, Vgn, Vgs, 	Uge, Ugw, Vge, Vgw, Wgt, 		&
-!$omp			Wgb, Vgt, Vgb, F_vir,  VMT, VMTtmp,	F_vir_tmp1, F_vir_tmp2,		&
-!$omp 			DRO1, DRO2, DROA, Vbf, avgRop, Ghd_drag, HYS_drag, avgDrag,		&
-!$omp			VSH_n, VSH_s, VSH_e, VSH_w, VSH_p, Source_conv, SRT)
+
+!$omp  parallel do default(shared)                                   &
+!$omp  private( I, J, K, IJK, IJKN, IMJK, IPJK, IJMK, IJPK, IMJPK,   &
+!$omp           IJKM, IJPKM, IJKP, ISV, epsMix, epsMixN, EPStmp,     &
+!$omp           EPSA, EPSw, EPSe, EPSn, EPSs, EPSt, EPSb, SUM_EPS_CP,&
+!$omp           PGN, Sdp, Sdps, MM, L, ROPSA, V0, ROP_MA,            &
+!$omp           Vgn, Vgs, Uge, Ugw, Vge, Vgw, Wgt, Wgb, Vgt, Vgb,    & 
+!$omp           F_vir, VMT, VMTtmp, DRO1, DRO2, DROA, Vbf,           &
+!$omp           avgRop, Ghd_drag, HYS_drag, avgDrag,                 &
+!$omp           VSH_n, VSH_s, VSH_e, VSH_w, VSH_p, Source_conv, SRT)
             DO IJK = ijkstart3, ijkend3
 
                 I = I_OF(IJK) 
@@ -163,7 +156,7 @@
                   epsMixN= ZERO  
                   DO L = 1, SMAX
                     EPStmp = EPStmp + AVG_Y(EP_S(IJK,L),EP_S(IJKN,L),J) 
-                    epsMix  = epsMix  + EP_S(IJK,L) ! epsMix, epsMixN to be used for modelB
+                    epsMix  = epsMix  + EP_S(IJK,L) ! epsMix, epsMixN to be used for model B
                     epsMixN = epsMixN + EP_S(IJKN,L)
                     IF(IP_AT_N(IJK)) THEN
                     V_S(IJK,L) = ZERO
@@ -187,6 +180,7 @@
                   A_M(IJK,B,M) = ZERO 
                   A_M(IJK,0,M) = -ONE 
                   B_M(IJK,M) = ZERO 
+
 ! Semi-permeable internal surface
                 ELSEIF (SIP_AT_N(IJK)) THEN 
                   A_M(IJK,E,M) = ZERO 
@@ -197,7 +191,8 @@
                   A_M(IJK,B,M) = ZERO 
                   A_M(IJK,0,M) = -ONE 
                   ISV = IS_ID_AT_N(IJK) 
-                  B_M(IJK,M) = -IS_VEL_S(ISV,M) 
+                  B_M(IJK,M) = -IS_VEL_S(ISV,M)
+
 ! Dilute flow
                 ELSEIF (EPSA <= DIL_EP_S) THEN 
                   A_M(IJK,E,M) = ZERO 
@@ -251,6 +246,7 @@
                     A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+ &
                                      A_M(IJK,S,M)+A_M(IJK,T,M)+A_M(IJK,B,M))
                   ENDIF
+
 ! Cartesian grid implementation
                ELSEIF (BLOCKED_V_CELL_AT(IJK)) THEN 
                   A_M(IJK,E,M) = ZERO 
@@ -260,10 +256,10 @@
                   A_M(IJK,T,M) = ZERO 
                   A_M(IJK,B,M) = ZERO 
                   A_M(IJK,0,M) = -ONE 
-                  B_M(IJK,M) = ZERO 
+                  B_M(IJK,M) = ZERO
+
 ! Normal case
                ELSE 
-
 
 ! Surface forces:
 ! Pressure term
@@ -338,12 +334,9 @@
 ! VIRTUAL MASS SECTION (explicit terms)
 ! adding transient term dvg/dt to virtual mass term	    
                   F_vir = ZERO
-!Handan Liu changed on July 12 2012, then modified on March 1 2013:
-!===================================================================<< Handan Liu				  
                   IF(Added_Mass .AND. M==M_AM .AND.&
-                    (.NOT.CUT_V_TREATMENT_AT(IJK))) THEN        
-                     !F_vir = ( (V_g(IJK) - V_gO(IJK)) )*ODT*VOL_V(IJK)
-					 F_vir_tmp1 = ( (V_g(IJK) - V_gO(IJK)) )*ODT*VOL_V(IJK)
+                     (.NOT.CUT_V_TREATMENT_AT(IJK))) THEN        
+                     F_vir = ( (V_g(IJK) - V_gO(IJK)) )*ODT*VOL_V(IJK)
 
 ! defining gas-particles velocity at momentum cell faces (or scalar cell center)    
                      Vgs = AVG_Y_N(V_G(IJMK),V_G(IJK))  
@@ -357,21 +350,15 @@
                         Wgb = AVG_Y(W_g(IJKM),W_g(IJPKM),J)
                         Vgt = AVG_Z(V_g(IJK),V_g(IJKP),KP1(K))
                         Vgb = AVG_Z(V_g(IJKM),V_g(IJK),K)
-                        !F_vir = F_vir + AVG_Z_T(Wgb,Wgt)*OX(I) * &
-                        !   (Vgt - Vgb)*AXY(IJK)
-                        F_vir_tmp2 = F_vir_tmp1 + AVG_Z_T(Wgb,Wgt)*OX(I) * &
-                           (Vgt - Vgb)*AXY(IJK)						   
+                        F_vir = F_vir + AVG_Z_T(Wgb,Wgt)*&
+                           OX(I) * (Vgt - Vgb)*AXY(IJK)
                      ENDIF
-
 ! adding convective terms (U dV/dx + V dV/dy) to virtual mass; W dV/dz added above.
-                     !F_vir = F_vir + V_g(IJK)*(Vgn - Vgs)*AXZ(IJK) + &
-                     !   AVG_X_E(Ugw,Uge,IP1(I))*(Vge - Vgw)*AYZ(IJK)
-                     !F_vir = F_vir * Cv * ROP_MA
-                     F_vir_tmp2 = F_vir_tmp1 + V_g(IJK)*(Vgn - Vgs)*AXZ(IJK) + &
+                     F_vir = F_vir + V_g(IJK)*(Vgn - Vgs)*AXZ(IJK) + &
                         AVG_X_E(Ugw,Uge,IP1(I))*(Vge - Vgw)*AYZ(IJK)
-                     F_vir = F_vir_tmp2 * Cv * ROP_MA					 
+                     F_vir = F_vir * Cv * ROP_MA
                   ENDIF
-!===================================================================>> Handan Liu
+
 ! Interphase mass transfer
                   IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
                      VMTtmp = ZERO
@@ -391,7 +378,6 @@
 ! Body force
                   IF (MODEL_B) THEN 
                      IF (TRIM(KT_TYPE) /= 'GHD') THEN
-!QX                     
                        DRO1 = (RO_SV(IJK,M)-RO_G(IJK))*EP_S(IJK,M) 
                        DRO2 = (RO_SV(IJK,M)-RO_G(IJKN))*EP_S(IJKN,M) 
                        DROA = AVG_Y(DRO1,DRO2,J) 
@@ -479,24 +465,19 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: SOURCE_V_s_BC                                         C
+!  Subroutine: SOURCE_V_s_BC                                           C
 !  Purpose: Determine source terms for V_s momentum eq. The terms      C
-!  appear in the center coefficient and RHS vector.    The center      C
-!  coefficient and source vector are negative.  The off-diagonal       C
-!  coefficients are positive.                                          C
-!  The drag terms are excluded from the source at this stage.          C
-!  stage.                                                              C
+!     appear in the center coefficient and RHS vector.    The center   C
+!     coefficient and source vector are negative.  The off-diagonal    C
+!     coefficients are positive.                                       C
+!     The drag terms are excluded from the source at this stage.       C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 7-JUN-96   C
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !                                                                      C
-!  Literature/Document References:                                     C
+!  Comments: see source_v_g_bc for more detailed in-code comments      C
 !                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -1025,7 +1006,7 @@
                IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
     
                IJK = FUNIJK(I,J,K) 
-               IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells
+               IF (.NOT.WALL_AT(IJK)) CYCLE  ! skip redefined cells
                IM = IM1(I) 
                KM = KM1(K) 
                A_M(IJK,E,M) = ZERO 
@@ -1143,6 +1124,8 @@
       RETURN  
       END SUBROUTINE JJ_BC_V_S 
 
+
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: POINT_SOURCE_V_S                                        C
@@ -1154,6 +1137,9 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE POINT_SOURCE_V_S(A_M, B_M, IER) 
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       use compar    
       use constant
       use fldvar
@@ -1162,35 +1148,31 @@
       use physprop
       use ps
       use run
-
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
 ! Septadiagonal matrix A_m 
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
-
 ! Vector b_m 
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M) 
-
 ! Error index 
       INTEGER, INTENT(INOUT) :: IER 
-
 !----------------------------------------------- 
-! Local Variables
+! Local variables
 !----------------------------------------------- 
-
 ! Indices 
       INTEGER :: IJK, I, J, K
       INTEGER :: IJKN, IJPK
       INTEGER :: PSV, M
-
       INTEGER :: lJN, lJS
-
 ! terms of bm expression
       DOUBLE PRECISION :: pSource
-
+!----------------------------------------------- 
+! Include statement functions
+!----------------------------------------------- 
       include 'function.inc'
+!----------------------------------------------- 
 
       do M=1, MMAX
 
