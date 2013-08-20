@@ -570,7 +570,7 @@
          IF (DNCHECK < 256) DNCHECK = DNCHECK*2 
          NCHECK = NCHECK + DNCHECK 
 ! Upate the reaction rates for checking
-         CALL CALC_RRATE
+         CALL CALC_RRATE(IER)
          CALL CHECK_DATA_30 
       ENDIF 
 
