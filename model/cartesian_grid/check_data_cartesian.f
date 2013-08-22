@@ -52,12 +52,21 @@
 
       IF(DISCRETE_ELEMENT) THEN
          IF(MyPE == PE_IO) THEN
-            WRITE(*,*)'INPUT ERROR: CARTESIAN GRID OPTION NOT CURRENTLY'
-            WRITE(*,*)'AVALAIBLE WITH DISCRETE ELEMENT MODEL.'
-            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+
+            WRITE(*,10)'######################################################################'
+            WRITE(*,10)'##                                                                  ##'
+            WRITE(*,10)'##  ===>   WARNING: RUNNING CARTESIAN GRID WITH DISCRETE ELEMENT.   ##'
+            WRITE(*,10)'##                  THIS HAS NOT BEEN FULLY TESTED.                 ##'
+            WRITE(*,10)'##                  PLEASE USE WITH CAUTION.                        ##'
+            WRITE(*,10)'##                                                                  ##'
+            WRITE(*,10)'######################################################################'
+
          ENDIF
-         CALL MFIX_EXIT(MYPE)
       ENDIF
+
+
+10    FORMAT(1X,A)
+
 
       IF(COORDINATES=='CYLINDRICAL') THEN
          IF(MyPE == PE_IO) THEN
