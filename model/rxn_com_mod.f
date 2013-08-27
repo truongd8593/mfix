@@ -227,6 +227,8 @@
 
       CHARACTER(len=64) lName
 
+! Flag to give DPM message
+      LOGICAL :: lDPM_Flag
 ! Length of noncomment string
       INTEGER LINE_LEN
 ! Integer function which returns COMMENT_INDEX
@@ -237,8 +239,10 @@
 ! Full path to model directory.
       INCLUDE 'mfix_directory_path.inc'
 
-! Initialize loop counter.
-      LC = 0
+! Initialize
+      lDPM_Flag = .FALSE.
+      LC = 0  ! Loop counter.
+
       DO
          LC = LC + 1
 ! First check the model directory for the species.inc file.
@@ -264,8 +268,8 @@
         	ELSE
 ! No species.inc file was located.
             IF(DMP_LOG) THEN
-               WRITE(*,1004)
-               WRITE(UNIT_LOG,1004)
+               WRITE(*,1004) trim(CALLER)
+               WRITE(UNIT_LOG,1004) trim(CALLER)
             ENDIF
             EXIT
             CLOSE(FUNIT)
@@ -280,6 +284,8 @@
             ELSEIF(IOS<0)THEN
 ! All entries have been processed.
                CLOSE(FUNIT)
+! Give DPM Message if needed.
+               IF(lDPM_Flag .AND. DMP_LOG) WRITE(*,1005) trim(CALLER)
                EXIT
             ENDIF
 ! Clean up the input.
@@ -340,15 +346,23 @@
                      CYCLE READ_LP
                ENDDO
 ! No match was made.
-               IF(DMP_LOG) THEN
-                  WRITE(*,1003)trim(CALLER), trim(lName)
-                  IF(lfDPM) WRITE(*,1103)
-                  WRITE(*,1203)
-                  WRITE(UNIT_LOG,1003) trim(CALLER), trim(lName)
-                  IF(lfDPM) WRITE(UNIT_LOG,1103)
-                  WRITE(UNIT_LOG,1203)
+               IF(lfDPM .AND. trim(CALLER)=='CHECK_DATA_09') THEN
+! If this routine was invoked by CHECK_DATA_09, ignore the error as
+! the species could be associated with a discrete solids phase.
+                  lDPM_Flag = .TRUE.
+! This is a TFM only run. Since a match could not be made, flag this
+! as an error and exit.
+               ELSE
+                  IF(DMP_LOG) THEN
+                     WRITE(*,1003)trim(CALLER), trim(lName)
+                     IF(lfDPM) WRITE(*,1103)
+                     WRITE(*,1203)
+                     WRITE(UNIT_LOG,1003) trim(CALLER), trim(lName)
+                     IF(lfDPM) WRITE(UNIT_LOG,1103)
+                     WRITE(UNIT_LOG,1203)
+                  ENDIF
+                  CALL MFiX_EXIT(myPE)
                ENDIF
-               CALL MFiX_EXIT(myPE)
 
             ENDIF
 
@@ -361,15 +375,15 @@
 
  1000 FORMAT(/2X,'Verifying reaction aliases in ',A)
 
- 1001 FORMAT(/1X,70('*'),' From: ',A,' --> RXN_COM --> checkSpeciesInc'&
+ 1001 FORMAT(/1X,70('*'),/' From: ',A,' --> RXN_COM --> checkSpeciesInc'&
          ,/' Error 1001: There was a problem reading file: ',A,/       &
          1X,70('*')/)
 
- 1002 FORMAT(/1X,70('*'),' From: ',A,' --> RXN_COM --> checkSpeciesInc'&
+ 1002 FORMAT(/1X,70('*'),/' From: ',A,' --> RXN_COM --> checkSpeciesInc'&
          ,/' Error 1002: Unable to obtain alias ',A,' from species.inc'&
          ,' file.',//' INPUT: ',A,//1X,70('*')/)
 
- 1003 FORMAT(/1X,70('*'),' From: ',A,' --> RXN_COM --> checkSpeciesInc'&
+ 1003 FORMAT(/1X,70('*'),/' From: ',A,' --> RXN_COM --> checkSpeciesInc'&
          ,/' Error 1003: A match could not be made for an entry in the'&
          ,' species.inc',/' file. (',A,')',//' If the reaction names', &
          ' or species aliases were changed in the data file,',/        &
@@ -382,10 +396,16 @@
 
  1203 FORMAT(1X,70('*'))
 
- 1004 FORMAT(/1X,70('*'),' From: ',A,' --> RXN_COM --> checkSpeciesInc'&
+ 1004 FORMAT(/1X,70('*'),/' From: ',A,' --> RXN_COM --> checkSpeciesInc'&
          ,/' Warning 1004: Unable to locate original species.inc file.'&
          ,' No',/' verification of mfix.dat species aliases or',       &
          ' reaction names can be',/' preformed.',/1X,70('*')/)
+
+ 1005 FORMAT(/1X,70('*'),/' From: ',A,' --> RXN_COM --> checkSpeciesInc'&
+         ,/' Message 1005: One or more species in the species.inc',    &
+         ' file were not',/' matched to any gas or continuous solids', &
+         ' phase species. Error detection',/' is being deferred to',   &
+         ' check_des_rxns.f.',/1X,70('*')/)
 
       END SUBROUTINE checkSpeciesInc
 

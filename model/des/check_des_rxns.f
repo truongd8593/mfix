@@ -104,7 +104,7 @@
 ! species.inc file.
       CALL checkSpeciesInc('CHECK_DES_RXNS',NMAX(0),SPECIES_ALIAS_g(:),&
          DES_MMAX, DES_NMAX_s(1:DES_MMAX), DES_SPECIES_ALIAS_s(:,:),   &
-         NO_OF_DES_RXNS, DES_RXN_NAME(:), 'des/des_species.inc', .TRUE.)
+         NO_OF_DES_RXNS, DES_RXN_NAME(:), 'species.inc', .FALSE.)
 
 ! Loop over reaction data pulled from data file.
       DO L=1, NO_OF_DES_RXNS

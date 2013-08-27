@@ -131,12 +131,14 @@
 ! setting pip to particle count
       pip = lproc_parcount 
 
-      if(maxval(des_pos_new(1:pip,2)).gt.&
-      ylength-2.d0*maxval(des_radius(1:pip))) then 
-         write(unit_log,1002) maxval(des_pos_new(1:pip,2)), &
-            ylength-2.d0*maxval(des_radius(1:pip))
-         write(*,1003)
-         call des_mpi_stop
+      if(pip > 0) then
+         if(maxval(des_pos_new(1:pip,2)).gt.&
+         ylength-2.d0*maxval(des_radius(1:pip))) then 
+            write(unit_log,1002) maxval(des_pos_new(1:pip,2)), &
+               ylength-2.d0*maxval(des_radius(1:pip))
+            write(*,1003)
+            call des_mpi_stop
+         endif
       endif
       
       IF(DMP_LOG.and.debug_des) write(UNIT_LOG,'(3x,a)') &
