@@ -100,6 +100,8 @@
       use discretelement, only: DISCRETE_ELEMENT
 ! Indicate that TFM/DEM hybrid is used.
       use discretelement, only: DES_CONTINUUM_HYBRID
+! Small value for species mass fractions
+      use toleranc, only: ZERO_X_gs
 
 
       implicit none
@@ -147,13 +149,9 @@
 ! Conversion factor for HoR (CGS to SI)
       DOUBLE PRECISION :: l_2SI
 
-
-! Local parameters:
-!`````````````````````````````````````````````````````````````````````//
 ! Reaction limiters. If a species mass fraction is less than this
-! value, then the reaction is suppressed. Further reducing this value
-! requires smaller time steps for stability.
-      DOUBLE PRECISION, parameter :: speciesLimiter = 1.0d-6
+! value, then the reaction is suppressed. 
+      DOUBLE PRECISION :: speciesLimiter
 
 
 ! External functions:
@@ -179,6 +177,9 @@
       HOR_G   = ZERO;    HOR_S   = ZERO
 
       R_PHASE = ZERO
+
+! Set the species limiter:
+      speciesLimiter = ZERO_X_gs
 
 ! Set the conversion factor for heat of reaction.
       l_2SI = merge(4.183925d3, ONE, UNITS(1:2) == 'SI')
