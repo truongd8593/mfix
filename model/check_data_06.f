@@ -370,16 +370,21 @@
 ! (mfix will exit in next check).   
                DO N = 1, NMAX(0) 
                   IF (IC_X_G(ICV,N) == UNDEFINED) THEN 
-                     IF (.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)&
-                        WRITE (UNIT_LOG, 1050) ICV, N 
-                     IC_X_G(ICV,N) = ZERO 
+                     IF(SPECIES_EQ(0)) THEN
+                       IF (.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)&
+                          WRITE (UNIT_LOG, 1050) ICV, N 
+                       IC_X_G(ICV,N) = ZERO 
+                     ELSEIF(NMAX(0)==1) THEN
+                       IC_X_G(ICV,N) = ONE
+		       SUM = ONE
+                     ENDIF
                   ENDIF 
                ENDDO 
 ! if sum of gas phase species mass fraction not 1....
                IF (.NOT.COMPARE(ONE,SUM)) THEN 
                   IF(DMP_LOG)WRITE (UNIT_LOG, 1055) ICV 
-                  IF (SPECIES_EQ(0) .OR. RO_G0==UNDEFINED .AND. &
-                      MW_AVG==UNDEFINED) THEN
+                  IF (SPECIES_EQ(0) .OR. (RO_G0==UNDEFINED .AND. &
+                      MW_AVG==UNDEFINED)) THEN
                      call mfix_exit(myPE)  
                   ENDIF
                ENDIF 
@@ -448,9 +453,14 @@
 ! species is undefined (mfix will exit in next check). 
                      DO N = 1, NMAX(M) 
                         IF (IC_X_S(ICV,M,N) == UNDEFINED) THEN 
+                          IF(SPECIES_EQ(M)) THEN
                            IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)&
                               WRITE (UNIT_LOG, 1110)ICV,M,N 
                            IC_X_S(ICV,M,N) = ZERO 
+                          ELSEIF(NMAX(M)==1) THEN
+                           IC_X_S(ICV,M,N) = ONE
+			   SUM = ONE
+                          ENDIF
                         ENDIF 
                      ENDDO
 ! if sum of solids phase M species mass fraction not 1...
