@@ -453,7 +453,7 @@
       
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
-      INTEGER :: IJK,I,J,K,Q_ID,Q_ID2,N_int_x,N_int_y,N_int_z
+      INTEGER :: IJK,I,J,K,Q_ID,Q_ID2,N_int_x,N_int_y,N_int_z,N_USR
       DOUBLE PRECISION :: xa,ya,za,xb,yb,zb,xc,yc,zc,Fc
       DOUBLE PRECISION :: Xi,Yi,Zi,Xc_backup,Yc_backup,Zc_backup
       LOGICAL :: INTERSECT_FLAG,CLIP_FLAG
@@ -504,7 +504,7 @@
          IF(INTERSECT_X(IJK)) Xi = xc
       ENDDO
 
-      DO Q_ID = 1, N_USR_DEF
+      DO N_USR= 1, N_USR_DEF
          CALL INTERSECT_LINE('USR_DEF',xa,ya,za,xb,yb,zb,Q_ID,INTERSECT_X(IJK),xc,yc,zc)
          IF(INTERSECT_X(IJK)) Xi = xc
       ENDDO
@@ -552,7 +552,7 @@
          IF(INTERSECT_Y(IJK)) Yi = yc
       ENDDO
 
-      DO Q_ID = 1, N_USR_DEF
+      DO N_USR= 1, N_USR_DEF
          CALL INTERSECT_LINE('USR_DEF',xa,ya,za,xb,yb,zb,Q_ID,INTERSECT_Y(IJK),xc,yc,zc)
          IF(INTERSECT_Y(IJK)) Yi = yc
       ENDDO
@@ -599,7 +599,7 @@
             IF(INTERSECT_Z(IJK)) Zi = zc
          ENDDO
 
-         DO Q_ID = 1, N_USR_DEF
+         DO N_USR= 1, N_USR_DEF
             CALL INTERSECT_LINE('USR_DEF',xa,ya,za,xb,yb,zb,Q_ID,INTERSECT_Z(IJK),xc,yc,zc)
             IF(INTERSECT_Z(IJK)) Zi = zc
          ENDDO
