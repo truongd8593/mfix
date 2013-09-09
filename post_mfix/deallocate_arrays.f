@@ -218,6 +218,7 @@
       deallocate( resid_pack )  ! added 17-mar-2008
  
 !rxns
+      if (nRR .gt. 0) Deallocate( ReactionRates )
       Deallocate(  R_gp  )
       Deallocate(  R_sp  )
       Deallocate(  RoX_gc  )
