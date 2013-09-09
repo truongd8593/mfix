@@ -73,6 +73,7 @@
 
       IF(USE_RRATES.or.bDoing_postmfix) THEN
           IF(NMAX(0) .NE. UNDEFINED_I)DIMENSION_N_g = NMAX(0)
+          IF(NMAX_g .NE. UNDEFINED_I) DIMENSION_N_g = NMAX_g
       ELSE
          IF(NMAX_g == UNDEFINED_I) THEN
             IF(NMAX(0) /= UNDEFINED_I) DIMENSION_N_g = NMAX(0)
