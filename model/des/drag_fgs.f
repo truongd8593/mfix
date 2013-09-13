@@ -2030,8 +2030,8 @@
 
 ! calculating the accumulated solids-solids drag force on discrete 
 ! solids phase dm
-                     SS_DRAG(IJK,DM,:) = SS_DRAG(IJK,DM,:) + &
-                        -F_SDS(IJK,CM,DM)*(VELDS_ARR(:)-VELCS_ARR(:))
+                     SS_DRAG(IJK,DM,:) = SS_DRAG(IJK,DM,:) - &
+                        F_SDS(IJK,CM,DM)*(VELDS_ARR(:)-VELCS_ARR(:))
 
                   ENDDO   ! end do loop (cm=1,mmax)
 

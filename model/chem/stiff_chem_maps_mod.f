@@ -172,12 +172,11 @@
       countNaN = 0
       writeMsg = .FALSE.
       NaN_lp: do l=1, loD
-         if(isNaN(lVars(l))) then
+         if(lVars(l).NE.lVars(l)) then
             countNaN = countNan + 1
             writeMsg = .TRUE.
          endif
       enddo NaN_lp
-
 
       if(writeMsg) then
          write(*,"(3x,'From MapODEtoMFIX: NaNs Found! :: ',3(3x,I4))") &
@@ -185,7 +184,8 @@
 
          if(countNaN < loD) then
             do l=1, loD
-               if(isNaN(lVars(l))) write(*,"(5x,' NaN in Var ',I2)") l
+               if(lVars(l).NE.lVars(l))                                &
+                  write(*,"(5x,' NaN in Var ',I2)") l
             enddo
          endif
       endif

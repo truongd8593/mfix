@@ -177,7 +177,7 @@
 ! Check ODE_VAR for NaNs.
 !---------------------------------------------------------------------//
       DO Node=1,loD
-         IF(isNaN(VARS(node))) THEN
+         IF(VARS(node).NE.VARS(node)) THEN
             lErr = -8
             return
          ENDIF

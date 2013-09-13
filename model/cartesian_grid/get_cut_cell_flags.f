@@ -615,11 +615,11 @@
 
       IF(TOT_VOL_CELLS>ZERO) THEN
          IF(DABS(ONE-DABS(TOT_VOL_NODE/TOT_VOL_CELLS))>1.0D-6) THEN
-            WRITE(*,*),'==========================================================='
-            WRITE(*,*),'Total volume around nodes=',TOT_VOL_NODE
-            WRITE(*,*),'Total volume =',TOT_VOL_CELLS
-            WRITE(*,*),'The two volumes above should be the same.'
-            WRITE(*,*),'==========================================================='
+            WRITE(*,*)'==========================================================='
+            WRITE(*,*)'Total volume around nodes=',TOT_VOL_NODE
+            WRITE(*,*)'Total volume =',TOT_VOL_CELLS
+            WRITE(*,*)'The two volumes above should be the same.'
+            WRITE(*,*)'==========================================================='
             CALL MFIX_EXIT(MYPE) 
          ENDIF
       ENDIF

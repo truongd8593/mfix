@@ -121,7 +121,7 @@
                IN_CONSTRUCT = .TRUE.
             ELSE
 ! Format Error.
-               WRITE(*, 1004), trim(adjustl(INPUT))
+               WRITE(*, 1004) trim(adjustl(INPUT))
                WRITE(*, 1000)
                CALL MFIX_EXIT(myPE)
             ENDIF

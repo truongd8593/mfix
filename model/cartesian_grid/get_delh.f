@@ -587,7 +587,7 @@
 
 
                IF(PRINT_WARNINGS.AND.MyPE==PE_IO) THEN
-                  WRITE(*,*),' Warning: Negative delh detected in scalar cell :',IJK
+                  WRITE(*,*) ' Warning: Negative delh detected in scalar cell :',IJK
                   WRITE(*,*) ' Location (X,Y,Z) = ',X_COPY,Y_COPY,Z_COPY
                   WRITE(*,*) ' Reverting unit normal vector.'
                ENDIF

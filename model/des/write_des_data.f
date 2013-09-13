@@ -443,7 +443,7 @@
          ELSEIF(S_TIME .LT. 10000.0d0)THEN
             WRITE (S_TIME_CHAR,"(A,F11.6)")"0",S_TIME
          ELSE
-            WRITE (S_TIME_CHAR,"(F12.6)"),S_TIME
+            WRITE (S_TIME_CHAR,"(F12.6)")S_TIME
          ENDIF
          
          

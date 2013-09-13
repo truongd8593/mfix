@@ -899,13 +899,14 @@
          lfreq =0 
       end if 
       lfcount = lfcount + 1 
-      write(filename,'("debug",I3.3)'), lfcount
+      write(filename,'("debug",I3.3)') lfcount
       open (unit=100,file=filename)
       do lp = pstart,pend 
          if (pea(lp,1) .and. .not.pea(lp,4)) then 
             lijk = pijk(lp,4) 
-            write(100,*),"positon =",lijk,pijk(lp,1),pijk(lp,2),pijk(lp,3),ep_g(lijk),DES_U_s(lijk,1)
-            write(100,*),"forces =", FC(lp,2),tow(lp,1)
+            write(100,*)"positon =",lijk,pijk(lp,1),pijk(lp,2), &
+               pijk(lp,3),ep_g(lijk),DES_U_s(lijk,1)
+            write(100,*)"forces =", FC(lp,2),tow(lp,1)
          end if 
       end do  
       close (100)
@@ -952,7 +953,7 @@
          lfreq =0 
       end if 
       lfcount = lfcount + 1 
-      write(filename,'("new_tec",I3.3,".dat")'), lfcount
+      write(filename,'("new_tec",I3.3,".dat")') lfcount
       open (unit=100,file=filename)
       write(100,'(9(A,3X),A)') &
          'VARIABLES = ', '"ijk"', '"x"', '"y"', '"vx"', '"vy"', &
@@ -961,7 +962,7 @@
       do lp = pstart,pend 
          if (pea(lp,1)) then 
             lijk = pijk(lp,4) 
-            write(100,*),lijk,des_pos_new(lp,1),des_pos_new(lp,2), &
+            write(100,*)lijk,des_pos_new(lp,1),des_pos_new(lp,2), &
                des_vel_new(lp,1),des_vel_new(lp,2),ep_g(lijk),&
                fc(lp,1),fc(lp,2),tow(lp,1)
          endif 
