@@ -260,7 +260,10 @@
 ! Pressure terms
                   PGE = P_G(IJKE) 
                   IF (CYCLIC_X_PD) THEN 
-                     IF (CYCLIC_AT_E(IJK)) PGE = P_G(IJKE) - DELP_X 
+! CYCLIC_AT_E Flag is not set correctly in DMP and causes issues. This
+! is avoided by using the DMP cyclic map. The flags need fixed.
+!                     IF (CYCLIC_AT_E(IJK)) PGE = P_G(IJKE) - DELP_X 
+                     IF (IMAP(I_OF(IJK)).EQ.IMAX1) PGE = P_G(IJKE) - DELP_X 
                   ENDIF 
                   IF (MODEL_B) THEN 
                      SDP = ZERO 

@@ -265,7 +265,10 @@
 ! Pressure term
                   PGN = P_G(IJKN) 
                   IF (CYCLIC_Y_PD) THEN 
-                     IF (CYCLIC_AT_N(IJK)) PGN = P_G(IJKN) - DELP_Y 
+! CYCLIC_AT_N Flag is not set correctly in DMP and causes issues. This
+! is avoided by using the DMP cyclic map. The flags need fixed.
+!                     IF (CYCLIC_AT_N(IJK)) PGN = P_G(IJKN) - DELP_Y 
+                     IF (JMAP(J_OF(IJK)).EQ.JMAX1)PGN = P_G(IJKN) - DELP_Y 
                   ENDIF 
                   IF (MODEL_B) THEN 
                      SDP = ZERO 

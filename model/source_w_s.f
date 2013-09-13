@@ -254,7 +254,10 @@
 ! Pressure term
                   PGT = P_G(IJKT) 
                   IF (CYCLIC_Z_PD) THEN 
-                     IF (CYCLIC_AT_T(IJK)) PGT = P_G(IJKT) - DELP_Z 
+! CYCLIC_AT_T Flag is not set correctly in DMP and causes issues. This
+! is avoided by using the DMP cyclic map. The flags need fixed.
+!                     IF (CYCLIC_AT_T(IJK)) PGT = P_G(IJKT) - DELP_Z 
+                     IF (KMAP(K_OF(IJK)).EQ.KMAX1) PGT = P_G(IJKT) - DELP_Z 
                   ENDIF
                   IF (MODEL_B) THEN 
                      SDP = ZERO 
