@@ -69,7 +69,7 @@
 #
 #
                      DRAG_TYPE  = 'GIDASPOW'
-                     RO_S  =         2.4 
+                     RO_S0 =         2.4 
                       D_p0 =         0.012
                         C_e  =       0.95
                       PHI  =        30.0 

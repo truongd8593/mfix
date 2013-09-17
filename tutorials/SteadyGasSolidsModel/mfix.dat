@@ -65,7 +65,7 @@
 #
                      DRAG_TYPE  = 'WEN_YU'
                      SCHAEFFER  = .F.
-                     RO_S  =         2.4 
+                     RO_S0 =         2.4 
                       D_P0  =         0.012
                         C_e  =       0.99
                       PHI  =        30.0 

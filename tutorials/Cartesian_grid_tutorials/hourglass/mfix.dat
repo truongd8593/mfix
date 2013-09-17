@@ -135,7 +135,7 @@
  
 ! Solids-phase Section                                                          
   
-  RO_s                  = 1.12                 !solids density
+  RO_s0                 = 1.12                 !solids density
   D_p0                  = 0.15                 !particle diameter     
   e                     = 0.8                  !restitution coefficient
   Phi                   = 15.0                 !angle of internal friction

@@ -46,8 +46,8 @@
   
 ! Solids-phase Section                                                          
   MMAX                  = 2
-  RO_s(1)               = 2400                         
-  RO_s(2)               = 2400
+  RO_s0(1)               = 2400                         
+  RO_s0(2)               = 2400
   D_p0(1)               = 120.0E-06
   D_P0(2)               = 185.0E-06                            
   e                     = 1.0

@@ -54,7 +54,7 @@
 ! Solids-phase Section                                                          
   
   DRAG_TYPE             = 'WEN_YU'  
-  RO_s                  = 2.4                           !glass-beads density
+  RO_s0                 = 2.4                           !glass-beads density
   D_p0                  = 0.02                          !200-micron particle diameter     
   e                     = 0.999                         !restitution coefficient
   Phi                   =30.0                           !angle of internal friction

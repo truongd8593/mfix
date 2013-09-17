@@ -48,7 +48,7 @@
 # 
 ################################################################################
 
-  RO_s    = 1.0                                                                 
+  RO_s0   = 1.0                                                                 
   D_p0     = 0.02                                                               
   NMAX(1) =  1
   SPECIES_NAME(4) = 'AL' !specified only to avoid error message

@@ -78,7 +78,7 @@
 ! Solids-phase Section                                                          
   
   MMAX = 1
-  RO_s                  = 2640.0               !solids density
+  RO_s0                 = 2640.0               !solids density
   D_p0                  = 0.000213             !particle diameter     
   e                     = 0.8                  !restitution coefficient
   Phi                   = 15.0                 !angle of internal friction

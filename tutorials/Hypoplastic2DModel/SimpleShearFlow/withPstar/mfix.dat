@@ -72,7 +72,7 @@
 #
 
                      DRAG_TYPE = 'WEN_YU'
-		     RO_S  =         2.5 
+		     RO_S0 =         2.5 
                       D_P0 =         0.02
                         C_e  =       0.95
                       PHI  =         30.0 

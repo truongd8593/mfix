@@ -48,7 +48,7 @@
  RO_g0    		=    1.2
 
  ! Particle phase properties
- RO_s    		=    1500
+ RO_s0   		=    1500
  D_p0    		=    252.9E-06
  C_e       		=    1			
  e_w                    =    1.0
