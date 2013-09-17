@@ -73,8 +73,8 @@
 
                DO M = 1, SMAX
                  SIGMAI(M) = D_P(IJK,M)
-                 Mi(M)     = (PI/6.d0)*SIGMAI(M)**3 * RO_S(M)
-                 phii(M)   = ROP_S(IJK,M) / RO_S(M)
+                 Mi(M)     = (PI/6.d0)*SIGMAI(M)**3 * RO_S(IJK,M)
+                 phii(M)   = ROP_S(IJK,M) / RO_S(IJK,M)
 	         Ti(M)= THETA_M(IJK,M)
                ENDDO
                TMix = THETA_M(IJK,MMAX)

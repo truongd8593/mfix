@@ -51,7 +51,7 @@
 ! Solids-phase Section 
 
   MMAX                  = 2
-  RO_s                  = 2.524d0  2.524d0      !solids density
+  RO_s0                 = 2.524d0  2.524d0      !solids density
   D_p0                  = 0.15d0  0.25d0        !particle diameter     
   e                     = 0.97d0                !restitution coefficient
   C_f                   = 0.1d0

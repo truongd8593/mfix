@@ -47,7 +47,7 @@
 ! or not, the following quantities must be defined to bypass the
 ! checks made in MFIX
   MMAX    = 2
-  RO_s    = 2.600000    2.600001
+  RO_s0   = 2.600000    2.600001
   D_p0    = 20.00000   20.000000
 
   e       = 0.9

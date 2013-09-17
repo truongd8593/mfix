@@ -7,7 +7,6 @@
 !  Reviewer: 
 !                                                                     
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
       SUBROUTINE ALLOCATE_ARRAYS 
 
 !-----------------------------------------------
@@ -148,14 +147,13 @@
       Allocate(  RO_go (DIMENSION_3p) )
       Allocate(  ROP_g (DIMENSION_3) )
       Allocate(  ROP_go (DIMENSION_3p) )
+      Allocate(  RO_S (DIMENSION_3, DIMENSION_M) )
+      Allocate(  RO_So (DIMENSION_3p, DIMENSION_M) )
       Allocate(  ROP_s (DIMENSION_3, DIMENSION_M) )
       Allocate(  ROP_so (DIMENSION_3p, DIMENSION_M) )
 
-      Allocate(  RO_SV (DIMENSION_3, DIMENSION_M) )
-      Allocate(  RO_SVo (DIMENSION_3p, DIMENSION_M) )
       Allocate(  EP_SS(DIMENSION_3,DIMENSION_M,DIMENSION_N_S) )
       Allocate(  ERR_ARRAY(DIMENSION_3,DIMENSION_M) )
-      Allocate(  RO_SVo2 (DIMENSION_3, DIMENSION_M) )
 
       Allocate(  T_g (DIMENSION_3) )
       Allocate(  T_s (DIMENSION_3, DIMENSION_M) )

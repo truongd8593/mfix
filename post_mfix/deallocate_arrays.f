@@ -80,11 +80,10 @@
       Deallocate(  ROP_s  )
       Deallocate(  ROP_so  )
 
-      Deallocate(  RO_SV )
-      Deallocate(  RO_SVo )
+!      Deallocate(  RO_SV )
+!      Deallocate(  RO_SVo )
       Deallocate(  EP_SS )
       Deallocate(  ERR_ARRAY )
-      Deallocate(  RO_SVo2 )
          
       Deallocate(  T_g  )
       Deallocate(  T_s  )

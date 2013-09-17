@@ -111,8 +111,8 @@
 ! setting aliases for easy reference
             D_PM = D_P(IJK,M) 
             D_PL = D_P(IJK,L)
-            RO_M = RO_SV(IJK,M)
-            RO_L = RO_SV(IJK,L)
+            RO_M = RO_S(IJK,M)
+            RO_L = RO_S(IJK,L)
 
             IF (DES_CONTINUUM_HYBRID) THEN
 ! evaluating g0 - taken from G_0.f subroutine (lebowitz form)

@@ -103,8 +103,6 @@
       RETURN
       END SUBROUTINE mapMFIXtoODE
 
-!#######################################################################################################################
-
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -259,8 +257,7 @@
       use param1,   only : LARGE_NUMBER
       use param1,   only : SMALL_NUMBER
 
-      use physprop, only : RO_s
-      use physprop, only : RO_sv
+      use fldvar, only : RO_s
 
 !      use physprop, only : C_pg
 !      use physprop, only : C_ps
@@ -272,7 +269,7 @@
 ! Calculate the gas volume fraction from solids volume fractions. Only
 ! update it's value if the solids equations are being solved.
       IF(sum(lNEQ(3:)) > 0) EP_G(IJK) = &
-         ONE - sum(ROP_S(IJK,1:MMAX)/RO_S(1:MMAX))
+         ONE - sum(ROP_S(IJK,1:MMAX)/RO_S(IJK,1:MMAX))
 
 ! Gas phase bulk density is updated within the stiff solver (lVar(1)).
 ! Now that the gas phase volume fraction is updated, the gas phase 

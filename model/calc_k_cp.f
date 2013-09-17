@@ -143,7 +143,7 @@
  
                      Mu = (5d0*DSQRT(Pi*Theta_m(IJK,M))&
 !QX
-                        *D_p(IJK,M)*RO_SV(IJK,M))/96d0
+                        *D_p(IJK,M)*RO_S(IJK,M))/96d0
   
                      Mu_b = (256d0*Mu*EP_s(IJK,M)*EP_s(IJK,M)&
                         *G_0(IJK,M,M))/(5d0*Pi)
@@ -155,7 +155,7 @@
                            G_0(IJK,M,M))*(1d0+1.6d0*Eta*(3d0*Eta-2d0)*&
                            EP_s(IJK,M)*G_0(IJK,M,M))+(0.6d0*Mu_b*Eta))
 !QX   
-                        ZETA = ((48d0*Eta*(1d0-Eta)*RO_SV(IJK,M)*EP_s(IJK,M)*&
+                        ZETA = ((48d0*Eta*(1d0-Eta)*RO_S(IJK,M)*EP_s(IJK,M)*&
                             EP_s(IJK,M)*G_0(IJK,M,M)*&
                             (Theta_m(IJK,M)**1.5d0))/&
                             (SQRT_Pi*D_p(IJK,M)*2d0*Mu_zeta))**0.5d0
@@ -324,7 +324,7 @@
  
       g0 = G_0(IJK, M, M)
 !QX
-      Mu = (5d0*DSQRT(Pi*Theta_m(IJK,M))*D_p(IJK,M)*RO_SV(IJK,M))/96d0
+      Mu = (5d0*DSQRT(Pi*Theta_m(IJK,M))*D_p(IJK,M)*RO_S(IJK,M))/96d0
  
       Mu_b = (256d0*Mu*EPs*EPs*g0/(5d0*Pi))
  
@@ -337,10 +337,10 @@
       DF1oDEPs = ((2d0+ALPHA)/3d0)*((2*Mu/(Eta*(2d0-Eta))*&
          ((-DG_0DNU(EPs)/(g0*g0)) + (1.6d0*Eta*(3d0*Eta-1d0))&
         + (64d0*Eta*Eta*(3d0*Eta-2d0)*DEPs2G_0oDEPs/25d0))) +&
-        3.2d0*Eta*RO_SV(IJK,M)*D_p(IJK,M)*((Theta_m(IJK,M)/Pi)**0.5d0)&
+        3.2d0*Eta*RO_S(IJK,M)*D_p(IJK,M)*((Theta_m(IJK,M)/Pi)**0.5d0)&
           *DEPs2G_0oDEPs)
  
-      DZETAoDEPs = 0.5d0*((48d0*Eta*(1d0-Eta)*RO_SV(IJK,M)*F1*&
+      DZETAoDEPs = 0.5d0*((48d0*Eta*(1d0-Eta)*RO_S(IJK,M)*F1*&
               (Theta_m(IJK,M)**1.5d0)/&
            (SQRT_Pi*D_p(IJK,M)*EPs*EPs*g0))**0.5d0)*&
            (F1*DEPs2G_0oDEPs - EPs*Eps*g0*DF1oDEPs)/(F1*F1)

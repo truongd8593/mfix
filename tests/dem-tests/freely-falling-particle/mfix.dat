@@ -42,12 +42,12 @@
 
 # Solids-phase Section
 ! when using DEM the variable MMAX is used, when using DEM with 
-! gener_part_config then RO_S(M) and D_p0(M) are also used (they
+! gener_part_config then RO_S0(M) and D_p0(M) are also used (they
 ! are otherwise read in from particle_input.dat).  whether used
 ! or not, the following quantities must be defined to bypass the
 ! checks made in MFIX
   MMAX    = 1
-  RO_s    = 2.6 
+  RO_s0   = 2.6 
   D_p0    = 20.0
   e       = 0.9
   Phi     = 0.0

@@ -146,8 +146,7 @@
       DO IJK = IJKSTART3, IJKEND3
 
           D_PM = D_P(IJK,M) 
-!QX
-          M_PM = (Pi/6d0) * D_PM**3 *RO_SV(IJK,M)
+          M_PM = (Pi/6d0) * D_PM**3 *RO_S(IJK,M)
 
           J = J_OF(IJK) 
           IJKN = NORTH_OF(IJK) 
@@ -230,7 +229,7 @@
 ! number density of solids phase m and all other solids phases						
                          D_PL = D_P(IJK,L) 
 
-                         M_PL = (Pi/6d0)* D_PL**3 *RO_SV(IJK,L)
+                         M_PL = (Pi/6d0)* D_PL**3 *RO_S(IJK,L)
 
                          NU_PM_pN = ROP_S(IJKN,M)/M_PM
                          NU_PM_pS = ROP_S(IJK,M)/M_PM

@@ -22,11 +22,8 @@
 !  Local variables: EPSUM                                              C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE ADJUST_EPS 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
+
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
@@ -75,7 +72,7 @@
 		  epsMix = ZERO
                   DO M = 1, SMAX 
 !QX
-                     epSolid = ROP_S(IJK,M)/RO_SV(IJK,M)
+                     epSolid = ROP_S(IJK,M)/RO_S(IJK,M)
 		     epsMix = epsMix +  epSolid
 		     IF (epSolid < ZERO_EP_S) THEN 
 
@@ -118,9 +115,4 @@
       call send_recv(ROP_G,2)
 
       RETURN  
-      END SUBROUTINE ADJUST_EPS 
-      
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization 
-!// 200 1119 Changed the limits for the triple loop, do k=kmin1,kmax1=>kstart1,kend1
-!// 400 Added sendrecv module and send_recv calls for COMMunication
+      END SUBROUTINE ADJUST_EPS

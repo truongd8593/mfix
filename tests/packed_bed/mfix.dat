@@ -42,7 +42,7 @@
 # Solids-phase Section
 #
   MMAX         = 1
-  RO_s         =100000.0
+  RO_s0        =100000.0
   D_p0         = 0.05 
   CLOSE_PACKED = .TRUE.
 

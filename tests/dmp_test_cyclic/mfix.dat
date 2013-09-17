@@ -41,7 +41,7 @@
 #                                                                               
 # Solids-phase Section                                                          
 #                                                                               
-  RO_s    = 2.0                                                                 
+  RO_s0   = 2.0                                                                 
   D_p0     = 0.04                                                                
                                                                                 
   e       = 0.8                                                                 

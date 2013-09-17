@@ -178,7 +178,7 @@
 
   MMAX  =  1         ! number of solids phase
   D_p0  =  0.4       ! particle diameter 
-  RO_s  =  2.7       ! particle density
+  RO_s0 =  2.7       ! particle density
 
   e    = 0.9         ! coefficient of restitution p-p
   Phi  = 30.0        ! angle of internal friction (in degrees)

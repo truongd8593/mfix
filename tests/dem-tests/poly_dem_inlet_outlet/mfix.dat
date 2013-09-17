@@ -77,7 +77,7 @@
 # Solids-phase Section
 # -----------------------------
   MMAX     = 5
-  RO_s     = 1.75    1.85    1.95    2.05    2.15
+  RO_s0    = 1.75    1.85    1.95    2.05    2.15
   D_p0     = 0.100   0.125   0.150   0.175   0.200
 
 ! e must be defined, even in DEM simulations where it is not used

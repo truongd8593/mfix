@@ -98,7 +98,7 @@
           J = J_OF(IJK)
           K = K_OF(IJK)
          
-          Mi = (PI/6.d0)*D_P(IJK,M)**3 * RO_S(M)
+          Mi = (PI/6.d0)*D_P(IJK,M)**3 * RO_S(IJK,M)
           Ni = ROP_s(IJK,M) / Mi
           
 	  IF ( FLUID_AT(IJK) ) THEN      
@@ -196,14 +196,14 @@
 	       massMobilityTermNoDragZ = ZERO
 
 	       DO L = 1, SMAX
-                 Mj  = (PI/6.d0)*D_P(IJK,L)**3 * RO_S(L)
+                 Mj  = (PI/6.d0)*D_P(IJK,L)**3 * RO_S(IJK,L)
 
                  NjC = ROP_s(IJK,L) / Mj
                  NjE = ROP_S(IJKE,L) / Mj
                  NjN = ROP_S(IJKN,L) / Mj
                  NjT = ROP_S(IJKT,L) / Mj
                 
-                IF((ROP_S(IJK,MMAX)/RO_S(M) > DIL_EP_S) .and. (ROP_S(IJKE,MMAX)/RO_S(M) > DIL_EP_S))THEN
+                IF((ROP_S(IJK,MMAX)/RO_S(IJK,M) > DIL_EP_S) .and. (ROP_S(IJKE,MMAX)/RO_S(IJK,M) > DIL_EP_S))THEN
 		    DijE_H = AVG_X_S(Dij(IJK,M,L)*Mi*Mj/ROP_S(IJK,MMAX),Dij(IJKE,M,L)*Mi*Mj/ROP_S(IJKE,MMAX),I)
 		    DijE_A = AVG_X(Dij(IJK,M,L)*Mi*Mj/ROP_S(IJK,MMAX),Dij(IJKE,M,L)*Mi*Mj/ROP_S(IJKE,MMAX),I)
                     
@@ -229,7 +229,7 @@
                  DijE = ZERO
                 ENDIF
                 
-                IF((ROP_S(IJK,MMAX)/RO_S(M) > DIL_EP_S) .and. (ROP_S(IJKN,MMAX)/RO_S(M) > DIL_EP_S))THEN
+                IF((ROP_S(IJK,MMAX)/RO_S(IJK,M) > DIL_EP_S) .and. (ROP_S(IJKN,MMAX)/RO_S(IJK,M) > DIL_EP_S))THEN
 		    DijN_H = AVG_Y_S(Dij(IJK,M,L)*Mi*Mj/ROP_S(IJK,MMAX),Dij(IJKN,M,L)*Mi*Mj/ROP_S(IJKN,MMAX),J)
 		    DijN_A = AVG_Y(Dij(IJK,M,L)*Mi*Mj/ROP_S(IJK,MMAX),Dij(IJKN,M,L)*Mi*Mj/ROP_S(IJKN,MMAX),J)
                     IF(M .eq. 1)THEN
@@ -251,7 +251,7 @@
                  DijN = ZERO
                 ENDIF
 
-                IF((ROP_S(IJK,MMAX)/RO_S(M) > DIL_EP_S) .and. (ROP_S(IJKT,MMAX)/RO_S(M) > DIL_EP_S))THEN
+                IF((ROP_S(IJK,MMAX)/RO_S(IJK,M) > DIL_EP_S) .and. (ROP_S(IJKT,MMAX)/RO_S(IJK,M) > DIL_EP_S))THEN
 		   DijT_H = AVG_Z_S(Dij(IJK,M,L)*Mi*Mj/ROP_S(IJK,MMAX),Dij(IJKT,M,L)*Mi*Mj/ROP_S(IJKT,MMAX),K)
 		   DijT_A = AVG_Z(Dij(IJK,M,L)*Mi*Mj/ROP_S(IJK,MMAX),Dij(IJKT,M,L)*Mi*Mj/ROP_S(IJKT,MMAX),K)
                     IF(M .eq. 1)THEN
@@ -373,13 +373,13 @@
 	          DELTAW(IJK,M) = -(ordinDiffTermZ+thermalDiffTermz+massMobilityTermZvelUpdate)
         	
 ! set fluxes to zero in case very dilute conditions	       
-	       EPSA = AVG_X(ROP_S(IJK,M),ROP_S(IJKE,M),I) / RO_S(M)
+	       EPSA = AVG_X(ROP_S(IJK,M),ROP_S(IJKE,M),I) / RO_S(IJK,M)
 	       IF(EPSA <= ZERO_EP_S) JoiX(IJK,M) = ZERO
 	       
-	       EPSA = AVG_Y(ROP_S(IJK,M),ROP_S(IJKN,M),J) / RO_S(M)
+	       EPSA = AVG_Y(ROP_S(IJK,M),ROP_S(IJKN,M),J) / RO_S(IJK,M)
 	       IF(EPSA <= ZERO_EP_S) JoiY(IJK,M) = ZERO
 	       
-	       EPSA = AVG_Z(ROP_S(IJK,M),ROP_S(IJKT,M),K) / RO_S(M)
+	       EPSA = AVG_Z(ROP_S(IJK,M),ROP_S(IJKT,M),K) / RO_S(IJK,M)
 	       IF(EPSA <= ZERO_EP_S) JoiZ(IJK,M) = ZERO
 
 ! set flux components to zero in case of walls        
@@ -515,9 +515,9 @@
             IF(.NOT.IP_AT_E(IJK) .OR. .NOT.SIP_AT_E(IJK)) THEN
 	      IF(RO_g0 == ZERO) THEN ! special case of a granular flow
 	       do s = 1, smax
-	        rosN(s) = AVG_X(ROP_S(IJK,s),ROP_S(IJKE,s),I)/ RO_S(s) ! this is ep_s
+	        rosN(s) = AVG_X(ROP_S(IJK,s),ROP_S(IJKE,s),I)/ RO_S(IJK,s) ! this is ep_s
 		if(rosN(s) > zero_ep_s) then
-		   u_s(ijk,s) = u_s(ijk,mmax) + JoiX(IJK,s)/(rosN(s)*ro_s(s))
+		   u_s(ijk,s) = u_s(ijk,mmax) + JoiX(IJK,s)/(rosN(s)*ro_s(IJK,s))
 	        else
 		   u_s(ijk,s) = u_s(ijk,mmax) ! case of zero flux
 		endif
@@ -602,9 +602,9 @@
             IF (.NOT.IP_AT_N(IJK) .OR. .NOT.SIP_AT_N(IJK)) THEN 
 	      IF(RO_g0 == ZERO) THEN ! special case of a granular flow
 	       do s = 1, smax
-	        rosN(s) = AVG_Y(ROP_S(IJK,s),ROP_S(IJKN,s),J)/ RO_S(s) ! this is ep_s
+	        rosN(s) = AVG_Y(ROP_S(IJK,s),ROP_S(IJKN,s),J)/ RO_S(IJK,s) ! this is ep_s
 		if(rosN(s) > zero_ep_s) then
-	          v_s(ijk,s) = v_s(ijk,mmax) + JoiY(IJK,s)/(rosN(s)*ro_s(s))
+	          v_s(ijk,s) = v_s(ijk,mmax) + JoiY(IJK,s)/(rosN(s)*ro_s(IJK,s))
 	        else
 		   v_s(ijk,s) = v_s(ijk,mmax) ! case of zero flux
 		endif
@@ -690,9 +690,9 @@
 	    IF(.NOT.NO_K .AND. (.NOT.IP_AT_T(IJK) .OR. .NOT.SIP_AT_T(IJK))) THEN
 	      IF(RO_g0 == ZERO) THEN ! special case of a granular flow
 	       do s = 1, smax
-	        rosN(s) = AVG_Z(ROP_S(IJK,s),ROP_S(IJKT,s),K)/ RO_S(s) ! this is ep_s
+	        rosN(s) = AVG_Z(ROP_S(IJK,s),ROP_S(IJKT,s),K)/ RO_S(IJK,s) ! this is ep_s
 		if(rosN(s) > zero_ep_s) then
-	           w_s(ijk,s) = w_s(ijk,mmax) + JoiZ(IJK,s)/(rosN(s)*ro_s(s))
+	           w_s(ijk,s) = w_s(ijk,mmax) + JoiZ(IJK,s)/(rosN(s)*ro_s(IJK,s))
 	        else
 		   w_s(ijk,s) = w_s(ijk,mmax) ! case of zero flux
 		endif

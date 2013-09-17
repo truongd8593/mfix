@@ -425,7 +425,7 @@ CONTAINS
 	  SELECT CASE (TRIM(BC_PLANE(L)))  
 	  CASE ('W')  
 	    IJK2 = IM_OF(IJK) 
-	    QMOMK_N0 (:, IJK2, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(M))
+	    QMOMK_N0 (:, IJK2, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(IJK2,M))
 
 	    InitVal = MAX(SQRT(BC_THETA_M(L,M)), MINIMUM_THETA)
 
@@ -457,7 +457,7 @@ CONTAINS
 	    QMOMK_W0(8, IJK2, M) = +InitVal 
 	    
 	  CASE ('E')  
-	    QMOMK_N0 (:, IJK, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(M))
+	    QMOMK_N0 (:, IJK, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(IJK,M))
 
 	    InitVal = MAX(SQRT(BC_THETA_M(L,M)), MINIMUM_THETA)
 
@@ -489,7 +489,7 @@ CONTAINS
 	    QMOMK_W0(8, IJK, M) = +InitVal
 	  CASE ('S')  
 	    IJK2 = JM_OF(IJK) 
-	    QMOMK_N0 (:, IJK2, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(M))
+	    QMOMK_N0 (:, IJK2, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(IJK,M))
 
 	    InitVal = MAX(SQRT(BC_THETA_M(L,M)), MINIMUM_THETA)
 
@@ -521,7 +521,7 @@ CONTAINS
 	    QMOMK_W0(8, IJK2, M) = +InitVal 
 
 	  CASE ('N')  
-	    QMOMK_N0 (:, IJK, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(M))
+	    QMOMK_N0 (:, IJK, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(IJK,M))
 
 	    InitVal = MAX(SQRT(BC_THETA_M(L,M)), MINIMUM_THETA)
 
@@ -554,7 +554,7 @@ CONTAINS
 
 	  CASE ('B')  
 	    IJK2 = KM_OF(IJK) 
-	    QMOMK_N0 (:, IJK2, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(M))
+	    QMOMK_N0 (:, IJK2, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(IJK2,M))
 
 	    InitVal = MAX(SQRT(BC_THETA_M(L,M)), MINIMUM_THETA)
 
@@ -586,7 +586,7 @@ CONTAINS
 	    QMOMK_W0(8, IJK2, M) = +InitVal + BC_W_S(L, M)
 
 	  CASE ('T')  
-	    QMOMK_N0 (:, IJK, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(M))
+	    QMOMK_N0 (:, IJK, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(IJK,M))
 
 	    InitVal = MAX(SQRT(BC_THETA_M(L,M)), MINIMUM_THETA)
 
@@ -631,7 +631,7 @@ CONTAINS
 
 	  CASE ('W')  
 	    IJK2 = IM_OF(IJK) 
-	    QMOMK_N1 (:, IJK2, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(M))
+	    QMOMK_N1 (:, IJK2, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(IJK2,M))
 
 	    InitVal = MAX(SQRT(BC_THETA_M(L,M)), MINIMUM_THETA)
 
@@ -663,7 +663,7 @@ CONTAINS
 	    QMOMK_W1(8, IJK2, M) = +InitVal 
 	    
 	  CASE ('E')  
-	    QMOMK_N1 (:, IJK, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(M))
+	    QMOMK_N1 (:, IJK, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(IJK,M))
 
 	    InitVal = MAX(SQRT(BC_THETA_M(L,M)), MINIMUM_THETA)
 
@@ -696,7 +696,7 @@ CONTAINS
 
 	  CASE ('S')  
 	    IJK2 = JM_OF(IJK) 
-	    QMOMK_N1 (:, IJK2, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(M))
+	    QMOMK_N1 (:, IJK2, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(IJK2,M))
 
 	    InitVal = MAX(SQRT(BC_THETA_M(L,M)), MINIMUM_THETA)
 
@@ -728,7 +728,7 @@ CONTAINS
 	    QMOMK_W1(8, IJK2, M) = +InitVal 
 
 	  CASE ('N')  
-	    QMOMK_N1 (:, IJK, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(M))
+	    QMOMK_N1 (:, IJK, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(IJK,M))
 
 	    InitVal = MAX(SQRT(BC_THETA_M(L,M)), MINIMUM_THETA)
 
@@ -761,7 +761,7 @@ CONTAINS
 
 	  CASE ('B')  
 	    IJK2 = KM_OF(IJK) 
-	    QMOMK_N1 (:, IJK2, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(M))
+	    QMOMK_N1 (:, IJK2, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(IJK2,M))
 
 	    InitVal = MAX(SQRT(BC_THETA_M(L,M)), MINIMUM_THETA)
 
@@ -793,7 +793,7 @@ CONTAINS
 	    QMOMK_W1(8, IJK2, M) = +InitVal + BC_W_S(L, M)
 
 	  CASE ('T')  
-	    QMOMK_N1 (:, IJK, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(M))
+	    QMOMK_N1 (:, IJK, M) = BC_ROP_s (L, M)/(QMOMK_NN * RO_s(IJK,M))
 
 	    InitVal = MAX(SQRT(BC_THETA_M(L,M)), MINIMUM_THETA)
 

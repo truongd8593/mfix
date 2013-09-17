@@ -42,7 +42,7 @@
 ! Solids-phase section 
 
   MMAX                  = 2
-  RO_s                 = 2.649d0   0.585d0      !density
+  RO_s0                = 2.649d0   0.585d0      !density
   D_p0                  = 0.052d0   0.05d0      !diameter     
   NMAX(1)               = 1
   NMAX(2)               = 5

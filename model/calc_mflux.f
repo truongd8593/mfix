@@ -104,11 +104,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE CALC_MFLUX0(U, V, W, ROP_E, ROP_N, ROP_T, Flux_E, Flux_N, Flux_T, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
-!  Include param.inc file to specify parameter values
-!
+
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
@@ -227,7 +223,8 @@
       USE physprop
       USE geometry
       USE indices
-      USE compar   
+      USE compar
+      use fldvar, only: RO_S
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -267,33 +264,33 @@
 !
 !         East face (i+1/2, j, k)
 !QX RO_S changed
-            Flux_E(IJK) = ROP_E(IJK)*(ONE + Cv*ROPa_E(IJK)/RO_SV(IJK,M_AM))*AYZ(IJK)*U(IJK)
+            Flux_E(IJK) = ROP_E(IJK)*(ONE + Cv*ROPa_E(IJK)/RO_S(IJK,M_AM))*AYZ(IJK)*U(IJK)
 !
 !         North face (i, j+1/2, k)
-            Flux_N(IJK) = ROP_N(IJK)*(ONE + Cv*ROPa_N(IJK)/RO_SV(IJK,M_AM))*AXZ(IJK)*V(IJK)
+            Flux_N(IJK) = ROP_N(IJK)*(ONE + Cv*ROPa_N(IJK)/RO_S(IJK,M_AM))*AXZ(IJK)*V(IJK)
 !
 !         Top face (i, j, k+1/2)
             IF (DO_K) THEN 
-               Flux_T(IJK) = ROP_T(IJK)*(ONE + Cv*ROPa_T(IJK)/RO_SV(IJK,M_AM))*AXY(IJK)*W(IJK)
+               Flux_T(IJK) = ROP_T(IJK)*(ONE + Cv*ROPa_T(IJK)/RO_S(IJK,M_AM))*AXY(IJK)*W(IJK)
             ENDIF 
 !
 !         West face (i-1/2, j, k)
             IMJK = IM_OF(IJK) 
             IF (.NOT.FLUID_AT(IMJK)) THEN 
-               Flux_E(IMJK) = ROP_E(IMJK)*(ONE + Cv*ROPa_E(IMJK)/RO_SV(IJK,M_AM))*AYZ(IMJK)*U(IMJK)
+               Flux_E(IMJK) = ROP_E(IMJK)*(ONE + Cv*ROPa_E(IMJK)/RO_S(IJK,M_AM))*AYZ(IMJK)*U(IMJK)
             ENDIF 
 !
 !         South face (i, j-1/2, k)
             IJMK = JM_OF(IJK) 
             IF (.NOT.FLUID_AT(IJMK)) THEN 
-              Flux_N(IJMK) = ROP_N(IJMK)*(ONE + Cv*ROPa_N(IJMK)/RO_SV(IJK,M_AM))*AXZ(IJMK)*V(IJMK)
+              Flux_N(IJMK) = ROP_N(IJMK)*(ONE + Cv*ROPa_N(IJMK)/RO_S(IJK,M_AM))*AXZ(IJMK)*V(IJMK)
             ENDIF 
 !
 !         Bottom face (i, j, k-1/2)
             IF (DO_K) THEN 
                IJKM = KM_OF(IJK) 
                IF (.NOT.FLUID_AT(IJKM)) THEN 
-                 Flux_T(IJKM) = ROP_T(IJKM)*(ONE + Cv*ROPa_T(IJKM)/RO_SV(IJK,M_AM))*AXY(IJKM)*W(IJKM)
+                 Flux_T(IJKM) = ROP_T(IJKM)*(ONE + Cv*ROPa_T(IJKM)/RO_S(IJK,M_AM))*AXY(IJKM)*W(IJKM)
                ENDIF 
             ENDIF 
          ENDIF 

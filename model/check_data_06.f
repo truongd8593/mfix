@@ -421,7 +421,7 @@
                            IC_ROP_S(ICV,M) = ZERO 
                         ELSEIF (SMAX == 1 .AND. &
                                 .NOT.DES_CONTINUUM_HYBRID) THEN 
-                           IC_ROP_S(ICV,M) = (ONE - IC_EP_G(ICV))*RO_S(M)
+                           IC_ROP_S(ICV,M) = (ONE - IC_EP_G(ICV))*RO_S0(M)
                         ELSE
 ! bulk density must be explicitly defined for hybrid model and cannot be
 ! defined from 1-ic_ep_g
@@ -432,7 +432,7 @@
                      ENDIF
 ! at this point ic_rop_s must be defined
 ! sum of void fraction and solids volume fractions                  
-                     SUM_EP = SUM_EP + IC_ROP_S(ICV,M)/RO_S(M) 
+                     SUM_EP = SUM_EP + IC_ROP_S(ICV,M)/RO_S0(M) 
 
 ! check sum of the solids phase m species mass fractions                  
                      SUM = ZERO 

@@ -158,7 +158,7 @@
          endif
          DO IJK = 1,IJKMAX2
             IF(EP_g(IJK) .NE. UNDEFINED) THEN
-              ROP_s(IJK,1) = (ONE - EP_g(IJK)) * RO_s(1)
+              ROP_s(IJK,1) = (ONE - EP_g(IJK)) * RO_s0(1)
             ELSE
               ROP_s(IJK,1) = ZERO
             ENDIF

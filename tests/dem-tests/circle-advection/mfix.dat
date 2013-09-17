@@ -50,7 +50,7 @@
   RO_g0			= 1.205E-3		!constant gas density
  
 ! Solids-phase Section                                                  
-  RO_s    		= 2.7			!solids density
+  RO_s0   		= 2.7			!solids density
   D_p0    		= 0.01d0		!particle diameter
   e       		= 0.9 			!restitution coefficient
   Phi    		= 30.0			!angle of internal friction

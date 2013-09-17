@@ -42,7 +42,7 @@
 
   MMAX = 1                            ! No of solids
   D_p0          =  0.1
-  RO_s          =  2.0
+  RO_s0         =  2.0
 
   EP_star = 0.4                       ! maximum possible packing
 

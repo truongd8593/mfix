@@ -102,7 +102,7 @@
             IF (SPECIES_EQ(M)) THEN 
                IF (NMAX(M) > 0) THEN 
                   X_SO(:,M,:NMAX(M)) = X_S(:,M,:NMAX(M)) 
-                  RO_SVO(:,M) = RO_SV(:,M) 
+                  RO_SO(:,M) = RO_S(:,M) 
                ENDIF 
             ENDIF 
       END DO 

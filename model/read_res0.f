@@ -416,25 +416,25 @@
 	  IF (VERSION=='RES = 01.00' .OR. VERSION==&
                 'RES = 01.01') THEN 
             READ (UNIT_RES, REC=NEXT_RECA) (D_P0(L),L=1,&
-                MMAX), (RO_S(L),L=1,MMAX), EP_STAR, &
+                MMAX), (RO_S0(L),L=1,MMAX), EP_STAR, &
                 MU_G0, MW_AVG 
           ELSE IF (VERSION == 'RES = 01.02') THEN 
             READ (UNIT_RES, REC=NEXT_RECA) (D_P0(L),L=1,&
-                MMAX), (RO_S(L),L=1,MMAX), EP_STAR, &
+                MMAX), (RO_S0(L),L=1,MMAX), EP_STAR, &
                 RO_G0, MU_G0, MW_AVG 
           ELSE IF (VERSION == 'RES = 01.03') THEN 
             READ (UNIT_RES, REC=NEXT_RECA) (D_P0(L),L=1,&
-                MMAX), (RO_S(L),L=1,MMAX), EP_STAR, &
+                MMAX), (RO_S0(L),L=1,MMAX), EP_STAR, &
                 RO_G0, MU_G0, MW_AVG 
           ELSE IF (VERSION_NUMBER >= 1.04) THEN 
             READ (UNIT_RES, REC=NEXT_RECA) (D_P0(L),L=1,&
-                MMAX), (RO_S(L),L=1,MMAX), EP_STAR, &
+                MMAX), (RO_S0(L),L=1,MMAX), EP_STAR, &
                 RO_G0, MU_G0, MW_AVG 
           ENDIF 
           NEXT_RECA = NEXT_RECA + 1
 	ENDIF 
-        call bcast(D_P0, PE_IO)       !//PAR_I/O BCAST1d
-        call bcast(RO_S, PE_IO)      !//PAR_I/O BCAST1d
+        call bcast(D_P0, PE_IO)      !//PAR_I/O BCAST1d
+        call bcast(RO_S0, PE_IO)     !//PAR_I/O BCAST1d
         call bcast(EP_STAR, PE_IO)   !//PAR_I/O BCAST0d
         call bcast(RO_G0, PE_IO)     !//PAR_I/O BCAST0d
         call bcast(MU_G0, PE_IO)     !//PAR_I/O BCAST0d
@@ -1215,14 +1215,14 @@
             NEXT_RECA = NEXT_RECA + 1 
             if (doingPost .and. (.NOT.SOLID_RO_V)) then
                DO LC = 1, MMAX 
-                  RO_SV(:,LC) = RO_S(LC)
+                  RO_S(:,LC) = RO_S0(LC)
                 END DO 
             end if
 	  ENDIF
         ELSE
           SOLID_RO_V = .false.
           DO LC = 1, MMAX 
-             RO_SV(:,LC) = RO_S(LC)
+             RO_S(:,LC) = RO_S0(LC)
           END DO 
 
         ENDIF 

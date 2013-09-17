@@ -68,7 +68,7 @@
       
   DRAG_TYPE            = 'WEN_YU'  !not used since single phase  
   MMAX = 1
-  RO_s         = 1.5
+  RO_s0        = 1.5
   D_p0         = 7.5D-3  !particle diameters  
 
   e         = 0.95  !not used, restitution coefficient (particle-particle)  

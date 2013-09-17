@@ -71,16 +71,16 @@
 
 
       IF (.NOT.DES_CONTINUUM_HYBRID) THEN
-! MMAX, D_p0 and RO_s are to be strictly associated with the continuum
+! MMAX, D_p0 and RO_s0 are to be strictly associated with the continuum
 ! model and are no longer to be used in the DEM. However, when not using
 ! DES_CONTINUUM_HYBRID the current DEM code still assumes that the user
-! specifies MMAX, D_P0 and RO_S.  These are then linked to their
+! specifies MMAX, D_P0 and RO_S0.  These are then linked to their
 ! respective DES variables.  Note that valid values of MMAX, D_P0 and 
-! RO_s are ensured by check_data_04.
+! RO_s0 are ensured by check_data_04.
          DES_MMAX = MMAX
          DO M = 1, DES_MMAX
             DES_D_p0(M) = D_p0(M)
-            DES_RO_s(M) = RO_s(M)
+            DES_RO_s(M) = RO_s0(M)
          ENDDO
       ENDIF
 

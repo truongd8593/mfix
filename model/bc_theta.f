@@ -412,7 +412,7 @@
          EPs_avg(MM) = EP_s(IJK2,MM)
          DP_avg(MM)  = D_P(IJK2,MM)
          g0EPs_avg   = g0EPs_avg + G_0(IJK2, M, MM)*EP_s(IJK2,MM)
-         ROs_avg(MM) = RO_SV(IJK2,MM)
+         ROs_avg(MM) = RO_S(IJK2,MM)
       ENDDO
 
 

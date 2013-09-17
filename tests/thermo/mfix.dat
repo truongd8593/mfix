@@ -75,7 +75,7 @@
 ! Solids phase 1
 !------------------------------------------//
   D_p0(1) = 0.1   ! (cm)
-  RO_s(1) = 1.0   ! (g/cm)
+  RO_s0(1) = 1.0  ! (g/cm)
 
   NMAX_s(1) = 4
 
@@ -88,7 +88,7 @@
 ! Solids phase 2
 !------------------------------------------//
   D_p0(2) = 0.1   ! (cm)
-  RO_s(2) = 1.0   ! (g/cm)
+  RO_s0(2) = 1.0  ! (g/cm)
 
   NMAX_s(2) = 2
   SPECIES_s(2,1) = 'Fixed Carbon'   SPECIES_ALIAS_s(2,1) = 'FC2'
@@ -97,7 +97,7 @@
 ! Solids phase 2
 !------------------------------------------//
   D_p0(3) = 0.1   ! (cm)
-  RO_s(3) = 1.0   ! (g/cm)
+  RO_s0(3) = 1.0  ! (g/cm)
 
   NMAX_s(3) = 2
   SPECIES_s(3,1) = 'Fixed Carbon'   SPECIES_ALIAS_s(3,1) = 'SSOOT'

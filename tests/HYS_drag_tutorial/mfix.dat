@@ -68,7 +68,7 @@
   SCHAEFFER = .F. !no frictional viscosity will be used in this simulation
 
   MMAX = 2     ! bi-disperse powder with same density and different diameter
-  RO_s         = 2*2.4d0
+  RO_s0        = 2*2.4d0
   D_p0(1)         = 0.02
   D_p0(2)         = 0.012
  

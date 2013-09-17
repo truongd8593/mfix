@@ -98,7 +98,7 @@
             X_S(:,M,:NMAX(M)) = X_SO(:,M,:NMAX(M)) 
           ENDIF 
 
-          RO_SV(:,M) = RO_SVO(:,M)
+          RO_S(:,M) = RO_SO(:,M)
         ENDIF 
       END DO 
 

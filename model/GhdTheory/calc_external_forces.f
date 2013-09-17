@@ -115,7 +115,7 @@
 
 	       DO M = 1, SMAX
                  Vj = (PI/6.d0)*D_P(IJK,M)**3 ! particle volume
-                 Mj = Vj * RO_S(M)            ! particle mass
+                 Mj = Vj * RO_S(IJK,M)            ! particle mass
 
                  NjC = ROP_s(IJK,M) / Mj
                  NjE = ROP_S(IJKE,M) / Mj

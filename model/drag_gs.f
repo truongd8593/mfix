@@ -145,7 +145,7 @@
                   DO CM = 1,MAXM
                      DP_loc(CM) = D_p(IJK,CM)
                      EPs_loc(CM) = EP_S(IJK,CM)
-                     ROs_loc(CM) = RO_SV(IJK,CM)
+                     ROs_loc(CM) = RO_S(IJK,CM)
                   ENDDO
                ENDIF
             ELSE   ! des_continuum_hybrid branch
@@ -167,7 +167,7 @@
                      L = DES_MMAX + CM
                      DP_loc(L) = D_P(IJK,CM)
                      EPs_loc(L) = EP_S(IJK,CM)
-                     ROs_loc(L) = RO_SV(IJK,CM)
+                     ROs_loc(L) = RO_S(IJK,CM)
                   ENDDO
                ELSE
 ! the subroutine is being called to calculate the drag coefficient on
@@ -176,7 +176,7 @@
                   DO CM = 1,SMAX
                      DP_loc(CM) = D_p(IJK,CM)         
                      EPs_loc(CM) = EP_S(IJK,CM)
-                     ROs_loc(CM) = RO_S(CM)
+                     ROs_loc(CM) = RO_S(IJK,CM)
                   ENDDO
                   DO DM = 1,DES_MMAX
                      L = SMAX + DM

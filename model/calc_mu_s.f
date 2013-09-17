@@ -31,7 +31,7 @@
 !                                                                      C
 !  Author: QX, Iowa State                                              C
 !  Revision Number:X                                                   C
-!  Purpose: Variable density- changed RO_S(M) to RO_SV(IJK,M)          C
+!  Purpose: Variable density- changed RO_S(M) to RO_S(IJK,M)          C
 !                                                                      C
 !  Author: Handan Liu                                                  C
 !  Revision Number:X                                                   C
@@ -383,16 +383,16 @@
             IF(EP_g(IJK) .GE. EP_g_blend_start(IJK)) THEN
 
 ! Calculate K_1m, K_2m, K_3m, K_4m
-               K_1m = 2.D0 * (ONE + C_e) * RO_SV(IJK,M) * G_0(IJK, M, M)
-               K_3m = HALF * D_p(IJK,M) * RO_SV(IJK,M) * (&
+               K_1m = 2.D0 * (ONE + C_e) * RO_S(IJK,M) * G_0(IJK, M, M)
+               K_3m = HALF * D_p(IJK,M) * RO_S(IJK,M) * (&
                    ( (SQRT_PI / (3.D0*(3.D0 - C_e))) *&
                    (HALF*(3d0*C_e+ONE) + 0.4D0*(ONE + C_e)*(3.D0*C_e - ONE)*&
                    EP_s(IJK,M)*G_0(IJK, M,M)) ) + 8.D0*EP_s(IJK,M)&
                    *G_0(IJK, M,M)*(ONE + C_e)/ (5.D0*SQRT_PI) )
-               K_2m = 4.D0 * D_p(IJK,M) * RO_SV(IJK,M) * (ONE + C_e) *&
+               K_2m = 4.D0 * D_p(IJK,M) * RO_S(IJK,M) * (ONE + C_e) *&
                    EP_s(IJK,M) * G_0(IJK, M,M) / (3.D0 * SQRT_PI) - 2.D0/3.D0 * K_3m
                K_4m = 12.D0 * (ONE - C_e*C_e) *&
-                   RO_SV(IJK,M) * G_0(IJK, M,M) / (D_p(IJK,M) * SQRT_PI)
+                   RO_S(IJK,M) * G_0(IJK, M,M) / (D_p(IJK,M) * SQRT_PI)
                aq   = K_4m*EP_s(IJK,M)
                bq   = K_1m*EP_s(IJK,M)*trD_s_C(IJK,M)
                cq   = -(K_2m*trD_s_C(IJK,M)*trD_s_C(IJK,M)&
@@ -400,7 +400,7 @@
      
 ! Boyle-Massoudi Stress term
                IF(V_ex .NE. ZERO) THEN
-                  K_5m = 0.4 * (ONE + C_e) * G_0(IJK, M,M) * RO_SV(IJK,M) *&
+                  K_5m = 0.4 * (ONE + C_e) * G_0(IJK, M,M) * RO_S(IJK,M) *&
                   ( (V_ex * D_p(IJK,M)) / (ONE - EP_s(IJK,M) * V_ex) )**2
                   bq   = bq + EP_s(IJK,M) * K_5m * (trM_s(IJK) + 2.D0 * trDM_s(IJK))
                ELSE
@@ -570,9 +570,9 @@
 ! particle relaxation time. For very dilute flows avoid singularity by
 ! redefining the drag as single partilce drag
                IF(Ep_s(IJK,M) > DIL_EP_S .AND. F_GS(IJK,1) > small_number) THEN
-                  Tau_12_st = Ep_s(IJK,M)*RO_SV(IJK,M)/F_GS(IJK,1)
+                  Tau_12_st = Ep_s(IJK,M)*RO_S(IJK,M)/F_GS(IJK,1)
                ELSE             !for dilute flows, drag equals single particle drag law
-                  Tau_12_st = RO_SV(IJK,M)/DgA
+                  Tau_12_st = RO_S(IJK,M)/DgA
                ENDIF            !for dilute flows
 ! time scale of turbulent eddies
                Tau_1(ijk) = 3.d0/2.d0*C_MU*K_Turb_G(IJK)/(E_Turb_G(IJK)+small_number)
@@ -606,7 +606,7 @@
 ! and kinetic theory formulation of the stresses)
                Tau_2 = ONE/(2./Tau_12_st+Sigma_c/Tau_2_c)
 ! The ratio of densities
-               X_21 = Ep_s(IJK,M)*RO_SV(IJK,M)/(EP_g(IJK)*RO_g(IJK))
+               X_21 = Ep_s(IJK,M)*RO_S(IJK,M)/(EP_g(IJK)*RO_g(IJK))
 ! The ratio of these two time scales.
                Nu_t =  Tau_12(ijk)/Tau_12_st
      
@@ -645,7 +645,7 @@
             ENDIF
 
 ! find bulk and shear viscosity
-            Mu_s_v(IJK) = (5d0*DSQRT(Pi*Theta_m(IJK,M))*D_p(IJK,M)*RO_SV(IJK,M))/96d0
+            Mu_s_v(IJK) = (5d0*DSQRT(Pi*Theta_m(IJK,M))*D_p(IJK,M)*RO_S(IJK,M))/96d0
             Mu_b_v(IJK) = (256d0*Mu_s_v(IJK)*EP_s(IJK,M)*SUM_EpsGo)&
                 /(5d0*Pi)
 
@@ -655,13 +655,13 @@
             ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
                Mu_star = ZERO
             ELSEIF(EP_S(IJK,M) < DIL_EP_S) THEN
-               Mu_star = RO_SV(IJK,M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)* Mu_s_v(IJK)/ &
-                   (RO_SV(IJK,M)*SUM_EpsGo*Theta_m(IJK,M) &
-                   + 2.0d0*SWITCH*DgA/RO_SV(IJK,M)* Mu_s_v(IJK))
+               Mu_star = RO_S(IJK,M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)* Mu_s_v(IJK)/ &
+                   (RO_S(IJK,M)*SUM_EpsGo*Theta_m(IJK,M) &
+                   + 2.0d0*SWITCH*DgA/RO_S(IJK,M)* Mu_s_v(IJK))
             ELSE
-               Mu_star = RO_SV(IJK,M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)*Mu_s_v(IJK)/ &
-                   (RO_SV(IJK,M)*SUM_EpsGo*Theta_m(IJK,M)+ &
-                   (2d0*SWITCH*F_gs(IJK,M)*Mu_s_v(IJK)/(RO_SV(IJK,M)*EP_s(IJK,M))) )
+               Mu_star = RO_S(IJK,M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)*Mu_s_v(IJK)/ &
+                   (RO_S(IJK,M)*SUM_EpsGo*Theta_m(IJK,M)+ &
+                   (2d0*SWITCH*F_gs(IJK,M)*Mu_s_v(IJK)/(RO_S(IJK,M)*EP_s(IJK,M))) )
             ENDIF
      
 ! shear viscosity in Mth solids phase  (add to frictional part)
@@ -680,8 +680,8 @@
                    (ONE+ zeta_c_2*EP_s(IJK,M)*G_0(IJK,M,M)))*Tau_2
                Mu_2_Col = 8.d0/5.d0*EP_s(IJK,M)*G_0(IJK,M,M)*Eta* (MU_2_T_Kin+ &
                    D_p(IJK,M)*DSQRT(Theta_m(IJK,M)/PI))
-               Mu_b_v(IJK) = 5.d0/3.d0*EP_s(IJK,M)*RO_SV(IJK,M)*Mu_2_Col
-               Mu_s_v(IJK) = EP_s(IJK,M)*RO_SV(IJK,M)*(MU_2_T_Kin + Mu_2_Col)
+               Mu_b_v(IJK) = 5.d0/3.d0*EP_s(IJK,M)*RO_S(IJK,M)*Mu_2_Col
+               Mu_s_v(IJK) = EP_s(IJK,M)*RO_S(IJK,M)*(MU_2_T_Kin + Mu_2_Col)
                
             ELSE IF(AHMADI) THEN
               IF(EP_s(IJK,M) < (ONE-EP_star_array(ijk))) THEN
@@ -695,18 +695,18 @@
 ! was replaced by 0.1567 to include 3/2*sqrt(3/2) because K = 3/2 Theta_m
                Mu_s_v(IJK) = Tmp_Ahmadi_Const &
                    *0.1045d0*(ONE/G_0(IJK,M,M)+3.2d0*EP_s(IJK,M)+12.1824d0*   &
-                   G_0(IJK,M,M)*EP_s(IJK,M)*EP_s(IJK,M))*D_p(IJK,M)*RO_SV(IJK,M)*  &
+                   G_0(IJK,M,M)*EP_s(IJK,M)*EP_s(IJK,M))*D_p(IJK,M)*RO_S(IJK,M)*  &
                    DSQRT(Theta_m(IJK,M))
 ! This is a guess of what Mu_b might be by taking 5/3 of the collisional viscosity
 ! contribution. In this case col. visc. is the eps^2 contribution to Mu_s_v(IJK). This
 ! might be changed later if communications with Ahmadi reveals a diffrent appoach
                Mu_b_v(IJK) = 5.d0/3.d0* Tmp_Ahmadi_Const                  &
                    *0.1045d0*(12.1824d0*G_0(IJK,M,M)*EP_s(IJK,M)*EP_s(IJK,M)) &
-                   *D_p(IJK,M)*RO_SV(IJK,M)* DSQRT(Theta_m(IJK,M))
+                   *D_p(IJK,M)*RO_S(IJK,M)* DSQRT(Theta_m(IJK,M))
             ENDIF               !for simonin or ahmadi viscosity
             
             
-            Kth=75d0*RO_SV(IJK,M)*D_p(IJK,M)*DSQRT(Pi*Theta_m(IJK,M))/&
+            Kth=75d0*RO_S(IJK,M)*D_p(IJK,M)*DSQRT(Pi*Theta_m(IJK,M))/&
                 (48d0*Eta*(41d0-33d0*Eta))
             
             IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN ! sof modifications (May 20 2005)
@@ -714,13 +714,13 @@
             ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
                Kth_star = ZERO
             ELSEIF(EP_S(IJK,M) < DIL_EP_S) THEN
-               Kth_star = RO_SV(IJK,M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)* Kth/ &
-                   (RO_SV(IJK,M)*SUM_EpsGo*Theta_m(IJK,M) &
-                   + 1.2d0*SWITCH*DgA/RO_SV(IJK,M)* Kth)
+               Kth_star = RO_S(IJK,M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)* Kth/ &
+                   (RO_S(IJK,M)*SUM_EpsGo*Theta_m(IJK,M) &
+                   + 1.2d0*SWITCH*DgA/RO_S(IJK,M)* Kth)
             ELSE
-               Kth_star = RO_SV(IJK,M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)*Kth/ &
-                   (RO_SV(IJK,M)*SUM_EpsGo*Theta_m(IJK,M)+ &
-                   (1.2d0*SWITCH*F_gs(IJK,M)*Kth/(RO_SV(IJK,M)*EP_s(IJK,M))) )
+               Kth_star = RO_S(IJK,M)*EP_s(IJK,M)* G_0(IJK,M,M)*Theta_m(IJK,M)*Kth/ &
+                   (RO_S(IJK,M)*SUM_EpsGo*Theta_m(IJK,M)+ &
+                   (1.2d0*SWITCH*F_gs(IJK,M)*Kth/(RO_S(IJK,M)*EP_s(IJK,M))) )
             ENDIF
      
 ! granular conductivity in Mth solids phase
@@ -738,12 +738,12 @@
                    (9.d0/(5.d0*Tau_12_st) + zeta_c/Tau_2_c)
                Kappa_Col = 18.d0/5.d0*EP_s(IJK,M)*G_0(IJK,M,M)*Eta* & 
                    (Kappa_kin+ 5.d0/9.d0*D_p(IJK,M)*DSQRT(Theta_m(IJK,M)/PI))
-               Kth_s(IJK,M) =  EP_s(IJK,M)*RO_SV(IJK,M)*(Kappa_kin + Kappa_Col)
+               Kth_s(IJK,M) =  EP_s(IJK,M)*RO_S(IJK,M)*(Kappa_kin + Kappa_Col)
      
             ELSEIF(AHMADI) THEN
 ! Defining Ahmadi conductivity from his equation 42 in Cao and Ahmadi 1995 paper
 ! note the constant 0.0711 is now 0.1306 because K = 3/2 theta_m
-               Kth_s(IJK,M) = 0.1306D0*RO_SV(IJK,M)*D_p(IJK,M)*(ONE+C_e**2)* &
+               Kth_s(IJK,M) = 0.1306D0*RO_S(IJK,M)*D_p(IJK,M)*(ONE+C_e**2)* &
                    (ONE/G_0(IJK,M,M)+4.8D0*EP_s(IJK,M)+12.1184D0 &
                    *EP_s(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M) )  &
                    *DSQRT(Theta_m(IJK,M))
@@ -885,8 +885,8 @@
 ! Note: k_boltz = M_PM
 !-----------------------------------
                D_PM = D_P(IJK,M)
-!               M_PM = (PI/6.d0)*D_PM**3 * RO_SV(M)
-               M_PM = (PI/6.d0)*D_PM**3 * RO_SV(IJK,M)
+!               M_PM = (PI/6.d0)*D_PM**3 * RO_S(M)
+               M_PM = (PI/6.d0)*D_PM**3 * RO_S(IJK,M)
                NU_PM = ROP_S(IJK,M)/M_PM
 
      
@@ -923,13 +923,13 @@
                ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
                     Mu_star = ZERO
                ELSEIF(EP_S(IJK,M) < DIL_EP_S) THEN
-                    Mu_star = RO_SV(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M)*eta0 / &
-                         ( RO_SV(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M) + &
-                         2.d0*DgA*eta0/RO_SV(IJK,M) )
+                    Mu_star = RO_S(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M)*eta0 / &
+                         ( RO_S(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M) + &
+                         2.d0*DgA*eta0/RO_S(IJK,M) )
                ELSE
-                    Mu_star = RO_SV(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M)*eta0 / &
-                         ( RO_SV(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M) + &
-                         (2.d0*F_gs(IJK,M)*eta0/(RO_SV(IJK,M)*EP_s(IJK,M))) )
+                    Mu_star = RO_S(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M)*eta0 / &
+                         ( RO_S(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M) + &
+                         (2.d0*F_gs(IJK,M)*eta0/(RO_S(IJK,M)*EP_s(IJK,M))) )
                ENDIF
 
 ! shear viscosity in Mth solids phase  (add to frictional part)
@@ -963,13 +963,13 @@
                ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
                     Kth_star = ZERO
                ELSEIF(EP_S(IJK,M) < DIL_EP_S) THEN
-                    Kth_star = RO_SV(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M)*kappa0/ &
-                         (RO_SV(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M) + &
-                         1.2d0*DgA*kappa0/RO_SV(IJK,M) )
+                    Kth_star = RO_S(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M)*kappa0/ &
+                         (RO_S(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M) + &
+                         1.2d0*DgA*kappa0/RO_S(IJK,M) )
                ELSE
-                    Kth_star = RO_SV(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M)*kappa0/ &
-                         (RO_SV(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M)+ &
-                         (1.2d0*F_gs(IJK,M)*kappa0/(RO_SV(IJK,M)*EP_s(IJK,M))) )
+                    Kth_star = RO_S(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M)*kappa0/ &
+                         (RO_S(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M)+ &
+                         (1.2d0*F_gs(IJK,M)*kappa0/(RO_S(IJK,M)*EP_s(IJK,M))) )
                ENDIF
 
 ! granular conductivity in Mth solids phase
@@ -1132,12 +1132,12 @@
              XI_sM_sum = ZERO
 
              D_PM = D_P(IJK,M)
-             M_PM = (PI/6.d0)*D_PM**3 * RO_SV(IJK,M)
+             M_PM = (PI/6.d0)*D_PM**3 * RO_S(IJK,M)
              NU_PM = ROP_S(IJK,M)/M_PM
 
              P_s_MM = NU_PM*Theta_m(IJK,M)
 
-             MU_s_dil = (5.d0/96.d0)*D_PM* RO_SV(IJK,M)*&
+             MU_s_dil = (5.d0/96.d0)*D_PM* RO_S(IJK,M)*&
                  DSQRT(PI*Theta_m(IJK,M)/M_PM)
 
              IF(.NOT.SWITCH_IA .OR. RO_G(IJK) == ZERO) THEN 
@@ -1147,11 +1147,11 @@
              ELSEIF(EP_S(IJK,M) <= DIL_EP_s) THEN
                 Mu_star = MU_s_dil*EP_s(IJK,M)*G_0(IJK,M,M)/ &
                     (SUM_EpsGo + 2.0d0*DgA*MU_s_dil &
-                    / (RO_SV(IJK,M)**2 *(Theta_m(IJK,M)/M_PM)))
+                    / (RO_S(IJK,M)**2 *(Theta_m(IJK,M)/M_PM)))
              ELSE
                 Mu_star = MU_s_dil*EP_S(IJK,M)*G_0(IJK,M,M)/ &
                     (SUM_EpsGo + 2.0d0*F_gs(IJK,M)*MU_s_dil &
-                    / (RO_SV(IJK,M)**2 *EP_s(IJK,M)*(Theta_m(IJK,M)/M_PM)))
+                    / (RO_S(IJK,M)**2 *EP_s(IJK,M)*(Theta_m(IJK,M)/M_PM)))
              ENDIF
    
              MU_s_MM = (Mu_star/G_0(IJK,M,M))*&
@@ -1159,7 +1159,7 @@
 
              DO L = 1, MMAX
                 D_PL = D_P(IJK,L)
-                M_PL = (PI/6.d0)*D_PL**3 * RO_SV(IJK,L)
+                M_PL = (PI/6.d0)*D_PL**3 * RO_S(IJK,L)
                 MPSUM = M_PM + M_PL
                 DPSUMo2 = (D_PM+D_PL)/2.d0
                 NU_PL = ROP_S(IJK,L)/M_PL
@@ -1265,7 +1265,7 @@
 !----------------------------------- 
             K_s_sum = ZERO
 
-            K_s_dil = (75.d0/384.d0)*D_PM* RO_SV(IJK,M)*&
+            K_s_dil = (75.d0/384.d0)*D_PM* RO_S(IJK,M)*&
                  DSQRT(PI*Theta_m(IJK,M)/M_PM)
                
              IF(.NOT.SWITCH_IA .OR. RO_G(IJK) == ZERO) THEN 
@@ -1276,11 +1276,11 @@
              ELSEIF(EP_S(IJK,M) <= DIL_EP_s) THEN
                 Kth_star = K_s_dil*EP_s(IJK,M)*G_0(IJK,M,M)/ &
                     (SUM_EpsGo+ 1.2d0*DgA*K_s_dil &
-                    / (RO_SV(IJK,M)**2 *(Theta_m(IJK,M)/M_PM)))
+                    / (RO_S(IJK,M)**2 *(Theta_m(IJK,M)/M_PM)))
              ELSE
                 Kth_star = K_s_dil*EP_S(IJK,M)*G_0(IJK,M,M)/ &
                     (SUM_EpsGo+ 1.2d0*F_gs(IJK,M)*K_s_dil &
-                    / (RO_SV(IJK,M)**2 *EP_s(IJK,M)*(Theta_m(IJK,M)/M_PM)))
+                    / (RO_S(IJK,M)**2 *EP_s(IJK,M)*(Theta_m(IJK,M)/M_PM)))
              ENDIF
 
 ! Kth doesn't include the mass.      
@@ -1289,7 +1289,7 @@
 
              DO L = 1, MMAX
                 D_PL = D_P(IJK,L)
-                M_PL = (PI/6.d0)*D_PL**3 *RO_SV(IJK,L)
+                M_PL = (PI/6.d0)*D_PL**3 *RO_S(IJK,L)
                 MPSUM = M_PM + M_PL
                 DPSUMo2 = (D_PM+D_PL)/2.d0
                 NU_PL = ROP_S(IJK,L)/M_PL
@@ -1529,7 +1529,7 @@
                         G_0(IJK,M,M))*(1d0+1.6d0*Eta*(3d0*Eta-2d0)*&
                         EP_s(IJK,M)*G_0(IJK,M,M))+(0.6d0*Mu_b_v(IJK)*Eta))
                      ZETA = &
-                        ((48d0*Eta*(1d0-Eta)*RO_SV(IJK,M)*EP_s(IJK,M)*&
+                        ((48d0*Eta*(1d0-Eta)*RO_S(IJK,M)*EP_s(IJK,M)*&
                         EP_s(IJK,M)*G_0(IJK,M,M)*&
                         (Theta_m(IJK,M)**1.5d0))/&
                         (SQRT_Pi*D_p(IJK,M)*2d0*Mu_zeta))**0.5d0
@@ -1709,7 +1709,7 @@
             wfactor_mus = ONE   ! for MU_s
 
 ! particle terminal settling velocity: vt = g*d^2*(Rho_s - Rho_g) / 18 * Mu_g
-            vt = GRAVITY*D_p0(M)*D_p0(M)*(RO_SV(IJK,M) - RO_g(IJK)) / &
+            vt = GRAVITY*D_p0(M)*D_p0(M)*(RO_S(IJK,M) - RO_g(IJK)) / &
                (18.0d0*MU_G(IJK))
 
 ! FilterSIZE calculation for each specific gridcell volume
@@ -1785,11 +1785,11 @@
 
 ! pressure
             P_s_v(IJK) = Ps_total * wfactor_Ps * (vt**2) * &
-               RO_SV(IJK,M)
+               RO_S(IJK,M)
 
 ! shear viscosity
             Mu_s_v(IJK) = Mu_total * wfactor_mus * (vt**3) * &
-               RO_SV(IJK,M)/GRAVITY
+               RO_S(IJK,M)/GRAVITY
          
 ! set an arbitrary value in case value gets negative (this should 
 ! not happen unless filtersize becomes unrelastic w.r.t. gridsize)
@@ -1897,7 +1897,7 @@
             wfactor_mus = ONE   ! for MU_s
 
 ! particle terminal settling velocity: vt = g*d^2*(Rho_s - Rho_g) / 18 * Mu_g
-            vt = GRAVITY*D_p0(M)*D_p0(M)*(RO_SV(IJK,M) - RO_g(IJK)) / &
+            vt = GRAVITY*D_p0(M)*D_p0(M)*(RO_S(IJK,M) - RO_g(IJK)) / &
                (18.0d0*MU_G(IJK))
 
 ! FilterSIZE calculation for each specific gridcell volume
@@ -1959,12 +1959,12 @@
             ENDIF
 
 ! solid filtered pressure
-            P_s_v(IJK) = RO_sV(IJK,M) * Inv_froude**(2/7) * &
+            P_s_v(IJK) = RO_S(IJK,M) * Inv_froude**(2/7) * &
                filtersize**2 * DSQRT( I2_devD_s(IJK) )**2 * &
                cpress * wfactor_Ps    !16/7-2=2/7 in [Pa or kg/m.s2]
 
 ! solids filtered shear viscosity
-            Mu_s_v(IJK) = RO_sV(IJK,M) * filtersize**2 * &
+            Mu_s_v(IJK) = RO_S(IJK,M) * filtersize**2 * &
                DSQRT( I2_devD_s(IJK) ) * cvisc * wfactor_mus  ! [kg/m.s]
 
 ! set an arbitrary value in case value gets negative (this should 

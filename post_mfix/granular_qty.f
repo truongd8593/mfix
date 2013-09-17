@@ -162,7 +162,7 @@
       IF (TIME_NOW .LT. TIME_START) GOTO 100
       IF(MMAX .EQ. 1.AND.(.NOT.SOLID_RO_V))  THEN
         DO IJK = 1, IJKMAX2
-          ROP_s(IJK, 1) = RO_s(1) * (1. - EP_g(IJK))
+          ROP_s(IJK, 1) = RO_s0(1) * (1. - EP_g(IJK))
         END DO
       ENDIF
 !
@@ -175,7 +175,7 @@
       IF(CALC_GT) THEN
          DO IJK = 1, IJKMAX2
            IF( FLUID_AT(IJK) ) THEN
-             K_1m = 2.D0 * (ONE + C_e) * RO_sv(IJK,MM) * G_0(IJK, MM, MM)
+             K_1m = 2.D0 * (ONE + C_e) * RO_s(IJK,MM) * G_0(IJK, MM, MM)
              IF(K_1m .NE. 0.0 .AND. EP_s(IJK,MM) .NE. 0.0) THEN
                Tmp(IJK) = P_s(IJK,MM)/K_1m/EP_s(IJK, MM)**2
              ELSE

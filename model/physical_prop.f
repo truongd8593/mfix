@@ -372,6 +372,7 @@
       use scalars, only: phase4scalar
 
       use fldvar, only: ROP_s
+      use fldvar, only: RO_s
       use fldvar, only: D_p
 
       implicit none

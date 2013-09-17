@@ -338,7 +338,7 @@ SUBROUTINE QMOMK_TIME_MARCH
               ! Particle Reynolds number
               Rep = RO_g0*D_p0(M)*vrel/MU_g0
               Cd = 24.D0*(EP_G(IJK)**(-2.65))*(1.D0 + 0.15D0*((EP_G(IJK)*Rep)**0.687))/(Rep + SMALL_NUMBER)
-              beta_drag = 3.D0*RO_g0*Cd*vrel/(4.D0*D_p0(M)*RO_s(M))
+              beta_drag = 3.D0*RO_g0*Cd*vrel/(4.D0*D_p0(M)*RO_s(IJK,M))
 
               drag_exp = EXP(-0.5*QMOMK_DT*beta_drag)
 
@@ -405,7 +405,7 @@ SUBROUTINE QMOMK_TIME_MARCH
                     CALL SOLVE_BOLTZMANN_COLLISIONS_TWO_SPECIES(QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), &
                          QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), &
                          QMOMK_M1(:,IJK,M2), QMOMK_N1(:,IJK,M2), QMOMK_U1(:,IJK,M2), QMOMK_V1(:,IJK,M2), QMOMK_W1(:,IJK,M2), &
-                         0.5*QMOMK_DT, 1.D0/6.D0*Pi*(D_p0(M)**3)*RO_s(M), 1.D0/6.D0*Pi*(D_p0(M2)**3)*RO_s(M2),  D_p0(M), D_p0(M2), &
+                         0.5*QMOMK_DT, 1.D0/6.D0*Pi*(D_p0(M)**3)*RO_s(IJK,M), 1.D0/6.D0*Pi*(D_p0(M2)**3)*RO_s(IJK,M2),  D_p0(M), D_p0(M2), &
                          C_e, C_e, QMOMK_COLLISIONS_ORDER)
                  END DO
                  CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
@@ -622,8 +622,8 @@ SUBROUTINE QMOMK_TIME_MARCH
                          QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), &
                          QMOMK_M1(:,IJK,M2), QMOMK_N1(:,IJK,M2), &
                          QMOMK_U1(:,IJK,M2), QMOMK_V1(:,IJK,M2), QMOMK_W1(:,IJK,M2), &
-                         QMOMK_DT, 1.D0/6.D0*Pi*(D_p0(M)**3)*RO_s(M), &
-                         1.D0/6.D0*Pi*(D_p0(M2)**3)*RO_s(M2),  D_p0(M), D_p0(M2), &
+                         QMOMK_DT, 1.D0/6.D0*Pi*(D_p0(M)**3)*RO_s(IJK,M), &
+                         1.D0/6.D0*Pi*(D_p0(M2)**3)*RO_s(IJK,M2),  D_p0(M), D_p0(M2), &
                          C_e, C_e, QMOMK_COLLISIONS_ORDER)
                  END DO
                  CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
@@ -654,7 +654,7 @@ SUBROUTINE QMOMK_TIME_MARCH
                  ! Particle Reynolds number
                  Rep = RO_g0*D_p0(M)*vrel/MU_g0
                  Cd = 24.D0*(EP_G(IJK)**(-2.65))*(1.D0 + 0.15*((EP_G(IJK)*Rep)**0.687))/(Rep+SMALL_NUMBER)
-                 beta_drag = 3.D0*RO_g0*Cd*vrel/(4.D0*D_p0(M)*RO_s(M))
+                 beta_drag = 3.D0*RO_g0*Cd*vrel/(4.D0*D_p0(M)*RO_s(IJK,M))
 
                  IF (beta_drag > SMALL_NUMBER) THEN ! CHECK HERE, it was /= 0.
                     QMOMK_TAU_DRAG(IN,IJK,M) = 1.D0/beta_drag
@@ -736,7 +736,7 @@ SUBROUTINE QMOMK_TIME_MARCH
            EP_G(IJK) = EP_G(IJK) - QMOMK_M1(1,IJK,M) 
            
            ! Particle phases "densities"
-           ROP_S(IJK, M) = QMOMK_M1(1,IJK,M)*RO_s(M)
+           ROP_S(IJK, M) = QMOMK_M1(1,IJK,M)*RO_s(IJK,M)
            
            ! Particle phases granular temperatures
            THETA_M(IJK,M) = ((QMOMK_M1(5,IJK,M)/QMOMK_M1(1,IJK,M) - &

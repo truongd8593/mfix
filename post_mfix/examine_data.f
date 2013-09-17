@@ -726,8 +726,8 @@
 !     When the solids density is not constant, it is computed
 !     from solids species mass fractions
 !     This is needed for volumetric flow rates VFLOW_sx, VFLOW_sy or VFLOW_sz
-!     because EP_S is needed and EP_S = RO_PS / RO_SV
-!     RO_PS is read from the SP5 file, but RO_SV is not saved anywhere
+!     because EP_S is needed and EP_S = ROP_S / RO_S
+!     ROP_S is read from the SP5 file, but RO_S is not saved anywhere
       IF((VAR_NO .GE. 14 .AND. VAR_NO .LE. 21) .OR. &
          (SOLID_RO_V.AND.(VAR_NO .GE. 31 .AND. VAR_NO .LE. 33))    ) THEN
         READ_SPX(7) = .TRUE.    ! X_g, X_s
@@ -1271,7 +1271,7 @@
           DO 102 J = JMIN1, JMAX2
           DO 102 I = IMIN1, IMAX2
             IJK = FUNIJK(I, J, K)
-            ROP_s(IJK, 1) = (ONE - EP_g(IJK)) * RO_s(1)
+            ROP_s(IJK, 1) = (ONE - EP_g(IJK)) * RO_s0(1)
 102       CONTINUE
         ENDIF
       ENDIF

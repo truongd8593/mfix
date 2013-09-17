@@ -153,7 +153,7 @@
            DP_avg(MM)  = AVG_X(D_P(IJK2,MM), D_P(IJK2E,MM), I_OF(IJK2))
            g0EPs_avg   = g0EPs_avg + G_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, MM) &
                        * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
-           ROs_avg(MM) = AVG_X(RO_SV(IJK2, MM), RO_SV(IJK2E, MM), I_OF(IJK2))
+           ROs_avg(MM) = AVG_X(RO_S(IJK2, MM), RO_S(IJK2E, MM), I_OF(IJK2))
            IF (.NOT.GRANULAR_ENERGY) THEN
               TH_avg(MM) = AVG_X(THETA_M(IJK2,MM), THETA_M(IJK2E,MM), I_OF(IJK2))
               IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
@@ -354,7 +354,7 @@
            DP_avg(MM)  = AVG_Y(D_p(IJK2,MM), D_p(IJK2N,MM), J_OF(IJK2))
            g0EPs_avg   = g0EPs_avg + G_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), M, MM) &
                         * AVG_Y(EP_s(IJK2, MM), EP_s(IJK2N, MM), J_OF(IJK2))
-           ROS_avg(MM) = AVG_Y(RO_SV(IJK2, MM), RO_SV(IJK2N, MM), J_OF(IJK2))
+           ROS_avg(MM) = AVG_Y(RO_S(IJK2, MM), RO_S(IJK2N, MM), J_OF(IJK2))
            IF(.NOT.GRANULAR_ENERGY) THEN                        
               TH_avg(MM) = AVG_Y(THETA_M(IJK2,MM), THETA_M(IJK2N,MM), J_OF(IJK2))
               IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
@@ -566,7 +566,7 @@
            DP_avg(MM)  = AVG_Z(D_p(IJK2,MM), D_p(IJK2T,MM), K_OF(IJK2))
            g0EPs_avg   = g0EPs_avg + G_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, MM) &
                        * AVG_Z(EP_s(IJK2, MM), EP_s(IJK2T, MM), K_OF(IJK2))
-           ROs_avg(MM) = AVG_Z(RO_SV(IJK2,MM), RO_SV(IJK2T,MM), K_OF(IJK2))
+           ROs_avg(MM) = AVG_Z(RO_S(IJK2,MM), RO_S(IJK2T,MM), K_OF(IJK2))
            IF(.NOT.GRANULAR_ENERGY) THEN
               TH_avg(MM) = AVG_Z(THETA_M(IJK2,MM), THETA_M(IJK2T,MM), K_OF(IJK2))
               IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
@@ -1314,7 +1314,7 @@
                DP_avg(MM)  = (VOL(IJK)*D_P(IJK, MM) + VOL(IJK2)*D_P(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                g0EPs_avg   = g0EPs_avg + G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM) &
                            * (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
-               ROS_AVG(MM) = (VOL(IJK)*RO_SV(IJK, MM) + VOL(IJK2)*RO_SV(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
+               ROS_AVG(MM) = (VOL(IJK)*RO_S(IJK, MM) + VOL(IJK2)*RO_S(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
 
 !               IF(GRANULAR_ENERGY) THEN
 !                  TH_avg(MM) = AVG_Y(&  ! not converted to CG
@@ -1388,7 +1388,7 @@
                DP_avg(MM)  = (VOL(IJK)*D_P(IJK, MM) + VOL(IJK2)*D_P(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                g0EPs_avg   = g0EPs_avg + G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM) &
                            * (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
-               ROS_avg(MM) = (VOL(IJK)*RO_SV(IJK, MM) + VOL(IJK2)*RO_SV(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
+               ROS_avg(MM) = (VOL(IJK)*RO_S(IJK, MM) + VOL(IJK2)*RO_S(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
 
 !               IF(GRANULAR_ENERGY) THEN  ! not converted to CG
 !                   TH_avg(MM) = AVG_Y(&
@@ -1457,7 +1457,7 @@
             Mu_g_avg = (VOL(IJK)*Mu_g(IJK) + VOL(IJK2)*Mu_g(IJK2))/(VOL(IJK) + VOL(IJK2))
             RO_g_avg = (VOL(IJK)*RO_g(IJK) + VOL(IJK2)*RO_g(IJK2))/(VOL(IJK) + VOL(IJK2))
             g0EPs_avg = ZERO
-            ROS_avg(MM) = (VOL(IJK)*RO_SV(IJK, MM) + VOL(IJK2)*RO_SV(IJK2, MM))/(VOL(IJK) + VOL(IJK2))  
+            ROS_avg(MM) = (VOL(IJK)*RO_S(IJK, MM) + VOL(IJK2)*RO_S(IJK2, MM))/(VOL(IJK) + VOL(IJK2))  
 
             DO MM = 1, MMAX
                g0(MM)      = G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM)

@@ -1655,7 +1655,7 @@
             L = DES_MMAX + CM
             DP_loc(L) = D_P(IJK,CM)
             EPs_loc(L) = EP_S(IJK,CM)
-            ROs_loc(L) = RO_S(CM)            
+            ROs_loc(L) = RO_S(IJK,CM)
          ENDDO
       ENDIF   ! end if/else (.not.des_continuum_hybrid)
 
@@ -1995,7 +1995,7 @@
 ! setting aliases for easy reference
                      D_PM = D_P(IJK,CM) 
                      D_PL = DES_D_P0(DM) 
-                     RO_M = RO_S(CM)
+                     RO_M = RO_S(IJK,CM)
                      RO_L = DES_RO_S(DM)
 
 ! evaluating g0 - taken from G_0.f subroutine (lebowitz form)
@@ -2313,7 +2313,7 @@
 ! setting aliases for easy reference
                   D_PM = D_P(IJK,CM) 
                   D_PL = DES_D_P0(DM) 
-                  RO_M = RO_S(CM)
+                  RO_M = RO_S(IJK,CM)
                   RO_L = DES_RO_S(DM)
 
 ! evaluating g0 - taken from G_0.f subroutine (lebowitz form)

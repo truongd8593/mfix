@@ -41,7 +41,7 @@
           ! be initialized separetely in the correspoding module
 
           DO I = 1, QMOMK_NN
-             QMOMK_N0 (I, IJK, M) = ROP_S(IJK, M)/(QMOMK_NN * RO_s(M))
+             QMOMK_N0 (I, IJK, M) = ROP_S(IJK, M)/(QMOMK_NN * RO_s(IJK,M))
           END DO
 
           ! A.P. Granular temperature minimum value is bounded

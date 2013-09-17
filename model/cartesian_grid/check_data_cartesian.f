@@ -946,14 +946,14 @@
                      IF (BC_EP_G(BCV) == ONE) THEN 
                         BC_ROP_S(BCV,M) = ZERO 
                      ELSEIF (MMAX == 1) THEN 
-                         BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S(M) 
+                         BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S0(M) 
                      ELSE 
                          IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_ROP_s', BCV, M 
                          call mfix_exit(myPE)
                      ENDIF 
                   ENDIF 
 
-                  SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S(M) 
+                  SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S0(M) 
                   IF (SPECIES_EQ(M)) THEN 
                      SUM = ZERO 
                         DO N = 1, NMAX(M) 
@@ -1610,8 +1610,8 @@
 !             If solids mass flow is defined convert it to volumetric flow
 !
                   IF (BC_MASSFLOW_S(BCV,M) /= UNDEFINED) THEN 
-                     IF (RO_S(M) /= UNDEFINED) THEN 
-                        VOLFLOW = BC_MASSFLOW_S(BCV,M)/RO_S(M) 
+                     IF (RO_S0(M) /= UNDEFINED) THEN 
+                        VOLFLOW = BC_MASSFLOW_S(BCV,M)/RO_S0(M) 
                      ELSE 
                         RETURN                   !  This error will be caught in a previous routine 
                      ENDIF 
@@ -1629,10 +1629,10 @@
                   ENDIF 
 
                   IF (BC_ROP_S(BCV,M)==UNDEFINED .AND. MMAX==1) BC_ROP_S(BCV,M)&
-                        = (ONE - BC_EP_G(BCV))*RO_S(M) 
+                        = (ONE - BC_EP_G(BCV))*RO_S0(M) 
                   IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN 
                      IF (BC_ROP_S(BCV,M) /= UNDEFINED) THEN 
-                        EPS = BC_ROP_S(BCV,M)/RO_S(M) 
+                        EPS = BC_ROP_S(BCV,M)/RO_S0(M) 
                         IF (EPS /= ZERO) THEN 
                            BC_VELMAG_s(BCV,M) = BC_VOLFLOW_S(BCV,M)/(BC_AREA(BCV)*EPS) 
                         ELSE 

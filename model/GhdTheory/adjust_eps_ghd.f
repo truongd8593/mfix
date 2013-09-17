@@ -74,7 +74,7 @@
       DO IJK = ijkstart3, ijkend3 
                IF (FLUID_AT(IJK)) THEN 
                   DO M = 1, SMAX 
-                     epSolid = ROP_S(IJK,M)/RO_S(M)
+                     epSolid = ROP_S(IJK,M)/RO_S(IJK,M)
 		     IF (epSolid < ZERO_EP_S) THEN 
 
 !  Remove solids in very small quantities and set solids velocity to zero
@@ -110,12 +110,12 @@
                      epSolidN(M) = AVG_Y(EP_S(IJK,M),EP_S(IJKN,M),J) 
                      epSolidT(M) = AVG_Z(EP_S(IJK,M),EP_S(IJKT,M),K)
 		     
-		     epsMixE = epsMixE + epSolidE(M)*RO_S(M)
-		     epsMixN = epsMixN + epSolidN(M)*RO_S(M)
-		     epsMixT = epsMixT + epSolidT(M)*RO_S(M)
+		     epsMixE = epsMixE + epSolidE(M)*RO_S(IJK,M)
+		     epsMixN = epsMixN + epSolidN(M)*RO_S(IJK,M)
+		     epsMixT = epsMixT + epSolidT(M)*RO_S(IJK,M)
 		     
 		     IF (epSolidE(M) < ZERO_EP_S) THEN 
-		        epsMixE = epsMixE - epSolidE(M)*RO_S(M)
+		        epsMixE = epsMixE - epSolidE(M)*RO_S(IJK,M)
 			epSolidE(M) = ZERO
                         U_S(IJK,M) = ZERO 
                         JoiX(IJK,M) = ZERO
@@ -124,7 +124,7 @@
 		     ENDIF
 		     
 		     IF (epSolidN(M) < ZERO_EP_S) THEN 
-		        epsMixN = epsMixN - epSolidN(M)*RO_S(M)
+		        epsMixN = epsMixN - epSolidN(M)*RO_S(IJK,M)
 			epSolidN(M) = ZERO
                         V_S(IJK,M) = ZERO
                         JoiY(IJK,M) = ZERO 
@@ -132,7 +132,7 @@
 		     ENDIF
 		     
 		     IF (epSolidT(M) < ZERO_EP_S) THEN 
-		        epsMixT = epsMixT - epSolidT(M)*RO_S(M)
+		        epsMixT = epsMixT - epSolidT(M)*RO_S(IJK,M)
 			epSolidT(M) = ZERO
                         W_S(IJK,M) = ZERO
                         JoiZ(IJK,M) = ZERO 
@@ -145,11 +145,11 @@
 		     IF (epsMixE > ZERO .AND. DiluteCellE) THEN
 		       U_S(IJK,MMAX) = ZERO
 		       DO M = 1, SMAX
-		         U_S(IJK,MMAX) = U_S(IJK,MMAX) + U_S(IJK,M)*epSolidE(M)*RO_S(M)
+		         U_S(IJK,MMAX) = U_S(IJK,MMAX) + U_S(IJK,M)*epSolidE(M)*RO_S(IJK,M)
 		       ENDDO
 		       U_S(IJK,MMAX) = U_S(IJK,MMAX)/epsMixE
 		       DO M = 1, SMAX
-		         JoiX(IJK,M) = epSolidE(M)*RO_S(M)*(U_S(IJK,M)-U_S(IJK,MMAX))
+		         JoiX(IJK,M) = epSolidE(M)*RO_S(IJK,M)*(U_S(IJK,M)-U_S(IJK,MMAX))
 		       ENDDO
 		     ELSEIF(epsMixE == ZERO) THEN
 		       U_S(IJK,MMAX) = ZERO
@@ -158,11 +158,11 @@
 		     IF (epsMixN > ZERO .AND. DiluteCellN) THEN
 		       V_S(IJK,MMAX) = ZERO
 		       DO M = 1, SMAX
-		         V_S(IJK,MMAX) = V_S(IJK,MMAX) + V_S(IJK,M)*epSolidN(M)*RO_S(M)
+		         V_S(IJK,MMAX) = V_S(IJK,MMAX) + V_S(IJK,M)*epSolidN(M)*RO_S(IJK,M)
 		       ENDDO
 		       V_S(IJK,MMAX) = V_S(IJK,MMAX)/epsMixN
 		       DO M = 1, SMAX
-		         JoiY(IJK,M) = epSolidN(M)*RO_S(M)*(V_S(IJK,M)-V_S(IJK,MMAX))
+		         JoiY(IJK,M) = epSolidN(M)*RO_S(IJK,M)*(V_S(IJK,M)-V_S(IJK,MMAX))
 		       ENDDO
 		     ELSEIF(epsMixN == ZERO) THEN
 		       V_S(IJK,MMAX) = ZERO
@@ -172,11 +172,11 @@
 		       IF (epsMixT > ZERO .AND. DiluteCellT) THEN
 		         W_S(IJK,MMAX) = ZERO
 		         DO M = 1, SMAX
-		           W_S(IJK,MMAX) = W_S(IJK,MMAX) + W_S(IJK,M)*epSolidT(M)*RO_S(M)
+		           W_S(IJK,MMAX) = W_S(IJK,MMAX) + W_S(IJK,M)*epSolidT(M)*RO_S(IJK,M)
 		         ENDDO
 		         W_S(IJK,MMAX) = W_S(IJK,MMAX)/epsMixT
 		         DO M = 1, SMAX
-		           JoiZ(IJK,M) = epSolidT(M)*RO_S(M)*(W_S(IJK,M)-W_S(IJK,MMAX))
+		           JoiZ(IJK,M) = epSolidT(M)*RO_S(IJK,M)*(W_S(IJK,M)-W_S(IJK,MMAX))
 		         ENDDO
 		       ELSEIF(epsMixT == ZERO) THEN
 		         W_S(IJK,MMAX) = ZERO

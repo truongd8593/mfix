@@ -284,11 +284,11 @@
                      ENDDO
                      IF(EP_SS_L_TOT .GT. ZERO) THEN
 !                       phase density
-                        RO_SV(IJK,M) = ONE/EP_SS_L_TOT
+                        RO_S(IJK,M) = ONE/EP_SS_L_TOT
                      ENDIF
 
                      if(ROP_s(IJK,M) .eq. 0.E0) then
-                        if(RO_SV(IJK,M) .eq. 0.d0) then
+                        if(RO_S(IJK,M) .eq. 0.d0) then
                            write(*,*) 'WARNING: zero ro_s in solve_species_eq.f'
                         endif
                      endif

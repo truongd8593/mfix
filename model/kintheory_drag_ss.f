@@ -85,10 +85,8 @@
                     D_PM = D_P(IJK,M) 
                     D_PL = D_P(IJK,L) 
                     DPSUM = D_PL + D_PM 
-!QX
-                    M_PM = (Pi/6.d0) * D_PM**3 *RO_SV(IJK,M)
-                    M_PL = (Pi/6.d0) * D_PL**3 *RO_SV(IJK,L)
-!end
+                    M_PM = (Pi/6.d0) * D_PM**3 *RO_S(IJK,M)
+                    M_PL = (Pi/6.d0) * D_PL**3 *RO_S(IJK,L)
                     MPSUM = M_PM + M_PL
                     DPSUMo2 = DPSUM/2.d0
                     NU_PM = ROP_S(IJK,M)/M_PM

@@ -31,125 +31,132 @@
  
       Use param
       Use param1
- 
- 
-!
-!                      Number of solids phases
-      INTEGER          MMAX
-!
-!                      Real number of solids phases for GHD theory
-      INTEGER          SMAX
-!
-!                      Scale factor for gas turbulence length scale
-      DOUBLE PRECISION K_scale
-!
-!                      Particle diameters
-      DOUBLE PRECISION D_p0 (DIM_M)
-!
-!                      index to rearrange particles from coarsest to finest
-!                      for use in function CALC_ep_star(IJK,IER)
-      INTEGER          M_MAX (DIM_M)
-!
-!                      Particle densities
-      DOUBLE PRECISION RO_s  (DIM_M)
-!                      Field densities (solids density at IJK for phase M)
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: RO_SV
-!                      Previous-time-step value of local density of solid phase
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: RO_SVo
-!                      Previous-time value of local density of solid phase
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: RO_SVo2
-!   
-!
-!                      Specified constant solids viscosity
-      DOUBLE PRECISION MU_s0
-!
-!                      Flag indicates whether the phase becomes close-packed
-!                      at ep_star
-      LOGICAL          CLOSE_PACKED (DIM_M)
-!
-!                      Specified constant gas density
-      DOUBLE PRECISION RO_g0
-!
-!                      Specified constant gas viscosity
-      DOUBLE PRECISION MU_g0
-!
-!                      Virtual (added) mass coefficient Cv
-      DOUBLE PRECISION Cv
-!
-!                      gas viscosity
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MU_g 
-!
-!                      average molecular weight of gas
-      DOUBLE PRECISION MW_AVG
-!
-!                      Constant constant-pressure specific heat of gas
-      DOUBLE PRECISION C_pg0
-!
-!                      Reference temperature for enthalpy calculations (K)
-      DOUBLE PRECISION, PARAMETER :: T_ref = 298
-!
-!                      Constant pressure specific heat of gas
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  C_pg 
-!
-!                      Constant constant-pressure specific heat of solids
-      DOUBLE PRECISION C_ps0
-!
-!                      Constant pressure specific heat of solids
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  C_ps 
-!
-!                      Specified constant gas conductivity
-      DOUBLE PRECISION K_g0
-!
-!                      Conductivity of gas
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  K_g 
-!
-!                      Specified constant solids conductivity
-      DOUBLE PRECISION K_s0
-!
-!                      Conductivity of solids
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  K_s 
-!
-!		       Granular Temperature Conductivity (associated
-!                      with temperature gradient)
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  Kth_s 
-!
-!		       Granular Temperature Conductivity (associated
-!                      with volume fraction gradient)
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  Kphi_s 
-!
-!                      Specified constant gas diffusivity
-      DOUBLE PRECISION DIF_g0
-!
-!                      Diffusivity of gas species N
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  DIF_g 
-!
-!                      Specified constant solids diffusivity
-      DOUBLE PRECISION DIF_s0
-!
-!                      Diffusivity of solids species N
-      DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE ::  DIF_s 
-!
-!                      Total number of gas or solids species
-      INTEGER          NMAX(0:DIM_M)
-      INTEGER          NMAX_g ! Number of gas phase species
-      INTEGER          NMAX_s(DIM_M) ! Number of solids phase species
-!
-!                      Molecular weight of gas species
-      DOUBLE PRECISION MW_g (DIM_N_g)
-!
-!                      Molecular weight of solids species
-      DOUBLE PRECISION MW_s (DIM_M, DIM_N_s)
-!
-!                      Density of solid species
-      DOUBLE PRECISION RO_SS (DIM_M, DIM_N_s)
-!
-!                      Molecular weight of gas mixture
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MW_MIX_g 
-!
-! Coefficients for high and low temperature ranges, heat of formation at T_ref K
-!                      and the temperature ranges for calculating thermochemical properties
-      LOGICAL :: DATABASE_READ = .FALSE.
 
+
+! Scale factor for gas turbulence length scale
+      DOUBLE PRECISION :: K_scale
+ 
+ 
+! Number of solids phases
+      INTEGER :: MMAX
+
+! Real number of solids phases for GHD theory
+      INTEGER :: SMAX
+
+! Particle diameters
+      DOUBLE PRECISION :: D_p0(DIM_M)
+
+! Index to rearrange particles from coarsest to finest for use in 
+! function CALC_ep_star(IJK,IER)
+      INTEGER M_MAX(DIM_M)
+
+
+!--------------------------------------------------------------------------> JMusser.0 Start
+! Constant solids phase densities. This value is also used in variable
+! solids density simulations to store the baseline/initial solids
+! phase densities.
+      DOUBLE PRECISION RO_s0(DIM_M)
+
+! Constant solids phase species mass fractions. These values delinate
+! the baseline/initial solids phase composition for ariable density
+      DOUBLE PRECISION :: X_S0(DIM_M, DIM_N_s)
+
+! ConstantDensity of solid species
+      DOUBLE PRECISION RO_Xs0(DIM_M, DIM_N_s)
+
+! The index of an inert solids phase species. This is needed for 
+! calculating the variable solids phase density.
+      INTEGER :: INERT_SPECIES(DIM_M)
+
+
+
+! Density of solid species
+      DOUBLE PRECISION RO_SS (DIM_M, DIM_N_s)  ! REMOVE
+
+!--------------------------------------------------------------------------> JMusser.0 End!
+! Specified constant solids viscosity
+      DOUBLE PRECISION MU_s0
+
+! Flag indicates whether the phase becomes close-packed at ep_star
+      LOGICAL :: CLOSE_PACKED (DIM_M)
+
+! Specified constant gas density
+      DOUBLE PRECISION RO_g0
+
+! Specified constant gas viscosity
+      DOUBLE PRECISION MU_g0
+
+! Virtual (added) mass coefficient Cv
+      DOUBLE PRECISION Cv
+
+! Gas viscosity
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MU_g 
+
+! Average molecular weight of gas
+      DOUBLE PRECISION MW_AVG
+
+! Constant constant-pressure specific heat of gas
+      DOUBLE PRECISION C_pg0
+
+! Reference temperature for enthalpy calculations (K)
+      DOUBLE PRECISION, PARAMETER :: T_ref = 298
+
+! Constant pressure specific heat of gas
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  C_pg 
+
+! Constant constant-pressure specific heat of solids
+      DOUBLE PRECISION C_ps0
+
+! Constant pressure specific heat of solids
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  C_ps 
+
+! Specified constant gas conductivity
+      DOUBLE PRECISION :: K_g0
+
+! Conductivity of gas
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  K_g 
+
+! Specified constant solids conductivity
+      DOUBLE PRECISION K_s0
+
+! Conductivity of solids
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  K_s 
+
+! Granular Temperature Conductivity (associated with temperature grad)
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  Kth_s 
+
+! Granular Temperature Conductivity (associated with volume fraction grad)
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  Kphi_s 
+
+
+! Specified constant gas diffusivity
+      DOUBLE PRECISION DIF_g0
+
+! Diffusivity of gas species N
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  DIF_g 
+
+! Specified constant solids diffusivity
+      DOUBLE PRECISION DIF_s0
+
+! Diffusivity of solids species N
+      DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE ::  DIF_s 
+
+! Total number of gas or solids species
+      INTEGER :: NMAX(0:DIM_M) ! Runtime (all phases)
+      INTEGER :: NMAX_g        ! Number of gas phase species
+      INTEGER :: NMAX_s(DIM_M) ! Number of solids phase species
+
+! Molecular weight of gas species
+      DOUBLE PRECISION :: MW_g (DIM_N_g)
+
+! Molecular weight of solids species
+      DOUBLE PRECISION :: MW_s (DIM_M, DIM_N_s)
+
+! Molecular weight of gas mixture
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: MW_MIX_g
+
+! Logical for reading thermochemical database.
+      LOGICAL :: DATABASE_READ = .FALSE.
 
 ! Polynomical coefficients for calculating specific heat.
       DOUBLE PRECISION Alow (7,0:DIM_M, DIM_N) ! Tlow --> Tcom
@@ -162,28 +169,9 @@
 
 ! Heat of formation at Tref divided by the gas constant.
       DOUBLE PRECISION HfrefoR(0:DIM_M, DIM_N)
-! Reference
+
+! Reference values.
       DOUBLE PRECISION ICpoR_l(0:DIM_M, DIM_N)
       DOUBLE PRECISION ICpoR_h(0:DIM_M, DIM_N)
-
-
-
-!      DOUBLE PRECISION Ahigh_g(7, DIM_N_g), Alow_g(7, DIM_N_g), HfrefoR_g(DIM_N_g)
-!      DOUBLE PRECISION Thigh_g(DIM_N_g), Tlow_g(DIM_N_g), Tcom_g(DIM_N_g), IC_PGrefoR(DIM_N_g)
-!      DOUBLE PRECISION Ahigh_s(7, DIM_M, DIM_N_s), Alow_s(7, DIM_M, DIM_N_s), HfrefoR_s(DIM_M, DIM_N_s)
-!      DOUBLE PRECISION Thigh_s(DIM_M, DIM_N_s), Tlow_s(DIM_M, DIM_N_s), Tcom_s(DIM_M, DIM_N_s)
-!      DOUBLE PRECISION IC_PsrefoR(DIM_M, DIM_N_s)
- 
- 
-!!!HPF$ align MU_g(:) with TT(:)
-!!!HPF$ align C_pg(:) with TT(:)
-!!!HPF$ align C_ps(:, *) with TT(:)
-!!!HPF$ align K_g(:) with TT(:)
-!!!HPF$ align K_s(:, *) with TT(:)
-!!!HPF$ align Kth_s(:, *) with TT(:)
-!!!HPF$ align Kphi_s(:, *) with TT(:)
-!!!HPF$ align DIF_g(:, *) with TT(:)
-!!!HPF$ align DIF_s(:, *, *) with TT(:)
-!!!HPF$ align MW_MIX_g(:) with TT(:)
 
       END MODULE physprop

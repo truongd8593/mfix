@@ -46,7 +46,7 @@
 
 # Solids-phase Section
   MMAX    = 1
-  RO_s    = 1.0 
+  RO_s0   = 1.0 
   D_p0    = 1.0
   e       = 0.9   ! this must be defined even for DEM simulation, however,
                   ! the values of des_en_input are used to define the restitution

@@ -79,7 +79,7 @@
          END IF
          DO 100 IJK = 1,IJKMAX2
             IF (EP_s(IJK,M) .NE. 0.0) THEN
-               K_1m = 2.D0 * (ONE + C_e) * RO_sv(IJK,M) * G_0(IJK, M, M)
+               K_1m = 2.D0 * (ONE + C_e) * RO_s(IJK,M) * G_0(IJK, M, M)
                ARRAY(IJK,M) = P_s(IJK,M) / K_1m / EP_s(IJK,M)**2
             ELSE
                ARRAY(IJK,M) = 0.0

@@ -11,11 +11,8 @@
 !           cells)                                                     C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE ADJUST_THETA(M, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
+
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
@@ -67,14 +64,13 @@
 
               IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
                 D_PM = D_P(IJK,M)
-!QX
-                M_PM = (PI/6.d0)*(D_PM**3)*RO_SV(IJK,M)
+                M_PM = (PI/6.d0)*(D_PM**3)*RO_S(IJK,M)
               ELSE
                 M_PM = ZERO
                 DO L = 1,SMAX
                   D_PM = D_P(IJK,L)
-!QX
-                  M_PM = M_PM +(PI/6.d0)*(D_PM**3)*RO_SV(IJK,L)
+
+                  M_PM = M_PM +(PI/6.d0)*(D_PM**3)*RO_S(IJK,L)
                 ENDDO
                 M_PM = M_PM/DBLE(SMAX)
               ENDIF 
@@ -87,8 +83,4 @@
       ENDDO 
 
       RETURN  
-      END SUBROUTINE ADJUST_THETA 
-
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization 
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
+      END SUBROUTINE ADJUST_THETA

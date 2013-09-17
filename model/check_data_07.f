@@ -385,7 +385,7 @@
                                 .NOT.DES_CONTINUUM_HYBRID) THEN 
 ! bulk density must be explicitly defined for hybrid model and cannot be
 ! defined from 1-bc_ep_g
-                           BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S(M)
+                           BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S0(M)
                         ELSE
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
                               'BC_ROP_s', BCV, M 
@@ -394,7 +394,7 @@
                      ENDIF
 ! at this point bc_rop_s must be defined
 ! sum of void fraction and solids volume fractions
-                     SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S(M) 
+                     SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S0(M) 
 
                      IF (SPECIES_EQ(M)) THEN 
 ! if solids phase M species equations are solved, check sum of the
@@ -793,7 +793,7 @@
                                 .NOT.DES_CONTINUUM_HYBRID) THEN 
 ! bulk density must be explicitly defined for hybrid model and cannot be
 ! defined from 1-bc_ep_g                           
-                           BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S(M)
+                           BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S0(M)
                         ELSE
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
                               'BC_ROP_s', BCV, M 
@@ -802,7 +802,7 @@
                      ENDIF
 ! at this point bc_rop_s must be defined
 ! sum of void fraction and solids volume fractions
-                     SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S(M)
+                     SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S0(M)
 
                      IF (ENERGY_EQ .AND. BC_T_S(BCV,M)==UNDEFINED) THEN 
                         IF (BC_ROP_S(BCV,M) == ZERO) THEN 
@@ -1005,7 +1005,7 @@
                            ELSEIF (SMAX == 1 ) THEN 
 ! no discrete solids are present so a bulk density can be defined from 
 ! 1-bc_ep_g even for hybrid model
-                              BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S(M)
+                              BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S0(M)
                            ELSE
 ! bc_ep_g is defined but some bc_rop_s(m) are undefined.
 ! in this ep_p in the outflow boundary will be based on the user defined
@@ -1018,7 +1018,7 @@
                            ENDIF
 ! by this point, bc_rop_s must be defined
 ! check that sum of void fraction and solids volume fractions
-                           SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S(M) 
+                           SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S0(M) 
                         ENDIF
                      ENDDO
 

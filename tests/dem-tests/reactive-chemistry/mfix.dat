@@ -64,7 +64,7 @@
 # -----------------------------
   MMAX     =   2            ! number of discrete solids phase
 	 NMAX(1)		=   3       1    ! number of species comprising solids phase
-  RO_s     =   2.5     8.85 ! particle densitie
+  RO_s0    =   2.5     8.85 ! particle densitie
   D_p0     =   0.30    0.36 ! diameters
 
   SPECIES_NAME(3) = 'B'  'D'  'I'  'B'

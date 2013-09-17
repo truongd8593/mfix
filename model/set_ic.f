@@ -229,8 +229,7 @@
                     DO M = 1, SMAX 
                       IF (ROPSX(M) /= UNDEFINED) THEN
                         ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + ROPSX(M) 
-!QX
-                        nM = ROPSX(M)*6d0/(PI*D_p(IJK,M)**3*RO_SV(IJK,M))  
+                        nM = ROPSX(M)*6d0/(PI*D_p(IJK,M)**3*RO_S(IJK,M))  
                         nTOT = nTOT + nM 
                       ENDIF
                       IF (IC_THETA_M(L,M) /= UNDEFINED) THETA_M(IJK,MMAX) = &

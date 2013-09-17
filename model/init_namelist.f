@@ -333,15 +333,17 @@
       DIF_S0 = UNDEFINED 
       C_PS0 = UNDEFINED 
       D_P0(:DIM_M) = UNDEFINED 
-      RO_S(:DIM_M) = UNDEFINED 
-      NMAX(1:DIM_M) = UNDEFINED_I 
+!--------------------------------------------------------------------------> JMusser.0 Start
+      RO_S0 = UNDEFINED
+      X_s0 = UNDEFINED
+      RO_Xs0 = UNDEFINED
+      INERT_SPECIES = UNDEFINED_I
+!--------------------------------------------------------------------------> JMusser.0 End
+      NMAX(1:DIM_M) = UNDEFINED_I
       CLOSE_PACKED(:DIM_M) = .TRUE. 
       MW_S = UNDEFINED
       EP_STAR = UNDEFINED 
 
-! QX: density of each solids phase
-      RO_SS = UNDEFINED
-      SOLID_RO_V = .FALSE.
 
       NMAX_g = UNDEFINED_I
       SPECIES_g(:) = UNDEFINED_C

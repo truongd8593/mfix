@@ -75,7 +75,7 @@
 !
         IF (FLUID_AT(IJK)) THEN 
            DO L = 1, SMAX
-	     MP_L = RO_S(L) * PI*D_P(IJK,L)**3/6d0
+	     MP_L = RO_S(IJK,L) * PI*D_P(IJK,L)**3/6d0
 	     Ni_E(IJK) = Ni_E(IJK) + ROP_sE(IJK,L) / MP_L
              IMJK = IM_OF(IJK) 
              IF (.NOT.FLUID_AT(IMJK)) THEN 

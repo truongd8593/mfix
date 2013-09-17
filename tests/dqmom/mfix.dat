@@ -61,8 +61,8 @@
   
 ! Solids-phase Section                                                          
   MMAX                  = 2
-  RO_s(1)               = 2.53d0                         !solids density
-  RO_s(2)               = 2.53d0
+  RO_s0(1)              = 2.53d0                         !solids density
+  RO_s0(2)              = 2.53d0
   C_f                   = 0.1
   D_p0(1)                = 0.0164536d0
   D_P0(2)                = 0.0408151d0                       !particle diameter     

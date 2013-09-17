@@ -181,7 +181,7 @@
       ELSEIF(AHMADI) THEN
 ! note specific reference to F_GS of solids phase 1!
          IF(Ep_s(IJK,M) > DIL_EP_S .AND. F_GS(IJK,1) > small_number) THEN
-            Tau_12_st = Ep_s(IJK,M)*RO_SV(IJK,M)/F_GS(IJK,1)
+            Tau_12_st = Ep_s(IJK,M)*RO_S(IJK,M)/F_GS(IJK,1)
             S7_rhs = 2.d0*F_GS(IJK,M) * (ONE/(ONE+Tau_12_st/  &
                (Tau_1(ijk)+small_number)))*K_Turb_G(IJK)
          ELSE
@@ -191,7 +191,7 @@
          VSLIP = DSQRT( (U_S(IJK,M)-U_G(IJK))**2 + &
             (V_S(IJK,M)-V_G(IJK))**2 + (W_S(IJK,M)-W_G(IJK))**2 ) 
          S7_rhs = SWITCH*81.d0*EP_S(IJK,M)*(MU_G(IJK)*VSLIP)**2 /&
-            (G_0(IJK,M,M)*D_P(IJK,M)**3 * RO_SV(IJK,M)*&
+            (G_0(IJK,M,M)*D_P(IJK,M)**3 * RO_S(IJK,M)*&
             DSQRT(PI)*DSQRT( THETA_M(IJK,M)+SMALL_NUMBER ) ) 
       ENDIF
   
@@ -394,7 +394,7 @@
       WsM_p = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M) )
  
       D_PM = D_P(IJK,M) 
-      M_PM = (Pi/6.d0)*D_PM**3 * RO_SV(IJK,M)
+      M_PM = (Pi/6.d0)*D_PM**3 * RO_S(IJK,M)
       NU_PM_p = ROP_S(IJK,M)/M_PM
       NU_PM_E = ROP_S(IJKE,M)/M_PM
       NU_PM_W = ROP_S(IJKW,M)/M_PM
@@ -420,7 +420,7 @@
 
       DO L = 1, MMAX
           D_PL = D_P(IJK,L) 
-          M_PL = (Pi/6.d0)*D_PL**3 * RO_SV(IJK,L)
+          M_PL = (Pi/6.d0)*D_PL**3 * RO_S(IJK,L)
           NU_PL_p = ROP_S(IJK,L)/M_PL
           NU_PL_E = ROP_S(IJKE,L)/M_PL
           NU_PL_W = ROP_S(IJKW,L)/M_PL
@@ -709,7 +709,7 @@
       S15b_rhs = ZERO
 
       D_PM = D_P(IJK,M) 
-      M_PM = (Pi/6.d0)*D_PM**3 * RO_SV(IJK,M)
+      M_PM = (Pi/6.d0)*D_PM**3 * RO_S(IJK,M)
       NU_PM_p = ROP_S(IJK,M)/M_PM
       NU_PM_E = ROP_S(IJKE,M)/M_PM
       NU_PM_W = ROP_S(IJKW,M)/M_PM
@@ -787,7 +787,7 @@
 
 ! production by gas-particle slip: Koch & Sangani (1999)
          Kslip = SWITCH*81.d0*EP_s(IJK,M)*(MU_G(IJK)*VSLIP)**2.d0 / &
-            (G_0(IJK,M,M)*D_P(IJK,M)**3.D0*RO_SV(IJK,M)*DSQRT(PI)) 
+            (G_0(IJK,M,M)*D_P(IJK,M)**3.D0*RO_S(IJK,M)*DSQRT(PI)) 
 
          Tslip_rhs = 1.5d0*Kslip/( (THETA_M(IJK,M)+SMALL_NUMBER)**0.50)*VOL(IJK)  
          Tslip_lhs = 0.5d0*Kslip/( (THETA_M(IJK,M)+SMALL_NUMBER)**1.50)*VOL(IJK)

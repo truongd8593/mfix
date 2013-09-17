@@ -24,9 +24,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE INIT_FVARS 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
+
 !-----------------------------------------------
 !   M o d u l e s 
 !-----------------------------------------------
@@ -102,8 +100,7 @@
             IF (NMAX(M) > 0) THEN 
                X_S(IJKSTART3:IJKEND3,M,:NMAX(M)) = ZERO 
             ENDIF 
-!QX
-            RO_SV(IJKSTART3:IJKEND3,M) = 1.d0
+            RO_S(IJKSTART3:IJKEND3,M) = 1.d0
 
          ENDIF 
       END DO 

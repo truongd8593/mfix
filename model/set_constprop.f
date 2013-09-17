@@ -122,7 +122,7 @@
                K_S(IJK,M) = ZERO 
                C_PS(IJK,M) = ZERO 
                D_p(IJK,M)=D_P0(M)
-               RO_SV(IJK,M) = RO_S(M)
+               RO_S(IJK,M) = RO_S0(M)
             ELSE 
                IF (C_PS0 /= UNDEFINED) C_PS(IJK,M) = C_PS0 
                IF(FLUID_AT(IJK))THEN
@@ -136,7 +136,7 @@
                   IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
                ENDIF
                IF (D_P0(M)/=UNDEFINED)  D_P(IJK,M)=D_P0(M)
-               IF (RO_S(M)/=UNDEFINED) RO_SV(IJK,M) = RO_S(M)
+               IF (RO_S0(M)/=UNDEFINED) RO_S(IJK,M) = RO_S0(M)
             ENDIF 
 
 ! set ep_star_array to user input ep_star in all cells. sof--> Nov-17-05

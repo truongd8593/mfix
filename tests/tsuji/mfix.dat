@@ -61,7 +61,7 @@
 # 
 ###############################################  
   DRAG_TYPE  = 'WEN_YU'
-  RO_s    = 1.038            ! particle density
+  RO_s0   = 1.038            ! particle density
   D_p0    = 0.0406           ! particle diameter
   e       = 0.9              ! part-part restitution coefficient
   e_w     = 0.9              ! part-wall rest. coef.

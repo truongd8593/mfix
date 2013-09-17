@@ -297,7 +297,7 @@
                            SUM_XoRO = SUM_XoRO + X_S(IJK,M,N)/RO_SS(M,N)
                         ENDDO ! N Loop (species) 
                         IF(SUM_XoRO>ZERO) THEN
-                           RO_SV(IJK,M) = ONE / SUM_XoRO
+                           RO_S(IJK,M) = ONE / SUM_XoRO
                         ELSE
                            WRITE(*,*)'Error computing solids density'
                           WRITE(*,*)' at I,J,K=', I_OF(IJK),J_OF(IJK),K_OF(IJK)

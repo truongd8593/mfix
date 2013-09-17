@@ -354,9 +354,9 @@
 ! ---------------------------------------------------------------->>>
                   IF (BC_MASSFLOW_S(BCV,M) /= UNDEFINED) THEN 
 
-                     IF (RO_S(M) /= UNDEFINED) THEN 
-! RO_S must be defined for solids phases (see check_data_04).
-                        VOLFLOW = BC_MASSFLOW_S(BCV,M)/RO_S(M) 
+                     IF (RO_S0(M) /= UNDEFINED) THEN 
+! RO_S0 must be defined for solids phases (see check_data_04).
+                        VOLFLOW = BC_MASSFLOW_S(BCV,M)/RO_S0(M) 
                      ELSE 
 ! this section should never happen (redundant).
                         RETURN    
@@ -390,7 +390,7 @@
                               .NOT.DES_CONTINUUM_HYBRID) THEN 
 ! bulk density must be explicitly defined for hybrid model and cannot be
 ! defined from 1-bc_ep_g
-                         BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S(M)
+                         BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S0(M)
                      ENDIF
                   ENDIF
 ! note bc_rop_s may still be undefined at this point
@@ -401,7 +401,7 @@
                   IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN 
 
                      IF (BC_ROP_S(BCV,M) /= UNDEFINED) THEN 
-                        EPS = BC_ROP_S(BCV,M)/RO_S(M)
+                        EPS = BC_ROP_S(BCV,M)/RO_S0(M)
 ! volumetric flow rate and solids volume fraction at the boundary are
 ! specified (known) so that the corresponding solids velocity through
 ! the boundary plane may be calculated. 

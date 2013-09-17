@@ -286,8 +286,7 @@
       WRITE (UNIT_OUT, 1410) MMAX 
       WRITE (UNIT_OUT, 1420) 
       DO M = 1, MMAX 
-!QX
-         WRITE (UNIT_OUT, 1421) M, D_P0(M), RO_S(M), CLOSE_PACKED(M) 
+         WRITE (UNIT_OUT, 1421) M, D_P0(M), RO_S0(M), CLOSE_PACKED(M) 
       END DO 
       DO M = 1, MMAX 
          IF (SPECIES_EQ(M)) THEN 
@@ -296,7 +295,6 @@
             DO N = 1, NMAX(M) 
                WRITE (UNIT_OUT, 1424) N, MW_S(M,N) 
             END DO 
-!QX
             WRITE (UNIT_OUT, 1425) 
             DO N = 1, NMAX(M) 
                WRITE (UNIT_OUT, 1424) N, RO_SS(M,N) 
@@ -355,7 +353,6 @@
 !                 based on ic_rop_s and ic_x_s, ic_ro_s_l is calculated.
                   if (EP_S_TOT .gt. 0.d0) IC_RO_S_L(L,M) = IC_ROP_S(L,M)/EP_S_TOT
                   WRITE (UNIT_OUT, 1562) M, IC_RO_S_L(L,M)
-!end
                ENDIF 
             END DO 
             DO M = 1, MMAX 

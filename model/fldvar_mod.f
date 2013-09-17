@@ -19,11 +19,8 @@
 !  Local variables: None                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
- 
- 
       MODULE fldvar
- 
- 
+  
       Use param
       Use param1
  
@@ -53,15 +50,19 @@
 !                      Previous-time-step value of macroscopic gas density
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  ROP_go 
 !
+
+!                      Solids phase densities
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: RO_S
+!                      Previous-time-step value Solids phase densities
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: RO_So
+
+
 !                      Macroscopic density of solids phases
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  ROP_s 
 !
 !                      Previous-time-step value of macroscopic density of
 !                      solids phases
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  ROP_so 
-!QX
-      DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: EP_SS 
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: ERR_ARRAY
 
 !                      Macroscopic density of particle diameter
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  D_p 
@@ -177,6 +178,14 @@
 !                      Previous time-step value of K and Epsilon
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  K_Turb_Go
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  E_Turb_Go
+
+
+
+!--------------------------------------------------------------------------> J.Musser TBR
+      DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: EP_SS 
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: ERR_ARRAY
+
+
  
 !!!HPF$ align EP_g(:) with TT(:)
 !!!HPF$ align EP_go(:) with TT(:)

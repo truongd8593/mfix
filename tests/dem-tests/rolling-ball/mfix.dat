@@ -45,7 +45,7 @@
 # Solids-phase Section
 #
   MMAX         = 1
-  RO_s         =  10.0
+  RO_s0        =  10.0
   D_p0          = 0.1
   e       = 0.8
   Phi     = 0.0

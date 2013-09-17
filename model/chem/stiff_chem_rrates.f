@@ -50,8 +50,6 @@
       use fldvar, only: T_s
 ! Species mass fractions
       use fldvar, only: X_s
-! Material densities
-      use physprop, only: RO_s
 ! Apparent densities
       use fldvar, only: ROP_s
 ! Specific heats

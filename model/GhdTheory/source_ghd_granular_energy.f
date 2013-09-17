@@ -127,9 +127,9 @@
       Ntotal = ZERO      
       phi_tot = ZERO
       DO M = 1,SMAX
-          Ntotal = Ntotal + ROP_S(IJK,M)*6.d0/(Pi*D_P(IJK,M)**3 * RO_S(M))
-          ni(M) = ROP_S(IJK,M)*6.d0/(Pi*D_P(IJK,M)**3 * RO_S(M))
-          phi_tot = phi_tot + ROP_S(IJK,M)/RO_S(M)
+          Ntotal = Ntotal + ROP_S(IJK,M)*6.d0/(Pi*D_P(IJK,M)**3 * RO_S(IJK,M))
+          ni(M) = ROP_S(IJK,M)*6.d0/(Pi*D_P(IJK,M)**3 * RO_S(IJK,M))
+          phi_tot = phi_tot + ROP_S(IJK,M)/RO_S(IJK,M)
 	  SIGMAI(M) = D_P(IJK,M)
       ENDDO          
 
@@ -170,7 +170,7 @@
 !     Sum_ij [ div( T^2*DijQ/nj*grad(nj)) ] -> Dufour term
  
           DO L = 1,SMAX      
-              Mi = (Pi/6.d0)*D_P(IJK,L)**3 * RO_S(L)
+              Mi = (Pi/6.d0)*D_P(IJK,L)**3 * RO_S(IJK,L)
               
 	      Nip = ROP_S(IJK,L) /Mi
               NiE = ROP_S(IJKE,L)/Mi
@@ -184,11 +184,11 @@
               DijQTermN = zero
               DijQTermS = zero
 	      
-              if(ROP_S(IJK,L)/RO_S(L) > DIL_EP_S) DijQTerm = Theta_m(IJK,MMAX)**2*DijQ(IJK,M,L) / Nip
-              if(ROP_S(IJKE,L)/RO_S(L) > DIL_EP_S) DijQTermE =Theta_m(IJKE,MMAX)**2*DijQ(IJKE,M,L) / NiE
-	      if(ROP_S(IJKW,L)/RO_S(L) > DIL_EP_S) DijQTermW =Theta_m(IJKW,MMAX)**2*DijQ(IJKW,M,L) / NiW
-	      if(ROP_S(IJKN,L)/RO_S(L) > DIL_EP_S) DijQTermN =Theta_m(IJKN,MMAX)**2*DijQ(IJKN,M,L) / NiN
-	      if(ROP_S(IJKS,L)/RO_S(L) > DIL_EP_S) DijQTermS =Theta_m(IJKS,MMAX)**2*DijQ(IJKS,M,L) / NiS
+              if(ROP_S(IJK,L)/RO_S(IJK,L) > DIL_EP_S) DijQTerm = Theta_m(IJK,MMAX)**2*DijQ(IJK,M,L) / Nip
+              if(ROP_S(IJKE,L)/RO_S(IJKE,L) > DIL_EP_S) DijQTermE =Theta_m(IJKE,MMAX)**2*DijQ(IJKE,M,L) / NiE
+	      if(ROP_S(IJKW,L)/RO_S(IJKW,L) > DIL_EP_S) DijQTermW =Theta_m(IJKW,MMAX)**2*DijQ(IJKW,M,L) / NiW
+	      if(ROP_S(IJKN,L)/RO_S(IJKN,L) > DIL_EP_S) DijQTermN =Theta_m(IJKN,MMAX)**2*DijQ(IJKN,M,L) / NiN
+	      if(ROP_S(IJKS,L)/RO_S(IJKS,L) > DIL_EP_S) DijQTermS =Theta_m(IJKS,MMAX)**2*DijQ(IJKS,M,L) / NiS
 	     
                 DijQTermE_H = AVG_X_S(DijQTerm, DijQTermE, I)
                 DijQTermE_A = AVG_X(DijQTerm, DijQTermE, I)
@@ -234,8 +234,8 @@
 		 DijQTermT = zero
                  DijQTermB = zero
                 
-                 if(ROP_S(IJKT,L)/RO_S(L) > DIL_EP_S) DijQTermT = Theta_m(IJK,MMAX)**2*DijQ(IJK,M,L) / NiT
-                 if(ROP_S(IJKB,L)/RO_S(L) > DIL_EP_S) DijQTermB = Theta_m(IJK,MMAX)**2*DijQ(IJK,M,L) / NiB
+                 if(ROP_S(IJKT,L)/RO_S(IJKT,L) > DIL_EP_S) DijQTermT = Theta_m(IJK,MMAX)**2*DijQ(IJK,M,L) / NiT
+                 if(ROP_S(IJKB,L)/RO_S(IJKB,L) > DIL_EP_S) DijQTermB = Theta_m(IJK,MMAX)**2*DijQ(IJK,M,L) / NiB
 
 		 DijQTermT_H = AVG_Z_S(DijQTerm , DijQTermT, K)
 		 DijQTermT_A = AVG_Z(DijQTerm , DijQTermT, K)
@@ -327,7 +327,7 @@
 ! Additional term arising from subtraction of 3/2*T*continuity
 !     + (3/2)*T* Sum_i [ div (joi/mi) ]
 
-          Mi = (Pi/6.d0)*D_P(IJK,M)**3 * RO_S(M)
+          Mi = (Pi/6.d0)*D_P(IJK,M)**3 * RO_S(IJK,M)
       
           DelDotJoi = DelDotJoi + 1.5d0*THETA_M(IJK,MMAX)/Mi * ( &
 	              (JoiX(IJK,M) - JoiX(IMJK,M))*AYZ(IJK) + &
@@ -368,7 +368,7 @@
 !            call chi_ij_GHD(smax,M,M,SIGMAi,phi_tot,ni,chi_ij)
        
 !            SOURCE_FLUID = SOURCE_FLUID + (81D0*EP_S(IJK,M)*(MU_G(IJK)*VSLIP)**2D0/ &
-!                   (chi_ij*(D_P(IJK,M)**3D0*RO_S(M)*THETA_M(IJK,M))**0.5D0))*VOL(IJK)
+!                   (chi_ij*(D_P(IJK,M)**3D0*RO_S(IJK,M)*THETA_M(IJK,M))**0.5D0))*VOL(IJK)
         
 !            SINK_FLUID = SINK_FLUID + 3.d0*F_GS(IJK,M)*THETA_M(IJK,M)/Mi
           ENDIF

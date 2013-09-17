@@ -363,9 +363,10 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_ODE_COEFF(lNEQ, IJK)
 
-      use fldvar,     only : ROP_s
-      use physprop,   only : MMAX, RO_sv
-      use run,        only : SPECIES_EQ
+      use fldvar, only : ROP_s
+      use physprop, only : MMAX
+      use fldvar, only: RO_s
+      use run, only : SPECIES_EQ
 
       implicit none
 

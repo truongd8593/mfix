@@ -52,12 +52,12 @@
 ! calculate BETA_A(I,J) and A(I)
       
       DO I=1, Nscalar
-        epstotal=ROP_s(IJK,I)/RO_sv(IJK,I)+epstotal
+        epstotal=ROP_s(IJK,I)/RO_S(IJK,I)+epstotal
       ENDDO
        
        If(epstotal>=small_number) THEN
            Do J=1,Nscalar
-            theta= theta+(ROP_s(IJk,J)/RO_sv(IJK,J))*Theta_m(IJK,J)
+            theta= theta+(ROP_s(IJk,J)/RO_S(IJK,J))*Theta_m(IJK,J)
            ENDDO
             theta= theta/epstotal
         else
@@ -68,8 +68,8 @@
        DO I=1,Nscalar
        DO J=1,Nscalar
 
-        m1=PI*(Scalar(IJK,I)**3)*RO_sv(IJK,I)/6.0
-        m2=PI*(Scalar(IJK,J)**3)*RO_sv(IJK,J)/6.0
+        m1=PI*(Scalar(IJK,I)**3)*RO_S(IJK,I)/6.0
+        m2=PI*(Scalar(IJK,J)**3)*RO_S(IJK,J)/6.0
         dav=(Scalar(IJk,I)+Scalar(IJk,J))/2.0      
         c11=((theta*(m1+m2)**2)/(4*PI*m1*m2))**(0.5)*(4.0/dav)           
         BETA_A(I,J)=aggregation_eff*PI*(dav**3)*G_0(IJK,I,J)*c11
