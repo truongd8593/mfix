@@ -1,40 +1,35 @@
-Changes from MFIX2012-1 (Date: 01/19/2012) to MFIX2013-1 (Date: 03/05/2013)
+Changes from MFIX2013-1 (Date: 03/05/2013) to MFIX2013-2 (Date: 09/18/2013)
 
 
 New features added:
 -------------------
 
-* Hybrid model 
-   o Ability to describe different solids phases in either Eulerian or Lagrangian frames
+* Stiff chemistry model
+  o The stiff chemistry solver was completely overhauled to eliminate any user coding.
+    This capability can now be activated with a single keyword.
 
-* MPPIC (Multi-Phase Particle in Cell)
-  o Eulerian model for carrier phase coupled with particle-in-cell (PIC) based discrete representation for dispersed phase
-  o Tentative release to handle cut-cells
+* Point Source
+  o The ability to specify mass inlet point source anywhere in the domain was added.
+    This can be useful when modeling a small side inlet, without having to resolve the
+    actual geometry.
 
-* DEM
-  o Tentative release to handle cut-cells
+* Subgrid models
+  o The two-fluid Igci and Milioli filtered models were implemented and can be activated by new keywords.
 
+* DEM cluster detection
+  o An algorithm to detect clusters and collect information was implemented.
 
 
 Changes in existing features:
 -----------------------------
 
-* Bug fixes and enhancements:
-  o Makefile: improved user input
-    - Improved user input
-    - Object files are stored in dedicated directories to speed-up recompilation
-
-* Reaction rate input
-  o New user-friendly input method to define chemical reactions in input file
-  o Simplification of user-defined reaction rate specification
-  o Heats of reaction are automatically calculated
-
 * Parallel execution
-  o SMP mode of execution was turned off due to current assesment of OpenMP directives
+  o The SMP directives have been updated in key-subroutines. The SMP compilation
+    options (including hybrid SMP+DMP) have been turned back on. Please note that
+    the reported CPU time may be inaccurate in SMP mode.
 
-* Cartesian Grid cut cell technique
-  o Improvement in handling geometry intersections
-  o Geometry input from multiple STL files
+* Bug fixes and enhancements:
+  o Cyclic boundaries with pressure drop: flags CYCLIC_AT_E/N/T were corrected
 
 
 
@@ -43,51 +38,35 @@ Changes in existing features:
 
 * Updated documents:
   o Readme file [1]
-  o Cartesian grid documentation [2]
-
-* New documents:
-  o MMPIC documentation [3]
-  o MPI verification [4]
-  o Compiler study [5]
-
 
 
 Under Development:
 ------------------
 
-* Stiff solver: Automatic parsing to elimnate user-input for Direct Integration method
-
 * Variable solids density 
   o Ability to have solids density vary as a function of species composition (Eulerian/Eulerian solver)
-
-* Parallel execution
-  o Updated OpenMP directives
 
 
 
 Project Metrics:
 ----------------
 
-* Change from 2012-1 Release:
-  o 20 new files
-  o Over 11,000 new lines of code (around 7,000 excluding comments and blank lines)
+* Change from 2013-1 Release:
+  o 13 files were removed due to stiff-solver overhaul (net count)
+  o Over 3,000 new lines of code (net count)
 
-* 2013-1 Total count:
-  o Files: 539
-  o Lines: 192,460
-  o Blank Lines: 25,376
-  o Code Lines: 114,993
-  o Comment Lines: 55,510
-  o Statements: 85,098
+* 2013-2 Total count:
+  o Files: 526
+  o Lines: 195,755
+  o Blank Lines: 26,750
+  o Code Lines: 116,321
+  o Comment Lines: 56,292
+  o Statements: 85,702
 
 
 
 References:
 -----------
 [1] https://mfix.netl.doe.gov/documentation/Readme.pdf
-[2] https://mfix.netl.doe.gov/documentation/Cartesian_grid_user_guide.pdf
-[3] https://mfix.netl.doe.gov/documentation/mfix_pic_doc.pdf
-[4] https://mfix.netl.doe.gov/documentation/MPI_verification_for_MFIX.pdf
-[5] https://mfix.netl.doe.gov/documentation/MFIX_results_sensitivity_to_Fortran_compilers.pdf
 
 
