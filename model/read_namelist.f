@@ -254,7 +254,8 @@
       IF(LINE_STRING(1:11) == 'THERMO DATA')  GOTO 500  !All subsequent lines are thermochemical data
       
       CALL REPLACE_TAB (LINE_STRING, LINE_LEN) 
-     
+
+      CALL REMOVE_PAR_BLANKS(LINE_STRING)
      
 ! Complete arithmetic operations and expand line
       CALL PARSE_LINE (LINE_STRING, LINE_LEN, RXN_FLAG, READ_FLAG) 
