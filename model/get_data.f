@@ -266,51 +266,88 @@
       END SUBROUTINE GET_DATA 
       
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  SUBROUTINE: CHECK_DATA_00                                           C
-!  Purpose: check the distributed parallel namelist variables          C
-!                                                                      C
-!  Author: P. Nicoletti                               Date: 14-DEC-99  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:  NODESI , NODESJ , NODESK                     C
-!  Variables modified: None                                            C
-!  Local variables: None                                               C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  SUBROUTINE: CHECK_DATA_00                                           !
+!  Purpose: Check the distributed parallel namelist variables.         !
+!                                                                      !
+!  Author: P. Nicoletti                               Date: 14-DEC-99  !
+!  Reviewer: J.Musser                                 Date: 20-Sep-13  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_DATA_00
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE param1 
-      USE compar
-      IMPLICIT NONE
-!-----------------------------------------------
 
+! Global Variables:
+!---------------------------------------------------------------------//
+! This processes rank.
+      use compar, only: myPE
+! Number of ranks.
+      use compar, only: numPEs
+! DMP grid partitioning data:
+      use compar, only: NODESI  ! Partitions along x-axis
+      use compar, only: NODESJ  ! Partitions along y-axis
+      use compar, only: NODESK  ! Partitions along z-axis
+! Flag: All ranks report errors.
+      use output, only: ENABLE_DMP_LOG
+! Flag: My rank reports errors.
+      use funits, only: DMP_LOG
+
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+      use param1, only: UNDEFINED_I
+
+
+      implicit none
+
+
+! This turns on error messaging from all processes.
+      IF(ENABLE_DMP_LOG) DMP_LOG = .TRUE.
+
+! Verify that DMP partitioning information is provided given if
+! there is more than one rank.
       IF( numPEs > 1 ) then
-         IF (NODESI .EQ. UNDEFINED_I .AND. NODESJ .EQ. UNDEFINED_I &
-             .AND. NODESK .EQ. UNDEFINED_I) THEN
-            WRITE (*,*) ' No grid partitioning data ',&
-               '(NODESI, NODESJ, or NODESK) in mfix.dat'
+         IF(NODESI .EQ. UNDEFINED_I .AND.                              &
+            NODESJ .EQ. UNDEFINED_I .AND.                              &
+            NODESK .EQ. UNDEFINED_I) THEN
+            IF(DMP_LOG) THEN
+! This message is only passed to standard out because the unit log file
+! has not been opened at this point.
+               WRITE(*,1000); WRITE(*,9999)
+            ENDIF
             CALL MFIX_EXIT(myPE)
          ENDIF
       ENDIF
 
-      IF (NODESI .EQ. UNDEFINED_I) NODESI = 1
-      IF (NODESJ .EQ. UNDEFINED_I) NODESJ = 1
-      IF (NODESK .EQ. UNDEFINED_I) NODESK = 1
+! Initialize NODE values if undefined. If this is a DMP run, then a 
+! warning message is passed to the user.
+      IF (NODESI .EQ. UNDEFINED_I) THEN
+         IF((numPEs > 1) .AND. DMP_LOG) WRITE(*,1001)'I','I'
+         NODESI = 1
+      ENDIF
+
+      IF (NODESJ .EQ. UNDEFINED_I) THEN
+         IF((numPEs > 1) .AND. DMP_LOG) WRITE(*,1001)'J','J'
+         NODESJ = 1
+      ENDIF
+
+      IF (NODESK .EQ. UNDEFINED_I) THEN
+         IF((numPEs > 1) .AND. DMP_LOG) WRITE(*,1001)'K','K'
+         NODESK = 1
+      ENDIF
 
       RETURN  
-      END SUBROUTINE CHECK_DATA_00
- 
 
+ 1000 FORMAT(//1X,70('*'),' From: CHECK_DATA_00',/' Error 1000:',      &
+         '  No DMP grid partitioning data provided in mfix.dat. ',     &
+         '  NODESI, NODESJ, and NODESK are all undefined.')
+
+ 1001 FORMAT(' From: CHECK_DATA_00',/' Warning 1001:',                 &
+         ' Setting NODES',A1,' to default: NODES',A1,'=1.',/)
+
+ 9999 FORMAT(/' Please refer to the Readme file on the required input',&
+         ' and make',/' the necessary corrections to the data file.',  &
+         /1X,70('*')//)
+
+      END SUBROUTINE CHECK_DATA_00

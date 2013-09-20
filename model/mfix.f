@@ -103,20 +103,14 @@
 
       bDoing_postmfix = .false.
 
-      call parallel_init
+! Invoke MPI initialization routines and get rank info.
+      CALL PARALLEL_INIT
     
 ! we want only PE_IO to write out common error messages
-      if(enable_dmp_log)then
-         dmp_log = .true.
-      elseif(mype == pe_io) then
-         dmp_log = .true.
-      else
-         dmp_log = .false.
-      endif
+      DMP_LOG = (myPE == PE_IO)
 
 ! set the version.release of the software
       ID_VERSION = '2013-2'
-
 
 ! set automatic restart flag to false
 !      AUTOMATIC_RESTART = .FALSE.
