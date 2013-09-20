@@ -70,7 +70,7 @@
 ! Internal search flag
       LOGICAL :: replace
 ! Debug flag
-      LOGICAL, parameter :: verbose = .TRUE.
+      LOGICAL, parameter :: verbose = .FALSE.
 
 
 ! Exit if the string is empty.
