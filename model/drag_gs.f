@@ -284,9 +284,9 @@
                   CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,&
                        DPA)
                CASE ('WEN_YU')
-                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROg,ROPg,VREL,DPM)
+                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROPg,VREL,DPM)
                CASE ('WEN_YU_PCF')
-                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROg,ROPg,VREL,DPA)
+                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROPg,VREL,DPA)
                 CASE ('KOCH_HILL')
                   CALL DRAG_KOCH_HILL(DgA,EPg,Mu,ROPg,VREL,&
                        DPM,DPM,phis)
@@ -741,7 +741,7 @@
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
-      SUBROUTINE DRAG_WEN_YU(lDgA,EPg,Mug,ROg,ROPg,VREL,DPM)
+      SUBROUTINE DRAG_WEN_YU(lDgA,EPg,Mug,ROPg,VREL,DPM)
                                                          
 !-----------------------------------------------
 ! Modules
@@ -758,8 +758,6 @@
       DOUBLE PRECISION, INTENT(IN) :: EPg
 ! gas laminar viscosity 
       DOUBLE PRECISION, INTENT(IN) :: Mug
-! gas density
-      DOUBLE PRECISION, INTENT(IN) :: ROg
 ! gas density*EP_g
       DOUBLE PRECISION, INTENT(IN) :: ROPg
 ! Magnitude of gas-solids relative velocity 
