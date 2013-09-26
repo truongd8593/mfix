@@ -121,8 +121,8 @@
 !
 
 !$omp  parallel do default(shared)                                   &
-!$omp  private(I, J, K, IJK, IJKT, IJKM, IJKP, IMJK, IPJK, IJMK      &
-!$omp          IMJKP, IJPK, IJMKP, IJKTE, IJKTW, IM, IJKW, IJKE      &
+!$omp  private(I, J, K, IJK, IJKT, IJKM, IJKP, IMJK, IPJK, IJMK,     &
+!$omp          IMJKP, IJPK, IJMKP, IJKTE, IJKTW, IM, IJKW, IJKE,     &
 !$omp          EPGA, PGT, SDP, ROPGA, ROGA, V0, ISV, MUGA, Vpm,      &
 !$omp          Vmt, Vbf, F_vir, Ghd_drag, avgRop, HYS_drag, avgDrag, &
 !$omp          MM, L, VXZA, VXZB, VCOA, VCOB, CTE, CTW, UGT,         &

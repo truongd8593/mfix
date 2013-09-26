@@ -133,7 +133,7 @@
 !$omp         EPSS, EPST, EPSB, SUM_EPS_CP, PGT, SDP, SDPS, ROPSA,   &
 !$omp         V0, ROP_MA, MM, L, F_vir,                              &
 !$omp         Uge, Ugw, Vgb, Vgt, Wge, Wgw, Wgn, Wgs, Wgt, Wgb,      &
-!$omp         Ugt, VMTtmp, VMT, DRO1, DRO2, DROA, VBF, Ghd_drag,     cd&
+!$omp         Ugt, VMTtmp, VMT, DRO1, DRO2, DROA, VBF, Ghd_drag,     &
 !$omp         avgRop, HYS_drag, avgDrag, VCOA, VCOB, CTE, CTW,       &
 !$omp         SXZB, VXZA, VXZB, EPMUOX)
             DO IJK = ijkstart3, ijkend3 
