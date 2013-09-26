@@ -121,6 +121,11 @@
           IF (MOMENTUM_Z_EQ(M)) THEN 
 
 
+!
+! rogue "cd" deleted at end of Ghd_drag line
+! CP Crosby, CHPC, 26 Sep 2013
+!
+
 !$omp  parallel do default(shared)                                   &
 !$omp  private(I, J, K, IJK, IMJK, IJMK, IJKM, IJKP, IPJK, IMJKP,    &
 !$omp         IJPK, IJMKP, IJKT, IJKE, IJKW, IJKTE, IJKTW, IM,       &
@@ -374,8 +379,8 @@
 ! Body force
                   IF (MODEL_B) THEN 
                      IF (TRIM(KT_TYPE) /= 'GHD') THEN
-                       DRO1 = (RO_S(IJK,M)-RO_G(IJK))*EP_S(IJK,M) 
-                       DRO2 = (RO_S(IJK,M)-RO_G(IJKT))*EP_S(IJKT,M) 
+                       DRO1 = (RO_SV(IJK,M)-RO_G(IJK))*EP_S(IJK,M) 
+                       DRO2 = (RO_SV(IJK,M)-RO_G(IJKT))*EP_S(IJKT,M) 
                        DROA = AVG_Z(DRO1,DRO2,K) 
                        VBF = DROA*BFZ_S(IJK,M) 
                      ELSE ! GHD and M = MMAX

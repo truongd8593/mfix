@@ -113,6 +113,12 @@
 
       IF (.NOT.MOMENTUM_Z_EQ(0)) RETURN  
 
+!
+! trailing commas added to the first two lines in the 
+! private list
+! Charles Crosby
+! CHPC, 26 September 2013
+!
 
 !$omp  parallel do default(shared)                                   &
 !$omp  private(I, J, K, IJK, IJKT, IJKM, IJKP, IMJK, IPJK, IJMK      &
