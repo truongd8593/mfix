@@ -36,8 +36,9 @@
       integer lmax_pip 
 !-----------------------------------------------
 
-      CHARACTER*32 :: lMsg
+      CHARACTER*32 :: lMsg, cErr
       INTEGER :: lc1, lc2, lc3, lc4
+      INTEGER :: iErr
 
       ltor_dimn = 1 + (dimn-2)*2 
  
@@ -439,15 +440,29 @@
          if(PEA(lc1,3)) cycle      ! Don't care about exiting particles
          if(PEA(lc1,4)) cycle      ! Don't care about ghost particles
 
-         if(DES_POS_NEW(lc1,1) .lt. xe(istart1_all(myPE)-1)      .OR. &
-            DES_POS_NEW(lc1,1) .ge. xe(iend1_all(myPE))          .OR. &  
-            DES_POS_NEW(lc1,2) .lt. yn(jstart1_all(myPE)-1)      .OR. &
-            DES_POS_NEW(lc1,2) .ge. yn(jend1_all(myPE))          .OR. &
-            DES_POS_NEW(lc1,3) .lt. zt(kstart1_all(myPE)-1)      .OR. &
-            DES_POS_NEW(lc1,3) .ge. zt(kend1_all(myPE))) then
+         iErr=0
 
+
+         if(DES_POS_NEW(lc1,1) .lt. xe(istart1_all(myPE)-1))           &
+            iErr = iErr +      1
+         if(DES_POS_NEW(lc1,1) .ge. xe(iend1_all(myPE)))               &
+            iErr = iErr +     10
+         if(DES_POS_NEW(lc1,2) .lt. yn(jstart1_all(myPE)-1))           &
+            iErr = iErr +    100
+         if(DES_POS_NEW(lc1,2) .ge. yn(jend1_all(myPE)))               &
+            iErr = iErr +   1000
+
+         if(dimn .gt. 3) then
+            if(DES_POS_NEW(lc1,3) .lt. zt(kstart1_all(myPE)-1))        &
+               iErr = iErr +  10000
+            if(DES_POS_NEW(lc1,3) .ge. zt(kend1_all(myPE)))            &
+               iErr = iErr + 100000
+        endif
+
+         if(iErr /= 0) then
             lMsg=''; write(lMsg,*) lc1
-            write(*,"(5x,'Particle ',A,' is stray! - Delete it.')") trim(lMsg)
+            write(*,"(5x,'Particle ',A,' is stray! -',I6.6,'- Delete it.')")&
+               trim(lMsg), iErr
             CALL delete_par_from_res(lc1)
          endif
       enddo 
