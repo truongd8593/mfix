@@ -110,8 +110,6 @@
       INTEGER, ALLOCATABLE, DIMENSION(:) :: INTPACK           !//PAR_I/O packing array for integers
       DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: DBLPACK  !//PAR_I/O packing array for doubles    
 
-      LOGICAL :: ANY_SOLVE_ROs
-
       doingPost = .false.
 !
 !  1) Check to ensure that this subroutine was updated.

@@ -272,7 +272,7 @@
 
 
 ! Flags indicating variable solids density.
-      LOGICAL :: SOLVE_ROs(DIM_M)
+      LOGICAL :: SOLVE_ROs(DIM_M), ANY_SOLVE_ROs
 
 ! Sebastien Dartevelle, LANL, May 2013
 ! filtered/subgrid corrections to the drag coefficient & granular 
