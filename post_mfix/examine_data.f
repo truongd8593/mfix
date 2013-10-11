@@ -729,7 +729,7 @@
 !     because EP_S is needed and EP_S = ROP_S / RO_S
 !     ROP_S is read from the SP5 file, but RO_S is not saved anywhere
       IF((VAR_NO .GE. 14 .AND. VAR_NO .LE. 21) .OR. &
-         (SOLID_RO_V.AND.(VAR_NO .GE. 31 .AND. VAR_NO .LE. 33))    ) THEN
+         (ANY_SOLVE_ROs.AND.(VAR_NO .GE. 31 .AND. VAR_NO .LE. 33))) THEN
         READ_SPX(7) = .TRUE.    ! X_g, X_s
       ENDIF
       
@@ -1253,7 +1253,7 @@
       IF (TIME_NOW .LT. TIME_START) GOTO 100
       TIME_OLD = TIME_NOW
 !
-      IF(MMAX .EQ. 1.AND.(.NOT.SOLID_RO_V)) THEN
+      IF(MMAX .EQ. 1.AND.(.NOT.ANY_SOLVE_ROs)) THEN
         IF (VAR_NO .EQ. 10 .OR.&
          (VAR_NO .GE. 19 .AND. VAR_NO .LE. 21) .OR.&
          (VAR_NO .GE. 25 .AND. VAR_NO .LE. 27) .OR. &

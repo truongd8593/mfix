@@ -138,8 +138,8 @@
       END DO
       READ_SPX(1)       = .TRUE.
       READ_SPX(4)       = .TRUE.
-      IF(MMAX .GT. 1.OR.SOLID_RO_V) READ_SPX(5) = .TRUE.
-      IF(SOLID_RO_V) READ_SPX(7) = .TRUE.  ! Will compute solids density
+      IF(MMAX .GT. 1.OR.ANY_SOLVE_ROs) READ_SPX(5) = .TRUE.
+      IF(ANY_SOLVE_ROs) READ_SPX(7) = .TRUE.  ! Will compute solids density
 !
       IF(TIME_START .LT. TIME_IN_RES) THEN
         CALL SEEK_TIME(READ_SPX, TIME_START, REC_POINTER, TIME_NOW)
@@ -160,7 +160,7 @@
 !
       IF (TIME_NOW .LT. ZERO) GOTO 1000
       IF (TIME_NOW .LT. TIME_START) GOTO 100
-      IF(MMAX .EQ. 1.AND.(.NOT.SOLID_RO_V))  THEN
+      IF(MMAX .EQ. 1.AND.(.NOT.ANY_SOLVE_ROs))  THEN
         DO IJK = 1, IJKMAX2
           ROP_s(IJK, 1) = RO_s0(1) * (1. - EP_g(IJK))
         END DO

@@ -286,7 +286,7 @@
 
 !        Compute solids density from true densities of each species
 
-         IF(SOLID_RO_V) THEN
+         IF(ANY_SOLVE_ROs) THEN
             DO M = 1,MMAX  ! Loop over solids phases
                IF(SPECIES_EQ(M)) THEN  ! only when species eq. was solved
                   DO IJK = IJKSTART3, IJKEND3 ! Loop over all cells
@@ -307,7 +307,7 @@
                   ENDDO ! IJK Loop
                ENDIF ! species eq.
             ENDDO ! LC loop (solids phases)
-         ENDIF ! SOLID_RO_V
+         ENDIF ! ANY_SOLVE_ROs
 
 
       END IF
