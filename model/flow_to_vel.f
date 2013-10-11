@@ -56,6 +56,10 @@
       LOGICAL :: CONVERTED,DO_VEL_CHECK 
 ! Average molecular weight 
       DOUBLE PRECISION :: MW 
+! Index of inert species
+      INTEGER :: INERT
+! Solids density at BC plane
+      DOUBLE PRECISION :: BC_ROs
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
@@ -349,18 +353,53 @@
 
 ! initialize
                   VOLFLOW = UNDEFINED
+                  BC_ROs = UNDEFINED
+
+                  IF((BC_MASSFLOW_S(BCV,M) /= UNDEFINED) .OR.          &
+                     (BC_VOLFLOW_S(BCV,M)  /= UNDEFINED)) THEN
+
+! Calculate the solid density.
+                     BC_ROs = UNDEFINED
+                     IF(SOLVE_ROs(M))THEN
+                        INERT = INERT_SPECIES(M)
+! Verify that the species mass fraction for the inert material is not
+! zero in the IC region when the solids is present.
+                        IF(BC_X_S(BCV,M,INERT) == ZERO) THEN
+                           IF(BC_ROP_S(BCV,M) /= ZERO) THEN
+                              IF(DMP_LOG) THEN
+                                 WRITE(*,1401) M, BCV
+                                 WRITE(UNIT_LOG,1401) M, BCV
+                              ENDIF
+                              CALL MFIX_EXIT(myPE)
+                           ELSE
+! If the solids isn't present, give it the baseline density.
+                              BC_ROs = RO_S0(M)
+                           ENDIF
+                        ELSE
+! Calculate the solids density.
+                           BC_ROs = RO_S0(M) * X_s0(M,INERT) /         &
+                              BC_X_S(BCV,M,INERT)
+                        ENDIF
+                     ELSE
+                        BC_ROs = RO_S0(M)
+                     ENDIF
+                  ENDIF
+
 
 ! If solids mass flow is defined convert it to volumetric flow
 ! ---------------------------------------------------------------->>>
                   IF (BC_MASSFLOW_S(BCV,M) /= UNDEFINED) THEN 
 
-                     IF (RO_S0(M) /= UNDEFINED) THEN 
-! RO_S0 must be defined for solids phases (see check_data_04).
-                        VOLFLOW = BC_MASSFLOW_S(BCV,M)/RO_S0(M) 
-                     ELSE 
-! this section should never happen (redundant).
-                        RETURN    
-                     ENDIF 
+! Sanity check on solids phase density.
+                     IF(BC_ROs <= ZERO .OR. BC_ROs==UNDEFINED) THEN
+                        IF(DMP_LOG)THEN
+                           WRITE(*,1401) M, BCV
+                           WRITE(UNIT_LOG,1401) M, BCV
+                        ENDIF
+                        CALL MFIX_EXIT(myPE)
+                     ENDIF
+
+                     VOLFLOW = BC_MASSFLOW_S(BCV,M)/BC_ROs
 
 ! If volumetric flow is also specified compare both
                      IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN 
@@ -388,9 +427,20 @@
                          BC_ROP_S(BCV,M) = ZERO 
                      ELSEIF (SMAX == 1 .AND. &
                               .NOT.DES_CONTINUUM_HYBRID) THEN 
+
+! Sanity check on solids phase density.
+                        IF(BC_ROs <= ZERO .OR. BC_ROs==UNDEFINED) THEN
+                           IF(DMP_LOG)THEN
+                              WRITE(*,1401) M, BCV
+                              WRITE(UNIT_LOG,1401) M, BCV
+                           ENDIF
+                           CALL MFIX_EXIT(myPE)
+                        ENDIF
+
+
 ! bulk density must be explicitly defined for hybrid model and cannot be
 ! defined from 1-bc_ep_g
-                         BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S0(M)
+                         BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*BC_ROs
                      ENDIF
                   ENDIF
 ! note bc_rop_s may still be undefined at this point
@@ -400,8 +450,17 @@
 ! ---------------------------------------------------------------->>>
                   IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN 
 
+! Sanity check on solids phase density.
+                     IF(BC_ROs <= ZERO .OR. BC_ROs==UNDEFINED) THEN
+                        IF(DMP_LOG)THEN
+                           WRITE(*,1401) M, BCV
+                           WRITE(UNIT_LOG,1401) M, BCV
+                        ENDIF
+                        CALL MFIX_EXIT(myPE)
+                     ENDIF
+
                      IF (BC_ROP_S(BCV,M) /= UNDEFINED) THEN 
-                        EPS = BC_ROP_S(BCV,M)/RO_S0(M)
+                        EPS = BC_ROP_S(BCV,M)/BC_ROs
 ! volumetric flow rate and solids volume fraction at the boundary are
 ! specified (known) so that the corresponding solids velocity through
 ! the boundary plane may be calculated. 
@@ -621,6 +680,11 @@
          '   that the third (unused) dimension is correctly specified;',/&
          '   e.g. in axisymmetric cylindrical coordinates ZLENGTH = 2*Pi'/1X,70&
          ('*')/) 
+
+ 1401 FORMAT(//1X,70('*')/' From: FLOW_TO_VEL',/,' Error 1401:'        &
+         ' Solids phase ',I2,' failed sanity check in BC region ',I3,  &
+         '. ',/' Please check mfix.dat file.',/1X,70('*')//)
+
 
       END SUBROUTINE FLOW_TO_VEL 
 

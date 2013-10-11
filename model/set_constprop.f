@@ -43,23 +43,20 @@
 !-----------------------------------------------
 
 ! Initialize transport coefficients to zero everywhere
-      MU_gt(:) = ZERO
-      LAMBDA_GT(:) = ZERO
-      MU_s(:, :) = ZERO
-      LAMBDA_s_c(:, :) = ZERO
-      LAMBDA_s(:, :) = ZERO
-      K_g(:) = ZERO
-      K_s(:, :) = ZERO
-      DIF_g(:, :) = ZERO
-      DIF_S(:, :, :) = ZERO
-      F_GS(:,:) = ZERO          !S. Dartevelle, LANL, 2004
-      F_SS(:,:) = ZERO          !S. Dartevelle, LANL, 2004
+      MU_gt = ZERO
+      LAMBDA_GT = ZERO
+      MU_s = ZERO
+      LAMBDA_s_c = ZERO
+      LAMBDA_s = ZERO
+      K_g = ZERO
+      K_s = ZERO
+      DIF_g = ZERO
+      DIF_S = ZERO
+      F_GS = ZERO
+      F_SS = ZERO
 
-      IF (ENERGY_EQ .OR. L_SCALE0/=ZERO .OR. K_EPSILON) THEN 
-         RECALC_VISC_G = .TRUE. 
-      ELSE 
-         RECALC_VISC_G = .FALSE. 
-      ENDIF 
+! Set the flag for recalculating gas viscosity.
+      RECALC_VISC_G = (ENERGY_EQ .OR. L_SCALE0/=ZERO .OR. K_EPSILON)
 
 ! Set default value for virtual mass coefficient
       Cv = HALF
@@ -68,37 +65,41 @@
 ! EDvel_sM_ip & EDT_s_ip are also used for Garzy & Dufty (1999) 
 ! kinetic theory
       IF (TRIM(KT_TYPE) == 'IA_NONEP') THEN
-         MU_sM_ip(:,:,:) = ZERO
-         MU_sL_ip(:,:,:) = ZERO
-         XI_sM_ip(:,:,:) = ZERO
-         XI_sL_ip(:,:,:) = ZERO
-         Fnu_s_ip(:,:,:) = ZERO
-         FT_sM_ip(:,:,:) = ZERO
-         FT_sL_ip(:,:,:) = ZERO
-         Kth_sL_ip(:,:,:) = ZERO
-         Knu_sM_ip(:,:,:) = ZERO
-         Knu_sL_ip(:,:,:) = ZERO
-         Kvel_s_ip(:,:,:) = ZERO
-         ED_ss_ip(:,:) = ZERO
-         EDvel_sL_ip(:,:,:) = ZERO
+         MU_sM_ip = ZERO
+         MU_sL_ip = ZERO
+         XI_sM_ip = ZERO
+         XI_sL_ip = ZERO
+         Fnu_s_ip = ZERO
+         FT_sM_ip = ZERO
+         FT_sL_ip = ZERO
+         Kth_sL_ip = ZERO
+         Knu_sM_ip = ZERO
+         Knu_sL_ip = ZERO
+         Kvel_s_ip = ZERO
+         ED_ss_ip = ZERO
+         EDvel_sL_ip = ZERO
       ENDIF
       IF (TRIM(KT_TYPE) == 'IA_NONEP' .OR. TRIM(KT_TYPE) == 'GD_99') THEN
-         EDT_s_ip(:,:,:) = ZERO
-         EDvel_sM_ip(:,:,:) = ZERO
+         EDT_s_ip = ZERO
+         EDvel_sM_ip = ZERO
       ENDIF
      
 ! Set specified constant physical properties values
       DO IJK = ijkstart3, ijkend3
-         IF (WALL_AT(IJK)) THEN 
+
+! All wall cells: FLAG >= 100
+         IF (WALL_AT(IJK)) THEN
             RO_G(IJK) = ZERO 
             MU_G(IJK) = ZERO 
             K_G(IJK) = ZERO 
             C_PG(IJK) = ZERO 
             MW_MIX_G(IJK) = ZERO 
-         ELSE 
+         ELSE
+! Fluid and inflow/outlfow cells: FLAG < 100
             IF (RO_G0 /= UNDEFINED) RO_G(IJK) = RO_G0 
             IF (C_PG0 /= UNDEFINED) C_PG(IJK) = C_PG0 
             IF (MW_AVG /= UNDEFINED) MW_MIX_G(IJK) = MW_AVG 
+! Strictly fluid cells: FLAG = 1
             IF(FLUID_AT(IJK)) THEN
                IF (MU_G0 /= UNDEFINED) THEN
                   MU_G(IJK) = MU_G0
@@ -109,11 +110,13 @@
                IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = DIF_G0 
             ENDIF
          ENDIF 
+
       ENDDO 
 
 
       DO M = 1, MMAX 
          DO IJK = ijkstart3, ijkend3
+! All wall cells: FLAG >= 100
             IF (WALL_AT(IJK)) THEN 
                P_S(IJK,M) = ZERO 
                MU_S(IJK,M) = ZERO 
@@ -121,11 +124,15 @@
                ALPHA_S(IJK,M) = ZERO 
                K_S(IJK,M) = ZERO 
                C_PS(IJK,M) = ZERO 
-               D_p(IJK,M)=D_P0(M)
-               RO_S(IJK,M) = RO_S0(M)
-            ELSE 
+               D_p(IJK,M) = ZERO
+               RO_S(IJK,M) = ZERO
+            ELSE
+! Fluid and inflow/outlfow cells: FLAG < 100
+               IF (RO_S0(M) /= UNDEFINED) RO_S(IJK,M) = RO_S0(M)
                IF (C_PS0 /= UNDEFINED) C_PS(IJK,M) = C_PS0 
-               IF(FLUID_AT(IJK))THEN
+               IF (D_P0(M) /= UNDEFINED) D_P(IJK,M) = D_P0(M)
+! Strictly fluid cells: FLAG = 1
+               IF (FLUID_AT(IJK)) THEN
                   IF (MU_S0 /= UNDEFINED) THEN 
                      P_S(IJK,M) = ZERO 
                      MU_S(IJK,M) = MU_S0 
@@ -135,15 +142,8 @@
                   IF (K_S0 /= UNDEFINED) K_S(IJK,M) = K_S0 
                   IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
                ENDIF
-               IF (D_P0(M)/=UNDEFINED)  D_P(IJK,M)=D_P0(M)
-               IF (RO_S0(M)/=UNDEFINED) RO_S(IJK,M) = RO_S0(M)
             ENDIF 
 
-! set ep_star_array to user input ep_star in all cells. sof--> Nov-17-05
-            EP_star_array(ijk) = ep_star
-            IF(EP_S_MAX(M) == UNDEFINED) EP_S_MAX(M) = ONE-EP_STAR
-! this probably should not be used anymore            
-            EP_S_CP = 1.D0 - EP_STAR
 
 ! initializing Sreekanth blending stress parameters (sof)
 ! changed blend_start to 0.99*ep_star from 0.97*ep_star [ceaf 2006-03-17]
@@ -161,34 +161,41 @@
             ENDIF
 
          ENDDO   ! end loop over ijk
-      ENDDO      ! end loop over MMAX
+
+         IF(EP_S_MAX(M) == UNDEFINED) EP_S_MAX(M) = ONE-EP_STAR
+
+      ENDDO   ! end loop over MMAX
+
+! Set ep_star_array to user input ep_star in all cells.
+      EP_star_array = ep_star
+
+! This probably should not be used anymore.
+      EP_S_CP = 1.D0 - EP_STAR
 
 
-      IF (RO_G0 == ZERO) THEN 
-         IF (MMAX > 0) THEN 
-            IF (IJKMAX2 > 0) THEN 
-               F_GS(IJKSTART3:IJKEND3,:MMAX) = ZERO 
-            ENDIF 
-         ENDIF 
+      IF (RO_G0 == ZERO .AND. MMAX > 0) THEN
+         IF(allocated(F_GS)) F_GS = ZERO
       ENDIF 
      
 
-! sof 05/04-2005: initializing the new indexing system
-! this doesn't need to be done if no correlation is used to compute ep_star
+! Initializing the indexing system. This doesn't need to be done if no
+! correlation is used to compute ep_star.
       IF(YU_STANDISH .OR. FEDORS_LANDEL .AND. .NOT. CALL_DQMOM) THEN
 
 ! refer to Syam's dissertation
          IF (SMAX == 2) THEN
-            ep_s_max_ratio(1,2) = ep_s_max(1)/&
+            ep_s_max_ratio(1,2) = ep_s_max(1)/                         &
                (ep_s_max(1)+(1.-ep_s_max(1))*ep_s_max(2)) 
          ENDIF
+
          DO I = 1, MMAX
+! Why is there a bailout condition for undefined D_P0?
             IF(D_P0(I) == UNDEFINED) RETURN
             DP_TMP(I) = D_P0(I)
             M_MAX(I) = I
          ENDDO
 
-! rearrange the indices from coarsest particles to finest to be 
+! Rearrange the indices from coarsest particles to finest to be 
 ! used in CALC_ep_star. Done here because it may need to be done
 ! for auto_restart
          DO I = 1, MMAX
@@ -209,8 +216,5 @@
          ENDDO
       ENDIF    ! if Yu-standish or Fedors-Landel and .not. call_dqmom
 
-
       RETURN  
-      END SUBROUTINE SET_CONSTPROP 
-
-
+      END SUBROUTINE SET_CONSTPROP

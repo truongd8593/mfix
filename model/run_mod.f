@@ -268,7 +268,11 @@
       CHARACTER(64)    RDF_TYPE 
 
 ! Flag to invoke the variable solids density model.
-      LOGICAL          SOLID_RO_V
+!      LOGICAL          SOLID_RO_V
+
+
+! Flags indicating variable solids density.
+      LOGICAL :: SOLVE_ROs(DIM_M)
 
 ! Sebastien Dartevelle, LANL, May 2013
 ! filtered/subgrid corrections to the drag coefficient & granular 

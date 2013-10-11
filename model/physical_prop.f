@@ -52,8 +52,9 @@
 !-----------------------------------------------------------------------
 ! Arrays for storing errors:
 ! 100 - Negative gas phase density
-! 101 - Invalid temperature in calc_CpoR
+! 101 - Negative solids phase density
 ! 10x - Unclassified
+! 900 - Invalid temperature in calc_CpoR
       INTEGER :: Err_l(0:numPEs-1)  ! local
       INTEGER :: Err_g(0:numPEs-1)  ! global
 
@@ -70,6 +71,7 @@
 ! each iteration.
       elseif(LEVEL == 1) then
          if(SP_HEAT(0)) CALL PHYSICAL_PROP_CPg
+!         if(any(DENSITY(1:DIMENSION_M))) CALL PHYSICAL_PROP_ROs
          if(any(SP_HEAT(1:DIMENSION_M))) CALL PHYSICAL_PROP_CPs
          if(any(PSIZE(1:DIMENSION_M))) CALL PHYSICAL_PROP_Dp
 
@@ -97,10 +99,10 @@
 !-----------------------------------------------------------------------
 ! An invalid temperature was found by calc_CpoR. This is a fatal run-
 ! time error and forces a call to MFIX_EXIT.
-      IF(IER == 101) then
+      IF(IER == 901 .OR. IER == 902) then
          if(myPE == PE_IO) then
-            write(*,2000)
-            write(UNIT_LOG,2000)
+            write(*,2000) IER
+            write(UNIT_LOG,2000) IER
          endif
          CALL MFIX_EXIT(myPE)
       ENDIF
@@ -108,8 +110,8 @@
       return
 
  2000 FORMAT(/1X,70('*')/' From: PHYSICAL_PROP',/' Fatal Error 2000:', &
-         ' calc_CpoR reporetd an invalid temperature.',/,'See Cp.log', &
-         ' for details. Calling MFIX_EXIT.',/1X,70('*')/) 
+         ' calc_CpoR reporetd an invalid temperature: 0x0', I3/,       &
+         'See Cp.log for details. Calling MFIX_EXIT.',/1X,70('*')/) 
 
       contains
 
@@ -207,11 +209,66 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE PHYSICAL_PROP_ROs
 
+! Global variables:
+!-----------------------------------------------------------------------
+! Solid phase species mass fractions.
+      use fldvar, only: X_s
+! Solid phase density (variable).
+      use fldvar, only: RO_s
+! Gas phase material density.
+      use fldvar, only: ROP_s
+! Flag for variable solids density.
+      use run, only: SOLVE_ROs
+! Run time flag for generating negative density log files.
+      use run, only: REPORT_NEG_DENSITY
+
       implicit none
+
+! Local Variables:
+!-----------------------------------------------------------------------
+! Loop indicies
+      INTEGER :: IJK   ! Computational cell
+      INTEGER :: M     ! Solids phase
+! Solids volume fraction.
+      DOUBLE PRECISION :: EPs_M
+
+      DOUBLE PRECISION :: oMass ! Old Mass
+      DOUBLE PRECISION :: nMass ! New Mass
+      DOUBLE PRECISION :: dMass ! delta Mass
+
+! Equation of State - Solid
+      DOUBLE PRECISION, EXTERNAL :: EOSS
+! Flag to write log header
+      LOGICAL wHeader
+
+      include 'function.inc'
+
+! Initialize:
+      wHeader = .TRUE.
+
+      M_LP: DO M=1, MMAX 
+         IF(.NOT.SOLVE_ROs(M)) cycle M_LP
+         IJK_LP: DO IJK = IJKSTART3, IJKEND3 
+            IF(WALL_AT(IJK)) cycle IJK_LP
+
+! Back out the solids volume fraction.
+!            EPs_M = ROP_s(IJK,M)/RO_s(IJK,M)
+! Calculate the soilds density.
+            RO_S(IJK,M) = EOSS(IJK,M)
+! Update the material density.
+!            ROP_S(IJK,M) = RO_S(IJK,M)*EPs_M
+
+! Report errors.
+            IF(RO_S(IJK,M) <= ZERO) THEN
+               Err_l(myPE) = 101
+               IF(REPORT_NEG_DENSITY)CALL ROsErr_LOG(IJK, wHeader)
+            ENDIF
+         ENDDO IJK_LP
+      ENDDO M_LP
+
 
       RETURN
       END SUBROUTINE PHYSICAL_PROP_ROs
-
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -249,6 +306,7 @@
       DOUBLE PRECISION :: lCp
 ! Error flag returned from calc_CpoR
       INTEGER :: lCP_Err
+      INTEGER :: gCP_Err
 ! Average molecular weight
       DOUBLE PRECISION :: MW
 ! Loop indicies
@@ -267,6 +325,7 @@
 ! check_data_05 but this call remains to prevent an accident.
       IF(.NOT.database_read) CALL read_database0(IER)
 
+      gCP_Err = 0
       lCP_Err = 0
 
       IJK_LP: DO IJK = IJKSTART3, IJKEND3 
@@ -275,13 +334,17 @@
          C_PG(IJK) = ZERO
          DO N = 1, NMAX(0)
             lCp = calc_CpoR(T_G(IJK), 0, N, lCP_Err)
-            C_PG(IJK) = C_PG(IJK) + X_g(IJK,N) * lCp * RGAS / MW_g(N) 
+            C_PG(IJK) = C_PG(IJK) + X_g(IJK,N) * lCp * RGAS / MW_g(N)
+            gCP_Err = max(gCP_Err, lCP_Err)
          ENDDO
       ENDDO IJK_LP
 
 ! The database calculation always returns cal/g.K thus the following
 ! conversion is needed if using SI units. ** Vector operation
       IF(UNITS == 'SI') C_PG = 4.183925d3 * C_PG  !in J/kg K
+
+! Increment the error to 900+ to invoke fatal exit.
+      IF(gCP_Err /= 0) Err_l(myPE) = 800 + gCP_Err
 
       RETURN
       END SUBROUTINE PHYSICAL_PROP_CPg
@@ -486,5 +549,88 @@
  1001 FORMAT(/4X,'IJK: ',I8,7X,'I: ',I4,'  J: ',I4,'  K: ',I4)
 
       END SUBROUTINE ROgErr_LOG
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: NegROs_LOG                                              !
+!  Purpose: Record information about the location and conditions that  !
+!           resulted in a negative solids phase density.               !
+!                                                                      !
+!  Author: J. Musser                                  Date: 09-Oct-13  !
+!  Reviewer:                                          Date:            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE ROsErr_LOG(IJK, tHeader)
+
+! Simulation time
+      use run, only: TIME
+! Gas phase temperature.
+      use fldvar, only: T_g
+! Gas phase density (compressible).
+      use fldvar, only: RO_g
+! Gas phase pressure.
+      use fldvar, only: P_g
+      use cutcell 
+
+      INTEGER, intent(in) :: IJK
+      LOGICAL, intent(inout) :: tHeader
+
+      LOGICAL :: lExists
+      CHARACTER*32 :: lFile
+      INTEGER, parameter :: lUnit = 4868
+      LOGICAL, save :: fHeader = .TRUE.
+
+
+! This file is a copy of the gas density log. Need to update.
+      return
+
+
+      lFile = ''; 
+      if(numPEs > 1) then
+         write(lFile,"('ROsErr_',I4.4,'.log')") myPE
+      else
+         write(lFile,"('ROsErr.log')")
+      endif
+      inquire(file=trim(lFile),exist=lExists)
+      if(lExists) then
+         open(lUnit,file=trim(adjustl(lFile)),                         &
+            status='old', position='append')
+      else
+         open(lUnit,file=trim(adjustl(lFile)), status='new')
+      endif
+
+      if(fHeader) then
+         write(lUnit,1000)
+         fHeader = .FALSE.
+      endif
+
+      if(tHeader) then
+         write(lUnit,"(/2x,'Simulation time: ',g11.5)") TIME
+         tHeader = .FALSE.
+      endif
+
+      write(lUnit,1001) IJK, I_OF(IJK), J_OF(IJK), K_OF(IJK)
+      write(lUnit,"(6x,A,1X,g11.5,$)") 'RO_g:', RO_g(IJK)
+      write(lUnit,"(2x,A,1X,g11.5,$)") 'P_g:', P_g(IJK)
+      write(lUnit,"(2x,A,1X,g11.5)") 'T_g:', T_g(IJK)
+      if(CARTESIAN_GRID) then
+         write(lUnit,"(6x,A,1X,L1,$)") 'Cut Cell:', CUT_CELL_AT(IJK)
+         write(lUnit,"(6x,A,1X,L1)") 'Small Cell:', SMALL_CELL_AT(IJK)
+         write(lUnit,"(6x,'Coordinates (E/N/T): ',1X,3(2x, g17.8))") &
+            xg_e(I_OF(IJK)), yg_n(J_of(ijk)), zg_t(k_of(ijk))
+      endif
+
+      close(lUnit)
+
+      RETURN
+
+ 1000 FORMAT(2X,'One or more cells have reported a negative gas',      &
+         ' density (RO_g(IJK)). If',/2x,'this is a persistent issue,', &
+         ' lower UR_FAC(1) in mfix.dat.')
+
+ 1001 FORMAT(/4X,'IJK: ',I8,7X,'I: ',I4,'  J: ',I4,'  K: ',I4)
+
+      END SUBROUTINE ROsErr_LOG
 
       END SUBROUTINE PHYSICAL_PROP

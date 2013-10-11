@@ -79,6 +79,7 @@
       call send_recv(u_g,2)
       call send_recv(v_s,2)
       call send_recv(v_g,2)
+      call send_recv(ro_s,2)
       call send_recv(rop_s,2)
       call send_recv( P_STAR, 2 ) 
       call send_recv( ROP_G, 2 ) 
@@ -226,6 +227,15 @@
 ! dont need the values at the ghost walls for setting pressure outflow 
 ! BC's for MPPIC. so not checking this for MPPIC
                      DO M = 1, SMAX 
+
+                        IF (RO_S(IJK,M) == UNDEFINED) THEN 
+                           IF (.NOT.ABORT) THEN 
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
+                              ABORT = .TRUE. 
+                           ENDIF 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1011) &
+                              I, J, K, M, 'RO_s' 
+                        ENDIF
                         IF (ROP_S(IJK,M) == UNDEFINED) THEN 
                            IF (.NOT.ABORT) THEN 
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
@@ -335,22 +345,13 @@
 ! Check whether L_scale is non-zero anywhere
                   IF (L_SCALE(IJK) /= ZERO) NONZERO = .TRUE. 
 
-
 ! check the sum of volume fractions. 
 ! this seems redundant with the existing checks in check_data_06 for 
 ! fluid cells (flag=1) and with check_data_07 for MI cells (flag=20).  
                   IF (.NOT.DISCRETE_ELEMENT) THEN
                      DIF = ONE - EP_G(IJK) 
                      IF (SMAX > 0) THEN 
-                        SELECT CASE (TRIM(RUN_TYPE))  
-                        CASE ('NEW')  
-                           DIF = DIF - SUM(ROP_S(IJK,:MMAX)/RO_S0(:MMAX))
-                        CASE ('RESTART_1', 'RESTART_2')  
-                           DIF = DIF - SUM(ROP_S(IJK,:MMAX)/RO_S(IJK,:MMAX))
-                        CASE DEFAULT
-                     END SELECT 
-                     M = SMAX + 1 
-
+                        DIF = DIF - SUM(ROP_S(IJK,:MMAX)/RO_S(IJK,:MMAX))
                         IF (ABS(DIF) > SMALL_NUMBER) THEN 
                            IF (.NOT.ABORT) THEN 
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1050)  

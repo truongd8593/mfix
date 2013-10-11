@@ -390,8 +390,8 @@
       NEXT_RECA = NEXT_RECA + 1 
 
 !
-!     Version 1.8 -- write SOLID_RO_V and densities of each solids species
-      WRITE (UNIT_RES, REC=NEXT_RECA) SOLID_RO_V
+!     Version 1.8 -- write densities of each solids species
+      WRITE (UNIT_RES, REC=NEXT_RECA) any(SOLVE_ROs)
       NEXT_RECA = NEXT_RECA + 1 
       DO LC = 1, MMAX 
          WRITE (UNIT_RES, REC=NEXT_RECA) (RO_SS(LC,N),N=1,NMAX(LC))

@@ -110,6 +110,8 @@
       INTEGER, ALLOCATABLE, DIMENSION(:) :: INTPACK           !//PAR_I/O packing array for integers
       DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: DBLPACK  !//PAR_I/O packing array for doubles    
 
+      LOGICAL :: ANY_SOLVE_ROs
+
       doingPost = .false.
 !
 !  1) Check to ensure that this subroutine was updated.
@@ -1201,11 +1203,11 @@
            CALL_ISAT = .FALSE.
         ENDIF 
 
-!           Version 1.8 -- SOLID_RO_V and densities of each solids species
+!           Version 1.8 -- Variable solid density and  each solids species
 !
         IF (VERSION_NUMBER >= 1.799) THEN 
           if (myPE == PE_IO) then
-             READ (UNIT_RES, REC=NEXT_RECA) SOLID_RO_V
+             READ (UNIT_RES, REC=NEXT_RECA) ANY_SOLVE_ROs
              NEXT_RECA = NEXT_RECA + 1 
              DO LC = 1, MMAX 
                 READ (UNIT_RES, REC=NEXT_RECA) (RO_SS(LC,N),N=1,NMAX(LC))
@@ -1213,14 +1215,14 @@
              END DO 
 
             NEXT_RECA = NEXT_RECA + 1 
-            if (doingPost .and. (.NOT.SOLID_RO_V)) then
+            if (doingPost .and. (.NOT.ANY_SOLVE_ROs)) then
                DO LC = 1, MMAX 
                   RO_S(:,LC) = RO_S0(LC)
                 END DO 
             end if
 	  ENDIF
         ELSE
-          SOLID_RO_V = .false.
+          ANY_SOLVE_ROs = .FALSE.
           DO LC = 1, MMAX 
              RO_S(:,LC) = RO_S0(LC)
           END DO 

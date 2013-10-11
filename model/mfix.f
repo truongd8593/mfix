@@ -182,7 +182,6 @@
   101 CONTINUE
 
 
-
 ! if not netcdf writes asked for ... globally turn off netcdf
       if (MFIX_usingNETCDF()) then
          bGlobalNetcdf = .false.
@@ -296,7 +295,6 @@
 ! Set point sources.
       CALL SET_PS
 
-
 ! Set boundary conditions
       CALL ZERO_NORM_VEL 
       CALL SET_BC0 
@@ -310,8 +308,9 @@
 ! Set the pressure field for a fluidized bed
       IF (RUN_TYPE == 'NEW') CALL SET_FLUIDBED_P 
 
-! Initialize gas densities
-      CALL SET_RO_G 
+! Initialize densities.
+      CALL SET_RO_G
+      CALL SET_RO_S
 
 ! Initialize time dependent boundary conditions
       CALL SET_BC1 

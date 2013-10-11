@@ -83,11 +83,6 @@
 !         call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0),&
 !            1, DO_K, ier)
 
-!QX
-!     use under_relax factor
-         IF(SOLID_RO_V) CALL UNDER_RELAX_S (ROP_G, A_M, B_M, 0, UR_FAC(2), IER) 
-
-
 ! solving gas continuity            
          CALL ADJUST_LEQ (RESID(RESID_RO,0), LEQ_IT(2), LEQ_METHOD(2),&
             LEQI, LEQM, IER) 
@@ -120,10 +115,6 @@
 !          call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, M), 1,
 !     &      DO_K, ier)
 !
-!QX
-!           use under_relax factor
-         IF(SOLID_RO_V) CALL UNDER_RELAX_S (ROP_S(1,M), A_M, B_M, M, UR_FAC(2), IER)
-
          CALL ADJUST_LEQ (RESID(RESID_RO,M), LEQ_IT(2), LEQ_METHOD(2),&
             LEQI, LEQM, IER) 
          CALL SOLVE_LIN_EQ ('ROP_s', 2, ROP_S(1,M), A_M, B_M, M, LEQI,&

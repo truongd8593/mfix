@@ -188,6 +188,7 @@ $(EXEC_FILE) : \
     $(DPO)drag_gs.$(OBJ_EXT) \
     $(DPO)drag_ss.$(OBJ_EXT) \
     $(DPO)eosg.$(OBJ_EXT) \
+    $(DPO)eoss.$(OBJ_EXT) \
     $(DPO)equal.$(OBJ_EXT) \
     $(DPO)error_routine.$(OBJ_EXT) \
     $(DPO)exchange.$(OBJ_EXT) \
@@ -279,6 +280,7 @@ $(EXEC_FILE) : \
     $(DPO)set_outflow.$(OBJ_EXT) \
     $(DPO)set_ps.$(OBJ_EXT) \
     $(DPO)set_ro_g.$(OBJ_EXT) \
+    $(DPO)set_ro_s.$(OBJ_EXT) \
     $(DPO)set_wall_bc.$(OBJ_EXT) \
     $(DPO)shift_dxyz.$(OBJ_EXT) \
     $(DPO)solve_continuity.$(OBJ_EXT) \
@@ -604,6 +606,7 @@ $(EXEC_FILE) : \
     $(DPO)drag_ss.$(OBJ_EXT) \
     $(DPO)energy_mod.$(OBJ_EXT) \
     $(DPO)eosg.$(OBJ_EXT) \
+    $(DPO)eoss.$(OBJ_EXT) \
     $(DPO)equal.$(OBJ_EXT) \
     $(DPO)error_routine.$(OBJ_EXT) \
     $(DPO)exchange.$(OBJ_EXT) \
@@ -723,6 +726,7 @@ $(EXEC_FILE) : \
     $(DPO)set_outflow.$(OBJ_EXT) \
     $(DPO)set_ps.$(OBJ_EXT) \
     $(DPO)set_ro_g.$(OBJ_EXT) \
+    $(DPO)set_ro_s.$(OBJ_EXT) \
     $(DPO)set_wall_bc.$(OBJ_EXT) \
     $(DPO)shift_dxyz.$(OBJ_EXT) \
     $(DPO)solve_continuity.$(OBJ_EXT) \
@@ -1294,9 +1298,9 @@ $(DPO)stiff_chem_dbg.mod : ./chem/stiff_chem_dbg_mod.f \
 $(DPO)stiff_chem_maps.mod : ./chem/stiff_chem_maps_mod.f \
             $(DPO)fldvar.mod \
             $(DPO)physprop.mod \
+            $(DPO)compar.mod \
             $(DPO)constant.mod \
-            $(DPO)param1.mod \
-            $(DPO)compar.mod 
+            $(DPO)param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/stiff_chem_maps_mod.f  -o $(DPO)stiff_chem_maps_mod.$(OBJ_EXT) -J$(DPO)
 $(DPO)stiff_chem.mod : ./chem/stiff_chem_mod.f \
             $(DPO)stiff_chem_maps.mod \
@@ -1309,8 +1313,8 @@ $(DPO)stiff_chem.mod : ./chem/stiff_chem_mod.f \
             $(DPO)rxns.mod \
             $(DPO)fldvar.mod \
             $(DPO)physprop.mod \
-            $(DPO)constant.mod \
             $(DPO)param1.mod \
+            $(DPO)constant.mod \
             $(DPO)compar.mod \
             $(DPO)sendrecv.mod \
             function.inc                                                 \
@@ -1724,27 +1728,15 @@ $(DPO)allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
 $(DPO)bc_phi.$(OBJ_EXT) : bc_phi.f \
             $(DPO)param.mod \
             $(DPO)param1.mod \
-            $(DPO)parallel.mod \
             $(DPO)matrix.mod \
-            $(DPO)scales.mod \
-            $(DPO)constant.mod \
-            $(DPO)toleranc.mod \
-            $(DPO)run.mod \
-            $(DPO)physprop.mod \
-            $(DPO)fldvar.mod \
-            $(DPO)visc_s.mod \
             $(DPO)geometry.mod \
-            $(DPO)output.mod \
             $(DPO)indices.mod \
             $(DPO)bc.mod \
             $(DPO)compar.mod \
             $(DPO)cutcell.mod \
-            $(DPO)quadric.mod \
-            ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
-            fun_avg2.inc                                                 \
-            ep_s2.inc                                                   
+            fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) bc_phi.f  -o $(DPO)bc_phi.$(OBJ_EXT) -J$(DPO)
 $(DPO)bc_theta.$(OBJ_EXT) : bc_theta.f \
             $(DPO)param.mod \
@@ -2175,20 +2167,9 @@ $(DPO)calc_u_friction.$(OBJ_EXT) : calc_u_friction.f \
             $(DPO)constant.mod \
             $(DPO)physprop.mod \
             $(DPO)fldvar.mod \
-            $(DPO)run.mod \
-            $(DPO)turb.mod \
-            $(DPO)visc_s.mod \
-            $(DPO)geometry.mod \
-            $(DPO)indices.mod \
             $(DPO)bc.mod \
-            $(DPO)compar.mod \
-            $(DPO)toleranc.mod \
-            $(DPO)mpi_utility.mod \
-            ep_s1.inc                                                    \
-            fun_avg1.inc                                                 \
-            function.inc                                                 \
-            fun_avg2.inc                                                 \
-            ep_s2.inc                                                   
+            $(DPO)run.mod \
+            $(DPO)mpi_utility.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) calc_u_friction.f  -o $(DPO)calc_u_friction.$(OBJ_EXT) -J$(DPO)
 $(DPO)calc_vol_fr.$(OBJ_EXT) : calc_vol_fr.f \
             $(DPO)param.mod \
@@ -2206,6 +2187,7 @@ $(DPO)calc_vol_fr.$(OBJ_EXT) : calc_vol_fr.f \
             $(DPO)sendrecv.mod \
             $(DPO)discretelement.mod \
             $(DPO)mpi_utility.mod \
+            $(DPO)fldvar.mod \
             ep_s1.inc                                                    \
             s_pr1.inc                                                    \
             function.inc                                                 \
@@ -2281,7 +2263,8 @@ $(DPO)check_data_01.$(OBJ_EXT) : check_data_01.f \
             $(DPO)indices.mod \
             $(DPO)scalars.mod \
             $(DPO)funits.mod \
-            $(DPO)rxns.mod 
+            $(DPO)rxns.mod \
+            $(DPO)cutcell.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) check_data_01.f  -o $(DPO)check_data_01.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_data_02.$(OBJ_EXT) : check_data_02.f \
             $(DPO)param.mod \
@@ -2972,6 +2955,13 @@ $(DPO)eosg.$(OBJ_EXT) : eosg.f \
             sc_p_g1.inc                                                  \
             sc_p_g2.inc                                                 
 	$(FORTRAN_CMD) $(FORT_FLAGS) eosg.f  -o $(DPO)eosg.$(OBJ_EXT) -J$(DPO)
+$(DPO)eoss.$(OBJ_EXT) : eoss.f \
+            $(DPO)param.mod \
+            $(DPO)param1.mod \
+            $(DPO)constant.mod \
+            $(DPO)physprop.mod \
+            $(DPO)scales.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) eoss.f  -o $(DPO)eoss.$(OBJ_EXT) -J$(DPO)
 $(DPO)equal.$(OBJ_EXT) : equal.f \
             $(DPO)param.mod \
             $(DPO)param1.mod \
@@ -3051,7 +3041,9 @@ $(DPO)get_data.$(OBJ_EXT) : get_data.f \
             $(DPO)parallel.mod \
             $(DPO)qmom_kinetic_equation.mod \
             $(DPO)mfix_pic.mod \
-            $(DPO)cutcell.mod 
+            $(DPO)cutcell.mod \
+            $(DPO)dashboard.mod \
+            $(DPO)output.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) get_data.f  -o $(DPO)get_data.$(OBJ_EXT) -J$(DPO)
 $(DPO)get_eq.$(OBJ_EXT) : get_eq.f \
             $(DPO)param.mod \
@@ -3165,17 +3157,10 @@ $(DPO)init_ab_m.$(OBJ_EXT) : init_ab_m.f \
             $(DPO)compar.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) init_ab_m.f  -o $(DPO)init_ab_m.$(OBJ_EXT) -J$(DPO)
 $(DPO)init_fvars.$(OBJ_EXT) : init_fvars.f \
-            $(DPO)param.mod \
-            $(DPO)param1.mod \
-            $(DPO)parallel.mod \
             $(DPO)fldvar.mod \
-            $(DPO)geometry.mod \
             $(DPO)physprop.mod \
-            $(DPO)indices.mod \
-            $(DPO)scalars.mod \
             $(DPO)rxns.mod \
-            $(DPO)run.mod \
-            $(DPO)compar.mod 
+            $(DPO)param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) init_fvars.f  -o $(DPO)init_fvars.$(OBJ_EXT) -J$(DPO)
 $(DPO)init_namelist.$(OBJ_EXT) : init_namelist.f \
             $(DPO)param.mod \
@@ -3632,7 +3617,10 @@ $(DPO)partial_elim.$(OBJ_EXT) : partial_elim.f \
             $(DPO)compar.mod \
             $(DPO)drag.mod \
             $(DPO)fldvar.mod \
-            function.inc                                                
+            $(DPO)run.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) partial_elim.f  -o $(DPO)partial_elim.$(OBJ_EXT) -J$(DPO)
 $(DPO)physical_prop.$(OBJ_EXT) : physical_prop.f \
             $(DPO)compar.mod \
@@ -3645,10 +3633,10 @@ $(DPO)physical_prop.$(OBJ_EXT) : physical_prop.f \
             $(DPO)coeff.mod \
             $(DPO)fldvar.mod \
             $(DPO)toleranc.mod \
-            $(DPO)cutcell.mod \
-            $(DPO)constant.mod \
             $(DPO)run.mod \
+            $(DPO)constant.mod \
             $(DPO)scalars.mod \
+            $(DPO)cutcell.mod \
             function.inc                                                 \
             ep_s1.inc                                                    \
             ep_s2.inc                                                   
@@ -3766,24 +3754,18 @@ $(DPO)reset_new.$(OBJ_EXT) : reset_new.f \
             $(DPO)scalars.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) reset_new.f  -o $(DPO)reset_new.$(OBJ_EXT) -J$(DPO)
 $(DPO)rrates0.$(OBJ_EXT) : rrates0.f \
-            $(DPO)param.mod \
-            $(DPO)param1.mod \
-            $(DPO)parallel.mod \
+            $(DPO)compar.mod \
+            $(DPO)indices.mod \
+            $(DPO)geometry.mod \
             $(DPO)fldvar.mod \
             $(DPO)rxns.mod \
             $(DPO)energy.mod \
-            $(DPO)geometry.mod \
+            $(DPO)param.mod \
             $(DPO)run.mod \
-            $(DPO)indices.mod \
             $(DPO)physprop.mod \
-            $(DPO)constant.mod \
-            $(DPO)funits.mod \
-            $(DPO)compar.mod \
-            $(DPO)sendrecv.mod \
-            $(DPO)parse.mod \
-            ep_s1.inc                                                    \
-            function.inc                                                 \
-            ep_s2.inc                                                   
+            $(DPO)discretelement.mod \
+            $(DPO)toleranc.mod \
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) rrates0.f  -o $(DPO)rrates0.$(OBJ_EXT) -J$(DPO)
 $(DPO)rrates.$(OBJ_EXT) : rrates.f \
             $(DPO)param.mod \
@@ -3799,8 +3781,7 @@ $(DPO)rrates.$(OBJ_EXT) : rrates.f \
             $(DPO)constant.mod \
             $(DPO)funits.mod \
             $(DPO)compar.mod \
-            $(DPO)sendrecv.mod \
-            function.inc                                                
+            $(DPO)sendrecv.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) rrates.f  -o $(DPO)rrates.$(OBJ_EXT) -J$(DPO)
 $(DPO)rrates_init.$(OBJ_EXT) : rrates_init.f \
             $(DPO)energy.mod \
@@ -4111,6 +4092,18 @@ $(DPO)set_ro_g.$(OBJ_EXT) : set_ro_g.f \
             $(DPO)compar.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) set_ro_g.f  -o $(DPO)set_ro_g.$(OBJ_EXT) -J$(DPO)
+$(DPO)set_ro_s.$(OBJ_EXT) : set_ro_s.f \
+            $(DPO)param.mod \
+            $(DPO)param1.mod \
+            $(DPO)parallel.mod \
+            $(DPO)physprop.mod \
+            $(DPO)geometry.mod \
+            $(DPO)fldvar.mod \
+            $(DPO)constant.mod \
+            $(DPO)indices.mod \
+            $(DPO)compar.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) set_ro_s.f  -o $(DPO)set_ro_s.$(OBJ_EXT) -J$(DPO)
 $(DPO)set_wall_bc.$(OBJ_EXT) : set_wall_bc.f \
             $(DPO)param.mod \
             $(DPO)param1.mod \
@@ -4386,8 +4379,8 @@ $(DPO)source_granular_energy.$(OBJ_EXT) : source_granular_energy.f \
             $(DPO)constant.mod \
             $(DPO)toleranc.mod \
             $(DPO)compar.mod \
-            $(DPO)residual.mod \
             $(DPO)kintheory.mod \
+            $(DPO)residual.mod \
             s_pr1.inc                                                    \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
@@ -4945,13 +4938,7 @@ $(DPO)usr2.$(OBJ_EXT) : usr2.f \
             $(DPO)usr.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr2.f  -o $(DPO)usr2.$(OBJ_EXT) -J$(DPO)
 $(DPO)usr3.$(OBJ_EXT) : usr3.f \
-            $(DPO)param.mod \
-            $(DPO)param1.mod \
-            $(DPO)fldvar.mod \
-            $(DPO)geometry.mod \
-            $(DPO)indices.mod \
-            $(DPO)usr.mod \
-            function.inc                                                
+            $(DPO)usr.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr3.f  -o $(DPO)usr3.$(OBJ_EXT) -J$(DPO)
 $(DPO)usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
             $(DPO)usr.mod 
@@ -5613,7 +5600,14 @@ $(DPO)check_data_cartesian.$(OBJ_EXT) : ./cartesian_grid/check_data_cartesian.f 
             $(DPO)vtk.mod \
             $(DPO)polygon.mod \
             $(DPO)dashboard.mod \
-            $(DPO)stl.mod 
+            $(DPO)stl.mod \
+            $(DPO)fldvar.mod \
+            $(DPO)scales.mod \
+            $(DPO)parallel.mod \
+            $(DPO)toleranc.mod \
+            $(DPO)geometry.mod \
+            $(DPO)sendrecv.mod \
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/check_data_cartesian.f  -o $(DPO)check_data_cartesian.$(OBJ_EXT) -J$(DPO)
 $(DPO)cut_cell_preprocessing.$(OBJ_EXT) : ./cartesian_grid/cut_cell_preprocessing.f \
             $(DPO)param.mod \
@@ -6719,7 +6713,12 @@ $(DPO)read_des_restart.$(OBJ_EXT) : ./des/read_des_restart.f \
             $(DPO)desmpi.mod \
             $(DPO)machine.mod \
             $(DPO)cdist.mod \
-            $(DPO)mpi_utility.mod 
+            $(DPO)mpi_utility.mod \
+            $(DPO)constant.mod \
+            $(DPO)funits.mod \
+            $(DPO)geometry.mod \
+            $(DPO)indices.mod \
+            $(DPO)physprop.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/read_des_restart.f  -o $(DPO)read_des_restart.$(OBJ_EXT) -J$(DPO)
 $(DPO)solid_drag.$(OBJ_EXT) : ./des/solid_drag.f \
             $(DPO)param.mod \

@@ -64,6 +64,13 @@
       INTEGER :: BCV
       INTEGER :: I, J ,K, IJK
       INTEGER :: M, N
+
+! Solids phase density in BC region.
+      DOUBLE PRECISION :: BC_ROs
+! Index of inert species
+      INTEGER :: INERT
+
+
 ! valid boundary condition types
       CHARACTER*16, DIMENSION(1:DIM_BCTYPE) ::VALID_BC_TYPE = (/&
            'MASS_INFLOW     ', 'MI              ',&
@@ -108,7 +115,6 @@
          IF (BC_K_B(BCV) /= UNDEFINED_I) BC_DEFINED(BCV) = .TRUE. 
          IF (BC_K_T(BCV) /= UNDEFINED_I) BC_DEFINED(BCV) = .TRUE. 
          IF (BC_TYPE(BCV) == 'DUMMY') BC_DEFINED(BCV) = .FALSE. 
-! JFD: MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
          IF (BC_TYPE(BCV) == 'CG_NSW') BC_DEFINED(BCV) = .TRUE. 
          IF (BC_TYPE(BCV) == 'CG_FSW') BC_DEFINED(BCV) = .TRUE. 
          IF (BC_TYPE(BCV) == 'CG_PSW') BC_DEFINED(BCV) = .TRUE. 
@@ -132,6 +138,7 @@
             ENDIF
          ENDIF
 
+! Validate the BC postion for all non cut-cell boundaries:
          IF (BC_DEFINED(BCV).AND.BC_TYPE(BCV)(1:2)/='CG') THEN 
 
             IF (BC_X_W(BCV)==UNDEFINED .AND. BC_I_W(BCV)==UNDEFINED_I) THEN 
@@ -265,9 +272,39 @@
                   ENDIF 
                ENDIF 
 
+! Verify that species mass fractions are defined for mass flow BCs whe
+! using variable solids density. Needed to calculation RO_s
+               DO M = 1, SMAX
+                  IF(SOLVE_ROs(M)) THEN
+                     IF (BC_MASSFLOW_S(BCV,M) /= UNDEFINED .OR.        &
+                         BC_VOLFLOW_S(BCV,M)  /= UNDEFINED) THEN
+! Sum together those species mass fractions that are defined.
+                        SUM = ZERO 
+                        DO N = 1, NMAX(M) 
+                           IF(BC_X_S(BCV,M,N) /= UNDEFINED) &
+                              SUM = SUM + BC_X_S(BCV,M,N)
+                        ENDDO 
+! Set any undefined species mass fractions to zero.
+                        DO N = 1, NMAX(M)
+                           IF (BC_X_S(BCV,M,N) == UNDEFINED) THEN
+! Only warn the user of this action when the sum does not equal one.
+                              IF (.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)&
+                                 WRITE (UNIT_LOG, 1110) BCV, M, N
+                              BC_X_S(BCV,M,N) = ZERO 
+                           ENDIF 
+                        ENDDO
+! Exit if sum of the  species mass fraction not one.
+                        IF (.NOT.COMPARE(ONE,SUM)) THEN 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1120) BCV 
+                           CALL MFIX_EXIT(myPE)
+                        ENDIF
+                     ENDIF   ! solids mass or vol flow
+                  ENDIF   ! variable solids density
+               ENDDO   ! M=1,MMAX
             ENDIF   ! end if (bc_type(bcv)=='mass_inflow')
          ENDIF   ! end if (bc_defined(bcv))
-      ENDDO      ! end loop over (bcv=1,dimension_bc)
+      ENDDO   ! end loop over (bcv=1,dimension_bc)
+
 
 ! Convert mass and volumetric flows to velocities 
       CALL FLOW_TO_VEL(.TRUE.) 
@@ -369,65 +406,109 @@
 
 ! DEM simulations do not employ variables for continuum solids. So do
 ! not perform checks on unnecessary data.
-! However, MPPIC initilization and BC's are based on continuum only, So do
+! However, MPPIC initilization and BC's are based on continuum only, So
 ! perform these checks 
-               IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID.OR.MPPIC) THEN
+               IF(.NOT.DISCRETE_ELEMENT .OR.                           &
+                  DES_CONTINUUM_HYBRID  .OR. MPPIC) THEN
 
 ! at this point bc_ep_g must be defined
                   SUM_EP = BC_EP_G(BCV) 
-                  DO M = 1, SMAX 
+                  DO M = 1, SMAX
+
 ! the following check on bc_rop_s is redundant with code in flow_to_vel,
 ! except that the latter has no calls for MFIX to exit
                      IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
                         IF (BC_EP_G(BCV) == ONE) THEN 
                            BC_ROP_S(BCV,M) = ZERO 
-                        ELSEIF (SMAX == 1 .AND. &
-                                .NOT.DES_CONTINUUM_HYBRID) THEN 
-! bulk density must be explicitly defined for hybrid model and cannot be
-! defined from 1-bc_ep_g
-                           BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S0(M)
-                        ELSE
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
+                        ELSEIF (SMAX > 1 .OR. DES_CONTINUUM_HYBRID) THEN 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100)           &
                               'BC_ROP_s', BCV, M 
                            call mfix_exit(myPE)
                         ENDIF
                      ENDIF
-! at this point bc_rop_s must be defined
-! sum of void fraction and solids volume fractions
-                     SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S0(M) 
 
-                     IF (SPECIES_EQ(M)) THEN 
-! if solids phase M species equations are solved, check sum of the
-! solids phase M species mass fractions
-                        SUM = ZERO 
-                        DO N = 1, NMAX(M) 
-! sum together those solids phase M species mass fractions that are
-! defined
-                           IF(BC_X_S(BCV,M,N)/=UNDEFINED) &
-                              SUM=SUM+BC_X_S(BCV,M,N) 
-                        ENDDO 
-! if no solids phase M present and no solids M species are defined then
-! set the mass fraction of solids phase M species 1 to one
-                        IF (BC_ROP_S(BCV,M)==ZERO .AND. SUM==ZERO) THEN 
-                            BC_X_S(BCV,M,1) = ONE 
-                            SUM = ONE 
-                        ENDIF 
-! set any undefined species mass fractions to zero. Warn the user if 
-! the sum of species mass fractions is not one and indicate which 
+! Verify that species mass fractions have been specified.
+                     SUM = ZERO
+                     DO N = 1, NMAX(M)
+! Sum together solids phase M species mass fractions that are defined.
+                        IF(BC_X_S(BCV,M,N)/=UNDEFINED) &
+                           SUM=SUM+BC_X_S(BCV,M,N) 
+                     ENDDO
+! If no solids phase M present and no species are defined for phase M 
+! then set mass fraction of solids phase M species 1 to one
+                     IF (SUM==ZERO .AND. BC_ROP_S(BCV,M)==ZERO) THEN 
+                        BC_X_S(BCV,M,:) = ZERO
+                        BC_X_S(BCV,M,1) = ONE 
+                        SUM = ONE 
+                     ENDIF
+
+! Set the default if needed.
+                     IF(NMAX(M)==1 .AND. BC_X_S(BCV,M,1)==UNDEFINED)THEN
+                        BC_X_S(BCV,M,:) = ZERO
+                        BC_X_S(BCV,M,1) = ONE
+                        SUM = ONE
+! Set any undefined species mass fractions to zero. Warn the user if 
+! the sum of species mass fractions is not one and indicate which
 ! species is undefined (mfix will exit in next check). 
-                        DO N = 1, NMAX(M) 
+                     ELSE
+                        DO N = 1, NMAX(M)
                            IF (BC_X_S(BCV,M,N) == UNDEFINED) THEN 
-                              IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG) &
-                                 WRITE (UNIT_LOG,1110)BCV,M,N 
+                              IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)  &
+                                 WRITE (UNIT_LOG, 1110)BCV, M, N 
                               BC_X_S(BCV,M,N) = ZERO 
-                           ENDIF 
-                        ENDDO 
-! if sum of solids phase M species mass fraction not 1...
-                        IF (.NOT.COMPARE(ONE,SUM)) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1120) BCV, M 
-                           call mfix_exit(myPE)
-                        ENDIF 
-                     ENDIF  ! end if (species_eq(m)) 
+                           ENDIF
+                        ENDDO
+                     ENDIF
+! Verify that the sum of the mass fractions sum to one. Otherwise, exit.
+                     IF(.NOT.COMPARE(ONE,SUM)) THEN 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1120) BCV, M 
+                        CALL MFIX_EXIT(myPE)
+                     ENDIF 
+
+! Calculate the solid density.
+                     BC_ROs = UNDEFINED
+                     IF(SOLVE_ROs(M))THEN
+                        INERT = INERT_SPECIES(M)
+! Verify that the species mass fraction for the inert material is not
+! zero in the BC region when the solids is present.
+                        IF(BC_X_S(BCV,M,INERT) == ZERO) THEN
+                           IF(BC_ROP_S(BCV,M) /= ZERO) THEN
+                              IF(DMP_LOG) THEN
+                                 WRITE(*,1400) M, BCV
+                                 WRITE(UNIT_LOG,1400) M, BCV
+                              ENDIF
+                              CALL MFIX_EXIT(myPE)
+                           ELSE
+! If the solids isn't present, give it the baseline density.
+                              BC_ROs = RO_S0(M)
+                           ENDIF
+                        ELSE
+! Calculate the solids density.
+                           BC_ROs = RO_S0(M) * X_s0(M,INERT) / &
+                              BC_X_S(BCV,M,INERT)
+                        ENDIF
+                     ELSE
+                        BC_ROs = RO_S0(M)
+                     ENDIF
+
+! Sanity check on solids phase density.
+                     IF(BC_ROs <= ZERO .OR. BC_ROs==UNDEFINED) THEN
+                        IF(DMP_LOG)THEN
+                           WRITE(*,1500) M, BCV
+                           WRITE(UNIT_LOG,1500) M, BCV
+                        ENDIF
+                        CALL MFIX_EXIT(myPE)
+                     ENDIF
+
+! BC_ROP_S may still be undefined if there is only one solids phase
+! and the hybrid model is not in use. Back out the bulk density with
+! the assigned solids density.
+                     IF(BC_ROP_S(BCV,M) == UNDEFINED)                  &
+                        BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*BC_ROs
+
+! sum of void fraction and solids volume fractions
+                     SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/BC_ROs
+
 
                      IF (ENERGY_EQ .AND. BC_T_S(BCV,M)==UNDEFINED) THEN 
                         IF (BC_ROP_S(BCV,M) == ZERO) THEN 
@@ -786,25 +867,97 @@
 ! at this point bc_ep_g must be defined
                   SUM_EP = BC_EP_G(BCV) 
                   DO M = 1, SMAX 
+
+! the following check on bc_rop_s is redundant with code in flow_to_vel,
+! except that the latter has no calls for MFIX to exit
                      IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
                         IF (BC_EP_G(BCV) == ONE) THEN 
                            BC_ROP_S(BCV,M) = ZERO 
-                        ELSEIF (SMAX == 1 .AND. &
-                                .NOT.DES_CONTINUUM_HYBRID) THEN 
-! bulk density must be explicitly defined for hybrid model and cannot be
-! defined from 1-bc_ep_g                           
-                           BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S0(M)
-                        ELSE
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
+                        ELSEIF (SMAX > 1 .OR. DES_CONTINUUM_HYBRID) THEN 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100)           &
                               'BC_ROP_s', BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF                                 
+                           call mfix_exit(myPE)
+                        ENDIF
                      ENDIF
+
+! Verify that species mass fractions have been specified.
+                     SUM = ZERO
+                     DO N = 1, NMAX(M)
+! Sum together solids phase M species mass fractions that are defined.
+                        IF(BC_X_S(BCV,M,N)/=UNDEFINED) &
+                           SUM=SUM+BC_X_S(BCV,M,N) 
+                     ENDDO
+! If no solids phase M present and no species are defined for phase M 
+! then set mass fraction of solids phase M species 1 to one
+                     IF (SUM==ZERO .AND. BC_ROP_S(BCV,M)==ZERO) THEN 
+                        BC_X_S(BCV,M,:) = ZERO
+                        BC_X_S(BCV,M,1) = ONE 
+                        SUM = ONE 
+                     ENDIF
+
+! Set the default if needed.
+                     IF(NMAX(M)==1 .AND. BC_X_S(BCV,M,1)==UNDEFINED)THEN
+                        BC_X_S(BCV,M,:) = ZERO
+                        BC_X_S(BCV,M,1) = ONE
+                        SUM = ONE
+! Set any undefined species mass fractions to zero. Warn the user if 
+! the sum of species mass fractions is not one and indicate which
+! species is undefined (mfix will exit in next check). 
+                     ELSE
+                        DO N = 1, NMAX(M)
+                           IF (BC_X_S(BCV,M,N) == UNDEFINED) THEN 
+                              IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)  &
+                                 WRITE (UNIT_LOG, 1110)BCV, M, N 
+                              BC_X_S(BCV,M,N) = ZERO 
+                           ENDIF
+                        ENDDO
+                     ENDIF
+! Verify that the sum of the mass fractions sum to one. Otherwise, exit.
+                     IF(.NOT.COMPARE(ONE,SUM)) THEN 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1120) BCV, M 
+                        CALL MFIX_EXIT(myPE)
+                     ENDIF 
+
+! Calculate the solid density.
+                     BC_ROs = UNDEFINED
+                     IF(SOLVE_ROs(M))THEN
+                        INERT = INERT_SPECIES(M)
+! Verify that the species mass fraction for the inert material is not
+! zero in the BC region when the solids is present.
+                        IF(BC_X_S(BCV,M,INERT) == ZERO) THEN
+                           IF(BC_ROP_S(BCV,M) /= ZERO) THEN
+                              IF(DMP_LOG) THEN
+                                 WRITE(*,1400) M, BCV
+                                 WRITE(UNIT_LOG,1400) M, BCV
+                              ENDIF
+                              CALL MFIX_EXIT(myPE)
+                           ELSE
+! If the solids isn't present, give it the baseline density.
+                              BC_ROs = RO_S0(M)
+                           ENDIF
+                        ELSE
+! Calculate the solids density.
+                           BC_ROs = RO_S0(M) * X_s0(M,INERT) / &
+                              BC_X_S(BCV,M,INERT)
+                        ENDIF
+                     ELSE
+                        BC_ROs = RO_S0(M)
+                     ENDIF
+
+! Sanity check on solids phase density.
+                     IF(BC_ROs <= ZERO .OR. BC_ROs==UNDEFINED) THEN
+                        IF(DMP_LOG)THEN
+                           WRITE(*,1500) M, BCV
+                           WRITE(UNIT_LOG,1500) M, BCV
+                        ENDIF
+                        CALL MFIX_EXIT(myPE)
+                     ENDIF
+
 ! at this point bc_rop_s must be defined
 ! sum of void fraction and solids volume fractions
-                     SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S0(M)
+                     SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/BC_ROs
 
-                     IF (ENERGY_EQ .AND. BC_T_S(BCV,M)==UNDEFINED) THEN 
+                     IF (ENERGY_EQ .AND. BC_T_S(BCV,M)==UNDEFINED) THEN
                         IF (BC_ROP_S(BCV,M) == ZERO) THEN 
                            BC_T_S(BCV,M) = BC_T_G(BCV) 
                         ELSE 
@@ -814,38 +967,6 @@
                         ENDIF 
                      ENDIF 
 
-                     IF (SPECIES_EQ(M)) THEN 
-! if solids phase M species equations are solved, check sum of the
-! solids phase M species mass fractions
-                        SUM = ZERO 
-                        DO N = 1, NMAX(M) 
-! sum together those solids phase M species mass fractions that are
-! defined
-                           IF(BC_X_S(BCV,M,N)/=UNDEFINED) &
-                              SUM=SUM+BC_X_S(BCV,M,N) 
-                        ENDDO 
-! if no solids phase M present and no solids phase M species are defined 
-! then set the mass fraction of solids phase M species 1 to one
-                        IF (BC_ROP_S(BCV,M)==ZERO .AND. SUM==ZERO) THEN 
-                            BC_X_S(BCV,M,1) = ONE 
-                            SUM = ONE 
-                        ENDIF 
-! set any undefined species mass fractions to zero. Warn the user if 
-! the sum of species mass fractions is not one and indicate which 
-! species is undefined (mfix will exit in next check).
-                        DO N = 1, NMAX(M) 
-                           IF (BC_X_S(BCV,M,N) == UNDEFINED) THEN 
-                              IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG) &
-                                 WRITE (UNIT_LOG,1110)BCV,M,N 
-                              BC_X_S(BCV,M,N) = ZERO 
-                           ENDIF 
-                        ENDDO 
-! if sum of solids phase M species mass fraction not 1...
-                        IF (.NOT.COMPARE(ONE,SUM)) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1120) BCV, M 
-                           call mfix_exit(myPE)
-                        ENDIF 
-                     ENDIF  ! end if (species_eq(m)) 
 
                   ENDDO   ! end loop over (m=1,smax)
 
@@ -1412,6 +1533,12 @@
          '    I       J       K') 
  1410 FORMAT(I5,3X,I5,3X,I5) 
  1420 FORMAT(/1X,70('*')/) 
+
+ 1500 FORMAT(//1X,70('*')/' From: CHECK_DATA_07',/,' Error 1500:'      &
+         ' Solids phase ',I2,' failed sanity check in IC region ',I3,  &
+         '. ',/' Please check mfix.dat file.',/1X,70('*')//)
+
+
       END SUBROUTINE CHECK_DATA_07 
 
 

@@ -273,11 +273,11 @@
                IF(EEQ_CPS  .OR. SEQ_MWs) THEN
 ! Notify the user of the reason the thermochemical database is used.
                   IF(.NOT.WARNED_USR) THEN
-                     IF(EEQ_CPS .AND. myPE .EQ. PE_IO) THEN
+                     IF(EEQ_CPS .AND. DMP_LOG) THEN
                         WRITE(*,1058)
                         WRITE(UNIT_LOG,1058)
                      ENDIF
-                     IF(SEQ_MWs .AND. myPE .EQ. PE_IO) THEN
+                     IF(SEQ_MWs .AND. DMP_LOG) THEN
                         WRITE(*,1059)LC
                         WRITE(UNIT_LOG,1059)LC
                      ENDIF
@@ -287,14 +287,14 @@
                   ENDIF
 ! Flag that the species name is not provided.
                   IF(SPECIES_s(LC,N) == UNDEFINED_C) THEN
-                     IF(myPE .EQ. PE_IO) THEN
+                     IF(DMP_LOG) THEN
                         WRITE(*,1060) LC, N
                         WRITE(UNIT_LOG,1060) LC, N
                      ENDIF
                      CALL MFIX_EXIT(myPE)
                   ENDIF
 ! Read the database.
-                  IF(myPE .EQ. PE_IO) THEN
+                  IF(DMP_LOG) THEN
                      IF(.NOT.thermoHeader) THEN
                         WRITE(*,1061) LC
                         WRITE(UNIT_LOG,1061) LC
@@ -329,145 +329,279 @@
          ENDDO 
       ENDDO ! Loop over solids phases
 
-
 ! Check RO_s/0
-!--------------------------------------------------------------------------> JMusser.0 Start
-! Determine if the simulation has constant or variable soilds density.
-
-
-! Only need to check for real phases (for GHD theory):
       DO LC = 1, SMAX
-! Check if the constant solids phase density is physical. This check
-! is superfluous for variable solids density.
-         IF(RO_S0(LC) < ZERO) THEN
-            IF(DMP_LOG) THEN
-               WRITE(*,1300) LC;  WRITE(*,9999)
-               WRITE(UNIT_LOG,1300) LC;  WRITE(UNIT_LOG,9999)
-            ENDIF
-            CALL MFIX_EXIT(myPE)
-
-! Check that there is sufficient information to calculate a variable
-! solids density. The first round of checks only determine that a user
-! has specified the input. Checks on the input values follows.
-         ELSEIF(RO_S0(LC) == UNDEFINED) THEN
-! Initialize the error flag.
-            PASSED = .TRUE.
-! Verify that the number of solids phase species is defined.
-            IF(NMAX(LC) == UNDEFINED_I) THEN
-               PASSED = .FALSE.
-! Verify that an inert species is identified.
-            ELSEIF(INERT_SPECIES(LC) == UNDEFINED_I) THEN
-               PASSED = .FALSE.
-            ELSE
-               DO N=1, NMAX(LC)
-! Verify baseline solids phase species mass fractions.
-                  IF(RO_Xs0(LC,N) == UNDEFINED) PASSED = .FALSE.
-! Verify constant solids phase species densities.
-                  IF(X_S0(LC,N)  == UNDEFINED) PASSED = .FALSE.
-               ENDDO
-            ENDIF
-! If the values passed the above checks, then the values need to be
-! checked for validity.
-            IF(PASSED) THEN
-               FAILED = .FALSE.
-! Verify that the inert species index is in range.
-               IF(INERT_SPECIES(LC) < 1 .OR.                           &
-                  INERT_SPECIES(LC) > NMAX(LC)) THEN
-                  WRITE(*,1302) LC, INERT_SPECIES(LC)
-                  WRITE(*,9999)
-                  WRITE(UNIT_LOG,1302) LC, INERT_SPECIES(LC)
-                  WRITE(UNIT_LOG,9999)
-               ENDIF
-! Verify that RO_Xs0 and X_S0 are physical.
-               DO N=1, NMAX(LC)
-                  IF(RO_Xs0(LC,N) < ZERO) FAILED = .TRUE.
-                  IF(X_S0(LC,N) < ZERO) FAILED = .TRUE.
-               ENDDO
-! Flag errors.
-               IF(FAILED) THEN
-                  IF(DMP_LOG) THEN
-                     WRITE(*,1303) LC
-                     WRITE(UNIT_LOG,1303) LC
-                     DO N=1, NMAX(LC)
-                        IF(RO_Xs0(LC,N) < ZERO) THEN
-                           WRITE(*,1304)'RO_Xs0',LC,N,RO_Xs0(LC,N)
-                           WRITE(UNIT_LOG,1304)'RO_Xs0',LC,N,RO_Xs0(LC,N)
-                        ENDIF
-                        IF(X_S0(LC,N)  < ZERO) THEN
-                           WRITE(*,1304)'X_S0',LC,N,RO_Xs0(LC,N)
-                           WRITE(UNIT_LOG,1304)'X_S0',LC,N,RO_Xs0(LC,N)
-                        ENDIF
-                     ENDDO
-                     WRITE(*,9999)
-                     WRITE(UNIT_LOG,9999)
-                  ENDIF
-                  CALL MFIX_EXIT(myPE)
-               ENDIF
-! All of the information for variable solids density has been verified
-! as of this point. Calculate and store the baseline density.
-               RO_S0(LC) = sum(X_S0(LC,:NMAX(LC))/RO_Xs0(LC,:NMAX(LC)))
-               IF(RO_S0(LC) > ZERO) THEN
-                  RO_S0(LC) = ONE/RO_S0(LC)
-               ELSE
-! This should never happen. The above checks should prevent this.
-! However, this check is preformed for completeness.
-                  IF(DMP_LOG) THEN
-                     WRITE(*,1305) LC;  WRITE(*,9999)
-                     WRITE(UNIT_LOG,1305) LC;  WRITE(UNIT_LOG,9999)
-                  ENDIF
-                  CALL MFIX_EXIT(myPE)
-               ENDIF
-            ELSE
-! Flag the error and exit.
+! Check if the constant solids phase density is physical.
+         IF(RO_S0(LC) /= UNDEFINED) THEN
+            SOLVE_ROs(LC) = .FALSE.
+! Check if the constant solids phase density is physical.
+            IF(RO_S0(LC) <= ZERO) THEN
                IF(DMP_LOG) THEN
                   WRITE(*,1301) LC;  WRITE(*,9999)
                   WRITE(UNIT_LOG,1301) LC;  WRITE(UNIT_LOG,9999)
                ENDIF
                CALL MFIX_EXIT(myPE)
             ENDIF
-! Constant solids density.
+! Ensure that no variable solids density is given.
+            FAILED = .FALSE.
+            WARNED_USR = .FALSE.
+            IF (INERT_SPECIES(LC) /= UNDEFINED_I) THEN
+               IF(DMP_LOG) THEN
+                  IF(.NOT.WARNED_USR) THEN
+                     WRITE(*,1302) LC, LC, RO_S0(LC)
+                     WRITE(UNIT_LOG,1302) LC, LC, RO_S0(LC)
+                     WARNED_USR = .TRUE.
+                  ENDIF
+                  WRITE(*,1303) 'INERT_SPECIES',LC,INERT_SPECIES(LC)
+                  WRITE(UNIT_LOG,1303) 'INERT_SPECIES', LC,            &
+                     INERT_SPECIES(LC)
+               ENDIF
+               FAILED = .TRUE.
+            ENDIF
+            DO N=1, DIM_N_s
+               IF(RO_Xs0(LC,N) /= UNDEFINED .AND.                      &
+                  RO_Xs0(LC,N) /=ZERO) THEN
+                  IF(DMP_LOG) THEN
+                     IF(.NOT.WARNED_USR) THEN
+                        WRITE(*,1302) LC, LC, RO_S0(LC)
+                        WRITE(UNIT_LOG,1303) LC, LC, RO_S0(LC)
+                        WARNED_USR = .TRUE.
+                     ENDIF
+                     WRITE(*,1304) 'RO_XS0',LC,N, RO_XS0(LC,N)
+                     WRITE(UNIT_LOG,1304) 'RO_XS0',LC,N, RO_XS0(LC,N)
+                  ENDIF
+                  FAILED = .TRUE.
+               ENDIF
+               IF(X_S0(LC,N) /= UNDEFINED .AND. X_S0(LC,N) /= ZERO) THEN
+                  IF(DMP_LOG) THEN
+                     IF(.NOT.WARNED_USR) THEN
+                        WRITE(*,1302) LC, LC, RO_S0(LC)
+                        WRITE(UNIT_LOG,1302) LC, LC, RO_S0(LC)
+                        WARNED_USR = .TRUE.
+                     ENDIF
+                     WRITE(*,1304) 'X_S0',LC,N, X_S0(LC,N)
+                     WRITE(UNIT_LOG,1304) 'X_S0',LC, N, X_S0(LC,N)
+                  ENDIF
+                  FAILED = .TRUE.
+               ENDIF
+            ENDDO
+            IF(FAILED)THEN
+               IF(DMP_LOG) THEN
+                  WRITE(*,9999)
+                  WRITE(UNIT_LOG,9999)
+               ENDIF
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+
+! Check if any variable density parameters are provided.
          ELSE
+            IF(INERT_SPECIES(LC) /= UNDEFINED_I) SOLVE_ROs(LC) = .TRUE.
+            DO N=1, DIM_N_s
+               IF(RO_Xs0(LC,N) /= UNDEFINED) SOLVE_ROs(LC) = .TRUE.
+               IF(X_S0(LC,N) /= UNDEFINED) SOLVE_ROs(LC) = .TRUE.
+            ENDDO
+         ENDIF
 
-         ENDIF 
+! No solids density was provided.
+         IF(RO_S0(LC) == UNDEFINED .AND. .NOT.SOLVE_ROs(LC)) THEN
+            IF(DMP_LOG) THEN
+               WRITE(*,1301) LC; WRITE(*,9999)
+               WRITE(UNIT_LOG,1301) LC; WRITE(UNIT_LOG,9999)
+            ENDIF
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+! Check that there is sufficient information to calculate a variable
+! solids density. The first round of checks only determine that a user
+! has specified an input value. Checks on the values follows.
+! Initialize the error flag.
+         IF(SOLVE_ROs(LC)) THEN
+            FAILED = .FALSE.
+            WARNED_USR = .FALSE.
+! Verify that the inert species index is defined and in range.
+            IF(INERT_SPECIES(LC) == UNDEFINED_I) THEN
+               IF(DMP_LOG) THEN
+                  IF(.NOT.WARNED_USR) THEN
+                     WRITE(*,1305)
+                     WRITE(UNIT_LOG,1305)
+                     WARNED_USR = .TRUE.
+                  ENDIF
+                  WRITE(*,1306) LC, NMAX(LC)
+                  WRITE(UNIT_LOG,1306) LC, NMAX(LC)
+               ENDIF
+               FAILED = .TRUE.
+            ELSEIF(INERT_SPECIES(LC) < 1 .OR.                          &
+               INERT_SPECIES(LC) > NMAX(LC)) THEN
+               IF(DMP_LOG) THEN
+                  IF(.NOT.WARNED_USR) THEN
+                     WRITE(*,1305)
+                     WRITE(UNIT_LOG,1305)
+                     WARNED_USR = .TRUE.
+                  ENDIF
+                  WRITE(*,1307) LC, NMAX(LC)
+                  WRITE(UNIT_LOG,1307) LC, NMAX(LC)
+               ENDIF
+               FAILED = .TRUE.
+            ENDIF
+            DO N=1, NMAX(LC)
+               IF(RO_Xs0(LC,N) == UNDEFINED) THEN
+                  IF(DMP_LOG) THEN
+                     IF(.NOT.WARNED_USR) THEN
+                        WRITE(*,1305)
+                        WRITE(UNIT_LOG,1305)
+                        WARNED_USR = .TRUE.
+                     ENDIF
+                     WRITE(*,1308)'RO_Xs0',LC, N
+                     WRITE(UNIT_LOG,1308)'RO_Xs0',LC, N
+                  ENDIF
+                  FAILED = .TRUE.
+               ELSEIF(RO_Xs0(LC,N) < ZERO) THEN
+                  IF(DMP_LOG) THEN
+                     IF(.NOT.WARNED_USR) THEN
+                        WRITE(*,1305)
+                        WRITE(UNIT_LOG,1305)
+                        WARNED_USR = .TRUE.
+                     ENDIF
+                     WRITE(*,1309)'RO_Xs0', LC, N, RO_Xs0(LC,N)
+                     WRITE(UNIT_LOG,1309)'RO_Xs0', LC, N, RO_Xs0(LC,N)
+                  ENDIF
+                  FAILED = .TRUE.
+               ENDIF
+
+               IF(X_s0(LC,N) == UNDEFINED) THEN
+                  IF(DMP_LOG) THEN
+                     IF(.NOT.WARNED_USR) THEN
+                        WRITE(*,1305)
+                        WRITE(UNIT_LOG,1305)
+                        WARNED_USR = .TRUE.
+                     ENDIF
+                     WRITE(*,1308)'X_s0',LC, N
+                     WRITE(UNIT_LOG,1308)'X_s0',LC, N
+                  ENDIF
+                  FAILED = .TRUE.
+               ELSEIF(X_s0(LC,N) < ZERO .OR. X_s0(LC,N) >= ONE) THEN
+                  IF(DMP_LOG) THEN
+                     IF(.NOT.WARNED_USR) THEN
+                        WRITE(*,1305)
+                        WRITE(UNIT_LOG,1305)
+                        WARNED_USR = .TRUE.
+                     ENDIF
+                     WRITE(*,1309)'X_s0', LC, N, X_s0(LC,N)
+                     WRITE(UNIT_LOG,1309)'X_s0', LC, N, X_s0(LC,N)
+                  ENDIF
+                  FAILED = .TRUE.
+               ENDIF
+            ENDDO
+            IF(FAILED) THEN
+               IF(DMP_LOG) THEN
+                  WRITE(*,9999)
+                  WRITE(UNIT_LOG,9999)
+               ENDIF
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+
+! Verify that the inert species mass fraction is non-zero.
+            IF(X_s0(LC,INERT_SPECIES(LC)) == ZERO) THEN
+               IF(DMP_LOG) THEN
+                  WRITE(*,1310) LC, INERT_SPECIES(LC)
+                  WRITE(UNIT_LOG,1310) LC, INERT_SPECIES(LC)
+                  WRITE(*,9999)
+                  WRITE(UNIT_LOG,9999)
+               ENDIF
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+
+! All of the information for variable solids density has been verified
+! as of this point. Calculate and store the baseline density.
+            RO_S0(LC) = sum(X_S0(LC,:NMAX(LC))/RO_Xs0(LC,:NMAX(LC)))
+            IF(RO_S0(LC) > ZERO) THEN
+               RO_S0(LC) = ONE/RO_S0(LC)
+            ELSE
+! This is an extra sanity check that should be caught be one ore more
+! of the proceeding data checks.
+               IF(abs(RO_S0(LC)) <= SMALL_NUMBER) THEN
+                  LONG_STRING = ''; WRITE(LONG_STRING,"('Infinity')")
+               ELSE
+                  LONG_STRING = ''; WRITE(LONG_STRING,*) ONE/RO_S0(LC)
+               ENDIF
+               IF(DMP_LOG) THEN
+                  WRITE(*,1311) LC, trim(LONG_STRING)
+                  WRITE(UNIT_LOG,1311), trim(LONG_STRING)
+                  WRITE(*,9999)
+                  WRITE(UNIT_LOG,9999)
+               ENDIF
+               CALL MFIX_EXIT(myPE)
+            ENDIF
 
 
- 1300 FORMAT(//1X,70('*')/' From: CHECK_DATA_04',/,' Error 1300:'      &
-         ' Unphysical solids density (RO_s0) for phase ',I2,'.')
-
- 1301 FORMAT(//1X,70('*')/' From: CHECK_DATA_04',/,' Error 1301:'      &
-         ' Insufficient solids density information for phase ',I2,'.',/&
-         '   > Constant solids density (RO_s0) is not specified.',/    &
-         '   > Insufficient input for variable solids density.',2/,    &
-         '   Requirements for variable solids density:',/              &
-         '   * Number of solids phase species: NMAX_s',/               &
-         '   * Index of inert solids phase species: INERT_SPECIES',/   &
-         '   * Baseline solids composition: X_s0',/                    &
-         '   * Baseline constant solids phase species densities: RO_Xs0')
-
- 1302 FORMAT(//1X,70('*')/' From: CHECK_DATA_04',/,' Error 1302:'      &
-         ' Invalid index for inert species for phase ',I2,'.',/        &
-         '  * INERT_SPECIES(,'I2,') = ',I4)
-
- 1303 FORMAT(//1X,70('*')/' From: CHECK_DATA_04',/,' Error 1303:'      &
-         ' One or more invalid species values for phase ',I2,'.')
-
- 1304 FORMAT(2x,'* ',A,'(',I2,',',I3,') = ',F8.4)
-
- 1305 FORMAT(//1X,70('*')/' From: CHECK_DATA_04',/,' Error 1305:'      &
-         ' Fatal RO_s0 calculation for solids phase ',I2,'.',/)
-
-
-      ENDDO 
+         ENDIF ! SOLVE_RO_s
+      ENDDO
+! Ensure no values are given for undefined solids phases.
+      FAILED = .FALSE.
+      WARNED_USR = .FALSE.
       DO LC = SMAX + 1, DIM_M
-         IF (RO_S0(LC) /= UNDEFINED) THEN 
-            CALL ERROR_ROUTINE ('check_data_04', &
-               'too many RO_s0 values specified', 0, 2) 
-               IF(DMP_LOG)WRITE (UNIT_LOG, 1400) LC, RO_S0(LC), MMAX 
-            CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
-         ENDIF 
+         IF (RO_S0(LC) /= UNDEFINED) THEN
+            IF(DMP_LOG) THEN
+               IF(.NOT.WARNED_USR) THEN
+                  WRITE(*,1312) SMAX
+                  WRITE(UNIT_LOG,1312) SMAX
+                  WARNED_USR = .TRUE.
+               ENDIF
+               WRITE(*,1313) LC, RO_S0(LC)
+               WRITE(UNIT_LOG,1313) LC, RO_S0(LC)
+            ENDIF
+            FAILED = .TRUE.
+         ENDIF
+         IF (INERT_SPECIES(LC) /= UNDEFINED_I) THEN
+            IF(DMP_LOG) THEN
+               IF(.NOT.WARNED_USR) THEN
+                  WRITE(*,1312) SMAX
+                  WRITE(UNIT_LOG,1312)
+                  WARNED_USR = .TRUE.
+               ENDIF
+               WRITE(*,1314) LC, INERT_SPECIES(LC)
+               WRITE(UNIT_LOG,1314) LC, INERT_SPECIES(LC)
+            ENDIF
+            FAILED = .TRUE.
+         ENDIF
+         DO N=1, DIM_N_s
+            IF(RO_Xs0(LC,N) /= UNDEFINED .AND. RO_Xs0(LC,N) /=ZERO) THEN
+               IF(DMP_LOG) THEN
+                  IF(.NOT.WARNED_USR) THEN
+                     WRITE(*,1312) SMAX         ! Screen Error
+                     WRITE(UNIT_LOG,1312) SMAX  ! Log Error
+                     WARNED_USR = .TRUE.
+                  ENDIF
+                  WRITE(*,1315) 'RO_XS0',LC,N, RO_XS0(LC,N)
+                  WRITE(UNIT_LOG,1315) 'RO_XS0',LC,N, RO_XS0(LC,N)
+               ENDIF
+               FAILED = .TRUE.
+            ENDIF
+            IF(X_S0(LC,N) /= UNDEFINED .AND. X_S0(LC,N) /= ZERO) THEN
+               IF(DMP_LOG) THEN
+                  IF(.NOT.WARNED_USR) THEN
+                     WRITE(*,1312) SMAX         ! Screen Error
+                     WRITE(UNIT_LOG,1312) SMAX  ! Log Error
+                     WARNED_USR = .TRUE.
+                  ENDIF
+                  WRITE(*,1315) 'X_S0',LC,N, X_S0(LC,N)
+                  WRITE(UNIT_LOG,1315) 'X_S0',LC,N, X_S0(LC,N)
+               ENDIF
+               FAILED = .TRUE.
+            ENDIF
+         ENDDO
+         IF(FAILED)THEN
+            IF(DMP_LOG) THEN
+               WRITE(*,9999)
+               WRITE(UNIT_LOG,9999)
+            ENDIF
+            CALL MFIX_EXIT(myPE)
+         ENDIF
       ENDDO 
 
-!--------------------------------------------------------------------------< JMusser.0 End
+
+
+
 
 
 ! CHECK MU_s0
@@ -550,6 +684,54 @@
  1100 FORMAT(1X,/,1X,'D_p0(',I2,') in mfix.dat = ',G12.5) 
  1200 FORMAT(1X,/,1X,'D_p0(',I2,') = ',G12.5,/,1X,'MMAX in mfix = ',I2,/) 
 
+ 1300 FORMAT(//1X,70('*')/' From: CHECK_DATA_04',/,' Error 1300:'      &
+         ' No solids density information for phase ',I2,'.')
+
+ 1301 FORMAT(//1X,70('*')/' From: CHECK_DATA_04',/,' Error 1301:'      &
+         ' Unphysical solids density (RO_s0) for phase ',I2,'.')
+
+ 1302 FORMAT(//1X,70('*')/' From: CHECK_DATA_04',/,' Error 1310:'      &
+         ' Conflicting solids phase density values defined:',I2,'.',2/,&
+         '  > Constant density provided: RO_s0(',I2,') = ',g11.5)
+
+ 1303 FORMAT('  > Variable density parameter provided: ',A,'(',I2,     &
+         ') = ',I3)
+
+ 1304 FORMAT('  > Variable density parameter provided: ',A,'(',I2,     &
+         ',',I3,') = ',g11.5)
+
+
+ 1305 FORMAT(//1X,70('*')/' From: CHECK_DATA_04',/,' Error 1305:'      &
+         ' One or more invalid variable solid density parameters:',/)
+  
+ 1306 FORMAT(3x,'> INERT_SPECIES(',I2,') is UNDEFINED.')
+
+ 1307 FORMAT(3x,'> INERT_SPECIES(',I2,') is out of range :: [1,',I3,']')
+
+ 1308 FORMAT(3x,'> ',A,'(',I2,',',I3,') is UNDEFINED.')
+
+ 1309 FORMAT(3x,'> ',A,'(',I2,',',I3,') is unphysical :: ',g11.5)
+
+ 1310 FORMAT(//1X,70('*')/' From: CHECK_DATA_04',/,' Error 1310:'      &
+         ' Invalid baseline inert speices mass fraction.',/            &
+         ' The inert spcies mass fraction must be greater than zero.',/&
+         ' Phase ',I2,' Inert Species: ',I3,'  X_s0 = 0.0')
+
+ 1311 FORMAT(//1X,70('*')/' From: CHECK_DATA_04',/,' Error 1311:'      &
+         ' Fatal error calculating phase baseline density:',/ &
+         ' RO_s(',I2,') = ',A)
+
+ 1312 FORMAT(//1X,70('*')/' From: CHECK_DATA_04',/,' Error 1305:'      &
+         ' One or more parameters defined with solid phase index',/    &
+         ' exceeding MMAX = ',I2,/)
+
+ 1313 FORMAT('  > RO_s0(',I2,') = ',g11.5)
+
+ 1314 FORMAT('  > INERT_SPECIES(',I2,') = ',I3)
+
+ 1315 FORMAT('  > ',A,'(',I2,',',I3,') = ',g11.5)
+
+
  1400 FORMAT(1X,/,1X,'RO_S0(',I2,') = ',G12.5,/,1X,'MMAX in mfix = ',I2,/) 
 
 
@@ -564,8 +746,8 @@
 
 
  9999 FORMAT(/' Please refer to the Readme file on the required input',&
-         ' format and make',/' the necessary corrections to the data', &
-         ' file.',/1X,70('*')//)
+         ' and make',/' the necessary corrections to the data file.',  &
+         /1X,70('*')//)
 
 
       END SUBROUTINE CHECK_DATA_04 
@@ -608,12 +790,12 @@
 ! Check if continuum phase variables are specified.
          IF(NMAX_s(lM) /= UNDEFINED_I .OR. &
             NMAX(lM) /= UNDEFINED_I) THEN
-            IF(.NOT.WARNED_USR0 .AND. myPE == PE_IO) THEN
+            IF(.NOT.WARNED_USR0 .AND. DMP_LOG) THEN
                WRITE(*,1001)
                WRITE(*,1101) lM
                WRITE(UNIT_LOG,1001)
                WRITE(UNIT_LOG,1101) lM
-            ELSEIF(.NOT.WARNED_USR1 .AND. myPE == PE_IO) THEN
+            ELSEIF(.NOT.WARNED_USR1 .AND. DMP_LOG) THEN
                WRITE(*,1101) lM
                WRITE(UNIT_LOG,1101) lM
             ENDIF
@@ -634,12 +816,12 @@
          DO lN = 1, DIM_N_S
 ! Verify that a species name was not provided.
             IF(SPECIES_s(lM,lN) /= UNDEFINED_C) THEN
-               IF(.NOT.WARNED_USR0 .AND. myPE == PE_IO) THEN
+               IF(.NOT.WARNED_USR0 .AND. DMP_LOG) THEN
                   WRITE(*,1001)
                   WRITE(*,1101) lM
                   WRITE(UNIT_LOG,1001)
                   WRITE(UNIT_LOG,1101) lM
-               ELSEIF(.NOT.WARNED_USR1 .AND. myPE == PE_IO) THEN
+               ELSEIF(.NOT.WARNED_USR1 .AND. DMP_LOG) THEN
                   WRITE(*,1101) lM
                   WRITE(UNIT_LOG,1101) lM
                ENDIF
@@ -651,12 +833,12 @@
             ENDIF
 ! Verify that a species alias was not provided.
             IF(SPECIES_ALIAS_s(lM,lN) /= UNDEFINED_C) THEN
-               IF(.NOT.WARNED_USR0 .AND. myPE == PE_IO) THEN
+               IF(.NOT.WARNED_USR0 .AND. DMP_LOG) THEN
                   WRITE(*,1001)
                   WRITE(*,1101) lM
                   WRITE(UNIT_LOG,1001)
                   WRITE(UNIT_LOG,1101) lM
-               ELSEIF(.NOT.WARNED_USR1 .AND. myPE == PE_IO) THEN
+               ELSEIF(.NOT.WARNED_USR1 .AND. DMP_LOG) THEN
                   WRITE(*,1101) lM
                   WRITE(UNIT_LOG,1101) lM
                ENDIF
@@ -669,7 +851,7 @@
          ENDDO
       ENDDO
 
-      IF(WARNED_USR0 .AND. myPE == PE_IO) THEN
+      IF(WARNED_USR0 .AND. DMP_LOG) THEN
          WRITE(*,1201)
          WRITE(UNIT_LOG,1201)
       ENDIF

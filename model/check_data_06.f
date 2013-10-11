@@ -59,6 +59,10 @@
       INTEGER :: I, J, K, IJK
       INTEGER :: M, N, IER
       DOUBLE PRECISION SUM, SUM_EP
+! Solids phase density in IC region.
+      DOUBLE PRECISION :: IC_ROs
+! Index of inert species
+      INTEGER :: INERT
 
 !-----------------------------------------------
 ! External functions
@@ -411,28 +415,106 @@
 
 ! SOLIDS PHASE Quantities               
 ! -------------------------------------------->>>
-               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID.OR.MPPIC) THEN
-
-! at this point ic_ep_g must be defined
+               IF (.NOT.DISCRETE_ELEMENT .OR. MPPIC .OR.               &
+                  DES_CONTINUUM_HYBRID) THEN
+! At this point ic_ep_g must be defined.
                   SUM_EP = IC_EP_G(ICV) 
-                  DO M = 1, SMAX 
-                     IF (IC_ROP_S(ICV,M) == UNDEFINED) THEN 
-                        IF (IC_EP_G(ICV) == ONE) THEN 
-                           IC_ROP_S(ICV,M) = ZERO 
-                        ELSEIF (SMAX == 1 .AND. &
-                                .NOT.DES_CONTINUUM_HYBRID) THEN 
-                           IC_ROP_S(ICV,M) = (ONE - IC_EP_G(ICV))*RO_S0(M)
-                        ELSE
-! bulk density must be explicitly defined for hybrid model and cannot be
-! defined from 1-ic_ep_g
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
+
+                  DO M = 1, SMAX
+! Bulk density must be explicitly defined if there are more than one
+! solids phase or using hybrid model.
+                     IF(IC_ROP_S(ICV,M) == UNDEFINED) THEN
+                        IF(IC_EP_G(ICV) == ONE) THEN
+                           IC_ROP_S(ICV,M) = ZERO
+                        ELSEIF(SMAX > 1 .OR. DES_CONTINUUM_HYBRID) THEN
+                           IF(DMP_LOG) WRITE(UNIT_LOG, 1100)           &
                               'IC_ROP_s', ICV, M 
-                           call mfix_exit(myPE) 
+                           CALL MFIX_EXIT(myPE) 
                         ENDIF
                      ENDIF
+
+! Verify that species mass fractions have been specified.
+                     SUM = ZERO
+                     DO N = 1, NMAX(M)
+! Sum together solids phase M species mass fractions that are defined.
+                        IF(IC_X_S(ICV,M,N)/=UNDEFINED) &
+                           SUM=SUM+IC_X_S(ICV,M,N) 
+                     ENDDO
+! If no solids phase M present and no species are defined for phase M 
+! then set mass fraction of solids phase M species 1 to one
+                     IF (SUM==ZERO .AND. IC_ROP_S(ICV,M)==ZERO) THEN 
+                        IC_X_S(ICV,M,:) = ZERO
+                        IC_X_S(ICV,M,1) = ONE 
+                        SUM = ONE 
+                     ENDIF
+
+! Set the default if needed.
+                     IF(NMAX(M)==1 .AND. IC_X_S(ICV,M,1)==UNDEFINED)THEN
+                        IC_X_S(ICV,M,:) = ZERO
+                        IC_X_S(ICV,M,1) = ONE
+                        SUM = ONE
+! Set any undefined species mass fractions to zero. Warn the user if 
+! the sum of species mass fractions is not one and indicate which
+! species is undefined (mfix will exit in next check). 
+                     ELSE
+                        DO N = 1, NMAX(M)
+                           IF (IC_X_S(ICV,M,N) == UNDEFINED) THEN 
+                              IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)  &
+                                 WRITE (UNIT_LOG, 1110)ICV, M, N 
+                              IC_X_S(ICV,M,N) = ZERO 
+                           ENDIF
+                        ENDDO
+                     ENDIF
+! Verify that the sum of the mass fractions sum to one. Otherwise, exit.
+                     IF(.NOT.COMPARE(ONE,SUM)) THEN 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1120) ICV, M 
+                        CALL MFIX_EXIT(myPE)
+                     ENDIF 
+
+! Calculate the solid density.
+                     IC_ROs = UNDEFINED
+                     IF(SOLVE_ROs(M))THEN
+                        INERT = INERT_SPECIES(M)
+! Verify that the species mass fraction for the inert material is not
+! zero in the IC region when the solids is present.
+                        IF(IC_X_S(ICV,M,INERT) == ZERO) THEN
+                           IF(IC_ROP_S(ICV,M) /= ZERO) THEN
+                              IF(DMP_LOG) THEN
+                                 WRITE(*,1400) M, ICV
+                                 WRITE(UNIT_LOG,1400) M, ICV
+                              ENDIF
+                              CALL MFIX_EXIT(myPE)
+                           ELSE
+! If the solids isn't present, give it the baseline density.
+                              IC_ROs = RO_S0(M)
+                           ENDIF
+                        ELSE
+! Calculate the solids density.
+                           IC_ROs = RO_S0(M) * X_s0(M,INERT) / &
+                              IC_X_S(ICV,M,INERT)
+                        ENDIF
+                     ELSE
+                        IC_ROs = RO_S0(M)
+                     ENDIF
+
+! Sanity check on solids phase density.
+                     IF(IC_ROs <= ZERO .OR. IC_ROs==UNDEFINED) THEN
+                        IF(DMP_LOG)THEN
+                           WRITE(*,1401) M, ICV
+                           WRITE(UNIT_LOG,1401) M, ICV
+                        ENDIF
+                        CALL MFIX_EXIT(myPE)
+                     ENDIF
+
+! IC_ROP_S may still be undefined if there is only one solids phase
+! and the hybrid model is not in use. Back out the bulk density with
+! the assigned solids density.
+                     IF(IC_ROP_S(ICV,M) == UNDEFINED)                  &
+                        IC_ROP_S(ICV,M) = (ONE - IC_EP_G(ICV))*IC_ROs
+
 ! at this point ic_rop_s must be defined
 ! sum of void fraction and solids volume fractions                  
-                     SUM_EP = SUM_EP + IC_ROP_S(ICV,M)/RO_S0(M) 
+                     SUM_EP = SUM_EP + IC_ROP_S(ICV,M)/IC_ROs 
 
 ! check sum of the solids phase m species mass fractions                  
                      SUM = ZERO 
@@ -451,16 +533,16 @@
 ! set any undefined species mass fractions to zero. Warn the user if 
 ! the sum of species mass fractions is not one and indicate which 
 ! species is undefined (mfix will exit in next check). 
-                     DO N = 1, NMAX(M) 
+                     DO N = 1, NMAX(M)
                         IF (IC_X_S(ICV,M,N) == UNDEFINED) THEN 
-                          IF(SPECIES_EQ(M)) THEN
-                           IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)&
-                              WRITE (UNIT_LOG, 1110)ICV,M,N 
-                           IC_X_S(ICV,M,N) = ZERO 
-                          ELSEIF(NMAX(M)==1) THEN
-                           IC_X_S(ICV,M,N) = ONE
-			   SUM = ONE
-                          ENDIF
+                           IF(SPECIES_EQ(M) .OR. SOLVE_ROs(M)) THEN
+                              IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)  &
+                                 WRITE (UNIT_LOG, 1110)ICV,M,N 
+                              IC_X_S(ICV,M,N) = ZERO 
+                           ELSEIF(NMAX(M)==1) THEN
+                              IC_X_S(ICV,M,N) = ONE
+                              SUM = ONE
+                           ENDIF
                         ENDIF 
                      ENDDO
 ! if sum of solids phase M species mass fraction not 1...
@@ -729,6 +811,18 @@
          ') specified',' for an undefined IC region',/1X,70('*')/) 
  1300 FORMAT(/1X,70('*')//' From: CHECK_DATA_06',/' Message: ',A,'(',I2,',',I1,&
          ') specified',' for an undefined IC region',/1X,70('*')/)
+
+ 1400 FORMAT(//1X,70('*')/' From: CHECK_DATA_06',/,' Error 1400:'      &
+         ' No inert species for phase ',I2,' in IC region ',I3,'. ',/  &
+         ' Unable to calculate solids phase density. Please refer to', &
+         ' the Readme',/' file for required variable soilds density',  &
+         ' model input parameters and',/' make the necessary',         &
+         ' corrections to the data file.',/1X,70('*')//)
+
+ 1401 FORMAT(//1X,70('*')/' From: CHECK_DATA_06',/,' Error 1401:'      &
+         ' Solids phase ',I2,' failed sanity check in IC region ',I3,  &
+         '. ',/' Please check mfix.dat file.',/1X,70('*')//)
+
 
       END SUBROUTINE CHECK_DATA_06 
 

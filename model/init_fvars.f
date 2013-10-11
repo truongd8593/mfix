@@ -1,112 +1,108 @@
-!
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: INIT_FVARS                                             C
-!  Purpose: Initialize all field variables as undefined                C
-!                                                                      C
-!  Author: M. Syamlal                                 Date: 23-JAN-94  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date:            C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: ROP_g, EP_g, ROP_s, IJKMAX2, MMAX, U_s, V_s,  C
-!                        W_s                                           C
-!                                                                      C
-!  Variables modified: ROP_go, ROP_so, IJK, M, U_so, V_so, W_so C
-!                                                                      C
-!  Local variables: NONE                                               C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: INIT_FVARS                                             !
+!  Purpose: Initialize all field variables.                            !
+!                                                                      !
+!  Author: M. Syamlal                                 Date: 23-JAN-94  !
+!  Reviewer: J.Musser                                 Date:  8-Oct-13  !
+!                                                                      !
+!  Literature/Document References:                                     !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE INIT_FVARS 
 
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
-      USE fldvar
-      USE geometry
-      USE physprop
-      USE indices
-      USE scalars
-      USE rxns
-      USE run
-      USE compar
+! Global Variables:
+!---------------------------------------------------------------------//
+! Gas phase volume farction
+      USE fldvar, only: EP_G
+! Pressures
+      USE fldvar, only: P_G    ! Gas
+      USE fldvar, only: P_s    ! Solids
+      USE fldvar, only: P_STAR ! Solids at EP_star
+! Densities
+      USE fldvar, only: RO_G  ! Gas
+      USE fldvar, only: RO_s  ! Solids
+! Bulk densities: RO*EP
+      USE fldvar, only: ROP_G ! Gas
+      USE fldvar, only: ROP_s ! Solids
+! Gas velocity components:
+      USE fldvar, only: U_G  ! x-axis
+      USE fldvar, only: V_G  ! y-axis
+      USE fldvar, only: W_G  ! z-axis
+! Solids velocity components:
+      USE fldvar, only: U_S  ! x-axis
+      USE fldvar, only: V_S  ! y-axis
+      USE fldvar, only: W_S  ! z-axis
+! Temperature
+      USE fldvar, only: T_G  ! Gas
+      USE fldvar, only: T_S  ! Solids
+! Species mass fractions
+      USE fldvar, only: X_G  ! Gas
+      USE fldvar, only: X_S  ! Solids
+! Solids particle diameter
+      USE fldvar, only: D_P
+! Granular Energy
+      USE fldvar, only: THETA_M
+! Granular energy conductivity
+      USE physprop, only: KTH_S
+! Gas turbulence
+      USE fldvar, only: K_Turb_G
+      USE fldvar, only: E_Turb_G
+! User-scalar equation field
+      USE fldvar, only: Scalar
+! Reaction Rates
+      USE rxns, only: ReactionRates
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+      USE param1, only: UNDEFINED
+      USE param1, only: ZERO
+
+
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!                      Indices
-      INTEGER          IJK
-!
-!                      Solids phase
-      INTEGER          M
-!
-!                      Species index
-      INTEGER          N
-!-----------------------------------------------
-      IF (IJKMAX2 > 0) THEN 
-         EP_G(IJKSTART3:IJKEND3) = UNDEFINED 
-         P_G(IJKSTART3:IJKEND3) = UNDEFINED 
-         P_STAR(IJKSTART3:IJKEND3) = ZERO 
-         RO_G(IJKSTART3:IJKEND3) = UNDEFINED 
-         ROP_G(IJKSTART3:IJKEND3) = UNDEFINED 
-         T_G(IJKSTART3:IJKEND3) = ZERO 
-         U_G(IJKSTART3:IJKEND3) = UNDEFINED 
-         V_G(IJKSTART3:IJKEND3) = UNDEFINED 
-         W_G(IJKSTART3:IJKEND3) = UNDEFINED 
-         IF (NMAX(0) > 0) THEN 
-            X_G(IJKSTART3:IJKEND3,:NMAX(0)) = ZERO 
-         ENDIF  
-      
-         IF(Nscalar > 0) Scalar(IJKSTART3:IJKEND3,:Nscalar) = ZERO
-         IF(nRR > 0) ReactionRates(IJKSTART3:IJKEND3,:nRR) = ZERO
 
-         IF(K_Epsilon) THEN
-           K_Turb_G(IJKSTART3:IJKEND3) = ZERO
-           E_Turb_G(IJKSTART3:IJKEND3) = ZERO
-         ENDIF
-      ENDIF
+! Passed Variables:
+!---------------------------------------------------------------------//
+! NONE
 
-!!!!$omp parallel do private(M,IJK,N)
-      DO M = 1, MMAX 
-         IF (IJKMAX2 > 0) THEN 
-            ROP_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
-            T_S(IJKSTART3:IJKEND3,M) = ZERO 
-! add by rong 
-            D_P(IJKSTART3:IJKEND3,M)=ZERO
-! add by rong
-            THETA_M(IJKSTART3:IJKEND3,M) = ZERO 
-            P_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
-            U_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
-            V_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
-            W_S(IJKSTART3:IJKEND3,M) = UNDEFINED 
-	    P_S(IJKSTART3:IJKEND3,M) = UNDEFINED
-	    KTH_S(IJKSTART3:IJKEND3,M) = UNDEFINED
-            IF (NMAX(M) > 0) THEN 
-               X_S(IJKSTART3:IJKEND3,M,:NMAX(M)) = ZERO 
-            ENDIF 
-            RO_S(IJKSTART3:IJKEND3,M) = 1.d0
+! Local Variables:
+!---------------------------------------------------------------------//
+! NONE
 
-         ENDIF 
-      END DO 
+      IF(allocated(EP_G)) EP_G = UNDEFINED
+
+      IF(allocated(P_G)) P_G  = UNDEFINED
+      IF(allocated(P_S)) P_s = UNDEFINED
+      IF(allocated(P_STAR)) P_STAR = UNDEFINED
+
+      IF(allocated(RO_G)) RO_G = UNDEFINED
+      IF(allocated(RO_S)) RO_s = UNDEFINED
+      IF(allocated(ROP_G)) ROP_G = UNDEFINED
+      IF(allocated(ROP_S)) ROP_s = UNDEFINED
+
+      IF(allocated(U_G)) U_G = UNDEFINED
+      IF(allocated(V_G)) V_G = UNDEFINED
+      IF(allocated(W_G)) W_G = UNDEFINED
+
+      IF(allocated(U_S)) U_S = UNDEFINED
+      IF(allocated(V_S)) V_S = UNDEFINED
+      IF(allocated(W_S)) W_S = UNDEFINED
+
+      IF(allocated(T_G)) T_G = ZERO
+      IF(allocated(T_S)) T_S = ZERO
+
+      IF(allocated(X_G)) X_G = ZERO
+      IF(allocated(X_S)) X_S = ZERO
+
+      IF(allocated(D_P)) D_P = ZERO
+      IF(allocated(THETA_M)) THETA_M = ZERO
+      IF(allocated(KTH_S)) KTH_S = UNDEFINED
+
+      IF(allocated(K_Turb_G)) K_Turb_G = ZERO
+      IF(allocated(E_Turb_G)) E_Turb_G = ZERO
+
+      IF(allocated(Scalar)) Scalar = ZERO
+      IF(allocated(ReactionRates)) ReactionRates = ZERO
+
       RETURN  
-      END SUBROUTINE INIT_FVARS 
-
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!// 120 Replaced the index for initialization :ijkmax2 --> IJKSTART3:IJKEND3
+      END SUBROUTINE INIT_FVARS

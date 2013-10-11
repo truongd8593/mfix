@@ -229,7 +229,7 @@
 ! Solve starred velocity components
       CALL SOLVE_VEL_STAR(IER)
 
-! Calculate the gas phase density.
+! Calculate densities.
       CALL PHYSICAL_PROP(IER, 0)
       goto( 1000 ), IER_MANAGER(IER)
 
@@ -266,19 +266,13 @@
                ENDDO
             ENDIF   ! end if/else (mmax==1 .and. mcp /= undefined)
 
-
-
-!**********************************************************************!
-!                                                                      !
-!          ------> Need to update solids density here <------          !
-!                                                                      !
-!**********************************************************************!
-
-
             IF(TRIM(KT_TYPE) .eq. 'GHD') CALL ADJUST_EPS_GHD
+
             CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER)
             goto( 1000 ), IER_MANAGER(IER)
+
          ENDIF  ! endif (mmax >0)
+
       ENDIF  ! end if (.not.discrete_element)
 
 
@@ -300,7 +294,7 @@
          CALL CORRECT_0 (IER)
       ENDIF
 
-! Recalculate gas phase density.
+! Recalculate densities.
       CALL PHYSICAL_PROP(IER, 0)
       goto( 1000 ), IER_MANAGER(IER)
 
@@ -560,6 +554,8 @@
       IF(IER <  110) THEN
          IF(IER ==  100) THEN
             lMsg = 'Negative gas density detected'
+         ELSEIF(IER ==  101) THEN
+            lMsg = 'Negative solids density detected'
          ELSE
             lMsg = 'UCE in PHYSICAL_PROP'
          ENDIF

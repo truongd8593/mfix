@@ -275,32 +275,6 @@
 
             END DO 
 
-            IF (SOLID_RO_V) THEN
-               DO IJK = ijkstart3, ijkend3
-                  IF (FLUID_AT(IJK)) THEN 
-                     EP_SS_L_TOT = ZERO
-                     DO LN = 1,NMAX(M)
-                        EP_SS_L_TOT = EP_SS_L_TOT + X_S(IJK,M,LN) / RO_SS(M,LN)
-                     ENDDO
-                     IF(EP_SS_L_TOT .GT. ZERO) THEN
-!                       phase density
-                        RO_S(IJK,M) = ONE/EP_SS_L_TOT
-                     ENDIF
-
-                     if(ROP_s(IJK,M) .eq. 0.E0) then
-                        if(RO_S(IJK,M) .eq. 0.d0) then
-                           write(*,*) 'WARNING: zero ro_s in solve_species_eq.f'
-                        endif
-                     endif
-
-                  ENDIF  ! Fluid cell
-               ENDDO  ! IJK Loop
-
-
-
-            ENDIF
-!end
-
             if(chi_scheme) call unset_chi(IER)
          ENDIF ! check for any species in phase m
       END DO ! for m = 1, mmax

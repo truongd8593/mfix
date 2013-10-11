@@ -24,18 +24,13 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
- 
- 
       MODULE physprop
- 
  
       Use param
       Use param1
 
-
 ! Scale factor for gas turbulence length scale
       DOUBLE PRECISION :: K_scale
- 
  
 ! Number of solids phases
       INTEGER :: MMAX
@@ -55,20 +50,18 @@
 ! Constant solids phase densities. This value is also used in variable
 ! solids density simulations to store the baseline/initial solids
 ! phase densities.
-      DOUBLE PRECISION RO_s0(DIM_M)
+      DOUBLE PRECISION :: RO_s0(DIM_M)
 
 ! Constant solids phase species mass fractions. These values delinate
 ! the baseline/initial solids phase composition for ariable density
       DOUBLE PRECISION :: X_S0(DIM_M, DIM_N_s)
 
 ! ConstantDensity of solid species
-      DOUBLE PRECISION RO_Xs0(DIM_M, DIM_N_s)
+      DOUBLE PRECISION :: RO_Xs0(DIM_M, DIM_N_s)
 
 ! The index of an inert solids phase species. This is needed for 
 ! calculating the variable solids phase density.
       INTEGER :: INERT_SPECIES(DIM_M)
-
-
 
 ! Density of solid species
       DOUBLE PRECISION RO_SS (DIM_M, DIM_N_s)  ! REMOVE

@@ -75,6 +75,8 @@
       use param1, only: UNDEFINED
 ! Constant value gas viscosity.
       use physprop, only: MU_g0
+! Variable solids density flag.
+      use run, only: SOLVE_ROs
 
       implicit none
 
@@ -136,6 +138,9 @@
       IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
 ! Interphase heat transfer coefficient (GAMA)
          if(ENERGY_EQ) HEAT_TR(0:MMAX,0:MMAX) = .TRUE.
+
+! Variable solids density.
+         if(any(SOLVE_ROs)) DENSITY(1:MMAX) = .TRUE.
 
 ! Solids viscosity. CALC_MU_s must be invoked every iteration, even if
 ! MU_s0 /= UNDEFINED, so that initialization of global variables occurs.
