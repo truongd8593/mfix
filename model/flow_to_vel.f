@@ -383,6 +383,9 @@
                      ELSE
                         BC_ROs = RO_S0(M)
                      ENDIF
+                  ELSE
+! Set a generic value to pass through sanity check.
+                     BC_ROs = RO_S0(M)
                   ENDIF
 
 

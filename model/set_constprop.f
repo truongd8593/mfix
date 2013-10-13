@@ -144,6 +144,11 @@
                ENDIF
             ENDIF 
 
+! set ep_star_array to user input ep_star in all cells.
+            EP_star_array(ijk) = ep_star
+            IF(EP_S_MAX(M) == UNDEFINED) EP_S_MAX(M) = ONE-EP_STAR
+! this probably should not be used anymore            
+            EP_S_CP = 1.D0 - EP_STAR
 
 ! initializing Sreekanth blending stress parameters (sof)
 ! changed blend_start to 0.99*ep_star from 0.97*ep_star [ceaf 2006-03-17]
@@ -161,16 +166,7 @@
             ENDIF
 
          ENDDO   ! end loop over ijk
-
-         IF(EP_S_MAX(M) == UNDEFINED) EP_S_MAX(M) = ONE-EP_STAR
-
       ENDDO   ! end loop over MMAX
-
-! Set ep_star_array to user input ep_star in all cells.
-      EP_star_array = ep_star
-
-! This probably should not be used anymore.
-      EP_S_CP = 1.D0 - EP_STAR
 
 
       IF (RO_G0 == ZERO .AND. MMAX > 0) THEN
