@@ -1258,7 +1258,8 @@
 
                      F_AT(IMJK) = ZERO
 
-                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+!                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+                     CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
                      N8(1) = xb-xa
                      N8(2) = yb-ya
@@ -1279,7 +1280,8 @@
 
                      F_AT(IJK) = ZERO
 
-                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+!                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+                     CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
                      N7(1) = xa-xb
                      N7(2) = ya-yb
@@ -1333,10 +1335,15 @@
                         IF(DABS(F_AT(IJK))>TOL_F)   F_AT(IJK) = -DOT_PRODUCT(N8,NORM_FACE(N,:))  
 
 
-                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                        IF(JP<=J2) BC_ID(IJPK) = BC_ID_STL_FACE(N)
-                        IF(KP<=K2) BC_ID(IJKP) = BC_ID_STL_FACE(N) 
-                        IF(JP<=J2.AND.KP<=K2)BC_ID(IJPKP) = BC_ID_STL_FACE(N)  
+!                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+!                        IF(JP<=J2) BC_ID(IJPK) = BC_ID_STL_FACE(N)
+!                        IF(KP<=K2) BC_ID(IJKP) = BC_ID_STL_FACE(N) 
+!                        IF(JP<=J2.AND.KP<=K2)BC_ID(IJPKP) = BC_ID_STL_FACE(N)  
+
+                        CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
+                        IF(JP<=J2) CALL ADD_FACET_AND_SET_BC_ID(IJPK,N) 
+                        IF(KP<=K2) CALL ADD_FACET_AND_SET_BC_ID(IJKP,N) 
+                        IF(JP<=J2.AND.KP<=K2) CALL ADD_FACET_AND_SET_BC_ID(IJPKP,N)
 
 
                      ENDIF
@@ -1370,7 +1377,8 @@
 
                      F_AT(IJMK) = ZERO
 
-                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+!                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+                     CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
                      N8(1) = xb-xa
                      N8(2) = yb-ya
@@ -1391,7 +1399,8 @@
 
                      F_AT(IJK) = ZERO
 
-                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+!                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+                     CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
                      N6(1) = xa-xb
                      N6(2) = ya-yb
@@ -1447,10 +1456,15 @@
                         IF(DABS(F_AT(IJK))>TOL_F)   F_AT(IJK) = -DOT_PRODUCT(N8,NORM_FACE(N,:))  
 
 
-                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                        IF(IP<=I2) BC_ID(IPJK) = BC_ID_STL_FACE(N) 
-                        IF(KP<=K2) BC_ID(IJKP) = BC_ID_STL_FACE(N)
-                        IF(IP<=I2.AND.KP<=K2)BC_ID(IPJKP) = BC_ID_STL_FACE(N) 
+!                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+!                        IF(IP<=I2) BC_ID(IPJK) = BC_ID_STL_FACE(N) 
+!                        IF(KP<=K2) BC_ID(IJKP) = BC_ID_STL_FACE(N)
+!                        IF(IP<=I2.AND.KP<=K2)BC_ID(IPJKP) = BC_ID_STL_FACE(N) 
+
+                        CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
+                        IF(IP<=I2) CALL ADD_FACET_AND_SET_BC_ID(IPJK,N) 
+                        IF(KP<=K2) CALL ADD_FACET_AND_SET_BC_ID(IJKP,N) 
+                        IF(IP<=I2.AND.KP<=K2) CALL ADD_FACET_AND_SET_BC_ID(IPJKP,N)
 
                      ENDIF
 
@@ -1479,7 +1493,8 @@
 
                         F_AT(IJKM) = ZERO
 
-                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+!                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+                        CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
                         N8(1) = xb-xa
                         N8(2) = yb-ya
@@ -1500,7 +1515,8 @@
 
                         F_AT(IJK) = ZERO
 
-                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+!                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+                        CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
                         N4(1) = xa-xb
                         N4(2) = ya-yb
@@ -1555,10 +1571,15 @@
                            IF(DABS(F_AT(IJK))>TOL_F)   F_AT(IJK) = -DOT_PRODUCT(N8,NORM_FACE(N,:))  
 
 
-                           BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                           IF(IP<=I2)  BC_ID(IPJK) = BC_ID_STL_FACE(N)    
-                           IF(JP<=J2) BC_ID(IJPK) = BC_ID_STL_FACE(N)  
-                           IF(IP<=I2.AND.JP<=J2) BC_ID(IPJPK) = BC_ID_STL_FACE(N) 
+!                           BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+!                           IF(IP<=I2)  BC_ID(IPJK) = BC_ID_STL_FACE(N)    
+!                           IF(JP<=J2) BC_ID(IJPK) = BC_ID_STL_FACE(N)  
+!                           IF(IP<=I2.AND.JP<=J2) BC_ID(IPJPK) = BC_ID_STL_FACE(N) 
+         
+                           CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
+                           IF(IP<=I2) CALL ADD_FACET_AND_SET_BC_ID(IPJK,N) 
+                           IF(JP<=J2) CALL ADD_FACET_AND_SET_BC_ID(IJPK,N) 
+                           IF(IP<=I2.AND.JP<=J2) CALL ADD_FACET_AND_SET_BC_ID(IPJPK,N)
 
                         ENDIF
 
@@ -1942,3 +1963,60 @@
       END SUBROUTINE CAD_INTERSECT
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: ADD_FACET                                              C
+!  Purpose: Add facet to list in IJK scalar cell                       C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 15-Oct-13  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE ADD_FACET_AND_SET_BC_ID(IJK,N)
+    
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices  
+      USE compar
+      USE sendrecv
+      USE quadric
+      USE cutcell
+      USE polygon
+      USE stl
+
+
+      USE mpi_utility
+
+
+
+      
+      IMPLICIT NONE
+      INTEGER :: IJK,N
+
+
+      BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
+      
+      IF(N_FACET_AT(IJK)<DIM_FACETS_PER_CELL) THEN
+
+         N_FACET_AT(IJK) = N_FACET_AT(IJK) + 1
+         LIST_FACET_AT(IJK,N_FACET_AT(IJK)) = N
+
+      ELSE
+
+         WRITE(*,*) ' FATAL ERROR: TOO MANY FACETS IN CELL: ', IJK
+         CALL MFIX_EXIT(myPE)
+
+      ENDIF
+
+
+
+  END SUBROUTINE ADD_FACET_AND_SET_BC_ID

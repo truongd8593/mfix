@@ -2956,11 +2956,8 @@ $(DPO)eosg.$(OBJ_EXT) : eosg.f \
             sc_p_g2.inc                                                 
 	$(FORTRAN_CMD) $(FORT_FLAGS) eosg.f  -o $(DPO)eosg.$(OBJ_EXT) -J$(DPO)
 $(DPO)eoss.$(OBJ_EXT) : eoss.f \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)CONSTANT.mod \
             $(DPO)PHYSPROP.mod \
-            $(DPO)SCALES.mod 
+            $(DPO)FLDVAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) eoss.f  -o $(DPO)eoss.$(OBJ_EXT) -J$(DPO)
 $(DPO)equal.$(OBJ_EXT) : equal.f \
             $(DPO)PARAM.mod \
@@ -3617,10 +3614,7 @@ $(DPO)partial_elim.$(OBJ_EXT) : partial_elim.f \
             $(DPO)COMPAR.mod \
             $(DPO)DRAG.mod \
             $(DPO)FLDVAR.mod \
-            $(DPO)RUN.mod \
-            function.inc                                                 \
-            fun_avg1.inc                                                 \
-            fun_avg2.inc                                                
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) partial_elim.f  -o $(DPO)partial_elim.$(OBJ_EXT) -J$(DPO)
 $(DPO)physical_prop.$(OBJ_EXT) : physical_prop.f \
             $(DPO)COMPAR.mod \
@@ -4093,15 +4087,13 @@ $(DPO)set_ro_g.$(OBJ_EXT) : set_ro_g.f \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) set_ro_g.f  -o $(DPO)set_ro_g.$(OBJ_EXT) -J$(DPO)
 $(DPO)set_ro_s.$(OBJ_EXT) : set_ro_s.f \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)PARALLEL.mod \
             $(DPO)PHYSPROP.mod \
-            $(DPO)GEOMETRY.mod \
             $(DPO)FLDVAR.mod \
-            $(DPO)CONSTANT.mod \
-            $(DPO)INDICES.mod \
+            $(DPO)RUN.mod \
             $(DPO)COMPAR.mod \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)INDICES.mod \
+            $(DPO)FUNITS.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) set_ro_s.f  -o $(DPO)set_ro_s.$(OBJ_EXT) -J$(DPO)
 $(DPO)set_wall_bc.$(OBJ_EXT) : set_wall_bc.f \

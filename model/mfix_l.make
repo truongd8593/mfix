@@ -2956,11 +2956,8 @@ $(DPO)eosg.$(OBJ_EXT) : eosg.f \
             sc_p_g2.inc                                                 
 	$(FORTRAN_CMD) $(FORT_FLAGS) eosg.f  -o $(DPO)eosg.$(OBJ_EXT) -module $(DPO)
 $(DPO)eoss.$(OBJ_EXT) : eoss.f \
-            $(DPO)param.mod \
-            $(DPO)param1.mod \
-            $(DPO)constant.mod \
             $(DPO)physprop.mod \
-            $(DPO)scales.mod 
+            $(DPO)fldvar.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) eoss.f  -o $(DPO)eoss.$(OBJ_EXT) -module $(DPO)
 $(DPO)equal.$(OBJ_EXT) : equal.f \
             $(DPO)param.mod \
@@ -3617,10 +3614,7 @@ $(DPO)partial_elim.$(OBJ_EXT) : partial_elim.f \
             $(DPO)compar.mod \
             $(DPO)drag.mod \
             $(DPO)fldvar.mod \
-            $(DPO)run.mod \
-            function.inc                                                 \
-            fun_avg1.inc                                                 \
-            fun_avg2.inc                                                
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) partial_elim.f  -o $(DPO)partial_elim.$(OBJ_EXT) -module $(DPO)
 $(DPO)physical_prop.$(OBJ_EXT) : physical_prop.f \
             $(DPO)compar.mod \
@@ -4093,15 +4087,13 @@ $(DPO)set_ro_g.$(OBJ_EXT) : set_ro_g.f \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) set_ro_g.f  -o $(DPO)set_ro_g.$(OBJ_EXT) -module $(DPO)
 $(DPO)set_ro_s.$(OBJ_EXT) : set_ro_s.f \
-            $(DPO)param.mod \
-            $(DPO)param1.mod \
-            $(DPO)parallel.mod \
             $(DPO)physprop.mod \
-            $(DPO)geometry.mod \
             $(DPO)fldvar.mod \
-            $(DPO)constant.mod \
-            $(DPO)indices.mod \
+            $(DPO)run.mod \
             $(DPO)compar.mod \
+            $(DPO)geometry.mod \
+            $(DPO)indices.mod \
+            $(DPO)funits.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) set_ro_s.f  -o $(DPO)set_ro_s.$(OBJ_EXT) -module $(DPO)
 $(DPO)set_wall_bc.$(OBJ_EXT) : set_wall_bc.f \

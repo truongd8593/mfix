@@ -4,7 +4,7 @@
       Use param 
       Use param1
 
-!     Maximum of the number of polygons that can be read 
+!     Maximum number of facets that can be read 
       INTEGER, PARAMETER          :: DIM_STL = 10000000   !10 Million
 !     Number of facets
       INTEGER                     :: N_FACETS
@@ -41,6 +41,8 @@
 
       INTEGER, DIMENSION(DIM_STL) :: BC_ID_STL_FACE
 
+!     Maximum number of facets per cell 
+      INTEGER, PARAMETER          :: DIM_FACETS_PER_CELL = 10   
       INTEGER, DIMENSION (:), ALLOCATABLE ::  N_FACET_AT 
       INTEGER, DIMENSION (:,:), ALLOCATABLE ::  LIST_FACET_AT 
 
