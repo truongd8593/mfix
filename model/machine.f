@@ -104,42 +104,40 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-!      SUBROUTINE CPU_TIME(CPU)
+      SUBROUTINE CPU_TIME(CPU)
 !
-!      IMPLICIT NONE
+      IMPLICIT NONE
 !
 ! passed arguments
 !
 !                      cpu time since start of run
-!      DOUBLE PRECISION CPU
-!      
-!      INTEGER, SAVE :: COUNT_OLD=0, WRAP=0
+      DOUBLE PRECISION CPU
+      
+      INTEGER, SAVE :: COUNT_OLD=0, WRAP=0
 !
 ! local variables
 !
-!
+
 !                       clock cycle
-!      INTEGER           COUNT
-!
+      INTEGER           COUNT
+
 !                       number of cycles per second
-!      INTEGER           COUNT_RATE
-!      
+      INTEGER           COUNT_RATE
+      
 !                       max number of cycles, after which count is reset to 0
-!      INTEGER           COUNT_MAX
-!
-!      CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
-!      IF(COUNT_OLD .GT. COUNT) THEN
-!        WRAP = WRAP + 1
-!      ENDIF
-!      COUNT_OLD = COUNT
-!     
-!      CPU           = DBLE(COUNT)/DBLE(COUNT_RATE) &
-!                     + DBLE(WRAP) * DBLE(COUNT_MAX)/DBLE(COUNT_RATE)
-!
-!      RETURN
-!      END
+      INTEGER           COUNT_MAX
 
-
+      CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
+      IF(COUNT_OLD .GT. COUNT) THEN
+        WRAP = WRAP + 1
+      ENDIF
+      COUNT_OLD = COUNT
+      
+      CPU           = DBLE(COUNT)/DBLE(COUNT_RATE) &
+                     + DBLE(WRAP) * DBLE(COUNT_MAX)/DBLE(COUNT_RATE)
+!
+      RETURN
+      END
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: START_LOG                                              C

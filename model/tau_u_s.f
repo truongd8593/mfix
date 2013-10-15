@@ -154,6 +154,10 @@
 !!!!$omp&  schedule(static)
 
         DO IJK = IJKSTART3, IJKEND3
+
+! Skip walls where some values are undefined.
+         IF(WALL_AT(IJK)) cycle
+
             I = I_OF(IJK) 
             IJKE = EAST_OF(IJK) 
             IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN

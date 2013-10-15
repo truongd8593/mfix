@@ -145,6 +145,10 @@
 ! section largely based on tau_u_g:
  
       DO IJK = IJKSTART3, IJKEND3
+
+
+! Skip walls where some values are undefined.
+         IF(WALL_AT(IJK)) cycle
      
          D_PM = D_P(IJK,M) 
          M_PM = (Pi/6d0)*D_PM**3 * RO_S(IJK,M)

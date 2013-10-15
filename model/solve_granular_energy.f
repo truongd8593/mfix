@@ -140,6 +140,9 @@
          DO M = 1, MMAX 
             DO IJK = ijkstart3, ijkend3
 
+! Skip walls where some values are undefined.
+               IF(WALL_AT(IJK)) cycle
+
                D_PM = D_P(IJK,M)
                M_PM = (PI/6.d0)*(D_PM**3)*RO_S(IJK,M)
 

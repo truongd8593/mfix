@@ -137,6 +137,9 @@
 !$omp           VSH_n, VSH_s, VSH_e, VSH_w, VSH_p, Source_conv, SRT)
             DO IJK = ijkstart3, ijkend3
 
+! Skip walls where some values are undefined.
+                IF(WALL_AT(IJK)) cycle
+
                 I = I_OF(IJK) 
                 J = J_OF(IJK) 
                 K = K_OF(IJK)
