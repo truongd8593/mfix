@@ -838,6 +838,9 @@
       DO IJK = ijkstart3, ijkend3
         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
 
+! Skip walls where some values are undefined.
+        IF(WALL_AT(IJK)) cycle
+
          if(m/=0) then
             EPSA = AVG_X(EP_S(IJK,M),EP_S(EAST_OF(IJK),M),I_OF(IJK))
             if(EPSA <= DIL_EP_s) CYCLE
@@ -1045,6 +1048,10 @@
 !!$omp&  REDUCTION(+:NUM, DEN, NCELLS)  
       DO IJK = ijkstart3, ijkend3 
         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+
+! Skip walls where some values are undefined.
+        IF(WALL_AT(IJK)) cycle
+
 
          if(m/=0) then
             EPSA = AVG_Y(EP_S(IJK,M),EP_S(NORTH_OF(IJK),M),J_OF(IJK)) 
@@ -1256,6 +1263,10 @@
 !!$omp&  REDUCTION(+:NUM, DEN,NCELLS )  
       DO IJK = ijkstart3, ijkend3
         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+
+! Skip walls where some values are undefined.
+        IF(WALL_AT(IJK)) cycle
+
 
          if(m/=0) then
             EPSA = AVG_Z(EP_S(IJK,M),EP_S(TOP_OF(IJK),M),K_OF(IJK)) 

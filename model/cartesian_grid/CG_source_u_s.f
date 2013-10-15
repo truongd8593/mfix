@@ -163,6 +163,11 @@
 !!!$omp&  schedule(static)
             DO IJK = ijkstart3, ijkend3 
 
+! Skip walls where some values are undefined.
+                IF(WALL_AT(IJK)) cycle
+
+
+
 ! Wall or impermeable internal surface
                 I = I_OF(IJK) 
                 IJKE = EAST_OF(IJK)
