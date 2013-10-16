@@ -100,10 +100,6 @@
       INCLUDE 'sc_p_g1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'sc_p_g2.inc'
-!
-!  Set the boundary conditions.
-
-      CALL CHECK_BC_FLAGS
 
 !
 !  Define global corners as acceptable default walls
