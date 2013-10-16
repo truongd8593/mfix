@@ -158,9 +158,6 @@
          CALL ALLOCATE_DUMMY_CUT_CELL_ARRAYS
       ENDIF
 
-! Set constant physical properties
-      CALL SET_CONSTPROP 
-      
 ! Write the initial part of the standard output file
       CALL WRITE_OUT0
       IF(.NOT.CARTESIAN_GRID)  CALL WRITE_FLAGS
@@ -274,6 +271,9 @@
 ! boundaries using FLAG_E, FLAG_N, and FLAG_T
       CALL SET_FLAGS1 
 
+!  Update flags for Cartesian_GRID.
+      IF(CARTESIAN_GRID) CALL CHECK_BC_FLAGS
+
 ! Calculate cell volumes and face areas
       IF(.NOT.CARTESIAN_GRID)  THEN
          CALL SET_GEOMETRY1 
@@ -288,7 +288,9 @@
          IF (SET_CORNER_CELLS)  CALL GET_CORNER_CELLS (IER)
       ENDIF
 
-
+! Set constant physical properties
+      CALL SET_CONSTPROP 
+      
 ! Set initial conditions
       CALL SET_IC 
 
