@@ -142,7 +142,7 @@
                IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                IJK = FUNIJK(I,J,K) 
 
-               IF (FLUID_AT(IJK)) THEN
+               IF (.NOT.WALL_AT(IJK)) THEN
                   IF (EPGX /= UNDEFINED) EP_G(IJK) = EPGX 
                   IF (IC_TYPE(L) == 'PATCH') THEN 
                       IF (PGX /= UNDEFINED) P_G(IJK) = SCALE(PGX) 
