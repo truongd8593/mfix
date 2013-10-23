@@ -285,6 +285,8 @@
          R(:) = B_m(:) - R(:)
       endif
 
+      call send_recv(R,nlayers_bicgs)
+
       if(is_serial) then
          Rnorm0 = zero
          if (use_doloop) then   ! mfix.dat keyword default=false
@@ -1207,8 +1209,7 @@
 
          IF (NO_K) THEN   ! two dimensional
 ! 2D run no need to enable openmp parallel
-            !IF ( DO_ISWEEP ) THEN
-            IF ( DO_ISWEEP .and. nodesj.eq.1) THEN		!Added by Handan Liu
+            IF ( DO_ISWEEP ) THEN
 !!$omp   parallel do private(I)   
                DO I=istart,iend,1
                   CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
@@ -1216,7 +1217,7 @@
             ENDIF
 ! ----------------------------------------------------------------<<<			
 ! Handan Liu added 2D RSRS sweep and parallelized this loop on Jan 22 2013:
-		    IF (DO_REDBLACK .and. nodesj.eq.1) THEN
+		    IF (DO_REDBLACK) THEN
 !$omp parallel do private(I)
 			      DO I=istart,iend,2
 				     CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
