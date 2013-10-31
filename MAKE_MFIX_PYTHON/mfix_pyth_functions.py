@@ -11,6 +11,8 @@ import re
 import subprocess
 import time 
 
+dpo_full = ''
+
 def mfix_print_version(vers):
     print "=============================================================="
     print ""
@@ -177,7 +179,6 @@ def hold():
     return
     
 def backup_original_source(run_dir, mfix):
-    
     force_recomp =  False
     check_for_changed_or_backup(run_dir, mfix, ".", force_recomp, 'model')
     check_for_changed_or_backup(run_dir, mfix, "cartesian_grid", force_recomp, 'cartesian_grid')
@@ -190,7 +191,49 @@ def backup_original_source(run_dir, mfix):
     check_for_changed_or_backup(run_dir, mfix, "GhdTheory", force_recomp, "GhdTheory")
     check_for_changed_or_backup(run_dir, mfix, "qmomk", force_recomp, "qmomk")
     check_for_changed_or_backup(run_dir, mfix, "thermochemical", force_recomp, "thermochemical")
+    
+def del_obj_filename(file):
+    import os 
+    import os.path
+    import filecmp
+    import subprocess
 
+#    print "here in obj_delete", file, (os.path.splitext(file))[1]
+    if  (os.path.splitext(file))[1] != '.f':
+        return
+    cmd = "rm "
+    del_list = ""
+    del_files = False
+    
+    onlyfilename = os.path.splitext(file)[0]
+    
+    obj_file = onlyfilename + ".o"
+    obj_file_loc  = os.path.join(dpo_full, obj_file)
+    if os.path.isfile(obj_file_loc):
+        del_files = True 
+        del_list =  obj_file + "\t"
+        cmd =  cmd +  obj_file_loc + "  "
+        
+    if onlyfilename.lower().endswith("_mod") :
+        mod_file = onlyfilename.replace("_mod", ".mod")
+        mod_file_loc  = os.path.join(dpo_full, mod_file)
+        
+        if os.path.isfile(mod_file_loc):
+            del_files = True 
+            del_list  = del_list + mod_file
+            cmd =  cmd +  mod_file_loc + "  "
+
+    if del_files: 
+        print "deleting the following files: ", del_list
+        subprocess.call(cmd, shell = True)
+    else:
+        print "Old object and module files do not exist for this file"
+        
+
+#    print "deleting the following file", cmd 
+    return 
+    
+    
 def check_for_changed_or_backup(run_dir, mfix, tdir, force_recomp, fold_name):
     import os 
     import os.path
@@ -252,16 +295,21 @@ def check_for_changed_or_backup(run_dir, mfix, tdir, force_recomp, fold_name):
                 
                 
                 if filecmp.cmp(real_file_loc_in_src, real_file_loc_in_run):
-                    print "File in rundir, unchanged from last comp: \"{0:<s}\"".format(real_file)
+                    
+                    print '.............................................................'
+                    print " \"{0:<s}\": \n File in rundir, unchanged from last comp".format(real_file)
                     if force_recomp:
                         cmd = "cp " + real_file_loc_in_run + " " + real_file_loc_in_src
                         subprocess.call(cmd, shell = True)                   
                         
                 else:
-                    print "File in rundir: changed from last comp  : \"{0:<s}\"".format(real_file)
+                    
+                    print '.................................................................'
+                    print " \"{0:<s}\": \n File in rundir, changed from last comp".format(real_file)
                     cmd = "cp " + real_file_loc_in_run + " " + real_file_loc_in_src
                     subprocess.call(cmd, shell = True)
-                    
+
+                    del_obj_filename(real_file)
                     #print filecmp.cmp(backedup_file_loc_in_src, real_file_loc_in_run), cmd
                     
                     #hold()  
@@ -269,17 +317,19 @@ def check_for_changed_or_backup(run_dir, mfix, tdir, force_recomp, fold_name):
             else:
                 if filecmp.cmp(real_file_loc_in_src, backedup_file_loc_in_src):
                     #if they are same, just remove the backed up file
-                    
-                    print "Restored file that didn't really change: \"{0:<s}\"".format(real_file)
+                    print '..................................................................'
+                    print "\"{0:<s}\": \n Restored, but it wasn\'t changed".format(real_file)
                     os.remove(backedup_file_loc_in_src)
                 else:
-                    print "Restored file that did change: \"{0:<s}\"".format(real_file)
+                    
+                    print '...................................................................'
+                    print "\"{0:<s}\": \n Restored file, it was changed".format(real_file)
                     #Restore from the backed up file
                     cmd = "mv " + backedup_file_loc_in_src + " " + real_file_loc_in_src
                     subprocess.call(cmd, shell = True)
                     cmd = "touch " + real_file_loc_in_src
                     subprocess.call(cmd, shell = True)
-                    
+                    del_obj_filename(real_file)
     #hold()
                     
     print "--------------------------------------------------------------------------------------"
