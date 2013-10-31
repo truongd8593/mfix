@@ -52,14 +52,15 @@ def get_comp_flags():
     FORTRAN_EXT ="f"
     omp         ="-mp"
     FORTRAN_CMD ="gfortran"
-    compile_d1   = "-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow -I$mpi_include -I$DPO -g "
-    compile_d2   = "-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -I$mpi_include -I$DPO -g "
-    compile_d3   = "-c -I. -fconvert='big-endian' -I$mpi_include -I$DPO -g "
+    compile_d1   = "-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow -I${mpi_include} -I${DPO} -g "
+    compile_d2   = "-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -I${mpi_include} -I${DPO} -g "
+    compile_d3   = "-c -I. -fconvert='big-endian' -I${mpi_include} -I${DPO} -g "
     link_d       = "-g"
     
-    compile1    = "-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -I${mpi_include} -I${DPO} -O1 "
-    compile2    = "-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -I${mpi_include} -I${DPO} -O1 "
-    compile3    = "-c -I. -fconvert='big-endian' -I${mpi_include} -I${DPO} -O1 "
+    compile1="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -m64 -Ofast -flto -mtune=corei7-avx -march=corei7-avx -masm=intel -funroll-loops -I${mpi_include} -I${DPO} "
+    
+    compile2    = "$compile1"
+    compile3="-c -I. -fconvert='big-endian' -I${mpi_include} -I${DPO} -O3 "
     link        = " "
 
 ########################################################################################
