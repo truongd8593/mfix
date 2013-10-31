@@ -184,6 +184,8 @@ DPO1 = DPO1 + "_" + compiler.upper() + "/"
 DPO_ABS  = os.path.join(mfix_base, DPO1)
 DPO = "../" + DPO1
 
+mfix_pyth_functions.dpo_full = DPO_ABS
+print "Object and mod files will be sent to the following folder", DPO_ABS 
 #print "DPO_ABS", DPO_ABS, DPO1
 if os.path.isdir(DPO_ABS):
     pass
@@ -298,6 +300,7 @@ EXEC_FILE = "mfix.exe"
 mfix_pyth_functions.write_directory_path(mfix)
 
 mfix_pyth_functions.backup_original_source(run_dir, mfix)
+
 #the above will copy any new files to mfix directory and also 
 #revert back any backups from previous build
 
@@ -356,9 +359,6 @@ if serial_mode | smp_mode :
 else:
     cmd  = "cp " + mfile_new_loc  + " " + mfile_final_loc
     subprocess.call(cmd, shell=True)
-
-
-
 
 cmd = "make -f " + mfile_final_loc + "  "   + EXEC_FILE
 print 'Compiling mfix. Final temporary make file is', mfile_final_loc
