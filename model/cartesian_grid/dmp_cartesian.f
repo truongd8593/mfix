@@ -120,10 +120,12 @@
       call send_recv(DELH_V,2)
       call send_recv(DELH_W,2)
 
+      call send_recv(NORMAL_S,2)
       call send_recv(NORMAL_U,2)
       call send_recv(NORMAL_V,2)
       call send_recv(NORMAL_W,2)
 
+      call send_recv(REFP_S,2)
       call send_recv(REFP_U,2)
       call send_recv(REFP_V,2)
       call send_recv(REFP_W,2)
