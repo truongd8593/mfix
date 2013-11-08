@@ -1106,7 +1106,6 @@
                IF (BC_EP_G(BCV) /= UNDEFINED) THEN
                   SUM_EP = BC_EP_G(BCV)
 
-                  write(*,*) 'sum_ep: ', sum_ep
 ! Unclear how the discrete solids volume fraction can be dictated at 
 ! the boundary, so it is currently prevented!
                   IF (DISCRETE_ELEMENT) THEN
@@ -1141,7 +1140,6 @@
 ! therefore we can check that sum of void fraction and solids volume 
 ! fractions
                         SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S0(M) 
-                        write(*,*) 'M, sum_ep: ', M, sum_ep
                      ENDDO
 
                      IF (.NOT.COMPARE(ONE,SUM_EP)) THEN 
