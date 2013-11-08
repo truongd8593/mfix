@@ -23,9 +23,6 @@
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -64,13 +61,10 @@
       INTEGER :: BCV
       INTEGER :: I, J ,K, IJK
       INTEGER :: M, N
-
 ! Solids phase density in BC region.
       DOUBLE PRECISION :: BC_ROs
 ! Index of inert species
       INTEGER :: INERT
-
-
 ! valid boundary condition types
       CHARACTER*16, DIMENSION(1:DIM_BCTYPE) ::VALID_BC_TYPE = (/&
            'MASS_INFLOW     ', 'MI              ',&
@@ -405,10 +399,10 @@
 
 
 ! DEM simulations do not employ variables for continuum solids. So do
-! not perform checks on unnecessary data.
-! However, MPPIC initilization and BC's are based on continuum only, So
-! perform these checks 
-               IF(.NOT.DISCRETE_ELEMENT .OR.                           &
+! not perform checks on unnecessary data.  Note, MPPIC initialization
+! and BC's are based on continuum quantities so that these checks are
+! necessary when invoking MPPIC.
+               IF(.NOT.DISCRETE_ELEMENT .OR. &
                   DES_CONTINUUM_HYBRID  .OR. MPPIC) THEN
 
 ! at this point bc_ep_g must be defined
@@ -420,8 +414,8 @@
                      IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
                         IF (BC_EP_G(BCV) == ONE) THEN 
                            BC_ROP_S(BCV,M) = ZERO 
-                        ELSEIF (SMAX > 1 .OR. DES_CONTINUUM_HYBRID) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100)           &
+                        ELSEIF (SMAX > 1 .OR. DES_CONTINUUM_HYBRID) THEN
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
                               'BC_ROP_s', BCV, M 
                            call mfix_exit(myPE)
                         ENDIF
@@ -503,7 +497,7 @@
 ! BC_ROP_S may still be undefined if there is only one solids phase
 ! and the hybrid model is not in use. Back out the bulk density with
 ! the assigned solids density.
-                     IF(BC_ROP_S(BCV,M) == UNDEFINED)                  &
+                     IF(BC_ROP_S(BCV,M) == UNDEFINED) &
                         BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*BC_ROs
 
 ! sum of void fraction and solids volume fractions
@@ -618,13 +612,14 @@
                      ENDIF
                   ENDIF
                ELSE   ! discrete_element and .not.des_continuum_hybrid
+                      ! and .not.mppic
                   SUM_EP = BC_EP_G(BCV)
                   IF (SUM_EP>ONE .OR. SUM_EP<ZERO) THEN 
                      IF(DMP_LOG) WRITE (UNIT_LOG, 1130) BCV 
                      call mfix_exit(myPE)
                   ENDIF
                ENDIF   ! end if/else (.not.discrete_element .or.
-                       !               des_continuum_hybrid)
+                       !               des_continuum_hybrid .or. mppic)
 
        
                DO N = 1, NScalar
@@ -644,7 +639,7 @@
 !     The velocities at the outflow face are fixed and the momentum    C
 !     equations are not solved in the outflow cells. Since the flow    C
 !     is out of the domain none of the other scalars should need to    C
-!     be specified (e.g., mass fractions, vodi fraction, etc.,).       C
+!     be specified (e.g., mass fractions, void fraction, etc.,).       C
 !     Such values will become defined according to their adjacent      C
 !     fluid cell                                                       C
 !                                                                      C
@@ -720,10 +715,11 @@
                END SELECT   ! end select case (bc_plane(bcv)) 
 
 ! DEM simulations do not employ variables for continuum solids. So do
-! not perform checks on unnecessary data.               
-! However, MPPIC initilization and BC's are based on continuum only, So do
-! perform these checks 
-               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID.OR.MPPIC) THEN
+! not perform checks on unnecessary data. Note, MPPIC initialization
+! and BC's are based on continuum quantities so that these checks are
+! necessary when invoking MPPIC.
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID &
+                   .OR.MPPIC) THEN
                   DO M = 1, SMAX 
                      IF (BC_U_S(BCV,M) == UNDEFINED) THEN 
                         IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_I) THEN 
@@ -795,7 +791,7 @@
                      END SELECT   ! end select case (bc_plane(bcv))
                   ENDDO   ! end loop over (m=1,smax)
                ENDIF   ! end if (.not.discrete_element .or.
-                       !         des_continuum_hybrid)
+                       !         des_continuum_hybrid .or. mppic)
 ! case mass_outflow
 ! --------------------------------------------<<<
 
@@ -859,10 +855,11 @@
                ENDIF 
 
 ! DEM simulations do not employ variables for continuum solids. So do
-! not perform checks on unnecessary data.
-! However, MPPIC initilization and BC's are based on continuum only, So do
-! perform these checks 
-               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID.OR.MPPIC) THEN
+! not perform checks on unnecessary data. Note, MPPIC initialization
+! and BC's are based on continuum quantities so that these checks are
+! necessary when invoking MPPIC.
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID &
+                   .OR.MPPIC) THEN
 
 ! at this point bc_ep_g must be defined
                   SUM_EP = BC_EP_G(BCV) 
@@ -873,8 +870,8 @@
                      IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
                         IF (BC_EP_G(BCV) == ONE) THEN 
                            BC_ROP_S(BCV,M) = ZERO 
-                        ELSEIF (SMAX > 1 .OR. DES_CONTINUUM_HYBRID) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100)           &
+                        ELSEIF (SMAX > 1 .OR. DES_CONTINUUM_HYBRID) THEN
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100)  &
                               'BC_ROP_s', BCV, M 
                            call mfix_exit(myPE)
                         ENDIF
@@ -985,13 +982,14 @@
                      ENDIF
                   ENDIF
                ELSE   ! discrete_element and .not.des_continuum_hybrid
+                      ! and .not.mppic
                   SUM_EP = BC_EP_G(BCV)
                   IF (SUM_EP>ONE .OR. SUM_EP<ZERO) THEN 
                      IF(DMP_LOG) WRITE (UNIT_LOG, 1130) BCV 
                      call mfix_exit(myPE)
                   ENDIF
                ENDIF   ! end if/else (.not.discrete_element .or.
-                       !               des_continuum_hybrid)
+                       !               des_continuum_hybrid .or. mppic)
 
                DO N = 1, NScalar
                   IF (BC_Scalar(BCV,N) == UNDEFINED) THEN 
@@ -1026,10 +1024,11 @@
                ENDIF  
 
 ! DEM simulations do not employ variables for continuum solids. So do
-! not perform checks on unnecessary data.               
-! However, MPPIC initilization and BC's are based on continuum only, So do
-! perform these checks 
-               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID.OR.MPPIC) THEN
+! not perform checks on unnecessary data. Note, MPPIC initialization
+! and BC's are based on continuum quantities so that these checks are
+! necessary when invoking MPPIC.
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID &
+                   .OR.MPPIC) THEN
                   DO M = 1, SMAX 
                      IF (BC_U_S(BCV,M) == UNDEFINED) THEN 
                         BC_U_S(BCV,M) = ZERO
@@ -1058,7 +1057,7 @@
                      ENDIF 
                   ENDDO   ! end loop over (m=1,smax)
                ENDIF   ! end if (.not.discrete_element .or.
-                       !         des_continuum_hybrid)
+                       !         des_continuum_hybrid .or. mppic)
 
 ! case p_inflow               
 ! --------------------------------------------<<<
@@ -1094,8 +1093,7 @@
 
 ! it is unclear whether specifying bc_ep_g or bc_rop_s at the boundary
 ! is physical? Should it be prevented in the first place? Do their
-! values matter (play a role in the solution) or are they largely 
-! inconsequential? 
+! values matter (factor into the solution) or are they inconsequential? 
             IF (BC_TYPE(BCV) == 'OUTFLOW' .OR. &
                 BC_TYPE(BCV) == 'MASS_OUTFLOW' .OR. &
                 BC_TYPE(BCV) == 'P_OUTFLOW') THEN
@@ -1108,6 +1106,7 @@
                IF (BC_EP_G(BCV) /= UNDEFINED) THEN
                   SUM_EP = BC_EP_G(BCV)
 
+                  write(*,*) 'sum_ep: ', sum_ep
 ! Unclear how the discrete solids volume fraction can be dictated at 
 ! the boundary, so it is currently prevented!
                   IF (DISCRETE_ELEMENT) THEN
@@ -1121,7 +1120,7 @@
                         IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
                            IF (BC_EP_G(BCV) == ONE) THEN 
 ! what does it mean to force the bulk density to zero at the
-! boundary...?
+! boundary? (again does this value matter anyway)
                               BC_ROP_S(BCV,M) = ZERO 
                            ELSEIF (SMAX == 1 ) THEN 
 ! no discrete solids are present so a bulk density can be defined from 
@@ -1137,10 +1136,12 @@
                                  'BC_ROP_s', BCV, M 
                               call mfix_exit(myPE)
                            ENDIF
-! by this point, bc_rop_s must be defined
-! check that sum of void fraction and solids volume fractions
-                           SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S0(M) 
-                        ENDIF
+                        ENDIF  ! end if(bc_rop_s(bcv,m) == undefined)
+! by this point bc_rop_s should either be defined or mfix exited
+! therefore we can check that sum of void fraction and solids volume 
+! fractions
+                        SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S0(M) 
+                        write(*,*) 'M, sum_ep: ', M, sum_ep
                      ENDDO
 
                      IF (.NOT.COMPARE(ONE,SUM_EP)) THEN 
@@ -1193,7 +1194,8 @@
                ENDIF 
             ENDDO 
 
-            IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID .OR. MPPIC) THEN
+            IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID &
+                .OR. MPPIC) THEN
                DO M = 1, SMAX 
                   IF (BC_ROP_S(BCV,M) /= UNDEFINED) THEN 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1300) &
@@ -1282,7 +1284,8 @@
                   ENDIF 
                ENDIF   ! end if (bc_type(bcv)=='par_slip_wall')
 
-               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID.OR.MPPIC) THEN
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID &
+                   .OR.MPPIC) THEN
                   IF (BC_TYPE(BCV)=='PAR_SLIP_WALL' .OR. BC_JJ_PS(BCV)==1) THEN
                      DO M = 1, MMAX
                         IF (BC_UW_S(BCV,M) == UNDEFINED) THEN 
@@ -1303,7 +1306,8 @@
                         ENDIF 
                      ENDDO 
                   ENDIF   ! end if (bc_type(bcv)=='par_slip_wall' or bc_jj_ps(bcv)==1)
-               ENDIF   ! end if (.not.discrete_element .or. des_continuum_hybrid)
+               ENDIF   ! end if (.not.discrete_element .or. des_continuum_hybrid .or.
+                       !          mppic)
 
                IF (ENERGY_EQ) THEN 
                   IF (BC_HW_T_G(BCV) < ZERO) THEN 
@@ -1321,7 +1325,8 @@
                      call mfix_exit(myPE)  
                   ENDIF 
 
-                  IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID .OR. MPPIC) THEN
+                  IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID &
+                      .OR. MPPIC) THEN
                      DO M = 1, SMAX 
                         IF (BC_HW_T_S(BCV,M) < ZERO) THEN 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1103) 'BC_hw_T_s', BCV, M 
@@ -1341,7 +1346,8 @@
                   ENDIF   ! end if (.not.discrete_element .or. des_continuum_hybrid)
                ENDIF   ! end if (energy_eq)
 
-               IF (.NOT. DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID .OR. MPPIC) THEN
+               IF (.NOT. DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID  &
+                   .OR. MPPIC) THEN
                   IF (GRANULAR_ENERGY .AND. BC_JJ_PS(BCV)==0) THEN 
                      DO M = 1, MMAX 
                         IF (BC_HW_THETA_M(BCV,M) < ZERO) THEN 
@@ -1363,7 +1369,8 @@
                         ENDIF 
                      ENDDO 
                   ENDIF   ! end if (granular_energy .and. bc_jj_ps(bcv)==0)
-               ENDIF    ! end if (.not.discrete_element .or. des_continuum_hybrid)
+               ENDIF    ! end if (.not.discrete_element .or. des_continuum_hybrid 
+                        !         .or. mppic)
 
                IF (SPECIES_EQ(0)) THEN 
                   DO N = 1, NMAX(0) 
@@ -1384,7 +1391,8 @@
                   ENDDO 
                ENDIF   ! end if (species_eq(0))
 
-               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID .OR. MPPIC) THEN
+               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID .OR.&
+                   MPPIC) THEN
                   DO M = 1, SMAX 
                      IF (SPECIES_EQ(M)) THEN 
                         DO N = 1, NMAX(M) 
@@ -1409,7 +1417,8 @@
                      ENDIF    ! end if (species_eq(m))
                   ENDDO    ! end loop over (m=1,smax)
                ENDIF   ! end if (.not.discrete_element .or. des_continuum_hybrid)
-  
+                       !         .or. mppic)
+
                DO N = 1, NScalar
                   IF (BC_HW_Scalar(BCV,N) < ZERO) THEN 
                      IF(DMP_LOG)WRITE (UNIT_LOG, 1005) 'BC_hw_Scalar', BCV, N 
