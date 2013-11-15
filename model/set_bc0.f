@@ -51,7 +51,9 @@
       USE boundfunijk 
       USE toleranc
       USE sendrecv
+
       IMPLICIT NONE
+
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -78,6 +80,12 @@
       INCLUDE 'function.inc'
       INCLUDE 'sc_p_g2.inc'
 !----------------------------------------------
+
+
+! Incompressible cases require that Ppg specified for one cell.
+! The following attempts to pick an appropriate cell.
+      CALL SET_IJK_P_G
+
 
 ! Set the boundary conditions - Defining the field variables at the 
 ! boundaries according to the user specifications. These are not the
@@ -401,3 +409,476 @@
       END SUBROUTINE SET_BC0 
 
 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: SET_IJK_P_G                                             !
+!  Purpose: Pick an appropriate control volume to specify Ppg.         !
+!                                                                      !
+!  Author: J. Musser                                  Date: 07-Nov-13  !
+!  Reviewer:                                          Date:            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE SET_IJK_P_G
+
+! IJK location where Ppg is fixed.
+      use bc, only: IJK_P_G
+! Specified constant gas density.
+      use physprop, only: RO_G0
+
+      use geometry, only: CYCLIC
+      use geometry, only: CYCLIC_X, CYCLIC_X_PD, CYCLIC_X_MF
+      use geometry, only: CYCLIC_Y, CYCLIC_Y_PD, CYCLIC_Y_MF
+      use geometry, only: CYCLIC_Z, CYCLIC_Z_PD, CYCLIC_Z_MF
+
+      use geometry, only: iMAX1, iMin1
+      use geometry, only: jMAX1, jMin1
+      use geometry, only: kMAX1, kMin1
+
+      use geometry, only: do_K
+
+      use funits, only: DMP_LOG
+
+      use bc, only: BC_I_w, BC_I_e
+      use bc, only: BC_J_s, BC_J_n
+      use bc, only: BC_K_b, BC_K_t
+
+      use bc, only: BC_DEFINED
+      use bc, only: BC_TYPE
+      use bc, only: BC_PLANE
+
+! MFIX Runtime parameters:
+      use param, only: DIMENSION_BC
+      use param1, only: UNDEFINED
+      use param1, only: UNDEFINED_I
+
+      use mpi_utility
+
+      implicit none
+
+      INTEGER :: BCV
+
+      CHARACTER(len=7) :: Map
+
+      CHARACTER(len=128) :: lMsg
+
+      INTEGER :: l3
+      INTEGER :: l2, u2
+      INTEGER :: l1, u1
+
+      LOGICAL, parameter :: setDBG = .TRUE.
+      LOGICAL :: dFlag
+
+      INTEGER :: iErr
+
+      EXTERNAL JKI_MAP, IKJ_MAP, KIJ_MAP
+
+      dFlag = (DMP_LOG .AND. setDBG)
+
+! Initialize.
+      iErr = 0
+      IJK_P_G = UNDEFINED_I
+
+! This is not needed for compressible cases.
+      IF(RO_G0 == UNDEFINED) THEN
+         IF(dFlag) write(*,"(3x,A)")                                   &
+            'Compressible: IJK_P_g remaining undefined.'
+         return
+      ENDIF
+
+! Initialize.
+         l3 = UNDEFINED_I
+         l2 = UNDEFINED_I; u2=l2
+         l1 = UNDEFINED_I; u1=l1
+
+! If there are cyclic boundaries, flag a cell along the positive 
+! domain extreme in the cyclic direction (e.g., JMAX1).
+      IF(CYCLIC_Y .OR. CYCLIC_Y_PD .OR. CYCLIC_Y_MF) THEN
+
+         Map = 'JKI_MAP'
+         l3 = JMAX1
+         l2 = KMIN1;  u2 = KMAX1
+         l1 = IMIN1;  u1 = IMAX1
+         lMsg='Cyclic in Y'
+
+      ELSEIF(CYCLIC_X .OR. CYCLIC_X_PD .OR. CYCLIC_X_MF) THEN
+
+         Map = 'IKJ_MAP'
+         l3 = IMAX1
+         l2 = KMIN1;  u2 = KMAX1
+         l1 = JMIN1;  u1 = JMAX1
+         lMsg='Cyclic in X'
+
+      ELSEIF(CYCLIC_Z .OR. CYCLIC_Z_PD .OR. CYCLIC_Z_MF) THEN
+
+         Map = 'KIJ_MAP'
+         l3 = KMAX1
+         l2 = IMIN1;  u2 = IMAX1
+         l1 = JMIN1;  u1 = JMAX1
+         lMsg='Cyclic in Z'
+
+      ENDIF
+
+! If there are no cyclic boundaries, look for a pressure outflow.
+      IF(l3 == UNDEFINED_I) THEN
+
+         lpBCV: DO BCV = 1, DIMENSION_BC 
+
+            IF (.NOT.BC_DEFINED(BCV)) cycle lpBCV
+            IF (BC_TYPE(BCV) /= 'P_OUTFLOW') cycle lpBCV
+               
+            SELECT CASE (TRIM(BC_PLANE(BCV)))  
+
+            CASE ('W'); 
+               Map = 'IKJ_MAP'
+               l3 = BC_I_w(BCV) - 1
+               l2 = BC_J_s(BCV);  u2 = BC_J_n(BCV)
+               l1 = BC_K_b(BCV);  u1 = BC_K_t(BCV)
+               write(lMsg,"('P Outflow (W): ,'I3)") BCV
+
+            CASE ('E'); 
+               Map = 'IKJ_MAP'
+               l3 = BC_I_e(BCV) + 1
+               l2 = BC_J_s(BCV);  u2 = BC_J_n(BCV)
+               l1 = BC_K_b(BCV);  u1 = BC_K_t(BCV)
+               write(lMsg,"('P Outflow (E): ,'I3)") BCV
+
+            CASE ('S')
+               Map = 'JKI_MAP'
+               l3 = BC_J_s(BCV) - 1
+               l2 = BC_K_b(BCV);  u2 = BC_K_t(BCV)
+               l1 = BC_I_w(BCV);  u1 = BC_I_e(BCV)
+               write(lMsg,"('P Outflow (S): ,'I3)") BCV
+
+            CASE ('N')
+               Map = 'JKI_MAP'
+               l3 = BC_J_n(BCV) + 1
+               l2 = BC_K_b(BCV);  u2 = BC_K_t(BCV)
+               l1 = BC_I_w(BCV);  u1 = BC_I_e(BCV)
+               write(lMsg,"('P Outflow (N): ,'I3)") BCV
+
+            CASE ('B')
+               Map = 'KIJ_MAP'
+               l3 = BC_K_b(BCV) - 1
+               l2 = BC_I_w(BCV);  u2 = BC_I_e(BCV)
+               l1 = BC_J_s(BCV);  u1 = BC_J_n(BCV)
+               write(lMsg,"('P Outflow (B): ,'I3)") BCV
+
+            CASE ('T')
+               Map = 'KIJ_MAP'
+               l3 = BC_K_t(BCV) + 1
+               l2 = BC_I_w(BCV);  u2 = BC_I_e(BCV)
+               l1 = BC_J_s(BCV);  u1 = BC_J_n(BCV)
+               write(lMsg,"('P Outflow (T): ,'I3)") BCV
+
+            END SELECT   ! end select case (bc_plane(bcv))
+
+            EXIT lpBCV
+         ENDDO lpBCV
+      ENDIF
+
+! No cyclic boundaries or pressure outflows. The IJ plane is used in 
+! this case to maximize search region for 2D problems.
+      IF(l3 == UNDEFINED_I) THEN
+         Map = 'KIJ_MAP'
+         l3 = merge((KMAX1 - KMIN1)/2 + 1, KMIN1, do_K)
+         l2 = IMIN1;  u2 = IMAX1
+         l1 = JMIN1;  u1 = JMAX1
+         lMsg='Center of domain'
+      ENDIF
+
+! Debugging messages.
+      IF(dFlag) THEN
+         write(*,"(3/,3x,'Map: ',A)") Map
+         write(*,"(/5x,'l3:',2x,I4)") l3
+         write(*,"( 5x,'l2:',2(2x,I4))") l2, u2
+         write(*,"( 5x,'l1:',2(2x,I4))") l1, u1
+         write(*,"( 5x,'Msg: ',A)") trim(lMsg)
+      ENDIF
+
+! Invoke the search routine.
+      SELECT CASE (Map)
+      CASE ('JKI_MAP') 
+         CALL IJK_Pg_SEARCH(l3, l2, u2, l1, u1, JKI_MAP, dFlag, iErr)
+      CASE ('IKJ_MAP')
+         CALL IJK_Pg_SEARCH(l3, l2, u2, l1, u1, IKJ_MAP, dFlag, iErr)
+      CASE ('KIJ_MAP')
+         CALL IJK_Pg_SEARCH(l3, l2, u2, l1, u1, KIJ_MAP, dFlag, iErr)
+      CASE DEFAULT
+         iErr = 1001
+      END SELECT
+
+      IF(iErr == 0) RETURN
+
+! Error management.
+      IF(DMP_LOG) THEN
+         SELECT CASE (iErr)
+         CASE ( 1001);  WRITE(UNIT_LOG, 1001); WRITE(*,1001)
+         CASE ( 2000);  WRITE(UNIT_LOG, 2000); WRITE(*,2000)
+         CASE ( 2001);  WRITE(UNIT_LOG, 2001); WRITE(*,2001)
+         CASE ( 2002);  WRITE(UNIT_LOG, 2002); WRITE(*,2002)
+         CASE DEFAULT
+            WRITE(UNIT_LOG, 1000) iErr
+            WRITE(*,1000) iErr
+         END SELECT
+
+         WRITE(UNIT_LOG, 9000) MAP(1:1), l3, MAP(2:2),                 &
+            l2, u2, MAP(3:3), l1, u1
+         WRITE(*, 9000) MAP(1:1), l3, MAP(2:2),                        &
+            l2, u2, MAP(3:3), l1, u1
+
+         WRITE(*, 9999) 
+         WRITE(UNIT_LOG, 9999) 
+
+      ENDIF
+
+
+      CALL MFIX_EXIT(myPE)
+
+
+ 1000 FORMAT(//1X,70('*')/' From: SET_IJK_Pg',/,                       &
+         ' Error 1000: Unknown error reported. x', I4.4)
+
+ 1001 FORMAT(//1X,70('*')/' From: SET_IJK_Pg',/,                       &
+         ' Error 1001: Invalid mapping function.')
+
+ 2000 FORMAT(//1X,70('*')/' From: SET_IJK_Pg > IJK_Pg_SEARCH',/,       &
+         ' Error 2000: Unknown error reported from IJK_Pg_SEARCH.')
+
+ 2001 FORMAT(//1X,70('*')/' From: SET_IJK_Pg > IJK_Pg_SEARCH',/,       &
+         ' Error 2001: Unable to locate fluid cell in search region.')
+
+ 2002 FORMAT(//1X,70('*')/' From: SET_IJK_Pg > IJK_Pg_SEARCH',/,       &
+         ' Error 2002: Unable to locate fluid cell owner.')
+
+ 9000 FORMAT(/' Search plane information:',/,3x,A1,': ',I8,            &
+          2(/3x,A1,': ',I8,' x ',I8))
+
+ 9999 FORMAT(/' Fatal Error --> Invoking MFIX_EXIT',/1x,70('*'),2/)
+
+
+      END SUBROUTINE SET_IJK_P_G
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: SET_IJK_P_G                                             !
+!  Purpose: Pick an appropriate control volume to specify Ppg.         !
+!                                                                      !
+!  Author: J. Musser                                  Date: 07-Nov-13  !
+!  Reviewer:                                          Date:            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE IJK_Pg_SEARCH(ll3, ll2, lu2, ll1, lu1,  lMAP,         &
+         ldFlag, iErr)
+
+! IJK location where Ppg is fixed.
+      use bc, only: IJK_P_g
+
+      use indices
+      use mpi_utility
+
+      implicit none
+
+      INTEGER, INTENT(IN)  :: ll3
+      INTEGER, INTENT(IN)  :: ll2, lu2
+      INTEGER, INTENT(IN)  :: ll1, lu1
+
+      LOGICAL, intent(in) :: ldFlag
+
+      INTEGER, INTENT(OUT)  :: iErr
+
+      EXTERNAL lMAP
+
+      INTEGER :: lc2, lS2, lE2
+      INTEGER :: lc1, lS1, lE1
+
+      INTEGER :: I, J, K, IJK
+      LOGICAL :: recheck
+
+      INTEGER :: IJK_Pg_Owner, proc
+      INTEGER :: gIJK(0:numPEs-1)
+
+      INTEGER :: I_J_K_Pg(3)
+
+      INTEGER :: lpCnt
+
+      CHARACTER(len=32) :: cInt
+
+      include 'function.inc'
+
+! Initialize Error Flag
+      iErr = 2000
+
+! Initialize the Owner ID
+      IJK_Pg_Owner = UNDEFINED_I
+
+! Set the initial search region, a single cell.
+      lS1 = (lu1-ll1)/2 + 1; lE1 = lS1
+      lS2 = (lu2-ll2)/2 + 1; lE2 = lS2
+
+      lpCnt = 1
+      recheck = .TRUE.
+      do while(recheck)
+
+! Initialize the global IJK array to zero. Resetting this array inside
+! this do-loop is most likely overkill. This loop should only cycle
+! if gIJK is zero.
+         gIJK = 0
+
+! Report debugging information for the search region.
+         if(ldFlag) then
+            write(*,"(/5x,'Pass: ',I4)") lpCnt
+            write(*,"( 5x,'lp2 bounds:',2(2x,I4))")lS2, lE2
+            write(*,"( 5x,'lp1 bounds:',2(2x,I4))")lS1, lE1
+         endif
+
+         lp2: do lc2 = lS2, lE2
+         lp1: do lc1 = lS1, lE1
+! Map the loop counters to I/J/K indices. 
+            CALL lMAP(lc1, lc2, ll3, I, J, K)
+
+! Only the rank that owns this I/J/K proceeds.
+            if(.NOT.IS_ON_myPE_owns(I,J,K)) cycle
+! Calculate the triple loop index.
+            IJK = funijk(I,J,K)
+! If there is fluid at this location, store the IJK and exit loops.
+            if(fluid_at(IJK)) then
+               gIJK(myPE) = IJK
+               exit lp2
+            endif
+         enddo lp1
+         enddo lp2
+
+! Sync gIJK across all processes. Select the lowest ranked process that
+! has gIJK defined. This choice is arbitray and doesn't really matter.
+! It just needs to be consistent.
+         CALL global_all_sum(gIJK)
+         proc_lp: do proc=0, numPEs-1
+            if(gIJK(proc) /= 0) then
+               IJK_P_g = gIJK(proc)
+               IJK_Pg_Owner = proc
+               recheck = .FALSE.
+               exit proc_lp
+            endif
+         enddo proc_lp
+
+! If the proceeding section did not find a fluid cell, expand the search
+! area and try again.
+         if(recheck) then
+            if(lS1 > ll1 .OR. lE1 < lu1 .OR.                           &
+               lS2 > ll2 .OR. lE2 < lu2) then
+! Expand the 1-axis
+               lS1 = max((lS1-1), ll1)
+               lE1 = min((lE1+1), lu1)
+! Expand the 2-axis
+               lS2 = max((lS2-1), ll2)
+               lE2 = min((lE2+1), lu2)
+! The entire seach plane was checked with no fluid cell identified.
+! Force IJK_P_g to undefined for later error checking.
+            else
+               recheck = .FALSE.
+               IJK_P_g = UNDEFINED_I
+            endif
+         endif
+      enddo
+
+! Verify that one fluid cell was detected. Otherwise flag the possible
+! errors and return.
+      if(IJK_P_G == UNDEFINED_I) then
+         iErr = 2001
+         return
+      elseif(IJK_Pg_Owner == UNDEFINED_I) then
+         iErr = 2002
+         return
+      endif
+
+
+! The owner if the IJK_Pg gets the global I/J/K values and sends
+! them to all ranks.
+      if(myPE == IJK_Pg_Owner) then
+         I_J_K_Pg(1) = I_OF(IJK_P_G)
+         I_J_K_Pg(2) = J_OF(IJK_P_G)
+         I_J_K_Pg(3) = K_OF(IJK_P_G)
+      endif
+      CALL BCAST(I_J_K_Pg, IJK_Pg_Owner)
+
+      I = I_J_K_Pg(1)
+      J = I_J_K_Pg(2)
+      K = I_J_K_Pg(3)
+
+! If debugging, have PE_IO report some information before the
+! data is overwritten.
+      if(ldFlag) then
+         write(*,"(/3x,'IJK_P_g successfully identified!')")
+         cInt=''; write(cInt,*) IJK_Pg_Owner
+         write(*,"( 5x,'Owner Rank: ',A)")trim(adjustl(cInt))
+         cInt=''; write(cInt,*) IJK_P_G
+         write(*,"(5x, 'IJK: ',A)", advance='no') trim(adjustl(cInt))
+         write(*,"(' :: ')", advance='no') 
+         cInt=''; write(cInt,*) I
+         write(*,"('(',A)",advance='no') trim(adjustl(cInt))
+         cInt=''; write(cInt,*) J
+         write(*,"(',',A)",advance='no') trim(adjustl(cInt))
+         cInt=''; write(cInt,*) K
+         write(*,"(',',A,')',2/)") trim(adjustl(cInt))
+      endif
+
+! Ranks that 'see' IJK_P_g store their local IJK value. Everyone else
+! resets IJK_P_g to UNDEFINED_I. This removes the need for getting
+! I/J/K values later on in source_PPg.
+      IJK_P_g = merge(funijk(I,J,K), UNDEFINED_I,                      &
+         IS_ON_myPE_plus2layers(I,J,K))
+
+      IERR = 0
+      RETURN
+      END SUBROUTINE IJK_Pg_SEARCH
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: NegROs_LOG                                              !
+!  Purpose: Record information about the location and conditions that  !
+!           resulted in a negative solids phase density.               !
+!                                                                      !
+!  Author: J. Musser                                  Date: 09-Oct-13  !
+!  Reviewer:                                          Date:            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE JKI_MAP(in1, in2, in3, lI, lJ, lK)
+
+      implicit none
+
+      INTEGER, intent(in) :: in1, in2, in3
+      INTEGER, intent(out) :: lI, lJ, lK
+
+      lI=in1; lJ=in3; lK=in2; return
+      return
+      END SUBROUTINE JKI_MAP
+
+
+
+      SUBROUTINE IKJ_MAP(in1, in2, in3, lI, lJ, lK)
+
+      implicit none
+
+      INTEGER, intent(in) :: in1, in2, in3
+      INTEGER, intent(out) :: lI, lJ, lK
+
+      lI=in3; lJ=in1; lK=in2; return
+      return
+      END SUBROUTINE IKJ_MAP
+
+
+
+      SUBROUTINE KIJ_MAP(in1, in2, in3, lI, lJ, lK)
+
+      implicit none
+
+      INTEGER, intent(in) :: in1, in2, in3
+      INTEGER, intent(out) :: lI, lJ, lK
+
+      lI=in2; lJ=in1; lK=in3; return
+      return
+      END SUBROUTINE KIJ_MAP

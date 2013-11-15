@@ -81,22 +81,6 @@
 ! External functions
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: DROODP_G 
-! ----------------------------------------------
-! Inline statement functions 
-! ----------------------------------------------
-! Determining i, j, k for global ijk_p_g      
-      integer i_of_g, j_of_g, k_of_g
-      integer ijk_p_g_local
-! Need to extract i, j, k from ijk_p_g to determine
-! the processor which acts on ijk_p_g to fix the 
-! value of pressure
-      k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*&
-                         (jmax3-jmin3+1) ) ) + kmin3
-      i_of_g(ijk) = int( ( (ijk-(k_of_g(ijk)-kmin3)*((imax3-imin3+1)*&
-                         (jmax3-jmin3+1)))-1) / (jmax3-jmin3+1)) + imin3
-      j_of_g(ijk) = ijk - (i_of_g(ijk)-imin3)*(jmax3-jmin3+1) - &
-                          (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*&
-                          (jmax3-jmin3+1)) - 1 + jmin3
 
 !-----------------------------------------------
 ! Include statement functions
@@ -105,8 +89,6 @@
 !-----------------------------------------------
 
       call lock_xsi_array
-
-
 ! loezos
 ! update to true velocity
       IF (SHEAR) THEN
@@ -315,30 +297,15 @@
          ENDIF 
       ENDDO 
 
-
-! Specify P' to zero at a certain location for incompressible flows and
-! cyclic boundary conditions.
-! Parallel implementation of fixing a pressure at a point
-      I = I_OF_G(IJK_P_G)
-      J = J_OF_G(IJK_P_G)
-      K = K_OF_G(IJK_P_G)
-      IF(IS_ON_myPE_OWNS(I,J,K)) THEN
-         IF (IJK_P_G /= UNDEFINED_I) THEN 
-            IJK_P_G_LOCAL = FUNIJK(I,J,K)
-            A_M(IJK_P_G_LOCAL,E,0) = ZERO 
-            A_M(IJK_P_G_LOCAL,W,0) = ZERO 
-            A_M(IJK_P_G_LOCAL,N,0) = ZERO 
-            A_M(IJK_P_G_LOCAL,S,0) = ZERO 
-            A_M(IJK_P_G_LOCAL,T,0) = ZERO 
-            A_M(IJK_P_G_LOCAL,B,0) = ZERO 
-            A_M(IJK_P_G_LOCAL,0,0) = -ONE 
-            B_M(IJK_P_G_LOCAL,0) = ZERO 
-         ENDIF 
+! Specify P' to zero for incompressible flows. Check set_bc0
+! for details on selection of IJK_P_g.
+      IF (IJK_P_G /= UNDEFINED_I) THEN 
+         B_M(IJK_P_G,0) = ZERO 
+         A_M(IJK_P_G,:,0) = ZERO 
+         A_M(IJK_P_G,0,0) = -ONE 
       ENDIF
 
       call unlock_xsi_array
 
       RETURN  
-      END SUBROUTINE SOURCE_PP_G 
-
-
+      END SUBROUTINE SOURCE_PP_G
