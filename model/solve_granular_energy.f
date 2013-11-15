@@ -350,7 +350,7 @@
 ! ----------------------------------------------------------------<<<
 
 
-      ELSE     ! default KT in MFIX or GD_99 theory
+      ELSE     ! default KT in MFIX or GD_99 or GTHS theory
 ! ---------------------------------------------------------------->>>              
          DO M = 1, MMAX 
 
@@ -368,7 +368,8 @@
  
                IF (FLUID_AT(IJK)) THEN 
 ! calculate the source terms to be used in the a matrix and b vector
-                  IF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
+                  IF (TRIM(KT_TYPE) .EQ. 'GD_99' .OR. &
+		      TRIM(KT_TYPE) .EQ. 'GTSH' ) THEN
                      CALL SOURCE_GD_99_GRANULAR_ENERGY(SOURCELHS, &
                         SOURCERHS, IJK, M, IER)
                   ELSE
@@ -456,7 +457,7 @@
          ENDDO   ! end do loop (m=1,mmax)
 
       ENDIF   ! end if/else (kt_type)     
-! end default KT in MFIX or GD_99 theory      
+! end default KT in MFIX or GD_99 or GTSH theory      
 ! ----------------------------------------------------------------<<<      
       call unlock_ambm
       call unlock_tmp_array

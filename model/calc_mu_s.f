@@ -122,7 +122,8 @@
          ELSE   ! granular energy transport equation
             IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
                CALL gt_pde_ia_nonep(M,IER) ! complete polydisperse IA theory
-            ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
+            ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99' .OR. &
+	            TRIM(KT_TYPE) .EQ. 'GTSH') THEN
                CALL gt_pde_gd_99(M,IER) ! monodisperse GD theory
             ELSEIF (TRIM(KT_TYPE) == 'GHD') THEN
                CALL TRANSPORT_COEFF_GHD(M,IER) ! GHD theory for mixture temperature
@@ -785,7 +786,10 @@
 !  Literature/Document References:                                     C
 !    Garzo, V., and Dufty, J., Homogeneous cooling state for a         C
 !    granular mixture, Physical Review E, 1999, Vol 60 (5), 5706-      C
-!    5713                                                              C
+!    5713                                               C
+!  Revision: (sof) Added GTSH kinetic theory based on Garzo, Tenneti,  C
+!     Subramaniam, Hrenya (2012) J. Fluid Mech. 712, pp 129-404        C
+!     And also based on C.M. Hrenya hand-notes dated Sep 2013          C
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
@@ -835,6 +839,12 @@
                           gamma_star, eta_k_star, eta_star, eta0, &
                           kappa0, nu_kappa_star, kappa_k_star, &
                           qmu_k_star, qmu_star, kappa_star, press_star
+!
+      DOUBLE PRECISION :: Xsi, eps, nu0, nuN, etaK
+      DOUBLE PRECISION :: dZeta_dT, dGama_dT, NuK, Kth0, KthK, dXsiOdphi
+      DOUBLE PRECISION :: Rdissdphi, Kphidphi, Re_T, dGamadn, dRdphi, denom
+      DOUBLE PRECISION :: dSdphi, R_dphi, Tau_st, dPsidn, MuK
+      DOUBLE PRECISION, PARAMETER  ::  epM = 0.001d0
 
 ! SWITCH enables us to turn on/off the modification to the
 ! particulate phase viscosity. If we want to simulate gas-particle
@@ -850,6 +860,11 @@
       DOUBLE PRECISION, EXTERNAL :: G_0
 ! dg0/dep
       DOUBLE PRECISION, EXTERNAL :: DG_0DNU
+! function gamma: eq. (8.1), S_star and K_phi in GTSH theory
+      DOUBLE PRECISION, EXTERNAL :: G_gtsh
+      DOUBLE PRECISION, EXTERNAL :: S_star
+      DOUBLE PRECISION, EXTERNAL :: K_phi
+      DOUBLE PRECISION, EXTERNAL :: R_d
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -864,7 +879,15 @@
           K = K_OF(IJK)
 
           IF ( FLUID_AT(IJK) ) THEN
+
+             Xsi = G_0(IJK,M,M)
+	     eps = EP_S(IJK,M)
+	     dXsiOdphi = DG_0DNU(eps)
+	     D_PM = D_P(IJK,M)
+             M_PM = (PI/6.d0)*D_PM**3 * RO_S(IJK,M)
+             NU_PM = ROP_S(IJK,M)/M_PM
     
+             if((TRIM(KT_TYPE) == 'GD_99')) then
 ! Defining a single particle drag coefficient (similar to one defined in drag_gs)
                Re = D_p(IJK,M)*VREL_array(IJK)*ROP_G(IJK)/&
                     (MU_G(IJK) + small_number)
@@ -884,14 +907,10 @@
 ! Pressure/Viscosity/Bulk Viscosity
 ! Note: k_boltz = M_PM
 !-----------------------------------
-               D_PM = D_P(IJK,M)
-!               M_PM = (PI/6.d0)*D_PM**3 * RO_S(M)
-               M_PM = (PI/6.d0)*D_PM**3 * RO_S(IJK,M)
-               NU_PM = ROP_S(IJK,M)/M_PM
 
      
 ! Find pressure in the Mth solids phase
-               press_star = 1.d0 + 2.d0*(1.d0+C_E)*EP_s(IJK,M)*G_0(IJK,M,M)
+               press_star = 1.d0 + 2.d0*(1.d0+C_E)*eps*Xsi
 
 ! n*k_boltz = n*m = ep_s*ro_s
                P_s_v(IJK) = ROP_s(IJK,M)*Theta_m(IJK,M)*press_star
@@ -900,19 +919,19 @@
                c_star = 32.0d0*(1.0d0 - C_E)*(1.d0 - 2.0d0*C_E*C_E) &
                     / (81.d0 - 17.d0*C_E + 30.d0*C_E*C_E*(1.0d0-C_E))
 
-               zeta0_star = (5.d0/12.d0)*G_0(IJK,M,M)*(1.d0 - C_E*C_E) &
+               zeta0_star = (5.d0/12.d0)*Xsi*(1.d0 - C_E*C_E) &
                     * (1.d0 + (3.d0/32.d0)*c_star)
 
-               nu_eta_star = G_0(IJK,M,M)*(1.d0 - 0.25d0*(1.d0-C_E)*(1.d0-C_E)) &
+               nu_eta_star = Xsi*(1.d0 - 0.25d0*(1.d0-C_E)*(1.d0-C_E)) &
                     * (1.d0-(c_star/64.d0))
 
-               gamma_star = (4.d0/5.d0)*(32.d0/PI)*EP_s(IJK,M)*EP_S(IJK,M) &
-                    * G_0(IJK,M,M)*(1.d0+C_E) * (1.d0 - (c_star/32.d0))
+               gamma_star = (4.d0/5.d0)*(32.d0/PI)*eps*eps &
+                    * Xsi*(1.d0+C_E) * (1.d0 - (c_star/32.d0))
 
                eta_k_star = (1.d0 - (2.d0/5.d0)*(1.d0+C_E)*(1.d0-3.d0*C_E) &
-                    * EP_s(IJK,M)*G_0(IJK,M,M) ) / (nu_eta_star - 0.5d0*zeta0_star)
+                    * eps*Xsi ) / (nu_eta_star - 0.5d0*zeta0_star)
 
-               eta_star = eta_k_star*(1.d0 + (4.d0/5.d0)*EP_s(IJK,M)*G_0(IJK,M,M) &
+               eta_star = eta_k_star*(1.d0 + (4.d0/5.d0)*eps*Xsi &
                     * (1.d0+C_E) ) + (3.d0/5.d0)*gamma_star
 
                eta0 = 5.0d0*M_PM*DSQRT(Theta_m(IJK,M)/PI) / (16.d0*D_PM*D_PM)
@@ -922,14 +941,14 @@
                     Mu_star = eta0
                ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
                     Mu_star = ZERO
-               ELSEIF(EP_S(IJK,M) < DIL_EP_S) THEN
-                    Mu_star = RO_S(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M)*eta0 / &
-                         ( RO_S(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M) + &
+               ELSEIF(eps < DIL_EP_S) THEN
+                    Mu_star = RO_S(IJK,M)*eps*Xsi*Theta_m(IJK,M)*eta0 / &
+                         ( RO_S(IJK,M)*eps*Xsi*Theta_m(IJK,M) + &
                          2.d0*DgA*eta0/RO_S(IJK,M) )
                ELSE
-                    Mu_star = RO_S(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M)*eta0 / &
-                         ( RO_S(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M) + &
-                         (2.d0*F_gs(IJK,M)*eta0/(RO_S(IJK,M)*EP_s(IJK,M))) )
+                    Mu_star = RO_S(IJK,M)*eps*Xsi*Theta_m(IJK,M)*eta0 / &
+                         ( RO_S(IJK,M)*eps*Xsi*Theta_m(IJK,M) + &
+                         (2.d0*F_gs(IJK,M)*eta0/(RO_S(IJK,M)*eps)) )
                ENDIF
 
 ! shear viscosity in Mth solids phase  (add to frictional part)
@@ -944,32 +963,32 @@
 !-----------------------------------
                kappa0 = (15.d0/4.d0)*eta0
 
-               nu_kappa_star = (G_0(IJK,M,M)/3.d0)*(1.d0+C_E) * ( 1.d0 + &
+               nu_kappa_star = (Xsi/3.d0)*(1.d0+C_E) * ( 1.d0 + &
                     (33.d0/16.d0)*(1.d0-C_E) + ((19.d0-3.d0*C_E)/1024.d0)*c_star)
 !              nu_mu_star = nu_kappa_star
 
                kappa_k_star = (2.d0/3.d0)*(1.d0 + 0.5d0*(1.d0+press_star)*c_star + &
-                    (3.d0/5.d0)*EP_s(IJK,M)*G_0(IJK,M,M)*(1.d0+C_E)*(1.d0+C_E) * &
+                    (3.d0/5.d0)*eps*Xsi*(1.d0+C_E)*(1.d0+C_E) * &
                     (2.d0*C_E - 1.d0 + ( 0.5d0*(1.d0+C_E) - 5.d0/(3*(1.d0+C_E))) * &
                      c_star ) ) / (nu_kappa_star - 2.d0*zeta0_star)
 
-               kappa_star = kappa_k_star * (1.d0 + (6.d0/5.d0)*EP_s(IJK,M)* &
-                    G_0(IJK,M,M)*(1.d0+C_E) ) + (256.d0/25.d0)*(EP_s(IJK,M)* &
-                    EP_s(IJK,M)/PI)*G_0(IJK,M,M)*(1.d0+C_E)*(1.d0+(7.d0/32.d0)* &
+               kappa_star = kappa_k_star * (1.d0 + (6.d0/5.d0)*eps* &
+                    Xsi*(1.d0+C_E) ) + (256.d0/25.d0)*(eps* &
+                    eps/PI)*Xsi*(1.d0+C_E)*(1.d0+(7.d0/32.d0)* &
                     c_star)
 
                IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN ! sof modifications (May 20 2005)
                     Kth_star= kappa0
                ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
                     Kth_star = ZERO
-               ELSEIF(EP_S(IJK,M) < DIL_EP_S) THEN
-                    Kth_star = RO_S(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M)*kappa0/ &
-                         (RO_S(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M) + &
+               ELSEIF(eps < DIL_EP_S) THEN
+                    Kth_star = RO_S(IJK,M)*eps*Xsi*Theta_m(IJK,M)*kappa0/ &
+                         (RO_S(IJK,M)*eps*Xsi*Theta_m(IJK,M) + &
                          1.2d0*DgA*kappa0/RO_S(IJK,M) )
                ELSE
-                    Kth_star = RO_S(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M)*kappa0/ &
-                         (RO_S(IJK,M)*EP_s(IJK,M)*G_0(IJK,M,M)*Theta_m(IJK,M)+ &
-                         (1.2d0*F_gs(IJK,M)*kappa0/(RO_S(IJK,M)*EP_s(IJK,M))) )
+                    Kth_star = RO_S(IJK,M)*eps*Xsi*Theta_m(IJK,M)*kappa0/ &
+                         (RO_S(IJK,M)*eps*Xsi*Theta_m(IJK,M)+ &
+                         (1.2d0*F_gs(IJK,M)*kappa0/(RO_S(IJK,M)*eps)) )
                ENDIF
 
 ! granular conductivity in Mth solids phase
@@ -977,23 +996,139 @@
    
 ! transport coefficient of the Mth solids phase associated
 ! with gradient in volume fraction in heat flux
-               qmu_k_star = 2.d0*( (1.d0+EP_s(IJK,M)*DG_0DNU(EP_s(IJK,M)))* &
+               qmu_k_star = 2.d0*( (1.d0+eps*dXsiOdphi)* &
                     zeta0_star*kappa_k_star + ( (press_star/3.d0) + (2.d0/3.d0)* &
-                    EP_s(IJK,M)*(1.d0+C_E) * (G_0(IJK,M,M)+EP_s(IJK,M)* &
-                    DG_0DNU(EP_s(IJK,M))) )*c_star - (4.d0/5.d0)*EP_s(IJK,M)* &
-                    G_0(IJK,M,M)* (1.d0+(EP_s(IJK,M)/2.d0)*DG_0DNU(EP_s(IJK,M)))* &
+                    eps*(1.d0+C_E) * (Xsi+eps* &
+                    dXsiOdphi) )*c_star - (4.d0/5.d0)*eps* &
+                    Xsi* (1.d0+(eps/2.d0)*dXsiOdphi)* &
                     (1.d0+C_E) * ( C_E*(1.d0-C_E)+0.25d0*((4.d0/3.d0)+C_E* &
                     (1.d0-C_E))*c_star ) ) / (2.d0*nu_kappa_star-3.d0*zeta0_star)
 
-               qmu_star = qmu_k_star*(1.d0+(6.d0/5.d0)*EP_s(IJK,M)*G_0(IJK,M,M)*&
+               qmu_star = qmu_k_star*(1.d0+(6.d0/5.d0)*eps*Xsi*&
                     (1.d0+C_E) )
 
 
-               IF (EP_S(IJK,M) .LT. SMALL_NUMBER) THEN
+               IF (eps .LT. SMALL_NUMBER) THEN
                     Kphi_s(IJK,M) = ZERO
                ELSE   
                     Kphi_s(IJK,M) = (Theta_m(IJK,M)*Kth_star/NU_PM)*qmu_star
                ENDIF
+!
+             elseif((TRIM(KT_TYPE) == 'GTSH')) then
+!
+! defining solids pressure, eq (6.14) of GTSH theory
+               P_s_v(IJK) = ROP_s(IJK,M)*Theta_m(IJK,M)* &
+	                   (one+2d0*(one+C_E)*Xsi*eps)
+!
+! now evaluating shear viscosity, eq (7.3) of GTSH theory
+! starting with nu_0 equ (7.6-7.8)
+               eta0 = 0.3125d0/(dsqrt(pi)*D_PM**2)*M_pm*dsqrt(theta_m(ijk,m))
+	       nu0 = (96.d0/5.d0)*(eps/D_PM)*DSQRT(Theta_m(IJK,M)/PI)
+!	       nu0 = NU_PM*M_pm*theta_m(ijk,m)/eta0
+	       nuN = 0.25d0*nu0*Xsi*(3d0-C_E)*(one+C_E) * &
+	             (one+0.7375d0*A2_gtsh(ijk))
+! defining kinetic part of shear viscosity nuK  equ (7.7)
+               etaK = rop_s(ijk,m)*theta_m(ijk,m) / (nuN-0.5d0*( &
+	             EDT_s_ip(ijk,M,M)-zeta_gtsh(ijk)/theta_m(ijk,m) - &
+		     2d0*G_gtsh(EPS, Xsi, IJK, M)/M_PM)) * (one -0.4d0 * &
+		     (one+C_E)*(one-3d0*C_E)*eps*Xsi)
+! bulk viscosity lambda eq. (7.5)
+               Mu_b_v(IJK) = 25.6d0/pi * eps**2 * Xsi *(one+C_E) * &
+	                    (one - A2_gtsh(ijk)/16d0)*eta0
+!
+! Finaly shear viscosity, eq (7.9) of GTSH theory
+               Mu_s_v(IJK) = etaK*(one+0.8d0*eps*Xsi*(one+C_E)) + &
+	                     0.6d0*Mu_b_v(IJK)
+!
+! Now let's define the true bulk viscosity as defined in MFIX 
+               LAMBDA_S_V(IJK) = Mu_b_v(IJK) - (2.d0/3.d0)*Mu_s_v(IJK)
+!
+! There are several steps to calculate conductivity Kth_s(IJK,M), eq. 7.12 GTSH theory.
+! Let's start with calculatint dZeta/dT and dGama/dT
+! note that 1/Tau = (3d0*pi*mu_g(ijk)*D_PM/M_p)**2 defined under eq. 8.2 GTSH
+               dZeta_dT = -0.5d0*zeta_gtsh(ijk)/(M_pm*theta_m(ijk,m))
+               dGama_dT = 3d0*pi*D_PM**2*RO_g(ijk)*K_phi(eps)/ &
+	                 (2d0*M_pm*dsqrt(theta_m(ijk,m)))  ! note that T = (m_pm*theta_m)
+               dGama_dT = zero  ! this is giving neg. KthK for dilute flows, set it to zero for now.
+! evaluating eq (7.16) in GTSH
+               NuK = nu0*(one+C_E)/3d0*Xsi*( one+2.0625d0*(one-C_E)+ &
+	             ((947d0-579*C_E)/256d0*A2_gtsh(ijk)) )
+! evaluating eq. (7.13)
+               Kth0 = 3.75d0*eta0/M_pm
+! evaluating kinetic conductivity Kk eq. (7.14)
+               KthK = zero
+	       if(eps > small_number) KthK = 2d0/3d0*Kth0*nu0/(NuK - &
+	              2d0*EDT_s_ip(ijk,M,M)-2d0*theta_m(ijk,m)*dGama_dT  &
+! note that 1/2m/T Psi and m dZeta_dT  cancel out.
+		      ) * (one+2d0*A2_gtsh(ijk)+0.6d0*eps*Xsi* &
+		      (one+C_E)**2*(2*C_E-one+A2_gtsh(ijk)*(one+C_E)))
+
+! the conductivity Kth from eq (7.17) in GTSH theory:
+               Kth_s(IJK,M) = KthK*(one+1.2d0*eps*Xsi*(one+C_E)) + (10.24d0/pi* &
+	                      eps**2*Xsi*(one+C_E)*(one+0.4375d0*A2_gtsh(ijk))*Kth0)
+! Finaly notice that conductivity K in eq (7.10) must be multiplied by m because of grad(T)
+               Kth_s(IJK,M) = M_pm * Kth_s(IJK,M)
+!
+! Again, there are several steps to calculate the Dufour coefficient Kphi_s(IJK,M)
+! in equation (7.18) of GTSH theory.
+! First let's calculate terms in 2 n/m x Gama_n, dRdiss/dphi and dK_phi/dphi
+! notice that 2 n/m Gama_n = 2 phi/m Gama_phi and let's multiply the derivatives of
+! Rdiss and K_phi by phi to avoid possible division by phi.
+               Rdissdphi = ZERO
+	       if(eps > small_number) Rdissdphi = &
+	                   1.5d0*dsqrt(eps/2d0)+135d0/64d0*eps*(dlog(eps)+one) + &
+	                   11.26d0*eps*(one-10.2*eps+49.71d0*eps**2-87.08d0* &
+			   eps**3) - eps*dlog(epM)*(Xsi+eps*dXsiOdphi)
+               Kphidphi = eps*(0.212d0*0.142d0*eps**0.788d0/(one-eps)**4.454d0 - &
+	                  4.454d0*K_phi(eps)/(one-eps))
+               Re_T = ro_g(ijk)*d_p(ijk,m)*dsqrt(theta_m(ijk,m)) / mu_g(ijk)
+!
+! The term phi x Gama_phi becomes
+               dGamadn = 3d0*pi*D_pm*Mu_g(ijk)*(Rdissdphi+Re_T*Kphidphi)
+! Second let's calculate terms in 2 rho x Psi_n, which is same as ro_s x eps x Psi_n
+! And let's take eps inside the derivative dS_star/dphi to avoid singularities as eps -> 0
+! calculating the term phi*dRd/dphi
+               dRdphi = zero
+	       if((eps > small_number) .and. (eps < 0.4d0)) then
+	         denom = one+0.681d0*eps-8.48d0*eps**2+8.16d0*eps**3
+		 dRdphi = (1.5d0*dsqrt(eps/2d0)+135d0/64d0*eps*(dlog(eps)+one)+ &
+		           17.14d0*eps)/denom - eps*(one+3d0*dsqrt(eps/2d0) + &
+			   135d0/64d0*eps*dlog(eps)+17.14*eps)/denom**2 * &
+			   (0.681d0-16.96d0*eps+24.48d0*eps**2)
+	       elseif(eps > 0.4d0) then
+		 dRdphi = 10d0*(one+2d0*eps)/(one-eps)**4
+	       endif
+! calculating the term phi*dS_star/dphi
+               dSdphi = zero
+	       if(eps >= 0.1d0) then
+	         R_dphi = R_d(eps)
+	         denom = one+3.5d0*dsqrt(eps)+5.9d0*eps
+	         dSdphi = 2d0*R_dphi*dRdphi/(Xsi*denom) - &
+	                  eps*R_dphi**2 * (dXsiOdphi/(Xsi**2*denom) + &
+			  (1.75d0/dsqrt(eps)+5.9d0)/(Xsi*denom**2))
+	       endif
+! defining the relaxation time Tau_st
+               Tau_st = M_pm/(3d0*pi*mu_g(ijk)*D_pm)
+!
+! The term phi x Psi_n becomes
+               dPsidn = dsqrt(pi)*D_pm**4*VREL_array(IJK)**2 / &
+	                (36d0*Tau_st**2*dsqrt(theta_m(ijk,m))) * dSdphi
+!
+! Now compute the kinetic contribution to Dufour coef. Muk eq (7.20) GSTH
+               Muk = ZERO  ! This is assumed to avoid /0 for eps = 0
+	       if(eps> small_number) Muk = Kth0*Nu0*M_pm*theta_m(ijk,m)/NU_PM / &
+	         (NuK-1.5d0*(EDT_s_ip(ijk,M,M)-zeta_gtsh(ijk)/theta_m(ijk,m))) * &
+		 ( KthK/(Kth0*Nu0)*(2d0/M_pm*dGamadn-ro_s(ijk,m)/(M_pm*  &
+		  theta_m(ijk,m))*dPsidn + EDT_s_ip(ijk,M,M)*(one+eps/   &
+		  Xsi*dXsiOdphi)) + 2d0/3d0*A2_gtsh(ijk) + 0.8d0*eps*Xsi* &
+		  (one+C_E)*(one+0.5d0*eps/Xsi*dXsiOdphi)*(C_E*(C_E-one)+ &
+		  A2_gtsh(ijk)/6d0*(16d0-3d0*C_E+3d0*C_E**2)))
+
+!
+! Finaly compute the Dufour coefficient Mu (Kphi_s(IJK,M)) from eq (7.22) GTSH
+               Kphi_s(IJK,M) = Muk*(one+1.2d0*eps*Xsi*(one+C_E))
+!
+             endif  ! for kt_type gd_99 and gtsh
 
 
           ENDIF   ! Fluid_at

@@ -189,9 +189,9 @@
 ! check for valid options for KT type
       IF (KT_TYPE /= UNDEFINED_C) THEN
          LONG_STRING = 'The only options for KT_TYPE are &
-            &IA_NONEP, GD_99, or GHD'
+            &IA_NONEP, GD_99, GTSH, or GHD'
          IF(KT_TYPE /= 'IA_NONEP' .AND. KT_TYPE /= 'GD_99' .AND. &
-            KT_TYPE /= 'GHD') &
+            KT_TYPE /= 'GTSH' .AND. KT_TYPE /= 'GHD') &
             CALL ERROR_ROUTINE ('check_data_01',TRIM(LONG_STRING),1,1)
          IF(KT_TYPE == 'GHD') THEN
             LONG_STRING = 'When KT_TYPE is GHD the only valid &

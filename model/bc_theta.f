@@ -841,6 +841,9 @@
       DOUBLE PRECISION :: c_star, zeta0_star, press_star, eta0, &
                           kappa0, nu_kappa_star, kappa_k_star, &
                           kappa_star
+! Variables for GTSH theory
+      DOUBLE PRECISION :: Re_T, Xsi, vfrac, mu2_0, mu4_0, mu4_1, &
+                          A2_gtshW, zeta_star, nu0, NuK, Kth0, KthK, EDT_s
 ! Error message
       CHARACTER*80     LINE
 !----------------------------------------------- 
@@ -848,6 +851,7 @@
 !----------------------------------------------- 
 ! variable specularity coefficient
       DOUBLE PRECISION :: PHIP_JJ 
+      DOUBLE PRECISION :: S_star 
 !-----------------------------------------------
  
       IF(TH(M) .LE. ZERO)THEN
@@ -1123,10 +1127,63 @@
 !         qmu_star = qmu_k_star*(1.d0+(6.d0/5.d0)*EPS(M)*G0(M)*&
 !            (1.d0+C_E) )
 !         Kphis = (TH(M)*Kgran_star/NU_PM)*qmu_star
+!
+!
+      ELSEIF (TRIM(KT_TYPE) .EQ. 'GTSH') THEN ! see calc_mu_s & kintheory_.._ss for details
+         D_PM = DP_avg(M)        
+         M_PM = (PI/6.d0)*(D_PM**3.)*ROS_avg(M)
+         NU_PM = (EPS(M)*ROS_avg(M))/M_PM
+	 Xsi = g0(M)
+	 vfrac = EPS(M)
+	 
+	 Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
+	 Re_T = RO_g_avg*D_PM*dsqrt(TH(M)) / Mu_g_avg
+	 mu2_0 = dsqrt(2d0*pi) * Xsi * (one-C_E**2)  ! eq. (6.22) GTSH theory
+	 mu4_0 = (4.5d0+C_E**2) * mu2_0              ! eq. (6.23) GTSH theory
+	 mu4_1 = (6.46875d0+0.3125d0*C_E**2)*mu2_0 + 2d0*dsqrt(2d0*pi)* &
+	          Xsi*(one+C_E)  ! this is done to avoid /0 in case c_e = 1.0
+         A2_gtshW = zero ! for eps = zero
+	 if((vfrac> small_number) .and. (TH(M) > small_number)) then 
+	    zeta_star = 4.5d0*dsqrt(2d0*Pi)*(RO_g_avg/ROs_avg(M))**2*Re_g**2 * &
+	                S_star(vfrac,Xsi) / (vfrac*(one-vfrac)**2 * Re_T**4)
+	    A2_gtshW = (5d0*mu2_0 - mu4_0) / (mu4_1 - 5d0* &
+	                   (19d0/16d0*mu2_0 - 1.5d0*zeta_star))
+	  endif
+          eta0 = 0.3125d0/(dsqrt(pi)*D_PM**2)*M_pm*dsqrt(TH(M))
+	  nu0 = (96.d0/5.d0)*(vfrac/D_PM)*DSQRT(TH(M)/PI)
+          NuK = nu0*(one+C_E)/3d0*Xsi*( one+2.0625d0*(one-C_E)+ &
+	             ((947d0-579*C_E)/256d0*A2_gtshW) )
+          Kth0 = 3.75d0*eta0/M_pm
+	  EDT_s = 4d0/3d0*dsqrt(pi)*(one-C_E**2)*Xsi* &
+	         (one+0.1875d0*A2_gtshW)*NU_PM*D_PM**2*dsqrt(TH(M))
+          KthK = zero
+	  if(vfrac > small_number) KthK = 2d0/3d0*Kth0*nu0/(NuK - 2d0*EDT_s) * &
+		        (one+2d0*A2_gtshW+0.6d0*vfrac*Xsi* &
+		        (one+C_E)**2*(2*C_E-one+A2_gtshW*(one+C_E)))
+! defining conductivity K_1 at walls equivalent to Kth_s(IJK,M) in calc_mu_s
+          K_1 = KthK*(one+1.2d0*vfrac*Xsi*(one+C_E)) + (10.24d0/pi* &
+	        vfrac**2*Xsi*(one+C_E)*(one+0.4375d0*A2_gtshW)*Kth0)
+          K_1 = M_pm * K_1
+!
+! part below copied from GD_99 code above
+!
+! setting the coefficients for JJ BC         
+! granular conductivity in Mth solids phase
+         GW = K_1
 
-
+         HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*(1d0-e_w*e_w)*&
+            ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))
+ 
+         IF(.NOT. BC_JJ_M) THEN
+            CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*&
+               ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
+         ELSE
+            CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*&
+               PHIP_JJ(DSQRT(vslipsq),TH(M))*ROs_avg(M)*&
+               EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
+         ENDIF
       ELSE   ! No modifications to original mfix if 
-             ! IA or GD99 theories are not used
+             ! IA or GD99 or GTSH theories are not used
  
          Kgran = 75d0*ROs_avg(M)*DP_avg(M)*DSQRT(Pi*TH(M))/(48*Eta*(41d0-33d0*Eta))
  

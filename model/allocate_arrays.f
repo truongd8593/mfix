@@ -534,9 +534,12 @@
          Allocate(  EDvel_sL_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
          Allocate(  ED_ss_ip(DIMENSION_3p, 0:DIMENSION_LM) )
       ENDIF
-      IF (TRIM(KT_TYPE) == 'IA_NONEP' .OR. TRIM(KT_TYPE) == 'GD_99') THEN
+      IF (TRIM(KT_TYPE) == 'IA_NONEP' .OR. TRIM(KT_TYPE) == 'GD_99' .OR. &
+          TRIM(KT_TYPE) == 'GTSH') THEN
          Allocate(  EDT_s_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
          Allocate(  EDvel_sM_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
+         Allocate(  A2_gtsh(DIMENSION_3) )
+         Allocate(  zeta_gtsh(DIMENSION_3) )
       ENDIF
 
 

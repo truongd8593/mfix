@@ -221,24 +221,31 @@
       INTEGER          IER
 !
 !     Index
-      INTEGER          IJK, I, J, K
+      INTEGER          IJK, I, J, K, IMJK, IJMK, IJKM
 !     
 !     Solids phase
       INTEGER          M
 !
 !     variables for GD model
-      DOUBLE PRECISION D_PM
+      DOUBLE PRECISION D_PM, V_p, N_p, M_p
       DOUBLE PRECISION press_star, c_star, zeta0_star, nu_gamma_star, &
-                       lambda_num, cd_num, zeta1, nu0	   
+                       lambda_num, cd_num, zeta1, nu0, eps, Xsi
+      DOUBLE PRECISION UGC, VGC, WGC, USCM, VSCM, WSCM, VREL, Re_m, Re_T
+      DOUBLE PRECISION zeta_star, mu2_0, mu4_0, mu4_1
+      DOUBLE PRECISION omega, nu_j, rho_10, rho_11
 !
 !----------------------------------------------- 
 !     Function subroutines
 !----------------------------------------------- 
-      DOUBLE PRECISION G_0
+      DOUBLE PRECISION G_0 
+      DOUBLE PRECISION S_star
+      DOUBLE PRECISION G_gtsh
 !-----------------------------------------------
 !     Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
+      INCLUDE 'fun_avg1.inc'
+      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------   
@@ -246,26 +253,36 @@
       DO IJK = ijkstart3, ijkend3
           I = I_OF(IJK)
           J = J_OF(IJK)
-          K = K_OF(IJK)       
+          K = K_OF(IJK) 
+          IMJK = IM_OF(IJK) 
+          IJMK = JM_OF(IJK) 
+          IJKM = KM_OF(IJK)       
      
           IF ( FLUID_AT(IJK) ) THEN
 
 !              Note: k_boltz = M_PM
 
-               D_PM = D_P(IJK,M)
+               Xsi = G_0(IJK,M,M)
+	       eps = EP_s(IJK,M)
+	       D_PM = D_P(IJK,M)
+	       V_p = pi*D_PM**3/6d0
+	       n_p = eps/V_p
+	       M_p = V_p * ro_s(ijk,m)
+! 
+	       nu0 = (96.d0/5.d0)*(eps/D_PM)*DSQRT(Theta_m(IJK,M)/PI)
 
+             if((TRIM(KT_TYPE) == 'GD_99')) then
 !              nu0=p_k/eta0
-               nu0 = (96.d0/5.d0)*(EP_s(IJK,M)/D_PM)*DSQRT(Theta_m(IJK,M)/PI)
 
-               press_star = 1.d0 + 2.d0*(1.d0+C_E)*EP_s(IJK,M)*G_0(IJK,M,M)
+               press_star = 1.d0 + 2.d0*(1.d0+C_E)*eps*Xsi
 
                c_star = 32.0d0*(1.0d0 - C_E)*(1.d0 - 2.0d0*C_E*C_E) &
                     / (81.d0 - 17.d0*C_E + 30.d0*C_E*C_E*(1.0d0-C_E))
 
-               zeta0_star = (5.d0/12.d0)*G_0(IJK,M,M)*(1.d0 - C_E*C_E) &
+               zeta0_star = (5.d0/12.d0)*Xsi*(1.d0 - C_E*C_E) &
                     * (1.d0 + (3.d0/32.d0)*c_star)
 
-               nu_gamma_star = ((1.d0+C_E)/48.d0)*G_0(IJK,M,M)*(128.d0-96.d0*C_E + &
+               nu_gamma_star = ((1.d0+C_E)/48.d0)*Xsi*(128.d0-96.d0*C_E + &
                     15.d0*C_E*C_E-15.d0*C_E*C_E*C_E+ (c_star/64.d0) * (15.d0* &
                     C_E*C_E*C_E-15.d0*C_E*C_E+498.d0*C_E-434.d0))
 
@@ -275,16 +292,16 @@
 
 !              does not include factor of 1/nu0.  the factor 1/nu0 in cD will cancel
 !              with the factor of nu0 used to obtain zeta1 from zeta1_star
-               cd_num = ( (4.d0/15.d0)*lambda_num*EP_s(IJK,M)*G_0(IJK,M,M) + &
+               cd_num = ( (4.d0/15.d0)*lambda_num*eps*Xsi + &
                     (press_star-1.d0)*(2.d0/3.d0-C_E)*c_star ) / &
                     ( 0.5d0*zeta0_star+nu_gamma_star + (5.d0*c_star/64.d0) * &
-                    (1.d0+(3.d0*c_star/64.d0))*G_0(IJK,M,M)*(1.d0-C_E*C_E))
+                    (1.d0+(3.d0*c_star/64.d0))*Xsi*(1.d0-C_E*C_E))
 
 !              does not include factor of 1/nu0 in the first term.  the factor 1/nu0 
 !              will cancel with the factor of nu0 used to obtain zeta1 from zeta1_star
 !              zeta1 = nu0*zeta1_star
                zeta1 = -(1.d0-C_E)*(press_star-1.d0) + (5.d0/32.d0) * &
-                    (1.d0-C_E*C_E)*(1.d0+(3.d0*c_star/64.d0))*G_0(IJK,M,M)*cd_num
+                    (1.d0-C_E*C_E)*(1.d0+(3.d0*c_star/64.d0))*Xsi*cd_num
 
 !              in the energy equation this term is multiplied by 3/2*n*kboltz*T
 !              leave multiplication of theta for source routine
@@ -293,6 +310,71 @@
 !              in the energy equation this term is multiplied by 3/2*n*kboltz*T
 !              leave multiplication of theta for source routine
                EDT_s_ip(IJK,M,M) = (3.d0/2.d0)*ROP_s(IJK,M)*nu0*zeta0_star
+!
+             elseif((TRIM(KT_TYPE) == 'GTSH')) then
+! First calculate the Re number (Re_m, Re_T) in eq. 3.1 in GTSH theory               
+	       UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I) 
+               VGC = AVG_Y_N(V_G(IJMK),V_G(IJK)) 
+               WGC = AVG_Z_T(W_G(IJKM),W_G(IJK)) 
+	       USCM = AVG_X_E(U_S(IMJK,M),U_S(IJK,M),I) 
+               VSCM = AVG_Y_N(V_S(IJMK,M),V_S(IJK,M)) 
+               WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M))
+	       VREL = DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
+	       Re_m = D_PM*VREL*ROP_g(ijk)/Mu_g(ijk)
+	       Re_T = ro_g(ijk)*D_PM*dsqrt(theta_m(ijk,m)) / mu_g(ijk)
+! Now calculate and store zeta (used in many sopts) in eq. 8.2 in GTSH theory.
+	       zeta_gtsh(ijk) = one/6d0*D_PM*VREL**2*(3d0*pi*mu_g(ijk)*D_PM/M_p)**2 / &
+	                        dsqrt(pi*theta_m(ijk,m)) * S_star(eps, Xsi)
+
+	       mu2_0 = dsqrt(2d0*pi) * Xsi * (one-C_E**2)  ! eq. (6.22) GTSH theory
+	       mu4_0 = (4.5d0+C_E**2) * mu2_0              ! eq. (6.23) GTSH theory
+!	       mu4_1 = (6.46875d0+0.3125d0*C_E**2 + 2d0/(one-C_E)) * mu2_0   ! eq. (6.24) GTSH theory
+	       mu4_1 = (6.46875d0+0.3125d0*C_E**2)*mu2_0 + 2d0*dsqrt(2d0*pi)* &
+	                Xsi*(one+C_E)  ! this is done to avoid /0 in case c_e = 1.0
+!
+	       A2_gtsh(ijk) = zero ! for eps = zero
+	       if(eps> small_number) then ! avoid singularity
+! Now calculate zeta_star in eq. 8.10 in GTSH theory 
+	         zeta_star = 4.5d0*dsqrt(2d0*Pi)*(ro_g(ijk)/ro_s(ijk,m))**2*Re_m**2 * &
+	                     S_star(eps,Xsi) / (eps*(one-eps)**2 * Re_T**4)
+! Now calculate important parameter A2. This is used in many transport coefficients
+! so that it's best to store it in an array instead of having many function calls.
+!
+	         A2_gtsh(ijk) = (5d0*mu2_0 - mu4_0) / (mu4_1 - 5d0* &
+	                        (19d0/16d0*mu2_0 - 1.5d0*zeta_star))
+	       endif
+!
+! Now calculate first term rho_0 in colling rate rho, eq (6.26) in GTSH theory.
+! note that theta_(ijk,m) does't contain mass m, so that T/m = theta_m.
+! note that edt_s_ip will need to be multiplied by 3/2 rop_s(ijk,m) in 
+! source_granular_energy to have the same meaning as in GD_99 theory.
+!
+	       EDT_s_ip(ijk,M,M) = 4d0/3d0*dsqrt(pi)*(one-C_E**2)*Xsi* &
+	           (one+0.1875d0*A2_gtsh(ijk))*n_p*D_PM**2*dsqrt(theta_m(ijk,m))
+!
+! Let's move now to calculating the second term in cooling rate, eq (7.25) in GTSH theory.
+! First calculate eq (7.28, 7.29) of GTSH theory.
+!
+               omega = (one+C_E)*nu0*((one-C_E**2)*(5d0*C_E-one) - A2_gtsh(ijk)/ &
+	                6d0 * (15d0*C_E**3-3d0*C_E**2+81d0*C_E-31d0))
+               nu_j = (one+C_E)/192d0*Xsi*nu0* &
+	              (241d0-177d0*C_E+30d0*C_E**2-30d0*C_E**3)
+!
+! Now calculate eq (7.26, 7.27) of GTSH theory.
+!
+               rho_10 = 2d0*Xsi*eps*(C_E**2-one)
+	       rho_11 = 675d0/9216d0*eps*Xsi**2*(one-C_E**2)* &
+	               (one+3d0/128d0*A2_gtsh(ijk)) * (omega/10d0 - &
+		       (one+C_E)*nu0*(one/3d0-C_E)*A2_gtsh(ijk)/2d0) / &
+		       (nu_j + G_gtsh(eps, Xsi, IJK, M)/m_p + 1.5d0* &
+		        zeta_gtsh(ijk) -1.5d0*EDT_s_ip(ijk,M,M))
+!
+! Now calculate the second term in cooling rate eq (7.25) of GTSH theory.
+! note that EDvel_sM_ip will later need to be multiplied by 3/2 rop_s(ijk,m).
+!
+               EDvel_sM_ip(IJK,M,M) = rho_10 + rho_11
+		       
+             endif  ! for kt_type gd_99 and gtsh
 
           ENDIF
       ENDDO
@@ -300,3 +382,114 @@
       RETURN  
       END SUBROUTINE CALC_GD_99_ENERGY_DISSIPATION_SS 
 !-----------------------------------------------
+!-------------- Below are function needed for GTSH theory only ------
+!
+!
+      DOUBLE PRECISION FUNCTION G_gtsh (EPS, Xsi, IJK, M) 
+!       Function gamma, eq. (8.1) in GTSH theory
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1 
+      USE physprop 
+      USE fldvar 
+      USE constant
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+      DOUBLE PRECISION EPS, Xsi
+!
+!     Index
+      INTEGER          IJK
+!     
+!     Solids phase. M should be equal to 1 since theory valid for only mmax = 1.
+      INTEGER          M
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+      DOUBLE PRECISION Re_T
+      DOUBLE PRECISION Rdiss, RdissP
+      DOUBLE PRECISION, PARAMETER  ::  epM = 0.001d0
+!-----------------------------------------------
+!
+!----------------------------------------------- 
+!     Function subroutines
+!----------------------------------------------- 
+      DOUBLE PRECISION K_phi
+!
+      RdissP = one  ! this avoids singularity at eps = 0.0
+      
+      if(eps > small_number) RdissP = &
+               one + 3d0*dsqrt(eps/2d0) + 135d0/64d0*eps*dlog(eps) + &
+               11.26d0*eps*(one-5.1d0*eps+16.57d0*eps**2-21.77d0*    &
+	       eps**3) - eps*Xsi*dlog(epM)
+      
+      Re_T = ro_g(ijk)*d_p(ijk,m)*dsqrt(theta_m(ijk,m)) / mu_g(ijk)
+      
+      Rdiss = RdissP + Re_T * K_phi(eps)
+      
+      G_gtsh = 3d0*Pi*mu_g(ijk)*d_p(ijk,m)*Rdiss  ! eq. (8.1) in GTSH theory
+      
+      RETURN  
+      END FUNCTION G_gtsh 
+!
+!
+      DOUBLE PRECISION FUNCTION K_phi (phi) 
+!       Function K(phi), eq. (2.7) in Yi/Zenk/Mitrano/Hrenya JFM (2013)
+!
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+      DOUBLE PRECISION phi 
+!
+      K_phi = (0.096d0 + 0.142d0*phi**0.212d0) / (1d0-phi)**4.454d0
+      RETURN  
+      END FUNCTION K_phi
+!
+!
+      DOUBLE PRECISION FUNCTION R_d (phi) 
+!     Function R_d, eq. (8.6) in GTSH theory
+!
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+      DOUBLE PRECISION phi 
+!
+      R_d = 1.0d0  ! this avoids singularity at phi = 0.0
+      if((phi > 1d-15) .and. (phi <= 0.4d0)) then
+        R_d = (1d0+3d0*dsqrt(phi/2d0)+135d0/64d0*phi*dlog(phi)+17.14d0*phi) / &
+              (1d0+0.681d0*phi-8.48*phi**2+8.16d0*phi**3)
+      elseif(phi > 0.4d0) then
+        R_d = 10d0*phi/(1d0-phi)**3 + 0.7d0
+      endif
+      RETURN  
+      END FUNCTION R_d
+!
+!
+      DOUBLE PRECISION FUNCTION S_star (phi, Xsi) 
+!     Function S_Star(phi), eq. (8.3, 8.5) in GTSH theory
+!
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+      DOUBLE PRECISION phi, Xsi
+!
+!----------------------------------------------- 
+!     Function subroutines
+!----------------------------------------------- 
+      DOUBLE PRECISION R_d
+!
+      S_star = 1.0d0
+      if(phi >= 0.1d0) &
+        S_star = R_d(phi)**2/(Xsi*(1d0+3.5d0*dsqrt(phi)+5.9*phi))
+      RETURN  
+      END FUNCTION S_Star

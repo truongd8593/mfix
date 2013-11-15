@@ -158,7 +158,8 @@
 
 ! Particle-Particle Energy Dissipation
          IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP' .OR. &
-             TRIM(KT_TYPE) .EQ. 'GD_99') THEN
+             TRIM(KT_TYPE) .EQ. 'GD_99' .OR. &
+             TRIM(KT_TYPE) .EQ. 'GTSH') THEN
             GRAN_DISS(:MMAX) = .TRUE.
          ENDIF
 

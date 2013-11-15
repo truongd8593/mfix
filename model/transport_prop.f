@@ -54,18 +54,20 @@
       IF (DIFF(0)) CALL CALC_DIF_G (IER)   ! Fluid diffusivity
 
       DO M = 1, MMAX
-         IF (COND(M)) CALL CALC_K_S (M, IER)   ! Solids conductivity
-         IF (VISC(M)) CALL CALC_MU_S (M, IER)  ! Solids viscosity
-         IF (DIFF(M)) CALL CALC_DIF_S (M, IER) ! Solids diffusivity
 
 ! Particle-Particle Energy Dissipation
+! this need to be done before calc_mu_s so cooling rate is available for mu_s.
          IF (GRAN_DISS(M)) THEN
             IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
                CALL CALC_IA_NONEP_ENERGY_DISSIPATION_SS(M, IER)
-            ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
+            ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99' .OR. &
+	            TRIM(KT_TYPE) .EQ. 'GTSH') THEN
                CALL CALC_GD_99_ENERGY_DISSIPATION_SS(M, IER)
             ENDIF
          ENDIF
+         IF (COND(M)) CALL CALC_K_S (M, IER)   ! Solids conductivity
+         IF (VISC(M)) CALL CALC_MU_S (M, IER)  ! Solids viscosity
+         IF (DIFF(M)) CALL CALC_DIF_S (M, IER) ! Solids diffusivity
       ENDDO
 
       RETURN  

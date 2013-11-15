@@ -656,10 +656,12 @@
                           S13b_lhs, S14a_lhs, S14b_lhs, S15a_lhs, S15b_lhs
 ! Source terms from interstitial effects
       DOUBLE PRECISION :: VSLIP, Kslip, Tslip_rhs, Tslip_lhs, Tvis_lhs
+      DOUBLE PRECISION :: eps, Xsi, Sgama_lhs, Spsi_rhs  ! local var. for GTSH theory
 !----------------------------------------------- 
 ! Function subroutines
 !----------------------------------------------- 
       DOUBLE PRECISION, EXTERNAL :: G_0
+      DOUBLE PRECISION, EXTERNAL :: G_gtsh
 !----------------------------------------------- 
 ! Include statement functions
 !-----------------------------------------------
@@ -707,9 +709,13 @@
       S14b_rhs = ZERO
       S15a_rhs = ZERO
       S15b_rhs = ZERO
+      Sgama_lhs = ZERO  ! for GTSH theory
+      Spsi_rhs = ZERO   ! for GTSH theory
 
       D_PM = D_P(IJK,M) 
       M_PM = (Pi/6.d0)*D_PM**3 * RO_S(IJK,M)
+      eps = EP_s(IJK,M)
+      Xsi = G_0(IJK,M,M)
       NU_PM_p = ROP_S(IJK,M)/M_PM
       NU_PM_E = ROP_S(IJKE,M)/M_PM
       NU_PM_W = ROP_S(IJKW,M)/M_PM
@@ -741,6 +747,17 @@
 ! (3/2)*rop_s*T*zeta1
       S12_lhs = ZMAX( EDvel_sM_ip(IJK,M,M) * TRD_S_C(IJK,M) ) 
       S12_rhs = ZMAX( -EDvel_sM_ip(IJK,M,M) * TRD_S_C(IJK,M) )*Theta_m(IJK,M)
+!
+! for GTSH theory, the dissipation terms above need to be multiplied by 3/2 rop_s(ijk,m)
+! GTSH theory has two additional terms as source (Psi) and sink (gama) in eq (4.9) of GTSH JFM paper
+      if((TRIM(KT_TYPE) == 'GTSH')) then
+        S11_lhs = 1.5d0*ROP_s(IJK,M) * S11_lhs
+        S11_rhs = 1.5d0*ROP_s(IJK,M) * S11_rhs
+	S12_lhs = 1.5d0*ROP_s(IJK,M) * S12_lhs
+	S12_rhs = 1.5d0*ROP_s(IJK,M) * S12_rhs
+        Sgama_lhs = 3d0*NU_PM_p * G_gtsh(eps, Xsi, IJK, M)
+        Spsi_rhs = 1.5d0*ROP_s(IJK,M) * zeta_gtsh(ijk)
+      endif
 
 ! Part of Heat Flux: div (q)
 ! Knu_s_ip*grad(nu)
@@ -769,25 +786,25 @@
       S15b_rhs = Knu_sM_b*ZMAX( -(NU_PM_p-NU_PM_B) )*ODZ_T(KM)*OX(I)*AXY(IJKM)
       S15b_lhs = Knu_sM_b*ZMAX( (NU_PM_p-NU_PM_B) )*ODZ_T(KM)*OX(I)*AXY(IJKM)
 
-
       SOURCELHS = ( (S8_lhs+S10_lhs)*VOL(IJK) + &
           S13a_lhs+S13b_lhs+S14a_lhs+S14b_lhs+S15a_lhs+S15b_lhs)/Theta_m(IJK,M)&
-          + (S11_lhs + S12_rhs)*VOL(IJK) 
+          + (S11_lhs + S12_lhs + Sgama_lhs)*VOL(IJK) 
 
 
-      SOURCERHS = ( S8_rhs+S9_rhs+S10_rhs+S11_rhs+S12_rhs) * VOL(IJK) + &
+      SOURCERHS = ( S8_rhs+S9_rhs+S10_rhs+S11_rhs+S12_rhs+Spsi_rhs) * VOL(IJK) + &
           S13a_rhs+S13b_rhs+S14a_rhs+S14b_rhs+S15a_rhs+S15b_rhs
 
 
-      IF(SWITCH > ZERO .AND. RO_g0 /= ZERO) THEN 
+      IF(SWITCH > ZERO .AND. RO_g0 /= ZERO .AND. &
+         (TRIM(KT_TYPE) == 'GD_99')) THEN ! this is only done for GD_99, do not add these terms to GTSH
 
          VSLIP = (U_S(IJK,M)-U_G(IJK))**2 + (V_S(IJK,M)-V_G(IJK))**2 +&
             (W_S(IJK,M)-W_G(IJK))**2 
          VSLIP = DSQRT(VSLIP) 
 
 ! production by gas-particle slip: Koch & Sangani (1999)
-         Kslip = SWITCH*81.d0*EP_s(IJK,M)*(MU_G(IJK)*VSLIP)**2.d0 / &
-            (G_0(IJK,M,M)*D_P(IJK,M)**3.D0*RO_S(IJK,M)*DSQRT(PI)) 
+         Kslip = SWITCH*81.d0*eps*(MU_G(IJK)*VSLIP)**2.d0 / &
+            (Xsi*D_P(IJK,M)**3.D0*RO_S(IJK,M)*DSQRT(PI)) 
 
          Tslip_rhs = 1.5d0*Kslip/( (THETA_M(IJK,M)+SMALL_NUMBER)**0.50)*VOL(IJK)  
          Tslip_lhs = 0.5d0*Kslip/( (THETA_M(IJK,M)+SMALL_NUMBER)**1.50)*VOL(IJK)

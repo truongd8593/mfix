@@ -58,6 +58,9 @@
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: EDvel_sM_ip
 !     energy dissipation with divergence of velocity of species L
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: EDvel_sL_ip
+!     coefficient A2, zeta used in multiple places in GTSH theory
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: A2_gtsh
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: zeta_gtsh
 
 ! Solids source terms needed for Iddir & Arastoopour (2005)
 ! kinetic theory model

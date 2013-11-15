@@ -79,9 +79,12 @@
          ED_ss_ip = ZERO
          EDvel_sL_ip = ZERO
       ENDIF
-      IF (TRIM(KT_TYPE) == 'IA_NONEP' .OR. TRIM(KT_TYPE) == 'GD_99') THEN
+      IF (TRIM(KT_TYPE) == 'IA_NONEP' .OR. TRIM(KT_TYPE) == 'GD_99' .OR.  &
+          TRIM(KT_TYPE) == 'GTSH') THEN
          EDT_s_ip = ZERO
          EDvel_sM_ip = ZERO
+	 A2_gtsh = ZERO
+	 zeta_gtsh = zero
       ENDIF
      
 ! Set specified constant physical properties values

@@ -258,7 +258,7 @@
 
 ! kinetic theory model: see calc_mu_s for details
 ! for m > 1 option is IA_nonep, GHD,
-! for m = 1 option is GD_99
+! for m = 1 option is GD_99 for granular flow or GTSH for gas-solids flow
       CHARACTER(64)    KT_TYPE
 
 ! radial distribution function options: see g_0 for details

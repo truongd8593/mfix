@@ -902,11 +902,18 @@
 ! Variables for Garzo and Dufty model
       DOUBLE PRECISION :: c_star, zeta0_star, nu_eta_star, press_star, &
                           gamma_star, eta_k_star, eta_star, eta0
+! Variables for GTSH theory
+      DOUBLE PRECISION :: Xsi, vfrac, RdissP, Re_T, Rdiss, GamaAvg, A2_gtshW, &
+                          zeta_star, nu0, nuN, NuK, EDT_s, zeta_avg, etaK, &
+			  Mu_b_avg, mu2_0, mu4_0, mu4_1
+      DOUBLE PRECISION, PARAMETER  ::  epM = 0.001d0
 !----------------------------------------------- 
 ! Functions
 !----------------------------------------------- 
 ! Variable specularity coefficient
       DOUBLE PRECISION :: PHIP_JJ 
+      DOUBLE PRECISION :: S_star  
+      DOUBLE PRECISION :: K_phi 
 !-----------------------------------------------                           
 
 ! This is done here similar to bc_theta to avoid small negative values of
@@ -1083,6 +1090,65 @@
 !  shear viscosity in Mth solids phase  (add to frictional part)
          Mu_s = Mu_star * eta_star
 
+
+      ELSEIF (TRIM(KT_TYPE) .EQ. 'GTSH') THEN  ! see calc_mu_s & kintheory_..._ss for details
+
+         D_PM = DP_avg(M)
+         M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
+         NU_PM = (EPS(M)*ROS_avg(M))/M_PM
+	 Xsi = g0(M)
+	 vfrac = EPS(M)
+         IF(.NOT. BC_JJ_M) THEN
+            F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*vfrac*&
+               Xsi)/(6.d0*(ONE-ep_star_avg))
+         ELSE
+            F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M))*PI*&
+               ROS_avg(M)*vfrac*Xsi)/(6.d0*(ONE-ep_star_avg))
+         ENDIF
+         RdissP = one 
+         if(vfrac > small_number) RdissP = &
+               one + 3d0*dsqrt(vfrac/2d0) + 135d0/64d0*vfrac*dlog(vfrac) + &
+               11.26d0*vfrac*(one-5.1d0*vfrac+16.57d0*vfrac**2-21.77d0*    &
+	       vfrac**3) - vfrac*Xsi*dlog(epM)
+      
+         Re_T = RO_g_avg*D_pm*dsqrt(TH(M)) / Mu_g_avg
+	 Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
+         Rdiss = RdissP + Re_T * K_phi(vfrac)
+         GamaAvg = 3d0*Pi*Mu_g_avg*D_pm*Rdiss
+	 mu2_0 = dsqrt(2d0*pi) * Xsi * (one-C_E**2)
+	 mu4_0 = (4.5d0+C_E**2) * mu2_0 
+	 mu4_1 = (6.46875d0+0.3125d0*C_E**2)*mu2_0 + 2d0*dsqrt(2d0*pi)* &
+	          Xsi*(one+C_E)
+         A2_gtshW = zero ! for eps = zero
+	 if((vfrac> small_number) .and. (TH(M) > small_number)) then 
+	    zeta_star = 4.5d0*dsqrt(2d0*Pi)*(RO_g_avg/ROs_avg(M))**2*Re_g**2 * &
+	                S_star(vfrac,Xsi) / (vfrac*(one-vfrac)**2 * Re_T**4)
+	    A2_gtshW = (5d0*mu2_0 - mu4_0) / (mu4_1 - 5d0* &
+	                   (19d0/16d0*mu2_0 - 1.5d0*zeta_star))
+	 endif
+         eta0 = 0.3125d0/(dsqrt(pi)*D_PM**2)*M_pm*dsqrt(TH(M))
+	 nu0 = (96.d0/5.d0)*(vfrac/D_PM)*DSQRT(TH(M)/PI)
+	 nuN = 0.25d0*nu0*Xsi*(3d0-C_E)*(one+C_E) * &
+	        (one+0.7375d0*A2_gtshW)
+         NuK = nu0*(one+C_E)/3d0*Xsi*( one+2.0625d0*(one-C_E)+ &
+	             ((947d0-579*C_E)/256d0*A2_gtshW) )
+	 EDT_s = 4d0/3d0*dsqrt(pi)*(one-C_E**2)*Xsi* &
+	         (one+0.1875d0*A2_gtshW)*NU_PM*D_PM**2*dsqrt(TH(M))
+         if((TH(m) > small_number) .and. (vfrac > small_number)) then
+	   zeta_avg = one/6d0*D_PM*VREL**2*(3d0*pi*Mu_g_avg*D_PM/M_pm)**2 / &
+	                  dsqrt(TH(m)) * S_star(vfrac, Xsi)
+           etaK = ROs_avg(M)*vfrac*TH(m) / (nuN-0.5d0*( &
+	          EDT_s-zeta_avg/TH(m) - &
+		  2d0*GamaAvg/M_PM)) * (one -0.4d0 * &
+		  (one+C_E)*(one-3d0*C_E)*vfrac*Xsi)
+         else
+           etaK = zero
+         endif
+         Mu_b_avg = 25.6d0/pi * vfrac**2 * Xsi *(one+C_E) * &
+	               (one - A2_gtshW/16d0)*eta0
+!
+         Mu_s = etaK*(one+0.8d0*vfrac*Xsi*(one+C_E)) + &
+	                     0.6d0*Mu_b_avg
 
       ELSE   ! No modifications to original mfix if 
              ! IA or GD99 theories are not used
@@ -1620,37 +1686,9 @@
 !-----------------------------------------------
 ! Local Variables      
 !-----------------------------------------------
-! Solids phase index
-      INTEGER :: LL
-! Coefficient of 2nd term
+! 
       DOUBLE PRECISION :: F_2
-! Coefficient of 1st term
-      DOUBLE PRECISION :: Mu_s
-! Viscosity
-      DOUBLE PRECISION :: Mu
-! Bulk viscosity
-      DOUBLE PRECISION :: Mu_b
-! Viscosity corrected for interstitial fluid effects
-      DOUBLE PRECISION :: Mu_star
-
-! Reynolds number based on slip velocity
-      DOUBLE PRECISION :: Re_g
-! Friction Factor in drag coefficient
-      DOUBLE PRECISION :: C_d
-! Drag Coefficient
-      DOUBLE PRECISION :: Beta, DgA
-! Constants in Simonin or Ahmadi model
-      DOUBLE PRECISION :: Sigma_c, Tau_2_c, Tau_12_st, Nu_t
-      DOUBLE PRECISION :: Tau_2, zeta_c_2, MU_2_T_Kin, Mu_2_Col
-      DOUBLE PRECISION :: Tmp_Ahmadi_Const
-! Variables for Iddir & Arastoopour model
-      DOUBLE PRECISION :: MU_sM_sum, MU_s_MM, MU_s_LM, MU_sM_ip, MU_common_term,&
-                          MU_sM_LM
-      DOUBLE PRECISION :: M_PM, M_PL, MPSUM, NU_PL, NU_PM, D_PM, D_PL, DPSUMo2
-      DOUBLE PRECISION :: Ap_lm, Dp_lm, R1p_lm, Bp_lm
-! Variables for Garzo and Dufty model
-      DOUBLE PRECISION :: c_star, zeta0_star, nu_eta_star, press_star, &
-                          gamma_star, eta_k_star, eta_star, eta0
+      DOUBLE PRECISION :: M_PM
 !----------------------------------------------- 
 ! Functions 
 !----------------------------------------------- 
@@ -1675,14 +1713,9 @@
 ! doesn't have a sqrt(th) directly available to use this simplification.
 
 
-      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN  
-
-! Use original IA theory if SWITCH_IA is false
-         IF(.NOT. SWITCH_IA) g0EPs_avg = EPS(M)*ROS_avg(M)
-
-         D_PM = DP_avg(M)
-         M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
-         NU_PM = (EPS(M)*ROS_avg(M))/M_PM
+      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN  ! this only done because Th includes M_pm
+!
+         M_PM = (PI/6.d0)*(DP_avg(M)**3)*ROS_avg(M)
  
          IF(.NOT. BC_JJ_M) THEN
             F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*&
@@ -1692,85 +1725,9 @@
                PI*ROS_avg(M)*EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg))
          ENDIF
 
-! This is from Wen-Yu correlation, you can put here your own single particle drag
-         Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
-         IF (Re_g .lt. 1000.d0) THEN
-            C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
-         ELSE
-            C_d = 0.44d0
-         ENDIF
-         DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(D_PM*EPG**(2.65d0))
-         IF(VREL == ZERO) DgA = LARGE_NUMBER
-         Beta = EPS(M)*DgA !this is equivalent to F_gs(ijk,m)
 
-         Mu = (5.d0/96.d0)*D_PM* ROS_avg(M)*DSQRT(PI*TH(M)/M_PM)
-
-         IF(.NOT.SWITCH_IA .OR. RO_g_avg == ZERO)THEN
-            Mu_star = Mu
-         ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
-            MU_star = ZERO
-         ELSE
-            Mu_star = Mu*EPS(M)*g0(M)/ (g0EPs_avg+ 2.0d0*DgA*Mu / &
-               (ROS_avg(M)**2 *(TH(M)/M_PM)))
-         ENDIF
-
-         MU_s_MM = (Mu_star/g0(M))*(1.d0+(4.d0/5.d0)*(1.d0+C_E)*g0EPs_avg)**2
-         Mu_sM_sum = ZERO
-
-         DO LL = 1, SMAX
-            D_PL = DP_avg(LL)
-            M_PL = (PI/6.d0)*(D_PL**3.)*ROS_avg(LL)
-            MPSUM = M_PM + M_PL
-            DPSUMo2 = (D_PM+D_PL)/2.d0
-            NU_PL = (EPS(LL)*ROS_avg(LL))/M_PL
-
-            IF ( LL .eq. M) THEN
-               Ap_lm = MPSUM/(2.d0)
-               Dp_lm = M_PL*M_PM/(2.d0*MPSUM)
-               R1p_lm = ONE/( Ap_lm**1.5 * Dp_lm**3 )
-               MU_s_LM = DSQRT(PI)*(DPSUMo2**4 / (48.d0*5.d0))*&
-                  g0(LL)*(M_PL*M_PM/MPSUM)*(M_PL*M_PM/&
-                  MPSUM)*((M_PL*M_PM)**1.5)*NU_PM*NU_PL*&
-                  (1.d0+C_E)*R1p_lm*DSQRT(TH(M))
-
-! solids phase 'viscosity' associated with the divergence 
-! of solids phase M
-               MU_sM_ip = (MU_s_MM + MU_s_LM)
-
-            ELSE
-               Ap_lm = (M_PM*TH(LL)+M_PL*TH(M))/&
-                  (2.d0)
-               Bp_lm = (M_PM*M_PL*(TH(LL)-TH(M) ))/&
-                  (2.d0*MPSUM)
-               Dp_lm = (M_PL*M_PM*(M_PM*TH(M)+M_PL*TH(LL) ))/&
-                  (2.d0*MPSUM*MPSUM)
-               R1p_lm = ( ONE/( Ap_lm**1.5 * Dp_lm**3 ) ) + &
-                  ( (9.d0*Bp_lm*Bp_lm)/( Ap_lm**2.5 * Dp_lm**4 ) )+&
-                  ( (30.d0*Bp_lm**4)/( 2.d0*Ap_lm**3.5 * Dp_lm**5 ) )
-               MU_common_term = DSQRT(PI)*(DPSUMo2**4 / (48.d0*5.d0))*&
-                  g0(LL)*(M_PL*M_PM/MPSUM)*(M_PL*M_PM/&
-                  MPSUM)*((M_PL*M_PM)**1.5)*NU_PM*NU_PL*&
-                  (1.d0+C_E)*R1p_lm
-               MU_sM_LM = MU_common_term*(TH(M)*TH(M)*TH(LL)*TH(LL)*TH(LL) )
-
-! solids phase 'viscosity' associated with the divergence
-! of solids phase M       
-               MU_sM_ip = MU_sM_LM
-
-            ENDIF
-            MU_sM_sum = MU_sM_sum + MU_sM_ip
-
-          ENDDO
-
-! Find the term proportional to the gradient in velocity
-! of phase M  (viscosity in the Mth solids phase)
-          Mu_s = MU_sM_sum
-
-      ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
-
-         D_PM = DP_avg(M)
-         M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
-         NU_PM = (EPS(M)*ROS_avg(M))/M_PM
+      ELSEIF ((TRIM(KT_TYPE) .EQ. 'GD_99') .OR. & ! these theories do not use M_pm in Th
+              (TRIM(KT_TYPE) .EQ. 'GTSH')) THEN
 
          IF(.NOT. BC_JJ_M) THEN
             F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*EPS(M)*&
@@ -1780,61 +1737,9 @@
                ROS_avg(M)*EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg))
          ENDIF      
 
-! This is from Wen-Yu correlation, you can put here your own single particle drag
-         Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
-         IF (Re_g .lt. 1000.d0) THEN
-            C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
-         ELSE
-            C_d = 0.44d0
-         ENDIF
-         DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(D_PM*EPG**(2.65d0))
-         IF(VREL == ZERO) DgA = LARGE_NUMBER
-         Beta = EPS(M)*DgA !this is equivalent to F_gs(ijk,m)
-  
-! Pressure/Viscosity/Bulk Viscosity
-! Note: k_boltz = M_PM
-     
-! Find pressure in the Mth solids phase
-         press_star = 1.d0 + 2.d0*(1.d0+C_E)*EPS(M)*G0(M)
- 
-! find bulk and shear viscosity
-         c_star = 32.0d0*(1.0d0 - C_E)*(1.d0 - 2.0d0*C_E*C_E) &
-            / (81.d0 - 17.d0*C_E + 30.d0*C_E*C_E*(1.0d0-C_E))
-
-         zeta0_star = (5.d0/12.d0)*G0(M)*(1.d0 - C_E*C_E) &
-            * (1.d0 + (3.d0/32.d0)*c_star)
-
-         nu_eta_star = G0(M)*(1.d0 - 0.25d0*(1.d0-C_E)*(1.d0-C_E)) &
-            * (1.d0-(c_star/64.d0))
-
-         gamma_star = (4.d0/5.d0)*(32.d0/PI)*EPS(M)*EPS(M) &
-            * G0(M)*(1.d0+C_E) * (1.d0 - (c_star/32.d0))
-
-         eta_k_star = (1.d0 - (2.d0/5.d0)*(1.d0+C_E)*(1.d0-3.d0*C_E) &
-            * EPS(M)*G0(M) ) / (nu_eta_star - 0.5d0*zeta0_star)
-
-         eta_star = eta_k_star*(1.d0 + (4.d0/5.d0)*EPS(M)*G0(M) &
-            * (1.d0+C_E) ) + (3.d0/5.d0)*gamma_star
-
-         eta0 = 5.0d0*M_PM*DSQRT(TH(M)/PI) / (16.d0*D_PM*D_PM)
-
-! added Ro_g = 0 for granular flows (no gas). 
-         IF(SWITCH == ZERO .OR. RO_g_avg == ZERO) THEN 
-            Mu_star = eta0
-         ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
-            Mu_star = ZERO               
-         ELSE
-            Mu_star = ROS_avg(M)*EPS(M)*G0(M)*TH(M)*eta0 / &
-               ( ROS_avg(M)*EPS(M)*G0(M)*TH(M) + &
-               (2.d0*DgA*eta0/ROS_avg(M)) )     ! Note dgA is ~F_gs/ep_s
-         ENDIF
-   
-!  shear viscosity in Mth solids phase  (add to frictional part)
-         Mu_s = Mu_star * eta_star
-
 
       ELSE   ! No modifications to original mfix if 
-             ! IA or GD99 theories are not used
+             ! IA or GD99  or GTSH theories are not used
       
 !  modify F_2 if Jenkins BC is used (sof)    
          IF(JENKINS) THEN
@@ -1868,71 +1773,12 @@
             ENDIF
 
          ENDIF   ! end if(Jenkins)/else 
- 
-         Mu = (5d0*DSQRT(Pi*TH(M))*DP_avg(M)*ROS_avg(M))/96d0
-         Mu_b = (256d0*Mu*EPS(M)*g0EPs_avg)/(5d0*Pi)
-
-! This is from Wen-Yu correlation, you can put here your own single particle drag 
-         Re_g = EPG*RO_g_avg*DP_avg(M)*VREL/Mu_g_avg
-         IF (Re_g.lt.1000d0) THEN
-            C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
-         ELSE
-            C_d = 0.44d0
-         ENDIF
-         DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(DP_avg(M)*EPG**(2.65d0))
-         IF(VREL == ZERO) DgA = LARGE_NUMBER
-         Beta = SWITCH*EPS(M)*DgA
-
-! SWITCH enables us to turn on/off the modification to the
-! particulate phase viscosity. If we want to simulate gas-particle
-! flow then SWITCH=1 to incorporate the effect of drag on the
-! particle viscosity. If we want to simulate granular flow
-! without the effects of an interstitial gas, SWITCH=0.
-         IF(SWITCH == ZERO .OR. Ro_g_avg == ZERO)THEN
-            Mu_star = Mu
-         ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
-            MU_star = ZERO
-         ELSE
-            Mu_star = ROS_avg(M)*EPS(M)* g0(M)*TH(M)* Mu/ &
-               (ROS_avg(M)*g0EPs_avg*TH(M) + 2.0d0*DgA/ROS_avg(M)* Mu)
-         ENDIF
- 
-         Mu_s = ((2d0+ALPHA)/3d0)*((Mu_star/(Eta*(2d0-Eta)*&
-            g0(M)))*(ONE+1.6d0*Eta*g0EPs_avg)*&
-            (ONE+1.6d0*Eta*(3d0*Eta-2d0)*&
-            g0EPs_avg)+(0.6d0*Mu_b*Eta))
- 
-! particle relaxation time
-         Tau_12_st = ROS_avg(M)/(DgA+small_number)
-
-         IF(SIMONIN) THEN !see calc_mu_s for explanation of these definitions
-            Sigma_c = (ONE+ C_e)*(3.d0-C_e)/5.d0
-            Tau_2_c = DP_avg(M)/(6.d0*EPS(M)*g0(M)*DSQRT(16.d0*(TH(M)+Small_number)/PI))
-            zeta_c_2= 2.D0/5.D0*(ONE+ C_e)*(3.d0*C_e-ONE)
-            Nu_t =  Tau_12_avg/Tau_12_st
-            Tau_2 = ONE/(2.D0/Tau_12_st+Sigma_c/Tau_2_c)
-            MU_2_T_Kin = (2.0D0/3.0D0*K_12_avg*Nu_t + TH(M) * &
-                 (ONE+ zeta_c_2*EPS(M)*g0(M)))*Tau_2
-            Mu_2_Col = 8.D0/5.D0*EPS(M)*g0(M)*Eta* (MU_2_T_Kin+ &
-                  DP_avg(M)*DSQRT(TH(M)/PI))
-            Mu_s = EPS(M)*ROS_avg(M)*(MU_2_T_Kin + Mu_2_Col)
-
-         ELSEIF(AHMADI) THEN
-            IF(EPS(M) < (ONE-ep_star_avg)) THEN
-               Tmp_Ahmadi_Const = ONE/&
-                  (ONE+ Tau_1_avg/Tau_12_st * (ONE-EPS(M)/(ONE-ep_star_avg))**3)
-            ELSE
-               Tmp_Ahmadi_Const = ONE
-            ENDIF
-            Mu_s = Tmp_Ahmadi_Const &
-               *0.1045D0*(ONE/g0(M)+3.2D0*EPS(M)+12.1824D0*g0(M)*EPS(M)*EPS(M))  &
-               *DP_avg(M)*ROS_avg(M)* DSQRT(TH(M))
-         ENDIF
         
       ENDIF    ! end if for kinetic theory type
         
  
 !      F_HW =  F_2/Mu_s  ! Only F_2 is actually needed 
+!      so all the code used to calculate Mu_s was deleted from this routine.
 
       RETURN
       END SUBROUTINE GET_CG_F2
