@@ -93,7 +93,7 @@
 ! 
 !	parameter in GTSH theory related to length scale of lubrication effects
 !       see GTSH J. fluid Mech. (2012), vol 712, pp 129-168
-:     DOUBLE PRECISION, PARAMETER          ::  EpM = 0.01d0
+      DOUBLE PRECISION, PARAMETER          ::  EpM = 0.01d0
 !                      Gravitational acceleration
       DOUBLE PRECISION GRAVITY, to_SI
 
