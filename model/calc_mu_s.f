@@ -844,7 +844,6 @@
       DOUBLE PRECISION :: dZeta_dT, dGama_dT, NuK, Kth0, KthK, dXsiOdphi
       DOUBLE PRECISION :: Rdissdphi, Kphidphi, Re_T, dGamadn, dRdphi, denom
       DOUBLE PRECISION :: dSdphi, R_dphi, Tau_st, dPsidn, MuK
-      DOUBLE PRECISION, PARAMETER  ::  epM = 0.001d0
 
 ! SWITCH enables us to turn on/off the modification to the
 ! particulate phase viscosity. If we want to simulate gas-particle

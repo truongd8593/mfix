@@ -906,7 +906,6 @@
       DOUBLE PRECISION :: Xsi, vfrac, RdissP, Re_T, Rdiss, GamaAvg, A2_gtshW, &
                           zeta_star, nu0, nuN, NuK, EDT_s, zeta_avg, etaK, &
 			  Mu_b_avg, mu2_0, mu4_0, mu4_1
-      DOUBLE PRECISION, PARAMETER  ::  epM = 0.001d0
 !----------------------------------------------- 
 ! Functions
 !----------------------------------------------- 
