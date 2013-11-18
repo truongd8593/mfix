@@ -130,6 +130,7 @@ post_mfix : \
     ik_avg_out.$(OBJ_EXT) \
     init_namelist.$(OBJ_EXT) \
     interp_res.$(OBJ_EXT) \
+    kintheory_energy_dissipation_ss.$(OBJ_EXT) \
     line_too_big.$(OBJ_EXT) \
     main_f.$(OBJ_EXT) \
     make_upper_case.$(OBJ_EXT) \
@@ -340,6 +341,7 @@ post_mfix : \
     ik_avg_out.$(OBJ_EXT) \
     init_namelist.$(OBJ_EXT) \
     interp_res.$(OBJ_EXT) \
+    kintheory_energy_dissipation_ss.$(OBJ_EXT) \
     line_too_big.$(OBJ_EXT) \
     main_f.$(OBJ_EXT) \
     make_upper_case.$(OBJ_EXT) \
@@ -1306,6 +1308,24 @@ interp_res.$(OBJ_EXT) : interp_res.f \
             TMP_ARRAY.mod \
             xforms.inc                                                   \
             function.inc                                                
+kintheory_energy_dissipation_ss.$(OBJ_EXT) : ../model/kintheory_energy_dissipation_ss.f \
+            PARAM.mod \
+            PARAM1.mod \
+            GEOMETRY.mod \
+            COMPAR.mod \
+            FLDVAR.mod \
+            INDICES.mod \
+            PHYSPROP.mod \
+            RUN.mod \
+            CONSTANT.mod \
+            TOLERANC.mod \
+            KINTHEORY.mod \
+            function.inc                                                   \
+            fun_avg1.inc                                                   \
+            fun_avg2.inc                                                   \
+            ep_s1.inc                                                   \
+            ep_s2.inc                                         
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/kintheory_energy_dissipation_ss.f
 line_too_big.$(OBJ_EXT) : ../model/line_too_big.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/line_too_big.f 
 main_f.$(OBJ_EXT) : main_f.f \

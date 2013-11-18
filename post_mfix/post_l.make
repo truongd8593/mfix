@@ -131,6 +131,7 @@ post_mfix : \
     init_namelist.$(OBJ_EXT) \
     interp_res.$(OBJ_EXT) \
     line_too_big.$(OBJ_EXT) \
+    kintheory_energy_dissipation_ss.$(OBJ_EXT) \
     main_f.$(OBJ_EXT) \
     make_upper_case.$(OBJ_EXT) \
     open_file.$(OBJ_EXT) \
@@ -340,6 +341,7 @@ post_mfix : \
     ik_avg_out.$(OBJ_EXT) \
     init_namelist.$(OBJ_EXT) \
     interp_res.$(OBJ_EXT) \
+    kintheory_energy_dissipation_ss.$(OBJ_EXT) \
     line_too_big.$(OBJ_EXT) \
     main_f.$(OBJ_EXT) \
     make_upper_case.$(OBJ_EXT) \
@@ -889,7 +891,7 @@ calc_mu_s.$(OBJ_EXT) : ../model/calc_mu_s.f \
             s_pr1.inc                                                    \
             s_pr2.inc                                                    \
             fun_avg1.inc                                                 \
-            fun_avg2.inc                                                
+            fun_avg2.inc 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/calc_mu_s.f 
 calc_mw.$(OBJ_EXT) : ../model/calc_mw.f \
             param.mod \
@@ -1291,21 +1293,37 @@ init_namelist.$(OBJ_EXT) : ../model/init_namelist.f \
 interp_res.$(OBJ_EXT) : interp_res.f \
             param.mod \
             param1.mod \
+            parallel.mod \
+            constant.mod \
+            fldvar.mod \
             geometry.mod \
             indices.mod \
-            energy.mod \
             physprop.mod \
-            fldvar.mod \
-            post3d.mod \
-            run.mod \
-            rxns.mod \
-            scalars.mod \
-            funits.mod \
             compar.mod \
-            gridmap.mod \
+            sendrecv.mod \
+            drag.mod \
+            kintheory.mod \
             tmp_array.mod \
             xforms.inc                                                   \
             function.inc                                                
+kintheory_energy_dissipation_ss.$(OBJ_EXT) : ../model/kintheory_energy_dissipation_ss.f \
+            param.mod \
+            param1.mod \
+            geometry.mod \
+            compar.mod \
+            fldvar.mod \
+            indices.mod \
+            physprop.mod \
+            run.mod \
+            constant.mod \
+            toleranc.mod \
+            kintheory.mod \
+            function.inc                                                   \
+            fun_avg1.inc                                                   \
+            fun_avg2.inc                                                   \
+            ep_s1.inc                                                   \
+            ep_s2.inc                                         
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/kintheory_energy_dissipation_ss.f
 line_too_big.$(OBJ_EXT) : ../model/line_too_big.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/line_too_big.f 
 main_f.$(OBJ_EXT) : main_f.f \
