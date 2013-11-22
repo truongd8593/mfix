@@ -903,9 +903,9 @@
       DOUBLE PRECISION :: c_star, zeta0_star, nu_eta_star, press_star, &
                           gamma_star, eta_k_star, eta_star, eta0
 ! Variables for GTSH theory
-      DOUBLE PRECISION :: Xsi, vfrac, RdissP, Re_T, Rdiss, GamaAvg, A2_gtshW, &
+      DOUBLE PRECISION :: Chi, EP_SM, RdissP, Re_T, Rdiss, GamaAvg, A2_gtshW, &
                           zeta_star, nu0, nuN, NuK, EDT_s, zeta_avg, etaK, &
-			  Mu_b_avg, mu2_0, mu4_0, mu4_1
+                          Mu_b_avg, mu2_0, mu4_0, mu4_1
 !----------------------------------------------- 
 ! Functions
 !----------------------------------------------- 
@@ -1095,62 +1095,67 @@
          D_PM = DP_avg(M)
          M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
          NU_PM = (EPS(M)*ROS_avg(M))/M_PM
-	 Xsi = g0(M)
-	 vfrac = EPS(M)
+         Chi = g0(M)
+         EP_SM = EPS(M)
+
          IF(.NOT. BC_JJ_M) THEN
-            F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*vfrac*&
-               Xsi)/(6.d0*(ONE-ep_star_avg))
+            F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*EP_SM*&
+               Chi)/(6.d0*(ONE-ep_star_avg))
          ELSE
             F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M))*PI*&
-               ROS_avg(M)*vfrac*Xsi)/(6.d0*(ONE-ep_star_avg))
+               ROS_avg(M)*EP_SM*Chi)/(6.d0*(ONE-ep_star_avg))
          ENDIF
+
          RdissP = one 
-         if(vfrac > small_number) RdissP = &
-               one + 3d0*dsqrt(vfrac/2d0) + 135d0/64d0*vfrac*dlog(vfrac) + &
-               11.26d0*vfrac*(one-5.1d0*vfrac+16.57d0*vfrac**2-21.77d0*    &
-	       vfrac**3) - vfrac*Xsi*dlog(epM)
+         IF(EP_SM > small_number) RdissP = &
+            one + 3d0*dsqrt(EP_SM/2d0) + 135d0/64d0*EP_SM*dlog(EP_SM) + &
+            11.26d0*EP_SM*(one-5.1d0*EP_SM+16.57d0*EP_SM**2-21.77d0*    &
+            EP_SM**3) - EP_SM*Chi*dlog(epM)
       
          Re_T = RO_g_avg*D_pm*dsqrt(TH(M)) / Mu_g_avg
-	 Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
-         Rdiss = RdissP + Re_T * K_phi(vfrac)
+         Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
+         Rdiss = RdissP + Re_T * K_phi(EP_SM)
          GamaAvg = 3d0*Pi*Mu_g_avg*D_pm*Rdiss
-	 mu2_0 = dsqrt(2d0*pi) * Xsi * (one-C_E**2)
-	 mu4_0 = (4.5d0+C_E**2) * mu2_0 
-	 mu4_1 = (6.46875d0+0.3125d0*C_E**2)*mu2_0 + 2d0*dsqrt(2d0*pi)* &
-	          Xsi*(one+C_E)
+         mu2_0 = dsqrt(2d0*pi) * Chi * (one-C_E**2)
+         mu4_0 = (4.5d0+C_E**2) * mu2_0 
+         mu4_1 = (6.46875d0+0.3125d0*C_E**2)*mu2_0 + 2d0*dsqrt(2d0*pi)* &
+            Chi*(one+C_E)
          A2_gtshW = zero ! for eps = zero
-	 if((vfrac> small_number) .and. (TH(M) > small_number)) then 
-	    zeta_star = 4.5d0*dsqrt(2d0*Pi)*(RO_g_avg/ROs_avg(M))**2*Re_g**2 * &
-	                S_star(vfrac,Xsi) / (vfrac*(one-vfrac)**2 * Re_T**4)
-	    A2_gtshW = (5d0*mu2_0 - mu4_0) / (mu4_1 - 5d0* &
-	                   (19d0/16d0*mu2_0 - 1.5d0*zeta_star))
-	 endif
-         eta0 = 0.3125d0/(dsqrt(pi)*D_PM**2)*M_pm*dsqrt(TH(M))
-	 nu0 = (96.d0/5.d0)*(vfrac/D_PM)*DSQRT(TH(M)/PI)
-	 nuN = 0.25d0*nu0*Xsi*(3d0-C_E)*(one+C_E) * &
-	        (one+0.7375d0*A2_gtshW)
-         NuK = nu0*(one+C_E)/3d0*Xsi*( one+2.0625d0*(one-C_E)+ &
-	             ((947d0-579*C_E)/256d0*A2_gtshW) )
-	 EDT_s = 4d0/3d0*dsqrt(pi)*(one-C_E**2)*Xsi* &
-	         (one+0.1875d0*A2_gtshW)*NU_PM*D_PM**2*dsqrt(TH(M))
-         if((TH(m) > small_number) .and. (vfrac > small_number)) then
-	   zeta_avg = one/6d0*D_PM*VREL**2*(3d0*pi*Mu_g_avg*D_PM/M_pm)**2 / &
-	                  dsqrt(TH(m)) * S_star(vfrac, Xsi)
-           etaK = ROs_avg(M)*vfrac*TH(m) / (nuN-0.5d0*( &
-	          EDT_s-zeta_avg/TH(m) - &
-		  2d0*GamaAvg/M_PM)) * (one -0.4d0 * &
-		  (one+C_E)*(one-3d0*C_E)*vfrac*Xsi)
-         else
-           etaK = zero
+
+         if((EP_SM> small_number) .and. (TH(M) > small_number)) then 
+            zeta_star = 4.5d0*dsqrt(2d0*Pi)*(RO_g_avg/ROs_avg(M))**2*Re_g**2 * &
+                        S_star(EP_SM,Chi) / (EP_SM*(one-EP_SM)**2 * Re_T**4)
+            A2_gtshW = (5d0*mu2_0 - mu4_0) / (mu4_1 - 5d0* &
+                           (19d0/16d0*mu2_0 - 1.5d0*zeta_star))
          endif
-         Mu_b_avg = 25.6d0/pi * vfrac**2 * Xsi *(one+C_E) * &
-	               (one - A2_gtshW/16d0)*eta0
-!
-         Mu_s = etaK*(one+0.8d0*vfrac*Xsi*(one+C_E)) + &
-	                     0.6d0*Mu_b_avg
+
+         eta0 = 0.3125d0/(dsqrt(pi)*D_PM**2)*M_pm*dsqrt(TH(M))
+         nu0 = (96.d0/5.d0)*(EP_SM/D_PM)*DSQRT(TH(M)/PI)
+         nuN = 0.25d0*nu0*Chi*(3d0-C_E)*(one+C_E) * &
+            (one+0.7375d0*A2_gtshW)
+         NuK = nu0*(one+C_E)/3d0*Chi*( one+2.0625d0*(one-C_E)+ &
+            ((947d0-579*C_E)/256d0*A2_gtshW) )
+         EDT_s = 4d0/3d0*dsqrt(pi)*(one-C_E**2)*Chi* &
+            (one+0.1875d0*A2_gtshW)*NU_PM*D_PM**2*dsqrt(TH(M))
+
+         if((TH(m) > small_number) .and. (EP_SM > small_number)) then
+            zeta_avg = one/6d0*D_PM*VREL**2*(3d0*pi*Mu_g_avg*D_PM/&
+               M_pm)**2 / dsqrt(TH(m)) * S_star(EP_SM, Chi)
+            etaK = ROs_avg(M)*EP_SM*TH(m) / (nuN-0.5d0*( &
+               EDT_s-zeta_avg/TH(m) - 2d0*GamaAvg/M_PM)) * &
+               (one -0.4d0 * (one+C_E)*(one-3d0*C_E)*EP_SM*Chi)
+         else
+            etaK = zero
+         endif
+
+         Mu_b_avg = 25.6d0/pi * EP_SM**2 * Chi *(one+C_E) * &
+            (one - A2_gtshW/16d0)*eta0
+
+         Mu_s = etaK*(one+0.8d0*EP_SM*Chi*(one+C_E)) + &
+            0.6d0*Mu_b_avg
 
       ELSE   ! No modifications to original mfix if 
-             ! IA or GD99 theories are not used
+             ! IA, GD99, GTSH theories are not used
       
 !  modify F_2 if Jenkins BC is used (sof)    
          IF(JENKINS) THEN

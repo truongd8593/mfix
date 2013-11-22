@@ -60,11 +60,14 @@
          IF (GRAN_DISS(M)) THEN
             IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
                CALL CALC_IA_NONEP_ENERGY_DISSIPATION_SS(M, IER)
-            ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99' .OR. &
-	            TRIM(KT_TYPE) .EQ. 'GTSH') THEN
+            ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99')THEN
                CALL CALC_GD_99_ENERGY_DISSIPATION_SS(M, IER)
+            ELSEIF (TRIM(KT_TYPE) .EQ. 'GTSH') THEN
+               CALL CALC_GTSH_ENERGY_DISSIPATION_SS(M, IER)
             ENDIF
          ENDIF
+! these were moved after gran_diss since some quantities above are
+! needed in the subsequent gtsh calculations
          IF (COND(M)) CALL CALC_K_S (M, IER)   ! Solids conductivity
          IF (VISC(M)) CALL CALC_MU_S (M, IER)  ! Solids viscosity
          IF (DIFF(M)) CALL CALC_DIF_S (M, IER) ! Solids diffusivity

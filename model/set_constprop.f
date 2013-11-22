@@ -83,8 +83,10 @@
           TRIM(KT_TYPE) == 'GTSH') THEN
          EDT_s_ip = ZERO
          EDvel_sM_ip = ZERO
-	 A2_gtsh = ZERO
-	 zeta_gtsh = zero
+      ENDIF
+      IF(TRIM(KT_TYPE) == 'GTSH') THEN
+         A2_gtsh = ZERO
+         xsi_gtsh = zero
       ENDIF
      
 ! Set specified constant physical properties values

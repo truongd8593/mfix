@@ -1,9 +1,18 @@
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: CALC_IA_NONEP_ENERGY_DISSIPATION_SS                     C
+!                                                                      C
+!  Purpose: Implement kinetic theory of Iddir & Arastoopour (2005)     C
+!     for calculation of source terms in granular energy equation      C
+!                                                                      C
+!  Author: Janine E. Galvin, Univeristy of Colorado                    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE CALC_IA_NONEP_ENERGY_DISSIPATION_SS(M, IER) 
-!
+
 !-----------------------------------------------
-!     Modules
+! Modules
 !-----------------------------------------------
       USE param
       USE param1
@@ -18,189 +27,189 @@
       use kintheory
       IMPLICIT NONE
 !-----------------------------------------------
-!     Local variables
+! Dummy arguments
 !-----------------------------------------------  
-!     Error index
-      INTEGER          IER
-!
-!     Index
-      INTEGER          IJK, I, J, K
-!     
-!     Solids phase
-      INTEGER          L,M
-!
-!                      Index for storing solids-solids drag coefficients 
-!                      in the upper triangle of the matrix                  
-      INTEGER          LM 
-!
-!     variables for IA equipartition model
-      DOUBLE PRECISION ED_common_term
-      DOUBLE PRECISION EDvel_sL, EDvel_sM
-      DOUBLE PRECISION M_PM, M_PL, MPSUM, NU_PL, NU_PM, D_PM, D_PL, DPSUMo2
-      DOUBLE PRECISION Ap_lm, Dp_lm, R1p_lm, R10p_lm, R3p_lm, R4p_lm,&
-                       R5p_lm, Bp_lm
+! Error index
+      INTEGER, INTENT(INOUT) ::  IER
+! Solids phase index
+      INTEGER, INTENT(IN) :: M
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------  
+! Index
+      INTEGER :: IJK, I, J, K
+     
+! Solids phase index
+      INTEGER :: L
+
+! Index for storing solids-solids drag coefficients 
+! in the upper triangle of the matrix                  
+      INTEGER :: LM 
+
+! variables for IA theory 
+      DOUBLE PRECISION :: ED_common_term
+      DOUBLE PRECISION :: EDvel_sL, EDvel_sM
+      DOUBLE PRECISION :: M_PM, M_PL, MPSUM, NU_PL, NU_PM, D_PM, &
+                          D_PL, DPSUMo2
+      DOUBLE PRECISION :: Ap_lm, Dp_lm, R1p_lm, R10p_lm, R3p_lm, &
+                          R4p_lm, R5p_lm, Bp_lm
 !----------------------------------------------- 
-!     Function subroutines
+! Function subroutines
 !----------------------------------------------- 
       DOUBLE PRECISION G_0
 !-----------------------------------------------
-!     Include statement functions
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------   
-!
+
       DO IJK = ijkstart3, ijkend3
           I = I_OF(IJK)
           J = J_OF(IJK)
           K = K_OF(IJK)       
-!     
+     
           IF ( FLUID_AT(IJK) ) THEN
-!
-               D_PM = D_P(IJK,M)
-               M_PM = (PI/6.d0)*(D_PM**3)*RO_S(IJK,M)
 
-               NU_PM = ROP_S(IJK,M)/M_PM
+             D_PM = D_P(IJK,M)
+             M_PM = (PI/6.d0)*(D_PM**3)*RO_S(IJK,M)
+             NU_PM = ROP_S(IJK,M)/M_PM
 
-               DO L = 1, MMAX
-!
-                    LM = FUNLM(L,M)
-! 
-                    D_PL = D_P(IJK,L)
+             DO L = 1, MMAX
+                LM = FUNLM(L,M)
+                D_PL = D_P(IJK,L)
+                M_PL = (PI/6.d0)*(D_PL**3)*RO_S(IJK,L)
 
-                    M_PL = (PI/6.d0)*(D_PL**3)*RO_S(IJK,L)
+                MPSUM = M_PM + M_PL
+                DPSUMo2 = (D_PM+D_PL)/2.d0
+                NU_PL = ROP_S(IJK,L)/M_PL
 
-                    MPSUM = M_PM + M_PL
-                    DPSUMo2 = (D_PM+D_PL)/2.d0
-                    NU_PL = ROP_S(IJK,L)/M_PL
-!
-!
-                    ED_common_term = (3.d0/4.d0)*(DPSUMo2*DPSUMo2)*(1.d0+C_E)*&
-                         G_0(IJK,M,L)*NU_PM*NU_PL*(M_PM*M_PL/MPSUM)*&
-                         ((M_PM*M_PL)**1.5)
-!
-!                                  
-                    IF (M .eq. L) THEN
-!
-                         Ap_lm = MPSUM/(2.d0)
-                         Dp_lm = M_PL*M_PM/(2.d0*MPSUM)
-                         R1p_lm = 1.d0/( (Ap_lm**1.5)*(Dp_lm**3) )
-                         R3p_lm = 1.d0/( (Ap_lm**1.5)*(Dp_lm**3.5) )
-!
-!
-                         ! Dissipation associated with the difference in temperature
-                         ! (e.g. interphase transfer term).  For the case case (L=M) 
-                         ! the term ED_s * (TL-TM) cancels. Therefore, explicity set
-                         ! the term to zero for this case.
-                         ED_ss_ip(IJK,LM) = ZERO                        
-!
-!
-                         ! Dissipation associated with temperature
-                         EDT_s_ip(IJK,M,L) = -ED_common_term* (1.d0-C_E)*(M_PL/MPSUM)*&
-                              (DSQRT(PI)/6.d0)*R1p_lm*(Theta_m(IJK,M)**1.5)
-!
-!
-                         ! Dissipation associated with divergence of
-                         ! velocity of solid phase L: do not explicity include
-                         ! terms that cancel when EDvel_sL is summed with EDvel_sM
-                         EDvel_sL = ED_common_term*((1.d0-C_E)*(M_PL/MPSUM)*&
-                              (DPSUMo2*PI/48.d0)*(M_PM*M_PL/MPSUM)*R3p_lm)
-                         EDvel_sL_ip(IJK,M,L) = EDvel_sL*(Theta_m(IJK,L))
-!
-!
-                         ! Dissipation associated with divergence of
-                         ! velocity of solid phase M: do not explicity include
-                         ! terms that cancel when EDvel_sL is summed with EDvel_sM
-                        
-			! commented by sof, no need to re-do computation
-			! EDvel_sM = ED_common_term*((1.d0-C_E)*(M_PL/MPSUM)*&
-                        !      (DPSUMo2*PI/48.d0)*(M_PM*M_PL/MPSUM)*R3p_lm)
-                        ! EDvel_sM_ip(IJK,M,L) = EDvel_sM*(Theta_m(IJK,M))
-                         
-			 EDvel_sM_ip(IJK,M,L) =  EDvel_sL_ip(IJK,M,L)
-!
-                    ELSE
-!
-                         Ap_lm = (M_PM*Theta_m(IJK,L)+M_PL*Theta_m(IJK,M))/&
-                               2.d0
-                         Bp_lm = (M_PM*M_PL*(Theta_m(IJK,L)-Theta_m(IJK,M) ))/&
-                              (2.d0*MPSUM)
-                         Dp_lm = (M_PL*M_PM*(M_PM*Theta_m(IJK,M)+M_PL*Theta_m(IJK,L) ))/&
-                              (2.d0*MPSUM*MPSUM)
-                         
-			 R1p_lm = ( 1.d0/( (Ap_lm**1.5)*(Dp_lm**3) ) )+ &
-                              ( (9.d0*Bp_lm*Bp_lm)/( Ap_lm**2.5 * Dp_lm**4 ) )+&
-                              ( (30.d0*Bp_lm**4) /( 2.d0*Ap_lm**3.5 * Dp_lm**5 ) )
-                         
-			 R3p_lm = ( 1.d0/( (Ap_lm**1.5)*(Dp_lm**3.5) ) )+&
-                              ( (21.d0*Bp_lm*Bp_lm)/( 2.d0 * Ap_lm**2.5 * Dp_lm**4.5 ) )+&
-                              ( (315.d0*Bp_lm**4)/( 8.d0 * Ap_lm**3.5 *Dp_lm**5.5 ) )
-                         
-			 R4p_lm = ( 3.d0/( Ap_lm**2.5 * Dp_lm**3.5 ) )+&
-                              ( (35.d0*Bp_lm*Bp_lm)/( 2.d0 * Ap_lm**3.5 * Dp_lm**4.5 ) )+&
-                              ( (441.d0*Bp_lm**4)/( 8.d0 * Ap_lm**4.5 * Dp_lm**5.5 ) )
-                         
-			 R5p_lm = ( 1.d0/( Ap_lm**2.5 * Dp_lm**3 ) )+ &
-                              ( (5.d0*Bp_lm*Bp_lm)/( Ap_lm**3.5 * Dp_lm**4 ) )+&
-                              ( (14.d0*Bp_lm**4)/( Ap_lm**4.5 * Dp_lm**5 ) )
-                         
-			 R10p_lm = ( 1.d0/( Ap_lm**2.5 * Dp_lm**2.5 ) )+&
-                              ( (25.d0*Bp_lm*Bp_lm)/( 2.d0* Ap_lm**3.5 * Dp_lm**3.5 ) )+&
-                              ( (1225.d0*Bp_lm**4)/( 24.d0* Ap_lm**4.5 * Dp_lm**4.5 ) )
-!
-!
-                         ! Dissipation associated with the difference in temperature
-                         ! (e.g. interphase transfer term). to solved using PEA
-                         ED_ss_ip(IJK,LM) = ED_common_term*DSQRT(PI)*(M_PM*M_PL/&
-                             (2.d0*MPSUM))*R5p_lm*( (Theta_M(IJK,M)*Theta_M(IJK,L))**3 )
-!
-!
-                         ! Dissipation associated with temperature
-                         EDT_s_ip(IJK,M,L) = -ED_common_term* (1.d0-C_E)*(M_PL/MPSUM)*&
-                              (DSQRT(PI)/6.d0)*R1p_lm*( (Theta_m(IJK,M)*Theta_m(IJK,L))**3 )
-!
-!
-                         ! Dissipation associated with divergence of
-                         ! velocity of solid phase L  
-                         EDvel_sL = ED_common_term*( ((3.d0*DPSUMo2*PI/40.d0)*M_PL*&
-                              R10p_lm)+( (DPSUMo2*PI/4.d0)*(M_PM*M_PL/MPSUM)*Bp_lm*&
-                              R4p_lm)-( (1.d0-C_E)*(M_PL/MPSUM)*(DPSUMo2*PI/16.d0)*&
-                              M_PL*Bp_lm*R4p_lm)+( (1.d0-C_E)*(M_PL/MPSUM)*&
-                              (DPSUMo2*PI/48.d0)*(M_PM*M_PL/MPSUM)*R3p_lm))
-                         
-			 EDvel_sL_ip(IJK,M,L) = EDvel_sL*( Theta_m(IJK,M)**3.5 *&
-                               Theta_m(IJK,L)**2.5 )
+                ED_common_term = (3.d0/4.d0)*(DPSUMo2*DPSUMo2)*&
+                   (1.d0+C_E)*G_0(IJK,M,L)*NU_PM*NU_PL*(M_PM*&
+                   M_PL/MPSUM)*((M_PM*M_PL)**1.5)
+                                  
+                IF (M .eq. L) THEN
+                   Ap_lm = MPSUM/(2.d0)
+                   Dp_lm = M_PL*M_PM/(2.d0*MPSUM)
+                   R1p_lm = 1.d0/( (Ap_lm**1.5)*(Dp_lm**3) )
+                   R3p_lm = 1.d0/( (Ap_lm**1.5)*(Dp_lm**3.5) )
 
-                         ! Dissipation associated with divergence of
-                         ! velocity of solid phase M  
-                         EDvel_sM = ED_common_term*( (-(3.d0*DPSUMo2*PI/40.d0)*M_PM*&
-                              R10p_lm)+( (DPSUMo2*PI/4.d0)*(M_PM*M_PL/MPSUM)*Bp_lm*&
-                              R4p_lm)+( (1.d0-C_E)*(M_PL/MPSUM)*(DPSUMo2*PI/16.d0)*&
-                              M_PM*Bp_lm*R4p_lm)+( (1.d0-C_E)*(M_PL/MPSUM)*&
-                              (DPSUMo2*PI/48.d0)*(M_PM*M_PL/MPSUM)*R3p_lm))
+! Dissipation associated with the difference in temperature
+! (e.g. interphase transfer term).  For the case case (L=M) 
+! the term ED_s * (TL-TM) cancels. Therefore, explicity set
+! the term to zero for this case.
+                   ED_ss_ip(IJK,LM) = ZERO                        
+
+! Dissipation associated with temperature
+                   EDT_s_ip(IJK,M,L) = -ED_common_term* (1.d0-C_E)*&
+                      (M_PL/MPSUM)*(DSQRT(PI)/6.d0)*R1p_lm*&
+                      (Theta_m(IJK,M)**1.5)
+
+! Dissipation associated with divergence of
+! velocity of solid phase L: do not explicity include
+! terms that cancel when EDvel_sL is summed with EDvel_sM
+                   EDvel_sL = ED_common_term*((1.d0-C_E)*(M_PL/MPSUM)*&
+                      (DPSUMo2*PI/48.d0)*(M_PM*M_PL/MPSUM)*R3p_lm)
+                      EDvel_sL_ip(IJK,M,L) = EDvel_sL*(Theta_m(IJK,L))
+
+! Dissipation associated with divergence of
+! velocity of solid phase M: do not explicity include
+! terms that cancel when EDvel_sL is summed with EDvel_sM
+! commented by sof, no need to re-do computation
+                   !EDvel_sM = ED_common_term*((1.d0-C_E)*(M_PL/MPSUM)*&
+                   !   (DPSUMo2*PI/48.d0)*(M_PM*M_PL/MPSUM)*R3p_lm)
+                   !EDvel_sM_ip(IJK,M,L) = EDvel_sM*(Theta_m(IJK,M)) ! M=L
                          
-			 EDvel_sM_ip(IJK,M,L) = EDvel_sM*( Theta_m(IJK,M)**2.5 *&
-                              Theta_m(IJK,L)**3.5 )
-!
-                    ENDIF
+                   EDvel_sM_ip(IJK,M,L) =  EDvel_sL_ip(IJK,M,L)
 
-               ENDDO
+                ELSE
 
-          ENDIF
-      ENDDO
+                   Ap_lm = (M_PM*Theta_m(IJK,L)+M_PL*Theta_m(IJK,M))/&
+                      2.d0
+                   Bp_lm = (M_PM*M_PL*(Theta_m(IJK,L)-&
+                      Theta_m(IJK,M) ))/(2.d0*MPSUM)
+                   Dp_lm = (M_PL*M_PM*(M_PM*Theta_m(IJK,M)+M_PL*&
+                      Theta_m(IJK,L) ))/(2.d0*MPSUM*MPSUM)
+                         
+                   R1p_lm = (1.d0/((Ap_lm**1.5)*(Dp_lm**3)))+ &
+                      ((9.d0*Bp_lm*Bp_lm)/(Ap_lm**2.5 * Dp_lm**4))+&
+                      ((30.d0*Bp_lm**4)/(2.d0*Ap_lm**3.5 * Dp_lm**5))
+                         
+                   R3p_lm = (1.d0/((Ap_lm**1.5)*(Dp_lm**3.5)))+&
+                      ((21.d0*Bp_lm*Bp_lm)/(2.d0 * Ap_lm**2.5 * Dp_lm**4.5))+&
+                      ((315.d0*Bp_lm**4)/(8.d0 * Ap_lm**3.5 *Dp_lm**5.5))
+                         
+                   R4p_lm = (3.d0/( Ap_lm**2.5 * Dp_lm**3.5))+&
+                      ((35.d0*Bp_lm*Bp_lm)/(2.d0 * Ap_lm**3.5 * Dp_lm**4.5))+&
+                      ((441.d0*Bp_lm**4)/(8.d0 * Ap_lm**4.5 * Dp_lm**5.5))
+                         
+                   R5p_lm = (1.d0/(Ap_lm**2.5 * Dp_lm**3))+ &
+                      ((5.d0*Bp_lm*Bp_lm)/(Ap_lm**3.5 * Dp_lm**4))+&
+                      ((14.d0*Bp_lm**4)/( Ap_lm**4.5 * Dp_lm**5))
+                         
+                   R10p_lm = (1.d0/(Ap_lm**2.5 * Dp_lm**2.5))+&
+                      ((25.d0*Bp_lm*Bp_lm)/(2.d0* Ap_lm**3.5 * Dp_lm**3.5))+&
+                      ((1225.d0*Bp_lm**4)/(24.d0* Ap_lm**4.5 * Dp_lm**4.5))
+
+! Dissipation associated with the difference in temperature
+! (e.g. interphase transfer term). to solved using PEA
+                   ED_ss_ip(IJK,LM) = ED_common_term*DSQRT(PI)*(M_PM*M_PL/&
+                      (2.d0*MPSUM))*R5p_lm*( (Theta_M(IJK,M)*Theta_M(IJK,L))**3 )
+
+! Dissipation associated with temperature
+                   EDT_s_ip(IJK,M,L) = -ED_common_term* (1.d0-C_E)*(M_PL/MPSUM)*&
+                      (DSQRT(PI)/6.d0)*R1p_lm*( (Theta_m(IJK,M)*Theta_m(IJK,L))**3 )
+
+! Dissipation associated with divergence of
+! velocity of solid phase L  
+                   EDvel_sL = ED_common_term*( ((3.d0*DPSUMo2*PI/40.d0)*M_PL*&
+                      R10p_lm)+( (DPSUMo2*PI/4.d0)*(M_PM*M_PL/MPSUM)*Bp_lm*&
+                      R4p_lm)-( (1.d0-C_E)*(M_PL/MPSUM)*(DPSUMo2*PI/16.d0)*&
+                      M_PL*Bp_lm*R4p_lm)+( (1.d0-C_E)*(M_PL/MPSUM)*&
+                      (DPSUMo2*PI/48.d0)*(M_PM*M_PL/MPSUM)*R3p_lm))
+                         
+                   EDvel_sL_ip(IJK,M,L) = EDvel_sL*( Theta_m(IJK,M)**3.5 *&
+                      Theta_m(IJK,L)**2.5 )
+
+! Dissipation associated with divergence of
+! velocity of solid phase M  
+                   EDvel_sM = ED_common_term*( (-(3.d0*DPSUMo2*PI/40.d0)*M_PM*&
+                      R10p_lm)+( (DPSUMo2*PI/4.d0)*(M_PM*M_PL/MPSUM)*Bp_lm*&
+                      R4p_lm)+( (1.d0-C_E)*(M_PL/MPSUM)*(DPSUMo2*PI/16.d0)*&
+                       M_PM*Bp_lm*R4p_lm)+( (1.d0-C_E)*(M_PL/MPSUM)*&
+                      (DPSUMo2*PI/48.d0)*(M_PM*M_PL/MPSUM)*R3p_lm))
+                         
+                   EDvel_sM_ip(IJK,M,L) = EDvel_sM*( Theta_m(IJK,M)**2.5 *&
+                      Theta_m(IJK,L)**3.5 )
+
+                ENDIF   ! end if/else (m.eq.l)
+
+             ENDDO   ! end do (l=1,mmax)
+
+         ENDIF   ! end if(fluid_at)
+      ENDDO   ! end do ijk
 
       RETURN  
       END SUBROUTINE CALC_IA_NONEP_ENERGY_DISSIPATION_SS 
-!-----------------------------------------------
 
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-!
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: CALC_GD_99_ENERGY_DISSIPATION_SS                        C
+!                                                                      C
+!  Purpose: Implement kinetic theory of Garzo & Dufty (1999)           C
+!     for calculation of source terms in granular energy equation      C
+!                                                                      C
+!  Author: Janine E. Galvin                                            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE CALC_GD_99_ENERGY_DISSIPATION_SS(M, IER) 
-!
+
 !-----------------------------------------------
-!     Modules
+! Modules
 !-----------------------------------------------
       USE param
       USE param1
@@ -215,33 +224,156 @@
       use kintheory
       IMPLICIT NONE
 !-----------------------------------------------
-!     Local variables
+! Dummy arguments
 !-----------------------------------------------  
-!     Error index
-      INTEGER          IER
-!
-!     Index
-      INTEGER          IJK, I, J, K, IMJK, IJMK, IJKM
-!     
-!     Solids phase
-      INTEGER          M
-!
-!     variables for GD model
-      DOUBLE PRECISION D_PM, V_p, N_p, M_p
-      DOUBLE PRECISION press_star, c_star, zeta0_star, nu_gamma_star, &
-                       lambda_num, cd_num, zeta1, nu0, eps, Xsi
-      DOUBLE PRECISION UGC, VGC, WGC, USCM, VSCM, WSCM, VREL, Re_m, Re_T
-      DOUBLE PRECISION zeta_star, mu2_0, mu4_0, mu4_1
-      DOUBLE PRECISION omega, nu_j, rho_10, rho_11
-!
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
+! Solids phase index      
+      INTEGER, INTENT(IN) :: M
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------  
+! Indices
+      INTEGER :: IJK, I, J, K
+! variables for GD model
+      DOUBLE PRECISION :: press_star, c_star, zeta0_star, nu_gamma_star, &
+                          lambda_num, cd_num, zeta1
+      DOUBLE PRECISION :: D_PM, EP_SM
+      DOUBLE PRECISION :: nu0, Chi
 !----------------------------------------------- 
-!     Function subroutines
+! Function subroutines
 !----------------------------------------------- 
       DOUBLE PRECISION G_0 
       DOUBLE PRECISION S_star
       DOUBLE PRECISION G_gtsh
 !-----------------------------------------------
-!     Include statement functions
+! Include statement functions
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+      INCLUDE 'fun_avg1.inc'
+      INCLUDE 'fun_avg2.inc'
+      INCLUDE 'ep_s1.inc'
+      INCLUDE 'ep_s2.inc'
+!-----------------------------------------------   
+
+      DO IJK = ijkstart3, ijkend3
+          I = I_OF(IJK)
+          J = J_OF(IJK)
+          K = K_OF(IJK) 
+     
+          IF ( FLUID_AT(IJK) ) THEN
+
+! Note: k_boltz = M_PM
+
+! local aliases
+             Chi = G_0(IJK,M,M)
+             EP_SM = EP_s(IJK,M)
+             D_PM = D_P(IJK,M)
+
+!            nu0=p_k/eta0
+             nu0 = (96.d0/5.d0)*(EP_SM/D_PM)*DSQRT(Theta_m(IJK,M)/PI)
+
+             press_star = 1.d0 + 2.d0*(1.d0+C_E)*EP_SM*Chi
+
+             c_star = 32.0d0*(1.0d0 - C_E)*(1.d0 - 2.0d0*C_E*C_E) &
+                / (81.d0 - 17.d0*C_E + 30.d0*C_E*C_E*(1.0d0-C_E))
+
+             zeta0_star = (5.d0/12.d0)*Chi*(1.d0 - C_E*C_E) &
+                * (1.d0 + (3.d0/32.d0)*c_star)
+
+             nu_gamma_star = ((1.d0+C_E)/48.d0)*Chi*(128.d0-96.d0*C_E + &
+                15.d0*C_E*C_E-15.d0*C_E*C_E*C_E+ (c_star/64.d0) * (15.d0* &
+                C_E*C_E*C_E-15.d0*C_E*C_E+498.d0*C_E-434.d0))
+
+             lambda_num = (3.d0/8.d0)*( (1.d0-C_E)*(5.d0*C_E*C_E+4.d0*C_E-1.d0)+ &
+                (c_star/12.d0)*(159.d0*C_E+3.d0*C_E*C_E-19.d0*C_E- &
+                15.d0*C_E*C_E*C_E) ) * (1.d0+C_E)
+
+! does not include factor of 1/nu0.  the factor 1/nu0 in cD will cancel
+! with the factor of nu0 used to obtain zeta1 from zeta1_star
+             cd_num = ( (4.d0/15.d0)*lambda_num*EP_SM*Chi + &
+                (press_star-1.d0)*(2.d0/3.d0-C_E)*c_star ) / &
+                ( 0.5d0*zeta0_star+nu_gamma_star + (5.d0*c_star/64.d0) * &
+                (1.d0+(3.d0*c_star/64.d0))*Chi*(1.d0-C_E*C_E))
+
+! does not include factor of 1/nu0 in the first term.  the factor 1/nu0 
+! will cancel with the factor of nu0 used to obtain zeta1 from zeta1_star
+! zeta1 = nu0*zeta1_star
+             zeta1 = -(1.d0-C_E)*(press_star-1.d0) + (5.d0/32.d0) * &
+                (1.d0-C_E*C_E)*(1.d0+(3.d0*c_star/64.d0))*Chi*cd_num
+
+! in the energy equation this term is multiplied by 3/2*n*kboltz*T
+! leave multiplication of theta for source routine
+             EDvel_sM_ip(IJK,M,M) = (3.d0/2.d0)*ROP_s(IJK,M)*zeta1
+
+! in the energy equation this term is multiplied by 3/2*n*kboltz*T
+! leave multiplication of theta for source routine
+             EDT_s_ip(IJK,M,M) = (3.d0/2.d0)*ROP_s(IJK,M)*nu0*zeta0_star
+
+         ENDIF   ! end if (fluid_at)
+      ENDDO   ! end do (ijk=ijkstart3,ijkend3)
+
+      RETURN  
+      END SUBROUTINE CALC_GD_99_ENERGY_DISSIPATION_SS 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: CALC_GTSH_ENERGY_DISSIPATION_SS                         C
+!                                                                      C
+!  Purpose: Implement kinetic theory of Garzo, Tenneti, Subramaniam    C
+!     Hrenya (2012) for calculation of source terms in granular        C
+!     energy equation                                                  C
+!                                                                      C
+!  Author: Sofiane Benyahia                                            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      SUBROUTINE CALC_GTSH_ENERGY_DISSIPATION_SS(M, IER) 
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      USE param
+      USE param1
+      USE geometry
+      USE compar
+      USE fldvar 
+      USE indices 
+      USE physprop
+      USE run
+      USE constant
+      USE toleranc
+      use kintheory
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
+! Solids phase index      
+      INTEGER, INTENT(IN) :: M
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+! Indices
+      INTEGER :: IJK, I, J, K, IMJK, IJMK, IJKM
+! variables 
+      DOUBLE PRECISION :: D_PM, EP_SM, V_p, N_p, M_p
+      DOUBLE PRECISION :: nu0, Chi
+      DOUBLE PRECISION :: UGC, VGC, WGC, USCM, VSCM, WSCM, VREL
+      DOUBLE PRECISION :: Re_m, Re_T
+      DOUBLE PRECISION :: zeta_star, mu2_0, mu4_0, mu4_1
+      DOUBLE PRECISION :: omega, nu_j, rho_10, rho_11
+
+!----------------------------------------------- 
+! Function subroutines
+!----------------------------------------------- 
+      DOUBLE PRECISION G_0 
+      DOUBLE PRECISION S_star
+      DOUBLE PRECISION G_gtsh
+!-----------------------------------------------
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg1.inc'
@@ -260,136 +392,114 @@
      
           IF ( FLUID_AT(IJK) ) THEN
 
-!              Note: k_boltz = M_PM
+! Local aliases
+             Chi = G_0(IJK,M,M)
+             EP_SM = EP_s(IJK,M)
+             D_PM = D_P(IJK,M)
+             V_p = pi*D_PM**3/6d0
+             n_p = EP_SM/V_p
+             M_p = V_p * ro_s(ijk,m)
+ 
+             nu0 = (96.d0/5.d0)*(EP_SM/D_PM)*DSQRT(Theta_m(IJK,M)/PI)
 
-               Xsi = G_0(IJK,M,M)
-	       eps = EP_s(IJK,M)
-	       D_PM = D_P(IJK,M)
-	       V_p = pi*D_PM**3/6d0
-	       n_p = eps/V_p
-	       M_p = V_p * ro_s(ijk,m)
-! 
-	       nu0 = (96.d0/5.d0)*(eps/D_PM)*DSQRT(Theta_m(IJK,M)/PI)
 
-             if((TRIM(KT_TYPE) == 'GD_99')) then
-!              nu0=p_k/eta0
+! First calculate the Re number (Re_m, Re_T) in eq. 3.1 in GTSH theory
+            UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I) 
+            VGC = AVG_Y_N(V_G(IJMK),V_G(IJK)) 
+            WGC = AVG_Z_T(W_G(IJKM),W_G(IJK)) 
+            USCM = AVG_X_E(U_S(IMJK,M),U_S(IJK,M),I) 
+            VSCM = AVG_Y_N(V_S(IJMK,M),V_S(IJK,M)) 
+            WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M))
+            VREL = DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 
-               press_star = 1.d0 + 2.d0*(1.d0+C_E)*eps*Xsi
+            Re_m = D_PM*VREL*ROP_g(ijk)/Mu_g(ijk)
+            Re_T = ro_g(ijk)*D_PM*dsqrt(theta_m(ijk,m)) / mu_g(ijk)
 
-               c_star = 32.0d0*(1.0d0 - C_E)*(1.d0 - 2.0d0*C_E*C_E) &
-                    / (81.d0 - 17.d0*C_E + 30.d0*C_E*C_E*(1.0d0-C_E))
+! Now calculate and store xsi (used in many spots) in eq. 8.2 in 
+! GTSH theory.
+            xsi_gtsh(ijk) = one/6d0*D_PM*VREL**2*(3d0*pi*mu_g(ijk)*&
+               D_PM/M_p)**2 / dsqrt(pi*theta_m(ijk,m)) * &
+               S_star(EP_SM, Chi)
 
-               zeta0_star = (5.d0/12.d0)*Xsi*(1.d0 - C_E*C_E) &
-                    * (1.d0 + (3.d0/32.d0)*c_star)
+! eq. (6.22) GTSH theory
+            mu2_0 = dsqrt(2d0*pi) * Chi * (one-C_E**2)  
 
-               nu_gamma_star = ((1.d0+C_E)/48.d0)*Xsi*(128.d0-96.d0*C_E + &
-                    15.d0*C_E*C_E-15.d0*C_E*C_E*C_E+ (c_star/64.d0) * (15.d0* &
-                    C_E*C_E*C_E-15.d0*C_E*C_E+498.d0*C_E-434.d0))
+! eq. (6.23) GTSH theory
+            mu4_0 = (4.5d0+C_E**2) * mu2_0
 
-               lambda_num = (3.d0/8.d0)*( (1.d0-C_E)*(5.d0*C_E*C_E+4.d0*C_E-1.d0)+ &
-                    (c_star/12.d0)*(159.d0*C_E+3.d0*C_E*C_E-19.d0*C_E- &
-                    15.d0*C_E*C_E*C_E) ) * (1.d0+C_E)
+! eq. (6.24) GTSH theory
+!            mu4_1 = (6.46875d0+0.3125d0*C_E**2 + 2d0/(one-C_E)) * mu2_0   
+! this is done to avoid /0 in case c_e = 1.0
+            mu4_1 = (6.46875d0+0.3125d0*C_E**2)*mu2_0 + &
+               2d0*dsqrt(2d0*pi)* Chi*(one+C_E)  
 
-!              does not include factor of 1/nu0.  the factor 1/nu0 in cD will cancel
-!              with the factor of nu0 used to obtain zeta1 from zeta1_star
-               cd_num = ( (4.d0/15.d0)*lambda_num*eps*Xsi + &
-                    (press_star-1.d0)*(2.d0/3.d0-C_E)*c_star ) / &
-                    ( 0.5d0*zeta0_star+nu_gamma_star + (5.d0*c_star/64.d0) * &
-                    (1.d0+(3.d0*c_star/64.d0))*Xsi*(1.d0-C_E*C_E))
-
-!              does not include factor of 1/nu0 in the first term.  the factor 1/nu0 
-!              will cancel with the factor of nu0 used to obtain zeta1 from zeta1_star
-!              zeta1 = nu0*zeta1_star
-               zeta1 = -(1.d0-C_E)*(press_star-1.d0) + (5.d0/32.d0) * &
-                    (1.d0-C_E*C_E)*(1.d0+(3.d0*c_star/64.d0))*Xsi*cd_num
-
-!              in the energy equation this term is multiplied by 3/2*n*kboltz*T
-!              leave multiplication of theta for source routine
-               EDvel_sM_ip(IJK,M,M) = (3.d0/2.d0)*ROP_s(IJK,M)*zeta1
-
-!              in the energy equation this term is multiplied by 3/2*n*kboltz*T
-!              leave multiplication of theta for source routine
-               EDT_s_ip(IJK,M,M) = (3.d0/2.d0)*ROP_s(IJK,M)*nu0*zeta0_star
-!
-             elseif((TRIM(KT_TYPE) == 'GTSH')) then
-! First calculate the Re number (Re_m, Re_T) in eq. 3.1 in GTSH theory               
-	       UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I) 
-               VGC = AVG_Y_N(V_G(IJMK),V_G(IJK)) 
-               WGC = AVG_Z_T(W_G(IJKM),W_G(IJK)) 
-	       USCM = AVG_X_E(U_S(IMJK,M),U_S(IJK,M),I) 
-               VSCM = AVG_Y_N(V_S(IJMK,M),V_S(IJK,M)) 
-               WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M))
-	       VREL = DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
-	       Re_m = D_PM*VREL*ROP_g(ijk)/Mu_g(ijk)
-	       Re_T = ro_g(ijk)*D_PM*dsqrt(theta_m(ijk,m)) / mu_g(ijk)
-! Now calculate and store zeta (used in many sopts) in eq. 8.2 in GTSH theory.
-	       zeta_gtsh(ijk) = one/6d0*D_PM*VREL**2*(3d0*pi*mu_g(ijk)*D_PM/M_p)**2 / &
-	                        dsqrt(pi*theta_m(ijk,m)) * S_star(eps, Xsi)
-
-	       mu2_0 = dsqrt(2d0*pi) * Xsi * (one-C_E**2)  ! eq. (6.22) GTSH theory
-	       mu4_0 = (4.5d0+C_E**2) * mu2_0              ! eq. (6.23) GTSH theory
-!	       mu4_1 = (6.46875d0+0.3125d0*C_E**2 + 2d0/(one-C_E)) * mu2_0   ! eq. (6.24) GTSH theory
-	       mu4_1 = (6.46875d0+0.3125d0*C_E**2)*mu2_0 + 2d0*dsqrt(2d0*pi)* &
-	                Xsi*(one+C_E)  ! this is done to avoid /0 in case c_e = 1.0
-!
-	       A2_gtsh(ijk) = zero ! for eps = zero
-	       if(eps> small_number) then ! avoid singularity
+            A2_gtsh(ijk) = zero ! for EP_SM = zero
+            if(EP_SM> small_number) then ! avoid singularity
 ! Now calculate zeta_star in eq. 8.10 in GTSH theory 
-	         zeta_star = 4.5d0*dsqrt(2d0*Pi)*(ro_g(ijk)/ro_s(ijk,m))**2*Re_m**2 * &
-	                     S_star(eps,Xsi) / (eps*(one-eps)**2 * Re_T**4)
-! Now calculate important parameter A2. This is used in many transport coefficients
-! so that it's best to store it in an array instead of having many function calls.
-!
-	         A2_gtsh(ijk) = (5d0*mu2_0 - mu4_0) / (mu4_1 - 5d0* &
-	                        (19d0/16d0*mu2_0 - 1.5d0*zeta_star))
-	       endif
-!
-! Now calculate first term rho_0 in colling rate rho, eq (6.26) in GTSH theory.
-! note that theta_(ijk,m) does't contain mass m, so that T/m = theta_m.
+               zeta_star = 4.5d0*dsqrt(2d0*Pi)*&
+                  (ro_g(ijk)/ro_s(ijk,m))**2*Re_m**2 * &
+                  S_star(EP_SM,Chi) / (EP_SM*(one-EP_SM)**2 * Re_T**4)
+
+! Now calculate important parameter A2. This is used in many transport
+! coefficients so that it's best to store it in an array instead of 
+! having many function calls.
+               A2_gtsh(ijk) = (5d0*mu2_0 - mu4_0) / (mu4_1 - 5d0* &
+                  (19d0/16d0*mu2_0 - 1.5d0*zeta_star))
+            endif
+
+! Now calculate first term rho_0 in cooling rate rho, eq (6.26) in GTSH 
+! theory. 
+! note that theta_(ijk,m) does't contain mass m, so that T/m = theta_m. 
 ! note that edt_s_ip will need to be multiplied by 3/2 rop_s(ijk,m) in 
 ! source_granular_energy to have the same meaning as in GD_99 theory.
-!
-	       EDT_s_ip(ijk,M,M) = 4d0/3d0*dsqrt(pi)*(one-C_E**2)*Xsi* &
-	           (one+0.1875d0*A2_gtsh(ijk))*n_p*D_PM**2*dsqrt(theta_m(ijk,m))
-!
-! Let's move now to calculating the second term in cooling rate, eq (7.25) in GTSH theory.
-! First calculate eq (7.28, 7.29) of GTSH theory.
-!
-               omega = (one+C_E)*nu0*((one-C_E**2)*(5d0*C_E-one) - A2_gtsh(ijk)/ &
-	                6d0 * (15d0*C_E**3-3d0*C_E**2+81d0*C_E-31d0))
-               nu_j = (one+C_E)/192d0*Xsi*nu0* &
-	              (241d0-177d0*C_E+30d0*C_E**2-30d0*C_E**3)
-!
-! Now calculate eq (7.26, 7.27) of GTSH theory.
-!
-               rho_10 = 2d0*Xsi*eps*(C_E**2-one)
-	       rho_11 = 675d0/9216d0*eps*Xsi**2*(one-C_E**2)* &
-	               (one+3d0/128d0*A2_gtsh(ijk)) * (omega/10d0 - &
-		       (one+C_E)*nu0*(one/3d0-C_E)*A2_gtsh(ijk)/2d0) / &
-		       (nu_j + G_gtsh(eps, Xsi, IJK, M)/m_p + 1.5d0* &
-		        zeta_gtsh(ijk) -1.5d0*EDT_s_ip(ijk,M,M))
-!
-! Now calculate the second term in cooling rate eq (7.25) of GTSH theory.
-! note that EDvel_sM_ip will later need to be multiplied by 3/2 rop_s(ijk,m).
-!
-               EDvel_sM_ip(IJK,M,M) = rho_10 + rho_11
-		       
-             endif  ! for kt_type gd_99 and gtsh
+            EDT_s_ip(ijk,M,M) = 4d0/3d0*dsqrt(pi)*(one-C_E**2)*Chi* &
+               (one+0.1875d0*A2_gtsh(ijk))*n_p*D_PM**2*dsqrt(theta_m(ijk,m))
 
-          ENDIF
-      ENDDO
+! Calculate the second term in cooling rate, eq (7.25) in GTSH theory.
+! First calculate eq (7.28, 7.29) of GTSH theory.
+            omega = (one+C_E)*nu0*((one-C_E**2)*(5d0*C_E-one) - &
+               A2_gtsh(ijk)/ 6d0 * (15d0*C_E**3-3d0*C_E**2+81d0*C_E-31d0))
+            nu_j = (one+C_E)/192d0*Chi*nu0* &
+               (241d0-177d0*C_E+30d0*C_E**2-30d0*C_E**3)
+
+! Now calculate eq (7.26, 7.27) of GTSH theory.
+            rho_10 = 2d0*Chi*EP_SM*(C_E**2-one)
+            rho_11 = 675d0/9216d0*EP_SM*Chi**2*(one-C_E**2)* &
+               (one+3d0/128d0*A2_gtsh(ijk)) * (omega/10d0 - &
+               (one+C_E)*nu0*(one/3d0-C_E)*A2_gtsh(ijk)/2d0) / &
+               (nu_j + G_gtsh(EP_SM, Chi, IJK, M)/m_p + 1.5d0* &
+               xsi_gtsh(ijk) -1.5d0*EDT_s_ip(ijk,M,M))
+
+! note that EDvel_sM_ip will later need to be multiplied by 3/2 rop_s(ijk,m).
+            EDvel_sM_ip(IJK,M,M) = rho_10 + rho_11
+
+         ENDIF   ! end if (fluid_at)
+      ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 
       RETURN  
-      END SUBROUTINE CALC_GD_99_ENERGY_DISSIPATION_SS 
+      END SUBROUTINE CALC_GTSH_ENERGY_DISSIPATION_SS 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Functions: G_tsh, K_phi, R_d, S_star                                C
+!                                                                      C
+!  Purpose: Implement kinetic theory of Garzo, Tenneti, Subramaniam    C
+!     Hrenya (2012) for calculation of source terms in granular        C
+!     energy equation                                                  C
+!                                                                      C
+!  Author: Sofiane Benyahia                                            C
+!                                                                      C
+!  Comments:                                                           C
+!     these functions are needed only for gtsh theory                  C
+!     Function gamma, eq. (8.1) in GTSH theory                         C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      DOUBLE PRECISION FUNCTION G_gtsh (EP_SM, Chi, IJK, M) 
+
 !-----------------------------------------------
-!-------------- Below are function needed for GTSH theory only ------
-!
-!
-      DOUBLE PRECISION FUNCTION G_gtsh (EPS, Xsi, IJK, M) 
-!       Function gamma, eq. (8.1) in GTSH theory
-!
-!-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -398,70 +508,80 @@
       USE constant
       IMPLICIT NONE
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Dummy arguments
 !-----------------------------------------------
-      DOUBLE PRECISION EPS, Xsi
-!
-!     Index
-      INTEGER          IJK
-!     
-!     Solids phase. M should be equal to 1 since theory valid for only mmax = 1.
-      INTEGER          M
+! solids volume fraction of phase m at ijk
+      DOUBLE PRECISION, INTENT(IN) :: EP_SM
+! radial distribution function of phase M at ijk
+      DOUBLE PRECISION, INTENT(IN) :: Chi
+! Index
+      INTEGER, INTENT(IN) :: IJK
+! Solids phase index. Note M should be equal to 1 since theory
+! valid for only mmax = 1.
+      INTEGER, INTENT(IN) :: M
 !-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
+! Local variables
 !-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      DOUBLE PRECISION Re_T
-      DOUBLE PRECISION Rdiss, RdissP
-!-----------------------------------------------
-!
+      DOUBLE PRECISION :: Re_T
+      DOUBLE PRECISION :: Rdiss, RdissP
 !----------------------------------------------- 
-!     Function subroutines
+! Functions
 !----------------------------------------------- 
-      DOUBLE PRECISION K_phi
-!
-      RdissP = one  ! this avoids singularity at eps = 0.0
+      DOUBLE PRECISION :: K_phi
+!----------------------------------------------- 
+
+      RdissP = one  ! this avoids singularity at EP_SM = 0.0
       
-      if(eps > small_number) RdissP = &
-               one + 3d0*dsqrt(eps/2d0) + 135d0/64d0*eps*dlog(eps) + &
-               11.26d0*eps*(one-5.1d0*eps+16.57d0*eps**2-21.77d0*    &
-	       eps**3) - eps*Xsi*dlog(epM)
+      if(EP_SM > small_number) RdissP = &
+         one + 3d0*dsqrt(EP_SM/2d0) + 135d0/64d0*EP_SM*dlog(EP_SM) + &
+         11.26d0*EP_SM*(one-5.1d0*EP_SM+16.57d0*EP_SM**2-21.77d0*    &
+         EP_SM**3) - EP_SM*Chi*dlog(epM)
       
       Re_T = ro_g(ijk)*d_p(ijk,m)*dsqrt(theta_m(ijk,m)) / mu_g(ijk)
       
-      Rdiss = RdissP + Re_T * K_phi(eps)
+      Rdiss = RdissP + Re_T * K_phi(EP_SM)
       
       G_gtsh = 3d0*Pi*mu_g(ijk)*d_p(ijk,m)*Rdiss  ! eq. (8.1) in GTSH theory
       
       RETURN  
       END FUNCTION G_gtsh 
-!
-!
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Comments:                                                           C
+!     Function K(phi), eq. (2.7) in Yi/Zenk/Mitrano/Hrenya JFM (2013)  C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       DOUBLE PRECISION FUNCTION K_phi (phi) 
-!       Function K(phi), eq. (2.7) in Yi/Zenk/Mitrano/Hrenya JFM (2013)
-!
       IMPLICIT NONE
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Dummy Arguments
 !-----------------------------------------------
-      DOUBLE PRECISION phi 
-!
+! solids volume fraction 
+      DOUBLE PRECISION, INTENT(IN) :: phi 
+!-----------------------------------------------
+
       K_phi = (0.096d0 + 0.142d0*phi**0.212d0) / (1d0-phi)**4.454d0
       RETURN  
       END FUNCTION K_phi
-!
-!
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Comments:                                                           C
+!     Function R_d, eq. (8.6) in GTSH theory                           C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       DOUBLE PRECISION FUNCTION R_d (phi) 
-!     Function R_d, eq. (8.6) in GTSH theory
-!
       IMPLICIT NONE
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Dummy arguments
 !-----------------------------------------------
-      DOUBLE PRECISION phi 
-!
+! solids volume fraction 
+      DOUBLE PRECISION, INTENT(IN) :: phi 
+!-----------------------------------------------
+
       R_d = 1.0d0  ! this avoids singularity at phi = 0.0
       if((phi > 1d-15) .and. (phi <= 0.4d0)) then
         R_d = (1d0+3d0*dsqrt(phi/2d0)+135d0/64d0*phi*dlog(phi)+17.14d0*phi) / &
@@ -471,24 +591,31 @@
       endif
       RETURN  
       END FUNCTION R_d
-!
-!
-      DOUBLE PRECISION FUNCTION S_star (phi, Xsi) 
-!     Function S_Star(phi), eq. (8.3, 8.5) in GTSH theory
-!
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Comments:                                                           C
+!     Function S_Star(phi), eq. (8.3, 8.5) in GTSH theory              C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      DOUBLE PRECISION FUNCTION S_star (phi, Chi) 
       IMPLICIT NONE
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Dummy arguments
 !-----------------------------------------------
-      DOUBLE PRECISION phi, Xsi
-!
+! solids volume fraction
+      DOUBLE PRECISION, INTENT(IN) :: phi
+! radial distribution function      
+      DOUBLE PRECISION, INTENT(IN) :: Chi
 !----------------------------------------------- 
-!     Function subroutines
+! Functions
 !----------------------------------------------- 
       DOUBLE PRECISION R_d
-!
+!----------------------------------------------- 
+
       S_star = 1.0d0
       if(phi >= 0.1d0) &
-        S_star = R_d(phi)**2/(Xsi*(1d0+3.5d0*dsqrt(phi)+5.9*phi))
+        S_star = R_d(phi)**2/(Chi*(1d0+3.5d0*dsqrt(phi)+5.9*phi))
       RETURN  
       END FUNCTION S_Star

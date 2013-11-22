@@ -1,16 +1,17 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
-!  Module name: ALLOCATE_ARRAYS                                     
-!  Purpose: allocate arrays
-!                                                                      
-!  Author: M. Syamlal                                Date: 17-DEC-98 
-!  Reviewer: 
-!                                                                     
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutinee: ALLOCATE_ARRAYS                                        C
+!  Purpose: allocate arrays                                            C
+!                                                                      C
+!  Author: M. Syamlal                                Date: 17-DEC-98   C
+!  Reviewer:                                                           C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE ALLOCATE_ARRAYS 
 
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1
@@ -54,7 +55,7 @@
       integer :: dimension_3p   ! used during post_mfix to reduce allocations
 !-----------------------------------------------     
 
-!// Modified the DIMENSION_X based on the new domain decomposition variables
+! Modified the DIMENSION_X based on the new domain decomposition variables
       DIMENSION_I   = IMAX3
       DIMENSION_J   = JMAX3
       DIMENSION_K   = KMAX3
@@ -538,8 +539,10 @@
           TRIM(KT_TYPE) == 'GTSH') THEN
          Allocate(  EDT_s_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
          Allocate(  EDvel_sM_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
+      ENDIF
+      IF (TRIM(KT_TYPE) == 'GTSH') THEN
          Allocate(  A2_gtsh(DIMENSION_3) )
-         Allocate(  zeta_gtsh(DIMENSION_3) )
+         Allocate(  xsi_gtsh(DIMENSION_3) )
       ENDIF
 
 
