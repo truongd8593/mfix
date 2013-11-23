@@ -533,15 +533,15 @@
             CASE ('W'); 
                Map = 'IKJ_MAP'
                l3 = BC_I_w(BCV) - 1
-               l2 = BC_J_s(BCV);  u2 = BC_J_n(BCV)
-               l1 = BC_K_b(BCV);  u1 = BC_K_t(BCV)
+               l2 = BC_K_b(BCV);  u2 = BC_K_t(BCV)
+               l1 = BC_J_s(BCV);  u1 = BC_J_n(BCV)
                write(lMsg,"('P Outflow (W): ,'I3)") BCV
 
             CASE ('E'); 
                Map = 'IKJ_MAP'
                l3 = BC_I_e(BCV) + 1
-               l2 = BC_J_s(BCV);  u2 = BC_J_n(BCV)
-               l1 = BC_K_b(BCV);  u1 = BC_K_t(BCV)
+               l2 = BC_K_b(BCV);  u2 = BC_K_t(BCV)
+               l1 = BC_J_s(BCV);  u1 = BC_J_n(BCV)
                write(lMsg,"('P Outflow (E): ,'I3)") BCV
 
             CASE ('S')
