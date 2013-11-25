@@ -467,7 +467,7 @@
       INTEGER :: l2, u2
       INTEGER :: l1, u1
 
-      LOGICAL, parameter :: setDBG = .FALSE. !.TRUE.
+      LOGICAL, parameter :: setDBG = .TRUE. ! .FALSE. !.TRUE.
       LOGICAL :: dFlag
 
       INTEGER :: iErr
@@ -535,42 +535,42 @@
                l3 = BC_I_w(BCV) - 1
                l2 = BC_K_b(BCV);  u2 = BC_K_t(BCV)
                l1 = BC_J_s(BCV);  u1 = BC_J_n(BCV)
-               write(lMsg,"('P Outflow (W): ,'I3)") BCV
+               write(lMsg,"('P Outflow (W): ',I3)") BCV
 
             CASE ('E'); 
                Map = 'IKJ_MAP'
                l3 = BC_I_e(BCV) + 1
                l2 = BC_K_b(BCV);  u2 = BC_K_t(BCV)
                l1 = BC_J_s(BCV);  u1 = BC_J_n(BCV)
-               write(lMsg,"('P Outflow (E): ,'I3)") BCV
+               write(lMsg,"('P Outflow (E): ',I3)") BCV
 
             CASE ('S')
                Map = 'JKI_MAP'
                l3 = BC_J_s(BCV) - 1
                l2 = BC_K_b(BCV);  u2 = BC_K_t(BCV)
                l1 = BC_I_w(BCV);  u1 = BC_I_e(BCV)
-               write(lMsg,"('P Outflow (S): ,'I3)") BCV
+               write(lMsg,"('P Outflow (S): ',I3)") BCV
 
             CASE ('N')
                Map = 'JKI_MAP'
                l3 = BC_J_n(BCV) + 1
                l2 = BC_K_b(BCV);  u2 = BC_K_t(BCV)
                l1 = BC_I_w(BCV);  u1 = BC_I_e(BCV)
-               write(lMsg,"('P Outflow (N): ,'I3)") BCV
+               write(lMsg,"('P Outflow (N): ',I3)") BCV
 
             CASE ('B')
                Map = 'KIJ_MAP'
                l3 = BC_K_b(BCV) - 1
                l2 = BC_I_w(BCV);  u2 = BC_I_e(BCV)
                l1 = BC_J_s(BCV);  u1 = BC_J_n(BCV)
-               write(lMsg,"('P Outflow (B): ,'I3)") BCV
+               write(lMsg,"('P Outflow (B): ',I3)") BCV
 
             CASE ('T')
                Map = 'KIJ_MAP'
                l3 = BC_K_t(BCV) + 1
                l2 = BC_I_w(BCV);  u2 = BC_I_e(BCV)
                l1 = BC_J_s(BCV);  u1 = BC_J_n(BCV)
-               write(lMsg,"('P Outflow (T): ,'I3)") BCV
+               write(lMsg,"('P Outflow (T): ',I3)") BCV
 
             END SELECT   ! end select case (bc_plane(bcv))
 
@@ -715,8 +715,8 @@
       IJK_Pg_Owner = UNDEFINED_I
 
 ! Set the initial search region, a single cell.
-      lS1 = (lu1-ll1)/2 + 1; lE1 = lS1
-      lS2 = (lu2-ll2)/2 + 1; lE2 = lS2
+      lS1 = ll1 + (lu1-ll1)/2 + 1; lE1 = lS1
+      lS2 = ll2 + (lu2-ll2)/2 + 1; lE2 = lS2
 
       lpCnt = 1
       recheck = .TRUE.
