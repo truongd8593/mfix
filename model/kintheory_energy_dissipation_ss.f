@@ -412,7 +412,7 @@
             WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M))
             VREL = DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 
-            Re_m = D_PM*VREL*ROP_g(ijk)/Mu_g(ijk)
+            Re_m = D_PM*VREL*ROP_g(ijk)/Mu_g(ijk)  ! rop_g = ro_g * (1-phi)
             Re_T = ro_g(ijk)*D_PM*dsqrt(theta_m(ijk,m)) / mu_g(ijk)
 
 ! Now calculate and store xsi (used in many spots) in eq. 8.2 in 
@@ -430,7 +430,7 @@
 ! eq. (6.24) GTSH theory
 !            mu4_1 = (6.46875d0+0.3125d0*C_E**2 + 2d0/(one-C_E)) * mu2_0   
 ! this is done to avoid /0 in case c_e = 1.0
-            mu4_1 = (6.46875d0+0.3125d0*C_E**2)*mu2_0 + &
+            mu4_1 = (6.46875d0+0.9375d0*C_E**2)*mu2_0 + &
                2d0*dsqrt(2d0*pi)* Chi*(one+C_E)  
 
             A2_gtsh(ijk) = zero ! for EP_SM = zero
@@ -458,7 +458,7 @@
 ! Calculate the second term in cooling rate, eq (7.25) in GTSH theory.
 ! First calculate eq (7.28, 7.29) of GTSH theory.
             omega = (one+C_E)*nu0*((one-C_E**2)*(5d0*C_E-one) - &
-               A2_gtsh(ijk)/ 6d0 * (15d0*C_E**3-3d0*C_E**2+81d0*C_E-31d0))
+               A2_gtsh(ijk)/ 6d0 * (15d0*C_E**3-3d0*C_E**2+81d0*C_E-61d0))
             nu_j = (one+C_E)/192d0*Chi*nu0* &
                (241d0-177d0*C_E+30d0*C_E**2-30d0*C_E**3)
 
@@ -468,7 +468,7 @@
                (one+3d0/128d0*A2_gtsh(ijk)) * (omega/10d0 - &
                (one+C_E)*nu0*(one/3d0-C_E)*A2_gtsh(ijk)/2d0) / &
                (nu_j + G_gtsh(EP_SM, Chi, IJK, M)/m_p + 1.5d0* &
-               xsi_gtsh(ijk) -1.5d0*EDT_s_ip(ijk,M,M))
+               xsi_gtsh(ijk)/theta_m(ijk,m) -1.5d0*EDT_s_ip(ijk,M,M))
 
 ! note that EDvel_sM_ip will later need to be multiplied by 3/2 rop_s(ijk,m).
             EDvel_sM_ip(IJK,M,M) = rho_10 + rho_11
@@ -563,7 +563,7 @@
 !-----------------------------------------------
 
       K_phi = (0.096d0 + 0.142d0*phi**0.212d0) / (1d0-phi)**4.454d0
-      K_phi = 0.0d0 ! per Christine's email on 11/21/2013 4:53 PM.
+      K_phi = 0.0d0 ! set to zero for compatibility with GTSH JFM (2012)
       RETURN  
       END FUNCTION K_phi
 

@@ -1140,7 +1140,7 @@
 	 Re_T = RO_g_avg*D_PM*dsqrt(TH(M)) / Mu_g_avg
 	 mu2_0 = dsqrt(2d0*pi) * Xsi * (one-C_E**2)  ! eq. (6.22) GTSH theory
 	 mu4_0 = (4.5d0+C_E**2) * mu2_0              ! eq. (6.23) GTSH theory
-	 mu4_1 = (6.46875d0+0.3125d0*C_E**2)*mu2_0 + 2d0*dsqrt(2d0*pi)* &
+	 mu4_1 = (6.46875d0+0.9375d0*C_E**2)*mu2_0 + 2d0*dsqrt(2d0*pi)* &
 	          Xsi*(one+C_E)  ! this is done to avoid /0 in case c_e = 1.0
          A2_gtshW = zero ! for eps = zero
 	 if((vfrac> small_number) .and. (TH(M) > small_number)) then 

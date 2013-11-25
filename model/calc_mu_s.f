@@ -1125,13 +1125,6 @@
 
 ! evaluating shear viscosity, eq (7.3) of GTSH theory
 ! starting with nu_0 equ (7.6-7.8)
-<<<<<<< calc_mu_s.f
-               eta0 = 0.3125d0/(dsqrt(pi)*D_PM**2)*M_pm*dsqrt(theta_m(ijk,m))
-	       nu0 = (96.d0/5.d0)*(eps/D_PM)*DSQRT(Theta_m(IJK,M)/PI)
-!	       nu0 = NU_PM*M_pm*theta_m(ijk,m)/eta0
-	       nuN = 0.25d0*nu0*Xsi*(3d0-C_E)*(one+C_E) * &
-	             (one+0.4375d0*A2_gtsh(ijk))
-=======
              eta0 = 0.3125d0/(dsqrt(pi)*D_PM**2)*M_pm*&
                 dsqrt(theta_m(ijk,m))
 
@@ -1139,8 +1132,7 @@
 !             nu0 = NU_PM*M_pm*theta_m(ijk,m)/eta0
 
              nuN = 0.25d0*nu0*Chi*(3d0-C_E)*(one+C_E) * &
-                    (one+0.7375d0*A2_gtsh(ijk))
->>>>>>> 1.75
+                    (one+0.4375d0*A2_gtsh(ijk))
 ! defining kinetic part of shear viscosity nuK  equ (7.7)
              etaK = rop_s(ijk,m)*theta_m(ijk,m) / (nuN-0.5d0*( &
                 EDT_s_ip(ijk,M,M)-xsi_gtsh(ijk)/theta_m(ijk,m) - &
@@ -1156,16 +1148,6 @@
                 0.6d0*Mu_b_v(IJK)
 
 ! Now let's define the true bulk viscosity as defined in MFIX 
-<<<<<<< calc_mu_s.f
-               LAMBDA_S_V(IJK) = Mu_b_v(IJK) - (2.d0/3.d0)*Mu_s_v(IJK)
-!
-! There are several steps to calculate conductivity Kth_s(IJK,M), eq. 7.12 GTSH theory.
-! Let's start with calculatint dZeta/dT and dGama/dT
-! note that 1/Tau = (3d0*pi*mu_g(ijk)*D_PM/M_p) defined under eq. 8.2 GTSH
-               dZeta_dT = -0.5d0*zeta_gtsh(ijk)/(M_pm*theta_m(ijk,m))
-               dGama_dT = 3d0*pi*D_PM**2*RO_g(ijk)*K_phi(eps)/ &
-	                 (2d0*M_pm*dsqrt(theta_m(ijk,m)))  ! note that T = (m_pm*theta_m)
-=======
              LAMBDA_S_V(IJK) = Mu_b_v(IJK) - (2.d0/3.d0)*Mu_s_v(IJK)
 
 
@@ -1173,16 +1155,13 @@
 !-----------------------------------
 ! Calculate conductivity Kth_s(IJK,M), eq. 7.12 GTSH theory. 
 ! Start with calculating dZeta/dT and dGama/dT
-! note that 1/Tau = (3d0*pi*mu_g(ijk)*D_PM/M_p)**2 defined
+! note that 1/Tau**2 = (3d0*pi*mu_g(ijk)*D_PM/M_p)**2 defined
 ! under eq. 8.2 GTSH
              dZeta_dT = -0.5d0*xsi_gtsh(ijk)/(M_pm*theta_m(ijk,m))
 
              dGama_dT = 3d0*pi*D_PM**2*RO_g(ijk)*K_phi(EP_SM)/ &
-                (2d0*M_pm*dsqrt(theta_m(ijk,m)))  
-             dGama_dT = zero  ! this is giving neg. KthK for dilute 
-                              ! flows, set it to zero for now.
+                (2d0*M_pm*dsqrt(theta_m(ijk,m)))
 
->>>>>>> 1.75
 ! evaluating eq (7.16) in GTSH
              NuK = nu0*(one+C_E)/3d0*Chi*( one+2.0625d0*(one-C_E)+ &
                 ((947d0-579*C_E)/256d0*A2_gtsh(ijk)) )
@@ -1221,9 +1200,9 @@
 
              Kphidphi = EP_SM*(0.212d0*0.142d0*EP_SM**0.788d0/&
                 (one-EP_SM)**4.454d0 - 4.454d0*K_phi(EP_SM)/(one-EP_SM))
+             Kphidphi = zero  ! this is compatible with K_phi = zero
 
-             Re_T = ro_g(ijk)*d_p(ijk,m)*dsqrt(theta_m(ijk,m)) / &
-                mu_g(ijk)
+             Re_T = ro_g(ijk)*D_PM*dsqrt(theta_m(ijk,m)) / mu_g(ijk)
 
 ! The term phi x Gama_phi becomes
              dGamadn = 3d0*pi*D_pm*Mu_g(ijk)*(Rdissdphi+Re_T*Kphidphi)
@@ -1235,7 +1214,7 @@
 
 ! calculating the term phi*dRd/dphi
              dRdphi = zero
-             IF((EP_SM > SMALL_NUMBER) .AND. (EP_SM < 0.4d0)) THEN
+             IF((EP_SM > SMALL_NUMBER) .AND. (EP_SM <= 0.4d0)) THEN
                 denom = one+0.681d0*EP_SM-8.48d0*EP_SM**2+8.16d0*EP_SM**3
                 dRdphi = (1.5d0*dsqrt(EP_SM/2d0)+135d0/64d0*EP_SM*&
                    (dlog(EP_SM)+one)+ 17.14d0*EP_SM)/denom - EP_SM*&
@@ -1275,16 +1254,7 @@
                 A2_gtsh(ijk)/6d0*(16d0-3d0*C_E+3d0*C_E**2)))
 
 ! Finaly compute the Dufour coefficient Mu (Kphi_s(IJK,M)) from eq (7.22) GTSH
-<<<<<<< calc_mu_s.f
-               Kphi_s(IJK,M) = Muk*(one+1.2d0*eps*Xsi*(one+C_E))
-write(*,*) eps, D_pm*VREL_array(IJK)*ROP_G(IJK)/MU_G(IJK), RE_T, NU_PM*Kphi_s(IJK,M)/(Kth0*M_pm*theta_m(ijk,m))
-STOP
-!
-             endif  ! for kt_type gd_99 and gtsh
-
-=======
              Kphi_s(IJK,M) = Muk*(one+1.2d0*EP_SM*Chi*(one+C_E))
->>>>>>> 1.75
 
           ENDIF   ! Fluid_at
  200  CONTINUE   ! outer IJK loop

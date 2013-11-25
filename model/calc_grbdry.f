@@ -1118,7 +1118,7 @@
          GamaAvg = 3d0*Pi*Mu_g_avg*D_pm*Rdiss
          mu2_0 = dsqrt(2d0*pi) * Chi * (one-C_E**2)
          mu4_0 = (4.5d0+C_E**2) * mu2_0 
-         mu4_1 = (6.46875d0+0.3125d0*C_E**2)*mu2_0 + 2d0*dsqrt(2d0*pi)* &
+         mu4_1 = (6.46875d0+0.9375d0*C_E**2)*mu2_0 + 2d0*dsqrt(2d0*pi)* &
             Chi*(one+C_E)
          A2_gtshW = zero ! for eps = zero
 
