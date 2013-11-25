@@ -563,6 +563,7 @@
 !-----------------------------------------------
 
       K_phi = (0.096d0 + 0.142d0*phi**0.212d0) / (1d0-phi)**4.454d0
+      K_phi = 0.0d0 ! per Christine's email on 11/21/2013 4:53 PM.
       RETURN  
       END FUNCTION K_phi
 
