@@ -529,13 +529,15 @@
 !----------------------------------------------- 
       DOUBLE PRECISION :: K_phi
 !----------------------------------------------- 
-
-      RdissP = one  ! this avoids singularity at EP_SM = 0.0
       
-      if(EP_SM > small_number) RdissP = &
+      if(EP_SM <= 0.1d0) then
+         RdissP = one+3d0*dsqrt(EP_SM/2d0)
+      else
+         RdissP = &
          one + 3d0*dsqrt(EP_SM/2d0) + 135d0/64d0*EP_SM*dlog(EP_SM) + &
          11.26d0*EP_SM*(one-5.1d0*EP_SM+16.57d0*EP_SM**2-21.77d0*    &
          EP_SM**3) - EP_SM*Chi*dlog(epM)
+      endif
       
       Re_T = ro_g(ijk)*d_p(ijk,m)*dsqrt(theta_m(ijk,m)) / mu_g(ijk)
       
