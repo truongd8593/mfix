@@ -71,7 +71,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: CALC_COEFF_ALL                                          !
+!  Subroutine: CALC_COEFF                                              !
 !  Purpose: This routine directs the calculation of all physical and   !
 !           transport properties, and exchange rates.                  !
 !                                                                      !
@@ -181,3 +181,64 @@
          ,/1X,70('*')/) 
 
       END SUBROUTINE CALC_RRATE
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: CALC_TRD_AND_TAU                                        !
+!  Purpose: This routine directs the calculation of all physical and   !
+!           transport properties, and exchange rates.                  !
+!                                                                      !
+!  Author: M. Syamlal                                 Date: 25-AUG-05  !
+!  Reviewer:                                          Date:            !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!  Literature/Document References:                                     !
+!                                                                      !
+!  Variables referenced:                                               !
+!  Variables modified:                                                 !
+!  Local variables:                                                    !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE CALC_TRD_AND_TAU(IER)
+
+! Stress tensor trace.
+      USE visc_g, only : TRD_g
+      USE visc_s, only : TRD_S 
+! Stress tensor cross terms.
+      USE tau_g, only : TAU_U_G, TAU_V_G, TAU_W_G
+      USE tau_s, only : TAU_U_S, TAU_V_S, TAU_W_S
+! Runtime flag for DEM model.
+      USE discretelement, only: DISCRETE_ELEMENT
+! Runtime flag for TFM-DEM hybrid model.
+      USE discretelement, only: DES_CONTINUUM_HYBRID
+
+      implicit none
+
+! Dummy arguments
+!-----------------------------------------------------------------------
+! Error index
+      INTEGER, intent(inout) :: IER
+
+!-----------------------------------------------------------------------
+
+! Calculate the trace of the stress tensor (gas phase; m=0)
+      CALL CALC_TRD_G (TRD_G, IER) 
+
+! Calculate the cross terms of the stress tensor (gas phase; m=0)
+      CALL CALC_TAU_U_G (TAU_U_G, IER) 
+      CALL CALC_TAU_V_G (TAU_V_G, IER) 
+      CALL CALC_TAU_W_G (TAU_W_G, IER) 
+
+! Bypass the following calculations if there are no TFM solids.
+      IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+! Calculate the cross terms of the stress tensor (solids phases; m>0)
+         CALL CALC_TRD_S (TRD_S, IER)
+! Calculate the trace of the stress tensor (solids phases; m>0)
+         CALL CALC_TAU_U_S (TAU_U_S, IER) 
+         CALL CALC_TAU_V_S (TAU_V_S, IER) 
+         CALL CALC_TAU_W_S (TAU_W_S, IER) 
+      ENDIF
+
+      RETURN
+      END SUBROUTINE CALC_TRD_AND_TAU

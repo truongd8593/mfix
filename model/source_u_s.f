@@ -57,6 +57,7 @@
       USE drag
       USE cutcell
       USE quadric
+      USE mms
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -451,7 +452,10 @@
                        TAU_U_S(IJK,M) + F_vir + &
                        ( (V0+ZMAX((-VMT)))*U_SO(IJK,M)+&
                        VBF + VCF + HYS_drag)*VOL_U(IJK) )
-                     
+! MMS Source term
+                  IF(USE_MMS)B_M(IJK,M) = &
+                     B_M(IJK,M) - MMS_U_S_SRC(IJK)*VOL_U(IJK)
+
                   IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN 
                      B_M(IJK,M) = B_M(IJK,M) - KTMOM_U_S(IJK,M)
                   ELSEIF (TRIM(KT_TYPE) .EQ. 'GHD') THEN

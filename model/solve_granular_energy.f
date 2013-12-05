@@ -50,7 +50,7 @@
       USE compar      
       USE mflux
       USE mpi_utility
-
+      USE mms
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -382,10 +382,14 @@
                   S_C(IJK) = APO*THETA_MO(IJK,M) + SOURCERHS + 1.5d0* &
                       THETA_M(IJK,M)*ZMAX((-SUM_R_S(IJK,M))) * VOL(IJK)
                   EPS(IJK) = EP_S(IJK,M) 
+! MMS Source term.
+                  IF(USE_MMS) S_C(IJK) = S_C(IJK) + &
+                     MMS_THETA_M_SRC(IJK)*VOL(IJK)
                ELSE 
                   EPS(IJK) = ZERO 
                   S_P(IJK) = ZERO 
                   S_C(IJK) = ZERO 
+                  IF(USE_MMS) EPS(IJK) = EP_S(IJK,M)
                ENDIF 
             ENDDO   ! end do loop (ijk=ijkstart3,ijkend3) 
 

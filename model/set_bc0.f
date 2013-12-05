@@ -28,7 +28,6 @@
 !  Local variables: L, IJK1, IJK2, IJK3                                C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE SET_BC0 
 
 !-----------------------------------------------
@@ -51,6 +50,7 @@
       USE boundfunijk 
       USE toleranc
       USE sendrecv
+      USE mms
 
       IMPLICIT NONE
 
@@ -86,6 +86,15 @@
 ! The following attempts to pick an appropriate cell.
       CALL SET_IJK_P_G
 
+      IF(USE_MMS) THEN
+! IJK_P_G is set as UNDEFINED for MMS since current IJK_P_G setting 
+! is not a second order operation.
+         IJK_P_G = UNDEFINED_I
+! Calculate MMS variables. Better place might be inside interate before
+! every time-step. (?)
+         CALL CALCULATE_MMS 
+         CALL CALCULATE_MMS_SOURCE
+      END IF
 
 ! Set the boundary conditions - Defining the field variables at the 
 ! boundaries according to the user specifications. These are not the
@@ -268,6 +277,19 @@
                           ENDDO 
                           IF(ROP_S(IJK,MMAX) > ZERO) THETA_M(IJK,MMAX)=&
                              THETA_M(IJK,MMAX) / nTOT
+
+! Set MMS BCs when PO boundary condition is used.
+                        IF (USE_MMS) THEN
+                           P_G(IJK) = SCALE(MMS_P_G(IJK))
+                           EP_G(IJK) = MMS_EP_G(IJK)
+                           T_G(IJK) = MMS_T_G(IJK)
+   
+                           M = 1 ! Single solid phase for MMS cases
+                           ROP_S(IJK,M) = MMS_ROP_S(IJK)
+                           T_S(IJK,M) = MMS_T_S(IJK)
+                           THETA_M(IJK,M) = MMS_THETA_M(IJK)
+                        ENDIF ! end if(USE_MMS)
+
                         ENDIF
 ! end setting P_outflow_at or outflow_at boundary conditions
 ! ----------------------------------------------------------------<<<
@@ -381,6 +403,48 @@
                               END SELECT 
                            ENDIF
                         ENDIF  ! end if (trim(kt_type) ='ghd')
+
+! Set MMS BCs when MI boundary condition is used.
+                        IF (USE_MMS) THEN                           
+                           P_G(IJK) = SCALE(MMS_P_G(IJK))
+                           EP_G(IJK) = MMS_EP_G(IJK) 
+                           T_G(IJK) = MMS_T_G(IJK)
+
+                           DO M = 1, SMAX 
+                             ROP_S(IJK,M) = MMS_ROP_S(IJK)
+                             T_S(IJK,M) = MMS_T_S(IJK) 
+                             THETA_M(IJK,M) = MMS_THETA_M(IJK) 
+                           ENDDO    
+
+                           IJK1 = IJK
+                           IJK2 = IJK
+                           IJK3 = IJK
+                           SELECT CASE (TRIM(BC_PLANE(L)))
+                             CASE ('W')
+                               IJK1 = BOUND_FUNIJK(IM1(I),J,K)
+                             CASE ('S')
+                               IJK2 = BOUND_FUNIJK(I,JM1(J),K)
+                             CASE ('B')
+                               IJK3 = BOUND_FUNIJK(I,J,KM1(K))
+                           END SELECT
+! When the boundary plane is W, S, or B the velocity components
+! need to be set for both sides of the boundary cell.
+                          U_G(IJK) = MMS_U_G(IJK)
+                          V_G(IJK) = MMS_V_G(IJK)
+                          W_G(IJK) = MMS_W_G(IJK)
+                          U_G(IJK1) = MMS_U_G(IJK1)
+                          V_G(IJK2) = MMS_V_G(IJK2)
+                          W_G(IJK3) = MMS_W_G(IJK3)
+   
+                          IF (MMAX > 0) THEN 
+                             U_S(IJK,:SMAX) = MMS_U_S(IJK)
+                             V_S(IJK,:SMAX) = MMS_V_S(IJK)
+                             W_S(IJK,:SMAX) = MMS_W_S(IJK)
+                             U_S(IJK1,:SMAX) = MMS_U_S(IJK1)
+                             V_S(IJK2,:SMAX) = MMS_V_S(IJK2)
+                             W_S(IJK3,:SMAX) = MMS_W_S(IJK3)
+                          ENDIF 
+                        ENDIF ! end if(USE_MMS)
 
                      ENDIF     ! end if/else branch of if(P_outflow_at or outflow_at)
 ! end setting for p_inflow, mass_inflow or mass_outflow boundary

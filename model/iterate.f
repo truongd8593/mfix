@@ -60,8 +60,8 @@
       USE dashboard
       USE qmom_kinetic_equation
       USE stiff_chem, only : STIFF_CHEMISTRY
-      USE rxns,       only : USE_RRATES, NO_OF_RXNS
-
+      USE rxns, only : USE_RRATES, NO_OF_RXNS
+      USE mms, only: USE_MMS
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -226,6 +226,10 @@
 ! Diffusion coefficient and source terms for K & Epsilon Eq.
       IF(K_Epsilon) CALL K_Epsilon_PROP(IER)
 
+! Update the stress tensor trace and cross terms each subiteration
+! for MMS cases.
+      IF(USE_MMS) CALL CALC_TRD_AND_TAU(IER)
+
 ! Solve starred velocity components
       CALL SOLVE_VEL_STAR(IER)
 
@@ -241,30 +245,35 @@
       IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
          DES_CONTINUUM_HYBRID) THEN
          IF (MMAX > 0) THEN
-
-            IF(MMAX == 1 .AND. MCP /= UNDEFINED_I)THEN 
+! MMS:  Solve gas continuity only.
+            IF(USE_MMS) THEN
+               CALL SOLVE_CONTINUITY(0,IER)
+! Regular, non-MMS cases.
+            ELSE
+               IF(MMAX == 1 .AND. MCP /= UNDEFINED_I)THEN 
 ! if second phase (m=1) can overpack (e.g., bubbles) then solve its
 ! continuity equation
-               CALL CALC_K_CP (K_CP, IER)
-               CALL SOLVE_EPP (NORMS, RESS, IER)
-               CALL CORRECT_1 (IER) 
-            ELSE
+                  CALL CALC_K_CP (K_CP, IER)
+                  CALL SOLVE_EPP (NORMS, RESS, IER)
+                  CALL CORRECT_1 (IER) 
+               ELSE
 
 ! If one chooses to revert back to old mark_phase_4_cor wherein the
 ! continuity of the gas phase can get marked to be solved then this 
 ! loop should start at 0.
-               DO M=1,SMAX ! mmax -> smax for GHD theory
+                  DO M=1,SMAX ! mmax -> smax for GHD theory
 ! Volume fraction correction technique for one of the solids phase
 ! is not implemented.  This will only slow down convergence.
-!   	            IF (M .EQ. MCP) THEN
-!                     CALL CALC_K_CP (K_CP, IER)
-!                     CALL SOLVE_EPP (NORMS, RESS, IER)
-!                     CALL CORRECT_1 (IER) 
-!                  ELSE
-                     CALL SOLVE_CONTINUITY(M,IER)
-!                 ENDIF
-               ENDDO
-            ENDIF   ! end if/else (mmax==1 .and. mcp /= undefined)
+!   	               IF (M .EQ. MCP) THEN
+!                       CALL CALC_K_CP (K_CP, IER)
+!                       CALL SOLVE_EPP (NORMS, RESS, IER)
+!                       CALL CORRECT_1 (IER) 
+!                    ELSE
+                        CALL SOLVE_CONTINUITY(M,IER)
+!                    ENDIF
+                  ENDDO
+               ENDIF   ! end if/else (mmax==1 .and. mcp /= undefined)
+            ENDIF ! end if/else (MMS)
 
             IF(TRIM(KT_TYPE) .eq. 'GHD') CALL ADJUST_EPS_GHD
 

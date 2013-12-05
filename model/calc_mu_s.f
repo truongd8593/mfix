@@ -68,6 +68,8 @@
       USE indices
       USE geometry
       USE qmom_kinetic_equation
+      USE mms
+
       Implicit NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -103,7 +105,18 @@
      
       IF (SHEAR) call remove_shear(M)
 
-      IF(MU_s0 /= UNDEFINED) RETURN ! constant solids viscosity case 
+! Constant solids viscosity.
+      IF( MU_s0 /= UNDEFINED) THEN
+! MMS: Force constant solid viscosity at all cells.
+         IF(USE_MMS) THEN
+            DO IJK = ijkstart3, ijkend3
+              MU_S(IJK,M) = MU_S0
+              LAMBDA_S(IJK,M) = -2.D0/3.D0*MU_S(IJK,M)
+              KTH_S(IJK,M) = K_S0  !! Note: KTH_S set as K_S0 for MMS
+            END DO
+         ENDIF
+         RETURN
+      END IF       
 
 ! Viscous-flow stress tensor
       IF (.NOT. QMOMK) THEN

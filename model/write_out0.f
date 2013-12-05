@@ -79,8 +79,8 @@
 !                      Coefficient of restitution (old symbol) 
       DOUBLE PRECISION :: E 
       CHARACTER, DIMENSION(3) :: LEGEND*3 
-      CHARACTER, DIMENSION(0:8) :: DISCR_NAME*12 
-      CHARACTER, DIMENSION(0:8) :: DISCR_NAME1*12 
+      CHARACTER, DIMENSION(0:9) :: DISCR_NAME*12 
+      CHARACTER, DIMENSION(0:9) :: DISCR_NAME1*12 
 !QX
       DOUBLE PRECISION EP_S_TOT
 !-----------------------------------------------
@@ -94,9 +94,9 @@
 !
 !                      Coefficient of restitution (old symbol)
       DATA DISCR_NAME/'FOUP', 'FOUP', 'Superbee', 'Smart', 'Ultra-Quick', &
-         'QUICKEST', 'Muscl', 'VanLeer', 'Minmod'/ 
+         'QUICKEST', 'Muscl', 'VanLeer', 'Minmod', 'Central'/ 
       DATA DISCR_NAME1/'FOUP', 'FOUP', 'Fourth Order', 'Smart', 'Ultra-Quick', &
-         'QUICKEST', 'Muscl', 'VanLeer', 'Minmod'/ 
+         'QUICKEST', 'Muscl', 'VanLeer', 'Minmod', 'Central'/ 
 
       if (myPE.ne.PE_IO) return
 

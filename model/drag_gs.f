@@ -38,6 +38,7 @@
       USE discretelement
       USE ur_facs 
       USE funits
+      USE mms
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -266,6 +267,9 @@
 ! RE==0 (for correlations in which RE includes EPg). however, this will
 ! prevent potential divisions by zero in some models by setting it now.
                DgA = ZERO   
+! Force a ZERO drag coefficient for MMS cases.
+            ELSEIF (USE_MMS) THEN
+               DgA = ZERO
             ELSE
                SELECT CASE(TRIM(DRAG_TYPE))
                CASE ('SYAM_OBRIEN')

@@ -62,6 +62,8 @@
       USE toleranc
       USE compar     
       USE kintheory   
+      USE mms
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -166,6 +168,9 @@
       S4_lhs = (48.d0/DSQRT(PI))*ETA*(ONE-ETA)*ROP_S(IJK,M)*&
          SUM_EpsGo*DSQRT(THETA_M(IJK,M))/D_P(IJK,M)
 
+! Need to revisit this part about granular energy MMS source terms.
+      IF (USE_MMS) S4_lhs = ZERO
+
 ! Energy dissipation by viscous dampening
 ! Gidaspow (1994)  : addition due to role of interstitial fluid
       IF(SIMONIN .OR. AHMADI) THEN
@@ -193,6 +198,9 @@
          S7_rhs = SWITCH*81.d0*EP_S(IJK,M)*(MU_G(IJK)*VSLIP)**2 /&
             (G_0(IJK,M,M)*D_P(IJK,M)**3 * RO_S(IJK,M)*&
             DSQRT(PI)*DSQRT( THETA_M(IJK,M)+SMALL_NUMBER ) ) 
+! Need to revisit this part about granular energy MMS source terms.
+         IF (USE_MMS) S7_rhs = ZERO
+            
       ENDIF
   
 

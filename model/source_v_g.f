@@ -50,6 +50,8 @@
       USE drag  
       USE cutcell
       USE quadric
+      USE mms
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -334,6 +336,10 @@
                Ghd_drag + HYS_drag)*VOL_V(IJK) ) 
 ! adding explicit-part of virtual mass force
             B_M(IJK,M) = B_M(IJK,M) - F_vir 
+! MMS Source term.
+            IF(USE_MMS) B_M(IJK,M) = &
+               B_M(IJK,M) - MMS_V_G_SRC(IJK)*VOL_V(IJK)
+
          ENDIF 
       ENDDO 
 !$omp end parallel do

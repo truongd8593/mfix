@@ -542,24 +542,12 @@
 ! Calculate coefficients
       CALL CALC_COEFF_ALL (0, IER) 
      
-! Calculate the trace of the stress tensor (gas phase; m=0)
-      CALL CALC_TRD_G (TRD_G, IER) 
-
-! Calculate the cross terms of the stress tensor (gas phase; m=0)
-      CALL CALC_TAU_U_G (TAU_U_G, IER) 
-      CALL CALC_TAU_V_G (TAU_V_G, IER) 
-      CALL CALC_TAU_W_G (TAU_W_G, IER) 
-
-      IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
-! Calculate the cross terms of the stress tensor (solids phases; m>0)
-         CALL CALC_TRD_S (TRD_S, IER)
-! Calculate the trace of the stress tensor (solids phases; m>0)
-         CALL CALC_TAU_U_S (TAU_U_S, IER) 
-         CALL CALC_TAU_V_S (TAU_V_S, IER) 
-         CALL CALC_TAU_W_S (TAU_W_S, IER) 
+! Calculate the stress tensor trace and cross terms for all phases.
+      CALL CALC_TRD_AND_TAU(IER)
 
 ! Calculate additional solid phase momentum source terms 
 ! that arise from kinetic theory constitutive relations
+      IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
          CALL CALC_KTMOMSOURCE_U_S (IER)
          CALL CALC_KTMOMSOURCE_V_S (IER)
          CALL CALC_KTMOMSOURCE_W_S (IER)

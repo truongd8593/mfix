@@ -52,6 +52,7 @@
       USE mpi_utility      
       USE sendrecv 
       USE ps
+      USE mms
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -161,6 +162,7 @@
             APO = ROP_GO(IJK)*C_PG(IJK)*VOL(IJK)*ODT 
             S_P(IJK) = APO + S_RPG(IJK)*VOL(IJK) 
             S_C(IJK) = APO*T_GO(IJK)-HOR_G(IJK)*VOL(IJK)+S_RCG(IJK)*VOL(IJK)
+            IF(USE_MMS) S_C(IJK) = S_C(IJK) + MMS_T_G_SRC(IJK)*VOL(IJK)
          ELSE 
             S_P(IJK) = ZERO 
             S_C(IJK) = ZERO 
@@ -221,11 +223,13 @@
                   S_RCS(IJK,M)*VOL(IJK) 
                VXGAMA(IJK,M) = GAMA_GS(IJK,M)*VOL(IJK) 
                EPS(IJK) = EP_S(IJK,M) 
+               IF(USE_MMS) S_C(IJK) = S_C(IJK) + MMS_T_S_SRC(IJK)*VOL(IJK)
             ELSE 
                S_P(IJK) = ZERO 
                S_C(IJK) = ZERO 
                VXGAMA(IJK,M) = ZERO 
                EPS(IJK) = ZERO 
+               IF(USE_MMS) EPS(IJK) = EP_S(IJK,M)
             ENDIF 
          ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 
@@ -248,7 +252,8 @@
       ENDDO   ! end do (m=1,tmp_smax)
 
 ! use partial elimination on interphase heat transfer term
-      IF (TMP_SMAX > 0) CALL PARTIAL_ELIM_S (T_G, T_S, VXGAMA, A_M, B_M, IER) 
+      IF (TMP_SMAX > 0 .AND. .NOT.USE_MMS) &
+        CALL PARTIAL_ELIM_S (T_G, T_S, VXGAMA, A_M, B_M, IER) 
 
       CALL CALC_RESID_S (T_G, A_M, B_M, 0, NUM_RESID(RESID_T,0),& 
          DEN_RESID(RESID_T,0), RESID(RESID_T,0), MAX_RESID(RESID_T,&

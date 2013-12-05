@@ -49,6 +49,7 @@
       USE drag
       USE cutcell
       USE quadric
+      USE mms
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -73,7 +74,7 @@
       DOUBLE PRECISION :: PgE 
 ! Average volume fraction 
       DOUBLE PRECISION :: EPGA 
-! Average density 
+! Average density
       DOUBLE PRECISION :: ROPGA, ROGA 
 ! Average viscosity 
       DOUBLE PRECISION :: MUGA 
@@ -343,7 +344,9 @@
                VCF + Ghd_drag + HYS_drag)*VOL_U(IJK) )
 ! adding explicit part of virtual mass force
             B_M(IJK,M) = B_M(IJK,M) - F_vir 
-
+! MMS source term
+            IF(USE_MMS) B_M(IJK,M) = &
+               B_M(IJK,M) - MMS_U_G_SRC(IJK)*VOL_U(IJK)
          ENDIF   ! end branching on cell type (ip/dilute/block/else branches)
       ENDDO   ! end do loop over ijk
 !$omp end parallel do

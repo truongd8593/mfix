@@ -26,6 +26,7 @@
 !-----------------------------------------------
       USE param 
       USE param1 
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -380,6 +381,29 @@
       RETURN  
       END FUNCTION MINMOD 
 !
+
+
+
+
+! Central scheme for MMS cases.
+      DOUBLE PRECISION FUNCTION CENTRAL_SCHEME (PHI_C)
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE param 
+      USE param1 
+
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+      DOUBLE PRECISION PHI_C 
+!
+      CENTRAL_SCHEME = HALF
+
+      RETURN  
+      END FUNCTION CENTRAL_SCHEME
+
 !
       DOUBLE PRECISION FUNCTION UMIST (PHI_C) 
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  

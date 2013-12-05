@@ -58,6 +58,8 @@
       USE run          !S. Dartevelle
       USE turb
       USE sendrecv  
+      USE mms
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -184,7 +186,18 @@
             MU_GT(IJK) = ZERO 
             LAMBDA_GT(IJK) = ZERO
          ENDIF   ! end if (fluid_at(ijk))
+
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
+
+
+! MMS: Force constant gas viscosity at all cells including ghost cells.
+      IF (USE_MMS) THEN
+         DO IJK = ijkstart3, ijkend3 
+            MU_G(IJK) = MU_G0
+            MU_GT(IJK) = MU_G(IJK)
+            LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)            
+         ENDDO
+      END IF ! end if (USE_MMS)
 
 
 

@@ -29,6 +29,8 @@
       USE drag
       USE compar 
       use kintheory
+      use mms
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -93,7 +95,7 @@
       DO IJK = ijkstart3, ijkend3
 
 ! All wall cells: FLAG >= 100
-         IF (WALL_AT(IJK)) THEN
+         IF (WALL_AT(IJK) .AND. .NOT.USE_MMS) THEN
             RO_G(IJK) = ZERO 
             MU_G(IJK) = ZERO 
             K_G(IJK) = ZERO 
@@ -105,7 +107,7 @@
             IF (C_PG0 /= UNDEFINED) C_PG(IJK) = C_PG0 
             IF (MW_AVG /= UNDEFINED) MW_MIX_G(IJK) = MW_AVG 
 ! Strictly fluid cells: FLAG = 1
-            IF(FLUID_AT(IJK)) THEN
+            IF(FLUID_AT(IJK) .OR. USE_MMS) THEN
                IF (MU_G0 /= UNDEFINED) THEN
                   MU_G(IJK) = MU_G0
                   MU_GT(IJK) = MU_G0
@@ -115,14 +117,14 @@
                IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = DIF_G0 
             ENDIF
          ENDIF 
-
       ENDDO 
 
 
       DO M = 1, MMAX 
          DO IJK = ijkstart3, ijkend3
 ! All wall cells: FLAG >= 100
-            IF (WALL_AT(IJK)) THEN 
+            IF (WALL_AT(IJK) .AND. .NOT.USE_MMS) THEN 
+
                P_S(IJK,M) = ZERO 
                MU_S(IJK,M) = ZERO 
                LAMBDA_S(IJK,M) = ZERO 
@@ -137,7 +139,7 @@
                IF (C_PS0 /= UNDEFINED) C_PS(IJK,M) = C_PS0 
                IF (D_P0(M) /= UNDEFINED) D_P(IJK,M) = D_P0(M)
 ! Strictly fluid cells: FLAG = 1
-               IF (FLUID_AT(IJK)) THEN
+               IF (FLUID_AT(IJK) .OR. USE_MMS) THEN
                   IF (MU_S0 /= UNDEFINED) THEN 
                      P_S(IJK,M) = ZERO 
                      MU_S(IJK,M) = MU_S0 

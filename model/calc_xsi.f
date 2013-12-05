@@ -83,8 +83,9 @@
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: PHI_C_OF,  MINMOD, VANLEER, &
-         ULTRA_QUICK, QUICKEST, SUPERBEE, SMART, MUSCL, CHI_SMART, CHI_MUSCL 
+      DOUBLE PRECISION , EXTERNAL :: PHI_C_OF,  MINMOD, VANLEER,       &
+         ULTRA_QUICK, QUICKEST, SUPERBEE, SMART, MUSCL, CHI_SMART,     &
+         CHI_MUSCL, CENTRAL_SCHEME
 
       include 'xsi1.inc'
       INCLUDE 'function.inc'
@@ -547,6 +548,60 @@
 !
             ENDIF 
          END DO 
+
+
+      CASE (9)                                   ! Central
+
+!!!$omp    parallel do private(IJK, IJKC,IJKD,IJKU, PHI_C,DWF)
+         DO IJK = ijkstart3, ijkend3
+            IF (U(IJK) >= ZERO) THEN 
+               IJKC = IJK 
+               IJKD = EAST_OF(IJK) 
+               IJKU = WEST_OF(IJKC) 
+            ELSE 
+               IJKC = EAST_OF(IJK) 
+               IJKD = IJK 
+               IJKU = EAST_OF(IJKC) 
+            ENDIF 
+
+            PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
+            DWF = CENTRAL_SCHEME(PHI_C) 
+            XSI_E(IJK) = XSI(U(IJK),DWF) 
+
+
+            IF (V(IJK) >= ZERO) THEN 
+               IJKC = IJK 
+               IJKD = NORTH_OF(IJK) 
+               IJKU = SOUTH_OF(IJKC) 
+            ELSE 
+               IJKC = NORTH_OF(IJK) 
+               IJKD = IJK 
+               IJKU = NORTH_OF(IJKC) 
+            ENDIF 
+
+            PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
+            DWF = CENTRAL_SCHEME(PHI_C) 
+            XSI_N(IJK) = XSI(V(IJK),DWF) 
+
+
+            IF (DO_K) THEN 
+               IF (W(IJK) >= ZERO) THEN 
+                  IJKC = IJK 
+                  IJKD = TOP_OF(IJK) 
+                  IJKU = BOTTOM_OF(IJKC) 
+               ELSE 
+                  IJKC = TOP_OF(IJK) 
+                  IJKD = IJK 
+                  IJKU = TOP_OF(IJKC) 
+               ENDIF 
+
+               PHI_C = PHI_C_OF(PHI(IJKU),PHI(IJKC),PHI(IJKD)) 
+               DWF = CENTRAL_SCHEME(PHI_C)
+               XSI_T(IJK) = XSI(W(IJK),DWF) 
+            ENDIF 
+         END DO 
+
+
       CASE DEFAULT                               !Error 
          WRITE (LINE, '(A,I2,A)') 'DISCRETIZE = ', DISCR, ' not supported.' 
          CALL WRITE_ERROR ('CALC_XSI', LINE, 1) 

@@ -77,7 +77,8 @@
       use physprop, only: MU_g0
 ! Variable solids density flag.
       use run, only: SOLVE_ROs
-
+! MMS flag
+      use mms, only: USE_MMS
       implicit none
 
 ! Dummy Arguments:
@@ -130,14 +131,13 @@
 
 ! Interphase transfer terms.
 !```````````````````````````````````````````````````````````````````````
-      if(.NOT.QMOMK) DRAGCOEF(0:MMAX,0:MMAX) = .TRUE. 
-
+       if(.NOT.QMOMK .AND. .NOT.USE_MMS) DRAGCOEF(0:MMAX,0:MMAX)=.TRUE.
  
 ! Coefficients for solids phase parameters.
 !```````````````````````````````````````````````````````````````````````
       IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
 ! Interphase heat transfer coefficient (GAMA)
-         if(ENERGY_EQ) HEAT_TR(0:MMAX,0:MMAX) = .TRUE.
+         if(ENERGY_EQ .AND. .NOT.USE_MMS) HEAT_TR(0:MMAX,0:MMAX)=.TRUE.
 
 ! Variable solids density.
          if(any(SOLVE_ROs)) DENSITY(1:MMAX) = .TRUE.

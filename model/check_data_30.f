@@ -42,6 +42,7 @@
       USE compar 
       USE mpi_utility
       USE discretelement
+      USE mms
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -202,7 +203,10 @@
 ! Verify that inflow/outflow cells do not contain physical properties
 ! for the following variables.
 !---------------------------------------------------------------------//
-                  IF(FLOW_AT(IJK)) THEN
+! This check is skipped for MMS runs because ghost cells are assigned
+! values in these cases making the following checks invalid.
+                  IF(FLOW_AT(IJK) .AND. (.NOT.(USE_MMS))) THEN 
+
 ! Turbulent viscosity of fluid phase.
                      IF(MU_gt(IJK) /= ZERO) THEN
                         IF (.NOT.MESSAGE) THEN 
