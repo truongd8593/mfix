@@ -52,6 +52,7 @@ post_mfix : \
     VISC_S.mod \
     VSHEAR.mod \
     XSI_ARRAY.mod \
+    MMS.mod \
     PROGRESS_BAR.mod \
     QUADRIC.mod \
     STL.mod \
@@ -130,7 +131,6 @@ post_mfix : \
     ik_avg_out.$(OBJ_EXT) \
     init_namelist.$(OBJ_EXT) \
     interp_res.$(OBJ_EXT) \
-    kintheory_energy_dissipation_ss.$(OBJ_EXT) \
     line_too_big.$(OBJ_EXT) \
     main_f.$(OBJ_EXT) \
     make_upper_case.$(OBJ_EXT) \
@@ -232,6 +232,7 @@ post_mfix : \
     get_values.$(OBJ_EXT) \
     get_bc_area.$(OBJ_EXT) \
     flow_to_vel.$(OBJ_EXT) \
+    kintheory_energy_dissipation_ss.$(OBJ_EXT) \
     
 	$(LINK_CMD) $(LINK_FLAGS) \
     ambm_mod.$(OBJ_EXT) \
@@ -285,6 +286,7 @@ post_mfix : \
     visc_s_mod.$(OBJ_EXT) \
     vshear_mod.$(OBJ_EXT) \
     xsi_array_mod.$(OBJ_EXT) \
+    mms_mod.$(OBJ_EXT) \
     allocate_arrays.$(OBJ_EXT) \
     any_more_data.$(OBJ_EXT) \
     calc_cell2.$(OBJ_EXT) \
@@ -341,7 +343,6 @@ post_mfix : \
     ik_avg_out.$(OBJ_EXT) \
     init_namelist.$(OBJ_EXT) \
     interp_res.$(OBJ_EXT) \
-    kintheory_energy_dissipation_ss.$(OBJ_EXT) \
     line_too_big.$(OBJ_EXT) \
     main_f.$(OBJ_EXT) \
     make_upper_case.$(OBJ_EXT) \
@@ -464,6 +465,7 @@ post_mfix : \
     rxn_com_mod.$(OBJ_EXT) \
     get_bc_area.$(OBJ_EXT) \
     flow_to_vel.$(OBJ_EXT) \
+    kintheory_energy_dissipation_ss.$(OBJ_EXT) \
   -o post_mfix $(LIB_FLAGS)
   
 AMBM.mod : ../model/ambm_mod.f \
@@ -659,6 +661,8 @@ XSI_ARRAY.mod : ../model/xsi_array_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/xsi_array_mod.f 
+MMS.mod : ../model/mms_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/mms_mod.f 
 PROGRESS_BAR.mod : ../model/cartesian_grid/progress_bar_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/progress_bar_mod.f 
 QUADRIC.mod : ../model/cartesian_grid/quadric_mod.f \
@@ -872,6 +876,7 @@ calc_mu_s.$(OBJ_EXT) : ../model/calc_mu_s.f \
             INDICES.mod \
             GEOMETRY.mod \
             QMOM_KINETIC_EQUATION.mod \
+            MMS.mod \
             PARAM.mod \
             PARAM1.mod \
             TRACE.mod \
@@ -1308,24 +1313,6 @@ interp_res.$(OBJ_EXT) : interp_res.f \
             TMP_ARRAY.mod \
             xforms.inc                                                   \
             function.inc                                                
-kintheory_energy_dissipation_ss.$(OBJ_EXT) : ../model/kintheory_energy_dissipation_ss.f \
-            PARAM.mod \
-            PARAM1.mod \
-            GEOMETRY.mod \
-            COMPAR.mod \
-            FLDVAR.mod \
-            INDICES.mod \
-            PHYSPROP.mod \
-            RUN.mod \
-            CONSTANT.mod \
-            TOLERANC.mod \
-            KINTHEORY.mod \
-            function.inc                                                   \
-            fun_avg1.inc                                                   \
-            fun_avg2.inc                                                   \
-            ep_s1.inc                                                   \
-            ep_s2.inc                                         
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/kintheory_energy_dissipation_ss.f
 line_too_big.$(OBJ_EXT) : ../model/line_too_big.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/line_too_big.f 
 main_f.$(OBJ_EXT) : main_f.f \
@@ -1902,7 +1889,14 @@ check_data_cartesian.$(OBJ_EXT) : ../model/cartesian_grid/check_data_cartesian.f
             VTK.mod \
             POLYGON.mod \
             DASHBOARD.mod \
-            STL.mod 
+            STL.mod \
+            FLDVAR.mod \
+            SCALES.mod \
+            PARALLEL.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            SENDRECV.mod \
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/check_data_cartesian.f 
 get_poly_data.$(OBJ_EXT) : ../model/cartesian_grid/get_poly_data.f \
             PARAM.mod \
@@ -2241,3 +2235,21 @@ flow_to_vel.$(OBJ_EXT) : ../model/flow_to_vel.f \
             DISCRETELEMENT.mod \
             MFIX_PIC.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/flow_to_vel.f 
+kintheory_energy_dissipation_ss.$(OBJ_EXT) : ../model/kintheory_energy_dissipation_ss.f \
+            PARAM.mod \
+            PARAM1.mod \
+            GEOMETRY.mod \
+            COMPAR.mod \
+            FLDVAR.mod \
+            INDICES.mod \
+            PHYSPROP.mod \
+            RUN.mod \
+            CONSTANT.mod \
+            TOLERANC.mod \
+            KINTHEORY.mod \
+            function.inc                                                 \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                    \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/kintheory_energy_dissipation_ss.f 

@@ -49,6 +49,7 @@ post3d_mod.f
 ../model/visc_s_mod.f 
 ../model/vshear_mod.f 
 ../model/xsi_array_mod.f 
+../model/mms_mod.f
 ../model/allocate_arrays.f 
 any_more_data.f 
 calc_cell2.f 
@@ -227,3 +228,4 @@ usr_input_mod.f
 ../model/rxn_com_mod.f
 ../model/get_bc_area.f
 ../model/flow_to_vel.f
+../model/kintheory_energy_dissipation_ss.f
