@@ -9,7 +9,7 @@
 !  Reviewer: J.Musser                                 Date: 04-Dec-13  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      MODULE mms_src
+      MODULE mms
 
 ! By default the MMS functions are unavailable.
       LOGICAL, parameter :: USE_MMS = .FALSE.
@@ -109,4 +109,4 @@
       RETURN
       End SUBROUTINE CALCULATE_MMS_SOURCE
 
-      END MODULE mms_src
+      END MODULE mms
