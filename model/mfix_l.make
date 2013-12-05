@@ -1162,7 +1162,18 @@ $(DPO)mflux.mod : mflux_mod.f \
             $(DPO)param.mod \
             $(DPO)param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) mflux_mod.f  -o $(DPO)mflux_mod.$(OBJ_EXT) -module $(DPO)
-$(DPO)mms.mod : mms_mod.f 
+$(DPO)mms.mod : mms_mod.f \
+            $(DPO)param.mod \
+            $(DPO)param1.mod \
+            $(DPO)parallel.mod \
+            $(DPO)constant.mod \
+            $(DPO)run.mod \
+            $(DPO)toleranc.mod \
+            $(DPO)geometry.mod \
+            $(DPO)indices.mod \
+            $(DPO)compar.mod \
+            $(DPO)sendrecv.mod \
+            $(DPO)fldvar.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) mms_mod.f  -o $(DPO)mms_mod.$(OBJ_EXT) -module $(DPO)
 $(DPO)output.mod : output_mod.f \
             $(DPO)param.mod \
