@@ -35,6 +35,7 @@
       USE mfix_pic
       USE cutcell
       USE qmom_kinetic_equation
+      USE ic 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -53,6 +54,11 @@
       DOUBLE PRECISION REAL_PARTS(DIM_M), COMP_PARTS(DIM_M)
 ! volume of the cell 
       DOUBLE PRECISION :: VOLIJK, VOLIJK_UNCUT
+! temp variable for solids volume fraction and particle count 
+      DOUBLE PRECISION :: EP_SM, PARTS_TEMP 
+!IC region count with non-zero solids 
+      INTEGER :: IC_COUNT, ICV
+
 !-----------------------------------------------
 ! Functions
 !-----------------------------------------------
@@ -69,6 +75,11 @@
       IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(1X,A)')&
          '---------- START CHECK_DES_DATA ---------->'
 
+
+! want separate flag to toggle between screen output for the discrete modules
+      PRINT_DES_SCREEN = (myPE.EQ.pe_IO)
+      IF(DMP_LOG) WRITE(UNIT_LOG,1001) PRINT_DES_SCREEN
+      IF(DMP_LOG) WRITE(*,1001) PRINT_DES_SCREEN
 
       IF (.NOT.DES_CONTINUUM_HYBRID) THEN
 ! MMAX, D_p0 and RO_s0 are to be strictly associated with the continuum
@@ -170,12 +181,6 @@
             ENDDO
          ENDDO
       ENDIF
-
-! want separate flag to toggle between screen output for the discrete modules
-      PRINT_DES_SCREEN = (FULL_LOG.AND.myPE.EQ.pe_IO)
-      PRINT_DES_SCREEN = .TRUE.
-      IF(DMP_LOG) WRITE(UNIT_LOG,1001) PRINT_DES_SCREEN
-      IF(DMP_LOG) WRITE(*,1001) PRINT_DES_SCREEN
 
 
 ! Check dimension
@@ -284,13 +289,13 @@
 
 ! Check for valid neighbor search option      
       IF(DES_NEIGHBOR_SEARCH.EQ.1) THEN
-         IF(DMP_LOG) WRITE(*, 1045) 1, 'N-SQUARE'
+         IF(DMP_LOG) WRITE(unit_log, 1045) 1, 'N-SQUARE'
       ELSEIF(DES_NEIGHBOR_SEARCH.EQ.2) THEN
-         IF(DMP_LOG) WRITE(*, 1045) 2, 'QUADTREE'
+         IF(DMP_LOG) WRITE(unit_log, 1045) 2, 'QUADTREE'
       ELSEIF(DES_NEIGHBOR_SEARCH.EQ.3) THEN
-         IF(DMP_LOG) WRITE(*, 1045) 3, 'OCTREE'
+         IF(DMP_LOG) WRITE(unit_log, 1045) 3, 'OCTREE'
       ELSEIF(DES_NEIGHBOR_SEARCH.EQ.4) THEN
-         IF(DMP_LOG) WRITE(*, 1045) 4, 'GRID BASED'
+         IF(DMP_LOG) WRITE(unit_log, 1045) 4, 'GRID BASED'
       ELSE
          IF(DMP_LOG) WRITE(UNIT_LOG, 1003)
          CALL MFIX_EXIT(myPE)         
@@ -610,74 +615,31 @@
       IF(TRIM(RUN_TYPE) .NE. 'NEW'.AND.GENER_PART_CONFIG) THEN 
          GENER_PART_CONFIG = .FALSE. 
          IF(DMP_LOG) WRITE(UNIT_LOG, 1037)
-         IF(DMP_LOG) WRITE(*, 1037)
+         IF(PRINT_DES_SCREEN) WRITE(*, 1037)
       ENDIF
      
        
+      IF(gener_part_config) then 
+!Check if any of the deprecated flags are not present in the input file 
+         if(des_eps_xstart.ne.undefined.or.des_eps_ystart.ne.undefined.or.des_eps_xstart.ne.undefined) then 
+            if (PRINT_DES_SCREEN) write(*, 1056) 
+            if (dmp_log) write(unit_log, 1056) 
+            call mfix_exit(mype) 
+         endif
+         
+         DO M = 1, DES_MMAX
+            if(vol_frac(M).ne.undefined) then 
+               if (print_des_screen) write(*, 1057) 
+               if (dmp_log) write(unit_log, 1057) 
+               call mfix_exit(mype) 
+            endif
+         enddo
+      endif
+
 ! If gener_part_config ensure various quantities are defined and valid
 ! ---------------------------------------------------------------->>>
       IF(TRIM(RUN_TYPE).EQ. 'NEW' .AND. GENER_PART_CONFIG .AND.&
         .NOT.MPPIC) THEN 
-         TOT_VOL_FRAC = ZERO
-
-! Check if des_eps_xstart, ystart, zstart are set
-         IF(DES_EPS_XSTART.EQ.UNDEFINED.OR.&
-            DES_EPS_YSTART.EQ.UNDEFINED) THEN
-            IF(DMP_LOG) WRITE(UNIT_LOG, 1047)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-         IF (DIMN.EQ.3 .AND. DES_EPS_ZSTART.EQ.UNDEFINED) THEN
-            IF(DMP_LOG) WRITE(UNIT_LOG, 1048)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-
-! if boundaries for populating particles are set make sure they are
-! within domain of simulation         
-         IF (DES_EPS_XSTART > XLENGTH) THEN
-            IF(DMP_LOG) WRITE(UNIT_LOG,1046) 'X', 'X'
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-         IF (DES_EPS_YSTART > YLENGTH) THEN
-            IF(DMP_LOG) WRITE(UNIT_LOG,1046) 'Y', 'Y'
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-         IF (DIMN .EQ. 3 .AND. DES_EPS_ZSTART > ZLENGTH) THEN
-            IF(DMP_LOG) WRITE(UNIT_LOG,1046) 'Z', 'Z'
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-
-! Check for quantities needed for gener_part_config option and make sure
-! they are physically realistic
-         DO M = 1, DES_MMAX
-            IF(VOL_FRAC(M) == UNDEFINED) THEN
-               IF(DMP_LOG) WRITE(UNIT_LOG, 1049) 
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-            IF (DES_CONTINUUM_COUPLED) THEN
-               IF(VOL_FRAC(M) < ZERO .OR. VOL_FRAC(M) > (ONE-EP_STAR)) THEN
-                  IF(DMP_LOG) WRITE(UNIT_LOG, 1050) 
-                  CALL MFIX_EXIT(myPE)
-               ENDIF
-            ELSE
-               IF(VOL_FRAC(M) < ZERO .OR. VOL_FRAC(M) > ONE) THEN
-                  IF(DMP_LOG)  WRITE(UNIT_LOG, 1051)
-                  CALL MFIX_EXIT(myPE)
-               ENDIF
-            ENDIF 
-            TOT_VOL_FRAC = TOT_VOL_FRAC + VOL_FRAC(M)
-         ENDDO
-         
-         IF(DES_CONTINUUM_COUPLED) THEN
-            IF (TOT_VOL_FRAC > (ONE-EP_STAR)) THEN
-               IF(DMP_LOG) WRITE(UNIT_LOG, 1052) 
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-         ELSE
-            IF (TOT_VOL_FRAC > ONE) THEN
-               IF(DMP_LOG) WRITE(UNIT_LOG, 1053)
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-         ENDIF
 
 ! Determine the domain volume which is used to calculate the total
 ! number of particles and the number of particles in each phase. 
@@ -701,33 +663,61 @@
 ! particles. this will also be important when considering volume/void
 ! fraction calculations.
                IF(DMP_LOG) WRITE(UNIT_LOG, 1055)
-               WRITE(*,1055)
+               IF(print_des_screen) WRITE(*,1055)
             ENDIF
-            VOL_DOMAIN = DES_EPS_XSTART*DES_EPS_YSTART*ZLENGTH
-         ELSE
-            VOL_DOMAIN = DES_EPS_XSTART*DES_EPS_YSTART*DES_EPS_ZSTART
          ENDIF
 
-         DO M = 1, DES_MMAX
-            PART_MPHASE(M) = FLOOR((6.D0*VOL_FRAC(M)*VOL_DOMAIN)/&
-               (PI*(DES_D_P0(M)**3)))
-         ENDDO
+         CALL CHECK_DES_IC_EPS 
+
+         
          PARTICLES = 0
-         PARTICLES = SUM(PART_MPHASE(1:DES_MMAX))
+         IC_COUNT = 0 
+         DO ICV = 1, DIMENSION_IC 
+            IF(.not.ic_defined(icv)) cycle 
+
+            PART_MPHASE_BYIC(ICV,:) = 0
+
+            IF (IC_EP_G(ICV).lt.ONE) THEN 
+               IC_COUNT = IC_COUNT + 1 
+               DO M = 1, DES_MMAX
+                  EP_SM = IC_ROP_S(ICV,M)/DES_RO_s(M)
+                  PARTS_TEMP = FLOOR((6.D0*EP_SM*VOL_IC_REGION(ICV))/&
+                  (PI*(DES_D_P0(M)**3)))
+                  PART_MPHASE_BYIC(ICV, M) = PARTS_TEMP
+                  PARTICLES = PARTICLES + PARTS_TEMP
+               ENDDO
+            ENDIF
+         ENDDO
+    
 
 ! Local reporting for the user 
-         IF(DMP_LOG) WRITE(*,'(/3X,A,/)') &
-            'Particle configuration will automatically be generated'
-         IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A,I5,2X,A,G15.7)') &
-           'DES_MMAX = ', DES_MMAX, ' VOL_DOMAIN = ', VOL_DOMAIN
-         IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A,/7X,(ES15.7,2X))') &
-            'D_P0(M) = ', DES_D_P0(1:DES_MMAX)
-         IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A,/7X,(G15.8,2X))') &
-            'VOL_FRAC(M) (solids volume fraction of phase M) = ', &
-            VOL_FRAC(1:DES_MMAX)
-         IF(DMP_LOG) WRITE(UNIT_LOG,'(5X,A,/7X,(I10,2X))') &
-            'PART_MPHASE(M) (number particles in phase M) = ', &
-            PART_MPHASE(1:DES_MMAX)
+
+         IF(DMP_LOG)        WRITE(UNIT_LOG,2015) IC_COUNT, DES_MMAX
+         IF(PRINT_DES_SCREEN)  WRITE(*,2015) IC_COUNT, DES_MMAX
+
+         DO ICV = 1, DIMENSION_IC 
+            IF(.not.ic_defined(icv)) cycle 
+
+            IF (IC_EP_G(ICV).lt.ONE) THEN 
+
+               IF(DMP_LOG) WRITE(UNIT_LOG,2016) ICV, VOL_IC_REGION(ICV)
+               IF(MYPE.EQ.PE_IO)  WRITE(*,2016) ICV, VOL_IC_REGION(ICV)
+               DO M = 1, DES_MMAX
+                  EP_SM = IC_ROP_S(ICV,M)/DES_RO_s(M)
+                  IF(DMP_LOG)  WRITE(UNIT_LOG,2017) M,  &
+                  DES_D_P0(M), EP_SM, PART_MPHASE_BYIC(ICV, M) 
+                  IF(PRINT_DES_SCREEN)  WRITE(*,2017) M,  &
+                  DES_D_P0(M), EP_SM, PART_MPHASE_BYIC(ICV, M) 
+               ENDDO
+
+            ENDIF
+
+         ENDDO
+
+         IF(DMP_LOG) WRITE(UNIT_LOG,2018)
+         IF(PRINT_DES_SCREEN)  WRITE(*,2018)
+
+            
       ENDIF 
 ! ----------------------------------------------------------------<<< 
 
@@ -1150,42 +1140,6 @@
  1045 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'DES_NEIGHBOR_SEARCH set to ', I2, ' ',A,/1X,70('*')/)
 
-
- 1046 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/,&
-         ' Message: DES_EPS_',A1,'START exceeds ',A1, 'LENGTH',/10X,&
-         'Particles cannot be seeded outside the simulation ', &
-         'domain',/1X,70('*')/)
-
- 1047 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'Values of DES_EPS_XSTART and/or DES_EPS_YSTART must be ',&
-         'specified',/10X,'when GENER_PART_CONFIG.',/1X,70('*')/)
-
- 1048 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'Value of DES_EPS_ZSTART must be specified when DIMN = 3',&
-         /10X,'and GENER_PART_CONFIG.',/1X,70('*')/)
-
- 1049 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-         'VOL_FRAC(M) must be defined in mfix.dat for M=1, MMAX ',&
-         'when',/10X,'GENER_PART_CONFIG',/1X,70('*')/)
-
- 1050  FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-          'Unphysical ( > 1-EP_STAR or < 0) values of VOL_FRAC(M) ',&
-          'set in',/10X,'mfix.dat for GENER_PART_CONFIG option',&
-          /1X,70('*')/)
- 1051  FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-          'Unphysical ( > 1 or < 0) values of VOL_FRAC(M) ',&
-          'set in',/10X,'mfix.dat for GENER_PART_CONFIG option',&
-          /1X,70('*')/)
- 1052  FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-          'Total solids volume fraction should not exceed 1-EP_STAR ',&
-          'for',/10X,'GENER_PART_CONFIG option where EP_STAR = ',&
-          G12.5,/10X,'and the total solids volume fraction = ',G12.5, &
-          /1X,70('*')/)
- 1053  FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-          'Total solids volume fraction should not exceed 1 for',/10X,&
-          'GENER_PART_CONFIG option where the total solids volume ',&
-          'fraction = ',G12.5,/1X,70('*')/)
-
  1054 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
           'WARNING: zlength or dz(1) is used to calculate the ',&
           'number',/10X,'of particles in the 2D simulation when ',&
@@ -1196,6 +1150,20 @@
           'WARNING: zlength or dz(1) is used to calculate the ',&
           'number',/10X,'of particles in the 2D simulation when ',&
           'GENER_PART_CONFIG is T and DIMN = 2.',/1X,70('*'))
+
+ 1056     FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+          'Gener_part_config is true but using deprecated flags', /, &
+          'DES_EPS_XSTART, DES_EPS_YSTART, and DES_EPS_ZSTART are obsolete flags.', /, &
+          'IC region is now based on usual IC_flags', /, & 
+          'Delete these flags from mfix.dat and restart', /, &
+          'Exitting',/1X,70('*'))
+
+ 1057     FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+          'Gener_part_config is true but using deprecated flags', /, &
+          'VOL_FRAC is an obsolete flag', /, &
+          'IC region is now based on usual IC_flags', /, & 
+          'Delete these flags from mfix.dat and restart', /, &
+          'Exitting',/1X,70('*'))
 
  1060 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'Only the grid based search option is allowed when using',&
@@ -1342,5 +1310,23 @@
          ' for phase', I4, /, &
          ' See MFIX readme.', /,  &
          ' Please correct the data file. Exiting.',/, 1X,70('*')/)
+
+ 2015    FORMAT( 1X,70('*')/ & 
+         'From: CHECK_DES_DATA    ', /5x, &
+         'gener_part_config specified as true', /,5x, &
+         'Total IC region count with non zero solids = ', I5,2X, /5x, & 
+         'Total discrete solid phases = ', I5,2X, /5x, & 
+         'Particle configuration will be automatically generated: ')
+
+ 2016    FORMAT(/1X,70('-')/, 5x, &
+         'IC number and Volume        = ', I4, 2x, (ES15.7,2X) )
+         
+ 2017    FORMAT(1X,70('.'),/,5x, &
+         'PHASE Index, M              =  ', I5,2X, /5x, & 
+         'D_P0(M)                     =  ', (ES15.7,2X), /5x, &
+         'Solids vol fraction for M   =  ', (G15.8,2X), /5x, & 
+         '# of particles for phase M  = ',  (I10,2X))
+
+ 2018    FORMAT( 1X,70('*')/)
 
          END SUBROUTINE CHECK_DES_DATA

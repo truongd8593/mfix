@@ -217,6 +217,7 @@
 
       CFL_PIC = 0.1 
 
+      des_convert_box_to_facets = .false. 
 ! J.Musser : des energy equations
       DES_ENERGY_EQ = .FALSE.
       DES_CONV_EQ = .TRUE.

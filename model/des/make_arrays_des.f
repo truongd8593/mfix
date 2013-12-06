@@ -27,13 +27,13 @@
       USE des_ic
       USE des_rxns
       USE des_thermo
-
+      USE des_stl_functions 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------      
-      INTEGER :: I, J, K, L, IJK, PC, SM_CELL 
-      INTEGER :: lface, lcurpar, lpip_all(0:numpes-1), lglobal_id 
+      INTEGER :: I, J, K, L, IJK, PC, SM_CELL
+      INTEGER :: lface, lcurpar, lpip_all(0:numpes-1), lglobal_id  , lparcnt
       
 ! MPPIC related quantities      
       DOUBLE PRECISION :: DTPIC_TMPX, DTPIC_TMPY, DTPIC_TMPZ 
@@ -42,7 +42,7 @@
 !-----------------------------------------------      
       INCLUDE 'function.inc'
 !-----------------------------------------------
-
+     
       CALL DES_ALLOCATE_ARRAYS
       CALL DES_INIT_ARRAYS
 
@@ -58,7 +58,9 @@
       call desgrid_init 
       call desmpi_init       
 
-      IF(CARTESIAN_GRID.or.MPPIC) CALL DES_WALLBC_PREPROCSSING 
+      !if use_stl, then don't call the des_wall_bc_preprocssing as it is based on cut-cell 
+      !treatment. For MPPIC, still call it for the time being but it will also be removed later on
+      IF(MPPIC.OR.(CARTESIAN_GRID.AND..NOT.USE_STL))  CALL DES_WALLBC_PREPROCSSING 
 
       IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(1X,A)')&
          '---------- START MAKE_ARRAYS_DES ---------->'
@@ -98,11 +100,6 @@
          des_pos_old(:,:) = des_pos_new(:,:)
          des_vel_old(:,:) = des_vel_new(:,:)
          DES_VEL_OOLD(:,:) = DES_VEL_NEW(:,:)
-
-! overriding initial particle velocities with velocities assigned from a
-! Gaussian distribution based on usr specified standard deviation and
-! mean
-         IF(PVEL_StDev > ZERO) CALL INIT_PARTICLES_JN         
 
       ELSEIF(RUN_TYPE == 'RESTART_1') THEN !  Read Restart
           
@@ -158,9 +155,10 @@
 ! are not removed first.
 ! JM: Added RUN_TYPE check to prevent particles from being deleted 
 ! during a restart.
-      IF(RUN_TYPE == 'NEW' .AND. CARTESIAN_GRID) &
+      IF(RUN_TYPE == 'NEW' .AND. CARTESIAN_GRID.and.gener_part_config) then
+      !IF(RUN_TYPE == 'NEW' .AND. CARTESIAN_GRID) then
          CALL CG_DEL_OUTOFDOMAIN_PARTS
-
+      ENDIF
 ! do_nsearch should be set before calling particle in cell  
       DO_NSEARCH =.TRUE.
       CALL PARTICLES_IN_CELL
@@ -201,9 +199,6 @@
          close(1000, status = 'keep')
       ENDIF
 
-      IF (TRIM(RUN_TYPE) == 'NEW') THEN
-         CALL WRITEIC
-      ENDIF
 
       IF(MPPIC) THEN 
          DTPIC_CFL = LARGE_NUMBER 
@@ -328,8 +323,9 @@
             dpar_den = 0.0
             DO lcurpar = 1, particles
                read (lunit,*) (dpar_pos(lcurpar,k),k=1,dimn),&
-                            dpar_rad(lcurpar), & 
-                            dpar_den(lcurpar),(dpar_vel(lcurpar,k),k=1,dimn)
+               dpar_rad(lcurpar), & 
+               dpar_den(lcurpar),(dpar_vel(lcurpar,k),k=1,dimn)
+               
             ENDDO
          ENDIF 
          call des_scatter_particle

@@ -16,7 +16,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
+      
       SUBROUTINE GENERATE_PARTICLE_CONFIG
 
 !-----------------------------------------------
@@ -49,6 +49,8 @@
          RETURN 
       ENDIF
 
+      CALL GENERATE_PARTICLE_CONFIG2
+      RETURN 
       IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(3X,A)') &
          '---------- START GENERATE_PARTICLE_CONFIG ---------->'
 
@@ -158,6 +160,362 @@
 
       RETURN
       END SUBROUTINE GENERATE_PARTICLE_CONFIG
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  SUBROUTINE: GENERATE_PARTICLE_CONFIG                                C
+!                                                                      C
+!  Purpose: Generate particle configuration based on maximum particle  C
+!           radius and filling from top to bottom within specified     C
+!           bounds                                                     C
+!                                                                      C
+!                                                                      C
+!  Authors: Rahul Garg                                Date: 08-10-2013 C
+!  Now seeding the particles based on the IC regions 
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      
+      SUBROUTINE GENERATE_PARTICLE_CONFIG2
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      USE param1
+      USE geometry
+      USE funits
+      USE compar      
+      USE discretelement
+      USE run
+      USE constant
+      USE physprop
+      use desmpi 
+      use cdist 
+      use mpi_utility
+      use mfix_pic
+      USE ic 
+      USE randomno
+      IMPLICIT NONE
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+      INTEGER :: M, ICV, I,J, K, NP, idim
+      INTEGER :: lproc_parcount, pcount_byic_byphase(dimension_ic, DES_MMAX) 
+      INTEGER :: seed_x, seed_y, seed_z 
+      INTEGER :: TOTAL_PARTS_IC, last_counter, TMP_PART_COUNT_INTHIS_IC
+      integer, dimension(:), allocatable :: map_to_proc
+      double precision lmax_dia,lfac,xp,yp,zp 
+      double precision :: XSTART_IC, YSTART_IC, ZSTART_IC, adj_dia, ep_sm 
+      double precision :: XEND_IC, YEND_IC, ZEND_IC
+      double precision :: xinit, yinit, zinit, ymax 
+      !max point where the particle center cud be placed 
+      double precision ::  max_ic_pt(3)
+      !factor to re-fit the configuration to the IC region size 
+      double precision :: refit_fac(3) 
+      !particles min and max positions
+      double precision :: PART_CEN_MIN(DIMN), PART_CEN_MAX(DIMN)
+
+      !Particle mean velocity and standard deviation
+      double precision :: vel_mean(3), vel_sig(3)
+       
+      double precision, dimension(:,:), allocatable :: pvel_temp
+      
+!-----------------------------------------------
+
+      IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(3X,A)') &
+      '---------- START GENERATE_PARTICLE_CONFIG2 ---------->'
+
+      CALL des_check_ic_overlap
+
+! initializing particle count
+      lproc_parcount = 0 
+
+      PCOUNT_BYIC_BYPHASE(:,:)  = 0 
+! setting particle seed spacing grid to be slightly greater than
+! the maximum particle diameter. seed at ~particle radii
+      lfac = 1.05d0      
+      IF(DMP_LOG)        WRITE(UNIT_LOG,2015) 
+      IF(MYPE.EQ.PE_IO)  WRITE(*,2015) 
+
+
+      IC_LOOP : DO ICV = 1, DIMENSION_IC 
+
+         IF (IC_DEFINED(ICV)) THEN 
+
+            PART_CEN_MIN(:) = LARGE_NUMBER
+            PART_CEN_MAX(:) = SMALL_NUMBER
+
+            TOTAL_PARTS_IC = 0 
+
+            LMAX_DIA = SMALL_NUMBER 
+            DO M = 1, DES_MMAX
+               
+! setting a local value of maximum diameter for each IC region      
+               if(PART_MPHASE_BYIC(ICV,M).gt.0) then
+                  total_parts_ic = total_parts_ic + PART_MPHASE_BYIC(ICV,M)
+                  LMAX_DIA = MAX(LMAX_DIA, DES_D_P0(M))
+               endif
+            ENDDO
+
+            IF(total_parts_ic.eq.0) cycle IC_LOOP 
+
+            IF(DMP_LOG)        WRITE(UNIT_LOG,2016) ICV 
+            IF(MYPE.EQ.PE_IO)  WRITE(*       ,2016) ICV
+
+            !write(*,*) 'total_parts_ic', ICV, total_parts_ic,PART_MPHASE_BYIC(ICV,1:DES_MMAX)
+            if(.not.allocated(map_to_proc)) allocate(map_to_proc(total_parts_ic))
+
+            if(Allocated(map_to_proc)) then 
+               deallocate(map_to_proc)
+               allocate(map_to_proc(total_parts_ic))
+            endif
+            
+            last_counter = 0
+            DO M = 1, DES_MMAX 
+               if(PART_MPHASE_BYIC(ICV,M).gt.0) then
+                  map_to_proc(last_counter+1:last_counter+PART_MPHASE_BYIC(ICV,M)) = M 
+                  last_counter = last_counter+PART_MPHASE_BYIC(ICV,M)
+               endif
+            ENDDO
+                             
+            XSTART_IC = XE(IC_I_W(ICV)) - DX(IC_I_W(ICV))
+            YSTART_IC = YN(IC_J_S(ICV)) - DY(IC_J_S(ICV))
+            ZSTART_IC = ZT(IC_K_B(ICV)) - DZ(IC_K_B(ICV))
+            XEND_IC   = XE(IC_I_E(ICV))
+            YEND_IC   = YN(IC_J_N(ICV))
+            ZEND_IC   = ZT(IC_K_T(ICV))
+            
+            
+            MAX_IC_PT(1) = XEND_IC - 0.5d0*LMAX_DIA*LFAC
+            MAX_IC_PT(2) = YEND_IC - 0.5d0*LMAX_DIA*LFAC
+            MAX_IC_PT(3) = ZEND_IC - 0.5d0*LMAX_DIA*LFAC
+            XINIT = XSTART_IC
+            YINIT = YSTART_IC
+            ZINIT = ZSTART_IC
+
+            
+            DO M = 1, DES_MMAX 
+               if(PART_MPHASE_BYIC(ICV,M).eq.0) cycle 
+
+               SEED_X = 1
+               SEED_Y = 1
+               SEED_Z = 1
+               
+               ADJ_DIA = LFAC*DES_D_P0(M)               
+               
+               SEED_X = FLOOR((XEND_IC - XINIT)/ADJ_DIA)
+               SEED_Y = FLOOR((YEND_IC - YINIT)/ADJ_DIA)         
+               SEED_Z = FLOOR((ZEND_IC - ZINIT)/ADJ_DIA)
+               !write(*,*) 'adj_dia = ', adj_dia, lfac, lmax_dia
+               !write(*,*) 'seedx  = ', seed_x, seed_y, seed_z
+               if(dimn.eq.2) seed_z = 1 
+
+               outerloop :  DO  J = 1, SEED_Y
+                  DO  K = 1, SEED_Z 
+                     DO  I = 1, SEED_X 
+                        XP = XINIT + I*ADJ_DIA - DES_D_P0(M)*0.5D0
+                        YP = YINIT + J*ADJ_DIA - DES_D_P0(M)*0.5D0
+                        ZP = ZINIT + K*ADJ_DIA - DES_D_P0(M)*0.5D0
+                        
+                        TMP_PART_COUNT_INTHIS_IC = (PCOUNT_BYIC_BYPHASE(ICV,M)) + 1
+                        
+                        
+                        IF(TMP_PART_COUNT_INTHIS_IC.GT.PART_MPHASE_BYIC(ICV,M)) EXIT outerloop 
+                     
+!Associate this new particle to the solid phase id based on the map_to_proc defined 
+!earlier 
+
+                        
+                        PCOUNT_BYIC_BYPHASE(ICV,M)  = PCOUNT_BYIC_BYPHASE(ICV,M) + 1
+!Set it to -1 here. It will be set to non '-1' value (equal to particle id)
+!on the processor it belongs to
+
+                        MAP_TO_PROC(SUM(PCOUNT_BYIC_BYPHASE(ICV,:))) = -1 
+!computational FLUID grid (xe,yn, zt)
+                        IF ( XP.GE.XE(ISTART1-1) .AND. XP.LT.XE(IEND1) .AND. &
+                             YP.GE.YN(JSTART1-1) .AND. YP.LT.YN(JEND1) .AND. &
+                             ZP.GE.ZT(KSTART1-1) .AND. ZP.LT.ZT(KEND1)) THEN
+                           LPROC_PARCOUNT = LPROC_PARCOUNT + 1
+                           
+                           MAP_TO_PROC(SUM(PCOUNT_BYIC_BYPHASE(ICV,:))) = LPROC_PARCOUNT
+                           
+                           PEA(LPROC_PARCOUNT,1) = .TRUE.
+                           DES_RADIUS(LPROC_PARCOUNT) = DES_D_P0(M)*HALF 
+                           RO_SOL(LPROC_PARCOUNT) = DES_RO_S(M)
+                           DES_POS_NEW(LPROC_PARCOUNT,1) = XP 
+                           DES_POS_NEW(LPROC_PARCOUNT,2) = YP 
+                           IF(DIMN.EQ.3) DES_POS_NEW(LPROC_PARCOUNT,3) = ZP 
+                           
+                        ENDIF
+                        PART_CEN_MIN(1)  = MIN(XP , PART_CEN_MIN(1))
+                        PART_CEN_MIN(2)  = MIN(YP , PART_CEN_MIN(2))
+                        
+                        PART_CEN_MAX(1)  = MAX(XP , PART_CEN_MAX(1))
+                        PART_CEN_MAX(2)  = MAX(YP , PART_CEN_MAX(2))
+                        IF(DIMN.EQ.3) THEN 
+                           PART_CEN_MIN(3)  = MIN(ZP, PART_CEN_MIN(3))
+                           PART_CEN_MAX(3)  = MAX(ZP, PART_CEN_MAX(3))
+                        ENDIF
+
+                        YMAX = YP + DES_D_P0(M)*0.5D0
+                        
+                     end DO
+                  end DO
+               end DO outerloop
+            
+               YINIT = YMAX 
+            end DO
+
+            IF(IC_DES_FIT_TO_REGION(ICV)) THEN 
+               refit_fac = 1.d0 
+
+               DO IDIM = 1, DIMN 
+                  IF((PART_CEN_MAX(IDIM)-PART_CEN_MIN(IDIM).GT.LMAX_DIA).AND. &
+                       (MAX_IC_PT(IDIM) - PART_CEN_MAX(IDIM).GT.LMAX_DIA)) THEN 
+                     
+                     REFIT_FAC(IDIM)  = MAX_IC_PT(IDIM)/PART_CEN_MAX(IDIM)
+                     !write(*,*) ' REFI, IDIM =', IDIM, REFIT_FAC(IDIM)
+                  END IF
+               END DO
+
+               if(dmp_log)          write(unit_log, 2020) ICV, refit_fac(1:dimn)
+               if(print_des_screen) write(*       , 2020) ICV, refit_fac(1:dimn)
+
+
+               DO NP = 1, SUM(PCOUNT_BYIC_BYPHASE(ICV,:))
+                  IF (MAP_TO_PROC(NP).NE.-1) THEN 
+                     DES_POS_NEW(MAP_TO_PROC(NP), 1:DIMN) = DES_POS_NEW(MAP_TO_PROC(NP), 1:DIMN)*REFIT_FAC(1:DIMN)
+                  END IF
+               END DO
+            END IF !DES_IC_FIT_TO_REGION
+
+            
+            last_counter = 0 
+            
+            DO M = 1, DES_MMAX
+               if(PCOUNT_BYIC_BYPHASE(ICV,M).eq.0) cycle 
+
+               VEL_MEAN = ZERO
+               VEL_SIG = ZERO 
+               VEL_MEAN(1) = IC_U_S(ICV, M)
+               VEL_MEAN(2) = IC_V_S(ICV, M)
+               IF(DIMN.eq.3) VEL_MEAN(3) = IC_W_S(ICV, M)
+               !granular temp is defined as (Variance uprime + Variance vprime + Variance wprime)/3 
+               !assuming equal energy in each direction 
+               !Variance uprime  = IC_Theta
+               !Stdev (or sigma) = sqrt(Variance) 
+               VEL_SIG(:) = sqrt(IC_Theta_M(ICV, M))
+               
+               
+               IF(PRINT_DES_SCREEN) write(*,2022) M,  &
+               vel_mean(:), IC_theta_m(ICV, M), vel_sig(:)
+               IF(DMP_LOG) write(UNIT_LOG,2022)M, & 
+               vel_mean(:), IC_theta_m(ICV, M), vel_sig(:)
+               
+               allocate(pvel_temp( PCOUNT_BYIC_BYPHASE(ICV,M) , DIMN))
+               do IDIM = 1, DIMN 
+                  
+                  pvel_temp(:, idim) = vel_mean(idim)
+
+                  IF(vel_sig(idim).gt.zero) then 
+                     CALL nor_rno(pvel_temp(1:PCOUNT_BYIC_BYPHASE(ICV,M),IDIM), &
+                     vel_mean(idim),vel_sig(idim))
+                  ENDIF
+               ENDDO
+               
+               
+               DO NP = 1 , PCOUNT_BYIC_BYPHASE(ICV,M)
+                  IF (MAP_TO_PROC(NP+last_counter).eq.-1) cycle 
+
+                  DES_VEL_NEW(MAP_TO_PROC(NP+last_counter), 1:DIMN) = pvel_temp(np,1:dimn)
+                  DES_VEL_OLD(MAP_TO_PROC(NP+last_counter), 1:DIMN) = pvel_temp(np,1:dimn)
+               enddo
+               
+               last_counter = last_counter + PCOUNT_BYIC_BYPHASE(ICV,M)
+               
+               deallocate(pvel_temp)
+
+               EP_SM = IC_ROP_S(ICV,M)/DES_RO_s(M)
+               IF(DMP_LOG)        WRITE(UNIT_LOG,2017)  &
+                    EP_SM, PART_MPHASE_BYIC(ICV, M), PCOUNT_BYIC_BYPHASE(ICV,M)  
+               IF(MYPE.EQ.PE_IO)  WRITE(*,2017) &
+                    EP_SM, PART_MPHASE_BYIC(ICV, M), PCOUNT_BYIC_BYPHASE(ICV,M)
+               
+               IF(PCOUNT_BYIC_BYPHASE(ICV,M).ne.PART_MPHASE_BYIC(ICV, M)) then 
+                  IF(DMP_LOG)       write(unit_log, 2018) M
+                  if(mype.eq.pe_io) write(*, 2018) M 
+               ENDIF
+
+            ENDDO
+         END IF
+         
+      END DO IC_LOOP
+      
+! setting pip to particle count
+      pip = lproc_parcount 
+
+      !WRITE(*,*) 'PIP on proc ', mype , '  = ', pip 
+!      DO ICV = 1, DIMENSION_IC 
+!         
+!         IF (IC_DEFINED(ICV).AND.IC_EP_G(ICV).lt.ONE) THEN 
+            
+!            DO M = 1, DES_MMAX
+!               EP_SM = IC_ROP_S(ICV,M)/DES_RO_s(M)
+!               IF(DMP_LOG)        WRITE(UNIT_LOG,2017) M,  &
+!                    EP_SM, PART_MPHASE_BYIC(ICV, M), PCOUNT_BYIC_BYPHASE(ICV,M)  
+!               IF(MYPE.EQ.PE_IO)  WRITE(*,2017) M,  &
+!                    EP_SM, PART_MPHASE_BYIC(ICV, M), PCOUNT_BYIC_BYPHASE(ICV,M)
+               
+!               IF(PCOUNT_BYIC_BYPHASE(ICV,M).ne.PART_MPHASE_BYIC(ICV, M)) then 
+!                  IF(DMP_LOG)       write(unit_log, 2018) M
+!                  if(mype.eq.pe_io) write(*, 2018) M 
+!               ENDIF
+!            ENDDO
+!            
+!         ENDIF
+         
+!      ENDDO
+      
+      IF(DMP_LOG) WRITE(UNIT_LOG,2019)
+      IF(mype.eq.pe_io)  WRITE(*,2019)
+      
+2015  FORMAT( 1X,70('*')/ & 
+           'From: Gener_part_config    ', /5x, &
+           'IC region wise report on particle initialization')
+      
+2016  FORMAT(/1X,70('-')/, 5x, &
+           'IC number         = ', I4)
+      
+2017  FORMAT(5x, &
+           'Solids vol fraction for M   =  ', (G15.8,2X), /5x, & 
+           '# of particles implied from IC for phase M  = ',  I10, /5x, &
+           '# of particles actually seeded for phase M  = ',  I10)
+
+2018  FORMAT(1X,70('.'),/,5x, &
+           '####  Warning for phase Index, M  ###', I5,2X, /5x, & 
+           'Difference in mass of solids initialized and desired')
+      
+2019  FORMAT( 1X,70('*')/)
+      
+ 2020 Format(/5x, 'Refitting to box for IC', I4, /5x,   &
+      'Refitting factors (1-DIMN): ', 3(2x,g17.8))
+      
+
+ 2022      FORMAT(1X,70('.'),/5x, & 
+           'PHASE INDEX, M                     =  ', I5,2X, /5x, & 
+           'INITIALIZING SOLIDS VELOCITY FIELD', /5x, & 
+           'Mean velocity direction wise       =  ', 3(G15.8,2X), /5x, & 
+           'Initial granular temperature       =  ', (G15.8,2X), /5x, & 
+           'standard deviation direction wise  =  ', 3(G15.8,2X))
+        
+      IF(DMP_LOG.and.debug_des) write(UNIT_LOG,'(3x,a)') &
+         '<---------- END GENERATE_PARTICLE_CONFIG ----------'
+      
+
+
+      RETURN
+    END SUBROUTINE GENERATE_PARTICLE_CONFIG2
+
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -348,6 +706,7 @@
 !-----------------------------------------------
 
 ! based on distributed or single IO open the input file
+      WRITE(*,*) 'WRITING IC.dat'
       lunit = 25 
       if (bdist_io) then 
          write(lfilename,'("ic_",I4.4,".dat")')mype
@@ -361,6 +720,7 @@
 
 ! Write the information      
 !----------------------------------------------------------------->>>      
+
       if (bdist_io) then 
          lparcnt = 1 
          do lcurpar = 1,pip
@@ -369,7 +729,7 @@
             lparcnt = lparcnt+1
             if(pea(lcurpar,4)) cycle 
             write(lunit,'(10(2x,es12.5))') (des_pos_new(lcurpar,li),li=1,dimn),&
-               (des_vel_new(lcurpar,li),li=1,dimn), des_radius(lcurpar),ro_sol(lcurpar)
+            des_radius(lcurpar),ro_sol(lcurpar), (des_vel_new(lcurpar,li),li=1,dimn)
          enddo
 
 !-----------------------------------------------------------------<<<

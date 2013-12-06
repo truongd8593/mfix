@@ -96,10 +96,22 @@
       LOGICAL :: GENER_PART_CONFIG
       DOUBLE PRECISION ::  VOL_FRAC(DIM_M)
       DOUBLE PRECISION :: DES_EPS_XSTART, &
-                           DES_EPS_YSTART, DES_EPS_ZSTART
+      DES_EPS_YSTART, DES_EPS_ZSTART
+! volume of the IC region for computing number of particles to be seeded 
+      DOUBLE PRECISION, dimension(:), allocatable :: VOL_IC_REGION!(DIMENSION_IC)
+! number of particles for each phase corresponding to the IC number 
+      INTEGER, dimension(:,:), allocatable :: PART_MPHASE_BYIC!(DIMENSION_IC, DIM_M)
+      !The above two vars are allocated in check_des_ic_eps. One could have 
+      !used the module ic and just declared the size here itself but using ic 
+      !led to issues with "IC" variable declaration in octree. For some 
+      !reason, if a subroutine uses module named "test", then it cannot have
+      !variable named test under its scope. Octree, never used, but keeps
+      !on reminding us of its presence. 
+
 ! The number of particles that belong to solid phase M according to the
 ! vol_frac and particle diameter. this information is used when
 ! gener_part_config is invoked for initialization 
+! This will be removed soon as PART_MPHASE_BYIC will be used from now on
       INTEGER PART_MPHASE(DIM_M)
 ! Assigns the initial particle velocity distribution based on user
 ! specified mean and standard deviation (regardless if already set
@@ -267,7 +279,7 @@
 !   (0, xlength, 0, ylength, 0, zlength)
       DOUBLE PRECISION WX1, EX2, BY1, TY2, SZ1, NZ2
 
-! X, Y, Z position of cell faces of computational fluid grid
+! X, Y, Z position of cell faces of computational fluid grid 
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: XE  !(0:DIMENSION_I)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: YN  !(0:DIMENSION_J)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: ZT  !(0:DIMENSION_K)
@@ -611,6 +623,10 @@
 
       LOGICAL, DIMENSION(:), ALLOCATABLE :: TOBE_DELETED
       
+!flag to convert the outside box to facets if stl facet representation is used
+!default is false
+      
+      Logical :: des_convert_box_to_facets
 
 ! Start Cluster Identification
 !----------------------------------------------------------------->>>

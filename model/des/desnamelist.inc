@@ -99,5 +99,9 @@
 	 MPPIC_GRAV_TREATMENT, MPPIC_COEFF_EN_WALL, MPPIC_COEFF_ET_WALL, &
 
 ! des_cellwise_bc_data size 
-	 MAX_DES_BC_CELL
+	 MAX_DES_BC_CELL, & 
+
+! flag to convert des outside box to facets needed if outside box not part of stl geom
+
+	 des_convert_box_to_facets
 

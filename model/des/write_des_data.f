@@ -313,6 +313,12 @@
          call global_sum(llocalcnt,lglocnt) 
          allocate (dprocbuf(llocalcnt),drootbuf(lglocnt),iprocbuf(llocalcnt),irootbuf(lglocnt))
          allocate (ltemp_array(lglocnt,3)) 
+
+         !set it to zero or it could lead to floating point exceptions 
+         !as drootbuf is not set to any meaningful values for non-gathering
+         !processors 
+         drootbuf  = zero 
+         
          igath_sendcnt = llocalcnt 
          lgathercnts = 0
          lgathercnts(mype) = llocalcnt
@@ -377,7 +383,9 @@
             ENDIF
          ENDIF
 
+
 ! Write velocity data.
+               
          ltemp_array = 0.0 
          do k = 1,dimn
             call des_gather(des_vel_new(:,k))

@@ -809,7 +809,7 @@
          IF(TRIM(WALL_TYPE_TEMP).eq.'CUT_FACE') NORMAL_TEMP(1:3) = NORMAL_S(IJK_TEMP,1:3)
          IF(TRIM(WALL_TYPE_TEMP).eq.'NORMAL_WALL') NORMAL_TEMP(1:DIMN) = DES_CELLWISE_BCDATA(CELL_ID)%BDRY_LIST(COUNT)%NORMAL(1:DIMN) 
 
-         IF(myPE.eq.pe_IO) WRITE(*,1037) CELL_ID, I_OF(CELL_ID), J_OF(CELL_ID), K_OF(CELL_ID), CUT_CELL_AT(CELL_ID), COUNT, TRIM(WALL_TYPE_TEMP), IJK_TEMP, I_OF(IJK_TEMP), J_OF(IJK_TEMP), K_OF(IJK_TEMP), NORMAL_TEMP(1:3)
+         IF(PRINT_DES_SCREEN) WRITE(*,1037) CELL_ID, I_OF(CELL_ID), J_OF(CELL_ID), K_OF(CELL_ID), CUT_CELL_AT(CELL_ID), COUNT, TRIM(WALL_TYPE_TEMP), IJK_TEMP, I_OF(IJK_TEMP), J_OF(IJK_TEMP), K_OF(IJK_TEMP), NORMAL_TEMP(1:3)
       ENDDO
 
 1037   FORMAT(  & 
@@ -1674,10 +1674,10 @@
        IF(COUNT_BC.GT.MAX_DES_BC_CELL) THEN
           IF(DMP_LOG) THEN 
              WRITE(UNIT_LOG, 1036) MAX_DES_BC_CELL, CELL_ID, I_OF(CELL_ID), J_OF(CELL_ID), K_OF(CELL_ID), IS_ON_myPE_owns(I_OF(CELL_ID), J_OF(CELL_ID), K_OF(CELL_ID))
-             IF(myPE.eq.pe_IO) WRITE(*, 1036) MAX_DES_BC_CELL, CELL_ID, I_OF(CELL_ID), J_OF(CELL_ID), K_OF(CELL_ID), IS_ON_myPE_owns(I_OF(CELL_ID), J_OF(CELL_ID), K_OF(CELL_ID))
+             IF(PRINT_DES_SCREEN) WRITE(*, 1036) MAX_DES_BC_CELL, CELL_ID, I_OF(CELL_ID), J_OF(CELL_ID), K_OF(CELL_ID), IS_ON_myPE_owns(I_OF(CELL_ID), J_OF(CELL_ID), K_OF(CELL_ID))
 
              WRITE(UNIT_LOG, *) 'EXISTING BCs FOR THIS CELL', '   CELL CUT_CELL ?', CUT_CELL_AT(CELL_ID)
-             IF(myPE.eq.pe_IO) WRITE(*, *) 'EXISTING BCs FOR THIS CELL', '   CELL CUT_CELL ?', CUT_CELL_AT(CELL_ID)
+             IF(PRINT_DES_SCREEN) WRITE(*, *) 'EXISTING BCs FOR THIS CELL', '   CELL CUT_CELL ?', CUT_CELL_AT(CELL_ID)
              DO COUNT = 1, COUNT_BC - 1 
                 IJK_TEMP = DES_CELLWISE_BCDATA(CELL_ID)%BDRY_LIST(COUNT)%IJK_SCAL 
                 WALL_TYPE_TEMP = DES_CELLWISE_BCDATA(CELL_ID)%BDRY_LIST(COUNT)%DES_BC_TYPE
@@ -1685,7 +1685,7 @@
                 IF(TRIM(WALL_TYPE_TEMP).eq.'CUT_FACE') NORMAL_TEMP(1:3) = NORMAL_S(IJK_TEMP,1:3)
 
                 WRITE(UNIT_LOG,1037) COUNT, TRIM(WALL_TYPE_TEMP), IJK_TEMP, I_OF(IJK_TEMP), J_OF(IJK_TEMP), K_OF(IJK_TEMP), NORMAL_TEMP(1:3)
-                IF(myPE.eq.pe_IO) WRITE(*,1037) COUNT, TRIM(WALL_TYPE_TEMP), IJK_TEMP, I_OF(IJK_TEMP), J_OF(IJK_TEMP), K_OF(IJK_TEMP), NORMAL_TEMP(1:3)
+                IF(PRINT_DES_SCREEN) WRITE(*,1037) COUNT, TRIM(WALL_TYPE_TEMP), IJK_TEMP, I_OF(IJK_TEMP), J_OF(IJK_TEMP), K_OF(IJK_TEMP), NORMAL_TEMP(1:3)
              ENDDO
           ENDIF
           CALL mfix_exit(myPE)
@@ -1765,7 +1765,7 @@
 !!$          DES_CELLWISE_BCDATA(CELL_ID)%BDRY_LIST(COUNT_BC)%CNOT(:) = CNOT_ARR(:)
 !!$          DES_CELLWISE_BCDATA(CELL_ID)%BDRY_LIST(COUNT_BC)%VEC(:) = VEC_ARR(:)
        CASE DEFAULT
-          IF(DMP_LOG.OR.myPE.eq.pe_IO) THEN 
+          IF(DMP_LOG.OR.PRINT_DES_SCREEN) THEN 
              WRITE(UNIT_LOG, 1035) 'DES_ADD_WALLBC_TO_CELL', TRIM(DES_WALL_TYPE)
              WRITE(*, 1035) 'DES_ADD_WALLBC_TO_CELL', TRIM(DES_WALL_TYPE)
 
@@ -2661,9 +2661,8 @@
        INTEGER :: IJK, K
        INCLUDE 'function.inc'
       
-       IF(mype.eq.pe_IO) THEN 
-          WRITE(*,*) 'DELETING PARTICLES OUTSIDE THE CUT-FACE BCs'
-       ENDIF
+       IF(DMP_LOG) write(UNIT_LOG,101)
+       IF(print_des_screen) write(*,101)
 
        !if the particles in cell was called then the ghost particles
        !were also added to the particle araay on each processor. 
@@ -2682,22 +2681,6 @@
           IF(DIMN.eq.3) PIJK(LL, 3) = DES_GETINDEXFROMPOS(KSTART1,KEND1,DES_POS_NEW(LL,3),ZT(1:size(ZT,1)-1),'Z','K')
           PIJK(LL, 4) = FUNIJK(PIJK(LL, 1), PIJK(LL, 2), PIJK(LL, 3))         
        ENDDO
-      !**********DELETE START 
-
-      !OPEN(UNIT=24,FILE='PARTICLES_BEFORE_DEL.dat',&
-      !STATUS='REPLACE')
-      !WRITE(24, *) '"X"', '"Y"', '"Z"', '"Dp"', '"I"', '"J"', '"K"', '"IJK"'
-      !DO LL = 1, MAX_PIP
-      !   IF(.NOT.PEA(LL,1)) CYCLE  
-      !   IF(PEA(LL,4)) CYCLE  
-
-      ! WRITE(24,'(4(2x, g17.8), 4(2x, i20))')&
-      !   (DES_POS_NEW(LL,K),K=1,DIMN), 2.d0*DES_RADIUS(LL), PIJK(LL, 1:4)
-      !ENDDO
-      !CLOSE(24)
-      !call mfix_exit(mype)
-      
-      !**********DELETE END 
 
        DO LL = PIP - IGHOST_CNT + 1, PIP, 1 
           !deactivate the particle and also reset its ghost 
@@ -2729,13 +2712,19 @@
 !!$          
 !!$       end IF
 
-
-       IF(MPPIC) THEN 
-          CALL LIST_PARTS_TOBE_DEL_MPPIC
-       ELSE 
-          CALL LIST_PARTS_TOBE_DEL_DEM
-       END IF
-
+       IF(USE_STL) then 
+          IF(MPPIC) THEN 
+             CALL LIST_PARTS_TOBE_DEL_MPPIC_STL
+          ELSE 
+             CALL LIST_PARTS_TOBE_DEL_DEM_STL
+          END IF
+       ELSE             
+          IF(MPPIC) THEN 
+             CALL LIST_PARTS_TOBE_DEL_MPPIC
+          ELSE 
+             CALL LIST_PARTS_TOBE_DEL_DEM
+          END IF
+       ENDIF
        !in the above call, particle arrays are also rebuilt
        !so that all the active particles are in a continuous manner
        
@@ -2774,15 +2763,237 @@
 !!$          
 !!$       end IF
 
-       if(myPE.EQ.pe_IO) THEN 
-          WRITE(*,'(A, i10)') 'INITIAL TOTAL NUMBER OF PARTICLES IN THE SYSTEM = ', PIP_INIT
-          WRITE(*,'(A, i10)') 'NUMBER OF PARTICLES DELETED = ', PIP_INIT -  PIP_FINAL
-          WRITE(*,'(A, i10)') 'FINAL TOTAL NUMBER OF PARTICLES IN THE SYSTEM = ', PIP_FINAL
-       ENDIF
+       IF(PRINT_DES_SCREEN) write(*,102) PIP_INIT, PIP_INIT -  PIP_FINAL, PIP_FINAL
+       if(DMP_LOG) write(UNIT_LOG,102) PIP_INIT, PIP_INIT -  PIP_FINAL, PIP_FINAL
           
+
+
+ 101   FORMAT( 1X,70('*')/,1x, & 
+       'DELETING PARTICLES OUTSIDE THE DOMAIN FOR CARTESIAN GRID   ')          
+
+ 102   FORMAT(5x,  &
+       'Initial total number of particles: ', 2x, (i20), /5x, &
+       'Total number of particles deleted: ', 2x, i20, /5x, & 
+       'Final total number of particles  : ', 2x, i20, /, 1X,70('*'))
        END SUBROUTINE CG_DEL_OUTOFDOMAIN_PARTS
 
-       SUBROUTINE LIST_PARTS_TOBE_DEL_MPPIC
+
+     SUBROUTINE LIST_PARTS_TOBE_DEL_MPPIC_STL 
+       USE param1
+       USE funits
+       USE run
+       USE compar      
+       USE discretelement
+       USE cutcell
+       USE indices
+       USE physprop
+       USE parallel
+       USE geometry
+
+      
+       IMPLICIT NONE 
+       
+       INTEGER :: I, J, K, IJK, LL, COUNT_BC, COUNT, IJK_WALL, PC, IDIM
+       DOUBLE PRECISION :: NORMAL(DIMN), WALL_COOR(DIMN), NORM1, NORM2, NORM3, DIST(DIMN), DISTMOD, NORM_LINE_TO_PART(DIMN)
+         
+       DOUBLE PRECISION TEMPX, TEMPY, TEMPZ
+       DOUBLE PRECISION :: NORMAL_MAG, NORM_DOT, TEMP_DOT
+       CHARACTER*100 :: WALL_TYPE 
+       INTEGER :: COUNT_DELETE, PIP_OLD, TMP2, TMP1
+       LOGICAL :: DELETE_PART
+       CHARACTER*100 :: FILENAME
+       DOUBLE PRECISION X1MINX0(3), X2MINX1(3), TEMP_CROSSP(3), X1(3)
+       INCLUDE 'function.inc'
+       
+       IF(PRINT_DES_SCREEN) WRITE(*,*) 'FLAGGING PARTICLES OUTSIDE THE DOMAIN'
+
+       COUNT_DELETE  = 0
+       PIP_OLD = PIP
+
+       ALLOCATE(TOBE_DELETED(MAX_PIP))
+       TOBE_DELETED(:) = .false. 
+       
+       PC = 1      
+       PARTLOOP: DO LL = 1, MAX_PIP
+       
+          IF(PC .GT. PIP) EXIT PARTLOOP
+          PC = PC + 1 
+
+          IJK = PIJK(LL,4)
+          
+          IF(PIJK(LL,4).EQ.0) THEN 
+             WRITE(*,*) 'PIJK = ', PIJK(LL,4), LL, PIP, PC
+             READ(*,*) 
+          ENDIF
+          COUNT_BC = DES_CELLWISE_BCDATA(IJK)%COUNT_DES_BC
+          FLUID: IF(FLUID_AT(IJK)) THEN
+             !Check if any of the particles are overlapping with the walls 
+             !this will include the normal ghost cell walls and also the cut cells 
+             DELETE_PART = .FALSE.
+         
+             TMP1 = COUNT_DELETE
+             IF(.NOT.CUT_CELL_AT(IJK)) CYCLE PARTLOOP
+
+                  
+             TEMPX = DES_POS_NEW(LL,1)
+             TEMPY = DES_POS_NEW(LL,2)
+             TEMPZ = 0.d0 
+             IF(DIMN.EQ.3) TEMPZ = DES_POS_NEW(LL,3)
+                     
+             CALL GET_DEL_H_DES(IJK,'SCALAR',TEMPX, TEMPY, TEMPZ, &
+                  &  DISTMOD, NORM1, NORM2, NORM3, .TRUE.)
+             
+             IF(DISTMOD.LE.ZERO) DELETE_PART = .TRUE.
+      
+             IF(DELETE_PART) THEN 
+                TOBE_DELETED(LL) = .TRUE.
+                COUNT_DELETE = COUNT_DELETE + 1
+             END IF
+             TMP2 = COUNT_DELETE
+             IF(TMP2-TMP1.GT.1) WRITE(*,*) 'COUNT_DELETE JUMPED BY MORE THAN ONE = ', TMP2, TMP1
+          ELSE 
+             TOBE_DELETED(LL) = .TRUE.
+             COUNT_DELETE = COUNT_DELETE + 1
+               
+          END IF FLUID
+       END DO PARTLOOP
+         
+       IF(PRINT_DES_SCREEN) WRITE(*,'(5x,A,/5x,A)') 'Identified the particles outside the domain', &
+       'Now removing these out of domain particles'
+       !Now remove the particles just marked as tobe deleted 
+       CALL REMOVE_PARTICLES(COUNT_DELETE)
+
+       !Call particles in cell again to get things back in right shape
+
+       IF(PRINT_DES_SCREEN) WRITE(*,*) 'Removed the out of domain particles'
+         
+       DEALLOCATE(TOBE_DELETED)
+
+       IF(PIP_OLD.NE.(PIP+COUNT_DELETE)) THEN 
+          IF(DMP_LOG)          write(unit_log,1001)  PIP_OLD, PIP, COUNT_DELETE
+          IF(PRINT_DES_SCREEN) write(*,1001)         PIP_OLD, PIP, COUNT_DELETE         
+          CALL mfix_exit(mype)        
+       END IF
+
+ 1001  FORMAT(/1X,70('*'),/5x, & 
+       'From: LIST_PARTS_TOBE_DEL_MPPIC_STL: Error 1001',/5x, & 
+       'PIP old Not equal to  Pip New +  Deleted', 3(2x, i10) , /5x, & 
+       'Logic in this routine broken for this message to pop-up', /5x, & 
+       'Exiting.',/, 1X,70('*')/)
+         
+      
+       IF(.false.) CALL WRITE_PARTS_AFTER_DELETION
+          
+    END SUBROUTINE LIST_PARTS_TOBE_DEL_MPPIC_STL
+
+    SUBROUTINE LIST_PARTS_TOBE_DEL_DEM_STL
+       USE param1
+       USE funits
+       USE run
+       USE compar      
+       USE discretelement
+       USE cutcell
+ 
+       USE indices
+       USE physprop
+       USE parallel
+       USE geometry
+       USE softspring_funcs_cutcell
+       
+       IMPLICIT NONE 
+       
+       INTEGER :: I, J, K, IJK, LL, COUNT_BC, COUNT, IJK_WALL, PC, IDIM
+       DOUBLE PRECISION :: NORMAL(DIMN), WALL_COOR(DIMN), NORM1, NORM2, NORM3, DIST(DIMN), DISTMOD, NORM_LINE_TO_PART(DIMN)
+         
+       DOUBLE PRECISION TEMPX, TEMPY, TEMPZ
+       DOUBLE PRECISION :: NORMAL_MAG, NORM_DOT, TEMP_DOT
+       CHARACTER*100 :: WALL_TYPE 
+       INTEGER :: COUNT_DELETE, PIP_OLD, TMP2, TMP1
+       LOGICAL :: DELETE_PART, PRINT_PART
+       
+       DOUBLE PRECISION X1MINX0(3), X2MINX1(3), TEMP_CROSSP(3), X1(3)
+       CHARACTER*100 :: FILENAME
+       INCLUDE 'function.inc'
+       
+       IF(PRINT_DES_SCREEN) WRITE(*,'(5x,A)') & 
+       'Identifying particles outside the fluid domain'
+       
+       COUNT_DELETE  = 0
+       PIP_OLD = PIP
+       
+       ALLOCATE(TOBE_DELETED(MAX_PIP))
+       
+       TOBE_DELETED(:) = .false. 
+       
+       PC = 1      
+       DO LL = 1, MAX_PIP
+         ! skipping non-existent particles or ghost particles      
+          IF(.NOT.PEA(LL,1) .OR. PEA(LL,4)) CYCLE
+          IJK = PIJK(LL,4)
+          
+          I = I_OF(IJK)
+          J = J_OF(IJK)
+          K = K_OF(IJK)
+          
+          
+          DELETE_PART = .FALSE.
+          
+          
+          IF(FLUID_AT(IJK).and.(.not.CUT_CELL_AT(IJK))) THEN
+             
+          !Since checking if a particle is on other side of a triangle is tricky, 
+          !for safety, initially remove all the particles in the cut-cell.
+          !now cut-cell and actualy geometry could be off, so this might not work
+          !very robustly. 
+
+
+          !Check if any of the particles are overlapping with the walls 
+          !this will include the normal ghost cell walls and also the cut cells 
+             CALL CALC_FORCE_WITH_WALL_CUTFACE_STL(PART_ID = LL, OVERLAP_EXISTS=DELETE_PART)
+             
+             !if(mod(ll,5).eq.0) write(*,*) LL , delete_part 
+             IF(DELETE_PART) THEN 
+                TOBE_DELETED(LL) = .TRUE.
+                COUNT_DELETE = COUNT_DELETE + 1
+             END IF
+         
+          ELSE 
+             TOBE_DELETED(LL) = .TRUE.
+             COUNT_DELETE = COUNT_DELETE + 1
+             
+          END IF ! Fluid 
+       PC = PC+1
+      END DO
+         
+      IF(PRINT_DES_SCREEN) WRITE(*,'(5x,A,/5x,A)') & 
+      'Identified the particles outside the domain', &
+      'Now removing these out of domain particles'
+
+      !Now remove the particles just marked as tobe deleted 
+      CALL REMOVE_PARTICLES(COUNT_DELETE)
+
+      !Call particles in cell again to get things back in right shape
+
+      IF(PRINT_DES_SCREEN) WRITE(*,'(5x,A)') 'Removed the out of domain particles'
+      
+      DEALLOCATE(TOBE_DELETED)
+      
+      IF(PIP_OLD.NE.(PIP+COUNT_DELETE)) THEN 
+         IF(DMP_LOG)          write(unit_log,1001)  PIP_OLD, PIP, COUNT_DELETE
+         IF(PRINT_DES_SCREEN) write(*,1001)         PIP_OLD, PIP, COUNT_DELETE         
+         CALL mfix_exit(mype)        
+      END IF
+
+ 1001 FORMAT(/1X,70('*'),/5x, & 
+      'From: LIST_PARTS_TOBE_DEL_DEM_STL: Error 1001',/5x, & 
+      'PIP old Not equal to  Pip New +  Deleted', 3(2x, i10) , /5x, & 
+      'Logic in this routine broken for this message to pop-up', /5x, & 
+      'Exiting.',/, 1X,70('*')/)
+
+      IF(.True.) CALL WRITE_PARTS_AFTER_DELETION
+      END SUBROUTINE LIST_PARTS_TOBE_DEL_DEM_STL
+
+      SUBROUTINE LIST_PARTS_TOBE_DEL_MPPIC
        USE param1
        USE funits
        USE run
@@ -2808,7 +3019,8 @@
        DOUBLE PRECISION X1MINX0(3), X2MINX1(3), TEMP_CROSSP(3), X1(3)
        INCLUDE 'function.inc'
        
-       IF(mype.eq.pe_IO) WRITE(*,*) 'IN LIST_PARTS_TOBE_DEL_MPPIC: FLAGGING PARTICLES OUTSIDE THE DOMAIN'
+       IF(PRINT_DES_SCREEN) WRITE(*,'(5x,A)') & 
+       'Identifying particles outside the fluid domain'
 
        COUNT_DELETE  = 0
        PIP_OLD = PIP
@@ -2867,38 +3079,25 @@
 
        !Call particles in cell again to get things back in right shape
 
-       IF(mype.eq.pe_IO) WRITE(*,*) 'END IN LIST_PARTICLES_TOBE_DELETED'
-         
+       IF(PRINT_DES_SCREEN) WRITE(*,'(5x,A)') 'END IN LIST_PARTICLES_TOBE_DELETED'
+       
        DEALLOCATE(TOBE_DELETED)
-         
+
+       
        IF(PIP_OLD.NE.(PIP+COUNT_DELETE)) THEN 
-          IF(DMP_LOG) THEN 
-            WRITE(UNIT_LOG,*) 'LIST_PARTS_TOBE_DEL_MPPIC'
-            WRITE(UNIT_LOG,*) 'PIP_OLD NE PIP_NEW +  DELETED', PIP_OLD, PIP, COUNT_DELETE
-            WRITE(UNIT_LOG,*) 'LOGIC IN LIST_PARTILCES_TOBE_DELETED SCREWED UP FOR THE ABOVE MESSAGE TO SHOW UP'
-            
-            WRITE(UNIT_LOG,*) 'TERMINAL ERROR: STOPPING'
-         ENDIF
-         CALL mfix_exit(myPE)
+          IF(DMP_LOG)          write(unit_log,1001)  PIP_OLD, PIP, COUNT_DELETE
+          IF(PRINT_DES_SCREEN) write(*,1001)         PIP_OLD, PIP, COUNT_DELETE         
+          CALL mfix_exit(mype)        
+       END IF
 
-      END IF
-
-      
-      WRITE(FILENAME,'(A,"_",I5.5,".DAT")') 'PARTS_AFTERDEL',MYPE
-      OPEN(UNIT=24,FILE=TRIM(FILENAME),&
-           STATUS='UNKNOWN')
-      
-      PC = 1
-      
-      DO LL = 1, MAX_PIP
-         IF(PC .GT. PIP) EXIT
-         WRITE(24,'(10(X,ES15.5))')&
-              (DES_POS_NEW(LL,K),K=1,DIMN), DES_RADIUS(LL),&
-              RO_Sol(LL), (DES_VEL_NEW(LL,K),K=1,DIMN) 
-         PC = PC+1
-      ENDDO
-      CLOSE(24, STATUS='keep')
+ 1001  FORMAT(/1X,70('*'),/5x, & 
+       'From: LIST_PARTS_TOBE_DEL_MPPIC: Error 1001',/5x, & 
+       'PIP old Not equal to  Pip New +  Deleted', 3(2x, i10) , /5x, & 
+       'Logic in this routine broken for this message to pop-up', /5x, & 
+       'Exiting.',/, 1X,70('*')/)
          
+       IF(.false.) CALL WRITE_PARTS_AFTER_DELETION
+
     END SUBROUTINE LIST_PARTS_TOBE_DEL_MPPIC
 
     SUBROUTINE LIST_PARTS_TOBE_DEL_DEM
@@ -2928,9 +3127,9 @@
        DOUBLE PRECISION X1MINX0(3), X2MINX1(3), TEMP_CROSSP(3), X1(3)
        CHARACTER*100 :: FILENAME
        INCLUDE 'function.inc'
-       
-       WRITE(*,*) 'IN LIST_PARTICLES_TOBE_DELETED: FLAGGING PARTICLES OUTSIDE THE DOMAIN'
+       IF(PRINT_DES_SCREEN) WRITE(*,*) 'Identifying particles outside the domain'
 
+       
        COUNT_DELETE  = 0
        PIP_OLD = PIP
        
@@ -3083,20 +3282,7 @@
 
                   if(DMP_LOG) WRITE(UNIT_LOG, 1001) mype, TRIM(WALL_TYPE), IJK, I_OF(IJK), & 
                   & J_OF(IJK), K_OF(IJK), IJK_WALL, I_OF(IJK_WALL), J_OF(IJK_WALL), K_OF(IJK_WALL),  &
-                  & TEMPX, TEMPY, TEMPZ
-
-                  
- 1001             FORMAT( 10x,'FROM PROC = ', 2x, i10, /10x, &
-                  & 'EROR IN LIST_PARTILCES_TOBE_DELETED:' , /10x, &
-                  & 'UNKNOWN TYPE OF DES_WALL_TYPE:', 2x, A, /10x, &
-                  & 'PARTICLE CELL ATTRIBUTES (IJK, I, J, K)', 4(2x,i10) , /10x, &
-                  & 'WALL CELL ATTRIBUTES     (IJK, I, J, K)', 4(2x,i10) , /10x, &
-                  & 'PARTICLE POSITION CORDINATES', 3(2x,g17.8) , /10x, &
-                  & 'ACCEPTABLE TYPES ARE:' , /10x, &
-                  & 'NORMAL_WALL' , /10x, &
-                  & 'CUT_FACE' , /10x, &
-                  & 'CUT_FACE_LINE' , /10x, &                  
-                  & 'TERMINAL ERROR: STOPPING' , /)
+                  & TEMPX, TEMPY, TEMPZ                
       
                   CALL mfix_exit(mype) 
                   END SELECT
@@ -3121,38 +3307,258 @@
          !Now remove the particles just marked as tobe deleted 
          CALL REMOVE_PARTICLES(COUNT_DELETE)
 
-         WRITE(*,*) 'END IN LIST_PARTICLES_TOBE_DELETED'
+         
+         IF(PRINT_DES_SCREEN) WRITE(*,*) 'END IN LIST_PARTICLES_TOBE_DELETED'
          
          DEALLOCATE(TOBE_DELETED)
-         
-         IF(PIP_OLD.NE.(PIP+COUNT_DELETE)) THEN 
-            WRITE(*,*) 'LIST_PARTILCES_TOBE_DELETED'
-            WRITE(*,*) 'PIP_OLD NE PIP_NEW +  DELETED', PIP_OLD, PIP, COUNT_DELETE
-            WRITE(*,*) 'LOGIC IN LIST_PARTILCES_TOBE_DELETED SCREWED UP FOR THE ABOVE MESSAGE TO SHOW UP'
-            
-          WRITE(*,*) 'TERMINAL ERROR: STOPPING'
-          STOP
 
+         IF(PIP_OLD.NE.(PIP+COUNT_DELETE)) THEN 
+            IF(DMP_LOG)          write(unit_log,1002)  PIP_OLD, PIP, COUNT_DELETE
+            IF(PRINT_DES_SCREEN) write(*,1002)         PIP_OLD, PIP, COUNT_DELETE
+            
+            CALL mfix_exit(mype)        
          END IF
          
-         WRITE(FILENAME,'(A,"_",I5.5,".DAT")') 'PARTS_AFTERDEL',MYPE
-         OPEN(UNIT=24,FILE=TRIM(FILENAME),&
-           STATUS='UNKNOWN')
 
-         PC = 1
+ 1001    FORMAT( 10x,'FROM PROC = ', 2x, i10, /10x, &
+         & 'EROR IN LIST_PARTILCES_TOBE_DELETED:' , /10x, &
+         & 'UNKNOWN TYPE OF DES_WALL_TYPE:', 2x, A, /10x, &
+         & 'PARTICLE CELL ATTRIBUTES (IJK, I, J, K)', 4(2x,i10) , /10x, &
+         & 'WALL CELL ATTRIBUTES     (IJK, I, J, K)', 4(2x,i10) , /10x, &
+         & 'PARTICLE POSITION CORDINATES', 3(2x,g17.8) , /10x, &
+         & 'ACCEPTABLE TYPES ARE:' , /10x, &
+         & 'NORMAL_WALL' , /10x, &
+         & 'CUT_FACE' , /10x, &
+         & 'CUT_FACE_LINE' , /10x, &                  
+         & 'TERMINAL ERROR: STOPPING' , /)
+
+ 1002    FORMAT(/1X,70('*'),/5x, & 
+         'From: LIST_PARTS_TOBE_DEL_DEM: Error 1002',/5x, & 
+         'PIP old Not equal to  Pip New +  Deleted', 3(2x, i10) , /5x, & 
+         'Logic in this routine broken for this message to pop-up', /5x, & 
+         'Exiting.',/, 1X,70('*')/)
          
-         DO LL = 1, MAX_PIP
-            IF(PC .GT. PIP) EXIT
-            WRITE(24,'(10(X,ES15.5))')&
-               (DES_POS_NEW(LL,K),K=1,DIMN), DES_RADIUS(LL),&
-               RO_Sol(LL), (DES_VEL_NEW(LL,K),K=1,DIMN) 
-            PC = PC+1
-         ENDDO
-         CLOSE(24)
-         
+         IF(.false.) CALL DES_WRITE_PARTS_AFTER_DELETION
        END SUBROUTINE LIST_PARTS_TOBE_DEL_DEM 
        
-       
+      SUBROUTINE WRITE_PARTS_AFTER_DELETION
+      USE run
+      USE param1
+      USE discretelement
+      USE geometry
+      USE compar
+      USE constant
+      USE cutcell 
+      USE funits
+      USE indices
+      USE physprop
+      USE parallel
+      USE desmpi
+      USE cdist 
+      Implicit none 
+      !facet id and particle id 
+      Integer ::  vtp_unit , i,j,k,l, pc
+      CHARACTER*100 :: stl_fname, vtp_fname 
+      real,dimension(:,:), allocatable :: ltemp_array
+      ! dummy values to maintain format for dimn=2
+      REAL POS_Z, VEL_W 
+
+      integer llocalcnt,lglocnt,lgathercnts(0:numpes-1),lproc
+      vtp_unit = 1002      
+      
+      if (bdist_io) then 
+         write(vtp_fname,'(A,"_AFTER_DELETION_",I5.5,".vtp")') trim(run_name),mype
+      else 
+         if(mype.eq.pe_io) then 
+            write(vtp_fname,'(A,"_AFTER_DELETION", ".vtp")') trim(run_name) 
+         end if  
+      end if 
+                 
+      IF(bdist_io) then 
+         open(vtp_unit, file = vtp_fname, form='formatted')
+         write(vtp_unit,"(a)") '<?xml version="1.0"?>'
+! Write the S_TIME as a comment for reference
+         write(vtp_unit,"(a,es24.16,a)") '<!-- Time =',s_time,'s -->'
+
+! Write the necessary header information for a PolyData file type
+         write(vtp_unit,"(a,a)") '<VTKFile type="PolyData"',&
+         ' version="0.1" byte_order="LittleEndian">'
+         write(vtp_unit,"(3x,a)") '<PolyData>'
+      
+! Write Piece tag and identify the number of particles in the system.
+         write(vtp_unit,"(6x,a,i10.10,a,a)")&
+         '<Piece NumberOfPoints="',pip-ighost_cnt,&
+         '" NumberOfVerts="0" ',&
+         'NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="0">'
+         write(vtp_unit,"(9x,a)")&
+         '<PointData Scalars="Diameter" Vectors="Velocity">'
+         
+! Write the diameter data.         
+         write(vtp_unit,"(12x,a)")&
+         '<DataArray type="Float32" Name="Diameter" format="ascii">'
+         pc = 1
+         do l = 1,max_pip
+            if(pc.gt.pip) exit
+            if(.not.pea(l,1)) cycle 
+            pc = pc+1
+            if(pea(l,4)) cycle 
+            write (vtp_unit,"(15x,es12.6)") (real(2.d0*des_radius(l)))
+         end do
+         write(vtp_unit,"(12x,a)") '</DataArray>'
+      
+      ! Write velocity data. Force to three dimensions. So for 2D runs, a 
+! dummy value of zero is supplied as the 3rd point.
+         write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
+         'Name="Velocity" NumberOfComponents="3" format="ascii">'
+         if(dimn.eq.2) then
+            pc = 1
+            do l = 1,max_pip
+               if(pc.gt.pip) exit
+               if(.not.pea(l,1)) cycle 
+               pc = pc+1
+               if(pea(l,4)) cycle 
+               write (vtp_unit,"(15x,3(es13.6,3x))")&
+               (real(des_vel_new(l,k)),k=1,dimn),vel_w
+            enddo
+         else ! 3d 
+            pc = 1
+            do l = 1,max_pip
+               if(pc.gt.pip) exit
+               if(.not.pea(l,1)) cycle 
+               pc = pc+1
+               if(pea(l,4)) cycle 
+               write (vtp_unit,"(15x,3(es13.6,3x))")&
+                  (real(des_vel_new(l,k)),k=1,dimn)
+            enddo
+         endif
+         write(vtp_unit,"(12x,a,/9x,a)") '</DataArray>','</PointData>'
+
+! Skip CellData tag, no data. (vtp format style)
+         write(vtp_unit,"(9x,a)") '<CellData></CellData>'
+
+! Write position data. Point data must be supplied in 3 dimensions. So
+! for 2D runs, a dummy value of zero is supplied as the 3rd point.
+         write(vtp_unit,"(9x,a)") '<Points>'
+         write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
+            'Name="Position" NumberOfComponents="3" format="ascii">'
+         if(dimn.eq.2) then
+            pc = 1
+            do l = 1,max_pip
+               if(pc.gt.pip) exit
+               if(.not.pea(l,1)) cycle 
+               pc = pc+1
+               if(pea(l,4)) cycle 
+               write (vtp_unit,"(15x,3(es13.6,3x))")&
+                  (real(des_pos_new(l,k)),k=1,dimn),pos_z 
+            enddo
+         else
+            pc = 1
+            do l = 1,max_pip
+               if(pc.gt.pip) exit
+               if(.not.pea(l,1)) cycle 
+               pc = pc+1
+               if(pea(l,4)) cycle 
+               write (vtp_unit,"(15x,3(es13.6,3x))")&
+               (real(des_pos_new(l,k)),k=1,dimn) 
+            enddo
+         endif
+         write(vtp_unit,"(12x,a,/9x,a)")'</DataArray>','</Points>'
+         
+! Write tags for data not included (vtp format style)
+         write(vtp_unit,"(9x,a,/9x,a,/9x,a,/9x,a)")'<Verts></Verts>',&
+         '<Lines></Lines>','<Strips></Strips>','<Polys></Polys>'
+         write(vtp_unit,"(6x,a,/3x,a,/a)")&
+         '</Piece>','</PolyData>','</VTKFile>'
+      else 
+         
+         if(mype.eq.pe_io) open(vtp_unit, file = vtp_fname, form='formatted')
+      ! write a single file at PE_IO and set parameters for gather 
+         lglocnt = 10
+         llocalcnt = pip - ighost_cnt
+         call global_sum(llocalcnt,lglocnt) 
+         allocate (dprocbuf(llocalcnt),drootbuf(lglocnt),iprocbuf(llocalcnt),irootbuf(lglocnt))
+         allocate (ltemp_array(lglocnt,3)) 
+
+         !set it to zero or it could lead to floating point exceptions 
+         !as drootbuf is not set to any meaningful values for non-gathering
+         !processors 
+         drootbuf  = zero 
+         
+         igath_sendcnt = llocalcnt 
+         lgathercnts = 0
+         lgathercnts(mype) = llocalcnt
+         call global_sum(lgathercnts,igathercnts)
+         idispls(0) = 0 
+         do lproc = 1,numpes-1 
+            idispls(lproc) = idispls(lproc-1) + igathercnts(lproc-1)  
+         end do 
+
+! write diameter 
+         call des_gather(des_radius)
+         if (mype.eq.pe_io) then 
+            write(vtp_unit,"(a)") '<?xml version="1.0"?>'
+            write(vtp_unit,"(a,es24.16,a)") '<!-- time =',s_time,'s -->'
+            write(vtp_unit,"(a,a)") '<VTKFile type="PolyData"',&
+               ' version="0.1" byte_order="LittleEndian">'
+            write(vtp_unit,"(3x,a)") '<PolyData>'
+            write(vtp_unit,"(6x,a,i10.10,a,a)")&
+               '<Piece NumberOfPoints="',lglocnt,'" NumberOfVerts="0" ',&
+               'NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="0">'
+            write(vtp_unit,"(9x,a)")&
+               '<PointData Scalars="Diameter" Vectors="Velocity">'
+            write(vtp_unit,"(12x,a)")&
+               '<DataArray type="Float32" Name="Diameter" format="ascii">'
+            write (vtp_unit,"(15x,es12.6)") (real(2.d0*drootbuf(l)),l=1,lglocnt)
+            write(vtp_unit,"(12x,a)") '</DataArray>'
+         endif         
+
+! Write velocity data.
+               
+         ltemp_array = 0.0 
+         do k = 1,dimn
+            call des_gather(des_vel_new(:,k))
+            ltemp_array(:,k) = drootbuf(:)
+         end do
+         if (mype.eq.pe_io) then 
+            write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
+               'Name="Velocity" NumberOfComponents="3" format="ascii">'
+            write (vtp_unit,"(15x,3(es13.6,3x))")&
+               ((ltemp_array(l,k),k=1,3),l=1,lglocnt)
+            write(vtp_unit,"(12x,a,/9x,a)") '</DataArray>','</PointData>'
+! skip cell data
+            write(vtp_unit,"(9x,a)") '<CellData></CellData>'
+         end if 
+
+
+!write position data 
+         ltemp_array = 0.0 
+         do k = 1,dimn
+            call des_gather(des_pos_new(:,k))
+            ltemp_array(:,k) = drootbuf(:)
+         end do
+         if (mype.eq.pe_io) then 
+            write(vtp_unit,"(9x,a)") '<Points>'
+            write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
+               'Name="Position" NumberOfComponents="3" format="ascii">'
+            write (vtp_unit,"(15x,3(es13.6,3x))")&
+               ((ltemp_array(l,k),k=1,3),l=1,lglocnt)
+            write(vtp_unit,"(12x,a,/9x,a)")'</DataArray>','</Points>'
+! Write tags for data not included (vtp format style)
+            write(vtp_unit,"(9x,a,/9x,a,/9x,a,/9x,a)")'<Verts></Verts>',&
+                '<Lines></Lines>','<Strips></Strips>','<Polys></Polys>'
+            write(vtp_unit,"(6x,a,/3x,a,/a)")&
+               '</Piece>','</PolyData>','</VTKFile>'
+         endif
+         deallocate (dprocbuf,drootbuf,iprocbuf,irootbuf,ltemp_array)
+      end if  
+      close(vtp_unit, status = 'keep')
+
+      IF(PRINT_DES_SCREEN) write(*, '(2x, A, A)') 'Particle configuration written to', &
+      ' files named AFTER_DELETION For debugging purposes '
+      
+      END SUBROUTINE write_parts_after_deletion
+
+
        SUBROUTINE REMOVE_PARTICLES(NUMBER_DELETIONS)
        USE DISCRETELEMENT
        USE funits 
@@ -3167,7 +3573,6 @@
        INTEGER :: PC, LL, COUNT_ACTIVE, COUNT_ACTIVE2, II, COUNT_DELETE
        LOGICAL :: FOUND_REPL_PART
        
-       WRITE(*,*) 'IN REMOVE_PARTICLES: REMOVING FLAGGED PARTICLES'
                 
        PC = 1
        COUNT_ACTIVE  = 0
@@ -3249,31 +3654,27 @@
        !PIP now equals COUNT_ACTIVE 
        PIP = COUNT_ACTIVE 
        
-       IF(DMP_LOG) THEN 
-          WRITE(UNIT_LOG,*) 'TOTAL NUMBER OF PARTICLES DELETED = ', COUNT_DELETE
-          WRITE(UNIT_LOG,*) 'NUMBER OF PARTICLES LEFT = ', PIP
-       ENDIF
-       
-       !Sanity check 
        COUNT_ACTIVE2 = 0 
        DO LL = 1, MAX_PIP
           IF(PEA(LL,1)) COUNT_ACTIVE2 = COUNT_ACTIVE2 + 1
        ENDDO
 
        IF(COUNT_ACTIVE2.NE.COUNT_ACTIVE) THEN
-          IF(DMP_LOG) THEN 
-             WRITE(UNIT_LOG,*) 'ERROR MESSAGE FROM REMOVE_PARTICLES'
-             WRITE(UNIT_LOG,*) 'COUNT_ACTIVE2 NE COUNT_ACTIVE',COUNT_ACTIVE2, COUNT_ACTIVE
-             WRITE(UNIT_LOG,*) 'LOGIC IN REMOVE PARTICLES SCREWED UP FOR THE ABOVE MESSAGE TO SHOW UP'
-          end IF
+          IF(DMP_LOG) WRITE(UNIT_LOG,1001) COUNT_ACTIVE2, COUNT_ACTIVE
+          IF(PRINT_DES_SCREEN) WRITE(*,1001) COUNT_ACTIVE2, COUNT_ACTIVE
           CALL mfix_exit(myPE)
        ENDIF
-       
-       
-       if(mype.eq.pe_IO) WRITE(*,*) 'END REMOVE_PARTICLES'
+      
+ 1001  FORMAT(/1X,70('*'),/5x, & 
+       'From Remove particles: Error 1001  ',/5x, & 
+       'Sanity check failed in this routine', /5x, &
+       'Count_active2 NE Count_active      ', 2(2x, i10) , /5x, & 
+       'Logic in this routine broken for this message to pop-up', /5x, & 
+       'Exiting.',/, 1X,70('*')/)
+ 
       END SUBROUTINE REMOVE_PARTICLES
      
-
+      
        
 !       SUBROUTINE  GET_DEL_H_DES
 !       END SUBROUTINE  GET_DEL_H_DES
