@@ -78,6 +78,7 @@ deallocate_arrays.f
 ../model/cartesian_grid/dashboard_mod.f 
 ../model/cartesian_grid/cartesian_grid_init_namelist.f 
 ../model/eosg.f 
+../model/eoss.f 
 ../model/error_routine.f 
 examine_data.f
 ../model/exit.f 

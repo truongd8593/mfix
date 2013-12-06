@@ -103,6 +103,7 @@ post_mfix : \
     deallocate_arrays.$(OBJ_EXT) \
     cartesian_grid_init_namelist.$(OBJ_EXT) \
     eosg.$(OBJ_EXT) \
+    eoss.$(OBJ_EXT) \
     error_routine.$(OBJ_EXT) \
     examine_data.$(OBJ_EXT) \
     exit.$(OBJ_EXT) \
@@ -315,6 +316,7 @@ post_mfix : \
     dashboard_mod.$(OBJ_EXT) \
     cartesian_grid_init_namelist.$(OBJ_EXT) \
     eosg.$(OBJ_EXT) \
+    eoss.$(OBJ_EXT) \
     error_routine.$(OBJ_EXT) \
     examine_data.$(OBJ_EXT) \
     exit.$(OBJ_EXT) \
@@ -1057,6 +1059,12 @@ eosg.$(OBJ_EXT) : ../model/eosg.f \
             sc_p_g1.inc                                                  \
             sc_p_g2.inc                                                 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/eosg.f 
+eoss.$(OBJ_EXT) : ../model/eoss.f \
+            PHYSPROP.mod \
+            COMPAR.mod \
+            FUNITS.mod \
+            PARAM1.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/eoss.f 
 error_routine.$(OBJ_EXT) : ../model/error_routine.f \
             FUNITS.mod \
             COMPAR.mod \
