@@ -661,7 +661,18 @@ XSI_ARRAY.mod : ../model/xsi_array_mod.f \
             PARAM.mod \
             PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/xsi_array_mod.f 
-MMS.mod : ../model/mms_mod.f 
+MMS.mod : ../model/mms_mod.f \
+            PARAM.mod \
+            PARAM1.mod \
+            PARALLEL.mod \
+            CONSTANT.mod \
+            RUN.mod \
+            TOLERANC.mod \
+            GEOMETRY.mod \
+            INDICES.mod \
+            COMPAR.mod \
+            SENDRECV.mod \
+            FLDVAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/mms_mod.f 
 PROGRESS_BAR.mod : ../model/cartesian_grid/progress_bar_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/progress_bar_mod.f 
