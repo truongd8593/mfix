@@ -16,10 +16,9 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: mapODEtoMFIX                                           !
+!  Module name: mapMFIXtoODE                                           !
 !                                                                      !
-!  Purpose: This is a driver routine for mapping variables stored in   !
-!  the ODE array back to MFIX field variables.                         !
+!  Purpose: This routine maps MFIX variables into the ODE array.       !
 !                                                                      !
 !  Author: J.Musser                                   Date: 07-Feb-13  !
 !                                                                      !
@@ -70,9 +69,7 @@
 
 ! Initialize.
       IJK = lNEQ(2)
-
       lVars = 0.0d0
-
       Node = 1
 
 ! Gas phase density.
@@ -121,18 +118,45 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-      use fldvar,   only : ROP_g
-      use fldvar,   only : ROP_S
-      use fldvar,   only : T_g
-      use fldvar,   only : T_s
-      use fldvar,   only : X_g
-      use fldvar,   only : X_s
-
+! Material density.
+      use fldvar, only : RO_g, RO_s
+! Bulk density.
+      use fldvar, only : ROP_g, ROP_s
+! Gas temperature. (K)
+      use fldvar, only : T_g, T_s
+! Species Mass frcations.
+      use fldvar, only : X_g, X_s
+! Number of solids phases.
       use physprop, only : MMAX
+! Number of species comprising each phase.
       use physprop, only : NMAX
+! Gas constant (cal/g.K)
+      use constant, only : GAS_CONST
+! Gas pressure
+      use fldvar, only : P_g
+! Gas phase volume fraction.
+      use fldvar,   only : EP_g
+! Species molecular weights
+      use physprop, only : MW_g, MW_s
+! Gas phase mixture molecular weight.
+      use physprop, only : MW_MIX_g
+! Baseline/Unreaced solids density.
+      use physprop, only: BASE_ROs
+! Initial mass fraction of inert solids species.
+      use physprop, only: X_S0
+! Index of inert solids phase species.
+      use physprop, only: INERT_SPECIES
+! Rank ID and Rank of IO process.
+      use compar,   only : myPE, PE_IO
+! Runtime flag for variable solids density.
+      use run, only: SOLVE_ROs
 
-      use compar,   only : myPE
-      use compar,   only : PE_IO
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+      use param1,   only : ONE
+      use param1,   only : LARGE_NUMBER
+      use param1,   only : SMALL_NUMBER
 
 
       implicit none
@@ -161,12 +185,19 @@
       INTEGER :: N    ! species
       INTEGER :: Node ! ODE Equation Counter
 
+! Error flags/counters.
       INTEGER :: countNaN
       LOGICAL :: writeMsg
 
+! Variable solids density calculation.
+      DOUBLE PRECISION, external :: EOSS
 
       IJK = lNEQ(2)
 
+
+! Check if any NaNs were returned from ODEPACK.  This shouldn't happend
+! but errors in the usr_rates file can cause this to occur.
+!-----------------------------------------------------------------------
       countNaN = 0
       writeMsg = .FALSE.
       NaN_lp: do l=1, loD
@@ -211,60 +242,18 @@
 ! Only map back what was calculated.
       DO M = 1, MMAX
          IF(lNEQ(2+M) == 1) THEN
-! Solids volume fraction. (Constant Solids Density)
+! Solids bulk density.
             ROP_S(IJK,M) = lVars(Node);            Node = Node + 1
 ! Solids phase species mass fractions.
             DO N=1,NMAX(M)
                X_S(IJK,M,N) = lVars(Node);         Node = Node + 1
             ENDDO
+! Update the solids density from speices composition. This update must
+! come after the species data is mapped back into the MFIX variables.
+            IF(SOLVE_ROs(M)) RO_S(IJK,M) = EOSS(BASE_ROs(M), &
+               X_s0(M,INERT_SPECIES(M)), X_s(IJK,M,INERT_SPECIES(M)))
          ENDIF
       ENDDO   
-
-!      IF(VARIABLE_DENSITY) THEN
-
-!      ELSE
-         CALL mapODEtoMFIX_ROs0
-!      ENDIF
-
-      RETURN
-
-      contains
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Module name: mapODEtoMFIX                                           !
-!                                                                      !
-!  Purpose: Finish mapping ODE result into MFIX field variables. This  !
-!           routine is for constant solids density.                    !
-!                                                                      !
-!  Author: J.Musser                                   Date: 07-Feb-13  !
-!                                                                      !
-!  Comments:                                                           !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE mapODEtoMFIX_ROs0  ! Constant solids density
-
-      use constant, only : GAS_CONST
-
-      use fldvar,   only : P_g
-      use fldvar,   only : RO_g
-
-      use fldvar,   only : EP_g
-      use physprop, only : MW_g
-      use physprop, only : MW_MIX_g
-      use physprop, only : MW_s
-
-      use param1,   only : ONE
-      use param1,   only : LARGE_NUMBER
-      use param1,   only : SMALL_NUMBER
-
-      use fldvar, only : RO_s
-
-!      use physprop, only : C_pg
-!      use physprop, only : C_ps
-
-
-
-      implicit none
 
 ! Calculate the gas volume fraction from solids volume fractions. Only
 ! update it's value if the solids equations are being solved.
@@ -290,23 +279,6 @@
       P_G(IJK) = (RO_G(IJK)*GAS_CONST*T_G(IJK))/MW_MIX_G(IJK)
 
       RETURN
-      END SUBROUTINE mapODEtoMFIX_ROs0
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Module name: mapODEtoMFIX_ROs                                       !
-!                                                                      !
-!  Purpose: Finish mapping ODE result into MFIX field variables. This  !
-!           routine is for constant solids density.                    !
-!                                                                      !
-!  Author: J.Musser                                   Date: 07-Feb-13  !
-!                                                                      !
-!  Comments:                                                           !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE mapODEtoMFIX_ROs  ! Variable solids density
-      END SUBROUTINE mapODEtoMFIX_ROs  ! Variable solids density
-
-
       END SUBROUTINE mapODEtoMFIX
+
       END MODULE STIFF_CHEM_MAPS
