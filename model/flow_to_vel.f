@@ -63,7 +63,8 @@
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: EOSG, CALC_MW 
+      DOUBLE PRECISION, EXTERNAL :: EOSG, EOSS
+      DOUBLE PRECISION, EXTERNAL :: CALC_MW 
       LOGICAL, EXTERNAL :: COMPARE 
 !-----------------------------------------------
 
@@ -373,12 +374,12 @@
                               CALL MFIX_EXIT(myPE)
                            ELSE
 ! If the solids isn't present, give it the baseline density.
-                              BC_ROs = RO_S0(M)
+                              BC_ROs = BASE_ROs(M)
                            ENDIF
                         ELSE
 ! Calculate the solids density.
-                           BC_ROs = RO_S0(M) * X_s0(M,INERT) /         &
-                              BC_X_S(BCV,M,INERT)
+                           BC_ROs = EOSS(BASE_ROs(M),X_s0(M,INERT),    &
+                              BC_X_S(BCV,M,INERT))
                         ENDIF
                      ELSE
                         BC_ROs = RO_S0(M)

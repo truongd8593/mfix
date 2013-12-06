@@ -16,6 +16,14 @@
       use physprop, only: MMAX
 ! Solids density field variable.
       use fldvar, only: RO_s
+! Baseline/Unreaced solids density
+      use physprop, only: BASE_ROs
+! Solid phase species mass fractions.
+      use fldvar, only: X_s
+! Initial mass fraction of inert species
+      use physprop, only: X_S0
+! Index of inert solids phase species.
+      use physprop, only: INERT_SPECIES
 ! Run-time flag for variable soilds density
       use run, only: SOLVE_ROs
 ! Constant solids density.
@@ -34,6 +42,8 @@
       INTEGER :: M
 ! Fluid cell index
       INTEGER :: IJK
+! Index of the inert solids species.
+      INTEGER :: IIS
 ! Flag for debugging.
       LOGICAL, parameter :: dbgMode = .FALSE.
 ! Function for evaluating solids density.
@@ -41,17 +51,19 @@
 
       INCLUDE 'function.inc'
 
-
 ! Loop over all solids
       DO M=1,MMAX
 
 ! Variable solids density.
          IF (SOLVE_ROs(M)) THEN
+! Set the index of the intert phase.
+            IIS = INERT_SPECIES(M)
 ! Debug/Development option.
             IF(dbgMode) CALL CHECK_SET_ROs(M)
 ! Calculate Ro_s in all fluid and flow boundary cells.
             DO IJK = ijkStart3, ijkEnd3
-               IF (.NOT.WALL_AT(IJK)) RO_s(IJK,M) = EOSS(IJK,M)
+               IF (.NOT.WALL_AT(IJK)) RO_S(IJK,M) = EOSS(BASE_ROs(M),  &
+                  X_s0(M,IIS), X_s(IJK,M,IIS))
             ENDDO
          ELSE
 ! Constant solids density.

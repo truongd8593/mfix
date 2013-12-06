@@ -215,8 +215,12 @@
       use fldvar, only: X_s
 ! Solid phase density (variable).
       use fldvar, only: RO_s
-! Gas phase material density.
-      use fldvar, only: ROP_s
+! Baseline/Unreaced solids density
+      use physprop, only: BASE_ROs
+! Initial mass fraction of inert species
+      use physprop, only: X_S0
+! Index of inert solids phase species.
+      use physprop, only: INERT_SPECIES
 ! Flag for variable solids density.
       use run, only: SOLVE_ROs
 ! Run time flag for generating negative density log files.
@@ -229,39 +233,30 @@
 ! Loop indicies
       INTEGER :: IJK   ! Computational cell
       INTEGER :: M     ! Solids phase
-! Solids volume fraction.
-      DOUBLE PRECISION :: EPs_M
-
-      DOUBLE PRECISION :: oMass ! Old Mass
-      DOUBLE PRECISION :: nMass ! New Mass
-      DOUBLE PRECISION :: dMass ! delta Mass
-
-! Equation of State - Solid
-      DOUBLE PRECISION, EXTERNAL :: EOSS
+! Index of inert species
+      INTEGER :: IIS
 ! Flag to write log header
       LOGICAL wHeader
 
-      include 'function.inc'
+! Equation of State - Solid
+      DOUBLE PRECISION, EXTERNAL :: EOSS
 
-! Initialize:
-      wHeader = .TRUE.
+      include 'function.inc'
 
       M_LP: DO M=1, MMAX 
          IF(.NOT.SOLVE_ROs(M)) cycle M_LP
+! Initialize header flag.
+         wHeader = .TRUE.
+! Set the index of the inert species
+         IIS = INERT_SPECIES(M)
          IJK_LP: DO IJK = IJKSTART3, IJKEND3 
             IF(WALL_AT(IJK)) cycle IJK_LP
-
-! Back out the solids volume fraction.
-!            EPs_M = ROP_s(IJK,M)/RO_s(IJK,M)
 ! Calculate the soilds density.
-            RO_S(IJK,M) = EOSS(IJK,M)
-! Update the material density.
-!            ROP_S(IJK,M) = RO_S(IJK,M)*EPs_M
-
+            RO_S(IJK,M) = EOSS(BASE_ROs(M), X_s0(M,IIS), X_s(IJK,M,IIS))
 ! Report errors.
             IF(RO_S(IJK,M) <= ZERO) THEN
                Err_l(myPE) = 101
-               IF(REPORT_NEG_DENSITY)CALL ROsErr_LOG(IJK, wHeader)
+               IF(REPORT_NEG_DENSITY) CALL ROsErr_LOG(IJK, M, wHeader)
             ENDIF
          ENDDO IJK_LP
       ENDDO M_LP
@@ -561,29 +556,40 @@
 !  Reviewer:                                          Date:            !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE ROsErr_LOG(IJK, tHeader)
+      SUBROUTINE ROsErr_LOG(IJK, M, tHeader)
 
+! Global variables:
+!-----------------------------------------------------------------------
 ! Simulation time
       use run, only: TIME
-! Gas phase temperature.
-      use fldvar, only: T_g
-! Gas phase density (compressible).
-      use fldvar, only: RO_g
-! Gas phase pressure.
-      use fldvar, only: P_g
+! Solid phase species mass fractions.
+      use fldvar, only: X_s
+! Solid phase density (variable).
+      use fldvar, only: RO_s
+! Baseline/Unreaced solids density
+      use physprop, only: BASE_ROs
+! Initial mass fraction of inert species
+      use physprop, only: X_S0
+! Index of inert solids phase species.
+      use physprop, only: INERT_SPECIES
+
+! Full Access to cutcell data.
       use cutcell 
 
-      INTEGER, intent(in) :: IJK
-      LOGICAL, intent(inout) :: tHeader
 
+! Local Variables:
+!-----------------------------------------------------------------------
+! Fluid cell and solids phase indices
+      INTEGER, intent(in) :: IJK, M
+! Flag to output header
+      LOGICAL, intent(inout) :: tHeader
+! Local aliase for inert species index
+      INTEGER :: N
+! Local file values.
       LOGICAL :: lExists
       CHARACTER*32 :: lFile
       INTEGER, parameter :: lUnit = 4868
       LOGICAL, save :: fHeader = .TRUE.
-
-
-! This file is a copy of the gas density log. Need to update.
-      return
 
 
       lFile = ''; 
@@ -606,14 +612,18 @@
       endif
 
       if(tHeader) then
-         write(lUnit,"(/2x,'Simulation time: ',g11.5)") TIME
+         write(lUnit,"(/2x,'Simulation time: ',g11.5,'  Phase: ',I2)")&
+             TIME, M
          tHeader = .FALSE.
       endif
 
+      N = INERT_SPECIES(M)
       write(lUnit,1001) IJK, I_OF(IJK), J_OF(IJK), K_OF(IJK)
-      write(lUnit,"(6x,A,1X,g11.5,$)") 'RO_g:', RO_g(IJK)
-      write(lUnit,"(2x,A,1X,g11.5,$)") 'P_g:', P_g(IJK)
-      write(lUnit,"(2x,A,1X,g11.5)") 'T_g:', T_g(IJK)
+      write(lUnit,"(6x,A,1X,g11.5)",advance='no') 'RO_s:', RO_s(IJK,M)
+      write(lUnit,"(2x,A,1X,g11.5)",advance='no') 'Base:', BASE_ROs(M)
+      write(lUnit,"(2x,A,1X,g11.5)",advance='no') 'X_s0:', X_s0(M,N)
+      write(lUnit,"(2x,A,1X,g11.5)") 'X_s:', X_s(IJK,M,N)
+
       if(CARTESIAN_GRID) then
          write(lUnit,"(6x,A,1X,L1,$)") 'Cut Cell:', CUT_CELL_AT(IJK)
          write(lUnit,"(6x,A,1X,L1)") 'Small Cell:', SMALL_CELL_AT(IJK)
@@ -629,7 +639,7 @@
          ' density (RO_g(IJK)). If',/2x,'this is a persistent issue,', &
          ' lower UR_FAC(1) in mfix.dat.')
 
- 1001 FORMAT(/4X,'IJK: ',I8,7X,'I: ',I4,'  J: ',I4,'  K: ',I4)
+ 1001 FORMAT( 4X,'IJK: ',I8,7X,'I: ',I4,'  J: ',I4,'  K: ',I4)
 
       END SUBROUTINE ROsErr_LOG
 

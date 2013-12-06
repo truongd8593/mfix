@@ -62,7 +62,7 @@
       INTEGER :: I, J ,K, IJK
       INTEGER :: M, N
 ! Solids phase density in BC region.
-      DOUBLE PRECISION :: BC_ROs
+      DOUBLE PRECISION :: BC_ROs(MMAX)
 ! Index of inert species
       INTEGER :: INERT
 ! valid boundary condition types
@@ -85,6 +85,7 @@
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
+      DOUBLE PRECISION, EXTERNAL :: EOSS
       LOGICAL , EXTERNAL :: COMPARE 
 !-----------------------------------------------
 ! Include statement functions
@@ -460,7 +461,7 @@
                      ENDIF 
 
 ! Calculate the solid density.
-                     BC_ROs = UNDEFINED
+                     BC_ROs(M) = UNDEFINED
                      IF(SOLVE_ROs(M))THEN
                         INERT = INERT_SPECIES(M)
 ! Verify that the species mass fraction for the inert material is not
@@ -474,21 +475,22 @@
                               CALL MFIX_EXIT(myPE)
                            ELSE
 ! If the solids isn't present, give it the baseline density.
-                              BC_ROs = RO_S0(M)
+                              BC_ROs(M) = BASE_ROs(M)
                            ENDIF
                         ELSE
 ! Calculate the solids density.
-                           BC_ROs = RO_S0(M) * X_s0(M,INERT) / &
-                              BC_X_S(BCV,M,INERT)
+                           BC_ROs(M) = EOSS(BASE_ROs(M), X_s0(M,INERT),&
+                              BC_X_S(BCV,M,INERT))
                         ENDIF
                      ELSE
-                        BC_ROs = RO_S0(M)
+                        BC_ROs(M) = RO_S0(M)
                      ENDIF
 
 ! Sanity check on solids phase density.
-                     IF(BC_ROs <= ZERO .OR. BC_ROs==UNDEFINED) THEN
+                     IF(BC_ROs(M) <= ZERO .OR. BC_ROs(M)==UNDEFINED) THEN
                         IF(DMP_LOG)THEN
                            WRITE(*,1500) M, BCV
+                           write(*,"(3x,'Value: ',G11.5)")BC_ROs(M)
                            WRITE(UNIT_LOG,1500) M, BCV
                         ENDIF
                         CALL MFIX_EXIT(myPE)
@@ -498,10 +500,10 @@
 ! and the hybrid model is not in use. Back out the bulk density with
 ! the assigned solids density.
                      IF(BC_ROP_S(BCV,M) == UNDEFINED) &
-                        BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*BC_ROs
+                        BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*BC_ROs(M)
 
 ! sum of void fraction and solids volume fractions
-                     SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/BC_ROs
+                     SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/BC_ROs(M)
 
 
                      IF (ENERGY_EQ .AND. BC_T_S(BCV,M)==UNDEFINED) THEN 
@@ -600,8 +602,11 @@
 ! check sum of gas void fraction and all solids volume fractions
                   IF (.NOT.DES_CONTINUUM_HYBRID) THEN
                      IF (.NOT.COMPARE(ONE,SUM_EP)) THEN 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1125) BCV 
-                        call mfix_exit(myPE)  
+                        CALL SOLIDS_SUM_ERR('CHECK_DATA_07','BC', BCV, &
+                           BC_ROP_s(BCV,:), BC_ROs(:), BC_EP_g(BCV))
+
+!                        IF(DMP_LOG)WRITE (UNIT_LOG, 1125) BCV 
+!                        call mfix_exit(myPE)  
                      ENDIF 
                   ELSE
 ! sum_ep not necessarily one at this point since discrete particles
@@ -916,7 +921,7 @@
                      ENDIF 
 
 ! Calculate the solid density.
-                     BC_ROs = UNDEFINED
+                     BC_ROs(M) = UNDEFINED
                      IF(SOLVE_ROs(M))THEN
                         INERT = INERT_SPECIES(M)
 ! Verify that the species mass fraction for the inert material is not
@@ -930,19 +935,19 @@
                               CALL MFIX_EXIT(myPE)
                            ELSE
 ! If the solids isn't present, give it the baseline density.
-                              BC_ROs = RO_S0(M)
+                              BC_ROs(M) = BASE_ROs(M)
                            ENDIF
                         ELSE
 ! Calculate the solids density.
-                           BC_ROs = RO_S0(M) * X_s0(M,INERT) / &
-                              BC_X_S(BCV,M,INERT)
+                           BC_ROs(M) = EOSS(BASE_ROs(M), X_s0(M,INERT),&
+                              BC_X_S(BCV,M,INERT))
                         ENDIF
                      ELSE
-                        BC_ROs = RO_S0(M)
+                        BC_ROs(M) = RO_S0(M)
                      ENDIF
 
 ! Sanity check on solids phase density.
-                     IF(BC_ROs <= ZERO .OR. BC_ROs==UNDEFINED) THEN
+                     IF(BC_ROs(M) <= ZERO .OR. BC_ROs(M)==UNDEFINED) THEN
                         IF(DMP_LOG)THEN
                            WRITE(*,1500) M, BCV
                            WRITE(UNIT_LOG,1500) M, BCV
@@ -952,7 +957,7 @@
 
 ! at this point bc_rop_s must be defined
 ! sum of void fraction and solids volume fractions
-                     SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/BC_ROs
+                     SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/BC_ROs(M)
 
                      IF (ENERGY_EQ .AND. BC_T_S(BCV,M)==UNDEFINED) THEN
                         IF (BC_ROP_S(BCV,M) == ZERO) THEN 
@@ -970,8 +975,11 @@
 ! check sum of gas void fraction and all solids volume fractions
                   IF (.NOT.DES_CONTINUUM_HYBRID) THEN
                      IF (.NOT.COMPARE(ONE,SUM_EP)) THEN 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1125) BCV 
-                        call mfix_exit(myPE)  
+                        CALL SOLIDS_SUM_ERR('CHECK_DATA_07','BC', BCV, &
+                           BC_ROP_s(BCV,:), BC_ROs(:), BC_EP_g(BCV))
+
+!                        IF(DMP_LOG)WRITE (UNIT_LOG, 1125) BCV 
+!                        call mfix_exit(myPE)  
                      ENDIF 
                   ELSE
 ! sum_ep not necessarily one at this point since discrete particles
@@ -1144,8 +1152,10 @@
 
                      IF (.NOT.COMPARE(ONE,SUM_EP)) THEN 
 ! if both variables are completely defined they should sum to 1.
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1125) BCV 
-                           call mfix_exit(myPE)  
+                        CALL SOLIDS_SUM_ERR('CHECK_DATA_07','BC', BCV, &
+                           BC_ROP_s(BCV,:), BC_ROs(:), BC_EP_g(BCV))
+!                        IF(DMP_LOG)WRITE (UNIT_LOG, 1125) BCV 
+!                           call mfix_exit(myPE)
                      ENDIF
 
                   ENDIF   ! end if/else (.not.discrete_element)
@@ -1521,8 +1531,10 @@
  1120 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
          ' - Sum of solids-',I1,' mass fractions is NOT equal to one',/1X,70(&
          '*')/) 
- 1125 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
-         ' - Sum of volume fractions is NOT equal to one',/1X,70('*')/) 
+
+ !1125 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
+ !        ' - Sum of volume fractions is NOT equal to one',/1X,70('*')/) 
+
  1130 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
          ' - void fraction is unphysical (>1 or <0)',/1X,70('*')/) 
  1150 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&

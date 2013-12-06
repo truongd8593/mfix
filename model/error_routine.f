@@ -1,4 +1,3 @@
-!
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: ERROR_ROUTINE (CALL_ROUTINE,MESSAGE,ACTION_CODE,       C
@@ -24,60 +23,71 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE ERROR_ROUTINE(CALL_ROUTINE,MESSAGE,ACTION_CODE,MESSAGE_CODE) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
+
       USE funits 
       USE compar 
       USE mpi_utility 
+
       IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER ACTION_CODE, MESSAGE_CODE 
-      CHARACTER CALL_ROUTINE*(*), MESSAGE*(*) 
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      CHARACTER :: ABORT_CONT*10 
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-!-----------------------------------------------
-!
-! SET UP THE ABORT / CONTINUE MESSAGE
-!
-      IF (ACTION_CODE == 0) THEN 
-         ABORT_CONT = 'continued' 
-      ELSE 
-         ABORT_CONT = 'aborted' 
-      ENDIF 
-!
-! WRITE OUT HEADER INFO , UNLESS MESSAGE_CODE = 3
-!
-      IF (MESSAGE_CODE /= 3 .AND. DMP_LOG)WRITE (UNIT_LOG, 1000) myPE,CALL_ROUTINE, MESSAGE 
-!
+
+! Action to be taken after error messgase is given.
+! > 0 :: Continute
+! > 1 :: Abort
+      INTEGER, intent(in) :: ACTION_CODE
+! Message code
+! - 1 :: Write header, message, and footer.
+! - 2 :: Write only the header and message.
+! - 3 :: Write only the message and footer.
+      INTEGER, intent(in) ::  MESSAGE_CODE 
+
+! Name of routine calling ERROR_ROUTINE. Used in constructing
+! the error message header.
+      CHARACTER, intent(in) :: CALL_ROUTINE*(*)
+
+! Message to be written.
+      CHARACTER, intent(in) :: MESSAGE*(*) 
+
+! Local Variables
+! String used to format integers to characters.
+      CHARACTER(len=16) :: int2char
+
+! Write the header information and passed messaged.
+      IF (MESSAGE_CODE /= 3 .AND. DMP_LOG) THEN
+         write(*,1000); write(UNIT_LOG,1000)
+         IF(numPEs > 1) THEN
+            int2char=''; write(int2char,*) myPE
+            write(*,1001) trim(adjustl(int2Char)), CALL_ROUTINE
+            write(UNIT_LOG,1001) trim(adjustl(int2Char)), CALL_ROUTINE
+         ELSE
+            write(*,1002) CALL_ROUTINE
+            write(UNIT_LOG,1002) CALL_ROUTINE
+         ENDIF
+
+         WRITE (*, 1005) MESSAGE 
+         WRITE (UNIT_LOG, 1005) MESSAGE
+      ENDIF
+
 ! WRITE OUT TRAILER INFO, UNLESS MESSAGE_CODE = 2
-!
-      IF (MESSAGE_CODE /= 2 .AND. DMP_LOG)WRITE (UNIT_LOG, 1100) myPE,ABORT_CONT 
-!
-      IF (ACTION_CODE == 0) THEN 
-         RETURN  
-      ELSE 
-          call mfix_exit(myPE)
-      ENDIF 
-!
- 1000 FORMAT(1X,70('*'),/,/,1X,'(PE ',I6,'): From : ',A,/,11X,'Message : ',A) 
- 1100 FORMAT(1X,'(PE ',I6,'): Program execution ',A,/,/,1X,70('*')) 
-!
-      END SUBROUTINE ERROR_ROUTINE 
-      
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!// 800 Parallel I/O related modifications (added myPE print in msgs)
-!// 990 Replace STOP with exitMPI to terminate all processors
+      IF (MESSAGE_CODE /= 2 .AND. DMP_LOG) THEN
+         IF(ACTION_CODE == 0) THEN
+            WRITE (*, 1100)
+            WRITE (UNIT_LOG, 1100)
+         ELSE
+            WRITE (*, 1101)
+            WRITE (UNIT_LOG, 1101)
+         ENDIF
+      ENDIF
+
+      IF (ACTION_CODE == 1) CALL MFIX_EXIT(myPE)
+
+      RETURN  
+
+ 1000 FORMAT(2/,1X,70('*'))
+ 1001 FORMAT(1X,'(PE ',A,'): From : ',A)
+ 1002 FORMAT(1X,'From : ',A)
+ 1005 FORMAT(1X,'Message : ',A) 
+
+ 1100 FORMAT(1X,70('*'),2/) 
+ 1101 FORMAT(/1X,'Aborting execution.',/1X,70('*'),2/) 
+
+      END SUBROUTINE ERROR_ROUTINE

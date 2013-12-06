@@ -60,13 +60,14 @@
       INTEGER :: M, N, IER
       DOUBLE PRECISION SUM, SUM_EP
 ! Solids phase density in IC region.
-      DOUBLE PRECISION :: IC_ROs
+      DOUBLE PRECISION :: IC_ROs(1:MMAX)
 ! Index of inert species
       INTEGER :: INERT
 
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
+      DOUBLE PRECISION, EXTERNAL :: EOSS
       LOGICAL, EXTERNAL :: COMPARE 
 !-----------------------------------------------
 ! Include statement functions
@@ -472,7 +473,7 @@
                      ENDIF 
 
 ! Calculate the solid density.
-                     IC_ROs = UNDEFINED
+                     IC_ROs(M) = UNDEFINED
                      IF(SOLVE_ROs(M))THEN
                         INERT = INERT_SPECIES(M)
 ! Verify that the species mass fraction for the inert material is not
@@ -486,19 +487,19 @@
                               CALL MFIX_EXIT(myPE)
                            ELSE
 ! If the solids isn't present, give it the baseline density.
-                              IC_ROs = RO_S0(M)
+                              IC_ROs(M) = BASE_ROs(M)
                            ENDIF
                         ELSE
 ! Calculate the solids density.
-                           IC_ROs = RO_S0(M) * X_s0(M,INERT) / &
-                              IC_X_S(ICV,M,INERT)
+                           IC_ROs = EOSS(BASE_ROs(M),X_s0(M,INERT),    &
+                              IC_X_S(ICV,M,INERT))
                         ENDIF
                      ELSE
-                        IC_ROs = RO_S0(M)
+                        IC_ROs(M) = RO_S0(M)
                      ENDIF
 
 ! Sanity check on solids phase density.
-                     IF(IC_ROs <= ZERO .OR. IC_ROs==UNDEFINED) THEN
+                     IF(IC_ROs(M) <= ZERO .OR. IC_ROs(M)==UNDEFINED) THEN
                         IF(DMP_LOG)THEN
                            WRITE(*,1401) M, ICV
                            WRITE(UNIT_LOG,1401) M, ICV
@@ -510,11 +511,11 @@
 ! and the hybrid model is not in use. Back out the bulk density with
 ! the assigned solids density.
                      IF(IC_ROP_S(ICV,M) == UNDEFINED)                  &
-                        IC_ROP_S(ICV,M) = (ONE - IC_EP_G(ICV))*IC_ROs
+                        IC_ROP_S(ICV,M) = (ONE - IC_EP_G(ICV))*IC_ROs(M)
 
 ! at this point ic_rop_s must be defined
 ! sum of void fraction and solids volume fractions                  
-                     SUM_EP = SUM_EP + IC_ROP_S(ICV,M)/IC_ROs 
+                     SUM_EP = SUM_EP + IC_ROP_S(ICV,M)/IC_ROs(M)
 
 ! check sum of the solids phase m species mass fractions                  
                      SUM = ZERO 
@@ -619,8 +620,8 @@
 ! check sum of gas void fraction and all solids volume fractions                  
                   IF (.NOT.DES_CONTINUUM_HYBRID) THEN
                      IF (.NOT.COMPARE(ONE,SUM_EP)) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1125) ICV 
-                           call mfix_exit(myPE)
+                        CALL SOLIDS_SUM_ERR('CHECK_DATA_06','IC', ICV, &
+                           IC_ROP_s(ICV,:), IC_ROs(:), IC_EP_g(ICV))
                      ENDIF 
                   ELSE
 ! sum_ep not necessarily one at this point since discrete particles
@@ -827,3 +828,101 @@
       END SUBROUTINE CHECK_DATA_06 
 
 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+! Subroutine: SOLIDS_SUM_ERR                                           !
+!                                                                      !
+! Purpose: Provided a detailed error message when the sum of volume    !
+! fractions does not equal one. This is mainly an issue for variable   !
+! solids density when the user may not have accurately calcualted the  !
+! solids density and in turn, the solids bulk density for the region.  !
+!                                                                      !
+! This routine is invoked from several check_data routines and thus    !
+! the information like caller routine and IC/BC/PS are all passed in   !
+! as dummy arguments.                                                  !
+!                                                                      !
+!  Author: J.Musser                                   Date: 04-Dec-13  !
+!                                                                      !
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+      SUBROUTINE SOLIDS_SUM_ERR(CALLER, xType, xID, x_ROPs, x_ROs,x_EPg)
+
+      use funits, only: UNIT_LOG
+      use funits, only: DMP_LOG
+      use physprop, only: MMAX
+      use run, only: SOLVE_ROs
+
+      CHARACTER(len=*) CALLER*(*)
+
+      CHARACTER, intent(IN) :: xTYPE*(*)
+
+      INTEGER, intent(IN) :: xID
+
+      DOUBLE PRECISION, intent(IN) :: x_ROPs(MMAX)
+      DOUBLE PRECISION, intent(IN) :: x_ROs(MMAX)
+      DOUBLE PRECISION, intent(IN) :: x_EPg
+
+
+      DOUBLE PRECISION :: x_EPs
+      DOUBLE PRECISION :: ERR
+
+
+! A more descriptive error message is needed for variable density.
+      IF(DMP_LOG) THEN
+! Generic message header
+         WRITE (*, 1000) CALLER, xType, xID
+         WRITE (UNIT_LOG, 1000) CALLER, xType, xID
+
+         SUM = ZERO
+         WRITE(*,9000) xType, xType, xType
+         WRITE(UNIT_LOG,9000) xType, xType, xType
+
+         WRITE(*,9001)
+         WRITE(UNIT_LOG,9001)
+
+         WRITE(*,9002) xType, xType, xType
+         WRITE(UNIT_LOG,9002)xType, xType, xType
+
+         WRITE(*,9003);  WRITE(UNIT_LOG,9003)
+
+         DO M=1, MMAX
+            x_EPs = x_ROPs(M)/x_ROs(M)
+            SUM = SUM + x_EPs
+            WRITE(*,9004) M, x_ROPs(M), x_ROs(M), x_EPs
+            WRITE(UNIT_LOG,9004) M, x_ROPs(M), x_ROs(M), x_EPs
+            WRITE(*,9003);  WRITE(UNIT_LOG,9003)
+         ENDDO
+         ERR = abs(1.0d0- (x_EPg + SUM))
+         WRITE(*,9326) xType, xType, ERR
+         WRITE(UNIT_LOG,9326) xType, xType, ERR
+      ENDIF
+      WRITE(*,9999)
+      WRITE(UNIT_LOG,9999)
+
+      CALL MFIX_EXIT(myPE)
+
+
+
+ 1000 FORMAT(//1X,70('*')/' From: ',A,'',/,' Error:'                   &
+         ' Sum of volume fractions does not equal one in ',A2,1x,I3)
+
+ 9000 FORMAT(/1x,'Check variable solids density parameters:',//,4x,A2, &
+        '_EP_s(xxx,xx) = ',A2,'_ROP_s(xxx,xxx)/ ',A2,'_RO_s(xx)',/)
+
+ 9001 FORMAT(4x,'|',52('-'),'|')
+ 9002 FORMAT(4x,'| Phase |   ',A2,'_ROP_s   |   ',A2,'_RO_s    |   ',  &
+         A2,'_EP_s    |')
+
+ 9003 FORMAT(4x,'|',7('-'),'|',3(14('-'),'|'))
+ 9004 FORMAT(4x,'|',3x,I2,2x,'|',3(1x,g12.6,' |'))
+
+
+ 9326 FORMAT(/4x,'Err = 1.0 - (',A2,'_EP_G + sum(',A2,'_EP_S))',/8x,   &
+         '= ',g11.5)
+
+ 9999 FORMAT(/' Please refer to the Readme file on the required input',&
+         ' and make',/' the necessary corrections to the data file.',  &
+         /1X,70('*')//)
+
+      END SUBROUTINE SOLIDS_SUM_ERR

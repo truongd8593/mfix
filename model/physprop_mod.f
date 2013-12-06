@@ -45,18 +45,18 @@
 ! function CALC_ep_star(IJK,IER)
       INTEGER M_MAX(DIM_M)
 
-
-!--------------------------------------------------------------------------> JMusser.0 Start
-! Constant solids phase densities. This value is also used in variable
-! solids density simulations to store the baseline/initial solids
-! phase densities.
+! Constant solids phase densities.
       DOUBLE PRECISION :: RO_s0(DIM_M)
+
+! Baseline/Unreacted solids phase phase density. This value is only used
+! for variable solids density simulations in EOSS.
+      DOUBLE PRECISION :: BASE_ROs(DIM_M)
 
 ! Constant solids phase species mass fractions. These values delinate
 ! the baseline/initial solids phase composition for ariable density
       DOUBLE PRECISION :: X_S0(DIM_M, DIM_N_s)
 
-! ConstantDensity of solid species
+! Density of solid species (constant)
       DOUBLE PRECISION :: RO_Xs0(DIM_M, DIM_N_s)
 
 ! The index of an inert solids phase species. This is needed for 
@@ -64,9 +64,8 @@
       INTEGER :: INERT_SPECIES(DIM_M)
 
 ! Density of solid species
-      DOUBLE PRECISION RO_SS (DIM_M, DIM_N_s)  ! REMOVE
+      DOUBLE PRECISION RO_SS (DIM_M, DIM_N_s)  ! TO BE REMOVE
 
-!--------------------------------------------------------------------------> JMusser.0 End!
 ! Specified constant solids viscosity
       DOUBLE PRECISION MU_s0
 

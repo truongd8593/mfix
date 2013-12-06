@@ -64,6 +64,9 @@
       LOGICAL :: PASSED
 ! Flag that a fatal error was detected.
       LOGICAL :: FAILED
+
+! Solids phase density calculation
+      DOUBLE PRECISION, EXTERNAL :: EOSS0
 !-----------------------------------------------
 
 
@@ -513,26 +516,7 @@
 
 ! All of the information for variable solids density has been verified
 ! as of this point. Calculate and store the baseline density.
-            RO_S0(LC) = sum(X_S0(LC,:NMAX(LC))/RO_Xs0(LC,:NMAX(LC)))
-            IF(RO_S0(LC) > ZERO) THEN
-               RO_S0(LC) = ONE/RO_S0(LC)
-            ELSE
-! This is an extra sanity check that should be caught be one ore more
-! of the proceeding data checks.
-               IF(abs(RO_S0(LC)) <= SMALL_NUMBER) THEN
-                  LONG_STRING = ''; WRITE(LONG_STRING,"('Infinity')")
-               ELSE
-                  LONG_STRING = ''; WRITE(LONG_STRING,*) ONE/RO_S0(LC)
-               ENDIF
-               IF(DMP_LOG) THEN
-                  WRITE(*,1311) LC, trim(LONG_STRING)
-                  WRITE(UNIT_LOG,1311), trim(LONG_STRING)
-                  WRITE(*,9999)
-                  WRITE(UNIT_LOG,9999)
-               ENDIF
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-
+            BASE_ROs(LC) = EOSS0(LC)
 
          ENDIF ! SOLVE_RO_s
       ENDDO
@@ -678,7 +662,7 @@
  1061 FORMAT(/'  Searching thermochemical databases for solids phase ',&
          I2,' species data')
 
- 1062 FORMAT(2x,'>',I3,': Species: ',A)
+ 1062 FORMAT(/2x,'>',I3,': Species: ',A)
 
 
  1100 FORMAT(1X,/,1X,'D_p0(',I2,') in mfix.dat = ',G12.5) 
@@ -716,10 +700,6 @@
          ' Invalid baseline inert speices mass fraction.',/            &
          ' The inert spcies mass fraction must be greater than zero.',/&
          ' Phase ',I2,' Inert Species: ',I3,'  X_s0 = 0.0')
-
- 1311 FORMAT(//1X,70('*')/' From: CHECK_DATA_04',/,' Error 1311:'      &
-         ' Fatal error calculating phase baseline density:',/ &
-         ' RO_s(',I2,') = ',A)
 
  1312 FORMAT(//1X,70('*')/' From: CHECK_DATA_04',/,' Error 1305:'      &
          ' One or more parameters defined with solid phase index',/    &

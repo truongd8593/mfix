@@ -383,7 +383,7 @@
  1058 FORMAT(/'  Searching thermochemical databases for gas phase',    &
          ' species data')
 
- 1059 FORMAT(2x,'>',I3,': Species: ',A)
+ 1059 FORMAT(/2x,'>',I3,': Species: ',A)
 
  1100 FORMAT(1X,/,1X,'MU_g0   in mfix.dat = ',G12.5) 
  1110 FORMAT(1X,/,1X,'K_g0   in mfix.dat = ',G12.5) 
