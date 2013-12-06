@@ -32,12 +32,14 @@
       USE vtk
       use cdist
       
+      USE discretelement
+      USE des_stl_functions
       USE fldvar
 
       IMPLICIT NONE
 
       INTEGER :: IJK
-      INTEGER :: I,J,K
+      INTEGER :: I,J,K, COUNT
       INTEGER :: SAFE_MODE_COUNT
       DOUBLE PRECISION :: CPU_PP_START,CPU_PP_END
 
@@ -64,6 +66,8 @@
 
       CALL CPU_TIME (CPU_PP_START)
 
+
+
       CALL OPEN_CUT_CELL_FILES
 
       CALL ALLOCATE_CUT_CELL_ARRAYS 
@@ -72,15 +76,17 @@
 
       CALL SET_3D_CUT_CELL_FLAGS 
 
+      CALL GATHER_DATA
+
 !======================================================================
 ! Gather Data  and writes surface(s) defined by all cut cells 
 !======================================================================
 
-      CALL GATHER_DATA
-
       IF(WRITE_VTK_FILES.AND.(.NOT.BDIST_IO)) THEN
          CALL WRITE_CUT_SURFACE_VTK
       ENDIF
+
+
 
       CALL SET_3D_CUT_U_CELL_FLAGS 
       CALL SET_3D_CUT_V_CELL_FLAGS 
@@ -114,8 +120,45 @@
 
       CALL GET_DISTANCE_TO_WALL
 
+      IF(DISCRETE_ELEMENT.and.USE_STL) then
+         IF(myPE == PE_IO) THEN
+            WRITE(*,*)'DISCRETE ELEMENT also detected. Pre-Processing for des now'
+         endif
+
+         !now call the pre-procssing for the des in order to 
+         !assign facets to grid cells 
+         !Set N_facets_des to add any more facets needed by
+         !dem and not to contaminate the Eulerian-Eulerian CG stuff 
+         N_FACETS_DES = N_FACETS 
+
+         !**********************************************************************************
+         !this is a temporary routine to triangulate the 
+         !default walls (bounding box of the simulation)
+         !It will be users' burden to supply the bounding box 
+         !as stl         
+         if(DES_CONVERT_BOX_TO_FACETS) call cg_des_convert_to_facets
+         !*********************************************************************************
+         
+         CALL bin_facets_to_grid_des
+         
+         DO IJK = 1, DIMENSION_3 
+            COUNT = LIST_FACET_AT_DES(IJK)%COUNT_FACETS 
+            IF(COUNT.eq.0) DEALLOCATE(LIST_FACET_AT_DES(IJK)%FACET_LIST)
+         ENDDO
+
+         !CALL DEBUG_WRITE_GRID_FACEINFO
+         !CALL DEBUG_write_stl_from_grid_facet(WRITE_FACETS_EACH_CELL=.false.)
+
+         IF(myPE == PE_IO) THEN
+            WRITE(*,*)'Done with post processing for DISCRETE ELEMENT'
+         endif
+
+      endif  !discrete_element  
+
       CALL CPU_TIME (CPU_PP_END)
 
+      
+      
       IF(myPE == PE_IO) THEN
          WRITE(*,20)'CARTESIAN GRID PRE-PROCESSING COMPLETED IN ',CPU_PP_END - CPU_PP_START, ' SECONDS.'
          WRITE(*,10)'============================================================================='
@@ -1043,7 +1086,7 @@
       
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
-      INTEGER :: IJK,I,J,K,Q_ID,Q_ID2,N_int_x,N_int_y,N_int_z
+      INTEGER :: IJK,I,J,K,Q_ID,Q_ID2,N_int_x,N_int_y,N_int_z, COUNT
       INTEGER :: IM,IP,JM,JP,KM,KP,IMJK,IPJK,IJMK,IJPK,IJKM,IJKP
       INTEGER :: IJPKP,IPJKP,IPJPK
       DOUBLE PRECISION :: xa,ya,za,xb,yb,zb,xc,yc,zc,Fc
@@ -1073,9 +1116,6 @@
       include "function.inc"
 
 
-      N_FACET_AT = 0
-      LIST_FACET_AT = 0
-
       INTERSECT_X = .FALSE.
       INTERSECT_Y = .FALSE.
       INTERSECT_Z = .FALSE.
@@ -1089,6 +1129,7 @@
 
       SELECT CASE (TYPE_OF_CELL)
          CASE('SCALAR')
+
 
             X_OFFSET = ZERO
             Y_OFFSET = ZERO
@@ -1230,9 +1271,8 @@
                   IJPKP = FUNIJK(I,JP,KP)
                   IPJKP = FUNIJK(IP,J,KP)
                   IPJPK = FUNIJK(IP,JP,K)
-
-
-
+                  
+                  
 !======================================================================
 !  Get coordinates of eight nodes
 !======================================================================
@@ -1259,7 +1299,7 @@
                      F_AT(IMJK) = ZERO
 
 !                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                     CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
+                     IF(TRIM(TYPE_OF_CELL).eq.'SCALAR')  CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
                      N8(1) = xb-xa
                      N8(2) = yb-ya
@@ -1281,7 +1321,7 @@
                      F_AT(IJK) = ZERO
 
 !                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                     CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
+                     IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
                      N7(1) = xa-xb
                      N7(2) = ya-yb
@@ -1340,10 +1380,10 @@
 !                        IF(KP<=K2) BC_ID(IJKP) = BC_ID_STL_FACE(N) 
 !                        IF(JP<=J2.AND.KP<=K2)BC_ID(IJPKP) = BC_ID_STL_FACE(N)  
 
-                        CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
-                        IF(JP<=J2) CALL ADD_FACET_AND_SET_BC_ID(IJPK,N) 
-                        IF(KP<=K2) CALL ADD_FACET_AND_SET_BC_ID(IJKP,N) 
-                        IF(JP<=J2.AND.KP<=K2) CALL ADD_FACET_AND_SET_BC_ID(IJPKP,N)
+                        IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
+                        IF(JP<=J2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPK,N) 
+                        IF(KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJKP,N) 
+                        IF(JP<=J2.AND.KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPKP,N)
 
 
                      ENDIF
@@ -1378,7 +1418,7 @@
                      F_AT(IJMK) = ZERO
 
 !                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                     CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
+                     IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
                      N8(1) = xb-xa
                      N8(2) = yb-ya
@@ -1400,7 +1440,7 @@
                      F_AT(IJK) = ZERO
 
 !                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                     CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
+                     IF(TRIM(TYPE_OF_CELL).eq.'SCALAR')  CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
                      N6(1) = xa-xb
                      N6(2) = ya-yb
@@ -1461,10 +1501,10 @@
 !                        IF(KP<=K2) BC_ID(IJKP) = BC_ID_STL_FACE(N)
 !                        IF(IP<=I2.AND.KP<=K2)BC_ID(IPJKP) = BC_ID_STL_FACE(N) 
 
-                        CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
-                        IF(IP<=I2) CALL ADD_FACET_AND_SET_BC_ID(IPJK,N) 
-                        IF(KP<=K2) CALL ADD_FACET_AND_SET_BC_ID(IJKP,N) 
-                        IF(IP<=I2.AND.KP<=K2) CALL ADD_FACET_AND_SET_BC_ID(IPJKP,N)
+                        IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
+                        IF(IP<=I2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJK,N) 
+                        IF(KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJKP,N) 
+                        IF(IP<=I2.AND.KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJKP,N)
 
                      ENDIF
 
@@ -1494,7 +1534,7 @@
                         F_AT(IJKM) = ZERO
 
 !                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                        CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
+                        IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
                         N8(1) = xb-xa
                         N8(2) = yb-ya
@@ -1516,7 +1556,7 @@
                         F_AT(IJK) = ZERO
 
 !                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                        CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
+                        IF(TRIM(TYPE_OF_CELL).eq.'SCALAR')  CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
                         N4(1) = xa-xb
                         N4(2) = ya-yb
@@ -1575,11 +1615,11 @@
 !                           IF(IP<=I2)  BC_ID(IPJK) = BC_ID_STL_FACE(N)    
 !                           IF(JP<=J2) BC_ID(IJPK) = BC_ID_STL_FACE(N)  
 !                           IF(IP<=I2.AND.JP<=J2) BC_ID(IPJPK) = BC_ID_STL_FACE(N) 
-         
-                           CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
-                           IF(IP<=I2) CALL ADD_FACET_AND_SET_BC_ID(IPJK,N) 
-                           IF(JP<=J2) CALL ADD_FACET_AND_SET_BC_ID(IJPK,N) 
-                           IF(IP<=I2.AND.JP<=J2) CALL ADD_FACET_AND_SET_BC_ID(IPJPK,N)
+                           
+                           IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
+                           IF(IP<=I2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJK,N) 
+                           IF(JP<=J2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPK,N) 
+                           IF(IP<=I2.AND.JP<=J2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJPK,N)
 
                         ENDIF
 
@@ -1955,8 +1995,8 @@
       END SELECT 
 
 
-!      call send_recv(F_AT,2)
 
+!      call send_recv(F_AT,2)
 
       RETURN
       
@@ -1992,12 +2032,7 @@
       USE cutcell
       USE polygon
       USE stl
-
-
       USE mpi_utility
-
-
-
       
       IMPLICIT NONE
       INTEGER :: IJK,N
@@ -2017,6 +2052,8 @@
 
       ENDIF
 
+    
+      
+      END SUBROUTINE ADD_FACET_AND_SET_BC_ID
 
 
-  END SUBROUTINE ADD_FACET_AND_SET_BC_ID

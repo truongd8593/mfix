@@ -34,6 +34,7 @@
       USE rxns      
       USE output
       USE scalars
+      USE stl 
 
       USE mpi_utility     
       USE parallel_mpi
@@ -56,6 +57,8 @@
       DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  Z_OF
       INTEGER, DIMENSION(DIMENSION_3) ::  INDEX_OF_E_ADD_NODE
       INTEGER, DIMENSION(DIMENSION_3) ::  INDEX_OF_N_ADD_NODE
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FACET_COUNT_DES, NEIGHBORING_FACET
+
       INTEGER :: SPECIES_COUNTER,LT
 
       CHARACTER (LEN=32) :: SUBM,SUBN,SUBR
@@ -71,6 +74,7 @@
       include "function.inc"
 
       IF(.NOT.CARTESIAN_GRID) RETURN
+
 
       DX(IEND3+1) = DX(IEND3)
       DY(JEND3+1) = DY(JEND3)
@@ -245,6 +249,32 @@
                CASE (102)
                   CALL WRITE_SCALAR_IN_VTU_BIN('DISTANCE_TO_WALL',DWALL,PASS)
     
+               CASE (103)
+                  IF(DISCRETE_ELEMENT.AND.USE_STL) THEN
+                     ALLOCATE(FACET_COUNT_DES(DIMENSION_3))
+                     
+                     DO IJK = IJKSTART3, IJKEND3 
+                        FACET_COUNT_DES(IJK) = LIST_FACET_AT_DES(IJK)%COUNT_FACETS 
+                     ENDDO
+
+                     CALL WRITE_SCALAR_IN_VTU_BIN('FACET_COUNT', FACET_COUNT_DES,PASS)
+                     DEALLOCATE(FACET_COUNT_DES)
+                  ENDIF
+
+               CASE (104)
+                  IF(DISCRETE_ELEMENT.AND.USE_STL) THEN
+                     ALLOCATE(NEIGHBORING_FACET(DIMENSION_3))
+                     
+                     DO IJK = IJKSTART3, IJKEND3 
+                        NEIGHBORING_FACET(IJK) = 1.0
+                        IF(NO_NEIGHBORING_FACET_DES(IJK)) NEIGHBORING_FACET(IJK) = 0.0
+                     ENDDO
+
+                     CALL WRITE_SCALAR_IN_VTU_BIN('NEIGH_FACET', NEIGHBORING_FACET,PASS)
+                     DEALLOCATE(NEIGHBORING_FACET)
+                  ENDIF
+
+
                CASE(999)
                   Allocate(IJK_ARRAY(DIMENSION_3))
                   DO IJK = IJKSTART3, IJKEND3

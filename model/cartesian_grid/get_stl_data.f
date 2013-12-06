@@ -655,10 +655,12 @@
       DOUBLE PRECISION ::ABSTRANS
       CHARACTER(LEN=32) ::TEST_CHAR,BUFF_CHAR
       CHARACTER(LEN=32) ::geometryfile(DIMENSION_BC)
-
+      
       INTEGER :: BCV,NUMBER_OF_GEOMETRY_FILES
       INTEGER :: BC_PATCH(DIMENSION_BC)
 
+      CHARACTER*100 :: FNAME
+      integer :: stl_unit, nf
 
 
 
@@ -888,9 +890,34 @@
 !      IF(YMAX_STL>YLENGTH) YMAX_STL=YLENGTH
 !      IF(ZMIN_STL<ZERO) ZMIN_STL=ZERO 
 !      IF(ZMAX_STL>ZLENGTH) ZMAX_STL=ZLENGTH
+      
+      IF(mype.eq.pe_io.and..false.) then 
+         WRITE(fname,'(A,"_FACETS_READ", ".stl")') & 
+         TRIM(RUN_NAME)
+         open(stl_unit, file = fname, form='formatted')
+         write(stl_unit,*)'solid vcg'      
+      
 
+         do nf = 1, n_facets 
+            
+            write(stl_unit,*) '   facet normal ', NORM_FACE(NF,:)
+            write(stl_unit,*) '      outer loop'
+            write(stl_unit,*) '         vertex ', VERTEX(NF,1,1:3)
+            write(stl_unit,*) '         vertex ', VERTEX(NF,2,1:3)
+            write(stl_unit,*) '         vertex ', VERTEX(NF,3,1:3)
+            write(stl_unit,*) '      endloop'
+            write(stl_unit,*)'   endfacet'
+         enddo 
+         
+         
+         write(stl_unit,*)'endsolid vcg'
+         close(stl_unit, status = 'keep')
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*) ' The file FACETS_READ.stl was sucessfully written.'
+            WRITE(*,*) ' and is provided for convenience (it is not used).'
+         ENDIF
 
-
+      endif
 
       RETURN  
 

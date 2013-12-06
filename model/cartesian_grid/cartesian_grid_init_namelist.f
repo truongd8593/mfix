@@ -124,6 +124,7 @@
       TY_STL = ZERO
       TZ_STL = ZERO
       SCALE_STL = ONE
+      MAX_FACETS_PER_CELL_DES = 10 
 
       TOL_MSH = 1.0D-6        ! Settings for MSH file
       OUT_MSH_VALUE = 1.0 
