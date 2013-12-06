@@ -166,5 +166,10 @@
       DOUBLE PRECISION IC_K_Turb_G (DIMENSION_IC)
       DOUBLE PRECISION IC_E_Turb_G (DIMENSION_IC)
 
+! Initial conditions for DES cases (such as, DEM, MPPIC, hybrid) 
+      
+! Flag to extend the lattice distribution in a given IC to available area
+      LOGICAL IC_DES_FIT_TO_REGION (DIMENSION_IC) 
+ 
 
       END MODULE ic                                                                              

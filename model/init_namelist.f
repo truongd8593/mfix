@@ -400,6 +400,10 @@
          IC_GAMA_RS(LC,:DIM_M) = ZERO 
          IC_T_RS(LC,:DIM_M) = UNDEFINED 
 !         IC_X_S(LC,1,1+:DIM_N_S+) = UNDEFINED 
+
+! safe is set not inflate the inital lattice as the algorithm has not 
+! been thoroughly tested 
+         IC_DES_FIT_TO_REGION(LC) = .false. 
       ENDDO 
 
       IC_X_S = UNDEFINED
