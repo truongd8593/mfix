@@ -24,7 +24,7 @@
 </tr>
 <tr>
 <td width="16%" style="background-color: #ff0000">  FAILED</td>
-<td width="16%" style="background-color: #ff0000"><p align="center">0</p></td>
+<td width="16%" style="background-color: #ff0000"><p align="center">1</p></td>
 </tr>
 <tr>
 <td width="16%" style="background-color: #FFFF33">  UNTESTED</td>
@@ -337,7 +337,8 @@
 </tr>
 <tr>
 <td><a href="#rebuild_mfix.cvs_update">rebuild_mfix.cvs_update</a></td>
-<td align="center"><div align="right">13</div></td>
+<td bgcolor="#ff0000">FAIL</td>
+<td align="center"><div align="right">197</div></td>
 <td align="center"><div align="right"><p>%</p></div></td>
 <td align="center"><div align="right"><p>%</p></div></td>
 </tr>
@@ -528,25 +529,38 @@
 <th align="center">Annotation</th>
 <th align="center">Value</th>
 </tr>
-<tr><td>Outcome</td></tr>
+<tr>
+<td>Outcome</td>
+<td bgcolor="#ff0000">FAIL</td>
+</tr>
 <tr>
 <td>ExecTest.stderr</td>
-<td></td>
+<td>
+     "&lt;pre&gt;/bin/rm: No match.
+/bin/rm: No match.
+/bin/rm: No match.
+/bin/rm: No match.
+/bin/rm: No match.
+/bin/rm: No match.
+&lt;/pre&gt;"
+    </td>
 </tr>
 <tr>
 <td>ExecTest.stdout</td>
-<td><pre></pre></td>
+<td><pre>
+     "&lt;pre&gt;&lt;/pre&gt;"
+    </pre></td>
 </tr>
 <tr>
 <td>qmtest.end_time</td>
 <td>
-     "2013-12-09T18:20:33Z"
+     "2013-12-09T18:24:22Z"
     </td>
 </tr>
 <tr>
 <td>qmtest.start_time</td>
 <td>
-     "2013-12-09T18:20:20Z"
+     "2013-12-09T18:21:05Z"
     </td>
 </tr>
 <tr>
@@ -1585,7 +1599,7 @@
 <tr>
 <td><b>Command Line</b></td>
 <td>
- /nfs/home/mfixtest/QMTest/bin/qmtest -D /nfs/home/mfixtest/regr_test_mfix run -f full --output /nfs/home/mfixtest/regr_test_mfix/Results/Dec09-13:20:20.qmr rebuild_mfix
+ /nfs/home/mfixtest/QMTest/bin/qmtest -D /nfs/home/mfixtest/regr_test_mfix run -f full --output /nfs/home/mfixtest/regr_test_mfix/Results/Dec09-13:21:04.qmr rebuild_mfix
 </td>
 </tr>
 <tr>
@@ -1597,13 +1611,13 @@
 <tr>
 <td><b>Start Time</b></td>
 <td>
- 2013-12-09T18:20:20Z
+ 2013-12-09T18:21:05Z
 </td>
 </tr>
 <tr>
 <td><b>End Time</b></td>
 <td>
- 2013-12-09T18:20:33Z
+ 2013-12-09T18:24:22Z
 </td>
 </tr>
 <tr>
