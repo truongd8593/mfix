@@ -71,6 +71,7 @@ post_mfix : \
     boundfunijk.mod \
     discretelement.mod \
     ghdtheory.mod \
+    des_stl_functions.mod \
     post_precision.mod \
     paralleldata.mod \
     usr_input.mod \
@@ -416,6 +417,7 @@ post_mfix : \
     dufour_coeff.$(OBJ_EXT) \
     chi_ij_GHD.$(OBJ_EXT) \
     des_init_namelist.$(OBJ_EXT) \
+    des_stl_functions_mod.$(OBJ_EXT) \
     ornl_header.$(OBJ_EXT) \
     ornl_util.$(OBJ_EXT) \
     ornl_stats.$(OBJ_EXT) \
@@ -763,6 +765,28 @@ ghdtheory.mod : ../model/GhdTheory/ghdtheory_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/ghdtheory_mod.f 
+des_stl_functions.mod : ../model/des/des_stl_functions_mod.f \
+            param1.mod \
+            funits.mod \
+            run.mod \
+            compar.mod \
+            discretelement.mod \
+            mfix_pic.mod \
+            cutcell.mod \
+            stl.mod \
+            indices.mod \
+            geometry.mod \
+            bc.mod \
+            mpi_utility.mod \
+            param.mod \
+            parallel.mod \
+            constant.mod \
+            toleranc.mod \
+            sendrecv.mod \
+            quadric.mod \
+            polygon.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_stl_functions_mod.f 
 post_precision.mod : post_precision_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) post_precision_mod.f 
 paralleldata.mod : paralleldata_mod.f 
@@ -1997,6 +2021,8 @@ cut_cell_preprocessing.$(OBJ_EXT) : ../model/cartesian_grid/cut_cell_preprocessi
             cutcell.mod \
             vtk.mod \
             cdist.mod \
+            discretelement.mod \
+            des_stl_functions.mod \
             fldvar.mod \
             polygon.mod \
             stl.mod \
@@ -2023,7 +2049,8 @@ allocate_cut_cell_arrays.$(OBJ_EXT) : ../model/cartesian_grid/allocate_cut_cell_
             param1.mod \
             indices.mod \
             cutcell.mod \
-            stl.mod 
+            stl.mod \
+            discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/allocate_cut_cell_arrays.f 
 allocate_dummy_cut_cell_arrays.$(OBJ_EXT) : ../model/cartesian_grid/allocate_dummy_cut_cell_arrays.f \
             param.mod \
@@ -2159,14 +2186,14 @@ vtk_out.$(OBJ_EXT) : ../model/cartesian_grid/vtk_out.f \
             rxns.mod \
             output.mod \
             scalars.mod \
+            stl.mod \
             mpi_utility.mod \
             parallel_mpi.mod \
             pscor.mod \
             discretelement.mod \
             mfix_pic.mod \
             cdist.mod \
-            polygon.mod \
-            stl.mod 
+            polygon.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/vtk_out.f 
 write_progress_bar.$(OBJ_EXT) : ../model/cartesian_grid/write_progress_bar.f \
             param.mod \
