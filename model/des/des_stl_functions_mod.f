@@ -729,11 +729,14 @@
       USE mpi_utility
 
       IMPLICIT NONE 
-      INCLUDE 'function.inc'
       
       INTEGER :: CELL_ID, I, J, K, COUNT, COUNT_FACETS, IJK
       
       CHARACTER*100 :: FILENAME
+
+      INCLUDE 'function.inc'
+
+
       IF(nodesI*nodesJ*nodesK.gt.1) then 
          write(filename,'(A,"_FACETS_GRID_CELL_",I5.5,".dat")')  trim(run_name), myPE
       else
@@ -765,10 +768,12 @@
       
       Subroutine  DEBUG_write_all_readin_facets
       IMPLICIT NONE 
-      INCLUDE 'function.inc'
       
       INTEGER ::  CELL_ID, N, I, J, K, COUNT, COUNT_FACETS, IJK
       CHARACTER*100 :: FILENAME
+
+      INCLUDE 'function.inc'
+
       OPEN(UNIT=444, FILE='geometry_from_readin_facets.stl') 
       write(444,*)'solid vcg'      
       write(*,*) 'NFACETS, NFACETS DES =', N_FACETS, N_FACETS_DES
@@ -796,12 +801,14 @@
 
       Subroutine  DEBUG_write_stl_from_grid_facet(WRITE_FACETS_EACH_CELL)
       IMPLICIT NONE 
-      INCLUDE 'function.inc'
       
       LOGICAL, INTENT(IN),optional  :: WRITE_FACETS_EACH_CELL
       INTEGER ::  CELL_ID, N, I, J, K, COUNT, COUNT_FACETS, IJK
       CHARACTER*100 :: FILENAME
       LOGICAL :: FACET_WRITTEN(DIM_STL), write_each_cell 
+
+      INCLUDE 'function.inc'
+
       write_each_cell = .false.
       if(present(WRITE_FACETS_EACH_CELL)) then
          write_each_cell = WRITE_FACETS_EACH_CELL
