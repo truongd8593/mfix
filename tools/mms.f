@@ -4,6 +4,12 @@
 !
 ! create a make file for MFIX
 !
+! To compile:
+! Intel : ifort -132 -o mms.exe mms.f
+! GCC   : gfortran -ffixed-form -ffixed-line-length-none -o mms.exe mms.f
+
+
+
 ! assumptions :
 !
 !    1) module ABC is located in file  abc_mod.f
