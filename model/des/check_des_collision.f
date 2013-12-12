@@ -13,324 +13,372 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_DES_COLLISION
 
-      USE param1
-      USE geometry
-      USE funits
-      USE compar      
-      USE discretelement
-      USE run
-      USE constant
-      USE physprop
-      use desgrid 
-      USE indices
-      USE fldvar
-      USE toleranc 
+! Global Variables:
+!---------------------------------------------------------------------//
+
+! User specified collision model
+      USE discretelement, only: DES_COLL_MODEL
+! Number of discrete solids phases
+      USE discretelement, only: DES_MMAX
+! Particle and wall friction coeff.
+      USE discretelement, only: MEW, MEW_W
+! Particle and wall normal spring constants
+      USE discretelement, only: KN, KN_W
+! Particle and wall tangential spring factor := KN/KT
+      USE discretelement, only: KT_FAC, KT_W_FAC
+! Coefficients of restitution: Normal and Tangential
+      USE discretelement, only: DES_EN_INPUT, DES_EN_WALL_INPUT
+      USE discretelement, only: DES_ET_INPUT, DES_ET_WALL_INPUT
+! Tangential damping factors := ET/EN
+      USE discretelement, only: DES_ETAT_FAC, DES_ETAT_W_FAC
+! Particle and wall Young's modulus
+      USE discretelement, only: E_YOUNG, EW_YOUNG
+! Particle and wall Pooisson ratio
+      USE discretelement, only: V_POISSON, VW_POISSON
+! Parameter constatns.
+      USE param1, only: ONE, ZERO, UNDEFINED
+! File unit for .LOG file.
+      USE funits, only: UNIT_LOG
+
       USE mpi_utility
-      USE output 
-      USE mfix_pic
-      USE cutcell
-      USE qmom_kinetic_equation
-      USE ic 
+
 
       IMPLICIT NONE
-!-----------------------------------------------
-! Local Variables
-!-----------------------------------------------      
-      INTEGER :: M
-      INTEGER :: I, J, K, IJK
-      LOGICAL :: FLAG_WARN
 
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Loop index.
+      INTEGER :: M
+! Number of phase interactions 
+      INTEGER :: MxM
+! Flag to warn user.
+      LOGICAL :: FLAG_WARN
+! Integer error flag.
+      INTEGER :: IER
+! Message for formated output.
+      CHARACTER(len=64) :: MSG
+
+! Initialize the error flag.
+      IER = 0
 
 ! Check settings for collision models
-      IF (DES_COLL_MODEL /= UNDEFINED_C) THEN      
-         IF (TRIM(DES_COLL_MODEL) .NE. 'HERTZIAN') THEN
-            IF(DMP_LOG) WRITE(UNIT_LOG, 1006)
-            CALL MFIX_EXIT(myPE)
+
+! check particle-particle normal restitution coefficient      
+      MxM = DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
+      DO M = 1, MxM
+         IF(DES_EN_INPUT(M) == UNDEFINED) THEN
+            IF(myPE == PE_IO) WRITE(*, 1003)                           &
+               'particle normal', 'DES_EN_INPUT', MxM
+            IF(DMP_LOG) WRITE(UNIT_LOG,1003)                           &
+               'particle normal', 'DES_EN_INPUT', MxM
+            IER = 1
          ENDIF
+      ENDDO
+      DO M = 1, MxM
+         IF(DES_EN_INPUT(M) > ONE .OR. DES_EN_INPUT(M) < ZERO) THEN
+            MSG=''; WRITE(MSG,"('DES_EN_INPUT(',I2,')')") M
+            IF(myPE == PE_IO) WRITE(*, 1002) trim(MSG)
+            IF(DMP_LOG) WRITE(UNIT_LOG,1002) trim(MSG)
+            IER = 1
+         ENDIF
+      ENDDO
+
+! Check particle-wall normal restitution coefficient.
+      DO M = 1, DES_MMAX
+         IF(DES_EN_WALL_INPUT(M) == UNDEFINED) THEN
+            IF(myPE == PE_IO) WRITE(*, 1003)                           &
+               'wall normal', 'DES_EN_WALL_INPUT', DES_MMAX
+            IF(DMP_LOG) WRITE(UNIT_LOG,1003)                           &
+               'wall normal', 'DES_EN_WALL_INPUT', DES_MMAX
+            IER = 1
+         ENDIF
+      ENDDO
+
+      DO M = 1, DES_MMAX
+         IF(DES_EN_WALL_INPUT(M) > ONE .OR.                            &
+            DES_EN_WALL_INPUT(M) < ZERO) THEN
+            MSG=''; WRITE(MSG,"('DES_EN_WALL_INPUT(',I2,')')") M
+            IF(myPE == PE_IO) WRITE(*, 1002) trim(MSG)
+            IF(DMP_LOG) WRITE(UNIT_LOG,1002) trim(MSG)
+            IER = 1
+         ENDIF
+      ENDDO
+
+
+! Check coefficient friction 
+      IF(MEW == UNDEFINED) THEN
+         MSG='Particle friction coefficient.'
+         IF(myPE == PE_IO) WRITE(*, 1001) 'MEW', MSG
+         IF(DMP_LOG) WRITE(UNIT_LOG,1001) 'MEW', MSG
+         IER = 1
+      ELSEIF (MEW < ZERO .OR. MEW_W > ONE) THEN
+         IF(myPE == PE_IO) WRITE(*, 1002) 'MEW'
+         IF(DMP_LOG) WRITE(UNIT_LOG,1002) 'MEW'
+         IER = 1
+      ENDIF
+      IF(MEW_W == UNDEFINED) THEN
+         MSG='Wall friction coefficient.'
+         IF(myPE == PE_IO) WRITE(*, 1001) 'MEW_W', MSG
+         IF(DMP_LOG) WRITE(UNIT_LOG,1001) 'MEW_W', MSG
+         IER = 1
+      ELSEIF(MEW_w < ZERO .OR. MEW_W > ONE) THEN
+         IF(myPE == PE_IO) WRITE(*, 1002) 'MEW_W'
+         IF(DMP_LOG) WRITE(UNIT_LOG,1002) 'MEW_W'
+         IER = 1
       ENDIF
 
-      IF (TRIM(DES_COLL_MODEL) .EQ. 'HERTZIAN') THEN
-! check young's modulus and poisson ratio
-         IF(EW_YOUNG == UNDEFINED ) THEN
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1020)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-         IF(VW_POISSON == UNDEFINED) THEN
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1021)
-            CALL MFIX_EXIT(myPE)
-         ELSE
-            IF (VW_POISSON > 0.5d0 .OR. VW_POISSON <= -ONE) THEN
-               IF(DMP_LOG) WRITE (UNIT_LOG, 1033)
-            ENDIF
-         ENDIF
-         DO M = 1, DES_MMAX
-            IF(E_YOUNG(M) == UNDEFINED) THEN
-               IF(DMP_LOG) WRITE (UNIT_LOG, 1022)
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-            IF(V_POISSON(M) == UNDEFINED) THEN
-               IF(DMP_LOG) WRITE (UNIT_LOG, 1023)
-               CALL MFIX_EXIT(myPE)
-            ELSE
-               IF(V_POISSON(M) > 0.5d0 .OR. V_POISSON(M) <= -ONE) THEN
-                  IF(DMP_LOG) WRITE (UNIT_LOG, 1033)
-               ENDIF
-            ENDIF
-         ENDDO
-! check particle-particle tangential restitution coefficient      
-         DO M = 1, DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
-            IF(DES_ET_INPUT(M) == UNDEFINED) THEN
-               IF(DMP_LOG) WRITE (UNIT_LOG, 1024) DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-         ENDDO
-         DO M = 1, DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
-            IF(DES_ET_INPUT(M) > ONE .OR. DES_ET_INPUT(M) < ZERO) THEN
-               IF(DMP_LOG) WRITE (UNIT_LOG, 1025)
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-         ENDDO
-! check particle-wall tangential restitution coefficient
-         DO M = 1, DES_MMAX
-            IF(DES_ET_WALL_INPUT(M) == UNDEFINED) THEN
-               IF(DMP_LOG) WRITE (UNIT_LOG, 1026)
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-         ENDDO
-         DO M = 1, DES_MMAX
-            IF(DES_ET_WALL_INPUT(M) > ONE .OR. DES_ET_WALL_INPUT(M) < ZERO) THEN
-               IF(DMP_LOG) WRITE (UNIT_LOG, 1027)
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-         ENDDO
-! if following are assigned warn user they are discarded
-         IF(KN .NE. UNDEFINED .OR. KN_W .NE. UNDEFINED) THEN 
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1028)
-         ENDIF
-         IF(KT_FAC .NE. UNDEFINED .OR. KT_W_FAC .NE. UNDEFINED) then 
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1029)
-         ENDIF
-         IF(DES_ETAT_FAC .NE. UNDEFINED .OR. &
-            DES_ETAT_W_FAC .NE. UNDEFINED) then 
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1030)
-         ENDIF
 
 
-      ELSE  ! default linear spring-dashpot model
 
-! check normal spring constants 
-         IF(KN == UNDEFINED .OR. KN_W == UNDEFINED) THEN
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1004)
-            CALL MFIX_EXIT(myPE)
+
+! Check collision model specific model parameters.
+      SELECT CASE (TRIM(DES_COLL_MODEL))
+
+!**********************************************************************!
+!*                                                                    *!
+!*                     linear spring-dashpot model                    *!
+!*                                                                    *!
+!**********************************************************************!
+      CASE ('SOFT-SPRING')
+
+         IF(KN == UNDEFINED) THEN
+            IF(myPE == PE_IO) WRITE(*, 1101) 'KN'
+            IF(DMP_LOG) WRITE(UNIT_LOG,1101) 'KN'
+            IER = 1
          ENDIF
+         IF(KN_W == UNDEFINED) THEN
+            IF(myPE == PE_IO) WRITE(*, 1101) 'KN_W'
+            IF(DMP_LOG) WRITE(UNIT_LOG,1101) 'KN_W'
+            IER = 1
+         ENDIF
+
 ! Check for tangential spring constant factors         
-         IF(KT_FAC == UNDEFINED .OR. KT_W_FAC == UNDEFINED) THEN
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1005)
+         IF(KT_FAC == UNDEFINED) THEN
+            IF(DMP_LOG) WRITE (UNIT_LOG, 1102) 'KT_FAC'
+         ELSEIF(KT_FAC > ONE .OR. KT_FAC < ZERO) THEN
+            IF(myPE == PE_IO) WRITE(*, 1103) 'KT_FAC'
+            IF(DMP_LOG) WRITE(UNIT_LOG,1103) 'KT_FAC'
+            IER = 1
          ENDIF
-         IF(KT_FAC .NE. UNDEFINED) THEN
-            IF(KT_FAC > ONE .OR. KT_FAC < ZERO) THEN
-               IF(DMP_LOG) WRITE (UNIT_LOG, 1016)
-               CALL MFIX_EXIT(myPE)
-            ENDIF
+         IF(KT_W_FAC == UNDEFINED) THEN
+            IF(DMP_LOG) WRITE (UNIT_LOG, 1102) 'KT_W_FAC'
+         ELSEIF(KT_W_FAC > ONE .OR. KT_W_FAC < ZERO) THEN
+            IF(myPE == PE_IO) WRITE(*, 1103) 'KT_W_FAC'
+            IF(DMP_LOG) WRITE(UNIT_LOG,1103) 'KT_W_FAC'
+            IER = 1
          ENDIF
-         IF(KT_W_FAC .NE. UNDEFINED) THEN
-            IF(KT_W_FAC > ONE .OR. KT_W_FAC < ZERO) THEN
-               IF(DMP_LOG) WRITE (UNIT_LOG, 1016)
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-         ENDIF
-! check for tangential damping factor
+
+! Check for tangential damping factor
          IF(DES_ETAT_FAC == UNDEFINED) THEN
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1010)
+            IF(DMP_LOG) WRITE (UNIT_LOG, 1104) 'DES_ETAT_FAC'
          ELSEIF(DES_ETAT_FAC > ONE .OR. DES_ETAT_FAC < ZERO) THEN
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1015)
-            CALL MFIX_EXIT(myPE)
+            IF(myPE == PE_IO) WRITE(*, 1103) 'DES_ETAT_FAC'
+            IF(DMP_LOG) WRITE(UNIT_LOG,1103) 'DES_ETAT_FAC'
+            IER = 1
          ENDIF
          IF(DES_ETAT_W_FAC == UNDEFINED) THEN
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1011)
+            IF(DMP_LOG) WRITE (UNIT_LOG, 1104) 'DES_ETAT_W_FAC'
          ELSEIF(DES_ETAT_W_FAC > ONE .OR. DES_ETAT_W_FAC < ZERO) THEN
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1015)
-            CALL MFIX_EXIT(myPE)
+            IF(myPE == PE_IO) WRITE(*, 1103) 'DES_ETAT_W_FAC'
+            IF(DMP_LOG) WRITE(UNIT_LOG,1103) 'DES_ETAT_W_FAC'
+            IER = 1
          ENDIF
+
 ! if following are assigned warn user they are discarded
          FLAG_WARN = .FALSE.
          DO M = 1, DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
             IF(DES_ET_INPUT(M) .NE. UNDEFINED) FLAG_WARN = .TRUE.
          ENDDO
-         IF (FLAG_WARN) WRITE(UNIT_LOG,1031)
+         IF (FLAG_WARN) WRITE(UNIT_LOG,1105) 'DES_ET_INPUT'
          FLAG_WARN = .FALSE.
          DO M = 1, DES_MMAX
             IF(DES_ET_WALL_INPUT(M) .NE. UNDEFINED) FLAG_WARN = .TRUE.
          ENDDO
-         IF (FLAG_WARN) WRITE(UNIT_LOG,1032)
+         IF (FLAG_WARN) WRITE(UNIT_LOG,1105) 'DES_ET_WALL_INPUT'
          FLAG_WARN = .FALSE.
 
-      ENDIF   ! end if/else(des_coll_model.eq.hertzian)
 
-! check particle-particle normal restitution coefficient      
-      DO M = 1, DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
-         IF(DES_EN_INPUT(M) == UNDEFINED) THEN
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1008) DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDDO
-      DO M = 1, DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
-         IF(DES_EN_INPUT(M) > ONE .OR. DES_EN_INPUT(M) < ZERO) THEN
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1012)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDDO
 
-! check particle-wall normal restitution coefficient (needed by all
-! current collision models)
-! MPPIC has separate key words now for the particle-wall interaction
-      DO M = 1, DES_MMAX
-         IF(DES_EN_WALL_INPUT(M) == UNDEFINED) THEN
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1009)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDDO
-      DO M = 1, DES_MMAX
-         IF(DES_EN_WALL_INPUT(M) > ONE .OR. DES_EN_WALL_INPUT(M) < ZERO) THEN
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1013)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDDO
+!**********************************************************************!
+!*                                                                    *!
+!*                           Hertzian model                           *!
+!*                                                                    *!
+!**********************************************************************!
+      CASE ('HERTZIAN')
 
-! check coefficient friction 
-      IF(MEW /= UNDEFINED .AND. MEW_W /= UNDEFINED) THEN
-         IF (MEW> ONE .OR. MEW_W > ONE .OR. &
-             MEW < ZERO .OR. MEW_W < ZERO) THEN
-            IF(DMP_LOG) WRITE (UNIT_LOG, 1014)
-            CALL MFIX_EXIT(myPE)
+! check young's modulus and poisson ratio
+         IF(EW_YOUNG == UNDEFINED ) THEN
+            MSG='Wall value for Youngs modulus'
+            IF(myPE == PE_IO) WRITE(*, 1201) 'EW_YOUNG', MSG
+            IF(DMP_LOG) WRITE(UNIT_LOG,1201) 'EW_YOUNG', MSG
+            IER = 1
          ENDIF
-      ELSE
-         WRITE(UNIT_LOG, 1035)
-         CALL MFIX_EXIT(myPE)
-      ENDIF
+
+         IF(VW_POISSON == UNDEFINED) THEN
+            MSG='Wall value for Poissons ratio'
+            IF(myPE == PE_IO) WRITE(*, 1201) 'VW_POISSON', MSG
+            IF(DMP_LOG) WRITE(UNIT_LOG,1201) 'VW_POISSON', MSG
+            IER = 1
+         ELSEIF (VW_POISSON > 0.5d0 .OR. VW_POISSON <= -ONE) THEN
+            IF(myPE == PE_IO) WRITE(*, 1202) 'VW_POISSON'
+            IF(DMP_LOG) WRITE(UNIT_LOG,1202) 'VW_POISSON'
+            IER = 1
+         ENDIF
+
+         DO M = 1, DES_MMAX
+            IF(E_YOUNG(M) == UNDEFINED) THEN
+               MSG=''; WRITE(MSG,"('Phase ',I2,' Youngs modulus')") M
+               IF(myPE == PE_IO) WRITE(*, 1201) 'E_YOUNG', MSG
+               IF(DMP_LOG) WRITE(UNIT_LOG,1201) 'E_YOUNG', MSG
+               IER = 1
+            ENDIF
+            IF(V_POISSON(M) == UNDEFINED) THEN
+               MSG=''; WRITE(MSG,"('Phase ',I2,' Poissons ratio')") M
+               IF(myPE == PE_IO) WRITE(*, 1201) 'V_POISSON', MSG
+               IF(DMP_LOG) WRITE(UNIT_LOG,1201) 'V_POISSON', MSG
+               IER = 1
+            ELSEIF(V_POISSON(M) > 0.5d0 .OR. V_POISSON(M) <= -ONE) THEN
+               IF(myPE == PE_IO) WRITE(*, 1202) 'V_POISSON'
+               IF(DMP_LOG) WRITE(UNIT_LOG,1202) 'V_POISSON'
+               IER = 1
+            ENDIF
+         ENDDO
+
+! check particle-particle tangential restitution coefficient      
+         MxM = DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
+         DO M = 1, MxM
+            IF(DES_ET_INPUT(M) == UNDEFINED) THEN
+               IF(myPE == PE_IO) WRITE(*, 1203)                        &
+                  'particle', 'DES_ET_INPUT', MxM
+               IF(DMP_LOG) WRITE(UNIT_LOG,1203)                        &
+                  'particle', 'DES_ET_INPUT', MxM
+               IER = 1
+            ENDIF
+         ENDDO
+         DO M = 1, MxM
+            IF(DES_ET_INPUT(M) > ONE .OR. DES_ET_INPUT(M) < ZERO) THEN
+               MSG=''; WRITE(MSG,"('DES_ET_INPUT(',I2,')')") M
+               IF(myPE == PE_IO) WRITE(*, 1204) trim(MSG)
+               IF(DMP_LOG) WRITE(UNIT_LOG,1204) trim(MSG)
+               IER = 1
+            ENDIF
+         ENDDO
+
+! check particle-wall tangential restitution coefficient
+         DO M = 1, DES_MMAX
+            IF(DES_ET_WALL_INPUT(M) == UNDEFINED) THEN
+               IF(myPE == PE_IO) WRITE(*, 1203)                        &
+                  'wall', 'DES_ET_WALL_INPUT', DES_MMAX
+               IF(DMP_LOG) WRITE(UNIT_LOG,1203)                        &
+                  'wall', 'DES_ET_WALL_INPUT', DES_MMAX
+               IER = 1
+            ENDIF
+         ENDDO
+         DO M = 1, DES_MMAX
+            IF(DES_ET_WALL_INPUT(M) > ONE .OR.                         &
+               DES_ET_WALL_INPUT(M) < ZERO) THEN
+               MSG=''; WRITE(MSG,"('DES_ET_WALL_INPUT(',I2,')')") M
+               IF(myPE == PE_IO) WRITE(*, 1204) trim(MSG)
+               IF(DMP_LOG) WRITE(UNIT_LOG,1204) trim(MSG)
+               IER = 1
+            ENDIF
+         ENDDO
+
+! If following are assigned warn user they are discarded.
+         IF(DMP_LOG)THEN
+            IF(KN .NE. UNDEFINED)                                      &
+               WRITE(UNIT_LOG, 1205) 'KN'
+            IF(KN_W .NE. UNDEFINED)                                    &
+               WRITE(UNIT_LOG, 1205) 'KN_W'
+            IF(KT_FAC .NE. UNDEFINED)                                  &
+               WRITE(UNIT_LOG, 1205) 'KT_FAC'
+            IF(KT_W_FAC .NE. UNDEFINED)                                &
+               WRITE(UNIT_LOG, 1205) 'KT_W_FAC'
+            IF(DES_ETAT_FAC .NE. UNDEFINED)                            &
+               WRITE(UNIT_LOG, 1205) 'DES_ETAT_FAC'
+            IF(DES_ETAT_W_FAC .NE. UNDEFINED)                          &
+               WRITE(UNIT_LOG, 1205) 'DES_ETAT_W_FAC'
+         ENDIF
+
+
+! Unknown collision model.
+      CASE DEFAULT
+
+         IF(myPE == PE_IO) WRITE(*, 1000)TRIM(DES_COLL_MODEL)
+         IF(DMP_LOG) WRITE(UNIT_LOG,1000) TRIM(DES_COLL_MODEL)
+         IER =1
+
+      END SELECT
+
+
+     IF(IER /=0) CALL MFIX_EXIT(myPE)
+
 
 
       RETURN
 
 
- 1004 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Spring constants KN or KN_W not specified in mfix.dat',&
-         /1X,70('*')/)
+ 1000 FORMAT(/1X,70('*')/' From: CHECK_DES_COLLISION',/' Error 1000:', &
+         ' Invalid collision model specified: ',A,'.',/                &
+         ' Available DEM collision modles include:',/                  &
+         '   > SOFT-SPRING (DEFAULT)',/'   > HERTZIAN',/1X,70('*')/)
 
- 1005 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'WARNING: Tangential spring factors KT_FAC or KT_W_FAC not',/10X,&
-         'specified in mfix.dat.  These factors will be defined in ',&
-         'cfassign.f',/10X,'as 2/7.  See subroutine for references.',&
-         /1X,70('*')/)
+ 1001 FORMAT(/1X,70('*')/' From: CHECK_DES_COLLISION',/' Error 1001:', &
+         ' Undefined collision parameter: ',A,/' Description: ',A,/    &
+         1X,70('*')/)
 
- 1006 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Change the value DES_COLL_MODEL in mfix.dat. Options are',/10X,&
-         'leave it undefined to use the (default) linear spring-',/10X,&
-         'dashpot model or set it to HERTZIAN for hertz model.',&
-          /1X,70('*')/)
+ 1002 FORMAT(/1X,70('*')/' From: CHECK_DES_COLLISION',/' Error 1002:', &
+         ' Unphysical value specified for ',A,/' Valid parameter',     &
+         ' range is between zero and one.'/1X,70('*')/)
 
- 1008 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Particle-particle restitution coefficient DES_EN_INPUT(M)',/10X,&
-         'not specified in mfix.dat for interactions M = 1 to ',I5,&
-          /1X,70('*')/)
-
- 1009 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Particle-wall restitution coefficients DES_EN_WALL_INPUT(M)',&
-         /10X,'not specified in mfix.dat for interactions M= 1 to MMAX',&
-         /1X,70('*')/)
-
- 1010 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'WARNING: Tangential damping factors DES_ETAT_FAC not ',&
-         'specified in',/10X, 'mfix.dat. This factor will be set in ',&
-         'cfassign.f as 1/2. See subroutine for references.',&
-         /1X,70('*')/)
-
- 1011 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'WARNING: Tangential damping factors DES_ETAT_W_FAC not ',&
-         'specified in mfix.dat',/10X,'This factor will be set in ',&
-         'cfassign.f as 1/2. See subroutine for references.',&
-         /1X,70('*')/)
-
- 1012 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Unphysical ( > 1 or < 0) values of DES_EN_INPUT(M)',&
-         /1X,70('*')/)
-
- 1013 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Unphysical ( > 1 or < 0) values of DES_EN_WALL_INPUT(M)',&
-         /1X,70('*')/)
-
- 1014 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Unphysical ( > 1 or < 0) values of friction coefficients',&
-         /1X,70('*')/)
-
- 1015 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Values of DES_ETAT_FAC or DES_ETAT_W_FAC unphysical ',/10X,&
-         '(< 0 or > 1) defined in mfix.dat',/1X,70('*')/)
-
- 1016 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Values of KT_FAC or KT_W_FAC unphysical (< 0 or > 1) ',/10X,&
-         'defined in mfix.dat',/1X,70('*')/)
+ 1003 FORMAT(/1X,70('*')/' From: CHECK_DES_COLLISION',/' Error 1003:', &
+         ' Particle-',A,' restitution coefficient',/1x,A,              &
+         ' must be specified for all ',I3,' interactions.',/1X,70('*')/)
 
 
- 1020 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Wall value for Youngs modulus (EW_YOUNG) must be,'/10X,&
-         'specified in mfix.dat',/1X,70('*')/)
-
- 1021 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Wall value for Poissons ratio (VW_POISSON) must be',/10X,&
-         'specified in mfix.dat',/1X,70('*')/)
-
- 1022 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Youngs modulus (E_YOUNG) must be specified in mfix.dat',/10X,&
-         'for all particle types M = 1 to MMAX',/1X,70('*')/)
-
- 1023 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Poissons ratio (V_POISSON) must be specified in mfix.dat',/10X,&
-         'for all particle types M = 1 to MMAX',/1X,70('*')/)
-
- 1024 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Particle-particle tangential restitution coefficient',/10X,&
-         'DES_ET_INPUT(M) must be specified in mfix.dat for all',/10X,&
-         'interactions M = 1 to ',I5,/1X,70('*')/)
-
- 1025 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Unphysical ( > 1 or < 0) values of DES_ET_INPUT(M)',/1X,70('*')/)
-
- 1026 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Particle-wall tangential restitution coefficient',/10X,&
-         'DES_ET_WALL_INPUT(M) must be specified in mfix.dat for all',/10X,&
-         'wall interactions M = 1 to MMAX',/1X,70('*')/)
-
- 1027 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Unphysical ( > 1 or < 0) values of DES_ET_WALL_INPUT(M)',/1X,70('*')/)
-
- 1028 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'WARNING: specified values of KN and KN_W are not used with',/10X,&
-         'Hertz collision model',/1X,70('*')/)
-
- 1029 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'WARNING: specified values of KT_FAC and KT_W_WALL are not',/10X,&
-         'used with Hertz collision model',/1X,70('*')/)
-
- 1030 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'WARNING: specified values of DES_ETAT_FAC and',/10X,&
-         'DES_ETAT_W_FAC are not used with Hertz collision model',/1X,70('*')/)
-
- 1031 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'WARNING: specified values of DES_ET_INPUT(M) are not used',/10X,&
-         'with default collision model',/1X,70('*')/)
-
- 1032 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'WARNING: specified values of DES_ET_WALL_INPUT(M) are not',/10X,&
-         'used with default collision model',/1X,70('*')/)
-
- 1033 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'WARNING: Values of VW_POISSON OR V_POISSON unphysical',/10X,&
-         '(> 0.50 or =< -1.d0) defined in mfix.dat',/1X,70('*')/)
+ 1101 FORMAT(/1X,70('*')/' From: CHECK_DES_COLLISION',/' Error 1101:', &
+         ' Spring constants ',A,' not specified in mfix.dat',/1X,70('*'))
 
 
- 1035 FORMAT(/1X,70('*')//' From: CHECK_DES_COLLISION',/' Message: ',&
-         'Friction coefficients (MEW and MEW_w) must be ',&
-         'specified in mfix.dat',/1X,70('*')/)
+
+ 1102 FORMAT(/1X,70('*')/' From: CHECK_DES_COLLISION',/' Warning 1102:',&
+         ' Tangential spring factor ',A,' not specified in mfix.dat.',/&
+         ' It will be defined in cfassign.f as 2/7.',/1X,70('*')/)
+
+ 1103 FORMAT(/1X,70('*')/' From: CHECK_DES_COLLISION',/' Error 1103:', &
+         ' Unphysical value specified for ',A,/' Valid parameter',     &
+         ' range is between zero and one.'/1X,70('*')/)
+
+ 1104 FORMAT(/1X,70('*')/' From: CHECK_DES_COLLISION',/' Warning 1104:',&
+         ' Tangential damping factor ',A,' not specified.',/           &
+         ' The default of 1/2 will be set in cfassign.f. ',/1X,70('*')/)
+
+ 1105 FORMAT(/1X,70('*')/' From: CHECK_DES_COLLISION',/' Warning 1105:',&
+         ' Specified values for ',A,' are not used',/' with the',       &
+         ' default collision model.',/1X,70('*')/)
+
+
+
+
+ 1201 FORMAT(/1X,70('*')/' From: CHECK_DES_COLLISION',/' Error 1201:', &
+         ' Undefined collision parameter: ',A,/' Description: ',A,/    &
+         1X,70('*')/)
+
+ 1202 FORMAT(/1X,70('*')/' From: CHECK_DES_COLLISION',/' Error 1202:', &
+         ' Unphysical value specified for ',A,/' Valid parameter',     &
+         ' range is >0.50 or =< 1.0'/1X,70('*')/)
+
+ 1203 FORMAT(/1X,70('*')/' From: CHECK_DES_COLLISION',/' Error 1203:', &
+         'Particle-',A,' tangential restitution coefficient',/1x,A,    &
+         ' must be specified for all ',I3,' interactions.',/1X,70('*')/)
+
+ 1204 FORMAT(/1X,70('*')/' From: CHECK_DES_COLLISION',/' Error 1204:', &
+         ' Unphysical value specified for ',A,/' Valid parameter',     &
+         ' range is between zero and one.'/1X,70('*')/)
+
+ 1205 FORMAT(/1X,70('*')/' From: CHECK_DES_COLLISION',/' Warning 1205:',&
+         'Specified parameter not used in Hertz model',A,/1X,70('*')/)
+
 
          END SUBROUTINE CHECK_DES_COLLISION

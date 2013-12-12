@@ -77,10 +77,10 @@
 ! If run_type is not 'NEW' then force the gener_part_config to .false. 
 ! This will prevent overwriting over the number of particles which could
 ! have potentially changed depending on inlet/outlet      
-      IF(TRIM(RUN_TYPE) .NE. 'NEW'.AND.GENER_PART_CONFIG) THEN 
+      IF(TRIM(RUN_TYPE) .NE. 'NEW' .AND. GENER_PART_CONFIG) THEN 
          GENER_PART_CONFIG = .FALSE. 
-         IF(DMP_LOG) WRITE(UNIT_LOG, 1037)
-         IF(PRINT_DES_SCREEN) WRITE(*, 1037)
+         IF(DMP_LOG) WRITE(UNIT_LOG, 1000)
+         IF(PRINT_DES_SCREEN) WRITE(*, 1000)
       ENDIF
 
 
@@ -100,6 +100,9 @@
             call mfix_exit(mype) 
          endif
       enddo
+
+
+
 
 ! Only new DEM runs proceed with the following checks.
       IF(TRIM(RUN_TYPE) .NE. 'NEW') RETURN
@@ -184,9 +187,8 @@
       RETURN
 
 
- 1037 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
-          'GENER_PAR_CONFIG set to false because a restart detected',&
-          /1X,70('*')/)
+ 1000 FORMAT(/1X,70('*')/' From: CHECK_DES_PCONFIG',/' Message: ',        &
+          'Restart detected. Disabling GENER_PAR_CONFIG',/1X,70('*')/)
 
  1054 FORMAT(/1X,70('*')//' From: CHECK_DES_PCONFIG',/' Message: ',&
           'WARNING: zlength or dz(1) is used to calculate the ',&
@@ -199,9 +201,9 @@
           'number',/10X,'of particles in the 2D simulation when ',&
           'GENER_PART_CONFIG is T and DIMN = 2.',/1X,70('*'))
 
- 1056 FORMAT(/1X,70('*')//' From: CHECK_DES_PCONFIG',/' Message: ',&
-          'Gener_part_config is true but using deprecated flags', /, &
-          'DES_EPS_XSTART, DES_EPS_YSTART, and DES_EPS_ZSTART are obsolete flags.', /, &
+ 1056 FORMAT(/1X,70('*')/' From: CHECK_DES_PCONFIG',/' Error 1001:',      &
+          ' Deprecated flags for GENER_PART_CONFIG detected.',/           &
+          ' DES_EPS_XSTART, DES_EPS_YSTART, and DES_EPS_ZSTART are obsolete flags.', /, &
           'IC region is now based on usual IC_flags', /, & 
           'Delete these flags from mfix.dat and restart', /, &
           'Exitting',/1X,70('*'))
@@ -212,7 +214,6 @@
           'IC region is now based on usual IC_flags', /, & 
           'Delete these flags from mfix.dat and restart', /, &
           'Exitting',/1X,70('*'))
-
 
  2015    FORMAT( 1X,70('*')/ & 
          'From: CHECK_DES_PCONFIG    ', /5x, &

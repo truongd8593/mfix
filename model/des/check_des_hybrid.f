@@ -10,10 +10,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_DES_HYBRID
 
-!-----------------------------------------------
-! Modules 
-!-----------------------------------------------      
-
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Runtime Flag: Invoke gas/solids coupled simulation.
@@ -37,56 +33,76 @@
 
       USE mpi_utility
 
+
       IMPLICIT NONE
+
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Integer error flag.
+      INTEGER :: IER
+
+
+! Initialize the local error flag.
+      IER = 0
 
 ! des_continuum_coupled must be true if des_continuum_hybrid              
       IF(.NOT.DES_CONTINUUM_COUPLED) THEN
-         WRITE(UNIT_LOG, 1094)
-         CALL MFIX_EXIT(myPE)
+         IF(myPE == PE_IO) WRITE(*, 1000)
+         IF(DMP_LOG) WRITE(UNIT_LOG,1000)
+         IER = 1
       ENDIF
-! DES_CONTINUUM_HYBRID does not work with GHD or QMOMK
+
+! Hybrid model does not work with GHD or QMOMK.
       IF (TRIM(KT_TYPE)=='GHD') THEN
-         IF(DMP_LOG) WRITE(UNIT_LOG, 1091)
-         CALL MFIX_EXIT(myPE)
+         IF(myPE == PE_IO) WRITE(*, 1001)
+         IF(DMP_LOG) WRITE(UNIT_LOG,1001)
+         IER = 1
       ENDIF
       IF (QMOMK) THEN
-         IF(DMP_LOG) WRITE(UNIT_LOG, 1092)
-         CALL MFIX_EXIT(myPE)
+         IF(myPE == PE_IO) WRITE(*, 1002)
+         IF(DMP_LOG) WRITE(UNIT_LOG,1002)
+         IER = 1
       ENDIF
+
       IF (C_F==UNDEFINED .AND. MMAX>0 .AND. DES_MMAX >0) THEN
-         IF(DMP_LOG) WRITE(UNIT_LOG, 1095)
-         CALL MFIX_EXIT(myPE)
+         IF(myPE == PE_IO) WRITE(*, 1003)
+         IF(DMP_LOG) WRITE(UNIT_LOG, 1003)
+         IER = 1
       ENDIF                 
 
+! MPPIC and Hybrid models don't work together.
       IF (MPPIC) THEN
-         IF(DMP_LOG) WRITE(UNIT_LOG, 1093)
-         CALL MFIX_EXIT(myPE)
+         IF(myPE == PE_IO) WRITE(*, 1004)
+         IF(DMP_LOG) WRITE(UNIT_LOG, 1004)
+         IER = 1
       ENDIF         
       
+      IF(IER /= 0) CALL MFIX_EXIT(myPE)
 
       RETURN
 
 
- 1090 FORMAT(/1X,70('*')//' From: CHECK_DES_HYBRID',/' Message: ',&
-         'DES_MMAX not defined in mfix.dat. It must be defined',/10X,&
-         'when using DES_CONTINUUM_HYBRID',/1X,70('*')/)
+ 1000 FORMAT(/1X,70('*')/' From: CHECK_DES_HYBRID',/' Error 1000:',     &
+         ' DES_CONTINUUM_COUPLED must be to true when using ',/         &
+         ' DES_CONTINUUM_HYBRID.', /1X,70('*')/)
 
- 1091 FORMAT(/1X,70('*')//' From: CHECK_DES_HYBRID',/' Message: ',&
-         'KT_TYPE cannot be set to GHD when using ',&
-         'DES_CONTINUUM_HYBRID.',/1X,70('*')/)
- 1092 FORMAT(/1X,70('*')//' From: CHECK_DES_HYBRID',/' Message: ',&
-         'QMOMK cannot be TRUE when using ',&
-         'DES_CONTINUUM_HYBRID.',/1X,70('*')/)
- 1093 FORMAT(/1X,70('*')//' From: CHECK_DES_HYBRID',/' Message: ',&
-         'MPPIC and DES_CONTINUUM_HYBRID cannot both be TRUE.',&
-         /1X,70('*')/)
- 1094 FORMAT(/1X,70('*')//' From: CHECK_DES_HYBRID',/' Message: ',&
-         'DES_CONTINUUM_COUPLED must be to true when using ',/10X,&
-         'DES_CONTINUUM_HYBRID.',&
-         /1X,70('*')/)
- 1095 FORMAT(/1X,70('*')//' From: CHECK_DES_HYBRID',/' Message: ',&
-         'C_F must be defined when DES_CONTINUUM_HYBRID TRUE ',/10X,&
-         'and both continuum and discrete solids phases are ',&
-         'present'/10X,'(MAX>=1 and DES_MMAX>=1).',/1X,70('*')/)
+ 1001 FORMAT(/1X,70('*')/' From: CHECK_DES_HYBRID',/' Error 1001:',     &
+         ' KT_TYPE cannot be set to GHD when using',                    &
+         ' DES_CONTINUUM_HYBRID.',/1X,70('*')/)
+
+ 1002 FORMAT(/1X,70('*')/' From: CHECK_DES_HYBRID',/' Error 1002:',    &
+         ' QMOMK cannot be TRUE when using DES_CONTINUUM_HYBRID.',/1X, &
+         70('*')/)
+
+ 1003 FORMAT(/1X,70('*')/' From: CHECK_DES_HYBRID',/' Error 1003:',    &
+         ' C_F must be defined for hybrid simulations containing',/    &
+         ' continuum and discrete solids. (MMAX>=1 and DES_MMAX>=1)',/ &
+         1X,70('*')/)
+
+ 1004 FORMAT(/1X,70('*')/' From: CHECK_DES_HYBRID',/' Error 1004:',    &
+         'MPPIC and DES_CONTINUUM_HYBRID models are incompatible.',/   &
+         1X,70('*')/)
+
 
          END SUBROUTINE CHECK_DES_HYBRID

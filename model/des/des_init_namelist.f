@@ -82,8 +82,8 @@
       DES_ETAT_FAC = UNDEFINED
       DES_ETAT_W_FAC = UNDEFINED
 
-      DES_COLL_MODEL = UNDEFINED_C
-! T.Li : Hertzian collision model
+      DES_COLL_MODEL = 'SOFT-SPRING'
+
       ew_young = undefined
       vw_poisson = undefined
       e_young(:) = undefined
