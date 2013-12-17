@@ -1,0 +1,158 @@
+#!/bin/bsh -f
+#
+# MFIX script file for obtaining user-defined files and
+# executing 'make'
+#  Usage:
+#     1) on unix machines     :  sh    mfix/model/make_mfix
+#     2) on NT using PGI bash :  bash  mfix/model/make_mfix
+
+input=$@
+
+MFIX_VERSION="2013-2"
+EXEC_FILE="mfix.exe"
+MAKEFILE="Makefile"
+DPO_BASE=".."
+DPO="OBJ"
+OBJ_EXT="o"
+FORTRAN_EXT="f"
+
+RUN_DIR=
+MFIX_SRC=
+MFIX_CONFIG=
+
+# Set some of the folder paths.
+RUN_DIR=$(pwd)
+MFIX_SRC=$(echo $0 | sed 's/\/mkmfix//')
+MFIX_CONFIG=${MFIX_SRC}/../config
+
+# This sets absolute paths.
+. ${MFIX_CONFIG}/sys_info.sh
+
+# Request variables.
+REQ_MODE=1
+REQ_OPT=1
+REQ_COMP=1
+
+# Collected from the user
+USE_TAU=0
+USE_NETCDF=0
+EXPERT=0
+FORCE_COMPILE=0
+
+# SMP/DMP Variables
+USE_SMP=
+USE_DMP=
+
+# Auto-compile
+#  0 : User provides all input
+#  1 : Use last build
+AUTOCOMPILE=0
+
+# Set based upon user input.
+COMP_FILE=
+FORT_FLAGS=
+FORT_FLAGS2=
+FORT_FLAGS3=
+LINK_CMD=
+LINK_FLAGS=
+LIB_FLAGS=
+FORTRAN_CMD=
+MODULE_CODE=
+
+# Subdirectories to be checked.
+FOLDER_LIST="."
+FOLDER_LIST=${FOLDER_LIST}" cartesian_grid"
+FOLDER_LIST=${FOLDER_LIST}" chem"
+FOLDER_LIST=${FOLDER_LIST}" cohesion"
+FOLDER_LIST=${FOLDER_LIST}" des"
+FOLDER_LIST=${FOLDER_LIST}" des/mpi_donothing"
+FOLDER_LIST=${FOLDER_LIST}" dmp_modules"
+FOLDER_LIST=${FOLDER_LIST}" dmp_modules/mpi_donothing"
+FOLDER_LIST=${FOLDER_LIST}" dqmom"
+FOLDER_LIST=${FOLDER_LIST}" GhdTheory"
+FOLDER_LIST=${FOLDER_LIST}" qmomk"
+FOLDER_LIST=${FOLDER_LIST}" thermochemical"
+
+EXT_LIST="f F inc"
+
+# Import functions for MPI setup
+. $MFIX_CONFIG/mpi_fun.sh
+
+# Parse user arguments.
+. $MFIX_CONFIG/parse_args.sh
+
+# Load compiler and library information.
+if test ${AUTOCOMPILE} -le 1; then
+
+# Collect user information.
+# > Build options
+  . $MFIX_CONFIG/req_usr.sh
+
+# > Compiler
+  . $MFIX_CONFIG/sys_comp.sh
+
+# Set the compiler flags.
+  . $COMP_FILE
+
+# Set NetCDF library flags
+  . ${MFIX_CONFIG}/netcdf.sh
+# Set Trilinos library flags
+
+# Set TAU wrappers
+  if test $USE_TAU = 1; then
+    . ${MFIX_CONFIG}/tau_wrapper.sh
+  fi
+
+fi # End of Autocompile <= 1
+
+
+# Update source code if needed.
+. ${MFIX_CONFIG}/swap_build.sh
+
+
+#**************************************#
+#                                      #
+# Update mfix_l and mfix_u files here. #
+#                                      #
+#**************************************#
+
+
+# Construct the makefile
+. ${MFIX_CONFIG}/build_Makefile.sh
+
+
+echo "make -f ${MAKEFILE} $inline_objs"
+make -f "${MAKEFILE}" $inline_objs
+
+echo "Please wait..."
+
+echo "make -f ${MAKEFILE} $EXEC_FILE"
+make -f ${MAKEFILE} ${EXEC_FILE}
+
+
+if test $? = 0; then
+  /bin/cp -f $EXEC_FILE ${RUN_DIR}
+  if test USE_DMP = 1; then
+    echo
+    echo "**********************************************"
+    echo " Compilation successful: mfix.exe created"
+    echo " To run MFIX type (or equivalent): "
+    echo "   mpirun -np<# processors> mfix.exe"
+    echo "**********************************************"
+    echo
+  else
+    echo
+    echo "**********************************************"
+    echo " Compilation successful: mfix.exes created"
+    echo " To run MFIX type: mfix.exe"
+    echo "**********************************************"
+    echo
+  fi
+else
+  echo
+  echo
+  echo "*** File mfix.exe NOT created."
+  echo
+fi
+
+cd ${RUN_DIR}
