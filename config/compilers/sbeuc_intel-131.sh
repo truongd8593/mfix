@@ -7,8 +7,7 @@ mkl_libs=
 mpi_libs=
 misc_libs=
 
-echo " <------ SBEUC @ NETL ------>"
-echo "   Intel Fortarn Compiler"
+echo "SBEUC@NETL :: Intel Fortran Compiler"
 
 # Set the Intel module code.
 MODULE_CODE=0
@@ -20,14 +19,11 @@ if test ! -d $DPO; then  mkdir $DPO; fi
 # Set OpenMP flags.
 if test $USE_SMP = 1; then omp="-openmp"; fi
 
-SET_MPI_INCLUDE
 
 # Set compiler commands for DMP or serial.
 if test $USE_DMP = 1; then
   FORTRAN_CMD=mpiifort
   LINK_CMD=mpiifort
-  mpi="-I$MPI_INCLUDE_PATH"
-  mpi_libs=
 else
   FORTRAN_CMD=ifort
   LINK_CMD=ifort
@@ -36,6 +32,12 @@ fi
 
 # --> Verify compiler is in $PATH <-- #
 
+
+SET_MPI_INCLUDE
+if test $USE_DMP = 1; then
+  mpi="-I$MPI_INCLUDE_PATH"
+  mpi_libs=
+fi
 
 # Set generic library information:
 ode="${DPO}odepack.a"

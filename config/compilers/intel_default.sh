@@ -8,15 +8,12 @@ echo "Intel Fortarn Compiler"
 
 MODULE_CODE=0
 
-
 # Add some additinal flags to the object directory
 DPO=${DPO_BASE}/${DPO}_INTEL/
-
 if test ! -d ${DPO}; then mkdir ${DPO}; fi
 
 # Set OpenMP flags.
 if test ${USE_SMP} = 1; then omp="-openmp"; fi
-
 
 # Set MPI flags.
 if test ${USE_DMP} = 1; then
