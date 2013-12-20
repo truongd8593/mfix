@@ -80,7 +80,7 @@ common=${common}" -diag-disable remark -mcmodel medium -shared-intel"
 
 case $OPT in
   0)echo " Setting flags for debugging."
-    dbg="-traceback -check all -O0"
+    dbg="-traceback -check all -fpe:0 -fp-model precise -O0"
     FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR ${dbg} -g"
     FORT_FLAGS3="${common} ${mkl} -O0 -g"
     LINK_FLAGS="${omp} -g";;

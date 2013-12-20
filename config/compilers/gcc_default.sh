@@ -58,7 +58,7 @@ inline_files="compare.f eosg.f discretize.f "
 
 
 # Base flags for GNU Fortran
-common="-c -I. -fconvert='big-endian' ${incs}"
+common="-c -I. ${incs} -fconvert='big-endian'"
 
 case $OPT in
   0)echo " Setting flags for debugging."
