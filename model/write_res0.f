@@ -86,7 +86,7 @@
       integer :: work_around(100)
 !
 !                loop counters
-      INTEGER :: LC, L, N, M
+      INTEGER :: LC, L, N, M, IDX
 !
 !                Pointer to the next record
       INTEGER :: NEXT_RECA 
@@ -391,12 +391,14 @@
 
 !
 !     Version 1.8 -- write densities of each solids species
-      WRITE (UNIT_RES, REC=NEXT_RECA) any(SOLVE_ROs)
+      WRITE (UNIT_RES, REC=NEXT_RECA) (SOLVE_ROs(LC),LC=1,MMAX)
       NEXT_RECA = NEXT_RECA + 1 
       DO LC = 1, MMAX 
-         WRITE (UNIT_RES, REC=NEXT_RECA) (RO_SS(LC,N),N=1,NMAX(LC))
+         IDX = INERT_SPECIES(LC)
+         WRITE (UNIT_RES, REC=NEXT_RECA) IDX, BASE_ROs(LC),&
+            (X_s0(LC,N),N=1,NMAX(LC))
          NEXT_RECA = NEXT_RECA + 1 
-      END DO 
+      ENDDO 
 
 
 !

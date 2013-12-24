@@ -1155,78 +1155,83 @@
 !
 !           Version 1.4 -- read radiation variables in read_res1
 !
-        IF (VERSION_NUMBER >= 1.499) THEN 
-          if (myPE == PE_IO) then
+      IF (VERSION_NUMBER >= 1.499) THEN 
+         if (myPE == PE_IO) then
             READ (UNIT_RES, REC=NEXT_RECA) nRR 
             NEXT_RECA = NEXT_RECA + 1 
             if (doingPost .and. nRR.gt.0) then
                Allocate( ReactionRates(DIMENSION_3, nRR) )
             end if
-	  ENDIF
-          call bcast(nRR,PE_IO) !//PAR_I/O BCAST0d 
-        ELSE
-          nRR = 0 
-        ENDIF 
+         ENDIF
+         call bcast(nRR,PE_IO) !//PAR_I/O BCAST0d 
+      ELSE
+         nRR = 0 
+      ENDIF 
 
 !
 !           Version 1.6 -- read K_Epsilon and dqmom
 !
-        IF (VERSION_NUMBER >= 1.599) THEN 
-          if (myPE == PE_IO) then
+      IF (VERSION_NUMBER >= 1.599) THEN
+         if (myPE == PE_IO) then
             READ (UNIT_RES, REC=NEXT_RECA) K_Epsilon, Call_DQMOM
             NEXT_RECA = NEXT_RECA + 1 
             if (doingPost .and. K_epsilon) then
                Allocate( K_Turb_G(DIMENSION_3) )
                Allocate( E_Turb_G(DIMENSION_3) )
             end if
-	  ENDIF
-          call bcast(K_Epsilon,PE_IO) !//PAR_I/O BCAST0d 
-          call bcast(Call_DQMOM,PE_IO) !//PAR_I/O BCAST0d 
-        ELSE
-          K_Epsilon = .false.
-          Call_DQMOM =.FALSE.
-        ENDIF 
+         ENDIF
+         call bcast(K_Epsilon,PE_IO) !//PAR_I/O BCAST0d 
+         call bcast(Call_DQMOM,PE_IO) !//PAR_I/O BCAST0d 
+      ELSE
+         K_Epsilon = .false.
+         Call_DQMOM =.FALSE.
+      ENDIF
 !
 !           Version 1.7 -- Stiff Chemistry
-        IF (VERSION_NUMBER >= 1.699) THEN 
-           IF (myPE == PE_IO) then
-              READ (UNIT_RES, REC=NEXT_RECA) STIFF_CHEMISTRY, CALL_ISAT
-              NEXT_RECA = NEXT_RECA + 1 
-           ENDIF
-           call bcast(STIFF_CHEMISTRY,PE_IO)
-           call bcast(CALL_ISAT,PE_IO)
-        ELSE
-           STIFF_CHEMISTRY = .FALSE.
-           CALL_DI = .FALSE.
-           CALL_ISAT = .FALSE.
-        ENDIF 
-
-!           Version 1.8 -- Variable solid density and  each solids species
-!
-        IF (VERSION_NUMBER >= 1.799) THEN 
-          if (myPE == PE_IO) then
-             READ (UNIT_RES, REC=NEXT_RECA) ANY_SOLVE_ROs
-             NEXT_RECA = NEXT_RECA + 1 
-             DO LC = 1, MMAX 
-                READ (UNIT_RES, REC=NEXT_RECA) (RO_SS(LC,N),N=1,NMAX(LC))
-                NEXT_RECA = NEXT_RECA + 1 
-             END DO 
-
+      IF (VERSION_NUMBER >= 1.699) THEN 
+         IF (myPE == PE_IO) then
+            READ (UNIT_RES, REC=NEXT_RECA) STIFF_CHEMISTRY, CALL_ISAT
             NEXT_RECA = NEXT_RECA + 1 
-            if (doingPost .and. (.NOT.ANY_SOLVE_ROs)) then
-               DO LC = 1, MMAX 
-                  RO_S(:,LC) = RO_S0(LC)
-                END DO 
-            end if
-	  ENDIF
-        ELSE
-          ANY_SOLVE_ROs = .FALSE.
-          DO LC = 1, MMAX 
-             RO_S(:,LC) = RO_S0(LC)
-          END DO 
+         ENDIF
+         call bcast(STIFF_CHEMISTRY,PE_IO)
+         call bcast(CALL_ISAT,PE_IO)
+      ELSE
+         STIFF_CHEMISTRY = .FALSE.
+         CALL_DI = .FALSE.
+         CALL_ISAT = .FALSE.
+      ENDIF 
 
-        ENDIF 
-!
+
+! Version 1.8 -- Variable solid density and  each solids species
+      IF (VERSION_NUMBER >= 1.799) THEN 
+         IF (myPE == PE_IO) THEN
+            READ (UNIT_RES, REC=NEXT_RECA) (SOLVE_ROs(LC),LC=1,MMAX)
+            NEXT_RECA = NEXT_RECA + 1 
+            DO LC = 1, MMAX
+               READ (UNIT_RES, REC=NEXT_RECA) INERT_SPECIES(LC), &
+                  BASE_ROs(LC), (X_s0(LC,N),N=1,NMAX(LC))
+               NEXT_RECA = NEXT_RECA + 1 
+            ENDDO
+         ENDIF
+         call bcast(SOLVE_ROs,PE_IO)
+         call bcast(INERT_SPECIES,PE_IO)
+         call bcast(BASE_ROs,PE_IO)
+         call bcast(X_s0,PE_IO)
+
+         ANY_SOLVE_ROs = ANY(SOLVE_ROs)
+         IF (doingPost .AND. (.NOT.ANY_SOLVE_ROs)) THEN
+            DO LC = 1, MMAX 
+               RO_S(:,LC) = RO_S0(LC)
+            END DO 
+         ENDIF
+      ELSE
+         SOLVE_ROs = .FALSE.
+         ANY_SOLVE_ROs = .FALSE.
+         DO LC = 1, MMAX 
+            RO_S(:,LC) = RO_S0(LC)
+         END DO 
+      ENDIF 
+
 !  Add new read statements above this line.  Remember to update NEXT_RECA.
 !  Remember to update the version number check near begining of this subroutine.
 !------------------------------------------------------------------------------

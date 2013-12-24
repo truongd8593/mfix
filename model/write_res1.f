@@ -148,7 +148,9 @@
       DO LC = 1, MMAX 
 !
         call gatherWriteRes (ROP_s(:,LC),array2, array1, NEXT_REC)  !//d pnicol
-        IF(ANY(SOLVE_ROs)) call gatherWriteRes (RO_S(:,LC),array2, array1, NEXT_REC)  !//d pnicol
+
+        IF(ANY(SOLVE_ROs)) &
+           call gatherWriteRes (RO_S(:,LC),array2, array1, NEXT_REC)  !//d pnicol
 !
         call gatherWriteRes (T_s(:,LC),array2, array1, NEXT_REC)  !//d pnicol
 !

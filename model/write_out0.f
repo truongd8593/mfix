@@ -81,8 +81,6 @@
       CHARACTER, DIMENSION(3) :: LEGEND*3 
       CHARACTER, DIMENSION(0:9) :: DISCR_NAME*12 
       CHARACTER, DIMENSION(0:9) :: DISCR_NAME1*12 
-!QX
-      DOUBLE PRECISION EP_S_TOT
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -297,7 +295,7 @@
             END DO 
             WRITE (UNIT_OUT, 1425) 
             DO N = 1, NMAX(M) 
-               WRITE (UNIT_OUT, 1424) N, RO_SS(M,N) 
+               WRITE (UNIT_OUT, 1424) N, RO_Xs0(M,N) 
             END DO 
          ENDIF 
       END DO 
@@ -341,18 +339,10 @@
             DO M = 1, MMAX 
                IF (SPECIES_EQ(M)) THEN 
                   WRITE (UNIT_OUT, 1563) M 
-!QX
-                  EP_S_TOT = 0.d0
+
                   DO N = 1, NMAX(M) 
                      WRITE (UNIT_OUT, 1564) N, IC_X_S(L,M,N) 
-                     if(RO_SS(M,N) .gt. 0.d0) then
-                        EP_S_TOT = EP_S_TOT + IC_ROP_S(L,M)*IC_X_S(L,M,N)/RO_SS(M,N)
-                     endif
                   END DO 
-!                 Note: ic_ro_s_l is NOT read in from input dat.
-!                 based on ic_rop_s and ic_x_s, ic_ro_s_l is calculated.
-                  if (EP_S_TOT .gt. 0.d0) IC_RO_S_L(L,M) = IC_ROP_S(L,M)/EP_S_TOT
-                  WRITE (UNIT_OUT, 1562) M, IC_RO_S_L(L,M)
                ENDIF 
             END DO 
             DO M = 1, MMAX 
@@ -629,18 +619,13 @@
  1405 FORMAT(7X,'Viscosity (MU_s0) = ',G12.5,&
          '  (A constant value is used everywhere)') 
  1410 FORMAT(7X,'Number of particulate phases (MMAX) = ',I2) 
-!QX
-! (RO_s) changed to (RO_s0)
  1420 FORMAT(/7X,'M',5X,'Diameter (D_p0)',T35,'Density (RO_s0)',T50,&
          'Close_Packed') 
-!end
  1421 FORMAT(7X,I1,5X,G12.5,T35,G12.5,T55,L1) 
  1422 FORMAT(7X,'Number of solids-',I1,' species (NMAX(',I1,')) = ',I3) 
  1423 FORMAT(7X,'Solids species',5X,'Molecular weight (MW_s)') 
  1424 FORMAT(7X,3X,I3,18X,G12.5) 
-!QX
- 1425 FORMAT(7X,'Solids species',5X,'Species density (RO_ss)')
-!end
+ 1425 FORMAT(7X,'Solids species',5X,'Species density (RO_Xs0)')
  1430 FORMAT(/7X,'Void fraction at maximum packing (EP_star) = ',G12.5) 
 !
  1500 FORMAT(//,3X,'6. INITIAL CONDITIONS') 
@@ -670,9 +655,6 @@
          'Z-component of gas velocity (IC_W_g) = ',G12.5) 
  1560 FORMAT(9X,'Solids phase-',I1,' Density x Volume fr. (IC_ROP_s) = ',G12.5) 
  1561 FORMAT(9X,'Solids phase-',I1,' temperature (IC_T_s) = ',G12.5) 
-!QX
- 1562 FORMAT(9X,'Solids phase-',I1,' Density (IC_RO_S_L) = ',G12.5) 
-!end
  1563 FORMAT(9X,'Solids-',I1,' species',5X,'Mass fraction (IC_X_s)') 
  1564 FORMAT(9X,3X,I3,20X,G12.5) 
  1565 FORMAT(9X,'Solids phase-',I1,' radiation coefficient (IC_GAMA_Rs)',' =',&

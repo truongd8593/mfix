@@ -63,9 +63,6 @@
 ! calculating the variable solids phase density.
       INTEGER :: INERT_SPECIES(DIM_M)
 
-! Density of solid species
-      DOUBLE PRECISION RO_SS (DIM_M, DIM_N_s)  ! TO BE REMOVE
-
 ! Specified constant solids viscosity
       DOUBLE PRECISION MU_s0
 

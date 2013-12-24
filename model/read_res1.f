@@ -166,7 +166,10 @@
 !
       DO LC = 1, MMAX 
          call readScatterRes(ROP_S(:,LC), array2, array1, 0, NEXT_REC)
-!         IF(SOLID_RO_V) call readScatterRes(RO_S(:,LC), array2, array1, 0, NEXT_REC)
+
+         IF(ANY(SOLVE_ROs)) &
+            CALL readScatterRes(RO_S(:,LC), array2, array1, 0, NEXT_REC)
+
          IF (VERSION_NUMBER >= 1.15) THEN
             call readScatterRes(T_S(:,LC), array2, array1, 1, NEXT_REC)
          END IF
