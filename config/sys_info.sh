@@ -33,7 +33,7 @@ cd ${MFIX_SRC}
 # write mfix/model path into the file mfix_directory_path.inc
 string="     CHARACTER(len=132) :: MFIX_PATH = '${MFIX_SRC}'"
 file=${MFIX_SRC}/mfix_directory_path.inc
-if grep -qs ${string} ${file}; then
+if grep -qs "${string}" "${file}"; then
   echo " " > /dev/null
 else
   echo $string > ${file}
