@@ -287,6 +287,18 @@ for arg in $input; do
       echo "Build directory: ${DPO_BASE}";;
 
 
+# Use specified executable name. (mfix.exe is the default)
+#-------------------------------------------------------------------------->>
+    "--exe="*)
+      EXEC_FILE=$(echo ${arg} | cut -d "=" -f2)
+      if test -z ${EXEC_FILE}; then
+        echo "Specified executable name is empty!"
+        echo "Aborting make_mfix."
+        exit
+      fi
+      echo "User specified executable name: ${EXEC_FILE}";;
+
+
 # MPI installation directory. This folder should contain the include
 # and library directories.
 #-------------------------------------------------------------------------->>
