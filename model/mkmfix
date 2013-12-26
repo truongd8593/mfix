@@ -126,32 +126,32 @@ make -f "${MAKEFILE}" $inline_objs
 
 echo "Please wait..."
 
-echo "make -f ${MAKEFILE} $EXEC_FILE"
+echo "make -f ${MAKEFILE} ${EXEC_FILE}"
 make -f ${MAKEFILE} ${EXEC_FILE}
 
 
 if test $? = 0; then
-  /bin/cp -f $EXEC_FILE ${RUN_DIR}
-  if test USE_DMP = 1; then
+  /bin/cp -f ${EXEC_FILE} ${RUN_DIR}
+  if test ${USE_DMP} = 1; then
     echo
     echo "**********************************************"
-    echo " Compilation successful: mfix.exe created"
+    echo " Compilation successful: ${EXEC_FILE} created"
     echo " To run MFIX type (or equivalent): "
-    echo "   mpirun -np<# processors> mfix.exe"
+    echo "   mpirun -np<# processors> ${EXEC_FILE}"
     echo "**********************************************"
     echo
   else
     echo
     echo "**********************************************"
-    echo " Compilation successful: mfix.exes created"
-    echo " To run MFIX type: mfix.exe"
+    echo " Compilation successful: ${EXEC_FILE} created"
+    echo " To run MFIX type: ./${EXEC_FILE}"
     echo "**********************************************"
     echo
   fi
 else
   echo
   echo
-  echo "*** File mfix.exe NOT created."
+  echo "*** File ${EXEC_FILE} NOT created."
   echo
 fi
 
