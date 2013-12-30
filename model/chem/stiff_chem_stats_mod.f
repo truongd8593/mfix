@@ -166,6 +166,7 @@
 
       Hetrgns = 0
       Homogns = 0
+      failedCount = 0
 
       if(myPE == PE_IO) &
          write(*,"(/3x,'Integrating stiff chemistry...',$)")
