@@ -76,7 +76,7 @@ inline_files="compare.f eosg.f discretize.f"
 
 # Common compile flags.
 common="-c -I. -convert big_endian -assume byterecl"
-common=${common}" -diag-disable remark -mcmodel medium -shared-intel"
+common=${common}" -diag-disable remark -arch AVX -axAVX"
 
 case $OPT in
   0)echo " Setting flags for debugging."
@@ -92,12 +92,12 @@ case $OPT in
 
   2)echo " Setting flags for medium optimization."
     FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O2"
-    FORT_FLAGS3="${common} ${mkl} -O1"
+    FORT_FLAGS3="${common} ${mkl} -O2"
     LINK_FLAGS="${omp}";;
 
   3)echo " Setting flags for high optimization."
-    FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O3"
-    FORT_FLAGS3="${common} ${mkl} -O1"
+    FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O3 -no-prec-div -static -xHost"
+    FORT_FLAGS3="${common} ${mkl} -O3 -no-prec-div -static -xHost"
     LINK_FLAGS="${omp}";;
 
   *)echo "Unsupported optimization level."
