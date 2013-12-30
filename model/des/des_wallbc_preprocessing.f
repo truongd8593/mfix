@@ -3338,7 +3338,7 @@
          'Logic in this routine broken for this message to pop-up', /5x, & 
          'Exiting.',/, 1X,70('*')/)
          
-         IF(.false.) CALL DES_WRITE_PARTS_AFTER_DELETION
+!         IF(.false.) CALL DES_WRITE_PARTS_AFTER_DELETION
        END SUBROUTINE LIST_PARTS_TOBE_DEL_DEM 
        
       SUBROUTINE WRITE_PARTS_AFTER_DELETION
