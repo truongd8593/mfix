@@ -244,7 +244,8 @@
         ENDIF
       ENDIF
 
-! k4phi, phip0 for variable specularity coefficient      
+! k4phi, phip0 for variable specularity coefficient
+      k4phi = UNDEFINED
       IF(BC_JJ_M) THEN
          IF(phi_w .eq. UNDEFINED) &
             CALL ERROR_ROUTINE ('check_data_01',&
