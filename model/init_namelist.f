@@ -4,32 +4,9 @@
 !  Purpose: initialize the NAMELIST variables                          C
 !                                                                      C
 !  Author: P. Nicoletti                               Date: 26-NOV-91  C
-!  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 27-JAN-92  C
-!                                                                      C
-!  Revision Number: 1                                                  C
-!  Purpose: Initialize Phi and Phi_w                                   C
-!  Author: M. Syamlal                                 Date: 11-FEB-93  C
-!                                                                      C
-!  Revision Number: 2                                                  C
-!  Purpose: Add L_scale0, L_scale                                      C
-!  Author: W. Sams                                    Date: 04-MAY-94  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Revision Number: 3                                                  C
-!  Purpose: To call DES_Init_Namelist                                  C
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!                                                                      C
-!  Revision Number: 4                                                  C
-!  Purpose: To call CARTESIAN_GRID_INIT_NAMELIST                       C
-!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!  Local variables:                                                    C
 !                                                                      C
 !  Keyword Documentation Format:                                       C
+!                                                                      C
 !<keyword category="category name" required="true/false"               C
 !                                    legacy="true/false">              C
 !  <description></description>                                         C
@@ -117,27 +94,29 @@
 !<keyword category="Run Control" required="true">
 !  <description>type of run.</description>
 !  <valid value="new" note="new run."/>
-!  <valid value="restart_2" note="start a new run with initial conditions from a .res file created from another run."/>
-!  <valid value="restart_1" note="normal restart run. initial conditions from .res file."/>
-!  <valid value="restart_3" note="continue old run as in restart_1, but any input data not given in mfix.dat is read from the .res file. (do not use)"/>
-!  <valid value="restart_4" note="start a new run as in restart_2, but any input data not given in mfix.dat is read from the .res file. (do not use)"/>
+!  <valid value="RESTART_1" note="Traditional restart."/>
+!  <valid value="RESTART_2" 
+!    note="Start a new run with initial conditions from a .RES file created from another run."/>
       RUN_TYPE = UNDEFINED_C
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>start-time of the run.</description>
+!  <description>Start-time of the run.</description>
 !  <range min="0.0" max="+Inf" />
       TIME = UNDEFINED
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>stop-time of the run.</description>
+!  <description>Stop-time of the run.</description>
 !  <range min="0.0" max="+Inf" />
       TSTOP = UNDEFINED
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>starting time step. if dt is not defined, a steady-state calculation will be performed.</description>
+!  <description>
+!    Starting time step. If left undefined, a steady-state 
+!    calculation is performed.
+!  </description>
 !  <dependent keyword="TIME" value="DEFINED"/>
 !  <dependent keyword="TSTOP" value="DEFINED"/>
 !  <range min="0.0" max="+Inf" />
@@ -145,7 +124,7 @@
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>maximum time step.</description>
+!  <description>Maximum time step.</description>
 !  <dependent keyword="TIME" value="DEFINED"/>
 !  <dependent keyword="TSTOP" value="DEFINED"/>
 !  <range min="0.0" max="+Inf" />
@@ -153,15 +132,15 @@
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>minimum time step.</description>
+!  <description>Minimum time step.</description>
 !  <dependent keyword="TIME" value="DEFINED"/>
 !  <dependent keyword="TSTOP" value="DEFINED"/>
 !  <range min="0.0" max="+Inf" />
-      DT_MIN = 1.D-6
+      DT_MIN = 1.0D-6
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>factor for adjusting time step. should be less than 1.</description>
+!  <description>Factor for adjusting time step. Must be less than 1.</description>
 !  <dependent keyword="TIME" value="DEFINED"/>
 !  <dependent keyword="TSTOP" value="DEFINED"/>
 !  <range min="0.0" max="1" />
@@ -170,8 +149,8 @@
 
 !<keyword category="Run Control" required="false">
 !  <description></description>
-!  <valid value=".false." note="do not reduce time step for stalled iterations."/>
-!  <valid value=".true." note="reduce time step if the residuals sum does not decrease."/>
+!  <valid value=".FALSE." note="Do not reduce time step for stalled iterations."/>
+!  <valid value=".true." note="Reduce time step if the residuals sum does not decrease."/>
       DETECT_STALL = .TRUE.
 !</keyword>
 
@@ -182,29 +161,29 @@
       MODEL_B = .FALSE.
 !</keyword>
 
-
-      IF (DIM_M + 1 > 0) THEN
 !<keyword category="Run Control" required="false">
-!  <description>Solve X-momentum equations of phase m.</description>
-!  <valid value=".true." note="Solve X-momentum equations of phase m."/>
-!  <valid value=".false." note="Do not solve X-momentum equations of phase m. Beware of inconsistencies when the momentum equations are turned off; e.g., 2-D developing flow with only Y-momentum should not specify no-slip-walls."/>
-         MOMENTUM_X_EQ(:DIM_M) = .TRUE.
+!  <description>Solve X-momentum equations.</description>
+!  <arg index="1" id="Phase Index" min="0" max="DIM_M"/>
+!  <valid value=".true." note="Solve X-momentum equations."/>
+!  <valid value=".false." note="Do not solve X-momentum equations."/>
+      MOMENTUM_X_EQ(:DIM_M) = .TRUE.
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>Solve Y-momentum equations of phase m.</description>
-!  <valid value=".true." note="Solve Y-momentum equations of phase m."/>
-!  <valid value=".false." note="Do not solve Y-momentum equations of phase m."/>
-         MOMENTUM_Y_EQ(:DIM_M) = .TRUE.
+!  <description>Solve Y-momentum equations.</description>
+!  <arg index="1" id="Phase Index" min="0" max="DIM_M"/>
+!  <valid value=".TRUE." note="Solve Y-momentum equations."/>
+!  <valid value=".FALSE." note="Do not solve Y-momentum equations."/>
+      MOMENTUM_Y_EQ(:DIM_M) = .TRUE.
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>Solve Z-momentum equations of phase m.</description>
-!  <valid value=".true." note="Solve Z-momentum equations of phase m."/>
-!  <valid value=".false." note="Do not solve Z-momentum equations of phase m."/>
-         MOMENTUM_Z_EQ(:DIM_M) = .TRUE.
+!  <description>Solve Z-momentum equations.</description>
+!  <arg index="1" id="Phase Index" min="0" max="DIM_M"/>
+!  <valid value=".true." note="Solve Z-momentum equations."/>
+!  <valid value=".false." note="Do not solve Z-momentum equations."/>
+      MOMENTUM_Z_EQ(:DIM_M) = .TRUE.
 !</keyword>
-      ENDIF
 
 !<keyword category="Run Control" required="false">
 !  <description>Solve energy equations.</description>
@@ -213,65 +192,101 @@
       ENERGY_EQ = .TRUE.
 !</keyword>
 
-      IF (DIM_M + 1 > 0) THEN
 !<keyword category="Run Control" required="false">
-!  <description>Solve species equations (m=0 indicates gas phase).</description>
-!  <valid value=".false." note="do not solve species equations of phase m."/>
-!  <valid value=".true." note="solve species equations of phase m.  to solve species equation with no chemical reactions, copy the file mfix/model/rrates.f into run directory and remove the first two executable lines as explained in the comments.  no other change is needed in that file."/>
-         SPECIES_EQ(:DIM_M) = .TRUE.
+!  <description>Solve species transport equations.</description>
+!  <arg index="1" id="Phase Index" min="0" max="DIM_M"/>
+!  <valid value=".false." note="Solve species equations."/>
+!  <valid value=".true." note="Do not solve species equations."/>
+      SPECIES_EQ(:DIM_M) = .TRUE.
 !</keyword>
-      ENDIF
 
 !<keyword category="Run Control" required="false">
-!  <description>use the granular energy transport equation (pde) as opposed to the algebraic (alg) equation formulation.</description>
+!  <description>Granular energy formulation selection.</description>
+!  <valid value=".FALSE." note="Use algebraic granular energy equation formulation."/>
+!  <valid value=".TRUE." note="Use granular energy transport equation (PDE) formulation."/>
       GRANULAR_ENERGY = .FALSE.
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>use simonin model (see ~mfix/doc/simonin_ahmadi_models.pdf for details).</description>
-      SIMONIN = .FALSE.
+!  <description>Solids phase stress model.</description>
+!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
+!  <valid value="AHMADI" note="Cao and Ahmadi (1995). Int. J. Multiphase Flow 21(6), 1203."/>
+!  <valid value="GD_99" note="Garzo and Dufty (1999). Phys. Rev. E 59(5), 5895."/>
+!  <valid value="GHD" note="Garzo, Hrenya and Dufty (2007). Phys. Rev. E 76(3), 31304"/>
+!  <valid value="IA_NONEP" note="Iddir & Arastoopour (2005). AIChE J. 51(6), 1620"/>
+!  <valid value="LUN_1984" note="Lun et al (1984). J. Fluid Mech., 140, 223."/>
+!  <valid value="SIMONIN" note="Simonin (1996). VKI Lecture Series, 1996-2"/>
+      KT_TYPE = UNDEFINED_C
 !</keyword>
 
-!<keyword category="Run Control" required="false">
-!  <description>use ahmadi model (see ~mfix/doc/simonin_ahmadi_models.pdf for details).</description>
+! Retired keyword for specifying Ahmadi KT Theory.
+! Use: KT_TYPE = "AHMADI"
       AHMADI = .FALSE.
-!</keyword>
+
+! Retired keyword for specifying Simonin KT Theory. 
+! Use: KT_TYPE = "SIMONIN"
+      SIMONIN = .FALSE.
 
 !<keyword category="Run Control" required="false">
-!  <description>use jenkins small frictional boundary condition (see ~mfix/doc/simonin_ahmadi_models.pdf for details).</description>
+!  <description>Jenkins small frictional boundary condition.</description>
+!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
+!  <dependent keyword="PHI_W" value="DEFINED"/>
+!  <valid value=".FALSE." note=""/>
+!  <valid value=".true." note="Use the Jenkins small fricational boundary condition."/>
       JENKINS = .FALSE.
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>use the schaeffer model when .false., or use the princeton model when .true.</description>
-!  <valid value=".false." note="use the schaeffer model"/>
-!  <valid value=".true." note="use the princeton model"/>
+!  <description>Solids stress model selection.</description>
+!  <valid value=".false." note="Use the Schaeffer solids stress model."/>
+!  <valid value=".true." note="Use the Princeton solids stress model"/>
+!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
+!  <dependent keyword="PHI" value="DEFINED"/>
+!  <dependent keyword="PHI_W" value="DEFINED"/>
       FRICTION = .FALSE.
 !</keyword>
 
 !<keyword category="Run Control" required="false">
 !  <description>for a term appearing in the frictional stress model invoked with friction = .true.</description>
-!  <dependent keyword="friction" value=".true."/>
 !  <valid value="0" note="use s:s in the frictional stress model."/>
 !  <valid value="2" note="an appropriate combination of the above two forms."/>
 !  <valid value="1" note="use an alternate form suggested by savage."/>
+!  <dependent keyword="friction" value=".true."/>
       SAVAGE = 1
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>if set to false with friction = .false., then the model will not have any frictional viscosity.</description>
-!  <valid value=".true." note=""/>
-!  <valid value=".false." note=""/>
+!  <description>Schaeffer frictional stress tensor formulation. </description>
+!  <dependent keyword="PHI" value="DEFINED"/>
+!  <valid value=".TRUE." note="Use the Schaeffer model"/>
+!  <valid value=".FALSE." note="Do not use the Schaeffer model."/>
+!    If FRICTION=.FALSE. then the model will have no frictional viscosity."/>
       SCHAEFFER = .TRUE.
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>This will turn on the blending function to blend the Schaeffer stresses with that of kinetic theory around epsilon*. The default is hyperbolic tangent function for blending (TANH_BLEND = .TRUE.) and one could also utilize a scaled and truncated sigmoidal function (SIGM_BLEND=.TRUE.).</description>
+!  <description> Blend the Schaeffer stresses with that of kinetic theory around Ep*.</description>
       BLENDING_STRESS = .FALSE.
 !</keyword>
 
+!<keyword category="category name" required="false">
+!  <description>Hyperbolic tangent function for blending frictional stress models.</description>
+!  <dependent keyword="BLENDING_STRESS" value=".true."/>
+!  <conflict keyword="SIGM_BLEND" value=".true."/>
+      TANH_BLEND = .TRUE.
+!</keyword>
+
+!<keyword category="category name" required="false">
+!  <description>A scaled and truncated sigmoidal function for blending frictional stress models.</description>
+!  <dependent keyword="BLENDING_STRESS" value=".true."/>
+!  <conflict keyword="TANH_BLEND" value=".true."/>
+      SIGM_BLEND = .FALSE.
+!</keyword>
+
 !<keyword category="Run Control" required="false">
-!  <description>use yu and standish correlation to compute maximum packing for polydisperse systems.</description>
+!  <description>Correlation to compute maximum packing for polydisperse systems.</description>
+!  <valid value=".TRUE." note="Use the Yu and Standish correlation."/>
+!  <valid value=".FALSE." note="Do not use the Yu and Standish correlation."/>
       YU_STANDISH = .FALSE.
 !</keyword>
 
@@ -295,18 +310,10 @@
 
 !<keyword category="Run Control" required="false">
 !  <description>when activated the k-epsilon turbulence model (for single-phase flow) is solved using standard wall functions.</description>
+!  <conflict keyword="L_SCALE0" value="DEFINED"/>
       K_Epsilon = .FALSE.
 !</keyword>
 
-!<keyword category="Run Control" required="false">
-!  <description>solids phase stress model. To specify a kinetic theory granular_energy must be .true.  If kt_type is left undefined (default) the viscous model is based on the theory of lun et al. (1984).</description>
-!  <dependent keyword="GRANULAR_ENERGY" value=".true."/>
-!  <valid value="ia_nonep" note="iddir & arastoopour (aiche j, 2005)"/>
-!  <valid value="gd_99" note="garzo and dufty (pre, 1999)"/>
-!  <valid value="ghd" note="garzo, hrenya and dufty (pre, 2007)"/>
-!  <valid value="ia_nonep" note="iddir & arastoopour (aiche j, 2005)"/>
-      KT_TYPE = UNDEFINED_C
-!</keyword>
 
 !<keyword category="Run Control" required="false">
 !  <description>drag model (see drag_gs.f for details).</description>
@@ -351,10 +358,31 @@
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>Include wall effect term in subgrid model.</description>
+!  <description>Flag for subgrid wall effects.</description>
+!  <valid value=".FALSE." note="Do not include wall effects."/>
+!  <valid value=".TRUE." note="Include subgrid wall effects."/>
       SUBGRID_Wall = .FALSE.
 !</keyword>
 
+!<keyword category="Run Control" required="false">
+!  <description>Provide detailed logging of negative density errors.</description>
+!  <valid value=".FALSE." note="Do not log negative density errors."/>
+!  <valid value=".TRUE." note="Log negative density errors."/>
+      REPORT_NEG_DENSITY = .FALSE.
+!</keyword>
+
+!<keyword category="Run Control" required="false">
+!  <description>Number of user-defined scalar transport equations to solve.</description>
+!  <range min="0" max="DIM_SCALAR" />
+      NScalar = 0
+!</keyword>
+
+!<keyword category="Run Control" required="false">
+!  <description>The phase convecting the indexed scalar transport equation.</description>
+!  <arg index="1" id="Scalar Equation" min="0" max="DIM_SCALAR"/>
+!  <range min="0" max="DIM_M" />
+      Phase4Scalar(:DIM_SCALAR) = UNDEFINED_I
+!</keyword>
 
 
 
@@ -362,20 +390,15 @@
 !                           Physcial Parameters                       !
 !#####################################################################!
 
-
-
-
-      DO LC = 1, DIMENSION_C
 !<keyword category="Physical Parameters" required="false">
 !  <description>User defined constants.</description>
-         C(LC) = UNDEFINED
+      C(:DIMENSION_C) = UNDEFINED
 !</keyword>
 
 !<keyword category="Physical Parameters" required="false">
 !  <description>Name of user-defined constant. (20 character max)</description>
-         C_NAME(LC) = '....................'
+      C_NAME(:DIMENSION_C) = '....................'
 !</keyword>
-      ENDDO
 
 !<keyword category="Physical Parameters" required="false">
 !  <description>coefficient of restitution for particle-particle collisions.</description>
@@ -383,10 +406,19 @@
 !</keyword>
 
 !<keyword category="Physical Parameters" required="false">
+!  <description>GHD Theory: Coefficient of restitution for particle-particle collisions.</description>
+      r_p(:DIM_M, :DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="category name" required="false">
+!  <description>coefficient of restitution for particle-wall collisions.</description>
+      E_W = 1.D0
+!</keyword>
+
+!<keyword category="Physical Parameters" required="false">
 !  <description>specularity coefficient associated with particle-wall collisions.</description>
       PHIP = 0.6D0
 !</keyword>
-
 
 !<keyword category="Physical Parameters" required="false">
 !  <description>output the variable specularity coefficient when bc_jj_m is .true.. the specularity coefficient will be stored in reactionrates array for post-processing by post-mfix. user needs to set nrr to 1 for this purpose. be careful with this setting when reacting flow is simulated.</description>
@@ -438,6 +470,7 @@
 
 !<keyword category="Physical Parameters" required="false">
 !  <description>value of turbulent length initialized. this may be overwritten in specific regions with the keyword ic_l_scale.</description>
+!  <conflict keyword="K_EPSILON" value=".TRUE."/>
       L_SCALE0 = ZERO
 !</keyword>
 
@@ -575,7 +608,7 @@
 !  <valid value="2" note="BiCGSTAB"/>
 !  <valid value="3" note="GMRES"/>
 !  <valid value="5" note="CG"/>
-      LEQ_METHOD = 2
+      LEQ_METHOD(:) = 2
 !</keyword>
 
 
@@ -587,7 +620,7 @@
 !  <valid value="JSJS" note="(Sweep in J, Send Receive) repeated twice"/>
 !  <valid value="KSKS" note="(Sweep in K, Send Receive) repeated twice"/>
 !  <valid value="ASAS" note="(All Sweep, Send Receive) repeated twice"/>
-      LEQ_SWEEP = 'RSRS'
+      LEQ_SWEEP(:) = 'RSRS'
 !</keyword>
 
 
@@ -596,7 +629,7 @@
 !  <arg index="1" id="Equation ID Number" min="1" max="9"/>
 !  <dependent keyword="LEQ_METHOD" value="2"/>
 !  <dependent keyword="LEQ_METHOD" value="3"/>
-      LEQ_TOL = 1.0D-4
+      LEQ_TOL(:) = 1.0D-4
 !</keyword>
 
 
@@ -606,7 +639,7 @@
 !  <valid value="NONE" note="No preconditioner"/>
 !  <valid value="LINE" note="Line relaxation"/>
 !  <valid value="DIAG" note="Diagonal Scaling"/>
-      LEQ_PC  = 'LINE'
+      LEQ_PC(:) = 'LINE'
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
@@ -641,7 +674,7 @@
 !  <valid value="6" note="muscl."/>
 !  <valid value="8" note="minmod."/>
 !  <valid value="0" note="first-order upwinding."/>
-      DISCRETIZE = 0
+      DISCRETIZE(:) = 0
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
@@ -683,14 +716,37 @@
 !</keyword>
 
 
+!<keyword category="Numerical Parameters" required="false">
+!  <description>Solve transpose of linear system. (BICGSTAB ONLY).</description>
+!  <dependent keyword="LEQ_METHOD" value="2"/>
+      DO_TRANSPOSE = .FALSE.
+!</keyword>
 
+!<keyword category="Numerical Parameters" required="false">
+!  <description>Frequency to check for convergence. (BICGSTAB ONLY)</description>
+!  <dependent keyword="LEQ_METHOD" value="2"/>
+      icheck_bicgs = 1
+!</keyword>
+
+!<keyword category="Numerical Parameters" required="false">
+!  <description>Sets optimal LEQ flags for parallel runs.</description>
+      OPT_PARALLEL = .FALSE.
+!</keyword>
+
+!<keyword category="Numerical Parameters" required="false">
+!  <description>Use do-loop assignment over direct vector assignment.</description>
+      USE_DOLOOP = .FALSE.
+!</keyword>
+
+!<keyword category="Numerical Parameters" required="false">
+!  <description>Calculate dot-products more efficiently (Serial runs only.)</description>
+      IS_SERIAL = .TRUE.
+!</keyword>
 
 
 !#####################################################################!
 !                      Geometry and Discretization                    !
 !#####################################################################!
-
-
 
 
 !<keyword category="Geometry and Discretization" required="false">
@@ -923,27 +979,47 @@
 
 !<keyword category="Solids Phase" required="false">
 !  <description>Initial particle diameters.</description>
+!  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
       D_P0(:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Solids Phase" required="false">
 !  <description>Specified constant solids density.</description>
-      RO_S0 = UNDEFINED
+!  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
+      RO_S0(:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Solids Phase" required="false">
 !  <description>Baseline species mass fraction.</description>
-      X_s0 = UNDEFINED
+!  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
+!  <arg index="2" id="Species index" min="1" max="DIM_N_s"/>
+!  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
+!  <dependent keyword="RO_Xs0" value="DEFINED"/>
+!  <dependent keyword="INERT_SPECIES" value="DEFINED"/>
+!  <conflict keyword="RO_s0" value="DEFINED"/>
+      X_s0(:DIM_M,:DIM_N_s) = UNDEFINED
 !</keyword>
 
 !<keyword category="Solids Phase" required="false">
 !  <description>Specified constant solids species density.</description>
-      RO_Xs0 = UNDEFINED
+!  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
+!  <arg index="2" id="Species index" min="1" max="DIM_N_s"/>
+!  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
+!  <dependent keyword="X_s0" value="DEFINED"/>
+!  <dependent keyword="INERT_SPECIES" value="DEFINED"/>
+!  <conflict keyword="RO_s0" value="DEFINED"/>
+      RO_Xs0(:DIM_M,:DIM_N_s) = UNDEFINED
 !</keyword>
 
 !<keyword category="Solids Phase" required="false">
 !  <description>Index of inert solids phase species.</description>
-      INERT_SPECIES = UNDEFINED_I
+!  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
+!  <arg index="2" id="Species index" min="1" max="DIM_N_s"/>
+!  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
+!  <dependent keyword="X_s0" value="DEFINED"/>
+!  <dependent keyword="RO_Xs0" value="DEFINED"/>
+!  <conflict keyword="RO_s0" value="DEFINED"/>
+      INERT_SPECIES(:DIM_M) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Solids Phase" required="false">
@@ -968,22 +1044,29 @@
 
 !<keyword category="Solids Phase" required="false">
 !  <description>Molecular weight of solids phase-m, species n.</description>
-      MW_S = UNDEFINED
+!  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
+!  <arg index="2" id="Species index" min="1" max="DIM_N_s"/>
+      MW_S(:DIM_M,:DIM_N_s) = UNDEFINED
 !</keyword>
 
 !<keyword category="Solids Phase" required="false">
 !  <description>Number of species comprising solids phase m.</description>
-      NMAX_s(:) = UNDEFINED_I
+!  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
+      NMAX_s(:DIM_M) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Solids Phase" required="false">
 !  <description>Name of solids phase m, species n as it appears in the materials database.</description>
-      SPECIES_s(:,:) = UNDEFINED_C
+!  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
+!  <arg index="2" id="Species index" min="1" max="DIM_N_s"/>
+      SPECIES_s(:DIM_M,:DIM_N_s) = UNDEFINED_C
 !</keyword>
 
 !<keyword category="Solids Phase" required="false">
 !  <description>User defined name for solids phase m, species n</description>
-      SPECIES_ALIAS_s(:,:) = UNDEFINED_C
+!  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
+!  <arg index="2" id="Species index" min="1" max="DIM_N_s"/>
+      SPECIES_ALIAS_s(:DIM_M,:DIM_N_s) = UNDEFINED_C
 !</keyword>
 
 !<keyword category="Solids Phase" required="false">
@@ -993,6 +1076,7 @@
 
 !<keyword category="Solids Phase" required="false">
 !  <description>indicates whether the solids phase forms a packed bed with a void fraction ep_star.</description>
+!  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
       CLOSE_PACKED(:DIM_M) = .TRUE.
 !</keyword>
 
@@ -1003,287 +1087,6 @@
 !#####################################################################!
 
 
-
-
-! @@@###@@@###@@@###@@@@###@@@###@@@###@@@###@@@###@@@###@@##@@@###@@@
-! ###@@@###@@@###@@@@###@@@###@@@###@@@###@@@###@@@###@@##@@@###@@@###
-! @@@###@@@###@@@###@@@@###@@@###@@@###@@@###@@@###@@@###@@##@@@###@@@
-! ###@@@###@@@###@@@@###@@@###@@@###@@@###@@@###@@@###@@##@@@###@@@###
-! @@@###@@@###@@@###@@@@###@@@###@@@###@@@###@@@###@@@###@@##@@@###@@@
-! ###@@@###@@@###@@@@###@@@###@@@###@@@###@@@###@@@###@@##@@@###@@@###
-! @@@###@@@###@@@###@@@@###@@@###@@@###@@@###@@@###@@@###@@##@@@###@@@
-! ###@@@###@@@###@@@@###@@@###@@@###@@@###@@@###@@@###@@##@@@###@@@###
-! @@@###@@@###@@@###@@@@###@@@###@@@###@@@###@@@###@@@###@@##@@@###@@@
-! ###@@@###@@@###@@@@###@@@###@@@###@@@###@@@###@@@###@@##@@@###@@@###
-! @@@###@@@###@@@###@@@@###@@@###@@@###@@@###@@@###@@@###@@##@@@###@@@
-!
-!-------------------------->>>>>     JM END
-
-
-
-!<keyword category="category name" required="false">
-!  <description>enables clean termination feature.</description>
-      CHK_BATCHQ_END = .FALSE.
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>total wall-clock duration of the job, in seconds.</description>
-      BATCH_WALLCLOCK = 9000.0    ! set to 2.5 hrs for jaguarcnl w/ nproc<=512
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>buffer time when initiating clean termination, in seconds.</description>
-      TERM_BUFFER = 180.0         ! set to 3 minutes prior to end of job
-!</keyword>
-
-
-
-
-
-! do not use revised JJ BC
-!<keyword category="Boundary Condition" required="false">
-!  <description>Use the modified Johnson and Jackson partial slip BC with variable specularity coefficient. Must set e_w and phi_w with this BC.</description>
-!  <dependent keyword="e_w" value="DEFINED"/>
-!  <dependent keyword="phi_w" value="DEFINED"/>
-      BC_JJ_M = .false.
-!</keyword>
-
-
-
-
-
-
-
-
-
-
-
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      AUTOMATIC_RESTART = .FALSE.
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      AUTO_RESTART = .FALSE.
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      ITER_RESTART = 1
-!</keyword>
-
-
-
-
-
-
-!<keyword category="category name" required="false">
-!  <description>hyperbolic tangent function for blending</description>
-!  <dependent keyword="BLENDING_STRESS" value=".true."/>
-!  <conflict keyword="SIGM_BLEND" value=".true."/>
-      TANH_BLEND      = .TRUE.
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>a scaled and truncated sigmoidal function for blending</description>
-!  <dependent keyword="BLENDING_STRESS" value=".true."/>
-!  <conflict keyword="TANH_BLEND" value=".true."/>
-      SIGM_BLEND      = .FALSE.
-!</keyword>
-
-! sp: 06/15/2007
-!<keyword category="category name" required="false">
-!  <description>if set to false, the residuals are grouped into far fewer global collectives and this should only have impact on parallel runs</description>
-      DEBUG_RESID     = .TRUE.
-!</keyword>
-
-! DISTIO distributed IO
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      bDist_IO            = .false.
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      bStart_with_one_RES = .false.
-!</keyword>
-
-
-
-
-
-
-
-
-
-!<keyword category="category name" required="false">
-!  <description>number of solid phases to solve the population balance equations.</description>
-      NScalar = 0
-!</keyword>
-
-      Phase4Scalar(:) = UNDEFINED_I
-
-
-!<keyword category="category name" required="false">
-!  <description>variable to decide if the population balance equations are solved.</description>
-      Call_DQMOM = .FALSE.
-!</keyword>
-
-
-! INITIALIZE THE OUTPUT CONTROL SECTION
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      report_mass_balance_dt = UNDEFINED
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>interval in number of time steps at which .log file is written.</description>
-!  <valid value="report_mass_balance_dt " note="if a value is defined, say 0.1 s, an overall species mass balance is performed and reported in the log file. the over all mass balance calculations may slightly slow down the run."/>
-!  <valid value="resid_string" note="specify residuals to be printed as 4-character strings. "/>
-      NLOG = 25
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>if true, display the residuals on the screen and messages about convergence on the screen and in the .log file.</description>
-      FULL_LOG = .FALSE.
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>interval at which restart (.res) file is updated.</description>
-      RES_DT = UNDEFINED
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>interval at which .spx files are updated.</description>
-!  <valid value=".sp4" note="solids velocity (u_s, v_s, w_s)."/>
-!  <valid value=".sp7" note="gas and solids mass fractions (x_g, x-s)."/>
-!  <valid value=".sp6" note="gas and solids temperature (t_g, t_s1, t_s2)."/>
-!  <valid value=".sp1" note="void fraction (ep_g)."/>
-!  <valid value=".sp3" note="gas velocity (u_g, v_g, w_g)."/>
-!  <valid value=".sp2" note="gas pressure, solids pressure (p_g, p_star)."/>
-!  <valid value=".sp9" note="user defined scalars."/>
-!  <valid value=".sp8" note="granular temperature (g)."/>
-!  <valid value=".sp5" note="solids density (rop_s)."/>
-!  <valid value=".spa" note="reaction rates. (see section 4.11)"/>
-!  <valid value=".spb" note=""/>
-      SPX_DT(:N_SPX) = UNDEFINED
-!</keyword>
-      LC = N_SPX + 1
-
-!<keyword category="category name" required="false">
-!  <description>interval at which standard output (.out) file is updated.</description>
-      OUT_DT = UNDEFINED
-!</keyword>
-
-      DO LC = 1, DIMENSION_USR
-!<keyword category="category name" required="false">
-!  <description>interval at which user-defined outputs are written from the subroutine write_usr1.</description>
-         USR_DT(LC) = UNDEFINED
-!</keyword>
-
-         USR_TYPE(LC) = UNDEFINED_C
-         USR_VAR(LC) = UNDEFINED_C
-         USR_FORMAT(LC) = UNDEFINED_C
-         USR_EXT(LC) = UNDEFINED_C
-      END DO
-      DO LC = 1, 8
-         RESID_STRING(LC) = UNDEFINED_C
-      END DO
-
-
-
-
-
-
-
-
-
-
-
-
-      k4phi = undefined
-
-
-!<keyword category="category name" required="false">
-!  <description>coefficient of restitution for particle-wall collisions.</description>
-      E_W = 1.D0
-!</keyword>
-
-
-
-
-
-! coefficient of restitution
-      r_p(:DIM_M, :DIM_M) = UNDEFINED
-
-! rong
-!<keyword category="category name" required="false">
-!  <description>success-factor for aggregation.</description>
-      AGGREGATION_EFF=0.D0
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>success-factor for breakage.</description>
-      BREAKAGE_EFF=0.D0
-!</keyword>
-
-
-
-
-
-
-
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      DO_TRANSPOSE = .FALSE.
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      icheck_bicgs = 1
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>Print out additional statistics for parallel runs</description>
-      solver_statistics = .FALSE.
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      opt_parallel = .FALSE.
-!</keyword>
-
-! AEOLUS: set default value for new variable to debug print whole
-!         index layout
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      DBGPRN_LAYOUT = .FALSE.
-!</keyword>
-
-! AEOLUS: set default value for enabling all processors write out
-!         their *.LOG invidually
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      ENABLE_DMP_LOG = .FALSE.
-!</keyword>
-
-
-
-! INITIALIZE THE GAS PHASE SECTION
-
-
-
-!<keyword category="category name" required="false">
-!  <description>Use the automated reaction rate UDFS; usr_rates.f and usr_rates_des.f.</description>
-      USE_RRATES = .FALSE.
-!</keyword>
-
-! NO_OF_RXNS is not a keyword. However, it is initialized here so that
-! if there are no reactions, this value is assigned.
-      NO_OF_RXNS = UNDEFINED_I
-
-! INITIALIZE THE INITIAL CONDITIONS
       DO LC = 1, DIMENSION_IC
 
 !<keyword category="Initial Condition" required="false">
@@ -1389,70 +1192,15 @@
 !</keyword>
 
 !<keyword category="Initial Condition" required="false">
-!  <description>Initial gas phase temperature in the IC region.</description>
-!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
-         IC_T_G(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Initial Condition" required="false">
-!  <description>Gas phase radiation coefficient in the IC region. Modify file radtn2.inc to change the source term.</description>
-!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
-         IC_GAMA_RG(LC) = ZERO
-!</keyword>
-
-!<keyword category="Initial Condition" required="false">
-!  <description>Gas phase radiation temperature in the IC region.</description>
-!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
-         IC_T_RG(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Initial Condition" required="false">
-!  <description>Initial mass fraction of gas species n.</description>
-!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
-!  <arg index="2" id="species" min="1" max="DIM_N_g"/>
-         IC_X_G(LC,:DIM_N_G) = UNDEFINED
-!</keyword>
-
-!<keyword category="Initial Condition" required="false">
-!  <description>Initial x-component of gas velocity in the IC region.</description>
-!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
-         IC_U_G(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Initial Condition" required="false">
-!  <description>Initial y-component of gas velocity in the IC region.</description>
-!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
-         IC_V_G(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Initial Condition" required="false">
-!  <description>Initial z-component of gas velocity in the IC region.</description>
-!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
-         IC_W_G(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Initial Condition" required="false">
 !  <description>Initial bulk density (rop_s = ro_s x ep_s) of solids phase-m in the IC region. Users need to specify this IC only for polydisperse flow (MMAX > 1). Users must make sure that summation of ( IC_ROP_s(ic,m) / RO_s(m) ) over all solids phases is equal to ( 1.0 – IC_EP_g(ic) ).</description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
          IC_ROP_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Initial Condition" required="false">
-!  <description>Initial x-component of solids-phase velocity in the IC region.</description>
+!  <description>Initial gas phase temperature in the IC region.</description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
-         IC_U_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Initial Condition" required="false">
-!  <description>Initial y-component of solids-phase velocity in the IC region.</description>
-!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
-         IC_V_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Initial Condition" required="false">
-!  <description>Initial z-component of solids-phase velocity in the IC region.</description>
-!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
-         IC_W_S(LC,:DIM_M) = UNDEFINED
+         IC_T_G(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Initial Condition" required="false">
@@ -1468,14 +1216,16 @@
 !</keyword>
 
 !<keyword category="Initial Condition" required="false">
-!  <description>Initial value of Scalar n.</description>
+!  <description>Gas phase radiation coefficient in the IC region. Modify file radtn2.inc to change the source term.</description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
-         IC_SCALAR(LC,:DIM_SCALAR) = UNDEFINED
+         IC_GAMA_RG(LC) = ZERO
 !</keyword>
 
-! sof: force users to set initial values for K and Epsilon.
-         IC_K_Turb_G(LC) = UNDEFINED
-         IC_E_Turb_G(LC) = UNDEFINED
+!<keyword category="Initial Condition" required="false">
+!  <description>Gas phase radiation temperature in the IC region.</description>
+!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+         IC_T_RG(LC) = UNDEFINED
+!</keyword>
 
 !<keyword category="Initial Condition" required="false">
 !  <description>Solids phase-m radiation coefficient in the IC region. Modify file radtn2.inc to change the source term.</description>
@@ -1489,46 +1239,92 @@
          IC_T_RS(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
+!<keyword category="Initial Condition" required="false">
+!  <description>Initial x-component of gas velocity in the IC region.</description>
+!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+         IC_U_G(LC) = UNDEFINED
+!</keyword>
 
-! safe is set not inflate the inital lattice as the algorithm has not 
-! been thoroughly tested 
+!<keyword category="Initial Condition" required="false">
+!  <description>Initial x-component of solids-phase velocity in the IC region.</description>
+!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+         IC_U_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Initial Condition" required="false">
+!  <description>Initial y-component of gas velocity in the IC region.</description>
+!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+         IC_V_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Initial Condition" required="false">
+!  <description>Initial y-component of solids-phase velocity in the IC region.</description>
+!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+         IC_V_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Initial Condition" required="false">
+!  <description>Initial z-component of gas velocity in the IC region.</description>
+!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+         IC_W_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Initial Condition" required="false">
+!  <description>Initial z-component of solids-phase velocity in the IC region.</description>
+!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+         IC_W_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Initial Condition" required="false">
+!  <description>Initial mass fraction of gas species n.</description>
+!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+!  <arg index="2" id="species" min="1" max="DIM_N_g"/>
+         IC_X_G(LC,:DIM_N_G) = UNDEFINED
+!</keyword>
+
+!<keyword category="Initial Condition" required="false">
+!  <description>Initial mass fraction of gas species n.</description>
+!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
+!  <arg index="3" id="Species" min="1" max="DIM_N_s"/>
+         IC_X_S(LC,:DIM_M,:DIM_N_S) = UNDEFINED
+!</keyword>
+
+!<keyword category="Initial Condition" required="false">
+!  <description>Initial value of Scalar n.</description>
+!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+         IC_SCALAR(LC,:DIM_SCALAR) = UNDEFINED
+!</keyword>
+
+!<keyword category="Initial Condition" required="false">
+!  <description>Initial value of K in K-Epsilon.</description>
+!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+         IC_K_Turb_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Initial Condition" required="false">
+!  <description>Initial value of Epsilon in K-Epsilon.</description>
+!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+         IC_E_Turb_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Initial Condition" required="false">
+!  <description>Flag for inflating IC region to cover full domain.</description>
+!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
           IC_DES_FIT_TO_REGION(LC) = .FALSE. 
+!</keyword>
 
-!         IC_X_S(LC,1,1+:DIM_N_S+) = UNDEFINED
       ENDDO
 
-!<keyword category="Initial Condition">
-!  <description>Solids phase species mass fraction.</description>
-!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
-!  <arg index="2" id="phase" min="1" max="DIM_M"/>
-!  <arg index="3" id="species" min="1" max="DIM_N_s"/>
-!  <range min="0.0" max="1.0" />
-      IC_X_S = UNDEFINED
-!</keyword>
 
 
 
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      U_G0 = UNDEFINED
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      V_G0 = UNDEFINED
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      W_G0 = UNDEFINED
-!</keyword>
-
-      U_S0(:DIM_M) = UNDEFINED
-      V_S0(:DIM_M) = UNDEFINED
-      W_S0(:DIM_M) = UNDEFINED
-
-! Boundary Conditions
+!#####################################################################!
+!                        Boundary Conditions                          !
+!#####################################################################!
       DO LC = 1, DIMENSION_BC
+
+
 !<keyword category="Boundary Condition" required="false">
 !  <description>x coordinate of the west face or edge.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
@@ -1602,29 +1398,127 @@
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Void fraction at the BC plane.</description>
+!  <description>Type of boundary.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_EP_G(LC) = UNDEFINED
+!  <valid value='DUMMY' description='The specified boundary condition is ignored. This is useful for turning off some boundary conditions without having to delete them from the file.' />
+!  <valid value='MASS_INFLOW' description='Mass inflow rates for gas and solids phases are specified at the boundary.' alias='MI' />
+!  <valid value='MASS_OUTFLOW' description='The specified values of gas and solids mass outflow rates at the boundary are maintained, approximately. This condition should be used sparingly for minor outflows, when the bulk of the outflow is occurring through other constant pressure outflow boundaries.' alias='MO' />
+!  <valid value='P_INFLOW' description='Inflow from a boundary at a specified constant pressure. To specify as the west, south, or bottom end of the computational region, add a layer of wall cells to the west, south, or bottom of the PI cells. Users need to specify all scalar quantities and velocity components. The specified values of fluid and solids velocities are only used initially as MFIX computes these values at this inlet boundary.' alias='PI' />
+!  <valid value='P_OUTFLOW' description='Outflow to a boundary at a specified constant pressure. To specify as the west, south, or bottom end of the computational region, add a layer of wall cells to the west, south, or bottom of the PO cells.' alias='PO' />
+!  <valid value='FREE_SLIP_WALL' description='Velocity gradients at the wall vanish. If BC_JJ_PS is equal to 1, the Johnson-Jackson boundary condition is used for solids.  A FSW is equivalent to using a PSW with hw=0.' alias='FSW' />
+!  <valid value='NO_SLIP_WALL' description='All components of the velocity vanish at the wall. If BC_JJ_PS is equal to 1, the Johnson-Jackson boundary condition is used for solids.    A NSW is equivalent to using a PSW with vw=0 and hw undefined.' alias='NSW' />
+!  <valid value='PAR_SLIP_WALL' description='Partial slip at the wall implemented as dv/dn + hw (v – vw) = 0, where n is the normal pointing from the fluid into the wall. The coefficients hw and vw should be specified. For free slip set hw = 0. For no slip leave hw undefined (hw=∞) and set vw = 0. To set hw = ∞, leave it unspecified. If BC_JJ_PS is equal to 1, the Johnson-Jackson boundary condition is used for solids.' alias='PSW' />
+         BC_TYPE(LC) = UNDEFINED_C
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Gas pressure at the BC plane.</description>
+!  <description>Gas phase hw for partial slip boundary.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_P_G(LC) = UNDEFINED
-!</keyword>
-
-         BC_ROP_G(LC) = UNDEFINED
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Gas phase temperature at the BC plane.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_T_G(LC) = UNDEFINED
+         BC_HW_G(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Mass fraction of gas species n at the BC plane.</description>
+!  <description>Solids phase hw for partial slip boundary.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_X_G(LC,:DIM_N_G) = UNDEFINED
+         BC_HW_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Gas phase Uw for partial slip boundary.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_UW_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Solids phase Uw for partial slip boundary.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_UW_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Gas phase Vw for partial slip boundary.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_VW_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Solids phase Vw for partial slip boundary.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_VW_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Gas phase Ww for partial slip boundary.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_WW_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Solids phase Ww for partial slip boundary.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_WW_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Johnson and Jackson partial slip bc.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <valid value='0' description='Do not use Johnson and Jackson partial slip bc. If granular energy transport equation is not solved: (GRANULAR_ENERGY=.FALSE.). />
+!  <valid value='1' description='Use Johnson and Jackson partial slip bc. If granular energy transport equation is solved: (GRANULAR_ENERGY=.TRUE.). />
+         BC_JJ_PS(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Tw for granular energy bc.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_THETAW_M(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Hw for granular energy bc.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_HW_THETA_M(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>c for granular energy bc.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_C_THETA_M(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Gas phase hw for heat transfer.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_HW_T_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Solids phase hw for heat transfer.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_HW_T_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Gas phase Tw for heat transfer.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_TW_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Solids phase Tw for heat transfer.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_TW_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Gas phase C for heat transfer.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_C_T_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Solids phase C for heat transfer.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_C_T_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
@@ -1646,239 +1540,19 @@
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>x-component of gas velocity at the BC plane.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_U_G(LC) = UNDEFINED
+!  <description>Solids phase hw for mass transfer.</description>
+         BC_HW_X_S(LC,:DIM_M,:DIM_N_S) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>y-component of gas velocity at the BC plane.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_V_G(LC) = UNDEFINED
+!  <description>Solids phase Xw for mass transfer.</description>
+         BC_XW_S(LC,:DIM_M,:DIM_N_S) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>z-component of gas velocity at the BC plane.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_W_G(LC) = UNDEFINED
+!  <description>Solids phase C for mass transfer.</description>
+         BC_C_X_S(LC,:DIM_M,:DIM_N_S) = UNDEFINED
 !</keyword>
-
-         BC_VELMAG_G(LC) = UNDEFINED
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Type of boundary.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-!  <valid value='DUMMY' description='The specified boundary condition is ignored. This is useful for turning off some boundary conditions without having to delete them from the file.' />
-!  <valid value='MASS_INFLOW' description='Mass inflow rates for gas and solids phases are specified at the boundary.' alias='MI' />
-!  <valid value='MASS_OUTFLOW' description='The specified values of gas and solids mass outflow rates at the boundary are maintained, approximately. This condition should be used sparingly for minor outflows, when the bulk of the outflow is occurring through other constant pressure outflow boundaries.' alias='MO' />
-!  <valid value='P_INFLOW' description='Inflow from a boundary at a specified constant pressure. To specify as the west, south, or bottom end of the computational region, add a layer of wall cells to the west, south, or bottom of the PI cells. Users need to specify all scalar quantities and velocity components. The specified values of fluid and solids velocities are only used initially as MFIX computes these values at this inlet boundary.' alias='PI' />
-!  <valid value='P_OUTFLOW' description='Outflow to a boundary at a specified constant pressure. To specify as the west, south, or bottom end of the computational region, add a layer of wall cells to the west, south, or bottom of the PO cells.' alias='PO' />
-!  <valid value='FREE_SLIP_WALL' description='Velocity gradients at the wall vanish. If BC_JJ_PS is equal to 1, the Johnson-Jackson boundary condition is used for solids.  A FSW is equivalent to using a PSW with hw=0.' alias='FSW' />
-!  <valid value='NO_SLIP_WALL' description='All components of the velocity vanish at the wall. If BC_JJ_PS is equal to 1, the Johnson-Jackson boundary condition is used for solids.    A NSW is equivalent to using a PSW with vw=0 and hw undefined.' alias='NSW' />
-!  <valid value='PAR_SLIP_WALL' description='Partial slip at the wall implemented as dv/dn + hw (v – vw) = 0, where n is the normal pointing from the fluid into the wall. The coefficients hw and vw should be specified. For free slip set hw = 0. For no slip leave hw undefined (hw=∞) and set vw = 0. To set hw = ∞, leave it unspecified. If BC_JJ_PS is equal to 1, the Johnson-Jackson boundary condition is used for solids.' alias='PSW' />
-         BC_TYPE(LC) = UNDEFINED_C
-!</keyword>
-
-         BC_APPLY_TO_MPPIC(LC) = .true.
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Gas volumetric flow rate through the boundary.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_VOLFLOW_G(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Gas mass flow rate through the boundary.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_MASSFLOW_G(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>The interval at the beginning when the normal velocity at the boundary is equal to BC_Jet_g0. When restarting, run this value and BC_Jet_g0 should be specified such that the transient jet continues correctly. MFIX does not store the jet conditions. For MASS_OUTFLOW boundary conditions, BC_DT_0 is the time period to average and print the outflow rates. The adjustment of velocities to get a specified mass or volumetric flow rate is based on the average outflow rate.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_DT_0(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>The interval when normal velocity is equal to BC_Jet_gh.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_DT_H(LC) = UNDEFINED
-!</keyword>
-
-         BC_DT_L(LC) = UNDEFINED
-!<keyword category="Boundary Condition" required="false">
-!  <description>Value of normal velocity during the initial interval BC_DT_0.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_JET_G0(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Value of normal velocity during the interval BC_DT_h.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_JET_GH(LC) = UNDEFINED
-!</keyword>
-
-         BC_JET_GL(LC) = UNDEFINED
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Gas phase hw for partial slip boundary.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_HW_G(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Gas phase Uw for partial slip boundary.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_UW_G(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Gas phase Vw for partial slip boundary.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_VW_G(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Gas phase Ww for partial slip boundary.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_WW_G(LC) = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Gas phase hw for heat transfer.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_HW_T_G(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Gas phase Tw for heat transfer.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_TW_G(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Gas phase C for heat transfer.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_C_T_G(LC) = UNDEFINED
-!</keyword>
-
-
-! Kapil & Anuj: 01/19/98
-!<keyword category="Boundary Condition" required="false">
-!  <description>Johnson and Jackson partial slip bc.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-!  <valid value='0' description='Do not use Johnson and Jackson partial slip bc. If granular energy transport equation is not solved: (GRANULAR_ENERGY=.FALSE.). />
-!  <valid value='1' description='Use Johnson and Jackson partial slip bc. If granular energy transport equation is solved: (GRANULAR_ENERGY=.TRUE.). />
-         BC_JJ_PS(LC) = UNDEFINED_I
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Bulk density of solids phase at the BC plane.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_ROP_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>x-component of solids-phase velocity at the BC plane.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_U_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>y-component of solids-phase velocity at the BC plane.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_V_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>z-component of solids-phase velocity at the BC plane.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_W_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-         BC_VELMAG_S(LC,:DIM_M) = UNDEFINED
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase-m temperature at the BC plane.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_T_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Solids volumetric flow rate through the boundary.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_VOLFLOW_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Solids mass flow rate through the boundary.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_MASSFLOW_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase hw for partial slip boundary.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_HW_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase Uw for partial slip boundary.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_UW_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase Vw for partial slip boundary.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_VW_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase Ww for partial slip boundary.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_WW_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase hw for heat transfer.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_HW_T_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase Tw for heat transfer.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_TW_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase C for heat transfer.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_C_T_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Hw for granular energy bc.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_HW_THETA_M(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Tw for granular energy bc.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_THETAW_M(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>c for granular energy bc.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_C_THETA_M(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
 
 !<keyword category="Boundary Condition" required="false">
 !  <description>hw for scalar transfer at the boundary.</description>
@@ -1898,179 +1572,194 @@
          BC_C_Scalar(LC,:DIM_SCALAR) = UNDEFINED
 !</keyword>
 
-      ENDDO
+!<keyword category="Boundary Condition" required="false">
+!  <description>Void fraction at the BC plane.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_EP_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Gas pressure at the BC plane.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_P_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Bulk density of solids phase at the BC plane.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_ROP_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Gas phase temperature at the BC plane.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_T_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Solids phase-m temperature at the BC plane.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_T_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
 
 !<keyword category="Boundary Condition" required="false">
 !  <description>Solids phase-m granular temperature at the BC plane.</description>
-      BC_THETA_M = UNDEFINED
+         BC_THETA_M(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>NA</description>
-      BC_Scalar = UNDEFINED
-!</keyword>
-
-! sof: force users to set inlet BC for K and Epsilon
-!<keyword category="Boundary Condition" required="false">
-!  <description>NA</description>
-      BC_K_Turb_G = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>NA</description>
-      BC_E_Turb_G = UNDEFINED
+!  <description>Mass fraction of gas species n at the BC plane.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_X_G(LC,:DIM_N_G) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
 !  <description>Mass fraction of solids phase-m, species n at the BC plane.</description>
-      BC_X_S = UNDEFINED
+         BC_X_S(LC,:DIM_M,:DIM_N_S) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase hw for mass transfer.</description>
-      BC_HW_X_S = UNDEFINED
+!  <description>x-component of gas velocity at the BC plane.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_U_G(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase Xw for mass transfer.</description>
-      BC_XW_S = UNDEFINED
+!  <description>x-component of solids-phase velocity at the BC plane.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_U_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase C for mass transfer.</description>
-      BC_C_X_S = UNDEFINED
+!  <description>y-component of gas velocity at the BC plane.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_V_G(LC) = UNDEFINED
 !</keyword>
 
-! Point Source:
-!<keyword category="Point Source" required="false">
-!  <description>x coordinate of the west face or edge.</description>
-      PS_X_W = UNDEFINED
+!<keyword category="Boundary Condition" required="false">
+!  <description>y-component of solids-phase velocity at the BC plane.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_V_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="Point Source" required="false">
-!  <description>x coordinate of the east face or edge.</description>
-      PS_X_E = UNDEFINED
+!<keyword category="Boundary Condition" required="false">
+!  <description>z-component of gas velocity at the BC plane.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_W_G(LC) = UNDEFINED
 !</keyword>
 
-!<keyword category="Point Source" required="false">
-!  <description>y coordinate of the south face or edge.</description>
-      PS_Y_S = UNDEFINED
+!<keyword category="Boundary Condition" required="false">
+!  <description>z-component of solids-phase velocity at the BC plane.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_W_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="Point Source" required="false">
-!  <description>y coordinate of the north face or edge.</description>
-      PS_Y_N = UNDEFINED
+!<keyword category="Boundary Condition" required="false">
+!  <description>Gas volumetric flow rate through the boundary.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_VOLFLOW_G(LC) = UNDEFINED
 !</keyword>
 
-!<keyword category="Point Source" required="false">
-!  <description>z coordinate of the bottom face or edge.</description>
-      PS_Z_B = UNDEFINED
+!<keyword category="Boundary Condition" required="false">
+!  <description>Solids volumetric flow rate through the boundary.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_VOLFLOW_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="Point Source" required="false">
-!  <description>z coordinate of the top face or edge.</description>
-      PS_Z_T = UNDEFINED
+!<keyword category="Boundary Condition" required="false">
+!  <description>Gas mass flow rate through the boundary.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_MASSFLOW_G(LC) = UNDEFINED
 !</keyword>
 
-!<keyword category="Point Source" required="false">
-!  <description>i index of the west-most cell.</description>
-      PS_I_W = UNDEFINED_I
+!<keyword category="Boundary Condition" required="false">
+!  <description>Solids mass flow rate through the boundary.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_MASSFLOW_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="Point Source" required="false">
-!  <description>i index of the east-most cell.</description>
-      PS_I_E = UNDEFINED_I
+!<keyword category="Boundary Condition" required="false">
+!  <description>The interval at the beginning when the normal velocity at the boundary is equal to BC_Jet_g0. When restarting, run this value and BC_Jet_g0 should be specified such that the transient jet continues correctly. MFIX does not store the jet conditions. For MASS_OUTFLOW boundary conditions, BC_DT_0 is the time period to average and print the outflow rates. The adjustment of velocities to get a specified mass or volumetric flow rate is based on the average outflow rate.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_DT_0(LC) = UNDEFINED
 !</keyword>
 
-!<keyword category="Point Source" required="false">
-!  <description>j index of the south-most cell.</description>
-      PS_J_S = UNDEFINED_I
+!<keyword category="Boundary Condition" required="false">
+!  <description>Value of normal velocity during the initial interval BC_DT_0.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_JET_G0(LC) = UNDEFINED
 !</keyword>
 
-!<keyword category="Point Source" required="false">
-!  <description>j index of the north-most cell.</description>
-      PS_J_N = UNDEFINED_I
+!<keyword category="Boundary Condition" required="false">
+!  <description>The interval when normal velocity is equal to BC_Jet_gh.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_DT_H(LC) = UNDEFINED
 !</keyword>
 
-!<keyword category="Point Source" required="false">
-!  <description>k index of the bottom-most cell.</description>
-      PS_K_B = UNDEFINED_I
+!<keyword category="Boundary Condition" required="false">
+!  <description>Value of normal velocity during the interval BC_DT_h.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_JET_GH(LC) = UNDEFINED
 !</keyword>
 
-!<keyword category="Point Source" required="false">
-!  <description>k index of the top-most cell.</description>
-      PS_K_T = UNDEFINED_I
+!<keyword category="Boundary Condition" required="false">
+!  <description>The interval when normal velocity is equal to BC_JET_gL.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_DT_L(LC) = UNDEFINED
 !</keyword>
 
-
-!<keyword category="Point Source" required="false">
-!  <description>x-component of incoming gas velocity.</description>
-      PS_U_G = UNDEFINED
+!<keyword category="Boundary Condition" required="false">
+!  <description>Value of normal velocity during the interval BC_DT_L.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_JET_GL(LC) = UNDEFINED
 !</keyword>
 
-!<keyword category="Point Source" required="false">
-!  <description>y-component of incoming gas velocity.</description>
-      PS_V_G = UNDEFINED
+!<keyword category="Boundary Condition" required="false">
+!  <description>Boundary value for user-defined scalar equation.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_Scalar(LC,:DIM_SCALAR) = UNDEFINED
 !</keyword>
 
-!<keyword category="Point Source" required="false">
-!  <description>z-component of incoming gas velocity.</description>
-      PS_W_G = UNDEFINED
+!<keyword category="Boundary Condition" required="false">
+!  <description>Boundary value of K for K-Epsilon Equation.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_K_Turb_G(LC) = UNDEFINED
 !</keyword>
 
-
-!<keyword category="Point Source" required="false">
-!  <description>Gas mass flow rate through the point source.</description>
-      PS_MASSFLOW_G = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Point Source" required="false">
-!  <description>Temperature of incoming gas.</description>
-      PS_T_G = UNDEFINED
-!</keyword>
-
-!<keyword category="Point Source" required="false">
-!  <description>Gas phase incoming species n mass fraction.</description>
-      PS_X_G = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Point Source" required="false">
-!  <description>x-component of incoming solids velocity.</description>
-      PS_U_S = UNDEFINED
-!</keyword>
-
-!<keyword category="Point Source" required="false">
-!  <description>y-component of incoming solids velocity.</description>
-      PS_V_S = UNDEFINED
-!</keyword>
-
-!<keyword category="Point Source" required="false">
-!  <description>z-component of incoming solids velocity.</description>
-      PS_W_S = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Point Source" required="false">
-!  <description>Solids mass flow rate through the point source.</description>
-      PS_MASSFLOW_S = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Point Source" required="false">
-!  <description>Temperature of incoming solids.</description>
-      PS_T_S = UNDEFINED
-!</keyword>
-
-!<keyword category="Point Source" required="false">
-!  <description>Solids phase incoming species n mass fraction.</description>
-      PS_X_S = UNDEFINED
+!<keyword category="Boundary Condition" required="false">
+!  <description>Boundary value of Epsilon for K-Epsilon Equation.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+         BC_E_Turb_G(LC) = UNDEFINED
 !</keyword>
 
 
 
+         BC_ROP_G(LC) = UNDEFINED
+
+         BC_VELMAG_G(LC) = UNDEFINED
+         BC_VELMAG_S(LC,:DIM_M) = UNDEFINED
+
+         BC_APPLY_TO_MPPIC(LC) = .true.
+
+      ENDDO
+
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Use the modified Johnson and Jackson partial slip BC with variable specularity coefficient. Must set e_w and phi_w with this BC.</description>
+!  <dependent keyword="e_w" value="DEFINED"/>
+!  <dependent keyword="phi_w" value="DEFINED"/>
+         BC_JJ_M = .false.
+!</keyword>
+
+
+
+
+!#####################################################################!
+!                         Internal Surfaces                           !
+!#####################################################################!
       DO LC = 1, DIMENSION_IS
+
+
 !<keyword category="Internal Surface" required="false">
 !  <description>x coordinate of the west face or edge.</description>
          IS_X_W(LC) = UNDEFINED
@@ -2132,6 +1821,13 @@
 !</keyword>
 
 !<keyword category="Internal Surface" required="false">
+!  <description>Type of internal surface</description>
+!  <valid value="IMPERMEABLE" note="No gas or solids flow through the surface." alias="IP"/>
+!  <valid value="SEMIPERMEABLE" note="Gas flows through the surface with an additional resistance. Solids velocity through the surface is set to zero or to a user-specified fixed value (i.e., solids momentum equation for this direction is not solved)." alias="SP"/>
+         IS_TYPE(LC) = UNDEFINED_C
+!</keyword>
+
+!<keyword category="Internal Surface" required="false">
 !  <description>permeability</description>
          IS_PC(LC,1) = LARGE_NUMBER
 !</keyword>
@@ -2141,12 +1837,6 @@
          IS_PC(LC,2) = ZERO
 !</keyword>
 
-!<keyword category="Internal Surface" required="false">
-!  <description>Type of internal surface</description>
-!  <valid value="IMPERMEABLE" note="No gas or solids flow through the surface." alias="IP"/>
-!  <valid value="SEMIPERMEABLE" note="Gas flows through the surface with an additional resistance. Solids velocity through the surface is set to zero or to a user-specified fixed value (i.e., solids momentum equation for this direction is not solved)." alias="SP"/>
-         IS_TYPE(LC) = UNDEFINED_C
-!</keyword>
 
 !<keyword category="Internal Surface" required="false">
 !  <description>Value of fixed solids velocity through semipermeable surfaces.</description>
@@ -2155,64 +1845,355 @@
       ENDDO
 
 
+!#####################################################################!
+!                     Point Source Mass Inlets                        !
+!#####################################################################!
+      DO LC = 1, DIMENSION_IS
+
+!<keyword category="Point Source" required="false">
+!  <description>x coordinate of the west face or edge.</description>
+         PS_X_W(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>x coordinate of the east face or edge.</description>
+         PS_X_E(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>y coordinate of the south face or edge.</description>
+         PS_Y_S(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>y coordinate of the north face or edge.</description>
+         PS_Y_N(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>z coordinate of the bottom face or edge.</description>
+         PS_Z_B(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>z coordinate of the top face or edge.</description>
+         PS_Z_T(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>i index of the west-most cell.</description>
+         PS_I_W(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>i index of the east-most cell.</description>
+         PS_I_E(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>j index of the south-most cell.</description>
+         PS_J_S(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>j index of the north-most cell.</description>
+         PS_J_N(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>k index of the bottom-most cell.</description>
+         PS_K_B(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>k index of the top-most cell.</description>
+         PS_K_T(LC) = UNDEFINED_I
+!</keyword>
+
+
+!<keyword category="Point Source" required="false">
+!  <description>x-component of incoming gas velocity.</description>
+         PS_U_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>y-component of incoming gas velocity.</description>
+         PS_V_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>z-component of incoming gas velocity.</description>
+         PS_W_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>Gas mass flow rate through the point source.</description>
+         PS_MASSFLOW_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>Temperature of incoming gas.</description>
+         PS_T_G(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>Gas phase incoming species n mass fraction.</description>
+         PS_X_G(LC,:DIM_N_g) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>x-component of incoming solids velocity.</description>
+         PS_U_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>y-component of incoming solids velocity.</description>
+         PS_V_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>z-component of incoming solids velocity.</description>
+         PS_W_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>Solids mass flow rate through the point source.</description>
+         PS_MASSFLOW_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>Temperature of incoming solids.</description>
+         PS_T_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Point Source" required="false">
+!  <description>Solids phase incoming species n mass fraction.</description>
+         PS_X_S(LC,:DIM_M,:DIM_N_S) = UNDEFINED
+!</keyword>
+
+      ENDDO
+
+
+!#####################################################################!
+!                          Output Control                             !
+!#####################################################################!
 
 !<keyword category="category name" required="false">
-!  <description>number of grid blocks in x-direction.</description>
-      NODESI = UNDEFINED_I
+!  <description>interval at which restart (.res) file is updated.</description>
+      RES_DT = UNDEFINED
 !</keyword>
 
 !<keyword category="category name" required="false">
-!  <description>number of grid blocks in y-direction.</description>
-      NODESJ = UNDEFINED_I
+!  <description>interval at which .spx files are updated.</description>
+!  <valid value=".sp4" note="solids velocity (u_s, v_s, w_s)."/>
+!  <valid value=".sp7" note="gas and solids mass fractions (x_g, x-s)."/>
+!  <valid value=".sp6" note="gas and solids temperature (t_g, t_s1, t_s2)."/>
+!  <valid value=".sp1" note="void fraction (ep_g)."/>
+!  <valid value=".sp3" note="gas velocity (u_g, v_g, w_g)."/>
+!  <valid value=".sp2" note="gas pressure, solids pressure (p_g, p_star)."/>
+!  <valid value=".sp9" note="user defined scalars."/>
+!  <valid value=".sp8" note="granular temperature (g)."/>
+!  <valid value=".sp5" note="solids density (rop_s)."/>
+!  <valid value=".spa" note="reaction rates. (see section 4.11)"/>
+!  <valid value=".spb" note=""/>
+      SPX_DT(:N_SPX) = UNDEFINED
 !</keyword>
 
 !<keyword category="category name" required="false">
-!  <description>number of grid blocks in z-direction.</description>
-      NODESK = UNDEFINED_I
+!  <description>interval at which standard output (.out) file is updated.</description>
+      OUT_DT = UNDEFINED
+!</keyword>
+
+!<keyword category="category name" required="false">
+!  <description>interval in number of time steps at which .log file is written.</description>
+!  <valid value="report_mass_balance_dt " note="if a value is defined, say 0.1 s, an overall species mass balance is performed and reported in the log file. the over all mass balance calculations may slightly slow down the run."/>
+!  <valid value="resid_string" note="specify residuals to be printed as 4-character strings. "/>
+      NLOG = 25
+!</keyword>
+
+!<keyword category="category name" required="false">
+!  <description>if true, display the residuals on the screen and messages about convergence on the screen and in the .log file.</description>
+      FULL_LOG = .FALSE.
+!</keyword>
+
+      DO LC = 1, DIMENSION_USR
+!<keyword category="category name" required="false">
+!  <description>interval at which user-defined outputs are written from the subroutine write_usr1.</description>
+         USR_DT(LC) = UNDEFINED
+!</keyword>
+
+         USR_TYPE(LC) = UNDEFINED_C
+         USR_VAR(LC) = UNDEFINED_C
+         USR_FORMAT(LC) = UNDEFINED_C
+         USR_EXT(LC) = UNDEFINED_C
+      END DO
+
+
+      DO LC = 1, 8
+         RESID_STRING(LC) = UNDEFINED_C
+      END DO
+
+
+!<keyword category="category name" required="false">
+!  <description>NA</description>
+      report_mass_balance_dt = UNDEFINED
 !</keyword>
 
 !<keyword category="category name" required="false">
 !  <description>NA</description>
-      IS_SERIAL = .TRUE.
+      bDist_IO            = .false.
 !</keyword>
 
 !<keyword category="category name" required="false">
 !  <description>NA</description>
-      USE_DOLOOP = .FALSE.
+      bStart_with_one_RES = .false.
 !</keyword>
-
-! Stiff Chemistry Solver:
-      STIFF_CHEMISTRY = .FALSE.
-      CALL_DI   = .FALSE.      ! Legacy Keyword
-      CALL_GROW = .FALSE.      ! Legacy Keyword
-      CALL_ISAT = .FALSE.      ! Legacy Keyword
-      ISATdt    = UNDEFINED    ! Legacy Keyword
 
       bWrite_netCDF(:) = .false.
 
 
+!#####################################################################!
+!                        Chemical Reactions                           !
+!#####################################################################!
 
 
-
-
-
-
-
-
-
-
-
-
-      DO LC = 1, DIM_N_ALL
-!<keyword category="category name" required="false">
-!  <description>Names of gas and solids phase species as it appears in the materials database. The first NMAX(0) are the names of gas species. The next NMAX(1) are the names of solids phase-1 species, etc.</description>
-         SPECIES_NAME = UNDEFINED_C
+!<keyword category="Chemical Reactions" required="false">
+!  <description>Flag to use stiff chemistry solver (Direct Integration).</description>
+!  <conflict keyword="USE_RRATES" value=".TRUE."/>
+      STIFF_CHEMISTRY = .FALSE.
 !</keyword>
-      ENDDO
+
+!<keyword category="Chemical Reactions" required="false">
+!  <description>Flag to use legacy chemcial reaction UDFs.</description>
+      USE_RRATES = .FALSE.
+!</keyword>
+
+!<keyword category="Chemical Reactions" required="false" legacy="true">
+!  <description>Names of gas and solids phase species as it appears in the materials database. The first NMAX(0) are the names of gas species. The next NMAX(1) are the names of solids phase-1 species, etc.</description>
+!  <dependent keyword="USE_RRATES" value=".TRUE."/>
+      SPECIES_NAME(:DIM_N_ALL) = UNDEFINED_C
+!</keyword>
 
 !<keyword category="category name" required="false">
 !  <description>Number of species in phase m. Note that the gas phase is indicated as m=0.</description>
+!  <dependent keyword="USE_RRATES" value=".TRUE."/>
       NMAX = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Chemical Reactions" legacy="true">
+!  <description>Flag for previous stiff solver.</description>
+      CALL_DI   = .FALSE.
+!</keyword>
+
+!<keyword category="Chemical Reactions" required="false" legacy="true">
+!  <description>
+!   Flag to specify variable solids diameter in original stiff chem solver.
+!   (Non-Functional, Removed in 2013-2 Release)
+!  </description>
+      CALL_GROW = .FALSE.
+!</keyword>
+
+!<keyword category="Chemical Reactions" required="false" legacy="true">
+!  <description>
+!   Flag to use ISAT tables with original DI solver.
+!   (Non-Functional, Removed in 2013-2 Release)
+!  </description>
+      CALL_ISAT = .FALSE.      ! Legacy Keyword
+!  </description>
+!</keyword>
+
+!<keyword category="Chemical Reactions" required="false" legacy="true">
+!  <description>
+!   Specified constant call to ISAT functions.
+!   (Non-Functional, Removed in 2013-2 Release)
+!  </description>
+      ISATdt = UNDEFINED
+!  </description>
+!</keyword>
+
+
+
+!#####################################################################!
+!                    Parallelization Control                          !
+!#####################################################################!
+
+
+!<keyword category="Parallelization Control" required="false">
+!  <description>number of grid blocks in x-direction.</description>
+      NODESI = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Parallelization Control" required="false">
+!  <description>number of grid blocks in y-direction.</description>
+      NODESJ = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Parallelization Control" required="false">
+!  <description>number of grid blocks in z-direction.</description>
+      NODESK = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Parallelization Control" required="false">
+!  <description>Print out additional statistics for parallel runs</description>
+      solver_statistics = .FALSE.
+!</keyword>
+
+!<keyword category="Parallelization Control" required="false">
+!  <description>Group residuals to reduce global collectives.</description>
+      DEBUG_RESID = .TRUE.
+!</keyword>
+
+!<keyword category="Parallelization Control" required="false">
+!  <description>All ranks write error messages.</description>
+      ENABLE_DMP_LOG = .FALSE.
+!</keyword>
+
+!<keyword category="Parallelization Control" required="false">
+!  <description>Print the index layout for debugging.</description>
+      DBGPRN_LAYOUT = .FALSE.
+!</keyword>
+
+
+!#####################################################################!
+!                       Batch Queue Environmnet                       !
+!#####################################################################!
+
+
+!<keyword category="Batch Queue Environment" required="false">
+!  <description>enables clean termination feature.</description>
+      CHK_BATCHQ_END = .FALSE.
+!</keyword>
+
+!<keyword category="Batch Queue Environment" required="false">
+!  <description>total wall-clock duration of the job, in seconds.</description>
+      BATCH_WALLCLOCK = 9000.0    ! set to 2.5 hrs for jaguarcnl w/ nproc<=512
+!</keyword>
+
+!<keyword category="Batch Queue Environment" required="false">
+!  <description>buffer time when initiating clean termination, in seconds.</description>
+      TERM_BUFFER = 180.0         ! set to 3 minutes prior to end of job
+!</keyword>
+
+
+
+!#####################################################################!
+!          Direct Quadrature Method of Moments (DQMOM)                !
+!#####################################################################!
+
+
+!<keyword category="Direct Quadrature Method of Moments (DQMOM)" required="false">
+!  <description>variable to decide if the population balance equations are solved.</description>
+      Call_DQMOM = .FALSE.
+!</keyword>
+
+!<keyword category="Direct Quadrature Method of Moments (DQMOM)" required="false">
+!  <description>success-factor for aggregation.</description>
+      AGGREGATION_EFF=0.D0
+!</keyword>
+
+!<keyword category="Direct Quadrature Method of Moments (DQMOM)" required="false">
+!  <description>success-factor for breakage.</description>
+      BREAKAGE_EFF=0.D0
 !</keyword>
 
 
@@ -2222,19 +2203,86 @@
 
 
 
-! Debug flags
-      REPORT_NEG_DENSITY = .FALSE.
+
+
+
+
+
+
+
+
+
+!<keyword category="category name" required="false">
+!  <description>Variable which triggers an automatic restart.</description>
+      AUTOMATIC_RESTART = .FALSE.
+!</keyword>
+
+!<keyword category="category name" required="false">
+!  <description>Flag to restart the code when DT < DT_MIN</description>
+      AUTO_RESTART = .FALSE.
+!</keyword>
+
+!<keyword category="category name" required="false">
+!  <description>ATUO_RESTART counter.</description>
+      ITER_RESTART = 1
+!</keyword>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+! NO_OF_RXNS is not a keyword. However, it is initialized here so that
+! if there are no reactions, this value is assigned.
+      NO_OF_RXNS = UNDEFINED_I
+
+
+
+
+!<keyword category="category name" required="false">
+!  <description>NA</description>
+      U_G0 = UNDEFINED
+!</keyword>
+
+!<keyword category="category name" required="false">
+!  <description>NA</description>
+      V_G0 = UNDEFINED
+!</keyword>
+
+!<keyword category="category name" required="false">
+!  <description>NA</description>
+      W_G0 = UNDEFINED
+!</keyword>
+
+      U_S0(:DIM_M) = UNDEFINED
+      V_S0(:DIM_M) = UNDEFINED
+      W_S0(:DIM_M) = UNDEFINED
+
+
+
+
+
+
+
+
+
 
       CALL DES_INIT_NAMELIST
 
-! Initialize QMOMK namelist
       CALL QMOMK_INIT_NAMELIST
 
       CALL USR_INIT_NAMELIST
 
-! JFD: MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
       CALL CARTESIAN_GRID_INIT_NAMELIST
-
 
       RETURN
       END SUBROUTINE INIT_NAMELIST
