@@ -385,17 +385,17 @@
 
       RETURN  
 
- 1000 FORMAT(//1X,70('*'),' From: CHECK_DATA_00',/' Error 1000:',      &
+ 1000 FORMAT(//1X,70('*'),/' From: CHECK_DATA_00',/' Error 1000:',     &
          '  No DMP grid partitioning data provided in mfix.dat. ',     &
          '  NODESI, NODESJ, and NODESK are all undefined.')
 
  1001 FORMAT(/' From: CHECK_DATA_00',/' Warning 1001:',                &
          ' Setting NODES',A1,' to default: NODES',A1,'=1.',/)
 
- 1002 FORMAT(//1X,70('*'),' From: CHECK_DATA_00',/' Error 1002:',      &
+ 1002 FORMAT(//1X,70('*'),/' From: CHECK_DATA_00',/' Error 1002:',     &
          'IMAX or JMAX or KMAX not specified in mfix.dat',/1X,70('*')/)
 
- 1003 FORMAT(//1X,70('*'),' From: CHECK_DATA_00',/' Error 1003:',      &
+ 1003 FORMAT(//1X,70('*'),/' From: CHECK_DATA_00',/' Error 1003:',     &
          ' Too many DMP partitions partitions specified for ',A1,      &
          ' axis.',/' There must be at least ',I2,' computational',     &
          ' cells per DMP parition.',/' >>> Computational Cells/DMP',   &
