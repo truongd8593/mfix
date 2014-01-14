@@ -63,16 +63,24 @@ SET_MPI_INCLUDE(){
 
 # I've checked all the placed I know where to look. Ask the user.
   if test -z ${MPI_INCLUDE_PATH}; then
-    echo "  Unable to locate mpif.h"
-    echo -n "  Please provide the location of the mpif.h file: "
+    echo "Unable to locate mpif.h"
+    echo -n "Please provide the location of the mpif.h file: "
     read MPI_INCLUDE_PATH
   fi
 
   if test -f ${MPI_INCLUDE_PATH}/mpif.h; then
+    if test -f ${MFIX_SRC}/mpif.h; then
+      /bin/rm ${MFIX_SRC}/mpif.h
+      if test ! $? = 0; then
+        echo "Unable to remove existing mpif.h file in source directory!"
+        echo "Aborting."
+        exit
+      fi
+    fi
     ln -sf ${MPI_INCLUDE_PATH}/mpif.h ${MFIX_SRC}/mpif.h
   else
-    echo "  Fatal Error: Unable to locate the mpif.h header file!"
-    echo "  Aborting."
+    echo "Fatal Error: Unable to locate the mpif.h header file!"
+    echo "Aborting."
     exit
   fi
 
