@@ -105,17 +105,14 @@ if test ${AUTOCOMPILE} -le 1; then
 
 fi # End of Autocompile <= 1
 
+# Reaction preprocessor.
+if test ${REQ_RXNS} = 1; then
+  . ${MFIX_CONFIG}/rxn_preproc.sh
+fi
+
 
 # Update source code if needed.
 . ${MFIX_CONFIG}/swap_build.sh
-
-
-#**************************************#
-#                                      #
-# Update mfix_l and mfix_u files here. #
-#                                      #
-#**************************************#
-
 
 # Construct the makefile
 . ${MFIX_CONFIG}/build_Makefile.sh
