@@ -155,6 +155,11 @@
 !</keyword>
 
 !<keyword category="Run Control" required="false">
+!  <description>Flag to restart the code when DT < DT_MIN. </description>
+      AUTO_RESTART = .FALSE.
+!</keyword>
+
+!<keyword category="Run Control" required="false">
 !  <description>momentum equations.</description>
 !  <valid value=".false." note="model A"/>
 !  <valid value=".true." note="model B"/>
@@ -163,7 +168,7 @@
 
 !<keyword category="Run Control" required="false">
 !  <description>Solve X-momentum equations.</description>
-!  <arg index="1" id="Phase Index" min="0" max="DIM_M"/>
+!  <arg index="1" id="Phase" min="0" max="DIM_M"/>
 !  <valid value=".true." note="Solve X-momentum equations."/>
 !  <valid value=".false." note="Do not solve X-momentum equations."/>
       MOMENTUM_X_EQ(:DIM_M) = .TRUE.
@@ -171,7 +176,7 @@
 
 !<keyword category="Run Control" required="false">
 !  <description>Solve Y-momentum equations.</description>
-!  <arg index="1" id="Phase Index" min="0" max="DIM_M"/>
+!  <arg index="1" id="Phase" min="0" max="DIM_M"/>
 !  <valid value=".TRUE." note="Solve Y-momentum equations."/>
 !  <valid value=".FALSE." note="Do not solve Y-momentum equations."/>
       MOMENTUM_Y_EQ(:DIM_M) = .TRUE.
@@ -179,7 +184,7 @@
 
 !<keyword category="Run Control" required="false">
 !  <description>Solve Z-momentum equations.</description>
-!  <arg index="1" id="Phase Index" min="0" max="DIM_M"/>
+!  <arg index="1" id="Phase" min="0" max="DIM_M"/>
 !  <valid value=".true." note="Solve Z-momentum equations."/>
 !  <valid value=".false." note="Do not solve Z-momentum equations."/>
       MOMENTUM_Z_EQ(:DIM_M) = .TRUE.
@@ -194,7 +199,7 @@
 
 !<keyword category="Run Control" required="false">
 !  <description>Solve species transport equations.</description>
-!  <arg index="1" id="Phase Index" min="0" max="DIM_M"/>
+!  <arg index="1" id="Phase" min="0" max="DIM_M"/>
 !  <valid value=".false." note="Solve species equations."/>
 !  <valid value=".true." note="Do not solve species equations."/>
       SPECIES_EQ(:DIM_M) = .TRUE.
@@ -269,14 +274,14 @@
       BLENDING_STRESS = .FALSE.
 !</keyword>
 
-!<keyword category="category name" required="false">
+!<keyword category="Run Control" required="false">
 !  <description>Hyperbolic tangent function for blending frictional stress models.</description>
 !  <dependent keyword="BLENDING_STRESS" value=".true."/>
 !  <conflict keyword="SIGM_BLEND" value=".true."/>
       TANH_BLEND = .TRUE.
 !</keyword>
 
-!<keyword category="category name" required="false">
+!<keyword category="Run Control" required="false">
 !  <description>A scaled and truncated sigmoidal function for blending frictional stress models.</description>
 !  <dependent keyword="BLENDING_STRESS" value=".true."/>
 !  <conflict keyword="TANH_BLEND" value=".true."/>
@@ -410,7 +415,7 @@
       r_p(:DIM_M, :DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="category name" required="false">
+!<keyword category="Physical Parameters" required="false">
 !  <description>coefficient of restitution for particle-wall collisions.</description>
       E_W = 1.D0
 !</keyword>
@@ -423,11 +428,6 @@
 !<keyword category="Physical Parameters" required="false">
 !  <description>output the variable specularity coefficient when bc_jj_m is .true.. the specularity coefficient will be stored in reactionrates array for post-processing by post-mfix. user needs to set nrr to 1 for this purpose. be careful with this setting when reacting flow is simulated.</description>
       PHIP_OUT_JJ=.false.
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>Unknown.</description>
-      PHIP_OUT_ITER=0
 !</keyword>
 
 !<keyword category="Physical Parameters" required="false">
@@ -593,7 +593,11 @@
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>minimum residual for declaring divergence. when the fluid is incompressible, the velocity residuals take large values in the second iteration (e.g., 1e+8) and then drop down to a low value in the third iteration (e.g., 0.1). in such cases, it is desirable to increase this setting.</description>
+!  <description> Minimum residual for declaring divergence.
+!    This parameter is useful for incompressible fluid simulations because
+!    velocity residuals can take large values for the second iteration (e.g., 1e+8)
+!    before drop down to smaller values for third  third iteration (e.g., 0.1). 
+!  </description>
       TOL_DIVERGE = 1.0D+4
 !</keyword>
 
@@ -1209,6 +1213,7 @@
 !<keyword category="Initial Condition" required="false">
 !  <description>Initial bulk density (rop_s = ro_s x ep_s) of solids phase-m in the IC region. Users need to specify this IC only for polydisperse flow (MMAX > 1). Users must make sure that summation of ( IC_ROP_s(ic,m) / RO_s(m) ) over all solids phases is equal to ( 1.0 – IC_EP_g(ic) ).</description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          IC_ROP_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
@@ -1221,36 +1226,42 @@
 !<keyword category="Initial Condition" required="false">
 !  <description>Initial solids phase-m temperature in the IC region.</description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          IC_T_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Initial Condition" required="false">
 !  <description>Initial solids phase-m granular temperature in the IC region.</description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          IC_THETA_M(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Initial Condition" required="false">
 !  <description>Gas phase radiation coefficient in the IC region. Modify file radtn2.inc to change the source term.</description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          IC_GAMA_RG(LC) = ZERO
 !</keyword>
 
 !<keyword category="Initial Condition" required="false">
 !  <description>Gas phase radiation temperature in the IC region.</description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          IC_T_RG(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Initial Condition" required="false">
 !  <description>Solids phase-m radiation coefficient in the IC region. Modify file radtn2.inc to change the source term.</description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          IC_GAMA_RS(LC,:DIM_M) = ZERO
 !</keyword>
 
 !<keyword category="Initial Condition" required="false">
 !  <description>Solids phase-m radiation temperature in the IC region.</description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          IC_T_RS(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
@@ -1263,6 +1274,7 @@
 !<keyword category="Initial Condition" required="false">
 !  <description>Initial x-component of solids-phase velocity in the IC region.</description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          IC_U_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
@@ -1275,6 +1287,7 @@
 !<keyword category="Initial Condition" required="false">
 !  <description>Initial y-component of solids-phase velocity in the IC region.</description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          IC_V_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
@@ -1287,6 +1300,7 @@
 !<keyword category="Initial Condition" required="false">
 !  <description>Initial z-component of solids-phase velocity in the IC region.</description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          IC_W_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
@@ -1308,7 +1322,8 @@
 !<keyword category="Initial Condition" required="false">
 !  <description>Initial value of Scalar n.</description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
-         IC_SCALAR(LC,:DIM_SCALAR) = UNDEFINED
+!  <arg index="2" id="Scalar Eq." min="1" max="DIM_SCALAR"/>
+        IC_SCALAR(LC,:DIM_SCALAR) = UNDEFINED
 !</keyword>
 
 !<keyword category="Initial Condition" required="false">
@@ -1447,6 +1462,7 @@
 !<keyword category="Boundary Condition" required="false">
 !  <description>Solids phase Uw for partial slip boundary.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          BC_UW_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
@@ -1459,6 +1475,7 @@
 !<keyword category="Boundary Condition" required="false">
 !  <description>Solids phase Vw for partial slip boundary.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          BC_VW_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
@@ -1471,6 +1488,7 @@
 !<keyword category="Boundary Condition" required="false">
 !  <description>Solids phase Ww for partial slip boundary.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          BC_WW_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
@@ -1483,107 +1501,184 @@
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Tw for granular energy bc.</description>
+!  <description>
+!    Specified wall value, THETAw_M, in diffusion boundary condition:
+!    d(Theta_M)/dn + Hw (THETA_M - THETAw_M) = C, where n is the fluid-to-wall normal.
+!  </description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          BC_THETAW_M(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
+!  <description>
+!    Transfer coefficient, Hw, in diffusion boundary condition:
+!    d(Theta_M)/dn + Hw (THETA_M - THETAw_M) = C, where n is the fluid-to-wall normal.
+!  </description>
 !  <description>Hw for granular energy bc.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          BC_HW_THETA_M(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>c for granular energy bc.</description>
+!  <description>
+!    Specified constant flux, C, in diffusion boundary condition:
+!    d(Theta_M)/dn + Hw (THETA_M - THETAw_M) = C, where n is the fluid-to-wall normal.
+!  </description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          BC_C_THETA_M(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Gas phase hw for heat transfer.</description>
+!  <description>
+!    Gas phase heat transfer coefficient, Hw, in diffusion boundary condition:
+!    d(T_g)/dn + Hw (T_g - Tw_g) = C, where n is the fluid-to-wall normal.
+!  </description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
          BC_HW_T_G(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase hw for heat transfer.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_HW_T_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Gas phase Tw for heat transfer.</description>
+!  <description>
+!    Specified gas phase wall temperature, Tw_g, in diffusion boundary condition:
+!    d(T_g)/dn + Hw (T_g - Tw_g) = C, where n is the fluid-to-wall normal.
+!  </description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
          BC_TW_G(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase Tw for heat transfer.</description>
-!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
-         BC_TW_S(LC,:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Gas phase C for heat transfer.</description>
+!  <description>
+!    Specified constant gas phase heat flux, C, in diffusion boundary condition:
+!    d(T_g)/dn + Hw (T_g - Tw_g) = C, where n is the fluid-to-wall normal.
+!  </description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
          BC_C_T_G(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase C for heat transfer.</description>
+!  <description>
+!    Solids phase heat transfer coefficient, Hw, in diffusion boundary condition:
+!    d(T_s)/dn + Hw (T_s - Tw_s) = C, where n is the fluid-to-wall normal.
+!  </description>
+!  <description>Solids phase hw for heat transfer.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
+         BC_HW_T_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>
+!    Specified solids phase wall temperature, Tw_s, in diffusion boundary condition:
+!    d(T_s)/dn + Hw (T_s - Tw_s) = C, where n is the fluid-to-wall normal.
+!  </description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
+         BC_TW_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>
+!    Specified constant solids phase heat flux, C, in diffusion boundary condition:
+!    d(T_s)/dn + Hw (T_s - Tw_s) = C, where n is the fluid-to-wall normal.
+!  </description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
          BC_C_T_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>The species diffusion boundary condition is implemented as dX/dn + hw (X - Xw) = c, where n is the normal pointing from the fluid into the wall. The coefficients hw, Xw, and c should be specified. Hw = 0 => specified species diffusion flux; hw = ∞ => specified species concentration at the boundary. To set hw = ∞ , leave it unspecified and give a value for Xw. Gas phase hw for mass transfer.</description>
+!  <description>
+!    Gas phase species mass transfer coefficient, Hw, in diffusion boundary condition:
+!    d(X_g)/dn + Hw (X_g - Xw_g) = C, where n is the fluid-to-wall normal.
+!  </description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Species" min="1" max="DIM_N_G"/>
          BC_HW_X_G(LC,:DIM_N_G) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
+!  <description>
+!    Specified wall gas species mass fraction, Xw, in diffusion boundary condition:
+!    d(X_g)/dn + Hw (X_g - Xw_g) = C, where n is the fluid-to-wall normal.
+!  </description>
 !  <description>Gas phase Xw for mass transfer.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Species" min="1" max="DIM_N_G"/>
          BC_XW_G(LC,:DIM_N_G) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Gas phase C for mass transfer.</description>
+!  <description>
+!    Specified constant gas species mass flux, C, in diffusion boundary condition:
+!    d(X_g)/dn + Hw (X_g - Xw_g) = C, where n is the fluid-to-wall normal.
+!  </description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Species" min="1" max="DIM_N_G"/>
          BC_C_X_G(LC,:DIM_N_G) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase hw for mass transfer.</description>
+!  <description>
+!    Solid phase species mass transfer coefficient, Hw, in diffusion boundary condition:
+!    d(X_s)/dn + Hw (X_s - Xw_s) = C, where n is the fluid-to-wall normal.
+!  </description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Solid phase" min="1" max="DIM_M"/>
+!  <arg index="3" id="Species" min="1" max="DIM_N_S"/>
          BC_HW_X_S(LC,:DIM_M,:DIM_N_S) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase Xw for mass transfer.</description>
+!  <description>
+!    Specified solids species mass fraction at the wall, Xw, in diffusion boundary condition:
+!    d(X_g)/dn + Hw (X_g - Xw_g) = C, where n is the fluid-to-wall normal.
+!  </description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Solid phase" min="1" max="DIM_M"/>
+!  <arg index="3" id="Species" min="1" max="DIM_N_S"/>
          BC_XW_S(LC,:DIM_M,:DIM_N_S) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Solids phase C for mass transfer.</description>
+!  <description>
+!    Specified constant solids species mass flux, C, in diffusion boundary condition:
+!    d(X_s)/dn + Hw (X_s - Xw_s) = C, where n is the fluid-to-wall normal.
+!  </description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Solid phase" min="1" max="DIM_M"/>
+!  <arg index="3" id="Species" min="1" max="DIM_N_S"/>
          BC_C_X_S(LC,:DIM_M,:DIM_N_S) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>hw for scalar transfer at the boundary.</description>
+!  <description>
+!    Scalar transfer coefficient, Hw, in diffusion boundary condition:
+!    d(Scalar)/dn + Hw (Scalar - ScalarW) = C, where n is the fluid-to-wall normal.
+!  </description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Scalar Eq." min="1" max="DIM_SCALAR"/>
          BC_HW_Scalar(LC,:DIM_SCALAR) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Xw for scalar transfer at the boundary.</description>
+!  <description>
+!    Specified scalar value at the wall, ScalarW, in diffusion boundary condition:
+!    d(Scalar)/dn + Hw (Scalar - ScalarW) = C, where n is the fluid-to-wall normal.
+!  </description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Scalar Eq." min="1" max="DIM_SCALAR"/>
          BC_ScalarW(LC,:DIM_SCALAR) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>C for scalar transfer at the boundary.</description>
+!  <description>
+!    Specified constant scalar flux, C, in diffusion boundary condition:
+!    d(Scalar)/dn + Hw (Scalar - ScalarW) = C, where n is the fluid-to-wall normal.
+!  </description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Scalar Eq." min="1" max="DIM_SCALAR"/>
          BC_C_Scalar(LC,:DIM_SCALAR) = UNDEFINED
 !</keyword>
 
@@ -1602,6 +1697,7 @@
 !<keyword category="Boundary Condition" required="false">
 !  <description>Bulk density of solids phase at the BC plane.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Solid phase" min="1" max="DIM_M"/>
          BC_ROP_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
@@ -1614,22 +1710,28 @@
 !<keyword category="Boundary Condition" required="false">
 !  <description>Solids phase-m temperature at the BC plane.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Solid phase" min="1" max="DIM_M"/>
          BC_T_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
 !  <description>Solids phase-m granular temperature at the BC plane.</description>
+!  <arg index="2" id="Solid phase" min="1" max="DIM_M"/>
          BC_THETA_M(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
 !  <description>Mass fraction of gas species n at the BC plane.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Species" min="1" max="DIM_N_G"/>
          BC_X_G(LC,:DIM_N_G) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
 !  <description>Mass fraction of solids phase-m, species n at the BC plane.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Solid phase" min="1" max="DIM_M"/>
+!  <arg index="3" id="Species" min="1" max="DIM_N_s"/>
          BC_X_S(LC,:DIM_M,:DIM_N_S) = UNDEFINED
 !</keyword>
 
@@ -1642,6 +1744,7 @@
 !<keyword category="Boundary Condition" required="false">
 !  <description>x-component of solids-phase velocity at the BC plane.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Solid phase" min="1" max="DIM_M"/>
          BC_U_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
@@ -1654,6 +1757,7 @@
 !<keyword category="Boundary Condition" required="false">
 !  <description>y-component of solids-phase velocity at the BC plane.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Solid phase" min="1" max="DIM_M"/>
          BC_V_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
@@ -1666,6 +1770,7 @@
 !<keyword category="Boundary Condition" required="false">
 !  <description>z-component of solids-phase velocity at the BC plane.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Solid phase" min="1" max="DIM_M"/>
          BC_W_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
@@ -1678,6 +1783,7 @@
 !<keyword category="Boundary Condition" required="false">
 !  <description>Solids volumetric flow rate through the boundary.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Solid phase" min="1" max="DIM_M"/>
          BC_VOLFLOW_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
@@ -1690,11 +1796,20 @@
 !<keyword category="Boundary Condition" required="false">
 !  <description>Solids mass flow rate through the boundary.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Solid phase" min="1" max="DIM_M"/>
          BC_MASSFLOW_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>The interval at the beginning when the normal velocity at the boundary is equal to BC_Jet_g0. When restarting, run this value and BC_Jet_g0 should be specified such that the transient jet continues correctly. MFIX does not store the jet conditions. For MASS_OUTFLOW boundary conditions, BC_DT_0 is the time period to average and print the outflow rates. The adjustment of velocities to get a specified mass or volumetric flow rate is based on the average outflow rate.</description>
+!  <description>The interval at the beginning when the normal
+!    velocity at the boundary is equal to BC_Jet_g0. When restarting,
+!    run this value and BC_Jet_g0 should be specified such that the
+!    transient jet continues correctly. MFIX does not store the jet
+!    conditions. For MASS_OUTFLOW boundary conditions, BC_DT_0 is 
+!    the time period to average and print the outflow rates. The 
+!    adjustment of velocities to get a specified mass or volumetric
+!    flow rate is based on the average outflow rate.
+!  </description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
          BC_DT_0(LC) = UNDEFINED
 !</keyword>
@@ -1732,6 +1847,7 @@
 !<keyword category="Boundary Condition" required="false">
 !  <description>Boundary value for user-defined scalar equation.</description>
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Scalar Eq." min="1" max="DIM_SCALAR"/>
          BC_Scalar(LC,:DIM_SCALAR) = UNDEFINED
 !</keyword>
 
@@ -1747,20 +1863,29 @@
          BC_E_Turb_G(LC) = UNDEFINED
 !</keyword>
 
-
-
-         BC_ROP_G(LC) = UNDEFINED
-
+!<keyword category="Boundary Condition" required="false">
+!  <description>Magnitude of gas velocity in a specifed boundary region.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
          BC_VELMAG_G(LC) = UNDEFINED
-         BC_VELMAG_S(LC,:DIM_M) = UNDEFINED
-
-         BC_APPLY_TO_MPPIC(LC) = .true.
-
-      ENDDO
-
+!</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Use the modified Johnson and Jackson partial slip BC with variable specularity coefficient. Must set e_w and phi_w with this BC.</description>
+!  <description>Magnitude of gas velocity in a specifed boundary region.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Phase" min="1" max="DIMENSION_BC"/>
+         BC_VELMAG_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+         BC_APPLY_TO_MPPIC(LC) = .true.
+         BC_ROP_G(LC) = UNDEFINED
+      ENDDO
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Use the modified Johnson and Jackson partial slip BC 
+!    with variable specularity coefficient. 
+!  </description>
 !  <dependent keyword="e_w" value="DEFINED"/>
 !  <dependent keyword="phi_w" value="DEFINED"/>
          BC_JJ_M = .false.
@@ -1993,78 +2118,228 @@
 !                          Output Control                             !
 !#####################################################################!
 
-!<keyword category="category name" required="false">
+!<keyword category="Output Control" required="false">
 !  <description>interval at which restart (.res) file is updated.</description>
       RES_DT = UNDEFINED
 !</keyword>
 
-!<keyword category="category name" required="false">
-!  <description>interval at which .spx files are updated.</description>
-!  <valid value=".sp4" note="solids velocity (u_s, v_s, w_s)."/>
-!  <valid value=".sp7" note="gas and solids mass fractions (x_g, x-s)."/>
-!  <valid value=".sp6" note="gas and solids temperature (t_g, t_s1, t_s2)."/>
-!  <valid value=".sp1" note="void fraction (ep_g)."/>
-!  <valid value=".sp3" note="gas velocity (u_g, v_g, w_g)."/>
-!  <valid value=".sp2" note="gas pressure, solids pressure (p_g, p_star)."/>
-!  <valid value=".sp9" note="user defined scalars."/>
-!  <valid value=".sp8" note="granular temperature (g)."/>
-!  <valid value=".sp5" note="solids density (rop_s)."/>
-!  <valid value=".spa" note="reaction rates. (see section 4.11)"/>
-!  <valid value=".spb" note=""/>
+!<keyword category="Output Control" required="false">
+!  <description>interval at which .spx files are updated.
+!    SP1: void fraction (EP_G)
+!    SP2: Gas pressure (P_G), and Solids pressure (P_star)
+!    SP3: Gas veloicty (U_G, V_G, W_G)
+!    SP4: Solids veloicty (U_S, V_S, W_S)
+!    SP5: Solids builk density (ROP_s)
+!    SP6: Gas and solids temperature (T_G, T_S)
+!    SP7: Gas and solids mass fractions (X_G, X_S)
+!    SP8: Granular temperature (THETA_M)
+!    SP9: User defined scalars. (SCALAR)
+!    SPA: Reaction Rates (ReactionRates)
+!    SPB: Turbulence quantities (K_TURB_G, E_TURB_G)
+!  </description>
       SPX_DT(:N_SPX) = UNDEFINED
 !</keyword>
 
-!<keyword category="category name" required="false">
-!  <description>interval at which standard output (.out) file is updated.</description>
+!<keyword category="Output Control" required="false">
+!  <description> Interval at which standard output (.OUT) file is updated.
+!    Only run configuration information is written if left undefined. Otherwise
+!    all field variables for the entire domain are written in ASCII 
+!    format to the .OUT file at OUT_DT intervals.
+!  </description>
       OUT_DT = UNDEFINED
 !</keyword>
 
-!<keyword category="category name" required="false">
-!  <description>interval in number of time steps at which .log file is written.</description>
-!  <valid value="report_mass_balance_dt " note="if a value is defined, say 0.1 s, an overall species mass balance is performed and reported in the log file. the over all mass balance calculations may slightly slow down the run."/>
-!  <valid value="resid_string" note="specify residuals to be printed as 4-character strings. "/>
+!<keyword category="Output Control" required="false">
+!  <description>Number of time steps between .LOG file updates.</description>
       NLOG = 25
 !</keyword>
 
-!<keyword category="category name" required="false">
-!  <description>if true, display the residuals on the screen and messages about convergence on the screen and in the .log file.</description>
+!<keyword category="Output Control" required="false">
+!  <description> Display the residuals on the screen and provide
+!    messages about convergence on the screen and in the .LOG file.
+!  </description>
       FULL_LOG = .FALSE.
 !</keyword>
 
-      DO LC = 1, DIMENSION_USR
-!<keyword category="category name" required="false">
-!  <description>interval at which user-defined outputs are written from the subroutine write_usr1.</description>
+!<keyword category="Output Control" required="false">
+!  <description>Specifies the residuals to display.
+!    P0  : Gas pressure
+!    PM  : Solids phase M pressure
+!    R0  : Gas density
+!    RM  : Solids phase M density
+!    U0  : Gas phase U-velocity
+!    V0  : Gas phase V-velocity
+!    W0  : Gas phase W-velocity
+!    Um  : Solids phase M U-velocity
+!    Vm  : Solids phase M V-velocity
+!    Wm  : Solids phase M W-velocity
+!    T0  : Gas temperature
+!    Tm  : Solids phase M temperature
+!    X0NN: Gas phase species NN mass fraction
+!    XMNN: Solids phase M species NN mass fraction
+!    K0  : K-Epsilon model residuals
+!  </description>
+!  <arg index="1" id="Residual Index" max="8" min="1"/>
+      RESID_STRING(:8) = UNDEFINED_C
+!</keyword>
+
+
+      DO LC=1, DIMENSION_USR
+!<keyword category="Output Control" required="false">
+!  <description> Intervals at which subroutine write_usr1 is called. </description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
          USR_DT(LC) = UNDEFINED
 !</keyword>
 
+!<keyword category="Output Control" required="false">
+!  <description>UDF Hook: x coordinate of the west face or edge.</description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
+         USR_X_W(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>UDF Hook: x coordinate of the east face or edge.</description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
+         USR_X_E(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>UDF Hook: y coordinate of the south face or edge.</description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
+         USR_Y_S(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>UDF Hook: y coordinate of the north face or edge.</description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
+         USR_Y_N(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>UDF Hook: z coordinate of the bottom face or edge.</description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
+         USR_Z_B(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>UDF Hook: z coordinate of the top face or edge.</description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
+         USR_Z_T(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>UDF Hook: i index of the west-most cell.</description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
+         USR_I_W(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>UDF Hook: i index of the east-most cell.</description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
+         USR_I_E(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>UDF Hook: j index of the south-most cell.</description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
+         USR_J_S(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>UDF Hook: j index of the north-most cell.</description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
+         USR_J_N(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>UDF Hook: k index of the bottom-most cell.</description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
+         USR_K_B(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>UDF Hook: k index of the top-most cell.</description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
+         USR_K_T(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>UDF Hook: Type of user-defined ouput: Binary of ASCII.</description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
          USR_TYPE(LC) = UNDEFINED_C
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>UDF Hook: 
+!    Variables to be written in the user-defined output files.
+!  </description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
          USR_VAR(LC) = UNDEFINED_C
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>UDF Hook: 
+!    Format for writing user-defined (ASCII) output file.
+!  </description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
          USR_FORMAT(LC) = UNDEFINED_C
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>UDF Hook: File extension for the user-defined output.</description>
+!  <arg index="1" id="USR Index" max="DIMENSION_USR" min="1"/>
          USR_EXT(LC) = UNDEFINED_C
-      END DO
+!</keyword>
+      ENDDO
 
 
-      DO LC = 1, 8
-         RESID_STRING(LC) = UNDEFINED_C
-      END DO
-
-
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      report_mass_balance_dt = UNDEFINED
+!<keyword category="Output Control" required="false">
+!  <description> Frequency to perform an overall species mass balance.
+!    Leaving undefined suppresses the mass balance calculations which
+!    can slightly extend run time.
+!  </description>
+      REPORT_MASS_BALANCE_DT = UNDEFINED
 !</keyword>
 
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      bDist_IO            = .false.
+!<keyword category="Output Control" required="false">
+!  <description>Use distributed IO :: Each rank generates RES/SPx files.</description>
+!  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
+      bDist_IO = .FALSE.
 !</keyword>
 
-!<keyword category="category name" required="false">
-!  <description>NA</description>
-      bStart_with_one_RES = .false.
+!<keyword category="Output Control" required="false">
+!  <description>Restart a unified IO run as distributed IO.</description>
+!  <dependent keyword="RUN_TYPE" value="RESTART_2"/>
+!  <dependent keyword="bDist_IO" value=".TRUE."/>
+      bStart_with_one_RES = .FALSE.
 !</keyword>
 
-      bWrite_netCDF(:) = .false.
+!<keyword category="Output Control" required="false">
+!  <description>Flag to write variable in NetCDF output file. NetCDF support
+!    is not included in MFIX by default. The executable must be compiled and
+!    linked with an appropriate NetCDF library to use this functionality.
+!
+!    Variable Index List:
+!     1: void fraction (EP_G)
+!     2: Gas pressure (P_G)
+!     3: Solids pressure (P_star)
+!     4: Gas veloicty (U_G, V_G, W_G)
+!     5: Solids veloicty (U_S, V_S, W_S)
+!     6: Solids builk density (ROP_s)
+!     7: Gas temperature (T_G)
+!     8: Gas and solids temperature (T_S)
+!     9: Gas mass fractions (X_G)
+!    10: Solids mass fractions (X_S)
+!    11: Granular temperature (THETA_M)
+!    12: User defined scalars. (SCALAR)
+!    13: Reaction Rates (ReactionRates)
+!    14: Turbulence quantities (K_TURB_G, E_TURB_G)
+!  </description>
+!  <arg index="1" id="NetCDF Variable Reference" max="20" min="1"/>
+!  <valid value=".TRUE." note="Write variable in NetCDF output."/>
+!  <valid value=".FALSE." note="Do not include variable in NetCDF output."/>
+      bWrite_netCDF(:20) = .FALSE.
+!</keyword>
 
 
 !#####################################################################!
@@ -2089,7 +2364,7 @@
       SPECIES_NAME(:DIM_N_ALL) = UNDEFINED_C
 !</keyword>
 
-!<keyword category="category name" required="false">
+!<keyword category="Chemical Reactions" required="false">
 !  <description>Number of species in phase m. Note that the gas phase is indicated as m=0.</description>
 !  <dependent keyword="USE_RRATES" value=".TRUE."/>
       NMAX = UNDEFINED_I
@@ -2170,7 +2445,7 @@
 
 
 !#####################################################################!
-!                       Batch Queue Environmnet                       !
+!                       Batch Queue Environment                       !
 !#####################################################################!
 
 
@@ -2218,7 +2493,7 @@
 
 
 
-
+! ---------------------------------- questionable namelist entries below
 
 
 
@@ -2233,26 +2508,9 @@
 !</keyword>
 
 !<keyword category="category name" required="false">
-!  <description>Flag to restart the code when DT < DT_MIN</description>
-      AUTO_RESTART = .FALSE.
-!</keyword>
-
-!<keyword category="category name" required="false">
 !  <description>ATUO_RESTART counter.</description>
       ITER_RESTART = 1
 !</keyword>
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2261,31 +2519,15 @@
       NO_OF_RXNS = UNDEFINED_I
 
 
-
-
-!<keyword category="category name" required="false">
-!  <description>NA</description>
       U_G0 = UNDEFINED
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>NA</description>
       V_G0 = UNDEFINED
-!</keyword>
-
-!<keyword category="category name" required="false">
-!  <description>NA</description>
       W_G0 = UNDEFINED
-!</keyword>
-
       U_S0(:DIM_M) = UNDEFINED
       V_S0(:DIM_M) = UNDEFINED
       W_S0(:DIM_M) = UNDEFINED
 
 
-
-
-
+      PHIP_OUT_ITER=0
 
 
 
