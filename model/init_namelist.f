@@ -496,8 +496,23 @@
 !</keyword>
 
 !<keyword category="Physical Parameters" required="false">
-!  <description>gravitational acceleration. by default, the gravity force acts in the _ve y-direction. modify file b_force2.inc to change the body force term.</description>
+!  <description>gravitational acceleration. This is not used anymore, except for backward compatibility.</description>
       GRAVITY = UNDEFINED
+!</keyword>
+
+!<keyword category="Physical Parameters" required="false">
+!  <description>X-component of gravitational acceleration vector. By default, the gravity force acts in the negative y-direction. </description>
+      GRAVITY_X = ZERO
+!</keyword>
+
+!<keyword category="Physical Parameters" required="false">
+!  <description>X-component of gravitational acceleration vector. By default, the gravity force acts in the negative y-direction. </description>
+      GRAVITY_Y = ZERO
+!</keyword>
+
+!<keyword category="Physical Parameters" required="false">
+!  <description>X-component of gravitational acceleration vector. By default, the gravity force acts in the negative y-direction. </description>
+      GRAVITY_Z = ZERO
 !</keyword>
 
 !<keyword category="Physical Parameters" required="false">

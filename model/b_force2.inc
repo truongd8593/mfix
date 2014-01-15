@@ -21,19 +21,19 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
 !  Body force on gas at i+1/2, j, k
-      BFX_g(IJK) = ZERO
+      BFX_g(IJK) = GRAVITY_X
 !
 !  Body force on gas at i, j+1/2, k
-      BFY_g(IJK) = -GRAVITY
+      BFY_g(IJK) = GRAVITY_Y
 !
 !  Body force on gas at i, j, k+1/2
-      BFZ_g(IJK) = ZERO
+      BFZ_g(IJK) = GRAVITY_Z
 !
 !  Body force on solids m at i+1/2, j, k
-      BFX_s(IJK, M) = ZERO
+      BFX_s(IJK, M) = GRAVITY_X
 !
 !  Body force on solids m at i, j+1/2, k
-      BFY_s(IJK, M) = -GRAVITY
+      BFY_s(IJK, M) = GRAVITY_Y
 !
 !  Body force on solids m at i, j, k+1/2
-      BFZ_s(IJK, M) = ZERO
+      BFZ_s(IJK, M) = GRAVITY_Z

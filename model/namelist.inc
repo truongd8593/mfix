@@ -39,7 +39,7 @@
 ! 1.3 Physical and numerical parameters section
 ! ---------------------------------------------------------------->>>
 !            (e, r_p, and C_e are same)
-             GRAVITY, P_ref, P_scale, &
+             GRAVITY, GRAVITY_X,GRAVITY_Y,GRAVITY_Z,P_ref, P_scale, &
              e, C_e, r_p, C_f, C, C_NAME, Phi, Phi_w, L_scale0, MU_gmax,&
              PHIP, e_w, EPS_f_min, V_ex, SEGREGATION_SLOPE_COEFFICIENT,&
 	     ep_s_max, M_MAX,&

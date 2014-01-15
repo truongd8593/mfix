@@ -96,6 +96,17 @@
          CALL MFIX_EXIT(myPE) 
       ENDIF 
 
+! If the gravitational acceleration vector is undefined, then used default value in negative y-direction
+! This ensured backward compatibility with the old (legacy) GRAVITY keyword.
+! At this point GRAVITY is defined,either from mfix.dat or by default above
+      IF(GRAVITY_X==ZERO.AND.GRAVITY_Y==ZERO.AND.GRAVITY_Z==ZERO) THEN
+         GRAVITY_X = ZERO
+         GRAVITY_Y = - GRAVITY
+         GRAVITY_Z = ZERO
+      ENDIF
+
+
+
       RETURN  
  1000 FORMAT(/1X,70('*')//'From: SET_CONSTANTS',/&
          ' Message: Unknown UNITS: ',1A16,/1X,70('*')/)
