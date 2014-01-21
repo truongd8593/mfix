@@ -16,6 +16,7 @@ $(EXEC_FILE) : \
     $(DPO)DBG.mod \
     $(DPO)DRAG.mod \
     $(DPO)ENERGY.mod \
+    $(DPO)ERROR_MANAGER.mod \
     $(DPO)FLDVAR.mod \
     $(DPO)FUNCTION.mod \
     $(DPO)FUNITS.mod \
@@ -619,6 +620,7 @@ $(EXEC_FILE) : \
     $(DPO)eosg.$(OBJ_EXT) \
     $(DPO)eoss.$(OBJ_EXT) \
     $(DPO)equal.$(OBJ_EXT) \
+    $(DPO)error_manager_mod.$(OBJ_EXT) \
     $(DPO)error_routine.$(OBJ_EXT) \
     $(DPO)exchange.$(OBJ_EXT) \
     $(DPO)exit.$(OBJ_EXT) \
@@ -1130,6 +1132,8 @@ $(DPO)ENERGY.mod : energy_mod.f \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) energy_mod.f  -o $(DPO)energy_mod.$(OBJ_EXT) -module $(DPO)
+$(DPO)ERROR_MANAGER.mod : error_manager_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) error_manager_mod.f  -o $(DPO)error_manager_mod.$(OBJ_EXT) -module $(DPO)
 $(DPO)FLDVAR.mod : fldvar_mod.f \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod 
@@ -3135,7 +3139,8 @@ $(DPO)get_data.$(OBJ_EXT) : get_data.f \
             $(DPO)MFIX_PIC.mod \
             $(DPO)CUTCELL.mod \
             $(DPO)DASHBOARD.mod \
-            $(DPO)OUTPUT.mod 
+            $(DPO)OUTPUT.mod \
+            $(DPO)GEOMETRY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) get_data.f  -o $(DPO)get_data.$(OBJ_EXT) -module $(DPO)
 $(DPO)get_eq.$(OBJ_EXT) : get_eq.f \
             $(DPO)PARAM.mod \
@@ -5712,6 +5717,7 @@ $(DPO)check_data_cartesian.$(OBJ_EXT) : ./cartesian_grid/check_data_cartesian.f 
             $(DPO)TOLERANC.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)SENDRECV.mod \
+            $(DPO)PS.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/check_data_cartesian.f  -o $(DPO)check_data_cartesian.$(OBJ_EXT) -module $(DPO)
 $(DPO)cut_cell_preprocessing.$(OBJ_EXT) : ./cartesian_grid/cut_cell_preprocessing.f \
@@ -6266,27 +6272,14 @@ $(DPO)check_des_bc.$(OBJ_EXT) : ./des/check_des_bc.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_bc.f  -o $(DPO)check_des_bc.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_des_cohesion.$(OBJ_EXT) : ./des/check_des_cohesion.f \
             $(DPO)DISCRETELEMENT.mod \
+            $(DPO)FUNITS.mod \
             $(DPO)MPI_UTILITY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_cohesion.f  -o $(DPO)check_des_cohesion.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_des_collision.$(OBJ_EXT) : ./des/check_des_collision.f \
-            $(DPO)PARAM1.mod \
-            $(DPO)GEOMETRY.mod \
-            $(DPO)FUNITS.mod \
-            $(DPO)COMPAR.mod \
             $(DPO)DISCRETELEMENT.mod \
-            $(DPO)RUN.mod \
-            $(DPO)CONSTANT.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)DESGRID.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)FLDVAR.mod \
-            $(DPO)TOLERANC.mod \
-            $(DPO)MPI_UTILITY.mod \
-            $(DPO)OUTPUT.mod \
-            $(DPO)MFIX_PIC.mod \
-            $(DPO)CUTCELL.mod \
-            $(DPO)QMOM_KINETIC_EQUATION.mod \
-            $(DPO)IC.mod 
+            $(DPO)PARAM1.mod \
+            $(DPO)FUNITS.mod \
+            $(DPO)MPI_UTILITY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/check_des_collision.f  -o $(DPO)check_des_collision.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_des_coupling.$(OBJ_EXT) : ./des/check_des_coupling.f \
             $(DPO)MFIX_PIC.mod \
