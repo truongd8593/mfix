@@ -173,6 +173,7 @@
          IF (BC_DEFINED(BCV)) THEN 
 
             BC_AREA(BCV) = ZERO 
+            BC_VOL(BCV) = ZERO 
 
             IF(BC_TYPE(BCV)(1:2)=='CG') THEN
 
@@ -185,6 +186,7 @@
                      IF(BCID > 0 ) THEN
                         BCT = BC_TYPE(BCID)
                         IF(BCID==BCV) BC_AREA(BCV) = BC_AREA(BCV) + Area_CUT(IJK)
+                        IF(BCID==BCV) BC_VOL(BCV)  = BC_VOL(BCV)  + VOL(IJK)
                      ENDIF
                   ENDIF
                END DO

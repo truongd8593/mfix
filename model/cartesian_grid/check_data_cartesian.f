@@ -41,7 +41,7 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: G,I,J,IJK,Q
+      INTEGER :: G,I,J,IJK,Q,BCV
       Character*80  Line(1)
       DOUBLE PRECISION :: norm, tan_half_angle
       CHARACTER(LEN=9) :: GR
@@ -725,6 +725,23 @@
 
       N_DASHBOARD = 0
 
+
+
+      CG_MI_CONVERTED_TO_PS = .FALSE.
+
+      DO BCV = 1, DIMENSION_BC
+
+         IF (BC_TYPE(BCV) == 'CG_MI') THEN
+            BC_TYPE(BCV) = 'CG_FSW'
+            CG_MI_CONVERTED_TO_PS(BCV) = .TRUE.
+            print*,'Converted CG_MI to CG_FSW for BC#',BCV
+         ENDIF
+
+      ENDDO
+
+
+
+
       RETURN  
       END SUBROUTINE CHECK_DATA_CARTESIAN
 
@@ -794,11 +811,13 @@
          IF(BCV>0) THEN
 
             IF(BC_TYPE(BCV)  == 'CG_MI') THEN
- 
-               FLAG(IJK) = 20
-               FLAG_E(IJK) = UNDEFINED_I
-               FLAG_N(IJK) = UNDEFINED_I
-               FLAG_T(IJK) = UNDEFINED_I
+
+               print*,'CG_MI at', IJK  ! This should not be printed on the screen anymore after conversion to point source. 
+
+!               FLAG(IJK) = 20
+!               FLAG_E(IJK) = UNDEFINED_I
+!               FLAG_N(IJK) = UNDEFINED_I
+!               FLAG_T(IJK) = UNDEFINED_I
 
             ELSEIF(BC_TYPE(BCV)  == 'CG_PO') THEN
  
@@ -852,20 +871,20 @@
          IF(BCV>0) THEN
             IF(BC_TYPE(BCV)  == 'CG_MI') THEN
 
-               IJKW = WEST_OF(IJK)
-               IF(FLUID_AT(IJKW)) THEN
-                  FLAG_E(IJKW) = 2020
-               ENDIF           
+!               IJKW = WEST_OF(IJK)
+!               IF(FLUID_AT(IJKW)) THEN
+!                  FLAG_E(IJKW) = 2020
+!               ENDIF           
 
-               IJKS = SOUTH_OF(IJK)
-               IF(FLUID_AT(IJKS)) THEN
-                  FLAG_N(IJKS) = 2020
-               ENDIF           
+!               IJKS = SOUTH_OF(IJK)
+!               IF(FLUID_AT(IJKS)) THEN
+!                  FLAG_N(IJKS) = 2020
+!               ENDIF           
 
-               IJKB = BOTTOM_OF(IJK)
-               IF(FLUID_AT(IJKB)) THEN
-                  FLAG_T(IJKB) = 2020
-               ENDIF           
+!               IJKB = BOTTOM_OF(IJK)
+!               IF(FLUID_AT(IJKB)) THEN
+!                  FLAG_T(IJKB) = 2020
+!               ENDIF           
 
                IF (BC_U_G(BCV) == UNDEFINED) THEN 
                    IF (NO_I) THEN 
@@ -1691,6 +1710,192 @@
       
       END SUBROUTINE CG_FLOW_TO_VEL
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CONVERT_CG_MI_TO_PS                                    C
+!  Purpose: Convert CG_MI BCs to Point sources                         C
+!                                                                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 06-Jan-14  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE CONVERT_CG_MI_TO_PS
+    
+
+
+      USE physprop
+      USE scales
+      USE funits 
+
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE bc
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices  
+      USE compar
+      USE mpi_utility 
+      USE sendrecv
+      USE quadric
+      USE cutcell
+      USE fldvar
+      USE vtk
+
+      USE ps
+     
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+! 
+!     loop/variable indices 
+      INTEGER :: IJK, M, BCV
+      CHARACTER(LEN=9) :: BCT
+!     Volumetric flow rate computed from mass flow rate 
+      DOUBLE PRECISION :: VOLFLOW 
+!     Solids phase volume fraction 
+      DOUBLE PRECISION :: EPS 
+!     Average molecular weight 
+      DOUBLE PRECISION :: MW 
+!
+      INTEGER :: iproc,IERR
+      INTEGER :: I, J, K, NPS,PSV
+! 
+!-----------------------------------------------
+!   E x t e r n a l   F u n c t i o n s
+!-----------------------------------------------
+      DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW 
+      LOGICAL , EXTERNAL :: COMPARE 
+!-----------------------------------------------
+!
+
+      include "function.inc"
+
+
+! Find the last Point source that is defined. New point sources 
+! will be added after that.
+
+      
+
+      PS_LP: do PSV = 1, DIMENSION_PS
+         if(.NOT.PS_DEFINED(PSV)) cycle PS_LP
+         NPS = PSV
+      enddo PS_LP
+
+
+!      print *,'Last PS=',NPS
+!      read(*,*)
+
+! Loop though each cell. When a CG_MI is found convert it to a single point source
+! and change the BC_TYPE to Free-slip
+
+
+      DO IJK = ijkstart3, ijkend3
+         BCV = BC_ID(IJK)
+         IF(BCV>0) THEN
+
+
+            IF(CG_MI_CONVERTED_TO_PS(BCV).AND.INTERIOR_CELL_AT(IJK).AND.VOL(IJK)>ZERO) THEN
+
+
+               NPS = NPS + 1
+
+               PS_DEFINED(NPS) = .TRUE.
+
+               POINT_SOURCE = .TRUE.
+               
+               PS_I_w(NPS) = I_OF(IJK)
+               PS_I_e(NPS) = I_OF(IJK) 
+               PS_J_s(NPS) = J_OF(IJK)
+               PS_J_n(NPS) = J_OF(IJK) 
+               PS_K_b(NPS) = K_OF(IJK)
+               PS_K_t(NPS) = K_OF(IJK)
+
+               PS_MASSFLOW_g(NPS) = BC_MASSFLOW_g(BCV) * VOL(IJK) / BC_VOL(BCV)
+
+               PS_VOLUME(NPS) = VOL(IJK)
+
+               PS_T_g(NPS)    = BC_T_g(BCV)
+
+               PS_U_g(NPS)    = Normal_S(IJK,1) 
+               PS_V_g(NPS)    = Normal_S(IJK,2) 
+               PS_W_g(NPS)    = Normal_S(IJK,3) 
+
+! This is a temporary setting for the solids phase and will need to be generalalized
+               PS_MASSFLOW_s(NPS,1) = 0.0
+
+               PS_T_s(NPS,1)  = 298.0
+
+               PS_U_s(NPS,1)    = Normal_S(IJK,1) 
+               PS_V_s(NPS,1)    = Normal_S(IJK,2) 
+               PS_W_s(NPS,1)    = Normal_S(IJK,3) 
+
+
+               
+
+
+!               print*,'PS created:',NPS,PS_MASSFLOW_g(NPS),PS_VOLUME(NPS),PS_I_w(NPS),PS_J_n(NPS),PS_K_b(NPS),INTERIOR_CELL_AT(IJK),BC_U_g(BCV),BC_V_g(BCV) 
+!               ENDIF
+
+            ENDIF
+         ENDIF
+      ENDDO   
+
+
+      DO BCV = 1, DIMENSION_BC
+
+         IF (BC_TYPE(BCV) == 'CG_MI') THEN
+            BC_TYPE(BCV) = 'CG_NSW'
+!            print*,'Converted CG_MI to CG_FSW for BC#',BCV
+         ENDIF
+
+      ENDDO
+
+
+100         FORMAT(1X,A,I8)
+110         FORMAT(1X,A,A)
+120         FORMAT(1X,A,F14.8,/)
+130         FORMAT(1X,A,I8,F14.8,/)
+
+
+ 1000 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
+         ' Computed volumetric flow is not equal to specified value',/,&
+         ' Value computed from mass flow  = ',G14.7,/,&
+         ' Specified value (BC_VOLFLOW_g) = ',G14.7,/1X,70('*')/) 
+
+
+ 1020 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,&
+         '  BC_P_g, BC_T_g, and BC_X_g',/' should be specified',/1X,70('*')/) 
+
+
+ 1200 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
+         ' Computed volumetric flow is not equal to specified value',/,&
+         ' Value computed from mass flow  = ',G14.7,/,&
+         ' Specified value (BC_VOLFLOW_s',I1,') = ',G14.7,/1X,70('*')/) 
+
+ 1250 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
+         ' Non-zero vol. or mass flow specified with BC_ROP_s',&
+         I1,' = 0.',/1X,70('*')/) 
+ 1260 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
+         ' BC_ROP_s',I1,' not specified',/1X,70('*')/) 
+      RETURN
+
+      
+      END SUBROUTINE CONVERT_CG_MI_TO_PS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

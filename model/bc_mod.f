@@ -208,6 +208,9 @@
 !                      Area of boundary surfaces
       DOUBLE PRECISION BC_AREA (DIMENSION_BC)
 !
+!                      Volume of boundary cells 
+      DOUBLE PRECISION BC_VOL (DIMENSION_BC)
+!
 !                      Gas species mass fractions in a boundary region
       DOUBLE PRECISION BC_X_g (DIMENSION_BC, DIM_N_g)
 !
@@ -364,5 +367,6 @@
       DOUBLE PRECISION BC_K_Turb_G (DIMENSION_BC)
       DOUBLE PRECISION BC_E_Turb_G (DIMENSION_BC)
 
+      LOGICAL:: CG_MI_CONVERTED_TO_PS(DIMENSION_BC)
 
       END MODULE bc                                                                              

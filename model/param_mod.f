@@ -67,7 +67,7 @@
 !
 !                      Maximum number of items for specifying point
 !                      sources
-      INTEGER, PARAMETER          :: DIMENSION_PS = 500
+      INTEGER, PARAMETER          :: DIMENSION_PS = 5000
 
 !
 !                      Maximum number of solids phases that can be read
