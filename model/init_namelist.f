@@ -1988,7 +1988,7 @@
 !#####################################################################!
 !                     Point Source Mass Inlets                        !
 !#####################################################################!
-      DO LC = 1, DIMENSION_IS
+      DO LC = 1, DIMENSION_PS
 
 !<keyword category="Point Source" required="false">
 !  <description>x coordinate of the west face or edge.</description>
