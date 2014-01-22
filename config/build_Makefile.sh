@@ -54,20 +54,8 @@ esac
 
 # Swap the module folder references.
 if test ${USE_DMP} = 0; then
-
   ex ${tmpMFILE} < ${MFIX_SRC}/dmp_modules/ex.commands
   ex ${tmpMFILE} < ${MFIX_SRC}/des/ex.commands
-
-  src=${MFIX_SRC}/dmp_modules
-  cmp -s ${src}/compar_mod.f ${src}/mpi_donothing/compar_mod.f
-  if test ! $? = 0; then
-    /bin/cp -f ${src}/compar_mod.f ${src}/mpi_donothing/
-  fi
-
-  cmp -s ${src}/gridmap_mod.f ${src}/mpi_donothing/gridmap_mod.f
-  if test ! $? = 0; then
-    /bin/cp -f ${src}/gridmap_mod.f ${src}/mpi_donothing/
-  fi
 fi
 
 

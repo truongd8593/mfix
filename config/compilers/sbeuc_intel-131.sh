@@ -74,6 +74,10 @@ LIB_FLAGS="${ode} ${mkl_libs} ${mpi_libs} ${misc_libs}"
 inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o"
 inline_files="compare.f eosg.f discretize.f"
 
+# Debug flags for Intel Fortran
+dbg=
+if test ${USE_DEBUG} = 1; then dbg="-g"; fi
+
 # Common compile flags.
 common="-c -I. -convert big_endian -assume byterecl"
 common=${common}" -diag-disable remark -arch AVX -axAVX"
@@ -86,19 +90,19 @@ case $OPT in
     LINK_FLAGS="${omp} -g";;
 
   1)echo " Setting flags for low optimization."
-    FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O1 -g"
-    FORT_FLAGS3="${common} ${mkl} -O1 -g"
-    LINK_FLAGS="${omp} -g ";;
+    FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O1 ${dbg}"
+    FORT_FLAGS3="${common} ${mkl} -O1 ${dbg}"
+    LINK_FLAGS="${omp} ${dbg}";;
 
   2)echo " Setting flags for medium optimization."
-    FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O2"
-    FORT_FLAGS3="${common} ${mkl} -O2"
-    LINK_FLAGS="${omp}";;
+    FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O2 ${dbg}"
+    FORT_FLAGS3="${common} ${mkl} -O2 ${dbg}"
+    LINK_FLAGS="${omp} ${dbg}";;
 
   3)echo " Setting flags for high optimization."
-    FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O3 -no-prec-div -static -xHost"
-    FORT_FLAGS3="${common} ${mkl} -O3 -no-prec-div -static -xHost"
-    LINK_FLAGS="${omp}";;
+    FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O3 -no-prec-div -static -xHost ${dbg}"
+    FORT_FLAGS3="${common} ${mkl} -O3 -no-prec-div -static -xHost ${dbg}"
+    LINK_FLAGS="${omp} ${dbg}";;
 
   *)echo "Unsupported optimization level."
     exit;;

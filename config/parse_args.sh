@@ -42,7 +42,7 @@ echo " --force-recompile    Forced recompile of modified files"
 echo " --serial             Disable shared and distributed memory parallel"
 echo " --smp                Enable shared memory parallel (OpenMP)"
 echo " --dmp                Enable distributed memory paralle (MPI)"
-echo " --debug              Compile in debug mode (same as --opt=0)"
+echo " --debug              Compile with debugging information (e.g., -g flag)"
 echo ""
 echo " --opt=level - Specify compiler optimization level"
 echo "     O0     -   No optimization with debugging flags"
@@ -54,14 +54,14 @@ echo " --compiler=option - Specify compiler flag file. There are three"
 echo "                     generic options that cover most user needs:"
 echo "    gcc            - GCC compiler (gfortran)"
 echo "    intel          - Intel compiler (ifort)"
-#echo "    portland       - Portland Groupe (pgf90)"
+echo "    portland       - Portland Groupe (pgf90)"
 echo ""
 echo " Specific hardware configuration files: This script will first check for"
 echo " the specified file in the run directory, then within mfix/config directory."
 echo ""
 echo "    gcc_default.sh         - same as gcc"
 echo "    intel_default.sh       - same as intel"
-#echo "    portland_default.sh    - *NA* same as portland"
+echo "    portland_default.sh    - same as portland"
 echo ""
 echo "    SBEUC system files:"
 echo "      sbeuc_gcc-46.sh      - GCC 4.6 and Open MPI 1.5.5"
@@ -180,11 +180,9 @@ for arg in $input; do
       AUTOCOMPILE=1;;
 
 
-# Enable specify debug mode.
+# Enable specify debug flags.
 #-------------------------------------------------------------------------->>
-    "--debug" )
-      OPT=0
-      REQ_OPT=0;;
+    "--debug" ) USE_DEBUG=1;;
 
 
 # Specify optimization level.
@@ -192,7 +190,7 @@ for arg in $input; do
     "--opt="* )
       OPT=$(echo ${arg} | cut -d "=" -f2)
       case ${OPT} in
-        O0) OPT=0;; # Same as debug
+        O0) OPT=0; USE_DEBUG=1;;
         O1) OPT=1;;
         O2) OPT=2;;
         O3) OPT=3;;

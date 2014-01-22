@@ -56,6 +56,9 @@ inline_files="compare.f eosg.f discretize.f "
 
 # --> Verify compiler is in $PATH <-- #
 
+# Debug flags for GNU Fortran
+dbg=
+if test ${USE_DEBUG} = 1; then dbg="-g"; fi
 
 # Base flags for GNU Fortran
 common="-c -I. ${incs} -fconvert='big-endian'"
@@ -63,24 +66,24 @@ common="-c -I. ${incs} -fconvert='big-endian'"
 case $OPT in
   0)echo " Setting flags for debugging."
     dbg="-fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow -g"
-    FORT_FLAGS="${omp} ${common} -ffree-form -ffree-line-length-0 -O0 $dbg"
-    FORT_FLAGS3="${omp} ${common} -O0 $dbg"
+    FORT_FLAGS="${omp} ${common} -ffree-form -ffree-line-length-0 -O0 ${dbg}"
+    FORT_FLAGS3="${omp} ${common} -O0 ${dbg}"
     LINK_FLAGS="${omp} -g";;
 
   1)echo " Setting flags for low optimization."
-    FORT_FLAGS="${omp} ${common} -ffree-form -ffree-line-length-0 -O1"
-    FORT_FLAGS3="${omp} ${common} -O1"
-    LINK_FLAGS="${omp} -g";;
+    FORT_FLAGS="${omp} ${common} -ffree-form -ffree-line-length-0 -O1 ${dbg}"
+    FORT_FLAGS3="${omp} ${common} -O1 ${dbg}"
+    LINK_FLAGS="${omp} ${dbg}";;
 
   2)echo " Setting flags for medium optimization."
-    FORT_FLAGS="${omp} ${common} -ffree-form -ffree-line-length-0 -O2 $inline"
-    FORT_FLAGS3="${omp} ${common} -O1"
-    LINK_FLAGS="${omp}";;
+    FORT_FLAGS="${omp} ${common} -ffree-form -ffree-line-length-0 -O2 $inline ${dbg}"
+    FORT_FLAGS3="${omp} ${common} -O1 ${dbg}"
+    LINK_FLAGS="${omp} ${dbg}";;
 
   3)echo " Setting flags for high optimization."
-    FORT_FLAGS="${omp} ${common} -ffree-form -ffree-line-length-0 -O3 $inline"
-    FORT_FLAGS3="${omp} ${common} -O2"
-    LINK_FLAGS="${omp}";;
+    FORT_FLAGS="${omp} ${common} -ffree-form -ffree-line-length-0 -O3 $inline ${dbg}"
+    FORT_FLAGS3="${omp} ${common} -O2 ${dbg}"
+    LINK_FLAGS="${omp} ${dbg}";;
 
   *)echo "Unsupported optimization level."
     exit;;

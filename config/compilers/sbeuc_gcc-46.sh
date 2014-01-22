@@ -51,37 +51,39 @@ LIB_FLAGS="${ode} ${mkl_libs} ${misc_libs} ${mpi_libs} "
 inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
 inline_files="compare.f eosg.f discretize.f "
 
+# Debug flags for GNU Fortran
+dbg=
+if test ${USE_DEBUG} = 1; then dbg="-g"; fi
 
 # Base flags for GNU Fortran:
 common="-c -I. ${incs} -fconvert='big-endian'"
 # GCC Fortran syntax flags.
 sflag="-ffree-form -ffree-line-length-0"
-# GCC Fortran debug flags.
-dbg="-fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow"
 # GCC hardware-specific flags.
 hdwf="-mtune=corei7-avx -march=corei7-avx -masm=intel"
 
 # Set debugging and optimization flags.
 case $OPT in
   0)echo "Setting flags for debugging."
+    dbg="-fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow"
     FORT_FLAGS="${omp} ${common} ${sflag} ${dbg} -g -O0"
     FORT_FLAGS3="${common} -g -O0"
     LINK_FLAGS="${omp} -g";;
 
   1)echo "Setting flags for low optimization."
-    FORT_FLAGS="${omp} ${common} ${sflag} -g -O2"
-    FORT_FLAGS3="${common} -g -O1"
-    LINK_FLAGS="${omp} -g";;
+    FORT_FLAGS="${omp} ${common} ${sflag} -O2 ${dbg}"
+    FORT_FLAGS3="${common} -g -O1 ${dbg}"
+    LINK_FLAGS="${omp} ${dbg}";;
 
   2)echo "Setting flags for medium optimization."
-    FORT_FLAGS="${omp} ${common} ${sflag} -g -O2"
-    FORT_FLAGS3="${common} -O1"
-    LINK_FLAGS="${omp}";;
+    FORT_FLAGS="${omp} ${common} ${sflag} -g -O2 ${dbg}"
+    FORT_FLAGS3="${common} -O1 ${dbg}"
+    LINK_FLAGS="${omp} ${dbg}";;
 
   3)echo "Setting flags for high optimization."
-    FORT_FLAGS="${omp} ${common} ${sflag} ${hdwf} -Ofast"
-    FORT_FLAGS3="${common} -O2"
-    LINK_FLAGS="${omp}";;
+    FORT_FLAGS="${omp} ${common} ${sflag} ${hdwf} -Ofast ${dbg}"
+    FORT_FLAGS3="${common} -O2 ${dbg}"
+    LINK_FLAGS="${omp} ${dbg}";;
 
   *)echo "Unsupported optimization level."
     exit;;

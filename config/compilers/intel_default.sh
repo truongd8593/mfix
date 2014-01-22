@@ -48,6 +48,9 @@ LIB_FLAGS="${ode} ${mkl_libs} ${misc_libs} ${mpi_libs} "
 inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
 inline_files="compare.f eosg.f discretize.f "
 
+# Debug flags for Intel Fortran
+dbg=
+if test ${USE_DEBUG} = 1; then dbg="-g"; fi
 
 # Base flags for GNU Fortran
 common="-c -I. -convert big_endian -assume byterecl -diag-disable remark"
@@ -60,14 +63,14 @@ case $OPT in
     LINK_FLAGS="${omp} -g";;
 
   1)echo "Setting flags for low optimization."
-    FORT_FLAGS="${omp} ${incs} ${common} -FR -O1 -g "
-    FORT_FLAGS3="${common} ${incs} -O1 -g "
-    LINK_FLAGS="${omp} -g";;
+    FORT_FLAGS="${omp} ${incs} ${common} -FR -O1 ${dbg} "
+    FORT_FLAGS3="${common} ${incs} -O1 ${dbg} "
+    LINK_FLAGS="${omp} ${dbg}";;
 
   2)echo "Setting flags for medium optimization."
-    FORT_FLAGS="${omp} ${common} ${incs} -FR -O2 "
-    FORT_FLAGS3="${common} -O1 "
-    LINK_FLAGS="${omp}";;
+    FORT_FLAGS="${omp} ${common} ${incs} -FR -O2 ${dbg}"
+    FORT_FLAGS3="${common} -O1 ${dbg}"
+    LINK_FLAGS="${omp} ${dbg}";;
 
   3)echo "Setting flags for high optimization."
     FORT_FLAGS="${omp} ${incs} ${common} -FR -O3"
