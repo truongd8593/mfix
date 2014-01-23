@@ -19,102 +19,108 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-      SUBROUTINE OPEN_FILE(RUN_NAME, NB, IUNIT, EXT, FILE_NAME, OPEN_STAT, &
-         OPEN_ACCESS, OPEN_FORM, IRECL, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
+      SUBROUTINE OPEN_FILE(FILENAME, NB, IUNIT, EXT, FULL_NAME,        &
+         OPEN_STAT, OPEN_ACCESS, OPEN_FORM, IRECL, IER) 
 
-!-----------------------------------------------
-!   Modules
-!-----------------------------------------------
       use cdist
       use compar
-!-----------------------------------------------
 
       IMPLICIT NONE
 
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!                     Error index: 0 - no error, 1 could not open file
-      INTEGER         IER 
-!
-!                     run_name (without extension)
-      CHARACTER*(*)   RUN_NAME
-!
-!                     extension
-      CHARACTER*(*)   EXT
-!
-!                     run_name + extension
-      CHARACTER*(*)   FILE_NAME
-!
-!                     open status ('NEW' or 'OLD')
-      CHARACTER*(*)   OPEN_STAT
-!
-!                     open access ('SEQUENTIAL' or 'DIRECT')
-      CHARACTER*(*)   OPEN_ACCESS
-!
-!                     open form ('FORMATTED' or 'UNFORMATTED')
+! Dummy Arguments
+!---------------------------------------------------------------------//
+! FILENAME (without extension)
+      CHARACTER*(*), INTENT(IN) :: FILENAME
+! File extension.
+      CHARACTER*(*), INTENT(IN) :: EXT
+! FILENAME + EXTENSION
+      CHARACTER*(*), INTENT(INOUT) :: FULL_NAME
+! File status (NEW, OLD, UNKNOWN)
+      CHARACTER*(*), INTENT(IN) :: OPEN_STAT
+! File access method ('SEQUENTIAL', 'DIRECT')
+      CHARACTER*(*), INTENT(IN) :: OPEN_ACCESS
+! Open form ('FORMATTED' or 'UNFORMATTED')
       CHARACTER*(*)   OPEN_FORM
-!
-!                     index to first blank character in run_name
-      INTEGER         NB
-!
-!                     unit number to open
-      INTEGER         IUNIT
-!
-!                     record length
-      INTEGER         IRECL
-!-----------------------------------------------
-!
+! Index to first blank character in FILENAME
+      INTEGER, INTENT(IN) :: NB
+! Unit number to open
+      INTEGER, INTENT(IN) :: IUNIT
+! Record length
+      INTEGER, INTENT(IN) :: IRECL
+! Integer Error index: 
+! 000 - no error
+! 100 - NEW run with existing files in directory
+! 101 - OLD run missing RES and/or SPx files
+! 102 - Unknown OPEN_STAT
+      INTEGER, INTENT(OUT) :: IER 
 
-      FILE_NAME = ' ' 
+! Local Variables
+!---------------------------------------------------------------------//
+! Logical used to store result of file INQUIRE
+      LOGICAL :: FILE_EXISTS
 
-      IF (bDist_IO .and.ext(2:3) .eq. 'SP') THEN
+! Logicals that determine if files should be index.
+      LOGICAL :: RES_IDX  ! Index RES files
+      LOGICAL :: SPX_IDX  ! Index SPx files
+      LOGICAL :: USE_IDX  ! Use the IDX value
 
-         file_name(1:nb+4) = run_name(1:nb-1) // "_xxxxx"
-         write(file_name(nb+1:nb+5),'(i5.5)') myPE
-         FILE_NAME(NB+6:NB+9) = EXT(1:4) 
+! Initialize the error flag.
+      IER = 0
 
-      else 
+! Conditions for indexing the RES files for distributed IO.
+      RES_IDX = (myPE .NE. PE_IO) .OR. (.NOT.bStart_with_one_RES)
+! Conditions for indexing the SPX files for distributed IO.
+      SPX_IDX = .TRUE.
 
-         FILE_NAME(1:NB-1) = RUN_NAME(1:NB-1) 
-         FILE_NAME(NB:NB+3) = EXT(1:4) 
+! Flag for indexing files.
+      USE_IDX = bDist_IO .AND. (                                       &
+         (SPX_IDX .AND. (EXT(2:3) .EQ. 'SP')) .OR.                     &
+         (RES_IDX .AND. (EXT(2:4) .EQ. 'RES')))
 
+! Construct the file name.
+      FULL_NAME = ''
+      IF(USE_IDX)THEN
+         WRITE(FULL_NAME,1000) FILENAME(1:NB-1), myPE, EXT(1:4)
+      ELSE
+         WRITE(FULL_NAME,1001) FILENAME(1:NB-1), EXT(1:4)
       ENDIF
 
+! Check to see if the file already exists in the run directory.
+      INQUIRE(FILE=trim(FULL_NAME),EXIST=FILE_EXISTS)
 
-      IF (bDist_IO .and. EXT(2:4) .eq. "RES") THEN
-
-         ! if starting with one RES file, do no append
-	   ! processor number to filename for PE_IO
-
-         if (.not.bStart_with_one_RES .or. myPE.ne.PE_IO) then
-            file_name(1:nb+4) = run_name(1:nb-1) // "_xxxxx"
-            write(file_name(nb+1:nb+5),'(i5.5)') myPE
-            FILE_NAME(NB+6:NB+9) = EXT(1:4) 
-	   end if
-
+! NEW files should not be in the run directory.
+      IF(FILE_EXISTS .AND. (OPEN_STAT == 'NEW')) THEN
+         IER = 100; RETURN
+! OLD files must be in the run directory.
+      ELSEIF(.NOT. FILE_EXISTS .AND. OPEN_STAT .EQ. 'OLD') THEN
+         IER = 101; RETURN
       ENDIF
 
-
-!
+! Open direct access files.
       IF (OPEN_ACCESS == 'DIRECT') THEN 
-         OPEN (UNIT=IUNIT, FILE=FILE_NAME(1:LEN_TRIM(FILE_NAME)), &
-               STATUS=OPEN_STAT, RECL=IRECL, ACCESS=&
-               OPEN_ACCESS, FORM=OPEN_FORM, ERR=100) 
-      ELSE 
-         OPEN (UNIT=IUNIT, FILE=FILE_NAME(1:LEN_TRIM(FILE_NAME)), &
-               STATUS=OPEN_STAT, ACCESS=OPEN_ACCESS,&
-               FORM=OPEN_FORM, ERR=100) 
+         OPEN (UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS=OPEN_STAT,     &
+            RECL=IRECL, ACCESS=OPEN_ACCESS, FORM=OPEN_FORM, IOSTAT=IER)
+      ELSE
+! No matter the status passed to the routine, the file is created as
+! NEW if it doesn't exist in the run directory.
+         IF(.NOT.FILE_EXISTS) THEN
+            OPEN(UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS='NEW',       &
+               ACCESS=OPEN_ACCESS, FORM=OPEN_FORM, IOSTAT=IER)
+         ELSEIF(OPEN_STAT == 'REPLACE') THEN
+            OPEN(UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS=OPEN_STAT,   &
+               ACCESS=OPEN_ACCESS, FORM=OPEN_FORM, IOSTAT=IER)
+         ELSEIF(OPEN_STAT == 'APPEND' .OR. OPEN_STAT == 'UNKNOWN') THEN
+            OPEN(UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS='UNKNOWN',   &
+               ACCESS=OPEN_ACCESS, FORM=OPEN_FORM, POSITION='APPEND',  &
+               IOSTAT=IER)         
+         ELSE
+            IER = 102
+         ENDIF
       ENDIF 
-      IER = 0 
+
       RETURN  
-!
-  100 CONTINUE 
-      IER = 1 
-      RETURN  
-      END SUBROUTINE OPEN_FILE 
-      
+
+ 1000 FORMAT(A,'_',I5.5,A4)
+ 1001 FORMAT(A,A4)
+
+      END SUBROUTINE OPEN_FILE
