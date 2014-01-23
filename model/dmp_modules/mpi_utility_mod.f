@@ -4825,36 +4825,65 @@
         end subroutine global_all_or_1d
 
 
-        subroutine exitMPI(myid)
-        USE funits
-        integer, optional, intent(in) :: myid
+!``````````````````````````````````````````````````````````````````````!
+! Subroutine: ExitMPI                                                  !
+!                                                                      !
+! Purpose: Clean abort from a parallel run. This routine is invoked by !
+! by calling MFIX_EXIT                                                 !
+!......................................................................!
+      SUBROUTINE ExitMPI(myid)
 
-        INTEGER :: mylid, ERRORCODE
+      USE funits, only: UNIT_LOG
+      USE funits, only: DMP_LOG
 
-        if (.not. present(myid)) then
-           mylid = myPE
-        else
-           mylid = myid
-        endif
+      implicit none
 
-        write(*,100) mylid
-        write(UNIT_LOG,100) mylid
+      INTEGER, optional, intent(in) :: MyID
 
-100   	format(/,'*****************',&
-          '********************************************',/, &
-         '(PE ',I2,') : A fatal error occurred ',/,9X, &
-         '*.LOG file may contain other error messages ',/,'*****************', &
-         '********************************************',/)
-  
-        call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
-        call MPI_ABORT(MPI_COMM_WORLD, ERRORCODE, mpierr)
-        write(*,"('(PE ',I2,') : MPI_ABORT return = ',I2)") &
-               mylid,mpierr
-  
-        call MPI_Finalize(mpierr)
+      INTEGER :: MyID_l
+      INTEGER :: ERRORCODE
 
-        STOP 'MPI terminated'
-        END subroutine exitMPI
+! Flag to call MPI_ABORT and bypass the call to MPI_Finalize.
+! This is only needed if debugging a 'deadlocked' run.
+      LOGICAL, PARAMETER :: FORCED_ABORT = .FALSE.
+
+! Process ID (myPE) converted to a character string.
+      CHARACTER(len=64) :: myID_c
+
+
+! Set the ID of the caller.
+      myID_l= merge(MyID, myPE, PRESENT(MyID))
+      myID_c=''; WRITE(myID_c,*) myID_l
+
+! Hard abort. If you need this functionality, then you need to figure
+! out why the code has deadlocked. Most likely, a call to MFIX_EXIT
+! was put inside of a logical branch that only a few ranks execute.
+! DON'T JUST USE A FORCED ABORT --> FIX THE CODE CAUSE DEADLOCK <--
+      IF(FORCED_ABORT) THEN
+         ERRORCODE = 100 + myPE
+         CALL MPI_ABORT(MPI_COMM_WORLD, ERRORCODE, MPIERR)
+         WRITE(*,2000) myID_c, MPIERR
+
+! Calls to ExitMPI (via MFIX_EXIT) should be made by all processes
+! and therefore calling MPI_Finalize should be sufficient to exit
+! a failed run. However, a FORCED_ABORT can be issued if deadlock
+! is an issue.
+      ELSE
+         CALL MPI_BARRIER(MPI_COMM_WORLD, MPIERR)
+         CALL MPI_Finalize(MPIERR)
+      ENDIF
+
+! Notify that MPI was cleanly terminated. This point will not be
+! reached if MPI is aborted.
+      IF(myPE == PE_IO) WRITE(*,1000)
+
+      RETURN
+
+ 1000 FORMAT(2/,1X,'MPI Terminated.')
+ 2000 FORMAT(2/,1X,'Rank ',A,' :: MPI_ABORT CODE = ',I4)
+
+      END SUBROUTINE exitMPI
+
 
 	end module mpi_utility
 

@@ -1582,12 +1582,14 @@
 	end subroutine global_all_or_1d
 
 
-        subroutine exitMPI(myid)
-        USE funits
-        integer, optional, intent(in) :: myid
+      SUBROUTINE ExitMPI(myid)
+      USE funits
+      integer, optional, intent(in) :: myid
 
-        STOP 'Program terminated'
-        END subroutine exitMPI
+      RETURN
+      END subroutine exitMPI
+
+
 
 	subroutine MPI_BARRIER(MPI_COMM_WORLD, mpierr)
 	integer, intent(in) :: MPI_COMM_WORLD, mpierr
