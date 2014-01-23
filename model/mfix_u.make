@@ -387,6 +387,8 @@ $(EXEC_FILE) : \
     $(DPO)update_dashboard.$(OBJ_EXT) \
     $(DPO)vtk_out.$(OBJ_EXT) \
     $(DPO)write_progress_bar.$(OBJ_EXT) \
+    $(DPO)check_dmp_prereqs.$(OBJ_EXT) \
+    $(DPO)check_geometry_prereqs.$(OBJ_EXT) \
     $(DPO)check_data_odepack.$(OBJ_EXT) \
     $(DPO)stiff_chem_rrates.$(OBJ_EXT) \
     $(DPO)add_part_to_link_list.$(OBJ_EXT) \
@@ -864,6 +866,8 @@ $(EXEC_FILE) : \
     $(DPO)vtk_mod.$(OBJ_EXT) \
     $(DPO)vtk_out.$(OBJ_EXT) \
     $(DPO)write_progress_bar.$(OBJ_EXT) \
+    $(DPO)check_dmp_prereqs.$(OBJ_EXT) \
+    $(DPO)check_geometry_prereqs.$(OBJ_EXT) \
     $(DPO)check_data_odepack.$(OBJ_EXT) \
     $(DPO)stiff_chem_dbg_mod.$(OBJ_EXT) \
     $(DPO)stiff_chem_maps_mod.$(OBJ_EXT) \
@@ -1132,7 +1136,13 @@ $(DPO)ENERGY.mod : energy_mod.f \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) energy_mod.f  -o $(DPO)energy_mod.$(OBJ_EXT) -module $(DPO)
-$(DPO)ERROR_MANAGER.mod : error_manager_mod.f 
+$(DPO)ERROR_MANAGER.mod : error_manager_mod.f \
+            $(DPO)RUN.mod \
+            $(DPO)OUTPUT.mod \
+            $(DPO)FUNITS.mod \
+            $(DPO)COMPAR.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)MPI_UTILITY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) error_manager_mod.f  -o $(DPO)error_manager_mod.$(OBJ_EXT) -module $(DPO)
 $(DPO)FLDVAR.mod : fldvar_mod.f \
             $(DPO)PARAM.mod \
@@ -3139,8 +3149,7 @@ $(DPO)get_data.$(OBJ_EXT) : get_data.f \
             $(DPO)MFIX_PIC.mod \
             $(DPO)CUTCELL.mod \
             $(DPO)DASHBOARD.mod \
-            $(DPO)OUTPUT.mod \
-            $(DPO)GEOMETRY.mod 
+            $(DPO)ERROR_MANAGER.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) get_data.f  -o $(DPO)get_data.$(OBJ_EXT) -module $(DPO)
 $(DPO)get_eq.$(OBJ_EXT) : get_eq.f \
             $(DPO)PARAM.mod \
@@ -3623,6 +3632,7 @@ $(DPO)open_files.$(OBJ_EXT) : open_files.f \
             $(DPO)FUNITS.mod \
             $(DPO)COMPAR.mod \
             $(DPO)CDIST.mod \
+            $(DPO)MPI_UTILITY.mod \
             $(DPO)RUN.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) open_files.f  -o $(DPO)open_files.$(OBJ_EXT) -module $(DPO)
 $(DPO)out_array_c.$(OBJ_EXT) : out_array_c.f \
@@ -4124,10 +4134,8 @@ $(DPO)set_l_scale.$(OBJ_EXT) : set_l_scale.f \
             $(DPO)COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) set_l_scale.f  -o $(DPO)set_l_scale.$(OBJ_EXT) -module $(DPO)
 $(DPO)set_max2.$(OBJ_EXT) : set_max2.f \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)GEOMETRY.mod \
-            $(DPO)COMPAR.mod 
+            $(DPO)COMPAR.mod \
+            $(DPO)GEOMETRY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) set_max2.f  -o $(DPO)set_max2.$(OBJ_EXT) -module $(DPO)
 $(DPO)set_mw_mix_g.$(OBJ_EXT) : set_mw_mix_g.f \
             $(DPO)PARAM.mod \
@@ -6016,6 +6024,17 @@ $(DPO)write_progress_bar.$(OBJ_EXT) : ./cartesian_grid/write_progress_bar.f \
             $(DPO)PARALLEL.mod \
             $(DPO)SENDRECV.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/write_progress_bar.f  -o $(DPO)write_progress_bar.$(OBJ_EXT) -module $(DPO)
+$(DPO)check_dmp_prereqs.$(OBJ_EXT) : ./check_data/check_dmp_prereqs.f \
+            $(DPO)COMPAR.mod \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)ERROR_MANAGER.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_dmp_prereqs.f  -o $(DPO)check_dmp_prereqs.$(OBJ_EXT) -module $(DPO)
+$(DPO)check_geometry_prereqs.$(OBJ_EXT) : ./check_data/check_geometry_prereqs.f \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)ERROR_MANAGER.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_geometry_prereqs.f  -o $(DPO)check_geometry_prereqs.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_data_odepack.$(OBJ_EXT) : ./chem/check_data_odepack.f \
             $(DPO)FUNITS.mod \
             $(DPO)PARAM.mod \
