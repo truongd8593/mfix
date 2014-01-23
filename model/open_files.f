@@ -19,10 +19,7 @@
 !  Local variables: EXT, FILE_NAME, LC, NB                             C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
 !
 !-----------------------------------------------
 !   M o d u l e s 
@@ -31,24 +28,25 @@
       USE funits 
       USE compar 
       USE cdist
+
+      use mpi_utility, only: GLOBAL_ALL_SUM
       
       IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!                     Error index: 0 - no error, 1 could not open file
-      INTEGER         IER
-!
-!                   run_name (as specified in input file)
-      CHARACTER*(*) RUN_NAME
-!
-!                   run_type (as specified in input file)
-      CHARACTER*(*) RUN_TYPE
-!
-!                   number of single precision output files (param.inc)
-      INTEGER       N_SPX
-!
+
+! Error index: 0 - no error, 1 could not open file
+      INTEGER :: IER(numPEs-1)
+
+! RUN_NAME (as specified in input file)
+      CHARACTER*(*) :: RUN_NAME
+
+! Run_type (as specified in input file)
+      CHARACTER*(*) :: RUN_TYPE
+
+! Number of single precision output files (param.inc)
+      INTEGER :: N_SPX
+
+
+
 ! local variables
 !
 !                   Answer
@@ -61,9 +59,6 @@
       CHARACTER     FILE_NAME*64
 !
 !
-!                   Log file name: dmp mode adds processor no to file name
-      CHARACTER     LOGFILE*60
-!
 !                   Loop counter
       INTEGER       LC
 !
@@ -73,58 +68,35 @@
       CHARACTER     EXT_END*35 , cstatus*10
 !-----------------------------------------------
 
-      ext_end = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-!
-! DETERMINE THE FIRST BLANK CHARCATER IN RUN_NAME
-!
+! Initialize the error flags.
+      IER = 0
 
-!//PAR_I/O all PEs must exec this check in order to avoid Bcast of NB
-      DO LC = 1, LEN(RUN_NAME) 
-         IF (RUN_NAME(LC:LC) == ' ') THEN 
-            NB = LC 
-            GO TO 125 
-         ENDIF
-         LOGFILE(LC:LC) = RUN_NAME(LC:LC) 
-      END DO 
-      WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG' 
-      call mfix_exit(myPE) 
-!
-  125 CONTINUE 
-      IF (NB + 7 > LEN(FILE_NAME)) THEN 
-         WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG' 
-         call mfix_exit(myPE) 
-      ENDIF 
-!
-      NBL = NB
-      if ( numPEs > 1 ) then
-         write(LOGFILE(NB:NB+3),'(I3.3)') myPE
-         NBL = NB + 3
-      endif
-!
-      IF (DMP_LOG)Then
-         CALL OPEN_FILE (LOGFILE, NBL, UNIT_LOG, '.LOG', FILE_NAME, 'NEW', &
-          'SEQUENTIAL', 'FORMATTED', 132, IER) 
+! Generic SPx end characters in order.
+      EXT_END = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
-         IF (IER /= 0) THEN 
-            CALL OPEN_FILE (LOGFILE, NBL, UNIT_LOG, '.LOG', FILE_NAME, 'OLD', &
-                           'SEQUENTIAL', 'FORMATTED', 132, IER) 
-            IF (IER /= 0) GO TO 500
-            DO WHILE(IER ==0)
-               READ(UNIT_LOG,'(a)', IOSTAT = IER)ANS
-            ENDDO
-            BACKSPACE(UNIT_LOG)
+! Get the length of RUN_NAME. Note that len_trim would allow the
+! name to still contain spaces. The following approach truncates
+! RUN_NAME at the first blank character.
+      NB = INDEX(RUN_NAME,' ')
+
+! Only PE_IO opens the RUN_NAME.OUT file.
+      IF(myPE == PE_IO) CALL OPEN_FILE (RUN_NAME, NB, UNIT_OUT, '.OUT',&
+         FILE_NAME, 'UNKNOWN', 'SEQUENTIAL', 'FORMATTED',132, IER(myPE))
+
+! Check if there was an error opening the file.
+      CALL GLOBAL_ALL_SUM(IER)
+      IF(sum(IER) /= 0) THEN
+         IF(DMP_LOG) THEN
+            write(*,"(3x,'fatal error in open_files')")
          ENDIF
       ENDIF
 
-!//PAR_I/O only PE 0 opens the ASCI output (.out), restart (.res) and species (.spX) files 
-      if ( myPE == PE_IO ) then  ! dem 25jun07
-!
-         CALL OPEN_FILE (RUN_NAME, NB, UNIT_OUT, '.OUT', FILE_NAME, 'UNKNOWN', &
-                         'SEQUENTIAL', 'FORMATTED', 132, IER) 
-      end if ! pan 27-jun-2007
-!
-!
+
+! Initialize the generic SPx extension.
       EXT = '.SPx' 
+
+! Open the RES and SPx files. By default, only PE_IO opens these files, 
+! but all ranks open a rank-specific copy for distributed IO runs.
       SELECT CASE (TRIM(RUN_TYPE))  
 
       CASE ('NEW')  
@@ -132,7 +104,7 @@
         if (myPE==PE_IO .or.  bDist_IO) then 
            CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME, 'NEW', &
                            'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
-           IF (IER /= 0) THEN 
+           IF (IER(myPE) /= 0) THEN 
               WRITE (*, 1001) FILE_NAME 
               GO TO 600 
            ENDIF 
@@ -140,7 +112,7 @@
               ext(4:4) = ext_end(LC:LC)
               CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, 'NEW'&
                               , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
-              IF (IER /= 0) GO TO 500 
+              IF (IER(myPE) /= 0) GO TO 500 
            END DO 
         end if ! pan
 
@@ -151,7 +123,7 @@
          if (myPE == PE_IO .or. bDist_IO) then ! pan  
             CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME, 'OLD', &
                            'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
-            IF (IER /= 0) THEN 
+            IF (IER(myPE) /= 0) THEN 
                WRITE (*, 1002) FILE_NAME 
                GO TO 600 
             ENDIF 
@@ -160,7 +132,7 @@
               ext(4:4) = ext_end(LC:LC)
               CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, 'OLD'&
                            , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
-              IF (IER /= 0) GO TO 500 
+              IF (IER(myPE) /= 0) GO TO 500 
            END DO 
 
         end if ! pan
@@ -176,7 +148,7 @@
             CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME, cstatus, &
                          'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
 
-            IF (IER /= 0) THEN 
+            IF (IER(myPE) /= 0) THEN 
                WRITE (*, 1002) FILE_NAME 
                GO TO 600 
             ENDIF 
@@ -185,7 +157,7 @@
                ext(4:4) = ext_end(LC:LC)
                CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, &
                               'NEW' , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
-               IF (IER /= 0) GO TO 500 
+               IF (IER(myPE) /= 0) GO TO 500 
             END DO 
 
         end if ! pan
@@ -218,6 +190,22 @@
  1100 FORMAT(/70('*')//'(PE ',I3,'): From: OPEN_FILES',/&
          ' Error: Cannot open file -- ',A,/70('*')/) 
       END SUBROUTINE OPEN_FILES 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
       SUBROUTINE OPEN_PE_LOG (IER) 

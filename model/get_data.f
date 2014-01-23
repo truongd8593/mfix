@@ -57,6 +57,9 @@
       USE cutcell
       USE dashboard
 
+      USE error_manager
+
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -72,14 +75,26 @@
 !-----------------------------------------------
 
 
-! This module call routines to initialize the namelist variables,
-! read in the namelist variables from the ascii input file,
-! checks that the input is valid, and opens the files.
+! This module call routines to initialize the namelist variables.
       CALL INIT_NAMELIST 
-      CALL READ_NAMELIST (0) 
+! Read in the namelist variables from the ascii input file.
+      CALL READ_NAMELIST(0) 
 
-! Basic geometry checks. Needed before DMP decomp.
-      CALL CHECK_DATA_00
+! Initialize the error manager. This call occurs after the mfix.dat
+! is read so that message verbosity can be set and the .LOG file 
+! can be opened.
+      CALL INIT_ERROR_MANAGER
+
+! Check the minimum geometry requirements.
+      CALL CHECK_GEOMETRY_PREREQS
+
+! Check the minimum dmp requirements.
+      CALL CHECK_DMP_PREREQS
+
+! Set up the physical domain decomposition.
+      CALL SET_MAX2
+
+
 
 ! Set constants
       CALL SET_CONSTANTS 
@@ -145,7 +160,6 @@
       ENDIF
 
 ! Partition the domain and set indices
-      call SET_MAX2
       call GRIDMAP_INIT
 
 
@@ -255,155 +269,4 @@
  1000 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
          'RUN_NAME not specified in mfix.dat',/1X,70('*')/)  
 
-      END SUBROUTINE GET_DATA 
-      
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  SUBROUTINE: CHECK_DATA_00                                           !
-!  Purpose: Check the distributed parallel namelist variables.         !
-!                                                                      !
-!  Author: P. Nicoletti                               Date: 14-DEC-99  !
-!  Reviewer: J.Musser                                 Date: 20-Sep-13  !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_DATA_00
-
-
-! Global Variables:
-!---------------------------------------------------------------------//
-! This processes rank.
-      use compar, only: myPE
-! Number of ranks.
-      use compar, only: numPEs
-! DMP grid partitioning data:
-      use compar, only: NODESI  ! Partitions along x-axis
-      use compar, only: NODESJ  ! Partitions along y-axis
-      use compar, only: NODESK  ! Partitions along z-axis
-! Flag: All ranks report errors.
-      use output, only: ENABLE_DMP_LOG
-! Flag: My rank reports errors.
-      use funits, only: DMP_LOG
-! Domain partitions in various directions.
-      use geometry, only: IMAX 
-      use geometry, only: JMAX
-      use geometry, only: KMAX
-! Runtime flag specifying 2D simulations
-      use geometry, only: NO_K
-
-! Global Parameters:
-!---------------------------------------------------------------------//
-      use param1, only: UNDEFINED_I
-
-      implicit none
-
-! Local Variables:
-!---------------------------------------------------------------------//
-! The approximate number of domain partitions that will be assigned
-! to each process for DMP runs. (eg IMAX/NODESI)
-      INTEGER :: LAYERS
-
-! Local Parameters:
-!---------------------------------------------------------------------//
-! The minimum number of computational cell layers requried.
-      INTEGER, PARAMETER :: DMP_MIN = 4
-      
-
-! This turns on error messaging from all processes.
-      IF(ENABLE_DMP_LOG) DMP_LOG = .TRUE.
-
-! Verify that the domain decomposition was specifed.
-      IF(IMAX == UNDEFINED_I .OR. JMAX == UNDEFINED_I .OR. &
-         (.NOT.NO_K .AND. KMAX == UNDEFINED_I) ) THEN
-         IF(DMP_LOG) WRITE(*,1002)
-         CALL MFIX_EXIT(myPE) 
-      ENDIF
-
-! Verify that DMP partitioning information is provided given if
-! there is more than one rank.
-      IF( numPEs > 1 ) then
-         IF(NODESI .EQ. UNDEFINED_I .AND.                              &
-            NODESJ .EQ. UNDEFINED_I .AND.                              &
-            NODESK .EQ. UNDEFINED_I) THEN
-            IF(DMP_LOG) THEN
-! This message is only passed to standard out because the unit log file
-! has not been opened at this point.
-               WRITE(*,1000); WRITE(*,9999)
-            ENDIF
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDIF
-
-! Initialize NODE values if undefined. If this is a DMP run, then a 
-! warning message is passed to the user.
-      IF (NODESI .EQ. UNDEFINED_I) THEN
-         IF((numPEs > 1) .AND. DMP_LOG) WRITE(*,1001)'I','I'
-         NODESI = 1
-
-! Verify that the DMP partition is appropriate for the domain.
-      ELSEIF(NODESI > 1) THEN
-         LAYERS=int(IMAX/NODESI)
-         IF(LAYERS < DMP_MIN) THEN
-            IF(DMP_LOG) THEN
-               WRITE(*,1003) 'X', DMP_MIN, 'I', 'I', LAYERS
-               WRITE(*,9999)
-            ENDIF
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDIF
-
-      IF (NODESJ .EQ. UNDEFINED_I) THEN
-         IF((numPEs > 1) .AND. DMP_LOG) WRITE(*,1001)'J','J'
-         NODESJ = 1
-
-! Verify that the DMP partition is appropriate for the domain.
-      ELSEIF(NODESJ > 1) THEN
-         LAYERS=int(JMAX/NODESJ)
-         IF(LAYERS < DMP_MIN) THEN
-            IF(DMP_LOG) THEN
-               WRITE(*,1003) 'Y', DMP_MIN, 'J', 'J', LAYERS
-               WRITE(*,9999)
-            ENDIF
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDIF
-
-      IF (NODESK .EQ. UNDEFINED_I) THEN
-         IF((numPEs > 1) .AND. DMP_LOG) WRITE(*,1001)'K','K'
-         NODESK = 1
-! Verify that the DMP partition is appropriate for the domain.
-      ELSEIF(NODESK > 1) THEN
-         LAYERS=int(KMAX/NODESK)
-         IF(LAYERS < DMP_MIN) THEN
-            IF(DMP_LOG) THEN
-               WRITE(*,1003) 'Z', DMP_MIN, 'K', 'K', LAYERS
-               WRITE(*,9999)
-            ENDIF
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDIF
-
-      RETURN  
-
- 1000 FORMAT(//1X,70('*'),/' From: CHECK_DATA_00',/' Error 1000:',     &
-         '  No DMP grid partitioning data provided in mfix.dat. ',     &
-         '  NODESI, NODESJ, and NODESK are all undefined.')
-
- 1001 FORMAT(/' From: CHECK_DATA_00',/' Warning 1001:',                &
-         ' Setting NODES',A1,' to default: NODES',A1,'=1.',/)
-
- 1002 FORMAT(//1X,70('*'),/' From: CHECK_DATA_00',/' Error 1002:',     &
-         'IMAX or JMAX or KMAX not specified in mfix.dat',/1X,70('*')/)
-
- 1003 FORMAT(//1X,70('*'),/' From: CHECK_DATA_00',/' Error 1003:',     &
-         ' Too many DMP partitions partitions specified for ',A1,      &
-         ' axis.',/' There must be at least ',I2,' computational',     &
-         ' cells per DMP parition.',/' >>> Computational Cells/DMP',   &
-         ' Partition = int(',A1,'MAX/NODES',A1,' = ',I2)
-
-
- 9999 FORMAT(/' Please refer to the Readme file on the required input',&
-         ' and make',/' the necessary corrections to the data file.',  &
-         /1X,70('*')//)
-
-      END SUBROUTINE CHECK_DATA_00
+      END SUBROUTINE GET_DATA
