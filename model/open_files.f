@@ -29,30 +29,21 @@
       USE compar 
       USE cdist
 
-      use mpi_utility, only: GLOBAL_ALL_SUM
+      use error_manager
+
       
       IMPLICIT NONE
 
 ! Error index: 0 - no error, 1 could not open file
-      INTEGER :: IER(numPEs-1)
-
+      INTEGER :: IER(0:numPEs-1)
 ! RUN_NAME (as specified in input file)
       CHARACTER*(*) :: RUN_NAME
-
 ! Run_type (as specified in input file)
       CHARACTER*(*) :: RUN_TYPE
-
 ! Number of single precision output files (param.inc)
       INTEGER :: N_SPX
 
-
-
 ! local variables
-!
-!                   Answer
-      CHARACTER     ANS
-!
-!                   extension to filename
       CHARACTER     EXT*4
 !
 !                   run_name + extension
@@ -66,10 +57,20 @@
       INTEGER       NB, NBL
 
       CHARACTER     EXT_END*35 , cstatus*10
+
+! Character error code.
+      CHARACTER(len=32) :: CER
 !-----------------------------------------------
 
-! Initialize the error flags.
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("OPEN_FILES")
+
+! Initialize the error flag array.
       IER = 0
+
+! Initialize the generic SPx extension.
+      EXT = '.SPx' 
 
 ! Generic SPx end characters in order.
       EXT_END = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -81,114 +82,196 @@
 
 ! Only PE_IO opens the RUN_NAME.OUT file.
       IF(myPE == PE_IO) CALL OPEN_FILE (RUN_NAME, NB, UNIT_OUT, '.OUT',&
-         FILE_NAME, 'UNKNOWN', 'SEQUENTIAL', 'FORMATTED',132, IER(myPE))
+         FILE_NAME, 'UNKNOWN', 'SEQUENTIAL','FORMATTED',132, IER(myPE))
 
 ! Check if there was an error opening the file.
-      CALL GLOBAL_ALL_SUM(IER)
-      IF(sum(IER) /= 0) THEN
-         IF(DMP_LOG) THEN
-            write(*,"(3x,'fatal error in open_files')")
-         ENDIF
+      IF(ERROR_OPENING(IER)) THEN
+         WRITE(ERR_MSG,3000)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
-
-! Initialize the generic SPx extension.
-      EXT = '.SPx' 
 
 ! Open the RES and SPx files. By default, only PE_IO opens these files, 
 ! but all ranks open a rank-specific copy for distributed IO runs.
       SELECT CASE (TRIM(RUN_TYPE))  
 
+! Open the RES and SPx files for a new run.
+!......................................................................
       CASE ('NEW')  
 
-        if (myPE==PE_IO .or.  bDist_IO) then 
-           CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME, 'NEW', &
-                           'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
-           IF (IER(myPE) /= 0) THEN 
-              WRITE (*, 1001) FILE_NAME 
-              GO TO 600 
-           ENDIF 
-           DO LC = 1, N_SPX 
-              ext(4:4) = ext_end(LC:LC)
-              CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, 'NEW'&
-                              , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
-              IF (IER(myPE) /= 0) GO TO 500 
-           END DO 
-        end if ! pan
+         IF(myPE==PE_IO .OR.  bDist_IO) THEN
 
+! Open the RES file.
+            CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME, &
+               'NEW', 'DIRECT', 'UNFORMATTED', OPEN_N1, IER(myPE))
+! Report errors.
+            IF (IER(myPE) == 100) THEN
+               WRITE(ERR_MSG, 1000)'RES', 'NEW', trim(FILE_NAME)
+               CALL FLUSH_ERR_MSG
+               GO TO 100
+            ELSEIF(IER(myPE) /= 0) THEN
+               CER=''; WRITE(CER,*)
+               WRITE(ERR_MSG, 2000) trim(FILE_NAME), trim(CER)
+               CALL FLUSH_ERR_MSG
+               GO TO 100
+            ENDIF
 
-
-      CASE ('RESTART_1') 
-
-         if (myPE == PE_IO .or. bDist_IO) then ! pan  
-            CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME, 'OLD', &
-                           'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
-            IF (IER(myPE) /= 0) THEN 
-               WRITE (*, 1002) FILE_NAME 
-               GO TO 600 
-            ENDIF 
-
-           DO LC = 1, N_SPX 
-              ext(4:4) = ext_end(LC:LC)
-              CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, 'OLD'&
-                           , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
-              IF (IER(myPE) /= 0) GO TO 500 
-           END DO 
-
-        end if ! pan
-
-      CASE ('RESTART_2')  
-
-	   cstatus = 'old'
-
-         if (myPE == PE_IO .or. bDist_IO) then ! pan  
-
-	      if (bStart_with_one_res) cstatus = 'unknown'
-
-            CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME, cstatus, &
-                         'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
-
-            IF (IER(myPE) /= 0) THEN 
-               WRITE (*, 1002) FILE_NAME 
-               GO TO 600 
-            ENDIF 
-
+! Open the SPx files.
             DO LC = 1, N_SPX 
-               ext(4:4) = ext_end(LC:LC)
-               CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, &
-                              'NEW' , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER) 
-               IF (IER(myPE) /= 0) GO TO 500 
+               EXT(4:4) = ext_end(LC:LC)
+               CALL OPEN_FILE(RUN_NAME, NB, UNIT_SPX+LC, EXT,FILE_NAME,&
+                  'NEW', 'DIRECT', 'UNFORMATTED', OPEN_N1, IER(myPE)) 
+! Report errors.
+               IF (IER(myPE) == 100) THEN
+                  WRITE(ERR_MSG, 1000)EXT(2:4), 'NEW', trim(FILE_NAME)
+                  CALL FLUSH_ERR_MSG
+                  GO TO 100
+               ELSEIF(IER(myPE) /= 0) THEN
+                  CER=''; WRITE(CER,*)
+                  WRITE(ERR_MSG, 2000) trim(FILE_NAME), trim(CER)
+                  CALL FLUSH_ERR_MSG
+                  GO TO 100
+               ENDIF
+            ENDDO 
+         ENDIF
+
+
+! Open the RES and SPx files for a typical restart run.
+!......................................................................
+      CASE ('RESTART_1')
+
+! Open the RES file.
+         IF(myPE == PE_IO .or. bDist_IO) THEN
+            CALL OPEN_FILE(RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME,  &
+               'OLD', 'DIRECT', 'UNFORMATTED', OPEN_N1, IER(myPE))
+! Report errors.
+            IF (IER(myPE) == 101) THEN
+               WRITE(ERR_MSG, 1001)'RES', 'RESTART_1',trim(FILE_NAME)
+               CALL FLUSH_ERR_MSG
+               GO TO 100
+            ELSEIF(IER(myPE) /= 0) THEN
+               CER=''; WRITE(CER,*)
+               WRITE(ERR_MSG, 2000) trim(FILE_NAME), trim(CER)
+               CALL FLUSH_ERR_MSG
+               GO TO 100
+            ENDIF
+
+! Open the SPx files.
+            DO LC = 1, N_SPX 
+               EXT(4:4) = EXT_END(LC:LC)
+               CALL OPEN_FILE (RUN_NAME,NB, UNIT_SPX+LC,EXT, FILE_NAME,&
+                  'OLD', 'DIRECT', 'UNFORMATTED', OPEN_N1, IER(myPE)) 
+! Report errors.
+               IF (IER(myPE) == 101) THEN
+                  WRITE(ERR_MSG, 1001) EXT(2:4), 'RESTART_1',         &
+                     trim(FILE_NAME)
+                  CALL FLUSH_ERR_MSG
+                  GO TO 100
+               ELSEIF(IER(myPE) /= 0) THEN
+                  CER=''; WRITE(CER,*)
+                  WRITE(ERR_MSG, 2000) trim(FILE_NAME), trim(CER)
+                  CALL FLUSH_ERR_MSG
+                  GO TO 100
+               ENDIF
             END DO 
+         ENDIF
 
-        end if ! pan
 
+! Open the RES and SPx files for a typical restart run.
+!......................................................................
+      CASE ('RESTART_2')  
+! Open the RES file.
+         CSTATUS = 'OLD'
+         IF(myPE == PE_IO .OR. bDist_IO) THEN
+            IF(bStart_with_one_res) CSTATUS = 'UNKNOWN'
+            CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME, &
+               CSTATUS,'DIRECT', 'UNFORMATTED', OPEN_N1, IER(myPE)) 
+! Report errors.
+            IF (IER(myPE) == 101) THEN
+               WRITE(ERR_MSG, 1001)'RES', 'RESTART_2',trim(FILE_NAME)
+               CALL FLUSH_ERR_MSG
+               GO TO 100
+            ELSEIF(IER(myPE) /= 0) THEN
+               CER=''; WRITE(CER,*)
+               WRITE(ERR_MSG, 2000) trim(FILE_NAME), trim(CER)
+               CALL FLUSH_ERR_MSG
+               GO TO 100
+            ENDIF
 
+! Open the SPx files.
+            DO LC = 1, N_SPX 
+               EXT(4:4) = EXT_END(LC:LC)
+               CALL OPEN_FILE (RUN_NAME,NB,UNIT_SPX+LC, EXT, FILE_NAME,&
+                  'NEW' , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER(myPE)) 
+! Report errors.
+               IF (IER(myPE) == 100) THEN
+                  WRITE(ERR_MSG, 1000)EXT(2:4), 'RESTART_2',          &
+                     trim(FILE_NAME)
+                  CALL FLUSH_ERR_MSG
+                  GO TO 100
+               ELSEIF(IER(myPE) /= 0) THEN
+                  CER=''; WRITE(CER,*)
+                  WRITE(ERR_MSG, 2000) trim(FILE_NAME), trim(CER)
+                  CALL FLUSH_ERR_MSG
+                  GO TO 100
+               ENDIF
+            END DO
+         ENDIF
 
       CASE DEFAULT 
-          WRITE (*, *) ' OPEN_FILES: DO NOT KNOW HOW TO PROCESS' 
-          WRITE (*, *) ' RUN_TYPE in the input file' 
-          call mfix_exit(myPE) 
+         WRITE(ERR_MSG, 3000)
+         CALL FLUSH_ERR_MSG
+         GO TO 100
 
       END SELECT 
 
- !     endif   ! end of myPE=PE_IO if block commented out pan ... 
+! If an error was detected, abort the run.
+  100 IF(ERROR_OPENING(IER)) CALL MFIX_EXIT(myPE)
+
+! Initialize the error manager.
+      CALL FINL_ERR_MSG
 
       RETURN  
-  500 CONTINUE 
-      WRITE (*, 1100) myPE,FILE_NAME  !//PAR_I/O added myPE for output
-  600 CONTINUE 
-      CALL SLUMBER 
-      call mfix_exit(myPE) 
-!
- 1000 FORMAT(I1) 
- 1001 FORMAT(/70('*')//' From: OPEN_FILES',/&
-         ' Error: NEW run -- .RES file should NOT be in the run directory'/&
-         ' Cannot open new file -- ',A,/70('*')/) 
- 1002 FORMAT(/70('*')//' From: OPEN_FILES',/&
-         ' Error: RESTART run -- .RES file should be in the run directory'/&
-         ' Cannot open existing file -- ',A,/70('*')/) 
- 1100 FORMAT(/70('*')//'(PE ',I3,'): From: OPEN_FILES',/&
-         ' Error: Cannot open file -- ',A,/70('*')/) 
+
+ 1000 FORMAT('Error 1000: ',A,' file detected but RUN_TYPE=',A/,       &
+         'Cannot open file: ',A)
+
+ 1001 FORMAT('Error 1001: ',A,' file missing for RUN_TYPE=',A/,        &
+         'Cannot open file: ',A)
+
+ 2000 FORMAT('Error 2000: Unknown error opening file ',A,/             &
+         'Error code: ',A)
+
+ 3000 FORMAT('Error 3000: Unknown run type: ',A)
+
+
+      CONTAINS
+
+
+!``````````````````````````````````````````````````````````````````````!
+! FUNCTION: ERROR_OPENING                                              !
+! Purpose: Collect the error flags from all processes and sum them.    !
+! RESULT: .TRUE.  :: Sum of IER over all processes is non-zero.        !
+!         .FALSE. :: GLOBAL_ALL_SUM is zero.                           !
+!                                                                      !
+!......................................................................!
+      LOGICAL FUNCTION ERROR_OPENING(IER_l)
+
+! MPI Wrapper function.
+      use mpi_utility, only: GLOBAL_ALL_SUM
+
+! Array containing error flags from all ranks.
+      INTEGER, INTENT(IN) :: IER_L(0:numPEs-1)
+! Initialize error flags.
+      ERROR_OPENING = .FALSE.
+! Globally collect flags.
+      CALL GLOBAL_ALL_SUM(IER)
+! Report errors.
+      IF(sum(IER_l) /= 0) ERROR_OPENING = .TRUE.
+
+      RETURN
+      END FUNCTION ERROR_OPENING
+
       END SUBROUTINE OPEN_FILES 
 
 
@@ -261,7 +344,7 @@
       NBL = NB + 3
 !
       CALL OPEN_FILE (LOGFILE, NBL, UNIT_LOG, '.LOG', FILE_NAME, 'NEW', &
-          'SEQUENTIAL', 'FORMATTED', 132, IER)
+          'SEQUENTIAL', 'FORMATTED', 132, IER(myPE))
         
       RETURN
       END SUBROUTINE OPEN_PE_LOG 
