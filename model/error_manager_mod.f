@@ -16,12 +16,13 @@
 ! Character string for storing the error message.
       CHARACTER(LEN=LINE_LENGTH), DIMENSION(LINE_COUNT) :: ERR_MSG
 
-! The name of the calling routine. Set by calling: INIT_ERR_MSG
-      CHARACTER(LEN=128), PRIVATE :: PRIVATE_CALLER
+! Depth that the current call tree can go.
+      INTEGER, PARAMETER, PRIVATE :: MAX_CALL_DEPTH = 16
+! Current call depth.
+      INTEGER, PRIVATE :: CALL_DEPTH
 
-! Lock. The lock must be set/unset for each calling routine. This
-! is done by calling the start and end routines.
-      LOGICAL, PRIVATE :: LOCKED
+! The name of the calling routine. Set by calling: INIT_ERR_MSG
+      CHARACTER(LEN=128), DIMENSION(MAX_CALL_DEPTH), PRIVATE :: CALLERS
 
 ! Flag for writing messages to the screen.
       LOGICAL, PRIVATE :: SCR_LOG
@@ -75,12 +76,12 @@
 
 ! Initizilae the error flag.
       IER = 0
-! Initialize the lock.
-      LOCKED = .FALSE.
+! Initialize the call tree depth.
+      CALL_DEPTH = 0
 ! Clear the error message storage container.
       ERR_MSG = ''
 ! Clear the caller routine information.
-      PRIVATE_CALLER = ''
+      CALLERS = ''
 
 ! This turns on error messaging from all processes.
       DMP_LOG = (myPE == PE_IO) .OR. ENABLE_DMP_LOG
@@ -157,32 +158,38 @@
       use compar, only: myPE
 ! Rank ID for IO handeling
       use compar, only: PE_IO
+! Flag: My rank reports errors.
+      use funits, only: DMP_LOG
+! File unit for LOG messages.
+      use funits, only: UNIT_LOG
 
       implicit none
 
       CHARACTER(LEN=*), intent(IN) :: CALLER
 
-! Verify that the lock isn't set.
-      IF(LOCKED)THEN
-         IF(myPE == PE_IO) WRITE(*,1000) CALLER
+! Verify that the maximum call dept will not be exceeded.  If so, flag
+! the error and exit.
+      IF(CALL_DEPTH + 1 > MAX_CALL_DEPTH) THEN
+         IF(SCR_LOG) WRITE(*,1000) CALL_DEPTH
+         IF(DMP_LOG) WRITE(UNIT_LOG,1000) CALL_DEPTH
+         CALL SHOW_CALL_TREE
          CALL MFIX_EXIT(myPE)
+      ELSE
+! Store the caller routines name.
+         CALL_DEPTH = CALL_DEPTH + 1
+         CALLERS(CALL_DEPTH) = trim(CALLER)
       ENDIF
-
-! Set the error manager lock. This lock remains set until FNL_ERR_MSG
-! is called. A hard stop is called if the lock is set.
-      LOCKED = .TRUE.
 
 ! Clear out the error manager.
       ERR_MSG=''
-! Store the caller routines name.
-      PRIVATE_CALLER = trim(CALLER)
 
       RETURN
 
  1000 FORMAT(/1X,70('*')/' From: ERROR_MANAGER --> INIT_ERR_MSG',/     &
-         ' Error 1000: LOCK set at call to initialize routine.',/      &
-         ' Previous routine may not have called FINL_ERR_MSG.',/,      &
-         ' CALLER: ',A,/1x,70('*'))
+         ' Error 1000: Invalid ERROR_MANAGER usage. The maximum call', &
+         ' depth ',/' was exceeded. The calls to INIT_ERR_MSG should', &
+         ' have corresponding',/' calls to FINL_ERR_MSG. The current', &
+         ' CALL tree depth is: ',I4)
 
       END SUBROUTINE INIT_ERR_MSG
 
@@ -199,6 +206,10 @@
       use compar, only: myPE
 ! Rank ID for IO handeling
       use compar, only: PE_IO
+! Flag: My rank reports errors.
+      use funits, only: DMP_LOG
+! File unit for LOG messages.
+      use funits, only: UNIT_LOG
 
       implicit none
 
@@ -211,10 +222,20 @@
 ! Number of non-empty lines.
       INTEGER :: COUNT
 
-! Verify that the lock was set, otherwise flag the error.
-      IF(.NOT.LOCKED)THEN
-         IF(myPE == PE_IO) WRITE(*,1000) trim(PRIVATE_CALLER)
+! The current calling routine.
+      CHARACTER(LEN=128) :: CALLER
+
+! Verify that at the INIT routine was called.
+      IF(CALL_DEPTH < 1) THEN
+         IF(SCR_LOG) WRITE(*,1000)
+         IF(DMP_LOG) WRITE(UNIT_LOG,1000)
          CALL MFIX_EXIT(myPE)
+      ELSE
+! Store the current caller, clear the array position, and decrement
+! the counter.
+         CALLER = CALLERS(CALL_DEPTH)
+         CALLERS(CALL_DEPTH) = ''
+         CALL_DEPTH = CALL_DEPTH - 1
       ENDIF
 
 ! Verify that the error message container is empty.
@@ -225,37 +246,44 @@
          IF(0 < LENGTH .AND. LENGTH < 256 ) COUNT = COUNT + 1
       ENDDO
 
-! If the error message container empty, finish the reset and exit.
+! If the error message container is not empty, report the error, dump
+! the error message and abort MFIX.
       IF(COUNT /= 0) THEN
-         IF(myPE == PE_IO) THEN
-            WRITE(*,1001) trim(PRIVATE_CALLER)
+         IF(SCR_LOG) WRITE(*,1001) trim(CALLER)
+         IF(DMP_LOG) WRITE(UNIT_LOG,1001) trim(CALLER)
 ! Write out the error message container contents.
-            DO LC = 1, LINE_COUNT
-               LINE = ERR_MSG(LC)
-               LENGTH = len_trim(LINE)
-               IF(0 < LENGTH .AND. LENGTH < 256 )                      &
-                  WRITE(*,"(' LC ',I2.2,': LEN: ',I3.3,1x,A)")         &
-                     LC, LENGTH, trim(LINE)
-            ENDDO
-            WRITE(*,"(1x,70('*'),2/)")
-         ENDIF
+         DO LC = 1, LINE_COUNT
+            LINE = ERR_MSG(LC)
+            LENGTH = len_trim(LINE)
+            IF(0 < LENGTH .AND. LENGTH < 256 ) THEN
+               IF(SCR_LOG) WRITE(*,1002)LC, LENGTH, trim(LINE)
+               IF(DMP_LOG) WRITE(UNIT_LOG,1002)LC, LENGTH, trim(LINE)
+            ENDIF
+         ENDDO
+         IF(SCR_LOG) WRITE(*,1003)
+         IF(DMP_LOG) WRITE(UNIT_LOG, 1003)
          CALL MFIX_EXIT(myPE)
       ENDIF
 
-      PRIVATE_CALLER = ''
+! This shouldn't be needed, but it doesn't hurt.
       ERR_MSG = ''
-      LOCKED = .FALSE.
 
       RETURN
 
  1000 FORMAT(/1X,70('*')/' From: ERROR_MANAGER --> FINL_ERR_MSG',/     &
-         ' Error 1000: LOCK not set prior to finalize call.',/         &
-         ' Previous routine may not have called INIT_ERR_MSG.',/,      &
-         ' PRIVATE_CALLER: ',A,/1x,70('*'))
-
+         ' Error 1000: Ivalid ERROR_MANAGER usage. A call to FINL_ERR',&
+         '_MSG was',/' made while the call tree is empty. This can',   &
+         ' occur if a call to',/' FINL_ERR_MSG was made without a',    &
+         ' corresponding call to INIT_ERR_MSG.',/' Aborting MFIX.'/    &
+         1x,70('*'),2/)
+ 
  1001 FORMAT(/1X,70('*')/' From: ERROR_MANAGER --> FINL_ERR_MSG',/     &
          ' Error 1001: Error container ERR_MSG not empty.',/           &
-         ' PRIVATE_CALLER: ',A,2/' Contents:')
+         ' CALLERS: ',A,2/' Contents:')
+
+ 1002 FORMAT(' LC ',I2.2,': LEN: ',I3.3,1x,A)
+
+ 1003 FORMAT(/,1x,'Aborting MFIX.',1x,70('*'),2/)
 
       END SUBROUTINE FINL_ERR_MSG
 
@@ -264,10 +292,14 @@
 !``````````````````````````````````````````````````````````````````````!
 !                                                                      !
 !......................................................................!
-      SUBROUTINE FLUSH_ERR_MSG(DEBUG, HEADER, FOOTER, ABORT)
+      SUBROUTINE FLUSH_ERR_MSG(DEBUG, HEADER, FOOTER, ABORT, CALL_TREE)
 
 ! Rank ID of process
       use compar, only: myPE
+! Flag: My rank reports errors.
+      use funits, only: DMP_LOG
+! File unit for LOG messages.
+      use funits, only: UNIT_LOG
 
 ! Dummy Arguments:
 !---------------------------------------------------------------------//
@@ -279,6 +311,8 @@
       LOGICAL, INTENT(IN), OPTIONAL :: FOOTER
 ! Flag to abort execution by invoking MFIX_EXIT.
       LOGICAL, INTENT(IN), OPTIONAL :: ABORT
+! Provide the call tree in error message.
+      LOGICAL, INTENT(IN), OPTIONAL :: CALL_TREE
 
 ! Local Variables:
 !---------------------------------------------------------------------//
@@ -296,6 +330,11 @@
       LOGICAL :: F_FLAG
 ! Local abort flag.
       LOGICAL :: A_FLAG
+! Local call tree flag.
+      LOGICAL :: CT_FLAG
+
+! The current calling routine.
+      CHARACTER(LEN=128) :: CALLER
 
 ! Set the abort flag. Continue running by default.
       A_FLAG = merge(ABORT, .FALSE., PRESENT(ABORT))
@@ -305,16 +344,22 @@
       H_FLAG = merge(HEADER, .TRUE., PRESENT(HEADER))
 ! Set the footer flag. Write the footer by default.
       F_FLAG = merge(FOOTER, .TRUE., PRESENT(FOOTER))
+! Set the call tree flag. Suppress the call tree by default.
+      CT_FLAG = merge(CALL_TREE, .FALSE., PRESENT(CALL_TREE))
+
+! Set the current caller.
+      CALLER = CALLERS(CALL_DEPTH)
 
 ! Write out header infomration.
       IF(H_FLAG) THEN
-         write(*,"(2/,'')")
-         IF(D_FLAG) WRITE(*,"('--- HEADER --->')",advance="no")
-         WRITE(*,1000)
-         IF(D_FLAG) WRITE(*,"('--- HEADER --->')",advance="no")
-         WRITE(*,1001) trim(PRIVATE_CALLER)
+         IF(D_FLAG) THEN
+            IF(SCR_LOG) WRITE(*,2000) trim(CALLER)
+            IF(DMP_LOG) WRITE(UNIT_LOG,2000) trim(CALLER)
+         ELSE
+            IF(SCR_LOG)WRITE(*,1000) trim(CALLER)
+            IF(DMP_LOG)WRITE(UNIT_LOG,1000) trim(CALLER)
+         ENDIF
       ENDIF
-
 
 ! Write the message body.
       IF(D_FLAG)THEN
@@ -322,14 +367,14 @@
             LINE = ERR_MSG(LC)
             LENGTH = len_trim(LINE)
             IF(LENGTH == 0) THEN
-               write(*,"('LC ',I2.2,': LEN: ',I3.3,1x,A)")             &
-                  LC, LENGTH, "EMPTY."
+               IF(SCR_LOG) WRITE(*,2001) LC, LENGTH, "EMPTY."
+               IF(DMP_LOG) WRITE(UNIT_LOG,2001) LC, LENGTH, "EMPTY."
             ELSEIF(LENGTH >=  LINE_LENGTH)THEN
-               write(*,"('LC ',I2.2,': LEN: ',I3.3,1x,A)")             &
-                  LC, LENGTH, "OVERFLOW."
+               IF(SCR_LOG) WRITE(*,2001) LC, LENGTH, "OVERFLOW."
+               IF(DMP_LOG) WRITE(UNIT_LOG,2001) LC, LENGTH, "OVERFLOW."
             ELSE
-               write(*,"('LC ',I2.2,': LEN: ',I3.3,1x,A)")             &
-                  LC, LENGTH, trim(LINE)
+               IF(SCR_LOG) WRITE(*,2001) LC, LENGTH, trim(LINE)
+               IF(DMP_LOG) WRITE(UNIT_LOG,2001) LC, LENGTH, trim(LINE)
             ENDIF
          ENDDO
       ELSE
@@ -337,28 +382,109 @@
             LINE = ERR_MSG(LC)
             LENGTH = len_trim(LINE)
             IF(0 < LENGTH .AND. LENGTH < 256 ) THEN
-               write(*,"(1x,A)") trim(LINE)
+               IF(SCR_LOG) WRITE(*,1001) trim(LINE)
+               IF(DMP_LOG) WRITE(UNIT_LOG,1001) trim(LINE)
             ENDIF
          ENDDO
+      ENDIF
+
+! Print footer.
+      IF(F_FLAG) THEN
+         IF(D_FLAG) THEN
+            IF(SCR_LOG) WRITE(*, 2002)
+            IF(DMP_LOG) WRITE(UNIT_LOG, 2002)
+         ELSE
+            IF(SCR_LOG) WRITE(*, 1002)
+            IF(DMP_LOG) WRITE(UNIT_LOG, 1002)
+         ENDIF
       ENDIF
 
 ! Clear the message array.
       ERR_MSG=''
 
-! Print footer.
-      IF(F_FLAG) THEN
-         IF(D_FLAG) WRITE(*,"('--- FOOTER --->')",advance="no")
-         WRITE(*,1000)
-      ENDIF
-
 ! Abort the run if specified.
-      IF(A_FLAG) CALL MFIX_EXIT(myPE)
+      IF(A_FLAG) THEN
+         IF(D_FLAG) WRITE(*,3000) myPE
+         CALL MFIX_EXIT(myPE)
+      ENDIF
 
       RETURN
 
- 1000 FORMAT(1x,70('*'))
- 1001 FORMAT(1x,'From: ',A)
+ 1000 FORMAT(2/,1x,70('*'),/' From: ',A)
+ 1001 FORMAT(1x,A)
+ 1002 FORMAT(1x,70('*'))
+
+ 2000 FORMAT(2/,'--- HEADER ---> ',70('*'),/'--- HEADER ---> From: ',A)
+ 2001 FORMAT('LC ',I2.2,': LEN: ',I3.3,1x,A)
+ 2002 FORMAT('--- FOOTER --->',1x,70('*'))
+
+ 3000 FORMAT(2x,'Rank ',I5,' calling MFIX_EXIT from FLUSH_ERR_MSG.')
 
       END SUBROUTINE FLUSH_ERR_MSG
+
+
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!......................................................................!
+      SUBROUTINE SHOW_CALL_TREE(HEADER, FOOTER)
+
+! Flag: My rank reports errors.
+      use funits, only: DMP_LOG
+! File unit for LOG messages.
+      use funits, only: UNIT_LOG
+
+! Dummy Arguments:
+!---------------------------------------------------------------------//
+! Flag to suppress the message header.
+      LOGICAL, INTENT(IN), OPTIONAL :: HEADER
+! Flag to suppress the message footer.
+      LOGICAL, INTENT(IN), OPTIONAL :: FOOTER
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Local flag to suppress writing the header.
+      LOGICAL :: H_FLAG
+! Local flag to suppress writing the footer.
+      LOGICAL :: F_FLAG
+! Generic loop counters.
+      INTEGER ::  LC, SL
+ 
+! Set the header flag. Write the header by default.
+      H_FLAG = merge(HEADER, .TRUE., PRESENT(HEADER))
+! Set the footer flag. Write the footer by default.
+      F_FLAG = merge(FOOTER, .TRUE., PRESENT(FOOTER))
+
+! Header
+      IF(H_FLAG) THEN
+         IF(SCR_LOG) WRITE(*,1000)
+         IF(DMP_LOG) WRITE(UNIT_LOG,1000)
+      ENDIF
+
+! Call Tree
+      DO LC=1,MAX_CALL_DEPTH
+         DO SL=1,LC
+            IF(SCR_LOG) WRITE(*,1001,ADVANCE='NO')
+            IF(DMP_LOG) WRITE(UNIT_LOG,1001,ADVANCE='NO')
+         ENDDO
+         IF(SCR_LOG) WRITE(*,1002,ADVANCE='YES') CALLERS(LC)
+         IF(DMP_LOG) WRITE(UNIT_LOG,1002,ADVANCE='YES') CALLERS(LC)
+      ENDDO
+
+! Footer.
+      IF(F_FLAG) THEN
+         IF(SCR_LOG) WRITE(*,1003)
+         IF(DMP_LOG) WRITE(UNIT_LOG,1003)
+      ENDIF
+
+      RETURN
+
+ 1000 FORMAT(2/,1x,70('*'),' CALL TREE INFORMATION')
+ 1001 FORMAT(' ')
+ 1002 FORMAT('> ',A)
+ 1003 FORMAT(/1x,70('*'))
+
+      END SUBROUTINE SHOW_CALL_TREE
+
 
       END MODULE ERROR_MANAGER
