@@ -199,18 +199,6 @@
 
 ! Neighbor search
       Allocate(  NEIGHBOURS (NPARTICLES, MAXNEIGHBORS) )
-      IF (DES_NEIGHBOR_SEARCH .EQ. 2 .OR. DES_NEIGHBOR_SEARCH .EQ. 3) THEN
-         MAXQUADS = 5*PARTICLES*MQUAD_FACTOR
-         IF(MAXQUADS.LE.80000) MAXQUADS = 80000
-         IF(DIMN.EQ.3) THEN
-            NMQD = 11
-         ELSE
-            NMQD = 7
-         ENDIF
-         Allocate(  LQUAD (MAXQUADS, NMQD) )
-         Allocate(  PQUAD (NPARTICLES) )
-         Allocate(  CQUAD (MAXQUADS, NWALLS) )
-      ENDIF
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
@@ -311,24 +299,11 @@
      
 ! ---------------------------------------------------------------->>>
 ! BEGIN COHESION       
-! Square-well potential parameters
       IF(USE_COHESION) THEN 
-         IF(SQUARE_WELL)THEN 
-           Allocate(  WELL_WIDTH (NPARTICLES) )
-           Allocate(  WELL_DEPTH (NPARTICLES) )
-! Does particle have at least one linked partner
-           Allocate(  IS_LINKED (NPARTICLES) ) 
-! Array of linked partners
-           Allocate(  LINKS (NPARTICLES, MAXNEIGHBORS) )
-         ENDIF
-
 ! Matrix location of particle  (should be allocated in case user wishes
 ! to invoke routines in /cohesion subdirectory
-         Allocate(  PART_GRID (NPARTICLES,4) )
-
          Allocate(  FCohesive (NPARTICLES,DIMN) )
          Allocate(  PostCohesive (NPARTICLES) )
-         
       ENDIF
 ! END COHESION   
       IF(DES_CALC_CLUSTER) Allocate(  PostCluster (NPARTICLES) )

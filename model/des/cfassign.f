@@ -104,7 +104,6 @@
 
 ! used in octree and quadtree neighbor search algorithms      
       RADIUS_EQ = MAX_RADIUS*1.05d0
-      INQC = INIT_QUAD_COUNT
 !-----------------------------------------------------------------<<<
 
 
@@ -340,7 +339,7 @@
                'TAU_P FOR ', M,'th SOLID PHASE= ', DES_TAU_P(M)
          ENDDO
 
-         DTSOLID = DTSOLID_FACTOR*MINVAL(DES_TAU_P(1:DES_MMAX))
+         DTSOLID = MINVAL(DES_TAU_P(1:DES_MMAX))
          DTPIC_TAUP = DTSOLID   !maximum dt for point-particles based on taup
 
          IF(DMP_LOG) THEN 

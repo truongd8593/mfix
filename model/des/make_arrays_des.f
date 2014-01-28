@@ -169,15 +169,12 @@
 ! Set parameters for cohesion models.  This call needs to be after the
 ! particle's radius is assigned (i.e., after particles are identified).
       IF(USE_COHESION) THEN
-         IF (SQUARE_WELL) THEN
-            CALL INITIALIZE_COHESION_PARAMETERS
-            CALL INITIALIZE_COH_INT_SEARCH
-         ELSEIF (VAN_DER_WAALS) THEN
+         IF (VAN_DER_WAALS) THEN
 ! Surface energy set so that force stays constant at inner cut off         
             SURFACE_ENERGY=HAMAKER_CONSTANT/&
-               (24.d0*Pi*VDW_INNER_CUTOFF*VDW_INNER_CUTOFF)
+            (24.d0*Pi*VDW_INNER_CUTOFF*VDW_INNER_CUTOFF)
             WALL_SURFACE_ENERGY=WALL_HAMAKER_CONSTANT/&
-               (24.d0*Pi*WALL_VDW_INNER_CUTOFF*WALL_VDW_INNER_CUTOFF)
+            (24.d0*Pi*WALL_VDW_INNER_CUTOFF*WALL_VDW_INNER_CUTOFF)
          ENDIF
       ENDIF
 

@@ -17,7 +17,8 @@
       use discretelement, only: USE_COHESION
 ! Largest discrete particle diameter.
       use discretelement, only: MAX_RADIUS
-! Runtime Flag: Invoke Square well model.
+
+! Runtime Flag: Invoke Square Well 
       use discretelement, only: SQUARE_WELL
 ! Runtime Flag: Invoke Van der Waals model.
       use discretelement, only: VAN_DER_WAALS
@@ -25,12 +26,6 @@
       use discretelement, only: FACTOR_RLM
 ! File unit for LOG messages.
       use funits, only: UNIT_LOG
-
-! User specified parameters for square-well model.
-      use discretelement, only: MASTER_WELL_DEPTH
-      use discretelement, only: MASTER_WALL_WELL_DEPTH
-      use discretelement, only: RADIUS_RATIO
-      use discretelement, only: WALL_RADIUS_RATIO
 
 ! User specified parameters for Van der Waals model.
       use discretelement, only: VDW_INNER_CUTOFF
@@ -55,7 +50,8 @@
 
 ! Override the following settings if cohesion not used.
       IF(.NOT.USE_COHESION) THEN
-         SQUARE_WELL = .FALSE.
+!No more square well in the code 
+         SQUARE_WELL = .false. 
          VAN_DER_WAALS = .FALSE.
          WALL_VDW_OUTER_CUTOFF = ZERO
          RETURN
@@ -72,39 +68,6 @@
          IF(myPE == PE_IO) WRITE(*, 1001)
          IF(DMP_LOG) WRITE(UNIT_LOG,1001)
          CALL MFIX_EXIT(myPE)
-      ENDIF
-
-! Squarewell model checks
-      IF (SQUARE_WELL) THEN
-
-! Warn that the Square Well model may not function properly.
-         IF(myPE == PE_IO) WRITE(*, 1100)
-         IF(DMP_LOG) WRITE(UNIT_LOG,1100)
-
-         IER=0
-         IF(MASTER_WELL_DEPTH .EQ. UNDEFINED) THEN
-            IF(myPE == PE_IO) WRITE(*, 1101) 'MASTER_WELL_DEPTH'
-            IF(DMP_LOG) WRITE(UNIT_LOG,1101) 'MASTER_WELL_DEPTH'
-            IER = 1
-         ENDIF
-         IF(MASTER_WALL_WELL_DEPTH .EQ. UNDEFINED) THEN
-            IF(myPE == PE_IO) WRITE(*, 1101) 'MASTER_WALL_WELL_DEPTH'
-            IF(DMP_LOG) WRITE(UNIT_LOG,1101) 'MASTER_WALL_WELL_DEPTH'
-            IER = 1
-         ENDIF
-
-         IF(RADIUS_RATIO .EQ. UNDEFINED) THEN
-            IF(myPE == PE_IO) WRITE(*, 1101) 'RADIUS_RATIO'
-            IF(DMP_LOG) WRITE(UNIT_LOG,1101) 'RADIUS_RATIO'
-            IER = 1
-
-         ENDIF
-         IF(WALL_RADIUS_RATIO .EQ. UNDEFINED) THEN
-            IF(myPE == PE_IO) WRITE(*, 1101) 'WELL_RADIUS_RATIO'
-            IF(DMP_LOG) WRITE(UNIT_LOG,1101) 'WELL_RADIUS_RATIO'
-            IER = 1
-         ENDIF
-         IF(IER /= 0) CALL MFIX_EXIT(myPE)
       ENDIF
 
 
@@ -170,17 +133,6 @@
          ' A cohesion model was not selected. Specify one of the',/    &
          ' available models in the mfix.dat file.',/1X,70('*')/)
 
-
-!<-------------------- Square-well model messages. ------------------->!
-
-
- 1100 FORMAT(/1X,70('*')/' From: CHECK_DES_COHESION',/' Warning 1100:',&
-         ' The square-well cohesion model has not been verified',/     &
-         ' with the current DEM implemenation.',/1X,70('*')/)
-
- 1101 FORMAT(/1X,70('*')/' From: CHECK_DES_COHESION',/' Error 1101:',  &
-         ' Missing input data for square-well cohesion model.',/       &
-         ' Input parameter ',A,' is UNDEFINED.',/1X,70('*')/)
 
 
 !<------------------- Van der Waals model messages. ----------------->!

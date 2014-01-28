@@ -39,17 +39,6 @@
          N2CT = ZERO
       ENDIF
 
-      IF (DES_NEIGHBOR_SEARCH.EQ.2) THEN
-         CALL QUADTREE
-      ELSE
-         QUADCT = ZERO
-      ENDIF
-
-      IF (DES_NEIGHBOR_SEARCH.EQ.3) THEN
-         CALL OCTREE
-      ELSE
-         OCTCT = ZERO
-      ENDIF
 
       IF (DES_NEIGHBOR_SEARCH.EQ.4) THEN 
           CALL DESGRID_NEIGH_BUILD

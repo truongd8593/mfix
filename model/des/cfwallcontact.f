@@ -36,8 +36,6 @@
       DOUBLE PRECISION :: XPOS, YPOS, ZPOS      
 ! local variables to define system dimensions
       DOUBLE PRECISION :: LXE, LXW, LYN, LYS, LZT, LZB
-! local variables 
-      DOUBLE PRECISION :: A, OMEGA, OOMEGA2, ASINOMEGAT 
 ! local variables: distance between particle surface and wall
       DOUBLE PRECISION :: DistApart
 !-----------------------------------------------
@@ -59,17 +57,6 @@
 
 ! initialize
       WALLCONTACT = 0
-
-! for vibrating wall      
-      A = ZERO
-      OMEGA = ZERO
-      ASINOMEGAT = ZERO
-      IF(DES_F.NE.ZERO) THEN
-         OMEGA = 2.0D0*PI*DES_F
-         OOMEGA2 = ONE/(OMEGA**2)
-         A = DES_GAMMA*GRAV(2)*OOMEGA2
-         ASINOMEGAT = A*SIN(OMEGA*S_TIME)
-      ENDIF
 
       IF (DES_LE_BC) THEN
 ! Current implementation of Lees & Edwards boundaries implies all other
@@ -112,7 +99,7 @@
 
 ! south wall (Y)
       ELSEIF(WALL.EQ.3) THEN
-         DistApart = YPOS-(LYS+ASINOMEGAT)-DES_RADIUS(L)
+         DistApart = YPOS-(LYS)-DES_RADIUS(L)
          IF( DistApart <= WALL_VDW_OUTER_CUTOFF ) THEN
             IF(DES_MO_Y)THEN
                CALL DES_MASS_OUTLET(L,'YS',WALLCONTACT,DistApart)

@@ -102,12 +102,6 @@
       NEIGHBOURS(:,:) = -1
       NEIGHBOURS(:,1) = 0
 
-      IF (DES_NEIGHBOR_SEARCH .EQ. 2 .OR. &
-        DES_NEIGHBOR_SEARCH .EQ. 3) THEN
-          LQUAD(:,:) = UNDEFINED_I
-          CQUAD(:,:) = UNDEFINED
-          PQUAD(:) = 0
-      ENDIF      
 
 ! Cohesion VDW forces
       IF(USE_COHESION) THEN

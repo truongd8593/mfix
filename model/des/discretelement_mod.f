@@ -211,8 +211,6 @@
 
 ! Value of solids time step based on particle properties
       DOUBLE PRECISION DTSOLID
-! Currently obsolete quantity
-      DOUBLE PRECISION DTSOLID_FACTOR 
 ! Run time value of simulation time used in dem simulation
       DOUBLE PRECISION S_TIME
 
@@ -255,14 +253,8 @@
       INTEGER :: DESGRIDSEARCH_IMAX, DESGRIDSEARCH_JMAX, &
                  DESGRIDSEARCH_KMAX
 
-! Quantities used for neighbor search methods octree and quadtree
-      INTEGER QLM, QLN, INIT_QUAD_COUNT, INQC
-      INTEGER NQUAD, MAXQUADS, NMQD 
-      DOUBLE PRECISION N2CT, QUADCT, OCTCT, MQUAD_FACTOR
+      DOUBLE PRECISION N2CT
       DOUBLE PRECISION RADIUS_EQ
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: LQUAD          !(MAXQUADS, NMQD)
-      INTEGER, DIMENSION(:), ALLOCATABLE :: PQUAD            !(PARTICLES) 
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: CQUAD !(NWALLS,MAXQUADS)
 
 ! End neighbor search related quantities      
 !-----------------------------------------------------------------<<<
@@ -290,19 +282,6 @@
 ! Gravity vector
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: GRAV !(DIMN)
 
-! Wall vibration parameters
-      DOUBLE PRECISION DES_GAMMA, DES_F
-! if a value for des_f is given then this is used to move the 
-! bottom/top walls (xz plane) east/west      
-      DOUBLE PRECISION LID_VEL 
-
-! Particle treatment at the walls  
-! walldtsplit should be set to T for particle interaction with walls
-      LOGICAL WALLDTSPLIT
-      LOGICAL WALLREFLECT
-
-! Variable for cell_near_wall (obsolete)
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: c_near_w
 
 ! Periodic wall BC
       LOGICAL DES_PERIODIC_WALLS
@@ -651,19 +630,9 @@
 ! Switch to turn cohesion on and off (set in mfix.dat)
       LOGICAL USE_COHESION      
 
-! Square well constants (set in mfix.dat)      
-! Switch to turn square well on and off
-      LOGICAL SQUARE_WELL
-! Well depth 
-      DOUBLE PRECISION MASTER_WELL_DEPTH
-      DOUBLE PRECISION MASTER_WALL_WELL_DEPTH
-! Ratio of square-well width to inner radius 
-      DOUBLE PRECISION RADIUS_RATIO
-! Ratio of square-well depth to particle radius 
-      DOUBLE PRECISION WALL_RADIUS_RATIO
 
 ! Van der Waals constants (set in mfix.dat)
-      LOGICAL VAN_DER_WAALS
+      LOGICAL SQUARE_WELL, VAN_DER_WAALS
       DOUBLE PRECISION HAMAKER_CONSTANT
       DOUBLE PRECISION VDW_INNER_CUTOFF ! (in cm)
       DOUBLE PRECISION VDW_OUTER_CUTOFF
@@ -686,28 +655,6 @@
 ! simulation to ensure the van der Waals force is continuous at the inner cutoff) 
       DOUBLE PRECISION SURFACE_ENERGY
       DOUBLE PRECISION WALL_SURFACE_ENERGY      
-
-! Variables for square-well cohesion calculations:
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WELL_WIDTH ! (PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WELL_DEPTH ! (PARTICLES)
-! Array of linked partners
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: LINKS ! (PARTICLES, MAXNEIGHBORS)
-! True if particle has at least one linked partner.
-      INTEGER, DIMENSION(:), ALLOCATABLE :: IS_LINKED ! (PARTICLES)
-
-! Switch to run debugging on and off
-      INTEGER COHESION_DEBUG
-
-! Number of search grids in the x-, y-, and z-direction
-      INTEGER SEARCH_GRIDS(3)
-! Size of search grids
-      DOUBLE PRECISION SEARCH_GRID_SIZE(3)
-! Matrix of particles in each search grid
-      INTEGER PART_IN_GRID(0:110, 0:110, 0:110, 0:55)
-! Matrix location of particle 
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PART_GRID ! (PARTICLES,4)
-! Maximum number of particles in a search grid: set to 3
-      INTEGER MAX_PART_IN_GRID
 
 
 ! END Cohesion

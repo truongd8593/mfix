@@ -150,14 +150,18 @@
 
 ! Overwrite user's input in case of DEM (no fluid)
       IF(.NOT.DES_CONTINUUM_COUPLED) DES_INTERP_ON = .FALSE.
-
+      
 ! Check for valid neighbor search option      
+      IF(DES_NEIGHBOR_SEARCH.EQ.2)  then 
+         DES_NEIGHBOR_SEARCH = 4 
+         IF(DMP_LOG) WRITE(unit_log, 1046) 2, 'QUADTREE'
+      ELSEIF (DES_NEIGHBOR_SEARCH.EQ.3) THEN
+         DES_NEIGHBOR_SEARCH = 4 
+         IF(DMP_LOG) WRITE(unit_log, 1046) 3, 'OCTREE'
+      ENDIF
+      
       IF(DES_NEIGHBOR_SEARCH.EQ.1) THEN
          IF(DMP_LOG) WRITE(unit_log, 1045) 1, 'N-SQUARE'
-      ELSEIF(DES_NEIGHBOR_SEARCH.EQ.2) THEN
-         IF(DMP_LOG) WRITE(unit_log, 1045) 2, 'QUADTREE'
-      ELSEIF(DES_NEIGHBOR_SEARCH.EQ.3) THEN
-         IF(DMP_LOG) WRITE(unit_log, 1045) 3, 'OCTREE'
       ELSEIF(DES_NEIGHBOR_SEARCH.EQ.4) THEN
          IF(DMP_LOG) WRITE(unit_log, 1045) 4, 'GRID BASED'
       ELSE
@@ -258,6 +262,10 @@
 
  1045 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
          'DES_NEIGHBOR_SEARCH set to ', I2, ' ',A,/1X,70('*')/)
+
+ 1046    FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
+         'DES_NEIGHBOR_SEARCH specified as ', I2, ' ',A,/, &
+         'forced to grid based neighbor search  (4)', /1X,70('*')/)
 
  1054 FORMAT(/1X,70('*')//' From: CHECK_DES_DATA',/' Message: ',&
           'WARNING: zlength or dz(1) is used to calculate the ',&

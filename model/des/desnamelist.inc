@@ -16,10 +16,7 @@
 ! Used for grid/cell based search methods
         DESGRIDSEARCH_IMAX, DESGRIDSEARCH_JMAX, &
 	DESGRIDSEARCH_KMAX, &
- 
-! Used for quadtree or octree neighbor search methods
-	MQUAD_FACTOR, QLM, QLN, INIT_QUAD_COUNT,&
-	
+ 	
 !	
 ! Particle properties	
         DES_D_p0, DES_RO_s, DES_MMAX, &
@@ -27,26 +24,19 @@
         DES_EN_INPUT, DES_ET_INPUT, DES_ETAT_FAC, &
         DES_EN_WALL_INPUT, DES_ET_WALL_INPUT, DES_ETAT_W_FAC, &
 !      
-! Additional properties for Hertzian model: T.Li
-        DES_COLL_MODEL, ew_young, vw_poisson, e_young, v_poisson,&
+! Additional properties for Hertzian model: 
+        DES_COLL_MODEL, EW_YOUNG, VW_POISSON, E_YOUNG, V_POISSON,&
 	
-! Not presently used
-	DTSOLID_FACTOR,&
 
 ! Wall conditions
         DES_PERIODIC_WALLS, DES_PERIODIC_WALLS_X,&
         DES_PERIODIC_WALLS_Y, DES_PERIODIC_WALLS_Z,&
-        WALLDTSPLIT,&
 ! Lees Edwards BC (for DEM only)
         DES_LE_BC, DES_LE_REL_VEL, DES_LE_SHEAR_DIR,&
 	
-! Wall conditions not presently used
-        WALLREFLECT,& 
-
-! DES wall BC: vibration parameters 
-	DES_F, DES_GAMMA, LID_VEL,&
 
 ! DES wall BC: wall translational velocity
+! These need to be improved to work for arbitrary geoms
         DES_BC_Uw_s, DES_BC_Vw_s, DES_BC_Ww_s,&
 	
 ! DES flow boundary condition information: J.Musser
@@ -68,15 +58,13 @@
 ! DES output control information
         DEBUG_DES, FOCUS_PARTICLE,&
         PRINT_DES_DATA, DES_SPX_DT, DES_RES_DT, &
-        DES_OUTPUT_TYPE, DES_CALC_BEDHEIGHT, &
+        DES_OUTPUT_TYPE,  &
 
 ! DES Cohesion Information: M.Weber
-	USE_COHESION, SQUARE_WELL, MASTER_WELL_DEPTH, &
-	MASTER_WALL_WELL_DEPTH, RADIUS_RATIO, WALL_RADIUS_RATIO, &
-	VAN_DER_WAALS, HAMAKER_CONSTANT, WALL_HAMAKER_CONSTANT, &
+        USE_COHESION,VAN_DER_WAALS, HAMAKER_CONSTANT, & 
+	WALL_HAMAKER_CONSTANT, &
         VDW_INNER_CUTOFF, VDW_OUTER_CUTOFF, ASPERITIES, &
         WALL_VDW_INNER_CUTOFF, WALL_VDW_OUTER_CUTOFF,&
-	COHESION_DEBUG, &
 
 ! Des cluster identification
         DES_CALC_CLUSTER, CLUSTER_LENGTH_CUTOFF, &

@@ -251,7 +251,7 @@
 ! Treats wall interaction also as a two-particle interaction but accounting
 ! for the wall properties; make sure the particle is not classified as
 ! a new 'entering' particle or is already marked as a potential exiting particle
-         IF(WALLDTSPLIT .AND. .NOT.PEA(LL,2) .AND. .NOT.PEA(LL,3)) THEN
+         IF(.NOT.PEA(LL,2) .AND. .NOT.PEA(LL,3)) THEN
 
             DO IW = 1, NWALLS
                WALLCONTACT = 0
@@ -503,7 +503,7 @@
 
               ENDIF   ! end if (wallcontact.eq.1)
            ENDDO   ! end do iw = 1,nwalls
-        ENDIF   ! endif(walldtsplit .and. .not.pea(LL,2) and .not. pea(ll,3))
+        ENDIF   ! endif(.not.pea(LL,2) and .not. pea(ll,3))
 
 ! End check particle LL for wall contacts         
 !-----------------------------------------------------------------<<<
@@ -803,12 +803,6 @@
          CALL CALC_DES_DRAG_SS
       ENDIF
 
-! The square-well model is still available in the model/cohesion directory.
-! However, the VDW routine is now integrated into main mfix DEM to take
-! advantage of other DEM capabilities (parallel/search grid)      
-      IF(USE_COHESION .AND. .NOT.VAN_DER_WAALS)THEN
-         CALL CALC_COHESIVE_FORCES
-      ENDIF
 
 ! just for post-processing mag. of cohesive forces on each particle
       IF(USE_COHESION)THEN

@@ -140,7 +140,7 @@
 !*                     linear spring-dashpot model                    *!
 !*                                                                    *!
 !**********************************************************************!
-      CASE ('SOFT-SPRING')
+      CASE ('LSD')
 
          IF(KN == UNDEFINED) THEN
             IF(myPE == PE_IO) WRITE(*, 1101) 'KN'
@@ -322,7 +322,7 @@
  1000 FORMAT(/1X,70('*')/' From: CHECK_DES_COLLISION',/' Error 1000:', &
          ' Invalid collision model specified: ',A,'.',/                &
          ' Available DEM collision modles include:',/                  &
-         '   > SOFT-SPRING (DEFAULT)',/'   > HERTZIAN',/1X,70('*')/)
+         '   > LSD ',/'   > HERTZIAN',/1X,70('*')/)
 
  1001 FORMAT(/1X,70('*')/' From: CHECK_DES_COLLISION',/' Error 1001:', &
          ' Undefined collision parameter: ',A,/' Description: ',A,/    &
