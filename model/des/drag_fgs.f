@@ -908,7 +908,7 @@
 !Handan Liu added temporary variables on April 20 2012
 	  DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
 	  DOUBLE PRECISION, DIMENSION(6,6,6) :: weight_ft
-	  DOUBLE PRECISION :: velfp(3), desposnew(dimn)
+	  DOUBLE PRECISION :: velfp(dimn), desposnew(dimn)
 	  DOUBLE PRECISION :: D_FORCE(DIMN)
 !	  
 !-----------------------------------------------   
@@ -1217,7 +1217,7 @@
 !Handan Liu added temporary variables on April 20 2012
       DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
       DOUBLE PRECISION, DIMENSION(6,6,6) :: weight_ft
-      DOUBLE PRECISION :: velfp(3), desposnew(dimn)
+      DOUBLE PRECISION :: velfp(dimn), desposnew(dimn)
       
 !-----------------------------------------------   
 ! Include statement functions
