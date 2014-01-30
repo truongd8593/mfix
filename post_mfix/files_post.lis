@@ -1,3 +1,4 @@
+../model/error_manager_mod.f
 ../model/ambm_mod.f 
 ../model/bc_mod.f 
 ../model/cdist_mod.f 

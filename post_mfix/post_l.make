@@ -2,6 +2,7 @@
 	$(FORTRAN_CMD) $(FORT_FLAGS) $<
   
 post_mfix : \
+    error_manager.mod \
     ambm.mod \
     bc.mod \
     cdist.mod \
@@ -237,6 +238,7 @@ post_mfix : \
     kintheory_energy_dissipation_ss.$(OBJ_EXT) \
     
 	$(LINK_CMD) $(LINK_FLAGS) \
+    error_manager_mod.$(OBJ_EXT) \
     ambm_mod.$(OBJ_EXT) \
     bc_mod.$(OBJ_EXT) \
     cdist_mod.$(OBJ_EXT) \
@@ -472,6 +474,14 @@ post_mfix : \
     kintheory_energy_dissipation_ss.$(OBJ_EXT) \
   -o post_mfix $(LIB_FLAGS)
   
+error_manager.mod : ../model/error_manager_mod.f \
+            run.mod \
+            output.mod \
+            funits.mod \
+            compar.mod \
+            param1.mod \
+            mpi_utility.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/error_manager_mod.f 
 ambm.mod : ../model/ambm_mod.f \
             compar.mod \
             funits.mod 
@@ -730,6 +740,7 @@ gridmap.mod : ../model/dmp_modules/mpi_donothing/gridmap_mod.f \
             compar.mod \
             run.mod \
             indices.mod \
+            error_manager.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/gridmap_mod.f 
 mpi_utility.mod : ../model/dmp_modules/mpi_donothing/mpi_utility_mod.f \
@@ -1620,10 +1631,8 @@ set_index1a.$(OBJ_EXT) : ../model/set_index1a.f \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/set_index1a.f 
 set_max2.$(OBJ_EXT) : ../model/set_max2.f \
-            param.mod \
-            param1.mod \
-            geometry.mod \
-            compar.mod 
+            compar.mod \
+            geometry.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/set_max2.f 
 set_read_spx.$(OBJ_EXT) : set_read_spx.f 
 shift_dxyz.$(OBJ_EXT) : ../model/shift_dxyz.f \
@@ -1939,6 +1948,7 @@ check_data_cartesian.$(OBJ_EXT) : ../model/cartesian_grid/check_data_cartesian.f
             toleranc.mod \
             geometry.mod \
             sendrecv.mod \
+            ps.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/check_data_cartesian.f 
 get_poly_data.$(OBJ_EXT) : ../model/cartesian_grid/get_poly_data.f \
