@@ -126,7 +126,6 @@
  DISCRETE_ELEMENT = .TRUE. 
  DES_CONTINUUM_COUPLED = .TRUE.
  DES_INTERP_ON = .TRUE.
- WALLDTSPLIT = .TRUE.
  NFACTOR = 500             ! length of dem settling period in no. of loops
 
  DIMN = 2
@@ -143,7 +142,7 @@
  DES_ETAT_FAC = @(1/2)     ! damping coefficient factor = ETAT/ETAN
  DES_ETAT_W_FAC = @(1/2)   ! damping coefficient factor = ETAT_W/ETAN_W
 
- DES_NEIGHBOR_SEARCH = 4   !1=n-square; 2=quadtree; 3=octree; 4=grid-based
+ DES_NEIGHBOR_SEARCH = 4   !1=n-square; 4=grid-based
  NEIGHBOR_SEARCH_N = 20
  MN = 20                   ! Maximum number of neighbors allowed per particle
 
