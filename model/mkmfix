@@ -1,4 +1,4 @@
-#!/bin/bsh -f
+#!/bin/bash -f
 #
 # MFIX script file for obtaining user-defined files and
 # executing 'make'
@@ -73,6 +73,7 @@ FOLDER_LIST=${FOLDER_LIST}" dqmom"
 FOLDER_LIST=${FOLDER_LIST}" GhdTheory"
 FOLDER_LIST=${FOLDER_LIST}" qmomk"
 FOLDER_LIST=${FOLDER_LIST}" thermochemical"
+FOLDER_LIST=${FOLDER_LIST}" check_data"
 
 EXT_LIST="f F inc"
 
