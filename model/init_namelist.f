@@ -990,7 +990,6 @@
 !#####################################################################!
 
 
-
 !<keyword category="Solids Phase" required="false">
 !  <description>number of solids phases.</description>
       MMAX = 1
@@ -1042,7 +1041,10 @@
 !</keyword>
 
 !<keyword category="Solids Phase" required="false">
-!  <description>specified constant granular viscosity. if this value is specified, then the kinetic theory calculation is turned off and p_s = 0 and lambda_s = -2/3 mu_s0.</description>
+!  <description>specified constant granular viscosity. if this value is
+!    specified, then the kinetic theory calculation is turned off and
+!    p_s = 0 and lambda_s = -2/3 mu_s0.
+!  </description>
       MU_S0 = UNDEFINED
 !</keyword>
 
@@ -1094,9 +1096,25 @@
 !</keyword>
 
 !<keyword category="Solids Phase" required="false">
-!  <description>indicates whether the solids phase forms a packed bed with a void fraction ep_star.</description>
+!  <description>
+!    Indicates that the solids phase forms a packed bed with a void
+!    fraction ep_star.
+!  </description>
 !  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
       CLOSE_PACKED(:DIM_M) = .TRUE.
+!</keyword>
+
+
+!<keyword category="Solids Phase" required="false">
+!  <description>specified constant granular viscosity. if this value is
+!    specified, then the kinetic theory calculation is turned off and
+!    p_s = 0 and lambda_s = -2/3 mu_s0.
+!  </description>
+!  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
+!  <valid value='TFM' description='Two-fluid Model (coninuum).' />
+!  <valid value='DEM' description='Discrete Element Model' />
+!  <valid value='MPPIC' description='Multiphase-Particle in Cell' />
+      SOLIDS_MODEL(:DIM_M) = 'TFM'
 !</keyword>
 
 

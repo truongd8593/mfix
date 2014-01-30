@@ -286,4 +286,8 @@
       DOUBLE PRECISION filter_size_ratio
 
 
+! Specifies the type of solids: TFM, DEM, MPPIC
+      CHARACTER(len=5), DIMENSION(DIM_M) :: SOLIDS_MODEL
+
+
       END MODULE RUN

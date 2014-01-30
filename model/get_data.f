@@ -94,92 +94,17 @@
 ! Set up the physical domain decomposition.
       CALL SET_MAX2
 
-
-
 ! Set constants
       CALL SET_CONSTANTS 
 
-      CYCLIC_X_BAK = CYCLIC_X
-      CYCLIC_Y_BAK = CYCLIC_Y
-      CYCLIC_Z_BAK = CYCLIC_Z
-      CYLINDRICAL_BAK = CYLINDRICAL
-
-      IF (CYCLIC_X_PD) CYCLIC_X = .TRUE.
-      IF (CYCLIC_Y_PD) CYCLIC_Y = .TRUE.
-      IF (CYCLIC_Z_PD) CYCLIC_Z = .TRUE.
-      
-      DO_K = .NOT.NO_K
-
-      IF (COORDINATES == 'CYLINDRICAL') CYLINDRICAL = .TRUE.
-
-      IF (CYLINDRICAL .AND. COMPARE(ZLENGTH,8.D0*ATAN(ONE)) .AND. DO_K) &
-         CYCLIC_Z = .TRUE.
-
-      IF (OPT_PARALLEL) THEN
-         IS_SERIAL = .FALSE.
-         DO_TRANSPOSE = .FALSE.
-         MINIMIZE_DOTPRODUCTS = .TRUE.
-         SOLVER_STATISTICS = .TRUE.
-         DEBUG_RESID = .FALSE.
-         LEQ_SWEEP(1:2) = 'ASAS'
-         LEQ_METHOD(1:2) = 2
-         LEQ_METHOD(3:9) = 1
-      ENDIF
-
-      IF(DISCRETE_ELEMENT) THEN
-! make these checks here before the other continuum check routines are called.      
-         IF(DES_CONTINUUM_HYBRID.AND.MPPIC) then 
-            if(myPE.eq.pe_IO) WRITE(*,'(3(/,2x,A))') 'DISCRETE ELEMENT IS TRUE', &
-            'BUT BOTH DES_CONTINUUM_HYBRID AND MPPIC CANNOT BE SET TO TRUE', &
-            'Problem in input file; TERMINAL ERROR: exiting the simulation'
-            
-            if(DMP_LOG) WRITE(UNIT_LOG,'(3(/,2x,A))') 'DISCRETE ELEMENT IS TRUE', &
-            'BUT BOTH DES_CONTINUUM_HYBRID AND MPPIC CANNOT BE SET TO TRUE', &
-            'Problem in input file; TERMINAL ERROR: exiting the simulation'
-            
-            CALL MFIX_EXIT(myPE) 
-         ENDIF
-
-      ELSE
-         
-! If discrete_element is .false. then overwrite the following user 
-! DES logicals which may be set to true in the input file.  Only need
-! to set those that may impact continuum aspects
-! This is placed here (after reading of namelists) to ensure that
-! correct dem related flags are set when other continuum check_data
-! routines (such as check_data_04, ....06, ...07, ...20) are called          
-         DES_CONTINUUM_COUPLED = .FALSE.
-         DES_INTERP_ON = .FALSE.
-         DES_CONTINUUM_HYBRID = .FALSE.
-         TSUJI_DRAG = .FALSE.
-         PRINT_DES_DATA = .FALSE.
-         MPPIC = .FALSE. 
-         DES_ONEWAY_COUPLED = .false. 
-         DES_CONV_EQ = .FALSE. ! No convection - ref by SOLVE_ENERGY_EQ
-         ANY_DES_SPECIES_EQ = .FALSE.
-      ENDIF
-
 ! Partition the domain and set indices
-      call GRIDMAP_INIT
+      CALL GRIDMAP_INIT
+
+! Check the minimum solids phase requirements.
+      CALL CHECK_SOLIDS_MODEL_PREREQS
 
 
-! Copying back logical variables to original values to retain the structure of the code
-! For cylindrical case making CYCLIC_Z = .TRUE., makes CYCLIC TRUE in set_geometry and
-! which in turn leads to fixing the pressure in source_pp_g.  (SP)
-      CYCLIC_X = CYCLIC_X_BAK
-      CYCLIC_Y = CYCLIC_Y_BAK
-      CYCLIC_Z = CYCLIC_Z_BAK
-      CYLINDRICAL = CYLINDRICAL_BAK
-
-
-!     write(*,*) 'ISTART-IEND'
-!     write(*,*) ISTART3, ISTART2, ISTART, ISTART1, IEND1, IEND, IEND2, IEND3
-!     write(*,*) 'JSTART-JEND'
-!     write(*,*) JSTART3, JSTART2, JSTART, JSTART1, JEND1, JEND, JEND2, JEND3
-!     write(*,*) 'KSTART-KEND'
-!     write(*,*) KSTART3, KSTART2, KSTART, KSTART1, KEND1, KEND, KEND2, KEND3
-
-
+!
       CALL ALLOCATE_ARRAYS    
 
 ! Alberto Passalacqua - QMOMK
@@ -188,10 +113,6 @@
       ENDIF
 
 
-      IF (RUN_NAME == UNDEFINED_C) THEN 
-         WRITE (*, 1000) 
-         CALL MFIX_EXIT(myPE) 
-      ENDIF 
 
 ! open files
       IF (RUN_TYPE == 'RESTART_3') THEN 
@@ -262,6 +183,18 @@
       NIT_MAX = 0
              
       N_DASHBOARD = 0
+
+
+      IF (OPT_PARALLEL) THEN
+         IS_SERIAL = .FALSE.
+         DO_TRANSPOSE = .FALSE.
+         MINIMIZE_DOTPRODUCTS = .TRUE.
+         SOLVER_STATISTICS = .TRUE.
+         DEBUG_RESID = .FALSE.
+         LEQ_SWEEP(1:2) = 'ASAS'
+         LEQ_METHOD(1:2) = 2
+         LEQ_METHOD(3:9) = 1
+      ENDIF
 
 
       RETURN  
