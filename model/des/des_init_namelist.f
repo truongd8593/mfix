@@ -67,6 +67,13 @@
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
+!  <description>Run one-way coupled simulations. The fluid does not 
+! see the particles both in terms of drag force and volume displacement. 
+! </description>
+      DES_ONEWAY_COUPLED = .FALSE. 
+!</keyword>
+
+!<keyword category="Discrete Element" required="false">
 !  <description>Expand the size of the particle arrays by
 ! an arbitrary factor (multiple of the number of particles). Serves 
 ! as a knob to allocate more particles than initially specified in the 
@@ -87,13 +94,12 @@
 !<keyword category="Discrete Element" required="false">
 !  <description>To switch between pure granular or  coupled simulations of carried and dispersed phase flows. </description>
 !  <valid value=".true." note="Performs coupled simulations. "/>
-!  <dependent keyword="DISCRETE ELEMENT" value=".TRUE."/>
       DES_CONTINUUM_COUPLED = .FALSE.
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>use an interpolation suite to calculate the drag force on each particle based on particle location rather than cell averages.</description>
-!  <dependent keyword="DISCRETE ELEMENT" value=".TRUE."/>
+!  <description>use an interpolation suite to calculate the drag force on
+! each particle based on particle location rather than cell averages.</description>
       DES_INTERP_ON = .FALSE.
 !</keyword>
 
@@ -105,7 +111,6 @@
 ! true for backward compatibility. 
 ! Additionally, if MPPIC or Cut-cells are used (DEM or MPPIC), then 
 ! also the mean field interpolation is forced. "/>
-!  <dependent keyword="DISCRETE ELEMENT" value=".TRUE."/>
       DES_INTERP_MEAN_FIELDS = .false.
 !</keyword>
 
@@ -114,24 +119,16 @@
 ! and continuum representation. Useful to ensure mass conservation
 ! between Lagrangian and continuum representations. Recommended 
 ! use for debugging purposes. </description>
-!  <dependent keyword="DISCRETE ELEMENT" value=".TRUE."/>
 !  <dependent keyword="DES_INTERP_MEAN_FIELDS" value=".TRUE."/>
       DES_REPORT_MASS_INTERP = .false.
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Use Tsujis drag correlation. 
-! This correlation is only relevant when invoking Syamlal and O'Brien drag model.</description>
-!  <dependent keyword="DISCRETE ELEMENT" value=".TRUE."/>
-      TSUJI_DRAG = .FALSE.
-!</keyword>
 
 !<keyword category="Discrete Element" required="false">
 !  <description>Time stepping scheme (relevant to DEM model only). 
 ! MPPIC is only limited to EULER scheme. </description>
 !  <valid value="EULER" note="First-Order Euler Scheme."/>
 !  <valid value="ADAMS BASHFORTH" note="Second order ADAMS BASHFORTH scheme"/>
-!  <dependent keyword="DISCRETE ELEMENT" value=".TRUE."/>
       DES_INTG_METHOD = 'EULER'
 !</keyword>
 
@@ -144,14 +141,12 @@
 
 !<keyword category="Discrete Element" required="false">
 !  <description>Flag to turn on the use hamaker van der waals forces.</description>
-!  <dependent keyword="DISCRETE ELEMENT" value=".TRUE."/>
 !  <dependent keyword="USE_COHESION" value=".TRUE."/>
       VAN_DER_WAALS = .FALSE.
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
 !  <description>Invoke the hybrid scheme.</description>
-!  <dependent keyword="DISCRETE ELEMENT" value=".TRUE."/>
       DES_CONTINUUM_HYBRID = .FALSE.
 !</keyword>
 
@@ -160,7 +155,6 @@
 ! Relevant to DEM model only.</description>
 !  <valid value="1" note="N-Square search algorithm (most expensive)"/>
 !  <valid value="2-4" note="Grid-Based Neighbor Search (Recommended)"/>
-!  <dependent keyword="DISCRETE ELEMENT" value=".TRUE."/>
       DES_NEIGHBOR_SEARCH = 4
 !</keyword>
 
@@ -170,7 +164,6 @@
 ! before a neighbor search will be performed. 
 ! (search may be called earlier based on other logic).</description>
 !  <range min="0.0" max="+Inf" />
-!  <dependent keyword="DISCRETE ELEMENT" value=".TRUE."/>
       NEIGHBOR_SEARCH_N = 25
 !</keyword>
 
@@ -179,7 +172,6 @@
 ! to particle radius that is allowed before a neighbor search is performed. This works in conjunction with the logic imposed by 
 ! NEIGHBOR_SEARCH_N in deciding calls to the neighbor search 
 ! algorithm. </description>
-!  <dependent keyword="DISCRETE ELEMENT" value=".TRUE."/>
       NEIGHBOR_SEARCH_RAD_RATIO = 1.0D0
 !</keyword>
 
@@ -187,7 +179,6 @@
 !  <description>Effectively increase the radius of a particle 
 !(multiple of the sum of particle radii) during the  building of  
 ! particle neighbor list. Relevant to DEM model only. </description>
-!  <dependent keyword="DISCRETE ELEMENT" value=".TRUE."/>
       FACTOR_RLM = 1.2
 !</keyword>
 
@@ -196,7 +187,6 @@
 ! If left undefined, then it is set by MFIX such that its size 
 ! equals three times the maximum particle diameter with a minimum of 
 ! 1 cell.   </description>
-!  <dependent keyword="DISCRETE ELEMENT" value=".TRUE."/>
       DESGRIDSEARCH_IMAX = UNDEFINED_I
 !</keyword>
 
@@ -205,7 +195,6 @@
 ! If left undefined, then it is set by MFIX such that its size 
 ! equals three times the maximum particle diameter with a minimum of 
 ! 1 cell.   </description>
-!  <dependent keyword="DISCRETE ELEMENT" value=".TRUE."/>
       DESGRIDSEARCH_JMAX = UNDEFINED_I
 !</keyword>
 
@@ -215,10 +204,8 @@
 ! If left undefined, then it is set by MFIX such that its size 
 ! equals three times the maximum particle diameter with a minimum of 
 ! 1 cell.   </description>
-!  <dependent keyword="DISCRETE ELEMENT" value=".TRUE."/>
       DESGRIDSEARCH_KMAX = UNDEFINED_I
 !</keyword>
-
 
 
 !<keyword category="Discrete Element" required="false">
@@ -249,6 +236,7 @@
 ! particle-particle collisions as kt_fac*kn. Required 
 ! when using the default (linear spring-dashpot) collision 
 ! model.</description>
+!  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
 !  <range min="0.0" max="1.0" />
       KT_FAC = 2.d0/7.d0
 !</keyword>
@@ -262,63 +250,105 @@
 
    
 !<keyword category="Discrete Element" required="false">
-!  <description>Ratio of the tangential spring constant 
+! <description>Ratio of the tangential spring constant 
 ! to normal spring constant for particle-wall collisions. 
 ! Use it to specify the tangential spring constant for
 ! particle-wall collisions as kt_w_fac*kn_w. 
-!Needed when using the default (linear spring-dashpot) 
-! collision model.</description>
+! Needed when using the default (linear spring-dashpot) 
+! collision model.</description>! 
+! <dependent keyword="DES_COLL_MODEL" value="LSD"/>
 !  <range min="0.0" max="1.0" />
       KT_W_FAC = 2.d0/7.d0
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Inter-particle Columb friction coefficient 
+! <description>Inter-particle Columb friction coefficient 
 ! required for DEM model.</description>
-!  <range min="0.0" max="1.0" />
+! <range min="0.0" max="1.0" />
       MEW = UNDEFINED
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Particle-wall friction coefficient required for 
+! <description>Particle-wall friction coefficient required for 
 ! DEM model.</description>
-!  <range min="0.0" max="1.0" />
+! <range min="0.0" max="1.0" />
       MEW_W = UNDEFINED
 !</keyword>
 
-
+!<keyword category="Discrete Element" required="false">
+! <description>The normal restitution coefficient for
+! interparticle collisions that is used to determine the 
+! inter-particle normal damping factor. Values are stored as a one
+! dimensional array (see MFIX-DEM doc). So
+! if MAX=3, then 6 values are needed, which
+! are defined as follows: en11 en12 en13 en22
+! en23 en33.</description>
+! <range min="0.0" max="1.0" />
       DES_EN_INPUT(:) = UNDEFINED
-      DES_EN_WALL_INPUT(:) = UNDEFINED
-      DES_ET_INPUT(:) = UNDEFINED
-      DES_ET_WALL_INPUT(:) = UNDEFINED
+!</keyword>
 
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Ratio of the tangential damping factor to the 
+! <description>Normal restitution coefficient for particle
+! wall collisions that is used to determine the
+! particle-wall normal damping factor (see
+! cfassign.f for details). Values are stored as
+! a one dimensional array. So, if MMAX=3,
+! then 3 values are needed, which are
+! defined as follows: enw1 enw2 enw3.
+! </description>
+! <range min="0.0" max="1.0" />
+      DES_EN_WALL_INPUT(:) = UNDEFINED
+!</keyword>
+
+!<keyword category="Discrete Element" required="false">
+! <description>Tangential restitution coefficient for
+! interparticle collisions. Values are stored as
+! a one dimensional array. Only needed
+! when using the Hertzian collision model.
+! </description>
+! <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
+! <range min="0.0" max="1.0" />
+      DES_ET_INPUT(:) = UNDEFINED
+!</keyword>
+
+!<keyword category="Discrete Element" required="false">
+! <description>Tangential restitution coefficient for particle
+! wall collisions. Values are stored as a one
+! dimensional array. Only needed when using
+! the Hertzian collision model.
+! </description>
+! <range min="0.0" max="1.0" />
+! <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
+      DES_ET_WALL_INPUT(:) = UNDEFINED
+!</keyword>
+
+!<keyword category="Discrete Element" required="false">
+! <description>Ratio of the tangential damping factor to the 
 ! normal damping factor for inter-particle collisions. 
 ! Required for the linear spring-dashpot model for soft-spring collision 
 ! modelling under DEM. 
 ! For the Hertzian model, the tangential damping coefficients 
 ! have to be explicity specified and this variable is not 
 ! required. </description>
-!  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
-!  <range min="0.0" max="1.0" />
-!  <valid value="UNDEFINED" note="For LSD model, if left undefined, MFIX
+! <dependent keyword="DES_COLL_MODEL" value="LSD"/>
+! <range min="0.0" max="1.0" />
+! <valid value="UNDEFINED" note="For LSD model, if left undefined, MFIX
 ! will will revert to default value of 0.5" />
       DES_ETAT_FAC = UNDEFINED 
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Ratio of the tangential damping factor to the 
+! <description>Ratio of the tangential damping factor to the 
 ! normal damping factor for particle-wall collisions. 
 ! Required for the linear spring-dashpot model for soft-spring collision 
 ! modelling under DEM. 
 ! For the Hertzian model, the tangential damping coefficients 
 ! have to be explicity specified and specification of this 
 ! variable is not required. </description>
-!  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
-!  <range min="0.0" max="1.0" />
-!  <valid value="UNDEFINED" note="For LSD model, if left undefined, MFIX
+! <dependent keyword="DES_COLL_MODEL" value="LSD"/>
+! <range min="0.0" max="1.0" />
+! <valid value="UNDEFINED" note="For LSD model, if left undefined, MFIX
 ! will will revert to default value of 0.5" />
       DES_ETAT_W_FAC = UNDEFINED 
 !</keyword>
