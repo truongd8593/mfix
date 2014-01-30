@@ -347,7 +347,7 @@
 !</description>
 !  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
 !  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
-      E_YOUNG(:DES_MMAX) = UNDEFINED
+      E_YOUNG(:DIM_M) = UNDEFINED
 !</keyword>
 
 
@@ -357,25 +357,30 @@
 !</description>
 !  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
 !  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
-      V_POISSON(:DES_MMAX) = UNDEFINED
+      V_POISSON(:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
 !  <description>Particle diameter associated with discrete solids 
 ! phase M</description>
 !  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
-      DES_D_P0(:DES_MMAX) = UNDEFINED
+      DES_D_P0(:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
 !  <description>Particle density associated with discrete solids phase M</description>
 !  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
-      DES_RO_S(:DES_MMAX) = UNDEFINED
+      DES_RO_S(:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
 !  <description>Number of solid phases with discrete 
-! representation.</description>
+! representation. When DES_CONTINUUM_HYBRID is false, no need to set 
+! this variable as it is set equal to MMAX. Only relevant 
+! when DES_CONTINUUM_HYBRID  is true so as to differentiate 
+! between discrete and continuum representation of solids phase
+!</description>
+!  <dependent keyword="DES_CONTINUUM_HYBRID" value=".TRUE."/>
       DES_MMAX = UNDEFINED_I
 !</keyword>
 
