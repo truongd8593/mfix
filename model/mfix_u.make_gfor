@@ -389,29 +389,13 @@ $(EXEC_FILE) : \
     $(DPO)write_progress_bar.$(OBJ_EXT) \
     $(DPO)check_dmp_prereqs.$(OBJ_EXT) \
     $(DPO)check_geometry_prereqs.$(OBJ_EXT) \
+    $(DPO)check_solids_model_prereqs.$(OBJ_EXT) \
     $(DPO)check_data_odepack.$(OBJ_EXT) \
     $(DPO)stiff_chem_rrates.$(OBJ_EXT) \
-    $(DPO)add_part_to_link_list.$(OBJ_EXT) \
-    $(DPO)calc_app_coh_force.$(OBJ_EXT) \
-    $(DPO)calc_cap_coh_force.$(OBJ_EXT) \
-    $(DPO)calc_cohesive_forces.$(OBJ_EXT) \
-    $(DPO)calc_esc_coh_force.$(OBJ_EXT) \
-    $(DPO)calc_square_well.$(OBJ_EXT) \
-    $(DPO)calc_van_der_waals.$(OBJ_EXT) \
-    $(DPO)check_link.$(OBJ_EXT) \
-    $(DPO)check_sw_wall_interaction.$(OBJ_EXT) \
-    $(DPO)check_vdw_wall_interaction.$(OBJ_EXT) \
-    $(DPO)initialize_cohesion_parameters.$(OBJ_EXT) \
-    $(DPO)initialize_coh_int_search.$(OBJ_EXT) \
-    $(DPO)linked_interaction_eval.$(OBJ_EXT) \
-    $(DPO)remove_part_from_link_list.$(OBJ_EXT) \
-    $(DPO)unlinked_interaction_eval.$(OBJ_EXT) \
-    $(DPO)update_search_grids.$(OBJ_EXT) \
     $(DPO)calc_force_des_cutcell.$(OBJ_EXT) \
     $(DPO)calc_force_des.$(OBJ_EXT) \
     $(DPO)calc_rrate_des.$(OBJ_EXT) \
     $(DPO)calc_thermo_des.$(OBJ_EXT) \
-    $(DPO)cell_near_wall.$(OBJ_EXT) \
     $(DPO)cfassign.$(OBJ_EXT) \
     $(DPO)cffctowall.$(OBJ_EXT) \
     $(DPO)cffctow.$(OBJ_EXT) \
@@ -461,9 +445,7 @@ $(EXEC_FILE) : \
     $(DPO)mppic_routines.$(OBJ_EXT) \
     $(DPO)neighbour.$(OBJ_EXT) \
     $(DPO)nsquare.$(OBJ_EXT) \
-    $(DPO)octree.$(OBJ_EXT) \
     $(DPO)particles_in_cell.$(OBJ_EXT) \
-    $(DPO)quadtree.$(OBJ_EXT) \
     $(DPO)read_des_restart.$(OBJ_EXT) \
     $(DPO)solid_drag.$(OBJ_EXT) \
     $(DPO)usr0_des.$(OBJ_EXT) \
@@ -868,33 +850,17 @@ $(EXEC_FILE) : \
     $(DPO)write_progress_bar.$(OBJ_EXT) \
     $(DPO)check_dmp_prereqs.$(OBJ_EXT) \
     $(DPO)check_geometry_prereqs.$(OBJ_EXT) \
+    $(DPO)check_solids_model_prereqs.$(OBJ_EXT) \
     $(DPO)check_data_odepack.$(OBJ_EXT) \
     $(DPO)stiff_chem_dbg_mod.$(OBJ_EXT) \
     $(DPO)stiff_chem_maps_mod.$(OBJ_EXT) \
     $(DPO)stiff_chem_mod.$(OBJ_EXT) \
     $(DPO)stiff_chem_rrates.$(OBJ_EXT) \
     $(DPO)stiff_chem_stats_mod.$(OBJ_EXT) \
-    $(DPO)add_part_to_link_list.$(OBJ_EXT) \
-    $(DPO)calc_app_coh_force.$(OBJ_EXT) \
-    $(DPO)calc_cap_coh_force.$(OBJ_EXT) \
-    $(DPO)calc_cohesive_forces.$(OBJ_EXT) \
-    $(DPO)calc_esc_coh_force.$(OBJ_EXT) \
-    $(DPO)calc_square_well.$(OBJ_EXT) \
-    $(DPO)calc_van_der_waals.$(OBJ_EXT) \
-    $(DPO)check_link.$(OBJ_EXT) \
-    $(DPO)check_sw_wall_interaction.$(OBJ_EXT) \
-    $(DPO)check_vdw_wall_interaction.$(OBJ_EXT) \
-    $(DPO)initialize_cohesion_parameters.$(OBJ_EXT) \
-    $(DPO)initialize_coh_int_search.$(OBJ_EXT) \
-    $(DPO)linked_interaction_eval.$(OBJ_EXT) \
-    $(DPO)remove_part_from_link_list.$(OBJ_EXT) \
-    $(DPO)unlinked_interaction_eval.$(OBJ_EXT) \
-    $(DPO)update_search_grids.$(OBJ_EXT) \
     $(DPO)calc_force_des_cutcell.$(OBJ_EXT) \
     $(DPO)calc_force_des.$(OBJ_EXT) \
     $(DPO)calc_rrate_des.$(OBJ_EXT) \
     $(DPO)calc_thermo_des.$(OBJ_EXT) \
-    $(DPO)cell_near_wall.$(OBJ_EXT) \
     $(DPO)cfassign.$(OBJ_EXT) \
     $(DPO)cffctowall.$(OBJ_EXT) \
     $(DPO)cffctow.$(OBJ_EXT) \
@@ -957,9 +923,7 @@ $(EXEC_FILE) : \
     $(DPO)mppic_wallbc_mod.$(OBJ_EXT) \
     $(DPO)neighbour.$(OBJ_EXT) \
     $(DPO)nsquare.$(OBJ_EXT) \
-    $(DPO)octree.$(OBJ_EXT) \
     $(DPO)particles_in_cell.$(OBJ_EXT) \
-    $(DPO)quadtree.$(OBJ_EXT) \
     $(DPO)randomno_mod.$(OBJ_EXT) \
     $(DPO)read_des_restart.$(OBJ_EXT) \
     $(DPO)sendrecvnode_mod.$(OBJ_EXT) \
@@ -1560,6 +1524,7 @@ $(DPO)GRIDMAP.mod : ./dmp_modules/gridmap_mod.f \
             $(DPO)COMPAR.mod \
             $(DPO)RUN.mod \
             $(DPO)INDICES.mod \
+            $(DPO)ERROR_MANAGER.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/gridmap_mod.f  -o $(DPO)gridmap_mod.$(OBJ_EXT) -J$(DPO)
 $(DPO)MPI.mod : ./dmp_modules/mpi_mod.f \
@@ -3632,6 +3597,7 @@ $(DPO)open_files.$(OBJ_EXT) : open_files.f \
             $(DPO)FUNITS.mod \
             $(DPO)COMPAR.mod \
             $(DPO)CDIST.mod \
+            $(DPO)ERROR_MANAGER.mod \
             $(DPO)MPI_UTILITY.mod \
             $(DPO)RUN.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) open_files.f  -o $(DPO)open_files.$(OBJ_EXT) -J$(DPO)
@@ -6035,6 +6001,16 @@ $(DPO)check_geometry_prereqs.$(OBJ_EXT) : ./check_data/check_geometry_prereqs.f 
             $(DPO)PARAM1.mod \
             $(DPO)ERROR_MANAGER.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_geometry_prereqs.f  -o $(DPO)check_geometry_prereqs.$(OBJ_EXT) -J$(DPO)
+$(DPO)check_solids_model_prereqs.$(OBJ_EXT) : ./check_data/check_solids_model_prereqs.f \
+            $(DPO)RUN.mod \
+            $(DPO)DISCRETELEMENT.mod \
+            $(DPO)MFIX_PIC.mod \
+            $(DPO)DES_RXNS.mod \
+            $(DPO)DES_THERMO.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)PARAM.mod \
+            $(DPO)ERROR_MANAGER.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_model_prereqs.f  -o $(DPO)check_solids_model_prereqs.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_data_odepack.$(OBJ_EXT) : ./chem/check_data_odepack.f \
             $(DPO)FUNITS.mod \
             $(DPO)PARAM.mod \
@@ -6060,61 +6036,6 @@ $(DPO)stiff_chem_rrates.$(OBJ_EXT) : ./chem/stiff_chem_rrates.f \
             $(DPO)RUN.mod \
             $(DPO)STIFF_CHEM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/stiff_chem_rrates.f  -o $(DPO)stiff_chem_rrates.$(OBJ_EXT) -J$(DPO)
-$(DPO)add_part_to_link_list.$(OBJ_EXT) : ./cohesion/add_part_to_link_list.f \
-            $(DPO)DISCRETELEMENT.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/add_part_to_link_list.f  -o $(DPO)add_part_to_link_list.$(OBJ_EXT) -J$(DPO)
-$(DPO)calc_app_coh_force.$(OBJ_EXT) : ./cohesion/calc_app_coh_force.f \
-            $(DPO)DISCRETELEMENT.mod \
-            $(DPO)RUN.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_app_coh_force.f  -o $(DPO)calc_app_coh_force.$(OBJ_EXT) -J$(DPO)
-$(DPO)calc_cap_coh_force.$(OBJ_EXT) : ./cohesion/calc_cap_coh_force.f \
-            $(DPO)DISCRETELEMENT.mod \
-            $(DPO)RUN.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_cap_coh_force.f  -o $(DPO)calc_cap_coh_force.$(OBJ_EXT) -J$(DPO)
-$(DPO)calc_cohesive_forces.$(OBJ_EXT) : ./cohesion/calc_cohesive_forces.f \
-            $(DPO)DISCRETELEMENT.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_cohesive_forces.f  -o $(DPO)calc_cohesive_forces.$(OBJ_EXT) -J$(DPO)
-$(DPO)calc_esc_coh_force.$(OBJ_EXT) : ./cohesion/calc_esc_coh_force.f \
-            $(DPO)DISCRETELEMENT.mod \
-            $(DPO)RUN.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_esc_coh_force.f  -o $(DPO)calc_esc_coh_force.$(OBJ_EXT) -J$(DPO)
-$(DPO)calc_square_well.$(OBJ_EXT) : ./cohesion/calc_square_well.f \
-            $(DPO)DISCRETELEMENT.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_square_well.f  -o $(DPO)calc_square_well.$(OBJ_EXT) -J$(DPO)
-$(DPO)calc_van_der_waals.$(OBJ_EXT) : ./cohesion/calc_van_der_waals.f \
-            $(DPO)DISCRETELEMENT.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/calc_van_der_waals.f  -o $(DPO)calc_van_der_waals.$(OBJ_EXT) -J$(DPO)
-$(DPO)check_link.$(OBJ_EXT) : ./cohesion/check_link.f \
-            $(DPO)DISCRETELEMENT.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/check_link.f  -o $(DPO)check_link.$(OBJ_EXT) -J$(DPO)
-$(DPO)check_sw_wall_interaction.$(OBJ_EXT) : ./cohesion/check_sw_wall_interaction.f \
-            $(DPO)PARAM1.mod \
-            $(DPO)DISCRETELEMENT.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/check_sw_wall_interaction.f  -o $(DPO)check_sw_wall_interaction.$(OBJ_EXT) -J$(DPO)
-$(DPO)check_vdw_wall_interaction.$(OBJ_EXT) : ./cohesion/check_vdw_wall_interaction.f \
-            $(DPO)PARAM1.mod \
-            $(DPO)DISCRETELEMENT.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/check_vdw_wall_interaction.f  -o $(DPO)check_vdw_wall_interaction.$(OBJ_EXT) -J$(DPO)
-$(DPO)initialize_cohesion_parameters.$(OBJ_EXT) : ./cohesion/initialize_cohesion_parameters.f \
-            $(DPO)CONSTANT.mod \
-            $(DPO)DISCRETELEMENT.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/initialize_cohesion_parameters.f  -o $(DPO)initialize_cohesion_parameters.$(OBJ_EXT) -J$(DPO)
-$(DPO)initialize_coh_int_search.$(OBJ_EXT) : ./cohesion/initialize_coh_int_search.f \
-            $(DPO)DISCRETELEMENT.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/initialize_coh_int_search.f  -o $(DPO)initialize_coh_int_search.$(OBJ_EXT) -J$(DPO)
-$(DPO)linked_interaction_eval.$(OBJ_EXT) : ./cohesion/linked_interaction_eval.f \
-            $(DPO)DISCRETELEMENT.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/linked_interaction_eval.f  -o $(DPO)linked_interaction_eval.$(OBJ_EXT) -J$(DPO)
-$(DPO)remove_part_from_link_list.$(OBJ_EXT) : ./cohesion/remove_part_from_link_list.f \
-            $(DPO)DISCRETELEMENT.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/remove_part_from_link_list.f  -o $(DPO)remove_part_from_link_list.$(OBJ_EXT) -J$(DPO)
-$(DPO)unlinked_interaction_eval.$(OBJ_EXT) : ./cohesion/unlinked_interaction_eval.f \
-            $(DPO)DISCRETELEMENT.mod \
-            $(DPO)RUN.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/unlinked_interaction_eval.f  -o $(DPO)unlinked_interaction_eval.$(OBJ_EXT) -J$(DPO)
-$(DPO)update_search_grids.$(OBJ_EXT) : ./cohesion/update_search_grids.f \
-            $(DPO)DISCRETELEMENT.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./cohesion/update_search_grids.f  -o $(DPO)update_search_grids.$(OBJ_EXT) -J$(DPO)
 $(DPO)calc_force_des_cutcell.$(OBJ_EXT) : ./des/calc_force_des_cutcell.f \
             $(DPO)RUN.mod \
             $(DPO)PARAM1.mod \
@@ -6168,26 +6089,6 @@ $(DPO)calc_thermo_des.$(OBJ_EXT) : ./des/calc_thermo_des.f \
             $(DPO)RUN.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/calc_thermo_des.f  -o $(DPO)calc_thermo_des.$(OBJ_EXT) -J$(DPO)
-$(DPO)cell_near_wall.$(OBJ_EXT) : ./des/cell_near_wall.f \
-            $(DPO)DISCRETELEMENT.mod \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)PARALLEL.mod \
-            $(DPO)FLDVAR.mod \
-            $(DPO)RUN.mod \
-            $(DPO)GEOMETRY.mod \
-            $(DPO)MATRIX.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)DRAG.mod \
-            $(DPO)CONSTANT.mod \
-            $(DPO)COMPAR.mod \
-            $(DPO)SENDRECV.mod \
-            $(DPO)TOLERANC.mod \
-            $(DPO)IS.mod \
-            $(DPO)BC.mod \
-            function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cell_near_wall.f  -o $(DPO)cell_near_wall.$(OBJ_EXT) -J$(DPO)
 $(DPO)cfassign.$(OBJ_EXT) : ./des/cfassign.f \
             $(DPO)PARAM1.mod \
             $(DPO)PHYSPROP.mod \
@@ -6852,21 +6753,6 @@ $(DPO)nsquare.$(OBJ_EXT) : ./des/nsquare.f \
             $(DPO)DES_BC.mod \
             $(DPO)DES_THERMO.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/nsquare.f  -o $(DPO)nsquare.$(OBJ_EXT) -J$(DPO)
-$(DPO)octree.$(OBJ_EXT) : ./des/octree.f \
-            $(DPO)RUN.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)CONSTANT.mod \
-            $(DPO)DISCRETELEMENT.mod \
-            $(DPO)PARAM.mod \
-            $(DPO)PARALLEL.mod \
-            $(DPO)FLDVAR.mod \
-            $(DPO)GEOMETRY.mod \
-            $(DPO)MATRIX.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)DRAG.mod \
-            $(DPO)COMPAR.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/octree.f  -o $(DPO)octree.$(OBJ_EXT) -J$(DPO)
 $(DPO)particles_in_cell.$(OBJ_EXT) : ./des/particles_in_cell.f \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
@@ -6896,21 +6782,6 @@ $(DPO)particles_in_cell.$(OBJ_EXT) : ./des/particles_in_cell.f \
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/particles_in_cell.f  -o $(DPO)particles_in_cell.$(OBJ_EXT) -J$(DPO)
-$(DPO)quadtree.$(OBJ_EXT) : ./des/quadtree.f \
-            $(DPO)RUN.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)CONSTANT.mod \
-            $(DPO)DISCRETELEMENT.mod \
-            $(DPO)PARAM.mod \
-            $(DPO)PARALLEL.mod \
-            $(DPO)FLDVAR.mod \
-            $(DPO)GEOMETRY.mod \
-            $(DPO)MATRIX.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)DRAG.mod \
-            $(DPO)COMPAR.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/quadtree.f  -o $(DPO)quadtree.$(OBJ_EXT) -J$(DPO)
 $(DPO)read_des_restart.$(OBJ_EXT) : ./des/read_des_restart.f \
             $(DPO)PARAM1.mod \
             $(DPO)COMPAR.mod \
