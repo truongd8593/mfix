@@ -183,7 +183,6 @@ def backup_original_source(run_dir, mfix):
     check_for_changed_or_backup(run_dir, mfix, ".", force_recomp, 'model')
     check_for_changed_or_backup(run_dir, mfix, "cartesian_grid", force_recomp, 'cartesian_grid')
     check_for_changed_or_backup(run_dir, mfix, "chem", force_recomp, 'chem')
-    check_for_changed_or_backup(run_dir, mfix, "cohesion", force_recomp, 'cohesion')
     check_for_changed_or_backup(run_dir, mfix, "des", force_recomp, 'des')
     check_for_changed_or_backup(run_dir, mfix, "des/mpi_donothing", force_recomp, "des/mpi_donothing")
     check_for_changed_or_backup(run_dir, mfix, "dmp_modules", force_recomp, "dmp_modules")
@@ -191,6 +190,7 @@ def backup_original_source(run_dir, mfix):
     check_for_changed_or_backup(run_dir, mfix, "GhdTheory", force_recomp, "GhdTheory")
     check_for_changed_or_backup(run_dir, mfix, "qmomk", force_recomp, "qmomk")
     check_for_changed_or_backup(run_dir, mfix, "thermochemical", force_recomp, "thermochemical")
+    check_for_changed_or_backup(run_dir, mfix, "check_data", force_recomp, "thermochemical")
     
 def del_obj_filename(file):
     import os 
