@@ -85,13 +85,12 @@
 ! can be opened.
       CALL INIT_ERROR_MANAGER
 
-! Check the minimum geometry requirements.
+! These checks verify that sufficient information was provided
+! to setup the domain indices and DMP gridmap.
       CALL CHECK_GEOMETRY_PREREQS
-
-! Check the minimum dmp requirements.
       CALL CHECK_DMP_PREREQS
 
-! Set up the physical domain decomposition.
+! Set up the physical domain indicies (cell index max/min values).
       CALL SET_MAX2
 
 ! Set constants
@@ -104,39 +103,20 @@
       CALL CHECK_SOLIDS_MODEL_PREREQS
 
 
-!
+      CALL CHECK_RUN_CONTROL
+      CALL CHECK_NUMERICS
+      CALL CHECK_OUTPUT_CONTROL
+
+      CALL CHECK_CONTINUUM_SOLIDS
+
+
+! Allocate array storage.
       CALL ALLOCATE_ARRAYS    
+      IF (QMOMK) CALL QMOMK_ALLOCATE_ARRAYS
 
-! Alberto Passalacqua - QMOMK
-      IF (QMOMK) THEN
-         CALL QMOMK_ALLOCATE_ARRAYS
-      ENDIF
-
-
-
-! open files
-      IF (RUN_TYPE == 'RESTART_3') THEN 
-         RUN_TYPE = 'RESTART_1' 
-         CALL OPEN_FILES (RUN_NAME, RUN_TYPE, N_SPX) 
-         CALL READ_RES0
-!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  
-
-         CALL READ_NAMELIST (0)     ! to modify the .RES data with .DAT data 
-         RUN_TYPE = 'RESTART_1' 
-         SHIFT = .FALSE. 
-      ELSE IF (RUN_TYPE == 'RESTART_4') THEN 
-         RUN_TYPE = 'RESTART_2' 
-         CALL OPEN_FILES (RUN_NAME, RUN_TYPE, N_SPX) 
-         CALL READ_RES0  
-!        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  
-
-         CALL READ_NAMELIST (0)     ! to modify the .RES data with .DAT data 
-         RUN_TYPE = 'RESTART_2' 
-         SHIFT = .FALSE. 
-      ELSE 
-         CALL OPEN_FILES (RUN_NAME, RUN_TYPE, N_SPX) 
-         SHIFT = .TRUE. 
-      ENDIF 
+! Open files
+      CALL OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX) 
+      SHIFT = .TRUE. 
 
 
 ! write header in the .LOG file
@@ -146,8 +126,9 @@
 ! Check data and do some preliminary computations
       CALL START_LOG 
 
-      CALL CHECK_DATA_01                         ! run_control input 
-      CALL CHECK_DATA_02                         ! output_control input 
+!      CALL CHECK_DATA_01                         ! run_control input 
+!      CALL CHECK_DATA_02                         ! output_control input 
+
       CALL CHECK_DATA_03 (SHIFT)                 ! geometry input 
 
 ! Set X, X_E, oX, oX_E ... etc.
@@ -185,16 +166,6 @@
       N_DASHBOARD = 0
 
 
-      IF (OPT_PARALLEL) THEN
-         IS_SERIAL = .FALSE.
-         DO_TRANSPOSE = .FALSE.
-         MINIMIZE_DOTPRODUCTS = .TRUE.
-         SOLVER_STATISTICS = .TRUE.
-         DEBUG_RESID = .FALSE.
-         LEQ_SWEEP(1:2) = 'ASAS'
-         LEQ_METHOD(1:2) = 2
-         LEQ_METHOD(3:9) = 1
-      ENDIF
 
 
       RETURN  

@@ -34,9 +34,11 @@
 ! Number of discrtete solids phases.
       use discretelement, only: DES_MMAX
 ! Number of phases specified by the user.
-      use physprop, only: MMAX
+      use physprop, only: MMAX, SMAX
 ! Print E-L data.
       use discretelement, only: PRINT_DES_DATA
+! Kinetic theory model for TFM solids.
+      use run, only: KT_TYPE
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -117,6 +119,9 @@
 
 ! Set the number of discrete phases.
       DES_MMAX = DEM_SOLIDS + PIC_SOLIDS
+! Set the number of TFM phases.
+      MMAX = MMAX - DES_MMAX
+      SMAX = merge( MMAX-1, MMAX, KT_TYPE(1:3) == 'GHD')
 
 
    !****************************************************************!
@@ -173,7 +178,6 @@
       ENDIF
  9000 FORMAT('Error 9000: TFM/DEM Hybrid model has been disabled.',/   &
          'This will be restored shortly. Sorry :(')
-
 
 
 
