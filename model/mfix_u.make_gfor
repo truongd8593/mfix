@@ -387,8 +387,12 @@ $(EXEC_FILE) : \
     $(DPO)update_dashboard.$(OBJ_EXT) \
     $(DPO)vtk_out.$(OBJ_EXT) \
     $(DPO)write_progress_bar.$(OBJ_EXT) \
+    $(DPO)check_continuum_solids.$(OBJ_EXT) \
     $(DPO)check_dmp_prereqs.$(OBJ_EXT) \
     $(DPO)check_geometry_prereqs.$(OBJ_EXT) \
+    $(DPO)check_numerics.$(OBJ_EXT) \
+    $(DPO)check_output_control.$(OBJ_EXT) \
+    $(DPO)check_run_control.$(OBJ_EXT) \
     $(DPO)check_solids_model_prereqs.$(OBJ_EXT) \
     $(DPO)check_data_odepack.$(OBJ_EXT) \
     $(DPO)stiff_chem_rrates.$(OBJ_EXT) \
@@ -848,8 +852,12 @@ $(EXEC_FILE) : \
     $(DPO)vtk_mod.$(OBJ_EXT) \
     $(DPO)vtk_out.$(OBJ_EXT) \
     $(DPO)write_progress_bar.$(OBJ_EXT) \
+    $(DPO)check_continuum_solids.$(OBJ_EXT) \
     $(DPO)check_dmp_prereqs.$(OBJ_EXT) \
     $(DPO)check_geometry_prereqs.$(OBJ_EXT) \
+    $(DPO)check_numerics.$(OBJ_EXT) \
+    $(DPO)check_output_control.$(OBJ_EXT) \
+    $(DPO)check_run_control.$(OBJ_EXT) \
     $(DPO)check_solids_model_prereqs.$(OBJ_EXT) \
     $(DPO)check_data_odepack.$(OBJ_EXT) \
     $(DPO)stiff_chem_dbg_mod.$(OBJ_EXT) \
@@ -5990,6 +5998,19 @@ $(DPO)write_progress_bar.$(OBJ_EXT) : ./cartesian_grid/write_progress_bar.f \
             $(DPO)PARALLEL.mod \
             $(DPO)SENDRECV.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/write_progress_bar.f  -o $(DPO)write_progress_bar.$(OBJ_EXT) -J$(DPO)
+$(DPO)check_continuum_solids.$(OBJ_EXT) : ./check_data/check_continuum_solids.f \
+            $(DPO)CONSTANT.mod \
+            $(DPO)RUN.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)INDICES.mod \
+            $(DPO)SCALARS.mod \
+            $(DPO)FUNITS.mod \
+            $(DPO)RXNS.mod \
+            $(DPO)CUTCELL.mod \
+            $(DPO)PARAM.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)ERROR_MANAGER.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_continuum_solids.f  -o $(DPO)check_continuum_solids.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_dmp_prereqs.$(OBJ_EXT) : ./check_data/check_dmp_prereqs.f \
             $(DPO)COMPAR.mod \
             $(DPO)GEOMETRY.mod \
@@ -6001,6 +6022,31 @@ $(DPO)check_geometry_prereqs.$(OBJ_EXT) : ./check_data/check_geometry_prereqs.f 
             $(DPO)PARAM1.mod \
             $(DPO)ERROR_MANAGER.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_geometry_prereqs.f  -o $(DPO)check_geometry_prereqs.$(OBJ_EXT) -J$(DPO)
+$(DPO)check_numerics.$(OBJ_EXT) : ./check_data/check_numerics.f \
+            $(DPO)RUN.mod \
+            $(DPO)LEQSOL.mod \
+            $(DPO)PARALLEL.mod \
+            $(DPO)ERROR_MANAGER.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_numerics.f  -o $(DPO)check_numerics.$(OBJ_EXT) -J$(DPO)
+$(DPO)check_output_control.$(OBJ_EXT) : ./check_data/check_output_control.f \
+            $(DPO)OUTPUT.mod \
+            $(DPO)RUN.mod \
+            $(DPO)RXNS.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)ERROR_MANAGER.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_output_control.f  -o $(DPO)check_output_control.$(OBJ_EXT) -J$(DPO)
+$(DPO)check_run_control.$(OBJ_EXT) : ./check_data/check_run_control.f \
+            $(DPO)CONSTANT.mod \
+            $(DPO)RUN.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)SCALARS.mod \
+            $(DPO)DISCRETELEMENT.mod \
+            $(DPO)PARAM.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)ERROR_MANAGER.mod \
+            $(DPO)CUTCELL.mod \
+            $(DPO)MFIX_PIC.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_run_control.f  -o $(DPO)check_run_control.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_solids_model_prereqs.$(OBJ_EXT) : ./check_data/check_solids_model_prereqs.f \
             $(DPO)RUN.mod \
             $(DPO)DISCRETELEMENT.mod \
