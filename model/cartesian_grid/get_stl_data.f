@@ -1247,7 +1247,7 @@
 
 
       DOUBLE PRECISION :: Vx,Vy,Vz
-      DOUBLE PRECISION :: D(3),MINVAL_D
+      DOUBLE PRECISION :: D(3),MINVAL_D,DH,DSNAP
 
 !======================================================================
 !  If point P is very close to one of the Facet vertices, 
@@ -1296,7 +1296,14 @@
 
       dot_check = NFx*V2x + NFy*V2y + NFz*V2z
 
-      IF(dabs(dot_check)>TOL_STL) THEN          ! reject points that do not 
+!      IF(dabs(dot_check)>TOL_STL_DP) THEN          ! reject points that do not 
+!         INSIDE_FACET = .FALSE.                 ! belong to plane containing facet
+!         RETURN
+!      ENDIF 
+
+      DH = NFx * V2x + NFy * V2y + NFz * V2z
+
+      IF(dabs(DH)>TOL_STL_DP) THEN          ! reject points that do not 
          INSIDE_FACET = .FALSE.                 ! belong to plane containing facet
          RETURN
       ENDIF 

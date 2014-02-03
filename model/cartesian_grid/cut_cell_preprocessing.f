@@ -64,6 +64,8 @@
 
       ENDIF
 
+
+
       CALL CPU_TIME (CPU_PP_START)
 
 
@@ -1303,15 +1305,15 @@
 !                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
                      IF(TRIM(TYPE_OF_CELL).eq.'SCALAR')  CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
-                     N8(1) = xb-xa
-                     N8(2) = yb-ya
-                     N8(3) = zb-za
+!                     N8(1) = xb-xa
+!                     N8(2) = yb-ya
+!                     N8(3) = zb-za
 
-                     dotproduct = DOT_PRODUCT(N8,NORM_FACE(N,:)) 
+!                     dotproduct = DOT_PRODUCT(N8,NORM_FACE(N,:)) 
 
-                     IF (DABS(dotproduct)>TOL_F) THEN
-                        IF (F_AT(IJK)==UNDEFINED) F_AT(IJK) = -dotproduct
-                     ENDIF
+!                     IF (DABS(dotproduct)>TOL_F) THEN
+!                        IF (F_AT(IJK)==UNDEFINED) F_AT(IJK) = -dotproduct
+!                     ENDIF
 
                   ENDIF
 
@@ -1325,15 +1327,15 @@
 !                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
                      IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
-                     N7(1) = xa-xb
-                     N7(2) = ya-yb
-                     N7(3) = za-zb
+!                     N7(1) = xa-xb
+!                     N7(2) = ya-yb
+!                     N7(3) = za-zb
 
-                     dotproduct = DOT_PRODUCT(N7,NORM_FACE(N,:)) 
+!                     dotproduct = DOT_PRODUCT(N7,NORM_FACE(N,:)) 
 
-                     IF (DABS(dotproduct)>TOL_F) THEN
-                        IF (F_AT(IMJK)==UNDEFINED) F_AT(IMJK) = -dotproduct
-                     ENDIF
+!                     IF (DABS(dotproduct)>TOL_F) THEN
+!                        IF (F_AT(IMJK)==UNDEFINED) F_AT(IMJK) = -dotproduct
+!                     ENDIF
 
                   ENDIF
 
@@ -1422,39 +1424,39 @@
 !                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
                      IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
-                     N8(1) = xb-xa
-                     N8(2) = yb-ya
-                     N8(3) = zb-za
+!                     N8(1) = xb-xa
+!                     N8(2) = yb-ya
+!                     N8(3) = zb-za
 
-                     dotproduct = DOT_PRODUCT(N8,NORM_FACE(N,:)) 
+!                     dotproduct = DOT_PRODUCT(N8,NORM_FACE(N,:)) 
 
-                     IF (DABS(dotproduct)>TOL_F) THEN
-                        IF (F_AT(IJK)==UNDEFINED) F_AT(IJK) = -dotproduct
-                     ENDIF
+!                     IF (DABS(dotproduct)>TOL_F) THEN
+!                        IF (F_AT(IJK)==UNDEFINED) F_AT(IJK) = -dotproduct
+!                     ENDIF
 
                   ENDIF
 
 
-                  CALL IS_POINT_INSIDE_FACET(xb,yb,zb,N,INSIDE_FACET)
+!                  CALL IS_POINT_INSIDE_FACET(xb,yb,zb,N,INSIDE_FACET)
 
-                  IF(INSIDE_FACET) THEN   ! corner intersection at node 8
+!                  IF(INSIDE_FACET) THEN   ! corner intersection at node 8
 
-                     F_AT(IJK) = ZERO
+!                     F_AT(IJK) = ZERO
 
 !                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                     IF(TRIM(TYPE_OF_CELL).eq.'SCALAR')  CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
+!                     IF(TRIM(TYPE_OF_CELL).eq.'SCALAR')  CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
-                     N6(1) = xa-xb
-                     N6(2) = ya-yb
-                     N6(3) = za-zb
+!                     N6(1) = xa-xb
+!                     N6(2) = ya-yb
+!                     N6(3) = za-zb
 
-                     dotproduct = DOT_PRODUCT(N6,NORM_FACE(N,:)) 
+!                     dotproduct = DOT_PRODUCT(N6,NORM_FACE(N,:)) 
 
-                     IF (DABS(dotproduct)>TOL_F) THEN
-                        IF (F_AT(IJMK)==UNDEFINED) F_AT(IJMK) = -dotproduct
-                     ENDIF
+!                     IF (DABS(dotproduct)>TOL_F) THEN
+!                        IF (F_AT(IJMK)==UNDEFINED) F_AT(IJMK) = -dotproduct
+!                     ENDIF
 
-                  ENDIF
+!                  ENDIF
 
 
 
@@ -1538,39 +1540,39 @@
 !                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
                         IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
-                        N8(1) = xb-xa
-                        N8(2) = yb-ya
-                        N8(3) = zb-za
+!                        N8(1) = xb-xa
+!                        N8(2) = yb-ya
+!                        N8(3) = zb-za
 
-                        dotproduct = DOT_PRODUCT(N8,NORM_FACE(N,:)) 
+!                        dotproduct = DOT_PRODUCT(N8,NORM_FACE(N,:)) 
 
-                        IF (DABS(dotproduct)>TOL_F) THEN
-                           IF (F_AT(IJK)==UNDEFINED) F_AT(IJK) = -dotproduct
-                        ENDIF
+!                        IF (DABS(dotproduct)>TOL_F) THEN
+!                           IF (F_AT(IJK)==UNDEFINED) F_AT(IJK) = -dotproduct
+!                        ENDIF
 
                      ENDIF
 
 
-                     CALL IS_POINT_INSIDE_FACET(xb,yb,zb,N,INSIDE_FACET)
+!                     CALL IS_POINT_INSIDE_FACET(xb,yb,zb,N,INSIDE_FACET)
 
-                     IF(INSIDE_FACET) THEN   ! corner intersection at node 8
+!                     IF(INSIDE_FACET) THEN   ! corner intersection at node 8
 
-                        F_AT(IJK) = ZERO
+!                        F_AT(IJK) = ZERO
 
 !                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-                        IF(TRIM(TYPE_OF_CELL).eq.'SCALAR')  CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
+!                        IF(TRIM(TYPE_OF_CELL).eq.'SCALAR')  CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
-                        N4(1) = xa-xb
-                        N4(2) = ya-yb
-                        N4(3) = za-zb
+!                        N4(1) = xa-xb
+!                        N4(2) = ya-yb
+!                        N4(3) = za-zb
 
-                        dotproduct = DOT_PRODUCT(N4,NORM_FACE(N,:)) 
+!                        dotproduct = DOT_PRODUCT(N4,NORM_FACE(N,:)) 
 
-                        IF (DABS(dotproduct)>TOL_F) THEN
-                           IF (F_AT(IJKM)==UNDEFINED) F_AT(IJKM) = -dotproduct
-                        ENDIF
+!                        IF (DABS(dotproduct)>TOL_F) THEN
+!                           IF (F_AT(IJKM)==UNDEFINED) F_AT(IJKM) = -dotproduct
+!                        ENDIF
 
-                     ENDIF
+!                     ENDIF
 
 
 
@@ -1719,12 +1721,18 @@
             ENDDO
 
 
-            call send_recv(F_AT,2)
+!!!!            call send_recv(F_AT,2)
 
             IF(N_PROP>N_PROPMAX.AND.N_UNDEFINED>0) THEN
 
-               WRITE(*,*)'UNABLE TO PROPAGATE F_AT ARRAY FROM myPE=.', MyPE
-               CALL MFIX_EXIT(myPE)
+               WRITE(*,*)'WARNING: UNABLE TO PROPAGATE F_AT ARRAY FROM myPE=.', MyPE
+               WRITE(*,*)'         THIS USUALLY INDICATE A RANK WITH NO ACTIVE CELL'
+               WRITE(*,*)'         YOU MAY NEED TO ADJUST THE GRID PARTITIONNING'
+               WRITE(*,*)'         TO GET BETTER LOAD_BALANCE.'
+	       
+
+	       exit
+!               CALL MFIX_EXIT(myPE)
 
             ENDIF
 

@@ -40,6 +40,7 @@
 !     Tolerance for polygone edge detection
       DOUBLE PRECISION :: TOL_STL
       DOUBLE PRECISION :: TOL_MSH
+      DOUBLE PRECISION :: TOL_STL_DP
 !     Boundary condition ID
       INTEGER :: STL_BC_ID
 
@@ -47,7 +48,7 @@
 
 !     Maximum number of facets per cell. The arrays below are used
 ! to define cut-cells under the CG modules 
-      INTEGER, PARAMETER          :: DIM_FACETS_PER_CELL = 10   
+      INTEGER          :: DIM_FACETS_PER_CELL    
       INTEGER, DIMENSION (:), ALLOCATABLE ::  N_FACET_AT 
       INTEGER, DIMENSION (:,:), ALLOCATABLE ::  LIST_FACET_AT 
       

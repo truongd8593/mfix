@@ -435,6 +435,17 @@
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
+!  <description>Dot product tolerance when determining if a point lies in a facet.</description>
+      TOL_STL_DP = 1.0D-3        ! Settings for STL file
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Maximum number of STL facets per cell.</description>
+      DIM_FACETS_PER_CELL  = 10        !
+!</keyword>
+
+
+!<keyword category="cartesian grid" required="false">
 !  <description>defines value of f_stl outside of the stl geometry. a value of 1.0 means the domain outside of the stl geometry is excluded from computation, i.e., an internal flow is computed.</description>
 !  <valid value="-1.0" note="model an external flow"/>
 !  <valid value="1.0" note="model an internal flow"/>
