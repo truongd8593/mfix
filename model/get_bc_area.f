@@ -231,6 +231,8 @@
 
 
           CALL GLOBAL_ALL_SUM(BC_AREA(BCV))
+          CALL GLOBAL_ALL_SUM(BC_VOL(BCV))
+
 
          ENDIF 	 	 
       END DO 
