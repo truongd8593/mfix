@@ -732,9 +732,9 @@
       DO BCV = 1, DIMENSION_BC
 
          IF (BC_TYPE(BCV) == 'CG_MI') THEN
-            BC_TYPE(BCV) = 'CG_FSW'
+            BC_TYPE(BCV) = 'CG_NSW'
             CG_MI_CONVERTED_TO_PS(BCV) = .TRUE.
-            print*,'Converted CG_MI to CG_FSW for BC#',BCV
+            if(MyPE==0) print*,'From check_data_cartesian: Converted CG_MI to CG_NSW for BC#',BCV
          ENDIF
 
       ENDDO
@@ -1763,6 +1763,249 @@
 !-----------------------------------------------
 ! 
 !     loop/variable indices 
+      INTEGER :: IJK, M, N, BCV
+      CHARACTER(LEN=9) :: BCT
+!     Volumetric flow rate computed from mass flow rate 
+      DOUBLE PRECISION :: VOLFLOW 
+!     Solids phase volume fraction 
+      DOUBLE PRECISION :: EPS 
+!     Average molecular weight 
+      DOUBLE PRECISION :: MW 
+!
+      INTEGER :: iproc,jproc,IERR
+      INTEGER :: I, J, K, NPS,PSV
+      
+      LOGICAL, DIMENSION (0:NumPes) :: go
+! 
+!-----------------------------------------------
+!   E x t e r n a l   F u n c t i o n s
+!-----------------------------------------------
+      DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW 
+      LOGICAL , EXTERNAL :: COMPARE 
+!-----------------------------------------------
+!
+
+      include "function.inc"
+
+
+
+!      print*,'Entering test',MyPE
+      CALL MPI_BARRIER(MPI_COMM_WORLD,mpierr)
+
+! Each procesor waits for its turn to find cells where to add a point source and updates the list of point sources
+
+      do iproc = 0,NumPEs-1
+         if (MyPE==iproc) Then
+
+! First, find how many point sources are already defined. This could be regular PS from mfix.dat or new ones 
+! coming from the convertion of CG_MI to PS	 
+               NPS = 0
+
+               PS_LP: do PSV = 1, DIMENSION_PS
+                  if(.NOT.PS_DEFINED(PSV)) cycle PS_LP
+                  NPS = PSV
+               enddo PS_LP
+
+
+!               print *,'Last PS=',NPS
+
+! Next loop through all cells, and when a cut-cell with CG_MI is found, add a point source in this cell
+
+            DO IJK = ijkstart3, ijkend3
+               BCV = BC_ID(IJK)
+	       
+	       
+	       
+               IF(BCV>0) THEN
+
+
+                  IF(CG_MI_CONVERTED_TO_PS(BCV).AND.INTERIOR_CELL_AT(IJK).AND.VOL(IJK)>ZERO) THEN
+
+
+                     NPS = NPS + 1
+
+!                     print*,MyPE,NPS
+
+                     PS_DEFINED(NPS) = .TRUE.
+
+                     POINT_SOURCE = .TRUE.
+               
+                     PS_I_w(NPS) = I_OF(IJK)
+                     PS_I_e(NPS) = I_OF(IJK) 
+                     PS_J_s(NPS) = J_OF(IJK)
+                     PS_J_n(NPS) = J_OF(IJK) 
+                     PS_K_b(NPS) = K_OF(IJK)
+                     PS_K_t(NPS) = K_OF(IJK)
+
+                     PS_VOLUME(NPS) = VOL(IJK)
+
+                     PS_MASSFLOW_g(NPS) = BC_MASSFLOW_g(BCV) * VOL(IJK) / BC_VOL(BCV)
+
+                     PS_T_g(NPS)    = BC_T_g(BCV)
+
+                     IF(BC_U_g(BCV)==UNDEFINED) THEN
+                        PS_U_g(NPS)    = Normal_S(IJK,1) 
+                     ELSE
+                        PS_U_g(NPS)    = BC_U_g(BCV) 
+                     ENDIF
+
+                     IF(BC_V_g(BCV)==UNDEFINED) THEN
+                        PS_V_g(NPS)    = Normal_S(IJK,2) 
+                     ELSE
+                        PS_V_g(NPS)    = BC_V_g(BCV) 
+                     ENDIF
+
+                     IF(BC_W_g(BCV)==UNDEFINED) THEN
+                        PS_W_g(NPS)    = Normal_S(IJK,3) 
+                     ELSE
+                        PS_W_g(NPS)    = BC_W_g(BCV) 
+                     ENDIF
+
+                     DO N=1,NMAX(0)
+                        PS_X_g(NPS,N)    = BC_X_g(BCV,N)
+                     ENDDO
+
+
+                     DO M=1, MMAX
+                        PS_MASSFLOW_s(NPS,M) = BC_MASSFLOW_s(BCV,M) * VOL(IJK) / BC_VOL(BCV)
+
+                        PS_T_s(NPS,1)  = BC_T_s(BCV,M)
+
+                        IF(BC_U_s(BCV,M)==UNDEFINED) THEN
+                           PS_U_s(NPS,M)    = Normal_S(IJK,1) 
+                        ELSE
+                           PS_U_s(NPS,M)    = BC_U_s(BCV,M) 
+                        ENDIF
+
+                        IF(BC_V_s(BCV,M)==UNDEFINED) THEN
+                           PS_V_s(NPS,M)    = Normal_S(IJK,2) 
+                        ELSE
+                           PS_V_s(NPS,M)    = BC_V_s(BCV,M) 
+                        ENDIF
+
+                        IF(BC_W_s(BCV,M)==UNDEFINED) THEN
+                           PS_W_s(NPS,M)    = Normal_S(IJK,3) 
+                        ELSE
+                           PS_W_s(NPS,M)    = BC_W_s(BCV,M) 
+                        ENDIF
+
+
+                        DO N=1,NMAX(M)
+                           PS_X_s(NPS,M,N)    = BC_X_s(BCV,M,N)
+                        ENDDO
+
+                     ENDDO
+
+!                     print*,'PS created:',NPS,PS_MASSFLOW_g(NPS),PS_VOLUME(NPS),BC_VOL(BCV)
+
+
+
+                  ENDIF
+               ENDIF
+	       
+       
+	       
+            ENDDO  ! IJK Loop
+
+
+
+
+
+          endif  ! Work done by each processor in same order as rank
+
+         CALL MPI_BARRIER(MPI_COMM_WORLD,mpierr)
+         call bcast(POINT_SOURCE,iproc)
+         call bcast(PS_DEFINED,iproc)
+         call bcast(PS_I_w,iproc)
+         call bcast(PS_I_e,iproc)
+         call bcast(PS_J_s,iproc)
+         call bcast(PS_J_n,iproc)
+         call bcast(PS_K_b,iproc)
+         call bcast(PS_K_t,iproc)
+         call bcast(PS_MASSFLOW_g,iproc)
+         call bcast(PS_U_g,iproc)
+         call bcast(PS_V_g,iproc)
+         call bcast(PS_W_g,iproc)
+         call bcast(PS_X_g,iproc)
+         call bcast(PS_T_g,iproc)
+         call bcast(PS_MASSFLOW_s,iproc)
+         call bcast(PS_U_s,iproc)
+         call bcast(PS_V_s,iproc)
+         call bcast(PS_W_s,iproc)
+         call bcast(PS_X_s,iproc)
+         call bcast(PS_T_s,iproc)
+         call bcast(PS_VOLUME,iproc)
+      
+
+
+      enddo
+
+
+
+      CALL MPI_BARRIER(MPI_COMM_WORLD,mpierr)
+!      print*,'Leaving test',MyPE
+!      call mfix_exit(myPE)
+
+
+      RETURN
+
+      
+      END SUBROUTINE CONVERT_CG_MI_TO_PS
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CONVERT_CG_MI_TO_PS                                    C
+!  Purpose: Convert CG_MI BCs to Point sources                         C
+!                                                                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 06-Jan-14  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE CONVERT_CG_MI_TO_PS_PE
+    
+
+
+      USE physprop
+      USE scales
+      USE funits 
+
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE bc
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices  
+      USE compar
+      USE mpi_utility 
+      USE sendrecv
+      USE quadric
+      USE cutcell
+      USE fldvar
+      USE vtk
+
+      USE ps
+     
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+! 
+!     loop/variable indices 
       INTEGER :: IJK, M, BCV
       CHARACTER(LEN=9) :: BCT
 !     Volumetric flow rate computed from mass flow rate 
@@ -1789,7 +2032,18 @@
 ! Find the last Point source that is defined. New point sources 
 ! will be added after that.
 
-      
+!     print*,'setting bc_type to CG_NSW and exiting'
+!      DO BCV = 1, DIMENSION_BC
+!         IF (BC_TYPE(BCV) == 'CG_MI') THEN
+!            BC_TYPE(BCV) = 'CG_NSW'
+!            print*,'Converted CG_MI to CG_FSW for BC#',BCV
+!         ENDIF
+!      ENDDO
+!      RETURN
+
+
+
+      NPS = 0
 
       PS_LP: do PSV = 1, DIMENSION_PS
          if(.NOT.PS_DEFINED(PSV)) cycle PS_LP
@@ -1797,7 +2051,7 @@
       enddo PS_LP
 
 
-!      print *,'Last PS=',NPS
+      print *,'Last PS=',NPS
 !      read(*,*)
 
 ! Loop though each cell. When a CG_MI is found convert it to a single point source
@@ -1831,9 +2085,25 @@
 
                PS_T_g(NPS)    = BC_T_g(BCV)
 
-               PS_U_g(NPS)    = Normal_S(IJK,1) 
-               PS_V_g(NPS)    = Normal_S(IJK,2) 
-               PS_W_g(NPS)    = Normal_S(IJK,3) 
+               IF(BC_U_g(NPS)==UNDEFINED) THEN
+                  PS_U_g(NPS)    = Normal_S(IJK,1) 
+               ELSE
+                  PS_U_g(NPS)    = BC_U_g(NPS) 
+               ENDIF
+
+               IF(BC_V_g(NPS)==UNDEFINED) THEN
+                  PS_V_g(NPS)    = Normal_S(IJK,2) 
+               ELSE
+                  PS_V_g(NPS)    = BC_V_g(NPS) 
+               ENDIF
+
+               IF(BC_W_g(NPS)==UNDEFINED) THEN
+                  PS_W_g(NPS)    = Normal_S(IJK,3) 
+               ELSE
+                  PS_W_g(NPS)    = BC_W_g(NPS) 
+               ENDIF
+
+
 
 ! This is a temporary setting for the solids phase and will need to be generalalized
                PS_MASSFLOW_s(NPS,1) = 0.0
@@ -1844,26 +2114,51 @@
                PS_V_s(NPS,1)    = Normal_S(IJK,2) 
                PS_W_s(NPS,1)    = Normal_S(IJK,3) 
 
+               PS_U_s(NPS,1)    = ZERO            
+               PS_V_s(NPS,1)    = ZERO            
+               PS_W_s(NPS,1)    = ZERO            
 
+!               IF(Normal_S(IJK,2)/=ONE) print*,'Not vertical'
+!               IF(Normal_S(IJK,2)==ONE) print*,'    vertical'
                
+!               IF(Normal_S(IJK,2)/=ONE) PS_MASSFLOW_g(NPS) = ZERO
 
-
-!               print*,'PS created:',NPS,PS_MASSFLOW_g(NPS),PS_VOLUME(NPS),PS_I_w(NPS),PS_J_n(NPS),PS_K_b(NPS),INTERIOR_CELL_AT(IJK),BC_U_g(BCV),BC_V_g(BCV) 
+!               IF(.NOT.CUT_CELL_AT(IJK)) THEN
+!                  print*,'turn off PS :not a scalar cut cell'
+!                  PS_MASSFLOW_g(NPS) = ZERO
+!               ENDIF
+!               IF(.NOT.CUT_U_CELL_AT(IJK)) THEN
+!                  print*,'turn off PS :not a u cut cell'
+!                  PS_MASSFLOW_g(NPS) = ZERO
+!               ENDIF
+!               IF(.NOT.CUT_V_CELL_AT(IJK)) THEN
+!                  print*,'turn off PS :not a v cut cell'
+!                  PS_MASSFLOW_g(NPS) = ZERO
+!               ENDIF
+!               IF(.NOT.CUT_W_CELL_AT(IJK)) THEN
+!                  print*,'turn off PS :not a w cut cell'
+!                  PS_MASSFLOW_g(NPS) = ZERO
 !               ENDIF
 
+
+!                  PS_MASSFLOW_g(NPS) = ZERO
+
+
+               print*,'PS created:',NPS,PS_MASSFLOW_g(NPS),PS_VOLUME(NPS),PS_I_w(NPS),PS_J_n(NPS),PS_K_b(NPS),INTERIOR_CELL_AT(IJK),PS_U_g(NPS),PS_V_g(NPS),PS_W_g(NPS),CUT_CELL_AT(IJK),Normal_S(IJK,1),Normal_S(IJK,2),Normal_S(IJK,3) 
+!               ENDIF
+
+!               PS_DEFINED(NPS) = .FALSE.
             ENDIF
          ENDIF
       ENDDO   
 
 
-      DO BCV = 1, DIMENSION_BC
-
-         IF (BC_TYPE(BCV) == 'CG_MI') THEN
-            BC_TYPE(BCV) = 'CG_NSW'
+!      DO BCV = 1, DIMENSION_BC
+!         IF (BC_TYPE(BCV) == 'CG_MI') THEN
+!            BC_TYPE(BCV) = 'CG_NSW'
 !            print*,'Converted CG_MI to CG_FSW for BC#',BCV
-         ENDIF
-
-      ENDDO
+!         ENDIF
+!      ENDDO
 
 
 100         FORMAT(1X,A,I8)
@@ -1895,7 +2190,8 @@
       RETURN
 
       
-      END SUBROUTINE CONVERT_CG_MI_TO_PS
+      END SUBROUTINE CONVERT_CG_MI_TO_PS_PE
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
