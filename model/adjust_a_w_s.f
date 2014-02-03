@@ -80,7 +80,7 @@
                   A_M(IJK,0,M) = -ONE 
                   IF (B_M(IJK,M) < ZERO) THEN 
                      IJKT = TOP_OF(IJK) 
-                     IF (ROP_S(IJKT,M) > SMALL_NUMBER) THEN 
+                     IF (ROP_S(IJKT,M)*AXY_W(IJK) > SMALL_NUMBER) THEN 
                         B_M(IJK,M) = SQRT((-B_M(IJK,M)/(ROP_S(IJKT,M)*AVG_Z_T(&
                            ONE,ZERO)*AXY_W(IJK)))) 
                      ELSE 

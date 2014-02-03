@@ -71,7 +71,7 @@
                      IF (B_M(IJK,M) < ZERO) THEN 
                         IJKE = EAST_OF(IJK) 
                         IP = IP1(I_OF(IJK)) 
-                        IF (ROP_S(IJKE,M) > SMALL_NUMBER) THEN 
+                        IF (ROP_S(IJKE,M)*AYZ_U(IJK) > SMALL_NUMBER) THEN 
                            B_M(IJK,M) = SQRT((-B_M(IJK,M)/&
                               (ROP_S(IJKE,M)*AVG_X_E(ONE,ZERO,IP)*&
                               AYZ_U(IJK)))) 
