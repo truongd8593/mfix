@@ -515,7 +515,9 @@
       CHARACTER(len=64) :: tVAR
 
       iASc=''; WRITE(iASc,*)i1
-      tVar=''; WRITE(tVar,"('(',A)") trim(adjustl(iASc))
+      tVar=''; WRITE(tVar,"(A,'(',A)") &
+         trim(adjustl(VAR)), trim(adjustl(iASc))
+
 
       IF(PRESENT(i2))THEN
          iASc=''; WRITE(iASc,*)i2
