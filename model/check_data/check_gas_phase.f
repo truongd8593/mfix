@@ -112,7 +112,6 @@
 ! method are found, MFIX exits.
       IF(USE_RRATES) THEN
          IF(SPECIES_EQ(0)) THEN
-
             IF(NMAX(0) == UNDEFINED_I) THEN
                WRITE(ERR_MSG,2000)'NMAX(0)','specified'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -137,7 +136,8 @@
 
       IF(NMAX_g /= UNDEFINED_I)THEN
 ! Verify that the number of species is within range.
-         IF(NMAX_g > DIMENSION_N_G) THEN
+         IF(NMAX_g > DIM_N_G) THEN
+
             WRITE(ERR_MSG,1053)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ELSE
@@ -314,6 +314,7 @@
 
 ! Finalize the error manager
       CALL FINL_ERR_MSG
+
 
       RETURN  
 
