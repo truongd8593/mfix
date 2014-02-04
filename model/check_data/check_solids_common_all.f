@@ -50,7 +50,7 @@
       MMAX_L = SMAX + DES_MMAX
 
 ! Check D_p0
-      DO LC = MMAX_L, DIM_M
+      DO LC = 1, MMAX_L
          IF(D_P0(LC) == UNDEFINED) THEN
             WRITE(ERR_MSG, 1000) iVar('D_p0',LC)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -180,7 +180,7 @@
 ! Set the number of species to one if the species equations are not solved and
 ! the number of species is not specified.
          ELSE
-            NMAX(LC) = merge(1, NMAX_S(LC), NMAX_S(LC) == UNDEFINED)
+            NMAX(LC) = merge(1, NMAX_S(LC), NMAX_S(LC) == UNDEFINED_I)
          ENDIF
       ENDDO
 
@@ -571,18 +571,6 @@
 
 
          ENDIF
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ! Verify that the inert species mass fraction is non-zero.
