@@ -389,11 +389,18 @@ $(EXEC_FILE) : \
     $(DPO)write_progress_bar.$(OBJ_EXT) \
     $(DPO)check_continuum_solids.$(OBJ_EXT) \
     $(DPO)check_dmp_prereqs.$(OBJ_EXT) \
+    $(DPO)check_gas_phase.$(OBJ_EXT) \
     $(DPO)check_geometry_prereqs.$(OBJ_EXT) \
     $(DPO)check_numerics.$(OBJ_EXT) \
     $(DPO)check_output_control.$(OBJ_EXT) \
     $(DPO)check_run_control.$(OBJ_EXT) \
+    $(DPO)check_solids_common_all.$(OBJ_EXT) \
+    $(DPO)check_solids_common_discrete.$(OBJ_EXT) \
+    $(DPO)check_solids_continuum.$(OBJ_EXT) \
+    $(DPO)check_solids_des.$(OBJ_EXT) \
     $(DPO)check_solids_model_prereqs.$(OBJ_EXT) \
+    $(DPO)check_solids_mppic.$(OBJ_EXT) \
+    $(DPO)check_solids_phases.$(OBJ_EXT) \
     $(DPO)check_data_odepack.$(OBJ_EXT) \
     $(DPO)stiff_chem_rrates.$(OBJ_EXT) \
     $(DPO)calc_force_des_cutcell.$(OBJ_EXT) \
@@ -854,11 +861,18 @@ $(EXEC_FILE) : \
     $(DPO)write_progress_bar.$(OBJ_EXT) \
     $(DPO)check_continuum_solids.$(OBJ_EXT) \
     $(DPO)check_dmp_prereqs.$(OBJ_EXT) \
+    $(DPO)check_gas_phase.$(OBJ_EXT) \
     $(DPO)check_geometry_prereqs.$(OBJ_EXT) \
     $(DPO)check_numerics.$(OBJ_EXT) \
     $(DPO)check_output_control.$(OBJ_EXT) \
     $(DPO)check_run_control.$(OBJ_EXT) \
+    $(DPO)check_solids_common_all.$(OBJ_EXT) \
+    $(DPO)check_solids_common_discrete.$(OBJ_EXT) \
+    $(DPO)check_solids_continuum.$(OBJ_EXT) \
+    $(DPO)check_solids_des.$(OBJ_EXT) \
     $(DPO)check_solids_model_prereqs.$(OBJ_EXT) \
+    $(DPO)check_solids_mppic.$(OBJ_EXT) \
+    $(DPO)check_solids_phases.$(OBJ_EXT) \
     $(DPO)check_data_odepack.$(OBJ_EXT) \
     $(DPO)stiff_chem_dbg_mod.$(OBJ_EXT) \
     $(DPO)stiff_chem_maps_mod.$(OBJ_EXT) \
@@ -3122,6 +3136,8 @@ $(DPO)get_data.$(OBJ_EXT) : get_data.f \
             $(DPO)mfix_pic.mod \
             $(DPO)cutcell.mod \
             $(DPO)dashboard.mod \
+            $(DPO)visc_g.mod \
+            $(DPO)constant.mod \
             $(DPO)error_manager.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) get_data.f  -o $(DPO)get_data.$(OBJ_EXT) -module $(DPO)
 $(DPO)get_eq.$(OBJ_EXT) : get_eq.f \
@@ -6017,6 +6033,17 @@ $(DPO)check_dmp_prereqs.$(OBJ_EXT) : ./check_data/check_dmp_prereqs.f \
             $(DPO)param1.mod \
             $(DPO)error_manager.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_dmp_prereqs.f  -o $(DPO)check_dmp_prereqs.$(OBJ_EXT) -module $(DPO)
+$(DPO)check_gas_phase.$(OBJ_EXT) : ./check_data/check_gas_phase.f \
+            $(DPO)compar.mod \
+            $(DPO)param.mod \
+            $(DPO)param1.mod \
+            $(DPO)physprop.mod \
+            $(DPO)funits.mod \
+            $(DPO)run.mod \
+            $(DPO)indices.mod \
+            $(DPO)rxns.mod \
+            $(DPO)error_manager.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_gas_phase.f  -o $(DPO)check_gas_phase.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_geometry_prereqs.$(OBJ_EXT) : ./check_data/check_geometry_prereqs.f \
             $(DPO)geometry.mod \
             $(DPO)param1.mod \
@@ -6036,17 +6063,50 @@ $(DPO)check_output_control.$(OBJ_EXT) : ./check_data/check_output_control.f \
             $(DPO)error_manager.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_output_control.f  -o $(DPO)check_output_control.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_run_control.$(OBJ_EXT) : ./check_data/check_run_control.f \
-            $(DPO)constant.mod \
             $(DPO)run.mod \
+            $(DPO)constant.mod \
             $(DPO)physprop.mod \
             $(DPO)scalars.mod \
             $(DPO)discretelement.mod \
-            $(DPO)param.mod \
             $(DPO)param1.mod \
             $(DPO)error_manager.mod \
             $(DPO)cutcell.mod \
             $(DPO)mfix_pic.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_run_control.f  -o $(DPO)check_run_control.$(OBJ_EXT) -module $(DPO)
+$(DPO)check_solids_common_all.$(OBJ_EXT) : ./check_data/check_solids_common_all.f \
+            $(DPO)param.mod \
+            $(DPO)param1.mod \
+            $(DPO)run.mod \
+            $(DPO)indices.mod \
+            $(DPO)physprop.mod \
+            $(DPO)constant.mod \
+            $(DPO)discretelement.mod \
+            $(DPO)funits.mod \
+            $(DPO)mfix_pic.mod \
+            $(DPO)compar.mod \
+            $(DPO)rxns.mod \
+            $(DPO)error_manager.mod \
+            $(DPO)run.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_common_all.f  -o $(DPO)check_solids_common_all.$(OBJ_EXT) -module $(DPO)
+$(DPO)check_solids_common_discrete.$(OBJ_EXT) : ./check_data/check_solids_common_discrete.f \
+            $(DPO)error_manager.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_common_discrete.f  -o $(DPO)check_solids_common_discrete.$(OBJ_EXT) -module $(DPO)
+$(DPO)check_solids_continuum.$(OBJ_EXT) : ./check_data/check_solids_continuum.f \
+            $(DPO)constant.mod \
+            $(DPO)run.mod \
+            $(DPO)physprop.mod \
+            $(DPO)indices.mod \
+            $(DPO)scalars.mod \
+            $(DPO)funits.mod \
+            $(DPO)rxns.mod \
+            $(DPO)cutcell.mod \
+            $(DPO)param.mod \
+            $(DPO)param1.mod \
+            $(DPO)error_manager.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_continuum.f  -o $(DPO)check_solids_continuum.$(OBJ_EXT) -module $(DPO)
+$(DPO)check_solids_des.$(OBJ_EXT) : ./check_data/check_solids_des.f \
+            $(DPO)error_manager.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_des.f  -o $(DPO)check_solids_des.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_solids_model_prereqs.$(OBJ_EXT) : ./check_data/check_solids_model_prereqs.f \
             $(DPO)run.mod \
             $(DPO)discretelement.mod \
@@ -6057,6 +6117,13 @@ $(DPO)check_solids_model_prereqs.$(OBJ_EXT) : ./check_data/check_solids_model_pr
             $(DPO)param.mod \
             $(DPO)error_manager.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_model_prereqs.f  -o $(DPO)check_solids_model_prereqs.$(OBJ_EXT) -module $(DPO)
+$(DPO)check_solids_mppic.$(OBJ_EXT) : ./check_data/check_solids_mppic.f \
+            $(DPO)error_manager.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_mppic.f  -o $(DPO)check_solids_mppic.$(OBJ_EXT) -module $(DPO)
+$(DPO)check_solids_phases.$(OBJ_EXT) : ./check_data/check_solids_phases.f \
+            $(DPO)run.mod \
+            $(DPO)error_manager.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_phases.f  -o $(DPO)check_solids_phases.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_data_odepack.$(OBJ_EXT) : ./chem/check_data_odepack.f \
             $(DPO)funits.mod \
             $(DPO)param.mod \

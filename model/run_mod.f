@@ -287,7 +287,12 @@
 
 
 ! Specifies the type of solids: TFM, DEM, MPPIC
-      CHARACTER(len=5), DIMENSION(DIM_M) :: SOLIDS_MODEL
+      CHARACTER(len=3), DIMENSION(DIM_M) :: SOLIDS_MODEL
+
+
+      LOGICAL :: TFM_SOLIDS
+      LOGICAL :: DEM_SOLIDS
+      LOGICAL :: PIC_SOLIDS
 
 
       END MODULE RUN

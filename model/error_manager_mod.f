@@ -8,6 +8,15 @@
 
       implicit none
 
+! Interface
+!---------------------------------------------------------------------//
+      interface iVal
+         module procedure iVal_int
+         module procedure iVal_dbl
+         module procedure iVal_log
+      end interface
+
+
 ! Maximum number of lines a message can have before a flush is needed.
       INTEGER, PARAMETER :: LINE_COUNT  = 32
 ! Maximum number of characters per line.
@@ -485,6 +494,91 @@
  1003 FORMAT(/1x,70('*'))
 
       END SUBROUTINE SHOW_CALL_TREE
+
+
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!......................................................................!
+      CHARACTER(len=32) FUNCTION iVar(VAR, i1, i2, i3)
+
+      CHARACTER(len=*), intent(in) :: VAR
+
+      INTEGER,  intent(in) :: i1
+      INTEGER, OPTIONAL, intent(in) :: i2
+      INTEGER, OPTIONAL, intent(in) :: i3
+
+! Flags for arguments
+      LOGICAL :: ARG2, ARG3
+
+      CHARACTER(len=16) :: iASc
+      CHARACTER(len=64) :: tVAR
+
+      iASc=''; WRITE(iASc,*)i1
+      tVar=''; WRITE(tVar,"('(',A)") trim(adjustl(iASc))
+
+      IF(PRESENT(i2))THEN
+         iASc=''; WRITE(iASc,*)i2
+         WRITE(tVar,"(A,',',A)") trim(tVar), trim(adjustl(iASc))
+      ENDIF
+
+      IF(ARG3) THEN
+         iASc=''; WRITE(iASc,*)i3
+         WRITE(tVar,"(A,',',A)") trim(tVar), trim(adjustl(iASc))
+      ENDIF
+
+      iASc=''; WRITE(iASc,*)i2
+      WRITE(tVar,"(A,')')") trim(tVar)
+
+      iVar = trim(adjustl(tVar))
+
+      RETURN
+      END FUNCTION iVar
+
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!......................................................................!
+      CHARACTER(len=32) FUNCTION iVal_int(VAL)
+      INTEGER, intent(in) :: VAL
+
+      CHARACTER(len=16) :: iASc
+
+      WRITE(iASc,*) VAL
+      iVal_int = trim(adjustl(iASc))
+
+      END FUNCTION iVal_int
+
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!......................................................................!
+      CHARACTER(len=32) FUNCTION iVal_dbl(VAL)
+      DOUBLE PRECISION, intent(in) :: VAL
+
+      CHARACTER(len=16) :: dASc
+
+      WRITE(dASc,*) VAL
+      iVal_dbl = trim(adjustl(dASc))
+
+      END FUNCTION iVal_dbl
+
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!......................................................................!
+      CHARACTER(len=32) FUNCTION iVal_log(VAL)
+      LOGICAL, intent(in) :: VAL
+
+      IF(VAL) THEN
+         iVal_log = ".TRUE."
+      ELSE
+         iVal_log = ".FALSE."
+      ENDIF
+
+      RETURN
+      END FUNCTION iVal_log
+
 
 
       END MODULE ERROR_MANAGER

@@ -15,6 +15,11 @@
 ! Number of ranks.
       use run, only: SOLIDS_MODEL
 
+! Flag: Use DES E-E solids model
+      use run, only: TFM_SOLIDS
+      use run, only: DEM_SOLIDS
+      use run, only: PIC_SOLIDS
+
 ! Flag: Use DES E-L model
       use discretelement, only: DISCRETE_ELEMENT
 ! Flag: Use MPPIC E-L model
@@ -56,12 +61,9 @@
 ! Loop counter
       INTEGER :: M ! Phase index
 ! Flags for various solids phase models.
-      INTEGER :: TFM_SOLIDS = 0
-      INTEGER :: DEM_SOLIDS = 0
-      INTEGER :: PIC_SOLIDS = 0
-
-! Flag for two-fluid model solids.
-      LOGICAL :: CONTINUUM_SOLIDS
+      INTEGER :: TFM_SOLIDS_COUNT = 0
+      INTEGER :: DEM_SOLIDS_COUNT = 0
+      INTEGER :: PIC_SOLIDS_COUNT = 0
 
 
 !......................................................................!
@@ -83,24 +85,30 @@
       DO M=1, MMAX
          SOLIDS_MODEL(M) = trim(adjustl(SOLIDS_MODEL(M)))
          SELECT CASE(SOLIDS_MODEL(M))
-         CASE ('TFM')
-            TFM_SOLIDS = TFM_SOLIDS + 1
-         CASE ('DEM')
-            TFM_SOLIDS = DEM_SOLIDS + 1
-         CASE ('MPPIC')
-            PIC_SOLIDS = PIC_SOLIDS + 1
+         CASE ('TFM'); TFM_SOLIDS_COUNT = TFM_SOLIDS_COUNT + 1
+         CASE ('DEM'); DEM_SOLIDS_COUNT = DEM_SOLIDS_COUNT + 1
+         CASE ('PIC'); PIC_SOLIDS_COUNT = PIC_SOLIDS_COUNT + 1
+
          CASE DEFAULT
-            WRITE(ERR_MSG,1001) M, SOLIDS_MODEL(M)
+            WRITE(ERR_MSG,1001) iVar('SOLIDS_MODEL',M), SOLIDS_MODEL(M)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+ 1001 FORMAT('Error 1001: Unknown solids model: ',A,' = ',A)
+
          END SELECT
       ENDDO
 
- 1001 FORMAT('Error 1001: Unknown solids model: ',/3x,'SOLIDS_MODEL(', &
-         I2,') = ', A)
 
+! Clear out the unused phases.
+      SOLIDS_MODEL(MMAX+1:DIM_M) = '---'
+
+! Set the runtime flags:
+      TFM_SOLIDS = (TFM_SOLIDS_COUNT > 0)
+      DEM_SOLIDS = (DEM_SOLIDS_COUNT > 0)
+      PIC_SOLIDS = (PIC_SOLIDS_COUNT > 0)
 
 ! MPPIC and continuum solids don't mix.
-      IF((PIC_SOLIDS > 0) .AND. (TFM_SOLIDS > 0))THEN
+      IF(PIC_SOLIDS .AND. TFM_SOLIDS)THEN
          WRITE(ERR_MSG, 1002)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
@@ -109,7 +117,7 @@
 
 
 ! MPPIC and DEM solids don't mix.
-      IF((PIC_SOLIDS > 0) .AND. (DEM_SOLIDS > 0))THEN
+      IF(PIC_SOLIDS .AND. DEM_SOLIDS)THEN
          WRITE(ERR_MSG, 1003)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
@@ -118,7 +126,8 @@
 
 
 ! Set the number of discrete phases.
-      DES_MMAX = DEM_SOLIDS + PIC_SOLIDS
+      DES_MMAX = DEM_SOLIDS_COUNT + PIC_SOLIDS_COUNT
+
 ! Set the number of TFM phases.
       MMAX = MMAX - DES_MMAX
       SMAX = merge( MMAX-1, MMAX, KT_TYPE(1:3) == 'GHD')
@@ -133,34 +142,32 @@
    !                                                                !
    !****************************************************************!
 
-! Set the two-fluid model flag.
-      CONTINUUM_SOLIDS = (TFM_SOLIDS > 0)
 ! Set the DEM runtime flag.
-      DISCRETE_ELEMENT = (DEM_SOLIDS > 0) .OR. DISCRETE_ELEMENT
+      DISCRETE_ELEMENT = DEM_SOLIDS .OR. PIC_SOLIDS &
+         .OR. DISCRETE_ELEMENT .OR. MPPIC
 ! Set the MMPIC runtime flag.
-      MPPIC = (PIC_SOLIDS > 0) .OR. MPPIC
+      MPPIC = PIC_SOLIDS .OR. MPPIC
 ! Set the Hybird flag.
-      DES_CONTINUUM_HYBRID = ((DEM_SOLIDS > 0) .AND. (TFM_SOLIDS > 0)) &
+      DES_CONTINUUM_HYBRID = (DEM_SOLIDS .AND. TFM_SOLIDS) &
          .OR. DES_CONTINUUM_HYBRID
 
 
-! This is a legacy check that needs removed once this variable
+! This is a legacy check that needs removed once DES_CONTINUUM_HYBRID
 ! is removed from being a namelist keyword.
       IF(.NOT.DISCRETE_ELEMENT) DES_CONTINUUM_HYBRID = .FALSE. !<------ TO BE REMOVED
 
-! This is a legacy check that needs removed once this variable
+! This is a legacy check that needs removed once MPPIC
 ! is removed from being a namelist keyword.
       IF(.NOT.DISCRETE_ELEMENT) MPPIC = .FALSE. !<--------------------- TO BE REMOVED
 
-! This is a legacy check that needs removed once this variable
+! This is a legacy check that needs removed once DISCRETE_ELEMENT
 ! is removed from being a namelist keyword.
       IF(MPPIC) DISCRETE_ELEMENT = .TRUE. !<--------------------------- TO BE REMOVED
 
 
-
 ! Overwrite user settings if no Lagrangian solids
       IF(.NOT.DISCRETE_ELEMENT) THEN
-         DES_CONTINUUM_COUPLED = .FALSE.
+         DES_CONTINUUM_COUPLED = .FALSE.   ! This keyword might get removed.
          DES_INTERP_ON = .FALSE.
          PRINT_DES_DATA = .FALSE.
          DES_ONEWAY_COUPLED = .false. 

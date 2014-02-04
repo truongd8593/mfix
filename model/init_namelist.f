@@ -221,7 +221,7 @@
 !  <valid value="IA_NONEP" note="Iddir & Arastoopour (2005). AIChE J. 51(6), 1620"/>
 !  <valid value="LUN_1984" note="Lun et al (1984). J. Fluid Mech., 140, 223."/>
 !  <valid value="SIMONIN" note="Simonin (1996). VKI Lecture Series, 1996-2"/>
-      KT_TYPE = UNDEFINED_C
+      KT_TYPE = "LUN_1984"
 !</keyword>
 
 ! Retired keyword for specifying Ahmadi KT Theory.

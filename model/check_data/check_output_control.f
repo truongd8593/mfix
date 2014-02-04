@@ -35,8 +35,6 @@
 !---------------------------------------------------------------------//
 ! Loop counter
       INTEGER :: LC
-! Index variable for error messages.
-      CHARACTER(len=64) :: iVar
 
 
 !......................................................................!
@@ -75,13 +73,12 @@
 
 ! Verify the remaining SPx files.
          ELSE
-            iVar=''; WRITE(iVar,"('SPX_DT(',I2,')')") LC
             IF(SPX_DT(LC) == UNDEFINED) THEN
-               WRITE(ERR_MSG,1000) trim(iVar)
+               WRITE(ERR_MSG,1000) iVar('SPX_DT',LC)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
             ELSEIF(SPX_DT(LC) <= ZERO) THEN
-               WRITE(ERR_MSG,1001) trim(iVar), SPX_DT(LC)
+               WRITE(ERR_MSG,1001) iVar('SPX_DT',LC), SPX_DT(LC)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ENDIF

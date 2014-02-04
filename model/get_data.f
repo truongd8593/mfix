@@ -6,36 +6,7 @@
 !  Author: P. Nicoletti                               Date: 04-DEC-91  C
 !  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  C
 !                                                                      C
-!  Revision Number: 1                                                  C
-!  Purpose: Put version.release in LOG file                            C
-!  Author: P.Nicoletti                                Date: 07-FEB-92  C
-!  Reviewer: W. Rogers                                Date: 11-DEC-92  C
-!                                                                      C
-!  Revision Number: 2                                                  C
-!  Purpose: Add CALL to SET_L_scale                                    C
-!  Author: W. Sams                                    Date: 10-MAY-94  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:  call GRIDMAP_INIT to handle the domain decomposition and  C
-!            arrangement of all appropriate indices.                   C
-!            Introduced MPI_Barrier for RESTART file read situation    C
-!  Author:   Aeolus Res. Inc.                         Date: 04-SEP-99  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Revision Number: 4                                                  C
-!  Purpose: Incorporation of QMOM for the solution of the particle     C
-!  kinetic equation                                                    C
-!  Author: Alberto Passalacqua - Fox Research Group   Date: 02-Dec-09  C
-!								       C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: RUN_NAME, RUN_TYPE, ID_VERSION, ID_NODE       C
-!  Variables modified: None                                            C
-!  Local variables: None                                               C
-!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE GET_DATA 
 
 !-----------------------------------------------
@@ -57,6 +28,9 @@
       USE cutcell
       USE dashboard
 
+      USE visc_g, only: L_SCALE
+      USE constant, only: L_SCALE0
+
       USE error_manager
 
 
@@ -65,14 +39,7 @@
 ! Local variables
 !-----------------------------------------------
 ! shift DX, DY and DZ values 
-      LOGICAL :: SHIFT 
-      LOGICAL :: CYCLIC_X_BAK, CYCLIC_Y_BAK, CYCLIC_Z_BAK, &
-                 CYLINDRICAL_BAK
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-      LOGICAL , EXTERNAL :: COMPARE
-!-----------------------------------------------
+      LOGICAL, PARAMETER :: SHIFT = .TRUE.
 
 
 ! This module call routines to initialize the namelist variables.
@@ -84,6 +51,9 @@
 ! is read so that message verbosity can be set and the .LOG file 
 ! can be opened.
       CALL INIT_ERROR_MANAGER
+
+! Open files
+      CALL OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX)
 
 ! These checks verify that sufficient information was provided
 ! to setup the domain indices and DMP gridmap.
@@ -102,53 +72,54 @@
 ! Check the minimum solids phase requirements.
       CALL CHECK_SOLIDS_MODEL_PREREQS
 
-
       CALL CHECK_RUN_CONTROL
       CALL CHECK_NUMERICS
       CALL CHECK_OUTPUT_CONTROL
 
-      CALL CHECK_CONTINUUM_SOLIDS
+      CALL CHECK_GAS_PHASE
+      CALL CHECK_SOLIDS_PHASES
 
+! Stiff Chemistry Solver
+      CALL CHECK_DATA_09 ! ---> CALL CHECK_CHEMICAL_RXNS
+      CALL CHECK_DATA_ODEPACK
+
+
+!--------------------------  ARRAY ALLOCATION -----------------------!
 
 ! Allocate array storage.
-      CALL ALLOCATE_ARRAYS    
+      CALL ALLOCATE_ARRAYS
       IF (QMOMK) CALL QMOMK_ALLOCATE_ARRAYS
 
-! Open files
-      CALL OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX) 
-      SHIFT = .TRUE. 
+
+! Write header in the .LOG file and to screen.
+! Not sure if the values are correct or useful
+      CALL WRITE_HEADER
 
 
-! write header in the .LOG file
-      CALL WRITE_HEADER 
+!--------------------------  GEOMETRY CONTROLS -----------------------!
 
-
-! Check data and do some preliminary computations
-      CALL START_LOG 
-
-!      CALL CHECK_DATA_01                         ! run_control input 
-!      CALL CHECK_DATA_02                         ! output_control input 
-
-      CALL CHECK_DATA_03 (SHIFT)                 ! geometry input 
-
+      CALL CHECK_DATA_03(SHIFT)   ! geometry input 
 ! Set X, X_E, oX, oX_E ... etc.
       CALL SET_GEOMETRY 
 
-      CALL SET_L_SCALE 
+! Move cut-cell preprocessing somewhere near here.
 
-      CALL CHECK_DATA_04                         ! solid phase section 
-      CALL CHECK_DATA_05                         ! gas phase section 
-      CALL CHECK_DATA_06                         ! initial condition section 
-!      IF(.NOT.CARTESIAN_GRID) CALL CHECK_DATA_07                         ! boundary condition section 
-      CALL CHECK_DATA_07                         ! boundary condition section 
-      CALL CHECK_DATA_08                         ! Internal surfaces section 
-      CALL CHECK_DATA_09                         ! Chemical reactions section       
-      CALL CHECK_DATA_10
 
-      CALL CHECK_DATA_ODEPACK                    ! Stiff Chemistry Solver
+!----------------------  DOMAIN SPECIFIC CHECKS  --------------------!
 
-! close .LOG file
-      CALL END_LOG 
+      CALL CHECK_DATA_06          ! initial condition section 
+      CALL CHECK_DATA_07          ! boundary condition section 
+      CALL CHECK_DATA_08          ! Internal surfaces section 
+      CALL CHECK_DATA_10          ! point sources
+
+
+
+! This is all that happens in SET_L_SCALE so it needs moved, maybe
+! this should go in int_fluid_var.?
+!     CALL SET_L_SCALE 
+      L_SCALE(:) = L_SCALE0 
+
+
 
 !======================================================================
 ! Data initialization for Dashboard
@@ -157,7 +128,7 @@
       SMMIN =  LARGE_NUMBER
       SMMAX = -LARGE_NUMBER
             
-      DTMIN =  LARGE_NUMBER                                                                                                                        
+      DTMIN =  LARGE_NUMBER
       DTMAX = -LARGE_NUMBER
              
       NIT_MIN = MAX_NIT
@@ -166,11 +137,6 @@
       N_DASHBOARD = 0
 
 
-
-
       RETURN  
-
- 1000 FORMAT(/1X,70('*')//' From: GET_DATA.',/' Message: ',&
-         'RUN_NAME not specified in mfix.dat',/1X,70('*')/)  
 
       END SUBROUTINE GET_DATA

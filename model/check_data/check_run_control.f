@@ -56,8 +56,6 @@
 !---------------------------------------------------------------------//
 ! Dummy integer
       INTEGER :: N
-! Indexed variable:
-      Character(len=64) :: iVar
 
 
 !......................................................................!
@@ -134,19 +132,10 @@
 ! Check phase specification for Scalars
       DO N = 1, NScalar
          IF(Phase4Scalar(N) < 0 .OR. Phase4Scalar(N) > MMAX) THEN
-            iVar=''; WRITE(iVar,"('Phase4Scalar(',I2,')')")
-            WRITE(ERR_MSG,1002) trim(iVar), phase4scalar(N)
+            WRITE(ERR_MSG,1002) iVar('Phase4Scalar',N), phase4scalar(N)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
       ENDDO
-
-! Check name of radial distribution function
-      IF (RDF_TYPE /= 'LEBOWITZ') THEN
-         IF(RDF_TYPE /= 'MODIFIED_LEBOWITZ' .AND. &
-            RDF_TYPE /= 'MANSOORI' .AND. &
-            RDF_TYPE /= 'MODIFIED_MANSOORI') &
-            CALL ERROR_ROUTINE ('CHECK_RUN_CONTROL','Unknown RDF_TYPE',1,1)
-      ENDIF
 
 ! Checks requred for the subgird drag models.
       CALL CHECK_SUBGRID_MODEL
