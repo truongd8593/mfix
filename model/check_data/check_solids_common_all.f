@@ -428,6 +428,9 @@
       DOUBLE PRECISION, EXTERNAL :: EOSS0
 
 
+      CALL INIT_ERR_MSG("CHECK_SOLIDS_DENSITY")
+
+
 ! Initialize the flag for variable solids density.
       SOLVE_ROs = .FALSE.
 
