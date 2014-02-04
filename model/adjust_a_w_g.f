@@ -88,7 +88,7 @@
                ENDIF 
             ELSE IF (B_M(IJK,M) > ZERO) THEN 
                IJKM = KM_OF(IJK) 
-               IF (ROP_G(IJK) > SMALL_NUMBER) THEN 
+               IF (ROP_G(IJK)*AXY_W(IJKM) > SMALL_NUMBER) THEN 
                   B_M(IJK,M) = SQRT(B_M(IJK,M)/(ROP_G(IJK)*AVG_Z_T(ZERO,ONE)*&
                      AXY_W(IJKM))) 
                ELSE 

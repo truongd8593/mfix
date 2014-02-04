@@ -89,7 +89,7 @@
                      ENDIF 
                   ELSE IF (B_M(IJK,M) > ZERO) THEN 
                      IJMK = JM_OF(IJK) 
-                     IF (ROP_S(IJK,M) > SMALL_NUMBER) THEN 
+                     IF (ROP_S(IJK,M)*AXZ(IJK) > SMALL_NUMBER) THEN 
                         B_M(IJK,M) = SQRT(B_M(IJK,M)/(ROP_S(IJK,M)*AVG_Y_N(ZERO&
                            ,ONE)*AXZ(IJK))) 
                      ELSE 

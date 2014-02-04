@@ -81,7 +81,7 @@
                      ELSEIF (B_M(IJK,M) > ZERO) THEN 
                         I = I_OF(IJK) 
                         IMJK = IM_OF(IJK) 
-                        IF (ROP_S(IJK,M) > SMALL_NUMBER) THEN 
+                        IF (ROP_S(IJK,M)*AYZ_U(IMJK) > SMALL_NUMBER) THEN 
                            B_M(IJK,M) = SQRT(B_M(IJK,M)/(ROP_S(IJK,M)*&
                               AVG_X_E(ZERO,ONE,I)*AYZ_U(IMJK))) 
                         ELSE 

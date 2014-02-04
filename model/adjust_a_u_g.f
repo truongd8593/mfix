@@ -82,7 +82,6 @@
                IJKE = EAST_OF(IJK) 
                IP = IP1(I_OF(IJK)) 
                IF (ROP_G(IJKE)*AYZ_U(IJK) > SMALL_NUMBER) THEN 
-               print*,MyPE,IJK,IJKE,ROP_G(IJKE),AVG_X_E(ONE,ZERO,IP),AYZ_U(IJK)
                   B_M(IJK,M) = SQRT((-B_M(IJK,M)/(ROP_G(IJKE)*AVG_X_E(ONE,ZERO,&
                      IP)*AYZ_U(IJK)))) 
                ELSE 
@@ -91,7 +90,7 @@
             ELSE IF (B_M(IJK,M) > ZERO) THEN 
                I = I_OF(IJK) 
                IMJK = IM_OF(IJK) 
-               IF (ROP_G(IJK) > SMALL_NUMBER) THEN 
+               IF (ROP_G(IJK)*AYZ_U(IMJK) > SMALL_NUMBER) THEN 
                   B_M(IJK,M) = SQRT(B_M(IJK,M)/(ROP_G(IJK)*AVG_X_E(ZERO,ONE,I)*&
                      AYZ_U(IMJK))) 
                ELSE 
