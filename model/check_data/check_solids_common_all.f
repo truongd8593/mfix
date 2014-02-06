@@ -170,8 +170,9 @@
             IF(NMAX_s(LC) == UNDEFINED_I) THEN
                WRITE(ERR_MSG,1000) iVar('NMAX_S',LC)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ELSEIF(NMAX(LC) > DIMENSION_N_S) THEN
-               WRITE(ERR_MSG,1001) iVar('NMAX',LC), iVal(NMAX(LC))
+            ELSEIF(NMAX_s(LC) > DIM_N_S) THEN
+               WRITE(ERR_MSG,1001) trim(iVar('NMAX_s',LC)),            &
+                  trim(iVal(NMAX_s(LC)))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ELSE
                NMAX(LC) = NMAX_s(LC)
@@ -334,7 +335,7 @@
             ELSEIF(NMAX(LC) == UNDEFINED_I) THEN
                WRITE(ERR_MSG,2000) iVar('NMAX',LC),'specified'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ELSEIF(NMAX(LC) > DIMENSION_N_S) THEN
+            ELSEIF(NMAX(LC) > DIM_N_S) THEN
                WRITE(ERR_MSG,1001) iVar('NMAX',LC), iVal(NMAX(LC))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
