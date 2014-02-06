@@ -508,9 +508,6 @@
       INTEGER, OPTIONAL, intent(in) :: i2
       INTEGER, OPTIONAL, intent(in) :: i3
 
-! Flags for arguments
-      LOGICAL :: ARG2, ARG3
-
       CHARACTER(len=16) :: iASc
       CHARACTER(len=64) :: tVAR
 
@@ -524,12 +521,11 @@
          WRITE(tVar,"(A,',',A)") trim(tVar), trim(adjustl(iASc))
       ENDIF
 
-      IF(ARG3) THEN
+      IF(PRESENT(i3))THEN
          iASc=''; WRITE(iASc,*)i3
          WRITE(tVar,"(A,',',A)") trim(tVar), trim(adjustl(iASc))
       ENDIF
 
-      iASc=''; WRITE(iASc,*)i2
       WRITE(tVar,"(A,')')") trim(tVar)
 
       iVar = trim(adjustl(tVar))
