@@ -19,8 +19,8 @@ fi
 cd ${RUN_DIR}
 # Only execute if the run directory contains usr_rates.f
 if test -f "usr_rates.f" || test -f "des/usr_rates_des.f"; then
-  if test -f "usr_rates.f"; then echo -n "usr_rates.f "; fi
-  if test -f "des/usr_rates_des.f"; then echo -n "usr_rates_des.f "; fi
+#  if test -f "usr_rates.f"; then echo -n "usr_rates.f"; fi
+#  if test -f "des/usr_rates_des.f"; then echo -n "usr_rates_des.f"; fi
   REQ_RXNS=1
 else
   REQ_RXNS=0
