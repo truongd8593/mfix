@@ -108,52 +108,14 @@
 
 
 
-! Legacy checks for species equations. If values for the new input
-! method are found, MFIX exits.
-      IF(USE_RRATES) THEN
-         IF(SPECIES_EQ(0)) THEN
-            IF(NMAX(0) == UNDEFINED_I) THEN
-               WRITE(ERR_MSG,2000)'NMAX(0)','specified'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
-            ELSEIF(NMAX_G /= UNDEFINED_I) THEN
-               WRITE(ERR_MSG,2000)'NMAX_g', 'undefined'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
-            ELSEIF(NMAX(0) > DIMENSION_N_G) THEN
-               WRITE(ERR_MSG,1003)'NMAX(0)', NMAX(0)
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF
-         ELSE
-            NMAX(0) = 1
-         ENDIF
-      ENDIF
-
- 2000 FORMAT('Error 2000: Invalid input. ',A,' must be 'A,/'when ',    &
-         'USE_RRATES is .TRUE.'/,'Please correct the mfix.dat file')
-
-
-
-      IF(NMAX_g /= UNDEFINED_I)THEN
-! Verify that the number of species is within range.
-         IF(NMAX_g > DIM_N_G) THEN
-
-            WRITE(ERR_MSG,1053)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ELSE
-! Copy the new keyword entry into the runtime variable.
-            NMAX(0) = NMAX_g
-         ENDIF
-! Neither of the variables for given in the data file.
+! Check the input specifications for gas species.
+      IF(USE_RRATES)THEN
+         CALL CHECK_GAS_SPECIES_LEGACY
       ELSE
-         IF(SPECIES_EQ(0)) THEN
-            WRITE(ERR_MSG,1052)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ELSE
-            NMAX(0) = 1
-            NMAX_g = 1
-         ENDIF
+         CALL CHECK_GAS_SPECIES
       ENDIF
+
+
 
 
 ! CHECK MW_AVG
@@ -198,118 +160,6 @@
       ENDIF
 
 
-! Check MW_g
-      IF(.NOT.USE_RRATES) THEN
-! Initialize flag indicating the database was read for a species.
-         rDatabase(0,:) = .FALSE.
-! Flag indicating if the user was already warned.
-         WARNED_USR = .FALSE.
-! Flag indicating the search header was already written.
-         thermoHeader = .FALSE.
-! Flag that the energy equations are solved and specified solids phase
-! specific heat is undefined.
-         EEQ_CPG = .FALSE.
-         IF(ENERGY_EQ .AND. C_PG0 == UNDEFINED) EEQ_CPG = .TRUE.
-! Flag that the average molecular weight and constant gas density are
-! undefined.
-         MWg_ROg = .FALSE.
-         IF(MW_AVG == UNDEFINED) THEN
-            DO N=1,NMAX(0)
-               IF(MW_g(N) == UNDEFINED) MWg_ROg = .TRUE.
-            ENDDO
-         ENDIF
-         IF(MWg_ROg .AND. RO_G0==UNDEFINED) THEN
-            MWg_ROg = .TRUE.
-         ELSE
-            MWg_ROg = .FALSE.
-         ENDIF
-
-! Loop over the gas phase species
-         DO N = 1, NMAX(0)
-            SEQ_MWg = .FALSE.
-            IF(SPECIES_EQ(0) .AND. MW_G(N)==UNDEFINED) SEQ_MWg = .TRUE.
-
-! If the gas phase species equations are solved, or the gas phase is
-! compressible and the user has not supplied the average molecular 
-! weight, or the energy equations are solved and individual species
-! molecular wegiths are not given, then try and get them from the 
-! thermochemical database.
-! A final thermochemical check is preformed in check_data_09. If neither
-! of the above conditions result in species data being read from the
-! database AND a particular species is referenced by a chemical equation
-! then a call to read_database is forced.
-            IF(EEQ_CPG  .OR. MWg_ROg .OR. SEQ_MWg) THEN
-! Notify the user of the reason the thermochemical database is used.
-               IF(.NOT.WARNED_USR) THEN
-                  IF(EEQ_CPG) THEN
-                     WRITE(ERR_MSG,1054)
-                     CALL FLUSH_ERR_MSG
-                  ENDIF
-                  IF(SEQ_MWg) THEN
-                     WRITE(ERR_MSG,1055)
-                     CALL FLUSH_ERR_MSG
-                  ENDIF
-                  IF(MWg_ROg) THEN
-                     WRITE(ERR_MSG,1056)
-                     CALL FLUSH_ERR_MSG
-                  ENDIF
-                  WARNED_USR = .TRUE.
-               ENDIF
-! Flag that the species name is not provided.
-               IF(SPECIES_g(N) == UNDEFINED_C) THEN
-                  WRITE(ERR_MSG,1057)N
-                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-               ENDIF
-! Read the database.
-               IF(.NOT.thermoHeader) THEN
-                  WRITE(ERR_MSG,1058)
-                  CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
-                  thermoHeader = .TRUE.
-               ENDIF
-               WRITE(ERR_MSG,1059) N, trim(SPECIES_g(N))
-               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-               CALL READ_DATABASE('TFM', 0, N, SPECIES_g(N),MW_g(N))
-! Flag variable to stating that the database was read.
-               rDatabase(0,N) = .TRUE.
-            ENDIF 
-         ENDDO
-! Flag the legacy variable.
-         DATABASE_READ = .TRUE.
-
-! Verify that no molecular weight data was given for species that do
-! not exist.
-         DO N = NMAX(0) + 1, DIMENSION_N_G 
-            IF (MW_G(N) /= UNDEFINED) THEN 
-               CALL ERROR_ROUTINE ('CHECK_DATA_05', &
-                  'MW_g defined for N > NMAX(0)', 0, 2) 
-               IF(DMP_LOG)WRITE (UNIT_LOG, 1501) N 
-               CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
-            ENDIF 
-         ENDDO 
-! Legacy checks for MW_g
-      ELSE
-         IF (SPECIES_EQ(0) .OR. &
-            MW_AVG==UNDEFINED .AND. RO_G0==UNDEFINED) THEN 
-
-            DO N = 1, NMAX(0)
-               IF(MW_G(N) == UNDEFINED) THEN
-                  CALL ERROR_ROUTINE ('CHECK_DATA_05', &
-                     'Value of MW_g not specified', 0, 2) 
-                  IF(DMP_LOG)WRITE (UNIT_LOG, 1500) N 
-! No need to abort since MW will be read from database
-!               CALL ERROR_ROUTINE (' ', ' ', 1, 3)                
-               ENDIF 
-            ENDDO 
-            DO N = NMAX(0) + 1, DIMENSION_N_G 
-               IF (MW_G(N) /= UNDEFINED) THEN 
-                  CALL ERROR_ROUTINE ('CHECK_DATA_05', &
-                     'MW_g defined for N > NMAX(0)', 0, 2) 
-                  IF(DMP_LOG)WRITE (UNIT_LOG, 1501) N 
-                  CALL ERROR_ROUTINE (' ', ' ', 1, 3) 
-               ENDIF 
-            ENDDO 
-         ENDIF 
-      ENDIF
 
 
 ! Finalize the error manager
@@ -333,30 +183,10 @@
  1053 FORMAT('Message: The number of gas species (NMAX_g) is too ',    &
          'large. Please',/' correct the data file.')
 
- 1054 FORMAT('Message: The energy equations are being solved (ENERGY_',&
-         'EQ) and the',/' constant gas specific heat is undefined',    &
-         ' (C_PG0). Thus, the thermo-',/' chemical database will be',  &
-         ' used to gather specific heat data on the',/' individual',   &
-         ' gas phase species.')
 
- 1055 FORMAT('Message: Gas phase species equations are being solved, ',&
-         'and one or more',/'species molecular weights are undefined.',&
-         ' Thus, the thermochemical',/'database will be used to',      &
-         ' gather molecular weight data on the gas',/'phase species.')
-
- 1056 FORMAT(//1X,70('*')/' From: CHECK_DATA_05',/                     &
-         ' Message: MW_AVG and RO_G0 are undefined. Thus, the',        &
-         ' thermochemical',/' database will be used to gather',        &
-         ' molecular weight data on the gas',/' phase species.',/      &
-         1X,70('*')/)
 
  1057 FORMAT('Message: Gas phase species ',I2,' name (SPECIES_g) is',  &
          ' undefined.',/'Please correct the data file.')
-
- 1058 FORMAT(/'  Searching thermochemical databases for gas phase',    &
-         ' species data')
-
- 1059 FORMAT(/2x,'>',I3,': Species: ',A)
 
 
 
@@ -364,3 +194,275 @@
  1501 FORMAT(1X,/,1X,'MW_g for gas species ',I3,' specified') 
 
       END SUBROUTINE CHECK_GAS_PHASE
+
+
+
+!----------------------------------------------------------------------!
+! Subroutine: CHECK_GAS_SPECIES                                     !
+! Purpose: Clear solids phase species data from continuum variables    !
+! and notify the user.                                                 !
+!                                                                      !
+! Author: J. Musser                                  Date: 02-NOV-12   !
+! Reviewer:                                          Date:             !
+!                                                                      !
+! Literature/Document References: MFiX Readme                          !
+!                                                                      !
+! Variables modified: NMAX(1:DIM_M), NMAX_s(:), SPECIES_S(:,:),        !
+!                     SPECIES_ALIAS_S(:,:)                             !
+!                                                                      !
+!----------------------------------------------------------------------!
+      SUBROUTINE CHECK_GAS_SPECIES
+
+      USE compar
+      USE funits 
+      USE param 
+      USE param1 
+      USE physprop
+      USE rxns
+      USE RUN
+
+      use error_manager
+
+      IMPLICIT NONE
+
+! Total number of solids phases
+      INTEGER  :: MMAX_LL
+
+
+! Flag that the user was already warned why a call to the thermo-
+! chemical database is being made.
+      LOGICAL WARNED_USR
+
+! Flag that the energy equations are solved and specified solids phase
+! specific heat is undefined.
+! If true, a call to the thermochemical database is made.
+      LOGICAL EEQ_CPG
+
+! Flag that the solids phase species equations are solved and the 
+! molecular weight for a species are not given in the data file.
+! If true, a call to the thermochemical database is made.
+      LOGICAL SEQ_MWg
+
+      LOGICAL MWg_ROg
+
+!      LOGICAL thermoHeader
+
+      INTEGER :: N
+
+
+      CALL INIT_ERR_MSG("CHECK_GAS_SPECIES")
+
+
+! Reconcile the new species input method with the legacy input method.
+      IF(SPECIES_EQ(0)) THEN
+
+         IF(NMAX_g == UNDEFINED_I) THEN
+            WRITE(ERR_MSG,1000) 'NMAX_g'
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSEIF(NMAX_g > DIM_N_G) THEN
+            WRITE(ERR_MSG,1001) 'NMAX_g', iVal(NMAX_g)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSE
+            NMAX(0) = NMAX_g
+         ENDIF
+! Set the number of species to one if the species equations are not solved and
+! the number of species is not specified.
+      ELSE
+         NMAX(0) = merge(1, NMAX_g, NMAX_g == UNDEFINED_I)
+      ENDIF
+
+ 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
+            'correct the mfix.dat file.')
+
+ 1001 FORMAT('Error 1001: Illegal or unphysical input: ',A,' = ',A,/   &
+         'Please correct the mfix.dat file.')
+
+! Flag that the energy equations are solved and specified solids phase
+! specific heat is undefined.
+      EEQ_CPG = (ENERGY_EQ .AND. C_PG0 == UNDEFINED)
+      IF(EEQ_CPG) THEN
+         WRITE(ERR_MSG,2000)
+         CALL FLUSH_ERR_MSG
+      ENDIF
+
+ 2000 FORMAT('Message: 2000 The energy equations are being solved ',   &
+         '(ENERGY_EQ) and',/'the constant gas specific heat is ',      &
+         'undefined (C_PG0). Thus, the thermo-',/'chemical database ', &
+         'will be used to gather specific heat data on the',/          &
+         'individual gas phase species.')
+
+      MWg_ROg = .FALSE.
+      SEQ_MWg = .FALSE.
+      IF(MW_AVG == UNDEFINED) THEN
+         DO N=1,NMAX(0)
+            IF(MW_g(N) == UNDEFINED) THEN
+               IF(RO_G0 == UNDEFINED) MWg_ROg = .TRUE.
+               IF(SPECIES_EQ(0)) SEQ_MWg = .TRUE.
+            ENDIF
+         ENDDO
+      ENDIF
+
+      IF(MWg_ROg) THEN
+         WRITE(ERR_MSG, 2001)
+         CALL FLUSH_ERR_MSG
+      ENDIF
+
+ 2001 FORMAT('Message 2001: MW_AVG and RO_G0 are undefined and one or',&
+         ' more species',/'molecular weights are undefined. The therm',&
+         'ochemical database will be',/'used in an attempt to gather ',&
+         'missing molecular weight data.')
+
+      IF(MWg_ROg) THEN
+         WRITE(ERR_MSG, 2002)
+         CALL FLUSH_ERR_MSG
+      ENDIF
+
+ 2002 FORMAT('Message 2002: One or more species molecular weights are',&
+         ' undefined and',/'the gas phase species equations are being',&
+         ' solved (SOLVE_EQ(0)). The',/'thermochemical database will ',&
+         'be used in an attempt to gather missing',/'molecular weight',&
+         ' data.')
+
+      IF(EEQ_CPG  .OR. SEQ_MWg .OR. MWg_ROg) THEN
+! Initialize flag indicating the database was read for a species.
+         rDatabase(0,:) = .FALSE.
+
+         WRITE(ERR_MSG, 3000)
+         CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
+
+ 3000 FORMAT('Message 3000: Searching thermochemical databases for ',  &
+         'gas phase',/'species data.',/'  ')
+
+
+         DO N = 1, NMAX(0)
+! Notify the user of the reason the thermochemical database is used.
+! Flag that the species name is not provided.
+            IF(SPECIES_g(N) == UNDEFINED_C) THEN
+               WRITE(ERR_MSG,1000) trim(iVar('SPECIES_g',N))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+! Update the log files.
+            WRITE(ERR_MSG, 3001) N, trim(SPECIES_g(N))
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+            3001 FORMAT(2x,'>',I3,': Species: ',A)
+! Read the database.
+            CALL READ_DATABASE('TFM', 0, N, SPECIES_g(N), MW_g(N))
+! Flag variable to stating that the database was read.
+            rDatabase(0,N) = .TRUE.
+! Flag the legacy variable to prevent re-reading the database.
+            DATABASE_READ = .TRUE.
+         ENDDO ! Loop over species
+
+      ENDIF
+
+! Verify that no additional species information was given.
+      DO N = NMAX(0) + 1, DIM_N_G
+         IF(MW_G(N) /= UNDEFINED) THEN
+            WRITE(ERR_MSG, 1000) trim(iVar('MW_g',N))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDDO
+
+      CALL FINL_ERR_MSG
+
+      RETURN
+      END SUBROUTINE CHECK_GAS_SPECIES
+
+
+!----------------------------------------------------------------------!
+! Subroutine: CHECK_GAS_SPECIES_LEGACY                                 !
+! Purpose: These are legacy checks for using rrates.f to specify       !
+! chemcial reactions.                                                  !
+!                                                                      !
+! Author: J. Musser                                  Date: 03-FEB-14   !
+!----------------------------------------------------------------------!
+      SUBROUTINE CHECK_GAS_SPECIES_LEGACY
+
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! Flag: Solve species equations
+      use run, only: SPECIES_EQ
+! Gas phase molecular weights.
+      use physprop, only: MW_g
+! Number of gas phase species.
+      use physprop, only: NMAX, NMAX_g
+
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Maximum number of gas phase species.
+      USE param, only: DIM_N_g
+! Constants.
+      USE param1, only: UNDEFINED_I, UNDEFINED, ZERO
+
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
+      use error_manager
+
+
+      implicit none
+
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Loop counter.
+      INTEGER :: N
+
+
+!......................................................................!
+
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("CHECK_GAS_SPECIES_LEGACY")
+
+
+! Reconcile the new species input method with the legacy input method.
+      IF(SPECIES_EQ(0)) THEN
+! Legacy checks for species equations.
+         IF(NMAX_g /= UNDEFINED_I) THEN
+            WRITE(ERR_MSG,2000) 'NMAX_g', 'undefined'
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSEIF(NMAX(0) == UNDEFINED_I) THEN
+            WRITE(ERR_MSG,2000) trim(iVar('NMAX',0)), 'specified'
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSEIF(NMAX(0) > DIM_N_G) THEN
+            WRITE(ERR_MSG,1001) trim(iVar('NMAX',0)), iVal(NMAX(0))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+! Set the number of species to one if the species equations are not
+! solved and the number of species is not specified.
+      ELSE
+         IF(NMAX(0) == UNDEFINED_I) NMAX(0) = 1
+      ENDIF
+
+! Check MW_g if solids species are present    
+      DO N = 1, NMAX(0)
+         IF(MW_G(N) == UNDEFINED) THEN 
+            WRITE(ERR_MSG,2000)trim(iVar('MW_g',N)), 'specified'
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSEIF(MW_G(N) <= ZERO) THEN 
+            WRITE(ERR_MSG,1001)trim(iVar('MW_g',N)), iVal(MW_G(N)) 
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDDO ! Loop over species
+      DO N = NMAX(0) + 1, DIM_N_G
+         IF(MW_G(N) /= UNDEFINED) THEN 
+            WRITE(ERR_MSG,1001)trim(iVar('MW_g',N)), iVal(MW_G(N)) 
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDDO 
+
+      CALL FINL_ERR_MSG
+
+      RETURN
+
+ 1001 FORMAT('Error 1001: Illegal or unphysical input: ',A,' = ',A,/   &
+         'Please correct the mfix.dat file.')
+
+ 2000 FORMAT('Error 2000: Invalid input. ',A,' must be 'A,/'when ',    &
+         'USE_RRATES is .TRUE.'/,'Please correct the mfix.dat file')
+
+      END SUBROUTINE CHECK_GAS_SPECIES_LEGACY
+

@@ -13,8 +13,6 @@
 !    > CHECK_DES_SOLDIS       :: DEM solids phase model)               !
 !    > CHECK_MPPIC_SOLDIS     :: MPPIC solids phase model)             !
 !                                                                      !
-!                                                                      !
-!  Author: P.Nicoletti                               Date: 02-DEC-91   !
 !  Author: J.Musser                                  Date: 03-FEB-14   !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
@@ -330,13 +328,13 @@
 
 ! Legacy checks for species equations.
             IF(NMAX_s(LC) /= UNDEFINED_I) THEN
-               WRITE(ERR_MSG,2000) iVar('NMAX_s',LC), 'undefined'
+               WRITE(ERR_MSG,2000) trim(iVar('NMAX_s',LC)), 'undefined'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ELSEIF(NMAX(LC) == UNDEFINED_I) THEN
-               WRITE(ERR_MSG,2000) iVar('NMAX',LC),'specified'
+               WRITE(ERR_MSG,2000) trim(iVar('NMAX',LC)), 'specified'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ELSEIF(NMAX(LC) > DIM_N_S) THEN
-               WRITE(ERR_MSG,1001) iVar('NMAX',LC), iVal(NMAX(LC))
+               WRITE(ERR_MSG,1001) trim(iVar('NMAX',LC)), iVal(NMAX(LC))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
 
