@@ -29,6 +29,8 @@
       USE discretelement
       USE des_rxns
 
+      use error_manager
+
       IMPLICIT NONE
 
 ! Indicates the model. TFM, DEM
@@ -76,43 +78,41 @@
       DOUBLE PRECISION :: ICpoR_TcH  ! 0.0 --> Tcom using Ahigh
 
       LOGICAL :: testCp = .FALSE.
+! Database being searched.
+      CHARACTER(len=256) :: DB
+
+      CALL INIT_ERR_MSG('READ_DATABALSE')
 
 ! Initialize the file unit to be used.
       FUNIT = UNIT_DAT  ! .dat file unit
 ! Read data from mfix.dat or from BURCAT.THR in run directory or
 ! mfix directory.
       FILE = 0
-      DO
+      DB_LP: DO
          FILE = FILE + 1
 ! Check for thermochemical data in the mfix.dat file.
-         IF(FILE == 1) then
+         IF(FILE == 1) THEN
            OPEN(UNIT=FUNIT, FILE='mfix.dat', STATUS='OLD', IOSTAT= IOS)
-	          IF(IOS /= 0) CYCLE       ! Cycle on opening error
-           IF(myPE == PE_IO) THEN
-              WRITE(*,1000)'mfix.dat'  ! Identify read file. (screen)
-              WRITE(UNIT_LOG,1000)'mfix.dat' ! (log file)
-           ENDIF
+           IF(IOS /= 0) CYCLE DB_LP
+           DB=''; WRITE(DB,1000) 'mfix.dat'
+           CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 ! Read thermochemical data from the BURCAT.THR database in the local
 ! run directory.
-	        ELSEIF(FILE == 2) THEN
+         ELSEIF(FILE == 2) THEN
             OPEN(UNIT=FUNIT,FILE=TRIM(THERM), STATUS='OLD', IOSTAT= IOS)
-	           IF(IOS /= 0) CYCLE         ! Cycle on opening error
-            IF(myPE == PE_IO) THEN
-               WRITE(*,1000) TRIM(THERM)  ! Identify read file.
-               WRITE(UNIT_LOG,1000) TRIM(THERM)  ! (log file)
-            ENDIF
+            IF(IOS /= 0) CYCLE DB_LP
+            DB=''; WRITE(DB,1000) TRIM(THERM)
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 ! Read thermochemical data from the BURCAT.THR database in the model
 ! directory (model/thermochemical/BURCAT.THR).
-     	   ELSEIF(file == 3) then
+     	   ELSEIF(file == 3) THEN
             FILENAME = trim(MFIX_PATH)//'/thermochemical/'//TRIM(THERM)
             OPEN(UNIT=FUNIT,FILE=TRIM(FILENAME), STATUS='OLD',IOSTAT= IOS)
-	           IF(IOS /= 0) CYCLE            ! Cycle on opening error
-            IF(myPE == PE_IO) THEN
-               WRITE(*,1000) ('/thermochemical/'//TRIM(THERM)) ! (screen)
-               WRITE(UNIT_LOG,1000) ('/thermochemical/'//TRIM(THERM))  ! (log file)
-            ENDIF
+            IF(IOS /= 0) CYCLE DB_LP
+            DB=''; WRITE(DB,1000) ('/thermochemical/'//TRIM(THERM))
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
         	ELSE
-            EXIT 
+            EXIT DB_LP
         	ENDIF
 
          REWIND(UNIT=funit)
@@ -194,69 +194,58 @@
             ENDIF
          ELSE
 ! No other models have been set to use the thermochemical database.
-            IF(myPE == PE_IO) THEN
-               WRITE(*,1020) TRIM(ADJUSTL(MODEL))
-               WRITE(UNIT_LOG,1020) TRIM(ADJUSTL(MODEL))
-            ENDIF
-            CALL MFIX_EXIT(myPE)
+! This is to catch coding errors and shouldn't get thrown at runtime.
+            WRITE(ERR_MSG,1020) TRIM(ADJUSTL(MODEL))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
 
          ErrorFlag = .TRUE.
          IF(IER == 0) THEN
-            IF(myPE == PE_IO) THEN
-               WRITE(*,1001) 'Found!'
-               WRITE(UNIT_LOG,1001) 'Found!'
-            ENDIF
-            ErrorFlag = .FALSE.
-
+            WRITE(ERR_MSG,1001) trim(adjustl(DB)), 'Found!'
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
             if(testCP) CALL writeCp(MODEL, lM, lN, lName, lMW)
-            EXIT
-        ELSEIF(myPE == PE_IO) THEN
-            WRITE(*,1001) 'Not found.'
-            WRITE(UNIT_LOG,1001) 'Not found.'
+            ErrorFlag = .FALSE.
+            EXIT DB_LP
+        ELSE
+            WRITE(ERR_MSG,1001) trim(adjustl(DB)), 'Not found.'
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
         ENDIF
 
-      ENDDO
+      ENDDO DB_LP
 
 ! Error message control.
 !-----------------------------------------------------------------------
 ! Write remaining error message if needed.
       IF(ErrorFlag) THEN
-         IF(myPE .EQ. PE_IO) THEN
-            WRITE(*,1010) trim(lName)
-            WRITE(*,1011) TRIM(FILENAME)
-            WRITE(UNIT_LOG,1010) trim(lName)
-            WRITE(UNIT_LOG,1011) TRIM(FILENAME)
-         ENDIF
-         CALL MFiX_Exit(myPE)
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
+         WRITE(ERR_MSG,1010) trim(lName), trim(FILENAME)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
+
+      CALL FINL_ERR_MSG
 
       RETURN  
 
 
 ! Messages
 !-----------------------------------------------------------------------
- 1000 FORMAT(5X,'Checking ',A,$)
- 1001 FORMAT(1X,' :: ',A)
+ 1000 FORMAT('Checking ',A)
+ 1001 FORMAT(8X,A,1X,' :: ',A)
 
 ! Error Flags
 !-----------------------------------------------------------------------
- 1010 FORMAT(//1X,70('*')/, ' From: READ_DATABASE',/, ' Message:',     &
-         ' Species "',A,'" was not matched to any entry in the',/      &
-         ' thermochemical databases.')
- 1011 FORMAT(/' SUGGESTION: Search the database for the exact species',&
-         ' name. The',/' species names are case sensitive and should', &
-         ' match the names in',/' BURCAT.THR exactly excluding',       &
-         ' trailing blanks and tabs. Also verify',/' that the data',   &
-         ' section in the mfix.dat file (if any) is below a line',/    &
-         ' that starts with THERMO DATA.',//' Database location:',     &
-         /1X,A,/1X,70('*')/)
- 1012 FORMAT(1X,70('*')/)
+ 1010 FORMAT('Message 1010: Species "',A,'" was not matched to any ',  &
+         'entry in the',/'thermochemical databases.',2/,'SUGGESTION: ',&
+         'Search the database for the exact species name. The ',/      &
+         'species names are case sensitive and should match the names',&
+         ' in',/'BURCAT.THR exactly excluding trailing blanks and ',   &
+         'tabs. Also verify',/'that the data section in the mfix.dat ',&
+         'file (if any) is below a line',/'that starts with THERMO ',  &
+         'DATA.',2/'Database location:', /A)
 
- 1020 FORMAT(//1X,70('*')/' From: READ_DATABASE',/                     &
-         ' Message: This routine was entered with an invalid model',   &
-         ' argument.',/' Acceptable values are TFM and DEM.',/         &
-         ' Passed Argument: MODEL = ',A,/1X,70('*')//)
+ 1020 FORMAT('Message 1020: This routine was entered with an invalid ',&
+         'model argument.',/' Acceptable values are TFM and DEM.',/    &
+         ' Passed Argument: MODEL = ',A)
 
       END SUBROUTINE READ_DATABASE
 
