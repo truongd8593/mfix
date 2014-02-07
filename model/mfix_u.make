@@ -3751,6 +3751,7 @@ $(DPO)read_database.$(OBJ_EXT) : read_database.f \
             $(DPO)FUNITS.mod \
             $(DPO)DISCRETELEMENT.mod \
             $(DPO)DES_RXNS.mod \
+            $(DPO)ERROR_MANAGER.mod \
             mfix_directory_path.inc                                     
 	$(FORTRAN_CMD) $(FORT_FLAGS) read_database.f  -o $(DPO)read_database.$(OBJ_EXT) -module $(DPO)
 $(DPO)read_namelist.$(OBJ_EXT) : read_namelist.f \
@@ -5045,7 +5046,8 @@ $(DPO)usr2.$(OBJ_EXT) : usr2.f \
             $(DPO)USR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr2.f  -o $(DPO)usr2.$(OBJ_EXT) -module $(DPO)
 $(DPO)usr3.$(OBJ_EXT) : usr3.f \
-            $(DPO)USR.mod 
+            $(DPO)USR.mod \
+            $(DPO)FLDVAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr3.f  -o $(DPO)usr3.$(OBJ_EXT) -module $(DPO)
 $(DPO)usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
             $(DPO)USR.mod 
@@ -6034,15 +6036,12 @@ $(DPO)check_dmp_prereqs.$(OBJ_EXT) : ./check_data/check_dmp_prereqs.f \
             $(DPO)ERROR_MANAGER.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_dmp_prereqs.f  -o $(DPO)check_dmp_prereqs.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_gas_phase.$(OBJ_EXT) : ./check_data/check_gas_phase.f \
-            $(DPO)COMPAR.mod \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)FUNITS.mod \
             $(DPO)RUN.mod \
-            $(DPO)INDICES.mod \
             $(DPO)RXNS.mod \
-            $(DPO)ERROR_MANAGER.mod 
+            $(DPO)PHYSPROP.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)ERROR_MANAGER.mod \
+            $(DPO)PARAM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_gas_phase.f  -o $(DPO)check_gas_phase.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_geometry_prereqs.$(OBJ_EXT) : ./check_data/check_geometry_prereqs.f \
             $(DPO)GEOMETRY.mod \
@@ -6074,17 +6073,11 @@ $(DPO)check_run_control.$(OBJ_EXT) : ./check_data/check_run_control.f \
             $(DPO)MFIX_PIC.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_run_control.f  -o $(DPO)check_run_control.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_solids_common_all.$(OBJ_EXT) : ./check_data/check_solids_common_all.f \
+            $(DPO)RXNS.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)DISCRETELEMENT.mod \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
-            $(DPO)RUN.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)CONSTANT.mod \
-            $(DPO)DISCRETELEMENT.mod \
-            $(DPO)FUNITS.mod \
-            $(DPO)MFIX_PIC.mod \
-            $(DPO)COMPAR.mod \
-            $(DPO)RXNS.mod \
             $(DPO)ERROR_MANAGER.mod \
             $(DPO)RUN.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_common_all.f  -o $(DPO)check_solids_common_all.$(OBJ_EXT) -module $(DPO)
