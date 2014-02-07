@@ -43,7 +43,7 @@
       IMPLICIT NONE
 
 
-! Local Variables::
+! Local Variables:
 !---------------------------------------------------------------------//
 ! NONE
 
@@ -149,14 +149,6 @@
 !----------------------------------------------------------------------!
       SUBROUTINE CHECK_GAS_SPECIES
 
-!      USE compar
-!      USE funits 
-!      USE param 
-!      USE param1 
-!      use physprop
-!      use rxns
- !     USE RUN
-
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -166,8 +158,6 @@
       use run, only: SPECIES_EQ
 ! Flag: Database for phase X was read for species Y
       use rxns, only: rDatabase
-! Flag: Database was read. (legacy)
-      use physprop, only: DATABASE_READ
 ! Gas phase species database names.
       use rxns, only: SPECIES_g
 ! Gas phase molecular weights.
@@ -245,12 +235,6 @@
          NMAX(0) = merge(1, NMAX_g, NMAX_g == UNDEFINED_I)
       ENDIF
 
- 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
-            'correct the mfix.dat file.')
-
- 1001 FORMAT('Error 1001: Illegal or unphysical input: ',A,' = ',A,/   &
-         'Please correct the mfix.dat file.')
-
 ! Flag that the energy equations are solved and specified solids phase
 ! specific heat is undefined.
       EEQ_CPG = (ENERGY_EQ .AND. C_PG0 == UNDEFINED)
@@ -297,9 +281,10 @@
          'be used in an attempt to gather missing',/'molecular weight',&
          ' data.')
 
-      IF(EEQ_CPG  .OR. SEQ_MWg .OR. MWg_ROg) THEN
 ! Initialize flag indicating the database was read for a species.
-         rDatabase(0,:) = .FALSE.
+      rDatabase(0,:) = .FALSE.
+
+      IF(EEQ_CPG .OR. SEQ_MWg .OR. MWg_ROg) THEN
 
          WRITE(ERR_MSG, 3000)
          CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
@@ -307,24 +292,24 @@
  3000 FORMAT('Message 3000: Searching thermochemical databases for ',  &
          'gas phase',/'species data.',/'  ')
 
-
          DO N = 1, NMAX(0)
+            IF(EEQ_CPG .OR. MW_g(N) == UNDEFINED) THEN
 ! Notify the user of the reason the thermochemical database is used.
 ! Flag that the species name is not provided.
-            IF(SPECIES_g(N) == UNDEFINED_C) THEN
-               WRITE(ERR_MSG,1000) trim(iVar('SPECIES_g',N))
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF
+               IF(SPECIES_g(N) == UNDEFINED_C) THEN
+                  WRITE(ERR_MSG,1000) trim(iVar('SPECIES_g',N))
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
 ! Update the log files.
-            WRITE(ERR_MSG, 3001) N, trim(SPECIES_g(N))
-            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-            3001 FORMAT(/2x,'>',I3,': Species: ',A)
+               WRITE(ERR_MSG, 3001) N, trim(SPECIES_g(N))
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+               3001 FORMAT(/2x,'>',I3,': Species: ',A)
 ! Read the database.
-            CALL READ_DATABASE('TFM', 0, N, SPECIES_g(N), MW_g(N))
+               CALL READ_DATABASE('TFM', 0, N, SPECIES_g(N), MW_g(N))
 ! Flag variable to stating that the database was read.
-            rDatabase(0,N) = .TRUE.
-! Flag the legacy variable to prevent re-reading the database.
-            DATABASE_READ = .TRUE.
+               rDatabase(0,N) = .TRUE.
+            ENDIF
+
          ENDDO ! Loop over species
          CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
       ENDIF
@@ -332,7 +317,7 @@
 ! Verify that no additional species information was given.
       DO N = NMAX(0) + 1, DIM_N_G
          IF(MW_G(N) /= UNDEFINED) THEN
-            WRITE(ERR_MSG, 1000) trim(iVar('MW_g',N))
+            WRITE(ERR_MSG, 1002) trim(iVar('MW_g',N))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
       ENDDO
@@ -340,6 +325,16 @@
       CALL FINL_ERR_MSG
 
       RETURN
+
+ 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
+         'correct the mfix.dat file.')
+
+ 1001 FORMAT('Error 1001: Illegal or unphysical input: ',A,' = ',A,/   &
+         'Please correct the mfix.dat file.')
+
+ 1002 FORMAT('Error 1002: Illegal input: ',A,' specified out of range.'&
+         ,/'Please correct the mfix.dat file.')
+
       END SUBROUTINE CHECK_GAS_SPECIES
 
 
@@ -361,6 +356,8 @@
       use physprop, only: MW_g
 ! Number of gas phase species.
       use physprop, only: NMAX, NMAX_g
+! Flag: Database was read. (legacy)
+      use physprop, only: DATABASE_READ
 
 
 ! Global Parameters:
@@ -429,6 +426,9 @@
       ENDDO 
 
       CALL FINL_ERR_MSG
+
+! Set the legacy database flag. (Also in check_solids_common_all)
+      DATABASE_READ = .FALSE.
 
       RETURN
 
