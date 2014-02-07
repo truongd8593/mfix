@@ -145,7 +145,7 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: MW_MIX_g
 
 ! Logical for reading thermochemical database.
-      LOGICAL :: DATABASE_READ = .FALSE.
+      LOGICAL :: DATABASE_READ = .TRUE.
 
 ! Polynomical coefficients for calculating specific heat.
       DOUBLE PRECISION Alow (7,0:DIM_M, DIM_N) ! Tlow --> Tcom
