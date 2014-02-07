@@ -329,6 +329,8 @@
       CHARACTER(LEN=LINE_LENGTH) :: LINE
 ! Line length with trailing space removed.
       INTEGER :: LENGTH
+! Index of last line in the message.
+      INTEGER :: LAST_LINE, tsize
 ! Line Counter
       INTEGER :: LC
 ! Local debug flag.
@@ -370,6 +372,17 @@
          ENDIF
       ENDIF
 
+! Find the end of the message.
+      LAST_LINE = 0 
+      DO LC = 1, LINE_COUNT
+         LINE = ERR_MSG(LC)
+         LENGTH = len_trim(LINE)
+         IF(0 < LENGTH .AND. LENGTH < 256 ) THEN
+            LAST_LINE = LC
+            tsize = length
+         ENDIF
+      ENDDO
+
 ! Write the message body.
       IF(D_FLAG)THEN
          DO LC = 1, LINE_COUNT
@@ -387,12 +400,15 @@
             ENDIF
          ENDDO
       ELSE
-         DO LC = 1, LINE_COUNT
+         DO LC = 1, LAST_LINE
             LINE = ERR_MSG(LC)
             LENGTH = len_trim(LINE)
             IF(0 < LENGTH .AND. LENGTH < 256 ) THEN
                IF(SCR_LOG) WRITE(*,1001) trim(LINE)
                IF(DMP_LOG) WRITE(UNIT_LOG,1001) trim(LINE)
+            ELSE
+               IF(SCR_LOG) WRITE(*,"('  ')")
+               IF(DMP_LOG) WRITE(UNIT_LOG,"('  ')")
             ENDIF
          ENDDO
       ENDIF
