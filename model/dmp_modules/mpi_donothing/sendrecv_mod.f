@@ -276,5 +276,13 @@
 	return
 	end subroutine send_recv_1i
 
+! Re-initialize send/receive after re-indexing 
+	subroutine sendrecv_re_init_after_re_indexing(comm, idebug )
+        implicit none
+	integer, intent(in) :: comm
+	integer, intent(in), optional :: idebug
+   	return	
+	end subroutine sendrecv_re_init_after_re_indexing
+
 	
 	end module sendrecv

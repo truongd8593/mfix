@@ -3021,3 +3021,1564 @@
       RETURN
 
       END SUBROUTINE FIND_CELL_RATIO
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: ADJUST_IJK_SIZE                                        C
+!  Purpose: Adjust domain size of each processor, based on an          C
+!           estimate on the total number of useful cells.              C
+!           The objective is to reduce load imbalance.                 C
+!           This is the parallel version                               C
+!                                                                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 02-Dec-10  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE ADJUST_IJK_SIZE
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE gridmap
+      USE param 
+      USE param1 
+      USE constant 
+      USE run
+      USE physprop
+      USE indices
+      USE scalars
+      USE funits
+      USE leqsol
+      USE compar             
+      USE mpi_utility        
+      USE bc
+      USE DISCRETELEMENT
+
+      USE cutcell
+      USE quadric
+      USE vtk
+      USE polygon
+      USE dashboard
+      USE stl
+
+
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+      INTEGER :: LC,I,J,K,Q_ID,TOTAL_NUC,IDEAL_NCPP
+      DOUBLE PRECISION :: X_COPY,Y_COPY,Z_COPY,F_COPY
+      LOGICAL :: SHIFT,CLIP_FLAG,PRESENT
+      DOUBLE PRECISION, DIMENSION(0:DIM_I) :: DXT ,XCC
+      DOUBLE PRECISION, DIMENSION(0:DIM_J) :: DYT ,YCC
+      DOUBLE PRECISION, DIMENSION(0:DIM_K) :: DZT, ZCC
+
+      INTEGER, DIMENSION(0:DIM_I) :: NUC_I,GLOBAL_NUC_I
+      INTEGER, DIMENSION(0:DIM_J) :: NUC_J,GLOBAL_NUC_J
+      INTEGER, DIMENSION(0:DIM_K) :: NUC_K,GLOBAL_NUC_K
+
+      INTEGER :: IPROC,PSUM,LSUM,I1,I2,J1,J2,K1,K2,CURRENT_DIFF,PREVIOUS_DIFF
+
+   	INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,IDEAL_SUM,NCPP_WITH_GHOST
+
+   	INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
+   	INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
+   	INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
+
+
+      INTEGER :: JSIZE, IREMAIN,ISIZE, JREMAIN,KSIZE, KREMAIN
+      INTEGER :: MAXVAL_NCPP_OLD,MINVAL_NCPP_OLD,MAXVAL_NCPP,MINVAL_NCPP
+      INTEGER :: MAXLOC_NCPP_OLD,MINLOC_NCPP_OLD,MAXLOC_NCPP,MINLOC_NCPP
+      INTEGER :: AVG_NCPP_OLD,AVG_NCPP
+      DOUBLE PRECISION :: LIP_OLD,LIP,MAXSPEEDUP_OLD,MAXSPEEDUP,P
+
+      CHARACTER(LEN=10) :: MAX_SPEEDUP_OLD,MAX_SPEEDUP
+
+
+      INTEGER :: I_OFFSET,J_OFFSET,K_OFFSET,IERR,IPROC_OF_MAX,IPROC_OF_MIN
+
+      INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
+
+      LOGICAL :: PRINT_STATISTICS
+
+
+!-----------------------------------------------
+!
+
+      IF(.NOT.CARTESIAN_GRID) RETURN            ! Perform adjustement only when both CG 
+      IF(.NOT.ADJUST_PROC_DOMAIN_SIZE) RETURN   ! and domain adjustment
+      IF(NODESI*NODESJ*NODESK==1) RETURN         ! and parallel run are active
+
+
+      INQUIRE(FILE='gridmap.dat',EXIST=PRESENT)
+      IF(PRESENT) THEN
+         IF (myPE == PE_IO) WRITE(*,*)'gridmap was assigned from grimap.dat. Skipping the adjustment.'
+         RETURN
+
+      ENDIF
+
+      IF (myPE == PE_IO) CALL PRINT_CG_HEADER
+
+      allocate( NCPP_UNIFORM(0:NumPEs-1))
+
+      SHORT_GRIDMAP_INIT = .TRUE.
+      CALL gridmap_init
+      SHORT_GRIDMAP_INIT = .FALSE.
+
+      allocate( ISIZE_ALL(0:NODESI-1))
+      allocate( JSIZE_ALL(0:NODESJ-1))
+      allocate( KSIZE_ALL(0:NODESK-1))
+
+
+
+!      NCPP_UNIFORM = ijksize3_all
+
+!      print*,'------> MyPE,NCPP_UNIFORM=',MyPE,NCPP_UNIFORM
+
+      DIMENSION_I   = IMAX3
+      DIMENSION_J   = JMAX3
+      DIMENSION_K   = KMAX3
+
+      PARTIAL_CHECK_03 = .TRUE.
+      CALL CHECK_DATA_03(SHIFT)
+      PARTIAL_CHECK_03 = .FALSE.
+      CALL CHECK_DATA_CARTESIAN                                ! Make sure CG data is valid
+
+      CALL DEFINE_QUADRICS
+
+      SHIFT = .TRUE.
+
+      IF(SHIFT) THEN                                           ! Shift DX,DY,DZ and store it into temporary DXT,DYT,DZT
+
+         IF (DO_I) THEN 
+            DXT(IMAX3) = DX(IMAX-1)
+            DXT(IMAX2) = DX(IMAX-1)
+            DO LC = IMAX1, IMIN1, -1
+   	         DXT(LC) = DX(LC-2)
+            ENDDO
+            DXT(IMIN2) = DX(IMIN1) 
+            DXT(IMIN3) =DX(IMIN2)	
+
+            XCC(IMIN1) = HALF*DXT(IMIN1)
+            DO I=IMIN1+1,IMAX1
+               XCC(I) = XCC(I-1) + HALF*(DXT(I-1) + DXT(I))
+            ENDDO
+   	 
+         ENDIF 
+   !
+         IF (DO_J) THEN 
+            DYT(JMAX3) = DY(JMAX-1)	 	 
+            DYT(JMAX2) = DY(JMAX-1) 
+            DO LC = JMAX1, JMIN1, -1
+               DYT(LC) = DY(LC-2)
+            ENDDO
+            DYT(JMIN2) = DY(JMIN1) 
+            DYT(JMIN3) =DY(JMIN2)	 	 
+
+            YCC(JMIN1) = HALF*DYT(JMIN1)
+            DO J=JMIN1+1,JMAX1
+               YCC(J) = YCC(J-1) + HALF*(DYT(J-1) + DYT(J))
+            ENDDO
+
+
+         ENDIF 
+   !
+         IF (DO_K) THEN 
+            DZT(KMAX3) = DZ(KMAX-1) 
+            DZT(KMAX2) = DZ(KMAX-1) 
+            DO LC = KMAX1, KMIN1, -1
+               DZT(LC) = DZ(LC-2)
+            ENDDO
+            DZT(KMIN2) = DZ(KMIN1) 
+            DZT(KMIN3) =DZ(KMIN2)
+
+            ZCC(KMIN1) = HALF*DZT(KMIN1)
+            DO K=KMIN1+1,KMAX1
+               ZCC(K) = ZCC(K-1) + HALF*(DZT(K-1) + DZT(K))
+            ENDDO
+	 
+         ENDIF
+
+      ENDIF  ! SHIFT
+
+
+
+      IF(NODESI>1) THEN                                ! DOMAIN DECOMPOSITION IN I-DIRECTION
+
+         IF(myPE == 0.AND.NODESJ*NODESK/=1) THEN
+            WRITE(*,*)'ERROR IN SUBROUTINE ADJUST_IJK_SIZE.'
+            WRITE(*,*)'ADJUSTMENT POSSIBLE ONLY FOR DOMAIN DECOMPOSITION In ONE DIRECTION.'
+            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK 
+            WRITE(*,*)'MFIX WILL EXIT NOW.'
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+
+         JSIZE_ALL(0:NODESJ-1) = jmax1-jmin1+1         ! Assign size in J and K-direction
+         KSIZE_ALL(0:NODESK-1) = kmax1-kmin1+1
+
+! Assign size in I-direction
+         IF (myPE == 0) THEN
+            WRITE(*,1000)'INFO FROM ADJUST_IJK_SIZE:'
+            WRITE(*,1000)'ATTEMPTING TO ADJUST DOMAIN SIZE IN I-DIRECTION ...'
+            WRITE(*,1000)'THIS IS BASED ON AN ESTIMATED (NOT EXACT) NUMBER OF USEFUL CELLS,'
+            WRITE(*,1000)'AND IT INCLUDES GHOST LAYERS.'
+
+         ENDIF
+
+         DO I = ISTART1,IEND1
+
+            NUC_I(I) = 0                     ! NUC : Number of Useful Cells
+
+            DO J = JSTART1,JEND1
+               DO K = KSTART1,KEND1
+                  Q_ID = 1
+                  CLIP_FLAG = .FALSE.
+
+                  X_COPY = XCC(I)
+                  Y_COPY = YCC(J)
+                  Z_COPY = ZCC(K)
+
+
+                  CALL EVAL_F('QUADRIC',X_COPY,Y_COPY,Z_COPY,Q_ID,F_COPY,CLIP_FLAG)
+
+   !               CALL EVAL_F('POLYGON',X_COPY,Y_COPY,Z_COPY,N_POLYGON,F_COPY,CLIP_FLAG)
+
+   !               CALL EVAL_F('USR_DEF',X_COPY,Y_COPY,Z_COPY,N_USR_DEF,F_COPY,CLIP_FLAG)
+
+   !                CALL EVAL_STL_FCT(x1,x2,x3,Q,f,CLIP_FLAG,BCID)
+
+            
+                  IF (F_COPY < TOL_F ) THEN      ! Interior point, counted as useful
+                     NUC_I(I) = NUC_I(I) + 1
+                  ENDIF
+
+               ENDDO
+            ENDDO
+
+         ENDDO
+
+! Gather NUC onto the head node
+
+         CALL allgather_1i (IEND1-ISTART1+1,rcount,IERR)    
+
+         IF (myPE == 0) THEN
+            I_OFFSET = 0
+         ELSE
+            I_OFFSET = 0
+            DO iproc=0,myPE-1
+               I_OFFSET = I_OFFSET + rcount(iproc)
+            ENDDO
+         ENDIF
+
+         CALL allgather_1i (I_OFFSET,disp,IERR)
+
+         call gatherv_1i( NUC_I(ISTART1:IEND1), IEND1-ISTART1+1, GLOBAL_NUC_I(IMIN1:IMAX1), rcount, disp, PE_IO, ierr )
+
+
+
+      ELSEIF(NODESJ>1) THEN                            ! DOMAIN DECOMPOSITION IN J-DIRECTION
+
+
+         IF(myPE == 0.AND.NODESI*NODESK/=1) THEN
+            WRITE(*,*)'ERROR IN SUBROUTINE ADJUST_IJK_SIZE.'
+            WRITE(*,*)'ADJUSTMENT POSSIBLE ONLY FOR DOMAIN DECOMPOSITION In ONE DIRECTION.'
+            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK 
+            WRITE(*,*)'MFIX WILL EXIT NOW.'
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+
+         ISIZE_ALL(0:NODESI-1) = imax1-imin1+1         ! Assign size in I and K-direction
+         KSIZE_ALL(0:NODESK-1) = kmax1-kmin1+1
+
+
+
+!         WRITE(*,*)'Attempting to read gridmap from grimap.dat...',MyPE
+!         INQUIRE(FILE='gridmap.dat',EXIST=PRESENT)
+!         IF(PRESENT) THEN
+!          WRITE(*,*)'Reading gridmap from grimap.dat...'
+!            OPEN(UNIT=777, FILE='gridmap.dat', STATUS='OLD') 
+!            DO IPROC = 0,NumPEs-1
+!                  READ(777,*) jsize_all(IPROC)
+!            ENDDO
+!            CLOSE(777)
+!            GOTO 9999
+!         ENDIF
+
+
+! Assign size in J-direction
+         IF (myPE == 0) THEN
+            WRITE(*,1000)'INFO FROM ADJUST_IJK_SIZE:'
+            WRITE(*,1000)'ATTEMPTING TO ADJUST DOMAIN SIZE IN J-DIRECTION ...'
+            WRITE(*,1000)'THIS IS BASED ON AN ESTIMATED (NOT EXACT) NUMBER OF USEFUL CELLS,'
+            WRITE(*,1000)'AND IT INCLUDES GHOST LAYERS.'
+
+         ENDIF
+
+         DO J = JSTART1,JEND1
+
+            NUC_J(J) = 0                     ! NUC : Number of Useful Cells
+
+            DO I = ISTART1,IEND1
+               DO K = KSTART1,KEND1
+                  Q_ID = 1
+                  CLIP_FLAG = .FALSE.
+
+                  X_COPY = XCC(I)
+                  Y_COPY = YCC(J)
+                  Z_COPY = ZCC(K)
+
+
+                  CALL EVAL_F('QUADRIC',X_COPY,Y_COPY,Z_COPY,Q_ID,F_COPY,CLIP_FLAG)
+
+   !               CALL EVAL_F('POLYGON',X_COPY,Y_COPY,Z_COPY,N_POLYGON,F_COPY,CLIP_FLAG)
+
+   !               CALL EVAL_F('USR_DEF',X_COPY,Y_COPY,Z_COPY,N_USR_DEF,F_COPY,CLIP_FLAG)
+
+   !                CALL EVAL_STL_FCT(x1,x2,x3,Q,f,CLIP_FLAG,BCID)
+
+            
+                  IF (F_COPY < TOL_F ) THEN      ! Interior point, counted as useful
+                     NUC_J(J) = NUC_J(J) + 1
+                  ENDIF
+
+               ENDDO
+            ENDDO
+
+         ENDDO
+
+! Gather NUC onto the head node
+
+         CALL allgather_1i (JEND1-JSTART1+1,rcount,IERR)    
+
+         IF (myPE == 0) THEN
+            J_OFFSET = 0
+         ELSE
+            J_OFFSET = 0
+            DO iproc=0,myPE-1
+               J_OFFSET = J_OFFSET + rcount(iproc)
+            ENDDO
+         ENDIF
+
+         CALL allgather_1i (J_OFFSET,disp,IERR)
+
+         call gatherv_1i( NUC_J(JSTART1:JEND1), JEND1-JSTART1+1, GLOBAL_NUC_J(JMIN1:JMAX1), rcount, disp, PE_IO, ierr )
+
+
+      ELSEIF(NODESK>1) THEN                            ! DOMAIN DECOMPOSITION IN K-DIRECTION
+
+         IF(myPE == 0.AND.NODESI*NODESJ/=1) THEN
+            WRITE(*,*)'ERROR IN SUBROUTINE ADJUST_IJK_SIZE.'
+            WRITE(*,*)'ADJUSTMENT POSSIBLE ONLY FOR DOMAIN DECOMPOSITION In ONE DIRECTION.'
+            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK 
+            WRITE(*,*)'MFIX WILL EXIT NOW.'
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+
+         ISIZE_ALL(0:NODESI-1) = imax1-imin1+1         ! Assign size in I and J-direction
+         JSIZE_ALL(0:NODESJ-1) = jmax1-jmin1+1
+
+! Assign size in K-direction
+         IF (myPE == 0) THEN
+            WRITE(*,1000)'INFO FROM ADJUST_IJK_SIZE:'
+            WRITE(*,1000)'ATTEMPTING TO ADJUST DOMAIN SIZE IN K-DIRECTION ...'
+            WRITE(*,1000)'THIS IS BASED ON AN ESTIMATED (NOT EXACT) NUMBER OF USEFUL CELLS,'
+            WRITE(*,1000)'AND IT INCLUDES GHOST LAYERS.'
+         ENDIF
+
+         DO K = KSTART1,KEND1
+
+            NUC_K(K) = 0                     ! NUC : Number of Useful Cells
+
+            DO I = ISTART1,IEND1
+               DO J = JSTART1,JEND1
+                  Q_ID = 1
+                  CLIP_FLAG = .FALSE.
+
+                  X_COPY = XCC(I)
+                  Y_COPY = YCC(J)
+                  Z_COPY = ZCC(K)
+
+
+                  CALL EVAL_F('QUADRIC',X_COPY,Y_COPY,Z_COPY,Q_ID,F_COPY,CLIP_FLAG)
+
+   !               CALL EVAL_F('POLYGON',X_COPY,Y_COPY,Z_COPY,N_POLYGON,F_COPY,CLIP_FLAG)
+
+   !               CALL EVAL_F('USR_DEF',X_COPY,Y_COPY,Z_COPY,N_USR_DEF,F_COPY,CLIP_FLAG)
+
+   !                CALL EVAL_STL_FCT(x1,x2,x3,Q,f,CLIP_FLAG,BCID)
+
+            
+                  IF (F_COPY < TOL_F ) THEN      ! Interior point, counted as useful
+                     NUC_K(K) = NUC_K(K) + 1
+                  ENDIF
+
+               ENDDO
+            ENDDO
+
+         ENDDO
+
+! Gather NUC onto the head node
+
+         CALL allgather_1i (KEND1-KSTART1+1,rcount,IERR)    
+
+         IF (myPE == 0) THEN
+            K_OFFSET = 0
+         ELSE
+            K_OFFSET = 0
+            DO iproc=0,myPE-1
+               K_OFFSET = K_OFFSET + rcount(iproc)
+            ENDDO
+         ENDIF
+
+         CALL allgather_1i (K_OFFSET,disp,IERR)
+
+         call gatherv_1i( NUC_K(KSTART1:KEND1), KEND1-KSTART1+1, GLOBAL_NUC_K(KMIN1:KMAX1), rcount, disp, PE_IO, ierr )
+
+
+
+      ENDIF !(NODESI,NODESJ, OR NODESK)
+
+
+
+
+
+      IF (myPE == PE_IO) THEN                              ! DETERMINE BEST DOMAIN DECOMPOSITION FROM HEAD NODE
+
+         IF(NODESI>1) THEN                                 ! DOMAIN DECOMPOSITION IN I-DIRECTION
+
+
+
+
+
+
+         ELSEIF(NODESJ>1) THEN                            ! DOMAIN DECOMPOSITION IN J-DIRECTION
+
+   ! For comparison with old grid size, determine the size in j direction (without adjustment) and add the remainder sequentially
+
+            JSIZE = (JMAX1-JMIN1+1)/NODESJ
+            JSIZE_OLD(0:NODESJ-1) = JSIZE
+
+            JREMAIN = (JMAX1-JMIN1+1) - NODESJ*JSIZE
+            IF (JREMAIN.GE.1) THEN
+               JSIZE_OLD( 0:(JREMAIN-1) ) = JSIZE + 1
+            ENDIF
+
+
+!            DO IPROC = 0 ,numPEs-1
+!               NCPP_UNIFORM(IPROC) = (imax3-imin3+1)*(JSIZE_OLD(IPROC)+4)
+!               IF(DO_K) NCPP_UNIFORM(IPROC) = NCPP_UNIFORM(IPROC)*(kmax3-kmin3+1)
+!            ENDDO
+
+
+
+           JSIZE_ALL = JSIZE_OLD
+
+           CALL MINIMIZE_LOAD_IMBALANCE(GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL,NCPP,NCPP_WITH_GHOST)
+
+
+            TOTAL_NUC  = SUM(NCPP_WITH_GHOST(0:NumPEs-1))
+            IDEAL_NCPP = TOTAL_NUC / NumPEs
+
+            WRITE (*, 1000) 'AFTER OPTIMIZATION:'
+            WRITE (*, 1010) 'TOTAL NUMBER OF USEFUL CELLS = ',TOTAL_NUC
+            WRITE (*, 1010) 'IDEAL NUMBER OF CELLS/PROC.  = ',IDEAL_NCPP
+            WRITE (*, 1000) 'ACTUALL CELL COUNT:'
+            WRITE (*, 1000) '================================================='
+            WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   DIFF. (%)'
+            WRITE (*, 1000) '================================================='
+            DO IPROC = 0,numPEs-1
+               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DFLOAT(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+            ENDDO
+
+
+            DO IPROC = 0 ,numPEs-1
+               NCPP_OLD(IPROC) = (imax3-imin3+1)*(JSIZE_ALL(IPROC)+4)
+               IF(DO_K) NCPP_OLD(IPROC) = NCPP_OLD(IPROC)*(kmax3-kmin3+1)
+            ENDDO 
+
+
+   ! Verify that the sum of all JSIZE_ALL matches JMAX
+
+            PSUM = 0                 
+            DO IPROC = 0,numPEs-1
+               PSUM = PSUM + JSIZE_ALL(IPROC)
+               IF(JSIZE_ALL(IPROC)<5) THEN
+                  WRITE (*, 1010) 'ERROR: J-SIZE TOO SMALL FOR PROCESSOR:',IPROC
+                  WRITE (*, 1010) 'J-SIZE = ',JSIZE_ALL(IPROC)
+                  CALL MFIX_EXIT(myPE) 
+               ENDIF
+
+            ENDDO
+
+            IF(PSUM/=JMAX) THEN
+               WRITE (*, 1000) 'ERROR IN ADJUST_IJK_SIZE: UNABLE TO ASSIGN JSIZE TO PROCESSORS.'
+               WRITE (*, 1000) 'SUM OF JSIZE_ALL DOES NOT MATCH JMAX:'
+               WRITE (*, 1010) 'SUM OF JSIZE_ALL = ',PSUM
+               WRITE (*, 1010) 'JMAX1 = ',JMAX
+               CALL MFIX_EXIT(myPE) 
+            ENDIF
+
+
+
+
+
+
+         ELSEIF(NODESK>1) THEN                            ! DOMAIN DECOMPOSITION IN K-DIRECTION
+
+
+
+
+
+
+
+
+         ENDIF !(NODESI,NODESJ, OR NODESK)
+
+
+
+
+
+
+         PRINT_STATISTICS = .TRUE.
+
+         IF(PRINT_STATISTICS) THEN
+
+!            MAXVAL_NCPP_OLD = MAXVAL(NCPP_OLD)
+!            MINVAL_NCPP_OLD = MINVAL(NCPP_OLD)
+!            AVG_NCPP_OLD    = SUM(NCPP_OLD)/NUMPES
+
+!            LIP_OLD = DFLOAT(MAXVAL_NCPP_OLD-AVG_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)*100.0D0
+
+!            P = DFLOAT(MAXVAL_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)
+
+!            MAXSPEEDUP_OLD = DFLOAT(NumPes)*(ONE-LIP_OLD/100.0D0)
+
+
+
+            MAXVAL_NCPP_OLD = MAXVAL(NCPP_UNIFORM)
+            MINVAL_NCPP_OLD = MINVAL(NCPP_UNIFORM)
+            AVG_NCPP_OLD    = SUM(NCPP_UNIFORM)/NUMPES
+
+            LIP_OLD = DFLOAT(MAXVAL_NCPP_OLD-AVG_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)*100.0D0
+
+            P = DFLOAT(MAXVAL_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)
+
+            MAXSPEEDUP_OLD = DFLOAT(NumPes)*(ONE-LIP_OLD/100.0D0)
+
+
+
+
+            MAXVAL_NCPP = MAXVAL(NCPP_WITH_GHOST)
+            MINVAL_NCPP = MINVAL(NCPP_WITH_GHOST)
+            AVG_NCPP    = SUM(NCPP_WITH_GHOST(0:NumPEs-1))/NUMPES
+
+            LIP = DFLOAT(MAXVAL_NCPP-AVG_NCPP)/DFLOAT(AVG_NCPP)*100.0D0
+
+            P = DFLOAT(MAXVAL_NCPP)/DFLOAT(AVG_NCPP)
+
+            MAXSPEEDUP = DFLOAT(NumPes)*(ONE-LIP/100.0D0)
+
+
+            WRITE (*, 1000) '================================================='
+            WRITE (*, 1000) 'ESTIMATED PARALLEL LOAD BALANCING STATISTICS'
+            WRITE (*, 1000) 'COMPARISION BETWEEN UNIFORM SIZE (OLD)'
+            WRITE (*, 1000) 'AND ADJUSTED SIZE (NEW)'
+            WRITE (*, 1000) '================================================='
+            WRITE (*, 1000) '                               OLD       NEW'
+            WRITE (*, 1010) 'MAX CELL COUNT        : ',MAXVAL_NCPP_OLD,MAXVAL_NCPP
+            WRITE (*, 1010) 'AT PROCESSOR          : ',MAXLOC(NCPP_OLD)-1,MAXLOC(NCPP_WITH_GHOST)-1
+            WRITE (*, 1010) 'MIN CELL COUNT        : ',MINVAL_NCPP_OLD,MINVAL_NCPP
+            WRITE (*, 1010) 'AT PROCESSOR          : ',MINLOC(NCPP_OLD)-1,MINLOC(NCPP_WITH_GHOST)-1
+            WRITE (*, 1010) 'AVG CELL COUNT        : ',AVG_NCPP_OLD,AVG_NCPP
+            WRITE (*, 1000) ''
+            WRITE (*, 1030) 'LOAD IMBALANCE (%)    : ',LIP_OLD,LIP
+            WRITE (*, 1000) ''
+            WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DFLOAT(NumPEs),DFLOAT(NumPEs)
+            WRITE (*, 1030) 'MAX SPEEDUP           : ',MAXSPEEDUP_OLD,MAXSPEEDUP
+            WRITE (*, 1030) 'MAX EFFICIENCY (%)    : ',100.0D0 - LIP_OLD,100.0D0 - LIP
+
+            WRITE (*, 1000) '================================================='
+
+            WRITE (*, 1000) 'NOTE: ACTUAL LOAD BALANCING WILL BE COMPUTED AFTER PRE_PROCESSING.'
+
+
+        ENDIF !(PRINT_STATISTICS)
+
+     ENDIF  ! (MyPE==PE_IO)
+
+9999  CONTINUE
+
+! Broadcast Domain sizes to all processors
+
+      CALL BCAST(ISIZE_ALL)
+      CALL BCAST(JSIZE_ALL)
+      CALL BCAST(KSIZE_ALL)
+
+      DOMAIN_SIZE_ADJUSTED = .TRUE.
+
+
+1000  FORMAT(1x,A)
+1010  FORMAT(1x,A,I10,I10)
+1020  FORMAT(1X,I8,2(I12),F12.2)
+1030  FORMAT(1X,A,2(F10.1))
+1040  FORMAT(F10.1)
+1050  FORMAT(1X,3(A))
+
+
+      RETURN
+
+      END SUBROUTINE ADJUST_IJK_SIZE
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: REPORT_BEST_PROCESSOR_SIZE                             C
+!  Purpose: Adjust domain size of each processor, based on an          C
+!           estimate on the total number of useful cells.              C
+!           The objective is to reduce load imbalance.                 C
+!           This subroutine can be called in serial and parallel mode  C
+!                                                                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 02-Dec-10  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE REPORT_BEST_PROCESSOR_SIZE
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE gridmap
+      USE param 
+      USE param1 
+      USE constant 
+      USE run
+      USE physprop
+      USE indices
+      USE scalars
+      USE funits
+      USE leqsol
+      USE compar             
+      USE mpi_utility        
+      USE bc
+      USE DISCRETELEMENT
+ 
+      USE parallel
+
+      USE cutcell
+      USE quadric
+      USE vtk
+      USE polygon
+      USE dashboard
+      USE stl
+
+
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+      INTEGER :: LC,I,J,K,Q_ID,TOTAL_NUC,IDEAL_NCPP
+      DOUBLE PRECISION :: X_COPY,Y_COPY,Z_COPY,F_COPY
+      LOGICAL :: SHIFT,CLIP_FLAG
+      DOUBLE PRECISION, DIMENSION(0:DIM_I) :: DXT ,XCC
+      DOUBLE PRECISION, DIMENSION(0:DIM_J) :: DYT ,YCC
+      DOUBLE PRECISION, DIMENSION(0:DIM_K) :: DZT, ZCC
+
+      INTEGER, DIMENSION(0:DIM_I) :: NUC_I,GLOBAL_NUC_I
+      INTEGER, DIMENSION(0:DIM_J) :: NUC_J,GLOBAL_NUC_J
+      INTEGER, DIMENSION(0:DIM_K) :: NUC_K,GLOBAL_NUC_K
+
+      INTEGER :: IPROC,PSUM,LSUM,I1,I2,J1,J2,K1,K2,CURRENT_DIFF,PREVIOUS_DIFF
+
+   	INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,NCPP_OLD_WITH_GHOST,NCPP_WITH_GHOST,IDEAL_SUM
+
+   	INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
+   	INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
+   	INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
+
+
+
+      INTEGER :: JSIZE, IREMAIN,ISIZE, JREMAIN,KSIZE, KREMAIN
+      INTEGER :: MAXVAL_NCPP_OLD,MINVAL_NCPP_OLD,MAXVAL_NCPP,MINVAL_NCPP
+      INTEGER :: MAXLOC_NCPP_OLD,MINLOC_NCPP_OLD,MAXLOC_NCPP,MINLOC_NCPP
+      INTEGER :: AVG_NCPP_OLD,AVG_NCPP
+      DOUBLE PRECISION :: LIP_OLD,LIP,MAXSPEEDUP_OLD,MAXSPEEDUP,P
+
+      CHARACTER(LEN=10) :: MAX_SPEEDUP_OLD,MAX_SPEEDUP
+
+
+      INTEGER :: I_OFFSET,J_OFFSET,K_OFFSET,IERR
+
+      INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
+
+      INTEGER :: IPROC_OF_MAX,IPROC_OF_MIN,N
+      INTEGER :: IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD
+
+
+      LOGICAL :: PRESENT
+
+!-----------------------------------------------
+!
+
+      IS_SERIAL=(numPEs==1)
+
+      IF(IS_SERIAL) THEN   ! Temporarily mimick a parallel run 
+
+         NODESI = NODESI_REPORT
+         NODESJ = NODESJ_REPORT
+         NODESK = NODESK_REPORT
+         numPEs = NODESI*NODESJ*NODESK
+
+         IF(numPEs>1.AND.myPE==0) THEN
+            WRITE(*,1000)'TEMPORARILY SETTING:'
+            WRITE(*,1010)'NODESI = ',NODESI
+            WRITE(*,1010)'NODESJ = ',NODESJ
+            WRITE(*,1010)'NODESK = ',NODESK
+            WRITE(*,1000)'TO REPORT BEST DOMAIN SIZE FOR PARALLEL RUN'
+         ENDIF
+
+
+      ENDIF
+
+
+
+      IF(numPEs>1) CALL REPORT_BEST_IJK_SIZE
+
+
+      IF(IS_SERIAL) THEN   ! Revert to serial values
+                            ! These values were changed to allow reporting
+                            ! optimized sizes even for a serial run
+
+         NODESI = 1
+         NODESJ = 1
+         NODESK = 1
+         numPEs = 1
+
+      ENDIF
+
+1000  FORMAT(1x,A)
+1010  FORMAT(1x,A,I10)
+
+      RETURN
+
+      END SUBROUTINE REPORT_BEST_PROCESSOR_SIZE
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: REPORT_BEST_IJK_SIZE                                   C
+!  Purpose: Adjust domain size of each processor, based on an          C
+!           estimate on the total number of useful cells.              C
+!           The objective is to reduce load imbalance.                 C
+!           This is the parallel version                               C
+!                                                                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 02-Dec-10  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE REPORT_BEST_IJK_SIZE
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE gridmap
+      USE param 
+      USE param1 
+      USE constant 
+      USE run
+      USE physprop
+      USE indices
+      USE scalars
+      USE funits
+      USE leqsol
+      USE compar             
+      USE mpi_utility        
+      USE bc
+      USE DISCRETELEMENT
+ 
+      USE parallel
+
+      USE cutcell
+      USE quadric
+      USE vtk
+      USE polygon
+      USE dashboard
+      USE stl
+
+
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+      INTEGER :: LC,I,J,K,Q_ID,TOTAL_NUC,IDEAL_NCPP
+      DOUBLE PRECISION :: X_COPY,Y_COPY,Z_COPY,F_COPY
+      LOGICAL :: SHIFT,CLIP_FLAG
+      DOUBLE PRECISION, DIMENSION(0:DIM_I) :: DXT ,XCC
+      DOUBLE PRECISION, DIMENSION(0:DIM_J) :: DYT ,YCC
+      DOUBLE PRECISION, DIMENSION(0:DIM_K) :: DZT, ZCC
+
+      INTEGER, DIMENSION(0:DIM_I) :: NUC_I,GLOBAL_NUC_I
+      INTEGER, DIMENSION(0:DIM_J) :: NUC_J,GLOBAL_NUC_J
+      INTEGER, DIMENSION(0:DIM_K) :: NUC_K,GLOBAL_NUC_K
+
+      INTEGER :: IPROC,PSUM,LSUM,I1,I2,J1,J2,K1,K2,CURRENT_DIFF,PREVIOUS_DIFF
+
+   	INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,NCPP_OLD_WITH_GHOST,NCPP_WITH_GHOST,IDEAL_SUM
+
+   	INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
+   	INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
+   	INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
+
+
+
+      INTEGER :: JSIZE, IREMAIN,ISIZE, JREMAIN,KSIZE, KREMAIN
+      INTEGER :: MAXVAL_NCPP_OLD,MINVAL_NCPP_OLD,MAXVAL_NCPP,MINVAL_NCPP
+      INTEGER :: MAXLOC_NCPP_OLD,MINLOC_NCPP_OLD,MAXLOC_NCPP,MINLOC_NCPP
+      INTEGER :: AVG_NCPP_OLD,AVG_NCPP
+      DOUBLE PRECISION :: LIP_OLD,LIP,MAXSPEEDUP_OLD,MAXSPEEDUP,P
+
+      CHARACTER(LEN=10) :: MAX_SPEEDUP_OLD,MAX_SPEEDUP
+
+
+      INTEGER :: I_OFFSET,J_OFFSET,K_OFFSET,IERR
+
+      INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
+
+      INTEGER :: IPROC_OF_MAX,IPROC_OF_MIN,N
+      INTEGER :: IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD
+
+      LOGICAL :: PRESENT
+
+!-----------------------------------------------
+!
+      RETURN
+
+      IF(.NOT.CARTESIAN_GRID) RETURN            ! Perform adjustement only when both CG 
+!      IF(.NOT.ADJUST_PROC_DOMAIN_SIZE) RETURN   ! and domain adjustment
+      IF(NODESI*NODESJ*NODESK==1) RETURN         ! and parallel run are active
+
+
+
+      IF(.not.allocated(ISIZE_ALL)) allocate( ISIZE_ALL(0:NODESI-1))
+      IF(.not.allocated(JSIZE_ALL)) allocate( JSIZE_ALL(0:NODESJ-1))
+      IF(.not.allocated(KSIZE_ALL)) allocate( KSIZE_ALL(0:NODESK-1))
+
+!      allocate( ISIZE_ALL(0:NODESI-1))
+!      allocate( JSIZE_ALL(0:NODESJ-1))
+!      allocate( KSIZE_ALL(0:NODESK-1))
+
+
+
+
+      IF(NODESI>1) THEN                                ! DOMAIN DECOMPOSITION IN I-DIRECTION
+
+         IF(myPE == 0.AND.NODESJ*NODESK/=1) THEN
+            WRITE(*,*)'ERROR IN SUBROUTINE REPORT_BEST_IJK_SIZE.'
+            WRITE(*,*)'ADJUSTMENT POSSIBLE ONLY FOR DOMAIN DECOMPOSITION In ONE DIRECTION.'
+            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK 
+            WRITE(*,*)'MFIX WILL EXIT NOW.'
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+
+         JSIZE_ALL(0:NODESJ-1) = jmax1-jmin1+1         ! Assign size in J and K-direction
+         KSIZE_ALL(0:NODESK-1) = kmax1-kmin1+1
+
+! Assign size in I-direction
+         IF (myPE == 0) THEN
+            WRITE(*,1000)'INFO FROM REPORT_BEST_IJK_SIZE:'
+            WRITE(*,1000)'ATTEMPTING TO REPORT BEST DOMAIN SIZE IN I-DIRECTION ...'
+         ENDIF
+
+         DO I = ISTART1,IEND1
+
+            NUC_I(I) = 0                     ! NUC : Number of Useful Cells
+
+            DO J = JSTART3,JEND3
+               DO K = KSTART3,KEND3
+
+                  IF( .NOT.DEAD_CELL_AT(I,J,K)) THEN   ! Count number of useful cells
+                     NUC_I(I) = NUC_I(I) + 1
+                  ENDIF
+
+               ENDDO
+            ENDDO
+
+         ENDDO
+
+! Gather NUC onto the head node
+
+         CALL allgather_1i (IEND1-ISTART1+1,rcount,IERR)    
+
+         IF (myPE == 0) THEN
+            I_OFFSET = 0
+         ELSE
+            I_OFFSET = 0
+            DO iproc=0,myPE-1
+               I_OFFSET = I_OFFSET + rcount(iproc)
+            ENDDO
+         ENDIF
+
+         CALL allgather_1i (I_OFFSET,disp,IERR)
+
+         call gatherv_1i( NUC_I(ISTART1:IEND1), IEND1-ISTART1+1, GLOBAL_NUC_I(IMIN1:IMAX1), rcount, disp, PE_IO, ierr )
+
+
+
+      ELSEIF(NODESJ>1) THEN                            ! DOMAIN DECOMPOSITION IN J-DIRECTION
+
+
+         IF(myPE == 0.AND.NODESI*NODESK/=1) THEN
+            WRITE(*,*)'ERROR IN SUBROUTINE REPORT_BEST_IJK_SIZE.'
+            WRITE(*,*)'ADJUSTMENT POSSIBLE ONLY FOR DOMAIN DECOMPOSITION In ONE DIRECTION.'
+            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK 
+            WRITE(*,*)'MFIX WILL EXIT NOW.'
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+
+         ISIZE_ALL(0:NODESI-1) = imax1-imin1+1         ! Assign size in I and K-direction
+         KSIZE_ALL(0:NODESK-1) = kmax1-kmin1+1
+
+! Assign size in J-direction
+         IF (myPE == 0) THEN
+            WRITE(*,1000)'INFO FROM REPORT_BEST_IJK_SIZE:'
+            WRITE(*,1000)'ATTEMPTING TO REPORT BEST DOMAIN SIZE IN J-DIRECTION ...'
+         ENDIF
+
+         DO J = JSTART1,JEND1
+
+            NUC_J(J) = 0                     ! NUC : Number of Useful Cells
+
+            DO I = ISTART3,IEND3
+               DO K = KSTART3,KEND3
+            
+                  IF( .NOT.DEAD_CELL_AT(I,J,K)) THEN   ! Count number of useful cells
+                     NUC_J(J) = NUC_J(J) + 1
+                  ENDIF
+
+               ENDDO
+            ENDDO
+
+         ENDDO
+
+! Gather NUC onto the head node
+
+         IF(IS_SERIAL) THEN
+
+            DO J=JMIN1,JMAX1
+               GLOBAL_NUC_J(J) = NUC_J(J)
+            ENDDO
+
+
+         ELSE
+
+            CALL allgather_1i (JEND1-JSTART1+1,rcount,IERR)    
+
+            IF (myPE == 0) THEN
+               J_OFFSET = 0
+            ELSE
+               J_OFFSET = 0
+               DO iproc=0,myPE-1
+                  J_OFFSET = J_OFFSET + rcount(iproc)
+               ENDDO
+            ENDIF
+
+            CALL allgather_1i (J_OFFSET,disp,IERR)
+
+            call gatherv_1i( NUC_J(JSTART1:JEND1), JEND1-JSTART1+1, GLOBAL_NUC_J(JMIN1:JMAX1), rcount, disp, PE_IO, ierr )
+
+         ENDIF
+
+!         IF (myPE == 0) THEN
+!            DO J=JMIN1,JMAX1
+!               print*,'J,NUC=',J,GLOBAL_NUC_J(J)
+!            ENDDO
+!         ENDIF
+
+
+
+      ELSEIF(NODESK>1) THEN                            ! DOMAIN DECOMPOSITION IN K-DIRECTION
+
+         IF(myPE == 0.AND.NODESI*NODESJ/=1) THEN
+            WRITE(*,*)'ERROR IN SUBROUTINE REPORT_BEST_IJK_SIZE.'
+            WRITE(*,*)'ADJUSTMENT POSSIBLE ONLY FOR DOMAIN DECOMPOSITION In ONE DIRECTION.'
+            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK 
+            WRITE(*,*)'MFIX WILL EXIT NOW.'
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+
+         ISIZE_ALL(0:NODESI-1) = imax1-imin1+1         ! Assign size in I and J-direction
+         JSIZE_ALL(0:NODESJ-1) = jmax1-jmin1+1
+
+! Assign size in K-direction
+         IF (myPE == 0) THEN
+            WRITE(*,1000)'INFO FROM REPORT_BEST_IJK_SIZE:'
+            WRITE(*,1000)'ATTEMPTING TO REPORT BEST DOMAIN SIZE IN K-DIRECTION ...'
+         ENDIF
+
+         DO K = KSTART1,KEND1
+
+            NUC_K(K) = 0                     ! NUC : Number of Useful Cells
+
+            DO I = ISTART1,IEND1
+               DO J = JSTART1,JEND1
+            
+                  IF( .NOT.DEAD_CELL_AT(I,J,K)) THEN   ! Count number of useful cells
+                     NUC_K(K) = NUC_K(K) + 1
+                  ENDIF
+
+               ENDDO
+            ENDDO
+
+         ENDDO
+
+! Gather NUC onto the head node
+
+         CALL allgather_1i (KEND1-KSTART1+1,rcount,IERR)    
+
+         IF (myPE == 0) THEN
+            K_OFFSET = 0
+         ELSE
+            K_OFFSET = 0
+            DO iproc=0,myPE-1
+               K_OFFSET = K_OFFSET + rcount(iproc)
+            ENDDO
+         ENDIF
+
+         CALL allgather_1i (K_OFFSET,disp,IERR)
+
+         call gatherv_1i( NUC_K(KSTART1:KEND1), KEND1-KSTART1+1, GLOBAL_NUC_K(KMIN1:KMAX1), rcount, disp, PE_IO, ierr )
+
+
+
+      ENDIF !(NODESI,NODESJ, OR NODESK)
+
+
+
+
+      IF (myPE == PE_IO) THEN                              ! DETERMINE BEST DOMAIN DECOMPOSITION FROM HEAD NODE
+
+         IF(NODESI>1) THEN                                 ! DOMAIN DECOMPOSITION IN I-DIRECTION
+
+
+
+         ELSEIF(NODESJ>1) THEN                            ! DOMAIN DECOMPOSITION IN J-DIRECTION
+
+   ! For comparison with old grid size, determine the size in j direction (without adjustment) and add the remainder sequentially
+
+            JSIZE = (JMAX1-JMIN1+1)/NODESJ
+            JSIZE_OLD(0:NODESJ-1) = JSIZE
+
+            JREMAIN = (JMAX1-JMIN1+1) - NODESJ*JSIZE
+            IF (JREMAIN.GE.1) THEN
+               JSIZE_OLD( 0:(JREMAIN-1) ) = JSIZE + 1
+            ENDIF
+
+
+
+           JSIZE_ALL = JSIZE_OLD
+
+
+
+
+
+      CALL GET_LIP_WITH_GHOST_LAYERS(GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL,NCPP_OLD,NCPP_OLD_WITH_GHOST,LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
+
+
+!      print*,'INITIAL ESTIMATE OF LIP, before minimizing LIP:',LIP_OLD
+!         WRITE (*, 1000) '================================================='
+!         WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   ERROR (%)'
+!         WRITE (*, 1000) '================================================='
+!         DO IPROC = 0,numPEs-1
+!            WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC)
+!         ENDDO
+!         WRITE (*, 1000) '================================================='
+
+
+
+
+
+
+
+
+           CALL MINIMIZE_LOAD_IMBALANCE(GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL,NCPP,NCPP_WITH_GHOST)
+
+
+            TOTAL_NUC  = SUM(NCPP_WITH_GHOST(0:NumPEs-1))
+            IDEAL_NCPP = TOTAL_NUC / NumPEs
+
+            WRITE (*, 1000) 'AFTER OPTIMIZATION:'
+            WRITE (*, 1010) 'TOTAL NUMBER OF USEFUL CELLS = ',TOTAL_NUC
+            WRITE (*, 1010) 'IDEAL NUMBER OF CELLS/PROC.  = ',IDEAL_NCPP
+            WRITE (*, 1000) 'ACTUALL CELL COUNT:'
+            WRITE (*, 1000) '================================================='
+            WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   DIFF. (%)'
+            WRITE (*, 1000) '================================================='
+            DO IPROC = 0,numPEs-1
+               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DFLOAT(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+            ENDDO
+
+
+!            DO IPROC = 0 ,numPEs-1
+!               NCPP_OLD(IPROC) = (imax3-imin3+1)*(JSIZE_ALL(IPROC)+4)
+!               IF(DO_K) NCPP_OLD(IPROC) = NCPP_OLD(IPROC)*(kmax3-kmin3+1)
+!            ENDDO 
+
+
+   ! Verify that the sum of all JSIZE_ALL matches JMAX
+
+            PSUM = 0                 
+            DO IPROC = 0,numPEs-1
+               PSUM = PSUM + JSIZE_ALL(IPROC)
+               IF(JSIZE_ALL(IPROC)<5) THEN
+                  WRITE (*, 1010) 'ERROR: J-SIZE TOO SMALL FOR PROCESSOR:',IPROC
+                  WRITE (*, 1010) 'J-SIZE = ',JSIZE_ALL(IPROC)
+                  CALL MFIX_EXIT(myPE) 
+               ENDIF
+
+            ENDDO
+
+            IF(PSUM/=JMAX) THEN
+               WRITE (*, 1000) 'ERROR IN ADJUST_IJK_SIZE: UNABLE TO ASSIGN JSIZE TO PROCESSORS.'
+               WRITE (*, 1000) 'SUM OF JSIZE_ALL DOES NOT MATCH JMAX:'
+               WRITE (*, 1010) 'SUM OF JSIZE_ALL = ',PSUM
+               WRITE (*, 1010) 'JMAX1 = ',JMAX
+               CALL MFIX_EXIT(myPE) 
+            ENDIF
+
+
+            OPEN(UNIT=777, FILE='suggested_gridmap.dat') 
+            WRITE (777, 1000) 'J-SIZE DISTRIBUTION'
+            WRITE (777, 1010) 'NUMBER OF PROCESSORS = ',NumPEs
+            WRITE (777, 1000) '================================================='
+            WRITE (777, 1000) '   PROCESSOR    J-SIZE'
+            WRITE (777, 1000) '================================================='
+
+            DO IPROC = 0,NumPEs-1
+                  WRITE(777,1060) IPROC,jsize_all(IPROC)
+            ENDDO
+            CLOSE(777)
+            WRITE (*, 1000) '================================================='
+            WRITE (*, 1000) 'J-SIZE DISTRIBUTION SAVED IN FILE: suggested_gridmap.dat'
+            WRITE (*, 1000) 'TO USE THIS DISTRIBUTION, RENAME THE FILE AS: gridmap.dat'
+            WRITE (*, 1000) 'AND RUN MFIX AGAIN.'
+            WRITE (*, 1000) '================================================='
+
+
+         ELSEIF(NODESK>1) THEN                            ! DOMAIN DECOMPOSITION IN K-DIRECTION
+
+
+
+
+         ENDIF !(NODESI,NODESJ, OR NODESK)
+
+
+         MAXVAL_NCPP_OLD = MAXVAL(NCPP_OLD_WITH_GHOST)
+         MINVAL_NCPP_OLD = MINVAL(NCPP_OLD_WITH_GHOST)
+         AVG_NCPP_OLD    = SUM(NCPP_OLD_WITH_GHOST)/NUMPES
+
+!         LIP_OLD = DFLOAT(MAXVAL_NCPP_OLD-AVG_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)*100.0D0
+         LIP_OLD = DFLOAT(MAXVAL_NCPP_OLD-MINVAL_NCPP_OLD)/DFLOAT(MINVAL_NCPP_OLD)*100.0D0
+
+!         P = DFLOAT(MAXVAL_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)
+         P = DFLOAT(MINVAL_NCPP_OLD)/DFLOAT(MAXVAL_NCPP_OLD)
+
+!         MAXSPEEDUP_OLD = DFLOAT(NumPes)*(ONE-LIP_OLD/100.0D0)
+         MAXSPEEDUP_OLD = ONE / ((ONE-P) + P/NumPes)
+
+         MAXVAL_NCPP = MAXVAL(NCPP_WITH_GHOST)
+         MINVAL_NCPP = MINVAL(NCPP_WITH_GHOST)
+         AVG_NCPP    = SUM(NCPP_WITH_GHOST(0:NumPEs-1))/NUMPES
+
+!         LIP = DFLOAT(MAXVAL_NCPP-AVG_NCPP)/DFLOAT(AVG_NCPP)*100.0D0
+         LIP = DFLOAT(MAXVAL_NCPP-MINVAL_NCPP)/DFLOAT(MINVAL_NCPP)*100.0D0
+
+!         P = DFLOAT(MAXVAL_NCPP)/DFLOAT(AVG_NCPP)
+         P = DFLOAT(MINVAL_NCPP)/DFLOAT(MAXVAL_NCPP)
+
+!         MAXSPEEDUP = DFLOAT(NumPes)*(ONE-LIP/100.0D0)
+         MAXSPEEDUP = ONE / ((ONE-P) + P/NumPes)
+
+         WRITE (*, 1000) '================================================='
+         WRITE (*, 1000) 'ESTIMATED PARALLEL LOAD BALANCING STATISTICS'
+         WRITE (*, 1000) 'COMPARISION BETWEEN UNIFORM SIZE (OLD)'
+         WRITE (*, 1000) 'AND SUGGESTED SIZE (NEW)'
+         WRITE (*, 1000) '================================================='
+         WRITE (*, 1000) '                               OLD       NEW'
+         WRITE (*, 1010) 'MAX CELL COUNT        : ',MAXVAL_NCPP_OLD,MAXVAL_NCPP
+         WRITE (*, 1010) 'AT PROCESSOR          : ',MAXLOC(NCPP_OLD_WITH_GHOST)-1,MAXLOC(NCPP_WITH_GHOST)-1
+         WRITE (*, 1010) 'MIN CELL COUNT        : ',MINVAL_NCPP_OLD,MINVAL_NCPP
+         WRITE (*, 1010) 'AT PROCESSOR          : ',MINLOC(NCPP_OLD_WITH_GHOST)-1,MINLOC(NCPP_WITH_GHOST)-1
+         WRITE (*, 1010) 'AVG CELL COUNT        : ',AVG_NCPP_OLD,AVG_NCPP
+         WRITE (*, 1000) ''
+         WRITE (*, 1030) 'LOAD IMBALANCE (%)    : ',LIP_OLD,LIP
+         WRITE (*, 1000) ''
+         WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DFLOAT(NumPEs),DFLOAT(NumPEs)
+         WRITE (*, 1030) 'MAX SPEEDUP           : ',MAXSPEEDUP_OLD,MAXSPEEDUP
+         WRITE (*, 1030) 'MAX EFFICIENCY (%)    : ',MAXSPEEDUP_OLD/DFLOAT(NumPEs)*100.0,MAXSPEEDUP/DFLOAT(NumPEs)*100.0
+
+         WRITE (*, 1000) '================================================='
+
+
+
+     ENDIF  ! (MyPE==PE_IO)
+
+
+
+! Broadcast Domain sizes to all processors
+
+!      CALL BCAST(ISIZE_ALL)
+!      CALL BCAST(JSIZE_ALL)
+!      CALL BCAST(KSIZE_ALL)
+
+!      DOMAIN_SIZE_ADJUSTED = .TRUE.
+
+ 
+
+
+1000  FORMAT(1x,A)
+1010  FORMAT(1x,A,I10,I10)
+1020  FORMAT(1X,I8,2(I12),F12.2)
+1030  FORMAT(1X,A,2(F10.1))
+1040  FORMAT(F10.1)
+1050  FORMAT(1X,3(A))
+1060  FORMAT(1x,I8,I12)
+
+      RETURN
+
+      END SUBROUTINE REPORT_BEST_IJK_SIZE
+
+
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: GET_LIP_WITH_GHOST_LAYERS                              C
+!  Purpose: Compute Load Imbalance percentage                          C
+!           by including size of ghost layers                          C
+!                                                                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 02-Dec-10  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE GET_LIP_WITH_GHOST_LAYERS(NUC_L,LMIN1,LMAX1,L_SIZE,NCPP,NCPP_WITH_GHOST,LIP,IPROC_OF_MAX,IPROC_OF_MIN)
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE gridmap
+      USE param 
+      USE param1 
+      USE constant 
+      USE run
+      USE physprop
+      USE indices
+      USE scalars
+      USE funits
+      USE leqsol
+      USE compar             
+      USE mpi_utility        
+      USE bc
+      USE DISCRETELEMENT
+
+      USE cutcell
+      USE quadric
+      USE vtk
+      USE polygon
+      USE dashboard
+      USE stl
+
+
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+      INTEGER :: L,LMIN1,LMAX1,TOTAL_NUC,TOTAL_NUC_WITH_GHOST,IPROC_OF_MAX,IPROC_OF_MIN
+
+      INTEGER :: LCOUNT1,LCOUNT2,MINVAL_NCPP,MAXVAL_NCPP,IDEAL_NCPP
+      INTEGER, DIMENSION(LMIN1:LMAX1) :: NUC_L
+
+      INTEGER :: IPROC
+
+   	INTEGER, DIMENSION(0:numPEs-1) :: NCPP,NCPP_WITH_GHOST,L_SIZE,L1,L2
+
+
+      DOUBLE PRECISION :: LIP
+
+!-----------------------------------------------
+
+      LCOUNT1 = LMAX1 - LMIN1 + 1
+      LCOUNT2 = SUM(L_SIZE(0:numPEs-1))
+
+      IF(LCOUNT1/=LCOUNT2) THEN
+         WRITE(*,*)' ERROR: SUM OF CELLS DO NOT MATCH:',LCOUNT1,LCOUNT2
+         CALL MFIX_EXIT(myPE) 
+      ENDIF
+
+      L1(0) = LMIN1
+      L2(0) = L1(0) + L_SIZE(0) - 1
+
+      DO IPROC = 1,numPEs-1
+         L1(IPROC) = L2(IPROC-1) + 1
+         L2(IPROC) = L1(IPROC) + L_SIZE(IPROC) - 1
+      ENDDO
+
+      DO IPROC = 0,numPEs-1
+         NCPP(IPROC) = SUM(NUC_L(L1(IPROC):L2(IPROC)))
+!         print*,'NUC=',NUC_L(L1(IPROC):L2(IPROC))
+!         print*,'L1,L2=',IPROC,L1(IPROC),L2(IPROC),NCPP(IPROC)
+      ENDDO
+
+      TOTAL_NUC = 0
+
+      DO L=LMIN1,LMAX1
+         TOTAL_NUC = TOTAL_NUC + NUC_L(L) 
+      ENDDO
+
+      NCPP_WITH_GHOST(0) = NCPP(0) + 2*NUC_L(L1(0)) + NUC_L(L1(1)) + NUC_L(L1(1)+1)
+
+      DO IPROC = 1,numPEs-2
+         NCPP_WITH_GHOST(IPROC) =   NCPP(IPROC)  &
+                                  + NUC_L(L2(IPROC-1)) + NUC_L(L2(IPROC-1)-1) &
+                                  + NUC_L(L1(IPROC+1)) + NUC_L(L1(IPROC+1)+1)
+      ENDDO
+
+      NCPP_WITH_GHOST(numPEs-1) = NCPP(numPEs-1) + 2*NUC_L(L2(numPEs-1)) + NUC_L(L2(numPEs-2)) + NUC_L(L2(numPEs-2)-1)
+
+      TOTAL_NUC_WITH_GHOST = 0
+      DO IPROC = 0,numPEs-1
+!         print*,'NCPP_WITH_GHOST=',IPROC,L_SIZE(IPROC),NCPP(IPROC),NCPP_WITH_GHOST(IPROC)
+         TOTAL_NUC_WITH_GHOST = TOTAL_NUC_WITH_GHOST + NCPP_WITH_GHOST(IPROC)
+      ENDDO
+
+
+      IDEAL_NCPP = TOTAL_NUC_WITH_GHOST / NumPEs
+
+      MAXVAL_NCPP = MAXVAL(NCPP_WITH_GHOST)
+      MINVAL_NCPP = MINVAL(NCPP_WITH_GHOST)
+
+!      LIP = DFLOAT(MAXVAL_NCPP-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+      LIP = DFLOAT(MAXVAL_NCPP-MINVAL_NCPP)/DFLOAT(MINVAL_NCPP)*100.0D0
+
+
+      IPROC_OF_MAX = MAXLOC(NCPP_WITH_GHOST,1)-1
+      IPROC_OF_MIN = MINLOC(NCPP_WITH_GHOST,1)-1
+
+
+!      print*,'IPROC_OF_MIN=',IPROC_OF_MIN,MINVAL_NCPP
+!      print*,'IPROC_OF_MAX=',IPROC_OF_MAX,MAXVAL_NCPP
+
+      RETURN
+      END SUBROUTINE GET_LIP_WITH_GHOST_LAYERS
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: MINIMIZE_LOAD_IMBALANCE                                C
+!  Purpose: Rearrange L_SIZE to minimize load imbalance                C
+!           by including size of ghost layers                          C
+!                                                                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 02-Dec-10  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      SUBROUTINE MINIMIZE_LOAD_IMBALANCE(NUC_L,LMIN1,LMAX1,L_SIZE,NCPP,NCPP_WITH_GHOST)
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE gridmap
+      USE param 
+      USE param1 
+      USE constant 
+      USE run
+      USE physprop
+      USE indices
+      USE scalars
+      USE funits
+      USE leqsol
+      USE compar             
+      USE mpi_utility        
+      USE bc
+      USE DISCRETELEMENT
+
+      USE cutcell
+      USE quadric
+      USE vtk
+      USE polygon
+      USE dashboard
+      USE stl
+
+
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+      INTEGER :: L,LMIN1,LMAX1,TOTAL_NUC,IPROC_OF_MAX,IPROC_OF_MIN
+
+      INTEGER :: LCOUNT1,LCOUNT2,MINVAL_NCPP,MAXVAL_NCPP
+      INTEGER, DIMENSION(LMIN1:LMAX1) :: NUC_L
+
+      INTEGER :: IPROC,N,NA,NOIMPROVEMENT
+
+      INTEGER,PARAMETER :: NAMAX=10000  ! maximum number of adjustments, increase if optimized load is not reached
+
+   	INTEGER, DIMENSION(0:numPEs-1) :: NCPP,NCPP_WITH_GHOST,L_SIZE,L1,L2,BEST_L_SIZE,BEST_NCPP,BEST_NCPP_WITH_GHOST
+
+
+      DOUBLE PRECISION :: LIP,BEST_LIP
+
+!-----------------------------------------------
+
+
+!      NA = NAMAX   ! Number of adjustments
+
+! Initial estimate of LIP
+
+      CALL GET_LIP_WITH_GHOST_LAYERS(NUC_L,LMIN1,LMAX1,L_SIZE,NCPP,NCPP_WITH_GHOST,LIP,IPROC_OF_MAX,IPROC_OF_MIN)
+
+      BEST_LIP = LIP
+      BEST_L_SIZE = L_SIZE
+
+!      print*,'INITIAL ESTIMATE OF LIP:',LIP
+!         WRITE (*, 1000) '================================================='
+!         WRITE (*, 1010) 'AFTER STEP:',N 
+!         WRITE (*, 1010) 'NOIMPROVEMENT=',NOIMPROVEMENT 
+!         WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   ERROR (%)'
+!         WRITE (*, 1000) '================================================='
+!         DO IPROC = 0,numPEs-1
+!            WRITE (*, 1020) IPROC,L_SIZE(IPROC),NCPP_WITH_GHOST(IPROC)
+!         ENDDO
+!         WRITE (*, 1000) '================================================='
+
+!      print*,'MIN ',IPROC_OF_MIN,NCPP_WITH_GHOST(IPROC_OF_MIN)
+!      print*,'MAX ',IPROC_OF_MAX,NCPP_WITH_GHOST(IPROC_OF_MAX)
+
+      print*,'ATTEMPTING TO OPTIMIZE LOAD BALANCE...'
+
+      NOIMPROVEMENT=0
+
+      DO N = 1,NAMAX
+
+         L_SIZE(IPROC_OF_MAX) = L_SIZE(IPROC_OF_MAX) - 1
+         L_SIZE(IPROC_OF_MIN) = L_SIZE(IPROC_OF_MIN) + 1
+
+         CALL GET_LIP_WITH_GHOST_LAYERS(NUC_L,LMIN1,LMAX1,L_SIZE,NCPP,NCPP_WITH_GHOST,LIP,IPROC_OF_MAX,IPROC_OF_MIN)
+
+!      print*,'After adjustment of LIP:',N, LIP
+!      print*,'MIN ',IPROC_OF_MIN,NCPP_WITH_GHOST(IPROC_OF_MIN)
+!      print*,'MAX ',IPROC_OF_MAX,NCPP_WITH_GHOST(IPROC_OF_MAX)
+
+         IF(LIP<BEST_LIP) THEN
+            BEST_LIP    = LIP
+            BEST_L_SIZE = L_SIZE
+            BEST_NCPP   = NCPP
+            BEST_NCPP_WITH_GHOST   = NCPP_WITH_GHOST
+            NOIMPROVEMENT=0
+         ELSE
+            NOIMPROVEMENT = NOIMPROVEMENT + 1
+         ENDIF
+
+!         WRITE (*, 1000) '================================================='
+!         WRITE (*, 1010) 'AFTER STEP:',N 
+!         WRITE (*, 1010) 'NOIMPROVEMENT=',NOIMPROVEMENT 
+!         WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   ERROR (%)'
+!         WRITE (*, 1000) '================================================='
+!         DO IPROC = 0,numPEs-1
+!            WRITE (*, 1020) IPROC,L_SIZE(IPROC),NCPP_WITH_GHOST(IPROC)
+!         ENDDO
+
+         IF(NOIMPROVEMENT==10) THEN
+            WRITE (*, 1000) 'OPTIMIZED LOAD BALANCE REACHED.'
+            EXIT
+         ENDIF
+
+      ENDDO
+
+!      print*,'Best LIP = ',BEST_LIP
+      L_SIZE = BEST_L_SIZE
+      NCPP   = BEST_NCPP
+      NCPP_WITH_GHOST = BEST_NCPP_WITH_GHOST
+
+
+!      WRITE (*, 1000) '================================================='
+!      WRITE (*, 1000) 'AFTER OPTIMIZATION' 
+!      WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   ERROR (%)'
+!      WRITE (*, 1000) '================================================='
+!      DO IPROC = 0,numPEs-1
+!         WRITE (*, 1020) IPROC,L_SIZE(IPROC),NCPP_WITH_GHOST(IPROC)
+!      ENDDO
+
+1000  FORMAT(1x,A)
+1010  FORMAT(1x,A,I10,I10)
+1020  FORMAT(1X,I8,2(I12),F12.2)
+
+      RETURN
+      END SUBROUTINE MINIMIZE_LOAD_IMBALANCE
+

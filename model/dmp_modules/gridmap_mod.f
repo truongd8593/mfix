@@ -49,6 +49,7 @@
 
       INTEGER :: ijkproc
 
+      LOGICAL :: PRESENT
 
 !......................................................................!
 
@@ -67,23 +68,56 @@
          CALL FLUSH_ERR_MSG
       ENDIF
 
+! Get Domain size from ADJUST_IJK_SIZE Subroutine
+      IF(DOMAIN_SIZE_ADJUSTED) THEN         
+         isize1_all = isize_all
+         jsize1_all = jsize_all
+         ksize1_all = ksize_all
+      ELSE
 ! Determine the size in i direction and add the remainder sequentially
-      isize = (imax1-imin1+1)/nodesi
-      isize1_all(0:nodesi-1) = isize
-      iremain = (imax1-imin1+1) - nodesi*isize
-      IF (iremain.ge.1) isize1_all( 0:(iremain-1) ) = isize + 1
+         isize = (imax1-imin1+1)/nodesi
+         isize1_all(0:nodesi-1) = isize
+         iremain = (imax1-imin1+1) - nodesi*isize
+         IF (iremain.ge.1) isize1_all( 0:(iremain-1) ) = isize + 1
 
 ! Determine the size in j direction and add the remainder sequentially
-      jsize = (jmax1-jmin1+1)/nodesj
-      jsize1_all(0:nodesj-1) = jsize
-      jremain = (jmax1-jmin1+1) - nodesj*jsize
-      IF (jremain.ge.1) jsize1_all( 0:(jremain-1) ) = jsize + 1
+         jsize = (jmax1-jmin1+1)/nodesj
+         jsize1_all(0:nodesj-1) = jsize
+         jremain = (jmax1-jmin1+1) - nodesj*jsize
+         IF (jremain.ge.1) jsize1_all( 0:(jremain-1) ) = jsize + 1
 
 ! Determine the size in k direction and add the remainder sequentially
-      ksize = (kmax1-kmin1+1)/nodesk
-      ksize1_all(0:nodesk-1) = ksize
-      kremain = (kmax1-kmin1+1) - nodesk*ksize
-      IF (kremain.ge.1) ksize1_all( 0:(kremain-1) ) = ksize + 1
+         ksize = (kmax1-kmin1+1)/nodesk
+         ksize1_all(0:nodesk-1) = ksize
+         kremain = (kmax1-kmin1+1) - nodesk*ksize
+         IF (kremain.ge.1) ksize1_all( 0:(kremain-1) ) = ksize + 1
+      ENDIF
+
+
+! Get Domain size from gridmap.dat
+! This works only in the j-direction   <-------------------------
+      IF(.NOT.DOMAIN_SIZE_ADJUSTED) THEN         
+         INQUIRE(FILE='gridmap.dat',EXIST=PRESENT)
+         IF(PRESENT) THEN
+            IF(MyPE == PE_IO) THEN 
+               WRITE(*,*)'Reading gridmap from grimap.dat...'
+               OPEN(UNIT=777, FILE='gridmap.dat', STATUS='OLD') 
+               READ(777,*) 
+               READ(777,*) 
+               READ(777,*) 
+               READ(777,*) 
+               READ(777,*) 
+               DO IPROC = 0,NumPEs-1
+                  READ(777,*) jproc,jsize1_all(IPROC)
+               ENDDO
+               CLOSE(777)
+            ENDIF
+            CALL BCAST(JSIZE1_ALL)
+            allocate( JSIZE_ALL(0:NODESJ-1))
+            jsize_all = jsize1_all
+         ENDIF
+      ENDIF
+
 
 ! The following is general for 1-d or 2-d or 3-d decompostion
 ! Determining  istart, jstart and kstart for all the processors
@@ -361,7 +395,19 @@
       kstart4   = kstart4_all(myPE)
       kend4     = kend4_all(myPE)
 
+      IF(.not.allocated(NCPP_UNIFORM)) allocate( NCPP_UNIFORM(0:NumPEs-1))
 
+      IF(.NOT.NCPP_UNIFORM_BACKED_UP) THEN
+         NCPP_UNIFORM(MyPE) = ijksize3_all(MyPE)
+      ENDIF
+      NCPP_UNIFORM_BACKED_UP = .TRUE.
+
+      IF(SHORT_GRIDMAP_INIT) THEN
+!        do iproc=0,numPEs-1      
+!           NCPP_UNIFORM(iproc) = ijksize3_all(iproc)
+!        enddo
+         RETURN
+      ENDIF
 
 ! Setup mapping to take care of cyclic boundary conditions
 ! ---------------------------------------------------------------->>>
@@ -511,6 +557,26 @@
         c1_3 = (jend4_all(myPE)-jstart4_all(myPE)+1)
         c2_3 = (jend4_all(myPE)-jstart4_all(myPE)+1)* (iend4_all(myPE)-istart4_all(myPE)+1)
         c0_3 =  c0_3  - c1_3*istart4_all(myPE) - c2_3*kstart4_all(myPE)
+
+!   Initialize Array mapping (I,J,K) to IJK
+        INCREMENT_ARRAYS_ALLOCATED = .FALSE.
+
+        allocate(IJK_ARRAY_OF(istart3-1:iend3+1,jstart3-1:jend3+1,kstart3-1:kend3+1))   ! Must extend range such that neighbors (IM,JP etc...) stay in bound
+
+        allocate(DEAD_CELL_AT(imin3-1:imax3+1,jmin3-1:jmax3+1,kmin3-1:kmax3+1))
+
+        DEAD_CELL_AT = .FALSE.
+
+! Save IJK value of (I,J,K) cell in an array
+! IJK_ARRAY_OF(I,J,K) will replace the use of FUNIJK(I,J,K)
+        DO ii = istart3,iend3                                                           
+           DO jj = jstart3,jend3                                                        
+              DO kk = kstart3,kend3
+                 IJK_ARRAY_OF(ii,jj,kk)=FUNIJK_0(ii,jj,kk)
+              ENDDO
+           ENDDO
+        ENDDO
+
 
 ! Call to sendrecv_init to set all the communication pattern
       COMM = MPI_COMM_WORLD

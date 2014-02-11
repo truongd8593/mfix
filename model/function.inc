@@ -3,7 +3,8 @@
 !                      Function for generating the LOCAL 3-D array index IJK
 !                      from the 1-D indices I, J, and K.
 !//FUNIJK is moved to compar for debugging purposes - Sreekanth-10/26/99
-      INTEGER          FUNIJK
+      INTEGER          FUNIJK,FUNIJK_0
+!      INTEGER          FUNIJK_0
 !                      Function for generating the LOCAL 3-D array index IJK
 !                      from the 1-D indices I, J, K and IPROC.
       INTEGER          FUNIJK_PROC
@@ -32,40 +33,40 @@
       INTEGER          LIPROC
 !
 !                      Function for calculating IJKW
-      INTEGER          WEST_OF
+      INTEGER          WEST_OF, WEST_OF_0
 !
 !                      Function for calculating IJKE
-      INTEGER          EAST_OF
+      INTEGER          EAST_OF, EAST_OF_0
 !
 !                      Function for calculating IJKS
-      INTEGER          SOUTH_OF
+      INTEGER          SOUTH_OF, SOUTH_OF_0
 !
 !                      Function for calculating IJKN
-      INTEGER          NORTH_OF
+      INTEGER          NORTH_OF, NORTH_OF_0
 !
 !                      Function for calculating IJKB
-      INTEGER          BOTTOM_OF
+      INTEGER          BOTTOM_OF, BOTTOM_OF_0
 !
 !                      Function for calculating IJKT
-      INTEGER          TOP_OF
+      INTEGER          TOP_OF, TOP_OF_0
 !
 !                      Function for calculating IMJK
-      INTEGER          IM_OF
+      INTEGER          IM_OF, IM_OF_0
 !
 !                      Function for calculating IPJK
-      INTEGER          IP_OF
+      INTEGER          IP_OF, IP_OF_0
 !
 !                      Function for calculating IJMK
-      INTEGER          JM_OF
+      INTEGER          JM_OF, JM_OF_0
 !
 !                      Function for calculating IJPK
-      INTEGER          JP_OF
+      INTEGER          JP_OF, JP_OF_0
 !
 !                      Function for calculating IJKM
-      INTEGER          KM_OF
+      INTEGER          KM_OF, KM_OF_0
 !
 !                      Function for calculating IJKP
-      INTEGER          KP_OF
+      INTEGER          KP_OF, KP_OF_0
 !
 !                      Logical function to identify a fluid cell
       LOGICAL          FLUID_AT
@@ -216,7 +217,11 @@
 ! 
 !//FUNIJK is moved to compar for debugging purposes - Sreekanth-10/26/99
 !     FUNIJK (LI, LJ, LK) = c0 + LI + (LJ-jstart3_all(myPE))*c1 + (LK-kstart3_all(myPE))* c2
-      funijk(li,lj,lk) = lj + c0 + li*c1 + lk*c2
+!      funijk(li,lj,lk) = lj + c0 + li*c1 + lk*c2
+      funijk_0(li,lj,lk) = lj + c0 + li*c1 + lk*c2
+
+      funijk(li,lj,lk) = IJK_ARRAY_OF(li,lj,lk)
+
 
 !//SP
 !     FUNIJK_PROC(LI, LJ, LK, LIPROC) = 1 + (LI - istart3_all(LIPROC))+ &
@@ -242,6 +247,12 @@
 				LJ.ge.jstart3.and.LJ.le.jend3.and. &
                                 LK.ge.kstart3.and.LK.le.kend3
 
+!      IS_ON_myPE_plus2layers (LI, LJ, LK) = LI.ge.istart3.and.LI.le.iend3.and. &
+!				LJ.ge.jstart3.and.LJ.le.jend3.and. &
+!                                LK.ge.kstart3.and.LK.le.kend3.and. &
+!                                (.NOT.DEAD_CELL_AT(LI,LJ,LK))
+
+
       IS_ON_myPE_plus1layer (LI, LJ, LK) = LI.ge.istart2.and.LI.le.iend2.and. & 
       					   LJ.ge.jstart2.and.LJ.le.jend2.and. & 
       					   LK.ge.kstart2.and.LK.le.kend2
@@ -250,22 +261,69 @@
 				LJ.ge.jstart.and.LJ.le.jend.and. &
                                 LK.ge.kstart.and.LK.le.kend
 
+!      IS_ON_myPE_owns (LI, LJ, LK) = LI.ge.istart.and.LI.le.iend.and. &
+!				LJ.ge.jstart.and.LJ.le.jend.and. &
+!                                LK.ge.kstart.and.LK.le.kend.and. &
+!                                (.NOT.DEAD_CELL_AT(LI,LJ,LK))
+
+
       IS_ON_myPE_wobnd (LI, LJ, LK) = LI.ge.istart1.and.LI.le.iend1.and. &
                                 LJ.ge.jstart1.and.LJ.le.jend1.and. &
                                 LK.ge.kstart1.and.LK.le.kend1
 
-      WEST_OF  (IJK)   = IJK + INCREMENT_FOR_w (CELL_CLASS(IJK))
-      EAST_OF  (IJK)   = IJK + INCREMENT_FOR_e (CELL_CLASS(IJK))
-      SOUTH_OF (IJK)   = IJK + INCREMENT_FOR_s (CELL_CLASS(IJK))
-      NORTH_OF (IJK)   = IJK + INCREMENT_FOR_n (CELL_CLASS(IJK))
-      BOTTOM_OF(IJK)   = IJK + INCREMENT_FOR_b (CELL_CLASS(IJK))
-      TOP_OF   (IJK)   = IJK + INCREMENT_FOR_t (CELL_CLASS(IJK))
-      IM_OF  (IJK)     = IJK + INCREMENT_FOR_im(CELL_CLASS(IJK))
-      IP_OF  (IJK)     = IJK + INCREMENT_FOR_ip(CELL_CLASS(IJK))
-      JM_OF (IJK)      = IJK + INCREMENT_FOR_jm(CELL_CLASS(IJK))
-      JP_OF (IJK)      = IJK + INCREMENT_FOR_jp(CELL_CLASS(IJK))
-      KM_OF(IJK)       = IJK + INCREMENT_FOR_km(CELL_CLASS(IJK))
-      KP_OF   (IJK)    = IJK + INCREMENT_FOR_kp(CELL_CLASS(IJK))
+!      WEST_OF  (IJK)   = IJK + INCREMENT_FOR_w (CELL_CLASS(IJK))
+!      EAST_OF  (IJK)   = IJK + INCREMENT_FOR_e (CELL_CLASS(IJK))
+!      SOUTH_OF (IJK)   = IJK + INCREMENT_FOR_s (CELL_CLASS(IJK))
+!      NORTH_OF (IJK)   = IJK + INCREMENT_FOR_n (CELL_CLASS(IJK))
+!      BOTTOM_OF(IJK)   = IJK + INCREMENT_FOR_b (CELL_CLASS(IJK))
+!      TOP_OF   (IJK)   = IJK + INCREMENT_FOR_t (CELL_CLASS(IJK))
+!      IM_OF  (IJK)     = IJK + INCREMENT_FOR_im(CELL_CLASS(IJK))
+!      IP_OF  (IJK)     = IJK + INCREMENT_FOR_ip(CELL_CLASS(IJK))
+!      JM_OF (IJK)      = IJK + INCREMENT_FOR_jm(CELL_CLASS(IJK))
+!      JP_OF (IJK)      = IJK + INCREMENT_FOR_jp(CELL_CLASS(IJK))
+!      KM_OF(IJK)       = IJK + INCREMENT_FOR_km(CELL_CLASS(IJK))
+!      KP_OF   (IJK)    = IJK + INCREMENT_FOR_kp(CELL_CLASS(IJK))
+
+      EAST_OF  (IJK)   = IJK + INCREMENT_FOR_NB (1,CELL_CLASS(IJK))
+      WEST_OF  (IJK)   = IJK + INCREMENT_FOR_NB (2,CELL_CLASS(IJK))
+      SOUTH_OF (IJK)   = IJK + INCREMENT_FOR_NB (3,CELL_CLASS(IJK))
+      NORTH_OF (IJK)   = IJK + INCREMENT_FOR_NB (4,CELL_CLASS(IJK))
+      BOTTOM_OF(IJK)   = IJK + INCREMENT_FOR_NB (5,CELL_CLASS(IJK))
+      TOP_OF   (IJK)   = IJK + INCREMENT_FOR_NB (6,CELL_CLASS(IJK))
+
+      IM_OF  (IJK)     = IJK + INCREMENT_FOR_MP(1,CELL_CLASS(IJK))
+      IP_OF  (IJK)     = IJK + INCREMENT_FOR_MP(2,CELL_CLASS(IJK))
+      JM_OF (IJK)      = IJK + INCREMENT_FOR_MP(3,CELL_CLASS(IJK))
+      JP_OF (IJK)      = IJK + INCREMENT_FOR_MP(4,CELL_CLASS(IJK))
+      KM_OF(IJK)       = IJK + INCREMENT_FOR_MP(5,CELL_CLASS(IJK))
+      KP_OF   (IJK)    = IJK + INCREMENT_FOR_MP(6,CELL_CLASS(IJK))
+
+      WEST_OF_0  (IJK)   = IJK + INCREMENT_FOR_w (CELL_CLASS(IJK))
+      EAST_OF_0  (IJK)   = IJK + INCREMENT_FOR_e (CELL_CLASS(IJK))
+      SOUTH_OF_0 (IJK)   = IJK + INCREMENT_FOR_s (CELL_CLASS(IJK))
+      NORTH_OF_0 (IJK)   = IJK + INCREMENT_FOR_n (CELL_CLASS(IJK))
+      BOTTOM_OF_0(IJK)   = IJK + INCREMENT_FOR_b (CELL_CLASS(IJK))
+      TOP_OF_0   (IJK)   = IJK + INCREMENT_FOR_t (CELL_CLASS(IJK))
+      IM_OF_0  (IJK)     = IJK + INCREMENT_FOR_im(CELL_CLASS(IJK))
+      IP_OF_0  (IJK)     = IJK + INCREMENT_FOR_ip(CELL_CLASS(IJK))
+      JM_OF_0 (IJK)      = IJK + INCREMENT_FOR_jm(CELL_CLASS(IJK))
+      JP_OF_0 (IJK)      = IJK + INCREMENT_FOR_jp(CELL_CLASS(IJK))
+      KM_OF_0(IJK)       = IJK + INCREMENT_FOR_km(CELL_CLASS(IJK))
+      KP_OF_0   (IJK)    = IJK + INCREMENT_FOR_kp(CELL_CLASS(IJK))
+
+!      WEST_OF  (IJK)   = WEST_ARRAY_OF(IJK)
+!      EAST_OF  (IJK)   = EAST_ARRAY_OF(IJK)
+!      SOUTH_OF  (IJK)   = SOUTH_ARRAY_OF(IJK)
+!      NORTH_OF  (IJK)   = NORTH_ARRAY_OF(IJK)
+!      BOTTOM_OF  (IJK)   = BOTTOM_ARRAY_OF(IJK)
+!      TOP_OF  (IJK)   = TOP_ARRAY_OF(IJK)
+!      IM_OF  (IJK)   = IM_ARRAY_OF(IJK)
+!      IP_OF  (IJK)   = IP_ARRAY_OF(IJK)
+!      JM_OF  (IJK)   = JM_ARRAY_OF(IJK)
+!      JP_OF  (IJK)   = JP_ARRAY_OF(IJK)
+!      KM_OF  (IJK)   = KM_ARRAY_OF(IJK)
+!      KP_OF  (IJK)   = KP_ARRAY_OF(IJK)
+
       FUNLM (L1, L2)   = STORE_LM (L1, L2)
       FLUID_AT(IJK)    = FLAG(IJK) .EQ. 1
 

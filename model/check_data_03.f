@@ -33,6 +33,7 @@
       USE funits 
       USE compar
       USE mpi_utility
+      USE cutcell
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -124,6 +125,8 @@
       DO_J = .NOT.NO_J
       DO_K = .NOT.NO_K
 
+      IF(PARTIAL_CHECK_03) RETURN                ! Exit if partial check is performed during ADJUST_IJK_SIZE
+!
       IF (COORDINATES == 'CYLINDRICAL') THEN 
          CYLINDRICAL = .TRUE. 
          IF (CYCLIC_X .OR. CYCLIC_X_PD) THEN 

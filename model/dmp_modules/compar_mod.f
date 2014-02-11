@@ -104,5 +104,62 @@
       integer :: c0_3, c1_3, c2_3
 
 
+!       Integer Array of IJK values at each (I,J,K) cell
+
+        integer, allocatable, dimension(:,:,:) :: IJK_ARRAY_OF
+
+!        integer, allocatable, dimension(:,:,:) :: funijk
+
+!       Integer Array of neighbor cells 
+
+        integer, allocatable, dimension(:)     :: WEST_ARRAY_OF,EAST_ARRAY_OF
+        integer, allocatable, dimension(:)     :: SOUTH_ARRAY_OF,NORTH_ARRAY_OF
+        integer, allocatable, dimension(:)     :: BOTTOM_ARRAY_OF,TOP_ARRAY_OF
+        integer, allocatable, dimension(:)     :: IM_ARRAY_OF,IP_ARRAY_OF
+        integer, allocatable, dimension(:)     :: JM_ARRAY_OF,JP_ARRAY_OF
+        integer, allocatable, dimension(:)     :: KM_ARRAY_OF,KP_ARRAY_OF
+
+!       Flag to identify dead (unused cells)
+
+        LOGICAL, allocatable, dimension(:,:,:) :: DEAD_CELL_AT
+
+!       Flag to know if above neighbor arrays have been allocated
+
+        LOGICAL :: INCREMENT_ARRAYS_ALLOCATED
+
+!       Number of Ghost Cells 
+
+        INTEGER :: NGC_EAST                       
+        INTEGER :: NGC_WEST  
+        INTEGER :: NGC_NORTH 
+        INTEGER :: NGC_SOUTH 
+        INTEGER :: NGC_TOP   
+        INTEGER :: NGC_BOTTOM
+
+!       List of Ghost Cells
+
+        INTEGER, ALLOCATABLE, DIMENSION(:) ::  LGC_EAST 
+        INTEGER, ALLOCATABLE, DIMENSION(:) ::  LGC_WEST 
+        INTEGER, ALLOCATABLE, DIMENSION(:) ::  LGC_NORTH
+        INTEGER, ALLOCATABLE, DIMENSION(:) ::  LGC_SOUTH
+        INTEGER, ALLOCATABLE, DIMENSION(:) ::  LGC_TOP 
+        INTEGER, ALLOCATABLE, DIMENSION(:) ::  LGC_BOTTOM
+
+!       Domain size of each processor
+
+        INTEGER, ALLOCATABLE, DIMENSION(:) :: ISIZE_ALL,JSIZE_ALL,KSIZE_ALL
+
+        LOGICAL :: DOMAIN_SIZE_ADJUSTED = .FALSE.
+
+        INTEGER, ALLOCATABLE, DIMENSION(:) :: NCPP_UNIFORM
+
+        LOGICAL :: NCPP_UNIFORM_BACKED_UP = .FALSE.
+
+        integer, allocatable,dimension(:) ::  new_ijksize3_all
+
+!       Flag to exit gridmap_init after domain size is assigned
+        LOGICAL :: SHORT_GRIDMAP_INIT = .FALSE.
+
+
       END MODULE compar
 

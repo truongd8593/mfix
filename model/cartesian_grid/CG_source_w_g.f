@@ -170,7 +170,8 @@
 !
 !        do nothing
 !     
-         ELSE 
+!         ELSE 
+         ELSEIF(INTERIOR_CELL_AT(IJK)) THEN
 !
             BCV = BC_W_ID(IJK)
 

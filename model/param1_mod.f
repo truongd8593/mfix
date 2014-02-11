@@ -11,8 +11,8 @@
 !                      Number of single precision .SPx files
       INTEGER, PARAMETER          :: N_SPX = 11
 !
-!                      Maximum number of cell classes
-      INTEGER, PARAMETER          :: MAX_CLASS = 1000
+!                      Maximum number of cell classes, increased to 1 Million due to re-indexing
+      INTEGER, PARAMETER          :: MAX_CLASS = 1000000
 !
 !                      Maximum number of corner cells
       INTEGER, PARAMETER          :: MAX_NCORN = 4000

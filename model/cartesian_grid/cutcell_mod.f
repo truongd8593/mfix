@@ -12,6 +12,12 @@
 
       LOGICAL :: CARTESIAN_GRID
 
+!     Flag to activate cell re-indexing
+      LOGICAL :: RE_INDEXING
+
+!     Flag to activate adjustment of each processor domain size
+      LOGICAL :: ADJUST_PROC_DOMAIN_SIZE
+
 !     maximum number of cut cells
       INTEGER :: DIMENSION_MAX_CUT_CELL
 
@@ -450,6 +456,10 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  dvdy_OUT
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  delv_OUT
 
+      LOGICAL :: PARTIAL_CHECK_03
+
+!     Keep track of whether the CG Hader was printed on screen
+      LOGICAL :: CG_HEADER_WAS_PRINTED = .FALSE.
 
       LOGICAL, DIMENSION(:), ALLOCATABLE ::SCALAR_NODE_ATWALL
 
@@ -473,5 +483,10 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  F_AT
 
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DWALL
+! Grid partition for reporting best size 
+      INTEGER :: NODESI_REPORT,NODESJ_REPORT,NODESK_REPORT  
+      
+      LOGICAL :: MINIMIZE_SEND_RECV
+
 
       END MODULE cutcell

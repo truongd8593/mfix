@@ -65,6 +65,9 @@
 
 ! Set constants
       CALL SET_CONSTANTS 
+      
+! Adjust partition for better load balance (done when RE_INDEXING is .TRUE.)
+      CALL ADJUST_IJK_SIZE
 
 ! Partition the domain and set indices
       CALL GRIDMAP_INIT

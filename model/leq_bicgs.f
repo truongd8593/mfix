@@ -47,11 +47,15 @@
 !     e.g., pp_g, epp, rop_g, rop_s, u_g, u_s, v_g, v_s, w_g,
 !     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G, 
 !     e_Turb_G
-      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3), INTENT(INOUT) :: Var
+!      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3), INTENT(INOUT) :: Var
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3), INTENT(INOUT) :: Var
 ! Septadiagonal matrix A_m
-      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3,-3:3), INTENT(INOUT) :: A_m
+!      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3,-3:3), INTENT(INOUT) :: A_m
+     DOUBLE PRECISION, DIMENSION(DIMENSION_3,-3:3), INTENT(INOUT) :: A_m
+
 ! Vector b_m
-      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3), INTENT(INOUT) :: B_m
+!      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3), INTENT(INOUT) :: B_m
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3), INTENT(INOUT) :: B_m
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
 ! Note: this setting only seems to matter when leq_pc='line'      
@@ -127,6 +131,7 @@
       USE sendrecv
       USE indices
       USE leqsol
+      USE cutcell
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments/procedure
@@ -139,11 +144,14 @@
 !     e.g., pp_g, epp, rop_g, rop_s, u_g, u_s, v_g, v_s, w_g,
 !     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G, 
 !     e_Turb_G
-      DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
+!      DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3), INTENT(INOUT) :: Var
 ! Septadiagonal matrix A_m
-      DOUBLE PRECISION, INTENT(INOUT) :: A_m(ijkstart3:ijkend3,-3:3)
+!      DOUBLE PRECISION, INTENT(INOUT) :: A_m(ijkstart3:ijkend3,-3:3)
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3,-3:3), INTENT(INOUT) :: A_m
 ! Vector b_m
-      DOUBLE PRECISION, INTENT(INOUT) :: B_m(ijkstart3:ijkend3)
+!      DOUBLE PRECISION, INTENT(INOUT) :: B_m(ijkstart3:ijkend3)
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3), INTENT(INOUT) :: B_m
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
       CHARACTER*(*), INTENT(IN) :: CMETHOD
@@ -169,8 +177,15 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3) ::   &
-                        R, Rtilde, P, Phat, Svec, Shat, Tvec, V
+
+
+!      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3) ::                       &    !!! <-------- WHY ???
+!                                R,Rtilde, P,Phat, Svec, Shat, Tvec,V
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::                       &
+                                R,Rtilde, P,Phat, Svec, Shat, Tvec,V
+
+
+
       DOUBLE PRECISION, DIMENSION(0:ITMAX+1) :: &
                         alpha, beta, omega, rho
       DOUBLE PRECISION :: TxS, TxT, RtildexV, RtildexR, &
@@ -187,13 +202,16 @@
       INTERFACE
          DOUBLE PRECISION FUNCTION DOT_PRODUCT_PAR( R1, R2 )
          use compar
-         DOUBLE PRECISION, INTENT(IN), DIMENSION(ijkstart3:ijkend3) :: R1, R2
+         USE param
+!         DOUBLE PRECISION, INTENT(IN), DIMENSION(ijkstart3:ijkend3) :: R1,R2
+         DOUBLE PRECISION, INTENT(IN), DIMENSION(DIMENSION_3) :: R1,R2
          END FUNCTION DOT_PRODUCT_PAR
       END INTERFACE
 
       INTERFACE
          FUNCTION DOT_PRODUCT_PAR2( R1, R2, R3, R4 )
          use compar
+         USE param
          DOUBLE PRECISION, INTENT(IN), DIMENSION(ijkstart3:ijkend3) :: &
                                        R1, R2, R3, R4
          DOUBLE PRECISION, DIMENSION(2) :: DOT_PRODUCT_PAR2
@@ -255,17 +273,31 @@
 ! ---------------------------------------------------------------->>>
       if (do_unit_scaling) then
 !$omp parallel do default(shared) private(ijk,i,j,k,oam,aijmax)
-         do k = kstart2,kend2
-            do i = istart2,iend2
-               do j = jstart2,jend2
-                  IJK = funijk(i,j,k)
-                  aijmax = maxval(abs(A_M(ijk,:)) )
-                  OAM = one/aijmax
-                  A_M(IJK,:) = A_M(IJK,:)*OAM
-                  B_M(IJK) = B_M(IJK)*OAM
+
+         IF(RE_INDEXING) THEN  ! Loop only over active cells
+            DO IJK = IJKSTART3,IJKEND3
+               aijmax = maxval(abs(A_M(ijk,:)) )
+               OAM = one/aijmax
+               A_M(IJK,:) = A_M(IJK,:)*OAM
+               B_M(IJK) = B_M(IJK)*OAM
+            ENDDO
+
+         ELSE
+
+            do k = kstart2,kend2
+               do i = istart2,iend2
+                  do j = jstart2,jend2
+                     IJK = funijk(i,j,k)
+                     aijmax = maxval(abs(A_M(ijk,:)) )
+                     OAM = one/aijmax
+                     A_M(IJK,:) = A_M(IJK,:)*OAM
+                     B_M(IJK) = B_M(IJK)*OAM
+                  enddo
                enddo
             enddo
-         enddo
+
+         ENDIF
+
       endif
 ! ----------------------------------------------------------------<<<
 
@@ -308,6 +340,10 @@
 ! of small differences between runs.  the random number is shifted below
 ! between -1 and 1 and then scaled by factor 1.0D-6*Rnorm0 
       call random_number(Rtilde(:))
+
+! Shift random number array to be consistent with case when RE_INDEXING is .FALSE.
+       IF(RE_INDEXING) CALL SHIFT_DP_ARRAY(Rtilde)
+
 
       if (use_doloop) then   ! mfix.dat keyword default=false
 !$omp parallel do default(shared) private(ijk)
@@ -1030,6 +1066,7 @@
       USE indices
       USE sendrecv
       USE mpi_utility
+      USE cutcell
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1037,11 +1074,14 @@
 ! Variable name
       CHARACTER*(*), INTENT(IN) :: Vname
 ! Variable
-      DOUBLE PRECISION, INTENT(IN) :: Var(ijkstart3:ijkend3)
+!      DOUBLE PRECISION, INTENT(IN) :: Var(ijkstart3:ijkend3)
+      DOUBLE PRECISION, INTENT(IN) :: Var(DIMENSION_3)
 ! Septadiagonal matrix A_m
-      DOUBLE PRECISION, INTENT(IN) :: A_m(ijkstart3:ijkend3, -3:3)
+!      DOUBLE PRECISION, INTENT(IN) :: A_m(ijkstart3:ijkend3, -3:3)
+      DOUBLE PRECISION, INTENT(IN) :: A_m(DIMENSION_3, -3:3)
 ! Vector AVar
-      DOUBLE PRECISION, INTENT(OUT) :: AVar(ijkstart3:ijkend3)
+!      DOUBLE PRECISION, INTENT(OUT) :: AVar(ijkstart3:ijkend3)
+      DOUBLE PRECISION, INTENT(OUT) :: AVar(DIMENSION_3)
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -1054,12 +1094,68 @@
       INCLUDE 'function.inc'
 !-----------------------------------------------
 
-      if (do_k) then
+      IF(RE_INDEXING) THEN
+
+         DO IJK = IJKSTART3, IJKEND3  ! Loop only over active cells
+
+            im1jk = im_of(ijk)
+            ip1jk = ip_of(ijk)
+            ijm1k = jm_of(ijk)
+            ijp1k = jp_of(ijk)
+
+
+            AVar(ijk) =      A_m(ijk,-2) * Var(ijm1k)   &
+                           + A_m(ijk,-1) * Var(im1jk)   &
+                           + A_m(ijk, 0) * Var(ijk)     &
+                           + A_m(ijk, 1) * Var(ip1jk)   &
+                           + A_m(ijk, 2) * Var(ijp1k)
+
+            if (do_k) then
+               ijkm1 = km_of(ijk)
+               ijkp1 = kp_of(ijk)
+
+
+                AVar(ijk) =   AVar(ijk) + A_m(ijk,-3) * Var(ijkm1)   &
+                                        + A_m(ijk, 3) * Var(ijkp1)
+
+            endif
+
+         enddo
+
+
+      ELSE
+
+
+
+         if (do_k) then
 !$omp    parallel  do &
 !$omp&   private(     &
 !$omp&           ijk,i,j,k, &
 !$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1) collapse (3)
-         do k = kstart,kend
+            do k = kstart,kend
+               do i = istart,iend
+                  do j = jstart,jend
+                     IJK = funijk(i,j,k)
+                     im1jk = im_of(ijk)
+                     ip1jk = ip_of(ijk)
+                     ijm1k = jm_of(ijk)
+                     ijp1k = jp_of(ijk)
+                     ijkm1 = km_of(ijk)
+                     ijkp1 = kp_of(ijk)
+                     AVar(ijk) =  A_m(ijk,-3) * Var(ijkm1)   &
+                                + A_m(ijk,-2) * Var(ijm1k)   &
+                                + A_m(ijk,-1) * Var(im1jk)   &
+                                + A_m(ijk, 0) * Var(ijk)     &
+                                + A_m(ijk, 1) * Var(ip1jk)   &
+                                + A_m(ijk, 2) * Var(ijp1k)   &
+                                + A_m(ijk, 3) * Var(ijkp1)
+                  enddo
+               enddo
+            enddo
+    
+         else
+            k = 1
+!$omp parallel do private(i,j,ijk,im1jk,ip1jk,ijm1k,ijp1k) collapse (2)
             do i = istart,iend
                do j = jstart,jend
                   IJK = funijk(i,j,k)
@@ -1067,38 +1163,17 @@
                   ip1jk = ip_of(ijk)
                   ijm1k = jm_of(ijk)
                   ijp1k = jp_of(ijk)
-                  ijkm1 = km_of(ijk)
-                  ijkp1 = kp_of(ijk)
-                  AVar(ijk) =  A_m(ijk,-3) * Var(ijkm1)   &
-                             + A_m(ijk,-2) * Var(ijm1k)   &
+                  AVar(ijk) =  A_m(ijk,-2) * Var(ijm1k)   &
                              + A_m(ijk,-1) * Var(im1jk)   &
                              + A_m(ijk, 0) * Var(ijk)     &
                              + A_m(ijk, 1) * Var(ip1jk)   &
-                             + A_m(ijk, 2) * Var(ijp1k)   &
-                             + A_m(ijk, 3) * Var(ijkp1)
+                             + A_m(ijk, 2) * Var(ijp1k)
                enddo
             enddo
-         enddo
- 
-      else
-         k = 1
-!$omp parallel do private(i,j,ijk,im1jk,ip1jk,ijm1k,ijp1k) collapse (2)
-         do i = istart,iend
-            do j = jstart,jend
-               IJK = funijk(i,j,k)
-               im1jk = im_of(ijk)
-               ip1jk = ip_of(ijk)
-               ijm1k = jm_of(ijk)
-               ijp1k = jp_of(ijk)
-               AVar(ijk) =  A_m(ijk,-2) * Var(ijm1k)   &
-                          + A_m(ijk,-1) * Var(im1jk)   &
-                          + A_m(ijk, 0) * Var(ijk)     &
-                          + A_m(ijk, 1) * Var(ip1jk)   &
-                          + A_m(ijk, 2) * Var(ijp1k)
-            enddo
-         enddo
-		 
-      endif
+		    
+         endif
+
+      ENDIF ! RE_INDEXING
 
       call send_recv(Avar,nlayers_bicgs)
       RETURN
@@ -1142,11 +1217,14 @@
 ! Variable name
       CHARACTER*(*), INTENT(IN) :: Vname
 ! Vector b_m
-      DOUBLE PRECISION, INTENT(IN) :: B_m(ijkstart3:ijkend3)
+!      DOUBLE PRECISION, INTENT(IN) :: B_m(ijkstart3:ijkend3)
+      DOUBLE PRECISION, INTENT(IN) :: B_m(DIMENSION_3)
 ! Septadiagonal matrix A_m
-      DOUBLE PRECISION, INTENT(IN) :: A_m(ijkstart3:ijkend3, -3:3)
+!      DOUBLE PRECISION, INTENT(IN) :: A_m(ijkstart3:ijkend3, -3:3)
+      DOUBLE PRECISION, INTENT(IN) :: A_m(DIMENSION_3, -3:3)
 ! Variable
-      DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
+!      DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
+      DOUBLE PRECISION, INTENT(INOUT) :: Var(DIMENSION_3)
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
       CHARACTER*4, INTENT(IN) :: CMETHOD
@@ -1471,11 +1549,14 @@
 ! Variable name
       CHARACTER*(*), INTENT(IN) :: Vname
 ! Vector b_m
-      DOUBLE PRECISION, INTENT(IN) :: B_m(ijkstart3:ijkend3)
+!      DOUBLE PRECISION, INTENT(IN) :: B_m(ijkstart3:ijkend3)
+      DOUBLE PRECISION, INTENT(IN) :: B_m(DIMENSION_3)
 ! Septadiagonal matrix A_m
-      DOUBLE PRECISION, INTENT(IN) :: A_m(ijkstart3:ijkend3, -3:3)
+!      DOUBLE PRECISION, INTENT(IN) :: A_m(ijkstart3:ijkend3, -3:3)
+      DOUBLE PRECISION, INTENT(IN) :: A_m(DIMENSION_3, -3:3)
 ! Variable
-      DOUBLE PRECISION, INTENT(OUT) :: Var(ijkstart3:ijkend3)
+!      DOUBLE PRECISION, INTENT(OUT) :: Var(ijkstart3:ijkend3)
+      DOUBLE PRECISION, INTENT(OUT) :: Var(DIMENSION_3)
 ! sweep direction
       CHARACTER*4, INTENT(IN) :: CMETHOD
 !-----------------------------------------------
@@ -1592,11 +1673,13 @@
       use geometry
       use compar
       use indices
+      Use cutcell
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      double precision, intent(in), dimension(ijkstart3:ijkend3) :: r1,r2
+!      double precision, intent(in), dimension(ijkstart3:ijkend3) :: r1,r2
+      double precision, intent(in), dimension(DIMENSION_3) :: r1,r2
 !-----------------------------------------------
 ! Local parameters
 !-----------------------------------------------
@@ -1615,18 +1698,34 @@
 
       if(do_global_sum) then
          prod = 0.0d0
+
+         IF(RE_INDEXING) THEN
+!         IF(.FALSE.) THEN                  ! Somehow, looping in his order leads to smaller time step than k,i,j nested loop below ....
+            DO IJK = IJKSTART3,IJKEND3
+               IF(INTERIOR_CELL_AT(IJK)) prod = prod + r1(ijk)*r2(ijk) 
+            ENDDO
+
+            call global_all_sum(prod, dot_product_par)
+
+
+         ELSE
+
+
+
 !$omp parallel do private(i,j,k,ijk) reduction(+:prod) 	collapse (3) 
-         do k = kstart1, kend1
-            do i = istart1, iend1
-               do j = jstart1, jend1
-                  ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
-!                  ijk = funijk (i,j,k)
-                  prod = prod + r1(ijk)*r2(ijk)
+            do k = kstart1, kend1
+               do i = istart1, iend1
+                  do j = jstart1, jend1
+                     ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
+   !                  ijk = funijk (i,j,k)
+                     prod = prod + r1(ijk)*r2(ijk)
+                  enddo
                enddo
             enddo
-         enddo
 
-         call global_all_sum(prod, dot_product_par)
+            call global_all_sum(prod, dot_product_par)
+
+         ENDIF
 
       else
          if(myPE.eq.root) then

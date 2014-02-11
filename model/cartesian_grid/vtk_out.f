@@ -991,6 +991,7 @@
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VAR
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VAR(:)
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  TMP_VAR
 
 
       INTEGER :: int
@@ -1033,8 +1034,12 @@
                allocate (GLOBAL_VAR(1))     
             ENDIF
 
-            call gather (VAR,GLOBAL_VAR,root) 
-
+            IF(RE_INDEXING) THEN
+               CALL UNSHIFT_DP_ARRAY(VAR,TMP_VAR)
+               CALL gather (TMP_VAR,GLOBAL_VAR,root)  
+            ELSE
+               CALL gather (VAR,GLOBAL_VAR,root)    
+            ENDIF
 
             IF (myPE /= PE_IO) RETURN
 
@@ -1151,6 +1156,7 @@
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VARX,VARY,VARZ
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VARX(:),GLOBAL_VARY(:),GLOBAL_VARZ(:)
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  TMP_VAR
 
 
       INTEGER :: int
@@ -1192,9 +1198,22 @@
                allocate (GLOBAL_VARZ(1))          
             ENDIF
 
-            call gather (VARX,GLOBAL_VARX,root)
-            call gather (VARY,GLOBAL_VARY,root) 
-            call gather (VARZ,GLOBAL_VARZ,root)  
+            IF(RE_INDEXING) THEN
+               CALL UNSHIFT_DP_ARRAY(VARX,TMP_VAR)
+               call gather (TMP_VAR,GLOBAL_VARX,root)
+
+               CALL UNSHIFT_DP_ARRAY(VARY,TMP_VAR) 
+               call gather (TMP_VAR,GLOBAL_VARY,root) 
+
+               CALL UNSHIFT_DP_ARRAY(VARZ,TMP_VAR)
+               call gather (TMP_VAR,GLOBAL_VARZ,root)  
+
+            ELSE
+               call gather (VARX,GLOBAL_VARX,root)
+               call gather (VARY,GLOBAL_VARY,root) 
+               call gather (VARZ,GLOBAL_VARZ,root)  
+            ENDIF
+
 
             IF (myPE /= PE_IO) RETURN
 

@@ -290,6 +290,11 @@
       Allocate(  BC_V_ID (DIMENSION_3) )
       Allocate(  BC_W_ID (DIMENSION_3) )
 
+      BC_ID   = 0
+      BC_U_ID = 0
+      BC_V_ID = 0
+      BC_W_ID = 0
+
       Allocate(  DEBUG_CG (DIMENSION_3,15) )
 
       Allocate(  U_g_CC (DIMENSION_3) )

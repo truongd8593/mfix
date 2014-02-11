@@ -45,30 +45,9 @@
 
       include "function.inc"   
 
-      IF(myPE == PE_IO) THEN
-
-         WRITE(*,10)'============================================================================='
-         WRITE(*,10)'  ____          ___________    _   ____      ____    __________   __________  '
-         WRITE(*,10)' |    \        /           |  (_)  \   \    /   /   |          | |          | '
-         WRITE(*,10)' |     \      /      ______|  ___   \   \  /   /    |    ______| |    ______| '
-         WRITE(*,10)' |      \    /      |______  |   |   \   \/   /     |   |        |   |        '   
-         WRITE(*,10)' |       \  /              | |   |    \      /  === |   |        |   |  ____  '
-         WRITE(*,10)' |   |\   \/   /|    ______| |   |    /      \      |   |        |   | |_   | '
-         WRITE(*,10)' |   | \      / |   |        |   |   /   /\   \     |   |______  |   |___|  | '
-         WRITE(*,10)' |   |  \    /  |   |        |   |  /   /  \   \    |          | |          | '
-         WRITE(*,10)' |___|   \__/   |___|        |___| /___/    \___\   |__________| |__________| '
-         WRITE(*,10)'                                                                              '
-         WRITE(*,10)'============================================================================='
-         WRITE(*,10)'MFIX WITH CARTESIAN GRID IMPLEMENTATION.'
-         WRITE(*,10)'STARTING CARTESIAN GRID PRE-PROCESSING...'
-
-      ENDIF
-
-
+      IF(.NOT.CG_HEADER_WAS_PRINTED) CALL PRINT_CG_HEADER
 
       CALL CPU_TIME (CPU_PP_START)
-
-
 
       CALL OPEN_CUT_CELL_FILES
 
@@ -209,6 +188,77 @@
 20    FORMAT(1X,A,F8.2,A)
       
       END SUBROUTINE CUT_CELL_PREPROCESSING
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: PRINT_CG_HEADER                                        C
+!  Purpose: Display Cartesian-Grid Header on screen                    C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE PRINT_CG_HEADER
+    
+      USE param
+      USE param1
+      USE parallel
+      USE compar
+      USE cutcell
+
+      IMPLICIT NONE
+
+
+
+
+      IF(myPE == PE_IO) THEN
+
+         WRITE(*,10)'============================================================================='
+         WRITE(*,10)'  ____          ___________    _   ____      ____    __________   __________  '
+         WRITE(*,10)' |    \        /           |  (_)  \   \    /   /   |          | |          | '
+         WRITE(*,10)' |     \      /      ______|  ___   \   \  /   /    |    ______| |    ______| '
+         WRITE(*,10)' |      \    /      |______  |   |   \   \/   /     |   |        |   |        '   
+         WRITE(*,10)' |       \  /              | |   |    \      /  === |   |        |   |  ____  '
+         WRITE(*,10)' |   |\   \/   /|    ______| |   |    /      \      |   |        |   | |_   | '
+         WRITE(*,10)' |   | \      / |   |        |   |   /   /\   \     |   |______  |   |___|  | '
+         WRITE(*,10)' |   |  \    /  |   |        |   |  /   /  \   \    |          | |          | '
+         WRITE(*,10)' |___|   \__/   |___|        |___| /___/    \___\   |__________| |__________| '
+         WRITE(*,10)'                                                                              '
+         WRITE(*,10)'============================================================================='
+         WRITE(*,10)'MFIX WITH CARTESIAN GRID IMPLEMENTATION.'
+
+
+         IF(RE_INDEXING) THEN
+            WRITE(*,10)'RE-INDEXING IS TURNED ON.'
+!            IF(ADJUST_PROC_DOMAIN_SIZE) THEN
+!               WRITE(*,10)'EACH PROCESSOR DOMAIN SIZE WILL BE ADJUSTED FOR BETTER LOAD BALANCING.'
+!            ELSE
+!               WRITE(*,10)'WARNING: PROCESSOR DOMAIN SIZE WILL BE UNIFORMLY DISTIBUTED.'
+!               WRITE(*,10)'THIS COULD RESULT IN VERY POOR LOAD BALANCING.'
+!            ENDIF
+         ELSE
+            WRITE(*,10)'RE-INDEXING IS TURNED OFF.'
+         ENDIF
+
+
+
+      ENDIF
+
+      CG_HEADER_WAS_PRINTED = .TRUE.
+
+10    FORMAT(1X,A)
+
+      RETURN
+
+      END SUBROUTINE PRINT_CG_HEADER
+
+
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC

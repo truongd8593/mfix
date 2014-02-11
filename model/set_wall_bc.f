@@ -276,6 +276,9 @@
          DO J = J1, J2 
             DO I = I1, I2 
                IJK = FUNIJK(I,J,K)
+
+               IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
+
        
                IF(NS_WALL_AT(IJK))THEN
                   SIGN0 = -ONE

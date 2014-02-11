@@ -84,6 +84,7 @@
             DO I = I1, I2 
 ! Check if current i,j,k resides on this PE
                IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+               IF(DEAD_CELL_AT(I,J,K)) CYCLE
                IJK = FUNIJK(I,J,K) 
 
 ! Fluid cell at West

@@ -2380,4 +2380,166 @@
       end subroutine send_recv_1i
 
       
+
+! Re-initialize send/receive after re-indexing 
+	subroutine sendrecv_re_init_after_re_indexing(comm, idebug )
+        implicit none
+
+	integer, intent(in) :: comm
+
+	integer, intent(in), optional :: idebug
+
+!	-------------------------------------
+!	set up tables and data structures for
+!	exchanging ghost regions
+!	-------------------------------------
+
+!	---------------
+!	local variables
+!	---------------
+	character(len=80), parameter :: name = 'sendrecv_init'
+
+	character(len=80), pointer, dimension(:) :: line
+	integer :: ip, lmax
+
+        integer :: layer,request, source, tag, datatype
+
+	integer :: lidebug
+	integer :: isize,jsize,ksize, ijksize
+        integer :: recvsize1, recvsize2, &
+                   sendsize1, sendsize2
+
+	integer :: iter, i,j,k, ii, jj,kk, &
+		ntotal, icount,ipos, &
+		ilayer,        i1,i2,  j1,j2, k1,k2,  &
+		ijk, ijk2, iproc, jproc, src,dest, &
+		ierror
+
+	logical :: isok, isvalid, ismine, is_halobc
+
+	integer, dimension(:,:,:), pointer :: ijk2proc
+        integer, pointer, dimension(:) :: &
+		istartx,iendx, jstartx,jendx, kstartx,kendx, &
+		ncount, &
+		recvproc, recvtag, xrecv, recvijk,  &
+		sendproc, sendtag, xsend, sendijk
+
+        logical, parameter :: jfastest = .true.
+
+
+	integer, parameter :: message_tag_offset = 11
+
+
+!	----------------
+!	inline functions
+!	----------------
+	integer :: message_tag
+	
+!//DEEP moved include function before message_tag declaration
+	include 'function.inc'
+
+
+!  NEW SEND_RECV INIT HERE
+      if (use_persistent_message) then
+  
+         datatype = MPI_DOUBLE_PRECISION
+
+         do layer=1,2
+
+
+            if (layer.eq.1) then
+               nrecv = nrecv1
+               recvtag =>recvtag1
+               recvproc => recvproc1
+               recvijk => recvijk1
+               xrecv => xrecv1
+
+               nsend = nsend1
+               sendtag => sendtag1
+               sendproc => sendproc1
+               sendijk => sendijk1
+               xsend => xsend1
+
+               send_persistent_request => send_persistent_request1
+               recv_persistent_request => recv_persistent_request1
+
+            else
+               nrecv = nrecv2
+               recvtag =>recvtag2
+               recvproc => recvproc2
+               recvijk => recvijk2
+               xrecv => xrecv2
+
+               nsend = nsend2
+               sendtag => sendtag2
+               sendproc => sendproc2
+               sendijk => sendijk2
+               xsend => xsend2
+
+               send_persistent_request => send_persistent_request2
+               recv_persistent_request => recv_persistent_request2
+
+            endif
+
+
+
+            do ii=1,nrecv
+               j1 = xrecv(ii)
+               j2 = xrecv(ii+1)-1
+               icount = j2-j1+1
+               source = recvproc( ii )
+               tag = recvtag( ii )
+     
+
+
+               if (lidebug.ge.2) then
+     
+!                  call write_debug(name, 'mpi_recv_init: ii,j1,j2 ', &
+!                                             ii,j1,j2 )
+!                  call write_debug(name, 'icount, source, tag ', &
+!                                             icount,source,tag )
+               endif
+
+
+               call MPI_RECV_INIT( drecvbuffer(j1), icount, datatype, &
+					source, tag, comm, request, ierror )
+               call MPI_Check( 'sendrecv_begin_1d:MPI_IRECV ', ierror )
+     
+               recv_persistent_request(ii) = request
+            enddo
+
+
+            do ii=1,nsend
+               j1 = xsend(ii)
+               j2 = xsend(ii+1)-1
+               dest = sendproc( ii )
+               tag = sendtag( ii )
+               icount = j2-j1+1
+      
+               if (lidebug.ge.2) then
+      
+!                  call write_debug(name, 'mpi_send_init: ii,j1,j2 ', &
+!                                         ii,j1,j2)
+!                  call write_debug(name, 'icount, dest, tag ', &
+!                                         icount,dest,tag )
+               endif
+      
+      
+               call MPI_SEND_INIT( dsendbuffer(j1), icount, datatype, &
+                                     dest, tag, &
+                                        comm, request, ierror )
+               call MPI_Check( 'sendrecv_begin_1d:MPI_SEND_INIT ', ierror )
+      
+               send_persistent_request( ii ) = request
+            enddo
+
+         enddo  ! layers
+
+      endif  ! use_persistent_message
+
+
+	return	
+	end subroutine sendrecv_re_init_after_re_indexing
+      
+      
       end module sendrecv

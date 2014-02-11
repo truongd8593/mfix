@@ -164,6 +164,37 @@
 	return
 	end subroutine allgather_1i
 
+	subroutine gatherv_1i( lbuf, sendcnt, gbuf, rcount, disp, mroot, idebug )
+        integer, intent(in), dimension(:) :: lbuf
+        integer, intent(in), dimension(:) :: rcount
+        integer, intent(in), dimension(:) :: disp
+        integer, intent(out), dimension(:) :: gbuf
+	integer, optional, intent(in) :: mroot, idebug
+	integer :: sendtype,recvtype,sendcnt,recvcnt,lroot,ierr,lidebug
+
+!	check to see whether there is root
+
+	if (.not. present(mroot)) then
+	   lroot = 0
+	else
+	   lroot = mroot
+	endif
+
+        if (.not. present(idebug)) then  
+           lidebug = 0
+        else
+           lidebug = idebug
+        endif
+
+	recvtype = MPI_INTEGER
+	sendtype = MPI_INTEGER
+
+        CALL MPI_GATHERV(lbuf,sendcnt,sendtype,  &
+                         gbuf,rcount,disp,recvtype, &
+                         lroot,MPI_COMM_WORLD, IERR)
+
+	return
+	end subroutine gatherv_1i
 
 	subroutine gatherv_1d( lbuf, sendcnt, gbuf, rcount, disp, mroot, idebug )
         double precision, intent(in), dimension(:) :: lbuf

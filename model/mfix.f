@@ -267,6 +267,10 @@
 ! Set arrays for computing indices for higher order scheme
       CALL SET_INCREMENTS3 
 
+
+!      IF(.NOT.RE_INDEXING) CALL WRITE_IJK_VALUES
+
+
 ! Set the flags for wall surfaces impermeable and identify flow 
 ! boundaries using FLAG_E, FLAG_N, and FLAG_T
       CALL SET_FLAGS1 
@@ -319,6 +323,33 @@
 
 ! Check the field variable data and report errors.
       IF(.NOT.CARTESIAN_GRID)  CALL CHECK_DATA_20
+
+
+!=======================================================================
+! JFD: START MODIFICATION FOR RE-INDEXING CELLS
+!=======================================================================
+      IF(CARTESIAN_GRID.AND.RE_INDEXING) THEN
+
+         IF(myPE == PE_IO) WRITE(*,*)'============================================================================='
+         IF(myPE == PE_IO) WRITE(*,*)' RE-INDEXING CELLS FOR CARTESIAN GRID...'
+
+         CALL RE_INDEX_ARRAYS
+
+
+!      IF(myPE == PE_IO)print*,'Calling REPORT_BEST_IJK_SIZE:'
+!       CALL REPORT_BEST_IJK_SIZE
+       CALL REPORT_BEST_PROCESSOR_SIZE
+!      IF(myPE == PE_IO)print*,'Exiting MFIX after REPORT_BEST_IJK_SIZE.'
+
+
+         IF(myPE == PE_IO) WRITE(*,*)'============================================================================='
+
+      ENDIF
+
+!=======================================================================
+! JFD: END MODIFICATION FOR RE-INDEXING CELLS
+!=======================================================================
+
 
 ! Initialization of DEM quantities: set initial conditions (bulk
 ! density, velocities), boundary conditions (mass inlet/outlet),

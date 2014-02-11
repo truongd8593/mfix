@@ -684,6 +684,7 @@
                            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                            IJK = FUNIJK(I,J,K) 
                            IF (.NOT.WALL_AT(IJK)) CYCLE  !skip redefined cells
+                           IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells 
                            A_M(IJK,E,M) = ZERO 
                            A_M(IJK,W,M) = ZERO 
                            A_M(IJK,N,M) = ZERO 

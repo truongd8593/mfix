@@ -553,6 +553,7 @@
             DO J = J1, J2 
             DO I = I1, I2 
               IF(.NOT.IS_ON_myPE_owns(I, J, K)) cycle
+              IF(DEAD_CELL_AT(I,J,K)) cycle
 
               SELECT CASE (TRIM(PLANE))  
               CASE ('W')  
@@ -741,6 +742,7 @@
             DO J = J1, J2 
             DO I = I1, I2 
               IF(.NOT.IS_ON_myPE_owns(I, J, K)) cycle
+              IF(DEAD_CELL_AT(I,J,K)) cycle
 
               SELECT CASE (TRIM(PLANE))  
               CASE ('W')  

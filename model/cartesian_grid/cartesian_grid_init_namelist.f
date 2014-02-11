@@ -703,5 +703,35 @@
       LAST_DZ  = ZERO
 !</keyword>
 
+!<keyword category="cartesian grid" required="false">
+!  <description>Turns on the re-indexing of cells. When true, inactive (dead) cells are removed from computational domain. </description>
+      RE_INDEXING = .FALSE.
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Attemps to adjust grid partition. Each processor will be assigned its own size to minimize load imbalance  </description>
+      ADJUST_PROC_DOMAIN_SIZE = .FALSE.
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description> Temporary setting used in serial run to report best domain size for parallel run </description>
+      NODESI_REPORT = 1 
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description> Temporary setting used in serial run to report best domain size for parallel run </description>
+      NODESJ_REPORT = 1 
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description> Temporary setting used in serial run to report best domain size for parallel run </description>
+      NODESK_REPORT = 1 
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Attemps to minimize the size of the send/receive layers </description>
+      MINIMIZE_SEND_RECV = .TRUE.
+!</keyword>
+
       RETURN
       END SUBROUTINE CARTESIAN_GRID_INIT_NAMELIST

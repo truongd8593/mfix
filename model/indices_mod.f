@@ -42,6 +42,9 @@
       INTEGER          INCREMENT_FOR_jp(MAX_CLASS)
       INTEGER          INCREMENT_FOR_km(MAX_CLASS)
       INTEGER          INCREMENT_FOR_kp(MAX_CLASS)
+
+      INTEGER  ::        INCREMENT_FOR_MP(6,MAX_CLASS) = 0
+      INTEGER  ::        INCREMENT_FOR_NB(6,MAX_CLASS) = 0
 !
 !                      Increments used for index computation of 3rd layer
       INTEGER          INCREMENT3_FOR_im(MAX_CLASS)
@@ -114,6 +117,14 @@
 !
 !                      Store (K + 1)'s
       INTEGER, DIMENSION(:), ALLOCATABLE ::           Kp1_3
+
+!                      Save original IJK value of Background grid (new to old mapping)
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           BACKGROUND_IJK_OF
+!                      Save new IJK value of Background grid (old to new mapping)
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           IJK_OF_BACKGROUND
+
+!                      Save original IJKEND3 value of Background grid
+      INTEGER ::                                      BACKGROUND_IJKEND3
  
  
 !!!!HPF$ distribute CELL_CLASS(block)
