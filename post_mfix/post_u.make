@@ -62,12 +62,12 @@ post_mfix : \
     POLYGON.mod \
     DASHBOARD.mod \
     COMPAR.mod \
-    MPI.mod \
     DBG_UTIL.mod \
-    PARALLEL_MPI.mod \
     DEBUG.mod \
     GRIDMAP.mod \
+    MPI.mod \
     MPI_UTILITY.mod \
+    PARALLEL_MPI.mod \
     SENDRECV.mod \
     BOUNDFUNIJK.mod \
     DISCRETELEMENT.mod \
@@ -393,12 +393,12 @@ post_mfix : \
     write_spx1.$(OBJ_EXT) \
     usr_input.$(OBJ_EXT) \
     compar_mod.$(OBJ_EXT) \
-    mpi_mod.$(OBJ_EXT) \
     dbg_util_mod.$(OBJ_EXT) \
-    parallel_mpi_mod.$(OBJ_EXT) \
     debug_mod.$(OBJ_EXT) \
     gridmap_mod.$(OBJ_EXT) \
+    mpi_mod.$(OBJ_EXT) \
     mpi_utility_mod.$(OBJ_EXT) \
+    parallel_mpi_mod.$(OBJ_EXT) \
     sendrecv_mod.$(OBJ_EXT) \
     boundfunijk_mod.$(OBJ_EXT) \
     write_error.$(OBJ_EXT) \
@@ -713,26 +713,20 @@ POLYGON.mod : ../model/cartesian_grid/polygon_mod.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/polygon_mod.f 
 DASHBOARD.mod : ../model/cartesian_grid/dashboard_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/dashboard_mod.f 
-COMPAR.mod : ../model/dmp_modules/mpi_donothing/compar_mod.f \
+COMPAR.mod : ../model/dmp_modules/compar_mod.f \
             MPI.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/compar_mod.f 
-MPI.mod : ../model/dmp_modules/mpi_donothing/mpi_mod.f 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/mpi_mod.f 
-DBG_UTIL.mod : ../model/dmp_modules/mpi_donothing/dbg_util_mod.f \
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/compar_mod.f 
+DBG_UTIL.mod : ../model/dmp_modules/dbg_util_mod.f \
             COMPAR.mod \
             GEOMETRY.mod \
             PARALLEL_MPI.mod \
             INDICES.mod \
             function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/dbg_util_mod.f 
-PARALLEL_MPI.mod : ../model/dmp_modules/mpi_donothing/parallel_mpi_mod.f \
-            GEOMETRY.mod \
-            COMPAR.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/parallel_mpi_mod.f 
-DEBUG.mod : ../model/dmp_modules/mpi_donothing/debug_mod.f \
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/dbg_util_mod.f 
+DEBUG.mod : ../model/dmp_modules/debug_mod.f \
             FUNITS.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/debug_mod.f 
-GRIDMAP.mod : ../model/dmp_modules/mpi_donothing/gridmap_mod.f \
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/debug_mod.f 
+GRIDMAP.mod : ../model/dmp_modules/gridmap_mod.f \
             MPI_UTILITY.mod \
             PARALLEL_MPI.mod \
             GEOMETRY.mod \
@@ -742,7 +736,9 @@ GRIDMAP.mod : ../model/dmp_modules/mpi_donothing/gridmap_mod.f \
             INDICES.mod \
             ERROR_MANAGER.mod \
             function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/gridmap_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/gridmap_mod.f 
+MPI.mod : ../model/dmp_modules/mpi_donothing/mpi_mod.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/mpi_mod.f 
 MPI_UTILITY.mod : ../model/dmp_modules/mpi_donothing/mpi_utility_mod.f \
             GEOMETRY.mod \
             COMPAR.mod \
@@ -751,6 +747,10 @@ MPI_UTILITY.mod : ../model/dmp_modules/mpi_donothing/mpi_utility_mod.f \
             INDICES.mod \
             FUNITS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/mpi_utility_mod.f 
+PARALLEL_MPI.mod : ../model/dmp_modules/mpi_donothing/parallel_mpi_mod.f \
+            GEOMETRY.mod \
+            COMPAR.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/dmp_modules/mpi_donothing/parallel_mpi_mod.f 
 SENDRECV.mod : ../model/dmp_modules/mpi_donothing/sendrecv_mod.f \
             PARALLEL_MPI.mod \
             DEBUG.mod \
@@ -1006,7 +1006,8 @@ check_data_03.$(OBJ_EXT) : ../model/check_data_03.f \
             BC.mod \
             FUNITS.mod \
             COMPAR.mod \
-            MPI_UTILITY.mod 
+            MPI_UTILITY.mod \
+            CUTCELL.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/check_data_03.f 
 check_data_04.$(OBJ_EXT) : ../model/check_data_04.f \
             PARAM.mod \
@@ -1606,6 +1607,16 @@ set_increments.$(OBJ_EXT) : ../model/set_increments.f \
             PHYSPROP.mod \
             FLDVAR.mod \
             FUNITS.mod \
+            SCALARS.mod \
+            RUN.mod \
+            VISC_G.mod \
+            PGCOR.mod \
+            PSCOR.mod \
+            CUTCELL.mod \
+            SENDRECV.mod \
+            MPI_UTILITY.mod \
+            PARALLEL.mod \
+            CDIST.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/set_increments.f 
 set_index1.$(OBJ_EXT) : ../model/set_index1.f \
@@ -1949,6 +1960,7 @@ check_data_cartesian.$(OBJ_EXT) : ../model/cartesian_grid/check_data_cartesian.f
             GEOMETRY.mod \
             SENDRECV.mod \
             PS.mod \
+            GRIDMAP.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cartesian_grid/check_data_cartesian.f 
 get_poly_data.$(OBJ_EXT) : ../model/cartesian_grid/get_poly_data.f \
@@ -2255,6 +2267,7 @@ read_database.$(OBJ_EXT) : ../model/read_database.f \
             FUNITS.mod \
             DISCRETELEMENT.mod \
             DES_RXNS.mod \
+            ERROR_MANAGER.mod \
             mfix_directory_path.inc                                     
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/read_database.f 
 readTherm.$(OBJ_EXT) : ../model/thermochemical/readTherm.f \
