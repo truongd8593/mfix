@@ -1897,10 +1897,7 @@
 
 999 CONTINUE
 
-    print *,'MyPE before write ijk',MyPE
     CALL WRITE_IJK_VALUES
-    print *,'MyPE after write ijk',MyPE
-
 
 !      IJKEND3 = BACKGROUND_IJKEND3  ! for debugging purpose, will need to be removed
 
@@ -2716,8 +2713,6 @@
          WRITE(IJK_FILE_UNIT,200)' IJKSTART3 = ',IJKSTART3
          WRITE(IJK_FILE_UNIT,200)' IJKEND3 = ',IJKEND3
          WRITE(IJK_FILE_UNIT,*)''
-
-         print *,'MyPE,BACKGROUND_IJKEND3=',MyPE,BACKGROUND_IJKEND3
 
          IF(RE_INDEXING) WRITE(IJK_FILE_UNIT,100),'INFO: AFTER RE-INDEXING CELLS ON MyPE = ', MyPE, ' , &
                     THE NUMBER OF ACTIVE CELLS WENT FROM ',BACKGROUND_IJKEND3, ' TO ', IJKEND3 , &
