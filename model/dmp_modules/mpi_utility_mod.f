@@ -834,7 +834,8 @@
 	sendtype = recvtype
 
         ijk1 = ijkstart3
-        ijk2 = ijkend3
+!        ijk2 = ijkend3
+        ijk2 = max(ijkend3,BACKGROUND_IJKEND3)   !  For cell re-indexing
 
 	sendcnt = ijk2-ijk1+1
 
@@ -998,7 +999,10 @@
 	sendtype = recvtype
 
         ijk1 = ijkstart3
-        ijk2 = ijkend3
+!        ijk2 = ijkend3
+        ijk2 = max(ijkend3,BACKGROUND_IJKEND3)   !  For cell re-indexing
+
+
 
 	sendcnt = ijk2-ijk1+1
 
@@ -1164,7 +1168,8 @@
 	sendtype = recvtype
 
         ijk1 = ijkstart3
-        ijk2 = ijkend3
+!        ijk2 = ijkend3
+        ijk2 = max(ijkend3,BACKGROUND_IJKEND3)   !  For cell re-indexing
 
 	sendcnt = ijk2-ijk1+1
 
@@ -1324,7 +1329,8 @@
 
 
         ijk1 = ijkstart3
-        ijk2 = ijkend3
+!        ijk2 = ijkend3
+        ijk2 = max(ijkend3,BACKGROUND_IJKEND3)   !  For cell re-indexing
 
         lenchar = len(lbuf(1))
 
@@ -1404,7 +1410,8 @@
         sendtype = recvtype
 
         ijk1 = ijkstart3
-        ijk2 = ijkend3
+!        ijk2 = ijkend3
+        ijk2 = max(ijkend3,BACKGROUND_IJKEND3)   !  For cell re-indexing
 
         sendcnt = ijk2-ijk1+1
 
