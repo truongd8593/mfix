@@ -533,6 +533,7 @@
 
 !       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
         IF(RE_INDEXING) THEN
+           TMP_VAR = UNDEFINED
            CALL UNSHIFT_DP_ARRAY(VAR,TMP_VAR)
            CALL gather (TMP_VAR,array2,root)
         ELSE    
