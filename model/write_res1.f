@@ -150,7 +150,7 @@
         call gatherWriteRes (ROP_s(:,LC),array2, array1, NEXT_REC)  !//d pnicol
 
         IF(ANY(SOLVE_ROs)) &
-           call gatherWriteRes (RO_S(:,LC),array2, array1, NEXT_REC)  !//d pnicol
+        
 !
         call gatherWriteRes (T_s(:,LC),array2, array1, NEXT_REC)  !//d pnicol
 !
@@ -222,18 +222,28 @@
       USE mpi_utility      !//d pnicol : for gather
       USE sendrecv         !//d pnicol : for gather
 
+      USE cutcell
+
       IMPLICIT NONE
 
       double precision, dimension(ijkmax2) :: array1       
       double precision, dimension(ijkmax3) :: array2     
-      double precision, dimension(DIMENSION_3) :: VAR   
+      double precision, dimension(DIMENSION_3) :: VAR,TMP_VAR   
 
       INTEGER :: NEXT_REC 
 
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       if (.not.bDist_IO) then
 
-         call gather (VAR,array2,root)  !//d pnicol
+
+         IF(RE_INDEXING) THEN                                                                                                                                        
+            CALL UNSHIFT_DP_ARRAY(VAR,TMP_VAR)
+            CALL gather (TMP_VAR,array2,root)
+         ELSE   
+            CALL gather (VAR,array2,root)
+         ENDIF 
+!         call gather (VAR,array2,root)  !//d pnicol
+
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          if (myPE.eq.PE_IO) then
             call convert_to_io_dp(array2,array1,ijkmax2)  
@@ -242,7 +252,13 @@
 
       else
 
-         CALL OUT_BIN_512 (UNIT_RES, var, size(var), NEXT_REC) 
+         IF(RE_INDEXING) THEN                                                                                                                                        
+            CALL UNSHIFT_DP_ARRAY(VAR,TMP_VAR)
+            CALL OUT_BIN_512 (UNIT_RES, TMP_VAR, size(TMP_VAR), NEXT_REC) 
+         ELSE   
+            CALL OUT_BIN_512 (UNIT_RES, var, size(var), NEXT_REC) 
+         ENDIF 
+!         CALL OUT_BIN_512 (UNIT_RES, var, size(var), NEXT_REC) 
 
       end if
 

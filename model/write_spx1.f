@@ -42,6 +42,7 @@
       USE cdist
       USE compar           !//
       USE mpi_utility      !//
+      USE cutcell
 !//       USE tmp_array
       IMPLICIT NONE
 !-----------------------------------------------
@@ -80,6 +81,7 @@
       
       INTEGER  uspx   ! UNIT_SPX + offset from post_mfix
       CHARACTER, DIMENSION(1) :: LINE*50   !error message
+      double precision, dimension(DIMENSION_3) :: TMP_VAR
 !-----------------------------------------------
       uspx = UNIT_SPX + unit_add
 
@@ -104,7 +106,13 @@
             NEXT_REC = NEXT_REC + 1 
          end if
          if (bDist_IO) then
-            call OUT_BIN_R(uspx+L,EP_g,size(EP_g),NEXT_REC)
+            IF(RE_INDEXING) THEN
+               CALL UNSHIFT_DP_ARRAY(EP_g,TMP_VAR)
+               call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC) 
+            ELSE    
+               call OUT_BIN_R(uspx+L,EP_g,size(EP_g),NEXT_REC) 
+            ENDIF 
+!           call OUT_BIN_R(uspx+L,EP_g,size(EP_g),NEXT_REC)
          else
             call gatherWriteSpx (EP_g,array2, array1, uspx+L, NEXT_REC)   !//
          end if 
@@ -125,8 +133,17 @@
             NEXT_REC = NEXT_REC + 1 
          end if
          if (bDist_IO) then
-           call OUT_BIN_R(uspx+L,P_g,size(P_g),NEXT_REC)
-           call OUT_BIN_R(uspx+L,P_star,size(P_star),NEXT_REC)
+            IF(RE_INDEXING) THEN
+               CALL UNSHIFT_DP_ARRAY(P_g,TMP_VAR)
+               call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC) 
+               CALL UNSHIFT_DP_ARRAY(P_star,TMP_VAR)
+               call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC) 
+            ELSE    
+              call OUT_BIN_R(uspx+L,P_g,size(P_g),NEXT_REC)
+              call OUT_BIN_R(uspx+L,P_star,size(P_star),NEXT_REC)
+            ENDIF 
+!           call OUT_BIN_R(uspx+L,P_g,size(P_g),NEXT_REC)
+!           call OUT_BIN_R(uspx+L,P_star,size(P_star),NEXT_REC)
          else
            call gatherWriteSpx (P_g,array2, array1, uspx+L, NEXT_REC)   !//
            call gatherWriteSpx (P_star,array2, array1, uspx+L, NEXT_REC)   !//
@@ -148,9 +165,21 @@
             NEXT_REC = NEXT_REC + 1
          end if 
          if (bDist_IO) then
-           call OUT_BIN_R(uspx+L,U_g,size(U_g),NEXT_REC)
-           call OUT_BIN_R(uspx+L,V_g,size(V_g),NEXT_REC)
-           call OUT_BIN_R(uspx+L,W_g,size(W_g),NEXT_REC)
+            IF(RE_INDEXING) THEN
+               CALL UNSHIFT_DP_ARRAY(U_g,TMP_VAR)
+               call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC)
+               CALL UNSHIFT_DP_ARRAY(V_g,TMP_VAR)
+               call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC)
+               CALL UNSHIFT_DP_ARRAY(W_g,TMP_VAR)
+               call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC)
+            ELSE    
+               call OUT_BIN_R(uspx+L,U_g,size(U_g),NEXT_REC)
+               call OUT_BIN_R(uspx+L,V_g,size(V_g),NEXT_REC)
+               call OUT_BIN_R(uspx+L,W_g,size(W_g),NEXT_REC)
+            ENDIF 
+!           call OUT_BIN_R(uspx+L,U_g,size(U_g),NEXT_REC)
+!           call OUT_BIN_R(uspx+L,V_g,size(V_g),NEXT_REC)
+!           call OUT_BIN_R(uspx+L,W_g,size(W_g),NEXT_REC)
          else
            call gatherWriteSpx (U_g,array2, array1, uspx+L, NEXT_REC)   !//
            call gatherWriteSpx (V_g,array2, array1, uspx+L, NEXT_REC)   !//
@@ -173,11 +202,25 @@
             NEXT_REC = NEXT_REC + 1 
          end if
          if (bDist_IO) then
-         DO LC = 1, MMAX
-           call OUT_BIN_R(uspx+L,U_s(:,LC),Size(U_s(:,LC)),NEXT_REC)
-           call OUT_BIN_R(uspx+L,V_s(:,LC),Size(V_s(:,LC)),NEXT_REC)
-           call OUT_BIN_R(uspx+L,W_s(:,LC),Size(W_s(:,LC)),NEXT_REC)
-         END DO
+            DO LC = 1, MMAX
+               IF(RE_INDEXING) THEN
+                  CALL UNSHIFT_DP_ARRAY(U_s(:,LC),TMP_VAR)
+                  call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC) 
+                  CALL UNSHIFT_DP_ARRAY(V_s(:,LC),TMP_VAR)
+                  call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC) 
+                  CALL UNSHIFT_DP_ARRAY(W_s(:,LC),TMP_VAR)
+                  call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC) 
+               ELSE    
+                  call OUT_BIN_R(uspx+L,U_s(:,LC),Size(U_s(:,LC)),NEXT_REC)
+                  call OUT_BIN_R(uspx+L,V_s(:,LC),Size(V_s(:,LC)),NEXT_REC)
+                  call OUT_BIN_R(uspx+L,W_s(:,LC),Size(W_s(:,LC)),NEXT_REC)
+               ENDIF 
+            ENDDO
+!        DO LC = 1, MMAX
+!          call OUT_BIN_R(uspx+L,U_s(:,LC),Size(U_s(:,LC)),NEXT_REC)
+!          call OUT_BIN_R(uspx+L,V_s(:,LC),Size(V_s(:,LC)),NEXT_REC)
+!          call OUT_BIN_R(uspx+L,W_s(:,LC),Size(W_s(:,LC)),NEXT_REC)
+!        END DO
          else
          DO LC = 1, MMAX 
             call gatherWriteSpx (U_s(:,LC),array2, array1, uspx+L, NEXT_REC)
@@ -202,9 +245,17 @@
             NEXT_REC = NEXT_REC + 1 
          end if
          if (bDist_IO) then
-          DO LC = 1, MMAX
-            call OUT_BIN_R(uspx+L,ROP_s(:,LC),size(ROP_s(:,LC)), NEXT_REC)
-         END DO
+            DO LC = 1, MMAX
+               IF(RE_INDEXING) THEN
+                  CALL UNSHIFT_DP_ARRAY(ROP_s(:,LC),TMP_VAR)
+                  call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC) 
+               ELSE    
+                  call OUT_BIN_R(uspx+L,ROP_s(:,LC),size(ROP_s(:,LC)), NEXT_REC)
+               ENDIF 
+            ENDDO
+!          DO LC = 1, MMAX
+!            call OUT_BIN_R(uspx+L,ROP_s(:,LC),size(ROP_s(:,LC)), NEXT_REC)
+!         END DO
          else
          DO LC = 1, MMAX 
             call gatherWriteSpx (ROP_s(:,LC),array2, array1, uspx+L, NEXT_REC)
@@ -227,10 +278,23 @@
             NEXT_REC = NEXT_REC + 1 
          end if
          if (bDist_IO) then
-           call OUT_BIN_R(uspx+L,T_g,size(T_g), NEXT_REC)
-          DO LC = 1, MMAX
-            call OUT_BIN_R(uspx+L,T_s(:,LC),size(T_s(:,LC)), NEXT_REC)
-          END DO
+            IF(RE_INDEXING) THEN
+               CALL UNSHIFT_DP_ARRAY(T_g,TMP_VAR)
+               call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC) 
+               DO LC = 1, MMAX
+                  CALL UNSHIFT_DP_ARRAY(T_s(:,LC),TMP_VAR)
+                  call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR), NEXT_REC)
+               END DO
+            ELSE    
+               call OUT_BIN_R(uspx+L,T_g,size(T_g), NEXT_REC)
+               DO LC = 1, MMAX
+                  call OUT_BIN_R(uspx+L,T_s(:,LC),size(T_s(:,LC)), NEXT_REC)
+               END DO
+            ENDIF 
+!           call OUT_BIN_R(uspx+L,T_g,size(T_g), NEXT_REC)
+!          DO LC = 1, MMAX
+!            call OUT_BIN_R(uspx+L,T_s(:,LC),size(T_s(:,LC)), NEXT_REC)
+!          END DO
          else
          call gatherWriteSpx (T_g,array2, array1, uspx+L, NEXT_REC)   !//
           DO LC = 1, MMAX 
@@ -253,14 +317,36 @@
             NEXT_REC = NEXT_REC + 1 
          end if
          if (bDist_IO) then
-           DO N = 1, NMAX(0)
-             call OUT_BIN_R(uspx+L,X_G(:,N),size(X_G(:,N)), NEXT_REC)
-           END DO
-           DO LC = 1, MMAX
-            DO N = 1, NMAX(LC)
-               call OUT_BIN_R(uspx+L,X_s(:,LC,N),size(X_s(:,LC,N)), NEXT_REC)
-            END DO
-           END DO
+            IF(RE_INDEXING) THEN
+               DO N = 1, NMAX(0)
+                  CALL UNSHIFT_DP_ARRAY(X_G(:,N),TMP_VAR)
+                  call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC) 
+               END DO
+               DO LC = 1, MMAX
+                  DO N = 1, NMAX(LC)
+                     CALL UNSHIFT_DP_ARRAY(X_s(:,LC,N),TMP_VAR)
+                     call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR), NEXT_REC)
+                  ENDDO
+               END DO
+            ELSE    
+               DO N = 1, NMAX(0)
+                  call OUT_BIN_R(uspx+L,X_G(:,N),size(X_G(:,N)), NEXT_REC)
+               END DO
+               DO LC = 1, MMAX
+                  DO N = 1, NMAX(LC)
+                     call OUT_BIN_R(uspx+L,X_s(:,LC,N),size(X_s(:,LC,N)), NEXT_REC)
+                  END DO
+               END DO
+            ENDIF 
+
+!           DO N = 1, NMAX(0)
+!             call OUT_BIN_R(uspx+L,X_G(:,N),size(X_G(:,N)), NEXT_REC)
+!           END DO
+!           DO LC = 1, MMAX
+!            DO N = 1, NMAX(LC)
+!               call OUT_BIN_R(uspx+L,X_s(:,LC,N),size(X_s(:,LC,N)), NEXT_REC)
+!            END DO
+!           END DO
 
          else
           DO N = 1, NMAX(0) 
@@ -289,9 +375,19 @@
             NEXT_REC = NEXT_REC + 1
          end if 
          if (bDist_IO) then
-          DO LC = 1, MMAX
-            call OUT_BIN_R(uspx+L,THETA_m(:,LC),size(THETA_m(:,LC)), NEXT_REC)
-         END DO
+            IF(RE_INDEXING) THEN
+               DO LC = 1, MMAX
+                  CALL UNSHIFT_DP_ARRAY(THETA_m(:,LC),TMP_VAR)
+                  call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC) 
+               ENDDO
+            ELSE    
+               DO LC = 1, MMAX
+                  call OUT_BIN_R(uspx+L,THETA_m(:,LC),size(THETA_m(:,LC)), NEXT_REC)
+               END DO
+            ENDIF 
+!          DO LC = 1, MMAX
+!            call OUT_BIN_R(uspx+L,THETA_m(:,LC),size(THETA_m(:,LC)), NEXT_REC)
+!         END DO
          else
           DO LC = 1, MMAX 
             call gatherWriteSpx (THETA_m(:,LC),array2, array1, uspx+L, NEXT_REC)
@@ -314,9 +410,19 @@
             NEXT_REC = NEXT_REC + 1
          end if 
          if (bDist_IO) then
-          DO LC = 1, Nscalar
-            call OUT_BIN_R(uspx+L,Scalar(:,LC),size(Scalar(:,LC)), NEXT_REC)
-          END DO
+            IF(RE_INDEXING) THEN
+               DO LC = 1, Nscalar
+                  CALL UNSHIFT_DP_ARRAY(Scalar(:,LC),TMP_VAR)
+                  call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC) 
+               ENDDO
+            ELSE    
+               DO LC = 1, Nscalar
+                 call OUT_BIN_R(uspx+L,Scalar(:,LC),size(Scalar(:,LC)), NEXT_REC)
+               END DO
+            ENDIF 
+!          DO LC = 1, Nscalar
+!            call OUT_BIN_R(uspx+L,Scalar(:,LC),size(Scalar(:,LC)), NEXT_REC)
+!          END DO
          else
           DO LC = 1, Nscalar 
             call gatherWriteSpx (Scalar(:,LC),array2, array1, uspx+L, NEXT_REC) 
@@ -329,7 +435,7 @@
          end if
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
-      CASE (10)
+      CASE (10)  ! Reaction rates
 
          if (myPE.eq.PE_IO.or.bDist_IO) then
             READ (uspx + L, REC=3) NEXT_REC, NUM_REC 
@@ -338,9 +444,19 @@
             NEXT_REC = NEXT_REC + 1
          end if 
          if (bDist_IO) then
-          DO LC = 1, nRR
-            call OUT_BIN_R(uspx+L,ReactionRates(:,LC),size(ReactionRates(:,LC)), NEXT_REC)
-          END DO
+            IF(RE_INDEXING) THEN
+               DO LC = 1, nRR
+                  CALL UNSHIFT_DP_ARRAY(ReactionRates(:,LC),TMP_VAR)
+                  call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC) 
+               ENDDO
+            ELSE    
+               DO LC = 1, nRR
+                  call OUT_BIN_R(uspx+L,ReactionRates(:,LC),size(ReactionRates(:,LC)), NEXT_REC)
+               END DO
+            ENDIF 
+!          DO LC = 1, nRR
+!            call OUT_BIN_R(uspx+L,ReactionRates(:,LC),size(ReactionRates(:,LC)), NEXT_REC)
+!          END DO
          else
           DO LC = 1, nRR
             call gatherWriteSpx (ReactionRates(:,LC),array2, array1, uspx+L, NEXT_REC) 
@@ -363,8 +479,17 @@
          end if 
          if (K_Epsilon) then
             if (bDist_IO) then
-             call OUT_BIN_R(uspx+L,K_Turb_G,size(K_Turb_G), NEXT_REC)
-             call OUT_BIN_R(uspx+L,E_Turb_G,size(E_Turb_G), NEXT_REC)
+            IF(RE_INDEXING) THEN
+               CALL UNSHIFT_DP_ARRAY(K_Turb_G,TMP_VAR)
+               call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC) 
+               CALL UNSHIFT_DP_ARRAY(E_Turb_G,TMP_VAR)
+               call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC) 
+            ELSE    
+               call OUT_BIN_R(uspx+L,K_Turb_G,size(K_Turb_G), NEXT_REC)
+               call OUT_BIN_R(uspx+L,E_Turb_G,size(E_Turb_G), NEXT_REC)
+            ENDIF 
+!             call OUT_BIN_R(uspx+L,K_Turb_G,size(K_Turb_G), NEXT_REC)
+!             call OUT_BIN_R(uspx+L,E_Turb_G,size(E_Turb_G), NEXT_REC)
 
             else
              call gatherWriteSpx (K_Turb_G,array2, array1, uspx+L, NEXT_REC) 
@@ -399,14 +524,22 @@
         USE compar           !//
         USE mpi_utility      !//d pnicol : for gatherWriteSpx
         USE sendrecv         !//d pnicol : for gatherWriteSpx
+        USE cutcell
         IMPLICIT NONE
         integer uspxL, NEXT_REC
         double precision, dimension(ijkmax2) :: array1       
         double precision, dimension(ijkmax3) :: array2     
-        double precision, dimension(DIMENSION_3) :: VAR    
+        double precision, dimension(DIMENSION_3) :: VAR,TMP_VAR    
 
 !       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-        call gather (VAR,array2,root)  !//d pnicol
+        IF(RE_INDEXING) THEN
+           CALL UNSHIFT_DP_ARRAY(VAR,TMP_VAR)
+           CALL gather (TMP_VAR,array2,root)
+        ELSE    
+           CALL gather (VAR,array2,root)
+        ENDIF 
+!        call gather (VAR,array2,root)  !//d pnicol
+
 !       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
         if (myPE.eq.PE_IO) then
            call convert_to_io_dp(array2,array1,ijkmax2)  
