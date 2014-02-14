@@ -195,6 +195,7 @@ for arg in $input; do
         O2) OPT=2;;
         O3) OPT=3;;
         *) echo "Error unknown optimization level: ${arg}"
+           echo "First character is upper case letter O, not zero"
            echo "Aborting."
            exit;;
       esac
