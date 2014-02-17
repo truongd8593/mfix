@@ -1903,7 +1903,7 @@
 
 
 
-      RETURN
+!      RETURN
 
 
       ALLOCATE( NEW_IJKSIZE3_ALL(0:NUMPES-1) )

@@ -196,55 +196,55 @@
          (COORDINATES == 'CYLINDRICAL')) CYC_ZL = .TRUE.
 
 
-      allocate( ijksize3_all(0:numPEs-1) )
-      allocate( ijkstart3_all(0:numPEs-1) )
-      allocate( ijkend3_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(ijksize3_all))   allocate( ijksize3_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(ijkstart3_all))  allocate( ijkstart3_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(ijkend3_all))    allocate( ijkend3_all(0:numPEs-1) )
 
-      allocate( ijksize4_all(0:numPEs-1) )
-      allocate( ijkstart4_all(0:numPEs-1) )
-      allocate( ijkend4_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(ijksize4_all))   allocate( ijksize4_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(ijkstart4_all))  allocate( ijkstart4_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(ijkend4_all))    allocate( ijkend4_all(0:numPEs-1) )
 
-      allocate( istart_all(0:numPEs-1) )
-      allocate( jstart_all(0:numPEs-1) )
-      allocate( kstart_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(istart_all))     allocate( istart_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(jstart_all))     allocate( jstart_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(kstart_all))     allocate( kstart_all(0:numPEs-1) )
 
-      allocate( istart1_all(0:numPEs-1) )
-      allocate( jstart1_all(0:numPEs-1) )
-      allocate( kstart1_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(istart1_all))    allocate( istart1_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(jstart1_all))    allocate( jstart1_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(kstart1_all))    allocate( kstart1_all(0:numPEs-1) )
 
-      allocate( istart2_all(0:numPEs-1) )
-      allocate( jstart2_all(0:numPEs-1) )
-      allocate( kstart2_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(istart2_all))    allocate( istart2_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(jstart2_all))    allocate( jstart2_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(kstart2_all))    allocate( kstart2_all(0:numPEs-1) )
 
-      allocate( istart3_all(0:numPEs-1) )
-      allocate( jstart3_all(0:numPEs-1) )
-      allocate( kstart3_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(istart3_all))    allocate( istart3_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(jstart3_all))    allocate( jstart3_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(kstart3_all))    allocate( kstart3_all(0:numPEs-1) )
 
-      allocate( istart4_all(0:numPEs-1) )
-      allocate( jstart4_all(0:numPEs-1) )
-      allocate( kstart4_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(istart4_all))    allocate( istart4_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(jstart4_all))    allocate( jstart4_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(kstart4_all))    allocate( kstart4_all(0:numPEs-1) )
 
-      allocate( iend_all(0:numPEs-1) )
-      allocate( jend_all(0:numPEs-1) )
-      allocate( kend_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(iend_all))       allocate( iend_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(jend_all))       allocate( jend_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(kend_all))       allocate( kend_all(0:numPEs-1) )
 
-      allocate( iend1_all(0:numPEs-1) )
-      allocate( jend1_all(0:numPEs-1) )
-      allocate( kend1_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(iend1_all))      allocate( iend1_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(jend1_all))      allocate( jend1_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(kend1_all))      allocate( kend1_all(0:numPEs-1) )
 
-      allocate( iend2_all(0:numPEs-1) )
-      allocate( jend2_all(0:numPEs-1) )
-      allocate( kend2_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(iend2_all))      allocate( iend2_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(jend2_all))      allocate( jend2_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(kend2_all))      allocate( kend2_all(0:numPEs-1) )
 
-      allocate( iend3_all(0:numPEs-1) )
-      allocate( jend3_all(0:numPEs-1) )
-      allocate( kend3_all(0:numPEs-1) )
-         
-      allocate( iend4_all(0:numPEs-1) )
-      allocate( jend4_all(0:numPEs-1) )
-      allocate( kend4_all(0:numPEs-1) )
-         
-      allocate( displs(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(iend3_all))      allocate( iend3_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(jend3_all))      allocate( jend3_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(kend3_all))      allocate( kend3_all(0:numPEs-1) )
+	 
+      IF(.NOT.ALLOCATED(iend4_all))      allocate( iend4_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(jend4_all))      allocate( jend4_all(0:numPEs-1) )
+      IF(.NOT.ALLOCATED(kend4_all))      allocate( kend4_all(0:numPEs-1) )
+	 
+      IF(.NOT.ALLOCATED(displs))         allocate( displs(0:numPEs-1) )
 
 
       CALL PARTITION(CYC_XL, CYC_YL, CYC_ZL)
@@ -530,8 +530,8 @@
 
       IF(numPEs .GT. 1) THEN
 ! Calculate any load imbalance.
-         IMBALANCE = (maxval(ijksize3_all)- minval(ijksize3_all)) /    &
-            minval(ijksize3_all)*100
+         IMBALANCE = DFLOAT(maxval(ijksize3_all)- minval(ijksize3_all)) /    &
+            minval(ijksize3_all)*100.0
 ! Calculate potential speedup based on Amdahl's Law
          IF(IMBALANCE == 0)THEN
             AMDAHL_SPEEDUP='+Inf'

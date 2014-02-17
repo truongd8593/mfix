@@ -3144,7 +3144,7 @@
 
 
 
-!      NCPP_UNIFORM = ijksize3_all
+      NCPP_UNIFORM = ijksize3_all
 
 !      print*,'------> MyPE,NCPP_UNIFORM=',MyPE,NCPP_UNIFORM
 
