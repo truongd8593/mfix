@@ -519,6 +519,38 @@
 
       CLOSE(333)
 
+      OPEN(UNIT=444, FILE='msgeometry.stl') 
+
+         DO ZONE = 1,N_FACE_ZONES
+            IF(BC_ASSIGNED(ZONE)) THEN
+               ZID = FACE_ZONE_INFO(ZONE,1)
+               L2=LEN(TRIM(BC_LABEL_TEXT(ZONE,2)))-4
+!               WRITE(*,1000) ZID,BC_TYPE(ZID),NFZ,BC_LABEL_TEXT(ZONE,1),BC_LABEL_TEXT(ZONE,2)(1:L2)
+               print*,'=======>  Zone ID= ', ZID,BC_LABEL_TEXT(ZONE,2)(1:L2)  
+               write(444,6000) 'solid', BC_LABEL_TEXT(ZONE,2)(1:L2),ZID  
+               DO NF=1,N_FACETS
+                  IF(BC_ID_STL_FACE(NF) == ZID) THEN
+
+                  write(444,*) '   facet normal ', NORM_FACE(NF,:)
+                  write(444,*) '      outer loop'
+                  write(444,*) '         vertex ', VERTEX(NF,1,1:3)
+                  write(444,*) '         vertex ', VERTEX(NF,2,1:3)
+                  write(444,*) '         vertex ', VERTEX(NF,3,1:3)
+                  write(444,*) '      endloop'
+                  write(444,*)'   endfacet'
+
+
+                  ENDIF
+               ENDDO
+
+               write(444,6000) 'endsolid', BC_LABEL_TEXT(ZONE,2)(1:L2),ZID  
+
+            ENDIF
+         ENDDO
+
+      close(444)
+
+
 
       RETURN  
 
@@ -551,6 +583,7 @@
  3000 FORMAT(1X,A,'(',F10.4,';',F10.4,';',F10.4,')')
  4000 FORMAT(1X,A,F10.4,' to ',F10.4)
  5000 FORMAT(1X,A,F10.4)
+ 6000 FORMAT(A,1X,A,'_',I4.4)
       END SUBROUTINE GET_MSH_DATA
 
 
@@ -654,74 +687,120 @@
       DOUBLE PRECISION ::n1,n2,n3,NORM
       DOUBLE PRECISION ::ABSTRANS
       CHARACTER(LEN=32) ::TEST_CHAR,BUFF_CHAR
-      CHARACTER(LEN=32) ::geometryfile(DIMENSION_BC)
+      CHARACTER(LEN=32) ::geometryfile(0:DIMENSION_BC)
       
-      INTEGER :: BCV,NUMBER_OF_GEOMETRY_FILES
-      INTEGER :: BC_PATCH(DIMENSION_BC)
+      INTEGER :: BCV,NUMBER_OF_GEOMETRY_FILES,NUMBER_OF_BC_PATCHES
+      INTEGER :: BC_PATCH(DIMENSION_BC),L2,NF1
+      LOGICAL :: BC_PATCH_FOUND_IN_STL(DIMENSION_BC)
 
       CHARACTER*100 :: FNAME
       integer :: stl_unit, nf
 
+      BC_PATCH_FOUND_IN_STL = .FALSE.
 
-
+      geometryfile(0) = 'geometry.stl'
       NUMBER_OF_GEOMETRY_FILES = 0
+      NUMBER_OF_BC_PATCHES     = 0
 
 !     DETERMINE WHICH BOUNDARY CONDITIONS NEED STL FILE
+
+      IF(MyPE == PE_IO) THEN
+         WRITE(*,100)'From Get_Stl_Data: Analysing BCs in mfix.dat...'
+         WRITE(*,120)'BC_ID','BC_TYPE'
+      ENDIF
       DO BCV = 1, DIMENSION_BC 
 
          IF(BC_TYPE(BCV)(1:2) == 'CG') THEN
 
             NUMBER_OF_GEOMETRY_FILES = NUMBER_OF_GEOMETRY_FILES + 1
+            NUMBER_OF_BC_PATCHES     = NUMBER_OF_BC_PATCHES + 1
+
 
             BC_PATCH(NUMBER_OF_GEOMETRY_FILES) = BCV
-            WRITE(geometryfile(NUMBER_OF_GEOMETRY_FILES),100) 'geometry_',BCV
+            WRITE(geometryfile(NUMBER_OF_GEOMETRY_FILES),200) 'geometry_',BCV
+
+            IF(MyPE == PE_IO) WRITE(*,130)BCV,BC_TYPE(BCV)
 
          ENDIF 
       ENDDO 
 
+      IF(MyPE == PE_IO) WRITE(*,110)'Number of CG BCs in mfix.dat = ',NUMBER_OF_BC_PATCHES
 
-100  FORMAT(A,I4.4,".stl")
+
+
+
+
+100  FORMAT(1X,A)
+110  FORMAT(1X,A,I6)
+120  FORMAT(1X,A6,4X,A7)
+130  FORMAT(1X,I6,4X,A6)
+140  FORMAT(1X,A,I6,A)
+200  FORMAT(A,I4.4,".stl")
 
 
 ! VERIFY THAT THERE IS AT LEAST ONE STL FILE TO READ
 
-      IF(NUMBER_OF_GEOMETRY_FILES==0) THEN
+      IF(NUMBER_OF_BC_PATCHES==0) THEN
          IF(MyPE == PE_IO) THEN
-            WRITE(*,*) 'ERROR: NO CARTESIAN GRID BOUNDARY CONDITION SPECIFIED.'
-            WRITE(*,*) 'AT LEAST ONE BC_TYPE MUST START WITH CG (FOR EXAMPLE CG_NSW)'
-            WRITE(*,*) 'RUN ABORTED'
+            WRITE(*,100) 'ERROR: NO CARTESIAN GRID BOUNDARY CONDITION SPECIFIED.'
+            WRITE(*,100) 'AT LEAST ONE BC_TYPE MUST START WITH CG (FOR EXAMPLE CG_NSW)'
+            WRITE(*,100) 'RUN ABORTED'
             CALL MFIX_EXIT(MYPE) 
          ENDIF
-      ELSEIF(NUMBER_OF_GEOMETRY_FILES==1) THEN
+            
+      ELSEIF(NUMBER_OF_BC_PATCHES==1) THEN
 
          INQUIRE(FILE='geometry.stl',EXIST=PRESENT)
          IF(PRESENT) THEN
-            IF(MyPE == PE_IO) THEN
-               WRITE(*,*) 'The file geometry.stl exists.'
-            ENDIF
 
-            IF(STL_BC_ID==BC_PATCH(NUMBER_OF_GEOMETRY_FILES)) THEN
+!            IF(STL_BC_ID==BC_PATCH(1)) THEN
                IF(MyPE == PE_IO) THEN
-                  WRITE(*,*) 'STL_BC_ID is compatible.'
+                  WRITE(*,110) 'The file geometry.stl exists and the following  BC patch was found: ', BC_PATCH(1)
                ENDIF
           
+	       NF1 = 1
                geometryfile(NUMBER_OF_GEOMETRY_FILES)='geometry.stl'
             
-            ENDIF
+!            ENDIF
          ENDIF
+
+      ELSE  ! More than one CG BC type
+         INQUIRE(FILE='geometry.stl',EXIST=PRESENT)
+         IF(PRESENT) THEN
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,100) 'The file geometry.stl exists and several CG BC types are defined.'
+               WRITE(*,100) 'All BC patches will be read from geometry.stl.'	       
+            ENDIF
+
+            geometryfile(0)='geometry.stl'
+	    NF1 = 0
+            NUMBER_OF_GEOMETRY_FILES = 0
+
+         ELSE
+	 
+	    NF1 = 1
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,100) 'The file geometry.stl does not exist and several CG_BC types are defined.'
+               WRITE(*,100) 'Each BC patch will be read from geometry_BCID.stl.'	       
+               WRITE(*,100) 'where BCID is 4-paded integer'	       	       
+            ENDIF
+            
+         ENDIF
+      
+      
 
       ENDIF
 
 
-! START READING EACH STAL FILE, ONE FOR EACH BC_TYPE
+! START READING EACH STL FILE, ONE FOR EACH BC_TYPE
 
       N_FACETS = 0
       IGNORED_FACETS = 0
 
 
-      DO N = 1, NUMBER_OF_GEOMETRY_FILES
+      DO N = NF1, NUMBER_OF_GEOMETRY_FILES
 
-         IF(MyPE == PE_IO) WRITE(*,2000) 'READING geometry from '//TRIM(geometryfile(N))//' ...'
+         IF(MyPE == PE_IO) WRITE(*,2000) 'Reading geometry from '//TRIM(geometryfile(N))//' ...'
 
          INQUIRE(FILE=TRIM(geometryfile(N)),EXIST=PRESENT)
          IF(.NOT.PRESENT) THEN
@@ -738,15 +817,37 @@
 !     
          OPEN(UNIT=333, FILE=TRIM(geometryfile(N)), STATUS='OLD', ERR=910) 
 
-!         WRITE(*,2000)'STL file opened. Starting reading data...'
+         WRITE(*,2000)'STL file opened. Starting reading data...'
 
          KEEP_READING = .TRUE.
       
          DO WHILE(KEEP_READING)
          
             READ(333,*,ERR=920,END=930) TEST_CHAR
+!            print *,'TEST_CHAR=',TEST_CHAR
+            IF(TRIM(TEST_CHAR) == 'solid'.AND.N==0) THEN
+	    
+               BACKSPACE(333)
+	    
+               READ(333,*,ERR=920,END=930) BUFF_CHAR,BUFF_CHAR
 
-            IF(TRIM(TEST_CHAR) == 'facet') THEN
+               L2=LEN(TRIM(BUFF_CHAR))-3	       
+	       
+               READ(BUFF_CHAR(L2:L2+4),fmt='(I4.4)') BC_PATCH(N)
+
+               IF(MyPE == PE_IO)  WRITE(*,140) 'Found BC patch #', BC_PATCH(N), ' in STL file.'
+	       
+	       IF(BC_TYPE(BC_PATCH(N))(1:2)/='CG') THEN
+                  IF(MyPE == PE_IO)  THEN
+		     WRITE(*,110) 'This BC patch does not mach a CG BC in mfix.dat:',BC_PATCH(N)
+                     WRITE(*,100)'Please Correct mfix.dat and/or stl file amd try again' 
+                     CALL MFIX_EXIT(myPE) 
+		  ENDIF
+	       ENDIF
+
+               BC_PATCH_FOUND_IN_STL(BC_PATCH(N)) = .TRUE.
+
+            ELSEIF(TRIM(TEST_CHAR) == 'facet') THEN
     
                BACKSPACE(333)
                IGNORE_CURRENT_FACET = .FALSE.
@@ -824,16 +925,17 @@
 
                ENDIF
     
-            ELSEIF(TRIM(TEST_CHAR) == 'endsolid') THEN
+!            ELSEIF(TRIM(TEST_CHAR) == 'endsolid') THEN
     
-               KEEP_READING = .FALSE.
+!               KEEP_READING = .FALSE.
     
             ENDIF
          
          ENDDO
 
 
-
+930      IF(MyPE == PE_IO)  WRITE(*,100) 'Done reading file.'
+          
          CLOSE(333)
 
 
@@ -842,8 +944,17 @@
       ENDDO
 
 
+      IF(myPE==0) THEN
+         DO N = 1,NUMBER_OF_BC_PATCHES
 
-
+            IF(.NOT.BC_PATCH_FOUND_IN_STL(BC_PATCH(N))) THEN
+               WRITE (*, 140)'Did not find BC patch: ',BC_PATCH(N) , ' in stl file'
+	       WRITE(*,100)'Please correct mfix.dat and/or stl file amd try again' 
+               CALL MFIX_EXIT(myPE) 
+	    ENDIF      
+      
+         ENDDO
+      ENDIF
 
       
 
@@ -858,20 +969,20 @@
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,2000)'STL file(s) successfully read.'
-         WRITE(*,*)' Total number of facets read =',N_FACETS + IGNORED_FACETS
-         WRITE(*,*)' Number of valid facets      =',N_FACETS
-         WRITE(*,*)' Number of ignored facets    =',IGNORED_FACETS
-         WRITE(*,*)' RANGE OF STL FILE:'
+         WRITE(*,110)'Total number of facets read =',N_FACETS + IGNORED_FACETS
+         WRITE(*,110)'Number of valid facets      =',N_FACETS
+         WRITE(*,110)'Number of ignored facets    =',IGNORED_FACETS
+         WRITE(*,100)'Geometry range from stl file:'
          IF(SCALE_STL/=ONE) THEN
-            WRITE(*,5000)' AFTER SCALING BY A FACTOR OF ',SCALE_STL
+            WRITE(*,5000)'Scaling factor:',SCALE_STL
          ENDIF
          ABSTRANS = dabs(TX_STL)+dabs(TY_STL)+dabs(TZ_STL)
          IF(ABSTRANS>TOL_STL) THEN
-            WRITE(*,3000)' AFTER TRANSLATION OF (X,Y,Z)=',TX_STL,TY_STL,TZ_STL
+            WRITE(*,3000)'Translation vector (X,Y,Z)=',TX_STL,TY_STL,TZ_STL
          ENDIF
-         WRITE(*,4000)'X-RANGE = ', XMIN_STL,XMAX_STL
-         WRITE(*,4000)'Y-RANGE = ', YMIN_STL,YMAX_STL
-         WRITE(*,4000)'Z-RANGE = ', ZMIN_STL,ZMAX_STL
+         WRITE(*,4000)'x-range = ', XMIN_STL,XMAX_STL
+         WRITE(*,4000)'y-range = ', YMIN_STL,YMAX_STL
+         WRITE(*,4000)'z-range = ', ZMIN_STL,ZMAX_STL
          WRITE(*,4000)''
       ENDIF
 
@@ -913,8 +1024,8 @@
          write(stl_unit,*)'endsolid vcg'
          close(stl_unit, status = 'keep')
          IF(MyPE == PE_IO) THEN
-            WRITE(*,*) ' The file FACETS_READ.stl was sucessfully written.'
-            WRITE(*,*) ' and is provided for convenience (it is not used).'
+            WRITE(*,100) 'The file FACETS_READ.stl was sucessfully written.'
+            WRITE(*,100) 'and is provided for convenience (it is not used).'
          ENDIF
 
       endif
@@ -931,9 +1042,9 @@
  920  CONTINUE 
       WRITE (*, 1600) 
       CALL MFIX_EXIT(myPE) 
- 930  CONTINUE 
-      WRITE (*, 1700) 
-      CALL MFIX_EXIT(myPE) 
+! 930  CONTINUE 
+!     WRITE (*, 1700) 
+!     CALL MFIX_EXIT(myPE) 
 !     
  1500 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
       'Unable to open stl file',/1X,70('*')/) 
@@ -947,6 +1058,7 @@
  4000 FORMAT(1X,A,F10.4,' to ',F10.4)
  5000 FORMAT(1X,A,F10.4)
       END SUBROUTINE GET_STL_DATA
+
 
 
 
