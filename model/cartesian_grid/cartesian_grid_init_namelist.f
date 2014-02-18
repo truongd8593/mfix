@@ -514,7 +514,7 @@
 !  <valid value="ijk" note="propagation occurs in the i, followed by j, and k directions"/>
 !  <valid value="jki" note="propagation occurs in the j, followed by k, and i directions"/>
 !  <valid value="kij" note="propagation occurs in the k, followed by i, and j directions"/>
-      CAD_PROPAGATE_ORDER = 'IJK'
+      CAD_PROPAGATE_ORDER = '   '
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
