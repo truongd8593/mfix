@@ -28,7 +28,8 @@
              RES_DT, SPX_DT , OUT_DT, &
              USR_DT, USR_TYPE, USR_VAR, USR_FORMAT, USR_EXT,&
              USR_X_w , USR_X_e , USR_Y_s , USR_Y_n ,&
-             USR_Z_b , USR_Z_t, NLOG, FULL_LOG, RESID_STRING,&
+             USR_Z_b , USR_Z_t, NLOG, FULL_LOG, &
+             RESID_STRING,GROUP_RESID, &
 	     report_mass_balance_dt, nRR, &
 
 ! see output_mod for details

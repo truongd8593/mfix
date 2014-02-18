@@ -33,6 +33,8 @@
       USE fldvar
       USE compar
       USE geometry
+      USE scalars, only : NScalar
+      USE run
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -71,29 +73,57 @@
 !
       if (myPE.ne.PE_IO) return   
 !
-      IF (NIT == 1) THEN 
-         WRITE (*, '(A, $)') '  Nit' 
+      IF(GROUP_RESID) THEN
+
+         IF (NIT == 1) THEN 
+            WRITE (*, '(A, $)') '  Nit' 
+            WRITE (*, '(2X, A7, $)') RESID_GRP_STRING(HYDRO_GRP) 
+            IF(GRANULAR_ENERGY) WRITE (*, '(2X, A7, $)') RESID_GRP_STRING(THETA_GRP) 
+            IF(ENERGY_EQ) WRITE (*, '(2X, A7, $)') RESID_GRP_STRING(ENERGY_GRP) 
+            IF(ANY_SPECIES_EQ) WRITE (*, '(2X, A7, $)') RESID_GRP_STRING(SPECIES_GRP) 
+            IF(NScalar > 0) WRITE (*, '(2X, A7, $)') RESID_GRP_STRING(SCALAR_GRP) 
+            IF(K_EPSILON) WRITE (*, '(2X, A7, $)') RESID_GRP_STRING(KE_GRP) 
+            WRITE (*, '(2X, A)') 'Max res' 
+         ENDIF
+
+         WRITE (*, '(I5, $)') NIT 
+         WRITE (*, '(2X, 1PG7.1, $)') RESID_GRP(HYDRO_GRP)
+         IF(GRANULAR_ENERGY) WRITE (*, '(2X, 1PG7.1, $)') RESID_GRP(THETA_GRP) 
+         IF(ENERGY_EQ) WRITE (*, '(2X, 1PG7.1, $)') RESID_GRP(ENERGY_GRP)
+         IF(ANY_SPECIES_EQ) WRITE (*, '(2X, 1PG7.1, $)') RESID_GRP(SPECIES_GRP)
+         IF(NScalar > 0) WRITE (*, '(2X, 1PG7.1, $)') RESID_GRP(SCALAR_GRP)
+         IF(K_EPSILON) WRITE (*, '(2X, 1PG7.1, $)') RESID_GRP(KE_GRP)
+         WRITE (*, '(2X, A)') RESID_STRING(8) 
+
+
+      ELSE
+
+         IF (NIT == 1) THEN 
+            WRITE (*, '(A, $)') '  Nit' 
+            DO L = 1, 8 
+               IF (RESID_INDEX(L,1) /= UNDEFINED_I) WRITE (*, '(5X, A4, $)') &
+                  RESID_STRING(L) 
+            END DO 
+            IF (RESID_INDEX(8,1) == UNDEFINED_I) THEN 
+               WRITE (*, '(2X, A)') 'Max res' 
+            ELSE 
+               WRITE (*, *) 
+            ENDIF 
+         ENDIF 
+!
+         WRITE (*, '(I5, $)') NIT 
          DO L = 1, 8 
-            IF (RESID_INDEX(L,1) /= UNDEFINED_I) WRITE (*, '(5X, A4, $)') &
-               RESID_STRING(L) 
+            IF (RESID_INDEX(L,1) /= UNDEFINED_I) WRITE (*, '(2X, 1PG7.1, $)') &
+               RESID(RESID_INDEX(L,1),RESID_INDEX(L,2)) 
          END DO 
          IF (RESID_INDEX(8,1) == UNDEFINED_I) THEN 
-            WRITE (*, '(2X, A)') 'Max res' 
+            WRITE (*, '(2X, A)') RESID_STRING(8) 
          ELSE 
             WRITE (*, *) 
          ENDIF 
-      ENDIF 
-!
-      WRITE (*, '(I5, $)') NIT 
-      DO L = 1, 8 
-         IF (RESID_INDEX(L,1) /= UNDEFINED_I) WRITE (*, '(2X, 1PG7.1, $)') &
-            RESID(RESID_INDEX(L,1),RESID_INDEX(L,2)) 
-      END DO 
-      IF (RESID_INDEX(8,1) == UNDEFINED_I) THEN 
-         WRITE (*, '(2X, A)') RESID_STRING(8) 
-      ELSE 
-         WRITE (*, *) 
-      ENDIF 
+
+      ENDIF
+
 !
 !
 !

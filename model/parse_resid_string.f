@@ -68,6 +68,22 @@
 !
 !  If user did not define any residual strings use default values
 !
+
+      IF(GROUP_RESID) THEN
+     
+         RESID_GRP_STRING(HYDRO_GRP)   = 'HYDRO'                                                                  
+         RESID_GRP_STRING(THETA_GRP)   = 'THETA'
+         RESID_GRP_STRING(ENERGY_GRP)  = 'ENERGY'
+         RESID_GRP_STRING(SPECIES_GRP) = 'SPECIES'
+         RESID_GRP_STRING(SCALAR_GRP)  = 'SCALAR'
+         RESID_GRP_STRING(KE_GRP)      = 'K-EPS.'
+
+         RESID_STRING = UNDEFINED_C
+         RESID_INDEX(8,1) = UNDEFINED_I
+
+         RETURN
+      ENDIF
+
       STRING_DEFINED = .FALSE. 
       DO L = 1, MAX_RESID_INDEX 
          IF (RESID_STRING(L) /= UNDEFINED_C) STRING_DEFINED = .TRUE. 

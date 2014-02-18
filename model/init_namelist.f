@@ -2201,6 +2201,11 @@
       RESID_STRING(:8) = UNDEFINED_C
 !</keyword>
 
+!<keyword category="Output Control" required="false">
+!  <description>Display residuals by equation.  </description>
+      GROUP_RESID = .FALSE.
+!</keyword>
+
 
       DO LC=1, DIMENSION_USR
 !<keyword category="Output Control" required="false">

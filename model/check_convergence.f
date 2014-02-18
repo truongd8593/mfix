@@ -30,6 +30,7 @@
       USE residual
       USE toleranc 
       USE mpi_utility
+      USE scalars, only :NScalar
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local parameters
@@ -156,6 +157,16 @@
                MAXN 
          ENDIF 
       ENDIF 
+
+      IF (GROUP_RESID) THEN
+         RESID_GRP(HYDRO_GRP) = SUM
+         IF(GRANULAR_ENERGY) RESID_GRP(THETA_GRP) = SUM_TH
+         IF(ENERGY_EQ) RESID_GRP(ENERGY_GRP) = SUM_T
+         IF(ANY_SPECIES_EQ) RESID_GRP(SPECIES_GRP) = SUM_X
+         IF(NScalar > 0) RESID_GRP(SCALAR_GRP) = RESID(RESID_sc,0)
+         IF(K_EPSILON) RESID_GRP(KE_GRP) = RESID(RESID_ke,0)
+      ENDIF
+
 
 ! detect whether the run is stalled :  every 5 iterations check whether 
 ! the total residual has decreased
