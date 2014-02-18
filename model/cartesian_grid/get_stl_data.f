@@ -817,7 +817,7 @@
 !     
          OPEN(UNIT=333, FILE=TRIM(geometryfile(N)), STATUS='OLD', ERR=910) 
 
-         WRITE(*,2000)'STL file opened. Starting reading data...'
+         IF(MyPE == PE_IO) WRITE(*,2000)'STL file opened. Starting reading data...'
 
          KEEP_READING = .TRUE.
       
