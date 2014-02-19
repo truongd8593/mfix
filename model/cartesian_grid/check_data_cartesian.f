@@ -739,7 +739,16 @@
 
       ENDDO
 
+  
+      IF(RE_INDEXING) THEN
 
+         IF(MyPE==0) THEN
+            WRITE(*,*),' From check_data_cartesian: RE_INDEXING is turned on.'
+            WRITE(*,*),' The preconditionner will be turned off for all equations'
+            WRITE(*,*),' regardless of the mfix.dat setting.'
+            LEQ_PC = 'NONE'
+         ENDIF
+      ENDIF
 
 
       RETURN  
