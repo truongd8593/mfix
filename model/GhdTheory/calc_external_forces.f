@@ -21,8 +21,8 @@
       SUBROUTINE CALC_EXTERNAL_FORCES(IER)
 !
 !-----------------------------------------------
-!     Modules 
-!-----------------------------------------------  
+!     Modules
+!-----------------------------------------------
       USE param
       USE param1
       USE geometry
@@ -39,40 +39,40 @@
       IMPLICIT NONE
 !-----------------------------------------------
 !     Local variables
-!-----------------------------------------------  
+!-----------------------------------------------
 !                      Index
-      INTEGER          IJK, I, J, K   
-! 
+      INTEGER          IJK, I, J, K
+!
 !                      Index
       INTEGER          IJKE, IJKN, IJKT
-!     
+!
 !                      Solids phase
       INTEGER          M ,IM
-!     
+!
 !     Error index
-      INTEGER          IER  
-!     
+      INTEGER          IER
+!
 !     number densities to compute del(Nj)
       DOUBLE PRECISION NjC, NjE, NjN, NjT
-!     
+!
 !     mass, volume of species
       DOUBLE PRECISION Mj, Vj
-!     
+!
 !     mixture density at cell faces
       DOUBLE PRECISION ropsE, ropsN, ropsT
-!     
+!
 !     drag force on a particle
       DOUBLE PRECISION dragFc, dragFe, dragFn, dragFt
-!     
+!
 !     pressure terms in mass mobility
       DOUBLE PRECISION PGE, PGN, PGT, SDPx, SDPy, SDPz
 
 !     off-diagonal terms for HYS drag relation
       DOUBLE PRECISION  avgDragx, avgDragy, avgDragz
 !
-!----------------------------------------------- 
+!-----------------------------------------------
 !     Function subroutines
-!----------------------------------------------- 
+!-----------------------------------------------
 
 !-----------------------------------------------
 !     Include statement functions
@@ -82,38 +82,38 @@
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'b_force1.inc'
       INCLUDE 'b_force2.inc'
-!-----------------------------------------------   
-     
+!-----------------------------------------------
+
       DO 200 IJK = ijkstart3, ijkend3
           I = I_OF(IJK)
           J = J_OF(IJK)
           K = K_OF(IJK)
 
-     
-          IF ( FLUID_AT(IJK) ) THEN      
-               
-	       IJKE = EAST_OF(IJK)
-	       IJKN = NORTH_OF(IJK)
+
+          IF ( FLUID_AT(IJK) ) THEN
+
+               IJKE = EAST_OF(IJK)
+               IJKN = NORTH_OF(IJK)
                IJKT = TOP_OF(IJK)
 
 ! pressure term (no need to have it inside smax loop)
-               PGE = P_G(IJKE) 
+               PGE = P_G(IJKE)
                PGN = P_G(IJKN)
-               PGT = P_G(IJKT) 
-               IF (CYCLIC_X_PD) THEN 
-                 IF (CYCLIC_AT_E(IJK)) PGE = P_G(IJKE) - DELP_X 
-               ENDIF 
-               IF (CYCLIC_Y_PD) THEN 
-                 IF (CYCLIC_AT_N(IJK)) PGN = P_G(IJKN) - DELP_Y 
-               ENDIF 
-               IF (CYCLIC_Z_PD) THEN 
-                 IF (CYCLIC_AT_T(IJK)) PGT = P_G(IJKT) - DELP_Z 
+               PGT = P_G(IJKT)
+               IF (CYCLIC_X_PD) THEN
+                 IF (CYCLIC_AT_E(IJK)) PGE = P_G(IJKE) - DELP_X
+               ENDIF
+               IF (CYCLIC_Y_PD) THEN
+                 IF (CYCLIC_AT_N(IJK)) PGN = P_G(IJKN) - DELP_Y
+               ENDIF
+               IF (CYCLIC_Z_PD) THEN
+                 IF (CYCLIC_AT_T(IJK)) PGT = P_G(IJKT) - DELP_Z
                ENDIF
                SDPx = -P_SCALE*(PGE - P_G(IJK))  * oDX_E(I)
                SDPy = -P_SCALE*(PGN - P_G(IJK))  * oDY_N(J)
                SDPz = -P_SCALE*(PGT - P_G(IJK))  * (oX_E(I)*oDZ_T(K))
 
-	       DO M = 1, SMAX
+               DO M = 1, SMAX
                  Vj = (PI/6.d0)*D_P(IJK,M)**3 ! particle volume
                  Mj = Vj * RO_S(IJK,M)            ! particle mass
 
@@ -124,40 +124,40 @@
 
 ! drag force on a particle in -x -y -z directions
                  dragFc = zero
-		 dragFe = zero 
-		 dragFn = zero
-		 dragFt = zero
+                 dragFe = zero
+                 dragFn = zero
+                 dragFt = zero
                  if(NjC > zero) dragFc = F_GS(IJK ,M)/NjC
-		 if(NjE > zero) dragFe = F_GS(IJKE,M)/NjE 
-		 if(NjN > zero) dragFn = F_GS(IJKN,M)/NjN
-		 if(NjT > zero) dragFt = F_GS(IJKT,M)/NjT
-		 
-		 dragFxflux(IJK,M) = AVG_X(dragFc,dragFe,I) * (U_g(IJK) - U_s(IJK,M))
-		 dragFyflux(IJK,M) = AVG_Y(dragFc,dragFn,J) * (V_g(IJK) - V_s(IJK,M))
-		 dragFzflux(IJK,M) = AVG_Z(dragFc,dragFt,K) * (W_g(IJK) - W_s(IJK,M))
-		 
-		 dragFx(IJK,M) = AVG_X(dragFc,dragFe,I) * (U_g(IJK))
-		 dragFy(IJK,M) = AVG_Y(dragFc,dragFn,J) * (V_g(IJK))
-		 dragFz(IJK,M) = AVG_Z(dragFc,dragFt,K) * (W_g(IJK))
-                 
+                 if(NjE > zero) dragFe = F_GS(IJKE,M)/NjE
+                 if(NjN > zero) dragFn = F_GS(IJKN,M)/NjN
+                 if(NjT > zero) dragFt = F_GS(IJKT,M)/NjT
+
+                 dragFxflux(IJK,M) = AVG_X(dragFc,dragFe,I) * (U_g(IJK) - U_s(IJK,M))
+                 dragFyflux(IJK,M) = AVG_Y(dragFc,dragFn,J) * (V_g(IJK) - V_s(IJK,M))
+                 dragFzflux(IJK,M) = AVG_Z(dragFc,dragFt,K) * (W_g(IJK) - W_s(IJK,M))
+
+                 dragFx(IJK,M) = AVG_X(dragFc,dragFe,I) * (U_g(IJK))
+                 dragFy(IJK,M) = AVG_Y(dragFc,dragFn,J) * (V_g(IJK))
+                 dragFz(IJK,M) = AVG_Z(dragFc,dragFt,K) * (W_g(IJK))
+
                  beta_cell_X(IJK,M)=AVG_X(dragFc,dragFe,I)
                  beta_cell_Y(IJK,M)=AVG_Y(dragFc,dragFn,J)
                  beta_cell_Z(IJK,M)=AVG_Z(dragFc,dragFt,K)
 
-                 IF(TRIM(DRAG_TYPE) == 'HYS')THEN
+                 IF(DRAG_TYPE_ENUM == HYS)THEN
                     DO IM=1,SMAX
                        IF(IM /= M)THEN
 
 ! HYS additional drag force on a particle in -x -y -z directions
                           dragFc = zero
-		          dragFe = zero 
-		          dragFn = zero
-		          dragFt = zero
+                          dragFe = zero
+                          dragFn = zero
+                          dragFt = zero
                           if(NjC > zero) dragFc = beta_ij(IJK,M,IM) /NjC
-		          if(NjE > zero) dragFe = beta_ij(IJKE,M,IM)/NjE 
-		          if(NjN > zero) dragFn = beta_ij(IJKN,M,IM)/NjN
-		          if(NjT > zero) dragFt = beta_ij(IJKT,M,IM)/NjT
-                          
+                          if(NjE > zero) dragFe = beta_ij(IJKE,M,IM)/NjE
+                          if(NjN > zero) dragFn = beta_ij(IJKN,M,IM)/NjN
+                          if(NjT > zero) dragFt = beta_ij(IJKT,M,IM)/NjT
+
                           avgDragx = AVG_X(dragFc,dragFe,I)
                           dragFx(IJK,M) = dragFx(IJK,M) - avgDragx*(U_g(IJK))
                           dragFxflux(IJK,M) = dragFxflux(IJK,M) - avgDragx*(U_g(IJK) - U_s(IJK,IM))
@@ -176,19 +176,19 @@
                        ENDIF
                     ENDDO
                  ENDIF
-                
-                
-		 FiXvel(IJK,M) =  (Mj * BFX_S(IJK,M)+dragFx(IJK,M) +Vj*SDPx)
-		 FiYvel(IJK,M) =  (Mj * BFY_S(IJK,M)+dragFy(IJK,M) +Vj*SDPy)
-		 FiZvel(IJK,M) =  (Mj * BFZ_S(IJK,M)+dragFz(IJK,M) +Vj*SDPz)
 
-		 FiX(IJK,M) =  (Mj * BFX_S(IJK,M)+dragFxflux(IJK,M) +Vj*SDPx)
-		 FiY(IJK,M) =  (Mj * BFY_S(IJK,M)+dragFyflux(IJK,M) +Vj*SDPy)
-		 FiZ(IJK,M) =  (Mj * BFZ_S(IJK,M)+dragFzflux(IJK,M) +Vj*SDPz)
 
-		 FiMinusDragX(IJK,M) =  (Mj * BFX_S(IJK,M) + Vj*SDPx)
-		 FiMinusDragY(IJK,M) =  (Mj * BFY_S(IJK,M) + Vj*SDPy)
-		 FiMinusDragZ(IJK,M) =  (Mj * BFZ_S(IJK,M) + Vj*SDPz)
+                 FiXvel(IJK,M) =  (Mj * BFX_S(IJK,M)+dragFx(IJK,M) +Vj*SDPx)
+                 FiYvel(IJK,M) =  (Mj * BFY_S(IJK,M)+dragFy(IJK,M) +Vj*SDPy)
+                 FiZvel(IJK,M) =  (Mj * BFZ_S(IJK,M)+dragFz(IJK,M) +Vj*SDPz)
+
+                 FiX(IJK,M) =  (Mj * BFX_S(IJK,M)+dragFxflux(IJK,M) +Vj*SDPx)
+                 FiY(IJK,M) =  (Mj * BFY_S(IJK,M)+dragFyflux(IJK,M) +Vj*SDPy)
+                 FiZ(IJK,M) =  (Mj * BFZ_S(IJK,M)+dragFzflux(IJK,M) +Vj*SDPz)
+
+                 FiMinusDragX(IJK,M) =  (Mj * BFX_S(IJK,M) + Vj*SDPx)
+                 FiMinusDragY(IJK,M) =  (Mj * BFY_S(IJK,M) + Vj*SDPy)
+                 FiMinusDragZ(IJK,M) =  (Mj * BFZ_S(IJK,M) + Vj*SDPz)
                ENDDO
           ENDIF     ! Fluid_at
  200  CONTINUE     ! outer IJK loop

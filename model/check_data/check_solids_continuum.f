@@ -406,7 +406,7 @@
 !``````````````````````````````````````````````````````````````````````
       CASE ('GHD')
 
-         IF(DRAG_TYPE /= 'WEN_YU' .AND. DRAG_TYPE /= 'HYS') THEN
+         IF(DRAG_TYPE_ENUM /= WEN_YU .AND. DRAG_TYPE_ENUM /= HYS) THEN
             WRITE(ERR_MSG, 1101)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
