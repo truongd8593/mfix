@@ -130,6 +130,13 @@
 
 
 
+      SELECT CASE (trim(DES_COLL_MODEL))
+      CASE('LSD'); DES_COLL_MODEL_ENUM = LSD
+      CASE('HERTZIAN'); DES_COLL_MODEL_ENUM = HERTZIAN
+      CASE DEFAULT
+         WRITE(*,*)'Invalid collision model: ',DES_COLL_MODEL
+         CALL MFIX_EXIT(myPE)
+      END SELECT
 
 
 ! Check collision model specific model parameters.
