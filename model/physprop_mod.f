@@ -63,6 +63,9 @@
 ! calculating the variable solids phase density.
       INTEGER :: INERT_SPECIES(DIM_M)
 
+! Particle shape factor
+      DOUBLE PRECISION :: PSI_s(DIM_M)
+
 ! Specified constant solids viscosity
       DOUBLE PRECISION MU_s0
 
@@ -116,7 +119,6 @@
 
 ! Granular Temperature Conductivity (associated with volume fraction grad)
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  Kphi_s 
-
 
 ! Specified constant gas diffusivity
       DOUBLE PRECISION DIF_g0

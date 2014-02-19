@@ -336,6 +336,21 @@
       DRAG_TYPE = 'SYAM_OBRIEN'
 !</keyword>
 
+
+
+!<keyword category="Run Control" required="false">
+!  <description> Sinlge particle drag correlation. Note that names
+!    containing xRE are correlations multiplied by Reynods number.
+!    A default for each DRAG_TYPE is set if left UNDEFINED.
+!  </description>
+!  <valid value="C_DS_SN"    note="Schiller and Naumann (1933)"/>
+!  <valid value="C_DSxRE_DV" note="Dalla Valle (1948)"/>
+!  <valid value="C_DS_DEL"   note="Dellion et al. (2005)"/>
+!  <valid value="C_DSxRE_TL" note="Turton and Levenspiel (1986)"/>
+      CD_FUNCTION = UNDEFINED_C
+!</keyword>
+
+
 !<keyword category="Run Control" required="false">
 !  <description>radial distribution function at contact for polydisperse systems. </description>
 !  <valid value="lebowitz" note=""/>
@@ -1117,6 +1132,13 @@
       SOLIDS_MODEL(:DIM_M) = 'TFM'
 !</keyword>
 
+
+!<keyword category="Solids Phase" required="false">
+!  <description>Partice shape factor. </description>
+!  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
+!  <dependent keyword="CD_FUNCTION" value="C_DS_DEL"/>
+      PSI_s(:DIM_M) = UNDEFINED
+!</keyword>
 
 
 !#####################################################################!

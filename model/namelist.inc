@@ -17,6 +17,7 @@
              SUBGRID_TYPE, filter_size_ratio, SUBGRID_Wall, & 
              GRANULAR_ENERGY, KT_TYPE, RDF_TYPE, &
              YU_STANDISH, FEDORS_LANDEL, Added_Mass, M_AM, &
+             CD_FUNCTION, &
 
 ! see run_mod for details
              CHK_BATCHQ_END, BATCH_WALLCLOCK, TERM_BUFFER,&
@@ -75,7 +76,7 @@
              MU_s0, D_p0, EP_star, MMAX, MW_s, CLOSE_PACKED, &
              K_s0, C_ps0, DIF_s0, NMAX_g, NMAX_s, &
              RO_s0, X_s0, RO_Xs0, INERT_SPECIES, &
-             SOLIDS_MODEL, &
+             SOLIDS_MODEL, PSI_s, &
 ! ----------------------------------------------------------------<<<
 
 

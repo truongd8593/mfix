@@ -71,11 +71,11 @@
 
 ! AE 091501: Declare a new variable to use on CN with RESTART cases
 !            Number of time steps when restart file was read
-      INTEGER          NSTEPRST
+      INTEGER          NSTEPRST      
 
 ! Discretization scheme for different equations
       INTEGER          DISCRETIZE(9)
-
+      
 ! Use Chi scheme for discretizing certain equation sets
 !  (species mass fractions)
       LOGICAL          Chi_scheme
@@ -128,7 +128,7 @@
 
 ! If .TRUE. use Jenkins small friction BC
       LOGICAL          JENKINS
-! If .TRUE. use revised phip for JJ BC
+! If .TRUE. use revised phip for JJ BC 
       LOGICAL           BC_JJ_M
 ! If .TRUE. output PHIP to JJ_PHIP.dat
       LOGICAL           PHIP_OUT_JJ
@@ -156,7 +156,7 @@
 ! If .TRUE. use Model-B momentum equations
       LOGICAL          Model_B
 
-! Drag model: see drag_gs for full options
+! Drag model: see drag_gs for full options 
 ! default is syam_obrien (may enforce a corrected Umf by defining
 ! drag_c1 and drag_d1 accordingly)
       CHARACTER(64)    DRAG_TYPE
@@ -173,13 +173,16 @@
       INTEGER,PARAMETER ::  BVK=9
       INTEGER,PARAMETER ::  HYS=10
 
-! Parameter used to calculate lubrication interactions between
+! Single particle drag correlation
+      CHARACTER(64) :: CD_FUNCTION
+
+! Parameter used to calculate lubrication interactions between 
 ! different particles in HYS drag model
       DOUBLE PRECISION LAM_HYS
 
 ! anuj 4/20:  If .TRUE. calculate frictional stress terms
       LOGICAL          FRICTION
-! Form of friction model:
+! Form of friction model: 
 !             If 0: use S:S
 !             If 1: use the form of Savage to compute S:S
 !             If 2: use combination of both for frictional stress terms
@@ -189,7 +192,7 @@
 ! use Scheffer frictional stress (default set to .TRUE.)
       LOGICAL          SCHAEFFER
 
-! sp (02/8/2006): blending frictional/kinetic stresses
+! sp (02/8/2006): blending frictional/kinetic stresses 	
 ! (default set to .FALSE. do not blend)
       LOGICAL          BLENDING_STRESS
       LOGICAL          TANH_BLEND ! default set to true
@@ -204,26 +207,26 @@
       LOGICAL          CN_ON
 
 ! AEOLUS:
-! AE: STOP Trigger mechanism to terminate MFIX normally before batch
-! queue terminates flag variable to check for end of batch queue when
+! AE: STOP Trigger mechanism to terminate MFIX normally before batch 
+! queue terminates flag variable to check for end of batch queue when 
 ! set to TRUE check performed at the beginning of each time step and
 ! termination of mfix triggered after saving all files if condition
 ! is met
       LOGICAL          CHK_BATCHQ_END
-! variable to store the total wall clock duration of the batch queue
+! variable to store the total wall clock duration of the batch queue 
 ! session wall clock time specified in seconds
 ! for jaguarcnl@NCCS max wall clock limit is 2.5 hr limit up to 512
 ! processors
       DOUBLE PRECISION BATCH_WALLCLOCK
 ! variable to set a buffer time before the batch queue session ends to
-! make sure once MFIX is triggered to shutdown, there is sufficient
+! make sure once MFIX is triggered to shutdown, there is sufficient 
 ! time to save files, make copies to HPSS storage before batch queue
 ! time runs out. Current logic in MFIX checks for:
-!    if CPU_TIME > (BATCH_WALLCLOCK - TERM_BUFFER) then
-!    save all .RES .SP files and trigger shutdown
+!    if CPU_TIME > (BATCH_WALLCLOCK - TERM_BUFFER) then 
+!    save all .RES .SP files and trigger shutdown      
       DOUBLE PRECISION TERM_BUFFER
 
-! sof (5/24/2005): added in case a user wants the code to automatically
+! sof (5/24/2005): added in case a user wants the code to automatically 
 ! restart for DT < DT_MIN
       LOGICAL          AUTO_RESTART
 
@@ -261,7 +264,7 @@
 
 ! String which controls reduction of global sums for residual
 ! calculations
-      LOGICAL          DEBUG_RESID
+      LOGICAL          DEBUG_RESID        
 
 ! Generate log files when negative gas density is detected.
       LOGICAL REPORT_NEG_DENSITY
@@ -277,7 +280,7 @@
 ! for m > 1 options are lebowitz, modified_lebowitz,
 ! mansoori, modified_mansoori.  default = lebowitz
 ! for m = 1 then carnahan and starling rdf used
-      CHARACTER(64)    RDF_TYPE
+      CHARACTER(64)    RDF_TYPE 
 
 ! Flag to invoke the variable solids density model.
 !      LOGICAL          SOLID_RO_V
@@ -287,11 +290,11 @@
       LOGICAL :: SOLVE_ROs(DIM_M), ANY_SOLVE_ROs
 
 ! Sebastien Dartevelle, LANL, May 2013
-! filtered/subgrid corrections to the drag coefficient & granular
+! filtered/subgrid corrections to the drag coefficient & granular 
 ! stress terms including granular viscosity and solids pressure
 ! current options are 'igci' and 'milioli'
       CHARACTER(64)    SUBGRID_TYPE
-! flag to incorporate the wall effects upon the calculation of the
+! flag to incorporate the wall effects upon the calculation of the 
 ! subgrid solids viscosity, solids pressure, and gas-solids drag
       LOGICAL          SUBGRID_Wall
 ! the ratio of the FilterSize to the GridSize
@@ -305,6 +308,5 @@
       LOGICAL :: TFM_SOLIDS
       LOGICAL :: DEM_SOLIDS
       LOGICAL :: PIC_SOLIDS
-
 
       END MODULE RUN
