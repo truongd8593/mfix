@@ -117,18 +117,6 @@
       INCLUDE 'ep_s2.inc'
 
 
-      SELECT CASE(TRIM(DRAG_TYPE))
-      CASE ('SYAM_OBRIEN');        FUN_C_DS_ENUM = C_DSXRE_DV
-      CASE ('GIDASPOW');           FUN_C_DS_ENUM = C_DS_SN
-      CASE ('GIDASPOW_PCF');       FUN_C_DS_ENUM = C_DS_SN
-      CASE ('GIDASPOW_BLEND');     FUN_C_DS_ENUM = C_DS_SN
-      CASE ('GIDASPOW_BLEND_PCF'); FUN_C_DS_ENUM = C_DS_SN
-      CASE ('WEN_YU');             FUN_C_DS_ENUM = C_DS_SN
-      CASE ('WEN_YU_PCF');         FUN_C_DS_ENUM = C_DS_SN
-      END SELECT
-
-
-
 !-----------------------------------------------
 !$omp  parallel do default(shared)                                   &
 !$omp  private( I,  IJK, IMJK, IJMK, IJKM, DM, MAXM, CM, L,          &
@@ -455,23 +443,23 @@
       use param1, only: SMALL_NUMBER
       use constant, only: GRAVITY
   
-      use drag, only: FUN_C_DS_ENUM
-      use drag, only: C_DS_SN
-      use drag, only: C_DSxRE_DV
-      use drag, only: C_DS_DEL
-      use drag, only: C_DSxRE_TL
+      use drag, only: CD_FUNCTION_ENUM
+      use drag, only: SCHILLER_1933
+      use drag, only: DALLA_1948
+      use drag, only: DELLINO_2005
+      use drag, only: TURTON_1986
 
       IMPLICIT NONE
 
       DOUBLE PRECISION, INTENT(IN) :: RE ! Reynolds number 
       DOUBLE PRECISION, INTENT(IN) :: DPM,ROg,ROs,PSIs,MUg
 
-      SELECT CASE(FUN_C_DS_ENUM)
+      SELECT CASE(CD_FUNCTION_ENUM)
 
 
 ! Schiller and Naumann (1933)
 !------------------------------------------------------------------>>
-      CASE(C_DS_SN)
+      CASE(SCHILLER_1933)
          IF(RE <= 1.0d3) THEN
             FUN_C_DS = 24.D0*(1.0d0 + 0.15d0*RE**0.687d0) / &
                (RE+SMALL_NUMBER)
@@ -481,12 +469,12 @@
 
 ! Dalla Valle (1948)
 !------------------------------------------------------------------>>
-      CASE(C_DSXRE_DV)
+      CASE(DALLA_1948)
          FUN_C_DS = (0.63D0*SQRT(RE) + 4.8D0)**2
 
 ! Dellino et al. (2005)
 !------------------------------------------------------------------>>
-      CASE(C_DS_DEL) 
+      CASE(DELLINO_2005) 
          FUN_C_DS = (0.69d0*GRAVITY*(DPM**3)*ROg*1.33d0*(ROs-ROg))/    &
          (Mug**2*((GRAVITY*(PSIs**1.6d0)*(DPM**3)*ROg*(ROs-ROg)) /     &
          Mug**2)**1.0412d0)
@@ -494,7 +482,7 @@
 
 ! Turton and Levenspiel (1986)
 !------------------------------------------------------------------>>
-      CASE(C_DSXRE_TL)
+      CASE(TURTON_1986)
          FUN_C_DS = 24.D0*(1.D0 + 0.173D0*RE**0.657D0) + &
             0.413D0*RE**2.09D0/(RE**1.09D0 + 16300.D0)
 
