@@ -150,11 +150,7 @@ $(EXEC_FILE) : \
     $(DPO)cal_d.$(OBJ_EXT) \
     $(DPO)check_ab_m.$(OBJ_EXT) \
     $(DPO)check_convergence.$(OBJ_EXT) \
-    $(DPO)check_data_01.$(OBJ_EXT) \
-    $(DPO)check_data_02.$(OBJ_EXT) \
     $(DPO)check_data_03.$(OBJ_EXT) \
-    $(DPO)check_data_04.$(OBJ_EXT) \
-    $(DPO)check_data_05.$(OBJ_EXT) \
     $(DPO)check_data_06.$(OBJ_EXT) \
     $(DPO)check_data_07.$(OBJ_EXT) \
     $(DPO)check_data_08.$(OBJ_EXT) \
@@ -387,7 +383,6 @@ $(EXEC_FILE) : \
     $(DPO)update_dashboard.$(OBJ_EXT) \
     $(DPO)vtk_out.$(OBJ_EXT) \
     $(DPO)write_progress_bar.$(OBJ_EXT) \
-    $(DPO)check_continuum_solids.$(OBJ_EXT) \
     $(DPO)check_dmp_prereqs.$(OBJ_EXT) \
     $(DPO)check_gas_phase.$(OBJ_EXT) \
     $(DPO)check_geometry_prereqs.$(OBJ_EXT) \
@@ -562,11 +557,7 @@ $(EXEC_FILE) : \
     $(DPO)cdist_mod.$(OBJ_EXT) \
     $(DPO)check_ab_m.$(OBJ_EXT) \
     $(DPO)check_convergence.$(OBJ_EXT) \
-    $(DPO)check_data_01.$(OBJ_EXT) \
-    $(DPO)check_data_02.$(OBJ_EXT) \
     $(DPO)check_data_03.$(OBJ_EXT) \
-    $(DPO)check_data_04.$(OBJ_EXT) \
-    $(DPO)check_data_05.$(OBJ_EXT) \
     $(DPO)check_data_06.$(OBJ_EXT) \
     $(DPO)check_data_07.$(OBJ_EXT) \
     $(DPO)check_data_08.$(OBJ_EXT) \
@@ -859,7 +850,6 @@ $(EXEC_FILE) : \
     $(DPO)vtk_mod.$(OBJ_EXT) \
     $(DPO)vtk_out.$(OBJ_EXT) \
     $(DPO)write_progress_bar.$(OBJ_EXT) \
-    $(DPO)check_continuum_solids.$(OBJ_EXT) \
     $(DPO)check_dmp_prereqs.$(OBJ_EXT) \
     $(DPO)check_gas_phase.$(OBJ_EXT) \
     $(DPO)check_geometry_prereqs.$(OBJ_EXT) \
@@ -2344,29 +2334,9 @@ $(DPO)check_convergence.$(OBJ_EXT) : check_convergence.f \
             $(DPO)RUN.mod \
             $(DPO)RESIDUAL.mod \
             $(DPO)TOLERANC.mod \
-            $(DPO)MPI_UTILITY.mod 
+            $(DPO)MPI_UTILITY.mod \
+            $(DPO)SCALARS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) check_convergence.f  -o $(DPO)check_convergence.$(OBJ_EXT) -module $(DPO)
-$(DPO)check_data_01.$(OBJ_EXT) : check_data_01.f \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)CONSTANT.mod \
-            $(DPO)RUN.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)SCALARS.mod \
-            $(DPO)FUNITS.mod \
-            $(DPO)RXNS.mod \
-            $(DPO)CUTCELL.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) check_data_01.f  -o $(DPO)check_data_01.$(OBJ_EXT) -module $(DPO)
-$(DPO)check_data_02.$(OBJ_EXT) : check_data_02.f \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)OUTPUT.mod \
-            $(DPO)LEQSOL.mod \
-            $(DPO)GEOMETRY.mod \
-            $(DPO)RUN.mod \
-            $(DPO)RXNS.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) check_data_02.f  -o $(DPO)check_data_02.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_data_03.$(OBJ_EXT) : check_data_03.f \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
@@ -2374,31 +2344,9 @@ $(DPO)check_data_03.$(OBJ_EXT) : check_data_03.f \
             $(DPO)BC.mod \
             $(DPO)FUNITS.mod \
             $(DPO)COMPAR.mod \
-            $(DPO)MPI_UTILITY.mod 
+            $(DPO)MPI_UTILITY.mod \
+            $(DPO)CUTCELL.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) check_data_03.f  -o $(DPO)check_data_03.$(OBJ_EXT) -module $(DPO)
-$(DPO)check_data_04.$(OBJ_EXT) : check_data_04.f \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)RUN.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)CONSTANT.mod \
-            $(DPO)DISCRETELEMENT.mod \
-            $(DPO)FUNITS.mod \
-            $(DPO)MFIX_PIC.mod \
-            $(DPO)COMPAR.mod \
-            $(DPO)RXNS.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) check_data_04.f  -o $(DPO)check_data_04.$(OBJ_EXT) -module $(DPO)
-$(DPO)check_data_05.$(OBJ_EXT) : check_data_05.f \
-            $(DPO)COMPAR.mod \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)FUNITS.mod \
-            $(DPO)RUN.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)RXNS.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) check_data_05.f  -o $(DPO)check_data_05.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_data_06.$(OBJ_EXT) : check_data_06.f \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
@@ -2994,7 +2942,9 @@ $(DPO)display_resid.$(OBJ_EXT) : display_resid.f \
             $(DPO)RESIDUAL.mod \
             $(DPO)FLDVAR.mod \
             $(DPO)COMPAR.mod \
-            $(DPO)GEOMETRY.mod 
+            $(DPO)GEOMETRY.mod \
+            $(DPO)SCALARS.mod \
+            $(DPO)RUN.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) display_resid.f  -o $(DPO)display_resid.$(OBJ_EXT) -module $(DPO)
 $(DPO)drag_gs.$(OBJ_EXT) : drag_gs.f \
             $(DPO)PARAM.mod \
@@ -3458,6 +3408,7 @@ $(DPO)leq_bicgs.$(OBJ_EXT) : leq_bicgs.f \
             $(DPO)PARALLEL.mod \
             $(DPO)MPI_UTILITY.mod \
             $(DPO)SENDRECV.mod \
+            $(DPO)CUTCELL.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) leq_bicgs.f  -o $(DPO)leq_bicgs.$(OBJ_EXT) -module $(DPO)
 $(DPO)leq_bicgst.$(OBJ_EXT) : leq_bicgst.f \
@@ -4079,6 +4030,16 @@ $(DPO)set_increments.$(OBJ_EXT) : set_increments.f \
             $(DPO)PHYSPROP.mod \
             $(DPO)FLDVAR.mod \
             $(DPO)FUNITS.mod \
+            $(DPO)SCALARS.mod \
+            $(DPO)RUN.mod \
+            $(DPO)VISC_G.mod \
+            $(DPO)PGCOR.mod \
+            $(DPO)PSCOR.mod \
+            $(DPO)CUTCELL.mod \
+            $(DPO)SENDRECV.mod \
+            $(DPO)MPI_UTILITY.mod \
+            $(DPO)PARALLEL.mod \
+            $(DPO)CDIST.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) set_increments.f  -o $(DPO)set_increments.$(OBJ_EXT) -module $(DPO)
 $(DPO)set_index1a3.$(OBJ_EXT) : set_index1a3.f \
@@ -5046,8 +5007,7 @@ $(DPO)usr2.$(OBJ_EXT) : usr2.f \
             $(DPO)USR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr2.f  -o $(DPO)usr2.$(OBJ_EXT) -module $(DPO)
 $(DPO)usr3.$(OBJ_EXT) : usr3.f \
-            $(DPO)USR.mod \
-            $(DPO)FLDVAR.mod 
+            $(DPO)USR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr3.f  -o $(DPO)usr3.$(OBJ_EXT) -module $(DPO)
 $(DPO)usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
             $(DPO)USR.mod 
@@ -5351,6 +5311,7 @@ $(DPO)write_res1.$(OBJ_EXT) : write_res1.f \
             $(DPO)COMPAR.mod \
             $(DPO)MPI_UTILITY.mod \
             $(DPO)SENDRECV.mod \
+            $(DPO)CUTCELL.mod \
             $(DPO)MFIX_NETCDF.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) write_res1.f  -o $(DPO)write_res1.$(OBJ_EXT) -module $(DPO)
 $(DPO)write_spx0.$(OBJ_EXT) : write_spx0.f \
@@ -5376,6 +5337,7 @@ $(DPO)write_spx1.$(OBJ_EXT) : write_spx1.f \
             $(DPO)CDIST.mod \
             $(DPO)COMPAR.mod \
             $(DPO)MPI_UTILITY.mod \
+            $(DPO)CUTCELL.mod \
             $(DPO)SENDRECV.mod \
             $(DPO)MFIX_NETCDF.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) write_spx1.f  -o $(DPO)write_spx1.$(OBJ_EXT) -module $(DPO)
@@ -5718,6 +5680,7 @@ $(DPO)check_data_cartesian.$(OBJ_EXT) : ./cartesian_grid/check_data_cartesian.f 
             $(DPO)GEOMETRY.mod \
             $(DPO)SENDRECV.mod \
             $(DPO)PS.mod \
+            $(DPO)GRIDMAP.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/check_data_cartesian.f  -o $(DPO)check_data_cartesian.$(OBJ_EXT) -module $(DPO)
 $(DPO)cut_cell_preprocessing.$(OBJ_EXT) : ./cartesian_grid/cut_cell_preprocessing.f \
@@ -6016,19 +5979,6 @@ $(DPO)write_progress_bar.$(OBJ_EXT) : ./cartesian_grid/write_progress_bar.f \
             $(DPO)PARALLEL.mod \
             $(DPO)SENDRECV.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/write_progress_bar.f  -o $(DPO)write_progress_bar.$(OBJ_EXT) -module $(DPO)
-$(DPO)check_continuum_solids.$(OBJ_EXT) : ./check_data/check_continuum_solids.f \
-            $(DPO)CONSTANT.mod \
-            $(DPO)RUN.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)SCALARS.mod \
-            $(DPO)FUNITS.mod \
-            $(DPO)RXNS.mod \
-            $(DPO)CUTCELL.mod \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)ERROR_MANAGER.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_continuum_solids.f  -o $(DPO)check_continuum_solids.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_dmp_prereqs.$(OBJ_EXT) : ./check_data/check_dmp_prereqs.f \
             $(DPO)COMPAR.mod \
             $(DPO)GEOMETRY.mod \
