@@ -98,8 +98,6 @@ post_mfix : \
     calc_ro_g.$(OBJ_EXT) \
     calc_vol.$(OBJ_EXT) \
     check_data_03.$(OBJ_EXT) \
-    check_data_04.$(OBJ_EXT) \
-    check_data_05.$(OBJ_EXT) \
     check_one_axis.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
     deallocate_arrays.$(OBJ_EXT) \
@@ -305,8 +303,6 @@ post_mfix : \
     calc_ro_g.$(OBJ_EXT) \
     calc_vol.$(OBJ_EXT) \
     check_data_03.$(OBJ_EXT) \
-    check_data_04.$(OBJ_EXT) \
-    check_data_05.$(OBJ_EXT) \
     check_one_axis.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
     deallocate_arrays.$(OBJ_EXT) \
@@ -1009,29 +1005,6 @@ check_data_03.$(OBJ_EXT) : ../model/check_data_03.f \
             mpi_utility.mod \
             cutcell.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/check_data_03.f 
-check_data_04.$(OBJ_EXT) : ../model/check_data_04.f \
-            param.mod \
-            param1.mod \
-            run.mod \
-            indices.mod \
-            physprop.mod \
-            constant.mod \
-            discretelement.mod \
-            funits.mod \
-            mfix_pic.mod \
-            compar.mod \
-            rxns.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/check_data_04.f 
-check_data_05.$(OBJ_EXT) : ../model/check_data_05.f \
-            compar.mod \
-            param.mod \
-            param1.mod \
-            physprop.mod \
-            funits.mod \
-            run.mod \
-            indices.mod \
-            rxns.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/check_data_05.f 
 check_one_axis.$(OBJ_EXT) : ../model/check_one_axis.f \
             param.mod \
             param1.mod \
@@ -1747,6 +1720,7 @@ write_res1.$(OBJ_EXT) : ../model/write_res1.f \
             compar.mod \
             mpi_utility.mod \
             sendrecv.mod \
+            cutcell.mod \
             mfix_netcdf.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/write_res1.f 
 write_spx0.$(OBJ_EXT) : ../model/write_spx0.f \
@@ -1772,6 +1746,7 @@ write_spx1.$(OBJ_EXT) : ../model/write_spx1.f \
             cdist.mod \
             compar.mod \
             mpi_utility.mod \
+            cutcell.mod \
             sendrecv.mod \
             mfix_netcdf.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/write_spx1.f 

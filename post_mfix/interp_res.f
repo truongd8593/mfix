@@ -258,8 +258,8 @@
 !
 ! set smax value since check_data_01 and constant_prop are not called in post_mfix.
       SMAX = MMAX
-      CALL CHECK_DATA_04                         ! solid phase section 
-      CALL CHECK_DATA_05                         ! gas phase section 
+      !CALL CHECK_DATA_04                         ! solid phase section 
+      !CALL CHECK_DATA_05                         ! gas phase section 
 !
 !  Open new RES files
 !

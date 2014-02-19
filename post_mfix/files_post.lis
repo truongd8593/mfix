@@ -65,8 +65,6 @@ calc_quantities.f
 calc_ro_g.f
 calc_vol.f
 ../model/check_data_03.f
-../model/check_data_04.f 
-../model/check_data_05.f 
 ../model/check_one_axis.f 
 ../model/compare.f 
 deallocate_arrays.f 
