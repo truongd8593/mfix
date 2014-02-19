@@ -17,7 +17,7 @@
 !---------------------------------------------------------------------//
 
 ! User specified collision model
-      USE discretelement, only: DES_COLL_MODEL
+      USE discretelement, only: DES_COLL_MODEL, DES_COLL_MODEL_ENUM, LSD, HERTZIAN
 ! Number of discrete solids phases
       USE discretelement, only: DES_MMAX
 ! Particle and wall friction coeff.
@@ -50,7 +50,7 @@
 !---------------------------------------------------------------------//
 ! Loop index.
       INTEGER :: M
-! Number of phase interactions 
+! Number of phase interactions
       INTEGER :: MxM
 ! Flag to warn user.
       LOGICAL :: FLAG_WARN
@@ -64,7 +64,7 @@
 
 ! Check settings for collision models
 
-! check particle-particle normal restitution coefficient      
+! check particle-particle normal restitution coefficient
       MxM = DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
       DO M = 1, MxM
          IF(DES_EN_INPUT(M) == UNDEFINED) THEN
@@ -106,7 +106,7 @@
       ENDDO
 
 
-! Check coefficient friction 
+! Check coefficient friction
       IF(MEW == UNDEFINED) THEN
          MSG='Particle friction coefficient.'
          IF(myPE == PE_IO) WRITE(*, 1001) 'MEW', MSG
@@ -133,14 +133,14 @@
 
 
 ! Check collision model specific model parameters.
-      SELECT CASE (TRIM(DES_COLL_MODEL))
+      SELECT CASE (DES_COLL_MODEL_ENUM)
 
 !**********************************************************************!
 !*                                                                    *!
 !*                     linear spring-dashpot model                    *!
 !*                                                                    *!
 !**********************************************************************!
-      CASE ('LSD')
+      CASE (LSD)
 
          IF(KN == UNDEFINED) THEN
             IF(myPE == PE_IO) WRITE(*, 1101) 'KN'
@@ -153,7 +153,7 @@
             IER = 1
          ENDIF
 
-! Check for tangential spring constant factors         
+! Check for tangential spring constant factors
          IF(KT_FAC == UNDEFINED) THEN
             IF(DMP_LOG) WRITE (UNIT_LOG, 1102) 'KT_FAC'
          ELSEIF(KT_FAC > ONE .OR. KT_FAC < ZERO) THEN
@@ -205,7 +205,7 @@
 !*                           Hertzian model                           *!
 !*                                                                    *!
 !**********************************************************************!
-      CASE ('HERTZIAN')
+      CASE (HERTZIAN)
 
 ! check young's modulus and poisson ratio
          IF(EW_YOUNG == UNDEFINED ) THEN
@@ -245,7 +245,7 @@
             ENDIF
          ENDDO
 
-! check particle-particle tangential restitution coefficient      
+! check particle-particle tangential restitution coefficient
          MxM = DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
          DO M = 1, MxM
             IF(DES_ET_INPUT(M) == UNDEFINED) THEN

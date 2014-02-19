@@ -5,16 +5,16 @@
 !            Common Block containing DEM conditions                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-   
+
       MODULE DISCRETELEMENT
 
 !-----------------------------------------------
 ! Modules
-!-----------------------------------------------      
+!-----------------------------------------------
       USE param
       USE param1
-      IMPLICIT NONE      
-!-----------------------------------------------      
+      IMPLICIT NONE
+!-----------------------------------------------
 
 ! Define interface - needed when passing arrays of assumed size
 ! This function is used to identify fluid grid index (i,j or k) of a
@@ -23,7 +23,7 @@
          INTEGER FUNCTION DES_GETINDEXFROMPOS(LIM1,LIM2,PART_POS,&
             GRID_POS,AXIS,AXIS_INDEX)
             INTEGER :: LIM1, LIM2
-            DOUBLE PRECISION :: PART_POS            
+            DOUBLE PRECISION :: PART_POS
             DOUBLE PRECISION, DIMENSION(:) :: GRID_POS
             CHARACTER*1 :: AXIS,AXIS_INDEX
          END FUNCTION DES_GETINDEXFROMPOS
@@ -33,7 +33,7 @@
 ! Total number of particles in simulation: read from input or generated
       INTEGER PARTICLES
 ! Constant factor used to expand size of arrays beyond particle no.      
-      DOUBLE PRECISION PARTICLES_FACTOR 
+      DOUBLE PRECISION PARTICLES_FACTOR
 
 
 ! Start particle tracking quantities
@@ -42,35 +42,35 @@
 ! tracking for parallelization
 
 ! Dynamic particle count elements:
-! PEA(n,1) : This column identifies particle as 'existing' if true. 
+! PEA(n,1) : This column identifies particle as 'existing' if true.
 ! It is used with the inlet/outlet to skip indices that do not represent
-! particles in the system or indices that represent particles that have 
+! particles in the system or indices that represent particles that have
 ! exited the system.
 
 ! PEA(n,2) : This column identifies a particle as 'new' if true.
 ! Particles with a classification of 'new' do not react when in contact
 ! with a wall or another particle, however existing particles do collide
 ! and interact with 'new' particles. The classification allows new
-! particles to push particles already in the system out of the way when 
+! particles to push particles already in the system out of the way when
 ! entering to prevent overlap.  This flag is also used when the center
 ! of a particle crosses a dem outlet (i.e. an exiting particle; see
-! PEA(n,3)) so that the particle will maintain its present trajectory 
+! PEA(n,3)) so that the particle will maintain its present trajectory
 ! until it has fully exited the system
 
-! PEA(n,3) : This column identifies a particle as 'exiting' if true. 
+! PEA(n,3) : This column identifies a particle as 'exiting' if true.
 ! If a particle initiates contact with a wall surface designated as a
-! des outlet, this flag is set to true. With this classification the 
-! location of the particle is checked to assess if the particle has 
-! fully exited the system.  At this point, the particle is removed 
+! des outlet, this flag is set to true. With this classification the
+! location of the particle is checked to assess if the particle has
+! fully exited the system.  At this point, the particle is removed
 ! from the list.
 
-! PEA(n,4) : for ghost particles 
+! PEA(n,4) : for ghost particles
       LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PEA ! (MAX_PIS,4)
 
 ! PARALLEL PROCESSING: explanation of variables in parallel architecture  
 ! pip - particles in each processor (includes the ghost particles)
-! max_pis - maximum allocated particles in system  (input parameter) 
-! max_pip - maximum allocated particles in processor 
+! max_pis - maximum allocated particles in system  (input parameter)
+! max_pip - maximum allocated particles in processor
 
 ! Number of particles in the system (current)
       INTEGER PIP
@@ -80,37 +80,37 @@
 ! End particle tracking quantities
 !-----------------------------------------------------------------<<<
 
-! For parallel processing: global id of particles 
+! For parallel processing: global id of particles
       INTEGER, DIMENSION(:), ALLOCATABLE :: IGLOBAL_ID
 ! Ghost count of particles on each processor
       INTEGER :: IGHOST_CNT
 ! Maximum global id, new particles global id will be assigned based
-! on this value 
+! on this value
       Integer :: imax_global_id
 
 
 ! If gener_part_config is true, then the particle_input.dat file does
 ! not need to be supplied nor does the total number of particles as
 ! these are determined based on the specified volume fraction (vol_frac)
-! in the specified domain (des_eps_xyzstart)     
+! in the specified domain (des_eps_xyzstart)
       LOGICAL :: GENER_PART_CONFIG
       DOUBLE PRECISION ::  VOL_FRAC(DIM_M)
       DOUBLE PRECISION :: DES_EPS_XSTART, &
       DES_EPS_YSTART, DES_EPS_ZSTART
 ! volume of the IC region for computing number of particles to be seeded 
       DOUBLE PRECISION, dimension(:), allocatable :: VOL_IC_REGION!(DIMENSION_IC)
-! number of particles for each phase corresponding to the IC number 
+! number of particles for each phase corresponding to the IC number
       INTEGER, dimension(:,:), allocatable :: PART_MPHASE_BYIC!(DIMENSION_IC, DIM_M)
       !The above two vars are allocated in check_des_ic_eps. One could have 
       !used the module ic and just declared the size here itself but using ic 
-      !led to issues with "IC" variable declaration in octree. For some 
+      !led to issues with "IC" variable declaration in octree. For some
       !reason, if a subroutine uses module named "test", then it cannot have
       !variable named test under its scope. Octree, never used, but keeps
-      !on reminding us of its presence. 
+      !on reminding us of its presence.
 
 ! The number of particles that belong to solid phase M according to the
 ! vol_frac and particle diameter. this information is used when
-! gener_part_config is invoked for initialization 
+! gener_part_config is invoked for initialization
 ! This will be removed soon as PART_MPHASE_BYIC will be used from now on
       INTEGER PART_MPHASE(DIM_M)
 ! Assigns the initial particle velocity distribution based on user
@@ -120,14 +120,14 @@
 
 
 
-! Output/debug controls      
-!----------------------------------------------------------------->>> 
+! Output/debug controls
+!----------------------------------------------------------------->>>
 ! Logic that controls whether to print data dem simulations (granular or
 ! coupled)
-      LOGICAL PRINT_DES_DATA 
+      LOGICAL PRINT_DES_DATA
 
 ! logic that controls if des run time messages are printed on screen or not
-      LOGICAL PRINT_DES_SCREEN 
+      LOGICAL PRINT_DES_SCREEN
 
 ! Usr specified time interval that controls frequency of writing DEM
 ! output and restart for pure granular flow; otherwise (when coupled)
@@ -136,7 +136,7 @@
       DOUBLE PRECISION DES_SPX_DT, DES_RES_DT
 
 ! This specifies the file type used for outputting DES data
-! options are :      
+! options are :
 !    TECPLOT - data is written in Tecplot format
 !    undefined - data is written in ParaView format (default)
       CHARACTER*64 DES_OUTPUT_TYPE
@@ -151,21 +151,21 @@
 ! for vtp output used to label .vtp file names in sequential order
 ! and is saved so restarts begin at the correct count
       INTEGER VTP_FINDEX, TECPLOT_FINDEX
-! End Output/debug controls      
+! End Output/debug controls
 !-----------------------------------------------------------------<<<
 
 
 
-! DES - Continuum       
-      LOGICAL DISCRETE_ELEMENT 
+! DES - Continuum
+      LOGICAL DISCRETE_ELEMENT
       LOGICAL DES_CONTINUUM_COUPLED
-     
+
 ! DES - Invoke hybrid model where both the DEM and continuum model
-! are employed to describe solids 
-      LOGICAL DES_CONTINUUM_HYBRID 
+! are employed to describe solids
+      LOGICAL DES_CONTINUUM_HYBRID
 
 ! DES -
-! With this logic the particles see the fluid but the fluid does 
+! With this logic the particles see the fluid but the fluid does
 ! not see the particles.
       LOGICAL DES_ONEWAY_COUPLED
 
@@ -177,8 +177,8 @@
 ! Switch to decide whether to call drag_gs or to call des_drag_gs via
 ! drag_fgs to calculate the gas-solids drag coefficient.  if false
 ! then drag_gs is used, otherwise des_drag_gs via drag_fgs is used
-! At a more fundamental level, when des_interp_on is true, then the 
-! drag on particle is obtained by interpolating the carrier flow 
+! At a more fundamental level, when des_interp_on is true, then the
+! drag on particle is obtained by interpolating the carrier flow
 ! velocity at the particle location. Similarly the drag force on the
 ! Eulerian grid is obtained by backward of interpolaiton of the above
 ! calculated drag force. See the DEM doc for more details.
@@ -187,25 +187,28 @@
 ! Switch to decide if the mean fields (such as solids volume fraction
 ! and mean solids velocity) are obtained by interpolation or by the more
 ! crude cell artihmetic averages. For MPPIC, this will switch will always
-! be true. 
+! be true.
       LOGICAL DES_INTERP_MEAN_FIELDS
 
-! Flag to check if mass is conserved between discrete and continuum 
+! Flag to check if mass is conserved between discrete and continuum
 ! representations when mean fields are computed by backward interpolation.
-! Critical for cut-cells. 
-      LOGICAL DES_REPORT_MASS_INTERP 
-! Drag      
+! Critical for cut-cells.
+      LOGICAL DES_REPORT_MASS_INTERP
+! Drag
       LOGICAL TSUJI_DRAG
 
 ! Collision model, options are as follows
 !   linear spring dashpot model (default/undefined)
 !   'hertzian' model
       CHARACTER*64 DES_COLL_MODEL
+      INTEGER DES_COLL_MODEL_ENUM
+      INTEGER,PARAMETER ::  HERTZIAN=0
+      INTEGER,PARAMETER ::  LSD=1
 
 ! Integration method, options are as follows
 !   'euler' first-order scheme (default)
 !   'adams_bashforth' second-order scheme (by T.Li)
-      CHARACTER*64 DES_INTG_METHOD 
+      CHARACTER*64 DES_INTG_METHOD
       LOGICAL INTG_ADAMS_BASHFORTH
       LOGICAL INTG_EULER
 
@@ -215,10 +218,10 @@
       DOUBLE PRECISION S_TIME
 
 
-! Neighbor search related quantities      
+! Neighbor search related quantities
 !----------------------------------------------------------------->>>
 ! Neighbor search method, options are as follows
-!   1= nsquare, 2=quadtree, 3=octree, 4=grid/cell based search      
+!   1= nsquare, 2=quadtree, 3=octree, 4=grid/cell based search
       INTEGER DES_NEIGHBOR_SEARCH
 
 ! Quantities used to determine whether neighbor search should be called
@@ -228,14 +231,14 @@
 
 ! Factor muliplied by sum of radii in grid based neighbor search and
 ! nsquare search method.  increases the effective radius of a particle
-! for detecting particle contacts 
+! for detecting particle contacts
       DOUBLE PRECISION FACTOR_RLM
 
 ! User specified value for the max number of neighbors any particle is
 ! allowed
       INTEGER MN
 
-! Slightly larger than MN: used to specify the max number of neighbors 
+! Slightly larger than MN: used to specify the max number of neighbors
 ! any particle is allowed plus the number of walls in the simulation
 ! plus one
       INTEGER MAXNEIGHBORS
@@ -256,27 +259,27 @@
       DOUBLE PRECISION N2CT
       DOUBLE PRECISION RADIUS_EQ
 
-! End neighbor search related quantities      
+! End neighbor search related quantities
 !-----------------------------------------------------------------<<<
 
 
 ! User specified dimension of the system (by default 2D, but if 3D system is
-! desired then it must be explicitly specified)      
+! desired then it must be explicitly specified)
       INTEGER DIMN
 
 ! Variable that is set to the number of walls in the system (=2*DIMN)
       INTEGER NWALLS
 
-! Position of domain boundaries generally given as 
+! Position of domain boundaries generally given as
 !   (0, xlength, 0, ylength, 0, zlength)
       DOUBLE PRECISION WX1, EX2, BY1, TY2, SZ1, NZ2
 
-! X, Y, Z position of cell faces of computational fluid grid 
+! X, Y, Z position of cell faces of computational fluid grid
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: XE  !(0:DIMENSION_I)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: YN  !(0:DIMENSION_J)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: ZT  !(0:DIMENSION_K)
 
-! Wall normal vector 
+! Wall normal vector
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: WALL_NORMAL  !(NWALLS,DIMN)
 
 ! Gravity vector
@@ -291,38 +294,38 @@
 
 
 ! Lees & Edwards wall BC (lost in current DEM)
-!----------------------------------------------------------------->>>       
+!----------------------------------------------------------------->>>
 ! Logic for Lees & Edwards BC (T = turn on LE BC)
       LOGICAL DES_LE_BC
-! Relative velocity of LE boundaries (distance/time)      
+! Relative velocity of LE boundaries (distance/time)
       DOUBLE PRECISION DES_LE_REL_VEL
 ! Shear direction
-!   2D options are DUDY or DVDX 
+!   2D options are DUDY or DVDX
 !   3D options are DUDY, DUDZ, DVDX, DVDZ, DWDX or DWDY
 !   Note that all other directions are treated as periodic boundaries
       CHARACTER*4 DES_LE_SHEAR_DIR
-! End LE BC      
+! End LE BC
 !-----------------------------------------------------------------<<<
 
 
-            
+
 ! Particle-particle and Particle-wall collision model parameters
-!----------------------------------------------------------------->>>            
-! Spring contants      
+!----------------------------------------------------------------->>>
+! Spring contants
       DOUBLE PRECISION KN, KN_W  !Normal
       DOUBLE PRECISION KT, KT_W, KT_FAC, KT_W_FAC  ! Tangential factors = KT/KN and KT_w/KN_w, resp.
 
-! Damping coeffients      
+! Damping coeffients
       DOUBLE PRECISION ETA_DES_N, ETA_N_W  !Normal
       DOUBLE PRECISION ETA_DES_T, ETA_T_W  !Tangential
 
 ! Tangential damping factors, eta_t = eta_t_factor * eta_N
       DOUBLE PRECISION DES_ETAT_FAC, DES_ETAT_W_FAC
 
-! Damping coeffients in array form 
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_ETAN, DES_ETAT  
+! Damping coeffients in array form
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_ETAN, DES_ETAT
                         !(DES_MMAX,DES_MMAX)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_ETAN_WALL, DES_ETAT_WALL  
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_ETAN_WALL, DES_ETAT_WALL
                         !(DES_MMAX)
 
 ! Friction coeficients
@@ -333,41 +336,41 @@
       DOUBLE PRECISION DES_EN_INPUT(DIM_M+DIM_M*(DIM_M-1)/2)
       DOUBLE PRECISION DES_ET_INPUT(DIM_M+DIM_M*(DIM_M-1)/2)
 
-! coeff of restitution input in one D array, solid wall 
-      DOUBLE PRECISION DES_EN_WALL_INPUT(DIM_M) 
+! coeff of restitution input in one D array, solid wall
+      DOUBLE PRECISION DES_EN_WALL_INPUT(DIM_M)
       DOUBLE PRECISION DES_ET_WALL_INPUT(DIM_M)
 
-! actual coeff of rest.'s rearranged 
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: REAL_EN, REAL_ET 
+! actual coeff of rest.'s rearranged
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: REAL_EN, REAL_ET
                         !(DES_MMAX,DES_MMAX)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: REAL_EN_WALL, REAL_ET_WALL
                         !(DES_MMAX)
 
 ! Hertzian model: T.Li
       DOUBLE PRECISION ew_young, vw_poisson
-      DOUBLE PRECISION e_young(dim_m), v_poisson(dim_m)    
+      DOUBLE PRECISION e_young(dim_m), v_poisson(dim_m)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: hert_kn, hert_kt  !(DES_MMAX,DES_MMAX)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: hert_kwn, hert_kwt  !(DES_MMAX)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: g_mod               !(DES_MMAX)
 
-! End particle-particle and particle-wall collision model parameters      
+! End particle-particle and particle-wall collision model parameters
 !-----------------------------------------------------------------<<<
 
 
-! Particle attributes: radius, density, mass, moment of inertia      
+! Particle attributes: radius, density, mass, moment of inertia
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_RADIUS !(PARTICLES)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: RO_Sol     !(PARTICLES)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PVOL       !(PARTICLES)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PMASS      !(PARTICLES)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: OMOI       !(PARTICLES)
- 
+
 ! Additional quantities
       DOUBLE PRECISION :: MIN_RADIUS, MAX_RADIUS
 
-      
+
 ! 'solids phase' particle diameters
       DOUBLE PRECISION DES_D_P0 (DIM_M)
-! 'solids phase' particle densities      
+! 'solids phase' particle densities
       DOUBLE PRECISION DES_RO_s (DIM_M)
 ! number of 'solids phases'
       INTEGER DES_MMAX
@@ -385,34 +388,34 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_ACC_OLD  !(PARTICLES,DIMN)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: ROT_ACC_OLD  !(PARTICLES,DIMN)
 
-! Total, normal and tangetial forces      
+! Total, normal and tangetial forces
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC    !(PARTICLES,DIMN)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FN    !(PARTICLES,DIMN)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FT    !(PARTICLES,DIMN)
 
-! There is no need to maintain FN and FT arrays. This can be accomplished by FTAN and FNORM. 
-      
+! There is no need to maintain FN and FT arrays. This can be accomplished by FTAN and FNORM.
+
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: FTAN, FNORM ! (DIMN)
-! Torque      
+! Torque
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: TOW   !(PARTICLES,DIMN)
-     
-! Save the accumulated tangential displacement that occurs during 
+
+! Save the accumulated tangential displacement that occurs during
 ! collision (particle-particle or particle-wall)
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFT !(PARTICLES,DIMN,MAXNEIGHBORS)
 ! Save the normal direction at previous time step
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFN ! (PARTICLES,DIMN,MAXNEIGHBORS)
 
-! Variables used to track/store particle contact history      
+! Variables used to track/store particle contact history
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PN !(PARTICLES, MAXNEIGHBORS)
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PV !(PARTICLES, MAXNEIGHBORS)
 
 ! Gas-solids drag force on partaicle
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: GD_FORCE
-                        !(PARTICLES,DIMN)      
+                        !(PARTICLES,DIMN)
 
 ! Dynamic information related to computational (eulerian) fluid grid
 !----------------------------------------------------------------->>>
-! Dynamic variable. for each ijk computational fluid cell store the 
+! Dynamic variable. for each ijk computational fluid cell store the
 ! total number of particles and the id's of the particles in that cell
       TYPE iap1
          INTEGER, DIMENSION(:), POINTER:: p
@@ -421,12 +424,12 @@
 ! as single array IJK
       TYPE(iap1), DIMENSION(:), ALLOCATABLE:: pic  ! (DIMENSION_3)
 
-! Store the number of particles in a computational fluid cell 
+! Store the number of particles in a computational fluid cell
       INTEGER, DIMENSION(:), ALLOCATABLE :: PINC  ! (DIMENSION_3)
 
 ! For each particle track its i, j, k & ijk location on the fluid grid
-! and solids phase no.:      
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PIJK ! (PARTICLES,5)=>I,J,K,IJK,M 
+! and solids phase no.:
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PIJK ! (PARTICLES,5)=>I,J,K,IJK,M
 !-----------------------------------------------------------------<<<
 
 
@@ -458,18 +461,18 @@
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: VXF_SDS
                         !(DIMENSION_3,MMAX,DES_MMAX)
 
-! the contribution of solids-particle drag to the mth phase continuum 
+! the contribution of solids-particle drag to the mth phase continuum
 ! solids momentum A matrix (center coefficient)
-!      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: sdrag_am 
+!      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: sdrag_am
                         !(DIMENSION_3,MMAX,DES_MMAX)
 ! the contribution of solids-particle drag to the to mth phase continuum
 ! solids momentum B vector
-!      DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: sdrag_bm 
+!      DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: sdrag_bm
                         !(DIMENSION_3,DIMN,MMAX,DES_MMAX)
 ! mth phase continuum solids velocity at particle position
-!      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE ::vel_sp 
+!      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE ::vel_sp
                         !(PARTICLES,3)
-! the solids-particle drag coefficient                        
+! the solids-particle drag coefficient
 !      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: f_sp
                         !(MMAX,PARTICLES)
 
@@ -479,35 +482,35 @@
 ! START interpolation related data
 !----------------------------------------------------------------->>>
 ! the coefficient add to gas momentum A matrix  at cell corners
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::DRAG_AM 
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::DRAG_AM
                         !(DIMENSION_3,DES_MMAX)
 ! the coefficient add to gas momentum B matrix  at cell corners
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE ::DRAG_BM 
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE ::DRAG_BM
                         !(DIMENSION_3,DIMN,DES_MMAX)
 ! fluid velocity at particle position
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::VEL_FP 
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::VEL_FP
                         !(PARTICLES,3)
 
-! An intermediate array used in calculation of mean solids velocity 
-! by backward interpolation, i.e., when INTERP_DES_MEAN_FIELDS is true. 
+! An intermediate array used in calculation of mean solids velocity
+! by backward interpolation, i.e., when INTERP_DES_MEAN_FIELDS is true.
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE ::DES_VEL_NODE
                         !(DIMENSION_3,DIMN,DES_MMAX)
 
-! An intermediate array used in calculation of solids volume fraction 
-! by backward interpolation, i.e., when INTERP_DES_MEAN_FIELDS is true. 
+! An intermediate array used in calculation of solids volume fraction
+! by backward interpolation, i.e., when INTERP_DES_MEAN_FIELDS is true.
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::  DES_ROPS_NODE
                         !(DIMENSION_3,DES_MMAX)
 
       DOUBLE PRECISION, DIMENSION(:,:,:), POINTER :: weightp
 
-! the gas-particle drag coefficient                        
+! the gas-particle drag coefficient
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: f_gp
                         !(PARTICLES)
       DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: wtderivp
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: sstencil
       DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: gstencil, vstencil, pgradstencil
 
-! stencil for interpolation of solids pressure 
+! stencil for interpolation of solids pressure
       DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE ::  psgradstencil
 
 ! stencil for interpolation of solids velocity
@@ -516,49 +519,49 @@
 
 ! quantities are set in subroutine set_interpolation_scheme
 ! order = order of the interpolation method, ob2l = (order+1)/2,
-! ob2r = order/2      
+! ob2r = order/2
       CHARACTER(LEN=7):: scheme, interp_scheme
       INTEGER:: order, ob2l, ob2r
-      
+
 ! END of interpolation related data
 !-----------------------------------------------------------------<<<
 
       ! Volume of each node. Used to obtain Eulerian fields
       double precision, allocatable, dimension(:) :: des_vol_node
-                        !(DIMENSION_3) 
+                        !(DIMENSION_3)
 
 ! Ratio of actual volume of each node to volume of node not corrected for
-! outside the domain or being in cut-cell 
+! outside the domain or being in cut-cell
       double precision, allocatable, dimension(:) :: des_vol_node_ratio
-                        !(DIMENSION_3) 
+                        !(DIMENSION_3)
 
 ! Variable to track pressure force in computational fluid cell (ijk)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: P_FORCE
-                        !(DIMENSION_3,DES_MMAX) 
+                        !(DIMENSION_3,DES_MMAX)
 
 ! Bulk density of particles in fluid cell
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_ROP_S,&
                                                        DES_ROP_SO
                         !(DIMENSION_3,DES_MMAX)
 
-! Volume averaged solids velocity in a fluid cell      
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_U_s  
+! Volume averaged solids velocity in a fluid cell
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_U_s
                         !(DIMENSION_3,DES_MMAX)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_V_s
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_W_s
 
 ! Granular temperature in a fluid cell
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_THETA 
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_THETA
                         !(DIMENSION_3,DES_MMAX)
 
 ! Global average velocity: obtained by averaging over all the particles
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_VEL_AVG 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_VEL_AVG
                         !(DIMN)
-     
+
 ! Global granular energy & temp: obtained by averaging over all the particles
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: GLOBAL_GRAN_ENERGY 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: GLOBAL_GRAN_ENERGY
                         !(DIMN)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: GLOBAL_GRAN_TEMP   
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: GLOBAL_GRAN_TEMP
                         !(DIMN)
 
 ! Kinetic and potential energy of the system: obtained by averaging
@@ -567,44 +570,44 @@
 
 ! This quantity is used purely for post processing.  Originally coded to
 ! aid visualization of mixing process.  It is left here for those who
-! wish to modify it for their use      
+! wish to modify it for their use
       INTEGER, DIMENSION(:), ALLOCATABLE :: MARK_PART
-               !(PARTICLES)      
+               !(PARTICLES)
 
 ! Logic for bed height calculations (T = turn on bed height
 ! calculations)
-      LOGICAL DES_CALC_BEDHEIGHT      
-! Used to track bed height of solids phase M 
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: bed_height 
+      LOGICAL DES_CALC_BEDHEIGHT
+! Used to track bed height of solids phase M
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: bed_height
                        !(DES_MMAX)
 
 ! MAX velocity of particles in each direction
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_VEL_MAX
                         !(DIMN)
-     
-      INTEGER :: MAX_DES_BC_CELL 
+
+      INTEGER :: MAX_DES_BC_CELL
       TYPE BDRY_TYPE
          INTEGER :: IJK_SCAL
          CHARACTER*100 :: DES_BC_TYPE
-         DOUBLE PRECISION, DIMENSION (:) , ALLOCATABLE :: NORMAL 
+         DOUBLE PRECISION, DIMENSION (:) , ALLOCATABLE :: NORMAL
          DOUBLE PRECISION, DIMENSION (:) , ALLOCATABLE :: CNOT, VEC
-! MI_BCID will contain the BC id for the mass inflow bc. It is made allocatable 
+! MI_BCID will contain the BC id for the mass inflow bc. It is made allocatable
 ! to reduce memory usage
          INTEGER, DIMENSION (:), ALLOCATABLE :: MI_BCID
-      END TYPE BDRY_TYPE 
-      
+      END TYPE BDRY_TYPE
+
       TYPE DES_BDR
          INTEGER :: COUNT_DES_BC
-         TYPE(BDRY_TYPE), DIMENSION(:), ALLOCATABLE :: BDRY_LIST 
+         TYPE(BDRY_TYPE), DIMENSION(:), ALLOCATABLE :: BDRY_LIST
       END TYPE DES_BDR
 
-      TYPE(DES_BDR), DIMENSION(:), ALLOCATABLE :: DES_CELLWISE_BCDATA 
+      TYPE(DES_BDR), DIMENSION(:), ALLOCATABLE :: DES_CELLWISE_BCDATA
 
       LOGICAL, DIMENSION(:), ALLOCATABLE :: TOBE_DELETED
-      
+
 !flag to convert the outside box to facets if stl facet representation is used
 !default is false
-      
+
       Logical :: des_convert_box_to_facets
 
 ! Start Cluster Identification
@@ -613,8 +616,8 @@
 ! algorithm
       LOGICAL :: DES_CALC_CLUSTER
 
-! the maximum distance between two particles for them to be 
-! considered a cluster      
+! the maximum distance between two particles for them to be
+! considered a cluster
       DOUBLE PRECISION :: Cluster_Length_Cutoff
 
 ! indicates whether particle is currently in a cluster. this allows us
@@ -628,7 +631,7 @@
 ! Includes square-well type model and a van der waals type model
 
 ! Switch to turn cohesion on and off (set in mfix.dat)
-      LOGICAL USE_COHESION      
+      LOGICAL USE_COHESION
 
 
 ! Van der Waals constants (set in mfix.dat)
@@ -639,25 +642,25 @@
       DOUBLE PRECISION WALL_HAMAKER_CONSTANT
       DOUBLE PRECISION WALL_VDW_INNER_CUTOFF
       DOUBLE PRECISION WALL_VDW_OUTER_CUTOFF
-      DOUBLE PRECISION Asperities ! average radius of asperities (default zero)      
+      DOUBLE PRECISION Asperities ! average radius of asperities (default zero)
 
 ! Store cohesive forces
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FCohesive
                         !(PARTICLES,DIMN)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PostCohesive 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PostCohesive
                         !(PARTICLES)
 ! Store cluster information array for postprocessing
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PostCluster 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PostCluster
 
-! Variables for van der waals cohesion calculations:      
+! Variables for van der waals cohesion calculations:
 ! Surface energy used to calculate cohesive force for low separation distances
 ! in Van der Waals model (this variable is calculated at the beginning of each
-! simulation to ensure the van der Waals force is continuous at the inner cutoff) 
+! simulation to ensure the van der Waals force is continuous at the inner cutoff)
       DOUBLE PRECISION SURFACE_ENERGY
-      DOUBLE PRECISION WALL_SURFACE_ENERGY      
+      DOUBLE PRECISION WALL_SURFACE_ENERGY
 
 
 ! END Cohesion
-!-----------------------------------------------------------------<<<       
+!-----------------------------------------------------------------<<<
 
       END MODULE DISCRETELEMENT
