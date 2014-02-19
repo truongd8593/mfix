@@ -105,7 +105,7 @@
       ENDIF
 
 ! Check solids drag model selection.
-      CALL CHECK_SOLIDS_DRAG(MMAX_L)
+      CALL CHECK_SOLIDS_DRAG
 
 ! Check the solids density input parameters.
       CALL CHECK_SOLIDS_DENSITY(MMAX_L)
@@ -134,7 +134,7 @@
 !                                                                      !
 ! Author: J. Musser                                  Date: 07-FEB-14   !
 !----------------------------------------------------------------------!
-      SUBROUTINE CHECK_SOLIDS_DRAG(MMAX_LL)
+      SUBROUTINE CHECK_SOLIDS_DRAG
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -142,6 +142,22 @@
       use run, only: ENERGY_EQ
 ! Flag: Solve species equations
       use run, only: SPECIES_EQ
+! User specifed drag type, as string
+      use run, only: DRAG_TYPE
+! User drag type as ENUM
+      use run, only: DRAG_TYPE_ENUM
+! Possible DRAG_TYPE_ENUM values:
+      use run, only: SYAM_OBRIEN
+      use run, only: GIDASPOW
+      use run, only: GIDASPOW_PCF
+      use run, only: GIDASPOW_BLEND
+      use run, only: GIDASPOW_BLEND_PCF
+      use run, only: WEN_YU
+      use run, only: WEN_YU_PCF
+      use run, only: KOCH_HILL
+      use run, only: KOCH_HILL_PCF
+      use run, only: BVK
+      use run, only: HYS
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -184,7 +200,7 @@
          DRAG_TYPE_ENUM = GIDASPOW_BLEND
 
       CASE ('GIDASPOW_BLEND_PCF')
-         DRAG_TYPE_ENUM = GIDASPOW_BLEN_PCF
+         DRAG_TYPE_ENUM = GIDASPOW_BLEND_PCF
 
       CASE ('WEN_YU')
          DRAG_TYPE_ENUM = WEN_YU
