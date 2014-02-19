@@ -130,6 +130,7 @@
          DO I1 = ISTART3, IEND3
             IF(J1.NE.JSTART2) EXIT
             IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+            IF (DEAD_CELL_AT(I1,J1,K1)) CYCLE  ! skip dead cells
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, &
                 J1, J1, K1, K1, 0) 
@@ -142,6 +143,7 @@
          DO I1 = ISTART3, IEND3
             IF(J1.NE.JEND2) EXIT
             IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+            IF (DEAD_CELL_AT(I1,J1,K1)) CYCLE  ! skip dead cells
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, &
                J1, J1, K1, K1, 0) 
@@ -154,6 +156,7 @@
          DO J1 = JSTART3, JEND3
             IF(I1.NE.ISTART2) EXIT
             IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+            IF (DEAD_CELL_AT(I1,J1,K1)) CYCLE  ! skip dead cells
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, &
                 J1, J1, K1, K1, 0) 
@@ -177,6 +180,7 @@
          DO J1 = JSTART3, JEND3
             IF(I1.NE.IEND2) EXIT
             IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE    
+            IF (DEAD_CELL_AT(I1,J1,K1)) CYCLE  ! skip dead cells
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) CALL SET_WALL_BC1 (I1, I1, &
                 J1, J1, K1, K1, 0) 
