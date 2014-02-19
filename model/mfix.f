@@ -423,7 +423,7 @@
 ! Finalize and terminate MPI
       call parallel_fin
             
-      STOP  
+      CALL exit(0)
  1000 FORMAT(/1X,'MFIX ',A,' Simulation:'/) 
  1010 FORMAT(/1X,70('*')//' From: MFIX',/&
          ' Message: Read in data from .RES file for TIME = ',G12.5,/&
