@@ -209,11 +209,11 @@
       WRITE (UNIT_OUT, 1158) 
       IF(FPFOI) THEN
          WRITE (UNIT_OUT, 1159) (UR_FAC(L),LEQ_IT(L),LEQ_METHOD(L),&
-	                     LEQ_SWEEP(L), LEQ_TOL(L),&
+	                     LEQ_SWEEP(L), LEQ_TOL(L), LEQ_PC(L),&
 			     DISCR_NAME1(DISCRETIZE(L)),L=1,9) 
       ELSE
          WRITE (UNIT_OUT, 1159) (UR_FAC(L),LEQ_IT(L),LEQ_METHOD(L),&
-	                     LEQ_SWEEP(L), LEQ_TOL(L),&
+	                     LEQ_SWEEP(L), LEQ_TOL(L), LEQ_PC(L),&
 			     DISCR_NAME(DISCRETIZE(L)),L=1,9) 
       ENDIF
 
@@ -576,17 +576,17 @@
  1158 FORMAT(7X,'Under relaxation (UR_FAC) and',&
          ' Iterations in Leq solver (LEQ_IT):'/,9X,&
          '                        UR_FAC',2X,'LEQ_IT','  LEQ_METHOD',&
-         '  LEQ_SWEEP', '  LEQ_TOL', '  DISCRETIZE') 
+         '  LEQ_SWEEP', '  LEQ_TOL', '    LEQ_PC', '  DISCRETIZE') 
  1159 FORMAT(9X,&
-         'Fluid cont. and P_g   = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,2X,A12/9X,&
-         'Solids cont. and P_s  = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,2X,A12/9X,&
-         'U velocity            = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,2X,A12/9X,&
-         'V velocity            = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,2X,A12/9X,&
-         'W velocity            = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,2X,A12/9X,&
-         'Energy                = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,2X,A12/9X,&
-         'Species               = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,2X,A12/9X,&
-         'Granular Energy       = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,2X,A12/9X,&
-         'User scalar           = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,2X,A12/) 
+         'Fluid cont.  and P_g  = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
+         'Solids cont. and P_s  = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
+         'U velocity            = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
+         'V velocity            = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
+         'W velocity            = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
+         'Energy                = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
+         'Species               = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
+         'Granular Energy       = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
+         'User scalar           = ',F5.3,2X,I4,5X,I4,9x,A4,4X,G11.4,3X,A4,3X,A12/) 
  1190 FORMAT(7X,1A20,'- C(',I2,') = ',G12.5) 
 !
  1200 FORMAT(//,3X,'3. GEOMETRY AND DISCRETIZATION',/) 
