@@ -9,9 +9,9 @@
 !  Use the companion routines for checks specific to a particular      !
 !  solids phase model:                                                 !
 !                                                                      !
-!    > CHECK_CONTINUUM_SOLDIS :: TRM solids phase model)               !
-!    > CHECK_DES_SOLDIS       :: DEM solids phase model)               !
-!    > CHECK_MPPIC_SOLDIS     :: MPPIC solids phase model)             !
+!    > CHECK_SOLIDS_CONTINUUM :: TRM solids phase model)               !
+!    > CHECK_SOLIDS_DES       :: DEM solids phase model)               !
+!    > CHECK_SOLIDS_MPPIC     :: MPPIC solids phase model)             !
 !                                                                      !
 !  Author: J.Musser                                  Date: 03-FEB-14   !
 !                                                                      !
@@ -104,6 +104,8 @@
          CALL CHECK_SOLIDS_SPECIES(MMAX_L)
       ENDIF
 
+! Check solids drag model selection.
+      CALL CHECK_SOLIDS_DRAG(MMAX_L)
 
 ! Check the solids density input parameters.
       CALL CHECK_SOLIDS_DENSITY(MMAX_L)
@@ -123,6 +125,93 @@
          ,/'Please correct the mfix.dat file.')
 
       END SUBROUTINE CHECK_SOLIDS_COMMON_ALL
+
+
+
+!----------------------------------------------------------------------!
+! Subroutine: CHECK_SOLIDS_SPECIES                                     !
+! Purpose: Check solids species input.                                 !
+!                                                                      !
+! Author: J. Musser                                  Date: 07-FEB-14   !
+!----------------------------------------------------------------------!
+      SUBROUTINE CHECK_SOLIDS_DRAG(MMAX_LL)
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! Flag: Solve energy equations
+      use run, only: ENERGY_EQ
+! Flag: Solve species equations
+      use run, only: SPECIES_EQ
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Maximum number of solids phase species.
+      USE param, only: DIM_N_s
+! Parameter constants.
+      use param1, only: UNDEFINED, UNDEFINED_I, UNDEFINED_C
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
+      use error_manager
+
+
+      implicit none
+
+
+! Local Variables:
+!---------------------------------------------------------------------//
+
+
+!......................................................................!
+
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("CHECK_SOLIDS_DRAG")
+
+
+      SELECT CASE(trim(adjustl(DRAG_TYPE)))
+
+      CASE ('SYAM_OBRIEN')
+         DRAG_TYPE_ENUM = SYAM_OBRIEN
+
+      CASE ('GIDASPOW')
+         DRAG_TYPE_ENUM = GIDASPOW
+
+      CASE ('GIDASPOW_PCF')
+         DRAG_TYPE_ENUM = GIDASPOW_PCF
+
+      CASE ('GIDASPOW_BLEND')
+         DRAG_TYPE_ENUM = GIDASPOW_BLEND
+
+      CASE ('GIDASPOW_BLEND_PCF')
+         DRAG_TYPE_ENUM = GIDASPOW_BLEN_PCF
+
+      CASE ('WEN_YU')
+         DRAG_TYPE_ENUM = WEN_YU
+
+      CASE ('WEN_YU_PCF')
+         DRAG_TYPE_ENUM = WEN_YU_PCF
+
+      CASE ('KOCH_HILL')
+         DRAG_TYPE_ENUM = KOCH_HILL
+
+      CASE ('KOCH_HILL_PCF')
+         DRAG_TYPE_ENUM = KOCH_HILL_PCF
+
+      CASE ('BVK')
+         DRAG_TYPE_ENUM = BVK
+
+      CASE ('HYS')
+         DRAG_TYPE_ENUM = HYS
+
+      CASE DEFAULT
+         
+      END SELECT
+
+      CALL FINL_ERR_MSG
+
+      RETURN
+      END SUBROUTINE CHECK_SOLIDS_DRAG
 
 
 !----------------------------------------------------------------------!
