@@ -142,9 +142,8 @@
       use run, only: ENERGY_EQ
 ! Flag: Solve species equations
       use run, only: SPECIES_EQ
-! User specifed drag type, as string
+! User specifed drag type, as string and enum
       use run, only: DRAG_TYPE
-! User drag type as ENUM
       use run, only: DRAG_TYPE_ENUM
 ! Possible DRAG_TYPE_ENUM values:
       use run, only: SYAM_OBRIEN
@@ -158,6 +157,14 @@
       use run, only: KOCH_HILL_PCF
       use run, only: BVK
       use run, only: HYS
+! Sinlge particle drag correlation
+      use run, only: CD_FUNCTION
+      use drag, only: CD_FUNCTION_ENUM
+! Single particle drag correlation as enum
+      use drag, only: SCHILLER_1933
+      use drag, only: DALLA_1948
+      use drag, only: DELLINO_2005
+      use drag, only: TURTON_1986
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -170,13 +177,12 @@
 !---------------------------------------------------------------------//
       use error_manager
 
-
       implicit none
 
 
 ! Local Variables:
 !---------------------------------------------------------------------//
-
+      CHARACTER(LEN=64) :: DEFAULT_CD
 
 !......................................................................!
 
@@ -184,49 +190,89 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_DRAG")
 
-
       SELECT CASE(trim(adjustl(DRAG_TYPE)))
 
       CASE ('SYAM_OBRIEN')
          DRAG_TYPE_ENUM = SYAM_OBRIEN
+         DEFAULT_CD = 'DALLA_1948'
 
       CASE ('GIDASPOW')
          DRAG_TYPE_ENUM = GIDASPOW
+         DEFAULT_CD = 'SCHILLER_1933'
 
       CASE ('GIDASPOW_PCF')
          DRAG_TYPE_ENUM = GIDASPOW_PCF
+         DEFAULT_CD = 'SCHILLER_1933'
 
       CASE ('GIDASPOW_BLEND')
          DRAG_TYPE_ENUM = GIDASPOW_BLEND
+         DEFAULT_CD = 'SCHILLER_1933'
 
       CASE ('GIDASPOW_BLEND_PCF')
          DRAG_TYPE_ENUM = GIDASPOW_BLEND_PCF
+         DEFAULT_CD = 'SCHILLER_1933'
 
       CASE ('WEN_YU')
          DRAG_TYPE_ENUM = WEN_YU
+         DEFAULT_CD = 'SCHILLER_1933'
 
       CASE ('WEN_YU_PCF')
          DRAG_TYPE_ENUM = WEN_YU_PCF
+         DEFAULT_CD = 'SCHILLER_1933'
 
       CASE ('KOCH_HILL')
          DRAG_TYPE_ENUM = KOCH_HILL
+         DEFAULT_CD = 'NULL'
 
       CASE ('KOCH_HILL_PCF')
          DRAG_TYPE_ENUM = KOCH_HILL_PCF
+         DEFAULT_CD = 'NULL'
 
       CASE ('BVK')
          DRAG_TYPE_ENUM = BVK
+         DEFAULT_CD = 'NULL'
 
       CASE ('HYS')
          DRAG_TYPE_ENUM = HYS
+         DEFAULT_CD = 'NULL'
 
       CASE DEFAULT
-         
+         WRITE(ERR_MSG,1001)'DRAG_TYPE', trim(adjustl(DRAG_TYPE))
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       END SELECT
+
+
+! Verify that if a CD_FUNCTION is given, that is is consistent with
+! the drag model selected.
+      IF(CD_FUNCTION /= UNDEFINED_C) THEN
+         IF(DEFAULT_CD == 'NULL')THEN
+         ENDIF
+      ELSE
+! If no CD_FUNCTION was specifed, set the default for the given
+! drag model.
+         CD_FUNCTION = DEFAULT_CD
+      ENDIF
+
+
+! Set the function for single particle drag correlation.
+      SELECT CASE(trim(adjustl(CD_FUNCTION)))
+      CASE ('SCHILLER_1933'); CD_FUNCTION_ENUM = SCHILLER_1933
+      CASE ('DALLA_1948');    CD_FUNCTION_ENUM = DALLA_1948
+      CASE ('DELLINO_2005');  CD_FUNCTION_ENUM = DELLINO_2005
+      CASE ('TURTON_1986');   CD_FUNCTION_ENUM = TURTON_1986
+      CASE DEFAULT
+         WRITE(ERR_MSG,1001)'CD_FUNCTION', CD_FUNCTION
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      END SELECT    
+
 
       CALL FINL_ERR_MSG
 
       RETURN
+
+ 1001 FORMAT('Error 1001: Illegal or unknown input: ',A,' = ',A,/   &
+         'Please correct the mfix.dat file.')
+
       END SUBROUTINE CHECK_SOLIDS_DRAG
 
 
