@@ -74,9 +74,11 @@ if test ${REQ_COMP} = 1; then
 
       case $compiler in
         1)COMP_FILE=win_g95.sh;;
-        2)COMP_FILE=win_gnu.sh;;
-        *)COMP_FILE=win_gnu.sh;;
+        2)COMP_FILE="win_gnu.sh";;
+        *)COMP_FILE="win_gnu.sh";;
       esac
+# Change from file name to absolute reference.
+      COMP_FILE=${MFIX_CONFIG}/compilers/${COMP_FILE}
     ;;
   esac
 fi
