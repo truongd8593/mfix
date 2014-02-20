@@ -690,7 +690,7 @@
       CHARACTER(LEN=32) ::geometryfile(0:DIMENSION_BC)
       
       INTEGER :: BCV,NUMBER_OF_GEOMETRY_FILES,NUMBER_OF_BC_PATCHES
-      INTEGER :: BC_PATCH(DIMENSION_BC),L2,NF1
+      INTEGER :: BC_PATCH(DIMENSION_BC),L2,NF1,NF2
       LOGICAL :: BC_PATCH_FOUND_IN_STL(DIMENSION_BC)
 
       CHARACTER*100 :: FNAME
@@ -759,7 +759,8 @@
                ENDIF
           
 	       NF1 = 1
-               geometryfile(NUMBER_OF_GEOMETRY_FILES)='geometry.stl'
+	       NF2 = 1
+               geometryfile(NF1)='geometry.stl'
             
 !            ENDIF
          ENDIF
@@ -774,11 +775,13 @@
 
             geometryfile(0)='geometry.stl'
 	    NF1 = 0
-            NUMBER_OF_GEOMETRY_FILES = 0
+            NF2 = 0                       ! This invokes a special treatment
+                                          ! to reading multiple solids 
 
          ELSE
 	 
 	    NF1 = 1
+	    NF2 = NUMBER_OF_GEOMETRY_FILES
             IF(MyPE == PE_IO) THEN
                WRITE(*,100) 'The file geometry.stl does not exist and several CG_BC types are defined.'
                WRITE(*,100) 'Each BC patch will be read from geometry_BCID.stl.'	       
@@ -798,7 +801,7 @@
       IGNORED_FACETS = 0
 
 
-      DO N = NF1, NUMBER_OF_GEOMETRY_FILES
+      DO N = NF1, NF2
 
          IF(MyPE == PE_IO) WRITE(*,2000) 'Reading geometry from '//TRIM(geometryfile(N))//' ...'
 
@@ -944,7 +947,7 @@
       ENDDO
 
 
-      IF(myPE==0) THEN
+      IF(myPE==0.AND.NF2==0) THEN
          DO N = 1,NUMBER_OF_BC_PATCHES
 
             IF(.NOT.BC_PATCH_FOUND_IN_STL(BC_PATCH(N))) THEN
