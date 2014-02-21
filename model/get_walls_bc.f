@@ -188,6 +188,7 @@
                   DO J = BC_J_S(BCV), BC_J_N(BCV) 
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
                         IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                         IJK = FUNIJK(I,J,K) 
                         SELECT CASE (TRIM(BC_TYPE(BCV)))  
                         CASE ('FREE_SLIP_WALL')  

@@ -245,6 +245,7 @@
                DO K = IS_K_B(L), IS_K_T(L) 
                   DO J = IS_J_S(L), IS_J_N(L) 
                      IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                      IJK = FUNIJK(I,J,K) 
                      FLAG_E(IJK) = FLAGX 
                   ENDDO 
@@ -255,6 +256,7 @@
                   DO K = IS_K_B(L), IS_K_T(L) 
                      DO J = IS_J_S(L), IS_J_N(L) 
                         IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                         IJK = FUNIJK(I,J,K) 
                         FLAG_E(IJK) = FLAGX 
                      ENDDO 
@@ -268,6 +270,7 @@
                DO K = IS_K_B(L), IS_K_T(L) 
                   DO I = IS_I_W(L), IS_I_E(L) 
                      IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                      IJK = FUNIJK(I,J,K) 
                      FLAG_N(IJK) = FLAGX 
                   ENDDO 
@@ -278,6 +281,7 @@
                   DO K = IS_K_B(L), IS_K_T(L) 
                      DO I = IS_I_W(L), IS_I_E(L) 
                         IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                         IJK = FUNIJK(I,J,K) 
                         FLAG_N(IJK) = FLAGX 
                      ENDDO 
@@ -291,6 +295,7 @@
                DO J = IS_J_S(L), IS_J_N(L) 
                   DO I = IS_I_W(L), IS_I_E(L) 
                      IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                      IJK = FUNIJK(I,J,K) 
                      FLAG_T(IJK) = FLAGX 
                   ENDDO 
@@ -301,6 +306,7 @@
                   DO J = IS_J_S(L), IS_J_N(L) 
                      DO I = IS_I_W(L), IS_I_E(L) 
                         IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                         IJK = FUNIJK(I,J,K) 
                         FLAG_T(IJK) = FLAGX 
                      ENDDO 
@@ -401,6 +407,7 @@
          J = J_OF(IJK) 
          K = K_OF(IJK) 
          IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+         IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
 
 ! If the flag is greater than or equal to 2000, there is no 
 ! internal surface.

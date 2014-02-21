@@ -88,6 +88,7 @@
          DO J1 = jmin3, jmax3 
             DO I1 = imin3, imax3 
                IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+               IF (DEAD_CELL_AT(I1,J1,K1)) CYCLE  ! skip dead cells
                IJK = FUNIJK(I1,J1,K1) 
 
                IF (DEFAULT_WALL_AT(IJK)) THEN 
@@ -113,6 +114,7 @@
          DO J1 = jmin3, jmax3 
             DO I1 = imin3, imax3 
                IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+               IF (DEAD_CELL_AT(I1,J1,K1)) CYCLE  ! skip dead cells
                IJK = FUNIJK(I1,J1,K1) 
                IF (DEFAULT_WALL_AT(IJK)) THEN
 ! Cutting the neighbor link between fluid cell and wall cell
@@ -137,6 +139,7 @@
       DO K1 = kmin3, kmax3 
          DO I1 = imin3, imax3 
             IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+            IF (DEAD_CELL_AT(I1,J1,K1)) CYCLE  ! skip dead cells
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) THEN 
 ! Cutting the neighbor link between fluid cell and wall cell
@@ -160,6 +163,7 @@
       DO K1 = kmin3, kmax3 
          DO I1 = imin3, imax3 
             IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+            IF (DEAD_CELL_AT(I1,J1,K1)) CYCLE  ! skip dead cells
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) THEN 
 ! Cutting the neighbor link between fluid cell and wall cell
@@ -183,6 +187,7 @@
       DO K1 = kmin3, kmax3 
          DO J1 = jmin3, jmax3 
             IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+            IF (DEAD_CELL_AT(I1,J1,K1)) CYCLE  ! skip dead cells
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) THEN 
 ! Cutting the neighbor link between fluid cell and wall cell
@@ -206,6 +211,7 @@
       DO K1 = kmin3, kmax3 
          DO J1 = jmin3, jmax3 
             IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+            IF (DEAD_CELL_AT(I1,J1,K1)) CYCLE  ! skip dead cells
             IJK = FUNIJK(I1,J1,K1) 
             IF (DEFAULT_WALL_AT(IJK)) THEN 
 ! Cutting the neighbor link between fluid cell and wall cell
@@ -247,6 +253,7 @@
                   DO J = J1, J2 
                      DO I = I1, I2
                         IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                         IJK = FUNIJK(I,J,K) 
                         IM = IM1(I) 
                         JM = JM1(J) 
@@ -371,6 +378,7 @@
                   DO J = J1, J2 
                      DO I = I1, I2 
                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                       IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                         IJK = FUNIJK(I,J,K) 
 ! first set the flow boundary cell value equal to zero
                         A_M(IJK,E,M) = ZERO 
@@ -423,6 +431,7 @@
                   DO J = J1, J2 
                      DO I = I1, I2 
                         IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                         IJK = FUNIJK(I,J,K) 
 ! setting the value in the boundary cell equal to what is known
                         A_M(IJK,E,M) = ZERO 

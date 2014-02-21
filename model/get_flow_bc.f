@@ -207,7 +207,9 @@
                   DO K = BC_K_B(BCV), BC_K_T(BCV) 
                      DO J = BC_J_S(BCV), BC_J_N(BCV) 
                        IF (.NOT.IS_ON_myPE_plus2layers(I_FLUID,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I_FLUID,J,K)) CYCLE  ! skip dead cells
                        IF (.NOT.IS_ON_myPE_plus2layers(I_WALL,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I_WALL,J,K)) CYCLE  ! skip dead cells
                         IJK_WALL = FUNIJK(I_WALL,J,K) 
                         IJK_FLUID = FUNIJK(I_FLUID,J,K) 
 ! check that the cell flag at the wall correctly reflects that it is a
@@ -239,7 +241,9 @@
                   DO K = BC_K_B(BCV), BC_K_T(BCV) 
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
                        IF (.NOT.IS_ON_myPE_plus2layers(I,J_FLUID,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J_FLUID,K)) CYCLE  ! skip dead cells
                        IF (.NOT.IS_ON_myPE_plus2layers(I,J_WALL,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J_WALL,K)) CYCLE  ! skip dead cells
                         IJK_WALL = FUNIJK(I,J_WALL,K) 
                         IJK_FLUID = FUNIJK(I,J_FLUID,K)
 ! check that the cell flag at the wall correctly reflects that it is a
@@ -274,7 +278,9 @@
                   DO J = BC_J_S(BCV), BC_J_N(BCV) 
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K_FLUID)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K_FLUID)) CYCLE  ! skip dead cells
                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K_WALL)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K_WALL)) CYCLE  ! skip dead cells
                         IJK_WALL = FUNIJK(I,J,K_WALL) 
                         IJK_FLUID = FUNIJK(I,J,K_FLUID)
 ! check that the cell flag at the wall correctly reflects that it is a
@@ -326,6 +332,7 @@
                   DO J = BC_J_S(BCV), BC_J_N(BCV) 
                      DO I = BC_I_W(BCV), BC_I_E(BCV) 
                         IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                         IJK = FUNIJK(I,J,K) 
                         IF (.NOT.WALL_ICBC_FLAG(IJK)) THEN 
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1500) BCV, &

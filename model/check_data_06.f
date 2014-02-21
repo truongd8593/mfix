@@ -649,6 +649,7 @@
                DO J = IC_J_S(ICV), IC_J_N(ICV) 
                   DO I = IC_I_W(ICV), IC_I_E(ICV) 
                      IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                     IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                      IJK = FUNIJK(I,J,K) 
                      ICBC_FLAG(IJK)(1:1) = '.' 
                      IC2 = MOD(ICV,100) 

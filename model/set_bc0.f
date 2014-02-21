@@ -113,6 +113,7 @@
                DO I = BC_I_W(L), BC_I_E(L)
 
                   IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                   IJK = BOUND_FUNIJK(I,J,K) 
 
                   IF (WALL_AT(IJK)) THEN
@@ -194,6 +195,7 @@
                DO I = BC_I_W(L), BC_I_E(L)
 
                   IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                   IJK = BOUND_FUNIJK(I,J,K) 
 
 ! this conditional may still be necessary to avoid cyclic boundaries.

@@ -101,6 +101,7 @@
               DO I = I1, I2
 
                 IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                 IJK   = FUNIJK(I, J, K)      
                 IF (FLOW_AT(IJK)) CYCLE !checks for pressure outlets
                 IM    = Im1(I)

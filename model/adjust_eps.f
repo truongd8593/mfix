@@ -65,7 +65,9 @@
       DO K = Kstart1, Kend1 
          DO J = Jstart1, Jend1 
             DO I = Istart1, Iend1 
-    
+
+               IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
+
                IJK = FUNIJK(I,J,K) 
                IF (FLUID_AT(IJK)) THEN 
                   EPSUM = ZERO 

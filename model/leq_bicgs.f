@@ -1809,6 +1809,9 @@
          do k = kstart1, kend1
             do i = istart1, iend1
                do j = jstart1, jend1
+
+                  IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells 
+
                   ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
 !                  ijk = funijk (i,j,k)
                   prod(1) = prod(1) + r1(ijk)*r2(ijk)
@@ -1839,6 +1842,7 @@
             do k = kmin1, kmax1
                do i = imin1, imax1
                   do j = jmin1, jmax1
+                     IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells 
                      ijk = funijk_gl (imap_c(i),jmap_c(j),kmap_c(k))
 !                     ijk = funijk_gl (i,j,k)
                      prod(1) = prod(1) + rg_temp(ijk,1)*rg_temp(ijk,2)

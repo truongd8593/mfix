@@ -90,6 +90,7 @@
                   DO J = BC_J_S(L), BC_J_N(L) 
                      DO I = BC_I_W(L), BC_I_E(L) 
                         IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells 
                         IJK = FUNIJK(I,J,K)
 
                         SELECT CASE (BC_PLANE(L))  

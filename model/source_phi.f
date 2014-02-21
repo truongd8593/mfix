@@ -232,6 +232,7 @@
          do i = PS_I_W(PSV), PS_I_E(PSV)
 
             if(.NOT.IS_ON_myPE_plus2layers(I,J,K)) cycle
+            IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
 
             ijk = funijk(i,j,k)
             if(.NOT.fluid_at(ijk)) cycle

@@ -108,6 +108,7 @@
                   DO J = J1, J2 
                      DO I = I1, I2 
                         IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                         IJK = FUNIJK(I,J,K) 
                         IJKE = EAST_OF(IJK) 
                         IJKN = NORTH_OF(IJK) 
@@ -128,6 +129,7 @@
                      DO J = J1, J2 
                         DO I = I1, I2 
                         IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                            IJK = FUNIJK(I,J,K) 
                            IJKE = EAST_OF(IJK) 
                            IJKT = TOP_OF(IJK) 

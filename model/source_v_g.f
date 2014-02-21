@@ -448,6 +448,7 @@
          DO J1 = jmin3,jmax3 
             DO I1 = imin3, imax3 
                IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+               IF (DEAD_CELL_AT(I1,J1,K1)) CYCLE  ! skip dead cells
                IJK = FUNIJK(I1,J1,K1) 
                IF (NS_WALL_AT(IJK)) THEN
 ! Setting the wall velocity to zero (set the boundary cell value equal
@@ -480,6 +481,7 @@
          DO J1 = jmin3,jmax3 
             DO I1 = imin3, imax3 
                IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
+               IF (DEAD_CELL_AT(I1,J1,K1)) CYCLE  ! skip dead cells
                IJK = FUNIJK(I1,J1,K1) 
                IF (NS_WALL_AT(IJK)) THEN 
                   A_M(IJK,E,M) = ZERO 
@@ -989,6 +991,7 @@
          do i = PS_I_W(PSV), PS_I_E(PSV)
 
             if(.NOT.IS_ON_myPE_plus2layers(I,J,K)) cycle
+            IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
 
             ijk = funijk(i,j,k)
             if(.NOT.fluid_at(ijk)) cycle

@@ -66,6 +66,7 @@
          KP = KP1(K) 
 
 	 IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+         IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
 	 
 !
          VOL(IJK) = DX(I)*DY(J)*(X(I)*DZ(K)) 
