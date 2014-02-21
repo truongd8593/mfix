@@ -156,7 +156,7 @@
                      WRITE(UNIT_LOG,1003)
                      WARNED_USR(0) = .TRUE.
                   ENDIF
-                  WRITE(*,1103) N
+                  IF(myPE == PE_IO) WRITE(*,1103) N
                   WRITE(UNIT_LOG,1103) N
                   CALL READ_DATABASE('TFM', 0, N, SPECIES_g(N), MW_g(N))
                   rDatabase(M,N) = .TRUE.
@@ -170,7 +170,7 @@
                      WRITE(UNIT_LOG,1004) M
                      WARNED_USR(M) = .TRUE.
                   ENDIF
-                  WRITE(*,1104) M,N
+                  IF(myPE == PE_IO) WRITE(*,1104) M,N
                   WRITE(UNIT_LOG,1103) M, N
                   CALL READ_DATABASE('TFM', M, N, SPECIES_s(M,N), &
                      MW_s(M,N))
