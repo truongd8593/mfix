@@ -78,9 +78,11 @@
 !calculate distances
       DO K1=KSTART3,KEND3      
         DO J1= JSTART3, JEND3       
+          IF (DEAD_CELL_AT(1,J1,K1)) CYCLE  ! skip dead cells
 	  xdist3(1,J1,K1)=1d0/(ODX(1))
        	  if(imin3.ne.imin2) xdist(IMIN3,J1)=-1d0/(ODX(IMIN3))
 	  DO  I1 = 2, IMAX3
+           IF (DEAD_CELL_AT(I1,J1,K1)) CYCLE  ! skip dead cells
 	   xdist3(I1,J1,K1)=1d0/(ODX(I1))+xdist3((I1-1),J1,K1)
           END DO
         END DO 

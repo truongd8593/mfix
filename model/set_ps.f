@@ -90,6 +90,7 @@
          do i = PS_I_W(PSV), PS_I_E(PSV)
 
             if(IS_ON_myPE_owns(I, J, K)) then
+            IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                ijk = funijk(i,j,k)
 
                if(fluid_at(ijk)) &
@@ -310,6 +311,7 @@
 
          lc1 = lc1 + 1
          if(IS_ON_myPE_owns(I, J, K)) then
+         IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
             ijk = funijk(i,j,k)
             if(fluid_at(ijk)) then
                lFlags_i(lc1,1) = myPE
@@ -388,6 +390,7 @@
          do k = PS_K_B(lPSV), PS_K_T(lPSV)
          do j = PS_J_S(lPSV), PS_J_N(lPSV)
          do i = PS_I_W(lPSV), PS_I_E(lPSV)
+            IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
             lc1 = lc1 + 1
             write(*,"(4x,I8,5(3x,I4))") IJK, I, J, K,  gFlags_i(lc1,:)
          enddo

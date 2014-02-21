@@ -1009,6 +1009,7 @@
       do I = iLB, iUB
       do J = jLB, jUB
          if(IS_ON_myPE_owns(I,J,K)) then
+         IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
             IJK = funIJK(I,J,K)
             dbgIJK = dbg_funijk(I,J,K)
 ! Only the rank that owns IJK populates lAm and lBm.
@@ -1119,6 +1120,7 @@
       do I = iLB, iUB
       do J = jLB, jUB
          if(IS_ON_myPE_owns(I,J,K)) then
+         IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
             IJK = funIJK(I,J,K)
             dbgIJK = dbg_funijk(I,J,K)
 ! Only the rank that owns IJK populates lAm and lBm.
@@ -1225,6 +1227,7 @@
       do I = iLB, iUB
       do J = jLB, jUB
          if(IS_ON_myPE_owns(I,J,K)) then
+         IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
             IJK = funIJK(I,J,K)
             dbgIJK = dbg_funijk(I,J,K)
 ! Only the rank that owns IJK populates lAm and lBm.

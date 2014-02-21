@@ -203,6 +203,7 @@
                   DO I = BC_I_W(BCV), BC_I_E(BCV)
 
                      IF (.NOT.IS_ON_myPE_OWNS(I,J,K)) CYCLE
+                     IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
 
                      IJK = FUNIJK(I,J,K) 
                      SELECT CASE (TRIM(BC_PLANE(BCV)))  

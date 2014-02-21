@@ -100,6 +100,8 @@
       DO I = Imin2, Imax2
       DO J = Jmin2, Jmax2
 
+      IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
+
       IJK = FUNIJK_GL(IMAP_C(I),JMAP_C(J),KMAP_C(K))
 !     IJK = FUNIJK_GL(I,J,K)
 
@@ -118,6 +120,8 @@
       DO K = Kmin2, Kmax2
       DO I = Imin2, Imax2
       DO J = Jmin2, Jmax2
+
+      IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
 
 !     IJK = FUNIJK_GL(I,J,K)
       IJK = FUNIJK_GL(IMAP_C(I),JMAP_C(J),KMAP_C(K))

@@ -107,6 +107,7 @@
                DO J = JMIN1, JMAX1 
 ! Bound Checking
                   IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
+                  IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                   IJK = FUNIJK(I,J,K) 
                   IF (FLUID_AT(IJK)) P_G(IJK) = SCALE(PJ) 
                ENDDO 
@@ -123,6 +124,7 @@
                DO I = IMIN1, IMAX1 
 ! Bound Checking
                   IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
+                  IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                   IJK = FUNIJK(I,J,K) 
                   IF (FLUID_AT(IJK)) P_G(IJK) = SCALE(PJ) 
                ENDDO 
@@ -139,6 +141,7 @@
                DO I = IMIN1, IMAX1 
 ! Bound Checking 
                   IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
+                  IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                   IJK = FUNIJK(I,J,K) 
                   IF (FLUID_AT(IJK)) P_G(IJK) = SCALE(PJ) 
                ENDDO 
@@ -192,6 +195,7 @@
          DO K = KMIN1, KMAX1 
             DO I = IMIN1, IMAX1 
                IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
+               IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                IJK = FUNIJK(I,J,K) 
                IF (FLUID_AT(IJK)) THEN 
                   IF (COORDINATES == 'CARTESIAN') THEN 
@@ -228,6 +232,7 @@
          DO K = KMIN1, KMAX1
             DO I = IMIN1, IMAX1 
                IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
+               IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                IJK = FUNIJK(I,J,K) 
                IF(FLUID_AT(IJK).AND.P_G(IJK)==UNDEFINED)P_G(IJK)=SCALE(PJ) 
             ENDDO    ! end do (i=imin1,imax1)
