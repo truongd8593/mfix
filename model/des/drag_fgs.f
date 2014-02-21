@@ -1,22 +1,22 @@
-! Reorganizing was performed for better calculation of interpolated 
+! Reorganizing was performed for better calculation of interpolated
 ! rop_s.  Contact (j.galvin) if you forsee issues/improvements/
 ! problems.
-!  1) The calculation of rop_s (when des_interp_on) should be done 
+!  1) The calculation of rop_s (when des_interp_on) should be done
 !     in the subroutine particles_in_cell to reflect the most current
 !     values of particle position.  It should also be done every dem
 !     time step if it is to be reflected in calculation of the drag
-!     coefficient. 
-!     In the old method, an accurate value of rop_s would not 
+!     coefficient.
+!     In the old method, an accurate value of rop_s would not
 !     be carried into the continuum side since ep_g is only updated
-!     based on rop_s from the call to particles_in_cell. Thus the 
-!     value of rop_s calculated in the drag subroutine would not 
-!     reflect the most recent particle position (as particles 
+!     based on rop_s from the call to particles_in_cell. Thus the
+!     value of rop_s calculated in the drag subroutine would not
+!     reflect the most recent particle position (as particles
 !     positions/velocities are updated after the drag subroutine).
-!     To avoid this issue calculation of the interpolated rop_s 
-!     was placed into its own subroutine.   
+!     To avoid this issue calculation of the interpolated rop_s
+!     was placed into its own subroutine.
 
 
-! Comments: 
+! Comments:
 ! 1) The interpolation mechanism/code should probably be streamlined
 !    in these subroutines but this requires more work at this point.
 
@@ -24,7 +24,7 @@
 !    and re-calculated during the subsequent discrete time steps.  As a
 !    result the total drag force acting on each phase may be differing.
 !    - During iterations in the continuum time step the particles are
-!      treated as static entities: 
+!      treated as static entities:
 !      - F_GS (or F_GP) will be based on updated gas velocity fields but
 !        static solids velocity fields (or particle velocities)
 !      - The field variable ep_g does not change since the particles
@@ -36,19 +36,19 @@
 !      - The field variable ep_g will be updated as particles
 
 ! Commented by Handan Liu on August 2012, revised at June 2013.
-! 1. Added two new subroutines in the end to calculate interpolation, 
-!	 i.e. DRAG_INTERPLATION_2D and DRAG_INTERPLATION_3D, 
-!	 to replace invoking 'interpolator' interface module, 
-!	 which will introduce global variables; thus cause datarace with OpenMP. 
-! 2. Set the intermediate variables 'desposnew(dimn),velfp(dimn)' (small arrays) as private 
-!	 to replace the global variables des_pos_new(np,dimn),vel_fp(np,dimn) (big arrays)  
-! 	 to avoid datarace; and save the calculating time.
-! 3. Set the intermediate array 'weight_ft' to replace the pointer 'weightp' (global) 
-!	 in 'interpolator', which leads errors with OpenMP.
-! 4. Set the intermediate variables 'gst_tmp & vst_tmp' as private to replace global variables 
-!	 'gstencil,vstencil' to avoid datarace and segmentation fault.
-! 5. Set the intermediate variable D_FORCE(dimn) in CALC_DES_DRAG_GS to replace  	
-!	 GD_FORCE(np,dimn) in order to reduce the calculation time	at Jan 14 2013
+! 1. Added two new subroutines in the end to calculate interpolation,
+!        i.e. DRAG_INTERPLATION_2D and DRAG_INTERPLATION_3D,
+!        to replace invoking 'interpolator' interface module,
+!        which will introduce global variables; thus cause datarace with OpenMP.
+! 2. Set the intermediate variables 'desposnew(dimn),velfp(dimn)' (small arrays) as private
+!        to replace the global variables des_pos_new(np,dimn),vel_fp(np,dimn) (big arrays)
+!        to avoid datarace; and save the calculating time.
+! 3. Set the intermediate array 'weight_ft' to replace the pointer 'weightp' (global)
+!        in 'interpolator', which leads errors with OpenMP.
+! 4. Set the intermediate variables 'gst_tmp & vst_tmp' as private to replace global variables
+!        'gstencil,vstencil' to avoid datarace and segmentation fault.
+! 5. Set the intermediate variable D_FORCE(dimn) in CALC_DES_DRAG_GS to replace
+!        GD_FORCE(np,dimn) in order to reduce the calculation time      at Jan 14 2013
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -81,7 +81,7 @@
       USE compar
       USE sendrecv
       USE discretelement
-      implicit none 
+      implicit none
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -99,8 +99,8 @@
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
-      MPG_CYCLIC(1:DIMN) = ZERO 
-      
+      MPG_CYCLIC(1:DIMN) = ZERO
+
       IF(CYCLIC_X_PD) MPG_CYCLIC(1) = DELP_X/XLENGTH
       IF(CYCLIC_Y_PD) MPG_CYCLIC(2) = DELP_Y/YLENGTH
       IF(CYCLIC_Z_PD.AND.DIMN.EQ.3) MPG_CYCLIC(3) = DELP_Z/ZLENGTH
@@ -111,12 +111,12 @@
          K = K_OF(IJK)
          P_FORCE(IJK, :) = ZERO
 
-         IF(.NOT.FLUID_AT(IJK).OR..NOT.IS_ON_myPE_owns(I, J, K)) CYCLE 
+         IF(.NOT.FLUID_AT(IJK).OR..NOT.IS_ON_myPE_owns(I, J, K)) CYCLE
 
          X_COUNT = 0
          Y_COUNT = 0
          Z_COUNT = 0
-         
+
          IJKE = IP_OF(IJK)
          IJKW = IM_OF(IJK)
          IJKN = JP_OF(IJK)
@@ -124,44 +124,44 @@
          IJKT = KP_OF(IJK)
          IJKB = KM_OF(IJK)
 
-         IF(FLUID_AT(IJKE)) THEN 
+         IF(FLUID_AT(IJKE)) THEN
             X_COUNT = X_COUNT + 1
             P_FORCE(IJK, 1) = P_FORCE(IJK, 1) + 2.d0*(P_G(IJKE) - P_G(IJK))/(DX(I) + DX(I_OF(IJKE)))
-         ENDIF            
-         IF(FLUID_AT(IJKW)) THEN 
+         ENDIF
+         IF(FLUID_AT(IJKW)) THEN
             X_COUNT = X_COUNT + 1
             P_FORCE(IJK, 1) = P_FORCE(IJK, 1) + 2.d0*(P_G(IJK) - P_G(IJKW))/(DX(I) + DX(I_OF(IJKW)))
          ENDIF
-         X_COUNT = MAX(1, X_COUNT) !to prevent division from zero 
-! P_FORCE (by convention) is stored as -dp/dx. MPG_CYCLIC is already -dp/dx. 
+         X_COUNT = MAX(1, X_COUNT) !to prevent division from zero
+! P_FORCE (by convention) is stored as -dp/dx. MPG_CYCLIC is already -dp/dx.
 ! therefore, P_force is multiplied by "-" for consistency
-         P_FORCE(IJK, 1) = MPG_CYCLIC(1) - P_FORCE(IJK,1)/REAL(X_COUNT) 
-         
-         IF(FLUID_AT(IJKN)) THEN 
+         P_FORCE(IJK, 1) = MPG_CYCLIC(1) - P_FORCE(IJK,1)/REAL(X_COUNT)
+
+         IF(FLUID_AT(IJKN)) THEN
             Y_COUNT = Y_COUNT + 1
             P_FORCE(IJK, 2) = P_FORCE(IJK, 2) + 2.d0*(P_G(IJKN) - P_G(IJK))/(DY(J) + DY(J_OF(IJKN)))
          ENDIF
-            
-         IF(FLUID_AT(IJKS)) THEN 
+
+         IF(FLUID_AT(IJKS)) THEN
             Y_COUNT = Y_COUNT + 1
             P_FORCE(IJK, 2) = P_FORCE(IJK, 2) + 2.d0*(P_G(IJK) - P_G(IJKS))/(DY(J) + DY(J_OF(IJKS)))
          ENDIF
-         Y_COUNT = MAX(1, Y_COUNT) !to prevent division from zero 
-         P_FORCE(IJK, 2) = MPG_CYCLIC(2) - P_FORCE(IJK,2)/REAL(Y_COUNT) 
+         Y_COUNT = MAX(1, Y_COUNT) !to prevent division from zero
+         P_FORCE(IJK, 2) = MPG_CYCLIC(2) - P_FORCE(IJK,2)/REAL(Y_COUNT)
 
          IF(DIMN.EQ.3) THEN
-            IF(FLUID_AT(IJKT)) THEN 
+            IF(FLUID_AT(IJKT)) THEN
                Z_COUNT = Z_COUNT + 1
                P_FORCE(IJK, 3) = P_FORCE(IJK, 3) + 2.d0*(P_G(IJKT) - P_G(IJK))/(DZ(K) + DZ(K_OF(IJKT)))
-            ENDIF            
-            IF(FLUID_AT(IJKB)) THEN 
+            ENDIF
+            IF(FLUID_AT(IJKB)) THEN
                Z_COUNT = Z_COUNT + 1
                P_FORCE(IJK, 3) = P_FORCE(IJK, 3) + 2.d0*(P_G(IJK) - P_G(IJKB))/(DZ(K) + DZ(K_OF(IJKB)))
             ENDIF
-            Z_COUNT = MAX(1, Z_COUNT) !to prevent division from zero 
-            P_FORCE(IJK, 3) = MPG_CYCLIC(3) - P_FORCE(IJK,3)/REAL(Z_COUNT) 
+            Z_COUNT = MAX(1, Z_COUNT) !to prevent division from zero
+            P_FORCE(IJK, 3) = MPG_CYCLIC(3) - P_FORCE(IJK,3)/REAL(Z_COUNT)
          ENDIF
-         
+
       ENDDO
 
       RETURN
@@ -199,8 +199,8 @@
       USE compar
       USE sendrecv
       USE discretelement
-      USE cutcell 
-      implicit none 
+      USE cutcell
+      implicit none
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -219,20 +219,20 @@
       INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
-      IF(CARTESIAN_GRID) THEN 
+      IF(CARTESIAN_GRID) THEN
          CALL COMPUTE_PG_GRAD_CG
          RETURN
       ENDIF
 
-      MPG_CYCLIC(1:DIMN) = ZERO 
-      
+      MPG_CYCLIC(1:DIMN) = ZERO
+
       IF(CYCLIC_X_PD) MPG_CYCLIC(1) = DELP_X/XLENGTH
       IF(CYCLIC_Y_PD) MPG_CYCLIC(2) = DELP_Y/YLENGTH
       IF(CYCLIC_Z_PD.AND.DIMN.EQ.3) MPG_CYCLIC(3) = DELP_Z/ZLENGTH
-      
+
       DO IJK = IJKSTART3, IJKEND3
          P_FORCE(IJK, :) = ZERO
-         IF(.NOT.FLUID_AT(IJK)) CYCLE 
+         IF(.NOT.FLUID_AT(IJK)) CYCLE
 
          I = I_OF(IJK)
          J = J_OF(IJK)
@@ -247,7 +247,7 @@
          IF(IMIN1.EQ.IMAX1) THEN
             P_FORCE(IJK,1) = MPG_CYCLIC(1)
          ELSEIF(I.EQ.IMIN1) THEN
-            TEMP2 = AVG_X(P_G(IJK), P_G(IPJK), I) 
+            TEMP2 = AVG_X(P_G(IJK), P_G(IPJK), I)
             TEMP1 = P_G(IJK)
             P_FORCE(IJK,1) = 2.d0*(TEMP1-TEMP2)/DX(I)  +  MPG_CYCLIC(1)
          ELSEIF(I.EQ.IMAX1) THEN
@@ -319,57 +319,57 @@
       USE param1
       USE fldvar
       USE geometry
-      USE indices      
+      USE indices
       USE compar
-      USE sendrecv      
+      USE sendrecv
       USE discretelement
       USE interpolation
-      use desmpi 
-      USE cutcell 
+      use desmpi
+      USE cutcell
       USE mfix_pic
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------   
+!-----------------------------------------------
 ! local variable used for debugging
-      LOGICAL :: FOCUS 
+      LOGICAL :: FOCUS
 ! general i, j, k indices
       INTEGER :: I, J, K, IJK, cur_ijk
       INTEGER :: II, JJ, KK
       INTEGER :: IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,&
                  IPJPK, IPJKP, IJPKP, IPJPKP, &
                  IMJMK, IMJKM, IJMKM, IMJMKM
-      INTEGER :: ICUR, JCUR, KCUR 
+      INTEGER :: ICUR, JCUR, KCUR
 ! indices used for interpolation stencil (unclear why IE, JN, KTP are
 ! needed)
       INTEGER :: IW, IE, JS, JN, KB, KTP
-! i,j,k indices of the fluid cell the particle resides in minus 1 
+! i,j,k indices of the fluid cell the particle resides in minus 1
 ! (e.g., shifted 1 in west, south, bottom direction)
       INTEGER, DIMENSION(3) :: PCELL
 ! order of interpolation set in the call to set_interpolation_scheme
 ! unless it is re/set later through the call to set_interpolation_stencil
       INTEGER :: ONEW
-! index of solid phase that particle NP belongs to      
+! index of solid phase that particle NP belongs to
       INTEGER :: M
-! particle number index, used for looping      
+! particle number index, used for looping
       INTEGER :: NP, nindx
 ! volume of fluid cell, & one over the volume of fluid cell
       DOUBLE PRECISION :: VCELL, OVOL
-! constant whose value depends on dimension of system 
+! constant whose value depends on dimension of system
 ! avg_factor=0.125 (in 3D) or =0.25 (in 2D)
 ! avg_factor=0.250 (in 3D) or =0.50 (in 2D)
-      DOUBLE PRECISION :: AVG_FACTOR   
-! Statistical weight of the particle. Equal to one for DEM 
-      DOUBLE PRECISION :: WTP     
-! for error messages      
+      DOUBLE PRECISION :: AVG_FACTOR
+! Statistical weight of the particle. Equal to one for DEM
+      DOUBLE PRECISION :: WTP
+! for error messages
       INTEGER :: IER
-!	  
+!
 !Handan Liu added temporary variables on April 20 2012
       DOUBLE PRECISION, DIMENSION(2,2,2,3) :: GST_TMP,VST_TMP
-      DOUBLE PRECISION, DIMENSION(6,6,6) :: WEIGHT_FT
+      DOUBLE PRECISION, DIMENSION(2,2,2) :: WEIGHT_FT
       DOUBLE PRECISION :: VELFP(DIMN), DESPOSNEW(DIMN)
-!	  
-!-----------------------------------------------   
+!
+!-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
@@ -382,11 +382,11 @@
 ! avg_factor=0.25 (in 3D) or =0.5 (in 2D)
       AVG_FACTOR = 0.250d0*(DIMN-2) + 0.50d0*(3-DIMN)
 
-! sets several quantities including interp_scheme, scheme, and 
-! order and allocates arrays necessary for interpolation      
+! sets several quantities including interp_scheme, scheme, and
+! order and allocates arrays necessary for interpolation
       call set_interpolation_scheme(2)
-      
-! There is some issue associated to gstencil, vstencil which are 
+
+! There is some issue associated to gstencil, vstencil which are
 ! allocable variables
 
 !!$      omp_start=omp_get_wtime()
@@ -398,15 +398,15 @@
 !!$omp         focus,np,wtp,weightp,ovol,m,vcell)                  &
 !!$omp schedule (guided,50)
 
-!Handan Liu modified the following do-loop on Jan 20 2013. 
-!$omp parallel default(shared) 	                                	&
-!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,				&
-!$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,gst_tmp,vst_tmp,		&
-!$omp         ijpkp,ipjkp,ipjpkp,ijkp,velfp,desposnew,weight_ft,	&
-!$omp         nindx,np,focus,wtp,m,icur,jcur,kcur,ovol,vcell)  
-!$omp do reduction(+:des_rops_node)          	
+!Handan Liu modified the following do-loop on Jan 20 2013.
+!$omp parallel default(shared)                                          &
+!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,                          &
+!$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,gst_tmp,vst_tmp,         &
+!$omp         ijpkp,ipjkp,ipjpkp,ijkp,velfp,desposnew,weight_ft,        &
+!$omp         nindx,np,focus,wtp,m,icur,jcur,kcur,ovol,vcell)
+!$omp do reduction(+:des_rops_node)
       DO ijk = ijkstart3,ijkend3
-         if(.not.fluid_at(ijk) .or. pinc(ijk).eq.0) cycle 
+         if(.not.fluid_at(ijk) .or. pinc(ijk).eq.0) cycle
          i = i_of(ijk)
          j = j_of(ijk)
          k = k_of(ijk)
@@ -421,9 +421,9 @@
 ! setup the stencil based on the order of interpolation and factoring in
 ! whether the system has any periodic boundaries. sets onew to order.
          call set_interpolation_stencil(pcell,iw,ie,js,jn,kb,&
-              ktp,interp_scheme,dimn,ordernew = onew) 
+              ktp,interp_scheme,dimn,ordernew = onew)
 
-! Computing velocity at grid nodes and set the geometric stencil 
+! Computing velocity at grid nodes and set the geometric stencil
          DO k = 1,(3-dimn)*1+(dimn-2)*onew
             DO j = 1,onew
                DO i = 1,onew
@@ -440,8 +440,8 @@
 !                  gstencil(i,j,k,2) = yn(jj)
 !                  gstencil(i,j,k,3) = zt(kk)*(dimn-2) + dz(1)*(3-dimn)
 !                  vstencil(i,j,k,1) = avg_factor*(u_g(cur_ijk)+u_g(ijpk))
-!                  vstencil(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk)) 
-!                  IF(dimn.EQ.3) THEN                  
+!                  vstencil(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk))
+!                  IF(dimn.EQ.3) THEN
 !                     ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
 !                     ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
 !                     ipjpkp  = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk+1))
@@ -450,7 +450,7 @@
 !                     vstencil(i,j,k,2) = vstencil(i,j,k,2)+avg_factor*(v_g(ijkp) + v_g(ipjkp))
 !                     vstencil(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
 !                          w_g(ijpk)+w_g(ipjk)+w_g(ipjpk))
-!                  ELSE 
+!                  ELSE
 !                     vstencil(i,j,k,3) = 0.d0
                   gst_tmp(i,j,k,1) = xe(ii)
                   gst_tmp(i,j,k,2) = yn(jj)
@@ -458,12 +458,12 @@
                   vst_tmp(i,j,k,1) = avg_factor*(u_g(cur_ijk)+u_g(ijpk))
                   vst_tmp(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk))
 
-                  if(dimn.eq.3) then 
+                  if(dimn.eq.3) then
                      ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
                      ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
                      ipjpkp  = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk+1))
                      ijkp    = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk+1))
-					 vst_tmp(i,j,k,1) = vst_tmp(i,j,k,1) + avg_factor*(u_g(ijkp) + u_g(ijpkp))
+                                         vst_tmp(i,j,k,1) = vst_tmp(i,j,k,1) + avg_factor*(u_g(ijkp) + u_g(ijpkp))
                      vst_tmp(i,j,k,2) = vst_tmp(i,j,k,2) + avg_factor*(v_g(ijkp) + v_g(ipjkp))
                      vst_tmp(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
                           w_g(ijpk)+w_g(ipjk)+w_g(ipjpk))
@@ -474,11 +474,11 @@
             ENDDO
          ENDDO
 !===================================================================>> Handan Liu
-! looping through particles in the cell  
+! looping through particles in the cell
          DO nindx = 1,pinc(ijk)
-            np = pic(ijk)%p(nindx)  
-			
-! Revised by Handan Liu for OpenMP implementation 
+            np = pic(ijk)%p(nindx)
+
+! Revised by Handan Liu for OpenMP implementation
 !===================================================================<< Handan Liu
 !            IF (DIMN .EQ. 2) THEN
 !               CALL interpolator(gstencil(1:onew,1:onew,1,1:dimn), &
@@ -492,44 +492,44 @@
 !                    onew,interp_scheme,weightp)
 !            ENDIF
             if (dimn .eq. 2) then
-			   desposnew(1:2) = des_pos_new(np,1:2)
-			   call DRAG_INTERPLATION_2D(gst_tmp(1:onew,1:onew,1,1:dimn),&
-					vst_tmp(1:onew,1:onew,1,1:dimn),desposnew,velfp,weight_ft)
-			else 
-			   desposnew(1:3) = des_pos_new(np,1:3)
-			   call DRAG_INTERPLATION_3D(gst_tmp(1:onew,1:onew,1:onew,1:dimn),&
-					vst_tmp(1:onew,1:onew,1:onew,1:dimn),desposnew,velfp,weight_ft)				
-			endif
+                           desposnew(1:2) = des_pos_new(np,1:2)
+                           call DRAG_INTERPLATION_2D(gst_tmp(1:onew,1:onew,1,1:dimn),&
+                                        vst_tmp(1:onew,1:onew,1,1:dimn),desposnew,velfp,weight_ft)
+                        else
+                           desposnew(1:3) = des_pos_new(np,1:3)
+                           call DRAG_INTERPLATION_3D(gst_tmp(1:onew,1:onew,1:onew,1:dimn),&
+                                        vst_tmp(1:onew,1:onew,1:onew,1:dimn),desposnew,velfp,weight_ft)
+                        endif
             vel_fp(np,1:dimn) = velfp(1:dimn)
-!===================================================================>> Handan Liu			
-			
+!===================================================================>> Handan Liu
+
             focus = .false.
             WTP = ONE
             IF(MPPIC) WTP = DES_STAT_WT(NP)
 
-! Calculating des_rops_node so des_rop_s, and in turn, ep_g can be updated 
+! Calculating des_rops_node so des_rop_s, and in turn, ep_g can be updated
 !----------------------------------------------------------------->>>
             M = pijk(np,5)
             DO k = 1, (3-dimn)*1+(dimn-2)*onew
                DO j = 1, onew
                   DO i = 1, onew
-! shift loop index to new variables for manipulation                     
+! shift loop index to new variables for manipulation
                      ii = iw + i-1
                      jj = js + j-1
                      kk = kb + k-1
 ! The interpolation is done using node. so one should use consistent
-! numbering system in the current version imap_c is used instead of 
-! ip_of or im_of                       
+! numbering system in the current version imap_c is used instead of
+! ip_of or im_of
                      icur = imap_c(ii)
                      jcur = jmap_c(jj)
-                     kcur = kmap_c(kk)                     
-                     cur_ijk = funijk(icur, jcur, kcur) 
+                     kcur = kmap_c(kk)
+                     cur_ijk = funijk(icur, jcur, kcur)
 
 ! Replacing the volume of cell to volume at the node
                      vcell = des_vol_node(cur_ijk)
                      ovol = one/vcell
 
-!!$omp critical                 
+!!$omp critical
                      des_rops_node(cur_ijk,m) = des_rops_node(cur_ijk,m) + &
                           !weightp(i,j,k) *DES_ro_s(m)*ovol*pvol(np)*WTP
 !Handan Liu revised on Jan 15 2013
@@ -543,26 +543,26 @@
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 !$omp end parallel
 !!$      omp_end=omp_get_wtime()
-!!$      write(*,*)'drag_interp:',omp_end - omp_start  
+!!$      write(*,*)'drag_interp:',omp_end - omp_start
 
-		
+
 ! At the interface des_rops_node has to be added
-! send recv will be called and the node values will be added 
+! send recv will be called and the node values will be added
 ! at the junction. des_rops_node is altered by the routine when
 ! periodic boundaries are invoked
       call des_addnodevalues_mean_fields
 !-----------------------------------------------------------------<<<
 
 
-! Calculate/update the cell centered bulk density 
-!----------------------------------------------------------------->>>  
+! Calculate/update the cell centered bulk density
+!----------------------------------------------------------------->>>
 ! avg_factor=0.125 (in 3D) or =0.25 (in 2D)
-      AVG_FACTOR = 0.125D0*(DIMN-2) + 0.25D0*(3-DIMN)   
+      AVG_FACTOR = 0.125D0*(DIMN-2) + 0.25D0*(3-DIMN)
 
 !$omp parallel do default(shared)                               &
-!$omp private(ijk,i,j,k,imjk,ijmk,imjmk,ijkm,imjkm,ijmkm,       & 
+!$omp private(ijk,i,j,k,imjk,ijmk,imjmk,ijkm,imjkm,ijmkm,       &
 !$omp         imjmkm)                                           &
-!$omp schedule (guided,20)           
+!$omp schedule (guided,20)
       DO ijk = ijkstart3, ijkend3
          IF(fluid_at(ijk)) THEN
             i = i_of(ijk)
@@ -590,11 +590,11 @@
             DES_ROP_S(IJK,:) = ZERO
          ENDIF
       ENDDO   ! end do loop (ijk=ijkstart3,ijkend3)
-!$omp end parallel do 
+!$omp end parallel do
 
 !-----------------------------------------------------------------<<<
 
-      RETURN   
+      RETURN
       END SUBROUTINE CALC_DES_ROP_S
 
 
@@ -634,8 +634,8 @@
       USE sendrecv
       USE discretelement
       USE drag
-      use desmpi 
-      USE cutcell 
+      use desmpi
+      USE cutcell
       USE mfix_pic
       IMPLICIT NONE
 !-----------------------------------------------
@@ -644,28 +644,28 @@
 ! general i, j, k indices
       INTEGER :: I, J, K, IJK
       INTEGER :: IPJK, IJPK, IJKP, IMJK, IJMK, IJKM
-! see the discussion for IJK_U ..... in comments       
+! see the discussion for IJK_U ..... in comments
       INTEGER :: IJK_U, IJK_V, IJK_W
 ! average fluid and solid velocity at scalar cell center in array form
       DOUBLE PRECISION :: VELG_ARR(DIMN), &
                           VELDS_ARR(DES_MMAX, DIMN)
 ! local drag force
       DOUBLE PRECISION :: GS_DRAG (DIMENSION_3, DES_MMAX, DIMN)
-! index of solid phase that particle NP belongs to      
+! index of solid phase that particle NP belongs to
       INTEGER :: M
-! particle number index, used for looping      
+! particle number index, used for looping
       INTEGER :: NP
 ! solids volume fraction of phase M in fluid cell
-      DOUBLE PRECISION :: EP_SM      
+      DOUBLE PRECISION :: EP_SM
 ! one over solids volume fraction in fluid cell and one over the
 ! volume of fluid cell
       DOUBLE PRECISION :: OEPS
-! for error messages      
+! for error messages
       INTEGER :: IER
 ! Flag only used when the hybrid model is invoked and notifies the
 ! routine that the solid phase index M refers to the indice of a
 ! discrete 'phase' not a continuous phase so that the appropriate
-! variables are referenced.  
+! variables are referenced.
       LOGICAL :: DISCRETE_FLAG
 !-----------------------------------------------
 ! Include statement functions
@@ -680,13 +680,13 @@
       GS_DRAG(:,:,:) = ZERO
       GD_FORCE(:,:) = ZERO
 
-! computing F_gs (gas-solids drag coefficient) with the latest average 
+! computing F_gs (gas-solids drag coefficient) with the latest average
 ! fluid and solid velocity fields.  see comments below
       DISCRETE_FLAG = .TRUE.   ! only matters if des_continuum_hybrid
-      DO M = 1, DES_MMAX 
+      DO M = 1, DES_MMAX
          IF (RO_G0/=ZERO) THEN
-! this call can not be readily replaced with a call to des_drag_gp 
-! due to difficulties going from particle phase and ijk loops to a 
+! this call can not be readily replaced with a call to des_drag_gp
+! due to difficulties going from particle phase and ijk loops to a
 ! particle loop & vice versa
             CALL DRAG_GS (M, DISCRETE_FLAG, IER)
          ENDIF
@@ -704,20 +704,20 @@
          IMJK = IM_OF(IJK)
          IJMK = JM_OF(IJK)
          IJKM = KM_OF(IJK)
-         IJK_U = IMJK 
+         IJK_U = IMJK
          IJK_V = IJMK
          IJK_W = IJKM
 
-! UGC (and likewise for VGC and WGC) are computed at the center of 
-! the scalar cell. The center of the Ith scalar cell can also be 
-! thought of as east face of the (I-1)th U- cell. 
+! UGC (and likewise for VGC and WGC) are computed at the center of
+! the scalar cell. The center of the Ith scalar cell can also be
+! thought of as east face of the (I-1)th U- cell.
 ! For cut-cell, it is easier to think in terms of U, V, W grids/cell
 ! as the interpolation arays (like Theta_Ue_bar) are based on the
-! respective grids, i.e., theta_Ue_bar is based on U- grid. See 
-! conv_diff_u_g for an example of this usage. 
+! respective grids, i.e., theta_Ue_bar is based on U- grid. See
+! conv_diff_u_g for an example of this usage.
 ! For U uncut grid, the average at the east face of IJK_U will be
 ! U_AVG(at East face of IJK_U) = HALF*(U(IJK_U) + U(IP_OF(IJK_U)))
-! It can be verified that the above formula and old formula of 
+! It can be verified that the above formula and old formula of
 ! U_AVG(center of IJK) = HALF*(U(IJK) + U(IM_OF(IJK))) are identical
 ! since IJK_U = IM_OF(IJK)
 
@@ -727,17 +727,17 @@
             IF(CUT_U_TREATMENT_AT(IJK_U)) THEN
                VELG_ARR(1) = (Theta_Ue_bar(IJK_U)*U_G(IJK_U) + &
                               Theta_Ue(IJK_U)    *U_G(IP_OF(IJK_U)))
-            ELSE 
+            ELSE
                VELG_ARR(1) = HALF * (U_G(IJK_U) + U_G(IP_OF(IJK_U)))
-               !VELG_ARR(1) = AVG_X_E(U_G(IMJK),U_G(IJK),I)                  
+               !VELG_ARR(1) = AVG_X_E(U_G(IMJK),U_G(IJK),I)
             ENDIF
-               
+
             IF(CUT_V_TREATMENT_AT(IJK_V)) THEN
                VELG_ARR(2) = (Theta_Vn_bar(IJK_V)*V_G(IJK_V) + &
                               Theta_Vn(IJK_V)    *V_G(JP_OF(IJK_V)))
             ELSE
                VELG_ARR(2) = HALF * (V_G(IJK_V) + V_G(JP_OF(IJK_V)))
-               !VELG_ARR(2) = AVG_Y_N(V_G(IJMK),V_G(IJK))                  
+               !VELG_ARR(2) = AVG_Y_N(V_G(IJMK),V_G(IJK))
             ENDIF
 
             VELDS_ARR(:,1) = DES_U_S(IJK,:)
@@ -747,18 +747,18 @@
                IF(CUT_W_TREATMENT_AT(IJK_W)) THEN
                   VELG_ARR(3) = (Theta_Wt_bar(IJK_W)*W_G(IJK_W) + &
                                  Theta_Wt(IJK_W)    * W_G(KP_OF(IJK_W)))
-               ELSE 
+               ELSE
                   VELG_ARR(3) = HALF * (W_G(IJK_W) + W_G(KP_OF(IJK_W)))
                   !VELG_ARR(3) = AVG_Z_T(W_G(IJKM),W_G(IJK))
                ENDIF
-               VELDS_ARR(:,3) = DES_W_S(IJK,:)               
+               VELDS_ARR(:,3) = DES_W_S(IJK,:)
             ENDIF
 
 
             DO M = 1, DES_MMAX
 ! the call to drag coefficient should probably be here for cut-cell
-! since cell center velocities are now known and these would be used 
-! in vrel within drag correlations). this would require some 
+! since cell center velocities are now known and these would be used
+! in vrel within drag correlations). this would require some
 ! rearrangement/reworking?  alternatively these calculations should be
 ! moved into drag_gs?
 
@@ -776,21 +776,21 @@
                   ENDIF   ! end if/else (des_continuum_hybrid)
                   OEPS = ONE/EP_SM
                   GS_DRAG(IJK,M,:) = GS_DRAG(IJK,M,:)*OEPS
-               ENDIF  ! end if ep_sm>0               
+               ENDIF  ! end if ep_sm>0
 
             ENDDO   ! end do loop (dm=1,des_mmax)
          ENDIF      ! end if(pinc(ijk).gt.0)
 
       ENDDO         ! end do loop (ijk=ijkstart3, ijkend3)
-!$omp end parallel do          
+!$omp end parallel do
 
 
 !$omp parallel do private(np,ijk,m,oeps,ep_sm)             &
-!$omp schedule (guided,100)    
+!$omp schedule (guided,100)
       DO NP = 1, MAX_PIP
 ! skipping indices that do not represent particles and ghost particles
-         if(.not.pea(np,1)) cycle 
-         if(pea(np,4)) cycle 
+         if(.not.pea(np,1)) cycle
+         if(pea(np,4)) cycle
 
          IJK = PIJK(NP,4)
          M = PIJK(NP,5)
@@ -801,28 +801,28 @@
          GD_FORCE(NP,:) = GS_DRAG(IJK,M,:)*PVOL(NP)
          FC(NP,:) = FC(NP,:) + GD_FORCE(NP,:)
 
-         IF(.NOT.MODEL_B) THEN    
+         IF(.NOT.MODEL_B) THEN
 ! Add the pressure gradient force
 ! P_force is evaluated as -dp/dx
             FC(NP,:) = FC(NP,:) + (P_FORCE(IJK,:))*PVOL(NP)
          ENDIF
 !-----------------------------------------------------------------<<<
-          
+
 ! For mppic calculate the gas-particle drag coefficient (F_GP).
 !----------------------------------------------------------------->>>
-         IF(MPPIC) THEN            
+         IF(MPPIC) THEN
             EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
             IF(EP_SM.GT.ZERO) THEN
                OEPS = ONE/EP_SM
             ELSE
-               OEPS = ZERO 
-            ENDIF            
-            IF(MPPIC_PDRAG_IMPLICIT) THEN 
+               OEPS = ZERO
+            ENDIF
+            IF(MPPIC_PDRAG_IMPLICIT) THEN
                F_gp(NP) = (F_GS(IJK,M)*PVOL(NP))*OEPS
             ELSE
-               F_gp(NP) = ZERO 
+               F_gp(NP) = ZERO
             ENDIF
-         ENDIF   ! end if (mppic)          
+         ENDIF   ! end if (mppic)
 !-----------------------------------------------------------------<<<
 
       ENDDO   ! end do loop (np=1,max_pip)
@@ -830,7 +830,7 @@
 
       RETURN
       END SUBROUTINE CALC_DES_DRAG_GS_NONINTERP
-    
+
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -870,15 +870,15 @@
       USE discretelement
       USE drag
       USE interpolation
-      use desmpi 
-      USE cutcell 
+      use desmpi
+      USE cutcell
       USE mfix_pic
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! local variable used for debugging
-      LOGICAL FOCUS 
+      LOGICAL FOCUS
 ! general i, j, k indices
       INTEGER :: I, J, K, IJK, cur_ijk
       INTEGER :: II, JJ, KK
@@ -887,62 +887,62 @@
 ! indices used for interpolation stencil (unclear why IE, JN, KTP are
 ! needed)
       INTEGER :: IW, IE, JS, JN, KB, KTP
-! i,j,k indices of the fluid cell the particle resides in minus 1 
+! i,j,k indices of the fluid cell the particle resides in minus 1
 ! (e.g., shifted 1 in west, south, bottom direction)
       INTEGER, DIMENSION(3) :: PCELL
 ! order of interpolation set in the call to set_interpolation_scheme
 ! unless it is re/set later through the call to set_interpolation_stencil
       INTEGER :: ONEW
-! index of solid phase that particle NP belongs to      
+! index of solid phase that particle NP belongs to
       INTEGER :: M
-! particle number index, used for looping      
+! particle number index, used for looping
       INTEGER :: NP, nindx
-! constant whose value depends on dimension of system 
+! constant whose value depends on dimension of system
 ! avg_factor=0.125 (in 3D) or =0.25 (in 2D)
 ! avg_factor=0.250 (in 3D) or =0.50 (in 2D)
       DOUBLE PRECISION :: AVG_FACTOR
-! for error messages      
+! for error messages
       INTEGER :: IER
 
 !Handan Liu added temporary variables on April 20 2012
-	  DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
-	  DOUBLE PRECISION, DIMENSION(6,6,6) :: weight_ft
-	  DOUBLE PRECISION :: velfp(dimn), desposnew(dimn)
-	  DOUBLE PRECISION :: D_FORCE(DIMN)
-!	  
-!-----------------------------------------------   
+          DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
+          DOUBLE PRECISION, DIMENSION(2,2,2) :: weight_ft
+          DOUBLE PRECISION :: velfp(dimn), desposnew(dimn)
+          DOUBLE PRECISION :: D_FORCE(DIMN)
+!
+!-----------------------------------------------
 ! Include statement functions
-!-----------------------------------------------   
+!-----------------------------------------------
       INCLUDE 'function.inc'
-!----------------------------------------------- 
+!-----------------------------------------------
 !!$      double precision omp_start, omp_end
 !!$      double precision omp_get_wtime
 ! NON-INTERPOLATED fluid-solids drag:
-! Calculate the gas solids drag force on a particle using the cell 
+! Calculate the gas solids drag force on a particle using the cell
 ! averaged particle velocity and the cell average fluid velocity
 !----------------------------------------------------------------->>>
       IF(.NOT.DES_INTERP_ON) THEN
          CALL CALC_DES_DRAG_GS_NONINTERP
-         RETURN 
+         RETURN
       ENDIF
 !-----------------------------------------------------------------<<<
 
 
 ! INTERPOLATED fluid-solids drag (the rest of this routine):
-! Calculate the gas solids drag coefficient using the particle 
+! Calculate the gas solids drag coefficient using the particle
 ! velocity and the fluid velocity interpolated to particle
-! position. 
+! position.
 !----------------------------------------------------------------->>>
 ! initializing
-! RG: I do not understand the need for this large array. It is not 
-! used anywhere else except the same subroutine it is calculated. 
+! RG: I do not understand the need for this large array. It is not
+! used anywhere else except the same subroutine it is calculated.
 ! A local single rank array (like in the old implementation) was just fine
       gd_force(:,:) = ZERO
       vel_fp = ZERO
 ! avg_factor=0.25 (in 3D) or =0.5 (in 2D)
       AVG_FACTOR = 0.250d0*(DIMN-2) + 0.50d0*(3-DIMN)
 
-! sets several quantities including interp_scheme, scheme, and 
+! sets several quantities including interp_scheme, scheme, and
 ! order and allocates arrays necessary for interpolation
       call set_interpolation_scheme(2)
 
@@ -957,14 +957,14 @@
 !!$omp         focus,np,weightp,m)                                 &
 !!$omp schedule (guided,50)
 
-!Handan Liu modified the following do-loop on Jan 20 2013. 
-!$omp parallel do default(shared)                                 	&
-!$omp private(ijk, i, j, k, pcell, iw, ie, js, jn, kb, ktp,		&
-!$omp         onew, ii, jj, kk,cur_ijk, ipjk, ijpk, ipjpk,		&
-!$omp         gst_tmp, vst_tmp, velfp, desposnew, ijpkp, ipjkp,	&
-!$omp         ipjpkp,ijkp,nindx,np,weight_ft,d_force)            	
+!Handan Liu modified the following do-loop on Jan 20 2013.
+!$omp parallel do default(shared)                                       &
+!$omp private(ijk, i, j, k, pcell, iw, ie, js, jn, kb, ktp,             &
+!$omp         onew, ii, jj, kk,cur_ijk, ipjk, ijpk, ipjpk,              &
+!$omp         gst_tmp, vst_tmp, velfp, desposnew, ijpkp, ipjkp, &
+!$omp         ipjpkp,ijkp,nindx,np,weight_ft,d_force)
       DO ijk = ijkstart3,ijkend3
-         if(.not.fluid_at(ijk) .or. pinc(ijk).eq.0) cycle 
+         if(.not.fluid_at(ijk) .or. pinc(ijk).eq.0) cycle
          i = i_of(ijk)
          j = j_of(ijk)
          k = k_of(ijk)
@@ -980,7 +980,7 @@
 ! setup the stencil based on the order of interpolation and factoring in
 ! whether the system has any periodic boundaries. sets onew to order.
          call set_interpolation_stencil(pcell,iw,ie,js,jn,kb,&
-              ktp,interp_scheme,dimn,ordernew = onew) 
+              ktp,interp_scheme,dimn,ordernew = onew)
 
 ! Compute velocity at grid nodes and set the geometric stencil
          DO k = 1,(3-dimn)*1+(dimn-2)*onew
@@ -999,7 +999,7 @@
 !                  gstencil(i,j,k,2) = yn(jj)
 !                  gstencil(i,j,k,3) = zt(kk)*(dimn-2) + dz(1)*(3-dimn)
 !                  vstencil(i,j,k,1) = avg_factor*(u_g(cur_ijk)+u_g(ijpk))
-!                  vstencil(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk)) 
+!                  vstencil(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk))
 !                  IF(DIMN.EQ.3) THEN
 !                     ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
 !                     ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
@@ -1017,12 +1017,12 @@
                   vst_tmp(i,j,k,1) = avg_factor*(u_g(cur_ijk)+u_g(ijpk))
                   vst_tmp(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk))
 
-                  if(dimn.eq.3) then 
+                  if(dimn.eq.3) then
                      ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
                      ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
                      ipjpkp  = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk+1))
                      ijkp    = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk+1))
-					 vst_tmp(i,j,k,1) = vst_tmp(i,j,k,1) + avg_factor*(u_g(ijkp) + u_g(ijpkp))
+                                         vst_tmp(i,j,k,1) = vst_tmp(i,j,k,1) + avg_factor*(u_g(ijkp) + u_g(ijpkp))
                      vst_tmp(i,j,k,2) = vst_tmp(i,j,k,2) + avg_factor*(v_g(ijkp) + v_g(ipjkp))
                      vst_tmp(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
                           w_g(ijpk)+w_g(ipjk)+w_g(ipjpk))
@@ -1040,8 +1040,8 @@
 ! skipping indices that do not represent particles and ghost particles
             if(.not.pea(np,1)) cycle
             if(pea(np,4)) cycle
-			
-! Revised by Handan Liu for OpenMP implementation 
+
+! Revised by Handan Liu for OpenMP implementation
 !===================================================================<< Handan Liu
 !            IF (DIMN .EQ. 2) THEN
 !               CALL interpolator(gstencil(1:onew,1:onew,1,1:dimn), &
@@ -1058,13 +1058,13 @@
                desposnew(1:2) = des_pos_new(np,1:2)
                call DRAG_INTERPLATION_2D(gst_tmp(1:onew,1:onew,1,1:dimn),&
                vst_tmp(1:onew,1:onew,1,1:dimn),desposnew,velfp,weight_ft)
-            else 
+            else
                desposnew(1:3) = des_pos_new(np,1:3)
                call DRAG_INTERPLATION_3D(gst_tmp(1:onew,1:onew,1:onew,1:dimn),&
-               vst_tmp(1:onew,1:onew,1:onew,1:dimn),desposnew,velfp,weight_ft)				
+               vst_tmp(1:onew,1:onew,1:onew,1:dimn),desposnew,velfp,weight_ft)
             endif
             vel_fp(np,1:dimn) = velfp(1:dimn)
-!===================================================================>> Handan Liu			
+!===================================================================>> Handan Liu
 !
 ! Calculate the particle centered drag coefficient (F_GP) using the
 ! particle velocity and the interpolated gas velocity.  Note F_GP
@@ -1078,40 +1078,40 @@
 
 ! Calculate the gas-solids drag force on the particle
             IF(MPPIC .AND. MPPIC_PDRAG_IMPLICIT) THEN
-! implicit treatment of the drag term for mppic 
+! implicit treatment of the drag term for mppic
 !------------------------------------------------------------------<<<< Handan Liu
-! Handan Liu set D_FORCE(:) to replace GD_FORCE(:,:) 	
-!	in order to reduce the calculation time			on Jan 14 2013
+! Handan Liu set D_FORCE(:) to replace GD_FORCE(:,:)
+!       in order to reduce the calculation time                 on Jan 14 2013
                !GD_FORCE(NP,:) = F_GP(NP)*(VEL_FP(NP,:))
-               D_FORCE(1:DIMN) = F_GP(NP)*(VEL_FP(NP,1:DIMN))	
+               D_FORCE(1:DIMN) = F_GP(NP)*(VEL_FP(NP,1:DIMN))
             ELSE
 ! default case
                !GD_FORCE(NP,:) = F_GP(NP)*(VEL_FP(NP,:)-DES_VEL_NEW(NP,:))
-               D_FORCE(1:DIMN) = F_GP(NP)*(VEL_FP(NP,1:DIMN)-DES_VEL_NEW(NP,1:DIMN))	
+               D_FORCE(1:DIMN) = F_GP(NP)*(VEL_FP(NP,1:DIMN)-DES_VEL_NEW(NP,1:DIMN))
             ENDIF
 
 ! Update the contact forces (FC) on the particle to include gas
-! pressure and gas-solids drag 
+! pressure and gas-solids drag
             !FC(NP,:) = FC(NP,:) + GD_FORCE(NP,:)
             FC(NP,1:DIMN) = FC(NP,1:DIMN) + D_FORCE(1:DIMN)
-            GD_FORCE(NP,1:DIMN) = D_FORCE(1:DIMN)			
+            GD_FORCE(NP,1:DIMN) = D_FORCE(1:DIMN)
 
             IF(.NOT.MODEL_B) THEN
-! P_force is evaluated as -dp/dx 
+! P_force is evaluated as -dp/dx
                !FC(NP,:) = FC(NP,:) + p_force(ijk,:)*pvol(NP)
                FC(NP,1:DIMN) = FC(NP,1:DIMN) + p_force(ijk,1:DIMN)*pvol(NP)
-            ENDIF               
-!------------------------------------------------------------------>>>>	Handan Liu		
+            ENDIF
+!------------------------------------------------------------------>>>> Handan Liu
          ENDDO       ! end do (nindx = 1,pinc(ijk))
 
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 !$omp end parallel do
 !!$      omp_end=omp_get_wtime()
-!!$      write(*,*)'drag_interp:',omp_end - omp_start  
+!!$      write(*,*)'drag_interp:',omp_end - omp_start
 
 !-----------------------------------------------------------------<<<
 
-      RETURN   
+      RETURN
       END SUBROUTINE CALC_DES_DRAG_GS
 
 
@@ -1165,15 +1165,15 @@
       USE discretelement
       USE drag
       USE interpolation
-      use desmpi 
-      USE cutcell 
+      use desmpi
+      USE cutcell
       USE mfix_pic
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! local variable used for debugging
-      LOGICAL :: FOCUS 
+      LOGICAL :: FOCUS
 ! local drag forces
       DOUBLE PRECISION :: drag_bm_tmp(DIMN)
 ! general i, j, k indices
@@ -1182,63 +1182,63 @@
       INTEGER :: IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,&
                  IPJPK, IPJKP, IJPKP, IPJPKP, &
                  IMJMK, IMJKM, IJMKM, IMJMKM
-      INTEGER :: ICUR, JCUR, KCUR 
+      INTEGER :: ICUR, JCUR, KCUR
 ! indices used for interpolation stencil (unclear why IE, JN, KTP are
 ! needed)
       INTEGER :: IW, IE, JS, JN, KB, KTP
-! i,j,k indices of the fluid cell the particle resides in minus 1 
+! i,j,k indices of the fluid cell the particle resides in minus 1
 ! (e.g., shifted 1 in west, south, bottom direction)
       INTEGER, DIMENSION(3) :: PCELL
 ! order of interpolation set in the call to set_interpolation_scheme
 ! unless it is re/set later through the call to set_interpolation_stencil
       INTEGER :: ONEW
-! index of solid phase that particle NP belongs to      
+! index of solid phase that particle NP belongs to
       INTEGER :: M
-! particle number index, used for looping      
+! particle number index, used for looping
       INTEGER :: NP, nindx
 ! one over the volume of fluid cell
-      DOUBLE PRECISION :: OVOL 
+      DOUBLE PRECISION :: OVOL
 ! volume of fluid cell particle resides in
       DOUBLE PRECISION :: VCELL
-! constant whose value depends on dimension of system 
+! constant whose value depends on dimension of system
 ! avg_factor=0.125 (in 3D) or =0.25 (in 2D)
 ! avg_factor=0.250 (in 3D) or =0.50 (in 2D)
       DOUBLE PRECISION :: AVG_FACTOR
-! Statistical weight of the particle. Equal to one for DEM 
+! Statistical weight of the particle. Equal to one for DEM
       DOUBLE PRECISION :: WTP
-! for error messages      
+! for error messages
       INTEGER :: IER
 ! Flag only used when the hybrid model is invoked and notifies the
 ! routine that the solid phase index M refers to the indice of a
 ! discrete 'phase' not a continuous phase so that the appropriate
-! variables are referenced.  
+! variables are referenced.
       LOGICAL :: DISCRETE_FLAG
 !Handan Liu added temporary variables on April 20 2012
       DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
-      DOUBLE PRECISION, DIMENSION(6,6,6) :: weight_ft
+      DOUBLE PRECISION, DIMENSION(2,2,2) :: weight_ft
       DOUBLE PRECISION :: velfp(dimn), desposnew(dimn)
-      
-!-----------------------------------------------   
+
+!-----------------------------------------------
 ! Include statement functions
-!-----------------------------------------------   
+!-----------------------------------------------
       INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !!$      double precision omp_start, omp_end
-!!$      double precision omp_get_wtime	      
+!!$      double precision omp_get_wtime
 
 !!$      omp_start=omp_get_wtime()
 
 ! NON-INTERPOLATED fluid-solids DRAG:
-! Calculate the fluid solids drag coefficient (F_GS) using the cell 
+! Calculate the fluid solids drag coefficient (F_GS) using the cell
 ! averaged particle velocity and the cell average fluid velocity
 !----------------------------------------------------------------->>>
-      IF (.NOT.DES_INTERP_ON) THEN         
+      IF (.NOT.DES_INTERP_ON) THEN
          DISCRETE_FLAG = .TRUE.   ! only matters if des_continuum_hybrid
-         DO M = 1, DES_MMAX 
+         DO M = 1, DES_MMAX
             IF (RO_G0/=ZERO) THEN
-! this call can not be readily replaced with a call to des_drag_gp 
-! due to difficulties going from particle phase and ijk loops to a 
+! this call can not be readily replaced with a call to des_drag_gp
+! due to difficulties going from particle phase and ijk loops to a
 ! particle loop & vice versa
                CALL DRAG_GS (M, DISCRETE_FLAG, IER)
             ENDIF
@@ -1247,21 +1247,21 @@
       ENDIF
 !-----------------------------------------------------------------<<<
 !!$      omp_end=omp_get_wtime()
-!!$      write(*,*)'drag_interp_off:',omp_end - omp_start 
+!!$      write(*,*)'drag_interp_off:',omp_end - omp_start
 
 ! INTERPOLATED fluid-solids drag (the rest of this routine):
-! Calculate the fluid solids drag coefficient using the particle 
+! Calculate the fluid solids drag coefficient using the particle
 ! velocity and the fluid velocity interpolated to particle
-! position. 
+! position.
 !----------------------------------------------------------------->>>
-! initializations 
+! initializations
       drag_am = ZERO
       drag_bm = ZERO
       vel_fp = ZERO
 ! avg_factor=0.25 (in 3D) or =0.5 (in 2D)
       AVG_FACTOR = 0.250d0*(DIMN-2) + 0.50d0*(3-DIMN)
 
-! sets several quantities including interp_scheme, scheme, and 
+! sets several quantities including interp_scheme, scheme, and
 ! order and allocates arrays necessary for interpolation
       call set_interpolation_scheme(2)
 ! There is some issue associated to gstencil, vstencil which are
@@ -1277,17 +1277,17 @@
 !!$omp         drag_bm_tmp)                                        &
 !!$omp schedule (guided,50)
 
-!Handan Liu modified the following do-loop on Jan 15 2013, 
-!	again modified on May 9 2013
-!$omp parallel default(shared)	                                 	&
-!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,				&
-!$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,						&
-!$omp         gst_tmp,vst_tmp,velfp,desposnew,ijpkp,ipjkp,			&
-!$omp         ipjpkp,ijkp,nindx,focus,np,wtp,m,weight_ft,			&
-!$omp		  icur,jcur,kcur,vcell,ovol,drag_bm_tmp) 
+!Handan Liu modified the following do-loop on Jan 15 2013,
+!       again modified on May 9 2013
+!$omp parallel default(shared)                                          &
+!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,                          &
+!$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,                                         &
+!$omp         gst_tmp,vst_tmp,velfp,desposnew,ijpkp,ipjkp,                      &
+!$omp         ipjpkp,ijkp,nindx,focus,np,wtp,m,weight_ft,                       &
+!$omp             icur,jcur,kcur,vcell,ovol,drag_bm_tmp)
 !$omp do reduction(+:drag_am) reduction(+:drag_bm)
       DO IJK = IJKSTART3,IJKEND3
-         IF(.NOT.FLUID_AT(IJK) .OR. PINC(IJK)==0) cycle 
+         IF(.NOT.FLUID_AT(IJK) .OR. PINC(IJK)==0) cycle
          i = i_of(ijk)
          j = j_of(ijk)
          k = k_of(ijk)
@@ -1303,7 +1303,7 @@
 ! setup the stencil based on the order of interpolation and factoring in
 ! whether the system has any periodic boundaries. sets onew to order.
          call set_interpolation_stencil(pcell,iw,ie,js,jn,kb,&
-              ktp,interp_scheme,dimn,ordernew = onew) 
+              ktp,interp_scheme,dimn,ordernew = onew)
 
 ! Compute velocity at grid nodes and set the geometric stencil
          DO k = 1,(3-dimn)*1+(dimn-2)*onew
@@ -1317,12 +1317,12 @@
                   ijpk    = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk))
                   ipjpk   = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk))
 ! Revised by Handan Liu for OpenMP implementation
-!===================================================================<< Handan Liu               
+!===================================================================<< Handan Liu
 !                  gstencil(i,j,k,1) = xe(ii)
 !                  gstencil(i,j,k,2) = yn(jj)
 !                  gstencil(i,j,k,3) = zt(kk)*(dimn-2) + dz(1)*(3-dimn)
 !                  vstencil(i,j,k,1) = avg_factor*(u_g(cur_ijk)+u_g(ijpk))
-!                  vstencil(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk)) 
+!                  vstencil(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk))
 !                  IF(DIMN.EQ.3) THEN
 !                     ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
 !                     ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
@@ -1367,8 +1367,8 @@
 ! skipping indices that do not represent particles and ghost particles
             if(.not.pea(np,1)) cycle
             if(pea(np,4)) cycle
-! Revised by Handan Liu for OpenMP implementation 
-!===================================================================<< Handan Liu			
+! Revised by Handan Liu for OpenMP implementation
+!===================================================================<< Handan Liu
 !            IF (DIMN .EQ. 2) THEN
 !               CALL interpolator(gstencil(1:onew,1:onew,1,1:dimn), &
 !                    vstencil(1:onew,1:onew,1,1:dimn), &
@@ -1381,17 +1381,17 @@
 !                    onew,interp_scheme,weightp)
 !            ENDIF
             if (dimn .eq. 2) then
-			   desposnew(1:2) = des_pos_new(np,1:2)
-			   call DRAG_INTERPLATION_2D(gst_tmp(1:onew,1:onew,1,1:dimn),&
-					vst_tmp(1:onew,1:onew,1,1:dimn),desposnew,velfp,weight_ft)
-			else 
-			   desposnew(1:3) = des_pos_new(np,1:3)
-			   call DRAG_INTERPLATION_3D(gst_tmp(1:onew,1:onew,1:onew,1:dimn),&
-					vst_tmp(1:onew,1:onew,1:onew,1:dimn),desposnew,velfp,weight_ft)					
-			endif
+                           desposnew(1:2) = des_pos_new(np,1:2)
+                           call DRAG_INTERPLATION_2D(gst_tmp(1:onew,1:onew,1,1:dimn),&
+                                        vst_tmp(1:onew,1:onew,1,1:dimn),desposnew,velfp,weight_ft)
+                        else
+                           desposnew(1:3) = des_pos_new(np,1:3)
+                           call DRAG_INTERPLATION_3D(gst_tmp(1:onew,1:onew,1:onew,1:dimn),&
+                                        vst_tmp(1:onew,1:onew,1:onew,1:dimn),desposnew,velfp,weight_ft)
+                        endif
             vel_fp(np,1:dimn) = velfp(1:dimn)
 !===================================================================>> Handan Liu
-!			
+!
 ! Calculate the particle centered drag coefficient (F_GP) using the
 ! particle velocity and the interpolated gas velocity.  Note F_GP
 ! obtained from des_drag_gp subroutine is given as:
@@ -1402,8 +1402,8 @@
             CALL DES_DRAG_GP(NP, VEL_FP(NP,1:DIMN), &
                DES_VEL_NEW(NP,1:DIMN))
 !-----------------------------------------------------------------<<<
-! Calculate the corresponding gas solids drag force that is used in 
-! the gas phase momentum balances.               
+! Calculate the corresponding gas solids drag force that is used in
+! the gas phase momentum balances.
 !----------------------------------------------------------------->>>
             focus = .false.
             M = pijk(np,5)
@@ -1413,17 +1413,17 @@
             DO k = 1, (3-dimn)*1+(dimn-2)*onew
                DO j = 1, onew
                   DO i = 1, onew
-! shift loop index to new variables for manipulation                     
+! shift loop index to new variables for manipulation
                      ii = iw + i-1
                      jj = js + j-1
                      kk = kb + k-1
-! The interpolation is done using node. so one should use consistent 
-! numbering system. in the current version imap_c is used instead of 
+! The interpolation is done using node. so one should use consistent
+! numbering system. in the current version imap_c is used instead of
 ! ip_of or im_of
                      icur = imap_c(ii)
                      jcur = jmap_c(jj)
                      kcur = kmap_c(kk)
-                     cur_ijk = funijk(icur, jcur, kcur) 
+                     cur_ijk = funijk(icur, jcur, kcur)
 
 ! Replacing the volume of cell to volume at the node
                      vcell = des_vol_node(cur_ijk)
@@ -1431,20 +1431,20 @@
 
 ! first remove the velocity component at this grid point from the vel_fp
                      drag_bm_tmp(1:dimn) = vel_fp(np, 1:dimn) - &
-                     !weightp(i,j,k)*vstencil(i,j,k, 1:dimn)	!Handan Liu revised on Jan 15 2013
+                     !weightp(i,j,k)*vstencil(i,j,k, 1:dimn)    !Handan Liu revised on Jan 15 2013
                      weight_ft(i,j,k)*vst_tmp(i,j,k, 1:dimn)
 ! now find the remaning drag force
                      drag_bm_tmp(1:dimn) = des_vel_new(np,1:dimn) !- drag_bm_tmp(1:dimn)
 
 !!$omp critical
                      drag_am(cur_ijk,m) = drag_am(cur_ijk,m) + &
-                     !f_gp(np)*weightp(i,j,k)*ovol*wtp		!Handan Liu revised on Jan 15 2013
+                     !f_gp(np)*weightp(i,j,k)*ovol*wtp          !Handan Liu revised on Jan 15 2013
                      f_gp(np)*weight_ft(i,j,k)*ovol*wtp
 
                      drag_bm(cur_ijk, 1:dimn,m) = &
                      drag_bm(cur_ijk,1:dimn,m) + &
                      f_gp(np) * drag_bm_tmp(1:dimn) * &
-                     !weightp(i,j,k)*ovol*wtp 		!Handan Liu revised on Jan 15 2013
+                     !weightp(i,j,k)*ovol*wtp           !Handan Liu revised on Jan 15 2013
                      weight_ft(i,j,k)*ovol*wtp
 !!$omp end critical
                   ENDDO
@@ -1455,25 +1455,25 @@
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 !$omp end parallel
 !!$      omp_end=omp_get_wtime()
-!!$      write(*,*)'drag_interp:',omp_end - omp_start  
+!!$      write(*,*)'drag_interp:',omp_end - omp_start
 
 ! At the interface drag_am and drag_bm have to be added
-! send recv will be called and the node values will be added 
-! at the junction. drag_am are drag_bm are altered by the 
+! send recv will be called and the node values will be added
+! at the junction. drag_am are drag_bm are altered by the
 ! routine when periodic boundaries are invoked. so both
 ! quantities are needed at the time of this call.
       call des_addnodevalues
 !-----------------------------------------------------------------<<<
-! Calculate/update the cell centered drag coefficient F_GS for use 
+! Calculate/update the cell centered drag coefficient F_GS for use
 ! in the pressure correction equation
 !----------------------------------------------------------------->>>
 ! avg_factor=0.125 (in 3D) or =0.25 (in 2D)
       AVG_FACTOR = 0.125D0*(DIMN-2) + 0.25D0*(3-DIMN)
-	  
+
 !$omp parallel do default(shared)                               &
-!$omp private(ijk,i,j,k,imjk,ijmk,imjmk,ijkm,imjkm,ijmkm,       & 
+!$omp private(ijk,i,j,k,imjk,ijmk,imjmk,ijkm,imjkm,ijmkm,       &
 !$omp         imjmkm)                                           &
-!$omp schedule (guided,20)           
+!$omp schedule (guided,20)
       DO ijk = ijkstart3, ijkend3
          IF(FLUID_AT(IJK)) THEN
 
@@ -1520,7 +1520,7 @@
          ENDIF   ! end if/else (fluid_at(ijk))
 
       ENDDO   ! end do loop (ijk=ijkstart3,ijkend3)
-!$omp end parallel do 
+!$omp end parallel do
 !-----------------------------------------------------------------<<<
 
       RETURN
@@ -1548,24 +1548,24 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE DES_DRAG_GP(LL, FLUID_VEL, PARTICLE_VEL) 
+      SUBROUTINE DES_DRAG_GP(LL, FLUID_VEL, PARTICLE_VEL)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE fldvar
       USE geometry
       USE indices
       USE physprop
       USE run
       USE constant
-      USE compar  
-      USE drag  
-      USE sendrecv 
+      USE compar
+      USE drag
+      USE sendrecv
       USE discretelement
-      USE ur_facs 
+      USE ur_facs
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1573,7 +1573,7 @@
 !-----------------------------------------------
 ! particle number id.
       INTEGER , INTENT(IN) :: LL
-! fluid velocity interpolated to particle position      
+! fluid velocity interpolated to particle position
       DOUBLE PRECISION, DIMENSION(DIMN), INTENT(IN) :: FLUID_VEL
 ! particle velocity
       DOUBLE PRECISION, DIMENSION(DIMN), INTENT(IN) :: PARTICLE_VEL
@@ -1583,22 +1583,22 @@
 ! indices, associated with current particle
       INTEGER :: IJK
 ! solids phase index, associated with current particle
-      INTEGER :: M      
-! magnitude of gas-solids relative velocity 
-      DOUBLE PRECISION :: VREL 
+      INTEGER :: M
+! magnitude of gas-solids relative velocity
+      DOUBLE PRECISION :: VREL
 ! gas laminar viscosity redefined here to set viscosity at pressure
 ! boundaries
       DOUBLE PRECISION :: Mu
-! drag coefficient 
-      DOUBLE PRECISION :: DgA  
+! drag coefficient
+      DOUBLE PRECISION :: DgA
 ! current value of F_gs (i.e., without underrelaxation)
-      DOUBLE PRECISION F_gstmp 
+      DOUBLE PRECISION F_gstmp
 ! indices of solids phases (continuous, discrete)
       INTEGER :: CM, DM, L
 ! temporary shift of total number of solids phases to account for both
 ! discrete and continuous solids phases used for the hybrid mdoel
       INTEGER :: MAXM
-! tmp local variable for the particle diameter of solids 
+! tmp local variable for the particle diameter of solids
 ! phase M (continuous or discrete)
       DOUBLE PRECISION :: DP_loc(2*DIM_M)
 ! tmp local variable for the solids volume fraction of solids
@@ -1606,11 +1606,11 @@
       DOUBLE PRECISION :: EPs_loc(2*DIM_M)
 ! tmp local variable for the particle density of solids
 ! phase M (continuous or discrete)
-      DOUBLE PRECISION :: ROs_loc(2*DIM_M)      
+      DOUBLE PRECISION :: ROs_loc(2*DIM_M)
 ! tmp local variable for the shape factor of solids
 ! phase M (continuous or discrete)
-      DOUBLE PRECISION :: PSIs_loc(2*DIM_M)      
-! correction factors for implementing polydisperse drag model 
+      DOUBLE PRECISION :: PSIs_loc(2*DIM_M)
+! correction factors for implementing polydisperse drag model
 ! proposed by van der Hoef et al. (2005)
       DOUBLE PRECISION :: F_cor, tmp_sum, tmp_fac
 ! average particle diameter in polydisperse systems
@@ -1620,17 +1620,17 @@
 ! total solids volume fraction
       DOUBLE PRECISION :: phis
 ! aliases for void fraction, gas density, gas bulk density,
-! solids volume fraction, particle diameter, particle density     
+! solids volume fraction, particle diameter, particle density
       DOUBLE PRECISION :: EPG, ROg, ROPg, EP_SM, DPM, ROs, PSIs
-!-----------------------------------------------    
+!-----------------------------------------------
 ! Include statement functions
-!-----------------------------------------------  
+!-----------------------------------------------
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
-!-----------------------------------------------  
+!-----------------------------------------------
 
-! values based on current particle      
+! values based on current particle
       IJK = PIJK(LL,4)
 ! solids phase index of current particle
       M = PIJK(LL,5)
@@ -1644,7 +1644,7 @@
             DP_loc(DM) = DES_D_p0(DM)
             EPs_loc(DM) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
             ROs_loc(DM) = DES_RO_S(DM)
-            PSIs_loc(DM) = DES_PSI_s(DM)            
+            PSIs_loc(DM) = DES_PSI_s(DM)
          ENDDO
       ELSE   ! des_continuum_hybrid branch
 ! For the hybrid model the diameters and solids volume fractions of
@@ -1663,8 +1663,8 @@
             L = DES_MMAX + CM
             DP_loc(L) = D_P(IJK,CM)
             EPs_loc(L) = EP_S(IJK,CM)
-            ROs_loc(L) = RO_S(IJK,CM)      
-            PSIs_loc(L) = PSI_s(CM)      
+            ROs_loc(L) = RO_S(IJK,CM)
+            PSIs_loc(L) = PSI_s(CM)
          ENDDO
       ENDIF   ! end if/else (.not.des_continuum_hybrid)
 
@@ -1678,15 +1678,15 @@
                      (FLUID_VEL(2) - PARTICLE_VEL(2))**2 +&
                      (FLUID_VEL(3) - PARTICLE_VEL(3))**2)
       ENDIF
-      
+
 ! Laminar viscosity at a pressure boundary is given the value of the
 ! fluid cell next to it. This applies just to the calculation of the
 ! drag, in other routines the value of viscosity at a pressure boundary
-! always has a zero value.      
+! always has a zero value.
 ! This will never happen since this subroutine is currently only called
 ! for fluid_at cells (does not include flow boundaries)
 ! This points to an inconsitency in calculation of drag between
-! continuum and discrete models that is probably not addressed in the 
+! continuum and discrete models that is probably not addressed in the
 ! solution of the gas phase momentum balances
       IF (P_OUTFLOW_AT(IJK)) THEN
          IF( FLUID_AT(EAST_OF(IJK) )) THEN
@@ -1711,9 +1711,9 @@
       DO L = 1, MAXM
 ! this is slightly /= one-ep_g due to round-off
          phis = phis + EPs_loc(L)
-      ENDDO 
+      ENDDO
 
-! calculate the average paricle diameter and particle ratio            
+! calculate the average paricle diameter and particle ratio
       DPA = ZERO
       tmp_sum = ZERO
       tmp_fac = ZERO
@@ -1724,7 +1724,7 @@
           ELSE
             tmp_sum = tmp_sum + ONE/DP_loc(L) ! not important, but will avoid NaN's in empty cells
           ENDIF
-      ENDDO 
+      ENDDO
       DPA = ONE / tmp_sum
       Y_i = DP_loc(M)/DPA
 
@@ -1738,22 +1738,22 @@
       PSIs = PSIs_loc(M)
 
 ! determine the drag coefficient
-      IF (EP_SM <= ZERO) THEN 
+      IF (EP_SM <= ZERO) THEN
 ! this won't happen in DEM case since routine is performed over
 ! particles not cells as in continuum case
-         DgA = ZERO 
-      ELSEIF (EPg == ZERO) THEN  
+         DgA = ZERO
+      ELSEIF (EPg == ZERO) THEN
 ! this case will already be caught in most drag subroutines whenever
 ! RE==0 (for correlations in which RE includes EPg). however, this will
 ! prevent potential divisions by zero in some models by setting it now.
-         DgA = ZERO   
-      ELSE      
+         DgA = ZERO
+      ELSE
 ! determine the drag coefficient
          SELECT CASE(DRAG_TYPE_ENUM)
          CASE (SYAM_OBRIEN)
             CALL DRAG_SYAM_OBRIEN(DgA,EPG,Mu,ROg,VREL,&
                 DPM,PSIs,ROs)
-         CASE (GIDASPOW) 
+         CASE (GIDASPOW)
             CALL DRAG_GIDASPOW(DgA,EPg,Mu,ROg,ROPg,VREL,&
                  DPM,PSIs,ROs)
          CASE (GIDASPOW_PCF)
@@ -1781,12 +1781,12 @@
             CALL DRAG_BVK(DgA,EPg,Mu,ROPg,VREL,&
                  DPM,DPA,phis)
          CASE DEFAULT
-            CALL START_LOG 
+            CALL START_LOG
             IF(DMP_LOG) WRITE (*, '(A,A)') &
                'Unknown DRAG_TYPE: ', DRAG_TYPE
             WRITE (UNIT_LOG, '(A,A)') 'Unknown DRAG_TYPE: ', DRAG_TYPE
-            CALL END_LOG 
-            CALL mfix_exit(myPE)  
+            CALL END_LOG
+            CALL mfix_exit(myPE)
          END SELECT   ! end selection of drag_type
       ENDIF   ! end if/elseif/else (ep_sm <= zero, ep_g==0)
 
@@ -1799,31 +1799,31 @@
          DRAG_TYPE_ENUM == KOCH_HILL_PCF .OR. &
          DRAG_TYPE_ENUM == BVK) THEN
 ! see erratum by Beetstra et al. (2007) : the correction factor differs
-! for model A versus model B. 
+! for model A versus model B.
 ! application of the correction factor for model A is found from
 ! the correction factor for model B and neglects the Y_i**3 term
          IF(Model_B) THEN
             IF (M == 1) THEN
-               F_cor = (EPg*Y_i + phis*Y_i**2) 
+               F_cor = (EPg*Y_i + phis*Y_i**2)
             ELSE
                F_cor = (EPg*Y_i + phis*Y_i**2 + &
-                  0.064d0*EPg*Y_i**3) 
+                  0.064d0*EPg*Y_i**3)
             ENDIF
          ELSE
             F_cor = Y_i
          ENDIF
-         DgA = ONE/(Y_i*Y_i) * DgA * F_cor 
+         DgA = ONE/(Y_i*Y_i) * DgA * F_cor
       ENDIF
 
 ! Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g)
-      IF(MODEL_B) THEN 
+      IF(MODEL_B) THEN
          F_gstmp = DgA * PVOL(LL)/EP_G(IJK)
       ELSE
          F_gstmp = DgA * PVOL(LL)
       ENDIF
 
-! Determine drag force coefficient accounting for any under relaxation      
-! f_gp() =  single particle drag excluding vector(v_g - v_p)   
+! Determine drag force coefficient accounting for any under relaxation
+! f_gp() =  single particle drag excluding vector(v_g - v_p)
       F_gp(LL) = (ONE - UR_F_gs) * F_gp(LL) + UR_F_gs * F_gstmp
 
       RETURN
@@ -1865,8 +1865,8 @@
       USE compar
       USE sendrecv
       USE discretelement
-      use desmpi 
-      USE cutcell 
+      use desmpi
+      USE cutcell
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -1874,27 +1874,27 @@
 ! general i, j, k indices
       INTEGER :: I, J, K, IJK
       INTEGER :: IPJK, IJPK, IJKP, IMJK, IJMK, IJKM
-! see the discussion for IJK_U ..... in comments       
+! see the discussion for IJK_U ..... in comments
       INTEGER :: IJK_U, IJK_V, IJK_W
 ! average solids velocity at scalar cell center in array form
       DOUBLE PRECISION :: VELCS_ARR(DIMN), &
                           VELDS_ARR(DIMN)
 ! local drag force
-      DOUBLE PRECISION :: SS_DRAG (DIMENSION_3, DES_MMAX, DIMN)      
-! Index of continuum solids phase 
+      DOUBLE PRECISION :: SS_DRAG (DIMENSION_3, DES_MMAX, DIMN)
+! Index of continuum solids phase
       INTEGER :: CM, M
 ! Index of discrete solids 'phase'
       INTEGER :: DM, L
-! particle number index, used for looping      
+! particle number index, used for looping
       INTEGER :: NP
-! relative velocity between solids phase m and l 
-      DOUBLE PRECISION :: VREL 
-! particle diameters of phase M and phase L 
-      DOUBLE PRECISION :: D_pm, D_pl 
-! particle densities of phase M and phase L 
-      DOUBLE PRECISION :: RO_M, RO_L 
+! relative velocity between solids phase m and l
+      DOUBLE PRECISION :: VREL
+! particle diameters of phase M and phase L
+      DOUBLE PRECISION :: D_pm, D_pl
+! particle densities of phase M and phase L
+      DOUBLE PRECISION :: RO_M, RO_L
 ! radial distribution function between phase M and L
-      DOUBLE PRECISION :: G0_ML      
+      DOUBLE PRECISION :: G0_ML
 ! Solids volume fraction, and void fraction
       DOUBLE PRECISION :: EP_SM, EPS, EPG
 ! Sum over all phases of ratio volume fraction over particle diameter
@@ -1902,14 +1902,14 @@
 ! one over solids volume fraction in fluid cell and one over the
 ! volume of fluid cell
       DOUBLE PRECISION :: OEPS
-! solid-solid drag coefficient 
+! solid-solid drag coefficient
       DOUBLE PRECISION :: lDss
-! for error messages      
+! for error messages
       INTEGER :: IER
 !-----------------------------------------------
 ! External Functions
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: G_0 
+      DOUBLE PRECISION , EXTERNAL :: G_0
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -1938,7 +1938,7 @@
          IMJK = IM_OF(IJK)
          IJMK = JM_OF(IJK)
          IJKM = KM_OF(IJK)
-         IJK_U = IMJK 
+         IJK_U = IMJK
          IJK_V = IJMK
          IJK_W = IJKM
 
@@ -1947,10 +1947,10 @@
             DO DM = 1, DES_MMAX
                EP_SM = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
 
-               IF(EP_SM.GT.ZERO) THEN               
+               IF(EP_SM.GT.ZERO) THEN
 
-! calculate the cell center average continuum solids velocities. 
-! no manipulation is needed for the discrete solids velocities 
+! calculate the cell center average continuum solids velocities.
+! no manipulation is needed for the discrete solids velocities
 ! since these are already determined at cell centers
 ! ---------------------------------------------------------------->>>
 
@@ -1966,8 +1966,8 @@
                         VELCS_ARR(1) = &
                            (Theta_Ue_bar(IJK_U)*U_S(IJK_U,CM) + &
                             Theta_Ue(IJK_U)    *U_S(IP_OF(IJK_U),CM))
-                     ELSE 
-                        VELCS_ARR(1) = & 
+                     ELSE
+                        VELCS_ARR(1) = &
                            AVG_X_E(U_S(IMJK,CM),U_S(IJK,CM),I)
                      ENDIF
                      IF(CUT_V_TREATMENT_AT(IJK_V)) THEN
@@ -1988,7 +1988,7 @@
                            VELCS_ARR(3) = &
                               (Theta_Wt_bar(IJK_W)*W_S(IJK_W,CM) + &
                                Theta_Wt(IJK_W)    * W_S(KP_OF(IJK_W),CM))
-                        ELSE 
+                        ELSE
                            VELCS_ARR(3) = &
                               AVG_Z_T(W_S(IJKM,CM),W_S(IJK,CM))
                         ENDIF
@@ -2003,8 +2003,8 @@
 ! Update the solids-solids drag coefficient
 ! ---------------------------------------------------------------->>>
 ! setting aliases for easy reference
-                     D_PM = D_P(IJK,CM) 
-                     D_PL = DES_D_P0(DM) 
+                     D_PM = D_P(IJK,CM)
+                     D_PL = DES_D_P0(DM)
                      RO_M = RO_S(IJK,CM)
                      RO_L = DES_RO_S(DM)
 
@@ -2030,15 +2030,15 @@
                      F_SDS(IJK,CM,DM) = lDss*ROP_S(IJK,CM)*&
                         DES_ROP_S(IJK,DM)
 
-! accounting for particle-particle drag due to enduring contact in a 
+! accounting for particle-particle drag due to enduring contact in a
 ! close-packed system
                      IF(CLOSE_PACKED(CM)) F_SDS(IJK,CM,DM) = &
                         F_SDS(IJK,CM,DM) + &
-                        SEGREGATION_SLOPE_COEFFICIENT*P_star(IJK) 
+                        SEGREGATION_SLOPE_COEFFICIENT*P_star(IJK)
 ! ----------------------------------------------------------------<<<
 
 
-! calculating the accumulated solids-solids drag force on discrete 
+! calculating the accumulated solids-solids drag force on discrete
 ! solids phase dm
                      SS_DRAG(IJK,DM,:) = SS_DRAG(IJK,DM,:) - &
                         F_SDS(IJK,CM,DM)*(VELDS_ARR(:)-VELCS_ARR(:))
@@ -2054,15 +2054,15 @@
          ENDIF      ! end if(pinc(ijk).gt.0)
 
       ENDDO         ! end do loop (ijk=ijkstart3, ijkend3)
-!$omp end parallel do          
+!$omp end parallel do
 
 
 !$omp parallel do private(np,ijk,m,ss_drag)                       &
-!$omp schedule (guided,100)    
+!$omp schedule (guided,100)
       DO NP = 1, MAX_PIP
 ! skipping indices that do not represent particles and ghost particles
-         if(.not.pea(np,1)) cycle 
-         if(pea(np,4)) cycle 
+         if(.not.pea(np,1)) cycle
+         if(pea(np,4)) cycle
 
          IJK = PIJK(NP,4)
          M = PIJK(NP,5)
@@ -2072,7 +2072,7 @@
          SD_FORCE(NP,:) = SS_DRAG(IJK,M,:)*PVOL(NP)
          FC(NP,:) = FC(NP,:) + SD_FORCE(NP,:)
 !-----------------------------------------------------------------<<<
-         
+
       ENDDO   ! end do loop (np=1,max_pip)
 !$omp end parallel do
 
@@ -2121,57 +2121,57 @@
       USE discretelement
       USE drag
       USE interpolation
-      use desmpi 
-      USE cutcell 
+      use desmpi
+      USE cutcell
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! indices
       INTEGER :: IJK
-!-----------------------------------------------   
+!-----------------------------------------------
 ! Include statement functions
-!-----------------------------------------------   
+!-----------------------------------------------
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
-!-----------------------------------------------   
+!-----------------------------------------------
 
 ! currently only non-interpolated version available
 
 ! NON-INTERPOLATED fluid-solids drag:
-! Calculate the solids solids drag force on a particle using the cell 
+! Calculate the solids solids drag force on a particle using the cell
 ! averaged particle velocity and the cell average continuum solids
 ! velocity
 !----------------------------------------------------------------->>>
 !      IF(.NOT.DES_INTERP_ON) THEN    !
          CALL CALC_DES_DRAG_SS_NONINTERP
-         RETURN 
+         RETURN
 !      ENDIF
-! end non-interpolated version         
+! end non-interpolated version
 !-----------------------------------------------------------------<<<
 
 
 ! INTERPOLATED solids-solids drag (the rest of this routine):
-! Calculate the solids solids drag coefficient using the particle 
-! velocity and the mth phase continuum solids velocity interpolated 
-! to particle position. 
+! Calculate the solids solids drag coefficient using the particle
+! velocity and the mth phase continuum solids velocity interpolated
+! to particle position.
 !----------------------------------------------------------------->>>
 ! initializations
 !      sd_force(:,:) = ZERO
 
-! interpolated version will require steps to 
-! - interpolate mth phase continuum solids velocity and solids volume 
+! interpolated version will require steps to
+! - interpolate mth phase continuum solids velocity and solids volume
 !   fraction to particle position
 ! - create a routine (des_drag_sp) to calculate the mth phase continuum
-!   solids-particle drag coefficient (f_sp).  
+!   solids-particle drag coefficient (f_sp).
 ! - update the contact force on the particle to include solids-solids
 !   drag
 
 !  loop over all solids phases and all cells and then overall particles
 !  to get mth phase solids velocity at particle position. in particle
 !  loop update contact force to include solids-solids drag
-  
+
 !-----------------------------------------------------------------<<<
 
       END SUBROUTINE CALC_DES_DRAG_SS
@@ -2200,24 +2200,24 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE DES_DRAG_SS 
+      SUBROUTINE DES_DRAG_SS
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE constant
       USE fldvar
       USE geometry
       USE indices
       USE physprop
-      USE compar 
+      USE compar
       USE drag
       USE discretelement
-      use desmpi 
-      USE cutcell 
+      use desmpi
+      USE cutcell
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -2226,9 +2226,9 @@
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-! Indices 
+! Indices
       INTEGER :: I, IJK, IMJK, IJMK, IJKM, IJK_U, IJK_V, IJK_W
-! Index of continuum solids phase 
+! Index of continuum solids phase
       INTEGER :: CM, M
 ! Index of discrete solids 'phase'
       INTEGER :: DM, L
@@ -2237,24 +2237,24 @@
 ! average fluid and solid velocity in array form
       DOUBLE PRECISION :: VELG_ARR(DIMN), &
                           VELDS_ARR(DES_MMAX, DIMN)
-! relative velocity between solids phase m and l 
-      DOUBLE PRECISION :: VREL 
-! particle diameters of phase M and phase L 
-      DOUBLE PRECISION :: D_pm, D_pl 
-! particle densities of phase M and phase L 
-      DOUBLE PRECISION :: RO_M, RO_L 
+! relative velocity between solids phase m and l
+      DOUBLE PRECISION :: VREL
+! particle diameters of phase M and phase L
+      DOUBLE PRECISION :: D_pm, D_pl
+! particle densities of phase M and phase L
+      DOUBLE PRECISION :: RO_M, RO_L
 ! radial distribution function between phase M and L
-      DOUBLE PRECISION :: G0_ML      
+      DOUBLE PRECISION :: G0_ML
 ! Solids volume fraction, and void fraction
       DOUBLE PRECISION :: EPS, EPG
 ! Sum over all phases of ratio volume fraction over particle diameter
       DOUBLE PRECISION :: EPSoDP
-! solid-solid drag coefficient 
+! solid-solid drag coefficient
       DOUBLE PRECISION :: lDss
 !-----------------------------------------------
 ! External Functions
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: G_0 
+      DOUBLE PRECISION , EXTERNAL :: G_0
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -2267,34 +2267,34 @@
 
 
 ! NON-INTERPOLATED solid-solid drag:
-! calculate the gas solids drag coefficient (F_SDS) using the cell 
-! averaged particle velocity and the cell average continuum solids 
+! calculate the gas solids drag coefficient (F_SDS) using the cell
+! averaged particle velocity and the cell average continuum solids
 ! velocity
 !----------------------------------------------------------------->>>
-!      IF (.NOT.DES_INTERP_ON) THEN   
+!      IF (.NOT.DES_INTERP_ON) THEN
       DO CM = 1, MMAX
          DO DM = 1, DES_MMAX
 
-            DO IJK = ijkstart3, ijkend3  
+            DO IJK = ijkstart3, ijkend3
 
                IF (FLUID_AT(IJK) .AND. PINC(IJK) >0) THEN   ! IF(.NOT.WALL_AT(IJK)) THEN?
-                  I = I_OF(IJK) 
-                  IMJK = IM_OF(IJK) 
-                  IJMK = JM_OF(IJK) 
-                  IJKM = KM_OF(IJK) 
-                  IJK_U = IMJK 
+                  I = I_OF(IJK)
+                  IMJK = IM_OF(IJK)
+                  IJMK = JM_OF(IJK)
+                  IJKM = KM_OF(IJK)
+                  IJK_U = IMJK
                   IJK_V = IJMK
-                  IJK_W = IJKM                  
+                  IJK_W = IJKM
 
-! calculating the cell center average continuum and discrete solids 
-! velocities. no manipulation is needed for the discrete soldis 
+! calculating the cell center average continuum and discrete solids
+! velocities. no manipulation is needed for the discrete soldis
 ! velocities since these are already determined at cell centers
                   IF(CUT_U_TREATMENT_AT(IJK_U)) THEN
                      USCM = (Theta_Ue_bar(IJK_U)*U_S(IJK_U,CM) + &
                             Theta_Ue(IJK_U)     *U_S(IP_OF(IJK_U),CM))
-                  ELSE 
-                     USCM = AVG_X_E(U_S(IMJK,CM),U_S(IJK,CM),I) 
-                  ENDIF            
+                  ELSE
+                     USCM = AVG_X_E(U_S(IMJK,CM),U_S(IJK,CM),I)
+                  ENDIF
                   IF(CUT_V_TREATMENT_AT(IJK_V)) THEN
                      VSCM = (Theta_Vn_bar(IJK_V)*V_S(IJK_V,CM) + &
                             Theta_Vn(IJK_V)     *V_S(JP_OF(IJK_V),CM))
@@ -2311,18 +2311,18 @@
                      IF(CUT_W_TREATMENT_AT(IJK_W)) THEN
                         WSCM = (Theta_Wt_bar(IJK_W)*W_S(IJK_W,CM) + &
                                Theta_Wt(IJK_W)     *W_S(KP_OF(IJK_W),CM))
-                     ELSE 
+                     ELSE
                         WSCM = AVG_Z_T(W_S(IJKM,CM),W_S(IJK,CM))
                      ENDIF
                      WSDM = DES_W_S(IJK,DM)
-! calculating the relative velocity in 3D                     
+! calculating the relative velocity in 3D
                      VREL = SQRT((USCM-USDM)**2 + (VSCM-VSDM)**2 +&
-                                 (WSCM-WSDM)**2) 
+                                 (WSCM-WSDM)**2)
                   ENDIF
 
 ! setting aliases for easy reference
-                  D_PM = D_P(IJK,CM) 
-                  D_PL = DES_D_P0(DM) 
+                  D_PM = D_P(IJK,CM)
+                  D_PL = DES_D_P0(DM)
                   RO_M = RO_S(IJK,CM)
                   RO_L = DES_RO_S(DM)
 
@@ -2348,14 +2348,14 @@
                   F_SDS(IJK,CM,DM) = lDss*ROP_S(IJK,CM)*&
                      DES_ROP_S(IJK,DM)
 
-! accounting for particle-particle drag due to enduring contact in a 
+! accounting for particle-particle drag due to enduring contact in a
 ! close-packed system.
                   IF(CLOSE_PACKED(CM)) F_SDS(IJK,CM,DM) = &
                      F_SDS(IJK,CM,DM) + &
-                     SEGREGATION_SLOPE_COEFFICIENT*P_star(IJK) 
+                     SEGREGATION_SLOPE_COEFFICIENT*P_star(IJK)
 
                ELSE   ! else branch of if(fluid_at(ijk) .and. pinc(ijk)>0)
-             
+
                   F_SDS(IJK,CM,DM) = ZERO
 
                ENDIF   ! end if/else (fluid_at(ijk))
@@ -2365,44 +2365,44 @@
 
       RETURN
 
-!      ENDIF   ! endif(.not.des_interp_on)         
+!      ENDIF   ! endif(.not.des_interp_on)
 !-----------------------------------------------------------------<<<
-      
+
 
 ! INTERPOLATED solids-solids drag (the rest of this routine):
-! Calculate the solids-solids drag coefficient using the particle 
+! Calculate the solids-solids drag coefficient using the particle
 ! velocity and the solids velocity interpolated to particle
-! position. 
+! position.
 !----------------------------------------------------------------->>>
-! initializations 
+! initializations
 !      sdrag_am = ZERO
 !      sdrag_bm = ZERO
 
-! interpolated version will require steps to 
-! - interpolate mth phase continuum solids velocity and solids volume 
+! interpolated version will require steps to
+! - interpolate mth phase continuum solids velocity and solids volume
 !   fraction to particle position
 ! - create a routine (des_drag_sp) to calculate the mth phase continuum
-!   solids-particle drag coefficient (f_sp).  
-! - calculate contributions to a and b matrix in mth phase solids 
+!   solids-particle drag coefficient (f_sp).
+! - calculate contributions to a and b matrix in mth phase solids
 !   momentum equations
-  
+
 !-----------------------------------------------------------------<<<
 
-      END SUBROUTINE DES_DRAG_SS 
+      END SUBROUTINE DES_DRAG_SS
 
-	  
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!  Module name: DRAG_INTERPLATION_2D									C 
-!																		C
-!  Purpose: DES - Calculte the fluid velocity interpolated at the  	    C        
-!           particle's location and weights. Replace 'interpolator'     C  
-! 			interface for OpenMP implementation. 						C
-!                                                                    	C
-!  Author: Handan Liu	                           Date: 10-May-2012	C
+!  Module name: DRAG_INTERPLATION_2D                                                                    C
+!                                                                                                                                               C
+!  Purpose: DES - Calculte the fluid velocity interpolated at the           C
+!           particle's location and weights. Replace 'interpolator'     C
+!                       interface for OpenMP implementation.                                            C
+!                                                                       C
+!  Author: Handan Liu                              Date: 10-May-2012    C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
       SUBROUTINE DRAG_INTERPLATION_2D(GSTEN,VSTEN,DESPOS,VELFP,WEIGHTFACTOR)
-      
+
       IMPLICIT NONE
 
       DOUBLE PRECISION, DIMENSION(2,2,1,2), INTENT(IN):: GSTEN
@@ -2411,7 +2411,7 @@
       DOUBLE PRECISION, DIMENSION(2), INTENT(OUT) :: VELFP
       DOUBLE PRECISION :: INTERP_SCL
 
-      DOUBLE PRECISION, DIMENSION(6,6,6) :: WEIGHTFACTOR
+      DOUBLE PRECISION, DIMENSION(2,2,2) :: WEIGHTFACTOR
 
       INTEGER:: I, J
       DOUBLE PRECISION, DIMENSION(2) :: XXVAL, YYVAL
@@ -2433,9 +2433,8 @@
          YYVAL(2)=ZETAA(2)
       END SELECT
       ENDDO
-      
+
       VELFP(:) = 0.D0
-      WEIGHTFACTOR = 0.0D0
       INTERP_SCL = 0.0
       DO J=1,2
          DO I=1,2
@@ -2444,43 +2443,43 @@
          ENDDO
       ENDDO
       VELFP(1) = INTERP_SCL
-      
+
       DO J=1,2
          DO I=1,2
             VELFP(2) = VELFP(2) + VSTEN(I,J,1,2)*WEIGHTFACTOR(I,J,1)
          ENDDO
       ENDDO
-      
+
       END SUBROUTINE DRAG_INTERPLATION_2D
-	
-	  
+
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!  Module name: DRAG_INTERPLATION_3D									C 
-!  Purpose: DES - Calculte the fluid velocity interpolated at the  	    C        
-!           particle's location and weights. Replace 'interpolator'     C  
-! 			interface for OpenMP implementation. 						C
-!                                                                    	C
-!  Author: Handan Liu	                           Date: 18-August-2012	C
+!  Module name: DRAG_INTERPLATION_3D                                                                    C
+!  Purpose: DES - Calculte the fluid velocity interpolated at the           C
+!           particle's location and weights. Replace 'interpolator'     C
+!                       interface for OpenMP implementation.                                            C
+!                                                                       C
+!  Author: Handan Liu                              Date: 18-August-2012 C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
       SUBROUTINE DRAG_INTERPLATION_3D(GSTEN,VSTEN,DESPOS,VELFP,WEIGHTFACTOR)
-      
+
       IMPLICIT NONE
-      
+
       DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(IN):: GSTEN
       DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(IN):: VSTEN
       DOUBLE PRECISION, DIMENSION(3), INTENT(IN):: DESPOS
       DOUBLE PRECISION, DIMENSION(3), INTENT(OUT) :: VELFP
       DOUBLE PRECISION :: INTERP_SCL
       DOUBLE PRECISION, DIMENSION(3) :: INTERP_VEC
-      DOUBLE PRECISION, DIMENSION(6,6,6), INTENT(OUT) :: WEIGHTFACTOR
+      DOUBLE PRECISION, DIMENSION(2,2,2), INTENT(OUT) :: WEIGHTFACTOR
       INTEGER :: VEC_SIZE, NV
       INTEGER :: I, J, K
 
       DOUBLE PRECISION, DIMENSION(2) :: XXVAL, YYVAL, ZZVAL
       DOUBLE PRECISION, DIMENSION(1) :: DXX, DYY, DZZ
       DOUBLE PRECISION, DIMENSION(3) :: ZETAA
-      
+
       DXX(1) = GSTEN(2,1,1,1) - GSTEN(1,1,1,1)
       DYY(1) = GSTEN(1,2,1,2) - GSTEN(1,1,1,2)
       DZZ(1) = GSTEN(1,1,2,3) - GSTEN(1,1,1,3)
@@ -2500,8 +2499,7 @@
          ZZVAL(2)=ZETAA(3)
       END SELECT
       ENDDO
-      
-      WEIGHTFACTOR = 0.0D0
+
       DO K=1,2
          DO J=1,2
             DO I=1,2
@@ -2509,7 +2507,7 @@
             ENDDO
          ENDDO
       ENDDO
-      
+
       INTERP_SCL = 0.0
       DO K=1,2
          DO J=1,2
@@ -2519,7 +2517,7 @@
          ENDDO
       ENDDO
       VELFP(1) = INTERP_SCL
-      
+
       VEC_SIZE = SIZE(VSTEN,4)
       DO NV=2,VEC_SIZE
          INTERP_VEC(NV) = 0.0
@@ -2533,6 +2531,6 @@
       ENDDO
       VELFP(2) = INTERP_VEC(2)
       VELFP(3) = INTERP_VEC(3)
-		
+
       END SUBROUTINE DRAG_INTERPLATION_3D
-	
+

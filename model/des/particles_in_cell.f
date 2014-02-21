@@ -750,7 +750,7 @@
       double precision :: NORM_FACTOR
 !Handan Liu added on Jan 17 2013     
 	  DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
-	  DOUBLE PRECISION, DIMENSION(6,6,6) :: weight_ft
+	  DOUBLE PRECISION, DIMENSION(2,2,2) :: weight_ft
 	  DOUBLE PRECISION :: desposnew(dimn)      
 !-----------------------------------------------
 ! Include statement functions
