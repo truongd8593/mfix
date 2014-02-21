@@ -150,7 +150,7 @@
 !$omp          dist_old,distmod_old,normal_old,                   &
 !$omp          vrn_old,v_rel_norm_old,                            &
 !$omp          phasei,kn_des,kt_des,etan_des,etat_des,            &
-!!$omp          Idimn,force_coh,eq_radius,distapart,norm_dist,maggravity)          
+!!$omp          Idimn,force_coh,eq_radius,distapart,norm_dist,maggravity)
 !!$omp do reduction(max:NEIGH_MAX,OVERLAP_MAX) schedule (dynamic,50)
 ! Revised by Handan Liu on Jan 17 2013
 !$omp          Idimn,force_coh,eq_radius,distapart,norm_dist)
@@ -192,7 +192,7 @@
 
 
 ! Check neighbor history of particle LL and update arrays as needed
-! ---------------------------------------------------------------->>>         
+! ---------------------------------------------------------------->>>
          IF(PN(LL,1).GE.1) THEN
             NLIM = PN(LL,1)+1
             N_NOCON = 0
@@ -217,22 +217,16 @@
                   PN(LL,1) = PN(LL,1) - 1
                ENDIF
             ENDDO
-         ENDIF
 
-! Initializing rest of the neighbor list which is not in contact and
-! clean up after the above array left shifts
-         NLIM = MAX(2,PN(LL,1) + 2)
-         PN(LL,NLIM:MAXNEIGHBORS) = -1
-         PFT(LL,NLIM:MAXNEIGHBORS,:) = ZERO
-         PFN(LL,NLIM:MAXNEIGHBORS,:) = ZERO
-         IF (PN(LL,1) .GT. NEIGH_MAX) NEIGH_MAX = PN(LL,1)
-
-
-! Initializing the neighbor list contact information when particles are
-! not in contact; i.e. when particle LL has no neighbors
-         IF (PN(LL,1).EQ.0) THEN
-            PFT(LL,:,:) = ZERO
-            PFN(LL,:,:) = ZERO
+            ! Initializing rest of the neighbor list which is not in contact and
+            ! clean up after the above array left shifts
+            IF (N_NOCON .GT. 0) THEN
+               NLIM = MAX(2,PN(LL,1) + 2)
+               PN(LL,NLIM:MAXNEIGHBORS) = -1
+               PFT(LL,NLIM:MAXNEIGHBORS,:) = ZERO
+               PFN(LL,NLIM:MAXNEIGHBORS,:) = ZERO
+            ENDIF
+            NEIGH_MAX = MAX(NEIGH_MAX,PN(LL,1))
          ENDIF
 
 ! Reset the flag array PV; during each call to calc_force_des this
@@ -241,7 +235,7 @@
 ! particle LL neighbor history above
          PV(LL,2:MAXNEIGHBORS) = 0
 
-! End check neighbor history and update of corresponding history arrays         
+! End check neighbor history and update of corresponding history arrays
 ! ----------------------------------------------------------------<<<
 
 
@@ -405,7 +399,7 @@
 ! ---------------------------------------------------------------->>>
 ! Old procedure
 !                  PFT(LL,NI,:) = PFT(LL,NI,:)+OVERLAP_T*TANGENT(:)
-!                  PFT_TMP(:) = PFT(LL,NI,:)    ! update pft_tmp before it used 
+!                  PFT_TMP(:) = PFT(LL,NI,:)    ! update pft_tmp before it used
 !                  PFT_TMP(:) = PFT(LL,NI,:) - &
 !                     DES_DOTPRDCT(PFT_TMP,NORMAL)*NORMAL(:)
 
@@ -499,7 +493,7 @@
 
                      PARTICLE_SLIDE = .FALSE.
 
-                  ENDIF   ! IF(R_LM - DISTMOD.GT.SMALL_NUMBER) -> resolve collision                     
+                  ENDIF   ! IF(R_LM - DISTMOD.GT.SMALL_NUMBER) -> resolve collision
 
               ENDIF   ! end if (wallcontact.eq.1)
            ENDDO   ! end do iw = 1,nwalls
