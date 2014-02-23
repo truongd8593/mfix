@@ -129,7 +129,7 @@
          DES_X_s(:,:) = ZERO
          Q_Source(:) = ZERO
          avgDES_T_s(:) = ZERO
-         IF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') &
+         IF (INTG_ADAMS_BASHFORTH) &
             Q_Source0(:) = ZERO
       ENDIF
 
@@ -137,7 +137,7 @@
          DES_R_sp(:,:) = ZERO
          DES_R_sc(:,:) = ZERO
          Qint(:) = ZERO
-         IF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') THEN
+         IF (INTG_ADAMS_BASHFORTH) THEN
             dMdt_OLD(:) = ZERO
             dXdt_OLD(:,:) = ZERO
             dRdt_OLD(:) = ZERO

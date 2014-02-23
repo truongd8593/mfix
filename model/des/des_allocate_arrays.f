@@ -326,7 +326,7 @@
 ! Average solids temperature in fluid cell
          Allocate(avgDES_T_s(DIMENSION_3) )
 ! Allocate the history variables for Adams-Bashforth integration
-         IF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') &
+         IF (INTG_ADAMS_BASHFORTH) &
             Allocate( Q_Source0( NPARTICLES ) )
       ENDIF
 ! End Thermodynamic Allocation
@@ -350,7 +350,7 @@
 
 
 ! Allocate the history variables for Adams-Bashforth integration
-         IF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') THEN
+         IF (INTG_ADAMS_BASHFORTH) THEN
 ! Rate of chnage of particle mass
             Allocate( dMdt_OLD( NPARTICLES ) )
 ! Rate of chnage of particle mass percent species

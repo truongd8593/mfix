@@ -48,7 +48,7 @@
 
 ! Second-order Adams-Bashforth scheme defaults to Euler on first pass.
       IF(FIRST_PASS) THEN
-         IF(trim(DES_INTG_METHOD).NE.'EULER') &
+         IF(INTG_EULER) &
             Q_Source0(:) = Q_Source(:)/ (PMASS(:) * DES_C_ps(:))
          FIRST_PASS = .FALSE.
       ENDIF
@@ -74,7 +74,7 @@
 ! Skip indices that represent ghost particles
             IF(PEA(NP,4)) CYCLE lNP_LP
 ! Advance particle position, velocity
-            IF (trim(DES_INTG_METHOD) .EQ. 'EULER') THEN
+            IF (INTG_EULER) THEN
 ! First-order method
                DES_T_s_NEW(NP) = DES_T_s_OLD(NP) + &
                   DTSOLID*(Q_Source(NP) / (PMASS(NP) * DES_C_ps(NP)))
