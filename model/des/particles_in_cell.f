@@ -898,15 +898,8 @@
                CALL MFIX_EXIT(myPE)
             ENDIF
 
-            if (dimn .eq. 2) then
-               desposnew(1:2) = des_pos_new(np,1:2)
-               call DRAG_INTERPLATION_2D(gst_tmp(1:onew,1:onew,1,1:dimn),&
-               vst_tmp(1:onew,1:onew,1,1:dimn),desposnew,JUNK_VAL(1:DIMN),weight_ft)
-            else 
-               desposnew(1:3) = des_pos_new(np,1:3)
-               call DRAG_INTERPLATION_3D(gst_tmp(1:onew,1:onew,1:onew,1:dimn),&
-               vst_tmp(1:onew,1:onew,1:onew,1:dimn),desposnew,JUNK_VAL(1:DIMN),weight_ft)				   
-            endif
+            desposnew(:) = des_pos_new(np,:)
+            call DRAG_INTERPOLATION(dimn,gst_tmp,vst_tmp,desposnew,JUNK_VAL,weight_ft)
 !===================================================================>>> Handan Liu 
 
             M = PIJK(NP,5)

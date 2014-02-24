@@ -50,6 +50,8 @@
 ! 5. Set the intermediate variable D_FORCE(dimn) in CALC_DES_DRAG_GS to replace
 !        GD_FORCE(np,dimn) in order to reduce the calculation time      at Jan 14 2013
 
+! 2014-02-24 mmeredith combined the above into one DRAG_INTERPOLATION() subroutine
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: COMPUTE_PG_GRAD_CG                                      C
@@ -491,15 +493,8 @@
 !                    des_pos_new(np,1:dimn),vel_fp(np,1:dimn),  &
 !                    onew,interp_scheme,weightp)
 !            ENDIF
-            if (dimn .eq. 2) then
-                           desposnew(1:2) = des_pos_new(np,1:2)
-                           call DRAG_INTERPLATION_2D(gst_tmp(1:onew,1:onew,1,1:dimn),&
-                                        vst_tmp(1:onew,1:onew,1,1:dimn),desposnew,velfp,weight_ft)
-                        else
-                           desposnew(1:3) = des_pos_new(np,1:3)
-                           call DRAG_INTERPLATION_3D(gst_tmp(1:onew,1:onew,1:onew,1:dimn),&
-                                        vst_tmp(1:onew,1:onew,1:onew,1:dimn),desposnew,velfp,weight_ft)
-                        endif
+            desposnew(:) = des_pos_new(np,:)
+            call DRAG_INTERPOLATION(dimn,gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
             vel_fp(np,1:dimn) = velfp(1:dimn)
 !===================================================================>> Handan Liu
 
@@ -1054,15 +1049,8 @@
 !                    des_pos_new(np,1:dimn),vel_fp(np,1:dimn),  &
 !                    onew,interp_scheme,weightp)
 !            ENDIF
-            if (dimn .eq. 2) then
-               desposnew(1:2) = des_pos_new(np,1:2)
-               call DRAG_INTERPLATION_2D(gst_tmp(1:onew,1:onew,1,1:dimn),&
-               vst_tmp(1:onew,1:onew,1,1:dimn),desposnew,velfp,weight_ft)
-            else
-               desposnew(1:3) = des_pos_new(np,1:3)
-               call DRAG_INTERPLATION_3D(gst_tmp(1:onew,1:onew,1:onew,1:dimn),&
-               vst_tmp(1:onew,1:onew,1:onew,1:dimn),desposnew,velfp,weight_ft)
-            endif
+            desposnew(:) = des_pos_new(np,:)
+            call DRAG_INTERPOLATION(dimn,gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
             vel_fp(np,1:dimn) = velfp(1:dimn)
 !===================================================================>> Handan Liu
 !
@@ -1073,7 +1061,7 @@
 ! The drag force on each particle is equal to:
 !    beta(u_g-u_s)*vol_p/eps.
 ! Therefore, the drag force = f_gp*(u_g - u_s)
-            CALL DES_DRAG_GP(NP, VEL_FP(NP,1:DIMN), &
+            CALL DES_DRAG_GP(NP, velfp(1:DIMN), &
                DES_VEL_NEW(NP,1:DIMN))
 
 ! Calculate the gas-solids drag force on the particle
@@ -1380,15 +1368,8 @@
 !                    des_pos_new(np,1:dimn),vel_fp(np,1:dimn),  &
 !                    onew,interp_scheme,weightp)
 !            ENDIF
-            if (dimn .eq. 2) then
-                           desposnew(1:2) = des_pos_new(np,1:2)
-                           call DRAG_INTERPLATION_2D(gst_tmp(1:onew,1:onew,1,1:dimn),&
-                                        vst_tmp(1:onew,1:onew,1,1:dimn),desposnew,velfp,weight_ft)
-                        else
-                           desposnew(1:3) = des_pos_new(np,1:3)
-                           call DRAG_INTERPLATION_3D(gst_tmp(1:onew,1:onew,1:onew,1:dimn),&
-                                        vst_tmp(1:onew,1:onew,1:onew,1:dimn),desposnew,velfp,weight_ft)
-                        endif
+            desposnew(:) = des_pos_new(np,:)
+            call DRAG_INTERPOLATION(dimn,gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
             vel_fp(np,1:dimn) = velfp(1:dimn)
 !===================================================================>> Handan Liu
 !
@@ -1399,7 +1380,7 @@
 ! The drag force on each particle is equal to:
 !    beta(u_g-u_s)*vol_p/eps.
 ! Therefore, the drag force = f_gp*(u_g - u_s)
-            CALL DES_DRAG_GP(NP, VEL_FP(NP,1:DIMN), &
+            CALL DES_DRAG_GP(NP, velfp(1:DIMN), &
                DES_VEL_NEW(NP,1:DIMN))
 !-----------------------------------------------------------------<<<
 ! Calculate the corresponding gas solids drag force that is used in
@@ -2390,147 +2371,72 @@
 
       END SUBROUTINE DES_DRAG_SS
 
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!  Module name: DRAG_INTERPLATION_2D                                                                    C
-!                                                                                                                                               C
-!  Purpose: DES - Calculte the fluid velocity interpolated at the           C
+!  Subroutine: DRAG_INTERPOLATION                                       C
+!  Purpose: DES - Calculate the fluid velocity interpolated at the      C
 !           particle's location and weights. Replace 'interpolator'     C
-!                       interface for OpenMP implementation.                                            C
+!                       interface for OpenMP implementation.            C
 !                                                                       C
-!  Author: Handan Liu                              Date: 10-May-2012    C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
-      SUBROUTINE DRAG_INTERPLATION_2D(GSTEN,VSTEN,DESPOS,VELFP,WEIGHTFACTOR)
+      SUBROUTINE DRAG_INTERPOLATION(DIMN,GSTEN,VSTEN,DESPOS,VELFP,WEIGHTFACTOR)
 
-      IMPLICIT NONE
+        IMPLICIT NONE
 
-      DOUBLE PRECISION, DIMENSION(2,2,1,2), INTENT(IN):: GSTEN
-      DOUBLE PRECISION, DIMENSION(2,2,1,2), INTENT(IN):: VSTEN
-      DOUBLE PRECISION, DIMENSION(2), INTENT(IN):: DESPOS
-      DOUBLE PRECISION, DIMENSION(2), INTENT(OUT) :: VELFP
-      DOUBLE PRECISION :: INTERP_SCL
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------
+        INTEGER, INTENT(IN) :: DIMN
+        DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(IN):: GSTEN
+        DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(IN):: VSTEN
+        DOUBLE PRECISION, DIMENSION(3), INTENT(IN):: DESPOS
+        DOUBLE PRECISION, DIMENSION(3), INTENT(OUT) :: VELFP
+        DOUBLE PRECISION, DIMENSION(2,2,2), INTENT(OUT) :: WEIGHTFACTOR
+        INTEGER :: II, JJ, KK
 
-      DOUBLE PRECISION, DIMENSION(2,2,2) :: WEIGHTFACTOR
+        DOUBLE PRECISION, DIMENSION(2) :: XXVAL, YYVAL, ZZVAL
+        DOUBLE PRECISION :: DXX, DYY, DZZ
+        DOUBLE PRECISION, DIMENSION(3) :: ZETAA
 
-      INTEGER:: I, J
-      DOUBLE PRECISION, DIMENSION(2) :: XXVAL, YYVAL
-      DOUBLE PRECISION, DIMENSION(1) :: DXX, DYY
-      DOUBLE PRECISION, DIMENSION(2):: ZETAA
+        DXX = GSTEN(2,1,1,1) - GSTEN(1,1,1,1)
+        DYY = GSTEN(1,2,1,2) - GSTEN(1,1,1,2)
 
-      DXX(1) = GSTEN(2,1,1,1) - GSTEN(1,1,1,1)
-      DYY(1) = GSTEN(1,2,1,2) - GSTEN(1,1,1,2)
-      ZETAA(1:2) = DESPOS(1:2) - GSTEN(1,1,1,1:2)
-      ZETAA(1) = ZETAA(1)/DXX(1)
-      ZETAA(2) = ZETAA(2)/DYY(1)
-      DO I=1,2
-         SELECT CASE(I)
-      CASE(1)
-         XXVAL(1)=1-ZETAA(1)
-         YYVAL(1)=1-ZETAA(2)
-      CASE(2)
-         XXVAL(2)=ZETAA(1)
-         YYVAL(2)=ZETAA(2)
-      END SELECT
-      ENDDO
+        ZETAA(1:2) = DESPOS(1:2) - GSTEN(1,1,1,1:2)
 
-      VELFP(:) = 0.D0
-      INTERP_SCL = 0.0
-      DO J=1,2
-         DO I=1,2
-            WEIGHTFACTOR(I,J,1) = XXVAL(I)*YYVAL(J)
-            INTERP_SCL = INTERP_SCL + VSTEN(I,J,1,1)*WEIGHTFACTOR(I,J,1)
-         ENDDO
-      ENDDO
-      VELFP(1) = INTERP_SCL
+        ZETAA(1) = ZETAA(1)/DXX
+        ZETAA(2) = ZETAA(2)/DYY
 
-      DO J=1,2
-         DO I=1,2
-            VELFP(2) = VELFP(2) + VSTEN(I,J,1,2)*WEIGHTFACTOR(I,J,1)
-         ENDDO
-      ENDDO
+        XXVAL(1)=1-ZETAA(1)
+        YYVAL(1)=1-ZETAA(2)
+        XXVAL(2)=ZETAA(1)
+        YYVAL(2)=ZETAA(2)
 
-      END SUBROUTINE DRAG_INTERPLATION_2D
+        VELFP(:) = 0.D0
 
+        IF (DIMN.EQ.2) THEN
+           DO JJ=1,2
+              DO II=1,2
+                 WEIGHTFACTOR(II,JJ,1) = XXVAL(II)*YYVAL(JJ)
+                 VELFP(1:2) = VELFP(1:2) + VSTEN(II,JJ,1,1:2)*WEIGHTFACTOR(II,JJ,1)
+              ENDDO
+           ENDDO
+        ELSEIF (DIMN.EQ.3) THEN
+           DZZ = GSTEN(1,1,2,3) - GSTEN(1,1,1,3)
+           ZETAA(3) = DESPOS(3) - GSTEN(1,1,1,3)
+           ZETAA(3) = ZETAA(3)/DZZ
+           ZZVAL(1)=1-ZETAA(3)
+           ZZVAL(2)=ZETAA(3)
+           DO KK=1,2
+              DO JJ=1,2
+                 DO II=1,2
+                    WEIGHTFACTOR(II,JJ,KK) = XXVAL(II)*YYVAL(JJ)*ZZVAL(KK)
+                    VELFP(1:3) = VELFP(1:3) + VSTEN(II,JJ,KK,1:3)*WEIGHTFACTOR(II,JJ,KK)
+                 ENDDO
+              ENDDO
+           ENDDO
+        ELSE
+           STOP "DIMN must be 2 or 3"
+        ENDIF
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!  Module name: DRAG_INTERPLATION_3D                                                                    C
-!  Purpose: DES - Calculte the fluid velocity interpolated at the           C
-!           particle's location and weights. Replace 'interpolator'     C
-!                       interface for OpenMP implementation.                                            C
-!                                                                       C
-!  Author: Handan Liu                              Date: 18-August-2012 C
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-
-      SUBROUTINE DRAG_INTERPLATION_3D(GSTEN,VSTEN,DESPOS,VELFP,WEIGHTFACTOR)
-
-      IMPLICIT NONE
-
-      DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(IN):: GSTEN
-      DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(IN):: VSTEN
-      DOUBLE PRECISION, DIMENSION(3), INTENT(IN):: DESPOS
-      DOUBLE PRECISION, DIMENSION(3), INTENT(OUT) :: VELFP
-      DOUBLE PRECISION :: INTERP_SCL
-      DOUBLE PRECISION, DIMENSION(3) :: INTERP_VEC
-      DOUBLE PRECISION, DIMENSION(2,2,2), INTENT(OUT) :: WEIGHTFACTOR
-      INTEGER :: VEC_SIZE, NV
-      INTEGER :: I, J, K
-
-      DOUBLE PRECISION, DIMENSION(2) :: XXVAL, YYVAL, ZZVAL
-      DOUBLE PRECISION, DIMENSION(1) :: DXX, DYY, DZZ
-      DOUBLE PRECISION, DIMENSION(3) :: ZETAA
-
-      DXX(1) = GSTEN(2,1,1,1) - GSTEN(1,1,1,1)
-      DYY(1) = GSTEN(1,2,1,2) - GSTEN(1,1,1,2)
-      DZZ(1) = GSTEN(1,1,2,3) - GSTEN(1,1,1,3)
-      ZETAA(1:3) = DESPOS(1:3) - GSTEN(1,1,1,1:3)
-      ZETAA(1) = ZETAA(1)/DXX(1)
-      ZETAA(2) = ZETAA(2)/DYY(1)
-      ZETAA(3) = ZETAA(3)/DZZ(1)
-      DO I=1,2
-         SELECT CASE(I)
-      CASE(1)
-         XXVAL(1)=1-ZETAA(1)
-         YYVAL(1)=1-ZETAA(2)
-         ZZVAL(1)=1-ZETAA(3)
-      CASE(2)
-         XXVAL(2)=ZETAA(1)
-         YYVAL(2)=ZETAA(2)
-         ZZVAL(2)=ZETAA(3)
-      END SELECT
-      ENDDO
-
-      DO K=1,2
-         DO J=1,2
-            DO I=1,2
-               WEIGHTFACTOR(I,J,K) = XXVAL(I)*YYVAL(J)*ZZVAL(K)
-            ENDDO
-         ENDDO
-      ENDDO
-
-      INTERP_SCL = 0.0
-      DO K=1,2
-         DO J=1,2
-            DO I=1,2
-               INTERP_SCL = INTERP_SCL + VSTEN(I,J,K,1)*WEIGHTFACTOR(I,J,K)
-            ENDDO
-         ENDDO
-      ENDDO
-      VELFP(1) = INTERP_SCL
-
-      VEC_SIZE = SIZE(VSTEN,4)
-      DO NV=2,VEC_SIZE
-         INTERP_VEC(NV) = 0.0
-         DO K=1,2
-            DO J=1,2
-               DO I=1,2
-                  INTERP_VEC(NV) = INTERP_VEC(NV) + VSTEN(I,J,K,NV)*WEIGHTFACTOR(I,J,K)
-               ENDDO
-            ENDDO
-         ENDDO
-      ENDDO
-      VELFP(2) = INTERP_VEC(2)
-      VELFP(3) = INTERP_VEC(3)
-
-      END SUBROUTINE DRAG_INTERPLATION_3D
+      END SUBROUTINE DRAG_INTERPOLATION
 
