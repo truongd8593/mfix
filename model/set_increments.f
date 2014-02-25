@@ -429,6 +429,7 @@
 !                             determination faster. 
       INTEGER                 DENOTE_CLASS(MAX_CLASS)
 
+   INTEGER :: I_SIZE,J_SIZE,K_SIZE
 
    INTEGER :: clock_start,clock_end,clock_rate
    DOUBLE PRECISION :: elapsed_time,dummysum
@@ -1919,90 +1920,18 @@
 
       IF(NUMPES.GT.1.AND.MYPE.EQ.0) THEN
 
-
-         LIP = DFLOAT(MAXVAL(NEW_IJKSIZE3_ALL)- MINVAL(NEW_IJKSIZE3_ALL))/MINVAL(NEW_IJKSIZE3_ALL)*100.0D0
-
-         P = DFLOAT(MINVAL(NEW_IJKSIZE3_ALL))/DFLOAT(MAXVAL(NEW_IJKSIZE3_ALL))
-
-         MAXSPEEDUP = ONE / ((ONE-P) + P/NumPes)
-
-!         WRITE (*, 1000) '=============================================='
-!         WRITE (*, 1000) 'PARALLEL LOAD BALANCING STATISTICS'
-!         WRITE (*, 1000) 'AFTER RE-INDEXING:'
-!         WRITE (*, 1000) '=============================================='
-!         WRITE (*, 1010) 'MAX CELL COUNT        : ',MAXVAL(NEW_IJKSIZE3_ALL)
-!         WRITE (*, 1010) 'AT PROCESSOR          : ',MAXLOC(NEW_IJKSIZE3_ALL)-1
-!         WRITE (*, 1010) 'MIN CELL COUNT        : ',MINVAL(NEW_IJKSIZE3_ALL)
-!         WRITE (*, 1010) 'AT PROCESSOR          : ',MINLOC(NEW_IJKSIZE3_ALL)-1
-!         WRITE (*, 1010) 'AVG CELL COUNT        : ',SUM(NEW_IJKSIZE3_ALL)/NUMPES
-!         WRITE (*, 1000) ''
-!         WRITE (*, 1030) 'LOAD IMBALANCE (%)    : ',LIP
-!         IF(LIP.NE.0.0D0) THEN
-!            WRITE (*, 1030) 'MAX SPEEDUP        : ',100.0D0/LIP
-!         ELSE
-!            WRITE (*, 1000) 'MAX SPEEDUP        :   INFINITY'
-!         ENDIF 
-!         WRITE (*, 1000) ''
-!         WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DFLOAT(NumPEs)
-!         WRITE (*, 1030) 'MAX SPEEDUP           : ',MAXSPEEDUP
-!         WRITE (*, 1030) 'MAX EFFICIENCY (%)    : ',MAXSPEEDUP/NumPes*100.0D0
-!         WRITE (*, 1000) '=============================================='
-
-
-
-   ! For comparison with old grid size, determine the size in j direction (without adjustment) and add the remainder sequentially
-
-         JSIZE = (JMAX1-JMIN1+1)/NODESJ
-         JSIZE_OLD(0:NODESJ-1) = JSIZE
-
-         JREMAIN = (JMAX1-JMIN1+1) - NODESJ*JSIZE
-         IF (JREMAIN.GE.1) THEN
-            JSIZE_OLD( 0:(JREMAIN-1) ) = JSIZE + 1
-         ENDIF
-
-
-         IF(.NOT.ALLOCATED(JSIZE_ALL)) THEN
-            ALLOCATE(JSIZE_ALL(0:NumPEs-1))
-            JSIZE_ALL = JSIZE_OLD
-         ENDIF
-
-!         WRITE(*,1000)"============================================================================="
-!         WRITE(*,1000)"    PROCESSOR   J-SIZE     # CELLS    J-SIZE    # CELLS    # CELLS   DIFF."
-!         WRITE(*,1000)"               (CURRENT)  (CURRENT) (ADJUSTED) (ADJUSTED) (RE-INDEXED) (%)"
-!         WRITE(*,1000)"============================================================================="
-
-!         DO IPROC = 0,NumPes-1
-!            DIFF_NCPP(IPROC) = DFLOAT(NEW_IJKSIZE3_ALL(IPROC)-NCPP_UNIFORM(IPROC))/DFLOAT(NCPP_UNIFORM(IPROC))*100.0D0
-!            WRITE(*,1060) IPROC,JSIZE_OLD(IPROC),NCPP_UNIFORM(IPROC),JSIZE_ALL(IPROC),BACKGROUND_IJKEND3_ALL(IPROC),NEW_IJKSIZE3_ALL(IPROC),DIFF_NCPP(IPROC)
-!         ENDDO
-!         WRITE(*,1000)"============================================================================="
-!         WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DFLOAT(NumPEs)
-!         WRITE (*, 1030) 'MAX SPEEDUP           : ',MAXSPEEDUP
-!         WRITE (*, 1030) 'MAX EFFICIENCY (%)    : ',MAXSPEEDUP/NumPes*100.0D0
-!         WRITE(*,1000)"============================================================================="
-!         WRITE(*,1070)'MAX # OF CELLS (UNIFORM)    = ',MAXVAL(NCPP_UNIFORM),'     AT PROCESSOR: ',MAXLOC(NCPP_UNIFORM)-1
-!         WRITE(*,1070)'MAX # OF CELLS (RE-INDEXED) = ',MAXVAL(NEW_IJKSIZE3_ALL),'     AT PROCESSOR: ',MAXLOC(NEW_IJKSIZE3_ALL)-1
-!         WRITE(*,1080)'DIFFERENCE (%)              = ',DFLOAT(MAXVAL(NEW_IJKSIZE3_ALL)-MAXVAL(NCPP_UNIFORM))/DFLOAT(MAXVAL(NCPP_UNIFORM))*100.0
-!         WRITE(*,1000)"============================================================================="
-
-
-
-
-
-
          WRITE(*,1000)"============================================================================="
-         WRITE(*,1000)"    PROCESSOR   J-SIZE   # CELLS     # CELLS    DIFF."
-         WRITE(*,1000)"                        (BACKGRD)  (RE-INDEXED) (%)"
+         WRITE(*,1000)"    PROCESSOR    I-SIZE     J-SIZE     K-SIZE    # CELLS    # CELLS   DIFF."
+         WRITE(*,1000)"                                                 (BCKGRD) (RE-INDEXED) (%)"
          WRITE(*,1000)"============================================================================="
 
          DO IPROC = 0,NumPes-1
+         I_SIZE = IEND1 - ISTART1 + 1
+         J_SIZE = JEND1 - JSTART1 + 1
+         K_SIZE = KEND1 - KSTART1 + 1
             DIFF_NCPP(IPROC) = DFLOAT(NEW_IJKSIZE3_ALL(IPROC)-NCPP_UNIFORM(IPROC))/DFLOAT(NCPP_UNIFORM(IPROC))*100.0D0
-            WRITE(*,1065) IPROC,JSIZE_ALL(IPROC),BACKGROUND_IJKEND3_ALL(IPROC),NEW_IJKSIZE3_ALL(IPROC),DIFF_NCPP(IPROC)
+            WRITE(*,1060) IPROC,I_SIZE,J_SIZE,K_SIZE,BACKGROUND_IJKEND3_ALL(IPROC),NEW_IJKSIZE3_ALL(IPROC),DIFF_NCPP(IPROC)
          ENDDO
-         WRITE(*,1000)"============================================================================="
-         WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DFLOAT(NumPEs)
-         WRITE (*, 1030) 'MAX SPEEDUP           : ',MAXSPEEDUP
-         WRITE (*, 1030) 'MAX EFFICIENCY (%)    : ',MAXSPEEDUP/NumPes*100.0D0
          WRITE(*,1000)"============================================================================="
          WRITE(*,1070)'MAX # OF CELLS (BACKGRD)    = ',MAXVAL(NCPP_UNIFORM),'     AT PROCESSOR: ',MAXLOC(NCPP_UNIFORM)-1
          WRITE(*,1070)'MAX # OF CELLS (RE-INDEXED) = ',MAXVAL(NEW_IJKSIZE3_ALL),'     AT PROCESSOR: ',MAXLOC(NEW_IJKSIZE3_ALL)-1
@@ -2010,9 +1939,7 @@
          WRITE(*,1000)"============================================================================="
 
 
-
-
-      END IF
+      ENDIF
 
 1000  FORMAT(1x,A)
 1010  FORMAT(1x,A,I10,I10)

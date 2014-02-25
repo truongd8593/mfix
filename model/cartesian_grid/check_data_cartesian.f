@@ -3601,7 +3601,7 @@
 
             P = DFLOAT(MAXVAL_NCPP)/DFLOAT(AVG_NCPP)
 
-            MAXSPEEDUP = DFLOAT(NumPes)*(ONE-LIP/100.0D0)
+!            MAXSPEEDUP = DFLOAT(NumPes)*(ONE-LIP/100.0D0)
 
 
             WRITE (*, 1000) '================================================='
@@ -3618,9 +3618,9 @@
             WRITE (*, 1000) ''
             WRITE (*, 1030) 'LOAD IMBALANCE (%)    : ',LIP_OLD,LIP
             WRITE (*, 1000) ''
-            WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DFLOAT(NumPEs),DFLOAT(NumPEs)
-            WRITE (*, 1030) 'MAX SPEEDUP           : ',MAXSPEEDUP_OLD,MAXSPEEDUP
-            WRITE (*, 1030) 'MAX EFFICIENCY (%)    : ',100.0D0 - LIP_OLD,100.0D0 - LIP
+!            WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DFLOAT(NumPEs),DFLOAT(NumPEs)
+!            WRITE (*, 1030) 'MAX SPEEDUP           : ',MAXSPEEDUP_OLD,MAXSPEEDUP
+!            WRITE (*, 1030) 'MAX EFFICIENCY (%)    : ',100.0D0 - LIP_OLD,100.0D0 - LIP
 
             WRITE (*, 1000) '================================================='
 
@@ -4262,9 +4262,9 @@
          WRITE (*, 1000) ''
          WRITE (*, 1030) 'LOAD IMBALANCE (%)    : ',LIP_OLD,LIP
          WRITE (*, 1000) ''
-         WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DFLOAT(NumPEs),DFLOAT(NumPEs)
-         WRITE (*, 1030) 'MAX SPEEDUP           : ',MAXSPEEDUP_OLD,MAXSPEEDUP
-         WRITE (*, 1030) 'MAX EFFICIENCY (%)    : ',MAXSPEEDUP_OLD/DFLOAT(NumPEs)*100.0,MAXSPEEDUP/DFLOAT(NumPEs)*100.0
+!         WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DFLOAT(NumPEs),DFLOAT(NumPEs)
+!         WRITE (*, 1030) 'MAX SPEEDUP           : ',MAXSPEEDUP_OLD,MAXSPEEDUP
+!         WRITE (*, 1030) 'MAX EFFICIENCY (%)    : ',MAXSPEEDUP_OLD/DFLOAT(NumPEs)*100.0,MAXSPEEDUP/DFLOAT(NumPEs)*100.0
 
          WRITE (*, 1000) '================================================='
 
