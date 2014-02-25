@@ -83,10 +83,10 @@
 ! specifies MMAX, D_P0 and RO_S0.  These are then linked to their
 ! respective DES variables.  Note that valid values of MMAX, D_P0 and 
 ! RO_s0 are ensured by check_data_04.
-         DES_MMAX = MMAX
+         DES_MMAX = merge(MMAX, DES_MMAX, DES_MMAX == UNDEFINED_I)
          DO M = 1, DES_MMAX
-            DES_D_p0(M) = D_p0(M)
-            DES_RO_s(M) = RO_s0(M)
+            DES_D_p0(M) = merge(D_p0(M), DES_D_p0(M), DES_D_p0(M) == UNDEFINED)
+            DES_RO_s(M) = merge(RO_s0(M), DES_RO_s(M), DES_RO_s(M) == UNDEFINED)
          ENDDO
       ENDIF
 
