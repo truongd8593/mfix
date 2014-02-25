@@ -1909,7 +1909,7 @@
 
          else   
 
-            allocate( recv_status(MPI_STATUS_SIZE,nsend))
+            allocate( recv_status(MPI_STATUS_SIZE,nrecv))
             if (use_persistent_message) then
                call MPI_WAITALL( nrecv, recv_persistent_request, &
                   recv_status, ierror )
@@ -2051,7 +2051,7 @@
 
          else 
 
-            allocate( recv_status(MPI_STATUS_SIZE,nsend))
+            allocate( recv_status(MPI_STATUS_SIZE,nrecv))
             call MPI_WAITALL( nrecv, recvrequest, recv_status, ierror )
             call MPI_Check( 'sendrecv_end_1c:MPI_WAITALL recv ', ierror )
 
@@ -2180,7 +2180,7 @@
                enddo
             enddo    ! end do (ii=1,nrecv)
          else 
-            allocate( recv_status(MPI_STATUS_SIZE,nsend))
+            allocate( recv_status(MPI_STATUS_SIZE,nrecv))
             call MPI_WAITALL( nrecv, recvrequest, recv_status, ierror )
             call MPI_Check( 'sendrecv_end_1i:MPI_WAITALL recv ', ierror )
             deallocate( recv_status )
