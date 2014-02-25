@@ -144,7 +144,7 @@
                      DP_loc(DM) = DES_D_p0(DM)
                      EPs_loc(DM) = DES_ROP_S(IJK,DM)/DES_RO_S(DM) 
                      ROs_loc(DM) = DES_RO_S(DM)
-                     PSIs_loc(CM) = DES_PSI_s(CM)
+                     ! PSIs_loc(CM) = DES_PSI_s(CM)
                   ENDDO
                ELSE
                   MAXM = SMAX
