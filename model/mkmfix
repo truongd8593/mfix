@@ -126,9 +126,9 @@ echo "Please wait..."
 
 echo "make -f ${MAKEFILE} ${EXEC_FILE}"
 make -f ${MAKEFILE} ${EXEC_FILE}
+result=$?
 
-
-if test $? = 0; then
+if test $result = 0; then
   /bin/cp -f ${EXEC_FILE} ${RUN_DIR}
   if test ${USE_DMP} = 1; then
     echo
@@ -153,4 +153,4 @@ else
   echo
 fi
 
-cd ${RUN_DIR}
+exit $result
