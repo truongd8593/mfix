@@ -540,7 +540,7 @@
             WRITE(AMDAHL_SPEEDUP,*)1.0/dble(IMBALANCE)
          ENDIF
 ! Construct a message for the user telling them the grid partition info.
-         WRITE(ERR_MSG,.1000)maxval(ijksize3_all), maxloc(ijksize3_all),&
+         WRITE(ERR_MSG,1000)maxval(ijksize3_all), maxloc(ijksize3_all),&
             minval(ijksize3_all), minloc(ijksize3_all),                &
             sum(ijksize3_all)/numPEs, trim(AMDAHL_SPEEDUP)
          CALL FLUSH_ERR_MSG
