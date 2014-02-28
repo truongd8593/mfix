@@ -47,8 +47,8 @@
   MU_g0 		= 1.8E-4		!constant gas viscosity
   RO_g0			= 1.205E-3		!constant gas density
 
+  SOLIDS_MODEL(1) = 'DEM'
 
- 
 ! Solids-phase Section
 ! MMAX                  = 2
   RO_s0   		= 2.7           	!solids density
