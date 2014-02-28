@@ -185,10 +185,13 @@
 
 ! Check geometry constrains.
 !      CALL CHECK_DES_GEOMETRY
+
 ! Check settings on cohesion model
 !      CALL CHECK_DES_COHESION
+
 ! Check settings for collision models
 !      IF(.NOT.MPPIC) CALL CHECK_DES_COLLISION
+
 ! Check TFM/DEM Hybrid model settings.
 !      IF (DES_CONTINUUM_HYBRID) CALL CHECK_DES_HYBRID
 ! Check settings for particle generation.

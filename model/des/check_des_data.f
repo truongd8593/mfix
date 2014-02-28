@@ -75,27 +75,10 @@
       IF(DMP_LOG) WRITE(UNIT_LOG,1001) PRINT_DES_SCREEN
       IF(DMP_LOG) WRITE(*,1001) PRINT_DES_SCREEN
 
-! Check settings on cluster identification
-      IF(DES_CALC_CLUSTER) THEN
-         IF(CLUSTER_LENGTH_CUTOFF .EQ. UNDEFINED) THEN
-            IF(DMP_LOG) WRITE(UNIT_LOG,1101)
-            IF(DMP_LOG) WRITE(*,1101)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-         IF(FACTOR_RLM < &
-            1.d0+CLUSTER_LENGTH_CUTOFF/(2.d0*MAX_RADIUS)) THEN
-            IF(DMP_LOG) WRITE(UNIT_LOG,1102)
-            IF(DMP_LOG) WRITE(*,1102)
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDIF
 
 ! Check geometry constrains.
       CALL CHECK_DES_GEOMETRY
 
-
-! Check thermodynamic properties of discrete solids.
-      CALL CHECK_DES_THERMO
 ! Check settings on cohesion model
       CALL CHECK_DES_COHESION
 ! Check settings for collision models
