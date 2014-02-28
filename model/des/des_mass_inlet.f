@@ -262,8 +262,8 @@
             ENDIF
 
 ! Set the mass fractions of the incoming particle.
-            IF(ANY_DES_SPECIES_EQ  .OR. (DES_ENERGY_EQ .AND. &
-               DES_C_PS0(M) /= UNDEFINED) ) THEN
+            IF(ANY_DES_SPECIES_EQ  .OR. (DES_ENERGY_EQ .AND.           &
+               C_PS0 /= UNDEFINED) ) THEN
                DO N=1,DES_NMAX_s(M)
                   IF(DES_BC_X_s(BCV_I,M,N) /= UNDEFINED) THEN
                      DES_X_s(NP,N) = DES_BC_X_s(BCV_I,M,N)

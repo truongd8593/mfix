@@ -44,6 +44,9 @@
 ! Default [RANZ_1952]
       CHARACTER*24 :: DES_CONV_CORR
 
+      INTEGER :: DES_CONV_CORR_ENUM
+      INTEGER, PARAMETER :: RANZ_1952 = 0
+
 ! Particle properties
 !--------------------------
 ! Particle temperature at current time step (S_TIME)
@@ -52,12 +55,12 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_T_s_NEW !(PARTICLES) 
 
 ! DES Specified constant solids thermal conductivity by solids phase
-      DOUBLE PRECISION DES_K_s0(DIM_M)
+!      DOUBLE PRECISION DES_K_s0(DIM_M)
 ! DES solids thermal conductivity by particle ! (not currently used)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_K_s
+!      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_K_s
 
 ! DES Specified constant solids specific heat by solids phase
-      DOUBLE PRECISION DES_C_ps0(DIM_M)
+!      DOUBLE PRECISION DES_C_ps0(DIM_M)
 ! DES specific heat of particles by particle
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_C_ps
 

@@ -882,18 +882,6 @@
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Specified constant solids thermal conductivity of solids phase M.</description>
-!  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
-      DES_K_s0(:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Specified constant solids specific heat of solids phase M.</description>
-!  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
-      DES_C_ps0(:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
 !  <description>Emissivity of solids phase M.</description>
 !  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
       DES_Em(:DIM_M) = UNDEFINED

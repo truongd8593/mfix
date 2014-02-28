@@ -125,9 +125,6 @@
          ,/'Please correct the mfix.dat file.')
 
       END SUBROUTINE CHECK_SOLIDS_COMMON_ALL
-
-
-
 !----------------------------------------------------------------------!
 ! Subroutine: CHECK_SOLIDS_SPECIES                                     !
 ! Purpose: Check solids species input.                                 !

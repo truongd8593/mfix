@@ -34,7 +34,7 @@
       CALL CHECK_SOLIDS_COMMON_ALL
 
 ! Checks common to discrete solids phases (DEM, MPPIC).
-      IF(DEM_SOLIDS .AND. PIC_SOLIDS) &
+      IF(DEM_SOLIDS .OR. PIC_SOLIDS) &
          CALL CHECK_SOLIDS_COMMON_DISCRETE
 
 ! Checks specific to the particular solids phase.

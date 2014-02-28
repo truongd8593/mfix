@@ -45,6 +45,14 @@
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
       INCLUDE 'function.inc'
 
+
+! This is a quick work-around to keep the thermo routines from causes
+! issues while the "check_data" routines are rewritten. Moving forward
+! this routine should be split apart to avoid the particle loops for
+! cold-flow, non-reacting cases.
+      IF(.NOT.ENERGY_EQ)RETURN
+
+
 ! Loop over fluid cells.
 !---------------------------------------------------------------------//
       IJK_LP: DO IJK = IJKSTART3, IJKEND3
@@ -87,14 +95,16 @@
             M = PIJK(NP,5)
 
 ! calculate heat transfer via convection
-            IF(DES_CONV_EQ) CALL DES_CONVECTION(NP, M, IJK, &
+            IF(ENERGY_EQ) CALL DES_CONVECTION(NP, M, IJK, &
                INTERP_IJK, INTERP_WEIGHTS, FOCUS)
+
+! calculate heat transfer via radiation
+            IF(ENERGY_EQ) CALL DES_RADIATION(NP, M, IJK, FOCUS)
+
 
 ! Loop over thermodynamic neighbor for conduction and radiation
             IF(DES_COND_EQ) CALL DES_CONDUCTION(NP, M, IJK, FOCUS)
 
-! calculate heat transfer via radiation
-            IF(DES_RADI_EQ) CALL DES_RADIATION(NP, M, IJK, FOCUS)
 
 ! Calculate reaction rates and interphase mass transfer
             IF(ANY_DES_SPECIES_EQ) CALL DES_RRATES0(NP, M, IJK, &

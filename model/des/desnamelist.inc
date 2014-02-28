@@ -74,7 +74,7 @@
 ! DES Energy Equations: J.Musser
         DES_ENERGY_EQ, DES_CONV_EQ, DES_COND_EQ, DES_RADI_EQ, &
         DES_COND_EQ_PFP, DES_COND_EQ_PP, DES_CONV_CORR, FLPC, & 
-        DES_K_s0, DES_C_ps0, DES_Em, DES_MIN_COND_DIST, &
+        DES_Em, DES_MIN_COND_DIST, &
 
 ! DES Species Equations (reactive chemistry): J. Musser
        DES_NMAX_s,  DES_MW_s, DES_SPECIES_EQ, &

@@ -55,7 +55,7 @@
 ! If a constant value specific heat has not been defined in the mfix.dat
 ! file, calculate the temperature dependent value based on data from the
 ! thermodynamic databases.
-         IF (DES_C_PS0(M) == UNDEFINED) THEN
+         IF (C_PS0 == UNDEFINED) THEN
 ! Read the thermodynamic database if it has not already been done.
             DES_C_PS(NP) = ZERO
 ! Calculate the specific heat based on the species composition of the
@@ -70,7 +70,7 @@
          ELSE
 ! If a constant value specific heat has been assigned to the particle
 ! in the mfix.dat file, use this value.
-            DES_C_PS(NP) = DES_C_PS0(M)
+            DES_C_PS(NP) = C_PS0
          ENDIF
       ENDIF
 

@@ -118,7 +118,8 @@
                IF(DES_COND_EQ_PP .AND. &
                   (CENTER_DIST < (MAX_RAD + MIN_RAD)) ) THEN
 ! Effective thermal conductivity
-                 lK_eff = K_eff(DES_K_s0(iM),DES_K_s0(jM))
+!                 lK_eff = K_eff(DES_K_s0(iM),DES_K_s0(jM))
+                 lK_eff = K_s0
 ! Effective contact area's radius
                  lRadius = RADIUS(MAX_RAD, MIN_RAD)
 ! Inter-particle heat transfer

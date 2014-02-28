@@ -19,6 +19,8 @@
       USE des_ic
       USE des_rxns
       USE funits
+      use physprop, only: C_PS0
+
 
       IMPLICIT NONE
 
@@ -138,10 +140,10 @@
       DOUBLE PRECISION SUM
 
 ! The initial species mass fractions for a particle must be supplied if
-! the species equation is being solved or if DES_C_PS0 has not been
+! the species equation is being solved or if C_PS0 has not been
 ! specified in conjunction with the energy equations being solved.
       IF(.NOT.ANY_DES_SPECIES_EQ  .AND. (.NOT.DES_ENERGY_EQ .OR. &
-         (DES_ENERGY_EQ .AND. DES_C_PS0(M) /= UNDEFINED) ) ) RETURN
+         (DES_ENERGY_EQ .AND. C_PS0 /= UNDEFINED) ) ) RETURN
 
 ! Verify that the species mass fraction sums to one.
       SUM = ZERO
@@ -164,7 +166,7 @@
  1000 FORMAT(/1X,70('*')/,' From: SET_DES_IC',/, ' Message: The',      &
          ' species mass fraction of particle ',I6,' does not sum',/    &
          ' to one. This is required if sovling the discrete particle', &
-         ' species',/' equation or if DES_C_PS0 is not specified when',&
+         ' species',/' equation or if C_PS0 is not specified when',&
          ' solving the internal',/' energy equation for a particle.',  &
          ' Check mfix.dat file.',/1X,70('*')/)
 

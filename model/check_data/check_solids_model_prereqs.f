@@ -16,9 +16,9 @@
       use run, only: SOLIDS_MODEL
 
 ! Flag: Use DES E-E solids model
-      use run, only: TFM_SOLIDS
-      use run, only: DEM_SOLIDS
-      use run, only: PIC_SOLIDS
+      use run, only: TFM_SOLIDS, TFM_COUNT
+      use run, only: DEM_SOLIDS, DEM_COUNT
+      use run, only: PIC_SOLIDS, PIC_COUNT
 
 ! Flag: Use DES E-L model
       use discretelement, only: DISCRETE_ELEMENT
@@ -60,10 +60,6 @@
 !---------------------------------------------------------------------//
 ! Loop counter
       INTEGER :: M ! Phase index
-! Flags for various solids phase models.
-      INTEGER :: TFM_SOLIDS_COUNT = 0
-      INTEGER :: DEM_SOLIDS_COUNT = 0
-      INTEGER :: PIC_SOLIDS_COUNT = 0
 
 
 !......................................................................!
@@ -85,9 +81,9 @@
       DO M=1, MMAX
          SOLIDS_MODEL(M) = trim(adjustl(SOLIDS_MODEL(M)))
          SELECT CASE(SOLIDS_MODEL(M))
-         CASE ('TFM'); TFM_SOLIDS_COUNT = TFM_SOLIDS_COUNT + 1
-         CASE ('DEM'); DEM_SOLIDS_COUNT = DEM_SOLIDS_COUNT + 1
-         CASE ('PIC'); PIC_SOLIDS_COUNT = PIC_SOLIDS_COUNT + 1
+         CASE ('TFM'); TFM_COUNT = TFM_COUNT + 1
+         CASE ('DEM'); DEM_COUNT = DEM_COUNT + 1
+         CASE ('PIC'); PIC_COUNT = PIC_COUNT + 1
 
          CASE DEFAULT
             WRITE(ERR_MSG,1001) iVar('SOLIDS_MODEL',M), SOLIDS_MODEL(M)
@@ -103,9 +99,9 @@
       SOLIDS_MODEL(MMAX+1:DIM_M) = '---'
 
 ! Set the runtime flags:
-      TFM_SOLIDS = (TFM_SOLIDS_COUNT > 0)
-      DEM_SOLIDS = (DEM_SOLIDS_COUNT > 0)
-      PIC_SOLIDS = (PIC_SOLIDS_COUNT > 0)
+      TFM_SOLIDS = (TFM_COUNT > 0)
+      DEM_SOLIDS = (DEM_COUNT > 0)
+      PIC_SOLIDS = (PIC_COUNT > 0)
 
 ! MPPIC and continuum solids don't mix.
       IF(PIC_SOLIDS .AND. TFM_SOLIDS)THEN
@@ -126,7 +122,7 @@
 
 
 ! Set the number of discrete phases.
-      DES_MMAX = DEM_SOLIDS_COUNT + PIC_SOLIDS_COUNT
+      DES_MMAX = DEM_COUNT + PIC_COUNT
 
 ! Set the number of TFM phases.
       MMAX = MMAX - DES_MMAX
