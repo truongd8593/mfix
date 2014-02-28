@@ -65,6 +65,7 @@
       USE sendrecv
       USE discretelement
       USE rxns
+      USE mfix_pic
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -351,14 +352,53 @@
 
 
          END DO 
-         WRITE (UNIT_OUT, 1430) EP_STAR 
-         IF (MU_S0 /= UNDEFINED) WRITE (UNIT_OUT, 1435) MU_S0 
-      ENDIF
 
+
+         IF(TFM_SOLIDS) THEN
+            WRITE (UNIT_OUT, 1430) EP_STAR 
+            IF(MU_S0 /= UNDEFINED) WRITE(UNIT_OUT, 1431) MU_S0 
+         ENDIF
  1430 FORMAT(/7X,'Void fraction at maximum packing (EP_star) = ',G12.5) 
- 1435 FORMAT(7X,'Viscosity (MU_s0) = ',G12.5,&
-         '  (A constant value is used everywhere)') 
+ 1431 FORMAT(7X,'Constant solids viscosity (MU_s0) = ',G12.5) 
 
+
+         IF(DEM_SOLIDS .OR. PIC_SOLIDS) THEN
+            IF(.NOT.DES_CONTINUUM_COUPLED) THEN
+               WRITE(UNIT_OUT,"(/7X,'Gas/Solids NOT coupled.')")
+            ELSE
+               WRITE(UNIT_OUT,"(/7X,'Gas/Solids Coupling Information:')")
+
+               IF(DES_INTERP_ON) THEN
+                  WRITE(UNIT_OUT,1440) 'interpolation'
+               ELSE
+                  WRITE(UNIT_OUT,1440) 'cell averaging'
+               ENDIF
+
+               IF(DES_INTERP_MEAN_FIELDS) THEN
+                  WRITE(UNIT_OUT,1441) 'interpolation'
+               ELSE
+                  WRITE(UNIT_OUT,1441) 'cell averaging'
+               ENDIF
+            ENDIF
+
+ 1440 FORMAT(10X,'Use ',A,' to calculate gas/particle drag.')
+ 1441 FORMAT(10X,'Use ',A,' to calculate dispersed phase scalar fields.')
+
+         ENDIF
+
+         IF(DEM_SOLIDS) THEN
+
+         ENDIF
+
+         IF(PIC_SOLIDS) THEN
+            WRITE(UNIT_OUT,"(/7X,A)") 'MP-PIC Model Parameters:'
+            IF(MPPIC_SOLID_STRESS_SNIDER) THEN
+               WRITE(UNIT_OUT,"(10X,A)")  &
+                  'SNIDER model for solids Stress and integration'
+            ENDIF
+         ENDIF
+
+      ENDIF
 
 !
 !  Initial Conditions Section
