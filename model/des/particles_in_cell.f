@@ -346,6 +346,9 @@
          K = PIJK(L,3)
          IJK = FUNIJK(I,J,K)
          PIJK(L,4) = IJK
+
+
+
 		 
          PINC(IJK) = PINC(IJK) + 1
 		 
@@ -1064,6 +1067,7 @@
       DO K = KSTART2, KEND1
          DO J = JSTART2, JEND1
             DO I = ISTART2, IEND1
+               IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                IJK = funijk(I,J,K)
                I1 = I
                I2 = I+1
@@ -1078,6 +1082,7 @@
                DO KK = K1, K2
                   DO JJ = J1, J2
                      DO II = I1, I2
+                        IF (DEAD_CELL_AT(II,JJ,KK)) CYCLE  ! skip dead cells
                         IJK2 = funijk(IMAP_C(II), JMAP_C(JJ), KMAP_C(KK))
                         IF(FLUID_AT(IJK2)) VOL_SURR = VOL_SURR+VOL(IJK2)
                      ENDDO
@@ -1088,6 +1093,7 @@
                DO KK = K1, K2
                   DO JJ = J1, J2
                      DO II = I1, I2
+                        IF (DEAD_CELL_AT(II,JJ,KK)) CYCLE  ! skip dead cells
 
                         IJK2 = funijk(IMAP_C(II), JMAP_C(JJ), KMAP_C(KK))
                         IF(FLUID_AT(IJK2).and.(IS_ON_myPE_wobnd(II, JJ, KK))) THEN 

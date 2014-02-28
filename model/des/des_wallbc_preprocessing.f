@@ -54,6 +54,7 @@
          I = ISTART1
          DO K = KSTART1, KEND1 
             DO J = JSTART1, JEND1
+               IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                ADD_GHOST_CELL_WALL = .TRUE.
                IJK  = FUNIJK(I,J,K)
                IJK_WALL = FUNIJK(IMIN2, J, K)
@@ -118,6 +119,7 @@
          DO K = KSTART1, KEND1 
             DO J = JSTART1, JEND1
                
+               IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                ADD_GHOST_CELL_WALL = .TRUE.
                IJK  = FUNIJK(I,J,K)
                IJK_WALL = FUNIJK(IMAX2, J, K)
@@ -174,6 +176,7 @@
          J = JMIN1
          DO K = KSTART1, KEND1 
             DO I = ISTART1, IEND1
+               IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                ADD_GHOST_CELL_WALL = .TRUE.
                IJK  = FUNIJK(I,J,K)
                IJK_WALL = FUNIJK(I, JMIN2, K)
@@ -228,6 +231,7 @@
          J = JMAX1
          DO K = KSTART1, KEND1 
             DO I = ISTART1, IEND1
+               IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                
                ADD_GHOST_CELL_WALL = .TRUE.
                IJK  = FUNIJK(I,J,K)
@@ -280,6 +284,7 @@
          K = KMIN1 
          DO J = JSTART1, JEND1 
             DO I = ISTART1, IEND1
+               IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                
                ADD_GHOST_CELL_WALL = .TRUE.
                IJK  = FUNIJK(I,J,K)
@@ -336,6 +341,7 @@
          K = KMAX1
          DO J = JSTART1, JEND1 
             DO I = ISTART1, IEND1
+               IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                
                ADD_GHOST_CELL_WALL = .TRUE.
                IJK  = FUNIJK(I,J,K)
@@ -389,6 +395,7 @@
          DO K = KSTART2, KEND2
             DO J = JSTART2, JEND2
                DO I = ISTART2, IEND2
+                  IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                   IJK = funijk(i,j,k)
                   !IF(SMALL_CELL_AT(IJK).AND.(.NOT.CUT_CELL_AT(IJK))) THEN
                   !   WRITE(*, '(A, 3(2x,L1))') 'SMALL NE CUT', SMALL_CELL_AT(IJK), CUT_CELL_AT(IJK), FLUID_AT(IJK)
@@ -488,6 +495,7 @@
                   DO J = J1, J2 
                      DO I = I1, I2  
                         IF (.NOT.IS_ON_myPE_owns(I, J, K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                         INEW = I
                         JNEW = J 
                         KNEW = K 
@@ -586,6 +594,7 @@
                   DO J = J1, J2 
                      DO I = I1, I2  
                         IF (.NOT.IS_ON_myPE_owns(I, J, K)) CYCLE
+                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                         !IS_ON_myPE_owns is true for istart<i<iend  and therefore includes 
                         !the ghost cells as well. 
                         INEW = I
@@ -654,7 +663,7 @@
                   WRITE(UNIT_LOG, *) 'THIS WALL BC', BC_TYPE(L),'  IS NOT SUPPORTED FOR MP-PIC' 
                   WRITE(*,*) 'ERROR WITH WALL BC SPECIFICATION, SEE THE LOG FILE'
                   
-                  call mfix_exit(myPE)
+!                  call mfix_exit(myPE)
                end IF
                
             end IF
@@ -669,6 +678,7 @@
       DO K=KSTART2, KEND2
          DO J=JSTART2, JEND2
             DO I=ISTART2, IEND2
+               IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                CELL_ID = FUNIJK(I,J,K)
                COUNT_BC = DES_CELLWISE_BCDATA(CELL_ID)%COUNT_DES_BC 
 
@@ -745,6 +755,7 @@
          DO K=KSTART2, KEND2
             DO J=JSTART2, JEND2
                DO I=ISTART2, IEND2
+                  IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                   IJK  = FUNIJK(I,J,K)
                   IF(FLUID_AT(IJK)) THEN 
                      FLUID_IND = 1
@@ -780,6 +791,7 @@
             DO K=KSTART2, KEND2
                DO J=JSTART2, JEND2
                   DO I=ISTART2, IEND2
+                  IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                   IJK  = FUNIJK(I,J,K)
                   IF(FLUID_AT(IJK)) THEN 
                      FLUID_IND = 1
