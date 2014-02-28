@@ -423,38 +423,6 @@
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Periodic wall boundary condition is imposed on any
-! pair of walls. Do not use N-square or tree neighbor search algorithms 
-! with periodic BC. </description>
-!  <conflict keyword="DES_NEIGHBOR_SEARCH" value="1" "2" "3"/>
-      DES_PERIODIC_WALLS = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Direction of periodicity: x. 
-! Do not use N-square or tree neighbor search algorithms 
-! with periodic BC. </description>
-!  <conflict keyword="DES_NEIGHBOR_SEARCH" value="1" "2" "3"/>
-      DES_PERIODIC_WALLS_X = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>direction of periodicity: y.
-! Do not use N-square or tree neighbor search algorithms 
-! with periodic BC. </description>
-!  <conflict keyword="DES_NEIGHBOR_SEARCH" value="1" "2" "3"/>
-      DES_PERIODIC_WALLS_Y = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>direction of periodicity: z.
-! Do not use N-square or tree neighbor search algorithms 
-! with periodic BC. </description>
-!  <conflict keyword="DES_NEIGHBOR_SEARCH" value="1" "2" "3"/>
-      DES_PERIODIC_WALLS_Z = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
 !  <description>Lees-Edwards boundary condition to simulate
 ! homogeneous shear problem with periodic boundary conditions. 
 ! Not supported in this version. </description>

@@ -23,6 +23,12 @@
       USE discretelement, only: DES_CONTINUUM_HYBRID
 ! Runtime Flag: Invoke DEM cluster detection.
       USE discretelement, only: DES_CALC_CLUSTER
+! Runtime Flag: Utilize cutcell geometry.
+      USE cutcell, only: CARTESIAN_GRID
+! Runtime Flag: Interpolate DEM field quanties.
+      USE discretelement, only: DES_INTERP_MEAN_FIELDS
+! Runtime Flag: Invoke gas/solids coupled simulation.
+      USE discretelement, only: DES_CONTINUUM_COUPLED
 
 ! Number of DEM solids phases.
       USE discretelement, only: DES_MMAX
@@ -43,6 +49,12 @@
       USE discretelement, only: MAX_RADIUS, MIN_RADIUS
 ! Max distance between two particles in a cluster.
       USE discretelement, only: CLUSTER_LENGTH_CUTOFF
+! Runtime Flag: Periodic boundaries
+      USE discretelement, only: DES_PERIODIC_WALLS
+      USE discretelement, only: DES_PERIODIC_WALLS_X
+      USE discretelement, only: DES_PERIODIC_WALLS_Y
+      USE discretelement, only: DES_PERIODIC_WALLS_Z
+
 ! Subroutine access.
       USE desgrid, only: DESGRID_CHECK
 
@@ -115,10 +127,30 @@
       MOMENTUM_Y_EQ((MMAX+1):DIM_M) = .FALSE.
       MOMENTUM_Z_EQ((MMAX+1):DIM_M) = .FALSE. 
 
+! Derive periodicity from cyclic boundary flags.
+      DES_PERIODIC_WALLS_X = CYCLIC_X .OR. CYCLIC_X_PD
+      DES_PERIODIC_WALLS_Y = CYCLIC_Y .OR. CYCLIC_Y_PD
+      DES_PERIODIC_WALLS_Z = CYCLIC_Z .OR. CYCLIC_Z_PD
+
+      DES_PERIODIC_WALLS = (DES_PERIODIC_WALLS_X .OR.                  &
+        DES_PERIODIC_WALLS_Y .OR. DES_PERIODIC_WALLS_Z)
 
 ! Overwrite user's input in case of DEM (no fluid)
-      IF(.NOT.DES_CONTINUUM_COUPLED) DES_INTERP_ON = .FALSE.
-      
+      IF(.NOT.DES_CONTINUUM_COUPLED) THEN
+         DES_INTERP_ON = .FALSE.
+
+      ELSE
+! MPPIC and DES/CUTCELL simulations require that the mean feilds be
+! interpolated without regard to user specifications.
+         IF(MPPIC.OR.CARTESIAN_GRID) DES_INTERP_MEAN_FIELDS = .TRUE.
+
+! DES_INTERP_MEAN_FIELDS is invoked if des_interp_on is true to remain
+! consistent with previous implementations.
+         IF(DES_INTERP_ON)  DES_INTERP_MEAN_FIELDS= .TRUE.
+      ENDIF
+            
+
+
 
 ! Check for valid neighbor search option.
       SELECT CASE(DES_NEIGHBOR_SEARCH)

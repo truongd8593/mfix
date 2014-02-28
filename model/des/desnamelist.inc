@@ -28,10 +28,6 @@
 ! Additional properties for Hertzian model: 
         DES_COLL_MODEL, EW_YOUNG, VW_POISSON, E_YOUNG, V_POISSON,&
 	
-
-! Wall conditions
-        DES_PERIODIC_WALLS, DES_PERIODIC_WALLS_X,&
-        DES_PERIODIC_WALLS_Y, DES_PERIODIC_WALLS_Z,&
 ! Lees Edwards BC (for DEM only)
         DES_LE_BC, DES_LE_REL_VEL, DES_LE_SHEAR_DIR,&
 	
