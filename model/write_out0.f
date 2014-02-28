@@ -60,9 +60,12 @@
       USE scalars
       USE ur_facs 
       USE leqsol 
-      USE compar         !//d
-      USE mpi_utility    !//d
-      USE sendrecv    !//d
+      USE compar
+      USE mpi_utility
+      USE sendrecv
+      USE discretelement
+      USE rxns
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -74,8 +77,12 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       INTEGER :: L, M, N 
+
+      INTEGER :: MMAX_TOT
+      DOUBLE PRECISION :: TMP_DP 
+
+
       DOUBLE PRECISION, DIMENSION(6) :: LOC 
-! 
 !                      Coefficient of restitution (old symbol) 
       DOUBLE PRECISION :: E 
       CHARACTER, DIMENSION(3) :: LEGEND*3 
@@ -283,27 +290,76 @@
 !
 !  Particle Section
 !
+      MMAX_TOT = MMAX + DES_MMAX
+
       WRITE (UNIT_OUT, 1400) 
-      IF (MU_S0 /= UNDEFINED) WRITE (UNIT_OUT, 1405) MU_S0 
-      WRITE (UNIT_OUT, 1410) MMAX 
-      WRITE (UNIT_OUT, 1420) 
-      DO M = 1, MMAX 
-         WRITE (UNIT_OUT, 1421) M, D_P0(M), RO_S0(M), CLOSE_PACKED(M) 
-      END DO 
-      DO M = 1, MMAX 
-         IF (SPECIES_EQ(M)) THEN 
-            WRITE (UNIT_OUT, 1422) M, M, NMAX(M) 
-            WRITE (UNIT_OUT, 1423) 
+      WRITE (UNIT_OUT, 1401) MMAX_TOT
+
+
+ 1400 FORMAT(//,3X,'5. SOLIDS PHASE',/) 
+ 1401 FORMAT(7X,'Number of particulate phases (MMAX) = ',I2) 
+
+      IF(MMAX_TOT > 0) THEN
+
+         WRITE (UNIT_OUT, 1405)
+         DO M = 1, MMAX_TOT
+            TMP_DP = merge(BASE_ROs(M), RO_s0(M), SOLVE_ROs(M))
+            WRITE (UNIT_OUT, 1406) M, SOLIDS_MODEL(M), D_P0(M),     &
+               TMP_DP, CLOSE_PACKED(M)
+         END DO 
+
+
+ 1405 FORMAT(/7x,'M',4x,'Model',5x,'Diameter',8x,'Density',6x,         &
+         'Close_Packed')
+ 1406 FORMAT(6x,I2,4x,A3,5X,G12.5,3x,G12.5,9x,L1)
+
+ 1410 FORMAT(/7X,'Number of solids-',I1,' species (NMAX(',I1,')) = ',I3)
+
+ 1411 FORMAT(9x,'Solid',5x,'Molecular')
+ 1412 FORMAT(26x,'Density',4x,'Mass Fraction')
+
+ 1415 FORMAT(8x,'Species',5x,'weight',7x,'Alias',5x,'Name')
+ 1416 FORMAT(7x,'(RO_Xs0)',6x,'(X_s0)')
+
+
+         DO M = 1, MMAX_TOT
+            IF(.NOT.SPECIES_EQ(M)) CYCLE
+            WRITE (UNIT_OUT, 1410) M, M, NMAX(M) 
+
+! Header Line 1
+            WRITE(UNIT_OUT,1411,ADVANCE='NO')
+            IF(SOLVE_ROs(M)) WRITE(UNIT_OUT,1412, ADVANCE='NO')
+            WRITE(UNIT_OUT,*)' '
+
+! Header Line 2
+            WRITE(UNIT_OUT,1415,ADVANCE='NO')
+            IF(SOLVE_ROs(M)) WRITE(UNIT_OUT,1416,ADVANCE='NO')
+            WRITE(UNIT_OUT,*)' '
+
+
             DO N = 1, NMAX(M) 
-               WRITE (UNIT_OUT, 1424) N, MW_S(M,N) 
+               WRITE(UNIT_OUT, 1420, ADVANCE='NO') N, MW_S(M,N),       &
+                  SPECIES_ALIAS_s(M,N)(1:8), SPECIES_s(M,N)(1:8)
+               IF(SOLVE_ROs(M)) WRITE(UNIT_OUT, 1421, ADVANCE='NO')    &
+                  RO_Xs0(M,N), X_s0(M,N)
+               WRITE(UNIT_OUT,*) ' '
+
+ 1420 FORMAT(10x,I2,5x,G12.5,2(2x,A8))
+ 1421 FORMAT(2(2x,G12.5))
+
             END DO 
-            WRITE (UNIT_OUT, 1425) 
-            DO N = 1, NMAX(M) 
-               WRITE (UNIT_OUT, 1424) N, RO_Xs0(M,N) 
-            END DO 
-         ENDIF 
-      END DO 
-      WRITE (UNIT_OUT, 1430) EP_STAR 
+
+
+         END DO 
+         WRITE (UNIT_OUT, 1430) EP_STAR 
+         IF (MU_S0 /= UNDEFINED) WRITE (UNIT_OUT, 1435) MU_S0 
+      ENDIF
+
+ 1430 FORMAT(/7X,'Void fraction at maximum packing (EP_star) = ',G12.5) 
+ 1435 FORMAT(7X,'Viscosity (MU_s0) = ',G12.5,&
+         '  (A constant value is used everywhere)') 
+
+
 !
 !  Initial Conditions Section
 !
@@ -619,18 +675,6 @@
  1320 FORMAT(7X,'Average molecular weight (MW_avg) = ',G12.5,&
          '  (A constant value is used everywhere)') 
 !
- 1400 FORMAT(//,3X,'5. SOLIDS PHASE',/) 
- 1405 FORMAT(7X,'Viscosity (MU_s0) = ',G12.5,&
-         '  (A constant value is used everywhere)') 
- 1410 FORMAT(7X,'Number of particulate phases (MMAX) = ',I2) 
- 1420 FORMAT(/7X,'M',5X,'Diameter (D_p0)',T35,'Density (RO_s0)',T50,&
-         'Close_Packed') 
- 1421 FORMAT(7X,I1,5X,G12.5,T35,G12.5,T55,L1) 
- 1422 FORMAT(7X,'Number of solids-',I1,' species (NMAX(',I1,')) = ',I3) 
- 1423 FORMAT(7X,'Solids species',5X,'Molecular weight (MW_s)') 
- 1424 FORMAT(7X,3X,I3,18X,G12.5) 
- 1425 FORMAT(7X,'Solids species',5X,'Species density (RO_Xs0)')
- 1430 FORMAT(/7X,'Void fraction at maximum packing (EP_star) = ',G12.5) 
 !
  1500 FORMAT(//,3X,'6. INITIAL CONDITIONS') 
  1510 FORMAT(/7X,'Initial condition no : ',I4) 
