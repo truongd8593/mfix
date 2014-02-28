@@ -305,8 +305,13 @@
       CHARACTER(len=3), DIMENSION(DIM_M) :: SOLIDS_MODEL
 
 
+! Flags for various solids phase models.
       LOGICAL :: TFM_SOLIDS
       LOGICAL :: DEM_SOLIDS
       LOGICAL :: PIC_SOLIDS
+! The number of the various solids phases.
+      INTEGER :: TFM_COUNT = 0
+      INTEGER :: DEM_COUNT = 0
+      INTEGER :: PIC_COUNT = 0
 
       END MODULE RUN
