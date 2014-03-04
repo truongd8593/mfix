@@ -345,6 +345,8 @@
 
       USE cutcell
 
+      USE stl
+
       USE sendrecv
 
       USE mpi_utility 
@@ -1310,6 +1312,10 @@
       CALL SHIFT_DP_ARRAY(SCALAR_NODE_XYZ,2)
       CALL SHIFT_DP_ARRAY(SCALAR_NODE_XYZ,3)
       CALL SHIFT_DP_ARRAY(Ovol_around_node)
+
+
+      CALL SHIFT_LOG_ARRAY(NO_NEIGHBORING_FACET_DES,.FALSE.)
+      CALL SHIFT_LIST_OF_FACETS_DES
 
 
       IF(BDIST_IO) CALL SHIFT_CONNECTIVITY_FOR_BDIST_IO
@@ -2416,6 +2422,90 @@
 
 
       END SUBROUTINE SHIFT_CONNECTIVITY_FOR_BDIST_IO
+
+
+      SUBROUTINE SHIFT_LIST_OF_FACETS_DES
+!
+!-----------------------------------------------
+!   M o d u l e s 
+!-----------------------------------------------
+      USE indices
+      USE geometry
+      USE compar
+      USE cutcell
+      USE stl
+
+      IMPLICIT NONE
+
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+!
+!                      Indices
+      INTEGER ::IJK, BCK_IJK,NF
+!
+      TYPE (FACETS_TO_CELL), DIMENSION (:), ALLOCATABLE ::  COPY_OF_LIST_FACET_AT_DES
+
+
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+
+!======================================================================
+!   To remove dead cells, the number of useful cells was calculated in
+!   RE_INDEX_ARRAY, and is stored back in IJKEND3
+!   Now, the array is shifted such that all useful values are contiguous
+!   and are located between IJKSTART3 and IJKEND3
+!   The array BACKGROUND_IJK_OF(IJK) points to the original cell
+!======================================================================
+
+
+      ALLOCATE(COPY_OF_LIST_FACET_AT_DES(DIMENSION_3))
+
+      DO IJK = 1,DIMENSION_3
+      
+         IF(ALLOCATED(LIST_FACET_AT_DES(IJK)%FACET_LIST)) THEN
+	    NF = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+	    
+	    COPY_OF_LIST_FACET_AT_DES(IJK)%COUNT_FACETS = NF
+	    ALLOCATE(COPY_OF_LIST_FACET_AT_DES(IJK)%FACET_LIST(NF))
+            COPY_OF_LIST_FACET_AT_DES(IJK)%FACET_LIST(1:NF) = LIST_FACET_AT_DES(IJK)%FACET_LIST(1:NF)
+	    
+	 ELSE
+	 
+            COPY_OF_LIST_FACET_AT_DES(IJK)%COUNT_FACETS = 0	 
+	 
+	 ENDIF
+         
+      
+      ENDDO
+
+
+      DO IJK = IJKSTART3, IJKEND3
+
+         BCK_IJK = BACKGROUND_IJK_OF(IJK)   ! Get the original IJK
+
+         
+         NF = COPY_OF_LIST_FACET_AT_DES(BCK_IJK)%COUNT_FACETS
+      
+
+         IF(ALLOCATED(LIST_FACET_AT_DES(IJK)%FACET_LIST)) DEALLOCATE(LIST_FACET_AT_DES(IJK)%FACET_LIST)
+
+         LIST_FACET_AT_DES(IJK)%COUNT_FACETS = NF
+
+         IF(NF>0) THEN
+	 
+            ALLOCATE(LIST_FACET_AT_DES(IJK)%FACET_LIST(NF))
+	    LIST_FACET_AT_DES(IJK)%FACET_LIST(1:NF) = COPY_OF_LIST_FACET_AT_DES(BCK_IJK)%FACET_LIST(1:NF)
+	 
+	 ENDIF
+
+
+      ENDDO
+
+      DEALLOCATE(COPY_OF_LIST_FACET_AT_DES)
+
+
+      END SUBROUTINE SHIFT_LIST_OF_FACETS_DES
 
 
       SUBROUTINE WRITE_INT_TABLE(FILE_UNIT,ARRAY, ARRAY_SIZE, LSTART, LEND, NCOL) 
