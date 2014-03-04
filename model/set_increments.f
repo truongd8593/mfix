@@ -352,6 +352,8 @@
       USE mpi_utility 
       USE parallel
 
+      use bc, only: IJK_P_G
+
       USE cdist
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1317,6 +1319,7 @@
       CALL SHIFT_LOG_ARRAY(NO_NEIGHBORING_FACET_DES,.FALSE.)
       CALL SHIFT_LIST_OF_FACETS_DES
 
+      IF (IJK_P_G /= UNDEFINED_I) IJK_P_G = IJK_OF_BACKGROUND(IJK_P_G)
 
       IF(BDIST_IO) CALL SHIFT_CONNECTIVITY_FOR_BDIST_IO
 
