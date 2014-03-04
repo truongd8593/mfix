@@ -9,6 +9,15 @@
 # also set NETCDF_HOME , NETCDF_INCLUDES , and NETCDF_LIBS
 # to the appopraite locations inside the "if" statement below.
 
+input=$@
+
+#get the post_mfix directory
+MFIX_DIR="$( cd "$( dirname "$( dirname "${BASH_SOURCE[0]}" )" )" && pwd )"
+
+cd ${MFIX_DIR}/post_mfix
+
+delete_files="n"
+
 USE_NETCDF=0
 
 NETCDF_HOME=" "
@@ -53,6 +62,18 @@ echo " "
 
     set `uname -s` ; opsys=$1
     set `uname -p` ; proctyp=$1
+
+
+for arg in $input; do
+  case ${arg} in
+      "--compiler="*)
+	  opsys=$(echo ${arg} | cut -d "=" -f2)
+	  ;;
+      "-f"|"--force")
+	  delete_files="y"
+	  ;;
+  esac
+done
 
 echo "IMPORTANT: execute this makefile by typing \"sh make_post\""
 
@@ -756,23 +777,25 @@ echo " "
 #
 #------------------------------------------------------------------------
 # delete *.o *.mod and *.a files from model directory
+if test $delete_files = "n"
+then
+    echo -n "Object files (*.o, *.mod, *.a) in mfix/model will be deleted. Continue? (y/n) [no] "
+    read delete_files
+fi
+
+case $delete_files in
+    y|Y )
+	echo "deleting files . . ."
+	/bin/rm -f ../model/*.o ../model/*.mod ../model/*.a
+	/bin/rm -f *.o *.mod
+	;;
+    *)
+	exit
+	;;
+esac
+
 echo
-echo -n "Object files (*.o, *.mod, *.a) in mfix/model will be deleted. Continue? (y/n) [no] "
-read delete_files
-  case $delete_files in
-  y|Y )
-    echo "deleting files . . ."
-    /bin/rm -f ../model/*.o ../model/*.mod ../model/*.a
-    /bin/rm -f *.o *.mod
-    ;;
-  *)
-    exit
-    ;;
-  esac
-
-  echo
-  echo "Please wait . . ."
-
+echo "Please wait . . ."
 
 #
 #------------------------------------------------------------------------
