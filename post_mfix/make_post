@@ -11,10 +11,9 @@
 
 input=$@
 
-#get the post_mfix directory
-MFIX_DIR="$( cd "$( dirname "$( dirname "${BASH_SOURCE[0]}" )" )" && pwd )"
-
-cd ${MFIX_DIR}/post_mfix
+#make sure we are in the post_mfix directory
+POSTMFIX_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd ${POSTMFIX_DIR}
 
 delete_files="n"
 
@@ -767,7 +766,7 @@ echo " "
     then
        echo
     else
-       chmod +w machine.f
+       rm -f machine.f
 	/bin/cp -f ../model/$mach_file machine.f
 	/bin/rm -f *.o *.a *.mod *.exe
 	/bin/rm -f COMPILED.WITH.*
