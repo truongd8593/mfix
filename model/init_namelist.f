@@ -1493,6 +1493,15 @@
 !</keyword>
 
 !<keyword category="Initial Condition" required="false">
+!  <description>
+!    Initial solids volume fraction of solids phase-m in the IC region.
+!  </description>
+!  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
+         IC_EP_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Initial Condition" required="false">
 !  <description>Initial gas phase temperature in the IC region.</description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
          IC_T_G(LC) = UNDEFINED
@@ -2019,6 +2028,13 @@
 !  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
 !  <arg index="2" id="Solid phase" min="1" max="DIM_M"/>
          BC_ROP_S(LC,:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Solids volume fraction at the BC plane.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_BC"/>
+!  <arg index="2" id="Solid phase" min="1" max="DIM_M"/>
+         BC_EP_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">

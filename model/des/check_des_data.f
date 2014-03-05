@@ -44,17 +44,11 @@
       IF(DMP_LOG) WRITE(UNIT_LOG,1001) PRINT_DES_SCREEN
       IF(DMP_LOG) WRITE(*,1001) PRINT_DES_SCREEN
 
-! Check geometry constrains.
-      CALL CHECK_DES_GEOMETRY
-
 ! Check TFM/DEM Hybrid model settings.
       IF (DES_CONTINUUM_HYBRID) CALL CHECK_DES_HYBRID
 ! Check settings for particle generation.
       IF(GENER_PART_CONFIG) CALL CHECK_DES_PCONFIG
 
-! Check coupling settings.
-      CALL CHECK_DES_COUPLING
-           
 ! the entire checking and setting up indices for desgridsearch
 ! moved to desgrid_mod to accomodate parallelization
 ! this is now conducted regardless of neighbor search option      

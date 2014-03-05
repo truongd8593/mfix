@@ -74,38 +74,6 @@
 !---------------------------------------------------------------------//
       LOGICAL, EXTERNAL :: COMPARE
 
-! If run_type is not 'NEW' then force the gener_part_config to .false. 
-! This will prevent overwriting over the number of particles which could
-! have potentially changed depending on inlet/outlet      
-      IF(TRIM(RUN_TYPE) .NE. 'NEW' .AND. GENER_PART_CONFIG) THEN 
-         GENER_PART_CONFIG = .FALSE. 
-         IF(DMP_LOG) WRITE(UNIT_LOG, 1000)
-         IF(PRINT_DES_SCREEN) WRITE(*, 1000)
-      ENDIF
-
-
-! Check if any of the deprecated flags are in the input file.
-      if(des_eps_xstart.ne.undefined .or. &
-         des_eps_ystart.ne.undefined .or. &
-         des_eps_xstart.ne.undefined) then 
-         if (PRINT_DES_SCREEN) write(*, 1056) 
-         if (dmp_log) write(unit_log, 1056) 
-         call mfix_exit(mype) 
-      endif
-         
-      DO M = 1, DES_MMAX
-         if(vol_frac(M).ne.undefined) then 
-            if (print_des_screen) write(*, 1057) 
-            if (dmp_log) write(unit_log, 1057) 
-            call mfix_exit(mype) 
-         endif
-      enddo
-
-
-
-
-! Only new DEM runs proceed with the following checks.
-      IF(TRIM(RUN_TYPE) .NE. 'NEW') RETURN
       IF(MPPIC) RETURN
 
 ! Determine the domain volume which is used to calculate the total

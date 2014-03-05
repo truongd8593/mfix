@@ -903,42 +903,6 @@
       REACTION_MODEL = 'VARIABLE_DENSITY'
 !</keyword>
 
-!<keyword category="Discrete Element" required="false" legacy="true">
-!  <description>Only relevant when gener_part_config is t.
-! NOT USED ANY MORE. </description>
-      VOL_FRAC(:) = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element" required="false" legacy="true">
-!  <description>only needed if gener_part_config. 
-! NOT USED ANY MORE.</description>
-      DES_EPS_XSTART = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element" required="false" legacy="true">
-!  <description>only needed if gener_part_config.
-! NOT USED ANY MORE.</description>
-      DES_EPS_YSTART = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element" required="false" legacy="true">
-!  <description>only needed if gener_part_config.
-! NOT USED ANY MORE.</description> 
-      DES_EPS_ZSTART = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element" required="false" legacy="true">
-!  <description>assign initial particle velocities from a gaussian distribution with the specified mean. 
-! NOT USED ANY MORE.</description> 
-      pvel_mean = zero
-!</keyword>
-
-!<keyword category="Discrete Element" required="false" legacy="true">
-!  <description>if not zero, then assign initial particle velocities from a gaussian distribution with the specified standard deviation. 
-! NOT USED ANY MORE.</description> 
-      PVEL_StDev = zero
-!</keyword>
-
 
 !<keyword category="Discrete Element" required="false">
 !  <description> ! Particle shape factor.

@@ -108,8 +108,13 @@
 
 !----------------------  DOMAIN SPECIFIC CHECKS  --------------------!
 
-      CALL CHECK_DATA_06          ! initial condition section 
-      CALL CHECK_DATA_07          ! boundary condition section 
+
+      CALL CHECK_INITIAL_CONDITIONS
+      CALL CHECK_BOUNDARY_CONDITIONS
+
+!      CALL CHECK_DATA_06         ! initial condition section 
+!      CALL CHECK_DATA_07         ! boundary condition section 
+
       CALL CHECK_DATA_08          ! Internal surfaces section 
       CALL CHECK_DATA_09 ! ---> CALL CHECK_CHEMICAL_RXNS
       CALL CHECK_DATA_10          ! point sources

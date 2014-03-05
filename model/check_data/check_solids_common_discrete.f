@@ -1,9 +1,9 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
 !  SUBROUTINE: CHECK_SOLIDS_COMMON_DISCRETE                            !
+!  Author: J.Musser                                   Date: 02-FEB-14  !
 !                                                                      !
 !  Purpose:                                                            !
-!                                                                      !
-!  Author: J.Musser                                   Date: 02-FEB-14  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE
@@ -63,6 +63,9 @@
       USE run, only: MOMENTUM_X_EQ
       USE run, only: MOMENTUM_Y_EQ
       USE run, only: MOMENTUM_Z_EQ
+
+      use run, only: RUN_TYPE
+      use discretelement, only: GENER_PART_CONFIG
 
       USE physprop, only: CLOSE_PACKED
 
@@ -150,7 +153,8 @@
       ENDIF
             
 
-
+! Overrite for restart cases.
+      IF(TRIM(RUN_TYPE) .NE. 'NEW') GENER_PART_CONFIG = .FALSE.
 
 ! Check for valid neighbor search option.
       SELECT CASE(DES_NEIGHBOR_SEARCH)
@@ -214,25 +218,15 @@
 ! Check thermodynamic properties of discrete solids.
       CALL CHECK_SOLIDS_COMMON_DISCRETE_THERMO
 
-
 ! Check geometry constrains.
-!      CALL CHECK_DES_GEOMETRY
+      CALL CHECK_SOLIDS_COMMON_DISCRETE_GEOMETRY
 
-! Check settings on cohesion model
-!      CALL CHECK_DES_COHESION
-
-! Check settings for collision models
-!      IF(.NOT.MPPIC) CALL CHECK_DES_COLLISION
 
 ! Check TFM/DEM Hybrid model settings.
 !      IF (DES_CONTINUUM_HYBRID) CALL CHECK_DES_HYBRID
+
 ! Check settings for particle generation.
 !      IF(GENER_PART_CONFIG) CALL CHECK_DES_PCONFIG
-! Check quantities related to MPPIC      
-!      IF(MPPIC) CALL CHECK_DES_MPPIC
-
-! Check coupling settings.
-!      CALL CHECK_DES_COUPLING
            
 ! the entire checking and setting up indices for desgridsearch
 ! moved to desgrid_mod to accomodate parallelization
@@ -249,14 +243,14 @@
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
 !  SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_ENERGY                      !
+!  Author: J.Musser                                   Date: 02-FEB-14  !
 !                                                                      !
 !  Purpose: Check input parameters for solving discrete solids phase   !
 !  energy equations.  Only DEM simulations (neither hybrid nor MPPIC)  !
 !  can invoke particle-particle heat transfer. Therefore, checks for   !
 !  those functions are reseved for later.                              !
-!                                                                      !
-!  Author: J.Musser                                   Date: 02-FEB-14  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_ENERGY
@@ -390,55 +384,36 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Subroutine: CHECK_SOLIDS_COMMON_DISCRETE_THERMO                     !
+!  Author: J.Musser                                   Date: 17-Jun-10  !
 !                                                                      !
 !  Purpose:                                                            !
 !                                                                      !
-!                                                                      !
-!  Author: J.Musser                                   Date: 17-Jun-10  !
-!                                                                      !
-!  Comments:                                                           !
-!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
       SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_THERMO
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      Use compar
-      Use des_thermo
-      Use des_rxns
-      Use discretelement
-      Use funits  
-      Use interpolation
-      Use param1
-      Use physprop
-      Use run
-
+      use des_rxns, only: ANY_DES_SPECIES_EQ
+      use des_rxns, only: MAX_DES_NMAX
+      use run, only: SPECIES_EQ
+      use discretelement, only: DES_MMAX
+      use des_rxns, only: DES_NMAX_s
+      use physprop, only: NMAX
       use physprop, only: MMAX
 
+      use error_manager
+
       IMPLICIT NONE
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------      
+
 
 ! Loop index
       INTEGER M, N ! Phase, Species
 
-! Flag that the user was already warned why a call to the thermo-
-! chemical database is being made.
-      LOGICAL WARNED_USR
 
-! Flag that the energy equations are solved and specified solids phase
-! specific heat is undefined.
-! If true, a call to the thermochemical database is made.
-      LOGICAL EEQ_CPS
 
-! Flag that the solids phase species equations are solved and the 
-! molecular weight for a species are not given in the data file.
-! If true, a call to the thermochemical database is made.
-      LOGICAL SEQ_MWs
-!-----------------------------------------------      
+!......................................................................!
+
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_DISCRETE_THERMO")
 
 
 ! Set the flag identifying that at least one of the species equations
@@ -468,42 +443,144 @@
       ENDDO ! DES_MMAX
 
 
+      CALL FINL_ERR_MSG
+
       RETURN
 
- 1001 FORMAT(/1X,70('*')/, ' From: CHECK_DES_THERMO',/,' Error 1001: ',&
-         A,' is ',A,' for discrete solids phase ',I2,/' Please',       &
-         ' correct the data file.',/1X,70('*')/)
-
- 1002 FORMAT(/1X,70('*')/' From: CHECK_DES_THERMO',/' Message 1002:',  &
-         ' The discrete phase energy equations are being solved',/     &
-         ' (DES_ENERGY_EQ) and the specified constant solids specific',&
-         ' heat is',/' undefined (DES_C_PS0). Thus, the',              &
-         ' thermochemical database will be used',/' to gather',        &
-         ' specific heat data on the individual soids phase species.',/&
-         1X,70('*')/)
-
- 1003 FORMAT(/1X,70('*')/' From: CHECK_DES_THERMO',/' Message 1003:',  &
-         ' Discrete solids phase ',I2,' species equations are being',/ &
-         ' solved, and one or more species molecular weights are',     &
-         ' undefined. Thus,',/' the thermochemical database will be',  &
-         ' used to gather molecular weight',/' data on the solids',    &
-         ' phase speicies.',/1X,70('*')/)
-
- 1004 FORMAT(/1X,70('*')/' From: CHECK_DES_THERMO',/' Error 1004:',    &
-         ' Discrete solids phase ',I2,' species ',I3,' name',          &
-         ' (DES_SPECIES_s)',/' is undefined. Please correct the data', &
-         ' file. ',/1X,70('*')/)
-
- 1005 FORMAT(/1X,70('*')/, ' From: CHECK_DES_RXNS',/, ' Error 1005:',  &
-         ' DES_NMAX_s is too large for discrete phase ',I2,'.',        &
-         ' The maximum',/' number of species is ',I3,'.',/1X,70('*')/)
-
- 1006 FORMAT(/1X,70('*')/, ' From: CHECK_DES_RXNS',/, ' Error 1006:',  &
-         ' Number of species for discrete phase ',I2,' is not',        &
-         ' specified.',/1X,70('*')/)
-
-
- 1100 FORMAT(/'  Searching thermochemical databases for discrete',     &
-         ' solids phase ',I2,', species ',I2)
-
       END SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_THERMO
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: CHECK_SOLIDS_COMMON_DISCRETE_GEOMETRY                   !
+!  Author: J.Musser                                   Date: 11-DEC-13  !
+!                                                                      !
+!  Purpose: Check user input data                                      !
+!                                                                      !
+!  Comments: Geometry checks were moved here from CHECK_DES_DATA.      !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_GEOMETRY
+
+!-----------------------------------------------
+! Modules 
+!-----------------------------------------------      
+      USE geometry, only: COORDINATES
+      USE geometry, only: DO_I, DO_J, DO_K
+      USE geometry, only: NO_I, NO_J, NO_K
+      USE geometry, only: ZLENGTH
+
+      USE discretelement, only: DIMN
+      USE discretelement, only: DES_CONTINUUM_COUPLED
+      USE discretelement, only: MAX_RADIUS
+
+      use param1, only: UNDEFINED_I
+
+      use error_manager
+ 
+      IMPLICIT NONE
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------      
+      LOGICAL :: REQ_3D
+      DOUBLE PRECISION :: MIN_DEPTH
+
+
+
+!......................................................................!
+
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_DISCRETE_GEOMETRY")
+
+
+! DEM/MPPIC is restriced to CARTESIAN coordinates.
+      IF(COORDINATES == 'CYLINDRICAL') THEN
+         WRITE (ERR_MSG, 1100)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 1100 FORMAT('Error: 1100: DES and MPPIC models only support ',        &
+         'CARTESIAN coordinates.')
+
+
+! Check dimension. This is redundant with check_data_03.
+      IF(NO_I .OR. NO_J) THEN
+         WRITE(ERR_MSG, 1200)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 1200 FORMAT('Error 1200: Illegal geometry for DEM/MPPIC. 2D ',        &
+         'simulations are',/'restricted to the XY plane. Please ',     &
+         'correct the mfix.dat file.')
+
+
+! Determine if a 3D simulation is requried.
+      REQ_3D = (DO_I .AND. DO_J .AND. DO_K)
+
+! Set the DIMN if not specified.
+      IF(DIMN == UNDEFINED_I) THEN
+         DIMN = merge(3, 2, REQ_3D)
+
+! Impose physical constraint
+      ELSEIF(DIMN < 2 .OR. DIMN > 3) THEN
+         WRITE(ERR_MSG,1001)'DIMN', trim(iVal(DIMN))
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+! Verify that 
+      ELSEIF(REQ_3D .AND. DIMN == 2) THEN
+         WRITE(ERR_MSG,1201)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+      ENDIF
+
+ 1201 FORMAT('Error 1201: Illegal geometry for DEM/MPPIC. The domain ',&
+         'geometry is',/'3D but DEM/MPPIC restricted to 2D (DIMN=2). ',&
+         'Please correctt the',/'mfix.dat file.')
+
+
+      IF(DES_CONTINUUM_COUPLED)THEN
+! Check that the depth of the simulation exceeds the largest particle
+! to ensure correct calculation of volume fraction. This is important
+! for coupled simulations.
+         MIN_DEPTH = 2.0d0*MAX_RADIUS
+         IF(ZLENGTH < MIN_DEPTH)THEN
+            WRITE(ERR_MSG, 1300)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDIF
+
+ 1300 FORMAT('Error 1300: The maximum particle diameter exceeds the ', &
+         'simulation',/'depth (ZLENGTH). Please correct the mfix.dat ',&
+         'file.')
+
+
+! Verify that there are no internal obstacles.
+!      IF(.NOT.CARTESIAN_GRID) THEN
+!         DO K = KSTART1, KEND1 
+!         DO J = JSTART1, JEND1
+!         DO I = ISTART1, IEND1 
+!            IJK  = FUNIJK(I,J,K)
+!            IF(.NOT.FLUID_AT(IJK)) THEN
+!               WRITE(ERR_MSG,1400)
+!               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+!            ENDIF
+!         ENDDO
+!         ENDDO
+!         ENDDO
+!      ENDIF
+
+! 1400 FORMAT('Error 1400: DES simulations cannot have defined ',       &
+!         'internal obstacles.',/'Please correct the data file')
+
+      CALL FINL_ERR_MSG
+
+      RETURN
+
+ 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
+         'correct the mfix.dat file.')
+
+ 1001 FORMAT('Error 1001: Illegal or unknown input: ',A,' = ',A,/   &
+         'Please correct the mfix.dat file.')
+
+      END SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_GEOMETRY

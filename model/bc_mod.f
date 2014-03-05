@@ -94,6 +94,7 @@
 !                      Macroscopic density of solids phases in a
 !                      specified boundary region
       DOUBLE PRECISION BC_ROP_s (DIMENSION_BC, DIM_M)
+      DOUBLE PRECISION BC_EP_s (DIMENSION_BC, DIM_M)
 !
 !                      Gas phase temperature in a specified boundary
 !                      region
