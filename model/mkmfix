@@ -1,4 +1,4 @@
-#!/bin/bash -f
+#!/bin/bash
 #
 # MFIX script file for obtaining user-defined files and
 # executing 'make'
