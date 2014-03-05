@@ -1608,6 +1608,8 @@
       USE indices
       USE sendrecv
       use parallel
+!      USE cutcell, only: RE_INDEXING,INTERIOR_CELL_AT
+      USE cutcell
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1615,11 +1617,14 @@
 ! Variable name
       CHARACTER*(*), INTENT(IN) :: Vname
 ! Vector b_m
-      DOUBLE PRECISION, INTENT(IN) :: B_m(ijkstart3:ijkend3)
+!      DOUBLE PRECISION, INTENT(IN) :: B_m(ijkstart3:ijkend3)
+      DOUBLE PRECISION, INTENT(IN) :: B_m(DIMENSION_3)
 ! Septadiagonal matrix A_m
-      DOUBLE PRECISION, INTENT(IN) :: A_m(ijkstart3:ijkend3, -3:3)
+!      DOUBLE PRECISION, INTENT(IN) :: A_m(ijkstart3:ijkend3, -3:3)
+      DOUBLE PRECISION, INTENT(IN) :: A_m(DIMENSION_3, -3:3)
 ! Variable
-      DOUBLE PRECISION, INTENT(OUT) :: Var(ijkstart3:ijkend3)
+!      DOUBLE PRECISION, INTENT(OUT) :: Var(ijkstart3:ijkend3)
+      DOUBLE PRECISION, INTENT(OUT) :: Var(DIMENSION_3)
 ! sweep direction
       CHARACTER*4, INTENT(IN) :: CMETHOD
 !-----------------------------------------------
@@ -1643,14 +1648,20 @@
 
 ! diagonal scaling
 !$omp   parallel do private(i,j,k,ijk) 	collapse (3)  
-      do k=kstart2,kend2
-         do i=istart2,iend2
-            do j=jstart2,jend2
-               ijk = funijk( i,j,k )
-               var(ijk) = b_m(ijk)/A_m(ijk,0)
+      IF(.NOT.RE_INDEXING) THEN
+         do k=kstart2,kend2
+            do i=istart2,iend2
+               do j=jstart2,jend2
+                  ijk = funijk( i,j,k )
+                  var(ijk) = b_m(ijk)/A_m(ijk,0)
+               enddo
             enddo
          enddo
-      enddo
+      ELSE
+         DO IJK=IJKSTART3,IJKEND3
+            var(ijk) = b_m(ijk)/A_m(ijk,0)
+         ENDDO
+      ENDIF
 
       call send_recv(var,nlayers_bicgs)
 
