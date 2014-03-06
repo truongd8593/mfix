@@ -308,6 +308,7 @@
       I = IMIN1 !West Face 
       DO K = KMIN1, KMAX1
          DO J = JMIN1, JMAX1               
+            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
             IJK  = FUNIJK(I,J,K)                        
             N_FACETS_DES = N_FACETS_DES + 1 
             NF = N_FACETS_DES
@@ -336,6 +337,7 @@
       I = IMAX1 !East Face 
       DO K = KMIN1, KMAX1
          DO J = JMIN1, JMAX1 
+            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
             IJK  = FUNIJK(I,J,K)            
             N_FACETS_DES = N_FACETS_DES + 1 
             NF = N_FACETS_DES
@@ -358,6 +360,7 @@
       J = JMIN1 !south face
       DO K = KMIN1, KMAX1
          DO I = IMIN1, IMAX1 
+            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
             IJK  = FUNIJK(I,J,K)            
             N_FACETS_DES = N_FACETS_DES + 1 
             NF = N_FACETS_DES
@@ -380,6 +383,7 @@
       J = JMAX1 !north  face
       DO K = KMIN1, KMAX1
          DO I = IMIN1, IMAX1 
+            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
             IJK  = FUNIJK(I,J,K)            
             N_FACETS_DES = N_FACETS_DES + 1 
             NF = N_FACETS_DES
@@ -401,6 +405,7 @@
       K = KMIN1 !bottom face 
       DO J = JMIN1, JMAX1
          DO I = IMIN1, IMAX1 
+            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
             IJK  = FUNIJK(I,J,K)            
             N_FACETS_DES = N_FACETS_DES + 1 
             NF = N_FACETS_DES
@@ -421,6 +426,7 @@
       K = KMAX1 !top face 
       DO J = JMIN1, JMAX1
          DO I = IMIN1, IMAX1 
+            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
             IJK  = FUNIJK(I,J,K)            
             N_FACETS_DES = N_FACETS_DES + 1 
             NF = N_FACETS_DES
