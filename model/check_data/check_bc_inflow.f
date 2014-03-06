@@ -163,6 +163,7 @@
             IF(BC_ROP_S(BCV,M) == UNDEFINED .AND. &
                BC_EP_S(BCV,M) == UNDEFINED) THEN
                WRITE(ERR_MSG, 1200) M, BCV, 'BC_ROP_s and BC_EP_s'
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ENDDO
       ENDIF
