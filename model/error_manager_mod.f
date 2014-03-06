@@ -108,7 +108,7 @@
       ELSEIF(NB + 10 > LEN(LOGFILE)) THEN
          IF(myPE == PE_IO) WRITE (*, 1000) 'long'
          CALL MFIX_EXIT(myPE) 
-! RUN_NAME legnth too just right.
+! RUN_NAME legnth just right.
       ELSE
 ! Specify the .LOG file name based on MPI Rank extenion.
          IF(numPEs == 1 .OR. .NOT.ENABLE_DMP_LOG) THEN
@@ -556,7 +556,7 @@
       CHARACTER(len=32) FUNCTION iVal_int(VAL)
       INTEGER, intent(in) :: VAL
 
-      CHARACTER(len=16) :: iASc
+      CHARACTER(len=32) :: iASc
 
       WRITE(iASc,*) VAL
       iVal_int = trim(adjustl(iASc))
@@ -570,9 +570,14 @@
       CHARACTER(len=32) FUNCTION iVal_dbl(VAL)
       DOUBLE PRECISION, intent(in) :: VAL
 
-      CHARACTER(len=16) :: dASc
+      CHARACTER(len=32) :: dASc
 
-      WRITE(dASc,*) VAL
+      IF(abs(VAL) < 1.0d-2 .AND. abs(VAL) < 1.0d2) THEN
+         WRITE(dASc,"(F18.4)") VAL
+      ELSE
+         WRITE(dASc,"(G18.4)") VAL
+      ENDIF
+      
       iVal_dbl = trim(adjustl(dASc))
 
       END FUNCTION iVal_dbl
