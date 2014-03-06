@@ -894,8 +894,14 @@
 ! Ranks that 'see' IJK_P_g store their local IJK value. Everyone else
 ! resets IJK_P_g to UNDEFINED_I. This removes the need for getting
 ! I/J/K values later on in source_PPg.
-      IJK_P_g = merge(funijk(I,J,K), UNDEFINED_I,                      &
-         IS_ON_myPE_plus2layers(I,J,K))
+!      IJK_P_g = merge(funijk(I,J,K), UNDEFINED_I,                      &
+!         IS_ON_myPE_plus2layers(I,J,K))
+
+      IF(IS_ON_myPE_plus2layers(I,J,K)) THEN
+         IJK_P_g = funijk(I,J,K)
+      ELSE
+         IJK_P_g = UNDEFINED_I
+      ENDIF
 
       IERR = 0
       RETURN
