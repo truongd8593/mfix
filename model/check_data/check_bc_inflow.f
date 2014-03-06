@@ -149,6 +149,13 @@
          ENDIF
       ENDIF
 
+
+! Calculate the solids volume fraction from the gas phase if there is
+! only one solids phase.
+      IF(M_TOT == 1 .AND. BC_EP_S(BCV,1) == UNDEFINED) THEN
+         BC_EP_S(BCV,1) = ONE - BC_EP_g(BCV)
+      ENDIF
+
 ! Bulk density or solids volume fraction must be explicitly defined 
 ! if there are more than one solids phase.
       IF(M_TOT > 1) THEN
@@ -158,8 +165,6 @@
                WRITE(ERR_MSG, 1200) M, BCV, 'BC_ROP_s and BC_EP_s'
             ENDIF
          ENDDO
-      ELSEIF(BC_EP_S(BCV,1) == UNDEFINED) THEN
-         BC_EP_S(BCV,1) = ONE - BC_EP_g(BCV)
       ENDIF
 
  1200 FORMAT('Error 1200: Insufficient solids phase ',I2,' data ',     &
@@ -278,13 +283,14 @@
 
 ! Verify that the volume fractions sum to one.
       IF(.NOT.COMPARE(SUM_EP,ONE)) THEN
-         WRITE(ERR_MSG,1215)
+         WRITE(*,1215) BCV, trim(iVal(SUM_EP))
+         WRITE(ERR_MSG,1215) BCV, trim(iVal(SUM_EP))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
- 1215 FORMAT('Error 1215: Illegal boundary condition region: ',I3,/    &
-         'Sum of volume fractions does NOT equal ONE. Please correct',/&
-         'the mfix.dat file.')
+ 1215 FORMAT('Error 1215: Illegal boundary condition region: ',I3,'. ',&
+         'Sum of volume',/'fractions does NOT equal ONE. (SUM = ',A,   &
+         ')',/'Please correct the mfix.dat file.')
 
       DO M = 1, M_TOT
 ! Check solids phase temperature dependency.
