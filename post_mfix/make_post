@@ -17,6 +17,9 @@ cd ${POSTMFIX_DIR}
 
 delete_files="n"
 
+# Set the machine file to LINUX by default.
+mach_file="LINUX.F"
+
 USE_NETCDF=0
 
 NETCDF_HOME=" "
