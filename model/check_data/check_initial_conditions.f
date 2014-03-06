@@ -666,21 +666,25 @@
 ! The total number of solids phases (all models).
       MMAX_TOT = SMAX + DES_MMAX
 
+! Calculate EP_s from EP_g if there is only one solids phase.
+      IF(MMAX_TOT == 1 .AND. IC_EP_S(ICV,1) == UNDEFINED) THEN
+         IC_EP_S(ICV,1) = ONE - IC_EP_g(ICV)
+      ENDIF
+
 ! Bulk density or solids volume fraction must be explicitly defined 
 ! if there are more than one solids phase.
-      IF(MMAX_TOT > 1) THEN
+      IF(MMAX_TOT > 1 .AND. .NOT.COMPARE(IC_EP_g(ICV),ONE)) THEN
          DO M = 1, SMAX + DES_MMAX
             IF(IC_ROP_S(ICV,M) == UNDEFINED .AND. &
                IC_EP_S(ICV,M) == UNDEFINED) THEN
                WRITE(ERR_MSG, 1400) M, ICV, 'IC_ROP_s and IC_EP_s'
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ENDDO
-      ELSEIF(IC_EP_S(ICV,1) == UNDEFINED) THEN
-         IC_EP_S(ICV,1) = ONE - IC_EP_g(ICV)
       ENDIF
 
  1400 FORMAT('Error 1400: Insufficient solids phase ',I2,' ',          &
-         'information for IC',/'region ',I3,'. ',A,'not specified.',/  &
+         'information for IC',/'region ',I3,'. ',A,' not specified.',/ &
          'Please correct the mfix.dat file.')
 
 ! Determine which solids phases are present.
