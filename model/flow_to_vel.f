@@ -47,7 +47,7 @@
       INTEGER, intent(in) :: BCV
 
 ! Whether any volumetric flow conversion was done 
-      LOGICAL :: CONVERTED 
+      LOGICAL :: CONVERTED = .FALSE.
 
 ! Loop index
       INTEGER :: M 
@@ -80,7 +80,7 @@
       ENDDO
 
       IF(CONVERTED .AND. (NO_I .OR. NO_J .OR. NO_K)) THEN
-         WRITE (ERR_MSG, 1100)
+         WRITE(ERR_MSG, 1100)
          CALL FLUSH_ERR_MSG
       ENDIF
 
