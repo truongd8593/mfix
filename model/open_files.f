@@ -1,36 +1,19 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: OPEN_FILES                                             C
-!  Purpose: open all the files for this run                            C
-!                                                                      C
-!  Author: P. Nicoletti                               Date: 12-DEC-91  C
-!  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date: 24-JAN-92  C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables: EXT, FILE_NAME, LC, NB                             C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: OPEN_FILES                                             !
+!  Author: P. Nicoletti                               Date: 12-DEC-91  !
+!                                                                      !
+!  Purpose: open all the files for this run                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX) 
-!
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
+
       USE machine 
       USE funits 
       USE compar 
       USE cdist
 
       use error_manager
-
       
       IMPLICIT NONE
 
@@ -42,22 +25,16 @@
       CHARACTER*(*) :: RUN_TYPE
 ! Number of single precision output files (param.inc)
       INTEGER :: N_SPX
-
 ! local variables
-      CHARACTER     EXT*4
-!
-!                   run_name + extension
-      CHARACTER     FILE_NAME*64
-!
-!
-!                   Loop counter
-      INTEGER       LC
-!
-!                   index to first blank character in run_name
-      INTEGER       NB, NBL
-
-      CHARACTER     EXT_END*35 , cstatus*10
-
+      CHARACTER(len=4) :: EXT
+! run_name + extension
+      CHARACTER(len=64) :: FILE_NAME
+! Loop counter
+      INTEGER :: LC
+! index to first blank character in run_name
+      INTEGER :: NB, NBL
+      CHARACTER(len=35) :: EXT_END
+      CHARACTER(len=10) :: CSTATUS
 ! Character error code.
       CHARACTER(len=32) :: CER
 !-----------------------------------------------
@@ -275,76 +252,85 @@
       END SUBROUTINE OPEN_FILES 
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: OPEN_PE_LOG                                            !
+!  Author: P. Nicoletti                               Date: 12-DEC-91  !
+!                                                                      !
+!  Purpose: Every rank open a .LOG file for domain specific errors.    !
+!  This routine should only be invoked before writing to the log and   !
+!  exiting.                                                            !
+!                                                                      !
+!  This routine only opens files when the following are met:           !
+!    (1) MFIX is run in DMP parallel (MPI)                             !
+!    (2) ENABLE_DMP_LOG is not set in the mfix.dat file.               !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE OPEN_PE_LOG(IER)
 
+! Global Variables:
+!---------------------------------------------------------------------//
+! File unit for LOG files.
+      USE funits, only: UNIT_LOG
+! User specifed run name
+      USE run, only: RUN_NAME
+! MPI Rank of current process.
+      USE compar, only: myPE
+! Total number of MPI ranks.
+      USE compar, only: numPEs
+! Flag: My rank reports errors.
+      use funits, only: DMP_LOG    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      SUBROUTINE OPEN_PE_LOG (IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      USE machine 
-      USE funits 
-      USE run
-      USE compar 
-      
       IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!                     Error index: 0 - no error, 1 could not open file
-      INTEGER         IER
-!
-!                   run_name + extension
-      CHARACTER     FILE_NAME*64
-!
-!
-!                   Log file name: dmp mode adds processor no to file name
-      CHARACTER     LOGFILE*60
-!
-!                   Loop counter
-      INTEGER       LC
-!
-!                   index to first blank character in run_name
-      INTEGER       NB, NBL
 
-!-----------------------------------------------
+! Dummy Arguments:
+!---------------------------------------------------------------------//
+! Error index.
+      INTEGER, INTENT(inout) :: IER
 
-!
-! DETERMINE THE FIRST BLANK CHARCATER IN RUN_NAME
-!
+! Local Variables:
+!---------------------------------------------------------------------//
+! Log file name.
+      CHARACTER(len=64) :: LOGFILE
+      CHARACTER(len=64) :: FILE_NAME
+! Flag for LOG files that are already open.
+      LOGICAL :: DO_NOTHING
+! Index of first blank character in RUN_NAME
+      INTEGER :: NB
+!......................................................................!
 
-!//PAR_I/O all PEs must exec this check in order to avoid Bcast of NB
-      DO LC = 1, LEN(RUN_NAME) 
-         IF (RUN_NAME(LC:LC) == ' ') THEN 
-            NB = LC 
-            EXIT 
-         ENDIF
-         LOGFILE(LC:LC) = RUN_NAME(LC:LC) 
-      END DO 
-!
-      NBL = NB
-      write(LOGFILE(NB:NB+3),'(I3.3)') myPE
-      NBL = NB + 3
-!
-      CALL OPEN_FILE (LOGFILE, NBL, UNIT_LOG, '.LOG', FILE_NAME, 'NEW', &
-          'SEQUENTIAL', 'FORMATTED', 132, IER(myPE))
+
+! Enable output from this rank.
+      DMP_LOG = .TRUE.
+
+! Return to the caller if this rank is already connect to a log file.
+      INQUIRE(UNIT=UNIT_LOG, OPENED=DO_NOTHING)
+      IF(DO_NOTHING) RETURN
+
+! Verify the length of user-provided name.
+      LOGFILE = ''
+      NB = INDEX(RUN_NAME,' ')
+
+! Specify the .LOG file name based on MPI Rank extenion.
+      IF(numPEs == 1) THEN
+         WRITE(LOGFILE,"(A)")RUN_NAME(1:(NB-1))
+      ELSEIF(numPEs <    10) THEN
+         WRITE(LOGFILE,"(A,'_',I1.1)") RUN_NAME(1:(NB-1)), myPE
+      ELSEIF(numPEs <   100) THEN
+         WRITE(LOGFILE,"(A,'_',I2.2)") RUN_NAME(1:(NB-1)), myPE
+      ELSEIF(numPEs <  1000) THEN
+         WRITE(LOGFILE,"(A,'_',I3.3)") RUN_NAME(1:(NB-1)), myPE
+      ELSEIF(numPEs < 10000) THEN
+         WRITE(LOGFILE,"(A,'_',I4.4)") RUN_NAME(1:(NB-1)), myPE
+      ELSE
+         WRITE(LOGFILE,"(A,'_',I8.8)") RUN_NAME(1:(NB-1)), myPE
+      ENDIF
+
+! Open the .LOG file. From here forward, all routines should store
+! error messages (at a minimum) in the .LOG file.
+      NB = len_trim(LOGFILE)+1
+      CALL OPEN_FILE(LOGFILE, NB, UNIT_LOG, '.LOG', FILE_NAME,         &
+         'APPEND', 'SEQUENTIAL', 'FORMATTED', 132,  IER)
         
       RETURN
       END SUBROUTINE OPEN_PE_LOG 
