@@ -766,7 +766,7 @@ echo " "
     then
        echo
     else
-       rm -f machine.f
+       /bin/rm -f machine.f
 	/bin/cp -f ../model/$mach_file machine.f
 	/bin/rm -f *.o *.a *.mod *.exe
 	/bin/rm -f COMPILED.WITH.*
