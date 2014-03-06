@@ -353,6 +353,7 @@
       USE parallel
 
       use bc, only: IJK_P_G
+      use discretelement, only: DISCRETE_ELEMENT
 
       USE cdist
       IMPLICIT NONE
@@ -1316,8 +1317,10 @@
       CALL SHIFT_DP_ARRAY(Ovol_around_node)
 
 
-      CALL SHIFT_LOG_ARRAY(NO_NEIGHBORING_FACET_DES,.FALSE.)
-      CALL SHIFT_LIST_OF_FACETS_DES
+      IF(DISCRETE_ELEMENT) THEN
+         CALL SHIFT_LOG_ARRAY(NO_NEIGHBORING_FACET_DES,.FALSE.)
+         CALL SHIFT_LIST_OF_FACETS_DES
+      ENDIF
 
       IF (IJK_P_G /= UNDEFINED_I) IJK_P_G = IJK_OF_BACKGROUND(IJK_P_G)
 
