@@ -693,14 +693,7 @@
             .AND.(IC_EP_S(ICV,M)==UNDEFINED .OR.IC_EP_S(ICV,M)==ZERO)
       ENDDO
 
-! Flag data out of range.
-!      DO M = MMAX_TOT+1, DIM_M
-!         IF(.NOT.SKIP(M)) THEN
-!            WRITE(ERR_MSG, 1002) ICV, 'IC_ROP_S or IC_EP_S',M
-!            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-!         ENDIF
-!      ENDDO
-
+      IF(MMAX_TOT == 1 .AND. IC_EP_g(BCV)/=ONE) SKIP(1) = .FALSE.
 
       DO M=1, MMAX_TOT
 

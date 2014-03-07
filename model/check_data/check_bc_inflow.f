@@ -158,7 +158,7 @@
 
 ! Bulk density or solids volume fraction must be explicitly defined 
 ! if there are more than one solids phase.
-      IF(M_TOT > 1) THEN
+      IF(M_TOT > 1 .AND. .NOT.COMPARE(BC_EP_g(BCV),ONE)) THEN
          DO M = 1, M_TOT
             IF(BC_ROP_S(BCV,M) == UNDEFINED .AND. &
                BC_EP_S(BCV,M) == UNDEFINED) THEN
@@ -169,7 +169,7 @@
       ENDIF
 
  1200 FORMAT('Error 1200: Insufficient solids phase ',I2,' data ',     &
-         'for BC',I3,'. ',/A,'not specified.',/'Please correct the ',  &
+         'for BC',I3,'. ',/A,' not specified.',/'Please correct the ', &
          'mfix.dat file.')
 
 ! Initialize the sum of the total volume fraction.
@@ -217,7 +217,7 @@
          'correct the mfix.dat file.')
 
             ELSEIF(.NOT.COMPARE(SUM,ZERO)) THEN
-                WRITE(ERR_MSG, 1212) BCV
+               WRITE(ERR_MSG, 1212) BCV
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
  1212 FORMAT('Error 1212: BC_X_s(',I3,',',I2,':) do NOT sum to ONE ',  &
