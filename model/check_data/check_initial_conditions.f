@@ -693,7 +693,7 @@
             .AND.(IC_EP_S(ICV,M)==UNDEFINED .OR.IC_EP_S(ICV,M)==ZERO)
       ENDDO
 
-      IF(MMAX_TOT == 1 .AND. IC_EP_g(BCV)/=ONE) SKIP(1) = .FALSE.
+      IF(MMAX_TOT == 1 .AND. IC_EP_g(ICV)/=ONE) SKIP(1) = .FALSE.
 
       DO M=1, MMAX_TOT
 
