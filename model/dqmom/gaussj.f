@@ -4,7 +4,7 @@
       PARAMETER (NMAX=50)
       INTEGER i,icol,irow,j,k,l,ll,indxc(NMAX),indxr(NMAX),ipiv(NMAX)
       DOUBLE PRECISION big,dum,pivinv
-      
+
         ipiv(:)=0
 
       do  i=1,n
@@ -19,7 +19,7 @@
                   icol=k
                 endif
               else if (ipiv(k)>1) then
-                pause 'singular matrix in gaussj'
+                write(*,*) 'WARNING: singular matrix in gaussj'
               endif
            enddo
           endif
@@ -39,7 +39,7 @@
         endif
         indxr(i)=irow
         indxc(i)=icol
-        if (a(icol,icol)==0.) pause 'singular matrix in gaussj'
+        if (a(icol,icol)==0.) write(*,*) 'WARNING: singular matrix in gaussj'
         pivinv=1./a(icol,icol)
         a(icol,icol)=1.
         do l=1,n
@@ -47,7 +47,7 @@
         enddo
         do l=1,m
           b(icol,l)=b(icol,l)*pivinv
-        enddo     
+        enddo
         do ll=1,n
           if(ll.ne.icol)then
             dum=a(ll,icol)
@@ -67,8 +67,8 @@
             dum=a(k,indxr(l))
             a(k,indxr(l))=a(k,indxc(l))
             a(k,indxc(l))=dum
-        enddo 
+        enddo
         endif
-       enddo    
+       enddo
       return
       END

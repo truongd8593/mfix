@@ -1,5 +1,5 @@
        SUBROUTINE rkck(y,dydx,n,x,h,yout,yerr)
-       IMPLICIT NONE 
+       IMPLICIT NONE
 
        INTEGER n,NMAX
       double precision h,x,dydx(n),y(n),yerr(n),yout(n)
@@ -8,7 +8,7 @@
       double precision ak2(NMAX),ak3(NMAX),ak4(NMAX),ak5(NMAX),&
       ak6(NMAX),ytemp(NMAX),A2,A3,A4,A5,A6,B21,&
       B31,B32,B41,B42,B43,B51,B52,B53,&
-      B54,B61,B62,B63,B64,B65,C1,C3,C4,C6,DC1,DC3,DC4,DC5,DC6 
+      B54,B61,B62,B63,B64,B65,C1,C3,C4,C6,DC1,DC3,DC4,DC5,DC6
       PARAMETER (A2=.2,A3=.3,A4=.6,A5=1.,A6=.875,B21=.2,B31=3./40.,&
       B32=9./40.,B41=.3,B42=-.9,B43=1.2,B51=-11./54.,B52=2.5,&
       B53=-70./27.,B54=35./27.,B61=1631./55296.,B62=175./512.,&
@@ -19,7 +19,7 @@
       do i=1,n
         ytemp(i)=y(i)+B21*h*dydx(i)
       end do
-      
+
       call source_population_eq(x+A2*h,ytemp,ak2)
       do i=1,n
         ytemp(i)=y(i)+h*(B31*dydx(i)+B32*ak2(i))

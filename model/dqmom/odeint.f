@@ -3,7 +3,7 @@
        IMPLICIT NONE
 
        INTEGER nbad,nok,nvar,KMAXX,MAXSTP,NMAX
-       
+
        DOUBLE PRECISION  eps,h1,hmin,x1,x2,ystart1(nvar),TINY
        PARAMETER (MAXSTP=10000,NMAX=50,KMAXX=200,TINY=1.e-30)
        INTEGER i,kmax1,kount,nstp
@@ -16,8 +16,8 @@
        kount=0
 !#######################################
 !      Don't store the intermediate results.
-!#######################################       
-       kmax1=0.0 
+!#######################################
+       kmax1=0.0
        dxsav=0.0
 !##############################################
 ! store the intermediate results. uncooment them.
@@ -27,12 +27,12 @@
        do i=1,nvar
         y(i)=ystart1(i)
        end do
-       
- 
+
+
        if (kmax1>0) xsav=x-2.*dxsav
        do  nstp=1,MAXSTP
           call source_population_eq(x,y,dydx)
-         
+
          do i=1,nvar
           yscal(i)=abs(y(i))+abs(h*dydx(i))+TINY
          end do
@@ -68,10 +68,9 @@
           endif
           return
          endif
-        if(abs(hnext)<hmin) pause &
-        'stepsize smaller than minimum in odeint'
-         h=hnext
+        if(abs(hnext)<hmin) write(*,*) 'WARNING: stepsize smaller than minimum in odeint'
+        h=hnext
        end do
-      pause 'too many steps in odeint'
+      write(*,*) 'WARNING: too many steps in odeint'
       return
       END

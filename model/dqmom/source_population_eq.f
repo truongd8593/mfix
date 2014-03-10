@@ -1,11 +1,11 @@
-  
+
       SUBROUTINE Source_population_eq(x,y,dydx)
 
-      USE physprop      
+      USE physprop
       USE constant
-      USE fldvar 
+      USE fldvar
       USE scalars
-     
+
 
       IMPLICIT NONE
 
@@ -13,14 +13,14 @@
       double precision K_v,a1,a2
       double precision m1,m2, dav,theta,c11
       double precision, external :: g_0
-      double precision epstotal 
+      double precision epstotal
       integer L,n,np,i,j,k,IJK
-            
+
       k_v=PI/6
       epstotal=0.0
       theta=0.0
 
-     
+
       DO I=1,Nscalar
       A(I)= 0.0
       omega(I)=y(I)/(k_v*(y(Nscalar+I)**3))
@@ -28,10 +28,10 @@
 
       n=2*Nscalar
       np=2*Nscalar
-      
+
       IJK=IJK_INDEX
 
-! initinalize variables     
+! initinalize variables
       DO i=1,n
        DO j=1,n
          matrix_a(i,j)=ZERO
@@ -50,11 +50,11 @@
       ENDDO
 
 ! calculate BETA_A(I,J) and A(I)
-      
+
       DO I=1, Nscalar
         epstotal=ROP_s(IJK,I)/RO_S(IJK,I)+epstotal
       ENDDO
-       
+
        If(epstotal>=small_number) THEN
            Do J=1,Nscalar
             theta= theta+(ROP_s(IJk,J)/RO_S(IJK,J))*Theta_m(IJK,J)
@@ -63,25 +63,25 @@
         else
            theta=0.0
         endif
-       
-     
+
+
        DO I=1,Nscalar
        DO J=1,Nscalar
 
         m1=PI*(Scalar(IJK,I)**3)*RO_S(IJK,I)/6.0
         m2=PI*(Scalar(IJK,J)**3)*RO_S(IJK,J)/6.0
-        dav=(Scalar(IJk,I)+Scalar(IJk,J))/2.0      
-        c11=((theta*(m1+m2)**2)/(4*PI*m1*m2))**(0.5)*(4.0/dav)           
+        dav=(Scalar(IJk,I)+Scalar(IJk,J))/2.0
+        c11=((theta*(m1+m2)**2)/(4*PI*m1*m2))**(0.5)*(4.0/dav)
         BETA_A(I,J)=aggregation_eff*PI*(dav**3)*G_0(IJK,I,J)*c11
         A(I)=A(I)+PI*(dav**3)*G_0(IJK,I,J)*c11*omega(J)*breakage_eff
-  
+
       ENDDO
       ENDDO
 
-   
+
 ! calculate S_bar
-!  
-       DO L=0,2*Nscalar-1 
+!
+       DO L=0,2*Nscalar-1
         DO I=1,Nscalar
          DO J=1,Nscalar
            If(y(I)<=1.0E-6) THEN
@@ -107,7 +107,7 @@
             ENDIF
           ENDDO
         ENDDO
-      
+
           DO I=1,Nscalar
               IF(y(I)<1.0E-6) THEN
                 S_bar(L)=S_bar(L)+0.0
@@ -120,7 +120,7 @@
        ENDDO
 
 ! calcalute inv(A)
-       
+
 
        IF(NSCALAR==2) THEN
          IF(abs(y(3)-y(4))<=1.0E-4) THEN
@@ -142,7 +142,7 @@
           y(4)=y(4)*0.999
           y(6)=y(4)*1.001
          ENDIF
-       ENDIF  
+       ENDIF
 
        DO j=1,Nscalar
             matrix_a(1,j)=1.0
@@ -153,24 +153,24 @@
             matrix_a(1,j)=0.0
             matrix_a(2,j)=1.0
        ENDDO
-  
-       DO i=3,n 
+
+       DO i=3,n
          DO j=1,Nscalar
           matrix_a(i,j)=(1.0-i+1.0)*(y(j+Nscalar)**((i-1)*1.0))
          ENDDO
 
-         DO j=Nscalar+1,n          
+         DO j=Nscalar+1,n
           matrix_a(i,j)=(i-1.0)*(y(j)**((i-2)*1.0))
          ENDDO
        ENDDO
 
-              
 
-      
+
+
        DO i=1,n
          inv_a(i,i)=1.0
        ENDDO
-         
+
        call gaussj(matrix_a,n,np,inv_a,n,n)
 
        DO i=1,n
@@ -178,17 +178,17 @@
            IF(y(i)>1.0E-3) matrix_c(i,i)=-2*(y(i+Nscalar)**3)
          ELSE
            IF(y(i-Nscalar)>1.0E-3) matrix_c(i,i)= 4*(y(i)**3)
-         ENDIF    
+         ENDIF
        ENDDO
-     
+
        DO i=1,Nscalar
          IF(y(i)>1.0E-3) THEN
            matrix_c(i,i+Nscalar)=3*(y(i+Nscalar)**2)
            matrix_c(i+Nscalar,i)=-3*(y(i+Nscalar)**4)
          ENDIF
        ENDDO
-      
-     
+
+
        DO i = 1, n
           DO j = 1, n
             DO k = 1, n
@@ -203,7 +203,7 @@
           dydx(i)=dydx(i)+k_v*matrix_b(i,j)*s_bar(j-1)
          ENDDO
        ENDDO
-            
+
        DO i=Nscalar+1,n
            IF(y(i-Nscalar)>1.0E-6) THEN
            dydx(i)=-dydx(i-Nscalar)*y(i)/y(i-Nscalar)
@@ -216,7 +216,7 @@
            ELSE
             dydx(i)=dydx(i)+0.0
            ENDIF
-         ENDDO          
+         ENDDO
        ENDDO
 
 

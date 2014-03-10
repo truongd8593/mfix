@@ -9,7 +9,7 @@
        PSHRNK,ERRCON
        PARAMETER (SAFETY=0.9,PGROW=-.2,PSHRNK=-.25,ERRCON=1.89e-4)
        h=htry
-       do 
+       do
          call rkck(y,dydx,n,x,h,ytemp,yerr)
          errmax=0.
          do i=1,n
@@ -20,9 +20,9 @@
          htemp=SAFETY*h*(errmax**PSHRNK)
          h=sign(max(abs(htemp),0.1*abs(h)),h)
          xnew=x+h
-         if(xnew==x)pause 'stepsize underflow in rkqs'
-       end do 
-     
+         if(xnew==x) write(*,*) 'WARNING: stepsize underflow in rkqs'
+       end do
+
         if(errmax>ERRCON)then
           hnext=SAFETY*h*(errmax**PGROW)
         else
