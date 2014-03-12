@@ -389,7 +389,7 @@ module softspring_funcs_cutcell
                ENDIF            !wall contact
  200           CONTINUE
             ENDDO
-         ENDIF                  !if(walldtsplit .and. .not.pea(LL,2))
+         ENDIF                  !if(.not.pea(LL,3) .and. .not.pea(LL,2))
 
       ENDDO
 !---------------------------------------------------------------------

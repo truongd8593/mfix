@@ -102,8 +102,6 @@
          ENDDO
       ENDIF
 
-! used in octree and quadtree neighbor search algorithms
-      RADIUS_EQ = MAX_RADIUS*1.05d0
 !-----------------------------------------------------------------<<<
 
 

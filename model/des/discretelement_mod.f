@@ -256,9 +256,6 @@
       INTEGER :: DESGRIDSEARCH_IMAX, DESGRIDSEARCH_JMAX, &
                  DESGRIDSEARCH_KMAX
 
-      DOUBLE PRECISION N2CT
-      DOUBLE PRECISION RADIUS_EQ
-
 ! End neighbor search related quantities
 !-----------------------------------------------------------------<<<
 
