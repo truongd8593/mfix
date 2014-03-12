@@ -281,8 +281,8 @@
 ! Calculate cell volumes and face areas
       IF(.NOT.CARTESIAN_GRID)  THEN
          CALL SET_GEOMETRY1 
-!       ELSE
-!         CALL SET_GEOMETRY
+       ELSE
+         CALL SET_GEOMETRY
        ENDIF
 
 ! Find corner cells and set their face areas to zero
@@ -359,8 +359,7 @@
       IF(DISCRETE_ELEMENT) THEN
          CALL CHECK_DES_DATA
          CALL CHECK_DES_RXNS
-         !CALL CHECK_DES_IC
-         !CALL CHECK_DES_BC
+         CALL CHECK_DES_BC
          CALL MAKE_ARRAYS_DES
       ENDIF
 
