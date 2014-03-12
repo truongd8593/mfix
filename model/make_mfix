@@ -2927,6 +2927,7 @@ updatesubdir()
 #from previous compilation is correctly reverted back. 
 #-----------
      updatesubdir cartesian_grid  
+     updatesubdir check_data
      updatesubdir chem  
      updatesubdir cohesion 
      updatesubdir des  
