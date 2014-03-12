@@ -14,12 +14,9 @@
       use ic, only: IC_DEFINED
       use ic, only: IC_TYPE
 
-      use ic, only: IC_I_W, IC_I_E
-      use ic, only: IC_J_S, IC_J_N
-      use ic, only: IC_K_B, IC_K_T
-
-      use sendrecv
-      use mpi_utility      
+      use param, only: DIMENSION_IC
+!      use sendrecv
+!      use mpi_utility      
       use error_manager
 
       IMPLICIT NONE
@@ -28,13 +25,8 @@
 ! Local variables
 !-----------------------------------------------
       INTEGER :: ICV
-      INTEGER :: I, J, K, IJK
-
-      INCLUDE 'function.inc'
 
       CALL INIT_ERR_MSG("CHECK_INITIAL_CONDITIONS")
-
-      CALL INIT_ICBC_FLAGS
 
       CALL CHECK_IC_GEOMETRY
 
@@ -49,30 +41,15 @@
 
             CALL CHECK_IC_SOLIDS_PHASES(ICV)
 
-!  Set ICBC flag
-            DO K = IC_K_B(ICV), IC_K_T(ICV)
-            DO J = IC_J_S(ICV), IC_J_N(ICV) 
-            DO I = IC_I_W(ICV), IC_I_E(ICV) 
-               IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-               IF(DEAD_CELL_AT(I,J,K)) CYCLE
-               IJK = FUNIJK(I,J,K)
-               WRITE(ICBC_FLAG(IJK)(1:3),"('.',I2.2)") MOD(ICV,100)
-            ENDDO 
-            ENDDO 
-            ENDDO 
-
          ELSE
 
 ! Check whether physical quantities are specified for undefined
 ! initial conditions and if so flag error
-!            CALL CHECK_IC_OVERFLOW(ICV)
+            CALL CHECK_IC_OVERFLOW(ICV)
 
          ENDIF
 
       ENDDO IC_LP
-
-! Update the ICBC flag on ghost cells.
-      CALL SEND_RECV(ICBC_FLAG, 2)
 
 ! Finalize the error manager.
       CALL FINL_ERR_MSG
@@ -80,94 +57,6 @@
       RETURN  
 
       END SUBROUTINE CHECK_INITIAL_CONDITIONS 
-
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-! Subroutine: INIT_ICBC_FLAGS                                          !
-! Author: J.Musser                                    Date: 01-Mar-14  !
-!                                                                      !
-! Purpose: Provided a detailed error message when the sum of volume    !
-!                                                                      !
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-      SUBROUTINE INIT_ICBC_FLAGS
-
-      use run, only: RUN_TYPE
-
-      use mpi_utility
-
-      implicit none
-
-      INTEGER :: I, J, K, IJK
-
-      include 'function.inc'
-
-! Initialize the icbc_flag array.
-      DO K = kStart3, kEnd3       
-      DO J = jStart3, jEnd3 
-      DO I = iStart3, iEnd3
-
-         IJK = FUNIJK(I,J,K)
-
-! Initialize the ICBC Flag
-         ICBC_FLAG(IJK) = merge('   ', '.--', RUN_TYPE == 'NEW')
-
-
-! If at domain boundaries then set default values (wall or, if
-! specified, cyclic)
-         IF (DO_K) THEN 
-            IF(K==KMIN3 .OR. K==KMIN2 .OR. K==KMAX2 .OR. K==KMAX3)THEN
-               IF (CYCLIC_Z_PD) THEN 
-                  ICBC_FLAG(IJK) = 'C--' 
-               ELSEIF (CYCLIC_Z) THEN 
-                  ICBC_FLAG(IJK) = 'c--' 
-               ELSE 
-                  ICBC_FLAG(IJK) = 'W--' 
-               ENDIF 
-            ENDIF 
-         ENDIF 
-
-         IF(DO_J)THEN 
-            IF(J==JMIN3 .OR. J==JMIN2 .OR. J==JMAX2 .OR. J==JMAX3)THEN 
-               IF (CYCLIC_Y_PD) THEN 
-                  ICBC_FLAG(IJK) = 'C--' 
-               ELSEIF (CYCLIC_Y) THEN 
-                  ICBC_FLAG(IJK) = 'c--' 
-               ELSE 
-                 ICBC_FLAG(IJK) = 'W--' 
-               ENDIF 
-            ENDIF
-         ENDIF 
-
-         IF(DO_I)THEN 
-            IF(I==IMIN3 .OR. I==IMIN2 .OR. I==IMAX2 .OR. I==IMAX3)THEN 
-               IF (CYCLIC_X_PD) THEN 
-                  ICBC_FLAG(IJK) = 'C--' 
-               ELSEIF (CYCLIC_X) THEN 
-                  ICBC_FLAG(IJK) = 'c--' 
-               ELSE 
-                  ICBC_FLAG(IJK) = 'W--' 
-               ENDIF 
-            ENDIF 
-            IF (I==1 .AND. CYLINDRICAL .AND. XMIN==ZERO) &
-               ICBC_FLAG(IJK) = 'S--'
-         ENDIF 
-
-! corner cells are wall cells
-         IF ((I==IMIN3 .OR. I==IMIN2 .OR. I==IMAX2 .OR. I==IMAX3) .AND. &
-             (J==JMIN3 .OR. J==JMIN2 .OR. J==JMAX2 .OR. J==JMIN3) .AND. &
-             (K==KMIN3 .OR. K==KMIN2 .OR. K==KMAX2 .OR. K==KMAX3)) THEN 
-            IF (ICBC_FLAG(IJK) /= 'S--') ICBC_FLAG(IJK) = 'W--' 
-         ENDIF 
-       
-      ENDDO ! end do loop (i=istart3, iend3)
-      ENDDO ! end do loop (j=jstart3, jend3)
-      ENDDO ! end do loop (k=kstart3, kend3)
-
-      RETURN
-
-      END SUBROUTINE INIT_ICBC_FLAGS
 
 
 
@@ -311,6 +200,7 @@
 ! Report problems with calculated bounds.
          IF(IC_I_W(ICV) > IC_I_E(ICV)) THEN
              WRITE(ERR_MSG, 1101) ICV, 'IC_I_W > IC_I_E'
+             write(*,*)' dump:',IC_I_W(ICV),IC_I_E(ICV)
              CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ELSEIF(IC_I_W(ICV) < IMIN1) THEN
              WRITE(ERR_MSG, 1101) ICV, 'IC_I_W < IMIN1'

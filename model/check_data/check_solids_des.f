@@ -401,8 +401,6 @@
 !**********************************************************************!
       CASE('LSD'); DES_COLL_MODEL_ENUM = LSD
 
-         write(*,*) 'crap a dapa'
-
          IF(KN == UNDEFINED) THEN
             WRITE(ERR_MSG, 1000) 'KN'
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -482,8 +480,6 @@
 !*                                                                    *!
 !**********************************************************************!
       CASE('HERTZIAN'); DES_COLL_MODEL_ENUM = HERTZIAN
-
-         write(*,*) 'crap a dapa - do'
 
 ! check young's modulus and poisson ratio
          IF(EW_YOUNG == UNDEFINED ) THEN
