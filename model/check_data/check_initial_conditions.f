@@ -16,7 +16,12 @@
 
       use param, only: DIMENSION_IC
 !      use sendrecv
-!      use mpi_utility      
+!      use mpi_utility 
+
+! Runtime flag specifying DEM solids
+      use run, only: DEM_SOLIDS
+! Runtime flag specifying MPPIC solids
+      use run, only: PIC_SOLIDS     
       use error_manager
 
       IMPLICIT NONE
@@ -52,6 +57,8 @@
       ENDDO IC_LP
 
 ! Finalize the error manager.
+      IF(DEM_SOLIDS) CALL CHECK_INITIAL_CONDITIONS_DEM
+
       CALL FINL_ERR_MSG
 
       RETURN  
