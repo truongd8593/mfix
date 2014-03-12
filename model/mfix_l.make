@@ -271,7 +271,6 @@ $(EXEC_FILE) : \
     $(DPO)set_geometry.$(OBJ_EXT) \
     $(DPO)set_icbc_flags.$(OBJ_EXT) \
     $(DPO)set_ic.$(OBJ_EXT) \
-    $(DPO)set_ic_flags.$(OBJ_EXT) \
     $(DPO)set_increments3.$(OBJ_EXT) \
     $(DPO)set_increments.$(OBJ_EXT) \
     $(DPO)set_index1a3.$(OBJ_EXT) \
@@ -728,7 +727,6 @@ $(EXEC_FILE) : \
     $(DPO)set_geometry.$(OBJ_EXT) \
     $(DPO)set_icbc_flags.$(OBJ_EXT) \
     $(DPO)set_ic.$(OBJ_EXT) \
-    $(DPO)set_ic_flags.$(OBJ_EXT) \
     $(DPO)set_increments3.$(OBJ_EXT) \
     $(DPO)set_increments.$(OBJ_EXT) \
     $(DPO)set_index1a3.$(OBJ_EXT) \
@@ -3108,11 +3106,7 @@ $(DPO)get_data.$(OBJ_EXT) : get_data.f \
             $(DPO)dashboard.mod \
             $(DPO)visc_g.mod \
             $(DPO)constant.mod \
-            $(DPO)error_manager.mod \
-            $(DPO)mpi_utility.mod \
-            $(DPO)ic.mod \
-            $(DPO)sendrecv.mod \
-            function.inc                                                
+            $(DPO)error_manager.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) get_data.f  -o $(DPO)get_data.$(OBJ_EXT) -module $(DPO)
 $(DPO)get_eq.$(OBJ_EXT) : get_eq.f \
             $(DPO)param.mod \
@@ -3530,40 +3524,27 @@ $(DPO)mfix.$(OBJ_EXT) : mfix.f \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) mfix.f  -o $(DPO)mfix.$(OBJ_EXT) -module $(DPO)
 $(DPO)mod_bc_i.$(OBJ_EXT) : mod_bc_i.f \
-            $(DPO)param.mod \
-            $(DPO)param1.mod \
+            $(DPO)bc.mod \
             $(DPO)geometry.mod \
-            $(DPO)fldvar.mod \
-            $(DPO)physprop.mod \
-            $(DPO)indices.mod \
-            $(DPO)funits.mod \
             $(DPO)compar.mod \
             $(DPO)mpi_utility.mod \
             $(DPO)error_manager.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) mod_bc_i.f  -o $(DPO)mod_bc_i.$(OBJ_EXT) -module $(DPO)
 $(DPO)mod_bc_j.$(OBJ_EXT) : mod_bc_j.f \
-            $(DPO)param.mod \
-            $(DPO)param1.mod \
+            $(DPO)bc.mod \
             $(DPO)geometry.mod \
-            $(DPO)fldvar.mod \
-            $(DPO)physprop.mod \
-            $(DPO)indices.mod \
-            $(DPO)funits.mod \
             $(DPO)compar.mod \
             $(DPO)mpi_utility.mod \
+            $(DPO)error_manager.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) mod_bc_j.f  -o $(DPO)mod_bc_j.$(OBJ_EXT) -module $(DPO)
 $(DPO)mod_bc_k.$(OBJ_EXT) : mod_bc_k.f \
-            $(DPO)param.mod \
-            $(DPO)param1.mod \
+            $(DPO)bc.mod \
             $(DPO)geometry.mod \
-            $(DPO)fldvar.mod \
-            $(DPO)physprop.mod \
-            $(DPO)indices.mod \
-            $(DPO)funits.mod \
             $(DPO)compar.mod \
             $(DPO)mpi_utility.mod \
+            $(DPO)error_manager.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) mod_bc_k.f  -o $(DPO)mod_bc_k.$(OBJ_EXT) -module $(DPO)
 $(DPO)open_file.$(OBJ_EXT) : open_file.f \
@@ -4050,8 +4031,6 @@ $(DPO)set_ic.$(OBJ_EXT) : set_ic.f \
             s_pr2.inc                                                    \
             sc_p_g2.inc                                                 
 	$(FORTRAN_CMD) $(FORT_FLAGS) set_ic.f  -o $(DPO)set_ic.$(OBJ_EXT) -module $(DPO)
-$(DPO)set_ic_flags.$(OBJ_EXT) : set_ic_flags.f 
-	$(FORTRAN_CMD) $(FORT_FLAGS) set_ic_flags.f  -o $(DPO)set_ic_flags.$(OBJ_EXT) -module $(DPO)
 $(DPO)set_increments3.$(OBJ_EXT) : set_increments3.f \
             $(DPO)param.mod \
             $(DPO)param1.mod \
