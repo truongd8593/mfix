@@ -460,7 +460,7 @@ module softspring_funcs_cutcell
 
       PC = 1
 
-      IF(test_overlap_and_exit) write(101,'(A, 2(2x,i6), 2x,L1)') 'min, max pip = ', LOC_MIN_PIP, LOC_MAX_PIP,NO_NEIGHBORING_FACET_DES(PIJK(part_id,4))
+      !IF(test_overlap_and_exit) write(101,'(A, 2(2x,i6), 2x,L1)') 'min, max pip = ', LOC_MIN_PIP, LOC_MAX_PIP,NO_NEIGHBORING_FACET_DES(PIJK(part_id,4))
 
       DO LL = LOC_MIN_PIP, LOC_MAX_PIP
          IF(LL.EQ.FOCUS_PARTICLE) then
