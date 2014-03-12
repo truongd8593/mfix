@@ -53,7 +53,7 @@
       INTEGER :: M 
 
 
-!      CALL INIT_ERR_MSG("FLOW_TO_VEL_NEW")
+      CALL INIT_ERR_MSG("FLOW_TO_VEL_NEW")
 
 ! Mass flows rates are converted to volumetric flow rates.
       IF(BC_MASSFLOW_G(BCV) /= UNDEFINED) &
@@ -84,7 +84,7 @@
          CALL FLUSH_ERR_MSG
       ENDIF
 
-!      CALL FINL_ERR_MSG
+      CALL FINL_ERR_MSG
 
       RETURN  
 

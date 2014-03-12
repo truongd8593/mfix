@@ -1,108 +1,177 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: MOD_BC_J(BC, I_w, J_s, J_n, K_b, PLANE)                C
-!  Purpose: modify the "J" values for the b.c. plane                   C
-!                                                                      C
-!  Author: P. Nicoletti                               Date: 10-DEC-91  C
-!  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 27-JAN-92  C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: None                                          C
-!  Variables modified: ICBC_FLAG                                       C
-!                                                                      C
-!  Local variables: IJK1, IJK2                                         C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-      SUBROUTINE MOD_BC_J(BC, I_W, J_S, J_N, K_B, PLANE) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE geometry
-      USE fldvar
-      USE physprop
-      USE indices
-      USE funits 
-      USE compar  
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: MOD_BC_J(BC, I_w, J_s, J_n, K_b, PLANE)                !
+!  Author: P. Nicoletti                               Date: 10-DEC-91  !
+!                                                                      !
+!  Purpose: modify the "J" values for the b.c. plane                   !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE MOD_BC_J(BCV)
+
+      use bc, only: BC_I_W, BC_I_E
+      use bc, only: BC_J_S, BC_J_N
+      use bc, only: BC_K_B, BC_K_T
+      use bc, only: BC_PLANE
+
+      USE geometry, only: ICBC_FLAG
+
+      USE compar 
       USE mpi_utility 
+
+      use error_manager
+
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!              boundary condition index
-      INTEGER  BC
-!
-!              calculated cell indices in I,J,K directions
-      INTEGER  I_w, J_s, J_n, K_b
-!
-!               the flow surface plane
-      CHARACTER PLANE
-!
-! local variables
-!
-!              'IJK' indices
-      INTEGER  IJK1 , IJK, bcast_root
+
+! boundary condition index
+      INTEGER, INTENT(in) :: BCV
+
+! Calculated cell indices in I,J,K directions
+      INTEGER :: J_s, J_n
+      INTEGER :: I_w, K_b
+
+      INTEGER :: OWNER
+      INTEGER :: I, K
+      INTEGER :: IJK , IJPK
+
+      INTEGER :: IER
+      LOGICAL :: ERROR
+      INTEGER :: J_FLUID, IJK_FLUID
+      INTEGER :: J_WALL,  IJK_WALL
+
+
 !-----------------------------------------------
       INCLUDE 'function.inc'
-!
-!// SP
-    IF(IS_ON_myPE_owns(I_W,J_S,K_B)) then
-      bcast_root = myPE
-      call global_all_sum(bcast_root)
-    ELSE
-      bcast_root = 0
-      call global_all_sum(bcast_root)
-    ENDIF
-
-    IF(IS_ON_myPE_owns(I_W,J_S,K_B)) then
-      IJK1 = FUNIJK(I_W,J_S,K_B) 
-      IJK = FUNIJK(I_W,J_S + 1,K_B) 
-      IF (WALL_ICBC_FLAG(IJK1) .AND. ICBC_FLAG(IJK)(1:1)=='.') THEN 
-         J_S = J_S 
-         J_N = J_N 
-         PLANE = 'N' 
-      ELSE IF (WALL_ICBC_FLAG(IJK) .AND. ICBC_FLAG(IJK1)(1:1)=='.') THEN 
-         J_S = J_S + 1 
-         J_N = J_N + 1 
-         PLANE = 'S' 
-      ELSE 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1000) BC, I_W, J_S, J_N, K_B, ICBC_FLAG(IJK1), &
-            ICBC_FLAG(IJK) 
-         call mfix_exit(myPE) 
-      ENDIF 
-    ENDIF
-
-!/SP
-      CALL bcast(J_S,bcast_root)
-      CALL bcast(J_N,bcast_root)
-      CALL bcast(PLANE,bcast_root)
 
 
-!
-      RETURN  
- 1000 FORMAT(/70('*')//'From: MOD_BC_J'/'Message: Cannot locate the ',& 
-      'flow plane for boundary condition ',I3,/' I West   = ',I3,/& 
-      ' J South  = ',I3,/' J North  = ',I3,/' K Bottom = ',I3,/& 
-      ' One of the following should be a wall cell and the other a',& 
-      ' fluid cell:',/5X,A3,5X,A3,/& 
-      ' May be no IC was specified for the fluid cell.',/70('*')/) 
-      END SUBROUTINE MOD_BC_J 
+      CALL INIT_ERR_MSG("MOD_BC_J")
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!// 400 Added mpi_utility module and other global reduction (bcast) calls
+      J_S = BC_J_S(BCV)
+      J_N = BC_J_N(BCV)
+
+      I_W = BC_I_W(BCV)
+      K_B = BC_K_B(BCV)
+
+! Establish the OWNER of the BC
+      OWNER = merge(myPE, 0, IS_ON_myPE_owns(I_W,J_S,K_B))
+      CALL GLOBAL_ALL_SUM(OWNER)
+
+      IF(myPE == OWNER)THEN
+
+         IJK  = FUNIJK(I_W, J_S,   K_B)
+         IJPK = FUNIJK(I_W, J_S+1, K_B)
+
+         IF (WALL_ICBC_FLAG(IJK) .AND. ICBC_FLAG(IJPK)(1:1)=='.') THEN 
+            J_S = J_S 
+            J_N = J_N 
+            BC_PLANE(BCV) = 'N' 
+
+         ELSE IF (WALL_ICBC_FLAG(IJPK) .AND. ICBC_FLAG(IJK)(1:1)=='.') THEN 
+            J_S = J_S + 1 
+            J_N = J_N + 1 
+            BC_PLANE(BCV) = 'S' 
+
+         ELSE
+            BC_PLANE(BCV) = '.'
+         ENDIF 
+      ENDIF
+
+      CALL BCAST(J_S,OWNER)
+      CALL BCAST(J_N,OWNER)
+      CALL BCAST(BC_PLANE(BCV),OWNER)
+
+! If there is an error, send IJK/IPJK to all ranks. Report and exit.
+      IF(BC_PLANE(BCV) == '.') THEN
+         CALL BCAST(IJPK,OWNER)
+         CALL BCAST(IJK, OWNER)
+
+         WRITE(ERR_MSG, 1100) BCV, J_S, J_N, I_W, K_B,                 &
+            IJK, ICBC_FLAG(IJK),  IJPK, ICBC_FLAG(IJPK) 
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 1100 FORMAT('Error 1100: Cannot locate flow plane for boundary ',     &
+         'condition ',I3,'.',2/3x,'J South  =  ',I6,' J North  = ',I6,/&
+         3x,'I West   =  ',I6,' K Bottom = ',I6,2/' The following ',   &
+         'should conttain a wall cell and fluid cell:',/3x,'IJK  ',I9, &
+         ' :: ',A3,/3x,'IJPK ',I9,' :: ',A3,2/' Maybe no IC was ',     &
+         'specified for the fluid cell.')
+
+! Store the new values in the global data array.
+      BC_J_S(BCV) = J_S
+      BC_J_N(BCV) = J_N
+
+
+      J_WALL = BC_J_S(BCV)
+      J_FLUID = merge(J_WALL-1, J_WALL+1, BC_PLANE(BCV)=='S')
+
+
+! First pass through all of the BC region and verify that you have
+! inflow/outflow specified against a wall. Flag any errors.
+      ERROR = .FALSE.
+      DO K = BC_K_B(BCV), BC_K_T(BCV) 
+      DO I = BC_I_W(BCV), BC_I_E(BCV) 
+         IF(.NOT.IS_ON_myPE_plus2layers(I,J_FLUID,K)) CYCLE
+         IF(.NOT.IS_ON_myPE_plus2layers(I,J_WALL, K)) CYCLE
+         IF(DEAD_CELL_AT(I,J_FLUID,K)) CYCLE
+         IF(DEAD_CELL_AT(I,J_WALL, K)) CYCLE
+
+         IJK_WALL  = FUNIJK(I,J_WALL, K) 
+         IJK_FLUID = FUNIJK(I,J_FLUID,K)
+
+          IF(.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND. &
+             ICBC_FLAG(IJK_FLUID)(1:1)=='.')) ERROR = .TRUE.
+
+       ENDDO
+       ENDDO
+
+
+! Sync up the error flag across all processes.
+      CALL GLOBAL_ALL_OR(ERROR)
+
+! If an error is detected, have each rank open a log file and write
+! it's own message. Otherwise, we need to send all the data back to
+! PE_IO and that's too much work!
+      IF(ERROR) THEN
+
+         CALL OPEN_PE_LOG(IER)
+
+         WRITE(ERR_MSG, 1200) BCV
+         CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
+
+ 1200 FORMAT('Error 1200: Illegal geometry for boundary condition:',I3)
+
+         DO K = BC_K_B(BCV), BC_K_T(BCV) 
+         DO I = BC_I_W(BCV), BC_I_E(BCV) 
+
+            IF(.NOT.IS_ON_myPE_plus2layers(I,J_FLUID,K)) CYCLE
+            IF(.NOT.IS_ON_myPE_plus2layers(I,J_WALL, K)) CYCLE
+            IF(DEAD_CELL_AT(I, J_FLUID,K)) CYCLE
+            IF(DEAD_CELL_AT(I, J_WALL, K)) CYCLE
+
+            IJK_WALL  = FUNIJK(I,J_WALL ,K)
+            IJK_FLUID = FUNIJK(I,J_FLUID,K)
+
+            IF(.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND.                    &
+               ICBC_FLAG(IJK_FLUID)(1:1)=='.')) THEN
+
+               WRITE(ERR_MSG, 1201) &
+                  I, J_WALL,  K, IJK_WALL, ICBC_FLAG(IJK_WALL),        &
+                  I, J_FLUID, K, IJK_FLUID, ICBC_FLAG(IJK_FLUID)
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+            ENDIF 
+
+ 1201 FORMAT(' ',/14X,'I',7X,'J',7X,'K',7X,'IJK',4x,'FLAG',/3x,        &
+         'WALL ',3(2x,I6),2x,I9,3x,A,/3x,'FLUID',3(2x,I6),2x,I9,3x,A)
+
+         ENDDO 
+         ENDDO 
+
+         WRITE(ERR_MSG,"('Please correct the mfix.dat file.')")
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., ABORT=.TRUE.)
+
+      ENDIF
+
+      CALL FINL_ERR_MSG
+
+      RETURN
+      END SUBROUTINE MOD_BC_J

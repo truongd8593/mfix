@@ -46,141 +46,9 @@
       LOGICAL :: COMPARE 
 !-----------------------------------------------
 
-      CALL GET_DXYZ_FROM_CONTROL_POINTS
-
-      IF (XMIN < ZERO .AND. DMP_LOG) WRITE (UNIT_LOG, 990) 
-
-! If no variation in a direction is considered, the number of cells in
-! that direction should be 1
-      IF (NO_I) THEN 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 995)                   !disabled 
-         call mfix_exit(myPE)
-!        IF(IMAX .EQ. UNDEFINED_I) IMAX = 1
-!        IF(DX(1) .EQ. UNDEFINED .AND. XLENGTH .EQ. UNDEFINED) THEN
-!          DX(1) = ONE
-!          XLENGTH = ONE
-!        ENDIF
-      ENDIF 
-
-      IF (NO_J) THEN 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 996)                   !disabled 
-         call mfix_exit(myPE) 
-!        IF(JMAX .EQ. UNDEFINED_I) JMAX = 1
-!        IF(DY(1) .EQ. UNDEFINED .AND. YLENGTH .EQ. UNDEFINED) THEN
-!          DY(1) = ONE
-!          YLENGTH = ONE
-!        ENDIF
-      ENDIF 
-
-      IF (NO_K) THEN 
-         IF (KMAX == UNDEFINED_I) KMAX = 1 
-         IF (DZ(1)==UNDEFINED) THEN
-            IF(ZLENGTH==UNDEFINED) THEN 
-               IF (COORDINATES == 'CYLINDRICAL') THEN 
-                  DZ(1) = 8.*ATAN(ONE) 
-                  ZLENGTH = 8.*ATAN(ONE) 
-               ELSE 
-                  DZ(1) = ONE 
-                  ZLENGTH = ONE 
-               ENDIF
-            ELSE
-               DZ(1) = ZLENGTH 
-            ENDIF
-         ELSE
-            IF(ZLENGTH==UNDEFINED) THEN
-               ZLENGTH = DZ(1)
-            ELSE
-               IF(.NOT.COMPARE(ZLENGTH,DZ(1)))THEN
-                  IF(DMP_LOG)WRITE (UNIT_LOG, 997) 
-                  call mfix_exit(myPE) 
-               ENDIF
-            ENDIF 
-         ENDIF 
-      ENDIF 
-
-      IF (NO_I .AND. IMAX>1) THEN 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 
-         call mfix_exit(myPE) 
-      ENDIF 
-      IF (NO_J .AND. JMAX>1) THEN 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 
-         call mfix_exit(myPE) 
-      ENDIF 
-      IF (NO_K .AND. KMAX>1) THEN 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1200) 
-         call mfix_exit(myPE) 
-      ENDIF 
 
 
-! CHECK THE DATA FOR THE INDIVIDUAL AXES
-! this must be changed if something other than 'NEW' or 'RESTART_1'
-      CALL CHECK_ONE_AXIS (IMAX, DIMENSION_I, XLENGTH, DX, 'X', 'I', &
-         NO_I, SHIFT)
-      CALL CHECK_ONE_AXIS (JMAX, DIMENSION_J, YLENGTH, DY, 'Y', 'J', &
-         NO_J, SHIFT)
-      CALL CHECK_ONE_AXIS (KMAX, DIMENSION_K, ZLENGTH, DZ, 'Z', 'K', &
-         NO_K, SHIFT)
 
-      DO_I = .NOT.NO_I
-      DO_J = .NOT.NO_J
-      DO_K = .NOT.NO_K
-
-      IF(PARTIAL_CHECK_03) RETURN                ! Exit if partial check is performed during ADJUST_IJK_SIZE
-!
-      IF (COORDINATES == 'CYLINDRICAL') THEN 
-         CYLINDRICAL = .TRUE. 
-         IF (CYCLIC_X .OR. CYCLIC_X_PD) THEN 
-            IF(DMP_LOG)WRITE (UNIT_LOG, 1250) 
-            call mfix_exit(myPE) 
-         ENDIF 
-      ELSE IF (COORDINATES == 'CARTESIAN') THEN 
-         CYLINDRICAL = .FALSE. 
-      ELSE 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1300) 
-         call mfix_exit(myPE) 
-      ENDIF 
-
-
-! calculate IMAX1, IMAX2, etc. and shift the DX,DY,DZ arrays to take into
-! account the fictitious cells
-!      CALL SET_MAX2    ... moved to allocate_arrays
-      IF (SHIFT) CALL SHIFT_DXYZ   ! only for new and restart_1 runs 
-
-
-!  Determine the cyclic direction with a specified mass flux
-      CYCLIC_X_MF = .FALSE. 
-      CYCLIC_Y_MF = .FALSE. 
-      CYCLIC_Z_MF = .FALSE. 
-      IF (CYCLIC_X_PD ) THEN
-        IF(Flux_g .NE. UNDEFINED) CYCLIC_X_MF = .TRUE. 
-      ELSE IF (CYCLIC_Y_PD ) THEN
-        IF(Flux_g .NE. UNDEFINED) CYCLIC_Y_MF = .TRUE. 
-      ELSE IF (CYCLIC_Z_PD ) THEN
-        IF(Flux_g .NE. UNDEFINED) CYCLIC_Z_MF = .TRUE. 
-      ENDIF
-
-
-!  Ensure that the cell sizes across cyclic boundaries are comparable
-      IF (CYCLIC_X .OR. CYCLIC_X_PD) THEN 
-         IF (DX(IMIN1) /= DX(IMAX1)) THEN 
-            IF(DMP_LOG)WRITE (UNIT_LOG, 1400) DX(IMIN1), DX(IMAX1) 
-            call mfix_exit(myPE) 
-         ENDIF 
-      ENDIF 
-
-      IF (CYCLIC_Y .OR. CYCLIC_Y_PD) THEN 
-         IF (DY(JMIN1) /= DY(JMAX1)) THEN 
-            IF(DMP_LOG)WRITE (UNIT_LOG, 1410) DY(JMIN1), DY(JMAX1) 
-            call mfix_exit(myPE) 
-         ENDIF 
-      ENDIF 
-
-      IF (CYCLIC_Z .OR. CYCLIC_Z_PD .OR. CYLINDRICAL) THEN 
-         IF (DZ(KMIN1) /= DZ(KMAX1)) THEN 
-            IF(DMP_LOG)WRITE (UNIT_LOG, 1420) DZ(KMIN1), DZ(KMAX1) 
-            call mfix_exit(myPE) 
-         ENDIF 
-      ENDIF 
 
 
 ! CHECK THE TOTAL DIMENSION
@@ -232,8 +100,10 @@
          'IMAX should be 1, since NO_I is true',/1X,70('*')/) 
  1100 FORMAT(/1X,70('*')//' From: CHECK_DATA_03',/' Message: ',&
          'JMAX should be 1, since NO_J is true',/1X,70('*')/) 
+
  1200 FORMAT(/1X,70('*')//' From: CHECK_DATA_03',/' Message: ',&
          'KMAX should be 1, since NO_K is true',/1X,70('*')/) 
+
  1250 FORMAT(/1X,70('*')//' From: CHECK_DATA_03',/' Message: ',&
          'Cyclic bc for X not allowed in cylindrical coordinates',&
          /1X,70('*')/) 

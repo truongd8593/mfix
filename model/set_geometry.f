@@ -1,132 +1,152 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: SET_GEOMETRY                                           C
-!  Purpose: Calculate X, X_E,  oX, oX_E                                C
-!                                                                      C
-!  Author: M. Syamlal                                 Date: 21-JAN-92  C
-!  Reviewer:M. Syamlal, S. Venkatesan, P. Nicoletti,  Date: 29-JAN-92  C
-!           W. Rogers                                                  C
-!                                                                      C
-!  Revision Number: 1                                                  C
-!  Purpose: Fix bugs                                                   C
-!  Author: M. Syamlal                                 Date: 10-FEB-92  C
-!  Revision Number: 2                                                  C
-!  Purpose: Include logic for Variable Grid Spacing capability         C
-!  Author: W. Rogers                                  Date: 06-APR-92  C
-!  Revision Number: 3                                                  C
-!  Purpose: Add oX, and oX_E calculations                              C
-!  Author: M. Syamlal                                 Date: 8-MAY-92   C
-!  Revision Number: 4                                                  C
-!  Purpose: Add FX, FX_bar, FX_E, FX_E_bar, FY_N, FY_N_bar, FZ_T, and  C
-!           FZ_T_bar calculations                                      C
-!  Author: M. Syamlal                                 Date: 31-AUG-92  C
-!  Reviewer: M. Syamlal                               Date: 11-DEC-92  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: COORDINATES, IMAX2, DX, JMAX2, DY, KMAX2,     C
-!                        DZ,                                           C
-!                                                                      C
-!  Variables modified: X, X_E, I,                                      C
-!                      J, K,  oX,                                      C
-!                      oX_E, FX, FX_bar, FX_E, FX_E_bar, FY_N,         C
-!                      FY_N_bar, FZ_T, FZ_T_bar                        C
-!                                                                      C
-!  Local variables: DX_E, DY_N, DZ_T                                   C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: SET_GEOMETRY                                           !
+!  Author: M. Syamlal                                 Date: 21-JAN-92  !
+!                                                                      !
+!  Purpose: Calculate X, X_E,  oX, oX_E                                !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_GEOMETRY 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
-!  Include param.inc file to specify parameter values
-!
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
+
       USE param 
       USE param1 
       USE run
       USE geometry
       USE compar
+
+      use bc, only: Flux_g
+
+      use mpi_utility
+
+      use error_manager
+
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
- 
-! 
-!                      Indices 
-      INTEGER          I, J, K 
-! 
-!     X-direction dimension of U-momentum cell 
-      DOUBLE PRECISION DX_E 
-! 
-!     Y-direction dimension of V-momentum cell 
-      DOUBLE PRECISION DY_N 
-! 
-!     Z-direction dimension of W-momentum cell 
-      DOUBLE PRECISION DZ_T 
-! 
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
+
+! Generic loop indices 
+      INTEGER :: I, J, K 
+! X-direction dimension of U-momentum cell 
+      DOUBLE PRECISION :: DX_E
+! Y-direction dimension of V-momentum cell 
+      DOUBLE PRECISION :: DY_N
+! Z-direction dimension of W-momentum cell 
+      DOUBLE PRECISION :: DZ_T
+! Error Flag
+      INTEGER :: IER
+
       LOGICAL , EXTERNAL :: COMPARE 
 !-----------------------------------------------
-!
-!
+
+
+      CALL INIT_ERR_MSG("SET_GEOMETRY")
+
+
+! Set DIMENSION_X variables to MAX3 values.
+      DIMENSION_I   = IMAX3
+      DIMENSION_J   = JMAX3
+      DIMENSION_K   = KMAX3
+
+! Allocate geometry components related to the mesh. Check the
+! allocation error status and abort if any failure is detected.
+      ALLOCATE( X     (0:DIMENSION_I), STAT=IER)
+      ALLOCATE( X_E   (0:DIMENSION_I), STAT=IER)
+      ALLOCATE( oX    (0:DIMENSION_I), STAT=IER)
+      ALLOCATE( oX_E  (0:DIMENSION_I), STAT=IER)
+      ALLOCATE( oDX   (0:DIMENSION_I), STAT=IER)
+      ALLOCATE( oDX_E (0:DIMENSION_I), STAT=IER)
+      IF(IER /= 0) goto 500
+
+      ALLOCATE( oDY   (0:DIMENSION_J), STAT=IER )
+      ALLOCATE( oDY_N (0:DIMENSION_J), STAT=IER )
+      IF(IER /= 0) goto 500
+
+      ALLOCATE( Z     (0:DIMENSION_K), STAT=IER )
+      ALLOCATE( Z_T   (0:DIMENSION_K), STAT=IER )
+      ALLOCATE( oDZ   (0:DIMENSION_K), STAT=IER )
+      ALLOCATE( oDZ_T (0:DIMENSION_K), STAT=IER )
+      IF(IER /= 0) goto 500
+
+      ALLOCATE( FX     (0:DIMENSION_I), STAT=IER)
+      ALLOCATE( FX_bar (0:DIMENSION_I), STAT=IER)
+      IF(IER /= 0) goto 500
+
+      ALLOCATE( FX_E     (0:DIMENSION_I), STAT=IER)
+      ALLOCATE( FX_E_bar (0:DIMENSION_I), STAT=IER)
+      IF(IER /= 0) goto 500
+
+      ALLOCATE( FY_N     (0:DIMENSION_J), STAT=IER )
+      ALLOCATE( FY_N_bar (0:DIMENSION_J), STAT=IER )
+      IF(IER /= 0) goto 500
+
+      ALLOCATE( FZ_T     (0:DIMENSION_K), STAT=IER )
+      ALLOCATE( FZ_T_bar (0:DIMENSION_K), STAT=IER )
+      IF(IER /= 0) goto 500
+
+
+! Collect the error flags from all ranks. If all allocaitons were
+! successfull, do nothing. Otherwise, flag the error and abort.
+! Note that the allocation status is checked in groups. This can
+! be increase if tracking the source of an allocation failure.
+  500 CALL GLOBAL_ALL_SUM(IER)
+
+      IF(IER /= 0) THEN
+         WRITE(ERR_MSG,1100)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 1100 FORMAT('Error 1100: Failure during array allocation.')
+
+
+!  Determine the cyclic direction with a specified mass flux
+      CYCLIC_X_MF = (FLUX_G /= UNDEFINED .AND. CYCLIC_X_PD)
+      CYCLIC_Y_MF = (FLUX_G /= UNDEFINED .AND. CYCLIC_Y_PD)
+      CYCLIC_Z_MF = (FLUX_G /= UNDEFINED .AND. CYCLIC_Z_PD)
+
+! Force the cyclic flag if cyclic with pressure drop.
       IF (CYCLIC_X_PD) CYCLIC_X = .TRUE. 
       IF (CYCLIC_Y_PD) CYCLIC_Y = .TRUE. 
       IF (CYCLIC_Z_PD) CYCLIC_Z = .TRUE. 
       CYCLIC = CYCLIC_X .OR. CYCLIC_Y .OR. CYCLIC_Z 
-      IF (CYLINDRICAL .AND. COMPARE(ZLENGTH,8.D0*ATAN(ONE)) .AND. DO_K) &
+
+      IF(CYLINDRICAL .AND. COMPARE(ZLENGTH,8.D0*ATAN(ONE)) .AND. DO_K) &
          CYCLIC_Z = .TRUE. 
-!
-      IF (CYCLIC_X) THEN 
+
+      IF(CYCLIC_X) THEN 
          DX(1) = DX(IMAX1) 
-         DX(IMAX2) = DX(IMIN1) 
-	 IF(NODESI.NE.1) THEN
-         DX(IMIN3) = DX(IMAX1-1) 
-         DX(IMAX3) = DX(IMIN1+1) 
-	 ENDIF
-      ENDIF 
-      IF (CYCLIC_Y) THEN 
+         DX(IMAX2) = DX(IMIN1)
+         IF(NODESI.NE.1) THEN
+            DX(IMIN3) = DX(IMAX1-1) 
+            DX(IMAX3) = DX(IMIN1+1) 
+         ENDIF
+      ENDIF
+
+      IF(CYCLIC_Y) THEN
          DY(1) = DY(JMAX1) 
-         DY(JMAX2) = DY(JMIN1) 
-	 IF(NODESJ.NE.1) THEN
-         DY(JMIN3) = DY(JMAX1-1) 
-         DY(JMAX3) = DY(JMIN1+1) 
-	 ENDIF
+         DY(JMAX2) = DY(JMIN1)
+         IF(NODESJ.NE.1) THEN
+            DY(JMIN3) = DY(JMAX1-1) 
+            DY(JMAX3) = DY(JMIN1+1) 
+         ENDIF
       ENDIF 
+
       IF (CYCLIC_Z) THEN 
          DZ(1) = DZ(KMAX1) 
          DZ(KMAX2) = DZ(KMIN1) 
-	 IF(NODESK.NE.1) THEN
-         DZ(KMIN3) = DZ(KMAX1-1) 
-         DZ(KMAX3) = DZ(KMIN1+1) 
-	 ENDIF
+         IF(NODESK.NE.1) THEN
+            DZ(KMIN3) = DZ(KMAX1-1)
+            DZ(KMAX3) = DZ(KMIN1+1)
+         ENDIF
       ENDIF 
-!
-      IF (COORDINATES == 'CARTESIAN') THEN 
-            X(IMIN3:IMAX3) = ONE 
-            X_E(IMIN3:IMAX3) = ONE 
-            OX(IMIN3:IMAX3) = ONE 
-            OX_E(IMIN3:IMAX3) = ONE 
-            ODX(IMIN3:IMAX3) = ONE/DX(IMIN3:IMAX3) 
-      ELSE IF (CYLINDRICAL) THEN 
-         ODX(IMIN3:IMAX3)  = UNDEFINED 
-         OX(IMIN3:IMAX3)   = UNDEFINED 
-         OX_E(IMIN3:IMAX3) = UNDEFINED 
+
+
+! Initialize the X-axis variables for CYLINDRICAL coordinates.
+      IF(CYLINDRICAL) THEN 
          X(IMIN3:IMAX3)    = UNDEFINED 
          X_E(IMIN3:IMAX3)  = UNDEFINED 
+         OX(IMIN3:IMAX3)   = UNDEFINED 
+         OX_E(IMIN3:IMAX3) = UNDEFINED 
+         ODX(IMIN3:IMAX3)  = UNDEFINED 
 
-         IF (XMIN == ZERO) THEN 
+         IF(XMIN == ZERO) THEN 
             ODX(1) = ONE/DX(1) 
             OX(1) = UNDEFINED 
             OX_E(1) = UNDEFINED 
@@ -149,7 +169,7 @@
             OX_E(1) = ONE/X_E(1) 
             ODX(1) = ONE/DX(1) 
          ENDIF 
-!                                                #1 add the DO_I IF block
+
          IF (DO_I) THEN 
             DO I = IMIN1, IMAX2 
                X(I) = X(I-1) + (DX(I-1)+DX(I))/2. 
@@ -158,45 +178,50 @@
                OX_E(I) = ONE/X_E(I) 
                ODX(I) = ONE/DX(I) 
             END DO 
-         ENDIF 
-      ENDIF 
-!
-         ODY(JMIN3:JMAX3) = ONE/DY(JMIN3:JMAX3) 
+         ENDIF
 
-      DO K = 1, KMAX3 
-!
+! Initialize the X-axis variables for CARTESIAN coordinates.
+      ELSE
+
+         X(IMIN3:IMAX3) = ONE 
+         X_E(IMIN3:IMAX3) = ONE 
+         OX(IMIN3:IMAX3) = ONE 
+         OX_E(IMIN3:IMAX3) = ONE
+         ODX(IMIN3:IMAX3) = ONE/DX(IMIN3:IMAX3) 
+      ENDIF 
+
+
+! Initialize the Y-Axis variables.
+      ODY(JMIN3:JMAX3) = ONE/DY(JMIN3:JMAX3)
+
+
+! Initialize the Z-Axis variables.
+      DO K = 1, KMAX3
          IF (K == 1) THEN 
             Z(K) = ZERO - HALF*DZ(K) 
             Z_T(K) = ZERO 
-	    IF(NODESK.NE.1) THEN
-	    Z(K-1) =Z_T(K) - HALF*DZ(K-1)
-            Z_T(K-1) = Z_T(K) - DZ(K-1) 	    
-	    ENDIF
-!
-!        ELSE IF (K == KMAX3) THEN
-!	    Z(K) =Z_T(K-1) + HALF*DZ(K)
-!           Z_T(K) = Z_T(K-1) + DZ(K) 	    
-	    
-         ELSE
+            IF(NODESK.NE.1) THEN
+               Z(K-1) =Z_T(K) - HALF*DZ(K-1)
+               Z_T(K-1) = Z_T(K) - DZ(K-1)
+            ENDIF
+	      ELSE
             Z(K) = Z_T(K-1) + HALF*DZ(K) 
-            Z_T(K) = Z_T(K-1) + DZ(K) 
-!
-         ENDIF 
-!
-         ODZ(K) = ONE/DZ(K) 
-         IF(NODESK.NE.1) THEN
-         IF (K == 1) ODZ(K-1) = ONE/DZ(K-1)
-	 ENDIF
-!
-      END DO 
+            Z_T(K) = Z_T(K-1) + DZ(K)
+         ENDIF
+         ODZ(K) = ONE/DZ(K)
+
+         IF(NODESK.NE.1 .AND. K==1) ODZ(K-1) = ONE/DZ(K-1)
+      END DO
+
+
       DX_E = HALF*(DX(1)+DX(IMIN1)) 
       DY_N = HALF*(DY(1)+DY(JMIN1)) 
       DZ_T = HALF*(DZ(1)+DZ(KMIN1)) 
-!
-!
-      ODX_E(1) = ONE/DX_E 
-      ODY_N(1) = ONE/DY_N 
-      ODZ_T(1) = ONE/DZ_T 
+
+      ODX_E(1) = ONE/DX_E
+      ODY_N(1) = ONE/DY_N
+      ODZ_T(1) = ONE/DZ_T
+
       FX(1) = HALF 
       FX_BAR(1) = HALF 
       FX_E(1) = HALF 
@@ -205,48 +230,42 @@
       FY_N_BAR(1) = HALF 
       FZ_T(1) = HALF 
       FZ_T_BAR(1) = HALF 
+
+      IF(NODESI.NE.1) ODX_E(IMIN3) = ONE/DX_E
+      IF(NODESJ.NE.1) ODY_N(JMIN3) = ONE/DY_N
+      IF(NODESK.NE.1) ODZ_T(KMIN3) = ONE/DZ_T
+
       IF(NODESI.NE.1) THEN
-      ODX_E(IMIN3) = ONE/DX_E
-      ENDIF
-      IF(NODESJ.NE.1) THEN
-      ODY_N(JMIN3) = ONE/DY_N
-      ENDIF
-      IF(NODESK.NE.1) THEN
-      ODZ_T(KMIN3) = ONE/DZ_T
-      ENDIF
-      IF(NODESI.NE.1) THEN
-      FX(IMIN3) = HALF
-      FX_BAR(IMIN3) = HALF
-      FX_E(IMIN3) = HALF
-      FX_E_BAR(IMIN3) = HALF
-      ENDIF
-      IF(NODESJ.NE.1) THEN
-      FY_N(JMIN3) = HALF
-      FY_N_BAR(JMIN3) = HALF
-      ENDIF
-      IF(NODESK.NE.1) THEN
-      FZ_T(KMIN3) = HALF
-      FZ_T_BAR(KMIN3) = HALF
+         FX(IMIN3) = HALF
+         FX_BAR(IMIN3) = HALF
+         FX_E(IMIN3) = HALF
+         FX_E_BAR(IMIN3) = HALF
       ENDIF
 
-!       ..........................................
-!       Look at 2 through IMAX1 U-momentum cells
+      IF(NODESJ.NE.1) THEN
+         FY_N(JMIN3) = HALF
+         FY_N_BAR(JMIN3) = HALF
+      ENDIF
+
+      IF(NODESK.NE.1) THEN
+         FZ_T(KMIN3) = HALF
+         FZ_T_BAR(KMIN3) = HALF
+      ENDIF
+
+
+! Look at 2 through IMAX1 U-momentum cells
       IF (DO_I) THEN 
          DO I = IMIN1, IMAX1 
             DX_E = HALF*(DX(I+1)+DX(I)) 
             ODX_E(I) = ONE/DX_E 
-!            FX(I)       = DX_E * X_E(I) /
-!     &             (DX_E * X_E(I) + HALF * (DX(I) + DX(I-1)) * X_E(I-1))
             FX(I) = HALF 
             FX_BAR(I) = ONE - FX(I) 
-!            FX_E(I)     = X(I+1) * DX(I+1) /
-!     &                  ( X(I+1) * DX(I+1) + X(I) * DX(I) )
             FX_E(I) = DX(I+1)/(DX(I+1)+DX(I)) 
             FX_E_BAR(I) = ONE - FX_E(I) 
          END DO 
       ENDIF 
-!
-!       Look at 2 through JMAX1 V-momentum cells
+
+! Look at 2 through JMAX1 V-momentum cells
       IF (DO_J) THEN 
          DO J = JMIN1, JMAX1 
             DY_N = HALF*(DY(J+1)+DY(J)) 
@@ -255,8 +274,8 @@
             FY_N_BAR(J) = ONE - FY_N(J) 
          END DO 
       ENDIF 
-!
-!       Look at 2 through KMAX1 W-momentum cells
+
+! Look at 2 through KMAX1 W-momentum cells
       IF (DO_K) THEN 
          DO K = KMIN1, KMAX1 
             DZ_T = HALF*(DZ(K+1)+DZ(K)) 
@@ -266,8 +285,7 @@
          END DO 
       ENDIF 
 
-!       ..........................................
-!       Look at last U-, V-, and W-momentum cells
+! Look at last U-, V-, and W-momentum cells
       DX_E = DX(IMAX2) 
       DY_N = DY(JMAX2) 
       DZ_T = DZ(KMAX2) 
@@ -299,33 +317,32 @@
       FY_N_BAR(JMAX3) = HALF
 
       
-      IF (CYCLIC_X) THEN 
-         FX_E(1) = FX_E(IMAX1) 
+      IF(CYCLIC_X) THEN
+         FX_E(1) = FX_E(IMAX1)
          FX_E_BAR(1) = FX_E_BAR(IMAX1) 
-	 IF(NODESI.NE.1) THEN
-         FX_E(IMIN3) = FX_E(IMAX1-1) 
-         FX_E_BAR(IMIN3) = FX_E_BAR(IMAX1-1) 
-	 ENDIF
+          IF(NODESI.NE.1) THEN
+            FX_E(IMIN3) = FX_E(IMAX1-1) 
+            FX_E_BAR(IMIN3) = FX_E_BAR(IMAX1-1) 
+         ENDIF
       ENDIF 
-      IF (CYCLIC_Y) THEN 
+      IF (CYCLIC_Y) THEN
          FY_N(1) = FY_N(JMAX1) 
          FY_N_BAR(1) = FY_N_BAR(JMAX1) 
-	 IF(NODESJ.NE.1) THEN
-         FY_N(JMIN3) = FY_N(JMAX1-1) 
-         FY_N_BAR(JMIN3) = FY_N_BAR(JMAX1-1) 
-	 ENDIF
+         IF(NODESJ.NE.1) THEN
+            FY_N(JMIN3) = FY_N(JMAX1-1) 
+            FY_N_BAR(JMIN3) = FY_N_BAR(JMAX1-1) 
+         ENDIF
       ENDIF 
       IF (CYCLIC_Z) THEN 
          FZ_T(1) = FZ_T(KMAX1) 
          FZ_T_BAR(1) = FZ_T_BAR(KMAX1) 
-	 IF(NODESK.NE.1) THEN
-         FZ_T(KMIN3) = FZ_T(KMAX1-1) 
-         FZ_T_BAR(KMIN3) = FZ_T_BAR(KMAX1-1) 
-	 ENDIF
+         IF(NODESK.NE.1) THEN
+            FZ_T(KMIN3) = FZ_T(KMAX1-1) 
+            FZ_T_BAR(KMIN3) = FZ_T_BAR(KMAX1-1) 
+         ENDIF
       ENDIF 
-!=====================================================================
-!
+
+      CALL FINL_ERR_MSG
+
       RETURN  
-      END SUBROUTINE SET_GEOMETRY 
-!// Comments on the modifications for DMP version implementation
-!// Changed the do loop bounds from 1, imax2 to istart3 to iend3. Initialized imin3, imax3 locations    when extra ghost layers are present
+      END SUBROUTINE SET_GEOMETRY

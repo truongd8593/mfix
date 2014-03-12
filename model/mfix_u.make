@@ -262,13 +262,16 @@ $(EXEC_FILE) : \
     $(DPO)seek_end.$(OBJ_EXT) \
     $(DPO)set_bc0.$(OBJ_EXT) \
     $(DPO)set_bc1.$(OBJ_EXT) \
+    $(DPO)set_bc_flow.$(OBJ_EXT) \
     $(DPO)set_constants.$(OBJ_EXT) \
     $(DPO)set_constprop.$(OBJ_EXT) \
     $(DPO)set_flags.$(OBJ_EXT) \
     $(DPO)set_fluidbed_p.$(OBJ_EXT) \
     $(DPO)set_geometry1.$(OBJ_EXT) \
     $(DPO)set_geometry.$(OBJ_EXT) \
+    $(DPO)set_icbc_flags.$(OBJ_EXT) \
     $(DPO)set_ic.$(OBJ_EXT) \
+    $(DPO)set_ic_flags.$(OBJ_EXT) \
     $(DPO)set_increments3.$(OBJ_EXT) \
     $(DPO)set_increments.$(OBJ_EXT) \
     $(DPO)set_index1a3.$(OBJ_EXT) \
@@ -383,12 +386,15 @@ $(EXEC_FILE) : \
     $(DPO)update_dashboard.$(OBJ_EXT) \
     $(DPO)vtk_out.$(OBJ_EXT) \
     $(DPO)write_progress_bar.$(OBJ_EXT) \
+    $(DPO)check_axis.$(OBJ_EXT) \
+    $(DPO)check_bc_geometry.$(OBJ_EXT) \
     $(DPO)check_bc_inflow.$(OBJ_EXT) \
     $(DPO)check_bc_outflow.$(OBJ_EXT) \
     $(DPO)check_bc_walls.$(OBJ_EXT) \
     $(DPO)check_boundary_conditions.$(OBJ_EXT) \
     $(DPO)check_dmp_prereqs.$(OBJ_EXT) \
     $(DPO)check_gas_phase.$(OBJ_EXT) \
+    $(DPO)check_geometry.$(OBJ_EXT) \
     $(DPO)check_geometry_prereqs.$(OBJ_EXT) \
     $(DPO)check_initial_conditions.$(OBJ_EXT) \
     $(DPO)check_numerics.$(OBJ_EXT) \
@@ -713,13 +719,16 @@ $(EXEC_FILE) : \
     $(DPO)seek_end.$(OBJ_EXT) \
     $(DPO)set_bc0.$(OBJ_EXT) \
     $(DPO)set_bc1.$(OBJ_EXT) \
+    $(DPO)set_bc_flow.$(OBJ_EXT) \
     $(DPO)set_constants.$(OBJ_EXT) \
     $(DPO)set_constprop.$(OBJ_EXT) \
     $(DPO)set_flags.$(OBJ_EXT) \
     $(DPO)set_fluidbed_p.$(OBJ_EXT) \
     $(DPO)set_geometry1.$(OBJ_EXT) \
     $(DPO)set_geometry.$(OBJ_EXT) \
+    $(DPO)set_icbc_flags.$(OBJ_EXT) \
     $(DPO)set_ic.$(OBJ_EXT) \
+    $(DPO)set_ic_flags.$(OBJ_EXT) \
     $(DPO)set_increments3.$(OBJ_EXT) \
     $(DPO)set_increments.$(OBJ_EXT) \
     $(DPO)set_index1a3.$(OBJ_EXT) \
@@ -855,12 +864,15 @@ $(EXEC_FILE) : \
     $(DPO)vtk_mod.$(OBJ_EXT) \
     $(DPO)vtk_out.$(OBJ_EXT) \
     $(DPO)write_progress_bar.$(OBJ_EXT) \
+    $(DPO)check_axis.$(OBJ_EXT) \
+    $(DPO)check_bc_geometry.$(OBJ_EXT) \
     $(DPO)check_bc_inflow.$(OBJ_EXT) \
     $(DPO)check_bc_outflow.$(OBJ_EXT) \
     $(DPO)check_bc_walls.$(OBJ_EXT) \
     $(DPO)check_boundary_conditions.$(OBJ_EXT) \
     $(DPO)check_dmp_prereqs.$(OBJ_EXT) \
     $(DPO)check_gas_phase.$(OBJ_EXT) \
+    $(DPO)check_geometry.$(OBJ_EXT) \
     $(DPO)check_geometry_prereqs.$(OBJ_EXT) \
     $(DPO)check_initial_conditions.$(OBJ_EXT) \
     $(DPO)check_numerics.$(OBJ_EXT) \
@@ -3096,7 +3108,11 @@ $(DPO)get_data.$(OBJ_EXT) : get_data.f \
             $(DPO)DASHBOARD.mod \
             $(DPO)VISC_G.mod \
             $(DPO)CONSTANT.mod \
-            $(DPO)ERROR_MANAGER.mod 
+            $(DPO)ERROR_MANAGER.mod \
+            $(DPO)MPI_UTILITY.mod \
+            $(DPO)IC.mod \
+            $(DPO)SENDRECV.mod \
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) get_data.f  -o $(DPO)get_data.$(OBJ_EXT) -module $(DPO)
 $(DPO)get_eq.$(OBJ_EXT) : get_eq.f \
             $(DPO)PARAM.mod \
@@ -3106,18 +3122,7 @@ $(DPO)get_eq.$(OBJ_EXT) : get_eq.f \
             $(DPO)FLDVAR.mod \
             $(DPO)INDICES.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) get_eq.f  -o $(DPO)get_eq.$(OBJ_EXT) -module $(DPO)
-$(DPO)get_flow_bc.$(OBJ_EXT) : get_flow_bc.f \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)GEOMETRY.mod \
-            $(DPO)FLDVAR.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)BC.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)FUNITS.mod \
-            $(DPO)COMPAR.mod \
-            $(DPO)SENDRECV.mod \
-            function.inc                                                
+$(DPO)get_flow_bc.$(OBJ_EXT) : get_flow_bc.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) get_flow_bc.f  -o $(DPO)get_flow_bc.$(OBJ_EXT) -module $(DPO)
 $(DPO)get_hloss.$(OBJ_EXT) : get_hloss.f \
             $(DPO)PARAM.mod \
@@ -3175,18 +3180,7 @@ $(DPO)get_stats.$(OBJ_EXT) : get_stats.f \
             $(DPO)COMPAR.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) get_stats.f  -o $(DPO)get_stats.$(OBJ_EXT) -module $(DPO)
-$(DPO)get_walls_bc.$(OBJ_EXT) : get_walls_bc.f \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)GEOMETRY.mod \
-            $(DPO)FLDVAR.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)BC.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)FUNITS.mod \
-            $(DPO)COMPAR.mod \
-            $(DPO)SENDRECV.mod \
-            function.inc                                                
+$(DPO)get_walls_bc.$(OBJ_EXT) : get_walls_bc.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) get_walls_bc.f  -o $(DPO)get_walls_bc.$(OBJ_EXT) -module $(DPO)
 $(DPO)in_bin_512.$(OBJ_EXT) : in_bin_512.f \
             $(DPO)MACHINE.mod \
@@ -3545,6 +3539,7 @@ $(DPO)mod_bc_i.$(OBJ_EXT) : mod_bc_i.f \
             $(DPO)FUNITS.mod \
             $(DPO)COMPAR.mod \
             $(DPO)MPI_UTILITY.mod \
+            $(DPO)ERROR_MANAGER.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) mod_bc_i.f  -o $(DPO)mod_bc_i.$(OBJ_EXT) -module $(DPO)
 $(DPO)mod_bc_j.$(OBJ_EXT) : mod_bc_j.f \
@@ -3903,6 +3898,24 @@ $(DPO)set_bc1.$(OBJ_EXT) : set_bc1.f \
             $(DPO)COMPAR.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) set_bc1.f  -o $(DPO)set_bc1.$(OBJ_EXT) -module $(DPO)
+$(DPO)set_bc_flow.$(OBJ_EXT) : set_bc_flow.f \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)DISCRETELEMENT.mod \
+            $(DPO)RUN.mod \
+            $(DPO)BC.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)PARAM.mod \
+            $(DPO)ERROR_MANAGER.mod \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)FLDVAR.mod \
+            $(DPO)INDICES.mod \
+            $(DPO)FUNITS.mod \
+            $(DPO)SCALARS.mod \
+            $(DPO)COMPAR.mod \
+            $(DPO)SENDRECV.mod \
+            $(DPO)MFIX_PIC.mod \
+            $(DPO)CUTCELL.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) set_bc_flow.f  -o $(DPO)set_bc_flow.$(OBJ_EXT) -module $(DPO)
 $(DPO)set_constants.$(OBJ_EXT) : set_constants.f \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
@@ -3993,8 +4006,28 @@ $(DPO)set_geometry.$(OBJ_EXT) : set_geometry.f \
             $(DPO)PARAM1.mod \
             $(DPO)RUN.mod \
             $(DPO)GEOMETRY.mod \
-            $(DPO)COMPAR.mod 
+            $(DPO)COMPAR.mod \
+            $(DPO)BC.mod \
+            $(DPO)MPI_UTILITY.mod \
+            $(DPO)ERROR_MANAGER.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) set_geometry.f  -o $(DPO)set_geometry.$(OBJ_EXT) -module $(DPO)
+$(DPO)set_icbc_flags.$(OBJ_EXT) : set_icbc_flags.f \
+            $(DPO)RUN.mod \
+            $(DPO)MPI_UTILITY.mod \
+            $(DPO)SENDRECV.mod \
+            $(DPO)ERROR_MANAGER.mod \
+            $(DPO)IC.mod \
+            $(DPO)PARAM.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)FLDVAR.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)BC.mod \
+            $(DPO)INDICES.mod \
+            $(DPO)FUNITS.mod \
+            $(DPO)COMPAR.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) set_icbc_flags.f  -o $(DPO)set_icbc_flags.$(OBJ_EXT) -module $(DPO)
 $(DPO)set_ic.$(OBJ_EXT) : set_ic.f \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
@@ -4017,6 +4050,8 @@ $(DPO)set_ic.$(OBJ_EXT) : set_ic.f \
             s_pr2.inc                                                    \
             sc_p_g2.inc                                                 
 	$(FORTRAN_CMD) $(FORT_FLAGS) set_ic.f  -o $(DPO)set_ic.$(OBJ_EXT) -module $(DPO)
+$(DPO)set_ic_flags.$(OBJ_EXT) : set_ic_flags.f 
+	$(FORTRAN_CMD) $(FORT_FLAGS) set_ic_flags.f  -o $(DPO)set_ic_flags.$(OBJ_EXT) -module $(DPO)
 $(DPO)set_increments3.$(OBJ_EXT) : set_increments3.f \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
@@ -4044,9 +4079,12 @@ $(DPO)set_increments.$(OBJ_EXT) : set_increments.f \
             $(DPO)PGCOR.mod \
             $(DPO)PSCOR.mod \
             $(DPO)CUTCELL.mod \
+            $(DPO)STL.mod \
             $(DPO)SENDRECV.mod \
             $(DPO)MPI_UTILITY.mod \
             $(DPO)PARALLEL.mod \
+            $(DPO)BC.mod \
+            $(DPO)DISCRETELEMENT.mod \
             $(DPO)CDIST.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) set_increments.f  -o $(DPO)set_increments.$(OBJ_EXT) -module $(DPO)
@@ -5990,6 +6028,24 @@ $(DPO)write_progress_bar.$(OBJ_EXT) : ./cartesian_grid/write_progress_bar.f \
             $(DPO)PARALLEL.mod \
             $(DPO)SENDRECV.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/write_progress_bar.f  -o $(DPO)write_progress_bar.$(OBJ_EXT) -module $(DPO)
+$(DPO)check_axis.$(OBJ_EXT) : ./check_data/check_axis.f \
+            $(DPO)PARAM.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)ERROR_MANAGER.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_axis.f  -o $(DPO)check_axis.$(OBJ_EXT) -module $(DPO)
+$(DPO)check_bc_geometry.$(OBJ_EXT) : ./check_data/check_bc_geometry.f \
+            $(DPO)BC.mod \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)PARAM.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)ERROR_MANAGER.mod \
+            $(DPO)FLDVAR.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)INDICES.mod \
+            $(DPO)FUNITS.mod \
+            $(DPO)COMPAR.mod \
+            $(DPO)SENDRECV.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_bc_geometry.f  -o $(DPO)check_bc_geometry.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_bc_inflow.$(OBJ_EXT) : ./check_data/check_bc_inflow.f \
             $(DPO)RUN.mod \
             $(DPO)SCALARS.mod \
@@ -6012,6 +6068,7 @@ $(DPO)check_bc_outflow.$(OBJ_EXT) : ./check_data/check_bc_outflow.f \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
             $(DPO)PHYSPROP.mod \
+            $(DPO)DISCRETELEMENT.mod \
             $(DPO)BC.mod \
             $(DPO)ERROR_MANAGER.mod \
             $(DPO)GEOMETRY.mod \
@@ -6022,7 +6079,6 @@ $(DPO)check_bc_outflow.$(OBJ_EXT) : ./check_data/check_bc_outflow.f \
             $(DPO)SCALARS.mod \
             $(DPO)COMPAR.mod \
             $(DPO)SENDRECV.mod \
-            $(DPO)DISCRETELEMENT.mod \
             $(DPO)MFIX_PIC.mod \
             $(DPO)CUTCELL.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_bc_outflow.f  -o $(DPO)check_bc_outflow.$(OBJ_EXT) -module $(DPO)
@@ -6045,23 +6101,13 @@ $(DPO)check_bc_walls.$(OBJ_EXT) : ./check_data/check_bc_walls.f \
             $(DPO)ERROR_MANAGER.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_bc_walls.f  -o $(DPO)check_bc_walls.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_boundary_conditions.$(OBJ_EXT) : ./check_data/check_boundary_conditions.f \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)GEOMETRY.mod \
-            $(DPO)FLDVAR.mod \
             $(DPO)PHYSPROP.mod \
+            $(DPO)DISCRETELEMENT.mod \
             $(DPO)RUN.mod \
             $(DPO)BC.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)FUNITS.mod \
-            $(DPO)SCALARS.mod \
-            $(DPO)COMPAR.mod \
-            $(DPO)SENDRECV.mod \
-            $(DPO)DISCRETELEMENT.mod \
-            $(DPO)MFIX_PIC.mod \
-            $(DPO)CUTCELL.mod \
-            $(DPO)ERROR_MANAGER.mod \
-            function.inc                                                
+            $(DPO)PARAM1.mod \
+            $(DPO)PARAM.mod \
+            $(DPO)ERROR_MANAGER.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_boundary_conditions.f  -o $(DPO)check_boundary_conditions.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_dmp_prereqs.$(OBJ_EXT) : ./check_data/check_dmp_prereqs.f \
             $(DPO)COMPAR.mod \
@@ -6077,26 +6123,35 @@ $(DPO)check_gas_phase.$(OBJ_EXT) : ./check_data/check_gas_phase.f \
             $(DPO)ERROR_MANAGER.mod \
             $(DPO)PARAM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_gas_phase.f  -o $(DPO)check_gas_phase.$(OBJ_EXT) -module $(DPO)
+$(DPO)check_geometry.$(OBJ_EXT) : ./check_data/check_geometry.f \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)BC.mod \
+            $(DPO)CUTCELL.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)PARAM.mod \
+            $(DPO)ERROR_MANAGER.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_geometry.f  -o $(DPO)check_geometry.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_geometry_prereqs.$(OBJ_EXT) : ./check_data/check_geometry_prereqs.f \
             $(DPO)GEOMETRY.mod \
+            $(DPO)BC.mod \
+            $(DPO)CUTCELL.mod \
             $(DPO)PARAM1.mod \
+            $(DPO)PARAM.mod \
             $(DPO)ERROR_MANAGER.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_geometry_prereqs.f  -o $(DPO)check_geometry_prereqs.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_initial_conditions.$(OBJ_EXT) : ./check_data/check_initial_conditions.f \
             $(DPO)IC.mod \
-            $(DPO)SENDRECV.mod \
-            $(DPO)MPI_UTILITY.mod \
+            $(DPO)PARAM.mod \
             $(DPO)ERROR_MANAGER.mod \
             $(DPO)RUN.mod \
-            $(DPO)PARAM.mod \
+            $(DPO)MPI_UTILITY.mod \
             $(DPO)PHYSPROP.mod \
             $(DPO)SCALARS.mod \
             $(DPO)PARAM1.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)DISCRETELEMENT.mod \
             $(DPO)INDICES.mod \
-            $(DPO)COMPAR.mod \
-            function.inc                                                
+            $(DPO)COMPAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_initial_conditions.f  -o $(DPO)check_initial_conditions.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_numerics.$(OBJ_EXT) : ./check_data/check_numerics.f \
             $(DPO)RUN.mod \

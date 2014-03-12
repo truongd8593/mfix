@@ -89,7 +89,7 @@
              IC_X_g, IC_X_s, IC_TYPE, IC_P_star, IC_L_scale,&
              IC_GAMA_Rg, IC_T_Rg, IC_GAMA_Rs, IC_T_Rs,&
              IC_Theta_m, IC_Scalar, IC_K_Turb_G, IC_E_Turb_G, &
-         	IC_DES_FIT_TO_REGION, &
+         	 IC_EP_s, IC_DES_FIT_TO_REGION, &
 ! ----------------------------------------------------------------<<<
 
 ! 1.8 Boundary conditions section
@@ -97,7 +97,7 @@
              BC_X_w, BC_X_e, BC_Y_s, BC_Y_n, BC_Z_b, BC_Z_t,&
              BC_I_w, BC_I_e, BC_J_s, BC_J_n, BC_K_b, BC_K_t,&
              BC_EP_g, BC_P_g, BC_RO_g, BC_ROP_g, BC_ROP_s,&
-             BC_T_g, BC_T_s,&
+             BC_EP_s, BC_T_g, BC_T_s,&
              BC_U_g, BC_U_s, BC_V_g, BC_V_s, BC_W_g, BC_W_s, BC_VELMAG_G,BC_VELMAG_S,&
              BC_TYPE,BC_APPLY_TO_MPPIC, BC_VOLFLOW_g, BC_VOLFLOW_s, BC_MASSFLOW_g, &
              BC_MASSFLOW_s, BC_X_g, BC_X_s,&

@@ -52,6 +52,10 @@
 ! can be opened.
       CALL INIT_ERROR_MANAGER
 
+! Write header in the .LOG file and to screen.
+! Not sure if the values are correct or useful
+      CALL WRITE_HEADER
+
 ! Open files
       CALL OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX)
 
@@ -72,6 +76,12 @@
 ! Partition the domain and set indices
       CALL GRIDMAP_INIT
 
+! Basic geometry checks.
+      CALL CHECK_GEOMETRY(SHIFT)
+! Set grid spacing variables.
+      CALL SET_GEOMETRY 
+
+
 ! Check the minimum solids phase requirements.
       CALL CHECK_SOLIDS_MODEL_PREREQS
 
@@ -82,7 +92,12 @@
       CALL CHECK_GAS_PHASE
       CALL CHECK_SOLIDS_PHASES
 
+      CALL CHECK_INITIAL_CONDITIONS
+      CALL CHECK_BOUNDARY_CONDITIONS
+ 
+
 ! Stiff Chemistry Solver
+
 
 
 !--------------------------  ARRAY ALLOCATION -----------------------!
@@ -92,33 +107,28 @@
       IF (QMOMK) CALL QMOMK_ALLOCATE_ARRAYS
 
 
-! Write header in the .LOG file and to screen.
-! Not sure if the values are correct or useful
-      CALL WRITE_HEADER
-
-
 !--------------------------  GEOMETRY CONTROLS -----------------------!
 
-      CALL CHECK_DATA_03(SHIFT)   ! geometry input 
-! Set X, X_E, oX, oX_E ... etc.
-      CALL SET_GEOMETRY 
 
-! Move cut-cell preprocessing somewhere near here.
+
 
 
 !----------------------  DOMAIN SPECIFIC CHECKS  --------------------!
 
-
-      CALL CHECK_INITIAL_CONDITIONS
-      CALL CHECK_BOUNDARY_CONDITIONS
-
-!      CALL CHECK_DATA_06         ! initial condition section 
-!      CALL CHECK_DATA_07         ! boundary condition section 
-
-      CALL CHECK_DATA_08          ! Internal surfaces section 
-      CALL CHECK_DATA_09 ! ---> CALL CHECK_CHEMICAL_RXNS
-      CALL CHECK_DATA_10          ! point sources
+      CALL CHECK_DATA_08       ! Internal surfaces section 
+      CALL CHECK_DATA_09       ! ---> CALL CHECK_CHEMICAL_RXNS
+      CALL CHECK_DATA_10       ! point sources
       CALL CHECK_DATA_ODEPACK
+
+
+! This call needs to occur before any of the IC/BC checks.
+      CALL SET_ICBC_FLAG
+
+! Compute area of boundary surfaces.
+      CALL GET_BC_AREA 
+
+! Convert (mass, volume) flows to velocities.
+      CALL SET_BC_FLOW
 
 
 

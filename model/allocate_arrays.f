@@ -55,10 +55,6 @@
       integer :: dimension_3p   ! used during post_mfix to reduce allocations
 !-----------------------------------------------
 
-! Modified the DIMENSION_X based on the new domain decomposition variables
-      DIMENSION_I   = IMAX3
-      DIMENSION_J   = JMAX3
-      DIMENSION_K   = KMAX3
       DIMENSION_3   = (kend3-kstart3+1)*(jend3-jstart3+1)*(iend3-istart3+1)
       DIMENSION_3G   = IJKMAX3
       DIMENSION_3L  = ijksize3_all(myPE)
@@ -206,26 +202,6 @@
       Allocate(  FLAG_N (DIMENSION_3) )
       Allocate(  FLAG_T (DIMENSION_3) )
       Allocate(  ICBC_FLAG (DIMENSION_3L) )
-      Allocate(  oDX (0:DIMENSION_I) )
-      Allocate(  oDY (0:DIMENSION_J) )
-      Allocate(  oDZ (0:DIMENSION_K) )
-      Allocate(  oDX_E (0:DIMENSION_I) )
-      Allocate(  oDY_N (0:DIMENSION_J) )
-      Allocate(  oDZ_T (0:DIMENSION_K) )
-      Allocate(  X (0:DIMENSION_I) )
-      Allocate(  X_E (0:DIMENSION_I) )
-      Allocate(  oX (0:DIMENSION_I) )
-      Allocate(  oX_E (0:DIMENSION_I) )
-      Allocate(  Z (0:DIMENSION_K) )
-      Allocate(  Z_T (0:DIMENSION_K) )
-      Allocate(  FX (0:DIMENSION_I) )
-      Allocate(  FX_bar (0:DIMENSION_I) )
-      Allocate(  FX_E (0:DIMENSION_I) )
-      Allocate(  FX_E_bar (0:DIMENSION_I) )
-      Allocate(  FY_N (0:DIMENSION_J) )
-      Allocate(  FY_N_bar (0:DIMENSION_J) )
-      Allocate(  FZ_T (0:DIMENSION_K) )
-      Allocate(  FZ_T_bar (0:DIMENSION_K) )
       Allocate(  AYZ (DIMENSION_3p) )
       Allocate(  AXZ (DIMENSION_3p) )
       Allocate(  AXY (DIMENSION_3p) )
