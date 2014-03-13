@@ -161,7 +161,7 @@
       use discretelement, only: WALL_VDW_INNER_CUTOFF
       use discretelement, only: WALL_VDW_OUTER_CUTOFF
       use discretelement, only: WALL_HAMAKER_CONSTANT
-
+      use discretelement, only: ASPERITIES
 ! Global Parameters:
 !---------------------------------------------------------------------//
       use param1, only: UNDEFINED
@@ -194,12 +194,12 @@
 
 ! Verify that only one cohesion model is specified.
       IF (SQUARE_WELL .AND. VAN_DER_WAALS) THEN
-         WRITE(ERR_MSG,1000)
+         WRITE(ERR_MSG,1002)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
 ! Verify that at a cohesion model is specified.
       ELSEIF(.NOT.SQUARE_WELL .AND. .NOT.VAN_DER_WAALS) THEN
-         WRITE(ERR_MSG,1001)
+         WRITE(ERR_MSG,1003)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
@@ -242,7 +242,11 @@
             WRITE(ERR_MSG,1202)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
-
+ 
+         IF (ASPERITIES < ZERO) THEN
+            WRITE(ERR_MSG,1001) 'ASPERITIES', trim(iVal(ASPERITIES))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
       ENDIF                
 
 
@@ -250,12 +254,14 @@
 
       RETURN
 
+ 1001 FORMAT('Error 1001: Illegal or unknown input: ',A, ' = ',A,/     &
+             'Please correct the mfix.dat file.')
 
- 1000 FORMAT(/1X,70('*')/' From: CHECK_SOLIDS_DES_COHESION',/' Error 1000:',  &
+ 1002 FORMAT(/1X,70('*')/' From: CHECK_SOLIDS_DES_COHESION',/' Error 1000:',  &
          ' Cannot use SQUARE_WELL and VAN_DER_WAALS cohesion',/        &
          ' models simultaneously.',/1X,70('*')/)            
 
- 1001 FORMAT(/1X,70('*')/' From: CHECK_SOLIDS_DES_COHESION',/' Error 1001:',  &
+ 1003 FORMAT(/1X,70('*')/' From: CHECK_SOLIDS_DES_COHESION',/' Error 1001:',  &
          ' A cohesion model was not selected. Specify one of the',/    &
          ' available models in the mfix.dat file.',/1X,70('*')/)
 
@@ -271,7 +277,7 @@
          ' VDW_OUTER_CUTOFF outside of the neighbor search distance.',/&
          ' Increase FACTOR_RLM to increase the search distance.',/     &
          1X,70('*')/)
-
+ 
       END SUBROUTINE CHECK_SOLIDS_DES_COHESION
 
 
