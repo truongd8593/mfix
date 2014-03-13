@@ -774,17 +774,13 @@
 ! cartesian_grid related quantities
       IF(DIMN.EQ.2) COUNT_NODES_INSIDE_MAX = 4
       IF(DIMN.EQ.3) COUNT_NODES_INSIDE_MAX = 8
-
-      DO IJK = IJKSTART3,IJKEND3
-         DES_VEL_NODE(IJK, :, :) = ZERO
-         DES_ROPS_NODE(IJK, :) = ZERO
-         IF(FLUID_AT(IJK)) THEN
-            DES_ROP_S(IJK,:) = zero 
-            DES_U_S(IJK, :) = ZERO
-            DES_V_S(IJK, :) = ZERO
-            IF(DIMN.EQ.3) DES_W_S(IJK, :) = ZERO
-         ENDIF
-      ENDDO
+! Initialize entire arrays to zero
+      DES_VEL_NODE = ZERO
+      DES_ROPS_NODE = ZERO
+      DES_ROP_S = zero 
+      DES_U_S = ZERO
+      DES_V_S = ZERO
+      IF(DIMN.EQ.3) DES_W_S = ZERO
 
       
 ! sets several quantities including interp_scheme, scheme, and 
@@ -1255,6 +1251,7 @@
       USE discretelement
       USE cutcell 
       USE mfix_pic
+      use desmpi_wrapper
       implicit none 
 !-----------------------------------------------
 ! Local variables
@@ -1307,16 +1304,17 @@
                         J_OF(IJK), K_OF(IJK), EP_SM, PINC(IJK), &
                         CUT_CELL_AT(IJK)
                   ENDIF
-                  IF(mype.eq.pe_IO) WRITE(*,1004) EP_G(IJK), IJK, &
+                  WRITE(*,1004) EP_G(IJK), IJK, &
                      I_OF(IJK), J_OF(IJK), K_OF(IJK), EP_SM, &
                      PINC(IJK), CUT_CELL_AT(IJK)
                   
                   IF(CARTESIAN_GRID) THEN 
                      CALL WRITE_DES_DATA
-                     CALL WRITE_VTK_FILE
+!                     CALL WRITE_VTU_FILE
                   ENDIF
                      
-                  CALL MFIX_EXIT(myPE)
+!                 CALL MFIX_EXIT(myPE)
+                  call des_mpi_stop
                ENDIF
             ENDIF
          ENDDO                  ! end loop over M=1,DES_MMAX
