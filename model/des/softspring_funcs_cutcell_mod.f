@@ -1,3 +1,22 @@
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: softspring_funcs_cutcell                               C
+!                                                                      C
+!  Purpose: subroutines for particle-wall collisions when cutcell is   C
+!           used. Also contains rehack of routines for cfslide and     C
+!           cffctow which might be different from the stand alone      C
+!           routines. Eventually all the DEM routines will be          C
+!           consolidated.                                              C
+!                                                                      C 
+! CALC_FORCE_WITH_WALL_CUTFACE: Particle-wall driver routine when      C
+!    quadrics are used                                                 C
+!                                                                      C
+! CALC_FORCE_WITH_WALL_CUTFACE_STL: Particle-wall driver routine when  C
+!    stl files are used                                                C
+!                                                                      C
+!  Author: Rahul Garg                               Date: 1-Dec-2013   C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
 module softspring_funcs_cutcell
 
   CONTAINS
