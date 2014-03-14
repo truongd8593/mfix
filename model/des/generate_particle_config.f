@@ -318,8 +318,11 @@
                !granular temp is defined as (Variance uprime + Variance vprime + Variance wprime)/3 
                !assuming equal energy in each direction 
                !Variance uprime  = IC_Theta
-               !Stdev (or sigma) = sqrt(Variance) 
-               VEL_SIG(:) = sqrt(IC_Theta_M(ICV, M))
+               !Stdev (or sigma) = sqrt(Variance)
+               VEL_SIG(:) = ZERO
+
+               IF(IC_Theta_M(ICV,M).ne.UNDEFINED) & 
+               & VEL_SIG(:) = sqrt(IC_Theta_M(ICV, M))
                
                
                write(ERR_MSG,2022) M,  &
@@ -408,11 +411,11 @@
       
 
  2022 FORMAT(1X,70('.'),/5x, & 
-      'PHASE INDEX, M                     =  ', I5,2X, /5x, & 
+      'PHASE INDEX, M                              =  ', I5,2X, /5x, & 
       'INITIALIZING SOLIDS VELOCITY FIELD', /5x, & 
-      'Mean velocity direction wise       =  ', 3(G15.8,2X), /5x, & 
-      'Initial granular temperature       =  ', (G15.8,2X), /5x, & 
-      'standard deviation direction wise  =  ', 3(G15.8,2X))
+      'Mean velocity direction wise                =  ', 3(G15.8,2X), /5x, & 
+      'Use specified initial granular temperature  =  ', (G15.8,2X), /5x, & 
+      'Velocity standard deviation direction wise  =  ', 3(G15.8,2X))
       
       CALL FINL_ERR_MSG
           
