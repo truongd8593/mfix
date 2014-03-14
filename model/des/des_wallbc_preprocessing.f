@@ -1,4 +1,18 @@
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: DES_WALLBC_PREPROCSSING                                C
+!                                                                      C
+!  Purpose: subroutines for pre-processing wall info for discrete      C
+!           simulations  when cutcell is used.                         C
+!           Most of this routine (except the particle deletion stuff)  C
+!           was developed when quadric representation was used for     C
+!           cutcell. Since STL works better, most of this routine will C
+!           be soon deprecated.                                        C
+!                                                                      C
+!  Author: Rahul Garg                               Date: 1-Dec-2012   C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE DES_WALLBC_PREPROCSSING 
       
       USE param1
@@ -2667,15 +2681,27 @@
        use mpi_utility
        USE sendrecv
        USE mfix_pic
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
+       use error_manager
+
        IMPLICIT NONE 
        
        INTEGER :: LCURPAR,LPIP_ALL(0:NUMPES-1),LGLOBAL_ID, LGHOST_CNT_ALL(0:NUMPES-1), LL, PIP_INIT, PIP_FINAL
        INTEGER :: IJK, K
+       character*100 :: fname_tmp
        INCLUDE 'function.inc'
       
-       IF(DMP_LOG) write(UNIT_LOG,101)
-       IF(print_des_screen) write(*,101)
+! Initialize the error manager.
+       CALL INIT_ERR_MSG("CG_DEL_OUTOFDOMAIN_PARTS")
 
+       write(ERR_MSG, 101)        
+       CALL FLUSH_ERR_MSG(footer = .false.)
+
+ 101   FORMAT('Deleting particles outside', &  
+       ' the domain for CG/cutcell simulations') 
+       
        !if the particles in cell was called then the ghost particles
        !were also added to the particle araay on each processor. 
        !Although this ghost particles shud not be there for 
@@ -2704,25 +2730,13 @@
        PIP = PIP - IGHOST_CNT 
        IGHOST_CNT  = 0 
 
-!!$       LGHOST_CNT_ALL = 0 
-!!$       LGHOST_CNT_ALL(MYPE) = IGHOST_CNT
-!!$       
-!!$       CALL GLOBAL_ALL_SUM(LGHOST_CNT_ALL)
-!!$
        LPIP_ALL = 0 
        LPIP_ALL(MYPE) = PIP - IGHOST_CNT 
        CALL GLOBAL_ALL_SUM(LPIP_ALL)
        PIP_INIT = SUM(LPIP_ALL(:))
-       
-!!$
-!!$       IF(mype.eq.pe_IO) THEN 
-!!$          WRITE(*,*) 'PIP = ', LPIP_ALL(:)
-!!$
-!!$          WRITE(*,*) 'GHOST COUNT = ', LGHOST_CNT_All(0:numpes-1)
-!!$          WRITE(*,*) 'PIP ADJUSTED = ', LPIP_ALL(:) - LGHOST_CNT_all(:)
-!!$          WRITE(*,*) 'ACTIVE LAST = ', PEA(PIP, 1)
-!!$          
-!!$       end IF
+
+       FNAME_TMP = "BEFORE_CG_DELETION"
+       IF(.True.) CALL WRITE_PARTICLE_VTP_FILE(fname_tmp)
 
        IF(USE_STL) then 
           IF(MPPIC) THEN 
@@ -2754,39 +2768,20 @@
           IGLOBAL_ID(LCURPAR) = LGLOBAL_ID 
        END DO
 
+       FNAME_TMP =  "AFTER_CG_DELETION"
+       IF(.True.) CALL WRITE_PARTICLE_VTP_FILE(FNAME_TMP)
+     
+       write(ERR_MSG,102) PIP_INIT, PIP_INIT -  PIP_FINAL, PIP_FINAL
+       CALL FLUSH_ERR_MSG(header = .false.)
+
+ 102   FORMAT(/,  &
+       'Initial total number of particles: ', 2x, (i20), /, &
+       'Total number of particles deleted: ', 2x, i20, /, & 
+       'Final total number of particles  : ', 2x, i20)
+
        
+       CALL FINL_ERR_MSG
 
-!!$       LGHOST_CNT_ALL = 0 
-!!$       LGHOST_CNT_ALL(MYPE) = IGHOST_CNT
-!!$       
-!!$       CALL GLOBAL_ALL_SUM(LGHOST_CNT_ALL)
-!!$
-!!$       LPIP_ALL = 0 
-!!$       LPIP_ALL(MYPE) = PIP 
-!!$       CALL GLOBAL_ALL_SUM(LPIP_ALL)
-!!$
-!!$       IF(mype.eq.pe_IO) THEN 
-!!$          WRITE(*,*) 'AFTER PARTILCES OUTSIDE THE CUT-FACE BCs'
-!!$          WRITE(*,*) 'PIP = ', LPIP_ALL(:)
-!!$
-!!$          WRITE(*,*) 'GHOST COUNT = ', LGHOST_CNT_All(0:numpes-1)
-!!$          WRITE(*,*) 'PIP ADJUSTED = ', LPIP_ALL(:) - LGHOST_CNT_all(:)
-!!$          WRITE(*,*) 'ACTIVE LAST = ', PEA(PIP, 1)
-!!$          
-!!$       end IF
-
-       IF(PRINT_DES_SCREEN) write(*,102) PIP_INIT, PIP_INIT -  PIP_FINAL, PIP_FINAL
-       if(DMP_LOG) write(UNIT_LOG,102) PIP_INIT, PIP_INIT -  PIP_FINAL, PIP_FINAL
-          
-
-
- 101   FORMAT( 1X,70('*')/,1x, & 
-       'DELETING PARTICLES OUTSIDE THE DOMAIN FOR CARTESIAN GRID   ')          
-
- 102   FORMAT(5x,  &
-       'Initial total number of particles: ', 2x, (i20), /5x, &
-       'Total number of particles deleted: ', 2x, i20, /5x, & 
-       'Final total number of particles  : ', 2x, i20, /, 1X,70('*'))
        END SUBROUTINE CG_DEL_OUTOFDOMAIN_PARTS
 
 
@@ -2817,6 +2812,8 @@
        DOUBLE PRECISION X1MINX0(3), X2MINX1(3), TEMP_CROSSP(3), X1(3)
        INCLUDE 'function.inc'
        
+
+! Initialize the error manager.
        IF(PRINT_DES_SCREEN) WRITE(*,*) 'FLAGGING PARTICLES OUTSIDE THE DOMAIN'
 
        COUNT_DELETE  = 0
@@ -2894,7 +2891,6 @@
        'Exiting.',/, 1X,70('*')/)
          
       
-       IF(.false.) CALL WRITE_PARTS_AFTER_DELETION
           
     END SUBROUTINE LIST_PARTS_TOBE_DEL_MPPIC_STL
 
@@ -2912,6 +2908,9 @@
        USE geometry
        USE softspring_funcs_cutcell
        
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
+      use error_manager
        IMPLICIT NONE 
        
        INTEGER :: I, J, K, IJK, LL, COUNT_BC, COUNT, IJK_WALL, PC, IDIM
@@ -2927,8 +2926,11 @@
        CHARACTER*100 :: FILENAME
        INCLUDE 'function.inc'
        
-       IF(PRINT_DES_SCREEN) WRITE(*,'(5x,A)') & 
-       'Identifying particles outside the fluid domain'
+       CALL INIT_ERR_MSG("LIST_PARTS_TOBE_DEL_DEM_STL")
+
+       WRITE(ERR_MSG,'(A,/)') & 
+       '---Identifying particles outside the fluid domain'       
+       CALL FLUSH_ERR_MSG(header=.false., footer = .false.)
        
        COUNT_DELETE  = 0
        PIP_OLD = PIP
@@ -2977,32 +2979,32 @@
        PC = PC+1
       END DO
          
-      IF(PRINT_DES_SCREEN) WRITE(*,'(5x,A,/5x,A)') & 
-      'Identified the particles outside the domain', &
-      'Now removing these out of domain particles'
+      WRITE(ERR_MSG,'(A,/,A,/)') & 
+      '---Identified the particles outside the domain', &
+      '---Now removing these out of domain particles'
+      CALL FLUSH_ERR_MSG(header=.false., footer = .false.)
 
       !Now remove the particles just marked as tobe deleted 
       CALL REMOVE_PARTICLES(COUNT_DELETE)
 
       !Call particles in cell again to get things back in right shape
 
-      IF(PRINT_DES_SCREEN) WRITE(*,'(5x,A)') 'Removed the out of domain particles'
-      
+      WRITE(ERR_MSG,'(A)') '---Removed the out of domain particles'
+      CALL FLUSH_ERR_MSG(header=.false., footer = .false.)
+
       DEALLOCATE(TOBE_DELETED)
       
       IF(PIP_OLD.NE.(PIP+COUNT_DELETE)) THEN 
-         IF(DMP_LOG)          write(unit_log,1001)  PIP_OLD, PIP, COUNT_DELETE
-         IF(PRINT_DES_SCREEN) write(*,1001)         PIP_OLD, PIP, COUNT_DELETE         
-         CALL mfix_exit(mype)        
+         WRITE(ERR_MSG,1001)  PIP_OLD, PIP, COUNT_DELETE
+         CALL FLUSH_ERR_MSG(Abort = .true.)
       END IF
 
- 1001 FORMAT(/1X,70('*'),/5x, & 
-      'From: LIST_PARTS_TOBE_DEL_DEM_STL: Error 1001',/5x, & 
+ 1001 FORMAT('Error 1001',/5x, & 
       'PIP old Not equal to  Pip New +  Deleted', 3(2x, i10) , /5x, & 
       'Logic in this routine broken for this message to pop-up', /5x, & 
-      'Exiting.',/, 1X,70('*')/)
+      'Exiting.')
+      CALL FINL_ERR_MSG
 
-      IF(.True.) CALL WRITE_PARTS_AFTER_DELETION
       END SUBROUTINE LIST_PARTS_TOBE_DEL_DEM_STL
 
       SUBROUTINE LIST_PARTS_TOBE_DEL_MPPIC
@@ -3108,7 +3110,6 @@
        'Logic in this routine broken for this message to pop-up', /5x, & 
        'Exiting.',/, 1X,70('*')/)
          
-       IF(.false.) CALL WRITE_PARTS_AFTER_DELETION
 
     END SUBROUTINE LIST_PARTS_TOBE_DEL_MPPIC
 
@@ -3350,10 +3351,9 @@
          'Logic in this routine broken for this message to pop-up', /5x, & 
          'Exiting.',/, 1X,70('*')/)
          
-!         IF(.false.) CALL DES_WRITE_PARTS_AFTER_DELETION
        END SUBROUTINE LIST_PARTS_TOBE_DEL_DEM 
        
-      SUBROUTINE WRITE_PARTS_AFTER_DELETION
+      SUBROUTINE WRITE_PARTICLE_VTP_FILE(part_fname)
       USE run
       USE param1
       USE discretelement
@@ -3367,7 +3367,13 @@
       USE parallel
       USE desmpi
       USE cdist 
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
+      use error_manager
+
       Implicit none 
+      CHARACTER*100, intent(in) :: part_fname
       !facet id and particle id 
       Integer ::  vtp_unit , i,j,k,l, pc
       CHARACTER*100 :: stl_fname, vtp_fname 
@@ -3376,13 +3382,18 @@
       REAL POS_Z, VEL_W 
 
       integer llocalcnt,lglocnt,lgathercnts(0:numpes-1),lproc
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("WRITE_PARTICLE_VTP_FILE")
       vtp_unit = 1002      
       
       if (bdist_io) then 
-         write(vtp_fname,'(A,"_AFTER_DELETION_",I5.5,".vtp")') trim(run_name),mype
+         write(vtp_fname,'(A,"_", A, "_",I5.5,".vtp")') & 
+         trim(run_name),trim(part_fname), mype
       else 
          if(mype.eq.pe_io) then 
-            write(vtp_fname,'(A,"_AFTER_DELETION", ".vtp")') trim(run_name) 
+            write(vtp_fname,'(A,"_", A, ".vtp")') & 
+            trim(run_name), trim(part_fname) 
          end if  
       end if 
                  
@@ -3565,10 +3576,16 @@
       end if  
       close(vtp_unit, status = 'keep')
 
-      IF(PRINT_DES_SCREEN) write(*, '(2x, A, A)') 'Particle configuration written to', &
-      ' files named AFTER_DELETION For debugging purposes '
       
-      END SUBROUTINE write_parts_after_deletion
+      write(ERR_MSG, 1000) vtp_fname
+      
+ 1000 FORMAT( 'For debugging purposes, particle configuration ', &
+      'file written to', /, A, /)
+
+      CALL FLUSH_ERR_MSG(header=.false., footer = .false.)
+
+      CALL FINL_ERR_MSG
+      END SUBROUTINE  WRITE_PARTICLE_VTP_FILE
 
 
        SUBROUTINE REMOVE_PARTICLES(NUMBER_DELETIONS)
