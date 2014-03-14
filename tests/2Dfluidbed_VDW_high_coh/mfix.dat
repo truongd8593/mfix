@@ -1,215 +1,237 @@
-!                                                                               
-!  Bubbling Fluidized Bed Simulation with DES and Cohesion
+                                                                               
+! A bubbling fluidized bed simulation with discrete particles having
+! cohesion
+! Author: S. Pannala
 
 ! For more details refer to PhD thesis (2004) of Michael Weber
-! It is made available in MFIX documents
-!                                                                               
-! Run-control section                                                           
-  RUN_NAME = 'fluidbed_VDW_high_coh'             
-  DESCRIPTION = 'fluid bed with cohesion'          
+
+!*********************************************************************
+! Run Control                             
+!*********************************************************************
+  RUN_NAME = 'des_fb_vdw'
+  DESCRIPTION = 'fluid bed with high cohesion'
   RUN_TYPE = 'new' 
+
   UNITS = 'cgs'
-  TIME = 0.0				!start time
-  TSTOP = 0.5 
-  DT = 2.5E-4			!time step
-  DT_MAX = 4.0E-4
- 
-  ENERGY_EQ = .FALSE.			!do not solve energy eq
-  SPECIES_EQ = .FALSE.    .FALSE. 		!do not solve species eq
- 
-  MOMENTUM_X_EQ(1) = .FALSE.
-  MOMENTUM_Y_EQ(1) = .FALSE.
-  MOMENTUM_Z_EQ(1) = .FALSE.
 
-! TIME_ADJUST = .FALSE.
-!  NORM_G = 1.0
+  TIME = 0.0          ! start time
+  TSTOP = 0.5         ! stop time 
+  DT = 2.5E-4         ! time step
+  DT_MAX = 4.0E-4     ! maximum time step
+ 
+! Do not solve energy eq
+  ENERGY_EQ = .FALSE.
 
-  MAX_NIT = 250
-  TOL_RESID = 1.E-3
-                
-                                                               
-! Geometry Section                                                              
-                                                                               
+! Do not solve species eq
+!                 Gas     Sld 1
+  SPECIES_EQ = .FALSE.    .FALSE. 		
+ 
+! Solve momentum equations (gas not solids)
+!                    Gas      Sld 1
+  MOMENTUM_X_EQ  =  .TRUE.   .FALSE.  !.FALSE.
+  MOMENTUM_Y_EQ  =  .TRUE.   .FALSE.  !.FALSE.
+  MOMENTUM_Z_EQ  = .FALSE.   .FALSE.
+
+
+!*********************************************************************
+! Numerical Parameters
+!*********************************************************************
+  MAX_NIT = 250          ! maximum number of iterations [500]
+
+  TOL_RESID   = 1.0E-3   ! max. continuity+momentum residual at 
+                         ! convergence [1E-3]
+
+! factor to normalize gas continuity equation residual 
+!  [undefined] : normalization uses residual from first iteration 
+!      0       : normalization based on dominate term in continuity eqn
+!  [defined]   : normalized by value provided
+!  NORM_g = 1.0 
+
+! The sweep direction for linear equation solver. 
+!  LEQ_SWEEP(1) = 9*'ISIS' 
+
+
+!*********************************************************************
+! Geometry and Discretization
+!*********************************************************************
   COORDINATES = 'cartesian' 
-  XLENGTH = 8.0		        !X length	
-  IMAX = 27			!cells in i direction
-  YLENGTH = 20.0			!height
-  JMAX = 30 			!cells in j direction
-
-  NO_K = .TRUE. 			!2D, no k direction
-
+  XLENGTH = 8.0     IMAX = 27	! length and cells in x/i direction
+  YLENGTH = 20.0    JMAX = 30 	! length and cells in y/j direction
+  NO_K = .TRUE.                 !2D, no k direction
   
-  GRAVITY = 980
-                                                                             
-! Gas-phase Section                                                             
- 
-  MU_g0 = 1.75E-4		!constant gas viscosity
-  RO_g0 = 1.205E-3		!constant gas density
-
- 
-! Solids-phase Section                                                          
-  
-  RO_s0 = 2.65			!solids density
-  D_p0 = 0.1			!particle diameter     
-  e = 0.9 			!restitution coefficient
-  Phi = 30.0		!angle of internal friction
-  EP_star = 0.42		!void fraction at minimum
-						!  fluidization
-
-  
-! Initial Conditions Section                                                    
-
-    ! 1. bed
-  IC_X_w(1) =  0.0				!domain
-  IC_X_e(1) =  8.0		! 0 < x < 15, 0 < y < 100
-  IC_Y_s(1) =  0.0
-  IC_Y_n(1) =  10.0
-                                	!initial values in the region
-  IC_EP_g(1) =  0.42		!void fraction
-  IC_U_g(1) =  0.0		!radial gas velocity
-  IC_V_g(1) =  80.0	!axial gas velocity
-
-  IC_U_s(1,1) = 0.0
-  IC_V_s(1,1) = 0.0
-
-      ! 2. freeboard
-  IC_X_w(2) = 0.0			!domain
-  IC_X_e(2) = 8.0		! 0 < x < 15, 0 < y < 100
-  IC_Y_s(2) = 10.0
-  IC_Y_n(2) = 20.0
-                                	!initial values in the region
-  IC_EP_g(2) = 1.0		!void fraction
-  IC_U_g(2) = 0.0		!radial gas velocity
-  IC_V_g(2) = 100.0	!axial gas velocity
-
-  IC_U_s(2,1) = 0.0
-  IC_V_s(2,1) = 0.0
+  GRAVITY = 980        ! gravitational acceleration [y-direction]
 
 
+!*********************************************************************
+! Gas Phase
+!*********************************************************************
+  MU_g0 = 1.75E-4     ! constant viscosity (poise or Pa.s)
+  RO_g0 = 1.205E-3     ! constant gas density
 
 
-!  Boundary Conditions Section
+!*********************************************************************
+! Solid Phase
+!*********************************************************************
+  MMAX  =  1         ! number of 'solids' phases
+  SOLIDS_MODEL(1) = 'DEM'     ! for the indicated solids set its model
+  D_p0  =  0.1       ! particle diameter 
+  RO_s0 =  2.65      ! particle density
 
-      ! 1. 
-  BC_X_w(1) = 0.1				!JET #1
-  BC_X_e(1) = 7.9			
+! strictly speaking these should not be needed for dem
+!  Phi  = 30.0        ! angle of internal friction (in degrees)
+!  e    = 0.9         ! coefficient of restitution p-p
+  EP_star  = 0.42    ! Packed bed void fraction
+
+
+!*********************************************************************
+! Initial Conditions
+!*********************************************************************
+! start from packed conditions
+
+! bed --------------------
+  IC_X_w(1)      =  0.0
+  IC_X_e(1)      =  8.0
+  IC_Y_s(1)      =  0.0
+  IC_Y_n(1)      =  10.0
+
+  IC_EP_g(1)     =  1.0    ! set to 1 to force some unnecessary data
+                           ! checks.
+                           ! ep_g will become based on the supplied
+                           ! particle_input.dat 
+  IC_U_g(1)      =  0.0
+  IC_V_g(1)      =  80.0
+
+
+! freeboard --------------------
+  IC_X_w(2)      = 0.0
+  IC_X_e(2)      = 8.0
+  IC_Y_s(2)      = 10.0
+  IC_Y_n(2)      = 20.0
+
+  IC_EP_g(2)     = 1.0
+  IC_U_g(2)      = 0.0
+  IC_V_g(2)      = 100.0
+
+
+
+!*********************************************************************
+! Boundary Conditions
+!*********************************************************************
+! By default outside boundaries are initialized as no slip walls 
+
+! Inlet --------------------
+! gas flow through bottom
+  BC_X_w(1) = 0.1
+  BC_X_e(1) = 7.9
   BC_Y_s(1) = 0.0
   BC_Y_n(1) = 0.0
-  BC_TYPE(1) = 'MI'		!specified mass inflow
+  BC_TYPE(1) = 'MI'     ! mass inflow
 
   BC_EP_g(1) = 1.0
   BC_U_g(1) = 0.0
-  BC_V_g(1) = 250.0 		!inlet jet vel
+  BC_V_g(1) = 250.0     ! inlet jet vel
   BC_P_g(1) = 0.0
 
-  BC_X_w(2) = 0.0				!top exit
-  BC_X_e(2) = 8.0	
+! Outlet --------------------
+! specified pressure
+  BC_X_w(2) = 0.0
+  BC_X_e(2) = 8.0
   BC_Y_s(2) = 20.0
   BC_Y_n(2) = 20.0
-  BC_TYPE(2) = 'PO' 	!specified pressure outflow
+  BC_TYPE(2) = 'PO'     ! pressure outflow
   BC_P_g(2) = 0.0
 
 
-!
-! DES INPUT
+!*********************************************************************
+! Discrete Element Model (DEM) 
+!*********************************************************************
+  DISCRETE_ELEMENT  = .TRUE.
+  DES_CONTINUUM_COUPLED = .TRUE.
+  PARTICLES = 4000
+  PARTICLES_FACTOR = 1.2   ! expand size of particle arrays by an 
+                           ! arbitrary factor [1.2]
+  NFACTOR = 10     ! length of dem settling period in no. of loops [10]
 
-! Begin
-! Parameters
+! Neighbor search parameters --------------------
+  DES_NEIGHBOR_SEARCH = 1     ! Particle neighbor search method [1]
+  NEIGHBOR_SEARCH_N = 4     ! solids time steps between neighbor search [25]
+  MN = 8     ! maximum number of neighbors allowed per particle [10]
 
-PARTICLES = 4000
-MN = 8
+! Particle properties --------------------
+! (particle-particle, particle-wall collision model parameters)
 
+  KN = 800000       ! normal inter-particle collision spring constant (dyne/cm)
+  KT_FAC = 1.0      ! tangential spring factor = KT/KN    [2/7]
+  KN_W = 8.0d+5     ! normal particle-wall collision spring constant (dyne/cm)
+  KT_W_FAC = 1.0    ! Tangential spring factor = KT_W/KN_W   [2/7]
 
-KN = 800000
-MEW = 0.3
+  MEW = 0.3         ! inter-particle friction coeffienct
+  MEW_W = 0.3       ! particle-wall friction coefficient
 
-## KT = 800000 !<------------- JM: OBSOLETE
-## ETA_DES_N = 0.792 !<------- JM: OBSOLETE
-## ETA_DES_T = 0.792 !<------- JM: OBSOLETE
-
-KT_FAC = 1.0   ! KT = KT_FAC*KN = 800000
-DES_EN_INPUT(1)   =  0.963346
-DES_ETAT_FAC = 1.0   ! = ETA_DES_T/ETA_DES_N = 1.0
-
-
-KN_W = 800000
-MEW_W = 0.3
-
-## KT_W = 800000 !<----------- JM: OBSOLETE
-## ETA_N_W = 0.792 !<--------- JM: OBSOLETE
-## ETA_T_W = 0.792 !<--------- JM: OBSOLETE
-
-KT_W_FAC = 1.0   ! KT_W = KT_W_FAC*KN_W = 800000
-DES_EN_WALL_INPUT =  0.963346
-DES_ETAT_W_FAC = 1.0   ! = ETA_DES_T_W/ETA_DES_N_W = 1.0
+  DES_EN_INPUT(1) = 0.963346     ! particle-particle rest coef
+  DES_ETAT_FAC = 1.0             ! damping coefficient factor = ETAT/ETAN   [1/2]
+  DES_EN_WALL_INPUT = 0.963346   ! particle-wall rest coef
+  DES_ETAT_W_FAC = 1.0           ! damping coefficient factor = ETAT_W/ETAN_W   [1/2]
 
 
+! Particle cohesion --------------------
+  USE_COHESION=.TRUE.
+  VAN_DER_WAALS=.TRUE.
 
-DES_GAMMA = 0.0
-DES_F = 0.0
-DES_NEIGHBOR_SEARCH = 1
+  HAMAKER_CONSTANT = 1e-10     ! (erg)
+  WALL_HAMAKER_CONSTANT = 1.0e-10
+  VDW_INNER_CUTOFF = 4e-8     ! (cm)
+  WALL_VDW_INNER_CUTOFF = 4e-8
+  VDW_OUTER_CUTOFF = 0.01
+  WALL_VDW_OUTER_CUTOFF = 0.01
+  ASPERITIES = 0.0     ! radius of surface asperities (cm) [0]
 
-!  DES Logicals
-DISCRETE_ELEMENT = .TRUE.
-WALLDTSPLIT = .TRUE.
-DES_CONTINUUM_COUPLED = .TRUE.
+! these keywords refer to M. Weber square well cohesion model that has
+! since been removed from MFIX. Would require an older version to
+! invoke. Left for legacy at this time.
+!  SQUARE_WELL=.FALSE.
+!  MASTER_WELL_DEPTH = 1e-3
+!  MASTER_WALL_WELL_DEPTH = 2e-3
+!  RADIUS_RATIO = 1.01
+!  WALL_RADIUS_RATIO = 1.01
+!  COHESION_DEBUG=0
 
-!!COHESION INPUT BEGIN
-USE_COHESION=.TRUE.
-SQUARE_WELL=.FALSE.
-MASTER_WELL_DEPTH = 1e-3
-MASTER_WALL_WELL_DEPTH=2e-3
-RADIUS_RATIO=1.01
-WALL_RADIUS_RATIO=1.01
-VAN_DER_WAALS=.TRUE.
-HAMAKER_CONSTANT = 1e-10
-WALL_HAMAKER_CONSTANT = 1.0e-10
-VDW_INNER_CUTOFF=4e-8
-WALL_VDW_INNER_CUTOFF=4e-8
-VDW_OUTER_CUTOFF=0.01
-WALL_VDW_OUTER_CUTOFF=0.01
-COHESION_DEBUG=0
-FOCUS_PARTICLE=4005
-!!COHESION INPUT END
+! DES Output Control --------------------
+  PRINT_DES_DATA = .F.    ! write DEM data as *.vtp files
 
 
-! End DES Input
-
-
-!
+!*********************************************************************
 !  Output Control
-!
-!  OUT_DT = 0.05		!write text file BUB01.OUT
-					!  every 0.1s
-  RES_DT = 0.01		!write binary restart file
-					!  BUB01.RES every 0.01 s
-  NLOG = 25 		!write logfile BUB01.LOG
-					!every 25 time steps
-  FULL_LOG = .TRUE. 	!display residuals on screen
+!*********************************************************************
+
+! Interval at which .SPX files are updated.
+! spx_dt(1) also controls dem output frequency for coupled cases
+  SPX_DT(1)  =  1.0E-1   ! Void fraction (EP_g)
+  SPX_DT(2)  =  5.0E-1   ! Gas and solids pressure (P_g, P_star)
+  SPX_DT(3)  =  1.0E-1   ! Gas velocity (U_g, V_g, W_g)
+  SPX_DT(4)  =  1.0E+2   ! Solids velocity (U_s, V_s, W_s)
+  SPX_DT(5)  =  1.0E+2   ! Solids density (ROP_s)
+  SPX_DT(6)  =  1.0E+2   ! Gas and solids temp. (T_g, T_s1, T_s2)
+  SPX_DT(7)  =  1.0E+2   ! Gas and solids mass fractions (X_g, X_s)
+  SPX_DT(8)  =  1.0E+2   ! Granular Temperature (G)
+  SPX_DT(9)  =  1.0E+2   ! User defined scalars
+
+! Interval at which restart (.RES) file is updated.
+  RES_DT     =  0.02 
+
+! Interval in number of time steps at which .LOG file is written.
+  NLOG  = 25
+
+! Display the residuals on the screen and messages about convergence
+! on the screen and in the .LOG file. [.FALSE.]
+  FULL_LOG  = .TRUE.
 
 
-!SPX_DT values determine how often SPx files are written.  Here BUB01.SP1, which
-!contains void fraction (EP_g), is written every 0.01 s, BUB01.SP2, which contains
-! gas and solids pressure (P_g, P_star), is written every 0.1 s, and so forth.
-!
-        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
-        !      P_star    V_g  V_s            T_s  X_s     Theta   Scalar 
-        !                W_g  W_s
-  SPX_DT = 0.1 0.05      0.01  0.1  100.      100. 100.   100.0     100.        
-                                                                                
-!  The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
-  
-!  NODESI = 1   NODESJ = 1   NODESK = 1
-
-!  Sweep Direction
-
-LEQ_SWEEP(1) = 'ISIS' 
-LEQ_SWEEP(2) = 'ISIS'  
-LEQ_SWEEP(3) = 'ISIS' 
-LEQ_SWEEP(4) = 'ISIS'  
-LEQ_SWEEP(5) = 'ISIS'  
-LEQ_SWEEP(6) = 'ISIS'  
-LEQ_SWEEP(7) = 'ISIS' 
-LEQ_SWEEP(8) = 'ISIS'  
-LEQ_SWEEP(9) = 'ISIS'
-
+!*********************************************************************
+! Parallelization Controls
+!*********************************************************************
+! Number of grid blocks in X/Y/Z directions (i,j,k) for a distributed
+! memory parallel simulation   [1]
+  NODESI = 1
+  NODESJ = 1
+  NODESK = 1
