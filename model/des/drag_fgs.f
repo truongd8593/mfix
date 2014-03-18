@@ -794,12 +794,12 @@
 ! gas pressure and gas-solids drag
 !----------------------------------------------------------------->>>
          GD_FORCE(NP,:) = GS_DRAG(IJK,M,:)*PVOL(NP)
-         FC(NP,:) = FC(NP,:) + GD_FORCE(NP,:)
+         FC(:,NP) = FC(:,NP) + GD_FORCE(NP,:)
 
          IF(.NOT.MODEL_B) THEN
 ! Add the pressure gradient force
 ! P_force is evaluated as -dp/dx
-            FC(NP,:) = FC(NP,:) + (P_FORCE(IJK,:))*PVOL(NP)
+            FC(:,NP) = FC(:,NP) + (P_FORCE(IJK,:))*PVOL(NP)
          ENDIF
 !-----------------------------------------------------------------<<<
 
@@ -1080,14 +1080,12 @@
 
 ! Update the contact forces (FC) on the particle to include gas
 ! pressure and gas-solids drag
-            !FC(NP,:) = FC(NP,:) + GD_FORCE(NP,:)
-            FC(NP,1:DIMN) = FC(NP,1:DIMN) + D_FORCE(1:DIMN)
-            GD_FORCE(NP,1:DIMN) = D_FORCE(1:DIMN)
+            FC(:,NP) = FC(:,NP) + D_FORCE(:)
+            GD_FORCE(NP,1:DIMN) = D_FORCE(:)
 
             IF(.NOT.MODEL_B) THEN
 ! P_force is evaluated as -dp/dx
-               !FC(NP,:) = FC(NP,:) + p_force(ijk,:)*pvol(NP)
-               FC(NP,1:DIMN) = FC(NP,1:DIMN) + p_force(ijk,1:DIMN)*pvol(NP)
+               FC(:,NP) = FC(:,NP) + p_force(ijk,1:DIMN)*pvol(NP)
             ENDIF
 !------------------------------------------------------------------>>>> Handan Liu
          ENDDO       ! end do (nindx = 1,pinc(ijk))
@@ -2051,7 +2049,7 @@
 ! solids-solids drag force
 !----------------------------------------------------------------->>>
          SD_FORCE(NP,:) = SS_DRAG(IJK,M,:)*PVOL(NP)
-         FC(NP,:) = FC(NP,:) + SD_FORCE(NP,:)
+         FC(:,NP) = FC(:,NP) + SD_FORCE(NP,:)
 !-----------------------------------------------------------------<<<
 
       ENDDO   ! end do loop (np=1,max_pip)

@@ -2,10 +2,10 @@
 !                                                                      !
 !  Module name: DES_CHECK_PARTICLE                                     !
 !                                                                      !
-!  Purpose:  This routine is used to check if a new particle has fully 
+!  Purpose:  This routine is used to check if a new particle has fully
 !  entered the domain.  If so, the flag classifying the particle as new
-!  is removed, allowing the particle to respond to contact forces from 
-!  walls and other particles.                                          
+!  is removed, allowing the particle to respond to contact forces from
+!  walls and other particles.
 !                                                                      !
 !                                                                      !
 !  Author: J.Musser                                   Date: 13-Jul-09  !
@@ -39,7 +39,7 @@
 
 ! Loop indices used for clearing forces associated with exiting particles
       INTEGER NLIMNP, NLIM, NEIGHNP, NLIM_NEIGHNP
-      
+
 ! Logical for local debug warnings
       LOGICAL DES_LOC_DEBUG
 !-----------------------------------------------
@@ -59,7 +59,7 @@
 
 ! check the status of a new injected particle. if the new particle
 ! fully entered the domain change its 'new' status PEA(NP,2) to false
-!-----------------------------------------------         
+!-----------------------------------------------
          IF(PEA(NP,2) .AND. .NOT.PEA(NP,3))THEN
 
             IF(DIMN == 2 .AND. &
@@ -83,13 +83,13 @@
 
 ! check the status of an exiting particle (a particle that has come into
 ! contact with a mass outlet).
-!-----------------------------------------------  
+!-----------------------------------------------
          ELSEIF(PEA(NP,3) .AND. .NOT.PEA(NP,2))THEN
 
-!--------------------         
+!--------------------
 ! if an exiting particle has altered course so that it is moving back
-! into the domain change (no longer on track to exit the domain) and 
-! it has fully entered the domain then change its 'exiting' status 
+! into the domain change (no longer on track to exit the domain) and
+! it has fully entered the domain then change its 'exiting' status
 ! PEA(NP,3) to false
             IF(DIMN == 2 .AND. &
                (XPOS - DES_RADIUS(NP)) .GT. 0 .AND.&
@@ -113,7 +113,7 @@
 ! then change its PEA(NP,2) status to true so that it will no longer
 ! react to forces but will continue on its present trajectory which will
 ! then carry it fully out of the domain
-               
+
             ELSEIF(DIMN == 2 .AND. &
                XPOS < 0 .OR. XPOS > XLENGTH .OR.&
                YPOS < 0 .OR. YPOS >YLENGTH &
@@ -132,7 +132,7 @@
 
 !--------------------
 ! if an exiting particle has fully exited the domain, effectively
-! remove the particle (reset PEA(NP,:) to false)                                    
+! remove the particle (reset PEA(NP,:) to false)
             IF(DIMN == 2 .AND. &
                (XPOS + DES_RADIUS(NP)) .LE. 0 .OR.&
                (XPOS - DES_RADIUS(NP)) .GE. XLENGTH .OR.&
@@ -148,7 +148,7 @@
                (ZPOS - DES_RADIUS(NP)) .GE. ZLENGTH)THEN
 
                PEA(NP,:) = .FALSE.
-              
+
                DES_POS_OLD(NP,:) = ZERO
                DES_POS_NEW(NP,:) = ZERO
                DES_VEL_OLD(NP,:) = ZERO
@@ -161,10 +161,10 @@
                RO_Sol(NP) = ZERO
                OMOI(NP) = ZERO
 
-               FC(NP,:) = ZERO
-               FN(NP,:) = ZERO
-               FT(NP,:) = ZERO
-               TOW(NP,:) = ZERO
+               FC(:,NP) = ZERO
+               FN(:,NP) = ZERO
+               FT(:,NP) = ZERO
+               TOW(:,NP) = ZERO
 
                PN(NP,:) = -1
                PN(NP,1) = 0
@@ -178,17 +178,17 @@
 ! the removal of NP but is forceably removed here to keep the dem
 ! inlet/outlet code self contained (does not rely on other code)
                NEIGHBOURS(NP,:) = -1
-               NEIGHBOURS(NP,1) = 0 
-               
-! Clear particle NP from any other neighboring particles lists               
+               NEIGHBOURS(NP,1) = 0
+
+! Clear particle NP from any other neighboring particles lists
                IF (NEIGHBOURS(NP,1) > 0) THEN
                   NLIMNP = NEIGHBOURS(NP,1)+1
-                
+
 ! Cycle through all neighbours of particle NP
                   DO I = 2, NLIMNP
                      NEIGHNP = NEIGHBOURS(NP,I)
 
-! If any neighbor particle has a lower index than NP then the contact 
+! If any neighbor particle has a lower index than NP then the contact
 ! force history will be stored with that particle and needs to be cleared
                      IF (NEIGHNP < NP) THEN
                         IF (PN(NEIGHNP,1) > 0) THEN
@@ -217,14 +217,14 @@
                         NEIGHBOURS(NEIGHNP,J:(MN-1)) = NEIGHBOURS(NEIGHNP,(J+1):MN)
                      ENDDO
                   ENDDO
-               ENDIF  
+               ENDIF
 
                PIP = PIP - 1
 ! Do not increment PC since PIP has been decremented.
 
             ENDIF   ! endif particle has fully exited the domain
 
-         ENDIF   ! if (pea(np,2) & .not.pea(np,3)) 
+         ENDIF   ! if (pea(np,2) & .not.pea(np,3))
                  ! elseif pea(np,3) & .not. pea(np,2)
                  ! elseif pea(np.2) & pea(np,3)
 
@@ -233,9 +233,9 @@
       IF (DES_LOC_DEBUG) WRITE(*,1001)
 
  1000 FORMAT(3X,'---------- START DES_CHECK_PARTICLE ---------->')
- 1001 FORMAT(3X,'<---------- END DES_CHECK_PARTICLE ----------') 
+ 1001 FORMAT(3X,'<---------- END DES_CHECK_PARTICLE ----------')
 
-! Can be used for debugging purposes      
+! Can be used for debugging purposes
  9000 FORMAT(F9.4,2X,'NOT NEW  ',I4,1X,6(F9.4,1X))
  9001 FORMAT(F9.4,2X,'RE-ENTER ',I4,1X,6(F9.4,1X))
  9002 FORMAT(F9.4,2X,'EXITED   ',I4)

@@ -1,67 +1,67 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvc
-!                                                                    
-!  module name: des_read_restart                                      
-!  purpose: writing des data for restart                               
-!                                                                      
-!  Author  : Pradeep G                                                  
-!  Purpose : Reads either single restart file or multiple restart files     
-!            (based on bdist_io) flag 
+!
+!  module name: des_read_restart
+!  purpose: writing des data for restart
+!
+!  Author  : Pradeep G
+!  Purpose : Reads either single restart file or multiple restart files
+!            (based on bdist_io) flag
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^c
       subroutine des_read_restart
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      use param1      
+      use param1
       use compar
       use discretelement
       use run
       use des_bc
       use des_rxns
       use des_thermo
-      use desmpi 
-      use machine 
-      use cdist 
+      use desmpi
+      use machine
+      use cdist
       use mpi_utility
 
       implicit none
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      integer lboundnum,lsize     
-      logical lassoc   
+      integer lboundnum,lsize
+      logical lassoc
       integer li,lj,lres_unit,lnext_rec,ltot_pip,ltor_dimn
       integer lproc,lparcnt,lglocnt,lscattercnts(0:numpes-1)
       integer,dimension(:),allocatable::ltemparr
       character(30) lfilename
-      integer lmax_pip 
+      integer lmax_pip
 !-----------------------------------------------
 
       CHARACTER*32 :: lMsg, cErr
       INTEGER :: lc1, lc2, lc3, lc4
       INTEGER :: iErr
 
-      ltor_dimn = 1 + (dimn-2)*2 
- 
+      ltor_dimn = 1 + (dimn-2)*2
+
 ! Create the restart file name and open. A restart can either be
 ! distributed, where each process writes a restart file. Or, a restart
-! can be serial, where a single restart file is written. 
-      lres_unit = 901 
-      if (bdist_IO) then 
+! can be serial, where a single restart file is written.
+      lres_unit = 901
+      if (bdist_IO) then
          write(lfilename,'(A,I4.4,A)') trim(run_name)//'_DES',mype,'.res'
          open (unit=lres_unit,file=lfilename,form='unformatted',status='old', &
                access='direct',recl=open_n1)
-      else 
-         if(mype.eq.pe_io) then 
+      else
+         if(mype.eq.pe_io) then
             write(lfilename,'(A)') trim(run_name)//'_DES.res'
             open (unit=lres_unit,file=lfilename,form='unformatted',status='old', &
                   access='direct',recl=open_n1)
-         end if 
-      end if 
+         end if
+      end if
 
 
 ! Distributed restart files:
 !---------------------------------------------------------------------//
-      if (bdist_IO) then 
+      if (bdist_IO) then
 
 ! Operational conditions:
 !--------------------------------------------------------------------->>
@@ -71,15 +71,15 @@
 ! tecplot_findex - Output file count for tecplot type files.
 ! dtsolid - Value of solids time step based on particle properties.
          read(lres_unit,rec=1) pip, ighost_cnt, vtp_findex, &
-            tecplot_findex, dtsolid 
+            tecplot_findex, dtsolid
 
          pea(1:pip,1) = .true.
-         if (pip .gt. max_pip) then 
+         if (pip .gt. max_pip) then
             write(*,*) "From des_read_restart:"
             write(*,*) "Error: The pip is grater than current max_pip"
-            write(*,*) "pip=" ,pip,"; max_pip =", max_pip 
+            write(*,*) "pip=" ,pip,"; max_pip =", max_pip
             call mfix_exit(mype)
-         end if 
+         end if
 
          lnext_rec = 6
 
@@ -89,7 +89,7 @@
 ! 3D simulations, all z-coordinates.
          do li = 1,dimn
             call in_bin_512(lres_unit,des_pos_new(:,li),pip,lnext_rec)
-         end do 
+         end do
 ! Global id of all particles for parallel processing.
          call in_bin_512i(lres_unit,iglobal_id,pip,lnext_rec)
          allocate(ltemparr(pip))
@@ -100,20 +100,20 @@
          do li = 2,4
             call in_bin_512i(lres_unit,ltemparr,pip,lnext_rec)
             do lj =1,pip
-               if(ltemparr(lj).eq.1) then 
+               if(ltemparr(lj).eq.1) then
                   pea(lj,li)= .true.
-               else 
+               else
                   pea(lj,li)= .false.
-               end if 
-            end do 
-         end do 
+               end if
+            end do
+         end do
          deallocate(ltemparr)
 
 ! Particle velocities: All x-components, all y-components, and for 3D
 ! simulations, all z-components
          do li = 1,dimn
             call in_bin_512(lres_unit,des_vel_new(:,li),pip,lnext_rec)
-         end do 
+         end do
 
 ! Rotational velocities: 1 degree of fredom for 2D, 3 DOF for 3D
          do li = 1,ltor_dimn
@@ -152,10 +152,10 @@
             call in_bin_512i(lres_unit,pn(:,li),pip,lnext_rec)
             call in_bin_512i(lres_unit,pv(:,li),pip,lnext_rec)
 ! Accumulated tangential displacement that occured during collision
-            do lj = 1,dimn  
+            do lj = 1,dimn
                call in_bin_512(lres_unit,pft(:,li,lj),pip,lnext_rec)
-            end do 
-         end do 
+            end do
+         end do
 
 ! Mass inlet/outlet parameters:
 !--------------------------------------------------------------------->>
@@ -173,7 +173,7 @@
 !   mi_window - grid cell length (> diameter)
 !   particle_plcmnt - indicates seeding approach (ordered vs. random)
                read (lres_unit,rec=lnext_rec) mi_factor(lboundnum),mi_window(lboundnum),particle_plcmnt(lboundnum)
-               lnext_rec = lnext_rec + 1 
+               lnext_rec = lnext_rec + 1
 ! For ordered inlets:
                if(particle_plcmnt(lboundnum) == 'ORDR')then
 !   mi_order pointer is 'associated', and if so, store:
@@ -203,7 +203,7 @@
                      allocate(j_of_mi(lboundnum)%value(lsize))
                      call in_bin_512i(lres_unit,j_of_mi(lboundnum)%value,lsize,lnext_rec)
                   endif
-               endif  
+               endif
             enddo
          endif
 
@@ -219,7 +219,7 @@
 ! 2) Output file count for *.vtp type files
 ! 3) Output file count for tecplot type files.
 ! 4) Value of solids time step based on particle properties.
-         if(mype.eq.pe_io) read(lres_unit,rec=1) lglocnt,vtp_findex,tecplot_findex,dtsolid 
+         if(mype.eq.pe_io) read(lres_unit,rec=1) lglocnt,vtp_findex,tecplot_findex,dtsolid
          call bcast(vtp_findex)
          call bcast(tecplot_findex)
          call bcast(dtsolid)
@@ -228,23 +228,23 @@
          allocate(irestartmap(lglocnt))
 
 ! for single file read the particle info first and then read the global
-! id and position and devlop the mapping between the reading order 
-! and local id and proc number 
+! id and position and devlop the mapping between the reading order
+! and local id and proc number
 
-         if(mype.eq.pe_io) then 
+         if(mype.eq.pe_io) then
             lnext_rec = 6
 ! Position data (one coordinate at a time).
             do li = 1,dimn
                call in_bin_512(lres_unit,dpar_pos(:,li),lglocnt,lnext_rec)
             end do
-         end if 
+         end if
 ! The call to des_restart_map allocates and sets the restartmap. It
 ! sets pip, and pea(pip,1) to true
-         call des_restart_map(lglocnt) 
+         call des_restart_map(lglocnt)
          deallocate(dpar_pos)
 
-! At this point, each process knows how many and which particles 
-! it contains. Since only the root process reads the restart file, 
+! At this point, each process knows how many and which particles
+! it contains. Since only the root process reads the restart file,
 ! parameters for scattering the data are set.
 
 ! Allocate variables for scatter.
@@ -257,16 +257,16 @@
 
 ! Construct an array for the Root process that states the number of
 ! (real) particles on each process.
-         lscattercnts(:) = 0 
-         lscattercnts(mype)=pip 
+         lscattercnts(:) = 0
+         lscattercnts(mype)=pip
          iscr_recvcnt = pip
          call global_sum(lscattercnts,iscattercnts)
 
 ! Calculate the displacements for each process in the global array.
-         idispls(0) = 0 
-         do lproc = 1,numpes-1 
-            idispls(lproc) = idispls(lproc-1) + iscattercnts(lproc-1)  
-         end do 
+         idispls(0) = 0
+         do lproc = 1,numpes-1
+            idispls(lproc) = idispls(lproc-1) + iscattercnts(lproc-1)
+         end do
 
 ! Read in particle properties:
 !--------------------------------------------------------------------->>
@@ -277,15 +277,15 @@
 ! 4 - Classifies particles as ghost particles
          do li = 2,4
             call des_readscatter(lres_unit,pea(:,li),lglocnt,lnext_rec)
-         end do 
+         end do
 ! Translational velocities (one coordinate at a time).
          do li = 1,dimn
             call des_readscatter(lres_unit,des_vel_new(:,li),lglocnt,lnext_rec)
-         end do 
+         end do
 ! Rotational velocity.
          do li = 1,ltor_dimn
             call des_readscatter(lres_unit,omega_new(:,li),lglocnt,lnext_rec)
-         end do 
+         end do
 ! Particle radi.
          call des_readscatter(lres_unit,des_radius,lglocnt,lnext_rec)
 ! Particle densities.
@@ -315,7 +315,7 @@
 ! Number of particles in contact with each particle.
          call des_readscatter(lres_unit,pn(:,1),lglocnt,lnext_rec)
 
-! *** Use global particle IDs for neighbors were stored. After the 
+! *** Use global particle IDs for neighbors were stored. After the
 ! *** restart is completely read, the IDs read from the restart are
 ! *** converted from global to local.
          do li = 2,maxneighbors
@@ -324,15 +324,15 @@
 ! Neighbor contact data.
             call des_readscatter(lres_unit,pn(:,li),lglocnt,lnext_rec)
             call des_readscatter(lres_unit,pv(:,li),lglocnt,lnext_rec)
-            do lj = 1,dimn  
+            do lj = 1,dimn
 ! Accumulated tangential displacement that occured during collision
                call des_readscatter(lres_unit,pft(:,li,lj),lglocnt,lnext_rec)
-            end do 
-         end do 
+            end do
+         end do
 
 ! Mass inlet/outlet parameters:
 !--------------------------------------------------------------------->>
-         if(des_mi) then 
+         if(des_mi) then
 !  *******************************************************************
 !  * Warning: DES_MI_TIME is an array allocated to des_bcmi.         *
 !  *          Could this be a problem?                               *
@@ -340,7 +340,7 @@
 ! Time to seed next particle.
             if(mype .eq. pe_io)then
                read (lres_unit,rec=lnext_rec) des_mi_time;lnext_rec=lnext_rec+1
-            end if 
+            end if
             call bcast(des_mi_time)
 
 ! For each mass inlet, store:
@@ -348,11 +348,11 @@
 !   mi_window - grid cell length (> diameter)
 !   particle_plcmnt - indicates seeding approach (ordered vs. random)
             do lboundnum =1, des_bcmi
-               if(mype.eq.pe_io) then 
+               if(mype.eq.pe_io) then
                   read (lres_unit,rec=lnext_rec) mi_factor(lboundnum), &
                      mi_window(lboundnum),particle_plcmnt(lboundnum)
-                  lnext_rec = lnext_rec + 1 
-               end if  
+                  lnext_rec = lnext_rec + 1
+               end if
                call bcast (mi_factor)
                call bcast (mi_window)
                call bcast (particle_plcmnt)
@@ -361,17 +361,17 @@
 !   mi_order pointer is 'associated', and if so, store:
 !     number of grid cells
 !     mi_order - order to populate grid cells with incoming particles
-                  if (mype.eq.pe_io) then 
+                  if (mype.eq.pe_io) then
                      read (lres_unit,rec=lnext_rec)lassoc
                      lnext_rec=lnext_rec+1
                      if(lassoc)then
                         read (lres_unit,rec=lnext_rec) lsize
                         lnext_rec=lnext_rec+1
                      end if
-                  end if 
+                  end if
                   call bcast(lassoc)
                   call bcast (lsize)
-                  if (lassoc) then 
+                  if (lassoc) then
                      allocate(mi_order(lboundnum)%value(lsize))
                      if(mype.eq.pe_io) call in_bin_512i(lres_unit, &
                         mi_order(lboundnum)%value,lsize,lnext_rec)
@@ -380,17 +380,17 @@
 !   i_of_mi is 'associated', and if so, store:
 !     number of cells in i-direction
 !     i indices of mass inlet grid
-                  if (mype.eq.pe_io) then 
+                  if (mype.eq.pe_io) then
                      read (lres_unit,rec=lnext_rec)lassoc
                      lnext_rec=lnext_rec+1
                      if(lassoc)then
                         read (lres_unit,rec=lnext_rec) lsize
                         lnext_rec=lnext_rec+1
                      end if
-                  end if 
+                  end if
                   call bcast(lassoc)
                   call bcast (lsize)
-                  if (lassoc) then 
+                  if (lassoc) then
                      allocate(i_of_mi(lboundnum)%value(lsize))
                      if(mype.eq.pe_io) call in_bin_512i(lres_unit, &
                         i_of_mi(lboundnum)%value,lsize,lnext_rec)
@@ -400,23 +400,23 @@
 !   j_of_mi is 'associated', and if so, store:
 !     number of cells in j-direction
 !     j indices of mass inlet grid
-                  if (mype.eq.pe_io) then 
+                  if (mype.eq.pe_io) then
                      read (lres_unit,rec=lnext_rec)lassoc
                      lnext_rec=lnext_rec+1
                      if(lassoc)then
                         read (lres_unit,rec=lnext_rec) lsize
                         lnext_rec=lnext_rec+1
                      end if
-                  end if 
+                  end if
                   call bcast(lassoc)
                   call bcast (lsize)
-                  if (lassoc) then 
+                  if (lassoc) then
                      allocate(j_of_mi(lboundnum)%value(lsize))
                      if(mype.eq.pe_io) call in_bin_512i(lres_unit, &
                         j_of_mi(lboundnum)%value,lsize,lnext_rec)
                      call bcast(j_of_mi(lboundnum)%value)
                   endif
-               endif  
+               endif
             enddo
          endif
 
@@ -465,12 +465,12 @@
                trim(lMsg), iErr
             CALL delete_par_from_res(lc1)
          endif
-      enddo 
+      enddo
 
 ! Copy values from "NEW" arrays to "OLD" arrays.
 ! Higher order integration (Adams-Bashforth) will default to Euler for
 ! the first time step since 'OLD' arrays values were not stored.
-      omega_old(:,:) = omega_new(:,:) 
+      omega_old(:,:) = omega_new(:,:)
       des_pos_old(:,:) = des_pos_new(:,:)
       des_vel_old(:,:) = des_vel_new(:,:)
       IF(DES_ENERGY_EQ) DES_T_s_OLD(:) = DES_T_s_NEW(:)
@@ -478,7 +478,7 @@
 ! Close the restart file.
       if(bdist_io .or.mype .eq. pe_io) close(lres_unit)
 
-      end subroutine des_read_restart 
+      end subroutine des_read_restart
 
 
 
@@ -515,12 +515,12 @@
 
 ! Loop indices used for clearing forces associated with exiting particles
       INTEGER NLIMNP, NLIM, NEIGHNP, NLIM_NEIGHNP
-      
+
 ! Logical for local debug warnings
       LOGICAL DES_LOC_DEBUG
 
       PEA(NP,:) = .FALSE.
-              
+
       DES_POS_OLD(NP,:) = ZERO
       DES_POS_NEW(NP,:) = ZERO
       DES_VEL_OLD(NP,:) = ZERO
@@ -533,10 +533,10 @@
       RO_Sol(NP) = ZERO
       OMOI(NP) = ZERO
 
-      FC(NP,:) = ZERO
-      FN(NP,:) = ZERO
-      FT(NP,:) = ZERO
-      TOW(NP,:) = ZERO
+      FC(:,NP) = ZERO
+      FN(:,NP) = ZERO
+      FT(:,NP) = ZERO
+      TOW(:,NP) = ZERO
 
       PN(NP,:) = -1
       PN(NP,1) = 0
@@ -550,17 +550,17 @@
 ! the removal of NP but is forceably removed here to keep the dem
 ! inlet/outlet code self contained (does not rely on other code)
       NEIGHBOURS(NP,:) = -1
-      NEIGHBOURS(NP,1) = 0 
-               
-! Clear particle NP from any other neighboring particles lists               
+      NEIGHBOURS(NP,1) = 0
+
+! Clear particle NP from any other neighboring particles lists
       IF (NEIGHBOURS(NP,1) > 0) THEN
          NLIMNP = NEIGHBOURS(NP,1)+1
-                
+
 ! Cycle through all neighbours of particle NP
          DO I = 2, NLIMNP
             NEIGHNP = NEIGHBOURS(NP,I)
 
-! If any neighbor particle has a lower index than NP then the contact 
+! If any neighbor particle has a lower index than NP then the contact
 ! force history will be stored with that particle and needs to be cleared
             IF (NEIGHNP < NP) THEN
                IF (PN(NEIGHNP,1) > 0) THEN
@@ -589,7 +589,7 @@
                NEIGHBOURS(NEIGHNP,J:(MN-1)) = NEIGHBOURS(NEIGHNP,(J+1):MN)
             ENDDO
          ENDDO
-      ENDIF  
+      ENDIF
 
       PIP = PIP - 1
 ! Do not increment PC since PIP has been decremented.

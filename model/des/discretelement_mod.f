@@ -390,15 +390,15 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: ROT_ACC_OLD  !(PARTICLES,DIMN)
 
 ! Total, normal and tangetial forces
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC    !(PARTICLES,DIMN)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FN    !(PARTICLES,DIMN)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FT    !(PARTICLES,DIMN)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC    !(DIMN,PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FN    !(DIMN,PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FT    !(DIMN,PARTICLES)
 
 ! There is no need to maintain FN and FT arrays. This can be accomplished by FTAN and FNORM.
 
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: FTAN, FNORM ! (DIMN)
 ! Torque
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: TOW   !(PARTICLES,DIMN)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: TOW   !(DIMN,PARTICLES)
 
 ! Save the accumulated tangential displacement that occurs during
 ! collision (particle-particle or particle-wall)

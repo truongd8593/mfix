@@ -7,7 +7,7 @@
 !           cffctow which might be different from the stand alone      C
 !           routines. Eventually all the DEM routines will be          C
 !           consolidated.                                              C
-!                                                                      C 
+!                                                                      C
 ! CALC_FORCE_WITH_WALL_CUTFACE: Particle-wall driver routine when      C
 !    quadrics are used                                                 C
 !                                                                      C
@@ -47,7 +47,7 @@ module softspring_funcs_cutcell
       DOUBLE PRECISION NORMAL(DIMN), TANGENT(DIMN), DIST(DIMN), DISTMOD, R_LM, &
       WALL_COOR(DIMN)
 
-      LOGICAL DES_LOC_DEBUG, consider_bc, consider_bc_temp, particle_slide 
+      LOGICAL DES_LOC_DEBUG, consider_bc, consider_bc_temp, particle_slide
 
       DOUBLE PRECISION DIR_X, DIR_Y, DIR_Z, DIR_X_ARR(DIMN), XREF, YREF, ZREF
 
@@ -106,21 +106,21 @@ module softspring_funcs_cutcell
 
             DO COUNT = 1, COUNT_BC
                IJK_WALL = DES_CELLWISE_BCDATA(IJK)%BDRY_LIST(COUNT)%IJK_SCAL
-               WALL_TYPE = DES_CELLWISE_BCDATA(IJK)%BDRY_LIST(COUNT)%DES_BC_TYPE               
+               WALL_TYPE = DES_CELLWISE_BCDATA(IJK)%BDRY_LIST(COUNT)%DES_BC_TYPE
                SELECT CASE (TRIM(WALL_TYPE))
 
                CASE('NORMAL_WALL')
                   NORMAL(1:DIMN) = DES_CELLWISE_BCDATA(IJK)%BDRY_LIST(COUNT)%NORMAL(1:DIMN)
                   !perpendicular distance from center of Lth particle
                   WALL_COOR(1) = (NORMAL(1)+ONE)*XLENGTH*HALF
-                  !For west wall, normal(1) = -1, therefore, WALL_COOR(1) = ZERO and other coordinates will be zero 
+                  !For west wall, normal(1) = -1, therefore, WALL_COOR(1) = ZERO and other coordinates will be zero
                   !For east wall, normal(1) = 1, thetefore, wall_coor(1) = XLENGTH
 
 
                   WALL_COOR(2) = (NORMAL(2)+ONE)*YLENGTH*HALF
                   IF(DIMN.EQ.3) WALL_COOR(3) = (NORMAL(3)+ONE)*ZLENGTH*HALF
 
-                  !perpendicular distance from center of LLth partcle to WALL 
+                  !perpendicular distance from center of LLth partcle to WALL
 
                   DO IDIM  = 1, DIMN
                      DIST(IDIM) = WALL_COOR(IDIM) - DES_POS_NEW(LL,IDIM)
@@ -134,7 +134,7 @@ module softspring_funcs_cutcell
 
 !                  WRITE(*,*) 'WALL_COOR2 = ', WALL_COOR(2), R_LM, DISTMOD
                   !Note that R_LM does not include another radius as was the practice in
-                  !the older version of the code. This is because now the wall coordinate has 
+                  !the older version of the code. This is because now the wall coordinate has
                   !not been reduced by the particle radius
 
                   IW = ABS(NORMAL(1))*1 + ABS(NORMAL(2))*2
@@ -153,7 +153,7 @@ module softspring_funcs_cutcell
                   CONSIDER_BC = .TRUE.
                   !first check if this wall shud be considered or not
                   !this will only happen if cut_face_line was also
-                  !encountered as a bc earlier. This will happen only for 
+                  !encountered as a bc earlier. This will happen only for
                   !particles belonging to cut-cells.
                   DO COUNT_REST  = 1, RESTRICT_COUNT
                      IF(RESTRICT_ARR(COUNT_REST).EQ.IJK_WALL) THEN
@@ -185,9 +185,9 @@ module softspring_funcs_cutcell
                      DIR_X_ARR(2) = DIR_Y
                      IF(DIMN.eq.3) DIR_X_ARR(3) = DIR_Z
 
-                     XREF = XG_E(I_OF(IJK)) - 0.5d0*DX(I_OF(IJK)) + DIR_X*0.5d0*DX(I_OF(IJK)) 
-                     YREF = YG_N(J_OF(IJK)) - 0.5d0*DY(J_OF(IJK)) + DIR_Y*0.5d0*DY(J_OF(IJK)) 
-                     ZREF = ZG_T(K_OF(IJK)) - 0.5d0*DZ(K_OF(IJK)) + DIR_Z*0.5d0*DZ(K_OF(IJK)) 
+                     XREF = XG_E(I_OF(IJK)) - 0.5d0*DX(I_OF(IJK)) + DIR_X*0.5d0*DX(I_OF(IJK))
+                     YREF = YG_N(J_OF(IJK)) - 0.5d0*DY(J_OF(IJK)) + DIR_Y*0.5d0*DY(J_OF(IJK))
+                     ZREF = ZG_T(K_OF(IJK)) - 0.5d0*DZ(K_OF(IJK)) + DIR_Z*0.5d0*DZ(K_OF(IJK))
                      DIST(1) = (XREF - DES_POS_NEW(LL,1))*DIR_X
                      DIST(2) = (YREF - DES_POS_NEW(LL,2))*DIR_Y
                      IF(DIMN.eq.3) DIST(3) = (ZREF - DES_POS_NEW(LL,3))*DIR_Z
@@ -222,17 +222,17 @@ module softspring_funcs_cutcell
                      WRITE(*, '(A10, 3(2x, g17.8))')'XE, YN, ZT = ', XG_E(I_OF(IJK)), YG_N(J_OF(IJK)), ZG_T(K_OF(IJK))
 
                      WRITE(*,'(A10, 3(2x, g17.8))') 'DIR_X = ', dir_x, dir_y, dir_z
-                     WRITE(*, '(A10, 3(2x, g17.8))') 'XREF = ', Xref, yref, zref 
-                     WRITE(*, '(A10, 3(2x, g17.8))') 'XPOST = ', (DES_POS_NEW(LL,IDIM), IDIM = 1, DIMN) 
+                     WRITE(*, '(A10, 3(2x, g17.8))') 'XREF = ', Xref, yref, zref
+                     WRITE(*, '(A10, 3(2x, g17.8))') 'XPOST = ', (DES_POS_NEW(LL,IDIM), IDIM = 1, DIMN)
 
-                     WRITE(*, '(A10, 3(2x, g17.8))') 'DIST = ', (DIST(IDIM), IDIM = 1, DIMN) 
+                     WRITE(*, '(A10, 3(2x, g17.8))') 'DIST = ', (DIST(IDIM), IDIM = 1, DIMN)
 
                    !  read(*,*)
                      ENDIF
 
                      CONSIDER_BC = CONSIDER_BC_TEMP
                   ENDIF
-                  IF(.NOT.CONSIDER_BC) CYCLE !THE COUNT = 1, COUNT_BC LOOP 
+                  IF(.NOT.CONSIDER_BC) CYCLE !THE COUNT = 1, COUNT_BC LOOP
 
 
                   TEMPX = DES_POS_NEW(LL,1)
@@ -244,7 +244,7 @@ module softspring_funcs_cutcell
                   CALL GET_DEL_H_DES(IJK_WALL,'SCALAR',TEMPX, TEMPY, TEMPZ, &
                        &  DISTMOD, NORM1, NORM2, NORM3, .true.)
 
-                  !Remember the normal from get_del_h is from wall to particle. But we need 
+                  !Remember the normal from get_del_h is from wall to particle. But we need
                   !the normal pointing from particle toward wall.
                   NORMAL(1) = -norm1
                   NORMAL(2) = -norm2
@@ -256,7 +256,7 @@ module softspring_funcs_cutcell
                           & J_OF(IJK), K_OF(IJK), CUT_CELL_AT(IJK), IJK_WALL, I_OF(IJK_WALL), J_OF(IJK_WALL), K_OF(IJK_WALL),  &
                           & TEMPX, TEMPY, TEMPZ
                      WRITE(*,*) 'NORMAL OF CUTCELL = ', NORMAL(1:3)
-                     IF(DMP_LOG) WRITE(UNIT_LOG,1010) mype, IJK, I_OF(IJK), & 
+                     IF(DMP_LOG) WRITE(UNIT_LOG,1010) mype, IJK, I_OF(IJK), &
                           & J_OF(IJK), K_OF(IJK), CUT_CELL_AT(IJK), IJK_WALL, I_OF(IJK_WALL), J_OF(IJK_WALL), K_OF(IJK_WALL),  &
                           & TEMPX, TEMPY, TEMPZ
 
@@ -286,7 +286,7 @@ module softspring_funcs_cutcell
                   TEMPY = DES_POS_NEW(LL,2)
                   TEMPZ = 0.d0
                   IF(DIMN.EQ.3) TEMPZ = DES_POS_NEW(LL,3)
-                  !in 3-d, minimum distance from point x0 to line is given by 
+                  !in 3-d, minimum distance from point x0 to line is given by
                   !d = mag({x2-x1} CROSS {x1-x0})/mag({x2-x1})
                   !reference
                   !http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
@@ -297,7 +297,7 @@ module softspring_funcs_cutcell
                   !r = cnot+t vec
                   !therefore, cnot = x1, and vec = x2-x1
                   !therefore, the distance is d = mag{vec CROSS {cnot-X0}}/mag{vec}
-                  !and also note that we already normalized vec to a unit vector 
+                  !and also note that we already normalized vec to a unit vector
                   X1(:) = DES_CELLWISE_BCDATA(IJK)%BDRY_LIST(COUNT)%CNOT(1:3)
                   X2MINX1(:) = DES_CELLWISE_BCDATA(IJK)%BDRY_LIST(COUNT)%VEC(1:3)
                   X1MINX0(1) = X1(1) - TEMPX
@@ -309,7 +309,7 @@ module softspring_funcs_cutcell
 
                   DISTMOD = SQRT(DOT_PRODUCT(TEMP_CROSSP(1:3), TEMP_CROSSP(1:3)))
 
-                  !Remember the normal is from line to particle. But we need 
+                  !Remember the normal is from line to particle. But we need
                   !the normal pointing from particle toward wall.
                   NORMAL(1:DIMN) = - DES_CELLWISE_BCDATA(IJK)%BDRY_LIST(COUNT)%NORMAL(1:DIMN)
 
@@ -339,7 +339,7 @@ module softspring_funcs_cutcell
 !                  WRITE(*,*) 'DETECTED PARTICLE-WALL OVERLAP, IW = ', IW
 
                   IF(IW.eq.5) THen
-                     !this can only happen if cutcell method is on. So use cutcell structures without any concern for seg errors 
+                     !this can only happen if cutcell method is on. So use cutcell structures without any concern for seg errors
                      IF(CUT_CELL_AT(IJK)) THEN
                         RESTRICT_COUNT = RESTRICT_COUNT +1
                         RESTRICT_ARR(RESTRICT_COUNT )  = IJK_WALL
@@ -383,8 +383,8 @@ module softspring_funcs_cutcell
                   FNS2(:) = -ETAN_DES_W * V_REL_TRANS_NORM * NORMAL(:)
                   FNORM(:) = FNS1(:) + FNS2(:)
 
-! Calculate the tangential displacement which is integration of tangential 
-! relative velocity with respect to contact time. Correction in the tangential 
+! Calculate the tangential displacement which is integration of tangential
+! relative velocity with respect to contact time. Correction in the tangential
 ! direction is imposed
                   FTS1(:) = -KT_DES_W * OVERLAP_T*TANGENT(:)
                   FTS2(:) = -ETAT_DES_W * V_REL_TRANS_TANG * TANGENT(:)
@@ -648,8 +648,8 @@ module softspring_funcs_cutcell
                   FNS2(:) = -ETAN_DES_W * V_REL_TRANS_NORM * NORMAL(:)
                   FNORM(:) = FNS1(:) + FNS2(:)
 
-! Calculate the tangential displacement which is integration of tangential 
-! relative velocity with respect to contact time. Correction in the tangential 
+! Calculate the tangential displacement which is integration of tangential
+! relative velocity with respect to contact time. Correction in the tangential
 ! direction is imposed
                   FTS1(:) = -KT_DES_W * OVERLAP_T*TANGENT(:)
                   FTS2(:) = -ETAT_DES_W * V_REL_TRANS_TANG * TANGENT(:)
@@ -674,7 +674,7 @@ module softspring_funcs_cutcell
             !!if (CONTACT_FACET_COUNT.gt.1) read(*,*)
 
             DO COUNT2 = 1, CONTACT_FACET_COUNT
-               CONTACT_ALREADY_FACET(LIST_OF_CONT_FACETS(COUNT2)) = .FALSE. 
+               CONTACT_ALREADY_FACET(LIST_OF_CONT_FACETS(COUNT2)) = .FALSE.
             ENDDO
          END IF
 
@@ -861,7 +861,7 @@ module softspring_funcs_cutcell
 ! distance from the contact point to the particle centers
       DOUBLE PRECISION :: DIST_CL, DIST_CI
 
-      FC(L,:) = FC(L,:) + FNORM(:) + FTAN(:)
+      FC(:,L) = FC(:,L) + FNORM(:) + FTAN(:)
 
 
 ! calculate the distance from the particle center to the wall
@@ -1041,9 +1041,7 @@ module softspring_funcs_cutcell
 
 !-----------------------------------------------
 
-      FC(L,:) = FC(L,:) + FNORM(:) + FTAN(:)
-!      FC(II,:) = FC(II,:) - FNORM(:) - FTAN(:)
-
+      FC(:,L) = FC(:,L) + FNORM(:) + FTAN(:)
 
 ! calculate the distance from the particle center to the contact point,
 ! which is taken as the radical line

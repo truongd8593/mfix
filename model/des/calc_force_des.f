@@ -390,7 +390,7 @@
 ! Calculate the normal contact force
                      FNS1(:) = -KN_DES_W * OVERLAP_N*NORMAL(:)
                      FNS2(:) = -ETAN_DES_W * V_REL_TRANS_NORM*NORMAL(:)
-                     FN(LL,:) = FNS1(:) + FNS2(:)
+                     FN(:,LL) = FNS1(:) + FNS2(:)
 
 ! Calculate the tangential displacement which is integration of
 ! tangential relative velocity with respect to contact time.
@@ -482,12 +482,12 @@
                      WRITE(*,*) '     TANGENT= ', TANGENT
                      WRITE(*,*) '     HIST = ', PFT(LL,NI,1:2)
                      WRITE(*,*) '     PARTICLE_SLIDE ? ', PARTICLE_SLIDE
-                     WRITE(*,*) '     FT and FN= ', FT( LL,:), FN(LL,:)
+                     WRITE(*,*) '     FT and FN= ', FT( LL,:), FN(:,LL)
                      WRITE(*,*) '     KT_W*OT*TAN = ', &
                         KT_DES_W*((OVERLAP_T)) *TANGENT(:)
                      WRITE(*,*) '     OVERLAP_T = ', OVERLAP_T, TANGENT
                      FTMD = SQRT(DES_DOTPRDCT(FT_TMP,FT_TMP))
-                     FNMD = SQRT(DES_DOTPRDCT(FN(LL,1:DIMN),FN(LL,1:DIMN)))
+                     FNMD = SQRT(DES_DOTPRDCT(FN(:,LL),FN(:,LL)))
                      WRITE(*,*) '     FTMD, mu FNMD = ', FTMD, MEW_W*FNMD
                      ENDIF
 
@@ -666,7 +666,7 @@
 ! Calculate the normal contact force
                   FNS1(:) = -KN_DES * OVERLAP_N * NORMAL(:)
                   FNS2(:) = -ETAN_DES * V_REL_TRANS_NORM*NORMAL(:)
-                  FN(LL,:) = FNS1(:) + FNS2(:)
+                  FN(:,LL) = FNS1(:) + FNS2(:)
 
 ! Contact T.Li for details
 ! Calculate the tangential displacement which is integration of
@@ -749,9 +749,9 @@
                      PRINT*, '     rad ratio = ', DES_RADIUS(LL)/DES_RADIUS(I)
                      PRINT*, '     FNS1 and FNS2 = ', FNS1(:), FNS2(:)
                      PRINT*, '     PFT = ', PFT(LL,NI,:)
-                     PRINT*, '     FORCEST = ', FT(LL,:)
-                     PRINT*, '     FORCESN = ', FN(LL,:)
-                     PRINT*, '     FORCEST = ', FT(LL,:)
+                     PRINT*, '     FORCEST = ', FT(:,LL)
+                     PRINT*, '     FORCESN = ', FN(:,LL)
+                     PRINT*, '     FORCEST = ', FT(:,LL)
                   ENDIF
 
                   IF(DEBUG_DES.AND.LL.eq.FOCUS_PARTICLE)THEN
@@ -760,12 +760,12 @@
                         OPEN(UNIT=1,FILE='debug_file',STATUS='OLD',POSITION='APPEND')
                         WRITE(1,'(A,I5)')'CALC FORCE -- NEIGHBOR',II
                         WRITE(1,'(2(1x,A,E12.5))')&
-                        'FNx=',FN(LL,1), 'FNy=',FN(LL,2)
+                        'FNx=',FN(1,LL), 'FNy=',FN(2,LL)
                      ELSE
                         OPEN(UNIT=1,FILE='debug_file',STATUS='NEW')
                         WRITE(1,'(A,I5)')'CALC FORCE -- NEIGHBOR',II
                         WRITE(1,'(2(1x,A,E12.5))')&
-                        'FNx=',FN(LL,1),'FNy=',FN(LL,2)
+                        'FNx=',FN(1,LL),'FNy=',FN(2,LL)
                      ENDIF
                      CLOSE (1)
                      PRINT*, 'PN', PN(LL,:)
