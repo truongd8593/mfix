@@ -245,8 +245,8 @@
 
       DO
          LC = LC + 1
-! First check the model directory for the species.inc file.
-         IF(LC == 1) THEN
+! Check the local run directory.
+         IF(LC == 2) THEN
             FILENAME = trim(MFIX_PATH)//'/'//trim(lFile)
             OPEN(UNIT=FUNIT,FILE=trim(FILENAME),STATUS='OLD',IOSTAT=IOS)
 ! Cycle on opening error
@@ -255,8 +255,9 @@
                WRITE(*,1000) '/model/'//trim(lFile)         ! (screen)
                WRITE(UNIT_LOG,1000) '/model/'//trim(lFile)  ! (log file)
             ENDIF
-! Check the local run directory.
-	        ELSEIF(LC == 2) THEN
+
+!Check the model directory for the species.inc file.
+	        ELSEIF(LC == 1) THEN
             FILENAME = trim(lFile)
             OPEN(UNIT=FUNIT,FILE=trim(FILENAME),STATUS='OLD',IOSTAT=IOS)
 ! Cycle on opening error
