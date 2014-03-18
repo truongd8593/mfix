@@ -3,10 +3,12 @@
 ! cohesion
 ! Author: S. Pannala
 
-! For more details refer to PhD thesis (2004) of Michael Weber
+! For more details see: Weber, M., "Simulation of Cohesive Particle
+! Flows in Granular and Gas-Solid Systems", Dissertation, Univeristy
+! of Colorado, 2004. 
 
 !*********************************************************************
-! Run Control                             
+! Run Control
 !*********************************************************************
   RUN_NAME = 'des_fb_vdw'
   DESCRIPTION = 'fluid bed with high cohesion'
@@ -19,17 +21,18 @@
   DT = 2.5E-4         ! time step
   DT_MAX = 4.0E-4     ! maximum time step
  
-! Do not solve energy eq
+! Solve energy eq? [.TRUE.]
   ENERGY_EQ = .FALSE.
 
-! Do not solve species eq
+! Solve species eq? [.TRUE.]
 !                 Gas     Sld 1
-  SPECIES_EQ = .FALSE.    .FALSE. 		
+  SPECIES_EQ = .FALSE.    .FALSE.
  
-! Solve momentum equations (gas not solids)
+! Solve momentum equations? [.TRUE.]
+! (solve gas not solids)
 !                    Gas      Sld 1
-  MOMENTUM_X_EQ  =  .TRUE.   .FALSE.  !.FALSE.
-  MOMENTUM_Y_EQ  =  .TRUE.   .FALSE.  !.FALSE.
+  MOMENTUM_X_EQ  =  .TRUE.   .FALSE.
+  MOMENTUM_Y_EQ  =  .TRUE.   .FALSE.
   MOMENTUM_Z_EQ  = .FALSE.   .FALSE.
 
 
@@ -48,7 +51,7 @@
 !  NORM_g = 1.0 
 
 ! The sweep direction for linear equation solver. 
-!  LEQ_SWEEP(1) = 9*'ISIS' 
+  LEQ_SWEEP = 9*'ISIS' 
 
 
 !*********************************************************************
@@ -65,7 +68,7 @@
 !*********************************************************************
 ! Gas Phase
 !*********************************************************************
-  MU_g0 = 1.75E-4     ! constant viscosity (poise or Pa.s)
+  MU_g0 = 1.75E-4      ! constant viscosity (poise)
   RO_g0 = 1.205E-3     ! constant gas density
 
 
@@ -73,7 +76,8 @@
 ! Solid Phase
 !*********************************************************************
   MMAX  =  1         ! number of 'solids' phases
-  SOLIDS_MODEL(1) = 'DEM'     ! for the indicated solids set its model
+  SOLIDS_MODEL(1) = 'DEM'     ! set the model type for the indicated
+                              ! solids
   D_p0  =  0.1       ! particle diameter 
   RO_s0 =  2.65      ! particle density
 
@@ -94,13 +98,11 @@
   IC_Y_s(1)      =  0.0
   IC_Y_n(1)      =  10.0
 
-  IC_EP_g(1)     =  1.0    ! set to 1 to force some unnecessary data
-                           ! checks.
-                           ! ep_g will become based on the supplied
-                           ! particle_input.dat 
-  IC_U_g(1)      =  0.0
-  IC_V_g(1)      =  80.0
-
+  IC_EP_g(1)     =  1.0   ! set to 1 to skip some unnecessary data
+                           ! checks. ep_g will become based on the
+                           ! supplied particle_input.dat 
+  IC_U_g(1)      =  0.0    ! x-dir gas velocity
+  IC_V_g(1)      =  80.0   ! y-dir gas velocity
 
 ! freeboard --------------------
   IC_X_w(2)      = 0.0
@@ -111,7 +113,6 @@
   IC_EP_g(2)     = 1.0
   IC_U_g(2)      = 0.0
   IC_V_g(2)      = 100.0
-
 
 
 !*********************************************************************
@@ -146,15 +147,17 @@
 ! Discrete Element Model (DEM) 
 !*********************************************************************
   DISCRETE_ELEMENT  = .TRUE.
-  DES_CONTINUUM_COUPLED = .TRUE.
-  PARTICLES = 4000
-  PARTICLES_FACTOR = 1.2   ! expand size of particle arrays by an 
-                           ! arbitrary factor [1.2]
+  DES_CONTINUUM_COUPLED = .TRUE.     ! couple gas and solids flow 
+                                     ! together [.FALSE.]
+  PARTICLES = 4000     ! total number of initial particles
+  PARTICLES_FACTOR = 1.2     ! expand size of particle arrays by an 
+                             ! arbitrary factor [1.2]
   NFACTOR = 10     ! length of dem settling period in no. of loops [10]
 
 ! Neighbor search parameters --------------------
   DES_NEIGHBOR_SEARCH = 1     ! Particle neighbor search method [1]
-  NEIGHBOR_SEARCH_N = 4     ! solids time steps between neighbor search [25]
+  NEIGHBOR_SEARCH_N = 4     ! number of solids time steps between 
+                            ! neighbor search [25]
   MN = 8     ! maximum number of neighbors allowed per particle [10]
 
 ! Particle properties --------------------
@@ -187,14 +190,14 @@
   ASPERITIES = 0.0     ! radius of surface asperities (cm) [0]
 
 ! these keywords refer to M. Weber square well cohesion model that has
-! since been removed from MFIX. Would require an older version to
-! invoke. Left for legacy at this time.
-!  SQUARE_WELL=.FALSE.
+! since been removed from MFIX. To invoke these would require an older
+! version of MFIX. Left here for legacy at this time.
+!  SQUARE_WELL = .FALSE.
 !  MASTER_WELL_DEPTH = 1e-3
 !  MASTER_WALL_WELL_DEPTH = 2e-3
 !  RADIUS_RATIO = 1.01
 !  WALL_RADIUS_RATIO = 1.01
-!  COHESION_DEBUG=0
+
 
 ! DES Output Control --------------------
   PRINT_DES_DATA = .F.    ! write DEM data as *.vtp files
