@@ -924,7 +924,7 @@
          h_phip = 0.868d0*EXP((-0.38*EPs)) - &
             0.176d0*EXP((-119.2*EPs))
       ELSEIF (EPs .LT. 0.455d0) THEN
-         h_phip = -ONE/(4.59d0*(10**5))*EXP((19.75*EPs)) + &
+         h_phip = -4.59d-5*EXP((19.75*EPs)) + &
             0.852d0*EXP((-0.268*EPs))
       ELSEIF (EPs .LE. 0.59d0) THEN
          h_phip = (EPs - 0.59d0) * (-1501.d0*(EPs**3) + &
