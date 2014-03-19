@@ -81,7 +81,6 @@
 ! Set grid spacing variables.
       CALL SET_GEOMETRY 
 
-
 ! Check the minimum solids phase requirements.
       CALL CHECK_SOLIDS_MODEL_PREREQS
 
@@ -96,7 +95,6 @@
       CALL CHECK_BOUNDARY_CONDITIONS
  
 
-! Stiff Chemistry Solver
 
 
 
@@ -130,13 +128,25 @@
 ! Convert (mass, volume) flows to velocities.
       CALL SET_BC_FLOW
 
+! Set the flags for identifying computational cells
+      CALL SET_FLAGS 
 
+! JFD: cartesian grid implementation
+      CALL CHECK_DATA_CARTESIAN
+      IF(CARTESIAN_GRID) THEN
+         CALL CUT_CELL_PREPROCESSING
+      ELSE
+         CALL ALLOCATE_DUMMY_CUT_CELL_ARRAYS
+      ENDIF
+
+
+! Initialize all field variables as undefined
+      CALL INIT_FVARS 
 
 ! This is all that happens in SET_L_SCALE so it needs moved, maybe
 ! this should go in int_fluid_var.?
 !     CALL SET_L_SCALE 
       L_SCALE(:) = L_SCALE0 
-
 
 
 !======================================================================

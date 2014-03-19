@@ -144,20 +144,6 @@
 ! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
       CALL GET_DATA 
 
-! Initialize all field variables as undefined
-      CALL INIT_FVARS 
-
-! Set the flags for identifying computational cells
-      CALL SET_FLAGS 
-
-! JFD: cartesian grid implementation
-      CALL CHECK_DATA_CARTESIAN
-      IF(CARTESIAN_GRID) THEN
-         CALL CUT_CELL_PREPROCESSING
-      ELSE
-         CALL ALLOCATE_DUMMY_CUT_CELL_ARRAYS
-      ENDIF
-
 ! Write the initial part of the standard output file
       CALL WRITE_OUT0
       IF(.NOT.CARTESIAN_GRID)  CALL WRITE_FLAGS
