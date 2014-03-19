@@ -2770,6 +2770,11 @@
           WRITE(IJK_FILE_UNIT,210) ('======',I=ISTART3,IEND3)
           WRITE(IJK_FILE_UNIT,220) (I,I=ISTART3,IEND3) 
 
+       ELSE
+          DO IJK=IJKSTART3,IJKEND3
+             WRITE(IJK_FILE_UNIT,*) IJK,I_OF(IJK),J_OF(IJK),K_OF(IJK)
+          ENDDO
+
        ENDIF
 
 
