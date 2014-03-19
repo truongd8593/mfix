@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
 !  Subroutine: CFSLIDE(L, TANGNT_VREL)
-!  Purpose:  Check for Coulombs friction law - calculate sliding 
+!  Purpose:  Check for Coulombs friction law - calculate sliding
 !            friction
 !
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04
@@ -19,12 +19,12 @@
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
-!-----------------------------------------------      
-! particle index no.      
+!-----------------------------------------------
+! particle index no.
       INTEGER, INTENT(IN) :: L
-! tangent to the plane of contact      
-      DOUBLE PRECISION, INTENT(IN) :: TANGNT(DIMN)      
-! logic set to T when a sliding contact occurs      
+! tangent to the plane of contact
+      DOUBLE PRECISION, INTENT(IN) :: TANGNT(DIMN)
+! logic set to T when a sliding contact occurs
       LOGICAL, INTENT(INOUT) :: PARTICLE_SLIDE
 !-----------------------------------------------
 ! Local variables
@@ -33,29 +33,29 @@
       DOUBLE PRECISION TMP_FT(DIMN), TMP_FN(DIMN)
 ! magnitude of tangential and normal forces
       DOUBLE PRECISION FTMD, FNMD
-!-----------------------------------------------      
+!-----------------------------------------------
 ! Functions
-!-----------------------------------------------     
+!-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-!-----------------------------------------------     
+!-----------------------------------------------
 
-      TMP_FN(:) = FN(L, :)
-      TMP_FT(:) = FT(L, :)
+      TMP_FN(:) = FN(:,L)
+      TMP_FT(:) = FT(:,L)
 
       FTMD = SQRT(DES_DOTPRDCT(TMP_FT,TMP_FT))
       FNMD = SQRT(DES_DOTPRDCT(TMP_FN,TMP_FN))
 
       IF (FTMD.GT.(MEW*FNMD)) THEN
-! tangential force based on sliding friction              
+! tangential force based on sliding friction
          PARTICLE_SLIDE = .TRUE.
          IF(DES_DOTPRDCT(TANGNT,TANGNT).EQ.0) THEN
-            FT(L,:) =  MEW * FNMD * TMP_FT(:)/FTMD
+            FT(:,L) =  MEW * FNMD * TMP_FT(:)/FTMD
          ELSE
-            FT(L,:) = -MEW * FNMD * TANGNT(:)
+            FT(:,L) = -MEW * FNMD * TANGNT(:)
          ENDIF
       ELSE
-! no sliding friction so tangential force is not changed              
-         FT(L, :) = TMP_FT(:)
+! no sliding friction so tangential force is not changed
+         FT(:,L) = TMP_FT(:)
       ENDIF
 
       IF(DEBUG_DES .AND. PARTICLE_SLIDE) THEN

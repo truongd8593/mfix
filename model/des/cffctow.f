@@ -46,7 +46,7 @@
       FC(:,L) = FC(:,L) + FN(:,L) + FT(:,L)
 
 ! temporary holder of tangential force
-      FT_TMP(:) = FT(L,:)
+      FT_TMP(:) = FT(:,L)
 
 ! calculate the distance from the particle center to the contact point,
 ! which is taken as the radical line
@@ -60,7 +60,7 @@
          TOW(L,:)  = TOW(L,:)  + DIST_CL*CROSSP(:)
       ELSE
          CROSSP(1) = NORM(1)*FT_TMP(2) - NORM(2)*FT_TMP(1)
-         TOW(L,1)  = TOW(L,1)  + DIST_CL*CROSSP(1)
+         TOW(1,L)  = TOW(1,L)  + DIST_CL*CROSSP(1)
       ENDIF
 
 

@@ -437,7 +437,7 @@
 ! Calculate the tangential contact force
                      FTS1(:) = -KT_DES_W * PFT_TMP(:)
                      FTS2(:) = -ETAT_DES_W * V_REL_TRANS_TANG * TANGENT(:)
-                     FT(LL,:) = FTS1(:) + FTS2(:)
+                     FT(:,LL) = FTS1(:) + FTS2(:)
 
 ! Temporary storage of tangential contact force for reporting
                      FT_TMP(:) = FT(:,LL)
