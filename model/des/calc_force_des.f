@@ -440,7 +440,7 @@
                      FT(LL,:) = FTS1(:) + FTS2(:)
 
 ! Temporary storage of tangential contact force for reporting
-                     FT_TMP(:) = FT(LL,:)
+                     FT_TMP(:) = FT(:,LL)
 
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with a wall
@@ -457,7 +457,7 @@
                      IF (PARTICLE_SLIDE) THEN
 ! Since FT might be corrected during the call to cfslide, the tangental
 ! displacement history needs to be changed accordingly
-                        PFT(LL,NI,:) = -( FT(LL,:) - FTS2(:) ) / KT_DES_W
+                        PFT(LL,NI,:) = -( FT(:,LL) - FTS2(:) ) / KT_DES_W
                      ELSE
                         PFT(LL,NI,:) = PFT_TMP(:)
                      ENDIF
@@ -482,7 +482,7 @@
                      WRITE(*,*) '     TANGENT= ', TANGENT
                      WRITE(*,*) '     HIST = ', PFT(LL,NI,1:2)
                      WRITE(*,*) '     PARTICLE_SLIDE ? ', PARTICLE_SLIDE
-                     WRITE(*,*) '     FT and FN= ', FT( LL,:), FN(:,LL)
+                     WRITE(*,*) '     FT and FN= ', FT(:,LL), FN(:,LL)
                      WRITE(*,*) '     KT_W*OT*TAN = ', &
                         KT_DES_W*((OVERLAP_T)) *TANGENT(:)
                      WRITE(*,*) '     OVERLAP_T = ', OVERLAP_T, TANGENT
@@ -713,9 +713,9 @@
 ! Calculate the tangential contact force
                   FTS1(:) = -KT_DES * PFT_TMP(:)
                   FTS2(:) = -ETAT_DES * V_REL_TRANS_TANG * TANGENT(:)
-                  FT(LL,:) = FTS1(:) + FTS2(:)
+                  FT(:,LL) = FTS1(:) + FTS2(:)
 
-                  FT_TMP(:) = FT(LL,:)
+                  FT_TMP(:) = FT(:,LL)
 
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with another particle/wall
@@ -733,7 +733,7 @@
                   IF (PARTICLE_SLIDE) THEN
 ! Since FT might be corrected during the call to cfslide, the tangental
 ! displacement history needs to be changed accordingly
-                     PFT(LL,NI,:) = -( FT(LL,:) - FTS2(:) ) / KT_DES
+                     PFT(LL,NI,:) = -( FT(:,LL) - FTS2(:) ) / KT_DES
                   ELSE
                      PFT(LL,NI,:) = PFT_TMP(:)
                   ENDIF
