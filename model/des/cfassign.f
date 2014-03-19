@@ -78,7 +78,7 @@
       GRAV(1) = GRAVITY_X
       GRAV(2) = GRAVITY_Y
       IF(DIMN.EQ.3) GRAV(3) = GRAVITY_Z
-      print*,'cfassign:',GRAVITY_X,GRAVITY_Y
+!      print*,'cfassign:',GRAVITY_X,GRAVITY_Y
 
 ! Note : the quantities xe, zt cannot be readily replaced with the
 ! similar appearing variables x_e, z_t in main mfix code as they
