@@ -2310,7 +2310,7 @@
 
 !<keyword category="Internal Surface" required="false">
 !  <description>permeability</description>
-         IS_PC(LC,1) = LARGE_NUMBER
+         IS_PC(LC,1) = UNDEFINED
 !</keyword>
 
 !<keyword category="Internal Surface" required="false">

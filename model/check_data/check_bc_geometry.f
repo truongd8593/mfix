@@ -164,8 +164,7 @@
          ENDIF
 
  1101 FORMAT('Error 1101: Boundary condition ',I3,' is ill-defined.',/ &
-         ' > ',A,' are not specified.',/'Please correct the mfix.dat ',&
-         'file.')
+         A,' are not specified.',/'Please correct the mfix.dat file.')
 
 ! Swap BC aliases for the "full name" complement.
          DO I = 1, DIM_BCTYPE 
@@ -187,7 +186,7 @@
       RETURN
 
 
- 1100 FORMAT('Error 1101: Illegal entry: ',A,' = ',A,/'Valid entries:',&
+ 1100 FORMAT('Error 1100: Illegal entry: ',A,' = ',A,/'Valid entries:',&
          ' '10(/5X,A,2x,A),/5X,A)
 
       END SUBROUTINE CHECK_BC_GEOMETRY

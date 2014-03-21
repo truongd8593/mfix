@@ -93,10 +93,8 @@
 
       CALL CHECK_INITIAL_CONDITIONS
       CALL CHECK_BOUNDARY_CONDITIONS
- 
-
-
-
+      CALL CHECK_INTERNAL_SURFACES
+      CALL CHECK_POINT_SOURCES
 
 !--------------------------  ARRAY ALLOCATION -----------------------!
 
