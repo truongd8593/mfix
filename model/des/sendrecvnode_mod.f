@@ -126,15 +126,16 @@
          linode_start = istart2; linode_end=iend1
          ljnode_start = jstart2; ljnode_end=jend1
          lknode_start = kstart2; lknode_end=kend1
-         if(lci.eq.-1) linode_end = istart2
-         if(lci.eq.1)  linode_start = iend1 
-         if(lcj.eq.-1) ljnode_end = jstart2
-         if(lcj.eq.1)  ljnode_start = jend1 
-         if(lck.eq.-1) lknode_end = kstart2
-         if(lck.eq.1)  lknode_start = kend1 
+         if(lci.eq.1) linode_end = istart2
+         if(lci.eq.-1)  linode_start = iend1 
+         if(lcj.eq.1) ljnode_end = jstart2
+         if(lcj.eq.-1)  ljnode_start = jend1 
+         if(lck.eq.1) lknode_end = kstart2
+         if(lck.eq.-1)  lknode_start = kend1 
          do lknode = lknode_start,lknode_end
          do linode = linode_start,linode_end
          do ljnode = ljnode_start,ljnode_end
+            IF(DEAD_CELL_AT(linode,ljnode,lknode)) CYCLE
             iprocsumindx(lproc) = iprocsumindx(lproc) + 1
          end do 
          end do 
@@ -181,6 +182,7 @@
          do lknode = lknode_start,lknode_end
          do linode = linode_start,linode_end
          do ljnode = ljnode_start,ljnode_end
+            IF(DEAD_CELL_AT(linode,ljnode,lknode)) CYCLE
             isendnodes(lcount)=funijk(linode,ljnode,lknode)  
             iprocsumindx(lproc)=iprocsumindx(lproc)+1
             lcount = lcount+1
