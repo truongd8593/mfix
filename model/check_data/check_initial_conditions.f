@@ -11,60 +11,65 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_INITIAL_CONDITIONS
 
+! Global Variables:
+!---------------------------------------------------------------------//
+! Flag: IC geometry was detected.
       use ic, only: IC_DEFINED
+! Flag: IC type.
       use ic, only: IC_TYPE
-
-      use param, only: DIMENSION_IC
-!      use sendrecv
-!      use mpi_utility 
-
-! Runtime flag specifying DEM solids
+! Flag: DEM solids present.
       use run, only: DEM_SOLIDS
-! Runtime flag specifying MPPIC solids
-      use run, only: PIC_SOLIDS     
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Maximum number of IC.
+      use param, only: DIMENSION_IC
+
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
       use error_manager
 
       IMPLICIT NONE
 
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-      INTEGER :: ICV
 
+! Local Variables:
+!---------------------------------------------------------------------//
+! Loop counter for ICs
+      INTEGER :: ICV
+!......................................................................!
+
+
+! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_INITIAL_CONDITIONS")
 
+! Determine which ICs are DEFINED
       CALL CHECK_IC_GEOMETRY
 
-      IC_LP: DO ICV=1, DIMENSION_IC
+! Loop over all IC arrays.
+      DO ICV=1, DIMENSION_IC
 
+! Verify user input for defined defined IC.
          IF(IC_DEFINED(ICV)) THEN
-
 ! Skip checks for PATCH restarts.
-            IF (IC_TYPE(ICV) == 'PATCH') CYCLE IC_LP
-
+            IF (IC_TYPE(ICV) == 'PATCH') CYCLE
             CALL CHECK_IC_GAS_PHASE(ICV)
-
             CALL CHECK_IC_SOLIDS_PHASES(ICV)
-
          ELSE
 
-! Check whether physical quantities are specified for undefined
-! initial conditions and if so flag error
+! Verify that no data was defined for unspecified IC.
             CALL CHECK_IC_OVERFLOW(ICV)
-
          ENDIF
+      ENDDO
 
-      ENDDO IC_LP
-
-! Finalize the error manager.
+! Check IC input specific to DEM simulations.
       IF(DEM_SOLIDS) CALL CHECK_INITIAL_CONDITIONS_DEM
 
+! Finalize the error manager.
       CALL FINL_ERR_MSG
 
       RETURN  
-
       END SUBROUTINE CHECK_INITIAL_CONDITIONS 
-
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -77,42 +82,67 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
       SUBROUTINE CHECK_IC_GEOMETRY
 
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! Flag: IC contains geometric data and/or specified type
+      use ic, only: IC_DEFINED
+! Flag: IC type.
+      use ic, only: IC_TYPE
+! User specifed: IC geometry
+      use ic, only: IC_X_e, IC_X_w, IC_I_e, IC_I_w
+      use ic, only: IC_Y_n, IC_Y_s, IC_J_n, IC_J_s
+      use ic, only: IC_Z_t, IC_Z_b, IC_K_t, IC_K_b
+! User specified: System geometry
+      use geometry, only: NO_I, IMAX, IMIN1, IMAX1, XLENGTH, DX, XMIN
+      use geometry, only: NO_J, JMAX, JMIN1, JMAX1, YLENGTH, DY
+      use geometry, only: NO_K, KMAX, KMIN1, KMAX1, ZLENGTH, DZ
+! Flag: New run or a restart.
       use run, only: RUN_TYPE
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+! The max number of ICs.
       use param, only: DIMENSION_IC
+! Parameter constants
+      use param1, only: ZERO, UNDEFINED, UNDEFINED_I
 
-      use ic
-
-      use mpi_utility
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
       use error_manager
+
 
       implicit none
 
 
+! Local Variables:
+!---------------------------------------------------------------------//
+! Loop/varaible indices
       INTEGER :: ICV
+! Local spatial indices.
       INTEGER :: I_w, I_e, J_s, J_n, K_b, K_t
+!......................................................................!
 
 
+! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_IC_GEOMETRY")
 
 ! Check geometry of any specified IC region      
       DO ICV = 1, DIMENSION_IC 
 
          IC_DEFINED(ICV) = .FALSE. 
-
-         IF (IC_X_W(ICV) /= UNDEFINED) IC_DEFINED(ICV) = .TRUE. 
-         IF (IC_X_E(ICV) /= UNDEFINED) IC_DEFINED(ICV) = .TRUE. 
-         IF (IC_Y_S(ICV) /= UNDEFINED) IC_DEFINED(ICV) = .TRUE. 
-         IF (IC_Y_N(ICV) /= UNDEFINED) IC_DEFINED(ICV) = .TRUE. 
-         IF (IC_Z_B(ICV) /= UNDEFINED) IC_DEFINED(ICV) = .TRUE. 
-         IF (IC_Z_T(ICV) /= UNDEFINED) IC_DEFINED(ICV) = .TRUE. 
-
+         IF (IC_X_W(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE. 
+         IF (IC_X_E(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE. 
+         IF (IC_Y_S(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE. 
+         IF (IC_Y_N(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE. 
+         IF (IC_Z_B(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE. 
+         IF (IC_Z_T(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE. 
          IF (IC_I_W(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE. 
          IF (IC_I_E(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE. 
          IF (IC_J_S(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE. 
          IF (IC_J_N(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE. 
          IF (IC_K_B(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE. 
          IF (IC_K_T(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE. 
-
 
 ! For restart runs IC is defined only if IC_TYPE='PATCH'
          IF(RUN_TYPE/='NEW' .AND. IC_TYPE(ICV)/='PATCH') &
@@ -298,7 +328,6 @@
  1101 FORMAT('Error 1101: Initial condition region ',I2,' is ill-',    &
          'defined.',/' > ',A,/'Please correct the mfix.dat file.')
 
-
       ENDDO   ! end loop over (icv=1,dimension_ic)
 
       CALL FINL_ERR_MSG
@@ -312,45 +341,71 @@
 ! Subroutine: CHECK_IC_GAS_PHASE                                       !
 ! Author: J.Musser                                    Date: 01-Mar-14  !
 !                                                                      !
-! Purpose: Provided a detailed error message when the sum of volume    !
+! Purpose: Verify gas phase input variables in IC region.              !
 !                                                                      !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
       SUBROUTINE CHECK_IC_GAS_PHASE(ICV)
 
-      use run, only: RUN_TYPE
+! Global Variables:
+!---------------------------------------------------------------------//
+! Gas phase volume fraction, pressure, temperature, species.
+      use ic, only: IC_EP_g, IC_P_g, IC_T_g, IC_X_g
+! Gas phase velocity components.
+      use ic, only: IC_U_g, IC_V_g, IC_W_g
+! Radiation model parameters.
+      use ic, only: IC_GAMA_RG, IC_T_RG
+! K-Epsilon model parameters.
+      use ic, only: IC_K_TURB_G, IC_E_TURB_G
+! IC for user-defined scalar equation.
+      use ic, only: IC_SCALAR
+
+! Flag. Solve Energy equations
       use run, only: ENERGY_EQ
+! Flag. Solve Species equations
       use run, only: SPECIES_EQ
+! Flag: Solve K-Epsilon; K-E parameters
       use run, only: K_Epsilon
-
-      use physprop, only: RO_G0
-      use physprop, only: MU_G0
+! Specified constant gas density and viscosity.
+      use physprop, only: RO_G0, MU_G0
+! Specified average molecular weight
       use physprop, only: MW_AVG
+! Number of gas phase species
       use physprop, only: NMAX
-      use param, only: DIMENSION_IC
+! Specifed number of scalar equations.
       use scalars, only: NSCALAR
-      use ic
-
-      use param1, only: ONE
-      use param1, only: ZERO
-      use param1, only: UNDEFINED
+! Flag: Do not solve in specified direction.
       use geometry, only: NO_I, NO_J, NO_K
 
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Parameter constants
+      use param1, only: ZERO, ONE, UNDEFINED
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
       use error_manager
+
 
       implicit none
 
 
+! Dummy Arguments:
+!---------------------------------------------------------------------//
       INTEGER, INTENT(IN) :: ICV
 
+! Local Variables:
+!---------------------------------------------------------------------//
+! Loop index
       INTEGER :: N
-
+! Sum of mass fraction.
       DOUBLE PRECISION :: SUM
-
+! External function for comparing two values.
       LOGICAL, EXTERNAL :: COMPARE 
+!......................................................................!
 
 
+! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_IC_GAS_PHASE")
-
 
 
 ! Check that gas phase velocity components are initialized
@@ -511,36 +566,61 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_IC_SOLIDS_PHASES(ICV)
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
 
+! Global Variables:
+!---------------------------------------------------------------------//
+! Solids volume fraction, bulk density
+      use ic, only: IC_EP_s, IC_ROP_s
+! Solids velocity components.
+      use ic, only: IC_U_s, IC_V_s, IC_W_s
+! Solids temperature, mass fractions, granular energy
+      use ic, only: IC_T_s, IC_X_s, IC_THETA_M
+! Radiation model parameters.
+      use ic, only: IC_GAMA_RS, IC_T_RS
+! Gas phase volume fraction and temperature.
+      use ic, only: IC_EP_g, IC_T_g
 
-
+! Flag. Solve Energy equations
       use run, only: ENERGY_EQ
+! Flag. Solve Species equations
       use run, only: SPECIES_EQ
+! Flag. Sovle Granular Energy PDE
       use run, only: GRANULAR_ENERGY
+! Flag. Solve variable solids density
       use run, only: SOLVE_ROs
-      use physprop, only: SMAX
-      use physprop, only: INERT_SPECIES, X_S0
-      use physprop, only: NMAX
-      use physprop, only: BASE_ROs
+! Baseline solids density, baseline mass fraction, index of intert
+      use physprop, only: BASE_ROs, X_S0, INERT_SPECIES
+! Specified constant solids density.
       use physprop, only: RO_S0
+! Number of gas phase species
+      use physprop, only: NMAX
+! Number of TFM solids phases.
+      use physprop, only: SMAX
+! Number of DEM or PIC solids.
       use discretelement, only: DES_MMAX
-      use param1, only: ONE
-      use param1, only: ZERO
-      use param1, only: UNDEFINED
+! Flag: Do not solve in specified direction.
       use geometry, only: NO_I, NO_J, NO_K
 
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Maximum number of solids species.
+      use param, only: DIM_M
+! Parameter constants
+      use param1, only: ZERO, ONE, UNDEFINED
 
-      USE ic
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
       use error_manager
 
       IMPLICIT NONE
 
+! Dummy Arguments:
+!---------------------------------------------------------------------//
+! Index of IC region.
       INTEGER, INTENT(IN) :: ICV
-
+! Loop/variable index
       INTEGER :: M, N
+! Various sums.
       DOUBLE PRECISION SUM, SUM_EP
 ! Solids phase density in IC region.
       DOUBLE PRECISION :: IC_ROs(1:DIM_M)
@@ -550,14 +630,14 @@
       LOGICAL :: SKIP(1:DIM_M)
 ! Total number of solids phases (TFM + DEM + MPPIC)
       INTEGER :: MMAX_TOT
-
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
+! External function to calculate solids density.
       DOUBLE PRECISION, EXTERNAL :: EOSS
+! External function for comparing two values.
       LOGICAL, EXTERNAL :: COMPARE 
+!......................................................................!
 
 
+! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_IC_SOLIDS_PHASES")
 
 ! The total number of solids phases (all models).
@@ -667,15 +747,15 @@
 ! Enforce that the species mass fractions must sum to one.
          IF(.NOT.COMPARE(ONE,SUM)) THEN
 
-            IF(SPECIES_EQ(M)) THEN
+            IF(SPECIES_EQ(M) .AND. .NOT.SKIP(M)) THEN
                WRITE(ERR_MSG, 1402) ICV, M
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
- 1402 FORMAT('Error 1402: IC_X_s(',I3,',',I2,':) do NOT sum to ONE ',  &
+ 1402 FORMAT('Error 1402: IC_X_s(',I3,',',I2,',:) do NOT sum to ONE ', &
          'and the solids phase',/'species equations are solved. ',     &
          'Please correct the mfix.dat file.')
 
-            ELSEIF(SOLVE_ROS(M)) THEN
+            ELSEIF(SOLVE_ROS(M) .AND. .NOT.SKIP(M)) THEN
                WRITE(ERR_MSG, 1403) ICV, M
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
@@ -805,25 +885,55 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
       SUBROUTINE CHECK_IC_OVERFLOW(ICV)
 
-      use scalars
-      use physprop
-      use run
-      use ic
-      use indices
-      use geometry
-      use compar
-      use discretelement
+! Global Variables:
+!---------------------------------------------------------------------//
+! Gas phase volume fraction, pressure, temperature, species.
+      use ic, only: IC_EP_g, IC_P_g, IC_T_g, IC_X_g
+! Gas phase velocity components.
+      use ic, only: IC_U_g, IC_V_g, IC_W_g
+! Radiation model parameters.
+      use ic, only: IC_GAMA_RG, IC_T_RG
+! K-Epsilon model parameters.
+      use ic, only: IC_K_TURB_G, IC_E_TURB_G
+! IC for user-defined scalar equation.
+      use ic, only: IC_SCALAR
+! Solids volume fraction, bulk density
+      use ic, only: IC_EP_s, IC_ROP_s
+! Solids velocity components.
+      use ic, only: IC_U_s, IC_V_s, IC_W_s
+! Solids temperature, mass fractions, granular energy
+      use ic, only: IC_T_s, IC_X_s, IC_THETA_M
+! Radiation model parameters.
+      use ic, only: IC_GAMA_RS, IC_T_RS
 
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Parameter constant
+      use param1, only: UNDEFINED
+! Maximum number of solids phases and user-defined scalars.
+      use param, only: DIM_M, DIM_SCALAR
+! Maximum number of gas and solids phase species
+      use param, only: DIM_N_g, DIM_N_s
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
       use error_manager
 
       implicit none
 
+! Dummy Arguments:
+!---------------------------------------------------------------------//
 ! IC region index.
       INTEGER, INTENT(IN) :: ICV
 
+! Local Variables:
+!---------------------------------------------------------------------//
+! Loop counters
       INTEGER :: M, N
-      INTEGER :: MMAX_TOT
+!......................................................................!
 
+
+! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_IC_OVERFLOW")
 
 
@@ -832,91 +942,68 @@
       IF(IC_U_G(ICV) /= UNDEFINED) THEN 
           WRITE(ERR_MSG, 1010) trim(iVar('IC_U_g',ICV))
           CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-      ENDIF 
-      IF(IC_V_G(ICV) /= UNDEFINED) THEN 
+      ELSEIF(IC_V_G(ICV) /= UNDEFINED) THEN 
          WRITE(ERR_MSG, 1010) trim(iVar('IC_V_g',ICV))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-      ENDIF 
-      IF(IC_W_G(ICV) /= UNDEFINED) THEN 
+      ELSEIF(IC_W_G(ICV) /= UNDEFINED) THEN 
          WRITE(ERR_MSG, 1010) trim(iVar('IC_W_g',ICV))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-      ENDIF 
-      IF(IC_EP_G(ICV) /= UNDEFINED) THEN 
+      ELSEIF(IC_EP_G(ICV) /= UNDEFINED) THEN 
          WRITE(ERR_MSG, 1010) trim(iVar('IC_EP_g',ICV))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-      ENDIF 
-      IF(IC_T_G(ICV) /= UNDEFINED) THEN 
+      ELSEIF(IC_T_G(ICV) /= UNDEFINED) THEN 
           WRITE(ERR_MSG, 1010) trim(iVar('IC_T_g',ICV))
           CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-      ENDIF 
-      IF(IC_T_RG(ICV) /= UNDEFINED) THEN 
+      ELSEIF(IC_T_RG(ICV) /= UNDEFINED) THEN 
           WRITE(ERR_MSG, 1010) trim(iVar('IC_T_Rg',ICV))
           CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
+      ELSEIF(IC_K_Turb_G(ICV) /= UNDEFINED) THEN 
+         WRITE(ERR_MSG, 1010) trim(iVar('IC_K_Turb_G',ICV))
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(IC_E_Turb_G(ICV) /= UNDEFINED) THEN 
+         WRITE(ERR_MSG, 1010) trim(iVar('IC_E_Turb_G',ICV))
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF 
-
-      DO N = 1, DIMENSION_N_G 
+      DO N = 1, DIM_N_G
          IF(IC_X_G(ICV,N) /= UNDEFINED) THEN 
             WRITE(ERR_MSG, 1010) trim(iVar('IC_X_g',ICV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
          ENDIF 
       ENDDO 
-    
-      DO N = 1, NScalar 
+      DO N = 1, DIM_SCALAR
          IF(IC_Scalar(ICV,N) /= UNDEFINED) THEN 
             WRITE(ERR_MSG, 1010) trim(iVar('IC_Scalar',ICV)) 
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF 
-      ENDDO 
-   
-      IF(K_Epsilon) THEN
-         IF(IC_K_Turb_G(ICV) /= UNDEFINED) THEN 
-            WRITE(ERR_MSG, 1010) trim(iVar('IC_K_Turb_G',ICV))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-    
-         IF(IC_E_Turb_G(ICV) /= UNDEFINED) THEN 
-            WRITE(ERR_MSG, 1010) trim(iVar('IC_E_Turb_G',ICV))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-      ENDIF
-
+      ENDDO
 
 ! SOLIDS PHASE quantities
-! -------------------------------------------->>>
-      MMAX_TOT = SMAX + DES_MMAX
-
-      DO M=1, MMAX_TOT
-
+      DO M=1, DIM_M
          IF(IC_ROP_S(ICV,M) /= UNDEFINED) THEN 
             WRITE(ERR_MSG, 1010) trim(iVar('IC_ROP_s',ICV,M))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
+         ELSEIF(IC_U_S(ICV,M) /= UNDEFINED) THEN 
+            WRITE(ERR_MSG, 1010) trim(iVar('IC_U_s',ICV,M))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
+         ELSEIF(IC_V_S(ICV,M) /= UNDEFINED) THEN 
+            WRITE(ERR_MSG, 1010) trim(iVar('IC_V_s',ICV,M))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
+         ELSEIF(IC_W_S(ICV,M) /= UNDEFINED) THEN 
+            WRITE(ERR_MSG, 1010) trim(iVar('IC_W_s',ICV,M))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
+         ELSEIF(IC_T_S(ICV,M) /= UNDEFINED) THEN 
+            WRITE(ERR_MSG, 1010) trim(iVar('IC_T_s',ICV,M))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
+         ELSEIF(IC_T_RS(ICV,M) /= UNDEFINED) THEN 
+            WRITE(ERR_MSG, 1010) trim(iVar('IC_T_Rs',ICV,M))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
          ENDIF 
-         DO N = 1, DIMENSION_N_S 
+         DO N = 1, DIM_N_S
             IF(IC_X_S(ICV,M,N) /= UNDEFINED) THEN 
                WRITE(ERR_MSG, 1010) trim(iVar('IC_X_s',ICV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
             ENDIF 
          ENDDO 
-         IF(IC_U_S(ICV,M) /= UNDEFINED) THEN 
-            WRITE(ERR_MSG, 1010) trim(iVar('IC_U_s',ICV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-         ENDIF 
-         IF(IC_V_S(ICV,M) /= UNDEFINED) THEN 
-            WRITE(ERR_MSG, 1010) trim(iVar('IC_V_s',ICV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-         ENDIF 
-         IF(IC_W_S(ICV,M) /= UNDEFINED) THEN 
-            WRITE(ERR_MSG, 1010) trim(iVar('IC_W_s',ICV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-         ENDIF 
-         IF(IC_T_S(ICV,M) /= UNDEFINED) THEN 
-            WRITE(ERR_MSG, 1010) trim(iVar('IC_T_s',ICV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-         ENDIF 
-         IF(IC_T_RS(ICV,M) /= UNDEFINED) THEN 
-            WRITE(ERR_MSG, 1010) trim(iVar('IC_T_Rs',ICV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-         ENDIF 
       ENDDO
 
       CALL FINL_ERR_MSG
