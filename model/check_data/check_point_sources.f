@@ -8,31 +8,50 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_POINT_SOURCES
 
-      use param
-      use run
-      use ps
+! Global Variables:
+!---------------------------------------------------------------------//
+! Flag: PS geometry was detected.
+      use ps, only: PS_DEFINED
 
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Maximum number of PS.
+      use param, only: DIMENSION_PS
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
       use error_manager
 
       implicit none
 
+! Local Variables:
+!---------------------------------------------------------------------//
+! Loop counter for BCs
       INTEGER :: PSV
+!......................................................................!
 
+
+! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_POINT_SOURCES")
 
-      POINT_SOURCE = .FALSE.
-      PS_DEFINED = .FALSE.
+! Determine which PSs are DEFINED
+      CALL CHECK_PS_GEOMETRY
 
+! Loop over all PS arrays.
       DO PSV = 1, DIMENSION_PS
+
+! Verify user input for defined defined PS.
          IF(PS_DEFINED(PSV)) THEN
             CALL GET_PS(PSV)
             CALL CHECK_PS_GAS_PHASE(PSV)
             CALL CHECK_PS_SOLIDS_PHASES(PSV)
          ELSE
+! Verify that no data was defined for unspecified PS.
             CALL CHECK_PS_OVERFLOW(PSV)
          ENDIF
       ENDDO
 
+! Clear the error manager.
       CALL FINL_ERR_MSG
 
       RETURN
@@ -49,33 +68,48 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_PS_GEOMETRY
 
-      use param
-      use run, only: SPECIES_EQ
-      use physprop, only: MMAX
-      use physprop, only: NMAX
 
-      use run
-      use rxns
-      use ps
-      use compar
-      use geometry
-      use mpi_utility
+! Global Variables:
+!---------------------------------------------------------------------//
+! Flag: PS contains geometric data and/or specified type
+      use ps, only: PS_DEFINED, POINT_SOURCE
+! User specifed: PS geometry
+      use ps, only: PS_X_e, PS_X_w, PS_I_e, PS_I_w
+      use ps, only: PS_Y_n, PS_Y_s, PS_J_n, PS_J_s
+      use ps, only: PS_Z_t, PS_Z_b, PS_K_t, PS_K_b
+! User specified: System geometry
+      use geometry, only: NO_I, XLENGTH
+      use geometry, only: NO_J, YLENGTH
+      use geometry, only: NO_K, ZLENGTH
 
+! Global Parameters:
+!---------------------------------------------------------------------//
+! The max number of BCs.
+      use param, only: DIMENSION_PS
+! Parameter constants
+      use param1, only: ZERO, UNDEFINED, UNDEFINED_I
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
       use error_manager
+
 
       implicit none
 
-      INTEGER :: IJK, I, J, K, M, N
 
-      INTEGER PSV
+! Local Variables:
+!---------------------------------------------------------------------//
+! PS loop counter.
+      INTEGER :: PSV
+!......................................................................!
 
-      CHARACTER*64 eMsg
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("CHECK_PS_GEOMETRY")
 
-      DOUBLE PRECISION lSum
+! Initialize the PS runtime flag.
+      POINT_SOURCE = .FALSE.
 
-      INTEGER :: iErr
-
-! DETERMINE WHICH BOUNDARY CONDITION INDICES HAVE VALUES
+! Determine which point source indices have values.
       PSV_LP: do PSV = 1, DIMENSION_PS
 
          IF (PS_X_W(PSV) /= UNDEFINED)   PS_DEFINED(PSV) = .TRUE. 
@@ -91,6 +125,7 @@
          IF (PS_K_B(PSV) /= UNDEFINED_I) PS_DEFINED(PSV) = .TRUE. 
          IF (PS_K_T(PSV) /= UNDEFINED_I) PS_DEFINED(PSV) = .TRUE. 
 
+! Skip consistency checks if nothing was defined.
          IF (.NOT.PS_DEFINED(PSV)) cycle PSV_LP
 
 ! Flag that one or more point sources has been detected.
@@ -148,9 +183,7 @@
  1101 FORMAT('Error 1101: Point source ',I3,' is ill-defined.',/A,     &
          ' are not specified.',/'Please correct the mfix.dat file.')
 
-
       ENDDO PSV_LP
-
 
       CALL FINL_ERR_MSG
 
@@ -168,28 +201,54 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_PS_GAS_PHASE(PSV)
 
-      use param
-      use run
-      use ps
-
+! Global Variables:
+!---------------------------------------------------------------------//
+! Gas phase mass flowrate for PS
+      use ps, only: PS_MASSFLOW_G
+! Gas phase velocity for PS
+      use ps, only: PS_U_g, PS_V_g, PS_W_g
+! Gas phase tempture and species mass fractions
+      use ps, only: PS_T_g, PS_X_g
+! Flag: Solve energy equations.
+      use run, only: ENERGY_EQ
+! Flag: Solve species equations.
+      use run, only: SPECIES_EQ
+! Number of species.
       use physprop, only: NMAX
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Parameter constants
+      use param1, only: ZERO, ONE, UNDEFINED
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
       use error_manager
+
 
       implicit none
 
+
+! Dummy Arguments:
+!---------------------------------------------------------------------//
       INTEGER, INTENT(in) :: PSV
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Loop counter
       INTEGER :: N
+! Sum of solids mass fractions.
       DOUBLE PRECISION :: SUM
-
+! External function for comparing two numbers.
       LOGICAL, EXTERNAL :: COMPARE
+!......................................................................!
 
 
+! Initialze the error manager.
       CALL INIT_ERR_MSG("CHECK_PS_GAS_PHASE")
 
 
-
-! Mass flow is undefined --> Velocity must also be undefined.
-!```````````````````````````````````````````````````````````````````````
+! Check mass flow and velocity
       IF(PS_MASSFLOW_G(PSV) == UNDEFINED) THEN
          IF(PS_U_g(PSV) /= UNDEFINED .OR. &
             PS_V_g(PSV) /= UNDEFINED .OR. &
@@ -209,8 +268,6 @@
             PS_W_g(PSV) = ZERO
          ENDIF
 
-! Mass flow is zero --> Velocity must also be zero.
-!```````````````````````````````````````````````````````````````````````
       ELSEIF(PS_MASSFLOW_G(PSV) == ZERO) THEN
          IF(PS_U_g(PSV) /= ZERO .OR. &
             PS_V_g(PSV) /= ZERO .OR. &
@@ -224,8 +281,7 @@
          '.',/A,' is zero but velocity is given.',/'Please correct ', &
          'the mfix.dat file.')
 
-! Mass flow is negative --> ERROR
-!```````````````````````````````````````````````````````````````````````
+! Verify a physical mass flow
       ELSEIF(PS_MASSFLOW_G(PSV) < ZERO) THEN
          WRITE(ERR_MSG,1102) PSV, trim(iVar('PS_MASSFLOW_G',PSV))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -236,14 +292,13 @@
 
 
 ! Mass flow is specified:
+      ELSE
+
 ! Velocity does not have to be defined (no momentum source). If the
 ! components are UNDEFINED, zero them out.
-!```````````````````````````````````````````````````````````````````````
-      ELSE
          IF(PS_U_g(PSV) == UNDEFINED) PS_U_g(PSV) = ZERO
          IF(PS_V_g(PSV) == UNDEFINED) PS_V_g(PSV) = ZERO
          IF(PS_W_g(PSV) == UNDEFINED) PS_W_g(PSV) = ZERO
-
 
 ! Sum together defiend gas phase species mass fractions.
          SUM = ZERO
@@ -320,30 +375,58 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_PS_SOLIDS_PHASES(PSV)
 
-      use param
-      use run
-      use ps
-
-      use error_manager
-      use discretelement, only: DES_MMAX
-      use physprop, only: NMAX
+! Global Variables:
+!---------------------------------------------------------------------//
+! Solids phase mass flowrate for PS
+      use ps, only: PS_MASSFLOW_S
+! Solids phase velocity for PS
+      use ps, only: PS_U_s, PS_V_s, PS_W_s
+! Solids phase tempture and species mass fractions
+      use ps, only: PS_T_s, PS_X_s
+! Flag: Solve energy equations.
+      use run, only: ENERGY_EQ
+! Flag: Solve species equations.
+      use run, only: SPECIES_EQ
+! Type of each solids phase.
+      use run, only: SOLIDS_MODEL
+! Number of (TFM) solids.
       use physprop, only: SMAX
+! Number of discrete solids phases.
+      use discretelement, only: DES_MMAX
+! Number of slolids species.
+      use physprop, only: SMAX, NMAX
 
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Parameter constants
+      use param1, only: ZERO, ONE, UNDEFINED
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
       use error_manager
+
 
       implicit none
 
+
+! Dummy Arguments:
+!---------------------------------------------------------------------//
       INTEGER, INTENT(in) :: PSV
 
-
-      INTEGER :: M, N
+! Local Variables:
+!---------------------------------------------------------------------//
+! Total number of solid phases
       INTEGER :: MMAX_TOT
-
+! Loop counters
+      INTEGER :: M, N
+! Sum of solids mass fractions.
       DOUBLE PRECISION :: SUM
-
+! External function for comparing two numbers.
       LOGICAL, EXTERNAL :: COMPARE
+!......................................................................!
 
 
+! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_PS_SOLIDS_PHASES")
 
 ! The total number of solids phases (all models).
@@ -351,8 +434,7 @@
 
       DO M=1, MMAX_TOT
 
-! Mass flow is undefined --> Velocity must also be undefined.
-!```````````````````````````````````````````````````````````````````````
+! Check mass flow and velocity
          IF(PS_MASSFLOW_S(PSV,M) == UNDEFINED) THEN
             IF(PS_U_s(PSV,M) /= UNDEFINED .OR. &
                PS_V_s(PSV,M) /= UNDEFINED .OR. &
@@ -372,8 +454,6 @@
                PS_W_s(PSV,M) = ZERO
             ENDIF
 
-! Mass flow is zero --> Velocity must also be zero.
-!```````````````````````````````````````````````````````````````````````
          ELSEIF(PS_MASSFLOW_S(PSV,M) == ZERO) THEN
             IF(PS_U_s(PSV,M) /= ZERO .OR. &
                PS_V_s(PSV,M) /= ZERO .OR. &
@@ -387,8 +467,6 @@
          '.',/A,' is zero but velocity is given.',/'Please correct ', &
          'the mfix.dat file.')
 
-! Mass flow is negative --> ERROR
-!```````````````````````````````````````````````````````````````````````
          ELSEIF(PS_MASSFLOW_S(PSV,M) < ZERO) THEN
             WRITE(ERR_MSG,1102) PSV, trim(iVar('PS_MASSFLOW_S',PSV,M))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -399,7 +477,6 @@
 
 
 ! Mass flow is specified:
-!```````````````````````````````````````````````````````````````````````
          ELSE
 
 ! Currently, only TFM solids can be used with point sources. However, 
@@ -425,7 +502,7 @@
             SUM = ZERO
             DO N = 1, NMAX(M)
                IF(PS_X_S(PSV,M,N) /= UNDEFINED) THEN
-               SUM = SUM + PS_X_G(PSV,N)
+               SUM = SUM + PS_X_S(PSV,M,N)
                ELSE
                   PS_X_S(PSV,M,N) = ZERO
                ENDIF
@@ -497,27 +574,51 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_PS_OVERFLOW(PSV)
 
-      use param
-      use run
-      use ps
+! Global Variables:
+!---------------------------------------------------------------------//
+! Gas phase mass flowrate for PS and velocities
+      use ps, only: PS_MASSFLOW_G, PS_U_g, PS_V_g, PS_W_g
+! Gas phase tempture and species mass fractions
+      use ps, only: PS_T_g, PS_X_g
+! Solids phase mass flowrate and velocity
+      use ps, only: PS_MASSFLOW_S, PS_U_s, PS_V_s, PS_W_s
+! Solids phase tempture and species mass fractions
+      use ps, only: PS_T_s, PS_X_s
+! Flag: Solve energy equations.
+      use run, only: ENERGY_EQ
+! Flag: Solve species equations.
+      use run, only: SPECIES_EQ
 
-      use physprop, only: NMAX
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Maximum input array sizes.
+      use param, only: DIM_M, DIM_N_g, DIM_N_s
+! Parameter constants
+      use param1, only: ZERO, ONE, UNDEFINED
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
       use error_manager
+
 
       implicit none
 
+
+! Dummy Arguments:
+!---------------------------------------------------------------------//
       INTEGER, INTENT(in) :: PSV
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Loop counters
       INTEGER :: M, N
-      DOUBLE PRECISION :: SUM
-
-      LOGICAL, EXTERNAL :: COMPARE
+!......................................................................!
 
 
+! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_PS_OVERFLOW")
 
 
-! Mass flow is undefined --> Velocity must also be undefined.
-!```````````````````````````````````````````````````````````````````````
       IF(PS_MASSFLOW_G(PSV) /= UNDEFINED) THEN
          WRITE(ERR_MSG,1010) trim(iVar('PS_MASSFLOW_G',PSV))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
