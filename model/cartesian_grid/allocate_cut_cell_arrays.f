@@ -72,6 +72,11 @@
       Allocate(  NUMBER_OF_V_NODES  (DIMENSION_3) )
       Allocate(  NUMBER_OF_W_NODES  (DIMENSION_3) )
 
+     NUMBER_OF_NODES   = 0
+     NUMBER_OF_U_NODES = 0  
+     NUMBER_OF_V_NODES = 0 
+     NUMBER_OF_W_NODES = 0 
+
       Allocate(  CONNECTIVITY  (DIMENSION_3,15) )
       Allocate(  CONNECTIVITY_U  (DIMENSION_3,15) )
       Allocate(  CONNECTIVITY_V  (DIMENSION_3,15) )
@@ -82,6 +87,10 @@
       Allocate(  WALL_U_AT (DIMENSION_3) )
       Allocate(  WALL_V_AT (DIMENSION_3) )
       Allocate(  WALL_W_AT (DIMENSION_3) )
+
+      WALL_U_AT = .FALSE.
+      WALL_V_AT = .FALSE.
+      WALL_W_AT = .FALSE.
 
       Allocate( Area_CUT  (DIMENSION_3) )
       Allocate( Area_U_CUT  (DIMENSION_3) )
@@ -242,27 +251,44 @@
 
       Allocate(  SNAP (DIMENSION_3) )
 
-
+      SNAP = .FALSE. 
 
       Allocate(  CUT_TREATMENT_AT (DIMENSION_3) )
       Allocate(  CUT_U_TREATMENT_AT (DIMENSION_3) )
       Allocate(  CUT_V_TREATMENT_AT (DIMENSION_3) )
       Allocate(  CUT_W_TREATMENT_AT (DIMENSION_3) )
 
+
+      CUT_TREATMENT_AT = .FALSE.
+      CUT_U_TREATMENT_AT = .FALSE.
+      CUT_V_TREATMENT_AT = .FALSE.
+      CUT_W_TREATMENT_AT = .FALSE.
+
       Allocate(  CUT_CELL_AT (DIMENSION_3) )
       Allocate(  CUT_U_CELL_AT (DIMENSION_3) )
       Allocate(  CUT_V_CELL_AT (DIMENSION_3) )
       Allocate(  CUT_W_CELL_AT (DIMENSION_3) )
 
+      CUT_CELL_AT = .FALSE.
+      CUT_U_CELL_AT = .FALSE.
+      CUT_V_CELL_AT = .FALSE.
+      CUT_W_CELL_AT = .FALSE.
 
       Allocate( SMALL_CELL_AT  (DIMENSION_3) )
+      SMALL_CELL_AT = .FALSE.       
 
       Allocate( SMALL_CELL_FLAG  (DIMENSION_3) )
+      SMALL_CELL_FLAG =.FALSE. 
 
       Allocate(  BLOCKED_CELL_AT (DIMENSION_3) )
       Allocate(  BLOCKED_U_CELL_AT (DIMENSION_3) )
       Allocate(  BLOCKED_V_CELL_AT (DIMENSION_3) )
       Allocate(  BLOCKED_W_CELL_AT (DIMENSION_3) )
+
+      BLOCKED_CELL_AT   = .FALSE.
+      BLOCKED_U_CELL_AT = .FALSE.
+      BLOCKED_V_CELL_AT = .FALSE.
+      BLOCKED_W_CELL_AT = .FALSE.
 
       Allocate(  STANDARD_CELL_AT (DIMENSION_3) )
       Allocate(  STANDARD_U_CELL_AT (DIMENSION_3) )
@@ -308,6 +334,8 @@
 
       
       ALLOCATE(N_FACET_AT(DIMENSION_3))
+      N_FACET_AT = 0
+
       ALLOCATE(LIST_FACET_AT(DIMENSION_3,DIM_FACETS_PER_CELL))
 
       IF(DISCRETE_ELEMENT) then 
@@ -329,6 +357,12 @@
       Allocate(  F_AT (DIMENSION_3) )
 
       Allocate(  DWALL (DIMENSION_3) )
+
+
+
+
+
+
 
  
       RETURN
