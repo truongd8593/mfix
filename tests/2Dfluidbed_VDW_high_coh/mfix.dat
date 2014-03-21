@@ -1,11 +1,12 @@
-                                                                               
 ! A bubbling fluidized bed simulation with discrete particles having
 ! cohesion
-! Author: S. Pannala
 
 ! For more details see: Weber, M., "Simulation of Cohesive Particle
 ! Flows in Granular and Gas-Solid Systems", Dissertation, Univeristy
 ! of Colorado, 2004. 
+
+! Author: S. Pannala, Feb. 2005 
+
 
 !*********************************************************************
 ! Run Control
@@ -21,10 +22,10 @@
   DT = 2.5E-4         ! time step
   DT_MAX = 4.0E-4     ! maximum time step
  
-! Solve energy eq? [.TRUE.]
+! Solve energy eq?  [.TRUE.]
   ENERGY_EQ = .FALSE.
 
-! Solve species eq? [.TRUE.]
+! Solve species eq?  [.TRUE.]
 !                 Gas     Sld 1
   SPECIES_EQ = .FALSE.    .FALSE.
  
@@ -41,78 +42,75 @@
 !*********************************************************************
   MAX_NIT = 250          ! maximum number of iterations [500]
 
-  TOL_RESID   = 1.0E-3   ! max. continuity+momentum residual at 
+  TOL_RESID = 1.0E-3     ! max. continuity+momentum residual at 
                          ! convergence [1E-3]
 
-! factor to normalize gas continuity equation residual 
+! factor to normalize gas pressure/solids correction equation(s) 
+! residual
 !  [undefined] : normalization uses residual from first iteration 
 !      0       : normalization based on dominate term in continuity eqn
 !  [defined]   : normalized by value provided
-!  NORM_g = 1.0 
+#  NORM_g = 1.0 
 
 ! The sweep direction for linear equation solver. 
   LEQ_SWEEP = 9*'ISIS' 
 
 
 !*********************************************************************
-! Geometry and Discretization
+! Geometry 
 !*********************************************************************
   COORDINATES = 'cartesian' 
   XLENGTH = 8.0     IMAX = 27	! length and cells in x/i direction
   YLENGTH = 20.0    JMAX = 30 	! length and cells in y/j direction
-  NO_K = .TRUE.                 !2D, no k direction
+  NO_K = .TRUE.                 ! 2D, no k direction
   
-  GRAVITY = 980        ! gravitational acceleration [y-direction]
+  GRAVITY = 980     ! gravitational acceleration (y-direction)
 
 
 !*********************************************************************
 ! Gas Phase
 !*********************************************************************
-  MU_g0 = 1.75E-4      ! constant viscosity (poise)
+  MU_g0 = 1.75E-4     ! constant viscosity (poise)
   RO_g0 = 1.205E-3     ! constant gas density
 
 
 !*********************************************************************
 ! Solid Phase
 !*********************************************************************
-  MMAX  =  1         ! number of 'solids' phases
+  MMAX = 1     ! number of 'solids' phases
   SOLIDS_MODEL(1) = 'DEM'     ! set the model type for the indicated
                               ! solids
-  D_p0  =  0.1       ! particle diameter 
-  RO_s0 =  2.65      ! particle density
+  D_p0 = 0.1     ! particle diameter 
+  RO_s0 = 2.65     ! material particle density
 
 ! strictly speaking these should not be needed for dem
-!  Phi  = 30.0        ! angle of internal friction (in degrees)
-!  e    = 0.9         ! coefficient of restitution p-p
-  EP_star  = 0.42    ! Packed bed void fraction
+  EP_star = 0.42     ! packed bed void fraction
 
 
 !*********************************************************************
 ! Initial Conditions
 !*********************************************************************
-! start from packed conditions
-
 ! bed --------------------
-  IC_X_w(1)      =  0.0
-  IC_X_e(1)      =  8.0
-  IC_Y_s(1)      =  0.0
-  IC_Y_n(1)      =  10.0
+  IC_X_w(1)       =       0.0
+  IC_X_e(1)       =       8.0
+  IC_Y_s(1)       =       0.0
+  IC_Y_n(1)       =      10.0
 
-  IC_EP_g(1)     =  1.0   ! set to 1 to skip some unnecessary data
-                           ! checks. ep_g will become based on the
-                           ! supplied particle_input.dat 
-  IC_U_g(1)      =  0.0    ! x-dir gas velocity
-  IC_V_g(1)      =  80.0   ! y-dir gas velocity
+  IC_EP_g(1)      =       1.0   ! set to 1 to skip some unnecessary data
+                                ! checks. ep_g will become based on the
+                                ! supplied particle_input.dat 
+  IC_U_g(1)       =       0.0   ! x-dir gas velocity
+  IC_V_g(1)       =      80.0   ! y-dir gas velocity
 
 ! freeboard --------------------
-  IC_X_w(2)      = 0.0
-  IC_X_e(2)      = 8.0
-  IC_Y_s(2)      = 10.0
-  IC_Y_n(2)      = 20.0
+  IC_X_w(2)       =       0.0
+  IC_X_e(2)       =       8.0
+  IC_Y_s(2)       =      10.0
+  IC_Y_n(2)       =      20.0
 
-  IC_EP_g(2)     = 1.0
-  IC_U_g(2)      = 0.0
-  IC_V_g(2)      = 100.0
+  IC_EP_g(2)      =       1.0
+  IC_U_g(2)       =       0.0
+  IC_V_g(2)       =     100.0
 
 
 !*********************************************************************
@@ -122,31 +120,32 @@
 
 ! Inlet --------------------
 ! gas flow through bottom
-  BC_X_w(1) = 0.1
-  BC_X_e(1) = 7.9
-  BC_Y_s(1) = 0.0
-  BC_Y_n(1) = 0.0
-  BC_TYPE(1) = 'MI'     ! mass inflow
+  BC_X_w(1)       =       0.1
+  BC_X_e(1)       =       7.9
+  BC_Y_s(1)       =       0.0
+  BC_Y_n(1)       =       0.0
+  BC_TYPE(1)      =       'MI'   ! mass inflow
 
-  BC_EP_g(1) = 1.0
-  BC_U_g(1) = 0.0
-  BC_V_g(1) = 250.0     ! inlet jet vel
-  BC_P_g(1) = 0.0
+  BC_EP_g(1)      =       1.0
+  BC_U_g(1)       =       0.0
+  BC_V_g(1)       =     250.0    ! inlet jet vel
+  BC_P_g(1)       =       0.0    ! at this time it is set
+                                 ! to avoid a data check
 
 ! Outlet --------------------
 ! specified pressure
-  BC_X_w(2) = 0.0
-  BC_X_e(2) = 8.0
-  BC_Y_s(2) = 20.0
-  BC_Y_n(2) = 20.0
-  BC_TYPE(2) = 'PO'     ! pressure outflow
-  BC_P_g(2) = 0.0
+  BC_X_w(2)       =       0.0
+  BC_X_e(2)       =       8.0
+  BC_Y_s(2)       =      20.0
+  BC_Y_n(2)       =      20.0
+  BC_TYPE(2)      =      'PO'    ! pressure outflow
+  BC_P_g(2)       =       0.0
 
 
 !*********************************************************************
 ! Discrete Element Model (DEM) 
 !*********************************************************************
-  DISCRETE_ELEMENT  = .TRUE.
+  DISCRETE_ELEMENT = .TRUE.
   DES_CONTINUUM_COUPLED = .TRUE.     ! couple gas and solids flow 
                                      ! together [.FALSE.]
   PARTICLES = 4000     ! total number of initial particles
@@ -178,8 +177,8 @@
 
 
 ! Particle cohesion --------------------
-  USE_COHESION=.TRUE.
-  VAN_DER_WAALS=.TRUE.
+  USE_COHESION = .TRUE.
+  VAN_DER_WAALS = .TRUE.
 
   HAMAKER_CONSTANT = 1e-10     ! (erg)
   WALL_HAMAKER_CONSTANT = 1.0e-10
@@ -192,12 +191,11 @@
 ! these keywords refer to M. Weber square well cohesion model that has
 ! since been removed from MFIX. To invoke these would require an older
 ! version of MFIX. Left here for legacy at this time.
-!  SQUARE_WELL = .FALSE.
-!  MASTER_WELL_DEPTH = 1e-3
-!  MASTER_WALL_WELL_DEPTH = 2e-3
-!  RADIUS_RATIO = 1.01
-!  WALL_RADIUS_RATIO = 1.01
-
+#  SQUARE_WELL = .FALSE.
+#  MASTER_WELL_DEPTH = 1e-3
+#  MASTER_WALL_WELL_DEPTH = 2e-3
+#  RADIUS_RATIO = 1.01
+#  WALL_RADIUS_RATIO = 1.01
 
 ! DES Output Control --------------------
   PRINT_DES_DATA = .F.    ! write DEM data as *.vtp files
@@ -206,8 +204,9 @@
 !*********************************************************************
 !  Output Control
 !*********************************************************************
+  RES_DT = 0.02     ! Interval (s) to update restart (.RES) file
 
-! Interval at which .SPX files are updated.
+! Interval (s) to update .SPX files 
 ! spx_dt(1) also controls dem output frequency for coupled cases
   SPX_DT(1)  =  1.0E-1   ! Void fraction (EP_g)
   SPX_DT(2)  =  5.0E-1   ! Gas and solids pressure (P_g, P_star)
@@ -219,15 +218,12 @@
   SPX_DT(8)  =  1.0E+2   ! Granular Temperature (G)
   SPX_DT(9)  =  1.0E+2   ! User defined scalars
 
-! Interval at which restart (.RES) file is updated.
-  RES_DT     =  0.02 
-
-! Interval in number of time steps at which .LOG file is written.
-  NLOG  = 25
-
 ! Display the residuals on the screen and messages about convergence
 ! on the screen and in the .LOG file. [.FALSE.]
-  FULL_LOG  = .TRUE.
+  FULL_LOG = .TRUE.
+
+! Interval in number of time steps at which .LOG file is written. [25]
+  NLOG = 25
 
 
 !*********************************************************************

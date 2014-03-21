@@ -1,17 +1,17 @@
+! A simple 3-particle DEM case (not coupled) with a weak form of 
+! van der Waals cohesive forces using 1 micron asperities
 
-! A simple 3-particle DEM case with a weak form of van der Waals cohesive
-! forces using 1 micron asperities
-! Author: S. Benyahia
+! Author: S. Benyahia, Dec. 2011
 
 
 !*********************************************************************
 ! Run Control
 !*********************************************************************
-  RUN_NAME    = 'R'
-  DESCRIPTION   = '3 particle case with vdW cohesion'
-  RUN_TYPE   = 'new'
+  RUN_NAME = 'des_vdw'
+  DESCRIPTION = '3 particle case with vdW cohesion'
+  RUN_TYPE = 'new'
 
-  UNITS   ='cgs'
+  UNITS = 'cgs'
 
   TIME = 0.0          ! start time
   TSTOP = 0.01        ! stop time 
@@ -33,24 +33,23 @@
   MOMENTUM_Y_EQ  = .F.       .FALSE.
   MOMENTUM_Z_EQ  = .F.       .FALSE.
 
-! Drag model ['SYAM_OBRIEN']
-  DRAG_TYPE            = 'WEN_YU'  !not used since single phase  
+! the gas-solid drag model.  ['SYAM_OBRIEN']
+  DRAG_TYPE = 'WEN_YU'     ! not used since single phase  
 
 !*********************************************************************
 ! Numerical Parameters
 !*********************************************************************
-
   MAX_NIT = 60           ! maximum number of iterations [500]
       
   TOL_RESID   = 0.001    ! max. continuity+momentum residual at 
                          ! convergence [1E-3]
 
 ! Discretization scheme
-  DISCRETIZE  = 9*2 
 !                [0] : First-order upwinding
 !                 1  : First-order upwinding (using down-wind factors)
 !                 2  : Superbee (recommended method)
 !                3-8 : see readme for details
+  DISCRETIZE = 9*2 
 
 ! Number of iterations in the linear equation solver
 !      [LEQ_IT(1,2)=20]
@@ -65,12 +64,12 @@
   LEQ_SWEEP = 9*'NONE'
 
 ! Use deferred correction method for implementing higher order
-! discretization.  Otherwise use down-wind factor method (default)
-  DEF_COR = .TRUE.  ! [.FALSE.]
+! discretization.  Otherwise use down-wind factor method [.FALSE.]
+  DEF_COR = .TRUE.  
 
 
 !*********************************************************************
-! Geometry and Discretization
+! Geometry 
 !*********************************************************************
 
   COORDINATES = 'cartesian' 
@@ -78,24 +77,24 @@
   YLENGTH = 0.3     JMAX = 12 	! length and cells in y/j direction
   ZLENGTH = 0.1     KMAX = 4    ! length and cells in z/k direction
   
-  GRAVITY = 981        ! gravitational acceleration [y-direction]
+  GRAVITY = 981     ! gravitational acceleration (y-direction)
 
 
 !*********************************************************************
 ! Gas Phase
 !*********************************************************************
-  MU_g0 = 0.00018      ! constant viscosity (poise or Pa.s)
+  MU_g0 = 0.00018     ! constant viscosity (poise)
 
 ! the molecular weight or density must be specified (or species names).
 ! if density is specified then the molecular weight will be ignored.
 ! specifying molecular weight allows for compressibility but requires
 ! setting the pressure and temperature in IC and BC regions
-!  RO_g0 = 0.0          ! constant gas density
-  MW_AVG = 29.0        ! average molecular weight of air
+#  RO_g0 = 0.0     ! constant gas density
+  MW_AVG = 29.0     ! average molecular weight of air (g/g-mol)
 
 ! the reference pressure is used to adjust input/output values of 
 ! pressure to a gauge value.
-  P_REF= 1010000       ! reference pressure
+  P_REF= 1010000.0     ! reference pressure (bayre)
 
 
 !*********************************************************************
@@ -114,31 +113,32 @@
 !*********************************************************************
 ! Initial Conditions
 !********************************************************************* 
-! geometry --------------------
-  IC_X_w(1)      =  0.0
-  IC_X_e(1)      =  0.3
-  IC_Y_s(1)      =  0.0
-  IC_Y_n(1)      =  0.3
-  IC_Z_b(1)      =  0.0
-  IC_Z_t(1)      =  0.1
+! currently not coupled so these gas phase settings will not matter
+! domain --------------------
+  IC_X_w(1)       =       0.0
+  IC_X_e(1)       =       0.3
+  IC_Y_s(1)       =       0.0
+  IC_Y_n(1)       =       0.3
+  IC_Z_b(1)       =       0.0
+  IC_Z_t(1)       =       0.1
 
-  IC_EP_g(1)     =  1.0    ! set to 1 to skip some unnecessary data
-                           ! checks. ep_g will become based on the
-                           ! supplied particle_input.dat 
-  IC_U_g(1)      =  0.0    ! x-dir gas velocity
-  IC_V_g(1)      =  1.0    ! y-dir gas velocity
-  IC_W_g(1)      =  0.0    ! z-dir gas velocity   
+  IC_EP_g(1)      =       1.0    ! set to 1 to skip some unnecessary data
+                                 ! checks. ep_g will become based on the
+                                 ! supplied particle_input.dat 
+  IC_U_g(1)       =       0.0    ! x-dir gas velocity
+  IC_V_g(1)       =       1.0    ! y-dir gas velocity
+  IC_W_g(1)       =       0.0    ! z-dir gas velocity   
 
 ! allows for slight compressibility since gas mw specified not density
-  IC_P_g(1)     = 1010000.0     ! pressure (Bayre)
-  IC_T_g(1)     = 300.0    ! temperature (K)
+  IC_P_g(1)       = 1010000.0    ! pressure (bayre)
+  IC_T_g(1)       =     300.0    ! temperature (K)
 
 
 !*********************************************************************
 ! Boundary Conditions
 !*********************************************************************
 ! By default outside boundaries are initialized as no slip walls 
-! No gas or continuum solids inlet/outlets
+! No gas inlet/outlets
 
 
 !*********************************************************************
@@ -206,11 +206,11 @@
 ! these keywords refer to M. Weber square well cohesion model that has
 ! since been removed from MFIX. To invoke these would require an older
 ! version of MFIX. Left here for legacy at this time.
-!  SQUARE_WELL = .FALSE.  
-!  MASTER_WELL_DEPTH = 1e-3
-!  MASTER_WALL_WELL_DEPTH = 2e-3
-!  RADIUS_RATIO = 1.01
-!  WALL_RADIUS_RATIO = 1.01
+#  SQUARE_WELL = .FALSE.  
+#  MASTER_WELL_DEPTH = 1e-3
+#  MASTER_WALL_WELL_DEPTH = 2e-3
+#  RADIUS_RATIO = 1.01
+#  WALL_RADIUS_RATIO = 1.01
 
 ! DES Output Control  --------------------
   PRINT_DES_DATA = .T.    ! write DEM data as *.vtp files
@@ -222,7 +222,10 @@
 !*********************************************************************
 !  Output Control
 !*********************************************************************
-! Interval at which .SPX files are updated.
+  RES_DT     =  0.01     ! Interval (s) to update restart (.RES) file 
+  OUT_DT     =  0.05     ! Interval (s) to update standard output (.OUT) file 
+
+! Interval (s) to update .SPX files 
 ! spx_dt(1) also controls dem output frequency for coupled cases
   SPX_DT(1)  =  1.0E-2   ! Void fraction (EP_g)
   SPX_DT(2)  =  100      ! Gas and solids pressure (P_g, P_star)
@@ -234,18 +237,12 @@
   SPX_DT(8)  =  1.0E+2   ! Granular Temperature (G)
   SPX_DT(9)  =  1.0E+2   ! User defined scalars
 
-! Interval at which standard output (.OUT) file is updated (s)
-  OUT_DT  = 0.05 
-
-! Interval at which restart (.RES) file is updated. (s)
-  RES_DT = 0.01
-
-! Interval in number of time steps at which .LOG file is written.
-  NLOG  = 25
-
 ! Display the residuals on the screen and messages about convergence
 ! on the screen and in the .LOG file. [.FALSE.]
   FULL_LOG  = .TRUE.
+
+! Interval in number of time steps at which .LOG file is written. [25]
+  NLOG  = 25
 
 
 !*********************************************************************
