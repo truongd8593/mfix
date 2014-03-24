@@ -2736,7 +2736,7 @@
        PIP_INIT = SUM(LPIP_ALL(:))
 
        FNAME_TMP = "BEFORE_CG_DELETION"
-       IF(.True.) CALL WRITE_PARTICLE_VTP_FILE(fname_tmp)
+       !IF(.True.) CALL WRITE_PARTICLE_VTP_FILE(fname_tmp)
 
        IF(USE_STL) then 
           IF(MPPIC) THEN 
@@ -2769,7 +2769,7 @@
        END DO
 
        FNAME_TMP =  "AFTER_CG_DELETION"
-       IF(.True.) CALL WRITE_PARTICLE_VTP_FILE(FNAME_TMP)
+       !IF(.True.) CALL WRITE_PARTICLE_VTP_FILE(FNAME_TMP)
      
        write(ERR_MSG,102) PIP_INIT, PIP_INIT -  PIP_FINAL, PIP_FINAL
        CALL FLUSH_ERR_MSG(header = .false.)
@@ -3353,6 +3353,18 @@
          
        END SUBROUTINE LIST_PARTS_TOBE_DEL_DEM 
        
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  SUBROUTINE:WRITE_PARTICLE_VTP_FILE                                  C
+!                                                                      C
+!  Purpose: Subroutine to des particle arrays to vtp files useful      C
+!           for debugging purporse.                                    C
+!                                                                      C
+!  Authors: Rahul Garg                               Date: 21-Mar-2014 C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE WRITE_PARTICLE_VTP_FILE(part_fname)
       USE run
       USE param1
