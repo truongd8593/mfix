@@ -416,6 +416,146 @@ module softspring_funcs_cutcell
 
       END SUBROUTINE CALC_FORCE_WITH_WALL_CUTFACE
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  SUBROUTINE: CHECK_IF_PARTICLE_OVELAPS_STL                           C
+!                                                                      C
+!  Purpose: This subroutine is special written to check if a particle  C
+!          overlaps any of the STL faces. The routine exits on         C
+!          detecting an overlap. It is called after initial            C
+!          generation of lattice configuration to remove out of domain C
+!          particles                                                   C 
+!                                                                      C
+!  Authors: Rahul Garg                               Date: 21-Mar-2014 C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C      
+      SUBROUTINE CHECK_IF_PARTICLE_OVELAPS_STL(POSITION, PCELL, RADIUS, & 
+      OVERLAP_EXISTS)
+
+      USE run
+      USE param1
+      USE discretelement, only: dimn 
+      USE geometry
+      USE constant
+      USE cutcell
+      USE indices
+      USE stl
+      USE des_stl_functions
+      Implicit none
+
+      DOUBLE PRECISION, INTENT(IN) :: POSITION(DIMN), RADIUS 
+      INTEGER , INTENT(IN) :: PCELL(4)
+      LOGICAL, INTENT(OUT) :: OVERLAP_EXISTS
+
+      INTEGER I, J, K, IJK, NF
+
+      DOUBLE PRECISION :: RADSQ, DISTSQ, DIST(DIMN), CLOSEST_PT(DIMN)
+      INTEGER :: COUNT_FAC, COUNT, contact_facet_count, NEIGH_CELLS, &
+      NEIGH_CELLS_NONNAT, &
+      LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
+      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP, &
+      LOC_MAX_PIP
+
+      INCLUDE 'function.inc'
+
+      FOCUS_PARTICLE = -1
+
+      OVERLAP_EXISTS = .false. 
+           
+      IF (NO_NEIGHBORING_FACET_DES(PCELL(4))) RETURN 
+
+      LIST_OF_CELLS(:) = -1
+      NEIGH_CELLS = 0
+      NEIGH_CELLS_NONNAT  = 0
+      CELL_ID = PCELL(4)
+      COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
+
+      RADSQ = RADIUS*RADIUS
+
+      IF (COUNT_FAC.gt.0)   then
+         !first add the facets in the cell the particle currently resides in
+         NEIGH_CELLS = NEIGH_CELLS + 1
+         LIST_OF_CELLS(NEIGH_CELLS) = CELL_ID
+      ENDIF
+
+      I_CELL = PCELL(1)
+      J_CELL = PCELL(2) 
+      K_CELL = PCELL(3)
+
+      IPLUS1  =  MIN( I_CELL + 1, IEND2)
+      IMINUS1 =  MAX( I_CELL - 1, ISTART2)
+      
+      JPLUS1  =  MIN (J_CELL + 1, JEND2)
+      JMINUS1 =  MAX( J_CELL - 1, JSTART2)
+      
+      KPLUS1  =  MIN (K_CELL + 1, KEND2)
+      KMINUS1 =  MAX( K_CELL - 1, KSTART2)
+      
+      DO K = KMINUS1, KPLUS1
+         DO J = JMINUS1, JPLUS1
+            DO I = IMINUS1, IPLUS1
+               IJK = FUNIJK(I,J,K)
+               COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+               IF(COUNT_FAC.EQ.0) CYCLE
+               distsq = zero
+               IF(POSITION(1) > XG_E(I)) DISTSQ = DISTSQ &
+               + (POSITION(1)-XG_E(I))*(POSITION(1)-XG_E(I))
+               
+               IF(POSITION(1) < XG_E(I) - DX(I)) DISTSQ = DISTSQ &
+               + (XG_E(I) - DX(I) - POSITION(1))*(XG_E(I) - DX(I) - POSITION(1))
+               
+               IF(POSITION(2) > YG_N(J)) DISTSQ = DISTSQ &
+               + (POSITION(2)-YG_N(J))* (POSITION(2)-YG_N(J))
+
+               IF(POSITION(2) < YG_N(J) - DY(J)) DISTSQ = DISTSQ &
+               + (YG_N(J) - DY(J) - POSITION(2))* (YG_N(J) - DY(J) - POSITION(2))
+               
+               IF(POSITION( 3) > ZG_T(K)) DISTSQ = DISTSQ &
+               + (POSITION(3)-ZG_T(K))*(POSITION(3)-ZG_T(K))
+               
+               IF(POSITION(3) < ZG_T(K) - DZ(K)) DISTSQ = DISTSQ &
+               + (ZG_T(K) - DZ(K) - POSITION(3))*(ZG_T(K) - DZ(K) - POSITION(3))
+               IF (DISTSQ < RADSQ) then
+                  NEIGH_CELLS_NONNAT = NEIGH_CELLS_NONNAT + 1
+                  NEIGH_CELLS = NEIGH_CELLS + 1
+                  LIST_OF_CELLS(NEIGH_CELLS) = IJK
+                                !WRITE(*,'(A10, 4(2x,i5))') 'WCELL  = ', IJK, I,J,K
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+
+      CONTACT_FACET_COUNT = 0
+
+      DO CELL_COUNT = 1, NEIGH_CELLS
+         IJK = LIST_OF_CELLS(CELL_COUNT)
+
+         DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+            NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
+            
+            CALL ClosestPtPointTriangle(POSITION(:), &
+            VERTEX(NF, 1,:), VERTEX(NF, 2,:), VERTEX(NF, 3,:), &
+            CLOSEST_PT(:))
+
+            DIST(:) = POSITION(:) - CLOSEST_PT(:)
+            DISTSQ = DOT_PRODUCT(DIST, DIST)
+
+            IF(DISTSQ .GE. RADSQ) CYCLE !No overlap exists, move on to the next facet
+                       
+            !Overlap detected
+            !Set overlap_exists to true and exit 
+            OVERLAP_EXISTS = .true.
+            RETURN
+
+         ENDDO
+         
+      end DO
+      
+      RETURN 
+      
+      END SUBROUTINE CHECK_IF_PARTICLE_OVELAPS_STL
+
 
       SUBROUTINE CALC_FORCE_WITH_WALL_CUTFACE_STL(PART_ID, OVERLAP_EXISTS)
 
