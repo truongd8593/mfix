@@ -56,29 +56,12 @@
 
 ! Note that the cell flags are not set when this routine is called.
 
-
-! For GHD theory
-! Increase MMAX by one to serve as 'mixture' phase
-! Automatically set SPECIES_EQ(MMAX) = .FALSE.
-      IF(TRIM(KT_TYPE) == 'GHD') THEN
-         MMAX = MMAX + 1
-         SPECIES_EQ(MMAX) = .FALSE.
-      ENDIF
-
 ! Dimensionless constants
       PI = 4.D0*ATAN(ONE) 
       SQRT_PI = SQRT(PI) 
       K_SCALE = .08D0 
       ETA = (1D0 + C_E)*0.5D0 
 
-! Plastic regime stress
-! Angle given in degree but calculated in radian within the fortran codes
-      IF(MMAx > 0) THEN
-        TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
-        SIN_PHI = SIN(PHI*PI/180.D0) 
-        SIN2_PHI = SIN_PHI*SIN_PHI 
-        F_PHI = (3.0D0 - 2.0D0*SIN2_PHI)/3.0D0 
-      ENDIF
 
 ! Enter the value of all constants in various units (CGS or SI)
       IF (UNITS == 'SI') THEN

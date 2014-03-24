@@ -19,6 +19,8 @@
       use run, only: TFM_SOLIDS, TFM_COUNT
       use run, only: DEM_SOLIDS, DEM_COUNT
       use run, only: PIC_SOLIDS, PIC_COUNT
+! Flag: Solve species eq.
+      USE run, only: SPECIES_EQ, ANY_SPECIES_EQ
 
 ! Flag: Use DES E-L model
       use discretelement, only: DISCRETE_ELEMENT
@@ -45,12 +47,17 @@
 ! Kinetic theory model for TFM solids.
       use run, only: KT_TYPE
 
+! Number of scalar equations to solve
+      USE scalars, only: NSCALAR, phase4scalar
+! Phase associated with scalar transport.
+      USE scalars, only: phase4scalar
+
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! Maximum number of solids phases.
       use param, only: DIM_M
 
-! Use the error manager for posting error messages.
+! Global Module procedures:
 !---------------------------------------------------------------------//
       use error_manager
 
@@ -60,22 +67,32 @@
 !---------------------------------------------------------------------//
 ! Loop counter
       INTEGER :: M ! Phase index
-
-
+! Error indicator for mmax
+      LOGICAL :: ERR_MMAX
+! Dummy integer
+      INTEGER :: N
 !......................................................................!
 
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_MODEL_PREREQS")
 
-
+! Moved this here but will need to discuss if this is best route 
+! going forward      
+      ERR_MMAX = .FALSE.
+      IF (MMAX < 0) ERR_MMAX = .TRUE.
+      IF(TRIM(KT_TYPE) == 'GHD') THEN
+         IF (MMAX+1 > DIM_M) ERR_MMAX = .TRUE.
+      ELSE
+         IF (MMAX > DIM_M) ERR_MMAX = .TRUE.
+      ENDIF
+      
 ! Check MMAX
-      IF (MMAX<0 .OR. MMAX>DIM_M) THEN 
-         WRITE(ERR_MSG, 1000)
+      IF (ERR_MMAX) THEN 
+         WRITE(ERR_MSG, 1000) iVal(DIM_M)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF 
-
- 1000 FORMAT('Error 1000: MMAX out of range. Min: 0, Max: ',I2)
+ 1000 FORMAT('Error 1000: MMAX out of range. Min: 0, Max: ',A)
 
 ! Loop over the phases to see what was specified.
       DO M=1, MMAX
@@ -126,7 +143,32 @@
 
 ! Set the number of TFM phases.
       MMAX = MMAX - DES_MMAX
+! For GHD theory increase MMAX by one to serve as 'mixture' phase
+      IF(TRIM(KT_TYPE) == 'GHD') THEN
+         MMAX = MMAX + 1
+! unclear if the following is necessary:         
+! Automatically set SPECIES_EQ(MMAX) = .FALSE.
+         SPECIES_EQ(MMAX) = .FALSE.
+      ENDIF
       SMAX = merge( MMAX-1, MMAX, KT_TYPE(1:3) == 'GHD')
+
+
+! temporary move for now since these rely on definition of mmax/smax      
+! Set variable ANY_SPECIES_EQ
+      N = max(SMAX, DES_MMAX)
+      ANY_SPECIES_EQ = any(SPECIES_EQ(:N))
+
+! Check phase specification for scalars
+      DO N = 1, NScalar
+         IF(Phase4Scalar(N) < 0 .OR. Phase4Scalar(N) > MMAX) THEN
+            WRITE(ERR_MSG,1004) iVar('Phase4Scalar',N), &
+               iVal(phase4scalar(N))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDDO
+ 1004 FORMAT('Error 1004: Illegal or unknown input: ',A,' = ',A,/  &
+         'Please correct the mfix.dat file.')
+
 
 
    !****************************************************************!

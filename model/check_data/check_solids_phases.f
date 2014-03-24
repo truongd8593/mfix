@@ -18,7 +18,7 @@
 ! Runtime flag specifying MPPIC solids
       use run, only: PIC_SOLIDS
 
-! Use the error manager for posting error messages.
+! Global Module procedures:
 !---------------------------------------------------------------------//
       use error_manager
 
@@ -26,7 +26,9 @@
 
 ! Local Variables:
 !---------------------------------------------------------------------//
-      
+
+!......................................................................!
+
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_PHASES")
 
@@ -82,15 +84,13 @@
       use discretelement, only: DES_CALC_CLUSTER
 
 ! Number of solid phases specified by the user/TFM model.
-      use physprop, only: MMAX
+      use physprop, only: SMAX
 ! Number of discrete solids.
       use discretelement, only: DES_MMAX
 
-
-! Use the error manager for posting error messages.
+! Global Module procedures:
 !---------------------------------------------------------------------//
       use error_manager
-
 
       implicit none
 
@@ -101,18 +101,18 @@
       INTEGER :: MMAX_TOT
 
 
+!......................................................................!
+
+
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_MODEL_LIMITATIONS")
 
 
-!......................................................................!
-
-
 ! Set up the total number of solids.
-      MMAX_TOT = MMAX + DES_MMAX
+      MMAX_TOT = SMAX + DES_MMAX
 
 
-! The cohesion model is only implemented for DEM simulations.
+! The cohesion model is only implemented for DEM simulations
       IF(USE_COHESION) THEN
          IF(TFM_SOLIDS .OR. PIC_SOLIDS) THEN
             WRITE(ERR_MSG, 2000)
@@ -124,7 +124,8 @@
       ENDIF
 
 
-! The cohesion model is only implemented for DEM simulations.
+! The cluster calculation only works at the particle level 
+! (i.e., for DEM simulations)
       IF(DES_CALC_CLUSTER) THEN
          IF(TFM_SOLIDS .OR. PIC_SOLIDS) THEN
             WRITE(ERR_MSG, 2001)
@@ -136,7 +137,7 @@
       ENDIF
 
 
-! The cohesion model is only implemented for DEM simulations.
+! Place holder
       IF(ENERGY_EQ .AND. (TFM_SOLIDS .OR. PIC_SOLIDS)) THEN
 !         IF()THEN
 !            WRITE(ERR_MSG, 2002)
@@ -146,20 +147,19 @@
  2002 FORMAT('Error 2002: The solids-solids conduction model is only', &
          ' available',/' for DEM only. Please correct the mfix.dat',   &
          ' file.')
-
       ENDIF
 
 
-! The cohesion model is only implemented for DEM simulations.
+! This is only implemented for pure TFM or pure DEM simulations.
       IF(any(SPECIES_EQ(1:MMAX_TOT))) THEN
          IF(TFM_SOLIDS .AND. DEM_SOLIDS) THEN
             WRITE(ERR_MSG, 5000)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
 
- 5000 FORMAT('Error 5000: Species equations are not available with ',  &
-         ' the hybrid',/'solids model. Please correct the mfix.dat file.')
-
+ 5000 FORMAT('Error 5000: Species equations are not available with',   &
+         ' the hybrid',/'solids model. Please correct the mfix.dat',   &
+         ' file.')
       ENDIF
 
 

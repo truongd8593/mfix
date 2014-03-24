@@ -24,7 +24,7 @@
       USE param 
       USE param1 
 
-! Global Module proceedures:
+! Global Module procedures:
 !---------------------------------------------------------------------//
       use error_manager
 
@@ -33,8 +33,6 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
       INTEGER :: M, N, L, LC
-      Character*80  Line(1)
-      CHARACTER*85 LONG_STRING
 
 
 !......................................................................!
@@ -42,7 +40,6 @@
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_CONTINUUM")
-
 
 ! Check EP_star
       IF(EP_STAR == UNDEFINED) THEN
@@ -53,13 +50,11 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
-
 ! CHECK MU_s0
       IF (MU_S0 < ZERO) THEN 
          WRITE(ERR_MSG, 1001) 'MU_s0', MU_s0
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF 
-
 
 ! CHECK DIF_s0
       IF (DIF_S0 < ZERO) THEN 
@@ -67,10 +62,8 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF 
 
-
 ! Check kinetic theory specifications.
       CALL CHECK_KT_TYPE
-
 
 ! Fedors_Landel correlation checks.
       IF(FEDORS_LANDEL .AND. SMAX /= 2) THEN
@@ -80,15 +73,13 @@
  1200 FORMAT('Error 1200: FEDORS_LANDEL correlation is for binary ',   &
          'mixtures (MMAX=2).',/'Please correct the mfix.dat file.')
 
-
-! Yu_Standish  correlation checks
+! Yu_Standish correlation checks
       IF(YU_STANDISH .AND. SMAX < 2) THEN
          WRITE(ERR_MSG, 1201)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
  1201 FORMAT('Error 1201: YU_STANDISH correlation is for polydisperse',&
          ' mixtures',/'(MMAX >= 2). Please correct the mfix.dat file.')
-
 
       IF(YU_STANDISH .AND. FEDORS_LANDEL) THEN
          WRITE(ERR_MSG, 1202)
@@ -98,7 +89,8 @@
          'cannot be',/'used at the same time. Please correct the ',    &
          'mfix.dat file.')
 
-! Solids phase quantities
+! If frictional stress modeling check various dependent/conflicting 
+! settings
       IF (FRICTION) THEN 
 ! Turn off the default when friction is set.
          SCHAEFFER = .FALSE.
@@ -136,6 +128,21 @@
  1205 FORMAT('Error 1205: The JENKINS small frication boundary ',      &
          'condtion is only',/'valid when solving GRANULAR_ENERGY',/    &
          'Please correct the mfix.dat file.')
+
+
+! it does not make sense to evaluate granular energy when the solids 
+! viscosity is set to a constant! so prevent granular energy routines
+! from being invoked with solids viscosity is set to constant. note
+! that the calculation for many of the solids phase transport 
+! coefficients that are needed will have be skipped in calc_mu_s 
+! anyway
+      IF (MU_S0 .NE. UNDEFINED .AND. GRANULAR_ENERGY) THEN
+         WRITE(ERR_MSG,1206)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+ 1206 FORMAT('Error 1206: A constant viscosity is specified but the ', &
+         'setting',/'GRANULAR_ENERGY=.TRUE. Please correct the ',      &
+         'mfix.dat file.')                 
 
 
 ! Set the flags for blending stresses.
@@ -196,7 +203,6 @@
 
 ! Check that phase number where added mass applies is properly defined.
       IF (ADDED_MASS) THEN
-         LONG_STRING = 'Must set disperse phase number M_AM where virtual mass applies.'
 
          IF(M_AM == UNDEFINED_I)THEN
             WRITE(ERR_MSG, 1305)
@@ -219,7 +225,8 @@
          IF(RDF_TYPE /= 'MODIFIED_LEBOWITZ' .AND. &
             RDF_TYPE /= 'MANSOORI' .AND. &
             RDF_TYPE /= 'MODIFIED_MANSOORI') &
-            CALL ERROR_ROUTINE ('CHECK_CONTINUUM_SOLIDS','Unknown RDF_TYPE',1,1)
+            CALL ERROR_ROUTINE ('CHECK_CONTINUUM_SOLIDS',&
+               'Unknown RDF_TYPE',1,1)
       ENDIF
 
 
@@ -231,11 +238,24 @@
          'Please correct the mfix.dat file.')
 
 
+! Plastic/frictional regime stress (jenkins is small frictional bc)
+      IF (FRICTION .OR. JENKINS .OR. SCHAEFFER) THEN
+! PHI and PHI_W are given in degree but calculated in radian within 
+! the fortran codes 
+         TAN_PHI_W = TAN(PHI_W*PI/180.D0)   ! jenkins or friction
+         SIN_PHI = SIN(PHI*PI/180.D0)   ! for friction/schaeffer
+         SIN2_PHI = SIN_PHI*SIN_PHI    ! for schaeffer
+         F_PHI = (3.0D0 - 2.0D0*SIN2_PHI)/3.0D0    ! for commented
+                                                   ! schaeffer section
+      ELSE
+         TAN_PHI_W = UNDEFINED
+         SIN_PHI = UNDEFINED
+         SIN2_PHI = UNDEFINED
+         F_PHI = UNDEFINED
+      ENDIF
 
-! I think the following should be moved to set_constants.
-!<<<>>><<<>>><<<>>><<<>>><<<>>><<<>>><<<>>><<<>>><<<>>><<<>>><<<>>><<<>>>!
 
-
+! This variable is only used for GHD at this point...
 ! Define restitution coefficient matrix
       DO LC = 1, SMAX 
          DO N = 1, SMAX
@@ -246,7 +266,8 @@
       ENDDO
 
 
-
+! This section will only be used if invoking jj_bc_PS which implies
+! granular_energy is true.
 ! k4phi, phip0 for variable specularity coefficient
       k4phi = UNDEFINED
       IF(BC_JJ_M) THEN
@@ -276,7 +297,8 @@
          ENDIF
  
          IF (phip0 < 0) THEN
-            CALL ERROR_ROUTINE ('CHECK_CONTINUUM_SOLIDS','phip0 less than zero',1,1)
+            CALL ERROR_ROUTINE ('CHECK_CONTINUUM_SOLIDS',&
+               'phip0 less than zero',1,1)
          ENDIF
 
          IF (PHIP_OUT_JJ) THEN
@@ -340,7 +362,7 @@
       USE param 
       USE param1 
 
-! Global Module proceedures:
+! Global Module procedures:
 !---------------------------------------------------------------------//
       use error_manager
 
