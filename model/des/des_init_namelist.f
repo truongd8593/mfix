@@ -728,55 +728,6 @@
 
 
 !<keyword category="Discrete Element" required="false">
-!  <description> Initially seed the parcels such that constant number 
-! of parcels are seeded per cell.
-! Statistical weight (defined as number of physical particles
-! represented by each parcel) is computed by the solver. 
-!</description>
-!  <dependent keyword="MPPIC" value=".TRUE."/>
-!  <conflict keyword="MPPIC_CONSTANTWT" value=".TRUE."/>
-      MPPIC_CONSTANTNPC  = .false.
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false">
-!  <description> Target number of parcels per cell when MPPIC_CONSTANTNPC is also true.
-! Relevant to MPPIC model only when MPPIC_CONSTANTNPC is also true.
-!</description>
-!  <dependent keyword="MPPIC" value=".TRUE."/>
-!  <dependent keyword="MPPIC_CONSTANTNPC" value=".TRUE."/>
-!  <conflict keyword="MPPIC_CONSTANTWT" value=".TRUE."/>
-!  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
-      NPC_PIC(:DIM_M) = UNDEFINED_I
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false">
-!  <description> Initially seed the parcels with specified constant 
-! value of statistical weight (defined as number of physical particles
-! represented by each parcel). Number of parcels per cell is computed by
-! the solver. 
-!</description>
-!  <dependent keyword="MPPIC" value=".TRUE."/>
-!  <conflict keyword="MPPIC_CONSTANTNPC" value=".TRUE."/>
-      MPPIC_CONSTANTWT = .false.
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false">
-!  <description> Statistical weight (defined as number of physical particles
-! represented by each parcel) of parcels to be used for initial seeding. 
-!Relevant for MPPIC model when MPPIC_CONSTANTWT is True. 
-!</description>
-!  <dependent keyword="MPPIC" value=".TRUE."/>
-!  <dependent keyword="MPPIC_CONSTANTWT" value=".TRUE."/>
-!  <conflict keyword="MPPIC_CONSTANTNPC" value=".TRUE."/>
-!  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
-      STATWT_PIC(:DIM_M) = UNDEFINED
-!</keyword>      
-
-
-!<keyword category="Discrete Element" required="false">
 !  <description>P_s term in the frictional stress model of Snider</description>
 !  <dependent keyword="MPPIC" value=".TRUE."/>
       PSFAC_FRIC_PIC = 100
