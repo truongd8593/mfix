@@ -20,6 +20,8 @@
 ! Flag: DEM solids present.
       use run, only: DEM_SOLIDS
 
+! Runtime flag specifying MPPIC solids
+      use run, only: PIC_SOLIDS     
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! Maximum number of IC.
@@ -62,8 +64,13 @@
          ENDIF
       ENDDO
 
-! Check IC input specific to DEM simulations.
+
+
+! Check the initial conditions for the DEM and MPPIC models as well 
+      IF(DEM_SOLIDS.OR.PIC_SOLIDS) &
+      CALL CHECK_IC_COMMON_DISCRETE       
       IF(DEM_SOLIDS) CALL CHECK_INITIAL_CONDITIONS_DEM
+      IF(PIC_SOLIDS) CALL CHECK_INITIAL_CONDITIONS_MPPIC
 
 ! Finalize the error manager.
       CALL FINL_ERR_MSG
