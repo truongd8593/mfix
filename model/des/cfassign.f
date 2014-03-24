@@ -29,6 +29,7 @@
       USE sendrecv
       USE discretelement
       USE mfix_pic
+      use error_manager
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -48,26 +49,13 @@
       INCLUDE 'b_force2.inc'
 !-----------------------------------------------
 
-      IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(3X,A)') &
-         '---------- START CFASSIGN ---------->'
+      CALL INIT_ERR_MSG("CFASSIGN")
+
 
 ! compute the volume of nodes - more description coming later
       CALL compute_volume_of_nodes
 
       TCOLL = LARGE_NUMBER
-
-! Set misc quantities defining the system
-!----------------------------------------------------------------->>>
-! Set boundary edges
-! In some instances wx1,ex2, etc have been used and in others
-! xlength,zero, etc are used. the code should be modified for
-! consistency throughout
-      WX1 = ZERO
-      EX2 = XLENGTH
-      BY1 = ZERO
-      TY2 = YLENGTH
-      SZ1 = ZERO
-      NZ2 = ZLENGTH
 
 ! the DEM variable grav(:) will not accomodate a body force that varies
 ! in space or on phases unlike the implementation in the continuum
@@ -78,50 +66,30 @@
       GRAV(1) = GRAVITY_X
       GRAV(2) = GRAVITY_Y
       IF(DIMN.EQ.3) GRAV(3) = GRAVITY_Z
-!      print*,'cfassign:',GRAVITY_X,GRAVITY_Y
+      WRITE(ERR_MSG, '(A, 2x, 3(ES15.7))') 'GRAVITY components for DES:', & 
+      GRAVITY_X, GRAVITY_Y, GRAVITY_Z
 
-! Note : the quantities xe, zt cannot be readily replaced with the
-! similar appearing variables x_e, z_t in main mfix code as they
-! are not the same.  also the variable y_n does not exist in main
-! mfix code.
-! Each loop starts at 2 and goes to max+2 (i.e., imin1=2, imax2=imax+2)
-! However, the indices range to include ghost cells (0-imax2) to avoid
-! multiple if statements in particles_in_cell
-      XE(IMIN2-1) = ZERO-DX(IMIN2)
-      DO I = IMIN2, IMAX2
-         XE(I) = XE(I-1) + DX(I)
-      ENDDO
-      YN(JMIN2-1) = ZERO-DY(JMIN2)
-      DO J  = JMIN2, JMAX2
-         YN(J) = YN(J-1) + DY(J)
-      ENDDO
-      IF(DIMN.EQ.3) THEN
-         ZT(KMIN2-1) = ZERO-DZ(KMIN2)
-         DO K = KMIN2, KMAX2
-            ZT(K) = ZT(K-1) + DZ(K)
-         ENDDO
-      ENDIF
-
-!-----------------------------------------------------------------<<<
-
+      CALL FLUSH_ERR_MSG (Footer = .false.)
 
 !-------------------------------------------------------
 ! Calculate collision parameters
 !----------------------------------------------------------------->>>
-      IF(DMP_LOG.AND..NOT.MPPIC) WRITE(UNIT_LOG,'(/2X,A,A)') &
-      'SOFT-SPRING FOR PARTICLE-PARTICLE AND PARTICLE-WALL COLLISIONS'
 
       IF (DES_COLL_MODEL_ENUM == HERTZIAN) THEN
 
          IF(DMP_LOG.AND..NOT.MPPIC) &
-            WRITE(UNIT_LOG,'(2X,A)') 'COLLISION MODEL: Hertzian'
+            WRITE(ERR_MSG,'(A)') 'COLLISION MODEL: Hertzian'
+            CALL FLUSH_ERR_MSG (Header = .false., Footer = .false.)
+
 
 ! particle-particle contact -------------------->
          DO I=1,DES_MMAX
             G_MOD(I) = 0.5d0*e_young(I)/(1.d0+v_poisson(I)) ! shear modulus 
-            if(dmp_log)write(unit_log,'(2X,A,I5,X,A,X,2(ES15.7))') &
-               'E_YOUNG AND V_POISSON FOR M = ', I, '=',&
-               E_YOUNG(I), V_POISSON(I)
+            WRITE(err_msg,'(A,I5,X,A,X,2(ES15.7))') &
+            'E_YOUNG AND V_POISSON FOR M = ', I, '=',&
+            E_YOUNG(I), V_POISSON(I)
+            CALL FLUSH_ERR_MSG (Header = .false., Footer = .false.)
+
          ENDDO
 
          COUNT_E = 0
@@ -174,10 +142,12 @@
                TCOLL_TMP = PI/SQRT(hert_kn(I,J)/MASS_EFF - ((DES_ETAN(I,J)/MASS_EFF)**2)/4.d0)
                TCOLL = MIN(TCOLL_TMP, TCOLL)
 
-               IF(DMP_LOG) &
-                  WRITE(UNIT_LOG,'(2X,A,I5,X,I5,X,A,X,2(ES15.7))') &
-                  'KN AND KT FOR PAIR ',I, J, '=', &
-                  hert_kn(I,J), hert_kt(I,J)
+               
+               WRITE(ERR_MSG,'(A,I5,X,I5,X,A,X,2(ES15.7))') &
+               'KN AND KT FOR PAIR ',I, J, '=', &
+               hert_kn(I,J), hert_kt(I,J)
+               CALL FLUSH_ERR_MSG
+
             ENDDO
          ENDDO
 
@@ -214,8 +184,10 @@
 
       ELSE                      ! Linear spring-dashpot model
 
-         IF(DMP_LOG) WRITE(UNIT_LOG,'(2X,A)') &
-            'COLLISION MODEL: Linear Spring-Dashpot (default)'
+         WRITE(ERR_MSG,'(A)') &
+         'COLLISION MODEL: Linear Spring-Dashpot (default)'
+            
+         CALL FLUSH_ERR_MSG (Header = .false., Footer = .false.)
 
 ! User's input for KT_FAC and KT_W_FAC will be used, otherwise these values are
 ! estimated using set factors.  See following references:
@@ -236,8 +208,10 @@
          ELSE
             KT_W = KT_W_FAC*KN_W
          ENDIF
-         IF(DMP_LOG) WRITE(UNIT_LOG,'(2X,A,ES17.10,2X,ES15.7)') &
-            'KN AND KT = ', KN, KT
+         WRITE(err_msg,'(A,ES17.10,2X,ES15.7)') &
+         'KN AND KT = ', KN, KT
+         CALL FLUSH_ERR_MSG (Header = .false., Footer = .false.)
+
 
 ! particle-particle contact -------------------->
          COUNT_E = 0
@@ -318,40 +292,45 @@
 ! reporting information to logs
       DO I = 1, DES_MMAX
          DO J = I, DES_MMAX
-         IF(DMP_LOG) WRITE(UNIT_LOG,'(2X,A,I10,2X,I10,A,2(ES15.7))') &
+            WRITE(err_msg, '(A,I10,2X,I10,A,2(ES15.7))') &
             'ETAN AND ETAT FOR PAIR ',&
             I, J, ' = ', DES_ETAN(I,J), DES_ETAT(I,J)
+            CALL FLUSH_ERR_MSG (Header = .false., Footer = .false.)
          ENDDO
       ENDDO
       DTSOLID = TCOLL/50.d0
 
-      IF(DMP_LOG.AND..NOT.MPPIC) &
-         WRITE(UNIT_LOG,'(2X,A,E17.10,2X,E17.10)') &
-         'MIN TCOLL AND DTSOLID = ',TCOLL, DTSOLID
+      IF(.NOT.MPPIC) &
+      WRITE(err_msg,'(A,E17.10,2X,E17.10)') &
+      'MIN TCOLL AND DTSOLID = ',TCOLL, DTSOLID
+      CALL FLUSH_ERR_MSG (Header = .false.)
 
 
       IF(MPPIC) THEN
          DO M = 1, DES_MMAX
             DES_TAU_P(M) = DES_RO_S(M)*(DES_D_P0(M)**2.d0)/(18.d0*MU_g0)
-            IF(DMP_LOG) WRITE(UNIT_LOG,'(/2X,A,I2,A,G17.8)') &
-               'TAU_P FOR ', M,'th SOLID PHASE= ', DES_TAU_P(M)
+            WRITE(err_msg,'(/A,I2,A,G17.8)') &
+            'TAU_P FOR ', M,'th SOLID PHASE= ', DES_TAU_P(M)
+            CALL FLUSH_ERR_MSG (Header = .false., Footer = .false.)
+
          ENDDO
 
          DTSOLID = MINVAL(DES_TAU_P(1:DES_MMAX))
          DTPIC_TAUP = DTSOLID   !maximum dt for point-particles based on taup
 
-         IF(DMP_LOG) THEN
-            WRITE(UNIT_LOG,'(/2X,A,A,A)') 'MPPIC: POINT PARTICLE ',&
-               'APPROXIMATION FOR PARTICLE-PARTICLE AND ',&
-               'PARTICLE-WALL COLLISIONS'
-            WRITE(UNIT_LOG,'(2X,A)') &
-               'DTSOLID BASED ON PARTICLE TIME RESPONSE TAUP'
-            WRITE(UNIT_LOG,'(2X,A,E17.10)') 'DTSOLID = ', DTSOLID
-         ENDIF
+         WRITE(ERR_MSG, 1000) DTSolid 
+         CALL FLUSH_ERR_MSG(Header = .false.)
+
+ 1000    format('MPPIC: Point-particle ',&
+         'approximation for particle-particle and ', /, & 
+         'particle-wall collisions', /, &
+         'DTSOLID based on particle time response Taup', /, & 
+         'DTSOLID = ', 2x, E17.10)
       ENDIF
 
-      IF(DMP_LOG.AND.DEBUG_DES) &
-         WRITE(UNIT_LOG,'(3X,A)') '<---------- END CFASSIGN ----------'
+
+! Finalize the error manager.
+      CALL FINL_ERR_MSG
 
       RETURN
       END SUBROUTINE CFASSIGN
