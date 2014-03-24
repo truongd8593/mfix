@@ -4,9 +4,88 @@
 !  Purpose: allocate arrays for DES                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE DES_ALLOCATE_ARRAYS_EULERIAN_GEOM
 
-      SUBROUTINE DES_ALLOCATE_ARRAYS
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: DES_ALLOCATE_ARRAYS_EULERIAN_GEOM                       !
+!                                                                      !
+!  Purpose: Allocate some des arrays that are based on Eulerian grid   !
+!           and are needed for generating particle configuration.      !
+!           Ideally all the arrays dimensioned by Eulerian grid        !
+!           parameters should be moved here but it breaks the flow for !
+!           for feature based allocation. So limiting to variables     !
+!           needed by gener_part_config routines                       !
+!  Author:   R.Garg                                   Date: 19-Mar-14  !
+!  Comments: Most of the code is from des_allocate arrays routine      !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
+
+! Cell faces
+! Added 0 to store IMIN3 values 
+      USE param 
+      USE param1
+      USE constant
+      USE discretelement
+      Use indices
+      USE geometry
+      
+      IMPLICIT NONE 
+      INTEGER :: I, J, K 
+      Allocate(  XE (0:DIMENSION_I) )
+      Allocate(  YN (0:DIMENSION_J) )
+      Allocate(  ZT (0:DIMENSION_K) )
+
+
+      ! Set misc quantities defining the system
+!----------------------------------------------------------------->>>
+! Set boundary edges
+! In some instances wx1,ex2, etc have been used and in others
+! xlength,zero, etc are used. the code should be modified for
+! consistency throughout
+      WX1 = ZERO
+      EX2 = XLENGTH
+      BY1 = ZERO
+      TY2 = YLENGTH
+      SZ1 = ZERO
+      NZ2 = ZLENGTH
+      
+      XE(:) = ZERO
+      YN(:) = ZERO
+      ZT(:) = ZERO
+
+! Note : the quantities xe, zt cannot be readily replaced with the
+! similar appearing variables x_e, z_t in main mfix code as they
+! are not the same.  also the variable y_n does not exist in main
+! mfix code.
+! Each loop starts at 2 and goes to max+2 (i.e., imin1=2, imax2=imax+2)
+! However, the indices range to include ghost cells (0-imax2) to avoid
+! multiple if statements in particles_in_cell
+      XE(IMIN2-1) = ZERO-DX(IMIN2)
+      DO I = IMIN2, IMAX2
+         XE(I) = XE(I-1) + DX(I)
+      ENDDO
+      YN(JMIN2-1) = ZERO-DY(JMIN2)
+      DO J  = JMIN2, JMAX2
+         YN(J) = YN(J-1) + DY(J)
+      ENDDO
+      IF(DIMN.EQ.3) THEN
+         ZT(KMIN2-1) = ZERO-DZ(KMIN2)
+         DO K = KMIN2, KMAX2
+            ZT(K) = ZT(K-1) + DZ(K)
+         ENDDO
+      ENDIF
+
+!-----------------------------------------------------------------<<<
+
+      
+      END SUBROUTINE DES_ALLOCATE_ARRAYS_EULERIAN_GEOM
+
+
+
+      SUBROUTINE DES_ALLOCATE_ARRAYS 
+                                                                   
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
@@ -26,6 +105,11 @@
       Use des_thermo
       Use des_rxns
       USE cutcell
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
+      use error_manager
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -40,17 +124,11 @@
       INCLUDE 'function.inc'
 !-----------------------------------------------
 
+      CALL INIT_ERR_MSG("DES_ALLOCATE_ARRAYS")
 
-      IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(1X,A)') &
-         '---------- START DES_ALLOCATE_ARRAYS ---------->'
-
-      IF(DMP_LOG) WRITE(UNIT_LOG,'(/2X,A)') &
-         'From: DES_ALLOCATE_ARRAYS'
-      IF(DMP_LOG) WRITE(UNIT_LOG,'(2X,A,I10)') &
-         'Total number of particles = ', PARTICLES
-      IF(DMP_LOG) WRITE(UNIT_LOG,'(2X,A,I5)') &
-         'Dimension = ', DIMN
-
+      write(err_msg, 1000) Particles 
+ 1000 FORMAT('Total number of particles = ', 2x, i15)
+      CALL FLUSH_ERR_MSG(footer = .false.)
 
       NWALLS = 2*DIMN
       MAXNEIGHBORS = MN + 1 + NWALLS
@@ -66,38 +144,54 @@
 ! J.Musser : Dynamic Particle Info
 ! no real need to print this information out
       IF(MAX_PIS /= UNDEFINED_I .AND. MAX_PIS .GT. NPARTICLES) THEN
-         IF(DMP_LOG) WRITE(UNIT_LOG, 1002) MAX_PIS, NPARTICLES, MAX_PIS
-         IF(DMP_LOG) WRITE(*, 1002) MAX_PIS, NPARTICLES, MAX_PIS
+         !WRITE(ERR_MSG, 1001) MAX_PIS, NPARTICLES, MAX_PIS
+         !CALL FLUSH_ERR_MSG(header = .false., footer = .false.)
          NPARTICLES = MAX_PIS
       ENDIF
+
+ 1001 FORMAT(/,'User supplied MAX_PIS (',I15, &
+      ') > cummulative size of particle arrays, NPARTILCES ( ', I15 , ')', /, & 
+      'Therefore, setting NPARTICLES to ',I15)
+      
 
 ! For parallel processing the array size required should be either
 ! specified by the user or could be determined from total particles
 ! with some factor
-      IF (numPEs.GT.1) THEN
-        NPARTICLES = (NPARTICLES/numPEs)
-      ENDIF
+      NPARTICLES = (NPARTICLES/numPEs)
 
 ! minimum size for nparticles
       IF(NPARTICLES.LT.1000) NPARTICLES = 1000
+      
+      IF(NPARTICLES .LT. PIP) then 
+         write(err_msg, 1002) mype, Nparticles, pip
+         CALL FLUSH_ERR_MSG(header = .false., footer = .false., Abort = .true.)
+      endif
+ 1002 FORMAT(/,'Error 1002: For processor:', 2x, i5, /, &
+      'Particle array size determined (', 2x, I15, & 
+      ') is less than number of particles (', 2x, i15, ')', /, & 
+      'Increase MAX_PIS or particles_factor in the input file')
 
 ! max_pip adjusted to accomodate temporary variables used for walls
-      MAX_PIP = NPARTICLES - 2*NWALLS - 3
+      IF(MPPIC) then 
+         MAX_PIP = NPARTICLES 
+      else
+         MAX_PIP = NPARTICLES - 2*NWALLS - 3
+         !the above adjustment is not needed and is an artifact 
+         !of old particle-wall interaction. 
+         !It will be removed once CG like particle-wall 
+         !is made the default. RG 
+      endif
 
-      IF(DMP_LOG) WRITE(UNIT_LOG, 1003)  NPARTICLES, MAX_PIP
-      IF(DMP_LOG) WRITE(*, 1003)  NPARTICLES, MAX_PIP
+      
+      WRITE(err_msg, 1003)  NPARTICLES, MAX_PIP
 
-! check if max_pip is less than maximum number of computational
-! particles for the MPPIC case if so, stop the code after printing
-! the error message
-      IF(GENER_PART_CONFIG.AND.MPPIC) THEN
-         IF(MAX_PIP.LT. SUM(PART_MPHASE(1:DES_MMAX))) THEN
-            IF(DMP_LOG) WRITE(UNIT_LOG,1001) MAX_PIP, SUM(PART_MPHASE(1:DES_MMAX))
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-      ENDIF
-!-----------------------------------------------------------------<<<
-
+ 1003 FORMAT('Particle array size on each proc = ',I15, /,&
+      'Maximum possible physical particles (MAX_PIP) on each proc = ',I15,/, &
+      'Note that this value of MAX_PIP is only ',&
+      'relevant for a new run',/,'For restarts, max_pip ',&
+      'will be set later on')
+      
+      CALL FLUSH_ERR_MSG(header = .false., footer = .false.)
 
 ! DES Allocatable arrays
 !-----------------------------------------------
@@ -187,12 +281,6 @@
 
 ! Temporary variables to store wall position, velocity and normal vector
       Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
-
-! Cell faces
-! Added 0 to store IMIN3 values
-      Allocate(  XE (0:DIMENSION_I) )
-      Allocate(  YN (0:DIMENSION_J) )
-      Allocate(  ZT (0:DIMENSION_K) )
 
 ! Gravity vector
       Allocate(  GRAV (DIMN) )
@@ -366,23 +454,10 @@
       IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(1X,A)')&
          '<---------- END DES_ALLOCATE_ARRAYS ----------'
 
-
- 1001 FORMAT(/1X,70('*')//' From: DES_ALLOCATE_ARRAYS',/,&
-         ' Message: MAX_PIP',4X,I4,4X,&
-         'is smaller than number of particles ',4x,i4,4x,/,&
-         'INCREASE PARTICLE FACTOR',/1X,70('*')/)
-
- 1002 FORMAT(2X,'Message: User supplied MAX_PIS =',I10,/2X,&
-         '> NPARTICLES (cummulative size of particle arrays) =',&
-         I10,/2X,'Therefore, setting NPARTICLES to ',I10)
-
- 1003 FORMAT(2X,'Message: particle array size on each proc = ',I10,/2X,&
-         'Maximum physical particles (MAX_PIP) one each proc = ',&
-         I10,/2X,'Note that this value of MAX_PIP is only ',&
-         'relevant for a new run',/2X,'For restarts, max_pip ',&
-         'be set later on')
-
       RETURN
+      write(err_msg, '(A,/)') ''
+      call flush_err_msg(header = .false.)
+      CALL FINL_ERR_MSG
       END SUBROUTINE DES_ALLOCATE_ARRAYS
 
 
