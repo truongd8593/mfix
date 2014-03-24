@@ -42,7 +42,17 @@
 !-----------------------------------------------      
       INCLUDE 'function.inc'
 !-----------------------------------------------
-     
+!Allocate the DES arrays dimensioned by Eulerian grid parameters 
+
+      CALL DES_ALLOCATE_ARRAYS_EULERIAN_GEOM
+
+      IF(RUN_TYPE == 'NEW' .and. particles /= 0) THEN ! Fresh run
+
+         IF(GENER_PART_CONFIG) THEN 
+            CALL GENERATE_PARTICLE_CONFIG
+         ENDIF
+      ENDIF
+           
       CALL DES_ALLOCATE_ARRAYS
       CALL DES_INIT_ARRAYS
 
@@ -76,7 +86,8 @@
          IF(.NOT.GENER_PART_CONFIG) THEN 
             CALL READ_PAR_INPUT
          ELSE
-            CALL GENERATE_PARTICLE_CONFIG
+            CALL COPY_PARTICLE_CONFIG_FROMLISTS
+            !Copy the particle config residing in linked lists to des arrats 
          ENDIF
          
 ! Further initialization now the particles have been specified         
@@ -144,21 +155,7 @@
          IF(DES_POS_NEW(L,2).LE.YLENGTH/2.d0) MARK_PART(L) = 0         
       ENDDO
 
-! This call will delete the particles outside the domain. It will then
-! re-arrange the arrays such that the active particles are in a block.
-! This works only for MPPIC as the cell information is added to 
-! particles in generate_particle_config_mppic itself. For DEM particles,
-! the cell information is not added in generate_particle_config but is
-! done only during first call to particles_in_cell. 
-! Call this before particles_in_cell as EP_G is computed which 
-! might become less than zero if the particles outside the domain 
-! are not removed first.
-! JM: Added RUN_TYPE check to prevent particles from being deleted 
-! during a restart.
-      IF(RUN_TYPE == 'NEW' .AND. CARTESIAN_GRID.and.gener_part_config) then
-      !IF(RUN_TYPE == 'NEW' .AND. CARTESIAN_GRID) then
-         CALL CG_DEL_OUTOFDOMAIN_PARTS
-      ENDIF
+
 ! do_nsearch should be set before calling particle in cell  
       DO_NSEARCH =.TRUE.
       CALL PARTICLES_IN_CELL
