@@ -89,7 +89,8 @@
              IC_X_g, IC_X_s, IC_TYPE, IC_P_star, IC_L_scale,&
              IC_GAMA_Rg, IC_T_Rg, IC_GAMA_Rs, IC_T_Rs,&
              IC_Theta_m, IC_Scalar, IC_K_Turb_G, IC_E_Turb_G, &
-         	 IC_EP_s, IC_DES_FIT_TO_REGION, &
+	     IC_EP_s, IC_DES_FIT_TO_REGION, IC_PIC_CONST_NPC, &
+	     IC_PIC_CONST_STATWT, &
 ! ----------------------------------------------------------------<<<
 
 ! 1.8 Boundary conditions section
