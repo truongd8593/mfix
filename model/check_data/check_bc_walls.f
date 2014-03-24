@@ -1,697 +1,551 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-! Subroutine: CHECK_BC_P_INFLOW                                        !
+! Subroutine: CHECK_BC_WALLS                                           !
 ! Author: J.Musser                                    Date: 01-Mar-14  !
 !                                                                      !
-! Purpose: Provided a detailed error message when the sum of volume    !
+! Purpose: Driver routine to call checks for WALL BCs.                 !
 !                                                                      !
-!     Unlike the MI boundary, for the PI boundary the velocities at    !
-!     the inflow face are calculated by solving the momentum eqns      !
-!     and are not fixed. In this way, the PI is similar to the PO      !
-!     except that the flow is into the domain and hence all other      !
-!     scalars (e.g., mass fractions, void fraction, temperature,       !
-!     etc.,) at the inflow cells need to be specified. To satisfy      !
-!     the error routines at the start of the simulation, both the      !
-!     tangential and normal components at the inflow also need to      !
-!     be specified. The velocities values essentially serve as IC.     !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
       SUBROUTINE CHECK_BC_WALLS(M_TOT, SKIP, BCV)
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE geometry
-      USE fldvar
-      USE physprop
-      USE run
-      USE bc
-      USE indices
-      USE funits 
-      USE scalars
-      USE compar
-      USE sendrecv
-      USE discretelement
-      USE mfix_pic
-      USE cutcell
 
+! Global Variables:
+!---------------------------------------------------------------------//
+! Flag: Identifies solids model (TFM,DEM,PIC)
+      use run, only: SOLIDS_MODEL
+! Flag: Solve granular energy PDE
+      use run, only: GRANULAR_ENERGY
+! Flag: Use Jenkins small small frication BC
+      use run, only: JENKINS
+! Flag: Use revised phihp for JJ BC.
+      use bc, only: BC_JJ_PS
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Maximum number of solids phases
+      use param, only: DIM_M
+! Parameter constant.
+      use param1, only: UNDEFINED_I
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
       use error_manager
 
       IMPLICIT NONE
 
-
+! Dummy Arguments.
+!---------------------------------------------------------------------//
+! Index of BC being checked.
       INTEGER, INTENT(in) :: BCV
+! Total number of solids phases.
       INTEGER, INTENT(in) :: M_TOT
+! Flag. Solids not present at this BC (used for flow BCs).
       LOGICAL, INTENT(in) :: SKIP(DIM_M)
 
-
-      INTEGER :: I, J ,K, IJK
-      INTEGER :: M, N
-! Solids phase density in BC region.
-      DOUBLE PRECISION :: BC_ROs(MMAX)
-! Index of inert species
-      INTEGER :: INERT
-
-      DOUBLE PRECISION SUM, SUM_EP
-
-      DOUBLE PRECISION, EXTERNAL :: EOSS
-      LOGICAL , EXTERNAL :: COMPARE 
+! Local Variables:
+!---------------------------------------------------------------------//
+! Loop/counter variable.
+      INTEGER :: M
+!......................................................................!
 
 
+! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_BC_WALLS")
 
+! Input checks for gas phase.
+      CALL CHECK_BC_WALLS_GAS(BCV)
 
-! Following section to check quantities for wall type boundaries
-! ---------------------------------------------------------------->>>      
+! Input checks for solid phases.
+      DO M=1, M_TOT
+         SELECT CASE(SOLIDS_MODEL(M))
+         CASE ('TFM'); CALL CHECK_BC_WALLS_TFM(BCV, M)
+         CASE ('DEM'); CALL CHECK_BC_WALLS_DISCRETE(BCV, M)
+         CASE ('PIC'); CALL CHECK_BC_WALLS_DISCRETE(BCV, M)
+         END SELECT
+      ENDDO
 
-! Default specification of Johnson-Jackson bc
-      IF(GRANULAR_ENERGY) THEN
-         IF(BC_JJ_PS(BCV) == UNDEFINED_I) BC_JJ_PS(BCV) = 1 
-      ELSE
-         IF(BC_JJ_PS(BCV) == UNDEFINED_I) BC_JJ_PS(BCV) = 0 
-      ENDIF 
+! Input checks for user-defined scalar equations.
+      CALL CHECK_BC_WALLS_SCALAR_EQ(BCV)
+
+! Set the default specification of Johnson-Jackson BC
+      IF(BC_JJ_PS(BCV) == UNDEFINED_I)                                 &
+         BC_JJ_PS(BCV) = merge(1,0,GRANULAR_ENERGY)
 
 ! Set Jenkins default specification, modify BC_JJ accordingly
       IF(GRANULAR_ENERGY .AND. JENKINS) BC_JJ_PS(BCV) = 1
 
-
-! The wall velocities are not needed for no-slip or free-slip                
-      IF(BC_TYPE(BCV) == 'PAR_SLIP_WALL') THEN 
-         IF(BC_UW_G(BCV) == UNDEFINED) THEN 
-            WRITE (UNIT_LOG, 1000) 'BC_Uw_g', BCV 
-            call mfix_exit(myPE)  
-         ENDIF 
-         IF(BC_VW_G(BCV) == UNDEFINED) THEN 
-            WRITE (UNIT_LOG, 1000) 'BC_Vw_g', BCV 
-            call mfix_exit(myPE)  
-         ENDIF 
-         IF(.NOT.NO_K) THEN 
-            IF(BC_WW_G(BCV) == UNDEFINED) THEN 
-               WRITE (UNIT_LOG, 1000) 'BC_Ww_g', BCV
-               call mfix_exit(myPE)  
-            ENDIF 
-         ELSE 
-            BC_WW_G(BCV) = ZERO 
-         ENDIF 
-      ENDIF
-
-
-      IF(BC_TYPE(BCV)=='PAR_SLIP_WALL' .OR. BC_JJ_PS(BCV)==1) THEN
-         DO M = 1, MMAX
-
-!            IF(SOLIDS_PHASE(M) == 'DEM') CYCLE
-
-            IF(BC_UW_S(BCV,M) == UNDEFINED) THEN
-               WRITE(UNIT_LOG, 1100) 'BC_Uw_s', BCV, M
-               call mfix_exit(myPE)  
-            ENDIF 
-            IF(BC_VW_S(BCV,M) == UNDEFINED) THEN 
-               WRITE (UNIT_LOG, 1100) 'BC_Vw_s', BCV, M 
-               call mfix_exit(myPE)  
-            ENDIF 
-            IF(.NOT.NO_K) THEN 
-               IF (BC_WW_S(BCV,M) == UNDEFINED) THEN 
-                  IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_Ww_s', BCV, M 
-                  call mfix_exit(myPE)  
-               ENDIF 
-            ELSE 
-               BC_WW_S(BCV,M) = ZERO 
-            ENDIF 
-         ENDDO 
-      ENDIF   ! end if (.not.discrete_element .or. des_continuum_hybrid .or.
-                       !          mppic)
-
-               IF (ENERGY_EQ) THEN 
-                  IF (BC_HW_T_G(BCV) < ZERO) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1003) 'BC_hw_T_g', BCV 
-                     call mfix_exit(myPE)  
-                  ENDIF 
-                  IF (BC_HW_T_G(BCV)/=ZERO .AND. &
-                      BC_TW_G(BCV)==UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_Tw_g', BCV 
-                     call mfix_exit(myPE)  
-                  ENDIF 
-                  IF (BC_HW_T_G(BCV)/=UNDEFINED .AND. &
-                      BC_C_T_G(BCV)==UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_C_T_g', BCV 
-                     call mfix_exit(myPE)  
-                  ENDIF 
-
-                  IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID &
-                      .OR. MPPIC) THEN
-                     DO M = 1, SMAX 
-                        IF (BC_HW_T_S(BCV,M) < ZERO) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1103) 'BC_hw_T_s', BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                        IF (BC_HW_T_S(BCV,M)/=ZERO .AND.&
-                            BC_TW_S(BCV,M)==UNDEFINED) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_Tw_s', BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                        IF (BC_HW_T_S(BCV,M)/=UNDEFINED .AND. &
-                            BC_C_T_S(BCV,M)==UNDEFINED) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_C_T_s', BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                     ENDDO 
-                  ENDIF   ! end if (.not.discrete_element .or. des_continuum_hybrid)
-               ENDIF   ! end if (energy_eq)
-
-               IF (.NOT. DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID  &
-                   .OR. MPPIC) THEN
-                  IF (GRANULAR_ENERGY .AND. BC_JJ_PS(BCV)==0) THEN 
-                     DO M = 1, MMAX 
-                        IF (BC_HW_THETA_M(BCV,M) < ZERO) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1103) &
-                              'BC_hw_Theta_m', BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                        IF (BC_HW_THETA_M(BCV,M)/=ZERO .AND. &
-                            BC_THETAW_M(BCV,M)==UNDEFINED) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
-                              'BC_Thetaw_m', BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                        IF (BC_HW_THETA_M(BCV,M)/=UNDEFINED .AND. &
-                            BC_C_THETA_M(BCV,M)==UNDEFINED) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
-                              'BC_C_Theta_m', BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                     ENDDO 
-                  ENDIF   ! end if (granular_energy .and. bc_jj_ps(bcv)==0)
-               ENDIF    ! end if (.not.discrete_element .or. des_continuum_hybrid 
-                        !         .or. mppic)
-
-               IF (SPECIES_EQ(0)) THEN 
-                  DO N = 1, NMAX(0) 
-                     IF (BC_HW_X_G(BCV,N) < ZERO) THEN 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1005) 'BC_hw_X_g', BCV, N 
-                        call mfix_exit(myPE)  
-                     ENDIF 
-                     IF (BC_HW_X_G(BCV,N)/=ZERO .AND. &
-                         BC_XW_G(BCV,N)==UNDEFINED) THEN 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_Xw_g', BCV, N 
-                        call mfix_exit(myPE)  
-                     ENDIF 
-                     IF (BC_HW_X_G(BCV,N)/=UNDEFINED .AND. &
-                         BC_C_X_G(BCV,N)==UNDEFINED) THEN 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_C_X_g', BCV, N 
-                        call mfix_exit(myPE)  
-                     ENDIF 
-                  ENDDO 
-               ENDIF   ! end if (species_eq(0))
-
-               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID .OR.&
-                   MPPIC) THEN
-                  DO M = 1, SMAX 
-                     IF (SPECIES_EQ(M)) THEN 
-                        DO N = 1, NMAX(M) 
-                           IF (BC_HW_X_S(BCV,M,N) < ZERO) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1105) &
-                                 'BC_hw_X_s', BCV, M, N 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                           IF (BC_HW_X_S(BCV,M,N)/=ZERO .AND. &
-                               BC_XW_S(BCV,M,N)==UNDEFINED) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1104) &
-                                 'BC_Xw_s', BCV, M, N 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                           IF (BC_HW_X_S(BCV,M,N)/=UNDEFINED .AND. &
-                               BC_C_X_S(BCV,M,N)==UNDEFINED) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1104) &
-                                 'BC_C_X_s', BCV, M, N 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                        ENDDO 
-                     ENDIF    ! end if (species_eq(m))
-                  ENDDO    ! end loop over (m=1,smax)
-               ENDIF   ! end if (.not.discrete_element .or. des_continuum_hybrid)
-                       !         .or. mppic)
-
-               DO N = 1, NScalar
-                  IF (BC_HW_Scalar(BCV,N) < ZERO) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1005) 'BC_hw_Scalar', BCV, N 
-                     CALL MFIX_EXIT(myPE)
-                  ENDIF 
-                  IF (BC_HW_Scalar(BCV,N)/=ZERO .AND. &
-                      BC_Scalarw(BCV,N)==UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_ScalarW', BCV, N 
-                     CALL MFIX_EXIT(myPE)
-                  ENDIF 
-                  IF (BC_HW_Scalar(BCV,N)/=UNDEFINED .AND. &
-                      BC_C_Scalar(BCV,N)==UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_C_Scalar', BCV, N 
-                     CALL MFIX_EXIT(myPE)
-                  ENDIF 
-               ENDDO    ! end loop over (n=1,nscalar)
-
-
-
-
       CALL FINL_ERR_MSG
 
-
       RETURN  
-
-
-! 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
-!         'correct the mfix.dat file.')
-
-
- 1000 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,&
-         ') not specified',/1X,70('*')/) 
- 1001 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/&
-         ' Message: Illegal BC_TYPE for BC # = ',I2,/'   BC_TYPE = ',A,/&
-         '  Valid BC_TYPE are: ') 
- 1002 FORMAT(5X,A16) 
- 1003 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,&
-         ') value is unphysical',/1X,70('*')/) 
- 1004 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I2,&
-         ') not specified',/1X,70('*')/) 
- 1005 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I2,&
-         ') value is unphysical',/1X,70('*')/) 
- 1010 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC_P_g( ',I2,&
-         ') = ',G12.5,/&
-         ' Pressure should be greater than zero for compressible flow',/1X,70(&
-         '*')/) 
- 1011 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,&
-         ') not specified.',/1X,'These serve as initial values in ',&
-         'the boundary region. Set to 0 by default',/1X,70('*')/) 
- 1050 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
-         ' - ',A,' should be ',A,' zero.',/1X,70('*')/) 
- 1060 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC_X_g(',I2,',',I2&
-         ,') not specified',/1X,70('*')/) 
- 1065 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
-         ' - Sum of gas mass fractions is NOT equal to one',/1X,70('*')/) 
- 1100 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I1,&
-         ') not specified',/1X,70('*')/) 
- 1101 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: For ', &
-         'BC_TYPE= ', A, ' BC_EP_G(',I2,') should not be defined',/1X,&
-         'or the sum of the volume fractions may not equal one',&
-         /1X,70('*')/)
- 1102 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: For ',& 
-         'BC_TYPE= ', A, ' Since BC_EP_G('I2,') is defined,',/1X,&
-         'BC_ROP_S should also be defined to ensure that the ',&
-         'sum of their',/1X, 'volume fractions will equal one',&
-         /1X,70('*')/)
-
- 1103 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I1,&
-         ') value is unphysical',/1X,70('*')/) 
- 1104 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I2,&
-         ',',I2,') not specified',/1X,70('*')/) 
- 1105 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I2,&
-         ',',I2,') value is unphysical',/1X,70('*')/) 
- 1110 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC_X_s(',I2,',',I2&
-         ,',',I2,') not specified',/1X,70('*')/) 
- 1111 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I1,&
-         ') not specified.',/1X,'These serve as initial values in ',&
-         'the boundary region. Set to 0 by default',/1X,70('*')/) 
- 1120 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
-         ' - Sum of solids-',I1,' mass fractions is NOT equal to one',/1X,70(&
-         '*')/) 
-
- !1125 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
- !        ' - Sum of volume fractions is NOT equal to one',/1X,70('*')/) 
-
- 1130 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
-         ' - void fraction is unphysical (>1 or <0)',/1X,70('*')/) 
- 1150 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
-         ' - ',A,I1,' should be ',A,' zero.',/1X,70('*')/) 
- 1160 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/&
-         ' Message: Boundary condition no', &
-         I2,' is a second outflow condition.',/1X,&
-         '  Only one outflow is allowed.  Consider using P_OUTFLOW.',/1X, 70('*')/) 
- 1200 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,&
-         ') specified',' for an undefined BC location',/1X,70('*')/) 
- 1300 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I1,&
-         ') specified',' for an undefined BC location',/1X,70('*')/) 
- 1400 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/&
-         ' Message: No initial or boundary condition specified',/&
-         '    I       J       K') 
- 1410 FORMAT(I5,3X,I5,3X,I5) 
- 1420 FORMAT(/1X,70('*')/) 
-
- 1500 FORMAT(//1X,70('*')/' From: CHECK_DATA_07',/,' Error 1500:'      &
-         ' Solids phase ',I2,' failed sanity check in IC region ',I3,  &
-         '. ',/' Please check mfix.dat file.',/1X,70('*')//)
-
-
-
       END SUBROUTINE CHECK_BC_WALLS
 
 
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-! Subroutine: CHECK_BC_P_INFLOW                                        !
+! Subroutine: CHECK_BC_WALLS_GAS                                       !
 ! Author: J.Musser                                    Date: 01-Mar-14  !
 !                                                                      !
-! Purpose: Provided a detailed error message when the sum of volume    !
+! Purpose: Check user-input for gas phase WALL BC parameters.          !
 !                                                                      !
-!     Unlike the MI boundary, for the PI boundary the velocities at    !
-!     the inflow face are calculated by solving the momentum eqns      !
-!     and are not fixed. In this way, the PI is similar to the PO      !
-!     except that the flow is into the domain and hence all other      !
-!     scalars (e.g., mass fractions, void fraction, temperature,       !
-!     etc.,) at the inflow cells need to be specified. To satisfy      !
-!     the error routines at the start of the simulation, both the      !
-!     tangential and normal components at the inflow also need to      !
-!     be specified. The velocities values essentially serve as IC.     !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-      SUBROUTINE CHECK_BC_WALLS_COPY(M_TOT, SKIP, BCV)
+      SUBROUTINE CHECK_BC_WALLS_GAS(BCV)
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE param 
-      USE param1 
-      USE geometry
-      USE fldvar
-      USE physprop
-      USE run
-      USE bc
-      USE indices
-      USE funits 
-      USE scalars
-      USE compar
-      USE sendrecv
-      USE discretelement
-      USE mfix_pic
-      USE cutcell
+! Global Variables:
+!---------------------------------------------------------------------//
+! User-input: type of BC
+      use bc, only: BC_TYPE
+! User-Input: gas velocity at wall BCs.
+      use bc, only: BC_UW_G, BC_VW_G, BC_WW_G
+! User-Input: gas energy eq BCs.
+      use bc, only: BC_HW_T_G, BC_TW_G, BC_C_T_G
+! User-Input: gas species eq BCs.
+      use bc, only: BC_HW_X_G, BC_XW_G, BC_C_X_G
+! Total number of speices in each phase.
+      use physprop, only: NMAX
+! Flag: Solve energy equations.
+      use run, only: ENERGY_EQ
+! Flag: Solve species equations.
+      use run, only: SPECIES_EQ
+! Flag: Solve K-th direction (3D)
+      use geometry, only: DO_K
 
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Parameter constants.
+      use param1, only: ZERO, UNDEFINED
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
       use error_manager
 
       IMPLICIT NONE
 
-
+! Dummy Arguments.
+!---------------------------------------------------------------------//
       INTEGER, INTENT(in) :: BCV
-      INTEGER, INTENT(in) :: M_TOT
-      LOGICAL, INTENT(in) :: SKIP(DIM_M)
+
+      INTEGER :: N
+!......................................................................!
 
 
-      INTEGER :: I, J ,K, IJK
-      INTEGER :: M, N
-! Solids phase density in BC region.
-      DOUBLE PRECISION :: BC_ROs(MMAX)
-! Index of inert species
-      INTEGER :: INERT
-
-      DOUBLE PRECISION SUM, SUM_EP
-
-      DOUBLE PRECISION, EXTERNAL :: EOSS
-      LOGICAL , EXTERNAL :: COMPARE 
-
-
-      CALL INIT_ERR_MSG("CHECK_BC_WALLS")
-
-
-! Following section to check quantities for wall type boundaries
-! ---------------------------------------------------------------->>>      
-
-! Default specification of Johnson-Jackson bc
-      IF(GRANULAR_ENERGY) THEN
-         IF(BC_JJ_PS(BCV) == UNDEFINED_I) BC_JJ_PS(BCV) = 1 
-      ELSE
-         IF(BC_JJ_PS(BCV) == UNDEFINED_I) BC_JJ_PS(BCV) = 0 
-      ENDIF 
-
-! Set Jenkins default specification, modify BC_JJ accordingly
-      IF(GRANULAR_ENERGY .AND. JENKINS) BC_JJ_PS(BCV) = 1
-
-
-      IF (BC_TYPE(BCV)=='FREE_SLIP_WALL' .OR. &
-       BC_TYPE(BCV)=='NO_SLIP_WALL' .OR. &
-       BC_TYPE(BCV)=='PAR_SLIP_WALL') THEN 
+! Initialize the error manger.
+      CALL INIT_ERR_MSG("CHECK_BC_WALLS_GAS")
 
 ! The wall velocities are not needed for no-slip or free-slip                
-               IF (BC_TYPE(BCV) == 'PAR_SLIP_WALL') THEN 
-                  IF (BC_UW_G(BCV) == UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_Uw_g', BCV 
-                     call mfix_exit(myPE)  
-                  ENDIF 
-                  IF (BC_VW_G(BCV) == UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_Vw_g', BCV 
-                     call mfix_exit(myPE)  
-                  ENDIF 
-                  IF (.NOT.NO_K) THEN 
-                     IF (BC_WW_G(BCV) == UNDEFINED) THEN 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_Ww_g', BCV
-                        call mfix_exit(myPE)  
-                     ENDIF 
-                  ELSE 
-                     BC_WW_G(BCV) = ZERO 
-                  ENDIF 
-               ENDIF   ! end if (bc_type(bcv)=='par_slip_wall')
+      IF(BC_TYPE(BCV) == 'PAR_SLIP_WALL') THEN 
+         IF(BC_UW_G(BCV) == UNDEFINED) THEN
+            WRITE(ERR_MSG,1000) trim(iVar('BC_Uw_g',BCV))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSEIF(BC_VW_G(BCV) == UNDEFINED) THEN 
+            WRITE(ERR_MSG,1000) trim(iVar('BC_Vw_g',BCV))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSEIF(BC_WW_G(BCV) == UNDEFINED) THEN
+            IF(DO_K)THEN
+               WRITE(ERR_MSG,1000) trim(iVar('BC_Ww_g',BCV))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ELSE 
+               BC_WW_G(BCV) = ZERO 
+            ENDIF
+         ENDIF
+      ENDIF
 
-               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID &
-                   .OR.MPPIC) THEN
-                  IF (BC_TYPE(BCV)=='PAR_SLIP_WALL' .OR. BC_JJ_PS(BCV)==1) THEN
-                     DO M = 1, MMAX
-                        IF (BC_UW_S(BCV,M) == UNDEFINED) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_Uw_s', BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                        IF (BC_VW_S(BCV,M) == UNDEFINED) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_Vw_s', BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                        IF (.NOT.NO_K) THEN 
-                           IF (BC_WW_S(BCV,M) == UNDEFINED) THEN 
-                             IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_Ww_s', BCV, M 
-                             call mfix_exit(myPE)  
-                           ENDIF 
-                        ELSE 
-                           BC_WW_S(BCV,M) = ZERO 
-                        ENDIF 
-                     ENDDO 
-                  ENDIF   ! end if (bc_type(bcv)=='par_slip_wall' or bc_jj_ps(bcv)==1)
-               ENDIF   ! end if (.not.discrete_element .or. des_continuum_hybrid .or.
-                       !          mppic)
-
-               IF (ENERGY_EQ) THEN 
-                  IF (BC_HW_T_G(BCV) < ZERO) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1003) 'BC_hw_T_g', BCV 
-                     call mfix_exit(myPE)  
-                  ENDIF 
-                  IF (BC_HW_T_G(BCV)/=ZERO .AND. &
-                      BC_TW_G(BCV)==UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_Tw_g', BCV 
-                     call mfix_exit(myPE)  
-                  ENDIF 
-                  IF (BC_HW_T_G(BCV)/=UNDEFINED .AND. &
-                      BC_C_T_G(BCV)==UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_C_T_g', BCV 
-                     call mfix_exit(myPE)  
-                  ENDIF 
-
-                  IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID &
-                      .OR. MPPIC) THEN
-                     DO M = 1, SMAX 
-                        IF (BC_HW_T_S(BCV,M) < ZERO) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1103) 'BC_hw_T_s', BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                        IF (BC_HW_T_S(BCV,M)/=ZERO .AND.&
-                            BC_TW_S(BCV,M)==UNDEFINED) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_Tw_s', BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                        IF (BC_HW_T_S(BCV,M)/=UNDEFINED .AND. &
-                            BC_C_T_S(BCV,M)==UNDEFINED) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_C_T_s', BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                     ENDDO 
-                  ENDIF   ! end if (.not.discrete_element .or. des_continuum_hybrid)
-               ENDIF   ! end if (energy_eq)
-
-               IF (.NOT. DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID  &
-                   .OR. MPPIC) THEN
-                  IF (GRANULAR_ENERGY .AND. BC_JJ_PS(BCV)==0) THEN 
-                     DO M = 1, MMAX 
-                        IF (BC_HW_THETA_M(BCV,M) < ZERO) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1103) &
-                              'BC_hw_Theta_m', BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                        IF (BC_HW_THETA_M(BCV,M)/=ZERO .AND. &
-                            BC_THETAW_M(BCV,M)==UNDEFINED) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
-                              'BC_Thetaw_m', BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                        IF (BC_HW_THETA_M(BCV,M)/=UNDEFINED .AND. &
-                            BC_C_THETA_M(BCV,M)==UNDEFINED) THEN 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1100) &
-                              'BC_C_Theta_m', BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                     ENDDO 
-                  ENDIF   ! end if (granular_energy .and. bc_jj_ps(bcv)==0)
-               ENDIF    ! end if (.not.discrete_element .or. des_continuum_hybrid 
-                        !         .or. mppic)
-
-               IF (SPECIES_EQ(0)) THEN 
-                  DO N = 1, NMAX(0) 
-                     IF (BC_HW_X_G(BCV,N) < ZERO) THEN 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1005) 'BC_hw_X_g', BCV, N 
-                        call mfix_exit(myPE)  
-                     ENDIF 
-                     IF (BC_HW_X_G(BCV,N)/=ZERO .AND. &
-                         BC_XW_G(BCV,N)==UNDEFINED) THEN 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_Xw_g', BCV, N 
-                        call mfix_exit(myPE)  
-                     ENDIF 
-                     IF (BC_HW_X_G(BCV,N)/=UNDEFINED .AND. &
-                         BC_C_X_G(BCV,N)==UNDEFINED) THEN 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_C_X_g', BCV, N 
-                        call mfix_exit(myPE)  
-                     ENDIF 
-                  ENDDO 
-               ENDIF   ! end if (species_eq(0))
-
-               IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID .OR.&
-                   MPPIC) THEN
-                  DO M = 1, SMAX 
-                     IF (SPECIES_EQ(M)) THEN 
-                        DO N = 1, NMAX(M) 
-                           IF (BC_HW_X_S(BCV,M,N) < ZERO) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1105) &
-                                 'BC_hw_X_s', BCV, M, N 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                           IF (BC_HW_X_S(BCV,M,N)/=ZERO .AND. &
-                               BC_XW_S(BCV,M,N)==UNDEFINED) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1104) &
-                                 'BC_Xw_s', BCV, M, N 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                           IF (BC_HW_X_S(BCV,M,N)/=UNDEFINED .AND. &
-                               BC_C_X_S(BCV,M,N)==UNDEFINED) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1104) &
-                                 'BC_C_X_s', BCV, M, N 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                        ENDDO 
-                     ENDIF    ! end if (species_eq(m))
-                  ENDDO    ! end loop over (m=1,smax)
-               ENDIF   ! end if (.not.discrete_element .or. des_continuum_hybrid)
-                       !         .or. mppic)
-
-               DO N = 1, NScalar
-                  IF (BC_HW_Scalar(BCV,N) < ZERO) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1005) 'BC_hw_Scalar', BCV, N 
-                     CALL MFIX_EXIT(myPE)
-                  ENDIF 
-                  IF (BC_HW_Scalar(BCV,N)/=ZERO .AND. &
-                      BC_Scalarw(BCV,N)==UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_ScalarW', BCV, N 
-                     CALL MFIX_EXIT(myPE)
-                  ENDIF 
-                  IF (BC_HW_Scalar(BCV,N)/=UNDEFINED .AND. &
-                      BC_C_Scalar(BCV,N)==UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_C_Scalar', BCV, N 
-                     CALL MFIX_EXIT(myPE)
-                  ENDIF 
-               ENDDO    ! end loop over (n=1,nscalar)
-
-            ENDIF  ! end if (bc_type(bcv)=='free_slip_wall' .or. 
-                   !        bc_type(bcv)=='no_slip_wall' .or.
-                   !        bc_type(bcv)=='par_slip_wall')
+! Check energy equation input.
+      IF(ENERGY_EQ) THEN
+         IF(BC_HW_T_G(BCV) < ZERO) THEN 
+            WRITE(ERR_MSG,1001) trim(iVar('BC_HW_T_g',BCV)),           &
+               trim(iVal(BC_HW_T_G(BCV)))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+         IF(BC_HW_T_G(BCV)/=ZERO .AND.                                 &
+            BC_TW_G(BCV)==UNDEFINED) THEN
+            WRITE(ERR_MSG,1000) trim(iVar('BC_Tw_g',BCV))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+         IF(BC_HW_T_G(BCV)/=UNDEFINED .AND.                            &
+            BC_C_T_G(BCV)==UNDEFINED) THEN 
+            WRITE(ERR_MSG,1000) trim(iVar('BC_C_T_g',BCV))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDIF
 
 
+! Check species equation input.
+      IF(SPECIES_EQ(0)) THEN
+         DO N=1, NMAX(0)
+            IF(BC_HW_X_G(BCV,N) < ZERO) THEN
+               WRITE(ERR_MSG,1001) trim(iVar('BC_HW_X_g',BCV,N)),      &
+                  trim(iVal(BC_HW_X_G(BCV,N)))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+            IF(BC_HW_X_G(BCV,N)/=ZERO .AND.                            &
+               BC_XW_G(BCV,N)==UNDEFINED) THEN
+               WRITE(ERR_MSG,1000) trim(iVar('BC_Xw_g',BCV,N))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+            IF(BC_HW_X_G(BCV,N)/=UNDEFINED .AND.                       &
+               BC_C_X_G(BCV,N)==UNDEFINED) THEN
+               WRITE(ERR_MSG,1000) trim(iVar('BC_C_X_g',BCV,N))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF 
+         ENDDO 
+      ENDIF
 
+
+! Clear the error manager.
       CALL FINL_ERR_MSG
-
 
       RETURN  
 
+ 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
+            'correct the mfix.dat file.')
 
-! 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
-!         'correct the mfix.dat file.')
+ 1001 FORMAT('Error 1001: Illegal or unphysical input: ',A,' = ',A,/   &
+         'Please correct the mfix.dat file.')
+
+      END SUBROUTINE CHECK_BC_WALLS_GAS
 
 
- 1000 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,&
-         ') not specified',/1X,70('*')/) 
- 1001 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/&
-         ' Message: Illegal BC_TYPE for BC # = ',I2,/'   BC_TYPE = ',A,/&
-         '  Valid BC_TYPE are: ') 
- 1002 FORMAT(5X,A16) 
- 1003 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,&
-         ') value is unphysical',/1X,70('*')/) 
- 1004 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I2,&
-         ') not specified',/1X,70('*')/) 
- 1005 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I2,&
-         ') value is unphysical',/1X,70('*')/) 
- 1010 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC_P_g( ',I2,&
-         ') = ',G12.5,/&
-         ' Pressure should be greater than zero for compressible flow',/1X,70(&
-         '*')/) 
- 1011 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,&
-         ') not specified.',/1X,'These serve as initial values in ',&
-         'the boundary region. Set to 0 by default',/1X,70('*')/) 
- 1050 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
-         ' - ',A,' should be ',A,' zero.',/1X,70('*')/) 
- 1060 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC_X_g(',I2,',',I2&
-         ,') not specified',/1X,70('*')/) 
- 1065 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
-         ' - Sum of gas mass fractions is NOT equal to one',/1X,70('*')/) 
- 1100 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I1,&
-         ') not specified',/1X,70('*')/) 
- 1101 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: For ', &
-         'BC_TYPE= ', A, ' BC_EP_G(',I2,') should not be defined',/1X,&
-         'or the sum of the volume fractions may not equal one',&
-         /1X,70('*')/)
- 1102 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: For ',& 
-         'BC_TYPE= ', A, ' Since BC_EP_G('I2,') is defined,',/1X,&
-         'BC_ROP_S should also be defined to ensure that the ',&
-         'sum of their',/1X, 'volume fractions will equal one',&
-         /1X,70('*')/)
-
- 1103 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I1,&
-         ') value is unphysical',/1X,70('*')/) 
- 1104 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I2,&
-         ',',I2,') not specified',/1X,70('*')/) 
- 1105 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I2,&
-         ',',I2,') value is unphysical',/1X,70('*')/) 
- 1110 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC_X_s(',I2,',',I2&
-         ,',',I2,') not specified',/1X,70('*')/) 
- 1111 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I1,&
-         ') not specified.',/1X,'These serve as initial values in ',&
-         'the boundary region. Set to 0 by default',/1X,70('*')/) 
- 1120 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
-         ' - Sum of solids-',I1,' mass fractions is NOT equal to one',/1X,70(&
-         '*')/) 
-
- !1125 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
- !        ' - Sum of volume fractions is NOT equal to one',/1X,70('*')/) 
-
- 1130 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
-         ' - void fraction is unphysical (>1 or <0)',/1X,70('*')/) 
- 1150 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: BC number:',I2,&
-         ' - ',A,I1,' should be ',A,' zero.',/1X,70('*')/) 
- 1160 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/&
-         ' Message: Boundary condition no', &
-         I2,' is a second outflow condition.',/1X,&
-         '  Only one outflow is allowed.  Consider using P_OUTFLOW.',/1X, 70('*')/) 
- 1200 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,&
-         ') specified',' for an undefined BC location',/1X,70('*')/) 
- 1300 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,',',I1,&
-         ') specified',' for an undefined BC location',/1X,70('*')/) 
- 1400 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/&
-         ' Message: No initial or boundary condition specified',/&
-         '    I       J       K') 
- 1410 FORMAT(I5,3X,I5,3X,I5) 
- 1420 FORMAT(/1X,70('*')/) 
-
- 1500 FORMAT(//1X,70('*')/' From: CHECK_DATA_07',/,' Error 1500:'      &
-         ' Solids phase ',I2,' failed sanity check in IC region ',I3,  &
-         '. ',/' Please check mfix.dat file.',/1X,70('*')//)
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+! Subroutine: CHECK_BC_WALLS_TFM                                       !
+! Author: J.Musser                                    Date: 01-Mar-14  !
+!                                                                      !
+! Purpose: Check user-input for TFM solids WALL BC parameters.         !
+!                                                                      !
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+      SUBROUTINE CHECK_BC_WALLS_TFM(BCV,M)
 
 
 
-      END SUBROUTINE CHECK_BC_WALLS_COPY
+! Global Variables:
+!---------------------------------------------------------------------//
+! User-input: type of BC
+      use bc, only: BC_TYPE
+! User-Input: solids velocity at wall BCs.
+      use bc, only: BC_UW_s, BC_VW_s, BC_WW_s
+! User-Input: solids energy eq BCs.
+      use bc, only: BC_HW_T_s, BC_TW_s, BC_C_T_s
+! User-Input: solids species eq BCs.
+      use bc, only: BC_HW_X_s, BC_XW_s, BC_C_X_s
+! Total number of solids phases
+      use physprop, only: MMAX
+! Total number of speices in each phase.
+      use physprop, only: NMAX
+! Flag: Solve energy equations.
+      use run, only: ENERGY_EQ
+! Flag: Solve species equations.
+      use run, only: SPECIES_EQ
+! Flag: Solve K-th direction (3D)
+      use geometry, only: DO_K
+! User-input: solids kinetic-theory model.
+      use run, only: KT_TYPE
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Parameter constants.
+      use param1, only: ZERO, UNDEFINED
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
+      use error_manager
+
+      IMPLICIT NONE
+
+! Dummy Arguments.
+!---------------------------------------------------------------------//
+! Index of BC being checked.
+      INTEGER, INTENT(in) :: BCV
+! Index of solids phase.
+      INTEGER, INTENT(in) :: M
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Loop/variable counter.
+      INTEGER :: N
+! Flag to check momentum eq input.
+      LOGICAL :: CHECK_MOMENTUM
+! Flag to check scalar eq input.
+      LOGICAL :: CHECK_SCALARS
+!......................................................................!
+
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("CHECK_BC_WALLS_TFM")
+
+! Toggle the momentum and scalar input variable checks.
+      SELECT CASE(trim(adjustl(KT_TYPE)))
+      CASE ('GHD')
+         CHECK_MOMENTUM = (M == MMAX)
+         CHECK_SCALARS  = (M /= MMAX)
+      CASE DEFAULT
+         CHECK_MOMENTUM = .TRUE.
+         CHECK_SCALARS  = .TRUE.
+      END SELECT
+
+! The wall velocities are not needed for no-slip or free-slip
+      IF(CHECK_MOMENTUM) THEN
+         IF(BC_TYPE(BCV) == 'PAR_SLIP_WALL') THEN 
+            IF(BC_UW_S(BCV,M) == UNDEFINED) THEN
+               WRITE(ERR_MSG,1000) trim(iVar('BC_Uw_s',BCV,M))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ELSEIF(BC_VW_S(BCV,M) == UNDEFINED) THEN 
+               WRITE(ERR_MSG,1000) trim(iVar('BC_Vw_s',BCV,M))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ELSEIF(BC_WW_S(BCV,M) == UNDEFINED) THEN
+               IF(DO_K)THEN
+                  WRITE(ERR_MSG,1000) trim(iVar('BC_Ww_s',BCV,M))
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ELSE 
+                  BC_WW_S(BCV,M) = ZERO 
+               ENDIF
+            ENDIF
+         ENDIF
+      ELSE
+      ENDIF
+
+      IF(CHECK_SCALARS)THEN
+         IF(ENERGY_EQ) THEN
+            IF(BC_HW_T_S(BCV,M) < ZERO) THEN 
+               WRITE(ERR_MSG,1001) trim(iVar('BC_HW_T_s',BCV,M)),      &
+                  trim(iVal(BC_HW_T_S(BCV,M)))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+            IF(BC_HW_T_S(BCV,M)/=ZERO .AND.                            &
+               BC_TW_S(BCV,M)==UNDEFINED) THEN
+               WRITE(ERR_MSG,1000) trim(iVar('BC_Tw_s',BCV,M))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+            IF(BC_HW_T_S(BCV,M)/=UNDEFINED .AND.                       &
+               BC_C_T_S(BCV,M)==UNDEFINED) THEN 
+               WRITE(ERR_MSG,1000) trim(iVar('BC_C_T_s',BCV,M))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDIF
+
+         IF(SPECIES_EQ(M)) THEN
+            DO N=1, NMAX(M)
+               IF(BC_HW_X_S(BCV,M,N) < ZERO) THEN
+                  WRITE(ERR_MSG,1001) trim(iVar('BC_HW_X_s',BCV,M,N)), &
+                     trim(iVal(BC_HW_X_S(BCV,M,N)))
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
+               IF(BC_HW_X_S(BCV,M,N)/=ZERO .AND.                       &
+                  BC_XW_S(BCV,M,N)==UNDEFINED) THEN
+                  WRITE(ERR_MSG,1000) trim(iVar('BC_Xw_s',BCV,M,N))
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
+               IF(BC_HW_X_S(BCV,M,N)/=UNDEFINED .AND.                  &
+                  BC_C_X_S(BCV,M,N)==UNDEFINED) THEN
+                  WRITE(ERR_MSG,1000) trim(iVar('BC_C_X_s',BCV,M,N))
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF 
+            ENDDO 
+         ENDIF ! Species Equation
+      ELSE
+      ENDIF ! Check Scalars
+
+      CALL FINL_ERR_MSG
+
+      RETURN  
+
+ 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
+            'correct the mfix.dat file.')
+
+ 1001 FORMAT('Error 1001: Illegal or unphysical input: ',A,' = ',A,/   &
+         'Please correct the mfix.dat file.')
+
+      END SUBROUTINE CHECK_BC_WALLS_TFM
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+! Subroutine: CHECK_BC_WALLS_DISCRETE                                  !
+! Author: J.Musser                                    Date: 01-Mar-14  !
+!                                                                      !
+! Purpose: Check user-input for DEM/PIC solids WALL BC parameters.     !
+!                                                                      !
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+      SUBROUTINE CHECK_BC_WALLS_DISCRETE(BCV,M)
+
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! User-input: type of BC
+      use bc, only: BC_TYPE
+! User-Input: solids velocity at wall BCs.
+      use bc, only: BC_UW_s, BC_VW_s, BC_WW_s
+! User-Input: solids energy eq BCs.
+      use bc, only: BC_HW_T_s, BC_TW_s, BC_C_T_s
+! User-Input: solids species eq BCs.
+      use bc, only: BC_HW_X_s, BC_XW_s, BC_C_X_s
+! Total number of solids phases
+      use physprop, only: MMAX
+! Total number of speices in each phase.
+      use physprop, only: NMAX
+! Flag: Solve energy equations.
+      use run, only: ENERGY_EQ
+! Flag: Solve species equations.
+      use run, only: SPECIES_EQ
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Maximum number of possible species.
+      use param, only: DIM_N_S
+! Parameter constants.
+      use param1, only: ZERO, UNDEFINED
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
+      use error_manager
+
+      IMPLICIT NONE
+
+! Dummy Arguments.
+!---------------------------------------------------------------------//
+! Index of BC getting checked.
+      INTEGER, INTENT(in) :: BCV
+! Index of solid phase getting checked.
+      INTEGER, INTENT(in) :: M
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Loop/variable counter.
+      INTEGER :: N
+!......................................................................!
+
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("CHECK_BC_WALLS_DISCRETE")
+
+! DEM and PIC are restricted to adibatic walls.
+      IF(BC_HW_T_S(BCV,M) /= UNDEFINED) THEN
+         WRITE(ERR_MSG,1100) trim(iVar('BC_HW_T_s',BCV,M))
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(BC_TW_S(BCV,M) /= UNDEFINED) THEN
+         WRITE(ERR_MSG,1100) trim(iVar('BC_Tw_s',BCV,M))
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(BC_C_T_S(BCV,M) /= UNDEFINED) THEN 
+         WRITE(ERR_MSG,1100) trim(iVar('BC_C_T_s',BCV,M))
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 1100 FORMAT('Error 1100: ',A,' should not specified for DEM/PIC',/    &
+         'simulations as they are currently limited to adiabatic BCs.',&
+         /'Please correct the mfix.dat file.')
+
+
+! The following checks verify that TFM solids parameters are not
+! specified for discrete solids.
+
+
+! The wall velocities are not needed DEM/PIC solids
+      IF(BC_UW_S(BCV,M) /= UNDEFINED) THEN
+         WRITE(ERR_MSG,1101) BCV, trim(iVar('BC_Uw_s',BCV,M))
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(BC_VW_S(BCV,M) /= UNDEFINED) THEN 
+         WRITE(ERR_MSG,1101) BCV, trim(iVar('BC_Vw_s',BCV,M))
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(BC_WW_S(BCV,M) /= UNDEFINED) THEN
+         WRITE(ERR_MSG,1101) BCV, trim(iVar('BC_Ww_s',BCV,M))
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+! DEM cannot have a species flux at the walls.
+      DO N=1, DIM_N_s
+         IF(BC_HW_X_S(BCV,M,N) /= UNDEFINED) THEN
+            WRITE(ERR_MSG,1101) BCV, trim(iVar('BC_HW_X_s',BCV,M,N))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSEIF(BC_XW_S(BCV,M,N) /= UNDEFINED) THEN
+            WRITE(ERR_MSG,1101) BCV, trim(iVar('BC_Xw_s',BCV,M,N))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSEIF(BC_C_X_S(BCV,M,N) /= UNDEFINED) THEN
+            WRITE(ERR_MSG,1101) BCV, trim(iVar('BC_C_X_s',BCV,M,N))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF 
+      ENDDO 
+
+ 1101 FORMAT('Error 1101: Illegal input for boundary condition: 'I3,/  &
+         A,' should not be specified for DEM/PIC simulations.',/       &
+         'Please correct the mfix.dat file.')
+
+      CALL FINL_ERR_MSG
+
+      RETURN
+
+      END SUBROUTINE CHECK_BC_WALLS_DISCRETE
+
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+! Subroutine: CHECK_BC_WALLS_SCALAR_EQ                                 !
+! Author: J.Musser                                    Date: 01-Mar-14  !
+!                                                                      !
+! Purpose: Check user-input for generic scalar eq WALL BC parameters.  !
+!                                                                      !
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+      SUBROUTINE CHECK_BC_WALLS_SCALAR_EQ(BCV)
+
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! User-input: number of generic scalar equations to solve.
+      use scalars, only: NSCALAR
+! User-Input: generic scalar eq at wall BCs.
+      use bc, only: BC_HW_SCALAR, BC_SCALARw, BC_C_SCALAR
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Parameter constants
+      use param1, only: ZERO, UNDEFINED
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
+      use error_manager
+
+      IMPLICIT NONE
+
+! Dummy Arguments.
+!---------------------------------------------------------------------//
+! Index of BC getting checked.
+      INTEGER, INTENT(in) :: BCV
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Loop/counter variable.
+      INTEGER :: N
+!......................................................................!
+
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("CHECK_BC_WALLS_SCALAR_EQ")
+
+      DO N=1, NSCALAR
+         IF(BC_HW_Scalar(BCV,N) < ZERO) THEN 
+            WRITE(ERR_MSG,1001) trim(iVar('BC_HW_SCALAR',BCV,N)),      &
+               trim(iVal(BC_HW_Scalar(BCV,N)))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF 
+         IF(BC_HW_SCALAR(BCV,N) /= ZERO .AND.                          &
+            BC_SCALARw(BCV,N) == UNDEFINED) THEN 
+            WRITE(ERR_MSG,1000) trim(iVar('BC_SCALARw',BCV,N))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+         IF(BC_HW_SCALAR(BCV,N) /= UNDEFINED .AND.                     &
+            BC_C_Scalar(BCV,N) == UNDEFINED) THEN
+            WRITE(ERR_MSG,1000) trim(iVar('BC_C_SCALAR',BCV,N))
+         ENDIF 
+      ENDDO
+
+      CALL FINL_ERR_MSG
+
+      RETURN
+
+ 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
+            'correct the mfix.dat file.')
+
+ 1001 FORMAT('Error 1001: Illegal or unphysical input: ',A,' = ',A,/   &
+         'Please correct the mfix.dat file.')
+
+      END SUBROUTINE CHECK_BC_WALLS_SCALAR_EQ
