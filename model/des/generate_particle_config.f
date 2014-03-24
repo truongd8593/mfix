@@ -7,12 +7,7 @@
 !           bounds                                                     C
 !                                                                      C
 !                                                                      C
-!  Authors: Rahul Garg                                Date: 01-Aug-07  C
-!  Reviewer: Sreekanth Pannala                        Date: 23-Oct-08  C
-!  Comments: Added a new routine for clarity of functions              C
-!                                                                      C
-!  Revision: Modified subroutine for parallel processing               C
-!  Authour : Pradeep G                                Date:28-Feb-11   C
+!  Authors: Rahul Garg                                Date: 19-Mar-14  C
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
@@ -23,16 +18,643 @@
 ! Modules
 !-----------------------------------------------
       USE mfix_pic, only: MPPIC 
-      IMPLICIT NONE
+      USE DES_LINKED_LIST_DATA, only : orig_part_list, particle
+      USE des_linked_list_funcs
+      USE cutcell, only : CARTESIAN_GRID
+      USE discretelement, only: dimn, xe, yn, zt
+      USE discretelement, only: particles, pip
 
-        
+      USE mpi_utility
+            
+      USE mfix_pic, only : mppic 
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
+      use error_manager
+
+
+      IMPLICIT NONE
+      INTEGER :: IJK, ICELL, IPE
+      type(particle), pointer :: part => null()
+
+      INTEGER :: LPIP_ALL(0:NUMPES-1),LORIG_ALL(0:Numpes-1), LDEL_ALL(0:Numpes-1), LREM_ALL(0:Numpes-1)
+
+      character*100 :: fname_tmp
+      Logical :: write_vtp_files
+! Initialize the error manager.
+      
+      WRITE_VTP_FILES = .true. 
+
+      CALL INIT_ERR_MSG("Generate_Particle_Config")
+
       IF(MPPIC) THEN 
          CALL GENERATE_PARTICLE_CONFIG_MPPIC
       ELSE
-         CALL GENERATE_PARTICLE_CONFIG_DEM 
+         write(err_msg, '(A)') 'GENERATING INITIAL LATTICE CONFIGURATION FOR DEM MODEL'
+         call flush_err_msg(footer = .false.)
+
+         CALL GENERATE_PARTICLE_CONFIG2_DEM 
+         
+         write(err_msg, '(/, 70("."), /,A,/,70("-"))') 'Done generating initial lattice configuration'
+         call flush_err_msg(header = .false., footer = .false.)
       ENDIF
+
+      LORIG_ALL = 0
+
+   
       
+      IF(CARTESIAN_GRID) then 
+         write(err_msg, '(A, /, A,/, A)') 'Cartesian grid detected in gener particle configuration', &
+         'Binning particles to cell using the brute force technique in order to remove',  &
+         'out of domain particles'         
+         call flush_err_msg(header = .false., footer = .false.)
+         CALL BIN_PARTICLES_TO_CELL
+
+
+         write(err_msg, '(A, /, 70("-"))') 'Binning over'
+         call flush_err_msg(header = .false., footer = .false.)
+
+         write(err_msg, '(A)') 'Now Marking particles to be deleted'
+         call flush_err_msg(header = .false., footer = .false.)
+
+         IF(WRITE_VTP_FILES) CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("BEFORE_DELETION")
+
+         IF(MPPIC) THEN 
+            !CALL MARK_PARTS_TOBE_DEL_MPPIC_STL
+         ELSE 
+            CALL MARK_PARTS_TOBE_DEL_DEM_STL
+         END IF
+
+         write(err_msg, '(A)') 'Finished marking particles to be deleted'
+         call flush_err_msg(header = .false., footer = .false.)
+
+         IF(WRITE_VTP_FILES) CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("AFTER_DELETION")
+
+      ENDIF
+
+
+
+      write(err_msg, '(/,70("-"),/,A)') 'Particle statistics reporting'
+      
+      call flush_err_msg(header = .false., footer = .false.)
+
+      LDEL_ALL = 0
+      LREM_ALL = 0
+      
+      part => orig_part_list 
+      DO WHILE (ASSOCIATED(part))
+         LORIG_ALL(mype) = LORIG_ALL(mype) + 1
+
+         IF(part%INDOMAIN) then 
+            LREM_ALL(mype) = LREM_ALL(mype) + 1 
+         else
+            LDEL_ALL(mype) = LDEL_ALL(mype) + 1 
+         ENDIF
+         
+         part => part%next
+      ENDDO
+
+      
+      CALL global_all_sum(LORIG_ALL)
+      CALL global_all_sum(LREM_ALL)
+      CALL global_all_sum(LDEL_ALL)
+      
+      PIP = LREM_ALL(mype) !Setting pip on each processor equal to remaining paticles
+
+      !total number of particles used to allocate the arrays is set equal to sum 
+      !of remaining particles on all processors 
+      PARTICLES  = SUM(LREM_ALL(0:numPEs-1))
+      
+      Do ipe = 0, numPEs - 1        
+         write(err_msg, 1002) ipe, Lorig_all(ipe), Ldel_all(ipe), Lrem_all(ipe)
+ 1002    FORMAT(/, & 
+         'For proc', 2x, i5, / & 
+         'Total number of particles originally seeded       : ', 2x, I15, / & 
+         'Total number of particles found outside the domain: ', 2x, I15, / & 
+         'Total number of particles remaining               : ', 2x, I15, /)
+
+         CALL FLUSH_ERR_MSG (header = .false., Footer = .false.)
+
+         if( Lrem_all(ipe) + Ldel_all(ipe) .ne. Lorig_all(ipe)) then 
+            
+            write(err_msg, 1003) ipe, Lrem_all(ipe) + Ldel_all(ipe), Lorig_all(ipe)
+            CALL FLUSH_ERR_MSG (ABORT = .true.)
+         endif
+         
+ 1003    Format('Sanity check failed for particle seeding on proc:', 2x, i5, / & 
+         '# of particles deleted + # of particles remaining ',  2x, I15, / &  
+         'not equal to original number of particles',  2x, I15, / & 
+         'MFIX will now exit')
+         
+      ENDDO
+
+      write(err_msg, 1004) PARTICLES 
+ 1004 FORMAT(/, & 
+      'Total number of particles in the system: ', 2x, i15)
+
+      CALL FLUSH_ERR_MSG (header = .false.)
+
+      CALL FINL_ERR_MSG
       END SUBROUTINE GENERATE_PARTICLE_CONFIG
+
+      SUBROUTINE COPY_PARTICLE_CONFIG_FROMLISTS
+      USE DES_LINKED_LIST_Data, only : orig_part_list, particle 
+      USE des_linked_list_funcs
+      use error_manager
+
+      USE discretelement
+      IMPLICIT NONE 
+      type(particle), pointer :: part => null()
+      integer :: count_part
+      
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("MARK_PARTS_TOBE_DEL_DEM_STL")
+
+      part => orig_part_list 
+      count_part = 0 
+      DO WHILE (ASSOCIATED(part))
+         IF(part%INDOMAIN) then 
+            count_part = count_part + 1
+                     
+            des_pos_new(count_part, 1:dimn) = part%position(1:dimn)
+            des_vel_new(count_part, 1:dimn) = part%velocity(1:dimn)
+            
+            DES_RADIUS(count_part) = part%rad
+            RO_SOL(count_part)  = part%dens
+            
+            PIJK(count_part,1:4) = part%cell(1:4)
+            PIJK(count_part,5) = part%M
+
+            des_vel_old(count_part, :) = des_vel_new(count_part, :)
+            des_pos_old(count_part, :) = des_pos_new(count_part, :)
+         ENDIF        
+         part => part%next
+         
+      ENDDO
+      if(count_part.ne.pip) then 
+         write(err_msg, 1000) count_part, pip 
+         call flush_err_msg(abort = .true.)
+      endif
+         
+ 1000 format('Particles copied from linked lists:', 2x, i15, /, & 
+      'not equal to particles earlier calculated to be inside domain', 2x, i15, / &
+      'This should not have happened, exitting')
+      CALL FINL_ERR_MSG
+
+      CALL DEALLOC_PART_LIST(orig_part_list)
+      END SUBROUTINE COPY_PARTICLE_CONFIG_FROMLISTS
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+! Subroutine: MARK_PARTS_TOBE_DEL_DEM_ST                               !
+! Author: R. Garg                                     Date: 21-Mar-14  !
+!                                                                      !
+! Purpose: Mark particles that are outside the domain using the factes !
+!          information                                                 !
+!                                                                      !
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+      SUBROUTINE MARK_PARTS_TOBE_DEL_DEM_STL
+      
+      USE DES_LINKED_LIST_Data, only : orig_part_list, particle 
+      USE des_linked_list_funcs
+      USE discretelement, only: dimn
+      
+      USE cutcell, only : cut_cell_at
+      USE softspring_funcs_cutcell
+      USE indices
+      USE geometry 
+      USE compar
+      use error_manager
+
+      IMPLICIT NONE    
+      INTEGER :: IJK 
+      LOGICAL :: DELETE_PART 
+      type(particle), pointer :: part => null()
+
+
+!-----------------------------------------------
+! Include statement functions      
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+      
+! This call will delete the particles outside the domain. It will then
+! re-arrange the arrays such that the active particles are in a block.
+! This works only for MPPIC as the cell information is added to 
+! particles in generate_particle_config_mppic itself. For DEM particles,
+! the cell information is not added in generate_particle_config but is
+! done only during first call to particles_in_cell. 
+      
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("MARK_PARTS_TOBE_DEL_DEM_STL")
+
+      part => orig_part_list 
+      DO WHILE (ASSOCIATED(part))
+         DELETE_PART = .false.
+         IJK = part%cell(4)
+         
+         IF(FLUID_AT(IJK).and.(.not.CUT_CELL_AT(IJK))) THEN
+          !Since checking if a particle is on other side of a triangle is tricky, 
+          !for safety, initially remove all the particles in the cut-cell.
+          !now cut-cell and actualy geometry could be off, so this might not work
+          !very robustly. 
+
+          !Check if any of the particles are overlapping with the walls 
+          !this will include the normal ghost cell walls and also the cut cells 
+            CALL CHECK_IF_PARTICLE_OVELAPS_STL(part%position(1:dimn), & 
+            part%cell(1:4), part%rad, DELETE_PART)            
+          ELSE 
+             DELETE_PART = .true.
+          ENDIF
+          if(delete_part) part%indomain = .false. 
+          part => part%next 
+       ENDDO
+       END SUBROUTINE MARK_PARTS_TOBE_DEL_DEM_STL
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+! Subroutine: BIN_PARTICLES_TO_CELL                                    !
+! Author: R. Garg                                     Date: 21-Mar-14  !
+!                                                                      !
+! Purpose: Routine to bin particles in particle lists using brute force!
+!          technique needed to determine out of domain particles       !
+!                                                                      !
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+
+      SUBROUTINE BIN_PARTICLES_TO_CELL
+      
+      USE DES_LINKED_LIST_Data, only : orig_part_list, particle 
+      USE des_linked_list_funcs
+      USE discretelement, only: dimn, xe, yn, zt
+      USE indices
+      USE geometry 
+      USE compar
+      USE mpi_utility
+      USE discretelement, only:DES_GETINDEXFROMPOS
+      USE error_manager
+      
+      IMPLICIT NONE    
+      INTEGER :: I, J, K, IJK, M 
+      LOGICAL :: DELETE_PART 
+      type(particle), pointer :: part => null()
+!-----------------------------------------------
+! Include statement functions      
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+      
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("BIN_PARTICLES_TO_CELL")
+      
+      !Compute the particle cell coordinates by brute forces      
+      part => orig_part_list 
+      DO WHILE (ASSOCIATED(part))
+         part%cell(1) = DES_GETINDEXFROMPOS(ISTART1, IEND1, & 
+         part%position(1), XE(1:size(XE,1)-1),'X','I')          
+         !-1 above since xe ranges from 0:IMAX3, so size is imax3 + 1.
+         !therefore, (1:size(xe,1)) will give 1:imax3 + 1, resulting in a seg error.
+
+         part%cell(2) = DES_GETINDEXFROMPOS(JSTART1,JEND1,part%position(2), &
+         YN(1:size(YN,1)-1),'Y','J')
+         
+         part%cell(3) = 1
+         IF(DIMN.eq.3) part%cell(3) = DES_GETINDEXFROMPOS(KSTART1, &
+         KEND1,part%position(3),ZT(1:size(ZT,1)-1),'Z','K')       
+         part%cell(4) = FUNIJK(part%cell(1), part%cell(2), part%cell(3))  
+
+         part => part%next !step 
+      ENDDO
+
+      CALL FINL_ERR_MSG
+      END SUBROUTINE BIN_PARTICLES_TO_CELL
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  SUBROUTINE: GENERATE_PARTICLE_CONFIG                                C
+!                                                                      C
+!  Purpose: Generate particle configuration for DEM solids for each IC C
+!           region. Now using the particle linked lists for initial    C
+!           build                                                      C
+!                                                                      C
+!  Authors: Rahul Garg                               Date: 21-Mar-2014 C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C      
+      SUBROUTINE GENERATE_PARTICLE_CONFIG2_DEM
+
+      
+! Global Variables:
+! Runtime Flag: Generate initial particle configuation.
+      USE discretelement, only: GENER_PART_CONFIG
+! particle radius and density 
+      USE discretelement, only: DES_RADIUS, RO_Sol
+! particle position new and old  
+      USE discretelement, only: des_pos_new, des_pos_old
+! particle velocity new and old  
+      USE discretelement, only: des_vel_new, des_vel_old
+! Simulation dimension (2D/3D)
+      USE discretelement, only: DIMN
+! X , Y, and Z position of cell faces of computational fluid grid
+      USE discretelement, only: XE, YN, ZT
+! Number of particles in the system (current)
+      USE discretelement, only:  PIP
+! Number of DEM solids phases.
+      USE discretelement, only: DES_MMAX
+! DEM solid phase diameters and densities.
+      USE discretelement, only: DES_D_p0, DES_RO_s
+! Computed volume of IC region for seeding
+      USE discretelement, only: VOL_IC_REGION
+! Number of particles seeded, per phase in each IC region
+      USE discretelement, only: PART_MPHASE_BYIC
+! Number of particles to read from input file.
+      USE discretelement, only: PARTICLES
+
+      USE discretelement, only: PEA
+! Constant: 3.14159...
+      USE constant, only: PI
+! Flag indicating that the IC region is defined.
+      USE ic, only: IC_DEFINED
+! IC Region bulk density (RO_s * EP_s)
+      USE ic, only: IC_ROP_s
+! IC Region gas volume fraction.
+      USE ic, only: IC_EP_G
+! min and max physical co-ordinates of IC regions in each direction 
+      USE ic, only: IC_X_w, IC_X_e, IC_Y_s, IC_Y_n, IC_Z_b, IC_Z_t
+! initally specified velocity field and granular temperature 
+      USE ic, only: IC_U_s, IC_V_s, IC_W_s, IC_Theta_M
+! Flag to extend the lattice distribution in a given IC to available area
+      Use ic, only: IC_DES_FIT_TO_REGION
+! Parameter for detecting unspecified values, zero, and one
+      USE param1, only: UNDEFINED, UNDEFINED_I, ZERO, ONE, Half
+! Parameter for small and large numbers
+      USE param1, only: SMALL_NUMBER, LARGE_NUMBER
+! Maximum number of initial conditions
+      USE param, only: DIMENSION_IC
+! first and last index of the physical cells in regular MFIX grid 
+      USe compar, only: istart1, iend1, jstart1, jend1, kstart1, kend1
+! to access random number generator subroutines 
+      USE randomno
+      use error_manager
+
+      USE DES_LINKED_LIST_Data, only : orig_part_list, particle 
+      USE des_linked_list_funcs
+      IMPLICIT NONE
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+      INTEGER :: M, ICV, I,J, K, NP, idim, IC_COUNT
+      INTEGER :: lproc_parcount, pcount_byic_byphase(dimension_ic, DES_MMAX) 
+      INTEGER :: seed_x, seed_y, seed_z 
+      INTEGER :: TOTAL_PARTS_IC, last_counter, TMP_PART_COUNT_INTHIS_IC
+      integer, dimension(:), allocatable :: map_to_proc
+      double precision lmax_dia,lfac,xp,yp,zp, parts_temp 
+      double precision :: XSTART_IC, YSTART_IC, ZSTART_IC, adj_dia, ep_sm 
+      double precision :: XEND_IC, YEND_IC, ZEND_IC
+      double precision :: xinit, yinit, zinit, ymax 
+      !max point where the particle center cud be placed 
+      double precision ::  max_ic_pt(3)
+      !factor to re-fit the configuration to the IC region size 
+      double precision :: refit_fac(3) 
+      !particles min and max positions
+      double precision :: PART_CEN_MIN(DIMN), PART_CEN_MAX(DIMN)
+
+      !Particle mean velocity and standard deviation
+      double precision :: vel_mean(3), vel_sig(3)
+       
+      double precision, dimension(:,:), allocatable :: pvel_temp
+      
+      double precision :: rad, dens, position(dimn), velocity(dimn), wtp
+
+      type(particle), pointer :: part_list_byic, part 
+!-----------------------------------------------
+
+      CALL INIT_ERR_MSG("GENERATE_PARTICLE_CONFIG2_DEM")
+
+
+! initializing particle count
+      lproc_parcount = 0 
+
+      PCOUNT_BYIC_BYPHASE(:,:)  = 0 
+! setting particle seed spacing grid to be slightly greater than
+! the maximum particle diameter. seed at ~particle radii
+      lfac = 1.05d0      
+
+      write(err_msg, 2015)
+      CALL FLUSH_ERR_MSG(header = .false., FOOTER = .false.)
+
+ 2015 FORMAT('IC region wise report on particle initialization')
+      
+      WTP = 1.d0
+
+      IC_LOOP : DO ICV = 1, DIMENSION_IC 
+      IF(associated(part_list_byic)) Nullify(part_list_byic)
+         
+         IF (.not.IC_DEFINED(ICV)) cycle 
+         
+         PART_CEN_MIN(:) = LARGE_NUMBER
+         PART_CEN_MAX(:) = SMALL_NUMBER
+         
+         TOTAL_PARTS_IC = 0 
+         
+         LMAX_DIA = SMALL_NUMBER 
+         DO M = 1, DES_MMAX
+         
+            ! setting a local value of maximum diameter for each IC region      
+            if(PART_MPHASE_BYIC(ICV,M).gt.0) then
+               total_parts_ic = total_parts_ic + PART_MPHASE_BYIC(ICV,M)
+               LMAX_DIA = MAX(LMAX_DIA, DES_D_P0(M))
+            endif
+         ENDDO
+            
+         IF(total_parts_ic.eq.0) cycle IC_LOOP 
+      
+         WRITE(ERR_MSG,2016) ICV 
+      
+2016     FORMAT(/1X,70('-')/, 5x, &
+              'IC number         = ', I4)
+      
+         CALL FLUSH_ERR_MSG(HEADER = .false., Footer = .false.)
+            
+         
+         XSTART_IC = IC_X_W(ICV) 
+         YSTART_IC = IC_Y_S(ICV) 
+         ZSTART_IC = IC_Z_B(ICV) 
+         XEND_IC   = IC_X_E(ICV)
+         YEND_IC   = IC_Y_N(ICV)
+         ZEND_IC   = IC_Z_T(ICV)
+            
+         !Max location of any particle in this IC 
+         MAX_IC_PT(1) = XEND_IC - 0.5d0*LMAX_DIA*LFAC
+         MAX_IC_PT(2) = YEND_IC - 0.5d0*LMAX_DIA*LFAC
+         MAX_IC_PT(3) = ZEND_IC - 0.5d0*LMAX_DIA*LFAC
+         XINIT = XSTART_IC
+         YINIT = YSTART_IC
+         ZINIT = ZSTART_IC
+            
+         DO M = 1, DES_MMAX 
+            if(PART_MPHASE_BYIC(ICV,M).eq.0) cycle 
+            
+            VEL_MEAN(1) = IC_U_S(ICV, M)
+            VEL_MEAN(2) = IC_V_S(ICV, M)
+            IF(DIMN.eq.3) VEL_MEAN(3) = IC_W_S(ICV, M)
+            !granular temp is defined as (Variance uprime + Variance vprime + Variance wprime)/3 
+            !assuming equal energy in each direction 
+            !Variance uprime  = IC_Theta
+            !Stdev (or sigma) = sqrt(Variance)
+            
+            VEL_SIG(:) = sqrt(IC_Theta_M(ICV, M))
+            write(ERR_MSG,2022) M,  &
+                 vel_mean(:), IC_theta_m(ICV, M), vel_sig(:)
+            CALL FLUSH_ERR_MSG(HEADER = .false., Footer = .false.)
+            
+
+ 2022       FORMAT(1X,70('.'),/5x, & 
+            'PHASE INDEX, M                              =  ', I5,2X, /5x, & 
+            'INITIALIZING SOLIDS VELOCITY FIELD', /5x, & 
+            'Mean velocity direction wise                =  ', 3(G15.8,2X), /5x, & 
+            'Use specified initial granular temperature  =  ', (G15.8,2X), /5x, & 
+            'Velocity standard deviation direction wise  =  ', 3(G15.8,2X))
+     
+            allocate(pvel_temp( PART_MPHASE_BYIC(ICV,M) , DIMN))
+
+            do IDIM = 1, DIMN                   
+               pvel_temp(:, idim) = vel_mean(idim)
+               
+               IF(vel_sig(idim).gt.zero) then 
+                  CALL nor_rno(pvel_temp(1:PART_MPHASE_BYIC(ICV,M),IDIM), &
+                       vel_mean(idim),vel_sig(idim))
+               ENDIF
+            ENDDO
+         
+            SEED_X = 1
+            SEED_Y = 1
+            SEED_Z = 1
+            
+            ADJ_DIA = LFAC*DES_D_P0(M)               
+            
+            SEED_X = FLOOR((XEND_IC - XINIT)/ADJ_DIA)
+            SEED_Y = FLOOR((YEND_IC - YINIT)/ADJ_DIA)         
+            SEED_Z = FLOOR((ZEND_IC - ZINIT)/ADJ_DIA)
+            !write(*,*) 'adj_dia = ', adj_dia, lfac, lmax_dia
+            !write(*,*) 'seedx  = ', seed_x, seed_y, seed_z
+            if(dimn.eq.2) seed_z = 1 
+         
+            outerloop :  DO  J = 1, SEED_Y
+               DO  K = 1, SEED_Z 
+                  DO  I = 1, SEED_X 
+                     XP = XINIT + I*ADJ_DIA - DES_D_P0(M)*0.5D0
+                     YP = YINIT + J*ADJ_DIA - DES_D_P0(M)*0.5D0
+                     ZP = ZINIT + K*ADJ_DIA - DES_D_P0(M)*0.5D0
+                     
+                     TMP_PART_COUNT_INTHIS_IC = (PCOUNT_BYIC_BYPHASE(ICV,M)) + 1
+                     
+                     IF(TMP_PART_COUNT_INTHIS_IC.GT.PART_MPHASE_BYIC(ICV,M)) EXIT outerloop 
+                     
+                     !Associate this new particle to the solid phase id based on the map_to_proc defined 
+                     !earlier 
+                     
+                        
+                     PCOUNT_BYIC_BYPHASE(ICV,M)  = PCOUNT_BYIC_BYPHASE(ICV,M) + 1
+               
+                     !computational FLUID grid (xe,yn, zt)
+                     IF ( XP.GE.XE(ISTART1-1) .AND.XP.LT.XE(IEND1) & 
+                          .AND.YP.GE.YN(JSTART1-1) .AND.YP.LT.YN(JEND1) & 
+                          .AND.ZP.GE.ZT(KSTART1-1) .AND.ZP.LT.ZT(KEND1)) THEN 
+               
+                        RAD = DES_D_P0(M)*HALF 
+                        DENS  =  DES_RO_S(M)
+                        POSITION(1) = XP 
+                        POSITION(2) = YP 
+                        IF(DIMN.EQ.3) POSITION(3) = ZP 
+                        VELOCITY(1:DIMN) = PVEL_TEMP(PCOUNT_BYIC_BYPHASE(ICV,M),1:DIMN)
+                        
+                        CALL GEN_AND_ADD_TO_PART_LIST(PART_LIST_BYIC, M, POSITION(1:DIMN), &
+                             VELOCITY(1:DIMN), RAD, DENS, WTP)   
+                     ENDIF
+            
+                     PART_CEN_MIN(1)  = MIN(XP , PART_CEN_MIN(1))
+                     PART_CEN_MIN(2)  = MIN(YP , PART_CEN_MIN(2))
+                     
+                     PART_CEN_MAX(1)  = MAX(XP , PART_CEN_MAX(1))
+                     PART_CEN_MAX(2)  = MAX(YP , PART_CEN_MAX(2))
+                     IF(DIMN.EQ.3) THEN 
+                        PART_CEN_MIN(3)  = MIN(ZP, PART_CEN_MIN(3))
+                        PART_CEN_MAX(3)  = MAX(ZP, PART_CEN_MAX(3))
+                     ENDIF
+                     
+                     YMAX = YP + DES_D_P0(M)*0.5D0
+               
+                  end DO
+               end DO
+            end DO outerloop
+            
+            YINIT = YMAX 
+            
+            DEALLOCATE(pvel_temp)
+
+            EP_SM = IC_ROP_S(ICV,M)/DES_RO_s(M)
+            WRITE(ERR_MSG,2017) EP_SM, PART_MPHASE_BYIC(ICV, M), & 
+            PCOUNT_BYIC_BYPHASE(ICV,M)  
+            
+            CALL FLUSH_ERR_MSG(HEADER = .false., Footer = .false.)
+            
+            IF(PCOUNT_BYIC_BYPHASE(ICV,M).ne.PART_MPHASE_BYIC(ICV, M)) then 
+               WRITE(ERR_MSG, 2018) M
+               CALL FLUSH_ERR_MSG(HEADER = .false., Footer = .false.)
+            ENDIF
+            
+ 2017       FORMAT(5x, &
+            'Solids vol fraction for M   =  ', (G15.8,2X), /5x, & 
+            '# of particles implied from IC for phase M  = ',  I10, /5x, &
+            '# of particles actually seeded for phase M  = ',  I10)
+            
+ 2018       FORMAT(1X,70('.'),/,5x, &
+            '####  Warning for phase Index, M  ###', I5,2X, /5x, & 
+            'Difference in mass of solids initialized and desired')
+            
+         end DO                 ! DO M = 1, DES_MMAX
+
+         IF(IC_DES_FIT_TO_REGION(ICV)) THEN 
+            refit_fac = 1.d0 
+            
+            DO IDIM = 1, DIMN 
+               IF((PART_CEN_MAX(IDIM)-PART_CEN_MIN(IDIM).GT.LMAX_DIA).AND. &
+                    (MAX_IC_PT(IDIM) - PART_CEN_MAX(IDIM).GT.LMAX_DIA)) THEN 
+                  
+                  REFIT_FAC(IDIM)  = MAX_IC_PT(IDIM)/PART_CEN_MAX(IDIM)
+                  !write(*,*) ' REFI, IDIM =', IDIM, REFIT_FAC(IDIM)
+               END IF
+            END DO
+               
+            write(err_msg, 2020) ICV, refit_fac(1:dimn)
+            CALL FLUSH_ERR_MSG(HEADER = .false., Footer = .false.)
+            
+ 2020       Format(/5x, 'Refitting to box for IC', I4, /5x,   &
+            'Refitting factors (1-DIMN): ', 3(2x,g17.8))
+            
+            part => part_list_byic 
+            DO WHILE (ASSOCIATED(part))
+               do idim = 1, dimn 
+                  part%position(idim) = part%position(idim)*REFIT_FAC(IDIM)
+               ENDDO  
+               part => part%next
+            ENDDO
+         END IF              !DES_IC_FIT_TO_REGION
+
+! Now merge this IC specific list to the master list 
+         if(associated(part_list_byic)) then 
+            CALL merge_part_lists(part_list_byic, orig_part_list)
+            nullify(part_list_byic)
+         endif
+         
+      END DO IC_LOOP
+       
+      
+      CALL FINL_ERR_MSG
+          
+      RETURN
+    END SUBROUTINE GENERATE_PARTICLE_CONFIG2_DEM
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -319,11 +941,8 @@
                !assuming equal energy in each direction 
                !Variance uprime  = IC_Theta
                !Stdev (or sigma) = sqrt(Variance)
-               VEL_SIG(:) = ZERO
 
-               IF(IC_Theta_M(ICV,M).ne.UNDEFINED) & 
-               & VEL_SIG(:) = sqrt(IC_Theta_M(ICV, M))
-               
+               VEL_SIG(:) = sqrt(IC_Theta_M(ICV, M))
                
                write(ERR_MSG,2022) M,  &
                vel_mean(:), IC_theta_m(ICV, M), vel_sig(:)
@@ -403,8 +1022,6 @@
  2018 FORMAT(1X,70('.'),/,5x, &
       '####  Warning for phase Index, M  ###', I5,2X, /5x, & 
       'Difference in mass of solids initialized and desired')
-      
- 2019 FORMAT( 1X,70('*')/)
       
  2020 Format(/5x, 'Refitting to box for IC', I4, /5x,   &
       'Refitting factors (1-DIMN): ', 3(2x,g17.8))
@@ -584,6 +1201,174 @@
       !CALL mfix_exit(mypE)
       END SUBROUTINE GENERATE_PARTICLE_CONFIG_MPPIC
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  SUBROUTINE: DBG_WRITE_PART_VTP_FILE_FROM_LIST                       C
+!                                                                      C
+!  Purpose: Subroutine to write initial particle lists to vtp files    C
+!           for debugging purporse.                                    C
+!           This only writes process wise files since constructor does C
+!           not exist to gather linked-lists on root processor.        C
+!                                                                      C
+!  Authors: Rahul Garg                               Date: 21-Mar-2014 C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE DBG_WRITE_PART_VTP_FILE_FROM_LIST(part_fname)
+      USE run
+      USE param1
+      USE discretelement, only : dimn, s_time
+      USE compar
+      USE constant
+      USE cutcell 
+      USE funits
+      USE indices
+      USE physprop
+      USE parallel
+      USE DES_LINKED_LIST_DATA, only : orig_part_list, particle
+      USE des_linked_list_funcs
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
+      use error_manager
+
+      Implicit none 
+      CHARACTER (LEN=*), intent(in) :: part_fname
+      !facet id and particle id 
+      Integer ::  vtp_unit , i,j,k,l, nparts
+      CHARACTER*100 :: vtp_fname 
+      
+      type(particle), pointer :: part => null()
+      real,dimension(:,:), allocatable :: ltemp_array
+      ! dummy values to maintain format for dimn=2
+      REAL POS_Z, VEL_W 
+      
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("WRITE_PARTICLE_VTP_FILE")
+      vtp_unit = 1002      
+
+      POS_Z = 0.0
+      vel_w = 0.0
+
+      nparts = 0 
+      part => orig_part_list 
+      DO WHILE (ASSOCIATED(part))
+         if(part%INDOMAIN) then 
+            nparts = nparts + 1 
+         endif
+         part => part%next
+      ENDDO      
+      write(vtp_fname,'(A,"_", A, "_",I5.5,".vtp")') & 
+      trim(run_name),trim(part_fname), mype
+                 
+      open(vtp_unit, file = vtp_fname, form='formatted')
+      write(vtp_unit,"(a)") '<?xml version="1.0"?>'
+! Write the S_TIME as a comment for reference
+      write(vtp_unit,"(a,es24.16,a)") '<!-- Time =',s_time,'s -->'
+
+! Write the necessary header information for a PolyData file type
+      write(vtp_unit,"(a,a)") '<VTKFile type="PolyData"',&
+      ' version="0.1" byte_order="LittleEndian">'
+      write(vtp_unit,"(3x,a)") '<PolyData>'
+      
+! Write Piece tag and identify the number of particles in the system.
+      write(vtp_unit,"(6x,a,i10.10,a,a)")&
+      '<Piece NumberOfPoints="',nparts,&
+      '" NumberOfVerts="0" ',&
+      'NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="0">'
+      write(vtp_unit,"(9x,a)")&
+      '<PointData Scalars="Diameter" Vectors="Velocity">'
+      
+! Write the diameter data.         
+      write(vtp_unit,"(12x,a)")&
+      '<DataArray type="Float32" Name="Diameter" format="ascii">'
+      part => orig_part_list 
+      DO WHILE (ASSOCIATED(part))
+         if(part%INDOMAIN) then  
+            write (vtp_unit,"(15x,es12.6)") (real(2.d0*part%rad))
+         endif
+         part => part%next
+      ENDDO
+
+      write(vtp_unit,"(12x,a)") '</DataArray>'
+      
+      ! Write velocity data. Force to three dimensions. So for 2D runs, a 
+! dummy value of zero is supplied as the 3rd point.
+      write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
+      'Name="Velocity" NumberOfComponents="3" format="ascii">'
+      if(dimn.eq.2) then
+         part => orig_part_list 
+         DO WHILE (ASSOCIATED(part))
+            if(part%INDOMAIN) then 
+               write (vtp_unit,"(15x,3(es13.6,3x))")&
+               (real(part%velocity(k)),k=1,dimn),vel_w
+            endif
+            part => part%next
+         ENDDO
+      
+      else                      ! 3d 
+         part => orig_part_list 
+         DO WHILE (ASSOCIATED(part))
+            if(part%INDOMAIN) then 
+               write (vtp_unit,"(15x,3(es13.6,3x))")&
+               (real(part%velocity(k)),k=1,dimn)
+            endif
+            part => part%next
+         ENDDO
+      endif
+      write(vtp_unit,"(12x,a,/9x,a)") '</DataArray>','</PointData>'
+
+! Skip CellData tag, no data. (vtp format style)
+      write(vtp_unit,"(9x,a)") '<CellData></CellData>'
+
+! Write position data. Point data must be supplied in 3 dimensions. So
+! for 2D runs, a dummy value of zero is supplied as the 3rd point.
+      write(vtp_unit,"(9x,a)") '<Points>'
+      write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
+      'Name="Position" NumberOfComponents="3" format="ascii">'
+      if(dimn.eq.2) then
+
+         part => orig_part_list 
+         DO WHILE (ASSOCIATED(part))
+            if(part%INDOMAIN) then 
+               write (vtp_unit,"(15x,3(es13.6,3x))")&
+               (real(part%position(k)),k=1,dimn),pos_z 
+            endif
+            part => part%next
+         ENDDO
+      else
+         
+         part => orig_part_list 
+         DO WHILE (ASSOCIATED(part))
+            if(part%INDOMAIN) then 
+               write (vtp_unit,"(15x,3(es13.6,3x))")&
+               (real(part%position(k)),k=1,dimn) 
+            endif
+
+            part => part%next
+         ENDDO
+      endif
+      write(vtp_unit,"(12x,a,/9x,a)")'</DataArray>','</Points>'
+         
+! Write tags for data not included (vtp format style)
+      write(vtp_unit,"(9x,a,/9x,a,/9x,a,/9x,a)")'<Verts></Verts>',&
+      '<Lines></Lines>','<Strips></Strips>','<Polys></Polys>'
+      write(vtp_unit,"(6x,a,/3x,a,/a)")&
+      '</Piece>','</PolyData>','</VTKFile>'
+
+      close(vtp_unit, status = 'keep')
+
+      
+      write(ERR_MSG, 1000) part_fname
+      
+ 1000 FORMAT( 'For debugging purposes, processor wise particle configurations ', &
+      'written to files containing ', /, A, /)
+
+      CALL FLUSH_ERR_MSG(header=.false., footer = .false.)
+
+      CALL FINL_ERR_MSG
+      END SUBROUTINE  DBG_WRITE_PART_VTP_FILE_FROM_LIST
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -821,3 +1606,5 @@
 
       RETURN
       END SUBROUTINE init_particles_jn
+      
+
