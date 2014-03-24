@@ -1192,7 +1192,7 @@ module softspring_funcs_cutcell
 
       IF(DIMN.EQ.3) THEN
          CALL DES_CROSSPRDCT(CROSSP, NORM, FTAN)
-         TOW(L,:)  = TOW(L,:)  + DIST_CL*CROSSP(:)
+         TOW(:,L)  = TOW(:,L)  + DIST_CL*CROSSP(:)
 !         TOW(II,:) = TOW(II,:) + DIST_CI*CROSSP(:)
 ! remember torque is R cross FT, which, compared to I particle, are
 ! both negative for the J particle.  Therefore, the toqrue, unlike tangential
@@ -1200,7 +1200,7 @@ module softspring_funcs_cutcell
 ! particles making the pair
       ELSE
          CROSSP(1) = NORM(1)*FTAN(2) - NORM(2)*FTAN(1)
-         TOW(L,1)  = TOW(L,1)  + DIST_CL*CROSSP(1)
+         TOW(1,L)  = TOW(1,L)  + DIST_CL*CROSSP(1)
 !        TOW(II,1) = TOW(II,1) + DIST_CI*CROSSP(1)
       ENDIF
 
