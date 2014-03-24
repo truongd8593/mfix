@@ -75,6 +75,8 @@ $(EXEC_FILE) : \
     $(DPO)des_cluster.mod \
     $(DPO)desgrid.mod \
     $(DPO)des_ic.mod \
+    $(DPO)des_linked_list_data.mod \
+    $(DPO)des_linked_list_funcs.mod \
     $(DPO)desmpi.mod \
     $(DPO)desmpi_wrapper.mod \
     $(DPO)des_rxns.mod \
@@ -396,8 +398,10 @@ $(EXEC_FILE) : \
     $(DPO)check_gas_phase.$(OBJ_EXT) \
     $(DPO)check_geometry.$(OBJ_EXT) \
     $(DPO)check_geometry_prereqs.$(OBJ_EXT) \
+    $(DPO)check_ic_common_discrete.$(OBJ_EXT) \
     $(DPO)check_initial_conditions_dem.$(OBJ_EXT) \
     $(DPO)check_initial_conditions.$(OBJ_EXT) \
+    $(DPO)check_initial_conditions_mppic.$(OBJ_EXT) \
     $(DPO)check_internal_surfaces.$(OBJ_EXT) \
     $(DPO)check_numerics.$(OBJ_EXT) \
     $(DPO)check_output_control.$(OBJ_EXT) \
@@ -875,8 +879,10 @@ $(EXEC_FILE) : \
     $(DPO)check_gas_phase.$(OBJ_EXT) \
     $(DPO)check_geometry.$(OBJ_EXT) \
     $(DPO)check_geometry_prereqs.$(OBJ_EXT) \
+    $(DPO)check_ic_common_discrete.$(OBJ_EXT) \
     $(DPO)check_initial_conditions_dem.$(OBJ_EXT) \
     $(DPO)check_initial_conditions.$(OBJ_EXT) \
+    $(DPO)check_initial_conditions_mppic.$(OBJ_EXT) \
     $(DPO)check_internal_surfaces.$(OBJ_EXT) \
     $(DPO)check_numerics.$(OBJ_EXT) \
     $(DPO)check_output_control.$(OBJ_EXT) \
@@ -932,6 +938,8 @@ $(EXEC_FILE) : \
     $(DPO)des_init_arrays.$(OBJ_EXT) \
     $(DPO)des_init_bc.$(OBJ_EXT) \
     $(DPO)des_init_namelist.$(OBJ_EXT) \
+    $(DPO)des_linked_list_data_mod.$(OBJ_EXT) \
+    $(DPO)des_linked_list_funcs_mod.$(OBJ_EXT) \
     $(DPO)des_mass_inlet.$(OBJ_EXT) \
     $(DPO)desmpi_mod.$(OBJ_EXT) \
     $(DPO)desmpi_wrapper_mod.$(OBJ_EXT) \
@@ -1419,6 +1427,13 @@ $(DPO)desgrid.mod : ./des/desgrid_mod.f \
 $(DPO)des_ic.mod : ./des/des_ic_mod.f \
             $(DPO)param.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_ic_mod.f  -o $(DPO)des_ic_mod.$(OBJ_EXT) -J$(DPO)
+$(DPO)des_linked_list_data.mod : ./des/des_linked_list_data_mod.f \
+            $(DPO)error_manager.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_linked_list_data_mod.f  -o $(DPO)des_linked_list_data_mod.$(OBJ_EXT) -J$(DPO)
+$(DPO)des_linked_list_funcs.mod : ./des/des_linked_list_funcs_mod.f \
+            $(DPO)des_linked_list_data.mod \
+            $(DPO)discretelement.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_linked_list_funcs_mod.f  -o $(DPO)des_linked_list_funcs_mod.$(OBJ_EXT) -J$(DPO)
 $(DPO)desmpi.mod : ./des/desmpi_mod.f \
             $(DPO)parallel_mpi.mod \
             $(DPO)mpi_utility.mod \
@@ -6113,6 +6128,14 @@ $(DPO)check_geometry_prereqs.$(OBJ_EXT) : ./check_data/check_geometry_prereqs.f 
             $(DPO)param.mod \
             $(DPO)error_manager.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_geometry_prereqs.f  -o $(DPO)check_geometry_prereqs.$(OBJ_EXT) -J$(DPO)
+$(DPO)check_ic_common_discrete.$(OBJ_EXT) : ./check_data/check_ic_common_discrete.f \
+            $(DPO)discretelement.mod \
+            $(DPO)ic.mod \
+            $(DPO)param1.mod \
+            $(DPO)geometry.mod \
+            $(DPO)param.mod \
+            $(DPO)error_manager.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_ic_common_discrete.f  -o $(DPO)check_ic_common_discrete.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_initial_conditions_dem.$(OBJ_EXT) : ./check_data/check_initial_conditions_dem.f \
             $(DPO)discretelement.mod \
             $(DPO)ic.mod \
@@ -6124,18 +6147,27 @@ $(DPO)check_initial_conditions_dem.$(OBJ_EXT) : ./check_data/check_initial_condi
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_initial_conditions_dem.f  -o $(DPO)check_initial_conditions_dem.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_initial_conditions.$(OBJ_EXT) : ./check_data/check_initial_conditions.f \
             $(DPO)ic.mod \
-            $(DPO)param.mod \
             $(DPO)run.mod \
+            $(DPO)param.mod \
             $(DPO)error_manager.mod \
-            $(DPO)mpi_utility.mod \
+            $(DPO)geometry.mod \
+            $(DPO)param1.mod \
             $(DPO)physprop.mod \
             $(DPO)scalars.mod \
-            $(DPO)param1.mod \
-            $(DPO)geometry.mod \
-            $(DPO)discretelement.mod \
-            $(DPO)indices.mod \
-            $(DPO)compar.mod 
+            $(DPO)discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_initial_conditions.f  -o $(DPO)check_initial_conditions.$(OBJ_EXT) -J$(DPO)
+$(DPO)check_initial_conditions_mppic.$(OBJ_EXT) : ./check_data/check_initial_conditions_mppic.f \
+            $(DPO)discretelement.mod \
+            $(DPO)mfix_pic.mod \
+            $(DPO)ic.mod \
+            $(DPO)param1.mod \
+            $(DPO)param.mod \
+            $(DPO)geometry.mod \
+            $(DPO)constant.mod \
+            $(DPO)mpi_utility.mod \
+            $(DPO)error_manager.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_initial_conditions_mppic.f  -o $(DPO)check_initial_conditions_mppic.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_internal_surfaces.$(OBJ_EXT) : ./check_data/check_internal_surfaces.f \
             $(DPO)is.mod \
             $(DPO)param.mod \
@@ -6163,15 +6195,13 @@ $(DPO)check_output_control.$(OBJ_EXT) : ./check_data/check_output_control.f \
             $(DPO)error_manager.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_output_control.f  -o $(DPO)check_output_control.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_point_sources.$(OBJ_EXT) : ./check_data/check_point_sources.f \
-            $(DPO)param.mod \
-            $(DPO)run.mod \
             $(DPO)ps.mod \
+            $(DPO)param.mod \
             $(DPO)error_manager.mod \
-            $(DPO)physprop.mod \
-            $(DPO)rxns.mod \
-            $(DPO)compar.mod \
             $(DPO)geometry.mod \
-            $(DPO)mpi_utility.mod \
+            $(DPO)param1.mod \
+            $(DPO)run.mod \
+            $(DPO)physprop.mod \
             $(DPO)discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_point_sources.f  -o $(DPO)check_point_sources.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_run_control.$(OBJ_EXT) : ./check_data/check_run_control.f \
@@ -6349,6 +6379,7 @@ $(DPO)cfassign.$(OBJ_EXT) : ./des/cfassign.f \
             $(DPO)sendrecv.mod \
             $(DPO)discretelement.mod \
             $(DPO)mfix_pic.mod \
+            $(DPO)error_manager.mod \
             $(DPO)param.mod \
             $(DPO)fldvar.mod \
             $(DPO)run.mod \
@@ -6503,6 +6534,7 @@ $(DPO)des_allocate_arrays.$(OBJ_EXT) : ./des/des_allocate_arrays.f \
             $(DPO)des_thermo.mod \
             $(DPO)des_rxns.mod \
             $(DPO)cutcell.mod \
+            $(DPO)error_manager.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_allocate_arrays.f  -o $(DPO)des_allocate_arrays.$(OBJ_EXT) -J$(DPO)
 $(DPO)des_check_particle.$(OBJ_EXT) : ./des/des_check_particle.f \
@@ -6811,21 +6843,27 @@ $(DPO)gas_drag.$(OBJ_EXT) : ./des/gas_drag.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/gas_drag.f  -o $(DPO)gas_drag.$(OBJ_EXT) -J$(DPO)
 $(DPO)generate_particle_config.$(OBJ_EXT) : ./des/generate_particle_config.f \
             $(DPO)mfix_pic.mod \
+            $(DPO)des_linked_list_data.mod \
+            $(DPO)des_linked_list_funcs.mod \
+            $(DPO)cutcell.mod \
             $(DPO)discretelement.mod \
+            $(DPO)mpi_utility.mod \
+            $(DPO)error_manager.mod \
+            $(DPO)des_linked_list_data.mod \
+            $(DPO)softspring_funcs_cutcell.mod \
+            $(DPO)indices.mod \
+            $(DPO)geometry.mod \
+            $(DPO)compar.mod \
             $(DPO)constant.mod \
             $(DPO)ic.mod \
             $(DPO)param1.mod \
             $(DPO)param.mod \
             $(DPO)randomno.mod \
-            $(DPO)error_manager.mod \
-            $(DPO)geometry.mod \
             $(DPO)funits.mod \
-            $(DPO)compar.mod \
             $(DPO)run.mod \
             $(DPO)physprop.mod \
             $(DPO)fldvar.mod \
-            $(DPO)indices.mod \
-            $(DPO)mpi_utility.mod \
+            $(DPO)parallel.mod \
             $(DPO)desmpi.mod \
             $(DPO)cdist.mod \
             function.inc                                                 \
