@@ -93,9 +93,7 @@
          VXF_SDS(:,:,:) = ZERO
       ENDIF
 
-      XE(:) = ZERO
-      YN(:) = ZERO
-      ZT(:) = ZERO
+  
 
       GRAV(:) = ZERO
 
