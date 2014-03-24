@@ -19,6 +19,8 @@
       use run, only: JENKINS
 ! Flag: Use revised phihp for JJ BC.
       use bc, only: BC_JJ_PS
+! User-input: solids kinetic-theory model.
+      use run, only: KT_TYPE
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -46,6 +48,8 @@
 !---------------------------------------------------------------------//
 ! Loop/counter variable.
       INTEGER :: M
+! Local total number of solids phases
+      INTEGER :: MTOT_L
 !......................................................................!
 
 
@@ -55,8 +59,10 @@
 ! Input checks for gas phase.
       CALL CHECK_BC_WALLS_GAS(BCV)
 
+      MTOT_L = merge( M_TOT+1, M_TOT, KT_TYPE(1:3) == 'GHD')
+
 ! Input checks for solid phases.
-      DO M=1, M_TOT
+      DO M=1, MTOT_L
          SELECT CASE(SOLIDS_MODEL(M))
          CASE ('TFM'); CALL CHECK_BC_WALLS_TFM(BCV, M)
          CASE ('DEM'); CALL CHECK_BC_WALLS_DISCRETE(BCV, M)

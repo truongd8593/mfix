@@ -442,6 +442,15 @@
             CALL FLUSH_ERR_MSG
          ENDIF
 
+! Automatically set SPECIES_EQ(MMAX) = .FALSE. to avoid potential
+! checks/loops over the mmax species type eqn which has no meaning         
+         SPECIES_EQ(MMAX) = .FALSE.
+         NMAX_s(MMAX) = 1
+
+! currently set to avoid an overflow error in write_res0 
+! legacy variable?         
+         NMAX(MMAX) = 1
+
  1101 FORMAT('Error 1101: KT_TYPE = "GHD" is restricted to DRAG_TYPE', &
          'values of WEN_YU and HYS.',/'Please correct the mfix.dat ',  &
          'file.')

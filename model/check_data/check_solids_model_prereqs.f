@@ -111,6 +111,18 @@
          END SELECT
       ENDDO
 
+! Set the number of discrete phases.
+      DES_MMAX = DEM_COUNT + PIC_COUNT
+
+! Set the number of TFM phases.  (should be equivalent to tfm_count)
+      MMAX = MMAX - DES_MMAX
+      SMAX = MMAX   ! USE smax in the code for the number of TFM phases 
+! For GHD theory increase MMAX by one to serve as 'mixture' phase
+      IF(TRIM(KT_TYPE) == 'GHD') THEN
+         MMAX = MMAX + 1
+         TFM_COUNT = TFM_COUNT + 1
+      ENDIF
+
 
 ! Clear out the unused phases.
       SOLIDS_MODEL(MMAX+1:DIM_M) = '---'
@@ -135,28 +147,12 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
  1003 FORMAT('Error 1003: MPPIC solids and DES solids cannot be ',     &
-         'combined.',/'Please correct the mfix.dat file.')
-
-
-! Set the number of discrete phases.
-      DES_MMAX = DEM_COUNT + PIC_COUNT
-
-! Set the number of TFM phases.
-      MMAX = MMAX - DES_MMAX
-! For GHD theory increase MMAX by one to serve as 'mixture' phase
-      IF(TRIM(KT_TYPE) == 'GHD') THEN
-         MMAX = MMAX + 1
-! unclear if the following is necessary:         
-! Automatically set SPECIES_EQ(MMAX) = .FALSE.
-         SPECIES_EQ(MMAX) = .FALSE.
-      ENDIF
-      SMAX = merge( MMAX-1, MMAX, KT_TYPE(1:3) == 'GHD')
-
+         'combined.',/'Please correct the mfix.dat file.')      
 
 ! temporary move for now since these rely on definition of mmax/smax      
 ! Set variable ANY_SPECIES_EQ
-      N = max(SMAX, DES_MMAX)
-      ANY_SPECIES_EQ = any(SPECIES_EQ(:N))
+      M = max(SMAX, DES_MMAX)
+      ANY_SPECIES_EQ = any(SPECIES_EQ(:M))
 
 ! Check phase specification for scalars
       DO N = 1, NScalar
