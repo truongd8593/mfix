@@ -330,7 +330,7 @@
 ! magnitude of gas-solids relative velocity
                   VREL = SQRT(USCM_HYS**2 +VSCM_HYS**2 +WSCM_HYS**2)
                   CALL DRAG_HYS(DgA,EPg,Mu,ROPg,VREL,&
-                       DP_loc(:),DPA,Y_i,EPs_loc(:),phis,M,IJK,MAXM)
+                       DP_loc(:),DPA,Y_i,EPs_loc(:),phis,M,MAXM,IJK)
                CASE DEFAULT
                   CALL START_LOG 
                   IF(.NOT.DMP_LOG) call open_pe_log(ier)
