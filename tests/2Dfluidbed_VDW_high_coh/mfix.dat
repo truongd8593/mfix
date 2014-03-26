@@ -63,6 +63,8 @@
   XLENGTH = 8.0     IMAX = 27	! length and cells in x/i direction
   YLENGTH = 20.0    JMAX = 30 	! length and cells in y/j direction
   NO_K = .TRUE.                 ! 2D, no k direction
+  DZ(1) = 0.1   ! specify thickness for solids volume fraction
+                ! calculation in coupled des
   
   GRAVITY = 980     ! gravitational acceleration (y-direction)
 
@@ -120,15 +122,15 @@
 
 ! Inlet --------------------
 ! gas flow through bottom
-  BC_X_w(1)       =       0.1
-  BC_X_e(1)       =       7.9
+  BC_X_w(1)       =       0.0
+  BC_X_e(1)       =       8.0
   BC_Y_s(1)       =       0.0
   BC_Y_n(1)       =       0.0
   BC_TYPE(1)      =       'MI'   ! mass inflow
 
   BC_EP_g(1)      =       1.0
   BC_U_g(1)       =       0.0
-  BC_V_g(1)       =     250.0    ! inlet jet vel
+  BC_V_g(1)       =     250.0    ! inlet gas vel
   BC_P_g(1)       =       0.0    ! at this time it is set
                                  ! to avoid a data check
 
@@ -148,6 +150,8 @@
   DISCRETE_ELEMENT = .TRUE.
   DES_CONTINUUM_COUPLED = .TRUE.     ! couple gas and solids flow 
                                      ! together [.FALSE.]
+  DES_INTERP_ON = .FALSE.     ! interpolate for gas-solids drag force
+                              ! [.FALSE.]
   PARTICLES = 4000     ! total number of initial particles
   PARTICLES_FACTOR = 1.2     ! expand size of particle arrays by an 
                              ! arbitrary factor [1.2]
@@ -198,7 +202,7 @@
 #  WALL_RADIUS_RATIO = 1.01
 
 ! DES Output Control --------------------
-  PRINT_DES_DATA = .F.    ! write DEM data as *.vtp files
+  PRINT_DES_DATA = .T.    ! write DEM data as *.vtp files
 
 
 !*********************************************************************
@@ -224,6 +228,9 @@
 
 ! Interval in number of time steps at which .LOG file is written. [25]
   NLOG = 25
+
+! Specify residuals to be printed as 4-character strings.
+  RESID_STRING  = 'P0' 'U0' 'V0'
 
 
 !*********************************************************************
