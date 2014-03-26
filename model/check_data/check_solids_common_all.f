@@ -248,6 +248,9 @@
 ! the drag model selected.
       IF(CD_FUNCTION /= UNDEFINED_C) THEN
          IF(DEFAULT_CD == 'NULL')THEN
+         WRITE(ERR_MSG,1002) 'DRAG_TYPE', trim(adjustl(DRAG_TYPE)), &
+            'CD_FUNCTION', CD_FUNCTION
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)                 
          ENDIF
       ELSE
 ! If no CD_FUNCTION was specifed, set the default for the given
@@ -262,6 +265,7 @@
       CASE ('DALLA_1948');    CD_FUNCTION_ENUM = DALLA_1948
       CASE ('DELLINO_2005');  CD_FUNCTION_ENUM = DELLINO_2005
       CASE ('TURTON_1986');   CD_FUNCTION_ENUM = TURTON_1986
+      CASE ('NULL');          CD_FUNCTION_ENUM = UNDEFINED_I
       CASE DEFAULT
          WRITE(ERR_MSG,1001)'CD_FUNCTION', CD_FUNCTION
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -274,7 +278,9 @@
 
  1001 FORMAT('Error 1001: Illegal or unknown input: ',A,' = ',A,/   &
          'Please correct the mfix.dat file.')
-
+ 1002 FORMAT('Error 1002: Illegal input: ',A,' = ',A,/ &
+      'does not support ',A, ' = ',A, ' Please correct ', / &
+      'the mfix.dat file.')
       END SUBROUTINE CHECK_SOLIDS_DRAG
 
 
