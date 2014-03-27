@@ -10,9 +10,11 @@
 !     - calculating DTSOLID based on particle properties: spring       C
 !       coefficient, damping factor & mass                             C
 !                                                                      C
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !  Reviewer: Sreekanth Pannala                        Date: 09-Nov-06  C
 !                                                                      C
+!  Reviewer: Rahul Garg                               Date: 25-Mar-14  C
+!  Comments: Breaking this subroutine into several subroutines for DEM C
+!            and PIC models                                            C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CFASSIGN
@@ -21,27 +23,21 @@
 ! Modules
 !-----------------------------------------------
       USE param1
-      USE physprop
-      USE geometry
-      USE constant
-      USE compar
-      USE parallel
-      USE sendrecv
-      USE discretelement
+      USE constant, only : GRAVITY_X, GRAVITY_Y, GRAVITY_Z
+      USE discretelement 
       USE mfix_pic
       use error_manager
+! Flag: DEM solids present.
+      use run, only: DEM_SOLIDS
+! Runtime flag specifying MPPIC solids
+      use run, only: PIC_SOLIDS     
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
       INTEGER :: I, J, K, L
       INTEGER :: IJK, M  ! needed for calling bfx_s, etc
-      INTEGER :: COUNT_E
-      DOUBLE PRECISION :: MASS_I, MASS_J, &
-                          MASS_EFF, RED_MASS_EFF
-      DOUBLE PRECISION :: TCOLL, TCOLL_TMP
-! local variables for calculation of hertzian contact parameters
-      DOUBLE PRECISION :: R_EFF, E_EFF, G_MOD_EFF
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -51,36 +47,136 @@
 
       CALL INIT_ERR_MSG("CFASSIGN")
 
+      
+! The common assignments are done in this routine. 
+! The model spcific assignmets are moved to the specific subroutines 
 
-! compute the volume of nodes - more description coming later
-      CALL compute_volume_of_nodes
-
-      TCOLL = LARGE_NUMBER
-
-! the DEM variable grav(:) will not accomodate a body force that varies
-! in space or on phases unlike the implementation in the continuum
-! simulations
-!      GRAV(1) = BFX_s(1,1)
-!      GRAV(2) = BFY_s(1,1)
-!      IF(DIMN.EQ.3) GRAV(3) = BFZ_s(1,1)
       GRAV(1) = GRAVITY_X
       GRAV(2) = GRAVITY_Y
       IF(DIMN.EQ.3) GRAV(3) = GRAVITY_Z
       WRITE(ERR_MSG, '(A, 2x, 3(ES15.7))') 'GRAVITY components for DES:', & 
       GRAVITY_X, GRAVITY_Y, GRAVITY_Z
 
+      CALL FLUSH_ERR_MSG 
+      
+      IF(DEM_SOLIDS) CALL cfassign_dem
+      IF(PIC_SOLIDS) CALL cfassign_pic
+
+! Finalize the error manager.
+      CALL FINL_ERR_MSG
+
+      RETURN
+      END SUBROUTINE CFASSIGN
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: CFASSIGN_PIC                                            C
+!                                                                      C
+!  Purpose: PIC related cfassign source code moved here                C
+!           example:                                                   C
+!     - calculating DTSOLID based on particle response time            C
+!                                                                      C
+!                                                                      C
+!  Reviewer: Rahul Garg                               Date: 25-Mar-14  C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      SUBROUTINE CFASSIGN_PIC
+
+      
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      USE param1
+      USE constant, only: Pi
+      USE discretelement, only: des_mmax, dtsolid 
+      USE discretelement, only: DES_RO_s, DES_D_P0
+      USE physprop, only: MU_g0
+      USE mfix_pic, only : dtpic_taup, des_tau_p
+      use error_manager
+      IMPLICIT NONE
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------
+      INTEGER :: M 
+
+      CALL INIT_ERR_MSG("CFASSIGN_PIC")
+
+      DO M = 1, DES_MMAX
+         DES_TAU_P(M) = DES_RO_S(M)*(DES_D_P0(M)**2.d0)/(18.d0*MU_g0)
+         WRITE(err_msg,'(/A,I2,A,G17.8)') &
+         'TAU_P FOR ', M,'th SOLID PHASE= ', DES_TAU_P(M)
+         CALL FLUSH_ERR_MSG (Header = .false., Footer = .false.)
+
+      ENDDO
+
+      DTSOLID = MINVAL(DES_TAU_P(1:DES_MMAX))
+      DTPIC_TAUP = DTSOLID      !maximum dt for point-particles based on taup
+      
+      WRITE(ERR_MSG, 1000) DTSolid 
+      CALL FLUSH_ERR_MSG(Header = .false.)
+      
+ 1000 format('MPPIC: Point-particle ',&
+      'approximation for particle-particle and ', /, & 
+      'particle-wall collisions', /, &
+      'DTSOLID based on particle time response Taup', /, & 
+      'DTSOLID = ', 2x, E17.10)
+
+! Finalize the error manager.
+      CALL FINL_ERR_MSG
+
+      END SUBROUTINE CFASSIGN_PIC 
+
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: CFASSIGN_DEM                                            C
+!                                                                      C
+!  Purpose: DEM related cfassign source code moved here                C
+!           example:                                                   C
+!     - calculating DTSOLID based on particle properties: spring       C
+!       coefficient, damping factor & mass                             C
+!                                                                      C
+!                                                                      C
+!  Reviewer: Rahul Garg                               Date: 25-Mar-14  C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      SUBROUTINE CFASSIGN_DEM 
+
+      
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      USE param1
+      USE constant, only: Pi
+      USE discretelement
+      use error_manager
+      IMPLICIT NONE
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------
+      INTEGER :: I, J, K, L, M 
+      INTEGER :: COUNT_E
+      DOUBLE PRECISION :: MASS_I, MASS_J, &
+                          MASS_EFF, RED_MASS_EFF
+      DOUBLE PRECISION :: TCOLL, TCOLL_TMP
+! local variables for calculation of hertzian contact parameters
+      DOUBLE PRECISION :: R_EFF, E_EFF, G_MOD_EFF
+
+      CALL INIT_ERR_MSG("CFASSIGN_DEM")
+
+      TCOLL = LARGE_NUMBER
+
+      WRITE(ERR_MSG,'(A)') 'Setting collision model parameters for DEM'
       CALL FLUSH_ERR_MSG (Footer = .false.)
-
-!-------------------------------------------------------
-! Calculate collision parameters
-!----------------------------------------------------------------->>>
-
+      
       IF (DES_COLL_MODEL_ENUM == HERTZIAN) THEN
 
-         IF(DMP_LOG.AND..NOT.MPPIC) &
-            WRITE(ERR_MSG,'(A)') 'COLLISION MODEL: Hertzian'
-            CALL FLUSH_ERR_MSG (Header = .false., Footer = .false.)
-
+         WRITE(ERR_MSG,'(A)') 'COLLISION MODEL: Hertzian'
+         CALL FLUSH_ERR_MSG (Header = .false., Footer = .false.)
 
 ! particle-particle contact -------------------->
          DO I=1,DES_MMAX
@@ -300,41 +396,13 @@
       ENDDO
       DTSOLID = TCOLL/50.d0
 
-      IF(.NOT.MPPIC) &
       WRITE(err_msg,'(A,E17.10,2X,E17.10)') &
       'MIN TCOLL AND DTSOLID = ',TCOLL, DTSOLID
       CALL FLUSH_ERR_MSG (Header = .false.)
 
-
-      IF(MPPIC) THEN
-         DO M = 1, DES_MMAX
-            DES_TAU_P(M) = DES_RO_S(M)*(DES_D_P0(M)**2.d0)/(18.d0*MU_g0)
-            WRITE(err_msg,'(/A,I2,A,G17.8)') &
-            'TAU_P FOR ', M,'th SOLID PHASE= ', DES_TAU_P(M)
-            CALL FLUSH_ERR_MSG (Header = .false., Footer = .false.)
-
-         ENDDO
-
-         DTSOLID = MINVAL(DES_TAU_P(1:DES_MMAX))
-         DTPIC_TAUP = DTSOLID   !maximum dt for point-particles based on taup
-
-         WRITE(ERR_MSG, 1000) DTSolid 
-         CALL FLUSH_ERR_MSG(Header = .false.)
-
- 1000    format('MPPIC: Point-particle ',&
-         'approximation for particle-particle and ', /, & 
-         'particle-wall collisions', /, &
-         'DTSOLID based on particle time response Taup', /, & 
-         'DTSOLID = ', 2x, E17.10)
-      ENDIF
-
-
 ! Finalize the error manager.
       CALL FINL_ERR_MSG
-
-      RETURN
-      END SUBROUTINE CFASSIGN
-
+      END SUBROUTINE CFASSIGN_DEM 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 ! subroutine: compute_volume_of_nodes                                      C
@@ -535,37 +603,6 @@
       ENDDO   ! end do ijk=ijkstart3,ijkend3
 
       RETURN
-! reporting information
-      WRITE(filename,'(A,"_",I5.5,".dat")') 'VOL_NODE_',myPE
-      OPEN(1000,file=TRIM(filename),form ='formatted',status='unknown')
-      write(1000,'(9(A,3X),A)') 'VARIABLES=',&
-         '"I"', '"J"', '"K"', '"FLUID"', '"CUTCELL"', '"WALL"', &
-         '"VOL_CELL"', '"VOL_NODE"', '"VOL_NODE_RATIO"'
-      write(1000,'(A,2X,3(A,I5,2X))') 'ZONE F=POINT, ',&
-         'I=', IEND2-ISTART2+1, ', J=', JEND2-JSTART2+1, &
-         ', K=', KEND2-KSTART2+1
-
-      DO K=KSTART2, KEND2
-         DO J=JSTART2, JEND2
-            DO I=ISTART2, IEND2
-               IJK  = FUNIJK(I,J,K)
-               FLUID_IND = 0
-               CUTCELL_IND = 0
-               WALL_IND = 0
-               IF(FLUID_AT(IJK)) FLUID_IND = 1
-               IF(CUT_CELL_AT(IJK)) CUTCELL_IND = 1
-               if(cartesian_grid)then
-                  IF(SCALAR_NODE_ATWALL(IJK)) WALL_IND = 1
-               endif
-               write(1000,'(3(2X,I10),2((2X,I4)),3(2X,G17.8))')&
-                  I, J, K, fluid_ind, cutcell_ind, wall_ind, &
-                  (vol(ijk)/(DX(I)*DY(J)*DZ(K)))*100., &
-                  des_vol_node(ijk), des_vol_node_ratio(ijk)
-             ENDDO
-         ENDDO
-      ENDDO
-      close(1000, status='keep')
-
       RETURN
       END SUBROUTINE compute_volume_of_nodes
 
