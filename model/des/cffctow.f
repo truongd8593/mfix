@@ -37,9 +37,9 @@
 ! local variable for calculating torque on particle
       DOUBLE PRECISION :: CROSSP(DIMN)
 ! temporary variable for particle L tangential force
-      DOUBLE PRECISION FT_TMP(DIMN)
+      DOUBLE PRECISION :: FT_TMP(DIMN)
 ! distance from the contact point to the particle center
-      DOUBLE PRECISION DIST_CL
+      DOUBLE PRECISION :: DIST_CL
 !------------------------------------------------
 
 ! total contact force
@@ -57,14 +57,11 @@
 ! total torque
       IF(DIMN.EQ.3) THEN
          CALL DES_CROSSPRDCT(CROSSP, NORM, FT_TMP)
-         TOW(L,:)  = TOW(L,:)  + DIST_CL*CROSSP(:)
+         TOW(:,L)  = TOW(:,L)  + DIST_CL*CROSSP(:)
       ELSE
          CROSSP(1) = NORM(1)*FT_TMP(2) - NORM(2)*FT_TMP(1)
          TOW(1,L)  = TOW(1,L)  + DIST_CL*CROSSP(1)
       ENDIF
 
-
       RETURN
       END SUBROUTINE CFFCTOW
-
-
