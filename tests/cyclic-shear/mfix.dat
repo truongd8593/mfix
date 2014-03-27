@@ -1,4 +1,5 @@
-! A 2D fully periodic case with dv/dx shear 
+! A 2D fully periodic case with dv/dx shear and a pressure gradient 
+! imposed in the y-direction
 
 ! Author: S. Pannala, Feb. 2000
 
@@ -26,18 +27,18 @@
   MOMENTUM_Z_EQ  = .FALSE.   .FALSE.
 
 ! solve a granular energy transport equation(s) as opposed to an
-! algebraic equation?  [.FALSE.]
+! algebraic equation?   [.FALSE.]
   GRANULAR_ENERGY = .TRUE.
 
 ! the kinetic theory model used to describe the solids phase(s)
   KT_TYPE = 'LUN_1984'     
 
 ! use the schaeffer model for frictional/plastic solids phase
-! stress?  [.TRUE.]  
+! stress?   [.TRUE.]  
   SCHAEFFER = .TRUE.  
 
 ! use the princeton model for frictional/plastic solids phase
-! stress?  [.FALSE.]
+! stress?   [.FALSE.]
 ! (this cannot be invoked simultaneously with schaeffer)
 #  FRICTION = .FALSE.
 
@@ -63,10 +64,10 @@
 !  [undefined] : normalization uses residual from first iteration 
 !      0       : normalization based on dominate term in continuity eqn
 !  [defined]   : normalized by value provided
-  NORM_s = 1E-1
+   NORM_s = 1E-1
 #  NORM_g = 1e-1
 
-! reduce time step if residuals sum does not decrease?  
+! reduce time step if residuals sum does not decrease?  [.TRUE.]
 #  DETECT_STALL = .FALSE.
 
 ! Number of iterations in the linear equation solver
@@ -92,12 +93,11 @@
 !*********************************************************************
   COORDINATES = 'Cartesian'
 
-  XLENGTH  =   1.0    IMAX = 16
-  YLENGTH  =   4.0    JMAX = 64
+  XLENGTH =   1.0    IMAX = 16
+  YLENGTH =   4.0    JMAX = 64
   NO_K = .TRUE.
 
 ! make y direction cyclic w/ specified pressure drop
-#   CYCLIC_Y   = .TRUE.
   CYCLIC_Y_PD = .TRUE.    
 ! the fluid pressure drop across ylength
   DELP_Y =592.9885122     ! 299.0439851   (Bayre)
@@ -106,8 +106,9 @@
   CYCLIC_X    = .TRUE.   ! make x-direction cyclic
 
 ! IMPORTANT NOTE: it is most likely that these keywords are no 
-! longer functional in MFIX. Best way to achieve similar shear
-! is to use partial slip walls with specified wall velocity.
+! longer functional in MFIX. Best way to achieve shear is via wall
+! shear. use partial slip walls with specified wall velocity.
+
 ! impose a mean shear on the flow field as linear function of the
 ! x-coordinate.  Requires cyclic_x be set to true.
   SHEAR=.TRUE.
@@ -120,13 +121,13 @@
 !*********************************************************************
 ! Gas Phase
 !*********************************************************************
-  MU_g0 = 1.8E-4
+  MU_g0 = 1.8E-4     ! constant gas viscosity (poise)
 ! the molecular weight or density must be specified (or species names).
 ! if density is specified then the molecular weight will be ignored.
 ! specifying molecular weight allows for compressibility but requires
 ! setting the pressure and temperature in IC and BC regions
-  RO_g0 = 1.3E-3
-#  MW_avg  = 29.0
+#  MW_avg = 29.0     ! average molecular weight of air (g/g-mol)
+  RO_g0 = 1.3E-3     ! constant gas density
 
 
 !*********************************************************************
@@ -167,8 +168,8 @@
   IC_V_g          =       0.0
 
 ! allows for slight compressibility if gas mw specified not density
-  IC_T_g          =     300.0   
-  IC_P_g          =       0.0
+#  IC_P_g(1)       = 1013250.0     ! pressure (bayre)
+#  IC_T_g(1)       =     298.0     ! temperature (K)
 
   IC_U_s          =       0.0
   IC_V_s          =       0.0
