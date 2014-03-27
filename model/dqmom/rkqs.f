@@ -1,15 +1,29 @@
-       SUBROUTINE rkqs(y,dydx,n,x,htry,eps,yscal,hdid,hnext)
-       IMPLICIT NONE
-       INTEGER n,NMAX
-       double precision eps,hdid,hnext,htry,x,dydx(n),y(n),yscal(n)
-       PARAMETER (NMAX=50)
-       INTEGER i
-       double precision errmax,h,htemp,xnew
-       double precision yerr(NMAX),ytemp(NMAX),SAFETY,PGROW,&
-       PSHRNK,ERRCON
-       PARAMETER (SAFETY=0.9,PGROW=-.2,PSHRNK=-.25,ERRCON=1.89e-4)
-       h=htry
-       do
+      SUBROUTINE rkqs(y, dydx, n, x, htry, eps, yscal, hdid, hnext)
+ 
+      IMPLICIT NONE
+
+! Dummy Arguments:
+!---------------------------------------------------------------------//
+      INTEGER, INTENT(in) :: N
+
+      DOUBLE PRECISION :: y(N), dydx(N), yscal(N)
+      DOUBLE PRECISION x, hTry, EPs, hDid, hNext
+
+! Local Variables:
+!---------------------------------------------------------------------//
+      INTEGER i
+
+      DOUBLE PRECISION :: errmax, h, htemp, xnew
+      DOUBLE PRECISION :: yerr(N), ytemp(N)
+
+      DOUBLE PRECISION, parameter :: SAFETY =  0.9
+      DOUBLE PRECISION, parameter :: PGROW  = -0.2
+      DOUBLE PRECISION, parameter :: PSHRNK = -0.25
+      DOUBLE PRECISION, parameter :: ERRCON =  1.89e-4
+
+      h=htry
+
+      do
          call rkck(y,dydx,n,x,h,ytemp,yerr)
          errmax=0.
          do i=1,n
@@ -21,15 +35,13 @@
          h=sign(max(abs(htemp),0.1*abs(h)),h)
          xnew=x+h
          if(xnew==x) write(*,*) 'WARNING: stepsize underflow in rkqs'
-       end do
+      enddo
 
-        if(errmax>ERRCON)then
-          hnext=SAFETY*h*(errmax**PGROW)
-        else
-          hnext=5.0*h
-        endif
-        hdid=h
-        x=x+h
-          y(:)=ytemp(:)
-        return
-      END
+      HNEXT = merge(SAFETY*h*(errmax**PGROW), 5.0*h, errmax>ERRCON)
+
+      hdid=h
+      x=x+h
+      y(:)=ytemp(:)
+
+      RETURN
+      END SUBROUTINE rkqs
