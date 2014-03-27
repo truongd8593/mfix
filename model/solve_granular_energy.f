@@ -56,7 +56,7 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! Error index 
-      INTEGER :: gIER, IER 
+      INTEGER :: IER 
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -94,7 +94,6 @@
       INTEGER :: Err_l(0:numPEs-1)  ! local
       INTEGER :: Err_g(0:numPEs-1)  ! global
 
-
 ! temporary use of global arrays:
 ! array1 (locally s_p) 
 ! source vector: coefficient of dependent variable
@@ -119,13 +118,12 @@
       INCLUDE 'radtn2.inc'
 !-----------------------------------------------
 
-      call lock_ambm       ! locks arrys a_m and b_m
+      call lock_ambm       ! locks arrays a_m and b_m
       call lock_tmp_array  ! locks array1,array2,array3
                            ! (locally s_p, s_c, eps) 
 
 ! Initialize error flags.
       Err_l = 0
-
 
       smallTheta = (to_SI)**4 * ZERO_EP_S
 
@@ -264,20 +262,17 @@
 
       ELSEIF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
 ! ---------------------------------------------------------------->>>
+! solve for the mixture phase         
+         M = MMAX 
+
+! initialize         
          TOT_NO(:) = ZERO
          TOT_SUM_RS(:) = ZERO
          TOT_EPS(:) = ZERO
+
          CALL CALC_NFLUX (IER)  
 
          DO IJK = ijkstart3, ijkend3
-
-            DO L = 1,SMAX
-               M_PM = (PI/6.d0)*(D_P(IJK,L)**3)*RO_S(IJK,L)
-               TOT_SUM_RS(IJK) = TOT_SUM_RS(IJK) + SUM_R_S(IJK,L)/M_PM
-               TOT_NO(IJK) = TOT_NO(IJK) + ROP_SO(IJK,L)/M_PM
-               IF (FLUID_AT(IJK)) TOT_EPS(IJK) = TOT_EPS(IJK) + EP_S(IJK,L)
-            ENDDO
-            M = MMAX 
 
 ! total number density is used for GHD theory
             CpxFlux_E(IJK) = 1.5D0 * Flux_nE(IJK)
@@ -285,6 +280,13 @@
             CpxFlux_T(IJK) = 1.5D0 * Flux_nT(IJK)
 
             IF (FLUID_AT(IJK)) THEN
+               DO L = 1,SMAX
+                  M_PM = (PI/6.d0)*(D_P(IJK,L)**3)*RO_S(IJK,L)
+                  TOT_SUM_RS(IJK) = TOT_SUM_RS(IJK) + SUM_R_S(IJK,L)/M_PM
+                  TOT_NO(IJK) = TOT_NO(IJK) + ROP_SO(IJK,L)/M_PM
+                  TOT_EPS(IJK) = TOT_EPS(IJK) + EP_S(IJK,L)
+               ENDDO
+
 ! calculate the source terms to be used in the a matrix and b vector
                CALL SOURCE_GHD_GRANULAR_ENERGY (SOURCELHS, &
                   SOURCERHS, IJK, IER) 
@@ -369,7 +371,7 @@
                IF (FLUID_AT(IJK)) THEN 
 ! calculate the source terms to be used in the a matrix and b vector
                   IF (TRIM(KT_TYPE) .EQ. 'GD_99' .OR. &
-		      TRIM(KT_TYPE) .EQ. 'GTSH' ) THEN
+                      TRIM(KT_TYPE) .EQ. 'GTSH' ) THEN
                      CALL SOURCE_GD_99_GRANULAR_ENERGY(SOURCELHS, &
                         SOURCERHS, IJK, M, IER)
                   ELSE
