@@ -88,6 +88,13 @@
 ! the impulse velocity for the MPPIC collisions 
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: MPPIC_VPTAU 
 
- 
+      
+! Face centered u-velocity required by PIC model. Not using the U_s arrays anymore
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PIC_U_S
+! Face centered v-velocity required by PIC model. Not using the U_s arrays anymore
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PIC_V_S
+! Face centered z-velocity required by PIC model. Not using the U_s arrays anymore
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PIC_W_S
+
       end MODULE MFIX_PIC
 
