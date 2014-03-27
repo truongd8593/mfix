@@ -81,6 +81,8 @@
 ! Volume of the cell 
       DOUBLE PRECISION :: VOLIJK
       INTEGER :: I, J, K, IJK, ICV, M, COUNT_IC
+!temporary variable for Dimension_3 
+      INTEGER :: DIM3_TEMP
 !-----------------------------------------------
 ! Include statement functions      
 !-----------------------------------------------
@@ -132,135 +134,30 @@
       'constant statistical weight', /, &
       'See MFIX readme',/'Please correct the data file.')
 
-      if(.not.allocated(part_mphase_byic)) & 
-      ALLOCATE(PART_MPHASE_BYIC(DIMENSION_IC, DES_MMAX))    
-
-! cnp_array(ijk, 0) will contain the cumulative number of real 
-! particles later in the handling of inflow BC for MPPIC. See 
-! the mppic_mi_bc in mppic_wallbc_mod.f 
-      ALLOCATE(CNP_ARRAY(DIMENSION_3, DES_MMAX))
-
-      ALLOCATE(RNP_PIC(DES_MMAX))
-      ALLOCATE(CNP_PIC(DES_MMAX))
-
-      CNP_ARRAY(:, :) = 0
-      PART_MPHASE_BYIC(:,:) = 0 
-
-      RNP_PIC(:) = ZERO
-      CNP_PIC(:) = ZERO 
-
-      COUNT_IC = 0
-      DO ICV = 1, DIMENSION_IC 
-         IF(.not.ic_defined(icv)) cycle         
-         
-         IF (IC_EP_G(ICV).lt.ONE) THEN 
-            COUNT_IC = COUNT_IC + 1 
-
-            DO K = IC_K_B(ICV), IC_K_T(ICV) 
-               DO J = IC_J_S(ICV), IC_J_N(ICV) 
-                  DO I = IC_I_W(ICV), IC_I_E(ICV) 
-
-                     IF(.not.IS_ON_myPE_wobnd(I,J,K)) cycle 
-                     IJK = FUNIJK(I,J,K)
-
-                    ! IF(.not.FLUID_AT(IJK)) cycle 
-
-                     VOLIJK = Dx(I)*Dy(J)*Dz(K)
-                     DO M = 1, DES_MMAX
-                        
-                        REAL_PARTS(M) = 0.
-                        COMP_PARTS(M) = 0
-
-                        EP_SM = IC_ROP_S(ICV,M)/DES_RO_s(M)
-
-                        REAL_PARTS(M) = 6.d0*EP_SM*VOLIJK/ &
-                        (PI*(Des_D_P0(M)**3.d0))
-
-                        CONST_NPC    = (IC_PIC_CONST_NPC   (ICV, M) .ne. 0) &
-                        .AND. (EP_SM.gt.Zero)
-
-                        CONST_STATWT = (IC_PIC_CONST_STATWT(ICV, M) .ne. ZERO  ) &
-                        .AND. (EP_SM.gt.Zero)
-                        
-                        IF(CONST_NPC) THEN 
-                           COMP_PARTS(M) = IC_PIC_CONST_NPC(ICV,M)
-                        ELSEIF(CONST_STATWT) THEN
-                           COMP_PARTS(M) = MAX(1, & 
-                           INT(REAL_PARTS(M)/REAL(IC_PIC_CONST_STATWT(ICV,M))))
-                        ENDIF
-                        
-                        RNP_PIC(M) = RNP_PIC(M) + REAL_PARTS(M)
-                        CNP_PIC(M) = CNP_PIC(M) + COMP_PARTS(M)
-                        
-                        PART_MPHASE_BYIC(ICV, M) =  PART_MPHASE_BYIC(ICV, M) & 
-                        + COMP_PARTS(M)
-                                               
-                        CNP_ARRAY(IJK,M) = COMP_PARTS(M)
-                     ENDDO      ! M = 1, DES_MMAX
-                  ENDDO
-               ENDDO
-            ENDDO
-         ENDIF                  !ic defined
-      ENDDO                     !ICV = 1, DIMENSION_IC
-
-
-      CALL global_all_sum(RNP_PIC)
-      CALL global_all_sum(CNP_PIC)
-      CALL global_all_sum(PART_MPHASE_BYIC)
-
-      PART_MPHASE(1:DES_MMAX) = CNP_PIC(1:DES_MMAX)
-      PARTICLES = SUM(PART_MPHASE(1:DES_MMAX))
       
-      
-! Local reporting for the user 
-      WRITE(ERR_MSG, 2015)  COUNT_IC, DES_MMAX
-      CALL FLUSH_ERR_MSG(FOOTER = .false.)
-
-      DO ICV = 1, DIMENSION_IC 
-         IF(.not.ic_defined(icv)) cycle 
-
-         IF (IC_EP_G(ICV).lt.ONE) THEN 
-            
-            WRITE(ERR_MSG,2016) ICV
-            CALL FLUSH_ERR_MSG(HEADER = .false., FOOTER = .false.)
-
-            DO M = 1, DES_MMAX
-               
-               CONST_NPC    = (IC_PIC_CONST_NPC   (ICV, M) &
-               .ne. 0)
-               CONST_STATWT = (IC_PIC_CONST_STATWT(ICV, M) & 
-               .ne. ZERO  )
-
-               EP_SM = IC_ROP_S(ICV,M)/DES_RO_s(M)
-               WRITE(ERR_MSG,2017) M, DES_D_P0(M), EP_SM, & 
-               CONST_NPC, CONST_STATWT, PART_MPHASE_BYIC(ICV, M) 
-               CALL FLUSH_ERR_MSG(HEADER = .false., FOOTER = .false.)
-            ENDDO
-
+   
+      IF(DIMN.EQ.2) THEN 
+! require that DZ(1)/ZLENGTH be specified for 2-dimensional case.  
+! unclear why this cannot be one - other than the user may be unaware 
+! that a depth has been set (a value of one implies default setting) 
+         IF (DZ(1) == ONE) THEN
+            WRITE(*,'(5X,A,A,/5X,A,A)') &
+            'For DIMN = 2, specify a value for DZ(1) or ',&
+            'ZLENGTH in mfix.dat which is not',&
+            'equal to one. If you want it to be one then ',&
+            'set it close to one but not exactly one'
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
 
-      ENDDO
-
-      WRITE(ERR_MSG,2018)
-      CALL FLUSH_ERR_MSG(HEADER = .false.)
-
-
- 2015 FORMAT('Gener_Part_Config specified as true', /,5x, &
-      'Total IC region count with non zero solids = ', I5,2X, /5x, & 
-      'Total discrete solid phases = ', I5,2X, /5x, & 
-      'Particle configuration will be automatically generated: ')
-
- 2016 FORMAT('IC number:         = ', I4 )
-      
- 2017 FORMAT( &
-      'PHASE Index, M              =  ', I5,2X, /5x, & 
-      'D_P0(M)                     =  ', (ES15.7,2X), /5x, &
-      'Solids vol fraction for M   =  ', (G15.8,2X), /5x, & 
-      'Const Npc?', 2x, L4, 'Const Statwt?', 2x, L4, /5x, & 
-      '# of computational particles or parcels for phase M  = ',  (I10,2X))
-      
- 2018 FORMAT( 'End of Message' ) 
-
+         IF (DZ(1) .NE. ZLENGTH) THEN 
+            WRITE(ERR_MSG,'(5X,A,/5x,A,/5X,2(A20,2X,G17.8))')        &
+            'For DIMN = 2, DZ(1) and ZLENGTH are used ',         &
+            'interchangeably', ' Specify same values for ',      &
+            'DZ(1) and ZLENGTH','DZ(1) = ', DZ(1), 'ZLENGTH = ', &
+            ZLENGTH
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDIF
 
 
       CALL FINL_ERR_MSG
