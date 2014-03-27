@@ -1,9 +1,3 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: DES_ALLOCATE_ARRAYS                                     C
-!  Purpose: allocate arrays for DES                                    C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE DES_ALLOCATE_ARRAYS_EULERIAN_GEOM
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -83,6 +77,12 @@
       END SUBROUTINE DES_ALLOCATE_ARRAYS_EULERIAN_GEOM
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: DES_ALLOCATE_ARRAYS                                     C
+!  Purpose: Original allocte arrays subroutines for DES                C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE DES_ALLOCATE_ARRAYS 
                                                                    
@@ -172,16 +172,9 @@
       'Increase MAX_PIS or particles_factor in the input file')
 
 ! max_pip adjusted to accomodate temporary variables used for walls
-      IF(MPPIC) then 
-         MAX_PIP = NPARTICLES 
-      else
-         MAX_PIP = NPARTICLES - 2*NWALLS - 3
-         !the above adjustment is not needed and is an artifact 
-         !of old particle-wall interaction. 
-         !It will be removed once CG like particle-wall 
-         !is made the default. RG 
-      endif
+! and DES_MPI stuff 
 
+      MAX_PIP = NPARTICLES - 2*NWALLS - 3
       
       WRITE(err_msg, 1003)  NPARTICLES, MAX_PIP
 
@@ -325,11 +318,6 @@
       Allocate(  DES_V_s (DIMENSION_3, DES_MMAX) )
       Allocate(  DES_W_s (DIMENSION_3, DES_MMAX) )
 
-! Volume of nodes
-      ALLOCATE(DES_VOL_NODE(DIMENSION_3))
-! ratio of actual volume of nodes to volume of nodes not corrected for
-! on the wall or being outside the domain
-      ALLOCATE(DES_VOL_NODE_RATIO(DIMENSION_3))
 
 ! Variables for hybrid model
       IF (DES_CONTINUUM_HYBRID) THEN
