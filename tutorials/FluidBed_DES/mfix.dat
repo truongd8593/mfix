@@ -12,7 +12,7 @@
   RUN_TYPE 		= 'NEW'             
   UNITS 		= 'cgs'
   TIME  		= 0.0			!start time
-  TSTOP 		= 40.0 
+  TSTOP 		= 1.0 
   DT 			= 5E-4			!time step
   DT_MAX                = 1E-3
 !  DT_FAC = 1.0
