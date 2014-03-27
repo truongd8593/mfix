@@ -1197,7 +1197,7 @@
                allocate (GLOBAL_VARY(1))     
                allocate (GLOBAL_VARZ(1))          
             ENDIF
-
+            
             IF(RE_INDEXING) THEN
                CALL UNSHIFT_DP_ARRAY(VARX,TMP_VAR)
                call gather (TMP_VAR,GLOBAL_VARX,root)
@@ -1558,17 +1558,8 @@
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
             
             CASE (100)
-               IF(DISCRETE_ELEMENT.AND.MPPIC) THEN
-                  ALLOCATE( COUNT_DES_BC(DIMENSION_3))
-                  DO IJK = IJKSTART3, IJKEND3
-                     COUNT_DES_BC (IJK) = 0.d0
-                     COUNT_DES_BC (IJK) = DES_CELLWISE_BCDATA(IJK)%COUNT_DES_BC
-                  ENDDO
-                  CALL WRITE_SCALAR_IN_VTU_ASCII('COUNT_BC',COUNT_DES_BC)
-                  DEALLOCATE(COUNT_DES_BC)
-               ELSE
-                  CALL WRITE_SCALAR_IN_VTU_ASCII('PARTITION',PARTITION)
-               ENDIF
+
+               CALL WRITE_SCALAR_IN_VTU_ASCII('PARTITION',PARTITION)
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
 
             CASE (101)
@@ -3510,6 +3501,9 @@
          ENDDO
       ENDDO
 
+      
+      GLOBAL_INTERIOR_CELL_AT  = .FALSE.
+      GLOBAL_BLOCKED_CELL_AT   = .FALSE.
       call gather (I_OF,GLOBAL_I_OF,root)    
       call gather (J_OF,GLOBAL_J_OF,root)    
       call gather (K_OF,GLOBAL_K_OF,root)    
