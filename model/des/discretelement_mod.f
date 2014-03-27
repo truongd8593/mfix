@@ -99,20 +99,21 @@
       DES_EPS_YSTART, DES_EPS_ZSTART
 ! volume of the IC region for computing number of particles to be seeded 
       DOUBLE PRECISION, dimension(:), allocatable :: VOL_IC_REGION!(DIMENSION_IC)
-! number of particles for each phase corresponding to the IC number
+! number of particles for each phase corresponding to the IC number. This will
+! be real particles for DEM but parcels or computational particles for PIC model 
       INTEGER, dimension(:,:), allocatable :: PART_MPHASE_BYIC!(DIMENSION_IC, DIM_M)
-      !The above two vars are allocated in check_des_ic_eps. One could have 
-      !used the module ic and just declared the size here itself but using ic 
-      !led to issues with "IC" variable declaration in octree. For some
-      !reason, if a subroutine uses module named "test", then it cannot have
-      !variable named test under its scope. Octree, never used, but keeps
-      !on reminding us of its presence.
 
+! Number of real particles by IC and by solid phase. Only relevant for PIC model 
+      double precision, dimension(:,:), allocatable :: REALPART_MPHASE_BYIC!(DIMENSION_IC, DIM_M)
 ! The number of particles that belong to solid phase M according to the
 ! vol_frac and particle diameter. this information is used when
 ! gener_part_config is invoked for initialization
 ! This will be removed soon as PART_MPHASE_BYIC will be used from now on
       INTEGER PART_MPHASE(DIM_M)
+
+! The number of real particles that belong to solid phase M during the initialization. 
+! It is equal to Part_mphase for DEM but implies real number of particles for PIC model 
+      double precision REALPART_MPHASE(DIM_M)
 ! Assigns the initial particle velocity distribution based on user
 ! specified mean and standard deviation (regardless if already set
 ! within particle_input.dat)
