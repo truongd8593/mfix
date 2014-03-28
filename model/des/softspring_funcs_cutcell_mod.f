@@ -588,7 +588,7 @@ module softspring_funcs_cutcell
 
       LOGICAL :: CONTACT_ALREADY_FACET(DIM_STL),DES_LOC_DEBUG, PARTICLE_SLIDE, &
       test_overlap_and_exit
-      INTEGER :: COUNT_FAC, COUNT, COUNT2, list_of_cont_facets(20), &
+      INTEGER :: COUNT_FAC, COUNT, COUNT2, list_of_cont_facets(100), &
       contact_facet_count, NEIGH_CELLS, NEIGH_CELLS_NONNAT, &
       LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
       IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP, &
