@@ -536,7 +536,7 @@
 ! Verify that the net interphase mass transfer rates sum to zero.
 ! This check is not needed when using the stiff chemistry solver.
 !---------------------------------------------------------------------//
-                  IF(RRATE)THEN
+                  IF(USE_RRATES)THEN
 
 ! The rate of interphase mass transfer must sum to zero over all phases.
                      lSUM = SUM_R_G(IJK) 
