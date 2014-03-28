@@ -411,6 +411,10 @@
                IF(DMP_LOG) WRITE(UNIT_LOG,"('  ')")
             ENDIF
          ENDDO
+         IF(LAST_LINE == 0) THEN
+            IF(SCR_LOG) WRITE(*,"('  ')")
+            IF(DMP_LOG) WRITE(UNIT_LOG,"('  ')")
+         ENDIF
       ENDIF
 
 ! Print footer.
