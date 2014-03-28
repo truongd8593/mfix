@@ -13,17 +13,17 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-! Handan Liu wrote below:		!Jan 22 2013
+! Handan Liu wrote below:               !Jan 22 2013
 ! The modification is as below:
-!	Adding a loop of 2D RSRS sweep and parallelizing for OpenMP.
-!	Splitting the existing 3D RSRS loop into two loops for OpenMP 
-!		due to data dependency 
-!	Adding openmp directives in all loops in leq_bicgs0.
-!	Setting 'use_doloop = ture' to activate using do-loop.
+!       Adding a loop of 2D RSRS sweep and parallelizing for OpenMP.
+!       Splitting the existing 3D RSRS loop into two loops for OpenMP
+!               due to data dependency
+!       Adding openmp directives in all loops in leq_bicgs0.
+!       Setting 'use_doloop = ture' to activate using do-loop.
 !
       SUBROUTINE LEQ_BICGS(VNAME, VNO, VAR, A_M, B_m, cmethod, &
                            TOL, PC, ITMAX, IER)
-      
+
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
@@ -43,9 +43,9 @@
       CHARACTER*(*), INTENT(IN) :: Vname
 ! variable number (not really used here; see calling subroutine)
       INTEGER, INTENT(IN) :: VNO
-! variable 
+! variable
 !     e.g., pp_g, epp, rop_g, rop_s, u_g, u_s, v_g, v_s, w_g,
-!     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G, 
+!     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G,
 !     e_Turb_G
 !      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3), INTENT(INOUT) :: Var
       DOUBLE PRECISION, DIMENSION(DIMENSION_3), INTENT(INOUT) :: Var
@@ -58,23 +58,23 @@
       DOUBLE PRECISION, DIMENSION(DIMENSION_3), INTENT(INOUT) :: B_m
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
-! Note: this setting only seems to matter when leq_pc='line'      
+! Note: this setting only seems to matter when leq_pc='line'
       CHARACTER*(*), INTENT(IN) :: CMETHOD
 ! convergence tolerance (generally leq_tol)
       DOUBLE PRECISION, INTENT(IN) :: TOL
 ! preconditioner (leq_pc)
-!     options = 'line' (default), 'diag', 'none'      
+!     options = 'line' (default), 'diag', 'none'
       CHARACTER*4, INTENT(IN) ::  PC
 ! maximum number of iterations (generally leq_it)
-      INTEGER, INTENT(IN) :: ITMAX      
+      INTEGER, INTENT(IN) :: ITMAX
 ! error indicator
       INTEGER, INTENT(INOUT) :: IER
 !-------------------------------------------------
-! Local Variables      
+! Local Variables
 !-------------------------------------------------
-!------------------------------------------------- 
-! External subroutines 
-!------------------------------------------------- 
+!-------------------------------------------------
+! External subroutines
+!-------------------------------------------------
 ! These procedures are effectively dummy arguments (procedures as
 ! arguments within the subroutine leq_bicgs0)
       EXTERNAL LEQ_MATVEC, LEQ_MSOLVE, LEQ_MSOLVE0, LEQ_MSOLVE1
@@ -140,9 +140,9 @@
       CHARACTER*(*), INTENT(IN) :: Vname
 ! variable number (not really used here-see calling subroutine)
       INTEGER, INTENT(IN) :: VNO
-! variable 
+! variable
 !     e.g., pp_g, epp, rop_g, rop_s, u_g, u_s, v_g, v_s, w_g,
-!     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G, 
+!     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G,
 !     e_Turb_G
 !      DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
       DOUBLE PRECISION, DIMENSION(DIMENSION_3), INTENT(INOUT) :: Var
@@ -158,11 +158,11 @@
 ! convergence tolerance (generally leq_tol)
       DOUBLE PRECISION, INTENT(IN) :: TOL
 ! maximum number of iterations (generally leq_it)
-      INTEGER, INTENT(IN) :: ITMAX      
+      INTEGER, INTENT(IN) :: ITMAX
 ! error indicator
       INTEGER, INTENT(INOUT) :: IER
 ! dummy arguments/procedures set as indicated
-!     matvec->leq_matvec      
+!     matvec->leq_matvec
 ! for preconditioner (leq_pc)
 !    'line' msolve->leq_msolve  (default)
 !    'diag' msolve->leq_msolve1
@@ -173,7 +173,7 @@
 !-----------------------------------------------
       INTEGER, PARAMETER :: idebugl = 0
       DOUBLE PRECISION, PARAMETER :: ratiotol = 0.2
-      LOGICAL, PARAMETER :: do_unit_scaling = .true.      
+      LOGICAL, PARAMETER :: do_unit_scaling = .true.
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -219,31 +219,31 @@
       END INTERFACE
 
 !-----------------------------------------------
-! Include statement functions      
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !-----------------------------------------------
 
       is_serial = numPEs.eq.1.and.is_serial
 
-! these scalars should not be necessary to initialize but done as failsafe      
+! these scalars should not be necessary to initialize but done as failsafe
       rnorm = ZERO
-      rnorm0 = ZERO 
+      rnorm0 = ZERO
       snorm = ZERO
       pnorm = ZERO
 
-! initializing      
+! initializing
       alpha(:)  = zero
       beta(:)   = zero
       omega(:)  = zero
       rho(:)    = zero
 
-	  use_doloop = .TRUE.	! set true by Handan Liu for OpenMP do-loop
+          use_doloop = .TRUE.   ! set true by Handan Liu for OpenMP do-loop
 
-! Adding all by Handan Liu	  
+! Adding all by Handan Liu
 ! zero out R, Rtilde, P, Phat, Svec, Shat, Tvec, V
 ! --------------------------------
-      if (use_doloop) then   ! mfix.dat keyword default=false	
+      if (use_doloop) then   ! mfix.dat keyword default=false
 !$omp  parallel do default(shared) private(ijk)
          do ijk=ijkstart3,ijkend3
             R(ijk) = zero
@@ -272,9 +272,10 @@
 ! Scale matrix to have unit diagonal
 ! ---------------------------------------------------------------->>>
       if (do_unit_scaling) then
-!$omp parallel do default(shared) private(ijk,i,j,k,oam,aijmax)
+
 
          IF(RE_INDEXING) THEN  ! Loop only over active cells
+!$omp parallel do default(shared) private(ijk,oam,aijmax)
             DO IJK = IJKSTART3,IJKEND3
                aijmax = maxval(abs(A_M(ijk,:)) )
                OAM = one/aijmax
@@ -284,6 +285,7 @@
 
          ELSE
 
+!$omp parallel do default(shared) private(ijk,i,j,k,oam,aijmax)
             do k = kstart2,kend2
                do i = istart2,iend2
                   do j = jstart2,jend2
@@ -335,10 +337,10 @@
       endif
 
 ! determine an initial guess for the residual = residual + small random
-! number (so it could be set to anything). note that since random_number 
+! number (so it could be set to anything). note that since random_number
 ! is used to supply the guess, this line could potentially be the source
 ! of small differences between runs.  the random number is shifted below
-! between -1 and 1 and then scaled by factor 1.0D-6*Rnorm0 
+! between -1 and 1 and then scaled by factor 1.0D-6*Rnorm0
       call random_number(Rtilde(:))
 
 ! Shift random number array to be consistent with case when RE_INDEXING is .FALSE.
@@ -400,7 +402,7 @@
          if (i .eq. 1) then
             if (use_doloop) then
 !!$omp        parallel do private(ijk)
-!$omp parallel do default(shared) private(ijk)	
+!$omp parallel do default(shared) private(ijk)
                do ijk=ijkstart3,ijkend3
                   P(ijk) = R(ijk)
                enddo
@@ -419,13 +421,13 @@
             endif
          endif ! i.eq.1
 
-     
+
 ! Solve A*Phat(:) = P(:)
-! V(:) = A*Phat(:)  
+! V(:) = A*Phat(:)
 ! --------------------------------
-         call MSOLVE(Vname, P, A_m, Phat, CMETHOD) ! returns Phat  
+         call MSOLVE(Vname, P, A_m, Phat, CMETHOD) ! returns Phat
          call MATVEC(Vname, Phat, A_m, V)   ! returns V=A*Phat
-         
+
          if(is_serial) then
             if (use_doloop) then
                RtildexV = zero
@@ -450,7 +452,7 @@
 ! --------------------------------
          if (use_doloop) then
 !!$omp     parallel do private(ijk)
-!$omp parallel do default(shared) private(ijk)	
+!$omp parallel do default(shared) private(ijk)
             do ijk=ijkstart3,ijkend3
                Svec(ijk) = R(ijk) - alpha(i) * V(ijk)
             enddo
@@ -491,7 +493,7 @@
                   Var(:) = Var(:) + alpha(i)*Phat(:)
                endif            ! use_doloop
 
-! Recompute residual norm 
+! Recompute residual norm
 ! --------------------------------
                if (idebugl >= 1) then
                   call MATVEC(Vname, Var, A_m, R)   ! returns R=A*Var
@@ -515,7 +517,7 @@
                            Rnorm = Rnorm + R(ijk)*R(ijk)
                         enddo
                      else
-                        Rnorm =  dot_product( R, R ) 
+                        Rnorm =  dot_product( R, R )
                      endif
                      Rnorm = sqrt( Rnorm )
                   else
@@ -523,8 +525,8 @@
                   endif
 !                  print*,'leq_bicgs, initial: ', Vname,' Rnorm ', Rnorm
                endif            ! idebugl >= 1
-			   isConverged = .TRUE.
-			   EXIT
+                           isConverged = .TRUE.
+                           EXIT
             endif               ! end if (Snorm <= TOLMIN)
          endif                  ! end if (.not.minimize_dotproducts)
 
@@ -624,7 +626,7 @@
          iter = iter + 1
 
       enddo   ! end do i=1,itmax
-! end of linear solver loop 
+! end of linear solver loop
 ! ----------------------------------------------------------------<<<
 
 
@@ -673,7 +675,7 @@
       endif
 
       call send_recv(var,2)
-      
+
       return
       end subroutine LEQ_BICGS0
 
@@ -725,7 +727,7 @@
 ! Local variables
 !-----------------------------------------------
       DOUBLE PRECISION, DIMENSION (JSTART:JEND) :: CC, DD, EE, BB
-      INTEGER :: NSTART, NEND, INFO       
+      INTEGER :: NSTART, NEND, INFO
       INTEGER :: IJK, J, K, IM1JK, IP1JK
 !-----------------------------------------------
 ! Include statement functions
@@ -754,14 +756,14 @@
       INFO = 0
 !     CALL DGTSL( JEND-JSTART+1, CC, DD, EE, BB, INFO )
       CALL DGTSV( JEND-JSTART+1, 1, CC(JSTART+1), DD, EE, BB, JEND-JSTART+1, INFO )
-      
+
       IF (INFO.NE.0) THEN
          RETURN
       ENDIF
-      
+
       DO J=NSTART, NEND
          IJK = FUNIJK(I,J,K)
-         Var(IJK) =  BB(J) 
+         Var(IJK) =  BB(J)
       ENDDO
 
       RETURN
@@ -814,7 +816,7 @@
 ! Local variables
 !-----------------------------------------------
       DOUBLE PRECISION, DIMENSION(JSTART:JEND) :: CC, DD, EE, BB
-      INTEGER :: NSTART, NEND, INFO 
+      INTEGER :: NSTART, NEND, INFO
       INTEGER :: IJK, J, IM1JK, IP1JK, IJKM1, IJKP1
 !-----------------------------------------------
 ! Include statement functions
@@ -847,18 +849,18 @@
       INFO = 0
 !     CALL DGTSL( JEND-JSTART+1, CC, DD, EE, BB, INFO )
       CALL DGTSV(NEND-NSTART+1, 1, CC(NSTART+1), DD, EE, BB, NEND-NSTART+1, INFO)
-      
+
       IF (INFO.NE.0) THEN
          write(*,*) 'leq_iksweep',INFO, myPE
          IF(DMP_LOG)WRITE (UNIT_LOG,*) 'ROUTINE = ', ' IKSWEEP'
          RETURN
       ENDIF
-      
+
       DO J=NSTART, NEND
          IJK = FUNIJK(I,J,K)
          Var(IJK) = BB(J)
       ENDDO
-      
+
       RETURN
       END SUBROUTINE LEQ_IKSWEEP
 
@@ -908,13 +910,13 @@
 ! Local variables
 !-----------------------------------------------
       DOUBLE PRECISION, DIMENSION (ISTART:IEND) :: CC, DD, EE, BB
-      INTEGER :: NSTART, NEND, INFO, IJK, I 
+      INTEGER :: NSTART, NEND, INFO, IJK, I
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !-----------------------------------------------
-      
+
       NEND = IEND
       NSTART = ISTART
 
@@ -1152,7 +1154,7 @@
                   enddo
                enddo
             enddo
-    
+
          else
             k = 1
 !$omp parallel do private(i,j,ijk,im1jk,ip1jk,ijm1k,ijp1k) collapse (2)
@@ -1170,7 +1172,7 @@
                              + A_m(ijk, 2) * Var(ijp1k)
                enddo
             enddo
-		    
+
          endif
 
       ENDIF ! RE_INDEXING
@@ -1236,13 +1238,13 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-!     
+!
       INTEGER :: ITER, NITER
       INTEGER :: IJK, I , J, K
       INTEGER :: I1, J1, K1, I2, J2, K2, IK, JK, IJ
-      INTEGER :: ISIZE, JSIZE, KSIZE 
+      INTEGER :: ISIZE, JSIZE, KSIZE
       INTEGER :: ICASE
-      
+
 !     CHARACTER*4, PARAMETER :: CMETHOD = 'II'
       CHARACTER :: CH
       LOGICAL :: DO_ISWEEP, DO_JSWEEP, DO_KSWEEP
@@ -1254,12 +1256,12 @@
       INCLUDE 'function.inc'
 !-----------------------------------------------
 !!$      double precision omp_start, omp_end
-!!$      double precision omp_get_wtime	      
-!       by Tingwen      
+!!$      double precision omp_get_wtime
+!       by Tingwen
 !!$      omp_start=omp_get_wtime()
 
       IF (SETGUESS) THEN
-!$omp   parallel do private(i,j,k,ijk) 	
+!$omp   parallel do private(i,j,k,ijk)
          do k = kstart3,kend3
             do i = istart3,iend3
                do j = jstart3,jend3
@@ -1268,50 +1270,50 @@
                enddo
             enddo
          enddo
- 
+
          call send_recv(var,nlayers_bicgs)
       ENDIF
 
       NITER = LEN( CMETHOD )
 
       DO ITER=1,NITER
-     
+
 ! Perform sweeps
          CH = CMETHOD( ITER:ITER )
          DO_ISWEEP = (CH .EQ. 'I') .OR. (CH .EQ. 'i')
-         DO_JSWEEP = (CH .EQ. 'J') .OR. (CH .EQ. 'j')  
-         DO_KSWEEP = (CH .EQ. 'K') .OR. (CH .EQ. 'k') 
-         DO_ALL = (CH .EQ. 'A') .OR. (CH .EQ. 'a')         
+         DO_JSWEEP = (CH .EQ. 'J') .OR. (CH .EQ. 'j')
+         DO_KSWEEP = (CH .EQ. 'K') .OR. (CH .EQ. 'k')
+         DO_ALL = (CH .EQ. 'A') .OR. (CH .EQ. 'a')
          DO_REDBLACK = (CH .EQ. 'R') .OR. (CH .EQ. 'r')
          DO_SENDRECV = (CH .EQ. 'S') .OR. (CH .EQ. 's')
 
          IF (NO_K) THEN   ! two dimensional
 ! 2D run no need to enable openmp parallel
             IF ( DO_ISWEEP ) THEN
-!!$omp   parallel do private(I)   
+!!$omp   parallel do private(I)
                DO I=istart,iend,1
                   CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
-               ENDDO        
+               ENDDO
             ENDIF
-! ----------------------------------------------------------------<<<			
+! ----------------------------------------------------------------<<<
 ! Handan Liu added 2D RSRS sweep and parallelized this loop on Jan 22 2013:
-		    IF (DO_REDBLACK) THEN
+                    IF (DO_REDBLACK) THEN
 !$omp parallel do private(I)
-			      DO I=istart,iend,2
-				     CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
+                              DO I=istart,iend,2
+                                     CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
                   ENDDO
 !$omp parallel do private(I)
                   DO I=istart+1,iend,2
                      CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
                   ENDDO
             ENDIF
-! ---------------------------------------------------------------->>>			
+! ---------------------------------------------------------------->>>
          ELSE   ! three dimensional
 
 
 ! do_all true only for leq_pc='asas'
 ! ---------------------------------------------------------------->>>
-            IF(DO_ALL) THEN        ! redblack for all sweeps, not used by default            
+            IF(DO_ALL) THEN        ! redblack for all sweeps, not used by default
 ! JK Loop
 ! --------------------------------
                j1 = jstart
@@ -1329,10 +1331,10 @@
                         k = int( jk/jsize ) + k1 -1
                      endif
                      j = (jk-1-(k-k1)*jsize) + j1 + mod(k,2)
-                     if(j.gt.j2) j=j-j2 + j1 -1                  
+                     if(j.gt.j2) j=j-j2 + j1 -1
                      CALL LEQ_JKSWEEP(J, K, Vname, Var, A_m, B_m)
                   ENDDO
-				  
+
                ENDDO
                call send_recv(var,nlayers_bicgs)
 
@@ -1353,10 +1355,10 @@
                         j = int( ij/isize ) + j1 -1
                      endif
                      i = (ij-1-(j-j1)*isize) + i1 + mod(j,2)
-                     if(i.gt.i2) i=i-i2 + i1 -1  
+                     if(i.gt.i2) i=i-i2 + i1 -1
                      CALL LEQ_IJSWEEP(I, J, Vname, Var, A_m, B_m)
                   ENDDO
-				  
+
                ENDDO
                call send_recv(var,nlayers_bicgs)
 
@@ -1378,10 +1380,10 @@
                         k = int( ik/isize ) + k1 -1
                      endif
                      i = (ik-1-(k-k1)*isize) + i1 + mod(k,2)
-                     if(i.gt.i2) i=i-i2 + i1 -1      
+                     if(i.gt.i2) i=i-i2 + i1 -1
                      CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
                   ENDDO
-			  
+
                ENDDO
             ENDIF ! end DO_ALL
 ! ----------------------------------------------------------------<<<
@@ -1412,37 +1414,37 @@
 ! Handan Liu split above loop for OpenMP at May 22 2013, modified at July 17
 !$omp parallel do default(shared) private(I,K) schedule(auto)
                DO k=kstart,kend
-			     IF(mod(k,2).ne.0)THEN
-				    DO I=istart+1,iend,2
-				      CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
-				    ENDDO
-			     ELSE
-				    DO I=istart,iend,2
-				      CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
-				    ENDDO
-			     ENDIF
-		       ENDDO
-!$omp end parallel do				  
+                             IF(mod(k,2).ne.0)THEN
+                                    DO I=istart+1,iend,2
+                                      CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
+                                    ENDDO
+                             ELSE
+                                    DO I=istart,iend,2
+                                      CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
+                                    ENDDO
+                             ENDIF
+                       ENDDO
+!$omp end parallel do
 !$omp parallel do default(shared) private(I,K) schedule(auto)
                DO k=kstart,kend
-			     IF(mod(k,2).ne.0)THEN
-				   DO I=istart,iend,2
-				     CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
-				   ENDDO
-			     ELSE
-				   DO I=istart+1,iend,2
-				     CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
-				   ENDDO
-			     ENDIF
-		       ENDDO
-!$omp end parallel do				
+                             IF(mod(k,2).ne.0)THEN
+                                   DO I=istart,iend,2
+                                     CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
+                                   ENDDO
+                             ELSE
+                                   DO I=istart+1,iend,2
+                                     CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
+                                   ENDDO
+                             ENDIF
+                       ENDDO
+!$omp end parallel do
 
-            ENDIF   	! end if(do_redblack)
+            ENDIF       ! end if(do_redblack)
 ! ----------------------------------------------------------------<<<
 
 !  Not sure the purpose of us_ikloop
 !  The SMP directives below need review                        !Tingwen Jan 2012
-            IF(USE_IKLOOP) THEN  
+            IF(USE_IKLOOP) THEN
 ! use_ikloop is currently hard-wired to false (so goto else branch)
 ! ---------------------------------------------------------------->>>
                i1 = istart
@@ -1475,7 +1477,7 @@
                      CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
                   ENDDO
                ENDIF
-! ----------------------------------------------------------------<<<               
+! ----------------------------------------------------------------<<<
             ELSE   ! else branch of if(use_ikloop)
 !  Not sure the purpose of us_ikloop
 !  The SMP directives below need review                        !Tingwen Jan 2012
@@ -1508,7 +1510,7 @@
 
       ENDDO   ! end do iter=1,niter
 !!$      omp_end=omp_get_wtime()
-!!$      write(*,*)'leq_msolve:',omp_end - omp_start	
+!!$      write(*,*)'leq_msolve:',omp_end - omp_start
 
       RETURN
       END SUBROUTINE LEQ_MSOLVE
@@ -1527,7 +1529,7 @@
 !  Variables modified:                                                 C
 !  Local variables:                                                    C
 !                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE LEQ_MSOLVE0(VNAME, B_m, A_M, Var, CMETHOD)
 
@@ -1630,7 +1632,7 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      integer :: i,j,k, ijk 
+      integer :: i,j,k, ijk
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -1647,8 +1649,8 @@
       endif
 
 ! diagonal scaling
-!$omp   parallel do private(i,j,k,ijk) 	collapse (3)  
       IF(.NOT.RE_INDEXING) THEN
+!$omp   parallel do private(i,j,k,ijk)  collapse (3)
          do k=kstart2,kend2
             do i=istart2,iend2
                do j=jstart2,jend2
@@ -1658,6 +1660,7 @@
             enddo
          enddo
       ELSE
+!$omp   parallel do private(ijk)  collapse (1)
          DO IJK=IJKSTART3,IJKEND3
             var(ijk) = b_m(ijk)/A_m(ijk,0)
          ENDDO
@@ -1713,7 +1716,7 @@
          IF(RE_INDEXING) THEN
 !         IF(.FALSE.) THEN                  ! Somehow, looping in his order leads to smaller time step than k,i,j nested loop below ....
             DO IJK = IJKSTART3,IJKEND3
-               IF(INTERIOR_CELL_AT(IJK)) prod = prod + r1(ijk)*r2(ijk) 
+               IF(INTERIOR_CELL_AT(IJK)) prod = prod + r1(ijk)*r2(ijk)
             ENDDO
 
             call global_all_sum(prod, dot_product_par)
@@ -1723,7 +1726,7 @@
 
 
 
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod) 	collapse (3) 
+!$omp parallel do private(i,j,k,ijk) reduction(+:prod)  collapse (3)
             do k = kstart1, kend1
                do i = istart1, iend1
                   do j = jstart1, jend1
@@ -1748,11 +1751,11 @@
          endif
          call gather(r1,r1_g)
          call gather(r2,r2_g)
-        
+
          if(myPE.eq.root) then
             prod = 0.0d0
-            
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod) 	collapse (3)  
+
+!$omp parallel do private(i,j,k,ijk) reduction(+:prod)  collapse (3)
             do k = kmin1, kmax1
                do i = imin1, imax1
                   do j = jmin1, jmax1
@@ -1765,14 +1768,14 @@
 
          endif
          call bcast( prod)
-         
+
          dot_product_par = prod
 
          deallocate (r1_g)
          deallocate (r2_g)
 
       endif
-      
+
       end function dot_product_par
 
 
@@ -1786,7 +1789,7 @@
 
 !-----------------------------------------------
 ! Modules
-!-----------------------------------------------      
+!-----------------------------------------------
       use mpi_utility
       use geometry
       use compar
@@ -1813,15 +1816,15 @@
 !-----------------------------------------------
 
       if(do_global_sum) then
-         
+
          prod(:) = 0.0d0
-         
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod)  collapse (3) 
+
+!$omp parallel do private(i,j,k,ijk) reduction(+:prod)  collapse (3)
          do k = kstart1, kend1
             do i = istart1, iend1
                do j = jstart1, jend1
 
-                  IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells 
+                  IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
 
                   ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
 !                  ijk = funijk (i,j,k)
@@ -1846,14 +1849,14 @@
             allocate (rg_temp(10,4))
          endif
          call gather(r_temp,rg_temp)
-         
+
          if(myPE.eq.root) then
             prod = 0.0d0
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod) 	collapse (3)
+!$omp parallel do private(i,j,k,ijk) reduction(+:prod)  collapse (3)
             do k = kmin1, kmax1
                do i = imin1, imax1
                   do j = jmin1, jmax1
-                     IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells 
+                     IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                      ijk = funijk_gl (imap_c(i),jmap_c(j),kmap_c(k))
 !                     ijk = funijk_gl (i,j,k)
                      prod(1) = prod(1) + rg_temp(ijk,1)*rg_temp(ijk,2)
@@ -1863,15 +1866,15 @@
             enddo
          endif
          call bcast( prod)
-         
+
          dot_product_par2 = prod
 
          deallocate (r_temp)
          deallocate (rg_temp)
 
       endif
-      
+
       end function dot_product_par2
 
-    
+
 
