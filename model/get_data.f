@@ -96,6 +96,8 @@
       CALL CHECK_INTERNAL_SURFACES
       CALL CHECK_POINT_SOURCES
 
+      CALL CHECK_CHEMICAL_RXNS
+
 !--------------------------  ARRAY ALLOCATION -----------------------!
 
 ! Allocate array storage.
@@ -111,9 +113,6 @@
 
 !----------------------  DOMAIN SPECIFIC CHECKS  --------------------!
 
-      CALL CHECK_DATA_08       ! Internal surfaces section 
-      CALL CHECK_DATA_09       ! ---> CALL CHECK_CHEMICAL_RXNS
-      CALL CHECK_DATA_10       ! point sources
       CALL CHECK_DATA_ODEPACK
 
 

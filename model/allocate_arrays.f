@@ -55,11 +55,12 @@
       integer :: dimension_3p   ! used during post_mfix to reduce allocations
 !-----------------------------------------------
 
-      DIMENSION_3   = (kend3-kstart3+1)*(jend3-jstart3+1)*(iend3-istart3+1)
+      DIMENSION_3 = (kend3-kstart3+1)*(jend3-jstart3+1)*(iend3-istart3+1)
+      DIMENSION_4 = (kend4-kstart4+1)*(jend4-jstart4+1)*(iend4-istart4+1)
+
       DIMENSION_3G   = IJKMAX3
       DIMENSION_3L  = ijksize3_all(myPE)
       DIMENSION_M   = MAX(1, MMAX)
-      DIMENSION_4   = (kend4-kstart4+1)*(jend4-jstart4+1)*(iend4-istart4+1)
 
       DIMENSION_N_g = 1
 ! If we use the old (legacy) rrate file or if we are running post_mfix,
@@ -276,10 +277,6 @@
       Allocate(  SUM_R_g (DIMENSION_3p) )
       Allocate(  SUM_R_s (DIMENSION_3p, DIMENSION_M) )
       Allocate(  R_phase (DIMENSION_3, DIMENSION_LM+DIMENSION_M-1) )
-
-! Undefined indicates that no reaction block was found in the deck file.
-      IF(NO_OF_RXNS .NE. UNDEFINED_I) &
-         Allocate( REACTION( NO_OF_RXNS ))
 
 !scalars
       IF(DIMENSION_Scalar /= 0) then

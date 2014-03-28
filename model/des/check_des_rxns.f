@@ -96,15 +96,15 @@
       WARNED_USR(:) = .FALSE.
 
 ! Verify that the species aliases are unique.
-      CALL checkDulpicateAliases('CHECK_DES_RXNS', NMAX(0),   &
-         SPECIES_ALIAS_g(:),DES_MMAX, DES_NMAX_s(1:DES_MMAX), &
-         DES_SPECIES_ALIAS_s(:,:))
+!      CALL checkDulpicateAliases('CHECK_DES_RXNS', NMAX(0),   &
+!         SPECIES_ALIAS_g(:),DES_MMAX, DES_NMAX_s(1:DES_MMAX), &
+!         DES_SPECIES_ALIAS_s(:,:))
 
 ! Verify that species aliases in the datafile match those in the 
 ! species.inc file.
-      CALL checkSpeciesInc('CHECK_DES_RXNS',NMAX(0),SPECIES_ALIAS_g(:),&
-         DES_MMAX, DES_NMAX_s(1:DES_MMAX), DES_SPECIES_ALIAS_s(:,:),   &
-         NO_OF_DES_RXNS, DES_RXN_NAME(:), 'species.inc', .FALSE.)
+!      CALL checkSpeciesInc('CHECK_DES_RXNS',NMAX(0),SPECIES_ALIAS_g(:),&
+!         DES_MMAX, DES_NMAX_s(1:DES_MMAX), DES_SPECIES_ALIAS_s(:,:),   &
+!         NO_OF_DES_RXNS, DES_RXN_NAME(:), 'species.inc', .FALSE.)
 
 ! Loop over reaction data pulled from data file.
       DO L=1, NO_OF_DES_RXNS

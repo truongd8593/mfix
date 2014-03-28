@@ -55,118 +55,95 @@
       CONTAINS
 
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
-!  Function name: checkDulpicateAlaises()                              !
+!  Subroutine: checkDuplicateAlaises                                   !
 !                                                                      !
 !  Purpose: Loop through species in all phases and ensure that no two  !
 !  entries are the same. ***Warning*** Species aliases that were not   !
 !  specified are skipped. Non-specified aliases are treated later in   !
 !  parse_mod.f/mapAliases.                                             !
 !                                                                      !
-!  Variables referenced: None                                          !
-!                                                                      !
-!  Variables modified: None                                            !
-!                                                                      !
-!  Local variables: None                                               !
-!                                                                      !
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
-      SUBROUTINE checkDulpicateAliases(CALLER, lNg, lSAg, &
-         lMMx, lNs, lSAs)
+      SUBROUTINE checkDuplicateAliases(lNg, SA_g, lMMx, lNs, SA_s)
+
+      use error_manager
 
       IMPLICIT NONE
-! Calling routine.
-      CHARACTER(len=*), INTENT(IN) :: CALLER
+
 ! Number of gas speices
       INTEGER, INTENT(IN) :: lNg
 ! Gas phase species aliases
-      CHARACTER(len=32), DIMENSION(DIM_N_g), INTENT(IN) :: lSAg
+      CHARACTER(len=32), DIMENSION(DIM_N_g), INTENT(IN) :: SA_g
 ! Number of solids phases
       INTEGER, INTENT(IN) :: lMMx
 ! Number of species in each solids phase.
       INTEGER, DIMENSION(DIM_M), INTENT(IN) :: lNs
 ! Solids phase speices aliases.
-      CHARACTER(len=32), DIMENSION(DIM_M, DIM_N_s), INTENT(IN) :: lSAs
+      CHARACTER(len=32), DIMENSION(DIM_M, DIM_N_s), INTENT(IN) :: SA_s
 
 ! Loop indicles.
-      INTEGER lM1, lN1  ! Phase, Species
-      INTEGER lM2, lN2  ! Phase, Species
+      INTEGER M1, N1  ! Phase, Species
+      INTEGER M2, N2  ! Phase, Species
 
-      CHARACTER(len=32) lSA1, lSA2
+      CHARACTER(len=32) SA1, SA2
+
+      CALL INIT_ERR_MSG("RXN_COM --> checkDuplicateAliases")
 
 ! Set variables for error messages.
-      lM1 = 0
-      lM2 = 0
-
+      M1 = 0
+      M2 = 0
 ! Compare gas phase aliases.
-      DO lN1 = 1, lNg
-         lSA1 = lSAg(lN1)
-         IF(len_trim(lSA1) == 0) CYCLE
-         DO lN2=lN1+1,lNg
-            lSA2 = lSAg(lN2)
-            IF(len_trim(lSA2) == 0) CYCLE
-            IF(compareAliases(lSA1, lSA2)) GoTo 100
+      DO N1 = 1, lNg
+         SA1 =SA_g(N1)
+         IF(len_trim(SA1) == 0) CYCLE
+         DO N2=N1+1,lNg
+            SA2 = SA_g(N2)
+            IF(len_trim(SA2) == 0) CYCLE
+            IF(compareAliases(SA1, SA2)) GoTo 100
          ENDDO
 ! Compare gas and solids phase aliases.
-         DO lM2 = 1, lMMx
-            DO lN2 = 1, lNs(lM2)
-               lSA2 = lSAs(lM2,lN2)
-               IF(len_trim(lSA2) == 0) CYCLE
-               IF(compareAliases(lSA1, lSA2)) GoTo 100
+         DO M2 = 1, lMMx
+            DO N2 = 1, lNs(M2)
+               SA2 = SA_s(M2,N2)
+               IF(len_trim(SA2) == 0) CYCLE
+               IF(compareAliases(SA1, SA2)) GoTo 100
             ENDDO
          ENDDO
       ENDDO
 ! Compare aliases between solids phases
-      DO lM1 = 1, lMMx
-         DO lN1 = 1, lNs(lM1)
-            lSA1 = lSAs(lM1,lN1)
-            IF(len_trim(lSA1) == 0) CYCLE
+      DO M1 = 1, lMMx
+         DO N1 = 1, lNs(M1)
+            SA1 = SA_s(M1,N1)
+            IF(len_trim(SA1) == 0) CYCLE
 ! Self phase comparison.
-            lM2 = lM1
-            DO lN2=lN1+1,lNs(lM2)
-               lSA2 = lSAs(lM2,lN2)
-               IF(len_trim(lSA2) == 0) CYCLE
-               IF(compareAliases(lSA1, lSA2)) GoTo 100
+            M2 = M1
+            DO N2=N1+1, lNs(M2)
+               SA2 = SA_s(M2,N2)
+               IF(len_trim(SA2) == 0) CYCLE
+               IF(compareAliases(SA1, SA2)) GoTo 100
             ENDDO
 ! Compare with other phases.
-            DO lM2 = lM1+1, lMMx
-               DO lN2 = 1, lNs(lM2)
-                  lSA2 = lSAs(lM2,lN2)
-                  IF(len_trim(lSA2) == 0) CYCLE
-                  IF(compareAliases(lSA1, lSA2)) GoTo 100
+            DO M2 = M1+1, lMMx
+               DO N2 = 1, lNs(M2)
+                  SA2 = SA_s(M2,N2)
+                  IF(len_trim(SA2) == 0) CYCLE
+                  IF(compareAliases(SA1, SA2)) GoTo 100
                ENDDO
             ENDDO
          ENDDO
       ENDDO
 
+      CALL FINL_ERR_MSG
       RETURN
 
- 100  IF(DMP_LOG) THEN
-         WRITE(*,1001) trim(CALLER)
-         WRITE(*,1101) lM1, lN1, lSA1
-         WRITE(*,1101) lM2, lN2, lSA2
-         WRITE(*,1201)
+  100 WRITE(ERR_MSG, 1100) M1, N1, SA1, M2, N2, SA2
+      CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
-         WRITE(UNIT_LOG,1001) trim(CALLER)
-         WRITE(UNIT_LOG,1101) lM1, lN1, lSA1
-         WRITE(UNIT_LOG,1101) lM2, lN2, lSA2
-         WRITE(UNIT_LOG,1201)
+ 1100 FORMAT('Error 1100: Non-unique species aliases detected.',/      &
+         3x,'Phase: ',I2,', Species: ',I3,' - Alias: ',A,/             &
+         3x,'Phase: ',I2,', Species: ',I3,' - Alias: ',A,//            &
+         'Please correct the mfix.dat file.')
 
-         CALL MFIX_EXIT(myPE)
-      ENDIF
-
-
- 1001 FORMAT(/1X,70('*')/' From: ',A,' --> RXN_COM -->',               &
-         ' checkDulpicateAliases',/' Error 1001: Non-unique species',  &
-         ' aliases. Species aliases must be unique',/' so that',       &
-         ' chemical equation entries can be linked to a specific',     &
-         ' phase.',//' Please refer to the Readme file for specifying',&
-         ' chemical reactions.'/)
-
- 1101 FORMAT(' Phase: ',I2,', Species: ',I3,' - Alias: ',A)
-
- 1201 FORMAT(1X,70('*')/)
-
-
-      END SUBROUTINE checkDulpicateAliases
+      END SUBROUTINE checkDuplicateAliases
 
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
 !  Function name: checkSpeciesInc()                                    !
@@ -181,56 +158,46 @@
 !  Local variables: None                                               !
 !                                                                      !
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
-      SUBROUTINE checkSpeciesInc(CALLER, lNg, lSAg, lMMx, lNs, lSAs, &
-         lNRxn, lRNames, lFile, lfDPM)
+      SUBROUTINE checkSpeciesInc(lNg, SA_g, lMMx, lNs, SA_s,           &
+         lNRxn,  lRNames)
+
+      use error_manager
 
       IMPLICIT NONE
 
-! Calling routine.
-      CHARACTER(len=*), INTENT(IN) :: CALLER
 ! Number of gas speices
       INTEGER, INTENT(IN) :: lNg
 ! Gas phase species aliases
-      CHARACTER(len=32), DIMENSION(DIM_N_g), INTENT(IN) :: lSAg
+      CHARACTER(len=32), DIMENSION(DIM_N_g), INTENT(IN) :: SA_g
 ! Number of solids phases
       INTEGER, INTENT(IN) :: lMMx
 ! Number of species in each solids phase.
       INTEGER, DIMENSION(DIM_M), INTENT(IN) :: lNs
 ! Solids phase speices aliases.
-      CHARACTER(len=32), DIMENSION(DIM_M, DIM_N_s), INTENT(IN) :: lSAs
+      CHARACTER(len=32), DIMENSION(DIM_M, DIM_N_s), INTENT(IN) :: SA_s
 ! Number of reactions
       INTEGER, INTENT(IN) :: lNRxn
 ! Reaction Names (aliases)
-      CHARACTER(len=32), DIMENSION(DIMENSION_RXN), INTENT(IN) :: lRNames
+      CHARACTER(len=32), DIMENSION(DIMENSION_RXN), INTENT(IN) ::  lRNames
 
-! Generated species include file.
-      CHARACTER(len=*), INTENT(IN) :: lFile
-! Flag when a discrete phase model is active.
-      LOGICAL, INTENT(IN) :: lfDPM
 
 ! Input/Output status.
-      INTEGER IOS
+      INTEGER :: IOS
 ! File unit.
       INTEGER, PARAMETER :: FUNIT = 167
 ! Full path to Burcat and Ruscic database
-      CHARACTER(len=256) FILENAME
-      CHARACTER(len=128) INPUT
+      CHARACTER(len=256) :: FILENAME
+      CHARACTER(len=128) :: INPUT
 ! Loop counters
-      INTEGER LC  ! file locations
-      INTEGER lM, lN  ! Phase, Species/Reactions
-
-! String position
-      INTEGER POS
-
-      INTEGER lIndex
-! Loop inde
-
-      CHARACTER(len=64) lName
-
-! Flag to give DPM message
-      LOGICAL :: lDPM_Flag
+      INTEGER :: SRC, M
+! Position of interest in string.
+      INTEGER :: POS
+! Index from species.inc file.
+      INTEGER :: lIndex
+      CHARACTER(len=64) :: lName
+      CHARACTER(len=32) :: tName
 ! Length of noncomment string
-      INTEGER LINE_LEN
+      INTEGER :: LINE_LEN
 ! Integer function which returns COMMENT_INDEX
       INTEGER, EXTERNAL :: SEEK_COMMENT 
 ! Blank line function
@@ -239,175 +206,130 @@
 ! Full path to model directory.
       INCLUDE 'mfix_directory_path.inc'
 
-! Initialize
-      lDPM_Flag = .FALSE.
-      LC = 0  ! Loop counter.
+      CALL INIT_ERR_MSG("RXN_COM --> checkDuplicateAliases")
 
-      DO
-         LC = LC + 1
+      SRC = 0
+
+! Loop over possible locations .
+      SRC_LP: DO
+         SRC = SRC + 1
+         SELECT CASE(SRC)
+
 ! Check the local run directory.
-         IF(LC == 2) THEN
-            FILENAME = trim(MFIX_PATH)//'/'//trim(lFile)
+	      CASE(1); FILENAME = 'species.inc'
             OPEN(UNIT=FUNIT,FILE=trim(FILENAME),STATUS='OLD',IOSTAT=IOS)
-! Cycle on opening error
-            IF(IOS /= 0) CYCLE
-            IF(DMP_LOG) THEN
-               WRITE(*,1000) '/model/'//trim(lFile)         ! (screen)
-               WRITE(UNIT_LOG,1000) '/model/'//trim(lFile)  ! (log file)
-            ENDIF
+            IF(IOS /= 0) CYCLE SRC_LP
+            WRITE(ERR_MSG, 1000)'species.inc'
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
-!Check the model directory for the species.inc file.
-	        ELSEIF(LC == 1) THEN
-            FILENAME = trim(lFile)
+! Check the model directory.
+         CASE(2); FILENAME = trim(MFIX_PATH)//'/species.inc'
             OPEN(UNIT=FUNIT,FILE=trim(FILENAME),STATUS='OLD',IOSTAT=IOS)
-! Cycle on opening error
-	           IF(IOS /= 0) CYCLE
-            IF(DMP_LOG) THEN
-               WRITE(*,1000) trim(lFile)         ! (screen)
-               WRITE(UNIT_LOG,1000) trim(lFile)  ! (log file)
-            ENDIF
-        	ELSE
+            IF(IOS /= 0) CYCLE SRC_LP
+            WRITE(ERR_MSG, 1000)'mfix/model/species.inc'
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+
+ 1000 FORMAT(/2X,'Verifying reaction aliases in ',A)
+
 ! No species.inc file was located.
-            IF(DMP_LOG) THEN
-               WRITE(*,1004) trim(CALLER)
-               WRITE(UNIT_LOG,1004) trim(CALLER)
-            ENDIF
-            EXIT
-            CLOSE(FUNIT)
-        	ENDIF
+        	CASE DEFAULT
+            WRITE(ERR_MSG, 1004)
+            CALL FLUSH_ERR_MSG
+            EXIT SRC_LP
+        	END SELECT
+
+ 1004 FORMAT('Warning 1004: Unable to locate the species.inc file. No ',&
+         'verification',/'of mfix.dat species aliases or reaction ',    &
+         'names can be preformed.')
 
          REWIND(FUNIT)
          READ_LP: DO
             READ(FUNIT,"(A)",IOSTAT=IOS) INPUT
+
+! This is a sanity check because the species.inc file is generated by
+! make_mfix and therefore should be the correct format.
             IF(IOS > 0) THEN
-               WRITE(*,1001) trim(CALLER), trim(adjustl(FILENAME))
-               CALL MFiX_EXIT(myPE)
-            ELSEIF(IOS<0)THEN
+               WRITE(ERR_MSG,1200) trim(adjustl(FILENAME))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+ 1200 FORMAT('Error 1200: There was a problem reading file: ',A)
+
 ! All entries have been processed.
-               CLOSE(FUNIT)
-! Give DPM Message if needed.
-               IF(lDPM_Flag .AND. DMP_LOG) WRITE(*,1005) trim(CALLER)
-               EXIT
+            ELSEIF(IOS<0)THEN
+               EXIT READ_LP
             ENDIF
+
 ! Clean up the input.
             LINE_LEN = SEEK_COMMENT(INPUT,LEN(INPUT)) - 1 
             CALL REMOVE_COMMENT(INPUT, LINE_LEN + 1, LEN(INPUT)) 
             CALL MAKE_UPPER_CASE(INPUT, LINE_LEN) 
             CALL REPLACE_TAB(INPUT, LINE_LEN) 
+
 ! Skip empty entires.
-            IF(LINE_LEN <= 0) CYCLE
-            IF(BLANK_LINE(INPUT)) CYCLE
+            IF(LINE_LEN <= 0) CYCLE READ_LP
+            IF(BLANK_LINE(INPUT)) CYCLE READ_LP
 
             POS = INDEX(INPUT,"INTEGER, PARAMETER ::")
             IF(POS /= 0) THEN
                INPUT = INPUT((POS + 21):)
             ELSE
-               CYCLE
+               CYCLE READ_LP
             ENDIF
 
+! We only want to process lines that have = as the other are coments.
             POS = INDEX(INPUT,"=")
-            IF(POS /= 0) THEN
-! Store the chemical equation.
-               WRITE(lName,"(A)",IOSTAT=IOS) &
-                  trim(adjustl(INPUT(:(POS-1))))
-               IF(IOS /= 0) THEN
-                  IF(DMP_LOG) THEN
-                     WRITE(*,1002) trim(CALLER), 'name', trim(INPUT)
-                     WRITE(UNIT_LOG,1002) trim(CALLER), 'name', &
-                        trim(INPUT)
-                  ENDIF
-                  CALL MFiX_EXIT(myPE)
-               ENDIF
-               READ(INPUT((POS+1):),*,IOSTAT=IOS) lIndex
-               IF(IOS /= 0) THEN
-                  IF(DMP_LOG) THEN
-                     WRITE(*,1002) trim(CALLER), 'index', trim(INPUT)
-                     WRITE(UNIT_LOG,1002) trim(CALLER), 'index', &
-                        trim(INPUT)
-                  ENDIF
-                  CALL MFiX_EXIT(myPE)
-               ENDIF
+            IF(POS == 0) CYCLE READ_LP
+
+! Store the species alias.
+            WRITE(lName,"(A)") trim(adjustl(INPUT(:(POS-1))))
+
+! Convert the read index from string to integer. Report any errors.
+            READ(INPUT((POS+1):),*,IOSTAT=IOS) lIndex
+            IF(IOS /= 0) THEN
+               WRITE(ERR_MSG,1205) 'index', trim(INPUT)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+
+ 1205 FORMAT('Error 1205: Unable to obtain alias index from species.', &
+         'inc file.',//' INPUT: ',A)
 
 ! Match against what was provided in the datafile:
 ! Gas phase species aliases.
-               DO lN=1, lNg
-                  IF(compareAliases(lSAg(lN), lName, lN, lIndex)) &
-                     CYCLE READ_LP
-               ENDDO
-! Solids phase species aliases.
-               DO lM = 1, lMMx
-                  DO lN=1, lNs(lM)
-                     IF(compareAliases(lSAs(lM,lN), lName, lN, lIndex))&
-                        CYCLE READ_LP
-                  ENDDO
-               ENDDO
-! Reaction Names
-               DO lN=1, lNRxn
-                  IF(compareAliases(lRNames(lN), lName, lN, lIndex)) &
-                     CYCLE READ_LP
-               ENDDO
-! No match was made.
-               IF(lfDPM .AND. trim(CALLER)=='CHECK_DATA_09') THEN
-! If this routine was invoked by CHECK_DATA_09, ignore the error as
-! the species could be associated with a discrete solids phase.
-                  lDPM_Flag = .TRUE.
-! This is a TFM only run. Since a match could not be made, flag this
-! as an error and exit.
-               ELSE
-                  IF(DMP_LOG) THEN
-                     WRITE(*,1003)trim(CALLER), trim(lName)
-                     IF(lfDPM) WRITE(*,1103)
-                     WRITE(*,1203)
-                     WRITE(UNIT_LOG,1003) trim(CALLER), trim(lName)
-                     IF(lfDPM) WRITE(UNIT_LOG,1103)
-                     WRITE(UNIT_LOG,1203)
-                  ENDIF
-                  CALL MFiX_EXIT(myPE)
-               ENDIF
-
+            IF(lIndex <= lNg) THEN
+               tName = SA_g(lIndex)
+               IF(compareAliases(tName, lName)) CYCLE READ_LP
             ENDIF
 
+! Solids phase species aliases.
+            DO M = 1, lMMx
+               IF(lIndex <= lNs(M))THEN
+                  tName = SA_s(M, lIndex)
+                  IF(compareAliases(tName, lName)) CYCLE READ_LP
+               ENDIF
+            ENDDO
+
+! Reaction Names
+            IF(lIndex <= lNRxn)THEN
+               tName =  lRNames(lIndex)
+               IF(compareAliases(tName, lName)) CYCLE READ_LP
+            ENDIF
+
+            WRITE(ERR_MSG,1300) trim(lName), lIndex
+            CALL FLUSH_ERR_MSG
+
+ 1300 FORMAT('Error 1300: An entry in the species.inc file does not ', &
+         'match any inputs',/'in the mfix.dat file.'/3x,'Name: ',A,4x, &
+         'Index: ',I3,/'If the quantity or order of gas species, ',    &
+         'solids species, or chemical',/'reactions has changed, then ',&
+         'the executable must be re-build. Please',/'see the document',&
+         'ation for specifying chemical reactions.')
+
          ENDDO READ_LP
+      ENDDO SRC_LP
 
-         CLOSE(FUNIT)
-         EXIT
-
-      ENDDO
-
- 1000 FORMAT(/2X,'Verifying reaction aliases in ',A)
-
- 1001 FORMAT(/1X,70('*'),/' From: ',A,' --> RXN_COM --> checkSpeciesInc'&
-         ,/' Error 1001: There was a problem reading file: ',A,/       &
-         1X,70('*')/)
-
- 1002 FORMAT(/1X,70('*'),/' From: ',A,' --> RXN_COM --> checkSpeciesInc'&
-         ,/' Error 1002: Unable to obtain alias ',A,' from species.inc'&
-         ,' file.',//' INPUT: ',A,//1X,70('*')/)
-
- 1003 FORMAT(/1X,70('*'),/' From: ',A,' --> RXN_COM --> checkSpeciesInc'&
-         ,/' Error 1003: A match could not be made for an entry in the'&
-         ,' species.inc',/' file. (',A,')',//' If the reaction names', &
-         ' or species aliases were changed in the data file,',/        &
-         ' recomplie the code using make_mfix to correct the issue.')
-
- 1103 FORMAT(/' Note: A discrete phase model is being used',           &
-         ' (DEM/MPPIC/Hybrid). Verify',/' that all gas/DPM solids',    &
-         ' heterogeneous reactions are specified within',/' a DPM ',   &
-         ' reaction block [@(DPM_RXNS)...@(END)].')
-
- 1203 FORMAT(1X,70('*'))
-
- 1004 FORMAT(/1X,70('*'),/' From: ',A,' --> RXN_COM --> checkSpeciesInc'&
-         ,/' Warning 1004: Unable to locate original species.inc file.'&
-         ,' No',/' verification of mfix.dat species aliases or',       &
-         ' reaction names can be',/' preformed.',/1X,70('*')/)
-
- 1005 FORMAT(/1X,70('*'),/' From: ',A,' --> RXN_COM --> checkSpeciesInc'&
-         ,/' Message 1005: One or more species in the species.inc',    &
-         ' file were not',/' matched to any gas or continuous solids', &
-         ' phase species. Error detection',/' is being deferred to',   &
-         ' check_des_rxns.f.',/1X,70('*')/)
-
+      CLOSE(FUNIT)
+      CALL FINL_ERR_MSG
+      RETURN
+ 
       END SUBROUTINE checkSpeciesInc
 
 
@@ -631,6 +553,156 @@
 
 
       END SUBROUTINE WRITE_RXN_SUMMARY
+
+
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+!  Subroutine: checkThermoReqs                                         !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      !
+!  Variables referenced: None                                          !
+!                                                                      !
+!  Variables modified: None                                            !
+!                                                                      !
+!  Local variables: None                                               !
+!                                                                      !
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+      SUBROUTINE checkThermoReqs(RxN, S_g, S_s, rDB, MWg, MWs, Cpg0, Cps0)
+
+      use error_manager
+
+      IMPLICIT NONE
+
+! Data structure for storing reaction data.
+      TYPE(REACTION_BLOCK), POINTER, INTENT(INOUT) :: RxN
+
+      CHARACTER(len=18), INTENT(IN) :: S_g(DIM_N_g)
+      CHARACTER(len=18), INTENT(in) :: S_s(DIM_M, DIM_N_s)
+      LOGICAL, INTENT(inout) :: rDB(0:DIM_M, DIM_N_g)
+      DOUBLE PRECISION, INTENT(in) :: Cpg0, Cps0
+      DOUBLE PRECISION, INTENT(inout) :: MWg(DIM_N_g)
+      DOUBLE PRECISION, INTENT(inout) :: MWs(DIM_M, DIM_N_s)
+
+      LOGICAL :: CP_FATAL
+      LOGICAL :: CHECK_DATABASE
+
+      INTEGER :: M, N, lN
+      
+
+      CHECK_DATABASE = .FALSE.
+      CP_FATAL = .FALSE.
+
+! Verify that the molecular weights and stoichiometry are consistent and
+! determine interphase mass exchanges.
+      DO lN = 1, RxN%nSpecies
+         M = RxN%Species(lN)%pMap
+         N = RxN%Species(lN)%sMap
+         IF(M == 0) THEN
+            IF(Cpg0 /= UNDEFINED) THEN
+               CP_FATAL = .TRUE.
+            ELSEIF((RxN%Calc_DH .AND. .NOT.rDB(M,N)) .OR.        &
+               (MWg(N) == UNDEFINED)) THEN
+               CHECK_DATABASE = .TRUE.
+            ENDIF
+         ELSE
+            IF(Cps0 /= UNDEFINED) THEN
+               CP_FATAL = .TRUE.
+            ELSEIF((RxN%Calc_DH .AND. .NOT.rDB(M,N)) .OR.        &
+               (MWs(M,N) == UNDEFINED)) THEN
+               CHECK_DATABASE = .TRUE.
+            ENDIF
+         ENDIF
+      ENDDO
+
+! Report errors and messages.
+      IF(CP_FATAL) THEN
+
+         WRITE(ERR_MSG, 1100) trim(RxN%Name)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+ 1100 FORMAT('Error 1100: One or more phases associated with ',        &
+         'reaction ',A,/'has specified constant specific heat (C_PG0/',&
+         'Cps0). This is',/'not permitted for reacting phases. ',     &
+         'Please correct the mfix.dat file.')
+
+      ELSEIF(CHECK_DATABASE) THEN
+
+         WRITE(ERR_MSG, 1101) trim(RxN%Name)
+         CALL FLUSH_ERR_MSG
+
+ 1101 FORMAT('Message 1101: One or more molecular weights and/or ',    &
+         'thermochemical data',/'is needed for reaction ',A,'. The ',  &
+         'thermochemical database',/'will be used to gather the ',     &
+         'necessary data.')
+
+      ENDIF
+
+      IF(CHECK_DATABASE) THEN
+
+         WRITE(ERR_MSG, 1200)
+         CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
+
+ 1200 FORMAT('Message 1200: Searching thermochemical databases for ',&
+         'species data.',/'  ')
+
+         DO lN = 1, RxN%nSpecies
+            M = RxN%Species(lN)%pMap
+            N = RxN%Species(lN)%sMap
+            IF(M == 0) THEN
+               IF((RxN%Calc_DH .AND. .NOT.rDB(M,N)) .OR.         &
+                  (MWg(N) == UNDEFINED)) THEN
+! Notify the user of the reason the thermochemical database is used.
+! Flag that the species name is not provided.
+                  IF(S_g(N) == UNDEFINED_C) THEN
+                     WRITE(ERR_MSG,1000) trim(iVar('SPECIES_g',N))
+                     CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+                  ENDIF
+
+! Update the log files.
+                  WRITE(ERR_MSG, 3001) N, trim(S_g(N))
+                  CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+! Read the database.
+                  CALL READ_DATABASE('TFM', 0, N, S_g(N), MWg(N))
+! Flag variable to stating that the database was read.
+                  rDB(0,N) = .TRUE.
+               ENDIF
+            ELSEIF((RxN%Calc_DH .AND. .NOT.rDB(M,N)) .OR.        &
+               (MWs(M,N) == UNDEFINED)) THEN
+
+! Flag that the species name is not provided.
+               IF(S_s(M,N) == UNDEFINED_C) THEN
+                  WRITE(ERR_MSG,1000) trim(iVar('SPECIES_s',M,N))
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
+! Update the log files.
+               WRITE(ERR_MSG, 3001) N, trim(S_s(M,N))
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+               CALL READ_DATABASE('TFM',M,N,S_s(M,N),MWs(M,N))
+! Flag variable to stating that the database was read.
+               rDB(M,N) = .TRUE.
+            ENDIF
+         ENDDO
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
+
+      ENDIF
+
+ 3001 FORMAT(/2x,'>',I3,': Species: ',A)
+
+      CALL FINL_ERR_MSG
+
+      RETURN
+
+ 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
+            'correct the mfix.dat file.')
+
+      END SUBROUTINE checkThermoReqs
+
+
+
+
+
+
+
 
 
 

@@ -394,6 +394,7 @@ $(EXEC_FILE) : \
     $(DPO)check_bc_outflow.$(OBJ_EXT) \
     $(DPO)check_bc_walls.$(OBJ_EXT) \
     $(DPO)check_boundary_conditions.$(OBJ_EXT) \
+    $(DPO)check_chemical_rxns.$(OBJ_EXT) \
     $(DPO)check_dmp_prereqs.$(OBJ_EXT) \
     $(DPO)check_gas_phase.$(OBJ_EXT) \
     $(DPO)check_geometry.$(OBJ_EXT) \
@@ -875,6 +876,7 @@ $(EXEC_FILE) : \
     $(DPO)check_bc_outflow.$(OBJ_EXT) \
     $(DPO)check_bc_walls.$(OBJ_EXT) \
     $(DPO)check_boundary_conditions.$(OBJ_EXT) \
+    $(DPO)check_chemical_rxns.$(OBJ_EXT) \
     $(DPO)check_dmp_prereqs.$(OBJ_EXT) \
     $(DPO)check_gas_phase.$(OBJ_EXT) \
     $(DPO)check_geometry.$(OBJ_EXT) \
@@ -1258,6 +1260,7 @@ $(DPO)RXN_COM.mod : rxn_com_mod.f \
             $(DPO)PARAM1.mod \
             $(DPO)COMPAR.mod \
             $(DPO)FUNITS.mod \
+            $(DPO)ERROR_MANAGER.mod \
             mfix_directory_path.inc                                     
 	$(FORTRAN_CMD) $(FORT_FLAGS) rxn_com_mod.f  -o $(DPO)rxn_com_mod.$(OBJ_EXT) -J$(DPO)
 $(DPO)RXNS.mod : rxns_mod.f \
@@ -2422,20 +2425,7 @@ $(DPO)check_data_07.$(OBJ_EXT) : check_data_07.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) check_data_07.f  -o $(DPO)check_data_07.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_data_08.$(OBJ_EXT) : check_data_08.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) check_data_08.f  -o $(DPO)check_data_08.$(OBJ_EXT) -J$(DPO)
-$(DPO)check_data_09.$(OBJ_EXT) : check_data_09.f \
-            $(DPO)COMPAR.mod \
-            $(DPO)DISCRETELEMENT.mod \
-            $(DPO)FLDVAR.mod \
-            $(DPO)FUNITS.mod \
-            $(DPO)GEOMETRY.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)MFIX_PIC.mod \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)PARSE.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)RUN.mod \
-            $(DPO)RXNS.mod 
+$(DPO)check_data_09.$(OBJ_EXT) : check_data_09.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) check_data_09.f  -o $(DPO)check_data_09.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_data_10.$(OBJ_EXT) : check_data_10.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) check_data_10.f  -o $(DPO)check_data_10.$(OBJ_EXT) -J$(DPO)
@@ -5042,7 +5032,8 @@ $(DPO)usr2.$(OBJ_EXT) : usr2.f \
             $(DPO)USR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr2.f  -o $(DPO)usr2.$(OBJ_EXT) -J$(DPO)
 $(DPO)usr3.$(OBJ_EXT) : usr3.f \
-            $(DPO)USR.mod 
+            $(DPO)USR.mod \
+            $(DPO)FLDVAR.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr3.f  -o $(DPO)usr3.$(OBJ_EXT) -J$(DPO)
 $(DPO)usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
             $(DPO)USR.mod 
@@ -6072,22 +6063,14 @@ $(DPO)check_bc_outflow.$(OBJ_EXT) : ./check_data/check_bc_outflow.f \
             $(DPO)CUTCELL.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_bc_outflow.f  -o $(DPO)check_bc_outflow.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_bc_walls.$(OBJ_EXT) : ./check_data/check_bc_walls.f \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)GEOMETRY.mod \
-            $(DPO)FLDVAR.mod \
-            $(DPO)PHYSPROP.mod \
             $(DPO)RUN.mod \
             $(DPO)BC.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)FUNITS.mod \
-            $(DPO)SCALARS.mod \
-            $(DPO)COMPAR.mod \
-            $(DPO)SENDRECV.mod \
-            $(DPO)DISCRETELEMENT.mod \
-            $(DPO)MFIX_PIC.mod \
-            $(DPO)CUTCELL.mod \
-            $(DPO)ERROR_MANAGER.mod 
+            $(DPO)PARAM.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)ERROR_MANAGER.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)SCALARS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_bc_walls.f  -o $(DPO)check_bc_walls.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_boundary_conditions.$(OBJ_EXT) : ./check_data/check_boundary_conditions.f \
             $(DPO)PHYSPROP.mod \
@@ -6098,6 +6081,22 @@ $(DPO)check_boundary_conditions.$(OBJ_EXT) : ./check_data/check_boundary_conditi
             $(DPO)PARAM.mod \
             $(DPO)ERROR_MANAGER.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_boundary_conditions.f  -o $(DPO)check_boundary_conditions.$(OBJ_EXT) -J$(DPO)
+$(DPO)check_chemical_rxns.$(OBJ_EXT) : ./check_data/check_chemical_rxns.f \
+            $(DPO)COMPAR.mod \
+            $(DPO)DISCRETELEMENT.mod \
+            $(DPO)FLDVAR.mod \
+            $(DPO)FUNITS.mod \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)INDICES.mod \
+            $(DPO)MFIX_PIC.mod \
+            $(DPO)PARAM.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)PARSE.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)RUN.mod \
+            $(DPO)RXNS.mod \
+            $(DPO)ERROR_MANAGER.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_chemical_rxns.f  -o $(DPO)check_chemical_rxns.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_dmp_prereqs.$(OBJ_EXT) : ./check_data/check_dmp_prereqs.f \
             $(DPO)COMPAR.mod \
             $(DPO)GEOMETRY.mod \
@@ -6138,11 +6137,8 @@ $(DPO)check_ic_common_discrete.$(OBJ_EXT) : ./check_data/check_ic_common_discret
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_ic_common_discrete.f  -o $(DPO)check_ic_common_discrete.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_initial_conditions_dem.$(OBJ_EXT) : ./check_data/check_initial_conditions_dem.f \
             $(DPO)DISCRETELEMENT.mod \
-            $(DPO)IC.mod \
             $(DPO)PARAM1.mod \
-            $(DPO)PARAM.mod \
             $(DPO)GEOMETRY.mod \
-            $(DPO)CONSTANT.mod \
             $(DPO)ERROR_MANAGER.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_initial_conditions_dem.f  -o $(DPO)check_initial_conditions_dem.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_initial_conditions.$(OBJ_EXT) : ./check_data/check_initial_conditions.f \
@@ -6207,13 +6203,8 @@ $(DPO)check_point_sources.$(OBJ_EXT) : ./check_data/check_point_sources.f \
 $(DPO)check_run_control.$(OBJ_EXT) : ./check_data/check_run_control.f \
             $(DPO)RUN.mod \
             $(DPO)CONSTANT.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)SCALARS.mod \
-            $(DPO)DISCRETELEMENT.mod \
             $(DPO)PARAM1.mod \
-            $(DPO)ERROR_MANAGER.mod \
-            $(DPO)CUTCELL.mod \
-            $(DPO)MFIX_PIC.mod 
+            $(DPO)ERROR_MANAGER.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_run_control.f  -o $(DPO)check_run_control.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_solids_common_all.$(OBJ_EXT) : ./check_data/check_solids_common_all.f \
             $(DPO)RXNS.mod \
@@ -6223,7 +6214,10 @@ $(DPO)check_solids_common_all.$(OBJ_EXT) : ./check_data/check_solids_common_all.
             $(DPO)PARAM1.mod \
             $(DPO)ERROR_MANAGER.mod \
             $(DPO)RUN.mod \
-            $(DPO)DRAG.mod 
+            $(DPO)DRAG.mod \
+            $(DPO)CONSTANT.mod \
+            $(DPO)CUTCELL.mod \
+            $(DPO)MFIX_PIC.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_common_all.f  -o $(DPO)check_solids_common_all.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_solids_common_discrete.$(OBJ_EXT) : ./check_data/check_solids_common_discrete.f \
             $(DPO)DISCRETELEMENT.mod \
@@ -6267,6 +6261,7 @@ $(DPO)check_solids_model_prereqs.$(OBJ_EXT) : ./check_data/check_solids_model_pr
             $(DPO)DES_RXNS.mod \
             $(DPO)DES_THERMO.mod \
             $(DPO)PHYSPROP.mod \
+            $(DPO)SCALARS.mod \
             $(DPO)PARAM.mod \
             $(DPO)ERROR_MANAGER.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_model_prereqs.f  -o $(DPO)check_solids_model_prereqs.$(OBJ_EXT) -J$(DPO)
@@ -6371,20 +6366,20 @@ $(DPO)calc_thermo_des.$(OBJ_EXT) : ./des/calc_thermo_des.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/calc_thermo_des.f  -o $(DPO)calc_thermo_des.$(OBJ_EXT) -J$(DPO)
 $(DPO)cfassign.$(OBJ_EXT) : ./des/cfassign.f \
             $(DPO)PARAM1.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)GEOMETRY.mod \
             $(DPO)CONSTANT.mod \
-            $(DPO)COMPAR.mod \
-            $(DPO)PARALLEL.mod \
-            $(DPO)SENDRECV.mod \
             $(DPO)DISCRETELEMENT.mod \
             $(DPO)MFIX_PIC.mod \
             $(DPO)ERROR_MANAGER.mod \
-            $(DPO)PARAM.mod \
-            $(DPO)FLDVAR.mod \
             $(DPO)RUN.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)PARAM.mod \
+            $(DPO)PARALLEL.mod \
+            $(DPO)FLDVAR.mod \
+            $(DPO)GEOMETRY.mod \
             $(DPO)INDICES.mod \
             $(DPO)BC.mod \
+            $(DPO)COMPAR.mod \
+            $(DPO)SENDRECV.mod \
             $(DPO)CUTCELL.mod \
             b_force1.inc                                                 \
             b_force2.inc                                                 \
@@ -6803,11 +6798,11 @@ $(DPO)drag_fgs.$(OBJ_EXT) : ./des/drag_fgs.f \
             $(DPO)SENDRECV.mod \
             $(DPO)DISCRETELEMENT.mod \
             $(DPO)CUTCELL.mod \
-            $(DPO)INTERPOLATION.mod \
-            $(DPO)DESMPI.mod \
-            $(DPO)MFIX_PIC.mod \
             $(DPO)CONSTANT.mod \
             $(DPO)DRAG.mod \
+            $(DPO)DESMPI.mod \
+            $(DPO)MFIX_PIC.mod \
+            $(DPO)INTERPOLATION.mod \
             $(DPO)UR_FACS.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
@@ -6850,6 +6845,7 @@ $(DPO)generate_particle_config.$(OBJ_EXT) : ./des/generate_particle_config.f \
             $(DPO)MPI_UTILITY.mod \
             $(DPO)ERROR_MANAGER.mod \
             $(DPO)DES_LINKED_LIST_DATA.mod \
+            $(DPO)RUN.mod \
             $(DPO)SOFTSPRING_FUNCS_CUTCELL.mod \
             $(DPO)INDICES.mod \
             $(DPO)GEOMETRY.mod \
@@ -6860,15 +6856,11 @@ $(DPO)generate_particle_config.$(OBJ_EXT) : ./des/generate_particle_config.f \
             $(DPO)PARAM.mod \
             $(DPO)RANDOMNO.mod \
             $(DPO)FUNITS.mod \
-            $(DPO)RUN.mod \
             $(DPO)PHYSPROP.mod \
-            $(DPO)FLDVAR.mod \
             $(DPO)PARALLEL.mod \
             $(DPO)DESMPI.mod \
             $(DPO)CDIST.mod \
-            function.inc                                                 \
-            ep_s1.inc                                                    \
-            ep_s2.inc                                                   
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/generate_particle_config.f  -o $(DPO)generate_particle_config.$(OBJ_EXT) -J$(DPO)
 $(DPO)make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
             $(DPO)PARAM1.mod \
@@ -6932,9 +6924,7 @@ $(DPO)mppic_routines.$(OBJ_EXT) : ./des/mppic_routines.f \
             $(DPO)VTK.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
-            fun_avg2.inc                                                 \
-            ep_s1.inc                                                    \
-            ep_s2.inc                                                   
+            fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/mppic_routines.f  -o $(DPO)mppic_routines.$(OBJ_EXT) -J$(DPO)
 $(DPO)neighbour.$(OBJ_EXT) : ./des/neighbour.f \
             $(DPO)PARAM1.mod \
@@ -7172,22 +7162,13 @@ $(DPO)source_population_eq.$(OBJ_EXT) : ./dqmom/source_population_eq.f \
             $(DPO)SCALARS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dqmom/source_population_eq.f  -o $(DPO)source_population_eq.$(OBJ_EXT) -J$(DPO)
 $(DPO)usr_dqmom.$(OBJ_EXT) : ./dqmom/usr_dqmom.f \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
             $(DPO)RUN.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)GEOMETRY.mod \
-            $(DPO)FLDVAR.mod \
-            $(DPO)OUTPUT.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)RXNS.mod \
-            $(DPO)CONSTANT.mod \
-            $(DPO)AMBM.mod \
-            $(DPO)COMPAR.mod \
             $(DPO)SCALARS.mod \
+            $(DPO)FLDVAR.mod \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)INDICES.mod \
+            $(DPO)COMPAR.mod \
             $(DPO)USR.mod \
-            ep_s1.inc                                                    \
-            ep_s2.inc                                                    \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dqmom/usr_dqmom.f  -o $(DPO)usr_dqmom.$(OBJ_EXT) -J$(DPO)
 $(DPO)adjust_eps_ghd.$(OBJ_EXT) : ./GhdTheory/adjust_eps_ghd.f \

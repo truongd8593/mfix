@@ -122,7 +122,7 @@
 
       INTEGER nSpecies, nPhases
 
-      LOGICAL blankAlias(0:(DIMENSION_N_g + lM*DIMENSION_N_s))
+      LOGICAL blankAlias(0:(DIM_N_g + lM*DIM_N_s))
 
 ! Initialize local reaction name and chemical equation variables.
       lName = trim(adjustl(RxN%Name))
@@ -168,7 +168,9 @@
 
 ! All the relevant data has been collected at this point. Build the
 ! reaction block data structure.
-      Allocate( RxN%rPhase( DIMENSION_LM+DIMENSION_M-1 ))
+      L = max(1,lM)
+      LL = (L * (L-1)/2)
+      Allocate( RxN%rPhase( LL+L ))
 
 
 ! Initialize local map and global values
@@ -761,7 +763,7 @@
 ! Solids phase speices aliases.
       CHARACTER(len=32), DIMENSION(DIM_M, DIM_N_s), INTENT(IN) :: lSAs
 
-      LOGICAL, INTENT(OUT) :: lBA(0:(DIMENSION_N_g + lM*DIMENSION_N_s))
+      LOGICAL, INTENT(OUT) :: lBA(0:(DIM_N_g + lM*DIM_N_s))
 
       INTEGER M, N
 
@@ -845,7 +847,7 @@
 
       INTEGER, INTENT(IN) :: lStart
 
-      LOGICAL, INTENT(IN) :: lBA(0:(DIMENSION_N_g + lM*DIMENSION_N_s))
+      LOGICAL, INTENT(IN) :: lBA(0:(DIM_N_g + lM*DIM_N_s))
 
 ! Data structure for storing reaction data.
       TYPE(REACTION_BLOCK), POINTER, INTENT(INOUT) :: lRxN
