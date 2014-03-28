@@ -13,7 +13,7 @@
   UNITS    = 'cgs'
   RUN_TYPE = 'new'
   TIME     = 0.0
-  TSTOP    = 0.1
+  TSTOP    = 0.0
   DT       = 1.0E-4
 
   GRAVITY  = 980.7
@@ -24,6 +24,8 @@
   MOMENTUM_X_EQ  = .F.  .F.  .F.  .F.
   MOMENTUM_Y_EQ  = .F.  .F.  .F.  .F.
   MOMENTUM_Z_EQ  = .F.  .F.  .F.  .F.
+
+  CALL_USR = .TRUE.
 
 #_______________________________________________________________
 # NUMERICAL SECTION
@@ -36,14 +38,9 @@
 
   COORDINATES = 'cartesian'
 
-  XLENGTH  = 1.0
-  IMAX     = 1
-
-  ZLENGTH  = 1.0
-  KMAX     = 1
-
-  YLENGTH  = 1.0
-  JMAX     = 1
+  XLENGTH  = 1.0   IMAX =  1
+  ZLENGTH  = 1.0   KMAX =  1
+  YLENGTH  = 1.0   JMAX = 10
 
 
 #_______________________________________________________________
@@ -74,8 +71,8 @@
 
 ! Solids phase 1
 !------------------------------------------//
-  D_p0(1) = 0.1   ! (cm)
-  RO_s0(1) = 1.0  ! (g/cm)
+  D_p0(1)  = 0.1   ! (cm)
+  RO_s0(1) = 1.0   ! (g/cm)
 
   NMAX_s(1) = 4
 
@@ -87,8 +84,8 @@
 
 ! Solids phase 2
 !------------------------------------------//
-  D_p0(2) = 0.1   ! (cm)
-  RO_s0(2) = 1.0  ! (g/cm)
+  D_p0(2)  = 0.1   ! (cm)
+  RO_s0(2) = 1.0   ! (g/cm)
 
   NMAX_s(2) = 2
   SPECIES_s(2,1) = 'Fixed Carbon'   SPECIES_ALIAS_s(2,1) = 'FC2'
@@ -96,8 +93,8 @@
 
 ! Solids phase 2
 !------------------------------------------//
-  D_p0(3) = 0.1   ! (cm)
-  RO_s0(3) = 1.0  ! (g/cm)
+  D_p0(3)  = 0.1   ! (cm)
+  RO_s0(3) = 1.0   ! (g/cm)
 
   NMAX_s(3) = 2
   SPECIES_s(3,1) = 'Fixed Carbon'   SPECIES_ALIAS_s(3,1) = 'SSOOT'

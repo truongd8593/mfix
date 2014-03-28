@@ -51,9 +51,10 @@
 
 ! Reaction specific variables:
 !`````````````````````````````````````````````````````````````````````//
+      INTEGER :: L
 
-      RATES(:) = ONE
+      L = IJK - 49
+      RATES(L) = ONE
 
       RETURN  
-
       END SUBROUTINE USR_RATES
