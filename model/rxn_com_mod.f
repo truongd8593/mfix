@@ -386,7 +386,7 @@
 !  Local variables: None                                               !
 !                                                                      !
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
-      SUBROUTINE WRITE_RXN_SUMMARY(RxN, lSAg, lSAs)
+      SUBROUTINE WRITE_RXN_SUMMARY(RxN, lSAg, lSAs, fUNIT)
 
       IMPLICIT NONE
 
@@ -397,7 +397,8 @@
       CHARACTER(len=32), DIMENSION(DIM_N_g), INTENT(IN) :: lSAg
 ! Solids phase speices aliases.
       CHARACTER(len=32), DIMENSION(DIM_M, DIM_N_s), INTENT(IN) :: lSAs
-
+! Optional file unit.
+      INTEGER, OPTIONAL :: fUNIT
 
       CHARACTER*72, OUTPUT
       CHARACTER*72, full, divided, empty
@@ -407,11 +408,15 @@
       INTEGER lN, M, N
       INTEGER lS, lE
 
+      INTEGER UNIT_FLAG
+
 ! External Function for comparing two numbers.
       LOGICAL, EXTERNAL :: COMPARE
 
-      empty = ''
-      CALL WRITE_RS0(empty)
+      UNIT_FLAG = merge(fUNIT, -1, present(fUnit))
+
+      empty = '  '
+      CALL WRITE_RS0(empty, UNIT_FLAG)
 
       full = ''
       WRITE(full,2000)
@@ -420,35 +425,35 @@
       WRITE(divided,2005) 
 
 ! Lead bar
-      CALL WRITE_RS0(full)
+      CALL WRITE_RS0(full, UNIT_FLAG)
 ! Reaction Nmae
       OUTPUT = ''      
       WRITE(OUTPUT, 2001)trim(RxN%Name)
       OUTPUT(72:72) = '|'
-      CALL WRITE_RS0(OUTPUT)
+      CALL WRITE_RS0(OUTPUT, UNIT_FLAG)
 
 ! Row Divider
-      CALL WRITE_RS0(full)
+      CALL WRITE_RS0(full, UNIT_FLAG)
 
       OUTPUT = ''
       WRITE(OUTPUT, 2002)trim(RxN%ChemEq(1:54))
       OUTPUT(72:72) = '|'
-      CALL WRITE_RS0(OUTPUT)
+      CALL WRITE_RS0(OUTPUT, UNIT_FLAG)
 
-      CALL WRITE_RS0(full)
+      CALL WRITE_RS0(full, UNIT_FLAG)
 
       IF(RxN%nSpecies > 0) THEN
 
          OUTPUT = ''      
          WRITE(OUTPUT, 2007)trim(RxN%Classification)
          OUTPUT(72:72) = '|'
-         CALL WRITE_RS0(OUTPUT)
+         CALL WRITE_RS0(OUTPUT, UNIT_FLAG)
 ! Row Divider
-         CALL WRITE_RS0(full)
+         CALL WRITE_RS0(full, UNIT_FLAG)
 
-         WRITE(OUTPUT,2003); CALL WRITE_RS0(OUTPUT)
-         WRITE(OUTPUT,2004); CALL WRITE_RS0(OUTPUT)
-         CALL WRITE_RS0(divided)
+         WRITE(OUTPUT,2003); CALL WRITE_RS0(OUTPUT, UNIT_FLAG)
+         WRITE(OUTPUT,2004); CALL WRITE_RS0(OUTPUT, UNIT_FLAG)
+         CALL WRITE_RS0(divided, UNIT_FLAG)
       ENDIF
 
 
@@ -493,12 +498,12 @@
             WRITE(OUTPUT(17:26),"(F9.4)")  RxN%Species(lN)%Coeff
             WRITE(OUTPUT(63:70),"(A)") 'Product'
          ENDIF
-         CALL WRITE_RS0(OUTPUT)
-         CALL WRITE_RS0(divided)
+         CALL WRITE_RS0(OUTPUT, UNIT_FLAG)
+         CALL WRITE_RS0(divided, UNIT_FLAG)
 
       ENDDO
 
-      CALL WRITE_RS0(empty)
+      CALL WRITE_RS0(empty, UNIT_FLAG)
 
       RETURN
 
@@ -538,20 +543,27 @@
 !  Local variables: None                                               !
 !                                                                      !
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
-      SUBROUTINE WRITE_RS0(LINE)
+      SUBROUTINE WRITE_RS0(LINE, UFLAG)
+
+      use error_manager
 
       IMPLICIT NONE
 
       CHARACTER(len=*), INTENT(IN) :: LINE
+      INTEGER, INTENT(IN) :: UFLAG
 
-      IF(DMP_LOG) THEN
-         WRITE(*,*) trim(LINE)
-         WRITE(UNIT_LOG,*) trim(LINE)
+      CALL INIT_ERR_MSG("WRITE_RXN_SUMMARY --> WRITE_RS0")
+
+      IF(UFLAG == -1)THEN
+         WRITE(ERR_MSG,*) LINE
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+      ELSE
+         WRITE(UFLAG,*) LINE
       ENDIF
+      CALL FINL_ERR_MSG
 
+      RETURN
       END SUBROUTINE WRITE_RS0
-
-
       END SUBROUTINE WRITE_RXN_SUMMARY
 
 
@@ -587,7 +599,9 @@
       LOGICAL :: CHECK_DATABASE
 
       INTEGER :: M, N, lN
-      
+
+
+      CALL INIT_ERR_MSG("RXN_COM --> checkThermoReqs")
 
       CHECK_DATABASE = .FALSE.
       CP_FATAL = .FALSE.
@@ -638,35 +652,37 @@
       ENDIF
 
       IF(CHECK_DATABASE) THEN
-
          WRITE(ERR_MSG, 1200)
          CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
+      ENDIF
 
  1200 FORMAT('Message 1200: Searching thermochemical databases for ',&
          'species data.',/'  ')
 
-         DO lN = 1, RxN%nSpecies
-            M = RxN%Species(lN)%pMap
-            N = RxN%Species(lN)%sMap
-            IF(M == 0) THEN
-               IF((RxN%Calc_DH .AND. .NOT.rDB(M,N)) .OR.         &
-                  (MWg(N) == UNDEFINED)) THEN
+      DO lN = 1, RxN%nSpecies
+         M = RxN%Species(lN)%pMap
+         N = RxN%Species(lN)%sMap
+         IF(M == 0) THEN
+            IF((RxN%Calc_DH .AND. .NOT.rDB(M,N)) .OR.         &
+               (MWg(N) == UNDEFINED)) THEN
 ! Notify the user of the reason the thermochemical database is used.
 ! Flag that the species name is not provided.
-                  IF(S_g(N) == UNDEFINED_C) THEN
-                     WRITE(ERR_MSG,1000) trim(iVar('SPECIES_g',N))
-                     CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-                  ENDIF
+               IF(S_g(N) == UNDEFINED_C) THEN
+                  WRITE(ERR_MSG,1000) trim(iVar('SPECIES_g',N))
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
 
 ! Update the log files.
-                  WRITE(ERR_MSG, 3001) N, trim(S_g(N))
-                  CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+               WRITE(ERR_MSG, 3001) N, trim(S_g(N))
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 ! Read the database.
-                  CALL READ_DATABASE('TFM', 0, N, S_g(N), MWg(N))
+               CALL READ_DATABASE('TFM', 0, N, S_g(N), MWg(N))
 ! Flag variable to stating that the database was read.
-                  rDB(0,N) = .TRUE.
-               ENDIF
-            ELSEIF((RxN%Calc_DH .AND. .NOT.rDB(M,N)) .OR.        &
+               rDB(0,N) = .TRUE.
+            ENDIF
+            RxN%Species(lN)%MW = MWg(N)
+         ELSE
+            IF((RxN%Calc_DH .AND. .NOT.rDB(M,N)) .OR.        &
                (MWs(M,N) == UNDEFINED)) THEN
 
 ! Flag that the species name is not provided.
@@ -681,10 +697,11 @@
 ! Flag variable to stating that the database was read.
                rDB(M,N) = .TRUE.
             ENDIF
-         ENDDO
-         CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
-
-      ENDIF
+            RxN%Species(lN)%MW = MWs(M,N)
+         ENDIF
+      ENDDO
+! Finalize the error message.
+      IF(CHECK_DATABASE) CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
 
  3001 FORMAT(/2x,'>',I3,': Species: ',A)
 
