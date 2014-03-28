@@ -155,7 +155,6 @@
                        ! it may be important to increase this value to
                        ! accomodate cohesion which occurs at distances
                        ! beyond the particles radii  
-  NFACTOR = 0     ! length of dem settling period in no. of loops [10]
 
 ! Particle properties --------------------
 ! (particle-particle, particle-wall collision model parameters)
