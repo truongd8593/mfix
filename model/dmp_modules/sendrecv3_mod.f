@@ -2204,7 +2204,7 @@ enddo ! do ilayer
 
         subroutine MPI_WAITANY(count, array_of_requests, jindex, &
                                 status, ierror)
-        use mpi
+        use mpi, only: MPI_STATUS_SIZE
 
         integer count
         integer array_of_requests(*)
@@ -2215,7 +2215,7 @@ enddo ! do ilayer
 
         subroutine MPI_WAITALL( count, array_of_requests,  &
                 array_of_status, ierror )
-        use mpi
+        use mpi, only: MPI_STATUS_SIZE
 
         integer count
         integer array_of_requests(*)
@@ -2347,7 +2347,7 @@ enddo ! do ilayer
 
         subroutine MPI_WAITANY(count, array_of_requests, jindex, &
                                 status, ierror)
-        use mpi
+        use mpi, only: MPI_STATUS_SIZE
 
         integer count
         integer array_of_requests(*)
@@ -2358,7 +2358,7 @@ enddo ! do ilayer
 
         subroutine MPI_WAITALL( count, array_of_requests,  &
                 array_of_status, ierror )
-        use mpi
+        use mpi, only: MPI_STATUS_SIZE
 
         integer count
         integer array_of_requests(*)
@@ -2495,7 +2495,7 @@ enddo ! do ilayer
 
         subroutine MPI_WAITANY(count, array_of_requests, jindex, &
                                 status, ierror)
-        use mpi
+        use mpi, only: MPI_STATUS_SIZE
 
         integer count
         integer array_of_requests(*)
@@ -2506,7 +2506,7 @@ enddo ! do ilayer
 
         subroutine MPI_WAITALL( count, array_of_requests,  &
                 array_of_status, ierror )
-        use mpi
+        use mpi, only: MPI_STATUS_SIZE
 
         integer count
         integer array_of_requests(*)

@@ -1812,7 +1812,7 @@
       interface
          subroutine MPI_WAITANY(count, array_of_requests, jindex, &
             status, ierror)
-            use mpi
+            use mpi, only: MPI_STATUS_SIZE
             integer count
             integer array_of_requests(*)
             integer jindex
@@ -1822,7 +1822,7 @@
 
          subroutine MPI_WAITALL( count, array_of_requests,  &
             array_of_status, ierror )
-            use mpi
+            use mpi, only: MPI_STATUS_SIZE
             integer count
             integer array_of_requests(*)
             integer array_of_status( MPI_STATUS_SIZE,*)
@@ -1954,7 +1954,7 @@
       interface
          subroutine MPI_WAITANY(count, array_of_requests, jindex, &
             status, ierror)
-            use mpi
+            use mpi, only: MPI_STATUS_SIZE
             integer count
             integer array_of_requests(*)
             integer jindex
@@ -1964,7 +1964,7 @@
 
          subroutine MPI_WAITALL( count, array_of_requests,  &
             array_of_status, ierror )
-            use mpi
+            use mpi, only: MPI_STATUS_SIZE
             integer count
             integer array_of_requests(*)
             integer array_of_status( MPI_STATUS_SIZE,*)
@@ -2093,7 +2093,7 @@
       interface
          subroutine MPI_WAITANY(count, array_of_requests, jindex, &
             status, ierror)
-            use mpi
+            use mpi, only: MPI_STATUS_SIZE
             integer count
             integer array_of_requests(*)
             integer jindex
@@ -2103,7 +2103,7 @@
 
          subroutine MPI_WAITALL( count, array_of_requests,  &
             array_of_status, ierror )
-            use mpi
+            use mpi, only: MPI_STATUS_SIZE
             integer count
             integer array_of_requests(*)
             integer array_of_status( MPI_STATUS_SIZE,*)
