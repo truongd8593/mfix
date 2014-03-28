@@ -255,7 +255,7 @@
 
 ! All entries have been processed.
             ELSEIF(IOS<0)THEN
-               EXIT READ_LP
+               EXIT SRC_LP
             ENDIF
 
 ! Clean up the input.
