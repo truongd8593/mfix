@@ -1,5 +1,7 @@
-!                                                                               
-!  Spouted Bed Combustor
+!  Test case for verifying that the thermo tables and heat
+!  of reaction calculations work. Note that this case will
+!  most likely fail if tstop is set to anything other than
+!  zero because the case wasn't designed to actually run.
 !
 !  Author: E.F. Modeler               Date: 9-28-94
 !  Modified: J. Musser                Date: 9-17-12
