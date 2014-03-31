@@ -35,8 +35,7 @@
       TYPE(REACTION_BLOCK), POINTER :: RxN
 
 
-! Write a summary of the chemical reactions
-!---------------------------------------------------------------------//
+! Open the POST data file and write out the recation data table.
       OPEN(678,FILE='POST_Thermo.dat', status='NEW')
       DO L=1, NO_OF_RXNS
          RxN => Reaction(L)
