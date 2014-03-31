@@ -318,6 +318,8 @@
       Allocate(  DES_V_s (DIMENSION_3, DES_MMAX) )
       Allocate(  DES_W_s (DIMENSION_3, DES_MMAX) )
 
+ ! Volume of nodes 	 
+       ALLOCATE(DES_VOL_NODE(DIMENSION_3)) 	 
 
 ! Variables for hybrid model
       IF (DES_CONTINUUM_HYBRID) THEN

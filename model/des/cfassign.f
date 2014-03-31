@@ -58,6 +58,11 @@
       GRAVITY_X, GRAVITY_Y, GRAVITY_Z
 
       CALL FLUSH_ERR_MSG 
+
+
+
+! compute the volume of nodes needed in drag_fgs.f 
+      CALL compute_volume_of_nodes
       
       IF(DEM_SOLIDS) CALL cfassign_dem
       IF(PIC_SOLIDS) CALL cfassign_pic
@@ -594,11 +599,6 @@
 
          ENDIF
 
-         IF(vol_node_actual_count.GT.zero) THEN
-            DES_VOL_NODE_RATIO(ijk)  = vol_node_count/vol_node_actual_count
-         ELSE
-            DES_VOL_NODE_RATIO(ijk) = zero
-         ENDIF
 
       ENDDO   ! end do ijk=ijkstart3,ijkend3
 
