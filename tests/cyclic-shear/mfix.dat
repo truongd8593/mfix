@@ -3,6 +3,10 @@
 
 ! Author: S. Pannala, Feb. 2000
 
+! For more details see: Agrawal, K., Loezos, P. N., Syamlal, M., and
+! Sundaresan, S., "The role of meso-scale structurse in rapid gas-
+! solid flows," J. Fluid Mech., Vol. 445, 2001, pp. 151-185
+
 !*********************************************************************
 ! Run Control
 !*********************************************************************
@@ -64,8 +68,8 @@
 !  [undefined] : normalization uses residual from first iteration 
 !      0       : normalization based on dominate term in continuity eqn
 !  [defined]   : normalized by value provided
-   NORM_s = 1E-1
-#  NORM_g = 1e-1
+  NORM_S = 0
+  NORM_G = 0
 
 ! reduce time step if residuals sum does not decrease?  [.TRUE.]
 #  DETECT_STALL = .FALSE.
@@ -74,14 +78,23 @@
 !      [LEQ_IT(1,2)=20]
 !      [LEQ_IT(3-5)=5]
 !      [LEQ_IT(6-9)=15]
-  LEQ_IT(1) = 200
-  LEQ_IT(2) = 200
+  LEQ_IT(1) = 9*200
+
+! the tolerance in the linear equation solver   [1.0E-4]
+  LEQ_TOL(1) = 9*1D-5
+
+! the preconditioner used for the sweeps in the linear equation 
+! solver   ['LINE']
+  LEQ_PC(1) = 9*'NONE'
+
+! the sweep direction for the linear equation solver
+!  LEQ_SWEEP(1) = 9*'ISIS'
 
 ! Under relaxation factors 
 !      [UR_FAC(1,6,9)=0.8]
 !      [UR_FAC(2,3,4,5,8)=0.5]
 !      [UR_FAC(7)=1]
-  UR_FAC(8) = 1.0
+!  UR_FAC(8) = 1.0
 
 ! Use deferred correction method for implementing higher order
 ! discretization.  Otherwise use down-wind factor method [.FALSE.]
