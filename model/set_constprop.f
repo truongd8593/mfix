@@ -37,7 +37,7 @@
 !-----------------------------------------------
 ! indices      
       INTEGER :: IJK, M, N, I, J
-      DOUBLE PRECISION :: old_value, DP_TMP(MMAX)
+      DOUBLE PRECISION old_value, DP_TMP(MMAX)
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -102,23 +102,20 @@
             C_PG(IJK) = ZERO 
             MW_MIX_G(IJK) = ZERO 
          ELSE
-! Fluid and inflow/outflow cells: FLAG < 100
+! Fluid and inflow/outlfow cells: FLAG < 100
             IF (RO_G0 /= UNDEFINED) RO_G(IJK) = RO_G0 
             IF (C_PG0 /= UNDEFINED) C_PG(IJK) = C_PG0 
             IF (MW_AVG /= UNDEFINED) MW_MIX_G(IJK) = MW_AVG 
-! modify the following so that all fluid cells including any
-! inflow/outflow type cells will have their transport coefficients
-! (mu_g, etc) initialized when they are defined constant
-            IF (MU_G0 /= UNDEFINED) THEN
-               MU_G(IJK) = MU_G0
-               MU_GT(IJK) = MU_G0
-               LAMBDA_GT(IJK) = -(2.0d0/3.0d0)*MU_G0
-            ENDIF
-            IF (K_G0 /= UNDEFINED) K_G(IJK) = K_G0 
-            IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = DIF_G0 
 ! Strictly fluid cells: FLAG = 1
-!            IF(FLUID_AT(IJK)) THEN
-!            ENDIF
+            IF(FLUID_AT(IJK) .OR. USE_MMS) THEN
+               IF (MU_G0 /= UNDEFINED) THEN
+                  MU_G(IJK) = MU_G0
+                  MU_GT(IJK) = MU_G0
+                  LAMBDA_GT(IJK) = -(2.0d0/3.0d0)*MU_G0
+               ENDIF
+               IF (K_G0 /= UNDEFINED) K_G(IJK) = K_G0 
+               IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = DIF_G0 
+            ENDIF
          ENDIF 
       ENDDO 
 
@@ -141,21 +138,18 @@
                IF (RO_S0(M) /= UNDEFINED) RO_S(IJK,M) = RO_S0(M)
                IF (C_PS0 /= UNDEFINED) C_PS(IJK,M) = C_PS0 
                IF (D_P0(M) /= UNDEFINED) D_P(IJK,M) = D_P0(M)
-! modify the following so that all fluid cells including any
-! inflow/outflow type cells will have their transport coefficients
-! (mu_s, etc) initialized when they are defined constant
-               IF (MU_S0 /= UNDEFINED) THEN 
-                  P_S(IJK,M) = ZERO 
-                  MU_S(IJK,M) = MU_S0 
-                  LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M) 
-                  ALPHA_S(IJK,M) = ZERO 
-               ENDIF 
-               IF (K_S0 /= UNDEFINED) K_S(IJK,M) = K_S0 
-               IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
 ! Strictly fluid cells: FLAG = 1
-!               IF(FLUID_AT(IJK)) THEN
-!               ENDIF
-           ENDIF 
+               IF (FLUID_AT(IJK) .OR. USE_MMS) THEN
+                  IF (MU_S0 /= UNDEFINED) THEN 
+                     P_S(IJK,M) = ZERO 
+                     MU_S(IJK,M) = MU_S0 
+                     LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M) 
+                     ALPHA_S(IJK,M) = ZERO 
+                  ENDIF 
+                  IF (K_S0 /= UNDEFINED) K_S(IJK,M) = K_S0 
+                  IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
+               ENDIF
+            ENDIF 
 
 ! set ep_star_array to user input ep_star in all cells.
             EP_star_array(ijk) = ep_star
