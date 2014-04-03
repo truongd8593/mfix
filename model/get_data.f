@@ -27,7 +27,7 @@
       USE mfix_pic
       USE cutcell
       USE dashboard
-
+      USE des_stl_functions, only: des_stl_preprocessing, allocate_des_stl_arrays
       USE visc_g, only: L_SCALE
       USE constant, only: L_SCALE0
 
@@ -136,7 +136,25 @@
          CALL ALLOCATE_DUMMY_CUT_CELL_ARRAYS
       ENDIF
 
-
+      IF(DISCRETE_ELEMENT) then 
+         !RG. Allocate the DES arrays dimensioned by Eulerian grid parameters 
+         !Right now the below routine allocates and defines xe, yn, and zt that are used 
+         !for des_stl_preprocessing. 
+         CALL DES_ALLOCATE_ARRAYS_EULERIAN_GEOM
+         
+         ! if using stl representation for particle-wall interactions in discrete model
+         ! then allocate the required arrays. This was earlier done in CG routines, 
+         ! but to extend this capabilty to non-CG setups, allocate these arrays independently.
+         IF(USE_STL_DES) then 
+            CALL ALLOCATE_DES_STL_ARRAYS 
+         
+            ! do the stl preprocessing for discrete model if it is specified as true
+            ! or forced to true through earlier consistency checks 
+            CALL DES_STL_PREPROCESSING
+         
+         end IF
+      end IF
+      
 ! Initialize all field variables as undefined
       CALL INIT_FVARS 
 
