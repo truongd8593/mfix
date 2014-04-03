@@ -417,8 +417,8 @@ $(EXEC_FILE) : \
     $(DPO)check_solids_phases.$(OBJ_EXT) \
     $(DPO)check_data_odepack.$(OBJ_EXT) \
     $(DPO)stiff_chem_rrates.$(OBJ_EXT) \
-    $(DPO)calc_force_des_cutcell.$(OBJ_EXT) \
-    $(DPO)calc_force_des.$(OBJ_EXT) \
+    $(DPO)calc_force_dem.$(OBJ_EXT) \
+    $(DPO)calc_force_dem_stl.$(OBJ_EXT) \
     $(DPO)calc_rrate_des.$(OBJ_EXT) \
     $(DPO)calc_thermo_des.$(OBJ_EXT) \
     $(DPO)cfassign.$(OBJ_EXT) \
@@ -903,8 +903,8 @@ $(EXEC_FILE) : \
     $(DPO)stiff_chem_mod.$(OBJ_EXT) \
     $(DPO)stiff_chem_rrates.$(OBJ_EXT) \
     $(DPO)stiff_chem_stats_mod.$(OBJ_EXT) \
-    $(DPO)calc_force_des_cutcell.$(OBJ_EXT) \
-    $(DPO)calc_force_des.$(OBJ_EXT) \
+    $(DPO)calc_force_dem.$(OBJ_EXT) \
+    $(DPO)calc_force_dem_stl.$(OBJ_EXT) \
     $(DPO)calc_rrate_des.$(OBJ_EXT) \
     $(DPO)calc_thermo_des.$(OBJ_EXT) \
     $(DPO)cfassign.$(OBJ_EXT) \
@@ -1463,25 +1463,17 @@ $(DPO)des_rxns.mod : ./des/des_rxns_mod.f \
             $(DPO)rxn_com.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_rxns_mod.f  -o $(DPO)des_rxns_mod.$(OBJ_EXT) -module $(DPO)
 $(DPO)des_stl_functions.mod : ./des/des_stl_functions_mod.f \
+            $(DPO)stl.mod \
+            $(DPO)param.mod \
+            $(DPO)error_manager.mod \
+            $(DPO)discretelement.mod \
+            $(DPO)cutcell.mod \
             $(DPO)param1.mod \
-            $(DPO)funits.mod \
             $(DPO)run.mod \
             $(DPO)compar.mod \
-            $(DPO)discretelement.mod \
-            $(DPO)mfix_pic.mod \
-            $(DPO)cutcell.mod \
-            $(DPO)stl.mod \
             $(DPO)indices.mod \
             $(DPO)geometry.mod \
-            $(DPO)bc.mod \
             $(DPO)mpi_utility.mod \
-            $(DPO)param.mod \
-            $(DPO)parallel.mod \
-            $(DPO)constant.mod \
-            $(DPO)toleranc.mod \
-            $(DPO)sendrecv.mod \
-            $(DPO)quadric.mod \
-            $(DPO)polygon.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_stl_functions_mod.f  -o $(DPO)des_stl_functions_mod.$(OBJ_EXT) -module $(DPO)
 $(DPO)des_thermo.mod : ./des/des_thermo_mod.f \
@@ -1521,6 +1513,10 @@ $(DPO)mppic_wallbc.mod : ./des/mppic_wallbc_mod.f \
             $(DPO)cutcell.mod \
             $(DPO)fldvar.mod \
             $(DPO)mfix_pic.mod \
+            $(DPO)run.mod \
+            $(DPO)stl.mod \
+            $(DPO)des_stl_functions.mod \
+            $(DPO)parallel.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/mppic_wallbc_mod.f  -o $(DPO)mppic_wallbc_mod.$(OBJ_EXT) -module $(DPO)
 $(DPO)randomno.mod : ./des/randomno_mod.f \
@@ -3093,6 +3089,7 @@ $(DPO)get_data.$(OBJ_EXT) : get_data.f \
             $(DPO)mfix_pic.mod \
             $(DPO)cutcell.mod \
             $(DPO)dashboard.mod \
+            $(DPO)des_stl_functions.mod \
             $(DPO)visc_g.mod \
             $(DPO)constant.mod \
             $(DPO)error_manager.mod 
@@ -5032,8 +5029,7 @@ $(DPO)usr2.$(OBJ_EXT) : usr2.f \
             $(DPO)usr.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr2.f  -o $(DPO)usr2.$(OBJ_EXT) -module $(DPO)
 $(DPO)usr3.$(OBJ_EXT) : usr3.f \
-            $(DPO)usr.mod \
-            $(DPO)fldvar.mod 
+            $(DPO)usr.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr3.f  -o $(DPO)usr3.$(OBJ_EXT) -module $(DPO)
 $(DPO)usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
             $(DPO)usr.mod 
@@ -5727,8 +5723,6 @@ $(DPO)cut_cell_preprocessing.$(OBJ_EXT) : ./cartesian_grid/cut_cell_preprocessin
             $(DPO)cutcell.mod \
             $(DPO)vtk.mod \
             $(DPO)cdist.mod \
-            $(DPO)discretelement.mod \
-            $(DPO)des_stl_functions.mod \
             $(DPO)fldvar.mod \
             $(DPO)polygon.mod \
             $(DPO)stl.mod \
@@ -6313,7 +6307,16 @@ $(DPO)stiff_chem_rrates.$(OBJ_EXT) : ./chem/stiff_chem_rrates.f \
             $(DPO)run.mod \
             $(DPO)stiff_chem.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/stiff_chem_rrates.f  -o $(DPO)stiff_chem_rrates.$(OBJ_EXT) -module $(DPO)
-$(DPO)calc_force_des_cutcell.$(OBJ_EXT) : ./des/calc_force_des_cutcell.f \
+$(DPO)calc_force_dem.$(OBJ_EXT) : ./des/calc_force_dem.f \
+            $(DPO)run.mod \
+            $(DPO)param1.mod \
+            $(DPO)discretelement.mod \
+            $(DPO)geometry.mod \
+            $(DPO)compar.mod \
+            $(DPO)constant.mod \
+            $(DPO)cutcell.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/calc_force_dem.f  -o $(DPO)calc_force_dem.$(OBJ_EXT) -module $(DPO)
+$(DPO)calc_force_dem_stl.$(OBJ_EXT) : ./des/calc_force_dem_stl.f \
             $(DPO)run.mod \
             $(DPO)param1.mod \
             $(DPO)discretelement.mod \
@@ -6327,16 +6330,7 @@ $(DPO)calc_force_des_cutcell.$(OBJ_EXT) : ./des/calc_force_des_cutcell.f \
             $(DPO)parallel.mod \
             $(DPO)softspring_funcs_cutcell.mod \
             function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/calc_force_des_cutcell.f  -o $(DPO)calc_force_des_cutcell.$(OBJ_EXT) -module $(DPO)
-$(DPO)calc_force_des.$(OBJ_EXT) : ./des/calc_force_des.f \
-            $(DPO)run.mod \
-            $(DPO)param1.mod \
-            $(DPO)discretelement.mod \
-            $(DPO)geometry.mod \
-            $(DPO)compar.mod \
-            $(DPO)constant.mod \
-            $(DPO)cutcell.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/calc_force_des.f  -o $(DPO)calc_force_des.$(OBJ_EXT) -module $(DPO)
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/calc_force_dem_stl.f  -o $(DPO)calc_force_dem_stl.$(OBJ_EXT) -module $(DPO)
 $(DPO)calc_rrate_des.$(OBJ_EXT) : ./des/calc_rrate_des.f \
             $(DPO)compar.mod \
             $(DPO)des_rxns.mod \
@@ -6772,13 +6766,9 @@ $(DPO)des_wallbc_preprocessing.$(OBJ_EXT) : ./des/des_wallbc_preprocessing.f \
             $(DPO)geometry.mod \
             $(DPO)bc.mod \
             $(DPO)constant.mod \
-            $(DPO)fldvar.mod \
-            $(DPO)mpi_utility.mod \
-            $(DPO)sendrecv.mod \
-            $(DPO)error_manager.mod \
-            $(DPO)softspring_funcs_cutcell.mod \
             $(DPO)desmpi.mod \
             $(DPO)cdist.mod \
+            $(DPO)error_manager.mod \
             $(DPO)discretelement.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
@@ -6850,6 +6840,7 @@ $(DPO)generate_particle_config.$(OBJ_EXT) : ./des/generate_particle_config.f \
             $(DPO)indices.mod \
             $(DPO)geometry.mod \
             $(DPO)compar.mod \
+            $(DPO)mppic_wallbc.mod \
             $(DPO)constant.mod \
             $(DPO)ic.mod \
             $(DPO)param1.mod \
@@ -6858,8 +6849,6 @@ $(DPO)generate_particle_config.$(OBJ_EXT) : ./des/generate_particle_config.f \
             $(DPO)funits.mod \
             $(DPO)physprop.mod \
             $(DPO)parallel.mod \
-            $(DPO)desmpi.mod \
-            $(DPO)cdist.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/generate_particle_config.f  -o $(DPO)generate_particle_config.$(OBJ_EXT) -module $(DPO)
 $(DPO)make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
@@ -6884,23 +6873,7 @@ $(DPO)mppic_routines.$(OBJ_EXT) : ./des/mppic_routines.f \
             $(DPO)param1.mod \
             $(DPO)run.mod \
             $(DPO)output.mod \
-            $(DPO)physprop.mod \
-            $(DPO)fldvar.mod \
-            $(DPO)geometry.mod \
-            $(DPO)pgcor.mod \
-            $(DPO)pscor.mod \
-            $(DPO)cont.mod \
-            $(DPO)tau_g.mod \
-            $(DPO)tau_s.mod \
-            $(DPO)visc_g.mod \
-            $(DPO)visc_s.mod \
             $(DPO)funits.mod \
-            $(DPO)vshear.mod \
-            $(DPO)scalars.mod \
-            $(DPO)drag.mod \
-            $(DPO)rxns.mod \
-            $(DPO)compar.mod \
-            $(DPO)time_cpu.mod \
             $(DPO)discretelement.mod \
             $(DPO)constant.mod \
             $(DPO)sendrecv.mod \
@@ -6908,20 +6881,16 @@ $(DPO)mppic_routines.$(OBJ_EXT) : ./des/mppic_routines.f \
             $(DPO)cutcell.mod \
             $(DPO)mppic_wallbc.mod \
             $(DPO)mfix_pic.mod \
-            $(DPO)des_thermo.mod \
-            $(DPO)des_rxns.mod \
-            $(DPO)interpolation.mod \
             $(DPO)parallel.mod \
+            $(DPO)geometry.mod \
             $(DPO)indices.mod \
             $(DPO)desmpi.mod \
             $(DPO)mpi_utility.mod \
+            $(DPO)fldvar.mod \
+            $(DPO)physprop.mod \
             $(DPO)bc.mod \
-            $(DPO)matrix.mod \
-            $(DPO)scales.mod \
-            $(DPO)toleranc.mod \
-            $(DPO)is.mod \
-            $(DPO)quadric.mod \
-            $(DPO)vtk.mod \
+            $(DPO)compar.mod \
+            $(DPO)interpolation.mod \
             function.inc                                                 \
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                
