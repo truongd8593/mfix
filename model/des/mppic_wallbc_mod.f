@@ -40,7 +40,8 @@
 
       PRIVATE 
       
-      PUBLIC:: mppic_apply_wallbc, MPPIC_FIND_NEW_CELL
+      PUBLIC:: mppic_apply_wallbc, MPPIC_FIND_NEW_CELL, &
+      CHECK_IF_PARCEL_OVELAPS_STL
       
       LOGICAL :: INSIDE_DOMAIN, INSIDE_SMALL_CELL, REFLECT_FROM_ORIG_CELL
       INTEGER :: PIP_DEL_COUNT, PIP_ADD_COUNT, REFLECTING_CELL 
@@ -50,6 +51,258 @@
 !-----------------------------------------------
 
       CONTAINS 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  SUBROUTINE: CHECK_IF_PARCEL_OVELAPS_STL                             C
+!                                                                      C
+!  Purpose: This subroutine is special written to check if a particle  C
+!          overlaps any of the STL faces. The routine exits on         C
+!          detecting an overlap. It is called after initial            C
+!          generation of lattice configuration to remove out of domain C
+!          particles                                                   C 
+!                                                                      C
+!  Authors: Rahul Garg                               Date: 21-Mar-2014 C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C      
+      SUBROUTINE CHECK_IF_PARCEL_OVELAPS_STL(POSITION, PCELL, & 
+      OVERLAP_EXISTS)
+
+      USE run
+      USE param1
+      USE discretelement, only: dimn 
+      USE geometry
+      USE constant
+      USE cutcell
+      USE indices
+      USE stl
+      USE des_stl_functions
+      Implicit none
+
+      DOUBLE PRECISION, INTENT(IN) :: POSITION(DIMN)
+      INTEGER , INTENT(IN) :: PCELL(4)
+      LOGICAL, INTENT(OUT) :: OVERLAP_EXISTS
+
+      INTEGER I, J, K, IJK, NF
+
+      DOUBLE PRECISION :: RADSQ, DISTSQ, DIST(DIMN), CLOSEST_PT(DIMN)
+      INTEGER :: COUNT_FAC, COUNT, contact_facet_count, NEIGH_CELLS, &
+      NEIGH_CELLS_NONNAT, &
+      LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
+      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP, &
+      LOC_MAX_PIP
+      
+      double precision :: velocity(dimn)
+      !reference point and direction of the line
+      double precision, dimension(dimn) :: ref_line,  dir_line 
+      !reference point and normal of the plane
+      double precision, dimension(dimn) :: ref_plane, norm_plane
+      !line is parameterized as p = p_ref + t * dir_line, t is line_param
+      double precision :: line_t
+      !logical for determining if a point is on the triangle or not
+      logical :: ontriangle 
+      !The line and plane intersection point 
+      double precision, dimension(dimn) :: point_onplane 
+
+      INCLUDE 'function.inc'
+
+      FOCUS_PARTICLE = -1
+
+      OVERLAP_EXISTS = .false. 
+           
+      IF (NO_NEIGHBORING_FACET_DES(PCELL(4))) RETURN 
+
+      LIST_OF_CELLS(:) = -1
+      NEIGH_CELLS = 0
+      NEIGH_CELLS_NONNAT  = 0
+      CELL_ID = PCELL(4)
+      COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
+
+
+      IF (COUNT_FAC.gt.0)   then
+         !first add the facets in the cell the particle currently resides in
+         NEIGH_CELLS = NEIGH_CELLS + 1
+         LIST_OF_CELLS(NEIGH_CELLS) = CELL_ID
+      ENDIF
+
+      I_CELL = PCELL(1)
+      J_CELL = PCELL(2) 
+      K_CELL = PCELL(3)
+
+      IPLUS1  =  MIN( I_CELL + 1, IEND2)
+      IMINUS1 =  MAX( I_CELL - 1, ISTART2)
+      
+      JPLUS1  =  MIN (J_CELL + 1, JEND2)
+      JMINUS1 =  MAX( J_CELL - 1, JSTART2)
+      
+      KPLUS1  =  MIN (K_CELL + 1, KEND2)
+      KMINUS1 =  MAX( K_CELL - 1, KSTART2)
+      
+      DO K = KMINUS1, KPLUS1
+         DO J = JMINUS1, JPLUS1
+            DO I = IMINUS1, IPLUS1
+               IJK = FUNIJK(I,J,K)
+               COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+               IF(COUNT_FAC.EQ.0) CYCLE
+               NEIGH_CELLS_NONNAT = NEIGH_CELLS_NONNAT + 1
+               NEIGH_CELLS = NEIGH_CELLS + 1
+               LIST_OF_CELLS(NEIGH_CELLS) = IJK
+               !WRITE(*,'(A10, 4(2x,i5))') 'WCELL  = ', IJK, I,J,K
+            ENDDO
+         ENDDO
+      ENDDO
+
+      CONTACT_FACET_COUNT = 0
+
+      DO CELL_COUNT = 1, NEIGH_CELLS
+         IJK = LIST_OF_CELLS(CELL_COUNT)
+
+         DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+            NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
+            line_t  = -Undefined 
+            !-undefined, because non zero values will imply intersection 
+            !with the plane
+            ontriangle = .false. 
+            
+            !parametrize a line as p = p_0 + t normal 
+            !and intersect with the triangular plane. 
+            !if t>0, then point is on the 
+            !non-fluid side of the plane, if the plane normal
+            !is assumed to point toward the fluid side 
+            ref_line(1:dimn) = position(1:dimn)
+            dir_line(1:dimn) = NORM_FACE(NF,1:dimn)
+            !Since this is for checking static config, line's direction
+            !is the same as plane's normal. For moving particles, 
+            !the line's normal will be along the point joining new 
+            !and old positions. 
+            
+            norm_plane(1:dimn) = NORM_FACE(NF,1:dimn)
+            ref_plane(1:dimn)  = VERTEX(NF, 1, 1:dimn)
+            CALL intersectLnPlane(ref_line, dir_line, ref_plane, & 
+            norm_plane, line_t) 
+            if(line_t.gt.zero) then 
+               !this implies by orthogonal projection 
+               !that the point is on non-fluid side of the 
+               !facet
+               point_onplane(1:dimn) = ref_line(1:dimn) + &
+               line_t*dir_line(1:dimn)
+               !Now check through barycentric coordinates if 
+               !this orthogonal projection lies on the facet or not 
+               !If it does, then this point is deemed to be on the 
+               !non-fluid side of the facet 
+               CALL checkPTonTriangle(point_onplane(1:dimn), &
+               VERTEX(NF, 1,:), VERTEX(NF, 2,:), VERTEX(NF, 3,:), &
+               ontriangle)
+               
+               if(ontriangle) then
+                  OVERLAP_EXISTS = .true.
+                  !velocity = zero
+                  !write(*,*) 'over lap detected', line_t
+                  !call write_this_facet_and_parcel(NF, position, velocity)
+                  RETURN
+               endif
+            endif
+         
+         ENDDO
+         
+      end DO
+      
+      RETURN 
+      
+      END SUBROUTINE CHECK_IF_PARCEL_OVELAPS_STL
+
+      
+      SUBROUTINE write_this_facet_and_parcel(FID, position, velocity)
+      USE run
+      USE param1
+      USE discretelement
+      USE geometry
+      USE compar
+      USE constant
+      USE cutcell
+      USE funits
+      USE indices
+      USE physprop
+      USE parallel
+      USE stl
+      USE des_stl_functions
+      Implicit none
+      !facet id and particle id
+      double precision, intent(in), dimension(dimn) :: position, velocity
+      Integer, intent(in) :: fid
+      Integer :: stl_unit, vtp_unit , k
+      CHARACTER*100 :: stl_fname, vtp_fname
+      real :: temp_array(3)
+
+      stl_unit = 1001
+      vtp_unit = 1002
+      
+      WRITE(vtp_fname,'(A,"_OFFENDING_PARTICLE",".vtp")') TRIM(RUN_NAME)
+      WRITE(stl_fname,'(A,"_STL_FACE",".stl")') TRIM(RUN_NAME)
+
+      open(vtp_unit, file = vtp_fname, form='formatted')
+      open(stl_unit, file = stl_fname, form='formatted')
+
+      write(vtp_unit,"(a)") '<?xml version="1.0"?>'
+      write(vtp_unit,"(a,es24.16,a)") '<!-- time =',s_time,'s -->'
+      write(vtp_unit,"(a,a)") '<VTKFile type="PolyData"',&
+           ' version="0.1" byte_order="LittleEndian">'
+      write(vtp_unit,"(3x,a)") '<PolyData>'
+      write(vtp_unit,"(6x,a,i10.10,a,a)")&
+           '<Piece NumberOfPoints="',1,'" NumberOfVerts="0" ',&
+           'NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="0">'
+      write(vtp_unit,"(9x,a)")&
+           '<PointData Scalars="Diameter" Vectors="Velocity">'
+      write(vtp_unit,"(12x,a)")&
+           '<DataArray type="Float32" Name="Diameter" format="ascii">'
+      write (vtp_unit,"(15x,es12.6)") (1.d0)
+      write(vtp_unit,"(12x,a)") '</DataArray>'
+
+      temp_array = zero
+      temp_array(1:DIMN) = velocity(1:dimn)
+      write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
+           'Name="Velocity" NumberOfComponents="3" format="ascii">'
+      write (vtp_unit,"(15x,3(es13.6,3x))")&
+           ((temp_array(k)),k=1,3)
+      write(vtp_unit,"(12x,a,/9x,a)") '</DataArray>','</PointData>'
+      ! skip cell data
+      write(vtp_unit,"(9x,a)") '<CellData></CellData>'
+
+      temp_array = zero
+      temp_array(1:dimn) = position(1:dimn)
+      write(vtp_unit,"(9x,a)") '<Points>'
+      write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
+           'Name="Position" NumberOfComponents="3" format="ascii">'
+      write (vtp_unit,"(15x,3(es13.6,3x))")&
+           ((temp_array(k)),k=1,3)
+      write(vtp_unit,"(12x,a,/9x,a)")'</DataArray>','</Points>'
+      ! Write tags for data not included (vtp format style)
+      write(vtp_unit,"(9x,a,/9x,a,/9x,a,/9x,a)")'<Verts></Verts>',&
+           '<Lines></Lines>','<Strips></Strips>','<Polys></Polys>'
+      write(vtp_unit,"(6x,a,/3x,a,/a)")&
+           '</Piece>','</PolyData>','</VTKFile>'
+
+      !Now write the facet info
+
+      write(stl_unit,*)'solid vcg'
+
+      write(stl_unit,*) '   facet normal ', NORM_FACE(FID,1:3)
+      write(stl_unit,*) '      outer loop'
+      write(stl_unit,*) '         vertex ', VERTEX(FID,1,1:3)
+      write(stl_unit,*) '         vertex ', VERTEX(FID,2,1:3)
+      write(stl_unit,*) '         vertex ', VERTEX(FID,3,1:3)
+      write(stl_unit,*) '      endloop'
+      write(stl_unit,*) '   endfacet'
+
+      write(stl_unit,*)'endsolid vcg'
+
+      close(vtp_unit, status = 'keep')
+      close(stl_unit, status = 'keep')
+      write(*,*) 'wrote a facet and a parcel. now waiting'
+      read(*,*) 
+    end SUBROUTINE write_this_facet_and_parcel
+
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
