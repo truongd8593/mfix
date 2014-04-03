@@ -77,11 +77,24 @@
 !  <description>Expand the size of the particle arrays by
 ! an arbitrary factor (multiple of the number of particles). Serves 
 ! as a knob to allocate more particles than initially specified in the 
-! particle configuration file. </description
+! particle configuration file. </description>
 !  <dependent keyword="PARTICLES" value="DEFINED"/>
       PARTICLES_FACTOR = 1.2D0
 !  <range min="1.0" max="+Inf" />
 !</keyword>
+
+!<keyword category="Discrete Element" required="false">
+!  <description>Flag to use triangular facet representation for 
+! particle/parcel-wall interactions. If PIC model is used, then 
+! this flag is forced to true. For DEM model, it will be made default, 
+! but currently setting it to false as cohesion model has not been extended 
+! to new routines. Expand the size of the particle arrays by
+! an arbitrary factor (multiple of the number of particles). Serves 
+! as a knob to allocate more particles than initially specified in the 
+! particle configuration file. </description>
+      USE_STL_DES  = .false.
+!</keyword>
+
 
 !<keyword category="Discrete Element" required="false">
 !  <description>Use discrete particle model for solids.
@@ -156,6 +169,12 @@
 !  <valid value="1" note="N-Square search algorithm (most expensive)"/>
 !  <valid value="2-4" note="Grid-Based Neighbor Search (Recommended)"/>
       DES_NEIGHBOR_SEARCH = 4
+!</keyword>
+!<keyword category="Discrete Element" required="false">
+!  <description> Flag to use van der Hoef et al. (2006) 
+! model for adjusting the rotation of the 
+! contact plane. See the MFIX-DEM documentation. </description>
+      USE_VDH_DEM_MODEL = .false. 
 !</keyword>
 
 
