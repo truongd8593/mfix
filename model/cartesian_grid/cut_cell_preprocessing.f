@@ -31,9 +31,6 @@
       USE cutcell
       USE vtk
       use cdist
-      
-      USE discretelement
-      USE des_stl_functions
       USE fldvar
 
       IMPLICIT NONE
@@ -103,40 +100,6 @@
  
       CALL GET_DISTANCE_TO_WALL
 
-      IF(DISCRETE_ELEMENT.and.USE_STL) then
-         IF(myPE == PE_IO) THEN
-            WRITE(*,*)'DISCRETE ELEMENT also detected. Pre-Processing for des now'
-         endif
-
-         !now call the pre-procssing for the des in order to 
-         !assign facets to grid cells 
-         !Set N_facets_des to add any more facets needed by
-         !dem and not to contaminate the Eulerian-Eulerian CG stuff 
-         N_FACETS_DES = N_FACETS 
-
-         !**********************************************************************************
-         !this is a temporary routine to triangulate the 
-         !default walls (bounding box of the simulation)
-         !It will be users' burden to supply the bounding box 
-         !as stl         
-         if(DES_CONVERT_BOX_TO_FACETS) call cg_des_convert_to_facets
-         !*********************************************************************************
-         
-         CALL bin_facets_to_grid_des
-         
-         DO IJK = 1, DIMENSION_3 
-            COUNT = LIST_FACET_AT_DES(IJK)%COUNT_FACETS 
-            IF(COUNT.eq.0) DEALLOCATE(LIST_FACET_AT_DES(IJK)%FACET_LIST)
-         ENDDO
-
-         !CALL DEBUG_WRITE_GRID_FACEINFO
-         !CALL DEBUG_write_stl_from_grid_facet(WRITE_FACETS_EACH_CELL=.false.)
-
-         IF(myPE == PE_IO) THEN
-            WRITE(*,*)'Done with post processing for DISCRETE ELEMENT'
-         endif
-
-      endif  !discrete_element  
 
       CALL CPU_TIME (CPU_PP_END)
 

@@ -444,6 +444,11 @@
       DIM_FACETS_PER_CELL  = 10        !
 !</keyword>
 
+!<keyword category="cartesian grid" required="false">
+!  <description>Maximum number of STL facets per cell for des data arrays.</description>
+      MAX_FACETS_PER_CELL_DES  = 10        !
+!</keyword>
+
 
 !<keyword category="cartesian grid" required="false">
 !  <description>defines value of f_stl outside of the stl geometry. a value of 1.0 means the domain outside of the stl geometry is excluded from computation, i.e., an internal flow is computed.</description>

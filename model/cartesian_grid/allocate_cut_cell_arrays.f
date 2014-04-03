@@ -331,38 +331,17 @@
       Allocate(  V_s_CC (DIMENSION_3, DIMENSION_M) )
       Allocate(  W_s_CC (DIMENSION_3, DIMENSION_M) )
 
-
-      
       ALLOCATE(N_FACET_AT(DIMENSION_3))
       N_FACET_AT = 0
 
       ALLOCATE(LIST_FACET_AT(DIMENSION_3,DIM_FACETS_PER_CELL))
 
-      IF(DISCRETE_ELEMENT) then 
-         ALLOCATE(LIST_FACET_AT_DES(DIMENSION_3))
-         
-         DO IJK = 1, DIMENSION_3 
-            LIST_FACET_AT_DES(IJK)%COUNT_FACETS = 0 
-            ALLOCATE(LIST_FACET_AT_DES(IJK)%FACET_LIST(MAX_FACETS_PER_CELL_DES))
-         ENDDO
-         
-         ALLOCATE(NO_NEIGHBORING_FACET_DES(DIMENSION_3))
-         NO_NEIGHBORING_FACET_DES = .false. 
-      ENDIF
-         
-      
       ALLOCATE(POTENTIAL_CUT_CELL_AT(DIMENSION_3))
 
 
       Allocate(  F_AT (DIMENSION_3) )
 
       Allocate(  DWALL (DIMENSION_3) )
-
-
-
-
-
-
 
  
       RETURN
