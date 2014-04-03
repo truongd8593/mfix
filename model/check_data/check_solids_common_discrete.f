@@ -471,10 +471,30 @@
       USE geometry, only: ZLENGTH
 
       USE discretelement, only: DIMN
+
+! Flag: Use DES E-L model
+      use discretelement, only: DISCRETE_ELEMENT
       USE discretelement, only: DES_CONTINUUM_COUPLED
       USE discretelement, only: MAX_RADIUS
 
+! flag to tell if using stl represenation in discrete models 
+      USE discretelement, only: USE_STL_DES
+! flag to tell if using CG 
+      USE cutcell, only: cartesian_grid
+! flag to tell if using stl represenation in CG 
+      USE cutcell, only: use_stl 
+
       use param1, only: UNDEFINED_I
+
+!flag to force conversion of regular bounding box to 
+!triangular facets for particle-wall interactions in discrete models 
+      use discretelement, only: des_convert_box_to_facets
+
+! Flag: Use cohesion
+      use discretelement, only: USE_COHESION
+
+! Flag: Use MPPIC E-L model
+      use mfix_pic, only: MPPIC
 
       use error_manager
  
@@ -536,7 +556,7 @@
 
  1201 FORMAT('Error 1201: Illegal geometry for DEM/MPPIC. The domain ',&
          'geometry is',/'3D but DEM/MPPIC restricted to 2D (DIMN=2). ',&
-         'Please correctt the',/'mfix.dat file.')
+         'Please correct the',/'mfix.dat file.')
 
 
       IF(DES_CONTINUUM_COUPLED)THEN
@@ -554,6 +574,54 @@
          'simulation',/'depth (ZLENGTH). Please correct the mfix.dat ',&
          'file.')
 
+
+      IF(CARTESIAN_GRID.and.discrete_element.and..not.use_stl) then 
+         write(err_msg, '((A, A,/, A, /, A, /))')& 
+         'cartesian grid and discrete modeds (DEM or PIC) only', & 
+         'work with stl representation for walls', &
+         'Quadrics and polygons are no longer supported for discrete models', &
+         'Switch to STL representation for using PIC or DEM models with cartesian grid'
+         CALL FLUSH_ERR_MSG(abort = .true.)
+      endif
+
+      IF(CARTESIAN_GRID.and.USE_STL.and..not.use_stl_des) then 
+         write(err_msg, '(3(A,/))')'Detected cartesian grid using STL representation', & 
+         'USE_STL_DES either not specified or set as false in the input file', &
+         'Forcing the discrete model to use STL for particle-wall interactions as well'
+         CALL FLUSH_ERR_MSG
+         USE_STL_DES = .true.
+      endif
+      
+      IF(MPPIC.AND..NOT.USE_STL_DES) THEN 
+         write(err_msg, '(3(A,/))') & 
+         'PIC model detected but USE_STL_DES left undefined or specified as false', &
+         'Particle-wall interactions in PIC model resoved as triangle-parcel', & 
+         'Forcing USE_STL_DES to true for PIC model. Bounding box will be converted to facets.'
+         CALL FLUSH_ERR_MSG
+         USE_STL_DES = .true.
+      ENDIF
+
+
+      IF(.not.cartesian_grid.and.use_stl_des.and..not.des_convert_box_to_facets) then 
+         write(err_msg, '(3(A,/))')'USE_STL_DES detected for particle-wall interactions', & 
+         'but DES_CONVERT_BOX_TO_FACETS not set to true to convert bounding box to facets', &
+         'Set DES_CONVERT_BOX_TO_FACETS to true and re-run'         
+         CALL FLUSH_ERR_MSG(abort = .true.)
+      endif
+      
+      IF(use_stl_des.and.use_cohesion) then 
+         write(err_msg, '(3(A,/))') & 
+         'The cohesion force model has not been implemented in new', &
+         'routines for STL facet based particle-wall interactions', & 
+         'This will be restored shortly. Sorry :('
+         CALL FLUSH_ERR_MSG(abort = .true.)
+      endif
+      
+      IF(use_stl_des.and.dimn.eq.2) then 
+         write(err_msg, '(3(A,/))') & 
+         'STL based treatment of walls requires 3-D geometry;'
+         CALL FLUSH_ERR_MSG(abort = .true.)
+      endif
 
 ! Verify that there are no internal obstacles.
 !      IF(.NOT.CARTESIAN_GRID) THEN
