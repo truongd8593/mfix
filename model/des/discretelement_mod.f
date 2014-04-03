@@ -35,6 +35,8 @@
 ! Constant factor used to expand size of arrays beyond particle no.      
       DOUBLE PRECISION PARTICLES_FACTOR
 
+! Flag to turn on particle-wall interaction through triangular factes
+      LOGICAL :: USE_STL_DES 
 
 ! Start particle tracking quantities
 !----------------------------------------------------------------->>>
@@ -317,6 +319,9 @@
       DOUBLE PRECISION ETA_DES_N, ETA_N_W  !Normal
       DOUBLE PRECISION ETA_DES_T, ETA_T_W  !Tangential
 
+! Flag to use van der Hoef et al. (2006) model for adjusting the rotation of the 
+! contact plane 
+      LOGICAL :: USE_VDH_DEM_MODEL
 ! Tangential damping factors, eta_t = eta_t_factor * eta_N
       DOUBLE PRECISION DES_ETAT_FAC, DES_ETAT_W_FAC
 
