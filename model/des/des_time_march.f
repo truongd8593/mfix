@@ -133,7 +133,7 @@
                            'times'
                      ENDIF
 ! calculate forces
-                     CALL CALC_FORCE_DES
+                     CALL CALC_FORCE_DEM
 ! update particle position/velocity
                      CALL CFNEWVALUES
 ! set the flag do_nsearch before calling particle in cell (for mpi)
@@ -250,7 +250,7 @@
          
 ! communication between processors have to take place all the time;
 ! regardless of number of particles 
-         CALL CALC_FORCE_DES
+         CALL CALC_FORCE_DEM
 ! Calculate energy sources and rates of formation/consumption of
 ! solids phase species.
          CALL CALC_THERMO_DES
