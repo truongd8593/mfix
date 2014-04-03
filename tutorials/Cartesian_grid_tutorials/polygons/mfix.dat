@@ -11,7 +11,8 @@
   SPECIES_EQ            = .FALSE.    .FALSE.   !do not solve species eq
   DT_MIN =  1.0E-8
 
-  NORM_g = 1.0
+ NORM_g = 0.0
+ NORM_s = 0.0
 
 !===============================================================================
 ! Cartesian Grid - Use polygon data
@@ -65,7 +66,7 @@
 ! Gas-phase Section                                                             
  
   MU_g0 		= 1.8E-4			!constant gas viscosity
-  RO_g0			= 1.2E-3			!constant gas density
+  MW_AVG                = 29.0
 
  
 ! Solids-phase Section                                                          
@@ -87,6 +88,8 @@
   IC_EP_g(1)            =   1.0      0.40
   IC_U_g(1)             =   0.0      0.0
   IC_V_g(1)             =   0.0      0.0 
+  IC_P_g(1)             =   1.013E6  1.013E6
+  IC_T_g(1)             =   298.0    298.0
   IC_U_s(1,1)           =   0.0      0.0 
   IC_V_s(1,1)           =   0.0      0.0
 
@@ -94,14 +97,15 @@
                                                                                 
 !  Boundary Conditions Section                                                  
                    
-  BC_X_w(1)             =    0.0
-  BC_X_e(1)             =   40.0
-  BC_Y_s(1)             =   60.0
-  BC_Y_n(1)             =   60.0
+  BC_X_w(1)             =    0.0    0.0    0.0     40.0
+  BC_X_e(1)             =   40.0    0.0   40.0     40.0
+  BC_Y_s(1)             =   60.0    0.0    0.0      0.0
+  BC_Y_n(1)             =   60.0   60.0    0.0     60.0
+ 
+  BC_TYPE(1)            =   'PO'   'NSW'  'NSW'   'NSW'
 
-  BC_TYPE(1)            =   'PO'
-
-  BC_P_g(1)             = 0.0
+  BC_P_g(1)             =   1.013E6
+  BC_T_g(1)             =   298.0
 
                     
 ! cut-cell boundary condition
@@ -137,18 +141,5 @@
   LEQ_PC        = 9*'NONE'
   LEQ_METHOD    = 9*2
 
-!  Sweep Direction
-
-! LEQ_SWEEP(1) = 'ISIS'
-! LEQ_SWEEP(2) = 'ISIS'
-! LEQ_SWEEP(3) = 'ISIS'
-! LEQ_SWEEP(4) = 'ISIS'
-! LEQ_SWEEP(5) = 'ISIS'
-! LEQ_SWEEP(6) = 'ISIS'
-! LEQ_SWEEP(7) = 'ISIS'
-! LEQ_SWEEP(8) = 'ISIS'
-! LEQ_SWEEP(9) = 'ISIS'
-
-! # Maximum iterations for linear solve
 
 
