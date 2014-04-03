@@ -39,7 +39,7 @@
 
       INTEGER :: LPIP_ALL(0:NUMPES-1),LORIG_ALL(0:Numpes-1), LDEL_ALL(0:Numpes-1), LREM_ALL(0:Numpes-1)
 
-      Logical :: write_vtp_files
+      Logical :: write_vtp_files, indomain
 ! Initialize the error manager.
       
       WRITE_VTP_FILES = .true. 
@@ -67,7 +67,8 @@
               'Deleting particles found outside the domain'
          call flush_err_msg(header = .false., footer = .false.)
 
-         IF(WRITE_VTP_FILES) CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("BEFORE_DELETION")
+         indomain = .true. 
+         IF(WRITE_VTP_FILES) CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("BEFORE_DELETION", indomain)
 
          IF(MPPIC) THEN 
             write(err_msg, '(A)') 'Now Marking particles to be deleted'
@@ -85,7 +86,10 @@
          write(err_msg, '(A)') 'Finished marking particles to be deleted'
          call flush_err_msg(header = .false., footer = .false.)
 
-         IF(WRITE_VTP_FILES) CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("AFTER_DELETION")
+         IF(WRITE_VTP_FILES) CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("AFTER_DELETION", indomain)
+
+         indomain = .false. 
+         IF(WRITE_VTP_FILES) CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("DELETED", indomain)
 
       ENDIF
 
@@ -301,7 +305,7 @@
       USE discretelement, only: dimn
       
       USE cutcell, only : cut_cell_at
-      USE softspring_funcs_cutcell
+      USE mppic_wallbc
       USE indices
       USE geometry 
       USE compar
@@ -327,23 +331,24 @@
       
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("MARK_PARTS_TOBE_DEL_PIC_STL")
-
       part => orig_part_list 
       DO WHILE (ASSOCIATED(part))
          DELETE_PART = .false.
          IJK = part%cell(4)
-         
-         IF(FLUID_AT(IJK).and.(.not.CUT_CELL_AT(IJK))) THEN
-          !Since checking if a particle is on other side of a triangle is tricky, 
-          !for safety, initially remove all the particles in the cut-cell.
-          !now cut-cell and actualy geometry could be off, so this might not work
-          !very robustly. 
-            !do nothing 
-          ELSE 
-             DELETE_PART = .true.
-          ENDIF
-          if(delete_part) part%indomain = .false. 
-          part => part%next 
+         IF(part%indomain) THEN
+            !Only look for particles that are in domain
+            !Particles in dead cells have already been flagged
+            !as outside of the domain in BIN_PARTICLES_TO_CELL
+
+            IF(FLUID_AT(IJK)) then 
+               CALL CHECK_IF_PARCEL_OVELAPS_STL(part%position(1:dimn), & 
+                    part%cell(1:4), DELETE_PART)            
+            ELSE 
+               DELETE_PART = .true.
+            ENDIF
+         ENDIF
+         if(delete_part) part%indomain = .false. 
+         part => part%next 
        ENDDO
        END SUBROUTINE MARK_PARTS_TOBE_DEL_PIC_STL
 
@@ -1048,7 +1053,7 @@
                         
                         COMP_PARTS(M) = IC_PIC_CONST_NPC(ICV,M)
                         IF(CUT_CELL_AT(IJK)) COMP_PARTS(M) = &
-                             INT(VOLIJK*real(COMP_PARTS(M))/VOLIJK_UNCUT)
+                             MAX(1,INT(VOLIJK*real(COMP_PARTS(M))/VOLIJK_UNCUT))
                         
                         STAT_WT = REAL_PARTS(M)/REAL(COMP_PARTS(M))
                         
@@ -1261,7 +1266,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE DBG_WRITE_PART_VTP_FILE_FROM_LIST(part_fname)
+      SUBROUTINE DBG_WRITE_PART_VTP_FILE_FROM_LIST(part_fname, writeindomain)
       USE run
       USE param1
       USE discretelement, only : dimn, s_time
@@ -1281,6 +1286,7 @@
 
       Implicit none 
       CHARACTER (LEN=*), intent(in) :: part_fname
+      logical , intent(in) :: writeindomain
       !facet id and particle id 
       Integer ::  vtp_unit , i,j,k,l, nparts, pvd_unit, ipe
       CHARACTER*100 :: vtp_fname, pvd_fname 
@@ -1303,7 +1309,9 @@
       nparts = 0 
       part => orig_part_list 
       DO WHILE (ASSOCIATED(part))
-         if(part%INDOMAIN) then 
+         if(part%INDOMAIN.and.writeindomain) then 
+            nparts = nparts + 1 
+         elseif(.not.part%INDOMAIN.and..not.writeindomain) then 
             nparts = nparts + 1 
          endif
          part => part%next
@@ -1367,7 +1375,9 @@
       '<DataArray type="Float32" Name="Diameter" format="ascii">'
       part => orig_part_list 
       DO WHILE (ASSOCIATED(part))
-         if(part%INDOMAIN) then  
+         if(part%INDOMAIN.and.writeindomain) then  
+            write (vtp_unit,"(15x,es12.6)") (real(2.d0*part%rad))
+         elseif(.not.part%INDOMAIN.and..not.writeindomain) then
             write (vtp_unit,"(15x,es12.6)") (real(2.d0*part%rad))
          endif
          part => part%next
@@ -1382,7 +1392,10 @@
       if(dimn.eq.2) then
          part => orig_part_list 
          DO WHILE (ASSOCIATED(part))
-            if(part%INDOMAIN) then 
+            if(part%INDOMAIN.and.writeindomain) then 
+               write (vtp_unit,"(15x,3(es13.6,3x))")&
+               (real(part%velocity(k)),k=1,dimn),vel_w
+            elseif(.not.part%INDOMAIN.and..not.writeindomain) then 
                write (vtp_unit,"(15x,3(es13.6,3x))")&
                (real(part%velocity(k)),k=1,dimn),vel_w
             endif
@@ -1392,9 +1405,12 @@
       else                      ! 3d 
          part => orig_part_list 
          DO WHILE (ASSOCIATED(part))
-            if(part%INDOMAIN) then 
+            if(part%INDOMAIN.and.writeindomain) then 
                write (vtp_unit,"(15x,3(es13.6,3x))")&
-               (real(part%velocity(k)),k=1,dimn)
+                    (real(part%velocity(k)),k=1,dimn)
+            elseif(.not.part%INDOMAIN.and..not.writeindomain) then 
+               write (vtp_unit,"(15x,3(es13.6,3x))")&
+                    (real(part%velocity(k)),k=1,dimn)
             endif
             part => part%next
          ENDDO
@@ -1413,9 +1429,12 @@
 
          part => orig_part_list 
          DO WHILE (ASSOCIATED(part))
-            if(part%INDOMAIN) then 
+            if(part%INDOMAIN.and.writeindomain) then 
                write (vtp_unit,"(15x,3(es13.6,3x))")&
                (real(part%position(k)),k=1,dimn),pos_z 
+            elseif(.not.part%INDOMAIN.and..not.writeindomain) then 
+               write (vtp_unit,"(15x,3(es13.6,3x))")&
+                    (real(part%position(k)),k=1,dimn),pos_z 
             endif
             part => part%next
          ENDDO
@@ -1423,9 +1442,12 @@
          
          part => orig_part_list 
          DO WHILE (ASSOCIATED(part))
-            if(part%INDOMAIN) then 
+            if(part%INDOMAIN.and.writeindomain) then 
                write (vtp_unit,"(15x,3(es13.6,3x))")&
-               (real(part%position(k)),k=1,dimn) 
+               (real(part%position(k)),k=1,dimn)
+            elseif(.not.part%INDOMAIN.and..not.writeindomain) then 
+               write (vtp_unit,"(15x,3(es13.6,3x))")&
+                    (real(part%position(k)),k=1,dimn) 
             endif
 
             part => part%next
@@ -1452,241 +1474,4 @@
       CALL FINL_ERR_MSG
       END SUBROUTINE  DBG_WRITE_PART_VTP_FILE_FROM_LIST
 
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-! Subroutine : writeic
-! Purpose    : write the initial position and velocity of the particles 
-!
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
-      SUBROUTINE writeic
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      use compar 
-      use mpi_utility 
-      USE discretelement
-      use desmpi
-      use cdist 
-      IMPLICIT NONE
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-      INTEGER:: NP,lunit,li,lparcnt,lcurpar
-      integer :: lproc,llocalcnt,lglocnt,lgathercnts(0:numpes-1)
-      character(30) :: lfilename
-      double precision,dimension(:,:),allocatable :: ltemparray
-!-----------------------------------------------
-
-! based on distributed or single IO open the input file
-      WRITE(*,*) 'WRITING IC.dat'
-      lunit = 25 
-      if (bdist_io) then 
-         write(lfilename,'("ic_",I4.4,".dat")')mype
-         open(unit=lunit, file=lfilename, form="formatted")
-      else 
-         if(mype.eq.pe_io) then  
-            lfilename= "ic.dat"
-            open(unit=lunit, file=lfilename, form="formatted")
-         endif 
-      endif  
-
-! Write the information      
-!----------------------------------------------------------------->>>      
-
-      if (bdist_io) then 
-         lparcnt = 1 
-         do lcurpar = 1,pip
-            if(lparcnt.gt.pip) exit
-            if(.not.pea(lcurpar,1)) cycle 
-            lparcnt = lparcnt+1
-            if(pea(lcurpar,4)) cycle 
-            write(lunit,'(10(2x,es12.5))') (des_pos_new(lcurpar,li),li=1,dimn),&
-            des_radius(lcurpar),ro_sol(lcurpar), (des_vel_new(lcurpar,li),li=1,dimn)
-         enddo
-
-!-----------------------------------------------------------------<<<
-      else   ! else branch if not bdist_IO
-!----------------------------------------------------------------->>>
-
-! set parameters required for gathering info at PEIO and write as single file   
-         lglocnt = 10
-         llocalcnt = pip - ighost_cnt 
-         call global_sum(llocalcnt,lglocnt) 
-         allocate (ltemparray(lglocnt,2*dimn+2)) 
-         allocate (dprocbuf(llocalcnt),drootbuf(lglocnt))
-         igath_sendcnt = llocalcnt 
-         lgathercnts = 0
-         lgathercnts(mype) = llocalcnt
-         call global_sum(lgathercnts,igathercnts)
-         idispls(0) = 0 
-         do lproc = 1,numpes-1 
-            idispls(lproc) = idispls(lproc-1) + igathercnts(lproc-1)  
-         end do 
-         do li = 1,dimn 
-            call des_gather(des_pos_new(:,li))
-            if(mype.eq.pe_io) ltemparray(1:lglocnt,li) = drootbuf(1:lglocnt)
-         end do 
-         do li = 1,dimn 
-            call des_gather(des_vel_new(:,li))
-            if(mype.eq.pe_io)ltemparray(1:lglocnt,dimn+li) = drootbuf(1:lglocnt)
-         end do 
-         call des_gather(des_radius)
-         if(mype.eq.pe_io)ltemparray(1:lglocnt,2*dimn+1) = drootbuf(1:lglocnt)
-         call des_gather(ro_sol)
-         if(mype.eq.pe_io)ltemparray(1:lglocnt,2*dimn+2) = drootbuf(1:lglocnt)
-         if (mype.eq.pe_io) then  
-            do lcurpar = 1,lglocnt
-               write(lunit,'(10(2x,es12.5))') (ltemparray(lcurpar,li),li=1,2*dimn+2)
-            enddo
-         end if 
-         deallocate(ltemparray)
-         deallocate(dprocbuf,drootbuf)
-
-      endif   ! end if/else bdist_io
-!-----------------------------------------------------------------<<<
-
-      if(bdist_io .or. mype.eq.pe_io) close(lunit)
-
-      RETURN
-      END SUBROUTINE writeic
-
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!
-!      
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-      SUBROUTINE init_particles_jn
-      USE randomno
-      USE discretelement
-      USE constant 
-      USE compar 
-      USE geometry
-      IMPLICIT NONE 
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-      INTEGER I, J, K, L
-      LOGICAL FILE_EXIST
-      REAL*8 :: umf0(dimn), rsf(DIMN, DIMN)
-! Quantities for LE BC      
-! local variable for shear direction
-      CHARACTER*4 SHEAR_DIR      
-! shear rate
-      DOUBLE PRECISION SHEAR_RATE
-! distance between shear boundaries      
-      DOUBLE PRECISION SHEAR_LENGTH
-! temporary variable - velocity of particle based on position between
-! shearing boundaries and shear rate
-      DOUBLE PRECISION TMP_VEL
-! indices for position and velocity
-      INTEGER POSI, VELI
-! number of total nodes
-      INTEGER NNODES      
-!-----------------------------------------------      
-
-      WRITE(*,'(3X,A)') '---------- START INIT_PARTICLES_JN ---------->'
-     
-      IF (.NOT.DES_LE_BC) THEN
-         WRITE(*,'(5X,A)') 'Initializing normal velocity distribution:'
-         WRITE(*,'(5X,A,ES17.8,A,ES17.8)') 'mean = ', pvel_mean,&
-            ' and standard deviation = ', PVEL_StDev
-      ELSE
-         SHEAR_DIR = TRIM(DES_LE_SHEAR_DIR)
-         IF(SHEAR_DIR.EQ.'DUDY') THEN
-            SHEAR_LENGTH = YLENGTH
-            POSI = 2
-            VELI = 1
-         ELSEIF(SHEAR_DIR.EQ.'DWDY') THEN
-            SHEAR_LENGTH = YLENGTH
-            POSI = 2
-            VELI = 3
-         ELSEIF(SHEAR_DIR.EQ.'DVDX') THEN
-            SHEAR_LENGTH = XLENGTH
-            POSI = 1
-            VELI = 2
-         ELSEIF(SHEAR_DIR.EQ.'DWDX') THEN
-            SHEAR_LENGTH = XLENGTH
-            POSI = 1
-            VELI = 3
-         ELSEIF(SHEAR_DIR.EQ.'DUDZ') THEN
-            SHEAR_LENGTH = ZLENGTH 
-            POSI = 3
-            VELI = 1
-         ELSEIF(SHEAR_DIR.EQ.'DVDZ') THEN
-            SHEAR_LENGTH = ZLENGTH 
-            POSI = 3
-            VELI = 2
-         ENDIF  
-         SHEAR_RATE =  (2.d0*DES_LE_REL_VEL)/SHEAR_LENGTH
-         pvel_mean = 0.0d0
-         PVEL_StDev = DABS(SHEAR_RATE)
-         WRITE(*,'(5X,A,A)') 'Setting up velocity profile consistent',&
-            'with shear'
-         WRITE(*,'(5X,A,ES17.8,A,ES17.8)') 'mean = ', pvel_mean,&
-            ' and standard deviation = ', PVEL_StDev
-      ENDIF
-!-----------------------------------------------      
-
-
-      DO J=1,DIMN
-         umf0(j)=pvel_mean
-         DO I=1,DIMN
-            IF(I.EQ.J) THEN
-               rsf(I,J)=PVEL_StDev
-            ELSE
-               rsf(I,J)=0.0
-            ENDIF
-         ENDDO
-         WRITE(*,'(5X,A,I5,2X,A)') 'FOR DIRECTION= ', J,&
-            ' where (1=X,2=Y,3=Z):   '
-         CALL nor_rno(DES_VEL_OLD(1:PARTICLES,J),umf0(J),rsf(J,J))
-      ENDDO
-
-
-! Adjust initial condition: change position and velocity according to
-! shear direction and rate
-      IF (DES_LE_BC) THEN
-         DO L = 1, PARTICLES
-            DES_VEL_OLD(L,VELI) = SHEAR_RATE*DES_POS_OLD(L,POSI)-&
-               DES_LE_REL_VEL
-         ENDDO
-      ENDIF
-      
-      DES_VEL_NEW(:,:) = DES_VEL_OLD(:,:)
-
-! The writing of files below needs to be updated for MPI case 
-! updating/writing initial particle configuration files      
-      NNODES = NODESI*NODESJ*NODESK
-      IF(NNODES.GT.1)   RETURN
-
-      IF (GENER_PART_CONFIG) THEN
-         INQUIRE(FILE='particle_gener_conf.dat',exist=FILE_EXIST)
-         IF (FILE_EXIST) THEN
-            OPEN(UNIT=24,FILE='particle_gener_conf.dat',&
-                 STATUS='REPLACE')
-            DO L = 1, PARTICLES
-               WRITE(24,'(10(X,ES12.5))')&
-                  (DES_POS_OLD(L,K),K=1,DIMN), DES_RADIUS(L),&
-                  RO_Sol(L), (DES_VEL_OLD(L,K),K=1,DIMN) 
-            ENDDO
-            CLOSE(24)
-         ENDIF
-      ELSE
-         OPEN(UNIT=24,FILE='particle_input2.dat',&
-              STATUS='REPLACE')
-         DO L = 1, PARTICLES
-            WRITE(24,'(10(X,ES15.5))')&
-               (DES_POS_OLD(L,K),K=1,DIMN), DES_RADIUS(L),&
-               RO_Sol(L), (DES_VEL_OLD(L,K),K=1,DIMN) 
-         ENDDO
-         CLOSE(24)
-      ENDIF
-
-      WRITE(*,'(3X,A)') '<---------- END INIT_PARTICLES_JN ----------'
-
-      RETURN
-      END SUBROUTINE init_particles_jn
-      
 
