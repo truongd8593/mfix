@@ -96,5 +96,8 @@
 ! Face centered z-velocity required by PIC model. Not using the U_s arrays anymore
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PIC_W_S
 
+!                      Solids pressure as a result of granular motion
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: PIC_P_s 
+
       end MODULE MFIX_PIC
 
