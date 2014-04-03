@@ -41,10 +41,6 @@
 ! Include statement functions
 !-----------------------------------------------      
       INCLUDE 'function.inc'
-!-----------------------------------------------
-!Allocate the DES arrays dimensioned by Eulerian grid parameters 
-
-      CALL DES_ALLOCATE_ARRAYS_EULERIAN_GEOM
 
       IF(RUN_TYPE == 'NEW' .and. particles /= 0) THEN ! Fresh run
 
@@ -68,9 +64,7 @@
       call desgrid_init 
       call desmpi_init       
 
-      !if use_stl, then don't call the des_wall_bc_preprocssing as it is based on cut-cell 
-      !treatment. For MPPIC, still call it for the time being but it will also be removed later on
-      IF(MPPIC.OR.(CARTESIAN_GRID.AND..NOT.USE_STL))  CALL DES_WALLBC_PREPROCSSING 
+     
 
       IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(1X,A)')&
          '---------- START MAKE_ARRAYS_DES ---------->'
@@ -225,7 +219,6 @@
             WRITE(*,'(A40, 2x, 2(2x,g17.8))') 'DTSOLID SET TO ', DTSOLID
          ENDIF
 
-         CNP_ARRAY = ZERO 
       ENDIF
 
 
