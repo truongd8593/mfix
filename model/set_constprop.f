@@ -37,7 +37,7 @@
 !-----------------------------------------------
 ! indices      
       INTEGER :: IJK, M, N, I, J
-      DOUBLE PRECISION old_value, DP_TMP(MMAX)
+      DOUBLE PRECISION :: old_value, DP_TMP(MMAX)
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -102,10 +102,11 @@
             C_PG(IJK) = ZERO 
             MW_MIX_G(IJK) = ZERO 
          ELSE
-! Fluid and inflow/outlfow cells: FLAG < 100
+! Fluid and inflow/outflow cells: FLAG < 100
             IF (RO_G0 /= UNDEFINED) RO_G(IJK) = RO_G0 
             IF (C_PG0 /= UNDEFINED) C_PG(IJK) = C_PG0 
             IF (MW_AVG /= UNDEFINED) MW_MIX_G(IJK) = MW_AVG 
+
 ! Strictly fluid cells: FLAG = 1
             IF(FLUID_AT(IJK) .OR. USE_MMS) THEN
                IF (MU_G0 /= UNDEFINED) THEN
@@ -114,9 +115,20 @@
                   LAMBDA_GT(IJK) = -(2.0d0/3.0d0)*MU_G0
                ENDIF
                IF (K_G0 /= UNDEFINED) K_G(IJK) = K_G0 
-               IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = DIF_G0 
+               IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = DIF_G0
+            ELSE
+! ONLY inflow/outflow cells: FLAG .NE. 1 and FLAG < 100
+! initialize transport coefficients to zero in inflow/outflow cells
+               IF (MU_G0 /= UNDEFINED) THEN
+                  MU_G(IJK) = ZERO
+                  MU_GT(IJK) = ZERO
+                  LAMBDA_GT(IJK) = ZERO
+               ENDIF
+               IF (K_G0 /= UNDEFINED) K_G(IJK) = ZERO
+               IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = ZERO
             ENDIF
          ENDIF 
+
       ENDDO 
 
 
@@ -124,7 +136,6 @@
          DO IJK = ijkstart3, ijkend3
 ! All wall cells: FLAG >= 100
             IF (WALL_AT(IJK) .AND. .NOT.USE_MMS) THEN 
-
                P_S(IJK,M) = ZERO 
                MU_S(IJK,M) = ZERO 
                LAMBDA_S(IJK,M) = ZERO 
@@ -134,12 +145,13 @@
                D_p(IJK,M) = ZERO
                RO_S(IJK,M) = ZERO
             ELSE
-! Fluid and inflow/outlfow cells: FLAG < 100
+! Fluid and inflow/outflow cells: FLAG < 100
                IF (RO_S0(M) /= UNDEFINED) RO_S(IJK,M) = RO_S0(M)
                IF (C_PS0 /= UNDEFINED) C_PS(IJK,M) = C_PS0 
                IF (D_P0(M) /= UNDEFINED) D_P(IJK,M) = D_P0(M)
+
 ! Strictly fluid cells: FLAG = 1
-               IF (FLUID_AT(IJK) .OR. USE_MMS) THEN
+               IF(FLUID_AT(IJK) .OR. USE_MMS) THEN
                   IF (MU_S0 /= UNDEFINED) THEN 
                      P_S(IJK,M) = ZERO 
                      MU_S(IJK,M) = MU_S0 
@@ -148,6 +160,17 @@
                   ENDIF 
                   IF (K_S0 /= UNDEFINED) K_S(IJK,M) = K_S0 
                   IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
+               ELSE
+! ONLY inflow/outflow cells: FLAG .NE. 1 and FLAG < 100
+! initialize transport coefficients to zero in inflow/outflow cells
+                  IF (MU_S0 /= UNDEFINED) THEN 
+                     P_S(IJK,M) = ZERO 
+                     MU_S(IJK,M) = ZERO
+                     LAMBDA_S(IJK,M) = ZERO
+                     ALPHA_S(IJK,M) = ZERO
+                  ENDIF
+                  IF (K_S0 /= UNDEFINED) K_S(IJK,M) = ZERO
+                  IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = ZERO 
                ENDIF
             ENDIF 
 
