@@ -441,6 +441,7 @@ module softspring_funcs_cutcell
       USE cutcell
       USE indices
       USE stl
+      USE compar 
       USE des_stl_functions
       Implicit none
 
@@ -455,8 +456,9 @@ module softspring_funcs_cutcell
       NEIGH_CELLS_NONNAT, &
       LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
       IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP, &
-      LOC_MAX_PIP
-
+      LOC_MAX_PIP, focus_particle 
+      
+      
       INCLUDE 'function.inc'
 
       FOCUS_PARTICLE = -1
@@ -557,7 +559,7 @@ module softspring_funcs_cutcell
       END SUBROUTINE CHECK_IF_PARTICLE_OVELAPS_STL
 
 
-      SUBROUTINE CALC_FORCE_WITH_WALL_CUTFACE_STL(PART_ID, OVERLAP_EXISTS)
+      SUBROUTINE CALC_DEM_FORCE_WITH_WALL_STL
 
       USE run
       USE param1
@@ -565,16 +567,10 @@ module softspring_funcs_cutcell
       USE geometry
       USE compar
       USE constant
-      USE cutcell
-      USE funits
       USE indices
-      USE physprop
-      USE parallel
       USE stl
       USE des_stl_functions
       Implicit none
-      INTEGER, INTENT(IN), OPTIONAL :: PART_ID
-      LOGICAL, INTENT(OUT), OPTIONAL :: OVERLAP_EXISTS
 
       INTEGER I, J,K, LL, II, IW, IDIM, IJK, PC, NF, wall_count
       DOUBLE PRECISION OVERLAP_N, OVERLAP_T, SQRT_OVERLAP, OVERLAP_PERCENT
@@ -591,37 +587,21 @@ module softspring_funcs_cutcell
       INTEGER :: COUNT_FAC, COUNT, COUNT2, list_of_cont_facets(100), &
       contact_facet_count, NEIGH_CELLS, NEIGH_CELLS_NONNAT, &
       LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
-      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP, &
-      LOC_MAX_PIP
+      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL
 
 ! local values used spring constants and damping coefficients
       DOUBLE PRECISION ETAN_DES_W, ETAT_DES_W, KN_DES_W, KT_DES_W
       INCLUDE 'function.inc'
 
-
-
       CONTACT_ALREADY_FACET = .false.
       DES_LOC_DEBUG = .false. ;      DEBUG_DES = .false.
       FOCUS_PARTICLE = -1
-
-      !When sent from main routine the loop shud go from 1, max_pip
-      !adding the capability to test for a specified particle
-      LOC_MIN_PIP = 1
-      LOC_MAX_PIP = MAX_PIP
-      if(present(part_id)) then
-         LOC_MIN_PIP = part_id
-         LOC_MAX_PIP = part_id
-      endif
-      test_overlap_and_exit = .false.
-      IF(present(OVERLAP_EXISTS)) then
-         test_overlap_and_exit = .true.
-      endif
 
       PC = 1
 
       !IF(test_overlap_and_exit) write(101,'(A, 2(2x,i6), 2x,L1)') 'min, max pip = ', LOC_MIN_PIP, LOC_MAX_PIP,NO_NEIGHBORING_FACET_DES(PIJK(part_id,4))
 
-      DO LL = LOC_MIN_PIP, LOC_MAX_PIP
+      DO LL = 1, MAX_PIP 
          IF(LL.EQ.FOCUS_PARTICLE) then
             DEBUG_DES = .TRUE.
          else
@@ -631,7 +611,7 @@ module softspring_funcs_cutcell
          ! skipping non-existent particles or ghost particles
          IF(.NOT.PEA(LL,1) .OR. PEA(LL,4)) CYCLE
 
-         IF (NO_NEIGHBORING_FACET_DES(PIJK(LL,4))) CYCLE
+         IF (NO_NEIGHBORING_FACET_DES(PIJK(LL,4))) cycle 
 
          PC = PC + 1
 
@@ -693,23 +673,23 @@ module softspring_funcs_cutcell
                      COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
                      IF(COUNT_FAC.EQ.0) CYCLE
                      distsq = zero
-                     IF(DES_POS_NEW( LL , 1) > XG_E(I)) DISTSQ = DISTSQ &
-                     + (DES_POS_NEW(LL,1)-XG_E(I))*(DES_POS_NEW(LL,1)-XG_E(I))
+                     IF(DES_POS_NEW( LL , 1) > XE(I)) DISTSQ = DISTSQ &
+                     + (DES_POS_NEW(LL,1)-XE(I))*(DES_POS_NEW(LL,1)-XE(I))
 
-                     IF(DES_POS_NEW( LL , 1) < XG_E(I) - DX(I)) DISTSQ = DISTSQ &
-                     + (XG_E(I) - DX(I) - DES_POS_NEW(LL,1))*(XG_E(I) - DX(I) - DES_POS_NEW(LL,1))
+                     IF(DES_POS_NEW( LL , 1) < XE(I) - DX(I)) DISTSQ = DISTSQ &
+                     + (XE(I) - DX(I) - DES_POS_NEW(LL,1))*(XE(I) - DX(I) - DES_POS_NEW(LL,1))
 
-                     IF(DES_POS_NEW( LL , 2) > YG_N(J)) DISTSQ = DISTSQ &
-                     + (DES_POS_NEW(LL,2)-YG_N(J))* (DES_POS_NEW(LL,2)-YG_N(J))
+                     IF(DES_POS_NEW( LL , 2) > YN(J)) DISTSQ = DISTSQ &
+                     + (DES_POS_NEW(LL,2)-YN(J))* (DES_POS_NEW(LL,2)-YN(J))
 
-                     IF(DES_POS_NEW( LL , 2) < YG_N(J) - DY(J)) DISTSQ = DISTSQ &
-                     + (YG_N(J) - DY(J) - DES_POS_NEW(LL,2))* (YG_N(J) - DY(J) - DES_POS_NEW(LL,2))
+                     IF(DES_POS_NEW( LL , 2) < YN(J) - DY(J)) DISTSQ = DISTSQ &
+                     + (YN(J) - DY(J) - DES_POS_NEW(LL,2))* (YN(J) - DY(J) - DES_POS_NEW(LL,2))
 
-                     IF(DES_POS_NEW( LL , 3) > ZG_T(K)) DISTSQ = DISTSQ &
-                     + (DES_POS_NEW(LL,3)-ZG_T(K))*(DES_POS_NEW(LL,3)-ZG_T(K))
+                     IF(DES_POS_NEW( LL , 3) > ZT(K)) DISTSQ = DISTSQ &
+                     + (DES_POS_NEW(LL,3)-ZT(K))*(DES_POS_NEW(LL,3)-ZT(K))
 
-                     IF(DES_POS_NEW( LL , 3) < ZG_T(K) - DZ(K)) DISTSQ = DISTSQ &
-                     + (ZG_T(K) - DZ(K) - DES_POS_NEW(LL,3))*(ZG_T(K) - DZ(K) - DES_POS_NEW(LL,3))
+                     IF(DES_POS_NEW( LL , 3) < ZT(K) - DZ(K)) DISTSQ = DISTSQ &
+                     + (ZT(K) - DZ(K) - DES_POS_NEW(LL,3))*(ZT(K) - DZ(K) - DES_POS_NEW(LL,3))
                      IF (DISTSQ < RADSQ) then
                         NEIGH_CELLS_NONNAT = NEIGH_CELLS_NONNAT + 1
                         NEIGH_CELLS = NEIGH_CELLS + 1
@@ -727,7 +707,9 @@ module softspring_funcs_cutcell
 
                DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
                   NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
-                  IF(CONTACT_ALREADY_FACET(NF)) CYCLE
+! Neighboring cells will share same facets. So it is important to make 
+! sure a facet is accounted only once 
+!                  IF(CONTACT_ALREADY_FACET(NF)) CYCLE
 
                   CALL ClosestPtPointTriangle(DES_POS_NEW(LL,:), &
                        VERTEX(NF, 1,:), VERTEX(NF, 2,:), VERTEX(NF, 3,:), &
@@ -740,13 +722,6 @@ module softspring_funcs_cutcell
 
                   IF(DISTSQ .GE. RADSQ) CYCLE !No overlap exists
 
-                  !Overlap detected
-                  IF(test_overlap_and_exit) then
-                  !for the special case where we only
-                  !want to test if a particle overlaps any of the walls
-                     OVERLAP_EXISTS = .true.
-                     return
-                  endif
                   DISTMOD = SQRT(DISTSQ)
                   OVERLAP_N = DES_RADIUS(LL) - DISTMOD
                   OVERLAP_PERCENT = (OVERLAP_N/DES_RADIUS(LL))*100.D0
@@ -841,7 +816,7 @@ module softspring_funcs_cutcell
       !     DES_POS_NEW(LL,:), CLOSEST_PT(:), DIST(:), DISTSIGN
 
 
-    END SUBROUTINE CALC_FORCE_WITH_WALL_CUTFACE_STL
+    END SUBROUTINE CALC_DEM_FORCE_WITH_WALL_STL
 
     SUBROUTINE write_this_facet_and_part(FID, PID)
       USE run
