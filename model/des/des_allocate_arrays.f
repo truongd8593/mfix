@@ -24,7 +24,7 @@
       USE discretelement
       Use indices
       USE geometry
-      
+
       IMPLICIT NONE 
       INTEGER :: I, J, K 
       Allocate(  XE (0:DIMENSION_I) )
@@ -71,7 +71,6 @@
          ENDDO
       ENDIF
 
-!-----------------------------------------------------------------<<<
 
       
       END SUBROUTINE DES_ALLOCATE_ARRAYS_EULERIAN_GEOM
@@ -343,13 +342,23 @@
 
          IF(.NOT.ALLOCATED(VEL_FP)) ALLOCATE(VEL_FP(NPARTICLES,DIMN))
 
-         Allocate(PS_FORCE_PIC(DIMENSION_3, DIMN))
+         Allocate(PS_FORCE_PIC(DIMENSION_3, DES_MMAX))
          ALLOCATE(DES_STAT_WT(NPARTICLES))
          ALLOCATE(DES_VEL_MAX(DIMN))
          ALLOCATE(PS_GRAD(NPARTICLES, DIMN))
          ALLOCATE(AVGSOLVEL_P(NPARTICLES, DIMN))
          ALLOCATE(EPG_P(NPARTICLES))
+
+         Allocate(PIC_U_S(DIMENSION_3, DES_MMAX))
+         Allocate(PIC_V_S(DIMENSION_3, DES_MMAX))
+         Allocate(PIC_W_S(DIMENSION_3, DES_MMAX))
+
+         Allocate(PIC_P_s (DIMENSION_3, DES_MMAX) )
 !         ALLOCATE(MPPIC_VPTAU(NPARTICLES, DIMN))
+         PIC_U_s = zero 
+         PIC_V_s = zero
+         PIC_W_s = zero 
+         PIC_P_s = zero 
       ENDIF
 
 
