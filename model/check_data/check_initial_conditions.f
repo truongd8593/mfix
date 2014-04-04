@@ -855,7 +855,7 @@
 
 ! Verify that the volume fractions sum to one.
       IF(.NOT.COMPARE(SUM_EP,ONE)) THEN
-         WRITE(ERR_MSG,1410)
+         WRITE(ERR_MSG,1410) ICV
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
