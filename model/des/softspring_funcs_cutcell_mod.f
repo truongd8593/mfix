@@ -584,13 +584,23 @@ module softspring_funcs_cutcell
 
       LOGICAL :: CONTACT_ALREADY_FACET(DIM_STL),DES_LOC_DEBUG, PARTICLE_SLIDE, &
       test_overlap_and_exit
-      INTEGER :: COUNT_FAC, COUNT, COUNT2, list_of_cont_facets(100), &
+      INTEGER :: COUNT_FAC, COUNT, COUNT2, list_of_cont_facets(200), &
       contact_facet_count, NEIGH_CELLS, NEIGH_CELLS_NONNAT, &
       LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
       IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL
 
 ! local values used spring constants and damping coefficients
       DOUBLE PRECISION ETAN_DES_W, ETAT_DES_W, KN_DES_W, KT_DES_W
+
+      !reference point and direction of the line
+      double precision, dimension(dimn) :: ref_line,  dir_line 
+      !reference point and normal of the plane
+      double precision, dimension(dimn) :: ref_plane, norm_plane
+      !line is parameterized as p = p_ref + t * dir_line, t is line_param
+      double precision :: line_t
+      !flag to tell if the orthogonal projection of sphere center to 
+      !extended plane detects an overlap 
+      LOGICAL :: ortho_proj_cut 
       INCLUDE 'function.inc'
 
       CONTACT_ALREADY_FACET = .false.
@@ -612,7 +622,7 @@ module softspring_funcs_cutcell
          IF(.NOT.PEA(LL,1) .OR. PEA(LL,4)) CYCLE
 
          IF (NO_NEIGHBORING_FACET_DES(PIJK(LL,4))) cycle 
-
+         
          PC = PC + 1
 
          IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN
@@ -701,15 +711,79 @@ module softspring_funcs_cutcell
             ENDDO
 
             CONTACT_FACET_COUNT = 0
-
+            
             DO CELL_COUNT = 1, NEIGH_CELLS
                IJK = LIST_OF_CELLS(CELL_COUNT)
 
                DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
                   NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
-! Neighboring cells will share same facets. So it is important to make 
-! sure a facet is accounted only once 
-!                  IF(CONTACT_ALREADY_FACET(NF)) CYCLE
+! Neighboring cells will share facets with same facet ID
+! So it is important to make sure a facet is checked (for speed) 
+! and accounted (for accuracy) only once 
+                  IF(CONTACT_ALREADY_FACET(NF)) CYCLE
+                  
+                  CONTACT_ALREADY_FACET(NF) = .TRUE.
+                  CONTACT_FACET_COUNT = CONTACT_FACET_COUNT + 1
+                  LIST_OF_CONT_FACETS(CONTACT_FACET_COUNT) = NF
+
+                  !Checking all the facets is time consuming due to the 
+                  !expensive separating axis test. Remove this facet from 
+                  !contention based on a simple orthogonal projection test. 
+
+                  !parametrize a line as p = p_0 + t normal 
+                  !and intersect with the triangular plane. 
+                  !if t>0, then point is on the 
+                  !non-fluid side of the plane, if the plane normal
+                  !is assumed to point toward the fluid side 
+
+
+                  line_t  = Undefined 
+                  !-undefined, because non zero values will imply the sphere center
+                  !is on the non-fluid side of the plane. Since the testing 
+                  !is with extended plane, this could very well happen even 
+                  !when the particle is well inside the domain (assuming the plane
+                  !normal points toward the fluid). See the pic below. So check
+                  !only when line_t is negative
+    
+!                            \   Solid  /
+!                             \  Side  /
+!                              \      /        
+!                               \    /
+!            Wall 1, fluid side  \  /  Wall 2, fluid side
+!                                 \/
+!                                   o particle 
+!                  line_t will be positive for wall 1 (incorrectly indicating center
+!                  is outside the domain) 
+!                  line_t will be negative for wall 2 
+!              
+!                Therefore, only stick with this test when line_t is negative and let the
+!                separating axis test take care of the other cases. 
+
+                  !Assume the orthogonal projection detects an overlap 
+                  ortho_proj_cut = .true. 
+                  
+                  ref_line(1:dimn) = des_pos_new(LL, 1:dimn)
+                  dir_line(1:dimn) = NORM_FACE(NF,1:dimn)
+                  !Since this is for checking static config, line's direction
+                  !is the same as plane's normal. For moving particles, 
+                  !the line's normal will be along the point joining new 
+                  !and old positions. 
+            
+                  norm_plane(1:dimn) = NORM_FACE(NF,1:dimn)
+                  ref_plane(1:dimn)  = VERTEX(NF, 1, 1:dimn)
+                  CALL intersectLnPlane(ref_line, dir_line, ref_plane, & 
+                       norm_plane, line_t) 
+                  !k - rad >= tol_orth, where k = -line_t, then orthogonal 
+                  !projection is false. Substituting for k
+                  !=> line_t + rad <= -tol_orth
+                  !choosing tol_orth = 0.01% of des_radius = 0.0001*des_radius 
+                  if(line_t.le.zero.and. & 
+                       (line_t+des_radius(LL).le.-0.0001d0*des_radius(LL))) ortho_proj_cut = .false. 
+                     !Orthogonal projection will detect false postitives even
+                     !when the particle does not overlap the triangle.
+                     !However, if the orthgonal projection shows no overlap, then 
+                     !that is a big fat nagative and overlaps are not possible. 
+                  if(.not.ortho_proj_cut) cycle 
 
                   CALL ClosestPtPointTriangle(DES_POS_NEW(LL,:), &
                        VERTEX(NF, 1,:), VERTEX(NF, 2,:), VERTEX(NF, 3,:), &
@@ -721,13 +795,23 @@ module softspring_funcs_cutcell
                   OVERLAP_PERCENT = ZERO
 
                   IF(DISTSQ .GE. RADSQ) CYCLE !No overlap exists
-
+                  
                   DISTMOD = SQRT(DISTSQ)
                   OVERLAP_N = DES_RADIUS(LL) - DISTMOD
                   OVERLAP_PERCENT = (OVERLAP_N/DES_RADIUS(LL))*100.D0
-                  CONTACT_ALREADY_FACET(NF) = .TRUE.
-                  CONTACT_FACET_COUNT = CONTACT_FACET_COUNT + 1
-                  LIST_OF_CONT_FACETS(CONTACT_FACET_COUNT) = NF
+                  
+                  if(.not.ortho_proj_cut) then 
+                     write(*,*) 'Orthogonal projection detected as false, but overlap', &
+                          'still detected'
+                     write(*, '(A, 3(2x, g17.8))') 'ref_line  :', ref_line
+                     write(*, '(A, 3(2x, g17.8))') 'dir_line  :', dir_line
+                     write(*, '(A, 3(2x, g17.8))') 'ref_plane :', ref_plane
+                     write(*, '(A, 3(2x, g17.8))') 'line_param:', line_t
+                     write(*, '(A, 2(2x, g17.8))') 'overlap and percent: ', overlap_n, OVERLAP_PERCENT
+                     call write_this_facet_and_part(NF, LL)
+                     read(*,*) 
+                  endif
+                     
                   !WRITE(*, '(A10, 2x,i5, 5(2x,g17.8))') 'overlap with NF',NF, overlap_n, overlap_percent
 
                   NORMAL(:) = -NORM_FACE(NF,:)
