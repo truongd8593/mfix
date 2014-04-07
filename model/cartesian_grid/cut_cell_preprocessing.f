@@ -814,7 +814,7 @@
 
          DFC = DABS(Xi-xa) ! DISTANCE FROM CORNER (NODE 7)
 
-         IF(DFC < DFC_MAX) THEN
+         IF(DFC < DFC_MAX.AND.F_AT(IMJK)/=ZERO) THEN
             IF(PRINT_WARNINGS) THEN
                WRITE(*,*)'MERGING X-INTERSECTION ALONG EDGE 7 ONTO NODE 7'
                WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
@@ -836,7 +836,7 @@
 
          DFC = DABS(Xi-xb) ! DISTANCE FROM CORNER (NODE 8)
 
-         IF(DFC < DFC_MAX) THEN
+         IF(DFC < DFC_MAX.AND.F_AT(IJK)/=ZERO) THEN
             IF(PRINT_WARNINGS) THEN
                WRITE(*,*)'MERGING X-INTERSECTION ALONG EDGE 7 ONTO NODE 8'
                WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
@@ -881,7 +881,7 @@
 
          DFC = DABS(Yi-ya) ! DISTANCE FROM CORNER (NODE 6)
 
-         IF(DFC < DFC_MAX) THEN
+         IF(DFC < DFC_MAX.AND.F_AT(IJMK)/=ZERO) THEN
             IF(PRINT_WARNINGS) THEN
                WRITE(*,*)'MERGING Y-INTERSECTION ALONG EDGE 6 ONTO NODE 6'
                WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
@@ -903,7 +903,7 @@
 
          DFC = DABS(Yi-yb) ! DISTANCE FROM CORNER (NODE 8)
 
-         IF(DFC < DFC_MAX) THEN
+         IF(DFC < DFC_MAX.AND.F_AT(IJK)/=ZERO) THEN
             IF(PRINT_WARNINGS) THEN
                WRITE(*,*)'MERGING Y-INTERSECTION ALONG EDGE 6 ONTO NODE 8'
                WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
@@ -946,7 +946,7 @@
 
             DFC = DABS(Zi-Za) ! DISTANCE FROM CORNER (NODE 4)
 
-            IF(DFC < DFC_MAX) THEN
+            IF(DFC < DFC_MAX.AND.F_AT(IJKM)/=ZERO) THEN
                IF(PRINT_WARNINGS) THEN
                   WRITE(*,*)'MERGING Z-INTERSECTION ALONG EDGE 11 ONTO NODE 4'
                   WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
@@ -969,7 +969,7 @@
 
             DFC = DABS(Zi-Zb) ! DISTANCE FROM CORNER (NODE 8)
 
-            IF(DFC < DFC_MAX) THEN
+            IF(DFC < DFC_MAX.AND.F_AT(IJK)/=ZERO) THEN
                IF(PRINT_WARNINGS) THEN
                   WRITE(*,*)'MERGING Z-INTERSECTION ALONG EDGE 11 ONTO NODE 8'
                   WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
@@ -979,6 +979,9 @@
                INTERSECT_Y(IJK)  = .FALSE.
                INTERSECT_Z(IJK)  = .FALSE.
                SNAP(IJK) = .TRUE.
+!            F_AT(IJKM) = UNDEFINED
+!            IF(F_AT(IJK)/=ZERO) SNAP(IJK) = .TRUE.
+!               F_AT(IJK) = ZERO  
 
                IF(I<=IMAX1) INTERSECT_X(IPJK) = .FALSE.
                IF(J<=JMAX1) INTERSECT_Y(IJPK) = .FALSE.
@@ -1108,7 +1111,7 @@
       INTEGER :: IJPKP,IPJKP,IPJPK
       DOUBLE PRECISION :: xa,ya,za,xb,yb,zb,xc,yc,zc,Fc
       DOUBLE PRECISION :: Xi,Yi,Zi,Xc_backup,Yc_backup,Zc_backup
-      LOGICAL :: INTERSECT_FLAG,CLIP_FLAG,INSIDE_FACET
+      LOGICAL :: INTERSECT_FLAG,CLIP_FLAG,INSIDE_FACET_a,INSIDE_FACET_b
 
       DOUBLE PRECISION :: X1,X2,Y1,Y2,Z1,Z2
 
@@ -1142,7 +1145,6 @@
       Zint = UNDEFINED
 
       F_AT = UNDEFINED
-
 
       SELECT CASE (TYPE_OF_CELL)
          CASE('SCALAR')
@@ -1309,46 +1311,24 @@
 
 ! Check if intersection occurs at corners
 
-                  CALL IS_POINT_INSIDE_FACET(xa,ya,za,N,INSIDE_FACET)
+                  CALL IS_POINT_INSIDE_FACET(xa,ya,za,N,INSIDE_FACET_a)
 
-                  IF(INSIDE_FACET) THEN   ! corner intersection at node 7
+                  IF(INSIDE_FACET_a) THEN   ! corner intersection at node 7
 
                      F_AT(IMJK) = ZERO
 
-!                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
                      IF(TRIM(TYPE_OF_CELL).eq.'SCALAR')  CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
-
-!                     N8(1) = xb-xa
-!                     N8(2) = yb-ya
-!                     N8(3) = zb-za
-
-!                     dotproduct = DOT_PRODUCT(N8,NORM_FACE(N,:)) 
-
-!                     IF (DABS(dotproduct)>TOL_F) THEN
-!                        IF (F_AT(IJK)==UNDEFINED) F_AT(IJK) = -dotproduct
-!                     ENDIF
 
                   ENDIF
 
 
-                  CALL IS_POINT_INSIDE_FACET(xb,yb,zb,N,INSIDE_FACET)
+                  CALL IS_POINT_INSIDE_FACET(xb,yb,zb,N,INSIDE_FACET_b)
 
-                  IF(INSIDE_FACET) THEN   ! corner intersection at node 8
+                  IF(INSIDE_FACET_b) THEN   ! corner intersection at node 8
 
                      F_AT(IJK) = ZERO
 
-!                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
                      IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
-
-!                     N7(1) = xa-xb
-!                     N7(2) = ya-yb
-!                     N7(3) = za-zb
-
-!                     dotproduct = DOT_PRODUCT(N7,NORM_FACE(N,:)) 
-
-!                     IF (DABS(dotproduct)>TOL_F) THEN
-!                        IF (F_AT(IMJK)==UNDEFINED) F_AT(IMJK) = -dotproduct
-!                     ENDIF
 
                   ENDIF
 
@@ -1356,23 +1336,12 @@
 
 ! Check intersection within line 7-8, excluding corners
 
-
                   INTERSECT_FLAG = .FALSE.
 
-                  IF(.NOT.INTERSECT_X(IJK)) CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
-
+                  IF(.NOT.(INTERSECT_X(IJK).OR.INSIDE_FACET_a.OR.INSIDE_FACET_b)) CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
 
                   IF(INTERSECT_FLAG) THEN
 
-                     IF(INTERSECT_X(IJK)) THEN
-
-                        IF(DABS(Xint(IJK)-xc)>TOL_STL) THEN
-
-                           INTERSECT_X(IJK) = .FALSE.        ! Ignore intersections when two intersections are detected on the same edge
-
-                        ENDIF                  
-
-                     ELSE
 
                         INTERSECT_X(IJK) = .TRUE.
                         Xint(IJK) = xc 
@@ -1392,18 +1361,12 @@
                         IF(DABS(F_AT(IJK))>TOL_F)   F_AT(IJK) = -DOT_PRODUCT(N8,NORM_FACE(N,:))  
 
 
-!                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-!                        IF(JP<=J2) BC_ID(IJPK) = BC_ID_STL_FACE(N)
-!                        IF(KP<=K2) BC_ID(IJKP) = BC_ID_STL_FACE(N) 
-!                        IF(JP<=J2.AND.KP<=K2)BC_ID(IJPKP) = BC_ID_STL_FACE(N)  
-
                         IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
                         IF(JP<=J2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPK,N) 
                         IF(KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJKP,N) 
                         IF(JP<=J2.AND.KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPKP,N)
 
 
-                     ENDIF
 
                   ENDIF
 
@@ -1428,48 +1391,15 @@
 
 ! Check if intersection occurs at corners
 
-                  CALL IS_POINT_INSIDE_FACET(xa,ya,za,N,INSIDE_FACET)
+                  CALL IS_POINT_INSIDE_FACET(xa,ya,za,N,INSIDE_FACET_a)
 
-                  IF(INSIDE_FACET) THEN   ! corner intersection at node 6
+                  IF(INSIDE_FACET_a) THEN   ! corner intersection at node 6
 
                      F_AT(IJMK) = ZERO
 
-!                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
                      IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
 
-!                     N8(1) = xb-xa
-!                     N8(2) = yb-ya
-!                     N8(3) = zb-za
-
-!                     dotproduct = DOT_PRODUCT(N8,NORM_FACE(N,:)) 
-
-!                     IF (DABS(dotproduct)>TOL_F) THEN
-!                        IF (F_AT(IJK)==UNDEFINED) F_AT(IJK) = -dotproduct
-!                     ENDIF
-
                   ENDIF
-
-
-!                  CALL IS_POINT_INSIDE_FACET(xb,yb,zb,N,INSIDE_FACET)
-
-!                  IF(INSIDE_FACET) THEN   ! corner intersection at node 8
-
-!                     F_AT(IJK) = ZERO
-
-!                     BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-!                     IF(TRIM(TYPE_OF_CELL).eq.'SCALAR')  CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
-
-!                     N6(1) = xa-xb
-!                     N6(2) = ya-yb
-!                     N6(3) = za-zb
-
-!                     dotproduct = DOT_PRODUCT(N6,NORM_FACE(N,:)) 
-
-!                     IF (DABS(dotproduct)>TOL_F) THEN
-!                        IF (F_AT(IJMK)==UNDEFINED) F_AT(IJMK) = -dotproduct
-!                     ENDIF
-
-!                  ENDIF
 
 
 
@@ -1479,20 +1409,10 @@
 
                   INTERSECT_FLAG = .FALSE.
 
-                  IF(.NOT.INTERSECT_Y(IJK)) CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                  IF(.NOT.(INTERSECT_Y(IJK).OR.INSIDE_FACET_a.OR.INSIDE_FACET_b)) CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
 
 
                   IF(INTERSECT_FLAG) THEN
-
-                     IF(INTERSECT_Y(IJK)) THEN
-
-                        IF(DABS(Yint(IJK)-yc)>TOL_STL) THEN
-
-                           INTERSECT_Y(IJK) = .FALSE. ! Ignore intersections when two intersections are detected on the same edge
-
-                        ENDIF
-
-                     ELSE
 
 
                         INTERSECT_Y(IJK) = .TRUE.
@@ -1513,17 +1433,10 @@
                         IF(DABS(F_AT(IJK))>TOL_F)   F_AT(IJK) = -DOT_PRODUCT(N8,NORM_FACE(N,:))  
 
 
-!                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-!                        IF(IP<=I2) BC_ID(IPJK) = BC_ID_STL_FACE(N) 
-!                        IF(KP<=K2) BC_ID(IJKP) = BC_ID_STL_FACE(N)
-!                        IF(IP<=I2.AND.KP<=K2)BC_ID(IPJKP) = BC_ID_STL_FACE(N) 
-
                         IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
                         IF(IP<=I2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJK,N) 
                         IF(KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJKP,N) 
                         IF(IP<=I2.AND.KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJKP,N)
-
-                     ENDIF
 
                   ENDIF
 
@@ -1544,48 +1457,16 @@
 
 ! Check if intersection occurs at corners
 
-                     CALL IS_POINT_INSIDE_FACET(xa,ya,za,N,INSIDE_FACET)
+                     CALL IS_POINT_INSIDE_FACET(xa,ya,za,N,INSIDE_FACET_a)
 
-                     IF(INSIDE_FACET) THEN   ! corner intersection at node 4
+                     IF(INSIDE_FACET_a) THEN   ! corner intersection at node 4
 
                         F_AT(IJKM) = ZERO
 
-!                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
                         IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
-
-!                        N8(1) = xb-xa
-!                        N8(2) = yb-ya
-!                        N8(3) = zb-za
-
-!                        dotproduct = DOT_PRODUCT(N8,NORM_FACE(N,:)) 
-
-!                        IF (DABS(dotproduct)>TOL_F) THEN
-!                           IF (F_AT(IJK)==UNDEFINED) F_AT(IJK) = -dotproduct
-!                        ENDIF
 
                      ENDIF
 
-
-!                     CALL IS_POINT_INSIDE_FACET(xb,yb,zb,N,INSIDE_FACET)
-
-!                     IF(INSIDE_FACET) THEN   ! corner intersection at node 8
-
-!                        F_AT(IJK) = ZERO
-
-!                        BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-!                        IF(TRIM(TYPE_OF_CELL).eq.'SCALAR')  CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
-
-!                        N4(1) = xa-xb
-!                        N4(2) = ya-yb
-!                        N4(3) = za-zb
-
-!                        dotproduct = DOT_PRODUCT(N4,NORM_FACE(N,:)) 
-
-!                        IF (DABS(dotproduct)>TOL_F) THEN
-!                           IF (F_AT(IJKM)==UNDEFINED) F_AT(IJKM) = -dotproduct
-!                        ENDIF
-
-!                     ENDIF
 
 
 
@@ -1594,20 +1475,9 @@
 
                      INTERSECT_FLAG = .FALSE. 
 
-                     IF(.NOT.INTERSECT_Z(IJK)) CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                  IF(.NOT.(INTERSECT_Z(IJK).OR.INSIDE_FACET_a.OR.INSIDE_FACET_b)) CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
 
                      IF(INTERSECT_FLAG) THEN
-
-                        IF(INTERSECT_Z(IJK)) THEN
-
-                           IF(DABS(Zint(IJK)-zc)>TOL_STL) THEN
-
-                              INTERSECT_Z(IJK) = .FALSE. ! Ignore intersections when two intersections are detected on the same edge
-
-                           ENDIF
-
-                        ELSE
-
 
                            INTERSECT_Z(IJK) = .TRUE.
                            Zint(IJK) = zc 
@@ -1628,17 +1498,11 @@
                            IF(DABS(F_AT(IJK))>TOL_F)   F_AT(IJK) = -DOT_PRODUCT(N8,NORM_FACE(N,:))  
 
 
-!                           BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-!                           IF(IP<=I2)  BC_ID(IPJK) = BC_ID_STL_FACE(N)    
-!                           IF(JP<=J2) BC_ID(IJPK) = BC_ID_STL_FACE(N)  
-!                           IF(IP<=I2.AND.JP<=J2) BC_ID(IPJPK) = BC_ID_STL_FACE(N) 
                            
                            IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
                            IF(IP<=I2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJK,N) 
                            IF(JP<=J2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPK,N) 
                            IF(IP<=I2.AND.JP<=J2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJPK,N)
-
-                        ENDIF
 
                      ENDIF
 
@@ -1662,8 +1526,6 @@
 
       CURRENT_F = UNDEFINED
 
-
-
 ! Overwrite small values to set them to zero
 
       DO IJK = IJKSTART3, IJKEND3
@@ -1677,7 +1539,33 @@
 
 
       call send_recv(F_AT,2)
-
+      call send_recv(Xint,2)
+      call send_recv(Yint,2)
+      call send_recv(Zint,2)
+      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_X,2)
+      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_Y,2)
+      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_Z,2)            
+!======================================================================
+!  Clean-up intersection flags in preparaton of small cells removal
+!======================================================================
+            
+      DO IJK = IJKSTART3, IJKEND3
+                 
+!        IF(INTERIOR_CELL_AT(IJK)) THEN
+                    
+!            IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL CLEAN_INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
+           
+           IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL CLEAN_INTERSECT(IJK,'SCALAR',Xint(IJK),Yint(IJK),Zint(IJK))
+                       
+!        ENDIF
+                   
+      END DO
+                   
+      call send_recv(F_AT,2)
+      call SEND_RECEIVE_1D_LOGICAL(SNAP,2)
+      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_X,2)
+      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_Y,2)
+      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_Z,2)
 
       SELECT CASE (CAD_PROPAGATE_ORDER)  
 
@@ -2019,7 +1907,7 @@
 
 
 
-!      call send_recv(F_AT,2)
+      call send_recv(F_AT,2)
 
       RETURN
       

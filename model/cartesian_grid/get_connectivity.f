@@ -109,16 +109,13 @@
             ENDIF
 
 
-            IF(.NOT.(USE_STL.OR.USE_MSH)) THEN
-
-               IF(SNAP(IJK_OF_NODE(NODE))) THEN
-                  CORNER_INTERSECTION(NODE) = .TRUE.
-                  NUMBER_OF_CORNER_INTERSECTIONS = NUMBER_OF_CORNER_INTERSECTIONS + 1
-                  N_NODES = N_NODES + 1
-                  CONNECT(IJK,N_NODES) = IJK_OF_NODE(NODE)
-               ENDIF
-
+            IF(SNAP(IJK_OF_NODE(NODE))) THEN
+               CORNER_INTERSECTION(NODE) = .TRUE.
+               NUMBER_OF_CORNER_INTERSECTIONS = NUMBER_OF_CORNER_INTERSECTIONS + 1
+               N_NODES = N_NODES + 1
+               CONNECT(IJK,N_NODES) = IJK_OF_NODE(NODE)
             ENDIF
+
 
          END DO
 

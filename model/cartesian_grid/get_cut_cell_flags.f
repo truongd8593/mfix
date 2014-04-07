@@ -177,27 +177,23 @@
             IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
 !            CALL INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
          END DO
-      ELSE
-         CALL CAD_INTERSECT('SCALAR',Xn_int,Ye_int,Zt_int)
-      ENDIF
+
 !======================================================================
 !  Clean-up intersection flags in preparaton of small cells removal
 !======================================================================
+         DO IJK = IJKSTART3, IJKEND3
+            IF(INTERIOR_CELL_AT(IJK)) THEN
+!             IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL CLEAN_INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
+               CALL CLEAN_INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
+            ENDIF
+         END DO
 
-      DO IJK = IJKSTART3, IJKEND3
+         call SEND_RECEIVE_1D_LOGICAL(SNAP,2)
 
-         IF(INTERIOR_CELL_AT(IJK)) THEN
 
-!          IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL CLEAN_INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
-
-            CALL CLEAN_INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
-
-         ENDIF
-
-      END DO
-
-      call SEND_RECEIVE_1D_LOGICAL(SNAP,2)
-
+      ELSE
+         CALL CAD_INTERSECT('SCALAR',Xn_int,Ye_int,Zt_int)
+      ENDIF
 !        NUMBER_OF_NODES = 0
 
       DO IJK = IJKSTART3, IJKEND3
@@ -694,22 +690,20 @@
 !             IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL INTERSECT(IJK,'U_MOMENTUM',Xn_U_int(IJK),Ye_U_int(IJK),Zt_U_int(IJK))
             CALL INTERSECT(IJK,'U_MOMENTUM',Xn_U_int(IJK),Ye_U_int(IJK),Zt_U_int(IJK))
          END DO
-      ELSE
-         CALL CAD_INTERSECT('U_MOMENTUM',Xn_U_int,Ye_U_int,Zt_U_int)
-      ENDIF
-
+	 
 !======================================================================
 !  Clean-up intersection flags in preparaton of small cells removal
 !======================================================================
-
-      DO IJK = IJKSTART3, IJKEND3
-
-         IF(INTERIOR_CELL_AT(IJK)) THEN
-!             IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL CLEAN_INTERSECT(IJK,'U_MOMENTUM',Xn_U_int(IJK),Ye_U_int(IJK),Zt_U_int(IJK))
-             CALL CLEAN_INTERSECT(IJK,'U_MOMENTUM',Xn_U_int(IJK),Ye_U_int(IJK),Zt_U_int(IJK))
-         ENDIF
-
-      END DO
+         DO IJK = IJKSTART3, IJKEND3
+            IF(INTERIOR_CELL_AT(IJK)) THEN
+!               IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL CLEAN_INTERSECT(IJK,'U_MOMENTUM',Xn_U_int(IJK),Ye_U_int(IJK),Zt_U_int(IJK))
+               CALL CLEAN_INTERSECT(IJK,'U_MOMENTUM',Xn_U_int(IJK),Ye_U_int(IJK),Zt_U_int(IJK))
+            ENDIF
+         END DO
+	 
+      ELSE
+         CALL CAD_INTERSECT('U_MOMENTUM',Xn_U_int,Ye_U_int,Zt_U_int)
+      ENDIF
 
 
       NUMBER_OF_NEW_U_POINTS = 0
@@ -949,23 +943,21 @@
 !             IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL INTERSECT(IJK,'V_MOMENTUM',Xn_V_int(IJK),Ye_V_int(IJK),Zt_V_int(IJK))
             CALL INTERSECT(IJK,'V_MOMENTUM',Xn_V_int(IJK),Ye_V_int(IJK),Zt_V_int(IJK))
          END DO
+	 
+!======================================================================
+!  Clean-up intersection flags in preparaton of small cells removal
+!======================================================================
+         DO IJK = IJKSTART3, IJKEND3
+            IF(INTERIOR_CELL_AT(IJK)) THEN
+!                IF(POTENTIAL_CUT_CELL_AT(IJK)) CALL CLEAN_INTERSECT(IJK,'V_MOMENTUM',Xn_V_int(IJK),Ye_V_int(IJK),Zt_V_int(IJK))
+               CALL CLEAN_INTERSECT(IJK,'V_MOMENTUM',Xn_V_int(IJK),Ye_V_int(IJK),Zt_V_int(IJK))
+            ENDIF
+         END DO
+	 
       ELSE
          CALL CAD_INTERSECT('V_MOMENTUM',Xn_V_int,Ye_V_int,Zt_V_int)
       ENDIF
 
-!======================================================================
-!  Clean-up intersection flags in preparaton of small cells removal
-!======================================================================
-
-      DO IJK = IJKSTART3, IJKEND3
-
-         IF(INTERIOR_CELL_AT(IJK)) THEN
-!             IF(POTENTIAL_CUT_CELL_AT(IJK)) CALL CLEAN_INTERSECT(IJK,'V_MOMENTUM',Xn_V_int(IJK),Ye_V_int(IJK),Zt_V_int(IJK))
-            CALL CLEAN_INTERSECT(IJK,'V_MOMENTUM',Xn_V_int(IJK),Ye_V_int(IJK),Zt_V_int(IJK))
-
-         ENDIF
-
-      END DO
 
       NUMBER_OF_NEW_V_POINTS = 0
 
@@ -1201,23 +1193,20 @@
 !             IF(POTENTIAL_CUT_CELL_AT(IJK)) CALL INTERSECT(IJK,'W_MOMENTUM',Xn_W_int(IJK),Ye_W_int(IJK),Zt_W_int(IJK))
             CALL INTERSECT(IJK,'W_MOMENTUM',Xn_W_int(IJK),Ye_W_int(IJK),Zt_W_int(IJK))
          END DO
-      ELSE
-         CALL CAD_INTERSECT('W_MOMENTUM',Xn_W_int,Ye_W_int,Zt_W_int)
-      ENDIF
-
+	 
 !======================================================================
 !  Clean-up intersection flags in preparaton of small cells removal
 !======================================================================
-
-      DO IJK = IJKSTART3, IJKEND3
-
-         IF(INTERIOR_CELL_AT(IJK)) THEN
-!             IF(POTENTIAL_CUT_CELL_AT(IJK)) CALL CLEAN_INTERSECT(IJK,'W_MOMENTUM',Xn_W_int(IJK),Ye_W_int(IJK),Zt_W_int(IJK))
-           CALL CLEAN_INTERSECT(IJK,'W_MOMENTUM',Xn_W_int(IJK),Ye_W_int(IJK),Zt_W_int(IJK))
-
-         ENDIF
-
-      END DO
+         DO IJK = IJKSTART3, IJKEND3
+            IF(INTERIOR_CELL_AT(IJK)) THEN
+!               IF(POTENTIAL_CUT_CELL_AT(IJK)) CALL CLEAN_INTERSECT(IJK,'W_MOMENTUM',Xn_W_int(IJK),Ye_W_int(IJK),Zt_W_int(IJK))
+               CALL CLEAN_INTERSECT(IJK,'W_MOMENTUM',Xn_W_int(IJK),Ye_W_int(IJK),Zt_W_int(IJK))
+            ENDIF
+         END DO
+	 
+      ELSE
+         CALL CAD_INTERSECT('W_MOMENTUM',Xn_W_int,Ye_W_int,Zt_W_int)
+      ENDIF
 
 
       NUMBER_OF_NEW_W_POINTS = 0
