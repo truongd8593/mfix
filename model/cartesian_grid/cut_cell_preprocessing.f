@@ -1342,6 +1342,15 @@
 
                   IF(INTERSECT_FLAG) THEN
 
+                     IF(INTERSECT_X(IJK)) THEN
+
+                        IF(DABS(Xint(IJK)-xc)>TOL_STL) THEN
+
+                           INTERSECT_X(IJK) = .FALSE.        ! Ignore intersections when two intersections are detected on the same edge
+
+                        ENDIF                  
+
+                     ELSE
 
                         INTERSECT_X(IJK) = .TRUE.
                         Xint(IJK) = xc 
@@ -1367,6 +1376,7 @@
                         IF(JP<=J2.AND.KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPKP,N)
 
 
+                     ENDIF
 
                   ENDIF
 
@@ -1414,6 +1424,16 @@
 
                   IF(INTERSECT_FLAG) THEN
 
+                     IF(INTERSECT_Y(IJK)) THEN
+
+                        IF(DABS(Yint(IJK)-yc)>TOL_STL) THEN
+
+                           INTERSECT_Y(IJK) = .FALSE. ! Ignore intersections when two intersections are detected on the same edge
+
+                        ENDIF
+
+                     ELSE
+
 
                         INTERSECT_Y(IJK) = .TRUE.
                         Yint(IJK) = yc 
@@ -1437,6 +1457,8 @@
                         IF(IP<=I2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJK,N) 
                         IF(KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJKP,N) 
                         IF(IP<=I2.AND.KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJKP,N)
+
+                     ENDIF
 
                   ENDIF
 
@@ -1479,6 +1501,17 @@
 
                      IF(INTERSECT_FLAG) THEN
 
+                        IF(INTERSECT_Z(IJK)) THEN
+
+                           IF(DABS(Zint(IJK)-zc)>TOL_STL) THEN
+
+                              INTERSECT_Z(IJK) = .FALSE. ! Ignore intersections when two intersections are detected on the same edge
+
+                           ENDIF
+
+                        ELSE
+
+
                            INTERSECT_Z(IJK) = .TRUE.
                            Zint(IJK) = zc 
 
@@ -1503,6 +1536,8 @@
                            IF(IP<=I2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJK,N) 
                            IF(JP<=J2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPK,N) 
                            IF(IP<=I2.AND.JP<=J2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJPK,N)
+
+                        ENDIF
 
                      ENDIF
 
@@ -1555,7 +1590,7 @@
                     
 !            IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL CLEAN_INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
            
-           IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL CLEAN_INTERSECT(IJK,'SCALAR',Xint(IJK),Yint(IJK),Zint(IJK))
+            CALL CLEAN_INTERSECT(IJK,TYPE_OF_CELL,Xint(IJK),Yint(IJK),Zint(IJK))
                        
 !        ENDIF
                    
