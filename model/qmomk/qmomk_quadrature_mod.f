@@ -1,17 +1,19 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C 
-!       Module name:  qmomk_quadrature                                 C
-!       Purpose: Routines to perform the quadrature calculations       C
 !                                                                      C
-!       Author: A. Passalacqua                      Date: 18-Jun-2008  C
-!       Reviewer: 			            Date: dd-mmm-yy    C
+!  Module: qmomk_quadrature                                            C
+!  Purpose: Routines to perform the quadrature calculations            C
+!  Contains the following subroutines:                                 C
+!     quadrature_bounded, moments_twenty_eight_nodes,                  C
+!     check_moments_twenty, eight_node_3d, bind_theta                  C
+!                                                                      C
+!  Author: A. Passalacqua                      Date: 18-Jun-2008       C
+!  Reviewer: 			            Date: dd-mmm-yy            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 MODULE qmomk_quadrature
 
   USE qmomk_tools
   USE qmomk_parameters
-  USE constant
 
   IMPLICIT NONE
 
@@ -23,7 +25,12 @@ MODULE qmomk_quadrature
 
 CONTAINS
 
-  !       Two-nodes quadrature
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Two-nodes quadrature                                                C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
   SUBROUTINE QUADRATURE_BOUNDED (m, w, u)
 
     IMPLICIT NONE
@@ -41,7 +48,7 @@ CONTAINS
     rho = m(1)
     um = m(2)/rho
 
-    sigma = (m(3)*rho - m(2)*m(2))/(rho**2)			
+    sigma = (m(3)*rho - m(2)*m(2))/(rho**2)
 
     IF (sigma <= 0.D0) THEN
        PRINT *,'QMOMK: Negative variance in quadrature'
@@ -71,9 +78,15 @@ CONTAINS
     END IF
   END SUBROUTINE QUADRATURE_BOUNDED
 
-  !       Calculation of the twenty moments from weights and abscissas
-  SUBROUTINE MOMENTS_TWENTY_EIGHT_NODES (n, u, v, w, mom)
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Calculation of the twenty moments from weights and abscissas        C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
+  SUBROUTINE MOMENTS_TWENTY_EIGHT_NODES (n, u, v, w, mom)
+  
+    USE param1, only: small_number
     IMPLICIT NONE
 
     INTEGER :: i
@@ -118,7 +131,13 @@ CONTAINS
     mom = M
   END SUBROUTINE MOMENTS_TWENTY_EIGHT_NODES
 
-  !       Moments check
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Moments check                                                       C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
   SUBROUTINE CHECK_MOMENTS_TWENTY(mom, n, u, v, w, Check)
 
     IMPLICIT NONE
@@ -187,7 +206,13 @@ CONTAINS
     Check = F
   END SUBROUTINE CHECK_MOMENTS_TWENTY
 
-  !       Calculation of weights and abscissas
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Calculation of weights and abscissas                                C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C  
+
   SUBROUTINE EIGHT_NODE_3D (mom, n, u, v, w)
 
     IMPLICIT NONE
@@ -464,7 +489,7 @@ CONTAINS
        rho123 = -MIN(-rho123 , (1-a)*b*c , a*(1-b)*c , a*b*(1-c) , (1-a)*(1-b)*(1-c))
     END IF
 
-    IF (a > 1.) THEN			
+    IF (a > 1.) THEN
        PRINT *,a
     END IF
     IF (b > 1.) THEN
@@ -474,13 +499,13 @@ CONTAINS
        PRINT *,c
     END IF
 
-    nstar(1) = a*b*c             	- rho123 
-    nstar(2) = (1.D0-a)*b*c         	+ rho123 
-    nstar(3) = a*(1.D0-b)*c         	+ rho123 
-    nstar(4) = (1.D0-a)*(1.D0-b)*c  	- rho123 
-    nstar(5) = a*b*(1.D0-c)        	+ rho123 
-    nstar(6) = (1.D0-a)*b*(1.D0-c)  	- rho123 
-    nstar(7) = a*(1.D0-b)*(1.D0-c)  	- rho123 
+    nstar(1) = a*b*c                    - rho123 
+    nstar(2) = (1.D0-a)*b*c             + rho123 
+    nstar(3) = a*(1.D0-b)*c             + rho123 
+    nstar(4) = (1.D0-a)*(1.D0-b)*c      - rho123 
+    nstar(5) = a*b*(1.D0-c)             + rho123 
+    nstar(6) = (1.D0-a)*b*(1.D0-c)      - rho123 
+    nstar(7) = a*(1.D0-b)*(1.D0-c)      - rho123 
     nstar(8) = (1.D0-a)*(1.D0-b)*(1.D0-c)   + rho123 
 
     IF (MINVAL(nstar) < -1.D-16) THEN
@@ -513,7 +538,13 @@ CONTAINS
     ENDIF
   END SUBROUTINE EIGHT_NODE_3D
 
-  ! Temperature limiter
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Temperature limiter                                                 C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C    
+
   SUBROUTINE BIND_THETA (mom, tau_p)
 
     DOUBLE PRECISION, INTENT(INOUT), DIMENSION(QMOMK_NMOM) :: mom

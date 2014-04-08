@@ -1,172 +1,183 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: constants.inc                                          C
+!  Module: constant                                                   C
 !  Purpose: Common block containing physical constants and constants   C
 !           used in the numerical technique                            C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 5-FEB-92   C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
-!  Revision Number: 1                                                  C
-!  Purpose: Add parameters MIN_EP_S and DEPSTAR.                       C
-!  Author: M. Syamlal                                 Date: 7-FEB-92   C
-!  Reviewer:                                          Date: dd-mmm-yy  C
+!  Literature/Document References:                                     C
+!    Gera, D., Syamlal, M., and O'Brien, T. J., "Hydrodynamics of      C
+!      particle segregation in fluidized beds", Int. J. of Multiphase  C
+!      Flow, Vol 30, 2004, pp. 419-428.                                C
+!    Johnson, P. C., and Jackson, R., "Frictional-collisional          C
+!      constitutive relations for granluar materials, with application C
+!      to plane shearing", JFM, Vol. 176, 1987, pp. 67-93.             C
+!    Garzo, V., Tenneti, S., Subramaniam, S., and Hrenya, C. M.,       C
+!      "Enskog kinetic theory for monodisperse gas-solid flows", JFM,  C
+!      Vol. 712, 2012, pp. 129-168                                     C
 !                                                                      C
-!  Literature/Document References: None                                C
-!                                                                      C
-!  Variables referenced: None                                          C
-!  Variables modified: None                                            C
-!                                                                      C
-!  Local variables: None                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-
       MODULE constant
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      Use param, only: dim_m, dimension_c
+!-----------------------------------------------
 
-      Use param
-      Use param1
+! Packed bed (close packed) void fraction
+      DOUBLE PRECISION :: EP_star
+      
+! parameters used in the correlation to calculate the local maximum
+! solids volume fraction for a polydisperse powder: ep_s_max_ratio, 
+! d_p_ratio and ep_s_max, m_max      
+      DOUBLE PRECISION :: ep_s_max_ratio(DIM_M, DIM_M), &
+                          d_p_ratio(DIM_M, DIM_M)
+! maximum packing volume fraction for indicate particulate phase
+! its value will default to 1-ep_star
+      DOUBLE PRECISION :: ep_s_max(DIM_M)  
+! Index to rearrange particles from coarsest to finest for use in 
+! function CALC_ep_star(IJK,IER)
+      INTEGER :: M_MAX(DIM_M)
 
-!     multiple particle sizes
-      DOUBLE PRECISION ep_s_max(DIM_M)  !maximum packing volume fraction for particles, typically 
-      DOUBLE PRECISION ep_s_max_ratio(DIM_M, DIM_M), d_p_ratio(DIM_M, DIM_M)
 
-!     not needed anymore (sof, Nov-17-2005) 
-!		       EPS_max = random close-packed solids volume fraction
-!      DOUBLE PRECISION EPS_max
+! SWITCH enables us to turn on/off modifications to certain kinetic
+! theory models for granular solids (i.e. no gas) that have been 
+! adjusted to account for the presence of a fluid phase. If one wants
+! to simulate gas-particle flow then set SWITCH=1. As a result, the
+! effects of drag on particle viscosity/conductivity will be
+! incorporated. Additional gas-solids terms are also introduced into
+! the granular energy balance. If we want to simulate granular flow
+! without the effects of an interstitial gas, set SWITCH=0.  
+      DOUBLE PRECISION, PARAMETER :: SWITCH=1.d0
 
-!     commented by sof(05-04-2005) no need for this, will be user input in mfix.dat
-!      DOUBLE PRECISION MAX_SOLID_1_PACKING, MAX_SOLID_2_PACKING    ! 0.6
+! ALPHA is a parameter introduced into the theory of Lun_1984 for 
+! calculating solids viscosity. It also appears when invoking the
+! solids frictional model FRICTION, which uses the Lun et al. 
+! theory. The factor (2+alpha)/3 was eliminated in the complete 
+! analysis of Lun et al. but was introduced as an adjustable 
+! parameter. To recover the original theory alpha should be set to
+! 1. For details see Johnson and Jackson, 1987. 
+      DOUBLE PRECISION, PARAMETER :: ALPHA = 1.6d0
 
-!     see gera et al. 2004 for details (employed in solid-solid drag with
-!     default KT)
-      DOUBLE PRECISION SEGREGATION_SLOPE_COEFFICIENT 
-                          
 
-!     success-factor for aggregation and breakage  
-      DOUBLE PRECISION AGGREGATION_EFF
-      DOUBLE PRECISION BREAKAGE_EFF
+! parameter used in the solids-solids drag model invoked in the
+! default KT (Lun_1984). For details see Gera et al., 2004 
+      DOUBLE PRECISION :: SEGREGATION_SLOPE_COEFFICIENT 
 
-!     ALPHA = parameter in equation for mu_s
-!     SWITCH enables us to turn on/off the modification to the
-!     particulate phase viscosity. If we want to simulate gas-particle
-!     flow then SWITCH=1 to incorporate the effect of drag on the
-!     particle viscosity. If we want to simulate granular flow
-!     without the effects of an interstitial gas, SWITCH=0.
-!     (Same for conductivity)
-      DOUBLE PRECISION ALPHA, SWITCH
-      PARAMETER(ALPHA = 1.6d0, SWITCH=1d0)
-
-!     SWITCH_IA changes some terms in solids viscosity and conductivity
-!     in order for the results using 2 or more identical solids phase to 
-!     be the same as 1 soldis phase. Set to false to use original theory
-!     of Iddir-Arastoopour. Sof DEC 05 2006.
+! SWITCH_IA does two things. 1) It changes some terms in solids 
+! viscosity and conductivity in order for the results using 2 or more 
+! identical solids phase to be the same as 1 solids phase (i.e., it
+! enforces consistency). 2) It also functions somewhat similary to
+! SWITCH above in that effects of drag on particle viscosity/
+! conductivity will be incorporated. Set to false to use original
+! theory of Iddir-Arastoopour. 
       LOGICAL, PARAMETER :: SWITCH_IA = .TRUE.
  
+! parameter in the theory of GTSH that is related to length scale
+! of lubrication effects. For details see GTSH, 2012.
+      DOUBLE PRECISION, PARAMETER :: EpM = 0.01d0
+
+! PHIP = Specularity coefficient associated with particle wall 
+! collisions
+      DOUBLE PRECISION :: PHIP
+! PHIP0 specularity coefficient for r->0 
+      double precision :: phip0
+! k4phi k=7/2*mu*(1+e_w)
+      double precision :: k4phi 
+! e_w = particle-wall coefficient of restitution	
+      DOUBLE PRECISION :: e_w
  
-!		       PHIP  = Specularity coefficient associated with
-!                              particle wall collisions
-      DOUBLE PRECISION PHIP
-!                      PHIP0 specularity coefficient for r->0 
-      double precision phip0
-!                      k4phi k=7/2*mu*(1+e_w)
-      double precision k4phi 
-!	               e_w   = particle-wall coefficient of restitution	
-      DOUBLE PRECISION e_w
- 
-!     Fr, EPS_f_min, N_Pc, D_Pc all appear in the equation for Pc,the
-!     critical solids pressure. N_Pf appears as an exponent in the
-!     equation of state for Pf (frictional pressure)
-!	               Fr = Constant with dyne/cm2 units of pressure
-!                           It will be converted automatically to Pa in calc_mu_s.f
-!                      N_Pc = exponent in numerator
-!	               D_Pc = exponent in denominator
-!   delta: small deviation in void fraction near packing where Pc and dPc/deps are calculated.
- 
-      DOUBLE PRECISION Fr, N_Pc, D_Pc, N_Pf, delta
+! Parameters used in the solids frictional model FRICTION:
+! - Fr, N_Pc, D_Pc, and EPS_F_min are all used in the equation for
+!   Pc, the critical solids pressure:
+!     Fr = Constant with dyne/cm2 units of pressure. It will be 
+!          automatically converted to Pa in calc_mu_s.f
+!     N_Pc = exponent in numerator
+!     D_Pc = exponent in denominator
+!     EPS_f_min = minimum solids fraction above which friction 
+!                 kicks in
+! - N_Pf appears as an exponent in the equation of state for Pf, the
+!   frictional pressure:
+! - delta is a small deviation in void fraction near packing where 
+!   Pc and dPc/deps are calculated.
+      DOUBLE PRECISION :: EPS_f_min
+      DOUBLE PRECISION :: Fr, N_Pc, D_Pc, N_Pf, delta
       PARAMETER(Fr = 0.5d0, N_Pc=2d0, D_Pc=5d0, N_Pf=1.03d0, delta=1d-2)
  
-!	               EPS_f_min = minimum solids fraction above which
-!                                  friction kicks in
-      DOUBLE PRECISION EPS_f_min
-! 
-!	parameter in GTSH theory related to length scale of lubrication effects
-!       see GTSH J. fluid Mech. (2012), vol 712, pp 129-168
-      DOUBLE PRECISION, PARAMETER          ::  EpM = 0.01d0
-!                      Gravitational acceleration
-      DOUBLE PRECISION GRAVITY, to_SI, GRAVITY_X,GRAVITY_Y,GRAVITY_Z
-
-!                      Universal gas constant
-      DOUBLE PRECISION GAS_CONST
-
-!                      Universal gas constant in cal/mol.K
-      DOUBLE PRECISION, PARAMETER :: GAS_CONST_cal = 1.987207D0
-
-!                      Coeficient of restitution
+! Coefficient of restitution
       DOUBLE PRECISION C_e
 
-!                      particle-type dependent rest. coef. for use in GHD theory
-      DOUBLE PRECISION r_p(DIM_M, DIM_M)
-
-!                      (1+C_e)/2.
+! (1+C_e)/2.
       DOUBLE PRECISION eta
 
-!                      Coeficient of friction
+! particle-type dependent rest. coef. for use in GHD theory
+      DOUBLE PRECISION r_p(DIM_M, DIM_M)
+
+! Coeficient of friction
       DOUBLE PRECISION C_f
 
-!                      Packed bed (close packed) void fraction
-      DOUBLE PRECISION EP_star
-
-!                      Packed bed  solids fraction (1 - EP_star)
-      DOUBLE PRECISION EP_s_cp
-
-!                      Pi, the ubiquitous irrational number
-      DOUBLE PRECISION Pi
-
-!                      Square root of Pi
-      DOUBLE PRECISION SQRT_Pi
-
-!                      Maximum pressure correction allowed in one iteration
-      DOUBLE PRECISION MAX_DELP
-
-!                      User defined constants
-      DOUBLE PRECISION C (DIMENSION_C)
-
-!                      Names of user defined constants (for output file only)
-      CHARACTER*20     C_NAME (DIMENSION_C)
-
-!                      Angle of internal friction (degrees)
+! Angle of internal friction (degrees)
       DOUBLE PRECISION Phi
 
-!                      Angle of wall-particle friction (degrees)
+! Angle of wall-particle friction (degrees)
       DOUBLE PRECISION Phi_w
 
-!                      (k=) Sin(PHI) in Plastic-flow stress formulation
+! (k=) Sin(PHI) in Plastic-flow stress formulation
       DOUBLE PRECISION Sin_Phi
 
-!                      Sin^2(PHI)
+! Sin^2(PHI)
       DOUBLE PRECISION Sin2_Phi
 
-!                      (3-2k^2)/6k^2 in Plastic-flow stress formulation
+! (3-2k^2)/6k^2 in Plastic-flow stress formulation
       DOUBLE PRECISION F_Phi
 
-!                      tan(PHI_w)
+! tan(PHI_w)
       DOUBLE PRECISION tan_Phi_w
  
-!                      Default value for characteristic length
-!                      for turbulence
+! Default value for characteristic length for turbulence
       DOUBLE PRECISION L_scale0
 
-!                      Maximum value of turbulent viscosity
+! Maximum value of turbulent viscosity
       DOUBLE PRECISION MU_gmax
 
-!                      Excluded volume (Boyle-Massoudi stress tensor)
+! Excluded volume (Boyle-Massoudi stress tensor)
       DOUBLE PRECISION V_ex
 
-!                      Coefficients for calibrating Syamlal-O'Brien drag correlation with Umf data
+! Coefficients for calibrating Syamlal-O'Brien drag correlation with 
+! Umf data
       DOUBLE PRECISION drag_c1, drag_d1
 
+! success-factor for aggregation and breakage  
+      DOUBLE PRECISION :: AGGREGATION_EFF
+      DOUBLE PRECISION :: BREAKAGE_EFF
 
+! Gravitational acceleration
+      DOUBLE PRECISION GRAVITY, to_SI, GRAVITY_X,GRAVITY_Y, GRAVITY_Z
 
-      END MODULE constant                                                                        
+! Universal gas constant
+      DOUBLE PRECISION GAS_CONST
+
+! Universal gas constant in cal/mol.K
+      DOUBLE PRECISION, PARAMETER :: GAS_CONST_cal = 1.987207D0
+
+! Pi, the ubiquitous irrational number
+      DOUBLE PRECISION Pi
+
+! Square root of Pi
+      DOUBLE PRECISION SQRT_Pi
+
+! Maximum pressure correction allowed in one iteration
+      DOUBLE PRECISION MAX_DELP
+
+! User defined constants
+      DOUBLE PRECISION C (DIMENSION_C)
+
+! Names of user defined constants (for output file only)
+      CHARACTER*20     C_NAME (DIMENSION_C)
+
+      END MODULE constant

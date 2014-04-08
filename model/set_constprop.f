@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Subroutine: SET_CONSTProp                                           C
-!  Purpose: This module sets all the constant physical properties      C
+!  Subroutine: set_constprop                                           C
+!  Purpose: This routine sets various constant physical properties     C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 12-MAY-97  C
 !                                                                      C
@@ -15,7 +15,7 @@
 ! Modules
 !-----------------------------------------------
       USE param 
-      USE param1 
+      USE param1, only: ZERO, HALF, ONE, UNDEFINED 
       USE fldvar
       USE visc_s
       USE visc_g
@@ -23,13 +23,13 @@
       USE geometry
       USE indices
       USE physprop
-      USE constant
+      USE constant, only: ep_s_max_ratio, d_p_ratio, ep_s_max, m_max
+      use constant, only: ep_star, l_scale0
       USE run
-      USE funits 
-      USE drag
+      USE drag, only: f_gs, f_ss
       USE compar 
       use kintheory
-      use mms
+      use mms, only: use_mms
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -37,7 +37,7 @@
 !-----------------------------------------------
 ! indices      
       INTEGER :: IJK, M, N, I, J
-      DOUBLE PRECISION :: old_value, DP_TMP(MMAX)
+      DOUBLE PRECISION :: old_value, DP_TMP(SMAX)
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -174,16 +174,10 @@
                ENDIF
             ENDIF 
 
+
 ! set ep_star_array to user input ep_star in all cells.
             EP_star_array(ijk) = ep_star
-            IF(EP_S_MAX(M) == UNDEFINED) EP_S_MAX(M) = ONE-EP_STAR
-! this probably should not be used anymore            
-            EP_S_CP = 1.D0 - EP_STAR
-
-! initializing Sreekanth blending stress parameters (sof)
-! changed blend_start to 0.99*ep_star from 0.97*ep_star [ceaf 2006-03-17]
-! changed blend_end to 1.01*ep_star from 1.03*ep_star [ceaf 2006-03-17]
-! added option for sigmoid function [sp 2006-10-24]
+! initializing blending stress parameters 
             IF(BLENDING_STRESS.AND.TANH_BLEND) THEN
                ep_g_blend_start(ijk) = ep_star_array(ijk) * 0.99d0
                ep_g_blend_end(ijk)   = ep_star_array(ijk) * 1.01d0
@@ -204,43 +198,49 @@
       ENDIF 
      
 
-! Initializing the indexing system. This doesn't need to be done if no
-! correlation is used to compute ep_star.
-      IF(YU_STANDISH .OR. FEDORS_LANDEL .AND. .NOT. CALL_DQMOM) THEN
+! Initializing parameters needed if a correlation is used to compute
+! ep_star
+      IF(YU_STANDISH .OR. FEDORS_LANDEL) THEN
+         DO M = 1, SMAX
+            IF(EP_S_MAX(M) == UNDEFINED) EP_S_MAX(M) = ONE-EP_STAR
+         ENDDO 
+
+         IF (.NOT.CALL_DQMOM) THEN
+! Initializing the indexing system.
 
 ! refer to Syam's dissertation
-         IF (SMAX == 2) THEN
-            ep_s_max_ratio(1,2) = ep_s_max(1)/                         &
-               (ep_s_max(1)+(1.-ep_s_max(1))*ep_s_max(2)) 
-         ENDIF
-
-         DO I = 1, MMAX
-! Why is there a bailout condition for undefined D_P0?
-            IF(D_P0(I) == UNDEFINED) RETURN
-            DP_TMP(I) = D_P0(I)
-            M_MAX(I) = I
-         ENDDO
+            IF (SMAX == 2) THEN
+               ep_s_max_ratio(1,2) = ep_s_max(1)/ &
+                  (ep_s_max(1)+(1.-ep_s_max(1))*ep_s_max(2)) 
+            ENDIF
 
 ! Rearrange the indices from coarsest particles to finest to be 
 ! used in CALC_ep_star. Done here because it may need to be done
 ! for auto_restart
-         DO I = 1, MMAX
-            DO J = I, MMAX                  
-               IF(DP_TMP(I) < DP_TMP(J)) THEN
-                  old_value = DP_TMP(I)
-                  DP_TMP(I) = DP_TMP(J)
-                  DP_TMP(J) = old_value
-               ENDIF                  
+            DO I = 1, SMAX
+               DO J = I, SMAX                  
+                  IF(DP_TMP(I) < DP_TMP(J)) THEN
+                     old_value = DP_TMP(I)
+                     DP_TMP(I) = DP_TMP(J)
+                     DP_TMP(J) = old_value
+                  ENDIF                  
+               ENDDO
             ENDDO
-         ENDDO
-         DO I = 1, MMAX
-            DO J = 1, MMAX
-               IF(DP_TMP(I) == D_P0(J) .AND. D_P0(I) .NE. D_P0(J)) THEN
-                  M_MAX(I) = J 
-               ENDIF
+
+            DO I = 1, SMAX
+               DO J = 1, SMAX
+                  IF(DP_TMP(I) == D_P0(J) .AND. D_P0(I) .NE. D_P0(J)) THEN
+                     M_MAX(I) = J 
+                  ENDIF
+               ENDDO
             ENDDO
-         ENDDO
-      ENDIF    ! if Yu-standish or Fedors-Landel and .not. call_dqmom
+         ENDIF    ! if .not. call_dqmom
+      ELSE   ! if .not. Yu-standish or Fedors-Landel
+         EP_S_MAX(:) = ZERO
+         EP_S_MAX_RATIO(:,:) = ZERO
+         D_P_RATIO(:,:) = ZERO
+         M_MAX(:) = ZERO
+      ENDIF
 
       RETURN  
       END SUBROUTINE SET_CONSTPROP

@@ -32,18 +32,17 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE fldvar
-      USE physprop
+      USE param1, only: one, zero, undefined_i
+      USE fldvar, only: u_s, v_s, w_s, rop_s, ro_s
+      USE physprop, only: close_packed
+      USE pscor, only: mcp, epp, k_cp, e_e, e_n, e_t
+      USE ur_facs, only: ur_fac
       USE indices
       USE geometry
-      USE pscor
-      USE ur_facs 
-      USE constant
       USE compar 
       USE sendrecv 
-      USE cutcell
+      USE cutcell, only: cartesian_grid, cut_cell_at, cg_ur_fac
+      USE visc_s, only: ep_star_array 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -61,13 +60,13 @@
       INTEGER :: IJK, IJKE, IJKN, IJKT
 ! solids index
       INTEGER :: M
+! solids volume fraction at maximum packing      
+      DOUBLE PRECISION :: EP_S_CP
 !-----------------------------------------------
 ! Include statement functions
 !----------------------------------------------- 
       INCLUDE 'ep_s1.inc'
-      INCLUDE 's_pr1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 's_pr2.inc'
       INCLUDE 'ep_s2.inc'
 !----------------------------------------------- 
 
@@ -93,8 +92,8 @@
          DO IJK = ijkstart3, ijkend3
             IF (FLUID_AT(IJK)) THEN
 
-               EPCOR = EP_S(IJK,M) + EPP(IJK) 
-! ep_s_cp should probably be replaced with (ONE-ep_star_array(ijk))               
+               EPCOR = EP_S(IJK,M) + EPP(IJK)
+               EP_S_CP = ONE - EP_STAR_ARRAY(IJK) 
                IF (EPCOR>EP_S_CP .AND. EPP(IJK)>ZERO) THEN 
                   EPP(IJK) = UR_FAC(2)*EPP(IJK) 
 

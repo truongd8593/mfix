@@ -41,7 +41,8 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_CONTINUUM")
 
-! Check EP_star
+! Check EP_star. This is used to populate ep_star_array which is what
+! should be used elsewhere in the code. (see set_constprop)
       IF(EP_STAR == UNDEFINED) THEN
          WRITE(ERR_MSG,1000) 'EP_STAR'
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -116,7 +117,7 @@
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
  1204 FORMAT('Error 1204: The BLENDING_STRESS is used with SCHAEFFER ',&
-         'not FRICATION.',/'Please correct the mfix.dat file.')
+         'not FRICTION.',/'Please correct the mfix.dat file.')
 
       ENDIF
 
@@ -126,16 +127,15 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
  1205 FORMAT('Error 1205: The JENKINS small frication boundary ',      &
-         'condtion is only',/'valid when solving GRANULAR_ENERGY',/    &
+         'condition is only',/'valid when solving GRANULAR_ENERGY',/    &
          'Please correct the mfix.dat file.')
 
 
-! it does not make sense to evaluate granular energy when the solids 
-! viscosity is set to a constant! so prevent granular energy routines
-! from being invoked with solids viscosity is set to constant. note
-! that the calculation for many of the solids phase transport 
-! coefficients that are needed will have be skipped in calc_mu_s 
-! anyway
+! if constant solids viscosity is employed, then the calculation for
+! many of the solids phase transport coefficients that are needed for
+! the granular energy equation will have be skipped in calc_mu_s. so
+! do not evaluate granular energy when the solids viscosity is set to
+! a constant!
       IF (MU_S0 .NE. UNDEFINED .AND. GRANULAR_ENERGY) THEN
          WRITE(ERR_MSG,1206)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -155,7 +155,10 @@
       ENDIF
 
 
-      IF(C_E == UNDEFINED) THEN
+! this version of the restitution coefficient is needed by most KT_TYPE
+! models. it is also needed in default solids-solids drag model      
+      IF (C_E == UNDEFINED .AND. (MU_S0 == UNDEFINED .OR. &
+          (SMAX>=2 .AND. KT_TYPE .EQ. UNDEFINED_C))) THEN
          WRITE(ERR_MSG,1300) 
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
@@ -163,7 +166,7 @@
          'specified.',/'Please correct the mfix.dat file.')
 
 
-      IF(C_F == UNDEFINED .AND. MMAX>=2 .AND.                          &
+      IF(C_F == UNDEFINED .AND. SMAX>=2 .AND.                          &
          KT_TYPE .EQ. UNDEFINED_C) THEN
          WRITE(ERR_MSG, 1301)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -197,7 +200,7 @@
          ENDDO 
       ENDIF 
  1304 FORMAT('Error 1304: Solids phase ',I2,' is not CLOSE_PACKED.',/, &
-         'All solids phases must be CLOSE_PACED with MODEL_B=.TURE.',/ &
+         'All solids phases must be CLOSE_PACKED with MODEL_B=.TURE.',/ &
          'Please correct the mfix.dat file.')
 
 
@@ -266,7 +269,7 @@
       ENDDO
 
 
-! This section will only be used if invoking jj_bc_PS which implies
+! These quantities will only be used if invoking jj_bc_PS which implies
 ! granular_energy is true.
 ! k4phi, phip0 for variable specularity coefficient
       k4phi = UNDEFINED

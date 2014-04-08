@@ -562,13 +562,11 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: CHECK_INITIAL_CONDITIONS                                !
+!  Subroutine: CHECK_IC_SOLIDS_PHASES                                  !
 !  Author: P. Nicoletti                               Date: 02-DEC-91  !
 !  Author: J.Musser                                   Date: 01-MAR-14  !
 !                                                                      !
-!  Purpose: check the initial conditions input section                 !
-!     - check geometry of any specified IC region                      !
-!     - check specification of physical quantities                     !
+!  Purpose: Verify solids phase(s) input variables in IC region.       !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_IC_SOLIDS_PHASES(ICV)
@@ -801,7 +799,7 @@
             ENDIF
 
  1405 FORMAT('Error 1405: No inert species for phase ',I2,' in IC ',   &
-         'region',I3,'.',/'Unable to calculate solids phase density. ',&
+         'region ',I3,'.',/'Unable to calculate solids phase density. ',&
          'Please refer to the Readme',/' file for required variable ', &
          'soilds density  model input parameters and',/' make the ',   &
          'necessary corrections to the data file.')
@@ -830,12 +828,12 @@
 
             IF(.NOT.COMPARE(IC_EP_S(ICV,M)*IC_ROs(M),                  &
                IC_ROP_S(ICV,M))) THEN
-               WRITE(ERR_MSG,1406)
+               WRITE(ERR_MSG,1406) M, ICV
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
 
- 1406 FORMAT('Error 1406: Illegal initial condition region : ',I3,/    &
-         'IC_EP_s and IC_ROP_s are inconsistent. Please correct the ',/&
+ 1406 FORMAT('Error 1406: IC_EP_s and IC_ROP_s are inconsistent for ',&
+         'phase ',I2,/,'in IC region ', I3,'. Please correct the ',&
          'mfix.dat file.')
 
 ! Compute IC_EP_s from IC_ROP_s
@@ -884,12 +882,14 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-! Subroutine: INIT_ICBC_FLAGS                                          !
+! Subroutine: CHECK_IC_OVERFLOW                                        !
 ! Author: J.Musser                                    Date: 01-Mar-14  !
 !                                                                      !
-! Purpose: Provided a detailed error message when the sum of volume    !
+! Purpose: Verify that no data was defined for unspecified IC.         !
+!                                                                      !
 !                                                                      !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+
       SUBROUTINE CHECK_IC_OVERFLOW(ICV)
 
 ! Global Variables:
@@ -983,8 +983,11 @@
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF 
       ENDDO
+! --------------------------------------------<<<
+
 
 ! SOLIDS PHASE quantities
+! -------------------------------------------->>>
       DO M=1, DIM_M
          IF(IC_ROP_S(ICV,M) /= UNDEFINED) THEN 
             WRITE(ERR_MSG, 1010) trim(iVar('IC_ROP_s',ICV,M))
@@ -1012,6 +1015,7 @@
             ENDIF 
          ENDDO 
       ENDDO
+! --------------------------------------------<<<
 
       CALL FINL_ERR_MSG
       RETURN

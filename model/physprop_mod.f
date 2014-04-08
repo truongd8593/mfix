@@ -1,33 +1,23 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: physical_prop.inc                                      C
+!  Module name: physprop                                               C
 !  Purpose: Common block containing physical property data             C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: dd-mmm-yy  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
-!  Revision Number: 1                                                  C
-!  Purpose: Add EP_zero, D_p3, oD_p3, MASS_s                     C
-!  Author: W. Sams                                    Date: 22-JUL-93  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Revision Numner: 2                                                  C
-!  Purpose: Add K_scale                                                C
-!  Author: W. Sams                                    Date: 26-APR-94  C
-!  Reviewer:                                                           C
-!                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       MODULE physprop
  
-      Use param
-      Use param1
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      Use param, only: dim_m, dim_n, dim_n_g, dim_n_s
+!-----------------------------------------------
+
 
 ! Scale factor for gas turbulence length scale
       DOUBLE PRECISION :: K_scale
@@ -40,10 +30,6 @@
 
 ! Particle diameters
       DOUBLE PRECISION :: D_p0(DIM_M)
-
-! Index to rearrange particles from coarsest to finest for use in 
-! function CALC_ep_star(IJK,IER)
-      INTEGER M_MAX(DIM_M)
 
 ! Constant solids phase densities.
       DOUBLE PRECISION :: RO_s0(DIM_M)

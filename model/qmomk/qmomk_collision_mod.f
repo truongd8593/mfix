@@ -1,7 +1,13 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name:  qmomk_collisions             		               C
+!  Module:  qmomk_collisions                		               C
 !  Purpose: Collision operators for the kinetic equation               C
+!  Contains the following subroutines and functions:                   C
+!      collisions_istantaneous, collisions_bgk,                        C
+!      compute_collision_time, collisions_boltzmann_one_specie,        C
+!      collisions_boltzmann_two_specie,                                C
+!      solve_boltzmann_collisions_one_specie,                          C
+!      solve_boltzmann_collisions_two_specie, radial_g0                C
 !                                                                      C
 !  Author: A. Passalacqua                           Date:              C
 !  Reviewer: 					    Date:              C
@@ -9,7 +15,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 MODULE qmomk_collision
 
-  USE constant
+
   USE qmomk_parameters
   USE qmomk_quadrature
 
@@ -28,7 +34,12 @@ MODULE qmomk_collision
 
 CONTAINS
 
-  !     Istantaneous collisions
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Instantaneous collisions                                            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
   SUBROUTINE COLLISIONS_ISTANTANEOUS(M, dp) 
 
     IMPLICIT NONE
@@ -50,7 +61,7 @@ CONTAINS
     m3 = M(4) 
     m11 = M(5) 
     m22 = M(8) 
-    m33 = M(10)	
+    m33 = M(10)
 
     up1 = m1/m0 
     up2 = m2/m0 
@@ -96,8 +107,17 @@ CONTAINS
 
   END SUBROUTINE COLLISIONS_ISTANTANEOUS
 
-  !     Bathnagar-Gross-Krook (BGK) collision opeator
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Bathnagar-Gross-Krook (BGK) collision operator                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C  
+
   SUBROUTINE COLLISIONS_BGK(M, Dt, tcol, dp, e)
+
+    USE param1, only: small_number
+    USE constant, only: Pi, EP_STAR
 
     IMPLICIT NONE
 
@@ -184,6 +204,10 @@ CONTAINS
     d233 = -(-2.D0*d23*up3+(2.D0*(up3**2)*m0-d33)*up2) 
     d333 = -(-3.D0*d33+2.D0*(up3**2)*m0)*up3 
 
+! JEC: Probable BUG: alpha_max was not defined. include definition as found in
+! other places 
+    ALPHA_MAX = 1. - EP_STAR
+
     IF (m0 > ALPHA_MAX - SMALL_NUMBER) THEN
       kap = 0.
     ELSE
@@ -208,8 +232,20 @@ CONTAINS
     M(20) =  d333 - kap*( d333 - m333 )
   END SUBROUTINE COLLISIONS_BGK
 
-  ! Collision time
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Collision time                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
   SUBROUTINE COMPUTE_COLLISION_TIME (M, dp, theta, tcol, dt)
+
+    USE param1, only: small_number
+    USE constant, only: Pi, EP_STAR
+! JEC: should ep_star be replaced by ep_star_array?
+          
+    IMPLICIT NONE
   
     DOUBLE PRECISION, INTENT(IN), DIMENSION(QMOMK_NMOM) :: M
     DOUBLE PRECISION, INTENT(IN) :: theta, dp, dt
@@ -245,9 +281,17 @@ CONTAINS
   !    tcol = dp*SQRT(pi/(theta+SMALL_NUMBER))/(12.0*alpha*RADIAL_G0(M(1))+SMALL_NUMBER)
   !  END IF
   !END SUBROUTINE
-   
-  !     Boltzmann collision operator for the monodispersed case 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Boltzmann collision operator for the monodispersed case             C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
   SUBROUTINE COLLISIONS_BOLTZMANN_ONE_SPECIE (N, U, V, W, dp, e, Coll)
+
+    USE constant, only: Pi
 
     IMPLICIT NONE
 
@@ -416,8 +460,16 @@ CONTAINS
 
   END SUBROUTINE COLLISIONS_BOLTZMANN_ONE_SPECIE
 
-  !     Boltzmann collision operator for the monodispersed case 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Boltzmann collision operator for bidisperse case                    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
   SUBROUTINE COLLISIONS_BOLTZMANN_TWO_SPECIES (N1, U1, V1, W1, N2, U2, V2, W2, m1, m2, dp1, dp2, e, Coll)
+
+    USE constant, only: Pi
 
     IMPLICIT NONE
 
@@ -611,8 +663,16 @@ CONTAINS
 
   END SUBROUTINE COLLISIONS_BOLTZMANN_TWO_SPECIES
 
-  !     Calculates the rate of change in the moments due to collisions (1 specie)
-  SUBROUTINE SOLVE_BOLTZMANN_COLLISIONS_ONE_SPECIE(M, N, U, V, W, dt, e, dp, order)
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!   Calculates the rate of change in the moments due to collisions     C
+!   (1 specie)                                                         C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+  SUBROUTINE SOLVE_BOLTZMANN_COLLISIONS_ONE_SPECIE(M, N, U, V, W, dt, &
+     e, dp, order)
 
     IMPLICIT NONE
 
@@ -644,8 +704,16 @@ CONTAINS
     M= Mtmp
   END SUBROUTINE SOLVE_BOLTZMANN_COLLISIONS_ONE_SPECIE
 
-  !     Calculates the rate of change in the moments due to collisions (1 specie)
-  SUBROUTINE SOLVE_BOLTZMANN_COLLISIONS_TWO_SPECIES(M1, N1, U1, V1, W1, M2, N2, U2, V2, W2, dt, m_1, m_2, dp1, dp2, e11, e12, order)
+  
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!   Calculates the rate of change in the moments due to collisions     C
+!   (2 specie)                                                         C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C    
+
+  SUBROUTINE SOLVE_BOLTZMANN_COLLISIONS_TWO_SPECIES(M1, N1, U1, V1, &
+     W1, M2, N2, U2, V2, W2, dt, m_1, m_2, dp1, dp2, e11, e12, order)
 
     IMPLICIT NONE
 
@@ -692,7 +760,18 @@ CONTAINS
     M1 = M1tmp;
   END SUBROUTINE SOLVE_BOLTZMANN_COLLISIONS_TWO_SPECIES
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!                                                                     C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C  
+
   DOUBLE PRECISION FUNCTION RADIAL_G0(ALPHA)
+
+    USE param1, only: small_number, large_number
+    USE constant, only: Pi, EP_STAR
+
     IMPLICIT NONE
 
     DOUBLE PRECISION, INTENT(IN) :: ALPHA

@@ -344,7 +344,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE BUILD_C_QUADRIC_MATRIX(lambda1,lambda2,lambda3,C_QUADRIC)
     
-      USE constant
+      USE param1, only: one, zero
+      USE constant, only: pi
 
       IMPLICIT NONE
       
@@ -380,7 +381,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE BUILD_X_ROTATION_MATRIX(Theta, R)
     
-      USE constant
+      USE param1, only: one, zero
+      USE constant, only: pi
 
       IMPLICIT NONE
       
@@ -417,7 +419,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE BUILD_Y_ROTATION_MATRIX(Theta, R)
     
-      USE constant
+      USE param1, only: one, zero
+      USE constant, only: pi
 
       IMPLICIT NONE
       
@@ -455,7 +458,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE BUILD_Z_ROTATION_MATRIX(Theta, R)
     
-      USE constant
+      USE param1, only: one, zero
+      USE constant, only: pi
 
       IMPLICIT NONE
       
