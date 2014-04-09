@@ -199,14 +199,13 @@
      
 
 ! Initializing parameters needed if a correlation is used to compute
-! ep_star
+! ep_star: initializing the indexing system.
       IF(YU_STANDISH .OR. FEDORS_LANDEL) THEN
          DO M = 1, SMAX
             IF(EP_S_MAX(M) == UNDEFINED) EP_S_MAX(M) = ONE-EP_STAR
          ENDDO 
 
          IF (.NOT.CALL_DQMOM) THEN
-! Initializing the indexing system.
 
 ! refer to Syam's dissertation
             IF (SMAX == 2) THEN
@@ -214,6 +213,12 @@
                   (ep_s_max(1)+(1.-ep_s_max(1))*ep_s_max(2)) 
             ENDIF
 
+! initialize local variables            
+            DO I = 1, SMAX
+               DP_TMP(I) = D_P0(I)
+               M_MAX(I) = I
+            ENDDO
+            
 ! Rearrange the indices from coarsest particles to finest to be 
 ! used in CALC_ep_star. Done here because it may need to be done
 ! for auto_restart
