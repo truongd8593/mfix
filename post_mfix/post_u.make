@@ -97,7 +97,6 @@ post_mfix : \
     calc_quantities.$(OBJ_EXT) \
     calc_ro_g.$(OBJ_EXT) \
     calc_vol.$(OBJ_EXT) \
-    check_one_axis.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
     deallocate_arrays.$(OBJ_EXT) \
     cartesian_grid_init_namelist.$(OBJ_EXT) \
@@ -303,7 +302,6 @@ post_mfix : \
     calc_quantities.$(OBJ_EXT) \
     calc_ro_g.$(OBJ_EXT) \
     calc_vol.$(OBJ_EXT) \
-    check_one_axis.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
     deallocate_arrays.$(OBJ_EXT) \
     progress_bar_mod.$(OBJ_EXT) \
@@ -985,11 +983,6 @@ calc_vol.$(OBJ_EXT) : calc_vol.f \
             POST3D.mod \
             COMPAR.mod \
             function.inc                                                
-check_one_axis.$(OBJ_EXT) : ../model/check_one_axis.f \
-            PARAM.mod \
-            PARAM1.mod \
-            FUNITS.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/check_one_axis.f 
 compare.$(OBJ_EXT) : ../model/compare.f \
             PARAM.mod \
             PARAM1.mod \

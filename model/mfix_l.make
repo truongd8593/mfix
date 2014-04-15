@@ -155,7 +155,6 @@ $(EXEC_FILE) : \
     $(DPO)check_data_20.$(OBJ_EXT) \
     $(DPO)check_data_30.$(OBJ_EXT) \
     $(DPO)check_mass_balance.$(OBJ_EXT) \
-    $(DPO)check_one_axis.$(OBJ_EXT) \
     $(DPO)check_plane.$(OBJ_EXT) \
     $(DPO)cn_extrapol.$(OBJ_EXT) \
     $(DPO)compare.$(OBJ_EXT) \
@@ -565,7 +564,6 @@ $(EXEC_FILE) : \
     $(DPO)check_data_30.$(OBJ_EXT) \
     $(DPO)check_mass_balance.$(OBJ_EXT) \
     $(DPO)check_mod.$(OBJ_EXT) \
-    $(DPO)check_one_axis.$(OBJ_EXT) \
     $(DPO)check_plane.$(OBJ_EXT) \
     $(DPO)chischeme_mod.$(OBJ_EXT) \
     $(DPO)cn_extrapol.$(OBJ_EXT) \
@@ -2408,11 +2406,6 @@ $(DPO)check_mass_balance.$(OBJ_EXT) : check_mass_balance.f \
             $(DPO)matrix.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) check_mass_balance.f  -o $(DPO)check_mass_balance.$(OBJ_EXT) -module $(DPO)
-$(DPO)check_one_axis.$(OBJ_EXT) : check_one_axis.f \
-            $(DPO)param.mod \
-            $(DPO)param1.mod \
-            $(DPO)funits.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) check_one_axis.f  -o $(DPO)check_one_axis.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_plane.$(OBJ_EXT) : check_plane.f \
             $(DPO)funits.mod \
             $(DPO)compar.mod 
@@ -4945,8 +4938,7 @@ $(DPO)usr2.$(OBJ_EXT) : usr2.f \
             $(DPO)usr.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr2.f  -o $(DPO)usr2.$(OBJ_EXT) -module $(DPO)
 $(DPO)usr3.$(OBJ_EXT) : usr3.f \
-            $(DPO)usr.mod \
-            $(DPO)fldvar.mod 
+            $(DPO)usr.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr3.f  -o $(DPO)usr3.$(OBJ_EXT) -module $(DPO)
 $(DPO)usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
             $(DPO)usr.mod 

@@ -64,7 +64,6 @@ calc_ep_g.f
 calc_quantities.f 
 calc_ro_g.f
 calc_vol.f
-../model/check_one_axis.f 
 ../model/compare.f 
 deallocate_arrays.f 
 ../model/cartesian_grid/progress_bar_mod.f 
