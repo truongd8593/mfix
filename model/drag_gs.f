@@ -115,9 +115,8 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-
-
 !-----------------------------------------------
+
 !$omp  parallel do default(shared)                                   &
 !$omp  private( I,  IJK, IMJK, IJMK, IJKM, DM, MAXM, CM, L,          &
 !$omp           UGC, VGC, WGC, USCM, VSCM, WSCM, VREL, USCM_HYS,     &
@@ -253,12 +252,13 @@
                IF (phis .GT. ZERO) THEN
                   tmp_fac = EPs_loc(L)/phis
                   tmp_sum = tmp_sum + tmp_fac/DP_loc(L)
-                ELSE
+               ELSE
                   tmp_sum = tmp_sum + ONE/DP_loc(L) ! not important, but will avoid NaN's in empty cells
-                ENDIF
+               ENDIF
             ENDDO 
             DPA = ONE / tmp_sum
             Y_i = DP_loc(M)/DPA
+
 ! assign aliases for easy reference
             EPg = EP_G(IJK)
             ROg = RO_G(IJK)
@@ -438,11 +438,14 @@
 !     Calculate the single sphere drag correlation                     C      
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+
       DOUBLE PRECISION FUNCTION FUN_C_DS(RE, DPM, ROg, ROs, PSIs, Mug)
 
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       use param1, only: SMALL_NUMBER
       use constant, only: GRAVITY
-  
       use drag, only: CD_FUNCTION_ENUM
       use drag, only: SCHILLER_1933
       use drag, only: DALLA_1948
@@ -450,9 +453,12 @@
       use drag, only: TURTON_1986
 
       IMPLICIT NONE
-
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
       DOUBLE PRECISION, INTENT(IN) :: RE ! Reynolds number 
       DOUBLE PRECISION, INTENT(IN) :: DPM,ROg,ROs,PSIs,MUg
+!-----------------------------------------------
 
       SELECT CASE(CD_FUNCTION_ENUM)
 
@@ -460,14 +466,10 @@
 ! Schiller and Naumann (1933)
 !------------------------------------------------------------------>>
       CASE(SCHILLER_1933)
-         IF(RE <= 1.0d3) THEN
-            FUN_C_DS = 24.D0*(1.0d0 + 0.15d0*RE**0.687d0) / &
-               (RE+SMALL_NUMBER)
-         ELSE
-            FUN_C_DS = 0.44D0
-         ENDIF
+         FUN_C_DS = 24.D0*(1.0d0 + 0.15d0*RE**0.687d0) / &
+            (RE+SMALL_NUMBER)
 
-! Dalla Valle (1948)
+! Dalla Valle (1948) (C_DSXRE)
 !------------------------------------------------------------------>>
       CASE(DALLA_1948)
          FUN_C_DS = (0.63D0*SQRT(RE) + 4.8D0)**2
@@ -480,7 +482,7 @@
          Mug**2)**1.0412d0)
          RETURN
 
-! Turton and Levenspiel (1986)
+! Turton and Levenspiel (1986) (C_DSXRE)
 !------------------------------------------------------------------>>
       CASE(TURTON_1986)
          FUN_C_DS = 24.D0*(1.D0 + 0.173D0*RE**0.657D0) + &
@@ -533,7 +535,7 @@
       DOUBLE PRECISION, INTENT(IN) :: PSIs
 ! particle density of solids phase M
       DOUBLE PRECISION, INTENT(IN) :: ROs
-! Drag coefficient
+! Drag coefficient x Re
       DOUBLE PRECISION :: C_d      
 !-----------------------------------------------
 ! Local parameters
@@ -560,7 +562,7 @@
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
-! Single sphere drag coefficient
+! Single sphere drag coefficient x Re
       DOUBLE PRECISION, EXTERNAL :: FUN_C_DS
 !-----------------------------------------------
 
@@ -606,6 +608,7 @@
 !     Ding J, Gidaspow D (1990). AIChE Journal 36: 523-538.            C
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+
       SUBROUTINE DRAG_GIDASPOW(lDgA,EPg,Mug,ROg,ROPg,VREL,&
                  DPM,PSIs,ROs)
 
@@ -646,8 +649,11 @@
 ! Single sphere drag coefficient 
       DOUBLE PRECISION :: C_d 
 !-----------------------------------------------
-! Single sphere drag coefficient Dellino et al. (2005)
+! External functions
+!-----------------------------------------------
+! Single sphere drag coefficient: Schiller and Naumann
       DOUBLE PRECISION, EXTERNAL :: FUN_C_DS
+!-----------------------------------------------
 
 ! Note the presence of gas volume fraction in ROPG
       RE = merge(DPM*VREL*ROPg/Mug, LARGE_NUMBER, MUg > ZERO)
@@ -658,7 +664,11 @@
                 1.75D0*ROg*VREL/DPM
       ELSE
 ! Dilute phase - EP_g >= 0.8
-         C_d = FUN_C_DS(RE, DPM, ROg, ROs, PSIs, Mug)
+         IF(RE <= 1000D0)THEN
+            C_d = FUN_C_DS(RE, DPM, ROg, ROs, PSIs, Mug)
+         ELSE
+            C_d = 0.44D0
+         ENDIF
          lDgA = 0.75D0*C_d*VREL*ROPg*EPg**(-2.65D0) / DPM
       ENDIF
 
@@ -729,8 +739,11 @@
       DOUBLE PRECISION :: WenYu
       DOUBLE PRECISION :: PHI_gs      
 !-----------------------------------------------
-! Single sphere drag coefficient
+! External functions
+!-----------------------------------------------
+! Single sphere drag coefficient: Schiller and Naumann
       DOUBLE PRECISION, EXTERNAL :: FUN_C_DS
+!-----------------------------------------------
 
 ! Note the presence of gas volume fraction in ROPG
       RE = merge(DPM*VREL*ROPg/Mug, LARGE_NUMBER, MUg > ZERO)
@@ -740,8 +753,11 @@
                1.75D0*ROg*VREL/DPM
 
 ! Dilute phase - EP_g >= 0.8
-      C_d = FUN_C_DS(RE, DPM, ROg, ROs, PSIs, Mug)
-
+      IF(RE <= 1000D0)THEN
+         C_d = FUN_C_DS(RE, DPM, ROg, ROs, PSIs, Mug)
+      ELSE
+         C_d = 0.44D0
+      ENDIF
       WenYu = 0.75D0*C_d*VREL*ROPg*EPg**(-2.65D0) / DPM
 
 ! Switch function
@@ -750,7 +766,7 @@
 ! Blend the models
       lDgA = (1.D0-PHI_gs)*Ergun + PHI_gs*WenYu
       IF (RE == ZERO) lDgA = ZERO
-      
+
       RETURN
       END SUBROUTINE DRAG_GIDASPOW_BLEND
 
@@ -804,15 +820,21 @@
       DOUBLE PRECISION :: RE
 ! Single sphere drag coefficient 
       DOUBLE PRECISION :: C_d 
-! Single sphere drag coefficient Dellino et al. (2005)
+!-----------------------------------------------
+! External functions
+!-----------------------------------------------
+! Single sphere drag coefficient: Schiller and Naumann
       DOUBLE PRECISION, EXTERNAL :: FUN_C_DS
 !-----------------------------------------------
 
 ! Note the presence of gas volume fraction in ROPG
       RE = merge(DPM*VREL*ROPg/Mug, LARGE_NUMBER, MUg > ZERO)
 
-! Calculate the drag coeff.
-      C_d = FUN_C_DS(RE, DPM, ROg, ROs, PSIs, Mug)
+      IF(RE <= 1000.0D0)THEN
+         C_d = FUN_C_DS(RE, DPM, ROg, ROs, PSIs, Mug)
+      ELSE
+         C_d = 0.44D0
+      ENDIF
 
       lDgA = 0.75D0 * C_d * VREL * ROPg * EPg**(-2.65D0) / DPM
       IF (RE == ZERO) lDgA = ZERO
