@@ -97,7 +97,6 @@ post_mfix : \
     calc_quantities.$(OBJ_EXT) \
     calc_ro_g.$(OBJ_EXT) \
     calc_vol.$(OBJ_EXT) \
-    check_data_03.$(OBJ_EXT) \
     check_one_axis.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
     deallocate_arrays.$(OBJ_EXT) \
@@ -234,6 +233,8 @@ post_mfix : \
     get_bc_area.$(OBJ_EXT) \
     flow_to_vel.$(OBJ_EXT) \
     kintheory_energy_dissipation_ss.$(OBJ_EXT) \
+    check_geometry.$(OBJ_EXT) \
+    check_axis.$(OBJ_EXT) \
     
 	$(LINK_CMD) $(LINK_FLAGS) \
     error_manager_mod.$(OBJ_EXT) \
@@ -302,7 +303,6 @@ post_mfix : \
     calc_quantities.$(OBJ_EXT) \
     calc_ro_g.$(OBJ_EXT) \
     calc_vol.$(OBJ_EXT) \
-    check_data_03.$(OBJ_EXT) \
     check_one_axis.$(OBJ_EXT) \
     compare.$(OBJ_EXT) \
     deallocate_arrays.$(OBJ_EXT) \
@@ -468,6 +468,8 @@ post_mfix : \
     get_bc_area.$(OBJ_EXT) \
     flow_to_vel.$(OBJ_EXT) \
     kintheory_energy_dissipation_ss.$(OBJ_EXT) \
+    check_geometry.$(OBJ_EXT) \
+    check_axis.$(OBJ_EXT) \
   -o post_mfix $(LIB_FLAGS)
   
 error_manager.mod : ../model/error_manager_mod.f \
@@ -489,8 +491,7 @@ bc.mod : ../model/bc_mod.f \
 cdist.mod : ../model/cdist_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/cdist_mod.f 
 constant.mod : ../model/constant_mod.f \
-            param.mod \
-            param1.mod 
+            param.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/constant_mod.f 
 cont.mod : ../model/cont_mod.f \
             param.mod \
@@ -503,9 +504,7 @@ correl.mod : correl_mod.f \
 des_bc.mod : ../model/des/des_bc_mod.f \
             param.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_bc_mod.f 
-drag.mod : ../model/drag_mod.f \
-            param.mod \
-            param1.mod 
+drag.mod : ../model/drag_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/drag_mod.f 
 energy.mod : ../model/energy_mod.f \
             param.mod \
@@ -522,8 +521,7 @@ geometry.mod : ../model/geometry_mod.f \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/geometry_mod.f 
 ic.mod : ../model/ic_mod.f \
-            param.mod \
-            param1.mod 
+            param.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/ic_mod.f 
 indices.mod : ../model/indices_mod.f \
             param.mod \
@@ -580,8 +578,7 @@ pgcor.mod : ../model/pgcor_mod.f \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/pgcor_mod.f 
 physprop.mod : ../model/physprop_mod.f \
-            param.mod \
-            param1.mod 
+            param.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/physprop_mod.f 
 post3d.mod : post3d_mod.f \
             param.mod \
@@ -773,25 +770,17 @@ ghdtheory.mod : ../model/GhdTheory/ghdtheory_mod.f \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/GhdTheory/ghdtheory_mod.f 
 des_stl_functions.mod : ../model/des/des_stl_functions_mod.f \
+            stl.mod \
+            param.mod \
+            error_manager.mod \
+            discretelement.mod \
+            cutcell.mod \
             param1.mod \
-            funits.mod \
             run.mod \
             compar.mod \
-            discretelement.mod \
-            mfix_pic.mod \
-            cutcell.mod \
-            stl.mod \
             indices.mod \
             geometry.mod \
-            bc.mod \
             mpi_utility.mod \
-            param.mod \
-            parallel.mod \
-            constant.mod \
-            toleranc.mod \
-            sendrecv.mod \
-            quadric.mod \
-            polygon.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_stl_functions_mod.f 
 post_precision.mod : post_precision_mod.f 
@@ -827,6 +816,7 @@ rxn_com.mod : ../model/rxn_com_mod.f \
             param1.mod \
             compar.mod \
             funits.mod \
+            error_manager.mod \
             mfix_directory_path.inc                                     
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/rxn_com_mod.f 
 machine.$(OBJ_EXT) : machine.f \
@@ -995,16 +985,6 @@ calc_vol.$(OBJ_EXT) : calc_vol.f \
             post3d.mod \
             compar.mod \
             function.inc                                                
-check_data_03.$(OBJ_EXT) : ../model/check_data_03.f \
-            param.mod \
-            param1.mod \
-            geometry.mod \
-            bc.mod \
-            funits.mod \
-            compar.mod \
-            mpi_utility.mod \
-            cutcell.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/check_data_03.f 
 check_one_axis.$(OBJ_EXT) : ../model/check_one_axis.f \
             param.mod \
             param1.mod \
@@ -1569,7 +1549,10 @@ set_geometry.$(OBJ_EXT) : ../model/set_geometry.f \
             param1.mod \
             run.mod \
             geometry.mod \
-            compar.mod 
+            compar.mod \
+            bc.mod \
+            mpi_utility.mod \
+            error_manager.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/set_geometry.f 
 set_increments.$(OBJ_EXT) : ../model/set_increments.f \
             param.mod \
@@ -1586,9 +1569,12 @@ set_increments.$(OBJ_EXT) : ../model/set_increments.f \
             pgcor.mod \
             pscor.mod \
             cutcell.mod \
+            stl.mod \
             sendrecv.mod \
             mpi_utility.mod \
             parallel.mod \
+            bc.mod \
+            discretelement.mod \
             cdist.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/set_increments.f 
@@ -2018,8 +2004,6 @@ cut_cell_preprocessing.$(OBJ_EXT) : ../model/cartesian_grid/cut_cell_preprocessi
             cutcell.mod \
             vtk.mod \
             cdist.mod \
-            discretelement.mod \
-            des_stl_functions.mod \
             fldvar.mod \
             polygon.mod \
             stl.mod \
@@ -2268,15 +2252,16 @@ flow_to_vel.$(OBJ_EXT) : ../model/flow_to_vel.f \
             param.mod \
             param1.mod \
             geometry.mod \
-            fldvar.mod \
             physprop.mod \
-            run.mod \
+            discretelement.mod \
             bc.mod \
+            error_manager.mod \
             scales.mod \
+            fldvar.mod \
+            run.mod \
             indices.mod \
             funits.mod \
             compar.mod \
-            discretelement.mod \
             mfix_pic.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/flow_to_vel.f 
 kintheory_energy_dissipation_ss.$(OBJ_EXT) : ../model/kintheory_energy_dissipation_ss.f \
@@ -2297,3 +2282,16 @@ kintheory_energy_dissipation_ss.$(OBJ_EXT) : ../model/kintheory_energy_dissipati
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/kintheory_energy_dissipation_ss.f 
+check_geometry.$(OBJ_EXT) : ../model/check_data/check_geometry.f \
+            geometry.mod \
+            bc.mod \
+            cutcell.mod \
+            param1.mod \
+            param.mod \
+            error_manager.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/check_data/check_geometry.f 
+check_axis.$(OBJ_EXT) : ../model/check_data/check_axis.f \
+            param.mod \
+            param1.mod \
+            error_manager.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/check_data/check_axis.f 
