@@ -3161,9 +3161,6 @@
       DIMENSION_J   = JMAX3
       DIMENSION_K   = KMAX3
 
-      PARTIAL_CHECK_03 = .TRUE.
-      CALL CHECK_DATA_03(SHIFT)
-      PARTIAL_CHECK_03 = .FALSE.
       CALL CHECK_DATA_CARTESIAN                                ! Make sure CG data is valid
 
       CALL DEFINE_QUADRICS
