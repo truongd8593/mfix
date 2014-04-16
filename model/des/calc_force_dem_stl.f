@@ -77,12 +77,6 @@
 
       LOGICAL :: report_excess_overlap
       LOGICAL PARTICLE_SLIDE
-!-----------------------------------------------
-! Functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-
-!-----------------------------------------------
 
       INCLUDE 'function.inc'
 
@@ -102,9 +96,9 @@
          NORMAL(:) = ZERO
          FC(:,:) = ZERO
       ENDIF
+
+! first calculate particle-wall interactive forces 
       CALL CALC_DEM_FORCE_WITH_WALL_STL
-!     Calculate contact force and torque
-!---------------------------------------------------------------------
 
       PC = 1
       DO LL = 1, MAX_PIP
@@ -119,13 +113,19 @@
 
 
 
+! Initializing local variables
+         TANGENT(:) = ZERO
+         NORMAL(:) = ZERO
          FTS1(:) = ZERO
          FTS2(:) = ZERO
          FNS1(:) = ZERO
          FNS2(:) = ZERO
-
          PFT_TMP(:) = ZERO
+         PARTICLE_SLIDE = .FALSE.
 
+
+! Check neighbor history of particle LL and update arrays as needed
+! ---------------------------------------------------------------->>>
          IF(PN(LL,1).GE.1) THEN
             NLIM = PN(LL,1)+1
             N_NOCON = 0
@@ -143,29 +143,23 @@
                      PV(LL,(NI-N_NOCON+1):MAXNEIGHBORS)
                   PFT(LL,(NI-N_NOCON):(MAXNEIGHBORS-1),:) = &
                      PFT(LL,(NI-N_NOCON+1):MAXNEIGHBORS,:)
-! Save the normal direction at previous time step. Needed when 
-! using the vdh model for tangential force calculation 
+! Save the normal direction at previous time step
                   PFN(LL,(NI-N_NOCON):(MAXNEIGHBORS-1),:) = &
                      PFN(LL,(NI-N_NOCON+1):MAXNEIGHBORS,:)
                   N_NOCON = N_NOCON + 1
                   PN(LL,1) = PN(LL,1) - 1
                ENDIF
             ENDDO
-         ENDIF
 
-! Initializing rest of the neighbor list which is not in contact and
-! clean up after the above array left shifts
-         NLIM = MAX(2,PN(LL,1) + 2)
-         PN(LL,NLIM:MAXNEIGHBORS) = -1
-         PFT(LL,NLIM:MAXNEIGHBORS,:) = ZERO
-         PFN(LL,NLIM:MAXNEIGHBORS,:) = ZERO
-         IF (PN(LL,1) .GT. NEIGH_MAX) NEIGH_MAX = PN(LL,1)
-
-
-! Initializing the neighbor list contact information when particles are
-! not in contact; i.e. when particle LL has no neighbors
-         IF (PN(LL,1).EQ.0) THEN
-            PFT(LL,:,:) = ZERO
+            ! Initializing rest of the neighbor list which is not in contact and
+            ! clean up after the above array left shifts
+            IF (N_NOCON .GT. 0) THEN
+               NLIM = MAX(2,PN(LL,1) + 2)
+               PN(LL,NLIM:MAXNEIGHBORS) = -1
+               PFT(LL,NLIM:MAXNEIGHBORS,:) = ZERO
+               PFN(LL,NLIM:MAXNEIGHBORS,:) = ZERO
+            ENDIF
+            NEIGH_MAX = MAX(NEIGH_MAX,PN(LL,1))
          ENDIF
 
 ! Reset the flag array PV; during each call to calc_force_des this
@@ -173,6 +167,9 @@
 ! the array is used in the next call to calc_force_des to update
 ! particle LL neighbor history above
          PV(LL,2:MAXNEIGHBORS) = 0
+
+! End check neighbor history and update of corresponding history arrays
+! ----------------------------------------------------------------<<<
 
 
 
@@ -198,7 +195,7 @@
 
                   R_LM = DES_RADIUS(LL) + DES_RADIUS(I)
                   DIST(:) = DES_POS_NEW(I,:) - DES_POS_NEW(LL,:)
-                  DISTMOD = SQRT(DES_DOTPRDCT(DIST,DIST))
+                  DISTMOD = SQRT(DOT_PRODUCT(DIST,DIST))
 
 
                   IF(R_LM - DISTMOD.GT.SMALL_NUMBER) THEN
@@ -321,26 +318,26 @@
 ! calculate the unit vector for axis of rotation
                      if(dimn.eq.3)then
                         call des_crossprdct(tmp_ax,norm_old,normal)
-                        tmp_mag=des_dotprdct(tmp_ax,tmp_ax)
+                        tmp_mag = DOT_PRODUCT(tmp_ax,tmp_ax)
                         if(tmp_mag .gt. zero)then
                            tmp_ax(:)=tmp_ax(:)/sqrt(tmp_mag)
 ! get the old tangential direction unit vector
                            call des_crossprdct(tang_old,tmp_ax,norm_old)
 ! get the new tangential direction unit vector due to rotation
                            call des_crossprdct(tang_new,tmp_ax,normal)
-                           sigmat(:)=des_dotprdct(sigmat_old,tmp_ax)*tmp_ax(:) &
-                           + des_dotprdct(sigmat_old,tang_old)*tang_new(:)
+                           sigmat(:) = DOT_PRODUCT(sigmat_old,tmp_ax)*tmp_ax(:) &
+                           + DOT_PRODUCT(sigmat_old,tang_old)*tang_new(:)
                            sigmat(:)=sigmat(:)+overlap_t*tangent(:)
                         else
                            sigmat(:)=sigmat_old(:)+overlap_t*tangent(:)
                         endif
                      else
-                        tang_old(1) =-norm_old(2)
+                        tang_old(1) = -norm_old(2)
                         tang_old(2) = norm_old(1)
-                        tang_new(1) =-normal(2)
+                        tang_new(1) = -normal(2)
                         tang_new(2) = normal(1)
-                        sigmat(:)=des_dotprdct(sigmat_old,tang_old)*tang_new(:)
-                        sigmat(:)=sigmat(:)+overlap_t*tangent(:)
+                        sigmat(:)   = DOT_PRODUCT(sigmat_old,tang_old)*tang_new(:)
+                        sigmat(:)   = sigmat(:)+overlap_t*tangent(:)
                      endif
 
 ! Save the old normal direction
@@ -348,9 +345,9 @@
                      PFT_TMP(:)   = SIGMAT(:)
                   else
                      PFT(LL,NI,:) = PFT(LL,NI,:) + OVERLAP_T * TANGENT(:)
-                     PFT_TMP(:) = PFT(LL,NI,:) ! for an easy pass to des_dotprdct
+                     PFT_TMP(:) = PFT(LL,NI,:) ! for an easy pass to dot_product
                      PFT_TMP(:) = PFT(LL,NI,:) - &
-                     DES_DOTPRDCT(PFT_TMP,NORMAL)*NORMAL(:)
+                     DOT_PRODUCT(PFT_TMP,NORMAL)*NORMAL(:)
                   endif
                   
                   FTS1(:) = -KT_DES * PFT_TMP(:)

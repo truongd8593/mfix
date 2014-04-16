@@ -29,9 +29,14 @@
       USE cutcell, only: use_stl
       implicit none 
       integer :: ijk, count 
+      integer :: max_des_facets
+      
+      double precision, allocatable :: vertex_des, norm_face_des 
       
       CALL INIT_ERR_MSG("DES_STL_PREPROCESSING")
 
+      !max_des_facets  = 2*(2*(imax*jmax) + 2*(jmax*kmax) + 2*(kmax*imax))
+      !allocate(vertex_des(max_des_facets))
       WRITE(err_msg, '(A, /, A, ES15.7)')& 
       'Pre-Processing stl information for discrete model now', &
       'TOL_STL = ', tol_stl
@@ -444,8 +449,10 @@
       I = IMIN1 !West Face 
       DO K = KMIN1, KMAX1
          DO J = JMIN1, JMAX1               
-            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-            IJK  = FUNIJK(I,J,K)                        
+            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE     
+            !IF(.not.fluid_at(FUNIJK(I+1,J,K))) cycle 
+                       
+            IJK  = FUNIJK(I,J,K)                   
             N_FACETS_DES = N_FACETS_DES + 1 
             NF = N_FACETS_DES
             NORM_FACE(NF,:) = (/one, zero, zero/)
@@ -474,6 +481,8 @@
       DO K = KMIN1, KMAX1
          DO J = JMIN1, JMAX1 
             IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+            !IF(.not.fluid_at(FUNIJK(I-1,J,K))) cycle 
+            
             IJK  = FUNIJK(I,J,K)            
             N_FACETS_DES = N_FACETS_DES + 1 
             NF = N_FACETS_DES
@@ -497,6 +506,8 @@
       DO K = KMIN1, KMAX1
          DO I = IMIN1, IMAX1 
             IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+            !IF(.not.fluid_at(FUNIJK(I,J+1,K))) cycle 
+            
             IJK  = FUNIJK(I,J,K)            
             N_FACETS_DES = N_FACETS_DES + 1 
             NF = N_FACETS_DES
@@ -520,6 +531,8 @@
       DO K = KMIN1, KMAX1
          DO I = IMIN1, IMAX1 
             IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+            
+            !IF(.not.fluid_at(FUNIJK(I,J-1,K))) cycle 
             IJK  = FUNIJK(I,J,K)            
             N_FACETS_DES = N_FACETS_DES + 1 
             NF = N_FACETS_DES
@@ -542,6 +555,8 @@
       DO J = JMIN1, JMAX1
          DO I = IMIN1, IMAX1 
             IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+            
+            !IF(.not.fluid_at(FUNIJK(I,J,K+1))) cycle 
             IJK  = FUNIJK(I,J,K)            
             N_FACETS_DES = N_FACETS_DES + 1 
             NF = N_FACETS_DES
@@ -563,6 +578,8 @@
       DO J = JMIN1, JMAX1
          DO I = IMIN1, IMAX1 
             IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+            
+            !IF(.not.fluid_at(FUNIJK(I,J,K-1))) cycle 
             IJK  = FUNIJK(I,J,K)            
             N_FACETS_DES = N_FACETS_DES + 1 
             NF = N_FACETS_DES
