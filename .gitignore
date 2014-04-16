@@ -1,5 +1,7 @@
 *.exe
 Makefile
 model/mpif.h
-model/mifx_directory_path.inc
+model/mfix_directory_path.inc
+model/files.lis
 OBJ*/
+tmp.*
