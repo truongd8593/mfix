@@ -1,0 +1,5 @@
+*.exe
+Makefile
+model/mpif.h
+model/mifx_directory_path.inc
+OBJ*/
