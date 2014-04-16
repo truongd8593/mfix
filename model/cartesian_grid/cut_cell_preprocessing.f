@@ -1199,7 +1199,7 @@
          I1 = IEND3
          I2 = ISTART3
 
-         IF(X2>=ZERO.AND.X1<=XLENGTH) THEN
+         IF(X2>=ZERO-DX(ISTART3).AND.X1<=XLENGTH+DX(IEND3)) THEN
             DO I = ISTART3, IEND3
                IP = I+1
                IF(XG_E(I)+X_OFFSET*DX(IP)>=X1-TOL_STL) THEN
@@ -1221,7 +1221,7 @@
          J1 = JEND3
          J2 = JSTART3
 
-         IF(Y2>=ZERO.AND.Y1<=YLENGTH) THEN
+         IF(Y2>=ZERO-DY(JSTART3).AND.Y1<=YLENGTH+DY(JEND3)) THEN
             DO J = JSTART3, JEND3
                JP = J+1
                IF(YG_N(J)+Y_OFFSET*DY(JP)>=Y1-TOL_STL) THEN
@@ -1242,7 +1242,7 @@
          K1 = KEND3
          K2 = KSTART3
 
-         IF(Z2>=ZERO.AND.Z1<=ZLENGTH) THEN
+         IF(Z2>=ZERO-DZ(KSTART3).AND.Z1<=ZLENGTH+DZ(KEND3)) THEN
             DO K = KSTART3, KEND3
                KP=K+1
 
