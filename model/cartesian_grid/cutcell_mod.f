@@ -18,6 +18,9 @@
 !     Flag to activate adjustment of each processor domain size
       LOGICAL :: ADJUST_PROC_DOMAIN_SIZE
 
+!     Flag to report best domain size on each processor and quit
+      LOGICAL :: REPORT_BEST_DOMAIN_SIZE
+
 !     maximum number of cut cells
       INTEGER :: DIMENSION_MAX_CUT_CELL
 

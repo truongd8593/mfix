@@ -719,6 +719,11 @@
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
+!  <description>Attemps to adjust grid partition. Each processor will be assigned its own size to minimize load imbalance  </description>
+      REPORT_BEST_DOMAIN_SIZE = .FALSE.
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
 !  <description> Temporary setting used in serial run to report best domain size for parallel run </description>
       NODESI_REPORT = 1 
 !</keyword>

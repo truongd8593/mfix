@@ -102,22 +102,31 @@
             IF(MyPE == PE_IO) THEN 
                WRITE(*,*)'Reading gridmap from grimap.dat...'
                OPEN(UNIT=777, FILE='gridmap.dat', STATUS='OLD') 
-               READ(777,*) 
-               READ(777,*) 
-               READ(777,*) 
-               READ(777,*) 
-               READ(777,*) 
-               DO IPROC = 0,NumPEs-1
-                  READ(777,*) jproc,jsize1_all(IPROC)
+
+               READ (777, *) NODESI,NODESJ,NODESK
+               DO IPROC = 0,NODESI-1
+                  READ(777,*) jPROC,Isize1_all(IPROC)
                ENDDO
+               DO IPROC = 0,NODESJ-1
+                  READ(777,*) jPROC,Jsize1_all(IPROC)
+               ENDDO
+               DO IPROC = 0,NODESK-1
+                  READ(777,*) jPROC,Ksize1_all(IPROC)
+               ENDDO
+
                CLOSE(777)
             ENDIF
+            CALL BCAST(ISIZE1_ALL)
             CALL BCAST(JSIZE1_ALL)
+            CALL BCAST(KSIZE1_ALL)
+            allocate( ISIZE_ALL(0:NODESI-1))
             allocate( JSIZE_ALL(0:NODESJ-1))
+            allocate( KSIZE_ALL(0:NODESK-1))
+            isize_all = isize1_all
             jsize_all = jsize1_all
+            ksize_all = ksize1_all
          ENDIF
       ENDIF
-
 
 ! The following is general for 1-d or 2-d or 3-d decompostion
 ! Determining  istart, jstart and kstart for all the processors

@@ -1937,27 +1937,39 @@
 
 
 
-      IF(NUMPES.GT.1.AND.MYPE.EQ.0) THEN
+      IF(NUMPES.GT.1) THEN
 
-         WRITE(*,1000)"============================================================================="
-         WRITE(*,1000)"    PROCESSOR    I-SIZE     J-SIZE     K-SIZE    # CELLS    # CELLS   DIFF."
-         WRITE(*,1000)"                                                 (BCKGRD) (RE-INDEXED) (%)"
-         WRITE(*,1000)"============================================================================="
+         call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
+
+         IF(MyPE.EQ.0) THEN
+            WRITE(*,1000)"============================================================================="
+            WRITE(*,1000)"    PROCESSOR    I-SIZE     J-SIZE     K-SIZE    # CELLS    # CELLS   DIFF."
+            WRITE(*,1000)"                                                 (BCKGRD) (RE-INDEXED) (%)"
+            WRITE(*,1000)"============================================================================="
+         ENDIF
+
+         call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
 
          DO IPROC = 0,NumPes-1
-         I_SIZE = IEND1 - ISTART1 + 1
-         J_SIZE = JEND1 - JSTART1 + 1
-         K_SIZE = KEND1 - KSTART1 + 1
-            DIFF_NCPP(IPROC) = DFLOAT(NEW_IJKSIZE3_ALL(IPROC)-NCPP_UNIFORM(IPROC))/DFLOAT(NCPP_UNIFORM(IPROC))*100.0D0
-            WRITE(*,1060) IPROC,I_SIZE,J_SIZE,K_SIZE,BACKGROUND_IJKEND3_ALL(IPROC),NEW_IJKSIZE3_ALL(IPROC),DIFF_NCPP(IPROC)
+            IF(MyPE==IPROC) THEN
+               I_SIZE = IEND1 - ISTART1 + 1
+               J_SIZE = JEND1 - JSTART1 + 1
+               K_SIZE = KEND1 - KSTART1 + 1
+               DIFF_NCPP(IPROC) = DFLOAT(NEW_IJKSIZE3_ALL(IPROC)-NCPP_UNIFORM(IPROC))/DFLOAT(NCPP_UNIFORM(IPROC))*100.0D0
+               WRITE(*,1060) IPROC,I_SIZE,J_SIZE,K_SIZE,BACKGROUND_IJKEND3_ALL(IPROC),NEW_IJKSIZE3_ALL(IPROC),DIFF_NCPP(IPROC)
+            ENDIF
+            call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
          ENDDO
-         WRITE(*,1000)"============================================================================="
-         WRITE(*,1070)'MAX # OF CELLS (BACKGRD)    = ',MAXVAL(NCPP_UNIFORM),'     AT PROCESSOR: ',MAXLOC(NCPP_UNIFORM)-1
-         WRITE(*,1070)'MAX # OF CELLS (RE-INDEXED) = ',MAXVAL(NEW_IJKSIZE3_ALL),'     AT PROCESSOR: ',MAXLOC(NEW_IJKSIZE3_ALL)-1
-         WRITE(*,1080)'DIFFERENCE (%)              = ',DFLOAT(MAXVAL(NEW_IJKSIZE3_ALL)-MAXVAL(NCPP_UNIFORM))/DFLOAT(MAXVAL(NCPP_UNIFORM))*100.0
-         WRITE(*,1000)"============================================================================="
 
-
+         call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
+         IF(MyPE.EQ.0) THEN
+            WRITE(*,1000)"============================================================================="
+            WRITE(*,1070)'MAX # OF CELLS (BACKGRD)    = ',MAXVAL(NCPP_UNIFORM),'     AT PROCESSOR: ',MAXLOC(NCPP_UNIFORM)-1
+            WRITE(*,1070)'MAX # OF CELLS (RE-INDEXED) = ',MAXVAL(NEW_IJKSIZE3_ALL),'     AT PROCESSOR: ',MAXLOC(NEW_IJKSIZE3_ALL)-1
+            WRITE(*,1080)'DIFFERENCE (%)              = ',DFLOAT(MAXVAL(NEW_IJKSIZE3_ALL)-MAXVAL(NCPP_UNIFORM))/DFLOAT(MAXVAL(NCPP_UNIFORM))*100.0
+           WRITE(*,1000)"============================================================================="
+         ENDIF
+         call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
       ENDIF
 
 1000  FORMAT(1x,A)
