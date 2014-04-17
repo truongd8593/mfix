@@ -39,19 +39,19 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      PROGRAM MFIX 
+      PROGRAM MFIX
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE run
-      USE time_cpu 
-      USE funits 
+      USE time_cpu
+      USE funits
       USE output
-      USE compar      
-      USE mpi_utility     
+      USE compar
+      USE mpi_utility
       USE parallel_mpi
       USE discretelement
       USE mfix_pic
@@ -79,15 +79,20 @@
 ! loop counter
       INTEGER :: L
 ! variable needed for including function.inc
-       INTEGER :: IJK 
+       INTEGER :: IJK
 ! Error index
       INTEGER :: IER
-! DISTIO variable for specifying the mfix version 
-      CHARACTER :: version*512      
+! DISTIO variable for specifying the mfix version
+      CHARACTER :: version*512
+! environment variable
+      CHARACTER :: omp_num_threads*512
+      INTEGER :: length
+      INTEGER :: status
+      CHARACTER :: arg*512
 
 !$      INTEGER num_threads, threads_specified, omp_id
 !$      INTEGER mp_numthreads, omp_get_num_threads
-!$      INTEGER omp_get_thread_num      
+!$      INTEGER omp_get_thread_num
 
 !-----------------------------------------------
 ! Include statement functions
@@ -105,7 +110,7 @@
 
 ! Invoke MPI initialization routines and get rank info.
       CALL PARALLEL_INIT
-    
+
 ! we want only PE_IO to write out common error messages
       DMP_LOG = (myPE == PE_IO)
 
@@ -117,8 +122,14 @@
 !      ITER_RESTART      = 1
 
 ! specify the number of processors to be used
-!$      WRITE(*,'(A,$)') 'Enter the number of threads to be used for SMP: '
-!$      READ(*,*) threads_specified
+!$        call get_environment_variable("OMP_NUM_THREADS",omp_num_threads,length,status, .true.)
+!$      if (status.eq.0 .and. length.ne.0) then
+!$        read(omp_num_threads,*) threads_specified
+!$      else
+!$        WRITE(*,'(A,$)') 'Enter the number of threads to be used for SMP: '
+!$        READ(*,*) threads_specified
+!$      endif
+
 !$      call omp_set_num_threads(threads_specified)
 
 ! Find the number of processors used
@@ -130,35 +141,35 @@
 
 
 ! Set machine dependent constants
-      CALL MACHINE_CONS 
+      CALL MACHINE_CONS
 
 ! Get the date and time. They give the unique run_id in binary output
 ! files
-      CALL GET_RUN_ID 
+      CALL GET_RUN_ID
 
-! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch 
+! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
 ! queue terminates. timestep at the beginning of execution
       CALL CPU_TIME (CPU00)
 
 ! Read input data, check data, do computations for IC and BC locations
 ! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
-      CALL GET_DATA 
+      CALL GET_DATA
 
 ! Write the initial part of the standard output file
       CALL WRITE_OUT0
       IF(.NOT.CARTESIAN_GRID)  CALL WRITE_FLAGS
 
 ! Write the initial part of the special output file(s)
-      CALL WRITE_USR0 
-      
-!$    CALL START_LOG 
-!$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' '  
-!$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' Number of processors used = ', threads_specified  
-!$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' '  
-!$    CALL END_LOG 
+      CALL WRITE_USR0
+
+!$    CALL START_LOG
+!$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' '
+!$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' Number of processors used = ', threads_specified
+!$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' '
+!$    CALL END_LOG
 
 !  setup for PC quickwin application
-      CALL PC_QUICKWIN 
+      CALL PC_QUICKWIN
 
 
 
@@ -187,126 +198,126 @@
          CALL SET_CONSTPROP
       ENDIF
 
-      DT_TMP = DT 
-      SELECT CASE (TRIM(RUN_TYPE))  
+      DT_TMP = DT
+      SELECT CASE (TRIM(RUN_TYPE))
 
-      CASE ('NEW')  
+      CASE ('NEW')
 ! Write the initial part of the restart files
-         CALL WRITE_RES0 
-         DO L = 1, N_SPX 
-            CALL WRITE_SPX0 (L, 0) 
-         ENDDO 
+         CALL WRITE_RES0
+         DO L = 1, N_SPX
+            CALL WRITE_SPX0 (L, 0)
+         ENDDO
 
-       CASE ('RESTART_1')  
+       CASE ('RESTART_1')
 ! Read the time-dependant part of the restart file
-         CALL READ_RES1 
-         CALL START_LOG 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1010) TIME, NSTEP 
-         CALL END_LOG 
-         if (myPE == PE_IO) WRITE (UNIT_OUT, 1010) TIME, NSTEP 
-         IF (FULL_LOG) WRITE (*, 1010) TIME, NSTEP 
+         CALL READ_RES1
+         CALL START_LOG
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1010) TIME, NSTEP
+         CALL END_LOG
+         if (myPE == PE_IO) WRITE (UNIT_OUT, 1010) TIME, NSTEP
+         IF (FULL_LOG) WRITE (*, 1010) TIME, NSTEP
 
-      CASE ('RESTART_2')  
-         TIME_SAVE = TIME 
+      CASE ('RESTART_2')
+         TIME_SAVE = TIME
 ! DISTIO
          if (myPE .ne. PE_IO .and. bDist_IO .and. bStart_with_one_res) then
              write (unit_res,rec=1) version
              write (unit_res,rec=2) 4
              write (unit_res,rec=3) 4
-         endif 
- 
-         CALL READ_RES1 
-         TIME = TIME_SAVE 
-         CALL START_LOG 
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1010) TIME, NSTEP 
-         CALL END_LOG 
-         if (myPE == PE_IO) WRITE (UNIT_OUT, 1010) TIME, NSTEP 
-         IF (FULL_LOG) WRITE (*, 1010) TIME, NSTEP 
-         CALL WRITE_RES0 
-         CALL WRITE_RES1 
-         DO L = 1, N_SPX 
-            CALL WRITE_SPX0 (L, 0) 
-            CALL WRITE_SPX1 (L, 0) 
-         END DO 
+         endif
+
+         CALL READ_RES1
+         TIME = TIME_SAVE
+         CALL START_LOG
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1010) TIME, NSTEP
+         CALL END_LOG
+         if (myPE == PE_IO) WRITE (UNIT_OUT, 1010) TIME, NSTEP
+         IF (FULL_LOG) WRITE (*, 1010) TIME, NSTEP
+         CALL WRITE_RES0
+         CALL WRITE_RES1
+         DO L = 1, N_SPX
+            CALL WRITE_SPX0 (L, 0)
+            CALL WRITE_SPX1 (L, 0)
+         END DO
          call write_netcdf(0,0,time)
 
-      CASE DEFAULT 
-         CALL START_LOG 
+      CASE DEFAULT
+         CALL START_LOG
          IF(DMP_LOG)WRITE (UNIT_LOG, *) &
-            ' MFIX: Do not know how to process' 
-         IF(DMP_LOG)WRITE (UNIT_LOG, *) ' RUN_TYPE in data file' 
-         CALL END_LOG 
-         call mfix_exit(myPE)  
+            ' MFIX: Do not know how to process'
+         IF(DMP_LOG)WRITE (UNIT_LOG, *) ' RUN_TYPE in data file'
+         CALL END_LOG
+         call mfix_exit(myPE)
 
-      END SELECT 
+      END SELECT
 
-      call MPI_Barrier(MPI_COMM_WORLD,mpierr)   
+      call MPI_Barrier(MPI_COMM_WORLD,mpierr)
 
-      IF (DT_TMP /= UNDEFINED) THEN 
-         DT = MAX(DT_MIN,MIN(DT_MAX,DT)) 
-      ELSE 
-         DT = DT_TMP 
-      ENDIF 
+      IF (DT_TMP /= UNDEFINED) THEN
+         DT = MAX(DT_MIN,MIN(DT_MAX,DT))
+      ELSE
+         DT = DT_TMP
+      ENDIF
 
 ! Set arrays for computing indices
-      CALL SET_INCREMENTS 
+      CALL SET_INCREMENTS
 
 ! Set arrays for computing indices for higher order scheme
-      CALL SET_INCREMENTS3 
+      CALL SET_INCREMENTS3
 
 
 !      IF(.NOT.RE_INDEXING) CALL WRITE_IJK_VALUES
 
 
-! Set the flags for wall surfaces impermeable and identify flow 
+! Set the flags for wall surfaces impermeable and identify flow
 ! boundaries using FLAG_E, FLAG_N, and FLAG_T
-      CALL SET_FLAGS1 
+      CALL SET_FLAGS1
 
 !  Update flags for Cartesian_GRID.
       IF(CARTESIAN_GRID) CALL CHECK_BC_FLAGS
 
 ! Calculate cell volumes and face areas
       IF(.NOT.CARTESIAN_GRID)  THEN
-         CALL SET_GEOMETRY1 
+         CALL SET_GEOMETRY1
 !       ELSE
 !         CALL SET_GEOMETRY
        ENDIF
 
 ! Find corner cells and set their face areas to zero
       IF(.NOT.CARTESIAN_GRID)  THEN
-         CALL GET_CORNER_CELLS (IER) 
+         CALL GET_CORNER_CELLS (IER)
       ELSE
          IF (SET_CORNER_CELLS)  CALL GET_CORNER_CELLS (IER)
       ENDIF
 
 ! Set constant physical properties
-      CALL SET_CONSTPROP 
-      
+      CALL SET_CONSTPROP
+
 ! Set initial conditions
-      CALL SET_IC 
+      CALL SET_IC
 
 ! Set point sources.
       CALL SET_PS
 
 ! Set boundary conditions
-      CALL ZERO_NORM_VEL 
-      CALL SET_BC0 
+      CALL ZERO_NORM_VEL
+      CALL SET_BC0
 
 ! JFD: cartesian grid implementation
-      IF(CARTESIAN_GRID) CALL CG_SET_BC0 
+      IF(CARTESIAN_GRID) CALL CG_SET_BC0
 
 ! Set gas mixture molecular weight
-      CALL SET_MW_MIX_G 
+      CALL SET_MW_MIX_G
 
 ! Set the pressure field for a fluidized bed
-      IF (RUN_TYPE == 'NEW') CALL SET_FLUIDBED_P 
+      IF (RUN_TYPE == 'NEW') CALL SET_FLUIDBED_P
 
 ! Initialize densities.
       CALL SET_RO_G
       CALL SET_RO_S
 
 ! Initialize time dependent boundary conditions
-      CALL SET_BC1 
+      CALL SET_BC1
 
 ! Check the field variable data and report errors.
       IF(.NOT.CARTESIAN_GRID)  CALL CHECK_DATA_20
@@ -341,7 +352,7 @@
 ! Initialization of DEM quantities: set initial conditions (bulk
 ! density, velocities), boundary conditions (mass inlet/outlet),
 ! physical constants, PIC, ...
-! This is best performed once all the fluid geometry information 
+! This is best performed once all the fluid geometry information
 ! has been obtained and initial fields set.
       IF(DISCRETE_ELEMENT) THEN
          CALL CHECK_DES_DATA
@@ -354,9 +365,9 @@
       IF (QMOMK) THEN
           CALL QMOMK_MAKE_ARRAYS
       ENDIF
-      
 
-! AEOLUS: debug prints 
+
+! AEOLUS: debug prints
       if (DBGPRN_LAYOUT .or. bdist_io) then
 !     write (*,*) myPE , ' E.4 ... version = ' , version(1:33)
          call debug_write_layout(1,ier)
@@ -364,13 +375,13 @@
       endif
 
 ! Initializations for CPU time calculations in iterate
-      CPUOS = 0. 
-      CALL CPU_TIME (CPU1) 
-      CPU_NLOG = CPU1 
-      TIME_NLOG = TIME - DT 
+      CPUOS = 0.
+      CALL CPU_TIME (CPU1)
+      CPU_NLOG = CPU1
+      TIME_NLOG = TIME - DT
 
 ! Get the initial value of CPU time
-      CALL CPU_TIME (CPU0) 
+      CALL CPU_TIME (CPU0)
 
 ! Find the solution of the equations from TIME to TSTOP at
 ! intervals of DT
@@ -383,7 +394,7 @@
 
 ! Get the final value of CPU time.  The difference gives the
 ! CPU time used for the computations.
-      CALL CPU_TIME (CPU1) 
+      CALL CPU_TIME (CPU1)
 
 ! Compute the CPU time and write it out in the .OUT file.
       CPUTIME_USED = CPU1 - CPU0 - CPU_IO
@@ -392,7 +403,7 @@
          '************** CPU TIME for IO **********************',&
          CPU_IO
       endif
-      CALL WRITE_OUT3 (CPUTIME_USED) 
+      CALL WRITE_OUT3 (CPUTIME_USED)
 
 
 ! JFD: cartesian grid implementation
@@ -402,22 +413,22 @@
          ELSE
             RUN_STATUS = 'DT < DT_MIN.  Recovery not possible!'
          ENDIF
-         CALL GET_TUNIT(CPUTIME_USED,TUNIT) 
+         CALL GET_TUNIT(CPUTIME_USED,TUNIT)
          CALL UPDATE_DASHBOARD(0,CPUTIME_USED,TUNIT)
       ENDIF
       IF(CARTESIAN_GRID)  CALL CLOSE_CUT_CELL_FILES
 
 ! Finalize and terminate MPI
       call parallel_fin
-            
+
       CALL exit(0)
- 1000 FORMAT(/1X,'MFIX ',A,' Simulation:'/) 
+ 1000 FORMAT(/1X,'MFIX ',A,' Simulation:'/)
  1010 FORMAT(/1X,70('*')//' From: MFIX',/&
          ' Message: Read in data from .RES file for TIME = ',G12.5,/&
-         ' Time step number (NSTEP) =',I7,/1X,70('*')/) 
+         ' Time step number (NSTEP) =',I7,/1X,70('*')/)
 
-      END PROGRAM MFIX 
-      
+      END PROGRAM MFIX
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -451,10 +462,10 @@
       USE compar
       USE mpi_utility
       USE sendrecv
-      USE sendrecv3      
+      USE sendrecv3
       USE indices
       USE leqsol
-      USE cdist      
+      USE cdist
       USE funits
       USE run
       USE time_cpu
@@ -471,34 +482,34 @@
 !-----------------------------------------------
 ! phase index
       INTEGER :: M
-! indices      
+! indices
       INTEGER :: i, j, k, ijk, ijk_GL, ijk_PROC, ijk_IO
 !
       integer :: i_of_g, j_of_g, k_of_g
       integer :: indxA, indxA_gl, indxB, indxB_gl, indxC, indxC_gl
       integer :: indxD, indxD_gl, indxE, indxE_gl, indxF, indxF_gl
-      integer :: indxG, indxG_gl, indxH, indxH_gl      
-!            
+      integer :: indxG, indxG_gl, indxH, indxH_gl
+!
       logical :: amgdbg = .TRUE.
-      
+
       character fname*80
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      
+
       k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
       i_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)* &
                            (jmax3-jmin3+1))) - 1)/(jmax3-jmin3+1)) + imin3
       j_of_g(ijk) = ijk - (i_of_g(ijk)-imin3)*(jmax3-jmin3+1) - &
-                     (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1)) - 1 + jmin3  
-                      
+                     (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1)) - 1 + jmin3
+
 
 !DISTIO
 !      fname = "layout_xxxx.txt"
 !      write (fname(8:11),'(i4.4)') myPE
       fname = "layout_xxxxx.txt"
-      write (fname(8:12),'(i5.5)') myPE      
+      write (fname(8:12),'(i5.5)') myPE
       open (unit=11,file=fname,status='unknown')
-      
+
       write (11,*) ' ********************************************'
       write (11,*) ' ********************************************'
       write (11,*) ' ********************************************'
@@ -508,19 +519,19 @@
       write (11,*) ' myPE =           ' , myPE
       write (11,*) ' '
       write (11,*) ' '
- 
+
 
     IF (AMGDBG .OR. bDist_IO) THEN
       write(11,"('BLK1: Running from istart3,iend3 .AND. jstart3, jend3 .AND. kstart3, kend3')")
-      write(11,"(' (   i ,    j,     k) =>    ijk      ijk_GL     ijk_PROC    ijk_IO')") 
+      write(11,"(' (   i ,    j,     k) =>    ijk      ijk_GL     ijk_PROC    ijk_IO')")
       write(11,"(' ====================      =====     =======    ========    ======')")
-      DO k = kstart3, kend3 
+      DO k = kstart3, kend3
         DO i = istart3,iend3
           DO j = jstart3, jend3
              ijk = FUNIJK(i,j,k)
              ijk_GL = FUNIJK_GL(i,j,k)
              ijk_PROC = FUNIJK_PROC(i,j,k,myPE)
-             ijk_IO = FUNIJK_IO(i,j,k)            
+             ijk_IO = FUNIJK_IO(i,j,k)
              write(11,"(' (',I4,' , ',I4,' , ',I4,') => ',4(I8,' , '))") &
                                          i,j,k,ijk,ijk_GL,ijk_PROC,ijk_IO
           ENDDO
@@ -528,9 +539,9 @@
       ENDDO
 
       write(11,"(/,/,'BLK2: Print out Bottom, South, West, East, North, Top neighbors')")
-      write(11,"(' (   i ,    j,     k) =>    ijk    ijk_GL    B_of    S_of    W_of    E_of    N_of    T_of')") 
+      write(11,"(' (   i ,    j,     k) =>    ijk    ijk_GL    B_of    S_of    W_of    E_of    N_of    T_of')")
       write(11,"(' ====================      =====   =======  ======  ======  ======  ======  ======  ======')")
-      DO k = kstart3, kend3 
+      DO k = kstart3, kend3
         DO i = istart3,iend3
           DO j = jstart3, jend3
              ijk = FUNIJK(i,j,k)
@@ -542,10 +553,10 @@
         ENDDO
       ENDDO
 
-      write(11,"(/,/,'BLK3: Print out km, jm, im, ip, jp, kp neighbors')")      
-      write(11,"(' (   i ,    j,     k) =>    ijk    ijk_GL    km_of   jm_of   im_of   ip_of   jp_of   kp_of')") 
+      write(11,"(/,/,'BLK3: Print out km, jm, im, ip, jp, kp neighbors')")
+      write(11,"(' (   i ,    j,     k) =>    ijk    ijk_GL    km_of   jm_of   im_of   ip_of   jp_of   kp_of')")
       write(11,"(' ====================      =====   =======  ======  ======  ======  ======  ======  ======')")
-      DO k = kstart3, kend3 
+      DO k = kstart3, kend3
         DO i = istart3,iend3
           DO j = jstart3, jend3
              ijk = FUNIJK(i,j,k)
@@ -558,15 +569,15 @@
       ENDDO
 
       write(11,"(/,'BLK4a: Active Fluid Cells:FLUID_AT(ijk)=.T.',/,&
-     &           ' (   i ,    j,     k) =>    ijk  [   x ,     ,     z]')") 
+     &           ' (   i ,    j,     k) =>    ijk  [   x ,     ,     z]')")
       write(11,"(' ====================      =====  ====================')")
        DO ijk = ijkstart3, ijkend3
-         I = I_OF(IJK) 
-         J = J_OF(IJK) 
-         K = K_OF(IJK)        
-        
-!         IF (FLOW_AT_E(IJK)) THEN 
-         IF (FLUID_AT(IJK)) THEN         
+         I = I_OF(IJK)
+         J = J_OF(IJK)
+         K = K_OF(IJK)
+
+!         IF (FLOW_AT_E(IJK)) THEN
+         IF (FLUID_AT(IJK)) THEN
 !          write(11,"(' (',I4,' , ',I4,' , ',I4,') => ',I8)") I,J,K,ijk
            write(11,"(' (',I4,' , ',I4,' , ',I4,') => ',I8,' [',E12.5,',',E12.5,' ]')") I,J,K,ijk,X(i),Z(k)
          ENDIF
@@ -586,41 +597,41 @@
          ENDIF
       ENDDO
 
-      DO k = kstart3, kend3 
+      DO k = kstart3, kend3
         DO i = istart3,iend3
           DO j = jstart3, jend3
              ijk = FUNIJK(i,j,k)
              ijk_GL = FUNIJK_GL(i,j,k)
 
-             if (i == istart2 .AND. j == jstart2) then 
-                 indxA = ijk 
+             if (i == istart2 .AND. j == jstart2) then
+                 indxA = ijk
                  indxA_gl = ijk_GL
-             endif       
-             if (i == istart1 .AND. j == jstart1) then 
+             endif
+             if (i == istart1 .AND. j == jstart1) then
                  indxE = ijk
                  indxE_gl = ijk_GL
-             endif                       
-             if (i == istart2 .AND. j == jend2) then 
+             endif
+             if (i == istart2 .AND. j == jend2) then
                  indxB = ijk
                  indxB_gl = ijk_GL
-             endif                       
-             if (i == istart1 .AND. j == jend1) then 
+             endif
+             if (i == istart1 .AND. j == jend1) then
                  indxF = ijk
                  indxF_gl = ijk_GL
-             endif                       
-             if (i == iend1 .AND. j == jstart1) then 
+             endif
+             if (i == iend1 .AND. j == jstart1) then
                  indxH = ijk
                  indxH_gl = ijk_GL
-             endif                       
-             if (i == iend2 .AND. j == jstart2) then 
+             endif
+             if (i == iend2 .AND. j == jstart2) then
                  indxD = ijk
                  indxD_gl = ijk_GL
-             endif                       
-             if (i == iend1 .AND. j == jend1) then 
+             endif
+             if (i == iend1 .AND. j == jend1) then
                  indxG = ijk
                  indxG_gl = ijk_GL
-             endif                       
-             if (i == iend2 .AND. j == jend2) then 
+             endif
+             if (i == iend2 .AND. j == jend2) then
                  indxC = ijk
                  indxC_gl = ijk_GL
              endif
@@ -648,93 +659,93 @@
 !                                        east_of(ijk),north_of(ijk),top_of(ijk)
 
       ENDDO
-  
-!      write(UNIT_LOG,"(/,' (   i ,    j,     k) =>    ijk (Active Fluid)')") 
+
+!      write(UNIT_LOG,"(/,' (   i ,    j,     k) =>    ijk (Active Fluid)')")
 !      write(UNIT_LOG,"(' ====================      =====')")
 !       DO ijk = ijkstart3, ijkend3
-!         I = I_OF(IJK) 
-!         J = J_OF(IJK) 
-!         K = K_OF(IJK)               
-        
-!         IF (FLOW_AT_E(IJK)) THEN 
-!         IF (FLUID_AT(IJK)) THEN        
+!         I = I_OF(IJK)
+!         J = J_OF(IJK)
+!         K = K_OF(IJK)
+
+!         IF (FLOW_AT_E(IJK)) THEN
+!         IF (FLUID_AT(IJK)) THEN
 !           write(UNIT_LOG,"(' (',I4,' , ',I4,' , ',I4,') => ',I8)") I,J,K,ijk
 !         ENDIF
 !      END DO
 
 
     endif   ! end if(amgdbg .or. bdist_io)
-            
-      M = 0 
-!      CALL WRITE_AB_M (A_M, B_M, IJKMAX2, M, IER)      
+
+      M = 0
+!      CALL WRITE_AB_M (A_M, B_M, IJKMAX2, M, IER)
 
     IF (AMGDBG .OR. bDist_IO) THEN
       write(11,"(/,/,'BLK6: ========= ORIGINAL MFIX VARIABLES ===========')")
-      write(11,"('PE ',I5,': imin1  = ',I6,3X,'imax1= ',I6,/,'PE ',I5,': jmin1  = ',I6,3X,'jmax1= ',I6)") & 
+      write(11,"('PE ',I5,': imin1  = ',I6,3X,'imax1= ',I6,/,'PE ',I5,': jmin1  = ',I6,3X,'jmax1= ',I6)") &
              myPE,imin1,imax1,myPE,jmin1,jmax1
       write(11,"('PE ',I5,': kmin1  = ',I6,3X,'kmax1= ',I6)") myPE,kmin1,kmax1
-      write(11,"('-----')")      
-      write(11,"('PE ',I5,': imin2  = ',I6,3X,'imax2= ',I6,/,'PE ',I5,': jmin2  = ',I6,3X,'jmax2= ',I6)") & 
+      write(11,"('-----')")
+      write(11,"('PE ',I5,': imin2  = ',I6,3X,'imax2= ',I6,/,'PE ',I5,': jmin2  = ',I6,3X,'jmax2= ',I6)") &
              myPE,imin2,imax2,myPE,jmin2,jmax2
-      write(11,"('PE ',I5,': kmin2  = ',I6,3X,'kmax2= ',I6)") myPE,kmin2,kmax2       
+      write(11,"('PE ',I5,': kmin2  = ',I6,3X,'kmax2= ',I6)") myPE,kmin2,kmax2
       write(11,"('----- Below xxx3 set is DMP extension ------------')")
-      write(11,"('PE ',I5,': imin3  = ',I6,3X,'imax3= ',I6,/,'PE ',I5,': jmin3  = ',I6,3X,'jmax3= ',I6)") & 
+      write(11,"('PE ',I5,': imin3  = ',I6,3X,'imax3= ',I6,/,'PE ',I5,': jmin3  = ',I6,3X,'jmax3= ',I6)") &
              myPE,imin3,imax3,myPE,jmin3,jmax3
       write(11,"('PE ',I5,': kmin3  = ',I6,3X,'kmax3= ',I6)") myPE,kmin3,kmax3
       write(11,"('----- End of Below xxx3 set is DMP extension -----')")
 !      write(11,"('PE ',I5,': ijkmax2= ',I6)") myPE,ijkmax2
       write(11,"('PE ',I5,': ijmax2 = ',I6)") myPE,ijmax2
       write(11,"('PE ',I5,': ijkmin1= ',I6,' ijkmax1= ',I12)") myPE,ijkmin1, ijkmax1
-      write(11,"('PE ',I5,':          ',6X,' ijkmax2= ',I12)") myPE,ijkmax2           
-      write(11,"('PE ',I5,':          ',6X,' ijkmax3= ',I12)") myPE,ijkmax3      
-      write(11,"('PE ',I5,': ijkmin4= ',I6,' ijkmax4= ',I12)") myPE,ijkmin4, ijkmax4      
+      write(11,"('PE ',I5,':          ',6X,' ijkmax2= ',I12)") myPE,ijkmax2
+      write(11,"('PE ',I5,':          ',6X,' ijkmax3= ',I12)") myPE,ijkmax3
+      write(11,"('PE ',I5,': ijkmin4= ',I6,' ijkmax4= ',I12)") myPE,ijkmin4, ijkmax4
 
 
       write(11,"(/,/,' ========= DMP EXTENSION VARIABLES ===========')")
 !      write(UNIT_LOG,"('PE ',I5,': ijksize  = ',I6)") myPE,ijksize
       write(11,"('PE ',I5,': ijksize3 = ',I6,3X,'ijksize3_all = ',I6)") myPE,ijksize3,ijksize3_all(myPE)
-      write(11,"('PE ',I5,': ijksize4 = ',I6,3X,'ijksize4_all = ',I6)") myPE,ijksize4,ijksize4_all(myPE)      
+      write(11,"('PE ',I5,': ijksize4 = ',I6,3X,'ijksize4_all = ',I6)") myPE,ijksize4,ijksize4_all(myPE)
       write(11,"('PE ',I5,': ijkstart3  = ',I6,3X,'ijkend3  = ',I6)") myPE,ijkstart3, ijkend3
       write(11,"('PE ',I5,': ijkstart3_all = ',I6,3X,'ijkstart4_all = ',I6)") myPE,ijkstart3_all(myPE),ijkstart4_all(myPE)
-      write(11,"('PE ',I5,': istart_all = ',I6,3X,'iend_all = ',I6,/,'PE ',I5,': jstart_all = ',I6,3X,'jend_all = ',I6)") & 
+      write(11,"('PE ',I5,': istart_all = ',I6,3X,'iend_all = ',I6,/,'PE ',I5,': jstart_all = ',I6,3X,'jend_all = ',I6)") &
              myPE,istart_all(myPE),iend_all(myPE),myPE,jstart_all(myPE),jend_all(myPE)
-      write(11,"('PE ',I5,': kstart_all = ',I6,3X,'kend_all = ',I6,/,'----------------------')") & 
+      write(11,"('PE ',I5,': kstart_all = ',I6,3X,'kend_all = ',I6,/,'----------------------')") &
              myPE,kstart_all(myPE),kend_all(myPE)
 
-      write(11,"('PE ',I5,': istart1_all= ',I6,3X,'iend1_all= ',I6,/,'PE ',I5,': jstart1_all= ',I6,3X,'jend3_all= ',I6)") & 
+      write(11,"('PE ',I5,': istart1_all= ',I6,3X,'iend1_all= ',I6,/,'PE ',I5,': jstart1_all= ',I6,3X,'jend3_all= ',I6)") &
              myPE,istart1_all(myPE),iend1_all(myPE),myPE,jstart1_all(myPE),jend1_all(myPE)
-      write(11,"('PE ',I5,': kstart1_all= ',I6,3X,'kend1_all= ',I6,/,'----------------------')") & 
+      write(11,"('PE ',I5,': kstart1_all= ',I6,3X,'kend1_all= ',I6,/,'----------------------')") &
              myPE,kstart1_all(myPE),kend1_all(myPE)
 
-      write(11,"('PE ',I5,': istart2_all= ',I6,3X,'iend2_all= ',I6,/,'PE ',I5,': jstart2_all= ',I6,3X,'jend3_all= ',I6)") & 
+      write(11,"('PE ',I5,': istart2_all= ',I6,3X,'iend2_all= ',I6,/,'PE ',I5,': jstart2_all= ',I6,3X,'jend3_all= ',I6)") &
              myPE,istart2_all(myPE),iend2_all(myPE),myPE,jstart2_all(myPE),jend2_all(myPE)
-      write(11,"('PE ',I5,': kstart2_all= ',I6,3X,'kend2_all= ',I6,/,'----------------------')") & 
+      write(11,"('PE ',I5,': kstart2_all= ',I6,3X,'kend2_all= ',I6,/,'----------------------')") &
              myPE,kstart2_all(myPE),kend2_all(myPE)
 
-      write(11,"('PE ',I5,': istart3_all= ',I6,3X,'iend3_all= ',I6,/,'PE ',I5,': jstart3_all= ',I6,3X,'jend3_all= ',I6)") & 
+      write(11,"('PE ',I5,': istart3_all= ',I6,3X,'iend3_all= ',I6,/,'PE ',I5,': jstart3_all= ',I6,3X,'jend3_all= ',I6)") &
              myPE,istart3_all(myPE),iend3_all(myPE),myPE,jstart3_all(myPE),jend3_all(myPE)
-      write(11,"('PE ',I5,': kstart3_all= ',I6,3X,'kend3_all= ',I6,/,'----------------------')") & 
+      write(11,"('PE ',I5,': kstart3_all= ',I6,3X,'kend3_all= ',I6,/,'----------------------')") &
              myPE,kstart3_all(myPE),kend3_all(myPE)
 
-      write(11,"('PE ',I5,': istart1= ',I6,3X,'iend1= ',I6,/,'PE ',I5,': jstart1= ',I6,3X,'jend1= ',I6)") & 
+      write(11,"('PE ',I5,': istart1= ',I6,3X,'iend1= ',I6,/,'PE ',I5,': jstart1= ',I6,3X,'jend1= ',I6)") &
              myPE,istart1,iend1,myPE,jstart1,jend1
-      write(11,"('PE ',I5,': kstart1= ',I6,3X,'kend1= ',I6,/,'----------------------')") & 
+      write(11,"('PE ',I5,': kstart1= ',I6,3X,'kend1= ',I6,/,'----------------------')") &
              myPE,kstart1,kend1
-      write(11,"('PE ',I5,': istart2= ',I6,3X,'iend2= ',I6,/,'PE ',I5,': jstart2= ',I6,3X,'jend2= ',I6)") & 
+      write(11,"('PE ',I5,': istart2= ',I6,3X,'iend2= ',I6,/,'PE ',I5,': jstart2= ',I6,3X,'jend2= ',I6)") &
              myPE,istart2,iend2,myPE,jstart2,jend2
-      write(11,"('PE ',I5,': kstart2= ',I6,3X,'kend2= ',I6,/,'----------------------')") & 
+      write(11,"('PE ',I5,': kstart2= ',I6,3X,'kend2= ',I6,/,'----------------------')") &
              myPE,kstart2,kend2
-      write(11,"('PE ',I5,': istart3= ',I6,3X,'iend3= ',I6,/,'PE ',I5,': jstart3= ',I6,3X,'jend3= ',I6)") & 
+      write(11,"('PE ',I5,': istart3= ',I6,3X,'iend3= ',I6,/,'PE ',I5,': jstart3= ',I6,3X,'jend3= ',I6)") &
              myPE,istart3,iend3,myPE,jstart3,jend3
-      write(11,"('PE ',I5,': kstart3= ',I6,3X,'kend3= ',I6,/,'----------------------')") & 
+      write(11,"('PE ',I5,': kstart3= ',I6,3X,'kend3= ',I6,/,'----------------------')") &
              myPE,kstart3,kend3
 
     ENDIF   ! end if(amgdbg .or. bdist_io)
-      
+
       close(unit=11)
 
 
-      RETURN      
+      RETURN
       END SUBROUTINE DEBUG_WRITE_LAYOUT
 
 
@@ -756,11 +767,11 @@
       USE compar
       USE mpi_utility
       USE sendrecv
-      USE sendrecv3      
+      USE sendrecv3
       USE indices
       USE leqsol
       USE funits
-      USE run       
+      USE run
       USE time_cpu
       IMPLICIT NONE
 !-----------------------------------------------
@@ -775,60 +786,60 @@
 !-----------------------------------------------
 ! phase index
       INTEGER :: M
-! indices      
+! indices
       INTEGER :: i, j, k, ijk, ijk_GL, ijk_PROC, ijk_IO
 !
       integer :: i_of_g, j_of_g, k_of_g
       integer :: indxA, indxA_gl, indxB, indxB_gl, indxC, indxC_gl
       integer :: indxD, indxD_gl, indxE, indxE_gl, indxF, indxF_gl
-      integer :: indxG, indxG_gl, indxH, indxH_gl      
-!            
+      integer :: indxG, indxG_gl, indxH, indxH_gl
+!
       logical :: amgdbg = .TRUE.
-      
+
       character fname*80
 !-----------------------------------------------
 
       INCLUDE 'function.inc'
-      
-  
+
+
       k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
       i_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1))) &
                      - 1)/(jmax3-jmin3+1)) + imin3
       j_of_g(ijk) = ijk - (i_of_g(ijk)-imin3)*(jmax3-jmin3+1) - &
-                     (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1)) - 1 + jmin3  
-                      
+                     (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1)) - 1 + jmin3
+
 !DISTIO
 !      fname = "p_info_xxxx.txt"
 !      write (fname(8:11),'(i4.4)') myPE
       fname = "p_info_xxxxx.txt"
-      write (fname(8:12),'(i5.5)') myPE      
+      write (fname(8:12),'(i5.5)') myPE
       open (unit=11,file=fname,status='unknown')
-      
+
       write (11,*) myPe , ' = myPE'
-  
+
       write (11,*) myPE , istart3,iend3
       write (11,*) myPE , jstart3,jend3
       write (11,*) myPE , kstart3,kend3
-      
+
       write(11,"('BLK1: Running from istart3,iend3 .AND. jstart3, jend3 .AND. kstart3, kend3')")
-      write(11,"(' (   i ,    j,     k)       ijk      ijk_GL     ijk_PROC    ijk_IO')") 
+      write(11,"(' (   i ,    j,     k)       ijk      ijk_GL     ijk_PROC    ijk_IO')")
       write(11,"(' ====================      =====     =======    ========    ======')")
-      DO k = kstart3, kend3 
+      DO k = kstart3, kend3
         DO i = istart3,iend3
           DO j = jstart3, jend3
              ijk = FUNIJK(i,j,k)
              ijk_GL = FUNIJK_GL(i,j,k)
              ijk_PROC = FUNIJK_PROC(i,j,k,myPE)
-             ijk_IO = FUNIJK_IO(i,j,k)            
+             ijk_IO = FUNIJK_IO(i,j,k)
              write(11,"('  ',I4,'   ',I4,'   ',I4,'     ',4(I8,'   '))" ) &
                                          i,j,k,ijk,ijk_GL,ijk_PROC,ijk_IO
           ENDDO
         ENDDO
       ENDDO
 
-      M = 0 
-!      CALL WRITE_AB_M (A_M, B_M, IJKMAX2, M, IER)      
-      
+      M = 0
+!      CALL WRITE_AB_M (A_M, B_M, IJKMAX2, M, IER)
+
       close(unit=11)
 
       RETURN
