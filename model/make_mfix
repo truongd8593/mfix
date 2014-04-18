@@ -119,13 +119,13 @@ fi
 . ${MFIX_CONFIG}/build_Makefile.sh
 
 
-echo "make -f ${MAKEFILE} $inline_objs"
-make -f "${MAKEFILE}" $inline_objs
+echo "make -j -f ${MAKEFILE} $inline_objs"
+make -j -f "${MAKEFILE}" $inline_objs
 
 echo "Please wait..."
 
-echo "make -f ${MAKEFILE} ${EXEC_FILE}"
-make -f ${MAKEFILE} ${EXEC_FILE}
+echo "make -j -f ${MAKEFILE} ${EXEC_FILE}"
+make -j -f ${MAKEFILE} ${EXEC_FILE}
 result=$?
 
 if test $result = 0; then
