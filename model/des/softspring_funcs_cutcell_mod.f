@@ -235,7 +235,7 @@
          IF( .NOT.PEA(LL,2) .AND. .NOT.PEA(LL,3)) CYCLE
 
 ! If no neighboring facet in the surrounding 27 cells, then exit 
-         IF (NO_NEIGHBORING_FACET_DES(PIJK(LL,4))) return 
+         IF (NO_NEIGHBORING_FACET_DES(PIJK(LL,4))) cycle  
               
 
          IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN
