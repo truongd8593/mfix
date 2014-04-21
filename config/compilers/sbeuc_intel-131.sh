@@ -82,6 +82,8 @@ if test ${USE_DEBUG} = 1; then dbg="-g"; fi
 common="-c -I. -convert big_endian -assume byterecl"
 common=${common}" -diag-disable remark -arch AVX -axAVX"
 
+if test ${USE_CODECOV} = 1; then common=${common}" -prof-gen=srcpos"; fi
+
 case $OPT in
   0)echo " Setting flags for debugging."
     dbg="-traceback -check all -fpe:0 -fp-model precise -O0"
