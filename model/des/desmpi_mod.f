@@ -699,8 +699,12 @@
       integer lproc_parcnt(0:numpes-1),lpar_proc(particles)
 !-----------------------------------------------
 
+      integer :: rdimn
+
+      rdimn = merge(2,3, NO_K)
+
 ! set the packet size for transfer
-      lpacketsize = 2*dimn + 2
+      lpacketsize = 2*rdimn + 2
 
 ! build the send buffer in PE_IO proc
 ! first pass to get the count of particles
@@ -776,8 +780,8 @@
             lbuf = idispls(lproc)+lproc_parcnt(lproc)*lpacketsize+1
             drootbuf(lbuf) = dpar_rad(lcurpar); lbuf = lbuf + 1
             drootbuf(lbuf) = dpar_den(lcurpar); lbuf = lbuf + 1
-            drootbuf(lbuf:lbuf+dimn-1) = dpar_pos(lcurpar,1:dimn); lbuf = lbuf + dimn
-            drootbuf(lbuf:lbuf+dimn-1) = dpar_vel(lcurpar,1:dimn); lbuf = lbuf + dimn
+            drootbuf(lbuf:lbuf+rdimn-1) = dpar_pos(lcurpar,1:rdimn); lbuf = lbuf + rdimn
+            drootbuf(lbuf:lbuf+rdimn-1) = dpar_vel(lcurpar,1:rdimn); lbuf = lbuf + rdimn
             lproc_parcnt(lproc) = lproc_parcnt(lproc) + 1
          enddo
       endif
@@ -788,8 +792,8 @@
          lbuf = (lcurpar-1)*lpacketsize+1
          des_radius(lcurpar) = dprocbuf(lbuf); lbuf = lbuf+1
          ro_sol(lcurpar) = dprocbuf(lbuf); lbuf = lbuf+1
-         des_pos_new(lcurpar,1:dimn) = dprocbuf(lbuf:lbuf+dimn-1); lbuf = lbuf+dimn
-         des_vel_new(lcurpar,1:dimn) = dprocbuf(lbuf:lbuf+dimn-1); lbuf = lbuf+dimn
+         des_pos_new(lcurpar,1:rdimn) = dprocbuf(lbuf:lbuf+rdimn-1); lbuf = lbuf+rdimn
+         des_vel_new(lcurpar,1:rdimn) = dprocbuf(lbuf:lbuf+rdimn-1); lbuf = lbuf+rdimn
          pea(lcurpar,1) = .true.
       enddo
       deallocate (dprocbuf,drootbuf)
