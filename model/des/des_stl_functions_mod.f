@@ -31,7 +31,7 @@
       integer :: ijk, count 
       integer :: max_des_facets
       
-      double precision, allocatable :: vertex_des, norm_face_des 
+!      double precision, allocatable :: vertex_des, norm_face_des 
       
       CALL INIT_ERR_MSG("DES_STL_PREPROCESSING")
 
