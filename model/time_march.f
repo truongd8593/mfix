@@ -573,7 +573,7 @@
       MAX_INLET_VEL = 100.0d0*MAX_VEL_INLET()
 ! if no inlet velocity is specified, use an upper limit defined in 
 ! toleranc_mod.f
-      IF(MAX_INLET_VEL == ZERO) THEN
+      IF(MAX_INLET_VEL <= SMALL_NUMBER) THEN
          MAX_INLET_VEL = MAX_ALLOWED_VEL
          IF (UNITS == 'SI') MAX_INLET_VEL = 1D-2 * MAX_ALLOWED_VEL
       ENDIF
