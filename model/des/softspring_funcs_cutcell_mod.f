@@ -232,7 +232,7 @@
 ! make sure the particle is not classified as a new 'entering' particle 
 ! or is already marked as a potential exiting particle
 
-         IF( .NOT.PEA(LL,2) .AND. .NOT.PEA(LL,3)) CYCLE
+         IF( PEA(LL,2) .OR. PEA(LL,3)) CYCLE
 
 ! If no neighboring facet in the surrounding 27 cells, then exit 
          IF (NO_NEIGHBORING_FACET_DES(PIJK(LL,4))) cycle  
