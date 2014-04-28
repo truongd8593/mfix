@@ -1,24 +1,24 @@
       MODULE stl
- 
 
-      Use param 
+
+      Use param
       Use param1
 
-!     Maximum number of facets that can be read 
-      INTEGER, PARAMETER          :: DIM_STL = 10000000   !10 Million
+!     Maximum number of facets that can be read
+      INTEGER, PARAMETER          :: DIM_STL = 10000   !10 Million
 !     Number of facets
       INTEGER                     :: N_FACETS
 
-!     Number of facets for des. This could be a diiferent number from 
-! N_FACETS if the outer boundary is triangulated here 
+!     Number of facets for des. This could be a diiferent number from
+! N_FACETS if the outer boundary is triangulated here
       INTEGER                     :: N_FACETS_DES
 !     Vertex Coordinates X ,Y and Z
-      DOUBLE PRECISION, DIMENSION(DIM_STL,3,3) :: VERTEX
+      DOUBLE PRECISION, DIMENSION(3,3,DIM_STL) :: VERTEX
 !     Face normal vector (normalized)
-      DOUBLE PRECISION, DIMENSION(DIM_STL,3) :: NORM_FACE
+      DOUBLE PRECISION, DIMENSION(3,DIM_STL) :: NORM_FACE
 !     TRANSLATION COMPONENTS
-      DOUBLE PRECISION :: TX_STL,TY_STL,TZ_STL  
-      DOUBLE PRECISION :: TX_MSH,TY_MSH,TZ_MSH  
+      DOUBLE PRECISION :: TX_STL,TY_STL,TZ_STL
+      DOUBLE PRECISION :: TX_MSH,TY_MSH,TZ_MSH
 !     SCALING FACTOR
       DOUBLE PRECISION :: SCALE_STL
       DOUBLE PRECISION :: SCALE_MSH
@@ -47,24 +47,24 @@
       INTEGER, DIMENSION(DIM_STL) :: BC_ID_STL_FACE
 
 !     Maximum number of facets per cell. The arrays below are used
-! to define cut-cells under the CG modules 
-      INTEGER          :: DIM_FACETS_PER_CELL    
-      INTEGER, DIMENSION (:), ALLOCATABLE ::  N_FACET_AT 
-      INTEGER, DIMENSION (:,:), ALLOCATABLE ::  LIST_FACET_AT 
-      
-      
+! to define cut-cells under the CG modules
+      INTEGER          :: DIM_FACETS_PER_CELL
+      INTEGER, DIMENSION (:), ALLOCATABLE ::  N_FACET_AT
+      INTEGER, DIMENSION (:,:), ALLOCATABLE ::  LIST_FACET_AT
+
+
 !RG: Since Lagrangian requires facets that do no intersect at any edge of a cell,
-!a separate facet list is maintained for Lagrangian modules, identfied by _DES 
-!appended to the key word 
-!     Maximum number of facets per cell 
-! Dynamic variable. for each ijk computational fluid cell store the 
+!a separate facet list is maintained for Lagrangian modules, identfied by _DES
+!appended to the key word
+!     Maximum number of facets per cell
+! Dynamic variable. for each ijk computational fluid cell store the
 ! total number of facets and the id's of the facets in that cell
       INTEGER :: MAX_FACETS_PER_CELL_DES
 ! in order to facilitate the parallel processing the PIC is defined
 ! as single array IJK
       TYPE FACETS_TO_CELL
          INTEGER :: COUNT_FACETS
-         INTEGER, DIMENSION(:), ALLOCATABLE ::  FACET_LIST 
+         INTEGER, DIMENSION(:), ALLOCATABLE ::  FACET_LIST
       END TYPE FACETS_TO_CELL
 
       TYPE (FACETS_TO_CELL), DIMENSION (:), ALLOCATABLE ::  LIST_FACET_AT_DES

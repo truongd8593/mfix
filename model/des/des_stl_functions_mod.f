@@ -2,7 +2,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: des_stl_functions                                      C
-!  Purpose: This module will contain routines for geometric interacti  C 
+!  Purpose: This module will contain routines for geometric interacti  C
 !  required for STL files                                              C
 !                                                                      C
 !  Author: Rahul Garg                                 Date: 24-Oct-13  C
@@ -11,116 +11,116 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       MODULE des_stl_functions
-      IMPLICIT NONE      
-      !Dont declare any global variables here as it could lead to cyclic 
-      !dependency issues 
-      !Use this module only to define functions and subroutines 
-      CONTAINS 
-      
+      IMPLICIT NONE
+      !Dont declare any global variables here as it could lead to cyclic
+      !dependency issues
+      !Use this module only to define functions and subroutines
+      CONTAINS
+
       SUBROUTINE des_stl_preprocessing
-      USE stl 
+      USE stl
       USE param
-      USE error_manager 
+      USE error_manager
       USE discretelement, only: DES_CONVERT_BOX_TO_FACETS
       USE cutcell, only: use_stl
-      implicit none 
-      integer :: ijk, count 
+      implicit none
+      integer :: ijk, count
       integer :: max_des_facets
-      
-!      double precision, allocatable :: vertex_des, norm_face_des 
-      
+
+!      double precision, allocatable :: vertex_des, norm_face_des
+
       CALL INIT_ERR_MSG("DES_STL_PREPROCESSING")
 
       !max_des_facets  = 2*(2*(imax*jmax) + 2*(jmax*kmax) + 2*(kmax*imax))
       !allocate(vertex_des(max_des_facets))
-      WRITE(err_msg, '(A, /, A, ES15.7)')& 
+      WRITE(err_msg, '(A, /, A, ES15.7)')&
       'Pre-Processing stl information for discrete model now', &
       'TOL_STL = ', tol_stl
-            
+
       CALL flush_err_msg(footer = .false.)
-      N_FACETS_DES = 0 
-      !now call the pre-procssing for the des in order to 
-      !assign facets to grid cells 
-      IF(USE_STL) then 
-         
+      N_FACETS_DES = 0
+      !now call the pre-procssing for the des in order to
+      !assign facets to grid cells
+      IF(USE_STL) then
+
          !Set N_facets_des to add any more facets needed by
-         !dem and not to contaminate the Eulerian-Eulerian CG stuff 
-         N_FACETS_DES = N_FACETS 
+         !dem and not to contaminate the Eulerian-Eulerian CG stuff
+         N_FACETS_DES = N_FACETS
       ENDIF
 
       !**********************************************************************************
-      !this is a temporary routine to triangulate the 
+      !this is a temporary routine to triangulate the
       !default walls (bounding box of the simulation)
-      !Eventually, it will be users' burden to supply the bounding box 
-      !as stl         
+      !Eventually, it will be users' burden to supply the bounding box
+      !as stl
       if(DES_CONVERT_BOX_TO_FACETS) call cg_des_convert_to_facets
       !*********************************************************************************
-      
+
       CALL bin_facets_to_grid_des
-      
-      DO IJK = 1, DIMENSION_3 
-         COUNT = LIST_FACET_AT_DES(IJK)%COUNT_FACETS 
+
+      DO IJK = 1, DIMENSION_3
+         COUNT = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
          IF(COUNT.eq.0) DEALLOCATE(LIST_FACET_AT_DES(IJK)%FACET_LIST)
       ENDDO
 
       !CALL DEBUG_WRITE_GRID_FACEINFO
       CALL DEBUG_write_stl_from_grid_facet(WRITE_FACETS_EACH_CELL=.false.)
-      
+
       WRITE(err_msg,*) 'Done with pre processing of STL faces for discrete model'
-      
+
       CALL flush_err_msg(header = .false.)
 
       CALL FINL_ERR_MSG
 
       END SUBROUTINE DES_STL_PREPROCESSING
-     
-      SUBROUTINE ALLOCATE_DES_STL_ARRAYS 
-      USE param
-      USE stl 
 
-      IMPLICIT NONE 
-      
-      integer :: ijk 
+      SUBROUTINE ALLOCATE_DES_STL_ARRAYS
+      USE param
+      USE stl
+
+      IMPLICIT NONE
+
+      integer :: ijk
 
       ALLOCATE(LIST_FACET_AT_DES(DIMENSION_3))
-      
-      DO IJK = 1, DIMENSION_3 
-         LIST_FACET_AT_DES(IJK)%COUNT_FACETS = 0 
+
+      DO IJK = 1, DIMENSION_3
+         LIST_FACET_AT_DES(IJK)%COUNT_FACETS = 0
          ALLOCATE(LIST_FACET_AT_DES(IJK)%FACET_LIST(MAX_FACETS_PER_CELL_DES))
       ENDDO
-         
-      ALLOCATE(NO_NEIGHBORING_FACET_DES(DIMENSION_3))
-      NO_NEIGHBORING_FACET_DES = .false. 
 
-      END SUBROUTINE ALLOCATE_DES_STL_ARRAYS 
+      ALLOCATE(NO_NEIGHBORING_FACET_DES(DIMENSION_3))
+      NO_NEIGHBORING_FACET_DES = .false.
+
+      END SUBROUTINE ALLOCATE_DES_STL_ARRAYS
 
 
       SUBROUTINE TestTriangleAABB(vert0, vert1, vert2, tri_norm, &
       box_origin, box_extents, sa_exist, sa, i,j,k)
-      USE stl 
-      Implicit none 
-      
-      !Separating axis test algorithm from Realtimecollision book by 
-      !Christer Ericson  
+      USE stl
+      Implicit none
+
+      !Separating axis test algorithm from Realtimecollision book by
+      !Christer Ericson
       double precision, intent(in), dimension(3) :: vert0, vert1, vert2, tri_norm
       double precision, intent(in), dimension(3) :: box_origin, box_extents
       logical, intent(out) :: sa_exist
 !      double precision, intent(out) :: proj_box, proj_tri(3)
-      Integer, intent(out) :: sa      
-      Integer, intent(in) :: i,j,k 
- 
+      Integer, intent(out) :: sa
+      Integer, intent(in) :: i,j,k
+
       double precision :: p0, p1, p2, r, e0, e1, e2
 
       double precision :: c_orig(3), c(3)
-    
-      !box face normals 
-      double precision, dimension(3) :: u0, u1, u2 
- 
-      double precision, dimension(3) :: v0, v1, v2 , vert0_orig 
+
+      !box face normals
+      double precision, dimension(3) :: u0, u1, u2
+
+      double precision, dimension(3) :: v0, v1, v2 , vert0_orig
       double precision, dimension(3) :: f0, f1, f2
 
       !13 possible Separating axes
@@ -128,14 +128,14 @@
       !triangle plane n and d
       double precision :: n(3), d, tol_tri_aabb_proj
 
-      double precision :: axis_magsq, s 
-      integer :: count 
-      sa_exist = .false. 
-      sa = 0 
+      double precision :: axis_magsq, s
+      integer :: count
+      sa_exist = .false.
+      sa = 0
       tol_tri_aabb_proj = 1e-06
 
-      !Initially set e0, e1, and e2 to box extents 
-     
+      !Initially set e0, e1, and e2 to box extents
+
       !Compute box center and extents (if not already given in that format)
       c_orig(:) = box_origin(:) + box_extents(:)* 0.5d0
 
@@ -143,9 +143,9 @@
 
       v0 = vert0 - c_orig
       v1 = vert1 - c_orig
-      v2 = vert2 - c_orig 
-      
-      !Scale everything by box_extents 
+      v2 = vert2 - c_orig
+
+      !Scale everything by box_extents
       v0(1) = v0(1)/box_extents(1)
       v1(1) = v1(1)/box_extents(1)
       v2(1) = v2(1)/box_extents(1)
@@ -174,12 +174,12 @@
 !!$  write(*,'(A20,5(2x,g17.8))') 'tri vert1 = ',v0(:)
 !!$  write(*,'(A20,5(2x,g17.8))') 'tri vert2 = ',v1(:)
 !!$  write(*,'(A20,5(2x,g17.8))') 'tri vert3 = ',v2(:)
-      
+
       !Compute edge vectors for triangle
       f0 = v1 - v0
       f1 = v2 - v1
       f2 = v0 - v2
-      !Category 3 (edge-edge cross products)... 
+      !Category 3 (edge-edge cross products)...
       !total of 9 (3 from triangle cross 3 independent from box)
       sep_axis(1, 1:3) = (/0.d0, -f0(3), f0(2)/)
       sep_axis(2, 1:3) = (/0.d0, -f1(3), f1(2)/)
@@ -196,22 +196,22 @@
          +sep_axis(count,3)**2)
          if(axis_magsq < TOL_STL*TOL_STL) THEN
             !nearly a zero vector. This will happen if the cross-products
-            !from category 3 are formed from co-planar vectors 
-            !WRITE(*,'(/5x,A20, i2,/5x, A, 3(2x,g17.8))') 'Axis number:', count, & 
+            !from category 3 are formed from co-planar vectors
+            !WRITE(*,'(/5x,A20, i2,/5x, A, 3(2x,g17.8))') 'Axis number:', count, &
             !     'Ignored due to zero vec:', sep_axis(count,:)
             CYCLE
          endif
 
          r =    e0*abs(dot_product(u0(:), sep_axis(count,:))) &
          + e1*abs(dot_product(u1(:), sep_axis(count,:))) &
-         + e2*abs(dot_product(u2(:), sep_axis(count,:))) 
+         + e2*abs(dot_product(u2(:), sep_axis(count,:)))
          p0 = dot_product(v0(:), sep_axis(count, :))
          p1 = dot_product(v1(:), sep_axis(count, :))
          p2 = dot_product(v2(:), sep_axis(count, :))
 
-         IF (I .eq. 2.and.j.eq.3.and.k.eq.2.and..false.) then 
+         IF (I .eq. 2.and.j.eq.3.and.k.eq.2.and..false.) then
             !if(.false.) then
-            
+
             write(*,'(A6,5(2x,g17.8))')'c:',c_orig
             write(*,'(A6,5(2x,g17.8))')'vorig:',vert0
             write(*,'(A6,5(2x,g17.8))')'v0:',v0
@@ -220,29 +220,29 @@
             write(*,'(A6,5(2x,g17.8))')'sa:', count, sep_axis(count,:)
             write(*,'(A6,5(2x,g17.8))')'data:',  r, p0, p1, p2
             write(*,'(A6,(2x,g17.8),"<",2(2x,g17.8), ">", 2x,g17.8)')'data2:', max(p0, p1, p2)*1e8, -r*1e8, min(p0, p1, p2)*1e8,r*1e8
-            
+
             write(*,'(A6,5(2x,L2))') 'data2:', max(p0, p1, p2)< -r, min(p0, p1, p2) > r
-            
+
              write(*,'(A6,(2x,g17.8),"<",2(2x,g17.8), ">", 2x,g17.8)') 'data2:', (max(p0, p1, p2)+tol_tri_aabb_proj)*1e8, -r*1e8, min(p0, p1, p2)*1e8, (r+tol_tri_aabb_proj)*1e8
             write(*,'(A6,5(2x,L2))') 'data2:', max(p0, p1, p2)+tol_tri_aabb_proj< -r, min(p0, p1, p2) > r+tol_tri_aabb_proj
          endif
 
-         if (max(p0, p1, p2) +tol_tri_aabb_proj < -r .or. min(p0,p1,p2) > r+tol_tri_aabb_proj) then 
-            sa = count 
+         if (max(p0, p1, p2) +tol_tri_aabb_proj < -r .or. min(p0,p1,p2) > r+tol_tri_aabb_proj) then
+            sa = count
             sa_exist = .true.
-            return 
+            return
          endif
       enddo
-      ! Test the three axes corresponding to the face normals of AABB b (category 1). 
+      ! Test the three axes corresponding to the face normals of AABB b (category 1).
       !Could have been through dot products like above, but explotiing the
-      !the simple definition of box face normals to optimize the code. 
-      
+      !the simple definition of box face normals to optimize the code.
+
       ! Exit if...
       ! ... [-e0, e0] and [min(v0.x,v1.x,v2.x), max(v0.x,v1.x,v2.x)] do not overlap
-      if (Max(v0(1), v1(1), v2(1)) +tol_tri_aabb_proj< -e0 .or. Min(v0(1), v1(1), v2(1)) > e0+tol_tri_aabb_proj) then 
+      if (Max(v0(1), v1(1), v2(1)) +tol_tri_aabb_proj< -e0 .or. Min(v0(1), v1(1), v2(1)) > e0+tol_tri_aabb_proj) then
          sa = 10
          sa_exist = .true.
-         return 
+         return
       endif
       !... [-e1, e1] and [min(v0.y,v1.y,v2.y), max(v0.y,v1.y,v2.y)] do not overlap
       if (Max(v0(2), v1(2), v2(2)) +tol_tri_aabb_proj< -e1 .or. Min(v0(2), v1(2), v2(2)) > e1+tol_tri_aabb_proj) then
@@ -252,7 +252,7 @@
       endif
 
       ! ... [-e2, e2] and [min(v0.z,v1.z,v2.z), max(v0.z,v1.z,v2.z)] do not overlap
-      if (Max(v0(3), v1(3), v2(3)) +tol_tri_aabb_proj< -e2 .or. Min(v0(3), v1(3), v2(3)) > e2+tol_tri_aabb_proj) then 
+      if (Max(v0(3), v1(3), v2(3)) +tol_tri_aabb_proj< -e2 .or. Min(v0(3), v1(3), v2(3)) > e2+tol_tri_aabb_proj) then
          sa = 12
          sa_exist = .true.
          return
@@ -260,7 +260,7 @@
 
       r =    e0*abs(dot_product(u0(:), tri_norm(:))) &
       + e1*abs(dot_product(u1(:), tri_norm(:))) &
-      + e2*abs(dot_product(u2(:), tri_norm(:))) 
+      + e2*abs(dot_product(u2(:), tri_norm(:)))
 
       !Compute distance of box center from plane
       !s = Dot_product(tri_norm(:), c(:) - v0(:))
@@ -268,47 +268,47 @@
       s = Dot_product(tri_norm(:), v0(:))
       !write(*,*) r,s
       !Intersection occurs when distance s falls within [-r,+r] interval
-      if(Abs(s) > r+ tol_tri_aabb_proj) then 
-         !projections do not intersect, so the separating axis exists 
+      if(Abs(s) > r+ tol_tri_aabb_proj) then
+         !projections do not intersect, so the separating axis exists
          sa_exist = .true.
          sa = 13
-      endif 
+      endif
       end subroutine TestTriangleAABB
 
 
       Subroutine ClosestPtPointTriangle(pointp, pointa, pointb, pointc, closest_point)
       USE param1, only: zero, one
-      USE discretelement, only: dimn 
+      USE discretelement, only: dimn
       !USE funits
       !USE run
-      !USE compar      
+      !USE compar
       !USE mfix_pic
       !USE cutcell
-      !Use stl 
-      !USE indices 
+      !Use stl
+      !USE indices
       !USE geometry
       !USE bc
-      !USE funits 
+      !USE funits
       !USE mpi_utility
 
       IMPLICIT NONE
       !point a, pointb, and pointc are the three nodes of the triangle
-      !point p is the sphere center 
+      !point p is the sphere center
       double precision, intent(in), dimension(3) :: pointa, pointb, pointc
       double precision, intent(in), dimension(dimn) :: pointp
       double precision, intent(out), dimension(dimn) ::  closest_point
       !Local variables
-      double precision, dimension(dimn) :: ab, ac, ap, bp,cp 
-      double precision :: d1, d2, d3, d4, vc, v, d5, d6, vb, w, va, denom 
+      double precision, dimension(dimn) :: ab, ac, ap, bp,cp
+      double precision :: d1, d2, d3, d4, vc, v, d5, d6, vb, w, va, denom
       ab = pointb - pointa
       ac = pointc - pointa
       ap = pointp - pointa
       d1 = DOT_PRODUCT(ab, ap)
       d2 = DOT_PRODUCT(ac, ap)
 
-      IF(d1 <= Zero .AND. d2 <= zero) then 
+      IF(d1 <= Zero .AND. d2 <= zero) then
          closest_point = pointa ! barycentric coordinates (1,0,0)
-         return 
+         return
       end if
 
       !Check if P in vertex region outside B
@@ -317,33 +317,33 @@
       d4 = DOT_PRODUCT(ac, bp);
       if (d3 >= zero .and. d4 <= d3) then
          closest_point = pointb !barycentric coordinates (0,1,0)
-         return 
+         return
       endif
 
       ! Check if P in edge region of AB, if so return projection of P onto AB
       vc = d1*d4 - d3*d2;
-      if (vc <= zero .and. d1 >= zero .and. d3 <= zero) then 
+      if (vc <= zero .and. d1 >= zero .and. d3 <= zero) then
          v = d1 / (d1 - d3);
          closest_point =  pointa + v * ab; ! barycentric coordinates (1-v,v,0)
-         return 
+         return
       end if
-      
+
       !Check if P in vertex region outside C
       cp = pointp - pointc
       d5 = DOT_PRODUCT(ab, cp)
       d6 = DOT_PRODUCT(ac, cp)
-      if (d6 >= zero .and. d5 <= d6) then 
+      if (d6 >= zero .and. d5 <= d6) then
          closest_point  = pointc ! barycentric coordinates (0,0,1)
-         return 
+         return
       endif
 
       !Check if P in edge region of AC, if so return projection of P onto AC
       vb = d5*d2 - d1*d6
 
-      if (vb <= zero .and. d2 >= zero .and. d6 <= zero) then 
+      if (vb <= zero .and. d2 >= zero .and. d6 <= zero) then
          w = d2 / (d2 - d6)
          closest_point = pointa + w * ac ! barycentric coordinates (1-w,0,w)
-         return 
+         return
       end if
 
       !Check if P in edge region of BC, if so return projection of P onto BC
@@ -351,7 +351,7 @@
       if (va <= zero .and.(d4 - d3) >= zero .and. (d5 - d6) >= zero) then
          w = (d4 - d3) / ((d4 - d3) + (d5 - d6))
          closest_point = pointb + w * (pointc - pointb) !barycentric coordinates (0,1-w,w)
-         return 
+         return
       end if
 
 
@@ -360,26 +360,26 @@
       v = vb * denom
       w = vc * denom
       closest_point = pointa + ab * v + ac * w; ! = u*a + v*b + w*c, u = va * denom = 1.0f - v - w
-      return 
+      return
       end Subroutine ClosestPtPointTriangle
 
       subroutine checkPTonTriangle(pointp, pointa, pointb, pointc, on_trian)
-      Use param1, only : one 
+      Use param1, only : one
       USE discretelement, only: dimn
       USE stl, only: tol_stl
       IMPLICIT NONE
       !point a, pointb, and pointc are the three nodes of the triangle
-      !point p is the test point 
+      !point p is the test point
       double precision, intent(in), dimension(3) :: pointa, pointb, pointc
       double precision, intent(in), dimension(dimn) :: pointp
       logical, intent(out)::  on_trian
       !Local variables
-      !triangle edges 
+      !triangle edges
       double precision, dimension(dimn) :: v0, v1, v2
       double precision :: d00, d01, d11, d20, d21, denom
-      !barcycentric coordinates 
+      !barcycentric coordinates
       double precision :: v, w
-      
+
       logical :: v_positive, w_positive, VplusW_positive
       v0 = pointb - pointa
       v1 = pointc - pointa
@@ -393,12 +393,12 @@
       v = (d11 * d20 - d01 * d21) / denom;
       w = (d00 * d21 - d01 * d20) / denom;
       !u = 1.0f - v - w;
-      
+
       V_POSITIVE = (v>=-TOL_STL)
       W_POSITIVE = (w>=-TOL_STL)
       VplusW_positive = ((v+w)<=ONE+TOL_STL)
 
-      ON_TRIAN = (V_POSITIVE.AND.W_POSITIVE.AND.VplusW_positive) 
+      ON_TRIAN = (V_POSITIVE.AND.W_POSITIVE.AND.VplusW_positive)
 
       RETURN
       end subroutine checkPTonTriangle
@@ -409,35 +409,35 @@
       USE param1, only: zero
       IMPLICIT NONE
       !reference point and direction of the line
-      double precision, intent(in), dimension(dimn) :: ref_line,  dir_line 
+      double precision, intent(in), dimension(dimn) :: ref_line,  dir_line
       !reference point and normal of the plane
       double precision, intent(in), dimension(dimn) :: ref_plane, norm_plane
 
       !line is parameterized as p = p_ref + t * dir_line, t is line_param
       double precision, intent(out) :: line_param
-      
+
       !local vars
       double precision :: denom
-      
-      
+
+
       denom = DOT_PRODUCT(dir_line, norm_plane)
-      if(denom.gt.zero) then 
+      if(denom.gt.zero) then
          line_param = DOT_PRODUCT(ref_plane(:) - ref_line(:), norm_plane(:))
          line_param = line_param/denom
       endif
-      return 
+      return
       end subroutine intersectLnPlane
 
       Subroutine cg_des_convert_to_facets
       USE param1
       USE run
-      USE compar      
+      USE compar
       Use stl
-      USE indices 
+      USE indices
       USE geometry
       USE compar
-      USE error_manager 
-      Implicit None 
+      USE error_manager
+      Implicit None
       INTEGER :: I, J, K, IJK, NF
 
       INCLUDE 'function.inc'
@@ -446,154 +446,151 @@
       write(err_msg,*) 'des_convert_box_to_facets specified as true'
       CALL flush_err_msg(footer = .false.)
 
-      I = IMIN1 !West Face 
+      I = IMIN1 !West Face
       DO K = KMIN1, KMAX1
-         DO J = JMIN1, JMAX1               
-            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE     
-            !IF(.not.fluid_at(FUNIJK(I+1,J,K))) cycle 
-                       
-            IJK  = FUNIJK(I,J,K)                   
-            N_FACETS_DES = N_FACETS_DES + 1 
+         DO J = JMIN1, JMAX1
+            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+            !IF(.not.fluid_at(FUNIJK(I+1,J,K))) cycle
+
+            IJK  = FUNIJK(I,J,K)
+            N_FACETS_DES = N_FACETS_DES + 1
             NF = N_FACETS_DES
-            NORM_FACE(NF,:) = (/one, zero, zero/)
-            !NORM_FACE(NF,:) = (/zero, zero, zero/)
-            !For stl, the vertices are stored in CCW order looking from outside. 
-            !In the stl convention, the normal points outwards. 
+            NORM_FACE(:,NF) = (/one, zero, zero/)
+            !NORM_FACE(:,NF) = (/zero, zero, zero/)
+            !For stl, the vertices are stored in CCW order looking from outside.
+            !In the stl convention, the normal points outwards.
             !However, in MFIX, cutcell and facets normals point into the fluid
-            !So, the normal's are written as pointing to the fluid but when the stl 
-            !is viewed in paraview, it will surely calculate its own normals based on the 
-            !order ot the vertices specified here and may look opposite. 
-            VERTEX(NF, 1,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(NF, 2,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            VERTEX(NF, 3,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-            
-            N_FACETS_DES = N_FACETS_DES + 1 
+            !So, the normal's are written as pointing to the fluid but when the stl
+            !is viewed in paraview, it will surely calculate its own normals based on the
+            !order ot the vertices specified here and may look opposite.
+            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+
+            N_FACETS_DES = N_FACETS_DES + 1
             NF = N_FACETS_DES
-            NORM_FACE(NF,:) = (/one, zero, zero/)
-            !NORM_FACE(NF,:) = (/zero, zero, zero/)
-            VERTEX(NF, 1,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(NF, 2,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            VERTEX(NF, 3,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            NORM_FACE(:,NF) = (/one, zero, zero/)
+            !NORM_FACE(:,NF) = (/zero, zero, zero/)
+            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
          enddo
       enddo
-      
-      I = IMAX1 !East Face 
+
+      I = IMAX1 !East Face
       DO K = KMIN1, KMAX1
-         DO J = JMIN1, JMAX1 
+         DO J = JMIN1, JMAX1
             IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-            !IF(.not.fluid_at(FUNIJK(I-1,J,K))) cycle 
-            
-            IJK  = FUNIJK(I,J,K)            
-            N_FACETS_DES = N_FACETS_DES + 1 
+            !IF(.not.fluid_at(FUNIJK(I-1,J,K))) cycle
+
+            IJK  = FUNIJK(I,J,K)
+            N_FACETS_DES = N_FACETS_DES + 1
             NF = N_FACETS_DES
-            NORM_FACE(NF,:) = (/-one, zero, zero/)
-            !NORM_FACE(NF,:) = (/zero, zero, zero/)
-            VERTEX(NF, 1,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(NF, 2,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-            VERTEX(NF, 3,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            
-            N_FACETS_DES = N_FACETS_DES + 1 
+            NORM_FACE(:,NF) = (/-one, zero, zero/)
+            !NORM_FACE(:,NF) = (/zero, zero, zero/)
+            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+
+            N_FACETS_DES = N_FACETS_DES + 1
             NF = N_FACETS_DES
-            NORM_FACE(NF,:) = (/-one, zero, zero/)
-            !NORM_FACE(NF,:) = (/zero, zero, zero/)
-            VERTEX(NF, 1,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(NF, 2,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            VERTEX(NF, 3,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            NORM_FACE(:,NF) = (/-one, zero, zero/)
+            !NORM_FACE(:,NF) = (/zero, zero, zero/)
+            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
          enddo
       enddo
 
       J = JMIN1 !south face
       DO K = KMIN1, KMAX1
-         DO I = IMIN1, IMAX1 
+         DO I = IMIN1, IMAX1
             IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-            !IF(.not.fluid_at(FUNIJK(I,J+1,K))) cycle 
-            
-            IJK  = FUNIJK(I,J,K)            
-            N_FACETS_DES = N_FACETS_DES + 1 
+            !IF(.not.fluid_at(FUNIJK(I,J+1,K))) cycle
+
+            IJK  = FUNIJK(I,J,K)
+            N_FACETS_DES = N_FACETS_DES + 1
             NF = N_FACETS_DES
-            NORM_FACE(NF,:) = (/zero, one, zero/)
-            VERTEX(NF, 1,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(NF, 3,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(NF, 2,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-            
-            N_FACETS_DES = N_FACETS_DES + 1 
+            NORM_FACE(:,NF) = (/zero, one, zero/)
+            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+
+            N_FACETS_DES = N_FACETS_DES + 1
             NF = N_FACETS_DES
-            NORM_FACE(NF,:) = (/zero, one, zero/)
-            VERTEX(NF, 1,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(NF, 2,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-            VERTEX(NF, 3,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
- 
-           
+            NORM_FACE(:,NF) = (/zero, one, zero/)
+            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
          enddo
       enddo
 
       J = JMAX1 !north  face
       DO K = KMIN1, KMAX1
-         DO I = IMIN1, IMAX1 
+         DO I = IMIN1, IMAX1
             IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-            
-            !IF(.not.fluid_at(FUNIJK(I,J-1,K))) cycle 
-            IJK  = FUNIJK(I,J,K)            
-            N_FACETS_DES = N_FACETS_DES + 1 
+
+            !IF(.not.fluid_at(FUNIJK(I,J-1,K))) cycle
+            IJK  = FUNIJK(I,J,K)
+            N_FACETS_DES = N_FACETS_DES + 1
             NF = N_FACETS_DES
-            NORM_FACE(NF,:) = (/zero, -one, zero/)
-            VERTEX(NF, 1,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            VERTEX(NF, 2,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            VERTEX(NF, 3,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            
-            N_FACETS_DES = N_FACETS_DES + 1 
+            NORM_FACE(:,NF) = (/zero, -one, zero/)
+            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+
+            N_FACETS_DES = N_FACETS_DES + 1
             NF = N_FACETS_DES
-            NORM_FACE(NF,:) = (/zero, -one, zero/)
-            VERTEX(NF, 1,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            VERTEX(NF, 2,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            VERTEX(NF, 3,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-          
+            NORM_FACE(:,NF) = (/zero, -one, zero/)
+            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
          enddo
       enddo
 
-      K = KMIN1 !bottom face 
+      K = KMIN1 !bottom face
       DO J = JMIN1, JMAX1
-         DO I = IMIN1, IMAX1 
+         DO I = IMIN1, IMAX1
             IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-            
-            !IF(.not.fluid_at(FUNIJK(I,J,K+1))) cycle 
-            IJK  = FUNIJK(I,J,K)            
-            N_FACETS_DES = N_FACETS_DES + 1 
+
+            !IF(.not.fluid_at(FUNIJK(I,J,K+1))) cycle
+            IJK  = FUNIJK(I,J,K)
+            N_FACETS_DES = N_FACETS_DES + 1
             NF = N_FACETS_DES
-            NORM_FACE(NF,:) = (/zero, zero, one/)
-            VERTEX(NF, 1,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(NF, 2,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            VERTEX(NF, 3,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            N_FACETS_DES = N_FACETS_DES + 1 
+            NORM_FACE(:,NF) = (/zero, zero, one/)
+            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            N_FACETS_DES = N_FACETS_DES + 1
             NF = N_FACETS_DES
 
-            NORM_FACE(NF,:) = (/zero, zero, one/)           
-            VERTEX(NF, 1,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(NF, 2,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(NF, 3,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            NORM_FACE(:,NF) = (/zero, zero, one/)
+            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
          enddo
       enddo
-      
-      K = KMAX1 !top face 
+
+      K = KMAX1 !top face
       DO J = JMIN1, JMAX1
-         DO I = IMIN1, IMAX1 
+         DO I = IMIN1, IMAX1
             IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-            
-            !IF(.not.fluid_at(FUNIJK(I,J,K-1))) cycle 
-            IJK  = FUNIJK(I,J,K)            
-            N_FACETS_DES = N_FACETS_DES + 1 
+
+            !IF(.not.fluid_at(FUNIJK(I,J,K-1))) cycle
+            IJK  = FUNIJK(I,J,K)
+            N_FACETS_DES = N_FACETS_DES + 1
             NF = N_FACETS_DES
-            NORM_FACE(NF,:) = (/zero, zero, -one/)
-            VERTEX(NF, 1,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-            VERTEX(NF, 2,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            VERTEX(NF, 3,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            
-            N_FACETS_DES = N_FACETS_DES + 1 
+            NORM_FACE(:,NF) = (/zero, zero, -one/)
+            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+
+            N_FACETS_DES = N_FACETS_DES + 1
             NF = N_FACETS_DES
-            NORM_FACE(NF,:) = (/zero, zero, -one/)          
-            VERTEX(NF, 1,:) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-            VERTEX(NF, 2,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            VERTEX(NF, 3,:) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+            NORM_FACE(:,NF) = (/zero, zero, -one/)
+            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
          enddo
       enddo
       CALL FINL_ERR_MSG
@@ -602,13 +599,13 @@
       Subroutine cg_des_convert_to_facets2
       USE param1
       USE run
-      USE compar      
+      USE compar
       Use stl
-      USE indices 
+      USE indices
       USE geometry
       USE compar
-      USE error_manager 
-      Implicit None 
+      USE error_manager
+      Implicit None
       INTEGER :: I, J, K, IJK, NF
 
       INCLUDE 'function.inc'
@@ -617,116 +614,116 @@
       write(err_msg,*) 'des_convert_box_to_facets specified as true'
       CALL flush_err_msg(footer = .false.)
 
-      N_FACETS_DES = N_FACETS_DES + 1 
+      N_FACETS_DES = N_FACETS_DES + 1
       NF = N_FACETS_DES
-      NORM_FACE(NF,:) = (/one, zero, zero/)
+      NORM_FACE(:,NF) = (/one, zero, zero/)
 
-      VERTEX(NF, 1,:) = (/0.d0, 0.d0, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(NF, 2,:) = (/0.d0, ylength, zlength/) !/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-      VERTEX(NF, 3,:) = (/0.d0, 0.d0, zlength/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-      
-      N_FACETS_DES = N_FACETS_DES + 1 
+      VERTEX(1,:,NF) = (/0.d0, 0.d0, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+      VERTEX(2,:,NF) = (/0.d0, ylength, zlength/) !/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+      VERTEX(3,:,NF) = (/0.d0, 0.d0, zlength/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+
+      N_FACETS_DES = N_FACETS_DES + 1
       NF = N_FACETS_DES
-      NORM_FACE(NF,:) = (/one, zero, zero/)
-            !NORM_FACE(NF,:) = (/zero, zero, zero/)
-            !For stl, the vertices are stored in CCW order looking from outside. 
-            !In the stl convention, the normal points outwards. 
+      NORM_FACE(:,NF) = (/one, zero, zero/)
+            !NORM_FACE(:,NF) = (/zero, zero, zero/)
+            !For stl, the vertices are stored in CCW order looking from outside.
+            !In the stl convention, the normal points outwards.
             !However, in MFIX, cutcell and facets normals point into the fluid
-            !So, the normal's are written as pointing to the fluid but when the stl 
-            !is viewed in paraview, it will surely calculate its own normals based on the 
-            !order ot the vertices specified here and may look opposite. 
-            !NORM_FACE(NF,:) = (/zero, zero, zero/)
-      VERTEX(NF, 1,:) = (/0.d0, 0.d0, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(NF, 2,:) = (/0.d0, ylength, 0.d0/)!get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-      VERTEX(NF, 3,:) = (/0.d0, ylength, zlength/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            !So, the normal's are written as pointing to the fluid but when the stl
+            !is viewed in paraview, it will surely calculate its own normals based on the
+            !order ot the vertices specified here and may look opposite.
+            !NORM_FACE(:,NF) = (/zero, zero, zero/)
+      VERTEX(1,:,NF) = (/0.d0, 0.d0, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+      VERTEX(2,:,NF) = (/0.d0, ylength, 0.d0/)!get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+      VERTEX(3,:,NF) = (/0.d0, ylength, zlength/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
 
-            
-      N_FACETS_DES = N_FACETS_DES + 1 
+
+      N_FACETS_DES = N_FACETS_DES + 1
       NF = N_FACETS_DES
-      NORM_FACE(NF,:) = (/-one, zero, zero/)
-            !NORM_FACE(NF,:) = (/zero, zero, zero/)
-      VERTEX(NF, 1,:) = (/xlength, 0.d0, 0.d0/) !/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(NF, 2,:) = (/xlength, 0.d0, zlength/)! /get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-      VERTEX(NF, 3,:) = (/xlength, ylength, zlength/) !/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            
-      N_FACETS_DES = N_FACETS_DES + 1 
+      NORM_FACE(:,NF) = (/-one, zero, zero/)
+            !NORM_FACE(:,NF) = (/zero, zero, zero/)
+      VERTEX(1,:,NF) = (/xlength, 0.d0, 0.d0/) !/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+      VERTEX(2,:,NF) = (/xlength, 0.d0, zlength/)! /get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+      VERTEX(3,:,NF) = (/xlength, ylength, zlength/) !/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+
+      N_FACETS_DES = N_FACETS_DES + 1
       NF = N_FACETS_DES
-      NORM_FACE(NF,:) = (/-one, zero, zero/)
-            !NORM_FACE(NF,:) = (/zero, zero, zero/)
-      VERTEX(NF, 1,:) = (/xlength, 0.d0, 0.d0/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(NF, 2,:) = (/xlength, ylength, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-      VERTEX(NF, 3,:) = (/xlength, ylength, 0.d0/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-      
-      N_FACETS_DES = N_FACETS_DES + 1 
+      NORM_FACE(:,NF) = (/-one, zero, zero/)
+            !NORM_FACE(:,NF) = (/zero, zero, zero/)
+      VERTEX(1,:,NF) = (/xlength, 0.d0, 0.d0/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+      VERTEX(2,:,NF) = (/xlength, ylength, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+      VERTEX(3,:,NF) = (/xlength, ylength, 0.d0/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+
+      N_FACETS_DES = N_FACETS_DES + 1
       NF = N_FACETS_DES
-      NORM_FACE(NF,:) = (/zero, one, zero/)
-      VERTEX(NF, 1,:) = (/0.d0, 0.d0, 0.d0/) !/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(NF, 3,:) = (/xlength, 0.d0, 0.d0/) !/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(NF, 2,:) = (/xlength, 0.d0, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-            
-      N_FACETS_DES = N_FACETS_DES + 1 
+      NORM_FACE(:,NF) = (/zero, one, zero/)
+      VERTEX(1,:,NF) = (/0.d0, 0.d0, 0.d0/) !/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+      VERTEX(3,:,NF) = (/xlength, 0.d0, 0.d0/) !/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+      VERTEX(2,:,NF) = (/xlength, 0.d0, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+
+      N_FACETS_DES = N_FACETS_DES + 1
       NF = N_FACETS_DES
-      NORM_FACE(NF,:) = (/zero, one, zero/)
-      VERTEX(NF, 1,:) = (/0.d0, 0.d0, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(NF, 2,:) = (/0.d0, 0.d0, zlength/) ! get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-      VERTEX(NF, 3,:) = (/xlength, 0.d0, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
- 
-      N_FACETS_DES = N_FACETS_DES + 1 
+      NORM_FACE(:,NF) = (/zero, one, zero/)
+      VERTEX(1,:,NF) = (/0.d0, 0.d0, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+      VERTEX(2,:,NF) = (/0.d0, 0.d0, zlength/) ! get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+      VERTEX(3,:,NF) = (/xlength, 0.d0, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+
+      N_FACETS_DES = N_FACETS_DES + 1
       NF = N_FACETS_DES
-      NORM_FACE(NF,:) = (/zero, -one, zero/)
-      VERTEX(NF, 1,:) = (/0.d0, ylength, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-      VERTEX(NF, 2,:) = (/xlength, ylength, 0.d0/) !/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-      VERTEX(NF, 3,:) = (/xlength, ylength, zlength/)!(/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            
-      N_FACETS_DES = N_FACETS_DES + 1 
+      NORM_FACE(:,NF) = (/zero, -one, zero/)
+      VERTEX(1,:,NF) = (/0.d0, ylength, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+      VERTEX(2,:,NF) = (/xlength, ylength, 0.d0/) !/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+      VERTEX(3,:,NF) = (/xlength, ylength, zlength/)!(/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+
+      N_FACETS_DES = N_FACETS_DES + 1
       NF = N_FACETS_DES
-      NORM_FACE(NF,:) = (/zero, -one, zero/)
-      VERTEX(NF, 1,:) = (/0.d0, ylength, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-      VERTEX(NF, 2,:) = (/xlength, ylength, zlength/)!get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-      VERTEX(NF, 3,:) = (/0.d0, ylength, zlength/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-          
-      
-      N_FACETS_DES = N_FACETS_DES + 1 
+      NORM_FACE(:,NF) = (/zero, -one, zero/)
+      VERTEX(1,:,NF) = (/0.d0, ylength, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+      VERTEX(2,:,NF) = (/xlength, ylength, zlength/)!get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+      VERTEX(3,:,NF) = (/0.d0, ylength, zlength/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+
+
+      N_FACETS_DES = N_FACETS_DES + 1
       NF = N_FACETS_DES
-      NORM_FACE(NF,:) = (/zero, zero, one/)
-      VERTEX(NF, 1,:) = (/0.d0, 0.d0, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(NF, 2,:) = (/xlength, ylength, 0.d0/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-      VERTEX(NF, 3,:) = (/0.d0, ylength, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-      N_FACETS_DES = N_FACETS_DES + 1 
+      NORM_FACE(:,NF) = (/zero, zero, one/)
+      VERTEX(1,:,NF) = (/0.d0, 0.d0, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+      VERTEX(2,:,NF) = (/xlength, ylength, 0.d0/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+      VERTEX(3,:,NF) = (/0.d0, ylength, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+      N_FACETS_DES = N_FACETS_DES + 1
       NF = N_FACETS_DES
-      
-      NORM_FACE(NF,:) = (/zero, zero, one/)           
-      VERTEX(NF, 1,:) = (/0.d0, 0.d0, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(NF, 2,:) = (/xlength, 0.d0, 0.d0/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(NF, 3,:) = (/xlength, ylength, 0.d0/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-      
-      N_FACETS_DES = N_FACETS_DES + 1 
+
+      NORM_FACE(:,NF) = (/zero, zero, one/)
+      VERTEX(1,:,NF) = (/0.d0, 0.d0, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+      VERTEX(2,:,NF) = (/xlength, 0.d0, 0.d0/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+      VERTEX(3,:,NF) = (/xlength, ylength, 0.d0/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+
+      N_FACETS_DES = N_FACETS_DES + 1
       NF = N_FACETS_DES
-      NORM_FACE(NF,:) = (/zero, zero, -one/)
-      VERTEX(NF, 1,:) = (/0.d0, 0.d0, zlength/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-      VERTEX(NF, 2,:) = (/0.d0, ylength, zlength/)! /get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-      VERTEX(NF, 3,:) = (/xlength, ylength, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            
-      N_FACETS_DES = N_FACETS_DES + 1 
+      NORM_FACE(:,NF) = (/zero, zero, -one/)
+      VERTEX(1,:,NF) = (/0.d0, 0.d0, zlength/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+      VERTEX(2,:,NF) = (/0.d0, ylength, zlength/)! /get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+      VERTEX(3,:,NF) = (/xlength, ylength, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+
+      N_FACETS_DES = N_FACETS_DES + 1
       NF = N_FACETS_DES
-      NORM_FACE(NF,:) = (/zero, zero, -one/)          
-      VERTEX(NF, 1,:) = (/0.d0, 0.d0, zlength/) !/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-      VERTEX(NF, 2,:) = (/xlength, ylength, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-      VERTEX(NF, 3,:) = (/xlength, 0.d0, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-      
+      NORM_FACE(:,NF) = (/zero, zero, -one/)
+      VERTEX(1,:,NF) = (/0.d0, 0.d0, zlength/) !/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+      VERTEX(2,:,NF) = (/xlength, ylength, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+      VERTEX(3,:,NF) = (/xlength, 0.d0, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+
       CALL FINL_ERR_MSG
       end Subroutine cg_des_convert_to_facets2
 
 
       Subroutine bin_facets_to_grid_des
-      USE param1, only: zero 
-      USE discretelement, only: dimn, xe, yn, zt 
+      USE param1, only: zero
+      USE discretelement, only: dimn, xe, yn, zt
       Use stl, only: vertex, NO_NEIGHBORING_FACET_DES, LIST_FACET_AT_DES
-      Use stl, only: tol_stl, n_facets_des 
-      USE indices 
+      Use stl, only: tol_stl, n_facets_des
+      USE indices
       USE geometry
       USE mpi_utility
-      implicit none     
+      implicit none
       INTEGER :: IJK,I,J,K, I1, I2, J1, J2, K1, K2, N, II, JJ, KK, count_fac
       INTEGER :: IM,IP,JM,JP,KM,KP,IMJK,IPJK,IJMK,IJPK,IJKM,IJKP
       INTEGER :: IJPKP,IPJKP,IPJPK
@@ -738,17 +735,17 @@
 
 !      CHARACTER (LEN=3) :: CAD_PROPAGATE_ORDER
 
-      include "function.inc"    
+      include "function.inc"
 
       DO N = 1,N_FACETS_DES
 
-         X1 = MINVAL(VERTEX(N,1:3,1))
-         X2 = MAXVAL(VERTEX(N,1:3,1))
-         Y1 = MINVAL(VERTEX(N,1:3,2))
-         Y2 = MAXVAL(VERTEX(N,1:3,2))
-         Z1 = MINVAL(VERTEX(N,1:3,3))
-         Z2 = MAXVAL(VERTEX(N,1:3,3))
-         
+         X1 = MINVAL(VERTEX(1:3,1,N))
+         X2 = MAXVAL(VERTEX(1:3,1,N))
+         Y1 = MINVAL(VERTEX(1:3,2,N))
+         Y2 = MAXVAL(VERTEX(1:3,2,N))
+         Z1 = MINVAL(VERTEX(1:3,3,N))
+         Z2 = MAXVAL(VERTEX(1:3,3,N))
+
          I1 = IEND3
          I2 = ISTART3
 
@@ -813,10 +810,10 @@
             ENDDO
          ENDIF
 
-         IF(N.eq.92.and..false.) then 
-            write(*,*) 'vertex x ', VERTEX(N,1:3,1)
-            write(*,*) 'vertex y ', VERTEX(N,1:3,2)
-            write(*,*) 'vertex z ', VERTEX(N,1:3,3)
+         IF(N.eq.92.and..false.) then
+            write(*,*) 'vertex x ', VERTEX(1:3,1,N)
+            write(*,*) 'vertex y ', VERTEX(1:3,2,N)
+            write(*,*) 'vertex z ', VERTEX(1:3,3,N)
             write(*,*) 'I1, I2', I1, I2, J1, J2, K1, K2
             read(*,*)
          endif
@@ -824,7 +821,7 @@
          DO K=K1,K2
             DO J=J1,J2
                DO I=I1,I2
-                  
+
                   IJK = FUNIJK(I,J,K)
                   CALL ADD_FACET_FOR_DES(I,J,K,IJK,N)
                enddo
@@ -839,31 +836,31 @@
 
                I1 =  MAX( I - 1, ISTART2)
                I2 =  MIN( I + 1, IEND2)
-               
+
                J1 =  MAX( J - 1, JSTART2)
                J2 =  MIN (J + 1, JEND2)
-               
+
                K1 =  MAX( K - 1, KSTART2)
                K2 =  MIN (K + 1, KEND2)
-               
-               count_fac = 0 
+
+               count_fac = 0
                NO_NEIGHBORING_FACET_DES(IJK)  = .false.
                DO KK = K1, k2
                   DO JJ = J1, j2
-                     DO II = I1, i2 
+                     DO II = I1, i2
                         IJK2 = FUNIJK(II, JJ, KK)
                         count_fac = count_fac +  LIST_FACET_AT_DES(IJK2)%COUNT_FACETS
                         ENDDO
                      ENDDO
                   ENDDO
-                  
-                  if(count_fac.eq.0)  then 
+
+                  if(count_fac.eq.0)  then
                      NO_NEIGHBORING_FACET_DES(IJK)  = .true.
                   endif
                ENDDO
             ENDDO
          ENDDO
-         
+
       End Subroutine bin_facets_to_grid_des
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -878,159 +875,159 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE ADD_FACET_FOR_DES(I,J,K,IJK,N)
       USE param1, only: zero, one
-      USE discretelement, only: dimn, xe, yn, zt 
-      Use stl 
-      USE indices 
+      USE discretelement, only: dimn, xe, yn, zt
+      Use stl
+      USE indices
       USE geometry
       USE mpi_utility
-      USE error_manager 
-      USE run 
+      USE error_manager
+      USE run
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: I,j,k,IJK, N
       !Local variables
       INTEGER ::  CURRENT_COUNT, COUNT
-      
+
       double precision ::   box_origin(3), box_extents(3), tri_norm(3)
       Logical :: sa_exist
-      integer :: sep_axis 
-      
+      integer :: sep_axis
+
       CHARACTER*100 :: FNAME
-      integer :: stl_unit, fid 
+      integer :: stl_unit, fid
       INCLUDE 'function.inc'
 
       stl_unit = 1001
-      IF (I.lt.IMIN1.OR.I.gt.IMAX1) RETURN 
-      IF (J.lt.JMIN1.OR.J.gt.JMAX1) RETURN 
-      IF (K.lt.KMIN1.OR.K.gt.KMAX1) RETURN 
-      
-      
+      IF (I.lt.IMIN1.OR.I.gt.IMAX1) RETURN
+      IF (J.lt.JMIN1.OR.J.gt.JMAX1) RETURN
+      IF (K.lt.KMIN1.OR.K.gt.KMAX1) RETURN
+
+
       box_origin(1) = xe(I) - dx(I)
       box_origin(2) = yn(J) - dy(J)
       box_origin(3) = zt(K) - dz(K)
-      
+
       box_extents(1) = dx(I)
       box_extents(2) = dy(J)
       box_extents(3) = dz(K)
-      
-      !Do the separating axis test to check if a separating axis exist. If the separating 
-      !axis exsit then the cell and facet cannot intersect, so return without adding. 
-      CALL TestTriangleAABB(vertex(N, 1,:), vertex(N,2,:), vertex(N,3,:), norm_face(N,:), &
+
+      !Do the separating axis test to check if a separating axis exist. If the separating
+      !axis exsit then the cell and facet cannot intersect, so return without adding.
+      CALL TestTriangleAABB(vertex(1,:,N), vertex(2,:,N), vertex(3,:,N), norm_face(:,N), &
       box_origin(:), box_extents(:), sa_exist, sep_axis,i,j,k )
 
-      IF (I .eq. 2.and.j.eq.3.and.k.eq.2.and..not.sa_exist.and..false.) then 
-         
+      IF (I .eq. 2.and.j.eq.3.and.k.eq.2.and..not.sa_exist.and..false.) then
+
          write(*, *) box_origin(:)
          write(*, '(5x,A10, 2x, i10) ') 'Facet number: ', N
-         write(*,'(5x,A10, 3(2x, g17.8))') 'vert1: ', vertex(N,1,:)
-         write(*,'(5x,A10,3(2x, g17.8))') 'vert1: ', vertex(N,2,:)
-         write(*,'(5x,A10,3(2x, g17.8))') 'vert1: ', vertex(N,3,:)
-         write(*,'(5x,A10,3(2x, g17.8))') 'norm: ', norm_face(N,:)
-         write(*,'(5x,A25, L2, 2x, i2)') 'sep_axis exist, axis #:', & 
-         sa_exist, sep_axis 
-         read(*,*) 
-      endif 
-         
-      IF (sa_exist) then 
-         !write(*,'(5x,A25, L2, 2x, i2)') 'sep_axis exist, axis #:', & 
-         !sa_exist, sep_axis 
-         return 
+         write(*,'(5x,A10, 3(2x, g17.8))') 'vert1: ', vertex(1,:,N)
+         write(*,'(5x,A10,3(2x, g17.8))') 'vert1: ', vertex(2,:,N)
+         write(*,'(5x,A10,3(2x, g17.8))') 'vert1: ', vertex(3,:,N)
+         write(*,'(5x,A10,3(2x, g17.8))') 'norm: ', norm_face(:,N)
+         write(*,'(5x,A25, L2, 2x, i2)') 'sep_axis exist, axis #:', &
+         sa_exist, sep_axis
+         read(*,*)
+      endif
+
+      IF (sa_exist) then
+         !write(*,'(5x,A25, L2, 2x, i2)') 'sep_axis exist, axis #:', &
+         !sa_exist, sep_axis
+         return
       ENDIF
-      !separating axis does not exist ==> cell and the triangle do intersect. 
+      !separating axis does not exist ==> cell and the triangle do intersect.
 
       CURRENT_COUNT = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-      
+
       IF(CURRENT_COUNT .LT. MAX_FACETS_PER_CELL_DES) THEN
          LIST_FACET_AT_DES(IJK)%COUNT_FACETS = CURRENT_COUNT+1
          LIST_FACET_AT_DES(IJK)%FACET_LIST(CURRENT_COUNT+1) = N
-         
+
       ELSE
          CALL INIT_ERR_MSG("add_facets_for_des  under des_stl_functions_mod")
-         WRITE(err_msg, 200) MAX_FACETS_PER_CELL_DES, IJK, & 
-         I, J, K, mype, & 
+         WRITE(err_msg, 200) MAX_FACETS_PER_CELL_DES, IJK, &
+         I, J, K, mype, &
          IS_ON_myPE_owns(I, J, K)
          CALL flush_err_msg(footer = .false.)
 
-         
+
          write(err_msg, *) "current_list for this cell is"
          CALL flush_err_msg(header = .false., footer = .false.)
 
-         
-         IF(nodesI*nodesJ*nodesK.gt.1) then 
-            
-            WRITE(fname,'(A,"_TROUBLE_CELL",A, I5.5, 3(A,I5.5), ".stl")') & 
+
+         IF(nodesI*nodesJ*nodesK.gt.1) then
+
+            WRITE(fname,'(A,"_TROUBLE_CELL",A, I5.5, 3(A,I5.5), ".stl")') &
             TRIM(RUN_NAME), '_pid', mype, '_I', I, '_J', J, '_K', K
          else
-            
-            WRITE(fname,'(A,"_TROUBLE_CELL", 3(A,I5.5), ".stl")') & 
+
+            WRITE(fname,'(A,"_TROUBLE_CELL", 3(A,I5.5), ".stl")') &
             TRIM(RUN_NAME), '_I', I, '_J', J, '_K', K
          endif
 
          open(stl_unit, file = fname, form='formatted')
-         write(stl_unit,*)'solid vcg'      
+         write(stl_unit,*)'solid vcg'
 
-         DO COUNT  = 1, CURRENT_COUNT 
-            
+         DO COUNT  = 1, CURRENT_COUNT
+
              !write(*, '(/,I10)') LIST_FACET_AT(IJK)%FACET_LIST(COUNT)
             FID = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
             write(err_msg, '(I10)') FID
-            
+
             CALL flush_err_msg(header = .false., footer = .false.)
-             
-             
-             write(stl_unit,*) '   facet normal ', NORM_FACE(FID,1:3)
-             write(stl_unit,*) '      outer loop' 
-             write(stl_unit,*) '         vertex ', VERTEX(FID,1,1:3)
-             write(stl_unit,*) '         vertex ', VERTEX(FID,2,1:3)
-             write(stl_unit,*) '         vertex ', VERTEX(FID,3,1:3)
+
+
+             write(stl_unit,*) '   facet normal ', NORM_FACE(1:3,FID)
+             write(stl_unit,*) '      outer loop'
+             write(stl_unit,*) '         vertex ', VERTEX(1,1:3,FID)
+             write(stl_unit,*) '         vertex ', VERTEX(2,1:3,FID)
+             write(stl_unit,*) '         vertex ', VERTEX(3,1:3,FID)
              write(stl_unit,*) '      endloop'
              write(stl_unit,*) '   endfacet'
-             
+
           ENDDO
-          
+
           write(stl_unit,*)'endsolid vcg'
           close(stl_unit, status = 'keep')
-          
-          
+
+
           write(err_msg, *) 'Stopping'
           CALL flush_err_msg(header = .false., abort = .true.)
       ENDIF
-      
 
-      
+
+
  200  FORMAT(&
-      & 'ERROR MESSAGE FROM CUT_CELL_PREPROCESSING', /10x, & 
+      & 'ERROR MESSAGE FROM CUT_CELL_PREPROCESSING', /10x, &
       & 'INCREASE MAX_FACETS_PER_CELL_DES from the current value of', i3, /10x, &
       & 'Happening for cell IJK, I, J, K = ', 4(2x, i5), /10X, &
       & 'mype, Is on myPe? ', I6, L2, /10X, &
       & 'see the file TROUBLE_CELL for all the current facets in this cell')
-      
+
       END SUBROUTINE ADD_FACET_FOR_DES
 
-     
+
 
       SUBROUTINE DEBUG_WRITE_GRID_FACEINFO
       USE param
       USE param1
       USE run
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE stl
 
-      IMPLICIT NONE 
-      
+      IMPLICIT NONE
+
       INTEGER :: CELL_ID, I, J, K, COUNT, COUNT_FACETS, IJK
-      
+
       CHARACTER*100 :: FILENAME
 
       INCLUDE 'function.inc'
 
 
-      IF(nodesI*nodesJ*nodesK.gt.1) then 
+      IF(nodesI*nodesJ*nodesK.gt.1) then
          write(filename,'(A,"_FACETS_GRID_CELL_",I5.5,".dat")')  trim(run_name), myPE
       else
          write(filename,'(A,"_FACETS_GRID_CELL",".dat")')  trim(run_name)
@@ -1041,74 +1038,74 @@
             DO I=ISTART2, IEND2
                CELL_ID = FUNIJK(I,J,K)
                COUNT_FACETS =  LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
-               IF(COUNT_FACETS.eq.0) cycle 
+               IF(COUNT_FACETS.eq.0) cycle
                WRITE(1001, '("**************************************************")')
 
-               WRITE(1001, '(2X, "CELL IJK, I, J, K =        = ", i20, 2x, 4(2x,i10))') CELL_ID, I, J, K 
+               WRITE(1001, '(2X, "CELL IJK, I, J, K =        = ", i20, 2x, 4(2x,i10))') CELL_ID, I, J, K
 
                WRITE(1001, '(2x, "TOTAL FACETS                  = ", 3(2x, i10))') COUNT_FACETS
-               
+
                DO COUNT = 1, COUNT_FACETS
                   WRITE(1001, '(2x, i20)')  LIST_FACET_AT_DES(CELL_ID)%FACET_LIST(COUNT)
                ENDDO
-               
+
             ENDDO
          ENDDO
       ENDDO
-      
+
       CLOSE(1001, STATUS = "keep")
       END    SUBROUTINE DEBUG_WRITE_GRID_FACEINFO
-      
+
       Subroutine  DEBUG_write_all_readin_facets
       USE stl
       USE compar
-      IMPLICIT NONE 
-      
+      IMPLICIT NONE
+
       INTEGER ::  CELL_ID, N, I, J, K, COUNT, COUNT_FACETS, IJK
       CHARACTER*100 :: FILENAME
 
 
-      OPEN(UNIT=444, FILE='geometry_from_readin_facets.stl') 
-      write(444,*)'solid vcg'      
+      OPEN(UNIT=444, FILE='geometry_from_readin_facets.stl')
+      write(444,*)'solid vcg'
       write(*,*) 'NFACETS, NFACETS DES =', N_FACETS, N_FACETS_DES
     !  DO N = N_FACETS+1, N_FACETS_DES
       DO N = 1, N_FACETS_DES
-         write(444,*) '   facet normal ', NORM_FACE(N,1:3)
-         write(444,*) '      outer loop' 
-         write(444,*) '         vertex ', VERTEX(N,1,1:3)
-         write(444,*) '         vertex ', VERTEX(N,2,1:3)
-         write(444,*) '         vertex ', VERTEX(N,3,1:3)
+         write(444,*) '   facet normal ', NORM_FACE(1:3,N)
+         write(444,*) '      outer loop'
+         write(444,*) '         vertex ', VERTEX(1,1:3,N)
+         write(444,*) '         vertex ', VERTEX(2,1:3,N)
+         write(444,*) '         vertex ', VERTEX(3,1:3,N)
          write(444,*) '      endloop'
          write(444,*) '   endfacet'
-         
+
       ENDDO
-      
+
       write(444,*)'endsolid vcg'
 
       close(444)
- 
+
       IF(MyPE == PE_IO) THEN
          WRITE(*,*) ' The file geometry_from_readin_facets.stl was sucessfully written.'
-         WRITE(*,*) ' This is the based on readin and newly generated facets' 
+         WRITE(*,*) ' This is the based on readin and newly generated facets'
       ENDIF
       END Subroutine DEBUG_write_all_readin_facets
 
       Subroutine  DEBUG_write_stl_from_grid_facet(WRITE_FACETS_EACH_CELL)
-      use run 
-      USE stl 
+      use run
+      USE stl
 
       USE geometry
-      USE indices  
-      USE compar 
+      USE indices
+      USE compar
 
-      IMPLICIT NONE 
-      
+      IMPLICIT NONE
+
       LOGICAL, INTENT(IN),optional  :: WRITE_FACETS_EACH_CELL
       INTEGER ::  CELL_ID, N, I, J, K, COUNT, COUNT_FACETS, IJK
       CHARACTER*100 :: FILENAME
-      LOGICAL :: FACET_WRITTEN(DIM_STL), write_each_cell 
+      LOGICAL :: FACET_WRITTEN(DIM_STL), write_each_cell
 
-      
+
       INCLUDE 'function.inc'
 
       write_each_cell = .false.
@@ -1116,56 +1113,56 @@
          write_each_cell = WRITE_FACETS_EACH_CELL
       endif
 
-      FACET_WRITTEN = .false. 
-      
-      IF(nodesI*nodesJ*nodesK.gt.1) then 
-         write(filename,'(A,"_GEOMETRY_FROM_GRID_FACETS_",I5.5,".stl")')  & 
+      FACET_WRITTEN = .false.
+
+      IF(nodesI*nodesJ*nodesK.gt.1) then
+         write(filename,'(A,"_GEOMETRY_FROM_GRID_FACETS_",I5.5,".stl")')  &
          trim(run_name), myPE
       else
-         write(filename,'(A,"_GEOMETRY_FROM_GRID_FACETS",".stl")')  & 
+         write(filename,'(A,"_GEOMETRY_FROM_GRID_FACETS",".stl")')  &
          trim(run_name)
       endif
       OPEN(UNIT=444, FILE=trim(filename))
-      write(444,*)'solid vcg'      
+      write(444,*)'solid vcg'
 
       DO K=KSTART2, KEND2
          DO J=JSTART2, JEND2
             DO I=ISTART2, IEND2
                CELL_ID = FUNIJK(I,J,K)
                COUNT_FACETS =  LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
-               IF(COUNT_FACETS.eq.0) cycle 
-               
-               if(write_each_cell) then 
+               IF(COUNT_FACETS.eq.0) cycle
+
+               if(write_each_cell) then
                   write(filename, '(A,"_geometry_", i3.3, "_", i3.3, "_", i3.3,"_" , i8.8, ".stl")') trim(run_name) , I,J,K,CELL_ID
-                  OPEN(UNIT=445, FILE=filename) 
-                  write(445,*)'solid vcg'      
-               endif 
-                  
+                  OPEN(UNIT=445, FILE=filename)
+                  write(445,*)'solid vcg'
+               endif
+
                DO COUNT = 1, COUNT_FACETS
                   N = LIST_FACET_AT_DES(CELL_ID)%FACET_LIST(COUNT)
 
-                  if(write_each_cell) then 
-                     write(445,*) '   facet normal ', NORM_FACE(N,:)
+                  if(write_each_cell) then
+                     write(445,*) '   facet normal ', NORM_FACE(:,N)
                      write(445,*) '      outer loop'
-                     write(445,*) '         vertex ', VERTEX(N,1,1:3)
-                     write(445,*) '         vertex ', VERTEX(N,2,1:3)
-                     write(445,*) '         vertex ', VERTEX(N,3,1:3)
+                     write(445,*) '         vertex ', VERTEX(1,1:3,N)
+                     write(445,*) '         vertex ', VERTEX(2,1:3,N)
+                     write(445,*) '         vertex ', VERTEX(3,1:3,N)
                      write(445,*) '      endloop'
                      write(445,*) '   endfacet'
                   endif
-                  
-                  if (facet_written(n)) cycle 
-                  write(444,*) '   facet normal ', NORM_FACE(N,:)
+
+                  if (facet_written(n)) cycle
+                  write(444,*) '   facet normal ', NORM_FACE(:,N)
                   write(444,*) '      outer loop'
-                  write(444,*) '         vertex ', VERTEX(N,1,1:3)
-                  write(444,*) '         vertex ', VERTEX(N,2,1:3)
-                  write(444,*) '         vertex ', VERTEX(N,3,1:3)
+                  write(444,*) '         vertex ', VERTEX(1,1:3,N)
+                  write(444,*) '         vertex ', VERTEX(2,1:3,N)
+                  write(444,*) '         vertex ', VERTEX(3,1:3,N)
                   write(444,*) '      endloop'
                   write(444,*) '   endfacet'
-                  facet_written(N) = .true. 
+                  facet_written(N) = .true.
                ENDDO
 
-               if(write_each_cell) then 
+               if(write_each_cell) then
                   write(445,*)'endsolid vcg'
                   close(445)
                endif
@@ -1185,14 +1182,14 @@
       END Subroutine  DEBUG_write_stl_from_grid_facet
 
 
-      double precision function get_nodes(I, J,K, IDIR) 
-      USE discretelement, only: dimn, xe, yn, zt 
-      USE geometry, only: dx, dy, dz 
-      USE error_manager 
-      implicit none     
+      double precision function get_nodes(I, J,K, IDIR)
+      USE discretelement, only: dimn, xe, yn, zt
+      USE geometry, only: dx, dy, dz
+      USE error_manager
+      implicit none
       Integer, intent(in) :: I, J, K
       Character*1, intent(in) :: Idir
-      Integer :: IJK 
+      Integer :: IJK
 
       SELECT CASE((TRIM(IDIR)))
       CASE('w' )
@@ -1200,31 +1197,31 @@
       CASE('e')
          GET_NODES = XE(I)
       CASE('n')
-         GET_NODES = YN(J)  
+         GET_NODES = YN(J)
       CASE('s')
-         GET_NODES = YN(J) - DY(J) 
+         GET_NODES = YN(J) - DY(J)
       CASE('t')
          GET_NODES = ZT(K)
       CASE('b')
-         GET_NODES = ZT(K) - DZ(K) 
+         GET_NODES = ZT(K) - DZ(K)
       CASE DEFAULT
-         
+
          CALL INIT_ERR_MSG("get_nodes under des_stl_functions_mod")
-         WRITE(err_msg,'(A,/,A,i1,/,A)') & 
+         WRITE(err_msg,'(A,/,A,i1,/,A)') &
          'ERROR IN get_nodes under des_stl_functions.', &
-         'UNKNOWN direction:  ', trim(idir), & 
+         'UNKNOWN direction:  ', trim(idir), &
          'ACCEPTABLE directions are E,W,N,S,T,B:'
                                 !            WRITE(*,*)'STL'
          CALL flush_err_msg(abort = .true.)
 
       END SELECT
-         
-      return 
+
+      return
       end function get_nodes
 
 
 
       end       MODULE des_stl_functions
-      
-      
-      
+
+
+

@@ -13,10 +13,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CUT_CELL_PREPROCESSING
-    
+
       USE param
       USE param1
       USE parallel
@@ -40,7 +40,7 @@
       INTEGER :: SAFE_MODE_COUNT
       DOUBLE PRECISION :: CPU_PP_START,CPU_PP_END
 
-      include "function.inc"   
+      include "function.inc"
 
       IF(.NOT.CG_HEADER_WAS_PRINTED) CALL PRINT_CG_HEADER
 
@@ -48,16 +48,16 @@
 
       CALL OPEN_CUT_CELL_FILES
 
-      CALL ALLOCATE_CUT_CELL_ARRAYS 
+      CALL ALLOCATE_CUT_CELL_ARRAYS
 
       CALL DEFINE_QUADRICS
 
-      CALL SET_3D_CUT_CELL_FLAGS 
+      CALL SET_3D_CUT_CELL_FLAGS
 
       CALL GATHER_DATA
 
 !======================================================================
-! Gather Data  and writes surface(s) defined by all cut cells 
+! Gather Data  and writes surface(s) defined by all cut cells
 !======================================================================
 
       IF(WRITE_VTK_FILES.AND.(.NOT.BDIST_IO)) THEN
@@ -66,15 +66,15 @@
 
 
 
-      CALL SET_3D_CUT_U_CELL_FLAGS 
-      CALL SET_3D_CUT_V_CELL_FLAGS 
-      IF(DO_K) CALL SET_3D_CUT_W_CELL_FLAGS 
+      CALL SET_3D_CUT_U_CELL_FLAGS
+      CALL SET_3D_CUT_V_CELL_FLAGS
+      IF(DO_K) CALL SET_3D_CUT_W_CELL_FLAGS
 
       CALL SET_3D_CUT_CELL_TREATMENT_FLAGS
 
-      CALL GET_3D_ALPHA_U_CUT_CELL 
-      CALL GET_3D_ALPHA_V_CUT_CELL 
-      IF(DO_K) CALL GET_3D_ALPHA_W_CUT_CELL 
+      CALL GET_3D_ALPHA_U_CUT_CELL
+      CALL GET_3D_ALPHA_V_CUT_CELL
+      IF(DO_K) CALL GET_3D_ALPHA_W_CUT_CELL
 
       CALL SET_GHOST_CELL_FLAGS
 
@@ -90,21 +90,21 @@
 
       CALL PRINT_GRID_STATISTICS
 
-      CALL CG_GET_BC_AREA   
+      CALL CG_GET_BC_AREA
 
       CALL FLOW_TO_VEL(.FALSE.)
 
       CALL CG_FLOW_TO_VEL
 
       CALL CONVERT_CG_MI_TO_PS
- 
+
       CALL GET_DISTANCE_TO_WALL
 
 
       CALL CPU_TIME (CPU_PP_END)
 
-      
-      
+
+
       IF(myPE == PE_IO) THEN
          WRITE(*,20)'CARTESIAN GRID PRE-PROCESSING COMPLETED IN ',CPU_PP_END - CPU_PP_START, ' SECONDS.'
          WRITE(*,10)'============================================================================='
@@ -149,7 +149,7 @@
 
 10    FORMAT(1X,A)
 20    FORMAT(1X,A,F8.2,A)
-      
+
       END SUBROUTINE CUT_CELL_PREPROCESSING
 
 
@@ -165,10 +165,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE PRINT_CG_HEADER
-    
+
       USE param
       USE param1
       USE parallel
@@ -186,7 +186,7 @@
          WRITE(*,10)'  ____          ___________    _   ____      ____    __________   __________  '
          WRITE(*,10)' |    \        /           |  (_)  \   \    /   /   |          | |          | '
          WRITE(*,10)' |     \      /      ______|  ___   \   \  /   /    |    ______| |    ______| '
-         WRITE(*,10)' |      \    /      |______  |   |   \   \/   /     |   |        |   |        '   
+         WRITE(*,10)' |      \    /      |______  |   |   \   \/   /     |   |        |   |        '
          WRITE(*,10)' |       \  /              | |   |    \      /  === |   |        |   |  ____  '
          WRITE(*,10)' |   |\   \/   /|    ______| |   |    /      \      |   |        |   | |_   | '
          WRITE(*,10)' |   | \      / |   |        |   |   /   /\   \     |   |______  |   |___|  | '
@@ -247,7 +247,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
         SUBROUTINE EVAL_F(METHOD,x1,x2,x3,Q,f,CLIP_FLAG)
- 
+
       USE parallel
       USE compar
       USE sendrecv
@@ -255,10 +255,10 @@
       USE cutcell
 
       USE quadric
-  
+
 
       IMPLICIT NONE
- 
+
       DOUBLE PRECISION x1,x2,x3
       DOUBLE PRECISION f
       DOUBLE PRECISION, DIMENSION(1,3) :: X_VECTOR,XMT
@@ -281,7 +281,7 @@
 
             DO GROUP = 1, N_GROUP
                GS = GROUP_SIZE(GROUP)
-               GR = TRIM(GROUP_RELATION(GROUP)) 
+               GR = TRIM(GROUP_RELATION(GROUP))
 
                DO P = 1 , GS
                   Q_ID = GROUP_Q(GROUP,P)
@@ -304,7 +304,7 @@
 
             DO GROUP = 2, N_GROUP
 
-               GR = TRIM(RELATION_WITH_PREVIOUS(GROUP)) 
+               GR = TRIM(RELATION_WITH_PREVIOUS(GROUP))
 
                IF(GR =='AND') THEN
                   f = DMAX1(f,F_G(GROUP,0))
@@ -343,7 +343,7 @@
 
 
       RETURN
-      END SUBROUTINE EVAL_F     
+      END SUBROUTINE EVAL_F
 
 
 
@@ -359,10 +359,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE INTERSECT_LINE(METHOD,xa,ya,za,xb,yb,zb,Q_ID,INTERSECT_FLAG,xc,yc,zc)
-    
+
       USE param
       USE param1
       USE parallel
@@ -374,7 +374,7 @@
       USE compar
       USE sendrecv
       USE quadric
-      
+
       IMPLICIT NONE
       DOUBLE PRECISION:: x1,y1,z1,x2,y2,z2,x3,y3,z3
       DOUBLE PRECISION:: xa,ya,za,xb,yb,zb,xc,yc,zc
@@ -402,7 +402,7 @@
       CALL EVAL_F(METHOD,x2,y2,z2,Q_ID,f2,CLIP_FLAG2)
 
 !======================================================================
-!  The line from (x1,y1,z1) and (x2,y2,z2) is parametrized 
+!  The line from (x1,y1,z1) and (x2,y2,z2) is parametrized
 !  from t1 = ZERO to t2 = ONE
 !======================================================================
 
@@ -424,7 +424,7 @@
         niter = 0
         f3 = 2.0d0*TOL_F
         do while (   (abs(f3) > TOL_F)   .AND.   (niter<ITERMAX_INT)       )
-         
+
           t3 = t1 - f1*(t2-t1)/(f2-f1)
 
           x3 = x1 + t3 * (x2 - x1)
@@ -435,10 +435,10 @@
           if(f1*f3<0) then
             t2 = t3
             f2 = f3
-          else 
+          else
             t1 = t3
             f1 = f3
-          endif   
+          endif
           niter = niter + 1
 
         end do
@@ -462,8 +462,8 @@
            WRITE(*,*)'Maximum number of iterations = ', ITERMAX_INT
            WRITE(*,*)   'Please increase the intersection tolerance, '
            WRITE(*,*)   'or the maximum number of iterations, and try again.'
-           WRITE(*,*)   'MFiX will exit now.'             
-           CALL MFIX_EXIT(myPE) 
+           WRITE(*,*)   'MFiX will exit now.'
+           CALL MFIX_EXIT(myPE)
            x_intersection = UNDEFINED
            INTERSECT_FLAG = .FALSE.
 
@@ -475,7 +475,7 @@
         INTERSECT_FLAG = .FALSE.
       endif
 
- 1000 FORMAT(A,3(2X,G12.5)) 
+ 1000 FORMAT(A,3(2X,G12.5))
 
 
       RETURN
@@ -493,10 +493,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE INTERSECT(IJK,TYPE_OF_CELL,Xi,Yi,Zi)
-    
+
       USE param
       USE param1
       USE parallel
@@ -504,13 +504,13 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
       USE cutcell
       USE polygon
-      
+
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
       INTEGER :: IJK,I,J,K,Q_ID,Q_ID2,N_int_x,N_int_y,N_int_z,N_USR
@@ -571,13 +571,13 @@
 
 !      IF(USE_STL) THEN
 !         CALL INTERSECT_LINE_WITH_STL(xa,ya,za,xb,yb,zb,INTERSECT_X(IJK),xc,yc,zc)
-!         IF(INTERSECT_X(IJK)) Xi = xc 
+!         IF(INTERSECT_X(IJK)) Xi = xc
 !      ENDIF
 
       IF(TYPE_OF_CELL=='U_MOMENTUM') THEN
          IF(SNAP(IJK)) THEN
             INTERSECT_X(IJK) = .TRUE.
-            I = I_OF(IJK) 
+            I = I_OF(IJK)
             Xi = XG_E(I)
          ENDIF
       ENDIF
@@ -599,7 +599,7 @@
             N_int_y = N_int_y + 1
             INTERSECT_Y(IJK) = .TRUE.
             yc_backup = Yi
-            Yi = yc            
+            Yi = yc
          ENDIF
 
       IF(N_int_y /= 1) THEN
@@ -619,13 +619,13 @@
 
 !      IF(USE_STL) THEN
 !         CALL INTERSECT_LINE_WITH_STL(xa,ya,za,xb,yb,zb,INTERSECT_Y(IJK),xc,yc,zc)
-!         IF(INTERSECT_Y(IJK)) Yi = yc 
+!         IF(INTERSECT_Y(IJK)) Yi = yc
 !      ENDIF
 
       IF(TYPE_OF_CELL=='V_MOMENTUM') THEN
          IF(SNAP(IJK)) THEN
             INTERSECT_Y(IJK) = .TRUE.
-            J = J_OF(IJK) 
+            J = J_OF(IJK)
             Yi = YG_N(J)
          ENDIF
       ENDIF
@@ -646,7 +646,7 @@
                N_int_z = N_int_z + 1
                INTERSECT_Z(IJK) = .TRUE.
                zc_backup = Zi
-               Zi = zc            
+               Zi = zc
             ENDIF
 
             IF(N_int_z /= 1) THEN
@@ -666,13 +666,13 @@
 
    !      IF(USE_STL) THEN
    !         CALL INTERSECT_LINE_WITH_STL(xa,ya,za,xb,yb,zb,INTERSECT_Z(IJK),xc,yc,zc)
-   !         IF(INTERSECT_Z(IJK)) Zi = zc 
+   !         IF(INTERSECT_Z(IJK)) Zi = zc
    !      ENDIF
 
          IF(TYPE_OF_CELL=='W_MOMENTUM') THEN
             IF(SNAP(IJK)) THEN
                INTERSECT_Z(IJK) = .TRUE.
-               K = K_OF(IJK) 
+               K = K_OF(IJK)
                Zi = ZG_T(K)
             ENDIF
          ENDIF
@@ -698,7 +698,7 @@
 
 
       RETURN
-      
+
       END SUBROUTINE INTERSECT
 
 
@@ -706,7 +706,7 @@
 !                                                                      C
 !  Module name: CLEAN_INTERSECT                                        C
 !  Purpose: Remove Intersection flags in preparation of small cell     C
-!           removal                                                    C 
+!           removal                                                    C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
 !  Reviewer:                                          Date:            C
@@ -714,10 +714,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CLEAN_INTERSECT(IJK,TYPE_OF_CELL,Xi,Yi,Zi)
-    
+
       USE param
       USE param1
       USE parallel
@@ -725,14 +725,14 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
       USE cutcell
       USE polygon
       USE STL
-      
+
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
       INTEGER :: IJK,I,J,K,IM,JM,KM,IP,JP,KP
@@ -751,17 +751,17 @@
 
       CALL GET_CELL_NODE_COORDINATES(IJK,TYPE_OF_CELL)
 
-      I = I_OF(IJK) 
-      J = J_OF(IJK) 
-      K = K_OF(IJK) 
+      I = I_OF(IJK)
+      J = J_OF(IJK)
+      K = K_OF(IJK)
 
-      IM = I - 1 
-      JM = J - 1 
+      IM = I - 1
+      JM = J - 1
       KM = K - 1
 
-      IP = I + 1 
-      JP = J + 1 
-      KP = K + 1 
+      IP = I + 1
+      JP = J + 1
+      KP = K + 1
 
       IMJK = FUNIJK(IM,J,K)
       IPJK = FUNIJK(IP,J,K)
@@ -830,7 +830,7 @@
 
                SNAP(IMJK) = .TRUE.
             ENDIF
-                
+
          ENDIF
 
 
@@ -852,7 +852,7 @@
             IF(J<=JMAX1) INTERSECT_Y(IJPK) = .FALSE.
             IF(DO_K.AND.(K<=KMAX1)) INTERSECT_Z(IJKP) = .FALSE.
 
-                
+
          ENDIF
 
          IF(USE_STL.OR.USE_MSH) THEN
@@ -864,7 +864,7 @@
       ENDIF
 
 
-      
+
 
 !======================================================================
 !  Clean Intersection with Edge 6 (node 6-8, Face East-Top):
@@ -897,7 +897,7 @@
 
                SNAP(IJMK) = .TRUE.
             ENDIF
-                
+
          ENDIF
 
 
@@ -907,7 +907,7 @@
             IF(PRINT_WARNINGS) THEN
                WRITE(*,*)'MERGING Y-INTERSECTION ALONG EDGE 6 ONTO NODE 8'
                WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
-            ENDIF 
+            ENDIF
 
             INTERSECT_X(IJK)  = .FALSE.
             INTERSECT_Y(IJK)  = .FALSE.
@@ -918,7 +918,7 @@
             IF(J<=JMAX1) INTERSECT_Y(IJPK) = .FALSE.
             IF(DO_K.AND.(K<=KMAX1)) INTERSECT_Z(IJKP) = .FALSE.
 
-                
+
          ENDIF
 
 
@@ -950,7 +950,7 @@
                IF(PRINT_WARNINGS) THEN
                   WRITE(*,*)'MERGING Z-INTERSECTION ALONG EDGE 11 ONTO NODE 4'
                   WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
-               ENDIF 
+               ENDIF
 
                INTERSECT_Z(IJK)  = .FALSE.
 
@@ -960,7 +960,7 @@
                   INTERSECT_Y(IJKM)  = .FALSE.
                   INTERSECT_Y(IJPKM) = .FALSE.
                   INTERSECT_Z(IJKM) = .FALSE.
-                   
+
                   SNAP(IJKM) = .TRUE.
                ENDIF
 
@@ -981,13 +981,13 @@
                SNAP(IJK) = .TRUE.
 !            F_AT(IJKM) = UNDEFINED
 !            IF(F_AT(IJK)/=ZERO) SNAP(IJK) = .TRUE.
-!               F_AT(IJK) = ZERO  
+!               F_AT(IJK) = ZERO
 
                IF(I<=IMAX1) INTERSECT_X(IPJK) = .FALSE.
                IF(J<=JMAX1) INTERSECT_Y(IJPK) = .FALSE.
                IF(K<=KMAX1) INTERSECT_Z(IJKP) = .FALSE.
 
-                   
+
             ENDIF
 
             IF(USE_STL.OR.USE_MSH) THEN
@@ -1002,7 +1002,7 @@
 
 
       RETURN
-      
+
       END SUBROUTINE CLEAN_INTERSECT
 
 
@@ -1019,13 +1019,13 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_CUT_CELL_FILES
-    
+
       USE cutcell
       USE compar
-      
+
       IMPLICIT NONE
 
       IF(MyPE == PE_IO)  THEN
@@ -1034,7 +1034,7 @@
 
       RETURN
 
-      
+
       END SUBROUTINE OPEN_CUT_CELL_FILES
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -1048,13 +1048,13 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CLOSE_CUT_CELL_FILES
-    
+
       USE compar
       USE cutcell
-      
+
       IMPLICIT NONE
 
       IF(MyPE == PE_IO) THEN
@@ -1063,7 +1063,7 @@
 
       RETURN
 
-      
+
       END SUBROUTINE CLOSE_CUT_CELL_FILES
 
 
@@ -1079,10 +1079,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CAD_INTERSECT(TYPE_OF_CELL,Xint,Yint,Zint)
-    
+
       USE param
       USE param1
       USE parallel
@@ -1090,7 +1090,7 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
@@ -1103,7 +1103,7 @@
 
 
 
-      
+
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
       INTEGER :: IJK,I,J,K,Q_ID,Q_ID2,N_int_x,N_int_y,N_int_z, COUNT
@@ -1115,7 +1115,7 @@
 
       DOUBLE PRECISION :: X1,X2,Y1,Y2,Z1,Z2
 
-      DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: Xint,Yint,Zint 
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: Xint,Yint,Zint
 
       INTEGER :: N,I1,I2,J1,J2,K1,K2
 
@@ -1176,11 +1176,11 @@
          CASE DEFAULT
             WRITE(*,*)'SUBROUTINE: GET_CELL_NODE_COORDINATES'
             WRITE(*,*)'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
-            WRITE(*,*)'ACCEPTABLE TYPES ARE:' 
-            WRITE(*,*)'SCALAR' 
-            WRITE(*,*)'U_MOMENTUM' 
-            WRITE(*,*)'V_MOMENTUM' 
-            WRITE(*,*)'W_MOMENTUM' 
+            WRITE(*,*)'ACCEPTABLE TYPES ARE:'
+            WRITE(*,*)'SCALAR'
+            WRITE(*,*)'U_MOMENTUM'
+            WRITE(*,*)'V_MOMENTUM'
+            WRITE(*,*)'W_MOMENTUM'
             CALL MFIX_EXIT(myPE)
       END SELECT
 
@@ -1290,8 +1290,8 @@
                   IJPKP = FUNIJK(I,JP,KP)
                   IPJKP = FUNIJK(IP,J,KP)
                   IPJPK = FUNIJK(IP,JP,K)
-                  
-                  
+
+
 !======================================================================
 !  Get coordinates of eight nodes
 !======================================================================
@@ -1348,12 +1348,12 @@
 
                            INTERSECT_X(IJK) = .FALSE.        ! Ignore intersections when two intersections are detected on the same edge
 
-                        ENDIF                  
+                        ENDIF
 
                      ELSE
 
                         INTERSECT_X(IJK) = .TRUE.
-                        Xint(IJK) = xc 
+                        Xint(IJK) = xc
 
 ! Set values at corners if they are not zero
 
@@ -1361,18 +1361,18 @@
                         N7(2) = ya-yc
                         N7(3) = za-zc
 
-                        IF(DABS(F_AT(IMJK))>TOL_F)   F_AT(IMJK) = -DOT_PRODUCT(N7,NORM_FACE(N,:))  
+                        IF(DABS(F_AT(IMJK))>TOL_F)   F_AT(IMJK) = -DOT_PRODUCT(N7,NORM_FACE(:,N))
 
                         N8(1) = xb-xc
                         N8(2) = yb-yc
                         N8(3) = zb-zc
 
-                        IF(DABS(F_AT(IJK))>TOL_F)   F_AT(IJK) = -DOT_PRODUCT(N8,NORM_FACE(N,:))  
+                        IF(DABS(F_AT(IJK))>TOL_F)   F_AT(IJK) = -DOT_PRODUCT(N8,NORM_FACE(:,N))
 
 
                         IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
-                        IF(JP<=J2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPK,N) 
-                        IF(KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJKP,N) 
+                        IF(JP<=J2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPK,N)
+                        IF(KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJKP,N)
                         IF(JP<=J2.AND.KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPKP,N)
 
 
@@ -1436,7 +1436,7 @@
 
 
                         INTERSECT_Y(IJK) = .TRUE.
-                        Yint(IJK) = yc 
+                        Yint(IJK) = yc
 
 ! Set values at corners if they are not zero
 
@@ -1444,18 +1444,18 @@
                         N6(2) = ya-yc
                         N6(3) = za-zc
 
-                        IF(DABS(F_AT(IJMK))>TOL_F)   F_AT(IJMK) = -DOT_PRODUCT(N6,NORM_FACE(N,:))  
+                        IF(DABS(F_AT(IJMK))>TOL_F)   F_AT(IJMK) = -DOT_PRODUCT(N6,NORM_FACE(:,N))
 
                         N8(1) = xb-xc
                         N8(2) = yb-yc
                         N8(3) = zb-zc
 
-                        IF(DABS(F_AT(IJK))>TOL_F)   F_AT(IJK) = -DOT_PRODUCT(N8,NORM_FACE(N,:))  
+                        IF(DABS(F_AT(IJK))>TOL_F)   F_AT(IJK) = -DOT_PRODUCT(N8,NORM_FACE(:,N))
 
 
                         IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
-                        IF(IP<=I2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJK,N) 
-                        IF(KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJKP,N) 
+                        IF(IP<=I2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJK,N)
+                        IF(KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJKP,N)
                         IF(IP<=I2.AND.KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJKP,N)
 
                      ENDIF
@@ -1495,7 +1495,7 @@
 ! Check intersection within line 4-8, excluding corners
 
 
-                     INTERSECT_FLAG = .FALSE. 
+                     INTERSECT_FLAG = .FALSE.
 
                   IF(.NOT.(INTERSECT_Z(IJK).OR.INSIDE_FACET_a.OR.INSIDE_FACET_b)) CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
 
@@ -1513,7 +1513,7 @@
 
 
                            INTERSECT_Z(IJK) = .TRUE.
-                           Zint(IJK) = zc 
+                           Zint(IJK) = zc
 
 
 ! Set values at corners if they are not zero
@@ -1522,19 +1522,19 @@
                            N4(2) = ya-yc
                            N4(3) = za-zc
 
-                           IF(DABS(F_AT(IJKM))>TOL_F)   F_AT(IJKM) = -DOT_PRODUCT(N4,NORM_FACE(N,:))  
+                           IF(DABS(F_AT(IJKM))>TOL_F)   F_AT(IJKM) = -DOT_PRODUCT(N4,NORM_FACE(:,N))
 
                            N8(1) = xb-xc
                            N8(2) = yb-yc
                            N8(3) = zb-zc
 
-                           IF(DABS(F_AT(IJK))>TOL_F)   F_AT(IJK) = -DOT_PRODUCT(N8,NORM_FACE(N,:))  
+                           IF(DABS(F_AT(IJK))>TOL_F)   F_AT(IJK) = -DOT_PRODUCT(N8,NORM_FACE(:,N))
 
 
-                           
+
                            IF(TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJK,N)
-                           IF(IP<=I2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJK,N) 
-                           IF(JP<=J2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPK,N) 
+                           IF(IP<=I2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJK,N)
+                           IF(JP<=J2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPK,N)
                            IF(IP<=I2.AND.JP<=J2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IPJPK,N)
 
                         ENDIF
@@ -1579,30 +1579,30 @@
       call send_recv(Zint,2)
       call SEND_RECEIVE_1D_LOGICAL(INTERSECT_X,2)
       call SEND_RECEIVE_1D_LOGICAL(INTERSECT_Y,2)
-      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_Z,2)            
+      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_Z,2)
 !======================================================================
 !  Clean-up intersection flags in preparaton of small cells removal
 !======================================================================
-            
+
       DO IJK = IJKSTART3, IJKEND3
-                 
+
 !        IF(INTERIOR_CELL_AT(IJK)) THEN
-                    
+
 !            IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL CLEAN_INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
-           
+
             CALL CLEAN_INTERSECT(IJK,TYPE_OF_CELL,Xint(IJK),Yint(IJK),Zint(IJK))
-                       
+
 !        ENDIF
-                   
+
       END DO
-                   
+
       call send_recv(F_AT,2)
       call SEND_RECEIVE_1D_LOGICAL(SNAP,2)
       call SEND_RECEIVE_1D_LOGICAL(INTERSECT_X,2)
       call SEND_RECEIVE_1D_LOGICAL(INTERSECT_Y,2)
       call SEND_RECEIVE_1D_LOGICAL(INTERSECT_Z,2)
 
-      SELECT CASE (CAD_PROPAGATE_ORDER)  
+      SELECT CASE (CAD_PROPAGATE_ORDER)
 
       CASE ('   ')
 
@@ -1611,7 +1611,7 @@
 
          N_PROP = 0
 
-         DO WHILE(N_UNDEFINED>0) 
+         DO WHILE(N_UNDEFINED>0)
 
             N_UNDEFINED = 0
 
@@ -1621,7 +1621,7 @@
 
                IF(INTERIOR_CELL_AT(IJK).AND.F_AT(IJK)==UNDEFINED) THEN
 
-                  N_UNDEFINED = N_UNDEFINED + 1 
+                  N_UNDEFINED = N_UNDEFINED + 1
 
                ENDIF
 
@@ -1637,7 +1637,7 @@
                      IF(F_AT(IMJK)==UNDEFINED.AND.F_AT(IMJK)/=ZERO)  F_AT(IMJK)=F_AT(IJK)
 
                      IPJK = IP_OF(IJK)
-                     IF(F_AT(IPJK)==UNDEFINED.AND.F_AT(IPJK)/=ZERO)  F_AT(IPJK)=F_AT(IJK)    
+                     IF(F_AT(IPJK)==UNDEFINED.AND.F_AT(IPJK)/=ZERO)  F_AT(IPJK)=F_AT(IJK)
 
                      IJMK = JM_OF(IJK)
                      IF(F_AT(IJMK)==UNDEFINED.AND.F_AT(IJMK)/=ZERO)  F_AT(IJMK)=F_AT(IJK)
@@ -1665,9 +1665,9 @@
                WRITE(*,*)'         THIS USUALLY INDICATE A RANK WITH NO ACTIVE CELL'
                WRITE(*,*)'         YOU MAY NEED TO ADJUST THE GRID PARTITIONNING'
                WRITE(*,*)'         TO GET BETTER LOAD_BALANCE.'
-	       
 
-	       exit
+
+               exit
 !               CALL MFIX_EXIT(myPE)
 
             ENDIF
@@ -1682,7 +1682,7 @@
 
 
 
-      CASE ('IJK')  
+      CASE ('IJK')
 
          DO I=ISTART3,IEND3
             DO K=KSTART3,KEND3
@@ -1692,8 +1692,8 @@
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
                      F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
-                     EXIT                
-                  ENDIF         
+                     EXIT
+                  ENDIF
                ENDDO
                IF(F_FOUND) THEN
                   DO J=JSTART3,JEND3
@@ -1718,8 +1718,8 @@
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
                      F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
-                     EXIT                
-                  ENDIF         
+                     EXIT
+                  ENDIF
                ENDDO
                IF(F_FOUND) THEN
                   DO K=KSTART3,KEND3
@@ -1744,8 +1744,8 @@
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
                      F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
-                     EXIT                
-                  ENDIF         
+                     EXIT
+                  ENDIF
                ENDDO
                IF(F_FOUND) THEN
                   DO I=ISTART3,IEND3
@@ -1762,7 +1762,7 @@
 
          call send_recv(F_AT,2)
 
-      CASE ('JKI')  
+      CASE ('JKI')
 
          DO J=JSTART3,JEND3
             DO I=ISTART3,IEND3
@@ -1772,8 +1772,8 @@
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
                      F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
-                     EXIT                
-                  ENDIF         
+                     EXIT
+                  ENDIF
                ENDDO
                IF(F_FOUND) THEN
                   DO K=KSTART3,KEND3
@@ -1798,8 +1798,8 @@
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
                      F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
-                     EXIT                
-                  ENDIF         
+                     EXIT
+                  ENDIF
                ENDDO
                IF(F_FOUND) THEN
                   DO I=ISTART3,IEND3
@@ -1824,8 +1824,8 @@
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
                      F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
-                     EXIT                
-                  ENDIF         
+                     EXIT
+                  ENDIF
                ENDDO
                IF(F_FOUND) THEN
                   DO J=JSTART3,JEND3
@@ -1843,7 +1843,7 @@
          call send_recv(F_AT,2)
 
 
-      CASE ('KIJ')  
+      CASE ('KIJ')
 
 
 
@@ -1855,8 +1855,8 @@
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
                      F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
-                     EXIT                
-                  ENDIF         
+                     EXIT
+                  ENDIF
                ENDDO
                IF(F_FOUND) THEN
                   DO I=ISTART3,IEND3
@@ -1881,8 +1881,8 @@
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
                      F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
-                     EXIT                
-                  ENDIF         
+                     EXIT
+                  ENDIF
                ENDDO
                IF(F_FOUND) THEN
                   DO J=JSTART3,JEND3
@@ -1908,8 +1908,8 @@
                   IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
                      F_FOUND = .TRUE.
                      CURRENT_F = F_AT(IJK)
-                     EXIT                
-                  ENDIF         
+                     EXIT
+                  ENDIF
                ENDDO
                IF(F_FOUND) THEN
                   DO K=KSTART3,KEND3
@@ -1938,14 +1938,14 @@
             ENDIF
 !            CALL MFIX_EXIT(myPE)
 
-      END SELECT 
+      END SELECT
 
 
 
       call send_recv(F_AT,2)
 
       RETURN
-      
+
       END SUBROUTINE CAD_INTERSECT
 
 
@@ -1960,10 +1960,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE ADD_FACET_AND_SET_BC_ID(IJK,N)
-    
+
       USE param
       USE param1
       USE parallel
@@ -1971,7 +1971,7 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
@@ -1979,13 +1979,13 @@
       USE polygon
       USE stl
       USE mpi_utility
-      
+
       IMPLICIT NONE
       INTEGER :: IJK,N
 
 
       BC_ID(IJK) = BC_ID_STL_FACE(N)             ! Set tentative BC_ID
-      
+
       IF(N_FACET_AT(IJK)<DIM_FACETS_PER_CELL) THEN
 
          N_FACET_AT(IJK) = N_FACET_AT(IJK) + 1
@@ -1998,8 +1998,8 @@
 
       ENDIF
 
-    
-      
+
+
       END SUBROUTINE ADD_FACET_AND_SET_BC_ID
 
 

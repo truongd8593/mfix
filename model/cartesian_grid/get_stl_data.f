@@ -27,19 +27,19 @@
       SUBROUTINE GET_MSH_DATA
 
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE physprop
       USE fldvar
       USE run
       USE scalars
-      USE funits 
+      USE funits
       USE rxns
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE progress_bar
       USE stl
       USE vtk
@@ -98,18 +98,18 @@
             WRITE(*,"('(PE ',I3,'): input data file, ',A11,' is missing: run aborted')") &
             myPE,'geometry.msh'
          ENDIF
-         CALL MFIX_EXIT(MYPE) 
+         CALL MFIX_EXIT(MYPE)
       ENDIF
-!     
-!     
+!
+!
 !     OPEN geometry.msh ASCII FILE
-!     
-      OPEN(UNIT=333, FILE='geometry.msh', STATUS='OLD', ERR=910) 
+!
+      OPEN(UNIT=333, FILE='geometry.msh', STATUS='OLD', ERR=910)
 
       IF(MyPE == PE_IO) WRITE(*,2000)'MSH file opened. Starting reading data...'
 
-      OPEN(UNIT=444, FILE='checkgeometry.stl') 
-      write(444,*)'solid vcg'      
+      OPEN(UNIT=444, FILE='checkgeometry.stl')
+      write(444,*)'solid vcg'
 
 
       CALL SKIP(333,3)
@@ -130,7 +130,7 @@
       ZONE = 1
       ALL_POINTS_READ = .FALSE.
 
-      DO WHILE(.NOT.ALL_POINTS_READ) 
+      DO WHILE(.NOT.ALL_POINTS_READ)
 
          READ(333,*) (BUFF_CHAR(I),I=1,4)
          CALL TEXT_HEX2INT(BUFF_CHAR(2),ZONE_ID)
@@ -172,7 +172,7 @@
       NF=0
       N_QUAD2TRI=0
 
-      DO WHILE(.NOT.ALL_FACES_READ) 
+      DO WHILE(.NOT.ALL_FACES_READ)
 
          READ(333,*) (BUFF_CHAR(I),I=1,4)
 
@@ -192,7 +192,7 @@
                READ(333,*)PPFACE
                IF(PPFACE<3.OR.PPFACE>4) THEN
                   IF(MyPE == PE_IO) WRITE(*,*)PPFACE, 'POINTS PER FACE. EACH FACE MUST HAVE 3 OR 4 POINTS.'
-                  CALL MFIX_EXIT(MYPE)  
+                  CALL MFIX_EXIT(MYPE)
 
                ELSEIF(PPFACE==3) THEN
                   BACKSPACE(333)
@@ -222,29 +222,29 @@
 
                   NF = NF + 1
 
-                  NORM_FACE(NF,:) = NORMAL*OUT_MSH_VALUE  ! Save and Reverse unit vector if needed (this will switch fluid and blocked cells)
+                  NORM_FACE(:,NF) = NORMAL*OUT_MSH_VALUE  ! Save and Reverse unit vector if needed (this will switch fluid and blocked cells)
 
 
-                  VERTEX(NF,1,1) = SCALE_MSH*V1x + TX_MSH  
-                  VERTEX(NF,1,2) = SCALE_MSH*V1y + TY_MSH  
-                  VERTEX(NF,1,3) = SCALE_MSH*V1z + TZ_MSH  
+                  VERTEX(1,1,NF) = SCALE_MSH*V1x + TX_MSH
+                  VERTEX(1,2,NF) = SCALE_MSH*V1y + TY_MSH
+                  VERTEX(1,3,NF) = SCALE_MSH*V1z + TZ_MSH
 
-                  VERTEX(NF,2,1) = SCALE_MSH*V2x + TX_MSH  
-                  VERTEX(NF,2,2) = SCALE_MSH*V2y + TY_MSH  
-                  VERTEX(NF,2,3) = SCALE_MSH*V2z + TZ_MSH  
+                  VERTEX(2,1,NF) = SCALE_MSH*V2x + TX_MSH
+                  VERTEX(2,2,NF) = SCALE_MSH*V2y + TY_MSH
+                  VERTEX(2,3,NF) = SCALE_MSH*V2z + TZ_MSH
 
-                  VERTEX(NF,3,1) = SCALE_MSH*V3x + TX_MSH  
-                  VERTEX(NF,3,2) = SCALE_MSH*V3y + TY_MSH  
-                  VERTEX(NF,3,3) = SCALE_MSH*V3z + TZ_MSH  
+                  VERTEX(3,1,NF) = SCALE_MSH*V3x + TX_MSH
+                  VERTEX(3,2,NF) = SCALE_MSH*V3y + TY_MSH
+                  VERTEX(3,3,NF) = SCALE_MSH*V3z + TZ_MSH
 
                   BC_ID_STL_FACE(NF) = ZONE_ID
-  
 
-                  write(444,*) '   facet normal ', NORM_FACE(NF,:)
+
+                  write(444,*) '   facet normal ', NORM_FACE(:,NF)
                   write(444,*) '      outer loop'
-                  write(444,*) '         vertex ', VERTEX(NF,1,1:3)
-                  write(444,*) '         vertex ', VERTEX(NF,2,1:3)
-                  write(444,*) '         vertex ', VERTEX(NF,3,1:3)
+                  write(444,*) '         vertex ', VERTEX(1,1:3,NF)
+                  write(444,*) '         vertex ', VERTEX(2,1:3,NF)
+                  write(444,*) '         vertex ', VERTEX(3,1:3,NF)
                   write(444,*) '      endloop'
                   write(444,*) '   endfacet'
 
@@ -261,7 +261,7 @@
 
 ! Splitting Quad face 1-2-3-4 into two triangles 1-2-3 and 1-3-4
 
-! First triangle 1-2-3                 
+! First triangle 1-2-3
 
                   V1x = POINT_COORDS(P1,1)
                   V1y = POINT_COORDS(P1,2)
@@ -283,32 +283,32 @@
 
                   NF = NF + 1
 
-                  NORM_FACE(NF,:) = NORMAL*OUT_MSH_VALUE  ! Save and Reverse unit vector if needed (this will switch fluid and blocked cells)
+                  NORM_FACE(:,NF) = NORMAL*OUT_MSH_VALUE  ! Save and Reverse unit vector if needed (this will switch fluid and blocked cells)
 
-                  VERTEX(NF,1,1) = SCALE_MSH*V1x + TX_MSH  
-                  VERTEX(NF,1,2) = SCALE_MSH*V1y + TY_MSH  
-                  VERTEX(NF,1,3) = SCALE_MSH*V1z + TZ_MSH  
+                  VERTEX(1,1,NF) = SCALE_MSH*V1x + TX_MSH
+                  VERTEX(1,2,NF) = SCALE_MSH*V1y + TY_MSH
+                  VERTEX(1,3,NF) = SCALE_MSH*V1z + TZ_MSH
 
-                  VERTEX(NF,2,1) = SCALE_MSH*V2x + TX_MSH  
-                  VERTEX(NF,2,2) = SCALE_MSH*V2y + TY_MSH  
-                  VERTEX(NF,2,3) = SCALE_MSH*V2z + TZ_MSH  
+                  VERTEX(2,1,NF) = SCALE_MSH*V2x + TX_MSH
+                  VERTEX(2,2,NF) = SCALE_MSH*V2y + TY_MSH
+                  VERTEX(2,3,NF) = SCALE_MSH*V2z + TZ_MSH
 
-                  VERTEX(NF,3,1) = SCALE_MSH*V3x + TX_MSH  
-                  VERTEX(NF,3,2) = SCALE_MSH*V3y + TY_MSH  
-                  VERTEX(NF,3,3) = SCALE_MSH*V3z + TZ_MSH  
+                  VERTEX(3,1,NF) = SCALE_MSH*V3x + TX_MSH
+                  VERTEX(3,2,NF) = SCALE_MSH*V3y + TY_MSH
+                  VERTEX(3,3,NF) = SCALE_MSH*V3z + TZ_MSH
 
                   BC_ID_STL_FACE(NF) = ZONE_ID
-  
 
-                  write(444,*) '   facet normal ', NORM_FACE(NF,:)
+
+                  write(444,*) '   facet normal ', NORM_FACE(:,NF)
                   write(444,*) '      outer loop'
-                  write(444,*) '         vertex ', VERTEX(NF,1,1:3)
-                  write(444,*) '         vertex ', VERTEX(NF,2,1:3)
-                  write(444,*) '         vertex ', VERTEX(NF,3,1:3)
+                  write(444,*) '         vertex ', VERTEX(1,1:3,NF)
+                  write(444,*) '         vertex ', VERTEX(2,1:3,NF)
+                  write(444,*) '         vertex ', VERTEX(3,1:3,NF)
                   write(444,*) '      endloop'
                   write(444,*)'   endfacet'
 
-! Second triangle 1-3-4                 
+! Second triangle 1-3-4
 
                   V1x = POINT_COORDS(P1,1)
                   V1y = POINT_COORDS(P1,2)
@@ -330,28 +330,28 @@
 
                   NF = NF + 1
 
-                  NORM_FACE(NF,:) = NORMAL*OUT_MSH_VALUE  ! Save and Reverse unit vector if needed (this will switch fluid and blocked cells)
+                  NORM_FACE(:,NF) = NORMAL*OUT_MSH_VALUE  ! Save and Reverse unit vector if needed (this will switch fluid and blocked cells)
 
-                  VERTEX(NF,1,1) = SCALE_MSH*V1x + TX_MSH  
-                  VERTEX(NF,1,2) = SCALE_MSH*V1y + TY_MSH  
-                  VERTEX(NF,1,3) = SCALE_MSH*V1z + TZ_MSH  
+                  VERTEX(1,1,NF) = SCALE_MSH*V1x + TX_MSH
+                  VERTEX(1,2,NF) = SCALE_MSH*V1y + TY_MSH
+                  VERTEX(1,3,NF) = SCALE_MSH*V1z + TZ_MSH
 
-                  VERTEX(NF,2,1) = SCALE_MSH*V2x + TX_MSH  
-                  VERTEX(NF,2,2) = SCALE_MSH*V2y + TY_MSH  
-                  VERTEX(NF,2,3) = SCALE_MSH*V2z + TZ_MSH  
+                  VERTEX(2,1,NF) = SCALE_MSH*V2x + TX_MSH
+                  VERTEX(2,2,NF) = SCALE_MSH*V2y + TY_MSH
+                  VERTEX(2,3,NF) = SCALE_MSH*V2z + TZ_MSH
 
-                  VERTEX(NF,3,1) = SCALE_MSH*V3x + TX_MSH  
-                  VERTEX(NF,3,2) = SCALE_MSH*V3y + TY_MSH  
-                  VERTEX(NF,3,3) = SCALE_MSH*V3z + TZ_MSH  
+                  VERTEX(3,1,NF) = SCALE_MSH*V3x + TX_MSH
+                  VERTEX(3,2,NF) = SCALE_MSH*V3y + TY_MSH
+                  VERTEX(3,3,NF) = SCALE_MSH*V3z + TZ_MSH
 
                   BC_ID_STL_FACE(NF) = ZONE_ID
-  
 
-                  write(444,*) '   facet normal ', NORM_FACE(NF,:)
+
+                  write(444,*) '   facet normal ', NORM_FACE(:,NF)
                   write(444,*) '      outer loop'
-                  write(444,*) '         vertex ', VERTEX(NF,1,1:3)
-                  write(444,*) '         vertex ', VERTEX(NF,2,1:3)
-                  write(444,*) '         vertex ', VERTEX(NF,3,1:3)
+                  write(444,*) '         vertex ', VERTEX(1,1:3,NF)
+                  write(444,*) '         vertex ', VERTEX(2,1:3,NF)
+                  write(444,*) '         vertex ', VERTEX(3,1:3,NF)
                   write(444,*) '      endloop'
                   write(444,*)'   endfacet'
 
@@ -399,10 +399,10 @@
       BC_ASSIGNED = .FALSE.
 
 
-      DO WHILE(BC_LABELS_READ < BC_LABELS_TO_READ) 
+      DO WHILE(BC_LABELS_READ < BC_LABELS_TO_READ)
 
          READ(333,*) BUFF_CHAR(1)
-         
+
          IF(BUFF_CHAR(1)=='(45') THEN
             BACKSPACE(333)
             READ(333,*) (BUFF_CHAR(I),I=1,4)
@@ -411,7 +411,7 @@
 
             DO ZONE = 1,N_FACE_ZONES
                IF(FACE_ZONE_INFO(ZONE,1)==ZONE_ID) THEN
-                  BC_LABELS_READ = BC_LABELS_READ + 1       
+                  BC_LABELS_READ = BC_LABELS_READ + 1
                   BC_LABEL_TEXT(ZONE,1) = TRIM(BUFF_CHAR(3))
                   BC_LABEL_TEXT(ZONE,2) = TRIM(BUFF_CHAR(4))
                   IF(BC_TYPE(ZONE_ID)(1:2)=='CG') THEN
@@ -468,12 +468,12 @@
       ENDIF
 
 
-      XMIN_MSH = MINVAL(VERTEX(1:N_FACES,:,1))
-      XMAX_MSH = MAXVAL(VERTEX(1:N_FACES,:,1))
-      YMIN_MSH = MINVAL(VERTEX(1:N_FACES,:,2))
-      YMAX_MSH = MAXVAL(VERTEX(1:N_FACES,:,2))
-      ZMIN_MSH = MINVAL(VERTEX(1:N_FACES,:,3))
-      ZMAX_MSH = MAXVAL(VERTEX(1:N_FACES,:,3))
+      XMIN_MSH = MINVAL(VERTEX(:,1,1:N_FACES))
+      XMAX_MSH = MAXVAL(VERTEX(:,1,1:N_FACES))
+      YMIN_MSH = MINVAL(VERTEX(:,2,1:N_FACES))
+      YMAX_MSH = MAXVAL(VERTEX(:,2,1:N_FACES))
+      ZMIN_MSH = MINVAL(VERTEX(:,3,1:N_FACES))
+      ZMAX_MSH = MAXVAL(VERTEX(:,3,1:N_FACES))
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,2000)'MSH file successfully read.'
@@ -519,23 +519,23 @@
 
       CLOSE(333)
 
-      OPEN(UNIT=444, FILE='msgeometry.stl') 
+      OPEN(UNIT=444, FILE='msgeometry.stl')
 
          DO ZONE = 1,N_FACE_ZONES
             IF(BC_ASSIGNED(ZONE)) THEN
                ZID = FACE_ZONE_INFO(ZONE,1)
                L2=LEN(TRIM(BC_LABEL_TEXT(ZONE,2)))-4
 !               WRITE(*,1000) ZID,BC_TYPE(ZID),NFZ,BC_LABEL_TEXT(ZONE,1),BC_LABEL_TEXT(ZONE,2)(1:L2)
-               print*,'=======>  Zone ID= ', ZID,BC_LABEL_TEXT(ZONE,2)(1:L2)  
-               write(444,6000) 'solid', BC_LABEL_TEXT(ZONE,2)(1:L2),ZID  
+               print*,'=======>  Zone ID= ', ZID,BC_LABEL_TEXT(ZONE,2)(1:L2)
+               write(444,6000) 'solid', BC_LABEL_TEXT(ZONE,2)(1:L2),ZID
                DO NF=1,N_FACETS
                   IF(BC_ID_STL_FACE(NF) == ZID) THEN
 
-                  write(444,*) '   facet normal ', NORM_FACE(NF,:)
+                  write(444,*) '   facet normal ', NORM_FACE(:,NF)
                   write(444,*) '      outer loop'
-                  write(444,*) '         vertex ', VERTEX(NF,1,1:3)
-                  write(444,*) '         vertex ', VERTEX(NF,2,1:3)
-                  write(444,*) '         vertex ', VERTEX(NF,3,1:3)
+                  write(444,*) '         vertex ', VERTEX(1,1:3,NF)
+                  write(444,*) '         vertex ', VERTEX(2,1:3,NF)
+                  write(444,*) '         vertex ', VERTEX(3,1:3,NF)
                   write(444,*) '      endloop'
                   write(444,*)'   endfacet'
 
@@ -543,7 +543,7 @@
                   ENDIF
                ENDDO
 
-               write(444,6000) 'endsolid', BC_LABEL_TEXT(ZONE,2)(1:L2),ZID  
+               write(444,6000) 'endsolid', BC_LABEL_TEXT(ZONE,2)(1:L2),ZID
 
             ENDIF
          ENDDO
@@ -552,33 +552,33 @@
 
 
 
-      RETURN  
+      RETURN
 
 !======================================================================
 !     HERE IF AN ERROR OCCURED OPENNING/READING THE FILE
 !======================================================================
-!     
- 910  CONTINUE 
-      WRITE (*, 1500) 
-      CALL MFIX_EXIT(myPE) 
- 920  CONTINUE 
-      WRITE (*, 1600) 
-      CALL MFIX_EXIT(myPE) 
- 930  CONTINUE 
-      WRITE (*, 1700) 
-      CALL MFIX_EXIT(myPE) 
+!
+ 910  CONTINUE
+      WRITE (*, 1500)
+      CALL MFIX_EXIT(myPE)
+ 920  CONTINUE
+      WRITE (*, 1600)
+      CALL MFIX_EXIT(myPE)
+ 930  CONTINUE
+      WRITE (*, 1700)
+      CALL MFIX_EXIT(myPE)
 
  1000 FORMAT(1X,I4,7X,A8,I8,1X,A20,1X,A20)
  1010 FORMAT(1X,I4,5X,A20,1X,A20)
  1020 FORMAT(5X,I3,2X,3(I10,2X))
-!     
+!
  1500 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
-      'Unable to open stl file',/1X,70('*')/) 
+      'Unable to open stl file',/1X,70('*')/)
  1600 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
-      'Error while reading stl file',/1X,70('*')/) 
+      'Error while reading stl file',/1X,70('*')/)
  1700 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
-      'End of file reached while reading stl file',/1X,70('*')/) 
- 2000 FORMAT(1X,A) 
+      'End of file reached while reading stl file',/1X,70('*')/)
+ 2000 FORMAT(1X,A)
  2010 FORMAT(1X,A,I4,A)
  3000 FORMAT(1X,A,'(',F10.4,';',F10.4,';',F10.4,')')
  4000 FORMAT(1X,A,F10.4,' to ',F10.4)
@@ -656,19 +656,19 @@
       SUBROUTINE GET_STL_DATA
 
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE physprop
       USE fldvar
       USE run
       USE scalars
-      USE funits 
+      USE funits
       USE rxns
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE progress_bar
       USE stl
       USE vtk
@@ -688,7 +688,7 @@
       DOUBLE PRECISION ::ABSTRANS
       CHARACTER(LEN=32) ::TEST_CHAR,BUFF_CHAR
       CHARACTER(LEN=32) ::geometryfile(0:DIMENSION_BC)
-      
+
       INTEGER :: BCV,NUMBER_OF_GEOMETRY_FILES,NUMBER_OF_BC_PATCHES
       INTEGER :: BC_PATCH(0:DIMENSION_BC),L2,NF1,NF2
       LOGICAL :: BC_PATCH_FOUND_IN_STL(DIMENSION_BC)
@@ -708,7 +708,7 @@
          WRITE(*,100)'From Get_Stl_Data: Analysing BCs in mfix.dat...'
          WRITE(*,120)'BC_ID','BC_TYPE'
       ENDIF
-      DO BCV = 1, DIMENSION_BC 
+      DO BCV = 1, DIMENSION_BC
 
          IF(BC_TYPE(BCV)(1:2) == 'CG') THEN
 
@@ -721,8 +721,8 @@
 
             IF(MyPE == PE_IO) WRITE(*,130)BCV,BC_TYPE(BCV)
 
-         ENDIF 
-      ENDDO 
+         ENDIF
+      ENDDO
 
       IF(MyPE == PE_IO) WRITE(*,110)'Number of CG BCs in mfix.dat = ',NUMBER_OF_BC_PATCHES
 
@@ -745,9 +745,9 @@
             WRITE(*,100) 'ERROR: NO CARTESIAN GRID BOUNDARY CONDITION SPECIFIED.'
             WRITE(*,100) 'AT LEAST ONE BC_TYPE MUST START WITH CG (FOR EXAMPLE CG_NSW)'
             WRITE(*,100) 'RUN ABORTED'
-            CALL MFIX_EXIT(MYPE) 
+            CALL MFIX_EXIT(MYPE)
          ENDIF
-            
+
       ELSEIF(NUMBER_OF_BC_PATCHES==1) THEN
 
          INQUIRE(FILE='geometry.stl',EXIST=PRESENT)
@@ -757,11 +757,11 @@
                IF(MyPE == PE_IO) THEN
                   WRITE(*,110) 'The file geometry.stl exists and the following  BC patch was found: ', BC_PATCH(1)
                ENDIF
-          
-	       NF1 = 1
-	       NF2 = 1
+
+               NF1 = 1
+               NF2 = 1
                geometryfile(NF1)='geometry.stl'
-            
+
 !            ENDIF
          ENDIF
 
@@ -770,27 +770,27 @@
          IF(PRESENT) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,100) 'The file geometry.stl exists and several CG BC types are defined.'
-               WRITE(*,100) 'All BC patches will be read from geometry.stl.'	       
+               WRITE(*,100) 'All BC patches will be read from geometry.stl.'
             ENDIF
 
             geometryfile(0)='geometry.stl'
-	    NF1 = 0
+            NF1 = 0
             NF2 = 0                       ! This invokes a special treatment
-                                          ! to reading multiple solids 
+                                          ! to reading multiple solids
 
          ELSE
-	 
-	    NF1 = 1
-	    NF2 = NUMBER_OF_GEOMETRY_FILES
+
+            NF1 = 1
+            NF2 = NUMBER_OF_GEOMETRY_FILES
             IF(MyPE == PE_IO) THEN
                WRITE(*,100) 'The file geometry.stl does not exist and several CG_BC types are defined.'
-               WRITE(*,100) 'Each BC patch will be read from geometry_BCID.stl.'	       
-               WRITE(*,100) 'where BCID is 4-paded integer'	       	       
+               WRITE(*,100) 'Each BC patch will be read from geometry_BCID.stl.'
+               WRITE(*,100) 'where BCID is 4-paded integer'
             ENDIF
-            
+
          ENDIF
-      
-      
+
+
 
       ENDIF
 
@@ -811,52 +811,52 @@
                WRITE(*,"('(PE ',I3,'): input data file, ',A11,' is missing: run aborted')") &
                myPE,TRIM(geometryfile(N))
             ENDIF
-            CALL MFIX_EXIT(MYPE) 
+            CALL MFIX_EXIT(MYPE)
          ENDIF
 
 
-!     
+!
 !     OPEN geometry.stl ASCII FILE
-!     
-         OPEN(UNIT=333, FILE=TRIM(geometryfile(N)), STATUS='OLD', ERR=910) 
+!
+         OPEN(UNIT=333, FILE=TRIM(geometryfile(N)), STATUS='OLD', ERR=910)
 
          IF(MyPE == PE_IO) WRITE(*,2000)'STL file opened. Starting reading data...'
 
          KEEP_READING = .TRUE.
-      
+
          DO WHILE(KEEP_READING)
-         
+
             READ(333,*,ERR=920,END=930) TEST_CHAR
 !            print *,'TEST_CHAR=',TEST_CHAR
             IF(TRIM(TEST_CHAR) == 'solid'.AND.N==0) THEN
-	    
+
                BACKSPACE(333)
-	    
+
                READ(333,*,ERR=920,END=930) BUFF_CHAR,BUFF_CHAR
 
-               L2=LEN(TRIM(BUFF_CHAR))-3	       
-	       
+               L2=LEN(TRIM(BUFF_CHAR))-3
+
                READ(BUFF_CHAR(L2:L2+4),fmt='(I4.4)') BC_PATCH(N)
 
                IF(MyPE == PE_IO)  WRITE(*,140) 'Found BC patch #', BC_PATCH(N), ' in STL file.'
-	       
-	       IF(BC_TYPE(BC_PATCH(N))(1:2)/='CG') THEN
+
+               IF(BC_TYPE(BC_PATCH(N))(1:2)/='CG') THEN
                   IF(MyPE == PE_IO)  THEN
-		     WRITE(*,110) 'This BC patch does not mach a CG BC in mfix.dat:',BC_PATCH(N)
-                     WRITE(*,100)'Please Correct mfix.dat and/or stl file amd try again' 
-                     CALL MFIX_EXIT(myPE) 
-		  ENDIF
-	       ENDIF
+                     WRITE(*,110) 'This BC patch does not mach a CG BC in mfix.dat:',BC_PATCH(N)
+                     WRITE(*,100)'Please Correct mfix.dat and/or stl file amd try again'
+                     CALL MFIX_EXIT(myPE)
+                  ENDIF
+               ENDIF
 
                BC_PATCH_FOUND_IN_STL(BC_PATCH(N)) = .TRUE.
 
             ELSEIF(TRIM(TEST_CHAR) == 'facet') THEN
-    
+
                BACKSPACE(333)
                IGNORE_CURRENT_FACET = .FALSE.
 
                READ(333,*,ERR=920,END=930) BUFF_CHAR,BUFF_CHAR,N1,N2,N3  ! Read unit normal vector
-               READ(333,*,ERR=920,END=930) 
+               READ(333,*,ERR=920,END=930)
                READ(333,*,ERR=920,END=930) BUFF_CHAR, V1x,V1y,V1z
                READ(333,*,ERR=920,END=930) BUFF_CHAR, V2x,V2y,V2z
                READ(333,*,ERR=920,END=930) BUFF_CHAR, V3x,V3y,V3z
@@ -901,44 +901,44 @@
                ENDIF
 
 
-               IF(IGNORE_CURRENT_FACET) THEN    
+               IF(IGNORE_CURRENT_FACET) THEN
                   IGNORED_FACETS = IGNORED_FACETS + 1
                ELSE                                                      ! Save vertex coordinates for valid facets
                                                                          ! and performs translation
                   N_FACETS = N_FACETS + 1
-        
-                  NORM_FACE(N_FACETS,1) = N1
-                  NORM_FACE(N_FACETS,2) = N2
-                  NORM_FACE(N_FACETS,3) = N3
 
-                  VERTEX(N_FACETS,1,1) = SCALE_STL*V1x + TX_STL  
-                  VERTEX(N_FACETS,1,2) = SCALE_STL*V1y + TY_STL  
-                  VERTEX(N_FACETS,1,3) = SCALE_STL*V1z + TZ_STL  
+                  NORM_FACE(1,N_FACETS) = N1
+                  NORM_FACE(2,N_FACETS) = N2
+                  NORM_FACE(3,N_FACETS) = N3
 
-                  VERTEX(N_FACETS,2,1) = SCALE_STL*V2x + TX_STL  
-                  VERTEX(N_FACETS,2,2) = SCALE_STL*V2y + TY_STL  
-                  VERTEX(N_FACETS,2,3) = SCALE_STL*V2z + TZ_STL  
+                  VERTEX(1,1,N_FACETS) = SCALE_STL*V1x + TX_STL
+                  VERTEX(1,2,N_FACETS) = SCALE_STL*V1y + TY_STL
+                  VERTEX(1,3,N_FACETS) = SCALE_STL*V1z + TZ_STL
 
-                  VERTEX(N_FACETS,3,1) = SCALE_STL*V3x + TX_STL  
-                  VERTEX(N_FACETS,3,2) = SCALE_STL*V3y + TY_STL  
-                  VERTEX(N_FACETS,3,3) = SCALE_STL*V3z + TZ_STL  
+                  VERTEX(2,1,N_FACETS) = SCALE_STL*V2x + TX_STL
+                  VERTEX(2,2,N_FACETS) = SCALE_STL*V2y + TY_STL
+                  VERTEX(2,3,N_FACETS) = SCALE_STL*V2z + TZ_STL
+
+                  VERTEX(3,1,N_FACETS) = SCALE_STL*V3x + TX_STL
+                  VERTEX(3,2,N_FACETS) = SCALE_STL*V3y + TY_STL
+                  VERTEX(3,3,N_FACETS) = SCALE_STL*V3z + TZ_STL
 
                   BC_ID_STL_FACE(N_FACETS) = BC_PATCH(N)
 
 
                ENDIF
-    
+
 !            ELSEIF(TRIM(TEST_CHAR) == 'endsolid') THEN
-    
+
 !               KEEP_READING = .FALSE.
-    
+
             ENDIF
-         
+
          ENDDO
 
 
 930      IF(MyPE == PE_IO)  WRITE(*,100) 'Done reading file.'
-          
+
          CLOSE(333)
 
 
@@ -952,23 +952,23 @@
 
             IF(.NOT.BC_PATCH_FOUND_IN_STL(BC_PATCH(N))) THEN
                WRITE (*, 140)'Did not find BC patch: ',BC_PATCH(N) , ' in stl file'
-	       WRITE(*,100)'Please correct mfix.dat and/or stl file amd try again' 
-               CALL MFIX_EXIT(myPE) 
-	    ENDIF      
-      
+               WRITE(*,100)'Please correct mfix.dat and/or stl file amd try again'
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+
          ENDDO
       ENDIF
 
-      
 
-      
 
-      XMIN_STL = MINVAL(VERTEX(1:N_FACETS,:,1))
-      XMAX_STL = MAXVAL(VERTEX(1:N_FACETS,:,1))
-      YMIN_STL = MINVAL(VERTEX(1:N_FACETS,:,2))
-      YMAX_STL = MAXVAL(VERTEX(1:N_FACETS,:,2))
-      ZMIN_STL = MINVAL(VERTEX(1:N_FACETS,:,3))
-      ZMAX_STL = MAXVAL(VERTEX(1:N_FACETS,:,3))
+
+
+      XMIN_STL = MINVAL(VERTEX(:,1,1:N_FACETS))
+      XMAX_STL = MAXVAL(VERTEX(:,1,1:N_FACETS))
+      YMIN_STL = MINVAL(VERTEX(:,2,1:N_FACETS))
+      YMAX_STL = MAXVAL(VERTEX(:,2,1:N_FACETS))
+      ZMIN_STL = MINVAL(VERTEX(:,3,1:N_FACETS))
+      ZMAX_STL = MAXVAL(VERTEX(:,3,1:N_FACETS))
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,2000)'STL file(s) successfully read.'
@@ -998,32 +998,32 @@
 
 
 
-!      IF(XMIN_STL<ZERO) XMIN_STL=ZERO 
+!      IF(XMIN_STL<ZERO) XMIN_STL=ZERO
 !      IF(XMAX_STL>XLENGTH) XMAX_STL=XLENGTH
-!      IF(YMIN_STL<ZERO) YMIN_STL=ZERO 
+!      IF(YMIN_STL<ZERO) YMIN_STL=ZERO
 !      IF(YMAX_STL>YLENGTH) YMAX_STL=YLENGTH
-!      IF(ZMIN_STL<ZERO) ZMIN_STL=ZERO 
+!      IF(ZMIN_STL<ZERO) ZMIN_STL=ZERO
 !      IF(ZMAX_STL>ZLENGTH) ZMAX_STL=ZLENGTH
-      
-      IF(mype.eq.pe_io.and..false.) then 
-         WRITE(fname,'(A,"_FACETS_READ", ".stl")') & 
+
+      IF(mype.eq.pe_io.and..false.) then
+         WRITE(fname,'(A,"_FACETS_READ", ".stl")') &
          TRIM(RUN_NAME)
          open(stl_unit, file = fname, form='formatted')
-         write(stl_unit,*)'solid vcg'      
-      
+         write(stl_unit,*)'solid vcg'
 
-         do nf = 1, n_facets 
-            
-            write(stl_unit,*) '   facet normal ', NORM_FACE(NF,:)
+
+         do nf = 1, n_facets
+
+            write(stl_unit,*) '   facet normal ', NORM_FACE(:,NF)
             write(stl_unit,*) '      outer loop'
-            write(stl_unit,*) '         vertex ', VERTEX(NF,1,1:3)
-            write(stl_unit,*) '         vertex ', VERTEX(NF,2,1:3)
-            write(stl_unit,*) '         vertex ', VERTEX(NF,3,1:3)
+            write(stl_unit,*) '         vertex ', VERTEX(1,1:3,NF)
+            write(stl_unit,*) '         vertex ', VERTEX(2,1:3,NF)
+            write(stl_unit,*) '         vertex ', VERTEX(3,1:3,NF)
             write(stl_unit,*) '      endloop'
             write(stl_unit,*)'   endfacet'
-         enddo 
-         
-         
+         enddo
+
+
          write(stl_unit,*)'endsolid vcg'
          close(stl_unit, status = 'keep')
          IF(MyPE == PE_IO) THEN
@@ -1033,29 +1033,29 @@
 
       endif
 
-      RETURN  
+      RETURN
 
 !======================================================================
 !     HERE IF AN ERROR OCCURED OPENNING/READING THE FILE
 !======================================================================
-!     
- 910  CONTINUE 
-      WRITE (*, 1500) 
-      CALL MFIX_EXIT(myPE) 
- 920  CONTINUE 
-      WRITE (*, 1600) 
-      CALL MFIX_EXIT(myPE) 
-! 930  CONTINUE 
-!     WRITE (*, 1700) 
-!     CALL MFIX_EXIT(myPE) 
-!     
+!
+ 910  CONTINUE
+      WRITE (*, 1500)
+      CALL MFIX_EXIT(myPE)
+ 920  CONTINUE
+      WRITE (*, 1600)
+      CALL MFIX_EXIT(myPE)
+! 930  CONTINUE
+!     WRITE (*, 1700)
+!     CALL MFIX_EXIT(myPE)
+!
  1500 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
-      'Unable to open stl file',/1X,70('*')/) 
+      'Unable to open stl file',/1X,70('*')/)
  1600 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
-      'Error while reading stl file',/1X,70('*')/) 
+      'Error while reading stl file',/1X,70('*')/)
  1700 FORMAT(/1X,70('*')//' From: GET_STL_DATA',/' Message: ',&
-      'End of file reached while reading stl file',/1X,70('*')/) 
- 2000 FORMAT(1X,A) 
+      'End of file reached while reading stl file',/1X,70('*')/)
+ 2000 FORMAT(1X,A)
  2010 FORMAT(1X,A,I4,A)
  3000 FORMAT(1X,A,'(',F10.4,';',F10.4,';',F10.4,')')
  4000 FORMAT(1X,A,F10.4,' to ',F10.4)
@@ -1091,19 +1091,19 @@
       SUBROUTINE EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,NODE,f_stl,CLIP_FLAG,BCID)
 
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE physprop
       USE fldvar
       USE run
       USE scalars
-      USE funits 
+      USE funits
       USE rxns
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE progress_bar
 !      USE quadric
       USE cutcell
@@ -1170,7 +1170,7 @@
       CLIP_FLAG = .TRUE.
 
 
-      RETURN  
+      RETURN
 
 
       END SUBROUTINE EVAL_STL_FCT_AT
@@ -1188,10 +1188,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,FACET,INTERSECT_FLAG,xc,yc,zc)
-    
+
       USE param
       USE param1
       USE parallel
@@ -1204,7 +1204,7 @@
       USE sendrecv
       USE quadric
       USE STL
-      
+
       IMPLICIT NONE
       DOUBLE PRECISION:: xa,ya,za,xb,yb,zb,xc,yc,zc
       INTEGER :: FACET
@@ -1219,25 +1219,25 @@
 
 
 !======================================================================
-! This subroutine tries to find the intersection of a line AB with one  
+! This subroutine tries to find the intersection of a line AB with one
 ! of the facets defined in the stl file
 !
 !
 ! 1) Verify that intersection is possible. Only facets and line AB that are
 !    not parallel are acceptable candidates
-! 2) Find intersection point P of line AB with plane containing the facet. 
+! 2) Find intersection point P of line AB with plane containing the facet.
 !    Valid intersection point must be between A and B to continue.
 ! 3) Verify that point P is inside triangular facet
 !======================================================================
-      
+
       INTERSECT_FLAG = .FALSE.
 
 !======================================================================
 !  Facet normal vector (normalized)
 !======================================================================
-      NFx = NORM_FACE(FACET,1)
-      NFy = NORM_FACE(FACET,2)
-      NFz = NORM_FACE(FACET,3)
+      NFx = NORM_FACE(1,FACET)
+      NFy = NORM_FACE(2,FACET)
+      NFz = NORM_FACE(3,FACET)
 
 !======================================================================
 !  AB vector (NOT normalized)
@@ -1253,7 +1253,7 @@
 !======================================================================
       IF(dabs(dot_denom)<TOL_STL) THEN
 
-         INTERSECT_FLAG = .FALSE.              ! No intersection (facet nornal 
+         INTERSECT_FLAG = .FALSE.              ! No intersection (facet nornal
                                                ! and AB are perpendicular
          RETURN
 
@@ -1263,9 +1263,9 @@
 ! 2) Find intersection point P of line AB with plane containing the facet
 !    Line AB is parametrized with parameter t (from t=0 at A to t=1 at B)
 !======================================================================
-         VP1Ax = VERTEX(FACET,1,1) - xa
-         VP1Ay = VERTEX(FACET,1,2) - ya
-         VP1Az = VERTEX(FACET,1,3) - za
+         VP1Ax = VERTEX(1,1,FACET) - xa
+         VP1Ay = VERTEX(1,2,FACET) - ya
+         VP1Az = VERTEX(1,3,FACET) - za
 
          dot_num = NFx*VP1Ax + NFy*VP1Ay + NFz*VP1Az
 
@@ -1316,7 +1316,7 @@
       ENDIF
 
 
- 1000 FORMAT(A,3(2X,G12.5)) 
+ 1000 FORMAT(A,3(2X,G12.5))
 
 
       RETURN
@@ -1334,10 +1334,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE IS_POINT_INSIDE_FACET(Px,Py,Pz,FACET,INSIDE_FACET)
-    
+
       USE param
       USE param1
       USE parallel
@@ -1350,7 +1350,7 @@
       USE sendrecv
       USE quadric
       USE STL
-      
+
       IMPLICIT NONE
       INTEGER :: FACET,VV
       DOUBLE PRECISION :: NFx,NFy,NFz
@@ -1365,13 +1365,13 @@
       DOUBLE PRECISION :: D(3),MINVAL_D,DH,DSNAP
 
 !======================================================================
-!  If point P is very close to one of the Facet vertices, 
+!  If point P is very close to one of the Facet vertices,
 !  consider that P belongs to facet, and return.
 !======================================================================
          DO VV = 1,3
-            Vx = VERTEX(FACET,VV,1)
-            Vy = VERTEX(FACET,VV,2)
-            Vz = VERTEX(FACET,VV,3)
+            Vx = VERTEX(VV,1,FACET)
+            Vy = VERTEX(VV,2,FACET)
+            Vz = VERTEX(VV,3,FACET)
             D(VV) = DSQRT((Px - Vx)**2 + (Py - Vy)**2 + (Pz - Vz)**2 )
          ENDDO
 
@@ -1385,9 +1385,9 @@
 !======================================================================
 !  Facet normal vector (normalized)
 !======================================================================
-      NFx = NORM_FACE(FACET,1)
-      NFy = NORM_FACE(FACET,2)
-      NFz = NORM_FACE(FACET,3)
+      NFx = NORM_FACE(1,FACET)
+      NFy = NORM_FACE(2,FACET)
+      NFz = NORM_FACE(3,FACET)
 
 !======================================================================
 ! This subroutine verifies that point P is inside triangular facet
@@ -1397,39 +1397,39 @@
 ! u+v <= 1
 !======================================================================
 
-      V0x = VERTEX(FACET,2,1) - VERTEX(FACET,1,1) 
-      V0y = VERTEX(FACET,2,2) - VERTEX(FACET,1,2) 
-      V0z = VERTEX(FACET,2,3) - VERTEX(FACET,1,3) 
+      V0x = VERTEX(2,1,FACET) - VERTEX(1,1,FACET)
+      V0y = VERTEX(2,2,FACET) - VERTEX(1,2,FACET)
+      V0z = VERTEX(2,3,FACET) - VERTEX(1,3,FACET)
 
-      V1x = VERTEX(FACET,3,1) - VERTEX(FACET,1,1) 
-      V1y = VERTEX(FACET,3,2) - VERTEX(FACET,1,2) 
-      V1z = VERTEX(FACET,3,3) - VERTEX(FACET,1,3) 
+      V1x = VERTEX(3,1,FACET) - VERTEX(1,1,FACET)
+      V1y = VERTEX(3,2,FACET) - VERTEX(1,2,FACET)
+      V1z = VERTEX(3,3,FACET) - VERTEX(1,3,FACET)
 
-      V2x = Px - VERTEX(FACET,1,1) 
-      V2y = Py - VERTEX(FACET,1,2) 
-      V2z = Pz - VERTEX(FACET,1,3) 
+      V2x = Px - VERTEX(1,1,FACET)
+      V2y = Py - VERTEX(1,2,FACET)
+      V2z = Pz - VERTEX(1,3,FACET)
 
       dot_check = NFx*V2x + NFy*V2y + NFz*V2z
 
-!      IF(dabs(dot_check)>TOL_STL_DP) THEN          ! reject points that do not 
+!      IF(dabs(dot_check)>TOL_STL_DP) THEN          ! reject points that do not
 !         INSIDE_FACET = .FALSE.                 ! belong to plane containing facet
 !         RETURN
-!      ENDIF 
+!      ENDIF
 
       DH = NFx * V2x + NFy * V2y + NFz * V2z
 
-      IF(dabs(DH)>TOL_STL_DP) THEN          ! reject points that do not 
+      IF(dabs(DH)>TOL_STL_DP) THEN          ! reject points that do not
          INSIDE_FACET = .FALSE.                 ! belong to plane containing facet
          RETURN
-      ENDIF 
+      ENDIF
 
       dot00 = V0x*V0x + V0y*V0y + V0z*V0z
       dot01 = V0x*V1x + V0y*V1y + V0z*V1z
       dot02 = V0x*V2x + V0y*V2y + V0z*V2z
       dot11 = V1x*V1x + V1y*V1y + V1z*V1z
       dot12 = V1x*V2x + V1y*V2y + V1z*V2z
-      
-      Inv_denom = ONE / (dot00*dot11 - dot01*dot01)   
+
+      Inv_denom = ONE / (dot00*dot11 - dot01*dot01)
 
       u = (dot11*dot02 - dot01*dot12) * Inv_denom
       v = (dot00*dot12 - dot01*dot02) * Inv_denom
@@ -1438,7 +1438,7 @@
       V_POSITIVE = (v>=-TOL_STL)
       UPVL1 = ((u+v)<=ONE+TOL_STL)
 
-      INSIDE_FACET = (U_POSITIVE.AND.V_POSITIVE.AND.UPVL1) 
+      INSIDE_FACET = (U_POSITIVE.AND.V_POSITIVE.AND.UPVL1)
 
 
       RETURN
