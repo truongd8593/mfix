@@ -1188,12 +1188,12 @@
       DO N = 1,N_FACETS
 
 
-         X1 = MINVAL(VERTEX(N,1:3,1))
-         X2 = MAXVAL(VERTEX(N,1:3,1))
-         Y1 = MINVAL(VERTEX(N,1:3,2))
-         Y2 = MAXVAL(VERTEX(N,1:3,2))
-         Z1 = MINVAL(VERTEX(N,1:3,3))
-         Z2 = MAXVAL(VERTEX(N,1:3,3))
+         X1 = MINVAL(VERTEX(1:3,1,N))
+         X2 = MAXVAL(VERTEX(1:3,1,N))
+         Y1 = MINVAL(VERTEX(1:3,2,N))
+         Y2 = MAXVAL(VERTEX(1:3,2,N))
+         Z1 = MINVAL(VERTEX(1:3,3,N))
+         Z2 = MAXVAL(VERTEX(1:3,3,N))
 
 
          I1 = IEND3
