@@ -151,8 +151,6 @@
   PARTICLES_FACTOR = 1.2     ! expand size of particle arrays by an 
                              ! arbitrary factor [1.2]
                    
-  DIMN = 3     ! number of dimensions in dem simulation 
-
   NFACTOR = 0     ! length of dem settling period in no. of loops   [10]
 
 ! DEM boundary conditions  --------------------
