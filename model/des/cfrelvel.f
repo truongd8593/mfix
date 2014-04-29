@@ -20,6 +20,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------      
+      use geometry, only: DO_K
       USE discretelement
       USE param1
       IMPLICIT NONE
@@ -32,9 +33,9 @@
       DOUBLE PRECISION, INTENT(IN) :: DIST_LI
 ! unit normal vector along the line of contact pointing from 
 ! particle L to particle II
-      DOUBLE PRECISION, INTENT(IN) :: NORM(DIMN)
+      DOUBLE PRECISION, INTENT(IN) :: NORM(3)
 ! tangent to the plane of contact
-      DOUBLE PRECISION, INTENT(INOUT) :: TANGNT(DIMN)
+      DOUBLE PRECISION, INTENT(INOUT) :: TANGNT(3)
 ! normal component of relative contact velocity (scalar)
       DOUBLE PRECISION, INTENT(INOUT) :: VRN
 ! tangential component of relative contact velocity (scalar)
@@ -45,10 +46,9 @@
 ! magnitude of tangent vector to plane of contact
       DOUBLE PRECISION :: TANMOD
 ! translational relative velocity 
-      DOUBLE PRECISION :: VRELTRANS(DIMN)
+      DOUBLE PRECISION :: VRELTRANS(3)
 ! slip velocity at point of contact      
-      DOUBLE PRECISION :: VSLIP(DIMN), &
-                          V_ROT(DIMN), OMEGA_SUM(DIMN)
+      DOUBLE PRECISION :: VSLIP(3), V_ROT(3), OMEGA_SUM(3)
 ! distance from the contact point to the particle centers 
       DOUBLE PRECISION :: DIST_CL, DIST_CI      
 !----------------------------------------------- 
@@ -67,13 +67,14 @@
             (2.d0*DIST_LI)
          DIST_CI = DIST_LI - DIST_CL
 
-         IF(DIMN.EQ.3) THEN
+         IF(DO_K) THEN
             OMEGA_SUM(:) = OMEGA_NEW(L,:)*DIST_CL + &
                OMEGA_NEW(II,:)*DIST_CI
          ELSE
             OMEGA_SUM(1) = OMEGA_NEW(L,1)*DIST_CL + &
                OMEGA_NEW(II,1)*DIST_CI
             OMEGA_SUM(2) = ZERO
+            OMEGA_SUM(3) = ZERO
          ENDIF
 
 ! calculate the rotational relative velocity         
@@ -124,6 +125,7 @@
 ! Modules
 !-----------------------------------------------      
       USE discretelement
+      use geometry, only: DO_K
       USE param1
       IMPLICIT NONE     
 !-----------------------------------------------
@@ -132,14 +134,14 @@
 ! indices of particle
       INTEGER, INTENT(IN) :: L
 ! wall velocity
-      DOUBLE PRECISION, INTENT(IN) :: WALL_VEL(DIMN)      
+      DOUBLE PRECISION, INTENT(IN) :: WALL_VEL(3)      
 ! distance between particle centers
       DOUBLE PRECISION, INTENT(IN) :: DIST_LI
 ! unit normal vector along the line of contact pointing from 
 ! particle L to wall
-      DOUBLE PRECISION, INTENT(IN) :: NORM(DIMN)
+      DOUBLE PRECISION, INTENT(IN) :: NORM(3)
 ! tangent to the plane of contact
-      DOUBLE PRECISION, INTENT(INOUT) :: TANGNT(DIMN)
+      DOUBLE PRECISION, INTENT(INOUT) :: TANGNT(3)
 ! normal component of relative contact velocity (scalar)
       DOUBLE PRECISION, INTENT(INOUT) :: VRN
 ! tangential component of relative contact velocity (scalar)
@@ -150,10 +152,10 @@
 ! magnitude of tangent vector to plane of contact
       DOUBLE PRECISION :: TANMOD
 ! translational relative velocity 
-      DOUBLE PRECISION :: VRELTRANS(DIMN)
+      DOUBLE PRECISION :: VRELTRANS(3)
 ! slip velocity at point of contact      
-      DOUBLE PRECISION :: VSLIP(DIMN), &
-                          V_ROT(DIMN), OMEGA_SUM(DIMN)
+      DOUBLE PRECISION :: VSLIP(3), &
+                          V_ROT(3), OMEGA_SUM(3)
 ! distance from the contact point to the particle centers 
       DOUBLE PRECISION :: DIST_CL
 !----------------------------------------------- 
@@ -167,11 +169,12 @@
 
 ! calculate the distance from the particle center to the wall
          DIST_CL = DIST_LI - DES_RADIUS(L)
-         IF(DIMN.EQ.3) THEN
+         IF(DO_K) THEN
             OMEGA_SUM(:) = OMEGA_NEW(L,:)*DIST_CL
          ELSE
             OMEGA_SUM(1) = OMEGA_NEW(L,1)*DIST_CL
             OMEGA_SUM(2) = ZERO
+            OMEGA_SUM(3) = ZERO
          ENDIF
 
 ! calculate the rotational relative velocity

@@ -55,20 +55,20 @@
 
          XPOS = DES_POS_NEW(NP,1)
          YPOS = DES_POS_NEW(NP,2)
-         IF (DIMN .EQ. 3) ZPOS = DES_POS_NEW(NP,3)
+         IF (DO_K) ZPOS = DES_POS_NEW(NP,3)
 
 ! check the status of a new injected particle. if the new particle
 ! fully entered the domain change its 'new' status PEA(NP,2) to false
 !-----------------------------------------------
          IF(PEA(NP,2) .AND. .NOT.PEA(NP,3))THEN
 
-            IF(DIMN == 2 .AND. &
+            IF(NO_K .AND. &
                (XPOS - DES_RADIUS(NP)) .GT. 0 .AND.&
                (XPOS + DES_RADIUS(NP)) .LT. XLENGTH.AND.&
                (YPOS - DES_RADIUS(NP)) .GT. 0 .AND.&
                (YPOS + DES_RADIUS(NP)) .LT. YLENGTH &
             .OR. &
-               DIMN == 3 .AND. &
+               DO_K .AND. &
                (XPOS - DES_RADIUS(NP)) .GT. 0 .AND.&
                (XPOS + DES_RADIUS(NP)) .LT. XLENGTH.AND.&
                (YPOS - DES_RADIUS(NP)) .GT. 0 .AND.&
@@ -91,13 +91,13 @@
 ! into the domain change (no longer on track to exit the domain) and
 ! it has fully entered the domain then change its 'exiting' status
 ! PEA(NP,3) to false
-            IF(DIMN == 2 .AND. &
+            IF(NO_K .AND. &
                (XPOS - DES_RADIUS(NP)) .GT. 0 .AND.&
                (XPOS + DES_RADIUS(NP)) .LT. XLENGTH.AND.&
                (YPOS - DES_RADIUS(NP)) .GT. 0 .AND.&
                (YPOS + DES_RADIUS(NP)) .LT. YLENGTH &
             .OR. &
-               DIMN == 3 .AND. &
+               DO_K .AND. &
                (XPOS - DES_RADIUS(NP)) .GT. 0 .AND.&
                (XPOS + DES_RADIUS(NP)) .LT. XLENGTH.AND.&
                (YPOS - DES_RADIUS(NP)) .GT. 0 .AND.&
@@ -114,11 +114,11 @@
 ! react to forces but will continue on its present trajectory which will
 ! then carry it fully out of the domain
 
-            ELSEIF(DIMN == 2 .AND. &
+            ELSEIF(NO_K .AND. &
                XPOS < 0 .OR. XPOS > XLENGTH .OR.&
                YPOS < 0 .OR. YPOS >YLENGTH &
             .OR. &
-               DIMN == 3 .AND. &
+               DO_K .AND. &
                XPOS < 0 .OR. XPOS > XLENGTH .OR.&
                YPOS < 0 .OR. YPOS > YLENGTH .OR.&
                ZPOS < 0 .OR. ZPOS > ZLENGTH) THEN
@@ -133,13 +133,13 @@
 !--------------------
 ! if an exiting particle has fully exited the domain, effectively
 ! remove the particle (reset PEA(NP,:) to false)
-            IF(DIMN == 2 .AND. &
+            IF(NO_K .AND. &
                (XPOS + DES_RADIUS(NP)) .LE. 0 .OR.&
                (XPOS - DES_RADIUS(NP)) .GE. XLENGTH .OR.&
                (YPOS + DES_RADIUS(NP)) .LE. 0 .OR.&
                (YPOS - DES_RADIUS(NP)) .GT. YLENGTH &
             .OR. &
-               DIMN == 3 .AND. &
+               DO_K .AND. &
                (XPOS + DES_RADIUS(NP)) .LE. 0 .OR.&
                (XPOS - DES_RADIUS(NP)) .GE. XLENGTH.OR.&
                (YPOS + DES_RADIUS(NP)) .LE. 0 .OR.&

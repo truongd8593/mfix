@@ -247,7 +247,7 @@
 ! dummy value of zero is supplied as the 3rd point.
          write(des_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
             'Name="Velocity" NumberOfComponents="3" format="ascii">'
-         if(dimn.eq.2) then
+         if(NO_K) then
             pc = 1
             do l = 1,max_pip
                if(pc.gt.pip) exit
@@ -278,7 +278,7 @@
          write(des_unit,"(9x,a)") '<Points>'
          write(des_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
             'Name="Position" NumberOfComponents="3" format="ascii">'
-         if(dimn.eq.2) then
+         if(NO_K) then
             pc = 1
             do l = 1,max_pip
                if(pc.gt.pip) exit
@@ -756,7 +756,7 @@
       INCLUDE 'ep_s2.inc'
 
 ! set the total variable based on dimension 
-      if (dimn.eq.3) then  
+      if (DO_K) then  
         ltotvar = 9 
       else
         ltotvar = 8 
@@ -787,7 +787,7 @@
        
 ! write header 
       if (bdist_io .or. mype .eq. pe_io) then 
-         if(dimn.eq.3) then 
+         if(DO_K) then 
             write (des_data,'(A)') & 
             'variables = "x" "y" "z" "vx" "vy" "vz" "rad" "den" "mark"'
          else 
@@ -805,7 +805,7 @@
             if(.not.pea(l,1)) cycle 
             pc = pc+1
             if(pea(l,4)) cycle 
-            if(dimn.eq.3) then
+            if(DO_K) then
                write (des_data, '(8(2x,es12.5),I5)')&
                   (des_pos_new(l,k),k=1,dimn),(des_vel_new(l,k),k=1,dimn), &
                    des_radius(l),ro_sol(l),mark_part(l) 
@@ -842,7 +842,7 @@
             call des_gather(des_vel_new(:,k))
             ltemp_array(:,lcount) = drootbuf(:); lcount=lcount+1
          end do  
-         if(dimn.eq.2) then 
+         if(NO_K) then 
             call des_gather(omega_new(:,1))
             ltemp_array(:,lcount) = drootbuf(:); lcount=lcount+1
          end if   
@@ -855,7 +855,7 @@
 
 ! write the data into file 
          if (mype.eq.pe_io) then 
-            if(dimn.eq.3) then
+            if(DO_K) then
                do l =1,lglocnt
                   write (des_data,'(8(2x,es12.5),I5)') (ltemp_array(l,k),k=1,8),int(ltemp_array(l,9))
                end do 

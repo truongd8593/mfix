@@ -1,4 +1,8 @@
 *.exe
+*.a
+*.o
+*.mod
+post_mfix
 Makefile
 model/mpif.h
 model/mfix_directory_path.inc

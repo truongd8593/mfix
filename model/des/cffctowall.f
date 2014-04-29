@@ -13,6 +13,7 @@
 ! Modules
 !-----------------------------------------------
       USE param1
+      use geometry, only: DO_K
       USE discretelement
       IMPLICIT NONE
 !-----------------------------------------------
@@ -24,14 +25,14 @@
       DOUBLE PRECISION, INTENT(IN) :: DIST_LI
 ! unit normal vector along the line of contact pointing from
 ! particle L to wall
-      DOUBLE PRECISION, INTENT(IN) :: NORM(DIMN)
+      DOUBLE PRECISION, INTENT(IN) :: NORM(3)
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! local variable for calculating torque on particle
-      DOUBLE PRECISION :: CROSSP(DIMN)
+      DOUBLE PRECISION :: CROSSP(3)
 ! temporary variable for particle L tangential force
-      DOUBLE PRECISION FT_TMP(DIMN)
+      DOUBLE PRECISION FT_TMP(3)
 ! distance from the contact point to the particle center
       DOUBLE PRECISION DIST_CL
 !------------------------------------------------
@@ -46,7 +47,7 @@
       DIST_CL = DIST_LI - DES_RADIUS(L)
 
 ! total torque
-      IF(DIMN.EQ.3) THEN
+      IF(DO_K) THEN
          CALL DES_CROSSPRDCT(CROSSP, NORM, FT_TMP)
          TOW(:,L) = TOW(:,L) + DIST_CL*CROSSP(:)
       ELSE

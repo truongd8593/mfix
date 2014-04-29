@@ -389,7 +389,7 @@
          call send_recv(rop_g,2)
          call send_recv(des_u_s,2)
          call send_recv(des_v_s,2) 
-         if(dimn.eq.3) call send_recv(des_w_s,2) 
+         if(do_K) call send_recv(des_w_s,2) 
          call send_recv(rop_s,2)
       ENDIF
 

@@ -26,6 +26,7 @@
       USE constant, only : GRAVITY_X, GRAVITY_Y, GRAVITY_Z
       USE discretelement 
       USE mfix_pic
+      use geometry, only: DO_K
       use error_manager
 ! Flag: DEM solids present.
       use run, only: DEM_SOLIDS
@@ -53,7 +54,7 @@
 
       GRAV(1) = GRAVITY_X
       GRAV(2) = GRAVITY_Y
-      IF(DIMN.EQ.3) GRAV(3) = GRAVITY_Z
+      IF(DO_K) GRAV(3) = GRAVITY_Z
       WRITE(ERR_MSG, '(A, 2x, 3(ES15.7))') 'GRAVITY components for DES:', & 
       GRAVITY_X, GRAVITY_Y, GRAVITY_Z
 
@@ -479,12 +480,11 @@
       INCLUDE 'function.inc'
 !-----------------------------------------------
 
-      avg_factor = 0.125d0*(DIMN-2) + 0.25d0*(3-DIMN)
+      avg_factor = merge(0.25d0, 0.125d0, NO_K)
 
 ! compute the volume at the grid nodes
 ! grid nodes start from istart2 to iend1
-      IF(DIMN.EQ.2) vol_node_count = 4.
-      IF(DIMN.EQ.3) vol_node_count = 8.
+      vol_node_count = merge(4., 8., NO_K)
 
       DO ijk = ijkstart3,ijkend3
          des_vol_node(ijk) = zero
@@ -559,7 +559,7 @@
          des_vol_node(ijk) = avg_factor*(vol_ijk + vol_ipjk + &
             vol_ijpk + vol_ipjpk)
 
-         IF (DIMN.EQ.3) THEN
+         IF (DO_K) THEN
             KP     = kmap_c(kraw+1)
             ijkp   = funijk(I, J, KP)
             ipjkp  = funijk(IP,J, KP)

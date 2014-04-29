@@ -24,6 +24,7 @@
       USE compar
       USE constant
       USE cutcell
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -54,30 +55,30 @@
       DOUBLE PRECISION :: DTSOLID_TMP
 ! distance vector between two particle centers or between a particle
 ! center and wall at current and previous time steps
-      DOUBLE PRECISION :: DIST(DIMN)
+      DOUBLE PRECISION :: DIST(3)
 ! magnitude of distance between two particle centers or between a
 ! particle center and wall at current and previous time steps
       DOUBLE PRECISION :: DISTMOD
 ! unit normal vector along the line of contact between contacting
 ! particles or particle-wall at current and previous time steps
-      DOUBLE PRECISION :: NORMAL(DIMN), NORM_OLD(DIMN)
+      DOUBLE PRECISION :: NORMAL(3), NORM_OLD(3)
 ! tangent to the plane of contact at current time step
-      DOUBLE PRECISION :: TANGENT(DIMN)
+      DOUBLE PRECISION :: TANGENT(3)
 ! variables for tangential displacement calculation:
 ! unit vector for axis of rotation and its magnitude
-      DOUBLE PRECISION :: TMP_AX(DIMN), TMP_MAG
+      DOUBLE PRECISION :: TMP_AX(3), TMP_MAG
 ! local variables for the accumulated tangential displacement that occurs
 ! for the particle-particle or particle-wall collision (current time
 ! step and previous time step)
-      DOUBLE PRECISION :: SIGMAT(DIMN),SIGMAT_OLD(DIMN)
+      DOUBLE PRECISION :: SIGMAT(3),SIGMAT_OLD(3)
 ! tangent to the plane of contact at current and previous time step
 ! (used for 2D calculations)
-      DOUBLE PRECISION :: TANG_OLD(DIMN),TANG_NEW(DIMN)
+      DOUBLE PRECISION :: TANG_OLD(3),TANG_NEW(3)
 ! normal and tangential forces
-      DOUBLE PRECISION :: FNS1(DIMN), FNS2(DIMN)
-      DOUBLE PRECISION :: FTS1(DIMN), FTS2(DIMN)
+      DOUBLE PRECISION :: FNS1(3), FNS2(3)
+      DOUBLE PRECISION :: FTS1(3), FTS2(3)
 ! temporary storage of tangential DISPLACEMENT
-      DOUBLE PRECISION :: PFT_TMP(DIMN)
+      DOUBLE PRECISION :: PFT_TMP(3)
 ! magnitude of normal/tangential force used for reporting only
       DOUBLE PRECISION :: FTMD, FNMD
 
@@ -93,7 +94,7 @@
 ! (1=contact, 0=nocontact)
       INTEGER :: WALLCONTACT
 ! local variables to store wall position and velocity
-      DOUBLE PRECISION :: WALL_POS(DIMN), WALL_VEL(DIMN)
+      DOUBLE PRECISION :: WALL_POS(3), WALL_VEL(3)
 ! set to T when a sliding contact occurs
       LOGICAL :: PARTICLE_SLIDE
 ! logic flag telling whether contact pair is old (previously detected)
@@ -271,26 +272,25 @@
 
 ! compute particle-wall VDW cohesive short-range forces
                   IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
-                    DistApart = (DISTMOD-R_LM) ! distance between particle&wall surface
-                    IF(DistApart < WALL_VDW_OUTER_CUTOFF)THEN
-                      IF(DistApart > WALL_VDW_INNER_CUTOFF)THEN
-                         FORCE_COH = WALL_HAMAKER_CONSTANT * DES_RADIUS(LL) / &
+                     DistApart = (DISTMOD-R_LM) ! distance between particle&wall surface
+                     IF(DistApart < WALL_VDW_OUTER_CUTOFF)THEN
+                        IF(DistApart > WALL_VDW_INNER_CUTOFF)THEN
+                           FORCE_COH = WALL_HAMAKER_CONSTANT * DES_RADIUS(LL) / &
                              (6d0*DistApart**2) * &
                              ( Asperities/(Asperities+DES_RADIUS(LL)) + &
                              ONE/(ONE+Asperities/DistApart)**2 )
-                      ELSE
+                        ELSE
 
-                         FORCE_COH = 4d0 * PI * WALL_SURFACE_ENERGY * DES_RADIUS(LL) * &
+                            FORCE_COH = 4d0 * PI * WALL_SURFACE_ENERGY * DES_RADIUS(LL) * &
                               ( Asperities/(Asperities+DES_RADIUS(LL)) + &
                               ONE/(ONE+Asperities/VDW_INNER_CUTOFF)**2 )
-                      ENDIF
-                      DO IDIMN=1,DIMN
-                        Norm_Dist = DIST(IDIMN)/DISTMOD
-                        Fcohesive(LL, IDIMN) = Fcohesive(LL, IDIMN) + Norm_Dist*FORCE_COH
-                      ENDDO
-                    ENDIF
+                        ENDIF
+                        DO IDIMN=1,DIMN
+                           Norm_Dist = DIST(IDIMN)/DISTMOD
+                           Fcohesive(LL, IDIMN) = Fcohesive(LL, IDIMN) + Norm_Dist*FORCE_COH
+                        ENDDO
+                     ENDIF
                   ENDIF ! for using VDW cohesion model
-
 
 
                   IF(R_LM - DISTMOD.GT.SMALL_NUMBER) THEN
@@ -389,42 +389,42 @@
                         sigmat_old(:) = pft(ll,ni,:)
                         norm_old(:)   = pfn(ll,ni,:)
 ! calculate the unit vector for axis of rotation
-                        if(dimn.eq.3)then
+                        if(DO_K)then
                            call des_crossprdct(tmp_ax,norm_old,normal)
                            tmp_mag   = des_dotprdct(tmp_ax,tmp_ax)
-                        if(tmp_mag .gt. zero)then
-                           tmp_ax(:) = tmp_ax(:)/sqrt(tmp_mag)
+                           if(tmp_mag .gt. zero)then
+                              tmp_ax(:) = tmp_ax(:)/sqrt(tmp_mag)
 ! get the old tangential direction unit vector
-                           call des_crossprdct(tang_old,tmp_ax,norm_old)
+                              call des_crossprdct(tang_old,tmp_ax,norm_old)
 ! get the new tangential direction unit vector due to rotation
-                           call des_crossprdct(tang_new,tmp_ax,normal)
-                           sigmat(:) = des_dotprdct(sigmat_old,tmp_ax)*tmp_ax(:) &
-                           + des_dotprdct(sigmat_old,tang_old)*tang_new(:)
+                              call des_crossprdct(tang_new,tmp_ax,normal)
+                                 sigmat(:) = des_dotprdct(sigmat_old,tmp_ax)*tmp_ax(:) &
+                                 + des_dotprdct(sigmat_old,tang_old)*tang_new(:)
 
-                           sigmat(:) = sigmat(:)+overlap_t*tangent(:)
+                              sigmat(:) = sigmat(:)+overlap_t*tangent(:)
+                           else
+                              sigmat(:) = sigmat_old(:)+overlap_t*tangent(:)
+                           endif
                         else
-                           sigmat(:) = sigmat_old(:)+overlap_t*tangent(:)
+                           tang_old(1) = -norm_old(2)
+                           tang_old(2) =  norm_old(1)
+                           tang_new(1) = -normal(2)
+                           tang_new(2) =  normal(1)
+                           sigmat(:)= des_dotprdct(sigmat_old,tang_old)*tang_new(:)
+                           sigmat(:)= sigmat(:)+overlap_t*tangent(:)
                         endif
-                     else
-                        tang_old(1) = -norm_old(2)
-                        tang_old(2) =  norm_old(1)
-                        tang_new(1) = -normal(2)
-                        tang_new(2) =  normal(1)
-                        sigmat(:)   = des_dotprdct(sigmat_old,tang_old)*tang_new(:)
-                        sigmat(:)   = sigmat(:)+overlap_t*tangent(:)
-                     endif
 
-                     pft_tmp(:)     = sigmat(:)
+                        pft_tmp(:) = sigmat(:)
             ! Save the old normal direction
-                     pfn(ll,ni,:)   = normal(:)
-                  else ! Old procedure
-                     PFT(LL,NI,:) = PFT(LL,NI,:) + OVERLAP_T*TANGENT(:)
-                     PFT_TMP(:)   = PFT(LL,NI,:) ! update pft_tmp before it used
+                        pfn(ll,ni,:)   = normal(:)
+                     else ! Old procedure
+                        PFT(LL,NI,:) = PFT(LL,NI,:) + OVERLAP_T*TANGENT(:)
+                        PFT_TMP(:) = PFT(LL,NI,:) ! update pft_tmp before it used
                      !remove the normal component from the tangential force 
                      !due to change of normal direction 
-                     PFT_TMP(:)   = PFT(LL,NI,:) - &
-                     DES_DOTPRDCT(PFT_TMP,NORMAL)*NORMAL(:)
-                  endif
+                        PFT_TMP(:)   = PFT(LL,NI,:) - &
+                           DES_DOTPRDCT(PFT_TMP,NORMAL)*NORMAL(:)
+                     endif
 ! ----------------------------------------------------------------<<<
 
 ! Calculate the tangential contact force
@@ -624,7 +624,7 @@
                      sigmat_old(:) = pft(ll,ni,:)
                      norm_old(:) = pfn(ll,ni,:)
 ! calculate the unit vector for axis of rotation
-                     if(dimn.eq.3)then
+                     if(DO_K)then
                         call des_crossprdct(tmp_ax,norm_old,normal)
                         tmp_mag=des_dotprdct(tmp_ax,tmp_ax)
                         if(tmp_mag .gt. zero)then

@@ -20,7 +20,7 @@
       USE des_rxns
       USE funits
       use physprop, only: C_PS0
-
+      use geometry, only: DO_K, NO_K
 
       IMPLICIT NONE
 
@@ -47,7 +47,7 @@
          M = PIJK(I,5)
          X_POS = DES_POS_NEW(I,1)
          Y_POS = DES_POS_NEW(I,2)
-         IF(DIMN == 3) Z_POS = DES_POS_NEW(I,3)
+         IF(DO_K) Z_POS = DES_POS_NEW(I,3)
          IC_FOUND = .FALSE.
 
 ! Loop through the initial conditions
@@ -59,7 +59,7 @@
                   X_POS .LE. DES_IC_X_E(ICV) .AND. &
                   Y_POS .GE. DES_IC_Y_S(ICV) .AND. &
                   Y_POS .LE. DES_IC_Y_N(ICV) ) THEN
-                  IF(DIMN == 2 .OR. &
+                  IF(NO_K .OR. &
                     (Z_POS .GE. DES_IC_Z_B(ICV) .AND. &
                      Z_POS .LE. DES_IC_Z_T(ICV)) ) THEN
                   ENDIF
@@ -76,7 +76,7 @@
             CALL SET_DES_TEMPERATURE(I,ICV,M)
             CALL SET_DES_MASS_FRACTION(I,ICV,M)
          ELSE
-            IF(DIMN == 2) Z_POS = 0.0d0
+            IF(NO_K) Z_POS = 0.0d0
             WRITE(*,1000)I, X_POS, Y_POS, Z_POS
             WRITE(UNIT_LOG,1000)I, X_POS, Y_POS, Z_POS
             CALL MFIX_EXIT(myPE)

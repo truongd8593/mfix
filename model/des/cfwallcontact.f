@@ -17,6 +17,7 @@
       USE compar
       Use discretelement      
       USE des_bc
+      use geometry, only: DO_K
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments      
@@ -51,9 +52,8 @@
 ! assign temporary local variables for manipulation/use
       XPOS = DES_POS_NEW(L,1)
       YPOS = DES_POS_NEW(L,2)
-      IF (DIMN .EQ. 3) THEN
-         ZPOS = DES_POS_NEW(L,3)
-      ENDIF 
+      IF(DO_K) ZPOS = DES_POS_NEW(L,3)
+ 
 
 ! initialize
       WALLCONTACT = 0
@@ -66,7 +66,7 @@
 ! Check if current wall corresponds to a periodic boundary (i.e. no wall) 
          IF( (DES_PERIODIC_WALLS_X .AND. (WALL.EQ.1.OR.WALL.EQ.2)).OR.&
              (DES_PERIODIC_WALLS_Y .AND. (WALL.EQ.3.OR.WALL.EQ.4)).OR.&
-             (DIMN.EQ.3.AND.DES_PERIODIC_WALLS_Z .AND. &
+             (DO_K.AND.DES_PERIODIC_WALLS_Z .AND. &
              (WALL.EQ.5.OR.WALL.EQ.6)) ) THEN
             RETURN
          ENDIF         
@@ -169,6 +169,8 @@
       USE des_bc
       USE discretelement
       USE param1
+      use geometry, only: NO_K
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -194,11 +196,7 @@
 
       XPOS = DES_POS_NEW(NP,1) 
       YPOS = DES_POS_NEW(NP,2)
-      IF (DIMN .EQ. 2) THEN
-         ZPOS = ONE
-      ELSE
-         ZPOS = DES_POS_NEW(NP,3)
-      ENDIF
+      ZPOS = merge(ONE, DES_POS_NEW(NP,3), NO_K)
 
 ! Set the flag identifying a wall contact to 1 (contact exists).  If the
 ! particle is in contact with a region of the wall that is listed as an
@@ -213,7 +211,7 @@
 ! condition class.
          IF(DES_MO_CLASS(BCV_I) == BCC)THEN 
 
-            IF(DIMN == 2)THEN   ! 2D domain
+            IF(NO_K)THEN   ! 2D domain
 
                IF(BCC == 'XW' .OR. BCC == 'XE')THEN
                   IF(DES_BC_Y_s(BCV) < (YPOS - RAD) .AND. &
@@ -263,7 +261,7 @@
                   ENDIF
                ENDIF
 
-            ENDIF   ! endif dimn == 2
+            ENDIF   ! endif NO_K
          ENDIF   ! endif DES_MO_CLASS(BCV_I) == BCC
 
       ENDDO  ! loop over BCV_I the no. of outlet boundaries

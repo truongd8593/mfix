@@ -124,10 +124,7 @@
 ! Assigning local aliases for particle position
          XPOS = DES_POS_NEW(L,1)
          YPOS = DES_POS_NEW(L,2)
-         IF (DIMN .EQ. 3) THEN
-            ZPOS = DES_POS_NEW(L,3)
-         ENDIF
-
+         ZPOS = merge(0.0d0, DES_POS_NEW(L,3), NO_K)
 
          IF(FIRST_PASS) THEN 
 ! Determining the solids phase of each particle by matching the diameter
@@ -183,7 +180,8 @@
                   EXIT
                ENDIF
             ENDDO
-            IF(DIMN.EQ.2) THEN
+
+            IF(NO_K) THEN
                K=1
                PIJK(L,3) = 1
             ELSE
@@ -191,9 +189,11 @@
                   IF(ZPOS >= ZT(K-1) .and. ZPOS < ZT(K)) THEN 
                      PIJK(L,3) = K
                      EXIT
-                 ENDIF
+                  ENDIF
                ENDDO
             ENDIF
+
+
 
          ELSE    ! if not first_pass
 
@@ -225,7 +225,7 @@
                PIJK(L,2) = j-1
             ENDIF 
 
-            IF(DIMN.EQ.2) THEN
+            IF(NO_K) THEN
                PIJK(L,3) = 1
             ELSE
                IF(ZPOS >= ZT(k-1) .and. ZPOS < ZT(k)) THEN
@@ -265,7 +265,7 @@
                   CALL WRITE_DES_DATA
                   CALL MFIX_EXIT(MYPE)
                ENDIF   
-               IF ((DIMN.EQ.3) .AND. (K.GT.KEND1 .OR. K.LT.KSTART1)) THEN
+               IF (DO_K .AND. (K.GT.KEND1 .OR. K.LT.KSTART1)) THEN
                   IF(DMP_LOG) WRITE(UNIT_LOG,1007) L,'K',K,'Z',&
                      ZPOS,'Z',DES_VEL_NEW(L,3)
                   CALL WRITE_DES_DATA
@@ -318,7 +318,7 @@
                      CYCLE
                   ENDIF
                ENDIF   
-               IF ((DIMN.EQ.3) .AND. (K.GT.KEND1 .OR. K.LT.KSTART1)) THEN
+               IF ( DO_K .AND. (K.GT.KEND1 .OR. K.LT.KSTART1)) THEN
                   IF(K.EQ.KEND1+1.AND.&
                     (ZPOS >= ZT(KEND1-1) .AND. ZPOS <= ZT(KEND1)) ) THEN
                      IF(DMP_LOG) WRITE(UNIT_LOG,1011) L,'K',K,'Z',&
@@ -588,7 +588,7 @@
 ! adding particle velocity to ongoing summation of solids velocity
          DES_U_S(IJK,M) = DES_U_S(IJK,M) + PVOL(L)*DES_VEL_NEW(L,1)*WTP
          DES_V_S(IJK,M) = DES_V_S(IJK,M) + PVOL(L)*DES_VEL_NEW(L,2)*WTP
-         IF(DIMN.EQ.3) DES_W_S(IJK,M) = DES_W_S(IJK,M) + & 
+         IF(DO_K) DES_W_S(IJK,M) = DES_W_S(IJK,M) + & 
             PVOL(L)*DES_VEL_NEW(L,3)*WTP
       ENDDO      ! end loop over L = 1,particles
 
@@ -619,9 +619,7 @@
                OSOLVOL = ONE/SOLVOLINC(IJK,M)   
                DES_U_s(IJK,M) = DES_U_s(IJK,M)*OSOLVOL
                DES_V_s(IJK,M) = DES_V_s(IJK,M)*OSOLVOL
-               IF(DIMN.EQ.3) THEN
-                  DES_W_s(IJK,M) = DES_W_s(IJK,M)*OSOLVOL
-               ENDIF
+               IF(DO_K) DES_W_s(IJK,M) = DES_W_s(IJK,M)*OSOLVOL
             ENDIF
 
 ! calculating the bulk density of solids phase m based on the total
@@ -749,12 +747,12 @@
       INTEGER :: COUNT_NODES_OUTSIDE, COUNT_NODES_INSIDE, &
                  COUNT_NODES_INSIDE_MAX, COUNT_TEMP
       double precision :: RESID_ROPS(DES_MMAX), &
-                          RESID_VEL(DIMN, DES_MMAX)
+                          RESID_VEL(3, DES_MMAX)
       double precision :: NORM_FACTOR
 !Handan Liu added on Jan 17 2013     
 	  DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
 	  DOUBLE PRECISION, DIMENSION(2,2,2) :: weight_ft
-	  DOUBLE PRECISION :: desposnew(dimn)      
+	  DOUBLE PRECISION :: desposnew(3)      
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -769,18 +767,19 @@
       MASS_SOL1_ALL = ZERO 
       MASS_SOL2_ALL = ZERO 
 ! avg_factor=0.25 (in 3D) or =0.5 (in 2D)
-      AVG_FACTOR = 0.25D0*(DIMN-2) + 0.5D0*(3-DIMN)
+      AVG_FACTOR = merge(0.5d0, 0.25D0, NO_K)
 
 ! cartesian_grid related quantities
-      IF(DIMN.EQ.2) COUNT_NODES_INSIDE_MAX = 4
-      IF(DIMN.EQ.3) COUNT_NODES_INSIDE_MAX = 8
+      COUNT_NODES_INSIDE_MAX = merge(4, 8, NO_K)
+
+
 ! Initialize entire arrays to zero
       DES_VEL_NODE = ZERO
       DES_ROPS_NODE = ZERO
       DES_ROP_S = zero 
       DES_U_S = ZERO
       DES_V_S = ZERO
-      IF(DIMN.EQ.3) DES_W_S = ZERO
+      IF(DO_K) DES_W_S = ZERO
 
       
 ! sets several quantities including interp_scheme, scheme, and 
@@ -830,7 +829,7 @@
 
          PCELL(1) = I-1
          PCELL(2) = J-1
-         PCELL(3) = (3-DIMN)*1+(DIMN-2)*(K-1) ! =K-1 (IN 3D) OR =1 (IN 2D)
+         PCELL(3) = merge(1, K-1, NO_K)
 
 ! setup the stencil based on the order of interpolation and factoring in
 ! whether the system has any periodic boundaries. sets onew to order.
@@ -839,7 +838,7 @@
 
          COUNT_NODES_OUTSIDE = 0 		
 ! Computing/setting the geometric stencil 
-         DO K = 1,(3-DIMN)*1+(DIMN-2)*ONEW
+         DO K = 1,merge(1, ONEW, NO_K)
             DO J = 1,ONEW
                DO I = 1,ONEW
                   II = IW + I-1
@@ -849,7 +848,7 @@
                   IPJK    = funijk(IMAP_C(II+1),JMAP_C(JJ),KMAP_C(KK))
                   IJPK    = funijk(IMAP_C(II),JMAP_C(JJ+1),KMAP_C(KK))
                   IPJPK   = funijk(IMAP_C(II+1),JMAP_C(JJ+1),KMAP_C(KK))
-                  IF(DIMN.EQ.3) THEN 
+                  IF(DO_K) THEN 
                      IJKP    = funijk(IMAP_C(II),JMAP_C(JJ),KMAP_C(KK+1))
                      IJPKP   = funijk(IMAP_C(II),JMAP_C(JJ+1),KMAP_C(KK+1))
                      IPJKP   = funijk(IMAP_C(II+1),JMAP_C(JJ),KMAP_C(KK+1))
@@ -858,7 +857,7 @@
 
                   GST_TMP(I,J,K,1) = XE(II)
                   GST_TMP(I,J,K,2) = YN(JJ)
-                  GST_TMP(I,J,K,3) = ZT(KK)*(DIMN-2) + DZ(1)*(3-DIMN)
+                  GST_TMP(I,J,K,3) = merge(DZ(1), ZT(KK), NO_K)
                   VST_TMP(I,J,K,:) = ZERO
 !===================================================================>>> Handan Liu	
 
@@ -898,7 +897,7 @@
             ENDIF
 
             desposnew(:) = des_pos_new(np,:)
-            call DRAG_INTERPOLATION(dimn,gst_tmp,vst_tmp,desposnew,JUNK_VAL,weight_ft)
+            call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,JUNK_VAL,weight_ft)
 !===================================================================>>> Handan Liu 
 
             M = PIJK(NP,5)
@@ -906,7 +905,7 @@
             IF(MPPIC) WTP = DES_STAT_WT(NP)
             MASS_SOL1 = MASS_SOL1 + PMASS(NP)*WTP
             
-            DO K = 1, (3-DIMN)*1+(DIMN-2)*ONEW
+            DO K = 1, merge(1, ONEW, NO_K)
                DO J = 1, ONEW
                   DO I = 1, ONEW
 ! shift loop index to new variables for manipulation
@@ -927,8 +926,8 @@
 ! for each particle in an ijk cell <June 18 2013>
                      TEMP1(NP) = WEIGHT_FT(I,J,K)*DES_RO_S(M)*PVOL(NP)*WTP					 
                      DES_ROPS_NODE(CUR_IJK,M) = DES_ROPS_NODE(CUR_IJK,M) + TEMP1(NP) 
-                     DES_VEL_NODE(CUR_IJK, 1:DIMN,M) = &
-                        DES_VEL_NODE(CUR_IJK, 1:DIMN,M) + TEMP1(NP)*DES_VEL_NEW(NP, 1:DIMN)
+                     DES_VEL_NODE(CUR_IJK,:,M) = &
+                        DES_VEL_NODE(CUR_IJK,:,M) + TEMP1(NP)*DES_VEL_NEW(NP,:)
                   ENDDO
                ENDDO
             ENDDO
@@ -952,7 +951,7 @@
 
 ! initializing                    
                RESID_ROPS(1:DES_MMAX) = ZERO 
-               RESID_VEL(1:DIMN, 1:DES_MMAX) = ZERO
+               RESID_VEL(:, 1:DES_MMAX) = ZERO
 
 ! Convention used to number node numbers
 ! i=1, j=2           i=2, j=2
@@ -969,8 +968,7 @@
                I2 = I
                J1 = J-1
                J2 = J
-! K1 = K if DIMN = 2, amd K1 = K-1 DIMN = 3
-               K1 = (3-DIMN)*K+(DIMN-2)*(K-1)
+               K1 = merge(K, K-1, NO_K)
                K2 = K
 ! first calculate the residual des_rops_node and des_vel_node that was
 ! computed on nodes that do not belong to the domain
@@ -985,7 +983,7 @@
                               RESID_ROPS(1:DES_MMAX) +&
                               DES_ROPS_NODE(IJK2,1:DES_MMAX)
                            DES_ROPS_NODE(IJK2,1:DES_MMAX) = ZERO 
-                           DO IDIM = 1, DIMN
+                           DO IDIM = 1, merge(2,3,NO_K)
                               RESID_VEL(IDIM, 1:DES_MMAX) = &
                                  RESID_VEL(IDIM, 1:DES_MMAX) + & 
                                  DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX)
@@ -1008,7 +1006,7 @@
                            DES_ROPS_NODE(IJK2,1:DES_MMAX) = &
                               DES_ROPS_NODE(IJK2,1:DES_MMAX) + &
                               RESID_ROPS(1:DES_MMAX)*NORM_FACTOR
-                           DO IDIM = 1, DIMN
+                           DO IDIM = 1, merge(2,3,NO_K)
                               DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX) = &
                                  DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX) + &
                                  RESID_VEL(IDIM, 1:DES_MMAX)*NORM_FACTOR
@@ -1070,7 +1068,7 @@
                J1 = J
                J2 = J+1
                K1 = K
-               K2 = (3-DIMN)*K+(DIMN-2)*(K+1)
+               K2 = merge(K, K+1, NO_K)
 
                VOL_SURR = ZERO 
 
@@ -1104,7 +1102,7 @@
                                  DES_VEL_NODE(IJK, 1, M)*VOL(IJK2)/VOL_SURR
                               DES_V_S(IJK2, M) = DES_V_S(IJK2, M) + & 
                                  DES_VEL_NODE(IJK, 2, M)*VOL(IJK2)/VOL_SURR
-                              IF(DIMN.eq.3) DES_W_S(IJK2, M) = DES_W_S(IJK2, M) + & 
+                              IF(DO_K) DES_W_S(IJK2, M) = DES_W_S(IJK2, M) + & 
                                  DES_VEL_NODE(IJK, 3, M)*VOL(IJK2)/VOL_SURR
                            ENDDO
                         ENDIF
@@ -1131,7 +1129,7 @@
             IF(DES_ROP_S(IJK, M).GT.ZERO) THEN 
                DES_U_S(IJK, M) = DES_U_S(IJK,M)/DES_ROP_S(IJK, M)
                DES_V_S(IJK, M) = DES_V_S(IJK,M)/DES_ROP_S(IJK, M)
-               IF(DIMN.eq.3) DES_W_S(IJK, M) = DES_W_S(IJK,M)/DES_ROP_S(IJK, M)
+               IF(DO_K) DES_W_S(IJK, M) = DES_W_S(IJK,M)/DES_ROP_S(IJK, M)
                
 ! Finally divide by scalar cell volume to obtain \eps * \rho_s
                DES_ROP_S(IJK, M) = DES_ROP_S(IJK, M)/VOL(IJK)
@@ -1194,7 +1192,7 @@
 ! Now calculate Eulerian mean velocity fields like U_S, V_S, and W_S. 
          CALL SEND_RECV(DES_U_S,2)
          CALL SEND_RECV(DES_V_S,2) 
-         IF(DIMN.EQ.3) CALL SEND_RECV(DES_W_S,2) 
+         IF(DO_K) CALL SEND_RECV(DES_W_S,2) 
 
 ! The Eulerian velocity field is used to set up the stencil to interpolate
 ! mean solid velocity at the parcel's location. DES_U_S could have also been

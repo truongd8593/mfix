@@ -470,8 +470,6 @@
       USE geometry, only: NO_I, NO_J, NO_K
       USE geometry, only: ZLENGTH
 
-      USE discretelement, only: DIMN
-
 ! Flag: Use DES E-L model
       use discretelement, only: DISCRETE_ELEMENT
       USE discretelement, only: DES_CONTINUUM_COUPLED
@@ -502,10 +500,7 @@
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------      
-      LOGICAL :: REQ_3D
       DOUBLE PRECISION :: MIN_DEPTH
-
-
 
 !......................................................................!
 
@@ -533,30 +528,6 @@
  1200 FORMAT('Error 1200: Illegal geometry for DEM/MPPIC. 2D ',        &
          'simulations are',/'restricted to the XY plane. Please ',     &
          'correct the mfix.dat file.')
-
-
-! Determine if a 3D simulation is requried.
-      REQ_3D = (DO_I .AND. DO_J .AND. DO_K)
-
-! Set the DIMN if not specified.
-      IF(DIMN == UNDEFINED_I) THEN
-         DIMN = merge(3, 2, REQ_3D)
-
-! Impose physical constraint
-      ELSEIF(DIMN < 2 .OR. DIMN > 3) THEN
-         WRITE(ERR_MSG,1001)'DIMN', trim(iVal(DIMN))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
-! Verify that 
-      ELSEIF(REQ_3D .AND. DIMN == 2) THEN
-         WRITE(ERR_MSG,1201)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
-      ENDIF
-
- 1201 FORMAT('Error 1201: Illegal geometry for DEM/MPPIC. The domain ',&
-         'geometry is',/'3D but DEM/MPPIC restricted to 2D (DIMN=2). ',&
-         'Please correct the',/'mfix.dat file.')
 
 
       IF(DES_CONTINUUM_COUPLED)THEN
@@ -617,11 +588,6 @@
          CALL FLUSH_ERR_MSG(abort = .true.)
       endif
       
-      IF(use_stl_des.and.dimn.eq.2) then 
-         write(err_msg, '(3(A,/))') & 
-         'STL based treatment of walls requires 3-D geometry;'
-         CALL FLUSH_ERR_MSG(abort = .true.)
-      endif
 
 ! Verify that there are no internal obstacles.
 !      IF(.NOT.CARTESIAN_GRID) THEN

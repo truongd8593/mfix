@@ -57,8 +57,8 @@
       INTEGER, INTENT(IN) :: IJK  ! fluid cell index
 ! Variables needed for calculating new interpolation quantities for
 ! species and energy equations
-      INTEGER, INTENT(IN) :: INTERP_IJK(2**DIMN)
-      DOUBLE PRECISION, INTENT(IN) :: INTERP_WEIGHTS(2**DIMN)
+      INTEGER, INTENT(IN) :: INTERP_IJK(2**3)
+      DOUBLE PRECISION, INTENT(IN) :: INTERP_WEIGHTS(2**3)
 ! Identifies that the indicated particle is of interest for debugging
       LOGICAL, INTENT(IN) :: FOCUS
 

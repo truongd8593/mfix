@@ -23,14 +23,14 @@
 ! particle index no.
       INTEGER, INTENT(IN) :: L
 ! tangent to the plane of contact
-      DOUBLE PRECISION, INTENT(IN) :: TANGNT(DIMN)
+      DOUBLE PRECISION, INTENT(IN) :: TANGNT(3)
 ! logic set to T when a sliding contact occurs
       LOGICAL, INTENT(INOUT) :: PARTICLE_SLIDE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! local variables for tangential and normal forces at point of contact
-      DOUBLE PRECISION TMP_FT(DIMN), TMP_FN(DIMN)
+      DOUBLE PRECISION TMP_FT(3), TMP_FN(3)
 ! magnitude of tangential and normal forces
       DOUBLE PRECISION FTMD, FNMD
 !-----------------------------------------------

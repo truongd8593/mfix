@@ -85,7 +85,7 @@
                ENDIF
                CALL MFIX_EXIT(myPE)
             ENDIF 
-            IF(DIMN == 3)THEN
+            IF(DO_K)THEN
               IF(DES_BC_Z_b(BCV) == UNDEFINED .OR. &
                  DES_BC_Z_t(BCV) == UNDEFINED) THEN
                IF(DMP_LOG) THEN
@@ -107,7 +107,7 @@
                ENDIF
                CALL MFIX_EXIT(myPE)
             ENDIF
-            IF(DIMN == 3)THEN
+            IF(DO_K)THEN
                IF(DES_BC_Z_b(BCV) .LT. 0 .OR. &
                   DES_BC_Z_t(BCV) .GT. ZLENGTH .OR. &
                   DES_BC_Z_b(BCV) .GT. DES_BC_Z_t(BCV))THEN
@@ -415,7 +415,7 @@
       INTEGER BCV         ! Boundary Condition 
 !-----------------------------------------------
 
-      IF(DIMN == 2) THEN
+      IF(NO_K) THEN
 ! Check verticle mass inlet
          IF(DES_BC_X_w(BCV) == DES_BC_X_e(BCV)) THEN
             IF(DES_BC_X_w(BCV) /= ZERO .AND. &
@@ -569,7 +569,7 @@
             ENDIF
          ENDIF
 
-      ENDIF ! end if dimn == 2 / else
+      ENDIF ! end if  / else
 
 
 ! The following checks target potential bc problems in 3D systems   
@@ -659,6 +659,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_DES_LE_BC
 
+      use geometry, only: DO_K, NO_K
       use discretelement
       use mpi_utility
 
@@ -675,13 +676,13 @@
             CALL MFIX_EXIT(myPE)
          ENDIF
 ! not all possible shear directions are fully coded         
-         IF (DIMN .EQ. 2) THEN
+         IF (NO_K) THEN
             IF(TRIM(DES_LE_SHEAR_DIR) .NE. 'DUDY' .AND. &
                TRIM(DES_LE_SHEAR_DIR) .NE. 'DVDX') THEN
                WRITE(UNIT_LOG, 1061)
                CALL MFIX_EXIT(myPE)
             ENDIF
-         ELSEIF(DIMN.EQ.3) THEN
+         ELSEIF(DO_K) THEN
             IF(TRIM(DES_LE_SHEAR_DIR) .NE. 'DUDY') THEN ! .AND. & 
 !               TRIM(DES_LE_SHEAR_DIR) .NE. 'DUDZ' .AND. &
 !               TRIM(DES_LE_SHEAR_DIR) .NE. 'DVDX' .AND. &

@@ -128,7 +128,7 @@
 
 ! setting the global id for walls. this is required to handle 
 ! particle-wall contact
-      DO lface = 1,dimn*2
+      DO lface = 1, merge(4,6,DO_K)
          iglobal_id(max_pip+lface) = -lface 
       ENDDO
 
@@ -180,8 +180,8 @@
             IF(.NOT.FLUID_AT(PIJK(L,4))) THEN 
                IF(SMALL_CELL_AT(PIJK(L,4))) SM_CELL = 1.d0
                WRITE(1000, '(10(2x,g17.8))')&
-                  SM_CELL, (DES_POS_NEW(L, I), I=1,DIMN),&
-                  (DES_VEL_NEW(L, I), I=1,DIMN), REAL(L)
+                  SM_CELL, (DES_POS_NEW(L, I), I=1,3),&
+                  (DES_VEL_NEW(L, I), I=1,3), REAL(L)
             ENDIF
          ENDDO
          close(1000, status = 'keep')
@@ -202,7 +202,7 @@
             DTPIC_TMPY = (CFL_PIC*DY(PIJK(L,2)))/&
                (ABS(DES_VEL_NEW(L,2))+SMALL_NUMBER)
             DTPIC_TMPZ = LARGE_NUMBER 
-            IF(DIMN.EQ.3) DTPIC_TMPZ = (CFL_PIC*DZ(PIJK(L,3)))/&
+            IF(DO_K) DTPIC_TMPZ = (CFL_PIC*DZ(PIJK(L,3)))/&
                (ABS(DES_VEL_NEW(L,3))+SMALL_NUMBER)
 
             DTPIC_CFL = MIN(DTPIC_CFL, DTPIC_TMPX, DTPIC_TMPY, DTPIC_TMPZ)
@@ -248,6 +248,8 @@
       use desmpi 
       use cdist 
       use mpi_utility
+      use geometry, only: NO_K
+
       implicit none 
 !-----------------------------------------------
 ! Local variables
@@ -260,8 +262,12 @@
       integer :: lunit 
 ! local filename      
       character(30) lfilename 
+
+      integer :: RDMN
 !-----------------------------------------------
 
+
+      RDMN = merge(2,3,NO_K)
 
       IF(DMP_LOG) WRITE(UNIT_LOG,'(/2X,A)') &
        'Reading particle configuration from the supplied input file'
@@ -287,9 +293,9 @@
          read(lunit,*) pip
          DO lcurpar = 1,pip
             pea(lcurpar,1) = .true.
-            read (lunit,*) (des_pos_new(lcurpar,k),k=1,dimn),&
+            read (lunit,*) (des_pos_new(lcurpar,k),k=1,RDMN),&
                des_radius(lcurpar), ro_sol(lcurpar),&
-               (des_vel_new(lcurpar,k),k=1,dimn)
+               (des_vel_new(lcurpar,k),k=1,RDMN)
          ENDDO
 
 !-----------------------------------------------------------------<<<
@@ -299,8 +305,8 @@
 ! Read into temporary variable and scatter 
          IF (mype .eq. pe_io) THEN
 ! temporary variable                 
-            ALLOCATE (dpar_pos(particles,dimn))
-            ALLOCATE (dpar_vel(particles,dimn))
+            ALLOCATE (dpar_pos(particles,3))
+            ALLOCATE (dpar_vel(particles,3))
             ALLOCATE (dpar_rad(particles))
             ALLOCATE (dpar_den(particles))
 ! Initialize            
@@ -309,9 +315,9 @@
             dpar_rad=0.0
             dpar_den = 0.0
             DO lcurpar = 1, particles
-               read (lunit,*) (dpar_pos(lcurpar,k),k=1,dimn),&
+               read (lunit,*) (dpar_pos(lcurpar,k),k=1,RDMN),&
                dpar_rad(lcurpar), & 
-               dpar_den(lcurpar),(dpar_vel(lcurpar,k),k=1,dimn)
+               dpar_den(lcurpar),(dpar_vel(lcurpar,k),k=1,RDMN)
                
             ENDDO
          ENDIF 

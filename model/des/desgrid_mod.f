@@ -363,8 +363,8 @@
 
       IF (DESGRIDSEARCH_IMAX == UNDEFINED_I .OR. &
           DESGRIDSEARCH_JMAX == UNDEFINED_I .OR. &
-          (DIMN.EQ.2 .AND. DESGRIDSEARCH_KMAX /= 1) .OR. &
-          (DIMN.EQ.3 .AND. DESGRIDSEARCH_KMAX == UNDEFINED_I)) THEN
+          (NO_K .AND. DESGRIDSEARCH_KMAX /= 1) .OR. &
+          (DO_K .AND. DESGRIDSEARCH_KMAX == UNDEFINED_I)) THEN
           IF(DMP_LOG) WRITE(UNIT_LOG,'(/2X,A)') &
              'From: DESGRID_CHECK'
       ENDIF
@@ -396,7 +396,7 @@
             call mfix_exit(mype)
          endif
       endif
-      if (dimn .eq. 2) then
+      if (NO_K) then
          if (desgridsearch_kmax == undefined_i) then
             desgridsearch_kmax = 1
          elseif(desgridsearch_kmax /= 1) then
@@ -418,7 +418,7 @@
                 call mfix_exit(mype)
             endif
          endif
-      endif   ! end if/else dimn == 2
+      endif   ! end if/else
 
 
 
@@ -547,9 +547,11 @@
 !-----------------------------------------------      
       integer lcurpar,lmaxneigh,lkoffset
       integer lijk,lic,ljc,lkc,li,lj,lk,ltotpic,lpicloc,lneigh,lneighcnt
-      double precision lsearch_rad,ldist,ldistvec(dimn)
-	  double precision lcurpar_pos(dimn),lcur_off
-	  integer il_off,iu_off,jl_off,ju_off,kl_off,ku_off
+      double precision lsearch_rad,ldist
+      double precision :: ldistvec(3)
+      double precision :: lcurpar_pos(3)
+      double precision :: lcur_off
+      integer il_off,iu_off,jl_off,ju_off,kl_off,ku_off
 !-----------------------------------------------
 ! Include statement functions      
 !-----------------------------------------------
@@ -600,7 +602,7 @@
 			ju_off = 0
 		 endif
 		 
-		 if(dimn.eq.2)then
+		 if(NO_K)then
 			kl_off = 0
 		 	ku_off = 0
 		 else

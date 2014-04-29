@@ -468,7 +468,7 @@
                !now add the torque             
                !Using particle radius as the moment arm for computing the 
                !torque 
-               IF(DIMN.EQ.3) THEN
+               IF(DO_K) THEN
                   CALL DES_CROSSPRDCT(CROSSP, NORMAL, FTAN)
                   TOW(:,LL) = TOW(:,LL) + DES_RADIUS(LL)*CROSSP(:)
                ELSE
@@ -578,6 +578,7 @@
 
       USE discretelement
       USE param1
+      use geometry, only: DO_K
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -607,7 +608,7 @@
       DIST_CL = (DIST_LI**2 + DES_RADIUS(L)**2 - DES_RADIUS(II)**2)/&
       (2.d0*DIST_LI)
       DIST_CI = DIST_LI - DIST_CL
-      IF(DIMN.EQ.3) THEN
+      IF(DO_K) THEN
          OMEGA_SUM(:) = OMEGA_NEW(L,:)*DIST_CL + &
          OMEGA_NEW(II,:)*DIST_CI
       ELSE
@@ -701,6 +702,8 @@
 
       USE param1
       USE discretelement
+
+      use geometry, only: DO_K
       IMPLICIT NONE
       INTEGER, INTENT(IN) ::  L, II
       DOUBLE PRECISION, INTENT(IN), DIMENSION(DIMN) ::  NORM(DIMN)
@@ -729,7 +732,7 @@
          (2.d0*DIST_LI)
 
 
-      IF(DIMN.EQ.3) THEN
+      IF(DO_K) THEN
          CALL DES_CROSSPRDCT(CROSSP, NORM, FTAN)
          TOW(:,L)  = TOW(:,L)  + DIST_CL*CROSSP(:)
       ELSE
@@ -745,6 +748,8 @@
 
       USE discretelement
       USE param1
+
+      use geometry, only: DO_K
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -771,7 +776,7 @@
 ! rotational contribution  : v_rot
 ! calculate the distance from the particle center to the wall
       DIST_CL = DIST_LI         !- DES_RADIUS(L)
-      IF(DIMN.EQ.3) THEN
+      IF(DO_K) THEN
          OMEGA_SUM(:) = OMEGA_NEW(L,:)*DIST_CL
       ELSE
          OMEGA_SUM(1) = OMEGA_NEW(L,1)*DIST_CL

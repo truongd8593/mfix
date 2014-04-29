@@ -12,14 +12,15 @@
 ! Modules
 !-----------------------------------------------
       USE param 
-      USE param1  
+      USE param1
+      USE geometry, only: NO_K
       USE discretelement
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments      
 !-----------------------------------------------
 ! vectors      
-      DOUBLE PRECISION, INTENT(IN) :: XX(DIMN), YY(DIMN) 
+      DOUBLE PRECISION, INTENT(IN) :: XX(3), YY(3) 
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -29,7 +30,7 @@
 
       DOTP = ZERO
 
-      DO II = 1, DIMN
+      DO II = 1, merge(2,3,NO_K)
          DOTP = DOTP + XX(II)*YY(II)
       ENDDO
       DES_DOTPRDCT = DOTP
@@ -55,23 +56,25 @@
       USE param 
       USE param1  
       USE discretelement
+      use geometry, only: DO_K
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments      
 !-----------------------------------------------
 ! sent vectors
-      DOUBLE PRECISION, INTENT(IN) :: XX(DIMN), YY(DIMN) 
+      DOUBLE PRECISION, INTENT(IN) :: XX(3), YY(3) 
 ! returned result: cross product of vectors
-      DOUBLE PRECISION, INTENT(INOUT) :: AA(DIMN)
+      DOUBLE PRECISION, INTENT(INOUT) :: AA(3)
 !-----------------------------------------------      
  
-      IF(DIMN.EQ.3) THEN
+      IF(DO_K) THEN
          AA(1) = XX(2)*YY(3) - XX(3)*YY(2) 
          AA(2) = XX(3)*YY(1) - XX(1)*YY(3) 
          AA(3) = XX(1)*YY(2) - XX(2)*YY(1)
       ELSE
          AA(1) = - XX(1)*YY(2) 
          AA(2) = XX(1)*YY(1)  
+         AA(3) = ZERO
       ENDIF
 
       RETURN  

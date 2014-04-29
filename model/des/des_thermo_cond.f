@@ -72,7 +72,7 @@
 ! Temperature difference between two particles
       DOUBLE PRECISION DeltaTp
 ! Distance between the centers of particle I and particle J (component)
-      DOUBLE PRECISION DISTVEC(DIMN)
+      DOUBLE PRECISION DISTVEC(3)
 ! Distance between the centers of particle I and particle J (magnitude)
       DOUBLE PRECISION CENTER_DIST
 ! Effective thermal conductivity

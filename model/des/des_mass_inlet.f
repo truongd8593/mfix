@@ -66,11 +66,11 @@
       INTEGER lli, llj, llk
 ! Pradeep altering the structure 
       double precision lpar_rad 
-      double precision, dimension(dimn) :: lpar_pos
+      double precision, dimension(3) :: lpar_pos
       logical :: lflag 
       integer :: lglobal_id
       logical :: ltouching
-      double precision,dimension(dimn):: lrange_min,lrange_max,lrand3
+      double precision,dimension(3):: lrange_min,lrange_max,lrand3
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -129,7 +129,7 @@
          lflag = .false. 
          select case (des_mi_class(bcv_i))
          case ('XW','XE', 'YZw','YZe')
-            if (dimn .eq. 2) then   
+            if (NO_K) then   
                if (    lpar_pos(2) .ge. yn(jstart1-1) &
                  .and. lpar_pos(2) .lt. yn(jend1)) lflag = .true.   
             else 
@@ -139,7 +139,7 @@
                  .and. lpar_pos(3) .lt. zt(kend1)) lflag = .true.  
             end if 
          case ('YN','YS', 'XZn','XZs')
-            if (dimn .eq. 2) then   
+            if (NO_K) then   
                if (    lpar_pos(1) .ge. xe(istart1-1) &
                  .and. lpar_pos(1) .lt. xe(iend1)) lflag = .true.   
             else 
@@ -166,7 +166,7 @@
                   lrange_min(1) = lpar_pos(1);lrange_max(1) = lpar_pos(1) 
                   lrange_min(2) = max(DES_BC_Y_s(BCV),yn(jstart1-1)) + lpar_rad
                   lrange_max(2) = min(DES_BC_Y_n(BCV),yn(jend1)) - lpar_rad
-                  if (dimn .eq. 3) then   
+                  if (DO_K) then   
                      lrange_min(3) = max(DES_BC_Z_b(BCV),zt(kstart1-1)) + lpar_rad
                      lrange_max(3) = min(DES_BC_Z_t(BCV),zt(kend1)) - lpar_rad
                   end if 
@@ -174,7 +174,7 @@
                   lrange_min(1) = max(DES_BC_X_w(BCV),xe(istart1-1)) + lpar_rad
                   lrange_max(1) = min(DES_BC_X_e(BCV),xe(iend1)) - lpar_rad
                   lrange_min(2) = lpar_pos(2); lrange_max(2)=lpar_pos(2)
-                  if (dimn .eq. 3) then   
+                  if (DO_K) then   
                      lrange_min(3) = max(DES_BC_Z_b(BCV),zt(kstart1-1)) + lpar_rad
                      lrange_max(3) = min(DES_BC_Z_t(BCV),zt(kend1)) - lpar_rad
                   end if 
@@ -190,7 +190,7 @@
 ! from the processor interface, i,e no contact with particles 
 ! inserted in neighbour proc
                ltouching = .false.
-               do li = 1,dimn
+               do li = 1,3
                   if (lpar_pos(li).lt.lrange_min(li) .or. &
                       lpar_pos(li).gt.lrange_max(li)) ltouching =.true. 
                end do 
@@ -198,7 +198,7 @@
                   if (ltouching) then 
                      call random_number(lrand3(1))
                      call random_number(lrand3(2))
-                     if(dimn.eq.3) call random_number(lrand3(3))
+                     if(DO_K) call random_number(lrand3(3))
                      lpar_pos= lrange_min+(lrange_max-lrange_min)*lrand3
                   end if 
                   call des_new_particle_test(bcv_i,lpar_rad,lpar_pos,ltouching)
@@ -235,7 +235,7 @@
 ! Set the initial velocity values
             DES_VEL_OLD(NP,1) = DES_BC_U_s(BCV)
             DES_VEL_OLD(NP,2) = DES_BC_V_s(BCV)
-            IF(DIMN == 3) DES_VEL_OLD(NP,3) = DES_BC_W_s(BCV)
+            IF(DO_K) DES_VEL_OLD(NP,3) = DES_BC_W_s(BCV)
             DES_VEL_NEW(NP,:) = DES_VEL_OLD(NP,:)
 ! Set the initial angular velocity values
             OMEGA_OLD(NP,:) = 0
@@ -283,9 +283,7 @@
 
             XPOS = DES_POS_NEW(NP,1)
             YPOS = DES_POS_NEW(NP,2)
-            IF (DIMN == 3) THEN
-               ZPOS = DES_POS_NEW(NP,3)
-            ENDIF               
+            IF (DO_K) ZPOS = DES_POS_NEW(NP,3)
 
 ! Determine the i, j, k indices of the cell containing the new 
 ! particle(s) by checking the cells near the mass inlet using 
@@ -318,7 +316,7 @@
                ENDIF
             ENDDO
 
-            IF(DIMN == 2) THEN
+            IF(NO_K) THEN
                PIJK(NP,3)  = 1
             ELSE
                DO K = GS_ARRAY(BCV_I,5), GS_ARRAY(BCV_I,6)
@@ -419,7 +417,7 @@
 ! the associated bc no.      
       INTEGER, INTENT(IN) :: BCV_I
       DOUBLE PRECISION, INTENT(IN) :: lpar_rad
-      DOUBLE PRECISION, INTENT(OUT) :: lpar_pos(DIMN)
+      DOUBLE PRECISION, INTENT(OUT) :: lpar_pos(3)
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -940,7 +938,7 @@
 !-----------------------------------------------
 ! index of boundary condition 
       INTEGER, INTENT(IN) :: BCV_I
-      DOUBLE PRECISION, INTENT(IN) :: ppar_pos(DIMN)
+      DOUBLE PRECISION, INTENT(IN) :: ppar_pos(3)
       DOUBLE PRECISION, INTENT(IN) :: ppar_rad
       LOGICAL, INTENT(INOUT) :: TOUCHING
 !-----------------------------------------------
@@ -956,7 +954,7 @@
       integer listart,liend,ljstart,ljend,lkstart,lkend 
 
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
-      DOUBLE PRECISION  DISTVEC(DIMN), DIST, R_LM
+      DOUBLE PRECISION  DISTVEC(3), DIST, R_LM
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
