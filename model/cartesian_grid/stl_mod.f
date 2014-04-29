@@ -5,7 +5,7 @@
       Use param1
 
 !     Maximum number of facets that can be read
-      INTEGER, PARAMETER          :: DIM_STL = 10000   !10 Million
+      INTEGER, PARAMETER          :: DIM_STL = 10000000   !10 Million
 !     Number of facets
       INTEGER                     :: N_FACETS
 
