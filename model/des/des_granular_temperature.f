@@ -82,7 +82,7 @@
             (DES_VEL_NEW(LL,1)-DES_U_s(IJK,M))**2 
          TEMP(IJK,M) = TEMP(IJK,M) + &
             (DES_VEL_NEW(LL,2)-DES_V_s(IJK,M))**2
-         IF(DIMN.EQ.3) THEN 
+         IF(DO_K) THEN 
             TEMP(IJK,M) = TEMP(IJK,M) + &
                (DES_VEL_NEW(LL,3)-DES_W_s(IJK,M))**2 
          ENDIF

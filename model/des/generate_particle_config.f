@@ -398,7 +398,7 @@
          YN(1:size(YN,1)-1),'Y','J')
          
          part%cell(3) = 1
-         IF(DIMN.eq.3) part%cell(3) = DES_GETINDEXFROMPOS(KSTART1, &
+         IF(DO_K) part%cell(3) = DES_GETINDEXFROMPOS(KSTART1, &
          KEND1,part%position(3),ZT(1:size(ZT,1)-1),'Z','K')       
 
          IF(.NOT.DEAD_CELL_AT(part%cell(1), part%cell(2), part%cell(3))) THEN
@@ -576,7 +576,7 @@
             DOML(2) = IC_Y_N(ICV) - IC_Y_S(ICV) 
             DOML(3) = IC_Z_T(ICV) - IC_Z_B(ICV)
             
-            IF(DIMN.eq.2) DOML(3) = ZLENGTH 
+            IF(NO_K) DOML(3) = ZLENGTH 
             
             VOLIJK = DOML(1)*DOML(2)*DOML(3) 
 
@@ -619,7 +619,7 @@
             
             VEL_MEAN(1) = IC_U_S(ICV, M)
             VEL_MEAN(2) = IC_V_S(ICV, M)
-            IF(DIMN.eq.3) VEL_MEAN(3) = IC_W_S(ICV, M)
+            IF(DO_K) VEL_MEAN(3) = IC_W_S(ICV, M)
             !granular temp is defined as (Variance uprime + Variance vprime + Variance wprime)/3 
             !assuming equal energy in each direction 
             !Variance uprime  = IC_Theta
@@ -660,7 +660,7 @@
             SEED_Z = FLOOR((ZEND_IC - ZINIT)/ADJ_DIA)
             !write(*,*) 'adj_dia = ', adj_dia, lfac, lmax_dia
             !write(*,*) 'seedx  = ', seed_x, seed_y, seed_z
-            if(dimn.eq.2) seed_z = 1 
+            if(NO_K) seed_z = 1 
          
             outerloop :  DO  J = 1, SEED_Y
                DO  K = 1, SEED_Z 
@@ -688,7 +688,7 @@
                      DENS  =  DES_RO_S(M)
                      POSITION(1) = XP 
                      POSITION(2) = YP 
-                     IF(DIMN.EQ.3) POSITION(3) = ZP 
+                     IF(DO_K) POSITION(3) = ZP 
                      VELOCITY(1:DIMN) = PVEL_TEMP(PCOUNT_BYIC_BYPHASE(ICV,M),1:DIMN)
                      
                      CALL GEN_AND_ADD_TO_PART_LIST(PART_LIST_BYIC, M, POSITION(1:DIMN), &
@@ -700,7 +700,7 @@
                      
                      PART_CEN_MAX(1)  = MAX(XP , PART_CEN_MAX(1))
                      PART_CEN_MAX(2)  = MAX(YP , PART_CEN_MAX(2))
-                     IF(DIMN.EQ.3) THEN 
+                     IF(DO_K) THEN 
                         PART_CEN_MIN(3)  = MIN(ZP, PART_CEN_MIN(3))
                         PART_CEN_MAX(3)  = MAX(ZP, PART_CEN_MAX(3))
                      ENDIF
@@ -768,7 +768,7 @@
             part_old%position(2),YN(1:size(YN,1)-1),'Y','J')
          
             K = 1
-            IF(DIMN.eq.3) K = DES_GETINDEXFROMPOS(KSTART1, &
+            IF(DO_K) K = DES_GETINDEXFROMPOS(KSTART1, &
             KEND1,part_old%position(3),ZT(1:size(ZT,1)-1),'Z','K')       
             
             IF(.not.IS_ON_myPE_wobnd(I,J,K)) cycle 
@@ -988,7 +988,7 @@
             VEL_SIG = ZERO 
             VEL_MEAN(1) = IC_U_S(ICV, M)
             VEL_MEAN(2) = IC_V_S(ICV, M)
-            IF(DIMN.eq.3) VEL_MEAN(3) = IC_W_S(ICV, M)
+            IF(DO_K) VEL_MEAN(3) = IC_W_S(ICV, M)
             !granular temp is defined as (Variance uprime + Variance vprime + Variance wprime)/3 
             !assuming equal energy in each direction 
             !Variance uprime  = IC_Theta
@@ -1039,7 +1039,7 @@
                         CORD_START(3) = ZT(K-1)
                         DOML(1) = DX(I)
                         DOML(2) = DY(J)
-                        IF(DIMN.EQ.3) DOML(3) = DZ(K)
+                        IF(DO_K) DOML(3) = DZ(K)
                         
                         VOLIJK = VOL(IJK)
                         VOLIJK_UNCUT = DX(I)*DY(J)*DZ(K) 
@@ -1111,7 +1111,7 @@
                
                DOML(:) = CORD_END(:) - CORD_START(:)
                
-               IF(DIMN.eq.2) DOML(3) = DZ(1) 
+               IF(NO_K) DOML(3) = DZ(1) 
 
                VOLIJK = DOML(1)*DOML(2)*DOML(3) 
                         
@@ -1165,7 +1165,7 @@
                        YN(1:size(YN,1)-1),'Y','J')
          
                   K = 1
-                  IF(DIMN.eq.3) K = DES_GETINDEXFROMPOS(KSTART1, &
+                  IF(DO_K) K = DES_GETINDEXFROMPOS(KSTART1, &
                        KEND1,position(3),ZT(1:size(ZT,1)-1),'Z','K')       
                   
                   IF(.not.IS_ON_myPE_wobnd(I,J,K)) cycle 
@@ -1279,7 +1279,7 @@
       USE parallel
       USE DES_LINKED_LIST_DATA, only : orig_part_list, particle
       USE des_linked_list_funcs
-
+      use geometry, only: NO_K
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       use error_manager
@@ -1389,7 +1389,7 @@
 ! dummy value of zero is supplied as the 3rd point.
       write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
       'Name="Velocity" NumberOfComponents="3" format="ascii">'
-      if(dimn.eq.2) then
+      if(NO_K) then
          part => orig_part_list 
          DO WHILE (ASSOCIATED(part))
             if(part%INDOMAIN.and.writeindomain) then 
@@ -1425,7 +1425,7 @@
       write(vtp_unit,"(9x,a)") '<Points>'
       write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
       'Name="Position" NumberOfComponents="3" format="ascii">'
-      if(dimn.eq.2) then
+      if(NO_K) then
 
          part => orig_part_list 
          DO WHILE (ASSOCIATED(part))

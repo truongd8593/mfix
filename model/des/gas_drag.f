@@ -88,7 +88,7 @@
       ENDIF
 
 ! (=0.25 in 3D and =0.5 in 2D)
-      AVG_FACTOR = 0.25D0*(DIMN-2) + 0.5D0*(3-DIMN)
+      AVG_FACTOR = merge(0.5d0, 0.25D0, NO_K)
 
       IF(VELDIR .EQ.1) THEN
 
@@ -115,7 +115,7 @@
                                             DRAG_AM(IJMK,M))
                      tmp_B =  - AVG_FACTOR*(DRAG_BM(IJK,1,M) + &
                                             DRAG_BM(IJMK,1,M))
-                     IF(DIMN.EQ.3) THEN 
+                     IF(DO_K) THEN 
                         IJKM = FUNIJK(IMAP_C(I),JMAP_C(J),KMAP_C(K-1))
                         IMJKM = FUNIJK(IMAP_C(I-1),JMAP_C(J),KMAP_C(K-1))
                         IJMKM = FUNIJK(IMAP_C(I),JMAP_C(J-1),KMAP_C(K-1))
@@ -174,7 +174,7 @@
                                             DRAG_AM(IMJK,M))
                      tmp_B =  - AVG_FACTOR*(DRAG_BM(IJK,2,M) + &
                                             DRAG_BM(IMJK,2,M))
-                     IF(DIMN.EQ.3) THEN
+                     IF(DO_K) THEN
                         IJKM = FUNIJK(IMAP_C(I),JMAP_C(J),KMAP_C(K-1))
                         IMJKM = FUNIJK(IMAP_C(I-1),JMAP_C(J),KMAP_C(K-1))
                         IJMKM = FUNIJK(IMAP_C(I),JMAP_C(J-1),KMAP_C(K-1))

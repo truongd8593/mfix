@@ -632,13 +632,13 @@
       double precision, dimension(:), allocatable :: lPost
 
 ! Cluster analysis variables:
-      integer lMin(1:DIMN), lMax(1:DIMN)
+      integer lMin(1:3), lMax(1:3)
 
       double precision avgEpg, avgRe, avgSlip, lSlip
-      double precision avgVel_s(1:DIMN), avgVel_g(1:DIMN)
+      double precision avgVel_s(1:3), avgVel_g(1:3)
 
-      double precision posMin(1:DIMN), posMax(1:DIMN)
-      double precision clSize(1:DIMN), clDiameter
+      double precision posMin(1:3), posMax(1:3)
+      double precision clSize(1:3), clDiameter
 
       double precision cSize
 
@@ -719,7 +719,7 @@
                   endif
 
                   lSlip = zero
-                  do lc4=1, 2*(3-DIMN) + 3*(DIMN - 2)
+                  do lc4=1, merge(2, 3, NO_K)
 ! Calculate the cluster's dimensions:
                      if((lPos(L,lc4)-lRad(L)) < posMin(lc4)) then
                         posMin(lc4) = lPos(L,lc4)-lRad(L)
@@ -775,7 +775,7 @@
 
                avgSlip = zero
                clSize = zero
-               do lc4=1, 2*(3-DIMN) + 3*(DIMN - 2)
+               do lc4=1, merge(2, 3, NO_K)
                   avgSlip = avgSlip + (avgVel_g(lc4)-avgVel_s(lc4))**2
                   clSize(lc4) = posMax(lc4) - posMin(lc4)
                enddo
@@ -785,7 +785,7 @@
 ! of an ellipse in each plane. Then weighting this area by the slip
 ! velocity normal to it. This in effect gives a hydrodynamic diameter
 ! of the cluster.- 1660
-               if(dimn == 3) then
+               if(DO_K) then
                   clDiameter = &
                      clSize(2)*clSize(3)*(avgVel_g(1)-avgVel_s(1))**2 &
                    + clSize(1)*clSize(3)*(avgVel_g(2)-avgVel_s(2))**2 &
@@ -2273,11 +2273,11 @@
       endif
 
 ! Allocate the receive buffer (and returned data set)
-      allocate(lrbuff(recv_sum,1:DIMN))
+      allocate(lrbuff(recv_sum,1:3))
 ! Allocate the temporary send buffer.
       allocate(lsbuff(send_cnt))
 ! Allocate the local return data set
-      if(present(lOut)) allocate(lOut(send_cnt,1:DIMN))
+      if(present(lOut)) allocate(lOut(send_cnt,1:3))
 
 ! Populate the send buffer. The send buffer only contains data about
 ! particles that belong to clusters.
@@ -2339,7 +2339,7 @@
 ! Store the local return data set.
       if(present(lOut)) lOut(:,2) = lsbuff
 
-      if(dimn == 3) then
+      if(DO_K) then
          if(send_cnt > 0) then
             lsbuff = -9.87654321
             NULLIFY(cluster)

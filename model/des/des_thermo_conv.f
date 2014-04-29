@@ -37,9 +37,9 @@
 ! IJK value of cell containing particle NP
       INTEGER, INTENT(IN) :: IJK
 ! IJK indicies of fluid cells involved in interpolation
-      INTEGER, INTENT(IN) :: INTERP_IJK(2**DIMN)
+      INTEGER, INTENT(IN) :: INTERP_IJK(2**3)
 ! Weights associated with interpolation
-      DOUBLE PRECISION, INTENT(IN) :: INTERP_WEIGHTS(2**DIMN)
+      DOUBLE PRECISION, INTENT(IN) :: INTERP_WEIGHTS(2**3)
 ! Indicates that debugging information for the particle
       LOGICAL, INTENT(IN) :: FOCUS
 
@@ -252,7 +252,7 @@
             Vs = DES_VEL_NEW(NP,2)
 
 ! Calculate the magnitude of the slip velocity
-            IF(DIMN == 2) THEN
+            IF(NO_K) THEN
                SLIP = SQRT((cUg-Us)**2 + (cVg-Vs)**2)
             ELSE
                cWg = AVG_Z_T(W_g(IJKM), W_g(IJK))

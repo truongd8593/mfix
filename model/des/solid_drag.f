@@ -59,7 +59,7 @@
       INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------      
 
-      AVG_FACTOR = 0.25D0*(DIMN-2) + 0.5D0*(3-DIMN)
+      AVG_FACTOR = merge(0.5d0, 0.25D0, DO_K)
 
       IF(VELDIR.EQ.1) THEN
          DO CM = 1, MMAX

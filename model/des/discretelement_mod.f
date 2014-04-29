@@ -265,9 +265,9 @@
 
 ! User specified dimension of the system (by default 2D, but if 3D system is
 ! desired then it must be explicitly specified)
-      INTEGER DIMN
+      INTEGER, PARAMETER :: DIMN = 3
 
-! Variable that is set to the number of walls in the system (=2*DIMN)
+! Variable that is set to the number of walls in the system
       INTEGER NWALLS
 
 ! Position of domain boundaries generally given as
@@ -280,10 +280,10 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: ZT  !(0:DIMENSION_K)
 
 ! Wall normal vector
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: WALL_NORMAL  !(NWALLS,DIMN)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: WALL_NORMAL  !(NWALLS,3)
 
 ! Gravity vector
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: GRAV !(DIMN)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: GRAV !(3)
 
 
 ! Periodic wall BC
@@ -384,33 +384,33 @@
 
 ! Old and new particle positions, velocities (translational and
 ! rotational)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_POS_OLD  !(PARTICLES,DIMN)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_POS_NEW  !(PARTICLES,DIMN)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_VEL_OLD  !(PARTICLES,DIMN)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_VEL_NEW  !(PARTICLES,DIMN)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: OMEGA_OLD    !(PARTICLES,DIMN)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: OMEGA_NEW    !(PARTICLES,DIMN)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PPOS         !(PARTICLES,DIMN)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_VEL_OOLD !(PARTICLES,DIMN)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_ACC_OLD  !(PARTICLES,DIMN)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: ROT_ACC_OLD  !(PARTICLES,DIMN)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_POS_OLD  !(PARTICLES,3)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_POS_NEW  !(PARTICLES,3)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_VEL_OLD  !(PARTICLES,3)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_VEL_NEW  !(PARTICLES,3)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: OMEGA_OLD    !(PARTICLES,3)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: OMEGA_NEW    !(PARTICLES,3)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PPOS         !(PARTICLES,3)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_VEL_OOLD !(PARTICLES,3)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_ACC_OLD  !(PARTICLES,3)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: ROT_ACC_OLD  !(PARTICLES,3)
 
 ! Total, normal and tangetial forces
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC    !(DIMN,PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FN    !(DIMN,PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FT    !(DIMN,PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC    !(3,PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FN    !(3,PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FT    !(3,PARTICLES)
 
 ! There is no need to maintain FN and FT arrays. This can be accomplished by FTAN and FNORM.
 
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: FTAN, FNORM ! (DIMN)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: FTAN, FNORM ! (3)
 ! Torque
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: TOW   !(DIMN,PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: TOW   !(3,PARTICLES)
 
 ! Save the accumulated tangential displacement that occurs during
 ! collision (particle-particle or particle-wall)
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFT !(PARTICLES,DIMN,MAXNEIGHBORS)
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFT !(PARTICLES,3,MAXNEIGHBORS)
 ! Save the normal direction at previous time step
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFN ! (PARTICLES,DIMN,MAXNEIGHBORS)
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFN ! (PARTICLES,3,MAXNEIGHBORS)
 
 ! Variables used to track/store particle contact history
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PN !(PARTICLES, MAXNEIGHBORS)
@@ -418,7 +418,7 @@
 
 ! Gas-solids drag force on partaicle
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: GD_FORCE
-                        !(PARTICLES,DIMN)
+                        !(PARTICLES,3)
 
 ! Dynamic information related to computational (eulerian) fluid grid
 !----------------------------------------------------------------->>>
@@ -455,7 +455,7 @@
 ! Solids-solids drag force on particle (between continuous solids and
 ! discrete particle)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: SD_FORCE
-                        !(PARTICLES,DIMN)
+                        !(PARTICLES,3)
 
 ! the following should probably be local to the subroutine
 ! solve_vel_star they are only needed when invoking the non-interpolated
@@ -475,7 +475,7 @@
 ! the contribution of solids-particle drag to the to mth phase continuum
 ! solids momentum B vector
 !      DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: sdrag_bm
-                        !(DIMENSION_3,DIMN,MMAX,DES_MMAX)
+                        !(DIMENSION_3,3,MMAX,DES_MMAX)
 ! mth phase continuum solids velocity at particle position
 !      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE ::vel_sp
                         !(PARTICLES,3)
@@ -493,7 +493,7 @@
                         !(DIMENSION_3,DES_MMAX)
 ! the coefficient add to gas momentum B matrix  at cell corners
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE ::DRAG_BM
-                        !(DIMENSION_3,DIMN,DES_MMAX)
+                        !(DIMENSION_3,3,DES_MMAX)
 ! fluid velocity at particle position
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::VEL_FP
                         !(PARTICLES,3)
@@ -501,7 +501,7 @@
 ! An intermediate array used in calculation of mean solids velocity
 ! by backward interpolation, i.e., when INTERP_DES_MEAN_FIELDS is true.
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE ::DES_VEL_NODE
-                        !(DIMENSION_3,DIMN,DES_MMAX)
+                        !(DIMENSION_3,3,DES_MMAX)
 
 ! An intermediate array used in calculation of solids volume fraction
 ! by backward interpolation, i.e., when INTERP_DES_MEAN_FIELDS is true.
@@ -563,13 +563,13 @@
 
 ! Global average velocity: obtained by averaging over all the particles
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_VEL_AVG
-                        !(DIMN)
+                        !(3)
 
 ! Global granular energy & temp: obtained by averaging over all the particles
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: GLOBAL_GRAN_ENERGY
-                        !(DIMN)
+                        !(3)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: GLOBAL_GRAN_TEMP
-                        !(DIMN)
+                        !(3)
 
 ! Kinetic and potential energy of the system: obtained by averaging
 ! over all particles
@@ -590,7 +590,7 @@
 
 ! MAX velocity of particles in each direction
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_VEL_MAX
-                        !(DIMN)
+                        !(3)
 
       INTEGER :: MAX_DES_BC_CELL
       TYPE BDRY_TYPE
@@ -653,7 +653,7 @@
 
 ! Store cohesive forces
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FCohesive
-                        !(PARTICLES,DIMN)
+                        !(PARTICLES,3)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PostCohesive
                         !(PARTICLES)
 ! Store cluster information array for postprocessing

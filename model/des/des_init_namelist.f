@@ -434,14 +434,6 @@
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Specify the dimension of the simulation: 2 or 3.</description>
-!  <valid value="2" note="If No_K = .true., 
-! then DIMN is automatically set to 2. "/>
-!  <valid value="3" note="3-D simulation" /> 
-      DIMN = UNDEFINED_I
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
 !  <description>Lees-Edwards boundary condition to simulate
 ! homogeneous shear problem with periodic boundary conditions. 
 ! Not supported in this version. </description>

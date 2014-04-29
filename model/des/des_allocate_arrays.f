@@ -64,7 +64,7 @@
       DO J  = JMIN2, JMAX2
          YN(J) = YN(J-1) + DY(J)
       ENDDO
-      IF(DIMN.EQ.3) THEN
+      IF(DO_K) THEN
          ZT(KMIN2-1) = ZERO-DZ(KMIN2)
          DO K = KMIN2, KMAX2
             ZT(K) = ZT(K-1) + DZ(K)
@@ -129,7 +129,7 @@
  1000 FORMAT('Total number of particles = ', 2x, i15)
       CALL FLUSH_ERR_MSG(footer = .false.)
 
-      NWALLS = 2*DIMN
+      NWALLS = merge(4,6,NO_K)
       MAXNEIGHBORS = MN + 1 + NWALLS
 
 ! defining the local variables nparticles
@@ -234,7 +234,7 @@
       Allocate(  DES_VEL_OOLD(NPARTICLES,DIMN) )
       Allocate(  DES_ACC_OLD (NPARTICLES,DIMN) )
 
-      IF(DIMN.GT.2) THEN
+      IF(DO_K) THEN
          Allocate(  OMEGA_OLD (NPARTICLES,DIMN) )
          Allocate(  OMEGA_NEW (NPARTICLES,DIMN) )
          ALLOCATE(  ROT_ACC_OLD (NPARTICLES,DIMN))
@@ -255,7 +255,7 @@
       Allocate(  FNORM (DIMN) )
 
 ! Torque
-      IF(DIMN.EQ.3) THEN
+      IF(DO_K) THEN
          Allocate(  TOW (DIMN,NPARTICLES) )
       ELSE
          Allocate(  TOW (1,NPARTICLES) )
@@ -296,21 +296,21 @@
 
       IF(DES_INTERP_ON) THEN
          ALLOCATE(DRAG_AM(DIMENSION_3, DES_MMAX))
-         ALLOCATE(DRAG_BM(DIMENSION_3, DIMN, DES_MMAX))
-         ALLOCATE(VEL_FP(NPARTICLES,DIMN))
+         ALLOCATE(DRAG_BM(DIMENSION_3, 3, DES_MMAX))
+         ALLOCATE(VEL_FP(NPARTICLES,3))
          ALLOCATE(F_gp(NPARTICLES ))
          F_gp(1:NPARTICLES)  = ZERO
       ENDIF
 
       IF(DES_INTERP_MEAN_FIELDS) THEN
          ALLOCATE(DES_ROPS_NODE(DIMENSION_3, DES_MMAX))
-         ALLOCATE(DES_VEL_NODE(DIMENSION_3, DIMN, DES_MMAX))
+         ALLOCATE(DES_VEL_NODE(DIMENSION_3, 3, DES_MMAX))
       ENDIF
 
 ! force due to gas-pressure gradient
-      ALLOCATE(P_FORCE(DIMENSION_3,DIMN))
+      ALLOCATE(P_FORCE(DIMENSION_3,3))
 ! force due to gas-solids drag on a particle
-      ALLOCATE(GD_FORCE(NPARTICLES,DIMN))
+      ALLOCATE(GD_FORCE(NPARTICLES,3))
 
 ! Volume averaged solids volume in a computational fluid cell
       Allocate(  DES_U_s (DIMENSION_3, DES_MMAX) )
@@ -326,7 +326,7 @@
          ALLOCATE(F_SDS(DIMENSION_3,DIMENSION_M,DES_MMAX))
          ALLOCATE(VXF_GDS(DIMENSION_3,DES_MMAX))
          ALLOCATE(VXF_SDS(DIMENSION_3,DIMENSION_M,DES_MMAX))
-         ALLOCATE(SD_FORCE(NPARTICLES,DIMN))
+         ALLOCATE(SD_FORCE(NPARTICLES,3))
       ENDIF
 ! Bulk density in a computational fluid cell / for communication with
 ! MFIX continuum
@@ -340,13 +340,13 @@
             F_GP(1:NPARTICLES)  = ZERO
          ENDIF
 
-         IF(.NOT.ALLOCATED(VEL_FP)) ALLOCATE(VEL_FP(NPARTICLES,DIMN))
+         IF(.NOT.ALLOCATED(VEL_FP)) ALLOCATE(VEL_FP(NPARTICLES,3))
 
          Allocate(PS_FORCE_PIC(DIMENSION_3, DES_MMAX))
          ALLOCATE(DES_STAT_WT(NPARTICLES))
-         ALLOCATE(DES_VEL_MAX(DIMN))
-         ALLOCATE(PS_GRAD(NPARTICLES, DIMN))
-         ALLOCATE(AVGSOLVEL_P(NPARTICLES, DIMN))
+         ALLOCATE(DES_VEL_MAX(3))
+         ALLOCATE(PS_GRAD(NPARTICLES, 3))
+         ALLOCATE(AVGSOLVEL_P(NPARTICLES, 3))
          ALLOCATE(EPG_P(NPARTICLES))
 
          Allocate(PIC_U_S(DIMENSION_3, DES_MMAX))
@@ -354,7 +354,7 @@
          Allocate(PIC_W_S(DIMENSION_3, DES_MMAX))
 
          Allocate(PIC_P_s (DIMENSION_3, DES_MMAX) )
-!         ALLOCATE(MPPIC_VPTAU(NPARTICLES, DIMN))
+!         ALLOCATE(MPPIC_VPTAU(NPARTICLES, 3))
          PIC_U_s = zero 
          PIC_V_s = zero
          PIC_W_s = zero 
@@ -366,11 +366,11 @@
       Allocate(DES_THETA (DIMENSION_3, DES_MMAX) )
 
 ! Averaged velocity obtained by averaging over all the particles
-      ALLOCATE(DES_VEL_AVG(DIMN) )
+      ALLOCATE(DES_VEL_AVG(3) )
 
 ! Global Granular Energy
-      ALLOCATE(GLOBAL_GRAN_ENERGY(DIMN) )
-      ALLOCATE(GLOBAL_GRAN_TEMP(DIMN) )
+      ALLOCATE(GLOBAL_GRAN_ENERGY(3) )
+      ALLOCATE(GLOBAL_GRAN_TEMP(3) )
 
 ! Somewhat free variable used to aid in manipulation
       ALLOCATE(MARK_PART(NPARTICLES))
@@ -389,7 +389,7 @@
       IF(USE_COHESION) THEN
 ! Matrix location of particle  (should be allocated in case user wishes
 ! to invoke routines in /cohesion subdirectory
-         Allocate(  FCohesive (NPARTICLES,DIMN) )
+         Allocate(  FCohesive (NPARTICLES,3) )
          Allocate(  PostCohesive (NPARTICLES) )
       ENDIF
 ! END COHESION

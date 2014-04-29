@@ -456,7 +456,7 @@
             CALL ADJUST_A_W_S (A_M, B_M, IER)
          ENDIF 
 
-         IF(DIMN.EQ.3) THEN
+         IF(DO_K) THEN
             IF(DES_CONTINUUM_COUPLED) THEN
                VELDIR = 3
                CALL GAS_DRAG(A_M, B_M, VXF_GS, VELDIR, IER)

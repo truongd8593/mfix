@@ -76,7 +76,7 @@
       double precision lmean, lvariance, lsigma
       double precision x(2), w
       integer i, nsize, n
-! no. of times this routine has been called (should = dimn)
+! no. of times this routine has been called
       integer, save :: COUNTER = 0
 ! so all components are written
       integer fileunit 

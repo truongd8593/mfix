@@ -316,7 +316,7 @@
                      sigmat_old(:) = pft(ll,ni,:)
                      norm_old(:) = pfn(ll,ni,:)
 ! calculate the unit vector for axis of rotation
-                     if(dimn.eq.3)then
+                     if(do_K)then
                         call des_crossprdct(tmp_ax,norm_old,normal)
                         tmp_mag = DOT_PRODUCT(tmp_ax,tmp_ax)
                         if(tmp_mag .gt. zero)then

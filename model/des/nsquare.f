@@ -16,6 +16,7 @@
       USE geometry
       USE des_bc      
       Use des_thermo
+      use geometry, only: DO_K
 
       IMPLICIT NONE
 
@@ -24,10 +25,10 @@
 !-----------------------------------------------
       INTEGER I, J, K
       INTEGER L, LL, NEIGH_L, NEIGH_LL
-      DOUBLE PRECISION DISTVEC(DIMN), DIST, R_LM
+      DOUBLE PRECISION DISTVEC(3), DIST, R_LM
 ! Temporary variables to adjust particle position in event of periodic
 ! boundaries
-      DOUBLE PRECISION XPOS(2), YPOS(2), ZPOS(2), TMPPOS(DIMN)
+      DOUBLE PRECISION XPOS(2), YPOS(2), ZPOS(2), TMPPOS(3)
 ! Max loop limit in each coordinate direction
       INTEGER II, JJ, KK
 ! Index to track accounted for particles
@@ -84,7 +85,7 @@
                      YPOS(JJ) = DES_POS_NEW(LL,2) - YLENGTH
                   ENDIF
                ENDIF
-               IF(DIMN.EQ.3) THEN 
+               IF(DO_K) THEN 
                   ZPOS(:) = DES_POS_NEW(LL,3)
                   IF(DES_PERIODIC_WALLS_Z) THEN 
                      IF (DES_POS_NEW(L,3) + R_LM > ZLENGTH) THEN 
@@ -104,7 +105,7 @@
                   DO J = 1,JJ
                      TMPPOS(1) = XPOS(I)
                      TMPPOS(2) = YPOS(J)
-                     IF (DIMN .EQ. 3) THEN
+                     IF (DO_K) THEN
                         DO K = 1,KK
                            TMPPOS(3) = ZPOS(K)
                            DISTVEC(:) = TMPPOS(:) - DES_POS_NEW(L,:)

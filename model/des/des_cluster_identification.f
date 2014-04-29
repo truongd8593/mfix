@@ -48,7 +48,7 @@
 ! sum of particle radii
       DOUBLE PRECISION :: R_LM
 ! distance vector between two particle centers 
-      DOUBLE PRECISION :: DIST(DIMN)
+      DOUBLE PRECISION :: DIST(3)
 ! magnitude of distance between two particle centers
       DOUBLE PRECISION :: DISTMOD
 ! distance between particle surfaces

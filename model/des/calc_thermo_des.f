@@ -37,8 +37,8 @@
       LOGICAL FOCUS
 ! Variables needed for calculating new interpolation quantities for
 ! species and energy equations
-      INTEGER INTERP_IJK(2**DIMN)
-      DOUBLE PRECISION INTERP_WEIGHTS(2**DIMN)
+      INTEGER INTERP_IJK(2**3)
+      DOUBLE PRECISION INTERP_WEIGHTS(2**3)
 
 ! Functions
 !---------------------------------------------------------------------//

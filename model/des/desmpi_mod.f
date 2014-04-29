@@ -229,7 +229,7 @@
       lfaces = dimn*2
       lmaxlen1 = dg_iend2-dg_istart2+1
       lmaxlen2 = dg_jend2-dg_jstart2+1
-      if (dimn.eq.3) then
+      if (do_K) then
          lmaxlen1 = max(lmaxlen1,dg_kend2 -dg_kstart2+1)
          lmaxlen2 = max(lmaxlen2,dg_kend2 -dg_kstart2+1)
       else
@@ -1664,7 +1664,7 @@
       lic = dg_iof_lo(pijk)
       ljc = dg_jof_lo(pijk)
       lkc = dg_kof_lo(pijk)
-      if(dimn.eq.2) then
+      if(no_K) then
          lkoffset = 0
       else
          lkoffset =1
@@ -1743,7 +1743,7 @@
          end do
          end do
       end if
-      if (des_periodic_walls_z .and. nodesk.eq.1 .and. dimn .eq. 3) then
+      if (des_periodic_walls_z .and. nodesk.eq.1 .and. do_K) then
          do li = istart2,iend2
          do lj = jstart2,jend2
             lijkmin = funijk(li,lj,1)
@@ -1820,7 +1820,7 @@
          end do
          end do
       end if
-      if (des_periodic_walls_z .and. nodesk.eq.1 .and. dimn .eq. 3) then
+      if (des_periodic_walls_z .and. nodesk.eq.1 .and. do_K) then
          do li = istart2,iend2
          do lj = jstart2,jend2
             lijkmin = funijk(li,lj,1)
@@ -1889,7 +1889,7 @@
          end do
          end do
       end if
-      if (des_periodic_walls_z .and. nodesk.eq.1 .and. dimn .eq. 3) then
+      if (des_periodic_walls_z .and. nodesk.eq.1 .and. do_K) then
          do li = istart2,iend2
          do lj = jstart2,jend2
             lijkmin = funijk(li,lj,1)

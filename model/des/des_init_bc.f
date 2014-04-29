@@ -256,7 +256,7 @@
 !-----------------------------------------------
 
 
-      IF(DIMN == 2)THEN   ! 2D domain
+      IF(NO_K)THEN   ! 2D domain
 
 ! Check verticle mass inlet: 2D
 ! ----------------------------------------
@@ -506,7 +506,7 @@
                PHASE_CNT, PHASE_LIST)
          ENDIF
 
-      ENDIF   ! end if dimn == 2/else
+      ENDIF   ! end if NO_K/else
 
 ! Verify that an inlet is not on a face that is connected to a periodic
 ! boundary condition.  If so, write error message and exit.
@@ -1218,7 +1218,7 @@
          ENDDO
       ENDIF
 
-      IF(DIMN == 2) THEN
+      IF(NO_K) THEN
          GS_ARRAY(BCV_I,5:6) = 1
       ELSE
          IF(DES_BC_Z_b(BCV) == DES_BC_Z_t(BCV))THEN
@@ -1282,7 +1282,7 @@
 !-----------------------------------------------
 
 
-      IF(DIMN == 2)THEN   ! 2D domain
+      IF(NO_K)THEN   ! 2D domain
 
 ! Check verticle mass outlet: 2D
 ! ----------------------------------------
@@ -1374,7 +1374,7 @@
          ENDIF
 ! End check mass outlet on XY face: 3D 
 
-      ENDIF   ! endif dimn == 2
+      ENDIF   ! endif NO_K
 
 ! Verify that an outlet is not on a face that is connected to a periodic
 ! boundary condition.  If so, write error message and exit.

@@ -31,12 +31,13 @@
       USE des_bc
       USE mpi_utility
       USE mfix_pic
+      use geometry, only: DO_K, NO_K
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
       INTEGER :: L
-      DOUBLE PRECISION :: D(DIMN), DIST, &
+      DOUBLE PRECISION :: D(3), DIST, &
                           NEIGHBOR_SEARCH_DIST
 !-----------------------------------------------
 ! Functions
@@ -88,16 +89,24 @@
 ! following is equivalent to x=xold + vold*dt + 1/2acc*dt^2
 !         DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + 0.5d0*&
 !             (DES_VEL_NEW(L,:)+DES_VEL_OLD(L,:))*DTSOLID
+
+!            OMEGA_NEW(L,:)   = OMEGA_OLD(L,:) + TOW(:,L)*OMOI(L)*DTSOLID
             OMEGA_NEW(L,:)   = OMEGA_OLD(L,:) + TOW(:,L)*OMOI(L)*DTSOLID
 
-            ELSEIF (INTG_ADAMS_BASHFORTH) THEN
+         ELSEIF (INTG_ADAMS_BASHFORTH) THEN
 ! T.Li:  second-order Adams-Bashforth scheme
             DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + 0.5d0*&
                ( 3.d0*DES_VEL_OLD(L,:)-DES_VEL_OOLD(L,:) )*DTSOLID
             DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + 0.5d0*&
                ( 3.d0*FC(:,L)-DES_ACC_OLD(L,:) )*DTSOLID
+
+
+! JM           OMEGA_NEW(L,:)   =  OMEGA_OLD(L,:) + 0.5d0*&
+! JM              ( 3.d0*TOW(:,L)*OMOI(L)-ROT_ACC_OLD(L,:) )*DTSOLID
             OMEGA_NEW(L,:)   =  OMEGA_OLD(L,:) + 0.5d0*&
                ( 3.d0*TOW(:,L)*OMOI(L)-ROT_ACC_OLD(L,:) )*DTSOLID
+
+
             DES_ACC_OLD(L,:) = FC(:,L)
             ROT_ACC_OLD(L,:) = TOW(:,L)*OMOI(L)
          ENDIF
@@ -170,6 +179,8 @@
       USE cutcell
       USE mfix_pic
       USE randomno
+      use geometry, only: DO_K, NO_K
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -177,10 +188,10 @@
       INTEGER L, M, IDIM
       INTEGER I, J, K, IJK, IJK_OLD, IJK2, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB
 
-      DOUBLE PRECISION D(DIMN), DIST, &
-                       NEIGHBOR_SEARCH_DIST, DP_BAR, COEFF_EN, MEANVEL(DIMN), D_GRIDUNITS(3)
+      DOUBLE PRECISION D(3), DIST, &
+                       NEIGHBOR_SEARCH_DIST, DP_BAR, COEFF_EN, MEANVEL(3), D_GRIDUNITS(3)
 
-      DOUBLE PRECISION DELUP(DIMN), UPRIMETAU(DIMN), UPRIMETAU_INT(DIMN), MEAN_FREE_PATH, PS_FORCE(DIMN), VEL_ORIG(DIMN)
+      DOUBLE PRECISION DELUP(3), UPRIMETAU(3), UPRIMETAU_INT(3), MEAN_FREE_PATH, PS_FORCE(3), VEL_ORIG(3)
 ! index to track accounted for particles
       INTEGER PC
 
@@ -192,14 +203,14 @@
 
 ! dt's in each direction  based on cfl_pic for the mppic case
 
-      DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF, MEANUS(DIMN, MMAX)
+      DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF, MEANUS(3, MMAX)
       DOUBLE PRECISION :: DPS_DXE, DPS_DXW, DPS_DYN, DPS_DYS, DPS_DZT, DPS_DZB
-      DOUBLE PRECISION :: XI_EAST, XI_WEST, XI_NORTH, XI_SOUTH, XI_TOP, XI_BOTTOM, epg_min2, velf_part(dimn)
+      DOUBLE PRECISION :: XI_EAST, XI_WEST, XI_NORTH, XI_SOUTH, XI_TOP, XI_BOTTOM, epg_min2, velf_part(3)
 
       LOGICAL :: DELETE_PART, INSIDE_DOMAIN
       INTEGER :: PIP_DEL_COUNT, count_bc
 
-      DOUBLE PRECISION MEANUS_e(DIMN, MMAX), MEANUS_w(DIMN, MMAX),MEANUS_n(DIMN, MMAX),MEANUS_s(DIMN, MMAX),MEANUS_t(DIMN, MMAX), MEANUS_b(DIMN, MMAX)
+      DOUBLE PRECISION MEANUS_e(3, MMAX), MEANUS_w(3, MMAX),MEANUS_n(3, MMAX),MEANUS_s(3, MMAX),MEANUS_t(3, MMAX), MEANUS_b(3, MMAX)
       INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), PIJK_OLD(5), epg_min_loc(1)
 
 
@@ -220,8 +231,8 @@
       FOCUS_PARTICLE = -1
       DTPIC_CFL = LARGE_NUMBER
 
-      if(dimn.eq.2) THREEINTOSQRT2 = 2.D0*SQRT(2.D0)
-      if(dimn.eq.3) THREEINTOSQRT2 = 3.D0*SQRT(2.D0)
+      if(NO_K) THREEINTOSQRT2 = 2.D0*SQRT(2.D0)
+      if(DO_K) THREEINTOSQRT2 = 3.D0*SQRT(2.D0)
       THREEINTOSQRT2 = 3.D0*SQRT(2.D0)
       DES_VEL_MAX(:) = ZERO
       PIP_DEL_COUNT = 0
@@ -230,8 +241,8 @@
       !epg_min_loc = MINLOC(EP_G)
       !IJK = epg_min_loc(1)
 
-      allocate(rand_vel(MAX_PIP, DIMN))
-      do idim = 1, dimn
+      allocate(rand_vel(MAX_PIP, 3))
+      do idim = 1, 3
          mean_u = zero
          sig_u = 1.d0
          CALL NOR_RNO(RAND_VEL(1:MAX_PIP, IDIM), MEAN_U, SIG_U)
@@ -290,7 +301,7 @@
          DES_VEL_NEW(L,:) = (DES_VEL_OLD(L,:) + &
          & FC(:,L)*DTSOLID)/(1.d0+DP_BAR*DTSOLID)
 
-         do idim = 1, dimn
+         do idim = 1, 3
             SIG_U = 0.05D0
             rand_vel(L, idim)  = sig_u*DES_VEL_NEW(L, IDIM)*rand_vel(L, idim)
          enddo
@@ -307,7 +318,7 @@
 
          !MEANVEL(1) = DES_U_S(IJK_OLD,M)
          !MEANVEL(2) = DES_V_S(IJK_OLD,M)
-         !IF(DIMN.EQ.3) MEANVEL(3) = DES_W_S(IJK_OLD,M)
+         !IF(DO_K) MEANVEL(3) = DES_W_S(IJK_OLD,M)
 
          PS_FORCE(:) = PS_GRAD(L, :)
          DELUP(:) = -( DTSOLID*PS_FORCE(:))/((1.d0+DP_BAR*DTSOLID))
@@ -315,7 +326,7 @@
 
          MEANVEL(:) = AVGSOLVEL_P(L,:)
 
-         DO IDIM = 1, DIMN
+         DO IDIM = 1, 3
             IF(PS_FORCE(IDIM).LE.ZERO) THEN
                UPRIMETAU(IDIM) = MIN(DELUP(IDIM), (1+COEFF_EN)*(MEANVEL(IDIM)-DES_VEL_NEW(L,IDIM)))
                UPRIMETAU_INT(IDIM) = UPRIMETAU(IDIM)
@@ -333,7 +344,7 @@
          DES_VEL_NEW(L,:)*DTSOLID
 
 
-         UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(L,1:DIMN), DES_VEL_NEW(L, 1:DIMN)))
+         UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(L,1:), DES_VEL_NEW(L, 1:)))
 
          RAD_EFF = DES_RADIUS(L)
                !RAD_EFF = (DES_STAT_WT(L)**(1.d0/3.d0))*DES_RADIUS(L)
@@ -393,19 +404,19 @@
          D_GRIDUNITS(1) = ABS(D(1))/DX(PIJK(L,1))
          D_GRIDUNITS(2) = ABS(D(2))/DY(PIJK(L,2))
          D_GRIDUNITS(3) = 1.d0
-         IF(DIMN.EQ.3) D_GRIDUNITS(3) = ABS(D(3))/DZ(PIJK(L,3))
+         IF(DO_K) D_GRIDUNITS(3) = ABS(D(3))/DZ(PIJK(L,3))
 
          DIST = SQRT(DES_DOTPRDCT(D,D))
          DTPIC_TMPX = (CFL_PIC*DX(PIJK(L,1)))/(ABS(DES_VEL_NEW(L,1))+SMALL_NUMBER)
          DTPIC_TMPY = (CFL_PIC*DY(PIJK(L,2)))/(ABS(DES_VEL_NEW(L,2))+SMALL_NUMBER)
          DTPIC_TMPZ = LARGE_NUMBER
-         IF(DIMN.EQ.3) DTPIC_TMPZ = (CFL_PIC*DZ(PIJK(L,3)))/(ABS(DES_VEL_NEW(L,3))+SMALL_NUMBER)
+         IF(DO_K) DTPIC_TMPZ = (CFL_PIC*DZ(PIJK(L,3)))/(ABS(DES_VEL_NEW(L,3))+SMALL_NUMBER)
 
 
 ! Check if the particle has moved a distance greater than or equal to grid spacing
 ! if so, then exit
 
-         DO IDIM = 1, DIMN
+         DO IDIM = 1, 3
             IF(D_GRIDUNITS(IDIM).GT.ONE) THEN
                IF(DMP_LOG.OR.myPE.eq.pe_IO) THEN
 
@@ -518,10 +529,10 @@
       INTEGER L, M, IDIM
       INTEGER I, J, K, IJK, IJK_OLD, IJK2, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB
 
-      DOUBLE PRECISION D(DIMN), DIST, &
-                       NEIGHBOR_SEARCH_DIST, DP_BAR, COEFF_EN, MEANVEL(DIMN), D_GRIDUNITS(3)
+      DOUBLE PRECISION D(3), DIST, &
+                       NEIGHBOR_SEARCH_DIST, DP_BAR, COEFF_EN, MEANVEL(3), D_GRIDUNITS(3)
 
-      DOUBLE PRECISION DELUP(DIMN), UPRIMETAU(DIMN), UPRIMETAU_INT(DIMN), MEAN_FREE_PATH, PS_FORCE(DIMN), VEL_ORIG(DIMN)
+      DOUBLE PRECISION DELUP(3), UPRIMETAU(3), UPRIMETAU_INT(3), MEAN_FREE_PATH, PS_FORCE(3), VEL_ORIG(3)
 ! index to track accounted for particles
       INTEGER PC
 
@@ -533,14 +544,14 @@
 
 ! dt's in each direction  based on cfl_pic for the mppic case
 
-      DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF, MEANUS(DIMN, MMAX), POS_Z
+      DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF, MEANUS(3, MMAX), POS_Z
       DOUBLE PRECISION :: DPS_DXE, DPS_DXW, DPS_DYN, DPS_DYS, DPS_DZT, DPS_DZB
-      DOUBLE PRECISION :: XI_EAST, XI_WEST, XI_NORTH, XI_SOUTH, XI_TOP, XI_BOTTOM, epg_min2, velf_part(dimn), VELP_INT(DIMN)
+      DOUBLE PRECISION :: XI_EAST, XI_WEST, XI_NORTH, XI_SOUTH, XI_TOP, XI_BOTTOM, epg_min2, velf_part(3), VELP_INT(3)
 
       LOGICAL :: DELETE_PART, INSIDE_DOMAIN
       INTEGER :: PIP_DEL_COUNT, count_bc
 
-      DOUBLE PRECISION MEANUS_e(DIMN, MMAX), MEANUS_w(DIMN, MMAX),MEANUS_n(DIMN, MMAX),MEANUS_s(DIMN, MMAX),MEANUS_t(DIMN, MMAX), MEANUS_b(DIMN, MMAX)
+      DOUBLE PRECISION MEANUS_e(3, MMAX), MEANUS_w(3, MMAX),MEANUS_n(3, MMAX),MEANUS_s(3, MMAX),MEANUS_t(3, MMAX), MEANUS_b(3, MMAX)
       INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), PIJK_OLD(5), epg_min_loc(1)
 
       double precision  sig_u, mean_u,ymid, part_taup,  DTPIC_MIN_X,  DTPIC_MIN_Y,  DTPIC_MIN_Z
@@ -567,8 +578,8 @@
       DTPIC_MIN_Y =  LARGE_NUMBER
       DTPIC_MIN_Z =  LARGE_NUMBER
 
-      if(dimn.eq.2) THREEINTOSQRT2 = 2.D0*SQRT(2.D0)
-      if(dimn.eq.3) THREEINTOSQRT2 = 3.D0*SQRT(2.D0)
+      if(NO_K) THREEINTOSQRT2 = 2.D0*SQRT(2.D0)
+      if(DO_K) THREEINTOSQRT2 = 3.D0*SQRT(2.D0)
       THREEINTOSQRT2 = 3.D0*SQRT(2.D0)
       DES_VEL_MAX(:) = ZERO
       PIP_DEL_COUNT = 0
@@ -576,8 +587,8 @@
       !EPG_MIN2 = MINVAL(EP_G(:))
       !epg_min_loc = MINLOC(EP_G)
       !IJK = epg_min_loc(1)
-      allocate(rand_vel(MAX_PIP, DIMN))
-      do idim = 1, dimn
+      allocate(rand_vel(MAX_PIP, 3))
+      do idim = 1, 3
          mean_u = zero
          sig_u = 1.d0
          CALL NOR_RNO(RAND_VEL(1:MAX_PIP, IDIM), MEAN_U, SIG_U)
@@ -636,14 +647,14 @@
 
          MEANVEL(1) = DES_U_S(IJK_OLD,M)
          MEANVEL(2) = DES_V_S(IJK_OLD,M)
-         IF(DIMN.EQ.3) MEANVEL(3) = DES_W_S(IJK_OLD,M)
+         IF(DO_K) MEANVEL(3) = DES_W_S(IJK_OLD,M)
 
          RAD_EFF = DES_RADIUS(L)
          !RAD_EFF = (DES_STAT_WT(L)**(1.d0/3.d0))*DES_RADIUS(L)
          MEAN_FREE_PATH  = MAX(1.d0/(1.d0-EP_STAR), 1.d0/(1.D0-EP_G(IJK_OLD)))
          MEAN_FREE_PATH  = MEAN_FREE_PATH*RAD_EFF/THREEINTOSQRT2
 
-         DO IDIM = 1, DIMN
+         DO IDIM = 1, 3
             !SIG_U = 0.05D0*MEANVEL(IDIM)
             !DES_VEL_NEW(L, IDIM) = DES_VEL_NEW(L, IDIM) + SIG_U*RAND_VEL(L, IDIM )
             !PART_TAUP = RO_Sol(L)*((2.d0*DES_RADIUS(L))**2.d0)/(18.d0* MU_G(IJK))
@@ -663,7 +674,7 @@
          IF(.not.DES_ONEWAY_COUPLED.and.(.not.des_fixed_bed)) CALL MPPIC_APPLY_PS_GRAD_PART(L)
 
 
-         UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(L,1:DIMN), DES_VEL_NEW(L, 1:DIMN)))
+         UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(L,1:), DES_VEL_NEW(L, 1:)))
 
          !IF(UPRIMEMOD*DTSOLID.GT.MEAN_FREE_PATH) then
          !   DES_VEL_NEW(L,:) = (DES_VEL_NEW(L,:)/UPRIMEMOD)*MEAN_FREE_PATH/DTSOLID
@@ -685,7 +696,7 @@
 
          IF(CUT_CELL_AT(IJK)) THEN
             POS_Z = zero
-            IF(DIMN.eq.3) POS_Z = DES_POS_NEW(L,3)
+            IF(DO_K) POS_Z = DES_POS_NEW(L,3)
             CALL GET_DEL_H_DES(IJK,'SCALAR', &
             & DES_POS_NEW(L,1),  DES_POS_NEW(L,2), &
             & POS_Z, &
@@ -739,19 +750,19 @@
          D_GRIDUNITS(1) = ABS(D(1))/DX(PIJK(L,1))
          D_GRIDUNITS(2) = ABS(D(2))/DY(PIJK(L,2))
          D_GRIDUNITS(3) = 1.d0
-         IF(DIMN.EQ.3) D_GRIDUNITS(3) = ABS(D(3))/DZ(PIJK(L,3))
+         IF(DO_K) D_GRIDUNITS(3) = ABS(D(3))/DZ(PIJK(L,3))
 
          DIST = SQRT(DES_DOTPRDCT(D,D))
          DTPIC_TMPX = (CFL_PIC*DX(PIJK(L,1)))/(ABS(DES_VEL_NEW(L,1))+SMALL_NUMBER)
          DTPIC_TMPY = (CFL_PIC*DY(PIJK(L,2)))/(ABS(DES_VEL_NEW(L,2))+SMALL_NUMBER)
          DTPIC_TMPZ = LARGE_NUMBER
-         IF(DIMN.EQ.3) DTPIC_TMPZ = (CFL_PIC*DZ(PIJK(L,3)))/(ABS(DES_VEL_NEW(L,3))+SMALL_NUMBER)
+         IF(DO_K) DTPIC_TMPZ = (CFL_PIC*DZ(PIJK(L,3)))/(ABS(DES_VEL_NEW(L,3))+SMALL_NUMBER)
 
 
 ! Check if the particle has moved a distance greater than or equal to grid spacing
 ! if so, then exit
 
-         DO IDIM = 1, DIMN
+         DO IDIM = 1, 3
             IF(D_GRIDUNITS(IDIM).GT.ONE) THEN
                IF(DMP_LOG.OR.myPE.eq.pe_IO) THEN
 
