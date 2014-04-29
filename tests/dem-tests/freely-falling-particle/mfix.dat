@@ -7,7 +7,7 @@
  
 
 # Run-control section
-  RUN_NAME = 'DES_PFF' 
+  RUN_NAME = 'DES_PFF'
   DESCRIPTION = 'particle free fall'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
@@ -46,6 +46,7 @@
 ! are otherwise read in from particle_input.dat).  whether used
 ! or not, the following quantities must be defined to bypass the
 ! checks made in MFIX
+  SOLIDS_MODEL(1) = 'DEM'
   MMAX    = 1
   RO_s0   = 2.6 
   D_p0    = 20.0
@@ -128,13 +129,7 @@
 
 
 # DES
-  DISCRETE_ELEMENT = .TRUE. 
-  !DES_INTERP_ON = .TRUE.       ! false by default
   DES_CONTINUUM_COUPLED = .F.   ! false by default
-  WALLDTSPLIT = .TRUE.          ! false by default (must be true for DEM)
-  DIMN = 3
-  GRAVITY=980.0d0
-
   DES_NEIGHBOR_SEARCH = 1   ! Particle neighbor search method:
                             ! 1=n-square; 2=quadtree; 3=octree; 4=gridbased
   MN = 2                    ! Maximum number of neighbors allowed per particle

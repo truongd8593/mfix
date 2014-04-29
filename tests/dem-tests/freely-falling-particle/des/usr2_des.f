@@ -97,7 +97,7 @@
       integer :: lStage
 
 ! Open the files.
-      FNAME1 = TRIM(RUN_NAME)//'_POS.txt'
+      FNAME1 = 'POST_POS.dat'
       INQUIRE(FILE=FNAME1,EXIST=F_EXISTS1)
       IF (.NOT.F_EXISTS1) THEN
          OPEN(UNIT=uPos,FILE=FNAME1,STATUS='NEW')
@@ -107,7 +107,7 @@
          OPEN(UNIT=uPos,FILE=FNAME1,&
             POSITION="APPEND",STATUS='OLD')
       ENDIF
-      FNAME2 = TRIM(RUN_NAME)//'_VEL.txt'
+      FNAME2 = 'POST_VEL.dat'
       INQUIRE(FILE=FNAME2,EXIST=F_EXISTS2)
       IF (.NOT.F_EXISTS2) THEN
          OPEN(UNIT=uVel,FILE=FNAME2,STATUS='NEW')
