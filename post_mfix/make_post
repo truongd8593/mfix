@@ -1,4 +1,4 @@
-#!/bin/bsh -f
+#!/bin/bash
 #
 # POST_MFIX script file for executing 'make'
 # M. Syamlal/P.Nicoletti                   9-27-95
@@ -38,21 +38,21 @@ NETCDF_LIBS="$NETCDF_HOME/libsrc/.libs/libnetcdf.a $NETCDF_HOME/f90/.libs/libnet
 
 #cp ../model/netcdf/*.fi ../model
 cp ../model/netcdf/*.fi .
-#dumping these files to post_mfix directory so that the self generated 
+#dumping these files to post_mfix directory so that the self generated
 #make file is able to link up to it
 echo "Using netCDF"
 
 else
 
 #cp ../model/netcdf/noop/*.fi ../model
-cp ../model/netcdf/noop/*.fi . 
+cp ../model/netcdf/noop/*.fi .
 
 echo "not using netCDF"
 
 fi
 
 echo " "
- 
+
 # For compiling post_mfix the ../model directory must exist.
 #
     if test -f machine.f
@@ -69,11 +69,11 @@ echo " "
 for arg in $input; do
   case ${arg} in
       "--compiler="*)
-	  opsys=$(echo ${arg} | cut -d "=" -f2)
-	  ;;
+          opsys=$(echo ${arg} | cut -d "=" -f2)
+          ;;
       "-f"|"--force")
-	  delete_files="y"
-	  ;;
+          delete_files="y"
+          ;;
   esac
 done
 
@@ -84,8 +84,8 @@ echo "IMPORTANT: execute this makefile by typing \"sh make_post\""
 # Set to 0 to avoid Pentium 4 specific optimizations
 P4_OPTIMIZE=1
 #
-#  Check if the system is a Linux system, if yes then ask the user which 
-#  compiler to use    
+#  Check if the system is a Linux system, if yes then ask the user which
+#  compiler to use
 #
     if test $opsys = "Linux"
     then
@@ -132,9 +132,9 @@ P4_OPTIMIZE=1
 
                       y|Y )
                             echo " "
-	                    echo "Portland Group Linux Fortran Compiler selected"
+                            echo "Portland Group Linux Fortran Compiler selected"
                             opsys="Linux_64_pgi"
-	                    ;;
+                            ;;
                      *)
                             echo " "
                             ;;
@@ -151,32 +151,32 @@ P4_OPTIMIZE=1
 
 
          if test $opsys = "Linux_64_pgi"
-	 then
+         then
            if [ "$PGI" ]
-           then                                                                    
+           then
               echo " "
             else
-	      echo "______     Environment variable ERROR          _______"
-	      echo "Environment variable for Portland Group is not defined !"
-	      echo " "
-	      echo "Please define the following in your shell and rerun make_mfix"
-	      echo " setenv PGI your_path_of_PGI_root_directory"
-	      exit
-	    fi
+              echo "______     Environment variable ERROR          _______"
+              echo "Environment variable for Portland Group is not defined !"
+              echo " "
+              echo "Please define the following in your shell and rerun make_mfix"
+              echo " setenv PGI your_path_of_PGI_root_directory"
+              exit
+            fi
          fi
          if test $opsys = "Linux_64_pscale"
-	 then
+         then
            if [ "$PSCALE" ]
-           then                                                                    
+           then
               echo " "
             else
-	      echo "______     Environment variable ERROR          _______"
-	      echo "Environment variable for PathScale is not defined !"
-	      echo " "
-	      echo "Please define the following in your shell and rerun make_mfix"
-	      echo " setenv PSCALE your_path_of_PathScale_root_directory"
-	      exit
-	    fi
+              echo "______     Environment variable ERROR          _______"
+              echo "Environment variable for PathScale is not defined !"
+              echo " "
+              echo "Please define the following in your shell and rerun make_mfix"
+              echo " setenv PSCALE your_path_of_PathScale_root_directory"
+              exit
+            fi
          fi
          if test $opsys = "Linux_64_intel"
          then
@@ -231,10 +231,10 @@ P4_OPTIMIZE=1
        esac
       fi
     else
-       echo  
+       echo
     fi
 
-   
+
     case $opsys in
 
         CYGWIN_NT-5.1   | CYGWIN_NT-6.0    | CYGWIN32_NT |    \
@@ -245,7 +245,7 @@ P4_OPTIMIZE=1
 
             FORTRAN_CMD=gfortran
             LINK_CMD=gfortran
-                                                                                 
+
             OBJ_EXT=o
             FORTRAN_EXT=f
             compile_common="-c -I. -I$mpi_include -fconvert='big-endian' -ffree-form -ffree-line-length-0 "
@@ -254,7 +254,7 @@ P4_OPTIMIZE=1
             MODULE_CODE=1
             ;;
 
-	OSF1)
+        OSF1)
             mach_file="OSF1.F"
 
             FORTRAN_CMD=f90
@@ -272,48 +272,48 @@ P4_OPTIMIZE=1
             MODULE_CODE=1
             ;;
 
-	AIX)
+        AIX)
             mach_file="AIX.F"
 
-	    case $dmp_version in
-	      y|Y )
-	    		FORTRAN_CMD=mpxlf90_r
-	    		LINK_CMD=mpxlf90_r
-            	;;
+            case $dmp_version in
+              y|Y )
+                        FORTRAN_CMD=mpxlf90_r
+                        LINK_CMD=mpxlf90_r
+                ;;
               *)
-	    		FORTRAN_CMD=xlf90_r
-	    		LINK_CMD=xlf90_r
-            	;;
+                        FORTRAN_CMD=xlf90_r
+                        LINK_CMD=xlf90_r
+                ;;
             esac
 
 
-	    OBJ_EXT=o
-	    FORTRAN_EXT=f
+            OBJ_EXT=o
+            FORTRAN_EXT=f
 
-#	    =============================
-#	    use mpxlf90_r or xlf90_r
-#	    for thread safe code
-#	    =============================
-	    omp="-qsmp=omp -qsmp=noauto -qnosave "
+#           =============================
+#           use mpxlf90_r or xlf90_r
+#           for thread safe code
+#           =============================
+            omp="-qsmp=omp -qsmp=noauto -qnosave "
 
-#	    =================================
-#	    the module directory cannot be on
-#	    a GPFS parallel file system
-#	    =================================
+#           =================================
+#           the module directory cannot be on
+#           a GPFS parallel file system
+#           =================================
 
             compile_common="-c -q32 -bmaxstack:2000000000 -bmaxdata:2000000000 -c -I.  -freeform"
-	    compile_d="-C -g -qinitauto=FF -qflttrap -freeform $compile_common"
-	    link_d="$compile_d"
+            compile_d="-C -g -qinitauto=FF -qflttrap -freeform $compile_common"
+            link_d="$compile_d"
 
             compile=" -O3 -qhot -qstrict  -qarch=pwr3 -qtune=pwr3 -qcache=auto $compile_common"
-	    compile2="$compile"
+            compile2="$compile"
             link="-O3 -qstrict -qarch=pwr3 -q32 -bmaxstack:2000000000 -bmaxdata:2000000000
 -qtune=pwr3 -qcache=auto "
 
- 	    MODULE_CODE=1
+            MODULE_CODE=1
             ;;
 
- 
+
     Linux_64_intel)
             mach_file="LINUX.F"
 
@@ -329,8 +329,8 @@ P4_OPTIMIZE=1
                         FORTRAN_CMD=ifort
                         LINK_CMD=ifort
                 ;;
-              esac                                                                                
-                                                                                
+              esac
+
             OBJ_EXT=o
             FORTRAN_EXT=f
             OBJ_EXT=o
@@ -349,7 +349,7 @@ P4_OPTIMIZE=1
 
             ;;
 
-     
+
     Linux_64_pgi)
             mach_file="LINUX.F"
 
@@ -365,9 +365,9 @@ P4_OPTIMIZE=1
                         FORTRAN_CMD=$PGI/bin/pgf90
                         LINK_CMD=$PGI/bin/pgf90
                 ;;
-              esac                                                                                
-                                                                                
-                                                                                
+              esac
+
+
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-mp"
@@ -379,10 +379,10 @@ P4_OPTIMIZE=1
             MODULE_CODE=1
 
             ;;
-                                                                                
+
 
      Linux_64_pscale)
-            mach_file="LINUX.F"                                                                                 
+            mach_file="LINUX.F"
           #-----------
           # Decide to use mpif90 or pathf90 as the compiler & linker command
           #-----------
@@ -397,20 +397,20 @@ P4_OPTIMIZE=1
                         LINK_CMD=$PSCALE/bin/pathf90
                 ;;
             esac
-	    if [ "$ACML" ]
-	    then
-	      echo " "
+            if [ "$ACML" ]
+            then
+              echo " "
               echo "-------------- W A R N I N G ! ----------"
               echo " You may need to update the paths under libs_d and libs "
-	      echo " variables in make_mfix; search for  Linux_64_pscale) text block"
-	      echo " with the corresponding paths on your local system if"
-	      echo " if you encounter problems during the link phase"
+              echo " variables in make_mfix; search for  Linux_64_pscale) text block"
+              echo " with the corresponding paths on your local system if"
+              echo " if you encounter problems during the link phase"
               echo "-------------- W A R N I N G ! ----------"
-	      echo " "
-	    fi  
+              echo " "
+            fi
            #MPI = /usr/lib/mpi/mpi_gnu
             MPI = /usr/common/mpich/pathscale-2.1/mvapich-0.9.5
-	    
+
             OBJ_EXT=o
             FORTRAN_EXT=f
             omp="-mp"
@@ -425,29 +425,29 @@ P4_OPTIMIZE=1
             compile3="-c -I. -O3 -OPT:Ofast -fno-math-errno -static-data -msse2 -Wno-globals -fno-second-underscore"
             link="  "
             MODULE_CODE=0
-                                                                                
+
             ;;
-	    	
+
     Linux_pgi)
             echo
             echo "Compiling for Linux computer (Portland group)"
-            echo	    
-	    
+            echo
+
             if test -f COMPILED.FOR.LINUX.PG
             then
-	        echo
+                echo
             else
                 /bin/cp -f ../model/LINUX.F machine.f
                 /bin/rm -f *.o
                 /bin/rm -f COMPILED.FOR.*
                 touch COMPILED.FOR.LINUX.PG
             fi
-	    
-	    
+
+
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-	       
-	    
+
+
             OBJ_EXT=o
             FORTRAN_EXT=f
             compile_d="-c -Mfreeform -Mnosave -Mrecursive -Mreentrant -g -byteswapio"
@@ -461,17 +461,17 @@ P4_OPTIMIZE=1
 
 
     Linux_ifc9 | Linux_ifc10 )
-	    
+
             if test -f COMPILED.FOR.LINUX.IFC
             then
-	        echo
+                echo
             else
                 cp ../model/LINUX_intel.F machine.f
                 rm *.o
                 rm COMPILED.FOR.*
                 touch COMPILED.FOR.LINUX.IFC
             fi
-	    
+
             case $opsys in
                 Linux_ifc9 )
                       FORTRAN_CMD=ifort
@@ -487,7 +487,7 @@ P4_OPTIMIZE=1
                       ;;
                 esac
 
-	    
+
             OBJ_EXT=o
             FORTRAN_EXT=f
 
@@ -529,7 +529,7 @@ P4_OPTIMIZE=1
               exit
 
             fi    # eof if [ "$F_UFMTENDIAN" ] branch
-	    
+
 
          #============================
          # Set the common compiler flags that are common for all three sets
@@ -599,7 +599,7 @@ P4_OPTIMIZE=1
 
             MODULE_CODE=1
             ;;
-	    
+
       sn6301)
             echo
             echo "Compiling for Cray T3E"
@@ -632,26 +632,26 @@ P4_OPTIMIZE=1
             MODULE_CODE=0
             ;;
 
-      IRIX64) 
+      IRIX64)
             echo
             echo "Compiling for SGI IRIX64 computer"
             echo
-	    
+
             if test -f COMPILED.FOR.IRIX64F90
             then
-	        echo
+                echo
             else
                 /bin/cp -f ../model/IRIXF90.F machine.f
                 /bin/rm -f *.o
-		/bin/rm -f *.a
+                /bin/rm -f *.a
                 /bin/rm -f COMPILED.FOR.*
                 touch COMPILED.FOR.IRIX64F90
             fi
-	    
-	    
+
+
             FORTRAN_CMD=f90
             LINK_CMD=f90
-	       	    
+
             OBJ_EXT=o
             FORTRAN_EXT=f
             compile_d="-c -I../model -g -C -trapuv -freeform"
@@ -661,27 +661,27 @@ P4_OPTIMIZE=1
             MODULE_CODE=0
 
             ;;
-	    
-      ULTRIX) 
+
+      ULTRIX)
             echo
             echo "Compiling for DEC ULTRIX computer"
             echo
-	    
+
             if test -f COMPILED.FOR.ULTRIX
             then
-	        echo
+                echo
             else
                 /bin/cp -f ../model/ULTRIX.F machine.f
                 /bin/rm -f *.o
-		/bin/rm -f *.a
+                /bin/rm -f *.a
                 /bin/rm -f COMPILED.FOR.*
                 touch COMPILED.FOR.ULTRIX
             fi
-	    
-	    
+
+
             FORTRAN_CMD=f90
             LINK_CMD=f90
-     
+
             OBJ_EXT=o
             FORTRAN_EXT=f
             compile_d="-c -g -freeform -convert big_endian"
@@ -691,27 +691,27 @@ P4_OPTIMIZE=1
             MODULE_CODE=0
 
             ;;
-             
+
 
     CYGWIN32_NT)
             echo
             echo "Compiling for NT computer (Portland group)"
-            echo	    
-	    
+            echo
+
             if test -f COMPILED.FOR.CYWIN32_NT.PG
             then
-	        echo
+                echo
             else
                 /bin/cp -f ../model/PGNT.F machine.f
                 /bin/rm -f *.o
                 /bin/rm -f COMPILED.FOR.*
                 touch COMPILED.FOR.CYWIN32_NT.PG
             fi
-	    
-	    
+
+
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-	       	    
+
             OBJ_EXT=o
             FORTRAN_EXT=f
             compile_d="-c -Mfreeform -Mnosave -Mrecursive -Mreentrant -O0 -byteswapio"
@@ -721,26 +721,26 @@ P4_OPTIMIZE=1
             MODULE_CODE=1
 
             ;;
-	    
+
     CYGWIN_NT-4.0)
             echo
             echo "Compiling for NT computer (Portland group)"
-            echo	    
-	    
+            echo
+
             if test -f COMPILED.FOR.CYWIN_NT-4.0.PG
             then
-	        echo
+                echo
             else
                 /bin/cp -f ../model/PGNT.F machine.f
                 /bin/rm -f *.o
                 /bin/rm -f COMPILED.FOR.*
                 touch COMPILED.FOR.CYWIN_NT-4.0.PG
             fi
-	    
-	    
+
+
             FORTRAN_CMD=pgf90
             LINK_CMD=pgf90
-	       	    
+
             OBJ_EXT=o
             FORTRAN_EXT=f
             compile_d="-c -Mfreeform -Mnosave -Mrecursive -Mreentrant -O0 -byteswapio"
@@ -750,14 +750,14 @@ P4_OPTIMIZE=1
             MODULE_CODE=1
 
             ;;
-	    
-   
-   
-   
+
+
+
+
       *) echo "no support for operating system: $opsys"
-         echo 
-	 echo "modify  make_post   to add support"
-	 echo
+         echo
+         echo "modify  make_post   to add support"
+         echo
          exit ;;
    esac
 
@@ -770,10 +770,10 @@ echo " "
        echo
     else
        /bin/rm -f machine.f
-	/bin/cp -f ../model/$mach_file machine.f
-	/bin/rm -f *.o *.a *.mod *.exe
-	/bin/rm -f COMPILED.WITH.*
-	touch $mach_check
+        /bin/cp -f ../model/$mach_file machine.f
+        /bin/rm -f *.o *.a *.mod *.exe
+        /bin/rm -f COMPILED.WITH.*
+        touch $mach_check
     fi
 
 #
@@ -787,13 +787,13 @@ fi
 
 case $delete_files in
     y|Y )
-	echo "deleting files . . ."
-	/bin/rm -f ../model/*.o ../model/*.mod ../model/*.a
-	/bin/rm -f *.o *.mod
-	;;
+        echo "deleting files . . ."
+        /bin/rm -f ../model/*.o ../model/*.mod ../model/*.a
+        /bin/rm -f *.o *.mod
+        ;;
     *)
-	exit
-	;;
+        exit
+        ;;
 esac
 
 echo
@@ -809,7 +809,7 @@ echo "Please wait . . ."
        if test -r "../model/function.0inc"
        then
           do_nothing="ok"
-      
+
        else
 #        Mfix/model directory does not have a default file. create one.
          /bin/cp -f "../model/function.inc" "../model/function.0inc"
@@ -843,6 +843,7 @@ echo "Please wait . . ."
  /bin/cp -f -p ../model/namelist.inc .
  /bin/cp -f -p ../model/sc_p_g1.inc .
  /bin/cp -f -p ../model/sc_p_g2.inc .
+ mkdir -p des
  /bin/cp -f -p ../model/des/desnamelist.inc des/
 
 
@@ -863,35 +864,35 @@ echo "Please wait . . ."
  else
     /bin/mkdir qmomk
     /bin/cp -f -p ../model/qmomk/qmomknamelist.inc qmomk/
- fi 
-     
+ fi
+
  case $MODULE_CODE in
 
       0)
-         make -f post_u.make
+         make -j -f post_u.make
          ;;
 
-      1)  
-         make -f post_l.make
+      1)
+         make -j -f post_l.make
          ;;
 
  esac
- 
+
  if test $? = 0
  then
     echo
-    echo 
+    echo
     echo "********************************************"
     echo "* Compilation successful: post_mfix created*"
     echo "********************************************"
-    echo 
+    echo
  else
     echo
     echo
     echo "*** File post_mfix NOT created."
-    echo 
+    echo
  fi
- 
+
 # Restore the function.inc file in the model directory
   /bin/mv -f "../model/function.0inc" "../model/function.inc"
 

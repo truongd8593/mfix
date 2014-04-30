@@ -1,4 +1,4 @@
-#!/bin/bsh -f
+#!/bin/bash
 #
 # POST_MFIX script file for executing 'make'
 # M. Syamlal/P.Nicoletti                   9-27-95
@@ -22,7 +22,7 @@ for arg in $input; do
                    compiler=gfortran
                    ;;
 
-         "-skip") 
+         "-skip")
                    skip=1;
                    ;;
 
@@ -31,7 +31,7 @@ for arg in $input; do
                    do_debug=1
                    ;;
 
-         *) 
+         *)
                    filename=config/"$arg".sh
                    echo "using : " $filename
                    if [ -f "$filename" ]
@@ -74,13 +74,13 @@ then
    NETCDF_LIBS="$NETCDF_HOME/libsrc/.libs/libnetcdf.a $NETCDF_HOME/f90/.libs/libnetcdff90.a"
 
    cp ../model/netcdf/*.fi .
-   # dumping these files to post_mfix directory so that the self generated 
+   # dumping these files to post_mfix directory so that the self generated
    # make file is able to link up to it
    echo "Using netCDF"
 
 else
 
-   cp ../model/netcdf/noop/*.fi . 
+   cp ../model/netcdf/noop/*.fi .
 
    echo "not using netCDF"
 
@@ -90,7 +90,7 @@ fi
 ###############
 
 echo " "
- 
+
 # For compiling post_mfix the ../model directory must exist.
 #
 if test -f machine.f
@@ -155,7 +155,7 @@ echo " "
 
     if [ "$skip" -eq "0" ]
     then
-      /bin/rm -f ../model/*.o ../model/*.mod ../model/*.a 
+      /bin/rm -f ../model/*.o ../model/*.mod ../model/*.a
       /bin/rm -f *.o *.mod
     fi
 
@@ -172,7 +172,7 @@ echo " "
        if test -r "../model/function.0inc"
        then
           do_nothing="ok"
-      
+
        else
 #        Mfix/model directory does not have a default file. create one.
          /bin/cp -f "../model/function.inc" "../model/function.0inc"
@@ -191,7 +191,7 @@ echo " "
        LINK_FLAGS="$link_d"
 
     fi
-          
+
 
 #
 #
@@ -215,6 +215,7 @@ echo " "
  /bin/cp -f -p ../model/namelist.inc .
  /bin/cp -f -p ../model/sc_p_g1.inc .
  /bin/cp -f -p ../model/sc_p_g2.inc .
+ mkdir -p des
  /bin/cp -f -p ../model/des/desnamelist.inc des/
 
 
@@ -235,35 +236,35 @@ echo " "
  else
     /bin/mkdir qmomk
     /bin/cp -f -p ../model/qmomk/qmomknamelist.inc qmomk/
- fi 
-     
+ fi
+
  case $MODULE_CODE in
 
       0)
-         make -f post_u.make
+         make -j -f post_u.make
          ;;
 
-      1)  
-         make -f post_l.make
+      1)
+         make -j -f post_l.make
          ;;
 
  esac
- 
+
  if test $? = 0
  then
     echo
-    echo 
+    echo
     echo "********************************************"
     echo "* Compilation successful: post_mfix created*"
     echo "********************************************"
-    echo 
+    echo
  else
     echo
     echo
     echo "*** File post_mfix NOT created."
-    echo 
+    echo
  fi
- 
+
 # Restore the function.inc file in the model directory
   /bin/mv -f "../model/function.0inc" "../model/function.inc"
 
