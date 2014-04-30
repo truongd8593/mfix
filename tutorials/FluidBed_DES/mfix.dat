@@ -1,24 +1,24 @@
 !  Bubbling Fluidized Bed Simulation
-!  DES for solid phase and Kinetic theory of gas phase                                            
-!  Fluidized bed with a central jet                                      
+!  DES for solid phase and Kinetic theory of gas phase
+!  Fluidized bed with a central jet
 
 ! Refer to Readme for the problem description and other details
 ! For more details refer to PhD thesis (Dec 2003) of Jay Boyalakuntla
 ! It is made available in MFIX documents
-                           
-! Run-control section                                                           
-  RUN_NAME 		= 'des_fb1'             
-  DESCRIPTION 		= 'fluid bed with single central jet'          
-  RUN_TYPE 		= 'NEW'             
-  UNITS 		= 'cgs'
-  TIME  		= 0.0			!start time
-  TSTOP 		= 1.0 
-  DT 			= 5E-4			!time step
+
+! Run-control section
+  RUN_NAME              = 'des_fb1'
+  DESCRIPTION           = 'fluid bed with single central jet'
+  RUN_TYPE              = 'NEW'
+  UNITS                 = 'cgs'
+  TIME                  = 0.0                   !start time
+  TSTOP                 = 1.0
+  DT                    = 5E-4                  !time step
   DT_MAX                = 1E-3
 !  DT_FAC = 1.0
 
-  ENERGY_EQ 		= .FALSE.		!do not solve energy eq
-  SPECIES_EQ 		= .FALSE.    .FALSE. 	!do not solve species eq
+  ENERGY_EQ             = .FALSE.               !do not solve energy eq
+  SPECIES_EQ            = .FALSE.    .FALSE.    !do not solve species eq
 
   MOMENTUM_X_EQ(1) = .FALSE.
   MOMENTUM_Y_EQ(1) = .FALSE.
@@ -32,43 +32,43 @@
 
 
 
-! Geometry Section 
-  COORDINATES 		= 'cartesian' 
-  XLENGTH  		=   15.0	        !X length	
-  IMAX 			=   15			!cells in i direction
-  YLENGTH  		=   90.0		!height
-  JMAX 			=   45 			!cells in j direction
-  NO_K     		= .TRUE. 		!2D, no k direction
+! Geometry Section
+  COORDINATES           = 'cartesian'
+  XLENGTH               =   15.0                !X length
+  IMAX                  =   15                  !cells in i direction
+  YLENGTH               =   90.0                !height
+  JMAX                  =   45                  !cells in j direction
+  NO_K                  = .TRUE.                !2D, no k direction
   DZ(1)                 = 0.4d0                 !Define DZ to be particle
                                                 !for 2D DEM cases
 
 
-! Gas-phase Section 
-  MU_g0 		= 1.8E-4		!constant gas viscosity
-  RO_g0			= 1.205E-3		!constant gas density
+! Gas-phase Section
+  MU_g0                 = 1.8E-4                !constant gas viscosity
+  RO_g0                 = 1.205E-3              !constant gas density
 
   SOLIDS_MODEL(1) = 'DEM'
 
 ! Solids-phase Section
 ! MMAX                  = 2
-  RO_s0   		= 2.7           	!solids density
-  D_p0    		= 0.4                   !particle diameter
-  e       		= 0.9 			!restitution coefficient
-  Phi    		= 30.0			!angle of internal friction
-  EP_star 		= 0.42			!void fraction at minimum
-						!  fluidization
- 
- 
-! Initial Conditions Section                                                    
+  RO_s0                 = 2.7                   !solids density
+  D_p0                  = 0.4                   !particle diameter
+  e                     = 0.9                   !restitution coefficient
+  Phi                   = 30.0                  !angle of internal friction
+  EP_star               = 0.42                  !void fraction at minimum
+                                                !  fluidization
+
+
+! Initial Conditions Section
     ! 1. bed
-  IC_X_w(1)           	=  0.0				!domain
-  IC_X_e(1)           	=  15.0		! 0 < x < 15, 0 < y < 30
-  IC_Y_s(1)          	=  0.0
-  IC_Y_n(1)           	=  90.0  
-                                	! initial values in the region
-  IC_EP_g(1)          	=  1.00  	! void fraction
-  IC_U_g(1)           	=  0.0		! x-dir gas velocity
-  IC_V_g(1)          	=  280.0 	! y-dir gas velocity
+  IC_X_w(1)             =  0.0                          !domain
+  IC_X_e(1)             =  15.0         ! 0 < x < 15, 0 < y < 30
+  IC_Y_s(1)             =  0.0
+  IC_Y_n(1)             =  90.0
+                                        ! initial values in the region
+  IC_EP_g(1)            =  1.00         ! void fraction
+  IC_U_g(1)             =  0.0          ! x-dir gas velocity
+  IC_V_g(1)             =  280.0        ! y-dir gas velocity
 
   IC_U_s(1,1) = 0.0
   IC_V_s(1,1) = 0.0
@@ -77,16 +77,16 @@
 
 !  Boundary Conditions Section
 ! 1. Central jet
-  BC_X_w(1)		=  7.0		! central jet
-  BC_X_e(1)		=  8.0		! 7 < x < 8, y = 0
-  BC_Y_s(1)		=  0.0
-  BC_Y_n(1)		=  0.0
-  BC_TYPE(1)		= 'MI'		!specified mass inflow
+  BC_X_w(1)             =  7.0          ! central jet
+  BC_X_e(1)             =  8.0          ! 7 < x < 8, y = 0
+  BC_Y_s(1)             =  0.0
+  BC_Y_n(1)             =  0.0
+  BC_TYPE(1)            = 'MI'          !specified mass inflow
 
-  BC_EP_g(1)		=  1.0
-  BC_U_g(1)		=  0.0
-  BC_V_g(1)		=  4200	        !inlet jet vel
-  BC_P_g(1)		=  0.0
+  BC_EP_g(1)            =  1.0
+  BC_U_g(1)             =  0.0
+  BC_V_g(1)             =  4200         !inlet jet vel
+  BC_P_g(1)             =  0.0
 
 ! 1. Secondary flow 1
   BC_X_w(2)             =  0.0
@@ -113,23 +113,22 @@
   BC_P_g(3)             =  0.0
 
        ! 2. Exit
-  BC_X_w(4)		=  0.0		! top exit
-  BC_X_e(4)		=  15.0	        ! 0 < x < 15, y = 90
-  BC_Y_s(4)		=  90.0
-  BC_Y_n(4)		=  90.0
-  BC_TYPE(4)		=  'PO' 	!specified pressure outflow
-  BC_P_g(4)		=  0.0
+  BC_X_w(4)             =  0.0          ! top exit
+  BC_X_e(4)             =  15.0         ! 0 < x < 15, y = 90
+  BC_Y_s(4)             =  90.0
+  BC_Y_n(4)             =  90.0
+  BC_TYPE(4)            =  'PO'         !specified pressure outflow
+  BC_P_g(4)             =  0.0
 
 
 
 ! DES INPUT
- DISCRETE_ELEMENT = .TRUE. 
+ DISCRETE_ELEMENT = .TRUE.
  DES_CONTINUUM_COUPLED = .TRUE.
  DES_INTERP_ON = .TRUE.
  NFACTOR = 500             ! length of dem settling period in no. of loops
 
- DIMN = 2
- PARTICLES = 2400              
+ PARTICLES = 2400
 
  KN = 1.0d+6               ! Normal inter-particle collision spring constant
  KT_FAC = @(2/7)           ! Tangential spring factor = KT/KN
@@ -151,13 +150,13 @@
 
 ! Output Control
 !
-  OUT_DT 		= 0.05		!write text file BUB01.OUT
-					!  every 0.1s
-  RES_DT 		= 0.01		!write binary restart file
-					!  BUB01.RES every 0.01 s
-  NLOG   		= 25 		!write logfile BUB01.LOG
-					!every 25 time steps
-  FULL_LOG 		= .TRUE. 	!display residuals on screen
+  OUT_DT                = 0.05          !write text file BUB01.OUT
+                                        !  every 0.1s
+  RES_DT                = 0.01          !write binary restart file
+                                        !  BUB01.RES every 0.01 s
+  NLOG                  = 25            !write logfile BUB01.LOG
+                                        !every 25 time steps
+  FULL_LOG              = .TRUE.        !display residuals on screen
 
 
 !SPX_DT values determine how often SPx files are written.  Here BUB01.SP1, which
@@ -165,23 +164,23 @@
 ! gas and solids pressure (P_g, P_star), is written every 0.1 s, and so forth.
 !
         ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
-        !      P_star    V_g  V_s            T_s  X_s     Theta   Scalar 
+        !      P_star    V_g  V_s            T_s  X_s     Theta   Scalar
         !                W_g  W_s
-  SPX_DT = 0.2 10.2   0.2  101.  100.  100. 100.   100.0   100. 100.  100.        
-                                                                                
+  SPX_DT = 0.2 10.2   0.2  101.  100.  100. 100.   100.0   100. 100.  100.
+
 !  The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
-  
+
   NODESI = 1   NODESJ = 1   NODESK = 1
 
 !  Sweep Direction
 
-LEQ_SWEEP(1) = 'ISIS' 
-LEQ_SWEEP(2) = 'ISIS'  
-LEQ_SWEEP(3) = 'ISIS' 
-LEQ_SWEEP(4) = 'ISIS'  
-LEQ_SWEEP(5) = 'ISIS'  
-LEQ_SWEEP(6) = 'ISIS'  
-LEQ_SWEEP(7) = 'ISIS' 
-LEQ_SWEEP(8) = 'ISIS'  
+LEQ_SWEEP(1) = 'ISIS'
+LEQ_SWEEP(2) = 'ISIS'
+LEQ_SWEEP(3) = 'ISIS'
+LEQ_SWEEP(4) = 'ISIS'
+LEQ_SWEEP(5) = 'ISIS'
+LEQ_SWEEP(6) = 'ISIS'
+LEQ_SWEEP(7) = 'ISIS'
+LEQ_SWEEP(8) = 'ISIS'
 LEQ_SWEEP(9) = 'ISIS'
 
