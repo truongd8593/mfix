@@ -52,65 +52,6 @@
 !-----------------------------------------------
       INTEGER M
 
-      integer :: dimension_3p   ! used during post_mfix to reduce allocations
-!-----------------------------------------------
-
-      DIMENSION_3 = (kend3-kstart3+1)*(jend3-jstart3+1)*(iend3-istart3+1)
-      DIMENSION_4 = (kend4-kstart4+1)*(jend4-jstart4+1)*(iend4-istart4+1)
-
-      DIMENSION_3G   = IJKMAX3
-      DIMENSION_3L  = ijksize3_all(myPE)
-      DIMENSION_M   = MAX(1, MMAX)
-
-      DIMENSION_N_g = 1
-! If we use the old (legacy) rrate file or if we are running post_mfix,
-! arrays should be allocated based on NMAX(0), because post_mfix reads
-! NMAX(0) from the .RES file, but it doesn't read USE_RRATES nor NMAX_g.
-! The same logic applies to DIMENSION_N_s a few lines below.
-
-      IF(USE_RRATES.or.bDoing_postmfix) THEN
-          IF(NMAX(0) .NE. UNDEFINED_I)DIMENSION_N_g = NMAX(0)
-          IF(NMAX_g .NE. UNDEFINED_I) DIMENSION_N_g = NMAX_g
-      ELSE
-         IF(NMAX_g == UNDEFINED_I) THEN
-            IF(NMAX(0) /= UNDEFINED_I) DIMENSION_N_g = NMAX(0)
-         ELSE
-            DIMENSION_N_g = NMAX_g
-         ENDIF
-      ENDIF
-
-
-! to reduce allocation space when doing post_mfix
-      if (bDoing_postmfix) then
-         dimension_3p = 1
-      else
-         dimension_3p = dimension_3
-      endif
-
-      DIMENSION_N_s = 1
-      DO M = 1, MMAX
-         IF(USE_RRATES.or.bDoing_postmfix) THEN  ! See comments for DIMENSION_N_g above
-            IF(NMAX(M) .NE. UNDEFINED_I) &
-               DIMENSION_N_s = MAX(DIMENSION_N_s, NMAX(M))
-         ELSE
-            IF(NMAX_s(M) == UNDEFINED_I) THEN
-               IF(NMAX(M) /= UNDEFINED_I) DIMENSION_N_s = &
-                  MAX(DIMENSION_N_s, NMAX(M))
-            ELSE
-               DIMENSION_N_s = MAX(DIMENSION_N_s, NMAX_s(M))
-            ENDIF
-         ENDIF
-      ENDDO
-      DO M = 1, DIM_M
-         IF(DES_NMAX_s(M) .NE. UNDEFINED_I) &
-            DIMENSION_N_s = MAX(DIMENSION_N_s, DES_NMAX_s(M))
-      ENDDO
-
-      DIMENSION_LM    = (DIMENSION_M * (DIMENSION_M-1) / 2)+1
-      DIMENSION_N_all = max(DIMENSION_N_g, DIMENSION_N_s)
-      DIMENSION_Scalar = NScalar
-!add by rong
-      DIM_Scalar2 = 2*NScalar
 
 !ambm
       Allocate( A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) )
@@ -196,42 +137,6 @@
         Allocate(  Scalaro (DIMENSION_3p, DIMENSION_Scalar) )
       ENDIF
 
-
-!geometry
-      Allocate(  FLAG (DIMENSION_3) )
-      Allocate(  FLAG_E (DIMENSION_3) )
-      Allocate(  FLAG_N (DIMENSION_3) )
-      Allocate(  FLAG_T (DIMENSION_3) )
-      Allocate(  ICBC_FLAG (DIMENSION_3L) )
-      Allocate(  AYZ (DIMENSION_3p) )
-      Allocate(  AXZ (DIMENSION_3p) )
-      Allocate(  AXY (DIMENSION_3p) )
-      Allocate(  VOL (DIMENSION_3) )
-      Allocate(  AYZ_U (DIMENSION_3p) )
-      Allocate(  AXZ_U (DIMENSION_3p) )
-      Allocate(  AXY_U (DIMENSION_3p) )
-      Allocate(  VOL_U (DIMENSION_3) )
-      Allocate(  AYZ_V (DIMENSION_3p) )
-      Allocate(  AXZ_V (DIMENSION_3p) )
-      Allocate(  AXY_V (DIMENSION_3p) )
-      Allocate(  VOL_V (DIMENSION_3) )
-      Allocate(  AYZ_W (DIMENSION_3p) )
-      Allocate(  AXZ_W (DIMENSION_3p) )
-      Allocate(  AXY_W (DIMENSION_3p) )
-      Allocate(  VOL_W (DIMENSION_3) )
-
-!indices
-      Allocate(  STORE_LM (DIMENSION_M, DIMENSION_M) )
-      Allocate(  CELL_CLASS (DIMENSION_3) )
-      Allocate(  I_OF (DIMENSION_3) )
-      Allocate(  J_OF (DIMENSION_3) )
-      Allocate(  K_OF (DIMENSION_3) )
-      Allocate(  Im1 (0:DIMENSION_I) )
-      Allocate(  Ip1 (0:DIMENSION_I) )
-      Allocate(  Jm1 (0:DIMENSION_J) )
-      Allocate(  Jp1 (0:DIMENSION_J) )
-      Allocate(  Km1 (0:DIMENSION_K) )
-      Allocate(  Kp1 (0:DIMENSION_K) )
 
 !pgcor
       Allocate(  d_e(DIMENSION_3p, 0:DIMENSION_M) )
@@ -391,22 +296,6 @@
       Allocate(  VSHE(DIMENSION_3) )
 
 
-! array allocation of add on packages, such as linear equation solvers
-
-
-! array allocation for higher order implementation
-      Allocate( FLAG3 (DIMENSION_4) )
-      Allocate( CELL_CLASS3 (DIMENSION_4) )
-      Allocate( I3_OF (DIMENSION_4) )
-      Allocate( J3_OF (DIMENSION_4) )
-      Allocate( K3_OF (DIMENSION_4) )
-      Allocate( Im1_3 (-1:DIMENSION_I+1) )
-      Allocate( Ip1_3 (-1:DIMENSION_I+1) )
-      Allocate( Jm1_3 (-1:DIMENSION_J+1) )
-      Allocate( Jp1_3 (-1:DIMENSION_J+1) )
-      Allocate( Km1_3 (-1:DIMENSION_K+1) )
-      Allocate( Kp1_3 (-1:DIMENSION_K+1) )
-
 !mflux
       Allocate( Flux_gE(DIMENSION_3p) )
       Allocate( Flux_sE(DIMENSION_3p, DIMENSION_M) )
@@ -523,3 +412,298 @@
       END SUBROUTINE ALLOCATE_ARRAYS
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: ALLOCATE_ARRAYS_GEOMETRY                               !
+!  Author: M. Syamlal                                 Date: 21-JAN-92  !
+!                                                                      !
+!  Purpose: Calculate X, X_E,  oX, oX_E                                !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE ALLOCATE_ARRAYS_GEOMETRY
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! Domain decomposition and dimensions
+      use geometry, only: DX, XLENGTH, oDX, oDX_E
+      use geometry, only: DY, YLENGTH, oDZ, oDZ_T
+      use geometry, only: DZ, ZLENGTH, oDY, oDY_N
+      use geometry, only: X, X_E, oX, oX_E, XMIN
+      use geometry, only: Z, Z_T
+! Domain indices.
+      use geometry, only: IJKMAX3
+      use geometry, only: DO_I, IMIN1, IMAX1, IMAX2, IMAX3, IMIN3
+      use geometry, only: DO_J, JMIN1, JMAX1, JMAX2, JMAX3, JMIN3
+      use geometry, only: DO_K, KMIN1, KMAX1, KMAX2, KMAX3, KMIN3
+! Averaging factors.
+      use geometry, only: FX_E, FX_E_bar, FX, FX_bar
+      use geometry, only: FY_N, FY_N_bar
+      use geometry, only: FZ_T, FZ_T_bar
+! Domain flags.
+      use geometry, only: ICBC_FLAG
+      use geometry, only: FLAG, FLAG3
+      use geometry, only: FLAG_E, FLAG_N, FLAG_T
+! Domain volumes and areas.
+      use geometry, only: VOL, AYZ, AXZ, AXY          ! Scalar grid
+      use geometry, only: VOL_U, AYZ_U, AXZ_U, AXY_U  ! X-Momentum
+      use geometry, only: VOL_V, AYZ_V, AXZ_V, AXY_V  ! Y-Momentum
+      use geometry, only: VOL_W, AYZ_W, AXZ_W, AXY_W  ! Z-Momentum
+! Cyclic domain flags.
+      use geometry, only: CYCLIC
+      use geometry, only: CYCLIC_X, CYCLIC_X_PD, CYCLIC_X_MF
+      use geometry, only: CYCLIC_Y, CYCLIC_Y_PD, CYCLIC_Y_MF
+      use geometry, only: CYCLIC_Z, CYCLIC_Z_PD, CYCLIC_Z_MF
+! Flag for cylindrical coordinates.
+      use geometry, only: CYLINDRICAL
+! Axis decomposition
+      USE param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
+      USE param, only: DIMENSION_3, DIMENSION_4
+      USE param, only: DIMENSION_3G, DIMENSION_3L, DIMENSION_3P
+! MPI-Domain decompoint and rank flags.
+      use compar, only: NODESI, NODESJ, NODESK, myPE
+! Rank specific decompositions.
+      use compar, only: IJKSIZE3_ALL
+      USE compar, only: iStart3, iEnd3, iStart4, iEnd4
+      USE compar, only: jStart3, jEnd3, jStart4, jEnd4
+      USE compar, only: kStart3, kEnd3, kStart4, kEnd4
+! Flag for specificed constant mass flux.
+      use bc, only: Flux_g
+! Flag for POST_MFIX
+      use cdist, only: bDoing_postmfix
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+      use param1, only: ZERO, HALF, ONE, UNDEFINED 
+
+! Module procedures
+!---------------------------------------------------------------------//
+      use mpi_utility, only: GLOBAL_ALL_SUM
+      use error_manager
+
+
+      IMPLICIT NONE
+
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Error Flag
+      INTEGER :: IER
+! Flag indicating that the arrays were previously allocated.
+      LOGICAL, SAVE :: ALREADY_ALLOCATED = .FALSE.
+!......................................................................!
+
+      IF(ALREADY_ALLOCATED) RETURN
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("ALLOCATE_ARRAYS_GEOMETRY")
+
+! Allocate geometry components related to the mesh. Check the
+! allocation error status and abort if any failure is detected.
+      ALLOCATE( X     (0:DIMENSION_I), STAT=IER)
+      ALLOCATE( X_E   (0:DIMENSION_I), STAT=IER)
+      ALLOCATE( oX    (0:DIMENSION_I), STAT=IER)
+      ALLOCATE( oX_E  (0:DIMENSION_I), STAT=IER)
+      ALLOCATE( oDX   (0:DIMENSION_I), STAT=IER)
+      ALLOCATE( oDX_E (0:DIMENSION_I), STAT=IER)
+      IF(IER /= 0) goto 500
+
+      ALLOCATE( oDY   (0:DIMENSION_J), STAT=IER )
+      ALLOCATE( oDY_N (0:DIMENSION_J), STAT=IER )
+      IF(IER /= 0) goto 500
+
+      ALLOCATE( Z     (0:DIMENSION_K), STAT=IER )
+      ALLOCATE( Z_T   (0:DIMENSION_K), STAT=IER )
+      ALLOCATE( oDZ   (0:DIMENSION_K), STAT=IER )
+      ALLOCATE( oDZ_T (0:DIMENSION_K), STAT=IER )
+      IF(IER /= 0) goto 500
+
+      ALLOCATE( FX     (0:DIMENSION_I), STAT=IER)
+      ALLOCATE( FX_bar (0:DIMENSION_I), STAT=IER)
+      IF(IER /= 0) goto 500
+
+      ALLOCATE( FX_E     (0:DIMENSION_I), STAT=IER)
+      ALLOCATE( FX_E_bar (0:DIMENSION_I), STAT=IER)
+      IF(IER /= 0) goto 500
+
+      ALLOCATE( FY_N     (0:DIMENSION_J), STAT=IER )
+      ALLOCATE( FY_N_bar (0:DIMENSION_J), STAT=IER )
+      IF(IER /= 0) goto 500
+
+      ALLOCATE( FZ_T     (0:DIMENSION_K), STAT=IER )
+      ALLOCATE( FZ_T_bar (0:DIMENSION_K), STAT=IER )
+      IF(IER /= 0) goto 500
+
+! Flags for the scalar grid.
+      Allocate( FLAG  (DIMENSION_3), STAT=IER )
+      Allocate( FLAG3 (DIMENSION_4), STAT=IER )
+      IF(IER /= 0) goto 500
+
+! Flags for the momentum grids.
+      Allocate( FLAG_E (DIMENSION_3), STAT=IER )
+      Allocate( FLAG_N (DIMENSION_3), STAT=IER )
+      Allocate( FLAG_T (DIMENSION_3), STAT=IER )
+      IF(IER /= 0) goto 500
+
+! Text flags for scalar grid.
+      Allocate( ICBC_FLAG (DIMENSION_3L), STAT=IER )
+      IF(IER /= 0) goto 500
+
+! Volume and face-areas of scalar grid.
+      Allocate( VOL (DIMENSION_3),  STAT=IER )
+      Allocate( AYZ (DIMENSION_3P), STAT=IER )
+      Allocate( AXZ (DIMENSION_3P), STAT=IER )
+      Allocate( AXY (DIMENSION_3P), STAT=IER )
+      IF(IER /= 0) goto 500
+
+! Volume and face-areas of X-Momentumn grid.
+      Allocate( VOL_U (DIMENSION_3),  STAT=IER )
+      Allocate( AYZ_U (DIMENSION_3P), STAT=IER )
+      Allocate( AXZ_U (DIMENSION_3P), STAT=IER )
+      Allocate( AXY_U (DIMENSION_3P), STAT=IER )
+      IF(IER /= 0) goto 500
+
+! Volume and face-areas of Y-Momentum grid.
+      Allocate( VOL_V (DIMENSION_3),  STAT=IER )
+      Allocate( AYZ_V (DIMENSION_3P), STAT=IER )
+      Allocate( AXZ_V (DIMENSION_3P), STAT=IER )
+      Allocate( AXY_V (DIMENSION_3P), STAT=IER )
+      IF(IER /= 0) goto 500
+
+! Volume and face-areas of Z-Momentum grid.
+      Allocate( VOL_W (DIMENSION_3),  STAT=IER )
+      Allocate( AYZ_W (DIMENSION_3P), STAT=IER )
+      Allocate( AXZ_W (DIMENSION_3P), STAT=IER )
+      Allocate( AXY_W (DIMENSION_3P), STAT=IER )
+      IF(IER /= 0) goto 500
+
+! Collect the error flags from all ranks. If all allocaitons were
+! successfull, do nothing. Otherwise, flag the error and abort.
+! Note that the allocation status is checked in groups. This can
+! be increase if tracking the source of an allocation failure.
+  500 CALL GLOBAL_ALL_SUM(IER)
+
+      IF(IER /= 0) THEN
+         WRITE(ERR_MSG,1100)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 1100 FORMAT('Error 1100: Failure during array allocation.')
+
+      ALREADY_ALLOCATED = .TRUE.
+
+      CALL FINL_ERR_MSG
+
+      RETURN  
+      END SUBROUTINE ALLOCATE_ARRAYS_GEOMETRY
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: ALLOCATE_ARRAYS_INCREMENTS                             !
+!  Author: M. Syamlal, W. Rogers                      Date: 10-DEC-91  !
+!                                                                      !
+!  Purpose: The purpose of this module is to create increments to be   !
+!           stored in the array STORE_INCREMENT which will be added    !
+!           to cell index ijk to find the effective indices of its     !
+!           neighbors. These increments are found using the 'class'    !
+!           of cell ijk. The class is determined based on the          !
+!           neighboring cell type, i.e. wall or fluid.                 !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE ALLOCATE_ARRAYS_INCREMENTS 
+
+      USE param 
+      USE param1 
+      USE indices
+      USE geometry
+      USE compar
+      USE physprop
+      USE fldvar
+      USE funits 
+
+! Module procedures
+!---------------------------------------------------------------------//
+      use mpi_utility, only: GLOBAL_ALL_SUM
+      use error_manager
+
+
+      IMPLICIT NONE
+
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Error flag.
+      INTEGER :: IER
+! Flag indicating that the arrays were previously allocated.
+      LOGICAL, SAVE :: ALREADY_ALLOCATED = .FALSE.
+!......................................................................!
+
+      IF(ALREADY_ALLOCATED) RETURN
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("ALLOCATE_ARRAYS_INCREMENTS")
+
+! Allocate increment arrays and report an allocation errors.
+      Allocate( I_OF (DIMENSION_3), STAT=IER)
+      Allocate( J_OF (DIMENSION_3), STAT=IER)
+      Allocate( K_OF (DIMENSION_3), STAT=IER)
+      IF(IER /= 0) goto 500
+
+      Allocate( Im1 (0:DIMENSION_I), STAT=IER)
+      Allocate( Ip1 (0:DIMENSION_I), STAT=IER)
+      IF(IER /= 0) goto 500
+
+      Allocate( Jm1 (0:DIMENSION_J), STAT=IER)
+      Allocate( Jp1 (0:DIMENSION_J), STAT=IER)
+      IF(IER /= 0) goto 500
+
+      Allocate( Km1 (0:DIMENSION_K), STAT=IER)
+      Allocate( Kp1 (0:DIMENSION_K), STAT=IER)
+      IF(IER /= 0) goto 500
+
+      Allocate( STORE_LM (DIMENSION_M, DIMENSION_M), STAT=IER)
+      Allocate( CELL_CLASS (DIMENSION_3), STAT=IER)
+      IF(IER /= 0) goto 500
+
+
+! Allocate increment arrays and report an allocation errors.
+      Allocate( I3_OF (DIMENSION_4), STAT=IER)
+      Allocate( J3_OF (DIMENSION_4), STAT=IER)
+      Allocate( K3_OF (DIMENSION_4), STAT=IER)
+      IF(IER /= 0) goto 500
+
+      Allocate( Im1_3 (-1:DIMENSION_I+1), STAT=IER)
+      Allocate( Ip1_3 (-1:DIMENSION_I+1), STAT=IER)
+      IF(IER /= 0) goto 500
+
+      Allocate( Jm1_3 (-1:DIMENSION_J+1), STAT=IER)
+      Allocate( Jp1_3 (-1:DIMENSION_J+1), STAT=IER)
+      IF(IER /= 0) goto 500
+
+      Allocate( Km1_3 (-1:DIMENSION_K+1), STAT=IER)
+      Allocate( Kp1_3 (-1:DIMENSION_K+1), STAT=IER)
+      IF(IER /= 0) goto 500
+
+      Allocate( CELL_CLASS3 (DIMENSION_4), STAT=IER)
+      IF(IER /= 0) goto 500
+
+
+! Collect the error flags from all ranks. If all allocaitons were
+! successfull, do nothing. Otherwise, flag the error and abort.
+! Note that the allocation status is checked in groups. This can
+! be increase if tracking the source of an allocation failure.
+  500 CALL GLOBAL_ALL_SUM(IER)
+
+      IF(IER /= 0) THEN
+         WRITE(ERR_MSG,1100)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 1100 FORMAT('Error 1100: Failure during array allocation.')
+
+      ALREADY_ALLOCATED = .TRUE.
+
+      CALL FINL_ERR_MSG
+
+      RETURN  
+      END SUBROUTINE ALLOCATE_ARRAYS_INCREMENTS

@@ -1,53 +1,18 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: SET_INCREMENTS                                         C
-!  Purpose: The purpose of this module is to create increments to be   C
-!           stored in the array STORE_INCREMENT which will be added    C
-!           to cell index ijk to find the effective indices of its     C
-!           neighbors. These increments are found using the 'class'    C
-!           of cell ijk. The class is determined based on the          C
-!           neighboring cell type, i.e. wall or fluid.                 C
-!                                                                      C
-!  Author: M. Syamlal, W. Rogers                      Date: 10-DEC-91  C
-!  Reviewer:M. Syamlal, S. Venkatesan, P. Nicoletti,  Date: 29-JAN-92  C
-!           W. Rogers                                                  C
-!                                                                      C
-!  Revision Number: 1                                                  C
-!  Purpose: Change the second index of STORE_INCREMENT to PARAMETER's  C
-!  Author: M. Syamlal                                 Date: 18-FEB-92  C
-!  Revision Number: 2                                                  C
-!  Purpose: Do STORE_INCREMENT calculations for wall cells also.       C
-!  Author: M. Syamlal                                 Date: 14-MAY-92  C
-!  Revision Number: 3                                                  C
-!  Purpose: Do STORE_LM calculations                                   C
-!  Author: M. Syamlal                                 Date: 23-JUL-92  C
-!  Revision Number: 4                                                  C
-!  Purpose: Split the 2-D STORE_INCREMENT array into several 1-D       C
-!           INCREMENT_FOR_xx arrays for speeding-up the program        C
-!  Author: M.Syamlal                                  Date: 18-SEP-92  C
-!  Reviewer: M. Syamlal                               Date: 11-DEC-92  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: IMAX2, JMAX2, KMAX2, IJKMAX2, IJKN,           C
-!                        IJKS, IJKE, IJKW, IJKT, IJKB, IJKEE, IJKNE,   C
-!                        IJKSE, IJKNW, IJKNN, IJKBE, IJKBN, IJKTT,     C
-!                        IJKTE, IJKTW, IJKTN, IJKTS                    C
-!                                                                      C
-!  Variables modified: INCREMENT_FOR_xx, CELL_CLASS, DENOTE_CLASS, IJK,C
-!                      I, J, K, STORE_LM                               C
-!                                                                      C
-!  Local variables: IC, ICLASS, DENOTE_CLASS, L                        C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: SET_INCREMENTS                                         !
+!  Author: M. Syamlal, W. Rogers                      Date: 10-DEC-91  !
+!                                                                      !
+!  Purpose: The purpose of this module is to create increments to be   !
+!           stored in the array STORE_INCREMENT which will be added    !
+!           to cell index ijk to find the effective indices of its     !
+!           neighbors. These increments are found using the 'class'    !
+!           of cell ijk. The class is determined based on the          !
+!           neighboring cell type, i.e. wall or fluid.                 !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_INCREMENTS 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!
-!-----------------------------------------------
-!   M o d u l e s 
-!-----------------------------------------------
+
       USE param 
       USE param1 
       USE indices
@@ -56,197 +21,217 @@
       USE physprop
       USE fldvar
       USE funits 
+
+! Module procedures
+!---------------------------------------------------------------------//
+      use mpi_utility, only: GLOBAL_ALL_SUM
+      use error_manager
+
+
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!                      Indices
-      INTEGER          I, J, K, IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP,&
-                       IJKW, IJKE, IJKS, IJKN, IJKB, IJKT
-!                             DO-loop index, ranges from 1 to ICLASS
-      INTEGER                 IC
-!
-!                      Index for the solids phase.
-      INTEGER          M
-!
-!                             Local DO-loop index
-      INTEGER                 L
-!
-!                             Array index denoting a cell class, it is a
-!                             column of the array STORE_INCREMENTS
-      INTEGER                 ICLASS
-!
-!                             Array of sum of increments to make the class
-!                             determination faster. 
-      INTEGER                 DENOTE_CLASS(MAX_CLASS)
-!
-      LOGICAL          TRUEI, TRUEJ, TRUEK
-!-----------------------------------------------
+
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Indices
+      INTEGER :: I, J, K, IJK
+      INTEGER :: IMJK, IPJK, IJKW, IJKE  ! I+, I-, east/west
+      INTEGER :: IJMK, IJPK, IJKS, IJKN  ! J+, J-, north/south
+      INTEGER :: IJKM, IJKP, IJKB, IJKT  ! K+, K-, top/bottom
+! DO-loop index, ranges from 1 to ICLASS
+      INTEGER :: IC
+! Index for the solids phase.
+      INTEGER :: M
+! Local DO-loop index
+      INTEGER :: L
+! Index denoting cell class
+      INTEGER :: ICLASS
+! Array of sum of increments to make the class determination faster. 
+      INTEGER :: DENOTE_CLASS(MAX_CLASS)
+! Error Flag
+      INTEGER :: IER
+! Flags for using the 'real' I/J/K value (not cyclic.)
+      LOGICAL :: SHIFT
+
       INCLUDE 'function.inc'
+!......................................................................!
 
-!// Initialize the default values to Undefined_I
 
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("SET_INCREMENTS")
+
+! Allocate increment arrays and report an allocation errors.
+      CALL ALLOCATE_ARRAYS_INCREMENTS
+
+! Initialize the default values to Undefined_I
       IP1(:) = UNDEFINED_I
       IM1(:) = UNDEFINED_I
       JP1(:) = UNDEFINED_I
       JM1(:) = UNDEFINED_I
       KP1(:) = UNDEFINED_I
       KM1(:) = UNDEFINED_I
-!
+
+
       DO I = ISTART3, IEND3
- 	 TRUEI = .NOT.(I.EQ.IMIN3.OR.I.EQ.IMIN2.OR.I.EQ.IMAX3.OR.I.EQ.IMAX2)
-         IF (CYCLIC_X.AND.NODESI.EQ.1.AND.DO_I.AND.TRUEI) THEN
+
+         SHIFT = .NOT.(I==IMIN3 .OR. I==IMIN2 .OR. &
+                       I==IMAX3 .OR. I==IMAX2)
+
+         IF(CYCLIC_X .AND. NODESI.EQ.1 .AND. DO_I .AND. SHIFT) THEN
             IP1(I) = IMAP_C(IMAP_C(I)+1)
             IM1(I) = IMAP_C(IMAP_C(I)-1)
-	 ELSE
-            IM1(I) = MAX(ISTART3,I - 1) 
-            IP1(I) = MIN(IEND3,I + 1) 
-         ENDIF 
-	 
-      END DO 
+         ELSE
+            IM1(I) = MAX(ISTART3, I - 1)
+            IP1(I) = MIN(IEND3,   I + 1) 
+         ENDIF
+      ENDDO
+
+
       DO J = JSTART3, JEND3
- 	 TRUEJ = .NOT.(J.EQ.JMIN3.OR.J.EQ.JMIN2.OR.J.EQ.JMAX3.OR.J.EQ.JMAX2)
-         IF (CYCLIC_Y.AND.NODESJ.EQ.1.AND.DO_J.AND.TRUEJ) THEN 
+
+         SHIFT = .NOT.(J==JMIN3 .OR. J==JMIN2 .OR. &
+                       J==JMAX3 .OR. J==JMAX2)
+
+         IF (CYCLIC_Y .AND. NODESJ.EQ.1 .AND. DO_J .AND. SHIFT) THEN
             JP1(J) = JMAP_C(JMAP_C(J)+1)
             JM1(J) = JMAP_C(JMAP_C(J)-1)
-	 ELSE
+         ELSE
             JM1(J) = MAX(JSTART3,J - 1)
-            JP1(J) = MIN(JEND3,J + 1)
+            JP1(J) = MIN(JEND3,  J + 1)
          ENDIF 
-      END DO 
+      ENDDO 
+
+
       DO K = KSTART3, KEND3
- 	 TRUEK = .NOT.(K.eq.KMIN3.OR.K.eq.KMIN2.OR.K.eq.KMAX3.OR.K.eq.KMAX2)
-         IF (CYCLIC_Z.AND.NODESK.EQ.1.AND.DO_K.AND.TRUEK) THEN
+
+         SHIFT = .NOT.(K==KMIN3 .OR. K==KMIN2 .OR. &
+                       K==KMAX3 .OR. K==KMAX2)
+
+         IF(CYCLIC_Z .AND. NODESK.EQ.1 .AND. DO_K .AND. SHIFT) THEN
             KP1(K) = KMAP_C(KMAP_C(K)+1)
             KM1(K) = KMAP_C(KMAP_C(K)-1)
-	 ELSE
+         ELSE
             KM1(K) = MAX(KSTART3,K - 1)
             KP1(K) = MIN(KEND3,K + 1)
          ENDIF 
-      END DO 
+      ENDDO 
+
+! Loop over all cells
+      DO K = KSTART3, KEND3
+      DO J = JSTART3, JEND3
+      DO I = ISTART3, IEND3
+
+         IJK = FUNIJK(I,J,K)  ! Find value of IJK
+
+         I_OF(IJK) = I
+         J_OF(IJK) = J 
+         K_OF(IJK) = K 
+
+      ENDDO 
+      ENDDO 
+      ENDDO 
+
       
       ICLASS = 0 
-!
-!     Loop over all cells
+
+
+! Loop over all cells (minus the ghost layers)
       DO K = KSTART3, KEND3
-         DO J = JSTART3, JEND3
-            DO I = ISTART3, IEND3
-               IJK = FUNIJK(I,J,K)               !Find value of IJK 
-!
-!        Fill I, J, K arrays
-               I_OF(IJK) = I
-               J_OF(IJK) = J 
-               K_OF(IJK) = K 
-            END DO 
-         END DO 
-      END DO 
+      DO J = JSTART3, JEND3
+      L100: DO I = ISTART3, IEND3
+
+         IJK = FUNIJK(I,J,K)
+
+! Find the the effective cell-center indices for all neighbor cells
+         CALL SET_INDEX1A (I, J, K, IJK, IMJK, IPJK, IJMK, IJPK, IJKM, &
+            IJKP, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT) 
+
+         ICLASS = ICLASS + 1               !Increment the ICLASS counter 
+         IF(ICLASS > MAX_CLASS) THEN
+            WRITE(ERR_MSG, 1200) trim(iVal(MAX_CLASS))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF 
+
+ 1200 FORMAT('Error 1200: The number of classes has exceeded the ',    &
+         'maximum: ',A,/'Increase the MAX_CLASS parameter in param1',  &
+         '_mod.f and recompile.')
 
 
-!     Loop over all cells (minus the ghost layers)
-      DO K = KSTART3, KEND3
-         DO J = JSTART3, JEND3
-            L100: DO I = ISTART3, IEND3
-               IJK = FUNIJK(I,J,K)               !Find value of IJK
-!
+         INCREMENT_FOR_N(ICLASS)  = IJKN - IJK
+         INCREMENT_FOR_S(ICLASS)  = IJKS - IJK
+         INCREMENT_FOR_E(ICLASS)  = IJKE - IJK
+         INCREMENT_FOR_W(ICLASS)  = IJKW - IJK
+         INCREMENT_FOR_T(ICLASS)  = IJKT - IJK
+         INCREMENT_FOR_B(ICLASS)  = IJKB - IJK
 
-!          Find the the effective cell-center indices for all neighbor cells
-               CALL SET_INDEX1A (I, J, K, IJK, IMJK, IPJK, IJMK, IJPK, IJKM, &
-                  IJKP, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT) 
-!
-               ICLASS = ICLASS + 1               !Increment the ICLASS counter 
-               IF (ICLASS > MAX_CLASS) THEN 
-                  IF(DMP_LOG)WRITE (UNIT_LOG, 1000) MAX_CLASS 
-                  CALL MFIX_EXIT(myPE) 
-               ENDIF 
-               INCREMENT_FOR_N(ICLASS) = IJKN - IJK 
-               INCREMENT_FOR_S(ICLASS) = IJKS - IJK 
-               INCREMENT_FOR_E(ICLASS) = IJKE - IJK 
-               INCREMENT_FOR_W(ICLASS) = IJKW - IJK 
-               INCREMENT_FOR_T(ICLASS) = IJKT - IJK 
-               INCREMENT_FOR_B(ICLASS) = IJKB - IJK 
-               INCREMENT_FOR_IM(ICLASS) = IMJK - IJK 
-               INCREMENT_FOR_IP(ICLASS) = IPJK - IJK 
-               INCREMENT_FOR_JM(ICLASS) = IJMK - IJK 
-               INCREMENT_FOR_JP(ICLASS) = IJPK - IJK 
-               INCREMENT_FOR_KM(ICLASS) = IJKM - IJK 
-               INCREMENT_FOR_KP(ICLASS) = IJKP - IJK 
+         INCREMENT_FOR_IM(ICLASS) = IMJK - IJK
+         INCREMENT_FOR_IP(ICLASS) = IPJK - IJK
+         INCREMENT_FOR_JM(ICLASS) = IJMK - IJK
+         INCREMENT_FOR_JP(ICLASS) = IJPK - IJK
+         INCREMENT_FOR_KM(ICLASS) = IJKM - IJK
+         INCREMENT_FOR_KP(ICLASS) = IJKP - IJK
 
-               INCREMENT_FOR_NB(1,ICLASS) = INCREMENT_FOR_E(ICLASS)
-               INCREMENT_FOR_NB(2,ICLASS) = INCREMENT_FOR_W(ICLASS)
-               INCREMENT_FOR_NB(3,ICLASS) = INCREMENT_FOR_S(ICLASS)
-               INCREMENT_FOR_NB(4,ICLASS) = INCREMENT_FOR_N(ICLASS)
-               INCREMENT_FOR_NB(5,ICLASS) = INCREMENT_FOR_B(ICLASS)
-               INCREMENT_FOR_NB(6,ICLASS) = INCREMENT_FOR_T(ICLASS)
+         INCREMENT_FOR_NB(1,ICLASS) = INCREMENT_FOR_E(ICLASS)
+         INCREMENT_FOR_NB(2,ICLASS) = INCREMENT_FOR_W(ICLASS)
+         INCREMENT_FOR_NB(3,ICLASS) = INCREMENT_FOR_S(ICLASS)
+         INCREMENT_FOR_NB(4,ICLASS) = INCREMENT_FOR_N(ICLASS)
+         INCREMENT_FOR_NB(5,ICLASS) = INCREMENT_FOR_B(ICLASS)
+         INCREMENT_FOR_NB(6,ICLASS) = INCREMENT_FOR_T(ICLASS)
+
+         INCREMENT_FOR_MP(1,ICLASS) = INCREMENT_FOR_IM(ICLASS)
+         INCREMENT_FOR_MP(2,ICLASS) = INCREMENT_FOR_IP(ICLASS)
+         INCREMENT_FOR_MP(3,ICLASS) = INCREMENT_FOR_JM(ICLASS)
+         INCREMENT_FOR_MP(4,ICLASS) = INCREMENT_FOR_JP(ICLASS)
+         INCREMENT_FOR_MP(5,ICLASS) = INCREMENT_FOR_KM(ICLASS)
+         INCREMENT_FOR_MP(6,ICLASS) = INCREMENT_FOR_KP(ICLASS)
 
 
-               INCREMENT_FOR_MP(1,ICLASS) = INCREMENT_FOR_IM(ICLASS)
-               INCREMENT_FOR_MP(2,ICLASS) = INCREMENT_FOR_IP(ICLASS)
-               INCREMENT_FOR_MP(3,ICLASS) = INCREMENT_FOR_JM(ICLASS)
-               INCREMENT_FOR_MP(4,ICLASS) = INCREMENT_FOR_JP(ICLASS)
-               INCREMENT_FOR_MP(5,ICLASS) = INCREMENT_FOR_KM(ICLASS)
-               INCREMENT_FOR_MP(6,ICLASS) = INCREMENT_FOR_KP(ICLASS)
+         DENOTE_CLASS(ICLASS) = INCREMENT_FOR_N(ICLASS) + INCREMENT_FOR_S&
+            (ICLASS) + INCREMENT_FOR_E(ICLASS) + INCREMENT_FOR_W(ICLASS)&
+             + INCREMENT_FOR_T(ICLASS) + INCREMENT_FOR_B(ICLASS) + &
+            INCREMENT_FOR_IM(ICLASS) + INCREMENT_FOR_IP(ICLASS) + &
+            INCREMENT_FOR_JM(ICLASS) + INCREMENT_FOR_JP(ICLASS) + &
+            INCREMENT_FOR_KM(ICLASS) + INCREMENT_FOR_KP(ICLASS) 
 
+         CELL_CLASS(IJK) = ICLASS 
 
-
-!
-               DENOTE_CLASS(ICLASS) = INCREMENT_FOR_N(ICLASS) + INCREMENT_FOR_S&
-                  (ICLASS) + INCREMENT_FOR_E(ICLASS) + INCREMENT_FOR_W(ICLASS)&
-                   + INCREMENT_FOR_T(ICLASS) + INCREMENT_FOR_B(ICLASS) + &
-                  INCREMENT_FOR_IM(ICLASS) + INCREMENT_FOR_IP(ICLASS) + &
-                  INCREMENT_FOR_JM(ICLASS) + INCREMENT_FOR_JP(ICLASS) + &
-                  INCREMENT_FOR_KM(ICLASS) + INCREMENT_FOR_KP(ICLASS) 
-!
-               CELL_CLASS(IJK) = ICLASS 
-!
-!
-!          Place the cell in a class based on its DENOTE_CLASS(ICLASS) value
-               DO IC = 1, ICLASS - 1             !Loop over previous and present classes 
+! Place the cell in a class based on its DENOTE_CLASS(ICLASS) value
+         DO IC = 1, ICLASS - 1             !Loop over previous and present classes 
 !                                                !IF a possible match in cell types
-                  IF (DENOTE_CLASS(ICLASS) == DENOTE_CLASS(IC)) THEN 
+            IF(DENOTE_CLASS(ICLASS) == DENOTE_CLASS(IC)) THEN 
 !                                                !is found, compare all increments
-                     IF (INCREMENT_FOR_N(ICLASS) /= INCREMENT_FOR_N(IC)) CYCLE  
-                     IF (INCREMENT_FOR_S(ICLASS) /= INCREMENT_FOR_S(IC)) CYCLE  
-                     IF (INCREMENT_FOR_E(ICLASS) /= INCREMENT_FOR_E(IC)) CYCLE  
-                     IF (INCREMENT_FOR_W(ICLASS) /= INCREMENT_FOR_W(IC)) CYCLE  
-                     IF (INCREMENT_FOR_T(ICLASS) /= INCREMENT_FOR_T(IC)) CYCLE  
-                     IF (INCREMENT_FOR_B(ICLASS) /= INCREMENT_FOR_B(IC)) CYCLE  
-                     IF (INCREMENT_FOR_IM(ICLASS) /= INCREMENT_FOR_IM(IC)) &
-                        CYCLE  
-                     IF (INCREMENT_FOR_IP(ICLASS) /= INCREMENT_FOR_IP(IC)) &
-                        CYCLE  
-                     IF (INCREMENT_FOR_JM(ICLASS) /= INCREMENT_FOR_JM(IC)) &
-                        CYCLE  
-                     IF (INCREMENT_FOR_JP(ICLASS) /= INCREMENT_FOR_JP(IC)) &
-                        CYCLE  
-                     IF (INCREMENT_FOR_KM(ICLASS) /= INCREMENT_FOR_KM(IC)) &
-                        CYCLE  
-                     IF (INCREMENT_FOR_KP(ICLASS) /= INCREMENT_FOR_KP(IC)) &
-                        CYCLE  
-                     CELL_CLASS(IJK) = IC        !Assign cell to a class 
-                     ICLASS = ICLASS - 1 
-                     CYCLE  L100                 !Go to next cell 
-                  ENDIF 
-               END DO 
-            END DO L100 
-         END DO 
-      END DO 
-      DO M = 1, MMAX 
-         DO L = M, MMAX 
-            IF (L == M) THEN 
-               STORE_LM(L,M) = 0 
-            ELSE 
-               STORE_LM(L,M) = M + (L - 2)*(L - 1)/2 
-               STORE_LM(M,L) = M + (L - 2)*(L - 1)/2 
+               IF(INCREMENT_FOR_N(ICLASS) /= INCREMENT_FOR_N(IC)) CYCLE  
+               IF(INCREMENT_FOR_S(ICLASS) /= INCREMENT_FOR_S(IC)) CYCLE  
+               IF(INCREMENT_FOR_E(ICLASS) /= INCREMENT_FOR_E(IC)) CYCLE  
+               IF(INCREMENT_FOR_W(ICLASS) /= INCREMENT_FOR_W(IC)) CYCLE  
+               IF(INCREMENT_FOR_T(ICLASS) /= INCREMENT_FOR_T(IC)) CYCLE  
+               IF(INCREMENT_FOR_B(ICLASS) /= INCREMENT_FOR_B(IC)) CYCLE  
+               IF(INCREMENT_FOR_IM(ICLASS) /= INCREMENT_FOR_IM(IC)) CYCLE  
+               IF(INCREMENT_FOR_IP(ICLASS) /= INCREMENT_FOR_IP(IC)) CYCLE
+               IF(INCREMENT_FOR_JM(ICLASS) /= INCREMENT_FOR_JM(IC)) CYCLE
+               IF(INCREMENT_FOR_JP(ICLASS) /= INCREMENT_FOR_JP(IC)) CYCLE
+               IF(INCREMENT_FOR_KM(ICLASS) /= INCREMENT_FOR_KM(IC)) CYCLE
+               IF(INCREMENT_FOR_KP(ICLASS) /= INCREMENT_FOR_KP(IC)) CYCLE
+               CELL_CLASS(IJK) = IC        !Assign cell to a class 
+               ICLASS = ICLASS - 1 
+               CYCLE  L100                 !Go to next cell 
             ENDIF 
-         END DO 
-      END DO
+         END DO
+
+      ENDDO L100 
+      ENDDO 
+      ENDDO 
+
+      DO M = 1, MMAX 
+      DO L = M, MMAX 
+         IF(L == M) THEN 
+            STORE_LM(L,M) = 0 
+         ELSE 
+            STORE_LM(L,M) = M + (L - 2)*(L - 1)/2 
+            STORE_LM(M,L) = M + (L - 2)*(L - 1)/2 
+         ENDIF 
+      ENDDO 
+      ENDDO
 
 
       IF(.NOT.INCREMENT_ARRAYS_ALLOCATED) THEN
@@ -286,20 +271,13 @@
    
 !      print*,'from set_increment:iclass=',iclass
 
- 
+
+      CALL FINL_ERR_MSG
+
       RETURN  
-!
-!     WRITE FOLLOWING IF THERE IS AN ERROR IN MODULE
- 1000 FORMAT(/70('*')//'From: SET_INCREMENTS'/'Message: The number of',&
-         'classes has exceeded the maximum allowed (',I3,').  Increase',&
-         'MAX_CLASS in PARAM1.INC') 
 !
       END SUBROUTINE SET_INCREMENTS 
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization
-!// 020 New local variables for parallelization : TRUEI, TRUEJ, TRUEK
-!// 350 Changed do loop limits: 1,kmax2->kmin3,kmax3      
 
 
 

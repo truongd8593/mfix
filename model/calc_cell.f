@@ -132,3 +132,56 @@
       
 !// Comments on the modifications for DMP version implementation      
 !// 100 EFD Replaced inheritance based dimensioning of arrays, i.e. D_DIR(*) 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: CALC_CELL_INTERSECT                                     !
+!  Author: J.Musser                                   Date: 23-APR-14  !
+!                                                                      !
+!  Purpose: Calculate the cell index that intersects LOC. Unlike the   !
+!  base routine (CALC_CELL), this routine does not shift the index     !
+!  based on which half of the cell the point intersects.               !
+!                                                                      !
+!  Comment: This is a brute force approach and should not be called    !
+!  from within any critical routines/loops.                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE CALC_CELL_INTERSECT(RMIN, LOC, D_DIR, N_DIR, CELL) 
+
+      IMPLICIT NONE
+
+! Passed Arguments:
+!---------------------------------------------------------------------//
+! Starting value of the axis (ZERO except for maybe XMIN)
+      DOUBLE PRECISION, INTENT(in) :: RMIN
+! Point to check for intersection.
+      DOUBLE PRECISION, INTENT(in) :: LOC
+! Cell lengths (DX,DY,DZ)
+      DOUBLE PRECISION, INTENT(IN) :: D_DIR(0:(N_DIR+3))
+! Number of cells in this direction (IMAX,JMAX,KMAX)
+      INTEGER, INTENT(in) :: N_DIR
+! Cell indicies correspoinding to LOC
+      INTEGER, INTENT(out) :: CELL
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Loop counter
+      INTEGER :: LC
+! Start/End coordinates for cell
+      DOUBLE PRECISION :: CELL_START, CELL_END
+!......................................................................!
+
+     CELL = -1
+
+      CELL_START = RMIN
+      DO LC=2, N_DIR+1
+         CELL_END = CELL_START + D_DIR(LC)
+         IF(CELL_START <= LOC .AND. LOC <= CELL_END) THEN
+            CELL = LC
+            RETURN
+         ENDIF
+         CELL_START=CELL_END
+      ENDDO
+
+      RETURN  
+      END SUBROUTINE CALC_CELL_INTERSECT

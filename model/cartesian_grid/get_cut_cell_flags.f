@@ -87,7 +87,7 @@
 !  Set arrays for computing indices
 !
       
-      CALL SET_INCREMENTS 
+!      CALL SET_INCREMENTS 
 
       DX(IMAX3+1) = DX(IMAX3)
       DY(JMAX3+1) = DY(JMAX3)

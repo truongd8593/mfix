@@ -42,22 +42,14 @@
 !-----------------------------------------------      
       INCLUDE 'function.inc'
 
-      IF(RUN_TYPE == 'NEW' .and. particles /= 0) THEN ! Fresh run
 
-         IF(GENER_PART_CONFIG) THEN 
-            CALL GENERATE_PARTICLE_CONFIG
-         ENDIF
-      ENDIF
-           
-      CALL DES_ALLOCATE_ARRAYS
-      CALL DES_INIT_ARRAYS
 
 ! cfassign and des_init_bc called before reading the particle info 
       CALL CFASSIGN
 
 ! Make the necessary calculations for the mass inflow/outflow boundary
 ! conditions.  DTSOLID is needed so call is made after cfassign.f
-      CALL DES_INIT_BC
+!      CALL DES_INIT_BC  --> SET_BC_DEM
 
 ! parallelization: desmpi_init needs to be called after des_init_bc
 ! since it relies on setting/checking of des_mio

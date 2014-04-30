@@ -31,6 +31,8 @@
 ! Solids volume fraction at BC
       use bc, only: BC_EP_s
       use bc, only: BC_EP_g
+! Run-time flag for DEM solids
+      use run, only: DEM_SOLIDS
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -126,6 +128,8 @@
 
          ENDIF
       ENDDO
+! Additional checks needed for DEM boundaries
+      IF(DEM_SOLIDS) CALL CHECK_BC_DEM(MMAX_TOT)
 
 ! Cleanup and exit.
       CALL FINL_ERR_MSG

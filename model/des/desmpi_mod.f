@@ -147,7 +147,7 @@
 ! call particle crossing the boundary exchange in T-B,N-S,E-W order
       dsendbuf(1,:) = 0; drecvbuf(1,:) =0
       ispot = 1
-      do linter = dimn,1,-1
+      do linter = merge(2,3,NO_K),1,-1
          do lface = linter*2-1,linter*2
             if(.not.iexchflag(lface))cycle
             call desmpi_pack_parcross(lface)
@@ -176,7 +176,7 @@
          dsendbuf(1,:) = 0; drecvbuf(1,:) =0
          ighost_updated(:) = .false.
          ispot = 1
-         do linter = 1,dimn
+         do linter = 1,merge(2,3,NO_K)
             do lface = linter*2-1,linter*2
                if(.not.iexchflag(lface))cycle
                call desmpi_pack_ghostpar(lface)
@@ -388,20 +388,20 @@
       listart1=dg_istart1;liend1=dg_iend1;listart2=dg_istart2;liend2=dg_iend2
       ljstart1=dg_jstart1;ljend1=dg_jend1;ljstart2=dg_jstart2;ljend2=dg_jend2
       lkstart1=dg_kstart1;lkend1=dg_kend1;lkstart2=dg_kstart2;lkend2=dg_kend2
-      if (des_mio) then
-         if (des_mi_x .or. des_mo_x) then
-            if(listart1.eq.dg_imin1) listart1 = dg_imin1-1
-            if(liend1.eq.dg_imax1) liend1 = dg_imax1+1
-         end if
-         if (des_mi_y .or. des_mo_y) then
-            if(ljstart1.eq.dg_jmin1) ljstart1 = dg_jmin1-1
-            if(ljend1.eq.dg_jmax1) ljend1 = dg_jmax1+1
-         end if
-         if (des_mi_z .or. des_mo_z) then
-            if(lkstart1.eq.dg_kmin1) lkstart1 = dg_kmin1-1
-            if(lkend1.eq.dg_kmax1) lkend1 = dg_kmax1+1
-         end if
-      end if
+!      if (dem_mio) then
+!         if (dem_mi_x .or. dem_mo_x) then
+!            if(listart1.eq.dg_imin1) listart1 = dg_imin1-1
+!            if(liend1.eq.dg_imax1) liend1 = dg_imax1+1
+!         end if
+!         if (dem_mi_y .or. dem_mo_y) then
+!            if(ljstart1.eq.dg_jmin1) ljstart1 = dg_jmin1-1
+!            if(ljend1.eq.dg_jmax1) ljend1 = dg_jmax1+1
+!         end if
+!         if (dem_mi_z .or. dem_mo_z) then
+!            if(lkstart1.eq.dg_kmin1) lkstart1 = dg_kmin1-1
+!            if(lkend1.eq.dg_kmax1) lkend1 = dg_kmax1+1
+!         end if
+!      end if
 
 ! set the ghost cell indices for e-w, n-s and t-b
 ! for east and west faces
@@ -845,7 +845,7 @@
       end do
 ! modify the range for mass inlet and outlet, as particles injected
 ! can lie outside the domain and not ghost particles
-      if (des_mio) then
+      if (dem_mio) then
          do lproc= 0,numpes-1
 !            if(des_mi_x .or. des_mo_x) then
                if(istart1_all(lproc).eq.imin1) then
@@ -1668,11 +1668,7 @@
       lic = dg_iof_lo(pijk)
       ljc = dg_jof_lo(pijk)
       lkc = dg_kof_lo(pijk)
-      if(no_K) then
-         lkoffset = 0
-      else
-         lkoffset =1
-      endif
+      lkoffset = merge(0, 1, NO_K)
       do  lk = lkc-lkoffset,lkc+lkoffset
       do  lj = ljc-1,ljc+1
       do  li = lic-1,lic+1

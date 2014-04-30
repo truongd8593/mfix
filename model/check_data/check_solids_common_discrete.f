@@ -56,7 +56,7 @@
       USE discretelement, only: DES_PERIODIC_WALLS_Z
 
 ! Subroutine access.
-      USE desgrid, only: DESGRID_CHECK
+
 
       use physprop, only: MMAX
 
@@ -228,10 +228,6 @@
 ! Check settings for particle generation.
 !      IF(GENER_PART_CONFIG) CALL CHECK_DES_PCONFIG
            
-! the entire checking and setting up indices for desgridsearch
-! moved to desgrid_mod to accomodate parallelization
-! this is now conducted regardless of neighbor search option      
-!      CALL DESGRID_CHECK
 
 
       CALL FINL_ERR_MSG

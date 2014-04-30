@@ -125,7 +125,7 @@
 
 
 ! Clear out the unused phases.
-      SOLIDS_MODEL(MMAX+1:DIM_M) = '---'
+      SOLIDS_MODEL((MMAX+DES_MMAX)+1:DIM_M) = '---'
 
 ! Set the runtime flags:
       TFM_SOLIDS = (TFM_COUNT > 0)

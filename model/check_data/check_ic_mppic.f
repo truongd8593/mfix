@@ -1,6 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: CHECK_INITIAL_CONDITIONS_MPPIC                          !
+!  Subroutine: CHECK_IC_MPPIC                                          !
+!  Author:   R.Garg                                   Date: 11-Mar-14  !
 !                                                                      !
 !  Purpose: check the initial conditions input section for MPPIC model !
 !     - ensure the first IC is defined over the entire domain with     ! 
@@ -8,12 +9,9 @@
 !     - ensure the ICs are non-overlapping                             !
 !     - calculate the number of particles needed to initalize the      !
 !        MPPIC model                                                   !
-!  Author:   R.Garg                                   Date: 11-Mar-14  !
-!  Comments: Most of the code in this routine is a consolidation of    !
-!            codes from several existing routines                      !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_INITIAL_CONDITIONS_MPPIC
+      SUBROUTINE CHECK_IC_MPPIC
       
 
 ! Runtime Flag: Generate initial particle configuation.
@@ -91,7 +89,7 @@
       IF (.NOT.GENER_PART_CONFIG) RETURN 
 
 ! Initialize the error manager.
-      CALL INIT_ERR_MSG("CHECK_INITIAL_CONDITIONS_MPPIC")
+      CALL INIT_ERR_MSG("CHECK_IC_MPPIC")
 
 ! First check if either a constant npc or constant statwt 
 ! is specified for each IC 
@@ -162,5 +160,5 @@
 
       CALL FINL_ERR_MSG
       
-      END SUBROUTINE CHECK_INITIAL_CONDITIONS_MPPIC
+      END SUBROUTINE CHECK_IC_MPPIC
       

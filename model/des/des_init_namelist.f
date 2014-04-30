@@ -493,26 +493,7 @@
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>volumetric flow rate of discrete solids phase m through the mass inlet boundary.</description>
-      DES_BC_VOLFLOW_s(:,:) = UNDEFINED
-!</keyword>
 
-!<keyword category="Boundary Condition" required="false">
-!  <description>mass flow rate of discrete solids phase m through the mass inlet boundary.</description>
-      DES_BC_MASSFLOW_s(:,:) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>type of boundary</description>
-!  <valid value='MASS_INFLOW' description='Mass inflow rates for discrete solids phases are specified at the boundary.' alias='MI' />
-!  <valid value='MASS_OUTFLOW' description='This designates the specified region as a discrete mass 
-!            outflow wherein discrete particles may exit the system.  Once a particle center has crossed
-!            the mass outflow plane it will continue on that trajectory until it moves fully out of 
-!            the domain.' alias='MO' />
-      DES_BC_TYPE(:) = UNDEFINED_C
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
 !  <description>macroscopic bulk density of discrete solids phases at the bc plane.</description>
       DES_BC_ROP_s(:,:) = UNDEFINED
 !</keyword>

@@ -90,7 +90,7 @@
 !         DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + 0.5d0*&
 !             (DES_VEL_NEW(L,:)+DES_VEL_OLD(L,:))*DTSOLID
 
-!            OMEGA_NEW(L,:)   = OMEGA_OLD(L,:) + TOW(:,L)*OMOI(L)*DTSOLID
+
             OMEGA_NEW(L,:)   = OMEGA_OLD(L,:) + TOW(:,L)*OMOI(L)*DTSOLID
 
          ELSEIF (INTG_ADAMS_BASHFORTH) THEN
@@ -100,12 +100,8 @@
             DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + 0.5d0*&
                ( 3.d0*FC(:,L)-DES_ACC_OLD(L,:) )*DTSOLID
 
-
-! JM           OMEGA_NEW(L,:)   =  OMEGA_OLD(L,:) + 0.5d0*&
-! JM              ( 3.d0*TOW(:,L)*OMOI(L)-ROT_ACC_OLD(L,:) )*DTSOLID
             OMEGA_NEW(L,:)   =  OMEGA_OLD(L,:) + 0.5d0*&
                ( 3.d0*TOW(:,L)*OMOI(L)-ROT_ACC_OLD(L,:) )*DTSOLID
-
 
             DES_ACC_OLD(L,:) = FC(:,L)
             ROT_ACC_OLD(L,:) = TOW(:,L)*OMOI(L)
@@ -242,7 +238,7 @@
       !IJK = epg_min_loc(1)
 
       allocate(rand_vel(MAX_PIP, 3))
-      do idim = 1, 3
+      do idim = 1, merge(2,3,NO_K)
          mean_u = zero
          sig_u = 1.d0
          CALL NOR_RNO(RAND_VEL(1:MAX_PIP, IDIM), MEAN_U, SIG_U)
@@ -301,7 +297,7 @@
          DES_VEL_NEW(L,:) = (DES_VEL_OLD(L,:) + &
          & FC(:,L)*DTSOLID)/(1.d0+DP_BAR*DTSOLID)
 
-         do idim = 1, 3
+         do idim = 1, merge(2,3,NO_K)
             SIG_U = 0.05D0
             rand_vel(L, idim)  = sig_u*DES_VEL_NEW(L, IDIM)*rand_vel(L, idim)
          enddo
@@ -326,7 +322,7 @@
 
          MEANVEL(:) = AVGSOLVEL_P(L,:)
 
-         DO IDIM = 1, 3
+         DO IDIM = 1, merge(2,3,NO_K)
             IF(PS_FORCE(IDIM).LE.ZERO) THEN
                UPRIMETAU(IDIM) = MIN(DELUP(IDIM), (1+COEFF_EN)*(MEANVEL(IDIM)-DES_VEL_NEW(L,IDIM)))
                UPRIMETAU_INT(IDIM) = UPRIMETAU(IDIM)
@@ -416,7 +412,7 @@
 ! Check if the particle has moved a distance greater than or equal to grid spacing
 ! if so, then exit
 
-         DO IDIM = 1, 3
+         DO IDIM = 1, merge(2,3,NO_K)
             IF(D_GRIDUNITS(IDIM).GT.ONE) THEN
                IF(DMP_LOG.OR.myPE.eq.pe_IO) THEN
 
@@ -588,7 +584,7 @@
       !epg_min_loc = MINLOC(EP_G)
       !IJK = epg_min_loc(1)
       allocate(rand_vel(MAX_PIP, 3))
-      do idim = 1, 3
+      do idim = 1, merge(2,3,NO_K)
          mean_u = zero
          sig_u = 1.d0
          CALL NOR_RNO(RAND_VEL(1:MAX_PIP, IDIM), MEAN_U, SIG_U)
@@ -654,7 +650,7 @@
          MEAN_FREE_PATH  = MAX(1.d0/(1.d0-EP_STAR), 1.d0/(1.D0-EP_G(IJK_OLD)))
          MEAN_FREE_PATH  = MEAN_FREE_PATH*RAD_EFF/THREEINTOSQRT2
 
-         DO IDIM = 1, 3
+         DO IDIM = 1, merge(2,3,NO_K)
             !SIG_U = 0.05D0*MEANVEL(IDIM)
             !DES_VEL_NEW(L, IDIM) = DES_VEL_NEW(L, IDIM) + SIG_U*RAND_VEL(L, IDIM )
             !PART_TAUP = RO_Sol(L)*((2.d0*DES_RADIUS(L))**2.d0)/(18.d0* MU_G(IJK))
@@ -762,7 +758,7 @@
 ! Check if the particle has moved a distance greater than or equal to grid spacing
 ! if so, then exit
 
-         DO IDIM = 1, 3
+         DO IDIM = 1, merge(2,3,NO_K)
             IF(D_GRIDUNITS(IDIM).GT.ONE) THEN
                IF(DMP_LOG.OR.myPE.eq.pe_IO) THEN
 

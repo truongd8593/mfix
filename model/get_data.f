@@ -76,10 +76,6 @@
 ! Partition the domain and set indices
       CALL GRIDMAP_INIT
 
-! Basic geometry checks.
-      CALL CHECK_GEOMETRY(SHIFT)
-! Set grid spacing variables.
-      CALL SET_GEOMETRY 
 
 ! Check the minimum solids phase requirements.
       CALL CHECK_SOLIDS_MODEL_PREREQS
@@ -90,6 +86,15 @@
 
       CALL CHECK_GAS_PHASE
       CALL CHECK_SOLIDS_PHASES
+      CALL SET_PARAMETERS
+
+! Basic geometry checks.
+      CALL CHECK_GEOMETRY(SHIFT)
+      IF(DISCRETE_ELEMENT) CALL CHECK_GEOMETRY_DES
+
+! Set grid spacing variables.
+      CALL SET_GEOMETRY 
+      IF(DISCRETE_ELEMENT) CALL SET_GEOMETRY_DES
 
       CALL CHECK_INITIAL_CONDITIONS
       CALL CHECK_BOUNDARY_CONDITIONS
@@ -98,22 +103,12 @@
 
       CALL CHECK_CHEMICAL_RXNS
 
-!--------------------------  ARRAY ALLOCATION -----------------------!
-
-! Allocate array storage.
-      CALL ALLOCATE_ARRAYS
-      IF (QMOMK) CALL QMOMK_ALLOCATE_ARRAYS
-
-
-!--------------------------  GEOMETRY CONTROLS -----------------------!
-
-
+!     CALL CHECK_CHEMICAL_RXNS_DES
+      CALL CHECK_DATA_ODEPACK
 
 
 
 !----------------------  DOMAIN SPECIFIC CHECKS  --------------------!
-
-      CALL CHECK_DATA_ODEPACK
 
 
 ! This call needs to occur before any of the IC/BC checks.
@@ -127,8 +122,11 @@
 
 ! Set the flags for identifying computational cells
       CALL SET_FLAGS 
+! Set arrays for computing indices
+      CALL SET_INCREMENTS
+      CALL SET_INCREMENTS3
 
-! JFD: cartesian grid implementation
+! Cartesian grid implementation
       CALL CHECK_DATA_CARTESIAN
       IF(CARTESIAN_GRID) THEN
          CALL CUT_CELL_PREPROCESSING
@@ -136,27 +134,25 @@
          CALL ALLOCATE_DUMMY_CUT_CELL_ARRAYS
       ENDIF
 
+! Setup DES boundaries.
       IF(DISCRETE_ELEMENT) then 
-         !RG. Allocate the DES arrays dimensioned by Eulerian grid parameters 
-         !Right now the below routine allocates and defines xe, yn, and zt that are used 
-         !for des_stl_preprocessing. 
-         CALL DES_ALLOCATE_ARRAYS_EULERIAN_GEOM
+         CALL DES_STL_PREPROCESSING
+         IF(RUN_TYPE == 'NEW' .AND. PARTICLES /= 0) THEN
+            IF(GENER_PART_CONFIG) CALL GENERATE_PARTICLE_CONFIG
+         ENDIF
+      ENDIF
          
-         ! if using stl representation for particle-wall interactions in discrete model
-         ! then allocate the required arrays. This was earlier done in CG routines, 
-         ! but to extend this capabilty to non-CG setups, allocate these arrays independently.
-         IF(USE_STL_DES) then 
-            CALL ALLOCATE_DES_STL_ARRAYS 
-         
-            ! do the stl preprocessing for discrete model if it is specified as true
-            ! or forced to true through earlier consistency checks 
-            CALL DES_STL_PREPROCESSING
-         
-         end IF
-      end IF
+        
+!--------------------------  ARRAY ALLOCATION -----------------------!
       
-! Initialize all field variables as undefined
+! Allocate array storage.
+      CALL ALLOCATE_ARRAYS
+      IF(DISCRETE_ELEMENT) CALL DES_ALLOCATE_ARRAYS
+      IF(QMOMK) CALL QMOMK_ALLOCATE_ARRAYS
+      
+! Initialize arrays.
       CALL INIT_FVARS 
+      IF(DISCRETE_ELEMENT) CALL DES_INIT_ARRAYS
 
 ! This is all that happens in SET_L_SCALE so it needs moved, maybe
 ! this should go in int_fluid_var.?
