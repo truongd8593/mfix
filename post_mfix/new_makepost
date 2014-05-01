@@ -112,7 +112,7 @@ then
    echo " [1] Portland Group Linux Fortran Compiler (pgf90)"
    echo " [2] Intel Fortran Compiler (ifort) "
    echo " [3] gfortran"
-;   echo " "
+   echo " "
    echo -n "Select the compiler to compile POST_MFIX? [3] "
    read lnx_compiler
 
