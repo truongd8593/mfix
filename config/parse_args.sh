@@ -182,12 +182,12 @@ for arg in $input; do
 
 # Enable specify debug flags.
 #-------------------------------------------------------------------------->>
-    "--debug" ) USE_DEBUG=1;;
+    "--debug" ) USE_DEBUG="1";;
 
 
 # Code coverage flag
 #-------------------------------------------------------------------------->>
-    "--codecov" ) USE_CODECOV=1;;
+    "--codecov" ) USE_CODECOV="1";;
 
 
 # Specify optimization level.

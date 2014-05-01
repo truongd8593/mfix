@@ -76,17 +76,17 @@ inline_files="compare.f eosg.f discretize.f"
 
 # Debug flags for Intel Fortran
 dbg=
-if test ${USE_DEBUG} = 1; then dbg="-g"; fi
+if test "${USE_DEBUG}" = "1"; then dbg="-g"; fi
 
 # Common compile flags.
 common="-c -I. -convert big_endian -assume byterecl"
 common=${common}" -diag-disable remark -arch AVX -axAVX"
 
-if test ${USE_CODECOV} = 1; then common=${common}" -prof-gen=srcpos"; fi
+if test "${USE_CODECOV}" = "1"; then common=${common}" -prof-gen=srcpos"; fi
 
 case $OPT in
   0)echo " Setting flags for debugging."
-    dbg="-traceback -check all -fpe:0 -fp-model precise -O0"
+    dbg="-traceback -check all -fpe:0 -fp-model source -O0"
     FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR ${dbg} -g"
     FORT_FLAGS3="${common} ${mkl} -O0 -g"
     LINK_FLAGS="${omp} -g";;

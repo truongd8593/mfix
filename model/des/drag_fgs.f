@@ -612,6 +612,7 @@
           DOUBLE PRECISION, DIMENSION(2,2,2) :: weight_ft
           DOUBLE PRECISION :: velfp(3), desposnew(3)
           DOUBLE PRECISION :: D_FORCE(3)
+          DOUBLE PRECISION, DIMENSION(3) :: VEL_NEW
 !
 !-----------------------------------------------
 ! Include statement functions
@@ -739,8 +740,9 @@
 ! The drag force on each particle is equal to:
 !    beta(u_g-u_s)*vol_p/eps.
 ! Therefore, the drag force = f_gp*(u_g - u_s)
+            VEL_NEW(:) = DES_VEL_NEW(NP,:)
             CALL DES_DRAG_GP(NP, velfp(1:3), &
-               DES_VEL_NEW(NP,1:3))
+               VEL_NEW)
 
 ! Calculate the gas-solids drag force on the particle
             IF(MPPIC .AND. MPPIC_PDRAG_IMPLICIT) THEN
@@ -752,8 +754,8 @@
                D_FORCE(1:3) = F_GP(NP)*(VEL_FP(NP,1:3))
             ELSE
 ! default case
-               !GD_FORCE(NP,:) = F_GP(NP)*(VEL_FP(NP,:)-DES_VEL_NEW(NP,:))
-               D_FORCE(1:3) = F_GP(NP)*(VEL_FP(NP,1:3)-DES_VEL_NEW(NP,1:3))
+               !GD_FORCE(NP,:) = F_GP(NP)*(VEL_FP(NP,:)-VEL_NEW)
+               D_FORCE(1:3) = F_GP(NP)*(VEL_FP(NP,1:3)-VEL_NEW)
             ENDIF
 
 ! Update the contact forces (FC) on the particle to include gas
@@ -838,8 +840,6 @@
 !-----------------------------------------------
 ! local variable used for debugging
       LOGICAL :: FOCUS
-! local drag forces
-      DOUBLE PRECISION :: drag_bm_tmp(3)
 ! general i, j, k indices
       INTEGER :: I, J, K, IJK, cur_ijk
       INTEGER :: II, JJ, KK
@@ -881,6 +881,7 @@
       DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
       DOUBLE PRECISION, DIMENSION(2,2,2) :: weight_ft
       DOUBLE PRECISION :: velfp(3), desposnew(3)
+      DOUBLE PRECISION, DIMENSION(3) :: VEL_NEW
 
 !-----------------------------------------------
 ! Include statement functions
@@ -937,8 +938,7 @@
 !!$omp         ii,jj,kk,cur_ijk,icur,jcur,kcur,                    &
 !!$omp         ijpkp,ipjkp,ipjpkp,ijkp,ipjk,ijpk,ipjpk,            &
 !!$omp         avg_factor,pcell,vcell,onew,gstencil,vstencil,      &
-!!$omp         focus,np,wtp,weightp,ovol,m,nindx,                  &
-!!$omp         drag_bm_tmp)                                        &
+!!$omp         focus,np,wtp,weightp,ovol,m,nindx)                  &
 !!$omp schedule (guided,50)
 
 !Handan Liu modified the following do-loop on Jan 15 2013,
@@ -948,7 +948,7 @@
 !$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,                                         &
 !$omp         gst_tmp,vst_tmp,velfp,desposnew,ijpkp,ipjkp,                      &
 !$omp         ipjpkp,ijkp,nindx,focus,np,wtp,m,weight_ft,                       &
-!$omp             icur,jcur,kcur,vcell,ovol,drag_bm_tmp)
+!$omp             icur,jcur,kcur,vcell,ovol)
 !$omp do reduction(+:drag_am) reduction(+:drag_bm)
       DO IJK = IJKSTART3,IJKEND3
          IF(.NOT.FLUID_AT(IJK) .OR. PINC(IJK)==0) cycle
@@ -1025,8 +1025,9 @@
 ! The drag force on each particle is equal to:
 !    beta(u_g-u_s)*vol_p/eps.
 ! Therefore, the drag force = f_gp*(u_g - u_s)
+            VEL_NEW(:) = DES_VEL_NEW(NP,:)
             CALL DES_DRAG_GP(NP, velfp(1:3), &
-               DES_VEL_NEW(NP,1:3))
+               VEL_NEW)
 !-----------------------------------------------------------------<<<
 ! Calculate the corresponding gas solids drag force that is used in
 ! the gas phase momentum balances.
@@ -1055,12 +1056,6 @@
                      vcell = des_vol_node(cur_ijk)
                      ovol = one/vcell
 
-! first remove the velocity component at this grid point from the vel_fp
-                     drag_bm_tmp(1:3) = vel_fp(np, 1:3) - &
-                     weight_ft(i,j,k)*vst_tmp(i,j,k, 1:3)
-! now find the remaning drag force
-                     drag_bm_tmp(1:3) = des_vel_new(np,1:3) !- drag_bm_tmp(1:3)
-
 !!$omp critical
                      drag_am(cur_ijk,m) = drag_am(cur_ijk,m) + &
                      !f_gp(np)*weightp(i,j,k)*ovol*wtp          !Handan Liu revised on Jan 15 2013
@@ -1068,7 +1063,7 @@
 
                      drag_bm(cur_ijk, 1:3,m) = &
                      drag_bm(cur_ijk,1:3,m) + &
-                     f_gp(np) * drag_bm_tmp(1:3) * &
+                     f_gp(np) * vel_new(1:3) * &
                      !weightp(i,j,k)*ovol*wtp           !Handan Liu revised on Jan 15 2013
                      weight_ft(i,j,k)*ovol*wtp
 !!$omp end critical
@@ -1135,7 +1130,7 @@
                        (drag_am(ijkm,:) + drag_am(ijmkm,:) +&
                         drag_am(imjmkm,:)+drag_am(imjkm,:) )
                ENDIF
-            ENDIF   ! end if 
+            ENDIF   ! end if
          ELSE   ! else branch of if (fluid_at(ijk))
             IF (DES_CONTINUUM_HYBRID) THEN
                F_GDS(IJK,:) = ZERO
@@ -2080,4 +2075,3 @@
         ENDIF
 
       END SUBROUTINE DRAG_INTERPOLATION
-
