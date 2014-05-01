@@ -60,6 +60,8 @@
 
       INTEGER I, J, K, IJK, NF
 
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
+
       DOUBLE PRECISION :: RADSQ, DISTSQ, DIST(DIMN), CLOSEST_PT(DIMN)
       INTEGER :: COUNT_FAC, COUNT, contact_facet_count, NEIGH_CELLS, &
       NEIGH_CELLS_NONNAT, &
@@ -67,8 +69,8 @@
       IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP, &
       LOC_MAX_PIP, focus_particle
 
-
       INCLUDE 'function.inc'
+
 
       FOCUS_PARTICLE = -1
 
@@ -150,7 +152,7 @@
             CLOSEST_PT(:))
 
             DIST(:) = POSITION(:) - CLOSEST_PT(:)
-            DISTSQ = DOT_PRODUCT(DIST, DIST)
+            DISTSQ = DES_DOTPRDCT(DIST, DIST)
 
             IF(DISTSQ .GE. RADSQ) CYCLE !No overlap exists, move on to the next facet
 
@@ -168,6 +170,15 @@
       END SUBROUTINE CHECK_IF_PARTICLE_OVELAPS_STL
 
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_DEM_FORCE_WITH_WALL_STL
 
       USE run
@@ -216,12 +227,21 @@
       INTEGER, Parameter :: MAX_FACET_CONTS = 200
       INTEGER :: list_of_checked_facets(max_facet_conts)
 
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
+
+
+      DOUBLE PRECISION :: FORCE_HISTORY(DIMN), DTSOLID_TMP, route
+
+
       INCLUDE 'function.inc'
 
       DES_LOC_DEBUG = .false. ;      DEBUG_DES = .false.
       FOCUS_PARTICLE = -1
 
       DO LL = 1, MAX_PIP
+
+         FORCE_HISTORY = PFT(LL,0,:)
+         PFT(LL,0,:) = ZERO
 
          IF(LL.EQ.FOCUS_PARTICLE) DEBUG_DES = .TRUE.
 
@@ -400,7 +420,7 @@
                     CLOSEST_PT(:))
 
                DIST(:) = DES_POS_NEW(LL,:) - CLOSEST_PT(:)
-               DISTSQ = DOT_PRODUCT(DIST, DIST)
+               DISTSQ = DES_DOTPRDCT(DIST, DIST)
                OVERLAP_N = ZERO
                OVERLAP_PERCENT = ZERO
 
@@ -436,30 +456,59 @@
                FNS2(:) = -ETAN_DES_W * V_REL_TRANS_NORM * NORMAL(:)
                FNORM(:) = FNS1(:) + FNS2(:)
 
+
 ! Calculate the tangential displacement. The tangential displacement for facet
 ! treatment is not based on time integration of forces. It is given just as
 ! overlap_t = vrel_tang*dtsolid
+!               OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
 
-               OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
+               DTSOLID_TMP = 0.0d0
 
-               FTS1(:) = -KT_DES_W * OVERLAP_T*TANGENT(:)
+               IF(abs(sum(FORCE_HISTORY)) .gt. small_number) THEN
+!               IF(sum(FORCE_HISTORY) /= 0.0) THEN
+                  OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
+                  route = 0
+               ELSE
+                  IF (V_REL_TRANS_NORM .GT. ZERO) THEN
+                     DTSOLID_TMP = OVERLAP_N/(V_REL_TRANS_NORM)
+                  ELSEIF (V_REL_TRANS_NORM .LT. ZERO) THEN
+                     DTSOLID_TMP = DTSOLID
+                  ELSE
+                      DTSOLID_TMP = OVERLAP_N/&
+                         (V_REL_TRANS_NORM+SMALL_NUMBER)
+                  ENDIF
+                  OVERLAP_T = V_REL_TRANS_TANG*&
+                      MIN(DTSOLID,DTSOLID_TMP)
+                  route = 1
+               ENDIF
+
+               PFT(LL,0,:) = FORCE_HISTORY(:) + OVERLAP_T*TANGENT(:)
+               FORCE_HISTORY(:) = PFT(LL,0,:) - &
+                  DES_DOTPRDCT(PFT(LL,0,:),NORMAL)*NORMAL(:)
+
+
+
+               FTS1(:) = -KT_DES_W * FORCE_HISTORY(:)
                FTS2(:) = -ETAT_DES_W * V_REL_TRANS_TANG * TANGENT(:)
                FTAN(:) =  FTS1(:) + FTS2(:)
-
 
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with a wall
 
-               FTMD = sqrt(dot_product(FTAN, FTAN))
-               FNMD = sqrt(dot_product(FNORM,FNORM))
+               FTMD = sqrt(DES_DOTPRDCT(FTAN, FTAN))
+               FNMD = sqrt(DES_DOTPRDCT(FNORM,FNORM))
                !the Square roots could be removed to further optimize this code
 
                IF (FTMD.GT.(MEW_W*FNMD)) THEN
-                  IF(dot_product(TANGENT,TANGENT).EQ.zero) THEN
+                  IF(DES_DOTPRDCT(TANGENT,TANGENT).EQ.zero) THEN
                      FTAN(:) =  MEW_W * FNMD * FTAN(:)/FTMD
                   ELSE
                      FTAN(:) = -MEW_W * FNMD * TANGENT(:)
                   ENDIF
+
+! Updated the tangental displacement history.
+                  PFT(LL,0,:) = -( FTAN(:) - FTS2(:) ) / KT_DES_W
+
                ENDIF
 
                !add the force
@@ -473,18 +522,24 @@
                   TOW(:,LL) = TOW(:,LL) + DES_RADIUS(LL)*CROSSP(:)
                ELSE
                   CROSSP(1) = NORMAL(1)*FTAN(2) - NORMAL(2)*FTAN(1)
-                  TOW(1,LL) = TOW(1,LL) + DES_RADIUS(LL)*CROSSP(1)
+                  TOW(1,LL) = TOW(1,LL) + DISTMOD*CROSSP(1)
                ENDIF
 
             ENDDO
-
          end DO
-
       end DO
 
       RETURN
     END SUBROUTINE CALC_DEM_FORCE_WITH_WALL_STL
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
     SUBROUTINE write_this_facet_and_part(FID, PID)
       USE run
       USE param1
@@ -573,6 +628,15 @@
 
     end SUBROUTINE write_this_facet_and_part
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CFRELVEL2(L, II, VRN, VRT, TANGNT, NORM, DIST_LI, &
                           WALLCONTACT)
 
@@ -600,6 +664,9 @@
 ! distance from the contact point to the particle centers
       DOUBLE PRECISION DIST_CL, DIST_CI
 
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
+
+
       VRELTRANS(:) = (DES_VEL_NEW(L,:) - DES_VEL_NEW(II,:))
 
 ! calculate the distance from the particle center to the contact point,
@@ -623,14 +690,14 @@
       VRELTRANS(:) =  VRELTRANS(:) + V_ROT(:)
 
 ! normal component of relative velocity (scalar)
-      VRN = DOT_PRODUCT(VRELTRANS,NORM)
+      VRN = DES_DOTPRDCT(VRELTRANS,NORM)
 
 ! slip velocity of the contact point
 ! Equation (8) in Tsuji et al. 1992
       VSLIP(:) =  VRELTRANS(:) - VRN*NORM(:)
 
 ! the magnitude of the tangential vector
-      TANMOD = SQRT(DOT_PRODUCT(VSLIP,VSLIP))
+      TANMOD = SQRT(DES_DOTPRDCT(VSLIP,VSLIP))
       IF(TANMOD.NE.ZERO) THEN
 ! the unit vector in the tangential direction
          TANGNT(:) = VSLIP(:)/TANMOD
@@ -639,7 +706,7 @@
       ENDIF
 
 ! tangential component of relative surface velocity (scalar)
-      VRT  = DOT_PRODUCT(VRELTRANS,TANGNT)
+      VRT  = DES_DOTPRDCT(VRELTRANS,TANGNT)
 
 
       IF(DEBUG_DES) THEN
@@ -660,10 +727,23 @@
       RETURN
       END SUBROUTINE CFRELVEL2
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CFSLIDE2(TANGNT,PARTICLE_SLIDE)
-      USE discretelement
+
+      USE discretelement, only: FTAN, FNORM, MEW, DIMN
+      USE discretelement, only: DEBUG_DES
       USE param1
+
       IMPLICIT NONE
+
       DOUBLE PRECISION, DIMENSION(DIMN), INTENT(IN) :: TANGNT
 !-----------------------------------------------
 ! Local Variables
@@ -673,13 +753,15 @@
       DOUBLE PRECISION FTMD, FNMD
       LOGICAL PARTICLE_SLIDE
 
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
-      FTMD = SQRT(DOT_PRODUCT(FTAN, FTAN))
-      FNMD = SQRT(DOT_PRODUCT(FNORM,FNORM))
+
+      FTMD = SQRT(DES_DOTPRDCT(FTAN, FTAN))
+      FNMD = SQRT(DES_DOTPRDCT(FNORM,FNORM))
 
       IF (FTMD.GT.(MEW*FNMD)) THEN
          PARTICLE_SLIDE = .TRUE.
-         IF(DOT_PRODUCT(TANGNT,TANGNT).EQ.0) THEN
+         IF(DES_DOTPRDCT(TANGNT,TANGNT).EQ.0) THEN
             FTAN(:) =  MEW * FNMD * FTAN(:)/FTMD
          ELSE
             FTAN(:) = -MEW * FNMD * TANGNT(:)
@@ -698,6 +780,15 @@
       RETURN
       END SUBROUTINE CFSLIDE2
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CFFCTOW2(L, II,  NORM, DIST_LI)
 
       USE param1
@@ -744,6 +835,14 @@
       RETURN
       END SUBROUTINE CFFCTOW2
 
+
+!----------------------------------------------------------------------!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!----------------------------------------------------------------------!
       SUBROUTINE CFRELVEL_WALL2(L,  VRN, VRT, TANGNT, NORM, DIST_LI)
 
       USE discretelement
@@ -769,6 +868,7 @@
 ! distance from the contact point to the particle centers
       DOUBLE PRECISION DIST_CL, DIST_CI
 
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
 ! translational relative velocity
       VRELTRANS(:) = DES_VEL_NEW(L,:)
@@ -781,6 +881,7 @@
       ELSE
          OMEGA_SUM(1) = OMEGA_NEW(L,1)*DIST_CL
          OMEGA_SUM(2) = ZERO
+         OMEGA_SUM(3) = ZERO
       ENDIF
 
       CALL DES_CROSSPRDCT(V_ROT, OMEGA_SUM, NORM)
@@ -789,14 +890,14 @@
       VRELTRANS(:) =  VRELTRANS(:) + V_ROT(:)
 
 ! normal component of relative velocity (scalar)
-      VRN = dot_product(VRELTRANS,NORM)
+      VRN = DES_DOTPRDCT(VRELTRANS,NORM)
 
 ! slip velocity of the contact point
 ! Equation (8) in Tsuji et al. 1992
       VSLIP(:) =  VRELTRANS(:) - VRN*NORM(:)
 
 ! the magnitude of the tangential vector
-      TANMOD = SQRT(DOT_PRODUCT(VSLIP,VSLIP))
+      TANMOD = SQRT(DES_DOTPRDCT(VSLIP,VSLIP))
       IF(TANMOD.NE.ZERO) THEN
 ! the unit vector in the tangential direction
          TANGNT(:) = VSLIP(:)/TANMOD
@@ -805,8 +906,7 @@
       ENDIF
 
 ! tangential component of relative surface velocity (scalar)
-      VRT  = dot_product(VRELTRANS,TANGNT)
-
+      VRT  = DES_DOTPRDCT(VRELTRANS,TANGNT)
 
       IF(DEBUG_DES) THEN
          WRITE(*,*) 'IN CFRELVEL_WALL2------------------------------'

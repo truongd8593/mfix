@@ -412,6 +412,7 @@ $(EXEC_FILE) : \
     $(DPO)check_solids_phases.$(OBJ_EXT) \
     $(DPO)check_data_odepack.$(OBJ_EXT) \
     $(DPO)stiff_chem_rrates.$(OBJ_EXT) \
+    $(DPO)calc_collision_wall.$(OBJ_EXT) \
     $(DPO)calc_force_dem.$(OBJ_EXT) \
     $(DPO)calc_force_dem_stl.$(OBJ_EXT) \
     $(DPO)calc_rrate_des.$(OBJ_EXT) \
@@ -885,6 +886,7 @@ $(EXEC_FILE) : \
     $(DPO)stiff_chem_mod.$(OBJ_EXT) \
     $(DPO)stiff_chem_rrates.$(OBJ_EXT) \
     $(DPO)stiff_chem_stats_mod.$(OBJ_EXT) \
+    $(DPO)calc_collision_wall.$(OBJ_EXT) \
     $(DPO)calc_force_dem.$(OBJ_EXT) \
     $(DPO)calc_force_dem_stl.$(OBJ_EXT) \
     $(DPO)calc_rrate_des.$(OBJ_EXT) \
@@ -6242,6 +6244,16 @@ $(DPO)stiff_chem_rrates.$(OBJ_EXT) : ./chem/stiff_chem_rrates.f \
             $(DPO)run.mod \
             $(DPO)stiff_chem.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/stiff_chem_rrates.f  -o $(DPO)stiff_chem_rrates.$(OBJ_EXT) -module $(DPO)
+$(DPO)calc_collision_wall.$(OBJ_EXT) : ./des/calc_collision_wall.f \
+            $(DPO)softspring_funcs_cutcell.mod \
+            $(DPO)run.mod \
+            $(DPO)param1.mod \
+            $(DPO)discretelement.mod \
+            $(DPO)geometry.mod \
+            $(DPO)compar.mod \
+            $(DPO)constant.mod \
+            $(DPO)cutcell.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/calc_collision_wall.f  -o $(DPO)calc_collision_wall.$(OBJ_EXT) -module $(DPO)
 $(DPO)calc_force_dem.$(OBJ_EXT) : ./des/calc_force_dem.f \
             $(DPO)run.mod \
             $(DPO)param1.mod \

@@ -184,7 +184,7 @@
       ENDIF
 
 ! Accumulated spring force
-      Allocate(  PFT (NPARTICLES,MAXNEIGHBORS,DIMN) )
+      Allocate(  PFT (NPARTICLES,0:MAXNEIGHBORS,DIMN) )
 
 ! Save the normal direction at previous time step
       Allocate(  PFN (NPARTICLES,MAXNEIGHBORS,DIMN) )

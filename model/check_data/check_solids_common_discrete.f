@@ -569,13 +569,6 @@
       ENDIF
 
 
-      IF(.not.cartesian_grid.and.use_stl_des.and..not.des_convert_box_to_facets) then 
-         write(err_msg, '(3(A,/))')'USE_STL_DES detected for particle-wall interactions', & 
-         'but DES_CONVERT_BOX_TO_FACETS not set to true to convert bounding box to facets', &
-         'Set DES_CONVERT_BOX_TO_FACETS to true and re-run'         
-         CALL FLUSH_ERR_MSG(abort = .true.)
-      endif
-      
       IF(use_stl_des.and.use_cohesion) then 
          write(err_msg, '(3(A,/))') & 
          'The cohesion force model has not been implemented in new', &
