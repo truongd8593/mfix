@@ -432,7 +432,6 @@
                               Theta_Ue(IJK_U)    *U_G(IP_OF(IJK_U)))
             ELSE
                VELG_ARR(1) = HALF * (U_G(IJK_U) + U_G(IP_OF(IJK_U)))
-               !VELG_ARR(1) = AVG_X_E(U_G(IMJK),U_G(IJK),I)
             ENDIF
 
             IF(CUT_V_TREATMENT_AT(IJK_V)) THEN
@@ -440,7 +439,6 @@
                               Theta_Vn(IJK_V)    *V_G(JP_OF(IJK_V)))
             ELSE
                VELG_ARR(2) = HALF * (V_G(IJK_V) + V_G(JP_OF(IJK_V)))
-               !VELG_ARR(2) = AVG_Y_N(V_G(IJMK),V_G(IJK))
             ENDIF
 
             VELDS_ARR(:,1) = DES_U_S(IJK,:)
@@ -452,9 +450,11 @@
                                  Theta_Wt(IJK_W)    * W_G(KP_OF(IJK_W)))
                ELSE
                   VELG_ARR(3) = HALF * (W_G(IJK_W) + W_G(KP_OF(IJK_W)))
-                  !VELG_ARR(3) = AVG_Z_T(W_G(IJKM),W_G(IJK))
                ENDIF
                VELDS_ARR(:,3) = DES_W_S(IJK,:)
+            ELSE
+               VELG_ARR(3) = ZERO
+               VELDS_ARR(:,3) = ZERO
             ENDIF
 
 
@@ -731,8 +731,7 @@
             desposnew(:) = des_pos_new(np,:)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
             vel_fp(np,1:3) = velfp(1:3)
-!===================================================================>> Handan Liu
-!
+
 ! Calculate the particle centered drag coefficient (F_GP) using the
 ! particle velocity and the interpolated gas velocity.  Note F_GP
 ! obtained from des_drag_gp subroutine is given as:
@@ -741,16 +740,12 @@
 !    beta(u_g-u_s)*vol_p/eps.
 ! Therefore, the drag force = f_gp*(u_g - u_s)
             VEL_NEW(:) = DES_VEL_NEW(NP,:)
-            CALL DES_DRAG_GP(NP, velfp(1:3), &
-               VEL_NEW)
+            CALL DES_DRAG_GP(NP, velfp(1:3), VEL_NEW)
 
 ! Calculate the gas-solids drag force on the particle
             IF(MPPIC .AND. MPPIC_PDRAG_IMPLICIT) THEN
 ! implicit treatment of the drag term for mppic
 !------------------------------------------------------------------<<<< Handan Liu
-! Handan Liu set D_FORCE(:) to replace GD_FORCE(:,:)
-!       in order to reduce the calculation time                 on Jan 14 2013
-               !GD_FORCE(NP,:) = F_GP(NP)*(VEL_FP(NP,:))
                D_FORCE(1:3) = F_GP(NP)*(VEL_FP(NP,1:3))
             ELSE
 ! default case

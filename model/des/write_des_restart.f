@@ -33,7 +33,7 @@
 
 !-----------------------------------------------
 ! remove *********************
-      ltor_dimn = 1 + (dimn-2)*2 
+      ltor_dimn = merge(1,3,NO_K)
 
 ! Create the restart file name and open. A restart can either be
 ! distributed, where each process writes a restart file. Or, a restart

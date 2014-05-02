@@ -140,7 +140,9 @@
       real,dimension(:,:), allocatable :: ltemp_array
 
 ! check whether an error occurs in opening a file
-      INTEGER ISTAT      
+      INTEGER :: ISTAT
+
+      INTEGER :: wDIMN
 !-----------------------------------------------
 ! Include statement functions 
 !-----------------------------------------------
@@ -148,6 +150,9 @@
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
+
+! Set output dimension.
+       wDIMN = merge(2,3,NO_K)
 
 ! set the file name and unit number and open file 
       if (bdist_io) then 
@@ -255,7 +260,7 @@
                pc = pc+1
                if(pea(l,4)) cycle 
                write (des_unit,"(15x,3(es13.6,3x))")&
-                  (real(des_vel_new(l,k)),k=1,dimn),vel_w
+                  (real(des_vel_new(l,k)),k=1,wDIMN),vel_w
             enddo
          else ! 3d 
             pc = 1
@@ -265,7 +270,7 @@
                pc = pc+1
                if(pea(l,4)) cycle 
                write (des_unit,"(15x,3(es13.6,3x))")&
-                  (real(des_vel_new(l,k)),k=1,dimn)
+                  (real(des_vel_new(l,k)),k=1,wDIMN)
             enddo
          endif
          write(des_unit,"(12x,a,/9x,a)") '</DataArray>','</PointData>'
@@ -286,7 +291,7 @@
                pc = pc+1
                if(pea(l,4)) cycle 
                write (des_unit,"(15x,3(es13.6,3x))")&
-                  (real(des_pos_new(l,k)),k=1,dimn),pos_z 
+                  (real(des_pos_new(l,k)),k=1,wDIMN),pos_z 
             enddo
          else
             pc = 1
@@ -296,7 +301,7 @@
                pc = pc+1
                if(pea(l,4)) cycle 
                write (des_unit,"(15x,3(es13.6,3x))")&
-                  (real(des_pos_new(l,k)),k=1,dimn) 
+                  (real(des_pos_new(l,k)),k=1,wDIMN) 
             enddo
          endif
          write(des_unit,"(12x,a,/9x,a)")'</DataArray>','</Points>'
@@ -387,7 +392,7 @@
 ! Write velocity data.
                
          ltemp_array = 0.0 
-         do k = 1,dimn
+         do k = 1,wDIMN
             call des_gather(des_vel_new(:,k))
             ltemp_array(:,k) = drootbuf(:)
          end do
@@ -404,7 +409,7 @@
 
 !write position data 
          ltemp_array = 0.0 
-         do k = 1,dimn
+         do k = 1,wDIMN
             call des_gather(des_pos_new(:,k))
             ltemp_array(:,k) = drootbuf(:)
          end do
@@ -746,6 +751,9 @@
 ! Variables related to gathering info at PE_IO 
       integer llocalcnt,lglocnt,lgathercnts(0:numpes-1),lproc,ltotvar,lcount
       real,dimension(:,:), allocatable :: ltemp_array
+
+      INTEGER :: wDIMN
+
 !-----------------------------------------------
 ! Functions 
 !-----------------------------------------------
@@ -755,12 +763,10 @@
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
 
+! Set output dimnensions
+      wDIMN = merge(2,3,NO_K)
 ! set the total variable based on dimension 
-      if (DO_K) then  
-        ltotvar = 9 
-      else
-        ltotvar = 8 
-      end if 
+      ltotvar = merge(8,9,NO_K)
 
 ! set the file name and unit number and open file 
       des_data = 2000
@@ -807,11 +813,11 @@
             if(pea(l,4)) cycle 
             if(DO_K) then
                write (des_data, '(8(2x,es12.5),I5)')&
-                  (des_pos_new(l,k),k=1,dimn),(des_vel_new(l,k),k=1,dimn), &
+                  (des_pos_new(l,k),k=1,wDIMN),(des_vel_new(l,k),k=1,wDIMN), &
                    des_radius(l),ro_sol(l),mark_part(l) 
             else
                write (des_data, '(7(2x,es12.5),I5)')&
-                  (des_pos_new(l,k),k=1,dimn), (des_vel_new(l,k),k=1,dimn), & 
+                  (des_pos_new(l,k),k=1,wDIMN), (des_vel_new(l,k),k=1,wDIMN), & 
                   omega_new(l,1), des_radius(l), ro_sol(l),mark_part(l) 
             endif
         end do 
@@ -834,11 +840,11 @@
 
 ! gather information from all processor 
          lcount = 1
-         do k = 1,dimn 
+         do k = 1,wDIMN 
             call des_gather(des_pos_new(:,k))
             ltemp_array(:,lcount) = drootbuf(:); lcount=lcount+1
          end do  
-         do k = 1,dimn 
+         do k = 1,wDIMN 
             call des_gather(des_vel_new(:,k))
             ltemp_array(:,lcount) = drootbuf(:); lcount=lcount+1
          end do  
