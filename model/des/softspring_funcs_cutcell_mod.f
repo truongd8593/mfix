@@ -110,6 +110,7 @@
             DO I = IMINUS1, IPLUS1
                IJK = FUNIJK(I,J,K)
                COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+
                IF(COUNT_FAC.EQ.0) CYCLE
                distsq = zero
                IF(POSITION(1) > XE(I)) DISTSQ = DISTSQ &
@@ -194,7 +195,7 @@
 
       INTEGER :: LL
       INTEGER I, J,K, II, IW, IDIM, IJK, NF, wall_count
-      DOUBLE PRECISION OVERLAP_N, OVERLAP_T, SQRT_OVERLAP, OVERLAP_PERCENT
+      DOUBLE PRECISION OVERLAP_N, OVERLAP_T, SQRT_OVERLAP
 
       DOUBLE PRECISION V_REL_TRANS_NORM, V_REL_TRANS_TANG, &
       DISTSQ, RADSQ, CLOSEST_PT(DIMN)
@@ -230,8 +231,11 @@
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
 
-      DOUBLE PRECISION :: FORCE_HISTORY(DIMN), DTSOLID_TMP, route
+      DOUBLE PRECISION :: FORCE_HISTORY(DIMN), DTSOLID_TMP
 
+
+      DOUBLE PRECISION :: MAX_DISTSQ
+      INTEGER :: MAX_NF
 
       INCLUDE 'function.inc'
 
@@ -267,6 +271,8 @@
 
             WRITE(*,'(A, 3(2x, g17.8))') 'POS = ', DES_POS_NEW(LL, :)
          ENDIF
+
+
 
          FTS1(:) = ZERO
          FTS2(:) = ZERO
@@ -336,6 +342,8 @@
          ENDDO
 
          CONTACT_FACET_COUNT = 0
+
+         MAX_DISTSQ = UNDEFINED
 
          DO CELL_COUNT = 1, NEIGH_CELLS
             IJK = LIST_OF_CELLS(CELL_COUNT)
@@ -422,112 +430,110 @@
                DIST(:) = DES_POS_NEW(LL,:) - CLOSEST_PT(:)
                DISTSQ = DES_DOTPRDCT(DIST, DIST)
                OVERLAP_N = ZERO
-               OVERLAP_PERCENT = ZERO
 
                IF(DISTSQ .GE. RADSQ) CYCLE !No overlap exists
 
-               phaseLL = PIJK(LL,5)
-               ! Hertz vs linear spring-dashpot contact model
-               IF (DES_COLL_MODEL_ENUM .EQ. HERTZIAN) THEN
-                  sqrt_overlap = SQRT(OVERLAP_N)
-                  KN_DES_W = hert_kwn(phaseLL)*sqrt_overlap
-                  KT_DES_W = hert_kwt(phaseLL)*sqrt_overlap
-                  sqrt_overlap = SQRT(sqrt_overlap)
-                  ETAN_DES_W = DES_ETAN_WALL(phaseLL)*sqrt_overlap
-                  ETAT_DES_W = DES_ETAT_WALL(phaseLL)*sqrt_overlap
-               ELSE
-                  KN_DES_W = KN_W
-                  KT_DES_W = KT_W
-                  ETAN_DES_W = DES_ETAN_WALL(phaseLL)
-                  ETAT_DES_W = DES_ETAT_WALL(phaseLL)
-               ENDIF
-
-               DISTMOD = SQRT(DISTSQ)
-               OVERLAP_N = DES_RADIUS(LL) - DISTMOD
-               OVERLAP_PERCENT = (OVERLAP_N/DES_RADIUS(LL))*100.D0
-
-               NORMAL(:) = -NORM_FACE(:,NF)
-
-               !Calculate the translational relative velocity for a contacting particle pair
-               CALL CFRELVEL_WALL2(LL, V_REL_TRANS_NORM, &
-                    & V_REL_TRANS_TANG, TANGENT, NORMAL, DISTMOD)
-
-               FNS1(:) = -KN_DES_W * OVERLAP_N * NORMAL(:)
-               FNS2(:) = -ETAN_DES_W * V_REL_TRANS_NORM * NORMAL(:)
-               FNORM(:) = FNS1(:) + FNS2(:)
-
-
-! Calculate the tangential displacement. The tangential displacement for facet
-! treatment is not based on time integration of forces. It is given just as
-! overlap_t = vrel_tang*dtsolid
-!               OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
-
-               DTSOLID_TMP = 0.0d0
-
-               IF(abs(sum(FORCE_HISTORY)) .gt. small_number) THEN
-!               IF(sum(FORCE_HISTORY) /= 0.0) THEN
-                  OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
-                  route = 0
-               ELSE
-                  IF (V_REL_TRANS_NORM .GT. ZERO) THEN
-                     DTSOLID_TMP = OVERLAP_N/(V_REL_TRANS_NORM)
-                  ELSEIF (V_REL_TRANS_NORM .LT. ZERO) THEN
-                     DTSOLID_TMP = DTSOLID
-                  ELSE
-                      DTSOLID_TMP = OVERLAP_N/&
-                         (V_REL_TRANS_NORM+SMALL_NUMBER)
-                  ENDIF
-                  OVERLAP_T = V_REL_TRANS_TANG*&
-                      MIN(DTSOLID,DTSOLID_TMP)
-                  route = 1
-               ENDIF
-
-               PFT(LL,0,:) = FORCE_HISTORY(:) + OVERLAP_T*TANGENT(:)
-               FORCE_HISTORY(:) = PFT(LL,0,:) - &
-                  DES_DOTPRDCT(PFT(LL,0,:),NORMAL)*NORMAL(:)
-
-
-
-               FTS1(:) = -KT_DES_W * FORCE_HISTORY(:)
-               FTS2(:) = -ETAT_DES_W * V_REL_TRANS_TANG * TANGENT(:)
-               FTAN(:) =  FTS1(:) + FTS2(:)
-
-! Check for Coulombs friction law and limit the maximum value of the
-! tangential force on a particle in contact with a wall
-
-               FTMD = sqrt(DES_DOTPRDCT(FTAN, FTAN))
-               FNMD = sqrt(DES_DOTPRDCT(FNORM,FNORM))
-               !the Square roots could be removed to further optimize this code
-
-               IF (FTMD.GT.(MEW_W*FNMD)) THEN
-                  IF(DES_DOTPRDCT(TANGENT,TANGENT).EQ.zero) THEN
-                     FTAN(:) =  MEW_W * FNMD * FTAN(:)/FTMD
-                  ELSE
-                     FTAN(:) = -MEW_W * FNMD * TANGENT(:)
-                  ENDIF
-
-! Updated the tangental displacement history.
-                  PFT(LL,0,:) = -( FTAN(:) - FTS2(:) ) / KT_DES_W
-
-               ENDIF
-
-               !add the force
-               FC(:,LL) = FC(:,LL) + FNORM(:) + FTAN(:)
-               
-               !now add the torque             
-               !Using particle radius as the moment arm for computing the 
-               !torque 
-               IF(DO_K) THEN
-                  CALL DES_CROSSPRDCT(CROSSP, NORMAL, FTAN)
-                  TOW(:,LL) = TOW(:,LL) + DES_RADIUS(LL)*CROSSP(:)
-               ELSE
-                  CROSSP(1) = NORMAL(1)*FTAN(2) - NORMAL(2)*FTAN(1)
-                  TOW(1,LL) = TOW(1,LL) + DISTMOD*CROSSP(1)
+               IF(DISTSQ < MAX_DISTSQ)THEN
+                  MAX_DISTSQ = DISTSQ
+                  MAX_NF = NF
                ENDIF
 
             ENDDO
-         end DO
-      end DO
+         ENDDO
+
+
+         IF(MAX_DISTSQ /= UNDEFINED) THEN
+! Assign the collision normal based on the facet with the
+! largest overlap.
+            NORMAL(:) = -NORM_FACE(:,MAX_NF)
+
+! Calculate the particle/wall overlap.
+            DISTMOD = SQRT(MAX_DISTSQ)
+            OVERLAP_N = DES_RADIUS(LL) - DISTMOD
+
+! Calculate the translational relative velocity for a contacting particle pair
+            CALL CFRELVEL_WALL2(LL, V_REL_TRANS_NORM, &
+               V_REL_TRANS_TANG, TANGENT, NORMAL, DISTMOD)
+
+! Calculate the spring model parameters.
+            phaseLL = PIJK(LL,5)
+               ! Hertz vs linear spring-dashpot contact model
+            IF (DES_COLL_MODEL_ENUM .EQ. HERTZIAN) THEN
+               sqrt_overlap = SQRT(OVERLAP_N)
+               KN_DES_W = hert_kwn(phaseLL)*sqrt_overlap
+               KT_DES_W = hert_kwt(phaseLL)*sqrt_overlap
+               sqrt_overlap = SQRT(sqrt_overlap)
+               ETAN_DES_W = DES_ETAN_WALL(phaseLL)*sqrt_overlap
+               ETAT_DES_W = DES_ETAT_WALL(phaseLL)*sqrt_overlap
+            ELSE
+               KN_DES_W = KN_W
+               KT_DES_W = KT_W
+               ETAN_DES_W = DES_ETAN_WALL(phaseLL)
+               ETAT_DES_W = DES_ETAT_WALL(phaseLL)
+            ENDIF
+
+! Calculate the normal contact force
+            FNS1(:) = -KN_DES_W * OVERLAP_N * NORMAL(:)
+            FNS2(:) = -ETAN_DES_W * V_REL_TRANS_NORM * NORMAL(:)
+            FNORM(:) = FNS1(:) + FNS2(:)
+
+
+! Calculate the tangential displacement. Note that only the maximum
+! wall collision is considered. Therefore, enduring contact can exist
+! from facet-to-facet as long as the particle remains in contact with
+! one or more facets.
+            IF(abs(sum(FORCE_HISTORY)) .gt. small_number) THEN
+               OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
+            ELSE
+               IF(V_REL_TRANS_NORM .GT. ZERO) THEN
+                  DTSOLID_TMP = OVERLAP_N/(V_REL_TRANS_NORM)
+               ELSEIF(V_REL_TRANS_NORM .LT. ZERO) THEN
+                  DTSOLID_TMP = DTSOLID
+               ELSE
+                  DTSOLID_TMP = OVERLAP_N /                            &
+                     (V_REL_TRANS_NORM+SMALL_NUMBER)
+               ENDIF
+               OVERLAP_T = V_REL_TRANS_TANG* MIN(DTSOLID,DTSOLID_TMP)
+            ENDIF
+
+! Update the tangential history.
+            PFT(LL,0,:) = FORCE_HISTORY(:) + OVERLAP_T*TANGENT(:)
+            FORCE_HISTORY(:) = PFT(LL,0,:) - &
+               DES_DOTPRDCT(PFT(LL,0,:),NORMAL)*NORMAL(:)
+
+! Calculate the tangential collision force.
+            FTS1(:) = -KT_DES_W * FORCE_HISTORY(:)
+            FTS2(:) = -ETAT_DES_W * V_REL_TRANS_TANG * TANGENT(:)
+            FTAN(:) =  FTS1(:) + FTS2(:)
+
+! Check for Coulombs friction law and limit the maximum value of the
+! tangential force on a particle in contact with a wall.
+            FTMD = sqrt(DES_DOTPRDCT(FTAN, FTAN))
+            FNMD = sqrt(DES_DOTPRDCT(FNORM,FNORM))
+            IF (FTMD.GT.(MEW_W*FNMD)) THEN
+               IF(DES_DOTPRDCT(TANGENT,TANGENT).EQ.zero) THEN
+                  FTAN(:) =  MEW_W * FNMD * FTAN(:)/FTMD
+               ELSE
+                  FTAN(:) = -MEW_W * FNMD * TANGENT(:)
+               ENDIF
+! Updated the tangental displacement history.
+               PFT(LL,0,:) = -(FTAN(:) - FTS2(:)) / KT_DES_W
+
+            ENDIF
+
+! Add the collision force to the total forces acting on the particle.
+            FC(:,LL) = FC(:,LL) + FNORM(:) + FTAN(:)
+
+! Add the torque: The particle radius is used as the moment arm
+            IF(DO_K) THEN
+               CALL DES_CROSSPRDCT(CROSSP, NORMAL, FTAN)
+               TOW(:,LL) = TOW(:,LL) + DES_RADIUS(LL)*CROSSP(:)
+            ELSE
+               CROSSP(1) = NORMAL(1)*FTAN(2) - NORMAL(2)*FTAN(1)
+               TOW(1,LL) = TOW(1,LL) + DISTMOD*CROSSP(1)
+            ENDIF
+         ENDIF
+      ENDDO
 
       RETURN
     END SUBROUTINE CALC_DEM_FORCE_WITH_WALL_STL
