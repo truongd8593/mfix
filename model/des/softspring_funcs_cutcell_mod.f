@@ -146,7 +146,7 @@
             NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
 
             CALL ClosestPtPointTriangle(POSITION(:), &
-            VERTEX(NF, 1,:), VERTEX(NF, 2,:), VERTEX(NF, 3,:), &
+            VERTEX(1,:,NF), VERTEX(2,:,NF), VERTEX(3,:,NF), &
             CLOSEST_PT(:))
 
             DIST(:) = POSITION(:) - CLOSEST_PT(:)
@@ -380,7 +380,7 @@
                !and old positions.
 
                norm_plane(1:dimn) = NORM_FACE(1:dimn,NF)
-               ref_plane(1:dimn)  = VERTEX(NF, 1, 1:dimn)
+               ref_plane(1:dimn)  = VERTEX(1, 1:dimn,NF)
                CALL intersectLnPlane(ref_line, dir_line, ref_plane, &
                     norm_plane, line_t)
                !k - rad >= tol_orth, where k = -line_t, then orthogonal
@@ -396,7 +396,7 @@
                if(.not.ortho_proj_cut) cycle
 
                CALL ClosestPtPointTriangle(DES_POS_NEW(LL,:), &
-                    VERTEX(NF, 1,:), VERTEX(NF, 2,:), VERTEX(NF, 3,:), &
+                    VERTEX(1,:,NF), VERTEX(2,:,NF), VERTEX(3,:,NF), &
                     CLOSEST_PT(:))
 
                DIST(:) = DES_POS_NEW(LL,:) - CLOSEST_PT(:)

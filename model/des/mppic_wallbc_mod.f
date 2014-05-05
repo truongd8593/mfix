@@ -177,7 +177,7 @@
             !and old positions.
 
             norm_plane(1:dimn) = NORM_FACE(1:dimn,NF)
-            ref_plane(1:dimn)  = VERTEX(NF, 1, 1:dimn)
+            ref_plane(1:dimn)  = VERTEX(1, 1:dimn,NF)
             CALL intersectLnPlane(ref_line, dir_line, ref_plane, &
             norm_plane, line_t)
             if(line_t.gt.zero) then
@@ -191,7 +191,7 @@
                !If it does, then this point is deemed to be on the
                !non-fluid side of the facet
                CALL checkPTonTriangle(point_onplane(1:dimn), &
-               VERTEX(NF, 1,:), VERTEX(NF, 2,:), VERTEX(NF, 3,:), &
+               VERTEX(1,:,NF), VERTEX(2,:,NF), VERTEX(3,:,NF), &
                ontriangle)
 
                if(ontriangle) then
