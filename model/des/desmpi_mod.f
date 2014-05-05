@@ -1307,8 +1307,6 @@
             lbuf = lbuf+ltordimn
             dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_new(lcurpar,1:ltordimn)
             lbuf = lbuf+ltordimn
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_oold(lcurpar,1:dimn)
-            lbuf = lbuf+dimn
             dsendbuf(lbuf:lbuf+dimn-1,pface) = des_acc_old(lcurpar,1:dimn)
             lbuf = lbuf+dimn
             dsendbuf(lbuf:lbuf+ltordimn-1,pface) = rot_acc_old(lcurpar,1:ltordimn)
@@ -1489,8 +1487,6 @@
          lbuf = lbuf + ltordimn
          omega_new(llocpar,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
          lbuf = lbuf + ltordimn
-         des_vel_oold(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-         lbuf = lbuf + dimn
          des_acc_old(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
          lbuf = lbuf + dimn
          rot_acc_old(llocpar,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
@@ -2779,10 +2775,10 @@
                   write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
-                  write(44,*) "omega_old     omega_new   vel_oold"
+                  write(44,*) "omega_old     omega_new"
                   write(44,*) &
                  "-----------------------------------------------------"
-                  lsize = ltordimn*2 + dimn
+                  lsize = ltordimn*2
                   write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 

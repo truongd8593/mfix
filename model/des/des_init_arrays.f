@@ -52,7 +52,6 @@
       DES_VEL_OLD(:,:) = ZERO
       DES_VEL_NEW(:,:) = ZERO
 
-      DES_VEL_OOLD(:,:) = ZERO
       DES_ACC_OLD(:,:) = ZERO
 
       OMEGA_OLD(:,:) = ZERO
@@ -138,7 +137,6 @@
          IF (INTG_ADAMS_BASHFORTH) THEN
             dMdt_OLD(:) = ZERO
             dXdt_OLD(:,:) = ZERO
-            dRdt_OLD(:) = ZERO
          ENDIF
       ENDIF
 

@@ -92,21 +92,14 @@
 
 !            OMEGA_NEW(L,:)   = OMEGA_OLD(L,:) + TOW(:,L)*OMOI(L)*DTSOLID
             OMEGA_NEW(L,:)   = OMEGA_OLD(L,:) + TOW(:,L)*OMOI(L)*DTSOLID
-
          ELSEIF (INTG_ADAMS_BASHFORTH) THEN
-! T.Li:  second-order Adams-Bashforth scheme
-            DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + 0.5d0*&
-               ( 3.d0*DES_VEL_OLD(L,:)-DES_VEL_OOLD(L,:) )*DTSOLID
+! M.Prinkey:  second-order Adams-Bashforth/Trapezoidal scheme
             DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + 0.5d0*&
                ( 3.d0*FC(:,L)-DES_ACC_OLD(L,:) )*DTSOLID
-
-
-! JM           OMEGA_NEW(L,:)   =  OMEGA_OLD(L,:) + 0.5d0*&
-! JM              ( 3.d0*TOW(:,L)*OMOI(L)-ROT_ACC_OLD(L,:) )*DTSOLID
             OMEGA_NEW(L,:)   =  OMEGA_OLD(L,:) + 0.5d0*&
                ( 3.d0*TOW(:,L)*OMOI(L)-ROT_ACC_OLD(L,:) )*DTSOLID
-
-
+            DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + 0.5d0*&
+               ( DES_VEL_OLD(L,:)+DES_VEL_NEW(L,:) )*DTSOLID
             DES_ACC_OLD(L,:) = FC(:,L)
             ROT_ACC_OLD(L,:) = TOW(:,L)*OMOI(L)
          ENDIF

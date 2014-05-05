@@ -231,7 +231,6 @@
       Allocate(  DES_POS_NEW (NPARTICLES,DIMN) )
       Allocate(  DES_VEL_OLD (NPARTICLES,DIMN) )
       Allocate(  DES_VEL_NEW (NPARTICLES,DIMN) )
-      Allocate(  DES_VEL_OOLD(NPARTICLES,DIMN) )
       Allocate(  DES_ACC_OLD (NPARTICLES,DIMN) )
 
       IF(DO_K) THEN
