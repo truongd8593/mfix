@@ -30,7 +30,6 @@
       DO LL = 1, MAX_PIP
          IF(.NOT.PEA(LL,1) .or. pea(ll,4)) CYCLE
 
-         DES_VEL_OOLD(LL,:) = DES_VEL_OLD(LL,:)
          DES_POS_OLD(LL,:)  = DES_POS_NEW(LL,:)
          DES_VEL_OLD(LL,:)  = DES_VEL_NEW(LL,:)
          OMEGA_OLD(LL,:)    = OMEGA_NEW(LL,:)
