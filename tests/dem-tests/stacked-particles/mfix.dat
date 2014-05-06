@@ -13,7 +13,7 @@
   RUN_TYPE = 'new'
   UNITS = 'cgs'
   TIME  =0.0 
-  TSTOP = 0.005
+  TSTOP = 0.001
   DT = 1.0e-4
   DT_MAX = 2E-4
 
@@ -26,6 +26,7 @@
 
   GRAVITY = 980.665D0
 
+  CALL_USR = .T.
 
 # Geometry Section
 # -----------------------------
@@ -56,8 +57,11 @@
 ! or not, the following quantities must be defined to bypass the
 ! checks made in MFIX
   MMAX     = 2
-  RO_s0    =  20.0  10.0
-  D_p0     = 0.1     0.1
+
+  SOLIDS_MODEL = 'DEM'   'DEM'
+  RO_s0 =         20.0   10.0
+  D_p0 =          0.1     0.1
+
   e        = 0.8
   Phi     = 0.0
   EP_star = 0.40            
@@ -90,43 +94,14 @@
      
 #  Boundary Conditions Section
 # -----------------------------
-      !              bottom      Top
-!  BC_X_w            =  0.0        0.0
-!  BC_X_e            =  1.0        1.0
-!  BC_Y_s            =  0.0        0.18
-!  BC_Y_n            =  0.0        0.18
-! 
-!  BC_TYPE          =  'MI'     'PO'
-
-!  BC_EP_g          =  1.0      1.0
-
-!  BC_U_g           =  0.0 
-!  BC_V_g           =  0.0
-!  BC_W_g           =  0.0
-
-!  BC_P_g           =  2*0
-
+! None. Use default walls.
 
 
 #  DES
 # -----------------------------
-  DISCRETE_ELEMENT = .TRUE. 
 
-! decide whether gas and solids are coupled [FALSE]
-  !DES_CONTINUUM_COUPLED = .T.   
-
-! use interpolation to calculate individual drag forces on 
-! particles based on particle location rather than cell
-! average [FALSE]
-  !DES_INTERP_ON = .T.     
-
-! treat wall interaction as two-particle interaction but
-! accounting for wall properties; must be true for DEM [FALSE]
-  WALLDTSPLIT = .T  
-
+! Number of particles.
   PARTICLES = 2 
-
-  DIMN = 2                 ! if no_k set to 2 otherwise undefined
 
 ! Particle neighbor search method [1]
 !  1=n-square; 2=quadtree; 3=octree; 4=gridbased
@@ -162,7 +137,6 @@
 #  Output Control
 # -----------------------------
   RES_DT = 0.01    ! interval at which restart (.RES) file is updated
-  OUT_DT = 1.      ! interval at which standard output (.OUT) file is updated
   NLOG = 25        ! interval in no. of time steps at which (.LOG) file is written
 
 ! Interval at which .SPX files are written 
