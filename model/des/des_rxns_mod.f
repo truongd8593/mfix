@@ -74,9 +74,6 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: dMdt_OLD
  ! 2) particle species mass
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: dXdt_OLD
- ! 3) radius of unreacted core
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: dRdt_OLD
-
 
 ! Interphase transfer variables.
 !---------------------------------------------------------------------//
