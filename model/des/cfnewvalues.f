@@ -39,6 +39,8 @@
       INTEGER :: L
       DOUBLE PRECISION :: D(3), DIST, &
                           NEIGHBOR_SEARCH_DIST
+
+      LOGICAL, SAVE :: FIRST_PASS = .TRUE.
 !-----------------------------------------------
 ! Functions
 !-----------------------------------------------
@@ -54,6 +56,18 @@
             CALL CFNEWVALUES_MPPIC
          ENDIF
          RETURN
+      ENDIF
+
+
+! Adams-Bashforth defaults to Euler for the first time step.
+      IF(FIRST_PASS .AND. INTG_ADAMS_BASHFORTH) THEN
+         DO L =1, MAX_PIP
+            IF(.NOT.PEA(L,1)) CYCLE  ! Only real particles
+            IF(PEA(L,2)) CYCLE       ! Only non-entering
+            IF(PEA(L,4)) CYCLE       ! Skip ghost particles
+            DES_ACC_OLD(L,:) = FC(:,L)/PMASS(L) + GRAV(:)
+            ROT_ACC_OLD(L,:) = TOW(:,L)
+         ENDDO
       ENDIF
 
 
@@ -90,10 +104,10 @@
 !         DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + 0.5d0*&
 !             (DES_VEL_NEW(L,:)+DES_VEL_OLD(L,:))*DTSOLID
 
-!            OMEGA_NEW(L,:)   = OMEGA_OLD(L,:) + TOW(:,L)*OMOI(L)*DTSOLID
             OMEGA_NEW(L,:)   = OMEGA_OLD(L,:) + TOW(:,L)*OMOI(L)*DTSOLID
          ELSEIF (INTG_ADAMS_BASHFORTH) THEN
-! M.Prinkey:  second-order Adams-Bashforth/Trapezoidal scheme
+
+! Second-order Adams-Bashforth/Trapezoidal scheme
             DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + 0.5d0*&
                ( 3.d0*FC(:,L)-DES_ACC_OLD(L,:) )*DTSOLID
             OMEGA_NEW(L,:)   =  OMEGA_OLD(L,:) + 0.5d0*&
@@ -139,6 +153,8 @@
 
       ENDDO
 !$omp end parallel do
+
+      FIRST_PASS = .FALSE.
 
 
  1002 FORMAT(/1X,70('*')//&
