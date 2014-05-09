@@ -259,6 +259,13 @@
          DT = DT_TMP
       ENDIF
 
+! Set arrays for computing indices. A secondary call is made
+! after cut cell-preprocessing to update array indices.
+      IF(CARTESIAN_GRID) THEN
+         CALL SET_INCREMENTS
+         CALL SET_INCREMENTS3
+      ENDIF
+
 
 !      IF(.NOT.RE_INDEXING) CALL WRITE_IJK_VALUES
 
