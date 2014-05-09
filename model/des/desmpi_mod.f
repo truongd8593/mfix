@@ -224,7 +224,7 @@
 
 ! determine initial size of send and recv buffer based on max_pip,
 ! total cells max number of boundary cells, and the packet size
-      ltordimn = (dimn-2)*2 + 1
+      ltordimn = merge(1,3,NO_K)
       lpacketsize = 2*dimn + ltordimn+ 5
       lfaces = dimn*2
       lmaxlen1 = dg_iend2-dg_istart2+1
@@ -1005,7 +1005,7 @@
 !-----------------------------------------------
 
       lmaxcnt = 0
-      ltordimn = (dimn-2)*2 + 1
+      ltordimn = merge(1,3,NO_K)
       lpacketsize = 2*dimn + ltordimn+ 5
       do lface = 1,2*dimn
          ltot_ind = isendindices(1,lface)
@@ -1049,8 +1049,7 @@
 !-----------------------------------------------
       include 'des/desgrid_functions.inc'
 !-----------------------------------------------
-
-      ltordimn = (dimn-2)*2 + 1
+      ltordimn = merge(1,3,NO_K)
       lpacketsize = 2*dimn + ltordimn+ 5
       lpar_cnt = 0
       ltot_ind = isendindices(1,pface)
@@ -1108,7 +1107,8 @@
 ! if it already exists update the position
 ! if not and do_nsearch is true then add to the particle array
 
-      ltordimn = (dimn-2)*2 + 1
+      ltordimn = merge(1,3,NO_K)
+
       lpacketsize = 2*dimn + ltordimn+ 5
       lparcnt = drecvbuf(1,pface)
       lnewcnt = lparcnt
@@ -1261,7 +1261,7 @@
 !-----------------------------------------------
 
 ! pack the particle crossing the boundary
-      ltordimn = (dimn-2)*2 + 1
+      ltordimn = merge(1,3,NO_K)
       lpacketsize = 9*dimn + ltordimn*4 + maxneighbors * (dimn+5) + 15
       ltot_ind = irecvindices(1,pface)
       lparcnt = 0
@@ -1422,7 +1422,7 @@
 !-----------------------------------------------
 
 ! loop through particles and locate them and make changes
-      ltordimn = (dimn-2)*2 + 1
+      ltordimn = merge(1,3,NO_K)
       lpacketsize = 9*dimn + ltordimn*4 + maxneighbors * (dimn+5) + 15
       lparcnt = drecvbuf(1,pface)
 
@@ -2681,7 +2681,7 @@
          write(44,*) &
             "------------------------------------------------------"
       case (2)
-         ltordimn = 1 + 2*(dimn-2)
+         ltordimn = merge(1,3,NO_K)
          lpacketsize = 2*dimn + ltordimn+ 5
          do lface =1,dimn*2
             if (.not.iexchflag(lface))cycle
@@ -2702,7 +2702,7 @@
             end if
          end do
       case (3)
-         ltordimn = 1 + 2*(dimn-2)
+         ltordimn = merge(1,3,NO_K)
          lpacketsize = 2*dimn + ltordimn+ 5
          do lface =1,dimn*2
             if (.not.iexchflag(lface))cycle
@@ -2742,7 +2742,7 @@
              write(44,*)pea(lcurpar,4),xpos,ypos,li,lj,dg_funijk(li,lj,1)
           end do
       case (5)
-         ltordimn = (dimn-2)*2 + 1
+         ltordimn = merge(1,3,NO_K)
          lpacketsize = 9*dimn + ltordimn*4 + maxneighbors * (dimn+5) + 13
          do lface =1,dimn*2
             if (.not.iexchflag(lface))cycle
