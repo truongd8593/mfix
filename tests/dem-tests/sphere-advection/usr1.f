@@ -24,14 +24,8 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE USR1 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!
-!  Include modules
-!
+
       Use usr
       USE param 
       USE param1 
@@ -49,25 +43,21 @@
       USE discretelement
 
       IMPLICIT NONE
-!
-!  Define local variables here
-!
 
-!                      Indices
       INTEGER          I, J, K, IJK
       DOUBLE PRECISION XX, YY, ZZ, XM, YM, ZM, LN
 
-      DOUBLE PRECISION ERROR(PARTICLES)
-!
-!  Include files defining statement functions here
-!
+! Cycle length (time)
+      DOUBLE PRECISION, PARAMETER :: T_per=0.25d0
+
       INCLUDE 'function.inc'
-!
-!     Insert user-defined code here
-!     
+
+
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK) 
          J = J_OF(IJK) 
+         K = K_OF(IJK)
+
          XX = XE(I)
          YY = YN(J)
          XM = XE(I) - 0.5d0*DX(I)
@@ -81,24 +71,7 @@
          w_g(ijk) = -sin(2.d0*PI*XM)*sin(2.d0*PI*YM)*&
             (sin(PI*ZZ))**2*cos(PI*time/T_per)
 
-!        write(101,*) ijk, i, j, k, time, u_g(ijk), v_g(ijk), w_g(ijk)
-!        write(102,*) ijk, i, j, k, time, PI, xx, yy, zz, zm, ym, zm, cos(PI*time/T_per)
-!        write(103,*) ijk, i, j, k, time, PI, sin(PI*xx), sin(2*PI*ym), sin(2*PI*zm)
-
-!        write(104,*) i, j, k, xx, yy, zz, xm, ym, zm
-
       END DO
-
-      IF(MOD(time,t_per).lt.1.0e-5) then
-      write(201,*) 'Cycle = ', time/T_per 
-      DO LN = 1, PARTICLES
-         error(ln) = sqrt ((DES_POS_NEW(LN,1)-x_store(ln,1))**2 &
-                 + (DES_POS_NEW(LN,2)-x_store(ln,2))**2 &
-                 + (DES_POS_NEW(LN,3)-x_store(ln,3))**2)
-      END DO
-      write(201,*) 'Max L1 norm', maxval(error(:))
-      ENDIF
-
 
       RETURN  
       END SUBROUTINE USR1 
