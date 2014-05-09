@@ -233,6 +233,8 @@
       use bc, only: BC_HW_T_s, BC_TW_s, BC_C_T_s
 ! User-Input: solids species eq BCs.
       use bc, only: BC_HW_X_s, BC_XW_s, BC_C_X_s
+! User-Input: granular energy eq BCs.
+      use bc, only: BC_HW_THETA_M, BC_ThetaW_M, BC_C_Theta_M
 ! Total number of solids phases
       use physprop, only: MMAX
 ! Total number of speices in each phase.
@@ -241,6 +243,10 @@
       use run, only: ENERGY_EQ
 ! Flag: Solve species equations.
       use run, only: SPECIES_EQ
+! Flag: Solve Granular energy PDE
+      use run, only: GRANULAR_ENERGY
+! Flag: Use revised phihp for JJ BC.
+      use bc, only: BC_JJ_PS
 ! Flag: Solve K-th direction (3D)
       use geometry, only: DO_K
 ! User-input: solids kinetic-theory model.
@@ -304,6 +310,24 @@
                ELSE 
                   BC_WW_S(BCV,M) = ZERO 
                ENDIF
+            ENDIF
+         ENDIF
+
+         IF(GRANULAR_ENERGY .AND. BC_JJ_PS(BCV)==0) THEN
+            IF(BC_HW_THETA_M(BCV,M) < ZERO) THEN
+               WRITE(ERR_MSG,1001) trim(iVar('BC_HW_Theta_M',BCV,M)),  &
+                  trim(iVal(BC_HW_Theta_M(BCV,M)))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF 
+            IF(BC_HW_THETA_M(BCV,M)/=ZERO .AND.                        &
+               BC_THETAW_M(BCV,M)==UNDEFINED) THEN 
+               WRITE(ERR_MSG,1000) trim(iVar('BC_ThetaW_M',BCV,M))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF 
+            IF(BC_HW_THETA_M(BCV,M)/=UNDEFINED .AND.                   &
+               BC_C_THETA_M(BCV,M)==UNDEFINED) THEN 
+               WRITE(ERR_MSG,1000) trim(iVar('BC_C_THETA_M',BCV,M))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ENDIF
       ELSE

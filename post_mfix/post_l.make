@@ -234,6 +234,7 @@ post_mfix : \
     kintheory_energy_dissipation_ss.$(OBJ_EXT) \
     check_geometry.$(OBJ_EXT) \
     check_axis.$(OBJ_EXT) \
+    set_param.$(OBJ_EXT) \
     
 	$(LINK_CMD) $(LINK_FLAGS) \
     error_manager_mod.$(OBJ_EXT) \
@@ -468,6 +469,7 @@ post_mfix : \
     kintheory_energy_dissipation_ss.$(OBJ_EXT) \
     check_geometry.$(OBJ_EXT) \
     check_axis.$(OBJ_EXT) \
+    set_param.$(OBJ_EXT) \
   -o post_mfix $(LIB_FLAGS)
   
 error_manager.mod : ../model/error_manager_mod.f \
@@ -522,7 +524,6 @@ ic.mod : ../model/ic_mod.f \
             param.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/ic_mod.f 
 indices.mod : ../model/indices_mod.f \
-            param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/indices_mod.f 
 is.mod : ../model/is_mod.f \
@@ -559,8 +560,7 @@ parallel.mod : ../model/parallel_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/parallel_mod.f 
-param1.mod : ../model/param1_mod.f \
-            param.mod 
+param1.mod : ../model/param1_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/param1_mod.f 
 param.mod : ../model/param_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/param_mod.f 
@@ -853,7 +853,12 @@ allocate_arrays.$(OBJ_EXT) : ../model/allocate_arrays.f \
             ghdtheory.mod \
             kintheory.mod \
             cdist.mod \
-            des_rxns.mod 
+            des_rxns.mod \
+            compar.mod \
+            bc.mod \
+            mpi_utility.mod \
+            error_manager.mod \
+            funits.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/allocate_arrays.f 
 any_more_data.$(OBJ_EXT) : any_more_data.f \
             param.mod \
@@ -1538,12 +1543,12 @@ set_constants.$(OBJ_EXT) : ../model/set_constants.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/set_constants.f 
 set_dollar.$(OBJ_EXT) : set_dollar.f 
 set_geometry.$(OBJ_EXT) : ../model/set_geometry.f \
-            param.mod \
-            param1.mod \
-            run.mod \
             geometry.mod \
+            param.mod \
             compar.mod \
             bc.mod \
+            cdist.mod \
+            param1.mod \
             mpi_utility.mod \
             error_manager.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/set_geometry.f 
@@ -1556,6 +1561,8 @@ set_increments.$(OBJ_EXT) : ../model/set_increments.f \
             physprop.mod \
             fldvar.mod \
             funits.mod \
+            mpi_utility.mod \
+            error_manager.mod \
             scalars.mod \
             run.mod \
             visc_g.mod \
@@ -1564,7 +1571,6 @@ set_increments.$(OBJ_EXT) : ../model/set_increments.f \
             cutcell.mod \
             stl.mod \
             sendrecv.mod \
-            mpi_utility.mod \
             parallel.mod \
             bc.mod \
             discretelement.mod \
@@ -2281,10 +2287,21 @@ check_geometry.$(OBJ_EXT) : ../model/check_data/check_geometry.f \
             cutcell.mod \
             param1.mod \
             param.mod \
-            error_manager.mod 
+            error_manager.mod \
+            discretelement.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/check_data/check_geometry.f 
 check_axis.$(OBJ_EXT) : ../model/check_data/check_axis.f \
             param.mod \
             param1.mod \
             error_manager.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/check_data/check_axis.f 
+set_param.$(OBJ_EXT) : ../model/set_param.f \
+            physprop.mod \
+            discretelement.mod \
+            scalars.mod \
+            geometry.mod \
+            compar.mod \
+            param.mod \
+            param1.mod \
+            cdist.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/set_param.f 

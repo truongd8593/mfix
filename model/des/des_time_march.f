@@ -330,19 +330,7 @@
 
 
 ! J.Musser : mass inlet/outlet -> particles entering the system
-         IF(DES_MI)THEN 
-            DO BCV_I = 1, DES_BCMI
-               IF(PI_FACTOR(BCV_I) .GT. 1)THEN
-                  IF(DES_MI_TIME(BCV_I) .LE. S_TIME) THEN   !Verify start time
-                     CALL DES_MASS_INLET(BCV_I)
-                     DES_MI_TIME(BCV_I) = S_TIME + PI_FACTOR(BCV_I) *&
-                        DTSOLID
-                  ENDIF
-               ELSE
-                  CALL DES_MASS_INLET(BCV_I)
-               ENDIF
-            ENDDO
-         ENDIF
+         IF(DES_MI) CALL MASS_INFLOW_DEM
 
          IF(CALL_USR) CALL USR2_DES
 

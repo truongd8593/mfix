@@ -35,9 +35,7 @@
         DES_BC_X_w, DES_BC_X_e, &
         DES_BC_Y_s, DES_BC_Y_n, &
         DES_BC_Z_b, DES_BC_Z_t, &
-        DES_BC_VOLFLOW_s, DES_BC_MASSFLOW_s, &
-        DES_BC_ROP_s, DES_BC_TYPE, &
-        DES_BC_T_s, DES_BC_X_s, &
+        DES_BC_ROP_s, DES_BC_T_s, DES_BC_X_s, &
        	FORCE_ORD_BC, &
 
 ! DES initial condition information: J.Musser

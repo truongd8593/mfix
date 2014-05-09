@@ -259,12 +259,6 @@
          DT = DT_TMP
       ENDIF
 
-! Set arrays for computing indices
-      CALL SET_INCREMENTS
-
-! Set arrays for computing indices for higher order scheme
-      CALL SET_INCREMENTS3
-
 
 !      IF(.NOT.RE_INDEXING) CALL WRITE_IJK_VALUES
 
@@ -302,9 +296,11 @@
 ! Set boundary conditions
       CALL ZERO_NORM_VEL
       CALL SET_BC0
+!      IF(DISCRETE_ELEMENT) CALL MAKE_ARRAYS_DES
 
 ! JFD: cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SET_BC0
+!      IF(DEM_SOLIDS) CALL SET_BC_DEM
 
 ! Set gas mixture molecular weight
       CALL SET_MW_MIX_G
@@ -349,22 +345,10 @@
 !=======================================================================
 
 
-! Initialization of DEM quantities: set initial conditions (bulk
-! density, velocities), boundary conditions (mass inlet/outlet),
-! physical constants, PIC, ...
-! This is best performed once all the fluid geometry information
-! has been obtained and initial fields set.
-      IF(DISCRETE_ELEMENT) THEN
-         CALL CHECK_DES_DATA
-         CALL CHECK_DES_RXNS
-         !CALL CHECK_DES_IC
-         !CALL CHECK_DES_BC
-         CALL MAKE_ARRAYS_DES
-      ENDIF
+      IF(DISCRETE_ELEMENT) CALL MAKE_ARRAYS_DES
+      IF(QMOMK) CALL QMOMK_MAKE_ARRAYS
 
-      IF (QMOMK) THEN
-          CALL QMOMK_MAKE_ARRAYS
-      ENDIF
+      IF(DEM_SOLIDS) CALL SET_BC_DEM
 
 
 ! AEOLUS: debug prints

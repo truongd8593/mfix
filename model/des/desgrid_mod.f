@@ -149,9 +149,7 @@
 ! set grid size based on user input desgridsearch_<ijk>max 
       ltempdx = xlength/desgridsearch_imax 
       ltempdy = ylength/desgridsearch_jmax 
-      if (.not. no_k) then
-         ltempdz = zlength/desgridsearch_kmax 
-      end if  
+      if(do_k) ltempdz = zlength/desgridsearch_kmax 
       dg_ksize_all(:) = 1
 
       lijkproc = 0 
@@ -160,7 +158,7 @@
             do liproc=0,nodesi-1
                dg_isize_all(liproc) = (xe(iend1_all(lijkproc))-xe(istart1_all(lijkproc)-1))/ltempdx
                dg_jsize_all(ljproc) = (yn(jend1_all(lijkproc))-yn(jstart1_all(lijkproc)-1))/ltempdy
-               if(.not. no_k) dg_ksize_all(lkproc) = (zt(kend1_all(lijkproc))-zt(kstart1_all(lijkproc)-1))/ltempdz
+               if(do_k) dg_ksize_all(lkproc) = (zt(kend1_all(lijkproc))-zt(kstart1_all(lijkproc)-1))/ltempdz
                dg_istart1_all(lijkproc) = sum(dg_isize_all(0:liproc-1)) + 2  
                dg_jstart1_all(lijkproc) = sum(dg_jsize_all(0:ljproc-1)) + 2 
                dg_kstart1_all(lijkproc) = sum(dg_ksize_all(0:lkproc-1)) + 2 
@@ -345,92 +343,6 @@
       end subroutine desgrid_init 
 
 
-!------------------------------------------------------------------------
-! Subroutine       : desgrid_check 
-! Purpose          : checks the input parameter, if no user input then 
-!                    sets the grid size based on maximum diameter 
-!------------------------------------------------------------------------
-      subroutine desgrid_check() 
-      implicit none 
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------      
-      double precision :: max_diam,tmp_factor,dl_tmp  
-!-----------------------------------------------  
-
-      max_diam = 2.0d0*max_radius
-      tmp_factor = 3.0d0*(max_diam)
-
-      IF (DESGRIDSEARCH_IMAX == UNDEFINED_I .OR. &
-          DESGRIDSEARCH_JMAX == UNDEFINED_I .OR. &
-          (NO_K .AND. DESGRIDSEARCH_KMAX /= 1) .OR. &
-          (DO_K .AND. DESGRIDSEARCH_KMAX == UNDEFINED_I)) THEN
-          IF(DMP_LOG) WRITE(UNIT_LOG,'(/2X,A)') &
-             'From: DESGRID_CHECK'
-      ENDIF
-
-
-      if (desgridsearch_imax == undefined_i) then
-         dl_tmp = xlength/tmp_factor
-         desgridsearch_imax = int(dl_tmp)
-         if (desgridsearch_imax <= 0) desgridsearch_imax = 1
-         if(dmp_log) write(unit_log,'(2X,A,I8)') &
-            'desgridsearch_imax was set to ', desgridsearch_imax
-      else
-         dl_tmp = xlength/dble(desgridsearch_imax)
-         if (dl_tmp < max_diam) then
-            if(dmp_log) write(unit_log,1002) 'x', 'x', 'i', 'i'
-            call mfix_exit(mype)
-         endif
-      endif
-      if (desgridsearch_jmax == undefined_i) then
-         dl_tmp = ylength/tmp_factor
-         desgridsearch_jmax = int(dl_tmp)
-         if (desgridsearch_jmax <= 0) desgridsearch_jmax = 1
-         if(dmp_log) write(unit_log,'(2X,A,I8)') &
-            'desgridsearch_jmax was set to ', desgridsearch_jmax
-      else
-         dl_tmp = ylength/dble(desgridsearch_jmax)
-         if (dl_tmp < max_diam) then
-            if(dmp_log) write(unit_log,1002) 'y', 'y', 'j', 'j'
-            call mfix_exit(mype)
-         endif
-      endif
-      if (NO_K) then
-         if (desgridsearch_kmax == undefined_i) then
-            desgridsearch_kmax = 1
-         elseif(desgridsearch_kmax /= 1) then
-            desgridsearch_kmax = 1            
-            if(dmp_log) write(unit_log,'(2X,A,I8)') &
-               'desgridsearch_kmax was set to ', desgridsearch_kmax
-         endif            
-      else
-         if (desgridsearch_kmax == undefined_i) then
-             dl_tmp = zlength/tmp_factor
-             desgridsearch_kmax = int(dl_tmp)
-             if (desgridsearch_kmax <= 0) desgridsearch_kmax = 1
-             if(dmp_log) write(unit_log,'(2X,A,I8)') &
-               'desgridsearch_kmax was set to ', desgridsearch_kmax
-         else
-             dl_tmp = zlength/dble(desgridsearch_kmax)
-             if (dl_tmp < max_diam) then
-                if(dmp_log) write(unit_log,1002) 'z', 'z', 'k', 'k'
-                call mfix_exit(mype)
-            endif
-         endif
-      endif   ! end if/else
-
-
-
- 1002 FORMAT(/1X,70('*')//' From: DESGRID_CHECK',/' Message: ',&
-          'The neighbor search grid is too fine in the ',A, &
-          '-direction',/10X,'with a particle diameter > ',A, &
-          'length/desgridsearch_',A,'max. This will',/10X,'create ',&
-          'problems for the search method and detecting neighbors',/10X,&
-          'Decrease desgridsearch_',A,'max in mfix.dat to coarsen ',&
-          'grid.',/1X,70('*')/)
-
-      end subroutine desgrid_check 
 
 
 !------------------------------------------------------------------------

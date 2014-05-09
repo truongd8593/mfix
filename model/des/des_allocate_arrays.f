@@ -1,81 +1,3 @@
-      SUBROUTINE DES_ALLOCATE_ARRAYS_EULERIAN_GEOM
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Subroutine: DES_ALLOCATE_ARRAYS_EULERIAN_GEOM                       !
-!                                                                      !
-!  Purpose: Allocate some des arrays that are based on Eulerian grid   !
-!           and are needed for generating particle configuration.      !
-!           Ideally all the arrays dimensioned by Eulerian grid        !
-!           parameters should be moved here but it breaks the flow for !
-!           for feature based allocation. So limiting to variables     !
-!           needed by gener_part_config routines                       !
-!  Author:   R.Garg                                   Date: 19-Mar-14  !
-!  Comments: Most of the code is from des_allocate arrays routine      !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
-
-! Cell faces
-! Added 0 to store IMIN3 values 
-      USE param 
-      USE param1
-      USE constant
-      USE discretelement
-      Use indices
-      USE geometry
-
-      IMPLICIT NONE 
-      INTEGER :: I, J, K 
-      Allocate(  XE (0:DIMENSION_I) )
-      Allocate(  YN (0:DIMENSION_J) )
-      Allocate(  ZT (0:DIMENSION_K) )
-
-
-      ! Set misc quantities defining the system
-!----------------------------------------------------------------->>>
-! Set boundary edges
-! In some instances wx1,ex2, etc have been used and in others
-! xlength,zero, etc are used. the code should be modified for
-! consistency throughout
-      WX1 = ZERO
-      EX2 = XLENGTH
-      BY1 = ZERO
-      TY2 = YLENGTH
-      SZ1 = ZERO
-      NZ2 = ZLENGTH
-      
-      XE(:) = ZERO
-      YN(:) = ZERO
-      ZT(:) = ZERO
-
-! Note : the quantities xe, zt cannot be readily replaced with the
-! similar appearing variables x_e, z_t in main mfix code as they
-! are not the same.  also the variable y_n does not exist in main
-! mfix code.
-! Each loop starts at 2 and goes to max+2 (i.e., imin1=2, imax2=imax+2)
-! However, the indices range to include ghost cells (0-imax2) to avoid
-! multiple if statements in particles_in_cell
-      XE(IMIN2-1) = ZERO-DX(IMIN2)
-      DO I = IMIN2, IMAX2
-         XE(I) = XE(I-1) + DX(I)
-      ENDDO
-      YN(JMIN2-1) = ZERO-DY(JMIN2)
-      DO J  = JMIN2, JMAX2
-         YN(J) = YN(J-1) + DY(J)
-      ENDDO
-      IF(DO_K) THEN
-         ZT(KMIN2-1) = ZERO-DZ(KMIN2)
-         DO K = KMIN2, KMAX2
-            ZT(K) = ZT(K-1) + DZ(K)
-         ENDDO
-      ENDIF
-
-
-      
-      END SUBROUTINE DES_ALLOCATE_ARRAYS_EULERIAN_GEOM
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: DES_ALLOCATE_ARRAYS                                     C
@@ -194,7 +116,7 @@
       ALLOCATE (iglobal_id(nparticles))
 
 ! J.Musser: Allocate necessary arrays for discrete mass inlets
-      IF(DES_BCMI /= 0 .OR. DES_BCMO /=0) CALL ALLOCATE_DES_MIO
+      IF(DEM_BCMI /= 0 .OR. DEM_BCMO /=0) CALL ALLOCATE_DEM_MIO
 
 
 ! T. Li: Hertzian collision model
@@ -261,7 +183,7 @@
       ENDIF
 
 ! Accumulated spring force
-      Allocate(  PFT (NPARTICLES,MAXNEIGHBORS,DIMN) )
+      Allocate(  PFT (NPARTICLES,0:MAXNEIGHBORS,DIMN) )
 
 ! Save the normal direction at previous time step
       Allocate(  PFN (NPARTICLES,MAXNEIGHBORS,DIMN) )
@@ -295,21 +217,21 @@
 
       IF(DES_INTERP_ON) THEN
          ALLOCATE(DRAG_AM(DIMENSION_3, DES_MMAX))
-         ALLOCATE(DRAG_BM(DIMENSION_3, 3, DES_MMAX))
-         ALLOCATE(VEL_FP(NPARTICLES,3))
+         ALLOCATE(DRAG_BM(DIMENSION_3, DIMN, DES_MMAX))
+         ALLOCATE(VEL_FP(NPARTICLES,DIMN))
          ALLOCATE(F_gp(NPARTICLES ))
          F_gp(1:NPARTICLES)  = ZERO
       ENDIF
 
       IF(DES_INTERP_MEAN_FIELDS) THEN
          ALLOCATE(DES_ROPS_NODE(DIMENSION_3, DES_MMAX))
-         ALLOCATE(DES_VEL_NODE(DIMENSION_3, 3, DES_MMAX))
+         ALLOCATE(DES_VEL_NODE(DIMENSION_3, DIMN, DES_MMAX))
       ENDIF
 
 ! force due to gas-pressure gradient
-      ALLOCATE(P_FORCE(DIMENSION_3,3))
+      ALLOCATE(P_FORCE(DIMENSION_3,DIMN))
 ! force due to gas-solids drag on a particle
-      ALLOCATE(GD_FORCE(NPARTICLES,3))
+      ALLOCATE(GD_FORCE(NPARTICLES,DIMN))
 
 ! Volume averaged solids volume in a computational fluid cell
       Allocate(  DES_U_s (DIMENSION_3, DES_MMAX) )
@@ -325,7 +247,7 @@
          ALLOCATE(F_SDS(DIMENSION_3,DIMENSION_M,DES_MMAX))
          ALLOCATE(VXF_GDS(DIMENSION_3,DES_MMAX))
          ALLOCATE(VXF_SDS(DIMENSION_3,DIMENSION_M,DES_MMAX))
-         ALLOCATE(SD_FORCE(NPARTICLES,3))
+         ALLOCATE(SD_FORCE(NPARTICLES,DIMN))
       ENDIF
 ! Bulk density in a computational fluid cell / for communication with
 ! MFIX continuum
@@ -339,13 +261,13 @@
             F_GP(1:NPARTICLES)  = ZERO
          ENDIF
 
-         IF(.NOT.ALLOCATED(VEL_FP)) ALLOCATE(VEL_FP(NPARTICLES,3))
+         IF(.NOT.ALLOCATED(VEL_FP)) ALLOCATE(VEL_FP(NPARTICLES,DIMN))
 
          Allocate(PS_FORCE_PIC(DIMENSION_3, DES_MMAX))
          ALLOCATE(DES_STAT_WT(NPARTICLES))
-         ALLOCATE(DES_VEL_MAX(3))
-         ALLOCATE(PS_GRAD(NPARTICLES, 3))
-         ALLOCATE(AVGSOLVEL_P(NPARTICLES, 3))
+         ALLOCATE(DES_VEL_MAX(DIMN))
+         ALLOCATE(PS_GRAD(NPARTICLES, DIMN))
+         ALLOCATE(AVGSOLVEL_P(NPARTICLES, DIMN))
          ALLOCATE(EPG_P(NPARTICLES))
 
          Allocate(PIC_U_S(DIMENSION_3, DES_MMAX))
@@ -353,7 +275,7 @@
          Allocate(PIC_W_S(DIMENSION_3, DES_MMAX))
 
          Allocate(PIC_P_s (DIMENSION_3, DES_MMAX) )
-!         ALLOCATE(MPPIC_VPTAU(NPARTICLES, 3))
+!         ALLOCATE(MPPIC_VPTAU(NPARTICLES, DIMN))
          PIC_U_s = zero 
          PIC_V_s = zero
          PIC_W_s = zero 
@@ -365,11 +287,11 @@
       Allocate(DES_THETA (DIMENSION_3, DES_MMAX) )
 
 ! Averaged velocity obtained by averaging over all the particles
-      ALLOCATE(DES_VEL_AVG(3) )
+      ALLOCATE(DES_VEL_AVG(DIMN) )
 
 ! Global Granular Energy
-      ALLOCATE(GLOBAL_GRAN_ENERGY(3) )
-      ALLOCATE(GLOBAL_GRAN_TEMP(3) )
+      ALLOCATE(GLOBAL_GRAN_ENERGY(DIMN) )
+      ALLOCATE(GLOBAL_GRAN_TEMP(DIMN) )
 
 ! Somewhat free variable used to aid in manipulation
       ALLOCATE(MARK_PART(NPARTICLES))
@@ -388,7 +310,7 @@
       IF(USE_COHESION) THEN
 ! Matrix location of particle  (should be allocated in case user wishes
 ! to invoke routines in /cohesion subdirectory
-         Allocate(  FCohesive (NPARTICLES,3) )
+         Allocate(  FCohesive (NPARTICLES,DIMN) )
          Allocate(  PostCohesive (NPARTICLES) )
       ENDIF
 ! END COHESION
@@ -461,7 +383,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: ALLOCATE_DES_MIO                                        !
+!  Subroutine: ALLOCATE_DEM_MIO                                        !
 !                                                                      !
 !  Purpose:                                                            !
 !                                                                      !
@@ -471,7 +393,7 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-      SUBROUTINE ALLOCATE_DES_MIO
+      SUBROUTINE ALLOCATE_DEM_MIO
 
 !-----------------------------------------------
 ! Modules
@@ -486,44 +408,77 @@
 !-----------------------------------------------
 
 ! Allocate/Initialize for inlets
+      IF(DEM_BCMI /= 0)THEN
+
+! Distance offset of incoming particles in ghost cell
+         Allocate( DEM_BC_OFFSET (DEM_BCMI) )
+! Base location of new particle.
+         Allocate( DEM_BC_BASE (DEM_BCMI,2) )
+! Particle injection factor
+         Allocate( PI_FACTOR (DEM_BCMI) )
+! Particle injection count (injection number)
+         Allocate( PI_COUNT (DEM_BCMI) )
+! Particle injection time scale
+         Allocate( DEM_MI_TIME (DEM_BCMI) )
+! Logical array stating if a bounday condition is polydisperse
+         Allocate( DEM_BC_POLY( DEM_BCMI ) )
+! Array used for polydisperse inlets: stores the particle number
+! distribution of an inlet scaled with numfrac_limit
+         Allocate( DEM_BC_POLY_LAYOUT( DEM_BCMI, NUMFRAC_LIMIT ) )
+
+         Allocate( DEM_MI(DEM_BCMI) )
+
+! Initializiation
+! Logical for whether inlet is polydisperse
+         DEM_BC_POLY(:) = .FALSE.
+
+! Integer arrays
+         PI_FACTOR(:) = -1
+         PI_COUNT(:) = -1
+         DEM_BC_POLY_LAYOUT(:,:) = -1
+! Double precision arrays
+         DEM_MI_TIME(:) = UNDEFINED
+
+
+! Order inlet condition variables
+         Allocate( MI_FACTOR (DEM_BCMI) )
+         Allocate( MI_WINDOW (DEM_BCMI) )
+         Allocate( MI_ORDER  (DEM_BCMI) )
+         Allocate( I_OF_MI   (DEM_BCMI) )
+         Allocate( J_OF_MI   (DEM_BCMI) )
+
+
+      ENDIF  ! end if DEM_BCMI /= 0
+
+
+
+! Allocate/Initialize for inlets
       IF(DES_BCMI /= 0)THEN
 
 ! Boundary condition ID array
-         Allocate( DES_BC_MI_ID (DES_BCMI) )
+!         Allocate( DES_BC_MI_ID (DES_BCMI) )
 
 ! Distance offset of incoming particles in ghost cell
-         Allocate( DES_BC_OFFSET (DES_BCMI) )
-
-! Particle injection factor
-         Allocate( PI_FACTOR (DES_BCMI) )
-
-! Particle injection count (injection number)
-         Allocate( PI_COUNT (DES_BCMI) )
+!         Allocate( DES_BC_OFFSET (DES_BCMI) )
 
 ! Particle injection time scale
-         Allocate( DES_MI_TIME (DES_BCMI) )
+!         Allocate( DES_MI_TIME (DES_BCMI) )
 
 ! Boundary classification
-         Allocate( DES_MI_CLASS (DES_BCMI) )
+!         Allocate( DES_MI_CLASS (DES_BCMI) )
          Allocate( PARTICLE_PLCMNT (DES_BCMI) )
 
-! Order inlet condition variables
-! (only needed if particle_plcmt is assigned 'ordr')
-         Allocate( MI_FACTOR (DES_BCMI) )
-         Allocate( MI_WINDOW (DES_BCMI) )
-         Allocate( MI_ORDER (DES_BCMI) )   ! type dmi
-         Allocate( I_OF_MI ( DES_BCMI) )   ! type dmi
-         Allocate( J_OF_MI ( DES_BCMI) )   ! type dmi
+
 
 ! Grid search loop counter array; 6 = no. of faces
          Allocate(  GS_ARRAY (DES_BCMI, 6) )
 
 ! Logical array stating if a bounday condition is polydisperse
-         Allocate( DES_BC_POLY( DES_BCMI ) )
+!         Allocate( DES_BC_POLY( DES_BCMI ) )
 
 ! Array used for polydisperse inlets: stores the particle number
 ! distribution of an inlet scaled with numfrac_limit
-         Allocate( DES_BC_POLY_LAYOUT( DES_BCMI, NUMFRAC_LIMIT ) )
+!         Allocate( DES_BC_POLY_LAYOUT( DES_BCMI, NUMFRAC_LIMIT ) )
 
 ! Initializiation
 ! Logical for whether inlet is polydisperse
@@ -578,5 +533,5 @@
 
 
       RETURN
-      END SUBROUTINE ALLOCATE_DES_MIO
+      END SUBROUTINE ALLOCATE_DEM_MIO
 

@@ -8,20 +8,70 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_GEOMETRY 
 
-      USE param 
-      USE param1 
-      USE run
-      USE geometry
-      USE compar
-
+! Global Variables:
+!---------------------------------------------------------------------//
+! Domain decomposition and dimensions
+      use geometry, only: DX, XLENGTH, oDX, oDX_E
+      use geometry, only: DY, YLENGTH, oDZ, oDZ_T
+      use geometry, only: DZ, ZLENGTH, oDY, oDY_N
+      use geometry, only: X, X_E, oX, oX_E, XMIN
+      use geometry, only: Z, Z_T
+! Domain indices.
+      use geometry, only: IJKMAX3
+      use geometry, only: DO_I, IMIN1, IMAX1, IMAX2, IMAX3, IMIN3
+      use geometry, only: DO_J, JMIN1, JMAX1, JMAX2, JMAX3, JMIN3
+      use geometry, only: DO_K, KMIN1, KMAX1, KMAX2, KMAX3, KMIN3
+! Averaging factors.
+      use geometry, only: FX_E, FX_E_bar, FX, FX_bar
+      use geometry, only: FY_N, FY_N_bar
+      use geometry, only: FZ_T, FZ_T_bar
+! Domain flags.
+      use geometry, only: ICBC_FLAG
+      use geometry, only: FLAG, FLAG3
+      use geometry, only: FLAG_E, FLAG_N, FLAG_T
+! Domain volumes and areas.
+      use geometry, only: VOL, AYZ, AXZ, AXY          ! Scalar grid
+      use geometry, only: VOL_U, AYZ_U, AXZ_U, AXY_U  ! X-Momentum
+      use geometry, only: VOL_V, AYZ_V, AXZ_V, AXY_V  ! Y-Momentum
+      use geometry, only: VOL_W, AYZ_W, AXZ_W, AXY_W  ! Z-Momentum
+! Cyclic domain flags.
+      use geometry, only: CYCLIC
+      use geometry, only: CYCLIC_X, CYCLIC_X_PD, CYCLIC_X_MF
+      use geometry, only: CYCLIC_Y, CYCLIC_Y_PD, CYCLIC_Y_MF
+      use geometry, only: CYCLIC_Z, CYCLIC_Z_PD, CYCLIC_Z_MF
+! Flag for cylindrical coordinates.
+      use geometry, only: CYLINDRICAL
+! Axis decomposition
+      USE param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
+      USE param, only: DIMENSION_3, DIMENSION_4
+      USE param, only: DIMENSION_3G, DIMENSION_3L, DIMENSION_3P
+! MPI-Domain decompoint and rank flags.
+      use compar, only: NODESI, NODESJ, NODESK, myPE
+! Rank specific decompositions.
+      use compar, only: IJKSIZE3_ALL
+      USE compar, only: iStart3, iEnd3, iStart4, iEnd4
+      USE compar, only: jStart3, jEnd3, jStart4, jEnd4
+      USE compar, only: kStart3, kEnd3, kStart4, kEnd4
+! Flag for specificed constant mass flux.
       use bc, only: Flux_g
+! Flag for POST_MFIX
+      use cdist, only: bDoing_postmfix
 
-      use mpi_utility
+! Global Parameters:
+!---------------------------------------------------------------------//
+      use param1, only: ZERO, HALF, ONE, UNDEFINED 
 
+! Module procedures
+!---------------------------------------------------------------------//
+      use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
+
 
       IMPLICIT NONE
 
+
+! Local Variables:
+!---------------------------------------------------------------------//
 ! Generic loop indices 
       INTEGER :: I, J, K 
 ! X-direction dimension of U-momentum cell 
@@ -32,69 +82,16 @@
       DOUBLE PRECISION :: DZ_T
 ! Error Flag
       INTEGER :: IER
-
+! External function for comparing two values.
       LOGICAL , EXTERNAL :: COMPARE 
-!-----------------------------------------------
+!......................................................................!
 
 
+! Initialize the error manager.
       CALL INIT_ERR_MSG("SET_GEOMETRY")
 
-
-! Set DIMENSION_X variables to MAX3 values.
-      DIMENSION_I   = IMAX3
-      DIMENSION_J   = JMAX3
-      DIMENSION_K   = KMAX3
-
-! Allocate geometry components related to the mesh. Check the
-! allocation error status and abort if any failure is detected.
-      ALLOCATE( X     (0:DIMENSION_I), STAT=IER)
-      ALLOCATE( X_E   (0:DIMENSION_I), STAT=IER)
-      ALLOCATE( oX    (0:DIMENSION_I), STAT=IER)
-      ALLOCATE( oX_E  (0:DIMENSION_I), STAT=IER)
-      ALLOCATE( oDX   (0:DIMENSION_I), STAT=IER)
-      ALLOCATE( oDX_E (0:DIMENSION_I), STAT=IER)
-      IF(IER /= 0) goto 500
-
-      ALLOCATE( oDY   (0:DIMENSION_J), STAT=IER )
-      ALLOCATE( oDY_N (0:DIMENSION_J), STAT=IER )
-      IF(IER /= 0) goto 500
-
-      ALLOCATE( Z     (0:DIMENSION_K), STAT=IER )
-      ALLOCATE( Z_T   (0:DIMENSION_K), STAT=IER )
-      ALLOCATE( oDZ   (0:DIMENSION_K), STAT=IER )
-      ALLOCATE( oDZ_T (0:DIMENSION_K), STAT=IER )
-      IF(IER /= 0) goto 500
-
-      ALLOCATE( FX     (0:DIMENSION_I), STAT=IER)
-      ALLOCATE( FX_bar (0:DIMENSION_I), STAT=IER)
-      IF(IER /= 0) goto 500
-
-      ALLOCATE( FX_E     (0:DIMENSION_I), STAT=IER)
-      ALLOCATE( FX_E_bar (0:DIMENSION_I), STAT=IER)
-      IF(IER /= 0) goto 500
-
-      ALLOCATE( FY_N     (0:DIMENSION_J), STAT=IER )
-      ALLOCATE( FY_N_bar (0:DIMENSION_J), STAT=IER )
-      IF(IER /= 0) goto 500
-
-      ALLOCATE( FZ_T     (0:DIMENSION_K), STAT=IER )
-      ALLOCATE( FZ_T_bar (0:DIMENSION_K), STAT=IER )
-      IF(IER /= 0) goto 500
-
-
-! Collect the error flags from all ranks. If all allocaitons were
-! successfull, do nothing. Otherwise, flag the error and abort.
-! Note that the allocation status is checked in groups. This can
-! be increase if tracking the source of an allocation failure.
-  500 CALL GLOBAL_ALL_SUM(IER)
-
-      IF(IER /= 0) THEN
-         WRITE(ERR_MSG,1100)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
-
- 1100 FORMAT('Error 1100: Failure during array allocation.')
-
+! Allocate geometry arrays.
+      CALL ALLOCATE_ARRAYS_GEOMETRY
 
 !  Determine the cyclic direction with a specified mass flux
       CYCLIC_X_MF = (FLUX_G /= UNDEFINED .AND. CYCLIC_X_PD)

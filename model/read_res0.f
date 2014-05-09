@@ -320,6 +320,9 @@
          nRR     = 0                ! and NRR not read
          doingPost = .true.         ! until later
 
+         call set_parameters
+         call allocate_arrays_geometry
+         call allocate_arrays_increments
          call allocate_arrays       ! do for mfix/post_mfix
          deallocate(ijksize3_all)   ! post_mfix "fix"
   

@@ -1,27 +1,28 @@
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: des_stl_functions                                      C
-!  Purpose: This module will contain routines for geometric interacti  C
-!  required for STL files                                              C
-!                                                                      C
-!  Author: Rahul Garg                                 Date: 24-Oct-13  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!  Revision Number #                                  Date: ##-###-##  C
-!  Author: #                                                           C
-!  Purpose: #                                                          C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: des_stl_functions                                      !
+!  Author: Rahul Garg                                 Date: 24-Oct-13  !
+!                                                                      !
+!  Purpose: This module containd routines for geometric interaction    ! 
+!  required for STL files.                                             !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       MODULE des_stl_functions
+
       IMPLICIT NONE
-      !Dont declare any global variables here as it could lead to cyclic
-      !dependency issues
-      !Use this module only to define functions and subroutines
+
+! Use this module only to define functions and subroutines.
       CONTAINS
 
-      SUBROUTINE des_stl_preprocessing
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: des_stl_preprocessing                                   !
+!  Author: Rahul Garg                                 Date: 24-Oct-13  !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      ! 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE DES_STL_PREPROCESSING
       USE stl
       USE param
       USE error_manager
@@ -31,36 +32,26 @@
       integer :: ijk, count
       integer :: max_des_facets
 
-!      double precision, allocatable :: vertex_des, norm_face_des
-
       CALL INIT_ERR_MSG("DES_STL_PREPROCESSING")
 
       !max_des_facets  = 2*(2*(imax*jmax) + 2*(jmax*kmax) + 2*(kmax*imax))
       !allocate(vertex_des(max_des_facets))
-      WRITE(err_msg, '(A, /, A, ES15.7)')&
-      'Pre-Processing stl information for discrete model now', &
-      'TOL_STL = ', tol_stl
 
-      CALL flush_err_msg(footer = .false.)
+      CALL ALLOCATE_DES_STL_ARRAYS 
+
+! Pre-procssing for the des in order to assign facets to grid cells.
+      WRITE(ERR_MSG,"('Pre-Processing geometry for DES.')")
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
       N_FACETS_DES = 0
-      !now call the pre-procssing for the des in order to
-      !assign facets to grid cells
-      IF(USE_STL) then
 
-         !Set N_facets_des to add any more facets needed by
-         !dem and not to contaminate the Eulerian-Eulerian CG stuff
-         N_FACETS_DES = N_FACETS
-      ENDIF
+! Set N_facets_des to add any more facets needed by dem and not to.
+! contaminate the Eulerian-Eulerian CG stuff 
+      IF(USE_STL) N_FACETS_DES = N_FACETS
 
-      !**********************************************************************************
-      !this is a temporary routine to triangulate the
-      !default walls (bounding box of the simulation)
-      !Eventually, it will be users' burden to supply the bounding box
-      !as stl
-      if(DES_CONVERT_BOX_TO_FACETS) call cg_des_convert_to_facets
-      !*********************************************************************************
+! Triangulate default walls (bounding box of the simulation)
+      CALL CG_DES_CONVERT_TO_FACETS
 
-      CALL bin_facets_to_grid_des
+      CALL BIN_FACETS_TO_GRID_DES
 
       DO IJK = 1, DIMENSION_3
          COUNT = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
@@ -70,14 +61,24 @@
       !CALL DEBUG_WRITE_GRID_FACEINFO
       CALL DEBUG_write_stl_from_grid_facet(WRITE_FACETS_EACH_CELL=.false.)
 
-      WRITE(err_msg,*) 'Done with pre processing of STL faces for discrete model'
+!      call DEBUG_write_all_readin_facets
 
-      CALL flush_err_msg(header = .false.)
+      WRITE(ERR_MSG,"('Done pre-Processing geometry for DES.')")
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
       CALL FINL_ERR_MSG
 
+      RETURN
       END SUBROUTINE DES_STL_PREPROCESSING
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: ALLOCATE_DES_STL_ARRAYS                                 !
+!  Author: Rahul Garg                                 Date: 24-Oct-13  !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      ! 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE ALLOCATE_DES_STL_ARRAYS
       USE param
       USE stl
@@ -404,6 +405,14 @@
       end subroutine checkPTonTriangle
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: intersectLnPlane                                        !
+!  Author: Rahul Garg                                 Date: 24-Oct-13  !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      ! 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       Subroutine intersectLnPlane(ref_line, dir_line, ref_plane, norm_plane, line_param)
       USE discretelement, only: dimn
       USE param1, only: zero
@@ -428,7 +437,15 @@
       return
       end subroutine intersectLnPlane
 
-      Subroutine cg_des_convert_to_facets
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: cg_des_convert_to_facets                                !
+!  Author: Rahul Garg                                 Date: 24-Oct-13  !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      ! 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      Subroutine CG_DES_CONVERT_TO_FACETS
       USE param1
       USE run
       USE compar
@@ -442,9 +459,7 @@
 
       INCLUDE 'function.inc'
 
-      CALL INIT_ERR_MSG("cg_des_convert_to_facets")
-      write(err_msg,*) 'des_convert_box_to_facets specified as true'
-      CALL flush_err_msg(footer = .false.)
+      CALL INIT_ERR_MSG("CG_DES_CONVERT_TO_FACETS")
 
       I = IMIN1 !West Face
       DO K = KMIN1, KMAX1
@@ -548,8 +563,9 @@
          enddo
       enddo
 
-      K = KMIN1 !bottom face
-      DO J = JMIN1, JMAX1
+      IF(DO_K) THEN      
+         K = KMIN1 !bottom face
+         DO J = JMIN1, JMAX1
          DO I = IMIN1, IMAX1
             IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
 
@@ -569,10 +585,10 @@
             VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
             VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
          enddo
-      enddo
+         enddo
 
-      K = KMAX1 !top face
-      DO J = JMIN1, JMAX1
+         K = KMAX1 !top face
+         DO J = JMIN1, JMAX1
          DO I = IMIN1, IMAX1
             IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
 
@@ -592,130 +608,22 @@
             VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
             VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
          enddo
-      enddo
+         enddo
+      endif
+
       CALL FINL_ERR_MSG
       end Subroutine cg_des_convert_to_facets
 
-      Subroutine cg_des_convert_to_facets2
-      USE param1
-      USE run
-      USE compar
-      Use stl
-      USE indices
-      USE geometry
-      USE compar
-      USE error_manager
-      Implicit None
-      INTEGER :: I, J, K, IJK, NF
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: bin_facets_to_grid_des                                  !
+!  Author: Rahul Garg                                 Date: 24-Oct-13  !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      ! 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      Subroutine BIN_FACETS_TO_GRID_DES
 
-      INCLUDE 'function.inc'
-
-      CALL INIT_ERR_MSG("cg_des_convert_to_facets")
-      write(err_msg,*) 'des_convert_box_to_facets specified as true'
-      CALL flush_err_msg(footer = .false.)
-
-      N_FACETS_DES = N_FACETS_DES + 1
-      NF = N_FACETS_DES
-      NORM_FACE(:,NF) = (/one, zero, zero/)
-
-      VERTEX(1,:,NF) = (/0.d0, 0.d0, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(2,:,NF) = (/0.d0, ylength, zlength/) !/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-      VERTEX(3,:,NF) = (/0.d0, 0.d0, zlength/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-
-      N_FACETS_DES = N_FACETS_DES + 1
-      NF = N_FACETS_DES
-      NORM_FACE(:,NF) = (/one, zero, zero/)
-            !NORM_FACE(:,NF) = (/zero, zero, zero/)
-            !For stl, the vertices are stored in CCW order looking from outside.
-            !In the stl convention, the normal points outwards.
-            !However, in MFIX, cutcell and facets normals point into the fluid
-            !So, the normal's are written as pointing to the fluid but when the stl
-            !is viewed in paraview, it will surely calculate its own normals based on the
-            !order ot the vertices specified here and may look opposite.
-            !NORM_FACE(:,NF) = (/zero, zero, zero/)
-      VERTEX(1,:,NF) = (/0.d0, 0.d0, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(2,:,NF) = (/0.d0, ylength, 0.d0/)!get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-      VERTEX(3,:,NF) = (/0.d0, ylength, zlength/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-
-
-      N_FACETS_DES = N_FACETS_DES + 1
-      NF = N_FACETS_DES
-      NORM_FACE(:,NF) = (/-one, zero, zero/)
-            !NORM_FACE(:,NF) = (/zero, zero, zero/)
-      VERTEX(1,:,NF) = (/xlength, 0.d0, 0.d0/) !/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(2,:,NF) = (/xlength, 0.d0, zlength/)! /get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-      VERTEX(3,:,NF) = (/xlength, ylength, zlength/) !/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-
-      N_FACETS_DES = N_FACETS_DES + 1
-      NF = N_FACETS_DES
-      NORM_FACE(:,NF) = (/-one, zero, zero/)
-            !NORM_FACE(:,NF) = (/zero, zero, zero/)
-      VERTEX(1,:,NF) = (/xlength, 0.d0, 0.d0/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(2,:,NF) = (/xlength, ylength, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-      VERTEX(3,:,NF) = (/xlength, ylength, 0.d0/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-
-      N_FACETS_DES = N_FACETS_DES + 1
-      NF = N_FACETS_DES
-      NORM_FACE(:,NF) = (/zero, one, zero/)
-      VERTEX(1,:,NF) = (/0.d0, 0.d0, 0.d0/) !/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(3,:,NF) = (/xlength, 0.d0, 0.d0/) !/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(2,:,NF) = (/xlength, 0.d0, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-
-      N_FACETS_DES = N_FACETS_DES + 1
-      NF = N_FACETS_DES
-      NORM_FACE(:,NF) = (/zero, one, zero/)
-      VERTEX(1,:,NF) = (/0.d0, 0.d0, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(2,:,NF) = (/0.d0, 0.d0, zlength/) ! get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-      VERTEX(3,:,NF) = (/xlength, 0.d0, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-
-      N_FACETS_DES = N_FACETS_DES + 1
-      NF = N_FACETS_DES
-      NORM_FACE(:,NF) = (/zero, -one, zero/)
-      VERTEX(1,:,NF) = (/0.d0, ylength, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-      VERTEX(2,:,NF) = (/xlength, ylength, 0.d0/) !/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-      VERTEX(3,:,NF) = (/xlength, ylength, zlength/)!(/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-
-      N_FACETS_DES = N_FACETS_DES + 1
-      NF = N_FACETS_DES
-      NORM_FACE(:,NF) = (/zero, -one, zero/)
-      VERTEX(1,:,NF) = (/0.d0, ylength, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-      VERTEX(2,:,NF) = (/xlength, ylength, zlength/)!get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-      VERTEX(3,:,NF) = (/0.d0, ylength, zlength/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-
-
-      N_FACETS_DES = N_FACETS_DES + 1
-      NF = N_FACETS_DES
-      NORM_FACE(:,NF) = (/zero, zero, one/)
-      VERTEX(1,:,NF) = (/0.d0, 0.d0, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(2,:,NF) = (/xlength, ylength, 0.d0/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-      VERTEX(3,:,NF) = (/0.d0, ylength, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-      N_FACETS_DES = N_FACETS_DES + 1
-      NF = N_FACETS_DES
-
-      NORM_FACE(:,NF) = (/zero, zero, one/)
-      VERTEX(1,:,NF) = (/0.d0, 0.d0, 0.d0/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(2,:,NF) = (/xlength, 0.d0, 0.d0/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-      VERTEX(3,:,NF) = (/xlength, ylength, 0.d0/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-
-      N_FACETS_DES = N_FACETS_DES + 1
-      NF = N_FACETS_DES
-      NORM_FACE(:,NF) = (/zero, zero, -one/)
-      VERTEX(1,:,NF) = (/0.d0, 0.d0, zlength/) !get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-      VERTEX(2,:,NF) = (/0.d0, ylength, zlength/)! /get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-      VERTEX(3,:,NF) = (/xlength, ylength, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-
-      N_FACETS_DES = N_FACETS_DES + 1
-      NF = N_FACETS_DES
-      NORM_FACE(:,NF) = (/zero, zero, -one/)
-      VERTEX(1,:,NF) = (/0.d0, 0.d0, zlength/) !/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-      VERTEX(2,:,NF) = (/xlength, ylength, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-      VERTEX(3,:,NF) = (/xlength, 0.d0, zlength/) !get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-
-      CALL FINL_ERR_MSG
-      end Subroutine cg_des_convert_to_facets2
-
-
-      Subroutine bin_facets_to_grid_des
       USE param1, only: zero
       USE discretelement, only: dimn, xe, yn, zt
       Use stl, only: vertex, NO_NEIGHBORING_FACET_DES, LIST_FACET_AT_DES
@@ -732,10 +640,9 @@
 
       INTEGER :: IJK2,CURRENT_I,CURRENT_J,CURRENT_K
 
+      include "function.inc"    
 
 !      CHARACTER (LEN=3) :: CAD_PROPAGATE_ORDER
-
-      include "function.inc"
 
       DO N = 1,N_FACETS_DES
 
@@ -791,23 +698,25 @@
          K1 = KEND3
          K2 = KSTART3
 
-         IF(Z2>=ZERO.AND.Z1<=ZLENGTH+TOL_STL) THEN
-            DO K = KSTART3, KEND3
-               KP=K+1
+         IF(DO_K) THEN
+            IF(Z2>=ZERO.AND.Z1<=ZLENGTH+TOL_STL) THEN
+               DO K = KSTART3, KEND3
+                  KP=K+1
 
-               IF(ZT(K)>=Z1-TOL_STL) THEN
-                  K1=K
-                  EXIT
-               ENDIF
-            ENDDO
+                  IF(ZT(K)>=Z1-TOL_STL) THEN
+                     K1=K
+                     EXIT
+                  ENDIF
+               ENDDO
 
-            DO K = KEND3, KSTART3,-1
-               KP = K+1
-               IF(ZT(K)-DZ(K)<=Z2+TOL_STL) THEN
-                  K2=K
-                  EXIT
-               ENDIF
-            ENDDO
+               DO K = KEND3, KSTART3,-1
+                  KP = K+1
+                  IF(ZT(K)-DZ(K)<=Z2+TOL_STL) THEN
+                     K2=K
+                     EXIT
+                  ENDIF
+               ENDDO
+            ENDIF
          ENDIF
 
          IF(N.eq.92.and..false.) then
@@ -907,11 +816,11 @@
 
       box_origin(1) = xe(I) - dx(I)
       box_origin(2) = yn(J) - dy(J)
-      box_origin(3) = zt(K) - dz(K)
+      box_origin(3) = merge(0.0d0, zt(K) - dz(K), NO_K)
 
       box_extents(1) = dx(I)
       box_extents(2) = dy(J)
-      box_extents(3) = dz(K)
+      box_extents(3) = merge(dz(K), ZLENGTH, NO_K)
 
       !Do the separating axis test to check if a separating axis exist. If the separating
       !axis exsit then the cell and facet cannot intersect, so return without adding.
@@ -1009,6 +918,14 @@
 
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: DEBUG_WRITE_GRID_FACEINFO                               !
+!  Author: Rahul Garg                                 Date: 24-Oct-13  !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      ! 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DEBUG_WRITE_GRID_FACEINFO
       USE param
       USE param1
@@ -1056,6 +973,14 @@
       CLOSE(1001, STATUS = "keep")
       END    SUBROUTINE DEBUG_WRITE_GRID_FACEINFO
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: DEBUG_write_all_readin_facets                           !
+!  Author: Rahul Garg                                 Date: 24-Oct-13  !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      ! 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       Subroutine  DEBUG_write_all_readin_facets
       USE stl
       USE compar
@@ -1090,6 +1015,14 @@
       ENDIF
       END Subroutine DEBUG_write_all_readin_facets
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: DEBUG_write_stl_from_grid_facet                         !
+!  Author: Rahul Garg                                 Date: 24-Oct-13  !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      ! 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       Subroutine  DEBUG_write_stl_from_grid_facet(WRITE_FACETS_EACH_CELL)
       use run
       USE stl
@@ -1182,46 +1115,55 @@
       END Subroutine  DEBUG_write_stl_from_grid_facet
 
 
-      double precision function get_nodes(I, J,K, IDIR)
-      USE discretelement, only: dimn, xe, yn, zt
-      USE geometry, only: dx, dy, dz
-      USE error_manager
-      implicit none
-      Integer, intent(in) :: I, J, K
-      Character*1, intent(in) :: Idir
-      Integer :: IJK
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Function: get_nodes                                                 !
+!  Author: Rahul Garg                                 Date: 24-Oct-13  !
+!                                                                      !
+!  Purpose: Return the coordinate of the I/J/K for direction IDIR.     !
+!                                                                      ! 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      DOUBLE PRECISION FUNCTION GET_NODES(I, J, K, IDIR) 
+
+! Scalar grid face locations.
+      use discretelement, only: XE, YN, ZT
+! Scalar grid dimensions.
+      use geometry, only: DX, DY, DZ
+! Flag: Use Kth direction.
+      use geometry, only: DO_K, ZLENGTH
+
+      use error_manager 
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(in) :: I, J, K
+      CHARACTER*1, INTENT(in) :: Idir
 
       SELECT CASE((TRIM(IDIR)))
-      CASE('w' )
-         GET_NODES = XE(I) - DX(I)
-      CASE('e')
-         GET_NODES = XE(I)
-      CASE('n')
-         GET_NODES = YN(J)
-      CASE('s')
-         GET_NODES = YN(J) - DY(J)
-      CASE('t')
-         GET_NODES = ZT(K)
-      CASE('b')
-         GET_NODES = ZT(K) - DZ(K)
+
+
+      CASE('w'); GET_NODES = XE(I) - DX(I)
+      CASE('e'); GET_NODES = XE(I)
+
+      CASE('n'); GET_NODES = YN(J)
+      CASE('s'); GET_NODES = YN(J) - DY(J)
+
+      CASE('t'); GET_NODES = merge(ZT(K), ZLENGTH, DO_K)
+      CASE('b'); GET_NODES = merge(ZT(K) - DZ(K), 0.0d0, DO_K)
+
+! Catch illegal usage.
       CASE DEFAULT
-
-         CALL INIT_ERR_MSG("get_nodes under des_stl_functions_mod")
-         WRITE(err_msg,'(A,/,A,i1,/,A)') &
-         'ERROR IN get_nodes under des_stl_functions.', &
-         'UNKNOWN direction:  ', trim(idir), &
-         'ACCEPTABLE directions are E,W,N,S,T,B:'
-                                !            WRITE(*,*)'STL'
-         CALL flush_err_msg(abort = .true.)
-
+         CALL INIT_ERR_MSG("DES_STL_FUNCTIONS --> GET_NODES")
+         WRITE(ERR_MSG, 1100) trim(idir)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       END SELECT
 
-      return
-      end function get_nodes
+ 1100 FORMAT('Error 1100: Illegal usage. UNKNOWN direction: ',A,/      &
+         'Valid directions are E, W, N, S, T, B.')
 
+      RETURN
+      END FUNCTION GET_NODES
 
-
-      end       MODULE des_stl_functions
-
+      END MODULE DES_STL_FUNCTIONS      
 
 

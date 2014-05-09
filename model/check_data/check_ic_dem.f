@@ -1,17 +1,14 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: CHECK_INITIAL_CONDITIONS_DEM                            !
+!  Subroutine: CHECK_IC_DEM                                            !
+!  Author:   R.Garg                                   Date: 11-Mar-14  !
 !                                                                      !
 !  Purpose: check the initial conditions input section for DEM model   !
-!     
 !     - calculate the number of particles needed to initalize the      !
 !        DEM model                                                     !
-!  Author:   R.Garg                                   Date: 11-Mar-14  !
-!  Comments: Most of the code in this routine is a consolidation of    !
-!            codes from several existing routines                      !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_INITIAL_CONDITIONS_DEM
+      SUBROUTINE CHECK_IC_DEM
       
 
 ! Runtime Flag: Generate initial particle configuation.
@@ -41,7 +38,7 @@
 
 
 ! Initialize the error manager.
-      CALL INIT_ERR_MSG("CHECK_INITIAL_CONDITIONS_DEM")
+      CALL INIT_ERR_MSG("CHECK_IC_DEM")
       
 ! Determine the domain volume which is used to calculate the total
 ! number of particles and the number of particles in each phase. 
@@ -103,5 +100,5 @@
 
       CALL FINL_ERR_MSG
       
-      END SUBROUTINE CHECK_INITIAL_CONDITIONS_DEM
+      END SUBROUTINE CHECK_IC_DEM
       

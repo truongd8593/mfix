@@ -69,8 +69,8 @@
 ! Check the initial conditions for the DEM and MPPIC models as well 
       IF(DEM_SOLIDS.OR.PIC_SOLIDS) &
       CALL CHECK_IC_COMMON_DISCRETE       
-      IF(DEM_SOLIDS) CALL CHECK_INITIAL_CONDITIONS_DEM
-      IF(PIC_SOLIDS) CALL CHECK_INITIAL_CONDITIONS_MPPIC
+      IF(DEM_SOLIDS) CALL CHECK_IC_DEM
+      IF(PIC_SOLIDS) CALL CHECK_IC_MPPIC
 
 ! Finalize the error manager.
       CALL FINL_ERR_MSG

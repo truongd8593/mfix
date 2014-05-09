@@ -54,19 +54,15 @@
 
       GRAV(1) = GRAVITY_X
       GRAV(2) = GRAVITY_Y
-      IF(DO_K) GRAV(3) = GRAVITY_Z
-      WRITE(ERR_MSG, '(A, 2x, 3(ES15.7))') 'GRAVITY components for DES:', & 
-      GRAVITY_X, GRAVITY_Y, GRAVITY_Z
-
-      CALL FLUSH_ERR_MSG 
+      GRAV(3) = GRAVITY_Z
 
 
 
 ! compute the volume of nodes needed in drag_fgs.f 
-      CALL compute_volume_of_nodes
+      CALL COMPUTE_VOLUME_OF_NODES
       
-      IF(DEM_SOLIDS) CALL cfassign_dem
-      IF(PIC_SOLIDS) CALL cfassign_pic
+      IF(DEM_SOLIDS) CALL CFASSIGN_DEM
+      IF(PIC_SOLIDS) CALL CFASSIGN_PIC
 
 ! Finalize the error manager.
       CALL FINL_ERR_MSG
