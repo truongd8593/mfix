@@ -446,7 +446,7 @@
 
 !<keyword category="cartesian grid" required="false">
 !  <description>Maximum number of STL facets per cell for des data arrays.</description>
-      MAX_FACETS_PER_CELL_DES  = 10        !
+      MAX_FACETS_PER_CELL_DES  = 24
 !</keyword>
 
 
