@@ -938,13 +938,13 @@
 
 !Handan Liu modified the following do-loop on Jan 15 2013,
 !       again modified on May 9 2013
-!$omp parallel default(shared)                                          &
-!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,                          &
-!$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,                                         &
-!$omp         gst_tmp,vst_tmp,velfp,desposnew,ijpkp,ipjkp,                      &
-!$omp         ipjpkp,ijkp,nindx,focus,np,wtp,m,weight_ft,                       &
-!$omp             icur,jcur,kcur,vcell,ovol)
-!$omp do reduction(+:drag_am) reduction(+:drag_bm)
+!!$omp parallel default(shared)                                          &
+!!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,                          &
+!!$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,                                         &
+!!$omp         gst_tmp,vst_tmp,velfp,desposnew,ijpkp,ipjkp,                      &
+!!$omp         ipjpkp,ijkp,nindx,focus,np,wtp,m,weight_ft,                       &
+!!$omp             icur,jcur,kcur,vcell,ovol)
+!!$omp do reduction(+:drag_am) reduction(+:drag_bm)
       DO IJK = IJKSTART3,IJKEND3
          IF(.NOT.FLUID_AT(IJK) .OR. PINC(IJK)==0) cycle
          i = i_of(ijk)
@@ -1068,7 +1068,7 @@
          ENDDO   ! end do (nindx = 1,pinc(ijk))
 
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
-!$omp end parallel
+!!$omp end parallel
 !!$      omp_end=omp_get_wtime()
 !!$      write(*,*)'drag_interp:',omp_end - omp_start
 
