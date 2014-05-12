@@ -9,9 +9,9 @@
 !  Use the companion routines for checks specific to a particular      !
 !  solids phase model:                                                 !
 !                                                                      !
-!    > CHECK_SOLIDS_CONTINUUM :: TRM solids phase model)               !
-!    > CHECK_SOLIDS_DES       :: DEM solids phase model)               !
-!    > CHECK_SOLIDS_MPPIC     :: MPPIC solids phase model)             !
+!    > CHECK_SOLIDS_CONTINUUM :: TFM solids phase model                !
+!    > CHECK_SOLIDS_DEM       :: DEM solids phase model                !
+!    > CHECK_SOLIDS_MPPIC     :: MPPIC solids phase model              !
 !                                                                      !
 !  Author: J.Musser                                  Date: 03-FEB-14   !
 !                                                                      !

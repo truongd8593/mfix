@@ -118,27 +118,6 @@
 ! J.Musser: Allocate necessary arrays for discrete mass inlets
       IF(DEM_BCMI /= 0 .OR. DEM_BCMO /=0) CALL ALLOCATE_DEM_MIO
 
-
-! T. Li: Hertzian collision model
-      allocate(hert_kn(DES_MMAX,DES_MMAX))
-      allocate(hert_kt(DES_MMAX,DES_MMAX))
-      allocate(hert_kwn(DES_MMAX))
-      allocate(hert_kwt(DES_MMAX))
-      allocate(g_mod(DES_MMAX))
-
-! Coefficients of normal restitution
-      ALLOCATE(REAL_EN(DES_MMAX,DES_MMAX))
-      ALLOCATE(REAL_EN_WALL(DES_MMAX))
-
-! Coefficients of tangential restitution (needed for hertzian model)
-      ALLOCATE(REAL_ET(DES_MMAX,DES_MMAX))
-      ALLOCATE(REAL_ET_WALL(DES_MMAX))
-
-! normal and tangential dampening factors
-      ALLOCATE(DES_ETAN(DES_MMAX,DES_MMAX))
-      ALLOCATE(DES_ETAT(DES_MMAX,DES_MMAX))
-      ALLOCATE(DES_ETAN_WALL(DES_MMAX), DES_ETAT_WALL(DES_MMAX))
-
 ! Particle attributes
 ! Radius, density, mass, moment of inertia
       Allocate(  DES_RADIUS (NPARTICLES) )
@@ -194,9 +173,6 @@
 
 ! Temporary variables to store wall position, velocity and normal vector
       Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
-
-! Gravity vector
-      Allocate(  GRAV (DIMN) )
 
 ! Neighbor search
       Allocate(  NEIGHBOURS (NPARTICLES, MAXNEIGHBORS) )

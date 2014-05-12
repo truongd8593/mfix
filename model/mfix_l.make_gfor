@@ -406,7 +406,7 @@ $(EXEC_FILE) : \
     $(DPO)check_solids_common_all.$(OBJ_EXT) \
     $(DPO)check_solids_common_discrete.$(OBJ_EXT) \
     $(DPO)check_solids_continuum.$(OBJ_EXT) \
-    $(DPO)check_solids_des.$(OBJ_EXT) \
+    $(DPO)check_solids_dem.$(OBJ_EXT) \
     $(DPO)check_solids_model_prereqs.$(OBJ_EXT) \
     $(DPO)check_solids_mppic.$(OBJ_EXT) \
     $(DPO)check_solids_phases.$(OBJ_EXT) \
@@ -876,7 +876,7 @@ $(EXEC_FILE) : \
     $(DPO)check_solids_common_all.$(OBJ_EXT) \
     $(DPO)check_solids_common_discrete.$(OBJ_EXT) \
     $(DPO)check_solids_continuum.$(OBJ_EXT) \
-    $(DPO)check_solids_des.$(OBJ_EXT) \
+    $(DPO)check_solids_dem.$(OBJ_EXT) \
     $(DPO)check_solids_model_prereqs.$(OBJ_EXT) \
     $(DPO)check_solids_mppic.$(OBJ_EXT) \
     $(DPO)check_solids_phases.$(OBJ_EXT) \
@@ -6178,13 +6178,13 @@ $(DPO)check_solids_continuum.$(OBJ_EXT) : ./check_data/check_solids_continuum.f 
             $(DPO)param1.mod \
             $(DPO)error_manager.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_continuum.f  -o $(DPO)check_solids_continuum.$(OBJ_EXT) -J$(DPO)
-$(DPO)check_solids_des.$(OBJ_EXT) : ./check_data/check_solids_des.f \
+$(DPO)check_solids_dem.$(OBJ_EXT) : ./check_data/check_solids_dem.f \
             $(DPO)discretelement.mod \
             $(DPO)param1.mod \
             $(DPO)error_manager.mod \
             $(DPO)des_thermo.mod \
             $(DPO)run.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_des.f  -o $(DPO)check_solids_des.$(OBJ_EXT) -J$(DPO)
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_dem.f  -o $(DPO)check_solids_dem.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_solids_model_prereqs.$(OBJ_EXT) : ./check_data/check_solids_model_prereqs.f \
             $(DPO)run.mod \
             $(DPO)discretelement.mod \
@@ -6246,9 +6246,9 @@ $(DPO)stiff_chem_rrates.$(OBJ_EXT) : ./chem/stiff_chem_rrates.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/stiff_chem_rrates.f  -o $(DPO)stiff_chem_rrates.$(OBJ_EXT) -J$(DPO)
 $(DPO)calc_collision_wall.$(OBJ_EXT) : ./des/calc_collision_wall.f \
             $(DPO)softspring_funcs_cutcell.mod \
+            $(DPO)discretelement.mod \
             $(DPO)run.mod \
             $(DPO)param1.mod \
-            $(DPO)discretelement.mod \
             $(DPO)geometry.mod \
             $(DPO)compar.mod \
             $(DPO)constant.mod \

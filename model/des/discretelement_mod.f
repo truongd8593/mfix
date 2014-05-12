@@ -283,7 +283,7 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: WALL_NORMAL  !(NWALLS,3)
 
 ! Gravity vector
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: GRAV !(3)
+      DOUBLE PRECISION :: GRAV(3)
 
 
 ! Periodic wall BC
@@ -326,10 +326,8 @@
       DOUBLE PRECISION DES_ETAT_FAC, DES_ETAT_W_FAC
 
 ! Damping coeffients in array form
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_ETAN, DES_ETAT
-                        !(DES_MMAX,DES_MMAX)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_ETAN_WALL, DES_ETAT_WALL
-                        !(DES_MMAX)
+      DOUBLE PRECISION :: DES_ETAN(DIM_M, DIM_M), DES_ETAN_WALL(DIM_M)
+      DOUBLE PRECISION :: DES_ETAT(DIM_M, DIM_M), DES_ETAT_WALL(DIM_M)
 
 ! Friction coeficients
       DOUBLE PRECISION MEW, MEW_W
@@ -343,18 +341,12 @@
       DOUBLE PRECISION DES_EN_WALL_INPUT(DIM_M)
       DOUBLE PRECISION DES_ET_WALL_INPUT(DIM_M)
 
-! actual coeff of rest.'s rearranged
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: REAL_EN, REAL_ET
-                        !(DES_MMAX,DES_MMAX)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: REAL_EN_WALL, REAL_ET_WALL
-                        !(DES_MMAX)
-
-! Hertzian model: T.Li
-      DOUBLE PRECISION ew_young, vw_poisson
-      DOUBLE PRECISION e_young(dim_m), v_poisson(dim_m)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: hert_kn, hert_kt  !(DES_MMAX,DES_MMAX)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: hert_kwn, hert_kwt  !(DES_MMAX)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: g_mod               !(DES_MMAX)
+! Hertzian collision model:
+      DOUBLE PRECISION :: E_YOUNG(DIM_M), Ew_YOUNG
+      DOUBLE PRECISION :: V_POISSON(DIM_M), Vw_POISSON
+      DOUBLE PRECISION :: HERT_KN(DIM_M, DIM_M), HERT_KWN(DIM_M)
+      DOUBLE PRECISION :: HERT_KT(DIM_M, DIM_M), HERT_KWT(DIM_M)
+      DOUBLE PRECISION :: G_MOD(DIM_M)
 
 ! End particle-particle and particle-wall collision model parameters
 !-----------------------------------------------------------------<<<

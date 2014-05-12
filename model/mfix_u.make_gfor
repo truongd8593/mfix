@@ -406,7 +406,7 @@ $(EXEC_FILE) : \
     $(DPO)check_solids_common_all.$(OBJ_EXT) \
     $(DPO)check_solids_common_discrete.$(OBJ_EXT) \
     $(DPO)check_solids_continuum.$(OBJ_EXT) \
-    $(DPO)check_solids_des.$(OBJ_EXT) \
+    $(DPO)check_solids_dem.$(OBJ_EXT) \
     $(DPO)check_solids_model_prereqs.$(OBJ_EXT) \
     $(DPO)check_solids_mppic.$(OBJ_EXT) \
     $(DPO)check_solids_phases.$(OBJ_EXT) \
@@ -876,7 +876,7 @@ $(EXEC_FILE) : \
     $(DPO)check_solids_common_all.$(OBJ_EXT) \
     $(DPO)check_solids_common_discrete.$(OBJ_EXT) \
     $(DPO)check_solids_continuum.$(OBJ_EXT) \
-    $(DPO)check_solids_des.$(OBJ_EXT) \
+    $(DPO)check_solids_dem.$(OBJ_EXT) \
     $(DPO)check_solids_model_prereqs.$(OBJ_EXT) \
     $(DPO)check_solids_mppic.$(OBJ_EXT) \
     $(DPO)check_solids_phases.$(OBJ_EXT) \
@@ -6178,13 +6178,13 @@ $(DPO)check_solids_continuum.$(OBJ_EXT) : ./check_data/check_solids_continuum.f 
             $(DPO)PARAM1.mod \
             $(DPO)ERROR_MANAGER.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_continuum.f  -o $(DPO)check_solids_continuum.$(OBJ_EXT) -J$(DPO)
-$(DPO)check_solids_des.$(OBJ_EXT) : ./check_data/check_solids_des.f \
+$(DPO)check_solids_dem.$(OBJ_EXT) : ./check_data/check_solids_dem.f \
             $(DPO)DISCRETELEMENT.mod \
             $(DPO)PARAM1.mod \
             $(DPO)ERROR_MANAGER.mod \
             $(DPO)DES_THERMO.mod \
             $(DPO)RUN.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_des.f  -o $(DPO)check_solids_des.$(OBJ_EXT) -J$(DPO)
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_dem.f  -o $(DPO)check_solids_dem.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_solids_model_prereqs.$(OBJ_EXT) : ./check_data/check_solids_model_prereqs.f \
             $(DPO)RUN.mod \
             $(DPO)DISCRETELEMENT.mod \
@@ -6246,9 +6246,9 @@ $(DPO)stiff_chem_rrates.$(OBJ_EXT) : ./chem/stiff_chem_rrates.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/stiff_chem_rrates.f  -o $(DPO)stiff_chem_rrates.$(OBJ_EXT) -J$(DPO)
 $(DPO)calc_collision_wall.$(OBJ_EXT) : ./des/calc_collision_wall.f \
             $(DPO)SOFTSPRING_FUNCS_CUTCELL.mod \
+            $(DPO)DISCRETELEMENT.mod \
             $(DPO)RUN.mod \
             $(DPO)PARAM1.mod \
-            $(DPO)DISCRETELEMENT.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)COMPAR.mod \
             $(DPO)CONSTANT.mod \
