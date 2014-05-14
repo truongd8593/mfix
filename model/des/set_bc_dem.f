@@ -13,8 +13,8 @@
 
       USE constant
       USE des_bc
-      USE discretelement 
-      USE funits  
+      USE discretelement
+      USE funits
       USE geometry
       USE indices
       USE param
@@ -50,7 +50,7 @@
 !-----------------------------------------------
 !   External functions
 !-----------------------------------------------
-      LOGICAL , EXTERNAL :: COMPARE 
+      LOGICAL , EXTERNAL :: COMPARE
 
 !-----------------------------------------------           
 
@@ -82,7 +82,7 @@
  1201 FORMAT('Error 1201: MAX_PIS must be specified in the mfix.dat ', &
          'file if',/' there are no initial particles (PARTICLES = 0).')
 
-      ENDIF 
+      ENDIF
 
 ! If the system is started without any particles and an inlet is not
 ! specified, the run is likely aborted.
@@ -144,8 +144,8 @@
       USE constant
       USE bc
       USE des_bc
-      USE discretelement 
-      USE funits  
+      USE discretelement
+      USE funits
       USE geometry
       USE indices
       USE param
@@ -203,7 +203,7 @@
 !-----------------------------------------------
 !   External functions
 !-----------------------------------------------
-      LOGICAL, EXTERNAL :: COMPARE 
+      LOGICAL, EXTERNAL :: COMPARE
 !-----------------------------------------------
 
 
@@ -316,7 +316,7 @@
 ! Inlets with velocities greater than this value can be randomly seeded,
 ! otherwise, particles are seeded in according to the grid.
          MAXIPV = MAX_DIA/( DTSOLID*dble(PI_FACTOR(BCV_I)) * dble(     &
-            FLOOR(CEILING(real(OCCUPANTS)/2.0)/real(PI_COUNT(BCV_I))))) 
+            FLOOR(CEILING(real(OCCUPANTS)/2.0)/real(PI_COUNT(BCV_I)))))
 
          if(dFlag) write(*,"(/2x,'MaxIPV:',3x,g11.5)") MAXIPV
          if(dFlag) write(*,"( 2x,'MinIPV:',3x,g11.5)") MINIPV
@@ -413,7 +413,7 @@
                M = PHASE_LIST(MM)
                SCALED_VAL = dble(NUMFRAC_LIMIT)*(NPMpSEC(M)/NPpSEC)
                RANGE_TOP = FLOOR(SCALED_VAL) + (RANGE_BOT-1)
-               DEM_BC_POLY_LAYOUT(BCV_I,RANGE_BOT:RANGE_TOP) = M 
+               DEM_BC_POLY_LAYOUT(BCV_I,RANGE_BOT:RANGE_TOP) = M
                RANGE_BOT = RANGE_TOP+1
             ENDDO
 
@@ -532,7 +532,7 @@
 
       DOUBLE PRECISION :: SHIFT, WINDOW, OFFSET
 
-      LOGICAL, EXTERNAL :: COMPARE 
+      LOGICAL, EXTERNAL :: COMPARE
 
       LOGICAL, parameter :: setDBG = .FALSE. ! .FALSE.
       LOGICAL :: dFlag
@@ -686,6 +686,10 @@
 
       CALL GLOBAL_ALL_SUM(RAND_MAP)
 
+! Initialize the vacancy pointer.
+      DEM_MI(BCV_I)%VACANCY = 1
+
+! Allocate the mass inlet storage arrays.
       allocate( DEM_MI(BCV_I)%W(OCCUPANTS) )
       allocate( DEM_MI(BCV_I)%P(OCCUPANTS) )
       allocate( DEM_MI(BCV_I)%H(OCCUPANTS) )
@@ -770,8 +774,8 @@
       USE constant
       USE des_bc
       USE bc
-      USE discretelement 
-      USE funits  
+      USE discretelement
+      USE funits
       USE geometry
       USE indices
       USE param
@@ -801,14 +805,14 @@
 !-----------------------------------------------
 !   External functions
 !-----------------------------------------------
-      LOGICAL, EXTERNAL :: COMPARE 
+      LOGICAL, EXTERNAL :: COMPARE
 !-----------------------------------------------
 
 
 ! Check each discrete mass outlet for necessary data
       IF(DES_BCMO/=0)THEN
          BCV_I = 1
-         DO BCV = 1, DIMENSION_BC 
+         DO BCV = 1, DIMENSION_BC
            IF((DES_BC_DEFINED(BCV)) )THEN! .AND. &
 !              (DES_BC_TYPE(BCV) == 'MASS_OUTFLOW'))THEN
 
@@ -817,7 +821,7 @@
                CALL DES_MO_CLASSIFY(BCV_I, BCV)
 
 
-               BCV_I = BCV_I + 1 
+               BCV_I = BCV_I + 1
             ENDIF
          ENDDO
       ENDIF
@@ -852,8 +856,8 @@
       USE compar
       USE constant
       USE des_bc
-      USE discretelement 
-      USE funits  
+      USE discretelement
+      USE funits
       USE geometry
       USE param1
       USE physprop
@@ -1051,7 +1055,7 @@
             DES_PERIODIC_WALLS = .FALSE.
             DES_PERIODIC_WALLS_X = .FALSE.
             DES_PERIODIC_WALLS_Y = .FALSE.
-            DES_PERIODIC_WALLS_Z = .FALSE.            
+            DES_PERIODIC_WALLS_Z = .FALSE.
             WRITE(UNIT_LOG, 1063)
             WRITE(*,1063)
          ENDIF
