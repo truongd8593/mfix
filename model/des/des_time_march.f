@@ -22,12 +22,12 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE DES_TIME_MARCH
-     
+
 !------------------------------------------------
 ! Modules
 !------------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE run
       USE output
       USE physprop
@@ -40,23 +40,23 @@
       USE tau_s
       USE visc_g
       USE visc_s
-      USE funits 
+      USE funits
       USE vshear
       USE scalars
       USE drag
       USE rxns
-      USE compar     
-      USE time_cpu  
-      USE discretelement   
+      USE compar
+      USE time_cpu
+      USE discretelement
       USE constant
       USE sendrecv
       USE des_bc
-      USE cutcell 
+      USE cutcell
       USE mfix_pic
       Use des_thermo
       Use des_rxns
       Use interpolation
-      
+
       IMPLICIT NONE
 !------------------------------------------------
 ! Local variables
@@ -66,13 +66,13 @@
 ! particle loop counter index
       INTEGER :: NP
 ! time step loop counter index
-      INTEGER :: NN      
+      INTEGER :: NN
 ! loop counter index for any initial particle settling incoupled cases
       INTEGER :: FACTOR
 ! boundary condition loop counter index
-      INTEGER :: BCV_I      
+      INTEGER :: BCV_I
 ! accounted for particles
-      INTEGER :: PC      
+      INTEGER :: PC
 
 ! Local variables to keep track of time when dem restart and des
 ! write data need to be written when des_continuum_coupled is F
@@ -80,7 +80,7 @@
 
 ! Temporary variables when des_continuum_coupled is T to track
 ! changes in solid time step 
-      DOUBLE PRECISION TMP_DTS, DTSOLID_TMP 
+      DOUBLE PRECISION TMP_DTS, DTSOLID_TMP
       CHARACTER*5 FILENAME
 
 ! Temporary variable used to track reporting frequency for the
@@ -89,7 +89,7 @@
 
 ! Logical to see whether this is the first entry to this routine
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
-      
+
 ! Identifies that the indicated particle is of interest for debugging
       LOGICAL FOCUS
 !-----------------------------------------------
@@ -100,7 +100,7 @@
       INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
-      IF(MPPIC) THEN 
+      IF(MPPIC) THEN
          CALL MPPIC_TIME_MARCH
          RETURN
       ENDIF
@@ -108,7 +108,7 @@
 
 ! if first_pass
 !----------------------------------------------------------------->>>
-      IF(FIRST_PASS) THEN 
+      IF(FIRST_PASS) THEN
          IF(DMP_LOG) WRITE(UNIT_LOG,'(1X,A)')&
             '---------- FIRST PASS DES_TIME_MARCH ---------->'
          S_TIME = ZERO
@@ -117,8 +117,8 @@
 ! When no particles are present, skip the startup routines that loop over particles.
 ! That is, account for a setup that starts with no particles in the system.
          IF(PARTICLES /= 0) THEN
-            IF(DO_NSEARCH) CALL NEIGHBOUR         
-         
+            IF(DO_NSEARCH) CALL NEIGHBOUR
+
 ! To do only des in the 1st time step only for a new run so the 
 ! particles settle down before the coupling is turned on
             IF(RUN_TYPE == 'NEW') THEN
@@ -187,9 +187,9 @@
          ENDIF
          IF(DMP_LOG) WRITE(UNIT_LOG, 1999) factor, s_time, dt, dtsolid, pip
          IF(DMP_LOG) WRITE(*, 1999) factor, s_time, dt, dtsolid, pip
-         
+
       ELSE
-         FACTOR = CEILING(real((TSTOP-TIME)/DTSOLID)) 
+         FACTOR = CEILING(real((TSTOP-TIME)/DTSOLID))
          IF(DMP_LOG) WRITE(*,'(1X,A)')&
             '---------- START DES_TIME_MARCH ---------->'
          IF(DMP_LOG) WRITE(*,'(3X,A,X,I10,X,A)') &
@@ -221,33 +221,32 @@
 
 ! Main DEM time loop
 !----------------------------------------------------------------->>>
-      DO NN = 1, FACTOR 
+      DO NN = 1, FACTOR
 
          IF(DES_CONTINUUM_COUPLED) THEN
             IF(S_TIME.GE.(TIME+DT)) EXIT
 ! If the current time in the discrete loop exceeds the current time in
 ! the continuum simulation, exit the discrete loop
-            IF((S_TIME+DTSOLID).GT.(TIME+DT)) THEN 
+            IF((S_TIME+DTSOLID).GT.(TIME+DT)) THEN
 ! If next time step in the discrete loop will exceed the current time 
 ! in the continuum simulation, modify the discrete time step so final
 ! time will match 
                TMP_DTS = DTSOLID
                DTSOLID = TIME + DT - S_TIME
-            ENDIF 
+            ENDIF
             IF(DEBUG_DES) THEN
               IF(DMP_LOG) write(*,'(3X,A,X,I10,X,A,X,ES15.7)') &
-                  'DES-COUPLED LOOP NO. =', NN, ' S_TIME =', S_TIME 
+                  'DES-COUPLED LOOP NO. =', NN, ' S_TIME =', S_TIME
               IF(DMP_LOG) write(*,'(3X,A,X,ES15.7)') &
                   'DTSOLID =', DTSOLID
             ENDIF
          ELSE   ! else if (des_continuum_coupled)
             IF(DEBUG_DES) THEN
                IF(DMP_LOG) WRITE(*,'(3X,A,X,I10,X,A,X,ES15.7)') &
-               'DEM LOOP NO. =', NN, ' S_TIME =', S_TIME 
-            ENDIF             
+               'DEM LOOP NO. =', NN, ' S_TIME =', S_TIME
+            ENDIF
          ENDIF   ! end if/else (des_continuum_coupled) 
-         
-         
+
 ! communication between processors have to take place all the time;
 ! regardless of number of particles 
          CALL CALC_FORCE_DEM
@@ -273,9 +272,8 @@
          IF(NN.EQ.1 .OR. MOD(NN,NEIGHBOR_SEARCH_N).EQ.0) &
             DO_NSEARCH = .TRUE.
          CALL PARTICLES_IN_CELL
-            
          IF (DO_NSEARCH) THEN
-            IF(DEBUG_DES) THEN 
+            IF(DEBUG_DES) THEN
                IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,I10,/,5X,A,I10)') &
                   'Calling NEIGHBOUR: during iteration NN =', NN
             ENDIF
@@ -289,10 +287,10 @@
 ! When coupled, all write calls are made in time_march (the continuum 
 ! portion) according to user settings for spx_time and res_time.
 ! The following section targets data writes for DEM only cases:
-         IF(.NOT.DES_CONTINUUM_COUPLED) THEN    
+         IF(.NOT.DES_CONTINUUM_COUPLED) THEN
 ! Keep track of TIME for DEM simulations
             TIME = S_TIME
- 
+
 ! Write data using des_spx_time and des_res_time; note the time will
 ! reflect current position of particles  
             IF(PRINT_DES_DATA) THEN
@@ -322,22 +320,22 @@
                   call des_write_restart
 ! Write RES1 here since it won't be called in time_march.  This will
 ! also keep track of TIME
-               CALL WRITE_RES1 
+               CALL WRITE_RES1
                IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,X,ES15.5)') &
                'DES.RES and .RES files written at time =', S_TIME
             ENDIF
          ENDIF  ! end if (.not.des_continuum_coupled)
 
 
-! J.Musser : mass inlet/outlet -> particles entering the system
-         IF(DES_MI) CALL MASS_INFLOW_DEM
+! Seed new particles entering the system.
+         IF(DEM_BCMI > 0) CALL MASS_INFLOW_DEM
 
          IF(CALL_USR) CALL USR2_DES
 
 ! Report some statistics on overlap and neighbors to screen log
          IF ( (S_TIME+0.1d0*DTSOLID >= DES_TMP_TIME) .OR. &
               ( (S_TIME+0.1d0*DTSOLID >= TSTOP) .AND. &
-               (.NOT.DES_CONTINUUM_COUPLED) ) .OR. &          
+               (.NOT.DES_CONTINUUM_COUPLED) ) .OR. &
               (NN .EQ. FACTOR) ) THEN
             DES_TMP_TIME = ( INT((S_TIME+0.1d0*DTSOLID)/DES_SPX_DT) &
                + 1 )*DES_SPX_DT
@@ -368,24 +366,23 @@
          DTSOLID = TMP_DTS
          TMP_DTS = ZERO
       ENDIF
-      
+
       IF(.NOT.DES_CONTINUUM_COUPLED)THEN
          IF(DMP_LOG) WRITE(UNIT_LOG,'(1X,A)')&
          '<---------- END DES_TIME_MARCH ----------'
-      ELSE 
+      ELSE
          call send_recv(ep_g,2)
          call send_recv(rop_g,2)
          call send_recv(des_u_s,2)
-         call send_recv(des_v_s,2) 
-         if(do_K) call send_recv(des_w_s,2) 
+         call send_recv(des_v_s,2)
+         if(do_K) call send_recv(des_w_s,2)
          call send_recv(rop_s,2)
       ENDIF
 
- 1999    FORMAT(/1X,70('- '),//,10X,  & 
+ 1999    FORMAT(/1X,70('- '),//,10X,  &
          & 'DEM SIMULATION CALLED ', 2x, i5, 2x, 'times this fluid step', /10x &
          & 'S_TIME, DT, DTSOLID and PIP = ', 3(2x,g17.8),2x, i10)
 
       RETURN
 
       END SUBROUTINE DES_TIME_MARCH
-

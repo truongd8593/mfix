@@ -76,6 +76,8 @@
       TYPE DEM_MI_
 ! ID of BC use to build the DEM_MI
          INTEGER :: BCV
+! Array position of next seed location.
+         INTEGER :: VACANCY
 ! Number of positions in the layout grid.
          INTEGER :: OCCUPANTS
 ! Indicates the flow plane (same as BC_PLANE)

@@ -57,7 +57,7 @@
       DEM_BCMO = 0
 
 ! Loop over all BCs looking for DEM solids inlets/outlets
-      DO BCV = 1, DIMENSION_BC 
+      DO BCV = 1, DIMENSION_BC
 
          SELECT CASE (TRIM(BC_TYPE(BCV)))
 
@@ -73,9 +73,28 @@
             ENDDO M_LP
 
 ! Count the number of pressure outflows.
-         CASE ('P_OUTFLOW', 'CG_PO')
+         CASE ('P_OUTFLOW')
             DEM_BCMO = DEM_BCMO + 1
             DEM_BC_MO_MAP(DEM_BCMO) = BCV
+
+! Flag CG_MI as an error if DEM solids are present.
+         CASE ('CG_MI')
+            DO M=1,M_TOT
+               IF(SOLIDS_MODEL(M)=='DEM' .AND.                         &
+                  BC_EP_s(BCV,M) > ZERO) THEN
+                  WRITE(ERR_MSG,1100) trim(iVar('BC_TYPE',BCV)), 'GC_MI'
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
+            ENDDO
+
+         CASE ('CG_PO')
+            WRITE(ERR_MSG,1100) trim(iVar('BC_TYPE',BCV)), 'GC_PO'
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+         CASE ('MASS_OUTFLOW', 'OUTFLOW', 'P_INFLOW')
+            WRITE(ERR_MSG,1100) trim(iVar('BC_TYPE',BCV)),             &
+               trim(BC_TYPE(BCV))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
          END SELECT
 
@@ -84,4 +103,9 @@
       CALL FINL_ERR_MSG
 
       RETURN
+
+ 1100 FORMAT('Error 1100: Unsupported boundary condition specified ',  &
+         'with',/'DEM simulation: ',A,' = ',A,/'Please correct the ',&
+         'mfix.dat file.')
+
       END SUBROUTINE CHECK_BC_DEM
