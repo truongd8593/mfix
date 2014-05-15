@@ -243,7 +243,7 @@
       FOCUS_PARTICLE = -1
 
       DO LL = 1, MAX_PIP
-
+         
          FORCE_HISTORY = PFT(LL,0,:)
          PFT(LL,0,:) = ZERO
 
@@ -427,7 +427,7 @@
                     VERTEX(1,:,NF), VERTEX(2,:,NF), VERTEX(3,:,NF), &
                     CLOSEST_PT(:))
 
-               DIST(:) = DES_POS_NEW(LL,:) - CLOSEST_PT(:)
+               DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(LL,:) 
                DISTSQ = DES_DOTPRDCT(DIST, DIST)
                OVERLAP_N = ZERO
 
@@ -441,16 +441,24 @@
 !            ENDDO
 !         ENDDO
 
-
+                  
 !         IF(MAX_DISTSQ /= UNDEFINED) THEN
 ! Assign the collision normal based on the facet with the
 ! largest overlap.
-               NORMAL(:) = -NORM_FACE(:,MAX_NF)
+                  NORMAL(:) = DIST(:)/sqrt(DISTSQ)
+
+                  !NORMAL(:) = -NORM_FACE(:,MAX_NF)
+               !facet's normal is correct normal only when the 
+               !intersection is with the face. When the intersection
+               !is with edge or vertex, then the normal is 
+               !based on closest pt and sphere center. The  
+               !definiton above of the normal is generic enough to
+               !account for differences between vertex, edge, and facet. 
 
 ! Calculate the particle/wall overlap.
                DISTMOD = SQRT(MAX_DISTSQ)
                OVERLAP_N = DES_RADIUS(LL) - DISTMOD
-
+               
 ! Calculate the translational relative velocity for a contacting particle pair
                CALL CFRELVEL_WALL2(LL, V_REL_TRANS_NORM, &
                   V_REL_TRANS_TANG, TANGENT, NORMAL, DISTMOD)

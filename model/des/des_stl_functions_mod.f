@@ -820,7 +820,7 @@
 
       box_extents(1) = dx(I)
       box_extents(2) = dy(J)
-      box_extents(3) = merge(dz(K), ZLENGTH, NO_K)
+      box_extents(3) = merge(ZLENGTH, dz(K), NO_K)
 
       !Do the separating axis test to check if a separating axis exist. If the separating
       !axis exsit then the cell and facet cannot intersect, so return without adding.
