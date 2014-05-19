@@ -25,8 +25,8 @@
 
   CALL_USR = .T.
 
-  C(1) =  0.9     C_NAME(1) = 'Ash fraction threshold'
-  C(2) =  1.0E2   C_NAME(2) = 'Pseudo reaction const.'
+  C(1) =  0.9     C_NAME(1) = 'Ash fraction amount'
+  C(2) =  1.0E2   C_NAME(2) = 'Pseudo reaction cst.'
 
   PAFC =  0.6 ! Proximate analysis - Fixed Carbon
 

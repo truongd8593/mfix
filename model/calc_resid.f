@@ -286,16 +286,16 @@
       DO IJK = ijkstart3, ijkend3
          IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
 
-         if(M/=0) then
-            if(EP_S(IJK,M) <= DIL_EP_s) CYCLE
-         endif
-
-
          IF (FLUID_AT(IJK) .AND. ABS(VAR(IJK)) > TOL) THEN 
             IMJK = IM_OF(IJK) 
             IJMK = JM_OF(IJK) 
             IPJK = IP_OF(IJK) 
             IJPK = JP_OF(IJK) 
+
+            if(M/=0) then
+               if(EP_S(IJK,M) <= DIL_EP_s) CYCLE
+            endif
+
 
 ! evaluating the residual at cell ijk:
 !   RESp = B-sum(Anb*VARnb)-Ap*VARp

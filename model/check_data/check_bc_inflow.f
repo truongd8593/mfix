@@ -74,7 +74,7 @@
       IF(BC_EP_G(BCV) == UNDEFINED) THEN
          WRITE(ERR_MSG, 1000) trim(iVar('BC_EP_g',BCV))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF 
+      ENDIF
 
 ! Verify compressible boundary condition variables.
       IF(RO_G0 == UNDEFINED) THEN
@@ -89,10 +89,10 @@
          'flows',/'when specifying BC_MASSFLOW_g to make the ',        &
          'conversion to velocity.',/'Please correct the mfix.dat file.')
 
-         ELSEIF(BC_P_G(BCV) <= ZERO) THEN 
+         ELSEIF(BC_P_G(BCV) <= ZERO) THEN
             WRITE(ERR_MSG, 1101) BCV, trim(iVal(BC_P_G(BCV)))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
+         ENDIF
 
  1101 FORMAT('Error 1101: Pressure must be greater than zero for ',    &
          'compressible flow',/' >>>  BC_P_g(',I3,') = ',A,/'Please ',  &
@@ -104,7 +104,7 @@
          BC_T_G(BCV)==UNDEFINED) THEN
          WRITE(ERR_MSG, 1000) trim(iVar('BC_T_g',BCV))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF 
+      ENDIF
 
 ! Sum together defiend gas phase species mass fractions.
       SUM = ZERO
@@ -114,7 +114,7 @@
          ELSE
             BC_X_G(BCV,N) = ZERO
          ENDIF
-      ENDDO 
+      ENDDO
 
 ! Enforce that the species mass fractions must sum to one.
       IF(.NOT.COMPARE(ONE,SUM)) THEN
@@ -184,6 +184,10 @@
          IF(SKIP(M)) THEN
             BC_EP_S(BCV,M)  = ZERO
             BC_ROP_S(BCV,M) = ZERO
+            IF(SPECIES_EQ(M))THEN
+               BC_X_S(BCV,M,:) = ZERO
+               BC_X_S(BCV,M,1) = ONE
+            ENDIF
             CYCLE
          ENDIF
 
