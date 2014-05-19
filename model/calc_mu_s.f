@@ -2618,9 +2618,8 @@
       USE run, only: granular_energy
 ! kinetic theories
       USE run, only: kt_type_enum
-      USE run, only: simonin_1996
-      USE run, only: ahmadi_1995
-      USE run, only: ia_2005
+      USE run, only: simonin_1996, ahmadi_1995
+      USE run, only: ia_2005, ghd_2007
 ! runtime flag for treating the system as if shearing
       USE run, only: shear, V_sh
 
@@ -3001,20 +3000,21 @@
 ! to make this consistent with drag_gs?). Currently based on Wen-Yu
 ! correlation
 ! -------------------------------------------------------------------
-            RE = D_p(IJK,M)*VREL_array(IJK,M)*ROP_G(IJK)/&
-               (MU_G(IJK) + SMALL_NUMBER)
-            IF(RE .LE. 1000.d0)THEN
-               C_d = (24.d0/(Re+SMALL_NUMBER)) * &
-                  (ONE + 0.15d0 * Re**0.687D0)
-            ELSE
-               C_d = 0.44d0
-            ENDIF
-            DgA_s(IJK,M) = 0.75d0 * C_d * VREL_array(IJK,M) * &
-               ROP_g(IJK) / D_p(IJK,M)
+            IF (KT_TYPE_ENUM /= GHD_2007) THEN
+               RE = D_p(IJK,M)*VREL_array(IJK,M)*ROP_G(IJK)/&
+                  (MU_G(IJK) + SMALL_NUMBER)
+               IF(RE .LE. 1000.d0)THEN
+                  C_d = (24.d0/(Re+SMALL_NUMBER)) * &
+                     (ONE + 0.15d0 * Re**0.687D0)
+               ELSE
+                  C_d = 0.44d0
+               ENDIF
+               DgA_s(IJK,M) = 0.75d0 * C_d * VREL_array(IJK,M) * &
+                  ROP_g(IJK) / D_p(IJK,M)
 
 ! set value for 1st iteration and 1st time step
-            IF(VREL_array(IJK,M) == ZERO) DgA_S(IJK,M) = LARGE_NUMBER
-
+               IF(VREL_array(IJK,M) == ZERO) DgA_S(IJK,M) = LARGE_NUMBER
+            ENDIF
 
 ! Quantities for simonin or ahmadi theories:
 ! -------------------------------------------------------------------
