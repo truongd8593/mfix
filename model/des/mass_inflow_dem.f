@@ -65,7 +65,7 @@
             iMAX_GLOBAL_ID = iMAX_GLOBAL_ID + 1
 
 ! Determine the location and phase of the incoming particle.
-            CALL SEED_NEW_PARTICLE(BCV_I, M, POS, IJKP, OWNS)
+            CALL SEED_NEW_PARTICLE(BCV, BCV_I, M, POS, IJKP, OWNS)
 
 ! Only the rank receiving the new particle needs to continue
             IF(.NOT.OWNS) CYCLE PLoop
@@ -124,12 +124,13 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE SEED_NEW_PARTICLE(lBCV_I, lM, lPOS, lIJKP, lOWNS)
+      SUBROUTINE SEED_NEW_PARTICLE(lBCV, lBCV_I, lM, lPOS, lIJKP, lOWNS)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
       USE compar
+      USE bc
       USE des_bc
       USE discretelement
       USE funits
@@ -141,7 +142,7 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! The associated bc no.
-      INTEGER, INTENT(IN) :: lBCV_I
+      INTEGER, INTENT(IN) :: lBCV, lBCV_I
 ! Phase of incoming particle.
       INTEGER, INTENT(OUT) :: lM
 ! Position of incoming particle.
@@ -199,21 +200,36 @@
       RAND1 = HALF*DES_D_p0(lM) + (WINDOW - DES_D_p0(lM))*RAND1
       RAND2 = HALF*DES_D_p0(lM) + (WINDOW - DES_D_p0(lM))*RAND2
 
-!      SELECT CASE(DES_MI_CLASS(lBCV_I))
-!      CASE(NORTH_SOUTH)
-! Set the physical location of the particle.
+
+! Set the physical location and I/J/K location of the particle.
+      SELECT CASE(BC_PLANE(lBCV))
+      CASE('N','S')
          lPOS(1) = DEM_MI(lBCV_I)%P(VACANCY) + RAND1
          lPOS(3) = DEM_MI(lBCV_I)%Q(VACANCY) + RAND2
          lPOS(2) = DEM_MI(lBCV_I)%OFFSET
-! Set the I/J/K location of the particle
+
          lIJKP(1) = DEM_MI(lBCV_I)%W(VACANCY)
          lIJKP(3) = DEM_MI(lBCV_I)%H(VACANCY)
          lIJKP(2) = DEM_MI(lBCV_I)%L
 
-!      CASE(EAST_WEST)
-!      CASE(TOP_BOTTOM)
-!      END SELECT
+      CASE('E','W')
+         lPOS(2) = DEM_MI(lBCV_I)%P(VACANCY) + RAND1
+         lPOS(3) = DEM_MI(lBCV_I)%Q(VACANCY) + RAND2
+         lPOS(1) = DEM_MI(lBCV_I)%OFFSET
 
+         lIJKP(2) = DEM_MI(lBCV_I)%W(VACANCY)
+         lIJKP(3) = DEM_MI(lBCV_I)%H(VACANCY)
+         lIJKP(1) = DEM_MI(lBCV_I)%L
+
+      CASE('T','B')
+         lPOS(1) = DEM_MI(lBCV_I)%P(VACANCY) + RAND1
+         lPOS(2) = DEM_MI(lBCV_I)%Q(VACANCY) + RAND2
+         lPOS(3) = DEM_MI(lBCV_I)%OFFSET
+
+         lIJKP(1) = DEM_MI(lBCV_I)%W(VACANCY)
+         lIJKP(2) = DEM_MI(lBCV_I)%H(VACANCY)
+         lIJKP(3) = DEM_MI(lBCV_I)%L
+      END SELECT
 
 ! Easier and cleaner to clear out the third component at the end.
       IF(NO_K) lPOS(3) = ZERO

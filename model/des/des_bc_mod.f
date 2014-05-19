@@ -61,14 +61,10 @@
 ! the dimension of this variable is equal to the number of grid
 ! cells in the inlet edge/face
       TYPE DEM_MI_
-! ID of BC use to build the DEM_MI
-         INTEGER :: BCV
 ! Array position of next seed location.
          INTEGER :: VACANCY
 ! Number of positions in the layout grid.
          INTEGER :: OCCUPANTS
-! Indicates the flow plane (same as BC_PLANE)
-         CHARACTER*1 :: PLANE
 ! Flag for polydisperse inlets.
          LOGICAL :: POLYDISPERSE
 ! Uniform grid dimension (width and height).
