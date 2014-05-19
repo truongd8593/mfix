@@ -463,52 +463,6 @@
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>x coordinate of the west face</description>
-      DES_BC_X_w(:) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>x coordinate of the east face</description>
-      DES_BC_X_e(:) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>y coordinate of the south face</description>
-      DES_BC_Y_s(:) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>y coordinate of the north face</description>
-      DES_BC_Y_n(:) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>z coordinate of the bottom face</description>
-      DES_BC_Z_b(:) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>z coordinate of the top face</description>
-      DES_BC_Z_t(:) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-
-!  <description>macroscopic bulk density of discrete solids phases at the bc plane.</description>
-      DES_BC_ROP_s(:,:) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>temperature of incoming particles.</description>
-      DES_BC_T_s(:,:) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>mass fraction of solids phase m species n for incoming particles.</description>
-      DES_BC_X_s(:,:,:) = UNDEFINED
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
 !  <description>logical to force the inlet to operate with an ordered boundary condition.  this may be useful during long simulations or if the inlet appears to be taking a long time to randomly place particles.</description>
       FORCE_ORD_BC = .FALSE.
 !</keyword>

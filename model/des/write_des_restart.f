@@ -136,60 +136,60 @@
 
 ! Mass inlet/outlet parameters:
 !--------------------------------------------------------------------->>
-         if(des_mi)then
+!         if(des_mi)then
 
 !  *******************************************************************
 !  * Warning: DES_MI_TIME is an array allocated to des_bcmi.         *
 !  *          Could this be a problem?                               *
 !  *******************************************************************
 ! Time to seed next particle.
-            write (lres_unit,rec=lnext_rec) des_mi_time
-            lnext_rec=lnext_rec+1
+!            write (lres_unit,rec=lnext_rec) des_mi_time
+!            lnext_rec=lnext_rec+1
 
 ! For each mass inlet, store:
 !   mi_factor - number of inlet grid cells containing particles
 !   mi_window - grid cell length (> diameter)
 !   particle_plcmnt - indicates seeding approach (ordered vs. random)
-            do lboundnum =1, des_bcmi
-               write (lres_unit,rec=lnext_rec) mi_factor(lboundnum), &
-                  mi_window(lboundnum),particle_plcmnt(lboundnum)
-               lnext_rec = lnext_rec + 1 
+!            do lboundnum =1, des_bcmi
+!               write (lres_unit,rec=lnext_rec) mi_factor(lboundnum), &
+!                  mi_window(lboundnum),particle_plcmnt(lboundnum)
+!               lnext_rec = lnext_rec + 1 
 
-               if(particle_plcmnt(lboundnum) == 'ORDR')then
+!               if(particle_plcmnt(lboundnum) == 'ORDR')then
 ! For ordered inlets, store:
 !   mi_order pointer is 'associated', and if so, store:
 !     number of grid cells
 !     mi_order - order to populate grid cells with incoming particles
-                  lassoc = associated(mi_order(lboundnum)%value)
-                  write (lres_unit,rec=lnext_rec)lassoc;lnext_rec=lnext_rec+1
-                  if(lassoc)then
-                     lsize =size(mi_order(lboundnum)%value)
-                     write (lres_unit,rec=lnext_rec) lsize;lnext_rec=lnext_rec+1
-                     call out_bin_512i(lres_unit,mi_order(lboundnum)%value,lsize,lnext_rec)
-                  endif
+!                  lassoc = associated(mi_order(lboundnum)%value)
+!                  write (lres_unit,rec=lnext_rec)lassoc;lnext_rec=lnext_rec+1
+!                  if(lassoc)then
+!                     lsize =size(mi_order(lboundnum)%value)
+!                     write (lres_unit,rec=lnext_rec) lsize;lnext_rec=lnext_rec+1
+!                     call out_bin_512i(lres_unit,mi_order(lboundnum)%value,lsize,lnext_rec)
+!                  endif
 !     number of cells in i-direction
 !     number of cells in i-direction
 !     i indices of mass inlet grid
-                  lassoc = associated(i_of_mi(lboundnum)%value)
-                  write (lres_unit,rec=lnext_rec) lassoc;lnext_rec=lnext_rec+1
-                  if(lassoc)then
-                     lsize =size(i_of_mi(lboundnum)%value)
-                     write (lres_unit,rec=lnext_rec) lsize;lnext_rec=lnext_rec+1
-                     call out_bin_512i(lres_unit,i_of_mi(lboundnum)%value,lsize,lnext_rec)
-                  endif
+!                  lassoc = associated(i_of_mi(lboundnum)%value)
+!                  write (lres_unit,rec=lnext_rec) lassoc;lnext_rec=lnext_rec+1
+!                  if(lassoc)then
+!                     lsize =size(i_of_mi(lboundnum)%value)
+!                     write (lres_unit,rec=lnext_rec) lsize;lnext_rec=lnext_rec+1
+!                     call out_bin_512i(lres_unit,i_of_mi(lboundnum)%value,lsize,lnext_rec)
+!                  endif
 !   j_of_mi is 'associated', and if so, store:
 !     number of cells in j-direction
 !     j indices of mass inlet grid
-                  lassoc = associated(j_of_mi(lboundnum)%value)
-                  write (lres_unit,rec=lnext_rec) lassoc;lnext_rec=lnext_rec+1
-                  if(lassoc)then
-                     lsize =size(j_of_mi(lboundnum)%value)
-                     write (lres_unit,rec=lnext_rec) lsize;lnext_rec=lnext_rec+1
-                     call out_bin_512i(lres_unit,j_of_mi(lboundnum)%value,lsize,lnext_rec)
-                  endif
-               endif  
-            enddo
-         endif
+!                  lassoc = associated(j_of_mi(lboundnum)%value)
+!                  write (lres_unit,rec=lnext_rec) lassoc;lnext_rec=lnext_rec+1
+!                  if(lassoc)then
+!                     lsize =size(j_of_mi(lboundnum)%value)
+!                     write (lres_unit,rec=lnext_rec) lsize;lnext_rec=lnext_rec+1
+!                     call out_bin_512i(lres_unit,j_of_mi(lboundnum)%value,lsize,lnext_rec)
+!                  endif
+!               endif  
+!            enddo
+!         endif
 
 ! Serial restart file:
 !---------------------------------------------------------------------//
@@ -301,69 +301,69 @@
 
 ! Mass inlet/outlet parameters:
 !--------------------------------------------------------------------->>
-         if(des_mi .and. mype .eq. pe_io)then
+!         if(des_mi .and. mype .eq. pe_io)then
 
 !  *******************************************************************
 !  * Warning: DES_MI_TIME is an array allocated to des_bcmi.         *
 !  *          Could this be a problem?                               *
 !  *******************************************************************
 ! Time to seed next particle.
-            write (lres_unit,rec=lnext_rec) des_mi_time
-            lnext_rec=lnext_rec+1
+!            write (lres_unit,rec=lnext_rec) des_mi_time
+!            lnext_rec=lnext_rec+1
 
 ! For each mass inlet, store:
 !   mi_factor - number of inlet grid cells containing particles
 !   mi_window - grid cell length (> diameter)
 !   particle_plcmnt - indicates seeding approach (ordered vs. random)
-            do lboundnum =1, des_bcmi
-               write (lres_unit,rec=lnext_rec) mi_factor(lboundnum), &
-                  mi_window(lboundnum),particle_plcmnt(lboundnum)
-               lnext_rec = lnext_rec + 1 
+!            do lboundnum =1, des_bcmi
+!               write (lres_unit,rec=lnext_rec) mi_factor(lboundnum), &
+!                  mi_window(lboundnum),particle_plcmnt(lboundnum)
+!               lnext_rec = lnext_rec + 1 
 
-               if(particle_plcmnt(lboundnum) == 'ORDR')then
+!               if(particle_plcmnt(lboundnum) == 'ORDR')then
 ! For ordered inlets, store:
 !   mi_order pointer is 'associated', and if so, store:
 !     number of grid cells
 !     mi_order - order to populate grid cells with incoming particles
-                  lassoc = associated(mi_order(lboundnum)%value)
-                  write (lres_unit,rec=lnext_rec)lassoc
-                  lnext_rec=lnext_rec+1
-                  if(lassoc)then
-                     lsize =size(mi_order(lboundnum)%value)
-                     write (lres_unit,rec=lnext_rec) lsize
-                     lnext_rec=lnext_rec+1
-                     call out_bin_512i(lres_unit, &
-                        mi_order(lboundnum)%value,lsize,lnext_rec)
-                  endif
+!                  lassoc = associated(mi_order(lboundnum)%value)
+!                  write (lres_unit,rec=lnext_rec)lassoc
+!                  lnext_rec=lnext_rec+1
+!                  if(lassoc)then
+!                     lsize =size(mi_order(lboundnum)%value)
+!                     write (lres_unit,rec=lnext_rec) lsize
+!                     lnext_rec=lnext_rec+1
+!                     call out_bin_512i(lres_unit, &
+!                        mi_order(lboundnum)%value,lsize,lnext_rec)
+!                  endif
 !   i_of_mi is 'associated', and if so, store:
 !     number of cells in i-direction
 !     i indices of mass inlet grid
-                  lassoc = associated(i_of_mi(lboundnum)%value)
-                  write (lres_unit,rec=lnext_rec) lassoc
-                  lnext_rec=lnext_rec+1
-                  if(lassoc)then
-                     lsize =size(i_of_mi(lboundnum)%value)
-                     write (lres_unit,rec=lnext_rec) lsize
-                     lnext_rec=lnext_rec+1
-                     call out_bin_512i(lres_unit, &
-                        i_of_mi(lboundnum)%value,lsize,lnext_rec)
-                  endif
+!                  lassoc = associated(i_of_mi(lboundnum)%value)
+!                  write (lres_unit,rec=lnext_rec) lassoc
+!                  lnext_rec=lnext_rec+1
+!                  if(lassoc)then
+!                     lsize =size(i_of_mi(lboundnum)%value)
+!                     write (lres_unit,rec=lnext_rec) lsize
+!                     lnext_rec=lnext_rec+1
+!                     call out_bin_512i(lres_unit, &
+!                        i_of_mi(lboundnum)%value,lsize,lnext_rec)
+!                  endif
 !   j_of_mi is 'associated', and if so, store:
 !     number of cells in j-direction
 !     j indices of mass inlet grid
-                  lassoc = associated(j_of_mi(lboundnum)%value)
-                  write (lres_unit,rec=lnext_rec) lassoc
-                  lnext_rec=lnext_rec+1
-                  if(lassoc)then
-                     lsize =size(j_of_mi(lboundnum)%value)
-                     write (lres_unit,rec=lnext_rec) lsize
-                     lnext_rec=lnext_rec+1
-                     call out_bin_512i(lres_unit, &
-                        j_of_mi(lboundnum)%value,lsize,lnext_rec)
-                  endif
-               endif  
-            enddo
-         endif
+!                  lassoc = associated(j_of_mi(lboundnum)%value)
+!                  write (lres_unit,rec=lnext_rec) lassoc
+!                  lnext_rec=lnext_rec+1
+!                  if(lassoc)then
+!                     lsize =size(j_of_mi(lboundnum)%value)
+!                     write (lres_unit,rec=lnext_rec) lsize
+!                     lnext_rec=lnext_rec+1
+!                     call out_bin_512i(lres_unit, &
+!                        j_of_mi(lboundnum)%value,lsize,lnext_rec)
+!                  endif
+!               endif  
+!            enddo
+!         endif
       end if 
 
       if(bdist_io .or.mype .eq. pe_io) close(lres_unit)

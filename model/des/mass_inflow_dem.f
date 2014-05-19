@@ -10,11 +10,13 @@
       SUBROUTINE MASS_INFLOW_DEM
 
       use discretelement
+
+      use bc
       use des_bc
 
       implicit none
 
-      INTEGER :: IP, LS, M, NP
+      INTEGER :: IP, LS, M, NP, IJK, LC
       INTEGER :: BCV, BCV_I
       INTEGER :: IERR
       LOGICAL :: CHECK_FOR_ERRORS, OWNS
@@ -22,19 +24,39 @@
 ! I/J/K index of fluid cell containing the new particle.
       INTEGER :: IJKP(3)
 
-      DOUBLE PRECISION :: POS(3)
-
+      DOUBLE PRECISION :: DIST, POS(3)
 
       CHECK_FOR_ERRORS = .FALSE.
 
       IERR = 0
       DO BCV_I = 1, DEM_BCMI
+         BCV = DEM_BCMI_MAP(BCV_I)
+
+
+         DO LC=DEM_BCMI_IJKSTART(BCV_I), DEM_BCMI_IJKEND(BCV_I)
+           IJK = DEM_BCMI_IJK(LC)
+
+            DO LS= 1,PINC(IJK)
+               NP = PIC(IJK)%p(LS)
+               IF(PEA(NP,3)) CYCLE
+               SELECT CASE (BC_PLANE(BCV))
+               CASE('N'); DIST = DES_POS_NEW(NP,2) - YN(BC_J_s(BCV))
+               CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(NP,2)
+               CASE('E'); DIST = DES_POS_NEW(NP,1) - XE(BC_I_w(BCV))
+               CASE('W'); DIST = XE(BC_I_w(BCV)-1) - DES_POS_NEW(NP,1)
+               CASE('T'); DIST = DES_POS_NEW(NP,3) - ZT(BC_K_b(BCV))
+               CASE('B'); DIST = ZT(BC_K_b(BCV)-1) - DES_POS_NEW(NP,3)
+               END SELECT
+! The particle is still inside the domain
+               IF(DIST > DES_RADIUS(NP)) PEA(NP,2) = .FALSE.
+            ENDDO
+         ENDDO
+
 
 ! Check if any particles need seeded this time step.
          IF(DEM_MI_TIME(BCV_I) > S_TIME) CYCLE
 
          LS = 1
-         BCV = DEM_MI(BCV_I)%BCV
 
 ! Loop over the particles being injected
          PLoop: DO IP = 1, PI_COUNT(BCV_I)
@@ -64,14 +86,6 @@
 
 ! Set the particle's global ID.
             iGLOBAL_ID(NP) = iMAX_GLOBAL_ID
-
-
-
-
-            DES_DEBUG_DATA(NP,1) = 1.0
-
-
-
 
 ! Set the properties of the new particle.
             CALL SET_NEW_PARTICLE_PROPS(BCV, M, NP, POS, IJKP)
@@ -372,39 +386,39 @@
       TOUCHING = .FALSE.
 
 ! For parallel processing the arrays has to be limited 
-      select case (des_mi_class(bcv_i))
-      case ('XW','XE', 'YZw','YZe')
-         listart = gs_array(bcv_i,1)
-         liend = gs_array(bcv_i,2)
-         ljstart = max(gs_array(bcv_i,3),jstart)
-         ljend = min(gs_array(bcv_i,4),jend)
-         lkstart = max(gs_array(bcv_i,5),jstart)
-         lkend = min(gs_array(bcv_i,6),jend)
-      case ('YN','YS', 'XZn','XZs')
-         listart = max(gs_array(bcv_i,1),istart)
-         liend = min(gs_array(bcv_i,2),iend)
-         ljstart = gs_array(bcv_i,3)
-         ljend = gs_array(bcv_i,4)
-         lkstart = max(gs_array(bcv_i,5),jstart)
-         lkend = min(gs_array(bcv_i,6),jend)
-      case ('ZT','ZB', 'XYt','XYb')
-         listart = max(gs_array(bcv_i,1),istart)
-         liend = min(gs_array(bcv_i,2),iend)
-         ljstart = max(gs_array(bcv_i,3),jstart)
-         ljend = min(gs_array(bcv_i,4),jend)
-         lkstart = gs_array(bcv_i,5)
-         lkend = gs_array(bcv_i,6)
-      end select 
-    
-      DO k = lkstart,lkend 
-      DO j = ljstart,ljend 
-      DO i = listart,liend 
+!      select case (des_mi_class(bcv_i))
+!      case ('XW','XE', 'YZw','YZe')
+!         listart = gs_array(bcv_i,1)
+!         liend = gs_array(bcv_i,2)
+!         ljstart = max(gs_array(bcv_i,3),jstart)
+!         ljend = min(gs_array(bcv_i,4),jend)
+!         lkstart = max(gs_array(bcv_i,5),jstart)
+!         lkend = min(gs_array(bcv_i,6),jend)
+!      case ('YN','YS', 'XZn','XZs')
+!         listart = max(gs_array(bcv_i,1),istart)
+!         liend = min(gs_array(bcv_i,2),iend)
+!         ljstart = gs_array(bcv_i,3)
+!         ljend = gs_array(bcv_i,4)
+!         lkstart = max(gs_array(bcv_i,5),jstart)
+!         lkend = min(gs_array(bcv_i,6),jend)
+!      case ('ZT','ZB', 'XYt','XYb')
+!         listart = max(gs_array(bcv_i,1),istart)
+!         liend = min(gs_array(bcv_i,2),iend)
+!         ljstart = max(gs_array(bcv_i,3),jstart)
+!         ljend = min(gs_array(bcv_i,4),jend)
+!         lkstart = gs_array(bcv_i,5)
+!         lkend = gs_array(bcv_i,6)
+!      end select 
+
+      DO k = lkstart,lkend
+      DO j = ljstart,ljend
+      DO i = listart,liend
 !      DO K = GS_ARRAY(BCV_I,5), GS_ARRAY(BCV_I,6)
 !         DO J = GS_ARRAY(BCV_I,3), GS_ARRAY(BCV_I,4)
 !           DO I =  GS_ARRAY(BCV_I,1), GS_ARRAY(BCV_I,2)
              IJK = FUNIJK(I,J,K)
              IF(ASSOCIATED(PIC(IJK)%P)) THEN
-               NPG =  SIZE(PIC(IJK)%P)                     
+               NPG =  SIZE(PIC(IJK)%P)
                DO LL = 1, NPG
                   NP2 = PIC(IJK)%P(LL)
                   DISTVEC(:) = ppar_pos(:) - DES_POS_NEW(NP2,:)

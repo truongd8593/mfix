@@ -4,9 +4,8 @@
 !  Purpose: Original allocte arrays subroutines for DES                C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE DES_ALLOCATE_ARRAYS
 
-      SUBROUTINE DES_ALLOCATE_ARRAYS 
-                                                                   
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
@@ -47,7 +46,7 @@
 
       CALL INIT_ERR_MSG("DES_ALLOCATE_ARRAYS")
 
-      write(err_msg, 1000) Particles 
+      write(err_msg, 1000) Particles
  1000 FORMAT('Total number of particles = ', 2x, i15)
       CALL FLUSH_ERR_MSG(footer = .false.)
 
@@ -71,9 +70,9 @@
       ENDIF
 
  1001 FORMAT(/,'User supplied MAX_PIS (',I15, &
-      ') > cummulative size of particle arrays, NPARTILCES ( ', I15 , ')', /, & 
+      ') > cummulative size of particle arrays, NPARTILCES ( ', I15 , ')', /, &
       'Therefore, setting NPARTICLES to ',I15)
-      
+
 
 ! For parallel processing the array size required should be either
 ! specified by the user or could be determined from total particles
@@ -82,21 +81,21 @@
 
 ! minimum size for nparticles
       IF(NPARTICLES.LT.1000) NPARTICLES = 1000
-      
-      IF(NPARTICLES .LT. PIP) then 
+
+      IF(NPARTICLES .LT. PIP) then
          write(err_msg, 1002) mype, Nparticles, pip
          CALL FLUSH_ERR_MSG(header = .false., footer = .false., Abort = .true.)
       endif
  1002 FORMAT(/,'Error 1002: For processor:', 2x, i5, /, &
-      'Particle array size determined (', 2x, I15, & 
-      ') is less than number of particles (', 2x, i15, ')', /, & 
+      'Particle array size determined (', 2x, I15, &
+      ') is less than number of particles (', 2x, i15, ')', /, &
       'Increase MAX_PIS or particles_factor in the input file')
 
 ! max_pip adjusted to accomodate temporary variables used for walls
 ! and DES_MPI stuff 
 
       MAX_PIP = NPARTICLES - 2*NWALLS - 3
-      
+
       WRITE(err_msg, 1003)  NPARTICLES, MAX_PIP
 
  1003 FORMAT('Particle array size on each proc = ',I15, /,&
@@ -104,7 +103,7 @@
       'Note that this value of MAX_PIP is only ',&
       'relevant for a new run',/,'For restarts, max_pip ',&
       'will be set later on')
-      
+
       CALL FLUSH_ERR_MSG(header = .false., footer = .false.)
 
 ! DES Allocatable arrays
@@ -215,7 +214,7 @@
       Allocate(  DES_W_s (DIMENSION_3, DES_MMAX) )
 
  ! Volume of nodes 	 
-       ALLOCATE(DES_VOL_NODE(DIMENSION_3)) 	 
+       ALLOCATE(DES_VOL_NODE(DIMENSION_3))
 
 ! Variables for hybrid model
       IF (DES_CONTINUUM_HYBRID) THEN
@@ -252,10 +251,10 @@
 
          Allocate(PIC_P_s (DIMENSION_3, DES_MMAX) )
 !         ALLOCATE(MPPIC_VPTAU(NPARTICLES, DIMN))
-         PIC_U_s = zero 
+         PIC_U_s = zero
          PIC_V_s = zero
-         PIC_W_s = zero 
-         PIC_P_s = zero 
+         PIC_W_s = zero
+         PIC_P_s = zero
       ENDIF
 
 
@@ -386,18 +385,12 @@
 ! Allocate/Initialize for inlets
       IF(DEM_BCMI /= 0)THEN
 
-! Distance offset of incoming particles in ghost cell
-         Allocate( DEM_BC_OFFSET (DEM_BCMI) )
-! Base location of new particle.
-         Allocate( DEM_BC_BASE (DEM_BCMI,2) )
 ! Particle injection factor
          Allocate( PI_FACTOR (DEM_BCMI) )
 ! Particle injection count (injection number)
          Allocate( PI_COUNT (DEM_BCMI) )
 ! Particle injection time scale
          Allocate( DEM_MI_TIME (DEM_BCMI) )
-! Logical array stating if a bounday condition is polydisperse
-         Allocate( DEM_BC_POLY( DEM_BCMI ) )
 ! Array used for polydisperse inlets: stores the particle number
 ! distribution of an inlet scaled with numfrac_limit
          Allocate( DEM_BC_POLY_LAYOUT( DEM_BCMI, NUMFRAC_LIMIT ) )
@@ -405,9 +398,6 @@
          Allocate( DEM_MI(DEM_BCMI) )
 
 ! Initializiation
-! Logical for whether inlet is polydisperse
-         DEM_BC_POLY(:) = .FALSE.
-
 ! Integer arrays
          PI_FACTOR(:) = -1
          PI_COUNT(:) = -1
@@ -415,97 +405,27 @@
 ! Double precision arrays
          DEM_MI_TIME(:) = UNDEFINED
 
+         allocate( DEM_BCMI_IJKSTART(DEM_BCMI) )
+         allocate( DEM_BCMI_IJKEND(DEM_BCMI) )
 
-! Order inlet condition variables
-         Allocate( MI_FACTOR (DEM_BCMI) )
-         Allocate( MI_WINDOW (DEM_BCMI) )
-         Allocate( MI_ORDER  (DEM_BCMI) )
-         Allocate( I_OF_MI   (DEM_BCMI) )
-         Allocate( J_OF_MI   (DEM_BCMI) )
-
+         DEM_BCMI_IJKSTART = -1
+         DEM_BCMI_IJKEND   = -1
 
       ENDIF  ! end if DEM_BCMI /= 0
 
-
-
-! Allocate/Initialize for inlets
-      IF(DES_BCMI /= 0)THEN
-
-! Boundary condition ID array
-!         Allocate( DES_BC_MI_ID (DES_BCMI) )
-
-! Distance offset of incoming particles in ghost cell
-!         Allocate( DES_BC_OFFSET (DES_BCMI) )
-
-! Particle injection time scale
-!         Allocate( DES_MI_TIME (DES_BCMI) )
-
 ! Boundary classification
-!         Allocate( DES_MI_CLASS (DES_BCMI) )
-         Allocate( PARTICLE_PLCMNT (DES_BCMI) )
-
-
-
-! Grid search loop counter array; 6 = no. of faces
-         Allocate(  GS_ARRAY (DES_BCMI, 6) )
-
-! Logical array stating if a bounday condition is polydisperse
-!         Allocate( DES_BC_POLY( DES_BCMI ) )
-
-! Array used for polydisperse inlets: stores the particle number
-! distribution of an inlet scaled with numfrac_limit
-!         Allocate( DES_BC_POLY_LAYOUT( DES_BCMI, NUMFRAC_LIMIT ) )
-
-! Initializiation
-! Logical for whether inlet is polydisperse
-         DES_BC_POLY(:) = .FALSE.
-! Logical for inlet existance on IJK face
-         DES_MI_X = .FALSE.
-         DES_MI_Y = .FALSE.
-         DES_MI_Z = .FALSE.
-! Integer arrays
-         DES_BC_MI_ID(:) = -1
-         PI_FACTOR(:) = -1
-         PI_COUNT(:) = -1
-         MI_FACTOR(:) = -1
-         MI_WINDOW(:) = -1
-         GS_ARRAY(:,:) = -1
-         DES_BC_POLY_LAYOUT(:,:) = -1
-! Double precision arrays
-         DES_MI_TIME(:) = UNDEFINED
+!         Allocate( PARTICLE_PLCMNT (DES_BCMI) )
 ! Character precision arrays
-         DES_MI_CLASS(:) = UNDEFINED_C
-         PARTICLE_PLCMNT(:) = UNDEFINED_C
-! Derived data types
-         DO I = 1,DES_BCMI
-            NULLIFY( MI_ORDER(I)%VALUE )
-            NULLIFY( I_OF_MI(I)%VALUE )
-            NULLIFY( J_OF_MI(I)%VALUE )
-         ENDDO
-
-      ENDIF  ! end if des_bcmi /= 0
+!         PARTICLE_PLCMNT(:) = UNDEFINED_C
 
 
-! Allocate/Initialize for outlets
-      IF(DES_BCMO /= 0)THEN
+      IF(DEM_BCMO > 0)THEN
+         allocate( DEM_BCMO_IJKSTART(DEM_BCMO) )
+         allocate( DEM_BCMO_IJKEND(DEM_BCMO) )
 
-! Boundary Condition ID array
-         Allocate( DES_BC_MO_ID (DES_BCMO) )
-
-! Boundary classification
-         Allocate( DES_MO_CLASS (DES_BCMO) )
-
-! Initializiation
-! Integer arrays
-         DES_BC_MO_ID(:) = -1
-! Character arrays
-         DES_MO_CLASS(:) = UNDEFINED_C
-! Logical for outlet existance on IJK face
-         DES_MO_X = .FALSE.
-         DES_MO_Y = .FALSE.
-         DES_MO_Z = .FALSE.
-
-      ENDIF   ! end if des_bcmo /= 0
+         DEM_BCMO_IJKSTART = -1
+         DEM_BCMO_IJKEND   = -1
+      ENDIF
 
 
       RETURN

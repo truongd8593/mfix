@@ -7,16 +7,16 @@
 !  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE GET_DATA 
+      SUBROUTINE GET_DATA
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE run
-      USE funits 
-      USE compar      
+      USE funits
+      USE compar
       USE gridmap
       USE discretelement
       USE des_thermo
@@ -43,9 +43,9 @@
 
 
 ! This module call routines to initialize the namelist variables.
-      CALL INIT_NAMELIST 
+      CALL INIT_NAMELIST
 ! Read in the namelist variables from the ascii input file.
-      CALL READ_NAMELIST(0) 
+      CALL READ_NAMELIST(0)
 
 ! Initialize the error manager. This call occurs after the mfix.dat
 ! is read so that message verbosity can be set and the .LOG file 
@@ -68,8 +68,8 @@
       CALL SET_MAX2
 
 ! Set constants
-      CALL SET_CONSTANTS 
-      
+      CALL SET_CONSTANTS
+
 ! Adjust partition for better load balance (done when RE_INDEXING is .TRUE.)
       CALL ADJUST_IJK_SIZE
 
@@ -93,7 +93,7 @@
       IF(DISCRETE_ELEMENT) CALL CHECK_GEOMETRY_DES
 
 ! Set grid spacing variables.
-      CALL SET_GEOMETRY 
+      CALL SET_GEOMETRY
       IF(DISCRETE_ELEMENT) CALL SET_GEOMETRY_DES
 
       CALL CHECK_INITIAL_CONDITIONS
@@ -115,13 +115,13 @@
       CALL SET_ICBC_FLAG
 
 ! Compute area of boundary surfaces.
-      CALL GET_BC_AREA 
+      CALL GET_BC_AREA
 
 ! Convert (mass, volume) flows to velocities.
       CALL SET_BC_FLOW
 
 ! Set the flags for identifying computational cells
-      CALL SET_FLAGS 
+      CALL SET_FLAGS
 ! Set arrays for computing indices
       CALL SET_INCREMENTS
       CALL SET_INCREMENTS3
@@ -135,29 +135,29 @@
       ENDIF
 
 ! Setup DES boundaries.
-      IF(DISCRETE_ELEMENT) then 
+      IF(DISCRETE_ELEMENT) then
          CALL DES_STL_PREPROCESSING
          IF(RUN_TYPE == 'NEW' .AND. PARTICLES /= 0) THEN
             IF(GENER_PART_CONFIG) CALL GENERATE_PARTICLE_CONFIG
          ENDIF
       ENDIF
-         
-        
+
+
 !--------------------------  ARRAY ALLOCATION -----------------------!
-      
+
 ! Allocate array storage.
       CALL ALLOCATE_ARRAYS
       IF(DISCRETE_ELEMENT) CALL DES_ALLOCATE_ARRAYS
       IF(QMOMK) CALL QMOMK_ALLOCATE_ARRAYS
-      
+
 ! Initialize arrays.
-      CALL INIT_FVARS 
+      CALL INIT_FVARS
       IF(DISCRETE_ELEMENT) CALL DES_INIT_ARRAYS
 
 ! This is all that happens in SET_L_SCALE so it needs moved, maybe
 ! this should go in int_fluid_var.?
 !     CALL SET_L_SCALE 
-      L_SCALE(:) = L_SCALE0 
+      L_SCALE(:) = L_SCALE0
 
 
 !======================================================================
@@ -166,16 +166,16 @@
       INIT_TIME = TIME
       SMMIN =  LARGE_NUMBER
       SMMAX = -LARGE_NUMBER
-            
+
       DTMIN =  LARGE_NUMBER
       DTMAX = -LARGE_NUMBER
-             
+
       NIT_MIN = MAX_NIT
       NIT_MAX = 0
-             
+
       N_DASHBOARD = 0
 
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE GET_DATA

@@ -31,12 +31,7 @@
         DES_BC_Uw_s, DES_BC_Vw_s, DES_BC_Ww_s,&
 	
 ! DES flow boundary condition information: J.Musser
-        MAX_PIS, &
-        DES_BC_X_w, DES_BC_X_e, &
-        DES_BC_Y_s, DES_BC_Y_n, &
-        DES_BC_Z_b, DES_BC_Z_t, &
-        DES_BC_ROP_s, DES_BC_T_s, DES_BC_X_s, &
-       	FORCE_ORD_BC, &
+        MAX_PIS, FORCE_ORD_BC, &
 
 ! DES initial condition information: J.Musser
         DES_IC_X_w, DES_IC_X_e, &

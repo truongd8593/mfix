@@ -430,7 +430,6 @@ $(EXEC_FILE) : \
     $(DPO)check_des_hybrid.$(OBJ_EXT) \
     $(DPO)check_des_rxns.$(OBJ_EXT) \
     $(DPO)des_allocate_arrays.$(OBJ_EXT) \
-    $(DPO)des_check_particle.$(OBJ_EXT) \
     $(DPO)des_cluster_identification.$(OBJ_EXT) \
     $(DPO)des_functions.$(OBJ_EXT) \
     $(DPO)des_granular_temperature.$(OBJ_EXT) \
@@ -449,14 +448,18 @@ $(EXEC_FILE) : \
     $(DPO)drag_fgs.$(OBJ_EXT) \
     $(DPO)gas_drag.$(OBJ_EXT) \
     $(DPO)generate_particle_config.$(OBJ_EXT) \
+    $(DPO)layout_mi_dem.$(OBJ_EXT) \
     $(DPO)make_arrays_des.$(OBJ_EXT) \
     $(DPO)mass_inflow_dem.$(OBJ_EXT) \
+    $(DPO)mass_outflow_dem.$(OBJ_EXT) \
     $(DPO)mppic_routines.$(OBJ_EXT) \
     $(DPO)neighbour.$(OBJ_EXT) \
     $(DPO)nsquare.$(OBJ_EXT) \
     $(DPO)particles_in_cell.$(OBJ_EXT) \
     $(DPO)read_des_restart.$(OBJ_EXT) \
     $(DPO)set_bc_dem.$(OBJ_EXT) \
+    $(DPO)set_bc_dem_mi.$(OBJ_EXT) \
+    $(DPO)set_bc_dem_mo.$(OBJ_EXT) \
     $(DPO)set_geometry_des.$(OBJ_EXT) \
     $(DPO)solid_drag.$(OBJ_EXT) \
     $(DPO)usr0_des.$(OBJ_EXT) \
@@ -905,7 +908,6 @@ $(EXEC_FILE) : \
     $(DPO)check_des_rxns.$(OBJ_EXT) \
     $(DPO)des_allocate_arrays.$(OBJ_EXT) \
     $(DPO)des_bc_mod.$(OBJ_EXT) \
-    $(DPO)des_check_particle.$(OBJ_EXT) \
     $(DPO)des_cluster_identification.$(OBJ_EXT) \
     $(DPO)des_cluster_mod.$(OBJ_EXT) \
     $(DPO)des_functions.$(OBJ_EXT) \
@@ -936,8 +938,10 @@ $(EXEC_FILE) : \
     $(DPO)gas_drag.$(OBJ_EXT) \
     $(DPO)generate_particle_config.$(OBJ_EXT) \
     $(DPO)interpolation_mod.$(OBJ_EXT) \
+    $(DPO)layout_mi_dem.$(OBJ_EXT) \
     $(DPO)make_arrays_des.$(OBJ_EXT) \
     $(DPO)mass_inflow_dem.$(OBJ_EXT) \
+    $(DPO)mass_outflow_dem.$(OBJ_EXT) \
     $(DPO)mfix_pic_mod.$(OBJ_EXT) \
     $(DPO)mppic_routines.$(OBJ_EXT) \
     $(DPO)mppic_wallbc_mod.$(OBJ_EXT) \
@@ -948,6 +952,8 @@ $(EXEC_FILE) : \
     $(DPO)read_des_restart.$(OBJ_EXT) \
     $(DPO)sendrecvnode_mod.$(OBJ_EXT) \
     $(DPO)set_bc_dem.$(OBJ_EXT) \
+    $(DPO)set_bc_dem_mi.$(OBJ_EXT) \
+    $(DPO)set_bc_dem_mo.$(OBJ_EXT) \
     $(DPO)set_geometry_des.$(OBJ_EXT) \
     $(DPO)softspring_funcs_cutcell_mod.$(OBJ_EXT) \
     $(DPO)solid_drag.$(OBJ_EXT) \
@@ -6183,7 +6189,8 @@ $(DPO)check_solids_dem.$(OBJ_EXT) : ./check_data/check_solids_dem.f \
             $(DPO)PARAM1.mod \
             $(DPO)ERROR_MANAGER.mod \
             $(DPO)DES_THERMO.mod \
-            $(DPO)RUN.mod 
+            $(DPO)RUN.mod \
+            $(DPO)CONSTANT.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_dem.f  -o $(DPO)check_solids_dem.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_solids_model_prereqs.$(OBJ_EXT) : ./check_data/check_solids_model_prereqs.f \
             $(DPO)RUN.mod \
@@ -6442,18 +6449,6 @@ $(DPO)des_allocate_arrays.$(OBJ_EXT) : ./des/des_allocate_arrays.f \
             $(DPO)ERROR_MANAGER.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_allocate_arrays.f  -o $(DPO)des_allocate_arrays.$(OBJ_EXT) -module $(DPO)
-$(DPO)des_check_particle.$(OBJ_EXT) : ./des/des_check_particle.f \
-            $(DPO)COMPAR.mod \
-            $(DPO)CONSTANT.mod \
-            $(DPO)DES_BC.mod \
-            $(DPO)DISCRETELEMENT.mod \
-            $(DPO)FUNITS.mod \
-            $(DPO)GEOMETRY.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)PHYSPROP.mod \
-            function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_check_particle.f  -o $(DPO)des_check_particle.$(OBJ_EXT) -module $(DPO)
 $(DPO)des_cluster_identification.$(OBJ_EXT) : ./des/des_cluster_identification.f \
             $(DPO)DISCRETELEMENT.mod \
             $(DPO)RUN.mod \
@@ -6739,6 +6734,18 @@ $(DPO)generate_particle_config.$(OBJ_EXT) : ./des/generate_particle_config.f \
             $(DPO)PARALLEL.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/generate_particle_config.f  -o $(DPO)generate_particle_config.$(OBJ_EXT) -module $(DPO)
+$(DPO)layout_mi_dem.$(OBJ_EXT) : ./des/layout_mi_dem.f \
+            $(DPO)BC.mod \
+            $(DPO)RUN.mod \
+            $(DPO)ERROR_MANAGER.mod \
+            $(DPO)DES_BC.mod \
+            $(DPO)COMPAR.mod \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)INDICES.mod \
+            $(DPO)FUNITS.mod \
+            $(DPO)MPI_UTILITY.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/layout_mi_dem.f  -o $(DPO)layout_mi_dem.$(OBJ_EXT) -module $(DPO)
 $(DPO)make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
             $(DPO)PARAM1.mod \
             $(DPO)FUNITS.mod \
@@ -6758,7 +6765,23 @@ $(DPO)make_arrays_des.$(OBJ_EXT) : ./des/make_arrays_des.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/make_arrays_des.f  -o $(DPO)make_arrays_des.$(OBJ_EXT) -module $(DPO)
 $(DPO)mass_inflow_dem.$(OBJ_EXT) : ./des/mass_inflow_dem.f \
             $(DPO)DISCRETELEMENT.mod \
+            $(DPO)BC.mod \
             $(DPO)DES_BC.mod \
+            $(DPO)COMPAR.mod \
+            $(DPO)FUNITS.mod \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)DES_THERMO.mod \
+            $(DPO)DES_RXNS.mod \
+            $(DPO)CONSTANT.mod \
+            $(DPO)INDICES.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/mass_inflow_dem.f  -o $(DPO)mass_inflow_dem.$(OBJ_EXT) -module $(DPO)
+$(DPO)mass_outflow_dem.$(OBJ_EXT) : ./des/mass_outflow_dem.f \
+            $(DPO)DISCRETELEMENT.mod \
+            $(DPO)DES_BC.mod \
+            $(DPO)BC.mod \
             $(DPO)COMPAR.mod \
             $(DPO)CONSTANT.mod \
             $(DPO)FUNITS.mod \
@@ -6766,13 +6789,8 @@ $(DPO)mass_inflow_dem.$(OBJ_EXT) : ./des/mass_inflow_dem.f \
             $(DPO)INDICES.mod \
             $(DPO)PARAM1.mod \
             $(DPO)PHYSPROP.mod \
-            $(DPO)DESGRID.mod \
-            $(DPO)MPI_UTILITY.mod \
-            $(DPO)DES_THERMO.mod \
-            $(DPO)DES_RXNS.mod \
-            function.inc                                                 \
-            des/desgrid_functions.inc                                   
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/mass_inflow_dem.f  -o $(DPO)mass_inflow_dem.$(OBJ_EXT) -module $(DPO)
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/mass_outflow_dem.f  -o $(DPO)mass_outflow_dem.$(OBJ_EXT) -module $(DPO)
 $(DPO)mppic_routines.$(OBJ_EXT) : ./des/mppic_routines.f \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
@@ -6876,10 +6894,34 @@ $(DPO)set_bc_dem.$(OBJ_EXT) : ./des/set_bc_dem.f \
             $(DPO)MFIX_PIC.mod \
             $(DPO)MPI_UTILITY.mod \
             $(DPO)BC.mod \
-            $(DPO)ERROR_MANAGER.mod \
-            $(DPO)COMPAR.mod \
-            function.inc                                                
+            $(DPO)ERROR_MANAGER.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/set_bc_dem.f  -o $(DPO)set_bc_dem.$(OBJ_EXT) -module $(DPO)
+$(DPO)set_bc_dem_mi.$(OBJ_EXT) : ./des/set_bc_dem_mi.f \
+            $(DPO)COMPAR.mod \
+            $(DPO)CONSTANT.mod \
+            $(DPO)BC.mod \
+            $(DPO)DES_BC.mod \
+            $(DPO)DISCRETELEMENT.mod \
+            $(DPO)FUNITS.mod \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)INDICES.mod \
+            $(DPO)PARAM.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)RUN.mod \
+            $(DPO)ERROR_MANAGER.mod \
+            $(DPO)MPI_UTILITY.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/set_bc_dem_mi.f  -o $(DPO)set_bc_dem_mi.$(OBJ_EXT) -module $(DPO)
+$(DPO)set_bc_dem_mo.$(OBJ_EXT) : ./des/set_bc_dem_mo.f \
+            $(DPO)BC.mod \
+            $(DPO)DES_BC.mod \
+            $(DPO)FUNITS.mod \
+            $(DPO)MPI_UTILITY.mod \
+            $(DPO)ERROR_MANAGER.mod \
+            $(DPO)DISCRETELEMENT.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/set_bc_dem_mo.f  -o $(DPO)set_bc_dem_mo.$(OBJ_EXT) -module $(DPO)
 $(DPO)set_geometry_des.$(OBJ_EXT) : ./des/set_geometry_des.f \
             $(DPO)DISCRETELEMENT.mod \
             $(DPO)GEOMETRY.mod \

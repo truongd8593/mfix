@@ -262,12 +262,6 @@
 ! Update particle from reactive chemistry process.
          CALL DES_REACTION_MODEL
 
-
-! For systems with inlets/outlets check to determine if a particle has
-! fully entered or exited the domain.  If the former, remove the status
-! of 'new' and if the latter, remove the particle.
-         IF (DES_MIO) CALL DES_CHECK_PARTICLE
-
 ! set do_nsearch before calling particle_in_cell
          IF(NN.EQ.1 .OR. MOD(NN,NEIGHBOR_SEARCH_N).EQ.0) &
             DO_NSEARCH = .TRUE.
@@ -282,7 +276,6 @@
 
 ! Update time to reflect changes 
          S_TIME = S_TIME + DTSOLID
-
 
 ! When coupled, all write calls are made in time_march (the continuum 
 ! portion) according to user settings for spx_time and res_time.
@@ -329,6 +322,8 @@
 
 ! Seed new particles entering the system.
          IF(DEM_BCMI > 0) CALL MASS_INFLOW_DEM
+         IF(DEM_BCMO > 0) CALL MASS_OUTFLOW_DEM
+
 
          IF(CALL_USR) CALL USR2_DES
 

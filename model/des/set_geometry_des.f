@@ -36,7 +36,7 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Generic loop indices
-      INTEGER :: I, J, K 
+      INTEGER :: I, J, K
 ! Error Flag
       INTEGER :: IER
 !......................................................................!
@@ -60,7 +60,7 @@
       EX2 = XLENGTH;    WX1 = ZERO  ! East/West
       TY2 = YLENGTH;    BY1 = ZERO  ! North/South
       NZ2 = ZLENGTH;    SZ1 = ZERO  ! Top/Bottom
-      
+
 ! Initialize arrays.
       XE(:) = ZERO
       YN(:) = ZERO

@@ -54,7 +54,6 @@
 !---------------------------------------------------------------------//
 
 
-      
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_GEOMETRY")
 
@@ -67,35 +66,35 @@
       IF(SHIFT) CALL SHIFT_DXYZ
 
 !  Ensure that the cell sizes across cyclic boundaries are comparable
-      IF(CYCLIC_X .OR. CYCLIC_X_PD) THEN 
-         IF(DX(IMIN1) /= DX(IMAX1)) THEN 
+      IF(CYCLIC_X .OR. CYCLIC_X_PD) THEN
+         IF(DX(IMIN1) /= DX(IMAX1)) THEN
             WRITE(ERR_MSG,1100) 'DX(IMIN1)',DX(IMIN1),'DX(IMAX1)',DX(IMAX1)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-      ENDIF 
+         ENDIF
+      ENDIF
 
-      IF(CYCLIC_Y .OR. CYCLIC_Y_PD) THEN 
-         IF(DY(JMIN1) /= DY(JMAX1)) THEN 
+      IF(CYCLIC_Y .OR. CYCLIC_Y_PD) THEN
+         IF(DY(JMIN1) /= DY(JMAX1)) THEN
             WRITE(ERR_MSG,1100) 'DY(JMIN1)',DY(JMIN1),'DY(JMAX1)',DY(JMAX1)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-      ENDIF 
+         ENDIF
+      ENDIF
 
-      IF(CYCLIC_Z .OR. CYCLIC_Z_PD .OR. CYLINDRICAL) THEN 
-         IF (DZ(KMIN1) /= DZ(KMAX1)) THEN 
+      IF(CYCLIC_Z .OR. CYCLIC_Z_PD .OR. CYLINDRICAL) THEN
+         IF (DZ(KMIN1) /= DZ(KMAX1)) THEN
             WRITE(ERR_MSG,1100) 'DZ(KMIN1)',DZ(KMIN1),'DZ(KMAX1)',DZ(KMAX1)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-      ENDIF 
+         ENDIF
+      ENDIF
 
  1100 FORMAT('Error 1100: Cells adjacent to cyclic boundaries must ',  &
          'be of same size:',/2X,A,' = ',G12.5,/2x,A,' = ',G12.5,/      &
          'Please correct the mfix.dat file.')
- 
+
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE CHECK_GEOMETRY
 
@@ -156,7 +155,8 @@
          DESGRIDSEARCH_IMAX = max(int(XLENGTH/WIDTH), 1)
 
       ELSEIF((XLENGTH/dble(DESGRIDSEARCH_IMAX)) < MAX_DIAM) THEN
-         WRITE(ERR_MSG, 1100) 'X', 'X', 'I', 'I'
+         WRITE(ERR_MSG, 1100) 'X', MAX_DIAM,                           &
+            XLENGTH/dble(DESGRIDSEARCH_IMAX)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
@@ -165,7 +165,8 @@
          DESGRIDSEARCH_JMAX = max(int(YLENGTH/WIDTH), 1)
 
       ELSEIF((YLENGTH/dble(DESGRIDSEARCH_JMAX)) < MAX_DIAM) THEN
-         WRITE(ERR_MSG, 1100) 'Y', 'Y', 'J', 'J'
+         WRITE(ERR_MSG, 1100) 'Y', MAX_DIAM,                           &
+            YLENGTH/dble(DESGRIDSEARCH_JMAX)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
@@ -177,7 +178,8 @@
          DESGRIDSEARCH_KMAX = max(int(ZLENGTH/WIDTH), 1)
 
       ELSEIF((ZLENGTH/dble(DESGRIDSEARCH_KMAX)) < MAX_DIAM) THEN
-         WRITE(ERR_MSG, 1100) 'Z', 'Z', 'J', 'J'
+         WRITE(ERR_MSG, 1100) 'Z', MAX_DIAM,                           &
+            ZLENGTH/dble(DESGRIDSEARCH_KMAX)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
@@ -185,9 +187,9 @@
 
  1100 FORMAT('Error 1100: The des search grid is too fine in the ',A1, &
          '-direction. The',/'maximum particle diameter is larger than',&
-         'the cell width:',/2x,'MAX DIAM:   ',g11.5,/2x,'CELL WIDTH: ',&
-         g11.5,/'Decrease the values ofor the DESGRIDSEARCH in the ',  &
-         'mfix.dat file.')
+         ' the cell width:',/2x,'MAX DIAM:   ',g11.5,/2x,'CELL ',      &
+         'WIDTH: ',g11.5,/'Decrease the values for DESGRIDSEARCH in ', &
+         'the mfix.dat file.')
 
       RETURN
       END SUBROUTINE CHECK_GEOMETRY_DES

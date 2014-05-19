@@ -113,10 +113,6 @@
 
 ! J.Musser: DEM particle tracking quantity
       PEA(:,:) = .FALSE.
-! J.Musser: DEM inlet/outlet quantity      
-      DES_BC_U_s(:) = ZERO
-      DES_BC_V_s(:) = ZERO
-      DES_BC_W_s(:) = ZERO
 
 ! J.Musser: Energy and Species Equation Arrays
       IF(DES_ENERGY_EQ)THEN

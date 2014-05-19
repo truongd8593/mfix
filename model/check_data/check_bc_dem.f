@@ -20,14 +20,14 @@
 ! Number of DEM inlet/outlet BCs detected.
       use des_bc, only: DEM_BCMI, DEM_BCMO
 !
-      use des_bc, only: DEM_BC_MI_MAP
-      use des_bc, only: DEM_BC_MO_MAP
+      use des_bc, only: DEM_BCMI_MAP
+      use des_bc, only: DEM_BCMO_MAP
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! The max number of BCs.
       use param, only: DIMENSION_BC
 ! Parameter constants
-      use param1, only: ZERO
+      use param1, only: ZERO, UNDEFINED
 
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
@@ -67,7 +67,7 @@
                IF(SOLIDS_MODEL(M)=='DEM' .AND.                         &
                   BC_EP_s(BCV,M) > ZERO) THEN
                   DEM_BCMI = DEM_BCMI + 1
-                  DEM_BC_MI_MAP(DEM_BCMI) = BCV
+                  DEM_BCMI_MAP(DEM_BCMI) = BCV
                   EXIT M_LP
                ENDIF
             ENDDO M_LP
@@ -75,15 +75,18 @@
 ! Count the number of pressure outflows.
          CASE ('P_OUTFLOW')
             DEM_BCMO = DEM_BCMO + 1
-            DEM_BC_MO_MAP(DEM_BCMO) = BCV
+            DEM_BCMO_MAP(DEM_BCMO) = BCV
 
 ! Flag CG_MI as an error if DEM solids are present.
          CASE ('CG_MI')
             DO M=1,M_TOT
-               IF(SOLIDS_MODEL(M)=='DEM' .AND.                         &
-                  BC_EP_s(BCV,M) > ZERO) THEN
-                  WRITE(ERR_MSG,1100) trim(iVar('BC_TYPE',BCV)), 'GC_MI'
-                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               IF(SOLIDS_MODEL(M)=='DEM') THEN
+                  IF(BC_EP_s(BCV,M) /= UNDEFINED .AND.                 &
+                     BC_EP_s(BCV,M) > ZERO) THEN
+                     WRITE(ERR_MSG,1100) trim(iVar('BC_TYPE',BCV)),    &
+                        'GC_MI'
+                     CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+                  ENDIF
                ENDIF
             ENDDO
 
