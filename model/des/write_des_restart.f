@@ -122,12 +122,12 @@
 ! Number of neighbors
          call des_writepar(lres_unit,neighbours(:,1),pip,lnext_rec)
 ! Number of particles in contact with each particle.
-         call des_writepar(lres_unit,pn(:,1),pip,lnext_rec)
+         call des_writepar(lres_unit,pn(1,:),pip,lnext_rec)
 ! Actual neighbors, contact pairs, ...
          do li = 2,maxneighbors
             call des_writepar(lres_unit,neighbours(:,li),pip,lnext_rec)
-            call des_writepar(lres_unit,pn(:,li),pip,lnext_rec)
-            call des_writepar(lres_unit,pv(:,li),pip,lnext_rec)
+            call des_writepar(lres_unit,pn(li,:),pip,lnext_rec)
+            call des_writepar(lres_unit,pv(li,:),pip,lnext_rec)
 ! Accumulated tangential displacement that occured during collision
             do lj = 1,dimn  
                call des_writepar(lres_unit,pft(:,li,lj),pip,lnext_rec)
@@ -281,15 +281,15 @@
 ! Number of neighbors
          call des_gatherwrite(lres_unit,neighbours(:,1),lglocnt,lnext_rec)
 ! Number of particles in contact with each particle.
-         call des_gatherwrite(lres_unit,pn(:,1),lglocnt,lnext_rec)
+         call des_gatherwrite(lres_unit,pn(1,:),lglocnt,lnext_rec)
 
 ! *** Use global particle IDs instead of local IDs for neighbours.
          do li = 2,maxneighbors
 ! Global IDs of neighbor particles.
             call des_gatherwrite(lres_unit,neighbours(:,li),lglocnt,lnext_rec,ploc2glb=.true.)
 ! Neighbor contact data by global ID.
-            call des_gatherwrite(lres_unit,pn(:,li),lglocnt,lnext_rec,ploc2glb=.true.)
-            call des_gatherwrite(lres_unit,pv(:,li),lglocnt,lnext_rec)
+            call des_gatherwrite(lres_unit,pn(li,:),lglocnt,lnext_rec,ploc2glb=.true.)
+            call des_gatherwrite(lres_unit,pv(li,:),lglocnt,lnext_rec)
             do lj = 1,dimn
 ! Accumulated tangential displacement that occured during collision
                call des_gatherwrite(lres_unit,pft(:,li,lj),lglocnt,lnext_rec)

@@ -64,7 +64,7 @@
       TOW(:,:) = ZERO
 
       PN(:,:) = -1
-      PN(:,1) = 0
+      PN(1,:) = 0
       PV(:,:) = .TRUE.
       PFT(:,:,:) = ZERO
       PPOS(:,:) = ZERO

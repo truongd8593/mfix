@@ -189,40 +189,40 @@
 
 ! Check neighbor history of particle LL and update arrays as needed
 ! ---------------------------------------------------------------->>>
-         IF(PN(LL,1).GE.1) THEN
-            NLIM = PN(LL,1)+1
+         IF(PN(1,LL).GE.1) THEN
+            NLIM = PN(1,LL)+1
             N_NOCON = 0
 ! For each particle listed as in contact with particle LL in array PN,
 ! check the flag array PV to determine if particles remained in contact
 ! after the previous call of CALC_FORCE_DES.
             DO NI = 2, NLIM
-               IF(.NOT.PV(LL,NI-N_NOCON)) THEN
-! For each particle in PN(LL,2:MAXNEIGHBORS) that is no longer in
+               IF(.NOT.PV(NI-N_NOCON,LL)) THEN
+! For each particle in PN(2:MAXNEIGHBORS,LL) that is no longer in
 ! contact, shift the remaining particle contact information PN, PN,
-! PFT left by one and reduce PN(LL,1) by one.
-                  PN(LL,(NI-N_NOCON):MAXNEIGHBORS-1) = &
-                     PN(LL,(NI-N_NOCON+1):MAXNEIGHBORS)
-                  PV(LL,(NI-N_NOCON):(MAXNEIGHBORS-1)) = &
-                     PV(LL,(NI-N_NOCON+1):MAXNEIGHBORS)
+! PFT left by one and reduce PN(1,LL) by one.
+                  PN((NI-N_NOCON):MAXNEIGHBORS-1,LL) = &
+                     PN((NI-N_NOCON+1):MAXNEIGHBORS,LL)
+                  PV((NI-N_NOCON):(MAXNEIGHBORS-1),LL) = &
+                     PV((NI-N_NOCON+1):MAXNEIGHBORS,LL)
                   PFT(LL,(NI-N_NOCON):(MAXNEIGHBORS-1),:) = &
                      PFT(LL,(NI-N_NOCON+1):MAXNEIGHBORS,:)
 ! Save the normal direction at previous time step
                   PFN(LL,(NI-N_NOCON):(MAXNEIGHBORS-1),:) = &
                      PFN(LL,(NI-N_NOCON+1):MAXNEIGHBORS,:)
                   N_NOCON = N_NOCON + 1
-                  PN(LL,1) = PN(LL,1) - 1
+                  PN(1,LL) = PN(1,LL) - 1
                ENDIF
             ENDDO
 
             ! Initializing rest of the neighbor list which is not in contact and
             ! clean up after the above array left shifts
             IF (N_NOCON .GT. 0) THEN
-               NLIM = MAX(2,PN(LL,1) + 2)
-               PN(LL,NLIM:MAXNEIGHBORS) = -1
+               NLIM = MAX(2,PN(1,LL) + 2)
+               PN(NLIM:MAXNEIGHBORS,LL) = -1
                PFT(LL,NLIM:MAXNEIGHBORS,:) = ZERO
                PFN(LL,NLIM:MAXNEIGHBORS,:) = ZERO
             ENDIF
-            NEIGH_MAX = MAX(NEIGH_MAX,PN(LL,1))
+            NEIGH_MAX = MAX(NEIGH_MAX,PN(1,LL))
          ENDIF
 
 
@@ -230,7 +230,7 @@
 ! variable tracks whether particle LL has any current neighbors
 ! the array is used in the next call to calc_force_des to update
 ! particle LL neighbor history above
-         PV(LL,2:MAXNEIGHBORS) = .FALSE.
+         PV(2:MAXNEIGHBORS,LL) = .FALSE.
 
       ENDDO
 !$omp end parallel
@@ -259,9 +259,9 @@
 
                   ALREADY_NEIGHBOURS=.FALSE.
 
-                  IF(PN(LL,1).GT.0) THEN
-                     DO NEIGH_L = 2, PN(LL,1)+1
-                        IF(I.EQ. PN(LL,NEIGH_L)) THEN
+                  IF(PN(1,LL).GT.0) THEN
+                     DO NEIGH_L = 2, PN(1,LL)+1
+                        IF(I.EQ. PN(NEIGH_L,LL)) THEN
                            ALREADY_NEIGHBOURS=.TRUE.
                            NI = NEIGH_L
                            EXIT
@@ -345,7 +345,7 @@
                      OVERLAP_N = R_LM-DISTMOD
 
                      IF(ALREADY_NEIGHBOURS) THEN
-                        PV(LL,NI) = .TRUE.
+                        PV(NI,LL) = .TRUE.
                         OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                      ELSE
                         IF(DEBUG_DES) THEN
@@ -357,10 +357,10 @@
                               'Normal overlap for particle pair ',&
                               LL, I, ' : ', OVERLAP_N
                         ENDIF
-                        PN(LL,1) = PN(LL,1) + 1
-                        NI = PN(LL,1) + 1
-                        PN(LL,NI) = I
-                        PV(LL,NI) = .TRUE.
+                        PN(1,LL) = PN(1,LL) + 1
+                        NI = PN(1,LL) + 1
+                        PN(NI,LL) = I
+                        PV(NI,LL) = .TRUE.
 
                         IF (V_REL_TRANS_NORM .GT. ZERO) THEN
                            DTSOLID_TMP = OVERLAP_N/(V_REL_TRANS_NORM)
@@ -485,7 +485,7 @@
                         'FNx=',FN(1,LL),'FNy=',FN(2,LL)
                      ENDIF
                      CLOSE (1)
-                     PRINT*, 'PN', PN(LL,:)
+                     PRINT*, 'PN', PN(:,LL)
                   ENDIF
 
                   PARTICLE_SLIDE = .FALSE.

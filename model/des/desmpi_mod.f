@@ -1220,7 +1220,7 @@
                fc(:,lcurpar) = 0.0
                fn(:,lcurpar) = 0.0
                ft(:,lcurpar) = 0.0
-               pn(lcurpar,:) = 0 ; pv(lcurpar,:) = .false.
+               pn(:,lcurpar) = 0 ; pv(:,lcurpar) = .false.
                pft(lcurpar,:,:) = 0
                des_pos_new(lcurpar,:)=0
                des_pos_old(lcurpar,:)=0
@@ -1335,12 +1335,12 @@
 
             lbuf = lbuf+3*maxneighbors
 ! build contact list with global number
-            dsendbuf(lbuf,pface) = pn(lcurpar,1);ltmpbuf=lbuf+1
-            do lcontactindx = 2,pn(lcurpar,1)+1
-               lcontact = pn(lcurpar,lcontactindx)
+            dsendbuf(lbuf,pface) = pn(1,lcurpar);ltmpbuf=lbuf+1
+            do lcontactindx = 2,pn(1,lcurpar)+1
+               lcontact = pn(lcontactindx,lcurpar)
                dsendbuf(ltmpbuf,pface) = iglobal_id(lcontact)
                ltmpbuf=ltmpbuf+1
-               dsendbuf(ltmpbuf,pface) = merge(1,0,pv(lcurpar,lcontactindx))
+               dsendbuf(ltmpbuf,pface) = merge(1,0,pv(lcontactindx,lcurpar))
                ltmpbuf=ltmpbuf+1
                dsendbuf(ltmpbuf:ltmpbuf+dimn-1,pface) = pft(lcurpar,lcontactindx,1:dimn)
                ltmpbuf=ltmpbuf+dimn
@@ -1354,10 +1354,10 @@
 !             do lneighindx = 2,neighbours(lcurpar,1)+1
 !             print *, "neighbourid" , iglobal_id(neighbours(lcurpar,lneighindx))
 !             end do
-!             print *, "number of contacts ", pn(lcurpar,1)
-!             do lcontactindx = 2,pn(lcurpar,1)+1
-!             print *, "contactid" , iglobal_id(pn(lcurpar,lcontactindx))
-!             print *, "contact status", pv(lcurpar,lcontactindx)
+!             print *, "number of contacts ", pn(1,lcurpar)
+!             do lcontactindx = 2,pn(1,lcurpar)+1
+!             print *, "contactid" , iglobal_id(pn(lcontactindx,lcurpar))
+!             print *, "contact status", pv(lcontactindx,lcurpar)
 !             print *, "accumulated force ",pft(lcurpar,lcontactindx,1),pft(lcurpar,lcontactindx,2)
 !             end do
 !             print * ,"--------------------------------------------------------------------"
@@ -1374,8 +1374,8 @@
             fn(:,lcurpar) = 0.0
             ft(:,lcurpar) = 0.0
             neighbours(lcurpar,:)=0
-            pn(lcurpar,:) = 0
-            pv(lcurpar,:) = .false.
+            pn(:,lcurpar) = 0
+            pv(:,lcurpar) = .false.
             pft(lcurpar,:,:) = 0
 
             lparcnt = lparcnt + 1
@@ -1526,10 +1526,10 @@
          lbuf = lbuf+3*maxneighbors
 
 ! loop through contact list and find local particle number using neighbor list
-         pn(llocpar,1) = drecvbuf(lbuf,pface);ltmpbuf=lbuf+1
-         pv(llocpar,1) = .false.
+         pn(1,llocpar) = drecvbuf(lbuf,pface);ltmpbuf=lbuf+1
+         pv(1,llocpar) = .false.
          lcount = 0
-         do lcontactindx = 2,pn(llocpar,1)+1
+         do lcontactindx = 2,pn(1,llocpar)+1
             lcontactfound = .false.
             lcontactid = drecvbuf(ltmpbuf,pface)
             ltmpbuf=ltmpbuf+1
@@ -1551,13 +1551,13 @@
                endif
             endif
             lcount = lcount+1
-            pn(llocpar,lcount+1) = lcontact
-            pv(llocpar,lcount+1) = merge(.true.,.false.,drecvbuf(ltmpbuf,pface).gt.0.5)
+            pn(lcount+1,llocpar) = lcontact
+            pv(lcount+1,llocpar) = merge(.true.,.false.,drecvbuf(ltmpbuf,pface).gt.0.5)
             ltmpbuf=ltmpbuf+1
             pft(llocpar,lcount+1,1:dimn) = drecvbuf(ltmpbuf:ltmpbuf+dimn-1,pface)
             ltmpbuf=ltmpbuf+dimn
          enddo
-         pn(llocpar,1)=lcount
+         pn(1,llocpar)=lcount
          lbuf = lbuf+(2+dimn)*maxneighbors
 
 !debuging print PRADEEP remove
@@ -1568,10 +1568,10 @@
 !          do lneighindx = 2,neighbours(llocpar,1)+1
 !          print *, "neighbourid" , iglobal_id(neighbours(llocpar,lneighindx))
 !          end do
-!          print *, "number of contacts ", pn(llocpar,1)
-!          do lcontactindx = 2,pn(llocpar,1)+1
-!          print *, "contactid" , iglobal_id(pn(llocpar,lcontactindx))
-!          print *, "contact status", pv(llocpar,lcontactindx)
+!          print *, "number of contacts ", pn(1,llocpar)
+!          do lcontactindx = 2,pn(1,llocpar)+1
+!          print *, "contactid" , iglobal_id(pn(lcontactindx,llocpar))
+!          print *, "contact status", pv(lcontactindx,llocpar)
 !          print *, "accumulated force ",pft(llocpar,lcontactindx,1),pft(llocpar,lcontactindx,2)
 !          end do
 !          print * ,"--------------------------------------------------------------------"
@@ -2565,9 +2565,9 @@
 
 ! loop through contact list and find local particle number using neighbor list
          lcount = 0
-         do lcontactindx = 2,pn(lcurpar,1)+1
+         do lcontactindx = 2,pn(1,lcurpar)+1
             lcontactfound = .false.
-            lcontactid = pn(lcurpar,lcontactindx)
+            lcontactid = pn(lcontactindx,lcurpar)
             do lneighindx = 2,neighbours(lcurpar,1)+1
                if (iglobal_id(neighbours(lcurpar,lneighindx)).eq.lcontactid) then
                   lcontact = neighbours(lcurpar,lneighindx)
@@ -2585,9 +2585,9 @@
                endif
             endif
             lcount = lcount+1
-            pn(lcurpar,lcount+1) = lcontact
+            pn(lcount+1,lcurpar) = lcontact
          enddo
-         pn(lcurpar,1) = lcount
+         pn(1,lcurpar) = lcount
       enddo
 
  800  FORMAT(/2X,'From: DES_RESTART_NEIGH: ',/2X,&
@@ -2835,11 +2835,11 @@
                write(44,*)"Neghibour ",neighbours(lcurpar,lneighindx)
                write(44,*)"Neighbour par position",des_pos_new(neighbours(lcurpar,lneighindx),:)
             end do
-            write(44,*) "Total contacts", pn(lcurpar,1)
-            do lcontactindx = 2,pn(lcurpar,1)+1
-               write(44,*)"contact ", pn(lcurpar,lcontactindx)
-               write(44,*)"incontact ", pv(lcurpar,lcontactindx)
-               write(44,*)"contact par position",des_pos_new(pn(lcurpar,lcontactindx),:)
+            write(44,*) "Total contacts", pn(1,lcurpar)
+            do lcontactindx = 2,pn(1,lcurpar)+1
+               write(44,*)"contact ", pn(lcontactindx,lcurpar)
+               write(44,*)"incontact ", pv(lcontactindx,lcurpar)
+               write(44,*)"contact par position",des_pos_new(pn(lcontactindx,lcurpar),:)
             end do
          end do
          write(44,*) "-----------------------------------------------"

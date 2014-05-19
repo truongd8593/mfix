@@ -145,12 +145,12 @@
 ! Number of neighbors
          call in_bin_512i(lres_unit,neighbours(:,1),pip,lnext_rec)
 ! Number of particles in contact with each particle.
-         call in_bin_512i(lres_unit,pn(:,1),pip,lnext_rec)
+         call in_bin_512i(lres_unit,pn(1,:),pip,lnext_rec)
 ! Actual neighbors, contact pairs, ...
          do li = 2,maxneighbors
             call in_bin_512i(lres_unit,neighbours(:,li),pip,lnext_rec)
-            call in_bin_512i(lres_unit,pn(:,li),pip,lnext_rec)
-            call in_bin_512i(lres_unit,pv(:,li),pip,lnext_rec)
+            call in_bin_512i(lres_unit,pn(li,:),pip,lnext_rec)
+            call in_bin_512i(lres_unit,pv(li,:),pip,lnext_rec)
 ! Accumulated tangential displacement that occured during collision
             do lj = 1,dimn
                call in_bin_512(lres_unit,pft(:,li,lj),pip,lnext_rec)
@@ -314,7 +314,7 @@
 ! Number of neighbors
          call des_readscatter(lres_unit,neighbours(:,1),lglocnt,lnext_rec)
 ! Number of particles in contact with each particle.
-         call des_readscatter(lres_unit,pn(:,1),lglocnt,lnext_rec)
+         call des_readscatter(lres_unit,pn(1,:),lglocnt,lnext_rec)
 
 ! *** Use global particle IDs for neighbors were stored. After the
 ! *** restart is completely read, the IDs read from the restart are
@@ -323,8 +323,8 @@
 ! Neighbor particles.
             call des_readscatter(lres_unit,neighbours(:,li),lglocnt,lnext_rec)
 ! Neighbor contact data.
-            call des_readscatter(lres_unit,pn(:,li),lglocnt,lnext_rec)
-            call des_readscatter(lres_unit,pv(:,li),lglocnt,lnext_rec)
+            call des_readscatter(lres_unit,pn(li,:),lglocnt,lnext_rec)
+            call des_readscatter(lres_unit,pv(li,:),lglocnt,lnext_rec)
             do lj = 1,dimn
 ! Accumulated tangential displacement that occured during collision
                call des_readscatter(lres_unit,pft(:,li,lj),lglocnt,lnext_rec)
@@ -539,9 +539,9 @@
       FT(:,NP) = ZERO
       TOW(:,NP) = ZERO
 
-      PN(NP,:) = -1
-      PN(NP,1) = 0
-      PV(NP,:) = .TRUE.
+      PN(:,NP) = -1
+      PN(1,NP) = 0
+      PV(:,NP) = .TRUE.
       PFT(NP,:,:) = ZERO
       PPOS(NP,:) = ZERO
 
@@ -564,18 +564,18 @@
 ! If any neighbor particle has a lower index than NP then the contact
 ! force history will be stored with that particle and needs to be cleared
             IF (NEIGHNP < NP) THEN
-               IF (PN(NEIGHNP,1) > 0) THEN
-                  NLIM = PN(NEIGHNP,1)+1
+               IF (PN(1,NEIGHNP) > 0) THEN
+                  NLIM = PN(1,NEIGHNP)+1
                   DO J = 2, NLIM
-                     NPT = PN(NEIGHNP,J)
+                     NPT = PN(J,NEIGHNP)
                      IF (NPT .NE. NP) CYCLE   ! find particle NP in NEIGHNP list
-                     PN(NEIGHNP,J:(MAXNEIGHBORS-1)) = &
-                        PN(NEIGHNP,(J+1):MAXNEIGHBORS)
-                     PV(NEIGHNP,J:(MAXNEIGHBORS-1)) = &
-                        PV(NEIGHNP,(J+1):MAXNEIGHBORS)
+                     PN(J:(MAXNEIGHBORS-1),NEIGHNP) = &
+                        PN((J+1):MAXNEIGHBORS,NEIGHNP)
+                     PV(J:(MAXNEIGHBORS-1),NEIGHNP) = &
+                        PV((J+1):MAXNEIGHBORS,NEIGHNP)
                      PFT(NEIGHNP,J:(MAXNEIGHBORS-1),:) = &
                         PFT(NEIGHNP,(J+1):MAXNEIGHBORS,:)
-                     PN(NEIGHNP,1) = PN(NEIGHNP,1) -1
+                     PN(1,NEIGHNP) = PN(1,NEIGHNP) -1
                   ENDDO
                ENDIF
             ENDIF

@@ -218,9 +218,9 @@
                   I = MAX_PIP + IW
                   ALREADY_NEIGHBOURS=.FALSE.
 
-                  IF(PN(LL,1).GT.0) THEN
-                     DO NEIGH_L = 2, PN(LL,1)+1
-                        IF(I.EQ. PN(LL,NEIGH_L)) THEN
+                  IF(PN(1,LL).GT.0) THEN
+                     DO NEIGH_L = 2, PN(1,LL)+1
+                        IF(I.EQ. PN(NEIGH_L,LL)) THEN
                            ALREADY_NEIGHBOURS=.TRUE.
                            NI = NEIGH_L
                            EXIT
@@ -302,13 +302,13 @@
                      OVERLAP_N =  R_LM-DISTMOD
 
                      IF(ALREADY_NEIGHBOURS) THEN
-                        PV(LL,NI) = .TRUE.
+                        PV(NI,LL) = .TRUE.
                         OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                      ELSE
-                        PN(LL,1) = PN(LL,1) + 1
-                        NI = PN(LL,1) + 1
-                        PN(LL,NI) = I
-                        PV(LL,NI) = .TRUE.
+                        PN(1,LL) = PN(1,LL) + 1
+                        NI = PN(1,LL) + 1
+                        PN(NI,LL) = I
+                        PV(NI,LL) = .TRUE.
                         IF (V_REL_TRANS_NORM .GT. ZERO) THEN
                           DTSOLID_TMP = OVERLAP_N/(V_REL_TRANS_NORM)
                         ELSEIF (V_REL_TRANS_NORM .LT. ZERO) THEN
