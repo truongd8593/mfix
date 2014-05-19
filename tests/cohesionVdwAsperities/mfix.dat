@@ -24,8 +24,8 @@
 
 ! Solve species eq?  [.TRUE.]
 !                 Gas     Sld 1
-  SPECIES_EQ = .FALSE.    .FALSE. 
-       
+  SPECIES_EQ = .FALSE.    .FALSE.
+
 ! Solve momentum equations?  [.TRUE.] 
 ! (do not solve either gas or solids)
 !                    Gas      Sld 1
@@ -40,7 +40,7 @@
 ! Numerical Parameters
 !*********************************************************************
   MAX_NIT = 60           ! maximum number of iterations [500]
-      
+
   TOL_RESID   = 0.001    ! max. continuity+momentum residual at 
                          ! convergence [1E-3]
 
@@ -49,13 +49,13 @@
 !                 1  : First-order upwinding (using down-wind factors)
 !                 2  : Superbee (recommended method)
 !                3-8 : see readme for details
-  DISCRETIZE = 9*2 
+  DISCRETIZE = 9*2
 
 ! Number of iterations in the linear equation solver
 !      [LEQ_IT(1,2)=20]
 !      [LEQ_IT(3-5)=5]
 !      [LEQ_IT(6-9)=15]
-  LEQ_IT = 9*200 
+  LEQ_IT = 9*200
 
 ! The tolerance in the linear equation solver  [1.0D-4]
   LEQ_TOL = 9*1D-10
@@ -65,18 +65,18 @@
 
 ! Use deferred correction method for implementing higher order
 ! discretization.  Otherwise use down-wind factor method [.FALSE.]
-  DEF_COR = .TRUE.  
+  DEF_COR = .TRUE.
 
 
 !*********************************************************************
 ! Geometry 
 !*********************************************************************
 
-  COORDINATES = 'cartesian' 
+  COORDINATES = 'cartesian'
   XLENGTH = 0.3     IMAX = 12	! length and cells in x/i direction
   YLENGTH = 0.3     JMAX = 12 	! length and cells in y/j direction
   ZLENGTH = 0.1     KMAX = 4    ! length and cells in z/k direction
-  
+
   GRAVITY = 981     ! gravitational acceleration (y-direction)
 
 
@@ -106,8 +106,6 @@
   D_p0  =  7.5D-3     ! particle diameter (75 microns)
   RO_s0 =  1.5      ! particle density
 
-! strictly speaking these should not be needed for dem
-  EP_star  = 0.42    ! Packed bed void fraction
 
 
 !*********************************************************************
@@ -137,37 +135,37 @@
 !*********************************************************************
 ! Boundary Conditions
 !*********************************************************************
-! By default outside boundaries are initialized as no slip walls 
-! No gas inlet/outlets
+! DEM boundary conditions  --------------------
+! Mass outlet boundary on top
+  BC_X_w(1)  =   0.1
+  BC_X_e(1)  =   0.2
+  BC_Y_s(1)  =   0.0
+  BC_Y_n(1)  =   0.0
+  BC_Z_b(1)  =   0.0
+  BC_Z_t(1)  =   0.1
+
+  BC_TYPE(1) =   'PO'
+
+  BC_P_g(1)  =   1.01d6  ! pressure (bayre)
+  BC_T_g(1)  = 300.0     ! temperature (K)
 
 
 !*********************************************************************
 ! Discrete Element Model (DEM) 
 !*********************************************************************
-  DISCRETE_ELEMENT  = .TRUE.
   DES_CONTINUUM_COUPLED = .FALSE.    ! couple gas and solids flow 
                                      ! together [.FALSE.]
   PARTICLES = 3     ! total number of initial particles
   PARTICLES_FACTOR = 1.2     ! expand size of particle arrays by an 
                              ! arbitrary factor [1.2]
-                   
   NFACTOR = 0     ! length of dem settling period in no. of loops   [10]
 
-! DEM boundary conditions  --------------------
-! Mass outlet boundary on top
-  DES_BC_X_w(1)          =   0.1
-  DES_BC_X_e(1)          =   0.2
-  DES_BC_Y_s(1)          =   0.0
-  DES_BC_Y_n(1)          =   0.0
-  DES_BC_Z_b(1)          =   0.0
-  DES_BC_Z_t(1)          =   0.1
-  DES_BC_TYPE(1)         =   'MO'
 
 ! Neighbor search parameters --------------------
   DES_NEIGHBOR_SEARCH = 4     ! Particle neighbor search method [1]
   NEIGHBOR_SEARCH_N = 2     ! number of solids time steps between 
                             ! neighbor search [25]
-  MN = 100     ! maximum number of neighbors allowed per particle [10]
+  MN = 5     ! maximum number of neighbors allowed per particle [10]
   FACTOR_RLM =  1.27   ! factor by which the neighbor search radius
                        ! is increased [1.2]. so for cohesive simulations
                        ! it may be important to increase this value to
@@ -214,8 +212,8 @@
 
 ! DES Output Control  --------------------
   PRINT_DES_DATA = .T.    ! write DEM data as *.vtp files
-  DES_RES_DT = 0.00001       
-  DES_SPX_DT = 0.00001    ! interval to write *.vtp files in pure DEM 
+  DES_RES_DT = 0.001
+  DES_SPX_DT = 0.001    ! interval to write *.vtp files in pure DEM 
                           ! simulation otherwise follows spx_dt(1)
 
 
@@ -223,7 +221,6 @@
 !  Output Control
 !*********************************************************************
   RES_DT     =  0.01     ! Interval (s) to update restart (.RES) file 
-  OUT_DT     =  0.05     ! Interval (s) to update standard output (.OUT) file 
 
 ! Interval (s) to update .SPX files 
 ! spx_dt(1) also controls dem output frequency for coupled cases
