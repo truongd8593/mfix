@@ -39,16 +39,9 @@
 !-----------------------------------------------
       INTEGER :: I, J, K, L
       INTEGER :: IJK, M  ! needed for calling bfx_s, etc
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'b_force1.inc'
-      INCLUDE 'b_force2.inc'
-!-----------------------------------------------
 
       CALL INIT_ERR_MSG("CFASSIGN")
 
-      
 ! The common assignments are done in this routine. 
 ! The model spcific assignmets are moved to the specific subroutines 
 
@@ -56,11 +49,9 @@
       GRAV(2) = GRAVITY_Y
       GRAV(3) = GRAVITY_Z
 
-
-
 ! compute the volume of nodes needed in drag_fgs.f 
       CALL COMPUTE_VOLUME_OF_NODES
-      
+
       IF(DEM_SOLIDS) CALL CFASSIGN_DEM
       IF(PIC_SOLIDS) CALL CFASSIGN_PIC
 
