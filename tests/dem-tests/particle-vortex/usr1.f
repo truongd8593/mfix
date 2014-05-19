@@ -24,14 +24,8 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE USR1 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-!-----------------------------------------------
-!
-!  Include modules
-!
+
       Use usr
       USE param 
       USE param1 
@@ -49,22 +43,16 @@
       USE discretelement
 
       IMPLICIT NONE
-!
-!  Define local variables here
-!
 
 !                      Indices
       INTEGER          I, J, K, IJK
       DOUBLE PRECISION XX, YY, ZZ, XM, YM, ZM
       DOUBLE PRECISION, PARAMETER :: T_per=0.25d0
       double precision nu, ftauf, wnot, kx, ky, kmag
-!
-!  Include files defining statement functions here
-!
+
+
       INCLUDE 'function.inc'
-!
-!     Insert user-defined code here
-!     
+
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK) 
          J = J_OF(IJK) 
@@ -82,16 +70,6 @@
 
          u_g(ijk) = -cos(kx*xx)*sin(ky*ym)*kmag
          v_g(ijk) =  sin(kx*xm)*cos(ky*yy)*kmag
-!         p_g(ijk) = ro_g0/4*(cos(2*kx*xm)+cos(2*ky*ym))
-
-!         u_g(ijk) = (sin(pi*xx))**2*sin(2.0d0*pi*ym)*cos(pi*time/T_per)
-!         v_g(ijk) = -sin(2.0d0*pi*xm)*(sin(pi*yy))**2*cos(pi*time/T_per)
-
-!        write(101,*) ijk, i, j, k, time, u_g(ijk), v_g(ijk), w_g(ijk)
-!        write(102,*) ijk, i, j, k, time, pi, xx, yy, zz, zm, ym, zm, cos(pi*time/T_per)
-!        write(103,*) ijk, i, j, k, time, pi, sin(pi*xx), sin(2*pi*ym), sin(2*pi*zm)
- 
-!        write(104,*) i, j, k, xx, yy, zz, xm, ym, zm
 
       END DO
 
