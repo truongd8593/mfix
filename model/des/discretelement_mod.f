@@ -32,11 +32,11 @@
 
 ! Total number of particles in simulation: read from input or generated
       INTEGER PARTICLES
-! Constant factor used to expand size of arrays beyond particle no.      
+! Constant factor used to expand size of arrays beyond particle no.
       DOUBLE PRECISION PARTICLES_FACTOR
 
 ! Flag to turn on particle-wall interaction through triangular factes
-      LOGICAL :: USE_STL_DES 
+      LOGICAL :: USE_STL_DES
 
 ! Start particle tracking quantities
 !----------------------------------------------------------------->>>
@@ -69,7 +69,7 @@
 ! PEA(n,4) : for ghost particles
       LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PEA ! (MAX_PIS,4)
 
-! PARALLEL PROCESSING: explanation of variables in parallel architecture  
+! PARALLEL PROCESSING: explanation of variables in parallel architecture
 ! pip - particles in each processor (includes the ghost particles)
 ! max_pis - maximum allocated particles in system  (input parameter)
 ! max_pip - maximum allocated particles in processor
@@ -99,13 +99,13 @@
       DOUBLE PRECISION ::  VOL_FRAC(DIM_M)
       DOUBLE PRECISION :: DES_EPS_XSTART, &
       DES_EPS_YSTART, DES_EPS_ZSTART
-! volume of the IC region for computing number of particles to be seeded 
+! volume of the IC region for computing number of particles to be seeded
       DOUBLE PRECISION, dimension(:), allocatable :: VOL_IC_REGION!(DIMENSION_IC)
 ! number of particles for each phase corresponding to the IC number. This will
-! be real particles for DEM but parcels or computational particles for PIC model 
+! be real particles for DEM but parcels or computational particles for PIC model
       INTEGER, dimension(:,:), allocatable :: PART_MPHASE_BYIC!(DIMENSION_IC, DIM_M)
 
-! Number of real particles by IC and by solid phase. Only relevant for PIC model 
+! Number of real particles by IC and by solid phase. Only relevant for PIC model
       double precision, dimension(:,:), allocatable :: REALPART_MPHASE_BYIC!(DIMENSION_IC, DIM_M)
 ! The number of particles that belong to solid phase M according to the
 ! vol_frac and particle diameter. this information is used when
@@ -113,8 +113,8 @@
 ! This will be removed soon as PART_MPHASE_BYIC will be used from now on
       INTEGER PART_MPHASE(DIM_M)
 
-! The number of real particles that belong to solid phase M during the initialization. 
-! It is equal to Part_mphase for DEM but implies real number of particles for PIC model 
+! The number of real particles that belong to solid phase M during the initialization.
+! It is equal to Part_mphase for DEM but implies real number of particles for PIC model
       double precision REALPART_MPHASE(DIM_M)
 ! Assigns the initial particle velocity distribution based on user
 ! specified mean and standard deviation (regardless if already set
@@ -319,8 +319,8 @@
       DOUBLE PRECISION ETA_DES_N, ETA_N_W  !Normal
       DOUBLE PRECISION ETA_DES_T, ETA_T_W  !Tangential
 
-! Flag to use van der Hoef et al. (2006) model for adjusting the rotation of the 
-! contact plane 
+! Flag to use van der Hoef et al. (2006) model for adjusting the rotation of the
+! contact plane
       LOGICAL :: USE_VDH_DEM_MODEL
 ! Tangential damping factors, eta_t = eta_t_factor * eta_N
       DOUBLE PRECISION DES_ETAT_FAC, DES_ETAT_W_FAC
@@ -404,8 +404,8 @@
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFN ! (PARTICLES,3,MAXNEIGHBORS)
 
 ! Variables used to track/store particle contact history
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PN !(PARTICLES, MAXNEIGHBORS)
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PV !(PARTICLES, MAXNEIGHBORS)
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PN !(MAXNEIGHBORS,PARTICLES)
+      LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PV !(MAXNEIGHBORS,PARTICLES)
 
 ! Gas-solids drag force on partaicle
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: GD_FORCE

@@ -1,13 +1,13 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                         C 
+!                                                                         C
 !     Subrourtine: DES_INIT_ARRAYS                                        C
-!     Purpose: initialize arrays from des_allocate arrays                 C 
+!     Purpose: initialize arrays from des_allocate arrays                 C
 !                                                                         C
 !     Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !     Reviewer:                                          Date:            C
 !                                                                         C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-    
+
       SUBROUTINE DES_INIT_ARRAYS
 
 !-----------------------------------------------
@@ -22,10 +22,10 @@
       USE physprop
       USE des_bc
       USE run
-      use desgrid 
-      use desmpi 
+      use desgrid
+      use desmpi
       USE des_thermo
-      USE des_rxns      
+      USE des_rxns
       IMPLICIT NONE
 !-----------------------------------------------
 
@@ -39,14 +39,14 @@
       hert_kt(:,:) = zero
       hert_kwt(:) = zero
 
-! particle properties      
+! particle properties
       DES_RADIUS(:) = ZERO
       PMASS(:) = ZERO
       PVOL(:) = ZERO
       OMOI(:) = ZERO
-      RO_Sol(:) = ZERO 
+      RO_Sol(:) = ZERO
 
-! particle position, velocity, etc      
+! particle position, velocity, etc
       DES_POS_OLD(:,:) = ZERO
       DES_POS_NEW(:,:) = ZERO
       DES_VEL_OLD(:,:) = ZERO
@@ -65,7 +65,7 @@
 
       PN(:,:) = -1
       PN(:,1) = 0
-      PV(:,:) = 1
+      PV(:,:) = .TRUE.
       PFT(:,:,:) = ZERO
       PPOS(:,:) = ZERO
 
@@ -92,7 +92,7 @@
          VXF_SDS(:,:,:) = ZERO
       ENDIF
 
-  
+
 
       GRAV(:) = ZERO
 
@@ -108,7 +108,7 @@
 
       IF(DES_CALC_CLUSTER) THEN
          InACluster(:) = .FALSE.
-	 PostCluster(:) = ZERO
+         PostCluster(:) = ZERO
       ENDIF
 
 ! J.Musser: DEM particle tracking quantity
@@ -137,6 +137,6 @@
       ENDIF
 
       RETURN
-      END SUBROUTINE DES_INIT_ARRAYS 
+      END SUBROUTINE DES_INIT_ARRAYS
 
 

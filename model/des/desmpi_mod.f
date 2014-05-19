@@ -1220,7 +1220,7 @@
                fc(:,lcurpar) = 0.0
                fn(:,lcurpar) = 0.0
                ft(:,lcurpar) = 0.0
-               pn(lcurpar,:) = 0 ; pv(lcurpar,:) = 0
+               pn(lcurpar,:) = 0 ; pv(lcurpar,:) = .false.
                pft(lcurpar,:,:) = 0
                des_pos_new(lcurpar,:)=0
                des_pos_old(lcurpar,:)=0
@@ -1340,7 +1340,7 @@
                lcontact = pn(lcurpar,lcontactindx)
                dsendbuf(ltmpbuf,pface) = iglobal_id(lcontact)
                ltmpbuf=ltmpbuf+1
-               dsendbuf(ltmpbuf,pface) = pv(lcurpar,lcontactindx)
+               dsendbuf(ltmpbuf,pface) = merge(1,0,pv(lcurpar,lcontactindx))
                ltmpbuf=ltmpbuf+1
                dsendbuf(ltmpbuf:ltmpbuf+dimn-1,pface) = pft(lcurpar,lcontactindx,1:dimn)
                ltmpbuf=ltmpbuf+dimn
@@ -1375,7 +1375,7 @@
             ft(:,lcurpar) = 0.0
             neighbours(lcurpar,:)=0
             pn(lcurpar,:) = 0
-            pv(lcurpar,:) = 0
+            pv(lcurpar,:) = .false.
             pft(lcurpar,:,:) = 0
 
             lparcnt = lparcnt + 1
@@ -1527,7 +1527,7 @@
 
 ! loop through contact list and find local particle number using neighbor list
          pn(llocpar,1) = drecvbuf(lbuf,pface);ltmpbuf=lbuf+1
-         pv(llocpar,1) = 0
+         pv(llocpar,1) = .false.
          lcount = 0
          do lcontactindx = 2,pn(llocpar,1)+1
             lcontactfound = .false.
@@ -1552,7 +1552,7 @@
             endif
             lcount = lcount+1
             pn(llocpar,lcount+1) = lcontact
-            pv(llocpar,lcount+1) = drecvbuf(ltmpbuf,pface)
+            pv(llocpar,lcount+1) = merge(.true.,.false.,drecvbuf(ltmpbuf,pface).gt.0.5)
             ltmpbuf=ltmpbuf+1
             pft(llocpar,lcount+1,1:dimn) = drecvbuf(ltmpbuf:ltmpbuf+dimn-1,pface)
             ltmpbuf=ltmpbuf+dimn

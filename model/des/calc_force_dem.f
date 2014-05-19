@@ -196,7 +196,7 @@
 ! check the flag array PV to determine if particles remained in contact
 ! after the previous call of CALC_FORCE_DES.
             DO NI = 2, NLIM
-               IF(PV(LL,NI-N_NOCON).EQ.0) THEN
+               IF(.NOT.PV(LL,NI-N_NOCON)) THEN
 ! For each particle in PN(LL,2:MAXNEIGHBORS) that is no longer in
 ! contact, shift the remaining particle contact information PN, PN,
 ! PFT left by one and reduce PN(LL,1) by one.
@@ -230,7 +230,7 @@
 ! variable tracks whether particle LL has any current neighbors
 ! the array is used in the next call to calc_force_des to update
 ! particle LL neighbor history above
-         PV(LL,2:MAXNEIGHBORS) = 0
+         PV(LL,2:MAXNEIGHBORS) = .FALSE.
 
       ENDDO
 !$omp end parallel
@@ -345,7 +345,7 @@
                      OVERLAP_N = R_LM-DISTMOD
 
                      IF(ALREADY_NEIGHBOURS) THEN
-                        PV(LL,NI) = 1
+                        PV(LL,NI) = .TRUE.
                         OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                      ELSE
                         IF(DEBUG_DES) THEN
@@ -360,7 +360,7 @@
                         PN(LL,1) = PN(LL,1) + 1
                         NI = PN(LL,1) + 1
                         PN(LL,NI) = I
-                        PV(LL,NI) = 1
+                        PV(LL,NI) = .TRUE.
 
                         IF (V_REL_TRANS_NORM .GT. ZERO) THEN
                            DTSOLID_TMP = OVERLAP_N/(V_REL_TRANS_NORM)
@@ -401,7 +401,7 @@
                   FN(:,LL) = FNS1(:) + FNS2(:)
 
 
-                  IF(USE_VDH_DEM_MODEL) then 
+                  IF(USE_VDH_DEM_MODEL) then
 ! Calculate the tangential displacement which is integration of
 ! tangential relative velocity with respect to contact time.
 ! Correction in the tangential direction is imposed

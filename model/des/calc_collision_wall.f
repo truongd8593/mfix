@@ -302,13 +302,13 @@
                      OVERLAP_N =  R_LM-DISTMOD
 
                      IF(ALREADY_NEIGHBOURS) THEN
-                        PV(LL,NI) = 1
+                        PV(LL,NI) = .TRUE.
                         OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
                      ELSE
                         PN(LL,1) = PN(LL,1) + 1
                         NI = PN(LL,1) + 1
                         PN(LL,NI) = I
-                        PV(LL,NI) = 1
+                        PV(LL,NI) = .TRUE.
                         IF (V_REL_TRANS_NORM .GT. ZERO) THEN
                           DTSOLID_TMP = OVERLAP_N/(V_REL_TRANS_NORM)
                         ELSEIF (V_REL_TRANS_NORM .LT. ZERO) THEN
@@ -344,12 +344,12 @@
                      FNS2(:) = -ETAN_DES_W * V_REL_TRANS_NORM*NORMAL(:)
                      FN(:,LL) = FNS1(:) + FNS2(:)
 
-                     IF(USE_VDH_DEM_MODEL) then 
+                     IF(USE_VDH_DEM_MODEL) then
 
 ! Calculate the tangential displacement which is integration of
 ! tangential relative velocity with respect to contact time.
 ! Correction in the tangential direction is imposed
-                        
+
 ! New procedure: van der Hoef et al. (2006)
                         sigmat_old(:) = pft(ll,ni,:)
                         norm_old(:)   = pfn(ll,ni,:)
@@ -385,8 +385,8 @@
                      else ! Old procedure
                         PFT(LL,NI,:) = PFT(LL,NI,:) + OVERLAP_T*TANGENT(:)
                         PFT_TMP(:) = PFT(LL,NI,:) ! update pft_tmp before it used
-                     !remove the normal component from the tangential force 
-                     !due to change of normal direction 
+                     !remove the normal component from the tangential force
+                     !due to change of normal direction
                         PFT_TMP(:)   = PFT(LL,NI,:) - &
                            DES_DOTPRDCT(PFT_TMP,NORMAL)*NORMAL(:)
                      endif

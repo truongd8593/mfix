@@ -541,7 +541,7 @@
 
       PN(NP,:) = -1
       PN(NP,1) = 0
-      PV(NP,:) = 1
+      PV(NP,:) = .TRUE.
       PFT(NP,:,:) = ZERO
       PPOS(NP,:) = ZERO
 
