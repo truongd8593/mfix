@@ -122,8 +122,9 @@
 
 
       DO M = 1, MMAX 
-        IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. &
-                                        M==MMAX)) THEN
+        IF(KT_TYPE_ENUM /= GHD_2007 .OR. &
+           (KT_TYPE_ENUM == GHD_2007 .AND. M==MMAX)) THEN
+
           IF (MOMENTUM_Y_EQ(M)) THEN 
 
 
@@ -154,7 +155,7 @@
                 IJPKM = KM_OF(IJPK) 
                 IJKP = KP_OF(IJK) 
 
-                IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                IF (KT_TYPE_ENUM == GHD_2007) THEN
                   EPStmp = ZERO     
                   epsMix = ZERO
                   epsMixN= ZERO  
@@ -207,7 +208,7 @@
                   A_M(IJK,B,M) = ZERO 
                   A_M(IJK,0,M) = -ONE 
                   B_M(IJK,M) = ZERO 
-                  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                  IF (KT_TYPE_ENUM == GHD_2007) THEN
                       EPSw = ZERO
                       EPSe = ZERO
                       EPSn = ZERO
@@ -285,7 +286,7 @@
                   ENDIF 
 
                   IF (CLOSE_PACKED(M)) THEN
-                     IF(SMAX > 1 .AND. TRIM(KT_TYPE) /= 'GHD') THEN
+                     IF(SMAX > 1 .AND. KT_TYPE_ENUM /= GHD_2007) THEN
                         SUM_EPS_CP=0.0 
                         DO MM=1,SMAX
                           IF (CLOSE_PACKED(MM))&
@@ -367,7 +368,7 @@
                   ENDIF
 
 ! Interphase mass transfer
-                  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                  IF (KT_TYPE_ENUM == GHD_2007) THEN
                      VMTtmp = ZERO
                      DO L = 1,SMAX
                         VMTtmp = VMTtmp + AVG_Y(SUM_R_S(IJK,L),SUM_R_S(IJKN,L),J) 
@@ -384,14 +385,14 @@
 
 ! Body force
                   IF (MODEL_B) THEN 
-                     IF (TRIM(KT_TYPE) /= 'GHD') THEN
-                       DRO1 = (RO_S(IJK,M)-RO_G(IJK))*EP_S(IJK,M) 
-                       DRO2 = (RO_S(IJK,M)-RO_G(IJKN))*EP_S(IJKN,M) 
-                       DROA = AVG_Y(DRO1,DRO2,J) 
-                       VBF = DROA*BFY_S(IJK,M) 
-                     ELSE ! GHD and M = MMAX
+                     IF (KT_TYPE_ENUM == GHD_2007) THEN
                        DRO1 = ROP_S(IJK,M)  - RO_G(IJK) *epsMix
                        DRO2 = ROP_S(IJKN,M) - RO_G(IJKN)*epsMixN 
+                       DROA = AVG_Y(DRO1,DRO2,J) 
+                       VBF = DROA*BFY_S(IJK,M) 
+                     ELSE
+                       DRO1 = (RO_S(IJK,M)-RO_G(IJK))*EP_S(IJK,M) 
+                       DRO2 = (RO_S(IJK,M)-RO_G(IJKN))*EP_S(IJKN,M) 
                        DROA = AVG_Y(DRO1,DRO2,J) 
                        VBF = DROA*BFY_S(IJK,M) 
                      ENDIF
@@ -399,20 +400,21 @@
                      VBF = ROPSA*BFY_S(IJK,M) 
                   ENDIF 
 
-! Additional force for GHD from darg force sum(beta_ig * Joi/rhop_i)
+! Additional force for GHD from drag force sum(beta_ig * Joi/rhop_i)
                   Ghd_drag = ZERO
-                  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                  IF (KT_TYPE_ENUM == GHD_2007) THEN
                     DO L = 1,SMAX
                       avgRop = AVG_Y(ROP_S(IJK,L),ROP_S(IJKN,L),J)
                       if(avgRop > ZERO) Ghd_drag = Ghd_drag -&
-                           AVG_Y(F_GS(IJK,L),F_GS(IJKN,L),J) * JoiY(IJK,L) / avgRop
+                           AVG_Y(F_GS(IJK,L),F_GS(IJKN,L),J) * &
+                           JoiY(IJK,L) / avgRop
                     ENDDO
                   ENDIF
 
 ! Additional force for HYS drag force, do not use with mixture GHD theory
                   HYS_drag = ZERO
                   avgDrag = ZERO
-                  IF (DRAG_TYPE_ENUM .EQ. HYS .AND. TRIM(KT_TYPE) /= 'GHD') THEN
+                  IF (DRAG_TYPE_ENUM .EQ. HYS .AND. KT_TYPE_ENUM /= GHD_2007) THEN
                      DO L = 1,MMAX
                         IF (L /= M) THEN
                            avgDrag = AVG_Y(beta_ij(IJK,M,L),beta_ij(IJKN,M,L),J)
@@ -450,9 +452,9 @@
                   IF(USE_MMS) B_M(IJK,M) = &
                      B_M(IJK,M) - MMS_V_S_SRC(IJK)*VOL_V(IJK)
 
-                  IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN 
+                  IF (KT_TYPE_ENUM == IA_2005) THEN 
                      B_M(IJK,M) = B_M(IJK,M) - KTMOM_V_S(IJK,M)
-                  ELSEIF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                  ELSEIF (KT_TYPE_ENUM == GHD_2007) THEN
                      B_M(IJK,M) = B_M(IJK,M) - Ghd_drag*VOL_V(IJK)
                   ENDIF
 

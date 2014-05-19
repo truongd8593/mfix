@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      !
-!  Module name: SET_IC                                                 C
+!                                                                      C
+!  Subroutine: SET_IC                                                  C
 !  Purpose: This module sets all the initial conditions.               C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 21-JAN-92  C
@@ -11,25 +11,13 @@
 !  Purpose: Modifications for initializing solids pressure             C
 !  Author: M. Syamlal                                 Date: 11-MAY-93  C
 !                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: IC_DEFINED, IC_P_g, FLAG, IC_I_e, IC_I_w,     C
-!                        IC_EP_g, IC_T_g, IC_T_s,  IC_U_g,    C
-!                        IC_V_g, IC_W_g, IC_ROP_s, MMAX, IC_U_s,       C
-!                        IC_V_s, IC_W_s, IC_K_b, IC_K_t, IC_J_s,       C
-!                        IC_J_n                                        C
-!                                                                      C
-!  Variables modified: M, I, J, K, IJK, EP_g, P_g, T_g, T_s,     C
-!                      U_g, V_g, W_g, ROP_s, U_s, V_s, W_s, P_star     C
-!                                                                      C
-!  Local variables: EPGX, PGX, TGX, TS1X, TS2X, UGX, VGX, WGX, ROPSX,  C
-!                   USX, VSX, WSX, L                                  C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE SET_IC 
 
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
       USE param 
       USE param1 
@@ -48,69 +36,49 @@
       USE sendrecv 
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Local variables
 !-----------------------------------------------
+! indices 
+      INTEGER :: I, J, K, IJK, M, N 
+! Local index for initial condition 
+      INTEGER :: L 
+! Temporary variable for storing IC_EP_g 
+      DOUBLE PRECISION :: EPGX 
+! Temporary variable for storing IC_P_g 
+      DOUBLE PRECISION :: PGX 
+! Temporary variable for storing P_star 
+      DOUBLE PRECISION :: PSX 
+! Temporary variable for storing IC_T_g 
+      DOUBLE PRECISION :: TGX 
+! Temporary variable for storing IC_U_g 
+      DOUBLE PRECISION :: UGX 
+! Temporary variable for storing IC_V_g 
+      DOUBLE PRECISION :: VGX 
+! Temporary variable for storing IC_W_g 
+      DOUBLE PRECISION :: WGX 
+! number densities for use in GHD theory only
+      DOUBLE PRECISION :: ni(DIMENSION_M) 
+! Temporary variable for storing IC_ROP_s 
+      DOUBLE PRECISION :: ROPSX (DIMENSION_M) 
+! Temporary variable for storing IC_T_s 
+      DOUBLE PRECISION :: TSX (DIMENSION_M) 
+! Temporary variable for storing IC_U_s 
+      DOUBLE PRECISION :: USX (DIMENSION_M) 
+! Temporary variable for storing IC_V_s 
+      DOUBLE PRECISION :: VSX (DIMENSION_M) 
+! Temporary variable for storing IC_W_s 
+      DOUBLE PRECISION :: WSX (DIMENSION_M) 
+! number density for GHD theory 
+      DOUBLE PRECISION :: nM, nTOT 
 !-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-! 
-!                      indices 
-      INTEGER          I, J, K, IJK, M, N 
-! 
-!                      Local index for initial condition 
-      INTEGER          L 
-! 
-!                      Temporary variable for storing IC_EP_g 
-      DOUBLE PRECISION EPGX 
-! 
-!                      Temporary variable for storing IC_P_g 
-      DOUBLE PRECISION PGX 
-! 
-!                      Temporary variable for storing P_star 
-      DOUBLE PRECISION PSX 
-! 
-!                      Temporary variable for storing IC_T_g 
-      DOUBLE PRECISION TGX 
-! 
-!                      Temporary variable for storing IC_U_g 
-      DOUBLE PRECISION UGX 
-! 
-!                      Temporary variable for storing IC_V_g 
-      DOUBLE PRECISION VGX 
-! 
-!                      Temporary variable for storing IC_W_g 
-      DOUBLE PRECISION WGX 
-! 
-!                      number densities for use in GHD theory only
-      DOUBLE PRECISION ni(DIMENSION_M) 
-! 
-!                      Temporary variable for storing IC_ROP_s 
-      DOUBLE PRECISION ROPSX (DIMENSION_M) 
-! 
-!                      Temporary variable for storing IC_T_s 
-      DOUBLE PRECISION TSX (DIMENSION_M) 
-! 
-!                      Temporary variable for storing IC_U_s 
-      DOUBLE PRECISION USX (DIMENSION_M) 
-! 
-!                      Temporary variable for storing IC_V_s 
-      DOUBLE PRECISION VSX (DIMENSION_M) 
-! 
-!                      Temporary variable for storing IC_W_s 
-      DOUBLE PRECISION WSX (DIMENSION_M) 
-! 
-!                      number density for GHD theory 
-      DOUBLE PRECISION nM, nTOT 
-! 
+! Include statement function
 !-----------------------------------------------
       INCLUDE 'sc_p_g1.inc'
       INCLUDE 's_pr1.inc'
       INCLUDE 'function.inc'
       INCLUDE 's_pr2.inc'
       INCLUDE 'sc_p_g2.inc'
+!-----------------------------------------------
 
 !  Set the initial conditions.
       DO L = 1, DIMENSION_IC 
@@ -201,7 +169,7 @@
                   ENDDO 
 
 ! for GHD theory to compute mixture IC of velocity and density
-                  IF(TRIM(KT_TYPE) == 'GHD') THEN
+                  IF(KT_TYPE_ENUM == GHD_2007) THEN
                      ROP_S(IJK,MMAX) = ZERO
                      U_S(IJK,MMAX) = ZERO
                      V_S(IJK,MMAX) = ZERO

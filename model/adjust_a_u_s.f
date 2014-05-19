@@ -53,49 +53,45 @@
       INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
-      DO M = 1, MMAX  
-         IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
-            IF (MOMENTUM_X_EQ(M)) THEN 
+      DO M = 1, MMAX
+         IF (DRAG_TYPE_ENUM == GHD_2007 .AND. M /= MMAX) CYCLE
+         IF (MOMENTUM_X_EQ(M)) THEN 
 
 !!$omp     parallel do private(I, IP, IJK, IJKE, IMJK )
 
-               DO IJK = ijkstart3, ijkend3
-                  IF (ABS(A_M(IJK,0,M)) < SMALL_NUMBER) THEN 
-                     A_M(IJK,E,M) = ZERO 
-                     A_M(IJK,W,M) = ZERO 
-                     A_M(IJK,N,M) = ZERO 
-                     A_M(IJK,S,M) = ZERO 
-                     A_M(IJK,T,M) = ZERO 
-                     A_M(IJK,B,M) = ZERO 
-                     A_M(IJK,0,M) = -ONE 
-                     IF (B_M(IJK,M) < ZERO) THEN 
-                        IJKE = EAST_OF(IJK) 
-                        IP = IP1(I_OF(IJK)) 
-                        IF (ROP_S(IJKE,M)*AYZ_U(IJK) > SMALL_NUMBER) THEN 
-                           B_M(IJK,M) = SQRT((-B_M(IJK,M)/&
-                              (ROP_S(IJKE,M)*AVG_X_E(ONE,ZERO,IP)*&
-                              AYZ_U(IJK)))) 
-                        ELSE 
-                           B_M(IJK,M) = ZERO 
-                        ENDIF 
-                     ELSEIF (B_M(IJK,M) > ZERO) THEN 
-                        I = I_OF(IJK) 
-                        IMJK = IM_OF(IJK) 
-                        IF (ROP_S(IJK,M)*AYZ_U(IMJK) > SMALL_NUMBER) THEN 
-                           B_M(IJK,M) = SQRT(B_M(IJK,M)/(ROP_S(IJK,M)*&
-                              AVG_X_E(ZERO,ONE,I)*AYZ_U(IMJK))) 
-                        ELSE 
-                           B_M(IJK,M) = ZERO 
-                        ENDIF 
+            DO IJK = ijkstart3, ijkend3
+               IF (ABS(A_M(IJK,0,M)) < SMALL_NUMBER) THEN 
+                  A_M(IJK,E,M) = ZERO 
+                  A_M(IJK,W,M) = ZERO 
+                  A_M(IJK,N,M) = ZERO 
+                  A_M(IJK,S,M) = ZERO 
+                  A_M(IJK,T,M) = ZERO 
+                  A_M(IJK,B,M) = ZERO 
+                  A_M(IJK,0,M) = -ONE 
+                  IF (B_M(IJK,M) < ZERO) THEN 
+                     IJKE = EAST_OF(IJK) 
+                     IP = IP1(I_OF(IJK)) 
+                     IF (ROP_S(IJKE,M)*AYZ_U(IJK) > SMALL_NUMBER) THEN 
+                        B_M(IJK,M) = SQRT((-B_M(IJK,M)/(ROP_S(IJKE,M)*&
+                           AVG_X_E(ONE,ZERO,IP)*AYZ_U(IJK)))) 
+                     ELSE 
+                        B_M(IJK,M) = ZERO 
                      ENDIF 
-                  ENDIF    ! end if (abs(a_m(ijk,0,m))<small_number)
-               ENDDO    ! end do loop (ijk=ijkstart3,ijkend3)
+                  ELSEIF (B_M(IJK,M) > ZERO) THEN 
+                     I = I_OF(IJK) 
+                     IMJK = IM_OF(IJK) 
+                     IF (ROP_S(IJK,M)*AYZ_U(IMJK) > SMALL_NUMBER) THEN 
+                        B_M(IJK,M) = SQRT(B_M(IJK,M)/(ROP_S(IJK,M)*&
+                           AVG_X_E(ZERO,ONE,I)*AYZ_U(IMJK))) 
+                     ELSE 
+                        B_M(IJK,M) = ZERO 
+                     ENDIF 
+                  ENDIF 
+               ENDIF    ! end if (abs(a_m(ijk,0,m))<small_number)
+            ENDDO    ! end do loop (ijk=ijkstart3,ijkend3)
 
-            ENDIF   ! end if (momentum_x_eq(m))  
-         ENDIF   ! end if check for GHD Theory
+         ENDIF   ! end if (momentum_x_eq(m))  
       ENDDO   ! end do loop (m=1,mmax)
 
       RETURN  
       END SUBROUTINE ADJUST_A_U_S
-       
-

@@ -275,7 +275,7 @@
                ENDIF   ! end if/else (mmax==1 .and. mcp /= undefined)
             ENDIF ! end if/else (MMS)
 
-            IF(TRIM(KT_TYPE) .eq. 'GHD') CALL ADJUST_EPS_GHD
+            IF(KT_TYPE_ENUM == GHD_2007) CALL ADJUST_EPS_GHD
 
             CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER)
             goto( 1000 ), IER_MANAGER(IER)

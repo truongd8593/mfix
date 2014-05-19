@@ -173,7 +173,8 @@
 
 ! Energy dissipation by viscous dampening
 ! Gidaspow (1994)  : addition due to role of interstitial fluid
-      IF(SIMONIN .OR. AHMADI) THEN
+      IF(KT_TYPE_ENUM == SIMONIN_1996 .OR. &
+         KT_TYPE_ENUM == AHMADI_1995) THEN
          S6_lhs = 3.d0 * F_GS(IJK,M)
       ELSE IF(SWITCH > ZERO .AND. RO_g0 /= ZERO) THEN 
          S6_lhs = SWITCH * 3.d0 * F_GS(IJK,M)
@@ -181,9 +182,9 @@
 
 ! Energy production due to gas-particle slip
 ! Koch & Sangani (1999) : addition due to role of interstitial fluid
-      IF(SIMONIN) THEN
+      IF(KT_TYPE_ENUM == SIMONIN_1996) THEN
          S7_rhs = F_GS(IJK,M)*K_12(IJK)
-      ELSEIF(AHMADI) THEN
+      ELSEIF(KT_TYPE_ENUM == AHMADI_1995) THEN
 ! note specific reference to F_GS of solids phase 1!
          IF(Ep_s(IJK,M) > DIL_EP_S .AND. F_GS(IJK,1) > small_number) THEN
             Tau_12_st = Ep_s(IJK,M)*RO_S(IJK,M)/F_GS(IJK,1)
@@ -264,7 +265,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOURCE_IA_NONEP_GRANULAR_ENERGY(SOURCELHS, &
+      SUBROUTINE SOURCE_GRANULAR_ENERGY_IA(SOURCELHS, &
                     SOURCERHS, IJK, M, IER) 
 
 !-----------------------------------------------
@@ -584,13 +585,12 @@
   
 
       RETURN  
-      END SUBROUTINE SOURCE_IA_NONEP_GRANULAR_ENERGY
-
+      END SUBROUTINE SOURCE_GRANULAR_ENERGY_IA
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Subroutine: SOURCE_GD_99_GRANULAR_ENERGY                            C
+!  Subroutine: SOURCE_GRANULAR_ENERGY_GD                               C
 !  Purpose: Calculate the source terms of the Mth pahse granular       C
 !     energy equation                                                  C
 !                                                                      C
@@ -598,12 +598,14 @@
 !                                                                      C
 !  Literature/Document References:                                     C
 !    Garzo, V., and Dufty, J., Homogeneous cooling state for a         C
-!    granular mixture, Physical Review E, 1999, Vol 60 (5), 5706-      C
-!    5713                                                              C
+!      granular mixture, Physical Review E, 1999, Vol 60 (5), 5706-    C
+!      5713                                                            C
+!    Garzo, Tenneti, Subramaniam, Hrenya, J. Fluid Mech., 2012, 712,   C
+!      pp 129-404                                                      C
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
-      SUBROUTINE SOURCE_GD_99_GRANULAR_ENERGY(SOURCELHS, &
+      SUBROUTINE SOURCE_GRANULAR_ENERGY_GD(SOURCELHS, &
                     SOURCERHS, IJK, M, IER) 
 
 !-----------------------------------------------
@@ -664,7 +666,9 @@
                           S13b_lhs, S14a_lhs, S14b_lhs, S15a_lhs, S15b_lhs
 ! Source terms from interstitial effects
       DOUBLE PRECISION :: VSLIP, Kslip, Tslip_rhs, Tslip_lhs, Tvis_lhs
-      DOUBLE PRECISION :: ep_sM, chi, Sgama_lhs, Spsi_rhs  ! local var. for GTSH theory
+      DOUBLE PRECISION :: ep_sM
+! local var. for GTSH theory
+      DOUBLE PRECISION :: chi, Sgama_lhs, Spsi_rhs
 !----------------------------------------------- 
 ! Function subroutines
 !----------------------------------------------- 
@@ -723,7 +727,8 @@
       D_PM = D_P(IJK,M) 
       M_PM = (Pi/6.d0)*D_PM**3 * RO_S(IJK,M)
       EP_SM = EP_s(IJK,M)
-      chi = G_0(IJK,M,M)
+      CHI = G_0(IJK,M,M)
+
       NU_PM_p = ROP_S(IJK,M)/M_PM
       NU_PM_E = ROP_S(IJKE,M)/M_PM
       NU_PM_W = ROP_S(IJKW,M)/M_PM
@@ -760,14 +765,14 @@
 ! by 3/2 rop_s(ijk,m)
 ! GTSH theory has two additional terms as source (Psi) and sink (gama)
 ! in eq (4.9) of GTSH JFM paper
-      if((TRIM(KT_TYPE) == 'GTSH')) then
+      IF(KT_TYPE_ENUM == GTSH_2012) THEN
         S11_lhs = 1.5d0*ROP_s(IJK,M) * S11_lhs
         S11_rhs = 1.5d0*ROP_s(IJK,M) * S11_rhs
         S12_lhs = 1.5d0*ROP_s(IJK,M) * S12_lhs
         S12_rhs = 1.5d0*ROP_s(IJK,M) * S12_rhs
         Sgama_lhs = 3d0*NU_PM_p * G_gtsh(EP_SM, chi, IJK, M)
         Spsi_rhs = 1.5d0*ROP_s(IJK,M) * xsi_gtsh(ijk)
-      endif
+      ENDIF
 
 ! Part of Heat Flux: div (q)
 ! Knu_s_ip*grad(nu)
@@ -807,7 +812,7 @@
 
 ! this is only done for GD_99, do not add these terms to GTSH
       IF(SWITCH > ZERO .AND. RO_g0 /= ZERO .AND. &
-         (TRIM(KT_TYPE) == 'GD_99')) THEN 
+         (KT_TYPE_ENUM == GD_1999)) THEN 
 
          VSLIP = (U_S(IJK,M)-U_G(IJK))**2 + (V_S(IJK,M)-V_G(IJK))**2 +&
             (W_S(IJK,M)-W_G(IJK))**2 
@@ -828,6 +833,6 @@
       ENDIF
 
       RETURN  
-      END SUBROUTINE SOURCE_GD_99_GRANULAR_ENERGY
+      END SUBROUTINE SOURCE_GRANULAR_ENERGY_GD
 
 

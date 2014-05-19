@@ -63,6 +63,7 @@
 !drag
       Allocate(  F_gs(DIMENSION_3, DIMENSION_M) )
       Allocate(  F_ss(DIMENSION_3, 0:DIMENSION_LM) )
+      Allocate(  dgA_s(DIMENSION_3, DIMENSION_M) )
 
 !Off diagonal friction coefficient in HYS drag relation
       IF(DRAG_TYPE_ENUM.EQ.HYS) &
@@ -124,8 +125,7 @@
       Allocate(  THETA_m (DIMENSION_3, DIMENSION_M) )
       Allocate(  THETA_mo (DIMENSION_3p, DIMENSION_M) )
 
-! sof: MUST use k-epsilon model if using Simonin or Ahmadi model
-      IF(K_Epsilon .OR. SIMONIN .OR. AHMADI) THEN
+      IF(K_Epsilon)THEN
         Allocate(  K_Turb_G (DIMENSION_3) )
         Allocate(  K_Turb_Go (DIMENSION_3p) )
         Allocate(  E_Turb_G (DIMENSION_3) )
@@ -208,8 +208,7 @@
 !     ALLocate(  g_a( 1:DIMENSION_Scalar))
 
 ! K-Epsilon Turbulence model
-! sof (02/01/05): must use k-epsilon model with Simonin or Ahmadi models
-      IF(K_Epsilon .OR. SIMONIN .OR. AHMADI)then
+      IF(K_Epsilon) THEN
         Allocate(  K_Turb_G_c   (DIMENSION_3p) )
         Allocate(  K_Turb_G_p   (DIMENSION_3p) )
         Allocate(  Dif_K_Turb_G (DIMENSION_3p) )
@@ -219,7 +218,8 @@
       ENDIF
 
 ! Simonin or Ahmadi model
-      IF(SIMONIN .OR. AHMADI)then
+      IF(KT_TYPE_ENUM==SIMONIN_1996 .OR.&
+         KT_TYPE_ENUM==AHMADI_1995) THEN
         Allocate(  K_12 (DIMENSION_3) )
         Allocate(  Tau_12 (DIMENSION_3) )
         Allocate(  Tau_1 (DIMENSION_3) )
@@ -262,7 +262,6 @@
       Allocate(  L_scale (DIMENSION_3) )
 
 !visc_s
-      Allocate(  trD_s(DIMENSION_3, DIMENSION_M) )
       Allocate(  MU_s (DIMENSION_3, DIMENSION_M) )
       Allocate(  LAMBDA_s (DIMENSION_3, DIMENSION_M) )
       Allocate(  ALPHA_s (DIMENSION_3, DIMENSION_M) )
@@ -275,13 +274,11 @@
       Allocate(  MU_s_f (DIMENSION_3) )
       Allocate(  MU_s_p (DIMENSION_3) )
       Allocate(  MU_b_v (DIMENSION_3) )
-      Allocate(  ALPHA_s_v (DIMENSION_3) )
-      Allocate(  ALPHA_s_p (DIMENSION_3) )
-      Allocate(  ALPHA_s_f (DIMENSION_3) )
       Allocate(  EP_star_array (DIMENSION_3) )
       Allocate(  EP_g_blend_start (DIMENSION_3) )
       Allocate(  EP_g_blend_end (DIMENSION_3) )
-      Allocate(  VREL_array (DIMENSION_3) )
+      Allocate(  VREL_array (DIMENSION_3, DIMENSION_M) )
+      Allocate(  trD_s(DIMENSION_3, DIMENSION_M) )
       Allocate(  I2_devD_s (DIMENSION_3) )
       Allocate(  TrM_s (DIMENSION_3) )
       Allocate(  TrDM_s (DIMENSION_3) )
@@ -319,7 +316,7 @@
       Allocate( ROP_sT(DIMENSION_3p, DIMENSION_M) )
 
 ! allocate variables for GHD Theory
-      IF (TRIM(KT_TYPE) == 'GHD') THEN
+      IF (KT_TYPE_ENUM == GHD_2007) THEN
         Allocate(  Flux_nE(DIMENSION_3p) )
         Allocate(  Flux_nN(DIMENSION_3p) )
         Allocate(  Flux_nT(DIMENSION_3p) )
@@ -381,7 +378,7 @@
 
 ! allocate variables for Iddir & Arastoopour (2005) kinetic theory
 ! EDvel_sM_ip & EDT_s_ip are also used for Garzy & Dufty (1999) kinetic theory
-      IF (TRIM(KT_TYPE) == 'IA_NONEP') THEN
+      IF (KT_TYPE_ENUM == IA_2005) THEN
          Allocate(  trD_s2_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
          Allocate(  MU_sM_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
          Allocate(  MU_sL_ip(DIMENSION_3, DIMENSION_M, DIMENSION_M) )
@@ -397,14 +394,15 @@
          Allocate(  EDvel_sL_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
          Allocate(  ED_ss_ip(DIMENSION_3p, 0:DIMENSION_LM) )
       ENDIF
-      IF (TRIM(KT_TYPE) == 'IA_NONEP' .OR. TRIM(KT_TYPE) == 'GD_99' .OR. &
-          TRIM(KT_TYPE) == 'GTSH') THEN
-         Allocate(  EDT_s_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
-         Allocate(  EDvel_sM_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
-      ENDIF
-      IF (TRIM(KT_TYPE) == 'GTSH') THEN
+      IF (KT_TYPE_ENUM == GTSH_2012) THEN
          Allocate(  A2_gtsh(DIMENSION_3) )
          Allocate(  xsi_gtsh(DIMENSION_3) )
+      ENDIF
+      IF (KT_TYPE_ENUM == IA_2005 .OR. &
+          KT_TYPE_ENUM == GD_1999 .OR. &
+          KT_TYPE_ENUM == GTSH_2012) THEN
+         Allocate(  EDT_s_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
+         Allocate(  EDvel_sM_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
       ENDIF
 
 

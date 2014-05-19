@@ -12,6 +12,10 @@
 !  Literature/Document References:                                     C
 !                                                                      C
 !                                                                      C
+!  Notes:                                                              C
+!    This routine will not be entered unless granular_energy so we     C
+!    do not need to check for its condition!                           C
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CALC_GRBDRY(IJK1, IJK2, FCELL, COM, M, L, Gw, Hw, Cw)
@@ -66,13 +70,15 @@
       INTEGER :: IJK2T, IJKP2, IJMKP2, IMJKP2
 ! Solids phase index
       INTEGER :: MM
+!
+      DOUBLE PRECISION :: smallTheta
 ! Average scalars
       DOUBLE PRECISION :: EPg_avg, Mu_g_avg, RO_g_avg
 ! Average void fraction at packing
       DOUBLE PRECISION :: ep_star_avg
 ! Average scalars modified to include all solid phases
       DOUBLE PRECISION :: EPs_avg(DIMENSION_M), DP_avg(DIMENSION_M),&
-                          TH_avg(DIMENSION_M), AVGX1, AVGX2, smallTheta
+                          TH_avg(DIMENSION_M), AVGX1, AVGX2
       DOUBLE PRECISION ROS_AVG(DIMENSION_M)
 ! Average Simonin and Ahmadi variables (sof)
       DOUBLE PRECISION :: K_12_avg, Tau_12_avg, Tau_1_avg
@@ -136,14 +142,15 @@
         Mu_g_avg = AVG_X(Mu_g(IJK2), Mu_g(IJK2E), I_OF(IJK2))
         RO_g_avg = AVG_X(RO_g(IJK2), RO_g(IJK2E), I_OF(IJK2))
 
-        IF(SIMONIN .OR. AHMADI) THEN
+        K_12_avg = ZERO    
+        Tau_12_avg = ZERO
+        Tau_1_avg = ZERO        
+        IF(KT_TYPE_ENUM == SIMONIN_1996 .OR. &
+           KT_TYPE_ENUM == AHMADI_1995) THEN
+           Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
+! Simonin only:           
            K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))
            Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))
-           Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
-        ELSE
-           K_12_avg = ZERO    
-           Tau_12_avg = ZERO
-           Tau_1_avg = ZERO
         ENDIF
 
         g0EPs_avg = ZERO             
@@ -154,10 +161,9 @@
            g0EPs_avg   = g0EPs_avg + G_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, MM) &
                        * AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
            ROs_avg(MM) = AVG_X(RO_S(IJK2, MM), RO_S(IJK2E, MM), I_OF(IJK2))
-           IF (.NOT.GRANULAR_ENERGY) THEN
-              TH_avg(MM) = AVG_X(THETA_M(IJK2,MM), THETA_M(IJK2E,MM), I_OF(IJK2))
-              IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
-           ENDIF
+
+           TH_avg(MM) = AVG_X(THETA_M(IJK2,MM), THETA_M(IJK2E,MM), I_OF(IJK2))
+           IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
         ENDDO
 
         WVELS = BC_Uw_s(L,M)
@@ -167,19 +173,17 @@
           IPJMK2 = JM_OF(IPJK2) 
 
 ! code modified for some corner cells
-          IF(GRANULAR_ENERGY) THEN
-            DO MM = 1, SMAX
-              AVGX1 = AVG_X(Theta_m(IJK1,MM), Theta_m(IPJMK2,MM), I_OF(IJK1))
-              AVGX2 = AVG_X(Theta_m(IJK2,MM), Theta_m(IPJK2,MM), I_OF(IJK2))
-              IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
-              IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
-              IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+          DO MM = 1, SMAX
+             AVGX1 = AVG_X(Theta_m(IJK1,MM), Theta_m(IPJMK2,MM), I_OF(IJK1))
+             AVGX2 = AVG_X(Theta_m(IJK2,MM), Theta_m(IPJK2,MM), I_OF(IJK2))
+             IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+             IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+             IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
                 TH_avg(MM) = smallTheta
-              ELSE
+             ELSE
                 TH_avg(MM) = AVG_Y(AVGX1, AVGX2, J_OF(IJK1))
-              ENDIF
-            ENDDO
-          ENDIF
+             ENDIF
+          ENDDO
  
 ! Calculate velocity components at i+1/2, j+1/2, k (relative to IJK1)
           UGC  = AVG_Y(U_g(IJK1), U_g(IJK2),J_OF(IJK1))
@@ -206,19 +210,18 @@
           IPJPK2= JP_OF(IPJK2)
 
 ! code modified for some corner cells          
-          IF(GRANULAR_ENERGY) THEN
-            DO MM = 1, SMAX                  
-              AVGX1 = AVG_X(Theta_m(IJK2,MM),Theta_m(IPJK2,MM),I_OF(IJK2))
-              AVGX2 = AVG_X(Theta_m(IJK1,MM),Theta_m(IPJPK2,MM),I_OF(IJK1))
-              IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
-              IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
-              IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+          DO MM = 1, SMAX                  
+             AVGX1 = AVG_X(Theta_m(IJK2,MM),Theta_m(IPJK2,MM),I_OF(IJK2))
+             AVGX2 = AVG_X(Theta_m(IJK1,MM),Theta_m(IPJPK2,MM),I_OF(IJK1))
+             IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+             IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+             IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
                 TH_avg(MM) = smallTheta
-              ELSE
+             ELSE
                 TH_avg(MM) = AVG_Y(AVGX1, AVGX2, J_OF(IJK2))
-              ENDIF
-            ENDDO
-          ENDIF
+             ENDIF
+          ENDDO
+      
 
 ! Calculate velocity components at i+1/2, j+1/2, k relative to IJK2
           UGC  = AVG_Y(U_g(IJK2),U_g(IJK1),J_OF(IJK2))
@@ -245,19 +248,17 @@
           IPJKM2= KM_OF(IPJK2)
 
 ! code modified for some corner cells          
-          IF(GRANULAR_ENERGY) THEN          
-            DO MM = 1, SMAX
-              AVGX1 = AVG_X(Theta_m(IJK1,MM),Theta_m(IPJKM2,MM),I_OF(IJK1))
-              AVGX2 = AVG_X(Theta_m(IJK2,MM),Theta_m(IPJK2,MM),I_OF(IJK2))
-              IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
-              IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
-              IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+          DO MM = 1, SMAX
+             AVGX1 = AVG_X(Theta_m(IJK1,MM),Theta_m(IPJKM2,MM),I_OF(IJK1))
+             AVGX2 = AVG_X(Theta_m(IJK2,MM),Theta_m(IPJK2,MM),I_OF(IJK2))
+             IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+             IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+             IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
                 TH_avg(MM) = smallTheta
-              ELSE
+             ELSE
                 TH_avg(MM) = AVG_Z(AVGX1, AVGX2, K_OF(IJK1))
-              ENDIF
-            ENDDO
-          ENDIF
+             ENDIF
+          ENDDO
 
 ! Calculate velocity components at i+1/2,j,k-1/2 relative to IJK2
           UGC  = AVG_Z(U_g(IJK1), U_g(IJK2), K_OF(IJK1))
@@ -284,19 +285,17 @@
           IPJKP2= KP_OF(IPJK2)
 
 ! code modified for some corner cells
-          IF(GRANULAR_ENERGY) THEN
-            DO MM = 1, SMAX                  
-              AVGX1 = AVG_X(Theta_m(IJK1,MM), Theta_m(IPJKP2,MM),I_OF(IJK1))
-              AVGX2 = AVG_X(Theta_m(IJK2,MM), Theta_m(IPJK2,MM),I_OF(IJK2))
-              IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
-              IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
-              IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+          DO MM = 1, SMAX                  
+             AVGX1 = AVG_X(Theta_m(IJK1,MM), Theta_m(IPJKP2,MM),I_OF(IJK1))
+             AVGX2 = AVG_X(Theta_m(IJK2,MM), Theta_m(IPJK2,MM),I_OF(IJK2))
+             IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+             IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+             IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
                 TH_avg(MM) = smallTheta
-              ELSE
+             ELSE
                 TH_avg(MM) = AVG_Z(AVGX1, AVGX2, K_OF(IJK2))
-              ENDIF
-            ENDDO
-          ENDIF
+             ENDIF
+          ENDDO
 
 ! Calculate velocity components at i+1/2,j,k-1/2 relative to IJK1
           UGC  = AVG_Z(U_g(IJK2), U_g(IJK1), K_OF(IJK2))
@@ -337,15 +336,17 @@
         Mu_g_avg = AVG_Y(Mu_g(IJK2), Mu_g(IJK2N), J_OF(IJK2))
         RO_g_avg = AVG_Y(RO_g(IJK2), RO_g(IJK2N), J_OF(IJK2))
 
-        IF(SIMONIN .OR. AHMADI) THEN
+        K_12_avg = ZERO    
+        Tau_12_avg = ZERO
+        Tau_1_avg = ZERO
+        IF(KT_TYPE_ENUM == SIMONIN_1996 .OR. &
+           KT_TYPE_ENUM == AHMADI_1995) THEN
+           Tau_1_avg = AVG_Y(Tau_1(IJK2), Tau_1(IJK2N), J_OF(IJK2))
+! Simonin only:
            K_12_avg = AVG_Y(K_12(IJK2), K_12(IJK2N), J_OF(IJK2))
            Tau_12_avg = AVG_Y(Tau_12(IJK2), Tau_12(IJK2N), J_OF(IJK2))
-           Tau_1_avg = AVG_Y(Tau_1(IJK2), Tau_1(IJK2N), J_OF(IJK2))
-        ELSE
-           K_12_avg = ZERO    
-           Tau_12_avg = ZERO
-           Tau_1_avg = ZERO
         ENDIF
+
 
         g0EPs_avg = ZERO
         DO MM = 1, SMAX
@@ -355,10 +356,8 @@
            g0EPs_avg   = g0EPs_avg + G_0AVG(IJK2, IJK2N, 'Y', J_OF(IJK2), M, MM) &
                         * AVG_Y(EP_s(IJK2, MM), EP_s(IJK2N, MM), J_OF(IJK2))
            ROS_avg(MM) = AVG_Y(RO_S(IJK2, MM), RO_S(IJK2N, MM), J_OF(IJK2))
-           IF(.NOT.GRANULAR_ENERGY) THEN                        
-              TH_avg(MM) = AVG_Y(THETA_M(IJK2,MM), THETA_M(IJK2N,MM), J_OF(IJK2))
-              IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
-           ENDIF
+           TH_avg(MM) = AVG_Y(THETA_M(IJK2,MM), THETA_M(IJK2N,MM), J_OF(IJK2))
+           IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
         ENDDO
 
         WVELS = BC_Vw_s(L, M)
@@ -366,19 +365,17 @@
         IF(FCELL .EQ. 'T')THEN
           IJPKM2 = KM_OF(IJPK2)
 
-          IF(GRANULAR_ENERGY) THEN
-            DO MM = 1, SMAX                    
-              AVGX1 = AVG_Z(Theta_m(IJK1,MM), Theta_m(IJK2,MM), K_OF(IJK1))
-              AVGX2 = AVG_Z(Theta_m(IJPKM2,MM), Theta_m(IJPK2,MM), K_OF(IJPKM2))
-              IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
-              IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
-              IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+          DO MM = 1, SMAX                    
+             AVGX1 = AVG_Z(Theta_m(IJK1,MM), Theta_m(IJK2,MM), K_OF(IJK1))
+             AVGX2 = AVG_Z(Theta_m(IJPKM2,MM), Theta_m(IJPK2,MM), K_OF(IJPKM2))
+             IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+             IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+             IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
                 TH_avg(MM) = smallTheta
-              ELSE
+             ELSE
                 TH_avg(MM) = AVG_Y(AVGX1, AVGX2, J_OF(IJK1))
-              ENDIF
-            ENDDO
-          ENDIF 
+             ENDIF
+          ENDDO
 
 ! Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK1)
           UGC1 = AVG_X_E(&
@@ -412,19 +409,17 @@
         ELSEIF(FCELL .EQ. 'B')THEN
           IJPKP2 = KP_OF(IJPK2)
 
-          IF(GRANULAR_ENERGY) THEN
-            DO MM = 1, SMAX
-              AVGX1 = AVG_Z(Theta_m(IJK2,MM), Theta_m(IJK1,MM), K_OF(IJK2))
-              AVGX2 = AVG_Z(Theta_m(IJPK2,MM), Theta_m(IJPKP2,MM), K_OF(IJPK2))
-              IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
-              IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
-              IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+          DO MM = 1, SMAX
+             AVGX1 = AVG_Z(Theta_m(IJK2,MM), Theta_m(IJK1,MM), K_OF(IJK2))
+             AVGX2 = AVG_Z(Theta_m(IJPK2,MM), Theta_m(IJPKP2,MM), K_OF(IJPK2))
+             IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+             IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+             IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
                 TH_avg(MM) = smallTheta
-              ELSE
+             ELSE
                 TH_avg(MM) = AVG_Y(AVGX1, AVGX2, J_OF(IJK2))
-              ENDIF
-            ENDDO
-          ENDIF
+             ENDIF
+          ENDDO
 
 ! Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK2)
           UGC1 = AVG_X_E(&
@@ -458,19 +453,17 @@
         ELSEIF(FCELL .EQ. 'E')THEN
           IMJPK2= IM_OF(IJPK2)
 
-          IF(GRANULAR_ENERGY) THEN
-            DO MM = 1, SMAX
-              AVGX1 = AVG_X(Theta_m(IJK1,MM),Theta_m(IJK2,MM),I_OF(IJK1))
-              AVGX2 = AVG_X(Theta_m(IMJPK2,MM),Theta_m(IJPK2,MM),I_OF(IMJPK2))
-              IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
-              IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
-              IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+          DO MM = 1, SMAX
+             AVGX1 = AVG_X(Theta_m(IJK1,MM),Theta_m(IJK2,MM),I_OF(IJK1))
+             AVGX2 = AVG_X(Theta_m(IMJPK2,MM),Theta_m(IJPK2,MM),I_OF(IMJPK2))
+             IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+             IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+             IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
                 TH_avg(MM) = smallTheta
-              ELSE
+             ELSE
                 TH_avg(MM) = AVG_Y(AVGX1, AVGX2, J_OF(IJK1))
-              ENDIF
-            ENDDO
-          ENDIF
+             ENDIF
+          ENDDO
 
 ! Calculate velocity components at i+1/2,j+1/2,k relative to IJK1
           UGC  = AVG_Y(U_g(IJK1), U_g(IMJPK2), J_OF(IJK1))
@@ -496,19 +489,17 @@
         ELSEIF(FCELL .EQ. 'W')THEN
           IPJPK2= IP_OF(IJPK2)
        
-          IF(GRANULAR_ENERGY) THEN
-            DO MM = 1, SMAX
-              AVGX1 = AVG_X(Theta_m(IJK2,MM),Theta_m(IJK1,MM),I_OF(IJK2))
-              AVGX2 = AVG_X(Theta_m(IJPK2,MM),Theta_m(IPJPK2,MM),I_OF(IJPK2))
-              IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
-              IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
-              IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+          DO MM = 1, SMAX
+             AVGX1 = AVG_X(Theta_m(IJK2,MM),Theta_m(IJK1,MM),I_OF(IJK2))
+             AVGX2 = AVG_X(Theta_m(IJPK2,MM),Theta_m(IPJPK2,MM),I_OF(IJPK2))
+             IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+             IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+             IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
                 TH_avg(MM) = smallTheta
-              ELSE
+             ELSE
                 TH_avg(MM) = AVG_Y(AVGX1, AVGX2, J_OF(IJK2))
-              ENDIF
-            ENDDO
-          ENDIF
+             ENDIF
+          ENDDO
 
 ! Calculate velocity components at i+1/2,j+1/2,k relative to IJK2
           UGC  = AVG_Y(U_g(IJK2), U_g(IJPK2), J_OF(IJK2))
@@ -549,14 +540,15 @@
         RO_g_avg = AVG_Z(RO_g(IJK2), RO_g(IJK2T), K_OF(IJK2))
         ep_star_avg = AVG_Z(EP_star_array(IJK2), EP_star_array(IJK2T), K_OF(IJK2))
 
-        IF(SIMONIN .OR. AHMADI) THEN
+        K_12_avg = ZERO
+        Tau_12_avg = ZERO
+        Tau_1_avg = ZERO
+        IF(KT_TYPE_ENUM == SIMONIN_1996 .OR. &
+           KT_TYPE_ENUM == AHMADI_1995) THEN
+           Tau_1_avg = AVG_Z(Tau_1(IJK2), Tau_1(IJK2T), K_OF(IJK2))
+! Simonin only:
            K_12_avg = AVG_Z(K_12(IJK2), K_12(IJK2T), K_OF(IJK2))
            Tau_12_avg = AVG_Z(Tau_12(IJK2), Tau_12(IJK2T), K_OF(IJK2))
-           Tau_1_avg = AVG_Z(Tau_1(IJK2), Tau_1(IJK2T), K_OF(IJK2))
-        ELSE
-           K_12_avg = ZERO    
-           Tau_12_avg = ZERO
-           Tau_1_avg = ZERO
         ENDIF
 
         g0EPs_avg = ZERO
@@ -567,10 +559,8 @@
            g0EPs_avg   = g0EPs_avg + G_0AVG(IJK2, IJK2T, 'Z', K_OF(IJK2), M, MM) &
                        * AVG_Z(EP_s(IJK2, MM), EP_s(IJK2T, MM), K_OF(IJK2))
            ROs_avg(MM) = AVG_Z(RO_S(IJK2,MM), RO_S(IJK2T,MM), K_OF(IJK2))
-           IF(.NOT.GRANULAR_ENERGY) THEN
-              TH_avg(MM) = AVG_Z(THETA_M(IJK2,MM), THETA_M(IJK2T,MM), K_OF(IJK2))
-              IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
-           ENDIF
+           TH_avg(MM) = AVG_Z(THETA_M(IJK2,MM), THETA_M(IJK2T,MM), K_OF(IJK2))
+           IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
         ENDDO
 
         WVELS = BC_Ww_s(L,M)        
@@ -578,19 +568,17 @@
         IF(FCELL .EQ. 'N')THEN
           IJMKP2 = JM_OF(IJKP2)
 
-          IF(GRANULAR_ENERGY) THEN
-            DO MM = 1, SMAX
-               AVGX1 = AVG_Z(Theta_m(IJK1,MM), Theta_m(IJMKP2,MM), K_OF(IJK1))
-               AVGX2 = AVG_Z(Theta_m(IJK2,MM), Theta_m(IJKP2,MM), K_OF(IJK2))
-               IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
-               IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
-               IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
-                 TH_avg(MM) = smallTheta
-               ELSE
-                 TH_avg(MM) = AVG_Y(AVGX1, AVGX2, J_OF(IJK1))
-               ENDIF
-            ENDDO
-          ENDIF
+          DO MM = 1, SMAX
+             AVGX1 = AVG_Z(Theta_m(IJK1,MM), Theta_m(IJMKP2,MM), K_OF(IJK1))
+             AVGX2 = AVG_Z(Theta_m(IJK2,MM), Theta_m(IJKP2,MM), K_OF(IJK2))
+             IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+             IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+             IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+               TH_avg(MM) = smallTheta
+             ELSE
+               TH_avg(MM) = AVG_Y(AVGX1, AVGX2, J_OF(IJK1))
+             ENDIF
+          ENDDO
 
 ! Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK1)
           UGC1 = AVG_X_E(&
@@ -624,19 +612,17 @@
         ELSEIF(FCELL .EQ. 'S')THEN
           IJPKP2 = JP_OF(IJKP2)
 
-          IF(GRANULAR_ENERGY) THEN
-            DO MM = 1, SMAX
-              AVGX1 = AVG_Z(Theta_m(IJK2,MM), Theta_m(IJKP2,MM), K_OF(IJK2))
-              AVGX2 = AVG_Z(Theta_m(IJK1,MM), Theta_m(IJPKP2,MM), K_OF(IJK1))
-              IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
-              IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
-              IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
-                TH_avg(MM) = smallTheta
-              ELSE
-                TH_avg(MM) = AVG_Y(AVGX1, AVGX2, J_OF(IJK2))
-              ENDIF
-            ENDDO
-          ENDIF
+          DO MM = 1, SMAX
+             AVGX1 = AVG_Z(Theta_m(IJK2,MM), Theta_m(IJKP2,MM), K_OF(IJK2))
+             AVGX2 = AVG_Z(Theta_m(IJK1,MM), Theta_m(IJPKP2,MM), K_OF(IJK1))
+             IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+             IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+             IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+               TH_avg(MM) = smallTheta
+             ELSE
+               TH_avg(MM) = AVG_Y(AVGX1, AVGX2, J_OF(IJK2))
+             ENDIF
+           ENDDO
 
 ! Calculate velocity components at i,j+1/2,k+1/2 (relative to IJK2)
           UGC1 = AVG_X_E(&
@@ -670,19 +656,17 @@
         ELSEIF(FCELL .EQ. 'E')THEN
           IMJKP2 = IM_OF(IJKP2)
 
-          IF(GRANULAR_ENERGY) THEN
-            DO MM = 1, SMAX
-              AVGX1 = AVG_X(Theta_m(IJK1,MM),Theta_m(IJK2,MM),I_OF(IJK1))
-              AVGX2 = AVG_X(Theta_m(IMJKP2,MM),Theta_m(IJKP2,MM),I_OF(IMJKP2))
-              IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
-              IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
-              IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
-                TH_avg(MM) = smallTheta
-              ELSE
-                TH_avg(MM) = AVG_Z(AVGX1, AVGX2, K_OF(IJK1))
-              ENDIF
-            ENDDO
-          ENDIF
+          DO MM = 1, SMAX
+             AVGX1 = AVG_X(Theta_m(IJK1,MM),Theta_m(IJK2,MM),I_OF(IJK1))
+             AVGX2 = AVG_X(Theta_m(IMJKP2,MM),Theta_m(IJKP2,MM),I_OF(IMJKP2))
+             IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+             IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+             IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+               TH_avg(MM) = smallTheta
+             ELSE
+               TH_avg(MM) = AVG_Z(AVGX1, AVGX2, K_OF(IJK1))
+             ENDIF
+          ENDDO
 
 ! Calculate velocity components at i+1/2,j,k+1/2 relative to IJK1
           UGC  = AVG_Z(U_g(IJK1), U_g(IMJKP2), K_OF(IJK1))
@@ -708,19 +692,17 @@
         ELSEIF(FCELL .EQ. 'W')THEN
           IPJKP2= IP_OF(IJKP2)
 
-          IF(GRANULAR_ENERGY) THEN
-            DO MM = 1, SMAX                  
-              AVGX1 = AVG_X(Theta_m(IJK2,MM),Theta_m(IJK1,MM),I_OF(IJK2))
-              AVGX2 = AVG_X(Theta_m(IJKP2,MM),Theta_m(IPJKP2,MM),I_OF(IJKP2))
-              IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
-              IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
-              IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
-                TH_avg(MM) = smallTheta
-              ELSE
-                TH_avg(MM) = AVG_Z(AVGX1, AVGX2, K_OF(IJK2))
-              ENDIF
-            ENDDO
-          ENDIF            
+          DO MM = 1, SMAX                  
+             AVGX1 = AVG_X(Theta_m(IJK2,MM),Theta_m(IJK1,MM),I_OF(IJK2))
+             AVGX2 = AVG_X(Theta_m(IJKP2,MM),Theta_m(IPJKP2,MM),I_OF(IJKP2))
+             IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
+             IF(AVGX2 < ZERO .AND. AVGX1 > ZERO) AVGX2 = AVGX1
+             IF(AVGX1 < ZERO .AND. AVGX2 < ZERO) THEN
+               TH_avg(MM) = smallTheta
+             ELSE
+               TH_avg(MM) = AVG_Z(AVGX1, AVGX2, K_OF(IJK2))
+             ENDIF
+          ENDDO
 
 ! Calculate velocity components at i+1/2,j,k+1/2 relative to IJK2
           UGC  = AVG_Z(U_g(IJK2), U_g(IJKP2), K_OF(IJK2))
@@ -799,6 +781,7 @@
 !           Also included Jenkins small frictional limit               C
 !                                                                      C
 !  Literature/Document References:                                     C
+!     See calc_mu_s.f for references on kinetic theory models          C
 !     Johnson, P. C., and Jackson, R., Frictional-collisional          C
 !        constitutive relations for granular materials, with           C
 !        application to plane shearing, Journal of Fluid Mechanics,    C
@@ -807,16 +790,18 @@
 !        energy in a collisional grain flow at a flat frictional wall, C
 !        Physics of Fluids, 1997, 9(10), pp. 2835-2840                 C
 !                                                                      C
-!     See calc_mu_s.f for references on kinetic theory models          C
-!     See calc_mu_s.f for references on Ahmadi and Simonin models      C
 !                                                                      C
 !  Additional Notes:                                                   C
-!    The current implementations of the IA (2005) and GD (1999)        C
-!    kinetic theories do not incorporate ahmadi or simonin additions   C
-!    nor the jenkins small frictional bc model                         C
+!     The JJ granular momentum BC is written as:                       C
+!     usw/|usw|.tau.n+C+F=0                                            C
+!       tau = the stress tensor (collisional+frictional)               C
+!       n = outward normal vector                                      C
+!       usw = slip velocity with wall                                  C
+!       C = collisional force                                          C
+!       F = frictional force                                           C
 !                                                                      C
 !    The granular momentum BC is written as the normal vector dot the  C
-!    stress tensor.  Besides the gradient in velocity of phase M, the  C
+!    stress tensor. Besides the gradient in velocity of phase M, the   C
 !    stress tensor expression may contain several additional terms     C
 !    that would need to be accounted for when satisfying the BC. These C
 !    modifications have NOT been rigorously addressed.                 C
@@ -883,7 +868,8 @@
       DOUBLE PRECISION :: Mu_b
 ! Viscosity corrected for interstitial fluid effects
       DOUBLE PRECISION :: Mu_star
-
+! Solids pressure 
+      DOUBLE PRECISION :: Ps
 ! Reynolds number based on slip velocity
       DOUBLE PRECISION :: Re_g
 ! Friction Factor in drag coefficient
@@ -903,7 +889,7 @@
       DOUBLE PRECISION :: c_star, zeta0_star, nu_eta_star, press_star, &
                           gamma_star, eta_k_star, eta_star, eta0
 ! Variables for GTSH theory
-      DOUBLE PRECISION :: Chi, EP_SM, RdissP, Re_T, Rdiss, GamaAvg, A2_gtshW, &
+      DOUBLE PRECISION :: Chi, RdissP, Re_T, Rdiss, GamaAvg, A2_gtshW, &
                           zeta_star, nu0, nuN, NuK, EDT_s, zeta_avg, etaK, &
                           Mu_b_avg, mu2_0, mu4_0, mu4_1
 !----------------------------------------------- 
@@ -926,44 +912,92 @@
         ENDIF
       ENDIF
 
-! In F_2 and Mu a DSQRT(T) has been left out as it appears in both
-! terms and thus cancels out upon dividing the former by the latter
-! The above statement was not implemented because Simonin viscosity
-! doesn't have a sqrt(th) directly available to use this simplification.
 
-
-      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN  
-
-! Use original IA theory if SWITCH_IA is false
-!QX: RO_S repplaced by ROS_avg(M)
-         IF(.NOT. SWITCH_IA) g0EPs_avg = EPS(M)*ROS_avg(M)
-
-         D_PM = DP_avg(M)
-         M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
-         NU_PM = (EPS(M)*ROS_avg(M))/M_PM
-
-         IF(.NOT. BC_JJ_M) THEN
-            F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*EPS(M)*&
-               g0(M))/(6.d0*(ONE-ep_star_avg))
-         ELSE
-            F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M)/M_PM)*PI*&
-               ROS_avg(M)*EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg)) 
-         ENDIF
-
+! common variables      
+      D_PM = DP_avg(M)
+      M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
+      NU_PM = (EPS(M)*ROS_avg(M))/M_PM
+         
 ! This is from Wen-Yu correlation, you can put here your own single particle drag
-         Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
-         IF (Re_g .lt. 1000.d0) THEN
-            C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
+      Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
+      IF (Re_g .lt. 1000.d0) THEN
+         C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
+      ELSE
+         C_d = 0.44d0
+      ENDIF
+      DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(D_PM*EPG**(2.65d0))
+      IF(VREL == ZERO) DgA = LARGE_NUMBER
+      Beta = EPS(M)*DgA !this is equivalent to F_gs(ijk,m)
+
+
+! Defining viscosity according to each KT for later use in JJ BC
+! Also defining solids pressure according to each KT for use if JENKINS
+! -------------------------------------------------------------------
+      SELECT CASE (KT_TYPE_ENUM)
+      CASE (LUN_1984) 
+         Mu = (5d0*DSQRT(Pi*TH(M))*DP_avg(M)*ROS_avg(M))/96d0
+         Mu_b = (256d0*Mu*EPS(M)*g0EPs_avg)/(5d0*Pi)
+
+         IF(SWITCH == ZERO .OR. Ro_g_avg == ZERO)THEN
+            Mu_star = Mu
+         ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
+            MU_star = ZERO
          ELSE
-            C_d = 0.44d0
+            Mu_star = ROS_avg(M)*EPS(M)* g0(M)*TH(M)* Mu/ &
+               (ROS_avg(M)*g0EPs_avg*TH(M) + 2.0d0*DgA/ROS_avg(M)* Mu)
          ENDIF
-         DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(D_PM*EPG**(2.65d0))
-         IF(VREL == ZERO) DgA = LARGE_NUMBER
-         Beta = EPS(M)*DgA !this is equivalent to F_gs(ijk,m)
+ 
+         Mu_s = ((2d0+ALPHA)/3d0)*((Mu_star/(Eta*(2d0-Eta)*&
+            g0(M)))*(ONE+1.6d0*Eta*g0EPs_avg)*&
+            (ONE+1.6d0*Eta*(3d0*Eta-2d0)*&
+            g0EPs_avg)+(0.6d0*Mu_b*Eta))
+
+! defining granular pressure (for Jenkins BC)    
+         Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+4.D0*Eta*g0EPs_avg)
+
+
+      CASE (SIMONIN_1996)
+! particle relaxation time
+         Tau_12_st = ROS_avg(M)/(DgA+small_number)
+
+         Sigma_c = (ONE+ C_e)*(3.d0-C_e)/5.d0
+         Tau_2_c = DP_avg(M)/(6.d0*EPS(M)*g0(M)*DSQRT(16.d0*(TH(M)+Small_number)/PI))
+         zeta_c_2= 2.D0/5.D0*(ONE+ C_e)*(3.d0*C_e-ONE)
+         Nu_t =  Tau_12_avg/Tau_12_st
+         Tau_2 = ONE/(2.D0/Tau_12_st+Sigma_c/Tau_2_c)
+         MU_2_T_Kin = (2.0D0/3.0D0*K_12_avg*Nu_t + TH(M) * &
+              (ONE+ zeta_c_2*EPS(M)*g0(M)))*Tau_2
+         Mu_2_Col = 8.D0/5.D0*EPS(M)*g0(M)*Eta* (MU_2_T_Kin+ &
+               DP_avg(M)*DSQRT(TH(M)/PI))
+         Mu_s = EPS(M)*ROS_avg(M)*(MU_2_T_Kin + Mu_2_Col)
+
+! defining granular pressure (for Jenkins BC)
+         Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+4.D0*Eta*g0EPs_avg)
+
+
+      CASE (AHMADI_1995)
+         IF(EPS(M) < (ONE-ep_star_avg)) THEN
+            Tmp_Ahmadi_Const = ONE/&
+               (ONE+ Tau_1_avg/Tau_12_st * (ONE-EPS(M)/(ONE-ep_star_avg))**3)
+         ELSE
+            Tmp_Ahmadi_Const = ONE
+         ENDIF
+         Mu_s = Tmp_Ahmadi_Const &
+            *0.1045D0*(ONE/g0(M)+3.2D0*EPS(M)+12.1824D0*g0(M)*EPS(M)*EPS(M))  &
+            *DP_avg(M)*ROS_avg(M)* DSQRT(TH(M))
+
+! defining granular pressure (for Jenkins BC)
+         Ps = ROs_avg(M)*EPS(M)*TH(M)*&
+             ((ONE + 4.0D0*g0EPs_avg)+HALF*(ONE -C_e*C_e))
+
+
+      CASE(IA_2005)
+! Use original IA theory if SWITCH_IA is false
+         IF(.NOT. SWITCH_IA) g0EPs_avg = EPS(M)*ROS_avg(M)
 
          Mu = (5.d0/96.d0)*D_PM* ROS_avg(M)*DSQRT(PI*TH(M)/M_PM)
 
-         IF(.NOT.SWITCH_IA .OR. RO_g_avg == ZERO)THEN
+         IF(SWITCH == ZERO .OR. RO_g_avg == ZERO)THEN
             Mu_star = Mu
          ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
             MU_star = ZERO
@@ -1024,30 +1058,8 @@
 ! of phase M  (viscosity in the Mth solids phase)
           Mu_s = MU_sM_sum
 
-      ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
 
-         D_PM = DP_avg(M)
-         M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
-         NU_PM = (EPS(M)*ROS_avg(M))/M_PM
-         IF(.NOT. BC_JJ_M) THEN
-            F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*EPS(M)*&
-               g0(M))/(6.d0*(ONE-ep_star_avg))
-         ELSE
-            F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M))*PI*&
-               ROS_avg(M)*EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg))
-         ENDIF
-
-! This is from Wen-Yu correlation, you can put here your own single particle drag
-         Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
-         IF (Re_g .lt. 1000.d0) THEN
-            C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
-         ELSE
-            C_d = 0.44d0
-         ENDIF
-         DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(D_PM*EPG**(2.65d0))
-         IF(VREL == ZERO) DgA = LARGE_NUMBER
-         Beta = EPS(M)*DgA !this is equivalent to F_gs(ijk,m)
-  
+      CASE(GD_1999) 
 ! Pressure/Viscosity/Bulk Viscosity
 ! Note: k_boltz = M_PM
      
@@ -1089,32 +1101,23 @@
 !  shear viscosity in Mth solids phase  (add to frictional part)
          Mu_s = Mu_star * eta_star
 
+! defining granular pressure (for Jenkins BC)    
+         Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+2.d0*(ONE+C_E)*g0EPs_avg)
+                    ! ~ROs_avg(m)*EPS(M)*TH(M)*press_star
 
-      ELSEIF (TRIM(KT_TYPE) .EQ. 'GTSH') THEN  ! see calc_mu_s & kintheory_..._ss for details
 
-         D_PM = DP_avg(M)
-         M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
-         NU_PM = (EPS(M)*ROS_avg(M))/M_PM
+      CASE (GTSH_2012) 
          Chi = g0(M)
-         EP_SM = EPS(M)
-
-         IF(.NOT. BC_JJ_M) THEN
-            F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*EP_SM*&
-               Chi)/(6.d0*(ONE-ep_star_avg))
-         ELSE
-            F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M))*PI*&
-               ROS_avg(M)*EP_SM*Chi)/(6.d0*(ONE-ep_star_avg))
-         ENDIF
 
          RdissP = one 
-         IF(EP_SM > small_number) RdissP = &
-            one + 3d0*dsqrt(EP_SM/2d0) + 135d0/64d0*EP_SM*dlog(EP_SM) + &
-            11.26d0*EP_SM*(one-5.1d0*EP_SM+16.57d0*EP_SM**2-21.77d0*    &
-            EP_SM**3) - EP_SM*Chi*dlog(epM)
+         IF(EPS(M) > small_number) RdissP = &
+            one + 3d0*dsqrt(EPS(M)/2d0) + 135d0/64d0*EPS(M)*dlog(EPS(M)) + &
+            11.26d0*EPS(M)*(one-5.1d0*EPS(M)+16.57d0*EPS(M)**2-21.77d0*    &
+            EPS(M)**3) - EPS(M)*Chi*dlog(epM)
       
          Re_T = RO_g_avg*D_pm*dsqrt(TH(M)) / Mu_g_avg
          Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
-         Rdiss = RdissP + Re_T * K_phi(EP_SM)
+         Rdiss = RdissP + Re_T * K_phi(EPS(M))
          GamaAvg = 3d0*Pi*Mu_g_avg*D_pm*Rdiss
          mu2_0 = dsqrt(2d0*pi) * Chi * (one-C_E**2)
          mu4_0 = (4.5d0+C_E**2) * mu2_0 
@@ -1122,15 +1125,15 @@
             Chi*(one+C_E)
          A2_gtshW = zero ! for eps = zero
 
-         if((EP_SM> small_number) .and. (TH(M) > small_number)) then 
+         if((EPS(M)> small_number) .and. (TH(M) > small_number)) then 
             zeta_star = 4.5d0*dsqrt(2d0*Pi)*(RO_g_avg/ROs_avg(M))**2*Re_g**2 * &
-                        S_star(EP_SM,Chi) / (EP_SM*(one-EP_SM)**2 * Re_T**4)
+                        S_star(EPS(M),Chi) / (EPS(M)*(one-EPS(M))**2 * Re_T**4)
             A2_gtshW = (5d0*mu2_0 - mu4_0) / (mu4_1 - 5d0* &
                            (19d0/16d0*mu2_0 - 1.5d0*zeta_star))
          endif
 
          eta0 = 0.3125d0/(dsqrt(pi)*D_PM**2)*M_pm*dsqrt(TH(M))
-         nu0 = (96.d0/5.d0)*(EP_SM/D_PM)*DSQRT(TH(M)/PI)
+         nu0 = (96.d0/5.d0)*(EPS(M)/D_PM)*DSQRT(TH(M)/PI)
          nuN = 0.25d0*nu0*Chi*(3d0-C_E)*(one+C_E) * &
             (one+0.7375d0*A2_gtshW)
          NuK = nu0*(one+C_E)/3d0*Chi*( one+2.0625d0*(one-C_E)+ &
@@ -1138,121 +1141,88 @@
          EDT_s = 4d0/3d0*dsqrt(pi)*(one-C_E**2)*Chi* &
             (one+0.1875d0*A2_gtshW)*NU_PM*D_PM**2*dsqrt(TH(M))
 
-         if((TH(m) > small_number) .and. (EP_SM > small_number)) then
+         if((TH(m) > small_number) .and. (EPS(M) > small_number)) then
             zeta_avg = one/6d0*D_PM*VREL**2*(3d0*pi*Mu_g_avg*D_PM/&
-               M_pm)**2 / dsqrt(TH(m)) * S_star(EP_SM, Chi)
-            etaK = ROs_avg(M)*EP_SM*TH(m) / (nuN-0.5d0*( &
+               M_pm)**2 / dsqrt(TH(m)) * S_star(EPS(M), Chi)
+            etaK = ROs_avg(M)*EPS(M)*TH(m) / (nuN-0.5d0*( &
                EDT_s-zeta_avg/TH(m) - 2d0*GamaAvg/M_PM)) * &
-               (one -0.4d0 * (one+C_E)*(one-3d0*C_E)*EP_SM*Chi)
+               (one -0.4d0 * (one+C_E)*(one-3d0*C_E)*EPS(M)*Chi)
          else
             etaK = zero
          endif
 
-         Mu_b_avg = 25.6d0/pi * EP_SM**2 * Chi *(one+C_E) * &
+         Mu_b_avg = 25.6d0/pi * EPS(M)**2 * Chi *(one+C_E) * &
             (one - A2_gtshW/16d0)*eta0
 
-         Mu_s = etaK*(one+0.8d0*EP_SM*Chi*(one+C_E)) + &
+         Mu_s = etaK*(one+0.8d0*EPS(M)*Chi*(one+C_E)) + &
             0.6d0*Mu_b_avg
 
-      ELSE   ! No modifications to original mfix if 
-             ! IA, GD99, GTSH theories are not used
-      
-!  modify F_2 if Jenkins BC is used (sof)    
-         IF(JENKINS) THEN
+! defining granular pressure (for Jenkins BC)
+         Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+2.d0*(ONE+C_E)*g0EPs_avg)
 
-            IF (VSLIP == ZERO) THEN
+
+      CASE DEFAULT
+! should never hit this
+         WRITE (*, '(A)') 'CALC_GRBDRY => F_HW '
+         WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
+         call mfix_exit(myPE)
+      END SELECT
+
+
+! setting the coefficients for JJ BC
+! -------------------------------------------------------------------
+      SELECT CASE (KT_TYPE_ENUM)
+
+         CASE (LUN_1984, SIMONIN_1996, AHMADI_1995, GD_1999, GTSH_2012)
+! KT without particle mass in their definition of granular temperature
+! and theta = granular temperature  OR
+! KT with particle mass in their definition of granular temperature
+! and theta = granular temperature/mass
+
+! Jenkins BC is implemented for these KT
+            IF(JENKINS) THEN
+               IF (VSLIP == ZERO) THEN
 ! if solids velocity field is initialized to zero, use free slip bc
-               F_2 = zero
+                  F_2 = zero
+               ELSE
+! As I understand from soil mechanic papers, the coefficient mu in 
+! Jenkins paper is tan_Phi_w. T.  See for example, G.I. Tardos, PT,
+! 92 (1997), 61-74, equation (1). sof
 
-            ELSEIF(AHMADI) THEN
-! Ahmadi model uses different solids pressure model
-! the coefficient mu in Jenkins paper is defined as tan_Phi_w, that's how
-! I understand it from soil mechanic papers, i.e., G.I. Tardos, powder
-! Tech. 92 (1997), 61-74. See his equation (1). Define Phi_w in mfix.dat!
 ! here F_2 divided by VSLIP to use the same bc as Johnson&Jackson
-                F_2 = tan_Phi_w*ROS_avg(M)*EPS(M)* &
-                  ((ONE + 4.0D0*g0EPs_avg) + HALF*(ONE -C_e*C_e))*TH(M)/VSLIP
+                  F_2 = tan_Phi_w*Ps/VSLIP
 
+               ENDIF 
             ELSE
-! Simonin or granular models use same solids pressure
-               F_2 = tan_Phi_w*ROS_avg(M)*EPS(M)*(1d0+ 4.D0 * Eta *g0EPs_avg)*TH(M)/VSLIP
-            ENDIF !VSLIP == ZERO
+               IF(.NOT. BC_JJ_M) THEN
+                  F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*ROS_avg(M)*EPS(M)*&
+                     g0(M))/(6d0*(ONE-ep_star_avg))
+               ELSE
+                  F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3d0*TH(M))*Pi*&
+                     ROS_avg(M)*EPS(M)*g0(M))/(6d0*(ONE-ep_star_avg))
+               ENDIF
+            ENDIF   ! end if(Jenkins)/else 
 
-         ELSE   ! if(.not.jenkins)
 
+        CASE (IA_2005)
+! KTs with particle mass in their definition of granular temperature
+! and theta = granular temperature                
             IF(.NOT. BC_JJ_M) THEN
-               F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*ROS_avg(M)*EPS(M)*&
-                  g0(M))/(6d0*(ONE-ep_star_avg))
+               F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*EPS(M)*&
+                  g0(M))/(6.d0*(ONE-ep_star_avg))
             ELSE
-               F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3d0*TH(M))*Pi*&
-                  ROS_avg(M)*EPS(M)*g0(M))/(6d0*(ONE-ep_star_avg))
+               F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M)/M_PM)*PI*&
+                  ROS_avg(M)*EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg)) 
             ENDIF
 
-         ENDIF   ! end if(Jenkins)/else 
- 
-         Mu = (5d0*DSQRT(Pi*TH(M))*DP_avg(M)*ROS_avg(M))/96d0
-         Mu_b = (256d0*Mu*EPS(M)*g0EPs_avg)/(5d0*Pi)
 
-! This is from Wen-Yu correlation, you can put here your own single particle drag 
-         Re_g = EPG*RO_g_avg*DP_avg(M)*VREL/Mu_g_avg
-         IF (Re_g.lt.1000d0) THEN
-            C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
-         ELSE
-            C_d = 0.44d0
-         ENDIF
-         DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(DP_avg(M)*EPG**(2.65d0))
-         IF(VREL == ZERO) DgA = LARGE_NUMBER
-         Beta = SWITCH*EPS(M)*DgA
-
-! SWITCH enables us to turn on/off the modification to the
-! particulate phase viscosity. If we want to simulate gas-particle
-! flow then SWITCH=1 to incorporate the effect of drag on the
-! particle viscosity. If we want to simulate granular flow
-! without the effects of an interstitial gas, SWITCH=0.
-         IF(SWITCH == ZERO .OR. Ro_g_avg == ZERO)THEN
-            Mu_star = Mu
-         ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
-            MU_star = ZERO
-         ELSE
-            Mu_star = ROS_avg(M)*EPS(M)* g0(M)*TH(M)* Mu/ &
-               (ROS_avg(M)*g0EPs_avg*TH(M) + 2.0d0*DgA/ROS_avg(M)* Mu)
-         ENDIF
- 
-         Mu_s = ((2d0+ALPHA)/3d0)*((Mu_star/(Eta*(2d0-Eta)*&
-            g0(M)))*(ONE+1.6d0*Eta*g0EPs_avg)*&
-            (ONE+1.6d0*Eta*(3d0*Eta-2d0)*&
-            g0EPs_avg)+(0.6d0*Mu_b*Eta))
- 
-! particle relaxation time
-         Tau_12_st = ROS_avg(M)/(DgA+small_number)
-
-         IF(SIMONIN) THEN !see calc_mu_s for explanation of these definitions
-            Sigma_c = (ONE+ C_e)*(3.d0-C_e)/5.d0
-            Tau_2_c = DP_avg(M)/(6.d0*EPS(M)*g0(M)*DSQRT(16.d0*(TH(M)+Small_number)/PI))
-            zeta_c_2= 2.D0/5.D0*(ONE+ C_e)*(3.d0*C_e-ONE)
-            Nu_t =  Tau_12_avg/Tau_12_st
-            Tau_2 = ONE/(2.D0/Tau_12_st+Sigma_c/Tau_2_c)
-            MU_2_T_Kin = (2.0D0/3.0D0*K_12_avg*Nu_t + TH(M) * &
-                 (ONE+ zeta_c_2*EPS(M)*g0(M)))*Tau_2
-            Mu_2_Col = 8.D0/5.D0*EPS(M)*g0(M)*Eta* (MU_2_T_Kin+ &
-                  DP_avg(M)*DSQRT(TH(M)/PI))
-            Mu_s = EPS(M)*ROS_avg(M)*(MU_2_T_Kin + Mu_2_Col)
-
-         ELSEIF(AHMADI) THEN
-            IF(EPS(M) < (ONE-ep_star_avg)) THEN
-               Tmp_Ahmadi_Const = ONE/&
-                  (ONE+ Tau_1_avg/Tau_12_st * (ONE-EPS(M)/(ONE-ep_star_avg))**3)
-            ELSE
-               Tmp_Ahmadi_Const = ONE
-            ENDIF
-            Mu_s = Tmp_Ahmadi_Const &
-               *0.1045D0*(ONE/g0(M)+3.2D0*EPS(M)+12.1824D0*g0(M)*EPS(M)*EPS(M))  &
-               *DP_avg(M)*ROS_avg(M)* DSQRT(TH(M))
-         ENDIF
-        
-      ENDIF    ! end if for kinetic theory type
-        
- 
+         CASE DEFAULT
+! should never hit this
+            WRITE (*, '(A)') 'CALC_GRBDRY => F_HW '
+            WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
+            call mfix_exit(myPE)
+      END SELECT
+         
       F_HW =  F_2/Mu_s
  
       RETURN
@@ -1262,12 +1232,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine CG_CALC_GRBDRY                                           C
-!  Purpose: Calculate hw and cw for kinetic theory boundary conditions C
-!           Cut cell version                                           C
-!                                                                      C
-!  Author: K. Agrawal & A. Srivastava, Princeton Univ. Date: 19-JAN-98 C
-!  Reviewer:                                           Date:           C
-!                                                                      C
+!  Purpose: Cut cell version                                           C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -1289,7 +1254,7 @@
       USE bc
       USE compar
       Use cutcell
-
+      use toleranc
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -1314,6 +1279,8 @@
       INTEGER          IJK2E, IPJK2, IPJKM2, IPJKP2, IPJMK2, IPJPK2
       INTEGER          IJK2N, IJPK2, IJPKM2, IJPKP2, IMJPK2
       INTEGER          IJK2T, IJKP2, IJMKP2, IMJKP2
+!
+      DOUBLE PRECISION :: smallTheta
 ! Average scalars
       DOUBLE PRECISION EPg_avg, Mu_g_avg, RO_g_avg
 ! Average void fraction at packing
@@ -1366,6 +1333,8 @@
 !         IJK2 (fluid cell) is used in averages.
 !
 
+      smallTheta = (to_SI)**4 * ZERO_EP_S
+
       SELECT CASE (TYPE_OF_CELL)
 
          CASE('U_MOMENTUM')
@@ -1376,9 +1345,19 @@
             ep_star_avg = (VOL(IJK)*EP_star_array(IJK) + VOL(IJK2)*EP_star_array(IJK2))/(VOL(IJK) + VOL(IJK2))
             Mu_g_avg = (VOL(IJK)*Mu_g(IJK) + VOL(IJK2)*Mu_g(IJK2))/(VOL(IJK) + VOL(IJK2))
             RO_g_avg = (VOL(IJK)*RO_g(IJK) + VOL(IJK2)*RO_g(IJK2))/(VOL(IJK) + VOL(IJK2))
-            g0EPs_avg = ZERO
 
-            DO MM = 1, MMAX
+            K_12_avg = ZERO    
+            Tau_12_avg = ZERO
+            Tau_1_avg = ZERO
+            IF(KT_TYPE_ENUM == SIMONIN_1996 .OR.&
+               KT_TYPE_ENUM == AHMADI_1995) THEN  ! not converted to CG
+               K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))
+               Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))
+               Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
+            ENDIF
+
+            g0EPs_avg = ZERO
+            DO MM = 1, SMAX
                g0(MM)      = G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM)
                EPs_avg(MM) = (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                DP_avg(MM)  = (VOL(IJK)*D_P(IJK, MM) + VOL(IJK2)*D_P(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
@@ -1386,27 +1365,10 @@
                            * (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                ROS_AVG(MM) = (VOL(IJK)*RO_S(IJK, MM) + VOL(IJK2)*RO_S(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
 
-!               IF(GRANULAR_ENERGY) THEN
-!                  TH_avg(MM) = AVG_Y(&  ! not converted to CG
-!                               AVG_X(Theta_m(IJK1,MM), Theta_m(IPJMK2,MM), I_OF(IJK1)),&
-!                               AVG_X(Theta_m(IJK2,MM), Theta_m(IPJK2,MM), I_OF(IJK2)),&
-!                               J_OF(IJK1))
-!               ELSE
-                   TH_avg(MM)  = (VOL(IJK)*Theta_m(IJK,MM) + VOL(IJK2)*Theta_m(IJK2,MM))/(VOL(IJK) + VOL(IJK2))
-!               ENDIF
-
+               TH_avg(MM)  = (VOL(IJK)*Theta_m(IJK,MM) + VOL(IJK2)*Theta_m(IJK2,MM))/(VOL(IJK) + VOL(IJK2))
+               IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
             ENDDO
 
-            IF(SIMONIN .OR. AHMADI) THEN  ! not converted to CG
-! added for Simonin and Ahmadi model (sof)
-               K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))
-               Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))
-               Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
-             ELSE
-               K_12_avg = ZERO    
-               Tau_12_avg = ZERO
-               Tau_1_avg = ZERO
-             ENDIF
  
 ! Calculate velocity components at i+1/2, j+1/2, k (relative to IJK1)  ! not converted to CG
             UGC  = AVG_Y(U_g(IJK1), U_g(IJK2),J_OF(IJK1))
@@ -1433,7 +1395,7 @@
                           (WGC - WSCM)**2 )
 
 ! slip velocity for use in Jenkins bc (sof)	  
-           VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
+            VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
                        + (WSCM-BC_WW_S(L,M))**2 )
  
             CALL GET_CG_F2(g0, EPs_avg, EPg_avg, ep_star_avg, &
@@ -1450,38 +1412,30 @@
             ep_star_avg = (VOL(IJK)*EP_star_array(IJK) + VOL(IJK2)*EP_star_array(IJK2))/(VOL(IJK) + VOL(IJK2))
             Mu_g_avg = (VOL(IJK)*Mu_g(IJK) + VOL(IJK2)*Mu_g(IJK2))/(VOL(IJK) + VOL(IJK2))
             RO_g_avg = (VOL(IJK)*RO_g(IJK) + VOL(IJK2)*RO_g(IJK2))/(VOL(IJK) + VOL(IJK2))
-            g0EPs_avg = ZERO
   
-            DO MM = 1, MMAX
+            K_12_avg = ZERO    
+            Tau_12_avg = ZERO
+            Tau_1_avg = ZERO
+            IF(KT_TYPE_ENUM == SIMONIN_1996 .OR.&
+               KT_TYPE_ENUM == AHMADI_1995) THEN  ! not converted to CG
+               Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
+! Simonin only:
+               K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))
+               Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))
+            ENDIF
+
+            g0EPs_avg = ZERO
+            DO MM = 1, SMAX
                g0(MM)      = G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM)
                EPs_avg(MM) = (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                DP_avg(MM)  = (VOL(IJK)*D_P(IJK, MM) + VOL(IJK2)*D_P(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                g0EPs_avg   = g0EPs_avg + G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM) &
                            * (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                ROS_avg(MM) = (VOL(IJK)*RO_S(IJK, MM) + VOL(IJK2)*RO_S(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
-
-!               IF(GRANULAR_ENERGY) THEN  ! not converted to CG
-!                   TH_avg(MM) = AVG_Y(&
-!                                AVG_X(Theta_m(IJK1,MM), Theta_m(IPJMK2,MM), I_OF(IJK1)),&
-!                                AVG_X(Theta_m(IJK2,MM), Theta_m(IPJK2,MM), I_OF(IJK2)),&
-!                                J_OF(IJK1))
-!               ELSE
-                   TH_avg(MM)  = (VOL(IJK)*Theta_m(IJK,MM) + VOL(IJK2)*Theta_m(IJK2,MM))/(VOL(IJK) + VOL(IJK2))
-!               ENDIF
-
+               TH_avg(MM)  = (VOL(IJK)*Theta_m(IJK,MM) + VOL(IJK2)*Theta_m(IJK2,MM))/(VOL(IJK) + VOL(IJK2))
+               IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
             ENDDO
 
-            IF(SIMONIN .OR. AHMADI) THEN  ! not converted to CG
-! added for Simonin and Ahmadi model (sof)
-               K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))
-               Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))
-               Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
-            ELSE
-               K_12_avg = ZERO    
-               Tau_12_avg = ZERO
-               Tau_1_avg = ZERO
-            ENDIF
- 
 ! Calculate velocity components at i+1/2, j+1/2, k (relative to IJK1)    ! not converted to CG
             UGC  = AVG_Y(U_g(IJK1), U_g(IJK2),J_OF(IJK1))
             VGC  = AVG_X(V_g(IJK1), V_g(IPJMK2),I_OF(IJK1))
@@ -1526,38 +1480,31 @@
             ep_star_avg = (VOL(IJK)*EP_star_array(IJK) + VOL(IJK2)*EP_star_array(IJK2))/(VOL(IJK) + VOL(IJK2))
             Mu_g_avg = (VOL(IJK)*Mu_g(IJK) + VOL(IJK2)*Mu_g(IJK2))/(VOL(IJK) + VOL(IJK2))
             RO_g_avg = (VOL(IJK)*RO_g(IJK) + VOL(IJK2)*RO_g(IJK2))/(VOL(IJK) + VOL(IJK2))
-            g0EPs_avg = ZERO
-            ROS_avg(MM) = (VOL(IJK)*RO_S(IJK, MM) + VOL(IJK2)*RO_S(IJK2, MM))/(VOL(IJK) + VOL(IJK2))  
 
-            DO MM = 1, MMAX
+            K_12_avg = ZERO
+            Tau_12_avg = ZERO
+            Tau_1_avg = ZERO
+            IF(KT_TYPE_ENUM == SIMONIN_1996 .OR.&
+               KT_TYPE_ENUM == AHMADI_1995) THEN  ! not converted to CG
+               Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
+! Simonon only:               
+               K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))  
+               Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))
+            ENDIF
+
+            g0EPs_avg = ZERO
+            DO MM = 1, SMAX
                g0(MM)      = G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM)
                EPs_avg(MM) = (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                DP_avg(MM)  = (VOL(IJK)*D_P(IJK, MM) + VOL(IJK2)*D_P(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
+               ROS_avg(MM) = (VOL(IJK)*RO_S(IJK, MM) + VOL(IJK2)*RO_S(IJK2, MM))/(VOL(IJK) + VOL(IJK2))  
                g0EPs_avg   = g0EPs_avg + G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM) &
                            * (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
 
-!               IF(GRANULAR_ENERGY) THEN  ! not converted to CG
-!                   TH_avg(MM) = AVG_Y(&
-!                                AVG_X(Theta_m(IJK1,MM), Theta_m(IPJMK2,MM), I_OF(IJK1)),&
-!                                AVG_X(Theta_m(IJK2,MM), Theta_m(IPJK2,MM), I_OF(IJK2)),&
-!                                J_OF(IJK1))
-!               ELSE
-                   TH_avg(MM)  = (VOL(IJK)*Theta_m(IJK,MM) + VOL(IJK2)*Theta_m(IJK2,MM))/(VOL(IJK) + VOL(IJK2))
-!               ENDIF
-
+               TH_avg(MM)  = (VOL(IJK)*Theta_m(IJK,MM) + VOL(IJK2)*Theta_m(IJK2,MM))/(VOL(IJK) + VOL(IJK2))
+               IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
             ENDDO
 
-            IF(SIMONIN .OR. AHMADI) THEN  ! not converted to CG
-! added for Simonin and Ahmadi model (sof)
-               K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))  
-               Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))
-               Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
-            ELSE
-               K_12_avg = ZERO    
-               Tau_12_avg = ZERO
-               Tau_1_avg = ZERO
-            ENDIF
- 
 ! Calculate velocity components at i+1/2, j+1/2, k (relative to IJK1)    ! not converted to CG
             UGC  = AVG_Y(U_g(IJK1), U_g(IJK2),J_OF(IJK1))
             VGC  = AVG_X(V_g(IJK1), V_g(IPJMK2),I_OF(IJK1))
@@ -1586,20 +1533,21 @@
             VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
                         + (WSCM-BC_WW_S(L,M))**2 )
 
+
+! why bother with this since it should not come here...                
             CALL GET_CG_F2(g0, EPs_avg, EPg_avg, ep_star_avg, &
                       g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, ROS_AVG,&
                       DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, &
                       VREL, VSLIP, M,F_2)
 
 
-
          CASE DEFAULT
-            WRITE(*,*)'SUBROUTINE: GET_INTERPOLATION_TERMS_S'
-            WRITE(*,*)'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
-            WRITE(*,*)'ACCEPTABLE TYPES ARE:' 
-            WRITE(*,*)'U_MOMENTUM' 
-            WRITE(*,*)'V_MOMENTUM' 
-            WRITE(*,*)'W_MOMENTUM' 
+            WRITE(*,*) 'CG_CALC_GRBDRY'
+            WRITE(*,*) 'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
+            WRITE(*,*) 'ACCEPTABLE TYPES ARE:' 
+            WRITE(*,*) 'U_MOMENTUM' 
+            WRITE(*,*) 'V_MOMENTUM' 
+            WRITE(*,*) 'W_MOMENTUM' 
             CALL MFIX_EXIT(myPE)
           END SELECT
 
@@ -1614,30 +1562,6 @@
 !                                                                      C
 !  Subroutine: GET_CG_F2                                               C
 !  Purpose: Compute F_2 for cut cell version                           C
-!                                                                      C
-!  Author: K. Agrawal & A. Srivastava, Princeton Univ. Date: 24-JAN-98 C
-!  Reviewer:                                           Date:           C
-!                                                                      C
-!                                                                      C
-!  Modified: Sofiane Benyahia, Fluent Inc.             Date: 02-FEB-05 C
-!  Purpose: Include conductivity defined by Simonin and Ahmadi         C
-!           Also included Jenkins small frictional limit               C
-!                                                                      C
-!  Literature/Document References:                                     C
-!     See calc_mu_s.f for ref. on Simonin and Ahmadi models            C
-!     For Jenkins BC: Jenkins and Louge, Phys. fluids, 9 (10), 2835.   C
-!        See equation (2) in the paper                                 C
-!                                                                      C
-!  Additional Notes:                                                   C
-!    The current implementations of the IA (2005) and GD (1999)        C
-!    kinetic theories do not incorporate ahmadi or simonin additions   C
-!    nor the jenkins small frictional bc model                         C
-!                                                                      C
-!    The granular momentum BC is written as the normal vector dot the  C
-!    stress tensor.  Besides the gradient in velocity of phase M, the  C
-!    stress tensor expression may contain several additional terms     C
-!    that would need to be accounted for when satisfying the BC. These C
-!    modifications have NOT been rigorously addressed.                 C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE GET_CG_F2(g0,EPS,EPG, ep_star_avg, &
@@ -1690,9 +1614,10 @@
 !-----------------------------------------------
 ! Local Variables      
 !-----------------------------------------------
-! 
+! Solids pressure 
+      DOUBLE PRECISION :: Ps
       DOUBLE PRECISION :: F_2
-      DOUBLE PRECISION :: M_PM
+      DOUBLE PRECISION :: D_PM, M_PM
 !----------------------------------------------- 
 ! Functions 
 !----------------------------------------------- 
@@ -1711,78 +1636,110 @@
         ENDIF
       ENDIF
 
-! In F_2 and Mu a DSQRT(T) has been left out as it appears in both
-! terms and thus cancels out upon dividing the former by the latter
-! The above statement was not implemented because Simonin viscosity
-! doesn't have a sqrt(th) directly available to use this simplification.
+! common variables      
+      D_PM = DP_avg(M)
+      M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
+
+! Defining viscosity according to each KT for later use in JJ BC
+! Also defining solids pressure according to each KT for use if JENKINS
+! -------------------------------------------------------------------
+      SELECT CASE (KT_TYPE_ENUM)
+      CASE (LUN_1984) 
+! defining granular pressure (for Jenkins BC)
+         Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+4.D0*Eta*g0EPs_avg)
 
 
-      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN  ! this only done because Th includes M_pm
-!
-         M_PM = (PI/6.d0)*(DP_avg(M)**3)*ROS_avg(M)
- 
-         IF(.NOT. BC_JJ_M) THEN
-            F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*&
-               EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg))
-         ELSE
-            F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M)/M_PM)*&
-               PI*ROS_avg(M)*EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg))
-         ENDIF
+      CASE (SIMONIN_1996)
+! defining granular pressure (for Jenkins BC)
+         Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+4.D0*Eta*g0EPs_avg)
 
 
-      ELSEIF ((TRIM(KT_TYPE) .EQ. 'GD_99') .OR. & ! these theories do not use M_pm in Th
-              (TRIM(KT_TYPE) .EQ. 'GTSH')) THEN
-
-         IF(.NOT. BC_JJ_M) THEN
-            F_2 = (PHIP*DSQRT(3.d0*TH(M))*PI*ROS_avg(M)*EPS(M)*&
-               g0(M))/ (6.d0*(ONE-ep_star_avg))
-         ELSE
-            F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M))*PI*&
-               ROS_avg(M)*EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg))
-         ENDIF      
+      CASE (AHMADI_1995)
+! defining granular pressure (for Jenkins BC)
+         Ps = ROs_avg(M)*EPS(M)*TH(M)*&
+             ((ONE + 4.0D0*g0EPs_avg)+HALF*(ONE -C_e*C_e))
 
 
-      ELSE   ! No modifications to original mfix if 
-             ! IA or GD99  or GTSH theories are not used
-      
-!  modify F_2 if Jenkins BC is used (sof)    
-         IF(JENKINS) THEN
+      CASE(IA_2005)
+! Use original IA theory if SWITCH_IA is false
+! no ps since no jenkins for this theory
+              
+      CASE(GD_1999) 
 
-            IF (VSLIP == ZERO) THEN
+! defining granular pressure (for Jenkins BC)
+         Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+2.d0*(ONE+C_E)*g0EPs_avg)
+                    ! ~ROs_avg(m)*EPS(M)*TH(M)*press_star
+
+
+      CASE (GTSH_2012) 
+! defining granular pressure (for Jenkins BC)
+         Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+2.d0*(ONE+C_E)*g0EPs_avg)
+
+
+      CASE DEFAULT
+! should never hit this
+         WRITE (*, '(A)') 'CG_CALC_GRBDRY => GET_CG_F2 '
+         WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
+         call mfix_exit(myPE)
+      END SELECT
+
+
+! setting the coefficients for JJ BC
+! -------------------------------------------------------------------
+      SELECT CASE (KT_TYPE_ENUM)
+
+         CASE (LUN_1984, SIMONIN_1996, AHMADI_1995, GD_1999, GTSH_2012)
+! KT without particle mass in their definition of granular temperature
+! and theta = granular temperature  OR
+! KT with particle mass in their definition of granular temperature
+! and theta = granular temperature/mass
+
+! Jenkins BC is implemented for these KT
+            IF(JENKINS) THEN
+               IF (VSLIP == ZERO) THEN
 ! if solids velocity field is initialized to zero, use free slip bc
-               F_2 = zero
+                  F_2 = zero
+               ELSE
+! As I understand from soil mechanic papers, the coefficient mu in 
+! Jenkins paper is tan_Phi_w. T.  See for example, G.I. Tardos, PT,
+! 92 (1997), 61-74, equation (1). sof
 
-            ELSEIF(AHMADI) THEN
-! Ahmadi model uses different solids pressure model
-! the coefficient mu in Jenkins paper is defined as tan_Phi_w, that's how
-! I understand it from soil mechanic papers, i.e., G.I. Tardos, powder
-! Tech. 92 (1997), 61-74. See his equation (1). Define Phi_w in mfix.dat!
 ! here F_2 divided by VSLIP to use the same bc as Johnson&Jackson
-               F_2 = tan_Phi_w*ROS_avg(M)*EPS(M)* &
-                  ((ONE + 4.0D0*g0EPs_avg) + HALF*(ONE -C_e*C_e))*TH(M)/VSLIP
+                  F_2 = tan_Phi_w*Ps/VSLIP
 
+               ENDIF 
             ELSE
-! Simonin or granular models use same solids pressure
-               F_2 = tan_Phi_w*ROS_avg(M)*EPS(M)*(1d0+ 4.D0 * Eta *g0EPs_avg)*TH(M)/VSLIP
-            ENDIF !VSLIP == ZERO
+               IF(.NOT. BC_JJ_M) THEN
+                  F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*ROS_avg(M)*EPS(M)*&
+                     g0(M))/(6d0*(ONE-ep_star_avg))
+               ELSE
+                  F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3d0*TH(M))*Pi*&
+                     ROS_avg(M)*EPS(M)*g0(M))/(6d0*(ONE-ep_star_avg))
+               ENDIF
+            ENDIF   ! end if(Jenkins)/else
 
-         ELSE   ! if(.not.jenkins)
- 
+         CASE(IA_2005)
+! KTs with particle mass in their definition of granular temperature
+! and theta = granular temperature 
             IF(.NOT. BC_JJ_M) THEN
-               F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*ROS_avg(M)*EPS(M)*&
-                  g0(M))/(6d0*(ONE-ep_star_avg))
+               F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*&
+                  EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg))
             ELSE
-               F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3d0*TH(M))*PI*&
-                  ROS_avg(M)*EPS(M)*g0(M))/(6d0*(ONE-ep_star_avg))
+               F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M)/M_PM)*&
+                  PI*ROS_avg(M)*EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg))
             ENDIF
 
-         ENDIF   ! end if(Jenkins)/else 
+
+         CASE DEFAULT
+! should never hit this
+            WRITE (*, '(A)') 'CALC_GRBDRY => F_HW '
+            WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
+            call mfix_exit(myPE)
+      END SELECT
         
-      ENDIF    ! end if for kinetic theory type
-        
- 
+! all the code used to calculate Mu_s was deleted from this routine
 !      F_HW =  F_2/Mu_s  ! Only F_2 is actually needed 
-!      so all the code used to calculate Mu_s was deleted from this routine.
+
 
       RETURN
       END SUBROUTINE GET_CG_F2

@@ -261,7 +261,7 @@
                         ENDDO 
 
 ! for GHD theory to compute mixture BC of velocity and density
-                        IF(TRIM(KT_TYPE) == 'GHD') THEN
+                        IF(KT_TYPE_ENUM == GHD_2007) THEN
                            ROP_S(IJK,MMAX) = ZERO
                            nTOT = ZERO
                            THETA_M(IJK,MMAX) = ZERO
@@ -363,7 +363,7 @@
                         ENDIF 
 
 ! for GHD theory to compute mixture BC of velocity and density
-                        IF(TRIM(KT_TYPE) == 'GHD') THEN
+                        IF(KT_TYPE_ENUM == GHD_2007) THEN
                            ROP_S(IJK,MMAX) = ZERO
                            nTOT = ZERO 
                            THETA_M(IJK,MMAX) = ZERO 

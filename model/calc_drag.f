@@ -92,15 +92,26 @@
             IF (DRAGD(0,M) .AND. RO_G0/=ZERO) THEN 
                CALL DRAG_GS (M, DISCRETE_FLAG, IER)
             ENDIF
-            IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
-               DO L = 1, SMAX
-                  IF (DRAGD(L,M)) CALL CALC_IA_NONEP_DRAG_SS (L,M,IER)
-               ENDDO
-            ELSEIF (TRIM(KT_TYPE) /= 'GHD') THEN  ! do nothing for GHD theory
-               DO L = 1, M - 1 
-                  IF (DRAGD(L,M)) CALL DRAG_SS (L, M, IER)
-               ENDDO
-            ENDIF
+            SELECT CASE (KT_TYPE_ENUM)
+               CASE(LUN_1984, SIMONIN_1996, AHMADI_1995)
+                  DO L = 1, M - 1 
+                     IF (DRAGD(L,M)) CALL DRAG_SS (L, M, IER)
+                  ENDDO
+               CASE(IA_2005) 
+                  DO L = 1, SMAX
+                     IF (DRAGD(L,M)) CALL DRAG_SS_IA_NONEP (L,M,IER)
+                  ENDDO
+               CASE (GD_1999, GTSH_2012, GHD_2007)
+! strictly speaking gd and gtsh are monodisperse theories and so
+! should not have solid-solid drag.
+! ghd theory is a polydisperse theory but does not invoke this routine
+
+               CASE DEFAULT
+! should never hit this
+                  WRITE (*, '(A)') 'CALC_DRAG'
+                  WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
+                  call mfix_exit(myPE)
+            END SELECT
          ENDDO
       ENDIF
 

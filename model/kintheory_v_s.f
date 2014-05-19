@@ -1,138 +1,136 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
-!  Module name: CALC_KTMOMSOURCE_V_S(IER)                     
-!  Purpose: Determine source terms for V_S momentum equation arising   
-!           from kinetic theory constitutive relations for stress
-!           and solid-solid drag
-!
-!  Literature/Document References:    
-!	Iddir, Y.H., "Modeling of the multiphase mixture of particles 
-!	  using the kinetic theory approach," PhD Thesis, Illinois
-!	  Institute of Technology, Chicago, Illinois, 2004
-!    Iddir, Y.H., & H. Arastoopour, "Modeling of multitype particle
-!      flow using the kinetic theory approach," AIChE J., Vol 51,
-!      No 6, June 2005
-!                                                         
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: CALC_KTMOMSOURCE_V_S                                    C
+!  Purpose: Determine source terms for V_S momentum equation arising   C
+!           from kinetic theory constitutive relations for stress      C
+!           and solid-solid drag                                       C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CALC_KTMOMSOURCE_V_S(IER) 
 
 !-----------------------------------------------
-!     Modules
+! Modules
 !-----------------------------------------------
-      USE param     
-      USE param1  
-      USE matrix  
-      USE scales 
-      USE constant
-      USE run
-      USE toleranc
-      USE physprop 
-      USE geometry
-      USE indices
-      USE compar 
-      USE kintheory
+
+      USE param1, only: zero
+
+! kinetic theories
+      USE run, only: kt_type_enum
+      USE run, only: ia_2005
+
+! number of solids phases
+      USE physprop, only: smax
+
+! solids source term       
+      USE kintheory, only: ktmom_v_s
+
       IMPLICIT NONE
 !-----------------------------------------------
-!     Local variables
-!-----------------------------------------------   
-!                      Error index 
-      INTEGER          IER 
- 
-!                      Phase index 
-      INTEGER          M
+! Dummy arguments
+!-----------------------------------------------
+! Error index 
+      INTEGER, INTENT(INOUT) :: IER 
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+! Solids phase index 
+      INTEGER :: M
 !-----------------------------------------------
 
-      DO M = 1, MMAX 
-
-          KTMOM_V_s(:,M) = ZERO
-
-          IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
-               CALL CALC_IA_NONEP_V_S (M)
-          ENDIF
-
+      DO M = 1, SMAX 
+         KTMOM_V_s(:,M) = ZERO
+         IF (KT_TYPE_ENUM == IA_2005) THEN
+            CALL CALC_IA_MOMSOURCE_V_S (M)
+         ENDIF
       ENDDO 
 
       RETURN  
       END SUBROUTINE CALC_KTMOMSOURCE_V_S
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: CALC_IA_MOMSOURCE_V_S                                   C
+!  Purpose: Determine source terms for V_S momentum equation arising   C
+!           from IA kinetic theory constitutive relations for stress   C
+!           and solid-solid drag                                       C
+!                                                                      C
+!  Literature/Document References:                                     C
+!    Idir, Y.H., "Modeling of the multiphase mixture of particles      C
+!      using the kinetic theory approach," PhD Thesis, Illinois        C
+!      Institute of Technology, Chicago, Illinois, 2004                C
+!    Iddir, Y.H., & H. Arastoopour, "Modeling of multitype particle    C
+!      flow using the kinetic theory approach," AIChE J., Vol 51,      C
+!      No 6, June 2005                                                 C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      SUBROUTINE CALC_IA_MOMSOURCE_V_S(M) 
+
 !-----------------------------------------------
-!
-!
-!
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!
-!  Module name: CALC_IA_NONEP_V_S(M)
-!  Purpose: Determine source terms for V_S momentum equation arising   
-!           from kinetic theory constitutive relations for stress
-!           and solid-solid drag 
-!
-!  Literature/Document References:    
-!	Iddir, Y.H., "Modeling of the multiphase mixture of particles 
-!	  using the kinetic theory approach," PhD Thesis, Illinois
-!	  Institute of Technology, Chicago, Illinois, 2004
-!    Iddir, Y.H., & H. Arastoopour, "Modeling of multitype particle
-!      flow using the kinetic theory approach," AIChE J., Vol 51,
-!      No 6, June 2005
-!                                                         
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-!
-      SUBROUTINE CALC_IA_NONEP_V_S(M) 
-!
+! Modules
 !-----------------------------------------------
-!     Modules
-!-----------------------------------------------
-      USE param     
-      USE param1  
-      USE matrix  
-      USE scales 
-      USE constant
-      USE physprop
-      USE fldvar
-      USE visc_s
-      USE run
-      USE toleranc 
+      USE param1, only: half, zero  
+      USE constant, only: pi
+
+! trace of D_s at i, j, k
+      USE visc_s, only: trD_s
+
+! number of solids phases
+      USE physprop, only: mmax
+
+! x,y,z-components of solids velocity
+      USE fldvar, only: u_s, v_s, w_s
+! particle diameter, bulk density, material density      
+      USE fldvar, only: d_p, rop_s, ro_s
+! granular temperature
+      USE fldvar, only: theta_m
+! dilute threshold      
+      USE toleranc, only: dil_ep_s 
+
+      Use kintheory  
+
       USE geometry
       USE indices
       USE compar 
-      Use kintheory  
+
       IMPLICIT NONE
 !-----------------------------------------------
-!     Local variables
+! Dummy arguments
 !-----------------------------------------------   
-!                      Temporary variable
-      DOUBLE PRECISION STRESS_TERMS, DRAG_TERMS
-
-!                      Indices 
-      INTEGER          I, J, K, IJK, IJKN, JP, IM,  KM, IJPK, IJMK,& 
-                       IJKE, IJKNE, IJKW, IJKNW, IMJPK, IMJK, IJKT,& 
-                       IJKTN, IJKB, IJKBN, IJKM, IJPKM,&
-                       IPJK, IJKP
- 
-!                      Phase index 
-      INTEGER          M, L
- 
-!                      Viscosity values 
-      DOUBLE PRECISION MU_sL_pE, MU_sL_pW, MU_sL_pN, MU_sL_pS, MU_sL_pT,&
-                       MU_sL_pB, MU_sL_p
-
-!                      Bulk viscosity values 
-      DOUBLE PRECISION XI_sL_pN, XI_sL_pS, LAMBDA_sL_pN, LAMBDA_sL_pS 
-
-!                      Variables for drag calculations
-      DOUBLE PRECISION M_PM, M_PL, D_PM, D_PL, NU_PM_pN, NU_PM_pS, NU_PM_p, &
-                       NU_PL_pN, NU_PL_pS, NU_PL_p, T_PM_pN, T_PM_pS, &
-                       T_PL_pN, T_PL_pS, Fnu_s_p, FT_sM_p, FT_sL_p  
-
-!                      Average volume fraction 
-      DOUBLE PRECISION EPSA 
- 
-!                      Source terms (Surface) 
-      DOUBLE PRECISION ssvx, ssvy, ssvz, ssx, ssy, ssz, ssbv 
-
-!                      Source terms (Volumetric)
-      DOUBLE PRECISION DS1, DS2, DS3, DS4, DS1plusDS2
+! solids phase index
+      INTEGER, INTENT(IN) :: M
 !-----------------------------------------------
-!     Include statement functions
+! Local variables
+!-----------------------------------------------   
+! Temporary variable
+      DOUBLE PRECISION :: STRESS_TERMS, DRAG_TERMS
+! Indices 
+      INTEGER :: I, J, K, IJK, IJKN, JP, IM,  KM, IJPK, IJMK,& 
+                 IJKE, IJKNE, IJKW, IJKNW, IMJPK, IMJK, IJKT,& 
+                 IJKTN, IJKB, IJKBN, IJKM, IJPKM,&
+                 IPJK, IJKP
+! Phase index 
+      INTEGER :: L
+! Viscosity values 
+      DOUBLE PRECISION :: MU_sL_pE, MU_sL_pW, MU_sL_pN, MU_sL_pS, MU_sL_pT,&
+                          MU_sL_pB, MU_sL_p
+! Bulk viscosity values 
+      DOUBLE PRECISION :: XI_sL_pN, XI_sL_pS, LAMBDA_sL_pN, LAMBDA_sL_pS 
+! Variables for drag calculations
+      DOUBLE PRECISION :: M_PM, M_PL, D_PM, D_PL, NU_PM_pN, NU_PM_pS, NU_PM_p, &
+                          NU_PL_pN, NU_PL_pS, NU_PL_p, T_PM_pN, T_PM_pS, &
+                          T_PL_pN, T_PL_pS, Fnu_s_p, FT_sM_p, FT_sL_p  
+! Average volume fraction 
+      DOUBLE PRECISION :: EPSA 
+! Source terms (Surface) 
+      DOUBLE PRECISION :: ssvx, ssvy, ssvz, ssx, ssy, ssz, ssbv 
+! Source terms (Volumetric)
+      DOUBLE PRECISION :: DS1, DS2, DS3, DS4, DS1plusDS2
+!-----------------------------------------------
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
@@ -231,7 +229,6 @@
 ! Momentum source associated with the difference in the gradients in
 ! number density of solids phase m and all other solids phases						
                          D_PL = D_P(IJK,L) 
-
                          M_PL = (Pi/6d0)* D_PL**3 *RO_S(IJK,L)
 
                          NU_PM_pN = ROP_S(IJKN,M)/M_PM
@@ -286,4 +283,4 @@
       ENDDO        ! over ijk
 
       RETURN  
-      END SUBROUTINE CALC_IA_NONEP_V_S       
+      END SUBROUTINE CALC_IA_MOMSOURCE_V_S       

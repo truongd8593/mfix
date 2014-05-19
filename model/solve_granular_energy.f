@@ -14,9 +14,6 @@
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -131,230 +128,10 @@
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
       ENDDO 
 
-
+      SELECT CASE (KT_TYPE_ENUM)
+        CASE(LUN_1984, AHMADI_1995, SIMONIN_1996, GD_1999, GTSH_2012)
 ! ---------------------------------------------------------------->>>
-      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
-
-         DO M = 1, MMAX 
-            DO IJK = ijkstart3, ijkend3
-
-! Skip walls where some values are undefined.
-               IF(WALL_AT(IJK)) cycle
-
-               D_PM = D_P(IJK,M)
-               M_PM = (PI/6.d0)*(D_PM**3)*RO_S(IJK,M)
-
-! In Iddir & Arastoopour (2005) the granular temperature includes 
-! mass of the particle in the definition.
-               IF(.NOT.ADDED_MASS .OR. M /= M_AM) THEN
-                  CpxFlux_E(IJK) = (1.5D0/M_PM) * Flux_sE(IJK,M)
-                  CpxFlux_N(IJK) = (1.5D0/M_PM) * Flux_sN(IJK,M)
-                  CpxFlux_T(IJK) = (1.5D0/M_PM) * Flux_sT(IJK,M)
-               ELSE ! in case added mass is used.
-                  CpxFlux_E(IJK) = (1.5D0/M_PM) * Flux_sSE(IJK)
-                  CpxFlux_N(IJK) = (1.5D0/M_PM) * Flux_sSN(IJK)
-                  CpxFlux_T(IJK) = (1.5D0/M_PM) * Flux_sST(IJK)
-               ENDIF
-
-               IF (FLUID_AT(IJK)) THEN 
-! calculate the source terms to be used in the a matrix and b vector
-                  CALL SOURCE_IA_NONEP_GRANULAR_ENERGY(SOURCELHS, &
-                     SOURCERHS, IJK, M, IER) 
-                  APO = (1.5D0/M_PM)*ROP_SO(IJK,M)*VOL(IJK)*ODT 
-                  S_P(IJK) = APO + SOURCELHS + (1.5d0/M_PM)*&
-                     ZMAX(SUM_R_S(IJK,M)) * VOL(IJK) 
-                  S_C(IJK) = APO*THETA_MO(IJK,M) + SOURCERHS + &
-                     (1.50d0/M_PM)*THETA_M(IJK,M)*&
-                     ZMAX((-SUM_R_S(IJK,M))) * VOL(IJK)
-                  EPS(IJK) = EP_S(IJK,M)
-               ELSE 
-                  EPS(IJK) = ZERO 
-                  S_P(IJK) = ZERO 
-                  S_C(IJK) = ZERO 
-               ENDIF 
-            ENDDO    ! end do loop (ijk=ijkstart3,ijkend3)
- 
-! calculate the convection-diffusion terms 
-            CALL CONV_DIF_PHI (THETA_M(1,M), KTH_S(1,M), DISCRETIZE(8),&
-               U_S(1,M), V_S(1,M), W_S(1,M), &
-               CpxFlux_E, CpxFlux_N, CpxFlux_T, M, A_M, B_M, IER)
-
-! calculate standard bc            
-            CALL BC_PHI (THETA_M(1,M), BC_THETA_M(1,M), BC_THETAW_M(1,M),&
-               BC_HW_THETA_M(1,M),BC_C_THETA_M(1,M), M, A_M, B_M, IER) 
-
-! override bc settings if Johnson-Jackson bcs are specified
-            CALL BC_THETA (M, A_M, B_M, IER)
-
-! set the source terms in a and b matrix form
-            CALL SOURCE_PHI (S_P, S_C, EPS, THETA_M(1,M), M, A_M, B_M, IER)
-         ENDDO   ! end do loop (m = 1, mmax)
-
-! use partial elimination on collisional dissipation term: SUM(Nip)
-!     SUM( ED_s_ip* (Theta_p-Theta_i))
-         IF (MMAX > 1) THEN 
-            CALL CALC_VTC_SS (VXTC_SS, IER)   
-            CALL PARTIAL_ELIM_IA (THETA_M, VXTC_SS, A_M, B_M, IER)
-         ENDIF
-
-! Adjusting the values of theta_m to zero when Ep_g < EP_star 
-! (Shaeffer, 1987). This is done here instead of calc_mu_s to
-! avoid convergence problems. (sof)
-         IF (SCHAEFFER) THEN
-            DO M = 1, MMAX
-               DO IJK = ijkstart3, ijkend3
-                  IF (FLUID_AT(IJK) .AND. &
-                      EP_g(IJK) .LT. EP_g_blend_start(ijk)) THEN 
-
-                     D_PM = D_P(IJK,M)
-                     M_PM = (PI/6.d0)*(D_PM**3)*RO_S(IJK,M)
-                     A_M(IJK,1,M) = ZERO 
-                     A_M(IJK,-1,M) = ZERO 
-                     A_M(IJK,2,M) = ZERO 
-                     A_M(IJK,-2,M) = ZERO 
-                     A_M(IJK,3,M) = ZERO 
-                     A_M(IJK,-3,M) = ZERO 
-                     A_M(IJK,0,M) = -ONE
-! In Iddir & Arastoopour (2005) the granular temperature includes
-! mass of the particle in the definition. Systems with small
-! particles can give rise to smaller temperatures than the standard
-! zero_ep_s		  
-                     B_M(IJK,M) = -smallTheta*M_PM
-                  ENDIF
-               ENDDO
-            ENDDO ! for M
-         ENDIF  ! end if (schaeffer)
-
-         DO M = 1, MMAX 
-            CALL CALC_RESID_S (THETA_M(1,M), A_M, B_M, M, &
-               NUM_RESID(RESID_TH,M), DEN_RESID(RESID_TH,M), RESID(RESID_TH,M),&
-               MAX_RESID(RESID_TH,M), IJK_RESID(RESID_TH,M), ZERO, IER) 
-
-            CALL UNDER_RELAX_S (THETA_M(1,M), A_M, B_M, M, UR_FAC(8), IER) 
-
-!            call check_ab_m(a_m, b_m, m, .true., ier)
-!            write(*,*) resid(resid_th, m), max_resid(resid_th, m),&
-!               I_OF(ijk_resid(resid_th, m)), J_OF(ijk_resid(resid_th, m))
-!            call write_ab_m(a_m, b_m, ijkmax2, m, ier)
-
-!            call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1,-3,M), &
-!               1, DO_K, ier)
-
-            CALL ADJUST_LEQ (RESID(RESID_TH,M), LEQ_IT(8), &
-               LEQ_METHOD(8), LEQI, LEQM, IER) 
-
-            CALL SOLVE_LIN_EQ ('Theta_m', 8, THETA_M(1,M), A_M, B_M, M,&
-               LEQI, LEQM, LEQ_SWEEP(8), LEQ_TOL(8),  LEQ_PC(8), IER) 
-!            call out_array(Theta_m(1,m), 'Theta_m')
-
-! Check for linear solver divergence.
-            IF(ier == -2) Err_l(myPE) = 140
-
-! Remove very small negative values of theta caused by leq solvers
-            CALL ADJUST_THETA (M, IER)
-! large negative granular temp -> divergence 
-            IF (IER /= 0) Err_l(myPE) = 141
-
-         ENDDO   ! end do loop (m=1,mmax)
-! if(trim(kt_type) .eq. 'ia_nonep')         
-! ----------------------------------------------------------------<<<
-
-
-      ELSEIF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
-! ---------------------------------------------------------------->>>
-! solve for the mixture phase         
-         M = MMAX 
-
-! initialize         
-         TOT_NO(:) = ZERO
-         TOT_SUM_RS(:) = ZERO
-         TOT_EPS(:) = ZERO
-
-         CALL CALC_NFLUX (IER)  
-
-         DO IJK = ijkstart3, ijkend3
-
-! total number density is used for GHD theory
-            CpxFlux_E(IJK) = 1.5D0 * Flux_nE(IJK)
-            CpxFlux_N(IJK) = 1.5D0 * Flux_nN(IJK)
-            CpxFlux_T(IJK) = 1.5D0 * Flux_nT(IJK)
-
-            IF (FLUID_AT(IJK)) THEN
-               DO L = 1,SMAX
-                  M_PM = (PI/6.d0)*(D_P(IJK,L)**3)*RO_S(IJK,L)
-                  TOT_SUM_RS(IJK) = TOT_SUM_RS(IJK) + SUM_R_S(IJK,L)/M_PM
-                  TOT_NO(IJK) = TOT_NO(IJK) + ROP_SO(IJK,L)/M_PM
-                  TOT_EPS(IJK) = TOT_EPS(IJK) + EP_S(IJK,L)
-               ENDDO
-
-! calculate the source terms to be used in the a matrix and b vector
-               CALL SOURCE_GHD_GRANULAR_ENERGY (SOURCELHS, &
-                  SOURCERHS, IJK, IER) 
-               APO = 1.5D0 * TOT_NO(IJK)*VOL(IJK)*ODT 
-               S_P(IJK) = APO + SOURCELHS + 1.5d0 *&
-                  ZMAX(TOT_SUM_RS(IJK)) * VOL(IJK) 
-               S_C(IJK) = APO*THETA_MO(IJK,M) + SOURCERHS + 1.50d0 *&
-                  THETA_M(IJK,M)*ZMAX(-TOT_SUM_RS(IJK)) * VOL(IJK)
-               EPS(IJK) = TOT_EPS(IJK)
-            ELSE 
-               EPS(IJK) = ZERO 
-               S_P(IJK) = ZERO 
-               S_C(IJK) = ZERO 
-            ENDIF 
-         ENDDO   ! end do loop (ijk=ijkstart3,ijkend3)
- 
-! calculate the convection-diffusion terms 
-         CALL CONV_DIF_PHI (THETA_M(1,M), KTH_S(1,M), DISCRETIZE(8),&
-            U_S(1,M), V_S(1,M), W_S(1,M), &
-            CpxFlux_E, CpxFlux_N, CpxFlux_T, M, A_M, B_M, IER)
-
-! calculate standard bc
-         CALL BC_PHI (THETA_M(1,M), BC_THETA_M(1,M), BC_THETAW_M(1,M), &
-            BC_HW_THETA_M(1,M), BC_C_THETA_M(1,M), M, A_M, B_M, IER) 
-
-! override bc settings if Johnson-Jackson bcs are specified
-         CALL BC_THETA (M, A_M, B_M, IER)
- 
-! set the source terms in a and b matrix form
-         CALL SOURCE_PHI (S_P, S_C, EPS, THETA_M(1,M), M, A_M, B_M, IER)
-
-         CALL CALC_RESID_S (THETA_M(1,M), A_M, B_M, M, &
-            NUM_RESID(RESID_TH,M), DEN_RESID(RESID_TH,M), RESID(RESID_TH,M),&
-            MAX_RESID(RESID_TH,M), IJK_RESID(RESID_TH,M), ZERO, IER) 
-
-         CALL UNDER_RELAX_S (THETA_M(1,M), A_M, B_M, M, UR_FAC(8), IER)
-
-!         call check_ab_m(a_m, b_m, m, .true., ier)
-!         write(*,*) resid(resid_th, m), max_resid(resid_th, m),&
-!            I_OF(ijk_resid(resid_th, m)), J_OF(ijk_resid(resid_th, m))
-!         call write_ab_m(a_m, b_m, ijkmax2, m, ier)
-
-!         call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1,-3,M), &
-!            1, DO_K, ier)
-
-         CALL ADJUST_LEQ (RESID(RESID_TH,M), LEQ_IT(8), LEQ_METHOD(8),&
-            LEQI, LEQM, IER) 
-
-         CALL SOLVE_LIN_EQ ('Theta_m', 8, THETA_M(1,M), A_M, B_M, M, &
-            LEQI, LEQM, LEQ_SWEEP(8), LEQ_TOL(8),  LEQ_PC(8), IER) 
-!         call out_array(Theta_m(1,m), 'Theta_m')
-
-! Check for linear solver divergence.
-            IF(ier == -2) Err_l(myPE) = 140
-
-! Remove very small negative values of theta caused by leq solvers
-            CALL ADJUST_THETA (M, IER)
-! large negative granular temp -> divergence 
-            IF (IER /= 0) Err_l(myPE) = 141
-
-
-! elseif(trim(kt_type) .eq. 'ghd')
-! ----------------------------------------------------------------<<<
-
-
-      ELSE     ! default KT in MFIX or GD_99 or GTHS theory
-! ---------------------------------------------------------------->>>              
-         DO M = 1, MMAX 
+          DO M = 1, SMAX 
 
             DO IJK = ijkstart3, ijkend3
 
@@ -370,9 +147,9 @@
  
                IF (FLUID_AT(IJK)) THEN 
 ! calculate the source terms to be used in the a matrix and b vector
-                  IF (TRIM(KT_TYPE) .EQ. 'GD_99' .OR. &
-                      TRIM(KT_TYPE) .EQ. 'GTSH' ) THEN
-                     CALL SOURCE_GD_99_GRANULAR_ENERGY(SOURCELHS, &
+                  IF (KT_TYPE_ENUM == GD_1999 .OR. &
+                      KT_TYPE_ENUM == GTSH_2012) THEN
+                     CALL SOURCE_GRANULAR_ENERGY_GD(SOURCELHS, &
                         SOURCERHS, IJK, M, IER)
                   ELSE
                      CALL SOURCE_GRANULAR_ENERGY(SOURCELHS, &
@@ -460,11 +237,219 @@
 ! large negative granular temp -> divergence 
             IF (IER /= 0) Err_l(myPE) = 141
 
-         ENDDO   ! end do loop (m=1,mmax)
-
-      ENDIF   ! end if/else (kt_type)     
-! end default KT in MFIX or GD_99 or GTSH theory      
+          ENDDO   ! end do loop (m=1,smax)
+! end case(lun_1984, simonin_1996, ahmadi_1995, gd_1999, gtsh_2012)
 ! ----------------------------------------------------------------<<<      
+
+        CASE(IA_2005)
+! ---------------------------------------------------------------->>>
+          DO M = 1, SMAX 
+            DO IJK = ijkstart3, ijkend3
+
+! Skip walls where some values are undefined.
+               IF(WALL_AT(IJK)) cycle
+
+               D_PM = D_P(IJK,M)
+               M_PM = (PI/6.d0)*(D_PM**3)*RO_S(IJK,M)
+
+! In Iddir & Arastoopour (2005) the granular temperature includes 
+! mass of the particle in the definition.
+               IF(.NOT.ADDED_MASS .OR. M /= M_AM) THEN
+                  CpxFlux_E(IJK) = (1.5D0/M_PM) * Flux_sE(IJK,M)
+                  CpxFlux_N(IJK) = (1.5D0/M_PM) * Flux_sN(IJK,M)
+                  CpxFlux_T(IJK) = (1.5D0/M_PM) * Flux_sT(IJK,M)
+               ELSE ! in case added mass is used.
+                  CpxFlux_E(IJK) = (1.5D0/M_PM) * Flux_sSE(IJK)
+                  CpxFlux_N(IJK) = (1.5D0/M_PM) * Flux_sSN(IJK)
+                  CpxFlux_T(IJK) = (1.5D0/M_PM) * Flux_sST(IJK)
+               ENDIF
+
+               IF (FLUID_AT(IJK)) THEN 
+! calculate the source terms to be used in the a matrix and b vector
+                  CALL SOURCE_GRANULAR_ENERGY_IA(SOURCELHS, &
+                     SOURCERHS, IJK, M, IER) 
+                  APO = (1.5D0/M_PM)*ROP_SO(IJK,M)*VOL(IJK)*ODT 
+                  S_P(IJK) = APO + SOURCELHS + (1.5d0/M_PM)*&
+                     ZMAX(SUM_R_S(IJK,M)) * VOL(IJK) 
+                  S_C(IJK) = APO*THETA_MO(IJK,M) + SOURCERHS + &
+                     (1.50d0/M_PM)*THETA_M(IJK,M)*&
+                     ZMAX((-SUM_R_S(IJK,M))) * VOL(IJK)
+                  EPS(IJK) = EP_S(IJK,M)
+               ELSE 
+                  EPS(IJK) = ZERO 
+                  S_P(IJK) = ZERO 
+                  S_C(IJK) = ZERO 
+               ENDIF 
+            ENDDO    ! end do loop (ijk=ijkstart3,ijkend3)
+ 
+! calculate the convection-diffusion terms 
+            CALL CONV_DIF_PHI (THETA_M(1,M), KTH_S(1,M), DISCRETIZE(8),&
+               U_S(1,M), V_S(1,M), W_S(1,M), &
+               CpxFlux_E, CpxFlux_N, CpxFlux_T, M, A_M, B_M, IER)
+
+! calculate standard bc            
+            CALL BC_PHI (THETA_M(1,M), BC_THETA_M(1,M), BC_THETAW_M(1,M),&
+               BC_HW_THETA_M(1,M),BC_C_THETA_M(1,M), M, A_M, B_M, IER) 
+
+! override bc settings if Johnson-Jackson bcs are specified
+            CALL BC_THETA (M, A_M, B_M, IER)
+
+! set the source terms in a and b matrix form
+            CALL SOURCE_PHI (S_P, S_C, EPS, THETA_M(1,M), M, A_M, B_M, IER)
+          ENDDO   ! end do loop (m = 1, smax)
+
+! use partial elimination on collisional dissipation term: SUM(Nip)
+!     SUM( ED_s_ip* (Theta_p-Theta_i))
+          IF (SMAX > 1) THEN 
+            CALL CALC_VTC_SS (VXTC_SS, IER)   
+            CALL PARTIAL_ELIM_IA (THETA_M, VXTC_SS, A_M, B_M, IER)
+          ENDIF
+
+! Adjusting the values of theta_m to zero when Ep_g < EP_star 
+! (Shaeffer, 1987). This is done here instead of calc_mu_s to
+! avoid convergence problems. (sof)
+          IF (SCHAEFFER) THEN
+            DO M = 1, SMAX
+               DO IJK = ijkstart3, ijkend3
+                  IF (FLUID_AT(IJK) .AND. &
+                      EP_g(IJK) .LT. EP_g_blend_start(ijk)) THEN 
+
+                     D_PM = D_P(IJK,M)
+                     M_PM = (PI/6.d0)*(D_PM**3)*RO_S(IJK,M)
+                     A_M(IJK,1,M) = ZERO 
+                     A_M(IJK,-1,M) = ZERO 
+                     A_M(IJK,2,M) = ZERO 
+                     A_M(IJK,-2,M) = ZERO 
+                     A_M(IJK,3,M) = ZERO 
+                     A_M(IJK,-3,M) = ZERO 
+                     A_M(IJK,0,M) = -ONE
+! In Iddir & Arastoopour (2005) the granular temperature includes
+! mass of the particle in the definition. Systems with small
+! particles can give rise to smaller temperatures than the standard
+! zero_ep_s		  
+                     B_M(IJK,M) = -smallTheta*M_PM
+                  ENDIF
+               ENDDO
+            ENDDO ! for M
+          ENDIF  ! end if (schaeffer)
+
+          DO M = 1, SMAX 
+            CALL CALC_RESID_S (THETA_M(1,M), A_M, B_M, M, &
+               NUM_RESID(RESID_TH,M), DEN_RESID(RESID_TH,M), RESID(RESID_TH,M),&
+               MAX_RESID(RESID_TH,M), IJK_RESID(RESID_TH,M), ZERO, IER) 
+
+            CALL UNDER_RELAX_S (THETA_M(1,M), A_M, B_M, M, UR_FAC(8), IER) 
+
+            CALL ADJUST_LEQ (RESID(RESID_TH,M), LEQ_IT(8), &
+               LEQ_METHOD(8), LEQI, LEQM, IER) 
+
+            CALL SOLVE_LIN_EQ ('Theta_m', 8, THETA_M(1,M), A_M, B_M, M,&
+               LEQI, LEQM, LEQ_SWEEP(8), LEQ_TOL(8),  LEQ_PC(8), IER) 
+!            call out_array(Theta_m(1,m), 'Theta_m')
+
+! Check for linear solver divergence.
+            IF(ier == -2) Err_l(myPE) = 140
+
+! Remove very small negative values of theta caused by leq solvers
+            CALL ADJUST_THETA (M, IER)
+! large negative granular temp -> divergence 
+            IF (IER /= 0) Err_l(myPE) = 141
+
+          ENDDO   ! end do loop (m=1,smax)
+! end case(ia_2005)
+! ----------------------------------------------------------------<<<
+
+
+        CASE (GHD_2007)
+! ---------------------------------------------------------------->>>
+! do not loop over solids phases. solve for the mixture phase       
+          M = MMAX 
+
+! initialize         
+          TOT_NO(:) = ZERO
+          TOT_SUM_RS(:) = ZERO
+          TOT_EPS(:) = ZERO
+
+          CALL CALC_NFLUX (IER)  
+
+          DO IJK = ijkstart3, ijkend3
+
+! total number density is used for GHD theory
+            CpxFlux_E(IJK) = 1.5D0 * Flux_nE(IJK)
+            CpxFlux_N(IJK) = 1.5D0 * Flux_nN(IJK)
+            CpxFlux_T(IJK) = 1.5D0 * Flux_nT(IJK)
+
+            IF (FLUID_AT(IJK)) THEN
+               DO L = 1,SMAX
+                  M_PM = (PI/6.d0)*(D_P(IJK,L)**3)*RO_S(IJK,L)
+                  TOT_SUM_RS(IJK) = TOT_SUM_RS(IJK) + SUM_R_S(IJK,L)/M_PM
+                  TOT_NO(IJK) = TOT_NO(IJK) + ROP_SO(IJK,L)/M_PM
+                  TOT_EPS(IJK) = TOT_EPS(IJK) + EP_S(IJK,L)
+               ENDDO
+
+! calculate the source terms to be used in the a matrix and b vector
+               CALL SOURCE_GHD_GRANULAR_ENERGY (SOURCELHS, &
+                  SOURCERHS, IJK, IER) 
+               APO = 1.5D0 * TOT_NO(IJK)*VOL(IJK)*ODT 
+               S_P(IJK) = APO + SOURCELHS + 1.5d0 *&
+                  ZMAX(TOT_SUM_RS(IJK)) * VOL(IJK) 
+               S_C(IJK) = APO*THETA_MO(IJK,M) + SOURCERHS + 1.50d0 *&
+                  THETA_M(IJK,M)*ZMAX(-TOT_SUM_RS(IJK)) * VOL(IJK)
+               EPS(IJK) = TOT_EPS(IJK)
+            ELSE 
+               EPS(IJK) = ZERO 
+               S_P(IJK) = ZERO 
+               S_C(IJK) = ZERO 
+            ENDIF 
+          ENDDO   ! end do loop (ijk=ijkstart3,ijkend3)
+ 
+! calculate the convection-diffusion terms 
+          CALL CONV_DIF_PHI (THETA_M(1,M), KTH_S(1,M), DISCRETIZE(8),&
+            U_S(1,M), V_S(1,M), W_S(1,M), &
+            CpxFlux_E, CpxFlux_N, CpxFlux_T, M, A_M, B_M, IER)
+
+! calculate standard bc
+          CALL BC_PHI (THETA_M(1,M), BC_THETA_M(1,M), BC_THETAW_M(1,M), &
+            BC_HW_THETA_M(1,M), BC_C_THETA_M(1,M), M, A_M, B_M, IER) 
+
+! override bc settings if Johnson-Jackson bcs are specified
+          CALL BC_THETA (M, A_M, B_M, IER)
+ 
+! set the source terms in a and b matrix form
+          CALL SOURCE_PHI (S_P, S_C, EPS, THETA_M(1,M), M, A_M, B_M, IER)
+
+          CALL CALC_RESID_S (THETA_M(1,M), A_M, B_M, M, &
+            NUM_RESID(RESID_TH,M), DEN_RESID(RESID_TH,M), RESID(RESID_TH,M),&
+            MAX_RESID(RESID_TH,M), IJK_RESID(RESID_TH,M), ZERO, IER) 
+
+          CALL UNDER_RELAX_S (THETA_M(1,M), A_M, B_M, M, UR_FAC(8), IER)
+
+          CALL ADJUST_LEQ (RESID(RESID_TH,M), LEQ_IT(8), LEQ_METHOD(8),&
+            LEQI, LEQM, IER) 
+
+          CALL SOLVE_LIN_EQ ('Theta_m', 8, THETA_M(1,M), A_M, B_M, M, &
+            LEQI, LEQM, LEQ_SWEEP(8), LEQ_TOL(8),  LEQ_PC(8), IER) 
+!         call out_array(Theta_m(1,m), 'Theta_m')
+
+! Check for linear solver divergence.
+          IF(ier == -2) Err_l(myPE) = 140
+
+! Remove very small negative values of theta caused by leq solvers
+          CALL ADJUST_THETA (M, IER)
+
+! large negative granular temp -> divergence 
+          IF (IER /= 0) Err_l(myPE) = 141
+
+! end case(ghd_2007)
+! ----------------------------------------------------------------<<<
+
+        CASE DEFAULT
+! should never hit this
+          WRITE (*, '(A)') 'ADJUST_THETA'
+          WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
+          call mfix_exit(myPE)
+      END SELECT   ! end selection of kt_type_enum
+
       call unlock_ambm
       call unlock_tmp_array
 

@@ -1,23 +1,19 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: drag.inc                                               C
+!  Module name: drag                                                   C
 !  Purpose: Common block containing drag arrays                        C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 20-MAY-92  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References: None                                C
-!                                                                      C
-!  Variables referenced: None                                          C
-!  Variables modified: None                                            C
-!                                                                      C
-!  Local variables: None                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       MODULE drag
  
 ! Gas-solids drag
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  F_gs
+
+! Gas-solids drag coefficient/ep_s
+! Needed in computation of some conditional limits of various KT
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: dgA_s
 
 ! Solids-solids drag
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  F_ss
@@ -39,7 +35,5 @@
       INTEGER, PARAMETER :: DELLINO_2005  = 3  ! Dellino et al. (2005)
       INTEGER, PARAMETER :: TURTON_1986   = 4  ! Turton and Levenspiel (1986)
 
-!!!HPF$ align F_gs(:, *) with TT(:)
-!!!HPF$ align F_ss(:, *) with TT(:)
 
       END MODULE drag

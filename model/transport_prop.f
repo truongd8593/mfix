@@ -34,7 +34,8 @@
 ! Flags for calculating particle-particle energy dissipation.
       use coeff, only: GRAN_DISS
 ! Kinetic theory model.
-      use run, only: KT_TYPE
+      use run, only: KT_TYPE_enum
+      use run, only: ia_2005, gd_1999, gtsh_2012
 
       implicit none
 
@@ -56,15 +57,17 @@
       DO M = 1, MMAX
 
 ! Particle-Particle Energy Dissipation
-! this need to be done before calc_mu_s so cooling rate is available for mu_s.
+! for gtsh theory this call needs to be done before calc_mu_s so that
+! the cooling rate is available for mu_s
          IF (GRAN_DISS(M)) THEN
-            IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
+         SELECT CASE (KT_TYPE_ENUM)
+            CASE (IA_2005)
                CALL CALC_IA_NONEP_ENERGY_DISSIPATION_SS(M, IER)
-            ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99')THEN
+            CASE(GD_1999)
                CALL CALC_GD_99_ENERGY_DISSIPATION_SS(M, IER)
-            ELSEIF (TRIM(KT_TYPE) .EQ. 'GTSH') THEN
+            CASE(GTSH_2012)
                CALL CALC_GTSH_ENERGY_DISSIPATION_SS(M, IER)
-            ENDIF
+            END SELECT
          ENDIF
 ! these were moved after gran_diss since some quantities above are
 ! needed in the subsequent gtsh calculations

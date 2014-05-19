@@ -73,7 +73,7 @@
 ! gas laminar viscosity redefined here to set viscosity at pressure
 ! boundaries
       DOUBLE PRECISION :: Mu
-! drag coefficient 
+! particle drag coefficient 
       DOUBLE PRECISION :: DgA  
 ! current value of F_gs (i.e., without underrelaxation)
       DOUBLE PRECISION F_gstmp 
@@ -402,7 +402,7 @@
                   UR_F_gs*F_gstmp
             ENDIF
 
-            IF(TRIM(KT_TYPE) == 'GHD') THEN
+            IF(KT_TYPE_ENUM == GHD_2007) THEN
                IF(M==1) THEN
                   F_gs(IJK,MMAX) = F_gs(IJK,M)
                ELSE
@@ -418,7 +418,7 @@
                F_GS(IJK,M) = ZERO 
             ENDIF
 
-            IF(TRIM(KT_TYPE) == 'GHD') F_gs(IJK, MMAX) = ZERO
+            IF(KT_TYPE_ENUM == GHD_2007) F_gs(IJK, MMAX) = ZERO
 
          ENDIF   ! end if (fluidorp_flow_at(ijk))
 
@@ -435,7 +435,7 @@
 !  Purpose:                                                            C
 !     Calculate single sphere drag correlation multiplied by           C
 !     the Reynolds number or                                           C
-!     Calculate the single sphere drag correlation                     C      
+!     Calculate the single sphere drag correlation                     C
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 

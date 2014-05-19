@@ -489,7 +489,7 @@
          ENDDO   ! end do (m=1,smax)
       ENDIF   ! end if (.not.discrete_element .or. des_continuum_hybrid)
 
-      IF (TRIM(KT_TYPE) == 'GHD') THEN 
+      IF (KT_TYPE_ENUM == GHD_2007) THEN 
          P_S(IJK,MMAX) = P_S(FIJK,MMAX) 
          THETA_M(IJK,MMAX) =  THETA_M(FIJK,MMAX)
          ROP_S(IJK,MMAX) = SUM_ROPS
@@ -541,7 +541,7 @@
          ENDIF
       ENDIF 
 
-      IF (TRIM(KT_TYPE) == 'GHD') THEN 
+      IF (KT_TYPE_ENUM == GHD_2007) THEN 
          Flux_nE(IJK) = Flux_nE(FIJK)
          Flux_nN(IJK) = Flux_nN(FIJK)
          Flux_nT(IJK) = Flux_nT(FIJK) 

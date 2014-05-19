@@ -1,86 +1,113 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: ADJUST_THETA (M, IER)                                  C
+!  Subroutine: ADJUST_THETA                                            C
 !  Purpose: Remove small negative values of theta caused by linear     C
 !           solvers                                                    C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 02-APR-98  C
-!  Reviewer:                                          Date:            C
+!                                                                      C
 !  Modified: S. Benyahia                              Date: 02-AUG-06  C
-!  Purpose: check for small negative numbers at walls (not just fluid  C
-!           cells)                                                     C
+!  Purpose: check for small negative numbers at walls                  C
+!           (not just fluid cells)                                     C
+!                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE ADJUST_THETA(M, IER) 
 
 !-----------------------------------------------
-!   M o d u l e s 
+! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE toleranc 
-      USE constant
-      USE fldvar
+      USE param1, only: zero
+      USE toleranc, only: zero_ep_s
+      USE constant, only: pi, to_si
+! granular temperature of solids phase m
+      USE fldvar, only: theta_m
+! material density of solids phase m
+      USE fldvar, only: ro_s
+! particle diameter of solids phase m
+      USE fldvar, only: d_p
+! number of solids phases      
+      USE physprop, only: smax
+! kt types      
+      USE run, only: kt_type
+      USE run, only: kt_type_enum
+      USE run, only: lun_1984
+      USE run, only: simonin_1996
+      USE run, only: ahmadi_1995
+      USE run, only: gd_1999
+      USE run, only: gtsh_2012
+      USE run, only: ia_2005
+      USE run, only: ghd_2007
+! needed for function.inc
+      USE compar
       USE geometry
       USE indices
-      USE physprop
-      USE run
-      USE compar
       
       IMPLICIT NONE
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
+! Dummy arguments
 !-----------------------------------------------
+! solids phase
+      INTEGER, INTENT(IN) :: M
+! error indicator
+      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Local variables
 !-----------------------------------------------
-!
-!                      Indices
-      INTEGER          IJK
-!
-!                      Solids phase
-      INTEGER          M, L
-!                      Particle mass and diameter for use with IA theory only
-!                      because theta definition includes mass of particle.
-      DOUBLE PRECISION M_PM, D_PM
-!
-!                      small value of theta_m, 1 cm2/s2 = 1e-4 m2/s2
-      DOUBLE PRECISION smallTheta
-!
-!                      error indicator
-      INTEGER          IER
-!      CHARACTER*80     LINE
+! Indices
+      INTEGER :: IJK
+! Solids phase index
+      INTEGER :: L
+! Particle mass and diameter for use with those kinetic theories
+! that include mass of particle in definition of theta
+      DOUBLE PRECISION :: M_PM, D_PM
+! small value of theta_m
+      DOUBLE PRECISION :: smallTheta
+
+!-----------------------------------------------
+! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
+!-----------------------------------------------
 
       IER = 0 
       smallTheta = (to_SI)**4 * ZERO_EP_S
 
-!!!HPF$ independent
       DO IJK = IJKSTART3, IJKEND3
         IF ( FLUID_AT(IJK) ) THEN 
-          IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP' &
-          .OR. TRIM(KT_TYPE) .EQ. 'GHD') THEN
 
-              IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
-                D_PM = D_P(IJK,M)
-                M_PM = (PI/6.d0)*(D_PM**3)*RO_S(IJK,M)
-              ELSE
-                M_PM = ZERO
-                DO L = 1,SMAX
-                  D_PM = D_P(IJK,L)
+          SELECT CASE(KT_TYPE_ENUM)
+            CASE (LUN_1984, SIMONIN_1996, AHMADI_1995, GD_1999, &
+                  GTSH_2012)
+              IF (THETA_M(IJK,M) < smallTheta) &
+                 THETA_M(IJK,M) = smallTheta 
 
-                  M_PM = M_PM +(PI/6.d0)*(D_PM**3)*RO_S(IJK,L)
-                ENDDO
-                M_PM = M_PM/DBLE(SMAX)
-              ENDIF 
-              IF (THETA_M(IJK,M) < smallTheta*M_PM) THETA_M(IJK,M) = smallTheta*M_PM 
-          ELSE
-              IF (THETA_M(IJK,M) < smallTheta) THETA_M(IJK,M) = smallTheta 
-          ENDIF
+            CASE (IA_2005)
+              D_PM = D_P(IJK,M)
+              M_PM = (PI/6.d0)*(D_PM**3)*RO_S(IJK,M)
+              IF (THETA_M(IJK,M) < smallTheta*M_PM) &
+                THETA_M(IJK,M) = smallTheta*M_PM
 
-        ENDIF 
-      ENDDO 
+            CASE (GHD_2007)
+              M_PM = ZERO
+              DO L = 1,SMAX
+                D_PM = D_P(IJK,L)
+                M_PM = M_PM +(PI/6.d0)*(D_PM**3)*RO_S(IJK,L)
+              ENDDO
+              M_PM = M_PM/DBLE(SMAX)
+              IF (THETA_M(IJK,M) < smallTheta*M_PM) &
+                THETA_M(IJK,M) = smallTheta*M_PM 
+
+            CASE DEFAULT
+! should never hit this
+               WRITE (*, '(A)') 'ADJUST_THETA'
+               WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
+               call mfix_exit(myPE)
+          END SELECT   ! end selection of kt_type_enum
+        ENDIF   ! end if (fluid_at)
+      ENDDO  ! end do ijk 
 
       RETURN  
       END SUBROUTINE ADJUST_THETA
+

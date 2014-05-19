@@ -36,10 +36,6 @@
 !           kinetic equation                                           C
 !  Author: Alberto Passalacqua - Fox Research Group   Date: 02-Dec-09  C
 !                                                                      C
-!  Literature/Document References:                                     C
-!  Variables referenced:                                               C
-!  Variables modified: TIME, NSTEP                                     C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -344,7 +340,7 @@
 ! Remove solids from cells containing very small quantities of solids
       IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
          DES_CONTINUUM_HYBRID) THEN
-         IF(TRIM(KT_TYPE) == 'GHD') THEN
+         IF(KT_TYPE_ENUM == GHD_2007) THEN
             CALL ADJUST_EPS_GHD
          ELSE 
             CALL ADJUST_EPS

@@ -44,7 +44,14 @@
 ! Number of solids phases.
       use param, only: DIMENSION_M
 ! Kinetic theory model.
-      use run, only: KT_TYPE
+      USE run, only: kt_type_enum
+      USE run, only: lun_1984
+      USE run, only: simonin_1996
+      USE run, only: ahmadi_1995
+      USE run, only: gd_1999
+      USE run, only: gtsh_2012
+      USE run, only: ia_2005
+      USE run, only: ghd_2007
 ! Run-time flag for invoking DQMOM
       use run, only: CALL_DQMOM
 ! Real number of solids phases (GHD theory)
@@ -157,9 +164,9 @@
          DIFF(1:MMAX) = .FALSE.
 
 ! Particle-Particle Energy Dissipation
-         IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP' .OR. &
-             TRIM(KT_TYPE) .EQ. 'GD_99' .OR. &
-             TRIM(KT_TYPE) .EQ. 'GTSH') THEN
+         IF (KT_TYPE_ENUM == IA_2005 .OR. &
+             KT_TYPE_ENUM == GD_1999 .OR. &
+             KT_TYPE_ENUM == GTSH_2012) THEN
             GRAN_DISS(:MMAX) = .TRUE.
          ENDIF
 

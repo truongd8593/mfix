@@ -14,10 +14,6 @@
 !  Author: M. Syamlal                                 Date: 5-JUL-96   C
 !  Reviewer:                                          Date:            C
 !                                                                      C
-!  Literature/Document References:                                     C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -174,7 +170,7 @@
             ENDIF 
 
 ! modified for GHD theory
-            IF(TRIM(KT_TYPE) == 'GHD') THEN
+            IF(KT_TYPE_ENUM == GHD_2007) THEN
               ROP_S(IJK,MMAX) = ZERO  ! mixture density
               DO M = 1, SMAX 
 ! volume of particle M based on fixed diamter Dp0              

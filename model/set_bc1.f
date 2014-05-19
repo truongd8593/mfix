@@ -18,7 +18,7 @@
 !                        BC_K_b, BC_K_t, BC_TYPE, BC_TIME, BC_PLANE,   C
 !                        TIME, TSTOP, DT, BC_TIME, BC_DT_0, SMAX,      C
 !                        BC_JET_G, BC_JET_GH, BC_JET_GL, BC_DT_H,      C
-!                        BC_DT_L, KT_TYPE,                             C
+!                        BC_DT_L, KT_TYPE                             C
 !                                                                      C
 !  Variables modified:                                                 C
 !     For MI: BC_TIME, BC_JET_G, U_g, V_g, W_g                         C
@@ -253,7 +253,7 @@
 
 ! for GHD theory to compute mixture BC of velocity
 ! bulk density is set by set_outflow                           
-                           IF(TRIM(KT_TYPE) == 'GHD') THEN
+                           IF(KT_TYPE_ENUM == GHD_2007) THEN
                               U_S(IJK,MMAX) =  ZERO 
                               V_S(IJK,MMAX) =  ZERO 
                               W_S(IJK,MMAX) =  ZERO 
@@ -305,7 +305,7 @@
                               CASE ('T')  
                                  W_S(IJK,MMAX) =  W_S(IJK,MMAX) / ROP_S(IJK,MMAX)
                               END SELECT 
-                           ENDIF   ! end if (trim(kt_type)='ghd')
+                           ENDIF   ! end if (kt_type_enum==ghd_2007)
 
                                            
                         ENDDO 

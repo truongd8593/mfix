@@ -20,7 +20,7 @@
 ! Flag: Use revised phihp for JJ BC.
       use bc, only: BC_JJ_PS
 ! User-input: solids kinetic-theory model.
-      use run, only: KT_TYPE
+      use run, only: KT_TYPE_ENUM, GHD_2007
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -59,7 +59,7 @@
 ! Input checks for gas phase.
       CALL CHECK_BC_WALLS_GAS(BCV)
 
-      MTOT_L = merge( M_TOT+1, M_TOT, KT_TYPE(1:3) == 'GHD')
+      MTOT_L = merge( M_TOT+1, M_TOT, KT_TYPE_ENUM == GHD_2007)
 
 ! Input checks for solid phases.
       DO M=1, MTOT_L
@@ -250,7 +250,7 @@
 ! Flag: Solve K-th direction (3D)
       use geometry, only: DO_K
 ! User-input: solids kinetic-theory model.
-      use run, only: KT_TYPE
+      use run, only: KT_TYPE_ENUM, GHD_2007
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -285,8 +285,8 @@
       CALL INIT_ERR_MSG("CHECK_BC_WALLS_TFM")
 
 ! Toggle the momentum and scalar input variable checks.
-      SELECT CASE(trim(adjustl(KT_TYPE)))
-      CASE ('GHD')
+      SELECT CASE(KT_TYPE_ENUM)
+      CASE (GHD_2007)
          CHECK_MOMENTUM = (M == MMAX)
          CHECK_SCALARS  = (M /= MMAX)
       CASE DEFAULT

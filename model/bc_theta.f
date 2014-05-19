@@ -400,7 +400,8 @@
       g0EPs_avg = ZERO
 
 ! added for Simonin model (sof)         
-      IF(SIMONIN .OR. AHMADI) THEN
+      IF(KT_TYPE_ENUM == SIMONIN_1996 .OR. &
+         KT_TYPE_ENUM == AHMADI_1995) THEN
          K_12_avg = K_12(IJK2)
          Tau_12_avg = Tau_12(IJK2)
       ELSE
@@ -722,30 +723,34 @@
 !  Reviewer:                                           Date:           C
 !                                                                      C
 !                                                                      C
-!                                                                      C
 !  Modified: Sofiane Benyahia, Fluent Inc.             Date: 02-FEB-05 C
 !  Purpose: Include conductivity defined by Simonin and Ahmadi         C
 !           Also included Jenkins small frictional limit               C
 !                                                                      C
 !  Literature/Document References:                                     C
+!     See calc_mu_s.f for references on kinetic theory models          C
+!     Johnson, P. C., and Jackson, R., Frictional-collisional          C
+!        constitutive relations for granular materials, with           C
+!        application to plane shearing, Journal of Fluid Mechanics,    C
+!        1987, 176, pp. 67-93                                          C
 !     Jenkins, J. T., and Louge, M. Y., On the flux of fluctuating     C
 !        energy in a collisional grain flow at a flat frictional wall, C
 !        Physics of Fluids, 1997, 9(10), pp. 2835-2840                 C
 !                                                                      C
-!     See calc_mu_s.f for references on kinetic theory models          C
-!     See calc_mu_s.f for references on Ahmadi and Simonin models      C
 !                                                                      C
 !  Additional Notes:                                                   C
-!     The current implementation of the IA (2005) kinetic theory and   C
-!     the GD (1999) kinetic theory do not incorporate ahmadi or        C
-!     simonin additions, nor the jenkins small frictional bc model     C
+!     The JJ granular energy BC is written as: n.q = D-G, where        C
+!       q = the heat flux, n = outward normal vector                   C
+!       D = dissipation due to p-w collisions, and                     C
+!       G = generation due to p-w slip                                 C
+!     In MFIX this is implemented as k.gradT = G-D, where              C
+!       k = granular conductivity units (Mass/Length/Time)             C
+!       T = granular temperature in units (Length/Time)^2              C
+!     However, the expression for heat flux (q) may contain terms      C
+!     beyond that of gradient in temperature, such as the dufour       C
+!     term. A more rigorous implemenation should account for these     C
+!     additional terms, which is not done here.                        C
 !                                                                      C
-!     The granular energy BC is written as the normal vector dot the   C
-!     heat flux. In granular kinetic theory the expression for heat    C
-!     flux generally contains terms beyond the gradient in temp.       C
-!     So, to rigorously implement the granualr energy BC requires      C
-!     accounting for the additional terms. Such modifications were     C
-!     not done for the kinetic theories here.                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -805,7 +810,10 @@
       DOUBLE PRECISION, INTENT(IN) :: GTWDOTN (DIMENSION_M)
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
-! Coefficients in boundary conditions
+! Coefficients in JJ boundary conditions
+! Gw = granular conductivity (w particle mass)
+! Hw = dissipation due to particle-wall collision
+! Cw = generation due to particle-wall slip     
       DOUBLE PRECISION, INTENT(INOUT) :: GW, HW, CW 
 ! Index corresponding to boundary condition
       INTEGER, INTENT(IN) :: L
@@ -816,35 +824,37 @@
       INTEGER :: LL
 ! Coefficient of 1st term
       DOUBLE PRECISION :: K_1
-!      DOUBLE PRECISION :: K_10
 ! Conductivity
       DOUBLE PRECISION :: Kgran
-!      DOUBLE PRECISION :: Lambda0
 ! Conductivity corrected for interstitial fluid effects
       DOUBLE PRECISION :: Kgran_star
+! Drag Coefficient
+      DOUBLE PRECISION :: Beta, DgA
 ! Reynolds number based on slip velocity
       DOUBLE PRECISION :: Re_g
 ! Friction Factor in drag coefficient
       DOUBLE PRECISION :: C_d
-! Drag Coefficient
-      DOUBLE PRECISION :: Beta, DgA
-! Local parameters for Simonin model
-      DOUBLE PRECISION :: Zeta_c, Omega_c, Tau_2_c, Kappa_kin, &
-                          Kappa_Col, Tau_12_st
+! mth solids phase particle diameter, mass and number density
+      DOUBLE PRECISION :: D_PM, M_PM, NU_PM
 ! Variables for Iddir & Arastoopour model
-      DOUBLE PRECISION :: M_PM, M_PL, MPSUM, NU_PL, NU_PM, D_PM, D_PL, DPSUMo2
+      DOUBLE PRECISION :: D_PL, M_PL, NU_PL, MPSUM, DPSUMo2
       DOUBLE PRECISION :: Ap_lm, Dp_lm, R0p_lm, R1p_lm, R8p_lm, R9p_lm, &
                           Bp_lm, R5p_lm, R6p_lm, R7p_lm
       DOUBLE PRECISION :: K_s_sum, K_s_MM, K_s_LM, K_sM_LM
       DOUBLE PRECISION :: Kvel_s_sum, Kvel_s_LM, Kth_sL_LM, Kth_s_sum
-      DOUBLE PRECISION :: Knu_s_sum, Knu_s_LM, K_common_term, K
+      DOUBLE PRECISION :: Knu_s_sum, Knu_s_LM, K_common_term
 ! Variables for Garzo & Dufty model
       DOUBLE PRECISION :: c_star, zeta0_star, press_star, eta0, &
                           kappa0, nu_kappa_star, kappa_k_star, &
                           kappa_star
 ! Variables for GTSH theory
-      DOUBLE PRECISION :: Re_T, Xsi, vfrac, mu2_0, mu4_0, mu4_1, &
+      DOUBLE PRECISION :: Re_T, Chi, vfrac, mu2_0, mu4_0, mu4_1, &
                           A2_gtshW, zeta_star, nu0, NuK, Kth0, KthK, EDT_s
+! Local parameters for Simonin model
+      DOUBLE PRECISION :: Zeta_c, Omega_c, Tau_2_c, Kappa_kin, &
+                          Kappa_Col, Tau_12_st
+! Solids pressure and pressure divided by granular temperature
+      DOUBLE PRECISION :: Ps, PsoTheta
 ! Error message
       CHARACTER*80     LINE
 !----------------------------------------------- 
@@ -864,14 +874,93 @@
          ENDIF
       ENDIF
 
-      IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN
+! common variables
+      D_PM = DP_avg(M)        
+      M_PM = (PI/6.d0)*(D_PM**3.)*ROS_avg(M)
+      NU_PM = (EPS(M)*ROS_avg(M))/M_PM
 
+! This is from Wen-Yu correlation, you can put here your own single particle drag 
+      Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
+      IF (Re_g .lt. 1000.d0) THEN
+         C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
+      ELSE
+         C_d = 0.44d0
+      ENDIF
+      DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(DP_avg(M)*EPG**(2.65d0))
+      IF(VREL == ZERO) DgA = LARGE_NUMBER
+      Beta = EPS(M)*DgA
+
+
+! Defining conductivity according to each KT for later use in JJ BC
+! Also define solids pressure for use in Jenkins small frictional BC
+! -------------------------------------------------------------------
+      SELECT CASE (KT_TYPE_ENUM)
+
+      CASE (LUN_1984) 
+         Kgran = 75d0*ROs_avg(M)*DP_avg(M)*DSQRT(Pi*TH(M))/&
+            (48*Eta*(41d0-33d0*Eta))
+
+         IF(SWITCH == ZERO .OR. Ro_g_avg == ZERO)THEN
+            Kgran_star = Kgran
+         ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
+            Kgran_star = ZERO
+         ELSE
+            Kgran_star = ROs_avg(M)*EPS(M)* g0(M)*TH(M)* Kgran/ &
+               (ROs_avg(M)*g0EPs_avg*TH(M) + &
+               1.2d0*DgA/ROs_avg(M)* Kgran)
+         ENDIF
+ 
+! mth solids phase granular conductivity includes particle mass
+         K_1 = Kgran_star/g0(M)*( &
+            ( ONE + (12d0/5.d0)*Eta*g0EPs_avg ) * &
+            ( ONE + (12d0/5.d0)*Eta*Eta*(4d0*Eta-3d0) *g0EPs_avg ) + &
+            (64d0/(25d0*Pi)) * (41d0-33d0*Eta) *(Eta*g0EPs_avg)**2 )
+            
+! defining granular pressure (for Jenkins BC)    
+         PsoTheta = ROs_avg(M)*EPS(M)*(ONE+4.D0*Eta*g0EPs_avg)
+         Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+4.D0*Eta*g0EPs_avg)
+
+
+      CASE (SIMONIN_1996)
+! particle relaxation time
+         Tau_12_st = ROs_avg(M)/(DgA+small_number)
+         Zeta_c  = (ONE+ C_e)*(49.d0-33.d0*C_e)/100.d0
+         Omega_c = 3.d0*(ONE+ C_e)**2 *(2.d0*C_e-ONE)/5.d0 
+         Tau_2_c = DP_avg(M)/(6.d0*EPS(M)*g0(M) &
+            *DSQRT(16.d0*(TH(M)+Small_number)/PI))
+
+! Defining Simonin's Solids Turbulent Kinetic diffusivity: Kappa
+         Kappa_kin = (9.d0/10.d0*K_12_avg*(Tau_12_avg/Tau_12_st) &
+            + 3.0D0/2.0D0 * TH(M)*(ONE+ Omega_c*EPS(M)*g0(M)))/     &
+            (9.d0/(5.d0*Tau_12_st) + zeta_c/Tau_2_c)
+
+         Kappa_Col = 18.d0/5.d0*EPS(M)*g0(M)*Eta* (Kappa_kin+ &
+            5.d0/9.d0*DP_avg(M)*DSQRT(TH(M)/PI))
+
+! mth solids phase granular conductivity includes particle mass
+         K_1 =  EPS(M)*ROs_avg(M)*(Kappa_kin + Kappa_Col)
+
+! defining granular pressure (for Jenkins BC)
+         PsoTheta = ROs_avg(M)*EPS(M)*(ONE+4.D0*Eta*g0EPs_avg)
+         Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+4.D0*Eta*g0EPs_avg)
+    
+
+      CASE (AHMADI_1995)
+! mth solids phase granular conductivity includes particle mass
+         K_1 =  0.1306D0*ROs_avg(M)*DP_avg(M)*(ONE+C_e**2)* (  &
+            ONE/g0(M)+4.8D0*EPS(M)+12.1184D0 *EPS(M)*EPS(M)*g0(M) )*&
+            DSQRT(TH(M))
+
+! defining granular pressure (for Jenkins BC)
+         PsoTheta = ROs_avg(M)*EPS(M)* &
+             ((ONE + 4.0D0*g0EPs_avg)+HALF*(ONE -C_e*C_e))
+         Ps = ROs_avg(M)*EPS(M)*TH(M)*&
+             ((ONE + 4.0D0*g0EPs_avg)+HALF*(ONE -C_e*C_e))
+
+
+      CASE (IA_2005)
 ! Use original IA theory if SWITCH_IA is false
-          IF(.NOT. SWITCH_IA) g0EPs_avg = EPS(M)*ROS_avg(M)
-
-         D_PM = DP_avg(M)        
-         M_PM = (PI/6.d0)*(D_PM**3.)*ROS_avg(M)
-         NU_PM = (EPS(M)*ROS_avg(M))/M_PM
+         IF(.NOT. SWITCH_IA) g0EPs_avg = EPS(M)*ROS_avg(M)
 
          K_s_sum = ZERO
          Kvel_s_sum = ZERO
@@ -880,18 +969,7 @@
 
          Kgran = (75.d0/384.d0)*ROs_avg(M)*D_PM*DSQRT(Pi*TH(M)/M_PM)
 
-! This is from Wen-Yu correlation, you can put here your own single particle drag 
-         Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
-         IF (Re_g .lt. 1000.d0) THEN
-            C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
-         ELSE
-            C_d = 0.44d0
-         ENDIF
-         DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(DP_avg(M)*EPG**(2.65d0))
-         IF(VREL == ZERO) DgA = LARGE_NUMBER
-         Beta = EPS(M)*DgA
- 
-         IF(.NOT.SWITCH_IA .OR. RO_g_avg == ZERO)THEN
+         IF(SWITCH == ZERO .OR. RO_g_avg == ZERO)THEN
             Kgran_star = Kgran
          ELSEIF(TH(M)/M_PM .LT. SMALL_NUMBER)THEN
             Kgran_star = ZERO
@@ -963,7 +1041,7 @@
                   (M_PM*M_PL/MPSUM)*Bp_lm*R7p_lm) )*TH(LL) )*&
                   (TH(M)**2 * TH(LL)**3)
 
-! These lines were commented because they are not currently used (sof)
+! These lines were commented because they are not currently used
 ! solids phase 'conductivity' associated with the gradient in granular
 ! temperature of species L 
 !               Kth_sL_LM = K_common_term*NU_PM*NU_PL*(&
@@ -1005,27 +1083,8 @@
             ENDIF   ! end if( LL .eq. M)/else
          ENDDO  ! end do LL = 1, SMAX
                
+! mth solids phase granular conductivity DOES NOT include particle mass
          K_1 = K_s_sum
-
-         
-! setting the coefficients for JJ BC
-         GW = M_PM * K_1 !sof modified
-
-! Note that IA (2005) theory defines theta in terms of mass so
-! the boundary conditions must be adjusted for this definition
-! of granular temperature (JJ BC do not have mass in definition
-! of granular temperature)
-         HW = (PI*DSQRT(3.d0)/(4.d0*(ONE-ep_star_avg)))*(1.d0-e_w*e_w)*&
-            ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M)/M_PM)
-
-         IF(.NOT. BC_JJ_M) THEN
-            CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*PHIP*&
-               ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M)*M_PM)*VSLIPSQ
-         ELSE
-            CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*&
-               PHIP_JJ(DSQRT(vslipsq),TH(M))*ROs_avg(M)*&
-               EPS(M)*g0(M)*DSQRT(TH(M)*M_PM)*VSLIPSQ
-         ENDIF
 
 ! Note that the velocity term is not included here because it should
 ! become zero when dotted with the outward normal (i.e. no solids 
@@ -1043,27 +1102,14 @@
 !         CW = CW + Kth_s_sum
 
 
-      ELSEIF (TRIM(KT_TYPE) .EQ. 'GD_99') THEN
+      CASE (GD_1999) 
+! Note: k_boltz = M_PM
          D_PM = DP_avg(M)        
          M_PM = (PI/6.d0)*(D_PM**3.)*ROS_avg(M)
          NU_PM = (EPS(M)*ROS_avg(M))/M_PM
 
-! This is from Wen-Yu correlation, you can put here your own single particle drag
-         Re_g = EPG*RO_g_avg*DP_avg(M)*VREL/Mu_g_avg
-         IF (Re_g.lt.1000d0) THEN
-            C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
-         ELSE
-            C_d = 0.44d0
-         ENDIF
-         DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(DP_avg(M)*EPG**(2.65d0))
-         IF(VREL == ZERO) DgA = LARGE_NUMBER
-         Beta = SWITCH*EPS(M)*DgA
-
-! Conductivity
-! Note: k_boltz = M_PM
-
 ! Find pressure in the Mth solids phase
-         press_star = 1.d0 + 2.d0*(1.d0+C_E)*EPS(M)*G0(M)
+         press_star = ONE + 2.d0*(1.d0+C_E)*EPS(M)*G0(M)
  
 ! find conductivity  
          eta0 = 5.0d0*M_PM*DSQRT(TH(M)/PI) / (16.d0*D_PM*D_PM)
@@ -1100,21 +1146,9 @@
                1.2d0*DgA*kappa0/ROs_avg(M))     ! Note dgA is ~F_gs/ep_s
          ENDIF
   
-! setting the coefficients for JJ BC         
-! granular conductivity in Mth solids phase
-         GW = Kgran_star * kappa_star
-
-         HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*(1d0-e_w*e_w)*&
-            ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))
- 
-         IF(.NOT. BC_JJ_M) THEN
-            CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*&
-               ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
-         ELSE
-            CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*&
-               PHIP_JJ(DSQRT(vslipsq),TH(M))*ROs_avg(M)*&
-               EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
-         ENDIF
+! kgran_star includes particle mass     
+! mth solids phase granular conductivity includes particle mass         
+         K_1 = Kgran_star * kappa_star
 
 ! transport coefficient of the Mth solids phase associated
 ! with gradient in volume fraction in heat flux
@@ -1128,158 +1162,109 @@
 !         qmu_star = qmu_k_star*(1.d0+(6.d0/5.d0)*EPS(M)*G0(M)*&
 !            (1.d0+C_E) )
 !         Kphis = (TH(M)*Kgran_star/NU_PM)*qmu_star
-!
-!
-      ELSEIF (TRIM(KT_TYPE) .EQ. 'GTSH') THEN ! see calc_mu_s & kintheory_.._ss for details
+
+! defining granular pressure (for Jenkins BC)    
+         PsoTheta = ROs_avg(M)*EPS(M)*(ONE+2.d0*(ONE+C_E)*g0EPs_avg)
+                    ! ~ROs_avg(m)*EPS(M)*press_star
+         Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+2.d0*(ONE+C_E)*g0EPs_avg)
+                    ! ~ROs_avg(m)*EPS(M)*TH(M)*press_star
+
+      CASE (GTSH_2012)  
          D_PM = DP_avg(M)        
          M_PM = (PI/6.d0)*(D_PM**3.)*ROS_avg(M)
          NU_PM = (EPS(M)*ROS_avg(M))/M_PM
-	 Xsi = g0(M)
-	 vfrac = EPS(M)
-	 
-	 Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
-	 Re_T = RO_g_avg*D_PM*dsqrt(TH(M)) / Mu_g_avg
-	 mu2_0 = dsqrt(2d0*pi) * Xsi * (one-C_E**2)  ! eq. (6.22) GTSH theory
-	 mu4_0 = (4.5d0+C_E**2) * mu2_0              ! eq. (6.23) GTSH theory
-	 mu4_1 = (6.46875d0+0.9375d0*C_E**2)*mu2_0 + 2d0*dsqrt(2d0*pi)* &
-	          Xsi*(one+C_E)  ! this is done to avoid /0 in case c_e = 1.0
+         Chi = g0(M)
+         vfrac = EPS(M)
+         
+         Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
+         Re_T = RO_g_avg*D_PM*dsqrt(TH(M)) / Mu_g_avg
+         mu2_0 = dsqrt(2d0*pi) * Chi * (one-C_E**2)  ! eq. (6.22) GTSH theory
+         mu4_0 = (4.5d0+C_E**2) * mu2_0              ! eq. (6.23) GTSH theory
+         mu4_1 = (6.46875d0+0.9375d0*C_E**2)*mu2_0 + 2d0*dsqrt(2d0*pi)* &
+                  Chi*(one+C_E)  ! this is done to avoid /0 in case c_e = 1.0
          A2_gtshW = zero ! for eps = zero
-	 if((vfrac> small_number) .and. (TH(M) > small_number)) then 
-	    zeta_star = 4.5d0*dsqrt(2d0*Pi)*(RO_g_avg/ROs_avg(M))**2*Re_g**2 * &
-	                S_star(vfrac,Xsi) / (vfrac*(one-vfrac)**2 * Re_T**4)
-	    A2_gtshW = (5d0*mu2_0 - mu4_0) / (mu4_1 - 5d0* &
-	                   (19d0/16d0*mu2_0 - 1.5d0*zeta_star))
-	  endif
-          eta0 = 0.3125d0/(dsqrt(pi)*D_PM**2)*M_pm*dsqrt(TH(M))
-	  nu0 = (96.d0/5.d0)*(vfrac/D_PM)*DSQRT(TH(M)/PI)
-          NuK = nu0*(one+C_E)/3d0*Xsi*( one+2.0625d0*(one-C_E)+ &
-	             ((947d0-579*C_E)/256d0*A2_gtshW) )
-          Kth0 = 3.75d0*eta0/M_pm
-	  EDT_s = 4d0/3d0*dsqrt(pi)*(one-C_E**2)*Xsi* &
-	         (one+0.1875d0*A2_gtshW)*NU_PM*D_PM**2*dsqrt(TH(M))
-          KthK = zero
-	  if(vfrac > small_number) KthK = 2d0/3d0*Kth0*nu0/(NuK - 2d0*EDT_s) * &
-		        (one+2d0*A2_gtshW+0.6d0*vfrac*Xsi* &
-		        (one+C_E)**2*(2*C_E-one+A2_gtshW*(one+C_E)))
+         if((vfrac> small_number) .and. (TH(M) > small_number)) then 
+            zeta_star = 4.5d0*dsqrt(2d0*Pi)*(RO_g_avg/ROs_avg(M))**2*Re_g**2 * &
+                        S_star(vfrac,Chi) / (vfrac*(one-vfrac)**2 * Re_T**4)
+            A2_gtshW = (5d0*mu2_0 - mu4_0) / (mu4_1 - 5d0* &
+                           (19d0/16d0*mu2_0 - 1.5d0*zeta_star))
+         endif
+         eta0 = 0.3125d0/(dsqrt(pi)*D_PM**2)*M_pm*dsqrt(TH(M))
+         nu0 = (96.d0/5.d0)*(vfrac/D_PM)*DSQRT(TH(M)/PI)
+         NuK = nu0*(one+C_E)/3d0*Chi*( one+2.0625d0*(one-C_E)+ &
+                    ((947d0-579*C_E)/256d0*A2_gtshW) )
+         Kth0 = 3.75d0*eta0/M_pm
+         EDT_s = 4d0/3d0*dsqrt(pi)*(one-C_E**2)*Chi* &
+                (one+0.1875d0*A2_gtshW)*NU_PM*D_PM**2*dsqrt(TH(M))
+         KthK = zero
+         if(vfrac > small_number) KthK = 2d0/3d0*Kth0*nu0/(NuK - 2d0*EDT_s) * &
+                       (one+2d0*A2_gtshW+0.6d0*vfrac*Chi* &
+                       (one+C_E)**2*(2*C_E-one+A2_gtshW*(one+C_E)))
+
 ! defining conductivity K_1 at walls equivalent to Kth_s(IJK,M) in calc_mu_s
-          K_1 = KthK*(one+1.2d0*vfrac*Xsi*(one+C_E)) + (10.24d0/pi* &
-	        vfrac**2*Xsi*(one+C_E)*(one+0.4375d0*A2_gtshW)*Kth0)
-          K_1 = M_pm * K_1
-!
-! part below copied from GD_99 code above
-!
-! setting the coefficients for JJ BC         
-! granular conductivity in Mth solids phase
-         GW = K_1
+! mth solids phase granular conductivity DOES NOT include particle mass
+         K_1 = KthK*(one+1.2d0*vfrac*Chi*(one+C_E)) + (10.24d0/pi* &
+                vfrac**2*Chi*(one+C_E)*(one+0.4375d0*A2_gtshW)*Kth0)
 
-         HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*(1d0-e_w*e_w)*&
-            ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))
+! defining granular pressure (for Jenkins BC)    
+         PsoTheta = ROs_avg(M)*EPS(M)*(ONE+2.d0*(ONE+C_E)*g0EPs_avg)
+         Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+2.d0*(ONE+C_E)*g0EPs_avg)
+
+
+      CASE DEFAULT
+! should never hit this
+         WRITE (*, '(A)') 'BC_THETA => THETA_HW_CW'
+         WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
+         call mfix_exit(myPE)
+      END SELECT
  
-         IF(.NOT. BC_JJ_M) THEN
-            CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*&
-               ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
-         ELSE
-            CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*&
-               PHIP_JJ(DSQRT(vslipsq),TH(M))*ROs_avg(M)*&
-               EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
-         ENDIF
-      ELSE   ! No modifications to original mfix if 
-             ! IA or GD99 or GTSH theories are not used
- 
-         Kgran = 75d0*ROs_avg(M)*DP_avg(M)*DSQRT(Pi*TH(M))/(48*Eta*(41d0-33d0*Eta))
- 
-         Re_g = EPG*RO_g_avg*DP_avg(M)*VREL/Mu_g_avg
-         IF (Re_g.lt.1000d0) THEN
-            C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
-         ELSE
-            C_d = 0.44d0
-         ENDIF
-         DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(DP_avg(M)*EPG**(2.65d0))
-         IF(VREL == ZERO) DgA = LARGE_NUMBER
-         Beta = SWITCH*EPS(M)*DgA
 
-! particle relaxation time
-         Tau_12_st = ROs_avg(M)/(DgA+small_number)
- 
-! SWITCH enables us to turn on/off the modification to the
-! particulate phase viscosity. If we want to simulate gas-particle
-! flow then SWITCH=1 to incorporate the effect of drag on the
-! particle viscosity. If we want to simulate granular flow
-! without the effects of an interstitial gas, SWITCH=0.
-         IF(SWITCH == ZERO .OR. Ro_g_avg == ZERO)THEN
-            Kgran_star = Kgran
-         ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
-            Kgran_star = ZERO
-         ELSE
-            Kgran_star = ROs_avg(M)*EPS(M)* g0(M)*TH(M)* Kgran/ &
-               (ROs_avg(M)*g0EPs_avg*TH(M) + &
-               1.2d0*SWITCH*DgA/ROs_avg(M)* Kgran)
-         ENDIF
- 
-         K_1 = Kgran_star/g0(M)*(&
-            ( ONE + (12d0/5.d0)*Eta*g0EPs_avg )&
-            * ( ONE + (12d0/5.d0)*Eta*Eta*(4d0*Eta-3d0)&
-            *g0EPs_avg )&
-            + (64d0/(25d0*Pi)) * (41d0-33d0*Eta) *&
-            (Eta*g0EPs_avg)**2 &
-            )
- 
-         IF(SIMONIN) THEN
-            Zeta_c  = (ONE+ C_e)*(49.d0-33.d0*C_e)/100.d0
-
-            Omega_c = 3.d0*(ONE+ C_e)**2 *(2.d0*C_e-ONE)/5.d0 
-
-            Tau_2_c = DP_avg(M)/(6.d0*EPS(M)*g0(M) &
-               *DSQRT(16.d0*(TH(M)+Small_number)/PI))
-
-! Defining Simonin's Solids Turbulent Kinetic diffusivity: Kappa
-            Kappa_kin = (9.d0/10.d0*K_12_avg*(Tau_12_avg/Tau_12_st) &
-               + 3.0D0/2.0D0 * TH(M)*(ONE+ Omega_c*EPS(M)*g0(M)))/     &
-               (9.d0/(5.d0*Tau_12_st) + zeta_c/Tau_2_c)
-
-            Kappa_Col = 18.d0/5.d0*EPS(M)*g0(M)*Eta* (Kappa_kin+ &
-               5.d0/9.d0*DP_avg(M)*DSQRT(TH(M)/PI))
-
-            K_1 =  EPS(M)*ROs_avg(M)*(Kappa_kin + Kappa_Col)
- 
-         ELSEIF(AHMADI) THEN
-            K_1 =  0.1306D0*ROs_avg(M)*DP_avg(M)*(ONE+C_e**2)* (  &
-               ONE/g0(M)+4.8D0*EPS(M)+12.1184D0 *EPS(M)*EPS(M)*g0(M) )*&
-               DSQRT(TH(M))
-
-         ENDIF !for simonin or ahmadi models
-      
 ! setting the coefficients for JJ BC
-         GW = K_1
-      
-! modify HW and CW if Jenkins BC is used (sof)    
-         IF(JENKINS) THEN
+! -------------------------------------------------------------------
+! GW = granular conductivity
+! Hw = dissipation due to particle-wall collision
+! Cw = generation due to particle-wall slip      
+      SELECT CASE (KT_TYPE_ENUM)
+         CASE (LUN_1984, SIMONIN_1996, AHMADI_1995, GD_1999)
+! KTs without particle mass in their definition of granular temperature
+! and with mass in their conductivity
+! and theta = granular temperature
+            GW = K_1 
 
-            IF(AHMADI) THEN
-! Ahmadi model uses different solids pressure model
+! Jenkins BC implemented for these KT models
+            IF(JENKINS) THEN
                HW = 3.D0/8.D0*DSQRT(3.D0*TH(M))*((1d0-e_w))*&
-                  ROs_avg(M)*EPS(M)*((ONE + 4.0D0*g0EPs_avg) +&
-                  HALF*(ONE -C_e*C_e))
-
-! the coefficient mu in Jenkins paper is defined as tan_Phi_w, that's how
-! I understand it from soil mechanic papers, i.e., G.I. Tardos, powder
-! Tech. 92 (1997), 61-74. See his equation (1). Define Phi_w in mfix.dat!
+                  PsoTheta
+! As I understand from soil mechanic papers, the coefficient mu in 
+! Jenkins paper is tan_Phi_w. T.  See for example, G.I. Tardos, PT,
+! 92 (1997), 61-74, equation (1). sof
                CW = tan_Phi_w*tan_Phi_w*(ONE+e_w)*21.d0/16.d0*&
-                  DSQRT(3.D0*TH(M)) *ROs_avg(M)*EPS(M)*&
-                  ((ONE + 4.0D0*g0EPs_avg) + HALF*(ONE -C_e*C_e))*TH(M)
+                  DSQRT(3.D0*TH(M)) * Ps
 
-            ELSE  
-! Simonin or granular models use same solids pressure
-               HW = 3.D0/8.D0*DSQRT(3.*TH(M))*((1d0-e_w))*&
-                  ROs_avg(M)*EPS(M)*(1d0+ 4.D0*Eta*g0EPs_avg)
-               CW = tan_Phi_w*tan_Phi_w*(ONE+e_w)*21.D0/16.D0*&
-                  DSQRT(3.D0*TH(M))*ROs_avg(M)*EPS(M)*&
-                  (1d0+ 4.D0*Eta*g0EPs_avg)*TH(M)
-            ENDIF   ! end if for Ahmadi
- 
-         ELSE   ! if(.not.jenkins) branch
+            ELSE            
+               HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*&
+                  (1d0-e_w*e_w)*&
+                  ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))
 
-            HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*(1d0-e_w*e_w)*&
+               IF(.NOT. BC_JJ_M) THEN
+                  CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*&
+                     ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
+               ELSE
+                  CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*&
+                     PHIP_JJ(DSQRT(vslipsq),TH(M))*ROs_avg(M)*&
+                     EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ  
+               ENDIF
+            ENDIF   ! end if(Jenkins)/else
+
+
+         CASE (GTSH_2012)
+! KTs with particle mass in their definition of granular temperature
+! and without mass in their conductivity
+! and theta = granular temperature/mass
+            GW = M_PM * K_1 
+
+            HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*&
+               (1d0-e_w*e_w)*&
                ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))
 
             IF(.NOT. BC_JJ_M) THEN
@@ -1291,11 +1276,36 @@
                   EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ  
             ENDIF
 
-         ENDIF   ! end if(Jenkins)/else
 
-      ENDIF   ! end if for kinetic theory type
- 
- 
+         CASE (IA_2005)
+! KTs with particle mass in their definition of granular temperature
+! and without mass in their conductivity
+! and theta = granular temperature                
+            GW = M_PM * K_1 
+
+            HW = (PI*DSQRT(3.d0)/(4.d0*(ONE-ep_star_avg)))*&
+               (1.d0-e_w*e_w)*&
+               ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M)/M_PM)
+
+            IF(.NOT. BC_JJ_M) THEN
+               CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*PHIP*&
+                  ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M)*M_PM)*VSLIPSQ
+            ELSE
+               CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*&
+                  PHIP_JJ(DSQRT(vslipsq),TH(M))*ROs_avg(M)*&
+                  EPS(M)*g0(M)*DSQRT(TH(M)*M_PM)*VSLIPSQ
+            ENDIF
+
+
+
+         CASE DEFAULT
+! should never hit this
+            WRITE (*, '(A)') 'BC_THETA => THETA_HW_CW'
+            WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
+            call mfix_exit(myPE)
+         END SELECT
+
+
       RETURN
       END SUBROUTINE THETA_HW_CW
 

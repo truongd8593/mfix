@@ -50,9 +50,11 @@
 ! adjusted to account for the presence of a fluid phase. If one wants
 ! to simulate gas-particle flow then set SWITCH=1. As a result, the
 ! effects of drag on particle viscosity/conductivity will be
-! incorporated. Additional gas-solids terms are also introduced into
-! the granular energy balance. If we want to simulate granular flow
-! without the effects of an interstitial gas, set SWITCH=0.  
+! incorporated. Additional gas-solids terms may also have been 
+! introduced into the granular energy balance depending on the KT
+! model (see source_granular_energy for details). If we want to 
+! simulate pure granular flow without the effects of an interstitial
+! gas, set SWITCH=0.  
       DOUBLE PRECISION, PARAMETER :: SWITCH=1.d0
 
 ! ALPHA is a parameter introduced into the theory of Lun_1984 for 
@@ -69,13 +71,11 @@
 ! default KT (Lun_1984). For details see Gera et al., 2004 
       DOUBLE PRECISION :: SEGREGATION_SLOPE_COEFFICIENT 
 
-! SWITCH_IA does two things. 1) It changes some terms in solids 
-! viscosity and conductivity in order for the results using 2 or more 
-! identical solids phase to be the same as 1 solids phase (i.e., it
-! enforces consistency). 2) It also functions somewhat similary to
-! SWITCH above in that effects of drag on particle viscosity/
-! conductivity will be incorporated. Set to false to use original
-! theory of Iddir-Arastoopour. 
+! SWITCH_IA enforces consistency in the solids viscosity and
+! conductivity so that the results using 2 or more identical
+! solids phases are the same as an equivalent single solids
+! phase. Set to false to use original (published) theory of 
+! Iddir-Arastoopour. 
       LOGICAL, PARAMETER :: SWITCH_IA = .TRUE.
  
 ! parameter in the theory of GTSH that is related to length scale

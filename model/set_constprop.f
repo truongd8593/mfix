@@ -15,7 +15,7 @@
 ! Modules
 !-----------------------------------------------
       USE param 
-      USE param1, only: ZERO, HALF, ONE, UNDEFINED 
+      USE param1, only: zero, half, one, undefined
       USE fldvar
       USE visc_s
       USE visc_g
@@ -63,10 +63,8 @@
 ! Set default value for virtual mass coefficient
       Cv = HALF
 
-! Variables for Iddir & Arastoopour (2005) kinetic theory
-! EDvel_sM_ip & EDT_s_ip are also used for Garzy & Dufty (1999) 
-! kinetic theory
-      IF (TRIM(KT_TYPE) == 'IA_NONEP') THEN
+! Variables specific to various kinetic theory models
+      IF (KT_TYPE_ENUM == IA_2005) THEN
          MU_sM_ip = ZERO
          MU_sL_ip = ZERO
          XI_sM_ip = ZERO
@@ -81,12 +79,12 @@
          ED_ss_ip = ZERO
          EDvel_sL_ip = ZERO
       ENDIF
-      IF (TRIM(KT_TYPE) == 'IA_NONEP' .OR. TRIM(KT_TYPE) == 'GD_99' .OR.  &
-          TRIM(KT_TYPE) == 'GTSH') THEN
+      IF (KT_TYPE_ENUM == IA_2005 .OR. KT_TYPE_ENUM == GD_1999 .OR.  &
+          KT_TYPE_ENUM == GTSH_2012) THEN
          EDT_s_ip = ZERO
          EDvel_sM_ip = ZERO
       ENDIF
-      IF(TRIM(KT_TYPE) == 'GTSH') THEN
+      IF(KT_TYPE_ENUM == GTSH_2012) THEN
          A2_gtsh = ZERO
          xsi_gtsh = zero
       ENDIF

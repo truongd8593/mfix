@@ -117,15 +117,11 @@
 !-----------------------------------------------
 
       DO M = 1, MMAX  
-        IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. &
-                                        M==MMAX)) THEN
+        IF(KT_TYPE_ENUM /= GHD_2007 .OR. &
+           (KT_TYPE_ENUM == GHD_2007 .AND. M==MMAX)) THEN
+
           IF (MOMENTUM_Z_EQ(M)) THEN 
 
-
-!
-! rogue "cd" deleted at end of Ghd_drag line
-! CP Crosby, CHPC, 26 Sep 2013
-!
 
 !$omp  parallel do default(shared)                                   &
 !$omp  private(I, J, K, IJK, IMJK, IJMK, IJKM, IJKP, IPJK, IMJKP,    &
@@ -155,7 +151,8 @@
                 IJMKP = KP_OF(IJMK)
                 IJKT = TOP_OF(IJK)
 
-                IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN ! with ghd theory, m = mmax
+                IF (KT_TYPE_ENUM == GHD_2007) THEN 
+! with ghd theory, m = mmax
                    EPStmp = ZERO     
                    epsMix = ZERO
                    epsMixT= ZERO   
@@ -208,7 +205,7 @@
                   A_M(IJK,B,M) = ZERO 
                   A_M(IJK,0,M) = -ONE 
                   B_M(IJK,M) = ZERO 
-                  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                  IF (KT_TYPE_ENUM == GHD_2007) THEN
                       EPSw = ZERO
                       EPSe = ZERO
                       EPSn = ZERO
@@ -280,7 +277,7 @@
                   ENDIF 
 
                   IF (CLOSE_PACKED(M)) THEN 
-                     IF(SMAX > 1 .AND. TRIM(KT_TYPE) /= 'GHD') THEN 
+                     IF(SMAX > 1 .AND. KT_TYPE_ENUM /= GHD_2007) THEN 
                         SUM_EPS_CP=0.0 
                         DO MM=1,SMAX
                           IF (CLOSE_PACKED(MM))&
@@ -366,7 +363,7 @@
                   ENDIF
 
 ! Interphase mass transfer
-                  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                  IF (KT_TYPE_ENUM == GHD_2007) THEN
                      VMTtmp = ZERO
                      DO L = 1,SMAX
                         VMTtmp = VMTtmp + AVG_Z(SUM_R_S(IJK,L),SUM_R_S(IJKT,L),K)
@@ -383,14 +380,14 @@
 
 ! Body force
                   IF (MODEL_B) THEN 
-                     IF (TRIM(KT_TYPE) /= 'GHD') THEN
-                       DRO1 = (RO_S(IJK,M)-RO_G(IJK))*EP_S(IJK,M) 
-                       DRO2 = (RO_S(IJK,M)-RO_G(IJKT))*EP_S(IJKT,M) 
-                       DROA = AVG_Z(DRO1,DRO2,K) 
-                       VBF = DROA*BFZ_S(IJK,M) 
-                     ELSE ! GHD and M = MMAX
+                     IF (KT_TYPE_ENUM == GHD_2007) THEN
                        DRO1 = ROP_S(IJK,M)  - RO_G(IJK) *epsMix
                        DRO2 = ROP_S(IJKT,M) - RO_G(IJKT)*epsMixT
+                       DROA = AVG_Z(DRO1,DRO2,K) 
+                       VBF = DROA*BFZ_S(IJK,M) 
+                     ELSE
+                       DRO1 = (RO_S(IJK,M)-RO_G(IJK))*EP_S(IJK,M) 
+                       DRO2 = (RO_S(IJK,M)-RO_G(IJKT))*EP_S(IJKT,M) 
                        DROA = AVG_Z(DRO1,DRO2,K) 
                        VBF = DROA*BFZ_S(IJK,M) 
                      ENDIF
@@ -400,7 +397,7 @@
 
 ! Additional force for GHD from darg force sum(beta_ig * Joi/rhop_i)
                   Ghd_drag = ZERO
-                  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                  IF (KT_TYPE_ENUM == GHD_2007) THEN
                     DO L = 1,SMAX
                       avgRop = AVG_Z(ROP_S(IJK,L),ROP_S(IJKT,L),K)
                       if(avgRop > ZERO) Ghd_drag = Ghd_drag -&
@@ -410,7 +407,8 @@
 
 ! Additional force for HYS drag force, do not use with mixture GHD theory
                   HYS_drag = ZERO
-                  IF (DRAG_TYPE_ENUM .EQ. HYS .AND. TRIM(KT_TYPE) /= 'GHD') THEN
+                  IF (DRAG_TYPE_ENUM .EQ. HYS .AND. &
+                      KT_TYPE_ENUM /= GHD_2007) THEN
                      DO L = 1,MMAX
                         IF (L /= M) THEN
                            avgDrag = AVG_Z(beta_ij(IJK,M,L),beta_ij(IJKT,M,L),K)
@@ -465,10 +463,6 @@
 ! (mu/x)*(dw/dx) part of tau_xz/x
                      EPMUOX = AVG_Z(MU_S(IJK,M),MU_S(IJKT,M),K)*OX(I) 
                      VXZB = ZERO 
-                     !A_M(IJK,E,M) = A_M(IJK,E,M) + HALF*EPMUOX*ODX_E(I)*&
-                     !      VOL_W(IJK) 
-                     !A_M(IJK,W,M) = A_M(IJK,W,M) - HALF*EPMUOX*ODX_E(IM)*&
-                     !      VOL_W(IJK)
                      A_M(IJK,E,M) = A_M(IJK,E,M) + HALF*EPMUOX*ODX_E(I)*&
                            VOL_W(IJK) 
                      A_M(IJK,W,M) = A_M(IJK,W,M) - HALF*EPMUOX*ODX_E(IM)*&
@@ -486,12 +480,6 @@
                   ENDIF 
 
 ! Collect the terms
-!                  A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+&
-!                     A_M(IJK,N,M)+A_M(IJK,S,M)+A_M(IJK,T,M)+&
-!                     A_M(IJK,B,M)+(V0+ZMAX(VMT)+VCOA+VXZA)*&
-!                     VOL_W(IJK)+ CTE - CTW) 
-!                  A_M(IJK,E,M) = A_M(IJK,E,M) - CTE
-!                  A_M(IJK,W,M) = A_M(IJK,W,M) + CTW  
                   A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+&
                      A_M(IJK,N,M)+A_M(IJK,S,M)+A_M(IJK,T,M)+&
                      A_M(IJK,B,M)+(V0+ZMAX(VMT)+VCOA+VXZA)*&
@@ -507,9 +495,9 @@
                   IF(USE_MMS) B_M(IJK,M) = &
                      B_M(IJK,M) - MMS_W_S_SRC(IJK)*VOL_W(IJK)
 
-                  IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN 
+                  IF (KT_TYPE_ENUM == IA_2005) THEN 
                     B_M(IJK,M) = B_M(IJK,M) - KTMOM_W_S(IJK,M) 
-                  ELSEIF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                  ELSEIF (KT_TYPE_ENUM == GHD_2007) THEN
                     B_M(IJK,M) = B_M(IJK,M) - Ghd_drag*VOL_W(IJK)
                   ENDIF
 
@@ -536,7 +524,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: SOURCE_W_s_BC                                           C
-!  Purpose: Determine source terms for U_g momentum eq. The terms      C
+!  Purpose: Determine source terms for W_s momentum eq. The terms      C
 !     appear in the center coefficient and RHS vector.  The center     C
 !     coefficient and source vector are negative.  The off-diagonal    C
 !     coefficients are positive.                                       C

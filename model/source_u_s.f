@@ -23,8 +23,6 @@
 !  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
 !                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
@@ -118,9 +116,10 @@
 !-----------------------------------------------
 
       DO M = 1, MMAX 
-        IF(TRIM(KT_TYPE) /= 'GHD' .OR. (TRIM(KT_TYPE) == 'GHD' .AND. &
-                                        M==MMAX)) THEN
-          IF (MOMENTUM_X_EQ(M)) THEN 
+        IF(KT_TYPE_ENUM /= GHD_2007 .OR. &
+           (KT_TYPE_ENUM == GHD_2007 .AND. M==MMAX)) THEN
+
+        IF (MOMENTUM_X_EQ(M)) THEN 
 
 
 !$omp  parallel do default(shared)                                   &
@@ -137,7 +136,6 @@
 ! Skip walls where some values are undefined.
                 IF(WALL_AT(IJK)) cycle
 
-
                 I = I_OF(IJK) 
                 J = J_OF(IJK)
                 K = K_OF(IJK)
@@ -151,7 +149,8 @@
                 IPJKM = IP_OF(IJKM)
                 IJKP = KP_OF(IJK)
 
-                IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                IF (KT_TYPE_ENUM == GHD_2007) THEN
+! with ghd theory, m = mmax
                   EPStmp = ZERO     
                   epsMix = ZERO
                   epsMixE= ZERO          
@@ -171,7 +170,7 @@
                   EPSA = AVG_X(EP_S(IJK,M),EP_S(IJKE,M),I) 
                 ENDIF
 
-! Impermeable internal surface                
+! Impermeable internal surface
                 IF (IP_AT_E(IJK)) THEN 
                   A_M(IJK,E,M) = ZERO 
                   A_M(IJK,W,M) = ZERO 
@@ -182,7 +181,7 @@
                   A_M(IJK,0,M) = -ONE 
                   B_M(IJK,M) = ZERO
 
-! Semi-permeable internal surface                  
+! Semi-permeable internal surface
                 ELSEIF (SIP_AT_E(IJK)) THEN 
                   A_M(IJK,E,M) = ZERO 
                   A_M(IJK,W,M) = ZERO 
@@ -204,7 +203,7 @@
                   A_M(IJK,B,M) = ZERO 
                   A_M(IJK,0,M) = -ONE 
                   B_M(IJK,M) = ZERO 
-                  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                  IF (KT_TYPE_ENUM == GHD_2007) THEN
                       EPSw = ZERO
                       EPSe = ZERO
                       EPSn = ZERO
@@ -282,7 +281,7 @@
                   ENDIF 
 
                   IF (CLOSE_PACKED(M)) THEN 
-                     IF(SMAX > 1 .AND. TRIM(KT_TYPE) /= 'GHD') THEN
+                     IF(SMAX > 1 .AND. KT_TYPE_ENUM /= GHD_2007) THEN
                         SUM_EPS_CP=0.0 
                         DO MM=1,SMAX
                           IF (CLOSE_PACKED(MM))&
@@ -371,7 +370,7 @@
 
 
 ! Interphase mass transfer
-                  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                  IF (KT_TYPE_ENUM == GHD_2007) THEN
                      VMTtmp = ZERO
                      DO L = 1,SMAX
                         VMTtmp = VMTtmp + HALF*(VOL(IJK)*SUM_R_S(IJK,L) + &
@@ -390,38 +389,41 @@
 
 ! Body force
                   IF (MODEL_B) THEN 
-                     IF (TRIM(KT_TYPE) /= 'GHD') THEN
-                       DRO1 = (RO_S(IJK,M)-RO_G(IJK))*EP_S(IJK,M) 
-                       DRO2 = (RO_S(IJK,M)-RO_G(IJKE))*EP_S(IJKE,M) 
-                       DROA = AVG_X(DRO1,DRO2,I) 
-                       VBF = DROA*BFX_S(IJK,M) 
-                     ELSE ! GHD and M = MMAX
-                       DRO1 = ROP_S(IJK,M)  - RO_G(IJK) *epsMix
-                       DRO2 = ROP_S(IJKE,M) - RO_G(IJKE)*epsMixE
-                       DROA = AVG_X(DRO1,DRO2,I) 
-                       VBF = DROA*BFX_S(IJK,M) 
+                     IF (KT_TYPE_ENUM == GHD_2007) THEN
+                        DRO1 = ROP_S(IJK,M)  - RO_G(IJK) *epsMix
+                        DRO2 = ROP_S(IJKE,M) - RO_G(IJKE)*epsMixE
+                        DROA = AVG_X(DRO1,DRO2,I) 
+                        VBF = DROA*BFX_S(IJK,M) 
+                     ELSE
+                        DRO1 = (RO_S(IJK,M)-RO_G(IJK))*EP_S(IJK,M) 
+                        DRO2 = (RO_S(IJK,M)-RO_G(IJKE))*EP_S(IJKE,M) 
+                        DROA = AVG_X(DRO1,DRO2,I) 
+                        VBF = DROA*BFX_S(IJK,M) 
                      ENDIF
                   ELSE ! model A
                      VBF = ROPSA*BFX_S(IJK,M) 
                   ENDIF 
 
-! Additional force for GHD from darg force sum(beta_ig * Joi/rhop_i)
+! Additional force for GHD from drag force sum(beta_ig * Joi/rhop_i)
                   Ghd_drag = ZERO
-                  IF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                  IF (KT_TYPE_ENUM == GHD_2007) THEN
                     DO L = 1,SMAX
                       avgRop = AVG_X(ROP_S(IJK,L),ROP_S(IJKE,L),I)
                       if(avgRop > ZERO) Ghd_drag = Ghd_drag - &
-                           AVG_X(F_GS(IJK,L),F_GS(IJKE,L),I) * JoiX(IJK,L) / avgRop
+                           AVG_X(F_GS(IJK,L),F_GS(IJKE,L),I) * &
+                           JoiX(IJK,L) / avgRop
                     ENDDO
                   ENDIF
 
 ! Additional force for HYS drag force, do not use with mixture GHD theory
                   HYS_drag = ZERO
-                  IF (DRAG_TYPE_ENUM .EQ. HYS .AND. TRIM(KT_TYPE) /= 'GHD') THEN
+                  IF (DRAG_TYPE_ENUM .EQ. HYS .AND. &
+                      KT_TYPE_ENUM /= GHD_2007) THEN
                      DO L = 1,MMAX
                         IF (L /= M) THEN
                            avgDrag = AVG_X(beta_ij(IJK,M,L),beta_ij(IJKE,M,L),I)
-                           HYS_drag = HYS_drag - avgDrag * (U_g(ijk) - U_s(IJK,L))
+                           HYS_drag = HYS_drag - avgDrag * &
+                              (U_g(ijk) - U_s(IJK,L))
                         ENDIF
                      ENDDO
                   ENDIF
@@ -456,9 +458,9 @@
                   IF(USE_MMS)B_M(IJK,M) = &
                      B_M(IJK,M) - MMS_U_S_SRC(IJK)*VOL_U(IJK)
 
-                  IF (TRIM(KT_TYPE) .EQ. 'IA_NONEP') THEN 
+                  IF (KT_TYPE_ENUM == IA_2005) THEN 
                      B_M(IJK,M) = B_M(IJK,M) - KTMOM_U_S(IJK,M)
-                  ELSEIF (TRIM(KT_TYPE) .EQ. 'GHD') THEN
+                  ELSEIF (KT_TYPE_ENUM == GHD_2007) THEN
                      B_M(IJK,M) = B_M(IJK,M) - Ghd_drag*VOL_U(IJK)
                   ENDIF
 
@@ -483,7 +485,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: SOURCE_U_s_BC                                           C
-!  Purpose: Determine source terms for U_g momentum eq. The terms      C
+!  Purpose: Determine source terms for U_s momentum eq. The terms      C
 !     appear in the center coefficient and RHS vector.  The center     C
 !     coefficient and source vector are negative.  The off-diagonal    C
 !     coefficients are positive.                                       C

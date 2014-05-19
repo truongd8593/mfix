@@ -423,13 +423,19 @@
       SELECT CASE(trim(adjustl(KT_TYPE)))
 
 !``````````````````````````````````````````````````````````````````````
-      CASE ('IA_NONEP')
-      CASE ('GD_99')
-      CASE ('GTSH')
 
+      CASE ('IA_NONEP')
+         KT_TYPE_ENUM = IA_2005
+
+      CASE ('GD_99')
+         KT_TYPE_ENUM = GD_1999
+
+      CASE ('GTSH')
+         KT_TYPE_ENUM = GTSH_2012
 
 !``````````````````````````````````````````````````````````````````````
       CASE ('GHD')
+         KT_TYPE_ENUM = GHD_2007
 
          IF(DRAG_TYPE_ENUM /= WEN_YU .AND. DRAG_TYPE_ENUM /= HYS) THEN
             WRITE(ERR_MSG, 1101)
@@ -468,9 +474,9 @@
 
 !``````````````````````````````````````````````````````````````````````
       CASE ('AHMADI')
-         KT_TYPE = UNDEFINED_C
+         KT_TYPE_ENUM = AHMADI_1995
          AHMADI = .TRUE.
-
+         
          IF(.NOT.GRANULAR_ENERGY)THEN
             WRITE(ERR_MSG,1111) 'GRANULAR_ENERGY = .TRUE.'
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -486,8 +492,8 @@
 
 !``````````````````````````````````````````````````````````````````````
       CASE ('SIMONIN')
-         KT_TYPE = UNDEFINED_C
          SIMONIN = .TRUE.
+         KT_TYPE_ENUM = SIMONIN_1996
 
          IF(.NOT.GRANULAR_ENERGY)THEN
             WRITE(ERR_MSG,1121) 'GRANULAR_ENERGY = .TRUE.'
@@ -502,10 +508,10 @@
          'Please correct the mfix.dat file.')  
 
 
-! Lun is the defalut implementation.
+! Lun is the default implementation.
 !``````````````````````````````````````````````````````````````````````
       CASE ('LUN_1984')
-         KT_TYPE = UNDEFINED_C
+         KT_TYPE_ENUM = LUN_1984
 
       CASE DEFAULT
          WRITE(ERR_MSG,1100) trim(adjustl(KT_TYPE))
