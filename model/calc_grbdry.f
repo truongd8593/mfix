@@ -976,6 +976,9 @@
 
 
       CASE (AHMADI_1995)
+! particle relaxation time
+         Tau_12_st = ROS_avg(M)/(DgA+small_number)
+
          IF(EPS(M) < (ONE-ep_star_avg)) THEN
             Tmp_Ahmadi_Const = ONE/&
                (ONE+ Tau_1_avg/Tau_12_st * (ONE-EPS(M)/(ONE-ep_star_avg))**3)
