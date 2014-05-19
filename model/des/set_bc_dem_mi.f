@@ -52,7 +52,7 @@
       DOUBLE PRECISION :: VOL_FLOW
 
 
-      LOGICAL, parameter :: setDBG = .TRUE.
+      LOGICAL, parameter :: setDBG = .FALSE.
       LOGICAL :: dFlag
 
 
@@ -348,7 +348,7 @@
 
       INTEGER :: BND1, BND2
 
-      LOGICAL, parameter :: setDBG = .TRUE.
+      LOGICAL, parameter :: setDBG = .FALSE.
       LOGICAL :: dFlag
 
       INTEGER :: I,J,K,IJK

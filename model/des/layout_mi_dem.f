@@ -429,7 +429,7 @@
 
       LOGICAL, EXTERNAL :: COMPARE
 
-      LOGICAL, parameter :: setDBG = .TRUE.
+      LOGICAL, parameter :: setDBG = .FALSE.
       LOGICAL :: dFlag
 
 
