@@ -98,6 +98,7 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
+      DOUBLE PRECISION :: WALL_TIME
 !-----------------------------------------------
 
 ! DISTIO
@@ -150,6 +151,7 @@
 ! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
 ! queue terminates. timestep at the beginning of execution
       CALL CPU_TIME (CPU00)
+      WALL0 = WALL_TIME()
 
 ! Read input data, check data, do computations for IC and BC locations
 ! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
@@ -394,8 +396,7 @@
          '************** CPU TIME for IO **********************',&
          CPU_IO
       endif
-      CALL WRITE_OUT3 (CPUTIME_USED)
-
+      CALL WRITE_OUT3 (CPUTIME_USED,WALL_TIME() - WALL0)
 
 ! JFD: cartesian grid implementation
       IF(WRITE_DASHBOARD) THEN

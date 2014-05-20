@@ -1,9 +1,7 @@
       MODULE time_cpu
 
-
       Use param
       Use param1
-
 
 !                      cpu time/second
       DOUBLE PRECISION CPUos
@@ -12,11 +10,11 @@
 !                       Initial value of CPU time.
       DOUBLE PRECISION CPU0
 !
-!			Time for IO
-	DOUBLE PRECISION CPU0_IO, CPU1_IO, CPU_IO
-
+!                       Time for IO
+        DOUBLE PRECISION CPU0_IO, CPU1_IO, CPU_IO
 
 !AEOLUS STOP Initial value of CPU time at the begin of MFIX, prior any I/O
       DOUBLE PRECISION CPU00
+      DOUBLE PRECISION WALL0
 
-      END MODULE time_cpu                                                                        
+      END MODULE time_cpu
