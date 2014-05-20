@@ -17,7 +17,7 @@
   Run_type    = 'new'
 
   Time  = 0.0
-  Tstop = 1.50
+  Tstop = 0.10
   DT    = 1.0E-4
 
   ENERGY_EQ  = .T.

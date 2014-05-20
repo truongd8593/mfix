@@ -38,7 +38,7 @@
   Run_type    = 'new'
 
   Time   =   0.0
-  Tstop  =   1.0     ! Simulation length
+  Tstop  =   0.1     ! Simulation length
   DT     =   1.0E-4  ! Initial time step-size
   DT_MAX =   1.0E-2  ! Maximum time step-size
   DT_MIN =   1.0E-8  ! Minimum time step-size
