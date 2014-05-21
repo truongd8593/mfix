@@ -2817,7 +2817,7 @@
 !$omp           Vsl_B, Wsl_n, Wsl_S, Wsl_E, Wsl_W, Usl_C, Wsl_C,               &
 !$omp           UGC, VGC, WGC, USCM, VSCM, WSCM, USCM1, VSCM1, WSCM1,          &
 !$omp           SqrtVs, SqrtVgMinusVs,                                         &
-!$omp           D_s, D_sl, M, L, C_d, Re,                                      &
+!$omp           D_s, D_sl, L, C_d, Re,                                         &
 !$omp           DEP_soDX, DEP_soDY, DEP_soXDZ, M_s, I1, I2)
 
       DO IJK = ijkstart3, ijkend3
