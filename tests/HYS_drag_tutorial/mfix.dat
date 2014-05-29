@@ -169,7 +169,7 @@
   IC_U_s(1,1)     =       0.0
   IC_V_s(1,1)     =     400.0
 #  IC_Theta_m(1,1) =       1.0d-5  ! initial granular temperature
-                                  ! for IA_NONEP units are g.cm/s^2
+                                  ! for IA_NONEP units are g.(cm/s)^2
 
   IC_U_s(1,2)     =       0.0
   IC_V_s(1,2)     =     400.0
