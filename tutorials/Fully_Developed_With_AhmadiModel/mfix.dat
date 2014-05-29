@@ -15,8 +15,7 @@
   UNITS = 'cgs'
   TIME  =0.0  
   TSTOP = 200.0
-  DT = 0.1
-  DT_MIN = 0.1
+  DT = 0.05
   DT_FAC = 1
   ENERGY_EQ = .FALSE.
   SPECIES_EQ = .FALSE.    .FALSE.
@@ -153,7 +152,7 @@
   NLOG   = 25
   RESID_STRING = 'P0' 'P1' 'V0' 'V1' 'K0' 'G1'
 #  FULL_LOG = .TRUE.
-  
+
 # DMP control
   
   NODESI = 1  NODESJ = 1   NODESK = 1
