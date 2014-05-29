@@ -1036,10 +1036,12 @@
       LOGICAL, INTENT(IN),optional  :: WRITE_FACETS_EACH_CELL
       INTEGER ::  CELL_ID, N, I, J, K, COUNT, COUNT_FACETS, IJK
       CHARACTER*100 :: FILENAME
-      LOGICAL :: FACET_WRITTEN(DIM_STL), write_each_cell
-
+      LOGICAL :: write_each_cell
+      LOGICAL, DIMENSION(:), allocatable :: FACET_WRITTEN
 
       INCLUDE 'function.inc'
+
+      ALLOCATE (FACET_WRITTEN(DIM_STL))
 
       write_each_cell = .false.
       if(present(WRITE_FACETS_EACH_CELL)) then
@@ -1106,6 +1108,8 @@
       write(444,*)'endsolid vcg'
 
       close(444)
+
+      DEALLOCATE (FACET_WRITTEN)
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,*) ' The file geometry_from_grid_facets.stl was sucessfully written.'
