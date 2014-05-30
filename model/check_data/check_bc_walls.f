@@ -73,13 +73,6 @@
 ! Input checks for user-defined scalar equations.
       CALL CHECK_BC_WALLS_SCALAR_EQ(BCV)
 
-! Set the default specification of Johnson-Jackson BC
-      IF(BC_JJ_PS(BCV) == UNDEFINED_I)                                 &
-         BC_JJ_PS(BCV) = merge(1,0,GRANULAR_ENERGY)
-
-! Set Jenkins default specification, modify BC_JJ accordingly
-      IF(GRANULAR_ENERGY .AND. JENKINS) BC_JJ_PS(BCV) = 1
-
       CALL FINL_ERR_MSG
 
       RETURN  
@@ -222,7 +215,6 @@
       SUBROUTINE CHECK_BC_WALLS_TFM(BCV,M)
 
 
-
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! User-input: type of BC
@@ -245,22 +237,38 @@
       use run, only: SPECIES_EQ
 ! Flag: Solve Granular energy PDE
       use run, only: GRANULAR_ENERGY
-! Flag: Use revised phihp for JJ BC.
-      use bc, only: BC_JJ_PS
-! Flag: Solve K-th direction (3D)
-      use geometry, only: DO_K
 ! User-input: solids kinetic-theory model.
       use run, only: KT_TYPE_ENUM, GHD_2007
+! Flag: Use johnson and jackson bc
+      use bc, only: BC_JJ_PS
+! Flag: use revised phip for JJ BC.
+      use run, only: bc_jj_m, phip_out_jj
+! Flag: use jenkins small friction bc
+      use run, only: jenkins
+! User input: particle wall restitution coefficient and
+! angle of internal friction at walls (degrees)
+      use constant, only: e_w, phi_w
+! Used by jenkins or revised phip bcs
+      use constant, only: tan_phi_w 
+! Used by revised phip for jj bc
+      use constant, only: k4phi, phip0
+! User-Input: number of reactionrates
+!      use rxns, only: nrr
+! Flag: Solve K-th direction (3D)
+      use geometry, only: DO_K
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! Parameter constants.
-      use param1, only: ZERO, UNDEFINED
+      use param1, only: ONE, ZERO, UNDEFINED, UNDEFINED_I
+! parameter values
+      use constant, only: pi
 
+      use rxns
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       use error_manager
-
+      use funits, only: unit_log
       IMPLICIT NONE
 
 ! Dummy Arguments.
@@ -294,9 +302,24 @@
          CHECK_SCALARS  = .TRUE.
       END SELECT
 
+! Set the default specification of Johnson-Jackson BC
+      IF(BC_JJ_PS(BCV) == UNDEFINED_I)                                 &
+         BC_JJ_PS(BCV) = merge(1,0,GRANULAR_ENERGY)
+
+! specifying bc_jj_ps=1 without granular_energy would cause problem in
+! the momentum bc routines
+      IF(.NOT.GRANULAR_ENERGY .AND. BC_JJ_PS(BCV) == 1) THEN
+         WRITE(ERR_MSG, 1101)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF 
+ 1101 FORMAT('Error 1101: Invoking BC_JJ_PS requires GRANULAR_ENERGY', &
+         '=.TRUE.',/ 'Please correct the mfix.dat file.')
+
 ! The wall velocities are not needed for no-slip or free-slip
+! Wall velocities are needed if johnson-jackson bc model is used
       IF(CHECK_MOMENTUM) THEN
-         IF(BC_TYPE(BCV) == 'PAR_SLIP_WALL') THEN 
+         IF(BC_TYPE(BCV) == 'PAR_SLIP_WALL' .OR. &
+            BC_JJ_PS(BCV) /= ZERO) THEN
             IF(BC_UW_S(BCV,M) == UNDEFINED) THEN
                WRITE(ERR_MSG,1000) trim(iVar('BC_Uw_s',BCV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -374,6 +397,74 @@
       ELSE
       ENDIF ! Check Scalars
 
+
+      IF(GRANULAR_ENERGY .AND. BC_JJ_PS(BCV) == 1) THEN
+! small frictional boundary condition model
+         IF(JENKINS) THEN
+            IF (BC_JJ_M) THEN
+               WRITE(ERR_MSG, 1203)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ELSEIF (PHI_W == UNDEFINED) THEN
+               WRITE(ERR_MSG, 1204)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ELSEIF (E_W > ONE .OR. E_W < ZERO) THEN
+               WRITE(ERR_MSG, 1001) 'E_W', E_W
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+           ENDIF
+! PHI_W is given in degrees but calculated in radian within 
+! the fortran codes 
+            TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
+         ENDIF
+
+! k4phi, phip0 for variable specularity coefficient
+         k4phi = undefined
+         IF(BC_JJ_M) THEN
+            IF (JENKINS) THEN
+               WRITE(ERR_MSG, 1203)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ELSEIF (PHI_W == UNDEFINED) THEN
+               WRITE(ERR_MSG, 1204)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ELSEIF (E_W > ONE .OR. E_W < ZERO) THEN
+               WRITE(ERR_MSG, 1001) 'E_W', E_W
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+! PHI_W is given in degrees but calculated in radian within 
+! the fortran codes 
+            TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
+ 
+            k4phi = 7.d0/2.d0*tan_phi_w*(1.d0+e_w)
+            IF (phip0 .eq. UNDEFINED) THEN
+               phip0 = -0.0012596340709032689 + &
+                        0.10645510095633175*k4phi - &
+                        0.04281476447854031*k4phi**2 + &
+                        0.009759402181229842*k4phi**3 - &
+                        0.0012508257938705263*k4phi**4 + &
+                        0.00008369829630479206*k4phi**5 - &
+                        0.000002269550565981776*k4phi**6
+! if k4phi is less than 0.2, the analytical expression for phi is used
+! to estimate the phi at r->0
+               IF (k4phi .le. 0.2d0) THEN
+                  phip0=0.09094568176225006*k4phi
+               ENDIF
+               WRITE (UNIT_LOG, 1207) phip0
+            ENDIF
+            IF (phip0 < 0) THEN
+               WRITE(ERR_MSG, 1208)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+
+            IF (PHIP_OUT_JJ) THEN
+               IF(nRR < 1) THEN
+                  WRITE(ERR_MSG, 1209)
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
+               WRITE (UNIT_LOG, 1210) phip0
+            ENDIF
+         ENDIF
+      ENDIF
+
+
       CALL FINL_ERR_MSG
 
       RETURN  
@@ -384,6 +475,24 @@
  1001 FORMAT('Error 1001: Illegal or unphysical input: ',A,' = ',A,/   &
          'Please correct the mfix.dat file.')
 
+ 1203 FORMAT('Error 1203: JENKINS and BC_JJ_M cannot be used at the',&
+         ' same time',/'Please correct the mfix.dat file.')
+ 1204 FORMAT('Error 1204: Angle of particle-wall friction (PHI_W) not',&
+         ' specified.',/'Please correct the mfix.dat file.')
+
+ 1208 FORMAT('Error 1208: phip0 less than zero.') 
+ 1209 FORMAT('Error 1209: nRR should be at least 1 for storing ',&
+             'specularity.')
+ 
+ 1207 FORMAT(/1X,70('*')//' From: CHECK_BC_WALLS_TFM',/' Message: ',&
+         'No input for phip0 available, working expression is used.',/ &
+         'phip0=',G12.5,/1X,70('*')/)          
+ 1210 FORMAT(/1X,70('*')//' From: CHECK_BC_WALLS_TFM',/' Message: ',&
+         'Specularity will be stored as the first element of ', &
+         'ReactionRates',/1X,'array in WALL CELLS. Please avoid ', &
+         'overwriting it when reacting flow',/1X,' is simulated.', &
+         /1X,70('*')/)          
+ 
       END SUBROUTINE CHECK_BC_WALLS_TFM
 
 
