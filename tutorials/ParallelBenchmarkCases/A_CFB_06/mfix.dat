@@ -25,7 +25,9 @@
 
   GRANULAR_ENERGY = .T.
 
-  Friction = .true.
+  SCHAEFFER = .F.
+
+  FRICTION = .T.
   Savage = 2
 
 #_______________________________________________________________________
