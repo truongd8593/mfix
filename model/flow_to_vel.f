@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: FLOW_TO_VEL                                             !
+!  Subroutine: FLOW_TO_VEL_NEW                                         !
 !  Author: M. Syamlal                                 Date: 28-JUL-92  !
 !                                                                      !
 !  Purpose: Convert volumetric and mass flow rates to velocities       !
@@ -90,7 +90,7 @@
 
  1100 FORMAT('Warning 1100: Some volumetric or mass flow rates have ', &
          'been converted',/'velocity. Ensure that the third (unused) ',&
-         'dimension in 2D simulations',/'is correctly specirfed (e.g.',&
+         'dimension in 2D simulations',/'is correctly specified (e.g.',&
          ', in axisymmetric cylindrical coordinates',/'ZLENGTH = 2*Pi)')
 
       END SUBROUTINE FLOW_TO_VEL_NEW
@@ -245,8 +245,9 @@
       ENDIF
 
  1100 FORMAT('Error 1100: Solids phase ',I2,' has a specified mass ',  &
-         'flow rate',/'at BC ',I3,', ',A,'. But, BC_ROP_s are BC_EP_s',&
-         ' are zero.',/'Please correct the mfix.dat file.')
+         'flow rate',/'at BC ',I3,', ',A,'. But, both BC_ROP_s and ',&
+         'BC_EP_s are zero or undefined.',/'Please correct the ',&
+         'mfix.dat file.')
 
       IF(COMPARE(BC_MASSFLOW_S(BCV,M),ZERO)) THEN
          VOLFLOW = ZERO
@@ -342,7 +343,7 @@
       CASE ('MASS_INFLOW');  SGN =  ONE; OFF = ZERO
       CASE ('MASS_OUTFLOW'); SGN = -ONE; OFF = ONE
       CASE DEFAULT
-        write(*,*) 'stupid error in GAS_VOLFLOW_TO_VELOCITY'
+        write(*,*) 'error in GAS_VOLFLOW_TO_VELOCITY'
         call mfix_exit(myPE)
       END SELECT
 
@@ -418,7 +419,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: FLOW_TO_VEL                                             !
+!  Subroutine: SOLIDS_VOLFLOW_TO_VELOCITY                              !
 !  Author: M. Syamlal                                 Date: 28-JUL-92  !
 !                                                                      !
 !  Purpose: Convert volumetric and mass flow rates to velocities       !
@@ -472,15 +473,16 @@
       ENDIF
 
  1100 FORMAT('Error 1100: Solids phase ',I2,' has a specified ',       &
-         'volumetric flow rate',/'at BC ',I3,', ',A,'. But, BC_ROP_s ',&
-         'are BC_EP_s are zero.',/'Please correct the mfix.dat file.')
+         'volumetric flow rate',/'at BC ',I3,', ',A,'. But, both ',&
+         'BC_ROP_s and BC_EP_s are zero or undefined.',/'Please ',&
+         'the mfix.dat file.')
 
 
       SELECT CASE (trim(BC_TYPE(BCV)))
       CASE ('MASS_INFLOW');  SGN =  ONE; OFF = ZERO
       CASE ('MASS_OUTFLOW'); SGN = -ONE; OFF = ONE
       CASE DEFAULT
-        write(*,*) 'stupid error in GAS_VOLFLOW_TO_VELOCITY'
+        write(*,*) 'error in SOLIDS_VOLFLOW_TO_VELOCITY'
         call mfix_exit(myPE)
       END SELECT
 

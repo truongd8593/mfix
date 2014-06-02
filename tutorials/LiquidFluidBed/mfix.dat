@@ -18,7 +18,7 @@
   GRANULAR_ENERGY       = .TRUE.                    ! solve full granular energy eq
   FRICTION              = .TRUE.              ! frictional model based on this paper:
   SAVAGE                = 2                   ! Powder Technol. 129 (2003) 72-85
-
+  SCHAEFFER = .FALSE.
                                                                                
 ! Geometry Section                                                              
                                                                                

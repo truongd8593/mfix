@@ -59,8 +59,7 @@
 ! Dimensionless constants
       PI = 4.D0*ATAN(ONE) 
       SQRT_PI = SQRT(PI) 
-      K_SCALE = .08D0 
-      ETA = (1D0 + C_E)*0.5D0 
+      K_SCALE = .08D0   ! this actually isn't used anywhere...
 
 
 ! Enter the value of all constants in various units (CGS or SI)

@@ -1298,9 +1298,7 @@ $(DPO)VISC_G.mod : visc_g_mod.f \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) visc_g_mod.f  -o $(DPO)visc_g_mod.$(OBJ_EXT) -module $(DPO)
-$(DPO)VISC_S.mod : visc_s_mod.f \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod 
+$(DPO)VISC_S.mod : visc_s_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) visc_s_mod.f  -o $(DPO)visc_s_mod.$(OBJ_EXT) -module $(DPO)
 $(DPO)VSHEAR.mod : vshear_mod.f \
             $(DPO)PARAM.mod \
@@ -1728,6 +1726,7 @@ $(DPO)adjust_a_w_s.$(OBJ_EXT) : adjust_a_w_s.f \
             $(DPO)GEOMETRY.mod \
             $(DPO)RUN.mod \
             $(DPO)INDICES.mod \
+            $(DPO)COMPAR.mod \
             $(DPO)SENDRECV.mod \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -1742,15 +1741,13 @@ $(DPO)adjust_dt.$(OBJ_EXT) : adjust_dt.f \
             $(DPO)MPI_UTILITY.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) adjust_dt.f  -o $(DPO)adjust_dt.$(OBJ_EXT) -module $(DPO)
 $(DPO)adjust_eps.$(OBJ_EXT) : adjust_eps.f \
-            $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
             $(DPO)TOLERANC.mod \
-            $(DPO)CONSTANT.mod \
             $(DPO)FLDVAR.mod \
+            $(DPO)RUN.mod \
+            $(DPO)PHYSPROP.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)INDICES.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)RUN.mod \
             $(DPO)COMPAR.mod \
             $(DPO)SENDRECV.mod \
             function.inc                                                
@@ -1770,16 +1767,15 @@ $(DPO)adjust_rop.$(OBJ_EXT) : adjust_rop.f \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) adjust_rop.f  -o $(DPO)adjust_rop.$(OBJ_EXT) -module $(DPO)
 $(DPO)adjust_theta.$(OBJ_EXT) : adjust_theta.f \
-            $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
             $(DPO)TOLERANC.mod \
             $(DPO)CONSTANT.mod \
             $(DPO)FLDVAR.mod \
-            $(DPO)GEOMETRY.mod \
-            $(DPO)INDICES.mod \
             $(DPO)PHYSPROP.mod \
             $(DPO)RUN.mod \
             $(DPO)COMPAR.mod \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)INDICES.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) adjust_theta.f  -o $(DPO)adjust_theta.$(OBJ_EXT) -module $(DPO)
 $(DPO)allocate_arrays.$(OBJ_EXT) : allocate_arrays.f \
@@ -2123,34 +2119,29 @@ $(DPO)calc_mu_g.$(OBJ_EXT) : calc_mu_g.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) calc_mu_g.f  -o $(DPO)calc_mu_g.$(OBJ_EXT) -module $(DPO)
 $(DPO)calc_mu_s.$(OBJ_EXT) : calc_mu_s.f \
             $(DPO)RUN.mod \
-            $(DPO)VSHEAR.mod \
             $(DPO)VISC_S.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)CONSTANT.mod \
             $(DPO)FLDVAR.mod \
-            $(DPO)COMPAR.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)GEOMETRY.mod \
+            $(DPO)PHYSPROP.mod \
             $(DPO)QMOM_KINETIC_EQUATION.mod \
             $(DPO)MMS.mod \
+            $(DPO)COMPAR.mod \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)INDICES.mod \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
+            $(DPO)CONSTANT.mod \
             $(DPO)TRACE.mod \
             $(DPO)TOLERANC.mod \
-            $(DPO)TURB.mod \
             $(DPO)DRAG.mod \
+            $(DPO)TURB.mod \
             $(DPO)KINTHEORY.mod \
             $(DPO)UR_FACS.mod \
             $(DPO)CUTCELL.mod \
-            $(DPO)PARALLEL.mod \
-            $(DPO)VISC_G.mod \
+            $(DPO)VSHEAR.mod \
             $(DPO)IS.mod \
-            $(DPO)SENDRECV.mod \
             function.inc                                                 \
             ep_s1.inc                                                    \
             ep_s2.inc                                                    \
-            s_pr1.inc                                                    \
-            s_pr2.inc                                                    \
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) calc_mu_s.f  -o $(DPO)calc_mu_s.$(OBJ_EXT) -module $(DPO)
@@ -2511,18 +2502,18 @@ $(DPO)conv_dif_u_g.$(OBJ_EXT) : conv_dif_u_g.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) conv_dif_u_g.f  -o $(DPO)conv_dif_u_g.$(OBJ_EXT) -module $(DPO)
 $(DPO)conv_dif_u_s.$(OBJ_EXT) : conv_dif_u_s.f \
             $(DPO)PARAM.mod \
+            $(DPO)RUN.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)VISC_S.mod \
             $(DPO)PARAM1.mod \
             $(DPO)PARALLEL.mod \
             $(DPO)MATRIX.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)INDICES.mod \
-            $(DPO)RUN.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)VISC_S.mod \
-            $(DPO)COMPAR.mod \
             $(DPO)TOLERANC.mod \
             $(DPO)FLDVAR.mod \
             $(DPO)OUTPUT.mod \
+            $(DPO)COMPAR.mod \
             $(DPO)MFLUX.mod \
             $(DPO)CUTCELL.mod \
             $(DPO)XSI_ARRAY.mod \
@@ -2530,11 +2521,9 @@ $(DPO)conv_dif_u_s.$(OBJ_EXT) : conv_dif_u_s.f \
             $(DPO)SENDRECV.mod \
             $(DPO)SENDRECV3.mod \
             $(DPO)VSHEAR.mod \
-            ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
             function3.inc                                               
 	$(FORTRAN_CMD) $(FORT_FLAGS) conv_dif_u_s.f  -o $(DPO)conv_dif_u_s.$(OBJ_EXT) -module $(DPO)
 $(DPO)conv_dif_v_g.$(OBJ_EXT) : conv_dif_v_g.f \
@@ -2567,18 +2556,18 @@ $(DPO)conv_dif_v_g.$(OBJ_EXT) : conv_dif_v_g.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) conv_dif_v_g.f  -o $(DPO)conv_dif_v_g.$(OBJ_EXT) -module $(DPO)
 $(DPO)conv_dif_v_s.$(OBJ_EXT) : conv_dif_v_s.f \
             $(DPO)PARAM.mod \
+            $(DPO)RUN.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)VISC_S.mod \
             $(DPO)PARAM1.mod \
             $(DPO)PARALLEL.mod \
             $(DPO)MATRIX.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)INDICES.mod \
-            $(DPO)RUN.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)VISC_S.mod \
-            $(DPO)COMPAR.mod \
             $(DPO)TOLERANC.mod \
             $(DPO)FLDVAR.mod \
             $(DPO)OUTPUT.mod \
+            $(DPO)COMPAR.mod \
             $(DPO)MFLUX.mod \
             $(DPO)CUTCELL.mod \
             $(DPO)XSI_ARRAY.mod \
@@ -2623,18 +2612,18 @@ $(DPO)conv_dif_w_g.$(OBJ_EXT) : conv_dif_w_g.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) conv_dif_w_g.f  -o $(DPO)conv_dif_w_g.$(OBJ_EXT) -module $(DPO)
 $(DPO)conv_dif_w_s.$(OBJ_EXT) : conv_dif_w_s.f \
             $(DPO)PARAM.mod \
+            $(DPO)RUN.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)VISC_S.mod \
             $(DPO)PARAM1.mod \
             $(DPO)PARALLEL.mod \
             $(DPO)MATRIX.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)INDICES.mod \
-            $(DPO)RUN.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)VISC_S.mod \
-            $(DPO)COMPAR.mod \
             $(DPO)TOLERANC.mod \
             $(DPO)FLDVAR.mod \
             $(DPO)OUTPUT.mod \
+            $(DPO)COMPAR.mod \
             $(DPO)MFLUX.mod \
             $(DPO)CUTCELL.mod \
             $(DPO)XSI_ARRAY.mod \
@@ -2642,11 +2631,9 @@ $(DPO)conv_dif_w_s.$(OBJ_EXT) : conv_dif_w_s.f \
             $(DPO)SENDRECV.mod \
             $(DPO)SENDRECV3.mod \
             $(DPO)VSHEAR.mod \
-            ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
             function3.inc                                               
 	$(FORTRAN_CMD) $(FORT_FLAGS) conv_dif_w_s.f  -o $(DPO)conv_dif_w_s.$(OBJ_EXT) -module $(DPO)
 $(DPO)conv_pp_g.$(OBJ_EXT) : conv_pp_g.f \
@@ -2909,6 +2896,7 @@ $(DPO)drag_ss.$(OBJ_EXT) : drag_ss.f \
             $(DPO)DRAG.mod \
             $(DPO)DISCRETELEMENT.mod \
             $(DPO)RUN.mod \
+            $(DPO)KINTHEORY.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -3250,20 +3238,17 @@ $(DPO)kintheory_energy_dissipation_ss.$(OBJ_EXT) : kintheory_energy_dissipation_
             fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) kintheory_energy_dissipation_ss.f  -o $(DPO)kintheory_energy_dissipation_ss.$(OBJ_EXT) -module $(DPO)
 $(DPO)kintheory_u_s.$(OBJ_EXT) : kintheory_u_s.f \
-            $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
-            $(DPO)MATRIX.mod \
-            $(DPO)SCALES.mod \
-            $(DPO)CONSTANT.mod \
             $(DPO)RUN.mod \
-            $(DPO)TOLERANC.mod \
             $(DPO)PHYSPROP.mod \
+            $(DPO)KINTHEORY.mod \
+            $(DPO)CONSTANT.mod \
+            $(DPO)VISC_S.mod \
+            $(DPO)FLDVAR.mod \
+            $(DPO)TOLERANC.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)INDICES.mod \
             $(DPO)COMPAR.mod \
-            $(DPO)KINTHEORY.mod \
-            $(DPO)FLDVAR.mod \
-            $(DPO)VISC_S.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -3271,20 +3256,17 @@ $(DPO)kintheory_u_s.$(OBJ_EXT) : kintheory_u_s.f \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) kintheory_u_s.f  -o $(DPO)kintheory_u_s.$(OBJ_EXT) -module $(DPO)
 $(DPO)kintheory_v_s.$(OBJ_EXT) : kintheory_v_s.f \
-            $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
-            $(DPO)MATRIX.mod \
-            $(DPO)SCALES.mod \
-            $(DPO)CONSTANT.mod \
             $(DPO)RUN.mod \
-            $(DPO)TOLERANC.mod \
             $(DPO)PHYSPROP.mod \
+            $(DPO)KINTHEORY.mod \
+            $(DPO)CONSTANT.mod \
+            $(DPO)VISC_S.mod \
+            $(DPO)FLDVAR.mod \
+            $(DPO)TOLERANC.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)INDICES.mod \
             $(DPO)COMPAR.mod \
-            $(DPO)KINTHEORY.mod \
-            $(DPO)FLDVAR.mod \
-            $(DPO)VISC_S.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -3292,20 +3274,17 @@ $(DPO)kintheory_v_s.$(OBJ_EXT) : kintheory_v_s.f \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) kintheory_v_s.f  -o $(DPO)kintheory_v_s.$(OBJ_EXT) -module $(DPO)
 $(DPO)kintheory_w_s.$(OBJ_EXT) : kintheory_w_s.f \
-            $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
-            $(DPO)MATRIX.mod \
-            $(DPO)SCALES.mod \
-            $(DPO)CONSTANT.mod \
             $(DPO)RUN.mod \
-            $(DPO)TOLERANC.mod \
             $(DPO)PHYSPROP.mod \
+            $(DPO)KINTHEORY.mod \
+            $(DPO)CONSTANT.mod \
+            $(DPO)VISC_S.mod \
+            $(DPO)FLDVAR.mod \
+            $(DPO)TOLERANC.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)INDICES.mod \
             $(DPO)COMPAR.mod \
-            $(DPO)KINTHEORY.mod \
-            $(DPO)FLDVAR.mod \
-            $(DPO)VISC_S.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
@@ -4734,24 +4713,17 @@ $(DPO)tau_u_g.$(OBJ_EXT) : tau_u_g.f \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) tau_u_g.f  -o $(DPO)tau_u_g.$(OBJ_EXT) -module $(DPO)
 $(DPO)tau_u_s.$(OBJ_EXT) : tau_u_s.f \
-            $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
-            $(DPO)PARALLEL.mod \
-            $(DPO)MATRIX.mod \
-            $(DPO)SCALES.mod \
-            $(DPO)CONSTANT.mod \
             $(DPO)PHYSPROP.mod \
             $(DPO)FLDVAR.mod \
             $(DPO)VISC_S.mod \
-            $(DPO)RXNS.mod \
-            $(DPO)RUN.mod \
             $(DPO)TOLERANC.mod \
+            $(DPO)RUN.mod \
+            $(DPO)VSHEAR.mod \
+            $(DPO)COMPAR.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)INDICES.mod \
-            $(DPO)IS.mod \
-            $(DPO)VSHEAR.mod \
             $(DPO)SENDRECV.mod \
-            $(DPO)COMPAR.mod \
             $(DPO)BC.mod \
             $(DPO)QUADRIC.mod \
             $(DPO)CUTCELL.mod \
@@ -4789,23 +4761,16 @@ $(DPO)tau_v_g.$(OBJ_EXT) : tau_v_g.f \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) tau_v_g.f  -o $(DPO)tau_v_g.$(OBJ_EXT) -module $(DPO)
 $(DPO)tau_v_s.$(OBJ_EXT) : tau_v_s.f \
-            $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
-            $(DPO)PARALLEL.mod \
-            $(DPO)MATRIX.mod \
-            $(DPO)SCALES.mod \
-            $(DPO)CONSTANT.mod \
             $(DPO)PHYSPROP.mod \
             $(DPO)FLDVAR.mod \
             $(DPO)VISC_S.mod \
-            $(DPO)RXNS.mod \
-            $(DPO)RUN.mod \
             $(DPO)TOLERANC.mod \
+            $(DPO)RUN.mod \
+            $(DPO)COMPAR.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)INDICES.mod \
-            $(DPO)IS.mod \
             $(DPO)SENDRECV.mod \
-            $(DPO)COMPAR.mod \
             $(DPO)BC.mod \
             $(DPO)QUADRIC.mod \
             $(DPO)CUTCELL.mod \
@@ -4843,23 +4808,16 @@ $(DPO)tau_w_g.$(OBJ_EXT) : tau_w_g.f \
             ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) tau_w_g.f  -o $(DPO)tau_w_g.$(OBJ_EXT) -module $(DPO)
 $(DPO)tau_w_s.$(OBJ_EXT) : tau_w_s.f \
-            $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
-            $(DPO)PARALLEL.mod \
-            $(DPO)MATRIX.mod \
-            $(DPO)SCALES.mod \
-            $(DPO)CONSTANT.mod \
             $(DPO)PHYSPROP.mod \
             $(DPO)FLDVAR.mod \
             $(DPO)VISC_S.mod \
-            $(DPO)RXNS.mod \
-            $(DPO)RUN.mod \
             $(DPO)TOLERANC.mod \
+            $(DPO)RUN.mod \
+            $(DPO)COMPAR.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)INDICES.mod \
-            $(DPO)IS.mod \
             $(DPO)SENDRECV.mod \
-            $(DPO)COMPAR.mod \
             $(DPO)BC.mod \
             $(DPO)QUADRIC.mod \
             $(DPO)CUTCELL.mod \
@@ -5446,36 +5404,23 @@ $(DPO)CG_source_u_g.$(OBJ_EXT) : ./cartesian_grid/CG_source_u_g.f \
 $(DPO)CG_source_u_s.$(OBJ_EXT) : ./cartesian_grid/CG_source_u_s.f \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
-            $(DPO)PARALLEL.mod \
-            $(DPO)MATRIX.mod \
-            $(DPO)SCALES.mod \
-            $(DPO)CONSTANT.mod \
             $(DPO)PHYSPROP.mod \
-            $(DPO)FLDVAR.mod \
             $(DPO)VISC_S.mod \
-            $(DPO)RXNS.mod \
+            $(DPO)FLDVAR.mod \
             $(DPO)RUN.mod \
             $(DPO)TOLERANC.mod \
+            $(DPO)BC.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)INDICES.mod \
-            $(DPO)IS.mod \
-            $(DPO)TAU_S.mod \
-            $(DPO)BC.mod \
             $(DPO)COMPAR.mod \
-            $(DPO)SENDRECV.mod \
-            $(DPO)KINTHEORY.mod \
-            $(DPO)GHDTHEORY.mod \
-            $(DPO)DRAG.mod \
             $(DPO)CUTCELL.mod \
             $(DPO)QUADRIC.mod \
-            $(DPO)OUTPUT.mod \
-            b_force1.inc                                                 \
+            $(DPO)MATRIX.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
+            ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/CG_source_u_s.f  -o $(DPO)CG_source_u_s.$(OBJ_EXT) -module $(DPO)
 $(DPO)CG_source_v_g.$(OBJ_EXT) : ./cartesian_grid/CG_source_v_g.f \
             $(DPO)PARAM.mod \
@@ -5514,37 +5459,23 @@ $(DPO)CG_source_v_g.$(OBJ_EXT) : ./cartesian_grid/CG_source_v_g.f \
 $(DPO)CG_source_v_s.$(OBJ_EXT) : ./cartesian_grid/CG_source_v_s.f \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
-            $(DPO)PARALLEL.mod \
-            $(DPO)MATRIX.mod \
-            $(DPO)SCALES.mod \
-            $(DPO)CONSTANT.mod \
             $(DPO)PHYSPROP.mod \
-            $(DPO)FLDVAR.mod \
             $(DPO)VISC_S.mod \
-            $(DPO)RXNS.mod \
+            $(DPO)FLDVAR.mod \
             $(DPO)RUN.mod \
             $(DPO)TOLERANC.mod \
+            $(DPO)BC.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)INDICES.mod \
-            $(DPO)IS.mod \
-            $(DPO)TAU_S.mod \
-            $(DPO)BC.mod \
-            $(DPO)VSHEAR.mod \
             $(DPO)COMPAR.mod \
-            $(DPO)SENDRECV.mod \
-            $(DPO)KINTHEORY.mod \
-            $(DPO)GHDTHEORY.mod \
-            $(DPO)DRAG.mod \
             $(DPO)CUTCELL.mod \
             $(DPO)QUADRIC.mod \
-            $(DPO)OUTPUT.mod \
-            b_force1.inc                                                 \
+            $(DPO)MATRIX.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
+            ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/CG_source_v_s.f  -o $(DPO)CG_source_v_s.$(OBJ_EXT) -module $(DPO)
 $(DPO)CG_source_w_g.$(OBJ_EXT) : ./cartesian_grid/CG_source_w_g.f \
             $(DPO)PARAM.mod \
@@ -5582,36 +5513,23 @@ $(DPO)CG_source_w_g.$(OBJ_EXT) : ./cartesian_grid/CG_source_w_g.f \
 $(DPO)CG_source_w_s.$(OBJ_EXT) : ./cartesian_grid/CG_source_w_s.f \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
-            $(DPO)PARALLEL.mod \
-            $(DPO)MATRIX.mod \
-            $(DPO)SCALES.mod \
-            $(DPO)CONSTANT.mod \
             $(DPO)PHYSPROP.mod \
-            $(DPO)FLDVAR.mod \
             $(DPO)VISC_S.mod \
-            $(DPO)RXNS.mod \
+            $(DPO)FLDVAR.mod \
             $(DPO)RUN.mod \
             $(DPO)TOLERANC.mod \
+            $(DPO)BC.mod \
             $(DPO)GEOMETRY.mod \
             $(DPO)INDICES.mod \
-            $(DPO)IS.mod \
-            $(DPO)TAU_S.mod \
-            $(DPO)BC.mod \
             $(DPO)COMPAR.mod \
-            $(DPO)SENDRECV.mod \
-            $(DPO)KINTHEORY.mod \
-            $(DPO)GHDTHEORY.mod \
-            $(DPO)DRAG.mod \
             $(DPO)CUTCELL.mod \
             $(DPO)QUADRIC.mod \
-            $(DPO)OUTPUT.mod \
-            b_force1.inc                                                 \
+            $(DPO)MATRIX.mod \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             fun_avg2.inc                                                 \
-            ep_s2.inc                                                    \
-            b_force2.inc                                                
+            ep_s2.inc                                                   
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./cartesian_grid/CG_source_w_s.f  -o $(DPO)CG_source_w_s.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_data_cartesian.$(OBJ_EXT) : ./cartesian_grid/check_data_cartesian.f \
             $(DPO)PARAM.mod \
@@ -6007,6 +5925,9 @@ $(DPO)check_bc_walls.$(OBJ_EXT) : ./check_data/check_bc_walls.f \
             $(DPO)ERROR_MANAGER.mod \
             $(DPO)PHYSPROP.mod \
             $(DPO)GEOMETRY.mod \
+            $(DPO)CONSTANT.mod \
+            $(DPO)RXNS.mod \
+            $(DPO)FUNITS.mod \
             $(DPO)SCALARS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_bc_walls.f  -o $(DPO)check_bc_walls.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_boundary_conditions.$(OBJ_EXT) : ./check_data/check_boundary_conditions.f \
@@ -6175,12 +6096,6 @@ $(DPO)check_solids_continuum.$(OBJ_EXT) : ./check_data/check_solids_continuum.f 
             $(DPO)CONSTANT.mod \
             $(DPO)RUN.mod \
             $(DPO)PHYSPROP.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)SCALARS.mod \
-            $(DPO)FUNITS.mod \
-            $(DPO)RXNS.mod \
-            $(DPO)CUTCELL.mod \
-            $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
             $(DPO)ERROR_MANAGER.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_continuum.f  -o $(DPO)check_solids_continuum.$(OBJ_EXT) -module $(DPO)
@@ -6329,8 +6244,6 @@ $(DPO)cfassign.$(OBJ_EXT) : ./des/cfassign.f \
             $(DPO)COMPAR.mod \
             $(DPO)SENDRECV.mod \
             $(DPO)CUTCELL.mod \
-            b_force1.inc                                                 \
-            b_force2.inc                                                 \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/cfassign.f  -o $(DPO)cfassign.$(OBJ_EXT) -module $(DPO)
 $(DPO)cffctowall.$(OBJ_EXT) : ./des/cffctowall.f \

@@ -1217,125 +1217,94 @@
          WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
          call mfix_exit(myPE)
       END SELECT
-
+ 
 
 ! setting the coefficients for JJ BC
-! -------------------------------------------------------------------
-! setting the coefficients for JJ BC         
 ! -------------------------------------------------------------------
 ! GW = granular conductivity
 ! Hw = dissipation due to particle-wall collision
 ! Cw = generation due to particle-wall slip      
-      GW = K_1
+      SELECT CASE (KT_TYPE_ENUM)
+         CASE (LUN_1984, SIMONIN_1996, AHMADI_1995, GD_1999)
+! KTs without particle mass in their definition of granular temperature
+! and with mass in their conductivity
+! and theta = granular temperature
+            GW = K_1 
 
-      HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*(1d0-e_w*e_w)*&
-         ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))
+! Jenkins BC implemented for these KT models
+            IF(JENKINS) THEN
+               HW = 3.D0/8.D0*DSQRT(3.D0*TH(M))*((1d0-e_w))*&
+                    PsoTheta
 
-      IF(.NOT. BC_JJ_M) THEN
-         CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*&
-            ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
-      ELSE
-         CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*&
-            PHIP_JJ(DSQRT(vslipsq),TH(M))*ROs_avg(M)*&
-            EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
-      ENDIF
+! As I understand from soil mechanic papers, the coefficient mu in 
+! Jenkins paper is tan_Phi_w. T.  See for example, G.I. Tardos, PT,
+! 92 (1997), 61-74, equation (1). sof
+               CW = tan_Phi_w*tan_Phi_w*(ONE+e_w)*21.d0/16.d0*&
+                    DSQRT(3.D0*TH(M)) * Ps
+ 
+           ELSE            
+               HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*&
+                  (1d0-e_w*e_w)*&
+                  ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))
 
-      Kgran = 75d0*ROs_avg(M)*DP_avg(M)*DSQRT(Pi*TH(M))/(48*Eta*(41d0-33d0*Eta))
-
-! particle relaxation time
-      Tau_12_st = ROs_avg(M)/(DgA+small_number)
-
-! SWITCH enables us to turn on/off the modification to the
-! particulate phase viscosity. If we want to simulate gas-particle
-! flow then SWITCH=1 to incorporate the effect of drag on the
-! particle viscosity. If we want to simulate granular flow
-! without the effects of an interstitial gas, SWITCH=0.
-      IF(SWITCH == ZERO .OR. Ro_g_avg == ZERO)THEN
-         Kgran_star = Kgran
-      ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
-         Kgran_star = ZERO
-      ELSE
-         Kgran_star = ROs_avg(M)*EPS(M)* g0(M)*TH(M)* Kgran/ &
-            (ROs_avg(M)*g0EPs_avg*TH(M) + &
-            1.2d0*SWITCH*DgA/ROs_avg(M)* Kgran)
-      ENDIF
-
-      K_1 = Kgran_star/g0(M)*(&
-         ( ONE + (12d0/5.d0)*Eta*g0EPs_avg )&
-         * ( ONE + (12d0/5.d0)*Eta*Eta*(4d0*Eta-3d0)&
-         *g0EPs_avg )&
-         + (64d0/(25d0*Pi)) * (41d0-33d0*Eta) *&
-         (Eta*g0EPs_avg)**2 &
-         )
-
-      IF(SIMONIN) THEN
-         Zeta_c  = (ONE+ C_e)*(49.d0-33.d0*C_e)/100.d0
-         Omega_c = 3.d0*(ONE+ C_e)**2 *(2.d0*C_e-ONE)/5.d0
-
-         Tau_2_c = DP_avg(M)/(6.d0*EPS(M)*g0(M) &
-            *DSQRT(16.d0*(TH(M)+Small_number)/PI))
-
-! Defining Simonin's Solids Turbulent Kinetic diffusivity: Kappa
-         Kappa_kin = (9.d0/10.d0*K_12_avg*(Tau_12_avg/Tau_12_st) &
-            + 3.0D0/2.0D0 * TH(M)*(ONE+ Omega_c*EPS(M)*g0(M)))/     &
-            (9.d0/(5.d0*Tau_12_st) + zeta_c/Tau_2_c)
-
-         Kappa_Col = 18.d0/5.d0*EPS(M)*g0(M)*Eta* (Kappa_kin+ &
-            5.d0/9.d0*DP_avg(M)*DSQRT(TH(M)/PI))
-
-         K_1 =  EPS(M)*ROs_avg(M)*(Kappa_kin + Kappa_Col)
-
-      ELSEIF(AHMADI) THEN
-         K_1 =  0.1306D0*ROs_avg(M)*DP_avg(M)*(ONE+C_e**2)* (  &
-            ONE/g0(M)+4.8D0*EPS(M)+12.1184D0 *EPS(M)*EPS(M)*g0(M) )*&
-            DSQRT(TH(M))
-
-      ENDIF !for simonin or ahmadi models
+               IF(.NOT. BC_JJ_M) THEN
+                  CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*&
+                     ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
+               ELSE
+                  CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*&
+                     PHIP_JJ(DSQRT(vslipsq),TH(M))*ROs_avg(M)*&
+                     EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ  
+               ENDIF
+            ENDIF   ! end if(Jenkins)/else
 
 
-! setting the coefficients for JJ BC
-      GW = K_1
+         CASE (GTSH_2012)
+! KTs with particle mass in their definition of granular temperature
+! and without mass in their conductivity
+! and theta = granular temperature/mass
+            GW = M_PM * K_1 
 
-! modify HW and CW if Jenkins BC is used (sof)    
-      IF(JENKINS) THEN
+            HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*&
+               (1d0-e_w*e_w)*&
+               ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))
 
-         IF(AHMADI) THEN
-! Ahmadi model uses different solids pressure model
-            HW = 3.D0/8.D0*DSQRT(3.D0*TH(M))*((1d0-e_w))*&
-               ROs_avg(M)*EPS(M)*((ONE + 4.0D0*g0EPs_avg) +&
-               HALF*(ONE -C_e*C_e))
+            IF(.NOT. BC_JJ_M) THEN
+               CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*&
+                  ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
+            ELSE
+               CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*&
+                  PHIP_JJ(DSQRT(vslipsq),TH(M))*ROs_avg(M)*&
+                  EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ  
+            ENDIF
 
-! the coefficient mu in Jenkins paper is defined as tan_Phi_w, that's how
-! I understand it from soil mechanic papers, i.e., G.I. Tardos, powder
-! Tech. 92 (1997), 61-74. See his equation (1). Define Phi_w in mfix.dat!
-            CW = tan_Phi_w*tan_Phi_w*(ONE+e_w)*21.d0/16.d0*&
-               DSQRT(3.D0*TH(M)) *ROs_avg(M)*EPS(M)*&
-               ((ONE + 4.0D0*g0EPs_avg) + HALF*(ONE -C_e*C_e))*TH(M)
 
-         ELSE
-! Simonin or granular models use same solids pressure
-            HW = 3.D0/8.D0*DSQRT(3.*TH(M))*((1d0-e_w))*&
-               ROs_avg(M)*EPS(M)*(1d0+ 4.D0*Eta*g0EPs_avg)
-            CW = tan_Phi_w*tan_Phi_w*(ONE+e_w)*21.D0/16.D0*&
-               DSQRT(3.D0*TH(M))*ROs_avg(M)*EPS(M)*&
-               (1d0+ 4.D0*Eta*g0EPs_avg)*TH(M)
-         ENDIF   ! end if for Ahmadi
+         CASE (IA_2005)
+! KTs with particle mass in their definition of granular temperature
+! and without mass in their conductivity
+! and theta = granular temperature                
+            GW = M_PM * K_1 
 
-      ELSE   ! if(.not.jenkins) branch
+            HW = (PI*DSQRT(3.d0)/(4.d0*(ONE-ep_star_avg)))*&
+               (1.d0-e_w*e_w)*&
+               ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M)/M_PM)
 
-         HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*(1d0-e_w*e_w)*&
-            ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))
+            IF(.NOT. BC_JJ_M) THEN
+               CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*PHIP*&
+                  ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M)*M_PM)*VSLIPSQ
+            ELSE
+               CW = (PI*DSQRT(3.d0)/(6.d0*(ONE-ep_star_avg)))*&
+                  PHIP_JJ(DSQRT(vslipsq),TH(M))*ROs_avg(M)*&
+                  EPS(M)*g0(M)*DSQRT(TH(M)*M_PM)*VSLIPSQ
+            ENDIF
 
-         IF(.NOT. BC_JJ_M) THEN
-            CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*PHIP*&
-               ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
-         ELSE
-            CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*&
-               PHIP_JJ(DSQRT(vslipsq),TH(M))*ROs_avg(M)*&
-               EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
-         ENDIF
 
-      ENDIF   ! end if(Jenkins)/else
+
+         CASE DEFAULT
+! should never hit this
+            WRITE (*, '(A)') 'BC_THETA => THETA_HW_CW'
+            WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
+            call mfix_exit(myPE)
+         END SELECT
 
 
       RETURN
