@@ -602,7 +602,8 @@
       WALL_NOW = WALL_TIME()
       WALL_LEFT = (WALL_NOW-WALL_START)*(TSTOP-TIME)/max(TIME,0.000001)
       CALL GET_TUNIT(WALL_LEFT,TUNIT)
-      WRITE (*, '(/A,F9.3,1X,A)') "Wall time remaining = ",WALL_LEFT, TUNIT
+      IF(DMP_LOG) WRITE (*, '(/" Wall time remaining = ",F9.3,1X,A)') &
+         WALL_LEFT, TUNIT
 
       IF(DT.LT.DT_MIN) THEN
          IF(TIME.LE.RES_DT) THEN
