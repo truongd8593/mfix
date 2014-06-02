@@ -398,68 +398,72 @@
       ENDIF ! Check Scalars
 
 
-      IF(GRANULAR_ENERGY .AND. BC_JJ_PS(BCV) == 1) THEN
+! might make more sense to move this out... not sure
+      IF (M==1) THEN  ! do only once
+
+         IF(GRANULAR_ENERGY .AND. BC_JJ_PS(BCV) == 1) THEN
 ! small frictional boundary condition model
-         IF(JENKINS) THEN
-            IF (BC_JJ_M) THEN
-               WRITE(ERR_MSG, 1203)
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ELSEIF (PHI_W == UNDEFINED) THEN
-               WRITE(ERR_MSG, 1204)
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ELSEIF (E_W > ONE .OR. E_W < ZERO) THEN
-               WRITE(ERR_MSG, 1001) 'E_W', E_W
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-           ENDIF
+            IF(JENKINS) THEN
+               IF (BC_JJ_M) THEN
+                  WRITE(ERR_MSG, 1203)
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ELSEIF (PHI_W == UNDEFINED) THEN
+                  WRITE(ERR_MSG, 1204)
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ELSEIF (E_W > ONE .OR. E_W < ZERO) THEN
+                  WRITE(ERR_MSG, 1001) 'E_W', E_W
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+              ENDIF
 ! PHI_W is given in degrees but calculated in radian within 
 ! the fortran codes 
-            TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
-         ENDIF
+               TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
+            ENDIF
 
 ! k4phi, phip0 for variable specularity coefficient
-         k4phi = undefined
-         IF(BC_JJ_M) THEN
-            IF (JENKINS) THEN
-               WRITE(ERR_MSG, 1203)
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ELSEIF (PHI_W == UNDEFINED) THEN
-               WRITE(ERR_MSG, 1204)
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ELSEIF (E_W > ONE .OR. E_W < ZERO) THEN
-               WRITE(ERR_MSG, 1001) 'E_W', E_W
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF
-! PHI_W is given in degrees but calculated in radian within 
-! the fortran codes 
-            TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
- 
-            k4phi = 7.d0/2.d0*tan_phi_w*(1.d0+e_w)
-            IF (phip0 .eq. UNDEFINED) THEN
-               phip0 = -0.0012596340709032689 + &
-                        0.10645510095633175*k4phi - &
-                        0.04281476447854031*k4phi**2 + &
-                        0.009759402181229842*k4phi**3 - &
-                        0.0012508257938705263*k4phi**4 + &
-                        0.00008369829630479206*k4phi**5 - &
-                        0.000002269550565981776*k4phi**6
-! if k4phi is less than 0.2, the analytical expression for phi is used
-! to estimate the phi at r->0
-               IF (k4phi .le. 0.2d0) THEN
-                  phip0=0.09094568176225006*k4phi
-               ENDIF
-               WRITE (UNIT_LOG, 1207) phip0
-            ENDIF
-            IF (phip0 < 0) THEN
-               WRITE(ERR_MSG, 1208)
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF
-
-            IF (PHIP_OUT_JJ) THEN
-               IF(nRR < 1) THEN
-                  WRITE(ERR_MSG, 1209)
+            k4phi = undefined
+            IF(BC_JJ_M) THEN
+               IF (JENKINS) THEN
+                  WRITE(ERR_MSG, 1203)
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ELSEIF (PHI_W == UNDEFINED) THEN
+                  WRITE(ERR_MSG, 1204)
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ELSEIF (E_W > ONE .OR. E_W < ZERO) THEN
+                  WRITE(ERR_MSG, 1001) 'E_W', E_W
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
                ENDIF
-               WRITE (UNIT_LOG, 1210) phip0
+! PHI_W is given in degrees but calculated in radian within 
+! the fortran codes 
+               TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
+ 
+               k4phi = 7.d0/2.d0*tan_phi_w*(1.d0+e_w)
+               IF (phip0 .eq. UNDEFINED) THEN
+                  phip0 = -0.0012596340709032689 + &
+                           0.10645510095633175*k4phi - &
+                           0.04281476447854031*k4phi**2 + &
+                           0.009759402181229842*k4phi**3 - &
+                           0.0012508257938705263*k4phi**4 + &
+                           0.00008369829630479206*k4phi**5 - &
+                           0.000002269550565981776*k4phi**6
+! if k4phi is less than 0.2, the analytical expression for phi is used
+! to estimate the phi at r->0
+                  IF (k4phi .le. 0.2d0) THEN
+                     phip0=0.09094568176225006*k4phi
+                  ENDIF
+                  WRITE (UNIT_LOG, 1207) phip0
+               ENDIF
+               IF (phip0 < 0) THEN
+                  WRITE(ERR_MSG, 1208)
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
+
+               IF (PHIP_OUT_JJ) THEN
+                  IF(nRR < 1) THEN
+                     WRITE(ERR_MSG, 1209)
+                     CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+                  ENDIF
+                  WRITE (UNIT_LOG, 1210) phip0
+               ENDIF
             ENDIF
          ENDIF
       ENDIF
