@@ -174,7 +174,7 @@
          ELSE   ! granular energy transport equation
             SELECT CASE(KT_TYPE_ENUM)
                CASE (IA_2005)   ! polydisperse theory
-                  CALL gt_pde_ia_nonep(M,IER)
+                  CALL gt_pde_ia(M,IER)
                CASE (GD_1999)   ! strictly monodisperse theory
                   CALL gt_pde_gd(M,IER)
                CASE (GTSH_2012)   ! strictly monodisperse theory
@@ -1485,7 +1485,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Subroutine: GT_PDE_IA_NONEP                                         C
+!  Subroutine: GT_PDE_IA                                         C
 !  Purpose: Implement kinetic theory of Iddir & Arastoopour (2005) for C
 !     calculation of granular stress terms and granular conductivity   C
 !                                                                      C
@@ -1501,7 +1501,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      Subroutine gt_pde_ia_nonep (M, IER)
+      Subroutine gt_pde_ia (M, IER)
 
 !-----------------------------------------------
 ! Modules
@@ -1878,7 +1878,7 @@
  200  CONTINUE   ! outer IJK loop
 
       RETURN
-      END SUBROUTINE GT_PDE_IA_NONEP
+      END SUBROUTINE GT_PDE_IA
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC

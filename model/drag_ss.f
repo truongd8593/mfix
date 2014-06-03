@@ -227,7 +227,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: DRAG_ss_IA_NONEP                                        !
+!  Subroutine: DRAG_ss_IA                                              !
 !  Purpose: Compute the coefficient of drag between solids phase m     !
 !           and solids phase l using Iddir Arastoopour (2005) kinetic  !
 !           theory model                                               !
@@ -242,7 +242,7 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-      SUBROUTINE DRAG_SS_IA_NONEP(L, M, IER) 
+      SUBROUTINE DRAG_SS_IA(L, M, IER) 
 
 !-----------------------------------------------
 ! Modules
@@ -398,5 +398,5 @@
       ENDDO 
            
       RETURN  
-      END SUBROUTINE DRAG_SS_IA_NONEP      
+      END SUBROUTINE DRAG_SS_IA      
 

@@ -209,7 +209,6 @@ $(EXEC_FILE) : \
     $(DPO)init_resid.$(OBJ_EXT) \
     $(DPO)iterate.$(OBJ_EXT) \
     $(DPO)k_epsilon_prop.$(OBJ_EXT) \
-    $(DPO)kintheory_drag_ss.$(OBJ_EXT) \
     $(DPO)kintheory_energy_dissipation_ss.$(OBJ_EXT) \
     $(DPO)kintheory_u_s.$(OBJ_EXT) \
     $(DPO)kintheory_v_s.$(OBJ_EXT) \
@@ -639,7 +638,6 @@ $(EXEC_FILE) : \
     $(DPO)is_mod.$(OBJ_EXT) \
     $(DPO)iterate.$(OBJ_EXT) \
     $(DPO)k_epsilon_prop.$(OBJ_EXT) \
-    $(DPO)kintheory_drag_ss.$(OBJ_EXT) \
     $(DPO)kintheory_energy_dissipation_ss.$(OBJ_EXT) \
     $(DPO)kintheory_mod.$(OBJ_EXT) \
     $(DPO)kintheory_u_s.$(OBJ_EXT) \
@@ -3204,21 +3202,6 @@ $(DPO)k_epsilon_prop.$(OBJ_EXT) : k_epsilon_prop.f \
             ep_s2.inc                                                    \
             fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) k_epsilon_prop.f  -o $(DPO)k_epsilon_prop.$(OBJ_EXT) -J$(DPO)
-$(DPO)kintheory_drag_ss.$(OBJ_EXT) : kintheory_drag_ss.f \
-            $(DPO)param.mod \
-            $(DPO)param1.mod \
-            $(DPO)parallel.mod \
-            $(DPO)constant.mod \
-            $(DPO)fldvar.mod \
-            $(DPO)geometry.mod \
-            $(DPO)indices.mod \
-            $(DPO)physprop.mod \
-            $(DPO)compar.mod \
-            $(DPO)sendrecv.mod \
-            $(DPO)drag.mod \
-            $(DPO)kintheory.mod \
-            function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) kintheory_drag_ss.f  -o $(DPO)kintheory_drag_ss.$(OBJ_EXT) -J$(DPO)
 $(DPO)kintheory_energy_dissipation_ss.$(OBJ_EXT) : kintheory_energy_dissipation_ss.f \
             $(DPO)param.mod \
             $(DPO)param1.mod \

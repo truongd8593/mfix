@@ -249,7 +249,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Subroutine: SOURCE_IA_NONEP_GRANULAR_ENERGY                         C
+!  Subroutine: SOURCE_IA_GRANULAR_ENERGY                               C
 !  Purpose: Calculate the source terms of the Mth solids phase         C
 !           granular energy equation                                   C
 !                                                                      C

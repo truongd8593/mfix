@@ -62,7 +62,7 @@
          IF (GRAN_DISS(M)) THEN
          SELECT CASE (KT_TYPE_ENUM)
             CASE (IA_2005)
-               CALL CALC_IA_NONEP_ENERGY_DISSIPATION_SS(M, IER)
+               CALL CALC_IA_ENERGY_DISSIPATION_SS(M, IER)
             CASE(GD_1999)
                CALL CALC_GD_99_ENERGY_DISSIPATION_SS(M, IER)
             CASE(GTSH_2012)

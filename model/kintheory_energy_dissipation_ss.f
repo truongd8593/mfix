@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Subroutine: CALC_IA_NONEP_ENERGY_DISSIPATION_SS                     C
+!  Subroutine: CALC_IA_ENERGY_DISSIPATION_SS                     C
 !                                                                      C
 !  Purpose: Implement kinetic theory of Iddir & Arastoopour (2005)     C
 !     for calculation of source terms in granular energy equation      C
@@ -9,7 +9,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_IA_NONEP_ENERGY_DISSIPATION_SS(M, IER) 
+      SUBROUTINE CALC_IA_ENERGY_DISSIPATION_SS(M, IER) 
 
 !-----------------------------------------------
 ! Modules
@@ -191,7 +191,7 @@
       ENDDO   ! end do ijk
 
       RETURN  
-      END SUBROUTINE CALC_IA_NONEP_ENERGY_DISSIPATION_SS 
+      END SUBROUTINE CALC_IA_ENERGY_DISSIPATION_SS 
 
 
 

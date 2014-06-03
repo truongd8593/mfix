@@ -105,7 +105,7 @@
                CASE(IA_2005) 
                   DO M= 1, SMAX
                      DO L = 1, SMAX
-                        IF (DRAGD(L,M)) CALL DRAG_SS_IA_NONEP (L,M,IER)
+                        IF (DRAGD(L,M)) CALL DRAG_SS_IA (L,M,IER)
                      ENDDO
                   ENDDO
                CASE (GD_1999, GTSH_2012, GHD_2007)
