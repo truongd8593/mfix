@@ -240,11 +240,11 @@
 !</keyword>
 
 ! Retired keyword for specifying Ahmadi KT Theory.
-! Use: KT_TYPE = "AHMADI_1995"
+! Use: KT_TYPE = "AHMADI"
       AHMADI = .FALSE.
 
 ! Retired keyword for specifying Simonin KT Theory. 
-! Use: KT_TYPE = "SIMONIN_1996"
+! Use: KT_TYPE = "SIMONIN"
       SIMONIN = .FALSE.
 
 !<keyword category="Run Control" required="false">
