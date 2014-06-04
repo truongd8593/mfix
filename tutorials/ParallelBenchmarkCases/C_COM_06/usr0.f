@@ -24,52 +24,59 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-      SUBROUTINE USR0 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
-!...Switches: -xf
-      USE param 
-      USE param1 
+      SUBROUTINE USR0
+
+      USE param
+      USE param1
       USE physprop
       USE constant
-      USE funits    
+      USE funits
       Use usr
-      IMPLICIT NONE
-      INCLUDE 'usrnlst.inc' 
-!-----------------------------------------------
-!
-!  Include files defining common blocks here
-!
-!
-!  Define local variables here
-!
-      DOUBLE PRECISION SUM
-      LOGICAL COMPARE
-!
-!  Include files defining statement functions here
-!
-!
-!  Insert user-defined code here
-!
+      use compar
 
-!     allocate array declared in usrnlst.inc
-      Allocate(  N_Sh (DIMENSION_3, DIMENSION_M) )
-      
-        IF(PAFC .EQ. UNDEFINED ) &
-          CALL ERROR_ROUTINE ('USR0', 'PAFC not specified', 1, 1)
-!
-        IF(PAA .NE. UNDEFINED)THEN
-          SUM = PAFC + PAA
-          IF( .NOT.COMPARE(ONE,SUM) )THEN
-            WRITE(UNIT_LOG,'(A,F10.5/A)') &
-              ' *** PAFC + PAA = ',SUM,' It should be equal to 1.0'
-            CALL EXIT
-          ENDIF
-        ELSE
-          PAA = 1.0 - PAFC
-        ENDIF
-!
+      IMPLICIT NONE
+
+      INCLUDE 'usrnlst.inc'
+
+      LOGICAL, EXTERNAL :: COMPARE
+
+! Allocate the variable for Sherwood number
+      Allocate( N_Sh (DIMENSION_3, DIMENSION_M) )
+
+! Verify that PAFC and PAA were specified in the dat file and that
+! the values are physical.
+      IF(C(1) .EQ. UNDEFINED ) THEN
+         IF(DMP_LOG) WRITE(*,1100)
+         CALL MFIX_EXIT(myPE)
+      ELSEIF(C(1) < 0.0d0  .OR. C(1) > 1.0d0) THEN
+         IF(DMP_LOG) WRITE(*,1101)
+         CALL MFIX_EXIT(myPE)
+      ELSE
+         PAFC = C(1)
+      ENDIF
+
+ 1100 FORMAT(2/,1x,70('*'),'From: USR0',/' Error 1100: PAFC not ',     &
+         'specified in C(1).'/1x,70('*'))
+
+ 1101 FORMAT(2/,1x,70('*'),'From: USR0',/' Error 1101: PAFC specified',&
+         ' in C(1) is unphysical.'/1x,70('*'))
+
+      IF(C(2) .EQ. UNDEFINED) THEN
+         PAA = 1.0d0 - PAFC
+      ELSE
+         PAA = C(2)
+      ENDIF
+
+      IF(.NOT.COMPARE(ONE,(PAFC+PAA)) )THEN
+         IF(DMP_LOG) WRITE(*,1102)
+         CALL MFIX_EXIT(myPE)
+      ENDIF
+
+ 1102 FORMAT(2/,1x,70('*'),'From: USR0',/' Error 1102: Sum of PAFC ',  &
+         'and PAA does not equal 1.0d0.'/1x,70('*'))
+
 !  Function of the ash-layer void fraction
       f_EP_A = (0.25 + 0.75 * ( 1.0 - PAA )) ** 2.5
-      RETURN  
-      END SUBROUTINE USR0 
+
+      RETURN
+      END SUBROUTINE USR0

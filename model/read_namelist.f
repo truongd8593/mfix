@@ -326,19 +326,19 @@
  910  CONTINUE 
       WRITE (*, 1500) 
       CALL MFIX_EXIT(myPE) 
- 930  CONTINUE 
-      WRITE (*, 1600) LINE_NO, LINE_STRING(1:LINE_LEN) 
+ 930  CONTINUE
+      if(myPE == 0)WRITE (*, 1600) LINE_NO, trim(LINE_STRING(1:LINE_LEN))
       CALL MFIX_EXIT(myPE) 
-     
+
  1300 FORMAT(/1X,70('*')//' From: READ_NAMELIST',/' Message: ',&
       'Line Number:', I4, ' in mfix.dat has data past column 80',&
-      /1X,A80,/1X,70('*')/) 
+      /1X,A80,/1X,70('*')/)
  1400 FORMAT(/1X,70('*')//' From: READ_NAMELIST',/' Message: ',&
-      'Unable to open scratch file',/1X,70('*')/) 
+      'Unable to open scratch file',/1X,70('*')/)
  1500 FORMAT(/1X,70('*')//' From: READ_NAMELIST',/' Message: ',&
-      'Unable to open mfix.dat file',/1X,70('*')/) 
+      'Unable to open mfix.dat file',/1X,70('*')/)
  1600 FORMAT(/1X,70('*')//' From: READ_NAMELIST',/' Message: ',&
-      'Error while reading Line Number:', I4, ' in mfix.dat',/1X,A80,/1X,&
+      'Error while reading Line Number:', I4, ' in mfix.dat',/1X,A,/1X,&
       'Possible causes are 1. incorrect format, 2. unknown name,',/1X,&
       '3. the item is dimensioned too small (see PARAM.INC file).',/1X,70(&
       '*')/) 
