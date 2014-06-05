@@ -129,18 +129,17 @@
 
       CALL INIT_ERR_MSG("CHECK_BC_P_OUTFLOW")
 
-
-      IF (BC_P_G(BCV) == UNDEFINED) THEN 
-         WRITE(ERR_MSG,1000) 'BC_P_g', BCV 
+      IF (BC_P_G(BCV) == UNDEFINED) THEN
+         WRITE(ERR_MSG,1000) trim(iVar('BC_P_g',BCV))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
-      ELSEIF (BC_P_G(BCV)<=ZERO .AND. RO_G0==UNDEFINED) THEN 
-         WRITE(ERR_MSG, 1100) BCV, BC_P_G(BCV)
+      ELSEIF (BC_P_G(BCV)<=ZERO .AND. RO_G0==UNDEFINED) THEN
+         WRITE(ERR_MSG, 1100) BCV, trim(iVal(BC_P_G(BCV)))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF 
+      ENDIF
 
  1100 FORMAT('Error 1100: Pressure must be greater than zero for ',    &
-         'compressible flow',/' >>>  BC_P_g(',I3,') = ',A,/'Please ',  &
+         'compressible flow',/3x,'BC_P_g(',I3,') = ',A,/'Please ',     &
          'correct the mfix.dat file.')
 
 ! Clean up and return.

@@ -95,14 +95,12 @@
            OPEN(UNIT=FUNIT, FILE='mfix.dat', STATUS='OLD', IOSTAT= IOS)
            IF(IOS /= 0) CYCLE DB_LP
            DB=''; WRITE(DB,1000) 'mfix.dat'
-           CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 ! Read thermochemical data from the BURCAT.THR database in the local
 ! run directory.
          ELSEIF(FILE == 2) THEN
             OPEN(UNIT=FUNIT,FILE=TRIM(THERM), STATUS='OLD', IOSTAT= IOS)
             IF(IOS /= 0) CYCLE DB_LP
             DB=''; WRITE(DB,1000) TRIM(THERM)
-            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 ! Read thermochemical data from the BURCAT.THR database in the model
 ! directory (model/thermochemical/BURCAT.THR).
      	   ELSEIF(file == 3) THEN
@@ -110,7 +108,6 @@
             OPEN(UNIT=FUNIT,FILE=TRIM(FILENAME), STATUS='OLD',IOSTAT= IOS)
             IF(IOS /= 0) CYCLE DB_LP
             DB=''; WRITE(DB,1000) ('/thermochemical/'//TRIM(THERM))
-            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
         	ELSE
             EXIT DB_LP
         	ENDIF
