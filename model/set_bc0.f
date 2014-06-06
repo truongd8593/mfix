@@ -553,6 +553,16 @@
          return
       ENDIF
 
+! If there are no cyclic boundaries, look for a pressure outflow.
+      lpBCV: DO BCV = 1, DIMENSION_BC
+         IF (.NOT.BC_DEFINED(BCV)) cycle lpBCV
+         IF (BC_TYPE(BCV) == 'P_OUTFLOW') THEN
+            IF(dFlag) write(*,"(3x,A)")                                &
+               'Outflow PC defiend: IJK_P_g remaining undefined.'
+            RETURN
+         ENDIF
+      ENDDO lpBCV
+
 ! Initialize.
          l3 = UNDEFINED_I
          l2 = UNDEFINED_I; u2=l2
@@ -586,64 +596,6 @@
 
       ENDIF
 
-! If there are no cyclic boundaries, look for a pressure outflow.
-      IF(l3 == UNDEFINED_I) THEN
-
-         lpBCV: DO BCV = 1, DIMENSION_BC 
-
-            IF (.NOT.BC_DEFINED(BCV)) cycle lpBCV
-            IF (BC_TYPE(BCV) /= 'P_OUTFLOW') cycle lpBCV
-               
-            SELECT CASE (TRIM(BC_PLANE(BCV)))  
-
-            CASE ('W'); 
-               Map = 'IKJ_MAP'
-               l3 = BC_I_w(BCV) - 1
-               l2 = BC_K_b(BCV);  u2 = BC_K_t(BCV)
-               l1 = BC_J_s(BCV);  u1 = BC_J_n(BCV)
-               write(lMsg,"('P Outflow (W): ',I3)") BCV
-
-            CASE ('E'); 
-               Map = 'IKJ_MAP'
-               l3 = BC_I_e(BCV) + 1
-               l2 = BC_K_b(BCV);  u2 = BC_K_t(BCV)
-               l1 = BC_J_s(BCV);  u1 = BC_J_n(BCV)
-               write(lMsg,"('P Outflow (E): ',I3)") BCV
-
-            CASE ('S')
-               Map = 'JKI_MAP'
-               l3 = BC_J_s(BCV) - 1
-               l2 = BC_K_b(BCV);  u2 = BC_K_t(BCV)
-               l1 = BC_I_w(BCV);  u1 = BC_I_e(BCV)
-               write(lMsg,"('P Outflow (S): ',I3)") BCV
-
-            CASE ('N')
-               Map = 'JKI_MAP'
-               l3 = BC_J_n(BCV) + 1
-               l2 = BC_K_b(BCV);  u2 = BC_K_t(BCV)
-               l1 = BC_I_w(BCV);  u1 = BC_I_e(BCV)
-               write(lMsg,"('P Outflow (N): ',I3)") BCV
-
-            CASE ('B')
-               Map = 'KIJ_MAP'
-               l3 = BC_K_b(BCV) - 1
-               l2 = BC_I_w(BCV);  u2 = BC_I_e(BCV)
-               l1 = BC_J_s(BCV);  u1 = BC_J_n(BCV)
-               write(lMsg,"('P Outflow (B): ',I3)") BCV
-
-            CASE ('T')
-               Map = 'KIJ_MAP'
-               l3 = BC_K_t(BCV) + 1
-               l2 = BC_I_w(BCV);  u2 = BC_I_e(BCV)
-               l1 = BC_J_s(BCV);  u1 = BC_J_n(BCV)
-               write(lMsg,"('P Outflow (T): ',I3)") BCV
-
-            END SELECT   ! end select case (bc_plane(bcv))
-
-            EXIT lpBCV
-         ENDDO lpBCV
-      ENDIF
-
 ! No cyclic boundaries or pressure outflows. The IJ plane is used in 
 ! this case to maximize search region for 2D problems.
       IF(l3 == UNDEFINED_I) THEN
@@ -665,7 +617,7 @@
 
 ! Invoke the search routine.
       SELECT CASE (Map)
-      CASE ('JKI_MAP') 
+      CASE ('JKI_MAP')
          CALL IJK_Pg_SEARCH(l3, l2, u2, l1, u1, JKI_MAP, dFlag, iErr)
       CASE ('IKJ_MAP')
          CALL IJK_Pg_SEARCH(l3, l2, u2, l1, u1, IKJ_MAP, dFlag, iErr)
