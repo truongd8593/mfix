@@ -69,6 +69,8 @@
       INTEGER :: J1, J2
 ! Starting and ending K index 
       INTEGER :: K1, K2
+! local solids velocity for mixture (for ghd)
+      DOUBLE PRECISION :: lvel_s
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -251,63 +253,50 @@
                               END SELECT 
                            ENDDO  
 
-! for GHD theory to compute mixture BC of velocity
-! bulk density is set by set_outflow                           
+! compute mixutre velocity BC for GHD theory
                            IF(KT_TYPE_ENUM == GHD_2007) THEN
-                              U_S(IJK,MMAX) =  ZERO 
-                              V_S(IJK,MMAX) =  ZERO 
-                              W_S(IJK,MMAX) =  ZERO 
-                              U_S(IJK2,MMAX) =  ZERO 
-                              V_S(IJK2,MMAX) =  ZERO 
-                              W_S(IJK2,MMAX) =  ZERO 
+                              lvel_s = zero
+
+! bulk density is set by set_outflow and is set in bc according to
+! neighboring fluid appropriately. so we don't need to use an ijk2
+! index here (ijk value will = ijk2 value).
                               DO M = 1, SMAX 
-                                 SELECT CASE (TRIM(BC_PLANE(L)))  
-                                 CASE ('W')  
-                                    IJK2 = IM_OF(IJK) 
-                                    U_S(IJK2,MMAX) =  U_S(IJK2,MMAX) + &
-                                       BC_U_S(L,M)*ROP_S(IJK2,M)
-                                 CASE ('E')  
-                                    IJK2 = IP_OF(IJK)
-                                    U_S(IJK,MMAX) =  U_S(IJK,MMAX) + &
-                                       BC_U_S(L,M)*ROP_S(IJK2,M)
-                                 CASE ('S')  
-                                    IJK2 = JM_OF(IJK) 
-                                    V_S(IJK2,MMAX) =  V_S(IJK2,MMAX) + &
-                                       BC_V_S(L,M)*ROP_S(IJK2,M)
-                                 CASE ('N')  
-                                    IJK2 = JP_OF(IJK)
-                                    V_S(IJK,MMAX) =  V_S(IJK,MMAX) + &
-                                       BC_V_S(L,M)*ROP_S(IJK2,M)
-                                 CASE ('B')  
-                                    IJK2 = KM_OF(IJK) 
-                                    W_S(IJK2,MMAX) =  W_S(IJK2,MMAX) + &
-                                       BC_W_S(L,M)*ROP_S(IJK2,M)
-                                 CASE ('T')  
-                                    IJK2 = KP_OF(IJK)
-                                    W_S(IJK,MMAX) =  W_S(IJK,MMAX) + &
-                                       BC_W_S(L,M)*ROP_S(IJK2,M)
+                                 SELECT CASE (TRIM(BC_PLANE(L)))
+                                 CASE ('W', 'E')  
+                                    lvel_s = lvel_s + BC_U_S(L,M)*ROP_S(IJK,M)
+                                 CASE ('S', 'N')  
+                                    lvel_s = lvel_s + BC_V_S(L,M)*ROP_S(IJK,M)
+                                 CASE ('B', 'T')  
+                                    lvel_s = lvel_s + BC_W_S(L,M)*ROP_S(IJK,M)
                                  END SELECT 
                               ENDDO 
-                              SELECT CASE (TRIM(BC_PLANE(L)))  
-                              CASE ('W')  
-                                 IJK2 = IM_OF(IJK) 
-                                 U_S(IJK2,MMAX) =  U_S(IJK2,MMAX) / ROP_S(IJK,MMAX)
-                              CASE ('E')  
-                                 U_S(IJK,MMAX) =  U_S(IJK,MMAX) / ROP_S(IJK,MMAX)
-                              CASE ('S')  
-                                 IJK2 = JM_OF(IJK) 
-                                 V_S(IJK2,MMAX) =  V_S(IJK2,MMAX) / ROP_S(IJK,MMAX)
-                              CASE ('N')  
-                                 V_S(IJK,MMAX) =  V_S(IJK,MMAX) / ROP_S(IJK,MMAX)
-                              CASE ('B')  
-                                 IJK2 = KM_OF(IJK) 
-                                 W_S(IJK2,MMAX) =  W_S(IJK2,MMAX) / ROP_S(IJK,MMAX)
+
+                              IF (ROP_S(IJK,MMAX) > 0) THEN
+                                 lvel_s = lvel_s /ROP_S(IJK,MMAX)
+                              ELSE
+                                 lvel_s = ZERO
+                              ENDIF
+                              
+                              SELECT CASE (TRIM(BC_PLANE(L)))
+                              CASE ('W') 
+                                 IJK2 = IM_OF(IJK)
+                                 U_S(IJK2,MMAX) =  lvel_s 
+                              CASE ('E')
+                                 U_S(IJK,MMAX) = lvel_s 
+                              CASE ('S')
+                                 IJK2 = JM_OF(IJK)
+                                 V_S(IJK2,MMAX) = lvel_s 
+                              CASE ('N')
+                                 V_S(IJK,MMAX) = lvel_s 
+                              CASE ('B')
+                                 IJK2 = KM_OF(IJK)
+                                 W_S(IJK2,MMAX) = lvel_s 
                               CASE ('T')  
-                                 W_S(IJK,MMAX) =  W_S(IJK,MMAX) / ROP_S(IJK,MMAX)
+                                 W_S(IJK,MMAX) = lvel_s 
                               END SELECT 
+
                            ENDIF   ! end if (kt_type_enum==ghd_2007)
 
-                                           
                         ENDDO 
                      ENDDO 
                   ENDDO 
