@@ -517,7 +517,7 @@
          IF(DEAD_CELL_AT(I,J,K)) CYCLE
          IJK = FUNIJK(I,J,K)
          IF(.NOT.FLUID_AT(IJK)) CYCLE
-         IF(.NOT.COMPARE(AXZ(IJK),DX(I)*DZ(K))) CYCLE
+         IF(.NOT.COMPARE(AYZ(IJK),DY(J)*DZ(K))) CYCLE
          OCCUPANTS = OCCUPANTS + 1
          FULL_MAP(W,H) = myPE+1
       ENDDO
@@ -812,7 +812,7 @@
          IF(DEAD_CELL_AT(I,J,K)) CYCLE
          IJK = FUNIJK(I,J,K)
          IF(.NOT.FLUID_AT(IJK)) CYCLE
-         IF(.NOT.COMPARE(AXZ(IJK),DX(I)*DZ(K))) CYCLE
+         IF(.NOT.COMPARE(AXY(IJK),DX(I)*DY(J))) CYCLE
          OCCUPANTS = OCCUPANTS + 1
          FULL_MAP(W,H) = myPE+1
       ENDDO

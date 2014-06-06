@@ -54,22 +54,19 @@
                IF(DIST > DES_RADIUS(NP)) THEN
                   PEA(NP,3) = .FALSE.
 
-! Check if the particle is crossing over the outlet plane.
+! Check if the particle is crossing over the outlet plane. The velocity
+! is 'frozen' normal to the outlet and the particle exiting flags are
+! set. This implementation is strict as complex BCs (via STLs) can let
+! particles pop through the wall along the outlet.
                ELSEIF(DIST > ZERO) THEN
-                  PEA(NP,3) = .TRUE.
-
-! More than half the partice has crossed the outlet plane. Remove any
-! tangential velocity components to keep it from roaming off and 
-! update the PEA.
-               ELSEIF(DIST > -DES_RADIUS(NP)) THEN
                   DES_VEL_NEW(NP,:) = DES_VEL_NEW(NP,:)*FREEZE(:)
                   PEA(NP,2) = .TRUE.
                   PEA(NP,3) = .TRUE.
 
 ! Ladies and gentlemen, the particle has left the building.
                ELSE
-                  CALL DELETE_PARTICLE(NP)
 
+                  CALL DELETE_PARTICLE(NP)
                ENDIF
 
             ENDDO
@@ -147,9 +144,9 @@
       FT(:,NP) = ZERO
       TOW(:,NP) = ZERO
 
-      PN(NP,:) = -1
-      PN(NP,1) = 0
-      PV(NP,:) = 1
+      PN(:,NP) = -1
+      PN(1,NP) = 0
+      PV(:,NP) = .FALSE.
       PFT(NP,:,:) = ZERO
       PPOS(NP,:) = ZERO
 
@@ -161,47 +158,7 @@
       NEIGHBOURS(NP,:) = -1
       NEIGHBOURS(NP,1) = 0
 
-! Clear particle NP from any other neighboring particles lists
-      IF (NEIGHBOURS(NP,1) > 0) THEN
-         NLIMNP = NEIGHBOURS(NP,1)+1
-
-! Cycle through all neighbours of particle NP
-         DO I = 2, NLIMNP
-            NEIGHNP = NEIGHBOURS(NP,I)
-
-! If any neighbor particle has a lower index than NP then the contact
-! force history will be stored with that particle and needs to be cleared
-            IF (NEIGHNP < NP) THEN
-               IF (PN(NEIGHNP,1) > 0) THEN
-                  NLIM = PN(NEIGHNP,1)+1
-                  DO J = 2, NLIM
-                     NPT = PN(NEIGHNP,J)
-                     IF (NPT .NE. NP) CYCLE   ! find particle NP in NEIGHNP list
-                     PN(NEIGHNP,J:(MAXNEIGHBORS-1)) = &
-                        PN(NEIGHNP,(J+1):MAXNEIGHBORS)
-                     PV(NEIGHNP,J:(MAXNEIGHBORS-1)) = &
-                        PV(NEIGHNP,(J+1):MAXNEIGHBORS)
-                     PFT(NEIGHNP,J:(MAXNEIGHBORS-1),:) = &
-                        PFT(NEIGHNP,(J+1):MAXNEIGHBORS,:)
-                     PN(NEIGHNP,1) = PN(NEIGHNP,1) -1
-                  ENDDO
-               ENDIF
-            ENDIF
-
-            NLIM_NEIGHNP = NEIGHBOURS(NEIGHNP,1)+1
-! Find where particle NP is stored in its neighbours (NEIGHNP) lists
-! and remove particle NP from the list
-            DO J = 2, NLIM_NEIGHNP
-               NPT = NEIGHBOURS(NEIGHNP,J)
-               IF (NPT .NE. NP) CYCLE  ! find particle NP in NEIGHNP list
-               NEIGHBOURS(NEIGHNP,1) = NEIGHBOURS(NEIGHNP,1)-1
-               NEIGHBOURS(NEIGHNP,J:(MN-1)) = NEIGHBOURS(NEIGHNP,(J+1):MN)
-            ENDDO
-         ENDDO
-      ENDIF
-
       PIP = PIP - 1
-! Do not increment PC since PIP has been decremented.
 
       RETURN
       END SUBROUTINE DELETE_PARTICLE
