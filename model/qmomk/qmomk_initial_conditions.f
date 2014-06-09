@@ -32,6 +32,8 @@
       INCLUDE 'function.inc'
                
       DO IJK = IJKSTART3, IJKEND3
+
+        IF(.NOT.FLUID_AT(IJK)) cycle
         DO M = 1, MMAX
           ! A.P.
           ! Initializing weights as volume_fraction/number_of_nodes
