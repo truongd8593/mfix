@@ -156,7 +156,7 @@
   r_p(1,2) = 0.75     ! collisions between particles of phases 1 and 2
 
 ! this quantity currently needs to be specified to satisfy error checks
-  C_e = 0.8     ! coefficient of restitution p-p
+#  C_e = 0.8     ! coefficient of restitution p-p
 
 ! these quantities currently do not matter unless invoking certain
 ! boundary condition routines. they must be set when using Johnson

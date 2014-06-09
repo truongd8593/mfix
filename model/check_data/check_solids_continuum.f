@@ -64,18 +64,17 @@
       ENDIF 
 
 
-! if constant solids viscosity is employed, then the calculation for
+! Constant solids viscosity is employed
+      IF (MU_S0 .NE. UNDEFINED) THEN
 ! many of the solids phase transport coefficients that are needed for
 ! the granular energy equation will have be skipped in calc_mu_s. so
-! do not evaluate granular energy when the solids viscosity is set to
-! a constant!
-      IF (MU_S0 .NE. UNDEFINED) THEN
+! do not evaluate granular energy if the solids viscosity is set to
+! a constant. 
          IF(GRANULAR_ENERGY) THEN
             WRITE(ERR_MSG,1100)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
-! these are needed even if mu_s0 is constant because of the current
-! solid-solid drag model
+! needed by default solids-solids drag model 
          IF (SMAX >=2) THEN 
             IF (C_E == UNDEFINED) THEN
                WRITE(ERR_MSG,1101) 
@@ -85,19 +84,33 @@
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ENDIF
-      ENDIF
+      ELSE 
+! PDE granular energy. Check kinetic theory specifications. 
+         IF (GRANULAR_ENERGY) THEN
+            CALL CHECK_KT_TYPE
+         ELSE
+! Algebraic granular energy equation
+            IF (C_E == UNDEFINED) THEN
+               WRITE(ERR_MSG,1101) 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+! needed by default solids-solids drag model
+            IF (SMAX >=2) THEN
+               IF (C_F == UNDEFINED) THEN
+                  WRITE(ERR_MSG,1102) 
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
+            ENDIF
+         ENDIF
+      ENDIF   
+          
  1100 FORMAT('Error 1100: Constant viscosity is specified but', /&
          'GRANULAR_ENERGY=.TRUE. Please correct the mfix.dat file')
  1101 FORMAT('Error 1101: Coefficient of restitution (C_E) not ',      &
          'specified.',/'Please correct the mfix.dat file.')
  1102 FORMAT('Error 1102: Coefficient of friction (C_F) not ',         &
          'specified.',/'Please correct the mfix.dat file.')
-
-
-! Check kinetic theory specifications.
-! the kinetic theory model means nothing without granular_energy
-      IF (GRANULAR_ENERGY) CALL CHECK_KT_TYPE
-
+!
 
 ! If frictional stress modeling check various dependent/conflicting 
 ! settings
@@ -259,6 +272,7 @@
 !  Subroutine: CHECK_KT_TYPE                                           !
 !  Purpose: Check kinetic theory input specifications. These checks    !
 !  are almost all related to the KT_TYPE keyword.                      !
+!  Notes: To enter this routine granular_energy must be true           !
 !                                                                      !
 !  Author: J.Musser                                   Date: 04-FEB-14  !
 !                                                                      !
@@ -292,13 +306,6 @@
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_KT_TYPE")
-
-! eventually this should be made specific to lun/ahmadi/simonin
-! but because calc_gw_hw_cw in calc_u_friction is not consistent
-! it currently must be defined for all kt_types whenever friction
-! is invoked...
-      ETA = (ONE + C_E)*HALF
-
 
 ! These are some checks to satisfy legacy input:
       IF (AHMADI .AND. SIMONIN) THEN
@@ -380,9 +387,9 @@
                   ELSE
                      r_p(I,J) = C_e
                   ENDIF
-! just need to define r_p(1,2) and r_p(2,1) will be set.
-                  r_p(J,I) = r_p(I,J)
                ENDIF
+! just need to define r_p(1,2) and r_p(2,1) will be set.
+               r_p(J,I) = r_p(I,J)
             ENDDO
          ENDDO
 
@@ -474,6 +481,12 @@
          'Please correct the mfix.dat file.')
 
       END SELECT
+
+! eventually this should be made specific to lun/ahmadi/simonin
+! but because calc_gw_hw_cw in calc_u_friction is not consistent
+! it currently must be defined for all kt_types whenever friction
+! is invoked...
+      ETA = (ONE + C_E)*HALF
 
 
  1002 FORMAT('Error 1002: KT_TYPE = ',A,' is for monodisperse',&

@@ -256,6 +256,8 @@
 !      use rxns, only: nrr
 ! Flag: Solve K-th direction (3D)
       use geometry, only: DO_K
+! Flag: use cartesian grid
+      use cutcell, only: cartesian_grid
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -398,75 +400,86 @@
       ENDIF ! Check Scalars
 
 
-! might make more sense to move this out... not sure
-      IF (M==1) THEN  ! do only once
+! might make sense to move these checks out of this routine
+! but placed here for now
+      IF(GRANULAR_ENERGY .AND. BC_JJ_PS(BCV) == 1) THEN
 
-         IF(GRANULAR_ENERGY .AND. BC_JJ_PS(BCV) == 1) THEN
+         IF(KT_TYPE_ENUM == GHD_2007) THEN
+            WRITE(ERR_MSG, 1201)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+
+         IF(CARTESIAN_GRID) THEN
+! the user should really be warned this is not implemented as
+! opposed to running with it
+            WRITE(ERR_MSG, 1202)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+ 
 ! small frictional boundary condition model
-            IF(JENKINS) THEN
-               IF (BC_JJ_M) THEN
-                  WRITE(ERR_MSG, 1203)
-                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-               ELSEIF (PHI_W == UNDEFINED) THEN
-                  WRITE(ERR_MSG, 1204)
-                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-               ELSEIF (E_W > ONE .OR. E_W < ZERO) THEN
-                  WRITE(ERR_MSG, 1001) 'E_W', E_W
-                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-              ENDIF
+         IF(JENKINS) THEN
+            IF (BC_JJ_M) THEN
+               WRITE(ERR_MSG, 1203)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ELSEIF (PHI_W == UNDEFINED) THEN
+               WRITE(ERR_MSG, 1204)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ELSEIF (E_W > ONE .OR. E_W < ZERO) THEN
+               WRITE(ERR_MSG, 1001) 'E_W', E_W
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
 ! PHI_W is given in degrees but calculated in radian within 
 ! the fortran codes 
-               TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
-            ENDIF
+            TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
+         ENDIF
 
 ! k4phi, phip0 for variable specularity coefficient
-            k4phi = undefined
-            IF(BC_JJ_M) THEN
-               IF (JENKINS) THEN
-                  WRITE(ERR_MSG, 1203)
-                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-               ELSEIF (PHI_W == UNDEFINED) THEN
-                  WRITE(ERR_MSG, 1204)
-                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-               ELSEIF (E_W > ONE .OR. E_W < ZERO) THEN
-                  WRITE(ERR_MSG, 1001) 'E_W', E_W
-                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-               ENDIF
+         k4phi = undefined
+         IF(BC_JJ_M) THEN
+            IF (JENKINS) THEN
+               WRITE(ERR_MSG, 1203)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ELSEIF (PHI_W == UNDEFINED) THEN
+               WRITE(ERR_MSG, 1204)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ELSEIF (E_W > ONE .OR. E_W < ZERO) THEN
+               WRITE(ERR_MSG, 1001) 'E_W', E_W
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
 ! PHI_W is given in degrees but calculated in radian within 
 ! the fortran codes 
-               TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
- 
-               k4phi = 7.d0/2.d0*tan_phi_w*(1.d0+e_w)
-               IF (phip0 .eq. UNDEFINED) THEN
-                  phip0 = -0.0012596340709032689 + &
-                           0.10645510095633175*k4phi - &
-                           0.04281476447854031*k4phi**2 + &
-                           0.009759402181229842*k4phi**3 - &
-                           0.0012508257938705263*k4phi**4 + &
-                           0.00008369829630479206*k4phi**5 - &
-                           0.000002269550565981776*k4phi**6
+            TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
+
+            k4phi = 7.d0/2.d0*tan_phi_w*(1.d0+e_w)
+            IF (phip0 .eq. UNDEFINED) THEN
+               phip0 = -0.0012596340709032689 + &
+                        0.10645510095633175*k4phi - &
+                        0.04281476447854031*k4phi**2 + &
+                        0.009759402181229842*k4phi**3 - &
+                        0.0012508257938705263*k4phi**4 + &
+                        0.00008369829630479206*k4phi**5 - &
+                        0.000002269550565981776*k4phi**6
 ! if k4phi is less than 0.2, the analytical expression for phi is used
 ! to estimate the phi at r->0
-                  IF (k4phi .le. 0.2d0) THEN
-                     phip0=0.09094568176225006*k4phi
-                  ENDIF
-                  WRITE (UNIT_LOG, 1207) phip0
+               IF (k4phi .le. 0.2d0) THEN
+                  phip0=0.09094568176225006*k4phi
                ENDIF
-               IF (phip0 < 0) THEN
-                  WRITE(ERR_MSG, 1208)
+               WRITE (UNIT_LOG, 1207) phip0
+            ENDIF
+            IF (phip0 < 0) THEN
+               WRITE(ERR_MSG, 1208)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+
+            IF (PHIP_OUT_JJ) THEN
+               IF(nRR < 1) THEN
+                  WRITE(ERR_MSG, 1209)
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
                ENDIF
-
-               IF (PHIP_OUT_JJ) THEN
-                  IF(nRR < 1) THEN
-                     WRITE(ERR_MSG, 1209)
-                     CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-                  ENDIF
-                  WRITE (UNIT_LOG, 1210) phip0
-               ENDIF
+               WRITE (UNIT_LOG, 1210) phip0
             ENDIF
          ENDIF
-      ENDIF
+      ENDIF   ! if granular_energy and bc_jj_ps = 1
 
 
       CALL FINL_ERR_MSG
@@ -479,6 +492,12 @@
  1001 FORMAT('Error 1001: Illegal or unphysical input: ',A,' = ',A,/   &
          'Please correct the mfix.dat file.')
 
+ 1201 FORMAT('Error 1201: KT_TYPE = "GHD" cannot be used with ',&
+         ' BC_JJ_PS',/'Please correct the mfix.dat file.') 
+ 
+ 1202 FORMAT('Error 1202: CARTESIAN_GRID cannot be used with ',&
+         ' BC_JJ_PS',/'Please correct the mfix.dat file.') 
+ 
  1203 FORMAT('Error 1203: JENKINS and BC_JJ_M cannot be used at the',&
          ' same time',/'Please correct the mfix.dat file.')
  1204 FORMAT('Error 1204: Angle of particle-wall friction (PHI_W) not',&

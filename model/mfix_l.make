@@ -5909,6 +5909,7 @@ $(DPO)check_bc_walls.$(OBJ_EXT) : ./check_data/check_bc_walls.f \
             $(DPO)physprop.mod \
             $(DPO)geometry.mod \
             $(DPO)constant.mod \
+            $(DPO)cutcell.mod \
             $(DPO)rxns.mod \
             $(DPO)funits.mod \
             $(DPO)scalars.mod 
