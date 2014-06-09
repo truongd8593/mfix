@@ -606,20 +606,22 @@
          WALL_LEFT, TUNIT
 
       IF(DT.LT.DT_MIN) THEN
-         IF(TIME.LE.RES_DT) THEN
-            IF (AUTO_RESTART .AND. DMP_LOG)WRITE(UNIT_LOG,*) &
-               'Automatic restart not possible as Total Time < RES_DT'
+         IF(TIME.LE.RES_DT .AND. AUTO_RESTART) THEN
+            IF (DMP_LOG)WRITE(UNIT_LOG,*) &
+                 'Automatic restart not possible as Total Time < RES_DT'
+            AUTO_RESTART = .FALSE.
+         ENDIF
 
-! JFD modification: cartesian grid implementation
+         IF(AUTO_RESTART) THEN
+            AUTOMATIC_RESTART = .TRUE.
+            RETURN
+         ELSE
             IF(WRITE_DASHBOARD) THEN
                RUN_STATUS = 'DT < DT_MIN.  Recovery not possible!'
                CALL UPDATE_DASHBOARD(NIT,0.0d0,'    ')
             ENDIF
-
             CALL MFIX_EXIT(MyPE)
          ENDIF
-         IF(AUTO_RESTART) AUTOMATIC_RESTART = .TRUE.
-         RETURN
       ENDIF
 
 ! Stiff Chemistry Solver.
