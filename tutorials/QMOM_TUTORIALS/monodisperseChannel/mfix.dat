@@ -1,154 +1,159 @@
- !Run control
- ! Run-control section                                                           
- DESCRIPTION    = 'Channel flow with particles - QMOM - 2way'          
- RUN_TYPE 	= 'NEW'             
- UNITS 		= 'SI'
- TIME  		= 0.0			!start time
- DT_MIN         = 1.0E-06
- RUN_NAME       = "Channel_QMOM_alpha_0_001"
- DT             = 1.0e-5
- DT_MAX         = 1.0
- DT_FAC		= 0.95
- TSTOP          = 5.0     
+########################################################################
+#                                                                      #
+# Tutorial: QMOM momo-disperse channel (alpha 0-001)                   #
+#                                                                      #
+# Author:                                              Date: XX-XX-XX  #
+# Modified: J. Musser                                  Date: 06-02-14  #
+#                                                                      #
+########################################################################
 
- CYCLIC_Y_PD = .TRUE.
- DELP_Y = 3000.0
- FLUX_G = 2.42
 
- ! Numerical settings
- DISCRETIZE = 9*2
- leq_it = 9*200
- NORM_S = 0
- NORM_G = 0
- 
- !Under-relaxation 
- !Pressure
- UR_FAC(1) = 0.6
- 
- !Solids volume fraction
- UR_FAC(2) = 0.4
- 
- ! Excluding particle phase momentum  equations - Not necessary using QMOM
- 
- MOMENTUM_X_EQ(1) = .FALSE. 
- MOMENTUM_Y_EQ(1) = .FALSE. 
- MOMENTUM_Z_EQ(1) = .FALSE.
- GRANULAR_ENERGY  = .FALSE. 
- ENERGY_EQ 	  = .FALSE.		!do not solve energy eq
- SPECIES_EQ 	  = .FALSE.    .FALSE. 	!do not solve species eq
- !CLOSE_PACKED    = .FALSE.
+  RUN_NAME = 'QMC'
+  DESCRIPTION = 'Channel flow with particles'
 
- GRAVITY = 9.81
+  RUN_TYPE = 'NEW'
+  UNITS = 'SI'
 
- ! Setting the number of dispersed phases
- MMAX = 1
+  TIME =  0.0
+  TSTOP = 1.0d-3
 
- ! Gas phase properties
- MU_g0    		=    1.73E-4
- RO_g0    		=    1.2
+  DT =     1.0d-5
+  DT_MIN = 1.0d-8
+  DT_MAX = 1.0d-1
 
- ! Particle phase properties
- RO_s0   		=    1500
- D_p0    		=    252.9E-06
- C_e       		=    1			
- e_w                    =    1.0
- EP_star 		=    0.37    !void fraction at minimum fluidization
- 
- Phi    		=    28.0    !angle of internal friction
- phi_w                  =    28.0
- 
- ! Geometry definition
- COORDINATES 		= 'cartesian' 
- XLENGTH                = 0.1    
- IMAX                   = 20
- YLENGTH                = 1.0
- JMAX                   = 200
- NO_K                   = .TRUE.
- 
- ! Initial conditions
- IC_X_w(1)           	=     0.0
- IC_X_e(1)           	=     0.1
- IC_Y_s(1)           	=     0.0
- IC_Y_n(1)           	=     1.0
-  
- IC_EP_g           	=     0.999
- 
- IC_theta_m(1,1)        =     0.1
- 
- IC_U_g           	=     0.0       ! x-dir gas velocity
- IC_V_g          	=     0.0	! y-dir gas velocity
- IC_W_g                 =     0.0
- IC_U_s(1,1)            =     0.0
- IC_V_s(1,1)            =     0.0
- IC_W_s(1,1)            =     0.0
- IC_P_star              =     0.0
+  MOMENTUM_X_EQ(1) = .F.
+  MOMENTUM_Y_EQ(1) = .F.
 
-! Boundary conditions
- BC_X_w(1)           	=     0.0 
- BC_X_e(1)           	=     0.0     
- BC_Y_s(1)           	=     0.0    
- BC_Y_n(1)           	=     1.0   
+  ENERGY_EQ = .F.
 
- BC_X_w(2)           	=     0.1 
- BC_X_e(2)           	=     0.1     
- BC_Y_s(2)           	=     0.0    
- BC_Y_n(2)           	=     1.0    
- 
- BC_TYPE(1)           	= "NSW"
- BC_TYPE(2)           	= "NSW"
+  SPECIES_EQ(0:1) = .F.  .F.
 
- BC_Uw_g(1) = 0.0
- BC_Vw_g(1) = 0.0
- BC_Ww_g(1) = 0.0
+  GRANULAR_ENERGY = .F.
 
- BC_Uw_g(2) = 0.0
- BC_Vw_g(2) = 0.0
- BC_Ww_g(2) = 0.0
-
- PHIP = 0.0
- 
-! QMOMB Input
-  QMOMK = .TRUE.
+  QMOMK = .T.
   QMOMK_COLLISIONS = 'BGK'
-  QMOMK_COUPLED = .TRUE.
+
+  QMOMK_COUPLED = .T.
   QMOMK_COLLISIONS_ORDER = 0
   QMOMK_CFL = 0.1
-  
-! End QMOMB
 
-! Output Control
 
-  RES_DT 		=    0.01
-  SPX_DT = .01 .01 .01 .01 .01 .01 .01 .01 .2     .1E+03 .1E+03
-  OUT_DT 		= 20.0		!write text file BUB01.OUT
-					!  every 0.1s
-  NLOG   		= 10 		!write logfile BUB01.LOG
-					!every 25 time steps
-  FULL_LOG 		= .TRUE. 	!display residuals on screen
+#_______________________________________________________________________
+# NUMERICAL SECTION
 
-  CALL_USR              = .TRUE.
-  
-!SPX_DT values determine how often SPx files are written.  Here BUB01.SP1, which
-!contains void fraction (EP_g), is written every 0.01 s, BUB01.SP2, which contains
-! gas and solids pressure (P_g, P_star), is written every 0.1 s, and so forth.
-!
-        ! EP_g P_g       U_g  U_s  ROP_s     T_g  X_g
-        !      P_star    V_g  V_s            T_s  X_s     Theta   Scalar 
-        !                W_g  W_s      
-                                                 
-!  The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
-  
-  NODESI = 1   NODESJ = 1   NODESK = 1
+  DISCRETIZE = 9*2  ! Spuperbee for all equations
 
-!  Sweep Direction
+  NORM_S = 0.0  ! Normalize gas continuity residual
+  NORM_G = 0.0  ! Normalize solids continuity residual
 
-LEQ_SWEEP(1) = 'ISIS' 
-LEQ_SWEEP(2) = 'ISIS'  
-LEQ_SWEEP(3) = 'ISIS' 
-LEQ_SWEEP(4) = 'ISIS'  
-LEQ_SWEEP(5) = 'ISIS'  
-LEQ_SWEEP(6) = 'ISIS'  
-LEQ_SWEEP(7) = 'ISIS' 
-LEQ_SWEEP(8) = 'ISIS'  
-LEQ_SWEEP(9) = 'ISIS'
+  LEQ_SWEEP(1:9) = 9*'ISIS'
 
+
+#_______________________________________________________________________
+# GEOMETRY SECTION
+
+  COORDINATES = 'CARTESIAN'
+
+  XLENGTH = 0.1   IMAX =  20
+  YLENGTH = 1.0   JMAX = 200
+
+  NO_K = .T.
+
+  CYCLIC_Y_PD = .T.
+
+  DELP_Y = 3000.00
+  FLUX_G =    2.42
+
+
+#_______________________________________________________________________
+# MATERIAL SECTION
+
+! Gas Section
+!---------------------------------------------------------------------//
+  MU_g0 = 1.73d-4  ! Constant Viscosity
+  RO_g0 = 1.2      ! Constant gas density
+
+
+! Particle Section:
+!---------------------------------------------------------------------//
+  MMAX = 1
+
+  e =        1.0     ! part-part restitution coefficient
+  e_w =      1.0     ! part-wall restitution coefficient
+  Phi =     28.0     ! angle of internal friction
+  Phi_w =   28.0     ! angle of internal friction
+  PhiP =     0.0     ! part-wall specularity coefficient
+
+  EP_star =  0.37    ! void fraction at maximum packing
+
+
+! Solids phase 1
+!---------------------------------------------------------------------//
+  RO_s0(1) =  252.9d-6
+  D_p0(1) =  1500.0
+
+
+#_______________________________________________________________________
+# INITIAL CONDITIONS SECTION
+
+  IC_X_w(1) =        0.0    ! (m)
+  IC_X_e(1) =        0.1    ! (m)
+  IC_Y_s(1) =        0.0    ! (m)
+  IC_Y_n(1) =        1.0    ! (m)
+
+  IC_EP_g(1) =       0.999  ! (-)
+
+  IC_U_g(1) =        0.0
+  IC_V_g(1) =        0.0
+
+  IC_U_s(1,1) =      0.0
+  IC_V_s(1,1) =      0.0
+
+  IC_Theta_M(1,1) =  0.01
+
+
+#_______________________________________________________________________
+# BOUNDARY CONDITIONS SECTION
+
+! Walls:
+!---------------------------------------------------------------------//
+!                   West    East
+  BC_X_w(1:2) =     0.0     0.1
+  BC_X_e(1:2) =     0.0     0.1
+  BC_Y_s(1:2) =     0.0     0.0
+  BC_Y_n(1:2) =     1.      1.0
+
+  BC_TYPE(1:2)  =   2*'NSW'
+
+  BC_Uw_g(1:2) =    2*0.0
+  BC_Vw_g(1:2) =    2*0.0
+
+
+#_______________________________________________________________________
+# OUTPUT CONTROL SECTION
+
+  RES_DT = 0.01
+
+  SPX_DT(1) = 1.0d-2   ! EP_g 
+  SPX_DT(2) = 1.0d-2   ! P_g, P_star 
+  SPX_DT(3) = 1.0d-2   ! U_g, V_g, W_g
+  SPX_DT(4) = 1.0d-2   ! U_s, V_s, W_s
+  SPX_DT(5) = 1.0d-2   ! ROP_s
+  SPX_DT(6) = 1.0d+2   ! T_g, T_s
+  SPX_DT(7) = 1.0d+2   ! X_g, X_s
+  SPX_DT(8) = 1.0d-2   ! theta
+  SPX_DT(9) = 1.0d-2   ! Scalar
+
+  RESID_STRING = 'P0', 'U0', 'V0'
+
+  NLOG = 100
+  FULL_LOG = .T.
+
+
+#_______________________________________________________________________
+# DMP SETUP
+
+  NODESI =  1  NODESJ =  1  NODESK =  1
+
+  ENABLE_DMP_LOG = .F.
+  CHK_BATCHQ_END = .F.
