@@ -2238,7 +2238,8 @@
          BC_VELMAG_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
-         BC_APPLY_TO_MPPIC(LC) = .true.
+         BC_PO_APPLY_TO_DES(LC) = .true.
+         BC_MI_AS_WALL_FOR_DES(LC)  = .true. 
          BC_ROP_G(LC) = UNDEFINED
       ENDDO
 

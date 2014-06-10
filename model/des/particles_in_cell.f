@@ -37,6 +37,7 @@
       USE mfix_pic
       USE des_rxns
       USE run
+      USE error_manager
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -82,6 +83,7 @@
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
+      CALL INIT_ERR_MSG("Particles_in_cell")
 
 ! following quantities are reset every call to particles_in_cell
       PIP_DEL_COUNT = 0 
@@ -326,7 +328,7 @@
                      PIJK(L,3) = KEND1
                   ELSE
                      IF(DMP_LOG) WRITE(UNIT_LOG,1010) L,'K',K,'Z',&
-                        ZPOS,DES_POS_OLD(L,2),'Z',DES_VEL_NEW(L,3),&
+                        ZPOS,DES_POS_OLD(L,3),'Z',DES_VEL_NEW(L,3),&
                         DES_VEL_OLD(L,3), CUT_CELL_AT(IJK), &
                         FLUID_AT(IJK)
                      PIP_DEL_COUNT = PIP_DEL_COUNT + 1 
@@ -427,36 +429,39 @@
          LPIP_DEL_COUNT_ALL(:) = 0
          LPIP_DEL_COUNT_ALL(mype) = PIP_DEL_COUNT 
          CALL GLOBAL_ALL_SUM(LPIP_DEL_COUNT_ALL) 
-         IF((DMP_LOG).AND.SUM(LPIP_DEL_COUNT_ALL(:)).GT.0) THEN 
-            IF(PRINT_DES_SCREEN) WRITE(*,'(/,2x,A,2x,i10)') &
+         IF(SUM(LPIP_DEL_COUNT_ALL(:)).GT.0) THEN 
+            WRITE(ERR_MSG,'(/,2x,A,2x,i10)') &
                'TOTAL NUMBER OF PARTICLES OUSIDE DOMAIN IN PIC = ', &
                SUM(LPIP_DEL_COUNT_ALL(:))
-            WRITE(UNIT_LOG,'(/,2x,A,2x,i10)') &
-               'TOTAL NUMBER OF PARTICLES OUTSIDE DOMAIN IN PIC= ',&
-               SUM(LPIP_DEL_COUNT_ALL(:))
+            
+            CALL flush_err_msg(footer = .false.)
+
             DO IPROC = 0, NUMPES-1 
-               WRITE(UNIT_LOG, '(/,A,i4,2x,A,2x,i5)') &
-               'PARTICLES OUTSIDE DOMAIN (PIC)  ON PROC:', IPROC,&
-               ' EQUAL TO', LPIP_DEL_COUNT_ALL(IPROC)
-            ENDDO            
+               WRITE(ERR_MSG, '(/,A,i4,2x,A,2x,i5)') &
+                    'PARTICLES OUTSIDE DOMAIN (PIC)  ON PROC:', IPROC,&
+                    ' EQUAL TO', LPIP_DEL_COUNT_ALL(IPROC)
+               
+               CALL flush_err_msg(header = .false., footer = .false.)
+            ENDDO
          ENDIF
 
-         NNODES = NODESI*NODESJ*NODESK
-         IF (NNODES.EQ.1 ) THEN
-            EPG_MIN2 = MINVAL(EP_G(:))
-            epg_min_loc = MINLOC(EP_G(:))
-            IJK = epg_min_loc(1)
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
-            WRITE(*,1014) epg_min2, I_OF(IJK), j_of(ijk), k_of(ijk), &
-            & xe(I) - 0.5*dx(i), yn(J)-0.5*DY(J), zt(K) - 0.5*DZ(K), & 
-            & PINC(IJK), cut_cell_at(ijk), fluid_at(ijk)
-         ENDIF
+!!$         NNODES = NODESI*NODESJ*NODESK
+!!$         IF (NNODES.EQ.1 ) THEN
+!!$            EPG_MIN2 = MINVAL(EP_G(:))
+!!$            epg_min_loc = MINLOC(EP_G(:))
+!!$            IJK = epg_min_loc(1)
+!!$            I = I_OF(IJK)
+!!$            J = J_OF(IJK)
+!!$            K = K_OF(IJK)
+!!$            WRITE(*,1014) epg_min2, I_OF(IJK), j_of(ijk), k_of(ijk), &
+!!$            & xe(I) - 0.5*dx(i), yn(J)-0.5*DY(J), zt(K) - 0.5*DZ(K), & 
+!!$            & PINC(IJK), cut_cell_at(ijk), fluid_at(ijk)
+!!$         ENDIF
       ENDIF
          
 
       FIRST_PASS = .FALSE.
+      CALL FINL_ERR_MSG
 
  1000 FORMAT(3X,'---------- FROM PARTICLES_IN_CELL ---------->')
  1001 FORMAT(3X,'<---------- END PARTICLES_IN_CELL ----------') 
@@ -478,7 +483,7 @@
          ' From: PARTICLES_IN_CELL -',/,&         
          ' Message: Particle ',I8,' moved into a',&
          ' ghost cell from cell with ',A,' index : ',I8,/1X,A,&
-         '-position new and old: ',2(ES17.9,4X),A,/& 
+         '-position new and old: ',2(ES17.9,4X),/1X,A, & 
          '-velocity new and old: ',2(ES17.9,4x),/& 
          ' CUT_CELL and FLUID AT IJK_OLD ?', 2(L2,2x),/& 
          ' Marking this particle as inactive',/&          

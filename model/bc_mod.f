@@ -148,12 +148,18 @@
 !                      P_INFLOW, P_OUTFLOW, FREE_SLIP_WALL, NO_SLIP_WALL
       CHARACTER*16     BC_TYPE (DIMENSION_BC)
 
-!rahul:
-!                      FLAG to specify if this BC applies to solid phase 
-!                      in MPPIC implementation or not. For example, setting 
+
+!                      FLAG to specify if this PO BC applies to solid phase 
+!                      in discrete implementation or not. For example, setting 
 !                      Pressure outflow only for gas-phase. 
 
-      LOGICAL          BC_APPLY_TO_MPPIC (DIMENSION_BC)
+      LOGICAL          BC_PO_APPLY_TO_DES (DIMENSION_BC)
+
+!                      FLAG to specify if this MI BC plane will be 
+!                      seen as a wall by discrete phase (default behavior) 
+!                      or allow the particles to go through the inflow plane 
+
+      LOGICAL          BC_MI_AS_WALL_FOR_DES (DIMENSION_BC)
 
 !
 !                      Gas volumetric flow rate through the boundary

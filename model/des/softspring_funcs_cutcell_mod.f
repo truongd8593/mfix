@@ -347,7 +347,7 @@
 
          DO CELL_COUNT = 1, NEIGH_CELLS
             IJK = LIST_OF_CELLS(CELL_COUNT)
-
+            
             DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
                NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
 ! Neighboring cells will share facets with same facet ID
@@ -358,12 +358,22 @@
                   checked_facet_already = (NF.eq.LIST_OF_CHECKED_FACETS(count2))
                   IF(checked_facet_already) exit
                enddo
-
+               
                IF(checked_facet_already) CYCLE
-
+               
                CONTACT_FACET_COUNT = CONTACT_FACET_COUNT + 1
                LIST_OF_CHECKED_FACETS(CONTACT_FACET_COUNT) = NF
-
+               
+               IF(STL_FACET_TYPE(NF).eq.FACET_TYPE_NORMAL .or. &
+                    STL_FACET_TYPE(NF).eq.FACET_TYPE_MI) then 
+                  !do nothing
+               ELSE
+                  !Skip this facet 
+                  CYCLE 
+               ENDIF
+               
+               
+               
                !Checking all the facets is time consuming due to the
                !expensive separating axis test. Remove this facet from
                !contention based on a simple orthogonal projection test.

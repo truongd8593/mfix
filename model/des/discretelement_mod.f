@@ -608,6 +608,14 @@
 
       Logical :: des_convert_box_to_facets
 
+      Integer, parameter :: FACET_TYPE_NORMAL = 1, FACET_TYPE_PO = 2 & 
+      , FACET_TYPE_MI = 3
+      
+      !make this a short integer
+      !array to specify the facet type 
+      Integer, dimension(:), allocatable :: STL_FACET_TYPE
+
+      Integer :: count_facet_type_normal, count_facet_type_po, count_facet_type_mi
 ! Start Cluster Identification
 !----------------------------------------------------------------->>>
 ! keyword determining whether to activate cluster identification

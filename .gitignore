@@ -2,6 +2,7 @@
 *.a
 *.o
 *.mod
+*.0f
 post_mfix
 Makefile
 model/mpif.h

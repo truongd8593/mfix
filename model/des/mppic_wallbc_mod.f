@@ -40,7 +40,7 @@
 
       PRIVATE
 
-      PUBLIC:: mppic_apply_wallbc, MPPIC_FIND_NEW_CELL, &
+      PUBLIC:: mppic_apply_wallbc_stl, MPPIC_FIND_NEW_CELL, &
       CHECK_IF_PARCEL_OVELAPS_STL
 
       LOGICAL :: INSIDE_DOMAIN, INSIDE_SMALL_CELL, REFLECT_FROM_ORIG_CELL
@@ -301,6 +301,242 @@
       write(*,*) 'wrote a facet and a parcel. now waiting'
       read(*,*)
     end SUBROUTINE write_this_facet_and_parcel
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: MPPIC_APPLY_WALLBC_STL                                  C
+!  Purpose:                                                            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      SUBROUTINE MPPIC_APPLY_WALLBC_STL
+
+      USE run
+      USE param1
+      USE discretelement, only: dimn
+      USE geometry
+      USE constant
+      USE cutcell
+      USE indices
+      USE stl
+      USE des_stl_functions
+      Implicit none
+
+
+      INTEGER I, J, K, IJK, NF, LL
+
+      DOUBLE PRECISION :: RADSQ, DISTSQ, DIST(DIMN)
+      INTEGER :: COUNT_FAC, COUNT, contact_facet_count, NEIGH_CELLS, &
+      NEIGH_CELLS_NONNAT, IPROC, COUNT2, &
+      LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
+      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP, &
+      LOC_MAX_PIP
+      INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), LPIP_ADD_COUNT_ALL(0:numPEs-1)
+
+
+      double precision :: velocity(dimn)
+      !reference point and direction of the line
+      double precision, dimension(dimn) :: ref_line,  dir_line
+      !reference point and normal of the plane
+      double precision, dimension(dimn) :: ref_plane, norm_plane
+      !line is parameterized as p = p_ref + t * dir_line, t is line_param
+      double precision :: line_t
+      !logical for determining if a point is on the triangle or not
+      logical :: ontriangle
+      !The line and plane intersection point
+      double precision, dimension(dimn) :: point_onplane
+      !Old and new position of the parcel 
+      double precision, dimension(dimn) :: pt_old, pt_new 
+      
+      Logical :: checked_facet_already
+      !distance parcel travelled out of domain along the facet normal
+      double precision :: dist_from_facet
+      INTEGER, Parameter :: MAX_FACET_CONTS = 500
+      INTEGER :: list_of_checked_facets(max_facet_conts)
+
+      INCLUDE 'function.inc'
+
+      PIP_DEL_COUNT = ZERO
+
+      DO LL = 1, MAX_PIP
+
+
+         IF(LL.EQ.FOCUS_PARTICLE) DEBUG_DES = .TRUE.
+
+         ! skipping non-existent particles or ghost particles
+         IF(.NOT.PEA(LL,1) .OR. PEA(LL,4)) CYCLE
+
+
+         ! If no neighboring facet in the surrounding 27 cells, then exit
+         IF (NO_NEIGHBORING_FACET_DES(PIJK(LL,4))) cycle
+
+         LIST_OF_CELLS(:) = -1
+         NEIGH_CELLS = 0
+         NEIGH_CELLS_NONNAT  = 0
+
+         CELL_ID = PIJK(LL,4)
+         COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
+         RADSQ = DES_RADIUS(LL)*DES_RADIUS(LL)
+
+         pt_old(1:dimn) = des_pos_old(LL, 1:dimn)
+         pt_new(1:dimn) = des_pos_new(LL, 1:dimn)
+
+         IF (COUNT_FAC.gt.0)   then
+            !first add the facets in the cell the particle currently resides in
+            NEIGH_CELLS = NEIGH_CELLS + 1
+            LIST_OF_CELLS(NEIGH_CELLS) = CELL_ID
+         ENDIF
+
+         I_CELL = I_OF(CELL_ID)
+         J_CELL = J_OF(CELL_ID)
+         K_CELL = K_OF(CELL_ID)
+
+
+         IPLUS1  =  MIN (I_CELL + 1, IEND2)
+         IMINUS1 =  MAX (I_CELL - 1, ISTART2)
+
+         JPLUS1  =  MIN (J_CELL + 1, JEND2)
+         JMINUS1 =  MAX (J_CELL - 1, JSTART2)
+
+         KPLUS1  =  MIN (K_CELL + 1, KEND2)
+         KMINUS1 =  MAX (K_CELL - 1, KSTART2)
+
+         DO K = KMINUS1, KPLUS1
+            DO J = JMINUS1, JPLUS1
+               DO I = IMINUS1, IPLUS1
+                  IJK = FUNIJK(I,J,K)
+                  COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+                  IF(COUNT_FAC.EQ.0.or.ijk.eq.cell_id) CYCLE
+                  NEIGH_CELLS_NONNAT = NEIGH_CELLS_NONNAT + 1
+                  NEIGH_CELLS = NEIGH_CELLS + 1
+                  LIST_OF_CELLS(NEIGH_CELLS) = IJK
+                  !WRITE(*,'(A10, 4(2x,i5))') 'WCELL  = ', IJK, I,J,K
+               ENDDO
+            ENDDO
+         ENDDO
+
+         CONTACT_FACET_COUNT = 0
+
+         CELLLOOP: DO CELL_COUNT = 1, NEIGH_CELLS
+            IJK = LIST_OF_CELLS(CELL_COUNT)
+
+            DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+               NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
+               ! Neighboring cells will share facets with same facet ID
+               ! So it is important to make sure a facet is checked (for speed)
+               ! and accounted (for accuracy) only once
+               checked_facet_already = .false.
+               DO COUNT2 = 1, CONTACT_FACET_COUNT
+                  checked_facet_already = (NF.eq.LIST_OF_CHECKED_FACETS(count2))
+                  IF(checked_facet_already) exit
+               enddo
+
+               IF(checked_facet_already) CYCLE
+
+               CONTACT_FACET_COUNT = CONTACT_FACET_COUNT + 1
+               LIST_OF_CHECKED_FACETS(CONTACT_FACET_COUNT) = NF
+
+               line_t  = -Undefined
+               !-undefined, because non zero values will imply intersection
+               !with the plane
+               ontriangle = .false.
+
+               !parametrize a line as p = p_0 + t (p_1 - p_0)
+               !and intersect with the triangular plane.
+               !if 0<t<1, then this ray connect old and new positions 
+               !intersects with the facet. 
+               ref_line(1:dimn) = pt_old(1:dimn)
+               dir_line(1:dimn) = pt_new(1:dimn) - pt_old(1:dimn)
+
+               norm_plane(1:dimn) = NORM_FACE(1:dimn,NF)
+               ref_plane(1:dimn)  = VERTEX(1, 1:dimn,NF)
+               CALL intersectLnPlane(ref_line, dir_line, ref_plane, &
+                    norm_plane, line_t)
+               
+                  
+                  
+               if(line_t.ge.zero.and.line_t.lt.one) then
+                  !line_t = one would imply particle sitting on the stl 
+                  !face, so don't reflect it yet
+
+                  point_onplane(1:dimn) = ref_line(1:dimn) + &
+                       line_t*dir_line(1:dimn)
+                  !Now check through barycentric coordinates if
+                  !this orthogonal projection lies on the facet or not
+                  !If it does, then this point is deemed to be on the
+                  !non-fluid side of the facet
+                  CALL checkPTonTriangle(point_onplane(1:dimn), &
+                       VERTEX(1,:,NF), VERTEX(2,:,NF), VERTEX(3,:,NF), &
+                       ontriangle)
+                  IF(LL.eq.-11.and.pt_new(3).gt.zlength)then  
+                     !IF(LL.eq.1) then 
+                     
+                     write(*,*) 'POS OLD = ', pt_old(1:dimn)
+                     write(*,*) 'POS NEW = ', pt_new(1:dimn)
+                     write(*,*) 'plane ref= ', ref_plane(1:dimn)
+                     write(*,*) 'norm plane= ', norm_plane(1:dimn)
+                     write(*,*) 'dir_line = ', dir_line(1:dimn)
+                     
+                     WRITE(*,*) 'line_t = ',  line_t,ontriangle
+                     write(*,*) 'vel OLD = ', des_vel_old(LL,1:dimn)
+                     write(*,*) 'vel NEW = ', des_vel_new(LL,1:dimn)
+                  
+                     read(*,*)
+               endif
+
+                  if(ontriangle) then
+                     dist_from_facet = abs(dot_product(pt_new(1:dimn) & 
+                          & - point_onplane(1:dimn), norm_plane(1:dimn)))
+
+                     DES_POS_NEW(LL, 1:DIMN) = point_onplane(1:dimn) + & 
+                          & dist_from_facet*(norm_plane(1:dimn)) 
+
+                     IF(STL_FACET_TYPE(NF).eq.facet_type_normal.or. &
+                          STL_FACET_TYPE(NF).eq.facet_type_mi) then 
+                        CALL MPPIC_REFLECT_PART(LL, norm_plane(1:DIMN))
+                        !In the reflect routine, it is assumed that the normal
+                        !points into the system which is consitent with the 
+                        !definition of normal for facets 
+
+                     ELSEIF(STL_FACET_TYPE(NF).eq.FACET_TYPE_PO) then 
+                        PEA(LL, 1)  = .false.
+                        PIP_DEL_COUNT = PIP_DEL_COUNT+1
+                     ENDIF
+
+
+                     Exit CELLLOOP
+                  endif
+               endif
+
+            ENDDO
+
+         end DO CELLLOOP
+
+      end DO
+
+      RETURN 
+
+      !now apply the mass inflow bc
+      CALL MPPIC_MI_BC
+      
+! The following lines could be moved to MPPIC_MI_BC
+      LPIP_ADD_COUNT_ALL(:) = 0
+      LPIP_ADD_COUNT_ALL(mype) = PIP_ADD_COUNT
+      CALL GLOBAL_ALL_SUM(LPIP_ADD_COUNT_ALL)
+
+      !WRITE(*,*) 'PIP2 = ', PIP, PIP_ADD_COUNT,  LPIP_ADD_COUNT_ALL
+      !WRITE(*,*) 'PIP3 = ', LPIP_ADD_COUNT_ALL
+      IF((DMP_LOG).AND.SUM(LPIP_ADD_COUNT_ALL(:)).GT.0) THEN
+         IF(PRINT_DES_SCREEN) WRITE(*,'(/,2x,A,2x,i10)') 'TOTAL NUMBER OF PARTICLES ADDED GLOBALLY = ', SUM(LPIP_ADD_COUNT_ALL(:))
+         WRITE(UNIT_LOG,'(/,2x,A,2x,i10)') 'TOTAL NUMBER OF PARTICLES ADDED GLOBALLY = ', SUM(LPIP_ADD_COUNT_ALL(:))
+         DO IPROC = 0, NUMPES-1
+            WRITE(UNIT_LOG, '(/,A,i4,2x,A,2x,i5)') 'PARTICLES ADDED ON PROC:', IPROC,' EQUAL TO', LPIP_ADD_COUNT_ALL(IPROC)
+         ENDDO
+         !READ(*,*)
+      ENDIF
+
+      END SUBROUTINE MPPIC_APPLY_WALLBC_STL
+
 
 
 
@@ -905,7 +1141,7 @@
 !positive for particles outside the domain. This is becuase
 !the wall normal points away from the physical domain, and any
 !point inside the domain will have negative distance.
-            IF(DIST.GT.ZERO) CALL MPPIC_REFLECT_PART(LL, (DIST), -NORMAL(1:DIMN))
+            !IF(DIST.GT.ZERO) CALL MPPIC_REFLECT_PART(LL, (DIST), -NORMAL(1:DIMN))
 !in the routine mppic_reflect_part, it is assumed that the normal
 !points into the system (i.e., toward the fluid, hence the negative
 !sign in front of normal)
@@ -950,7 +1186,7 @@
 !!$               WRITE(*,'(A, 3(2x,g17.8))') 'DIST = ', DIST
 !!$            ENDIF
 
-            IF(DIST.LT.ZERO) CALL MPPIC_REFLECT_PART(LL, ABS(DIST), NORMAL(1:DIMN))
+            !IF(DIST.LT.ZERO) CALL MPPIC_REFLECT_PART(LL, ABS(DIST), NORMAL(1:DIMN))
 !recall the normal for small cell points toward the fluid.
 !!$            IF(IJK_CELL.eq.3413) THEN
 !!$               WRITE(*,'(A, 3(2x,g17.8))') 'POS PC = ', DES_POS_NEW(LL, :)
@@ -995,7 +1231,7 @@
                !& DIST_OLD, NORM_CF(1), NORM_CF(2), NORM_CF(3), .true.)
 
                !IF(DIST_OLD.GE.0.d0)
-               CALL MPPIC_REFLECT_PART(LL, ABS(DIST), NORMAL(1:DIMN))
+               !CALL MPPIC_REFLECT_PART(LL, ABS(DIST), NORMAL(1:DIMN))
             ENDIF
 
          CASE ('OUTFLOW')
@@ -1144,13 +1380,13 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE MPPIC_REFLECT_PART(LL, DISTFROMWALL, WALL_NORM)
+      SUBROUTINE MPPIC_REFLECT_PART(LL, WALL_NORM)
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
       INTEGER, INTENT(IN) :: LL
-      DOUBLE PRECISION, INTENT(IN) :: DISTFROMWALL, WALL_NORM(DIMN)
+      DOUBLE PRECISION, INTENT(IN) ::  WALL_NORM(DIMN)
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -1171,29 +1407,6 @@
       DOUBLE PRECISION :: VELMOD, NORMMOD, VELDOTNORM
 !-----------------------------------------------
 
-!bring the particle inside the domain
-      REFLECT_COUNT = REFLECT_COUNT + 1
-      DES_POS_NEW(LL, 1:DIMN) = DES_POS_NEW(LL, 1:DIMN) + &
-           & 1.001d0*DISTFROMWALL*WALL_NORM(1:DIMN)
-
-      !VELMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(LL,1:DIMN), DES_VEL_NEW(LL, 1:DIMN))
-      !NORMMOD = SQRT(DOT_PRODUCT(WALL_NORM(1:DIMN), WALL_NORM( 1:DIMN))
-      !sometime the magnitude of the normal from cut-face may not be
-      !exactly equal to one
-
-      VELDOTNORM = DOT_PRODUCT(DES_VEL_NEW(LL,1:DIMN), WALL_NORM(1:DIMN))
-      !VELDOTNORM = VELDOTNORM/(NORMMOD*VELMOD)
-
-
-      IF(VELDOTNORM.GT.ZERO) THEN
-         WRITE(*,*) 'NO NEED TO REFLECT VELOCITY: L = ', LL
-         if(dmp_log) WRITE(unit_log,*) 'NO NEED TO REFLECT VELOCITY: L = ', LL
-
-         RETURN
-                                !in this case only correct the position
-      ENDIF
-      !and do not reflect the velocity
-      !this kind of situation shud happen very rarely.
 
       VEL_NORMMAG_APP = DOT_PRODUCT(WALL_NORM(1:DIMN), DES_VEL_NEW(LL, 1:DIMN))
 
@@ -1203,21 +1416,18 @@
 
       VEL_TANG_APP(:) = DES_VEL_NEW(LL, 1:DIMN) - VEL_NORM_APP(1:DIMN)
 
-      VEL_TANGMAG_APP = SQRT(DOT_PRODUCT(VEL_TANG_APP(1:DIMN) , VEL_TANG_APP(1:DIMN)))
-
+      
 
 !post collisional velocities
 
       !COEFF_REST_EN = REAL_EN_WALL(PIJK(LL,5))
       COEFF_REST_EN = MPPIC_COEFF_EN_WALL
+      COEFF_REST_ET = MPPIC_COEFF_ET_WALL
+
       !if(ep_g(PIJK(LL,4)).lt.0.42) coeff_rest_en = 1.05
       VEL_NORM_SEP(1:DIMN) = -COEFF_REST_EN*VEL_NORM_APP(1:DIMN)
 
-      VEL_TANG_SEP(1:DIMN) = VEL_TANG_APP(1:DIMN)
-
-      COEFF_REST_ET = MPPIC_COEFF_ET_WALL
-
-      VEL_TANG_SEP(1:DIMN) = COEFF_REST_ET*VEL_TANG_APP(1:DIMN)
+      VEL_TANG_SEP(1:DIMN) =  COEFF_REST_ET*VEL_TANG_APP(1:DIMN)
 
       DES_VEL_NEW(LL, 1:DIMN) = VEL_NORM_SEP(1:DIMN) + VEL_TANG_SEP(1:DIMN)
 

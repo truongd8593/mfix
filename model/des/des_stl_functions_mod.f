@@ -26,10 +26,12 @@
       USE stl
       USE param
       USE error_manager
-      USE discretelement, only: DES_CONVERT_BOX_TO_FACETS
+      USE discretelement, only: DES_CONVERT_BOX_TO_FACETS, STL_FACET_TYPE, &
+           & FACET_TYPE_NORMAL, FACET_TYPE_MI, FACET_TYPE_PO, &
+           & COUNT_FACET_TYPE_NORMAL, COUNT_FACET_TYPE_MI, COUNT_FACET_TYPE_PO
       USE cutcell, only: use_stl
       implicit none
-      integer :: ijk, count
+      integer :: ijk, count,nf
       integer :: max_des_facets
 
       CALL INIT_ERR_MSG("DES_STL_PREPROCESSING")
@@ -47,7 +49,8 @@
 ! Set N_facets_des to add any more facets needed by dem and not to.
 ! contaminate the Eulerian-Eulerian CG stuff 
       IF(USE_STL) N_FACETS_DES = N_FACETS
-
+      !set all the facets generated so far as normal facet types 
+      STL_FACET_TYPE(1:N_FACETS) = FACET_TYPE_NORMAL
 ! Triangulate default walls (bounding box of the simulation)
       CALL CG_DES_CONVERT_TO_FACETS
 
@@ -58,6 +61,19 @@
          IF(COUNT.eq.0) DEALLOCATE(LIST_FACET_AT_DES(IJK)%FACET_LIST)
       ENDDO
 
+      count_facet_type_normal = 0
+      count_facet_type_po     = 0
+      count_facet_type_mi     = 0
+      DO NF = 1, N_FACETS_DES
+         if(stl_facet_type(nf).eq.facet_type_normal) & 
+              count_facet_type_normal = count_facet_type_normal + 1
+         
+         if(stl_facet_type(nf).eq.facet_type_mi) & 
+              count_facet_type_mi = count_facet_type_mi + 1
+         
+         if(stl_facet_type(nf).eq.facet_type_po) & 
+              count_facet_type_po = count_facet_type_po + 1
+      ENDDO
       !CALL DEBUG_WRITE_GRID_FACEINFO
       CALL DEBUG_write_stl_from_grid_facet(WRITE_FACETS_EACH_CELL=.false.)
 
@@ -82,6 +98,7 @@
       SUBROUTINE ALLOCATE_DES_STL_ARRAYS
       USE param
       USE stl
+      USE discretelement, only: STL_Facet_type
 
       IMPLICIT NONE
 
@@ -96,7 +113,8 @@
 
       ALLOCATE(NO_NEIGHBORING_FACET_DES(DIMENSION_3))
       NO_NEIGHBORING_FACET_DES = .false.
-
+      
+      Allocate(stl_facet_type(DIM_STL))
       END SUBROUTINE ALLOCATE_DES_STL_ARRAYS
 
 
@@ -430,12 +448,34 @@
 
 
       denom = DOT_PRODUCT(dir_line, norm_plane)
-      if(denom.gt.zero) then
+      if(denom*denom.gt.zero) then
          line_param = DOT_PRODUCT(ref_plane(:) - ref_line(:), norm_plane(:))
          line_param = line_param/denom
       endif
       return
       end subroutine intersectLnPlane
+
+      subroutine set_facet_type_normal(facet_type)
+        USE discretelement, only: Facet_type_normal
+        Implicit none 
+        integer, intent(out) :: facet_type
+        facet_type = FACET_type_NORMAL
+      end subroutine set_facet_type_normal
+      
+      subroutine set_facet_type_po(facet_type)        
+        USE discretelement, only: Facet_type_po
+        Implicit none 
+        integer, intent(out) :: facet_type
+        facet_type = FACET_type_PO
+      end subroutine set_facet_type_po
+      
+      subroutine set_facet_type_mi(facet_type)       
+        USE discretelement, only: Facet_type_mi
+        Implicit none 
+        integer, intent(out) :: facet_type
+        facet_type = FACET_type_MI
+      end subroutine set_facet_type_mi
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -454,23 +494,80 @@
       USE geometry
       USE compar
       USE error_manager
+      USE cutcell 
+      USE bc
+      
+      USE constant, only: PI
+      use discretelement, only: DES_PERIODIC_WALLS_X, DES_PERIODIC_WALLS_Y, &
+           & DES_PERIODIC_WALLS_Z, DIMN
+      
+      use discretelement, only: stl_facet_type, facet_type_normal, facet_type_po, & 
+           & facet_type_mi 
       Implicit None
-      INTEGER :: I, J, K, IJK, NF
+      INTEGER :: I, J, K, L, IJK, NF, COUNT
+      INTEGER :: I1, I2, J1, J2, K1, K2
+      INTEGER :: INEW, JNEW, KNEW
+      Integer :: new_facets_max
+      double precision :: wall_norm(3), NORM_ANG
+
+
+      !temp array for storing facet normals 
+      double precision, dimension(:,:), allocatable :: norm_face_temp
+      !temp array for storing facet vertices  
+      double precision, dimension(:,:,:), allocatable :: vertex_temp
+      
+      !id's of the new generated facets stored cell-wise 
+      Integer, dimension(:,:), allocatable :: facet_id_cellwise
+      !nummber of new generated facets cell-wise 
+      Integer, dimension(:), allocatable :: facet_count_cellwise
+
+      !Temp array for storing facet type 
+      integer, dimension(:), allocatable :: facet_type_temp 
+
+      !temp facet count 
+      Integer :: count_facet_temp 
 
       INCLUDE 'function.inc'
 
       CALL INIT_ERR_MSG("CG_DES_CONVERT_TO_FACETS")
 
+      new_facets_max = (iend3-istart3+1)*(jend3-jstart3+1) + & 
+      & (jend3-jstart3+1)*(kend3-kstart3+1) + &
+      & (kend3-kstart3+1)*(iend3-istart3+1) 
+      new_facets_max = 2*2*new_facets_max 
+      !first  "2" multiplicative factor since two similar faces.
+      !second "2" multiplicative factor since each cell is 
+      !broken into two facets 
+      Allocate(facet_type_temp(  new_facets_max  )) 
+      Allocate(norm_face_temp(3, new_facets_max  )) 
+      allocate(vertex_temp(3,3, new_facets_max   ))
+      Allocate(facet_id_cellwise((iend3-istart3+1)*(jend3-jstart3+1)* &
+      & (kend3-kstart3+1), 6))
+      !6 is used above since 6 is the maximum number of facets per cell 
+      !that is possible with this decomposition
+
+      Allocate(facet_count_cellwise((iend3-istart3+1)*(jend3-jstart3+1)* &
+           & (kend3-kstart3+1)))
+
+      COUNT_FACET_TEMP = 0 
+      facet_id_cellwise = -1
+      facet_count_cellwise = 0 
+      facet_type_temp = FACET_TYPE_NORMAL
+
       I = IMIN1 !West Face
       DO K = KMIN1, KMAX1
+         IF(DES_PERIODIC_WALLS_X) EXIT
          DO J = JMIN1, JMAX1
-            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-            !IF(.not.fluid_at(FUNIJK(I+1,J,K))) cycle
-
+            IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
+            IF(.not.fluid_at(FUNIJK(I,J,K))) cycle
             IJK  = FUNIJK(I,J,K)
-            N_FACETS_DES = N_FACETS_DES + 1
-            NF = N_FACETS_DES
-            NORM_FACE(:,NF) = (/one, zero, zero/)
+            COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
+            NF = COUNT_FACET_TEMP
+            NORM_FACE_TEMP(:,NF) = (/one, zero, zero/)
+
+            facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
+            facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
+
             !NORM_FACE(:,NF) = (/zero, zero, zero/)
             !For stl, the vertices are stored in CCW order looking from outside.
             !In the stl convention, the normal points outwards.
@@ -478,138 +575,376 @@
             !So, the normal's are written as pointing to the fluid but when the stl
             !is viewed in paraview, it will surely calculate its own normals based on the
             !order ot the vertices specified here and may look opposite.
-            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
 
-            N_FACETS_DES = N_FACETS_DES + 1
-            NF = N_FACETS_DES
-            NORM_FACE(:,NF) = (/one, zero, zero/)
-            !NORM_FACE(:,NF) = (/zero, zero, zero/)
-            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
+            NF = COUNT_FACET_TEMP
+            NORM_FACE_TEMP(:,NF) = (/one, zero, zero/)
+
+            facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
+            facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
+         
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
          enddo
       enddo
 
       I = IMAX1 !East Face
       DO K = KMIN1, KMAX1
+         IF(DES_PERIODIC_WALLS_X) EXIT
          DO J = JMIN1, JMAX1
-            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-            !IF(.not.fluid_at(FUNIJK(I-1,J,K))) cycle
+            IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
+            IF(.not.fluid_at(FUNIJK(I,J,K))) cycle
 
             IJK  = FUNIJK(I,J,K)
-            N_FACETS_DES = N_FACETS_DES + 1
-            NF = N_FACETS_DES
-            NORM_FACE(:,NF) = (/-one, zero, zero/)
-            !NORM_FACE(:,NF) = (/zero, zero, zero/)
-            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            
+            COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
+            NF = COUNT_FACET_TEMP
+            NORM_FACE_TEMP(:,NF) = (/-one, zero, zero/)
 
-            N_FACETS_DES = N_FACETS_DES + 1
-            NF = N_FACETS_DES
-            NORM_FACE(:,NF) = (/-one, zero, zero/)
-            !NORM_FACE(:,NF) = (/zero, zero, zero/)
-            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
+            facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
+          
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+
+            COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
+            NF = COUNT_FACET_TEMP
+            NORM_FACE_TEMP(:,NF) = (/-one, zero, zero/)
+
+            facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
+            facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
+
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
          enddo
       enddo
 
       J = JMIN1 !south face
       DO K = KMIN1, KMAX1
+         IF(DES_PERIODIC_WALLS_Y) EXIT
          DO I = IMIN1, IMAX1
-            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-            !IF(.not.fluid_at(FUNIJK(I,J+1,K))) cycle
+            IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
+            IF(.not.fluid_at(FUNIJK(I,J,K))) cycle
 
             IJK  = FUNIJK(I,J,K)
-            N_FACETS_DES = N_FACETS_DES + 1
-            NF = N_FACETS_DES
-            NORM_FACE(:,NF) = (/zero, one, zero/)
-            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
 
-            N_FACETS_DES = N_FACETS_DES + 1
-            NF = N_FACETS_DES
-            NORM_FACE(:,NF) = (/zero, one, zero/)
-            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+            COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
+            NF = COUNT_FACET_TEMP
+            NORM_FACE_TEMP(:,NF) = (/zero, one, zero/)
+
+            facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
+            facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
+
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+
+            COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
+            NF = COUNT_FACET_TEMP
+            NORM_FACE_TEMP(:,NF) = (/zero, one, zero/)
+
+            facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
+            facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
+
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
          enddo
       enddo
 
       J = JMAX1 !north  face
       DO K = KMIN1, KMAX1
+         IF(DES_PERIODIC_WALLS_Y) EXIT
          DO I = IMIN1, IMAX1
-            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+            IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
 
-            !IF(.not.fluid_at(FUNIJK(I,J-1,K))) cycle
+            IF(.not.fluid_at(FUNIJK(I,J,K))) cycle
             IJK  = FUNIJK(I,J,K)
-            N_FACETS_DES = N_FACETS_DES + 1
-            NF = N_FACETS_DES
-            NORM_FACE(:,NF) = (/zero, -one, zero/)
-            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
 
-            N_FACETS_DES = N_FACETS_DES + 1
-            NF = N_FACETS_DES
-            NORM_FACE(:,NF) = (/zero, -one, zero/)
-            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
+            NF = COUNT_FACET_TEMP
+            NORM_FACE_TEMP(:,NF) = (/zero, -one, zero/)
+
+            facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
+            facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
+
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+
+            COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
+            NF = COUNT_FACET_TEMP
+            NORM_FACE_TEMP(:,NF) = (/zero, -one, zero/)
+
+            facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
+            facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
+
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+
+            
          enddo
       enddo
 
       IF(DO_K) THEN      
          K = KMIN1 !bottom face
          DO J = JMIN1, JMAX1
+            IF(DES_PERIODIC_WALLS_Z) EXIT
          DO I = IMIN1, IMAX1
-            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+            IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
 
-            !IF(.not.fluid_at(FUNIJK(I,J,K+1))) cycle
+            IF(.not.fluid_at(FUNIJK(I,J,K))) cycle
             IJK  = FUNIJK(I,J,K)
-            N_FACETS_DES = N_FACETS_DES + 1
-            NF = N_FACETS_DES
-            NORM_FACE(:,NF) = (/zero, zero, one/)
-            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            N_FACETS_DES = N_FACETS_DES + 1
-            NF = N_FACETS_DES
 
-            NORM_FACE(:,NF) = (/zero, zero, one/)
-            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
+            NF = COUNT_FACET_TEMP
+            NORM_FACE_TEMP(:,NF) = (/zero, zero, one/)
+
+            facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
+            facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
+
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+
+            COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
+            NF = COUNT_FACET_TEMP
+            NORM_FACE_TEMP(:,NF) = (/zero, zero, one/)
+
+            facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
+            facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
+
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
          enddo
          enddo
 
          K = KMAX1 !top face
          DO J = JMIN1, JMAX1
+         IF(DES_PERIODIC_WALLS_Z) EXIT
          DO I = IMIN1, IMAX1
-            IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
+            IF (.NOT.IS_ON_myPE_plus1layer(I,J,K)) CYCLE
 
-            !IF(.not.fluid_at(FUNIJK(I,J,K-1))) cycle
+            IF(.not.fluid_at(FUNIJK(I,J,K))) cycle
             IJK  = FUNIJK(I,J,K)
-            N_FACETS_DES = N_FACETS_DES + 1
-            NF = N_FACETS_DES
-            NORM_FACE(:,NF) = (/zero, zero, -one/)
-            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
 
-            N_FACETS_DES = N_FACETS_DES + 1
-            NF = N_FACETS_DES
-            NORM_FACE(:,NF) = (/zero, zero, -one/)
-            VERTEX(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-            VERTEX(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            VERTEX(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+            COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
+            NF = COUNT_FACET_TEMP
+            NORM_FACE_TEMP(:,NF) = (/zero, zero, -one/)
+
+            facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
+            facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
+
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+
+            COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
+            NF = COUNT_FACET_TEMP
+            NORM_FACE_TEMP(:,NF) = (/zero, zero, -one/)
+
+            facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
+            facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
+
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
          enddo
          enddo
       endif
+
+! Now deactivate the facets that are on the outlfow plane 
+      DO L = 1, DIMENSION_BC 
+         IF (BC_DEFINED(L)) THEN 
+            IF (BC_TYPE(L)=='NO_SLIP_WALL' .OR. BC_TYPE(L)=='FREE_SLIP_WALL'&
+                 .OR. BC_TYPE(L)=='PAR_SLIP_WALL' .or. bc_type(L) .eq. 'CG_NSW') THEN 
+               !do nothing 
+            ELSEIF (BC_TYPE(L)=='P_OUTFLOW' ) THEN 
+               IF(.not.BC_PO_APPLY_TO_DES(L)) THEN 
+                  write(err_msg,'(/2x,A,2x,i4,2x,A,/2x,A)') & 
+                       'Pressure outflow  BC # ', L, &
+                       ' will not be applied to the discrete phase', &
+                       'i.e., particles will not exit the domain from this boundary plane'
+                  
+                  CALL flush_err_msg
+                  
+                  CYCLE
+               ENDIF
+               I1 = BC_I_W(L) 
+               I2 = BC_I_E(L) 
+               J1 = BC_J_S(L) 
+               J2 = BC_J_N(L) 
+               K1 = BC_K_B(L) 
+               K2 = BC_K_T(L) 
+               DO K = K1, K2 
+                  DO J = J1, J2 
+                     DO I = I1, I2  
+                        IF (.NOT.IS_ON_myPE_plus2layers(I, J, K)) CYCLE
+                        !IF (DEAD_CELL_AT(I,J,K)) CYCLE ! skip dead cells
+                        INEW = I
+                        JNEW = J 
+                        KNEW = K 
+
+                        WALL_NORM(:) = ZERO 
+                        SELECT CASE (TRIM(BC_PLANE(L)))  
+                        CASE ('E') 
+                           INEW = I+1
+                           WALL_NORM(1) = ONE
+                           !the normal points into the fluid
+                        CASE ('W')  
+                           INEW = I-1 
+                           WALL_NORM(1) = -ONE
+                        CASE ('N')  
+                           JNEW = J+1
+                           WALL_NORM(2) = ONE
+                        CASE ('S')  
+                           JNEW = J-1
+                           WALL_NORM(2) = -ONE
+                        CASE ('T')  
+                           KNEW = K+1
+                           WALL_NORM(3) = ONE
+                        CASE ('B')  
+                           KNEW = K-1
+                           WALL_NORM(3) = -ONE
+                        END SELECT 
+
+
+! If a pressure outflow BC is specified, then it is important 
+! to flag fluid cells from where particles can exit. Recall that 
+! earlier all fluid (emphasis on fluid) cells next to ghost cells
+! were set up as normal walls for particle reflection. Now need to
+! look at the specified exits and RE-flag (emphasis on RE) the 
+! fluid cells appropriately. 
+! in the mfix convention, if the northmost face (Y=ylength) is 
+! specified 
+! as PO, then J1 = J2 = IMAX+2 or IMAX2, which is the ghost cell.
+! Since the BC plane is at the bottom of this ghost cell, BC_PLane
+! is set as 'S' in the native mfix pre-processing. 
+
+                        IJK = FUNIJK(INEW,JNEW,KNEW) 
+! This is the cell where the new bc will go 
+
+! plus 1 layer is the extent of the conversion above, so limiting
+                        ! to plus 1 layer here
+                        !write(*,*) 'IJK =', INEW, JNEW, KNEW, IJK,facet_id_cellwise(IJK,1) 
+                        IF (.NOT.IS_ON_myPE_plus1layer(INEW, JNEW, KNEW)) CYCLE
+                        IF(.not.fluid_at(ijk)) cycle
+                        
+                        DO COUNT = 1, facet_count_cellwise(IJK)
+                           NF = facet_id_cellwise(IJK,COUNT)
+                           NORM_ANG = 180.d0*(ACOS(DOT_PRODUCT( & 
+                                & WALL_NORM(1:DIMN), norm_face_temp(1:DIMN, NF))))/PI
+                           IF(NORM_ANG.eq.zero) FACET_TYPE_TEMP(NF) = FACET_TYPE_PO
+                        ENDDO
+                        
+                     end DO
+                  end DO
+               end DO
+               
+            ELSEIF (BC_TYPE(L)=='MASS_INFLOW' ) THEN 
+               IF(BC_MI_AS_WALL_FOR_DES(L)) THEN 
+                  !This is the default particle-wall behavior for
+                  !inflow plane. The facets defined above will be kept active
+                  CYCLE
+               ENDIF
+               
+               write(err_msg,'(/2x,A,2x,i4,2x,A,/2x,A)') & 
+                    'Inflow plane for MI BC # ', L, &
+                    'will not be treated as a wall for discrete phase', &
+                    'De-activating the facets in this MIs plane'
+               CALL flush_err_msg
+
+               I1 = BC_I_W(L) 
+               I2 = BC_I_E(L) 
+               J1 = BC_J_S(L) 
+               J2 = BC_J_N(L) 
+               K1 = BC_K_B(L) 
+               K2 = BC_K_T(L) 
+               DO K = K1, K2 
+                  DO J = J1, J2 
+                     DO I = I1, I2  
+                        IF (.NOT.IS_ON_myPE_plus2layers(I, J, K)) CYCLE
+
+                        !IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
+                        
+                        INEW = I
+                        JNEW = J 
+                        KNEW = K 
+                        
+                        WALL_NORM(:) = ZERO 
+
+                        SELECT CASE (TRIM(BC_PLANE(L)))  
+                        CASE ('E') 
+                           INEW = I+1
+                           WALL_NORM(1) = ONE
+                           !the normal points into the fluid
+                        CASE ('W')  
+                           INEW = I-1 
+                           WALL_NORM(1) = -ONE
+                        CASE ('N')  
+                           JNEW = J+1
+                           WALL_NORM(2) = ONE
+                        CASE ('S')  
+                           JNEW = J-1
+                           WALL_NORM(2) = -ONE
+                        CASE ('T')  
+                           KNEW = K+1
+                           WALL_NORM(3) = ONE
+                        CASE ('B')  
+                           KNEW = K-1
+                           WALL_NORM(3) = -ONE
+                        END SELECT 
+                        IJK = FUNIJK(INEW,JNEW,KNEW)
+                        ! This is the cell where the new bc will go 
+
+                        ! plus 1 layer is the extent of the conversion above, so limiting
+                        ! to plus 1 layer here
+                        IF (.NOT.IS_ON_myPE_plus1layer(INEW, JNEW, KNEW)) CYCLE
+                        IF(.not.fluid_at(ijk)) cycle
+                        
+                        DO COUNT = 1, facet_count_cellwise(IJK)
+                           NF = facet_id_cellwise(IJK,COUNT)
+                           NORM_ANG = 180.d0*(ACOS(DOT_PRODUCT( & 
+                                & WALL_NORM(1:DIMN), norm_face_temp(1:DIMN, NF))))/PI
+                           IF(NORM_ANG.eq.zero) FACET_TYPE_TEMP(NF) = FACET_TYPE_MI
+                        ENDDO
+
+                        
+                     end DO
+                  end DO
+               end DO
+            ELSE
+               
+               WRITE(ERR_MSG, '(2(/2x,A))') 'Error with DES BC pre-processing', & 
+                    'THIS WALL BC', BC_TYPE(L),'  Is not supported for discrete phase'
+               
+               CALL flush_err_msg(Abort = .true.)
+               
+            end IF
+               
+         end IF
+      end DO
+      
+      DO COUNT = 1, COUNT_FACET_TEMP
+         N_FACETS_DES = N_FACETS_DES + 1
+         NF = N_FACETS_DES
+         NORM_FACE(:,NF) = NORM_FACE_TEMP(:,COUNT)
+         VERTEX (1,:,NF) = VERTEX_TEMP(1,:,COUNT)
+         VERTEX (2,:,NF) = VERTEX_TEMP(2,:,COUNT)
+         VERTEX (3,:,NF) = VERTEX_TEMP(3,:,COUNT)
+         STL_FACET_TYPE(NF) = facet_type_temp(COUNT)
+      ENDDO
+
+      DEAllocate(norm_face_temp, vertex_temp, facet_type_temp, & 
+           & facet_id_cellwise, facet_count_cellwise)
 
       CALL FINL_ERR_MSG
       end Subroutine cg_des_convert_to_facets
@@ -1030,12 +1365,15 @@
       USE geometry
       USE indices
       USE compar
+      USE discretelement, only: STL_FACET_TYPE, FACET_TYPE_NORMAL, & 
+           FACET_TYPE_MI, FACET_TYPE_PO, COUNT_FACET_TYPE_NORMAL, &
+           COUNT_FACET_TYPE_MI, COUNT_FACET_TYPE_PO
 
       IMPLICIT NONE
 
       LOGICAL, INTENT(IN),optional  :: WRITE_FACETS_EACH_CELL
-      INTEGER ::  CELL_ID, N, I, J, K, COUNT, COUNT_FACETS, IJK
-      CHARACTER*100 :: FILENAME
+      INTEGER ::  CELL_ID, N, I, J, K, COUNT, COUNT_FACETS, IJK, W_UNIT
+      CHARACTER*200 :: FILENAME, filename_po
       LOGICAL :: write_each_cell
       LOGICAL, DIMENSION(:), allocatable :: FACET_WRITTEN
 
@@ -1051,12 +1389,23 @@
       FACET_WRITTEN = .false.
 
       IF(nodesI*nodesJ*nodesK.gt.1) then
-         write(filename,'(A,"_GEOMETRY_FROM_GRID_FACETS_",I5.5,".stl")')  &
-         trim(run_name), myPE
+         write(filename_po,'(A,"_GEOM_PO_FROM_GRID_FACETS_",I5.5,".stl")')  &
+              trim(run_name), myPE
+         write(filename,'(A,"_GEOM_NORM_PL_MI_FROM_GRID_FACETS_",I5.5,".stl")')  &
+              trim(run_name), myPE
       else
-         write(filename,'(A,"_GEOMETRY_FROM_GRID_FACETS",".stl")')  &
-         trim(run_name)
+         write(filename,'(A,"_GEOM_NORM_PL_MI_FROM_GRID_FACETS",".stl")')  &
+              trim(run_name)
+
+         write(filename_po,'(A,"_GEOM_PO_FROM_GRID_FACETS",".stl")')  &
+              trim(run_name)
       endif
+      
+      if(count_facet_type_po.ge.1) then 
+         OPEN(UNIT=443, FILE=trim(filename_po))
+         write(443,*)'solid vcg'
+      endif
+
       OPEN(UNIT=444, FILE=trim(filename))
       write(444,*)'solid vcg'
 
@@ -1068,8 +1417,12 @@
                IF(COUNT_FACETS.eq.0) cycle
 
                if(write_each_cell) then
-                  write(filename, '(A,"_geometry_", i3.3, "_", i3.3, "_", i3.3,"_" , i8.8, ".stl")') trim(run_name) , I,J,K,CELL_ID
-                  OPEN(UNIT=445, FILE=filename)
+                  write(filename, '(A,"_geom_nor_mi_", i3.3, "_", i3.3, "_", i3.3,"_" , i8.8, ".stl")') trim(run_name) , I,J,K,CELL_ID
+                  OPEN(UNIT=446, FILE=filename)
+                  write(446,*)'solid vcg'
+                  
+                  write(filename_po, '(A,"_geom_po_", i3.3, "_", i3.3, "_", i3.3,"_" , i8.8, ".stl")') trim(run_name) , I,J,K,CELL_ID
+                  OPEN(UNIT=445, FILE=filename_po)
                   write(445,*)'solid vcg'
                endif
 
@@ -1077,37 +1430,59 @@
                   N = LIST_FACET_AT_DES(CELL_ID)%FACET_LIST(COUNT)
 
                   if(write_each_cell) then
-                     write(445,*) '   facet normal ', NORM_FACE(:,N)
-                     write(445,*) '      outer loop'
-                     write(445,*) '         vertex ', VERTEX(1,1:3,N)
-                     write(445,*) '         vertex ', VERTEX(2,1:3,N)
-                     write(445,*) '         vertex ', VERTEX(3,1:3,N)
-                     write(445,*) '      endloop'
-                     write(445,*) '   endfacet'
-                  endif
+                     if(stl_facet_type(N).eq.facet_type_normal.or. & 
+                          stl_facet_type(N).eq.facet_type_mi) then
+                        w_unit  = 446
+                     elseif(stl_facet_type(N).eq.facet_type_po) then 
+                        w_unit  = 445
+                     endif
+                     write(w_unit,*) '   facet normal ', NORM_FACE(:,N)
+                     write(w_unit,*) '      outer loop'
+                     write(w_unit,*) '         vertex ', VERTEX(1,1:3,N)
+                     write(w_unit,*) '         vertex ', VERTEX(2,1:3,N)
+                     write(w_unit,*) '         vertex ', VERTEX(3,1:3,N)
+                     write(w_unit,*) '      endloop'
+                     write(w_unit,*) '   endfacet'
 
+                  end if
+                  
                   if (facet_written(n)) cycle
-                  write(444,*) '   facet normal ', NORM_FACE(:,N)
-                  write(444,*) '      outer loop'
-                  write(444,*) '         vertex ', VERTEX(1,1:3,N)
-                  write(444,*) '         vertex ', VERTEX(2,1:3,N)
-                  write(444,*) '         vertex ', VERTEX(3,1:3,N)
-                  write(444,*) '      endloop'
-                  write(444,*) '   endfacet'
+                  
+                  if(stl_facet_type(N).eq.facet_type_normal.or. & 
+                       stl_facet_type(N).eq.facet_type_mi) then
+                     w_unit  = 444
+                  elseif(stl_facet_type(N).eq.facet_type_po) then 
+                     w_unit  = 443
+                  endif
+                  
+                  write(w_unit,*) '   facet normal ', NORM_FACE(:,N)
+                  write(w_unit,*) '      outer loop'
+                  write(w_unit,*) '         vertex ', VERTEX(1,1:3,N)
+                  write(w_unit,*) '         vertex ', VERTEX(2,1:3,N)
+                  write(w_unit,*) '         vertex ', VERTEX(3,1:3,N)
+                  write(w_unit,*) '      endloop'
+                  write(w_unit,*) '   endfacet'
                   facet_written(N) = .true.
                ENDDO
 
                if(write_each_cell) then
                   write(445,*)'endsolid vcg'
                   close(445)
+                                    
+                  write(446,*)'endsolid vcg'
+                  close(446)
                endif
 
             ENDDO
          ENDDO
       ENDDO
       write(444,*)'endsolid vcg'
-
       close(444)
+
+      if(count_facet_type_po.gt.0) then 
+         write(443,*)'endsolid vcg'
+         close(443)
+      ENDIF
 
       DEALLOCATE (FACET_WRITTEN)
 

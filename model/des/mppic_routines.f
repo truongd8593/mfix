@@ -24,7 +24,7 @@
       USE cutcell
       USE mppic_wallbc
       USE mfix_pic
-
+      USE error_manager
       IMPLICIT NONE
 !------------------------------------------------
 ! Local variables
@@ -49,6 +49,11 @@
 
 
       DOUBLE PRECISION :: DES_KE_VEC(DIMN)
+      
+      !time till which the PIC loop will be run 
+      double precision :: TEND_PIC_LOOP
+      !number of PIC time steps 
+      Integer :: PIC_ITERS
 ! Identifies that the indicated particle is of interest for debugging
       LOGICAL FOCUS
 
@@ -56,6 +61,7 @@
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
 
+      CALL INIT_ERR_MSG("MPPIC_TIME_MARCH")
 
       S_TIME = TIME
       TIME_LOOP_COUNT = 0
@@ -64,39 +70,56 @@
       !des calls
       IF(DES_CONTINUUM_COUPLED)   CALL COMPUTE_PG_GRAD
 
-      DO WHILE(S_TIME.LT.TIME+DT)
+      TEND_PIC_LOOP = MERGE(TIME+DT, TSTOP, DES_CONTINUUM_COUPLED)
+      PIC_ITERS = 0 
+
+      DO WHILE(S_TIME.LT.TEND_PIC_LOOP)
          ! If the current time in the discrete loop exceeds the current time in
          ! the continuum simulation, exit the lagrangian loop
 
          !DTPIC_MAX = MIN( 1e-04, DTPIC_MAX)
-         DTSOLID = MIN(DTPIC_MAX, DT)
+         DTSOLID = MERGE(MIN(DTPIC_MAX, DT), DTPIC_MAX, DES_CONTINUUM_COUPLED)
          DTSOLID_ORIG  = DTSOLID
+         IF(MOD(PIC_ITERS, 10).eq.0) then 
+            IF(DES_CONTINUUM_COUPLED) then 
+               WRITE(ERR_MSG, 2000) DTSOLID, DTPIC_CFL, DTPIC_TAUP, DT
+               
+2000           FORMAT(/10x, &
+                    & 'DTSOLID CURRENT  = ', g17.8, /10x,  &
+                    & 'DTPIC_CFL        = ', g17.8, /10x,  &
+                    & 'DTPIC TAUP       = ', g17.8, /10x, &
+                    & 'DT FLOW          = ', g17.8)
+            ELSE
+               
+               WRITE(ERR_MSG, 2001) S_TIME, DTSOLID, DTPIC_CFL, DTPIC_TAUP, DT
+               
+2001           FORMAT(/10x, &
+                    & 'TIME             = ', g17.8, /10x,  &
+                    & 'DTSOLID CURRENT  = ', g17.8, /10x,  &
+                    & 'DTPIC_CFL        = ', g17.8, /10x,  &
+                    & 'DTPIC TAUP       = ', g17.8, /10x, &
+                    & 'DT FLOW          = ', g17.8)
+            ENDIF
+            CALL flush_err_msg(header = .false., footer = .false.)
+         ENDIF
 
-         IF(DMP_LOG) WRITE(UNIT_LOG, 2000) DTSOLID, DTPIC_CFL, DTPIC_TAUP, DT
-         IF(myPE.eq.pe_IO) WRITE(*, 2000)  DTSOLID, DTPIC_CFL, DTPIC_TAUP, DT
+         PIC_ITERS  = PIC_ITERS + 1 
 
-2000     FORMAT(/10x, &
-              & 'DTSOLID CURRENT  = ', g17.8, /10x,  &
-              & 'DTPIC_CFL        = ', g17.8, /10x,  &
-              & 'DTPIC TAUP       = ', g17.8, /10x, &
-              & 'DT FLOW          = ', g17.8)
-
-         IF(S_TIME + DTSOLID.GT.TIME + DT) then
+         IF(S_TIME + DTSOLID.GT.TEND_PIC_LOOP) then
             ! If next time step in the discrete loop will exceed the current time
             ! in the continuum simulation, modify the discrete time step so final
             ! time will match
-            IF(DMP_LOG) WRITE(UNIT_LOG, 2010)  DTSOLID, TIME + DT - S_TIME
-            IF(myPE.eq.pe_IO) WRITE(*,  2010)  DTSOLID, TIME + DT - S_TIME
+            WRITE(ERR_MSG, 2010)  DTSOLID, TIME + DT - S_TIME
+            CALL flush_err_msg(header = .false., footer = .false.)
+
 2010        FORMAT(/10X, &
                  & 'REDUCING DTSOLID TO ENSURE STIME + DTSOLID LE TIME + DT', /10x, &
                  & 'DTSOLID ORIG         = ', g17.8, /10x, &
                  & 'DTSOLID ACTUAL       = ', g17.8)
 
-            DTSOLID = TIME + DT - S_TIME
+            DTSOLID = TEND_PIC_LOOP - S_TIME
          ENDIF
-         TIME_LOOP_COUNT = TIME_LOOP_COUNT + 1
 
-         !CALL MPPIC_COMPUTE_MEAN_FIELDS2
          CALL PARTICLES_IN_CELL
 
          CALL MPPIC_COMPUTE_PS_GRAD
@@ -106,7 +129,7 @@
          CALL CFNEWVALUES
 
          ! Impose the wall-particle boundary condition for mp-pic case
-         CALL MPPIC_APPLY_WALLBC
+         CALL MPPIC_APPLY_WALLBC_STL 
 
          !CALL PARTICLES_IN_CELL
          !CALL MPPIC_COMPUTE_MEAN_FIELDS2
@@ -117,11 +140,47 @@
 
          DTPIC_MAX = MIN(DTPIC_CFL, DTPIC_TAUP)
 
+         ! When coupled, all write calls are made in time_march (the continuum 
+         ! portion) according to user settings for spx_time and res_time.
+         ! The following section targets data writes for DEM only cases:
+         IF(.NOT.DES_CONTINUUM_COUPLED) THEN
+! Keep track of TIME for DEM simulations
+            TIME = S_TIME
+
+! Write data using des_spx_time and des_res_time; note the time will
+! reflect current position of particles  
+            IF(PRINT_DES_DATA) THEN
+               IF ( (S_TIME+0.1d0*DTSOLID >= DES_SPX_TIME) .OR. &
+                    (S_TIME+0.1d0*DTSOLID >= TSTOP)) then 
+                  DES_SPX_TIME = &
+                     ( INT((S_TIME+0.1d0*DTSOLID)/DES_SPX_DT) &
+                     + 1 )*DES_SPX_DT
+                  CALL WRITE_DES_DATA
+                  IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,X,ES15.5)') &
+                     'DES data file written at time =', S_TIME
+               ENDIF
+            ENDIF
+
+            IF ( (S_TIME+0.1d0*DTSOLID >= DES_RES_TIME) .OR. &
+                 (S_TIME+0.1d0*DTSOLID >= TSTOP) .OR. &
+                 (NN == FACTOR) ) THEN
+               DES_RES_TIME = &
+                  ( INT((S_TIME+0.1d0*DTSOLID)/DES_RES_DT) &
+                  + 1 )*DES_RES_DT
+                  call des_write_restart
+! Write RES1 here since it won't be called in time_march.  This will
+! also keep track of TIME
+               CALL WRITE_RES1
+               IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,X,ES15.5)') &
+               'DES.RES and .RES files written at time =', S_TIME
+            ENDIF
+         ENDIF  ! end if (.not.des_continuum_coupled)
+
 
       ENDDO
 
-      IF(DMP_LOG)       WRITE(UNIT_LOG,'(/10x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', TIME_LOOP_COUNT, PIP
-      IF(mype.eq.pe_IO) WRITE(*,'(/10x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', TIME_LOOP_COUNT, PIP
+      IF(DMP_LOG)       WRITE(UNIT_LOG,'(/10x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, Particles
+      IF(mype.eq.pe_IO) WRITE(*,'(/10x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, Particles 
 
 !      IJK_BOT = funijk(imin1, 2,kmin1)
 !      IJK_TOP = funijk(imin1, jmax1, kmin1)
@@ -141,6 +200,9 @@
 ! now the above are communicated in comp_mean_fields_interp itself.
 ! so no need to communicate them here.
       END IF
+      
+      
+      CALL FINL_ERR_MSG
     end SUBROUTINE MPPIC_TIME_MARCH
 
 
@@ -371,7 +433,7 @@
 
       VEL_ORIG(1:DIMN) = DES_VEL_NEW(L,1:DIMN)
       VEL_NEW (1:DIMN) = DES_VEL_NEW(L,1:DIMN)
-      IF(L.eq.1) WRITE(*,*) 'MPPIC COEFFS = ', COEFF_EN, COEFF_EN2
+      !IF(L.eq.1) WRITE(*,*) 'MPPIC COEFFS = ', COEFF_EN, COEFF_EN2
       IF(L.EQ.FOCUS_PARTICLE) THEN
 
          WRITE(*,'(A20,2x,3(2x,i4))') 'CELL ID = ', PIJK(L,1:3)

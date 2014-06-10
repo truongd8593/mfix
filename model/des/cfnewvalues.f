@@ -660,8 +660,10 @@
 
          RAD_EFF = DES_RADIUS(L)
          !RAD_EFF = (DES_STAT_WT(L)**(1.d0/3.d0))*DES_RADIUS(L)
-         MEAN_FREE_PATH  = MAX(1.d0/(1.d0-EP_STAR), 1.d0/(1.D0-EP_G(IJK_OLD)))
-         MEAN_FREE_PATH  = MEAN_FREE_PATH*RAD_EFF/THREEINTOSQRT2
+         IF(.not.DES_ONEWAY_COUPLED) then 
+            MEAN_FREE_PATH  = MAX(1.d0/(1.d0-EP_STAR), 1.d0/(1.D0-EP_G(IJK_OLD)))
+            MEAN_FREE_PATH  = MEAN_FREE_PATH*RAD_EFF/THREEINTOSQRT2
+         endif
 
          DO IDIM = 1, merge(2,3,NO_K)
             !SIG_U = 0.05D0*MEANVEL(IDIM)
@@ -833,7 +835,8 @@
       ENDIF
 
       DTPIC_MAX = MIN(DTPIC_CFL, DTPIC_TAUP)
-
+      
+      RETURN 
       IF(DTSOLID.GT.DTPIC_MAX) THEN
          !IF(DMP_LOG) WRITE(UNIT_LOG, 2001) DTSOLID
          IF(myPE.eq.pe_IO) WRITE(*, 2004) DTSOLID
