@@ -542,10 +542,10 @@
       Allocate(norm_face_temp(3, new_facets_max  )) 
       allocate(vertex_temp(3,3, new_facets_max   ))
       Allocate(facet_id_cellwise((iend3-istart3+1)*(jend3-jstart3+1)* &
-      & (kend3-kstart3+1), 6))
-      !6 is used above since 6 is the maximum number of facets per cell 
-      !that is possible with this decomposition
-
+      & (kend3-kstart3+1), 4 + merge(0,2,no_k) + & 
+      & merge(2,0,IMAX.eq.1) + merge(2,0,JMAX.eq.1) + &
+      & merge(2,0,KMAX.eq.1)))
+  
       Allocate(facet_count_cellwise((iend3-istart3+1)*(jend3-jstart3+1)* &
            & (kend3-kstart3+1)))
 
@@ -600,7 +600,7 @@
             IF(.not.fluid_at(FUNIJK(I,J,K))) cycle
 
             IJK  = FUNIJK(I,J,K)
-            
+
             COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
             NF = COUNT_FACET_TEMP
             NORM_FACE_TEMP(:,NF) = (/-one, zero, zero/)

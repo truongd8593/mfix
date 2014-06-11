@@ -3,6 +3,7 @@
 *.o
 *.mod
 *.0f
+*.0inc
 post_mfix
 Makefile
 model/mpif.h
