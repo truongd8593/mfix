@@ -461,12 +461,12 @@
 
 
 ! Allocate the global store arrary array. This changes across MPI ranks.
-      IF(LC >=1) THEN
+      IF(LC > 1) THEN
          allocate( DEM_BCMI_IJK(LC-1) )
          DEM_BCMI_IJK(1:LC-1) = LOC_DEM_BCMI_IJK(1:LC-1)
       ELSE
          allocate( DEM_BCMI_IJK(1) )
-         DEM_BCMI_IJK(1) = -1
+         DEM_BCMI_IJK(1) = LOC_DEM_BCMI_IJK(1)
       ENDIF
 
       deallocate(LOC_DEM_BCMI_IJK)

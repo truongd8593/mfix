@@ -183,12 +183,12 @@
          /4x,'IJKSTART:',I6,/4x,'IJKEND:  ',I6)
 
 ! Allocate the global store arrary array. This changes across MPI ranks.
-      IF(LC >=1) THEN
+      IF(LC > 1) THEN
          allocate( DEM_BCMO_IJK(LC-1) )
          DEM_BCMO_IJK(1:LC-1) = LOC_DEM_BCMO_IJK(1:LC-1)
       ELSE
          allocate( DEM_BCMO_IJK(1) )
-         DEM_BCMO_IJK(1) = -1
+         DEM_BCMO_IJK(1) = LOC_DEM_BCMO_IJK(1)
       ENDIF
 
       deallocate(LOC_DEM_BCMO_IJK)

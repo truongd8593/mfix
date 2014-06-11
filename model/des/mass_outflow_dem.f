@@ -23,7 +23,7 @@
 
       DOUBLE PRECISION :: FREEZE(3)
 
-      DO BCV_I = 1, DEM_BCMI
+      DO BCV_I = 1, DEM_BCMO
 
          BCV = DEM_BCMO_MAP(BCV_I)
 
