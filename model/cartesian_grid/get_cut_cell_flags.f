@@ -260,9 +260,22 @@
 !               CALL EVAL_STL_FCT_AT('SCALAR',IJK,0,F_NODE(0),CLIP_FLAG,BCID)
 
                IF(USE_MSH.OR.USE_STL) THEN
-                  CALL EVAL_STL_FCT_AT('SCALAR',IJK,1,F_NODE(1),CLIP_FLAG,BCID)
-                  CALL EVAL_STL_FCT_AT('SCALAR',IJK,8,F_NODE(8),CLIP_FLAG,BCID)
-                  F_NODE(0) = HALF*(F_NODE(1)+F_NODE(8))
+!                  CALL EVAL_STL_FCT_AT('SCALAR',IJK,1,F_NODE(1),CLIP_FLAG,BCID)
+!                  CALL EVAL_STL_FCT_AT('SCALAR',IJK,8,F_NODE(8),CLIP_FLAG,BCID)
+!                  F_NODE(0) = HALF*(F_NODE(1)+F_NODE(8))
+! Pick the first defined value of F_AT at one of the cell corners
+! This should avoid wrongly setting a cell next to the global ghost layer as blocked cell
+! when the average between undefined and negative is a positive number
+! This occurs for external flows only due to F_AT being initialized as UNDEFINED
+! which is a positive number (considered outside the fluid region).
+                  DO NODE=1,8
+                     CALL EVAL_STL_FCT_AT('SCALAR',IJK,NODE,F_NODE(NODE),CLIP_FLAG,BCID)
+                     IF(F_NODE(NODE)/=UNDEFINED) THEN
+                        F_NODE(0) = F_NODE(NODE)
+                        EXIT
+                     ENDIF
+
+                  ENDDO
                ENDIF
 
 
