@@ -121,6 +121,7 @@
   BC_P_g(4)             =  0.0
 
 
+PARTICLES_FACTOR = 2.0
 
 ! DES INPUT
  DISCRETE_ELEMENT = .TRUE.
