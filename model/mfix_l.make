@@ -89,6 +89,7 @@ $(EXEC_FILE) : \
     $(DPO)randomno.mod \
     $(DPO)sendrecvnode.mod \
     $(DPO)softspring_funcs_cutcell.mod \
+    $(DPO)vtp.mod \
     $(DPO)compar.mod \
     $(DPO)dbg_util.mod \
     $(DPO)debug.mod \
@@ -961,6 +962,7 @@ $(EXEC_FILE) : \
     $(DPO)usr3_des.$(OBJ_EXT) \
     $(DPO)usr4_des.$(OBJ_EXT) \
     $(DPO)usr_rates_des.$(OBJ_EXT) \
+    $(DPO)vtp_mod.$(OBJ_EXT) \
     $(DPO)walledgecontact.$(OBJ_EXT) \
     $(DPO)wallfacecontact.$(OBJ_EXT) \
     $(DPO)wallnodecontact.$(OBJ_EXT) \
@@ -1447,6 +1449,8 @@ $(DPO)des_stl_functions.mod : ./des/des_stl_functions_mod.f \
             $(DPO)compar.mod \
             $(DPO)indices.mod \
             $(DPO)geometry.mod \
+            $(DPO)bc.mod \
+            $(DPO)constant.mod \
             $(DPO)mpi_utility.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_stl_functions_mod.f  -o $(DPO)des_stl_functions_mod.$(OBJ_EXT) -module $(DPO)
@@ -1524,6 +1528,13 @@ $(DPO)softspring_funcs_cutcell.mod : ./des/softspring_funcs_cutcell_mod.f \
             $(DPO)parallel.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/softspring_funcs_cutcell_mod.f  -o $(DPO)softspring_funcs_cutcell_mod.$(OBJ_EXT) -module $(DPO)
+$(DPO)vtp.mod : ./des/vtp_mod.f \
+            $(DPO)mpi_utility.mod \
+            $(DPO)desmpi.mod \
+            $(DPO)cdist.mod \
+            $(DPO)error_manager.mod \
+            $(DPO)run.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/vtp_mod.f  -o $(DPO)vtp_mod.$(OBJ_EXT) -module $(DPO)
 $(DPO)compar.mod : ./dmp_modules/compar_mod.f \
             $(DPO)mpi.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/compar_mod.f  -o $(DPO)compar_mod.$(OBJ_EXT) -module $(DPO)
@@ -6532,27 +6543,7 @@ $(DPO)des_time_march.$(OBJ_EXT) : ./des/des_time_march.f \
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_time_march.f  -o $(DPO)des_time_march.$(OBJ_EXT) -module $(DPO)
-$(DPO)des_wallbc_preprocessing.$(OBJ_EXT) : ./des/des_wallbc_preprocessing.f \
-            $(DPO)param1.mod \
-            $(DPO)funits.mod \
-            $(DPO)run.mod \
-            $(DPO)compar.mod \
-            $(DPO)discretelement.mod \
-            $(DPO)mfix_pic.mod \
-            $(DPO)cutcell.mod \
-            $(DPO)indices.mod \
-            $(DPO)physprop.mod \
-            $(DPO)parallel.mod \
-            $(DPO)geometry.mod \
-            $(DPO)bc.mod \
-            $(DPO)constant.mod \
-            $(DPO)desmpi.mod \
-            $(DPO)cdist.mod \
-            $(DPO)error_manager.mod \
-            $(DPO)discretelement.mod \
-            function.inc                                                 \
-            fun_avg1.inc                                                 \
-            fun_avg2.inc                                                
+$(DPO)des_wallbc_preprocessing.$(OBJ_EXT) : ./des/des_wallbc_preprocessing.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/des_wallbc_preprocessing.f  -o $(DPO)des_wallbc_preprocessing.$(OBJ_EXT) -module $(DPO)
 $(DPO)drag_fgs.$(OBJ_EXT) : ./des/drag_fgs.f \
             $(DPO)param.mod \
@@ -6701,6 +6692,7 @@ $(DPO)mppic_routines.$(OBJ_EXT) : ./des/mppic_routines.f \
             $(DPO)cutcell.mod \
             $(DPO)mppic_wallbc.mod \
             $(DPO)mfix_pic.mod \
+            $(DPO)error_manager.mod \
             $(DPO)parallel.mod \
             $(DPO)geometry.mod \
             $(DPO)indices.mod \
@@ -6746,6 +6738,7 @@ $(DPO)particles_in_cell.$(OBJ_EXT) : ./des/particles_in_cell.f \
             $(DPO)mfix_pic.mod \
             $(DPO)des_rxns.mod \
             $(DPO)run.mod \
+            $(DPO)error_manager.mod \
             $(DPO)constant.mod \
             $(DPO)bc.mod \
             $(DPO)drag.mod \
@@ -6964,11 +6957,12 @@ $(DPO)write_des_data.$(OBJ_EXT) : ./des/write_des_data.f \
             $(DPO)physprop.mod \
             $(DPO)sendrecv.mod \
             $(DPO)des_bc.mod \
-            $(DPO)mpi_utility.mod \
-            $(DPO)compar.mod \
-            $(DPO)desmpi.mod \
-            $(DPO)cdist.mod \
+            $(DPO)vtp.mod \
             $(DPO)des_thermo.mod \
+            $(DPO)compar.mod \
+            $(DPO)cdist.mod \
+            $(DPO)desmpi.mod \
+            $(DPO)mpi_utility.mod \
             function.inc                                                 \
             ep_s1.inc                                                    \
             ep_s2.inc                                                   
