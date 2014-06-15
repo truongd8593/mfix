@@ -233,7 +233,11 @@ for arg in $input; do
       USE_DMP=0
       REQ_MODE=0;;
 
-
+# Enable MIC model
+#-------------------------------------------------------------------------->>
+    "--mic" )
+      USE_MIC=1
+      REQ_MODE=0;;
 
 # Bypass chemical reaction preprocessing.
 #-------------------------------------------------------------------------->>

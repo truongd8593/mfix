@@ -1,4 +1,5 @@
 *.exe
+*.mic
 *.a
 *.o
 *.mod

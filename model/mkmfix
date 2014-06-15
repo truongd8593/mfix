@@ -111,6 +111,9 @@ if test ${REQ_RXNS} = 1; then
   . ${MFIX_CONFIG}/rxn_preproc.sh
 fi
 
+if [[ -n $USE_MIC ]]; then
+    EXEC_FILE=${EXEC_FILE}.mic
+fi
 
 # Update source code if needed.
 . ${MFIX_CONFIG}/swap_build.sh

@@ -13,7 +13,11 @@ echo "SBEUC@NETL :: Intel Fortran Compiler"
 MODULE_CODE=0
 
 # Add some additinal flags to the object directory
-DPO=${DPO_BASE}/${DPO}_INTEL_SBEUC/
+if [[ -n $USE_MIC ]]; then
+    DPO=${DPO_BASE}/${DPO}_INTEL_MIC_SBEUC/;
+else
+    DPO=${DPO_BASE}/${DPO}_INTEL_SBEUC/;
+fi
 if test ! -d $DPO; then  mkdir $DPO; fi
 
 # Set OpenMP flags.
@@ -79,8 +83,12 @@ dbg=
 if test "${USE_DEBUG}" = "1"; then dbg="-g"; fi
 
 # Common compile flags.
-common="-c -I. -convert big_endian -assume byterecl"
-common=${common}" -diag-disable remark -arch AVX -axAVX"
+common="-c -I. -convert big_endian -assume byterecl  -diag-disable remark"
+if [[ -n $USE_MIC ]]; then
+    common=${common}" -mmic"
+else
+    common=${common}" -xHost"
+fi
 
 if test "${USE_CODECOV}" = "1"; then common=${common}" -prof-gen=srcpos"; fi
 
@@ -102,10 +110,12 @@ case $OPT in
     LINK_FLAGS="${omp} ${dbg}";;
 
   3)echo " Setting flags for high optimization."
-    FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O3 -no-prec-div -static -xHost ${dbg}"
-    FORT_FLAGS3="${common} ${mkl} -O3 -no-prec-div -static -xHost ${dbg}"
+    FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O3 -no-prec-div -static ${dbg}"
+    FORT_FLAGS3="${common} ${mkl} -O3 -no-prec-div -static ${dbg}"
     LINK_FLAGS="${omp} ${dbg}";;
 
   *)echo "Unsupported optimization level."
     exit;;
 esac
+
+if [[ -n $USE_MIC ]]; then LINK_FLAGS=${LINK_FLAGS}" -mmic"; fi
