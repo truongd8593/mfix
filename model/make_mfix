@@ -111,6 +111,9 @@ if test ${REQ_RXNS} = 1; then
   . ${MFIX_CONFIG}/rxn_preproc.sh
 fi
 
+if [[ -n $USE_MIC ]]; then
+    EXEC_FILE=${EXEC_FILE}.mic
+fi
 
 # Update source code if needed.
 . ${MFIX_CONFIG}/swap_build.sh
@@ -120,12 +123,12 @@ fi
 
 
 echo "make -j -f ${MAKEFILE} $inline_objs"
-make -j -f "${MAKEFILE}" $inline_objs
+make ${MAKE_ARGS} -f "${MAKEFILE}" $inline_objs
 
 echo "Please wait..."
 
 echo "make -j -f ${MAKEFILE} ${EXEC_FILE}"
-make -j -f ${MAKEFILE} ${EXEC_FILE}
+make ${MAKE_ARGS} -f ${MAKEFILE} ${EXEC_FILE}
 result=$?
 
 if test $result = 0; then

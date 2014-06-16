@@ -179,16 +179,17 @@ for arg in $input; do
       DPO=$(grep "DPO=" ${mfile} | cut -d "=" -f2)
       AUTOCOMPILE=1;;
 
+# Option for multiple make jobs
+#-------------------------------------------------------------------------->>
+    "-j" ) MAKE_ARGS="-j";;
 
 # Enable specify debug flags.
 #-------------------------------------------------------------------------->>
     "--debug" ) USE_DEBUG="1";;
 
-
 # Code coverage flag
 #-------------------------------------------------------------------------->>
     "--codecov" ) USE_CODECOV="1";;
-
 
 # Specify optimization level.
 #-------------------------------------------------------------------------->>
