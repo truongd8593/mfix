@@ -19,9 +19,11 @@
       use ic, only: IC_TYPE
 ! Flag: DEM solids present.
       use run, only: DEM_SOLIDS
-
+! Flag: New run or a restart.
+      use run, only: RUN_TYPE
 ! Runtime flag specifying MPPIC solids
-      use run, only: PIC_SOLIDS     
+      use run, only: PIC_SOLIDS
+
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! Maximum number of IC.
