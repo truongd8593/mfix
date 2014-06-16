@@ -57,9 +57,10 @@
             IF (IC_TYPE(ICV) == 'PATCH') CYCLE
             CALL CHECK_IC_GAS_PHASE(ICV)
             CALL CHECK_IC_SOLIDS_PHASES(ICV)
-         ELSE
 
-! Verify that no data was defined for unspecified IC.
+! Verify that no data was defined for unspecified IC. ICs are only
+! defined for new runs, so these checks are restricted to new runs.
+         ELSEIF(RUN_TYPE == 'NEW') THEN
             CALL CHECK_IC_OVERFLOW(ICV)
          ENDIF
       ENDDO
