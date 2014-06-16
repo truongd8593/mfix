@@ -185,7 +185,7 @@
                      DP_loc(CM) = D_p(IJK,CM)         
                      EPs_loc(CM) = EP_S(IJK,CM)
                      ROs_loc(CM) = RO_S(IJK,CM)
-                     PSIs_loc(L) = PSI_s(CM)
+                     PSIs_loc(CM) = PSI_s(CM)
                   ENDDO
                   DO DM = 1,DES_MMAX
                      L = SMAX + DM
