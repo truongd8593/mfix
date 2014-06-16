@@ -55,9 +55,10 @@
       USE discretelement, only: DES_PERIODIC_WALLS_Y
       USE discretelement, only: DES_PERIODIC_WALLS_Z
 
+! Number of ranks.
+      use run, only: SOLIDS_MODEL
+
 ! Subroutine access.
-
-
       use physprop, only: MMAX
 
       USE run, only: MOMENTUM_X_EQ
@@ -87,8 +88,6 @@
 ! Loop index.
       INTEGER :: M, lM  ! Solids phase Index
 
-
-      
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_DISCRETE")
 
@@ -99,8 +98,13 @@
       MAX_RADIUS = -UNDEFINED
       MIN_RADIUS =  UNDEFINED
 
+      M = 0
+      DO lM=1, MMAX+DES_MMAX
 
-      DO M=MMAX+1, MMAX+DES_MMAX
+! The accounts for an offset between the DEM and TFM phase indices
+         IF(SOLIDS_MODEL(lM) /= 'DEM') CYCLE
+         M = M+1
+
 ! Copy of the input keyword values into discrete solids arrays. We may be
 ! able to remove the DES_ specific variables moving forward.
          DES_D_p0(M) = D_p0(M)
@@ -128,7 +132,7 @@
 ! specified them.  We could make use of these flags.
       MOMENTUM_X_EQ((MMAX+1):DIM_M) = .FALSE.
       MOMENTUM_Y_EQ((MMAX+1):DIM_M) = .FALSE.
-      MOMENTUM_Z_EQ((MMAX+1):DIM_M) = .FALSE. 
+      MOMENTUM_Z_EQ((MMAX+1):DIM_M) = .FALSE.
 
 ! Derive periodicity from cyclic boundary flags.
       DES_PERIODIC_WALLS_X = CYCLIC_X .OR. CYCLIC_X_PD
@@ -151,7 +155,6 @@
 ! consistent with previous implementations.
          IF(DES_INTERP_ON)  DES_INTERP_MEAN_FIELDS= .TRUE.
       ENDIF
-            
 
 ! Overrite for restart cases.
       IF(TRIM(RUN_TYPE) .NE. 'NEW') GENER_PART_CONFIG = .FALSE.
@@ -227,7 +230,6 @@
 
 ! Check settings for particle generation.
 !      IF(GENER_PART_CONFIG) CALL CHECK_DES_PCONFIG
-           
 
 
       CALL FINL_ERR_MSG

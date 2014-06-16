@@ -49,7 +49,7 @@
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE CHECK_SOLIDS_PHASES
 
@@ -139,10 +139,8 @@
 
 ! Place holder
       IF(ENERGY_EQ .AND. (TFM_SOLIDS .OR. PIC_SOLIDS)) THEN
-!         IF()THEN
-!            WRITE(ERR_MSG, 2002)
-!            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-!         ENDIF
+!         WRITE(ERR_MSG, 2002)
+!         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
  2002 FORMAT('Error 2002: The solids-solids conduction model is only', &
          ' available',/' for DEM only. Please correct the mfix.dat',   &

@@ -86,12 +86,12 @@
       ELSE
          IF (MMAX > DIM_M) ERR_MMAX = .TRUE.
       ENDIF
-      
+
 ! Check MMAX
-      IF (ERR_MMAX) THEN 
+      IF (ERR_MMAX) THEN
          WRITE(ERR_MSG, 1000) iVal(DIM_M)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF 
+      ENDIF
  1000 FORMAT('Error 1000: MMAX out of range. Min: 0, Max: ',A)
 
 ! Loop over the phases to see what was specified.
@@ -147,7 +147,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
  1003 FORMAT('Error 1003: MPPIC solids and DES solids cannot be ',     &
-         'combined.',/'Please correct the mfix.dat file.')      
+         'combined.',/'Please correct the mfix.dat file.')
 
 ! temporary move for now since these rely on definition of mmax/smax      
 ! Set variable ANY_SPECIES_EQ
@@ -165,65 +165,88 @@
  1004 FORMAT('Error 1004: Illegal or unknown input: ',A,' = ',A,/  &
          'Please correct the mfix.dat file.')
 
-
-
-   !****************************************************************!
-   !                       -->   WARNING   <---                     !
-   !                                                                !
-   ! The following checks set the run time flags based on input     !
-   ! from the mfix.dat file.  The 'self setting' needs removed once !
-   ! these variables are no longer namelist variables.              !
-   !                                                                !
-   !****************************************************************!
-
 ! Set the DEM runtime flag.
-      DISCRETE_ELEMENT = DEM_SOLIDS .OR. PIC_SOLIDS &
-         .OR. DISCRETE_ELEMENT .OR. MPPIC
+      DISCRETE_ELEMENT = DEM_SOLIDS .OR. PIC_SOLIDS
 ! Set the MMPIC runtime flag.
-      MPPIC = PIC_SOLIDS .OR. MPPIC
+      MPPIC = PIC_SOLIDS
 ! Set the Hybird flag.
-      DES_CONTINUUM_HYBRID = (DEM_SOLIDS .AND. TFM_SOLIDS) &
-         .OR. DES_CONTINUUM_HYBRID
+      DES_CONTINUUM_HYBRID = (DEM_SOLIDS .AND. TFM_SOLIDS)
 
 
-! This is a legacy check that needs removed once DES_CONTINUUM_HYBRID
-! is removed from being a namelist keyword.
-      IF(.NOT.DISCRETE_ELEMENT) DES_CONTINUUM_HYBRID = .FALSE. !<------ TO BE REMOVED
-
-! This is a legacy check that needs removed once MPPIC
-! is removed from being a namelist keyword.
-      IF(.NOT.DISCRETE_ELEMENT) MPPIC = .FALSE. !<--------------------- TO BE REMOVED
-
-! This is a legacy check that needs removed once DISCRETE_ELEMENT
-! is removed from being a namelist keyword.
-      IF(MPPIC) DISCRETE_ELEMENT = .TRUE. !<--------------------------- TO BE REMOVED
-
+      IF(DES_CONTINUUM_HYBRID) CALL HYBRID_HACK
 
 ! Overwrite user settings if no Lagrangian solids
       IF(.NOT.DISCRETE_ELEMENT) THEN
          DES_CONTINUUM_COUPLED = .FALSE.   ! This keyword might get removed.
          DES_INTERP_ON = .FALSE.
          PRINT_DES_DATA = .FALSE.
-         DES_ONEWAY_COUPLED = .false. 
+         DES_ONEWAY_COUPLED = .FALSE.
          DES_CONV_EQ = .FALSE.
          ANY_DES_SPECIES_EQ = .FALSE.
       ENDIF
-
-
-! Most likely, the TFM/DEM hybird model is going to break a lot in the 
-! process to generalize the input. I'm going to disable it now so it
-! is not available.
-      IF(DES_CONTINUUM_HYBRID)THEN
-         WRITE(ERR_MSG, 9000)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
- 9000 FORMAT('Error 9000: TFM/DEM Hybrid model has been disabled.',/   &
-         'This will be restored shortly. Sorry :(')
-
-
 
       CALL FINL_ERR_MSG
 
       RETURN
 
       END SUBROUTINE CHECK_SOLIDS_MODEL_PREREQS
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  SUBROUTINE: Hybrid_HACK                                             !
+!  Purpose: Check the distributed parallel namelist variables.         !
+!                                                                      !
+!  Author: P. Nicoletti                               Date: 14-DEC-99  !
+!  Reviewer: J.Musser                                 Date: 16-Jan-14  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE HYBRID_HACK
+
+! Number of ranks.
+      use run, only: SOLIDS_MODEL
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Maximum number of solids phases.
+      use param, only: DIM_M
+
+      use error_manager
+
+      integer :: TFM_MAX
+      integer :: DEM_MIN
+      integer :: M, LC
+!......................................................................!
+
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("HYBRID_HACK")
+
+! Initialize the loop variables.
+      TFM_MAX = -DIM_M
+      DEM_MIN =  DIM_M
+
+! Loop over the phases to see what was specified.
+      DO M=1, DIM_M
+         SELECT CASE(SOLIDS_MODEL(M))
+         CASE ('TFM'); TFM_MAX = max(M, TFM_MAX)
+         CASE ('DEM'); DEM_MIN = min(M, DEM_MIN)
+         END SELECT
+      ENDDO
+
+      write(*,*)'  MAX TFM index: ', TFM_MAX
+      write(*,*)'  MIN DEM index: ', DEM_MIN
+
+      IF(DEM_MIN < TFM_MAX) THEN
+         WRITE(ERR_MSG, 2000)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 2000 FORMAT('Error 2000: Illegal phase specification for hybrid ',    &
+         'model. All TFM',/'solids must be defined before DEM solids.',&
+         /'Please correct the mfix.dat file.')
+
+      CALL FINL_ERR_MSG
+
+      RETURN
+      END SUBROUTINE HYBRID_HACK
