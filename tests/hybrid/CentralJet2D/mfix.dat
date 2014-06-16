@@ -1,198 +1,129 @@
-!  Fluidized Bed with Central Jet Simulation
-!  Loosely based on Tsuji et al., PT, 1993 article
-!  Continuum for gas phase
-!  Three setups depending on model description for solids
-!    -continuum for solids phase
-!    -dem for solids phase
-!    -hybrid for solids phase described by continuum and discrete
+########################################################################
+# Hybrid TFM/DEM Solids Tutoral: (Loosely based on REF)                #
+#                                                                      #
+# Author:  Janine Carney                               Date: 01-18-13  #
+# Modified: J. Musser                                  Date: 06-13-14  #
+#                                                                      #
+# REF: Tsuji, Kawaguchi, and Tanaka, Discrete particle simulation of   #
+#      two-dimensional fluidized bed, Powder Technology, 77(1), 1993,  #
+#      Pages 79-87.                                                    #
+#                                                                      #
+########################################################################
 
-                          
-!*********************************************************************
-! Run Control                             
-!*********************************************************************                                                          
-  RUN_NAME    = 'R'            
-  DESCRIPTION = 'fluid bed with central jet'
-  RUN_TYPE    = 'NEW'             
+#_______________________________________________________________________
+# RUN CONTROL SECTION
 
-  UNITS  = 'CGS' ! Units for data input/output
+  RUN_NAME = 'FB'
+  DESCRIPTION = 'TFM-DEM Hybrid: Fuild bed with jet'
 
-  TIME        = 0.0            ! start time
-  TSTOP       = 1.0            ! stop time 
-  DT          = 5E-4           ! initial step size
-  DT_MAX      = 1E-4           ! maximum step size
-  DT_MIN      = 1E-8  ![1E-6]  ! minimum step size
-!  DT_FAC      = 1.0
+  RUN_TYPE = 'NEW'
+  UNITS    = 'CGS'
 
-! Solve momentum equations
-!                    Gas      Sld 1
-  MOMENTUM_X_EQ  =  .TRUE.   .TRUE.  !.FALSE.
-  MOMENTUM_Y_EQ  =  .TRUE.   .TRUE.  !.FALSE.
-  MOMENTUM_Z_EQ  = .FALSE.   .FALSE.
+  TIME  = 0.0
+  TSTOP = 0.02
 
-! Solve energy equations
-  ENERGY_EQ  = .FALSE.
+  DT =     1.0d-4
+  DT_MAX = 1.0E-4  ! maximum step size
+  DT_MIN = 1.0d-8  ! minimum step size
 
-! Solve species equations
-!                 Gas     Sld 1
-  SPECIES_EQ  = .FALSE.   .FALSE.
+  ENERGY_EQ  = .F.
+
+  SPECIES_EQ(0:2)  = .F.  .F.  .F.
+
+  MOMENTUM_X_EQ(0:2) = .T.  .T.  .F.
+  MOMENTUM_Y_EQ(0:2) = .T.  .T.  .F.
 
 ! Solve granular energy equation (pde)
-  GRANULAR_ENERGY = .FALSE.
+  GRANULAR_ENERGY = .F.
 
 ! Friction/plastic stress models
-  FRICTION  = .FALSE.
-  SCHAEFFER  = .FALSE.
+  FRICTION  = .F.
+  SCHAEFFER  = .F.
 
 ! Drag model
   DRAG_TYPE = 'GIDASPOW'
 
 
-!*********************************************************************
-! Numerical Parameters                        
-!*********************************************************************
-
-! maximum number of iterations
-  MAX_NIT = 500          ! [500]
-
-!  TOL_RESID   = 1.0E-4   ! max. continuity+momentum residual at 
-!                           convergence [1E-3]
-!  TOL_RESID_X = 1.0E-4   ! max. species balance residual at 
-!                           convergence [1E-4]
-
-! factor to normalize gas continuity equation residual 
-!     [-] : normalization uses residual from first iteration 
-!      0  : normalization based on dominate term in continuity eqn
-  NORM_g = 0.0      
-
-! equation numbers for numerical settings
-!    1 : gas pressure
-!    2 : solids volume fraction
-!    3 : gas and solids u-momentum
-!    4 : gas and solids v-momentum
-!    5 : gas and solids w-momentum
-!    6 : gas and solids temperatures
-!    7 : species mass fractions
-!    8 : granular temperature
-!    9 : user-defined scalar
-
-! Discretization scheme
-!  DISCRETIZE  = 9*2 
-!                [0] : First-order upwinding
-!                 1  : First-order upwinding (using down-wind factors)
-!                 2  : Superbee (recommended method)
-!                 3  : SMART
-!                 4  : ULTRA-Quick
-!                 5  : QUICKEST (does not work)
-!                 6  : MUSCL
-!                 7  : van Leer
-!                 8  : Minmod
-
-! Under relaxation factors 
-!      [UR_FAC(1,6,9)=0.8]
-!      [UR_FAC(2,3,4,5,8)=0.5]
-!      [UR_FAC(7)=1]
-!  UR_FAC(1) 	= 0.5 ! gas pressure            [0.8]
-!  UR_FAC(2)    = 0.5 ! solids volume fraction  [0.5]
-!  UR_FAC(3) 	= 0.3 ! gas/solids u-momentum   [0.5]
-!  UR_FAC(4) 	= 0.3 ! gas/solids v-momentum   [0.5]
-!  UR_FAC(5) 	= 0.5 ! gas/solids w-momentum   [0.5]
-!  UR_FAC(6) 	= 0.8 ! gas/solids temperature  [0.8]
-!  UR_FAC(7) 	= 1.0 ! species mass fractions  [1.0]
-!  UR_FAC(8) 	= 1.0 ! granular temperature    [0.5]
-!  UR_FAC(9) 	= 1.0 ! user-defined scalar     [0.8]
-
-! Number of iterations in the linear equation solver
-!      [LEQ_IT(1,2)=20]
-!      [LEQ_IT(3-5)=5]
-!      [LEQ_IT(6-9)=15]
-!  LEQ_IT = 9*300 
-
-! Method used in the linear equation solver
-!  LEQ_METHOD = 9*2
-!                1  : SOR
-!               [2] : BiCGSTAB
-!                3  : GMRES
-!                5  : CG
-
-! The tolerance in the linear equation solver  [1.0D-4]
-!  LEQ_TOL = 9*1D-6
-
-! The preconditioner used for the sweeps in the linear equation solver
-!  LEQ_PC = 9*'NONE'
-!             [LINE] : line relaxation
-!              DIAG  : diagonal scaling
-!              NONE  : no preconditioner
-
-! The sweep direction for linear equation solver. 
-!    Note leq_sweep only matters if either (leq_method=3) or
-!    (leq_method=2 or 5 .AND. leq_pc='line') otherwise this 
-!    setting has no effect
-  LEQ_SWEEP(1) = 9*'ISIS' 
-!                   ISIS  : 1 sweep with do IK loop followed by 
-!                           send_recv
-!                  [RSRS] : 1 red-black sweep with do IK loop 
-!                           followed by send_recv 
-!                   ASAS  : 1 red-black sweep with do IK loop 
-!                           followed by do JK followed by IJ 
-!                           followed by send_recv
+  DES_CONTINUUM_COUPLED  = .T.  ! Coupled gas/solid model
+  DES_INTERP_ON  = .T.          ! interpolate for drag force
+  DES_INTERP_MEAN_FIELDS = .T.  ! interpolate mean fields (volume frac)
 
 
-! If true used deferred correction method for implementing higher order
-! discretization.  Otherwise use down-wind factor method (default)
-!   DEF_COR = .TRUE.  ! [.FALSE.]
+#_______________________________________________________________________
+# NUMERICAL PARAMETERS
+
+  LEQ_SWEEP(1) = 9*'ISIS'
 
 
-!*********************************************************************
-! Geometry and Discretization
-!*********************************************************************
+#_______________________________________________________________________
+# GEOMETRY SECTION
 
-! Coordinates used in the simulation
-!     a) CARTESIAN
-!     b) CYLINDRICAL
   COORDINATES = 'CARTESIAN'
 
-  XLENGTH  =   15.0    IMAX  =  15
-  YLENGTH  =   90.0    JMAX  =  45
-  ZLENGTH  =   0.40   !KMAX  =  5   ! particle diameter for 2D DEM cases
-  NO_K     = .TRUE.                 ! 2D, no k direction
+  XLENGTH = 15.0   IMAX =  15
+  YLENGTH = 90.0   JMAX =  45
+  ZLENGTH =  0.4   NO_K = .T.
 
-  GRAVITY  = 981.0    ! gravitational acceleration [y-direction]
+#_______________________________________________________________________
+# MATERIAL SECTION
 
+! Gas Section
+!---------------------------------------------------------------------//
+  MU_g0 =   1.8d-4  ! constant gas viscosity
+  MW_avg = 29.0     ! average molecular weight
 
-!*********************************************************************
-! Gas Phase
-!*********************************************************************
-
-  MU_g0  =  1.8E-4    ! constant viscosity (poise or Pa.s)
-! the molecular weight or density must be specified (or species names).
-! if density is specified then the molecular weight will be ignored.
-! specifying molecular weight allows for compressibility but requires
-! setting the pressure and temperature in IC and BC regions
-!  MW_AVG  =  28.8      ! average molecular weight 
-  RO_g0  =  1.205E-3  ! constant density 
+!  RO_g0  =  1.205E-3  ! constant density 
 
 
-!*********************************************************************
-! Solid Phase
-!*********************************************************************
-
-  MMAX  =  1         ! number of solids phase
-  D_p0  =  0.4       ! particle diameter 
-  RO_s0 =  2.7       ! particle density
+! Solids Section
+!---------------------------------------------------------------------//
+  MMAX  =  2         ! number of solids phase
 
   e    = 0.9         ! coefficient of restitution p-p
   Phi  = 30.0        ! angle of internal friction (in degrees)
   EP_star  = 0.42    ! Packed bed void fraction
-!  C_f  = 0.1        ! coefficient of friction between unlike cont solids
-                     ! and is also used to describe interaction between
-                     ! continuum and discrete solids for hybrid model
 
-  DES_CONTINUUM_HYBRID = .TRUE.
-  DES_MMAX = 1
-  DES_RO_S = 2.7
-  DES_D_p0 = 0.4
+! hybrid: interaction
+  C_F = 0.1
 
-  
+  NEIGHBOR_SEARCH_N  = 2 ! solids time steps between neighbor search
+  MN  = 20               ! maximum number of neighbors allowed per particle
+
+  KN = 1.0d+6     ! inter-particle collision spring constant (dyne/cm)
+  KN_W = 1.0d+6   ! particle-wall collision spring constant (dyne/cm)
+
+! to get closer match between dem and continuum set no friction!
+  MEW = 0.0       ! inter-particle friction coeffienct
+  MEW_W = 0.0     ! particle-wall friction coefficient
+
+! to get closer match at BC set no dissipation (zero granular T flux?)
+  DES_EN_INPUT = 0.9       ! particle-particle rest coef
+  DES_EN_WALL_INPUT = 1.0  ! particle-wall rest coef
+
+  DES_ETAT_W_FAC = 1       ! damping coefficient factor = ETAT_W/ETAN_W
+
+  PARTICLES = 1200         ! Number of particles in the system.
+
+  NFACTOR = 0  ! length of dem settling period in no. of loops
+
+
+! Solids phase 1:
+!---------------------------------------------------------------------//
+  SOLIDS_MODEL(1) = 'TFM'
+
+  D_p0(1) = 0.4
+  RO_s0(1) = 2.7
+
+
+! Solids phase 2:
+!---------------------------------------------------------------------//
+  SOLIDS_MODEL(2) = 'DEM'
+
+  D_p0(2) = 0.4
+  RO_s0(2) = 2.7
+
+
+
 !*********************************************************************
 ! Initial Conditions
 !*********************************************************************
@@ -200,24 +131,35 @@
   IC_X_w(1)      =   0.0
   IC_X_e(1)      =  15.0
   IC_Y_s(1)      =   0.0
-  IC_Y_n(1)      =  30.0  
-                      
+  IC_Y_n(1)      =  30.0
+
   IC_EP_g(1)     =   0.553  !1.0
   IC_U_g(1)      =   0.0
   IC_V_g(1)      =  @(280.0/0.553)
   IC_T_g(1)      = 298.0   ! allows for compressibility
 !  IC_P_g(1)      =  1013250.0 
 
-  IC_ROP_s(1,1)  =   @(0.2236*2.7)   ! other solids is DEM
+  IC_EP_s(1,1)  =   0.2235   ! other solids is DEM
   IC_U_s(1,1)    =   0.0
   IC_V_s(1,1)    =   0.0
   IC_Theta_m(1,1)=   10.0  ! granular temperature 
- 
+
+
+  IC_EP_s(1,2)  =   0.2235   ! other solids is DEM
+  IC_U_s(1,2)    =   0.0
+  IC_V_s(1,2)    =   0.0
+  IC_Theta_m(1,2)=   0.0  ! granular temperature 
+
+
+
+
+
+
 ! freeboard --------------------
   IC_X_w(2)      =   0.0
   IC_X_e(2)      =  15.0
   IC_Y_s(2)      =  30.0
-  IC_Y_n(2)      =  90.0  
+  IC_Y_n(2)      =  90.0
 
   IC_EP_g(2)     =   1.0
   IC_U_g(2)      =   0.0
@@ -353,78 +295,7 @@
   BC_C_theta_m(6,1) = 0.0
 
 
-!*********************************************************************
-! Discrete Element Model (DEM) Control
-!*********************************************************************
-  DISCRETE_ELEMENT  = .TRUE.
-  DES_CONTINUUM_COUPLED  = .TRUE. ! Coupled gas/solid model
-  DES_INTERP_ON  = .TRUE.         ! interpolate for drag force
-  DES_INTERP_MEAN_FIELDS = .TRUE.  ! interpolate mean fields (volume frac)
 
-  PARTICLES = 1200            ! Number of particles in the system.
-  MAX_PIS = 1200  
-
-  PARTICLES_FACTOR = 1.2   ! expand size of particle arrays by an arbitrary factor 
-                           ! (factor usually needs to be increased when running in
-                           !  parallel)  [1.2]
-
-! DES Initial Condition
-!--------------------------------------
-  NFACTOR = 0            ! length of dem settling period in no. of loops
-
-! get initial particle config from particle_input.dat 
-
-! generate a packed particle configuration in specified region
-  GENER_PART_CONFIG  = .FALSE. 
-  VOL_FRAC  = 0.2234    ! gives ~1200 particles
-  DES_EPS_XSTART  = 15
-  DES_EPS_YSTART  = 30
-  DES_EPS_ZSTART  = 0.4
-
-  PVEL_StDev = 0    ! stdev of velocity distribution (not used if stdev is zero)  
-  PVEL_mean  = 0.0  ! mean of velocity distribution (not used if stdev is zero)   
-
-
-! DES Boundary Condition 
-!--------------------------------------
-  DES_PERIODIC_WALLS  = .FALSE.
-  WALLDTSPLIT  = .TRUE.      ! wall interaction as two-particle interaction
-  DIMN  = 2                  ! number of dimensions in simulation 
-
-
-! Neighbor Search Parameters
-!--------------------------------------
-  DES_NEIGHBOR_SEARCH  = 4 ! Particle neighbor search method
-!   [1] : N-Square
-!    4  : Cell linked-list based algorithm
-
-  NEIGHBOR_SEARCH_N  = 2 ! solids time steps between neighbor search
-  MN  = 20               ! maximum number of neighbors allowed per particle
-
-  FACTOR_RLM = 1.2   ! factor by which search radius is increased. [1.2] 
-
-
-! DES Particle Properties 
-! (particle-particle, particle-wall collision model parameters)
-!--------------------------------------
-  KN = 1.0d+6               ! normal inter-particle collision spring constant (dyne/cm)
-  KT_FAC = @(2/7)           ! tangential spring factor = KT/KN    [2/7]
-  KN_W = 1.0d+6             ! normal particle-wall collision spring constant (dyne/cm)
-  KT_W_FAC = @(2/7)         ! Tangential spring factor = KT_W/KN_W   [2/7]
-
-! to get closer match between dem and continuum set no friction!
-  MEW = 0.0                 ! inter-particle friction coeffienct
-  MEW_W = 0.0               ! particle-wall friction coefficient
-
-! to get closer match at BC set no dissipation (zero granular T flux?)
-  DES_EN_INPUT = 0.9        ! particle-particle rest coef
-  DES_EN_WALL_INPUT = 1.0   ! particle-wall rest coef
-
-  DES_ETAT_FAC = @(1/2)     ! damping coefficient factor = ETAT/ETAN   [1/2]
-  DES_ETAT_W_FAC = 1        ! damping coefficient factor = ETAT_W/ETAN_W   [1/2]
-
-! hybrid: interaction
-  C_F = 0.1
 
 
 ! DES Output Control
@@ -481,5 +352,3 @@
 ! Number of grid blocks in X/Y/Z directions (i,j,k) for a distributed
 ! memory parallel machine
   NODESI = 1   NODESJ = 1   NODESK = 1
-
-
