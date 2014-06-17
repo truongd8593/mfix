@@ -376,4 +376,15 @@
 
       LOGICAL:: CG_MI_CONVERTED_TO_PS(DIMENSION_BC)
 
+
+! Flag to specify the constant number of particles per cell
+! for the PIC solids 
+! Statistical weight of parcels will be calculated by the code
+      INTEGER :: BC_PIC_MI_CONST_NPC(DIMENSION_BC, DIM_M)
+      
+! Flag to specify the constant statistical weight.
+! for the PIC solids
+! Number of computational particles/parcels will be calculated by the code
+      DOUBLE PRECISION :: BC_PIC_MI_CONST_STATWT(DIMENSION_BC, DIM_M)
+
       END MODULE bc                                                                              

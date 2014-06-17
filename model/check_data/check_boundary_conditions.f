@@ -33,6 +33,8 @@
       use bc, only: BC_EP_g
 ! Run-time flag for DEM solids
       use run, only: DEM_SOLIDS
+! Run-time flag for PIC solids
+      use run, only: PIC_SOLIDS
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -130,6 +132,8 @@
       ENDDO
 ! Additional checks needed for DEM boundaries
       IF(DEM_SOLIDS) CALL CHECK_BC_DEM(MMAX_TOT)
+! Additional checks needed for PIC inflow/outflow boundaries
+      IF(PIC_SOLIDS) CALL CHECK_BC_PIC(MMAX_TOT)
 
 ! Cleanup and exit.
       CALL FINL_ERR_MSG

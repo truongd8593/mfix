@@ -305,7 +305,6 @@
       USE discretelement, only: dimn
       
       USE cutcell, only : cut_cell_at
-      USE mppic_wallbc
       USE indices
       USE geometry 
       USE compar

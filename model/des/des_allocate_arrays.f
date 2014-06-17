@@ -18,6 +18,7 @@
       Use compar
       Use physprop
       Use des_bc
+      Use pic_bc
       use funits
       use desgrid
       use desmpi
@@ -114,8 +115,10 @@
 
       ALLOCATE (iglobal_id(nparticles))
 
-! J.Musser: Allocate necessary arrays for discrete mass inlets
+! J.Musser: Allocate necessary arrays for DEM mass inlet/outlet BCs
       IF(DEM_BCMI /= 0 .OR. DEM_BCMO /=0) CALL ALLOCATE_DEM_MIO
+! R.Garg: Allocate necessary arrays for PIC mass inlet/outlet BCs
+      IF(PIC_BCMI /= 0 .OR. PIC_BCMO /=0) CALL ALLOCATE_PIC_MIO
 
 ! Particle attributes
 ! Radius, density, mass, moment of inertia
@@ -430,4 +433,65 @@
 
       RETURN
       END SUBROUTINE ALLOCATE_DEM_MIO
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: ALLOCATE_PIC_MIO                                        !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      !
+!  Author: R. Garg                                    Date: 11-Jun-14  !
+!                                                                      !
+!  Comments:                                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
+      SUBROUTINE ALLOCATE_PIC_MIO
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      USE pic_bc
+      USE discretelement
+      IMPLICIT NONE
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+      INTEGER :: I     ! Loop counter for no. of DES_BCMI
+!-----------------------------------------------
+
+! Allocate/Initialize for inlets
+      IF(PIC_BCMI /= 0)THEN
+
+
+         allocate( PIC_BCMI_IJKSTART(PIC_BCMI) )
+         allocate( PIC_BCMI_IJKEND  (PIC_BCMI) )
+         allocate( PIC_BCMI_NORMDIR (PIC_BCMI) )
+         
+         ALLOCATE( PIC_BCMI_OFFSET  (PIC_BCMI,3))
+
+         ALLOCATE(PIC_BCMI_REAL_PARTS_BYDT(PIC_BCMI,DES_MMAX))
+         ALLOCATE(PIC_BCMI_COMP_PARTS_BYDT(PIC_BCMI,DES_MMAX))
+
+         PIC_BCMI_IJKSTART = -1
+         PIC_BCMI_IJKEND   = -1
+
+         PIC_BCMI_REAL_PARTS_BYDT = zero
+         PIC_BCMI_COMP_PARTS_BYDT = zero
+      ENDIF  ! end if PIC_BCMI /= 0
+
+
+
+      IF(PIC_BCMO > 0)THEN
+         allocate( PIC_BCMO_IJKSTART(PIC_BCMO) )
+         allocate( PIC_BCMO_IJKEND(PIC_BCMO) )
+
+         PIC_BCMO_IJKSTART = -1
+         PIC_BCMO_IJKEND   = -1
+      ENDIF
+
+
+      RETURN
+      END SUBROUTINE ALLOCATE_PIC_MIO
 

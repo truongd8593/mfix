@@ -85,7 +85,7 @@ $(EXEC_FILE) : \
     $(DPO)discretelement.mod \
     $(DPO)interpolation.mod \
     $(DPO)mfix_pic.mod \
-    $(DPO)mppic_wallbc.mod \
+    $(DPO)pic_bc.mod \
     $(DPO)randomno.mod \
     $(DPO)sendrecvnode.mod \
     $(DPO)softspring_funcs_cutcell.mod \
@@ -387,6 +387,7 @@ $(EXEC_FILE) : \
     $(DPO)check_bc_geometry.$(OBJ_EXT) \
     $(DPO)check_bc_inflow.$(OBJ_EXT) \
     $(DPO)check_bc_outflow.$(OBJ_EXT) \
+    $(DPO)check_bc_pic.$(OBJ_EXT) \
     $(DPO)check_bc_walls.$(OBJ_EXT) \
     $(DPO)check_boundary_conditions.$(OBJ_EXT) \
     $(DPO)check_chemical_rxns.$(OBJ_EXT) \
@@ -452,14 +453,17 @@ $(EXEC_FILE) : \
     $(DPO)make_arrays_des.$(OBJ_EXT) \
     $(DPO)mass_inflow_dem.$(OBJ_EXT) \
     $(DPO)mass_outflow_dem.$(OBJ_EXT) \
-    $(DPO)mppic_routines.$(OBJ_EXT) \
     $(DPO)neighbour.$(OBJ_EXT) \
     $(DPO)nsquare.$(OBJ_EXT) \
     $(DPO)particles_in_cell.$(OBJ_EXT) \
+    $(DPO)pic_bc_routines.$(OBJ_EXT) \
+    $(DPO)pic_routines.$(OBJ_EXT) \
     $(DPO)read_des_restart.$(OBJ_EXT) \
     $(DPO)set_bc_dem.$(OBJ_EXT) \
     $(DPO)set_bc_dem_mi.$(OBJ_EXT) \
     $(DPO)set_bc_dem_mo.$(OBJ_EXT) \
+    $(DPO)set_bc_pic.$(OBJ_EXT) \
+    $(DPO)set_bc_pic_mi.$(OBJ_EXT) \
     $(DPO)set_geometry_des.$(OBJ_EXT) \
     $(DPO)solid_drag.$(OBJ_EXT) \
     $(DPO)usr0_des.$(OBJ_EXT) \
@@ -859,6 +863,7 @@ $(EXEC_FILE) : \
     $(DPO)check_bc_geometry.$(OBJ_EXT) \
     $(DPO)check_bc_inflow.$(OBJ_EXT) \
     $(DPO)check_bc_outflow.$(OBJ_EXT) \
+    $(DPO)check_bc_pic.$(OBJ_EXT) \
     $(DPO)check_bc_walls.$(OBJ_EXT) \
     $(DPO)check_boundary_conditions.$(OBJ_EXT) \
     $(DPO)check_chemical_rxns.$(OBJ_EXT) \
@@ -942,17 +947,20 @@ $(EXEC_FILE) : \
     $(DPO)mass_inflow_dem.$(OBJ_EXT) \
     $(DPO)mass_outflow_dem.$(OBJ_EXT) \
     $(DPO)mfix_pic_mod.$(OBJ_EXT) \
-    $(DPO)mppic_routines.$(OBJ_EXT) \
-    $(DPO)mppic_wallbc_mod.$(OBJ_EXT) \
     $(DPO)neighbour.$(OBJ_EXT) \
     $(DPO)nsquare.$(OBJ_EXT) \
     $(DPO)particles_in_cell.$(OBJ_EXT) \
+    $(DPO)pic_bc_mod.$(OBJ_EXT) \
+    $(DPO)pic_bc_routines.$(OBJ_EXT) \
+    $(DPO)pic_routines.$(OBJ_EXT) \
     $(DPO)randomno_mod.$(OBJ_EXT) \
     $(DPO)read_des_restart.$(OBJ_EXT) \
     $(DPO)sendrecvnode_mod.$(OBJ_EXT) \
     $(DPO)set_bc_dem.$(OBJ_EXT) \
     $(DPO)set_bc_dem_mi.$(OBJ_EXT) \
     $(DPO)set_bc_dem_mo.$(OBJ_EXT) \
+    $(DPO)set_bc_pic.$(OBJ_EXT) \
+    $(DPO)set_bc_pic_mi.$(OBJ_EXT) \
     $(DPO)set_geometry_des.$(OBJ_EXT) \
     $(DPO)softspring_funcs_cutcell_mod.$(OBJ_EXT) \
     $(DPO)solid_drag.$(OBJ_EXT) \
@@ -1475,28 +1483,9 @@ $(DPO)mfix_pic.mod : ./des/mfix_pic_mod.f \
             $(DPO)param.mod \
             $(DPO)param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/mfix_pic_mod.f  -o $(DPO)mfix_pic_mod.$(OBJ_EXT) -J$(DPO)
-$(DPO)mppic_wallbc.mod : ./des/mppic_wallbc_mod.f \
-            $(DPO)param.mod \
-            $(DPO)param1.mod \
-            $(DPO)discretelement.mod \
-            $(DPO)bc.mod \
-            $(DPO)geometry.mod \
-            $(DPO)compar.mod \
-            $(DPO)indices.mod \
-            $(DPO)funits.mod \
-            $(DPO)mpi_utility.mod \
-            $(DPO)constant.mod \
-            $(DPO)physprop.mod \
-            $(DPO)randomno.mod \
-            $(DPO)cutcell.mod \
-            $(DPO)fldvar.mod \
-            $(DPO)mfix_pic.mod \
-            $(DPO)run.mod \
-            $(DPO)stl.mod \
-            $(DPO)des_stl_functions.mod \
-            $(DPO)parallel.mod \
-            function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/mppic_wallbc_mod.f  -o $(DPO)mppic_wallbc_mod.$(OBJ_EXT) -J$(DPO)
+$(DPO)pic_bc.mod : ./des/pic_bc_mod.f \
+            $(DPO)param.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/pic_bc_mod.f  -o $(DPO)pic_bc_mod.$(OBJ_EXT) -J$(DPO)
 $(DPO)randomno.mod : ./des/randomno_mod.f \
             $(DPO)constant.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/randomno_mod.f  -o $(DPO)randomno_mod.$(OBJ_EXT) -J$(DPO)
@@ -5911,6 +5900,14 @@ $(DPO)check_bc_outflow.$(OBJ_EXT) : ./check_data/check_bc_outflow.f \
             $(DPO)mfix_pic.mod \
             $(DPO)cutcell.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_bc_outflow.f  -o $(DPO)check_bc_outflow.$(OBJ_EXT) -J$(DPO)
+$(DPO)check_bc_pic.$(OBJ_EXT) : ./check_data/check_bc_pic.f \
+            $(DPO)bc.mod \
+            $(DPO)run.mod \
+            $(DPO)pic_bc.mod \
+            $(DPO)param.mod \
+            $(DPO)param1.mod \
+            $(DPO)error_manager.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_bc_pic.f  -o $(DPO)check_bc_pic.$(OBJ_EXT) -J$(DPO)
 $(DPO)check_bc_walls.$(OBJ_EXT) : ./check_data/check_bc_walls.f \
             $(DPO)run.mod \
             $(DPO)bc.mod \
@@ -6263,7 +6260,6 @@ $(DPO)cfnewvalues.$(OBJ_EXT) : ./des/cfnewvalues.f \
             $(DPO)mpi_utility.mod \
             $(DPO)mfix_pic.mod \
             $(DPO)geometry.mod \
-            $(DPO)mppic_wallbc.mod \
             $(DPO)cutcell.mod \
             $(DPO)randomno.mod \
             function.inc                                                 \
@@ -6347,6 +6343,7 @@ $(DPO)des_allocate_arrays.$(OBJ_EXT) : ./des/des_allocate_arrays.f \
             $(DPO)compar.mod \
             $(DPO)physprop.mod \
             $(DPO)des_bc.mod \
+            $(DPO)pic_bc.mod \
             $(DPO)funits.mod \
             $(DPO)desgrid.mod \
             $(DPO)desmpi.mod \
@@ -6611,7 +6608,6 @@ $(DPO)generate_particle_config.$(OBJ_EXT) : ./des/generate_particle_config.f \
             $(DPO)indices.mod \
             $(DPO)geometry.mod \
             $(DPO)compar.mod \
-            $(DPO)mppic_wallbc.mod \
             $(DPO)constant.mod \
             $(DPO)ic.mod \
             $(DPO)param1.mod \
@@ -6679,34 +6675,6 @@ $(DPO)mass_outflow_dem.$(OBJ_EXT) : ./des/mass_outflow_dem.f \
             $(DPO)physprop.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/mass_outflow_dem.f  -o $(DPO)mass_outflow_dem.$(OBJ_EXT) -J$(DPO)
-$(DPO)mppic_routines.$(OBJ_EXT) : ./des/mppic_routines.f \
-            $(DPO)param.mod \
-            $(DPO)param1.mod \
-            $(DPO)run.mod \
-            $(DPO)output.mod \
-            $(DPO)funits.mod \
-            $(DPO)discretelement.mod \
-            $(DPO)constant.mod \
-            $(DPO)sendrecv.mod \
-            $(DPO)des_bc.mod \
-            $(DPO)cutcell.mod \
-            $(DPO)mppic_wallbc.mod \
-            $(DPO)mfix_pic.mod \
-            $(DPO)error_manager.mod \
-            $(DPO)parallel.mod \
-            $(DPO)geometry.mod \
-            $(DPO)indices.mod \
-            $(DPO)desmpi.mod \
-            $(DPO)mpi_utility.mod \
-            $(DPO)fldvar.mod \
-            $(DPO)physprop.mod \
-            $(DPO)bc.mod \
-            $(DPO)compar.mod \
-            $(DPO)interpolation.mod \
-            function.inc                                                 \
-            fun_avg1.inc                                                 \
-            fun_avg2.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/mppic_routines.f  -o $(DPO)mppic_routines.$(OBJ_EXT) -J$(DPO)
 $(DPO)neighbour.$(OBJ_EXT) : ./des/neighbour.f \
             $(DPO)param1.mod \
             $(DPO)discretelement.mod \
@@ -6752,6 +6720,51 @@ $(DPO)particles_in_cell.$(OBJ_EXT) : ./des/particles_in_cell.f \
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/particles_in_cell.f  -o $(DPO)particles_in_cell.$(OBJ_EXT) -J$(DPO)
+$(DPO)pic_bc_routines.$(OBJ_EXT) : ./des/pic_bc_routines.f \
+            $(DPO)run.mod \
+            $(DPO)param1.mod \
+            $(DPO)discretelement.mod \
+            $(DPO)geometry.mod \
+            $(DPO)constant.mod \
+            $(DPO)cutcell.mod \
+            $(DPO)indices.mod \
+            $(DPO)stl.mod \
+            $(DPO)des_stl_functions.mod \
+            $(DPO)mpi_utility.mod \
+            $(DPO)compar.mod \
+            $(DPO)funits.mod \
+            $(DPO)physprop.mod \
+            $(DPO)parallel.mod \
+            $(DPO)mfix_pic.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/pic_bc_routines.f  -o $(DPO)pic_bc_routines.$(OBJ_EXT) -J$(DPO)
+$(DPO)pic_routines.$(OBJ_EXT) : ./des/pic_routines.f \
+            $(DPO)param.mod \
+            $(DPO)param1.mod \
+            $(DPO)run.mod \
+            $(DPO)output.mod \
+            $(DPO)funits.mod \
+            $(DPO)discretelement.mod \
+            $(DPO)constant.mod \
+            $(DPO)sendrecv.mod \
+            $(DPO)des_bc.mod \
+            $(DPO)cutcell.mod \
+            $(DPO)mfix_pic.mod \
+            $(DPO)error_manager.mod \
+            $(DPO)parallel.mod \
+            $(DPO)geometry.mod \
+            $(DPO)indices.mod \
+            $(DPO)desmpi.mod \
+            $(DPO)mpi_utility.mod \
+            $(DPO)fldvar.mod \
+            $(DPO)physprop.mod \
+            $(DPO)bc.mod \
+            $(DPO)compar.mod \
+            $(DPO)interpolation.mod \
+            function.inc                                                 \
+            fun_avg1.inc                                                 \
+            fun_avg2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/pic_routines.f  -o $(DPO)pic_routines.$(OBJ_EXT) -J$(DPO)
 $(DPO)read_des_restart.$(OBJ_EXT) : ./des/read_des_restart.f \
             $(DPO)param1.mod \
             $(DPO)compar.mod \
@@ -6812,6 +6825,39 @@ $(DPO)set_bc_dem_mo.$(OBJ_EXT) : ./des/set_bc_dem_mo.f \
             $(DPO)discretelement.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/set_bc_dem_mo.f  -o $(DPO)set_bc_dem_mo.$(OBJ_EXT) -J$(DPO)
+$(DPO)set_bc_pic.$(OBJ_EXT) : ./des/set_bc_pic.f \
+            $(DPO)constant.mod \
+            $(DPO)pic_bc.mod \
+            $(DPO)discretelement.mod \
+            $(DPO)funits.mod \
+            $(DPO)geometry.mod \
+            $(DPO)indices.mod \
+            $(DPO)param.mod \
+            $(DPO)param1.mod \
+            $(DPO)physprop.mod \
+            $(DPO)run.mod \
+            $(DPO)mfix_pic.mod \
+            $(DPO)mpi_utility.mod \
+            $(DPO)bc.mod \
+            $(DPO)error_manager.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/set_bc_pic.f  -o $(DPO)set_bc_pic.$(OBJ_EXT) -J$(DPO)
+$(DPO)set_bc_pic_mi.$(OBJ_EXT) : ./des/set_bc_pic_mi.f \
+            $(DPO)compar.mod \
+            $(DPO)constant.mod \
+            $(DPO)bc.mod \
+            $(DPO)pic_bc.mod \
+            $(DPO)discretelement.mod \
+            $(DPO)funits.mod \
+            $(DPO)geometry.mod \
+            $(DPO)indices.mod \
+            $(DPO)param.mod \
+            $(DPO)param1.mod \
+            $(DPO)physprop.mod \
+            $(DPO)run.mod \
+            $(DPO)error_manager.mod \
+            $(DPO)mpi_utility.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/set_bc_pic_mi.f  -o $(DPO)set_bc_pic_mi.$(OBJ_EXT) -J$(DPO)
 $(DPO)set_geometry_des.$(OBJ_EXT) : ./des/set_geometry_des.f \
             $(DPO)discretelement.mod \
             $(DPO)geometry.mod \

@@ -1,4 +1,5 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+! minimum amount of geometry data.                                     !
 !                                                                      !
 ! Subroutine: CHECK_BC_DEM                                             !
 ! Author: J.Musser                                    Date: 01-Mar-14  !
@@ -15,6 +16,8 @@
       use bc, only: BC_TYPE
 ! User specifed: BC geometry
       use bc, only: BC_EP_s
+! Use specified flag for ignoring PO BC for discrete solids 
+      USE bc, only: BC_PO_APPLY_TO_DES
 ! Solids phase identifier
       use run, only: SOLIDS_MODEL
 ! Number of DEM inlet/outlet BCs detected.
@@ -74,8 +77,10 @@
 
 ! Count the number of pressure outflows.
          CASE ('P_OUTFLOW')
-            DEM_BCMO = DEM_BCMO + 1
-            DEM_BCMO_MAP(DEM_BCMO) = BCV
+            IF(BC_PO_APPLY_TO_DES(BCV)) then
+               DEM_BCMO = DEM_BCMO + 1
+               DEM_BCMO_MAP(DEM_BCMO) = BCV
+            ENDIF
 
 ! Flag CG_MI as an error if DEM solids are present.
          CASE ('CG_MI')

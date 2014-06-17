@@ -101,7 +101,7 @@
 !-----------------------------------------------
 
       IF(MPPIC) THEN
-         CALL MPPIC_TIME_MARCH
+         CALL PIC_TIME_MARCH
          RETURN
       ENDIF
 

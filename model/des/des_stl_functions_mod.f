@@ -852,7 +852,8 @@
             ELSEIF (BC_TYPE(L)=='MASS_INFLOW' ) THEN 
                IF(BC_MI_AS_WALL_FOR_DES(L)) THEN 
                   !This is the default particle-wall behavior for
-                  !inflow plane. The facets defined above will be kept active
+                  !inflow plane. The facets defined above will not 
+                  !be reflagged as MI
                   CYCLE
                ENDIF
                

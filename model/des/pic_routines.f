@@ -11,7 +11,7 @@
 !   mppic_time_march
 
 
-      SUBROUTINE MPPIC_TIME_MARCH
+      SUBROUTINE PIC_TIME_MARCH
       USE param
       USE param1
       USE run
@@ -22,7 +22,6 @@
       USE sendrecv
       USE des_bc
       USE cutcell
-      USE mppic_wallbc
       USE mfix_pic
       USE error_manager
       IMPLICIT NONE
@@ -61,7 +60,7 @@
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'fun_avg2.inc'
 
-      CALL INIT_ERR_MSG("MPPIC_TIME_MARCH")
+      CALL INIT_ERR_MSG("PIC_TIME_MARCH")
 
       S_TIME = TIME
       TIME_LOOP_COUNT = 0
@@ -129,10 +128,7 @@
          CALL CFNEWVALUES
 
          ! Impose the wall-particle boundary condition for mp-pic case
-         CALL MPPIC_APPLY_WALLBC_STL 
-
-         !CALL PARTICLES_IN_CELL
-         !CALL MPPIC_COMPUTE_MEAN_FIELDS2
+         CALL PIC_APPLY_WALLBC_STL 
 
          ! Update time to reflect changes
          S_TIME = S_TIME + DTSOLID
@@ -175,8 +171,12 @@
                'DES.RES and .RES files written at time =', S_TIME
             ENDIF
          ENDIF  ! end if (.not.des_continuum_coupled)
+         
+         ! Seed new parcels entering the system.
+         !IF(PIC_BCMI > 0) CALL MASS_INFLOW_PIC
+         !IF(PIC_BCMO > 0) CALL MASS_OUTFLOW_PIC
 
-
+         
       ENDDO
 
       IF(DMP_LOG)       WRITE(UNIT_LOG,'(/10x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, Particles
@@ -203,7 +203,7 @@
       
       
       CALL FINL_ERR_MSG
-    end SUBROUTINE MPPIC_TIME_MARCH
+    end SUBROUTINE PIC_TIME_MARCH
 
 
 

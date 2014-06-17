@@ -1345,7 +1345,7 @@
 !  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
 !  <valid value='TFM' description='Two-fluid Model (coninuum).' />
 !  <valid value='DEM' description='Discrete Element Model' />
-!  <valid value='MPPIC' description='Multiphase-Particle in Cell' />
+!  <valid value='PIC' description='Multiphase-Particle in Cell' />
       SOLIDS_MODEL(:DIM_M) = 'TFM'
 !</keyword>
 
@@ -1638,11 +1638,11 @@
 
 !<keyword category="Initial Condition" required="false">
 !  <description>Flag to specify the initial constant number 
-! of particles per cell for the MPPIC method initialization.
+! of particles per cell for the PIC method initialization.
 !Statistical weight of parcels will be calculated by the code.</description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
 !  <arg index="2" id="Phase" min="1" max="DIM_M"/>
-!  <dependent keyword="SOLIDS_MODEL" value="MPPIC"/
+!  <dependent keyword="SOLIDS_MODEL" value="PIC"/>
 !  <conflict keyword="IC_PIC_CONST_STATWT" value="DEFINED"/>
           IC_PIC_CONST_NPC(LC, :DIM_M) = 0
 !</keyword>
@@ -1654,7 +1654,7 @@
 ! parcels will be automatically computed. </description>
 !  <arg index="1" id="IC region" min="1" max="DIMENSION_IC"/>
 !  <arg index="2" id="Phase" min="1" max="DIM_M"/>
-!  <dependent keyword="SOLIDS_MODEL" value="MPPIC"/
+!  <dependent keyword="SOLIDS_MODEL" value="PIC"/>
 !  <conflict keyword="IC_PIC_CONST_NPC" value="DEFINED"/>
           IC_PIC_CONST_STATWT(LC, :DIM_M) = ZERO 
 !</keyword>          
@@ -2238,8 +2238,43 @@
          BC_VELMAG_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
+!<keyword category="Boundary Condition" required="false">
+!  <description>Flag to specify the constant number 
+! of computational particles per cell for the PIC solids inflow BC.
+!Statistical weight of parcels will be calculated by the code.</description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_IC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
+!  <conflict keyword="BC_PIC_CONST_STATWT" value="DEFINED"/>
+!  <dependent keyword="SOLIDS_MODEL" value="PIC"/>
+          BC_PIC_MI_CONST_NPC(LC, :DIM_M) = 0
+!</keyword>
+
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Flag to specify the constant statistical 
+! weight for inflowing computational particles/parcels. Actual number of 
+! parcels will be automatically computed. </description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_IC"/>
+!  <arg index="2" id="Phase" min="1" max="DIM_M"/>
+!  <conflict keyword="IC_PIC_CONST_NPC" value="DEFINED"/>
+          BC_PIC_MI_CONST_STATWT(LC, :DIM_M) = ZERO 
+!</keyword>          
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Flag to make the PO BC invisible to discrete solids.
+! Set this flag to false to remove this BC for discrete solids. </description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_IC"/>
          BC_PO_APPLY_TO_DES(LC) = .true.
+!</keyword>          
+
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Flag to make the inflow plane invisible to discrete solids.
+! Set this flag to false to remove to inflow plane. </description>
+!  <arg index="1" id="BC region" min="1" max="DIMENSION_IC"/>
          BC_MI_AS_WALL_FOR_DES(LC)  = .true. 
+!</keyword>          
+
          BC_ROP_G(LC) = UNDEFINED
       ENDDO
 

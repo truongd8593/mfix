@@ -364,13 +364,12 @@
                CONTACT_FACET_COUNT = CONTACT_FACET_COUNT + 1
                LIST_OF_CHECKED_FACETS(CONTACT_FACET_COUNT) = NF
                
-               IF(STL_FACET_TYPE(NF).eq.FACET_TYPE_NORMAL .or. &
-                    STL_FACET_TYPE(NF).eq.FACET_TYPE_MI) then 
-                  !do nothing
-               ELSE
-                  !Skip this facet 
-                  CYCLE 
-               ENDIF
+               IF(STL_FACET_TYPE(NF).ne.FACET_TYPE_NORMAL) cycle !Skip this facet
+               !Recall the facets on the MI plane are re-classified 
+               !as MI only when the user specifies BC_MI_AS_WALL_FOR_DES
+               !as false. The default is to account for MI BC plane 
+               !as a wall and the facets making this plane are by 
+               !default classified as normal. 
                
                
                

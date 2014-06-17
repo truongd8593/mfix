@@ -183,7 +183,6 @@
       USE discretelement
       USE des_bc
       USE mpi_utility
-      USE mppic_wallbc
       USE fldvar
       USE cutcell
       USE mfix_pic
@@ -369,7 +368,7 @@
           DIST = SQRT(DES_DOTPRDCT(D,D))
 
 
-         CALL MPPIC_FIND_NEW_CELL(L)
+         CALL PIC_FIND_NEW_CELL(L)
 
          IJK = PIJK(L,4)
 
@@ -527,7 +526,6 @@
       USE discretelement
       USE des_bc
       USE mpi_utility
-      USE mppic_wallbc
       USE mfix_pic
       USE randomno
       USE cutcell
@@ -696,7 +694,7 @@
 
          IF(DES_FIXED_BED) DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
 
-         CALL MPPIC_FIND_NEW_CELL(L)
+         CALL PIC_FIND_NEW_CELL(L)
 
          IJK = PIJK(L,4)
 

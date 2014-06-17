@@ -357,8 +357,10 @@
       IF(DISCRETE_ELEMENT) CALL MAKE_ARRAYS_DES
       IF(QMOMK) CALL QMOMK_MAKE_ARRAYS
 
+! Set the inflow/outflow BCs for DEM solids 
       IF(DEM_SOLIDS) CALL SET_BC_DEM
-
+! Set the inflow/outflow BC for PIC solids 
+      IF(PIC_SOLIDS) CALL SET_BC_PIC
 
 ! AEOLUS: debug prints
       if (DBGPRN_LAYOUT .or. bdist_io) then

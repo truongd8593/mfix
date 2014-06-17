@@ -119,6 +119,7 @@
              BC_Scalar,&
 	     BC_K_Turb_G, BC_E_Turb_G, &
 	     Flux_g, &
+             BC_PIC_MI_CONST_NPC,BC_PIC_MI_CONST_STATWT, &
 ! ----------------------------------------------------------------<<<
 
 ! 1.X Point Sources
