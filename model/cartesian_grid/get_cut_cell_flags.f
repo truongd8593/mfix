@@ -10,10 +10,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE SET_3D_CUT_CELL_FLAGS 
-    
+  SUBROUTINE SET_3D_CUT_CELL_FLAGS
+
       USE param
       USE param1
       USE parallel
@@ -21,9 +21,9 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
@@ -34,13 +34,11 @@
       USE physprop
       USE fldvar
       USE scalars
-      USE funits 
+      USE funits
       USE rxns
 
       USE cutcell
       USE quadric
-
-
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,L
@@ -55,10 +53,8 @@
       DOUBLE PRECISION :: F_NODE_02
       INTEGER :: BCID
 
-
-
       INTEGER, DIMENSION(DIMENSION_3,15) :: OLD_CONNECTIVITY
-      DOUBLE PRECISION, DIMENSION(DIMENSION_MAX_CUT_CELL) :: X_OLD_POINT,Y_OLD_POINT,Z_OLD_POINT
+      DOUBLE PRECISION, DIMENSION(:), allocatable :: X_OLD_POINT,Y_OLD_POINT,Z_OLD_POINT
 
       INTEGER, DIMENSION(6) :: NB
 
@@ -66,14 +62,18 @@
 
       DOUBLE PRECISION :: X1,Y1,Z1,X2,Y2,Z2,D,TOT_VOL_NODE,TOT_VOL_CELLS
 
-
-      DOUBLE PRECISION :: SCALAR_NODE_XYZ_TEMP(DIMENSION_3, 3)
+      DOUBLE PRECISION, DIMENSION(:,:), allocatable :: SCALAR_NODE_XYZ_TEMP
 
       DOUBLE PRECISION :: DIST, NORM1, NORM2, NORM3,Diagonal
-      INTEGER :: IJK2, I1, I2, J1, J2, K1, K2, II, JJ, KK 
-      LOGICAL :: COND_1, COND_2 
+      INTEGER :: IJK2, I1, I2, J1, J2, K1, K2, II, JJ, KK
+      LOGICAL :: COND_1, COND_2
 
       include "function.inc"
+
+      allocate(X_OLD_POINT(DIMENSION_MAX_CUT_CELL))
+      allocate(Y_OLD_POINT(DIMENSION_MAX_CUT_CELL))
+      allocate(Z_OLD_POINT(DIMENSION_MAX_CUT_CELL))
+      allocate(SCALAR_NODE_XYZ_TEMP(DIMENSION_3, 3))
 
 
       IF(MyPE == PE_IO) THEN
@@ -86,37 +86,37 @@
 
 !  Set arrays for computing indices
 !
-      
-!      CALL SET_INCREMENTS 
+
+!      CALL SET_INCREMENTS
 
       DX(IMAX3+1) = DX(IMAX3)
       DY(JMAX3+1) = DY(JMAX3)
       DZ(KMAX3+1) = DZ(KMAX3)
 
 !     x-Location of U-momentum cells for original (uncut grid)
-      IF (DO_I) THEN 
+      IF (DO_I) THEN
          XG_E(1) = ZERO
          DO I = IMIN1, IMAX3
-            XG_E(I) = XG_E(I-1) + DX(I) 
-         END DO 
+            XG_E(I) = XG_E(I-1) + DX(I)
+         END DO
       ENDIF
- 
+
 
 !     y-Location of V-momentum cells for original (uncut grid)
-      IF (DO_J) THEN 
+      IF (DO_J) THEN
          YG_N(1) = ZERO
-         DO J = JMIN1, JMAX3  
-            YG_N(J) = YG_N(J-1) + DY(J) 
-         END DO 
+         DO J = JMIN1, JMAX3
+            YG_N(J) = YG_N(J-1) + DY(J)
+         END DO
       ENDIF
 
 
 !     z-Location of W-momentum cells for original (uncut grid)
-      IF (DO_K) THEN 
+      IF (DO_K) THEN
          ZG_T(1) = ZERO
-         DO K = KMIN1, KMAX3  
-            ZG_T(K) = ZG_T(K-1) + DZ(K) 
-         END DO 
+         DO K = KMIN1, KMAX3
+            ZG_T(K) = ZG_T(K-1) + DZ(K)
+         END DO
       ENDIF
 
       PARTITION = DFLOAT(myPE)       ! ASSIGN processor ID (for vizualisation)
@@ -144,19 +144,19 @@
 
       DO IJK = IJKSTART3, IJKEND3
 
-         I = I_OF(IJK) 
-         J = J_OF(IJK) 
-         K = K_OF(IJK) 
+         I = I_OF(IJK)
+         J = J_OF(IJK)
+         K = K_OF(IJK)
 
          IF(NO_K) THEN   ! 2D case
 
 
-            INTERIOR_CELL_AT(IJK) = (     (I >= ISTART1 ).AND.(I <= IEND1 )  & 
+            INTERIOR_CELL_AT(IJK) = (     (I >= ISTART1 ).AND.(I <= IEND1 )  &
                                      .AND.(J >= JSTART1 ).AND.(J <= JEND1 ) )
 
          ELSE            ! 3D case
 
-            INTERIOR_CELL_AT(IJK) = (     (I >= ISTART1 ).AND.(I <= IEND1 )  & 
+            INTERIOR_CELL_AT(IJK) = (     (I >= ISTART1 ).AND.(I <= IEND1 )  &
                                      .AND.(J >= JSTART1 ).AND.(J <= JEND1 )  &
                                      .AND.(K >= KSTART1 ).AND.(K <= KEND1 ) )
 
@@ -218,7 +218,7 @@
          X_U(IJK) = X_NODE(8)
          Y_U(IJK) = HALF * (Y_NODE(6) + Y_NODE(8))
          Z_U(IJK) = HALF * (Z_NODE(4) + Z_NODE(8))
-  
+
          X_V(IJK) = HALF * (X_NODE(7) + X_NODE(8))
          Y_V(IJK) = Y_NODE(8)
          Z_V(IJK) = HALF * (Z_NODE(4) + Z_NODE(8))
@@ -333,7 +333,7 @@
                   WRITE(*,*) 'TOTAL NUMBER OF INTERSECTIONS = ',TOTAL_NUMBER_OF_INTERSECTIONS
                   WRITE(*,*) 'REMOVING SCALAR CELL FROM COMPUTATION.'
 !                  WRITE(*,*) 'MFIX WILL EXIT NOW.'
-!                  CALL MFIX_EXIT(MYPE) 
+!                  CALL MFIX_EXIT(MYPE)
 
                ENDIF
 
@@ -349,7 +349,7 @@
                AXY(BOTTOM_OF(IJK)) = ZERO
                AXZ(SOUTH_OF(IJK)) = ZERO
                AYZ(WEST_OF(IJK)) = ZERO
- 
+
             ELSE                                         ! Cut cell
 
 
@@ -405,11 +405,11 @@
 
 !======================================================================
 !  Removing duplicate new points
-!  Up to here, a cut face node that is shared among neighbor cells had 
+!  Up to here, a cut face node that is shared among neighbor cells had
 !  a different index, and appeared as a duplicate node.
-!  The list will be updated and duplicate nodes will be removed from 
+!  The list will be updated and duplicate nodes will be removed from
 !  the connectivity list
-!  This is done to ensure that we can assign a volume surrounding each 
+!  This is done to ensure that we can assign a volume surrounding each
 !  node, that will be used to compute solids volume fraction for MPPIC
 !======================================================================
 
@@ -418,7 +418,7 @@
       DO IJK = IJKSTART3, IJKEND3
          IF(CUT_CELL_AT(IJK)) THEN          ! for each cut cell, identify neibhor cells that are also cut cells
                                              ! Look east and north in 2D, and also Top in 3D
-         
+
          Diagonal = DSQRT(DX(I_OF(IJK))**2 + DY(J_OF(IJK))**2 + DZ(K_OF(IJK))**2)
 
 
@@ -456,7 +456,7 @@
                               Z2 = Z_NEW_POINT(OLD_CONNECTIVITY(IJK_NB,NODE_NB)-IJKEND3)
 
                               D = (X2-X1)**2 + (Y2-Y1)**2 + (Z2-Z1)**2         ! compare coordinates of cut-face nodes
-    
+
                               IF(D<TOL_MERGE*Diagonal) THEN                    ! Duplicate nodes have identical coordinates (within tolerance TOL_MERGE times diagonal)
                                                                                ! keep the smallest node ID
 !                                 print*,'DULICATE NODES:',NODE,NODE_NB,OLD_CONNECTIVITY(IJK,NODE),OLD_CONNECTIVITY(IJK_NB,NODE_NB)
@@ -482,12 +482,12 @@
       ALLOCATE(Ovol_around_node(DIMENSION_3 + NUMBER_OF_NEW_POINTS))
       ALLOCATE(SCALAR_NODE_ATWALL(DIMENSION_3 + NUMBER_OF_NEW_POINTS))
 
-      !first fill with standard nodes 
+      !first fill with standard nodes
       DO IJK = IJKSTART3, IJKEND3
          SCALAR_NODE_XYZ(IJK,1:3)  = SCALAR_NODE_XYZ_TEMP(IJK,1:3)
       ENDDO
 
-      !now fill with cut-face nodes 
+      !now fill with cut-face nodes
       DO IJK = 1,NUMBER_OF_NEW_POINTS
          SCALAR_NODE_XYZ(IJKEND3+IJK,1) = X_NEW_POINT(IJK)
          SCALAR_NODE_XYZ(IJKEND3+IJK,2) = Y_NEW_POINT(IJK)
@@ -495,18 +495,18 @@
       ENDDO
 
 
-      
-      SCALAR_NODE_ATWALL(:)  = .true. 
+
+      SCALAR_NODE_ATWALL(:)  = .true.
       !Rahul:
-      !One could either set all scalar_node_atwall to false and 
-      !then set to true the nodes that are found as on the wall or outside 
+      !One could either set all scalar_node_atwall to false and
+      !then set to true the nodes that are found as on the wall or outside
       !the doamin
-      !In some situations, a node can be deemed to be both inside 
+      !In some situations, a node can be deemed to be both inside
       !and outside the domain depending upon which cell you look from.
       !Think of a small cell. According to the small cells, all the nodes
-      !are outside the domain, but from the perspective or surrounding 
-      !cut-cells, some of the nodes of this small cell are within the domain. 
-      
+      !are outside the domain, but from the perspective or surrounding
+      !cut-cells, some of the nodes of this small cell are within the domain.
+
       !so I'm setting all the points as being outside the domain.
       !if a point is ever found to be in the domain, then it will stay away
       !and further tests will not be able to revert it.
@@ -514,22 +514,22 @@
          I = I_OF(IJK)
          J = J_OF(IJK)
          K = K_OF(IJK)
-         IF(.not. IS_ON_myPE_wobnd(I,J,K)) cycle 
-         
+         IF(.not. IS_ON_myPE_wobnd(I,J,K)) cycle
+
          I1 = I-1
          I2 = I
          J1 = J-1
          J2 = J
-         
-         IF(NO_K) THEN 
+
+         IF(NO_K) THEN
             K1 = K
             K2 = K
          ELSE
             K1 = K-1
             K2 = K
          ENDIF
-         !Convention used to number node numbers is described below 
-         
+         !Convention used to number node numbers is described below
+
          ! i=1, j=2           i=2, j=2
          !   _____________________
          !   |                   |
@@ -539,28 +539,28 @@
 
          !Let's say the scalar cell with I = 2 and J = 2, i.e., the
          !first scalar cell in either direction.
-         !then this scalar cell's node numbering in x- direction 
-         !will go from 1 to 2 and likewise in other directions. 
+         !then this scalar cell's node numbering in x- direction
+         !will go from 1 to 2 and likewise in other directions.
          DO KK = K1, K2
             DO JJ = J1, J2
                DO II = I1, I2
-                  IJK2 = funijk(II, JJ, KK) 
+                  IJK2 = funijk(II, JJ, KK)
                   COND_1 = .false.
-                  COND_2 = .false. 
+                  COND_2 = .false.
                   !if it was already found to be inside the domain, then don't bother
-                  IF(.not.SCALAR_NODE_ATWALL(IJK2))  CYCLE 
+                  IF(.not.SCALAR_NODE_ATWALL(IJK2))  CYCLE
 
-                  IF(.not.FLUID_AT(IJK)) THEN 
-                     !do nothing 
+                  IF(.not.FLUID_AT(IJK)) THEN
+                     !do nothing
                   ELSE
                      !IJK is a fluid scalar cell. Check if it is
                      !a cut-cell or not
-                     IF(CUT_CELL_AT(IJK)) THEN 
-                        CALL GET_DEL_H_DES(IJK,'SCALAR', & 
+                     IF(CUT_CELL_AT(IJK)) THEN
+                        CALL GET_DEL_H_DES(IJK,'SCALAR', &
                         & SCALAR_NODE_XYZ(IJK2,1), SCALAR_NODE_XYZ(IJK2,2), &
-                        & SCALAR_NODE_XYZ(IJK2,3), & 
+                        & SCALAR_NODE_XYZ(IJK2,3), &
                         & DIST, NORM1, NORM2, NORM3, .true.)
-                        IF(DIST.GE.ZERO) THEN 
+                        IF(DIST.GE.ZERO) THEN
                            SCALAR_NODE_ATWALL(IJK2)  = .false.
                            COND_1 =  .true.
                         ENDIF
@@ -602,7 +602,7 @@
 
 !         print*,'IJK,VOL=',IJK,VOL(IJK)
 
- 
+
          IF(INTERIOR_CELL_AT(IJK)) TOT_VOL_CELLS = TOT_VOL_CELLS + VOL(IJK)
 
 
@@ -611,7 +611,7 @@
 
       TOT_VOL_NODE= ZERO
 
-      DO IJK = IJKSTART3, IJKEND3 + NUMBER_OF_NEW_POINTS    ! Loop over all nodes 
+      DO IJK = IJKSTART3, IJKEND3 + NUMBER_OF_NEW_POINTS    ! Loop over all nodes
 
          IF(Ovol_around_node(IJK)>ZERO) THEN
 !             print*,'NODE,VOL=',IJK,Ovol_around_node(IJK)
@@ -629,10 +629,15 @@
             WRITE(*,*)'Total volume =',TOT_VOL_CELLS
             WRITE(*,*)'The two volumes above should be the same.'
             WRITE(*,*)'==========================================================='
-            CALL MFIX_EXIT(MYPE) 
+            CALL MFIX_EXIT(MYPE)
          ENDIF
       ENDIF
-      
+
+      deallocate(X_OLD_POINT)
+      deallocate(Y_OLD_POINT)
+      deallocate(Z_OLD_POINT)
+      deallocate(SCALAR_NODE_XYZ_TEMP)
+
       RETURN
       END SUBROUTINE SET_3D_CUT_CELL_FLAGS
 
@@ -648,10 +653,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SET_3D_CUT_U_CELL_FLAGS
-    
+
       USE param
       USE param1
       USE parallel
@@ -659,14 +664,14 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
       USE cutcell
       USE polygon
       USE stl
-      
+
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
       INTEGER :: TOTAL_NUMBER_OF_INTERSECTIONS
@@ -703,7 +708,7 @@
 !             IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL INTERSECT(IJK,'U_MOMENTUM',Xn_U_int(IJK),Ye_U_int(IJK),Zt_U_int(IJK))
             CALL INTERSECT(IJK,'U_MOMENTUM',Xn_U_int(IJK),Ye_U_int(IJK),Zt_U_int(IJK))
          END DO
-	 
+
 !======================================================================
 !  Clean-up intersection flags in preparaton of small cells removal
 !======================================================================
@@ -713,7 +718,7 @@
                CALL CLEAN_INTERSECT(IJK,'U_MOMENTUM',Xn_U_int(IJK),Ye_U_int(IJK),Zt_U_int(IJK))
             ENDIF
          END DO
-	 
+
       ELSE
          CALL CAD_INTERSECT('U_MOMENTUM',Xn_U_int,Ye_U_int,Zt_U_int)
       ENDIF
@@ -745,7 +750,7 @@
                   Y_U_nc(IJK) = Y_NODE(8)
                   Z_U_nc(IJK) = HALF * (Z_NODE(4) + Z_NODE(8))
 
-                  X_U_tc(IJK) = HALF * (X_NODE(7) + X_NODE(8)) 
+                  X_U_tc(IJK) = HALF * (X_NODE(7) + X_NODE(8))
                   Y_U_tc(IJK) = HALF * (Y_NODE(6) + Y_NODE(8))
                   Z_U_tc(IJK) = Z_NODE(8)
 
@@ -796,7 +801,7 @@
                   Y_U_nc(IJK) = Y_NODE(8)
                   Z_U_nc(IJK) = HALF * (Z_NODE(4) + Z_NODE(8))
 
-                  X_U_tc(IJK) = HALF * (X_NODE(7) + X_NODE(8)) 
+                  X_U_tc(IJK) = HALF * (X_NODE(7) + X_NODE(8))
                   Y_U_tc(IJK) = HALF * (Y_NODE(6) + Y_NODE(8))
                   Z_U_tc(IJK) = Z_NODE(8)
 
@@ -832,7 +837,7 @@
                   WRITE(*,*) 'TOTAL NUMBER OF INTERSECTIONS = ',TOTAL_NUMBER_OF_INTERSECTIONS
                   WRITE(*,*) 'REMOVING U-CELL FROM COMPUTATION.'
 !                  WRITE(*,*) 'MFIX WILL EXIT NOW.'
-!                  CALL MFIX_EXIT(MYPE) 
+!                  CALL MFIX_EXIT(MYPE)
 
                ENDIF
 
@@ -887,7 +892,7 @@
 
       RETURN
 
-      
+
       END SUBROUTINE SET_3D_CUT_U_CELL_FLAGS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -902,10 +907,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SET_3D_CUT_V_CELL_FLAGS
-    
+
       USE param
       USE param1
       USE parallel
@@ -913,14 +918,14 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
       USE cutcell
       USE polygon
       USE stl
-      
+
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
       INTEGER :: TOTAL_NUMBER_OF_INTERSECTIONS
@@ -956,7 +961,7 @@
 !             IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL INTERSECT(IJK,'V_MOMENTUM',Xn_V_int(IJK),Ye_V_int(IJK),Zt_V_int(IJK))
             CALL INTERSECT(IJK,'V_MOMENTUM',Xn_V_int(IJK),Ye_V_int(IJK),Zt_V_int(IJK))
          END DO
-	 
+
 !======================================================================
 !  Clean-up intersection flags in preparaton of small cells removal
 !======================================================================
@@ -966,7 +971,7 @@
                CALL CLEAN_INTERSECT(IJK,'V_MOMENTUM',Xn_V_int(IJK),Ye_V_int(IJK),Zt_V_int(IJK))
             ENDIF
          END DO
-	 
+
       ELSE
          CALL CAD_INTERSECT('V_MOMENTUM',Xn_V_int,Ye_V_int,Zt_V_int)
       ENDIF
@@ -997,7 +1002,7 @@
             Y_V_nc(IJK) = Y_NODE(8)
             Z_V_nc(IJK) = HALF * (Z_NODE(4) + Z_NODE(8))
 
-            X_V_tc(IJK) = HALF * (X_NODE(7) + X_NODE(8)) 
+            X_V_tc(IJK) = HALF * (X_NODE(7) + X_NODE(8))
             Y_V_tc(IJK) = HALF * (Y_NODE(6) + Y_NODE(8))
             Z_V_tc(IJK) = Z_NODE(8)
 
@@ -1049,7 +1054,7 @@
                   Y_V_nc(IJK) = Y_NODE(8)
                   Z_V_nc(IJK) = HALF * (Z_NODE(4) + Z_NODE(8))
 
-                  X_V_tc(IJK) = HALF * (X_NODE(7) + X_NODE(8)) 
+                  X_V_tc(IJK) = HALF * (X_NODE(7) + X_NODE(8))
                   Y_V_tc(IJK) = HALF * (Y_NODE(6) + Y_NODE(8))
                   Z_V_tc(IJK) = Z_NODE(8)
 
@@ -1086,7 +1091,7 @@
                   WRITE(*,*) 'TOTAL NUMBER OF INTERSECTIONS = ',TOTAL_NUMBER_OF_INTERSECTIONS
                   WRITE(*,*) 'REMOVING V-CELL FROM COMPUTATION.'
 !                  WRITE(*,*) 'MFIX WILL EXIT NOW.'
-!                  CALL MFIX_EXIT(MYPE) 
+!                  CALL MFIX_EXIT(MYPE)
 
                ENDIF
 
@@ -1126,7 +1131,7 @@
 
          DELX_Ve(IJK) = X_NODE(8) - X_V(IJK)
          DELX_Vw(IJK) = X_V(IJK) - X_NODE(1)
- 
+
          DELY_Vn(IJK) = Y_NODE(8) - Y_V(IJK)
          DELY_Vs(IJK) = Y_V(IJK) - Y_NODE(1)
 
@@ -1139,7 +1144,7 @@
 
       RETURN
 
-      
+
       END SUBROUTINE SET_3D_CUT_V_CELL_FLAGS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -1154,10 +1159,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SET_3D_CUT_W_CELL_FLAGS
-    
+
       USE param
       USE param1
       USE parallel
@@ -1165,14 +1170,14 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
       USE cutcell
       USE polygon
       USE stl
-      
+
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
       INTEGER :: TOTAL_NUMBER_OF_INTERSECTIONS
@@ -1200,13 +1205,13 @@
       INTERSECT_Y = .FALSE.
       INTERSECT_Z = .FALSE.
       SNAP = .FALSE.
-      
+
       IF(.NOT.(USE_STL.OR.USE_MSH)) THEN
          DO IJK = IJKSTART3, IJKEND3
 !             IF(POTENTIAL_CUT_CELL_AT(IJK)) CALL INTERSECT(IJK,'W_MOMENTUM',Xn_W_int(IJK),Ye_W_int(IJK),Zt_W_int(IJK))
             CALL INTERSECT(IJK,'W_MOMENTUM',Xn_W_int(IJK),Ye_W_int(IJK),Zt_W_int(IJK))
          END DO
-	 
+
 !======================================================================
 !  Clean-up intersection flags in preparaton of small cells removal
 !======================================================================
@@ -1216,7 +1221,7 @@
                CALL CLEAN_INTERSECT(IJK,'W_MOMENTUM',Xn_W_int(IJK),Ye_W_int(IJK),Zt_W_int(IJK))
             ENDIF
          END DO
-	 
+
       ELSE
          CALL CAD_INTERSECT('W_MOMENTUM',Xn_W_int,Ye_W_int,Zt_W_int)
       ENDIF
@@ -1248,7 +1253,7 @@
             Y_W_nc(IJK) = Y_NODE(8)
             Z_W_nc(IJK) = HALF * (Z_NODE(4) + Z_NODE(8))
 
-            X_W_tc(IJK) = HALF * (X_NODE(7) + X_NODE(8)) 
+            X_W_tc(IJK) = HALF * (X_NODE(7) + X_NODE(8))
             Y_W_tc(IJK) = HALF * (Y_NODE(6) + Y_NODE(8))
             Z_W_tc(IJK) = Z_NODE(8)
 
@@ -1286,7 +1291,7 @@
                   Y_W_nc(IJK) = Y_NODE(8)
                   Z_W_nc(IJK) = HALF * (Z_NODE(4) + Z_NODE(8))
 
-                  X_W_tc(IJK) = HALF * (X_NODE(7) + X_NODE(8)) 
+                  X_W_tc(IJK) = HALF * (X_NODE(7) + X_NODE(8))
                   Y_W_tc(IJK) = HALF * (Y_NODE(6) + Y_NODE(8))
                   Z_W_tc(IJK) = Z_NODE(8)
 
@@ -1364,7 +1369,7 @@
 
       RETURN
 
-      
+
       END SUBROUTINE SET_3D_CUT_W_CELL_FLAGS
 
 
@@ -1380,10 +1385,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SET_3D_CUT_CELL_TREATMENT_FLAGS
-    
+
       USE param
       USE param1
       USE parallel
@@ -1391,9 +1396,9 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
@@ -1419,7 +1424,7 @@
       CUT_U_TREATMENT_AT = .FALSE.
       CUT_V_TREATMENT_AT = .FALSE.
       CUT_W_TREATMENT_AT = .FALSE.
-  
+
 
       DO IJK = IJKSTART3, IJKEND3
 
@@ -1427,18 +1432,18 @@
 
          IF(INTERIOR_CELL_AT(IJK)) THEN
 
-            I = I_OF(IJK) 
-            J = J_OF(IJK) 
-            K = K_OF(IJK)      
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
 
             IP = I + 1
             JP = J + 1
             KP = K + 1
 
-            IM = I - 1 
-            JM = J - 1 
+            IM = I - 1
+            JM = J - 1
             KM = K - 1
-    
+
             IMJK   = FUNIJK(IM,J,K)
             IJMK   = FUNIJK(I,JM,K)
             IJKM   = FUNIJK(I,J,KM)
@@ -1511,7 +1516,7 @@
 
       RETURN
 
-      
+
       END SUBROUTINE SET_3D_CUT_CELL_TREATMENT_FLAGS
 
 
@@ -1528,10 +1533,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SET_GHOST_CELL_FLAGS
-    
+
       USE param
       USE param1
       USE parallel
@@ -1539,12 +1544,12 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
       USE cutcell
-      
+
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,I23,J23,K23
       INTEGER :: IP,IM,JP,JM,KP,KM
@@ -1557,21 +1562,21 @@
 
 !     EAST BOUNDARY
       I = IEND1
-      
+
       IF(I==IMAX1) THEN
 
          DO I23 = IEND2,IEND3
             DO K = KSTART3,KEND3
                DO J = JSTART3, JEND3
 
-                  IJK  = FUNIJK(I,J,K) 
-                  IPJK = FUNIJK(I23,J,K) 
+                  IJK  = FUNIJK(I,J,K)
+                  IPJK = FUNIJK(I23,J,K)
 
                   BLOCKED_CELL_AT(IPJK) = BLOCKED_CELL_AT(IJK)
                   BLOCKED_U_CELL_AT(IPJK) = BLOCKED_U_CELL_AT(IJK)
                   BLOCKED_V_CELL_AT(IPJK) = BLOCKED_V_CELL_AT(IJK)
                   BLOCKED_W_CELL_AT(IPJK) = BLOCKED_W_CELL_AT(IJK)
- 
+
                   IF(BLOCKED_CELL_AT(IPJK)) FLAG(IPJK) = 100
 
                   VOL(IPJK)   = VOL(IJK)
@@ -1580,24 +1585,24 @@
                   VOL_W(IPJK) = VOL_W(IJK)
 
                   AYZ(IPJK)   = AYZ(IJK)
-                  AYZ_U(IPJK) = AYZ_U(IJK) 
+                  AYZ_U(IPJK) = AYZ_U(IJK)
                   AYZ_V(IPJK) = AYZ_V(IJK)
                   AYZ_W(IPJK) = AYZ_W(IJK)
 
                   AXY(IPJK)   = AXY(IJK)
-                  AXY_U(IPJK) = AXY_U(IJK) 
+                  AXY_U(IPJK) = AXY_U(IJK)
                   AXY_V(IPJK) = AXY_V(IJK)
                   AXY_W(IPJK) = AXY_W(IJK)
 
                   AXZ(IPJK)   = AXZ(IJK)
-                  AXZ_U(IPJK) = AXZ_U(IJK) 
+                  AXZ_U(IPJK) = AXZ_U(IJK)
                   AXZ_V(IPJK) = AXZ_V(IJK)
                   AXZ_W(IPJK) = AXZ_W(IJK)
 
-                  BC_ID(IPJK)   = BC_ID(IJK) 
-                  BC_U_ID(IPJK) = BC_U_ID(IJK) 
-                  BC_V_ID(IPJK) = BC_V_ID(IJK) 
-                  BC_W_ID(IPJK) = BC_W_ID(IJK) 
+                  BC_ID(IPJK)   = BC_ID(IJK)
+                  BC_U_ID(IPJK) = BC_U_ID(IJK)
+                  BC_V_ID(IPJK) = BC_V_ID(IJK)
+                  BC_W_ID(IPJK) = BC_W_ID(IJK)
 
                END DO
             END DO
@@ -1614,8 +1619,8 @@
             DO K = KSTART3,KEND3
                DO J = JSTART3, JEND3
 
-                  IJK  = FUNIJK(I,J,K) 
-                  IMJK = FUNIJK(I23,J,K) 
+                  IJK  = FUNIJK(I,J,K)
+                  IMJK = FUNIJK(I23,J,K)
 
                   BLOCKED_CELL_AT(IMJK) = BLOCKED_CELL_AT(IJK)
                   BLOCKED_U_CELL_AT(IMJK) = BLOCKED_U_CELL_AT(IJK)
@@ -1630,24 +1635,24 @@
                   VOL_W(IMJK) = VOL_W(IJK)
 
                   AYZ(IMJK)   = AYZ(IJK)
-                  AYZ_U(IMJK) = AYZ_U(IJK) 
+                  AYZ_U(IMJK) = AYZ_U(IJK)
                   AYZ_V(IMJK) = AYZ_V(IJK)
                   AYZ_W(IMJK) = AYZ_W(IJK)
 
                   AXY(IMJK)   = AXY(IJK)
-                  AXY_U(IMJK) = AXY_U(IJK) 
+                  AXY_U(IMJK) = AXY_U(IJK)
                   AXY_V(IMJK) = AXY_V(IJK)
                   AXY_W(IMJK) = AXY_W(IJK)
 
                   AXZ(IMJK)   = AXZ(IJK)
-                  AXZ_U(IMJK) = AXZ_U(IJK) 
+                  AXZ_U(IMJK) = AXZ_U(IJK)
                   AXZ_V(IMJK) = AXZ_V(IJK)
                   AXZ_W(IMJK) = AXZ_W(IJK)
-  
-                  BC_ID(IMJK)   = BC_ID(IJK) 
-                  BC_U_ID(IMJK) = BC_U_ID(IJK) 
-                  BC_V_ID(IMJK) = BC_V_ID(IJK) 
-                  BC_W_ID(IMJK) = BC_W_ID(IJK) 
+
+                  BC_ID(IMJK)   = BC_ID(IJK)
+                  BC_U_ID(IMJK) = BC_U_ID(IJK)
+                  BC_V_ID(IMJK) = BC_V_ID(IJK)
+                  BC_W_ID(IMJK) = BC_W_ID(IJK)
 
                END DO
             END DO
@@ -1664,8 +1669,8 @@
             DO K = KSTART3,KEND3
                DO I = ISTART3, IEND3
 
-                  IJK  = FUNIJK(I,J,K) 
-                  IJPK = FUNIJK(I,J23,K) 
+                  IJK  = FUNIJK(I,J,K)
+                  IJPK = FUNIJK(I,J23,K)
 
                   BLOCKED_CELL_AT(IJPK) = BLOCKED_CELL_AT(IJK)
                   BLOCKED_U_CELL_AT(IJPK) = BLOCKED_U_CELL_AT(IJK)
@@ -1680,29 +1685,29 @@
                   VOL_W(IJPK) = VOL_W(IJK)
 
                   AYZ(IJPK)   = AYZ(IJK)
-                  AYZ_U(IJPK) = AYZ_U(IJK) 
+                  AYZ_U(IJPK) = AYZ_U(IJK)
                   AYZ_V(IJPK) = AYZ_V(IJK)
                   AYZ_W(IJPK) = AYZ_W(IJK)
 
                   AXY(IJPK)   = AXY(IJK)
-                  AXY_U(IJPK) = AXY_U(IJK) 
+                  AXY_U(IJPK) = AXY_U(IJK)
                   AXY_V(IJPK) = AXY_V(IJK)
                   AXY_W(IJPK) = AXY_W(IJK)
 
                   AXZ(IJPK)   = AXZ(IJK)
-                  AXZ_U(IJPK) = AXZ_U(IJK) 
+                  AXZ_U(IJPK) = AXZ_U(IJK)
                   AXZ_V(IJPK) = AXZ_V(IJK)
                   AXZ_W(IJPK) = AXZ_W(IJK)
 
-                  BC_ID(IJPK)   = BC_ID(IJK) 
-                  BC_U_ID(IJPK) = BC_U_ID(IJK) 
-                  BC_V_ID(IJPK) = BC_V_ID(IJK) 
-                  BC_W_ID(IJPK) = BC_W_ID(IJK) 
+                  BC_ID(IJPK)   = BC_ID(IJK)
+                  BC_U_ID(IJPK) = BC_U_ID(IJK)
+                  BC_V_ID(IJPK) = BC_V_ID(IJK)
+                  BC_W_ID(IJPK) = BC_W_ID(IJK)
 
                END DO
             END DO
          END DO
- 
+
       ENDIF
 !     SOUTH BOUNDARY
       J = JSTART1
@@ -1713,8 +1718,8 @@
             DO K = KSTART3,KEND3
                DO I = ISTART3, IEND3
 
-                  IJK  = FUNIJK(I,J,K) 
-                  IJMK = FUNIJK(I,J23,K) 
+                  IJK  = FUNIJK(I,J,K)
+                  IJMK = FUNIJK(I,J23,K)
 
                   BLOCKED_CELL_AT(IJMK) = BLOCKED_CELL_AT(IJK)
                   BLOCKED_U_CELL_AT(IJMK) = BLOCKED_U_CELL_AT(IJK)
@@ -1729,24 +1734,24 @@
                   VOL_W(IJMK) = VOL_W(IJK)
 
                   AYZ(IJMK)   = AYZ(IJK)
-                  AYZ_U(IJMK) = AYZ_U(IJK) 
+                  AYZ_U(IJMK) = AYZ_U(IJK)
                   AYZ_V(IJMK) = AYZ_V(IJK)
                   AYZ_W(IJMK) = AYZ_W(IJK)
 
                   AXY(IJMK)   = AXY(IJK)
-                  AXY_U(IJMK) = AXY_U(IJK) 
+                  AXY_U(IJMK) = AXY_U(IJK)
                   AXY_V(IJMK) = AXY_V(IJK)
                   AXY_W(IJMK) = AXY_W(IJK)
 
                   AXZ(IJMK)   = AXZ(IJK)
-                  AXZ_U(IJMK) = AXZ_U(IJK) 
+                  AXZ_U(IJMK) = AXZ_U(IJK)
                   AXZ_V(IJMK) = AXZ_V(IJK)
                   AXZ_W(IJMK) = AXZ_W(IJK)
 
-                  BC_ID(IJMK)   = BC_ID(IJK) 
-                  BC_U_ID(IJMK) = BC_U_ID(IJK) 
-                  BC_V_ID(IJMK) = BC_V_ID(IJK) 
-                  BC_W_ID(IJMK) = BC_W_ID(IJK) 
+                  BC_ID(IJMK)   = BC_ID(IJK)
+                  BC_U_ID(IJMK) = BC_U_ID(IJK)
+                  BC_V_ID(IJMK) = BC_V_ID(IJK)
+                  BC_W_ID(IJMK) = BC_W_ID(IJK)
 
                END DO
             END DO
@@ -1760,13 +1765,13 @@
          K = KEND1
 
          IF(K==KMAX1) THEN
-         
+
             DO K23=KEND2,KEND3
                DO J = JSTART3,JEND3
                   DO I = ISTART3, IEND3
 
-                     IJK  = FUNIJK(I,J,K) 
-                     IJKP = FUNIJK(I,J,K23) 
+                     IJK  = FUNIJK(I,J,K)
+                     IJKP = FUNIJK(I,J,K23)
 
                      BLOCKED_CELL_AT(IJKP) = BLOCKED_CELL_AT(IJK)
                      BLOCKED_U_CELL_AT(IJKP) = BLOCKED_U_CELL_AT(IJK)
@@ -1781,24 +1786,24 @@
                      VOL_W(IJKP) = VOL_W(IJK)
 
                      AYZ(IJKP)   = AYZ(IJK)
-                     AYZ_U(IJKP) = AYZ_U(IJK) 
+                     AYZ_U(IJKP) = AYZ_U(IJK)
                      AYZ_V(IJKP) = AYZ_V(IJK)
                      AYZ_W(IJKP) = AYZ_W(IJK)
 
                      AXY(IJKP)   = AXY(IJK)
-                     AXY_U(IJKP) = AXY_U(IJK) 
+                     AXY_U(IJKP) = AXY_U(IJK)
                      AXY_V(IJKP) = AXY_V(IJK)
                      AXY_W(IJKP) = AXY_W(IJK)
 
                      AXZ(IJKP)   = AXZ(IJK)
-                     AXZ_U(IJKP) = AXZ_U(IJK) 
+                     AXZ_U(IJKP) = AXZ_U(IJK)
                      AXZ_V(IJKP) = AXZ_V(IJK)
                      AXZ_W(IJKP) = AXZ_W(IJK)
 
-                     BC_ID(IJKP)   = BC_ID(IJK) 
-                     BC_U_ID(IJKP) = BC_U_ID(IJK) 
-                     BC_V_ID(IJKP) = BC_V_ID(IJK) 
-                     BC_W_ID(IJKP) = BC_W_ID(IJK) 
+                     BC_ID(IJKP)   = BC_ID(IJK)
+                     BC_U_ID(IJKP) = BC_U_ID(IJK)
+                     BC_V_ID(IJKP) = BC_V_ID(IJK)
+                     BC_W_ID(IJKP) = BC_W_ID(IJK)
 
                   END DO
                END DO
@@ -1815,8 +1820,8 @@
                DO J = JSTART3,JEND3
                   DO I = ISTART3, IEND3
 
-                     IJK  = FUNIJK(I,J,K) 
-                     IJKM = FUNIJK(I,J,K23) 
+                     IJK  = FUNIJK(I,J,K)
+                     IJKM = FUNIJK(I,J,K23)
 
                      BLOCKED_CELL_AT(IJKM) = BLOCKED_CELL_AT(IJK)
                      BLOCKED_U_CELL_AT(IJKM) = BLOCKED_U_CELL_AT(IJK)
@@ -1831,30 +1836,30 @@
                      VOL_W(IJKM) = VOL_W(IJK)
 
                      AYZ(IJKM)   = AYZ(IJK)
-                     AYZ_U(IJKM) = AYZ_U(IJK) 
+                     AYZ_U(IJKM) = AYZ_U(IJK)
                      AYZ_V(IJKM) = AYZ_V(IJK)
                      AYZ_W(IJKM) = AYZ_W(IJK)
 
                      AXY(IJKM)   = AXY(IJK)
-                     AXY_U(IJKM) = AXY_U(IJK) 
+                     AXY_U(IJKM) = AXY_U(IJK)
                      AXY_V(IJKM) = AXY_V(IJK)
                      AXY_W(IJKM) = AXY_W(IJK)
 
                      AXZ(IJKM)   = AXZ(IJK)
-                     AXZ_U(IJKM) = AXZ_U(IJK) 
+                     AXZ_U(IJKM) = AXZ_U(IJK)
                      AXZ_V(IJKM) = AXZ_V(IJK)
                      AXZ_W(IJKM) = AXZ_W(IJK)
 
-                     BC_ID(IJKM)   = BC_ID(IJK) 
-                     BC_U_ID(IJKM) = BC_U_ID(IJK) 
-                     BC_V_ID(IJKM) = BC_V_ID(IJK) 
-                     BC_W_ID(IJKM) = BC_W_ID(IJK) 
+                     BC_ID(IJKM)   = BC_ID(IJK)
+                     BC_U_ID(IJKM) = BC_U_ID(IJK)
+                     BC_V_ID(IJKM) = BC_V_ID(IJK)
+                     BC_W_ID(IJKM) = BC_W_ID(IJK)
 
                   END DO
                END DO
             END DO
-         
-         ENDIF   
+
+         ENDIF
 
       ENDIF
 
@@ -1865,13 +1870,13 @@
          IF(BLOCKED_V_CELL_AT(IJK)) FLAG_N(IJK)=100
          IF(BLOCKED_W_CELL_AT(IJK)) FLAG_T(IJK)=100
 
- 
+
       ENDDO
 
 
       RETURN
 
-      
+
       END SUBROUTINE SET_GHOST_CELL_FLAGS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -2035,7 +2040,7 @@
                    AXZ(IJK) = ZERO
                    AYZ(IJK) = ZERO
                    VOL(IJK) = ZERO
- 
+
                    AXY(BOTTOM_OF(IJK)) = ZERO
                    AXZ(SOUTH_OF(IJK)) = ZERO
                    AYZ(WEST_OF(IJK)) = ZERO
