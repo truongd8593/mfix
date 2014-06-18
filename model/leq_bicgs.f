@@ -178,13 +178,7 @@
 ! Local variables
 !-----------------------------------------------
 
-
-!      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3) ::                       &    !!! <-------- WHY ???
-!                                R,Rtilde, P,Phat, Svec, Shat, Tvec,V
-      DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::                       &
-                                R,Rtilde, P,Phat, Svec, Shat, Tvec,V
-
-
+      DOUBLE PRECISION, DIMENSION(:), allocatable :: R,Rtilde, P,Phat, Svec, Shat, Tvec,V
 
       DOUBLE PRECISION, DIMENSION(0:ITMAX+1) :: &
                         alpha, beta, omega, rho
@@ -223,6 +217,15 @@
 !-----------------------------------------------
       INCLUDE 'function.inc'
 !-----------------------------------------------
+
+      allocate(R(DIMENSION_3))
+      allocate(Rtilde(DIMENSION_3))
+      allocate(P(DIMENSION_3))
+      allocate(Phat(DIMENSION_3))
+      allocate(Svec(DIMENSION_3))
+      allocate(Shat(DIMENSION_3))
+      allocate(Tvec(DIMENSION_3))
+      allocate(V(DIMENSION_3))
 
       is_serial = numPEs.eq.1.and.is_serial
 
@@ -676,9 +679,17 @@
 
       call send_recv(var,2)
 
+      deallocate(R)
+      deallocate(Rtilde)
+      deallocate(P)
+      deallocate(Phat)
+      deallocate(Svec)
+      deallocate(Shat)
+      deallocate(Tvec)
+      deallocate(V)
+
       return
       end subroutine LEQ_BICGS0
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
