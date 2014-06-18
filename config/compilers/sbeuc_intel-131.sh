@@ -94,7 +94,8 @@ if test "${USE_CODECOV}" = "1"; then common=${common}" -prof-gen=srcpos"; fi
 
 case $OPT in
   0)echo " Setting flags for debugging."
-    dbg="-traceback -check all -fpe:0 -fp-model source -O0"
+    dbg="-traceback -check all -fp-model source -O0"
+    if [[ -z $USE_MIC ]]; then dbg="$dbg -fpe:0" ; fi
     FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR ${dbg} -g"
     FORT_FLAGS3="${common} ${mkl} -O0 -g"
     LINK_FLAGS="${omp} -g";;
