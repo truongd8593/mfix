@@ -29,11 +29,11 @@
       SUBROUTINE PHYSICAL_PROP(IER, LEVEL)
 
       use compar
-      use funits 
+      use funits
       use geometry
       use indices
       use mpi_utility
-      use param1 
+      use param1
       use physprop
 
       use coeff, only: DENSITY  ! Density
@@ -111,7 +111,7 @@
 
  2000 FORMAT(/1X,70('*')/' From: PHYSICAL_PROP',/' Fatal Error 2000:', &
          ' calc_CpoR reporetd an invalid temperature: 0x0', I3/,       &
-         'See Cp.log for details. Calling MFIX_EXIT.',/1X,70('*')/) 
+         'See Cp.log for details. Calling MFIX_EXIT.',/1X,70('*')/)
 
       contains
 
@@ -172,9 +172,9 @@
 ! Average molecular weight: Xg1/Mw1 + Xg2/Mw2 + Xg3/Mw3 + ....
       IF(.NOT.database_read) call read_database0(IER)
 
-      IJK_LP: DO IJK = IJKSTART3, IJKEND3 
+      IJK_LP: DO IJK = IJKSTART3, IJKEND3
          IF(WALL_AT(IJK)) cycle IJK_LP
-         IF (MW_AVG == UNDEFINED) THEN 
+         IF (MW_AVG == UNDEFINED) THEN
 ! Calculating the average molecular weight of the fluid.
             MW = SUM(X_G(IJK,:NMAX(0))/MW_G(:NMAX(0)))
             MW = ONE/MAX(MW,OMW_MAX)
@@ -238,21 +238,28 @@
 ! Flag to write log header
       LOGICAL wHeader
 
+      DOUBLE PRECISION :: minROs
+
 ! Equation of State - Solid
       DOUBLE PRECISION, EXTERNAL :: EOSS
 
       include 'function.inc'
 
-      M_LP: DO M=1, MMAX 
+      M_LP: DO M=1, MMAX
          IF(.NOT.SOLVE_ROs(M)) cycle M_LP
 ! Initialize header flag.
          wHeader = .TRUE.
 ! Set the index of the inert species
          IIS = INERT_SPECIES(M)
-         IJK_LP: DO IJK = IJKSTART3, IJKEND3 
+! Calculate the minimum solids denisty.
+         minROs = EOSS(BASE_ROs(M), X_s0(M,IIS), 1.0d0)
+
+! Calculate the solids denisty over all cells.
+         IJK_LP: DO IJK = IJKSTART3, IJKEND3
             IF(WALL_AT(IJK)) cycle IJK_LP
-! Calculate the soilds density.
-            RO_S(IJK,M) = EOSS(BASE_ROs(M), X_s0(M,IIS), X_s(IJK,M,IIS))
+! Calculate the soilds density and store the minimum.
+            RO_S(IJK,M) = max(minROs, EOSS(BASE_ROs(M), X_s0(M,IIS),   &
+               X_s(IJK,M,IIS)))
 ! Report errors.
             IF(RO_S(IJK,M) <= ZERO) THEN
                Err_l(myPE) = 101
@@ -323,7 +330,7 @@
       gCP_Err = 0
       lCP_Err = 0
 
-      IJK_LP: DO IJK = IJKSTART3, IJKEND3 
+      IJK_LP: DO IJK = IJKSTART3, IJKEND3
          IF(WALL_AT(IJK)) CYCLE IJK_LP
 ! Calculating an average specific heat for the fluid.
          C_PG(IJK) = ZERO
@@ -390,7 +397,7 @@
       lCP_Err = 0
 
       M_LP: DO M=1, MMAX
-         IJK_LP: DO IJK = IJKSTART3, IJKEND3 
+         IJK_LP: DO IJK = IJKSTART3, IJKEND3
             IF(WALL_AT(IJK)) CYCLE IJK_LP
 ! Calculating an average specific heat for the fluid.
             C_PS(IJK, M) = ZERO
@@ -454,7 +461,7 @@
          lM = phase4scalar(M) ! Map from scalar eq to solids phase
 
          IF(.NOT.PSIZE(M)) CYCLE M_LP
-         IJK_LP: DO IJK = IJKSTART3, IJKEND3 
+         IJK_LP: DO IJK = IJKSTART3, IJKEND3
             IF(WALL_AT(IJK)) CYCLE IJK_LP
 
             IF(EP_s(IJK,lM) > small_number) D_p(IJK,M)= Scalar(IJK,lM)
@@ -487,7 +494,7 @@
       use fldvar, only: RO_g
 ! Gas phase pressure.
       use fldvar, only: P_g
-      use cutcell 
+      use cutcell
 
       INTEGER, intent(in) :: IJK
       LOGICAL, intent(inout) :: tHeader
@@ -498,7 +505,7 @@
       LOGICAL, save :: fHeader = .TRUE.
 
 
-      lFile = ''; 
+      lFile = '';
       if(numPEs > 1) then
          write(lFile,"('ROgErr_',I4.4,'.log')") myPE
       else
@@ -574,7 +581,7 @@
       use physprop, only: INERT_SPECIES
 
 ! Full Access to cutcell data.
-      use cutcell 
+      use cutcell
 
 
 ! Local Variables:
@@ -592,7 +599,7 @@
       LOGICAL, save :: fHeader = .TRUE.
 
 
-      lFile = ''; 
+      lFile = '';
       if(numPEs > 1) then
          write(lFile,"('ROsErr_',I4.4,'.log')") myPE
       else
