@@ -2760,6 +2760,18 @@
 !</keyword>
 
 !<keyword category="Chemical Reactions" required="false">
+!  <description>
+!    Maximum number of internal steps ODEPACK may use to integrate
+!    over the time interval.Leaving this value unspecifed permits
+!    an unlimited number of steps. Thee stiff solver reports the 
+!    number of cells that exceed the number of steps as 'incomplete'. 
+!  </description>
+!  <dependent keyword="STIFF_CHEMISTRY" value=".TRUE."/>
+!  <conflict keyword="USE_RRATES" value=".TRUE."/>
+      STIFF_CHEM_MAX_STEPS = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Chemical Reactions" required="false">
 !  <description>Flag to use legacy chemcial reaction UDFs.</description>
       USE_RRATES = .FALSE.
 !</keyword>

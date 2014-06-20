@@ -401,6 +401,7 @@ $(EXEC_FILE) : \
     $(DPO)check_initial_conditions.$(OBJ_EXT) \
     $(DPO)check_internal_surfaces.$(OBJ_EXT) \
     $(DPO)check_numerics.$(OBJ_EXT) \
+    $(DPO)check_odepack_stiff_chem.$(OBJ_EXT) \
     $(DPO)check_output_control.$(OBJ_EXT) \
     $(DPO)check_point_sources.$(OBJ_EXT) \
     $(DPO)check_run_control.$(OBJ_EXT) \
@@ -411,7 +412,6 @@ $(EXEC_FILE) : \
     $(DPO)check_solids_model_prereqs.$(OBJ_EXT) \
     $(DPO)check_solids_mppic.$(OBJ_EXT) \
     $(DPO)check_solids_phases.$(OBJ_EXT) \
-    $(DPO)check_data_odepack.$(OBJ_EXT) \
     $(DPO)stiff_chem_rrates.$(OBJ_EXT) \
     $(DPO)calc_collision_wall.$(OBJ_EXT) \
     $(DPO)calc_force_dem.$(OBJ_EXT) \
@@ -877,6 +877,7 @@ $(EXEC_FILE) : \
     $(DPO)check_initial_conditions.$(OBJ_EXT) \
     $(DPO)check_internal_surfaces.$(OBJ_EXT) \
     $(DPO)check_numerics.$(OBJ_EXT) \
+    $(DPO)check_odepack_stiff_chem.$(OBJ_EXT) \
     $(DPO)check_output_control.$(OBJ_EXT) \
     $(DPO)check_point_sources.$(OBJ_EXT) \
     $(DPO)check_run_control.$(OBJ_EXT) \
@@ -887,7 +888,6 @@ $(EXEC_FILE) : \
     $(DPO)check_solids_model_prereqs.$(OBJ_EXT) \
     $(DPO)check_solids_mppic.$(OBJ_EXT) \
     $(DPO)check_solids_phases.$(OBJ_EXT) \
-    $(DPO)check_data_odepack.$(OBJ_EXT) \
     $(DPO)stiff_chem_dbg_mod.$(OBJ_EXT) \
     $(DPO)stiff_chem_maps_mod.$(OBJ_EXT) \
     $(DPO)stiff_chem_mod.$(OBJ_EXT) \
@@ -1299,8 +1299,7 @@ $(DPO)UR_FACS.mod : ur_facs_mod.f \
             $(DPO)PARAM1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ur_facs_mod.f  -o $(DPO)ur_facs_mod.$(OBJ_EXT) -module $(DPO)
 $(DPO)USR.mod : usr_mod.f \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod 
+            $(DPO)PARAM.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr_mod.f  -o $(DPO)usr_mod.$(OBJ_EXT) -module $(DPO)
 $(DPO)VISC_G.mod : visc_g_mod.f \
             $(DPO)PARAM.mod \
@@ -4896,21 +4895,24 @@ $(DPO)update_old.$(OBJ_EXT) : update_old.f \
             $(DPO)SCALARS.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) update_old.f  -o $(DPO)update_old.$(OBJ_EXT) -module $(DPO)
 $(DPO)usr0.$(OBJ_EXT) : usr0.f \
-            $(DPO)USR.mod 
+            $(DPO)COMPAR.mod \
+            $(DPO)CUTCELL.mod \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)MPI_UTILITY.mod \
+            $(DPO)PARAM.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)USR.mod \
+            $(DPO)RUN.mod \
+            $(DPO)OUTPUT.mod \
+            $(DPO)STIFF_CHEM.mod \
+            $(DPO)CONSTANT.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)SENDRECV.mod \
+            $(DPO)RXNS.mod \
+            $(DPO)RXN_COM.mod \
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr0.f  -o $(DPO)usr0.$(OBJ_EXT) -module $(DPO)
 $(DPO)usr1.$(OBJ_EXT) : usr1.f \
-            $(DPO)USR.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) usr1.f  -o $(DPO)usr1.$(OBJ_EXT) -module $(DPO)
-$(DPO)usr2.$(OBJ_EXT) : usr2.f \
-            $(DPO)USR.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) usr2.f  -o $(DPO)usr2.$(OBJ_EXT) -module $(DPO)
-$(DPO)usr3.$(OBJ_EXT) : usr3.f \
-            $(DPO)USR.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) usr3.f  -o $(DPO)usr3.$(OBJ_EXT) -module $(DPO)
-$(DPO)usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
-            $(DPO)USR.mod 
-	$(FORTRAN_CMD) $(FORT_FLAGS) usr_init_namelist.f  -o $(DPO)usr_init_namelist.$(OBJ_EXT) -module $(DPO)
-$(DPO)usr_rates.$(OBJ_EXT) : usr_rates.f \
             $(DPO)PARAM.mod \
             $(DPO)PARAM1.mod \
             $(DPO)PARALLEL.mod \
@@ -4926,13 +4928,38 @@ $(DPO)usr_rates.$(OBJ_EXT) : usr_rates.f \
             $(DPO)COMPAR.mod \
             $(DPO)SENDRECV.mod \
             $(DPO)TOLERANC.mod \
+            $(DPO)TMP_ARRAY.mod \
             $(DPO)USR.mod \
+            $(DPO)MFLUX.mod \
+            $(DPO)MPI_UTILITY.mod \
             species.inc                                                  \
             ep_s1.inc                                                    \
             fun_avg1.inc                                                 \
             function.inc                                                 \
             ep_s2.inc                                                    \
-            fun_avg2.inc                                                 \
+            fun_avg2.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) usr1.f  -o $(DPO)usr1.$(OBJ_EXT) -module $(DPO)
+$(DPO)usr2.$(OBJ_EXT) : usr2.f \
+            $(DPO)USR.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) usr2.f  -o $(DPO)usr2.$(OBJ_EXT) -module $(DPO)
+$(DPO)usr3.$(OBJ_EXT) : usr3.f \
+            $(DPO)USR.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) usr3.f  -o $(DPO)usr3.$(OBJ_EXT) -module $(DPO)
+$(DPO)usr_init_namelist.$(OBJ_EXT) : usr_init_namelist.f \
+            $(DPO)USR.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) usr_init_namelist.f  -o $(DPO)usr_init_namelist.$(OBJ_EXT) -module $(DPO)
+$(DPO)usr_rates.$(OBJ_EXT) : usr_rates.f \
+            $(DPO)FLDVAR.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)PARAM.mod \
+            $(DPO)RXNS.mod \
+            $(DPO)PARSE.mod \
+            $(DPO)CONSTANT.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)USR.mod \
+            species.inc                                                  \
+            ep_s1.inc                                                    \
+            ep_s2.inc                                                    \
             usrnlst.inc                                                 
 	$(FORTRAN_CMD) $(FORT_FLAGS) usr_rates.f  -o $(DPO)usr_rates.$(OBJ_EXT) -module $(DPO)
 $(DPO)usr_write_out0.$(OBJ_EXT) : usr_write_out0.f 
@@ -5249,7 +5276,17 @@ $(DPO)write_table.$(OBJ_EXT) : write_table.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) write_table.f  -o $(DPO)write_table.$(OBJ_EXT) -module $(DPO)
 $(DPO)write_usr0.$(OBJ_EXT) : write_usr0.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) write_usr0.f  -o $(DPO)write_usr0.$(OBJ_EXT) -module $(DPO)
-$(DPO)write_usr1.$(OBJ_EXT) : write_usr1.f 
+$(DPO)write_usr1.$(OBJ_EXT) : write_usr1.f \
+            $(DPO)FLDVAR.mod \
+            $(DPO)RUN.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)INDICES.mod \
+            $(DPO)COMPAR.mod \
+            $(DPO)MPI_UTILITY.mod \
+            $(DPO)USR.mod \
+            species.inc                                                  \
+            function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) write_usr1.f  -o $(DPO)write_usr1.$(OBJ_EXT) -module $(DPO)
 $(DPO)xerbla.$(OBJ_EXT) : xerbla.f \
             $(DPO)COMPAR.mod 
@@ -6034,6 +6071,22 @@ $(DPO)check_numerics.$(OBJ_EXT) : ./check_data/check_numerics.f \
             $(DPO)PARALLEL.mod \
             $(DPO)ERROR_MANAGER.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_numerics.f  -o $(DPO)check_numerics.$(OBJ_EXT) -module $(DPO)
+$(DPO)check_odepack_stiff_chem.$(OBJ_EXT) : ./check_data/check_odepack_stiff_chem.f \
+            $(DPO)FUNITS.mod \
+            $(DPO)PARAM.mod \
+            $(DPO)PARAM1.mod \
+            $(DPO)PHYSPROP.mod \
+            $(DPO)RUN.mod \
+            $(DPO)RXNS.mod \
+            $(DPO)STIFF_CHEM.mod \
+            $(DPO)COMPAR.mod \
+            $(DPO)GEOMETRY.mod \
+            $(DPO)INDICES.mod \
+            $(DPO)ERROR_MANAGER.mod \
+            $(DPO)STIFF_CHEM_DBG.mod \
+            $(DPO)STIFF_CHEM_STATS.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_odepack_stiff_chem.f  -o $(DPO)check_odepack_stiff_chem.$(OBJ_EXT) -module $(DPO)
 $(DPO)check_output_control.$(OBJ_EXT) : ./check_data/check_output_control.f \
             $(DPO)OUTPUT.mod \
             $(DPO)RUN.mod \
@@ -6133,21 +6186,6 @@ $(DPO)check_solids_phases.$(OBJ_EXT) : ./check_data/check_solids_phases.f \
             $(DPO)DISCRETELEMENT.mod \
             $(DPO)PHYSPROP.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./check_data/check_solids_phases.f  -o $(DPO)check_solids_phases.$(OBJ_EXT) -module $(DPO)
-$(DPO)check_data_odepack.$(OBJ_EXT) : ./chem/check_data_odepack.f \
-            $(DPO)FUNITS.mod \
-            $(DPO)PARAM.mod \
-            $(DPO)PARAM1.mod \
-            $(DPO)PHYSPROP.mod \
-            $(DPO)RUN.mod \
-            $(DPO)RXNS.mod \
-            $(DPO)STIFF_CHEM.mod \
-            $(DPO)COMPAR.mod \
-            $(DPO)GEOMETRY.mod \
-            $(DPO)INDICES.mod \
-            $(DPO)STIFF_CHEM_DBG.mod \
-            $(DPO)STIFF_CHEM_STATS.mod \
-            function.inc                                                
-	$(FORTRAN_CMD) $(FORT_FLAGS) ./chem/check_data_odepack.f  -o $(DPO)check_data_odepack.$(OBJ_EXT) -module $(DPO)
 $(DPO)stiff_chem_rrates.$(OBJ_EXT) : ./chem/stiff_chem_rrates.f \
             $(DPO)STIFF_CHEM_MAPS.mod \
             $(DPO)PARAM.mod \

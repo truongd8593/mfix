@@ -40,7 +40,9 @@
 !---------------------------------------------------------------------//
 ! Frequency to report the number of steps distribution.
       INTEGER :: reportNST
+
       INTEGER :: failedCount_total
+      INTEGER :: countINCPT_total
 
 
 ! Variables updated every IJK loop cycle.
@@ -76,8 +78,11 @@
       INTEGER, allocatable :: maxAttempts(:)                ! local
       INTEGER, allocatable :: maxAttempts_all(:)            ! global
 
-      DOUBLE PRECISION :: ODE_StartTime
+! Maximum number of incomplete integrations.
+      INTEGER, allocatable :: countINCPT(:)                 ! local
+      INTEGER, allocatable :: countINCPT_all(:)             ! global
 
+      DOUBLE PRECISION :: ODE_StartTime
 
       contains
 
@@ -103,6 +108,7 @@
 
       reportNST = 1
       failedCount_total = 0
+      countINCPT_total = 0
 
 ! Number of cells that failed to successfully integration ODEs.
       allocate( failedCount(0:numPEs-1) ); failedCount = 0    ! local
@@ -137,6 +143,12 @@
       allocate( maxAttempts(0:numPEs-1) ); maxAttempts = 0    ! local
       allocate( maxAttempts_all(0:numPEs-1) )                 ! global
 
+! Number of cells that fail to completely integrate the time step
+! given the maximum number of steps.
+      allocate( countINCPT(0:numPEs-1) ); countINCPT = 0      ! local
+      allocate( countINCPT_all(0:numPEs-1) )                  ! global
+
+
       RETURN
       END SUBROUTINE ALLOCATE_STIFF_CHEM_STATS
 
@@ -167,6 +179,7 @@
       Hetrgns = 0
       Homogns = 0
       failedCount = 0
+      countINCPT = 0
 
       if(myPE == PE_IO) &
          write(*,"(/3x,'Integrating stiff chemistry...',$)")
@@ -187,7 +200,7 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE UPDATE_STIFF_CHEM_STATS(lNEQ, lNEQ_DIMN, lNST, &
-         lODE_DIMN, lAtps)
+         lODE_DIMN, lAtps, lIncpt)
 
       use compar, only: myPE
       use compar, only: PE_IO
@@ -208,6 +221,9 @@
 ! The number of attempts.
       INTEGER, intent(in) :: lAtps
 
+! Flag that the integration is incomplete
+      LOGICAL, intent(in) :: lIncpt
+
 
       IF(lNEQ(1) == lODE_DIMN) THEN
          Hetrgns(myPE) = Hetrgns(myPE) + 1
@@ -221,17 +237,18 @@
       maxNST(myPE) = max(maxNST(myPE), lNST)
 
       IF (lNST <           10) THEN
-         countNST(1) = countNST(1) + 1 
+         countNST(1) = countNST(1) + 1
       ELSE IF (lNST <     100) THEN
-         countNST(2) = countNST(2) + 1 
+         countNST(2) = countNST(2) + 1
       ELSE IF (lNST <    1000) THEN
-         countNST(3) = countNST(3) + 1 
+         countNST(3) = countNST(3) + 1
       ELSE IF (lNST <   10000) THEN
-         countNST(4) = countNST(4) + 1 
+         countNST(4) = countNST(4) + 1
       ELSE
-         countNST(5) = countNST(5) + 1 
+         countNST(5) = countNST(5) + 1
       ENDIF
 
+      IF(lIncpt) countINCPT(myPE) = countINCPT(myPE) + 1
 
       RETURN
       END SUBROUTINE UPDATE_STIFF_CHEM_STATS
@@ -290,6 +307,10 @@
       maxAttempts_all = 0
       CALL global_sum(maxAttempts, maxAttempts_all)
 
+! Collect stats on the maximum number of incomplete integrations.
+      countINCPT_all = 0
+      CALL global_sum(countINCPT, countINCPT_all)
+
 ! Collect stats on the number of failed integrations.
       failedCount_all = 0
       CALL global_sum(failedCount, failedCount_all)
@@ -312,14 +333,23 @@
          lMsg0=''; write(lMsg0,*) maxval(maxAttempts_all)
          write(*,1004)  trim(adjustl(lMsg0))
 
+! Report incomplete integrations:
+         countINCPT_total = countINCPT_total + sum(countINCPT_all)
+
+         IF(countINCPT_total > 0) THEN
+            lMsg0=''; write(lMsg0,*) sum(countINCPT_all)
+            lMsg1=''; write(lMsg1,*) countINCPT_total
+            write(*,1002) 'incomplete', trim(adjustl(lMsg0)), trim(adjustl(lMsg1))
+         ENDIF
 
 ! Report failed integrations:
          failedCount_total = failedCount_total + sum(failedCount_all)
 
-         lMsg0=''; write(lMsg0,*) sum(failedCount_all)
-         lMsg1=''; write(lMsg1,*) failedCount_total
-         write(*,1002) trim(adjustl(lMsg0)), trim(adjustl(lMsg1))
-
+         IF(failedCount_total > 0) THEN
+            lMsg0=''; write(lMsg0,*) sum(failedCount_all)
+            lMsg1=''; write(lMsg1,*) failedCount_total
+            write(*,1002) 'failed', trim(adjustl(lMsg0)), trim(adjustl(lMsg1))
+         ENDIF
 
          IF(lODE_RunTime > 3.6d3) THEN
             lMsg0=''; write(lMsg0,"(f8.4)") lODE_RunTime/3.6d3
@@ -367,7 +397,7 @@
 
  1000 Format(5x,'Minimum/Maximum number of steps over all cells: ',A,'/',A)
  1001 Format(5x,'Number of cells with Homogeneous/Heterogeneous reactions: ',A,'/',A)
- 1002 Format(5x,'Number of Current/Cumulative failed integrations: ',A,'/',A)
+ 1002 Format(5x,'Number of Current/Cumulative ',A,' integrations: ',A,'/',A)
  1003 Format(5x,'CPU Time Used: ',A,' ',A)
  1004 Format(5x,'Maximum number of integration attempts: ',A)
 
