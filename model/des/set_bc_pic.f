@@ -81,7 +81,7 @@
          'correct the mfix.dat ',/'file.')
 
       IF(PIC_BCMI > 0) CALL SET_BC_PIC_MI
-      !IF(PIC_BCMO > 0) CALL SET_BC_PIC_MO
+      IF(PIC_BCMO > 0) CALL SET_BC_PIC_MO
 
 ! Set the flag that one or more PIC MI/MO exists.
       PIC_MIO = (PIC_BCMI /= 0 .OR. PIC_BCMO /= 0)

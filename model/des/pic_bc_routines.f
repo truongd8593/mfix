@@ -282,7 +282,6 @@
       CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
       IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1
      
-      INTEGER :: PIP_DEL_COUNT
       !reference point and direction of the line
       double precision, dimension(dimn) :: ref_line,  dir_line
       !reference point and normal of the plane
@@ -302,14 +301,12 @@
       INTEGER, Parameter :: MAX_FACET_CONTS = 500
       INTEGER :: list_of_checked_facets(max_facet_conts)
       INTEGER :: FOCUS_CELLID
-      INTEGER, dimension(0:numpes-1) :: del_count_all
 
       double precision :: veldotnorm
       INCLUDE 'function.inc'
 
       CALL INIT_ERR_MSG("PIC_APPLY_WALLBC_STL")
 
-      PIP_DEL_COUNT = ZERO
       FOCUS_CELLID = funijk(14,24,2)
 
       DO LL = 1, MAX_PIP
@@ -376,6 +373,10 @@
 
             DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
                NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
+
+               !only check for facets flagged as normal 
+               IF(STL_FACET_TYPE(NF).ne.facet_type_normal) cycle
+
                ! Neighboring cells will share facets with same facet ID
                ! So it is important to make sure a facet is checked (for speed)
                ! and accounted (for accuracy) only once
@@ -447,23 +448,16 @@
 
                   if(ontriangle) then
                      dist_from_facet = abs(dot_product(pt_new(1:dimn) & 
-                          & - point_onplane(1:dimn), norm_plane(1:dimn)))
+                     & - point_onplane(1:dimn), norm_plane(1:dimn)))
 
                      DES_POS_NEW(LL, 1:DIMN) = point_onplane(1:dimn) + & 
-                          & dist_from_facet*(norm_plane(1:dimn)) 
+                     & dist_from_facet*(norm_plane(1:dimn)) 
 
-                     IF(STL_FACET_TYPE(NF).eq.facet_type_normal) then 
-                        CALL PIC_REFLECT_PART(LL, norm_plane(1:DIMN))
+                     CALL PIC_REFLECT_PART(LL, norm_plane(1:DIMN))
                         !In the reflect routine, it is assumed that the normal
                         !points into the system which is consitent with the 
                         !definition of normal for facets 
-
-                     ELSEIF(STL_FACET_TYPE(NF).eq.FACET_TYPE_PO) then 
-                        PEA(LL, 1)  = .false.
-                        PIP_DEL_COUNT = PIP_DEL_COUNT+1
-                     ENDIF
-
-
+                     
                      Exit CELLLOOP
                   endif
                endif
@@ -474,8 +468,89 @@
 
       end DO
       
-      pip = pip - pip_del_count 
+      
+      ! Seed new parcels entering the system.
+      IF(PIC_BCMI > 0) CALL PIC_MI_BC
+      IF(PIC_BCMO > 0) CALL PIC_MO_BC
 
+      CALL FINL_ERR_MSG
+      RETURN
+
+      END SUBROUTINE PIC_APPLY_WALLBC_STL
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: Mass_OUTFLOW_PIC                                        !
+!  Author: R. Garg                                   Date: 23-Jun-14   !
+!                                                                      !
+!  Purpose:  Routine to delete out of domain parcels for PIC           !
+!  implementation                                                      !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE PIC_MO_BC
+
+      use discretelement
+      use pic_bc
+      use bc
+      USE error_manager
+      USE mpi_utility
+   
+
+      implicit none
+
+      INTEGER :: IJK
+      INTEGER :: LC, LP, NP
+      INTEGER :: BCV, BCV_I
+
+      DOUBLE PRECISION :: DIST
+
+      INTEGER :: PIP_DEL_COUNT
+      INTEGER, dimension(0:numpes-1) :: del_count_all
+      INTEGER :: IPROC
+
+
+      CALL INIT_ERR_MSG("PIC_MO_BC")
+      
+      PIP_DEL_COUNT = 0 
+      DO BCV_I = 1, PIC_BCMO
+
+         BCV = PIC_BCMO_MAP(BCV_I)
+
+         SELECT CASE (BC_PLANE(BCV))
+         END SELECT
+
+         DO LC=PIC_BCMO_IJKSTART(BCV_I), PIC_BCMO_IJKEND(BCV_I)
+            IJK = PIC_BCMO_IJK(LC)
+            DO LP= 1,PINC(IJK)
+
+               NP = PIC(IJK)%p(LP)
+
+               IF(PEA(NP,4)) CYCLE
+
+               SELECT CASE (BC_PLANE(BCV))
+               CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(NP,2)
+               CASE('N'); DIST = DES_POS_NEW(NP,2) - YN(BC_J_s(BCV))
+               CASE('W'); DIST = XE(BC_I_w(BCV)-1) - DES_POS_NEW(NP,1)
+               CASE('E'); DIST = DES_POS_NEW(NP,1) - XE(BC_I_w(BCV))
+               CASE('B'); DIST = ZT(BC_K_b(BCV)-1) - DES_POS_NEW(NP,3)
+               CASE('T'); DIST = DES_POS_NEW(NP,3) - ZT(BC_K_b(BCV))
+               END SELECT
+
+               IF(DIST .lt. zero ) THEN
+
+! The parcel has left this bc_plane
+
+                  CALL DELETE_PARCEL(NP)
+                  PIP_DEL_COUNT = PIP_DEL_COUNT+1
+               ENDIF
+               
+            ENDDO
+         ENDDO
+      ENDDO
+
+      
       IF(PIC_REPORT_DELETION_STATS) then 
          
          del_count_all(:) = 0
@@ -494,15 +569,80 @@
          ENDIF
          
       ENDIF
+
       
       CALL FINL_ERR_MSG
       RETURN
+      END SUBROUTINE PIC_MO_BC
 
-      RETURN 
-  
 
-      END SUBROUTINE PIC_APPLY_WALLBC_STL
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: DELETE_PARCEL                                           !
+!  Author: R. Garg                                    Date: 23-Jun-14  !
+!                                                                      !
+!  Purpose:  Routine to delete parcel                                  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE DELETE_PARCEL(NP)
+
+      USE compar
+      USE constant
+      USE des_bc
+      USE discretelement
+      USE funits
+      USE geometry
+      USE indices
+      USE param1
+      USE physprop
+      USE mfix_pic
+
+      IMPLICIT NONE
+
+
+      INTEGER, INTENT(IN) :: NP
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+      INTEGER I,J,K,IJK       ! Unused indices at this time
+      INTEGER PC              ! Loop counter
+      INTEGER NPT             ! Temp Particle Index
+! Tmp holder of particle position
+      DOUBLE PRECISION XPOS, YPOS, ZPOS
+
+! Loop indices used for clearing forces associated with exiting particles
+      INTEGER NLIMNP, NLIM, NEIGHNP, NLIM_NEIGHNP
+
+! Logical for local debug warnings
+      LOGICAL DES_LOC_DEBUG
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+
+      PEA(NP,:) = .FALSE.
+
+      DES_POS_OLD(NP,:) = ZERO
+      DES_POS_NEW(NP,:) = ZERO
+      DES_VEL_OLD(NP,:) = ZERO
+      DES_VEL_NEW(NP,:) = ZERO
+      OMEGA_OLD(NP,:) = ZERO
+      OMEGA_NEW(NP,:) = ZERO
+      DES_RADIUS(NP) = ZERO
+      PMASS(NP) = ZERO
+      PVOL(NP) = ZERO
+      RO_Sol(NP) = ZERO
+      OMOI(NP) = ZERO
+
+      DES_STAT_WT(NP) = ZERO 
+
+      FC(:,NP) = ZERO
+
+      PIP = PIP - 1
+
+      RETURN
+      END SUBROUTINE DELETE_PARCEL
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -686,6 +826,8 @@
 
                      PVOL(NEW_SPOT) = (4.0d0/3.0d0)*Pi*DES_RADIUS(NEW_SPOT)**3
                      PMASS(NEW_SPOT) = PVOL(NEW_SPOT)*RO_SOL(NEW_SPOT)
+
+                     FC(:, NEW_SPOT) = zero 
                      DELETE_PART = .false. 
                      IF(PIC_BCMI_INCL_CUTCELL(BCV_I)) & 
                           CALL CHECK_IF_PARCEL_OVELAPS_STL & 

@@ -464,6 +464,7 @@ $(EXEC_FILE) : \
     $(DPO)set_bc_dem_mo.$(OBJ_EXT) \
     $(DPO)set_bc_pic.$(OBJ_EXT) \
     $(DPO)set_bc_pic_mi.$(OBJ_EXT) \
+    $(DPO)set_bc_pic_mo.$(OBJ_EXT) \
     $(DPO)set_geometry_des.$(OBJ_EXT) \
     $(DPO)solid_drag.$(OBJ_EXT) \
     $(DPO)usr0_des.$(OBJ_EXT) \
@@ -961,6 +962,7 @@ $(EXEC_FILE) : \
     $(DPO)set_bc_dem_mo.$(OBJ_EXT) \
     $(DPO)set_bc_pic.$(OBJ_EXT) \
     $(DPO)set_bc_pic_mi.$(OBJ_EXT) \
+    $(DPO)set_bc_pic_mo.$(OBJ_EXT) \
     $(DPO)set_geometry_des.$(OBJ_EXT) \
     $(DPO)softspring_funcs_cutcell_mod.$(OBJ_EXT) \
     $(DPO)solid_drag.$(OBJ_EXT) \
@@ -6868,6 +6870,14 @@ $(DPO)set_bc_pic_mi.$(OBJ_EXT) : ./des/set_bc_pic_mi.f \
             $(DPO)mpi_utility.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/set_bc_pic_mi.f  -o $(DPO)set_bc_pic_mi.$(OBJ_EXT) $(MODDIRPREFIX)$(DPO)
+$(DPO)set_bc_pic_mo.$(OBJ_EXT) : ./des/set_bc_pic_mo.f \
+            $(DPO)bc.mod \
+            $(DPO)pic_bc.mod \
+            $(DPO)funits.mod \
+            $(DPO)mpi_utility.mod \
+            $(DPO)error_manager.mod \
+            function.inc                                                
+	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/set_bc_pic_mo.f  -o $(DPO)set_bc_pic_mo.$(OBJ_EXT) $(MODDIRPREFIX)$(DPO)
 $(DPO)set_geometry_des.$(OBJ_EXT) : ./des/set_geometry_des.f \
             $(DPO)discretelement.mod \
             $(DPO)geometry.mod \

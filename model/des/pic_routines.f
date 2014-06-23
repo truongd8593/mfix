@@ -128,12 +128,10 @@
 
          CALL CFNEWVALUES
 
-         ! Impose the wall-particle boundary condition for mp-pic case
+         ! Impose the wall-particle boundary condition for pic case
+         ! The same routine also applies the mass inflow/outflow BCs as well
          CALL PIC_APPLY_WALLBC_STL 
-
-         ! Seed new parcels entering the system.
-         IF(PIC_BCMI > 0) CALL PIC_MI_BC
-         !IF(PIC_BCMO > 0) CALL MASS_OUTFLOW_PIC
+  
 
          ! Update time to reflect changes
          S_TIME = S_TIME + DTSOLID
