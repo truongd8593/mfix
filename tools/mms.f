@@ -15,7 +15,7 @@
 !    1) module ABC is located in file  abc_mod.f
 !    2) no non-module source file contains the string :
 !               "_mod."    in it's name
-!    3) list of all FORTRAN source files located in 
+!    3) list of all FORTRAN source files located in
 !       the file : files.lis    (one file per line)
 !
       CHARACTER   FILENAME*60 , FN(4000)*60 , IN(2000)*60 , NOEXT*60
@@ -26,9 +26,9 @@
 !
       WRITE(*,*)
       WRITE(*,*) 'Determining dependencies...'
-      WRITE(*,*) 
+      WRITE(*,*)
 !
-      OPEN (UNIT=10,FILE='files.lis',STATUS='OLD')            
+      OPEN (UNIT=10,FILE='files.lis',STATUS='OLD')
 !
 C loop thru  files.lis ...
 c
@@ -87,9 +87,9 @@ c
 	 if (j.eq.0) then
            CALL NO_EXT(FN(I),NOEXT,N)
            CALL NO_PATH(NOEXT, WoPATH, N, N1)
-           WRITE (30,'(A,A,A,A)') '    $(DPO)' , WoPATH(1:N1), 
+           WRITE (30,'(A,A,A,A)') '    $(DPO)' , WoPATH(1:N1),
      &          '.$(OBJ_EXT) ', BACK
-           WRITE (31,'(A,A,A,A)') '    $(DPO)' , WoPATH(1:N1), 
+           WRITE (31,'(A,A,A,A)') '    $(DPO)' , WoPATH(1:N1),
      &          '.$(OBJ_EXT) ', BACK
          endif
       END DO
@@ -109,30 +109,30 @@ C
      &                               '.$(OBJ_EXT) ',  BACK
       END DO
       WRITE (30,*) ' -o $(EXEC_FILE) $(LIB_FLAGS)'
-      WRITE (30,*) ' '            
+      WRITE (30,*) ' '
       WRITE (31,*) ' -o $(EXEC_FILE) $(LIB_FLAGS)'
-      WRITE (31,*) ' ' 
+      WRITE (31,*) ' '
 c
 c source code dependencies   ... blas90.a
 c
       write (30,'(a)') '$(DPO)blas90.a : $(DPO)BLAS.o'
       write (30,'(a)') '	ar cr $(DPO)blas90.a $(DPO)BLAS.o'
-      write (30,'(a)') '$(DPO)BLAS.o : BLAS.F'           
+      write (30,'(a)') '$(DPO)BLAS.o : BLAS.F'
       WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F -o $(DPO)BLAS.o'
       write (31,'(a)') '$(DPO)blas90.a : $(DPO)BLAS.o'
       write (31,'(a)') '	ar cr $(DPO)blas90.a $(DPO)BLAS.o'
-      write (31,'(a)') '$(DPO)BLAS.o : BLAS.F'           
+      write (31,'(a)') '$(DPO)BLAS.o : BLAS.F'
       WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F -o $(DPO)BLAS.o'
 c
 c source code dependencies   ... dgtsv90.a
 c
       write (30,'(a)') '$(DPO)dgtsv90.a : $(DPO)DGTSV.o'
       write (30,'(a)') '	ar cr $(DPO)dgtsv90.a $(DPO)DGTSV.o'
-      write (30,'(a)') '$(DPO)DGTSV.o : DGTSV.F'           
+      write (30,'(a)') '$(DPO)DGTSV.o : DGTSV.F'
       WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) DGTSV.F -o $(DPO)DGTSV.o'
       write (31,'(a)') '$(DPO)dgtsv90.a : $(DPO)DGTSV.o'
       write (31,'(a)') '	ar cr $(DPO)dgtsv90.a $(DPO)DGTSV.o'
-      write (31,'(a)') '$(DPO)DGTSV.o : DGTSV.F'           
+      write (31,'(a)') '$(DPO)DGTSV.o : DGTSV.F'
       WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS) DGTSV.F -o $(DPO)DGTSV.o'
 C
 c
@@ -140,11 +140,11 @@ c source code dependencies   ... odepack.a
 c
       write (30,'(a)') '$(DPO)odepack.a : $(DPO)ODEPACK.o'
       write (30,'(a)') '	ar cr $(DPO)odepack.a $(DPO)ODEPACK.o'
-      write (30,'(a)') '$(DPO)ODEPACK.o : ODEPACK.F'           
+      write (30,'(a)') '$(DPO)ODEPACK.o : ODEPACK.F'
       WRITE (30,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS3) ODEPACK.F -o $(DPO)ODEPACK.o'
       write (31,'(a)') '$(DPO)odepack.a : $(DPO)ODEPACK.o'
       write (31,'(a)') '	ar cr $(DPO)odepack.a $(DPO)ODEPACK.o'
-      write (31,'(a)') '$(DPO)ODEPACK.o : ODEPACK.F'           
+      write (31,'(a)') '$(DPO)ODEPACK.o : ODEPACK.F'
       WRITE (31,'(A)')'	$(FORTRAN_CMD) $(FORT_FLAGS3) ODEPACK.F -o $(DPO)ODEPACK.o'
 C
 C  source code Dependencies  ... MODULES
@@ -192,25 +192,25 @@ C
             CALL UNIQUE_FILES(IN,NINC)
             DO II = 1,NINC
                if (ii.eq.ninc) then
-                  WRITE (30,*) '           ' , IN(II) 
-                  WRITE (31,*) '           ' , IN(II) 
+                  WRITE (30,*) '           ' , IN(II)
+                  WRITE (31,*) '           ' , IN(II)
                else
                   WRITE (30,*) '           ' , IN(II) , ' ' , BACK
                   WRITE (31,*) '           ' , IN(II) , ' ' , BACK
                end if
             END DO
          END IF
-         
+
          j = index(WoPATH(1:N1),'_mod')
          call make_lower_case(WoPATH(1:j-1),j-1)
 
 !         WRITE(*,*)'WOPATH = ', WOPATH(1:J-1), J
          WRITE (30,'(A,A,A,A,A,A)')
-     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ', 
-     &        ' -o $(DPO)', WoPATH(1:J-1), '_mod.$(OBJ_EXT) -module $(DPO)'
+     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ',
+     &        ' -o $(DPO)', WoPATH(1:J-1), '_mod.$(OBJ_EXT) $(MODDIRPREFIX)$(DPO)'
          WRITE (31,'(A,A,A,A,A,A)')
-     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ', 
-     &        ' -o $(DPO)',  WoPATH(1:J-1),  '_mod.$(OBJ_EXT) -module $(DPO)'
+     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ',
+     &        ' -o $(DPO)',  WoPATH(1:J-1),  '_mod.$(OBJ_EXT) $(MODDIRPREFIX)$(DPO)'
       END DO
 C
 C  source code Dependencies (object files)
@@ -254,8 +254,8 @@ C
             CALL UNIQUE_FILES(IN,NINC)
             DO II = 1,NINC
                if (ii.eq.ninc) then
-                  WRITE (30,*) '           ' , IN(II) 
-                  WRITE (31,*) '           ' , IN(II) 
+                  WRITE (30,*) '           ' , IN(II)
+                  WRITE (31,*) '           ' , IN(II)
                else
                   WRITE (30,*) '           ' , IN(II) , ' ' , BACK
                   WRITE (31,*) '           ' , IN(II) , ' ' , BACK
@@ -264,15 +264,15 @@ C
          END IF
 
         WRITE (30,'(A,A,A,A,A,A)')
-     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ', 
-     &        ' -o $(DPO)', WoPATH(1:N1),   '.$(OBJ_EXT) -module $(DPO)'
+     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ',
+     &        ' -o $(DPO)', WoPATH(1:N1),   '.$(OBJ_EXT) $(MODDIRPREFIX)$(DPO)'
         WRITE (31,'(A,A,A,A,A,A)')
-     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ', 
-     &        ' -o $(DPO)', WoPATH(1:N1),  '.$(OBJ_EXT) -module $(DPO)'
- 
+     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ',
+     &        ' -o $(DPO)', WoPATH(1:N1),  '.$(OBJ_EXT) $(MODDIRPREFIX)$(DPO)'
+
 
 !
-! for files in subdirectories compilation rule needs 
+! for files in subdirectories compilation rule needs
 !        to be stated explicitly
 !
 ! special processing of files : mark_phase_4.f  and
@@ -280,21 +280,21 @@ C
 !
 !     for PGI compilers (needs -O1 optimization flag)
 !
-!         IF(N1 .LT. N) THEN      
+!         IF(N1 .LT. N) THEN
 !           WRITE (30,'(A,A,A)')
 !     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f '
 !           WRITE (31,'(A,A,A)')
 !     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f '
 !         ENDIF
          IF(fn(i).eq.'mark_phase_4_cor.f' .or.
-     &      fn(i).eq.'calc_vol_fr.f') THEN      
+     &      fn(i).eq.'calc_vol_fr.f') THEN
 
         WRITE (30,'(A,A,A,A,A,A)')
-     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ', 
-     &        ' -o $(DPO)', WoPATH(1:N1),   '.$(OBJ_EXT) -module $(DPO)'
+     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ',
+     &        ' -o $(DPO)', WoPATH(1:N1),   '.$(OBJ_EXT) $(MODDIRPREFIX)$(DPO)'
         WRITE (31,'(A,A,A,A,A,A)')
-     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ', 
-     &        ' -o $(DPO)', WoPATH(1:N1),  '.$(OBJ_EXT) -module $(DPO)'
+     &       '	$(FORTRAN_CMD) $(FORT_FLAGS) ', NOEXT(1:N),'.f ',
+     &        ' -o $(DPO)', WoPATH(1:N1),  '.$(OBJ_EXT) $(MODDIRPREFIX)$(DPO)'
          ENDIF
  5189    continue
       END DO
@@ -444,7 +444,7 @@ C
 !      DO I = 1,20
       DO I = 1,iend
          IF (LINE(I:I+3).EQ.'USE ' .OR.
-     &       LINE(I:I+3).EQ.'Use ' .or. 
+     &       LINE(I:I+3).EQ.'Use ' .or.
      &       LINE(I:I+3).EQ.'use ' ) then
 !             If(i .EQ. 1 .OR. LINE(I-1:I-1) .EQ. ' '
 !     &	          .OR. LINE(I-1:I-1) .EQ. '	')then
@@ -465,7 +465,7 @@ C
       NUSE = NUSE + 1
       RETURN
       END
-      
+
       logical function blank_before(line, i)
         CHARACTER*60 LINE
 	blank_before = .true.
@@ -477,7 +477,7 @@ C
 	enddo
         return
       end function blank_before
-      
+
       SUBROUTINE find_comment(LINE,iend)
       CHARACTER*60 LINE
       iend = 0
@@ -487,8 +487,8 @@ C
       enddo
       return
       end subroutine find_comment
-      
-     
+
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: MAKE_UPPER_CASE (LINE_STRING,MAXCOL)                   C
@@ -511,8 +511,8 @@ C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE MAKE_UPPER_CASE(LINE_STRING, MAXCOL) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE MAKE_UPPER_CASE(LINE_STRING, MAXCOL)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
       IMPLICIT NONE
 !-----------------------------------------------
@@ -547,20 +547,20 @@ C
 !-----------------------------------------------
 !
 !
-      A_UP = ICHAR('A') 
-      A_LO = ICHAR('a') 
-      Z_LO = ICHAR('z') 
-      A_DIFF = A_LO - A_UP 
+      A_UP = ICHAR('A')
+      A_LO = ICHAR('a')
+      Z_LO = ICHAR('z')
+      A_DIFF = A_LO - A_UP
 !
-      DO L = 1, MAXCOL 
-         INT_C = ICHAR(LINE_STRING(L:L)) 
-         IF (A_LO.le.INT_C .AND. INT_C.le.Z_LO) THEN 
-            INT_C = INT_C - A_DIFF 
-            LINE_STRING(L:L) = CHAR(INT_C) 
-         ENDIF 
-      END DO 
-      RETURN  
-      END 
+      DO L = 1, MAXCOL
+         INT_C = ICHAR(LINE_STRING(L:L))
+         IF (A_LO.le.INT_C .AND. INT_C.le.Z_LO) THEN
+            INT_C = INT_C - A_DIFF
+            LINE_STRING(L:L) = CHAR(INT_C)
+         ENDIF
+      END DO
+      RETURN
+      END
 !
       subroutine get_num_chars(string,n)
       implicit none
@@ -577,7 +577,7 @@ C
       return
       end
 !
-      SUBROUTINE MAKE_LOWER_CASE(LINE_STRING, MAXCOL) 
+      SUBROUTINE MAKE_LOWER_CASE(LINE_STRING, MAXCOL)
 !
       IMPLICIT NONE
 !-----------------------------------------------
@@ -612,17 +612,17 @@ C
 !-----------------------------------------------
 !
 !
-      A_UP = ICHAR('A') 
-      A_LO = ICHAR('a') 
-      Z_UP = ICHAR('Z') 
-      A_DIFF = A_LO - A_UP 
+      A_UP = ICHAR('A')
+      A_LO = ICHAR('a')
+      Z_UP = ICHAR('Z')
+      A_DIFF = A_LO - A_UP
 !
-      DO L = 1, MAXCOL 
-         INT_C = ICHAR(LINE_STRING(L:L)) 
-         IF (A_UP.le.INT_C .AND. INT_C.le.Z_UP) THEN 
-            INT_C = INT_C + A_DIFF 
-            LINE_STRING(L:L) = CHAR(INT_C) 
-         ENDIF 
-      END DO 
-      RETURN  
-      END 
+      DO L = 1, MAXCOL
+         INT_C = ICHAR(LINE_STRING(L:L))
+         IF (A_UP.le.INT_C .AND. INT_C.le.Z_UP) THEN
+            INT_C = INT_C + A_DIFF
+            LINE_STRING(L:L) = CHAR(INT_C)
+         ENDIF
+      END DO
+      RETURN
+      END

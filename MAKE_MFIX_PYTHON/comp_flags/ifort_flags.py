@@ -31,7 +31,6 @@ link_d = ""
 #Set the below appropriately. For pathscale, module names are capitalized.
 #so set the below to true there
 makefile_upper_case = False
-makefile_append = ""
 #the above is needed only needed for gfortran because gfortran uses a different 
 #option to direct object and module files. 
 

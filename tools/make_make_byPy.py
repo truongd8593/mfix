@@ -74,11 +74,9 @@ mod_files_list = open(mod_files_list_loc, "w")
 
 mfix_l_make_loc = os.path.join(tools_dir, "mfix_l.make")
 mfix_u_make_loc = os.path.join(tools_dir, "mfix_u.make")
-mfix_l_make_gfor_loc = os.path.join(tools_dir, "mfix_l.make_gfor")
 
 mfix_l = open(mfix_l_make_loc, "w")
 mfix_u = open(mfix_u_make_loc, "w")
-mfix_l_gfor =  open(mfix_l_make_gfor_loc, "w")
 
 preamble = ".$(FORTRAN_EXT).$(OBJ_EXT):\n\t$(FORTRAN_CMD) $(FORT_FLAGS) $<"
 preamble = preamble + "\n\n" + "$(EXEC_FILE) : \\" + "\n"
@@ -201,11 +199,11 @@ for filefullpath, filename, modname in all_mod_files:
     #now write the file linking
     new_lline = new_lline + "\t" + "$(FORTRAN_CMD) $(FORT_FLAGS) " + filefullpath + " -o "
     new_lline = new_lline + "$(DPO)" + os.path.splitext(filename)[0] + ".$(OBJ_EXT)"
-    new_lline = new_lline + " -module " + "$(DPO) " + "\n"
+    new_lline = new_lline + " $(MODDIRPREFIX)$(DPO) " + "\n"
     
     new_uline = new_uline + "\t" + "$(FORTRAN_CMD) $(FORT_FLAGS) " + filefullpath + " -o "
     new_uline = new_uline + "$(DPO)" + os.path.splitext(filename)[0] + ".$(OBJ_EXT)"
-    new_uline = new_uline + " -module " + "$(DPO) " + "\n"
+    new_uline = new_uline + " $(MODDIRPREFIX)$(DPO) " + "\n"
     
     
 for filefullpath, filename in non_mod_files:
@@ -248,7 +246,7 @@ for filefullpath, filename in non_mod_files:
         
     common_line = "\t" + "$(FORTRAN_CMD) $(FORT_FLAGS) " + filefullpath + " -o "
     common_line = common_line + "$(DPO)" + os.path.splitext(filename)[0] + ".$(OBJ_EXT)"
-    common_line = common_line + " -module " + "$(DPO) " + "\n"
+    common_line = common_line + " $(MODDIRPREFIX)$(DPO) " + "\n"
     
     new_lline = new_lline + common_line
     new_uline = new_uline + common_line
@@ -260,22 +258,13 @@ mfix_u.write(new_uline)
 mfix_l.close()
 mfix_u.close()
 
-
-with open(mfix_l_make_loc, "r") as makefile:
-    for oline in makefile:
-        line = oline.replace("-module", "-J")
-        mfix_l_gfor.write(line)       
-        
-mfix_l_gfor.close()
 files_list.close() 
 mod_files_list.close()
 
 shutil.copy(mfix_l_make_loc, MODEL_PATH)
 shutil.copy(mfix_u_make_loc, MODEL_PATH)
-shutil.copy(mfix_l_make_gfor_loc, MODEL_PATH)
 
 os.remove(mfix_l_make_loc)
 os.remove(mfix_u_make_loc)
-os.remove(mfix_l_make_gfor_loc)
 os.remove(files_list_loc)
 os.remove(mod_files_list_loc)

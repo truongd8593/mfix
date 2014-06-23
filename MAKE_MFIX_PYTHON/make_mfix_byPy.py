@@ -323,7 +323,6 @@ if F.makefile_upper_case:
 else:
     mfile = "mfix_l.make"
 
-mfile =  mfile + F.makefile_append
 mfile_loc = os.path.join(mfix, mfile)
 
 print "Base mfix makefile used:", mfile
