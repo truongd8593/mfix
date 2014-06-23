@@ -85,28 +85,32 @@
       if(dFlag) write(*,"(2/,2x,'PIC inlet count: ',I4)") PIC_BCMI
 
 
-! Loop over BCs that flagged for PIC mass inflow.
+      PIC_BCMI_INCL_CUTCELL(:) = .false. 
+      
+! Loop over BCs that are flagged for PIC mass inflow.
       DO BCV_I = 1, PIC_BCMI
 
 ! Get the user defined BC ID.
          BCV = PIC_BCMI_MAP(BCV_I)
          
-          
          PIC_BCMI_OFFSET (BCV_I,:) = 1
-         
+         PIC_BCMI_NORMDIR(BCV_I,:) = ZERO 
+
          SELECT CASE(BC_PLANE(BCV))
-         CASE('S')
-            PIC_BCMI_NORMDIR(BCV_I) = -2 
-            PIC_BCMI_OFFSET (BCV_I,2) = 0
-         CASE('N'); PIC_BCMI_NORMDIR(BCV_I) =  2 
-         CASE('E'); PIC_BCMI_NORMDIR(BCV_I) =  1 
+         CASE('E'); PIC_BCMI_NORMDIR(BCV_I,1) =  ONE
          CASE('W')
-            PIC_BCMI_NORMDIR(BCV_I) = -1
+            PIC_BCMI_NORMDIR(BCV_I,1) = -ONE
             PIC_BCMI_OFFSET (BCV_I,1) = 0
+            
+         CASE('N'); PIC_BCMI_NORMDIR(BCV_I,2) =  ONE
+         CASE('S')
+            PIC_BCMI_NORMDIR(BCV_I,2) = -ONE
+            PIC_BCMI_OFFSET (BCV_I,2) = 0
+
+         CASE('T'); PIC_BCMI_NORMDIR(BCV_I,3) =  ONE
          CASE('B') 
-            PIC_BCMI_NORMDIR(BCV_I  ) = -3
+            PIC_BCMI_NORMDIR(BCV_I,3) = -ONE
             PIC_BCMI_OFFSET (BCV_I,3) =  0
-         CASE('T'); PIC_BCMI_NORMDIR(BCV_I) =  3
          END SELECT
 
          if(dFlag) write(*,"(2/,'Setting PIC_MI:',I3)") BCV_I
@@ -133,13 +137,11 @@
 
       CALL SET_PIC_BCMI_IJK
       
-      !CALL CALC_REAL_COMP_PARTS_BYDT_PIC_BCMI
       CALL FINL_ERR_MSG
 
 
       RETURN
       END SUBROUTINE SET_BC_PIC_MI
-
 
       
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -154,14 +156,18 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_PIC_BCMI_IJK
-
       use bc, only: BC_PLANE
       use bc, only: BC_I_w, BC_I_e, BC_J_s, BC_J_n, BC_K_b, BC_K_t
 
       use pic_bc, only: PIC_BCMI, PIC_BCMI_MAP, PIC_BCMI_IJK
       use pic_bc, only: PIC_BCMI_IJKSTART, PIC_BCMI_IJKEND
-
+      use pic_bc, only: pic_bcmi_cnp
+      use pic_bc, only: pic_bcmi_rnp
+      use pic_bc, only: PIC_BCMI_INCL_CUTCELL
+      USE discretelement, only : DES_MMAX
       use funits, only: DMP_LOG
+      
+      USE cutcell, only: CUT_CELL_AT
 
       use mpi_utility
       use error_manager
@@ -178,7 +184,7 @@
 
       INTEGER :: BND1, BND2
 
-      LOGICAL, parameter :: setDBG = .TRUE.
+      LOGICAL, parameter :: setDBG = .false.
       LOGICAL :: dFlag
 
       INTEGER :: I,J,K,IJK
@@ -193,7 +199,7 @@
 
 
       dFlag = (DMP_LOG .AND. setDBG)
-
+      
       if(dFlag) write(*,"(2/,2x,'From: SET_PIC_BCMI_IJK')")
 
 
@@ -201,7 +207,7 @@
 ! Loop over all inflow BCs to get an approximate count of the number
 ! of fluid cells that are adjacent to them.
       MAX_CELLS = 0
-      DO BCV_I=1, PIC_BCMI
+      DO BCV_I = 1, PIC_BCMI
          BCV = PIC_BCMI_MAP(BCV_I)
 
 ! Set the search area a little bigger than the inlet area.
@@ -242,9 +248,9 @@
 
          if(dFlag) write(*,"(/2x,'Searching for fluid cells:',I3)") BCV
 
-         I_w = max(BC_I_w(BCV)-1,IMIN1); I_e = min(BC_I_e(BCV)+1,IMAX1)
-         J_s = max(BC_J_s(BCV)-1,JMIN1); J_n = min(BC_J_n(BCV)+1,JMAX1)
-         K_b = max(BC_K_b(BCV)-1,KMIN1); K_t = min(BC_K_t(BCV)+1,KMAX1)
+         I_w = max(BC_I_w(BCV),IMIN1); I_e = min(BC_I_e(BCV),IMAX1)
+         J_s = max(BC_J_s(BCV),JMIN1); J_n = min(BC_J_n(BCV),JMAX1)
+         K_b = max(BC_K_b(BCV),KMIN1); K_t = min(BC_K_t(BCV),KMAX1)
 
 ! Depending on the flow plane, the 'common' index needs set to reference
 ! the fluid cell.
@@ -269,10 +275,15 @@
          DO J = J_s, J_n
          DO I = I_w, I_e
 ! Skip cells that this rank does not own or are considered dead.
-            IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-            IF(DEAD_CELL_AT(I,J,K)) CYCLE
-
+! Limit only to fluid cells 
+            IF(.NOT.IS_ON_myPE_wobnd(I,J,K)) CYCLE
             IJK = FUNIJK(I,J,K)
+
+            IF(.NOT.FLUID_AT(IJK)) CYCLE
+            
+            !do not include this cell if the IO BC has been set to 
+            !not include cutcells 
+            IF(CUT_CELL_AT(IJK).AND.(.NOT.PIC_BCMI_INCL_CUTCELL(BCV_I))) CYCLE
             LOC_PIC_BCMI_IJK(LC) = IJK
             LC = LC+1
          ENDDO
@@ -293,9 +304,18 @@
 ! Allocate the global store arrary array. This changes across MPI ranks.
       IF(LC > 1) THEN
          allocate( PIC_BCMI_IJK(LC-1) )
+         allocate(pic_bcmi_cnp(LC-1, DES_MMAX))
+         allocate(pic_bcmi_rnp(LC-1, DES_MMAX))
+
          PIC_BCMI_IJK(1:LC-1) = LOC_PIC_BCMI_IJK(1:LC-1)
+         
+         pic_bcmi_cnp(1:LC-1,:) = 0.d0
+         pic_bcmi_rnp(1:LC-1,:) = 0.d0
       ELSE
          allocate( PIC_BCMI_IJK(1) )
+         allocate(pic_bcmi_cnp(1,1))
+         allocate(pic_bcmi_rnp(1,1))
+
          PIC_BCMI_IJK(1) = LOC_PIC_BCMI_IJK(1)
       ENDIF
 

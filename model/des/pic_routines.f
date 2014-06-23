@@ -23,6 +23,7 @@
       USE des_bc
       USE cutcell
       USE mfix_pic
+      USE pic_bc
       USE error_manager
       IMPLICIT NONE
 !------------------------------------------------
@@ -130,6 +131,10 @@
          ! Impose the wall-particle boundary condition for mp-pic case
          CALL PIC_APPLY_WALLBC_STL 
 
+         ! Seed new parcels entering the system.
+         IF(PIC_BCMI > 0) CALL PIC_MI_BC
+         !IF(PIC_BCMO > 0) CALL MASS_OUTFLOW_PIC
+
          ! Update time to reflect changes
          S_TIME = S_TIME + DTSOLID
 
@@ -172,15 +177,13 @@
             ENDIF
          ENDIF  ! end if (.not.des_continuum_coupled)
          
-         ! Seed new parcels entering the system.
-         !IF(PIC_BCMI > 0) CALL MASS_INFLOW_PIC
-         !IF(PIC_BCMO > 0) CALL MASS_OUTFLOW_PIC
+     
 
          
       ENDDO
 
-      IF(DMP_LOG)       WRITE(UNIT_LOG,'(/10x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, Particles
-      IF(mype.eq.pe_IO) WRITE(*,'(/10x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, Particles 
+      IF(DMP_LOG)       WRITE(UNIT_LOG,'(/10x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
+      IF(mype.eq.pe_IO) WRITE(*,'(/10x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
 
 !      IJK_BOT = funijk(imin1, 2,kmin1)
 !      IJK_TOP = funijk(imin1, jmax1, kmin1)

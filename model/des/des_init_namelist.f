@@ -28,6 +28,7 @@
       USE des_ic
       USE des_thermo
       USE des_rxns
+      USE pic_bc
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -68,7 +69,8 @@
 
 !<keyword category="Discrete Element" required="false">
 !  <description>Run one-way coupled simulations. The fluid does not 
-! see the particles both in terms of drag force and volume displacement. 
+! see the particles in terms of drag force. The effect of particle volume
+! is still felt by the fluid through non-unity voidage values. 
 ! </description>
       DES_ONEWAY_COUPLED = .FALSE. 
 !</keyword>
@@ -599,14 +601,6 @@
 
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Maximum number of cut-cell walls a cell have. This is 
-! relevant when STL files are not used to resolve particle-wall m
-! collisions in DEM and MPPIC. It is going to be deprecated soon 
-! in favor of STL files. </description>
-      MAX_DES_BC_CELL = 4
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
 !  <description>Turn on snider's version of frictional model. Does not run very stably.</description>
       MPPIC_SOLID_STRESS_SNIDER = .false.
 !</keyword>
@@ -672,6 +666,21 @@
       MPPIC_GRAV_TREATMENT = .true.
 !</keyword>
 
+!<keyword category="Discrete Element" required="false">
+!  <description> Flag to print processor level parcel seeding statistics
+! for inflow BC with PIC model. 
+!</description>
+!  <dependent keyword="MPPIC" value=".TRUE."/>
+      PIC_REPORT_SEEDING_STATS = .false.
+!</keyword>
+
+!<keyword category="Discrete Element" required="false">
+!  <description> Flag to print processor level parcel deletion statistics
+! for outflow BC with PIC model. Not recommended for production runs. 
+!</description>
+!  <dependent keyword="MPPIC" value=".TRUE."/>
+      PIC_REPORT_DELETION_STATS = .false.
+!</keyword>
 
 !<keyword category="Discrete Element" required="false">
 !  <description>P_s term in the frictional stress model of Snider</description>

@@ -1390,15 +1390,15 @@
       FACET_WRITTEN = .false.
 
       IF(nodesI*nodesJ*nodesK.gt.1) then
-         write(filename_po,'(A,"_GEOM_PO_FROM_GRID_FACETS_",I5.5,".stl")')  &
+         write(filename_po,'(A,"_GEOM_OTHER_FROM_GRID_FACETS_",I5.5,".stl")')  &
               trim(run_name), myPE
-         write(filename,'(A,"_GEOM_NORM_PL_MI_FROM_GRID_FACETS_",I5.5,".stl")')  &
+         write(filename,'(A,"_GEOM_NORM_FROM_GRID_FACETS_",I5.5,".stl")')  &
               trim(run_name), myPE
       else
-         write(filename,'(A,"_GEOM_NORM_PL_MI_FROM_GRID_FACETS",".stl")')  &
+         write(filename,'(A,"_GEOM_NORM_FROM_GRID_FACETS",".stl")')  &
               trim(run_name)
 
-         write(filename_po,'(A,"_GEOM_PO_FROM_GRID_FACETS",".stl")')  &
+         write(filename_po,'(A,"_GEOM_OTHER_FROM_GRID_FACETS",".stl")')  &
               trim(run_name)
       endif
       
@@ -1418,11 +1418,11 @@
                IF(COUNT_FACETS.eq.0) cycle
 
                if(write_each_cell) then
-                  write(filename, '(A,"_geom_nor_mi_", i3.3, "_", i3.3, "_", i3.3,"_" , i8.8, ".stl")') trim(run_name) , I,J,K,CELL_ID
+                  write(filename, '(A,"_geom_nor_", i3.3, "_", i3.3, "_", i3.3,"_" , i8.8, ".stl")') trim(run_name) , I,J,K,CELL_ID
                   OPEN(UNIT=446, FILE=filename)
                   write(446,*)'solid vcg'
                   
-                  write(filename_po, '(A,"_geom_po_", i3.3, "_", i3.3, "_", i3.3,"_" , i8.8, ".stl")') trim(run_name) , I,J,K,CELL_ID
+                  write(filename_po, '(A,"_geom_other_", i3.3, "_", i3.3, "_", i3.3,"_" , i8.8, ".stl")') trim(run_name) , I,J,K,CELL_ID
                   OPEN(UNIT=445, FILE=filename_po)
                   write(445,*)'solid vcg'
                endif
@@ -1431,10 +1431,10 @@
                   N = LIST_FACET_AT_DES(CELL_ID)%FACET_LIST(COUNT)
 
                   if(write_each_cell) then
-                     if(stl_facet_type(N).eq.facet_type_normal.or. & 
-                          stl_facet_type(N).eq.facet_type_mi) then
+                     if(stl_facet_type(N).eq.facet_type_normal) then 
                         w_unit  = 446
-                     elseif(stl_facet_type(N).eq.facet_type_po) then 
+                     else
+                     !elseif(stl_facet_type(N).eq.facet_type_po) then 
                         w_unit  = 445
                      endif
                      write(w_unit,*) '   facet normal ', NORM_FACE(:,N)
@@ -1449,10 +1449,10 @@
                   
                   if (facet_written(n)) cycle
                   
-                  if(stl_facet_type(N).eq.facet_type_normal.or. & 
-                       stl_facet_type(N).eq.facet_type_mi) then
+                  if(stl_facet_type(N).eq.facet_type_normal) then 
                      w_unit  = 444
-                  elseif(stl_facet_type(N).eq.facet_type_po) then 
+                  else
+                  !elseif(stl_facet_type(N).eq.facet_type_po) then 
                      w_unit  = 443
                   endif
                   

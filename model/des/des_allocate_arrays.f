@@ -400,6 +400,7 @@
 
          Allocate( DEM_MI(DEM_BCMI) )
 
+
 ! Initializiation
 ! Integer arrays
          PI_FACTOR(:) = -1
@@ -467,18 +468,15 @@
 
          allocate( PIC_BCMI_IJKSTART(PIC_BCMI) )
          allocate( PIC_BCMI_IJKEND  (PIC_BCMI) )
-         allocate( PIC_BCMI_NORMDIR (PIC_BCMI) )
+         allocate( PIC_BCMI_NORMDIR (PIC_BCMI,3) )
          
          ALLOCATE( PIC_BCMI_OFFSET  (PIC_BCMI,3))
-
-         ALLOCATE(PIC_BCMI_REAL_PARTS_BYDT(PIC_BCMI,DES_MMAX))
-         ALLOCATE(PIC_BCMI_COMP_PARTS_BYDT(PIC_BCMI,DES_MMAX))
+         
+         ALLOCATE( PIC_BCMI_INCL_CUTCELL(PIC_BCMI) )
 
          PIC_BCMI_IJKSTART = -1
          PIC_BCMI_IJKEND   = -1
 
-         PIC_BCMI_REAL_PARTS_BYDT = zero
-         PIC_BCMI_COMP_PARTS_BYDT = zero
       ENDIF  ! end if PIC_BCMI /= 0
 
 

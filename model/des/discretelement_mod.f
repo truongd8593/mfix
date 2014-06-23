@@ -583,25 +583,6 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_VEL_MAX
                         !(3)
 
-      INTEGER :: MAX_DES_BC_CELL
-      TYPE BDRY_TYPE
-         INTEGER :: IJK_SCAL
-         CHARACTER*100 :: DES_BC_TYPE
-         DOUBLE PRECISION, DIMENSION (:) , ALLOCATABLE :: NORMAL
-         DOUBLE PRECISION, DIMENSION (:) , ALLOCATABLE :: CNOT, VEC
-! MI_BCID will contain the BC id for the mass inflow bc. It is made allocatable
-! to reduce memory usage
-         INTEGER, DIMENSION (:), ALLOCATABLE :: MI_BCID
-      END TYPE BDRY_TYPE
-
-      TYPE DES_BDR
-         INTEGER :: COUNT_DES_BC
-         TYPE(BDRY_TYPE), DIMENSION(:), ALLOCATABLE :: BDRY_LIST
-      END TYPE DES_BDR
-
-      TYPE(DES_BDR), DIMENSION(:), ALLOCATABLE :: DES_CELLWISE_BCDATA
-
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: TOBE_DELETED
 
 !flag to convert the outside box to facets if stl facet representation is used
 !default is false

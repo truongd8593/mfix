@@ -94,6 +94,7 @@
       USE usr
       USE des_bc
       USE des_ic
+      USE pic_bc
       USE des_thermo
       USE des_rxns
       USE stiff_chem

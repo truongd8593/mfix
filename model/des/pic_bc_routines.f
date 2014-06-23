@@ -30,8 +30,6 @@
       DOUBLE PRECISION, INTENT(IN) :: POSITION(DIMN)
       INTEGER , INTENT(IN) :: PCELL(4)
       LOGICAL, INTENT(OUT) :: OVERLAP_EXISTS
-      LOGICAL :: INSIDE_DOMAIN, INSIDE_SMALL_CELL, REFLECT_FROM_ORIG_CELL
-      INTEGER :: PIP_DEL_COUNT, PIP_ADD_COUNT, REFLECTING_CELL
 
       INTEGER I, J, K, IJK, NF, FOCUS_PARTICLE
 
@@ -271,6 +269,8 @@
       USE stl
       USE des_stl_functions
       USE mpi_utility
+      use error_manager
+      USE pic_bc
       Implicit none
 
 
@@ -278,15 +278,11 @@
 
       DOUBLE PRECISION :: RADSQ, DISTSQ, DIST(DIMN)
       INTEGER :: COUNT_FAC, COUNT, contact_facet_count, NEIGH_CELLS, &
-      NEIGH_CELLS_NONNAT, IPROC, COUNT2, &
-      LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
-      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP, &
-      LOC_MAX_PIP
-      INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), LPIP_ADD_COUNT_ALL(0:numPEs-1)
-
-      
-      INTEGER :: PIP_DEL_COUNT, PIP_ADD_COUNT, REFLECTING_CELL
-      double precision :: velocity(dimn)
+      NEIGH_CELLS_NONNAT, LIST_OF_CELLS(27), IPROC, COUNT2, &
+      CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
+      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1
+     
+      INTEGER :: PIP_DEL_COUNT
       !reference point and direction of the line
       double precision, dimension(dimn) :: ref_line,  dir_line
       !reference point and normal of the plane
@@ -305,20 +301,25 @@
       double precision :: dist_from_facet
       INTEGER, Parameter :: MAX_FACET_CONTS = 500
       INTEGER :: list_of_checked_facets(max_facet_conts)
+      INTEGER :: FOCUS_CELLID
+      INTEGER, dimension(0:numpes-1) :: del_count_all
 
+      double precision :: veldotnorm
       INCLUDE 'function.inc'
 
+      CALL INIT_ERR_MSG("PIC_APPLY_WALLBC_STL")
+
       PIP_DEL_COUNT = ZERO
+      FOCUS_CELLID = funijk(14,24,2)
 
       DO LL = 1, MAX_PIP
-
-
-         IF(LL.EQ.FOCUS_PARTICLE) DEBUG_DES = .TRUE.
 
          ! skipping non-existent particles or ghost particles
          IF(.NOT.PEA(LL,1) .OR. PEA(LL,4)) CYCLE
 
-
+         IF(LL.EQ.FOCUS_PARTICLE) DEBUG_DES = .TRUE.
+        
+         
          ! If no neighboring facet in the surrounding 27 cells, then exit
          IF (NO_NEIGHBORING_FACET_DES(PIJK(LL,4))) cycle
 
@@ -327,13 +328,14 @@
          NEIGH_CELLS_NONNAT  = 0
 
          CELL_ID = PIJK(LL,4)
+         
          COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
          RADSQ = DES_RADIUS(LL)*DES_RADIUS(LL)
 
          pt_old(1:dimn) = des_pos_old(LL, 1:dimn)
          pt_new(1:dimn) = des_pos_new(LL, 1:dimn)
 
-         IF (COUNT_FAC.gt.0)   then
+         IF (COUNT_FAC.gt.01)   then
             !first add the facets in the cell the particle currently resides in
             NEIGH_CELLS = NEIGH_CELLS + 1
             LIST_OF_CELLS(NEIGH_CELLS) = CELL_ID
@@ -402,11 +404,18 @@
 
                norm_plane(1:dimn) = NORM_FACE(1:dimn,NF)
                ref_plane(1:dimn)  = VERTEX(1, 1:dimn,NF)
+               
+               
+               VELDOTNORM = DOT_PRODUCT(NORM_PLANE(1:DIMN), & 
+                    DES_VEL_NEW(LL, 1:DIMN))
+               !If the normal velocity of parcel is in the same 
+               !direction as facet normal, then the parcel could not
+               !have crossed this facet. 
+               IF(VELDOTNORM.GT.0.d0) CYCLE
+
                CALL intersectLnPlane(ref_line, dir_line, ref_plane, &
                     norm_plane, line_t)
-               
-                  
-                  
+                                
                if(line_t.ge.zero.and.line_t.lt.one) then
                   !line_t = one would imply particle sitting on the stl 
                   !face, so don't reflect it yet
@@ -434,7 +443,7 @@
                      write(*,*) 'vel NEW = ', des_vel_new(LL,1:dimn)
                   
                      read(*,*)
-               endif
+                  endif
 
                   if(ontriangle) then
                      dist_from_facet = abs(dot_product(pt_new(1:dimn) & 
@@ -443,8 +452,7 @@
                      DES_POS_NEW(LL, 1:DIMN) = point_onplane(1:dimn) + & 
                           & dist_from_facet*(norm_plane(1:dimn)) 
 
-                     IF(STL_FACET_TYPE(NF).eq.facet_type_normal.or. &
-                          STL_FACET_TYPE(NF).eq.facet_type_mi) then 
+                     IF(STL_FACET_TYPE(NF).eq.facet_type_normal) then 
                         CALL PIC_REFLECT_PART(LL, norm_plane(1:DIMN))
                         !In the reflect routine, it is assumed that the normal
                         !points into the system which is consitent with the 
@@ -465,28 +473,289 @@
          end DO CELLLOOP
 
       end DO
+      
+      pip = pip - pip_del_count 
+
+      IF(PIC_REPORT_DELETION_STATS) then 
+         
+         del_count_all(:) = 0
+         del_count_all(mype) = pip_del_count
+         call global_all_sum(del_count_all(0:numpes-1))
+         
+         IF(SUM(del_COUNT_ALL(:)).GT.0) THEN
+            WRITE(err_msg,'(/,2x,A,2x,i10)') 'TOTAL NUMBER OF PARCELS DELETED GLOBALLY = ', SUM(DEL_COUNT_ALL(:))
+            
+            call flush_err_msg(header = .false., footer = .false.)
+            
+            DO IPROC = 0, NUMPES-1
+               IF(DMP_LOG) WRITE(UNIT_LOG, '(/,A,i4,2x,A,2x,i5)') &
+                    'PARCELS ADDED ON PROC:', IPROC,' EQUAL TO', pip_del_count
+            ENDDO
+         ENDIF
+         
+      ENDIF
+      
+      CALL FINL_ERR_MSG
+      RETURN
 
       RETURN 
-      
-! The following lines could be moved to PIC_MI_BC
-      LPIP_ADD_COUNT_ALL(:) = 0
-      LPIP_ADD_COUNT_ALL(mype) = PIP_ADD_COUNT
-      CALL GLOBAL_ALL_SUM(LPIP_ADD_COUNT_ALL)
-
-      !WRITE(*,*) 'PIP2 = ', PIP, PIP_ADD_COUNT,  LPIP_ADD_COUNT_ALL
-      !WRITE(*,*) 'PIP3 = ', LPIP_ADD_COUNT_ALL
-      IF((DMP_LOG).AND.SUM(LPIP_ADD_COUNT_ALL(:)).GT.0) THEN
-         IF(PRINT_DES_SCREEN) WRITE(*,'(/,2x,A,2x,i10)') 'TOTAL NUMBER OF PARTICLES ADDED GLOBALLY = ', SUM(LPIP_ADD_COUNT_ALL(:))
-         WRITE(UNIT_LOG,'(/,2x,A,2x,i10)') 'TOTAL NUMBER OF PARTICLES ADDED GLOBALLY = ', SUM(LPIP_ADD_COUNT_ALL(:))
-         DO IPROC = 0, NUMPES-1
-            WRITE(UNIT_LOG, '(/,A,i4,2x,A,2x,i5)') 'PARTICLES ADDED ON PROC:', IPROC,' EQUAL TO', LPIP_ADD_COUNT_ALL(IPROC)
-         ENDDO
-         !READ(*,*)
-      ENDIF
+  
 
       END SUBROUTINE PIC_APPLY_WALLBC_STL
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: MPPIC_MI_BC                                             C
+!  Purpose:                                                            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      SUBROUTINE  PIC_MI_BC
+        
+      USE run
+      USE discretelement
+      USE geometry
+      USE constant
+      USE cutcell
+      USE mfix_pic
+      USE pic_bc
+      USE bc
+      USE mpi_utility
+      USE randomno
+      use error_manager
+
+      IMPLICIT NONE
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+      INTEGER :: WDIR, IDIM, IPCOUNT, LAST_EMPTY_SPOT, NEW_SPOT
+      INTEGER :: BCV, BCV_I, L, LC, PIP_ADD_COUNT, IPROC 
+      INTEGER ::  IFLUID, JFLUID, KFLUID, IJK, M
+      DOUBLE PRECISION :: CORD_START(3), DOML(3),WALL_NORM(3)
+      DOUBLE PRECISION :: AREA_INFLOW, VEL_INFLOW(DIMN), STAT_WT
+      
+      LOGICAL :: DELETE_PART 
+      DOUBLE PRECISION :: EPS_INFLOW(DES_MMAX)
+      DOUBLE PRECISION REAL_PARTS(DES_MMAX), COMP_PARTS(DES_MMAX), VEL_NORM_MAG, VOL_INFLOW, VOL_IJK
+      
+      
+! Temp logical variables for checking constant npc and statwt specification
+      LOGICAL :: CONST_NPC, CONST_STATWT
+
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: RANDPOS
+      INTEGER :: CNP_CELL_COUNT
+      DOUBLE PRECISION :: RNP_CELL_COUNT 
+      integer :: lglobal_id
+      integer, dimension(0:numpes-1) :: add_count_all
+
+      LOGICAL, parameter :: setDBG = .true.
+      LOGICAL :: dFlag
+      
+      type :: ty_spotlist
+         integer spot
+         type(ty_spotlist),pointer :: next => NULL()
+      end type ty_spotlist
+
+      type(ty_spotlist),pointer :: &
+           cur_spotlist => NULL(), & 
+           prev_spotlist => NULL(), &
+           temp_spotlist => NULL()
+
+      
+!-----------------------------------------------
+! Include statement functions
+!-----------------------------------------------
+      INCLUDE 'function.inc'
+!-----------------------------------------------
+
+      CALL INIT_ERR_MSG("PIC_MI_BC")
+
+      dFlag = (DMP_LOG .AND. setDBG)
+      PIP_ADD_COUNT = 0
+      LAST_EMPTY_SPOT = 0
+      
+      ALLOCATE(cur_spotlist); cur_spotlist%spot = -1 
+
+      DO BCV_I = 1, PIC_BCMI
+         BCV = PIC_BCMI_MAP(BCV_I)
+         
+         WALL_NORM(1:3) =  PIC_BCMI_NORMDIR(BCV_I,1:3)
+         
+         !Find the direction of the normal for this wall
+         WDIR = 0
+         DO IDIM = 1, DIMN
+            WDIR = WDIR + ABS(WALL_NORM(IDIM))*IDIM
+         end DO
+
+         DO LC=PIC_BCMI_IJKSTART(BCV_I), PIC_BCMI_IJKEND(BCV_I)
+            IJK = PIC_BCMI_IJK(LC)
+            
+            IF(.NOT.FLUID_AT(IJK)) CYCLE
+            
+            IFLUID = I_OF(IJK)
+            JFLUID = J_OF(IJK) 
+            KFLUID = K_OF(IJK) 
+            
+            CORD_START(1) = XE(IFLUID) - PIC_BCMI_OFFSET (BCV_I,1)*DX(IFLUID)
+            
+            CORD_START(2) = YN(JFLUID) - PIC_BCMI_OFFSET (BCV_I,2)*DY(JFLUID)
+            
+            
+            CORD_START(3) = merge(zero, ZT(KFLUID) - PIC_BCMI_OFFSET (BCV_I,3)*DZ(KFLUID), no_k)
+            
+            DOML(1) = DX(IFLUID)
+            DOML(2) = DY(JFLUID)
+            DOML(3) = MERGE(DZ(1), DZ(KFLUID), NO_K)
+            
+            AREA_INFLOW = DOML(1)*DOML(2)*DOML(3)/DOML(WDIR)
+            
+            VOL_IJK = DOML(1)*DOML(2)*DOML(3)
+            
+            DOML(WDIR) = ZERO
+            !set this to zero as the particles will
+            !be seeded only on the BC plane
+
+            DO M = 1, DES_MMAX
+               
+               IF(SOLIDS_MODEL(M) /= 'PIC') CYCLE
+               EPS_INFLOW(M) = BC_ROP_S(BCV, M)/DES_RO_S(M)
+               VEL_INFLOW(1) = BC_U_S(BCV, M)
+               VEL_INFLOW(2) = BC_V_S(BCV, M)
+               VEL_INFLOW(3) = BC_W_S(BCV, M)
+               
+               VEL_NORM_MAG = ABS(DOT_PRODUCT(VEL_INFLOW(1:DIMN), WALL_NORM(1:DIMN)))
+               VOL_INFLOW   = AREA_INFLOW*VEL_NORM_MAG*DTSOLID
+
+               REAL_PARTS(M) = 6.d0*EPS_INFLOW(M)*VOL_INFLOW/(PI*(DES_D_p0(M)**3.d0))
+               COMP_PARTS(M) = zero
+
+               CONST_NPC    = (BC_PIC_MI_CONST_NPC   (BCV, M) .ne. 0)
+               CONST_STATWT = (BC_PIC_MI_CONST_STATWT(BCV, M) .ne. ZERO)
+               IF(CONST_NPC) THEN
+                  IF(EPS_INFLOW(M).GT.ZERO) &
+                  COMP_PARTS(M) = REAL(BC_PIC_MI_CONST_NPC(BCV, M))* & 
+                  VOL_INFLOW/VOL_IJK
+               ELSEIF(CONST_STATWT) THEN
+                  COMP_PARTS(M) = REAL_PARTS(M)/ & 
+                  BC_PIC_MI_CONST_STATWT(BCV, M)
+               ENDIF
+               
+               pic_bcmi_rnp(LC,M) = pic_bcmi_rnp(LC,M) + REAL_PARTS(M)
+
+               pic_bcmi_cnp(LC,M) = pic_bcmi_cnp(LC,M) + COMP_PARTS(M)
+
+               
+               IF(pic_bcmi_cnp(LC,M).GE.1.d0) THEN
+                  CNP_CELL_COUNT = INT(pic_bcmi_cnp(LC,M))
+                  pic_bcmi_cnp(LC,M) = pic_bcmi_cnp(LC,M) - CNP_CELL_COUNT
+                  
+                  RNP_CELL_COUNT = pic_bcmi_rnp(LC,M)
+                  pic_bcmi_rnp(LC,M)  = zero 
+                  
+                  !set pic_bcmi_rnp to zero to reflect that all real particles have been seeded
+                  STAT_WT = RNP_CELL_COUNT/REAL(CNP_CELL_COUNT)
+                  ALLOCATE(RANDPOS(CNP_CELL_COUNT*DIMN))
+                  CALL UNI_RNO(RANDPOS(:))
+
+                  DO IPCOUNT = 1, CNP_CELL_COUNT
+                     
+
+                     CALL PIC_FIND_EMPTY_SPOT(LAST_EMPTY_SPOT, NEW_SPOT)
+                     
+                     DES_POS_OLD(NEW_SPOT, 1:DIMN) =  CORD_START(1:DIMN) &
+                          & + RANDPOS((IPCOUNT-1)*DIMN+1: & 
+                          & (IPCOUNT-1)*DIMN+DIMN)*DOML(1:DIMN)
+                     DES_POS_NEW(NEW_SPOT, :) = DES_POS_OLD(NEW_SPOT, :)
+                     DES_VEL_OLD(NEW_SPOT, 1:DIMN) = VEL_INFLOW(1:DIMN)
+
+                     DES_VEL_NEW(NEW_SPOT, :) = DES_VEL_OLD(NEW_SPOT, :)
+
+                     DES_RADIUS(NEW_SPOT) = DES_D_p0(M)*HALF
+
+                     RO_Sol(NEW_SPOT) =  DES_RO_S(M)
+
+                     DES_STAT_WT(NEW_SPOT) = STAT_WT
+                     MARK_PART(NEW_SPOT) = myPE
+
+                     PIJK(NEW_SPOT, 1) = IFLUID
+                     PIJK(NEW_SPOT, 2) = JFLUID
+                     PIJK(NEW_SPOT, 3) = KFLUID
+                     PIJK(NEW_SPOT, 4) = IJK
+                     PIJK(NEW_SPOT, 5) = M
+
+                     PVOL(NEW_SPOT) = (4.0d0/3.0d0)*Pi*DES_RADIUS(NEW_SPOT)**3
+                     PMASS(NEW_SPOT) = PVOL(NEW_SPOT)*RO_SOL(NEW_SPOT)
+                     DELETE_PART = .false. 
+                     IF(PIC_BCMI_INCL_CUTCELL(BCV_I)) & 
+                          CALL CHECK_IF_PARCEL_OVELAPS_STL & 
+                          (des_pos_new(NEW_SPOT, 1:dimn), & 
+                          PIJK(NEW_SPOT, 1:4), DELETE_PART)     
+       
+                     IF(.NOT.DELETE_PART) THEN
+                        
+                        PIP = PIP+1
+                        PIP_ADD_COUNT = PIP_ADD_COUNT + 1
+                        PEA(NEW_SPOT, 1) = .true.
+                        PEA(NEW_SPOT, 2:4) = .false.
+                        ! add to the list
+                        ALLOCATE(temp_spotlist)
+                        temp_spotlist%spot = new_spot 
+                        temp_spotlist%next => cur_spotlist
+                        cur_spotlist => temp_spotlist 
+                        nullify(temp_spotlist)
+                        
+                     ELSE
+                        PEA(NEW_SPOT, 1) = .false.
+                        LAST_EMPTY_SPOT = NEW_SPOT - 1
+                     ENDIF
+
+
+                     !WRITE(*,'(A,2(2x,i5), 2x, A,2x, 3(2x,i2),2x, A, 3(2x,g17.8))') 'NEW PART AT ', NEW_SPOT, MAX_PIP, 'I, J, K = ', IFLUID, JFLUID, KFLUID, 'POS =', DES_POS_NEW(NEW_SPOT,:)
+                     !IF(DMP_LOG) WRITE(UNIT_LOG,'(A,2x,i5, 2x, A,2x, 3(2x,i2),2x, A, 3(2x,g17.8))') 'NEW PART AT ', NEW_SPOT, 'I, J, K = ', IFLUID, JFLUID, KFLUID, 'POS =', DES_POS_NEW(NEW_SPOT,:)
+
+                     !WRITE(*,*) 'WDIR, DOML = ', WDIR, DOML(:)
+                  END DO
+                  DEALLOCATE(RANDPOS)
+
+               end IF
+            end DO
+         end DO
+      end DO
+   
+!Now assign global id to new particles added
+      add_count_all(:) = 0
+      add_count_all(mype) = pip_add_count
+      call global_all_sum(add_count_all(0:numpes-1))
+      lglobal_id = imax_global_id + sum(add_count_all(0:mype-1))
+
+      do l = 1,pip_add_count
+         lglobal_id = lglobal_id + 1
+         iglobal_id(cur_spotlist%spot)= lglobal_id
+         prev_spotlist=> cur_spotlist
+         cur_spotlist => cur_spotlist%next
+         deallocate(prev_spotlist)
+      end do
+      deallocate(cur_spotlist)
+      imax_global_id = imax_global_id + sum(add_count_all(0:numpes-1))
+   
+      IF(PIC_REPORT_SEEDING_STATS) then 
+         
+         IF(SUM(ADD_COUNT_ALL(:)).GT.0) THEN
+            WRITE(err_msg,'(/,2x,A,2x,i10)') 'TOTAL NUMBER OF PARCELS ADDED GLOBALLY = ', SUM(ADD_COUNT_ALL(:))
+            
+            call flush_err_msg(header = .false., footer = .false.)
+            
+            DO IPROC = 0, NUMPES-1
+               IF(DMP_LOG) WRITE(UNIT_LOG, '(/,A,i4,2x,A,2x,i5)') 'PARCELS ADDED ON PROC:', IPROC,' EQUAL TO', ADD_COUNT_ALL(IPROC)
+            ENDDO
+         ENDIF
+         
+      ENDIF
+      
+      CALL FINL_ERR_MSG
+      RETURN
+      END SUBROUTINE PIC_MI_BC
 
 
 
@@ -500,7 +769,7 @@
       SUBROUTINE PIC_FIND_EMPTY_SPOT(LAST_INDEX, EMPTY_SPOT)
       USE funits
       USE mpi_utility
-
+      USE error_manager
       USE discretelement, only: max_pip, pea
       IMPLICIT NONE
 !-----------------------------------------------
@@ -514,21 +783,19 @@
       LOGICAL :: SPOT_FOUND
       INTEGER :: LL
 !-----------------------------------------------
+      
+      CALL INIT_ERR_MSG("PIC_FIND_EMPTY_SPOT")
 
       IF(LAST_INDEX.EQ.MAX_PIP) THEN
-         IF(DMP_LOG) then
-            WRITE(UNIT_LOG,2001)
-            IF(mype.eq.pe_IO) write(*,2001)
-         ENDIF
+         WRITE(ERR_MSG,2001)
+         
+         CALL FLUSH_ERR_MSG(abort = .true.)
          call mfix_exit(mype)
       ENDIF
       SPOT_FOUND = .false.
 
       DO LL = LAST_INDEX+1, MAX_PIP
-         !Rahul:
-         !for Pradeep: Im not clear how to proceed here as I havent
-         !yet scene or gone over the particle exchange information
-         !for inflow/outflow BC
+
          if(.NOT.PEA(LL,1)) THEN
             EMPTY_SPOT = LL
             LAST_INDEX = LL
@@ -538,27 +805,23 @@
       ENDDO
 
       IF(.NOT.SPOT_FOUND) THEN
-         IF(DMP_LOG) then
-            WRITE(UNIT_LOG,2002)
-            IF(mype.eq.pe_IO) write(*,2002)
-         ENDIF
-         call mfix_exit(mype)
+         WRITE(ERR_MSG,2002)
+         CALL FLUSH_ERR_MSG(abort = .true.)
       ENDIF
 
- 2001 FORMAT(/1X,70('*'),//,10X,  &
-      & 'ERROR IN PIC_FIND_EMPTY_SPOT', /10X, &
-      & 'NO MORE EMPTY SPOT IN THE PARTICLE ARRAY TO ADD A NEW PARTICLE',/10X &
-      & 'TERMINAL ERROR: STOPPING (CALL RESTART NOT YET IMPLEMENTED BEFORE THIS EXIT)', &
-      & /1X,70('*')/)
+ 2001 FORMAT(/,5X,  &
+      & 'ERROR IN PIC_FIND_EMPTY_SPOT', /5X, &
+      & 'NO MORE EMPTY SPOT IN THE PARTICLE ARRAY TO ADD A NEW PARTICLE',/5X &
+      & 'TERMINAL ERROR: STOPPING')
 
- 2002 FORMAT(/1X,70('*'),//,10X,  &
-      & 'ERROR IN PIC_FIND_EMPTY_SPOT', /10X, &
-      & 'COULD NOT FIND A SPOT FOR ADDING NEW PARTICLE',/10X &
-      & 'INCREASE THE SIZE OF THE INITIAL ARRAYS', 10X, &
-      & 'TERMINAL ERROR: STOPPING (CALL RESTART NOT YET IMPLEMENTED BEFORE THIS EXIT)', &
-      & /1X,70('*')/)
+ 2002 FORMAT(/,5X,  &
+      & 'ERROR IN PIC_FIND_EMPTY_SPOT', /5X, &
+      & 'COULD NOT FIND A SPOT FOR ADDING NEW PARTICLE',/5X &
+      & 'INCREASE THE SIZE OF THE INITIAL ARRAYS', 5X, &
+      & 'TERMINAL ERROR: STOPPING')
+      
+      CALL FINL_ERR_MSG
       END SUBROUTINE PIC_FIND_EMPTY_SPOT
-
 
 
 
@@ -604,6 +867,7 @@
 
       VEL_NORMMAG_APP = DOT_PRODUCT(WALL_NORM(1:DIMN), DES_VEL_NEW(LL, 1:DIMN))
 
+
 !currently assuming that wall is at rest. Needs improvement for moving wall
 
       VEL_NORM_APP(1:DIMN) = VEL_NORMMAG_APP*WALL_NORM(1:DIMN)
@@ -627,78 +891,6 @@
 
       END SUBROUTINE PIC_REFLECT_PART
 
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: PIC_CHECK_IF_INSIDE_DOMAIN                            C
-!  Purpose:                                                            C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
-      SUBROUTINE PIC_CHECK_IF_INSIDE_DOMAIN(LL, INSIDE_DOMAIN, & 
-      REFLECT_FROM_ORIG_CELL,INSIDE_SMALL_CELL )
-      
-      USE discretelement
-      use mpi_utility
-      USE cutcell 
-      
-      IMPLICIT NONE 
-      
-      LOGICAL, intent(out) ::  INSIDE_DOMAIN, & 
-      REFLECT_FROM_ORIG_CELL,INSIDE_SMALL_CELL
-!-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
-      INTEGER, INTENT(IN) :: LL
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-      DOUBLE PRECISION :: XPOS, YPOS, ZPOS, WNORM(3), DISTMOD
-      INTEGER :: I, J, K, IJK
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!-----------------------------------------------
-
-      IJK = PIJK(LL, 4)
-
-      INSIDE_DOMAIN = .TRUE.
-      REFLECT_FROM_ORIG_CELL = .FALSE.
-      INSIDE_SMALL_CELL = .false.
-
-      IF(FLUID_AT(IJK)) THEN
-         CG: IF(CARTESIAN_GRID) THEN
-            IF(CUT_CELL_AT(IJK)) THEN
-               XPOS = DES_POS_NEW(LL,1)
-               YPOS = DES_POS_NEW(LL,2)
-               ZPOS = ZERO
-               IF (DIMN .EQ. 3) THEN
-                  ZPOS = DES_POS_NEW(LL,3)
-               ENDIF
-
-               CALL GET_DEL_H_DES(IJK,'SCALAR', XPOS, YPOS, ZPOS,&
-               & DISTMOD, WNORM(1), WNORM(2), WNORM(3), .true.)
-
-               IF(DISTMOD.LT.ZERO) THEN
-                  INSIDE_DOMAIN  = .FALSE.
-               ENDIF
-
-            ENDIF
-         ENDIF CG
-      ELSE
-         INSIDE_DOMAIN  = .FALSE.
-         REFLECT_FROM_ORIG_CELL = .TRUE.
-         IF(CARTESIAN_GRID) THEN
-            IF(SMALL_CELL_AT(IJK)) THEN
-               INSIDE_SMALL_CELL = .TRUE.
-               REFLECT_FROM_ORIG_CELL = .FALSE.
-            ENDIF
-            !In this case reflect using the small cell bc's
-         ENDIF
-      ENDIF
-      END SUBROUTINE PIC_CHECK_IF_INSIDE_DOMAIN
 
 
 

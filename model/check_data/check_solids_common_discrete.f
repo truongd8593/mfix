@@ -102,7 +102,7 @@
       DO lM=1, MMAX+DES_MMAX
 
 ! The accounts for an offset between the DEM and TFM phase indices
-         IF(SOLIDS_MODEL(lM) /= 'DEM') CYCLE
+         IF(SOLIDS_MODEL(lM) == 'TFM') CYCLE
          M = M+1
 
 ! Copy of the input keyword values into discrete solids arrays. We may be
@@ -147,7 +147,7 @@
          DES_INTERP_ON = .FALSE.
 
       ELSE
-! MPPIC and DES/CUTCELL simulations require that the mean feilds be
+! MPPIC and DES/CUTCELL simulations require that the mean fields be
 ! interpolated without regard to user specifications.
          IF(MPPIC.OR.CARTESIAN_GRID) DES_INTERP_MEAN_FIELDS = .TRUE.
 
@@ -212,8 +212,6 @@
          'correct the mfix.dat file.')
 
       END SELECT
-
-
 
 ! Set flags for energy equations
       CALL CHECK_SOLIDS_COMMON_DISCRETE_ENERGY

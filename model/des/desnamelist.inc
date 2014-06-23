@@ -68,9 +68,8 @@
 	 FRIC_EXP_PIC, FRIC_NON_SING_FAC,&
 	 CFL_PIC, MPPIC_COEFF_EN1, MPPIC_COEFF_EN2, MPPIC_PDRAG_IMPLICIT, &
 	 MPPIC_GRAV_TREATMENT, MPPIC_COEFF_EN_WALL, MPPIC_COEFF_ET_WALL, &
+	 PIC_REPORT_SEEDING_STATS, PIC_REPORT_DELETION_STATS, & 
 
-! des_cellwise_bc_data size 
-	 MAX_DES_BC_CELL, & 
 
 ! flag to convert des outside box to facets needed if outside box not part of stl geom
 

@@ -37,7 +37,7 @@
       INTEGER, ALLOCATABLE :: PIC_BCMI_IJK(:)
 
 ! Direction of the MI BC plane 
-      INTEGER, ALLOCATABLE :: PIC_BCMI_NORMDIR(:)
+      INTEGER, ALLOCATABLE :: PIC_BCMI_NORMDIR(:,:)
 ! BC planes will be calculated from the fluid node as
 ! XE-dx, YN-dy, and ZT-dz. 
 ! For BC-plane 'S', YN-dy will provide the wrong plane, as 
@@ -47,11 +47,17 @@
       INTEGER, ALLOCATABLE :: PIC_BCMI_OFFSET(:,:)
 
       
-! This will store number of implied real particles by DT for this 
-! BC. By DT, because dtsolid is allowed to vary for PIC simulations 
-      Double precision, Allocatable :: PIC_BCMI_REAL_PARTS_BYDT(:, :)
-      Double precision, Allocatable :: PIC_BCMI_COMP_PARTS_BYDT(:, :)
+! This will store cumulative number of computational parcels 
+      Double precision, Allocatable :: PIC_BCMI_CNP(:, :)
+! This will store cumulative number of implied real particles 
+      Double precision, Allocatable :: PIC_BCMI_RNP(:, :)
 
+! To include or not to include cut-cells in the MI BC 
+      
+      LOGICAL, Allocatable :: PIC_BCMI_INCL_CUTCELL(:)
+
+! Logicals to print seeding and deletion of particles based on user needs
+      LOGICAL :: PIC_REPORT_SEEDING_STATS, PIC_REPORT_DELETION_STATS 
 
       END MODULE PIC_BC
 

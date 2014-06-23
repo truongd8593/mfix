@@ -42,7 +42,7 @@
 
       USE pgcor
       USE pscor
-      USE discretelement, Only : DES_CELLWISE_BCDATA, DISCRETE_ELEMENT
+      USE discretelement, Only :  DISCRETE_ELEMENT
       USE mfix_pic
 
       IMPLICIT NONE
@@ -1391,7 +1391,6 @@
 
       USE pgcor
       USE pscor
-      USE discretelement, Only : DES_CELLWISE_BCDATA, DISCRETE_ELEMENT
       USE mfix_pic
 
       IMPLICIT NONE
@@ -2521,7 +2520,6 @@
 
       USE pgcor
       USE pscor
-      USE discretelement, Only : DES_CELLWISE_BCDATA, DISCRETE_ELEMENT
       USE mfix_pic
 
       IMPLICIT NONE
@@ -2687,17 +2685,7 @@
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
             
             CASE (100)
-               IF(DISCRETE_ELEMENT.AND.MPPIC) THEN
-                  ALLOCATE( COUNT_DES_BC(DIMENSION_3))
-                  DO IJK = IJKSTART3, IJKEND3
-                     COUNT_DES_BC (IJK) = 0.d0
-                     COUNT_DES_BC (IJK) = DES_CELLWISE_BCDATA(IJK)%COUNT_DES_BC
-                  ENDDO
-                  CALL WRITE_SCALAR_IN_VTK('COUNT_BC',COUNT_DES_BC)
-                  DEALLOCATE(COUNT_DES_BC)
-               ELSE
-                  CALL WRITE_SCALAR_IN_VTK('PARTITION',PARTITION)
-               ENDIF
+               CALL WRITE_SCALAR_IN_VTK('PARTITION',PARTITION)
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
             CASE (101)
        

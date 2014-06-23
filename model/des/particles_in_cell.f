@@ -639,7 +639,8 @@
             IF(DES_ROP_S(IJK,M) >= ZERO) THEN
 ! calculating solids volume fraction based on bulk density                    
                EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
-               IF(.NOT.DES_ONEWAY_COUPLED) EP_G(IJK) = EP_G(IJK) - EP_SM
+               !IF(.NOT.DES_ONEWAY_COUPLED) 
+               EP_G(IJK) = EP_G(IJK) - EP_SM
                ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
 
 ! ep_g does not matter if granular flow simulation (i.e. no fluid)               
@@ -1297,7 +1298,8 @@
 ! calculating void fraction in fluid cell based on value of bulk density
             IF(DES_ROP_S(IJK, M).GT.ZERO) THEN 
                EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
-               IF(.NOT.DES_ONEWAY_COUPLED) EP_G(IJK) = EP_G(IJK) - EP_SM
+               !IF(.NOT.DES_ONEWAY_COUPLED)
+               EP_G(IJK) = EP_G(IJK) - EP_SM
                ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
 
 ! ep_g does not matter if granular flow simulation (i.e. no fluid)

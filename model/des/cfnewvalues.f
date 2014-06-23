@@ -566,6 +566,7 @@
 
       double precision :: norm1, norm2, norm3
       Logical :: OUTER_STABILITY_COND, DES_FIXED_BED
+
 !-----------------------------------------------
 ! Functions
 !-----------------------------------------------
@@ -626,10 +627,8 @@
          !D_p = Beta/(EP_S*RHOP)
          !F_gp in drag_fgs.f  = Beta*PVOL/EP_S
          !Therefore, D_p = F_gp/(PVOL*RHOP) = F_gp/PMASS
-         IF(DES_ONEWAY_COUPLED) F_gp(L) = ZERO
          DP_BAR = F_gp(L)/(PMASS(L))
          IF(.NOT.DES_CONTINUUM_COUPLED) DP_BAR = ZERO
-
 
          if(.not.MPPIC_PDRAG_IMPLICIT) DP_BAR = ZERO
          M = PIJK(L,5)
@@ -642,7 +641,7 @@
          K = K_OF(IJK)
          VEL_ORIG(:) = DES_VEL_NEW(L,:)
 
-
+         
          DES_VEL_NEW(L,:) = (DES_VEL_OLD(L,:) + &
          & FC(:,L)*DTSOLID)/(1.d0+DP_BAR*DTSOLID)
 
