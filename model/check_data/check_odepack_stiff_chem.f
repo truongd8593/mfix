@@ -2,18 +2,18 @@
 !                                                                      C
 !  Module name: CHECK_DATA_CHEM                                        C
 !  Purpose: check the chemical rxns namelist variables for             C
-!           CALL_DI or CALL_ISAT                                     C
+!           CALL_DI or CALL_ISAT                                       C
 !                                                                      C
 !  Author: NAN XIE                              Date: 02-Aug-04        C
 !  Reviewer:                                          Date:            C
 !                                                                      C
-!  Variables referenced:  CALL_DI , CALL_ISAT , ISATdt               C
+!  Variables referenced:  CALL_DI , CALL_ISAT , ISATdt                 C
 !  Variables modified: None                                            C
 !                                                                      C
 !  Local variables: None                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CHECK_DATA_ODEPACK
+      SUBROUTINE CHECK_ODEPACK_STIFF_CHEM
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -55,6 +55,8 @@
       use geometry
       use indices
 
+      use error_manager
+
       implicit none
 
 ! Local Variables:
@@ -63,113 +65,96 @@
 
       include 'function.inc'
 
+
+      CALL INIT_ERR_MSG('CHECK_ODEPACK_STIFF_CHEM')
+
 ! Error - ISAT is no longer available.
       IF(CALL_ISAT) THEN
-         IF(myPE == PE_IO) THEN
-            WRITE(*,1001); WRITE(*,1000)
-            WRITE(UNIT_LOG,1001); WRITE(UNIT_LOG,1000)
-         ENDIF
-         CALL MFIX_EXIT(myPE)
-      END IF
-
-      IF(CALL_DI .AND. .NOT.STIFF_CHEMISTRY) THEN
-         IF(myPE == PE_IO) then
-            WRITE(*,1003); WRITE(*,1000)
-            WRITE(UNIT_LOG,1003); WRITE(UNIT_LOG,1000)
-         ENDIF
-         CALL MFIX_EXIT(myPE)
+         WRITE(ERR_MSG,1001)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
-! If the stiff solver is not being used, there is no need for the
-! following checks.
-      IF(.NOT.STIFF_CHEMISTRY) RETURN
+      IF(CALL_DI) THEN
+         WRITE(ERR_MSG,1002) 'CALL_DI'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
 
 ! Message - ISATDT is no longer used.
-      IF(ISATdt /= UNDEFINED) WRITE(UNIT_LOG,1002)
+      IF(ISATdt /= UNDEFINED) THEN
+         WRITE(ERR_MSG,1002) 'ISATdt'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+
+! Verify that there is sufficient run complexity to use the stiff solver
+      IF(STIFF_CHEMISTRY) THEN
 
 ! Energy equations must be solved.
-      IF(.NOT.ENERGY_EQ) THEN
-         IF(myPE == PE_IO) THEN
-            WRITE(*,1004)'ENERGY_EQ = .FALSE.'
-            WRITE(*,1000)
-            WRITE(UNIT_LOG,1004)'ENERGY_EQ = .FALSE.'
-            WRITE(UNIT_LOG,1000)
+         IF(.NOT.ENERGY_EQ) THEN
+            WRITE(ERR_MSG,1004)'ENERGY_EQ = .FALSE.'
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
-         CALL MFIX_EXIT(myPE)
-      ENDIF
 
-
-      IF(RO_G0 /= UNDEFINED) THEN
-         IF(myPE == PE_IO) THEN
-            WRITE(*,1003)'RO_G0 /= UNDEFINED'
-            WRITE(*,1000)
-            WRITE(UNIT_LOG,1003)'RO_G0 /= UNDEFINED'
-            WRITE(UNIT_LOG,1000)
+! Must be compressible
+         IF(RO_G0 /= UNDEFINED) THEN
+            WRITE(ERR_MSG,1004)'RO_G0 /= UNDEFINED'
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
-         CALL MFIX_EXIT(myPE)
-      ENDIF
 
-      IF(.NOT.SPECIES_EQ(0)) THEN
-         IF(myPE == PE_IO) THEN
-            WRITE(*,1003)'SPECIES_EQ(0) = .FALSE.'
-            WRITE(*,1000)
-            WRITE(UNIT_LOG,1003)'SPECIES_EQ(0) = .FALSE.'
-            WRITE(UNIT_LOG,1000)
+         IF(.NOT.SPECIES_EQ(0)) THEN
+            WRITE(ERR_MSG,1004)'SPECIES_EQ(0) = .FALSE.'
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
-         CALL MFIX_EXIT(myPE)
-      ENDIF
 
 ! The stiff chemistry solver only needs to loop over physical cells
 ! owned by a process (e.g., not ghost cells). To avoid having a 
 ! triple do loop, this array is populated to identify the cells that
 ! are not owned.
-      ALLOCATE( notOwner(DIMENSION_3) ); notOwner = .TRUE.
-      do k=kstart, kend
-      do j=jstart, jend
-      do i=istart, iend
-         ijk = funijk(i,j,k)
-         notOwner(IJK) = .FALSE.
-      enddo
-      enddo
-      enddo
-
-
+         ALLOCATE( notOwner(DIMENSION_3) ); notOwner = .TRUE.
+         do k=kstart, kend
+         do j=jstart, jend
+         do i=istart, iend
+            ijk = funijk(i,j,k)
+            notOwner(IJK) = .FALSE.
+         enddo
+         enddo
+         enddo
 
 ! Initialize ODEPACK operating parameters.
-      IF(STIFF_CHEMISTRY) THEN
-         if(allocated(SUM_R_g)) SUM_R_g = ZERO
-         if(allocated(SUM_R_s)) SUM_R_s = ZERO
          CALL ODEPACK_INIT
+
+! Clear the interphase mass transfer terms as the stiff solver 
+! does no use them.
+         IF(allocated(SUM_R_g)) SUM_R_g = ZERO
+         IF(allocated(SUM_R_s)) SUM_R_s = ZERO
+
       ENDIF
 
- 1000 FORMAT(/' Please refer to the Readme file on the required input',&
-         ' format and make',/' the necessary corrections to the data', &
-         ' file.',/1X,70('*')//)
+      CALL FINL_ERR_MSG
 
- 1001 FORMAT(//1X,70('*')/' From: CHECK_DATA_ODEPACK',/' Error 1001:', &
-         ' ISAT functionality has been disabled. Chemcial reactions',/ &
-         ' may be included using the urs_rates.f UDF and if desired',  &
-         ' the stiff',/' chemistry solve may be invoked setting the',  &
-         ' keyword STIFF_CHEMISTRY',/' in the mfix.dat file.')
 
- 1002 FORMAT(//1X,70('*')/' From: CHECK_DATA_ODEPACK',/                &
-         ' Message 1002: ISATDT is a legacy variable that is no',      &
-         ' longer necessary.',/1X,70('*')//)
+ 1001 FORMAT('Error 1001: ISAT functionality has been disabled.',/     &
+         'Chemcial reactions may be included using the urs_rates.f ',  &
+         'UDF and if',/'desired the stiff chemistry solve may be ',    &
+         'invoked setting the keyword',/'STIFF_CHEMISTRY. Check the ', &
+         'user documentation and correct the',/' mfix.dat file.')
 
- 1003 FORMAT(//1X,70('*')/' From: CHECK_DATA_ODEPACK',/                &
-         ' Error 1003: CALL_DI is a legacy variable. This keyword was',&
-         ' replaced',/' by the keyword STIFF_CHEMISTRY.')
+ 1002 FORMAT('Error 1002: ',A,' is a legacy variable that is no ',     &
+         'longer available.',/'Check the user documentation and ',     &
+         'correct the mfix.dat file.')
 
- 1004 FORMAT(//1X,70('*')/' From: CHECK_DATA_ODEPACK',/' Error 1004:', &
-         ' Invalid parameters for stiff chemistry solver!',//          &
+
+ 1004 FORMAT('Error 1004: ',                                           &
+         'Invalid parameters for stiff chemistry solver!',//           &
          ' The following criteria must be satisfied:',/                &
          '   > Solving the energy equations.',/                        &
          '   > Compressible gas phase.',/                              &
          '   > Solving gas phase species equations.',//                &
-         ' >>> Invalid Parameter: ',A)
+         ' >>> Invalid Parameter: ',A,//                               &
+         'Check the user documentation and correct the mfix.dat file.')
 
       RETURN
-      END SUBROUTINE CHECK_DATA_ODEPACK
+      END SUBROUTINE CHECK_ODEPACK_STIFF_CHEM
 
 
 
@@ -203,10 +188,13 @@
       use stiff_chem, only: ODE_LIW
       use stiff_chem, only: ODE_JT
 
-      use stiff_chem, only: VARIABLE_DENSITY
+      use stiff_chem, only: STIFF_CHEM_MAX_STEPS
 
       use stiff_chem_dbg, only: ALLOCATE_STIFF_CHEM_DBG
       use stiff_chem_stats, only: ALLOCATE_STIFF_CHEM_STATS
+
+! Double precision value for undefined variables.
+      use param1, only: UNDEFINED_I
 
       implicit none
 
@@ -215,6 +203,8 @@
 !---------------------------------------------------------------------//
       INTEGER :: LRN, LRS
       INTEGER :: M, N_VAR
+
+      LOGICAL :: LIMIT_MAX_STEPS
 
 ! Number of ODEs (maximum)
       NEQ_DIMN = 2 + MMAX
@@ -253,7 +243,14 @@
 ! Jacobian type indicator.
       ODE_JT = 2 ! Internally generated.
 
-      VARIABLE_DENSITY = .FALSE.
+
+      IF(STIFF_CHEM_MAX_STEPS == UNDEFINED_I) THEN
+         STIFF_CHEM_MAX_STEPS = 500000
+         LIMIT_MAX_STEPS = .FALSE.
+      ELSE
+         LIMIT_MAX_STEPS = .TRUE.
+      ENDIF
+
 
       CALL ALLOCATE_STIFF_CHEM_DBG(ODE_DIMN_all)
       CALL ALLOCATE_STIFF_CHEM_STATS

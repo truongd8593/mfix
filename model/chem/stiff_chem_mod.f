@@ -16,7 +16,7 @@
 ! Flag to invoke stiff chemistry solver.
       LOGICAL :: STIFF_CHEMISTRY
 ! Flag to invoke variable solids density.
-      LOGICAL :: VARIABLE_DENSITY
+!      LOGICAL :: VARIABLE_DENSITY
 ! Flag indicating if cell IJK is own by myPE.
       LOGICAL, dimension(:), allocatable :: notOwner
 
@@ -42,7 +42,10 @@
       INTEGER :: ODE_LIW
 ! Jacobian type indicator.
       INTEGER :: ODE_JT
-
+! The maximum number of steps ODEPACK may use to integrate.
+      INTEGER :: STIFF_CHEM_MAX_STEPS
+! Flag indicating that the max number of steps is unlimited.
+      LOGICAL :: UNLIMITED_STEPS
 
 ! Explicit interface for ODEPACK
 !---------------------------------------------------------------------//
@@ -98,7 +101,7 @@
       use run,      only : TIME
 
 
-      use mpi_utility   
+      use mpi_utility
 
       use stiff_chem_dbg
       use stiff_chem_stats
@@ -160,6 +163,7 @@
       INTEGER :: lAtps
 
       LOGICAL :: lReset
+      LOGICAL :: lIncpt
 
       INCLUDE 'function.inc'
 
@@ -173,6 +177,7 @@
 
             lAtps = 0
             lReset = .FALSE.
+            lIncpt = .FALSE.
 
 ! Forced restset of tolerance values.
             lRTOL = ODE_RTOL
@@ -203,7 +208,7 @@
 
 ! The maximum number of internal steps ODEPACK may use to integrate over
 ! the time interval. The default value is 500.
-            IWORK(6) = 500000
+            IWORK(6) = STIFF_CHEM_MAX_STEPS
 
             IF(CALC_REACTIONS(IJK)) THEN
 
@@ -224,7 +229,7 @@
 
 ! Verify that the results are well defined.
                CALL CHECK_ODE_DATA(NEQ_DIMN, lNEQ, ODE_DIMN_all,       &
-                  ODE_VARS, lISTATE, iErr)
+                  ODE_VARS, UNLIMITED_STEPS, lISTATE, iErr)
 
 ! Successfully Integrated ODEs.
                IF(iErr == 0) THEN
@@ -232,8 +237,13 @@
 ! Additional integration steps are needed (lT < lTOUT).
                ELSEIF(iErr == -1) THEN
 ! Reste the state flag and keep integrating.
+                  IF(UNLIMITED_STEPS) THEN
                      lISTATE = 2
                      goto 100
+                  ELSE
+                     lReset = .FALSE.
+                     lIncpt = .TRUE.
+                  ENDIF
 
 ! Too much accuracy was requested.
                ELSEIF(iErr == -2) THEN
@@ -289,7 +299,7 @@
                CALL mapODEtoMFIX(NEQ_DIMN, lNEQ, ODE_DIMN_all, ODE_VARS)
 ! Collect solver stats.
                IF(FULL_LOG) CALL UPDATE_STIFF_CHEM_STATS(lNEQ, &
-                  NEQ_DIMN, IWORK(11), ODE_DIMN_all, lAtps)
+                  NEQ_DIMN, IWORK(11), ODE_DIMN_all, lAtps, lIncpt)
 
 
             ENDIF  ! EndIF CALC_REACTIONS

@@ -143,7 +143,8 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_ODE_DATA(lnD, lNEQ, loD, VARS, lState, lErr)
+      SUBROUTINE CHECK_ODE_DATA(lnD, lNEQ, loD, VARS, lUNLIMITED,     &
+         lState, lErr)
 
       use param1,   only : ZERO, SMALL_NUMBER, ONE
       use physprop, only : NMAX, MMAX
@@ -160,6 +161,8 @@
 
 ! MFIX field variables mapped into the ODE format.
       DOUBLE PRECISION, intent(in) :: VARS(loD)
+! Flag for unlimited steps.
+      LOGICAL, intent(in) :: lUNLIMITED
 ! Sate value returned from ODEPACK
       INTEGER, intent(in)  :: lState
 ! Error Flag
@@ -188,7 +191,7 @@
 !---------------------------------------------------------------------//
       IF(lState == -1) THEN
          lErr = lState
-         return
+         if(lUNLIMITED) return
       ELSEIF(lState == 2) THEN
          lErr = 0
       ELSE
@@ -217,7 +220,6 @@
       ENDIF
       Node = Node + 1
 
-
 ! Gas phase species mass fractions.
       DO N=1,NMAX(0)
          IF(VARS(Node) > 1.009d0) THEN
@@ -233,7 +235,6 @@
          Node = Node + 1
       ENDDO
 
-
 ! Solids temperature.
       DO M = 1, MMAX
          IF(VARS(Node) > Tmax .OR. VARS(Node) < Tmin) THEN
@@ -242,7 +243,6 @@
          ENDIF
          Node = Node + 1
       ENDDO
-
 
 
       DO M = 1, MMAX
@@ -272,8 +272,8 @@
 
             ENDDO
          ENDIF
-      ENDDO   
-      
+      ENDDO
+
       RETURN
       END SUBROUTINE CHECK_ODE_DATA
 

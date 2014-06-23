@@ -143,7 +143,7 @@
             USE_RRATES, &
             SPECIES_g, SPECIES_s, &
             SPECIES_ALIAS_g, SPECIES_ALIAS_s, &
-            STIFF_CHEMISTRY, &
+            STIFF_CHEMISTRY, STIFF_CHEM_MAX_STEPS, &
 ! ----------------------------------------------------------------<<<
 
 ! 1.11 parallel related

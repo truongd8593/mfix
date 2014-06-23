@@ -949,7 +949,7 @@
 ! Copy species alias.
       tlSA = lSA
 ! Remove case sensitivity.
-      CALL MAKE_UPPER_CASE (tlSA,8)
+      CALL MAKE_UPPER_CASE (tlSA,32)
 ! Compare the two strings.
       checkMatch = .FALSE.
       IF(trim(tlSA) == trim(ceSA)) checkMatch = .TRUE.
