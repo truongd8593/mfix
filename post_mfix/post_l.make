@@ -77,6 +77,7 @@ post_mfix : \
     paralleldata.mod \
     usr_input.mod \
     mfix_pic.mod \
+    pic_bc.mod \
     qmom_kinetic_equation.mod \
     qmomk_parameters.mod \
     des_ic.mod \
@@ -432,6 +433,7 @@ post_mfix : \
     paralleldata_mod.$(OBJ_EXT) \
     usr_input_mod.$(OBJ_EXT) \
     mfix_pic_mod.$(OBJ_EXT) \
+    pic_bc_mod.$(OBJ_EXT) \
     qmom_kinetic_equation_mod.$(OBJ_EXT) \
     qmomk_parameters_mod.$(OBJ_EXT) \
     qmomk_init_namelist.$(OBJ_EXT) \
@@ -654,9 +656,7 @@ visc_g.mod : ../model/visc_g_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/visc_g_mod.f 
-visc_s.mod : ../model/visc_s_mod.f \
-            param.mod \
-            param1.mod 
+visc_s.mod : ../model/visc_s_mod.f 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/visc_s_mod.f 
 vshear.mod : ../model/vshear_mod.f \
             param.mod \
@@ -778,6 +778,8 @@ des_stl_functions.mod : ../model/des/des_stl_functions_mod.f \
             compar.mod \
             indices.mod \
             geometry.mod \
+            bc.mod \
+            constant.mod \
             mpi_utility.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_stl_functions_mod.f 
@@ -792,6 +794,9 @@ mfix_pic.mod : ../model/des/mfix_pic_mod.f \
             param.mod \
             param1.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/mfix_pic_mod.f 
+pic_bc.mod : ../model/des/pic_bc_mod.f \
+            param.mod 
+	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/pic_bc_mod.f 
 qmom_kinetic_equation.mod : ../model/qmomk/qmom_kinetic_equation_mod.f \
             param.mod \
             param1.mod \
@@ -904,34 +909,29 @@ calc_ep_g.$(OBJ_EXT) : calc_ep_g.f \
             ep_s2.inc                                                   
 calc_mu_s.$(OBJ_EXT) : ../model/calc_mu_s.f \
             run.mod \
-            vshear.mod \
             visc_s.mod \
-            physprop.mod \
-            constant.mod \
             fldvar.mod \
-            compar.mod \
-            indices.mod \
-            geometry.mod \
+            physprop.mod \
             qmom_kinetic_equation.mod \
             mms.mod \
+            compar.mod \
+            geometry.mod \
+            indices.mod \
             param.mod \
             param1.mod \
+            constant.mod \
             trace.mod \
             toleranc.mod \
-            turb.mod \
             drag.mod \
+            turb.mod \
             kintheory.mod \
             ur_facs.mod \
             cutcell.mod \
-            parallel.mod \
-            visc_g.mod \
+            vshear.mod \
             is.mod \
-            sendrecv.mod \
             function.inc                                                 \
             ep_s1.inc                                                    \
             ep_s2.inc                                                    \
-            s_pr1.inc                                                    \
-            s_pr2.inc                                                    \
             fun_avg1.inc                                                 \
             fun_avg2.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/calc_mu_s.f 
@@ -1415,6 +1415,7 @@ read_namelist.$(OBJ_EXT) : ../model/read_namelist.f \
             usr.mod \
             des_bc.mod \
             des_ic.mod \
+            pic_bc.mod \
             des_thermo.mod \
             des_rxns.mod \
             stiff_chem.mod \
@@ -1803,6 +1804,7 @@ des_init_namelist.$(OBJ_EXT) : ../model/des/des_init_namelist.f \
             des_ic.mod \
             des_thermo.mod \
             des_rxns.mod \
+            pic_bc.mod \
             des/desnamelist.inc                                         
 	$(FORTRAN_CMD) $(FORT_FLAGS) ../model/des/des_init_namelist.f 
 ornl_header.$(OBJ_EXT) : ornl_header.f \

@@ -193,6 +193,7 @@ post_precision_mod.f
 paralleldata_mod.f 
 usr_input_mod.f 
 ../model/des/mfix_pic_mod.f
+../model/des/pic_bc_mod.f
 ../model/qmomk/qmom_kinetic_equation_mod.f
 ../model/qmomk/qmomk_parameters_mod.f
 ../model/qmomk/qmomk_init_namelist.f
