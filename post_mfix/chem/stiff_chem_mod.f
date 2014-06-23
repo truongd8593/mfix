@@ -12,7 +12,6 @@
 ! Flag to invoke the variable solids diameter model.
       LOGICAL :: CALL_GROW
 
-
 ! ODEPACK Controlling parameters:
 !---------------------------------------------------------------------//
 ! Dimension of ODEs solved in ISAT or DI
@@ -29,6 +28,8 @@
       INTEGER :: ODE_LIW
 ! Jacobian type indicator.
       INTEGER :: ODE_JT
+! The maximum number of steps ODEPACK may use to integrate.
+      INTEGER :: STIFF_CHEM_MAX_STEPS
 
 
 ! Legacy Variables:
