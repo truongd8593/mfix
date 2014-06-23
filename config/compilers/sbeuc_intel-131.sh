@@ -9,8 +9,7 @@ misc_libs=
 
 echo "SBEUC@NETL :: Intel Fortran Compiler"
 
-# Set the Intel module code.
-MODULE_CODE=0
+MODDIRPREFIX="-module "
 
 # Add some additinal flags to the object directory
 if [[ -n $USE_MIC ]]; then

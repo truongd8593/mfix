@@ -5,7 +5,7 @@ incs=
 
 echo "Gfortran on 64 bit machine"
 
-MODULE_CODE=2
+MODDIRPREFIX="-J"
 
 # Add some additinal flags to the object directory
 DPO=${DPO_BASE}/${DPO}_GNU/

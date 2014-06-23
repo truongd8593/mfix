@@ -40,16 +40,11 @@ echo "LINK_FLAGS=${LINK_FLAGS}" >> ${tmpMFILE}
 echo "LINK_CMD=${LINK_CMD}" >> ${tmpMFILE}
 echo "LIB_FLAGS=${LIB_FLAGS}" >> ${tmpMFILE}
 echo "EXEC_FILE=${EXEC_FILE}" >> ${tmpMFILE}
+echo "MODDIRPREFIX=${MODDIRPREFIX}" >> ${tmpMFILE}
 
 
-# Copy of the correct base makefile.
-case ${MODULE_CODE} in
-  0) cat ${MFIX_SRC}/mfix_l.make >> ${tmpMFILE};;
-  1) cat ${MFIX_SRC}/mfix_u.make >> ${tmpMFILE};;
-  2) cat ${MFIX_SRC}/mfix_l.make_gfor >> ${tmpMFILE};;
-  *) echo "Fatal Error.  Unknown module code: ${MODULE_CODE}"
-     exit;;
-esac
+# Copy the base makefile.
+cat ${MFIX_SRC}/mfix_l.make >> ${tmpMFILE}
 
 
 # Swap the module folder references.

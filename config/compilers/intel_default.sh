@@ -6,7 +6,7 @@ misc_libs=
 
 echo "Intel Fortarn Compiler"
 
-MODULE_CODE=0
+MODDIRPREFIX="-module "
 
 # Add some additinal flags to the object directory
 DPO=${DPO_BASE}/${DPO}_INTEL/

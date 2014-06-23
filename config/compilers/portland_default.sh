@@ -9,8 +9,7 @@ misc_libs=
 
 echo "Portland Group Fortarn Compiler"
 
-# Set the Portland Group module code.
-MODULE_CODE=0
+MODDIRPREFIX="-module "
 
 # Add some additinal flags to the object directory
 DPO=${DPO_BASE}/${DPO}_PGI/

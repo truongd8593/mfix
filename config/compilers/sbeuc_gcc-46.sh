@@ -6,7 +6,7 @@ misc_libs=
 
 echo "SBEUC@NETL :: GCC Fortran Compiler"
 
-MODULE_CODE=2
+MODDIRPREFIX="-J"
 
 # Add some additinal flags to the object directory
 DPO=${DPO_BASE}/${DPO}_GNU_SBEUC/
