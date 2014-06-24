@@ -15,7 +15,7 @@
 ! Number of solids phases.
       use physprop, only: MMAX
 ! Solids density field variable.
-      use fldvar, only: RO_s
+      use fldvar, only: RO_s, ROP_s
 ! Baseline/Unreaced solids density
       use physprop, only: BASE_ROs
 ! Solid phase species mass fractions.
@@ -28,12 +28,14 @@
       use run, only: SOLVE_ROs
 ! Constant solids density.
       use physprop, only: RO_s0
+! Minimum solids volume fraction
+      use toleranc, only: DIL_EP_s
 
 ! Modules needed to support function.inc
-      use compar       
+      use compar
       use geometry
       use indices
- 
+
       implicit none
 
 ! Local Variables:
@@ -46,6 +48,9 @@
       INTEGER :: IIS
 ! Flag for debugging.
       LOGICAL, parameter :: dbgMode = .FALSE.
+
+      DOUBLE PRECISION :: minROPs
+
 ! Function for evaluating solids density.
       DOUBLE PRECISION, EXTERNAL :: EOSS
 
@@ -58,19 +63,28 @@
          IF (SOLVE_ROs(M)) THEN
 ! Set the index of the intert phase.
             IIS = INERT_SPECIES(M)
+! Calculate the minimum solids denisty.
+            minROPs = BASE_ROs(M)*DIL_EP_s
 ! Debug/Development option.
             IF(dbgMode) CALL CHECK_SET_ROs(M)
+
 ! Calculate Ro_s in all fluid and flow boundary cells.
             DO IJK = ijkStart3, ijkEnd3
-               IF (.NOT.WALL_AT(IJK)) RO_S(IJK,M) = EOSS(BASE_ROs(M),  &
-                  X_s0(M,IIS), X_s(IJK,M,IIS))
+               IF(WALL_AT(IJK)) CYCLE
+               IF(ROP_s(IJK,M) > minROPs) THEN
+                  RO_S(IJK,M) = EOSS(BASE_ROs(M), X_s0(M,IIS),         &
+                     X_s(IJK,M,IIS))
+               ELSE
+                  RO_s(IJK,M) = BASE_ROs(M)
+               ENDIF
             ENDDO
          ELSE
 ! Constant solids density.
-            DO IJK = ijkstart3, ijkend3 
-               IF (.NOT.WALL_AT(IJK)) RO_S(IJK,M) = RO_S0(M)
-            ENDDO 
-         ENDIF 
+            DO IJK = ijkstart3, ijkend3
+               IF (WALL_AT(IJK)) CYCLE
+               RO_S(IJK,M) = RO_S0(M)
+            ENDDO
+         ENDIF
       ENDDO
 
       RETURN

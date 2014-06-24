@@ -214,7 +214,7 @@
 ! Solid phase species mass fractions.
       use fldvar, only: X_s
 ! Solid phase density (variable).
-      use fldvar, only: RO_s
+      use fldvar, only: ROP_s, RO_s
 ! Baseline/Unreaced solids density
       use physprop, only: BASE_ROs
 ! Initial mass fraction of inert species
@@ -225,6 +225,8 @@
       use run, only: SOLVE_ROs
 ! Run time flag for generating negative density log files.
       use run, only: REPORT_NEG_DENSITY
+! Minimum solids volume fraction
+      use toleranc, only: DIL_EP_s
 
       implicit none
 
@@ -238,7 +240,7 @@
 ! Flag to write log header
       LOGICAL wHeader
 
-      DOUBLE PRECISION :: minROs
+      DOUBLE PRECISION :: minROPs
 
 ! Equation of State - Solid
       DOUBLE PRECISION, EXTERNAL :: EOSS
@@ -252,14 +254,18 @@
 ! Set the index of the inert species
          IIS = INERT_SPECIES(M)
 ! Calculate the minimum solids denisty.
-         minROs = EOSS(BASE_ROs(M), X_s0(M,IIS), 1.0d0)
+         minROPs = BASE_ROs(M)*DIL_EP_s
 
 ! Calculate the solids denisty over all cells.
          IJK_LP: DO IJK = IJKSTART3, IJKEND3
             IF(WALL_AT(IJK)) cycle IJK_LP
-! Calculate the soilds density and store the minimum.
-            RO_S(IJK,M) = max(minROs, EOSS(BASE_ROs(M), X_s0(M,IIS),   &
-               X_s(IJK,M,IIS)))
+            IF(ROP_s(IJK,M) > minROPs) THEN
+               RO_S(IJK,M) = EOSS(BASE_ROs(M), X_s0(M,IIS),            &
+                  X_s(IJK,M,IIS))
+            ELSE
+               RO_s(IJK,M) = BASE_ROs(M)
+            ENDIF
+
 ! Report errors.
             IF(RO_S(IJK,M) <= ZERO) THEN
                Err_l(myPE) = 101
