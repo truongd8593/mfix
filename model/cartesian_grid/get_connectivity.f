@@ -45,7 +45,7 @@
       CHARACTER (LEN=*) :: TYPE_OF_CELL
       DOUBLE PRECISION :: F_NODE_2,F2
 
-      include "function.inc"
+      include "../function.inc"
 
 !======================================================================
 !  Get coordinates of eight nodes
@@ -350,7 +350,7 @@
       INTEGER :: I,J,K,IP,JP,KP,IM,JM,KM
       INTEGER :: IJK,IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
 
-      include "function.inc"
+      include "../function.inc"
 
       I = I_OF(IJK) 
       J = J_OF(IJK) 
@@ -542,7 +542,7 @@
       INTEGER :: IJK,IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
       INTEGER :: NODE
 
-      include "function.inc"
+      include "../function.inc"
 
       I = GLOBAL_I_OF(IJK) 
       J = GLOBAL_J_OF(IJK) 

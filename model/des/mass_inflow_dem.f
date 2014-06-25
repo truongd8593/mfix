@@ -280,7 +280,7 @@
 
       INTEGER :: IJK
 
-      include 'function.inc'
+      INCLUDE '../function.inc'
 
 ! Set the PEA Flags:
       PEA(lNP,1:2) = .TRUE.  ! The particle exists and is entering
@@ -396,7 +396,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       TOUCHING = .FALSE.

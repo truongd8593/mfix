@@ -78,7 +78,7 @@
       LOGICAL :: report_excess_overlap
       LOGICAL PARTICLE_SLIDE
 
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
       report_excess_overlap = .false.
 ! Calculate new values

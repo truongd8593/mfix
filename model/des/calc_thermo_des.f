@@ -43,7 +43,7 @@
 ! Functions
 !---------------------------------------------------------------------//
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
 
 ! This is a quick work-around to keep the thermo routines from causes

@@ -40,7 +40,7 @@
       DOUBLE PRECISION :: old_Del_H,oldNx,oldNy,oldNz
 
 
-      include "function.inc"
+      include "../function.inc"
 
       SELECT CASE (TYPE_OF_CELL)
          CASE('SCALAR')
@@ -204,7 +204,7 @@
       LOGICAL :: ALLOW_NEG_DIST
 
 
-      include "function.inc"
+      include "../function.inc"
 
       SELECT CASE (TYPE_OF_CELL)
          CASE('SCALAR')
@@ -383,7 +383,7 @@
       LOGICAL:: CLIP_FLAG
 
 
-      include "function.inc"
+      include "../function.inc"
 
 
      IF(NO_K) THEN  ! 2D case
@@ -655,7 +655,7 @@
       INTEGER :: LIST_OF_CUT_CELLS(DIMENSION_3)
 
 
-      include "function.inc"
+      include "../function.inc"
 
 !======================================================================
 !  Get a list of cut cells

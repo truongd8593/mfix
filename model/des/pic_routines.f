@@ -57,9 +57,9 @@
 ! Identifies that the indicated particle is of interest for debugging
       LOGICAL FOCUS
 
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../fun_avg2.inc'
 
       CALL INIT_ERR_MSG("PIC_TIME_MARCH")
 
@@ -234,7 +234,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
 
       DO IJK = ijkstart3, ijkend3
@@ -312,7 +312,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
@@ -423,9 +423,9 @@
 
 !-----------------------------------------------
 
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../fun_avg2.inc'
 
       M = PIJK(L,5)
       IJK = PIJK(L,4)
@@ -637,9 +637,9 @@
       double precision :: vol_ijk, vol_ipjk, vol_ijpk, vol_ipjpk
       double precision :: vol_ijkp, vol_ipjkp, vol_ijpkp, vol_ipjpkp
 
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../fun_avg2.inc'
 
       if(MPPIC_SOLID_STRESS_SNIDER) then
 
@@ -1013,7 +1013,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 
@@ -1097,7 +1097,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! Set the default boundary conditions
@@ -1178,7 +1178,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! Set the default boundary conditions
@@ -1240,9 +1240,9 @@
       double precision, dimension(:), intent(in)  :: bufin
 
       integer :: ijk, i, j,k
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../fun_avg2.inc'
 
       write(funit,*)'VARIABLES= ',' "I" ',' "J" ',' "K" ',' "DES_ROPS_NODE" '
 
@@ -1278,10 +1278,10 @@
       double precision :: zcor
       character*100 :: filename
       logical finish
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
-!      INCLUDE 'ep_s1.inc'
-!      INCLUDE 'ep_s2.inc'
+!      INCLUDE '../ep_s1.inc'
+!      INCLUDE '../ep_s2.inc'
 
       WRITE(filename,'(A,"_",I5.5,".dat")') TRIM(RUN_NAME)//'_U_S_',myPE
       OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown')

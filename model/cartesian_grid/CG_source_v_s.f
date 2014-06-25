@@ -78,11 +78,11 @@
 !-----------------------------------------------
 ! Include statement functions 
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
+      INCLUDE '../ep_s1.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg2.inc'
+      INCLUDE '../ep_s2.inc'
 !-----------------------------------------------
 
       IF(CG_SAFE_MODE(4)==1) RETURN
@@ -357,9 +357,9 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg2.inc'
 !-----------------------------------------------
 
       IF(CG_SAFE_MODE(4)==1) RETURN

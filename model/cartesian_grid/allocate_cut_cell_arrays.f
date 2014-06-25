@@ -278,7 +278,7 @@
       SMALL_CELL_AT = .FALSE.       
 
       Allocate( SMALL_CELL_FLAG  (DIMENSION_3) )
-      SMALL_CELL_FLAG =.FALSE. 
+      SMALL_CELL_FLAG = 0 
 
       Allocate(  BLOCKED_CELL_AT (DIMENSION_3) )
       Allocate(  BLOCKED_U_CELL_AT (DIMENSION_3) )

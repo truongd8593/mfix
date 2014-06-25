@@ -47,7 +47,7 @@
 !-----------------------------------------------
 !
 !
-      INCLUDE 'cartesian_grid/cartesian_grid_namelist.inc'
+      INCLUDE 'cartesian_grid_namelist.inc'
 
 !<keyword category="cartesian grid" required="false">
 !  <description>activate cartesian grid cut cell technique.</description>

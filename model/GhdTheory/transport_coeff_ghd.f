@@ -56,7 +56,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 !-----------------------------------------------
      
       DO 200 IJK = ijkstart3, ijkend3

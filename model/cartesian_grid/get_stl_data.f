@@ -1128,7 +1128,7 @@
       INTEGER :: IM,IP,JM,JP,KM,KP
       INTEGER :: IMJK,IPJK,IJMK,IJPK,IJKM,IJKP
 
-      include "function.inc"
+      include "../function.inc"
 
       IF(NODE==15) print*,'Warning: eval stl at node 15'
 

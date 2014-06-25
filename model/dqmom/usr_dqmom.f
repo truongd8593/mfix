@@ -34,7 +34,7 @@
       double precision max1, min1, max_min
 !
 !  Include files defining statement functions here
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
 
       IF(.NOT.CALL_DQMOM) RETURN

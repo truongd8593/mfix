@@ -212,7 +212,7 @@
       IF(MODEL_B) THEN
          DO LC = 1, MMAX 
             IF(.NOT.CLOSE_PACKED(LC)) THEN 
-               WRITE(ERR_MSG, 1400), LC
+               WRITE(ERR_MSG, 1400) LC
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF 
          ENDDO 

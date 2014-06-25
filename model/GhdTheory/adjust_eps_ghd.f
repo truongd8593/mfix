@@ -63,11 +63,11 @@
       DOUBLE PRECISION epsMixE, epsMixN, epsMixT, epSolid, epSolidE(smax), epSolidN(smax), epSolidT(smax)
       LOGICAL          DiluteCellE, DiluteCellN, DiluteCellT
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../fun_avg2.inc'
+      INCLUDE '../ep_s1.inc'
+      INCLUDE '../ep_s2.inc'
 !   
 ! First set solids cell-center density in very dilute cells to zero
 !

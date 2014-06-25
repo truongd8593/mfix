@@ -40,9 +40,9 @@
 !        print *, T, Cp1
 !      ENDDO
       
-      Cp1 = calc_CpoR(8D2, Thigh, Tlow, Tcom, Ahigh, Alow)*1.987207
-      h1 = calc_H0oR(4D2, Thigh, Tlow, Tcom, Ahigh, Alow)*1.987207
-      h2 = calc_H0oR(12D2, Thigh, Tlow, Tcom, Ahigh, Alow)*1.987207
+!      Cp1 = calc_CpoR(8D2, Thigh, Tlow, Tcom, Ahigh, Alow)*1.987207
+!      h1 = calc_H0oR(4D2, Thigh, Tlow, Tcom, Ahigh, Alow)*1.987207
+!      h2 = calc_H0oR(12D2, Thigh, Tlow, Tcom, Ahigh, Alow)*1.987207
       print *, Cp1, h1, h2
       CLOSE(UNIT=funit)
       STOP
@@ -478,7 +478,7 @@
 ! Integral of specific heat polynomial (from 0 to T)
       DOUBLE PRECISION ICp
 
-      ICp = calc_ICpoR(T, Th, Tl, Tc, Ah, Al)
+      !ICp = calc_ICpoR(T, Th, Tl, Tc, Ah, Al)
       If (T < Tc) then
         calc_H0oR = ICp + Al(6)
       else

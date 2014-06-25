@@ -743,9 +743,9 @@
       IF(RE_INDEXING) THEN
 
          IF(MyPE==0) THEN
-            WRITE(*,*),' From check_data_cartesian: RE_INDEXING is turned on.'
-            WRITE(*,*),' The preconditionner will be turned off for all equations'
-            WRITE(*,*),' regardless of the mfix.dat setting.'
+            WRITE(*,*)' From check_data_cartesian: RE_INDEXING is turned on.'
+            WRITE(*,*)' The preconditionner will be turned off for all equations'
+            WRITE(*,*)' regardless of the mfix.dat setting.'
             LEQ_PC = 'NONE'
          ENDIF
       ENDIF
@@ -809,7 +809,7 @@
 !-----------------------------------------------
       LOGICAL , EXTERNAL :: COMPARE 
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 !-----------------------------------------------
 !======================================================================
 ! Boundary conditions
@@ -1566,7 +1566,7 @@
 !-----------------------------------------------
 !
 
-      include "function.inc"
+      include "../function.inc"
 
      
 
@@ -1794,7 +1794,7 @@
 !-----------------------------------------------
 !
 
-      include "function.inc"
+      include "../function.inc"
 
 
 
@@ -2035,7 +2035,7 @@
 !-----------------------------------------------
 !
 
-      include "function.inc"
+      include "../function.inc"
 
 
 ! Find the last Point source that is defined. New point sources 
@@ -3498,7 +3498,7 @@
 
            JSIZE_ALL = JSIZE_OLD
 
-           CALL MINIMIZE_LOAD_IMBALANCE(GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL,NCPP,NCPP_WITH_GHOST)
+           CALL MINIMIZE_LOAD_IMBALANCE(NODESJ,GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL,NCPP,NCPP_WITH_GHOST)
 
 
             TOTAL_NUC  = SUM(NCPP_WITH_GHOST(0:NumPEs-1))
@@ -5005,8 +5005,7 @@
 
 
 
-
-           CALL MINIMIZE_LOAD_IMBALANCE(GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL,NCPP,NCPP_WITH_GHOST)
+           CALL MINIMIZE_LOAD_IMBALANCE(nodesj,GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL,NCPP,NCPP_WITH_GHOST)
 
 
             TOTAL_NUC  = SUM(NCPP_WITH_GHOST(0:NumPEs-1))

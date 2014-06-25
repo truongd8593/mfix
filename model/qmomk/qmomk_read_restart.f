@@ -27,7 +27,7 @@ SUBROUTINE QMOMK_READ_RESTART
 
   INTEGER :: M, IJK
 
-  INCLUDE 'function.inc'  
+  INCLUDE '../function.inc'  
 
   OPEN (UNIT=901, FILE=TRIM(RUN_NAME)//'_QMOMK.RES', FORM='Unformatted', STATUS='unknown')
 

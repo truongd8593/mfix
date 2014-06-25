@@ -84,7 +84,7 @@
 !-----------------------------------------------
 ! Include statement functions      
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
       IF (.NOT.GENER_PART_CONFIG) RETURN 
 

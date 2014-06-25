@@ -15,7 +15,7 @@ SUBROUTINE qmomk_init_namelist
   USE param1
   USE qmom_kinetic_equation
   Implicit none 
-  INCLUDE 'qmomk/qmomknamelist.inc'
+  INCLUDE 'qmomknamelist.inc'
       
   QMOMK = .FALSE.
   QMOMK_TYPE = 'QMOM' 

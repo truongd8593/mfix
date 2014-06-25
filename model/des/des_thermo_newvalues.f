@@ -41,7 +41,7 @@
 ! Functions
 !---------------------------------------------------------------------//
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
 
       IF(.NOT.DES_ENERGY_EQ) RETURN
@@ -158,7 +158,7 @@
 ! Functions
 !---------------------------------------------------------------------//
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
       IF(.NOT.DES_ENERGY_EQ) RETURN
 

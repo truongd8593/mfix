@@ -40,7 +40,7 @@
       INTEGER :: SAFE_MODE_COUNT
       DOUBLE PRECISION :: CPU_PP_START,CPU_PP_END
 
-      include "function.inc"
+      include "../function.inc"
 
       IF(.NOT.CG_HEADER_WAS_PRINTED) CALL PRINT_CG_HEADER
 
@@ -518,7 +518,7 @@
       DOUBLE PRECISION :: Xi,Yi,Zi,Xc_backup,Yc_backup,Zc_backup
       LOGICAL :: INTERSECT_FLAG,CLIP_FLAG
 
-      include "function.inc"
+      include "../function.inc"
 
       Xi = UNDEFINED
       Yi = UNDEFINED
@@ -743,7 +743,7 @@
       DOUBLE PRECISION :: DFC,DFC_MAX,Fa,Fb,F4,F6,F7,F8
       LOGICAL :: CLIP_FLAG
 
-      include "function.inc"
+      include "../function.inc"
 
 !======================================================================
 !  Get coordinates of eight nodes
@@ -1133,7 +1133,7 @@
 
 !      CHARACTER (LEN=3) :: CAD_PROPAGATE_ORDER
 
-      include "function.inc"
+      include "../function.inc"
 
 
       INTERSECT_X = .FALSE.

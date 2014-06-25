@@ -277,7 +277,7 @@
         integer :: message_tag
         
 !//DEEP moved include function before message_tag declaration
-        include 'function.inc'
+        include '../function.inc'
 
         message_tag(src,dest) = message_tag_offset + (1+src + dest*10*numPEs)
 !//DEEP_BEFORE
@@ -1474,7 +1474,7 @@ enddo ! do ilayer
 
 
 
-        include 'function.inc'
+        include '../function.inc'
 
          lidebug = 0
 
@@ -1769,7 +1769,7 @@ enddo ! do ilayer
         integer ::  layer, datatype, comm, recvsize, sendsize, &
                 ijk,jj,j1,j2, request, ii,count,source,dest, tag, ierror
 
-        include 'function.inc'
+        include '../function.inc'
 
         lidebug = 0
         if (present(idebug)) then
@@ -1993,7 +1993,7 @@ enddo ! do ilayer
 
         integer :: ic, clen, jpos
 
-        include 'function.inc'
+        include '../function.inc'
 
         lidebug = 0
         if (present(idebug)) then
@@ -2241,7 +2241,7 @@ enddo ! do ilayer
 !       ---------------
 !       inline function
 !       ---------------
-        include 'function.inc'
+        include '../function.inc'
         
 !       --------------------------
 !       wait for sends to complete
@@ -2386,7 +2386,7 @@ enddo ! do ilayer
 !       ---------------
 !       inline function
 !       ---------------
-        include 'function.inc'
+        include '../function.inc'
         
 !       --------------------------
 !       wait for sends to complete
@@ -2532,7 +2532,7 @@ enddo ! do ilayer
 !       ---------------
 !       inline function
 !       ---------------
-        include 'function.inc'
+        include '../function.inc'
         
 !       --------------------------
 !       wait for sends to complete

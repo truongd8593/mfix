@@ -37,7 +37,7 @@
 
 !-----------------------------------------------
 
-      INCLUDE 'des/desnamelist.inc'
+      INCLUDE 'desnamelist.inc'
 
 !<keyword category="Discrete Element" required="false">
 !  <description>Total number of particles to be read in from the 

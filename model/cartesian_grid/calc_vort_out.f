@@ -35,7 +35,7 @@
       DOUBLE PRECISION,DIMENSION(3,3) :: OMEGA,SS,AA
       DOUBLE PRECISION,DIMENSION(4) :: POLY
 
-      include "function.inc"   
+      include "../function.inc"   
 
       DO IJK = IJKSTART3, IJKEND3
 

@@ -123,7 +123,7 @@
 ! Logical for local debug warnings
       LOGICAL DES_LOC_DEBUG
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
       PEA(NP,:) = .FALSE.
 

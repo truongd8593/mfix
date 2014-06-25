@@ -133,7 +133,7 @@
       LOGICAL :: dFlag
 
 
-      include 'function.inc'
+      INCLUDE '../function.inc'
 
 !-----------------------------------------------
 
@@ -433,7 +433,7 @@
       LOGICAL :: dFlag
 
 
-      include 'function.inc'
+      INCLUDE '../function.inc'
 
 !-----------------------------------------------
 
@@ -731,7 +731,7 @@
       LOGICAL :: dFlag
 
 
-      include 'function.inc'
+      INCLUDE '../function.inc'
 
 !-----------------------------------------------
 

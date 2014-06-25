@@ -29,7 +29,7 @@
       DOUBLE PRECISION Tinit, InitVal
       INTEGER :: I, J, K, M, L, IJK
       
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
                
       DO IJK = IJKSTART3, IJKEND3
 

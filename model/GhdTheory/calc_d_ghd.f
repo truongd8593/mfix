@@ -96,11 +96,11 @@
       DOUBLE PRECISION  EPStmp
 !-----------------------------------------------
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
+      INCLUDE '../ep_s1.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg2.inc'
+      INCLUDE '../ep_s2.inc'
 
 
    Pass1 = .FALSE.     !initialization
@@ -353,11 +353,11 @@
       DOUBLE PRECISION  EPStmp
 !-----------------------------------------------
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
+      INCLUDE '../ep_s1.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg2.inc'
+      INCLUDE '../ep_s2.inc'
 
 
    Pass1 = .FALSE.     !initialization
@@ -610,11 +610,11 @@
       DOUBLE PRECISION  EPStmp
 !-----------------------------------------------
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
+      INCLUDE '../ep_s1.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg2.inc'
+      INCLUDE '../ep_s2.inc'
 
 
    Pass1 = .FALSE.     !initialization

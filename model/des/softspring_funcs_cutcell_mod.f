@@ -69,7 +69,7 @@
       IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP, &
       LOC_MAX_PIP, focus_particle
 
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
 
       FOCUS_PARTICLE = -1
@@ -237,7 +237,7 @@
       DOUBLE PRECISION :: MAX_DISTSQ
       INTEGER :: MAX_NF
 
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
       DES_LOC_DEBUG = .false. ;      DEBUG_DES = .false.
       FOCUS_PARTICLE = -1

@@ -51,7 +51,7 @@
 
 ! Functions
 !---------------------------------------------------------------------//
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
       IF(.NOT.ANY_DES_SPECIES_EQ) RETURN
 
