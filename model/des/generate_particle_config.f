@@ -249,7 +249,7 @@
 !-----------------------------------------------
 ! Include statement functions      
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
       
 ! This call will delete the particles outside the domain. It will then
 ! re-arrange the arrays such that the active particles are in a block.
@@ -319,7 +319,7 @@
 !-----------------------------------------------
 ! Include statement functions      
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
       
 ! This call will delete the particles outside the domain. It will then
 ! re-arrange the arrays such that the active particles are in a block.
@@ -380,7 +380,7 @@
 !-----------------------------------------------
 ! Include statement functions      
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
       
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("BIN_PARTICLES_TO_CELL")
@@ -531,7 +531,7 @@
 !-----------------------------------------------  
 ! Include statement functions
 !-----------------------------------------------  
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
       CALL INIT_ERR_MSG("GENERATE_PARTICLE_CONFIG_DEM")
 
@@ -930,7 +930,7 @@
 !-----------------------------------------------  
 ! Include statement functions
 !-----------------------------------------------  
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
       
       CALL INIT_ERR_MSG("GENERATE_PARTICLE_CONFIG_MPPIC")
@@ -1040,11 +1040,7 @@
                         DOML(2) = DY(J)
                         IF(DO_K) DOML(3) = DZ(K)
                         
-                        !VOL(IJK) is calculated by set_geometry1, which is 
-                        !called in mfix.f after calling get_data. At this
-                        !stage, VOL(IJK) = zero
-                        !VOLIJK = VOL(IJK)
-                        VOLIJK       = DX(I)*DY(J)*DZ(K) 
+                        VOLIJK = VOL(IJK)
                         VOLIJK_UNCUT = DX(I)*DY(J)*DZ(K) 
                         
                         REAL_PARTS(M) = 0.
@@ -1208,7 +1204,7 @@
             
             WRITE(ERR_MSG, '(10x, A, I15, /, 10x, A, ES15.7)') &
                  '# of computational particles or parcels acutally seeded = ', PART_MPHASE_BYIC(ICV, M), & 
-                 '# of implied real particles for above parcel count          = ', REALPART_MPHASE_BYIC(ICV, M)
+                 '# of implied real particles for above partcles          = ', REALPART_MPHASE_BYIC(ICV, M)
                  
             CALL FLUSH_ERR_MSG(header = .false., FOOTER = .false.)
 

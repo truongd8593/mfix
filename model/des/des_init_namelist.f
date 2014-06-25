@@ -37,7 +37,7 @@
 
 !-----------------------------------------------
 
-      INCLUDE 'des/desnamelist.inc'
+      INCLUDE 'desnamelist.inc'
 
 !<keyword category="Discrete Element" required="false">
 !  <description>Total number of particles to be read in from the 
@@ -680,15 +680,6 @@
 !</description>
 !  <dependent keyword="MPPIC" value=".TRUE."/>
       PIC_REPORT_DELETION_STATS = .false.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description> A run time flag to report minimum value and location
-! of gas voidage. This is useful only for debugging and is not recommended for
-! production runs. 
-!</description>
-!  <dependent keyword="MPPIC" value=".TRUE."/>
-      PIC_REPORT_MIN_EPG = .false. 
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">

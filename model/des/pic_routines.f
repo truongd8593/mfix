@@ -25,7 +25,6 @@
       USE mfix_pic
       USE pic_bc
       USE error_manager
-      USE fldvar, only: P_g
       IMPLICIT NONE
 !------------------------------------------------
 ! Local variables
@@ -58,9 +57,9 @@
 ! Identifies that the indicated particle is of interest for debugging
       LOGICAL FOCUS
 
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../fun_avg2.inc'
 
       CALL INIT_ERR_MSG("PIC_TIME_MARCH")
 
@@ -73,6 +72,7 @@
 
       TEND_PIC_LOOP = MERGE(TIME+DT, TSTOP, DES_CONTINUUM_COUPLED)
       PIC_ITERS = 0 
+
       DO WHILE(S_TIME.LT.TEND_PIC_LOOP)
          ! If the current time in the discrete loop exceeds the current time in
          ! the continuum simulation, exit the lagrangian loop
@@ -84,20 +84,20 @@
             IF(DES_CONTINUUM_COUPLED) then 
                WRITE(ERR_MSG, 2000) DTSOLID, DTPIC_CFL, DTPIC_TAUP, DT
                
-2000           FORMAT(/5x, &
-                    & 'DTSOLID CURRENT  = ', g17.8, /5x,  &
-                    & 'DTPIC_CFL        = ', g17.8, /5x,  &
-                    & 'DTPIC TAUP       = ', g17.8, /5x, &
+2000           FORMAT(/10x, &
+                    & 'DTSOLID CURRENT  = ', g17.8, /10x,  &
+                    & 'DTPIC_CFL        = ', g17.8, /10x,  &
+                    & 'DTPIC TAUP       = ', g17.8, /10x, &
                     & 'DT FLOW          = ', g17.8)
             ELSE
                
                WRITE(ERR_MSG, 2001) S_TIME, DTSOLID, DTPIC_CFL, DTPIC_TAUP, DT
                
-2001           FORMAT(/5x, &
-                    & 'TIME             = ', g17.8, /5x,  &
-                    & 'DTSOLID CURRENT  = ', g17.8, /5x,  &
-                    & 'DTPIC_CFL        = ', g17.8, /5x,  &
-                    & 'DTPIC TAUP       = ', g17.8, /5x, &
+2001           FORMAT(/10x, &
+                    & 'TIME             = ', g17.8, /10x,  &
+                    & 'DTSOLID CURRENT  = ', g17.8, /10x,  &
+                    & 'DTPIC_CFL        = ', g17.8, /10x,  &
+                    & 'DTPIC TAUP       = ', g17.8, /10x, &
                     & 'DT FLOW          = ', g17.8)
             ENDIF
             CALL flush_err_msg(header = .false., footer = .false.)
@@ -112,9 +112,9 @@
             WRITE(ERR_MSG, 2010)  DTSOLID, TIME + DT - S_TIME
             CALL flush_err_msg(header = .false., footer = .false.)
 
-2010        FORMAT(/5X, &
-                 & 'REDUCING DTSOLID TO ENSURE STIME + DTSOLID LE TIME + DT', /5x, &
-                 & 'DTSOLID ORIG         = ', g17.8, /5x, &
+2010        FORMAT(/10X, &
+                 & 'REDUCING DTSOLID TO ENSURE STIME + DTSOLID LE TIME + DT', /10x, &
+                 & 'DTSOLID ORIG         = ', g17.8, /10x, &
                  & 'DTSOLID ACTUAL       = ', g17.8)
 
             DTSOLID = TEND_PIC_LOOP - S_TIME
@@ -180,13 +180,13 @@
          
       ENDDO
 
-      IF(DMP_LOG)       WRITE(UNIT_LOG,'(/5x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
-      IF(mype.eq.pe_IO) WRITE(*,'(/5x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
+      IF(DMP_LOG)       WRITE(UNIT_LOG,'(/10x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
+      IF(mype.eq.pe_IO) WRITE(*,'(/10x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
 
-      IJK_BOT = funijk(imin1, 2,kmin1)
-      IJK_TOP = funijk(imin1, jmax1, kmin1)
-      WRITE(*,'(/5X, A, 3(2x,g17.8))') 'MPPIC: PRES BOTTOM, TOP, AND DIFF KPA', P_G(IJK_BOT)/10000.d0, P_G(IJK_TOP)/10000.d0, (P_G(IJK_BOT) -  P_G(IJK_TOP))/10000.d0
-      !WRITE(*,'(/5X, A, 3(2x,g17.8))') 'PRES BOTTOM, TOP, AND DIFF ', P_G(IJK_BOT), P_G(IJK_TOP), P_G(IJK_BOT) -  P_G(IJK_TOP)
+!      IJK_BOT = funijk(imin1, 2,kmin1)
+!      IJK_TOP = funijk(imin1, jmax1, kmin1)
+!      WRITE(*,'(/10X, A, 3(2x,g17.8))') 'MPPIC: PRES BOTTOM, TOP, AND DIFF KPA', P_G(IJK_BOT)/10000.d0, P_G(IJK_TOP)/10000.d0, (P_G(IJK_BOT) -  P_G(IJK_TOP))/10000.d0
+      !WRITE(*,'(/10X, A, 3(2x,g17.8))') 'PRES BOTTOM, TOP, AND DIFF ', P_G(IJK_BOT), P_G(IJK_TOP), P_G(IJK_BOT) -  P_G(IJK_TOP)
       IF(.NOT.DES_CONTINUUM_COUPLED)then
          if(dmp_log)write(unit_log,'(1X,A)')&
          '<---------- END MPPIC_TIME_MARCH ----------'
@@ -234,7 +234,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
 
       DO IJK = ijkstart3, ijkend3
@@ -267,7 +267,7 @@
             ENDIF
 
 
-            if(K.GE.KMIN1.AND.K.LT.KMAX1.AND.DO_K) then !because we don't want to
+            if(K.GE.KMIN1.AND.K.LT.KMAX1.AND.DIMN.EQ.3) then !because we don't want to
                !calculate solids velocity at the wall cells.
                IJKP = KP_OF(IJK)
                DO M = 1, DES_MMAX
@@ -282,7 +282,7 @@
          !CALL WRITE_MPPIC_VEL_S
          CALL MPPIC_BC_U_S
          CALL MPPIC_BC_V_S
-         IF(DO_K) CALL MPPIC_BC_W_S
+         IF(DIMN.eq.3) CALL MPPIC_BC_W_S
 
       END SUBROUTINE MPPIC_COMP_EULERIAN_VELS_NON_CG
 
@@ -312,7 +312,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
@@ -360,7 +360,7 @@
             ENDIF
          ENDIF
 
-         IF(DO_K) THEN
+         IF(DIMN.EQ.3) THEN
             IF(WALL_W_AT(IJK)) THEN
                PIC_W_S(IJK, :) = ZERO
             ELSE
@@ -423,9 +423,9 @@
 
 !-----------------------------------------------
 
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../fun_avg2.inc'
 
       M = PIJK(L,5)
       IJK = PIJK(L,4)
@@ -446,7 +446,7 @@
 
       MEANVEL(1) = DES_U_S(IJK,M)
       MEANVEL(2) = DES_V_S(IJK,M)
-      IF(DO_K) MEANVEL(3) = DES_W_S(IJK,M)
+      IF(DIMN.EQ.3) MEANVEL(3) = DES_W_S(IJK,M)
 
       PS_FORCE(:) = PS_GRAD(L, :)
       !IF(ABS(PS_FORCE(2)).GT.ZERO)  WRITE(*,*) 'PS_FORCE = ', PS_FORCE
@@ -628,7 +628,7 @@
       INTEGER I, J, K, IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM, IDIM, M
 
       ! temporary variables used to calculate pressure at scalar cell edge
-      DOUBLE PRECISION TEMP1, TEMP2, avg_factor, VOL_TOT_VEC(3), VOL_TOT_SCAL
+      DOUBLE PRECISION TEMP1, TEMP2, avg_factor, VOL_TOT_VEC(DIMN), VOL_TOT_SCAL
 
       integer :: korder, iw,ie,js,jn,kb,ktp, onew, pcell(3), cur_ijk, NP, nindx
 
@@ -637,9 +637,9 @@
       double precision :: vol_ijk, vol_ipjk, vol_ijpk, vol_ipjpk
       double precision :: vol_ijkp, vol_ipjkp, vol_ijpkp, vol_ipjpkp
 
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../fun_avg2.inc'
 
       if(MPPIC_SOLID_STRESS_SNIDER) then
 
@@ -714,7 +714,7 @@
             ENDIF
          ENDIF
 
-         IF(DO_K) THEN
+         IF(DIMN.EQ.3) THEN
             IF(FLUID_AT(IJKP)) then
                PS_FORCE_PIC(IJK,3) = 2.d0*(PIC_P_S(IJKP,1) - PIC_P_S(IJK,1))/(Dz(k)+Dz(k_of(ijkp)))
             ELSE
@@ -773,7 +773,7 @@
          END DO
       END DO
 
-      IF(DO_K) then
+      IF(DIMN.eq.3) then
          K1 = 1
          DO J1 = JSTART3, JEND3
             DO I1 = ISTART3, IEND3
@@ -798,17 +798,13 @@
          END DO
       ENDIF
 
-      DO IDIM = 1, merge(2,3,NO_K)
+      DO IDIM = 1, DIMN
          CALL SEND_RECV(PS_FORCE_PIC(:,IDIM),1)
       ENDDO
 
       CALL SET_INTERPOLATION_SCHEME(2)
 
-      KORDER = merge ( 1, 2, no_k) !1+(DIMN-2)
-
-! avg_factor=0.25 (in 3D) or =0.5 (in 2D)
-      !avg_factor = 0.25d0*(dimn-2) + 0.5d0*(3-dimn)
-      AVG_FACTOR = merge(0.5d0, 0.25D0, NO_K)
+      KORDER = 1+(DIMN-2)
 
       do ijk = ijkstart3,ijkend3
 
@@ -818,12 +814,13 @@
          k = k_of(ijk)
          pcell(1) = i-1
          pcell(2) = j-1
-         pcell(3) = merge(1, k-1, no_k) ! =k-1 (in 3d) or =1 (in 2d)
+         pcell(3) = (3-dimn)*1+(dimn-2)*(k-1) ! =k-1 (in 3d) or =1 (in 2d)
          call set_interpolation_stencil(pcell,iw,ie,js,jn,kb,&
-         ktp,interp_scheme,merge(2,3,no_k),ordernew = onew)
+         ktp,interp_scheme,dimn,ordernew = onew)
 
 !Compute velocity at grid nodes and set the geometric stencil
-         do k = 1, merge(1, onew, no_K)!  (3-dimn)*1+(dimn-2)*onew
+         avg_factor = 0.25d0*(dimn-2) + 0.5d0*(3-dimn)
+         do k = 1,(3-dimn)*1+(dimn-2)*onew
             do j = 1,onew
                do i = 1,onew
                   ii = iw + i-1
@@ -850,7 +847,7 @@
                   if(fluid_at(ipjpk))   vol_ipjpk = vol(ipjpk)
 
 
-                  if(DO_K) then
+                  if(dimn.eq.3) then
                      ijkp    = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk+1))
                      ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
                      ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
@@ -865,7 +862,7 @@
                   endif
                   gstencil(i,j,k,1) = xe(ii)
                   gstencil(i,j,k,2) = yn(jj)
-                  gstencil(i,j,k,3) = merge(DZ(1), ZT(KK), NO_K)
+                  gstencil(i,j,k,3) = zt(kk)*(dimn-2) + dz(1)*(3-dimn)
 
                   VOL_TOT_SCAL = ZERO
 
@@ -893,7 +890,7 @@
 
                   vstencil(i,j,k,1) = u_g(cur_ijk)*vol(cur_ijk) + u_g(ijpk)*vol(ijpk)
                   vstencil(i,j,k,2) = v_g(cur_ijk)*vol(cur_ijk) + v_g(ipjk)*vol(ipjk)
-                  if(DO_K) then
+                  if(dimn.eq.3) then
                      VOL_TOT_VEC(1) = VOL_TOT_VEC(1) + VOL(IJKP) + VOL(IJPKP)
                      VOL_TOT_VEC(2) = VOL_TOT_VEC(2) + VOL(IJKP) + VOL(IPJKP)
                      VOL_TOT_VEC(3) = VOL(CUR_IJK) + VOL(IPJK) + VOL(IJPK) + VOL(IPJPK)
@@ -926,7 +923,7 @@
                      vstencil(i,j,k,3) = 0.d0
 
                   endif
-                  DO IDIM = 1, merge(2,3,NO_K)
+                  DO IDIM = 1, DIMN
                      IF(VOL_TOT_VEC(IDIM).GT.ZERO)  THEN
                         psgradstencil(i,j,k,idim) = psgradstencil(i,j,k,idim)/VOL_TOT_VEC(idim)
 
@@ -958,19 +955,19 @@
             np = pic(ijk)%p(nindx)
             m = pijk(np,5)
 
-            if(NO_K) then !2-D
+            if(dimn.eq.2) then
                call interpolator(gstencil(1:onew,1:onew,1,1:dimn), &
                psgradstencil(1:onew,1:onew,1,1:dimn), &
                des_pos_new(np,1:dimn),PS_GRAD(np,1:dimn),  &
                onew,interp_scheme,weightp)
-            else !3-D, diff in psgradstencil size
+            else
                call interpolator(gstencil(1:onew,1:onew,1:onew,1:dimn), &
                psgradstencil(1:onew,1:onew,1:onew,1:dimn), &
                des_pos_new(np,1:dimn),PS_GRAD(np,1:dimn),  &
                onew,interp_scheme,weightp)
             endif
 
-            do idim = 1,  merge(2,3,NO_K)
+            do idim = 1, dimn
                AVGSOLVEL_P(NP,IDIM) = ARRAY_DOT_PRODUCT(VEL_SOL_STENCIL(:,:,:,IDIM,M),WEIGHTP(:,:,:))
                VEL_FP(NP,IDIM) = ARRAY_DOT_PRODUCT(VSTENCIL(:,:,:,IDIM),WEIGHTP(:,:,:))
             ENDDO
@@ -1016,7 +1013,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 
@@ -1100,7 +1097,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! Set the default boundary conditions
@@ -1181,7 +1178,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! Set the default boundary conditions
@@ -1243,9 +1240,9 @@
       double precision, dimension(:), intent(in)  :: bufin
 
       integer :: ijk, i, j,k
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../fun_avg2.inc'
 
       write(funit,*)'VARIABLES= ',' "I" ',' "J" ',' "K" ',' "DES_ROPS_NODE" '
 
@@ -1281,10 +1278,10 @@
       double precision :: zcor
       character*100 :: filename
       logical finish
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
-!      INCLUDE 'ep_s1.inc'
-!      INCLUDE 'ep_s2.inc'
+!      INCLUDE '../ep_s1.inc'
+!      INCLUDE '../ep_s2.inc'
 
       WRITE(filename,'(A,"_",I5.5,".dat")') TRIM(RUN_NAME)//'_U_S_',myPE
       OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown')

@@ -90,7 +90,7 @@
       use discretelement, only: USE_COHESION, PostCohesive
       use discretelement, only: DES_CALC_CLUSTER, PostCluster
 
-      USE mfix_pic, only: des_stat_wt, mppic
+
       IMPLICIT NONE
 
 
@@ -133,7 +133,6 @@
       CALL VTP_WRITE_DATA('Diameter', 2.0d0*DES_RADIUS)
       CALL VTP_WRITE_DATA('Velocity', DES_VEL_NEW)
 
-!      IF(MPPIC) CALL VTP_WRITE_DATA('Statwt', DES_STAT_WT)
       IF(ENERGY_EQ) &
          CALL VTP_WRITE_DATA('Temperature', DES_T_s_NEW)
 
@@ -256,9 +255,9 @@
 !-----------------------------------------------
 !-----------------------------------------------
 
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../ep_s1.inc'
+      INCLUDE '../ep_s2.inc'
 
 ! Set output dimnensions
       wDIMN = merge(2,3,NO_K)
@@ -551,7 +550,7 @@
       CHARACTER*50  :: FNAME_GT      
 !-----------------------------------------------      
 
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
 
       FNAME_GT = TRIM(RUN_NAME)//'_DES_THETA.dat'

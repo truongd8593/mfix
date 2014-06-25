@@ -99,7 +99,5 @@
 !                      Solids pressure as a result of granular motion
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: PIC_P_s 
 
-! A run time flag to report minimum value of gas voidage
-      LOGICAL :: PIC_REPORT_MIN_EPG
       end MODULE MFIX_PIC
 
