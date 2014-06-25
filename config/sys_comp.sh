@@ -34,6 +34,7 @@ if test ${REQ_COMP} = 1; then
         echo
         echo " <--- @NERSC  ------------------------------------->"
         echo " [40] Hopper :: CRAY (ftn)"
+        echo " [41] Hopper :: Intel (ftn)"
         echo
       fi
       echo " "
@@ -54,7 +55,8 @@ if test ${REQ_COMP} = 1; then
        30)COMP_FILE="alcf_bgp_ibm.sh";;
        31)COMP_FILE="alcf_bgq_ibm.sh";;
 # NERSC Systems
-       40)COMP_FILE="nersc_cray.sh";;
+       40)COMP_FILE="nersc_hopper_cray.sh";;
+       41)COMP_FILE="nersc_hopper_intel.sh";;
 
         *)COMP_FILE="gcc_default.sh";;
       esac
