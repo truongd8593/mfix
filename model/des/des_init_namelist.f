@@ -683,6 +683,15 @@
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
+!  <description> A run time flag to report minimum value and location
+! of gas voidage. This is useful only for debugging and is not recommended for
+! production runs. 
+!</description>
+!  <dependent keyword="MPPIC" value=".TRUE."/>
+      PIC_REPORT_MIN_EPG = .false. 
+!</keyword>
+
+!<keyword category="Discrete Element" required="false">
 !  <description>P_s term in the frictional stress model of Snider</description>
 !  <dependent keyword="MPPIC" value=".TRUE."/>
       PSFAC_FRIC_PIC = 100

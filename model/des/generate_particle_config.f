@@ -1040,7 +1040,11 @@
                         DOML(2) = DY(J)
                         IF(DO_K) DOML(3) = DZ(K)
                         
-                        VOLIJK = VOL(IJK)
+                        !VOL(IJK) is calculated by set_geometry1, which is 
+                        !called in mfix.f after calling get_data. At this
+                        !stage, VOL(IJK) = zero
+                        !VOLIJK = VOL(IJK)
+                        VOLIJK       = DX(I)*DY(J)*DZ(K) 
                         VOLIJK_UNCUT = DX(I)*DY(J)*DZ(K) 
                         
                         REAL_PARTS(M) = 0.
@@ -1204,7 +1208,7 @@
             
             WRITE(ERR_MSG, '(10x, A, I15, /, 10x, A, ES15.7)') &
                  '# of computational particles or parcels acutally seeded = ', PART_MPHASE_BYIC(ICV, M), & 
-                 '# of implied real particles for above partcles          = ', REALPART_MPHASE_BYIC(ICV, M)
+                 '# of implied real particles for above parcel count          = ', REALPART_MPHASE_BYIC(ICV, M)
                  
             CALL FLUSH_ERR_MSG(header = .false., FOOTER = .false.)
 

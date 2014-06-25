@@ -67,8 +67,8 @@
       INTEGER :: NNODES
 ! IER for error reporting
       INTEGER IER 
-      INTEGER epg_min_loc(1)
-      double precision :: epg_min2
+      INTEGER epg_min_loc(0:numpes-1, 4), epg_min_loc2(1)
+      double precision :: epg_min(0:numpes-1), epg_min2
 ! Difference between a particles diameter (density) and the diameter
 ! (density) of a phase specified in the data file.
       DOUBLE PRECISION dDp, dRho
@@ -445,20 +445,58 @@
             ENDDO
          ENDIF
 
-!!$         NNODES = NODESI*NODESJ*NODESK
-!!$         IF (NNODES.EQ.1 ) THEN
-!!$            EPG_MIN2 = MINVAL(EP_G(:))
-!!$            epg_min_loc = MINLOC(EP_G(:))
-!!$            IJK = epg_min_loc(1)
-!!$            I = I_OF(IJK)
-!!$            J = J_OF(IJK)
-!!$            K = K_OF(IJK)
-!!$            WRITE(*,1014) epg_min2, I_OF(IJK), j_of(ijk), k_of(ijk), &
-!!$            & xe(I) - 0.5*dx(i), yn(J)-0.5*DY(J), zt(K) - 0.5*DZ(K), & 
-!!$            & PINC(IJK), cut_cell_at(ijk), fluid_at(ijk)
-!!$         ENDIF
-      ENDIF
-         
+
+         IF(PIC_REPORT_MIN_EPG) then 
+            EPG_MIN(:)       = 0 
+            EPG_MIN_LOC(:,:) = 0
+
+            EPG_MIN(mype)       = LARGE_NUMBER
+            EPG_MIN_LOC(mype,:) = -1 
+
+            DO K = KSTART1, KEND1
+               DO J = JSTART1, JEND1
+                  DO I = ISTART1, IEND1 
+                     IJK = funijk(I,J,K) 
+                     
+                     IF(EP_G(IJK).lt.EPG_MIN(mype)) then 
+                        EPG_MIN_LOC(mype,1) = I
+                        EPG_MIN_LOC(mype,2) = 2
+                        EPG_MIN_LOC(mype,3) = 3
+                        EPG_MIN_LOC(mype,4) = IJK
+                        EPG_MIN(mype)       = EP_G(IJK) 
+                     ENDIF
+                  ENDDO
+               ENDDO
+            ENDDO
+            
+            call global_all_sum(epg_min(0:numpes-1))
+            call global_all_sum(epg_min_loc(0:numpes-1,1:4))
+            
+            epg_min2     = MINVAL(epg_min(0:numpes-1))
+            epg_min_loc2 = MINLOC(epg_min(0:numpes-1)) - 1 
+            !-1, since minloc goes from 1:size of the array. 
+            !If not corrected by -1, then the proc id will be off by 1 
+
+            iproc = epg_min_loc2(1)
+
+            I     = epg_min_loc(iproc, 1)
+            J     = epg_min_loc(iproc, 2)
+            K     = epg_min_loc(iproc, 3)
+            IJK   = epg_min_loc(iproc, 4)
+            WRITE(ERR_MSG,1014) EPG_MIN2, Iproc, I, J, K, IJK, &
+            & XE(I) - 0.5*DX(I), YN(J)-0.5*DY(J), ZT(K) - 0.5*DZ(K)
+            
+ 1014       FORMAT( /, &
+            &      5x,'EPGMIN                    = ', 2x,g17.8,/ & 
+            &      5x,'EPGMIN PROC RANK          = ', 2x, I10, / & 
+            &      5x,'EPGMIN (I, J, K, IJK)     = ', 3(2x,i5),2x,i10,/ &
+            &      5x,'XMID, YMID, ZMID FOR CELL = ', 3(2x,g17.8))
+
+            call flush_err_msg(header = .false., footer = .false.)
+
+         ENDIF
+      end IF
+      
 
       FIRST_PASS = .FALSE.
       CALL FINL_ERR_MSG
@@ -497,13 +535,6 @@
          '-position new and old: ',2(ES17.9,4X),A,'-velocity: ',&
           ES17.9,/1X,70('*')/)
 
- 1014 FORMAT( /, &
-      &      10x,'EPGMIN NORMAL = ', 2x,g17.8, / & 
-      &      10x,'EPG_MIN_LOCATION, I, J, K = ', 3(2x,i5),/, &
-      &      10x,'XMID, YMID, ZMID FOR CELL = ', 3(2x,g17.8),/ & 
-      &      10x,'No of paricles in cell = ',I10, & 
-      &      10x,'CUT CELL, FLUID AT IJK ?    ', 2(2x, L2)) !,/& 
-!      &      1X,70('*')/)
      
       RETURN
       END SUBROUTINE PARTICLES_IN_CELL
@@ -1225,7 +1256,7 @@
          CALL GLOBAL_SUM(MASS_SOL1, MASS_SOL1_ALL)
          CALL GLOBAL_SUM(MASS_SOL2, MASS_SOL2_ALL)
          if(myPE.eq.pe_IO) THEN
-            WRITE(*,'(10x,A,4(2x,g17.8))') & 
+            WRITE(*,'(/,5x,A,4(2x,g17.8),/)') & 
                  'SOLIDS MASS DISCRETE AND CONTINUUM =  ', & 
                  MASS_SOL1_ALL, MASS_SOL2_ALL
          ENDIF
