@@ -489,13 +489,13 @@
 ! Write special output, if needed
       DO L = 1, DIMENSION_USR
          IF (DT == UNDEFINED) THEN
-            IF (FINISH.and.myPE.eq.PE_IO) CALL WRITE_USR1 (L)
+            IF (FINISH) CALL WRITE_USR1 (L)
 ! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
 ! queue terminates
          ELSEIF (USR_TIME(L)/=UNDEFINED .AND. &
                  TIME+0.1d0*DT>=USR_TIME(L) .OR. eofBATCHQ) THEN
             USR_TIME(L) = (INT((TIME + 0.1d0*DT)/USR_DT(L))+1)*USR_DT(L)
-            if (myPE.eq.PE_IO) CALL WRITE_USR1 (L)
+            CALL WRITE_USR1 (L)
          ENDIF
       ENDDO
 
