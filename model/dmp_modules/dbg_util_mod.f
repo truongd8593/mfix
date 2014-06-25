@@ -100,7 +100,7 @@
       integer :: i,j,k
 !      integer, optional, intent(in) :: mroot, idebug
       integer ijk
-      include 'function.inc'
+      include '../function.inc'
 
        OPEN(unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
        write(ldbg,"('Dumping variable : ',A10)") varname
@@ -127,7 +127,7 @@
       integer :: i,j,k
 !      integer, optional, intent(in) :: mroot, idebug
       integer ijk
-      include 'function.inc'
+      include '../function.inc'
 
        OPEN(unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
        write(ldbg,"('Dumping variable : ',A10)") varname
@@ -153,7 +153,7 @@
       integer :: i,j,k
 !      integer, optional, intent(in) :: mroot, idebug
       integer ijk
-      include 'function.inc'
+      include '../function.inc'
 
        OPEN(unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
        write(ldbg,"('Dumping variable : ',A10)") varname

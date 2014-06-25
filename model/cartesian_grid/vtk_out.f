@@ -71,7 +71,7 @@
       INTEGER :: WRITE_DATA   = 2
 
 
-      include "function.inc"
+      include "../function.inc"
 
       IF(.NOT.CARTESIAN_GRID) RETURN
 
@@ -420,7 +420,7 @@
       LOGICAL :: VTU_FRAME_FILE_EXISTS
       INTEGER :: ISTAT 
 
-      include "function.inc"
+      include "../function.inc"
 
 ! Only open the file form head node when not using distributed I/O
       IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN 
@@ -626,7 +626,7 @@
       INTEGER :: WRITE_HEADER = 1
       INTEGER :: WRITE_DATA   = 2
 
-      include "function.inc"
+      include "../function.inc"
 
 
 ! First a series of tags is written for the geometry (PASS=WRITE_HEADER)
@@ -994,7 +994,7 @@
       INTEGER :: WRITE_DATA   = 2
 
 
-      include "function.inc"
+      include "../function.inc"
 
       IF (.NOT.BDIST_IO) THEN
 
@@ -1159,7 +1159,7 @@
       INTEGER :: WRITE_DATA   = 2
 
 
-      include "function.inc"
+      include "../function.inc"
 
       IF (.NOT.BDIST_IO) THEN
 
@@ -1412,7 +1412,7 @@
 
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, COUNT_DES_BC,IJK_ARRAY
 
-      include "function.inc"
+      include "../function.inc"
 
       IF(.NOT.CARTESIAN_GRID) RETURN
 
@@ -1711,7 +1711,7 @@
       LOGICAL :: VTU_FRAME_FILE_EXISTS
       INTEGER :: ISTAT 
 
-      include "function.inc"
+      include "../function.inc"
 
 
 !      print*,'Entering Open_vtu_file from myPE=',MyPE, (myPE /= PE_IO.AND.(.NOT.BDIST_IO))
@@ -1869,7 +1869,7 @@
       INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
       LOGICAL :: PVD_EXISTS,VTU_FRAME_FILE_EXISTS
 
-      include "function.inc"
+      include "../function.inc"
 
       IF (myPE /= PE_IO) RETURN 
 
@@ -1993,7 +1993,7 @@
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: SHIFTED_CONNECTIVITY
       INTEGER :: CELL_TYPE
 
-      include "function.inc"
+      include "../function.inc"
 
       IF (myPE == PE_IO.AND.(.NOT.BDIST_IO)) THEN
 
@@ -2178,7 +2178,7 @@
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VAR
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VAR(:)
 
-      include "function.inc"
+      include "../function.inc"
 
       IF (.NOT.BDIST_IO) THEN
 
@@ -2285,7 +2285,7 @@
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VARX,VARY,VARZ
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VARX(:),GLOBAL_VARY(:),GLOBAL_VARZ(:)
 
-      include "function.inc"
+      include "../function.inc"
 
       IF (.NOT.BDIST_IO) THEN
 
@@ -2541,7 +2541,7 @@
 
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, COUNT_DES_BC
 
-      include "function.inc"
+      include "../function.inc"
 
       IF(.NOT.CARTESIAN_GRID) RETURN
 
@@ -2773,7 +2773,7 @@
       INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
       INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
 
-      include "function.inc"
+      include "../function.inc"
 
       IF (myPE /= PE_IO) RETURN 
 
@@ -2869,7 +2869,7 @@
       INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: SHIFTED_CONNECTIVITY
 
-      include "function.inc"
+      include "../function.inc"
 
       IF (myPE /= PE_IO) RETURN
 
@@ -2964,7 +2964,7 @@
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VAR
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VAR(:)
 
-      include "function.inc"
+      include "../function.inc"
 
 
       IF (myPE == PE_IO) THEN
@@ -3041,7 +3041,7 @@
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VARX,VARY,VARZ
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VARX(:),GLOBAL_VARY(:),GLOBAL_VARZ(:)
 
-      include "function.inc"
+      include "../function.inc"
 
 
       IF (myPE == PE_IO) THEN
@@ -3171,7 +3171,7 @@
       LOGICAL :: CORNER_POINT
       INTEGER :: NODE_OF_CORNER
 
-      include "function.inc"
+      include "../function.inc"
 
       IF(myPE/=0) RETURN
 
@@ -3389,7 +3389,7 @@
       INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: SHIFTED_CONNECTIVITY
 
-      include "function.inc"
+      include "../function.inc"
 
 
 !======================================================================
@@ -3583,7 +3583,7 @@
       DOUBLE PRECISION :: LOCAL_MIN_Q,LOCAL_MAX_Q, GLOBAL_MIN_Q,GLOBAL_MAX_Q
 
 
-      include "function.inc"
+      include "../function.inc"
 
       IF (myPE == PE_IO) THEN
 

@@ -245,7 +245,7 @@
 	integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
 	integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
-        include 'function.inc'
+        include '../function.inc'
 
 !	check to see whether there is root
 
@@ -385,7 +385,7 @@
 	integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
-        include 'function.inc'
+        include '../function.inc'
 
 	if (.not. present(mroot)) then
 	   lroot = 0
@@ -523,7 +523,7 @@
 	integer :: sendtype, recvtype, ijk1,ijk2,recvcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
-        include 'function.inc'
+        include '../function.inc'
 
 	if (.not. present(mroot)) then
 	   lroot = 0
@@ -663,7 +663,7 @@
         integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
         integer :: lenchar, icount
-        include 'function.inc'
+        include '../function.inc'
 
 !       check to see whether there is root
 
@@ -730,7 +730,7 @@
         integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
-        include 'function.inc'
+        include '../function.inc'
 
 !       check to see whether there is root
 
@@ -808,7 +808,7 @@
         integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
 	logical :: isok_k,isok_j,isok_i, isinterior 
 	logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
-        include 'function.inc'
+        include '../function.inc'
 
 !       check to see whether there is root
 
@@ -975,7 +975,7 @@
         integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
-        include 'function.inc'
+        include '../function.inc'
 
 	if (.not. present(mroot)) then
 	   lroot = 0
@@ -1144,7 +1144,7 @@
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
         integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
 
-        include 'function.inc'
+        include '../function.inc'
 
 	if (.not. present(mroot)) then
 	   lroot = 0
@@ -1311,7 +1311,7 @@
         integer :: lenchar, icount
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
-        include 'function.inc'
+        include '../function.inc'
 
 !       check to see whether there is root
 
@@ -1384,7 +1384,7 @@
         integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
-        include 'function.inc'
+        include '../function.inc'
 
 !       check to see whether there is root
 

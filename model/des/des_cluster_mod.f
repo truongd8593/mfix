@@ -293,7 +293,7 @@
 !......................................................................!
       SUBROUTINE DELETE_PARTICLES_IN_CLUSTER(cluster)
 
-      TYPE(CLUSTER_TYPE), INTENT(IN), POINTER :: cluster
+      TYPE(CLUSTER_TYPE), INTENT(INOUT), POINTER :: cluster
 
       TYPE(PARTICLE_TYPE), POINTER :: particle
       INTEGER pL, pDeleted
@@ -713,7 +713,7 @@
 ! Report a problem if viscosity is zero. (sanity check)
                   if(lMug(L) == zero) then
                      write(*,"(3x,'Invalid Mu_g. ', &
-                        'Omitting cluster data: ',I4)") lc1
+                        &'Omitting cluster data: ',I4)") lc1
                      lc2 = lc2 - 1
                      cycle lp_lc10
                   endif
@@ -738,7 +738,7 @@
 ! possible, (hopefully) there is always some small variance.
                   if(lSlip == zero) then
                      write(*,"(3x,'Invalid lSlip. ', &
-                        'Omitting cluster data: ',I4)") lc1
+                        &'Omitting cluster data: ',I4)") lc1
                      lc2 = lc2 - 1
                      cycle lp_lc10
                   endif
@@ -762,7 +762,7 @@
 ! calculated cluster size. They should match.
                if(lc3 /= cThis%size) then
                   write(*,"(3x,'Error processing particles. ', &
-                     'Omitting cluster data: ',I4)") lc1
+                     &'Omitting cluster data: ',I4)") lc1
                   lc2 = lc2 - 1
                   cycle lp_lc10
                endif
@@ -802,7 +802,7 @@
             enddo lp_lc10
 
             write(203,"(4X,'Clusters reported: ', I7, &
-               4x,'Clusters processed: ', I7)") clusterCount_all, lc2
+               &4x,'Clusters processed: ', I7)") clusterCount_all, lc2
          endif
          close(203)
       endif
@@ -1091,7 +1091,7 @@
             enddo
             if(dbg_level >= 1) then
                write(*,"(3x,'Number of clusters reported by ', &
-                  'all processes: ',I6)") cCnt_sum
+                  &'all processes: ',I6)") cCnt_sum
                write(*,"(3x,'Actual number of clusters: ',I6)") &
                   clusterCount_all
                write(*,*)''
@@ -1136,7 +1136,7 @@
             this => clusters(clusterCount_all); this%size = 0
             do lc1=1, pCnt_all(1)
                if(gpPEA_all(lc1)) write(*,"(3x, &
-                  'Error: Ghost particle detected: ',I7)") lc1
+                  &'Error: Ghost particle detected: ',I7)") lc1
                call addParticle(this, lc1, gpIDs_all(lc1))
             enddo
             if(dbg_level >= 1) &
@@ -1322,7 +1322,7 @@
             do proc = 0, numPEs-1
                if(recv_cnt(proc) > 0) then
                   write(*,"(5x,'Process ',I2,': count: ',I6,&
-                     ' disp:',I6)") &
+                     &' disp:',I6)") &
                      proc, recv_cnt(proc), recv_dsp(proc)
                else
                   write(*,"(3x,'Process ',I2,' is empty.')") proc
@@ -1475,7 +1475,7 @@
          do lc3 = 1, pCnt_all(lc2)
             if(gpPEA_all(gp_dsp(lc2) + lc3)) then
                write(*,"(3x,'Particle ',I8,' in cluster ',I6, &
-                  ' is a ghost on process ',I2'.')")          &
+                  &' is a ghost on process ',I2'.')")          &
                   gpIDs_all(gp_dsp(lc2) + lc3), lc2, proc
             endif
          enddo
@@ -1497,7 +1497,7 @@
          if(dbg >= 1) then
             do lc1=1, clusterCount_all
                write(*,"(3x,'Cluster ',I6,' reports ',I6,&
-                  ' particles.')") lc1, clusters(lc1)%size
+                  &' particles.')") lc1, clusters(lc1)%size
             enddo
          endif
 
@@ -1511,7 +1511,7 @@
                cThis => clusters(lc1)
 
                write(201,"(3x,'Cluster ',I6,' reports ',I6,&
-                  ' particles.')") lc1, cThis%size
+                  &' particles.')") lc1, cThis%size
                write(201,"(3x,' Particles in this cluster include:')")
 
                nullify(pThis)
@@ -1708,8 +1708,8 @@
 ! This array is only important on clusterPE. 
       if(allocated(lrbuff)) then
          if(myPE == clusterPE) write(*,"(3x,&
-            'Error in getClusterParticleData_1i: ',&
-            'Deallocating receive buffer.')")
+            &'Error in getClusterParticleData_1i: ',&
+            &'Deallocating receive buffer.')")
          deallocate(lrbuff)
       endif
 
@@ -1797,8 +1797,8 @@
 ! This array is only important on clusterPE. 
       if(allocated(lrbuff)) then
          if(myPE == 0) write(*,"(3x,&
-            'Error in getClusterParticleData_2i: ', &
-            'Deallocating receive buffer.')")
+            &'Error in getClusterParticleData_2i: ', &
+            &'Deallocating receive buffer.')")
          deallocate(lrbuff)
       endif
 
@@ -1884,8 +1884,8 @@
 ! This array is only important on clusterPE. 
       if(allocated(lrbuff)) then
          if(myPE == 0) write(*,"(3x,&
-            'Error in getClusterParticleData_1d: ', &
-            'Deallocating receive buffer.')")
+            &'Error in getClusterParticleData_1d: ', &
+            &'Deallocating receive buffer.')")
          deallocate(lrbuff)
       endif
 
@@ -1974,8 +1974,8 @@
 ! This array is only important on clusterPE. 
       if(allocated(lrbuff)) then
          if(myPE == 0) write(*,"(3x,&
-            'Error in getClusterParticleData_2d: ', &
-            'Deallocating receive buffer.')")
+            &'Error in getClusterParticleData_2d: ', &
+            &'Deallocating receive buffer.')")
          deallocate(lrbuff)
       endif
 
@@ -2067,8 +2067,8 @@
 ! This array is only important on clusterPE. 
       if(allocated(lrbuff)) then
          if(myPE == 0) write(*,"(3x,&
-            'Error in getClusterParticleData_1l: ',&
-            'Deallocating receive buffer.')")
+            &'Error in getClusterParticleData_1l: ',&
+            &'Deallocating receive buffer.')")
          deallocate(lrbuff)
       endif
 
@@ -2168,8 +2168,8 @@
 ! This array is only important on clusterPE. 
       if(allocated(lrbuff)) then
          if(myPE == 0) write(*,"(3x,&
-            'Error in getClusterFieldData_1d: ', &
-            'Deallocating receive buffer.')")
+            &'Error in getClusterFieldData_1d: ', &
+            &'Deallocating receive buffer.')")
          deallocate(lrbuff)
       endif
 
@@ -2267,8 +2267,8 @@
 ! This array is only important on clusterPE. 
       if(allocated(lrbuff)) then
          if(myPE == 0) write(*,"(3x,&
-            'Error in getClusterFieldData_3d: ', &
-            'Deallocating receive buffer.')")
+            &'Error in getClusterFieldData_3d: ', &
+            &'Deallocating receive buffer.')")
          deallocate(lrbuff)
       endif
 

@@ -78,9 +78,9 @@
 !-----------------------------------------------
 ! Include statement functions      
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../ep_s1.inc'
+      INCLUDE '../ep_s2.inc'
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("Particles_in_cell")
@@ -555,9 +555,9 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../ep_s1.inc'
+      INCLUDE '../ep_s2.inc'
 !-----------------------------------------------
 
       SOLVOLINC(:,:) = ZERO
@@ -762,9 +762,9 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../fun_avg2.inc'
 !-----------------------------------------------
 
 ! initializing            
@@ -1271,11 +1271,11 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../fun_avg2.inc'
+      INCLUDE '../ep_s1.inc'
+      INCLUDE '../ep_s2.inc'
 !-----------------------------------------------
 
 !$omp parallel do if(ijkend3 .ge. 2000) default(shared)        &

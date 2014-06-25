@@ -187,7 +187,7 @@
 ! External Function for compare two values.
       LOGICAL , EXTERNAL :: COMPARE
 
-      include 'function.inc'
+      include '../function.inc'
 !----------------------------------------------- 
 
 

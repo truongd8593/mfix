@@ -97,9 +97,9 @@
       INTEGER, DIMENSION(8) :: ACCEPTABLE_DEFAULT_WALL=-1
       LOGICAL :: GLOBAL_CORNER
 
-      INCLUDE 'sc_p_g1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'sc_p_g2.inc'
+      INCLUDE '../sc_p_g1.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../sc_p_g2.inc'
 
 !
 !  Define global corners as acceptable default walls

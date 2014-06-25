@@ -59,8 +59,8 @@
 !----------------------------------------------- 
 ! include statement functions      
 !----------------------------------------------- 
-      include 'function.inc'
-      include 'des/desgrid_functions.inc'
+      INCLUDE '../function.inc'
+      INCLUDE 'desgrid_functions.inc'
 !----------------------------------------------- 
 
 ! set flags for interprocessor boundaries and set the corresponding to proc  
@@ -279,7 +279,7 @@
 !----------------------------------------------- 
 ! include statement functions
 !----------------------------------------------- 
-      include 'function.inc' 
+      INCLUDE '../function.inc' 
 !----------------------------------------------- 
 
 ! pradeep remove print the flags

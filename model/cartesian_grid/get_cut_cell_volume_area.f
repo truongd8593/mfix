@@ -71,7 +71,7 @@
       LOGICAL :: CORNER_POINT
       INTEGER :: NODE_OF_CORNER,IERROR
 
-      include "function.inc"
+      include "../function.inc"
 
 !======================================================================
 !  Filter the connectivity to identify nodes belonging to 
@@ -1575,7 +1575,7 @@
       CHARACTER(LEN=9) :: BCT
       DOUBLE PRECISION :: ALPHA_CUT,AW,HW,VELW
 
-      include "function.inc"
+      include "../function.inc"
 
 !======================================================================
 ! The alpha correction term is only used for No-slip walls
@@ -1758,7 +1758,7 @@
       CHARACTER(LEN=9) :: BCT
       DOUBLE PRECISION :: ALPHA_CUT,AW,HW,VELW
 
-      include "function.inc"
+      include "../function.inc"
 
 !======================================================================
 ! The alpha correction term is only used for No-slip walls

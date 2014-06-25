@@ -63,9 +63,9 @@ SUBROUTINE QMOMK_TIME_MARCH
   DOUBLE PRECISION, DIMENSION(QMOMK_NMOM) :: F_y_coll_left, F_y_coll_right
   DOUBLE PRECISION, DIMENSION(QMOMK_NMOM) :: F_z_coll_left, F_z_coll_right
 
-  INCLUDE 'function.inc'
-  INCLUDE 'fun_avg1.inc'
-  INCLUDE 'fun_avg2.inc'
+  INCLUDE '../function.inc'
+  INCLUDE '../fun_avg1.inc'
+  INCLUDE '../fun_avg2.inc'
 
   IF (FIRST_PASS) THEN
      FIRST_PASS = .FALSE.

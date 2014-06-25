@@ -63,7 +63,7 @@
 !---------------------------------------------------------------------//
       INTEGER :: I, J, K, IJK
 
-      include 'function.inc'
+      include '../function.inc'
 
 
       CALL INIT_ERR_MSG('CHECK_ODEPACK_STIFF_CHEM')

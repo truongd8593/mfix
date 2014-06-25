@@ -29,7 +29,7 @@ SUBROUTINE QMOMK_INIT_BC
   INTEGER :: I, J, K, IJK, IJK2, IPJK, M, L 
   INTEGER :: I1, I2, J1, J2, K1, K2
 	
-  INCLUDE 'function.inc'
+  INCLUDE '../function.inc'
 
   DO L = 1, DIMENSION_BC 
       IF (BC_DEFINED(L)) THEN 

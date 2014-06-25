@@ -355,7 +355,7 @@
       INTEGER :: I_w, I_e, J_s, J_n, K_b, K_t
 
 
-      include 'function.inc'
+      INCLUDE '../function.inc'
 
 
       CALL INIT_ERR_MSG("SET_DEM_BCMI_IJK")

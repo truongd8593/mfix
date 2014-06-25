@@ -255,9 +255,9 @@
 !-----------------------------------------------
 !-----------------------------------------------
 
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../ep_s1.inc'
+      INCLUDE '../ep_s2.inc'
 
 ! Set output dimnensions
       wDIMN = merge(2,3,NO_K)
@@ -550,7 +550,7 @@
       CHARACTER*50  :: FNAME_GT      
 !-----------------------------------------------      
 
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
 
       FNAME_GT = TRIM(RUN_NAME)//'_DES_THETA.dat'

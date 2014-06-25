@@ -272,13 +272,13 @@
 ! or DES_INTERP_MEAN_FIELDS is true (i.e., mean fields are interpolated)
       IF(DES_INTERP_ON.OR.DES_INTERP_MEAN_FIELDS) THEN
          IF(DMP_LOG) WRITE(UNIT_LOG,'(/,5x,A,/,5x,A,/)') 'In desmpi_mod, &
-         setting the node indices &
-         for MPI communication', 'of nodal information needed for backward &
-         interpolation'
+         &setting the node indices &
+         &for MPI communication', 'of nodal information needed for backward &
+         &interpolation'
          IF(myPE.eq.pe_IO) WRITE(*, '(/,5x,A,/,5x,A,/)') 'In desmpi_mod, &
-         setting the node indices &
-         for MPI communication', 'of nodal information needed for backward &
-         interpolation'
+         &setting the node indices &
+         &for MPI communication', 'of nodal information needed for backward &
+         &interpolation'
          call des_setnodeindices
          ENDIF
 
@@ -308,7 +308,7 @@
 !-----------------------------------------------
 ! include statement functions
 !-----------------------------------------------
-      include 'des/desgrid_functions.inc'
+      INCLUDE 'desgrid_functions.inc'
 !-----------------------------------------------
 
 ! set flags for interprocessor boundaries and set the corresponding to proc
@@ -1047,7 +1047,7 @@
 !-----------------------------------------------
 ! include statement functions
 !-----------------------------------------------
-      include 'des/desgrid_functions.inc'
+      INCLUDE 'desgrid_functions.inc'
 !-----------------------------------------------
       ltordimn = merge(1,3,NO_K)
       lpacketsize = 2*dimn + ltordimn+ 5
@@ -1256,8 +1256,8 @@
 !-----------------------------------------------
 ! include statement functions
 !-----------------------------------------------
-      include 'des/desgrid_functions.inc'
-      include 'function.inc'
+      INCLUDE 'desgrid_functions.inc'
+      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! pack the particle crossing the boundary
@@ -1418,7 +1418,7 @@
 !-----------------------------------------------
 ! include statement functions
 !-----------------------------------------------
-      include 'des/desgrid_functions.inc'
+      INCLUDE 'desgrid_functions.inc'
 !-----------------------------------------------
 
 ! loop through particles and locate them and make changes
@@ -1614,7 +1614,7 @@
 !-----------------------------------------------
 ! include statement functions
 !-----------------------------------------------
-      include 'des/desgrid_functions.inc'
+      INCLUDE 'desgrid_functions.inc'
 !-----------------------------------------------
 
       locate_par = .false.
@@ -1658,7 +1658,7 @@
 !-----------------------------------------------
 ! include statement functions
 !-----------------------------------------------
-      include 'des/desgrid_functions.inc'
+      INCLUDE 'desgrid_functions.inc'
 !-----------------------------------------------
       exten_locate_par = .false.
       lic = dg_iof_lo(pijk)
@@ -1703,7 +1703,7 @@
 !-----------------------------------------------
 ! include statement functions
 !-----------------------------------------------
-      include 'function.inc'
+      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! fill the temporary buffer
@@ -1780,7 +1780,7 @@
 !-----------------------------------------------
 ! include statement functions
 !-----------------------------------------------
-      include 'function.inc'
+      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! fill the temporary buffer
@@ -1856,7 +1856,7 @@
 !-----------------------------------------------
 ! include statement functions
 !-----------------------------------------------
-      include 'function.inc'
+      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! fill the temporary buffer
@@ -2660,7 +2660,7 @@
 !-----------------------------------------------
 ! include statement functions
 !-----------------------------------------------
-      include 'des/desgrid_functions.inc'
+      INCLUDE 'desgrid_functions.inc'
 !-----------------------------------------------
 
       write(filename,'("dbg_desmpi",I4.4,".dat")') mype

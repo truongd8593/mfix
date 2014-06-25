@@ -77,11 +77,11 @@
 !-----------------------------------------------
 !     Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'b_force1.inc'
-      INCLUDE 'b_force2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../fun_avg2.inc'
+      INCLUDE '../b_force1.inc'
+      INCLUDE '../b_force2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3

@@ -42,7 +42,7 @@
 !-----------------------------------------------
 ! Include statment functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("DES_ALLOCATE_ARRAYS")

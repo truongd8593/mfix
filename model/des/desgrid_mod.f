@@ -115,7 +115,7 @@
 !----------------------------------------------- 
 ! Include statement functions      
 !-----------------------------------------------       
-      include 'des/desgrid_functions.inc' 
+      include 'desgrid_functions.inc' 
 !----------------------------------------------- 
 
 
@@ -371,7 +371,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------      
-      include 'des/desgrid_functions.inc' 
+      include 'desgrid_functions.inc' 
 !-----------------------------------------------      
 
 ! locate the particles including ghost cells
@@ -467,7 +467,7 @@
 !-----------------------------------------------
 ! Include statement functions      
 !-----------------------------------------------
-      include 'des/desgrid_functions.inc'
+      include 'desgrid_functions.inc'
 !----------------------------------------------- 
 
 ! loop through neighbours and build the contact particles list for particles 
@@ -578,7 +578,7 @@
 !-----------------------------------------------
 ! Include statement functions      
 !-----------------------------------------------      
-      include 'des/desgrid_functions.inc'
+      include 'desgrid_functions.inc'
 !-----------------------------------------------      
 
       write(filename,'("dbg_desgridn",I4.4,".dat")') mype 

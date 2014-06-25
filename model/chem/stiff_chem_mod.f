@@ -165,7 +165,7 @@
       LOGICAL :: lReset
       LOGICAL :: lIncpt
 
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
       lErr_l = .FALSE.
 
@@ -387,8 +387,8 @@
 
       LOGICAL :: USE_SOLIDS_ODEs
 
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
+      INCLUDE '../ep_s1.inc'
+      INCLUDE '../ep_s2.inc'
 
 ! Initialize.
       USE_SOLIDS_ODEs = .FALSE.
@@ -478,7 +478,7 @@
 ! Error flag - Unused but needed for call to BOUND_X.
       INTEGER :: IER
 
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
       CALL send_recv(EP_G,2)
       CALL send_recv(RO_G,2)

@@ -1564,7 +1564,8 @@ $(DPO)mpi_utility.mod : ./dmp_modules/mpi_utility_mod.f \
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/mpi_utility_mod.f  -o $(DPO)mpi_utility_mod.$(OBJ_EXT) $(MODDIRPREFIX)$(DPO)
 $(DPO)parallel_mpi.mod : ./dmp_modules/parallel_mpi_mod.f \
             $(DPO)geometry.mod \
-            $(DPO)compar.mod 
+            $(DPO)compar.mod \
+            $(DPO)mpi.mod 
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./dmp_modules/parallel_mpi_mod.f  -o $(DPO)parallel_mpi_mod.$(OBJ_EXT) $(MODDIRPREFIX)$(DPO)
 $(DPO)sendrecv3.mod : ./dmp_modules/sendrecv3_mod.f \
             $(DPO)parallel_mpi.mod \
@@ -4080,6 +4081,7 @@ $(DPO)set_ro_s.$(OBJ_EXT) : set_ro_s.f \
             $(DPO)physprop.mod \
             $(DPO)fldvar.mod \
             $(DPO)run.mod \
+            $(DPO)toleranc.mod \
             $(DPO)compar.mod \
             $(DPO)geometry.mod \
             $(DPO)indices.mod \
@@ -6743,8 +6745,9 @@ $(DPO)pic_bc_routines.$(OBJ_EXT) : ./des/pic_bc_routines.f \
             $(DPO)parallel.mod \
             $(DPO)error_manager.mod \
             $(DPO)pic_bc.mod \
-            $(DPO)mfix_pic.mod \
             $(DPO)bc.mod \
+            $(DPO)des_bc.mod \
+            $(DPO)mfix_pic.mod \
             $(DPO)randomno.mod \
             function.inc                                                
 	$(FORTRAN_CMD) $(FORT_FLAGS) ./des/pic_bc_routines.f  -o $(DPO)pic_bc_routines.$(OBJ_EXT) $(MODDIRPREFIX)$(DPO)

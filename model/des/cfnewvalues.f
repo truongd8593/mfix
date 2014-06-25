@@ -231,9 +231,9 @@
 
 !-----------------------------------------------
 
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../fun_avg2.inc'
 
       PC = 1
       FOCUS_PARTICLE = -1
@@ -574,9 +574,9 @@
 
 !-----------------------------------------------
 
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../fun_avg2.inc'
       OUTER_STABILITY_COND = .false.
       DES_FIXED_BED = .false.
       PC = 1

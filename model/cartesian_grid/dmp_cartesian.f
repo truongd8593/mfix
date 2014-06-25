@@ -36,7 +36,7 @@
       INTEGER :: TOTAL_NUMBER_OF_INTERSECTIONS
       INTEGER :: NODE
       LOGICAL :: CLIP_FLAG
-      include "function.inc"
+      include "../function.inc"
 
       call SEND_RECEIVE_1D_LOGICAL(WALL_U_AT,2)
       call SEND_RECEIVE_1D_LOGICAL(WALL_V_AT,2)

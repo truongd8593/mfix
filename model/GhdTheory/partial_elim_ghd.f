@@ -77,10 +77,10 @@
 !                      error message 
       CHARACTER*80     LINE 
 !-----------------------------------------------
-!      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
+!      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg2.inc'
       
 
 !!!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
@@ -286,10 +286,10 @@
 !                      error message 
       CHARACTER*80     LINE 
 !-----------------------------------------------
-!      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
+!      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg2.inc'
 
       
  
@@ -487,10 +487,10 @@
 !                      error message 
       CHARACTER*80     LINE 
 !-----------------------------------------------
-!      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
+!      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg2.inc'
 
  
 !!!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, &

@@ -130,7 +130,7 @@
 
 ! Functions
 !---------------------------------------------------------------------//
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
 ! Loop over fluid cells.
 !---------------------------------------------------------------------//
@@ -228,9 +228,9 @@
 !---------------------------------------------------------------------//
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
 
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg2.inc'
 
 ! Initialization
       IMJK  = IM_OF(IJK)

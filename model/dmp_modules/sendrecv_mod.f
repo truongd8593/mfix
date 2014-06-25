@@ -268,7 +268,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      include 'function.inc'
+      include '../function.inc'
 !-----------------------------------------------
 
       message_tag(src,dest) = message_tag_offset + (1+src + dest*numPEs)
@@ -1194,7 +1194,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      include 'function.inc'
+      include '../function.inc'
 !-----------------------------------------------
       lidebug = 0
 
@@ -1442,7 +1442,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      include 'function.inc'
+      include '../function.inc'
 !-----------------------------------------------
 
       lidebug = 0
@@ -1634,7 +1634,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      include 'function.inc'
+      include '../function.inc'
 !-----------------------------------------------
 
       lidebug = 0
@@ -1843,7 +1843,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      include 'function.inc'
+      include '../function.inc'
 !-----------------------------------------------
 
 
@@ -1986,7 +1986,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      include 'function.inc'
+      include '../function.inc'
 !-----------------------------------------------
 
 
@@ -2124,7 +2124,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      include 'function.inc'
+      include '../function.inc'
 !-----------------------------------------------
 
 
@@ -2436,7 +2436,7 @@
 	integer :: message_tag
 	
 !//DEEP moved include function before message_tag declaration
-	include 'function.inc'
+	include '../function.inc'
 
 
 !  NEW SEND_RECV INIT HERE

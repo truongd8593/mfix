@@ -62,7 +62,7 @@
       DOUBLE PRECISION Mp_L
 ! 
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
 !
 !  First compute total number density at faces 

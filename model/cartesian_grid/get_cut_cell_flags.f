@@ -68,7 +68,7 @@
       INTEGER :: IJK2, I1, I2, J1, J2, K1, K2, II, JJ, KK
       LOGICAL :: COND_1, COND_2
 
-      include "function.inc"
+      include "../function.inc"
 
       allocate(X_OLD_POINT(DIMENSION_MAX_CUT_CELL))
       allocate(Y_OLD_POINT(DIMENSION_MAX_CUT_CELL))
@@ -686,7 +686,7 @@
       DOUBLE PRECISION :: F_NODE_02
       INTEGER :: BCID
 
-      include "function.inc"
+      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'INTERSECTING GEOMETRY WITH U-MOMENTUM CELLS...'
@@ -940,7 +940,7 @@
       DOUBLE PRECISION :: F_NODE_02
       INTEGER :: BCID
 
-      include "function.inc"
+      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,*)'INTERSECTING GEOMETRY WITH V-MOMENTUM CELLS...'
@@ -1191,7 +1191,7 @@
       DOUBLE PRECISION :: F_NODE_02
       INTEGER :: BCID
 
-      include "function.inc"
+      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'INTERSECTING GEOMETRY WITH W-MOMENTUM CELLS...'
@@ -1409,7 +1409,7 @@
       INTEGER :: IJK,I,J,K,IM,IP,JM,JP,KM,KP
       INTEGER :: IMJK,IPJK,IJMK,IJPK,IJKM,IJKP
 
-      include "function.inc"
+      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,*)'SETTING CUT CELL TREATMENT FLAGS...'
@@ -1557,7 +1557,7 @@
       INTEGER :: TOTAL_NUMBER_OF_INTERSECTIONS
       INTEGER :: NODE
       LOGICAL :: CLIP_FLAG
-      include "function.inc"
+      include "../function.inc"
 
 
 !     EAST BOUNDARY
@@ -1936,7 +1936,7 @@
 
       LOGICAL, DIMENSION(DIMENSION_3) ::POSITIVE_F_AT
 
-      include "function.inc"
+      include "../function.inc"
 
 
       POTENTIAL_CUT_CELL_AT=.TRUE.

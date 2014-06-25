@@ -48,7 +48,7 @@
       INTEGER :: BCV
       CHARACTER(LEN=9) ::BCT
 
-      include "function.inc"
+      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'COMPUTING INTERPOLATION FACTORS IN U-MOMENTUM CELLS...'
@@ -474,7 +474,7 @@
       INTEGER :: BCV
       CHARACTER(LEN=9) ::BCT
 
-      include "function.inc"
+      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'COMPUTING INTERPOLATION FACTORS IN V-MOMENTUM CELLS...'
@@ -908,7 +908,7 @@
       CHARACTER(LEN=9) ::BCT
 
 
-      include "function.inc"
+      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'COMPUTING INTERPOLATION FACTORS IN W-MOMENTUM CELLS...'

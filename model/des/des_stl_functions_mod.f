@@ -527,7 +527,7 @@
       !temp facet count 
       Integer :: count_facet_temp 
 
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
       CALL INIT_ERR_MSG("CG_DES_CONVERT_TO_FACETS")
 
@@ -976,7 +976,7 @@
 
       INTEGER :: IJK2,CURRENT_I,CURRENT_J,CURRENT_K
 
-      include "function.inc"    
+      include "../function.inc"    
 
 !      CHARACTER (LEN=3) :: CAD_PROPAGATE_ORDER
 
@@ -1142,7 +1142,7 @@
 
       CHARACTER*100 :: FNAME
       integer :: stl_unit, fid
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
       stl_unit = 1001
       IF (I.lt.IMIN1.OR.I.gt.IMAX1) RETURN
@@ -1277,7 +1277,7 @@
 
       CHARACTER*100 :: FILENAME
 
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
 
       IF(nodesI*nodesJ*nodesK.gt.1) then
@@ -1378,7 +1378,7 @@
       LOGICAL :: write_each_cell
       LOGICAL, DIMENSION(:), allocatable :: FACET_WRITTEN
 
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
       ALLOCATE (FACET_WRITTEN(DIM_STL))
 

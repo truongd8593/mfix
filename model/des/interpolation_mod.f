@@ -444,7 +444,7 @@ MODULE interpolation
       CHARACTER*5 :: INTP_SCHM = 'LPI'
 !-----------------------------------------------  
 
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
 ! Obtain the starting cell index values for interpolation around
 ! particle NP

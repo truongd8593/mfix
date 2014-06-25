@@ -45,9 +45,9 @@
 !-----------------------------------------------
 ! Include statement functions
 !----------------------------------------------- 
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../fun_avg2.inc'
 !-----------------------------------------------
 
 
@@ -213,7 +213,7 @@
 !-----------------------------------------------
 ! Include statement functions      
 !-----------------------------------------------
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! calculation of bed height following the formulation of Goldschmidt et
