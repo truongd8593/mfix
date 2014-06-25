@@ -40,7 +40,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------      
-      INCLUDE '../function.inc'
+      INCLUDE 'function.inc'
 
 
 ! cfassign and des_init_bc called before reading the particle info 
