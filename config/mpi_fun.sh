@@ -66,6 +66,8 @@ SET_MPI_INCLUDE(){
     echo "Unable to locate mpif.h"
     echo -n "Please provide the location of the mpif.h file: "
     read MPI_INCLUDE_PATH
+  else
+    echo "Using mpif.h: ${MPI_INCLUDE_PATH}"
   fi
 
   if test -f ${MPI_INCLUDE_PATH}/mpif.h; then
@@ -77,7 +79,7 @@ SET_MPI_INCLUDE(){
         exit
       fi
     fi
-    ln -sf ${MPI_INCLUDE_PATH}/mpif.h ${MFIX_SRC}/mpif.h
+    ln -sf ${MPI_INCLUDE_PATH}/mpif.h ${MFIX_SRC}/dmp_modules/mpif.h
   else
     echo "Fatal Error: Unable to locate the mpif.h header file!"
     echo "Aborting."

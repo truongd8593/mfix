@@ -7,7 +7,7 @@ if test ${USE_NETCDF} = 1; then
   NETCDF_LIBS="-L${NETCDF_HOME}/lib -lnetcdff"
   netcdf_msg="Updated"
 else
-  MFIX_NETCDF=${MFIX_NETCDF}/noop
+  MFIX_NETCDF=${MFIX_NETCDF}/donothing
   netcdf_msg="Reverted"
 fi
 

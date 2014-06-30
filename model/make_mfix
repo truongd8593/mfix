@@ -19,6 +19,7 @@ FORTRAN_EXT="f"
 RUN_DIR=
 MFIX_SRC=
 MFIX_CONFIG=
+MFIX_TOOLS=
 
 # Set some of the folder paths.
 RUN_DIR=$(pwd)

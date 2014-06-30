@@ -9,6 +9,10 @@ MFIX_SRC=$(pwd)
 cd ${MFIX_SRC}/../config
 MFIX_CONFIG=$(pwd)
 
+# Set the path to the tools directory
+cd ${MFIX_SRC}/../tools
+MFIX_TOOLS=$(pwd)
+
 # Grab some system information.
 opsys=$(uname -s)
 proctyp=$(uname -p)

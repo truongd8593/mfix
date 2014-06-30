@@ -1,4 +1,4 @@
-echo "Checking Makefile for updates."
+echo "Building Makefile."
 
 # Change the name to the full path.
 MAKEFILE=${MFIX_SRC}/${MAKEFILE}
@@ -43,8 +43,54 @@ echo "EXEC_FILE=${EXEC_FILE}" >> ${tmpMFILE}
 echo "MODDIRPREFIX=${MODDIRPREFIX}" >> ${tmpMFILE}
 
 
-# Copy the base makefile.
-cat ${MFIX_SRC}/mfix_l.make >> ${tmpMFILE}
+echo "Updating file list."
+# Build a list of all files under the model directory.
+# All sub folders with "donothing" in the name are skipped"
+mlist=${MFIX_SRC}/file.list
+if test -f "${mlist}"; then rm ${mlist}; fi
+
+for dir in $(find . -type d); do
+  tdir=$(echo $dir | grep 'donothing')
+  if test -z "${tdir}"; then
+    cd "${dir}"
+#    echo "Adding files from $dir"
+    list=
+    if (eval ls *.f) > /dev/null 2>&1; then :
+      list=$(eval ls *.f)
+    fi
+
+    for file in $(echo ${list}); do
+      echo "${dir}/${file}" >> ${mlist}
+    done
+    if test "${dir}" != "."; then 
+#      echo "leaving $(pwd)"
+      cd ..
+    fi
+#  else
+#    echo "skipping ${dir}"
+  fi
+done
+
+echo "Building make utility."
+# build the MFIX make executable.
+$(${FORTRAN_CMD} -o ${MFIX_TOOLS}/mms-auto.exe ${MFIX_TOOLS}/mms.f90)
+if test $? -ne 0; then
+  echo "Error building make utility. Aborting."
+  exit
+elif test ! -e ${MFIX_TOOLS}/mms-auto.exe; then
+  echo "Error locating make utility. Aborting."
+  exit
+fi
+
+echo "Running make utility."
+$(${MFIX_TOOLS}/mms-auto.exe)
+if test $? -ne 0; then
+  echo "Error reported in make utility. Aborting."
+  exit
+fi
+
+# Remove the file list.
+rm mlist
 
 
 # Swap the module folder references.
@@ -60,14 +106,14 @@ if test -f ${MAKEFILE}; then
   cmp -s ${tmpMFILE} ${MAKEFILE}
   if test ! $? = 0; then
     /bin/cp -f ${tmpMFILE} ${MAKEFILE}
-    /bin/rm ${tmpMFILE}
+#    /bin/rm ${tmpMFILE}
     echo "Makefile was updated."
   else
     echo "Makefile is up to date."
   fi
 else
   /bin/cp -f ${tmpMFILE} ${MAKEFILE}
-  /bin/rm ${tmpMFILE}
+#  /bin/rm ${tmpMFILE}
   echo "Makefile was created."
 fi
 
