@@ -90,7 +90,7 @@ if test $? -ne 0; then
 fi
 
 # Remove the file list.
-rm mlist
+rm ${mlist}
 
 
 # Swap the module folder references.
