@@ -82,7 +82,12 @@ dbg=
 if test "${USE_DEBUG}" = "1"; then dbg="-g"; fi
 
 # Common compile flags.
-common="-c -I. -convert big_endian -assume byterecl  -diag-disable remark"
+common="-c -I. -grecord-gcc-switches -convert big_endian -assume byterecl  -diag-disable remark"
+
+# To display the flags mfix.exe is compiled with, run:
+# >
+# > readelf -p .debug_str mfix.exe | grep switches
+
 if [[ -n $USE_MIC ]]; then
     common=${common}" -mmic"
 else

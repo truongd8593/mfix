@@ -61,7 +61,10 @@ dbg=
 if test ${USE_DEBUG} = 1; then dbg="-g"; fi
 
 # Base flags for GNU Fortran
-common="-c -I. ${incs} -fconvert='big-endian'"
+common="-c -I. ${incs} -frecord-gcc-switches -fconvert='big-endian'"
+# To display the flags mfix.exe is compiled with, run:
+# >
+# > readelf -p .GCC.command.line mfix.exe
 
 case $OPT in
   0)echo " Setting flags for debugging."
