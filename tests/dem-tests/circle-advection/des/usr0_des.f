@@ -24,8 +24,6 @@
 
       IMPLICIT NONE
 
-      INCLUDE 'usrnlst.inc'
-
 ! Set the solids time step to the fluid time step.
       DTSOLID = DT
 

@@ -24,8 +24,6 @@
 
       IMPLICIT NONE
 
-      INCLUDE 'usrnlst.inc'
-
       LOGICAL, SAVE :: SKIP = .FALSE.
 
 
