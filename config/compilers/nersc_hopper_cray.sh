@@ -7,7 +7,7 @@ mkl_libs=
 mpi_libs=
 misc_libs=
 
-echo "HOPPER@NERSC :: Crray Fortran Compiler"
+echo "HOPPER@NERSC :: Cray Fortran Compiler"
 
 MODDIRPREFIX="-p "
 
