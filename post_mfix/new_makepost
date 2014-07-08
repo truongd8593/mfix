@@ -80,7 +80,7 @@ then
 
 else
 
-   cp ../model/netcdf/noop/*.fi .
+   cp ../model/netcdf/donothing/*.fi .
 
    echo "not using netCDF"
 
