@@ -68,6 +68,7 @@ SET_MPI_INCLUDE(){
     read MPI_INCLUDE_PATH
   else
     echo "Using mpif.h: ${MPI_INCLUDE_PATH}"
+    export ${MPI_INCLUDE_PATH}
   fi
 
   if test -f ${MPI_INCLUDE_PATH}/mpif.h; then
