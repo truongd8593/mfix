@@ -400,7 +400,7 @@
 
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with a wall
-                     CALL CFSLIDEWALL(LL, TANGENT, PARTICLE_SLIDE)
+                     CALL CFSLIDE(LL, TANGENT, PARTICLE_SLIDE, MEW_W)
 
 ! Calculate the total force FC and torque TOW on a particle in a
 ! particle-wall collision
