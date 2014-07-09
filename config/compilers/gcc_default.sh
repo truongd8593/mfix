@@ -67,23 +67,23 @@ common="-c -I. ${incs} -frecord-gcc-switches -fconvert='big-endian'"
 # > readelf -p .GCC.command.line mfix.exe
 
 case $OPT in
-  0)echo " Setting flags for debugging."
+  0)echo "Setting flags for debugging."
     dbg="-fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow -g"
     FORT_FLAGS="${omp} ${common} -ffree-form -ffree-line-length-0 -O0 ${dbg}"
     FORT_FLAGS3="${omp} ${common} -O0 ${dbg}"
     LINK_FLAGS="${omp} -g";;
 
-  1)echo " Setting flags for low optimization."
+  1)echo "Setting flags for low optimization."
     FORT_FLAGS="${omp} ${common} -ffree-form -ffree-line-length-0 -O1 ${dbg}"
     FORT_FLAGS3="${omp} ${common} -O1 ${dbg}"
     LINK_FLAGS="${omp} ${dbg}";;
 
-  2)echo " Setting flags for medium optimization."
+  2)echo "Setting flags for medium optimization."
     FORT_FLAGS="${omp} ${common} -ffree-form -ffree-line-length-0 -O2 $inline ${dbg}"
     FORT_FLAGS3="${omp} ${common} -O1 ${dbg}"
     LINK_FLAGS="${omp} ${dbg}";;
 
-  3)echo " Setting flags for high optimization."
+  3)echo "Setting flags for high optimization."
     FORT_FLAGS="${omp} ${common} -ffree-form -ffree-line-length-0 -O3 $inline ${dbg}"
     FORT_FLAGS3="${omp} ${common} -O2 ${dbg}"
     LINK_FLAGS="${omp} ${dbg}";;

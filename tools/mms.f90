@@ -16,6 +16,13 @@
       INTEGER, PARAMETER :: UNIT_MAKE = 150
       INTEGER, PARAMETER :: UNIT_TEMP = 250
 
+! Flag to include MPIF
+      LOGICAL :: INCLUDE_MPIF
+
+! Back slash
+      CHARACTER(LEN=1), PARAMETER :: BS = char(92)
+
+
       CONTAINS
 
 !``````````````````````````````````````````````````````````````````````!
@@ -27,7 +34,7 @@
       SUBROUTINE SET_WORKING_CASE
 
       INTEGER :: ENV_STAT, ENV_LEN
-      CHARACTER(LEN=1) :: MODULE_CODE
+      CHARACTER(LEN=32) :: MODULE_CODE
 
 ! Initialize the environment status variable.
       ENV_STAT = 1
@@ -53,6 +60,36 @@
 
       RETURN
       END SUBROUTINE SET_WORKING_CASE
+
+!``````````````````````````````````````````````````````````````````````!
+! Subroutine: SET_MPIF_INCLUDE                                         !
+!                                                                      !
+! Purpose: Manages flushing the output buffer (OUT) so that if output  !
+! needs multiple redirects, it only needs one call to this routine.    !
+!......................................................................!
+      SUBROUTINE SET_MPIF_INCLUDE
+
+      INTEGER :: ENV_STAT, ENV_LEN
+      CHARACTER(LEN=256) :: INC_PATH
+
+! Initialize the environment status variable.
+      ENV_STAT = 1
+
+! Check to see if the MODULE_CODE environment variable is set.
+      CALL GET_ENVIRONMENT_VARIABLE(NAME="MPI_INCLUDE_PATH", &
+         VALUE=INC_PATH, LENGTH=ENV_LEN, STATUS=ENV_STAT)
+
+      IF(ENV_STAT == 0 .AND. ENV_LEN /=0) THEN
+         INCLUDE_MPIF = .TRUE.
+      ELSE
+         INCLUDE_MPIF = .FALSE.
+      ENDIF
+
+      RETURN
+      END SUBROUTINE SET_MPIF_INCLUDE
+
+
+
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: FLUSH_OUT_BUFFER                                         !
@@ -308,6 +345,12 @@
          LIST(COUNT1) = LINE(LC:rPOS-1)
       ENDIF
 
+
+      IF(.NOT.INCLUDE_MPIF) THEN
+         IF(index(LIST(COUNT1),'mpif.h') > 0) RETURN
+      ENDIF
+
+
 ! Only keep the entry if it's new.
       DO LC=1, COUNT
          IF(LIST(LC) == LIST(COUNT1)) RETURN
@@ -517,6 +560,12 @@
 ! defaults to lower case if the flag is not set.
       CALL SET_WORKING_CASE
 
+! If the MPI include environment variable has been set, then mpif.h
+! is included in the Makefile otherwise it is omitted. This removes
+! the need for a 'dummy' mpif.h for serial runs as well as issues
+! with Cray compilers where includes are not needed.
+      CALL SET_MPIF_INCLUDE
+
 ! Initialize the file and module count.
       FILE_COUNT = 0
       MOD_COUNT  = 0
@@ -545,11 +594,11 @@
 
 ! Write out the start of the Makefile.
       OUT = ''
-      WRITE(OUT,5000)
+      WRITE(OUT,5000) BS
       CALL FLUSH_OUT_BUFFER
 
  5000 FORMAT(/'.$(FORTRAN_EXT).$(OBJ_EXT):',/'	$(FORTRAN_CMD) ',     &
-         '$(FORT_FLAGS) $<',2/,'$(EXEC_FILE) : \')
+         '$(FORT_FLAGS) $<',2/,'$(EXEC_FILE) : ',A1)
 
 ! First write out all the module files. Remove the file extension, path
 ! information and set the case.
@@ -558,7 +607,7 @@
          CALL TRIM_EXT(FILENAME, '_mod.')
          CALL TRIM_PATH(FILENAME)
          CALL FORCE_CASE(FILENAME)
-         WRITE(OUT,"(4X,'$(DPO)',A,'.mod \')") trim(FILENAME)
+         WRITE(OUT,"(4X,'$(DPO)',A,'.mod ',A1)") trim(FILENAME), BS
          CALL FLUSH_OUT_BUFFER
       ENDDO
 
@@ -568,24 +617,26 @@
          IF(index(FILENAME,'_mod.') /= 0) CYCLE
          CALL TRIM_EXT(FILENAME, '.')
          CALL TRIM_PATH(FILENAME)
-         WRITE(OUT,"(4X,'$(DPO)',A,'.$(OBJ_EXT) \')") trim(FILENAME)
+         WRITE(OUT,"(4X,'$(DPO)',A,'.$(OBJ_EXT) ',A1)") &
+            trim(FILENAME), BS
          CALL FLUSH_OUT_BUFFER
       ENDDO
 
-      WRITE(OUT(1),"(4X,'$(DPO)blas90.a  \')")
-      WRITE(OUT(2),"(4X,'$(DPO)odepack.a \')")
+      WRITE(OUT(1),"(4X,'$(DPO)blas90.a  ',A1)") BS
+      WRITE(OUT(2),"(4X,'$(DPO)odepack.a ',A1)") BS
       WRITE(OUT(3),"(4X,'$(DPO)dgtsv90.a  ')")
       CALL FLUSH_OUT_BUFFER
 
 ! Set the linking commands.
-      WRITE(OUT,"(/'	$(LINK_CMD) $(LINK_FLAGS) \')")
+      WRITE(OUT,"(/'	$(LINK_CMD) $(LINK_FLAGS) ',A1)") BS
       CALL FLUSH_OUT_BUFFER
 
       DO LC1 = 1,FILE_COUNT
          FILENAME = ALL_FILES(LC1)
          CALL TRIM_EXT(FILENAME, '.')
          CALL TRIM_PATH(FILENAME)
-         WRITE(OUT,"(4X,'$(DPO)',A,'.$(OBJ_EXT) \')") trim(FILENAME)
+         WRITE(OUT,"(4X,'$(DPO)',A,'.$(OBJ_EXT) ',A1)") &
+            trim(FILENAME), BS
          CALL FLUSH_OUT_BUFFER
       ENDDO
       WRITE(OUT,"(' -o $(EXEC_FILE) $(LIB_FLAGS)')")
@@ -636,12 +687,12 @@
                trim(BASENAME), trim(FILENAME)
             CALL FLUSH_OUT_BUFFER
          ELSE
-            WRITE(OUT,"(/'$(DPO)',A,'.mod : ',A,' \')")                &
-               trim(BASENAME), trim(FILENAME)
+            WRITE(OUT,"(/'$(DPO)',A,'.mod : ',A,1X,A1)")               &
+               trim(BASENAME), trim(FILENAME), BS
             CALL FLUSH_OUT_BUFFER
 
             DO LC2=1, USE_COUNT
-               C1 = merge('\',' ',INC_COUNT>0 .OR. LC2/=USE_COUNT)
+               C1 = merge(BS,' ',INC_COUNT>0 .OR. LC2/=USE_COUNT)
                CALL FORCE_CASE(USE_FILES(LC2))
                WRITE(OUT,"(11x,'$(DPO)',A,'.mod ',A)") &
                   trim(USE_FILES(LC2)), C1
@@ -649,7 +700,7 @@
             ENDDO
 
             DO LC2=1, INC_COUNT
-               C1 = merge('\',' ',LC2 /= INC_COUNT)
+               C1 = merge(BS,' ',LC2 /= INC_COUNT)
                WRITE(OUT,"(11x,A,1x,A)") trim(INC_FILES(LC2)), C1
                CALL FLUSH_OUT_BUFFER
             ENDDO
@@ -685,12 +736,12 @@
                trim(BASENAME), trim(FILENAME)
             CALL FLUSH_OUT_BUFFER
          ELSE
-            WRITE(OUT,"(/'$(DPO)',A,'.$(OBJ_EXT) : ',A,' \')")         &
-               trim(BASENAME), trim(FILENAME)
+            WRITE(OUT,"(/'$(DPO)',A,'.$(OBJ_EXT) : ',A,' 'A1)")        &
+               trim(BASENAME), trim(FILENAME), BS
             CALL FLUSH_OUT_BUFFER
 
             DO LC2=1, USE_COUNT
-               C1 = merge('\',' ',INC_COUNT>0 .OR. LC2/=USE_COUNT)
+               C1 = merge(BS,' ',INC_COUNT>0 .OR. LC2/=USE_COUNT)
                CALL FORCE_CASE(USE_FILES(LC2))
                WRITE(OUT,"(11x,'$(DPO)',A,'.mod ',A)") &
                   trim(USE_FILES(LC2)), C1
@@ -698,7 +749,7 @@
             ENDDO
 
             DO LC2=1, INC_COUNT
-               C1 = merge('\',' ',LC2 /= INC_COUNT)
+               C1 = merge(BS,' ',LC2 /= INC_COUNT)
                WRITE(OUT,"(11x,A,1x,A)") trim(INC_FILES(LC2)), C1
                CALL FLUSH_OUT_BUFFER
             ENDDO

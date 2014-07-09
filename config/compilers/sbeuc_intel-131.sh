@@ -97,24 +97,24 @@ fi
 if test "${USE_CODECOV}" = "1"; then common=${common}" -prof-gen=srcpos"; fi
 
 case $OPT in
-  0)echo " Setting flags for debugging."
+  0)echo "Setting flags for debugging."
     dbg="-traceback -check all -fp-model source -O0"
     if [[ -z $USE_MIC ]]; then dbg="$dbg -fpe:0" ; fi
     FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR ${dbg} -g"
     FORT_FLAGS3="${common} ${mkl} -O0 -g"
     LINK_FLAGS="${omp} -g";;
 
-  1)echo " Setting flags for low optimization."
+  1)echo "Setting flags for low optimization."
     FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O1 ${dbg}"
     FORT_FLAGS3="${common} ${mkl} -O1 ${dbg}"
     LINK_FLAGS="${omp} ${dbg}";;
 
-  2)echo " Setting flags for medium optimization."
+  2)echo "Setting flags for medium optimization."
     FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O2 ${dbg}"
     FORT_FLAGS3="${common} ${mkl} -O2 ${dbg}"
     LINK_FLAGS="${omp} ${dbg}";;
 
-  3)echo " Setting flags for high optimization."
+  3)echo "Setting flags for high optimization."
     FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O3 -no-prec-div -static ${dbg}"
     FORT_FLAGS3="${common} ${mkl} -O3 -no-prec-div -static ${dbg}"
     LINK_FLAGS="${omp} ${dbg}";;

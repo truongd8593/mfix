@@ -4,17 +4,16 @@ incs=
 mpi_libs=
 misc_libs=
 
-echo "GNU gfortran Compiler on Cray XE6 (hopper) @NERSC"
+echo "HOPPER@NERSC :: GNU gfortran Compiler on Cray XE6"
   
-
-MODULE_CODE=2
+MODDIRPREFIX="-J"
 
 # Add some additinal flags to the object directory
-DPO=${DPO_BASE}/${DPO}_GNU_NERSC_XE6/
+DPO=${DPO_BASE}/${DPO}_NERSC_HOPPER_GNU/
 if test ! -d ${DPO}; then mkdir ${DPO}; fi
 
 # Set OpenMP flags.
-if test ${USE_SMP} = 1; then omp="-openmp"; fi
+if test ${USE_SMP} = 1; then omp="-fopenmp"; fi
 
 # Set MPI flags.
 if test ${USE_DMP} = 1; then
@@ -23,13 +22,6 @@ if test ${USE_DMP} = 1; then
 else
   FORTRAN_CMD=ftn
   LINK_CMD=ftn
-fi
-
-# Set the MPI include path.  This must occur after
-# the Fortran command is defined.
-SET_MPI_INCLUDE
-if test ${USE_DMP} = 1; then
-  incs=${incs}" -I${MPI_INCLUDE_PATH}"
 fi
 
 
@@ -63,7 +55,7 @@ if test ${USE_DEBUG} = 1; then dbg="-g"; fi
 
 # Base flags for Intel Fortran Linux compiler
 #common="-c -I. -convert big_endian -assume byterecl -diag-disable remark"
-common="-c -I. -I$DPO -fconvert='big-endian'"
+common="-c -fconvert='big-endian'"
 
 # Optimization flags for level 4
 #optim="-V -fast -Mipa=fast,inline -Msmartalloc -Mfprelaxed -Mstack_arrays"
@@ -77,17 +69,17 @@ case $OPT in
     LINK_FLAGS="${omp} -g";;
 
   1)echo "Setting flags for low optimization."
-    FORT_FLAGS="${omp} ${incs} ${common} -FR -O1 ${dbg} -ffree-form -ffree-line-length-0"
+    FORT_FLAGS="${omp} ${incs} ${common} -O1 ${dbg} -ffree-form -ffree-line-length-0"
     FORT_FLAGS3="${common} ${incs} -O1 ${dbg} "
     LINK_FLAGS="${omp} ${dbg}";;
 
   2)echo "Setting flags for medium optimization."
-    FORT_FLAGS="${omp} ${common} ${incs} -FR -O2 ${dbg} -ffree-form -ffree-line-length-0"
+    FORT_FLAGS="${omp} ${common} ${incs} -O2 ${dbg} -ffree-form -ffree-line-length-0"
     FORT_FLAGS3="${common} -O1 ${dbg}"
     LINK_FLAGS="${omp} ${dbg}";;
 
   3)echo "Setting flags for high optimization."
-    FORT_FLAGS="${omp} ${incs} ${common} -FR -O3 -ffree-form -ffree-line-length-0"
+    FORT_FLAGS="${omp} ${incs} ${common} -O3 -ffree-form -ffree-line-length-0"
     FORT_FLAGS3="${common} -O2"
     LINK_FLAGS="${omp}";;
 

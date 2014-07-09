@@ -61,7 +61,7 @@ if test "${USE_DEBUG}" = "1"; then dbg="-g"; fi
 common="-c -I. -convert big_endian -assume byterecl -diag-disable remark "
 
 case $OPT in
-  0|1|2|3)echo " Setting compiler flags."
+  0|1|2|3)echo "Setting compiler flags."
 
     FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O3${dbg}"
     FORT_FLAGS3="${common} ${mkl} -O3 ${dbg}"

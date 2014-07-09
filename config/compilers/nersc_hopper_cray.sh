@@ -51,7 +51,7 @@ if test "${USE_DEBUG}" = "1"; then dbg="-rm"; fi
 common="-c -h byteswapio "
 
 case $OPT in
-  0|1|2|3)echo " Setting compiler flags."
+  0|1|2|3)echo "Setting compiler flags."
 
     FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -f free ${dbg}"
     FORT_FLAGS3="${common} ${mkl} ${dbg}"
