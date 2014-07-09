@@ -40,7 +40,8 @@
 
       FTMD = DES_DOTPRDCT(FT(:,LL),FT(:,LL))
       FNMD = DES_DOTPRDCT(FN(:,LL),FN(:,LL))
-      IF (FTMD.GT.(MU*FNMD)) THEN
+
+      IF (FTMD.GT.(MU*MU*FNMD)) THEN
 ! tangential force based on sliding friction
          PARTICLE_SLIDE = .TRUE.
          IF(DES_DOTPRDCT(TANGNT,TANGNT).EQ.0) THEN
