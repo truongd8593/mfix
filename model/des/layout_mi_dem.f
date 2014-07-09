@@ -341,7 +341,7 @@
 
       RETURN
 
- 8005 FORMAT(2/,2x,'Building MESH_',A1,':',/4x'Shift:',f8.4,/4x,       &
+ 8005 FORMAT(2/,2x,'Building MESH_',A1,':',/4x,'Shift:',f8.4,/4x,      &
          'MESH_',A1,'(0) = ',f8.4,/)
 
  8006 FORMAT(4x,'LC = ',I4,3x,A1,' =',I3,3x,A1,' =',f8.4)
@@ -639,7 +639,7 @@
 
       RETURN
 
- 8005 FORMAT(2/,2x,'Building MESH_',A1,':',/4x'Shift:',f8.4,/4x,       &
+ 8005 FORMAT(2/,2x,'Building MESH_',A1,':',/4x,'Shift:',f8.4,/4x,      &
          'MESH_',A1,'(0) = ',f8.4,/)
 
  8006 FORMAT(4x,'LC = ',I4,3x,A1,' =',I3,3x,A1,' =',f8.4)
@@ -934,7 +934,7 @@
 
       RETURN
 
- 8005 FORMAT(2/,2x,'Building MESH_',A1,':',/4x'Shift:',f8.4,/4x,       &
+ 8005 FORMAT(2/,2x,'Building MESH_',A1,':',/4x,'Shift:',f8.4,/4x,      &
          'MESH_',A1,'(0) = ',f8.4,/)
 
  8006 FORMAT(4x,'LC = ',I4,3x,A1,' =',I3,3x,A1,' =',f8.4)

@@ -1307,10 +1307,14 @@
                END IF
                IF(DIMN.EQ.2) THEN
                   ZCOR = ZT(K)
-                  WRITE(1000,'(3(2X,G17.8),4( 2X, G17.8))')  XE(I-1)+DX(I), YN(J-1)+DY(J),ZCOR, 1.D0 - EP_G(IJK), PIC_U_S(IJK,1), PIC_V_S(IJK,1), DES_U_S(IJK,1), DES_V_S(IJK,1)!, PS_FORCE_PIC(IJK,1), PS_FORCE_PIC(IJK,2)
+                  WRITE(1000,'(3(2X,G17.8),4( 2X, G17.8))')  XE(I-1)+DX(I), YN(J-1)+DY(J),ZCOR, &
+                     1.D0 - EP_G(IJK), PIC_U_S(IJK,1), PIC_V_S(IJK,1), DES_U_S(IJK,1), &
+                     DES_V_S(IJK,1) !, PS_FORCE_PIC(IJK,1), PS_FORCE_PIC(IJK,2)
                ELSE
                   ZCOR = ZT(K-1) + DZ(K)
-                  WRITE(1000,'(3(2X,G17.8),4( 2X, G17.8))')  XE(I-1)+DX(I), YN(J-1)+DY(J),ZCOR, 1.D0 - EP_G(IJK), PIC_U_S(IJK,1), PIC_V_S(IJK,1), PIC_W_S(IJK,1), DES_U_S(IJK,1), DES_V_S(IJK,1), DES_W_S(IJK,1)!, PS_FORCE_PIC(IJK,1), PS_FORCE_PIC(IJK,2),  PS_FORCE_PIC(IJK,3)
+                  WRITE(1000,'(3(2X,G17.8),4( 2X, G17.8))')  XE(I-1)+DX(I), YN(J-1)+DY(J),ZCOR, &
+                     1.D0 - EP_G(IJK), PIC_U_S(IJK,1), PIC_V_S(IJK,1), PIC_W_S(IJK,1), DES_U_S(IJK,1), &
+                    DES_V_S(IJK,1), DES_W_S(IJK,1)!, PS_FORCE_PIC(IJK,1), PS_FORCE_PIC(IJK,2),  PS_FORCE_PIC(IJK,3)
                ENDIF
             ENDDO
          ENDDO
