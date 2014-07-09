@@ -413,7 +413,11 @@
 ! External Function for comparing two numbers.
       LOGICAL, EXTERNAL :: COMPARE
 
-      UNIT_FLAG = merge(fUNIT, -1, present(fUnit))
+      IF(present(fUnit)) THEN
+         UNIT_FLAG = fUNIT
+      ELSE
+         UNIT_FLAG = -1
+      ENDIF
 
       empty = '  '
       CALL WRITE_RS0(empty, UNIT_FLAG)

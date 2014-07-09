@@ -348,15 +348,39 @@
       CHARACTER(LEN=128) :: CALLER
 
 ! Set the abort flag. Continue running by default.
-      A_FLAG = merge(ABORT, .FALSE., PRESENT(ABORT))
+      IF(PRESENT(ABORT))THEN
+         A_FLAG = ABORT
+      ELSE
+         A_FLAG = .FALSE.
+      ENDIF
+
 ! Set the local debug flag. Suppress debugging messages by default.
-      D_FLAG = merge(DEBUG, .FALSE., PRESENT(DEBUG))
+      IF(PRESENT(DEBUG)) THEN
+         D_FLAG = DEBUG
+      ELSE 
+         D_FLAG = .FALSE.
+      ENDIF
+
 ! Set the header flag. Write the header by default.
-      H_FLAG = merge(HEADER, .TRUE., PRESENT(HEADER))
+      IF(PRESENT(HEADER)) THEN
+         H_FLAG = HEADER
+      ELSE
+         H_FLAG = .TRUE.
+      ENDIF
+
 ! Set the footer flag. Write the footer by default.
-      F_FLAG = merge(FOOTER, .TRUE., PRESENT(FOOTER))
+      IF(PRESENT(FOOTER))THEN
+         F_FLAG = FOOTER
+      ELSE
+         F_FLAG = .TRUE.
+      ENDIF
+
 ! Set the call tree flag. Suppress the call tree by default.
-      CT_FLAG = merge(CALL_TREE, .FALSE., PRESENT(CALL_TREE))
+      IF(PRESENT(CALL_TREE)) THEN
+         CT_FLAG = CALL_TREE
+      ELSE
+         CT_FLAG = .FALSE.
+      ENDIF
 
 ! Set the current caller.
       CALLER = CALLERS(CALL_DEPTH)

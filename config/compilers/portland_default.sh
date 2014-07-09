@@ -27,8 +27,8 @@ if test ${USE_DMP} = 1; then
   FORTRAN_CMD=mpif90
   LINK_CMD=mpif90
 else
-  FORTRAN_CMD=pgf90
-  LINK_CMD=pgf90
+  FORTRAN_CMD=pgfortran
+  LINK_CMD=pgfortran
 fi
 
 
