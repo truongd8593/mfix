@@ -37,8 +37,7 @@
 ! Local Variables
 !-----------------------------------------------
       INTEGER :: L
-      DOUBLE PRECISION :: D(3), DIST, &
-                          NEIGHBOR_SEARCH_DIST
+      DOUBLE PRECISION :: D(3), NEIGHBOR_SEARCH_DIST
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
 !-----------------------------------------------
 ! Functions
@@ -124,19 +123,17 @@
 ! make sure that neighbor is called in des_time_march
          IF(.NOT.DO_NSEARCH) THEN
             D(:) = DES_POS_NEW(L,:) - PPOS(L,:)
-            DIST = SQRT(DES_DOTPRDCT(D,D))
             NEIGHBOR_SEARCH_DIST = NEIGHBOR_SEARCH_RAD_RATIO*&
                DES_RADIUS(L)
-            IF(DIST.GE.NEIGHBOR_SEARCH_DIST) DO_NSEARCH = .TRUE.
+            IF(dot_product(D,D).GE.NEIGHBOR_SEARCH_DIST**2) DO_NSEARCH = .TRUE.
          ENDIF
 
 
 ! Check if the particle has moved a distance greater than or equal to
 ! its radius during one solids time step. if so, call stop
          D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
-         DIST = SQRT(DES_DOTPRDCT(D,D))
-         IF(DIST.GE.DES_RADIUS(L)) THEN
-            WRITE(*,1002) L, DIST, DES_RADIUS(L)
+         IF(dot_product(D,D).GE.DES_RADIUS(L)**2) THEN
+            WRITE(*,1002) L, sqrt(dot_product(D,D)), DES_RADIUS(L)
             WRITE(*,'(5X,A,3(ES17.9))') &
                'old particle pos = ', DES_POS_OLD(L,:)
             WRITE(*,'(5X,A,3(ES17.9))') &
