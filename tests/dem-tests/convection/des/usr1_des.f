@@ -25,8 +25,6 @@
 
       IMPLICIT NONE
 
-      INCLUDE 'usrnlst.inc'
-
 ! Keep the particles stationary.
       FC(:,:) = ZERO
       TOW(:,:) = ZERO         

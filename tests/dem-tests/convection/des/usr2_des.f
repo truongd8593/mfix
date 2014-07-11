@@ -25,7 +25,6 @@
 
       IMPLICIT NONE
 
-      INCLUDE 'usrnlst.inc'
 
 !-----------------------------------------------
 ! Local variables
@@ -102,7 +101,6 @@
 
       DOUBLE PRECISION Tg, Tp0, Coeff, Tp,REL_ERR
 
-      INCLUDE 'usrnlst.inc'
 
       FNAME = TRIM(RUN_NAME)//'_TP.dat'
       INQUIRE(FILE=FNAME,EXIST=F_EXISTS)
