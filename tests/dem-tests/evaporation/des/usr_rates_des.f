@@ -88,17 +88,17 @@
 
       DOUBLE PRECISION Tp, Dp0
 
-      INCLUDE 'species.inc'
+      INCLUDE '../species.inc'
 
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
+      INCLUDE '../ep_s1.inc'
+      INCLUDE '../fun_avg1.inc'
 
-      INCLUDE 'function.inc'
+      INCLUDE '../function.inc'
 
-      INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg2.inc'
+      INCLUDE '../ep_s2.inc'
+      INCLUDE '../fun_avg2.inc'
 
-      INCLUDE 'usrnlst.inc'
+      INCLUDE '../usrnlst.inc'
 
 ! Alias particle temperature.
       Tp = DES_T_s_NEW(NP)

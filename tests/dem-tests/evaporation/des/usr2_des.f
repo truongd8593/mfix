@@ -25,7 +25,6 @@
 
       IMPLICIT NONE
 
-      INCLUDE 'usrnlst.inc'
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -90,7 +89,6 @@
 ! file unit for heat transfer data
       INTEGER, PARAMETER :: TP_UNIT = 2030
 
-      INCLUDE 'usrnlst.inc'
 
       FNAME = TRIM(RUN_NAME)//'_Tp.txt'
       INQUIRE(FILE=FNAME,EXIST=F_EXISTS)

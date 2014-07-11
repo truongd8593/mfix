@@ -1,103 +1,103 @@
-!######################################################################!
-!  Author: J.Musser                                 Date:   2012-11-15 !
-!                                                                      !
-!  Purpose: These simulations are constructed to reflect the classical !
-!  wet-bulb phenomenon whereby energy loss from evaporation is offset  !
-!  by energy absorption from the environment.                          !
-!                                                                      !
-!  Setup: A single droplet is suspended in a humidified air stream     !
-!  with an initial temperature equal to the air temperature (30C).     !
-!  Fifteen seconds of physical time is simulated to ensure the droplet !
-!  achieves a steady-state (SS) temperature. The SS temperature should !
-!  compare with the theoretical wet-bulb temperature.                  !
-!                                                                      !
-!  Boundary and initial conditions are provided for 11 cases. The      !
-!  relative humidity of the air ranges from 0% to 100% in increments   !
-!  of 10%.                                                             !
-!                                                                      !
-!  Note:                                                               !
-!  > Steady-state and theoretical wet-bulb temperatures are provided   !
-!    in the following table for comparison.                            !
-!  > The default test cases is for 50% relative humidity.              !
-!                                                                      !
-!  |----------------------------------------------------------------|  !
-!  | Relative | Mass fractions (Xg) | Mass Flow | Wet-Bulb | DEM-SS |  !
-!  | Humidity |---------------------|    Rate   |   Temp   |  Temp  |  !
-!  | (Tg=30C) |    Air   |    H2O   |  (g/sec)  |    (C)   |   (C)  |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |    0%    | 1.000000 | 0.000000 |  0.349315 |   10.5   |   9.49 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |   10%    | 0.997390 | 0.002610 |  0.348762 |   13.2   |  12.43 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |   20%    | 0.994771 | 0.005229 |  0.348208 |   15.7   |  15.10 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |   30%    | 0.992144 | 0.007856 |  0.347655 |   18.0   |  17.51 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |   40%    | 0.989509 | 0.010491 |  0.347102 |   20.1   |  19.72 |  !
-!  ******************************************************************  !
-!  *   50%    * 0.986865 * 0.013135 *  0.346548 *   22.0   *  21.76 *  !
-!  ******************************************************************  !
-!  |   60%    | 0.984212 | 0.015788 |  0.345995 |   23.8   |  23.64 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |   70%    | 0.981552 | 0.018448 |  0.345442 |   25.5   |  25.39 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |   80%    | 0.978882 | 0.021118 |  0.344888 |   27.1   |  27.02 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |   90%    | 0.976204 | 0.023796 |  0.344335 |   28.6   |  28.56 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!  |  100%    | 0.973518 | 0.026482 |  0.343781 |   30.0   |  30.00 |  !
-!  |----------|----------|----------|-----------|----------|--------|  !
-!                                                                      !
-!  References:                                                         !
-!  A.F. Mills. 1999. Basic Heat and Mass Transfer. Prentice Hall, USA. !
-!                                                                      !
-!######################################################################!
+########################################################################
+#  Author: J.Musser                                 Date:   2012-11-15 #
+#                                                                      #
+#  Purpose: These simulations are constructed to reflect the classical #
+#  wet-bulb phenomenon whereby energy loss from evaporation is offset  #
+#  by energy absorption from the environment.                          #
+#                                                                      #
+#  Setup: A single droplet is suspended in a humidified air stream     #
+#  with an initial temperature equal to the air temperature (30C).     #
+#  Fifteen seconds of physical time is simulated to ensure the droplet #
+#  achieves a steady-state (SS) temperature. The SS temperature should #
+#  compare with the theoretical wet-bulb temperature.                  #
+#                                                                      #
+#  Boundary and initial conditions are provided for 11 cases. The      #
+#  relative humidity of the air ranges from 0% to 100% in increments   #
+#  of 10%.                                                             #
+#                                                                      #
+#  Note:                                                               #
+#  > Steady-state and theoretical wet-bulb temperatures are provided   #
+#    in the following table for comparison.                            #
+#  > The default test cases is for 50% relative humidity.              #
+#                                                                      #
+#  |----------------------------------------------------------------|  #
+#  | Relative | Mass fractions (Xg) | Mass Flow | Wet-Bulb | DEM-SS |  #
+#  | Humidity |---------------------|    Rate   |   Temp   |  Temp  |  #
+#  | (Tg=30C) |    Air   |    H2O   |  (g/sec)  |    (C)   |   (C)  |  #
+#  |----------|----------|----------|-----------|----------|--------|  #
+#  |    0%    | 1.000000 | 0.000000 |  0.349315 |   10.5   |   9.49 |  #
+#  |----------|----------|----------|-----------|----------|--------|  #
+#  |   10%    | 0.997390 | 0.002610 |  0.348762 |   13.2   |  12.43 |  #
+#  |----------|----------|----------|-----------|----------|--------|  #
+#  |   20%    | 0.994771 | 0.005229 |  0.348208 |   15.7   |  15.10 |  #
+#  |----------|----------|----------|-----------|----------|--------|  #
+#  |   30%    | 0.992144 | 0.007856 |  0.347655 |   18.0   |  17.51 |  #
+#  |----------|----------|----------|-----------|----------|--------|  #
+#  |   40%    | 0.989509 | 0.010491 |  0.347102 |   20.1   |  19.72 |  #
+#  ******************************************************************  #
+#  *   50%    * 0.986865 * 0.013135 *  0.346548 *   22.0   *  21.76 *  #
+#  ******************************************************************  #
+#  |   60%    | 0.984212 | 0.015788 |  0.345995 |   23.8   |  23.64 |  #
+#  |----------|----------|----------|-----------|----------|--------|  #
+#  |   70%    | 0.981552 | 0.018448 |  0.345442 |   25.5   |  25.39 |  #
+#  |----------|----------|----------|-----------|----------|--------|  #
+#  |   80%    | 0.978882 | 0.021118 |  0.344888 |   27.1   |  27.02 |  #
+#  |----------|----------|----------|-----------|----------|--------|  #
+#  |   90%    | 0.976204 | 0.023796 |  0.344335 |   28.6   |  28.56 |  #
+#  |----------|----------|----------|-----------|----------|--------|  #
+#  |  100%    | 0.973518 | 0.026482 |  0.343781 |   30.0   |  30.00 |  #
+#  |----------|----------|----------|-----------|----------|--------|  #
+#                                                                      #
+#  References:                                                         #
+#  A.F. Mills. 1999. Basic Heat and Mass Transfer. Prentice Hall, USA. #
+#                                                                      #
+########################################################################
 
   RUN_NAME  = 'WBT'
   DESCRIPTION  = 'DEM :: Wet-bulb Test - HR  50%'
 
-#_______________________________________________________________
+#_______________________________________________________________________
 # RUN CONTROL SECTION
 
-  UNITS    = 'cgs'
-  RUN_TYPE = 'new'
-  TIME     = 0.0
-  TSTOP    = 15.0
-  DT       = 5.0E-3  DT_FAC   = 1.0
+  RUN_TYPE = 'NEW'
+  UNITS = 'CGS'
 
-  GRAVITY  = 980.7
+  TIME =   0.0
+  TSTOP = 15.0
+
+  DT =     5.0E-3
+  DT_FAC = 1.0
 
   ENERGY_EQ  = .T.
-  SPECIES_EQ = .T.  .F.
+  SPECIES_EQ(0:1) = .T.  .T.
 
-  MOMENTUM_X_EQ  = .T.   .F.
-  MOMENTUM_Y_EQ  = .F.   .F.
-  MOMENTUM_Z_EQ  = .F.   .F.
+  MOMENTUM_X_EQ(0:1)  = .T.   .F.
+  MOMENTUM_Y_EQ(0:1)  = .F.   .F.
+  MOMENTUM_Z_EQ(0:1)  = .F.   .F.
 
   CALL_USR = .T.
 
-#_______________________________________________________________
+#_______________________________________________________________________
 # NUMERICAL SECTION
 
   DEF_COR  =  .F.
   NORM_G  = 2.0
 
 
-#_______________________________________________________________
+#_______________________________________________________________________
 # GEOMETRY SECTION 
 
-  COORDINATES = 'cartesian'
+  COORDINATES = 'CARTESIAN'
 
   XLENGTH  = 1.0   IMAX = 1
   ZLENGTH  = 1.0   KMAX = 1
   YLENGTH  = 1.0   JMAX = 1
 
-
-#_______________________________________________________________
+#_______________________________________________________________________
 # MATERIAL SECTION
 
-# GAS SECTION
-#------------------------------------------//
+! GAS SECTION
+!---------------------------------------------------------------------//
   NMAX_g = 2
   SPECIES_g(1) = 'AIR'   SPECIES_ALIAS_g(1) = 'AIR'
   SPECIES_g(2) = 'H2O'   SPECIES_ALIAS_g(2) = 'Vapor'
@@ -105,23 +105,48 @@
 !  MW_g - Obtained from Burcat and Ruscic databse
 !  MW_AVG - Calculated from individual species
 
-# PARTICLE SECTION
-#------------------------------------------//
 
-  EP_star = 0.40    ! Packed bed void fraction
-  e       = 0.9
-  Phi     = 30.0
-  C_f     = 0.1
 
+! PARTICLE SECTION
+!---------------------------------------------------------------------//
   MMAX = 1
 
+  PARTICLES  = 1   ! Number of partiles in the system.
+
+! Particle-particle:
+  KN =   1.0d6               ! Normal collision spring constant
+  DES_EN_INPUT = 0.9         ! Restitution coefficient
+  MEW   = 0.1                ! Friction coefficient
+
+! Particle-wall:
+  KN_W = 1.0d6               ! Normal collision spring constant
+  DES_EN_WALL_INPUT = 0.9    ! Restitution coefficient
+  MEW_W = 0.1                ! Friction coefficient
+
+  NFACTOR = 0                ! No initial settling
+
+  DES_NEIGHBOR_SEARCH = 4    ! Grid based neighbor search
+  NEIGHBOR_SEARCH_N   = 9999 ! Steps between neighbor search
+  MN = 20                    ! Maximum number of neighbors
+
+
+
 ! Solids phase 1
-!------------------------------------------//
-  D_p0 = 0.1      ! (cm)
-  RO_s0= 0.9586d0 ! (g/cm)
+!---------------------------------------------------------------------//
+  SOLIDS_MODEL = 'DEM'
+
+  D_p0(1) = 0.1      ! (cm)
+  RO_s0(1)= 0.9586d0 ! (g/cm)
+
+  DES_Em(1) = 0.0    ! Emissivity
+
+  NMAX_s(1) = 1
+
+  SPECIES_s(1,1) = 'H2O(L)'
+  SPECIES_ALIAS_s(1,1) = 'Liquid'
 
 
-#_______________________________________________________________
+#_______________________________________________________________________
 # INITIAL CONDITIONS SECTION
 
   IC_X_w(1) = 0.0
@@ -135,11 +160,14 @@
 
   IC_EP_g(1) = 1.0
   IC_T_g(1)  = 303.15     ! (K) --> ~105F
-  IC_P_g(1)  = 1.01325d6 ! -> 1atm
+  IC_P_g(1)  = 1.01325d6  ! -> 1atm
 
-  IC_U_g(1) = 300.0  ! (cm/sec)
-  IC_V_g(1) = 0.0   ! (cm/sec)
-  IC_W_g(1) = 0.0   ! (cm/sec)
+  IC_U_g(1) = 300.0       ! (cm/sec)
+  IC_V_g(1) =   0.0       ! (cm/sec)
+  IC_W_g(1) =   0.0       ! (cm/sec)
+
+  IC_T_s(1,1) = 303.15    ! (K)
+  IC_X_s(1,1,1) = 1.0
 
 ! IC for Tg = 30C and RH = 0%
 !---------------------------------------------------//
@@ -197,7 +225,7 @@
 !  IC_X_g(1,2) = 0.026482  ! Water vapor
 
 
-#_______________________________________________________________
+#_______________________________________________________________________
 # BOUNDARY CONDITIONS SECTION
 
 
@@ -327,14 +355,6 @@
   BC_C_X_g(2,2) =  4*0.0
 
 
-  BC_hw_T_s(2,1) =  4*0.0
-  BC_C_T_s(2,1)  =  4*0.0
-
-  BC_hw_X_s(2,1,1) =  4*0.0
-
-  BC_C_X_s(2,1,1) =  4*0.0
-
-
 # Gas-Solids Outlet
 #------------------------------------------//
   BC_X_w(6) = 1.0
@@ -349,11 +369,24 @@
   BC_P_g(6)  = 1.01325d6  ! (Barye)
   BC_T_g(6)  = 303.15   ! (K) -> 30C
 
-#_______________________________________________________________
+
+
+#_______________________________________________________________________
+# CHEMICAL REACTION SECTION
+
+  @(DES_RXNS)
+
+    Evaporation{ chem_eq = "Liquid --> Vapor"}
+
+  @(DES_END)
+
+
+
+#_______________________________________________________________________
 # OUTPUT CONTROL SECTION
 
-  OUT_DT = 5.0
   RES_DT = 0.1 
+  DES_RES_DT = 5.0
 
   SPX_DT(1) = 0.1    ! EP_g 
   SPX_DT(2) = 5.0    ! P_g, P_star 
@@ -368,26 +401,25 @@
   RESID_STRING  = 'P0' 'T0'
 
   NLOG = 25
-  FULL_LOG = .F. 
+  FULL_LOG = .T. 
 
   WRITE_DASHBOARD = .T.
 
-#_______________________________________________________________
+  PRINT_DES_DATA = .F. ! write DEM data : *.vtp files
+
+#_______________________________________________________________________
 # PARALLELIZATION CONTROLS
 
   NODESI  = 1     NODESJ  = 1     NODESK  = 1
 
 
-#_______________________________________________________________
+#_______________________________________________________________________
 # DISCRETE ELEMENT MODEL
 
   DISCRETE_ELEMENT      = .T.
   DES_CONTINUUM_COUPLED = .T.
 
-  DIMN = 3
-
   DES_INTERP_ON  = .F.
-  WALLDTSPLIT    = .T.
 
 ! Solve DES Energy Equations
   DES_ENERGY_EQ = .T. 
@@ -395,97 +427,22 @@
     DES_COND_EQ = .F. ! Single particle, skip conduction
     DES_RADI_EQ = .F. ! Low temperatures, skip radiation
  
-! Solve DES Species Equations
-  DES_SPECIES_EQ = .T.
-
-  DEBUG_DES  = .F.
-
-  DTSOLID_FACTOR  = 0.1D0 ! Ratio (fluid step/solid steps)
-
 ! Constant particle size, changing density.
   REACTION_MODEL = 'VARIABLE_DENSITY'
 
 
 # DES Particle Properties
 #------------------------------------------//
-  PARTICLES  = 1 ! Number of partiles in the system.
 
-  DES_NMAX_s(1) = 1
-
-  DES_SPECIES_s(1,1) = 'H2O(L)'
-  DES_SPECIES_ALIAS_s(1,1) = 'Liquid'
-
-  DES_K_s0  = 1.4651d-3  ! conductivity, cal/(sec.cm.K)
+!  DES_K_s0  = 1.4651d-3  ! conductivity, cal/(sec.cm.K)
 ! DES_MW_s - molecular weight obtained from THERMO DATA
 
 
-#_______________________________________________________________
-# CHEMICAL REACTION SECTION
-
-  @(DES_RXNS)
-
-    Evaporation{ chem_eq = "Liquid --> Vapor"}
-
-  @(DES_END)
 
 
-# DES Initial Condition
-#------------------------------------------//
-  DES_IC_X_w   = 0.0
-  DES_IC_X_e   = 1.0
-  DES_IC_Y_s   = 0.0
-  DES_IC_Y_n   = 1.0
-  DES_IC_Z_b   = 0.0
-  DES_IC_Z_t   = 1.0
-
-  DES_IC_T_s(1,1)   = 303.15 ! Temperature
-  DES_IC_X_s(1,1,1) = 1.0   ! Liquid Water
 
 
-# DES Boundary Condition
-#------------------------------------------//
-  DES_PERIODIC_WALLS  = .F.
-
-
-# Neighbor Search Parameters
-#------------------------------------------//
-  DES_NEIGHBOR_SEARCH  = 1 ! Particle neighbor search method
-!   [1] : N-Square7
-!    4  : Cell linked-list based algorithm
-
-! solids time steps between neighbor search
-  NEIGHBOR_SEARCH_N = 987654321
-
-
-  MN  = 20  ! Maximum number of neighbors
-
-
-# Particle/Particle/Wall Contact Parameters
-#------------------------------------------//
-
-  KN       = 1.0d6        ! Normal inter-particle collision spring constant
-  KT_FAC   = @(2.0/7.0)   ! Tangential spring factor = KT/KN   [2/7]
-  KN_W     = 1.0d6        ! Normal particle-wall collision spring constant
-  KT_W_FAC = @(2.0/7.0)   ! Tangential spring factor = KT_W/KN_W   [2/7]
-  MEW      = 0.1          ! Inter-particle friction coeffienct
-  MEW_W    = 0.1          ! Particle-wall friction coefficient
-
-  DES_EN_INPUT(1)   =  0.9
-  DES_EN_WALL_INPUT =  0.9
-
-  DES_ETAT_FAC    = @(1/2)
-  DES_ETAT_W_FAC  = @(1/2)
-
-
-# DES Output Control
-#------------------------------------------//
-
-  PRINT_DES_DATA = .F. ! write DEM data : *.vtp files
-  DES_RES_DT = 5.0       
-  DES_SPX_DT = 0.5       ! interval to write *.vtp files in pure DEM simulation
-
-
-#_______________________________________________________________
+#_______________________________________________________________________
 THERMO DATA
 
 H2O(L)            L 8/89H  2.O  1.   0.   0.L   273.150  6000.000  C  18.01528 1
