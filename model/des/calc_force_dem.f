@@ -139,8 +139,7 @@
 !$omp          already_neighbours, report_excess_overlap,neigh_l, &
 !$omp          WALL_POS,WALL_VEL,                                 &
 !$omp          r_lm,dist,distmod,frac_overlap1,normal,            &
-!$omp          v_rel_trans_norm,tangent,                          &
-!$omp          v_rel_trans_tang,                                  &
+!$omp          v_rel_trans_norm, v_rel_tang,                      &
 !$omp          overlap_n,overlap_t,dtsolid_tmp,phasell,           &
 !$omp          sqrt_overlap,kn_des_w,kt_des_w,etan_des_w,         &
 !$omp          etat_des_w,sigmat_old,norm_old,tmp_ax,tmp_mag,     &
