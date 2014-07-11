@@ -24,7 +24,6 @@
       use desmpi 
       use mpi_utility
       USE geometry 
-      USE des_ic
       USE des_rxns
       USE des_thermo
       USE des_stl_functions 
@@ -45,10 +44,6 @@
 
 ! cfassign and des_init_bc called before reading the particle info 
       CALL CFASSIGN
-
-! Make the necessary calculations for the mass inflow/outflow boundary
-! conditions.  DTSOLID is needed so call is made after cfassign.f
-!      CALL DES_INIT_BC  --> SET_BC_DEM
 
 ! parallelization: desmpi_init needs to be called after des_init_bc
 ! since it relies on setting/checking of des_mio
@@ -144,9 +139,6 @@
 ! do_nsearch should be set before calling particle in cell  
       DO_NSEARCH =.TRUE.
       CALL PARTICLES_IN_CELL
-
-! Set initial conditions obtained from mfix.dat file. (ENERGY/SPECIES)
-      IF(RUN_TYPE == 'NEW' .AND. DES_IC_EXIST) CALL DES_SET_IC
 
 ! Set parameters for cohesion models.  This call needs to be after the
 ! particle's radius is assigned (i.e., after particles are identified).

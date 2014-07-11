@@ -27,6 +27,9 @@
       Use des_rxns
       USE cutcell
 
+      use run, only: ENERGY_EQ
+      use run, only: ANY_SPECIES_EQ
+
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       use error_manager
@@ -70,9 +73,9 @@
          NPARTICLES = MAX_PIS
       ENDIF
 
- 1001 FORMAT(/,'User supplied MAX_PIS (',I15, &
-      ') > cummulative size of particle arrays, NPARTILCES ( ', I15 , ')', /, &
-      'Therefore, setting NPARTICLES to ',I15)
+ 1001 FORMAT(/,'User supplied MAX_PIS (',I15,') > cummulative size ',&
+         'of particle arrays, NPARTILCES ( ', I15 , ')', /, &
+         'Therefore, setting NPARTICLES to ',I15)
 
 
 ! For parallel processing the array size required should be either
@@ -298,7 +301,7 @@
 
 ! ---------------------------------------------------------------->>>
 ! BEGIN Thermodynamic Allocation
-      IF(DES_ENERGY_EQ)THEN
+      IF(ENERGY_EQ)THEN
 ! Particle temperature
          Allocate( DES_T_s_OLD( NPARTICLES ) )
          Allocate( DES_T_s_NEW( NPARTICLES ) )
@@ -321,7 +324,7 @@
 
 ! ---------------------------------------------------------------->>>
 ! BEGIN Species Allocation
-      IF(ANY_DES_SPECIES_EQ)THEN
+      IF(ANY_SPECIES_EQ)THEN
 ! Rate of solids phase production for each species
          Allocate( DES_R_sp( NPARTICLES, MAX_DES_NMAX) )
 ! Rate of solids phase consumption for each species

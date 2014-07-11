@@ -51,7 +51,7 @@
 ! Specific heat
 !-----------------------------------------------------------------------
 ! This only needs calculated when solving the energy equations.
-      IF(DES_ENERGY_EQ) THEN
+      IF(ENERGY_EQ) THEN
 ! If a constant value specific heat has not been defined in the mfix.dat
 ! file, calculate the temperature dependent value based on data from the
 ! thermodynamic databases.
@@ -60,10 +60,10 @@
             DES_C_PS(NP) = ZERO
 ! Calculate the specific heat based on the species composition of the
 ! particle and the data from the thermodynamic databases.
-            DO N = 1, DES_NMAX_s(M)
-               lCPoR = DES_calc_CpoR(DES_T_s_NEW(NP), M, N,IER)
-    	          DES_C_PS(NP) = DES_C_PS(NP) +                          &
-                  lCpoR * DES_X_s(NP,N) * RGAS / DES_MW_s(M,N)
+            DO N = 1, NMAX_s(M)
+               lCPoR = DES_calc_CpoR(DES_T_s_NEW(NP), M, N, IER)
+               DES_C_PS(NP) = DES_C_PS(NP) +                          &
+                  lCpoR * DES_X_s(NP,N) * RGAS / MW_s(M,N)
             ENDDO
 ! Convert to SI units if needed.
             IF (UNITS == 'SI') DES_C_PS(NP) = 4183.925D0*DES_C_PS(NP)

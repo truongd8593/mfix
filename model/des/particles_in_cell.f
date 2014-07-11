@@ -134,7 +134,7 @@
 ! may change a particle's density (variable_density) or diameter 
 ! (shrinking_particle), each particle's phase is stored in the restart
 ! when solving the species equations.
-            IF((RUN_TYPE == 'NEW') .OR. .NOT.ANY_DES_SPECIES_EQ) THEN
+            IF((RUN_TYPE == 'NEW') .OR. .NOT.ANY_SPECIES_EQ) THEN
                M_LP: DO M = 1, DES_MMAX
                   dDp  = ABS(2.0d0*DES_RADIUS(L)-DES_D_P0(M))
                   dRho = ABS( RO_Sol(L)-DES_RO_S(M))

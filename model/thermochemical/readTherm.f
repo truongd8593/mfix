@@ -211,11 +211,11 @@
       DOUBLE PRECISION FUNCTION  DES_calc_CpoR(T, M, N, IER)
 
 ! Polynomial coefficients
-      use des_rxns, only: DES_Ahigh  ! for T in [Tcom, Thigh]
-      use des_rxns, only: DES_Alow   ! for T in [Tlow, Tcom)
-      use des_rxns, only: DES_Thigh  ! Upper bound of use
-      use des_rxns, only: DES_Tlow   ! Lower bound of use
-      use des_rxns, only: DES_Tcom   ! Switch from low to high coeffs
+      use physprop, only: Ahigh  ! for T in [Tcom, Thigh]
+      use physprop, only: Alow   ! for T in [Tlow, Tcom)
+      use physprop, only: Thigh  ! Upper bound of use
+      use physprop, only: Tlow   ! Lower bound of use
+      use physprop, only: Tcom   ! Switch from low to high coeffs
 
       implicit none
 
@@ -244,21 +244,21 @@
       IER = 0
 
 ! Verify that the temperature is in a valid range.
-      if(T > DES_Thigh(M,N)) THEN
-        xT = DES_Thigh(M,N)
+      if(T > Thigh(M,N)) THEN
+        xT = Thigh(M,N)
         IER = 101
-      elseif(T < DES_Tlow(M,N)) THEN
-        xT = DES_Tlow(M,N)
+      elseif(T < Tlow(M,N)) THEN
+        xT = Tlow(M,N)
         IER = 102
       endif
 
 ! Evaluate the polynomial form.
-      IF(T < DES_Tcom(M,N))THEN
-        DES_calc_CpoR = calc_CpoR0(xT, DES_Alow(1:5,M,N))
+      IF(T < Tcom(M,N))THEN
+        DES_calc_CpoR = calc_CpoR0(xT, Alow(1:5,M,N))
       ELSE
-        DES_calc_CpoR = calc_CpoR0(xT, DES_Ahigh(1:5,M,N))
+        DES_calc_CpoR = calc_CpoR0(xT, Ahigh(1:5,M,N))
       ENDIF
-      
+
       RETURN
       END Function DES_calc_CpoR
 

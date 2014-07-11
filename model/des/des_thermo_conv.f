@@ -17,7 +17,7 @@
       SUBROUTINE DES_CONVECTION(NP, M, IJK, &
          INTERP_IJK, INTERP_WEIGHTS, FOCUS)
 
-      Use constant
+      use constant, only: Pi
       Use des_thermo
       Use discretelement
       Use fldvar
@@ -73,6 +73,7 @@
          WRITE(*,"(/5X,A)")'From: DES_CONVECTION -'
          WRITE(*,"(8X,A,D12.6)")'Tg: ',Tg
          WRITE(*,"(8X,A,D12.6)")'Tp: ',DES_T_s_NEW(NP)
+         WRITE(*,"(8X,A,D12.6)")'Sa: ',Sa
          WRITE(*,"(8X,A,D12.6)")'GAMMA_CP: ',GAMMA_CP
          WRITE(*,"(8X,A,D12.6)")'Qcv: ',Qcv
          WRITE(*,"(5X,50('-')/)")
@@ -131,6 +132,14 @@
 ! Functions
 !---------------------------------------------------------------------//
       INCLUDE '../function.inc'
+
+
+
+
+      RETURN
+
+
+
 
 ! Loop over fluid cells.
 !---------------------------------------------------------------------//
@@ -263,9 +272,9 @@
 ! Calculate the Prandtl Number
             IF(K_G(IJK) > ZERO) THEN
                N_Pr = (C_PG(IJK)*MU_G(IJK))/K_G(IJK)
-		          ELSE
+            ELSE
                N_Pr = LARGE_NUMBER 
-        		  ENDIF
+            ENDIF
 
 ! Calculate the particle Reynolds Number
             IF(MU_G(IJK) > ZERO) THEN

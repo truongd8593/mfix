@@ -61,7 +61,7 @@
 
 ! Interpolation: Removed J.Musser 11/8/2012
 !---------------------------------------------------------------------//
-!     IF(DES_INTERP_ON .AND. (ANY_DES_SPECIES_EQ .OR. DES_CONV_EQ)) THEN
+!     IF(DES_INTERP_ON .AND. (ANY_SPECIES_EQ .OR. DES_CONV_EQ)) THEN
 !         INTERP_IJK(:) = -1
 !         INTERP_WEIGHTS(:) = ZERO
 !         CALL INTERPOLATE_CC(NP, INTERP_IJK, INTERP_WEIGHTS, FOCUS)
@@ -107,7 +107,7 @@
 
 
 ! Calculate reaction rates and interphase mass transfer
-            IF(ANY_DES_SPECIES_EQ) CALL DES_RRATES0(NP, M, IJK, &
+            IF(ANY_SPECIES_EQ) CALL DES_RRATES0(NP, M, IJK, &
                INTERP_IJK, INTERP_WEIGHTS, FOCUS)
 
          ENDDO lNP_LP ! End loop over all particles

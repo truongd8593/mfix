@@ -509,7 +509,7 @@
       ENDIF
 
  2101 FORMAT('Warning 2101: Tangential damping factor ',A,' not ',     &
-         'specified in mfix.dat.',/'Seting to default: (1/2).')
+         'specified',/'in mfix.dat. Seting to default: (1/2).')
 
 
       LC = 0

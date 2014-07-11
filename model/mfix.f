@@ -62,6 +62,7 @@
       USE quadric
       USE dashboard
       USE qmom_kinetic_equation
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -333,9 +334,10 @@
 !=======================================================================
       IF(CARTESIAN_GRID.AND.RE_INDEXING) THEN
 
-         IF(myPE == PE_IO) WRITE(*,*)'============================================================================='
-         IF(myPE == PE_IO) WRITE(*,*)' RE-INDEXING CELLS FOR CARTESIAN GRID...'
-
+         IF(myPE == PE_IO) THEN
+            WRITE(*,"(72('='))")
+            WRITE(*,*)' RE-INDEXING CELLS FOR CARTESIAN GRID...'
+         ENDIF
          CALL RE_INDEX_ARRAYS
 
 
@@ -345,14 +347,13 @@
 !      IF(myPE == PE_IO)print*,'Exiting MFIX after REPORT_BEST_IJK_SIZE.'
 
 
-         IF(myPE == PE_IO) WRITE(*,*)'============================================================================='
+         IF(myPE == PE_IO) WRITE(*,"(72('='))")
 
       ENDIF
 
 !=======================================================================
 ! JFD: END MODIFICATION FOR RE-INDEXING CELLS
 !=======================================================================
-
 
       IF(DISCRETE_ELEMENT) CALL MAKE_ARRAYS_DES
       IF(QMOMK) CALL QMOMK_MAKE_ARRAYS
@@ -361,6 +362,9 @@
       IF(DEM_SOLIDS) CALL SET_BC_DEM
 ! Set the inflow/outflow BC for PIC solids 
       IF(PIC_SOLIDS) CALL SET_BC_PIC
+
+! Set the inital properties of each particle.
+      IF(DEM_SOLIDS) CALL SET_IC_DEM
 
 ! AEOLUS: debug prints
       if (DBGPRN_LAYOUT .or. bdist_io) then

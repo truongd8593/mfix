@@ -115,7 +115,7 @@
       PEA(:,:) = .FALSE.
 
 ! J.Musser: Energy and Species Equation Arrays
-      IF(DES_ENERGY_EQ)THEN
+      IF(ENERGY_EQ)THEN
          DES_T_s_OLD(:) = UNDEFINED
          DES_T_s_NEW(:) = UNDEFINED
          DES_C_PS(:) = UNDEFINED
@@ -126,7 +126,7 @@
             Q_Source0(:) = ZERO
       ENDIF
 
-      IF(ANY_DES_SPECIES_EQ)THEN
+      IF(ANY_SPECIES_EQ)THEN
          DES_R_sp(:,:) = ZERO
          DES_R_sc(:,:) = ZERO
          Qint(:) = ZERO

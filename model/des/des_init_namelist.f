@@ -25,7 +25,6 @@
       USE discretelement
       USE mfix_pic
       USE des_bc
-      USE des_ic
       USE des_thermo
       USE des_rxns
       USE pic_bc
@@ -512,15 +511,6 @@
       Asperities = ZERO
 !</keyword>
 
-! J.Musser : des particle initial conditions
-      DES_IC_X_w(:) = UNDEFINED
-      DES_IC_X_e(:) = UNDEFINED
-      DES_IC_Y_s(:) = UNDEFINED
-      DES_IC_Y_n(:) = UNDEFINED
-      DES_IC_Z_b(:) = UNDEFINED
-      DES_IC_Z_t(:) = UNDEFINED
-      DES_IC_T_s(:,:) = UNDEFINED
-      DES_IC_X_s(:,:,:) = UNDEFINED
 
 !<keyword category="Discrete Element" required="false">
 !  <description>Allows writing of discrete particle data to output 

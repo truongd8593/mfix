@@ -10,12 +10,19 @@
 
 ! User defined reaction names from reaction blocks @(RXNS)
       use parse, only: RXN_NAME, DES_RXN_NAME
+
+      use parse, only: RXN_CHEM_EQ, DES_RXN_CHEM_EQ
+      use parse, only: usrDH, DES_usrDH
+      use parse, only: usrfDH, DES_usrfDH
+
+
 ! Number of continuum reactions and data object
       use rxns, only: NO_OF_RXNS, REACTION
 ! Number of discrete reactions and data object
       use des_rxns, only: NO_OF_DES_RXNS, DES_REACTION
-! User specifed species aliases used to specify reactions.
-      use rxns, only: SPECIES_ALIAS_g, SPECIES_ALIAS_s
+! User specifed species names and aliases:
+      use rxns, only: SPECIES_g, SPECIES_ALIAS_g
+      use rxns, only: SPECIES_s, SPECIES_ALIAS_s
 
 ! Number of continuum solids
       use physprop, only: SMAX
@@ -65,12 +72,14 @@
 
 
       IF(NO_OF_RXNS > 0) THEN
-
-         CALL CHECK_CHEMICAL_RXNS_COMMON(NO_OF_RXNS, REACTION)
-
+         CALL CHECK_CHEMICAL_RXNS_COMMON(NO_OF_RXNS, RXN_NAME,         &
+            RXN_CHEM_EQ, usrDH, usrfDH, REACTION)
       ENDIF
 
-
+      IF(NO_OF_DES_RXNS > 0) THEN
+         CALL CHECK_CHEMICAL_RXNS_COMMON(NO_OF_DES_RXNS, DES_RXN_NAME, &
+            DES_RXN_CHEM_EQ, DES_usrDH, DES_usrfDH, DES_REACTION)
+      ENDIF
 
       CALL FINL_ERR_MSG
 
@@ -86,41 +95,58 @@
 !  Purpose: Check chemical reactions specifications                    !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_CHEMICAL_RXNS_COMMON(NUM_RXNS, RXN_BLOCK)
+      SUBROUTINE CHECK_CHEMICAL_RXNS_COMMON(COUNT, NAME, CHEM_EQ, DH,  &
+         fDH, RXN_ARRAY)
 
-!      USE compar
-      USE discretelement
-      USE fldvar
-!      USE funits
-!      USE geometry
-!      USE indices
-!      USE mfix_pic
-!      USE param
-!      USE param1
-      USE parse
-      USE physprop
-      USE run, only: ENERGY_EQ, SPECIES_EQ
-      USE rxns
+! Runtime flags for solving energy and species equations.
+      use run, only: ENERGY_EQ, SPECIES_EQ
+! Definition of derived data type
+      use rxn_com, only: REACTION_BLOCK
+! User specified constant specific heats:
+      use physprop, only: C_PG0, C_PS0
+! Molecular weights:
+      use physprop, only: MW_g, MW_s
+! Flag marking when the thermochemical database is read.
+      use rxns, only: rDatabase
+
+      use param, only: DIM_M, DIMENSION_RXN
+
+
+      use parse, only: setReaction
+      use rxn_com, only: checkThermoReqs
+      use rxn_com, only: checkMassBalance
+      use rxn_com, only: calcInterphaseTxfr
+      use rxn_com, only: WRITE_RXN_SUMMARY
+
+
 
       use error_manager
 
       IMPLICIT NONE
 
-      INTEGER, INTENT(IN) :: NUM_RXNS
-      TYPE(REACTION_BLOCK), TARGET, ALLOCATABLE :: RXN_BLOCK(:)
+      INTEGER, INTENT(IN) :: COUNT
+
+! Reaction Names from mfix.dat file:
+      CHARACTER(len=32), INTENT(IN) ::  NAME(DIMENSION_RXN)
+! Chemical equations:
+      CHARACTER(len=256), INTENT(IN) :: CHEM_EQ(DIMENSION_RXN)
+! User defined heat of reacation:
+      DOUBLE PRECISION, INTENT(IN) :: DH(DIMENSION_RXN)
+! User defined heat of reaction partitions.
+      DOUBLE PRECISION, INTENT(IN) :: fDH(DIMENSION_RXN,0:DIM_M)
+
+! Array of reaction data objects.
+      TYPE(REACTION_BLOCK), TARGET, ALLOCATABLE :: RXN_ARRAY(:)
 
 
-! loop/variable indices
-      INTEGER L, lM, lN, M, N
+
+! loop/variable indices1
+      INTEGER :: L
 
       TYPE(REACTION_BLOCK), POINTER :: This
 
       DOUBLE PRECISION netMassTransfer(0:DIM_M)
 
-      LOGICAL WARNED_USR(0:DIM_M)
-
-! Indicates that a discrete phase model is active.
-      LOGICAL foundDPM
 
 
 
@@ -128,22 +154,19 @@
 
 
 ! Allocate reaction blocks.
-      allocate(RXN_BLOCK(NUM_RXNS))
+      allocate(RXN_ARRAY(COUNT))
 
 
-
-! Initialize flag indicating if the user was already warned.
-      WARNED_USR(:) = .FALSE.
 
 
 
 ! Loop over reaction data pulled from data file.
-      DO L=1, NUM_RXNS
+      DO L=1, COUNT
 
-         This => RXN_BLOCK(L)
+         This => RXN_ARRAY(L)
 
 ! Store the reaction name.
-         This%Name = trim(RXN_NAME(L))
+         This%Name = trim(NAME(L))
 
 ! This check should not be necessary. Pre-processing by make_mfix and
 ! reading the data file (PARSE_RXN) should have already caught any
@@ -158,7 +181,7 @@
          'routines.')
 
 ! Store the chemical equation.
-         This%ChemEq = trim(RXN_CHEM_EQ(L))
+         This%ChemEq = trim(CHEM_EQ(L))
 
 ! Verify that a chemical equation was given in the data file.
          IF(len_trim(This%ChemEq) == 0) THEN
@@ -171,7 +194,7 @@
 
 ! Take the data read from the data file and populate the reaction block.
          CALL setReaction(This, NMAX(0), SPECIES_ALIAS_g(:),lMMAX,     &
-            NMAX(1:lMMAX), SPECIES_ALIAS_s(:,:), usrDH(L), usrfDH(L,:))
+            NMAX(1:lMMAX), SPECIES_ALIAS_s(:,:), DH(L), fDH(L,:))
 
 ! If the energy equations are not being solved and a user provided
 ! heat of reaction is given, flag error and exit.
@@ -216,9 +239,8 @@
          CALL checkMassBalance('CHECK_CHEMICAL_RXNS', This, &
             netMassTransfer(:), IER)
          IF(IER /= 0) THEN
-            IF(DMP_LOG) CALL WRITE_RXN_SUMMARY(This, &
-               SPECIES_ALIAS_g(:), SPECIES_ALIAS_s(:,:))
-            CALL MFIX_EXIT(myPE)
+            CALL WRITE_RXN_SUMMARY(This, SPECIES_ALIAS_g(:), &
+               SPECIES_ALIAS_s(:,:), .TRUE.)
          ENDIF
 
 ! Determine interphase exchanges
@@ -230,10 +252,10 @@
 
 ! Write a summary of the chemical reactions
 !---------------------------------------------------------------------//
-      DO L=1, NUM_RXNS
-         This => RXN_BLOCK(L)
+      DO L=1, COUNT
+         This => RXN_ARRAY(L)
          CALL WRITE_RXN_SUMMARY(This, SPECIES_ALIAS_g(:), &
-            SPECIES_ALIAS_s(:,:))
+            SPECIES_ALIAS_s(:,:), .FALSE.)
       ENDDO
 
       CALL FINL_ERR_MSG

@@ -127,9 +127,9 @@
          IF(MPPIC) call in_bin_512(lres_unit,des_stat_wt,pip,lnext_rec)
 
 ! Particle temperatures.
-         IF(DES_ENERGY_EQ) &
+         IF(ENERGY_EQ) &
             CALL in_bin_512(lres_unit,DES_T_s_NEW,pip,lnext_rec)
-         IF(ANY_DES_SPECIES_EQ) THEN
+         IF(ANY_SPECIES_EQ) THEN
 ! Solids phase index: This is needed for reacting flows as the diameter
 ! (shrinking_particle) or density (variable_density) reaction models
 ! prevent identifying particles from initial phase specifications.
@@ -295,9 +295,9 @@
          IF(MPPIC) call des_readscatter(lres_unit,des_stat_wt,lglocnt,lnext_rec)
 
 ! Particle temperatures.
-         IF(DES_ENERGY_EQ)  call des_readscatter(lres_unit, &
+         IF(ENERGY_EQ)  call des_readscatter(lres_unit, &
             DES_T_s_NEW, lglocnt, lnext_rec)
-         IF(ANY_DES_SPECIES_EQ) THEN
+         IF(ANY_SPECIES_EQ) THEN
 ! Solids phase index: This is needed for reacting flows as the diameter
 ! (shrinking_particle) or density (variable_density) reaction models
 ! prevent identifying particles from initial phase specifications.
@@ -434,7 +434,9 @@
       end if   ! end if/else bdist_io
 !-----------------------------------------------------------------<<<
 
-      IF(myPE == PE_IO) write(*,"(2/,3x,'Checking for stray particles!')")
+      IF(myPE == PE_IO) write(*,"(2/,3x,A)") &
+         'Checking for stray particles!'
+
       do lc1 = 1, MAX_PIP
          if(.NOT.PEA(lc1,1)) cycle ! No particle here
          if(PEA(lc1,2)) cycle      ! Don't care about new particles
@@ -462,8 +464,10 @@
 
          if(iErr /= 0) then
             lMsg=''; write(lMsg,*) lc1
-            write(*,"(5x,'Particle ',A,' is stray! -',I6.6,'- Delete it.')")&
-               trim(lMsg), iErr
+            write(*,9800) trim(lMsg), iErr
+
+ 9800 FORMAT(5x,'Particle ',A,' is stray! -',I6.6,'- Delete it.')
+
             CALL delete_par_from_res(lc1)
          endif
       enddo
@@ -474,7 +478,7 @@
       omega_old(:,:) = omega_new(:,:)
       des_pos_old(:,:) = des_pos_new(:,:)
       des_vel_old(:,:) = des_vel_new(:,:)
-      IF(DES_ENERGY_EQ) DES_T_s_OLD(:) = DES_T_s_NEW(:)
+      IF(ENERGY_EQ) DES_T_s_OLD(:) = DES_T_s_NEW(:)
 
 ! Close the restart file.
       if(bdist_io .or.mype .eq. pe_io) close(lres_unit)

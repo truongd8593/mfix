@@ -20,7 +20,7 @@
       USE geometry
       USE indices
       Use param1
-
+      use run, only: ANY_SPECIES_EQ
       IMPLICIT NONE
 
 ! Passed variables
@@ -53,7 +53,7 @@
 !---------------------------------------------------------------------//
       INCLUDE '../function.inc'
 
-      IF(.NOT.ANY_DES_SPECIES_EQ) RETURN
+      IF(.NOT.ANY_SPECIES_EQ) RETURN
 
 ! Loop over fluid cells.
 !---------------------------------------------------------------------//

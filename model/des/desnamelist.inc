@@ -33,12 +33,6 @@
 ! DES flow boundary condition information: J.Musser
         MAX_PIS, FORCE_ORD_BC, &
 
-! DES initial condition information: J.Musser
-        DES_IC_X_w, DES_IC_X_e, &
-        DES_IC_Y_s, DES_IC_Y_n, &
-        DES_IC_Z_b, DES_IC_Z_t, &
-        DES_IC_T_s, DES_IC_X_s, &
-
 ! DES output control information
         DEBUG_DES, FOCUS_PARTICLE,&
         PRINT_DES_DATA, DES_SPX_DT, DES_RES_DT, &

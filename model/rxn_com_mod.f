@@ -396,7 +396,7 @@
 !  Local variables: None                                               !
 !                                                                      !
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
-      SUBROUTINE WRITE_RXN_SUMMARY(RxN, lSAg, lSAs, fUNIT)
+      SUBROUTINE WRITE_RXN_SUMMARY(RxN, lSAg, lSAs, ABORT, fUNIT)
 
       IMPLICIT NONE
 
@@ -407,6 +407,9 @@
       CHARACTER(len=32), DIMENSION(DIM_N_g), INTENT(IN) :: lSAg
 ! Solids phase speices aliases.
       CHARACTER(len=32), DIMENSION(DIM_M, DIM_N_s), INTENT(IN) :: lSAs
+! Flag to abort the run.
+      LOGICAL, INTENT(IN) :: ABORT
+
 ! Optional file unit.
       INTEGER, OPTIONAL :: fUNIT
 
@@ -519,6 +522,7 @@
 
       CALL WRITE_RS0(empty, UNIT_FLAG)
 
+      IF(ABORT) CALL MFIX_EXIT(myPE)
       RETURN
 
 
@@ -966,8 +970,8 @@
                            WRITE(*,1000)
                            WRITE(UNIT_LOG,1000)
                         ENDIF
-                        CALL WRITE_RXN_SUMMARY(RxN, lSAg(:), lSAs(:,:))
-                        CALL MFiX_EXIT(myPE)
+                        CALL WRITE_RXN_SUMMARY(RxN, lSAg(:),           &
+                           lSAs(:,:), .TRUE.)
                      ENDIF
                   ENDIF
                ENDIF
@@ -1008,8 +1012,7 @@
                               WRITE(UNIT_LOG,1000)
                            ENDIF
                            CALL WRITE_RXN_SUMMARY(RxN, lSAg(:), &
-                              lSAs(:,:))
-                           CALL MFiX_EXIT(myPE)
+                              lSAs(:,:), .TRUE.)
                         ENDIF
 
 ! A solids phase is the destination phase.
@@ -1093,8 +1096,8 @@
                            WRITE(*,1000)
                            WRITE(UNIT_LOG,1000)
                         ENDIF
-                        CALL WRITE_RXN_SUMMARY(RxN, lSAg(:), lSAs(:,:))
-                        CALL MFiX_EXIT(myPE)
+                        CALL WRITE_RXN_SUMMARY(RxN, lSAg(:),           &
+                           lSAs(:,:), .TRUE.)
                      ENDIF
                   ENDIF
                ENDIF
@@ -1136,8 +1139,7 @@
                               WRITE(UNIT_LOG,1000)
                            ENDIF
                            CALL WRITE_RXN_SUMMARY(RxN, lSAg(:),  &
-                              lSAs(:,:))
-                           CALL MFiX_EXIT(myPE)
+                              lSAs(:,:), .TRUE.)
                         ENDIF
                      ELSE
 ! There can be only one solids phase fuel. Store the phase of the
@@ -1208,8 +1210,7 @@
                               WRITE(UNIT_LOG,1000)
                            ENDIF
                            CALL WRITE_RXN_SUMMARY(RxN, lSAg(:),    &
-                              lSAs(:,:))
-                           CALL MFiX_EXIT(myPE)
+                              lSAs(:,:), .TRUE.)
                         ENDIF
                      ELSE
                         catPhase = RxN%Species(lN)%pMap
@@ -1226,8 +1227,8 @@
                         'catalyst', trim(RxN%Name)
                      WRITE(UNIT_LOG,1000)
                   ENDIF
-                  CALL WRITE_RXN_SUMMARY(RxN, lSAg(:), lSAs(:,:))
-                  CALL MFiX_EXIT(myPE)
+                  CALL WRITE_RXN_SUMMARY(RxN, lSAg(:),                 &
+                     lSAs(:,:), .TRUE.)
                ENDIF
 
 ! Identify the reactant phase.
@@ -1245,8 +1246,7 @@
                               WRITE(UNIT_LOG,1000)
                            ENDIF
                            CALL WRITE_RXN_SUMMARY(RxN, lSAg(:), &
-                              lSAs(:,:))
-                           CALL MFiX_EXIT(myPE)
+                              lSAs(:,:), .TRUE.)
                         ENDIF
                      ELSE
                         toPhase = RxN%Species(lN)%pMap
@@ -1263,8 +1263,7 @@
                         trim(RxN%Name)
                      WRITE(UNIT_LOG,1000)
                   ENDIF
-                  CALL WRITE_RXN_SUMMARY(RxN, lSAg(:), lSAs(:,:))
-                  CALL MFiX_EXIT(myPE)
+                  CALL WRITE_RXN_SUMMARY(RxN, lSAg(:), lSAs(:,:),.TRUE.)
                ENDIF
 
 ! Something when wrong.
@@ -1275,8 +1274,7 @@
                      WRITE(UNIT_LOG,1004) trim(CALLER),trim(RxN%Name)
                      WRITE(UNIT_LOG,1000)
                   ENDIF
-                  CALL WRITE_RXN_SUMMARY(RxN, lSAg(:), lSAs(:,:))
-                  CALL MFiX_EXIT(myPE)
+                  CALL WRITE_RXN_SUMMARY(RxN, lSAg(:), lSAs(:,:),.TRUE.)
 !Gas/solid cataltyic reaction:
                ELSEIF(toPhase == 0) THEN
                   DO lN = 1, RxN%nSpecies
@@ -1304,13 +1302,11 @@
 ! Two or more phases have a net mass loss and two or more phases have
 ! a net mass gain. Therefore, the interphase mass transfer cannot be
 ! concluded.
-            IF(DMP_LOG) THEN
-               CALL WRITE_RXN_SUMMARY(RxN, lSAg(:), lSAs(:,:))
-               WRITE(*,1002) trim(CALLER), trim(RxN%ChemEq)
-               WRITE(*,1000)
-               WRITE(UNIT_LOG,1002) trim(CALLER), trim(RxN%ChemEq)
-               WRITE(UNIT_LOG,1000)
-            ENDIF
+            CALL WRITE_RXN_SUMMARY(RxN, lSAg(:), lSAs(:,:),.FALSE.)
+            WRITE(*,1002) trim(CALLER), trim(RxN%ChemEq)
+            WRITE(*,1000)
+            WRITE(UNIT_LOG,1002) trim(CALLER), trim(RxN%ChemEq)
+            WRITE(UNIT_LOG,1000)
             CALL MFiX_EXIT(myPE)
          ENDIF
       ENDIF

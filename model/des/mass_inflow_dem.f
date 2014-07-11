@@ -259,6 +259,8 @@
       USE des_thermo
       use des_rxns
 
+      use run, only: ENERGY_EQ
+      use run, only: ANY_SPECIES_EQ
       use constant, only: PI
 
       use indices
@@ -320,16 +322,14 @@
       OMOI(lNP) = 5.d0 / (2.d0 * PMASS(lNP) * DES_RADIUS(lNP)**2)
 
 ! If solving the energy equations, set the temperature
-      IF(ANY_DES_SPECIES_EQ .OR. DES_ENERGY_EQ ) THEN
+      IF(ANY_SPECIES_EQ .OR. ENERGY_EQ ) THEN
          DES_T_s_NEW(lNP) = BC_T_s(lBCV,lM)
          DES_T_s_OLD(lNP) = DES_T_s_NEW(lNP)
       ENDIF
 
 ! Set species mass fractions
-      IF((DES_ENERGY_EQ .AND. C_PS0 /= UNDEFINED) .OR.           &
-         ANY_DES_SPECIES_EQ) THEN
+      IF((ENERGY_EQ .AND. C_PS0 /= UNDEFINED) .OR. ANY_SPECIES_EQ) &
          DES_X_s(lNP,1:NMAX(lM)) = BC_X_s(lBCV,lM,1:NMAX(lM))
-      ENDIF
 
 ! Calculate time dependent physical properties
       CALL DES_PHYSICAL_PROP(lNP, .FALSE.)

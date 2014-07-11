@@ -20,6 +20,7 @@
       USE indices
       Use param1
       Use physprop
+      use run, only: ENERGY_EQ
 
       IMPLICIT NONE
 
@@ -44,11 +45,11 @@
       INCLUDE '../function.inc'
 
 
-      IF(.NOT.DES_ENERGY_EQ) RETURN
+      IF(.NOT.ENERGY_EQ) RETURN
 
 ! Second-order Adams-Bashforth scheme defaults to Euler on first pass.
       IF(FIRST_PASS) THEN
-         IF(INTG_EULER) &
+         IF(INTG_ADAMS_BASHFORTH) &
             Q_Source0(:) = Q_Source(:)/ (PMASS(:) * DES_C_ps(:))
          FIRST_PASS = .FALSE.
       ENDIF
@@ -75,8 +76,9 @@
             IF(PEA(NP,4)) CYCLE lNP_LP
 ! Advance particle position, velocity
             IF (INTG_EULER) THEN
+
 ! First-order method
-               DES_T_s_NEW(NP) = DES_T_s_OLD(NP) + &
+               DES_T_s_NEW(NP) = DES_T_s_NEW(NP) + &
                   DTSOLID*(Q_Source(NP) / (PMASS(NP) * DES_C_ps(NP)))
             ELSE
 ! Second-order Adams-Bashforth scheme
@@ -112,6 +114,7 @@
 
       Q_Source(:) = ZERO
 
+
       RETURN
 
       END SUBROUTINE DES_THERMO_NEWVALUES
@@ -139,7 +142,7 @@
       USE indices
       Use param1
       Use physprop
-
+      use run, only: ENERGY_EQ
       IMPLICIT NONE
 
 ! Passed variables
@@ -160,7 +163,7 @@
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
       INCLUDE '../function.inc'
 
-      IF(.NOT.DES_ENERGY_EQ) RETURN
+      IF(.NOT.ENERGY_EQ) RETURN
 
 ! Clear the average solids temperature for all fluid cells.
       avgDES_T_s(:) = ZERO

@@ -100,13 +100,13 @@
 
 ! Logicals indicating the restart is written containing energy equation
 ! and reaction data.
-         write (lres_unit,rec=lnext_rec) DES_ENERGY_EQ, &
-            ANY_DES_SPECIES_EQ, MAX_DES_NMAX
+         write (lres_unit,rec=lnext_rec) ENERGY_EQ, &
+            ANY_SPECIES_EQ, MAX_DES_NMAX
          lnext_rec=lnext_rec+1
 ! Write out particle temperatures.
-         IF(DES_ENERGY_EQ) &
+         IF(ENERGY_EQ) &
             CALL des_writepar(lres_unit,DES_T_s_NEW,pip,lnext_rec)
-         IF(ANY_DES_SPECIES_EQ) THEN
+         IF(ANY_SPECIES_EQ) THEN
 ! Solids phase index: This is needed for reacting flows as the diameter
 ! (shrinking_particle) or density (variable_density) reaction models
 ! prevent identifying particles from initial phase specifications.
@@ -261,12 +261,12 @@
          IF(MPPIC) call des_gatherwrite(lres_unit,des_stat_wt,lglocnt,lnext_rec)
 
 ! Write out particle temperatures.
-         IF(DES_ENERGY_EQ) call des_gatherwrite(lres_unit, &
+         IF(ENERGY_EQ) call des_gatherwrite(lres_unit, &
             DES_T_s_NEW,lglocnt,lnext_rec)
 ! Solids phase index: This is needed for reacting flows as the diameter
 ! (shrinking_particle) or density (variable_density) reaction models
 ! prevent identifying particles from initial phase specifications.
-         IF(ANY_DES_SPECIES_EQ) THEN
+         IF(ANY_SPECIES_EQ) THEN
             call des_gatherwrite(lres_unit, &
                PIJK(:,5),lglocnt,lnext_rec)
 ! Write out species mass fractions.

@@ -105,7 +105,6 @@
          RETURN
       ENDIF
 
-
 ! if first_pass
 !----------------------------------------------------------------->>>
       IF(FIRST_PASS) THEN
@@ -215,7 +214,7 @@
       ENDIF
 
       IF(DES_CONTINUUM_COUPLED) CALL COMPUTE_PG_GRAD
-      IF(ANY_DES_SPECIES_EQ) CALL ZERO_RRATE_DES
+      IF(ANY_SPECIES_EQ) CALL ZERO_RRATE_DES
 
       IF(CALL_USR) CALL USR0_DES
 

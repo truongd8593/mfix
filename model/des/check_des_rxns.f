@@ -107,165 +107,165 @@
 !         NO_OF_DES_RXNS, DES_RXN_NAME(:), 'species.inc', .FALSE.)
 
 ! Loop over reaction data pulled from data file.
-      DO L=1, NO_OF_DES_RXNS
+!      DO L=1, NO_OF_DES_RXNS
 
-         This => DES_Reaction(L)
+!         This => DES_Reaction(L)
 
 ! Store the reaction name.
-         This%Name = trim(DES_RXN_NAME(L))
+!         This%Name = trim(DES_RXN_NAME(L))
 ! This check should not be necessary. Pre-processing by make_mfix and
 ! reading the data file (PARSE_RXN) should have already caught any
 ! issues.
-         IF(len_trim(This%Name) == 0) THEN
-            IF(DMP_LOG) THEN
-               write(*,1001) L
-               write(*,1000)
-               write(UNIT_LOG,1001) L
-               write(UNIT_LOG,1000)
-            ENDIF
-            CALL MFiX_EXIT(myPE)
-         ENDIF
+!         IF(len_trim(This%Name) == 0) THEN
+!            IF(DMP_LOG) THEN
+!               write(*,1001) L
+!               write(*,1000)
+!               write(UNIT_LOG,1001) L
+!               write(UNIT_LOG,1000)
+!            ENDIF
+!            CALL MFiX_EXIT(myPE)
+!         ENDIF
 ! Store the chemical equation.
-         This%ChemEq = trim(DES_RXN_CHEM_EQ(L))
+!         This%ChemEq = trim(DES_RXN_CHEM_EQ(L))
 ! Verify that a chemical equation was given in the data file.
-         IF(len_trim(This%ChemEq) == 0) THEN
-            IF(DMP_LOG) THEN
-               write(*,1002) trim(This%Name)
-               write(*,1000)
-               write(UNIT_LOG,1002) trim(This%Name)
-               write(UNIT_LOG,1000)
-            ENDIF
-         CALL MFiX_EXIT(myPE)
-         ENDIF
+!         IF(len_trim(This%ChemEq) == 0) THEN
+!            IF(DMP_LOG) THEN
+!               write(*,1002) trim(This%Name)
+!               write(*,1000)
+!               write(UNIT_LOG,1002) trim(This%Name)
+!               write(UNIT_LOG,1000)
+!            ENDIF
+!         CALL MFiX_EXIT(myPE)
+!         ENDIF
 
 ! Take the data read from the data file and populate the reaction block.
-         CALL setReaction(This, NMAX(0), SPECIES_ALIAS_g(:), DES_MMAX, &
-            DES_NMAX_s(1:DES_MMAX), DES_SPECIES_ALIAS_s(:,:),          &
-            DES_usrDH(L), DES_usrfDH(L,:))
+!         CALL setReaction(This, NMAX(0), SPECIES_ALIAS_g(:), DES_MMAX, &
+!            DES_NMAX_s(1:DES_MMAX), DES_SPECIES_ALIAS_s(:,:),          &
+!            DES_usrDH(L), DES_usrfDH(L,:))
 ! Skip empty reactions.
-         IF(This%nSpecies == 0 .AND. This%nPhases == 0) THEN
-            CYCLE
+!         IF(This%nSpecies == 0 .AND. This%nPhases == 0) THEN
+!            CYCLE
 ! Something went wrong while parsing the reaction. This is a sanity
 ! check and should never be true.
-         ELSEIF((This%nPhases == 0 .AND. This%nSpecies /= 0) .OR. &
-            (This%nPhases /= 0 .AND. This%nSpecies == 0)) THEN
-            IF(DMP_LOG) THEN
-               WRITE(*,1007) trim(This%Name), This%nPhases, &
-                  This%nSpecies
-               WRITE(UNIT_LOG,1007) trim(This%Name), This%nPhases, &
-                  This%nSpecies
-            ENDIF
-            CALL MFIX_EXIT(myPE)
+!         ELSEIF((This%nPhases == 0 .AND. This%nSpecies /= 0) .OR. &
+!            (This%nPhases /= 0 .AND. This%nSpecies == 0)) THEN
+!            IF(DMP_LOG) THEN
+!               WRITE(*,1007) trim(This%Name), This%nPhases, &
+!                  This%nSpecies
+!               WRITE(UNIT_LOG,1007) trim(This%Name), This%nPhases, &
+!                  This%nSpecies
+!            ENDIF
+!            CALL MFIX_EXIT(myPE)
 ! Homogeneous gas phase reactions must be given in a TFM reaction block.
-         ELSEIF(This%nPhases == 1) THEN
+!         ELSEIF(This%nPhases == 1) THEN
 ! This is a quick check to make sure all the phases match. If they this
 ! check fails, then something when wrong while parsing the reaction.
-            DO lN = 1, This%nSpecies - 1
-               M = This%Species(lN)%pMap
-               DO llN = lN + 1,This%nSpecies
-                  IF(M /= This%Species(llN)%pMap) THEN
-                     IF(DMP_LOG) THEN
-                        WRITE(*,1010) trim(This%Name)
-                        WRITE(UNIT_LOG,1010) trim(This%Name)
-                     ENDIF
-                     CALL MFIX_EXIT(myPE)
-                  ENDIF
-               ENDDO
-            ENDDO
-            IF(M == 0 .AND. DMP_LOG) THEN
-               WRITE(UNIT_LOG,1011) trim(This%Name)
-               WRITE(UNIT_LOG,1000)
-               WRITE(UNIT_LOG,1011) trim(This%Name)
-               WRITE(UNIT_LOG,1000)
-            ENDIF
-            CALL MFiX_EXIT(myPE)
-         ENDIF
+!            DO lN = 1, This%nSpecies - 1
+!               M = This%Species(lN)%pMap
+!               DO llN = lN + 1,This%nSpecies
+!                  IF(M /= This%Species(llN)%pMap) THEN
+!                     IF(DMP_LOG) THEN
+!                        WRITE(*,1010) trim(This%Name)
+!                        WRITE(UNIT_LOG,1010) trim(This%Name)
+!                     ENDIF
+!                     CALL MFIX_EXIT(myPE)
+!                  ENDIF
+!               ENDDO
+!            ENDDO
+!            IF(M == 0 .AND. DMP_LOG) THEN
+!               WRITE(UNIT_LOG,1011) trim(This%Name)
+!               WRITE(UNIT_LOG,1000)
+!               WRITE(UNIT_LOG,1011) trim(This%Name)
+!               WRITE(UNIT_LOG,1000)
+!            ENDIF
+!            CALL MFiX_EXIT(myPE)
+!         ENDIF
 
 ! If the energy equations are not being solved and a user provided
 ! heat of reaction is given, flag error and exit.
-         IF(.NOT.This%Calc_DH) THEN
-            IF(.NOT.ENERGY_EQ .OR. .NOT.DES_ENERGY_EQ) THEN
-               IF(DMP_LOG) THEN
-                  WRITE(*,1008) trim(This%Name)
-                  WRITE(*,1000)
-                  WRITE(UNIT_LOG,1008) trim(This%Name)
-                  WRITE(UNIT_LOG,1000)
-               ENDIF
-               CALL MFiX_EXIT(myPE)
-            ENDIF
-         ENDIF
+!         IF(.NOT.This%Calc_DH) THEN
+!            IF(.NOT.ENERGY_EQ .OR. .NOT.DES_ENERGY_EQ) THEN
+!               IF(DMP_LOG) THEN
+!                  WRITE(*,1008) trim(This%Name)
+!                  WRITE(*,1000)
+!                  WRITE(UNIT_LOG,1008) trim(This%Name)
+!                  WRITE(UNIT_LOG,1000)
+!               ENDIF
+!               CALL MFiX_EXIT(myPE)
+!            ENDIF
+!         ENDIF
 
 ! Verify that the molecular weights and stoichiometry are consistent and
 ! determine interphase mass exchanges.
-         DO lN = 1, This%nSpecies
-            M = This%Species(lN)%pMap
-            N = This%Species(lN)%sMap
+!         DO lN = 1, This%nSpecies
+!            M = This%Species(lN)%pMap
+!            N = This%Species(lN)%sMap
 
 ! Get the molecular weight.
-            IF(M==0) THEN
+!            IF(M==0) THEN
 ! If the thermochemical database has not be read for this species and
 ! the molecular weight or specific heat coefficients are undefined,
 ! then read the database.
-               IF(.NOT.rDatabase(M,N) .AND. (MW_g(N) == UNDEFINED .OR. &
-                  This%Calc_DH)) THEN
-                  IF(.NOT.WARNED_USR(0) .AND. DMP_LOG) THEN
-                     WRITE(*,1003)
-                     WRITE(UNIT_LOG,1003)
-                     WARNED_USR(0) = .TRUE.
-                  ENDIF
-                  WRITE(*,1103) N
-                  WRITE(UNIT_LOG,1103) N
-                  CALL READ_DATABASE('TFM', 0, N, SPECIES_g(N), MW_g(N))
-                  rDatabase(M,N) = .TRUE.
-               ENDIF
-               This%Species(lN)%MW = MW_g(N)
-            ELSE
-               IF(.NOT.DES_rDatabase(M,N) .AND. &
-                  (DES_MW_s(M,N) == UNDEFINED .OR. This%Calc_DH)) THEN
-                  IF(.NOT.WARNED_USR(M) .AND. DMP_LOG) THEN
-                     WRITE(*,1004) M
-                     WRITE(UNIT_LOG,1004) M
-                     WARNED_USR(M) = .TRUE.
-                  ENDIF
-                  WRITE(*,1104) M,N
-                  WRITE(UNIT_LOG,1103) M, N
-                  CALL READ_DATABASE('DEM', M, N, DES_SPECIES_s(M,N),  &
-                     DES_MW_s(M,N))
-                  DES_rDatabase(M,N) = .TRUE.
-               ENDIF
-               This%Species(lN)%MW = DES_MW_s(M,N)
-            ENDIF
-         ENDDO
+!               IF(.NOT.rDatabase(M,N) .AND. (MW_g(N) == UNDEFINED .OR. &
+!                  This%Calc_DH)) THEN
+!                  IF(.NOT.WARNED_USR(0) .AND. DMP_LOG) THEN
+!                     WRITE(*,1003)
+!                     WRITE(UNIT_LOG,1003)
+!                     WARNED_USR(0) = .TRUE.
+!                  ENDIF
+!                  WRITE(*,1103) N
+!                  WRITE(UNIT_LOG,1103) N
+!                  CALL READ_DATABASE('TFM', 0, N, SPECIES_g(N), MW_g(N))
+!                  rDatabase(M,N) = .TRUE.
+!               ENDIF
+!               This%Species(lN)%MW = MW_g(N)
+!            ELSE
+!               IF(.NOT.DES_rDatabase(M,N) .AND. &
+!                  (DES_MW_s(M,N) == UNDEFINED .OR. This%Calc_DH)) THEN
+!                  IF(.NOT.WARNED_USR(M) .AND. DMP_LOG) THEN
+!                     WRITE(*,1004) M
+!                     WRITE(UNIT_LOG,1004) M
+!                     WARNED_USR(M) = .TRUE.
+!                  ENDIF
+!                  WRITE(*,1104) M,N
+!                  WRITE(UNIT_LOG,1103) M, N
+!                  CALL READ_DATABASE('DEM', M, N, DES_SPECIES_s(M,N),  &
+!                     DES_MW_s(M,N))
+!                  DES_rDatabase(M,N) = .TRUE.
+!               ENDIF
+!               This%Species(lN)%MW = DES_MW_s(M,N)
+!            ENDIF
+!         ENDDO
 
 ! Verify Mass Balance (Mass of Reactants = Mass of Products)
 !---------------------------------------------------------------------//
-         IER = 0
-         CALL checkMassBalance('CHECK_DES_RXNS', This, &
-            netMassTransfer(:), IER)
-         IF(IER /= 0) THEN
-            IF(DMP_LOG) CALL WRITE_RXN_SUMMARY(This, &
-               SPECIES_ALIAS_g(:), DES_SPECIES_ALIAS_s(:,:))
-            CALL MFIX_EXIT(myPE)
-         ENDIF
+!         IER = 0
+!         CALL checkMassBalance('CHECK_DES_RXNS', This, &
+!            netMassTransfer(:), IER)
+!         IF(IER /= 0) THEN
+!            IF(DMP_LOG) CALL WRITE_RXN_SUMMARY(This, &
+!               SPECIES_ALIAS_g(:), DES_SPECIES_ALIAS_s(:,:))
+!            CALL MFIX_EXIT(myPE)
+!         ENDIF
 
 ! Determine interphase exchanges
 !---------------------------------------------------------------------//
 ! Construct a temp array with logicals for species equations.
-         lSpeciesEq(0) = SPECIES_EQ(0)
-         lSpeciesEq(1:DIM_M) = DES_SPECIES_EQ(1:DIM_M)
+!         lSpeciesEq(0) = SPECIES_EQ(0)
+!         lSpeciesEq(1:DIM_M) = DES_SPECIES_EQ(1:DIM_M)
 
-         CALL calcInterphaseTxfr('CHECK_DES_RXNS', This,  &
-            netMassTransfer(:), ENERGY_EQ, lSpeciesEq(:), &
-            SPECIES_ALIAS_g(:), DES_MMAX, DES_SPECIES_ALIAS_s(:,:))
-      ENDDO
+!         CALL calcInterphaseTxfr('CHECK_DES_RXNS', This,  &
+!            netMassTransfer(:), ENERGY_EQ, lSpeciesEq(:), &
+!            SPECIES_ALIAS_g(:), DES_MMAX, DES_SPECIES_ALIAS_s(:,:))
+!      ENDDO
 
 ! Write a summary of the chemical reactions
 !---------------------------------------------------------------------//
-      DO L=1, NO_OF_DES_RXNS
-         This => DES_Reaction(L)
-         CALL WRITE_RXN_SUMMARY(This, SPECIES_ALIAS_g(:), &
-            DES_SPECIES_ALIAS_s(:,:))
-      ENDDO
+!      DO L=1, NO_OF_DES_RXNS
+!         This => DES_Reaction(L)
+!         CALL WRITE_RXN_SUMMARY(This, SPECIES_ALIAS_g(:), &
+!            DES_SPECIES_ALIAS_s(:,:))
+!      ENDDO
 
       RETURN
 
