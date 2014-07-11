@@ -21,7 +21,7 @@
 ! Maximum number of user-defined scalars
       INTEGER :: DIMENSION_SCALAR
       INTEGER :: DIM_SCALAR2
-      
+
 
 ! Parameters limiting user-specifed input.
 !'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -58,4 +58,4 @@
 ! Maximum of the number of scalars that can be read
       INTEGER, PARAMETER :: DIM_SCALAR = 100
 
-      END MODULE param                                                                           
+      END MODULE param
