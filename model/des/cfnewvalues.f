@@ -69,8 +69,8 @@
       ENDIF
 
 
-!$omp parallel do if(max_pip .ge. 10000) default(shared)        &
-!$omp private(l,d,dist,neighbor_search_dist)                    &
+!$omp parallel do if(max_pip .ge. 10000) default(shared)   &
+!$omp private(l,d,neighbor_search_dist)                    &
 !$omp reduction(.or.:do_nsearch) schedule (auto)
 
       DO L = 1, MAX_PIP
