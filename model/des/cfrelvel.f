@@ -15,7 +15,7 @@
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-      SUBROUTINE CFRELVEL(L, II, VRN, VRT, TANGNT, NORM, DIST_LI)
+      SUBROUTINE CFRELVEL(L, II, VRN, VSLIP, NORM, DIST_LI)
 
 !-----------------------------------------------
 ! Modules
@@ -34,12 +34,10 @@
 ! unit normal vector along the line of contact pointing from 
 ! particle L to particle II
       DOUBLE PRECISION, INTENT(IN) :: NORM(3)
-! tangent to the plane of contact
-      DOUBLE PRECISION, INTENT(INOUT) :: TANGNT(3)
+! slip velocity at point of contact      
+      DOUBLE PRECISION, INTENT(INOUT) :: VSLIP(3)
 ! normal component of relative contact velocity (scalar)
       DOUBLE PRECISION, INTENT(INOUT) :: VRN
-! tangential component of relative contact velocity (scalar)
-      DOUBLE PRECISION, INTENT(INOUT) :: VRT
 !-----------------------------------------------
 ! Local variables
 !----------------------------------------------- 
@@ -47,8 +45,8 @@
       DOUBLE PRECISION :: TANMOD
 ! translational relative velocity 
       DOUBLE PRECISION :: VRELTRANS(3)
-! slip velocity at point of contact      
-      DOUBLE PRECISION :: VSLIP(3), V_ROT(3), OMEGA_SUM(3)
+! rotational velocity at point of contact      
+      DOUBLE PRECISION :: V_ROT(3), OMEGA_SUM(3)
 ! distance from the contact point to the particle centers 
       DOUBLE PRECISION :: DIST_CL, DIST_CI      
 !----------------------------------------------- 
@@ -90,18 +88,6 @@
 ! Equation (8) in Tsuji et al. 1992      
       VSLIP(:) =  VRELTRANS(:) - VRN*NORM(:)
       
-! the magnitude of the tangential vector      
-      TANMOD = SQRT(DES_DOTPRDCT(VSLIP,VSLIP))     
-      IF(TANMOD.NE.ZERO) THEN
-! the unit vector in the tangential direction  
-         TANGNT(:) = VSLIP(:)/TANMOD
-      ELSE
-         TANGNT(:) = ZERO
-      ENDIF
-
-! tangential component of relative surface velocity (scalar)
-      VRT  = DES_DOTPRDCT(VRELTRANS,TANGNT)
-
       RETURN
       END SUBROUTINE CFRELVEL
 
@@ -119,7 +105,7 @@
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-      SUBROUTINE CFRELVEL_WALL(L,WALL_VEL,VRN,VRT,TANGNT,NORM,DIST_LI)
+      SUBROUTINE CFRELVEL_WALL(L,WALL_VEL,VRN,VSLIP,NORM,DIST_LI)
       
 !-----------------------------------------------
 ! Modules
@@ -140,12 +126,10 @@
 ! unit normal vector along the line of contact pointing from 
 ! particle L to wall
       DOUBLE PRECISION, INTENT(IN) :: NORM(3)
-! tangent to the plane of contact
-      DOUBLE PRECISION, INTENT(INOUT) :: TANGNT(3)
+! slip velocity at point of contact      
+      DOUBLE PRECISION, INTENT(INOUT) :: VSLIP(3)
 ! normal component of relative contact velocity (scalar)
       DOUBLE PRECISION, INTENT(INOUT) :: VRN
-! tangential component of relative contact velocity (scalar)
-      DOUBLE PRECISION, INTENT(INOUT) :: VRT
 !-----------------------------------------------
 ! Local variables
 !----------------------------------------------- 
@@ -153,9 +137,8 @@
       DOUBLE PRECISION :: TANMOD
 ! translational relative velocity 
       DOUBLE PRECISION :: VRELTRANS(3)
-! slip velocity at point of contact      
-      DOUBLE PRECISION :: VSLIP(3), &
-                          V_ROT(3), OMEGA_SUM(3)
+! rotational velocity at point of contact      
+      DOUBLE PRECISION :: V_ROT(3), OMEGA_SUM(3)
 ! distance from the contact point to the particle centers 
       DOUBLE PRECISION :: DIST_CL
 !----------------------------------------------- 
@@ -190,17 +173,5 @@
 ! Equation (8) in Tsuji et al. 1992      
       VSLIP(:) =  VRELTRANS(:) - VRN*NORM(:)
       
-! the magnitude of the tangential vector      
-      TANMOD = SQRT(DES_DOTPRDCT(VSLIP,VSLIP))     
-      IF(TANMOD.NE.ZERO) THEN
-! the unit vector in the tangential direction  
-         TANGNT(:) = VSLIP(:)/TANMOD
-      ELSE
-         TANGNT(:) = ZERO
-      ENDIF
-
-! tangential component of relative surface velocity (scalar)
-      VRT  = DES_DOTPRDCT(VRELTRANS,TANGNT)
-
       RETURN
       END SUBROUTINE CFRELVEL_WALL

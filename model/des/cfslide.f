@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
-!  Subroutine: CFSLIDE(LL, TANGNT_VREL)
+!  Subroutine: CFSLIDE(LL, V_TANG, PARTICLE_SLIDE, MU)
 !  Purpose:  Check for Coulombs friction law - calculate sliding
 !            friction
 !
@@ -9,7 +9,7 @@
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-      SUBROUTINE CFSLIDE(LL, TANGNT, PARTICLE_SLIDE, MU)
+      SUBROUTINE CFSLIDE(LL, V_TANG, PARTICLE_SLIDE, MU)
 
 !-----------------------------------------------
 ! Modules
@@ -22,7 +22,7 @@
 ! particle index no.
       INTEGER, INTENT(IN) :: LL
 ! tangent to the plane of contact
-      DOUBLE PRECISION, INTENT(IN) :: TANGNT(3)
+      DOUBLE PRECISION, INTENT(IN) :: V_TANG(3)
 ! logic set to T when a sliding contact occurs
       LOGICAL, INTENT(INOUT) :: PARTICLE_SLIDE
 ! Coefficient of friction
@@ -33,21 +33,17 @@
 ! squared magnitude of tangential and normal forces
       DOUBLE PRECISION FTMD, FNMD
 !-----------------------------------------------
-! Functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-!-----------------------------------------------
 
-      FTMD = DES_DOTPRDCT(FT(:,LL),FT(:,LL))
-      FNMD = DES_DOTPRDCT(FN(:,LL),FN(:,LL))
+      FTMD = dot_product(FT(:,LL),FT(:,LL))
+      FNMD = dot_product(FN(:,LL),FN(:,LL))
 
       IF (FTMD.GT.(MU*MU*FNMD)) THEN
 ! tangential force based on sliding friction
          PARTICLE_SLIDE = .TRUE.
-         IF(DES_DOTPRDCT(TANGNT,TANGNT).EQ.0) THEN
+         IF(ALL(V_TANG.EQ.0)) THEN
             FT(:,LL) =  MU * FT(:,LL) * SQRT(FNMD/FTMD)
          ELSE
-            FT(:,LL) = -MU * SQRT(FNMD) * TANGNT(:)
+            FT(:,LL) = -MU * V_TANG(:) * SQRT(FNMD/dot_product(V_TANG,V_TANG))
          ENDIF
       ENDIF
 

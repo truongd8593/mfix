@@ -39,7 +39,8 @@
       INTEGER :: NI, NLIM, N_NOCON, NEIGH_L
 ! the overlap occuring between particle-particle or particle-wall
 ! collision in the normal and tangential directions
-      DOUBLE PRECISION :: OVERLAP_N, OVERLAP_T
+      DOUBLE PRECISION :: OVERLAP_N
+      DOUBLE PRECISION :: OVERLAP_T(3)
 ! square root of the overlap
       DOUBLE PRECISION :: SQRT_OVERLAP
       DOUBLE PRECISION :: FRAC_OVERLAP1, FRAC_OVERLAP2
@@ -49,7 +50,7 @@
       DOUBLE PRECISION :: R_LM
 ! the normal and tangential components of the translational relative
 ! velocity
-      DOUBLE PRECISION :: V_REL_TRANS_NORM, V_REL_TRANS_TANG
+      DOUBLE PRECISION :: V_REL_TRANS_NORM
 ! time elapsed to travel the calculated normal overlap given the
 ! normal relative velocity
       DOUBLE PRECISION :: DTSOLID_TMP
@@ -63,7 +64,7 @@
 ! particles or particle-wall at current and previous time steps
       DOUBLE PRECISION :: NORMAL(3), NORM_OLD(3)
 ! tangent to the plane of contact at current time step
-      DOUBLE PRECISION :: TANGENT(3)
+      DOUBLE PRECISION :: V_REL_TANG(3)
 ! variables for tangential displacement calculation:
 ! unit vector for axis of rotation and its magnitude
       DOUBLE PRECISION :: TMP_AX(3), TMP_MAG
@@ -177,7 +178,7 @@
          ENDIF
 
 ! Initializing local variables
-         TANGENT(:) = ZERO
+         V_REL_TANG(:) = ZERO
          NORMAL(:) = ZERO
          FTS1(:) = ZERO
          FTS2(:) = ZERO
@@ -339,14 +340,14 @@
 ! Calculate the components of translational relative velocity for a
 ! contacting particle pair and the tangent to the plane of contact
                      CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, &
-                        V_REL_TRANS_TANG, TANGENT, NORMAL, DISTMOD)
+                        V_REL_TANG, NORMAL, DISTMOD)
 
 ! Overlap calculation changed from history based to current position
                      OVERLAP_N = R_LM-DISTMOD
 
                      IF(ALREADY_NEIGHBOURS) THEN
                         PV(NI,LL) = .TRUE.
-                        OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
+                        OVERLAP_T = DTSOLID*V_REL_TANG
                      ELSE
                         IF(DEBUG_DES) THEN
                            IF (.NOT.DES_LOC_DEBUG) THEN
@@ -370,8 +371,7 @@
                            DTSOLID_TMP = OVERLAP_N/&
                               (V_REL_TRANS_NORM+SMALL_NUMBER)
                         ENDIF
-                        OVERLAP_T = V_REL_TRANS_TANG*&
-                           MIN(DTSOLID,DTSOLID_TMP)
+                        OVERLAP_T = MIN(DTSOLID,DTSOLID_TMP)*V_REL_TANG
                      ENDIF
                   ELSE
                      GOTO 300
@@ -421,9 +421,9 @@
                            call des_crossprdct(tang_new,tmp_ax,normal)
                            sigmat(:)=des_dotprdct(sigmat_old,tmp_ax)*tmp_ax(:) &
                            + des_dotprdct(sigmat_old,tang_old)*tang_new(:)
-                           sigmat(:)=sigmat(:)+overlap_t*tangent(:)
+                           sigmat(:)=sigmat(:)+overlap_t
                         else
-                           sigmat(:)=sigmat_old(:)+overlap_t*tangent(:)
+                           sigmat(:)=sigmat_old(:)+overlap_t
                         endif
                      else
                         tang_old(1) =-norm_old(2)
@@ -431,7 +431,7 @@
                         tang_new(1) =-normal(2)
                         tang_new(2) = normal(1)
                         sigmat(:)=des_dotprdct(sigmat_old,tang_old)*tang_new(:)
-                        sigmat(:)=sigmat(:)+overlap_t*tangent(:)
+                        sigmat(:)=sigmat(:)+overlap_t
                      endif
 
 ! Save the old normal direction
@@ -439,7 +439,7 @@
                      PFT_TMP(:)   = SIGMAT(:)
                   ELSE
                      ! Old procedure
-                     PFT(LL,NI,:) = PFT(LL,NI,:) + OVERLAP_T * TANGENT(:)
+                     PFT(LL,NI,:) = PFT(LL,NI,:) + OVERLAP_T
                      PFT_TMP(:) = PFT(LL,NI,:) ! update pft_tmp before it is used
                      PFT_TMP(:) = PFT(LL,NI,:) - &
                      DES_DOTPRDCT(PFT_TMP,NORMAL)*NORMAL(:)
@@ -447,13 +447,13 @@
 
 ! Calculate the tangential contact force
                   FTS1(:) = -KT_DES * PFT_TMP(:)
-                  FTS2(:) = -ETAT_DES * V_REL_TRANS_TANG * TANGENT(:)
+                  FTS2(:) = -ETAT_DES * V_REL_TANG
                   FT(:,LL) = FTS1(:) + FTS2(:)
 
 
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with another particle/wall
-                  CALL CFSLIDE(LL,TANGENT,PARTICLE_SLIDE,MEW)
+                  CALL CFSLIDE(LL,V_REL_TANG,PARTICLE_SLIDE,MEW)
 
 ! Calculate the total force FC and torque TOW on a particle in a
 ! particle-particle collision
