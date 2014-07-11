@@ -159,7 +159,7 @@
 !                                                                      !
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
       SUBROUTINE checkSpeciesInc(lNg, SA_g, lMMx, lNs, SA_s,           &
-         lNRxn,  lRNames)
+         lNRxn,  lRNames, lNRxn_DES, lRNames_DES)
 
       use error_manager
 
@@ -178,7 +178,11 @@
 ! Number of reactions
       INTEGER, INTENT(IN) :: lNRxn
 ! Reaction Names (aliases)
-      CHARACTER(len=32), DIMENSION(DIMENSION_RXN), INTENT(IN) ::  lRNames
+      CHARACTER(len=32), INTENT(IN) ::  lRNames(DIMENSION_RXN)
+! Number of discrete reactions
+      INTEGER, INTENT(IN) :: lNRxn_DES
+! Reaction Names for discrete solids (aliases)
+      CHARACTER(len=32), INTENT(IN) ::  lRNames_DES(DIMENSION_RXN)
 
 
 ! Input/Output status.
@@ -216,7 +220,7 @@
          SELECT CASE(SRC)
 
 ! Check the local run directory.
-	      CASE(1); FILENAME = 'species.inc'
+         CASE(1); FILENAME = 'species.inc'
             OPEN(UNIT=FUNIT,FILE=trim(FILENAME),STATUS='OLD',IOSTAT=IOS)
             IF(IOS /= 0) CYCLE SRC_LP
             WRITE(ERR_MSG, 1000)'species.inc'
@@ -232,11 +236,11 @@
  1000 FORMAT(/2X,'Verifying reaction aliases in ',A)
 
 ! No species.inc file was located.
-        	CASE DEFAULT
+         CASE DEFAULT
             WRITE(ERR_MSG, 1004)
             CALL FLUSH_ERR_MSG
             EXIT SRC_LP
-        	END SELECT
+         END SELECT
 
  1004 FORMAT('Warning 1004: Unable to locate the species.inc file. No ',&
          'verification',/'of mfix.dat species aliases or reaction ',    &
@@ -310,6 +314,12 @@
 ! Reaction Names
             IF(lIndex <= lNRxn)THEN
                tName =  lRNames(lIndex)
+               IF(compareAliases(tName, lName)) CYCLE READ_LP
+            ENDIF
+
+! Reaction Names for discrete solids
+            IF(lIndex <= lNRxn_DES)THEN
+               tName =  lRNames_DES(lIndex)
                IF(compareAliases(tName, lName)) CYCLE READ_LP
             ENDIF
 
