@@ -28,6 +28,8 @@
       USE compar  
       USE drag  
       USE discretelement
+      
+      use run, only: DEM_SOLIDS, PIC_SOLIDS 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -56,35 +58,48 @@
 ! initialize every call (redundant with solve_vel_star)
       VXF_GS(:,:) = ZERO 
 
-      DO M = 1, MMAX
-!!$omp parallel do private(K, IJK, IJKT)
-         DO IJK = ijkstart3, ijkend3
-            IF (.NOT.IP_AT_T(IJK).AND.(.NOT.DES_ONEWAY_COUPLED)) THEN 
-               K = K_OF(IJK) 
-               IJKT = TOP_OF(IJK) 
-               VXF_GS(IJK,M) = AVG_Z(F_GS(IJK,M),F_GS(IJKT,M),K)*VOL_W(IJK) 
-            ELSE 
-               VXF_GS(IJK,M) = ZERO 
-            ENDIF 
-         ENDDO   ! end do loop (ijk=ijkstart3,ijkend3)
-      ENDDO   ! end do loop (m=1,mmax)
-
       IF (DES_CONTINUUM_HYBRID) THEN
-! initialize every call 
-         VXF_GDS(:,:) = ZERO
+         
          DO DM = 1, DES_MMAX
+            VXF_GDS(:,DM) = ZERO
 !!$omp  parallel do private(K,IJK,IJKT)
             DO IJK = ijkstart3, ijkend3
                IF (.NOT.IP_AT_T(IJK)) THEN
                   K = K_OF(IJK)
                   IJKT = TOP_OF(IJK)
                   VXF_GDS(IJK,DM) = AVG_Z(F_GDS(IJK,DM),F_GDS(IJKT,DM),K)*VOL_W(IJK)
-               ELSE
-                  VXF_GDS(IJK,DM) = ZERO
                ENDIF
             ENDDO   ! end do loop (ijk=ijkstart3,ijkend3)
          ENDDO   ! end do loop (dm=1,des_mmax)
-      ENDIF   ! end if (discrete_element and des_continuum_hybrid)
+         
+      ELSE
+         DO M = 1, MMAX
+            VXF_GS(:,M) = ZERO
+!!$omp parallel do private(K, IJK, IJKT)
+            DO IJK = ijkstart3, ijkend3
+               IF (.NOT.IP_AT_T(IJK)) THEN 
+                  K = K_OF(IJK) 
+                  IJKT = TOP_OF(IJK) 
+                  VXF_GS(IJK,M) = AVG_Z(F_GS(IJK,M),F_GS(IJKT,M),K)*VOL_W(IJK) 
+               ENDIF 
+            ENDDO               ! end do loop (ijk=ijkstart3,ijkend3)
+         ENDDO                  ! end do loop (m=1,mmax)
+
+      ENDIF                     ! end if (des_continuum_hybrid)
+
+      IF((PIC_SOLIDS.OR.DEM_SOLIDS).AND.(.NOT.DES_ONEWAY_COUPLED)) then 
+         DO M = MMAX+1, DES_MMAX+MMAX
+!!$omp parallel do private(K, IJK, IJKT)
+            DO IJK = ijkstart3, ijkend3
+               IF (.NOT.IP_AT_T(IJK)) THEN 
+                  K = K_OF(IJK) 
+                  IJKT = TOP_OF(IJK) 
+                  VXF_GS(IJK,M) = AVG_Z(F_GS(IJK,M),F_GS(IJKT,M),K)*VOL_W(IJK) 
+               ENDIF 
+            ENDDO               ! end do loop (ijk=ijkstart3,ijkend3)
+         ENDDO                  ! end do loop (m=1,mmax)
+      ENDIF
+
 
       RETURN  
       END SUBROUTINE VF_GS_Z 

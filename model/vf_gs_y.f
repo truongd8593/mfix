@@ -28,6 +28,8 @@
       USE compar   
       USE drag   
       USE discretelement
+
+      use run, only: DEM_SOLIDS, PIC_SOLIDS 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -53,39 +55,56 @@
       INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
-! initialize every call (redundant with solve_vel_star)
-      VXF_GS(:,:) = ZERO 
 
-      DO M = 1, MMAX
-!!$omp parallel do private(J,IJK,IJKN)
-         DO IJK = ijkstart3, ijkend3
-            IF (.NOT.IP_AT_N(IJK).AND.(.NOT.DES_ONEWAY_COUPLED)) THEN
-               J = J_OF(IJK)
-               IJKN = NORTH_OF(IJK)
-               VXF_GS(IJK,M) = AVG_Y(F_GS(IJK,M),F_GS(IJKN,M),J)*VOL_V(IJK)
-            ELSE
-               VXF_GS(IJK,M) = ZERO
-            ENDIF
-         ENDDO   ! end do loop (ijk=ijkstart3,ijkend3)
-      ENDDO   ! end do loop (m=1,mmax)
-
+      
       IF (DES_CONTINUUM_HYBRID) THEN
-! initialize every call 
-         VXF_GDS(:,:) = ZERO
-         DO DM = 1,DES_MMAX
+         
+         DO DM = 1,MMAX
+            
+            VXF_GDS(:,DM) = ZERO
 !!$omp parallel do private(J,IJK,IJKN)
             DO IJK = ijkstart3, ijkend3
                IF (.NOT.IP_AT_N(IJK)) THEN
                   J = J_OF(IJK)
                   IJKN = NORTH_OF(IJK)
                   VXF_GDS(IJK,DM) = AVG_Y(F_GDS(IJK,DM),F_GDS(IJKN,DM),J)*VOL_V(IJK)
-               ELSE
-                  VXF_GDS(IJK,DM) = ZERO
                ENDIF
-            ENDDO   ! end do loop (ijk=ijkstart3,ijkend3)
-         ENDDO   ! end do loop (dm=1,des_mmax)
-      ENDIF   ! end if (discrete_element and des_continuum_hybrid)
+            ENDDO               ! end do loop (ijk=ijkstart3,ijkend3)
+         ENDDO                  ! end do loop (dm=1,des_mmax)
 
+      ELSE
+         
+         DO M = 1, MMAX
+            ! initialize every call (redundant with solve_vel_star)
+            VXF_GS(:,M) = ZERO 
+
+!!$omp parallel do private(J,IJK,IJKN)
+            DO IJK = ijkstart3, ijkend3
+               IF (.NOT.IP_AT_N(IJK)) THEN
+                  J = J_OF(IJK)
+                  IJKN = NORTH_OF(IJK)                 
+                  VXF_GS(IJK,M) = AVG_Y(F_GS(IJK,M),F_GS(IJKN,M),J)*VOL_V(IJK)
+               ENDIF
+            ENDDO               ! end do loop (ijk=ijkstart3,ijkend3)
+         ENDDO                  ! end do loop (m=1,mmax)
+      ENDIF
+      
+
+      IF((PIC_SOLIDS.OR.DEM_SOLIDS).AND.(.NOT.DES_ONEWAY_COUPLED)) then 
+         DO M = MMAX+1, DES_MMAX+MMAX
+            ! initialize every call (redundant with solve_vel_star)
+            VXF_GS(:,M) = ZERO 
+            
+!!$omp parallel do private(J,IJK,IJKN)
+            DO IJK = ijkstart3, ijkend3
+               IF (.NOT.IP_AT_N(IJK)) THEN
+                  J = J_OF(IJK)
+                  IJKN = NORTH_OF(IJK)                 
+                  VXF_GS(IJK,M) = AVG_Y(F_GS(IJK,M),F_GS(IJKN,M),J)*VOL_V(IJK)
+               ENDIF
+            ENDDO               ! end do loop (ijk=ijkstart3,ijkend3)
+         ENDDO                  ! end do loop (M = MMAX+1, DES_MMAX+MMAX)
+      ENDIF
       RETURN
       END SUBROUTINE VF_GS_Y
 
