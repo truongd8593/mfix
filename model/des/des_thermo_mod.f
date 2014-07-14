@@ -17,28 +17,28 @@
 ! Run time logicals
 !--------------------------
 ! Slove DES Energy Equations
-      LOGICAL DES_ENERGY_EQ
+!      LOGICAL DES_ENERGY_EQ
 
 ! Specifies that the convection model is to be solved.
 ! Requires DES_ENERGY_EQ = .TRUE.
 ! Default [.TRUE.]
-      LOGICAL DES_CONV_EQ
+!      LOGICAL DES_CONV_EQ
 ! Specifies that the particle conduction models are to be solved.
 ! Requires DES_ENERGY_EQ = .TRUE.
 ! Default [.TRUE.]
-      LOGICAL DES_COND_EQ
+!      LOGICAL DES_COND_EQ
 ! These logicals can be set in the mfix.dat file to omit specific
 ! particle-particle heat conduction models from being solved.
 ! If the DEM conduction model is not solved (DES_COND_EQ), the values
 ! are automatically set to .FALSE. in check_des_thermo.f.
 ! Default [.TRUE.]
-      LOGICAL DES_COND_EQ_PFP ! particle-fluid-particle
+!      LOGICAL DES_COND_EQ_PFP ! particle-fluid-particle
 ! Default [.TRUE.]
-      LOGICAL DES_COND_EQ_PP  ! particle-particle
+!      LOGICAL DES_COND_EQ_PP  ! particle-particle
 ! Specifies that the particle-environment radiation model is to be
 ! solved. Requires DES_ENERGY_EQ = .TRUE.
 ! Default [.TRUE.]
-      LOGICAL DES_RADI_EQ
+!      LOGICAL DES_RADI_EQ
 
 ! Heat transfer correlation specified in mfix.dat
 ! Default [RANZ_1952]

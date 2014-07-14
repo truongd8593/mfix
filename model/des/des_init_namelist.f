@@ -708,37 +708,6 @@
       CFL_PIC = 0.1
 !</keyword>
 
-! J.Musser : des energy equations
-!<keyword category="Discrete Element" required="false">
-!  <description>solve energy equations for dem.</description>
-      DES_ENERGY_EQ = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>include particle-gas convection in dem heat transfer model.</description>
-      DES_CONV_EQ = .TRUE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>include particle-particle conduction in dem heat transfer model.</description>
-      DES_COND_EQ = .TRUE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>include particle--particle radiation in dem heat transfer model.</description>
-      DES_RADI_EQ = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>include particle-fluid-particle conduction in dem heat transfer model. (requires des_cond_eq set to true.)</description>
-      DES_COND_EQ_PFP = .TRUE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>include particle-particle contact conduction in dem heat transfer model. (requires des_cond_eq set to true.)</description>
-      DES_COND_EQ_PP  = .TRUE.
-!</keyword>
-
 !<keyword category="Discrete Element" required="false">
 !  <description>specify the nusselt number correlation used for particle-gas convection. (only ranz_1952 is presently included.)</description>
       DES_CONV_CORR = 'RANZ_1952'

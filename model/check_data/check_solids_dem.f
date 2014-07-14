@@ -88,7 +88,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_DEM_ENERGY
 
-      use des_thermo, only: DES_COND_EQ
       use des_thermo, only: DES_MIN_COND_DIST
       use run, only: UNITS
 
@@ -106,15 +105,13 @@
 
 ! Conduction Equations:
 !'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-      IF(DES_COND_EQ) THEN
 
 ! Set the default value for the minimum distance separating particles'
 ! surfaces.
-         IF(DES_MIN_COND_DIST == UNDEFINED)THEN
-            DES_MIN_COND_DIST = 1.0D-04 ! cm
-            IF (UNITS == 'SI') DES_MIN_COND_DIST = &
-               DES_MIN_COND_DIST/100.0  ! m
-         ENDIF
+      IF(DES_MIN_COND_DIST == UNDEFINED)THEN
+         DES_MIN_COND_DIST = 1.0D-04 ! cm
+         IF (UNITS == 'SI') DES_MIN_COND_DIST = &
+            DES_MIN_COND_DIST/100.0  ! m
       ENDIF
 
       CALL FINL_ERR_MSG

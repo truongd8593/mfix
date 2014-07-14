@@ -12,6 +12,9 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_THERMO_DES
 
+      use physprop, only: SMAX
+      use physprop, only: K_s0
+
       USE compar
       Use des_rxns
       Use des_thermo
@@ -39,6 +42,12 @@
 ! species and energy equations
       INTEGER INTERP_IJK(2**3)
       DOUBLE PRECISION INTERP_WEIGHTS(2**3)
+! Flag to calculate gas/particle convective heat transfer.
+      LOGICAL :: CALC_CONV
+! Flag to calculate radiative heat transfer
+      LOGICAL :: CALC_RADT(DIM_M)
+! Flag to calculate conductive heat transfer
+      LOGICAL :: CALC_COND(DIM_M)
 
 ! Functions
 !---------------------------------------------------------------------//
@@ -50,8 +59,23 @@
 ! issues while the "check_data" routines are rewritten. Moving forward
 ! this routine should be split apart to avoid the particle loops for
 ! cold-flow, non-reacting cases.
-      IF(.NOT.ENERGY_EQ)RETURN
+      IF(.NOT.ENERGY_EQ .AND. .NOT.ANY_SPECIES_EQ) RETURN
 
+      CALC_CONV = .FALSE.
+      CALC_RADT = .FALSE.
+      CALC_COND = .FALSE.
+
+! Set flags for energy equations:
+      IF(ENERGY_EQ) THEN
+! Flag to calculate convection.
+         CALC_CONV = DES_CONTINUUM_COUPLED
+         DO M=1, SMAX + DES_MMAX
+! Flag to calculate radiation.
+            IF(DES_Em(M) > ZERO) CALC_RADT(M) = .TRUE.
+! Flag to calculate conduction.
+            IF(K_s0(M) > ZERO) CALC_COND(M) = .TRUE.
+         ENDDO
+      ENDIF
 
 ! Loop over fluid cells.
 !---------------------------------------------------------------------//
@@ -74,19 +98,15 @@
 !---------------------------------------------------------------------//
          lNP_LP: DO lNP = 1, PINC(IJK)
             NP = PIC(IJK)%p(lNP)
+
 ! Skip indices that do not represent particles
             IF(.NOT.PEA(NP,1)) CYCLE lNP_LP
+
 ! Skip indices that represent ghost particles
             IF(PEA(NP,4)) CYCLE lNP_LP
+
 ! Reset the debug flag
             FOCUS = .FALSE.
-
-! Set the debugging flag
-            IF(DEBUG_DES) THEN
-               IF(DMP_LOG) THEN
-                  IF(NP == FOCUS_PARTICLE) FOCUS = .TRUE.
-               ENDIF
-            ENDIF
 
 ! Calculate time dependent physical properties
             CALL DES_PHYSICAL_PROP(NP, FOCUS)
@@ -95,16 +115,14 @@
             M = PIJK(NP,5)
 
 ! calculate heat transfer via convection
-            IF(ENERGY_EQ) CALL DES_CONVECTION(NP, M, IJK, &
+            IF(CALC_CONV) CALL DES_CONVECTION(NP, M, IJK, &
                INTERP_IJK, INTERP_WEIGHTS, FOCUS)
 
 ! calculate heat transfer via radiation
-            IF(ENERGY_EQ) CALL DES_RADIATION(NP, M, IJK, FOCUS)
-
+            IF(CALC_RADT(M)) CALL DES_RADIATION(NP, M, IJK, FOCUS)
 
 ! Loop over thermodynamic neighbor for conduction and radiation
-            IF(DES_COND_EQ) CALL DES_CONDUCTION(NP, M, IJK, FOCUS)
-
+            IF(CALC_COND(M)) CALL DES_CONDUCTION(NP, M, IJK, FOCUS)
 
 ! Calculate reaction rates and interphase mass transfer
             IF(ANY_SPECIES_EQ) CALL DES_RRATES0(NP, M, IJK, &

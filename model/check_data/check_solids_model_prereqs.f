@@ -34,8 +34,6 @@
       use discretelement, only: DES_ONEWAY_COUPLED
 ! Flag: Solving DEM species equations.
       use des_rxns, only: ANY_DES_SPECIES_EQ
-! Flag: gas/solids E-L convective heat transfer.
-      use des_thermo, only: DES_CONV_EQ
 ! Flag: Interpolate between gas/solids
       use discretelement, only: DES_INTERP_ON
 ! Number of discrtete solids phases.
@@ -181,7 +179,6 @@
          DES_INTERP_ON = .FALSE.
          PRINT_DES_DATA = .FALSE.
          DES_ONEWAY_COUPLED = .FALSE.
-         DES_CONV_EQ = .FALSE.
          ANY_DES_SPECIES_EQ = .FALSE.
       ENDIF
 

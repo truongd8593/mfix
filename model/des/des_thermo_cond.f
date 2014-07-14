@@ -84,98 +84,92 @@
 !---------------------------------------------------------------------//
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
 
-! Distance between particle centers
-      IF(NEIGHBOURS(I,1).GT.0) THEN
-         NEIGH_LP: DO JJ = 2, NEIGHBOURS(I,1)+1
+! Particle I has no neighbors therefore no conduction can take place.
+      IF(NEIGHBOURS(I,1).LE.0) RETURN
+
+! Loop over neibhbors
+      NEIGH_LP: DO JJ = 2, NEIGHBOURS(I,1)+1
 ! Set the index of the neighbor particle
-            J = NEIGHBOURS(I,JJ)
+         J = NEIGHBOURS(I,JJ)
 ! Skip the neighbor if it does not exist (should not be a problem)
-            IF(.NOT.PEA(J,1) ) CYCLE NEIGH_LP
+         IF(.NOT.PEA(J,1) ) CYCLE NEIGH_LP
 ! Only do conduction calculations for particles with an index value
 ! higher than the current particle. The opposite heat transfer will be
 ! applied to the neighbor.
-            IF(J.GT.I) THEN
+         IF(J.LT.I) CYCLE NEIGH_LP
+
 ! Calculate the center distance between the two particles
-               DISTVEC(:) = DES_POS_NEW(I,:) - DES_POS_NEW(J,:)
-               CENTER_DIST = SQRT(DES_DOTPRDCT(DISTVEC,DISTVEC))
+         DISTVEC(:) = DES_POS_NEW(I,:) - DES_POS_NEW(J,:)
+         CENTER_DIST = SQRT(DES_DOTPRDCT(DISTVEC,DISTVEC))
 
 ! Identify the solid phases of each particle
-               jM = PIJK(J,5)
+         jM = PIJK(J,5)
 
 ! Determine the radius of the larger and smaller particle
-               MIN_RAD = MIN(DES_RADIUS(I), DES_RADIUS(J))
-               MAX_RAD = MAX(DES_RADIUS(I), DES_RADIUS(J))
+         MIN_RAD = MIN(DES_RADIUS(I), DES_RADIUS(J))
+         MAX_RAD = MAX(DES_RADIUS(I), DES_RADIUS(J))
 
-! Initialize the rates of conductive heat transfer
-               Q_pp = ZERO
-               Q_pfp = ZERO
-
-               DeltaTp = DES_T_s_NEW(J) - DES_T_s_NEW(I)
+         DeltaTp = DES_T_s_NEW(J) - DES_T_s_NEW(I)
 
 ! Calculate the particle-particle conduction 
 ! REF: Batchelor and O'Brien, 1977 (MODIFIED)
 !---------------------------------------------------------------------//
-               IF(DES_COND_EQ_PP .AND. &
-                  (CENTER_DIST < (MAX_RAD + MIN_RAD)) ) THEN
+         IF(CENTER_DIST < (MAX_RAD + MIN_RAD)) THEN
 ! Effective thermal conductivity
-                 lK_eff = K_eff(K_s0(iM),K_s0(jM))
+            lK_eff = K_eff(K_s0(iM),K_s0(jM))
 ! Effective contact area's radius
-                 lRadius = RADIUS(MAX_RAD, MIN_RAD)
+            lRadius = RADIUS(MAX_RAD, MIN_RAD)
 ! Inter-particle heat transfer
-                  Q_pp = 2.0d0 * lK_eff * lRadius * DeltaTp
+            Q_pp = 2.0d0 * lK_eff * lRadius * DeltaTp
 ! Assign the inter-particle heat transfer to both particles.
-                  Q_Source(I)  = Q_Source(I) + Q_pp
-                  Q_Source(J)  = Q_Source(J) - Q_pp
-               ENDIF
+            Q_Source(I)  = Q_Source(I) + Q_pp
+            Q_Source(J)  = Q_Source(J) - Q_pp
+         ENDIF
 
 ! Calculate the particle-fluid-particle conduction 
 ! REF: Rong and Horio, 1999 (MODIFIED)
-               IF(DES_COND_EQ_PFP)THEN
 !---------------------------------------------------------------------//
 ! Calculate the radius of the fluid lens surrounding the larger particle
 ! Default FLPC = 0.2
-                  LENS_RAD = MAX_RAD * (1.0D0 + FLPC)
+         LENS_RAD = MAX_RAD * (1.0D0 + FLPC)
 
 ! Calculate the outer radial distance of the region for particle-fluid-
 ! particle heat conduction.
-                  RD_OUT = RADIUS( LENS_RAD, MIN_RAD)
+         RD_OUT = RADIUS( LENS_RAD, MIN_RAD)
+
 ! If the value returned is less than zero, then the fluid lens
 ! surrounding the larger particle does not intersect with the surface
 ! of the smaller particle. In this case, particle-fluild-particle
 ! conduction does not occur.
-                  IF(RD_OUT .GT. ZERO)THEN
+         IF(RD_OUT .GT. ZERO)THEN
 ! Calculate the distance from the line connecting the particles' centers
 ! to the point of contact between the two particles. This value is
 ! zero if the particles are not touching and is the radius of the 
 ! shared contact area otherwise.
-                     RD_IN = ZERO
-                     IF(CENTER_DIST < (MAX_RAD + MIN_RAD) ) &
-                        RD_IN = RADIUS(MAX_RAD, MIN_RAD)
+            RD_IN = ZERO
+            IF(CENTER_DIST < (MAX_RAD + MIN_RAD) ) &
+               RD_IN = RADIUS(MAX_RAD, MIN_RAD)
 ! Calculate the rate of heat transfer between the particles through the
 ! fluid using adaptive Simpson's rule to manage the integral.
-                     Q_pfp = K_g(iIJK) * DeltaTp * &
-                        ADPT_SIMPSON(RD_IN,RD_OUT)
-                  ELSE
-! Particles are not close enough to engage in particle-fluid-particle
-! heat transfer.
-                     Q_pfp = ZERO
-                  ENDIF ! RD_OUT > ZERO
+            Q_pfp = K_g(iIJK) * DeltaTp * &
+               ADPT_SIMPSON(RD_IN,RD_OUT)
+
 ! Assign the heat flux to both particles.
-                  Q_Source(I) = Q_Source(I) + Q_pfp
-                  Q_Source(J) = Q_Source(J) - Q_pfp
-               ENDIF
+            Q_Source(I) = Q_Source(I) + Q_pfp
+            Q_Source(J) = Q_Source(J) - Q_pfp
+
+         ENDIF ! RD_OUT > ZERO
+
 
 ! Write debug messages
-               IF(FOCUS)THEN
-                  WRITE(*,"(//5X,A)")'From: DES_CONDUCTION -'
-                  WRITE(*,"(8X,A,D12.6)")'Tp: ',DES_T_s_NEW(I)
-                  WRITE(*,"(8X,A,D12.6)")'Qpp: ',Q_pp
-                  WRITE(*,"(8X,A,D12.6)")'Qpfp: ',Q_pfp
-                  WRITE(*,"(5X,25('-')/)")
-               ENDIF
-            ENDIF ! J>I
-         ENDDO NEIGH_LP! Looping over neighbors
-      ENDIF  ! neighbors > 0
+!         IF(FOCUS)THEN
+!            WRITE(*,"(//5X,A)")'From: DES_CONDUCTION -'
+!            WRITE(*,"(8X,A,D12.6)")'Tp: ',DES_T_s_NEW(I)
+!            WRITE(*,"(8X,A,D12.6)")'Qpp: ',Q_pp
+!            WRITE(*,"(8X,A,D12.6)")'Qpfp: ',Q_pfp
+!            WRITE(*,"(5X,25('-')/)")
+!         ENDIF
+      ENDDO NEIGH_LP! Looping over neighbors
 
       RETURN
 

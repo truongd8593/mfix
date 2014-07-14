@@ -110,7 +110,7 @@
          DES_D_p0(M) = D_p0(M)
          DES_RO_s(M) = RO_s0(M)
 ! Determine the maximum particle size in the system (MAX_RADIUS), which
-! in turn is used for various tasks        
+! in turn is used for various tasks
          MAX_RADIUS = MAX(MAX_RADIUS, 0.5d0*DES_D_P0(M))
          MIN_RADIUS = MIN(MIN_RADIUS, 0.5d0*DES_D_P0(M))
       ENDDO
@@ -121,9 +121,9 @@
 ! then a mixture pressure correction equation is invoked and this is not
 ! correctly setup for DEM.  To do so would require ensuring that
 ! 1) the solids phase continuum quantities used in these equations are
-!    correctly set based on their DEM counterparts and 
-! 2) the pressure correction coefficients for such solids phases are 
-!    also calculated (currently these calculations are turned off 
+!    correctly set based on their DEM counterparts and
+! 2) the pressure correction coefficients for such solids phases are
+!    also calculated (currently these calculations are turned off
 !    when using DEM)
       CLOSE_PACKED((MMAX+1):DIM_M) = .TRUE.
 
@@ -179,7 +179,7 @@
       END SELECT
 
 
-! Check the output file format 
+! Check the output file format
       IF(DES_OUTPUT_TYPE == UNDEFINED_C) DES_OUTPUT_TYPE = 'PARAVIEW'
       SELECT CASE(trim(DES_OUTPUT_TYPE))
       CASE ('PARAVIEW')
@@ -266,9 +266,9 @@
       use des_thermo, only: DES_CONV_CORR_ENUM
       use des_thermo, only: RANZ_1952
 
-      use des_thermo, only: DES_COND_EQ
-      use des_thermo, only: DES_COND_EQ_PFP
-      use des_thermo, only: DES_COND_EQ_PP
+!      use des_thermo, only: DES_COND_EQ
+!      use des_thermo, only: DES_COND_EQ_PFP
+!      use des_thermo, only: DES_COND_EQ_PP
 
       Use des_thermo, only: SB_CONST
       Use des_thermo, only: DES_Em
@@ -301,19 +301,17 @@
       CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_DISCRETE_ENERGY")
 
 
-      IF(.NOT.ENERGY_EQ)THEN
+!      IF(.NOT.ENERGY_EQ)THEN
 ! Reinitialize the heat transfer logicals to false.
-         DES_COND_EQ     = .FALSE.
-         DES_COND_EQ_PFP = .FALSE.
-         DES_COND_EQ_PP  = .FALSE.
-
-         CALL FINL_ERR_MSG
-
-         RETURN
-      ENDIF
+!         DES_COND_EQ     = .FALSE.
+!         DES_COND_EQ_PFP = .FALSE.
+!         DES_COND_EQ_PP  = .FALSE.
+!         CALL FINL_ERR_MSG
+!         RETURN
+!      ENDIF
 
 
-! Check the number of processors. DES reactive chemistry is currently 
+! Check the number of processors. DES reactive chemistry is currently
 ! limited to serial runs.
       CHECK_MPI = NODESI * NODESJ * NODESK
       IF(CHECK_MPI.NE.1) THEN
@@ -351,7 +349,7 @@
             WRITE(ERR_MSG,1000) trim(iVar('DES_Em',M))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
-     ENDDO
+      ENDDO
 
 
 ! Set the value of the Stefan-Boltzman Constant based on the untis
@@ -433,7 +431,7 @@
 
 !         MAX_DES_NMAX = MAX(MAX_DES_NMAX, DES_NMAX_s(M))
 
-!        DES_SPECIES_s(M,N),    
+!        DES_SPECIES_s(M,N),
 !        DES_MW_S(M,N)
 
 !      ENDDO ! DES_MMAX
@@ -459,8 +457,8 @@
       SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_GEOMETRY
 
 !-----------------------------------------------
-! Modules 
-!-----------------------------------------------      
+! Modules
+!-----------------------------------------------
       USE geometry, only: COORDINATES
       USE geometry, only: DO_I, DO_J, DO_K
       USE geometry, only: NO_I, NO_J, NO_K
@@ -471,17 +469,17 @@
       USE discretelement, only: DES_CONTINUUM_COUPLED
       USE discretelement, only: MAX_RADIUS
 
-! flag to tell if using stl represenation in discrete models 
+! flag to tell if using stl represenation in discrete models
       USE discretelement, only: USE_STL_DES
-! flag to tell if using CG 
+! flag to tell if using CG
       USE cutcell, only: cartesian_grid
-! flag to tell if using stl represenation in CG 
-      USE cutcell, only: use_stl 
+! flag to tell if using stl represenation in CG
+      USE cutcell, only: use_stl
 
       use param1, only: UNDEFINED_I
 
-!flag to force conversion of regular bounding box to 
-!triangular facets for particle-wall interactions in discrete models 
+!flag to force conversion of regular bounding box to
+!triangular facets for particle-wall interactions in discrete models
       use discretelement, only: des_convert_box_to_facets
 
 ! Flag: Use cohesion
@@ -491,11 +489,11 @@
       use mfix_pic, only: MPPIC
 
       use error_manager
- 
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
-!-----------------------------------------------      
+!-----------------------------------------------
       DOUBLE PRECISION :: MIN_DEPTH
 
 !......................................................................!
@@ -542,47 +540,47 @@
          'file.')
 
 
-      IF(CARTESIAN_GRID.and.discrete_element.and..not.use_stl) then 
-         write(err_msg, '((A, A,/, A, /, A, /))')& 
-         'cartesian grid and discrete modeds (DEM or PIC) only', & 
+      IF(CARTESIAN_GRID.and.discrete_element.and..not.use_stl) then
+         write(err_msg, '((A, A,/, A, /, A, /))')&
+         'cartesian grid and discrete modeds (DEM or PIC) only', &
          'work with stl representation for walls', &
          'Quadrics and polygons are no longer supported for discrete models', &
          'Switch to STL representation for using PIC or DEM models with cartesian grid'
          CALL FLUSH_ERR_MSG(abort = .true.)
       endif
 
-      IF(CARTESIAN_GRID.and.USE_STL.and..not.use_stl_des) then 
-         write(err_msg, '(3(A,/))')'Detected cartesian grid using STL representation', & 
+      IF(CARTESIAN_GRID.and.USE_STL.and..not.use_stl_des) then
+         write(err_msg, '(3(A,/))')'Detected cartesian grid using STL representation', &
          'USE_STL_DES either not specified or set as false in the input file', &
          'Forcing the discrete model to use STL for particle-wall interactions as well'
          CALL FLUSH_ERR_MSG
          USE_STL_DES = .true.
       endif
-      
-      IF(MPPIC.AND..NOT.USE_STL_DES) THEN 
-         write(err_msg, '(3(A,/))') & 
+
+      IF(MPPIC.AND..NOT.USE_STL_DES) THEN
+         write(err_msg, '(3(A,/))') &
          'PIC model detected but USE_STL_DES left undefined or specified as false', &
-         'Particle-wall interactions in PIC model resoved as triangle-parcel', & 
+         'Particle-wall interactions in PIC model resoved as triangle-parcel', &
          'Forcing USE_STL_DES to true for PIC model. Bounding box will be converted to facets.'
          CALL FLUSH_ERR_MSG
          USE_STL_DES = .true.
       ENDIF
 
 
-      IF(use_stl_des.and.use_cohesion) then 
-         write(err_msg, '(3(A,/))') & 
+      IF(use_stl_des.and.use_cohesion) then
+         write(err_msg, '(3(A,/))') &
          'The cohesion force model has not been implemented in new', &
-         'routines for STL facet based particle-wall interactions', & 
+         'routines for STL facet based particle-wall interactions', &
          'This will be restored shortly. Sorry :('
          CALL FLUSH_ERR_MSG(abort = .true.)
       endif
-      
+
 
 ! Verify that there are no internal obstacles.
 !      IF(.NOT.CARTESIAN_GRID) THEN
-!         DO K = KSTART1, KEND1 
+!         DO K = KSTART1, KEND1
 !         DO J = JSTART1, JEND1
-!         DO I = ISTART1, IEND1 
+!         DO I = ISTART1, IEND1
 !            IJK  = FUNIJK(I,J,K)
 !            IF(.NOT.FLUID_AT(IJK)) THEN
 !               WRITE(ERR_MSG,1400)
