@@ -149,7 +149,7 @@
             DO IJK = ijkstart3, ijkend3
               MU_S(IJK,M) = MU_S0
               LAMBDA_S(IJK,M) = -2.D0/3.D0*MU_S(IJK,M)
-              KTH_S(IJK,M) = K_S0  ! Note: KTH_S set as K_S0 for MMS
+              KTH_S(IJK,M) = K_S0(M)  ! Note: KTH_S set as K_S0 for MMS
             ENDDO
          ENDIF
          RETURN

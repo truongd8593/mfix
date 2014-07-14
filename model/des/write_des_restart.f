@@ -101,7 +101,7 @@
 ! Logicals indicating the restart is written containing energy equation
 ! and reaction data.
          write (lres_unit,rec=lnext_rec) ENERGY_EQ, &
-            ANY_SPECIES_EQ, MAX_DES_NMAX
+            ANY_SPECIES_EQ, DIMENSION_N_s
          lnext_rec=lnext_rec+1
 ! Write out particle temperatures.
          IF(ENERGY_EQ) &
@@ -112,7 +112,7 @@
 ! prevent identifying particles from initial phase specifications.
             CALL des_writepar(lres_unit,PIJK(:,5),pip,lnext_rec)
 ! Write out species mass fractions.
-            DO li = 1, MAX_DES_NMAX
+            DO li = 1, DIMENSION_N_s
                CALL des_writepar(lres_unit,DES_X_s(:,li),pip,lnext_rec)
             ENDDO
          ENDIF
@@ -270,7 +270,7 @@
             call des_gatherwrite(lres_unit, &
                PIJK(:,5),lglocnt,lnext_rec)
 ! Write out species mass fractions.
-            DO li = 1, MAX_DES_NMAX
+            DO li = 1, DIMENSION_N_s
                call des_gatherwrite(lres_unit, &
                   DES_X_s(:,li),lglocnt,lnext_rec)
             ENDDO

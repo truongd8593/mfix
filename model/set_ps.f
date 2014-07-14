@@ -59,7 +59,7 @@
 
             CALL CALC_PS_CpxMFLOW(PS_CpxMFLOW_s(PSV,M),                &
                PS_MASSFLOW_s(PSV,M), PS_T_s(PSV,M), PS_X_s(PSV,M,:), M,&
-               C_PS0, DIM_N_s, MW_s(M,:))
+               C_PS0(M), DIM_N_s, MW_s(M,:))
          enddo
 
 

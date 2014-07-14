@@ -761,47 +761,6 @@
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Flag to turn on species equations in the discrete 
-!solids phase M.</description>
-!  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
-      DES_SPECIES_EQ(:DIM_M) = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Total number of discrete solids species for each phase
-!</description>
-!  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
-      DES_NMAX_s(:DIM_M) = UNDEFINED_I
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Total number of discrete solids species for each phase
-!</description>
-!  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
-!  <arg index="2" id="Number of species" min="1" max="DES_NMAX_sX"/>
-      DES_MW_s(:DIM_M, :DIM_N_s) = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Name of solids phase M, species N as it appears in the
-! materials database. 
-!</description>
-!  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
-!  <arg index="2" id="Number of species" min="1" max="DES_NMAX_sX"/>
-      DES_SPECIES_s(:DIM_M, :DIM_N_s) = UNDEFINED_C
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Name of solids phase M, species N as it appears in the
-! materials database. 
-!</description>
-!  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
-!  <arg index="2" id="Number of species" min="1" max="DES_NMAX_sX"/>
-      DES_SPECIES_ALIAS_s(:DIM_M, :DIM_N_s) = UNDEFINED_C
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
 !  <description>Reaction model used to calculate the effects of a gas-solids reaction on a particle.</description>
 !  <valid value="variable_density" note="constant particle diameter. particle diameter changes to accommodate a loss/gain in mass."/>
 !  <valid value="shrinking_particle" note="constant particle density. particles diameter changes to accommodate a loss/gain in mass."/>

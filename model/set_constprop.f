@@ -145,7 +145,7 @@
             ELSE
 ! Fluid and inflow/outflow cells: FLAG < 100
                IF (RO_S0(M) /= UNDEFINED) RO_S(IJK,M) = RO_S0(M)
-               IF (C_PS0 /= UNDEFINED) C_PS(IJK,M) = C_PS0 
+               IF (C_PS0(M) /= UNDEFINED) C_PS(IJK,M) = C_PS0(M)
                IF (D_P0(M) /= UNDEFINED) D_P(IJK,M) = D_P0(M)
 
 ! Strictly fluid cells: FLAG = 1
@@ -156,7 +156,7 @@
                      LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M) 
                      ALPHA_S(IJK,M) = ZERO 
                   ENDIF 
-                  IF (K_S0 /= UNDEFINED) K_S(IJK,M) = K_S0 
+                  IF (K_S0(M) /= UNDEFINED) K_S(IJK,M) = K_S0(M)
                   IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
                ELSE
 ! ONLY inflow/outflow cells: FLAG .NE. 1 and FLAG < 100
@@ -167,7 +167,7 @@
                      LAMBDA_S(IJK,M) = ZERO
                      ALPHA_S(IJK,M) = ZERO
                   ENDIF
-                  IF (K_S0 /= UNDEFINED) K_S(IJK,M) = ZERO
+                  IF (K_S0(M) /= UNDEFINED) K_S(IJK,M) = ZERO
                   IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = ZERO 
                ENDIF
             ENDIF 

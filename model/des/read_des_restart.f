@@ -129,13 +129,14 @@
 ! Particle temperatures.
          IF(ENERGY_EQ) &
             CALL in_bin_512(lres_unit,DES_T_s_NEW,pip,lnext_rec)
+
          IF(ANY_SPECIES_EQ) THEN
 ! Solids phase index: This is needed for reacting flows as the diameter
 ! (shrinking_particle) or density (variable_density) reaction models
 ! prevent identifying particles from initial phase specifications.
             call in_bin_512i(lres_unit,PIJK(:,5),pip,lnext_rec)
 ! Species mass fractions.
-            DO li = 1, MAX_DES_NMAX
+            DO li = 1, DIMENSION_N_s
                CALL in_bin_512(lres_unit,DES_X_s(:,li),pip,lnext_rec)
             ENDDO
          ENDIF
@@ -303,7 +304,7 @@
 ! prevent identifying particles from initial phase specifications.
             call des_readscatter(lres_unit,PIJK(:,5),lglocnt,lnext_rec)
 ! Species mass fractions.
-            DO li = 1, MAX_DES_NMAX
+            DO li = 1, DIMENSION_N_s
                call des_readscatter(lres_unit, &
                   DES_X_s(:,li),lglocnt,lnext_rec)
             ENDDO

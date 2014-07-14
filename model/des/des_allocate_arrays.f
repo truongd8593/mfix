@@ -309,7 +309,7 @@
          Allocate( DES_C_PS( NPARTICLES ) )
 ! Species mass fractions comprising a particle. This array may not be
 ! needed for all thermo problems.
-         Allocate( DES_X_s( NPARTICLES, MAX_DES_NMAX) )
+         Allocate( DES_X_s( NPARTICLES, DIMENSION_N_S))
 ! Total rate of heat transfer to individual particles.
          Allocate( Q_Source( NPARTICLES ) )
 ! Average solids temperature in fluid cell
@@ -326,9 +326,9 @@
 ! BEGIN Species Allocation
       IF(ANY_SPECIES_EQ)THEN
 ! Rate of solids phase production for each species
-         Allocate( DES_R_sp( NPARTICLES, MAX_DES_NMAX) )
+         Allocate( DES_R_sp( NPARTICLES, DIMENSION_N_s) )
 ! Rate of solids phase consumption for each species
-         Allocate( DES_R_sc( NPARTICLES, MAX_DES_NMAX) )
+         Allocate( DES_R_sc( NPARTICLES, DIMENSION_N_s) )
 
 
          Allocate( DES_R_gp( DIMENSION_3, DIMENSION_N_g ) )
@@ -343,7 +343,7 @@
 ! Rate of chnage of particle mass
             Allocate( dMdt_OLD( NPARTICLES ) )
 ! Rate of chnage of particle mass percent species
-            Allocate( dXdt_OLD( NPARTICLES, MAX_DES_NMAX) )
+            Allocate( dXdt_OLD( NPARTICLES, DIMENSION_N_s) )
          ENDIF
 
 ! Energy generation from reaction (cal/sec)

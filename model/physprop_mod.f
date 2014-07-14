@@ -83,7 +83,7 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  C_pg 
 
 ! Constant constant-pressure specific heat of solids
-      DOUBLE PRECISION C_ps0
+      DOUBLE PRECISION C_ps0(DIM_M)
 
 ! Constant pressure specific heat of solids
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  C_ps 
@@ -95,7 +95,7 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  K_g 
 
 ! Specified constant solids conductivity
-      DOUBLE PRECISION K_s0
+      DOUBLE PRECISION K_s0(DIM_M)
 
 ! Conductivity of solids
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  K_s 

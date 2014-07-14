@@ -85,7 +85,7 @@
       INCLUDE 'ep_s2.inc'
 
 
-      IF (K_S0 /= UNDEFINED) RETURN  
+      IF (K_S0(M) /= UNDEFINED) RETURN  
 
 !!!!$omp parallel do private(IJK,B,R_km,BoR,L_rm,Kg_micro) &
 !!!!$omp& schedule(dynamic,chunk_size)

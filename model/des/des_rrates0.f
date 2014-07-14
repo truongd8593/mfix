@@ -47,6 +47,8 @@
       USE rxns
       USE sendrecv
       USE usr
+! Small value for species mass fractions
+      use toleranc, only: ZERO_X_gs
 
       IMPLICIT NONE
 
@@ -64,37 +66,40 @@
 
 ! Local variables
 !---------------------------------------------------------------------//
-      INTEGER H    ! Reaction loop counter
-      INTEGER L, M ! Global Phase index loop counters
-      INTEGER N    ! Global species index
-      INTEGER lN   ! Local reaction speices index/loop counter
-      INTEGER LM   ! 
+      INTEGER :: H    ! Reaction loop counter
+      INTEGER :: L, M ! Global Phase index loop counters
+      INTEGER :: N    ! Global species index
+      INTEGER :: lN   ! Local reaction speices index/loop counter
+      INTEGER :: LM   ! 
 
-      INTEGER mXfr ! Global phase index for mass transfer
+      INTEGER :: mXfr ! Global phase index for mass transfer
 
 ! User-defined reaction rates returned from USR_RATES
-      DOUBLE PRECISION DES_RATES(NO_OF_DES_RXNS)
+      DOUBLE PRECISION :: DES_RATES(NO_OF_DES_RXNS)
 
-      DOUBLE PRECISION lRate
-      DOUBLE PRECISION lTp
-      DOUBLE PRECISION lHoRs
+      DOUBLE PRECISION :: lRate
+      DOUBLE PRECISION :: lTp
+      DOUBLE PRECISION :: lHoRs
 
-      DOUBLE PRECISION RxH
+      DOUBLE PRECISION :: RxH
 
 ! Local gas phase values.
-      DOUBLE PRECISION lRgp(NMAX(0)) ! Rate of species production
-      DOUBLE PRECISION lRgc(NMAX(0)) ! Rate of species consumption
-      DOUBLE PRECISION lHoRg, llHoRg ! Heat of reaction
-      DOUBLE PRECISION SUMlRg
+      DOUBLE PRECISION :: lRgp(NMAX(0)) ! Rate of species production
+      DOUBLE PRECISION :: lRgc(NMAX(0)) ! Rate of species consumption
+      DOUBLE PRECISION :: lHoRg, llHoRg ! Heat of reaction
+      DOUBLE PRECISION :: SUMlRg
 
 ! Interphase mass transfer
-      DOUBLE PRECISION lRPhase(DIMENSION_LM+DIMENSION_M-1)
+      DOUBLE PRECISION :: lRPhase(DIMENSION_LM+DIMENSION_M-1)
+
+! Reaction limiters. If a species mass fraction is less than this
+! value, then the reaction is suppressed. 
+      DOUBLE PRECISION :: speciesLimiter
 
 ! External functions 
 !---------------------------------------------------------------------//
 ! Enthalpy calculations (cal/gram)
-      DOUBLE PRECISION, EXTERNAL ::CALC_H
-      DOUBLE PRECISION, EXTERNAL ::DES_CALC_H0
+      DOUBLE PRECISION, EXTERNAL :: CALC_H
 ! Compare two numbers.
       LOGICAL, EXTERNAL :: COMPARE
 
@@ -110,6 +115,9 @@
       lRgp(:) = ZERO
       lRgc(:) = ZERO
       lHoRg = ZERO
+
+! Set the species limiter:
+      speciesLimiter = ZERO_X_gs
 
 ! Calculate user defined reaction rates.
       CALL USR_RATES_DES(NP, pM, IJK, DES_RATES)
@@ -141,13 +149,16 @@
             IF(M == 0) THEN
 ! Consumption of gas phase species.
                IF(lRate < ZERO) THEN
-                  IF(X_g(IJK,N) > SMALL_NUMBER) THEN
+                  IF(X_g(IJK,N) > speciesLimiter) THEN
                      lRgc(N) = lRgc(N) - lRate
-                  ELSE
-                     lRgc(N) = 1.0d-9
-                  ENDIF
 ! Enthalpy transfer associated with mass transfer. (gas/solid)
-                  IF(M /= mXfr) RxH = RxH + lRate*CALC_H(T_g(IJK),0,N)
+                     IF(M /= mXfr) RxH = RxH +                         &
+                        lRate*CALC_H(T_g(IJK),0,N)
+                  ELSE
+! There is an insignificant amount of reactant. Skip this reaction.
+                     DES_RATES(H) = ZERO
+                     CYCLE RXN_LP
+                  ENDIF
                ELSE
 ! Formation of gas phase species.
                   lRgp(N) = lRgp(N) + lRate
@@ -186,7 +197,7 @@
                      llHORg = llHORg + CALC_H(T_g(IJK),0,N) * lRate
 ! Solid phase enthalpy change from energy equation derivation.
                   ELSE
-                     lHORs = lHORs + DES_CALC_H0(NP,N) * lRate
+                     lHORs = lHORs + CALC_H(lTp,M,N) * lRate
                   ENDIF
                ENDDO
 

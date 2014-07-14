@@ -955,16 +955,16 @@
 ! ------------------------------------------------------------------------
      IF (VERSION_NUMBER >= 1.15) THEN 
         IF (myPE == PE_IO) THEN
-           READ (UNIT_RES, REC=NEXT_RECA) K_G0, K_S0, &
-              C_PG0, C_PS0, TOL_RESID_T, TOL_RESID_X 
+           READ (UNIT_RES, REC=NEXT_RECA) K_G0, K_S0(1), &
+              C_PG0, C_PS0(1), TOL_RESID_T, TOL_RESID_X 
            NEXT_RECA = NEXT_RECA + 1 
         CALL IN_BIN_512 (UNIT_RES, IC_GAMA_RG, DIM_IC, NEXT_RECA) 
         CALL IN_BIN_512 (UNIT_RES, IC_T_RG, DIM_IC, NEXT_RECA) 
         ENDIF
         call bcast(K_G0,PE_IO)        ! BCAST0d 
-        call bcast(K_S0,PE_IO)        ! BCAST0d 
+        call bcast(K_S0(1),PE_IO)        ! BCAST0d 
         call bcast(C_PG0,PE_IO)       ! BCAST0d 
-        call bcast(C_PS0,PE_IO)       ! BCAST0d 
+        call bcast(C_PS0(1),PE_IO)    ! BCAST0d 
         call bcast(TOL_RESID_T,PE_IO) ! BCAST0d
         call bcast(TOL_RESID_X,PE_IO) ! BCAST0d 
         call bcast(IC_GAMA_RG,PE_IO)  ! BCAST1d 

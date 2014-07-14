@@ -98,7 +98,8 @@
 !-----------------------------------------------------------------------
 ! Invoke debug routine:
       LOGICAL, parameter :: dbg_coeffs = .FALSE.
-
+! Loop counter for solids phases
+      INTEGER :: M
 
 ! Allocate and initialize:
 !```````````````````````````````````````````````````````````````````````
@@ -155,8 +156,10 @@
 
 ! Specific heat and thermal conductivity.
          if(ENERGY_EQ) THEN
-            if(C_PS0 == UNDEFINED) SP_HEAT(1:MMAX) = .TRUE. 
-            if(K_S0  == UNDEFINED) COND(1:MMAX) = .TRUE. 
+            do M=1,MMAX
+               if(C_PS0(M) == UNDEFINED) SP_HEAT(M) = .TRUE.
+               if(K_S0(M)  == UNDEFINED) COND(M) = .TRUE.
+            enddo
          endif
 
 ! Species diffusivity. There is no reason to invoke this routine as the

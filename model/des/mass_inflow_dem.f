@@ -328,7 +328,7 @@
       ENDIF
 
 ! Set species mass fractions
-      IF((ENERGY_EQ .AND. C_PS0 /= UNDEFINED) .OR. ANY_SPECIES_EQ) &
+      IF((ENERGY_EQ .AND. C_PS0(lM) /= UNDEFINED) .OR. ANY_SPECIES_EQ) &
          DES_X_s(lNP,1:NMAX(lM)) = BC_X_s(lBCV,lM,1:NMAX(lM))
 
 ! Calculate time dependent physical properties

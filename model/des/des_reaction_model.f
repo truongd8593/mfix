@@ -21,6 +21,8 @@
       USE indices
       Use param1
       use run, only: ANY_SPECIES_EQ
+      use physprop, only: NMAX
+
       IMPLICIT NONE
 
 ! Passed variables
@@ -38,9 +40,9 @@
 ! total rate of consumption/production of species (g/sec)
       DOUBLE PRECISION SUM_DES_R_sc, SUM_DES_Rs
 ! masses of species comprising the particle (g)
-      DOUBLE PRECISION S_MASS( MAX_DES_NMAX )
+      DOUBLE PRECISION S_MASS( DIMENSION_N_s )
 
-      LOGICAL ALL_GONE( MAX_DES_NMAX )
+      LOGICAL ALL_GONE( DIMENSION_N_s )
 
       DOUBLE PRECISION, PARAMETER :: P43 = 4.0d0/3.0d0
 
@@ -84,7 +86,7 @@
             ALL_GONE(:) = .FALSE.
 
 ! Reset the flag
-            DO N=1,DES_NMAX_s(M)
+            DO N=1,NMAX(M)
 ! Calculate the current mass of species N in the particle
                S_MASS(N) = DES_X_s(NP,N) * PMASS(NP)
 ! Calculte the amount of species N mass that is produced/consumed.
@@ -130,7 +132,7 @@
 
 ! Update the species mass percent
 !---------------------------------------------------------------------//
-            DO N=1,DES_NMAX_s(M)
+            DO N=1,NMAX(M)
                IF(ALL_GONE(N))THEN
                   DES_X_s(NP,N) = ZERO
                ELSE

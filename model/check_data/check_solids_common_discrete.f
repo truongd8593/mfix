@@ -387,11 +387,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_THERMO
 
-      use des_rxns, only: ANY_DES_SPECIES_EQ
-      use des_rxns, only: MAX_DES_NMAX
+!      use des_rxns, only: ANY_DES_SPECIES_EQ
+!      use des_rxns, only: MAX_DES_NMAX
       use run, only: SPECIES_EQ
       use discretelement, only: DES_MMAX
-      use des_rxns, only: DES_NMAX_s
+!      use des_rxns, only: DES_NMAX_s
       use physprop, only: NMAX
       use physprop, only: MMAX
 
@@ -414,29 +414,29 @@
 
 ! Set the flag identifying that at least one of the species equations
 ! are being solved.
-      ANY_DES_SPECIES_EQ = &
-         ANY(SPECIES_EQ((MMAX+1):(MMAX+DES_MMAX)))
+!      ANY_DES_SPECIES_EQ = &
+!         ANY(SPECIES_EQ((MMAX+1):(MMAX+DES_MMAX)))
 
 ! Initialize MAX_DES_NMAX. This is the maximum number of species found
 ! over all solids phases. This is used for allocating DES_X_s
-      MAX_DES_NMAX = 1
+!      MAX_DES_NMAX = 1
 
 ! Loop over all solids phases
-      DO M = MMAX+1, MMAX+DES_MMAX
+!      DO M = MMAX+1, MMAX+DES_MMAX
 
 ! Copy of the input keyword values into discrete solids arrays. We may be
 ! able to remove the DES_ specific variables moving forward.
 !         DES_C_ps0(M) = C_ps0
 !         DES_K_s0(M)  = K_s0
 
-         DES_NMAX_s(M) = NMAX(M)
+!         DES_NMAX_s(M) = NMAX(M)
 
-         MAX_DES_NMAX = MAX(MAX_DES_NMAX, DES_NMAX_s(M))
+!         MAX_DES_NMAX = MAX(MAX_DES_NMAX, DES_NMAX_s(M))
 
 !        DES_SPECIES_s(M,N),    
 !        DES_MW_S(M,N)
 
-      ENDDO ! DES_MMAX
+!      ENDDO ! DES_MMAX
 
 
       CALL FINL_ERR_MSG

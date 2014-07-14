@@ -1279,12 +1279,14 @@
 
 !<keyword category="Solids Phase" required="false">
 !  <description>specified constant solids conductivity.</description>
-      K_S0 = UNDEFINED
+!  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
+      K_S0(:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Solids Phase" required="false">
 !  <description>specified constant solids specific heat.</description>
-      C_PS0 = UNDEFINED
+!  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
+      C_PS0(:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Solids Phase" required="false">

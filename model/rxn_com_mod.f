@@ -609,7 +609,8 @@
       CHARACTER(len=18), INTENT(IN) :: S_g(DIM_N_g)
       CHARACTER(len=18), INTENT(in) :: S_s(DIM_M, DIM_N_s)
       LOGICAL, INTENT(inout) :: rDB(0:DIM_M, DIM_N_g)
-      DOUBLE PRECISION, INTENT(in) :: Cpg0, Cps0
+      DOUBLE PRECISION, INTENT(in) :: Cpg0
+      DOUBLE PRECISION, INTENT(in) :: Cps0(DIM_M)
       DOUBLE PRECISION, INTENT(inout) :: MWg(DIM_N_g)
       DOUBLE PRECISION, INTENT(inout) :: MWs(DIM_M, DIM_N_s)
 
@@ -637,7 +638,7 @@
                CHECK_DATABASE = .TRUE.
             ENDIF
          ELSE
-            IF(Cps0 /= UNDEFINED) THEN
+            IF(Cps0(M) /= UNDEFINED) THEN
                CP_FATAL = .TRUE.
             ELSEIF((RxN%Calc_DH .AND. .NOT.rDB(M,N)) .OR.        &
                (MWs(M,N) == UNDEFINED)) THEN

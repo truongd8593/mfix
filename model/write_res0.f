@@ -331,8 +331,8 @@
 
 ! Version 01.15
 ! ------------------------------------------------------------------------
-      WRITE (UNIT_RES, REC=NEXT_RECA) K_G0, K_S0, C_PG0, C_PS0, TOL_RESID_T, &
-         TOL_RESID_X 
+      WRITE (UNIT_RES, REC=NEXT_RECA) &
+         K_G0, K_S0(1), C_PG0, C_PS0(1), TOL_RESID_T, TOL_RESID_X 
       NEXT_RECA = NEXT_RECA + 1 
       CALL OUT_BIN_512 (UNIT_RES, IC_GAMA_RG, DIMENSION_IC, NEXT_RECA) 
       CALL OUT_BIN_512 (UNIT_RES, IC_T_RG, DIMENSION_IC, NEXT_RECA) 

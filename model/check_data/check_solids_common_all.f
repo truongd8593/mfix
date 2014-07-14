@@ -85,17 +85,34 @@
       ENDDO 
 
 ! Check K_s0
-      IF (K_S0 < ZERO) THEN 
-         WRITE(ERR_MSG, 1001) 'K_s0', iVal(K_s0)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
+      DO M=1, MMAX_L
+         IF (K_S0(M) < ZERO) THEN 
+            WRITE(ERR_MSG, 1001) trim(iVar('K_s0',M)), iVal(K_s0(M))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDDO
+
+      DO M = MMAX_L+1, DIM_M
+         IF(K_s0(M) /= UNDEFINED)THEN
+            WRITE(ERR_MSG,1002) trim(iVar('K_s0',M))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDDO
 
 ! Check C_ps0
-      IF (C_PS0 < ZERO) THEN
-         WRITE(ERR_MSG, 1001) 'C_ps0', iVal(C_ps0)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
+      DO M=1, MMAX_L
+         IF (C_PS0(M) < ZERO) THEN
+            WRITE(ERR_MSG, 1001) trim(iVar('C_ps0',M)), iVal(C_ps0(M))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDDO
 
+      DO M = MMAX_L+1, DIM_M
+         IF(C_ps0(M) /= UNDEFINED)THEN
+            WRITE(ERR_MSG,1002) trim(iVar('C_ps0',M))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDDO
 
 ! Check the input specifications for solids species.
       IF(USE_RRATES)THEN
@@ -536,7 +553,7 @@
 
 ! Flag that the energy equations are solved and specified solids phase
 ! specific heat is undefined.
-         EEQ_CPS = (ENERGY_EQ .AND. C_PS0 == UNDEFINED)
+         EEQ_CPS = (ENERGY_EQ .AND. C_PS0(M) == UNDEFINED)
          IF(EEQ_CPS)THEN
             WRITE(ERR_MSG,2000)
             CALL FLUSH_ERR_MSG

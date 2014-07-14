@@ -54,8 +54,7 @@
         DES_Em, DES_MIN_COND_DIST, &
 
 ! DES Species Equations (reactive chemistry): J. Musser
-       DES_NMAX_s,  DES_MW_s, DES_SPECIES_EQ, &
-       DES_SPECIES_s, DES_SPECIES_ALIAS_s, REACTION_MODEL, &
+       REACTION_MODEL, &
 
 ! MP-PIC related flags 
 	 MPPIC, MPPIC_SOLID_STRESS_SNIDER, PSFAC_FRIC_PIC,& 

@@ -42,17 +42,17 @@
 ! Data Storate:
 !---------------------------------------------------------------------//
 ! maximum number of species over all solids phases
-      INTEGER MAX_DES_NMAX
+!      INTEGER MAX_DES_NMAX
 
 ! molecular weight of discrete solids species
-      DOUBLE PRECISION DES_MW_s(DIM_M, DIM_N_s)
+!      DOUBLE PRECISION DES_MW_s(DIM_M, DIM_N_s)
 
 ! total number of discrete solids species for each phase
-      INTEGER DES_NMAX_s(DIM_M)
+!      INTEGER DES_NMAX_s(DIM_M)
 
 ! Solids phase species names (database) and aliases
-      CHARACTER(len=18) DES_SPECIES_s(DIM_M, DIM_N_s) ! database name
-      CHARACTER(len=32)  DES_SPECIES_ALIAS_s(DIM_M, DIM_N_s) ! alias
+!      CHARACTER(len=18) DES_SPECIES_s(DIM_M, DIM_N_s) ! database name
+!      CHARACTER(len=32)  DES_SPECIES_ALIAS_s(DIM_M, DIM_N_s) ! alias
 
 ! discrete solids species mass fractions (PARTICLES, 0:MAX_DES_NMAX))
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: DES_X_s
@@ -70,9 +70,9 @@
 !---------------------------------------------------------------------//
 ! Previous time step's rate of change. Used for Adams-Bashforth
 ! time integration scheme.
- ! 1) particle mass
+! 1) particle mass
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: dMdt_OLD
- ! 2) particle species mass
+! 2) particle species mass
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: dXdt_OLD
 
 ! Interphase transfer variables.
