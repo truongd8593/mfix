@@ -17,7 +17,7 @@ correl_mod.f
 ../model/kintheory_mod.f
 ../model/leqsol_mod.f
 ../model/machine_mod.f
-machine.f
+../model/machine.f
 chem/stiff_chem_mod.f
 ../model/mflux_mod.f
 ../model/mfix_netcdf_mod.f
