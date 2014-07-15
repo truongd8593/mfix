@@ -29,7 +29,8 @@
       USE discretelement, only: DES_INTERP_MEAN_FIELDS
 ! Runtime Flag: Invoke gas/solids coupled simulation.
       USE discretelement, only: DES_CONTINUUM_COUPLED
-
+! Runtime Flag: Solve energy equations
+      USE run, only: ENERGY_EQ
 ! Number of DEM solids phases.
       USE discretelement, only: DES_MMAX
 ! DEM solid phase diameters and densities.
@@ -214,7 +215,7 @@
       END SELECT
 
 ! Set flags for energy equations
-      CALL CHECK_SOLIDS_COMMON_DISCRETE_ENERGY
+      IF(ENERGY_EQ) CALL CHECK_SOLIDS_COMMON_DISCRETE_ENERGY
 
 ! Check thermodynamic properties of discrete solids.
       CALL CHECK_SOLIDS_COMMON_DISCRETE_THERMO
