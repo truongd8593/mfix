@@ -26,11 +26,11 @@ MFIX_POST=
 RUN_DIR=$(pwd)
 
 # This permits the command to run from the post folder
-if test $0 = "new_makepost"; then
+if test $0 = "make_post"; then
   MFIX_SRC=../model
   MFIX_CONFIG=../config
 else
-  MFIX_POST=$(echo $0 | sed 's/\/new_makepost//')
+  MFIX_POST=$(echo $0 | sed 's/\/make_post//')
   MFIX_SRC=${MFIX_POST}/../model
   MFIX_CONFIG=${MFIX_POST}/../config
 fi
