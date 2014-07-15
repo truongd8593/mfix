@@ -9,7 +9,7 @@
 input=$@
 
 MFIX_VERSION="2013-2"
-EXEC_FILE="post-mfix"
+EXEC_FILE="post_mfix"
 MAKEFILE="Makefile"
 DPO_BASE=".."
 DPO="POST_OBJ"
