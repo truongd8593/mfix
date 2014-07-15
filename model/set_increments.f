@@ -334,6 +334,9 @@
       use discretelement, only: DISCRETE_ELEMENT
 
       USE cdist
+
+      use stiff_chem, only: notOwner
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1307,6 +1310,8 @@
       ENDIF
 
       IF (IJK_P_G /= UNDEFINED_I) IJK_P_G = IJK_OF_BACKGROUND(IJK_P_G)
+
+      CALL SHIFT_LOG_ARRAY(notOwner,.FALSE.)
 
       IF(BDIST_IO) CALL SHIFT_CONNECTIVITY_FOR_BDIST_IO
 
