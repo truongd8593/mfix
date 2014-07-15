@@ -161,7 +161,7 @@
   FULL_LOG = .T.  ! display residuals on screen
 
 ! Interval at which .SPX files are written
-  SPX_DT(1:9) = 1.0d3
+  SPX_DT(1:9) = 9*1.0d3
 
   RESID_STRING = 'P0'
 
