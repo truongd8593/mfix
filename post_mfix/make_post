@@ -99,23 +99,16 @@ make ${MAKE_ARGS} -f ${MAKEFILE} ${EXEC_FILE}
 result=$?
 
 if test $result = 0; then
-  /bin/cp -f ${EXEC_FILE} ${RUN_DIR}
-  if test ${USE_DMP} = 1; then
-    echo
-    echo "**********************************************"
-    echo " Compilation successful: ${EXEC_FILE} created"
-    echo " To run MFIX type (or equivalent): "
-    echo "   mpirun -np<# processors> ${EXEC_FILE}"
-    echo "**********************************************"
-    echo
-  else
-    echo
-    echo "**********************************************"
-    echo " Compilation successful: ${EXEC_FILE} created"
-    echo " To run MFIX type: ./${EXEC_FILE}"
-    echo "**********************************************"
-    echo
+# Copy out the executable if not compiled in post
+  if test "${MFIX_POST}" != "${RUN_DIR}"; then
+    /bin/cp -f ${EXEC_FILE} ${RUN_DIR}
   fi
+  echo
+  echo "**********************************************"
+  echo " Compilation successful: ${EXEC_FILE} created"
+  echo " To run MFIX type: ./${EXEC_FILE}"
+  echo "**********************************************"
+  echo
 else
   echo
   echo
