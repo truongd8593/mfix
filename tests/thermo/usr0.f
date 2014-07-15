@@ -40,7 +40,7 @@
       DO L=1, NO_OF_RXNS
          RxN => Reaction(L)
          CALL WRITE_RXN_SUMMARY(RxN, SPECIES_ALIAS_g(:), &
-            SPECIES_ALIAS_s(:,:), 678)
+            SPECIES_ALIAS_s(:,:), .FALSE., 678)
       ENDDO
       CLOSE(678)
 
