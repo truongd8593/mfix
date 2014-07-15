@@ -20,6 +20,7 @@ RUN_DIR=
 MFIX_SRC=
 MFIX_CONFIG=
 MFIX_TOOLS=
+MFIX_POST=
 
 # Set some of the folder paths.
 RUN_DIR=$(pwd)

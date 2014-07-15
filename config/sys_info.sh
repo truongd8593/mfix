@@ -13,6 +13,10 @@ MFIX_CONFIG=$(pwd)
 cd ${MFIX_SRC}/../tools
 MFIX_TOOLS=$(pwd)
 
+# Set the path to the tools directory
+cd ${MFIX_SRC}/../post_mfix
+MFIX_POST=$(pwd)
+
 # Grab some system information.
 opsys=$(uname -s)
 proctyp=$(uname -p)
