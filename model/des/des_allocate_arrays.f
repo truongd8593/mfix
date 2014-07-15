@@ -314,6 +314,9 @@
          Allocate( Q_Source( NPARTICLES ) )
 ! Average solids temperature in fluid cell
          Allocate(avgDES_T_s(DIMENSION_3) )
+
+         Allocate(DES_ENERGY_SOURCE(DIMENSION_3) )
+
 ! Allocate the history variables for Adams-Bashforth integration
          IF (INTG_ADAMS_BASHFORTH) &
             Allocate( Q_Source0( NPARTICLES ) )

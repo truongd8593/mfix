@@ -122,6 +122,7 @@
          DES_X_s(:,:) = ZERO
          Q_Source(:) = ZERO
          avgDES_T_s(:) = ZERO
+         DES_ENERGY_SOURCE(:) = ZERO
          IF (INTG_ADAMS_BASHFORTH) &
             Q_Source0(:) = ZERO
       ENDIF

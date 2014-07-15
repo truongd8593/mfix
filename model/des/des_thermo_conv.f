@@ -68,114 +68,23 @@
 ! Store convection source in global energy source array.
       Q_Source(NP) = Q_Source(NP) + Qcv
 
+! Calculate the source term components --> Not interpolated.
+      DES_ENERGY_SOURCE(IJK) = DES_ENERGY_SOURCE(IJK) - Qcv * DTSOLID
+
 ! Write out the debugging information.
-      IF(FOCUS) THEN
-         WRITE(*,"(/5X,A)")'From: DES_CONVECTION -'
-         WRITE(*,"(8X,A,D12.6)")'Tg: ',Tg
-         WRITE(*,"(8X,A,D12.6)")'Tp: ',DES_T_s_NEW(NP)
-         WRITE(*,"(8X,A,D12.6)")'Sa: ',Sa
-         WRITE(*,"(8X,A,D12.6)")'GAMMA_CP: ',GAMMA_CP
-         WRITE(*,"(8X,A,D12.6)")'Qcv: ',Qcv
-         WRITE(*,"(5X,50('-')/)")
-      ENDIF
+!     IF(FOCUS) THEN
+!        WRITE(*,"(/5X,A)")'From: DES_CONVECTION -'
+!        WRITE(*,"(8X,A,D12.6)")'Tg: ',Tg
+!        WRITE(*,"(8X,A,D12.6)")'Tp: ',DES_T_s_NEW(NP)
+!        WRITE(*,"(8X,A,D12.6)")'Sa: ',Sa
+!        WRITE(*,"(8X,A,D12.6)")'GAMMA_CP: ',GAMMA_CP
+!        WRITE(*,"(8X,A,D12.6)")'Qcv: ',Qcv
+!        WRITE(*,"(5X,50('-')/)")
+!     ENDIF
 
       RETURN
 
       END SUBROUTINE DES_CONVECTION
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!  Subroutine: DES_Hgm                                                 !
-!                                                                      !
-!  Purpose: This routine is called from the continuum phase and        !
-!  calculates the source term from the particles to the fluid. This    !
-!  routine handles both the interpolated and non-interpolated options. !
-!                                                                      !
-!  Author: J.Musser                                   Date: 15-Jan-11  !
-!                                                                      !
-!  Comments:                                                           !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE  DES_Hgm(S_C, S_P)
-
-      USE compar
-      Use constant
-      Use des_thermo
-      Use discretelement
-      Use fldvar
-      USE geometry
-      USE indices
-      Use interpolation
-      Use param1
-      Use physprop
-
-      IMPLICIT NONE
-
-! Passed Variables
-!---------------------------------------------------------------------//
-! Source term on LHS.  Must be positive. 
-      DOUBLE PRECISION, INTENT(INOUT) :: S_P(DIMENSION_3)
-! Source term on RHS 
-      DOUBLE PRECISION, INTENT(INOUT) :: S_C(DIMENSION_3)
-
-! Local variables
-!---------------------------------------------------------------------//
-! Index value of particle
-      INTEGER lNP, NP
-! IJK value of cell containing particle NP
-      INTEGER IJK
-! Convective heat transfer coefficient
-      DOUBLE PRECISION GAMMA_CP
-! Surface area of particle
-      DOUBLE PRECISION Sa
-
-! Functions
-!---------------------------------------------------------------------//
-      INCLUDE '../function.inc'
-
-
-
-
-      RETURN
-
-
-
-
-! Loop over fluid cells.
-!---------------------------------------------------------------------//
-      IJK_LP: DO IJK = IJKSTART3, IJKEND3
-         IF(.NOT.FLUID_AT(IJK)) CYCLE IJK_LP
-         IF(PINC(IJK) == 0) CYCLE IJK_LP
-
-! Interpolation.
-!---------------------------------------------------------------------//
-! Currently omitted.
-!   -> Set the IJK stencil
-
-! Loop over all particles in cell IJK.
-!---------------------------------------------------------------------//
-         lNP_LP: DO lNP = 1, PINC(IJK)
-            NP = PIC(IJK)%p(lNP)
-! Skip indices that do not represent particles
-            IF(.NOT.PEA(NP,1)) CYCLE lNP_LP
-! Skip indices that represent ghost particles
-            IF(PEA(NP,4)) CYCLE lNP_LP
-
-! Obtain the convective heat transfer coefficient of the particle
-            CALL DES_CALC_GAMMA(NP, IJK, GAMMA_CP)
-
-! Calculate the surface area of the particle
-            Sa = 4.0d0 * Pi * DES_RADIUS(NP)**2
-
-! Calculate the source term components --> Not interpolated.
-            S_P(IJK) = S_P(IJK) + (GAMMA_CP * Sa)
-            S_C(IJK) = S_C(IJK) + (GAMMA_CP * Sa * DES_T_s_NEW(NP))
-
-         ENDDO lNP_LP ! End loop over particles
-      ENDDO IJK_LP ! End loop over fluid cells
-
-      RETURN
-      END SUBROUTINE  DES_Hgm
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -297,3 +206,93 @@
 
       RETURN
       END SUBROUTINE DES_CALC_GAMMA
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Subroutine: DES_Hgm                                                 !
+!                                                                      !
+!  Purpose: This routine is called from the continuum phase and        !
+!  calculates the source term from the particles to the fluid.         !
+!                                                                      !
+!  Author: J.Musser                                   Date: 15-Jan-11  !
+!                                                                      !
+!  Comments:                                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE  DES_Hgm(S_C, S_P)
+
+      USE compar
+      Use constant
+      Use des_thermo
+      Use discretelement
+      Use fldvar
+      USE geometry
+      USE indices
+      Use interpolation
+      Use param1
+      Use physprop
+
+      use run, only: DT
+
+      IMPLICIT NONE
+
+! Passed Variables
+!---------------------------------------------------------------------//
+! Source term on LHS.  Must be positive. 
+      DOUBLE PRECISION, INTENT(INOUT) :: S_P(DIMENSION_3)
+! Source term on RHS 
+      DOUBLE PRECISION, INTENT(INOUT) :: S_C(DIMENSION_3)
+
+! Local variables
+!---------------------------------------------------------------------//
+! IJK value of cell containing particle NP
+      INTEGER :: IJK
+! Conversion factor from DEM to TFM
+      DOUBLE PRECISION :: DEM_to_TFM
+
+!---------------------------------------------------------------------//
+      INCLUDE '../function.inc'
+
+
+! Loop over fluid cells.
+      IJK_LP: DO IJK = IJKSTART3, IJKEND3
+         IF(.NOT.FLUID_AT(IJK)) CYCLE IJK_LP
+
+! Redistribute the energy over the fluid time step.
+         DEM_to_TFM = DT * VOL(IJK)
+! Calculate the source term components --> Not interpolated.
+         S_C(IJK) = S_C(IJK) + DES_ENERGY_SOURCE(IJK)/DEM_to_TFM
+
+      ENDDO IJK_LP ! End loop over fluid cells
+
+      RETURN
+      END SUBROUTINE  DES_Hgm
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Subroutine: DES_Hgm                                                 !
+!                                                                      !
+!  Purpose: ZERO out the array that passes energy source terms back to !
+!  the continuum model. Additional entries may be needed to include    !
+!  heat transfer to the hybrid mode.                                   !
+!                                                                      !
+!  Author: J.Musser                                   Date: 15-Jan-11  !
+!                                                                      !
+!  Comments:                                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE ZERO_ENERGY_SOURCE
+
+      Use des_thermo
+      Use param1
+
+      IMPLICIT NONE
+
+      DES_ENERGY_SOURCE(:) = ZERO
+
+
+      RETURN
+      END SUBROUTINE ZERO_ENERGY_SOURCE 
+
