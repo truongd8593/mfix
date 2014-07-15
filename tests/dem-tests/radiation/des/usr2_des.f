@@ -25,8 +25,6 @@
 
       IMPLICIT NONE
 
-      INCLUDE 'usrnlst.inc'
-
 ! Passed variables
 !---------------------------------------------------------------------//
 ! None
