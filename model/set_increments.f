@@ -335,7 +335,7 @@
 
       USE cdist
 
-      use stiff_chem, only: notOwner
+      use stiff_chem, only: STIFF_CHEMISTRY,notOwner
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1311,7 +1311,7 @@
 
       IF (IJK_P_G /= UNDEFINED_I) IJK_P_G = IJK_OF_BACKGROUND(IJK_P_G)
 
-      CALL SHIFT_LOG_ARRAY(notOwner,.FALSE.)
+      IF(STIFF_CHEMISTRY) CALL SHIFT_LOG_ARRAY(notOwner,.FALSE.)
 
       IF(BDIST_IO) CALL SHIFT_CONNECTIVITY_FOR_BDIST_IO
 
