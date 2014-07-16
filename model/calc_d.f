@@ -111,6 +111,8 @@
       DOUBLE PRECISION :: SUM_VXF_SS_wt_M
 ! Temporary variable to store A matrix for local manipulation
       DOUBLE PRECISION :: AM0(DIMENSION_3, 0:DIMENSION_M)
+! Number of solids to use in for the LOOP counter
+      INTEGER :: LC_MMAX
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -139,6 +141,10 @@
                ENDDO
             ENDDO
          ENDDO
+      ELSE
+! Loop over the the number of DES phases if this the is coupled
+! DEM or PIC simulation. Otherwise, use the number of TFM solids.
+         LC_MMAX = merge(DES_MMAX, MMAX, DES_CONTINUUM_COUPLED)
       ENDIF
          
 
@@ -316,7 +322,7 @@
 
        SUM_VXF_GS = ZERO
        IF (.NOT. QMOMK) THEN
-          DO M= 1, MMAX
+          DO M= 1, LC_MMAX
             SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)              !Gas - All Solids VolxDrag summation
           ENDDO
        ELSE
@@ -543,6 +549,9 @@
       DOUBLE PRECISION :: SUM_VXF_SS_wt_M
 ! Temporary variable to store A matrix for local manipulation
       DOUBLE PRECISION :: AM0(DIMENSION_3, 0:DIMENSION_M)
+! Number of solids to use in for the LOOP counter
+      INTEGER :: LC_MMAX
+
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -569,6 +578,10 @@
                ENDDO
             ENDDO
          ENDDO
+      ELSE
+! Loop over the the number of DES phases if this the is coupled
+! DEM or PIC simulation. Otherwise, use the number of TFM solids.
+         LC_MMAX = merge(DES_MMAX, MMAX, DES_CONTINUUM_COUPLED)
       ENDIF
 
 
@@ -744,8 +757,8 @@
 
        SUM_VXF_GS = ZERO
        IF (.NOT. QMOMK) THEN
-          DO M= 1, MMAX
-            SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)              !Gas - All Solids VolxDrag summation
+          DO M= 1, LC_MMAX
+            SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)  !Gas - All Solids VolxDrag summation
           ENDDO
        ELSE
           DO INN = 1, QMOMK_NN
@@ -970,6 +983,8 @@
       DOUBLE PRECISION :: SUM_VXF_SS_wt_M
 ! Temporary variable to store A matrix for local manipulation
       DOUBLE PRECISION :: AM0(DIMENSION_3, 0:DIMENSION_M)
+! Number of solids to use in for the LOOP counter
+      INTEGER :: LC_MMAX
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -996,6 +1011,10 @@
                ENDDO
             ENDDO
          ENDDO
+      ELSE
+! Loop over the the number of DES phases if this the is coupled
+! DEM or PIC simulation. Otherwise, use the number of TFM solids.
+         LC_MMAX = merge(DES_MMAX, MMAX, DES_CONTINUUM_COUPLED)
       ENDIF
 
 
@@ -1172,7 +1191,7 @@
 
        SUM_VXF_GS = ZERO
        IF (.NOT. QMOMK) THEN
-          DO M= 1, MMAX
+          DO M= 1, LC_MMAX
             SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)              !Gas - All Solids VolxDrag summation
           ENDDO
        ELSE
