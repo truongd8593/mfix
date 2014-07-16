@@ -43,7 +43,6 @@
       DOUBLE PRECISION :: OVERLAP_T(3)
 ! square root of the overlap
       DOUBLE PRECISION :: SQRT_OVERLAP
-      DOUBLE PRECISION :: FRAC_OVERLAP1, FRAC_OVERLAP2
 ! distance vector between two particle centers or between a particle
 ! center and wall when the two surfaces are just at contact (i.e. no
 ! overlap)
@@ -138,14 +137,13 @@
 !$omp          n_nocon,ni,iw,wallcontact,i,                       &
 !$omp          already_neighbours, report_excess_overlap,neigh_l, &
 !$omp          WALL_POS,WALL_VEL,                                 &
-!$omp          r_lm,dist,distmod,frac_overlap1,normal,            &
+!$omp          r_lm,dist,distmod,normal,ii,                       &
 !$omp          v_rel_trans_norm, v_rel_tang,                      &
 !$omp          overlap_n,overlap_t,dtsolid_tmp,phasell,           &
 !$omp          sqrt_overlap,kn_des_w,kt_des_w,etan_des_w,         &
 !$omp          etat_des_w,sigmat_old,norm_old,tmp_ax,tmp_mag,     &
 !$omp          tang_old,tang_new,sigmat,                          &
 !$omp          ftmd,fnmd,                                         &
-!$omp          ii,frac_overlap2,                                  &
 !$omp          phasei,kn_des,kt_des,etan_des,etat_des,            &
 !!$omp          Idimn,force_coh,eq_radius,distapart,norm_dist,maggravity)
 !!$omp do reduction(max:NEIGH_MAX,OVERLAP_MAX) schedule (dynamic,50)
@@ -271,14 +269,14 @@
 
                   R_LM = DES_RADIUS(LL) + DES_RADIUS(I)
                   DIST(:) = DES_POS_NEW(I,:) - DES_POS_NEW(LL,:)
-                  DISTMOD = SQRT(DES_DOTPRDCT(DIST,DIST))
+                  DISTMOD = DES_DOTPRDCT(DIST,DIST)
 
 ! compute particle-particle VDW cohesive short-range forces
-                  IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
-                    EQ_RADIUS = 2d0 * DES_RADIUS(LL)*DES_RADIUS(I) / &
+                  IF(USE_COHESION .AND. VAN_DER_WAALS .AND. DISTMOD < (R_LM+VDW_OUTER_CUTOFF)**2) THEN
+                    IF(DISTMOD < (R_LM+VDW_OUTER_CUTOFF)**2) THEN
+                       DistApart = (SQRT(DISTMOD)-R_LM) ! distance between particle surface
+                       EQ_RADIUS = 2d0 * DES_RADIUS(LL)*DES_RADIUS(I) / &
                                (DES_RADIUS(LL)+DES_RADIUS(I))  ! for use in cohesive force
-                    DistApart = (DISTMOD-R_LM) ! distance between particle surface
-                    IF(DistApart < VDW_OUTER_CUTOFF)THEN
                       IF(DistApart > VDW_INNER_CUTOFF)THEN
                          FORCE_COH = HAMAKER_CONSTANT * EQ_RADIUS / (12d0*DistApart**2) * &
                             ( Asperities/(Asperities+EQ_RADIUS) + &
@@ -296,7 +294,8 @@
                     ENDIF
                   ENDIF ! for using VDW cohesion model
 
-                  IF(R_LM - DISTMOD.GT.SMALL_NUMBER) THEN
+                  IF(DISTMOD < (R_LM + SMALL_NUMBER)**2) THEN
+                     DISTMOD = SQRT(DISTMOD)
 
                      IF(DEBUG_DES .AND. LL.EQ.FOCUS_PARTICLE) THEN
                         IF (.NOT.DES_LOC_DEBUG) THEN
@@ -306,21 +305,23 @@
                         WRITE(*,'(5X,A,(10I10))') 'NEIGHBORS: ', NEIGHBOURS(LL,:)
                      ENDIF
 
+! Overlap calculation changed from history based to current position
+                     OVERLAP_N = R_LM-DISTMOD
 
-                     FRAC_OVERLAP1 = (R_LM-DISTMOD)/DES_RADIUS(LL)
-                     FRAC_OVERLAP2 = (R_LM-DISTMOD)/DES_RADIUS(I)
-                     IF ((FRAC_OVERLAP1 > flag_overlap .OR. &
-                     FRAC_OVERLAP2 > flag_overlap).AND. &
-                     report_excess_overlap) THEN
-                        WRITE(*,'(5X,A,A,ES15.7)') &
-                           'WARNING: excessive overlap detected ', &
-                           'at time ', S_TIME
-                        WRITE(*,'(7X,A,I10,2X,A,I5,2X,A)') &
-                           'between particles ', LL, 'and ',&
-                           I, 'with'
-                        WRITE(*,'(7X,A,ES15.7,2X,A,ES15.7,2X,ES15.7)') &
-                           'overlap = ', (R_LM-DISTMOD), &
-                           ' radii = ', DES_RADIUS(LL), DES_RADIUS(I)
+                     IF (report_excess_overlap) THEN
+                        IF (OVERLAP_N > flag_overlap*DES_RADIUS(LL) .OR. &
+                            OVERLAP_N > flag_overlap*DES_RADIUS(I)) THEN
+
+                           WRITE(*,'(5X,A,A,ES15.7)') &
+                                'WARNING: excessive overlap detected ', &
+                                'at time ', S_TIME
+                           WRITE(*,'(7X,A,I10,2X,A,I5,2X,A)') &
+                                'between particles ', LL, 'and ',&
+                                I, 'with'
+                           WRITE(*,'(7X,A,ES15.7,2X,A,ES15.7,2X,ES15.7)') &
+                                'overlap = ', OVERLAP_N, &
+                                ' radii = ', DES_RADIUS(LL), DES_RADIUS(I)
+                        ENDIF
                      ENDIF
 
                      IF(DISTMOD.NE.ZERO) THEN
@@ -340,9 +341,6 @@
 ! contacting particle pair and the tangent to the plane of contact
                      CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, &
                         V_REL_TANG, NORMAL, DISTMOD)
-
-! Overlap calculation changed from history based to current position
-                     OVERLAP_N = R_LM-DISTMOD
 
                      IF(ALREADY_NEIGHBOURS) THEN
                         PV(NI,LL) = .TRUE.
