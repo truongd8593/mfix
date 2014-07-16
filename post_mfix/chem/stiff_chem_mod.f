@@ -11,6 +11,8 @@
       LOGICAL :: STIFF_CHEMISTRY
 ! Flag to invoke the variable solids diameter model.
       LOGICAL :: CALL_GROW
+! Flag indicating if cell IJK is own by myPE.
+      LOGICAL, dimension(:), allocatable :: notOwner
 
 ! ODEPACK Controlling parameters:
 !---------------------------------------------------------------------//
