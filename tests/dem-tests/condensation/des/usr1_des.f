@@ -25,8 +25,6 @@
 
       IMPLICIT NONE
 
-      INCLUDE 'usrnlst.inc'
-
 ! Local variables
 !---------------------------------------------------------------------//
 

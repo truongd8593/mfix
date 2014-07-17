@@ -84,17 +84,11 @@
 ! Water vapor mass transfer coefficient (cm/sec)
       DOUBLE PRECISION H2O_xfr
 
-      INCLUDE 'species.inc'
-
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-
-      INCLUDE 'function.inc'
-
-      INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg2.inc'
-
-      INCLUDE 'usrnlst.inc'
+      INCLUDE '../species.inc'
+      INCLUDE '../fun_avg1.inc'
+      INCLUDE '../function.inc'
+      INCLUDE '../fun_avg2.inc'
+      INCLUDE '../usrnlst.inc'
 
 ! Alias particle temperature.
       Tp = DES_T_s_NEW(NP)
