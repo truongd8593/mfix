@@ -54,7 +54,7 @@
 ########################################################################
 
   RUN_NAME  = 'WBT'
-  DESCRIPTION  = 'DEM :: Wet-bulb Test - HR  50%'
+  DESCRIPTION  = 'DEM TEST: Wet-bulb Test - 50% relative humidity'
 
 #_______________________________________________________________________
 # RUN CONTROL SECTION
@@ -77,9 +77,16 @@
 
   CALL_USR = .T.
 
+  DES_CONTINUUM_COUPLED = .T.
+  DES_INTERP_ON  = .F.
+
+! Constant particle size, changing density.
+  REACTION_MODEL = 'VARIABLE_DENSITY'
+
 #_______________________________________________________________________
 # NUMERICAL SECTION
 
+  NORM_g = 0.0
 
 #_______________________________________________________________________
 # GEOMETRY SECTION 
@@ -400,26 +407,12 @@
   NLOG = 25
   FULL_LOG = .T. 
 
-  WRITE_DASHBOARD = .T.
-
   PRINT_DES_DATA = .F. ! write DEM data : *.vtp files
 
 #_______________________________________________________________________
 # PARALLELIZATION CONTROLS
 
   NODESI  = 1     NODESJ  = 1     NODESK  = 1
-
-
-#_______________________________________________________________________
-# DISCRETE ELEMENT MODEL
-
-  DES_CONTINUUM_COUPLED = .T.
-
-  DES_INTERP_ON  = .F.
-
- 
-! Constant particle size, changing density.
-  REACTION_MODEL = 'VARIABLE_DENSITY'
 
 
 #_______________________________________________________________________
