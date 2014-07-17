@@ -81,7 +81,7 @@
 !---------------------------------------------------------------------//
   MMAX = 2
 
-  PARTICLES = 2   ! Number of partiles in the system.
+  PARTICLES = 2                ! Number of partiles
 
 ! Particle-particle:
   KN =   1.6d7                 ! Normal collision spring constant
@@ -98,7 +98,7 @@
 
   DES_EN_WALL_INPUT = 0.9  0.9 ! e1w  e2w
 
-  DES_NEIGHBOR_SEARCH = 4          ! Grid based neighbor search
+  DES_NEIGHBOR_SEARCH = 4      ! Grid based neighbor search
   NEIGHBOR_SEARCH_N   = 9999   ! Steps between neighbor search
   MN = 20                      ! Maximum number of neighbors
 
