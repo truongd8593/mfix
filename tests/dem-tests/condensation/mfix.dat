@@ -52,10 +52,6 @@
   DES_INTERP_ON = .F.
 
 
-! Constant particle size, changing density.
-  REACTION_MODEL = 'VARIABLE_DENSITY'
-
-
 #_______________________________________________________________________
 # NUMERICAL SECTION
 
