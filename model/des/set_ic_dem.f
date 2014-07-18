@@ -82,7 +82,8 @@
                ENDIF
 
 ! Set the initial species composition.
-               IF(SPECIES_EQ(M) .OR. C_PS0(M) == UNDEFINED) THEN
+               IF((ENERGY_EQ .AND. C_Ps0(M) == UNDEFINED) .OR.         &
+                  SPECIES_EQ(M)) THEN
                   DES_X_s(NP,:) = ZERO
                   DO N = 1, NMAX(M)
                      DES_X_s(NP,N) = IC_X_s(ICV,M,N)
@@ -108,9 +109,11 @@
          M = PIJK(NP,5)
 
 ! Check that the temperature is specified.
-         IF(ENERGY_EQ .AND. DES_T_s_NEW(NP) == UNDEFINED) THEN
-            WRITE(ERR_MSG, 2000) trim(iVal(NP)), trim(iVal(M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         IF(ENERGY_EQ) THEN
+            IF(DES_T_s_NEW(NP) == UNDEFINED) THEN
+               WRITE(ERR_MSG, 2000) trim(iVal(NP)), trim(iVal(M))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
          ENDIF
 
  2000 FORMAT('Error 2000: Particle ',A,' does not have a specified ',  &
@@ -119,7 +122,8 @@
          'defined: IC_T_s(ICV,',A,').')
 
 ! Check that the species mass fractions are specified.
-         IF(SPECIES_EQ(M) .OR. C_Ps0(M) == UNDEFINED) THEN
+         IF((ENERGY_EQ .AND. C_Ps0(M) == UNDEFINED) .OR.               &
+            SPECIES_EQ(M)) THEN
             IF(.NOT.COMPARE(sum(DES_X_s(NP,1:NMAX(M))),ONE)) THEN
                WRITE(ERR_MSG, 2000) trim(iVal(NP)), trim(iVal(M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
