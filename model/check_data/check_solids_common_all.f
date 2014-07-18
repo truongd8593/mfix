@@ -609,8 +609,7 @@
                   CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
                   3001 FORMAT(/2x,'>',I3,': Species: ',A)
 
-                  CALL READ_DATABASE('TFM', M, N, SPECIES_s(M,N),      &
-                     MW_S(M,N))
+                  CALL READ_DATABASE(M, N, SPECIES_s(M,N), MW_S(M,N))
 ! Flag variable to stating that the database was read.
                   rDatabase(M,N) = .TRUE.
                ENDIF

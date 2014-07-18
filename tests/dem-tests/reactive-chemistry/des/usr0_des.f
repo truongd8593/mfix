@@ -1,184 +1,222 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: DES_THERMO_NEWVALUES                                   !
+!  Module name: URS0_DES                                               !
 !                                                                      !
-!  Purpose:                                                            !
+!  Purpose: This routine is called before the discrete phase time loop !
+!  and is user-definable. The user may insert code in this routine or  !
+!  call appropriate user defined subroutines.                          !
 !                                                                      !
+!  This routien is not called from a loop, hence all indicies are      !
+!  undefined.                                                          !
 !                                                                      !
-!  Author: J.Musser                                   Date: 16-Jun-10  !
+!  Author: J.Musser                                   Date: 06-Nov-12  !
 !                                                                      !
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DES_THERMO_NEWVALUES(NP, FOCUS)
+      SUBROUTINE USR0_DES
 
-      Use des_thermo
-      Use des_rxns
-      Use discretelement
-      Use param1
-      Use physprop
+      Use usr
 
       IMPLICIT NONE
 
-! Passed variables
-!-----------------------------------------------
-! Index value of particle
-      INTEGER, INTENT(IN) :: NP
-! Logical indicating that the particle is of special interst
-      LOGICAL, INTENT(IN) :: FOCUS
+      LOGICAL, SAVE :: FIRST_PASS = .TRUE.
 
-! Local variables
-!-----------------------------------------------  
+      IF(FIRST_PASS) OUTPUT_DATA_TIME = ZERO
 
-! index of solids phase
-      INTEGER M
-! Total amount of energy transfer TO the particle NP. If this value is
-! positive, then the particle is heating, if it is negative, then the 
-! particle is cooling.
-      DOUBLE PRECISION  Qtotal
-
-      DOUBLE PRECISION Qtotal_MAX
-      DOUBLE PRECISION Qpp_MAX, Qpfp_MAX, Qcv_MAX, Qrd_MAX, Qint_MAX
-
-! Logical for Adams-Bashfort integration.
-      LOGICAL,SAVE:: FIRST_PASS = .TRUE.
-      LOGICAL NOISY
-
-! Initialize local variables
-      Qcv_MAX = ZERO
-      Qpp_MAX = ZERO
-      Qpfp_MAX = ZERO
-      Qrd_MAX = ZERO
-      Qint_MAX = ZERO
-      Qtotal_MAX = ZERO
-
-! Initialize variables
-      Qtotal = ZERO
-      M = PIJK(NP,5)
-
-! Particle-fluid convection
-      IF(DES_CONV_EQ)THEN 
-
-!------------------------------------------------------------------------->>>>
-! Prohibit any modes of heat transfer except HOR.
-         Qcv(NP) = ZERO
-!-------------------------------------------------------------------------<<<<
-         Qtotal = Qtotal + Qcv(NP)
-         Qcv_MAX = MAX( ABS(Qcv(NP)), Qcv_MAX)
-! Clear storage variable
-         Qcv(NP) = ZERO
-      ENDIF
-
-! Particle-particle conduction
-      IF(DES_COND_EQ_PP) THEN
-!------------------------------------------------------------------------->>>>
-! Prohibit any modes of heat transfer except HOR.
-         Qpp(NP) = ZERO
-!-------------------------------------------------------------------------<<<<
-         Qtotal = Qtotal + Qpp(NP)
-         Qpp_MAX = MAX( ABS(Qpp(NP)), Qpp_MAX)
-! Clear storage variable
-         Qpp(NP) = ZERO
-      ENDIF
-
-! Particle-fluid-particle conduction
-      IF(DES_COND_EQ_PFP)THEN
-!------------------------------------------------------------------------->>>>
-! Prohibit any modes of heat transfer except HOR.
-         Qpfp(NP) = ZERO
-!-------------------------------------------------------------------------<<<<
-         Qtotal = Qtotal + Qpfp(NP)
-         Qpfp_MAX = MAX( ABS(Qpfp(NP)), Qpfp_MAX)
-! Clear storage variable
-         Qpfp(NP) = ZERO
-      ENDIF
-
-! Energy from radiation
-      IF(DES_RADI_EQ)THEN
-!------------------------------------------------------------------------->>>>
-! Prohibit any modes of heat transfer except HOR.
-         Qrd(NP) = ZERO
-!-------------------------------------------------------------------------<<<<
-         Qtotal = Qtotal + Qrd(NP)
-         Qrd_MAX = MAX( ABS(Qrd(NP)), Qrd_MAX)
-! Clear storage variable
-         Qrd(NP) = ZERO
-      ENDIF
-
-! Energy from reaction
-      IF(DES_SPECIES_EQ(M))THEN
-         Qtotal = Qtotal - Qint(NP)
-         Qint_MAX = MAX( ABS(Qint(NP)), Qint_MAX)
-! Clear storage variable
-         Qint(NP) = ZERO
-      ENDIF
-
-      Qtotal_MAX = MAX( ABS(Qtotal), Qtotal_MAX)
-
-! Advance particle position, velocity
-      IF (TRIM(DES_INTG_METHOD) .EQ. 'EULER') THEN 
-! First-order method              
-
-!----------------------------------------------------------------------->>> REMOVE JM
-         IF(DES_T_s_OLD(NP) .NE. DES_T_s_OLD(NP)) THEN
-            WRITE(*,*)'   DES_T_s_OLD NAN FOR NP: ',NP
-            STOP
-         ENDIF
-         IF(Qtotal .NE. Qtotal) THEN
-            WRITE(*,*)'   Qtotal NAN FOR NP: ',NP
-            WRITE(*,*)'      Qcv  : ',Qcv(NP)
-            WRITE(*,*)'      Qpp  : ',Qpp(NP)
-            WRITE(*,*)'      Qpfp : ',Qpfp(NP)
-            WRITE(*,*)'      Qrd  : ',Qrd(NP)
-            WRITE(*,*)'      Qint : ',Qint(NP)
-            STOP
-         ENDIF            
-         
-         IF(PMASS(NP) .NE. PMASS(NP))THEN
-            WRITE(*,*)'   PMASS NAN FOR NP: ',NP
-            STOP
-         ENDIF
-
-         IF(DES_C_ps(NP) .NE. DES_C_ps(NP))THEN
-            WRITE(*,*)'   DES_C_ps NAN FOR NP: ',NP
-            STOP
-         ENDIF
-!-----------------------------------------------------------------------<<<
-         DES_T_s_NEW(NP) = DES_T_s_OLD(NP) + &
-            DTSOLID*(Qtotal / ( PMASS(NP) * DES_C_ps(NP) ))
-      ELSEIF (TRIM(DES_INTG_METHOD) .EQ. 'ADAMS_BASHFORTH') THEN
-! Second-order Adams-Bashforth scheme
-         IF(FIRST_PASS)THEN
-            FIRST_PASS = .FALSE.
-            DES_T_s_NEW(NP) = DES_T_s_OLD(NP) + &
-               DTSOLID*(Qtotal / ( PMASS(NP) * DES_C_ps(NP) ))
-            Qtotal_OLD(NP) = Qtotal / (PMASS(NP)*DES_C_ps(NP))
-         ELSE
-            DES_T_s_NEW(NP) = DES_T_s_OLD(NP) + &
-              ( 1.5d0 * (Qtotal/(PMASS(NP)*DES_C_ps(NP))) - &
-                0.5d0 * Qtotal_OLD(NP) ) * DTSOLID
-            Qtotal_OLD(NP) = Qtotal / (PMASS(NP)*DES_C_ps(NP))
-         ENDIF
-      ENDIF
-
-! Update the old temperature value
-      DES_T_s_OLD(NP) = DES_T_s_NEW(NP)
-
-!----------------------------------------------------------------------->>> 
-      IF(OUTPUT_DATA_TIME .LE. S_TIME)THEN
-         IF(NP==2) CALL WRITE_DES_TP
-      ENDIF
-!-----------------------------------------------------------------------<<<
+      FIRST_PASS = .FALSE.
 
       RETURN
+      END SUBROUTINE USR0_DES
 
-      END SUBROUTINE DES_THERMO_NEWVALUES
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Module name: WRITE_DES_MASS                                         !
+!                                                                      !
+!  THIS ROUTINE IS NOT DESIGNED TO BE CHECKED INTO CVS. IT IS STRICTLY !
+!  HERE FOR PRINTING MESSAGES USED FOR DEBUGGING AND V&V WORK.         !
+!                                                                      !
+!  Author: J.Musser                                                    !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE WRITE_DES_MASS
+
+      Use constant
+      Use des_rxns
+      Use des_thermo
+      Use discretelement
+      Use param1
+      USE run
+      use physprop, only: MW_s
+
+      IMPLICIT NONE
+
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+! file name
+      CHARACTER*64 :: FNAME
+! logical used for testing is the data file already exists
+      LOGICAL :: F_EXISTS
+! file unit for heat transfer data
+      INTEGER, PARAMETER :: MASS_UNIT = 2034
+      INTEGER, PARAMETER :: CORE_UNIT = 2038
+      INTEGER, PARAMETER :: XB_UNIT = 2040
+      INTEGER, PARAMETER :: XD_UNIT = 2041
+      INTEGER, PARAMETER :: XI_UNIT = 2042
+
+      INTEGER M
+
+      DOUBLE PRECISION m_p0, r_B, MW_B, MW_D, M_p, ABS_ERR
+      DOUBLE PRECISION X_B0, X_D0, X_I0
+      DOUBLE PRECISION X_B, X_D, X_I
+      DOUBLE PRECISION C_RAD
+      DOUBLE PRECISION T_COMP
+
+
+      r_B  = 0.00117810000665485d0
+
+      M = PIJK(2,5)
+
+      m_p0 = 0.0353429173528852d0
+      MW_B = 15.0d0
+      MW_D = 25.0d0
+
+      X_B0 = 0.5d0
+      X_D0 = 0.0d0
+      X_I0 = 0.5d0
+
+! Freeze the analytic solution at 14.99996484 seconds (the approximate time
+! when the reaction should stop due to a lack of species B reactant).
+      IF(S_TIME < 14.99996484d0) THEN
+         T_COMP  = S_TIME
+      ELSE
+         T_COMP = 14.99996484d0
+      ENDIF
+
+
+      FNAME = TRIM(RUN_NAME)//'_MASS.dat'
+      INQUIRE(FILE=FNAME,EXIST=F_EXISTS)
+      IF (.NOT.F_EXISTS) THEN
+         OPEN(UNIT=MASS_UNIT,FILE=FNAME,STATUS='NEW')
+
+         write(MASS_UNIT,"(3X,A)")'Initial Conditions:'
+         write(MASS_UNIT,"(15X,A,7X,A)")'Analytic','MFIX-DEM'
+         write(MASS_UNIT,"(6X,A,3X,F12.8,3X,F12.8)")'Mass',m_p0,PMASS(2)
+
+         write(MASS_UNIT,"(6X,A,3X,F12.8,3X,F12.8)")'MW_B',MW_B,MW_s(M,1)
+         write(MASS_UNIT,"(6X,A,3X,F12.8,3X,F12.8)")'MW_D',MW_D,MW_s(M,2)
+         write(MASS_UNIT,"(6X,A,4X,F12.8)")'r_B',r_B
+
+         write(MASS_UNIT,"(//7X,A,10X,A,11X,A,8X,A)")&
+            'S_TIME','Mp','Mp-DEM','ABS ERR'
+      ELSE
+         OPEN(UNIT=MASS_UNIT,FILE=FNAME,&
+            POSITION="APPEND",STATUS='OLD')
+      ENDIF
+
+! Calculate the analytic solution for the particle's mass
+      M_p = m_p0 + T_COMP*((MW_D/MW_B)/2.0d0 - 1.0d0)*r_B
+
+! Calculate the absolute error
+      ABS_ERR = abs(M_p - PMASS(2))
+      WRITE(MASS_UNIT,"(4(3X,F12.8))")S_TIME, M_p, PMASS(2),ABS_ERR
+      CLOSE(MASS_UNIT)
+
+
+
+      FNAME = TRIM(RUN_NAME)//'_Xs_B.dat'
+      INQUIRE(FILE=FNAME,EXIST=F_EXISTS)
+      IF (.NOT.F_EXISTS) THEN
+         OPEN(UNIT=XB_UNIT,FILE=FNAME,STATUS='NEW')
+
+         write(XB_UNIT,"(7X,A,10X,A,11X,A,8X,A)")&
+            'S_TIME','XB','XB-DEM','ABS ERR'
+      ELSE
+         OPEN(UNIT=XB_UNIT,FILE=FNAME,&
+            POSITION="APPEND",STATUS='OLD')
+      ENDIF
+! Calculate the analytic solution for species B mass fraction
+      X_B = (M_p0*X_B0 - r_B*T_COMP)/(M_p)
+! Calculate the abolute error
+      ABS_ERR = ABS(X_B - DES_X_s(2,1))
+      WRITE(XB_UNIT,"(4(3X,F12.8))")S_TIME, X_B, DES_X_s(2,1), ABS_ERR
+      CLOSE(XB_UNIT)
+
+
+
+      FNAME = TRIM(RUN_NAME)//'_Xs_D.dat'
+      INQUIRE(FILE=FNAME,EXIST=F_EXISTS)
+      IF (.NOT.F_EXISTS) THEN
+         OPEN(UNIT=XD_UNIT,FILE=FNAME,STATUS='NEW')
+
+         write(XD_UNIT,"(7X,A,10X,A,11X,A,8X,A)")&
+            'S_TIME','XD','XD-DEM','ABS ERR'
+      ELSE
+         OPEN(UNIT=XD_UNIT,FILE=FNAME,&
+            POSITION="APPEND",STATUS='OLD')
+      ENDIF
+! Calculate the analytic solution for species B mass fraction
+      X_D = (M_p0*X_D0 + T_COMP*((MW_D/MW_B)/2.0d0)*r_B)/M_p
+! Calculate the abolute error
+      ABS_ERR = ABS(X_D - DES_X_s(2,2))
+      WRITE(XD_UNIT,"(4(3X,F12.8))")S_TIME, X_D, DES_X_s(2,2), ABS_ERR
+      CLOSE(XD_UNIT)
+
+
+      FNAME = TRIM(RUN_NAME)//'_Xs_I.dat'
+      INQUIRE(FILE=FNAME,EXIST=F_EXISTS)
+      IF (.NOT.F_EXISTS) THEN
+         OPEN(UNIT=XI_UNIT,FILE=FNAME,STATUS='NEW')
+
+         write(XI_UNIT,"(7X,A,10X,A,11X,A,8X,A)")&
+            'S_TIME','XI','XI-DEM','ABS ERR'
+      ELSE
+         OPEN(UNIT=XI_UNIT,FILE=FNAME,&
+            POSITION="APPEND",STATUS='OLD')
+      ENDIF
+! Calculate the analytic solution for species B mass fraction
+      X_I = (M_p0*X_I0)/M_p
+! Calculate the abolute error
+      ABS_ERR = ABS(X_I - DES_X_s(2,3))
+      WRITE(XI_UNIT,"(4(3X,F12.8))")S_TIME, X_I, DES_X_s(2,3), ABS_ERR
+      CLOSE(XI_UNIT)
+
+
+      FNAME = TRIM(RUN_NAME)//'_CORE.dat'
+      INQUIRE(FILE=FNAME,EXIST=F_EXISTS)
+      IF (.NOT.F_EXISTS) THEN
+         OPEN(UNIT=CORE_UNIT,FILE=FNAME,STATUS='NEW')
+         write(CORE_UNIT,"(7X,A,7X,A,5X,A,6X,A)")&
+            'S_TIME','CORE RAD','CORE RAD-DEM','ABS ERR'
+
+      ELSE
+         OPEN(UNIT=CORE_UNIT,FILE=FNAME,&
+            POSITION="APPEND",STATUS='OLD')
+      ENDIF
+
+      C_RAD = UNDEFINED
+      ABS_ERR = UNDEFINED
+!      C_RAD = (DES_RADIUS(2)**3 - (T_COMP*r_B)/ &
+!         ((4.0d0/3.0d0)*PI*CORE_Rho(2)))**(1.0d0/3.0d0)
+
+!      ABS_ERR = ABS(C_RAD - CORE_RAD(2))
+
+!      WRITE(CORE_UNIT,"(4(3X,F12.8))")S_TIME, C_RAD, CORE_RAD(2), ABS_ERR
+      CLOSE(CORE_UNIT)
+
+
+      RETURN
+      END SUBROUTINE WRITE_DES_MASS
+
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !  Module name: WRITE_DES_TP                                           !
 !                                                                      !
-! 	THIS ROUTINE IS NOT DESIGNED TO BE CHECKED INTO CVS. IT IS STRICTLY !
+!  THIS ROUTINE IS NOT DESIGNED TO BE CHECKED INTO CVS. IT IS STRICTLY !
 !  HERE FOR PRINTING MESSAGES USED FOR DEBUGGING AND V&V WORK.         !
 !                                                                      !
 !  Author: J.Musser                                                    !
@@ -312,7 +350,7 @@
 
          ENDDO
 
-         
+
 
          IF(RK4_DT_LAST .NE. UNDEFINED) THEN
 
@@ -349,3 +387,5 @@
 
       RETURN
       END SUBROUTINE WRITE_DES_TP
+
+

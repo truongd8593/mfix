@@ -51,9 +51,6 @@
 ! DES Energy Equations: J.Musser
         DES_CONV_CORR, FLPC, DES_Em, DES_MIN_COND_DIST, &
 
-! DES Species Equations (reactive chemistry): J. Musser
-       REACTION_MODEL, &
-
 ! MP-PIC related flags 
 	 MPPIC, MPPIC_SOLID_STRESS_SNIDER, PSFAC_FRIC_PIC,& 
 	 FRIC_EXP_PIC, FRIC_NON_SING_FAC,&

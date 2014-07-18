@@ -32,8 +32,6 @@
       use discretelement, only: DES_CONTINUUM_COUPLED
 ! Flag: Fluid affects particles, but particles do not impact fluid.
       use discretelement, only: DES_ONEWAY_COUPLED
-! Flag: Solving DEM species equations.
-      use des_rxns, only: ANY_DES_SPECIES_EQ
 ! Flag: Interpolate between gas/solids
       use discretelement, only: DES_INTERP_ON
 ! Number of discrtete solids phases.
@@ -179,7 +177,6 @@
          DES_INTERP_ON = .FALSE.
          PRINT_DES_DATA = .FALSE.
          DES_ONEWAY_COUPLED = .FALSE.
-         ANY_DES_SPECIES_EQ = .FALSE.
       ENDIF
 
       CALL FINL_ERR_MSG

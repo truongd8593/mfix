@@ -20,8 +20,9 @@
       USE geometry
       USE indices
       Use param1
-      use run, only: ANY_SPECIES_EQ
+      use run, only: ANY_SPECIES_EQ, SPECIES_EQ
       use physprop, only: NMAX
+      use run, only: SOLVE_ROs
 
       IMPLICIT NONE
 
@@ -75,7 +76,7 @@
 ! Set the particle phase index
             M = PIJK(NP,5)
 ! Skip particles when not solving species equations
-            IF(.NOT.DES_SPECIES_EQ(M)) CYCLE lNP_LP
+            IF(.NOT.SPECIES_EQ(M)) CYCLE lNP_LP
 
 ! Check to see if any of the reaction rate will consume more than the
 ! available species in the particle.
@@ -154,13 +155,13 @@
 
 ! Variable density
 !---------------------------------------------------------------------//
-            IF(RM_VARIABLE_DENSITY) THEN
+            IF(SOLVE_ROs(M)) THEN
 ! update variables
                RO_Sol(NP) = PMASS(NP)/PVOL(NP)
 
 ! Shrinking particle
 !---------------------------------------------------------------------//
-            ELSEIF(RM_SHRINKING_PARTICLE) THEN
+            ELSE
                DES_RADIUS(NP) = &
                   (PMASS(NP)/(P43*Pi*Ro_Sol(NP)))**(1.0d0/3.0d0)
 ! update variables

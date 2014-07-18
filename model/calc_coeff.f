@@ -132,7 +132,7 @@
       USE funits,         only : DMP_LOG, UNIT_LOG 
       USE compar,         only : myPE
       USE discretelement, only : DISCRETE_ELEMENT
-      USE des_rxns,       only : ANY_DES_SPECIES_EQ
+      use run, only: ANY_SPECIES_EQ
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -169,7 +169,7 @@
          ENDIF
       ENDIF 
 
-      IF(DISCRETE_ELEMENT .AND. ANY_DES_SPECIES_EQ) &
+      IF(DISCRETE_ELEMENT .AND. ANY_SPECIES_EQ) &
          CALL CALC_RRATE_DES(CLEAR_ARRAYS)
 
       RETURN  

@@ -695,7 +695,7 @@
                WRITE(ERR_MSG, 3001) N, trim(S_g(N))
                CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 ! Read the database.
-               CALL READ_DATABASE('TFM', 0, N, S_g(N), MWg(N))
+               CALL READ_DATABASE(0, N, S_g(N), MWg(N))
 ! Flag variable to stating that the database was read.
                rDB(0,N) = .TRUE.
             ENDIF
@@ -712,7 +712,7 @@
 ! Update the log files.
                WRITE(ERR_MSG, 3001) N, trim(S_s(M,N))
                CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-               CALL READ_DATABASE('TFM',M,N,S_s(M,N),MWs(M,N))
+               CALL READ_DATABASE(M,N,S_s(M,N),MWs(M,N))
 ! Flag variable to stating that the database was read.
                rDB(M,N) = .TRUE.
             ENDIF

@@ -21,17 +21,21 @@
 
       use des_thermo, only: DES_T_s_NEW
 
+      use discretelement, only: MAX_PIP
+      use discretelement, only: PEA
       use discretelement, only: PINC, PIC
       use discretelement, only: PIJK
 
       USE des_rxns, only: DES_X_s
 
+      use physprop, only: C_PS0
       use physprop, only: NMAX
 
       USE compar
       use indices
       use geometry
 
+      use error_manager
 
       IMPLICIT NONE
 
@@ -49,6 +53,9 @@
 
 
       IF(RUN_TYPE /= 'NEW') RETURN
+
+
+      CALL INIT_ERR_MSG("SET_IC_DEM")
 
       DO ICV = 1, DIMENSION_IC
          IF(.NOT.IC_DEFINED(ICV)) CYCLE
@@ -75,19 +82,58 @@
                ENDIF
 
 ! Set the initial species composition.
-               IF(SPECIES_EQ(M)) THEN
+               IF(SPECIES_EQ(M) .OR. C_PS0(M) == UNDEFINED) THEN
                   DES_X_s(NP,:) = ZERO
                   DO N = 1, NMAX(M)
-                     write(*,*)'IC_X_s:', IC_X_s(ICV,M,N)
                      DES_X_s(NP,N) = IC_X_s(ICV,M,N)
                   ENDDO
                ENDIF
             ENDDO
-
          ENDDO
          ENDDO
          ENDDO
       ENDDO
+
+
+! Verify that all particles have a specified temperature and species
+! mass fractions that sum to one. These checks are needed as the
+! basic checks for IC_T_s and IC_X_s can be skipped if the IC region
+! is specified with EPg = 1.
+      DO NP = 1, MAX_PIP
+! skipping non-existent particles
+         IF(.NOT.PEA(NP,1)) CYCLE
+! skipping ghost particles
+         IF(PEA(NP,4)) CYCLE
+
+         M = PIJK(NP,5)
+
+! Check that the temperature is specified.
+         IF(ENERGY_EQ .AND. DES_T_s_NEW(NP) == UNDEFINED) THEN
+            WRITE(ERR_MSG, 2000) trim(iVal(NP)), trim(iVal(M))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+
+ 2000 FORMAT('Error 2000: Particle ',A,' does not have a specified ',  &
+         'initial',/'temperature. Verify that the IC region ',         &
+         'containing this particle',/'has a solids temperature ',      &
+         'defined: IC_T_s(ICV,',A,').')
+
+! Check that the species mass fractions are specified.
+         IF(SPECIES_EQ(M) .OR. C_Ps0(M) == UNDEFINED) THEN
+            IF(.NOT.COMPARE(sum(DES_X_s(NP,1:NMAX(M))),ONE)) THEN
+               WRITE(ERR_MSG, 2000) trim(iVal(NP)), trim(iVal(M))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDIF
+
+ 2001 FORMAT('Error 2001: The initial species mass fraction for ',     &
+         'particle ',A,/'does not sum to one. Verify that the IC ',    &
+         'region containing this particle',/'has the solids species ', &
+         'mass fractions defined: IC_X_s(ICV,',A,',:).')
+
+      ENDDO
+
+      CALL FINL_ERR_MSG
 
       RETURN
       END SUBROUTINE SET_IC_DEM

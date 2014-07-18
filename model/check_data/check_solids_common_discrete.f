@@ -386,21 +386,13 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_THERMO
 
-!      use des_rxns, only: ANY_DES_SPECIES_EQ
-!      use des_rxns, only: MAX_DES_NMAX
-      use run, only: SPECIES_EQ
-      use discretelement, only: DES_MMAX
-!      use des_rxns, only: DES_NMAX_s
-      use physprop, only: NMAX
-      use physprop, only: MMAX
+      use run, only: ANY_SPECIES_EQ
+      use compar, only: NODESI, NODESJ, NODESK
+      use stiff_chem, only: STIFF_CHEMISTRY
 
       use error_manager
 
       IMPLICIT NONE
-
-
-! Loop index
-      INTEGER M, N ! Phase, Species
 
 
 
@@ -410,38 +402,32 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_DISCRETE_THERMO")
 
+! Check the number of processors. DES reactive chemistry is currently 
+! limited to serial runs.
+      IF(ANY_SPECIES_EQ) THEN
+         IF((NODESI*NODESJ*NODESK) /= 1) THEN 
+            WRITE(ERR_MSG, 9001)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDIF
 
-! Set the flag identifying that at least one of the species equations
-! are being solved.
-!      ANY_DES_SPECIES_EQ = &
-!         ANY(SPECIES_EQ((MMAX+1):(MMAX+DES_MMAX)))
+ 9001 FORMAT('Error 9001: DES reactive chemistry is limited to ',      &
+         'serail  runs.',/'NODESI, NODESJ, and NODESK must equal 1. ', &
+         'Please correct the dat file.')
 
-! Initialize MAX_DES_NMAX. This is the maximum number of species found
-! over all solids phases. This is used for allocating DES_X_s
-!      MAX_DES_NMAX = 1
+! Stiff chemistry solver is a TFM reaction model not for DES.
+      IF(STIFF_CHEMISTRY) THEN
+         WRITE(ERR_MSG,9003)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
 
-! Loop over all solids phases
-!      DO M = MMAX+1, MMAX+DES_MMAX
-
-! Copy of the input keyword values into discrete solids arrays. We may be
-! able to remove the DES_ specific variables moving forward.
-!         DES_C_ps0(M) = C_ps0
-!         DES_K_s0(M)  = K_s0
-
-!         DES_NMAX_s(M) = NMAX(M)
-
-!         MAX_DES_NMAX = MAX(MAX_DES_NMAX, DES_NMAX_s(M))
-
-!        DES_SPECIES_s(M,N),
-!        DES_MW_S(M,N)
-
-!      ENDDO ! DES_MMAX
+ 9003 FORMAT('Error 9003: The stiff chemistry solver is not ',         &
+      'available in DES',/'simulations. Please correct the input file.')
 
 
       CALL FINL_ERR_MSG
 
       RETURN
-
       END SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_THERMO
 
 

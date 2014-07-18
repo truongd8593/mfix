@@ -15,45 +15,8 @@
       USE param
       USE rxn_com
 
-
-! Run time options:
+! Data Storage:
 !---------------------------------------------------------------------//
-! DES - Species Equation
-      LOGICAL DES_SPECIES_EQ(DIM_M)
-      LOGICAL ANY_DES_SPECIES_EQ
-
-! This indicates how a particle will respond to a chemical reaction.
-!  1) [VARIABLE_DENSITY] : The size of the particle remains constant
-!        but the density of the particle is changed to reflect the 
-!        consumption of the components of the particle.
-!  2) SHRINKING_PARTICLE : As components of the particle are consumed,
-!        the size of the particle reduces to maintain a constant
-!        density.
-      CHARACTER*64 REACTION_MODEL
-      LOGICAL RM_VARIABLE_DENSITY
-      LOGICAL RM_SHRINKING_PARTICLE
-
-! Logical flags indicating that the database was read for a particular
-! species. DIM_N_g is used (as opposed to DIM_N_s) to ensure the array
-! sizes for DEM/TFM are the same. Note that both are set to 100 in
-! param_mod.f.
-      LOGICAL DES_rDatabase(DIM_M, DIM_N_g)
-
-! Data Storate:
-!---------------------------------------------------------------------//
-! maximum number of species over all solids phases
-!      INTEGER MAX_DES_NMAX
-
-! molecular weight of discrete solids species
-!      DOUBLE PRECISION DES_MW_s(DIM_M, DIM_N_s)
-
-! total number of discrete solids species for each phase
-!      INTEGER DES_NMAX_s(DIM_M)
-
-! Solids phase species names (database) and aliases
-!      CHARACTER(len=18) DES_SPECIES_s(DIM_M, DIM_N_s) ! database name
-!      CHARACTER(len=32)  DES_SPECIES_ALIAS_s(DIM_M, DIM_N_s) ! alias
-
 ! discrete solids species mass fractions (PARTICLES, 0:MAX_DES_NMAX))
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: DES_X_s
 
@@ -95,21 +58,6 @@
 
 ! Array linking all of the reaction data.
       TYPE(REACTION_BLOCK), DIMENSION(:), TARGET, ALLOCATABLE :: DES_Reaction
-
-
-! Thermochemical data for discrese solids phases:
-!---------------------------------------------------------------------//
-      DOUBLE PRECISION DES_Thigh(DIM_M, DIM_N)
-      DOUBLE PRECISION DES_Tlow(DIM_M, DIM_N)
-      DOUBLE PRECISION DES_Tcom(DIM_M, DIM_N)
-      DOUBLE PRECISION DES_Ahigh(7, DIM_M, DIM_N)
-      DOUBLE PRECISION DES_Alow(7, DIM_M, DIM_N)
-      DOUBLE PRECISION DES_HfrefoR(DIM_M, DIM_N)
-
-      DOUBLE PRECISION DES_ICpoR_l(DIM_M, DIM_N)
-      DOUBLE PRECISION DES_ICpoR_h(DIM_M, DIM_N)
-
-!      DOUBLE PRECISION DES_IC_PSrefoR(DIM_M, DIM_N_s)
 
 
       END MODULE DES_RXNS

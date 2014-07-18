@@ -17,7 +17,7 @@
 !  referenced species (lName) is obtained.                             C                             C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE READ_DATABASE(MODEL, lM, lN, lName, lMW)
+      SUBROUTINE READ_DATABASE(lM, lN, lName, lMW)
 
       USE param 
       USE param1 
@@ -33,8 +33,6 @@
 
       IMPLICIT NONE
 
-! Indicates the model. TFM, DEM
-      CHARACTER(len=*), INTENT(IN) :: MODEL
 ! Phase and species indices
       INTEGER, INTENT(IN) :: lM, lN
 ! Species name from data file.
@@ -67,7 +65,6 @@
 ! External function. Integrates the temperature-dependent specific 
 ! heat from zero to Tref.
       DOUBLE PRECISION, EXTERNAL :: calc_ICpoR
-      DOUBLE PRECISION, EXTERNAL :: DES_calc_ICpoR
 ! Tcom +/- SMALL_NUMBER: This is done so that the specific heat poly-
 ! nomail can be evaluate at Tcom with the high and low coefficients.
       DOUBLE PRECISION :: xTc
@@ -103,104 +100,59 @@
             DB=''; WRITE(DB,1000) TRIM(THERM)
 ! Read thermochemical data from the BURCAT.THR database in the model
 ! directory (model/thermochemical/BURCAT.THR).
-     	   ELSEIF(file == 3) THEN
+          ELSEIF(file == 3) THEN
             FILENAME = trim(MFIX_PATH)//'/thermochemical/'//TRIM(THERM)
             OPEN(UNIT=FUNIT,FILE=TRIM(FILENAME), STATUS='OLD',IOSTAT= IOS)
             IF(IOS /= 0) CYCLE DB_LP
             DB=''; WRITE(DB,1000) ('/thermochemical/'//TRIM(THERM))
-        	ELSE
+          ELSE
             EXIT DB_LP
-        	ENDIF
+          ENDIF
 
          REWIND(UNIT=funit)
  
 ! Initialize the error flag
          IER = 0
 
-         IF(MODEL == "TFM") THEN
-            CALL READ_THERM(FUNIT, lName, Thigh(lM,lN), Tlow(lM,lN),&
-               Tcom(lM,lN), dbMW, Ahigh(:,lM,lN), Alow(:,lM,lN),    &
-               HfrefoR(lM,lN), IER)
+         CALL READ_THERM(FUNIT, lName, Thigh(lM,lN), Tlow(lM,lN),      &
+            Tcom(lM,lN), dbMW, Ahigh(:,lM,lN), Alow(:,lM,lN),          &
+            HfrefoR(lM,lN), IER)
 
-            IF(IER == 0) THEN
+         IF(IER == 0) THEN
 ! If the user did not supply a value for the gas phase molecular weight
 ! in the mfix.dat file, use the value from the database.
-               IF(lMW == UNDEFINED) lMW = dbMW
+            IF(lMW == UNDEFINED) lMW = dbMW
 ! There are a number of species with Tlow as 300, for which the
 ! following calculation will produce an error because T_ref = 298.  So
 ! slightly extend validity of the correaltion.
-               IF(ABS(Tlow(lM,lN)-T_ref)<=2.0D0 .AND. &
-                  Tlow(lM,lN) > T_ref) Tlow(lM,lN) = T_ref
+            IF(ABS(Tlow(lM,lN)-T_ref)<=2.0D0 .AND. &
+               Tlow(lM,lN) > T_ref) Tlow(lM,lN) = T_ref
 
 ! Initialize the reference integrals.
-               ICpoR_l(lM,lN) = ZERO
-               ICpoR_h(lM,lN) = ZERO
+            ICpoR_l(lM,lN) = ZERO
+            ICpoR_h(lM,lN) = ZERO
 
 ! Calculate the integral of specific heat from zero to Tref using the
 ! Alow coefficients.
                ICpoR_TrL = calc_ICpoR(T_ref, lM, lN, IER)
 ! Calculate the integral of specific heat from zero to Tcom using the 
 ! Alow coefficients.
-               xTc = Tcom(lM,lN)-SMALL_NUMBER
-               ICpoR_TcL = calc_ICpoR(xTc, lM, lN, IER)
+            xTc = Tcom(lM,lN)-SMALL_NUMBER
+            ICpoR_TcL = calc_ICpoR(xTc, lM, lN, IER)
 ! Calculate the integral of specific heat from zero to Tcom using the 
 ! Ahigh coefficients.
-               xTc = Tcom(lM,lN)+SMALL_NUMBER
-               ICpoR_TcH = calc_ICpoR(xTc, lM, lN, IER)
+            xTc = Tcom(lM,lN)+SMALL_NUMBER
+            ICpoR_TcH = calc_ICpoR(xTc, lM, lN, IER)
 ! Store the integrals in global variables.
-               ICpoR_l(lM,lN) = ICpoR_TrL
-               ICpoR_h(lM,lN) = ICpoR_TcL - ICpoR_TcH - ICpoR_TrL
-            ENDIF
-! Get DEM solids phase species data.
-         ELSEIF(MODEL == "DEM") THEN
-! Read the database.
-            CALL Read_Therm(FUNIT, lName, DES_Thigh(lM,lN),            &
-               DES_Tlow(lM,lN), DES_Tcom(lM,lN), dbMW,                 &
-               DES_Ahigh(1,lM,lN), DES_Alow(1,lM,lN),                  &
-               DES_HfrefoR(lM,lN), IER)
-            IF(IER == 0)THEN
-! If the user did not supply a value for the solids phase molecular
-! weight of species in the mfix.dat file, use the value from the database.
-               IF(lMW == UNDEFINED) lMW = dbMW
-! There are a number of species with Tlow as 300, for which the
-! following calculation will produce an error because T_ref = 298.  So
-! slightly extend validity of the correaltion.
-               IF( abs(DES_Tlow(lM,lN)-T_ref) <= 2.0D0 .AND.           &
-                  DES_Tlow(lM,lN) > T_ref )                            &
-                  DES_Tlow(lM,lN) = T_ref
-
-! Initialize the reference integrals.
-               DES_ICpoR_l(lM,lN) = ZERO
-               DES_ICpoR_h(lM,lN) = ZERO
-
-! Calculate the integral of specific heat from zero to Tref using the
-! Alow coefficients.
-               ICpoR_TrL = DES_calc_ICpoR(T_ref, lM, lN, IER)
-! Calculate the integral of specific heat from zero to Tcom using the 
-! Alow coefficients.
-               xTc = DES_Tcom(lM,lN)-SMALL_NUMBER
-               ICpoR_TcL = DES_calc_ICpoR(xTc, lM, lN, IER)
-! Calculate the integral of specific heat from zero to Tcom using the 
-! Ahigh coefficients.
-               xTc = DES_Tcom(lM,lN)+SMALL_NUMBER
-               ICpoR_TcH = DES_calc_ICpoR(xTc, lM, lN, IER)
-
-! Store the integrals in global variables.
-               DES_ICpoR_l(lM,lN) = ICpoR_TrL
-               DES_ICpoR_h(lM,lN) = ICpoR_TcL - ICpoR_TcH - ICpoR_TrL
-            ENDIF
-         ELSE
-! No other models have been set to use the thermochemical database.
-! This is to catch coding errors and shouldn't get thrown at runtime.
-            WRITE(ERR_MSG,1020) TRIM(ADJUSTL(MODEL))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ICpoR_l(lM,lN) = ICpoR_TrL
+            ICpoR_h(lM,lN) = ICpoR_TcL - ICpoR_TcH - ICpoR_TrL
          ENDIF
 
          ErrorFlag = .TRUE.
          IF(IER == 0) THEN
             WRITE(ERR_MSG,1001) trim(adjustl(DB)), 'Found!'
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-            if(testCP) CALL writeCp(MODEL, lM, lN, lName, lMW)
+            if(testCP) CALL writeCp(lM, lN, lName, lMW)
             ErrorFlag = .FALSE.
             EXIT DB_LP
         ELSE
@@ -290,33 +242,32 @@
       DO N = 1, NMAX(0)
          Nsp = Nsp + 1
 ! If a species name was not specified in mfix.dat, flag error and exit.
-	        IF(SPECIES_NAME(Nsp) == UNDEFINED_C) THEN
+          IF(SPECIES_NAME(Nsp) == UNDEFINED_C) THEN
             WRITE(*,1010) N         ! screen
             IF(DMP_LOG) WRITE(UNIT_LOG,1010) N  ! log file
-	           CALL MFIX_EXIT(mypE)
-	        ENDIF
+             CALL MFIX_EXIT(mypE)
+          ENDIF
 ! Read the database.
-         CALL READ_DATABASE('TFM', 0, N, SPECIES_NAME(Nsp), MW_g(N))
-	     ENDDO
+         CALL READ_DATABASE(0, N, SPECIES_NAME(Nsp), MW_g(N))
+       ENDDO
 
 ! Read species data for the continuum solids phases.
 !-----------------------------------------------------------------------
 ! Skip reading the database for the continuum solids phase if the 
 ! simulation is only employing discrete solids.
       IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID)THEN
-       	 DO M = 1, MMAX
+          DO M = 1, MMAX
             DO N = 1, NMAX(M)
-	              Nsp = Nsp + 1
+                Nsp = Nsp + 1
 ! If a species name was not specified in mfix.dat, flag error and exit.
-	              IF(SPECIES_NAME(Nsp) == UNDEFINED_C)THEN
+                IF(SPECIES_NAME(Nsp) == UNDEFINED_C)THEN
                   WRITE(*,1011)'continuum', M, N ! screen
                   IF(DMP_LOG) WRITE(UNIT_LOG,1011)'continuum', M, N
-	                 CALL MFIX_EXIT(mypE)
-	              ENDIF
-               CALL READ_DATABASE('TFM', M, N, &
-                  SPECIES_NAME(Nsp), MW_s(M,N))
-	           ENDDO   ! N=1, NMAX(M)
-	        ENDDO   ! M=1, MMAX
+                   CALL MFIX_EXIT(mypE)
+                ENDIF
+               CALL READ_DATABASE(M, N, SPECIES_NAME(Nsp), MW_s(M,N))
+             ENDDO   ! N=1, NMAX(M)
+          ENDDO   ! M=1, MMAX
       ENDIF
 
       RETURN  
@@ -352,7 +303,7 @@
 !  referenced species (lName) is obtained.                             C                             C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE writeCp(MODEL, lM, lN, lName, lMW)
+      SUBROUTINE writeCp(lM, lN, lName, lMW)
 
 
       USE physprop
@@ -362,9 +313,6 @@
       use constant, only: RGAS => GAS_CONST_cal
 
       IMPLICIT NONE
-
-! Indicates the model. TFM, DEM
-      CHARACTER(len=*), INTENT(IN) :: MODEL
 
 ! Phase and species indices
       INTEGER, INTENT(IN) :: lM, lN
@@ -380,9 +328,6 @@
 
       DOUBLE PRECISION, EXTERNAL :: calc_CpoR
       DOUBLE PRECISION, EXTERNAL :: calc_ICpoR
-
-
-      IF(MODEL == "DEM") return
 
 
       write(*,"(2/,3x,'Specific Heat report for ',A)")trim(lName)

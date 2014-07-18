@@ -523,9 +523,9 @@
             IF(DES_EN_INPUT(LC) == UNDEFINED) THEN
                WRITE(ERR_MSG,1000) trim(iVar('DES_EN_INPUT',LC))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ELSEIF(DES_EN_INPUT(LC) > ONE .OR.                             &
+            ELSEIF(DES_EN_INPUT(LC) > ONE .OR.                         &
                DES_EN_INPUT(LC) < ZERO) THEN
-               WRITE(ERR_MSG,1001) trim(iVar('DES_EN_INPUT',LC)),          &
+               WRITE(ERR_MSG,1001) trim(iVar('DES_EN_INPUT',LC)),      &
                   trim(iVal(DES_EN_INPUT(LC)))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
@@ -764,9 +764,9 @@
                WRITE(ERR_MSG,1000) trim(iVar('DES_EN_INPUT',LC))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
-            ELSEIF(DES_EN_INPUT(LC) > ONE .OR.                             &
+            ELSEIF(DES_EN_INPUT(LC) > ONE .OR.                         &
                DES_EN_INPUT(LC) < ZERO) THEN
-               WRITE(ERR_MSG,1001) trim(iVar('DES_EN_INPUT',LC)),          &
+               WRITE(ERR_MSG,1001) trim(iVar('DES_EN_INPUT',LC)),      &
                   trim(iVal(DES_EN_INPUT(LC)))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
@@ -776,9 +776,9 @@
             IF(DES_ET_INPUT(M) == UNDEFINED) THEN
                WRITE(ERR_MSG,1000) trim(iVar('DES_ET_INPUT',M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ELSEIF(DES_ET_INPUT(M) > ONE .OR.                             &
+            ELSEIF(DES_ET_INPUT(M) > ONE .OR.                          &
                DES_ET_INPUT(M) < ZERO) THEN
-               WRITE(ERR_MSG,1001) trim(iVar('DES_ET_INPUT',M)),          &
+               WRITE(ERR_MSG,1001) trim(iVar('DES_ET_INPUT',M)),       &
                   iVal(DES_ET_INPUT(M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF

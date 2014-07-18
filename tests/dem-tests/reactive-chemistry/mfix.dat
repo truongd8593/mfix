@@ -1,289 +1,239 @@
-# Run-control section
-# -----------------------------
-  RUN_NAME = 'RC' 
-  DESCRIPTION = 'reactive particle in uniform gas flow'
-  RUN_TYPE = 'new'
-  UNITS = 'cgs'
-  TIME  =  0.0 
-  TSTOP = 20.05
-  DT = 1.0e-4
-  DT_MAX = 2E-4
+########################################################################
+#  Author: J.Musser                                 Date:   2012-11-15 #
+#                                                                      #
+#  Purpose: Test the DEM particle-gas reaction model.                  #
+#                                                                      #
+#  REF: Musser, J., “Modeling of heat transfer and reactive chemistry  #
+#       for particles in gas-solid flow utilizing continuum-discrete   #
+#       methodology (CDM),” WVU, PhD Thesis 2011.                      #
+#                                                                      #
+########################################################################
 
-  ENERGY_EQ = .TRUE.
-  SPECIES_EQ = .TRUE. .FALSE. .FALSE.
+  RUN_NAME = 'RC_VV'
+  DESCRIPTION = 'DEM TEST: reactive particle in uniform gas flow'
 
-! value of momentum_()_eq for solid phases do not matter when
-! conducting dem simulations
-  MOMENTUM_X_EQ = .FALSE. .FALSE. .FALSE.
-  MOMENTUM_Y_EQ = .FALSE. .FALSE. .FALSE.
-  MOMENTUM_Z_EQ = .FALSE. .FALSE. .FALSE.
+#_______________________________________________________________________
+# RUN CONTROL SECTION
+
+  RUN_TYPE = 'NEW'
+  UNITS = 'CGS'
+
+  TIME  =   0.0
+  TSTOP =  20.05
+
+  DT =     1.0d-4
+  DT_MAX = 2.0d-4
+
+  ENERGY_EQ = .T.
+
+  SPECIES_EQ(0:2) = .T. .T. .T.
+
+  MOMENTUM_X_EQ(0:2) = .F. .F. .F.
+  MOMENTUM_Y_EQ(0:2) = .F. .F. .F.
+  MOMENTUM_Z_EQ(0:2) = .F. .F. .F.
 
   DRAG_TYPE = 'WEN_YU'
 
-  GRAVITY = 980.665D0    ! [980.665d0 in set_constants]
+  DES_CONTINUUM_COUPLED = .T.
+  DES_INTERP_ON = .T.
 
+  CALL_USR = .T.
 
-# Geometry Section
-# -----------------------------
-  COORDINATES = 'Cartesian'
-  XLENGTH  =  12.0    IMAX =  3
-  YLENGTH  = 120.0    JMAX = 30
-! for coupled dem simulations a defined 'depth' (i.e. zlength) is needed 
-! even when conducting 2D simulations (spheres in a plane) for calculating
-! void fraction
-  ZLENGTH  = 0.36
-  NO_K     = .TRUE.
+#_______________________________________________________________________
+# NUMERICAL SECTION
 
-# Numeric
-# -----------------------------
-  MAX_NIT = 500
   TOL_RESID = 1.0E-2
 
-! The sweep direction used in the linear equation solver. The sweep 
-! direction for preconditioning line relation:
-!      ISIS  : 1 sweep with do IK loop followed by send_recv
-!     [RSRS] : 1 red-black sweep with do IK loop followed by send_recv 
-!      ASAS  : 1 red-black sweep with do IK loop followed by do JK
-!                followed by IJ followed by send_recv
-  LEQ_SWEEP = 9*'ISIS'   
+
+#_______________________________________________________________________
+# GEOMETRY SECTION
+
+  COORDINATES = 'CARTESIAN'
+
+  XLENGTH  =  12.00   IMAX =  3
+  YLENGTH  = 120.00   JMAX = 30
+  ZLENGTH  =   0.36   NO_K = .T.
+
+! Grid partition for DES grid
+  DESGRIDSEARCH_IMAX = 1
+  DESGRIDSEARCH_JMAX = 1
+  DESGRIDSEARCH_KMAX = 1
 
 
-# Gas-phase Section
-# -----------------------------
+#_______________________________________________________________________
+# MATERIAL SECTION
+
+! GAS SECTION
+!---------------------------------------------------------------------//
+
   RO_g0 = 1.1854E-3  ! g/cm^3
   MU_g0 = 1.8603E-4  ! g/(cm.s)
   K_g0  = 1.2396E-4  ! cal/(s.g.K)
 
+  NMAX_g = 2
 
- 	NMAX(0)		= 2
-  SPECIES_NAME =  'A'   'C'
-!	 MW_g		- Obtained from Burcat and Ruscic databse
+  SPECIES_g(1) = 'A'  SPECIES_ALIAS_g(1) = 'Ag'
+  SPECIES_g(2) = 'C'  SPECIES_ALIAS_g(2) = 'Cg'
 
+! MW_g - Obtained from Burcat and Ruscic databse
 
-# Solids-phase Section
-# -----------------------------
-  MMAX     =   2            ! number of discrete solids phase
-	 NMAX(1)		=   3       1    ! number of species comprising solids phase
-  RO_s0    =   2.5     8.85 ! particle densitie
-  D_p0     =   0.30    0.36 ! diameters
+! PARTICLE SECTION
+!---------------------------------------------------------------------//
+  MMAX = 2
 
-  SPECIES_NAME(3) = 'B'  'D'  'I'  'B'
+  PARTICLES  = 2   ! Number of partiles in the system.
 
-! e must be defined, even in DEM simulations where it is not used
-  e        = 0.9
-  Phi     = 0.0 
-  EP_star = 0.40  
- 	C_f		= 0.1
+! Particle-particle:
+  KN =   1.0d6               ! Normal collision spring constant
+  MEW   = 0.1                ! Friction coefficient
 
-!----------- Bed -----------!
-  IC_X_w(1)  =       0.0
-  IC_X_e(1)  =      12.0
-  IC_Y_s(1)  =       0.0
-  IC_Y_n(1)  =     120.0
+! Particle-wall:
+  KN_W = 1.0d6               ! Normal collision spring constant
+  MEW_W = 0.1                ! Friction coefficient
 
-  IC_EP_g(1)  =      1.0
+! Restitution coefficients
 
-  IC_U_g(1)  =       0.0
-  IC_V_g(1)  =     600.0
-                                 
- 	IC_X_g(1,1)	=     1.0
- 	IC_X_g(1,2)	=     0.0
+  DES_EN_INPUT(1:2) = 0.9  0.9 ! e11  e12
+  DES_EN_INPUT(3)   =      0.9 !      e22
 
-  IC_T_g(1)  =     298.15
+  DES_EN_WALL_INPUT = 0.9  0.9 ! e1w  e2w
 
+  NFACTOR = 0                ! No initial settling
 
-# Boundary Conditions Section
-# -----------------------------
- !                 Inlet   Outlet
-  BC_TYPE  =        'MI'    'PO'
+  DES_NEIGHBOR_SEARCH = 4    ! Grid based neighbor search
+  NEIGHBOR_SEARCH_N   = 9999 ! Steps between neighbor search
+  MN = 20                    ! Maximum number of neighbors
 
-  BC_X_w  =         0.0      0.0 ! west coordinate
-  BC_X_e  =        12.0     12.0 ! east coordinate
-  BC_Y_s  =         0.0    120.0 ! south coordinate
-  BC_Y_n  =         0.0    120.0 ! north coordinate
+! Solids phase 1
+!---------------------------------------------------------------------//
+  SOLIDS_MODEL(1) = 'DEM'
 
- 	BC_P_g		=     2*101.352E3  ! gas pressure
+  D_p0(1) =  0.30     ! (cm)
+  RO_s0(1)=  2.50     ! (g/cm)
 
- 	BC_U_g		=         0.0      ! gas velocity
-  BC_V_g  =       450.0
+  K_s0(1) =  0.3585   ! conductivity, cal/(sec.cm.K)
+  DES_Em(1) = 0.0     ! Emissivity
 
-  BC_EP_g		=    	   1.0      ! void fraction
-  BC_T_g  =       298.15     ! inlet gas temp
+  NMAX_s(1) = 3
 
- 	BC_X_g(1,1)	=     1.0      ! Incoming gas composition by species
- 	BC_X_g(1,2)	=     0.0
+  SPECIES_s(1,1) = 'B'    SPECIES_ALIAS_s(1,1) = 'Bs'
+  SPECIES_s(1,2) = 'D'    SPECIES_ALIAS_s(1,2) = 'Ds'
+  SPECIES_s(1,3) = 'I'    SPECIES_ALIAS_s(1,3) = 'Is'
 
+! Solids phase 2
+!---------------------------------------------------------------------//
+  SOLIDS_MODEL(2) = 'DEM'
 
+  D_p0(2) =  0.36     ! (cm)
+  RO_s0(2)=  8.85     ! (g/cm)
 
-#  Output Control
-# -----------------------------
+  K_s0(2) =   2.0076E-5 ! conductivity, cal/(sec.cm.K)
+  DES_Em(2) = 0.0       ! Emissivity
 
-! Interval at which restart (.RES) file is updated.
-  RES_DT     =  2.0E-1
+  NMAX_s(2) = 1
 
-! Interval at which .SPX files are updated.
-  SPX_DT(1)  =  2.0E-1   ! Void fraction (EP_g)
-  SPX_DT(2)  =  1.0E 2   ! Gas and solids pressure (P_g, P_star)
-  SPX_DT(3)  =  2.0E-1   ! Gas velocity (U_g, V_g, W_g)
-  SPX_DT(4)  =  1.0E 2   ! Solids velocity (U_s, V_s, W_s)
-  SPX_DT(5)  =  1.0E 2   ! Solids density (ROP_s)
-  SPX_DT(6)  =  2.0E-1   ! Gas and solids temp. (T_g, T_s1, T_s2)
-  SPX_DT(7)  =  2.0E-1   ! Gas and solids mass fractions (X_g, X_s)
-  SPX_DT(8)  =  1.0E 2   ! Granular Temperature (G)
-  SPX_DT(9)  =  1.0E 2   ! User defined scalars
+  SPECIES_s(2,1) = 'I'    SPECIES_ALIAS_s(2,1) = 'Sand'
 
-  OUT_DT  = 2.0E-1
-  NLOG  = 25
-  FULL_LOG  = .FALSE.
-  RESID_STRING  = 'P0' 'T0' 'X001' 'X002' 'X003'
 
+#_______________________________________________________________________
+# INITIAL CONDITIONS SECTION
 
-# DMP control
-# -----------------------------
-  NODESI = 1 
-  NODESJ = 1
-  NODESK = 1
+  IC_X_w(1)   =    0.0  ! (cm)
+  IC_X_e(1)   =   12.0  ! (cm)
+  IC_Y_s(1)   =    0.0  ! (cm)
+  IC_Y_n(1)   =  120.0  ! (cm)
 
+  IC_EP_g(1)  =    1.0  ! (-)
 
-#  DES
-# -----------------------------
-  DISCRETE_ELEMENT = .TRUE. 
-  DES_CONTINUUM_COUPLED = .TRUE.
-  WALLDTSPLIT = .TRUE.
-  DES_INTERP_ON = .TRUE.
+  IC_U_g(1)   =    0.0  ! (cm/sec)
+  IC_V_g(1)   =  600.0  ! (cm/sec)
 
-  DIMN = 2
+  IC_T_g(1)   =  298.15 ! (K)
 
-  DES_ENERGY_EQ = .TRUE. ! Solve energy equations for DES [.FALSE.]
-    DES_CONV_EQ = .TRUE.
-    DES_COND_EQ = .FALSE.
-    DES_RADI_EQ = .FALSE.
+  IC_X_g(1,1)  =   1.0  ! A
+  IC_X_g(1,2)  =   0.0  ! C
 
-  DES_SPECIES_EQ = .TRUE.  .FALSE. ! Solve gas-solid reactive chemistry
+  IC_T_s(1,1) =  500.00 ! (K)
 
-  DES_INTERP_ON  = .TRUE. ! interpolate for drag force
+  IC_X_s(1,1,1) =  0.5  ! B
+  IC_X_s(1,1,2) =  0.0  ! D
+  IC_X_s(1,1,3) =  0.5  ! I
 
-  DEBUG_DES  = .FALSE. ! Flag for DEBUG runs of DEM code
+  IC_T_s(1,2) =  500.00 ! (K)
 
-  WALLDTSPLIT  = .TRUE. ! wall interaction as two-particle interaction
-  DTSOLID_FACTOR  = 0.1D0 ! Ratio (fluid step/solid steps)
+  IC_X_s(1,2,1) =  1.0  ! I
 
-  REACTION_MODEL = 'SHRINKING_CORE'
 
-!---------------------- DES Particle Properties -----------------------!
+#_______________________________________________________________________
+# BOUNDARY CONDITIONS SECTION
 
-  PARTICLES  = 2 ! Number of partiles in the system.
 
-! Solids phase 1 species composition
- 	DES_NMAX(1)		=  3
-  DES_SPECIES_NAME(1) = 'B' 'D' 'I'
+# Gas Inlet
+#---------------------------------------------------------------------//
+  BC_TYPE(1) =   'MI'
 
-! Solids phase 2 species composition
- 	DES_NMAX(2)  =  1
-  DES_SPECIES_NAME(4) = 'B'
+  BC_X_w(1) =      0.0     ! (cm)
+  BC_X_e(1) =     12.0     ! (cm)
+  BC_Y_s(1) =      0.0     ! (cm)
+  BC_Y_n(1) =      0.0     ! (cm)
 
-!             Carbon   Sand
-  DES_K_s0 =  0.3585   2.0076E-5 ! conductivity, cal/(sec.cm.K)
-  DES_Em =    1.0      0.7       ! emmisivity
+  BC_P_g(1) =    101.352d4 ! (barye)
 
-!  DES_MW_s - molecular weight obtained from THERMO DATA
-!  DES_C_ps0(2) = 0.1912 ! specific heat (sand) cal/g.K
+  BC_U_g(1) =      0.0     ! (cm/sec)
+  BC_V_g(1)  =   600.0     ! (cm/sec_)
 
-!----------------------- DES Initial Condition ------------------------!
+  BC_EP_g(1) =     1.0     ! void fraction
+  BC_T_g(1)  =   298.15    ! inlet gas temp
 
-  DES_PERIODIC_WALLS  = .FALSE.
+  BC_X_g(1,1) =    1.0     ! A
+  BC_X_g(1,2) =    0.0     ! C
 
-  DES_IC_X_w   =   0.0
-  DES_IC_X_e   =  12.0
 
-  DES_IC_Y_s   =   0.0
-  DES_IC_Y_n   = 120.0
+# Gas-Solids Outlet
+#---------------------------------------------------------------------//
+  BC_X_w(5) =    1.0
+  BC_X_e(5) =   12.0
+  BC_Y_s(5) =  120.0
+  BC_Y_n(5) =  120.0
 
-! Graphite
-	 DES_IC_T_s(1,1)	=  500.0 ! temperature
- 	DES_IC_CORE_Rho(1,1) = 1.25 ! unreacted core density (g/cm^3)
- 	DES_IC_X_s(1,1,1)	=  0.5 ! species mass fraction :: B
- 	DES_IC_X_s(1,1,2)	=  0.0 ! species mass fraction :: D
- 	DES_IC_X_s(1,1,3)	=  0.5 ! species mass fraction :: I
+  BC_TYPE(5) = 'PO'
 
+  BC_P_g(5)  = 101.325d4  ! (Barye)
 
 
-! Sand
-	 DES_IC_T_s(1,2)	=  500.0 ! temperature
-	 DES_IC_X_s(1,2,1)	=  1.0 ! species mass fraction :: B
 
 
-!---------------------- DES Boundary Condition -----------------------!
-!  MAX_PIS = 5000
+#_______________________________________________________________________
+# CHEMICAL REACTION SECTION
 
-  DES_PERIODIC_WALLS  = .FALSE.
+  @(DES_RXNS)
 
-!  DES_BC_TYPE  =      'MI'
+    EX_RXN{ chem_eq = " Ag + 2Bs --> Cg + Ds"}
 
-!  DES_BC_X_w   =      7.0  ! west face
-!  DES_BC_X_e   =      8.0  ! east face
-!  DES_BC_Y_s   =      0.0  ! south face
-!  DES_BC_Y_n   =      0.0  ! north face
+  @(DES_END)
 
-! Inflow parameters
-!	 DES_BC_ROP_s(1,1) 	=       0.0    ! bulk denisty
-!	 DES_BC_ROP_s(1,2) 	=       0.1
 
-!  DES_BC_VOLFLOW_s(1,1)  =  0.0   ! volumetric fow rate
-!  DES_BC_VOLFLOW_s(1,2)  =  3.36  ! ~100 particles/sec
-!
-!	 DES_BC_T_s(1,1) 	= 300.0  ! temperature of incoming solids
-!	 DES_BC_T_s(1,2) 	= 300.0
 
-! species composition of incoming solids
-! 	DES_BC_X_s(1,2,1)	=  0.6  ! BC 1, Phase 2, Species 1
-! 	DES_BC_X_s(1,2,2)	=  0.4  ! BC 1, Phase 2, Species 2
+#_______________________________________________________________________
+# OUTPUT CONROL SECTION
 
+  RES_DT = 1.0d3  ! interval to update restart (.RES) file
 
-!------------------- Neighbor Search Parameters ----------------------!
+  NLOG = 25       ! time steps between updates to (.LOG) file
+  FULL_LOG = .T.  ! display residuals on screen
 
-  DES_NEIGHBOR_SEARCH  = 4 ! Particle neighbor search method
-!   [1] : N-Square
-!    4  : Cell linked-list based algorithm
+! Interval at which .SPX files are written
+  SPX_DT(1:9) = 9*1.0d3
 
-! grid mesh used for the neighbor search (DES_NEIGHBOR_SEARCH 4 ONLY)
-  DESGRIDSEARCH_IMAX = 12   ! no. of i (x) cells on neighbor search grid 
-  DESGRIDSEARCH_JMAX = 36   ! no. of j (y) cells
+  GROUP_RESID = .T.
 
-  NEIGHBOR_SEARCH_N  = 25 ! solids time steps between neighbor search
+  PRINT_DES_DATA = .F.
+  DES_SPX_DT = 1.0d3
+  DES_RES_DT = 1.0d3
 
-  MN  = 100  ! Maximum number of neighbors
 
 
-!-------- Particle/Particle Particle/Wall Contact Parameters  --------!
-
-  KN       = 1.0d6        ! Normal inter-particle collision spring constant
-  KT_FAC   = @(2.0/7.0)   ! Tangential spring factor = KT/KN   [2/7]
-  KN_W     = 1.0d6        ! Normal particle-wall collision spring constant
-  KT_W_FAC = @(2.0/7.0)   ! Tangential spring factor = KT_W/KN_W   [2/7]
-  MEW      = 0.1          ! Inter-particle friction coeffienct
-  MEW_W    = 0.1          ! Particle-wall friction coefficient
-
-! particle-particle restitution coefficient
-!                      Sd1  Sd2
-  DES_EN_INPUT(1)   =  0.9  0.9 ! Sd1
-  DES_EN_INPUT(3)   =       0.9 ! Sd2
-  DES_EN_WALL_INPUT =  0.9  0.9
-
- ! damping coefficient factor
-  DES_ETAT_FAC    = @(1/2)
-  DES_ETAT_W_FAC  = @(1/2)
-
-
-!----------------------- DES Output Control --------------------------!
-
-  PRINT_DES_DATA = .FALSE. ! write DEM data : *.vtp files
-  DES_RES_DT = 0.1       
-  DES_SPX_DT = 0.1       ! interval to write *.vtp files in pure DEM simulation
-
-
-! The following are sand pseudo species specifications.
-
+#_______________________________________________________________________
 THERMO DATA
 
 A                          WARNING!       0.S   200.000  6000.000  B  25.00000 1

@@ -729,13 +729,6 @@
       DES_Em(:DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Reaction model used to calculate the effects of a gas-solids reaction on a particle.</description>
-!  <valid value="variable_density" note="constant particle diameter. particle diameter changes to accommodate a loss/gain in mass."/>
-!  <valid value="shrinking_particle" note="constant particle density. particles diameter changes to accommodate a loss/gain in mass."/>
-      REACTION_MODEL = 'VARIABLE_DENSITY'
-!</keyword>
-
 
 !<keyword category="Discrete Element" required="false">
 !  <description> ! Particle shape factor.
