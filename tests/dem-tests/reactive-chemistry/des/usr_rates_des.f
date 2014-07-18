@@ -19,7 +19,9 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE USR_RATES_DES(NP, pM, IJK, DES_RATES)
 
+      use constant, only: C
       use des_rxns, only: NO_OF_DES_RXNS
+      use des_rxns, only: DES_X_s
 
       IMPLICIT NONE
 
@@ -36,8 +38,13 @@
 
 ! EX_RXN:    A(g) + 2B(s) --> C(g) + D(s)
 !`````````````````````````````````````````````````````````````````````\\
-      DES_RATES(EX_RXN) = 3.927d-5 ! (moles/sec)
 
+! (moles/sec)  specified in mfix.dat
+      IF(NP == 2 .AND. DES_X_s(2,Bs) > 0.0d0) THEN
+         DES_RATES(EX_RXN) = C(1)
+      ELSE
+         DES_RATES(EX_RXN) = 0.0d0
+      ENDIF
 
       RETURN  
       END SUBROUTINE USR_RATES_DES

@@ -25,9 +25,13 @@
 
       IMPLICIT NONE
 
+      INTEGER :: NP, IJK
+
+
       FC(:,:) = ZERO
       TOW(:,:) = ZERO
       GRAV(:) = ZERO
+
 
       RETURN
       END SUBROUTINE USR1_DES
