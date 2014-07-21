@@ -175,7 +175,7 @@
 
 ! Open the files.
             filename = ''
-            write(filename,"(A,I1,'_POS.dat')") trim(RUN_NAME), lc2
+            write(filename,"(A,'_POS_',I1,'.dat')") trim(RUN_NAME), lc2
             inquire(file=filename, exist=exists)
             if(exists) then
                open(unit=uPos, file=filename,&
@@ -186,7 +186,7 @@
             endif
 
             filename = ''
-            write(filename,"(A,I1,'_VEL.dat')") trim(RUN_NAME), lc2
+            write(filename,"(A,'_VEL_',I1,'.dat')") trim(RUN_NAME), lc2
             inquire(file=filename, exist=exists)
             if(exists) then
                open(unit=uVel, file=filename,&
