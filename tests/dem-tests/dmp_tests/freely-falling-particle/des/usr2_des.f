@@ -23,8 +23,6 @@
 
       IMPLICIT NONE
 
-      INCLUDE 'usrnlst.inc'
-
 ! Passed variables
 !---------------------------------------------------------------------//
 ! None
@@ -157,11 +155,11 @@
       if (mype.eq.pe_io) lRad = drootbuf
 
 ! Gather particle position (Y-axis only)
-      call des_gather(des_pos_new(:,2))
+      call des_gather(des_POS_new(:,2))
       if (mype.eq.pe_io) lPos_Y = drootbuf
 
 ! Gather particle position (Y-axis only)
-      call des_gather(des_vel_new(:,2))
+      call des_gather(des_VEL_new(:,2))
       if (mype.eq.pe_io) lVel_Y = drootbuf
 
 ! Set local variables.
@@ -177,7 +175,7 @@
 
 ! Open the files.
             filename = ''
-            write(filename,"(A,I1,'_Pos.csv')") trim(RUN_NAME), lc2
+            write(filename,"(A,I1,'_POS.dat')") trim(RUN_NAME), lc2
             inquire(file=filename, exist=exists)
             if(exists) then
                open(unit=uPos, file=filename,&
@@ -188,7 +186,7 @@
             endif
 
             filename = ''
-            write(filename,"(A,I1,'_Vel.csv')") trim(RUN_NAME), lc2
+            write(filename,"(A,I1,'_VEL.dat')") trim(RUN_NAME), lc2
             inquire(file=filename, exist=exists)
             if(exists) then
                open(unit=uVel, file=filename,&
@@ -225,13 +223,13 @@
              Vel_rErr = (ABS(aVel_Y - lVel_Y(lc1))/ABS(aVel_Y))*100
 
 ! Write the results to a file.
-            WRITE(uPos,"(3x,F15.8,', ',I1,', ',F15.8,', ',F15.8, &
-               ', ',F15.8))")lTime, aStage, aPos_Y, lPos_Y(lc1),Pos_rErr
+            WRITE(uPos,9000) lTime, aStage, aPos_Y, lPos_Y(lc1),Pos_rErr
             CLOSE(uPos)
 
-            WRITE(uVel,"(3x,F15.8,', ',I1,', ',F15.8,', ',F15.8, &
-               ', ',F15.8))")lTime, aStage, aVel_Y, lVel_Y(lc1),Vel_rErr
+            WRITE(uVel,9000) lTime, aStage, aVel_Y, lVel_Y(lc1),Vel_rErr
             CLOSE(uVel)
+
+ 9000 FORMAT(3x,F15.8,',',1X,I1,3(',',1X,F15.8))
 
          enddo
       endif
