@@ -175,7 +175,7 @@
 
 ! Open the files.
             filename = ''
-            write(filename,"(POST_POS_',I1,'.dat')") lc2
+            write(filename,"('POST_POS_',I1,'.dat')") lc2
             inquire(file=filename, exist=exists)
             if(exists) then
                open(unit=uPos, file=filename,&
