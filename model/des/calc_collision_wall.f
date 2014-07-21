@@ -62,7 +62,8 @@
       INTEGER :: NI, NLIM, N_NOCON, NEIGH_L
 ! the overlap occuring between particle-particle or particle-wall
 ! collision in the normal and tangential directions
-      DOUBLE PRECISION :: OVERLAP_N, OVERLAP_T
+      DOUBLE PRECISION :: OVERLAP_N
+      DOUBLE PRECISION :: OVERLAP_T(3)
 ! square root of the overlap
       DOUBLE PRECISION :: SQRT_OVERLAP
       DOUBLE PRECISION :: FRAC_OVERLAP1, FRAC_OVERLAP2
@@ -72,7 +73,7 @@
       DOUBLE PRECISION :: R_LM
 ! the normal and tangential components of the translational relative
 ! velocity
-      DOUBLE PRECISION :: V_REL_TRANS_NORM, V_REL_TRANS_TANG
+      DOUBLE PRECISION :: V_REL_TRANS_NORM
 ! time elapsed to travel the calculated normal overlap given the
 ! normal relative velocity
       DOUBLE PRECISION :: DTSOLID_TMP
@@ -86,7 +87,7 @@
 ! particles or particle-wall at current and previous time steps
       DOUBLE PRECISION :: NORMAL(3), NORM_OLD(3)
 ! tangent to the plane of contact at current time step
-      DOUBLE PRECISION :: TANGENT(3)
+      DOUBLE PRECISION :: V_REL_TANG(3)
 ! variables for tangential displacement calculation:
 ! unit vector for axis of rotation and its magnitude
       DOUBLE PRECISION :: TMP_AX(3), TMP_MAG
@@ -145,6 +146,7 @@
 
 
 
+
 !$omp   parallel default(shared)                                  &
 !$omp   private(ll,fts1,fts2,fns1,fns2,pft_tmp,                   &
 !$omp          PARTICLE_SLIDE,nlim,                               &
@@ -152,7 +154,7 @@
 !$omp          already_neighbours, report_excess_overlap,neigh_l, &
 !$omp          WALL_POS,WALL_VEL,                                 &
 !$omp          r_lm,dist,distmod,frac_overlap1,normal,            &
-!$omp          v_rel_trans_norm,tangent,                          &
+!$omp          v_rel_trans_norm,V_REL_TANG,                       &
 !$omp          v_rel_trans_tang,                                  &
 !$omp          overlap_n,overlap_t,dtsolid_tmp,phasell,           &
 !$omp          sqrt_overlap,kn_des_w,kt_des_w,etan_des_w,         &
@@ -191,7 +193,7 @@
          ENDIF
 
 ! Initializing local variables
-         TANGENT(:) = ZERO
+         V_REL_TANG(:) = ZERO
          NORMAL(:) = ZERO
          FTS1(:) = ZERO
          FTS2(:) = ZERO
@@ -292,7 +294,7 @@
 ! Calculate the components of translational relative velocity for a
 ! contacting particle wall and the tangent to the plane of contact
                      CALL CFRELVEL_WALL(LL, WALL_VEL, V_REL_TRANS_NORM, &
-                        V_REL_TRANS_TANG, TANGENT, NORMAL, DISTMOD)
+                        V_REL_TANG, NORMAL, DISTMOD)
 
 ! The normal overlap calculation was changed so that it no longer
 ! depends on the contact history (i.e., integration of incremental
@@ -303,7 +305,7 @@
 
                      IF(ALREADY_NEIGHBOURS) THEN
                         PV(NI,LL) = .TRUE.
-                        OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
+                        OVERLAP_T = DTSOLID*V_REL_TANG
                      ELSE
                         PN(1,LL) = PN(1,LL) + 1
                         NI = PN(1,LL) + 1
@@ -317,8 +319,7 @@
                            DTSOLID_TMP = OVERLAP_N/&
                               (V_REL_TRANS_NORM+SMALL_NUMBER)
                         ENDIF
-                        OVERLAP_T = V_REL_TRANS_TANG*&
-                           MIN(DTSOLID,DTSOLID_TMP)
+                        OVERLAP_T = MIN(DTSOLID,DTSOLID_TMP)*V_REL_TANG
                      ENDIF
 
 
@@ -366,9 +367,9 @@
                                  sigmat(:) = des_dotprdct(sigmat_old,tmp_ax)*tmp_ax(:) &
                                  + des_dotprdct(sigmat_old,tang_old)*tang_new(:)
 
-                              sigmat(:) = sigmat(:)+overlap_t*tangent(:)
+                              sigmat(:) = sigmat(:)+overlap_t(:)
                            else
-                              sigmat(:) = sigmat_old(:)+overlap_t*tangent(:)
+                              sigmat(:) = sigmat_old(:)+overlap_t(:)
                            endif
                         else
                            tang_old(1) = -norm_old(2)
@@ -376,14 +377,14 @@
                            tang_new(1) = -normal(2)
                            tang_new(2) =  normal(1)
                            sigmat(:)= des_dotprdct(sigmat_old,tang_old)*tang_new(:)
-                           sigmat(:)= sigmat(:)+overlap_t*tangent(:)
+                           sigmat(:)= sigmat(:)+overlap_t(:)
                         endif
 
                         pft_tmp(:) = sigmat(:)
             ! Save the old normal direction
                         pfn(ll,ni,:)   = normal(:)
                      else ! Old procedure
-                        PFT(LL,NI,:) = PFT(LL,NI,:) + OVERLAP_T*TANGENT(:)
+                        PFT(LL,NI,:) = PFT(LL,NI,:) + OVERLAP_T(:)
                         PFT_TMP(:) = PFT(LL,NI,:) ! update pft_tmp before it used
                      !remove the normal component from the tangential force
                      !due to change of normal direction
@@ -394,13 +395,13 @@
 
 ! Calculate the tangential contact force
                      FTS1(:)  = -KT_DES_W * PFT_TMP(:)
-                     FTS2(:)  = -ETAT_DES_W * V_REL_TRANS_TANG * TANGENT(:)
+                     FTS2(:)  = -ETAT_DES_W * V_REL_TANG(:)
                      FT(:,LL) = FTS1(:) + FTS2(:)
 
 
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with a wall
-                     CALL CFSLIDE(LL, TANGENT, PARTICLE_SLIDE, MEW_W)
+                     CALL CFSLIDE(LL, V_REL_TANG, PARTICLE_SLIDE, MEW_W)
 
 ! Calculate the total force FC and torque TOW on a particle in a
 ! particle-wall collision
