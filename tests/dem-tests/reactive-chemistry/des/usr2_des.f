@@ -146,7 +146,7 @@
       T_COMP = merge(S_TIME, MAX_TIME, S_TIME < MAX_TIME)
 
 
-      FNAME = TRIM(RUN_NAME)//'_MASS.dat'
+      FNAME = 'POST_MASS.dat'
       INQUIRE(FILE=FNAME,EXIST=F_EXISTS)
       IF (.NOT.F_EXISTS) THEN
          OPEN(UNIT=lUNIT,FILE=FNAME,STATUS='NEW')
@@ -175,7 +175,7 @@
 
 ! Solids Species B:
 !.....................................................................//
-      FNAME = TRIM(RUN_NAME)//'_Xs_B.dat'
+      FNAME = 'POST_Xs_B.dat'
       INQUIRE(FILE=FNAME,EXIST=F_EXISTS)
       IF (.NOT.F_EXISTS) THEN
          OPEN(UNIT=lUNIT,FILE=FNAME,STATUS='NEW')
@@ -196,7 +196,7 @@
 
 ! Solids Species D:
 !.....................................................................//
-      FNAME = TRIM(RUN_NAME)//'_Xs_D.dat'
+      FNAME = 'POST_Xs_D.dat'
       INQUIRE(FILE=FNAME,EXIST=F_EXISTS)
       IF (.NOT.F_EXISTS) THEN
          OPEN(UNIT=lUNIT,FILE=FNAME,STATUS='NEW')
@@ -216,7 +216,7 @@
 
 ! Solids Species I:
 !.....................................................................//
-      FNAME = TRIM(RUN_NAME)//'_Xs_I.dat'
+      FNAME = 'POST_Xs_I.dat'
       INQUIRE(FILE=FNAME,EXIST=F_EXISTS)
       IF (.NOT.F_EXISTS) THEN
          OPEN(UNIT=lUNIT,FILE=FNAME,STATUS='NEW')

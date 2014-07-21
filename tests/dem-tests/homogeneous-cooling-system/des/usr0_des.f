@@ -85,7 +85,7 @@
       AVG_VEL = (1.0/wDIMN)*SUM( DES_VEL_AVG(1:wDIMN) )         
 
 
-      FNAME = TRIM(RUN_NAME)//'_GT.dat'
+      FNAME = 'POST_GT.dat'
       INQUIRE(FILE=FNAME,EXIST=F_EXISTS)
 
       IF(.NOT.F_EXISTS) THEN
