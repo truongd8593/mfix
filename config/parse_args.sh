@@ -113,7 +113,7 @@ echo ""
 echo "======================================================================"
 echo ""
 echo ""
-exit
+exit $1
 }
 
 # Display version.
@@ -123,7 +123,7 @@ show_version
 # If version information is explictly requested, exit.
 for arg in $input; do
   case ${arg} in
-    "--version"|"-V") exit;;
+    "--version"|"-V") exit 0;;
     *) echo "" > /dev/null 2>&1;
   esac
 done
@@ -138,7 +138,7 @@ for arg in $input; do
 # Display help.
 #-------------------------------------------------------------------------->>
     "--help"|"-h")
-      show_usage;;
+      show_usage 0;;
 
 
 # Clean out the last build.
@@ -148,7 +148,7 @@ for arg in $input; do
       if ! test -f ${log}; then
         echo "Unable to locate previous build log."
         echo "Cannot remove previous build directory"
-        exit
+        exit -1
       fi
       build_dir=$(grep "DPO=" ${log} | cut -d "=" -f2)
       echo "Cleaning previous build: ${build_dir}"
@@ -161,7 +161,7 @@ for arg in $input; do
           echo "Previous build directory removed."
         else
           echo "Error removing previous build directory."
-          exit
+          exit -1
         fi
       fi;;
 
@@ -195,7 +195,7 @@ for arg in $input; do
       if test ! -f "${MFIX_SRC}/${MAKEFILE}"; then
         echo "Cannot locate Makefile in model directory."
         echo "Unable to repeat last compile."
-        exit
+        exit -1
       fi
       mfile=${MFIX_SRC}/${MAKEFILE}
       echo "Using last compile settings."
@@ -226,7 +226,7 @@ for arg in $input; do
         *) echo "Error unknown optimization level: ${arg}"
            echo "First character is upper case letter O, not zero"
            echo "Aborting."
-           exit;;
+           exit -1;;
       esac
       echo "Specified optimization level: ${OPT}"
       REQ_OPT=0;;
@@ -292,7 +292,7 @@ for arg in $input; do
           else
             echo "  Error: Unable to locate compiler file!"
             echo "   >>> ${arg}"
-            exit
+            exit -1
           fi ;;
       esac
       REQ_COMP=0;;
@@ -311,7 +311,7 @@ for arg in $input; do
       if test ! -d ${dir}; then
         echo "  Specified build directory not found!"
         echo "   >>> ${dir}"
-        exit
+        exit -1
       fi
       cd ${dir}
       set `pwd` ; DPO_BASE=$1
@@ -326,7 +326,7 @@ for arg in $input; do
       if test -z ${EXEC_FILE}; then
         echo "Specified executable name is empty!"
         echo "Aborting make_mfix."
-        exit
+        exit -1
       fi
       echo "User specified executable name: ${EXEC_FILE}";;
 
@@ -339,7 +339,7 @@ for arg in $input; do
       if test ! -d ${dir}; then
         echo "   Specified MPI path not found!"
         echo "   >>> ${dir}"
-        exit
+        exit -1
       fi
       cd ${dir}
       set `pwd` ; MPI_PATH=$1
@@ -354,14 +354,14 @@ for arg in $input; do
       if test ! -d ${dir}; then
         echo "   Specified MPI include path not found!"
         echo "   >>> ${dir}"
-        exit
+        exit -1
       fi
       cd ${dir}
       set `pwd` ; MPI_INCLUDE_PATH=$1
       if test ! -f "mpif.h"; then
         echo "  Specified mpi_include does not contain mpif.h"
         echo "   >>> $PWD"
-        exit
+        exit -1
       fi
       cd ${MFIX_SRC}
       echo "MPI include path: ${MPI_INCLUDE_PATH}";;
@@ -374,7 +374,7 @@ for arg in $input; do
       if test ! -d ${dir}; then
         echo "  Specified mpi library path not found!"
         echo "   >>> ${dir}"
-        exit
+        exit -1
       fi
       cd ${dir}
       set `pwd` ; MPI_LIB_PATH=$1
@@ -387,7 +387,7 @@ for arg in $input; do
     "--enable-tau" )
       if test -z ${TAUROOT}; then
         echo "  Fatal Error: TAUROOT not set!"
-        exit
+        exit -1
       fi
       USE_TAU=1
       DPO=${DPO}_TAU;;
@@ -398,7 +398,7 @@ for arg in $input; do
     "--enable-netcdf" )
       if test -z ${NETCDF_HOME}; then
         echo "  Fatal Error: NETCDFROOT not set!"
-        exit
+        exit -1
       fi
       USE_NETCDF=1
       DPO=${DPO}_NCDF;;
@@ -408,7 +408,7 @@ for arg in $input; do
 # information and exit.
 #-------------------------------------------------------------------------->>
     *)echo "Unknown flag: ${arg}"
-      show_usage;;
+      show_usage -1;;
 
   esac
 done
