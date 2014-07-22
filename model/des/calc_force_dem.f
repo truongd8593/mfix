@@ -240,10 +240,12 @@
 ! skipping ghost particles
          IF(PEA(LL,4)) CYCLE
 
-
          IF (NEIGHBOURS(LL,1).GT.0) THEN
             DO II = 2, NEIGHBOURS(LL,1)+1
                I = NEIGHBOURS(LL,II)
+
+               call calc_coll_force(I,LL)
+
                IF(PEA(I,1)) THEN
 
                   ALREADY_NEIGHBOURS=.FALSE.
@@ -441,11 +443,11 @@
 
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with another particle/wall
-                  CALL CFSLIDE(LL,V_REL_TANG,PARTICLE_SLIDE,MEW)
+                  CALL CFSLIDE(LL,V_REL_TANG,PARTICLE_SLIDE,MEW,FT(:,LL),FN(:,LL))
 
 ! Calculate the total force FC and torque TOW on a particle in a
 ! particle-particle collision
-                  CALL CFFCTOW(LL, I, NORMAL, DISTMOD)
+                  CALL CFFCTOW(LL, I, NORMAL, DISTMOD, FC(:,LL), FN(:,LL), FT(:,LL), TOW(:,LL))
 
 
 ! Save the tangential displacement history with the correction of
@@ -486,17 +488,6 @@
 
       ENDDO
 
-
-
-
-
-
-
-
-
-
-
-
 ! Calculate gas-solids drag force on particle
       IF(DES_CONTINUUM_COUPLED) THEN
          CALL CALC_DES_DRAG_GS
@@ -532,5 +523,16 @@
  1001 FORMAT(5X,'<---------- END CALC_FORCE_DES ----------')
 
       RETURN
+
+      contains
+
+        subroutine calc_coll_force(I,LL)
+      IMPLICIT NONE
+
+      ! particle indices
+      INTEGER :: I, LL
+
+        end subroutine calc_coll_force
+
       END SUBROUTINE CALC_FORCE_DEM
 

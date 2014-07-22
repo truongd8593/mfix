@@ -248,6 +248,11 @@
 
 ! Stores number of neighbors based on neighbor search
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: NEIGHBOURS  !(PARTICLES, MAXNEIGHBORS)
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: COLLISIONS  !(2, #collisions < MAXNEIGHBORS*PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC_COLL   !(3, #collisions < MAXNEIGHBORS*PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_COLL  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_COLL  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
+      INTEGER :: COLLISION_NUM,COLLISION_MAX
 
 ! Quantities used for reporting: max no. neighbors and max overlap
 ! that exists during last solid time step of dem simulation

@@ -21,8 +21,8 @@
 ! Modules
 !-----------------------------------------------      
       use geometry, only: DO_K
-      USE discretelement
-      USE param1
+      USE discretelement, only: DES_VEL_NEW, DES_RADIUS, OMEGA_NEW
+      USE param1, only: ZERO
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -110,9 +110,9 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------      
-      USE discretelement
+      USE discretelement, only: DES_VEL_NEW, DES_RADIUS, OMEGA_NEW
       use geometry, only: DO_K
-      USE param1
+      USE param1, only: ZERO
       IMPLICIT NONE     
 !-----------------------------------------------
 ! Dummy arguments

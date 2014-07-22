@@ -9,12 +9,12 @@
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-      SUBROUTINE CFSLIDE(LL, V_TANG, PARTICLE_SLIDE, MU)
+      SUBROUTINE CFSLIDE(LL, V_TANG, PARTICLE_SLIDE, MU, FT_tmp, FN_tmp)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE discretelement, only: FT, FN, DEBUG_DES
+      USE discretelement, only: DEBUG_DES
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -27,6 +27,8 @@
       LOGICAL, INTENT(INOUT) :: PARTICLE_SLIDE
 ! Coefficient of friction
       DOUBLE PRECISION, INTENT(IN) :: MU
+! tangential force
+      DOUBLE PRECISION, DIMENSION(3), INTENT(INOUT) :: FT_tmp, FN_tmp
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -34,16 +36,16 @@
       DOUBLE PRECISION FTMD, FNMD
 !-----------------------------------------------
 
-      FTMD = dot_product(FT(:,LL),FT(:,LL))
-      FNMD = dot_product(FN(:,LL),FN(:,LL))
+      FTMD = dot_product(FT_tmp(:),FT_tmp(:))
+      FNMD = dot_product(FN_tmp(:),FN_tmp(:))
 
       IF (FTMD.GT.(MU*MU*FNMD)) THEN
 ! tangential force based on sliding friction
          PARTICLE_SLIDE = .TRUE.
          IF(ALL(V_TANG.EQ.0)) THEN
-            FT(:,LL) =  MU * FT(:,LL) * SQRT(FNMD/FTMD)
+            FT_tmp(:) =  MU * FT_tmp(:) * SQRT(FNMD/FTMD)
          ELSE
-            FT(:,LL) = -MU * V_TANG(:) * SQRT(FNMD/dot_product(V_TANG,V_TANG))
+            FT_tmp(:) = -MU * V_TANG(:) * SQRT(FNMD/dot_product(V_TANG,V_TANG))
          ENDIF
       ENDIF
 
