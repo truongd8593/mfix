@@ -55,28 +55,31 @@
   Phi    		= 30.0			!angle of internal friction
   EP_star 		= 0.38			!void fraction at minimum
 
+  SOLIDS_MODEL = 'PIC'
   
 ! Initial Conditions Section                                                    
     ! 1. bed
   IC_X_w(1)           	=  0.0	  0.			!domain
   IC_X_e(1)           	=  10	  10.0	! 0 < x < 15, 0 < y < 30
-  IC_Y_s(1)          	=  0.0    20.
-  IC_Y_n(1)           	=  20.    50.
-  ic_z_b(1)             =  0.0     0.
-  ic_z_t(1)             =  2.       2.0
+  IC_Y_s(1)          	=  0.0    0.
+  IC_Y_n(1)           	=  50.    20.
+  ic_z_b(1)             =  0.0    0.
+  ic_z_t(1)             =  2.     2.0
                                 	! initial values in the region
-  IC_EP_g(1)          	=  0.6    1.0  	! void fraction
+  IC_EP_g(1)          	=  1.0    0.6  	! void fraction
   IC_U_g(1)           	=  0.0	  0.0	! x-dir gas velocity
   IC_V_g(1)          	=  1.     1.		! y-dir gas velocity
   IC_W_g(1)          	=  0.0    0.		! z-dir gas velocity
    
-  IC_U_s(1,1)           = 0.0   0.
-  IC_V_s(1,1)           = 0.0    0.
-  IC_W_s(1,1)           = 0.0    0.
+  IC_U_s(1,1)           = 0.0     0.
+  IC_V_s(1,1)           = 0.0     0.
+  IC_W_s(1,1)           = 0.0     0.
 
   IC_P_g(1)             = 1013250.   1013250.
-  IC_T_g(1)             = 298.    298.
+  IC_T_g(1)             = 298.     298.
   IC_T_s(1,1)           = 298.     298. 
+  IC_PIC_CONST_NPC(1,1) =    0    5  
+  IC_theta_m(1,1)       =  0.0  0.d0 
 
 ! Boundary Conditions Section
       ! 1. bottom
@@ -120,9 +123,6 @@
 ! DES INPUT
   DISCRETE_ELEMENT      = .TRUE. 
 
-  DIMN = 3        
- 
-  MPPIC = .T.	
 
   PARTICLES  = 1280000  !Number of parcels used to intialize arrays
 ! the actual number of parcels will be determined from the intial
@@ -139,20 +139,6 @@
 ! Normal coefficient of friction for the parcel-wall 
 ! collision in MPPIC model 
   MPPIC_COEFF_EN_WALL = 0.5
-
-! Flag for implicit treatment of drag in parcel evolution equation
-! in MPPIC model. Any advantage of it over the explicit treatment 
-! has not been well studied so far
-
-  MPPIC_PDRAG_IMPLICIT = .t.
-
-! For initial seeding of parcels, seed equal number of 
-! parcels per cell 
-  MPPIC_CONSTANTNPC = .T.
-
-! For initial seeind and when MPPIC_CONSTANTNPC is true, 
-! set this flag for specifying number of parcels per cell 
-  NPC_PIC(1) = 5
 
 ! CFL used to set the time-step size in parcel evoltion equations
 ! under MPPIC model
@@ -181,7 +167,7 @@
 
 ! Drag type 
   DRAG_TYPE             = 'GIDASPOW'
-	
+
 
 
   PRINT_DES_DATA        = .TRUE.
