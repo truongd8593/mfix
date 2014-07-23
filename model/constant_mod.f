@@ -166,10 +166,10 @@
       DOUBLE PRECISION, PARAMETER :: GAS_CONST_cal = 1.987207D0
 
 ! Pi, the ubiquitous irrational number
-      DOUBLE PRECISION Pi
+      DOUBLE PRECISION, PARAMETER :: Pi = 4.D0*ATAN(1.D0)
 
 ! Square root of Pi
-      DOUBLE PRECISION SQRT_Pi
+      DOUBLE PRECISION, PARAMETER :: SQRT_Pi = 2.D0*SQRT(ATAN(1.D0))
 
 ! Maximum pressure correction allowed in one iteration
       DOUBLE PRECISION MAX_DELP

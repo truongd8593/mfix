@@ -17,13 +17,9 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE run
-      USE param1
       USE discretelement
-      USE geometry
-      USE compar
-      USE constant
-      USE cutcell
+      USE geometry, ONLY: DO_K
+      USE constant, ONLY: Pi
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -91,6 +87,7 @@
 ! logic flag telling whether contact pair is old (previously detected)
       LOGICAL :: ALREADY_NEIGHBOURS
 
+      LOGICAL, PARAMETER :: report_excess_overlap = .FALSE.
 !$      double precision omp_start, omp_end
 !$      double precision omp_get_wtime
 
@@ -103,7 +100,6 @@
 ! initialize local variables
       OVERLAP_MAX = ZERO
       NEIGH_MAX = -1
-
 
 ! initialize cohesive forces
       IF(USE_COHESION) THEN
@@ -145,7 +141,6 @@
          FNS1(:) = ZERO
          FNS2(:) = ZERO
          PFT_TMP(:) = ZERO
-         PARTICLE_SLIDE = .FALSE.
 
 ! Check neighbor history of particle LL and update arrays as needed
 ! ---------------------------------------------------------------->>>
@@ -209,21 +204,17 @@
          DO II = 2, NEIGHBOURS(LL,1)+1
             I = NEIGHBOURS(LL,II)
 
-            !call calc_coll_force(I,LL)
-
             IF(.NOT.PEA(I,1)) CYCLE
 
             ALREADY_NEIGHBOURS=.FALSE.
 
-            IF(PN(1,LL).GT.0) THEN
-               DO NEIGH_L = 2, PN(1,LL)+1
-                  IF(I.EQ. PN(NEIGH_L,LL)) THEN
-                     ALREADY_NEIGHBOURS=.TRUE.
-                     NI = NEIGH_L
-                     EXIT
-                  ENDIF
-               ENDDO
-            ENDIF
+            DO NEIGH_L = 2, PN(1,LL)+1
+               IF(I.EQ. PN(NEIGH_L,LL)) THEN
+                  ALREADY_NEIGHBOURS=.TRUE.
+                  NI = NEIGH_L
+                  EXIT
+               ENDIF
+            ENDDO
 
             R_LM = DES_RADIUS(LL) + DES_RADIUS(I)
             DIST(:) = DES_POS_NEW(I,:) - DES_POS_NEW(LL,:)
@@ -233,12 +224,17 @@
             IF(USE_COHESION .AND. VAN_DER_WAALS) call calc_cohesion()
 
             IF(DISTMOD > (R_LM + SMALL_NUMBER)**2) CYCLE
-            IF(DISTMOD == 0) STOP
+            IF(DISTMOD == 0) THEN
+               WRITE(*,'(5X,A,I10,I10)') 'DISTMOD is zero between particle-pair ',LL, I
+               STOP -1
+            ENDIF
             DISTMOD = SQRT(DISTMOD)
             NORMAL(:)= DIST(:)/DISTMOD
 
             ! Overlap calculation changed from history based to current position
             OVERLAP_N = R_LM-DISTMOD
+
+            IF (report_excess_overlap) call print_excess_overlap
 
             ! Calculate the components of translational relative velocity for a
             ! contacting particle pair and the tangent to the plane of contact
@@ -297,11 +293,12 @@
 
             ! Check for Coulombs friction law and limit the maximum value of the
             ! tangential force on a particle in contact with another particle/wall
-            CALL CFSLIDE(LL,V_REL_TANG,PARTICLE_SLIDE,MEW,FT(:,LL),FN(:,LL))
+            PARTICLE_SLIDE = .FALSE.
+            CALL CFSLIDE(V_REL_TANG,PARTICLE_SLIDE,MEW,FT(:,LL),FN(:,LL))
 
             ! Calculate the total force FC and torque TOW on a particle in a
             ! particle-particle collision
-            CALL CFFCTOW(LL, I, NORMAL, DISTMOD, FC(:,LL), FN(:,LL), FT(:,LL), TOW(:,LL))
+            CALL CFFCTOW(DES_RADIUS(LL), DES_RADIUS(I), NORMAL, DISTMOD, FC(:,LL), FN(:,LL), FT(:,LL), TOW(:,LL))
 
             ! Save the tangential displacement history with the correction of
             ! Coulomb's law
@@ -309,7 +306,6 @@
                ! Since FT might be corrected during the call to cfslide, the tangental
                ! displacement history needs to be changed accordingly
                PFT(LL,NI,:) = -( FT(:,LL) - FTS2(:) ) / KT_DES
-               PARTICLE_SLIDE = .FALSE.
             ELSE
                PFT(LL,NI,:) = PFT_TMP(:)
             ENDIF
@@ -349,16 +345,35 @@
 
       contains
 
-        subroutine calc_coll_force(I,LL)
-      IMPLICIT NONE
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+!
+!  Subroutine: print_excess_overlap
+!  Purpose: Print overlap warnings
+!
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        SUBROUTINE print_excess_overlap
+          IF (OVERLAP_N > flag_overlap*DES_RADIUS(LL) .OR. &
+               OVERLAP_N > flag_overlap*DES_RADIUS(I)) THEN
+             WRITE(*,'(5X,A,A,ES15.7)') &
+                  'WARNING: excessive overlap detected ', &
+                  'at time ', S_TIME
+             WRITE(*,'(7X,A,I10,2X,A,I5,2X,A)') &
+                  'between particles ', LL, 'and ',&
+                  I, 'with'
+             WRITE(*,'(7X,A,ES15.7,2X,A,ES15.7,2X,ES15.7)') &
+                  'overlap = ', OVERLAP_N, &
+                  ' radii = ', DES_RADIUS(LL), DES_RADIUS(I)
+          ENDIF
+        END SUBROUTINE print_excess_overlap
 
-      ! particle indices
-      INTEGER :: I, LL
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+!
+!  Subroutine: CALC_COHESION
+!  Purpose: Calculate cohesive forces between particles.
+!
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-        end subroutine calc_coll_force
-
-
-        subroutine calc_cohesion
+        SUBROUTINE CALC_COHESION
 
           implicit none
 
@@ -380,9 +395,16 @@
                 Fcohesive(LL, IDIMN) = Fcohesive(LL, IDIMN) + Norm_Dist*FORCE_COH
              ENDDO
           ENDIF
-        end subroutine CALC_COHESION
+        END SUBROUTINE CALC_COHESION
 
-        subroutine calc_tangential_displacement
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+!
+!  Subroutine: CALC_TANGENTIAL_DISPLACEMENT
+!  Purpose: Calculate the tangential displacement which is integration of
+!           tangential relative velocity with respect to contact time.
+!
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        SUBROUTINE CALC_TANGENTIAL_DISPLACEMENT
 
           implicit none
 
@@ -439,7 +461,68 @@
                      DES_DOTPRDCT(PFT_TMP,NORMAL)*NORMAL(:)
                   ENDIF
 
-        end subroutine calc_tangential_displacement
+        END SUBROUTINE CALC_TANGENTIAL_DISPLACEMENT
 
-      END SUBROUTINE CALC_FORCE_DEM
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+!
+!  Subroutine: CFFCTOW
+!  Purpose: Calculate the total force and torque on a particle
+!
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04
+!  Reviewer: Rahul Garg                               Date: 02-Aug-07
+!
+!  Comments: Implement eqns 13 & 14 from the following paper:
+!    Tsuji Y., Kawaguchi T., and Tanak T., "Lagrangian numerical
+!    simulation of plug glow of cohesionless particles in a
+!    horizontal pipe", Powder technology, 71, 239-250, 1992
+!
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+      SUBROUTINE CFFCTOW(RAD_L, RAD_II,  NORM, DIST_LI, FC_tmp, FN_tmp, FT_tmp, TOW_tmp)
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! radii of particle-particle contact pair
+      DOUBLE PRECISION, INTENT(IN) :: RAD_L, RAD_II
+! distance between particle centers
+      DOUBLE PRECISION, INTENT(IN) :: DIST_LI
+! unit normal vector along the line of contact pointing from
+! particle L to particle II
+      DOUBLE PRECISION, INTENT(IN) :: NORM(3)
+      DOUBLE PRECISION, DIMENSION(3), INTENT(INOUT) :: FC_tmp, FN_tmp, FT_tmp, TOW_tmp
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+! local variable for calculating torque on particle
+      DOUBLE PRECISION :: CROSSP(3)
+! distance from the contact point to the particle center
+      DOUBLE PRECISION :: DIST_CL
+!------------------------------------------------
+
+! total contact force
+      FC_tmp(:) = FC_tmp(:) + FN_tmp(:) + FT_tmp(:)
+
+! calculate the distance from the particle center to the contact point,
+! which is taken as the radical line
+! dist_ci+dist_cl=dist_li; dist_ci^2+a^2=ri^2;  dist_cl^2+a^2=rl^2
+      DIST_CL = (DIST_LI**2 + RAD_L**2 - RAD_II**2)/&
+         (2.d0*DIST_LI)
+
+! total torque
+      IF(DO_K) THEN
+         CALL DES_CROSSPRDCT(CROSSP, NORM, FT_TMP)
+         TOW_tmp(:)  = TOW_tmp(:)  + DIST_CL*CROSSP(:)
+      ELSE
+         CROSSP(1) = NORM(1)*FT_TMP(2) - NORM(2)*FT_TMP(1)
+         TOW_tmp(1)  = TOW_tmp(1)  + DIST_CL*CROSSP(1)
+      ENDIF
+
+      RETURN
+      END SUBROUTINE CFFCTOW
+
+    END SUBROUTINE CALC_FORCE_DEM

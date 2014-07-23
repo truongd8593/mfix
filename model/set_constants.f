@@ -57,10 +57,7 @@
 ! Note that the cell flags are not set when this routine is called.
 
 ! Dimensionless constants
-      PI = 4.D0*ATAN(ONE) 
-      SQRT_PI = SQRT(PI) 
       K_SCALE = .08D0   ! this actually isn't used anywhere...
-
 
 ! Enter the value of all constants in various units (CGS or SI)
       IF (UNITS == 'SI') THEN

@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
-!  Subroutine: CFSLIDE(LL, V_TANG, PARTICLE_SLIDE, MU)
+!  Subroutine: CFSLIDE(V_TANG, PARTICLE_SLIDE, MU)
 !  Purpose:  Check for Coulombs friction law - calculate sliding
 !            friction
 !
@@ -9,7 +9,7 @@
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-      SUBROUTINE CFSLIDE(LL, V_TANG, PARTICLE_SLIDE, MU, FT_tmp, FN_tmp)
+      SUBROUTINE CFSLIDE(V_TANG, PARTICLE_SLIDE, MU, FT_tmp, FN_tmp)
 
 !-----------------------------------------------
 ! Modules
@@ -19,12 +19,10 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! particle index no.
-      INTEGER, INTENT(IN) :: LL
 ! tangent to the plane of contact
       DOUBLE PRECISION, INTENT(IN) :: V_TANG(3)
 ! logic set to T when a sliding contact occurs
-      LOGICAL, INTENT(INOUT) :: PARTICLE_SLIDE
+      LOGICAL, INTENT(OUT) :: PARTICLE_SLIDE
 ! Coefficient of friction
       DOUBLE PRECISION, INTENT(IN) :: MU
 ! tangential force
@@ -47,15 +45,16 @@
          ELSE
             FT_tmp(:) = -MU * V_TANG(:) * SQRT(FNMD/dot_product(V_TANG,V_TANG))
          ENDIF
-      ENDIF
 
-      IF(DEBUG_DES .AND. PARTICLE_SLIDE) THEN
-         WRITE(*,'(7X,A)') &
-            'FROM CFSLIDE.F ---------->'
-         WRITE(*,'(9X,A)') 'PARTICLE_SLIDE = T'
-         WRITE(*,'(9X,A,2(ES15.7,X))')&
-            'FTMD, mu*FNMD = ', FTMD, MU*FNMD
-         WRITE(*,'(7X,A)') '<----------END CFSLIDE.F'
+         IF(DEBUG_DES) THEN
+            WRITE(*,'(7X,A)') &
+                 'FROM CFSLIDE.F ---------->'
+            WRITE(*,'(9X,A)') 'PARTICLE_SLIDE = T'
+            WRITE(*,'(9X,A,2(ES15.7,X))')&
+                 'FTMD, mu*FNMD = ', FTMD, MU*FNMD
+            WRITE(*,'(7X,A)') '<----------END CFSLIDE.F'
+         ENDIF
+
       ENDIF
 
       RETURN
