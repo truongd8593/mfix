@@ -59,7 +59,7 @@
 
       IF (DES_CONTINUUM_HYBRID) THEN
 ! initialize every call 
-         DO DM = 1, MMAX
+         DO DM = 1, DES_MMAX
             VXF_GDS(:,DM) = ZERO
 !!$omp  parallel do private(I,IJK,IJKE)
             DO IJK = ijkstart3, ijkend3

@@ -254,15 +254,14 @@
 !---------------------------------------------------------------------//
       INCLUDE '../function.inc'
 
-
 ! Loop over fluid cells.
       IJK_LP: DO IJK = IJKSTART3, IJKEND3
          IF(.NOT.FLUID_AT(IJK)) CYCLE IJK_LP
-
-! Redistribute the energy over the fluid time step.
-         DEM_to_TFM = DT * VOL(IJK)
-! Calculate the source term components --> Not interpolated.
-         S_C(IJK) = S_C(IJK) + DES_ENERGY_SOURCE(IJK)/DEM_to_TFM
+! Redistribute the energy over the fluid time step. Note that by the
+! time this routine is called, S_C and S_P have already been multiplied
+! by the fluid cell volume. Thus, the mapping should result in units
+! of energy per time.
+         S_C(IJK) = S_C(IJK) + DES_ENERGY_SOURCE(IJK)*ODT
 
       ENDDO IJK_LP ! End loop over fluid cells
 

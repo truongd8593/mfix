@@ -11,6 +11,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DES_RADIATION(I, iM, iIJK, FOCUS)
 
+      use physprop, only: SMAX
       Use constant
       Use des_thermo
       Use discretelement
@@ -33,12 +34,13 @@
 ! Local variables
 !---------------------------------------------------------------------//
 ! Surface area of particle
-      DOUBLE PRECISION A_S
+      DOUBLE PRECISION :: A_S
 ! Radiative heat transfer
-      DOUBLE PRECISION Qrd
+      DOUBLE PRECISION :: Qrd
 ! Environment temperature
-      DOUBLE PRECISION Tenv
-
+      DOUBLE PRECISION :: Tenv
+! Particle Emmisivity
+      DOUBLE PRECISION :: lEm
 ! Functions
 !---------------------------------------------------------------------//
 ! External Function for comparing two numbers.
@@ -53,10 +55,13 @@
          Tenv = EP_g(iIJK)*T_g(iIJK) + (ONE-EP_g(iIJK))*avgDES_T_s(iIJK)
       ENDIF
 
+! Set the particle emmisivity. Phase shift needed for TFM/DEM hybrid.
+      lEM= DES_Em(iM + SMAX)
+
 ! Calculate the surface area of the particle
       A_S = 4.0d0 * Pi * DES_RADIUS(I) * DES_RADIUS(I)
 ! Calculate the heat source.
-      Qrd = SB_CONST * A_s * DES_EM(iM) * (Tenv**4 - (DES_T_s_NEW(I))**4)
+      Qrd = SB_CONST * A_s * lEm * (Tenv**4 - (DES_T_s_NEW(I))**4)
 ! Update the thermal source term.
       Q_Source(I) = Q_Source(I) + Qrd
 

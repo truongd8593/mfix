@@ -46,7 +46,7 @@
       DOUBLE PRECISION , EXTERNAL :: DES_calc_CpoR
 
 ! Get the solids phase of the particle
-      M = PIJK(NP,5)
+      M = PIJK(NP,5) + SMAX
 
 ! Specific heat
 !-----------------------------------------------------------------------

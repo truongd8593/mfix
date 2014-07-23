@@ -39,7 +39,7 @@
       INTEGER HOLD, I         ! Dummy values
       INTEGER RANGE_TOP, RANGE_BOT ! Dummy values
       INTEGER PHASE_CNT        ! Number of solid phases at bc
-      INTEGER PHASE_LIST(DES_MMAX) ! List of phases used in current bc
+      INTEGER PHASE_LIST(DIM_M) ! List of phases used in current bc
 
 ! the number of particles injected in a solids time step
       DOUBLE PRECISION NPMpSEC(DES_MMAX) ! For solid phase m
@@ -102,13 +102,13 @@
          MAX_DIA = ZERO
 
 ! Determine if the inlet is mono or polydisperse               
-         DO M=1, DES_MMAX
+         DO M=1, SMAX + DES_MMAX
             IF(SOLIDS_MODEL(M) /= 'DEM') CYCLE
             IF(BC_ROP_s(BCV,M) == UNDEFINED) CYCLE
             IF(COMPARE(BC_ROP_s(BCV,M),ZERO)) CYCLE
             PHASE_CNT = PHASE_CNT + 1
-            PHASE_LIST(PHASE_CNT) = M
-            MAX_DIA = MAX(MAX_DIA,DES_D_P0(M))
+            PHASE_LIST(PHASE_CNT) = M-SMAX
+            MAX_DIA = MAX(MAX_DIA,DES_D_P0(M-SMAX))
          ENDDO
 ! Set the polydispersity flag.
          DEM_MI(BCV_I)%POLYDISPERSE = (PHASE_CNT > 1)
@@ -126,9 +126,9 @@
 
 ! Pull off the BC velocity normal to the flow plane.
             SELECT CASE(BC_PLANE(BCV))
-            CASE('N','S'); VEL_TMP(M) = abs(BC_V_s(BCV,M))
-            CASE('E','W'); VEL_TMP(M) = abs(BC_U_s(BCV,M))
-            CASE('T','B'); VEL_TMP(M) = abs(BC_W_s(BCV,M))
+            CASE('N','S'); VEL_TMP(M) = abs(BC_V_s(BCV,M+SMAX))
+            CASE('E','W'); VEL_TMP(M) = abs(BC_U_s(BCV,M+SMAX))
+            CASE('T','B'); VEL_TMP(M) = abs(BC_W_s(BCV,M+SMAX))
             END SELECT
 
 ! Check for min/max inlet velocity
@@ -136,7 +136,7 @@
 ! Calculate volumetric flow rate to convert to particle count. BC_AREA
 ! was already corrected for cut cells and velocity was recalculated
 ! to ensure user-specified mass or volumetric flow rates.
-            VOL_FLOW = VEL_TMP(M) * BC_AREA(BCV) * BC_EP_S(BCV,M)
+            VOL_FLOW = VEL_TMP(M) * BC_AREA(BCV) * BC_EP_S(BCV,M+SMAX)
 ! Calculate the number of particles of mass phase M are injected per 
 ! second for each solid phase present at the boundary
             NPMpSEC(M) = VOL_FLOW / (PI/6.d0*DES_D_P0(M)**3)
@@ -203,8 +203,8 @@
          EPs_TMP = ZERO
          DO MM = 1, PHASE_CNT
             M = PHASE_LIST(MM)
-            EPs_TMP(M) = BC_EP_s(BCV,M) * (VEL_TMP(M) / MAX_VEL)
-            EPs_ERR = EPs_ERR + (BC_EP_s(BCV,M) - EPs_TMP(M))
+            EPs_TMP(M) = BC_EP_s(BCV,M+SMAX) * (VEL_TMP(M) / MAX_VEL)
+            EPs_ERR = EPs_ERR + (BC_EP_s(BCV,M+SMAX) - EPs_TMP(M))
 
 ! Over-write the current BC value.
             SELECT CASE(BC_PLANE(BCV))

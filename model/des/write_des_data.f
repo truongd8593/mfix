@@ -89,14 +89,19 @@
       use discretelement, only: DES_RADIUS
       use discretelement, only: USE_COHESION, PostCohesive
       use discretelement, only: DES_CALC_CLUSTER, PostCluster
-
+      use des_rxns, only: DES_X_s
+      use run, only: ANY_SPECIES_EQ
+      use param, only: DIMENSION_N_S
       USE mfix_pic, only: des_stat_wt, mppic
+
+      use error_manager
+
       IMPLICIT NONE
 
 
       CHARACTER(len=10) :: lNoP
       CHARACTER(len=24) :: sTIMEc
-
+      INTEGER :: N
 
       sTIMEc=''; WRITE(sTIMEc,"(ES24.16)") S_TIME
 
@@ -136,6 +141,12 @@
 !      IF(MPPIC) CALL VTP_WRITE_DATA('Statwt', DES_STAT_WT)
       IF(ENERGY_EQ) &
          CALL VTP_WRITE_DATA('Temperature', DES_T_s_NEW)
+
+      IF(ANY_SPECIES_EQ) THEN
+         DO N=1, DIMENSION_N_S
+            CALL VTP_WRITE_DATA(trim(iVar('X_s',N)), DES_X_s(:,N))
+         ENDDO
+      ENDIF
 
       IF(USE_COHESION) &
          CALL VTP_WRITE_DATA('CohesiveForce', PostCohesive)

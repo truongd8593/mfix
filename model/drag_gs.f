@@ -168,14 +168,14 @@
                      DP_loc(DM) = DES_D_p0(DM)         
                      EPs_loc(DM) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
                      ROs_loc(DM) = DES_RO_S(DM)
-                     PSIs_loc(DM) = DES_PSI_s(CM)
+                     !PSIs_loc(DM) = DES_PSI_s(CM)
                   ENDDO
                   DO CM = 1,SMAX
                      L = DES_MMAX + CM
                      DP_loc(L) = D_P(IJK,CM)
                      EPs_loc(L) = EP_S(IJK,CM)
                      ROs_loc(L) = RO_S(IJK,CM)
-                     PSIs_loc(L) = PSI_s(CM)
+                     !PSIs_loc(L) = PSI_s(CM)
                   ENDDO
                ELSE
 ! the subroutine is being called to calculate the drag coefficient on
@@ -185,14 +185,14 @@
                      DP_loc(CM) = D_p(IJK,CM)         
                      EPs_loc(CM) = EP_S(IJK,CM)
                      ROs_loc(CM) = RO_S(IJK,CM)
-                     PSIs_loc(CM) = PSI_s(CM)
+                     !PSIs_loc(CM) = PSI_s(CM)
                   ENDDO
                   DO DM = 1,DES_MMAX
                      L = SMAX + DM
                      DP_loc(L) = DES_D_p0(DM)
                      EPs_loc(L) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
                      ROs_loc(L) = DES_RO_S(DM)
-                     PSIs_loc(L) = DES_PSI_s(CM)
+                     !PSIs_loc(L) = DES_PSI_s(CM)
                   ENDDO          
                ENDIF
             ENDIF   ! end if/else (.not.des_continuum_hybrid)

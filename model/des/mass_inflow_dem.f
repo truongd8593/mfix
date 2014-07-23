@@ -282,7 +282,13 @@
 
       INTEGER :: IJK
 
+! Global phase index
+      INTEGER :: BC_M
+
       INCLUDE '../function.inc'
+
+! Shift the phase index by SMAX to refernece global variables.
+      BC_M = lM + SMAX
 
 ! Set the PEA Flags:
       PEA(lNP,1:2) = .TRUE.  ! The particle exists and is entering
@@ -293,9 +299,9 @@
       DES_POS_OLD(lNP,:) = lPOS(:)
 
 ! Set the initial velocity values
-      DES_VEL_OLD(lNP,1) = BC_U_s(lBCV,lM)
-      DES_VEL_OLD(lNP,2) = BC_V_s(lBCV,lM)
-      DES_VEL_OLD(lNP,3) = BC_W_s(lBCV,lM)
+      DES_VEL_OLD(lNP,1) = BC_U_s(lBCV,BC_M)
+      DES_VEL_OLD(lNP,2) = BC_V_s(lBCV,BC_M)
+      DES_VEL_OLD(lNP,3) = BC_W_s(lBCV,BC_M)
 
       DES_VEL_NEW(lNP,:) = DES_VEL_OLD(lNP,:)
 
@@ -323,13 +329,13 @@
 
 ! If solving the energy equations, set the temperature
       IF(ANY_SPECIES_EQ .OR. ENERGY_EQ ) THEN
-         DES_T_s_NEW(lNP) = BC_T_s(lBCV,lM)
+         DES_T_s_NEW(lNP) = BC_T_s(lBCV,BC_M)
          DES_T_s_OLD(lNP) = DES_T_s_NEW(lNP)
       ENDIF
 
 ! Set species mass fractions
-      IF((ENERGY_EQ .AND. C_PS0(lM) /= UNDEFINED) .OR. ANY_SPECIES_EQ) &
-         DES_X_s(lNP,1:NMAX(lM)) = BC_X_s(lBCV,lM,1:NMAX(lM))
+      IF((ENERGY_EQ .AND. C_PS0(BC_M)/=UNDEFINED) .OR. ANY_SPECIES_EQ)&
+         DES_X_s(lNP,1:NMAX(BC_M)) = BC_X_s(lBCV,BC_M,1:NMAX(BC_M))
 
 ! Calculate time dependent physical properties
       CALL DES_PHYSICAL_PROP(lNP, .FALSE.)

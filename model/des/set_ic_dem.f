@@ -29,7 +29,7 @@
       USE des_rxns, only: DES_X_s
 
       use physprop, only: C_PS0
-      use physprop, only: NMAX
+      use physprop, only: SMAX, NMAX
 
       USE compar
       use indices
@@ -74,7 +74,9 @@
 ! Loop through particles in cell IJK.
             DO NINDX = 1,PINC(IJK)
                NP = PIC(IJK)%P(NINDX)
-               M = PIJK(NP,5)
+
+! Shift the phase index to the absolute phase index.
+               M = PIJK(NP,5) + SMAX
 
 ! Set the initial particle temperature.
                IF(ENERGY_EQ) THEN

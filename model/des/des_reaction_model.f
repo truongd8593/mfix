@@ -21,7 +21,7 @@
       USE indices
       Use param1
       use run, only: ANY_SPECIES_EQ, SPECIES_EQ
-      use physprop, only: NMAX
+      use physprop, only: SMAX, NMAX
       use run, only: SOLVE_ROs
 
       IMPLICIT NONE
@@ -74,7 +74,8 @@
             IF(PEA(NP,4)) CYCLE lNP_LP
 
 ! Set the particle phase index
-            M = PIJK(NP,5)
+            M = PIJK(NP,5) + SMAX
+
 ! Skip particles when not solving species equations
             IF(.NOT.SPECIES_EQ(M)) CYCLE lNP_LP
 

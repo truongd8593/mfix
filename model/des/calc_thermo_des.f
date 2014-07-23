@@ -70,6 +70,8 @@
 ! Flag to calculate convection.
          CALC_CONV = DES_CONTINUUM_COUPLED
          DO M=1, SMAX + DES_MMAX
+! Only interested in discrete solids.
+            IF(SOLIDS_MODEL(M) == 'TFM') CYCLE
 ! Flag to calculate radiation.
             IF(DES_Em(M) > ZERO) CALC_RADT(M) = .TRUE.
 ! Flag to calculate conduction.
@@ -101,9 +103,7 @@
 
 ! Skip indices that do not represent particles
             IF(.NOT.PEA(NP,1)) CYCLE lNP_LP
-
-! Skip indices that represent ghost particles
-            IF(PEA(NP,4)) CYCLE lNP_LP
+            IF(any(PEA(NP,2:4))) CYCLE lNP_LP
 
 ! Reset the debug flag
             FOCUS = .FALSE.

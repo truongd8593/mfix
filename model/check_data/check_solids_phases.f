@@ -152,7 +152,7 @@
       IF(any(SPECIES_EQ(1:MMAX_TOT))) THEN
          IF(TFM_SOLIDS .AND. DEM_SOLIDS) THEN
             WRITE(ERR_MSG, 5000)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
          ENDIF
 
  5000 FORMAT('Error 5000: Species equations are not available with',   &
