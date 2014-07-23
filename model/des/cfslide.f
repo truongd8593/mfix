@@ -14,7 +14,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE discretelement
+      USE discretelement, only: FT, FN, DEBUG_DES
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments

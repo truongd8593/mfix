@@ -113,10 +113,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 !-----------------------------------------------
-!      IF(USE_STL_DES) THEN
-!         CALL CALC_FORCE_DEM_STL
-!         RETURN
-!      ENDIF
 
       report_excess_overlap = .false.
 ! initialize local variables
@@ -233,12 +229,7 @@
       ENDDO
 !$omp end parallel
 
-
-
       CALL CALC_COLLISION_WALL
-
-
-
 
 ! Check particle LL neighbour contacts
 !----------------------------------------------------------------->>>
