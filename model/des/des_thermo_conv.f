@@ -233,7 +233,7 @@
       Use param1
       Use physprop
 
-      use run, only: DT
+      use run, only: ODT
 
       IMPLICIT NONE
 
