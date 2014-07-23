@@ -18,7 +18,7 @@
   UNITS = 'CGS'
 
   TIME =   0.0
-  TSTOP =  0.1
+  TSTOP =  1.0
 
   DT =     5.0d-4
   DT_MAX = 1.0d-3
