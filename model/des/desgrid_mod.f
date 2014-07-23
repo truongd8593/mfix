@@ -550,7 +550,6 @@
                end if   
                neighbours(lcurpar,1) = lneighcnt 
                neighbours(lcurpar,lneighcnt+1) = lneigh
-               call collision_add(lcurpar, lneigh)
             end do 
          end do 
          end do 
@@ -561,8 +560,6 @@
 !      open (unit=100,file='neighbours.txt',status='unknown')
 !      write(100,*)neighbours
 !      close(100)
-
-      print *,"COLLISION_NUM == ",COLLISION_NUM
 
       end subroutine desgrid_neigh_build
 
