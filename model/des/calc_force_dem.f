@@ -380,7 +380,7 @@
           IF(DISTMOD < (R_LM+VDW_OUTER_CUTOFF)**2) THEN
              EQ_RADIUS = 2d0 * DES_RADIUS(LL)*DES_RADIUS(I) / &
                   (DES_RADIUS(LL)+DES_RADIUS(I))  ! for use in cohesive force
-             IF(DISTMOD < (R_LM+VDW_INNER_CUTOFF)**2) THEN
+             IF(DISTMOD > (VDW_INNER_CUTOFF+R_LM)**2) THEN
                 DistApart = (SQRT(DISTMOD)-R_LM) ! distance between particle surface
                 FORCE_COH = HAMAKER_CONSTANT * EQ_RADIUS / (12d0*DistApart**2) * &
                      ( Asperities/(Asperities+EQ_RADIUS) + &
