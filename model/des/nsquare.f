@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: NSQUARE                                                C
-!>  Purpose: DES - N-Square neighbor search  
+!>  Purpose: DES - N-Square neighbor search
 !                                                                      C
 !                                                                      C
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
@@ -11,12 +11,10 @@
 
       SUBROUTINE NSQUARE
 
-      USE param1
       USE discretelement
-      USE geometry
-      USE des_bc      
+      USE des_bc
       Use des_thermo
-      use geometry, only: DO_K
+      Use geometry, only: DO_K, xlength, ylength, zlength
 
       IMPLICIT NONE
 
@@ -36,11 +34,6 @@
 ! Index to track unaccounted for particles
       INTEGER PNPC
 !-----------------------------------------------
-! Functions
-!-----------------------------------------------      
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
-
-!-----------------------------------------------  
 
       PC=1
       DO L=1, MAX_PIP
@@ -48,7 +41,7 @@
          IF(PC .GE. PIP ) EXIT
          IF(.NOT.PEA(L,1)) CYCLE
 
-         PNPC = PIP - PC        
+         PNPC = PIP - PC
          DO LL = L+1, MAX_PIP
 
             IF(PNPC .LE. 0) EXIT
@@ -59,25 +52,25 @@
 
 ! the following section adjusts the neighbor check routine when
 ! any boundary is periodic
-! ------------------------------ 
+! ------------------------------
             IF (DES_PERIODIC_WALLS) THEN
                XPOS(:) = DES_POS_NEW(LL,1)
                YPOS(:) = DES_POS_NEW(LL,2)
-               II = 1 
+               II = 1
                JJ = 1
                KK = 1
 
                IF(DES_PERIODIC_WALLS_X) THEN
-                  IF (DES_POS_NEW(L,1) + R_LM > XLENGTH) THEN 
+                  IF (DES_POS_NEW(L,1) + R_LM > XLENGTH) THEN
                      II = 2
                      XPOS(II) = DES_POS_NEW(LL,1) + XLENGTH
                   ELSEIF (DES_POS_NEW(L,1) - R_LM < ZERO) THEN
                      II = 2
                      XPOS(II) = DES_POS_NEW(LL,1) - XLENGTH
                   ENDIF
-               ENDIF                     
-               IF(DES_PERIODIC_WALLS_Y) THEN 
-                  IF (DES_POS_NEW(L,2) + R_LM > YLENGTH) THEN 
+               ENDIF
+               IF(DES_PERIODIC_WALLS_Y) THEN
+                  IF (DES_POS_NEW(L,2) + R_LM > YLENGTH) THEN
                      JJ = 2
                      YPOS(JJ) = DES_POS_NEW(LL,2) + YLENGTH
                   ELSEIF (DES_POS_NEW(L,2) - R_LM < YLENGTH) THEN
@@ -85,10 +78,10 @@
                      YPOS(JJ) = DES_POS_NEW(LL,2) - YLENGTH
                   ENDIF
                ENDIF
-               IF(DO_K) THEN 
+               IF(DO_K) THEN
                   ZPOS(:) = DES_POS_NEW(LL,3)
-                  IF(DES_PERIODIC_WALLS_Z) THEN 
-                     IF (DES_POS_NEW(L,3) + R_LM > ZLENGTH) THEN 
+                  IF(DES_PERIODIC_WALLS_Z) THEN
+                     IF (DES_POS_NEW(L,3) + R_LM > ZLENGTH) THEN
                         KK = 2
                         ZPOS(KK) = DES_POS_NEW(LL,3) + ZLENGTH
                      ELSEIF (DES_POS_NEW(L,3) - R_LM < ZERO) THEN
@@ -109,12 +102,12 @@
                         DO K = 1,KK
                            TMPPOS(3) = ZPOS(K)
                            DISTVEC(:) = TMPPOS(:) - DES_POS_NEW(L,:)
-                           DIST = SQRT(DES_DOTPRDCT(DISTVEC,DISTVEC))
+                           DIST = dot_product(DISTVEC,DISTVEC)
                            IF (DIST.LE.R_LM) EXIT OUTER
                         ENDDO
                      ELSE
                         DISTVEC(:) = TMPPOS(:) - DES_POS_NEW(L,:)
-                        DIST = SQRT(DES_DOTPRDCT(DISTVEC,DISTVEC))
+                        DIST = dot_product(DISTVEC,DISTVEC)
                         IF (DIST.LE.R_LM) EXIT OUTER
                      ENDIF
                   ENDDO
@@ -122,31 +115,31 @@
 
             ELSE   ! if .not.des_periodic_walls
                DISTVEC(:) = DES_POS_NEW(LL,:) - DES_POS_NEW(L,:)
-               DIST = SQRT(DES_DOTPRDCT(DISTVEC,DISTVEC)) 
+               DIST = dot_product(DISTVEC,DISTVEC)
             ENDIF    ! endif des_periodic_walls
-! ------------------------------ 
+! ------------------------------
 
-            IF (DIST.LE.R_LM) THEN
+            IF (DIST < R_LM**2) THEN
 
                NEIGHBOURS(L,1) = NEIGHBOURS(L,1)+1
                NEIGHBOURS(LL,1) = NEIGHBOURS(LL,1)+1
-               NEIGH_L = NEIGHBOURS(L,1) 
+               NEIGH_L = NEIGHBOURS(L,1)
                NEIGH_LL = NEIGHBOURS(LL,1)
 
                IF (NEIGH_L.LE.MN) THEN
                   NEIGHBOURS(L,NEIGH_L+1) = LL
                ELSE
-                  WRITE(*,1000) 
-                  PRINT *, L, ':', (NEIGHBOURS(L,II), II=1,MN+1) 
+                  WRITE(*,1000)
+                  PRINT *, L, ':', (NEIGHBOURS(L,II), II=1,MN+1)
                   WRITE(*,1001)
                   STOP
                ENDIF
 
                IF (NEIGH_LL.LE.MN) THEN
                   NEIGHBOURS(LL,NEIGH_LL+1) = L
-               ELSE 
-                  WRITE(*,1000) 
-                  PRINT *, LL, ':', (NEIGHBOURS(LL,II), II=1,MN+1) 
+               ELSE
+                  WRITE(*,1000)
+                  PRINT *, LL, ':', (NEIGHBOURS(LL,II), II=1,MN+1)
                   WRITE(*,1001)
                   STOP
                ENDIF
