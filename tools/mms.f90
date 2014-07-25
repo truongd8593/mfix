@@ -647,7 +647,7 @@
       CALL FLUSH_OUT_BUFFER
 
  5050 FORMAT(/'$(DPO)blas90.a : $(DPO)BLAS.o',/'	ar cr $(DPO)', &
-         'blas90.a $(DPO)BLAS.o',/'$(DPO)BLAS.o : BLAS.F',/            &
+         'blas90.a $(DPO)BLAS.o',/'$(DPO)BLAS.o : BLAS.f',/            &
          '	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F -o $(DPO)BLAS.o')
 
 
@@ -655,7 +655,7 @@
       CALL FLUSH_OUT_BUFFER
 
  5051 FORMAT(/'$(DPO)dgtsv90.a : $(DPO)DGTSV.o',/'	ar cr $(DPO)', &
-         'dgtsv90.a $(DPO)DGTSV.o',/'$(DPO)DGTSV.o : DGTSV.F',/        &
+         'dgtsv90.a $(DPO)DGTSV.o',/'$(DPO)DGTSV.o : DGTSV.f',/        &
          '	$(FORTRAN_CMD) $(FORT_FLAGS) DGTSV.F -o $(DPO)DGTSV.o')
 
 

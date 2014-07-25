@@ -1,3 +1,4 @@
+#!/bin/bash
 echo "Processing chemical reaction data."
 
 # Indicates if the preprocessor is in the reaction block @(RXNS
