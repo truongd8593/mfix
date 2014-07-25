@@ -18,26 +18,26 @@ noinst_LIBRARIES = libodepack.a
 libodepack_a_SOURCES = model/ODEPACK.F
 mfix_LDADD = libodepack.a
 
-EXTRA_DIST =  config doc regression_tests tests tools tutorials visualization_tools
+EXTRA_DIST =  build-aux config doc regression_tests tests tools tutorials visualization_tools
 EXTRA_DIST += CHANGES Readme.pdf readme README_MFIX_for_T3E README_POSTMFIX
 
 $(top_srcdir)/model/mfix_directory_path.inc:
 	echo "     CHARACTER(len=132) :: MFIX_PATH = '${abs_top_srcdir}/model'" > $@
 
 # Use generated module dependency rules.
-$(eval -include $(top_srcdir)/mfixmodule.deps)
+$(eval -include mfixmodule.deps)
 
-$(top_srcdir)/mfixmodule.deps: $(dist_mfix_SOURCES)
+mfixmodule.deps: $(dist_mfix_SOURCES)
 	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
 
 DISTCLEANFILES = mfixmodule.deps postmodule.deps
 
-$(top_srcdir)/postmodule.deps: $(dist_postmfix_SOURCES)
+postmodule.deps: $(dist_postmfix_SOURCES)
 	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
 
-$(eval -include $(top_srcdir)/postmodule.deps)
+$(eval -include postmodule.deps)
 
 species.inc:
 	RUN_DIR=. $(top_srcdir)/config/rxn_preproc.sh
@@ -67,6 +67,10 @@ common_SOURCES = \
 	model/GhdTheory/thermal_diffusivity.f \
 	model/GhdTheory/thermal_mobility.f \
 	model/GhdTheory/transport_coeff_ghd.f \
+	model/MFIX_netcdf_constants.fi \
+	model/MFIX_netcdf_misc.fi \
+	model/MFIX_netcdf_overloads.fi \
+	model/MFIX_netcdf_variables.fi \
 	model/accum_resid.f \
 	model/adjust_a_u_g.f \
 	model/adjust_a_u_s.f \
@@ -81,6 +85,8 @@ common_SOURCES = \
 	model/adjust_theta.f \
 	model/allocate_arrays.f \
 	model/ambm_mod.f \
+	model/b_force1.inc \
+	model/b_force2.inc \
 	model/b_m_p_star.f \
 	model/bc_mod.f \
 	model/bc_phi.f \
@@ -127,6 +133,7 @@ common_SOURCES = \
 	model/cartesian_grid/allocate_dummy_cut_cell_arrays.f \
 	model/cartesian_grid/calc_vort_out.f \
 	model/cartesian_grid/cartesian_grid_init_namelist.f \
+	model/cartesian_grid/cartesian_grid_namelist.inc \
 	model/cartesian_grid/check_data_cartesian.f \
 	model/cartesian_grid/cut_cell_preprocessing.f \
 	model/cartesian_grid/cutcell_mod.f \
@@ -214,14 +221,14 @@ common_SOURCES = \
 	model/corner_mod.f \
 	model/correct_0.f \
 	model/correct_1.f \
+	model/cp_fun1.inc \
+	model/cp_fun2.inc \
 	model/dbg_mod.f \
 	model/des/calc_collision_wall.f \
 	model/des/calc_force_dem.f \
-	model/des/calc_force_dem_stl.f \
 	model/des/calc_rrate_des.f \
 	model/des/calc_thermo_des.f \
 	model/des/cfassign.f \
-	model/des/cffctow.f \
 	model/des/cffctowall.f \
 	model/des/cfnewvalues.f \
 	model/des/cfrelvel.f \
@@ -230,7 +237,6 @@ common_SOURCES = \
 	model/des/cfwallcontact.f \
 	model/des/cfwallposvel.f \
 	model/des/check_des_hybrid.f \
-	model/des/check_des_rxns.f \
 	model/des/des_allocate_arrays.f \
 	model/des/des_bc_mod.f \
 	model/des/des_cluster_identification.f \
@@ -253,8 +259,10 @@ common_SOURCES = \
 	model/des/des_thermo_rad.f \
 	model/des/des_time_march.f \
 	model/des/des_wallbc_preprocessing.f \
+	model/des/desgrid_functions.inc \
 	model/des/desgrid_mod.f \
 	model/des/desmpi_mod.f \
+	model/des/desnamelist.inc \
 	model/des/discretelement_mod.f \
 	model/des/drag_fgs.f \
 	model/des/gas_drag.f \
@@ -311,6 +319,8 @@ common_SOURCES = \
 	model/energy_mod.f \
 	model/eosg.f \
 	model/eoss.f \
+	model/ep_s1.inc \
+	model/ep_s2.inc \
 	model/equal.f \
 	model/error_manager_mod.f \
 	model/error_routine.f \
@@ -318,6 +328,10 @@ common_SOURCES = \
 	model/exit.f \
 	model/fldvar_mod.f \
 	model/flow_to_vel.f \
+	model/fun_avg1.inc \
+	model/fun_avg2.inc \
+	model/function.inc \
+	model/function3.inc \
 	model/function_mod.f \
 	model/funits_mod.f \
 	model/g_0.f \
@@ -367,6 +381,7 @@ common_SOURCES = \
 	model/mod_bc_i.f \
 	model/mod_bc_j.f \
 	model/mod_bc_k.f \
+	model/namelist.inc \
 	model/open_file.f \
 	model/open_files.f \
 	model/output_mod.f \
@@ -400,6 +415,9 @@ common_SOURCES = \
 	model/qmomk/qmomk_time_march.f \
 	model/qmomk/qmomk_tools_mod.f \
 	model/qmomk/qmomk_write_restart.f \
+	model/qmomk/qmomknamelist.inc \
+	model/radtn1.inc \
+	model/radtn2.inc \
 	model/read_database.f \
 	model/read_namelist.f \
 	model/read_res0.f \
@@ -413,6 +431,10 @@ common_SOURCES = \
 	model/run_mod.f \
 	model/rxn_com_mod.f \
 	model/rxns_mod.f \
+	model/s_pr1.inc \
+	model/s_pr2.inc \
+	model/sc_p_g1.inc \
+	model/sc_p_g2.inc \
 	model/scalar_prop.f \
 	model/scalars_mod.f \
 	model/scales_mod.f \
@@ -465,6 +487,8 @@ common_SOURCES = \
 	model/source_v_s.f \
 	model/source_w_g.f \
 	model/source_w_s.f \
+	model/species.inc \
+	model/species_indices.inc \
 	model/tau_g_mod.f \
 	model/tau_s_mod.f \
 	model/tau_u_g.f \
@@ -488,6 +512,7 @@ common_SOURCES = \
 	model/under_relax.f \
 	model/update_old.f \
 	model/ur_facs_mod.f \
+	model/usrnlst.inc \
 	model/utilities.f \
 	model/vavg_u_g.f \
 	model/vavg_u_s.f \
@@ -517,26 +542,28 @@ common_SOURCES = \
 	model/write_usr0.f \
 	model/write_usr1.f \
 	model/xerbla.f \
+	model/xsi1.inc \
+	model/xsi2.inc \
 	model/xsi_array_mod.f \
 	model/zero_array.f \
 	model/zero_norm_vel.f
 
 if MPI
 common_SOURCES += \
+	model/des/desmpi_wrapper_mod.f \
 	model/dmp_modules/mpi_mod.f \
 	model/dmp_modules/mpi_utility_mod.f \
 	model/dmp_modules/parallel_mpi_mod.f \
 	model/dmp_modules/sendrecv3_mod.f \
-	model/dmp_modules/sendrecv_mod.f \
-	model/des/desmpi_wrapper_mod.f
+	model/dmp_modules/sendrecv_mod.f
 else
 common_SOURCES += \
+	model/des/mpi_donothing/desmpi_wrapper_mod.f \
 	model/dmp_modules/mpi_donothing/mpi_mod.f \
 	model/dmp_modules/mpi_donothing/mpi_utility_mod.f \
 	model/dmp_modules/mpi_donothing/parallel_mpi_mod.f \
 	model/dmp_modules/mpi_donothing/sendrecv3_mod.f \
-	model/dmp_modules/mpi_donothing/sendrecv_mod.f \
-	model/des/mpi_donothing/desmpi_wrapper_mod.f
+	model/dmp_modules/mpi_donothing/sendrecv_mod.f
 endif
 
 dist_mfix_SOURCES += $(common_SOURCES)
