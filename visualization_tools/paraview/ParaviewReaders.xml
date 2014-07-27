@@ -1,42 +1,42 @@
-<ModuleInterfaces>
-  <Module name="OpenFOAMReader" 
-          root_name="OpenFOAMReader" 
-	  class="vtkPVAdvancedReaderModule" 
-	  module_type="Reader" 
-	  extensions=".foam" 
-	  file_description="OpenFOAM  Files"> 
-    <Source class="vtkOpenFOAMReader"/> 
-    <Scale property="TimeStep" 
-           label="Time step" 
-           trace_name="TimeStep" 
-           keeps_timesteps="1" 
-           help="Set the current timestep."/> 
-    <ArraySelection label_text="Cell Arrays" 
-                    property="CellArrayStatus" 
-                    trace_name="CellSelection"/> 
-  </Module> 
-  <Module name="MFIXReader" 
-          root_name="MFIXReader" 
-          class="vtkPVAdvancedReaderModule" 
-          module_type="Reader" 
-          extensions=".RES" 
+X<ModuleInterfaces>
+  <Module name="OpenFOAMReader"
+          root_name="OpenFOAMReader"
+	  class="vtkPVAdvancedReaderModule"
+	  module_type="Reader"
+	  extensions=".foam"
+	  file_description="OpenFOAM  Files">
+    <Source class="vtkOpenFOAMReader"/>
+    <Scale property="TimeStep"
+           label="Time step"
+           trace_name="TimeStep"
+           keeps_timesteps="1"
+           help="Set the current timestep."/>
+    <ArraySelection label_text="Cell Arrays"
+                    property="CellArrayStatus"
+                    trace_name="CellSelection"/>
+  </Module>
+  <Module name="MFIXReader"
+          root_name="MFIXReader"
+          class="vtkPVAdvancedReaderModule"
+          module_type="Reader"
+          extensions=".RES"
           file_description="MFIX UnstructuredGrid Files">
   <Source class="vtkMFIXReader"/>
 
-  <Scale property="TimeStep" 
-         label="Time step" 
-         trace_name="TimeStep" 
-         keeps_timesteps="1" 
+  <Scale property="TimeStep"
+         label="Time step"
+         trace_name="TimeStep"
+         keeps_timesteps="1"
          help="Set the current timestep."/>
   <ArraySelection label_text="Cell Arrays"
-                  property="CellArrayStatus" 
+                  property="CellArrayStatus"
                   trace_name="CellSelection"/>
   </Module>
   <Module name="FLUENTReader"
           root_name="FLUENTReader"
           class="vtkPVAdvancedReaderModule"
-          module_type="Reader" 
-          extensions=".cas" 
+          module_type="Reader"
+          extensions=".cas"
           file_description="Fluent Case File">
   <Source class="vtkFLUENTReader"/>
 
@@ -51,7 +51,7 @@
           extensions=".pvd"
           file_description="ParaView Data Files">
     <Source class="vtkPVDReader"/>
-    
+
     <Scale property="TimeStep"
            label="Time step" trace_name="TimeStep"
            keeps_timesteps="1"
@@ -304,7 +304,7 @@
                  trace_name="file_pattern"
                  help="Pattern used to load files. There are two parts to it prefix (%s) and the file number (%i)" />
 
-    
+
     <MinMax trace_name="FileRange"
             property="FileRange"
             min_label="First Index"
@@ -408,7 +408,7 @@
     <ArraySelection trace_name="cell_array_sel"
                     property="CellArrayStatus"
                     label_text="Cell Arrays" />
-    <ArraySelection trace_name="point_array_sel" 
+    <ArraySelection trace_name="point_array_sel"
                     property="PointArrayStatus"
                     label_text="Point Arrays" />
     <VectorEntry label="Stride"
