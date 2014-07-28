@@ -42,6 +42,8 @@
 
       INCLUDE 'function.inc'
 
+      IF(NO_K .OR. KMAX==1) RETURN
+
       I1=1
       I2=2
 
