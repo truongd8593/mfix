@@ -33,6 +33,8 @@
       NEIGHBOURS(:,:) = -1
       NEIGHBOURS(:,1) = 0
       
+      collision_num = 0
+
       IF (DES_NEIGHBOR_SEARCH.EQ.1) THEN
          CALL NSQUARE
       ELSEIF (DES_NEIGHBOR_SEARCH.EQ.4) THEN 

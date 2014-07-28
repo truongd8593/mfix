@@ -182,6 +182,14 @@
 ! Neighbor search
       Allocate(  NEIGHBOURS (NPARTICLES, MAXNEIGHBORS) )
 
+      COLLISION_NUM = 0
+      COLLISION_MAX = 1024
+      Allocate(  COLLISIONS (2,COLLISION_MAX) )
+!      Allocate(  FC_COLL  (3,COLLISION_MAX) )
+      Allocate(  PV_COLL (COLLISION_MAX) )
+      Allocate(  PFT_COLL (3,COLLISION_MAX) )
+      Allocate(  PFN_COLL (3,COLLISION_MAX) )
+
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
       ALLOCATE(PIC(DIMENSION_3))
@@ -499,3 +507,44 @@
       RETURN
       END SUBROUTINE ALLOCATE_PIC_MIO
 
+      SUBROUTINE collision_add(ii,jj)
+        USE discretelement
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: ii,jj
+        LOGICAL, DIMENSION(:), ALLOCATABLE :: bool_tmp
+        INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
+        DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: real_tmp
+
+        collision_num = collision_num +1
+
+        ! if we run out of space, reallocate to double the size of the arrays
+        if (collision_num.gt.collision_max) then
+           allocate(int_tmp(2,2*collision_max))
+           int_tmp(:,1:collision_max) = collisions(:,1:collision_max)
+           call move_alloc(int_tmp,collisions)
+
+!           allocate(real_tmp(3,2*collision_max))
+!           real_tmp(:,1:collision_max) = fc_coll(:,1:collision_max)
+!           call move_alloc(real_tmp,fc_coll)
+
+           allocate(bool_tmp(2*collision_max))
+           bool_tmp(1:collision_max) = pv_coll(1:collision_max)
+           call move_alloc(bool_tmp,pv_coll)
+
+           allocate(real_tmp(3,2*collision_max))
+           real_tmp(:,1:collision_max) = pft_coll(:,1:collision_max)
+           call move_alloc(real_tmp,pft_coll)
+
+           allocate(real_tmp(3,2*collision_max))
+           real_tmp(:,1:collision_max) = pfn_coll(:,1:collision_max)
+           call move_alloc(real_tmp,pfn_coll)
+
+           collision_max = 2*collision_max
+        endif
+
+        collisions(1,collision_num) = ii
+        collisions(2,collision_num) = jj
+        pv_coll(collision_num) = .false.
+        pft_coll(:,collision_num) = 0.0
+        pfn_coll(:,collision_num) = 0.0
+      END SUBROUTINE collision_add

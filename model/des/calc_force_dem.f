@@ -28,7 +28,7 @@
 ! percent of particle radius when excess overlap will be flagged
       DOUBLE PRECISION, PARAMETER :: flag_overlap = 0.20d0
 ! particle no. indices
-      INTEGER :: I, LL
+      INTEGER :: I, LL, CC
 ! loop counters (neighbor particles, walls, dimension)
       INTEGER :: II, IW, IDIMN
 ! loop counter and indices for neighbor information
@@ -194,20 +194,12 @@
 
 ! Check particle LL neighbour contacts
 !----------------------------------------------------------------->>>
-      DO LL = 1, MAX_PIP
 
-! skipping non-existent particles
-         IF(.NOT.PEA(LL,1)) CYCLE
-! skipping ghost particles
-         IF(PEA(LL,4)) CYCLE
-
-         DO II = 2, NEIGHBOURS(LL,1)+1
-            I = NEIGHBOURS(LL,II)
-
-            IF(.NOT.PEA(I,1)) CYCLE
+      DO CC = 1, COLLISION_NUM
+            LL = COLLISIONS(1,CC)
+            I  = COLLISIONS(2,CC)
 
             ALREADY_NEIGHBOURS=.FALSE.
-
             DO NEIGH_L = 2, PN(1,LL)+1
                IF(I.EQ. PN(NEIGH_L,LL)) THEN
                   ALREADY_NEIGHBOURS=.TRUE.
@@ -310,7 +302,6 @@
                PFT(LL,NI,:) = PFT_TMP(:)
             ENDIF
 
-         ENDDO            ! DO II = 2, NEIGHBOURS(LL,1)+I
    ENDDO
 
    ! Calculate gas-solids drag force on particle
