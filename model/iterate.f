@@ -234,6 +234,9 @@
 ! Solve starred velocity components
       CALL SOLVE_VEL_STAR(IER)
 
+! Correct the centerline velocity for cylindrical simulations.
+      IF(CYLINDRICAL) CALL RADIAL_VEL_CORRECTION
+
 ! Calculate densities.
       CALL PHYSICAL_PROP(IER, 0)
       goto( 1000 ), IER_MANAGER(IER)
