@@ -254,7 +254,7 @@
 ! Set the index of the inert species
          IIS = INERT_SPECIES(M)
 ! Calculate the minimum solids denisty.
-         minROPs = BASE_ROs(M)*DIL_EP_s
+         minROPs = BASE_ROs(M)*(10.0d0*DIL_EP_s)
 
 ! Calculate the solids denisty over all cells.
          IJK_LP: DO IJK = IJKSTART3, IJKEND3
