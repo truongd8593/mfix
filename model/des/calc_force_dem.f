@@ -218,7 +218,7 @@
             IF(DISTMOD > (R_LM + SMALL_NUMBER)**2) CYCLE
             IF(DISTMOD == 0) THEN
                WRITE(*,'(5X,A,I10,I10)') 'DISTMOD is zero between particle-pair ',LL, I
-               STOP -1
+               STOP "division by zero"
             ENDIF
             DISTMOD = SQRT(DISTMOD)
             NORMAL(:)= DIST(:)/DISTMOD
