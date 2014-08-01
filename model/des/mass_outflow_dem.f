@@ -42,12 +42,12 @@
                IF(PEA(NP,4)) CYCLE
 
                SELECT CASE (BC_PLANE(BCV))
-               CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(NP,2)
-               CASE('N'); DIST = DES_POS_NEW(NP,2) - YN(BC_J_s(BCV))
-               CASE('W'); DIST = XE(BC_I_w(BCV)-1) - DES_POS_NEW(NP,1)
-               CASE('E'); DIST = DES_POS_NEW(NP,1) - XE(BC_I_w(BCV))
-               CASE('B'); DIST = ZT(BC_K_b(BCV)-1) - DES_POS_NEW(NP,3)
-               CASE('T'); DIST = DES_POS_NEW(NP,3) - ZT(BC_K_b(BCV))
+               CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(2,NP)
+               CASE('N'); DIST = DES_POS_NEW(2,NP) - YN(BC_J_s(BCV))
+               CASE('W'); DIST = XE(BC_I_w(BCV)-1) - DES_POS_NEW(1,NP)
+               CASE('E'); DIST = DES_POS_NEW(1,NP) - XE(BC_I_w(BCV))
+               CASE('B'); DIST = ZT(BC_K_b(BCV)-1) - DES_POS_NEW(3,NP)
+               CASE('T'); DIST = DES_POS_NEW(3,NP) - ZT(BC_K_b(BCV))
                END SELECT
 
 ! The particle is still inside the domain

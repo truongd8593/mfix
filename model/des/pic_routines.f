@@ -971,7 +971,7 @@
             endif
 
             do idim = 1,  merge(2,3,NO_K)
-               AVGSOLVEL_P(NP,IDIM) = ARRAY_DOT_PRODUCT(VEL_SOL_STENCIL(:,:,:,IDIM,M),WEIGHTP(:,:,:))
+               AVGSOLVEL_P(IDIM,NP) = ARRAY_DOT_PRODUCT(VEL_SOL_STENCIL(:,:,:,IDIM,M),WEIGHTP(:,:,:))
                VEL_FP(IDIM,NP) = ARRAY_DOT_PRODUCT(VSTENCIL(:,:,:,IDIM),WEIGHTP(:,:,:))
             ENDDO
 
