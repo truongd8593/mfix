@@ -268,7 +268,7 @@
             WRITE(*,*) 'NUMBER OF FACETS = ', I_OF(IJK), J_OF(IJK), K_OF(IJK), IJK
             WRITE(*,*) 'NUMBER OF FACETS = ', COUNT_FAC, I_OF(IJK), J_OF(IJK), K_OF(IJK)
 
-            WRITE(*,'(A, 3(2x, g17.8))') 'POS = ', DES_POS_NEW(LL, :)
+            WRITE(*,'(A, 3(2x, g17.8))') 'POS = ', DES_POS_NEW(:, LL)
          ENDIF
 
 
@@ -313,23 +313,23 @@
                   COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
                   IF(COUNT_FAC.EQ.0) CYCLE
                   distsq = zero
-                  IF(DES_POS_NEW( LL , 1) > XE(I)) DISTSQ = DISTSQ &
-                  + (DES_POS_NEW(LL,1)-XE(I))*(DES_POS_NEW(LL,1)-XE(I))
+                  IF(DES_POS_NEW( 1 , LL) > XE(I)) DISTSQ = DISTSQ &
+                  + (DES_POS_NEW(1,LL)-XE(I))*(DES_POS_NEW(1,LL)-XE(I))
 
-                  IF(DES_POS_NEW( LL , 1) < XE(I) - DX(I)) DISTSQ = DISTSQ &
-                  + (XE(I) - DX(I) - DES_POS_NEW(LL,1))*(XE(I) - DX(I) - DES_POS_NEW(LL,1))
+                  IF(DES_POS_NEW( 1, LL) < XE(I) - DX(I)) DISTSQ = DISTSQ &
+                  + (XE(I) - DX(I) - DES_POS_NEW(1,LL))*(XE(I) - DX(I) - DES_POS_NEW(1,LL))
 
-                  IF(DES_POS_NEW( LL , 2) > YN(J)) DISTSQ = DISTSQ &
-                  + (DES_POS_NEW(LL,2)-YN(J))* (DES_POS_NEW(LL,2)-YN(J))
+                  IF(DES_POS_NEW( 2 , LL) > YN(J)) DISTSQ = DISTSQ &
+                  + (DES_POS_NEW(2,LL)-YN(J))* (DES_POS_NEW(2,LL)-YN(J))
 
-                  IF(DES_POS_NEW( LL , 2) < YN(J) - DY(J)) DISTSQ = DISTSQ &
-                  + (YN(J) - DY(J) - DES_POS_NEW(LL,2))* (YN(J) - DY(J) - DES_POS_NEW(LL,2))
+                  IF(DES_POS_NEW( 2 , LL) < YN(J) - DY(J)) DISTSQ = DISTSQ &
+                  + (YN(J) - DY(J) - DES_POS_NEW(2,LL))* (YN(J) - DY(J) - DES_POS_NEW(2,LL))
 
-                  IF(DES_POS_NEW( LL , 3) > ZT(K)) DISTSQ = DISTSQ &
-                  + (DES_POS_NEW(LL,3)-ZT(K))*(DES_POS_NEW(LL,3)-ZT(K))
+                  IF(DES_POS_NEW( 3 , LL) > ZT(K)) DISTSQ = DISTSQ &
+                  + (DES_POS_NEW(3,LL)-ZT(K))*(DES_POS_NEW(3,LL)-ZT(K))
 
-                  IF(DES_POS_NEW( LL , 3) < ZT(K) - DZ(K)) DISTSQ = DISTSQ &
-                  + (ZT(K) - DZ(K) - DES_POS_NEW(LL,3))*(ZT(K) - DZ(K) - DES_POS_NEW(LL,3))
+                  IF(DES_POS_NEW( 3 , LL) < ZT(K) - DZ(K)) DISTSQ = DISTSQ &
+                  + (ZT(K) - DZ(K) - DES_POS_NEW(3,LL))*(ZT(K) - DZ(K) - DES_POS_NEW(3,LL))
                   IF (DISTSQ < RADSQ) then
                      NEIGH_CELLS_NONNAT = NEIGH_CELLS_NONNAT + 1
                      NEIGH_CELLS = NEIGH_CELLS + 1
@@ -408,7 +408,7 @@
                !Assume the orthogonal projection detects an overlap
                ortho_proj_cut = .true.
 
-               ref_line(1:dimn) = des_pos_new(LL, 1:dimn)
+               ref_line(1:dimn) = des_pos_new(1:dimn, LL)
                dir_line(1:dimn) = NORM_FACE(1:dimn,NF)
                !Since this is for checking static config, line's direction
                !is the same as plane's normal. For moving particles,
@@ -622,7 +622,7 @@
       write(vtp_unit,"(9x,a)") '<CellData></CellData>'
 
       temp_array = zero
-      temp_array(1:dimn) = des_pos_new(pid, 1:dimn)
+      temp_array(1:dimn) = des_pos_new(1:dimn, pid)
       write(vtp_unit,"(9x,a)") '<Points>'
       write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
            'Name="Position" NumberOfComponents="3" format="ascii">'

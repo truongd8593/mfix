@@ -99,7 +99,7 @@
          IF(J.LT.I) CYCLE NEIGH_LP
 
 ! Calculate the center distance between the two particles
-         DISTVEC(:) = DES_POS_NEW(I,:) - DES_POS_NEW(J,:)
+         DISTVEC(:) = DES_POS_NEW(:,I) - DES_POS_NEW(:,J)
          CENTER_DIST = SQRT(DES_DOTPRDCT(DISTVEC,DISTVEC))
 
 ! Identify the solid phases of the neighbor particle

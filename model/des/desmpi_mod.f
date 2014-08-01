@@ -1175,9 +1175,9 @@
             pijk(ispot,5) = drecvbuf(lbuf,pface) ; lbuf = lbuf + 1
             des_pos_new(1:dimn,ispot)= drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
-            des_vel_new(ispot,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+            des_vel_new(1:dimn,ispot) = drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
-            omega_new(ispot,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
+            omega_new(1:ltordimn,ispot) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
             lbuf = lbuf + ltordimn
             ighost_updated(ispot) = .true.
             lnewspot(lcurpar) = ispot

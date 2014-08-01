@@ -180,8 +180,8 @@
          IF(part%INDOMAIN) then 
             count_part = count_part + 1
                      
-            des_pos_new(count_part, 1:dimn) = part%position(1:dimn)
-            des_vel_new(count_part, 1:dimn) = part%velocity(1:dimn)
+            des_pos_new(1:dimn, count_part) = part%position(1:dimn)
+            des_vel_new(1:dimn, count_part) = part%velocity(1:dimn)
             
             DES_RADIUS(count_part) = part%rad
             RO_SOL(count_part)  = part%dens
@@ -189,8 +189,8 @@
             PIJK(count_part,1:4) = part%cell(1:4)
             PIJK(count_part,5) = part%M
             phase  = part%M 
-            des_vel_old(count_part, :) = des_vel_new(count_part, :)
-            des_pos_old(count_part, :) = des_pos_new(count_part, :)
+            des_vel_old(:, count_part) = des_vel_new(:, count_part)
+            des_pos_old(:, count_part) = des_pos_new(:, count_part)
             
             PEA(count_part,1) = .TRUE.
             

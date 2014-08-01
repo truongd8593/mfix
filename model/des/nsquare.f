@@ -114,7 +114,7 @@
                ENDDO OUTER
 
             ELSE   ! if .not.des_periodic_walls
-               DISTVEC(:) = DES_POS_NEW(LL,:) - DES_POS_NEW(L,:)
+               DISTVEC(:) = DES_POS_NEW(:,LL) - DES_POS_NEW(:,L)
                DIST = dot_product(DISTVEC,DISTVEC)
             ENDIF    ! endif des_periodic_walls
 ! ------------------------------

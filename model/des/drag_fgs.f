@@ -1682,8 +1682,8 @@
 ! Update the contact forces (FC) on the particle to include
 ! solids-solids drag force
 !----------------------------------------------------------------->>>
-         SD_FORCE(NP,:) = SS_DRAG(IJK,M,:)*PVOL(NP)
-         FC(:,NP) = FC(:,NP) + SD_FORCE(NP,:)
+         SD_FORCE(:,NP) = SS_DRAG(IJK,M,:)*PVOL(NP)
+         FC(:,NP) = FC(:,NP) + SD_FORCE(:,NP)
 !-----------------------------------------------------------------<<<
 
       ENDDO   ! end do loop (np=1,max_pip)

@@ -40,12 +40,12 @@
                NP = PIC(IJK)%p(LS)
                IF(PEA(NP,3)) CYCLE
                SELECT CASE (BC_PLANE(BCV))
-               CASE('N'); DIST = DES_POS_NEW(NP,2) - YN(BC_J_s(BCV))
-               CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(NP,2)
-               CASE('E'); DIST = DES_POS_NEW(NP,1) - XE(BC_I_w(BCV))
-               CASE('W'); DIST = XE(BC_I_w(BCV)-1) - DES_POS_NEW(NP,1)
-               CASE('T'); DIST = DES_POS_NEW(NP,3) - ZT(BC_K_b(BCV))
-               CASE('B'); DIST = ZT(BC_K_b(BCV)-1) - DES_POS_NEW(NP,3)
+               CASE('N'); DIST = DES_POS_NEW(2,NP) - YN(BC_J_s(BCV))
+               CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(2,NP)
+               CASE('E'); DIST = DES_POS_NEW(1,NP) - XE(BC_I_w(BCV))
+               CASE('W'); DIST = XE(BC_I_w(BCV)-1) - DES_POS_NEW(1,NP)
+               CASE('T'); DIST = DES_POS_NEW(3,NP) - ZT(BC_K_b(BCV))
+               CASE('B'); DIST = ZT(BC_K_b(BCV)-1) - DES_POS_NEW(3,NP)
                END SELECT
 ! The particle is still inside the domain
                IF(DIST > DES_RADIUS(NP)) PEA(NP,2) = .FALSE.
@@ -295,19 +295,19 @@
       PEA(lNP,3:4) = .FALSE. ! It is not exiting nor a ghost particle
 
 ! Set the initial position values based on mass inlet class
-      DES_POS_NEW(lNP,:) = lPOS(:)
-      DES_POS_OLD(lNP,:) = lPOS(:)
+      DES_POS_NEW(:,lNP) = lPOS(:)
+      DES_POS_OLD(:,lNP) = lPOS(:)
 
 ! Set the initial velocity values
-      DES_VEL_OLD(lNP,1) = BC_U_s(lBCV,BC_M)
-      DES_VEL_OLD(lNP,2) = BC_V_s(lBCV,BC_M)
-      DES_VEL_OLD(lNP,3) = BC_W_s(lBCV,BC_M)
+      DES_VEL_OLD(1,lNP) = BC_U_s(lBCV,BC_M)
+      DES_VEL_OLD(2,lNP) = BC_V_s(lBCV,BC_M)
+      DES_VEL_OLD(3,lNP) = BC_W_s(lBCV,BC_M)
 
-      DES_VEL_NEW(lNP,:) = DES_VEL_OLD(lNP,:)
+      DES_VEL_NEW(:,lNP) = DES_VEL_OLD(:,lNP)
 
 ! Set the initial angular velocity values
-      OMEGA_OLD(lNP,:) = 0
-      OMEGA_NEW(lNP,:) = 0
+      OMEGA_OLD(:,lNP) = 0
+      OMEGA_NEW(:,lNP) = 0
 
 ! Set the particle radius value
       DES_RADIUS(lNP) = HALF * DES_D_P0(lM)
@@ -443,7 +443,7 @@
                NPG =  SIZE(PIC(IJK)%P)
                DO LL = 1, NPG
                   NP2 = PIC(IJK)%P(LL)
-                  DISTVEC(:) = ppar_pos(:) - DES_POS_NEW(NP2,:)
+                  DISTVEC(:) = ppar_pos(:) - DES_POS_NEW(:,NP2)
                   DIST = SQRT(DES_DOTPRDCT(DISTVEC,DISTVEC))
                   R_LM = ppar_rad + DES_RADIUS(NP2)
                   IF(DIST .LE. R_LM) TOUCHING = .TRUE.
