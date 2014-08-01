@@ -50,10 +50,10 @@
 
 
       DOUBLE PRECISION :: DES_KE_VEC(DIMN)
-      
-      !time till which the PIC loop will be run 
+
+      !time till which the PIC loop will be run
       double precision :: TEND_PIC_LOOP
-      !number of PIC time steps 
+      !number of PIC time steps
       Integer :: PIC_ITERS
 ! Identifies that the indicated particle is of interest for debugging
       LOGICAL FOCUS
@@ -72,7 +72,7 @@
       IF(DES_CONTINUUM_COUPLED)   CALL COMPUTE_PG_GRAD
 
       TEND_PIC_LOOP = MERGE(TIME+DT, TSTOP, DES_CONTINUUM_COUPLED)
-      PIC_ITERS = 0 
+      PIC_ITERS = 0
       DO WHILE(S_TIME.LT.TEND_PIC_LOOP)
          ! If the current time in the discrete loop exceeds the current time in
          ! the continuum simulation, exit the lagrangian loop
@@ -80,19 +80,19 @@
          !DTPIC_MAX = MIN( 1e-04, DTPIC_MAX)
          DTSOLID = MERGE(MIN(DTPIC_MAX, DT), DTPIC_MAX, DES_CONTINUUM_COUPLED)
          DTSOLID_ORIG  = DTSOLID
-         IF(MOD(PIC_ITERS, 10).eq.0) then 
-            IF(DES_CONTINUUM_COUPLED) then 
+         IF(MOD(PIC_ITERS, 10).eq.0) then
+            IF(DES_CONTINUUM_COUPLED) then
                WRITE(ERR_MSG, 2000) DTSOLID, DTPIC_CFL, DTPIC_TAUP, DT
-               
+
 2000           FORMAT(/5x, &
                     & 'DTSOLID CURRENT  = ', g17.8, /5x,  &
                     & 'DTPIC_CFL        = ', g17.8, /5x,  &
                     & 'DTPIC TAUP       = ', g17.8, /5x, &
                     & 'DT FLOW          = ', g17.8)
             ELSE
-               
+
                WRITE(ERR_MSG, 2001) S_TIME, DTSOLID, DTPIC_CFL, DTPIC_TAUP, DT
-               
+
 2001           FORMAT(/5x, &
                     & 'TIME             = ', g17.8, /5x,  &
                     & 'DTSOLID CURRENT  = ', g17.8, /5x,  &
@@ -103,7 +103,7 @@
             CALL flush_err_msg(header = .false., footer = .false.)
          ENDIF
 
-         PIC_ITERS  = PIC_ITERS + 1 
+         PIC_ITERS  = PIC_ITERS + 1
 
          IF(S_TIME + DTSOLID.GT.TEND_PIC_LOOP) then
             ! If next time step in the discrete loop will exceed the current time
@@ -130,8 +130,8 @@
 
          ! Impose the wall-particle boundary condition for pic case
          ! The same routine also applies the mass inflow/outflow BCs as well
-         CALL PIC_APPLY_WALLBC_STL 
-  
+         CALL PIC_APPLY_WALLBC_STL
+
 
          ! Update time to reflect changes
          S_TIME = S_TIME + DTSOLID
@@ -139,7 +139,7 @@
 
          DTPIC_MAX = MIN(DTPIC_CFL, DTPIC_TAUP)
 
-         ! When coupled, all write calls are made in time_march (the continuum 
+         ! When coupled, all write calls are made in time_march (the continuum
          ! portion) according to user settings for spx_time and res_time.
          ! The following section targets data writes for DEM only cases:
          IF(.NOT.DES_CONTINUUM_COUPLED) THEN
@@ -147,10 +147,10 @@
             TIME = S_TIME
 
 ! Write data using des_spx_time and des_res_time; note the time will
-! reflect current position of particles  
+! reflect current position of particles
             IF(PRINT_DES_DATA) THEN
                IF ( (S_TIME+0.1d0*DTSOLID >= DES_SPX_TIME) .OR. &
-                    (S_TIME+0.1d0*DTSOLID >= TSTOP)) then 
+                    (S_TIME+0.1d0*DTSOLID >= TSTOP)) then
                   DES_SPX_TIME = &
                      ( INT((S_TIME+0.1d0*DTSOLID)/DES_SPX_DT) &
                      + 1 )*DES_SPX_DT
@@ -174,10 +174,10 @@
                'DES.RES and .RES files written at time =', S_TIME
             ENDIF
          ENDIF  ! end if (.not.des_continuum_coupled)
-         
-     
 
-         
+
+
+
       ENDDO
 
       IF(DMP_LOG)       WRITE(UNIT_LOG,'(/5x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
@@ -201,8 +201,8 @@
 ! now the above are communicated in comp_mean_fields_interp itself.
 ! so no need to communicate them here.
       END IF
-      
-      
+
+
       CALL FINL_ERR_MSG
     end SUBROUTINE PIC_TIME_MARCH
 
@@ -972,7 +972,7 @@
 
             do idim = 1,  merge(2,3,NO_K)
                AVGSOLVEL_P(NP,IDIM) = ARRAY_DOT_PRODUCT(VEL_SOL_STENCIL(:,:,:,IDIM,M),WEIGHTP(:,:,:))
-               VEL_FP(NP,IDIM) = ARRAY_DOT_PRODUCT(VSTENCIL(:,:,:,IDIM),WEIGHTP(:,:,:))
+               VEL_FP(IDIM,NP) = ARRAY_DOT_PRODUCT(VSTENCIL(:,:,:,IDIM),WEIGHTP(:,:,:))
             ENDDO
 
             EPG_P(NP) = ARRAY_DOT_PRODUCT(SSTENCIL(:,:,:),WEIGHTP(:,:,:))
@@ -1001,7 +1001,7 @@
       USE geometry
       USE indices
       USE compar
-      USE mfix_pic 
+      USE mfix_pic
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -1085,7 +1085,7 @@
       USE geometry
       USE indices
       USE compar
-      USE mfix_pic 
+      USE mfix_pic
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -1166,7 +1166,7 @@
       USE geometry
       USE indices
       USE compar
-      USE mfix_pic 
+      USE mfix_pic
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables

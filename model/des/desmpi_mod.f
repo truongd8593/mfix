@@ -792,8 +792,8 @@
          lbuf = (lcurpar-1)*lpacketsize+1
          des_radius(lcurpar) = dprocbuf(lbuf); lbuf = lbuf+1
          ro_sol(lcurpar) = dprocbuf(lbuf); lbuf = lbuf+1
-         des_pos_new(lcurpar,1:rdimn) = dprocbuf(lbuf:lbuf+rdimn-1); lbuf = lbuf+rdimn
-         des_vel_new(lcurpar,1:rdimn) = dprocbuf(lbuf:lbuf+rdimn-1); lbuf = lbuf+rdimn
+         des_pos_new(1:rdimn,lcurpar) = dprocbuf(lbuf:lbuf+rdimn-1); lbuf = lbuf+rdimn
+         des_vel_new(1:rdimn,lcurpar) = dprocbuf(lbuf:lbuf+rdimn-1); lbuf = lbuf+rdimn
          pea(lcurpar,1) = .true.
       enddo
       deallocate (dprocbuf,drootbuf)
@@ -962,7 +962,7 @@
 ! unpack the particles in each processor and set the pip
       do lcurpar = 1,pip
          lbuf = (lcurpar-1)*lpacketsize+1
-         des_pos_new(lcurpar,1:dimn) = dprocbuf(lbuf:lbuf+dimn-1); lbuf = lbuf+dimn
+         des_pos_new(1:dimn,lcurpar) = dprocbuf(lbuf:lbuf+dimn-1); lbuf = lbuf+dimn
          pea(lcurpar,1) = .true.
       enddo
       deallocate (drootbuf,dprocbuf)
@@ -1066,11 +1066,11 @@
             lbuf = lbuf +1
             dsendbuf(lbuf,pface) = des_radius(lcurpar); lbuf = lbuf + 1
             dsendbuf(lbuf,pface) = pijk(lcurpar,5); lbuf = lbuf + 1
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_new(lcurpar,1:dimn)+dcycl_offset(pface,1:dimn)
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_new(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn)
             lbuf = lbuf + dimn
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_new(lcurpar,1:dimn)
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_new(1:dimn,lcurpar)
             lbuf = lbuf + dimn
-            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_new(lcurpar,1:ltordimn)
+            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_new(1:ltordimn,lcurpar)
             lbuf = lbuf + ltordimn
             lpar_cnt = lpar_cnt + 1
          end do
@@ -1134,14 +1134,14 @@
             lbuf = lbuf + 1
             pijk(llocpar,5) = drecvbuf(lbuf,pface)
             lbuf = lbuf + 1
-            des_pos_old(llocpar,:)= des_pos_new(llocpar,:)
-            des_vel_old(llocpar,:)= des_vel_new(llocpar,:)
-            omega_old(llocpar,:)= omega_new(llocpar,:)
-            des_pos_new(llocpar,1:dimn)= drecvbuf(lbuf:lbuf+dimn-1,pface)
+            des_pos_old(:,llocpar)= des_pos_new(:,llocpar)
+            des_vel_old(:,llocpar)= des_vel_new(:,llocpar)
+            omega_old(:,llocpar)= omega_new(:,llocpar)
+            des_pos_new(1:dimn,llocpar)= drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
-            des_vel_new(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+            des_vel_new(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
-            omega_new(llocpar,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
+            omega_new(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
             lbuf = lbuf + ltordimn
             ighost_updated(llocpar) = .true.
             lnewcnt = lnewcnt-1
@@ -1173,7 +1173,7 @@
             dg_pijkprv(ispot) = lprvijk
             des_radius(ispot) = drecvbuf(lbuf,pface) ; lbuf = lbuf + 1
             pijk(ispot,5) = drecvbuf(lbuf,pface) ; lbuf = lbuf + 1
-            des_pos_new(ispot,1:dimn)= drecvbuf(lbuf:lbuf+dimn-1,pface)
+            des_pos_new(1:dimn,ispot)= drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
             des_vel_new(ispot,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
@@ -1181,9 +1181,9 @@
             lbuf = lbuf + ltordimn
             ighost_updated(ispot) = .true.
             lnewspot(lcurpar) = ispot
-            des_pos_old(ispot,1:dimn) = des_pos_new(ispot,1:dimn)
-            des_vel_old(ispot,1:dimn) = des_vel_new(ispot,1:dimn)
-            omega_old(ispot,1:ltordimn) = omega_new(ispot,1:ltordimn)
+            des_pos_old(1:dimn,ispot) = des_pos_new(1:dimn,ispot)
+            des_vel_old(1:dimn,ispot) = des_vel_new(1:dimn,ispot)
+            omega_old(1:ltordimn,ispot) = omega_new(1:ltordimn,ispot)
          enddo
       endif
 
@@ -1222,11 +1222,11 @@
                ft(:,lcurpar) = 0.0
                pn(:,lcurpar) = 0 ; pv(:,lcurpar) = .false.
                pft(lcurpar,:,:) = 0
-               des_pos_new(lcurpar,:)=0
-               des_pos_old(lcurpar,:)=0
-               des_vel_new(lcurpar,:)=0
-               des_vel_old(lcurpar,:)=0
-               omega_new(lcurpar,:)=0
+               des_pos_new(:,lcurpar)=0
+               des_pos_old(:,lcurpar)=0
+               des_vel_new(:,lcurpar)=0
+               des_vel_old(:,lcurpar)=0
+               omega_new(:,lcurpar)=0
                neighbours(lcurpar,:)=0
             end do
          end do
@@ -1295,21 +1295,21 @@
             dsendbuf(lbuf,pface) = pvol(lcurpar)        ;lbuf = lbuf+1
             dsendbuf(lbuf,pface) = pmass(lcurpar)       ;lbuf = lbuf+1
             dsendbuf(lbuf,pface) = omoi(lcurpar)        ;lbuf = lbuf+1
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_old(lcurpar,1:dimn)+dcycl_offset(pface,1:dimn)
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_old(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn)
             lbuf = lbuf+dimn
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_new(lcurpar,1:dimn)+dcycl_offset(pface,1:dimn)
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_new(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn)
             lbuf = lbuf+dimn
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_old(lcurpar,1:dimn)
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_old(1:dimn,lcurpar)
             lbuf = lbuf+dimn
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_new(lcurpar,1:dimn)
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_new(1:dimn,lcurpar)
             lbuf = lbuf+dimn
-            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_old(lcurpar,1:ltordimn)
+            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_old(1:ltordimn,lcurpar)
             lbuf = lbuf+ltordimn
-            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_new(lcurpar,1:ltordimn)
+            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_new(1:ltordimn,lcurpar)
             lbuf = lbuf+ltordimn
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_acc_old(lcurpar,1:dimn)
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_acc_old(1:dimn,lcurpar)
             lbuf = lbuf+dimn
-            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = rot_acc_old(lcurpar,1:ltordimn)
+            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = rot_acc_old(1:ltordimn,lcurpar)
             lbuf = lbuf+ltordimn
             dsendbuf(lbuf:lbuf+dimn-1,pface) = fc(:,lcurpar)
             lbuf = lbuf+dimn
@@ -1475,21 +1475,21 @@
          lbuf = lbuf + 1
          omoi(llocpar)        = drecvbuf(lbuf,pface)
          lbuf = lbuf + 1
-         des_pos_old(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+         des_pos_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
          lbuf = lbuf + dimn
-         des_pos_new(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+         des_pos_new(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
          lbuf = lbuf + dimn
-         des_vel_old(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+         des_vel_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
          lbuf = lbuf + dimn
-         des_vel_new(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+         des_vel_new(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
          lbuf = lbuf + dimn
-         omega_old(llocpar,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
+         omega_old(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
          lbuf = lbuf + ltordimn
-         omega_new(llocpar,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
+         omega_new(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
          lbuf = lbuf + ltordimn
-         des_acc_old(llocpar,1:dimn) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+         des_acc_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
          lbuf = lbuf + dimn
-         rot_acc_old(llocpar,1:ltordimn) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
+         rot_acc_old(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
          lbuf = lbuf + ltordimn
          fc(:,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
          lbuf = lbuf + dimn
@@ -2732,8 +2732,8 @@
              if (lparcount.gt.pip) exit
              if (.not.pea(lcurpar,1))cycle
              lparcount=lparcount + 1
-             xpos = des_pos_new(lcurpar,1)
-             ypos = des_pos_new(lcurpar,2)
+             xpos = des_pos_new(1,lcurpar)
+             ypos = des_pos_new(2,lcurpar)
              li=iofpos(xpos);lj=jofpos(ypos)
              write(44,*)pea(lcurpar,4),xpos,ypos,li,lj,dg_funijk(li,lj,1)
           end do
@@ -2814,7 +2814,7 @@
          do lcurpar = 1,max_pip
             if(lparcnt.gt.pip) exit
             lparcnt = lparcnt + 1
-            write(44,*) "particle position =",des_pos_new(lcurpar,1:dimn)
+            write(44,*) "particle position =",des_pos_new(1:dimn,lcurpar)
          end do
          write(44,*) "-----------------------------------------------"
       case (7)
@@ -2828,18 +2828,18 @@
             lparcnt = lparcnt+1
             if(pea(lcurpar,4)) cycle
             write(44,*) "Info for particle", iglobal_id(lcurpar)
-            write(44,*) "position new ", des_pos_new(lcurpar,:)
+            write(44,*) "position new ", des_pos_new(:,lcurpar)
             lcurijk = dg_pijk(lcurpar)
             write(44,*) "Total Neighbours", neighbours(lcurpar,1)
             do lneighindx = 2,neighbours(lcurpar,1)+1
                write(44,*)"Neghibour ",neighbours(lcurpar,lneighindx)
-               write(44,*)"Neighbour par position",des_pos_new(neighbours(lcurpar,lneighindx),:)
+               write(44,*)"Neighbour par position",des_pos_new(:,neighbours(lcurpar,lneighindx))
             end do
             write(44,*) "Total contacts", pn(1,lcurpar)
             do lcontactindx = 2,pn(1,lcurpar)+1
                write(44,*)"contact ", pn(lcontactindx,lcurpar)
                write(44,*)"incontact ", pv(lcontactindx,lcurpar)
-               write(44,*)"contact par position",des_pos_new(pn(lcontactindx,lcurpar),:)
+               write(44,*)"contact par position",des_pos_new(:,pn(lcontactindx,lcurpar))
             end do
          end do
          write(44,*) "-----------------------------------------------"

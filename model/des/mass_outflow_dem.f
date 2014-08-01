@@ -59,7 +59,7 @@
 ! set. This implementation is strict as complex BCs (via STLs) can let
 ! particles pop through the wall along the outlet.
                ELSEIF(DIST > ZERO) THEN
-                  DES_VEL_NEW(NP,:) = DES_VEL_NEW(NP,:)*FREEZE(:)
+                  DES_VEL_NEW(:,NP) = DES_VEL_NEW(:,NP)*FREEZE(:)
                   PEA(NP,2) = .TRUE.
                   PEA(NP,3) = .TRUE.
 
@@ -127,10 +127,10 @@
 
       PEA(NP,:) = .FALSE.
 
-      DES_POS_OLD(NP,:) = ZERO
-      DES_POS_NEW(NP,:) = ZERO
-      DES_VEL_OLD(NP,:) = ZERO
-      DES_VEL_NEW(NP,:) = ZERO
+      DES_POS_OLD(:,NP) = ZERO
+      DES_POS_NEW(:,NP) = ZERO
+      DES_VEL_OLD(:,NP) = ZERO
+      DES_VEL_NEW(:,NP) = ZERO
       OMEGA_OLD(NP,:) = ZERO
       OMEGA_NEW(NP,:) = ZERO
       DES_RADIUS(NP) = ZERO

@@ -102,8 +102,8 @@
       INTEGER :: LB, UB
       INTEGER :: PC, LC1, LC2
 
-      LB = LBOUND(DATA,2)
-      UB = UBOUND(DATA,2)
+      LB = LBOUND(DATA,1)
+      UB = UBOUND(DATA,1)
       NOC=''; WRITE(NOC,*) (UB-LB)+1
 
       IF(bDist_IO) THEN
@@ -117,7 +117,7 @@
             PC = PC+1
             IF(PEA(LC1,4)) CYCLE
             DO LC2=LB, UB
-               WRITE(DES_UNIT,1001,ADVANCE="NO") real(DATA(LC1,LC2))
+               WRITE(DES_UNIT,1001,ADVANCE="NO") real(DATA(LC2,LC1))
             ENDDO
          ENDDO
          WRITE(DES_UNIT,1002)
@@ -129,7 +129,7 @@
          allocate (ltemp_array(GLOBAL_CNT,(UB-LB)+1))
 
          DO LC1 = LB, UB
-            CALL DES_GATHER(DATA(:,LC1))
+            CALL DES_GATHER(DATA(LC1,:))
             ltemp_array(:,LC1) = drootbuf(:)
          ENDDO
 
@@ -251,7 +251,7 @@
 ! logical used for testing is the data file already exists
       LOGICAL :: F_EXISTS
 
-! Variables related to gather 
+! Variables related to gather
       integer lgathercnts(0:numpes-1), lproc
 
 ! check whether an error occurs in opening a file
@@ -294,13 +294,13 @@
          lgathercnts(myPE) = LOCAL_CNT
          call global_sum(lgathercnts,igathercnts)
 
-! Calculate the rank displacements. 
+! Calculate the rank displacements.
          idispls(0) = 0
          DO lPROC = 1,NUMPEs-1
             idispls(lproc) = idispls(lproc-1) + igathercnts(lproc-1)
          ENDDO
 
-! set the file name and unit number and open file 
+! set the file name and unit number and open file
          WRITE(fname_vtp,'(A,"_DES_",I5.5,".vtp")') &
             trim(run_name), vtp_findex
       ENDIF
@@ -374,7 +374,7 @@
 
 !-----------------------------------------------
 ! Local Variables
-!-----------------------------------------------       
+!-----------------------------------------------
 ! Index position of desired character
       INTEGER IDX_f, IDX_b
 ! logical used for testing is the data file already exists
@@ -395,10 +395,10 @@
 ! IO Status flag
       INTEGER :: IOS
 
-! Variables related to gather 
+! Variables related to gather
       integer :: IER
 
-!----------------------------------------------- 
+!-----------------------------------------------
 
 
       CALL INIT_ERR_MSG('VTP_MOD --> ADD_VTP_TO_PVD')
@@ -460,7 +460,7 @@
                         IER = 4
                         EXIT
                      ELSEIF(IOS<0)THEN
-! The end of the pvd file has been reached without finding an entry 
+! The end of the pvd file has been reached without finding an entry
 ! matching the current record. Exit the loop.
                         BACKSPACE(PVD_UNIT)
                         EXIT

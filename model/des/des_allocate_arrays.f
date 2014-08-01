@@ -133,24 +133,24 @@
 
 ! Old and new particle positions, velocities (translational and
 ! rotational)
-      Allocate(  DES_POS_OLD (NPARTICLES,DIMN) )
-      Allocate(  DES_POS_NEW (NPARTICLES,DIMN) )
-      Allocate(  DES_VEL_OLD (NPARTICLES,DIMN) )
-      Allocate(  DES_VEL_NEW (NPARTICLES,DIMN) )
-      Allocate(  DES_ACC_OLD (NPARTICLES,DIMN) )
+      Allocate(  DES_POS_OLD (DIMN,NPARTICLES) )
+      Allocate(  DES_POS_NEW (DIMN,NPARTICLES) )
+      Allocate(  DES_VEL_OLD (DIMN,NPARTICLES) )
+      Allocate(  DES_VEL_NEW (DIMN,NPARTICLES) )
+      Allocate(  DES_ACC_OLD (DIMN,NPARTICLES) )
 
       IF(DO_K) THEN
-         Allocate(  OMEGA_OLD (NPARTICLES,DIMN) )
-         Allocate(  OMEGA_NEW (NPARTICLES,DIMN) )
-         ALLOCATE(  ROT_ACC_OLD (NPARTICLES,DIMN))
+         Allocate(  OMEGA_OLD (DIMN,NPARTICLES) )
+         Allocate(  OMEGA_NEW (DIMN,NPARTICLES) )
+         ALLOCATE(  ROT_ACC_OLD (DIMN,NPARTICLES))
       ELSE
-         Allocate(  OMEGA_OLD (NPARTICLES,1) )
-         Allocate(  OMEGA_NEW (NPARTICLES,1) )
-         ALLOCATE(  ROT_ACC_OLD (NPARTICLES,1))
+         Allocate(  OMEGA_OLD (1,NPARTICLES) )
+         Allocate(  OMEGA_NEW (1,NPARTICLES) )
+         ALLOCATE(  ROT_ACC_OLD (1,NPARTICLES))
       ENDIF
 
 ! Particle positions at the last call neighbor search algorithm call
-      Allocate(  PPOS (NPARTICLES,DIMN) )
+      Allocate(  PPOS (DIMN,NPARTICLES) )
 
 ! Total, normal and tangetial forces
       Allocate(  FC (DIMN,NPARTICLES) )
@@ -217,7 +217,7 @@
       IF(DES_INTERP_ON) THEN
          ALLOCATE(DRAG_AM(DIMENSION_3, DES_MMAX))
          ALLOCATE(DRAG_BM(DIMENSION_3, DIMN, DES_MMAX))
-         ALLOCATE(VEL_FP(NPARTICLES,DIMN))
+         ALLOCATE(VEL_FP(DIMN,NPARTICLES))
          ALLOCATE(F_gp(NPARTICLES ))
          F_gp(1:NPARTICLES)  = ZERO
       ENDIF
@@ -230,7 +230,7 @@
 ! force due to gas-pressure gradient
       ALLOCATE(P_FORCE(DIMENSION_3,DIMN))
 ! force due to gas-solids drag on a particle
-      ALLOCATE(GD_FORCE(NPARTICLES,DIMN))
+      ALLOCATE(GD_FORCE(DIMN,NPARTICLES))
 
 ! Volume averaged solids volume in a computational fluid cell
       Allocate(  DES_U_s (DIMENSION_3, DES_MMAX) )
@@ -246,7 +246,7 @@
          ALLOCATE(F_SDS(DIMENSION_3,DIMENSION_M,DES_MMAX))
          ALLOCATE(VXF_GDS(DIMENSION_3,DES_MMAX))
          ALLOCATE(VXF_SDS(DIMENSION_3,DIMENSION_M,DES_MMAX))
-         ALLOCATE(SD_FORCE(NPARTICLES,DIMN))
+         ALLOCATE(SD_FORCE(DIMN,NPARTICLES))
       ENDIF
 ! Bulk density in a computational fluid cell / for communication with
 ! MFIX continuum
@@ -260,13 +260,13 @@
             F_GP(1:NPARTICLES)  = ZERO
          ENDIF
 
-         IF(.NOT.ALLOCATED(VEL_FP)) ALLOCATE(VEL_FP(NPARTICLES,DIMN))
+         IF(.NOT.ALLOCATED(VEL_FP)) ALLOCATE(VEL_FP(DIMN,NPARTICLES))
 
          Allocate(PS_FORCE_PIC(DIMENSION_3, DIMN))
          ALLOCATE(DES_STAT_WT(NPARTICLES))
          ALLOCATE(DES_VEL_MAX(DIMN))
          ALLOCATE(PS_GRAD(NPARTICLES, DIMN))
-         ALLOCATE(AVGSOLVEL_P(NPARTICLES, DIMN))
+         ALLOCATE(AVGSOLVEL_P(DIMN, NPARTICLES))
          ALLOCATE(EPG_P(NPARTICLES))
 
          Allocate(PIC_U_S(DIMENSION_3, DES_MMAX))
@@ -309,7 +309,7 @@
       IF(USE_COHESION) THEN
 ! Matrix location of particle  (should be allocated in case user wishes
 ! to invoke routines in /cohesion subdirectory
-         Allocate(  FCohesive (NPARTICLES,DIMN) )
+         Allocate(  FCohesive (DIMN,NPARTICLES) )
          Allocate(  PostCohesive (NPARTICLES) )
       ENDIF
 ! END COHESION

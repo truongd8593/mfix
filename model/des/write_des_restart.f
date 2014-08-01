@@ -1,31 +1,31 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvc
-!                                       
-!  module name: des_write_restart        
-!  purpose: writing des data for restart  
-!                         
-!  Author : Pradeep G      
-!  Purpose : Reads either single restart file or multiple restart files     
-!            (based on bdist_io) flag 
+!
+!  module name: des_write_restart
+!  purpose: writing des data for restart
+!
+!  Author : Pradeep G
+!  Purpose : Reads either single restart file or multiple restart files
+!            (based on bdist_io) flag
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^c
       subroutine des_write_restart
 
-      use param1      
+      use param1
       use compar
       use discretelement
       use run
       use des_bc
       use des_rxns
       use des_thermo
-      use desmpi 
-      use machine 
-      use cdist 
+      use desmpi
+      use machine
+      use cdist
       use mpi_utility
 
       implicit none
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      integer lboundnum 
+      integer lboundnum
       integer li,lj,lres_unit,lnext_rec,ltot_pip,ltor_dimn,lsize
       integer lproc,lparcnt,lglocnt,lgathercnts(0:numpes-1)
       logical lassoc
@@ -37,20 +37,20 @@
 
 ! Create the restart file name and open. A restart can either be
 ! distributed, where each process writes a restart file. Or, a restart
-! can be serial, where a single restart file is written. 
-      if (bdist_io) then 
-         lres_unit = 901 
+! can be serial, where a single restart file is written.
+      if (bdist_io) then
+         lres_unit = 901
          write(lfilename,'(A,I4.4,A)') trim(run_name)//'_DES',mype,'.res'
          open (unit=lres_unit,file=lfilename,form='unformatted',status='unknown', &
                access='direct',recl=open_n1)
-      else 
-         if(mype.eq.pe_io) then 
+      else
+         if(mype.eq.pe_io) then
             lres_unit = 901
             write(lfilename,'(A)') trim(run_name)//'_DES.res'
             open (unit=lres_unit,file=lfilename,form='unformatted',status='unknown', &
                   access='direct',recl=open_n1)
-         end if 
-      end if 
+         end if
+      end if
 
 ! Distributed restart files:
 !---------------------------------------------------------------------//
@@ -64,7 +64,7 @@
 ! tecplot_findex - Output file count for tecplot type files.
 ! dtsolid - Value of solids time step based on particle properties.
          write(lres_unit,rec=1) pip, ighost_cnt, vtp_findex, &
-            tecplot_findex, dtsolid 
+            tecplot_findex, dtsolid
          lnext_rec = 6
 
 ! Particle properties:
@@ -72,8 +72,8 @@
 ! Particle positions: All x-coordinates, then all y-coordinates and for
 ! 3D simulations, all z-coordinates.
          do li = 1,dimn
-            call des_writepar(lres_unit,des_pos_new(:,li),pip,lnext_rec)
-         end do 
+            call des_writepar(lres_unit,des_pos_new(li,:),pip,lnext_rec)
+         end do
 ! Global id of all particles for parallel processing.
          call des_writepar(lres_unit,iglobal_id,pip,lnext_rec)
 ! Dynamic particle count elements:
@@ -85,12 +85,12 @@
 ! Particle velocities: All x-components, all y-components, and for 3D
 ! simulations, all z-components
          do li = 1,dimn
-            call des_writepar(lres_unit,des_vel_new(:,li),pip,lnext_rec)
+            call des_writepar(lres_unit,des_vel_new(li,:),pip,lnext_rec)
          end do
 ! Rotational velocities: 1 degree of fredom for 2D, 3 DOF for 3D
          do li = 1,ltor_dimn
-            call des_writepar(lres_unit,omega_new(:,li),pip,lnext_rec)
-         end do 
+            call des_writepar(lres_unit,omega_new(li,:),pip,lnext_rec)
+         end do
 ! Particle radi
          call des_writepar(lres_unit,des_radius,pip,lnext_rec)
 ! Particle densities
@@ -129,10 +129,10 @@
             call des_writepar(lres_unit,pn(li,:),pip,lnext_rec)
             call des_writepar(lres_unit,pv(li,:),pip,lnext_rec)
 ! Accumulated tangential displacement that occured during collision
-            do lj = 1,dimn  
+            do lj = 1,dimn
                call des_writepar(lres_unit,pft(:,li,lj),pip,lnext_rec)
-            end do 
-         end do 
+            end do
+         end do
 
 ! Mass inlet/outlet parameters:
 !--------------------------------------------------------------------->>
@@ -153,7 +153,7 @@
 !            do lboundnum =1, des_bcmi
 !               write (lres_unit,rec=lnext_rec) mi_factor(lboundnum), &
 !                  mi_window(lboundnum),particle_plcmnt(lboundnum)
-!               lnext_rec = lnext_rec + 1 
+!               lnext_rec = lnext_rec + 1
 
 !               if(particle_plcmnt(lboundnum) == 'ORDR')then
 ! For ordered inlets, store:
@@ -187,7 +187,7 @@
 !                     write (lres_unit,rec=lnext_rec) lsize;lnext_rec=lnext_rec+1
 !                     call out_bin_512i(lres_unit,j_of_mi(lboundnum)%value,lsize,lnext_rec)
 !                  endif
-!               endif  
+!               endif
 !            enddo
 !         endif
 
@@ -209,16 +209,16 @@
 
 ! Construct an array for the Root process that states the number of
 ! (real) particles on each process.
-         igath_sendcnt = lparcnt 
+         igath_sendcnt = lparcnt
          lgathercnts = 0
          lgathercnts(mype) = lparcnt
          call global_sum(lgathercnts,igathercnts)
 
 ! Calculate the displacements for each process in the global array.
-         idispls(0) = 0 
-         do lproc = 1,numpes-1 
-            idispls(lproc) = idispls(lproc-1) + igathercnts(lproc-1)  
-         end do 
+         idispls(0) = 0
+         do lproc = 1,numpes-1
+            idispls(lproc) = idispls(lproc-1) + igathercnts(lproc-1)
+         end do
 
 ! Store data in restart file:
 
@@ -229,12 +229,12 @@
 ! 3) Output file count for tecplot type files.
 ! 4) Value of solids time step based on particle properties.
          if(mype.eq.pe_io) write(lres_unit,rec=1) lglocnt, vtp_findex, &
-            tecplot_findex,dtsolid 
+            tecplot_findex,dtsolid
          lnext_rec = 6
 
 ! Position data (one coordinate at a time).
          do li = 1,dimn
-            call des_gatherwrite(lres_unit,des_pos_new(:,li),lglocnt,lnext_rec)
+            call des_gatherwrite(lres_unit,des_pos_new(li,:),lglocnt,lnext_rec)
          end do
 ! Global particle index numbers.
          call des_gatherwrite(lres_unit,iglobal_id,lglocnt,lnext_rec)
@@ -243,15 +243,15 @@
 ! 4 - Classifies particles as ghost particles
          do li = 2,4
             call des_gatherwrite(lres_unit,pea(:,li),lglocnt,lnext_rec)
-         end do 
+         end do
 ! Translational velocities (one coordinate at a time).
          do li = 1,dimn
-            call des_gatherwrite(lres_unit,des_vel_new(:,li),lglocnt,lnext_rec)
-         end do 
+            call des_gatherwrite(lres_unit,des_vel_new(li,:),lglocnt,lnext_rec)
+         end do
 ! Rotational velocity.
          do li = 1,ltor_dimn
-            call des_gatherwrite(lres_unit,omega_new(:,li),lglocnt,lnext_rec)
-         end do 
+            call des_gatherwrite(lres_unit,omega_new(li,:),lglocnt,lnext_rec)
+         end do
 ! Particle radi.
          call des_gatherwrite(lres_unit,des_radius,lglocnt,lnext_rec)
 ! Particle densities.
@@ -293,7 +293,7 @@
             do lj = 1,dimn
 ! Accumulated tangential displacement that occured during collision
                call des_gatherwrite(lres_unit,pft(:,li,lj),lglocnt,lnext_rec)
-            end do 
+            end do
          end do
 
          deallocate (dprocbuf,drootbuf,iprocbuf,irootbuf)
@@ -318,7 +318,7 @@
 !            do lboundnum =1, des_bcmi
 !               write (lres_unit,rec=lnext_rec) mi_factor(lboundnum), &
 !                  mi_window(lboundnum),particle_plcmnt(lboundnum)
-!               lnext_rec = lnext_rec + 1 
+!               lnext_rec = lnext_rec + 1
 
 !               if(particle_plcmnt(lboundnum) == 'ORDR')then
 ! For ordered inlets, store:
@@ -361,13 +361,13 @@
 !                     call out_bin_512i(lres_unit, &
 !                        j_of_mi(lboundnum)%value,lsize,lnext_rec)
 !                  endif
-!               endif  
+!               endif
 !            enddo
 !         endif
-      end if 
+      end if
 
       if(bdist_io .or.mype .eq. pe_io) close(lres_unit)
-       
-      end subroutine des_write_restart 
 
-      
+      end subroutine des_write_restart
+
+

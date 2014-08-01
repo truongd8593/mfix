@@ -242,7 +242,7 @@
       FOCUS_PARTICLE = -1
 
       DO LL = 1, MAX_PIP
-         
+
          FORCE_HISTORY = PFT(LL,0,:)
          PFT(LL,0,:) = ZERO
 
@@ -346,7 +346,7 @@
 
          DO CELL_COUNT = 1, NEIGH_CELLS
             IJK = LIST_OF_CELLS(CELL_COUNT)
-            
+
             DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
                NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
 ! Neighboring cells will share facets with same facet ID
@@ -357,21 +357,21 @@
                   checked_facet_already = (NF.eq.LIST_OF_CHECKED_FACETS(count2))
                   IF(checked_facet_already) exit
                enddo
-               
+
                IF(checked_facet_already) CYCLE
-               
+
                CONTACT_FACET_COUNT = CONTACT_FACET_COUNT + 1
                LIST_OF_CHECKED_FACETS(CONTACT_FACET_COUNT) = NF
-               
+
                IF(STL_FACET_TYPE(NF).ne.FACET_TYPE_NORMAL) cycle !Skip this facet
-               !Recall the facets on the MI plane are re-classified 
+               !Recall the facets on the MI plane are re-classified
                !as MI only when the user specifies BC_MI_AS_WALL_FOR_DES
-               !as false. The default is to account for MI BC plane 
-               !as a wall and the facets making this plane are by 
-               !default classified as normal. 
-               
-               
-               
+               !as false. The default is to account for MI BC plane
+               !as a wall and the facets making this plane are by
+               !default classified as normal.
+
+
+
                !Checking all the facets is time consuming due to the
                !expensive separating axis test. Remove this facet from
                !contention based on a simple orthogonal projection test.
@@ -431,11 +431,11 @@
                !that is a big fat nagative and overlaps are not possible.
                if(.not.ortho_proj_cut) cycle
 
-               CALL ClosestPtPointTriangle(DES_POS_NEW(LL,:), &
+               CALL ClosestPtPointTriangle(DES_POS_NEW(:,LL), &
                     VERTEX(1,:,NF), VERTEX(2,:,NF), VERTEX(3,:,NF), &
                     CLOSEST_PT(:))
 
-               DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(LL,:) 
+               DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(:,LL)
                DISTSQ = DES_DOTPRDCT(DIST, DIST)
                OVERLAP_N = ZERO
 
@@ -449,24 +449,24 @@
 !            ENDDO
 !         ENDDO
 
-                  
+
 !         IF(MAX_DISTSQ /= UNDEFINED) THEN
 ! Assign the collision normal based on the facet with the
 ! largest overlap.
                   NORMAL(:) = DIST(:)/sqrt(DISTSQ)
 
                   !NORMAL(:) = -NORM_FACE(:,MAX_NF)
-               !facet's normal is correct normal only when the 
+               !facet's normal is correct normal only when the
                !intersection is with the face. When the intersection
-               !is with edge or vertex, then the normal is 
-               !based on closest pt and sphere center. The  
+               !is with edge or vertex, then the normal is
+               !based on closest pt and sphere center. The
                !definiton above of the normal is generic enough to
-               !account for differences between vertex, edge, and facet. 
+               !account for differences between vertex, edge, and facet.
 
 ! Calculate the particle/wall overlap.
                DISTMOD = SQRT(MAX_DISTSQ)
                OVERLAP_N = DES_RADIUS(LL) - DISTMOD
-               
+
 ! Calculate the translational relative velocity for a contacting particle pair
                CALL CFRELVEL_WALL2(LL, V_REL_TRANS_NORM, &
                   V_REL_TRANS_TANG, TANGENT, NORMAL, DISTMOD)
@@ -612,7 +612,7 @@
       write(vtp_unit,"(12x,a)") '</DataArray>'
 
       temp_array = zero
-      temp_array(1:DIMN) = des_vel_new(pid, 1:dimn)
+      temp_array(:) = des_vel_new(:,pid)
       write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
            'Name="Velocity" NumberOfComponents="3" format="ascii">'
       write (vtp_unit,"(15x,3(es13.6,3x))")&
@@ -689,15 +689,15 @@
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
 ! translational relative velocity
-      VRELTRANS(:) = DES_VEL_NEW(L,:)
+      VRELTRANS(:) = DES_VEL_NEW(:,L)
 
 ! rotational contribution  : v_rot
 ! calculate the distance from the particle center to the wall
       DIST_CL = DIST_LI         !- DES_RADIUS(L)
       IF(DO_K) THEN
-         OMEGA_SUM(:) = OMEGA_NEW(L,:)*DIST_CL
+         OMEGA_SUM(:) = OMEGA_NEW(:,L)*DIST_CL
       ELSE
-         OMEGA_SUM(1) = OMEGA_NEW(L,1)*DIST_CL
+         OMEGA_SUM(1) = OMEGA_NEW(1,L)*DIST_CL
          OMEGA_SUM(2) = ZERO
          OMEGA_SUM(3) = ZERO
       ENDIF
@@ -729,8 +729,8 @@
       IF(DEBUG_DES) THEN
          WRITE(*,*) 'IN CFRELVEL_WALL2------------------------------'
 
-         WRITE(*,'(3(2x,g17.8))') 'VEL LL = ', DES_VEL_NEW(L,:)
-         WRITE(*,'(3(2x,g17.8))') 'OMEGA LL = ',OMEGA_NEW(L,:)
+         WRITE(*,'(3(2x,g17.8))') 'VEL LL = ', DES_VEL_NEW(:,L)
+         WRITE(*,'(3(2x,g17.8))') 'OMEGA LL = ',OMEGA_NEW(:,L)
          WRITE(*,'(3(2x,g17.8))') 'NORMAL = ', NORM(:)
          WRITE(*,'(3(2x,g17.8))') 'TANGENT = ', TANGNT(:)
 

@@ -227,7 +227,7 @@
                   CALL CFWALLPOSVEL(LL, IW, WALL_POS, WALL_VEL)
 
                   R_LM = DES_RADIUS(LL) + DES_RADIUS(LL)
-                  DIST(:) = WALL_POS(:) - DES_POS_NEW(LL,:)
+                  DIST(:) = WALL_POS(:) - DES_POS_NEW(:,LL)
                   DISTMOD = SQRT(dot_product(DIST,DIST))
 
 ! compute particle-wall VDW cohesive short-range forces

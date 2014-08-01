@@ -256,7 +256,7 @@
       dg_kend1 = dg_kend1_all(mype)
       dg_kend2 = dg_kend2_all(mype)
 
-!	Defining new set of varaibles to define upper and lower bound of the
+!       Defining new set of varaibles to define upper and lower bound of the
 ! indices to include actual physical boundaries of the problem.
       dg_istart = dg_istart1;   dg_iend = dg_iend1
       dg_jstart = dg_jstart1;   dg_jend = dg_jend1
@@ -383,12 +383,12 @@
             if(lparcount.gt.pip) exit
             if(.not.pea(lcurpar,1)) cycle
             lparcount = lparcount + 1
-            li = min(dg_iend2,max(dg_istart2,iofpos(des_pos_new(lcurpar,1))))
-            lj = min(dg_jend2,max(dg_jstart2,jofpos(des_pos_new(lcurpar,2))))
+            li = min(dg_iend2,max(dg_istart2,iofpos(des_pos_new(1,lcurpar))))
+            lj = min(dg_jend2,max(dg_jstart2,jofpos(des_pos_new(2,lcurpar))))
             if(no_k) then
                lk = 1
             else
-               lk = min(dg_kend2,max(dg_kstart2,kofpos(des_pos_new(lcurpar,3))))
+               lk = min(dg_kend2,max(dg_kstart2,kofpos(des_pos_new(3,lcurpar))))
             end if
             dg_pijk(lcurpar) = dg_funijk(li,lj,lk)
             lijk = dg_pijk(lcurpar)
@@ -474,11 +474,6 @@
 ! present in the system
       lkoffset = dimn-2
 
-!$omp   parallel do default(shared)                              &
-!$omp   private(lcurpar,lneighcnt,lijk,lic,ljc,lkc,    		 &
-!$omp           li,lj,lk,ltotpic,lpicloc,lneigh,lsearch_rad,     &
-!$omp           ldistvec,ldist,lcurpar_pos,lcur_off,      &
-!$omp   il_off,iu_off,jl_off,ju_off,kl_off,ku_off ) schedule (dynamic,50)
       do lcurpar =1,max_pip
          if (.not. pea(lcurpar,1)) cycle
          if (pea(lcurpar,2)) cycle
@@ -489,44 +484,43 @@
          ljc = dg_jof_lo(lijk)
          lkc = dg_kof_lo(lijk)
 
-		 il_off = 1
-		 iu_off = 1
-		 jl_off = 1
-		 ju_off = 1
-		 kl_off = 1
-		 ku_off = 1
+                 il_off = 1
+                 iu_off = 1
+                 jl_off = 1
+                 ju_off = 1
+                 kl_off = 1
+                 ku_off = 1
 
-		 lcurpar_pos(:) = des_pos_new(lcurpar,:)
+                 lcurpar_pos(:) = des_pos_new(:,lcurpar)
 !   The desgrid size should not be less than 2*dia*rlm_factor
-		 lcur_off = (lcurpar_pos(1)-dg_xstart)*dg_dxinv - &
-		            floor((lcurpar_pos(1)-dg_xstart)*dg_dxinv)
-		 if(lcur_off .ge. 0.5) then
-			il_off = 0
-		 else
-			iu_off = 0
-		 endif
+                 lcur_off = (lcurpar_pos(1)-dg_xstart)*dg_dxinv - &
+                            floor((lcurpar_pos(1)-dg_xstart)*dg_dxinv)
+                 if(lcur_off .ge. 0.5) then
+                        il_off = 0
+                 else
+                        iu_off = 0
+                 endif
 
-		 lcur_off = (lcurpar_pos(2)-dg_ystart)*dg_dyinv - &
-		            floor((lcurpar_pos(2)-dg_ystart)*dg_dyinv)
-		 if(lcur_off .ge. 0.5) then
-			jl_off = 0
-		 else
-			ju_off = 0
-		 endif
+                 lcur_off = (lcurpar_pos(2)-dg_ystart)*dg_dyinv - &
+                            floor((lcurpar_pos(2)-dg_ystart)*dg_dyinv)
+                 if(lcur_off .ge. 0.5) then
+                        jl_off = 0
+                 else
+                        ju_off = 0
+                 endif
 
-		 if(NO_K)then
-			kl_off = 0
-		 	ku_off = 0
-		 else
-			 lcur_off = (lcurpar_pos(3)-dg_zstart)*dg_dzinv - &
-				        floor((lcurpar_pos(3)-dg_zstart)*dg_dzinv)
-			 if(lcur_off .ge. 0.5) then
-				kl_off = 0
-			 else
-				ku_off = 0
-			 endif
-		 endif
-
+                 if(NO_K)then
+                        kl_off = 0
+                        ku_off = 0
+                 else
+                         lcur_off = (lcurpar_pos(3)-dg_zstart)*dg_dzinv - &
+                                        floor((lcurpar_pos(3)-dg_zstart)*dg_dzinv)
+                         if(lcur_off .ge. 0.5) then
+                                kl_off = 0
+                         else
+                                ku_off = 0
+                         endif
+                 endif
 
          do lk = lkc-kl_off,lkc+ku_off
          do lj = ljc-jl_off,ljc+ju_off
@@ -537,7 +531,7 @@
                lneigh = dg_pic(lijk)%p(lpicloc)
                if (lneigh.eq.lcurpar) cycle
                lsearch_rad = factor_RLM*(des_radius(lcurpar)+des_radius(lneigh))
-               ldistvec = lcurpar_pos(:)-des_pos_new(lneigh,:)
+               ldistvec = lcurpar_pos(:)-des_pos_new(:,lneigh)
                ldist = sqrt(dot_product(ldistvec,ldistvec))
                if (ldist.gt.lsearch_rad) cycle
                lneighcnt = lneighcnt + 1
@@ -559,13 +553,7 @@
          end do
       end do
 
-!$omp end parallel do
-!      open (unit=100,file='neighbours.txt',status='unknown')
-!      write(100,*)neighbours
-!      close(100)
-
       end subroutine desgrid_neigh_build
-
 
 !------------------------------------------------------------------------
 ! subroutine       : des_dbggrid

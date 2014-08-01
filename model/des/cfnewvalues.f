@@ -95,26 +95,26 @@
 ! Advance particle position, velocity
         IF (INTG_EULER) THEN
 ! first-order method
-            DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + FC(:,L)*DTSOLID
-            DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + &
-               DES_VEL_NEW(L,:)*DTSOLID
+            DES_VEL_NEW(:,L) = DES_VEL_OLD(:,L) + FC(:,L)*DTSOLID
+            DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + &
+               DES_VEL_NEW(:,L)*DTSOLID
 ! following is equivalent to x=xold + vold*dt + 1/2acc*dt^2
-!         DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + 0.5d0*&
-!             (DES_VEL_NEW(L,:)+DES_VEL_OLD(L,:))*DTSOLID
+!         DES_POS_NEW(:,L) = DES_POS_OLD(L,:) + 0.5d0*&
+!             (DES_VEL_NEW(:,L)+DES_VEL_OLD(L,:))*DTSOLID
 
 
-            OMEGA_NEW(L,:)   = OMEGA_OLD(L,:) + TOW(:,L)*OMOI(L)*DTSOLID
+            OMEGA_NEW(:,L)   = OMEGA_OLD(:,L) + TOW(:,L)*OMOI(L)*DTSOLID
          ELSEIF (INTG_ADAMS_BASHFORTH) THEN
 
 ! Second-order Adams-Bashforth/Trapezoidal scheme
-            DES_VEL_NEW(L,:) = DES_VEL_OLD(L,:) + 0.5d0*&
-               ( 3.d0*FC(:,L)-DES_ACC_OLD(L,:) )*DTSOLID
-            OMEGA_NEW(L,:)   =  OMEGA_OLD(L,:) + 0.5d0*&
-               ( 3.d0*TOW(:,L)*OMOI(L)-ROT_ACC_OLD(L,:) )*DTSOLID
-            DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + 0.5d0*&
-               ( DES_VEL_OLD(L,:)+DES_VEL_NEW(L,:) )*DTSOLID
-            DES_ACC_OLD(L,:) = FC(:,L)
-            ROT_ACC_OLD(L,:) = TOW(:,L)*OMOI(L)
+            DES_VEL_NEW(:,L) = DES_VEL_OLD(:,L) + 0.5d0*&
+               ( 3.d0*FC(:,L)-DES_ACC_OLD(:,L) )*DTSOLID
+            OMEGA_NEW(:,L)   =  OMEGA_OLD(:,L) + 0.5d0*&
+               ( 3.d0*TOW(:,L)*OMOI(L)-ROT_ACC_OLD(:,L) )*DTSOLID
+            DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + 0.5d0*&
+               ( DES_VEL_OLD(:,L)+DES_VEL_NEW(:,L) )*DTSOLID
+            DES_ACC_OLD(:,L) = FC(:,L)
+            ROT_ACC_OLD(:,L) = TOW(:,L)*OMOI(L)
          ENDIF
 
 
@@ -122,7 +122,7 @@
 ! its radius since the last time a neighbor search was called. if so,
 ! make sure that neighbor is called in des_time_march
          IF(.NOT.DO_NSEARCH) THEN
-            D(:) = DES_POS_NEW(L,:) - PPOS(L,:)
+            D(:) = DES_POS_NEW(:,L) - PPOS(:,L)
             NEIGHBOR_SEARCH_DIST = NEIGHBOR_SEARCH_RAD_RATIO*&
                DES_RADIUS(L)
             IF(dot_product(D,D).GE.NEIGHBOR_SEARCH_DIST**2) DO_NSEARCH = .TRUE.
@@ -131,15 +131,15 @@
 
 ! Check if the particle has moved a distance greater than or equal to
 ! its radius during one solids time step. if so, call stop
-         D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
+         D(:) = DES_POS_NEW(:,L) - DES_POS_OLD(:,L)
          IF(dot_product(D,D).GE.DES_RADIUS(L)**2) THEN
             WRITE(*,1002) L, sqrt(dot_product(D,D)), DES_RADIUS(L)
             WRITE(*,'(5X,A,3(ES17.9))') &
-               'old particle pos = ', DES_POS_OLD(L,:)
+               'old particle pos = ', DES_POS_OLD(:,L)
             WRITE(*,'(5X,A,3(ES17.9))') &
-               'new particle pos = ', DES_POS_NEW(L,:)
+               'new particle pos = ', DES_POS_NEW(:,L)
             WRITE(*,'(5X,A,3(ES17.9))')&
-               'new particle vel = ', DES_VEL_NEW(L,:)
+               'new particle vel = ', DES_VEL_NEW(:,L)
             WRITE(*,1003)
             STOP
          ENDIF
@@ -301,14 +301,14 @@
          COEFF_EN =  MPPIC_COEFF_EN1
          UPRIMETAU(:) = ZERO
 
-         VEL_ORIG(:) = DES_VEL_NEW(L,:)
+         VEL_ORIG(:) = DES_VEL_NEW(:,L)
 
-         DES_VEL_NEW(L,:) = (DES_VEL_OLD(L,:) + &
+         DES_VEL_NEW(:,L) = (DES_VEL_OLD(:,L) + &
          & FC(:,L)*DTSOLID)/(1.d0+DP_BAR*DTSOLID)
 
          do idim = 1, merge(2,3,NO_K)
             SIG_U = 0.05D0
-            rand_vel(L, idim)  = sig_u*DES_VEL_NEW(L, IDIM)*rand_vel(L, idim)
+            rand_vel(L, idim)  = sig_u*DES_VEL_NEW(IDIM,L)*rand_vel(L, idim)
          enddo
 
 
@@ -316,7 +316,7 @@
 
             WRITE(*,'(A20,2x,3(2x,i4))') 'CELL ID = ', PIJK(L,1:3)
             WRITE(*,'(A20,2x,3(2x,g17.8))') 'EPS = ', 1.d0 - EP_g(PIJK(L,4))
-            WRITE(*,'(A20,2x,3(2x,g17.8))') 'DES_VEL ORIG = ', DES_VEL_NEW(L,:)
+            WRITE(*,'(A20,2x,3(2x,g17.8))') 'DES_VEL ORIG = ', DES_VEL_NEW(:,L)
 
             WRITE(*,'(A20,2x,3(2x,g17.8))') 'FC = ', FC(:,L)
          ENDIF
@@ -329,27 +329,27 @@
          DELUP(:) = -( DTSOLID*PS_FORCE(:))/((1.d0+DP_BAR*DTSOLID))
          DELUP(:) = DELUP(:)/ROP_S(IJK_OLD,M)
 
-         MEANVEL(:) = AVGSOLVEL_P(L,:)
+         MEANVEL(:) = AVGSOLVEL_P(:,L)
 
          DO IDIM = 1, merge(2,3,NO_K)
             IF(PS_FORCE(IDIM).LE.ZERO) THEN
-               UPRIMETAU(IDIM) = MIN(DELUP(IDIM), (1+COEFF_EN)*(MEANVEL(IDIM)-DES_VEL_NEW(L,IDIM)))
+               UPRIMETAU(IDIM) = MIN(DELUP(IDIM), (1+COEFF_EN)*(MEANVEL(IDIM)-DES_VEL_NEW(IDIM,L)))
                UPRIMETAU_INT(IDIM) = UPRIMETAU(IDIM)
                UPRIMETAU(IDIM) = MAX(UPRIMETAU(IDIM), ZERO)
             ELSE
-               UPRIMETAU(IDIM) = MAX(DELUP(IDIM), (1+COEFF_EN)*(MEANVEL(IDIM)-DES_VEL_NEW(L,IDIM)))
+               UPRIMETAU(IDIM) = MAX(DELUP(IDIM), (1+COEFF_EN)*(MEANVEL(IDIM)-DES_VEL_NEW(IDIM,L)))
                UPRIMETAU_INT(IDIM) = UPRIMETAU(IDIM)
                UPRIMETAU(IDIM) = MIN(UPRIMETAU(IDIM), ZERO)
             END IF
 
          ENDDO
 
-         DES_VEL_NEW(L,:) = DES_VEL_NEW(L,:) + UPRIMETAU(:)
-         DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + &
-         DES_VEL_NEW(L,:)*DTSOLID
+         DES_VEL_NEW(:,L) = DES_VEL_NEW(:,L) + UPRIMETAU(:)
+         DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + &
+         DES_VEL_NEW(:,L)*DTSOLID
 
 
-         UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(L,1:), DES_VEL_NEW(L, 1:)))
+         UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(:,L), DES_VEL_NEW(:,L)))
 
          RAD_EFF = DES_RADIUS(L)
                !RAD_EFF = (DES_STAT_WT(L)**(1.d0/3.d0))*DES_RADIUS(L)
@@ -357,10 +357,10 @@
          MEAN_FREE_PATH = MEAN_FREE_PATH*RAD_EFF/THREEINTOSQRT2
 
          !IF(UPRIMEMOD*DTSOLID.GT.MEAN_FREE_PATH) then
-         !   DES_VEL_NEW(L,:) = (DES_VEL_NEW(L,:)/UPRIMEMOD)*MEAN_FREE_PATH/DTSOLID
+         !   DES_VEL_NEW(:,L) = (DES_VEL_NEW(:,L)/UPRIMEMOD)*MEAN_FREE_PATH/DTSOLID
          !ENDIF
 
-          D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
+          D(:) = DES_POS_NEW(:,L) - DES_POS_OLD(:,L)
 
           DIST = SQRT(DES_DOTPRDCT(D,D))
 
@@ -376,14 +376,14 @@
          IF(EP_G(IJK).LT.EP_STAR.and.INSIDE_DOMAIN.and.IJK.NE.IJK_OLD) then
 
             IF(CUT_CELL_AT(IJK)) then
-               DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
-               DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + rand_vel(L, :)*dtsolid
-               DES_VEL_NEW(L,:) = 0.8d0*DES_VEL_NEW(L,:)
+               DES_POS_NEW(:,L) = DES_POS_OLD(:,L)
+               DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + rand_vel(L, :)*dtsolid
+               DES_VEL_NEW(:,L) = 0.8d0*DES_VEL_NEW(:,L)
             ELSE
                !IF(IJK.NE.IJK_OLD) THEN
-               DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
-               DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + rand_vel(L, :)*dtsolid
-               DES_VEL_NEW(L,:) = 0.8d0*DES_VEL_NEW(L,:)
+               DES_POS_NEW(:,L) = DES_POS_OLD(:,L)
+               DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + rand_vel(L, :)*dtsolid
+               DES_VEL_NEW(:,L) = 0.8d0*DES_VEL_NEW(:,L)
                !ENDIF
             ENDIF
          ENDIF
@@ -395,27 +395,27 @@
           !WRITE(*,*) 'UPRIME OLD = ', UPRIMETAU(:)
           !WRITE(*,*) 'DIST GT MEAN FREE PATH= ', DIST, MEAN_FREE_PATH
 
-             DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + &
-             DES_VEL_NEW(L,:)*DTSOLID*MEAN_FREE_PATH/DIST
+             DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + &
+             DES_VEL_NEW(:,L)*DTSOLID*MEAN_FREE_PATH/DIST
 
-             !D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
+             !D(:) = DES_POS_NEW(:,L) - DES_POS_OLD(:,L)
 
                                 !DIST = SQRT(DES_DOTPRDCT(D,D))
              !WRITE(*,*) 'new moved distance  = ', dist,1. -  ep_g(ijk)
           ENDIF
 
 
-         D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
+         D(:) = DES_POS_NEW(:,L) - DES_POS_OLD(:,L)
          D_GRIDUNITS(1) = ABS(D(1))/DX(PIJK(L,1))
          D_GRIDUNITS(2) = ABS(D(2))/DY(PIJK(L,2))
          D_GRIDUNITS(3) = 1.d0
          IF(DO_K) D_GRIDUNITS(3) = ABS(D(3))/DZ(PIJK(L,3))
 
          DIST = SQRT(DES_DOTPRDCT(D,D))
-         DTPIC_TMPX = (CFL_PIC*DX(PIJK(L,1)))/(ABS(DES_VEL_NEW(L,1))+SMALL_NUMBER)
-         DTPIC_TMPY = (CFL_PIC*DY(PIJK(L,2)))/(ABS(DES_VEL_NEW(L,2))+SMALL_NUMBER)
+         DTPIC_TMPX = (CFL_PIC*DX(PIJK(L,1)))/(ABS(DES_VEL_NEW(1,L))+SMALL_NUMBER)
+         DTPIC_TMPY = (CFL_PIC*DY(PIJK(L,2)))/(ABS(DES_VEL_NEW(2,L))+SMALL_NUMBER)
          DTPIC_TMPZ = LARGE_NUMBER
-         IF(DO_K) DTPIC_TMPZ = (CFL_PIC*DZ(PIJK(L,3)))/(ABS(DES_VEL_NEW(L,3))+SMALL_NUMBER)
+         IF(DO_K) DTPIC_TMPZ = (CFL_PIC*DZ(PIJK(L,3)))/(ABS(DES_VEL_NEW(3,L))+SMALL_NUMBER)
 
 
 ! Check if the particle has moved a distance greater than or equal to grid spacing
@@ -425,8 +425,8 @@
             IF(D_GRIDUNITS(IDIM).GT.ONE) THEN
                IF(DMP_LOG.OR.myPE.eq.pe_IO) THEN
 
-                  WRITE(UNIT_LOG, 2001) L, D_GRIDUNITS(:), DES_VEL_NEW(L,:)
-                  WRITE(*, 2001) L, D_GRIDUNITS(:), DES_VEL_NEW(L,:)
+                  WRITE(UNIT_LOG, 2001) L, D_GRIDUNITS(:), DES_VEL_NEW(:,L)
+                  WRITE(*, 2001) L, D_GRIDUNITS(:), DES_VEL_NEW(:,L)
                   DELETE_PART = .true.
 
                ENDIF
@@ -636,17 +636,17 @@
          I = I_OF(IJK)
          J = J_OF(IJK)
          K = K_OF(IJK)
-         VEL_ORIG(:) = DES_VEL_NEW(L,:)
+         VEL_ORIG(:) = DES_VEL_NEW(:,L)
 
-         
-         DES_VEL_NEW(L,:) = (DES_VEL_OLD(L,:) + &
+
+         DES_VEL_NEW(:,L) = (DES_VEL_OLD(:,L) + &
          & FC(:,L)*DTSOLID)/(1.d0+DP_BAR*DTSOLID)
 
-         IF(DES_FIXED_BED) DES_VEL_NEW(L, :) = ZERO
+         IF(DES_FIXED_BED) DES_VEL_NEW(:,L) = ZERO
 
-         !MPPIC_VPTAU(L,:) = DES_VEL_NEW(L,:)
+         !MPPIC_VPTAU(:,L) = DES_VEL_NEW(:,L)
 
-         VELP_INT(:) = DES_VEL_NEW(L,:)
+         VELP_INT(:) = DES_VEL_NEW(:,L)
 
          MEANVEL(1) = DES_U_S(IJK_OLD,M)
          MEANVEL(2) = DES_V_S(IJK_OLD,M)
@@ -654,24 +654,24 @@
 
          RAD_EFF = DES_RADIUS(L)
          !RAD_EFF = (DES_STAT_WT(L)**(1.d0/3.d0))*DES_RADIUS(L)
-         IF(.not.DES_ONEWAY_COUPLED) then 
+         IF(.not.DES_ONEWAY_COUPLED) then
             MEAN_FREE_PATH  = MAX(1.d0/(1.d0-EP_STAR), 1.d0/(1.D0-EP_G(IJK_OLD)))
             MEAN_FREE_PATH  = MEAN_FREE_PATH*RAD_EFF/THREEINTOSQRT2
          endif
 
          DO IDIM = 1, merge(2,3,NO_K)
             !SIG_U = 0.05D0*MEANVEL(IDIM)
-            !DES_VEL_NEW(L, IDIM) = DES_VEL_NEW(L, IDIM) + SIG_U*RAND_VEL(L, IDIM )
+            !DES_VEL_NEW(IDIM,L) = DES_VEL_NEW(IDIM,L) + SIG_U*RAND_VEL(L, IDIM )
             !PART_TAUP = RO_Sol(L)*((2.d0*DES_RADIUS(L))**2.d0)/(18.d0* MU_G(IJK))
             SIG_U = 0.005D0      !*MEANVEL(IDIM)
-            RAND_VEL(L, IDIM)  = SIG_U*RAND_VEL(L, IDIM)*DES_VEL_NEW(L, IDIM)
+            RAND_VEL(L, IDIM)  = SIG_U*RAND_VEL(L, IDIM)*DES_VEL_NEW(IDIM,L)
             IF(DES_FIXED_BED) RAND_VEL(L,IDIM) = ZERO
             !rand_vel(L, idim)  = sig_u*rand_vel(L, idim)/part_taup
             !rand_vel(L, idim)  = sig_u* mean_free_path*rand_vel(L, idim)/part_taup
-            DES_VEL_NEW(L, idim) = DES_VEL_NEW(L, idim) + rand_vel(L, idim)
+            DES_VEL_NEW(idim,L) = DES_VEL_NEW(idim,L) + rand_vel(idim,L)
          enddo
 
-         !DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + VELP_INT(:)*DTSOLID
+         !DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + VELP_INT(:)*DTSOLID
 
                                 !if(mod(L,400).eq.0) write(*,'(A,2x,10(2x,g17.8))') 'rand vel = ', rand_vel(1,:), sig_u
 
@@ -679,16 +679,16 @@
          IF(.not.DES_ONEWAY_COUPLED.and.(.not.des_fixed_bed)) CALL MPPIC_APPLY_PS_GRAD_PART(L)
 
 
-         UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(L,1:), DES_VEL_NEW(L, 1:)))
+         UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(:,L), DES_VEL_NEW(:,L)))
 
          !IF(UPRIMEMOD*DTSOLID.GT.MEAN_FREE_PATH) then
-         !   DES_VEL_NEW(L,:) = (DES_VEL_NEW(L,:)/UPRIMEMOD)*MEAN_FREE_PATH/DTSOLID
+         !   DES_VEL_NEW(:,L) = (DES_VEL_NEW(:,L)/UPRIMEMOD)*MEAN_FREE_PATH/DTSOLID
          !ENDIF
 
-         DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + &
-         DES_VEL_NEW(L,:)*DTSOLID !+ rand_vel(L, :)*dtsolid
+         DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + &
+         DES_VEL_NEW(:,L)*DTSOLID !+ rand_vel(L, :)*dtsolid
 
-         IF(DES_FIXED_BED) DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
+         IF(DES_FIXED_BED) DES_POS_NEW(:,L) = DES_POS_OLD(:,L)
 
          CALL PIC_FIND_NEW_CELL(L)
 
@@ -715,21 +715,21 @@
          IF(1.d0 - EP_G(IJK).GT. 1.3d0*(1.d0 - EP_STAR).and.INSIDE_DOMAIN.and.IJK.NE.IJK_OLD.and.OUTER_STABILITY_COND) then
 
             IF(CUT_CELL_AT(IJK)) then
-               DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
-               DES_POS_NEW(L,:) = DES_POS_OLD(L,:) !+ rand_vel(L, :)*dtsolid
-               DES_VEL_NEW(L,:) = 0.8d0*DES_VEL_NEW(L,:)
-               !DES_VEL_NEW(L,:) = VELP_INT(:)
+               DES_POS_NEW(:,L) = DES_POS_OLD(:,L)
+               DES_POS_NEW(:,L) = DES_POS_OLD(:,L) !+ rand_vel(L, :)*dtsolid
+               DES_VEL_NEW(:,L) = 0.8d0*DES_VEL_NEW(:,L)
+               !DES_VEL_NEW(:,L) = VELP_INT(:)
             ELSE
-               DES_POS_NEW(L,:) = DES_POS_OLD(L,:)
-               !DES_POS_NEW(L,:) = DES_POS_OLD(L,:) !+ rand_vel(L, :)*dtsolid
-               DES_VEL_NEW(L,:) = 0.8d0*DES_VEL_NEW(L,:)
-               !DES_VEL_NEW(L,:) = VELP_INT(:)
+               DES_POS_NEW(:,L) = DES_POS_OLD(:,L)
+               !DES_POS_NEW(:,L) = DES_POS_OLD(:,L) !+ rand_vel(L, :)*dtsolid
+               DES_VEL_NEW(:,L) = 0.8d0*DES_VEL_NEW(:,L)
+               !DES_VEL_NEW(:,L) = VELP_INT(:)
             ENDIF
          ENDIF
 
          PIJK(L,:) = PIJK_OLD(:)
 
-         D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
+         D(:) = DES_POS_NEW(:,L) - DES_POS_OLD(:,L)
 
          DIST = SQRT(DES_DOTPRDCT(D,D))
 
@@ -737,13 +737,13 @@
           !WRITE(*,*) 'UPRIME OLD = ', UPRIMETAU(:)
           !WRITE(*,*) 'DIST GT MEAN FREE PATH= ', DIST, MEAN_FREE_PATH
 
-         !    DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + &
-         !    DES_VEL_NEW(L, :)*DTSOLID*MEAN_FREE_PATH/DIST
+         !    DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + &
+         !    DES_VEL_NEW(:,L)*DTSOLID*MEAN_FREE_PATH/DIST
 
-             !DES_POS_NEW(L,:) = DES_POS_OLD(L,:) + &
+             !DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + &
              !VELP_INT(:)*DTSOLID*MEAN_FREE_PATH/DIST
 
-                                !D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
+                                !D(:) = DES_POS_NEW(:,L) - DES_POS_OLD(:,L)
 
                                 !DIST = SQRT(DES_DOTPRDCT(D,D))
              !WRITE(*,*) 'new moved distance  = ', dist,1. -  ep_g(ijk)
@@ -751,17 +751,17 @@
 
 
 
-         D(:) = DES_POS_NEW(L,:) - DES_POS_OLD(L,:)
+         D(:) = DES_POS_NEW(:,L) - DES_POS_OLD(:,L)
          D_GRIDUNITS(1) = ABS(D(1))/DX(PIJK(L,1))
          D_GRIDUNITS(2) = ABS(D(2))/DY(PIJK(L,2))
          D_GRIDUNITS(3) = 1.d0
          IF(DO_K) D_GRIDUNITS(3) = ABS(D(3))/DZ(PIJK(L,3))
 
          DIST = SQRT(DES_DOTPRDCT(D,D))
-         DTPIC_TMPX = (CFL_PIC*DX(PIJK(L,1)))/(ABS(DES_VEL_NEW(L,1))+SMALL_NUMBER)
-         DTPIC_TMPY = (CFL_PIC*DY(PIJK(L,2)))/(ABS(DES_VEL_NEW(L,2))+SMALL_NUMBER)
+         DTPIC_TMPX = (CFL_PIC*DX(PIJK(L,1)))/(ABS(DES_VEL_NEW(1,L))+SMALL_NUMBER)
+         DTPIC_TMPY = (CFL_PIC*DY(PIJK(L,2)))/(ABS(DES_VEL_NEW(2,L))+SMALL_NUMBER)
          DTPIC_TMPZ = LARGE_NUMBER
-         IF(DO_K) DTPIC_TMPZ = (CFL_PIC*DZ(PIJK(L,3)))/(ABS(DES_VEL_NEW(L,3))+SMALL_NUMBER)
+         IF(DO_K) DTPIC_TMPZ = (CFL_PIC*DZ(PIJK(L,3)))/(ABS(DES_VEL_NEW(3,L))+SMALL_NUMBER)
 
 
 ! Check if the particle has moved a distance greater than or equal to grid spacing
@@ -771,17 +771,17 @@
             IF(D_GRIDUNITS(IDIM).GT.ONE) THEN
                IF(DMP_LOG.OR.myPE.eq.pe_IO) THEN
 
-                  WRITE(UNIT_LOG, 2001) L, D_GRIDUNITS(:), DES_VEL_NEW(L,:)
+                  WRITE(UNIT_LOG, 2001) L, D_GRIDUNITS(:), DES_VEL_NEW(:,L)
                   WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'rand_vel = ', rand_vel(L,:)
-                  WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(l,:)
-                  WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(L,:)
+                  WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(:,L)
+                  WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(:,L)
                   WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'FC          = ', FC(:,L)
 
-                  WRITE(*, 2001) L, D_GRIDUNITS(:), DES_VEL_NEW(L,:)
+                  WRITE(*, 2001) L, D_GRIDUNITS(:), DES_VEL_NEW(:,L)
 
                   WRITE(*, '(A,2x,3(g17.8))') 'rand_vel = ', rand_vel(L,:)
-                  WRITE(*, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(l,:)
-                  WRITE(*, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(L,:)
+                  WRITE(*, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(:,L)
+                  WRITE(*, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(:,L)
                   WRITE(*, '(A,2x,3(g17.8))') 'FC          = ', FC(:,L)
                   read(*,*)
                   DELETE_PART = .true.
@@ -829,8 +829,8 @@
       ENDIF
 
       DTPIC_MAX = MIN(DTPIC_CFL, DTPIC_TAUP)
-      
-      RETURN 
+
+      RETURN
       IF(DTSOLID.GT.DTPIC_MAX) THEN
          !IF(DMP_LOG) WRITE(UNIT_LOG, 2001) DTSOLID
          IF(myPE.eq.pe_IO) WRITE(*, 2004) DTSOLID
@@ -980,7 +980,7 @@
          if (pea(lp,1)) then
             lijk = pijk(lp,4)
             write(100,*)lijk,des_pos_new(lp,1),des_pos_new(lp,2), &
-               des_vel_new(lp,1),des_vel_new(lp,2),ep_g(lijk),&
+               des_vel_new(1,lp),des_vel_new(2,lp),ep_g(lijk),&
                fc(1,lp),fc(2,lp),tow(lp,1)
          endif
       enddo

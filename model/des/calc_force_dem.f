@@ -198,7 +198,7 @@
             ALREADY_NEIGHBOURS=PV_COLL(CC)
 
             R_LM = DES_RADIUS(LL) + DES_RADIUS(I)
-            DIST(:) = DES_POS_NEW(I,:) - DES_POS_NEW(LL,:)
+            DIST(:) = DES_POS_NEW(:,I) - DES_POS_NEW(:,LL)
             DISTMOD = dot_product(DIST,DIST)
 
             ! compute particle-particle VDW cohesive short-range forces

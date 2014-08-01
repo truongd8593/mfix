@@ -88,7 +88,7 @@
 ! Particle positions: All x-coordinates, then all y-coordinates and for
 ! 3D simulations, all z-coordinates.
          do li = 1,dimn
-            call in_bin_512(lres_unit,des_pos_new(:,li),pip,lnext_rec)
+            call in_bin_512(lres_unit,des_pos_new(li,:),pip,lnext_rec)
          end do
 ! Global id of all particles for parallel processing.
          call in_bin_512i(lres_unit,iglobal_id,pip,lnext_rec)
@@ -112,12 +112,12 @@
 ! Particle velocities: All x-components, all y-components, and for 3D
 ! simulations, all z-components
          do li = 1,dimn
-            call in_bin_512(lres_unit,des_vel_new(:,li),pip,lnext_rec)
+            call in_bin_512(lres_unit,des_vel_new(li,:),pip,lnext_rec)
          end do
 
 ! Rotational velocities: 1 degree of fredom for 2D, 3 DOF for 3D
          do li = 1,ltor_dimn
-            call in_bin_512(lres_unit,omega_new(:,li),pip,lnext_rec)
+            call in_bin_512(lres_unit,omega_new(li,:),pip,lnext_rec)
          end do
 ! Particle radi
          call in_bin_512(lres_unit,des_radius,pip,lnext_rec)
@@ -282,11 +282,11 @@
          end do
 ! Translational velocities (one coordinate at a time).
          do li = 1,dimn
-            call des_readscatter(lres_unit,des_vel_new(:,li),lglocnt,lnext_rec)
+            call des_readscatter(lres_unit,des_vel_new(li,:),lglocnt,lnext_rec)
          end do
 ! Rotational velocity.
          do li = 1,ltor_dimn
-            call des_readscatter(lres_unit,omega_new(:,li),lglocnt,lnext_rec)
+            call des_readscatter(lres_unit,omega_new(li,:),lglocnt,lnext_rec)
          end do
 ! Particle radi.
          call des_readscatter(lres_unit,des_radius,lglocnt,lnext_rec)
@@ -527,12 +527,12 @@
 
       PEA(NP,:) = .FALSE.
 
-      DES_POS_OLD(NP,:) = ZERO
-      DES_POS_NEW(NP,:) = ZERO
-      DES_VEL_OLD(NP,:) = ZERO
-      DES_VEL_NEW(NP,:) = ZERO
-      OMEGA_OLD(NP,:) = ZERO
-      OMEGA_NEW(NP,:) = ZERO
+      DES_POS_OLD(:,NP) = ZERO
+      DES_POS_NEW(:,NP) = ZERO
+      DES_VEL_OLD(:,NP) = ZERO
+      DES_VEL_NEW(:,NP) = ZERO
+      OMEGA_OLD(:,NP) = ZERO
+      OMEGA_NEW(:,NP) = ZERO
       DES_RADIUS(NP) = ZERO
       PMASS(NP) = ZERO
       PVOL(NP) = ZERO

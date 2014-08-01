@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!      
-!  Subroutine: CFWALLCONTACT(WALL, L, WALLCONTACT) 	 
-!  Purpose: Check if particle L is in contact with WALL.  If so, set 	 
+!
+!  Subroutine: CFWALLCONTACT(WALL, L, WALLCONTACT)
+!  Purpose: Check if particle L is in contact with WALL.  If so, set
 !           WALLCONTACT to 1, else WALLCONTACT is 0
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -20,12 +20,12 @@
       use geometry, only: DO_K
       IMPLICIT NONE
 !-----------------------------------------------
-! Dummy arguments      
+! Dummy arguments
 !-----------------------------------------------
 ! Given wall ID number (1=west, 2=east, 3=south, 4=north, 5=bottom,
 ! 6=top)
       INTEGER, INTENT (IN) :: WALL
-! Given particle ID number      
+! Given particle ID number
       INTEGER, INTENT (IN) :: L
 ! Flag to indicate whether given particle is in contact with given wall
 ! (1=contact, 0 = no contact)
@@ -50,9 +50,9 @@
       LZB = SZ1
 
 ! assign temporary local variables for manipulation/use
-      XPOS = DES_POS_NEW(L,1)
-      YPOS = DES_POS_NEW(L,2)
-      IF(DO_K) ZPOS = DES_POS_NEW(L,3)
+      XPOS = DES_POS_NEW(1,L)
+      YPOS = DES_POS_NEW(2,L)
+      IF(DO_K) ZPOS = DES_POS_NEW(3,L)
 
 
 ! initialize
@@ -63,7 +63,7 @@
 ! boundaries are periodic (i.e. no walls in system)
          RETURN
       ELSEIF (DES_PERIODIC_WALLS) THEN
-! Check if current wall corresponds to a periodic boundary (i.e. no wall) 
+! Check if current wall corresponds to a periodic boundary (i.e. no wall)
          IF( (DES_PERIODIC_WALLS_X .AND. (WALL.EQ.1.OR.WALL.EQ.2)).OR.&
              (DES_PERIODIC_WALLS_Y .AND. (WALL.EQ.3.OR.WALL.EQ.4)).OR.&
              (DO_K.AND.DES_PERIODIC_WALLS_Z .AND. &
@@ -76,7 +76,7 @@
 ! west wall (X)
       IF(WALL.EQ.1) THEN
          DistApart = XPOS-LXW-DES_RADIUS(L)
-! consider wall contact calculations for particle wall distances less 
+! consider wall contact calculations for particle wall distances less
 ! than the cutoff
          IF( DistApart <= WALL_VDW_OUTER_CUTOFF ) WALLCONTACT = 1
 
