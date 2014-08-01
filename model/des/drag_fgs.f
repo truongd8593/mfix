@@ -1341,7 +1341,7 @@
           ENDIF
       ENDDO
       DPA = ONE / tmp_sum
-      Y_i = DP_loc(M)/DPA
+      Y_i = DP_loc(M) * tmp_sum
 
 ! assign variables for short dummy arguments
       EPg = EP_G(IJK)

@@ -64,9 +64,13 @@
       TOW(:,:) = ZERO
 
       PN(:,:) = -1
+      PN_WALL(:,:) = -1
       PN(1,:) = 0
+      PN_WALL(1,:) = 0
       PV(:,:) = .TRUE.
+      PV_WALL(:,:) = .TRUE.
       PFT(:,:,:) = ZERO
+      PFT_WALL(:,:,:) = ZERO
       PPOS(:,:) = ZERO
 
       PINC(:) = ZERO

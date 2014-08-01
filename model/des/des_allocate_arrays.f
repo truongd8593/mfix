@@ -96,7 +96,7 @@
       'Increase MAX_PIS or particles_factor in the input file')
 
 ! max_pip adjusted to accomodate temporary variables used for walls
-! and DES_MPI stuff 
+! and DES_MPI stuff
 
       MAX_PIP = NPARTICLES - 2*NWALLS - 3
 
@@ -168,13 +168,18 @@
 
 ! Accumulated spring force
       Allocate(  PFT (NPARTICLES,0:MAXNEIGHBORS,DIMN) )
+      Allocate(  PFT_WALL (NPARTICLES,6,DIMN) )
 
 ! Save the normal direction at previous time step
       Allocate(  PFN (NPARTICLES,MAXNEIGHBORS,DIMN) )
+      Allocate(  PFN_WALL (NPARTICLES,6,DIMN) )
 
 ! Tracking variables for particle contact history
       Allocate(  PN (MAXNEIGHBORS, NPARTICLES) )
+      Allocate(  PN_WALL (6, NPARTICLES) )
       Allocate(  PV (MAXNEIGHBORS, NPARTICLES) )
+      Allocate(  PV_WALL (6, NPARTICLES) )
+
 
 ! Temporary variables to store wall position, velocity and normal vector
       Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
@@ -182,13 +187,18 @@
 ! Neighbor search
       Allocate(  NEIGHBOURS (NPARTICLES, MAXNEIGHBORS) )
 
+      OLD_COLLISION_NUM = 0
       COLLISION_NUM = 0
       COLLISION_MAX = 1024
       Allocate(  COLLISIONS (2,COLLISION_MAX) )
+      Allocate(  COLLISIONS_OLD (2,COLLISION_MAX) )
 !      Allocate(  FC_COLL  (3,COLLISION_MAX) )
       Allocate(  PV_COLL (COLLISION_MAX) )
+      Allocate(  PV_COLL_OLD (COLLISION_MAX) )
       Allocate(  PFT_COLL (3,COLLISION_MAX) )
+      Allocate(  PFT_COLL_OLD (3,COLLISION_MAX) )
       Allocate(  PFN_COLL (3,COLLISION_MAX) )
+      Allocate(  PFN_COLL_OLD (3,COLLISION_MAX) )
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
@@ -227,7 +237,7 @@
       Allocate(  DES_V_s (DIMENSION_3, DES_MMAX) )
       Allocate(  DES_W_s (DIMENSION_3, DES_MMAX) )
 
- ! Volume of nodes 	 
+ ! Volume of nodes
        ALLOCATE(DES_VOL_NODE(DIMENSION_3))
 
 ! Variables for hybrid model
@@ -483,9 +493,9 @@
          allocate( PIC_BCMI_IJKSTART(PIC_BCMI) )
          allocate( PIC_BCMI_IJKEND  (PIC_BCMI) )
          allocate( PIC_BCMI_NORMDIR (PIC_BCMI,3) )
-         
+
          ALLOCATE( PIC_BCMI_OFFSET  (PIC_BCMI,3))
-         
+
          ALLOCATE( PIC_BCMI_INCL_CUTCELL(PIC_BCMI) )
 
          PIC_BCMI_IJKSTART = -1
@@ -523,6 +533,10 @@
            int_tmp(:,1:collision_max) = collisions(:,1:collision_max)
            call move_alloc(int_tmp,collisions)
 
+           allocate(int_tmp(2,2*collision_max))
+           int_tmp(:,1:collision_max) = collisions_old(:,1:collision_max)
+           call move_alloc(int_tmp,collisions_old)
+
 !           allocate(real_tmp(3,2*collision_max))
 !           real_tmp(:,1:collision_max) = fc_coll(:,1:collision_max)
 !           call move_alloc(real_tmp,fc_coll)
@@ -531,9 +545,21 @@
            bool_tmp(1:collision_max) = pv_coll(1:collision_max)
            call move_alloc(bool_tmp,pv_coll)
 
+           allocate(bool_tmp(2*collision_max))
+           bool_tmp(1:collision_max) = pv_coll_old(1:collision_max)
+           call move_alloc(bool_tmp,pv_coll_old)
+
+           allocate(real_tmp(3,2*collision_max))
+           real_tmp(:,1:collision_max) = pft_coll_old(:,1:collision_max)
+           call move_alloc(real_tmp,pft_coll_old)
+
            allocate(real_tmp(3,2*collision_max))
            real_tmp(:,1:collision_max) = pft_coll(:,1:collision_max)
            call move_alloc(real_tmp,pft_coll)
+
+           allocate(real_tmp(3,2*collision_max))
+           real_tmp(:,1:collision_max) = pfn_coll_old(:,1:collision_max)
+           call move_alloc(real_tmp,pfn_coll_old)
 
            allocate(real_tmp(3,2*collision_max))
            real_tmp(:,1:collision_max) = pfn_coll(:,1:collision_max)

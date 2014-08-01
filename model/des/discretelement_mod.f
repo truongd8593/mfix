@@ -249,11 +249,15 @@
 ! Stores number of neighbors based on neighbor search
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: NEIGHBOURS  !(PARTICLES, MAXNEIGHBORS)
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: COLLISIONS  !(2, #collisions < MAXNEIGHBORS*PARTICLES)
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: COLLISIONS_OLD  !(2, #collisions < MAXNEIGHBORS*PARTICLES)
 !      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC_COLL   !(3, #collisions < MAXNEIGHBORS*PARTICLES)
       LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_COLL  !(#collisions < MAXNEIGHBORS*PARTICLES)
+      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_COLL_OLD  !(#collisions < MAXNEIGHBORS*PARTICLES)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_COLL  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_COLL_OLD  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_COLL  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
-      INTEGER :: COLLISION_NUM,COLLISION_MAX
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_COLL_OLD  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
+      INTEGER :: COLLISION_NUM,OLD_COLLISION_NUM,COLLISION_MAX
 
 ! Quantities used for reporting: max no. neighbors and max overlap
 ! that exists during last solid time step of dem simulation
@@ -406,12 +410,16 @@
 ! Save the accumulated tangential displacement that occurs during
 ! collision (particle-particle or particle-wall)
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFT !(PARTICLES,3,MAXNEIGHBORS)
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFT_WALL !(PARTICLES,3,MAXNEIGHBORS)
 ! Save the normal direction at previous time step
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFN ! (PARTICLES,3,MAXNEIGHBORS)
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFN_WALL ! (PARTICLES,3,MAXNEIGHBORS)
 
 ! Variables used to track/store particle contact history
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PN !(PARTICLES,MAXNEIGHBORS)
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PN_WALL !(PARTICLES,MAXNEIGHBORS)
       LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PV !(PARTICLES,MAXNEIGHBORS)
+      LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PV_WALL !(PARTICLES,MAXNEIGHBORS)
 
 ! Gas-solids drag force on partaicle
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: GD_FORCE
@@ -595,11 +603,11 @@
 
       Logical :: des_convert_box_to_facets
 
-      Integer, parameter :: FACET_TYPE_NORMAL = 1, FACET_TYPE_PO = 2 & 
+      Integer, parameter :: FACET_TYPE_NORMAL = 1, FACET_TYPE_PO = 2 &
       , FACET_TYPE_MI = 3
-      
+
       !make this a short integer
-      !array to specify the facet type 
+      !array to specify the facet type
       Integer, dimension(:), allocatable :: STL_FACET_TYPE
 
       Integer :: count_facet_type_normal, count_facet_type_po, count_facet_type_mi

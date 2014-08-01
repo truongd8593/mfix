@@ -132,12 +132,6 @@
 !$      double precision omp_start, omp_end
 !$      double precision omp_get_wtime
 
-!-----------------------------------------------
-! Functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-
-
       report_excess_overlap = .false.
 ! initialize local variables
       DES_LOC_DEBUG = .FALSE.
@@ -219,9 +213,9 @@
                   I = MAX_PIP + IW
                   ALREADY_NEIGHBOURS=.FALSE.
 
-                  IF(PN(1,LL).GT.0) THEN
-                     DO NEIGH_L = 2, PN(1,LL)+1
-                        IF(I.EQ. PN(NEIGH_L,LL)) THEN
+                  IF(PN_WALL(1,LL).GT.0) THEN
+                     DO NEIGH_L = 2, PN_WALL(1,LL)+1
+                        IF(I.EQ. PN_WALL(NEIGH_L,LL)) THEN
                            ALREADY_NEIGHBOURS=.TRUE.
                            NI = NEIGH_L
                            EXIT
@@ -234,7 +228,7 @@
 
                   R_LM = DES_RADIUS(LL) + DES_RADIUS(LL)
                   DIST(:) = WALL_POS(:) - DES_POS_NEW(LL,:)
-                  DISTMOD = SQRT(DES_DOTPRDCT(DIST,DIST))
+                  DISTMOD = SQRT(dot_product(DIST,DIST))
 
 ! compute particle-wall VDW cohesive short-range forces
                   IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
@@ -303,13 +297,13 @@
                      OVERLAP_N =  R_LM-DISTMOD
 
                      IF(ALREADY_NEIGHBOURS) THEN
-                        PV(NI,LL) = .TRUE.
+                        PV_WALL(NI,LL) = .TRUE.
                         OVERLAP_T = DTSOLID*V_REL_TANG
                      ELSE
-                        PN(1,LL) = PN(1,LL) + 1
-                        NI = PN(1,LL) + 1
-                        PN(NI,LL) = I
-                        PV(NI,LL) = .TRUE.
+                        PN_WALL(1,LL) = PN_WALL(1,LL) + 1
+                        NI = PN_WALL(1,LL) + 1
+                        PN_WALL(NI,LL) = I
+                        PV_WALL(NI,LL) = .TRUE.
                         IF (V_REL_TRANS_NORM .GT. ZERO) THEN
                           DTSOLID_TMP = OVERLAP_N/(V_REL_TRANS_NORM)
                         ELSEIF (V_REL_TRANS_NORM .LT. ZERO) THEN
@@ -351,20 +345,20 @@
 ! Correction in the tangential direction is imposed
 
 ! New procedure: van der Hoef et al. (2006)
-                        sigmat_old(:) = pft(ll,ni,:)
-                        norm_old(:)   = pfn(ll,ni,:)
+                        sigmat_old(:) = pft_WALL(ll,ni,:)
+                        norm_old(:)   = pfn_WALL(ll,ni,:)
 ! calculate the unit vector for axis of rotation
                         if(DO_K)then
                            call des_crossprdct(tmp_ax,norm_old,normal)
-                           tmp_mag   = des_dotprdct(tmp_ax,tmp_ax)
+                           tmp_mag   = dot_product(tmp_ax,tmp_ax)
                            if(tmp_mag .gt. zero)then
                               tmp_ax(:) = tmp_ax(:)/sqrt(tmp_mag)
 ! get the old tangential direction unit vector
                               call des_crossprdct(tang_old,tmp_ax,norm_old)
 ! get the new tangential direction unit vector due to rotation
                               call des_crossprdct(tang_new,tmp_ax,normal)
-                                 sigmat(:) = des_dotprdct(sigmat_old,tmp_ax)*tmp_ax(:) &
-                                 + des_dotprdct(sigmat_old,tang_old)*tang_new(:)
+                                 sigmat(:) = dot_product(sigmat_old,tmp_ax)*tmp_ax(:) &
+                                 + dot_product(sigmat_old,tang_old)*tang_new(:)
 
                               sigmat(:) = sigmat(:)+overlap_t(:)
                            else
@@ -375,20 +369,20 @@
                            tang_old(2) =  norm_old(1)
                            tang_new(1) = -normal(2)
                            tang_new(2) =  normal(1)
-                           sigmat(:)= des_dotprdct(sigmat_old,tang_old)*tang_new(:)
+                           sigmat(:)= dot_product(sigmat_old,tang_old)*tang_new(:)
                            sigmat(:)= sigmat(:)+overlap_t(:)
                         endif
 
                         pft_tmp(:) = sigmat(:)
             ! Save the old normal direction
-                        pfn(ll,ni,:)   = normal(:)
+                        pfn_WALL(ll,ni,:)   = normal(:)
                      else ! Old procedure
-                        PFT(LL,NI,:) = PFT(LL,NI,:) + OVERLAP_T(:)
-                        PFT_TMP(:) = PFT(LL,NI,:) ! update pft_tmp before it used
+                        PFT_WALL(LL,NI,:) = PFT_WALL(LL,NI,:) + OVERLAP_T(:)
+                        PFT_TMP(:) = PFT_WALL(LL,NI,:) ! update pft_tmp before it used
                      !remove the normal component from the tangential force
                      !due to change of normal direction
-                        PFT_TMP(:)   = PFT(LL,NI,:) - &
-                           DES_DOTPRDCT(PFT_TMP,NORMAL)*NORMAL(:)
+                        PFT_TMP(:)   = PFT_WALL(LL,NI,:) - &
+                           dot_product(PFT_TMP,NORMAL)*NORMAL(:)
                      endif
 ! ----------------------------------------------------------------<<<
 
@@ -411,9 +405,9 @@
                      IF (PARTICLE_SLIDE) THEN
 ! Since FT might be corrected during the call to cfslide, the tangental
 ! displacement history needs to be changed accordingly
-                        PFT(LL,NI,:) = -( FT(:,LL) - FTS2(:) ) / KT_DES_W
+                        PFT_WALL(LL,NI,:) = -( FT(:,LL) - FTS2(:) ) / KT_DES_W
                      ELSE
-                        PFT(LL,NI,:) = PFT_TMP(:)
+                        PFT_WALL(LL,NI,:) = PFT_TMP(:)
                      ENDIF
 
 
