@@ -131,8 +131,8 @@
       DES_POS_NEW(:,NP) = ZERO
       DES_VEL_OLD(:,NP) = ZERO
       DES_VEL_NEW(:,NP) = ZERO
-      OMEGA_OLD(NP,:) = ZERO
-      OMEGA_NEW(NP,:) = ZERO
+      OMEGA_OLD(:,NP) = ZERO
+      OMEGA_NEW(:,NP) = ZERO
       DES_RADIUS(NP) = ZERO
       PMASS(NP) = ZERO
       PVOL(NP) = ZERO

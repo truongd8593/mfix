@@ -48,7 +48,7 @@
 ! 4. Set the intermediate variables 'gst_tmp & vst_tmp' as private to replace global variables
 !        'gstencil,vstencil' to avoid datarace and segmentation fault.
 ! 5. Set the intermediate variable D_FORCE(:) in CALC_DES_DRAG_GS to replace
-!        GD_FORCE(np,:) in order to reduce the calculation time      at Jan 14 2013
+!        GD_FORCE(:,np) in order to reduce the calculation time      at Jan 14 2013
 
 ! 2014-02-24 mmeredith combined the above into one DRAG_INTERPOLATION() subroutine
 
@@ -501,8 +501,8 @@
 ! Update the contact forces (FC) on the particle to include
 ! gas pressure and gas-solids drag
 !----------------------------------------------------------------->>>
-         GD_FORCE(NP,:) = GS_DRAG(IJK,M,:)*PVOL(NP)
-         FC(:,NP) = FC(:,NP) + GD_FORCE(NP,:)
+         GD_FORCE(:,NP) = GS_DRAG(IJK,M,:)*PVOL(NP)
+         FC(:,NP) = FC(:,NP) + GD_FORCE(:,NP)
 
          IF(.NOT.MODEL_B) THEN
 ! Add the pressure gradient force
@@ -728,9 +728,9 @@
             if(.not.pea(np,1)) cycle
             if(pea(np,4)) cycle
 
-            desposnew(:) = des_pos_new(np,:)
+            desposnew(:) = des_pos_new(:,np)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
-            vel_fp(np,1:3) = velfp(1:3)
+            vel_fp(:,np) = velfp(:)
 
 
 
@@ -740,7 +740,7 @@
 !``````````````````````````````````````````````````````````````````````!
 !          Massless particles for the circle advection test            !
 !----------------------------------------------------------------------!
-                   DES_VEL_NEW(NP,:) = VEL_FP(NP,:)
+                   DES_VEL_NEW(:,NP) = VEL_FP(:,NP)
 !......................................................................!
 
 
@@ -752,24 +752,24 @@
 ! The drag force on each particle is equal to:
 !    beta(u_g-u_s)*vol_p/eps.
 ! Therefore, the drag force = f_gp*(u_g - u_s)
-            VEL_NEW(:) = DES_VEL_NEW(NP,:)
+            VEL_NEW(:) = DES_VEL_NEW(:,NP)
             CALL DES_DRAG_GP(NP, velfp(1:3), VEL_NEW)
 
 ! Calculate the gas-solids drag force on the particle
             IF(MPPIC .AND. MPPIC_PDRAG_IMPLICIT) THEN
 ! implicit treatment of the drag term for mppic
 !------------------------------------------------------------------<<<< Handan Liu
-               D_FORCE(1:3) = F_GP(NP)*(VEL_FP(NP,1:3))
+               D_FORCE(:) = F_GP(NP)*(VEL_FP(:,NP))
             ELSE
 ! default case
-               !GD_FORCE(NP,:) = F_GP(NP)*(VEL_FP(NP,:)-VEL_NEW)
-               D_FORCE(1:3) = F_GP(NP)*(VEL_FP(NP,1:3)-VEL_NEW)
+               !GD_FORCE(NP,:) = F_GP(NP)*(VEL_FP(:,NP)-VEL_NEW)
+               D_FORCE(:) = F_GP(NP)*(VEL_FP(:,NP)-VEL_NEW)
             ENDIF
 
 ! Update the contact forces (FC) on the particle to include gas
 ! pressure and gas-solids drag
-            FC(:3,NP) = FC(:3,NP) + D_FORCE(:3)
-            GD_FORCE(NP,:3) = D_FORCE(:3)
+            FC(:,NP) = FC(:,NP) + D_FORCE(:)
+            GD_FORCE(:,NP) = D_FORCE(:)
 
             IF(.NOT.MODEL_B) THEN
 ! P_force is evaluated as -dp/dx
@@ -1021,9 +1021,9 @@
 ! skipping indices that do not represent particles and ghost particles
             if(.not.pea(np,1)) cycle
             if(pea(np,4)) cycle
-            desposnew(:) = des_pos_new(np,:)
+            desposnew(:) = des_pos_new(:,np)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
-            vel_fp(np,1:3) = velfp(1:3)
+            vel_fp(:,np) = velfp(:)
 !===================================================================>> Handan Liu
 !
 ! Calculate the particle centered drag coefficient (F_GP) using the
@@ -1033,7 +1033,7 @@
 ! The drag force on each particle is equal to:
 !    beta(u_g-u_s)*vol_p/eps.
 ! Therefore, the drag force = f_gp*(u_g - u_s)
-            VEL_NEW(:) = DES_VEL_NEW(NP,:)
+            VEL_NEW(:) = DES_VEL_NEW(:,NP)
             CALL DES_DRAG_GP(NP, velfp(1:3), &
                VEL_NEW)
 !-----------------------------------------------------------------<<<
@@ -1695,8 +1695,8 @@
 ! Update the contact forces (FC) on the particle to include
 ! solids-solids drag force
 !----------------------------------------------------------------->>>
-         SD_FORCE(NP,:) = SS_DRAG(IJK,M,:)*PVOL(NP)
-         FC(:,NP) = FC(:,NP) + SD_FORCE(NP,:)
+         SD_FORCE(:,NP) = SS_DRAG(IJK,M,:)*PVOL(NP)
+         FC(:,NP) = FC(:,NP) + SD_FORCE(:,NP)
 !-----------------------------------------------------------------<<<
 
       ENDDO   ! end do loop (np=1,max_pip)

@@ -247,7 +247,7 @@
                         ENDIF
                         DO IDIMN=1,DIMN
                            Norm_Dist = DIST(IDIMN)/DISTMOD
-                           Fcohesive(LL, IDIMN) = Fcohesive(LL, IDIMN) + Norm_Dist*FORCE_COH
+                           Fcohesive(IDIMN, LL) = Fcohesive(IDIMN, LL) + Norm_Dist*FORCE_COH
                         ENDDO
                      ENDIF
                   ENDIF ! for using VDW cohesion model
