@@ -304,7 +304,7 @@
          if(.not.pea(ll,1)) cycle
          if(pea(ll,4)) cycle
           DO IDIMN=1,DIMN
-            PostCohesive(LL) =  PostCohesive(LL) + Fcohesive(LL, IDIMN)**2
+            PostCohesive(LL) =  PostCohesive(LL) + Fcohesive(IDIMN, LL)**2
           ENDDO
           if(magGravity> ZERO) PostCohesive(LL) =  SQRT(PostCohesive(LL)) / &
                   (PMASS(LL)*magGravity)
@@ -366,7 +366,7 @@
              ENDIF
              DO IDIMN=1,DIMN
                 Norm_Dist = DIST(IDIMN)/DISTMOD
-                Fcohesive(LL, IDIMN) = Fcohesive(LL, IDIMN) + Norm_Dist*FORCE_COH
+                Fcohesive(IDIMN, LL) = Fcohesive(IDIMN, LL) + Norm_Dist*FORCE_COH
              ENDDO
           ENDIF
         END SUBROUTINE CALC_COHESION

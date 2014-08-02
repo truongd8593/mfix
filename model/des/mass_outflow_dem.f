@@ -152,7 +152,7 @@
       PV_WALL(:,NP) = .FALSE.
       PFT(NP,:,:) = ZERO
       PFT_WALL(NP,:,:) = ZERO
-      PPOS(NP,:) = ZERO
+      PPOS(:,NP) = ZERO
 
 ! Note that if particle NP has any neighbors then the particle NP will
 ! still exist in the neighbor's neighbours list.  This information would

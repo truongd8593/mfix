@@ -63,8 +63,8 @@
             IF(.NOT.PEA(L,1)) CYCLE  ! Only real particles
             IF(PEA(L,2)) CYCLE       ! Only non-entering
             IF(PEA(L,4)) CYCLE       ! Skip ghost particles
-            DES_ACC_OLD(L,:) = FC(:,L)/PMASS(L) + GRAV(:)
-            ROT_ACC_OLD(L,:) = TOW(:,L)
+            DES_ACC_OLD(:,L) = FC(:,L)/PMASS(L) + GRAV(:)
+            ROT_ACC_OLD(:,L) = TOW(:,L)
          ENDDO
       ENDIF
 
