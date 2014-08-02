@@ -14,6 +14,8 @@ AC_MSG_NOTICE([                        Version ${MFIX_VERSION}])
 AC_MSG_NOTICE([])
 AC_MSG_NOTICE([==============================================================])
 
+AC_LANG(Fortran)
+
 # Checks for programs.
 #AC_PROG_AWK
 AC_PROG_F77
@@ -23,6 +25,8 @@ AC_PROG_GREP
 AC_PROG_SED
 #AC_PROG_LN_S
 #AC_PROG_MAKE_SET
+
+AC_OPENMP()
 
 # Checks for source files.
 
@@ -61,6 +65,15 @@ AM_CONDITIONAL([DQMOM_USR_DQMOM], [test "$ac_cv_file_dqmom_usr_dqmom_f" = yes])
 AC_CONFIG_SRCDIR([model/mfix.f])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([subdir-objects foreign -Wall -Wno-portability])
+
+AC_ARG_ENABLE([smp],
+[  --enable-smp    Turn on OpenMP support],
+[case "${enableval}" in
+  yes) smp=true ;;
+  no)  smp=false ;;
+  *) AC_MSG_ERROR([bad value ${enableval} for --enable-smp]) ;;
+esac],[smp=false])
+AM_CONDITIONAL([OPENMP], [test x$smp = xtrue])
 
 AC_ARG_ENABLE([dmp],
 [  --enable-dmp    Turn on MPI support],

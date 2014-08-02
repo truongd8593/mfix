@@ -549,6 +549,11 @@ common_SOURCES = \
 	model/zero_array.f \
 	model/zero_norm_vel.f
 
+if OPENMP
+AM_FCFLAGS += $(OPENMP_FCFLAGS)
+AM_LDFLAGS = $(OPENMP_FCFLAGS)
+endif
+
 if MPI
 common_SOURCES += \
 	model/des/desmpi_wrapper_mod.f \
