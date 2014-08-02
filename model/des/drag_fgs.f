@@ -41,7 +41,7 @@
 !        to replace invoking 'interpolator' interface module,
 !        which will introduce global variables; thus cause datarace with OpenMP.
 ! 2. Set the intermediate variables 'desposnew(:),velfp(:)' (small arrays) as private
-!        to replace the global variables des_pos_new(np,:),vel_fp(np,:) (big arrays)
+!        to replace the global variables des_pos_new(:,np),vel_fp(:,np) (big arrays)
 !        to avoid datarace; and save the calculating time.
 ! 3. Set the intermediate array 'weight_ft' to replace the pointer 'weightp' (global)
 !        in 'interpolator', which leads errors with OpenMP.
@@ -732,19 +732,6 @@
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
             vel_fp(:,np) = velfp(:)
 
-
-
-
-!**********************************************************************!
-!                      TEST CASE MODIFICATIONS                         !
-!``````````````````````````````````````````````````````````````````````!
-!          Massless particles for the circle advection test            !
-!----------------------------------------------------------------------!
-                   DES_VEL_NEW(:,NP) = VEL_FP(:,NP)
-!......................................................................!
-
-
-
 ! Calculate the particle centered drag coefficient (F_GP) using the
 ! particle velocity and the interpolated gas velocity.  Note F_GP
 ! obtained from des_drag_gp subroutine is given as:
@@ -762,7 +749,7 @@
                D_FORCE(:) = F_GP(NP)*(VEL_FP(:,NP))
             ELSE
 ! default case
-               !GD_FORCE(NP,:) = F_GP(NP)*(VEL_FP(:,NP)-VEL_NEW)
+               !GD_FORCE(:,NP) = F_GP(NP)*(VEL_FP(:,NP)-VEL_NEW)
                D_FORCE(:) = F_GP(NP)*(VEL_FP(:,NP)-VEL_NEW)
             ENDIF
 
@@ -951,13 +938,13 @@
 
 !Handan Liu modified the following do-loop on Jan 15 2013,
 !       again modified on May 9 2013
-!$omp parallel default(shared)                                          &
-!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,                          &
-!$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,                                         &
-!$omp         gst_tmp,vst_tmp,velfp,desposnew,ijpkp,ipjkp,                      &
-!$omp         ipjpkp,ijkp,nindx,focus,np,wtp,m,weight_ft,                       &
-!$omp             icur,jcur,kcur,vcell,ovol)
-!$omp do reduction(+:drag_am) reduction(+:drag_bm)
+!!$omp parallel default(shared)                                          &
+!!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,                          &
+!!$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,                                         &
+!!$omp         gst_tmp,vst_tmp,velfp,desposnew,ijpkp,ipjkp,                      &
+!!$omp         ipjpkp,ijkp,nindx,focus,np,wtp,m,weight_ft,                       &
+!!$omp             icur,jcur,kcur,vcell,ovol)
+!!$omp do reduction(+:drag_am) reduction(+:drag_bm)
       DO IJK = IJKSTART3,IJKEND3
          IF(.NOT.FLUID_AT(IJK) .OR. PINC(IJK)==0) cycle
          i = i_of(ijk)
@@ -1081,7 +1068,7 @@
          ENDDO   ! end do (nindx = 1,pinc(ijk))
 
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
-!$omp end parallel
+!!$omp end parallel
 !!$      omp_end=omp_get_wtime()
 !!$      write(*,*)'drag_interp:',omp_end - omp_start
 
@@ -1354,7 +1341,7 @@
           ENDIF
       ENDDO
       DPA = ONE / tmp_sum
-      Y_i = DP_loc(M)/DPA
+      Y_i = DP_loc(M) * tmp_sum
 
 ! assign variables for short dummy arguments
       EPg = EP_G(IJK)
