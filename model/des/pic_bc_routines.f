@@ -329,8 +329,8 @@
          COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
          RADSQ = DES_RADIUS(LL)*DES_RADIUS(LL)
 
-         pt_old(1:dimn) = des_pos_old(LL, 1:dimn)
-         pt_new(1:dimn) = des_pos_new(LL, 1:dimn)
+         pt_old(1:dimn) = des_pos_old(:, LL)
+         pt_new(1:dimn) = des_pos_new(:, LL)
 
          IF (COUNT_FAC.gt.01)   then
             !first add the facets in the cell the particle currently resides in
@@ -408,7 +408,7 @@
                
                
                VELDOTNORM = DOT_PRODUCT(NORM_PLANE(1:DIMN), & 
-                    DES_VEL_NEW(LL, 1:DIMN))
+                    DES_VEL_NEW(:, LL))
                !If the normal velocity of parcel is in the same 
                !direction as facet normal, then the parcel could not
                !have crossed this facet. 
@@ -440,8 +440,8 @@
                      write(*,*) 'dir_line = ', dir_line(1:dimn)
                      
                      WRITE(*,*) 'line_t = ',  line_t,ontriangle
-                     write(*,*) 'vel OLD = ', des_vel_old(LL,1:dimn)
-                     write(*,*) 'vel NEW = ', des_vel_new(LL,1:dimn)
+                     write(*,*) 'vel OLD = ', des_vel_old(:,LL)
+                     write(*,*) 'vel NEW = ', des_vel_new(:,LL)
                   
                      read(*,*)
                   endif
@@ -450,7 +450,7 @@
                      dist_from_facet = abs(dot_product(pt_new(1:dimn) & 
                      & - point_onplane(1:dimn), norm_plane(1:dimn)))
 
-                     DES_POS_NEW(LL, 1:DIMN) = point_onplane(1:dimn) + & 
+                     DES_POS_NEW(:, LL) = point_onplane(1:dimn) + & 
                      & dist_from_facet*(norm_plane(1:dimn)) 
 
                      CALL PIC_REFLECT_PART(LL, norm_plane(1:DIMN))
@@ -1007,14 +1007,14 @@
 !-----------------------------------------------
 
 
-      VEL_NORMMAG_APP = DOT_PRODUCT(WALL_NORM(1:DIMN), DES_VEL_NEW(LL, 1:DIMN))
+      VEL_NORMMAG_APP = DOT_PRODUCT(WALL_NORM(1:DIMN), DES_VEL_NEW(:, LL))
 
 
 !currently assuming that wall is at rest. Needs improvement for moving wall
 
       VEL_NORM_APP(1:DIMN) = VEL_NORMMAG_APP*WALL_NORM(1:DIMN)
 
-      VEL_TANG_APP(:) = DES_VEL_NEW(LL, 1:DIMN) - VEL_NORM_APP(1:DIMN)
+      VEL_TANG_APP(:) = DES_VEL_NEW(:, LL) - VEL_NORM_APP(1:DIMN)
 
       
 
@@ -1029,7 +1029,7 @@
 
       VEL_TANG_SEP(1:DIMN) =  COEFF_REST_ET*VEL_TANG_APP(1:DIMN)
 
-      DES_VEL_NEW(LL, 1:DIMN) = VEL_NORM_SEP(1:DIMN) + VEL_TANG_SEP(1:DIMN)
+      DES_VEL_NEW(:, LL) = VEL_NORM_SEP(1:DIMN) + VEL_TANG_SEP(1:DIMN)
 
       END SUBROUTINE PIC_REFLECT_PART
 
@@ -1068,10 +1068,10 @@
       I = PIJK(LL,1)
       J = PIJK(LL,2)
       K = PIJK(LL,3)
-      XPOS = DES_POS_NEW(LL,1)
-      YPOS = DES_POS_NEW(LL,2)
+      XPOS = DES_POS_NEW(1,LL)
+      YPOS = DES_POS_NEW(2,LL)
       IF (DIMN .EQ. 3) THEN
-         ZPOS = DES_POS_NEW(LL,3)
+         ZPOS = DES_POS_NEW(3,LL)
       ENDIF
 
       IF(XPOS >= XE(I-1) .AND. XPOS < XE(I)) THEN

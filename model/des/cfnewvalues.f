@@ -246,11 +246,11 @@
       !epg_min_loc = MINLOC(EP_G)
       !IJK = epg_min_loc(1)
 
-      allocate(rand_vel(MAX_PIP, 3))
+      allocate(rand_vel(3, MAX_PIP))
       do idim = 1, merge(2,3,NO_K)
          mean_u = zero
          sig_u = 1.d0
-         CALL NOR_RNO(RAND_VEL(1:MAX_PIP, IDIM), MEAN_U, SIG_U)
+         CALL NOR_RNO(RAND_VEL(IDIM, 1:MAX_PIP), MEAN_U, SIG_U)
       enddo
 
       DO L = 1, MAX_PIP
@@ -308,7 +308,7 @@
 
          do idim = 1, merge(2,3,NO_K)
             SIG_U = 0.05D0
-            rand_vel(L, idim)  = sig_u*DES_VEL_NEW(IDIM,L)*rand_vel(L, idim)
+            rand_vel(idim, L)  = sig_u*DES_VEL_NEW(IDIM,L)*rand_vel(idim, L)
          enddo
 
 
@@ -377,12 +377,12 @@
 
             IF(CUT_CELL_AT(IJK)) then
                DES_POS_NEW(:,L) = DES_POS_OLD(:,L)
-               DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + rand_vel(L, :)*dtsolid
+               DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + rand_vel(:, L)*dtsolid
                DES_VEL_NEW(:,L) = 0.8d0*DES_VEL_NEW(:,L)
             ELSE
                !IF(IJK.NE.IJK_OLD) THEN
                DES_POS_NEW(:,L) = DES_POS_OLD(:,L)
-               DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + rand_vel(L, :)*dtsolid
+               DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + rand_vel(:, L)*dtsolid
                DES_VEL_NEW(:,L) = 0.8d0*DES_VEL_NEW(:,L)
                !ENDIF
             ENDIF
@@ -592,11 +592,11 @@
       !EPG_MIN2 = MINVAL(EP_G(:))
       !epg_min_loc = MINLOC(EP_G)
       !IJK = epg_min_loc(1)
-      allocate(rand_vel(MAX_PIP, 3))
+      allocate(rand_vel(3, MAX_PIP))
       do idim = 1, merge(2,3,NO_K)
          mean_u = zero
          sig_u = 1.d0
-         CALL NOR_RNO(RAND_VEL(1:MAX_PIP, IDIM), MEAN_U, SIG_U)
+         CALL NOR_RNO(RAND_VEL(IDIM, 1:MAX_PIP), MEAN_U, SIG_U)
       enddo
       !WRITE(*, '(A,2x,3(g17.8))') 'FC MIN AND MAX IN Z = ', MINVAL(FC(:,3)), MAXVAL(FC(:,3))
       !WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'FC MIN AND MAX IN Z = ', MINVAL(FC(:,3)), MAXVAL(FC(:,3))
@@ -661,13 +661,13 @@
 
          DO IDIM = 1, merge(2,3,NO_K)
             !SIG_U = 0.05D0*MEANVEL(IDIM)
-            !DES_VEL_NEW(IDIM,L) = DES_VEL_NEW(IDIM,L) + SIG_U*RAND_VEL(L, IDIM )
+            !DES_VEL_NEW(IDIM,L) = DES_VEL_NEW(IDIM,L) + SIG_U*RAND_VEL(IDIM, L )
             !PART_TAUP = RO_Sol(L)*((2.d0*DES_RADIUS(L))**2.d0)/(18.d0* MU_G(IJK))
             SIG_U = 0.005D0      !*MEANVEL(IDIM)
-            RAND_VEL(L, IDIM)  = SIG_U*RAND_VEL(L, IDIM)*DES_VEL_NEW(IDIM,L)
-            IF(DES_FIXED_BED) RAND_VEL(L,IDIM) = ZERO
-            !rand_vel(L, idim)  = sig_u*rand_vel(L, idim)/part_taup
-            !rand_vel(L, idim)  = sig_u* mean_free_path*rand_vel(L, idim)/part_taup
+            RAND_VEL(IDIM, L)  = SIG_U*RAND_VEL(IDIM, L)*DES_VEL_NEW(IDIM,L)
+            IF(DES_FIXED_BED) RAND_VEL(IDIM,L) = ZERO
+            !rand_vel(idim, L)  = sig_u*rand_vel(L, idim)/part_taup
+            !rand_vel(idim, L)  = sig_u* mean_free_path*rand_vel(idim, L)/part_taup
             DES_VEL_NEW(idim,L) = DES_VEL_NEW(idim,L) + rand_vel(idim,L)
          enddo
 
@@ -686,7 +686,7 @@
          !ENDIF
 
          DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + &
-         DES_VEL_NEW(:,L)*DTSOLID !+ rand_vel(L, :)*dtsolid
+         DES_VEL_NEW(:,L)*DTSOLID !+ rand_vel(:, L)*dtsolid
 
          IF(DES_FIXED_BED) DES_POS_NEW(:,L) = DES_POS_OLD(:,L)
 
@@ -701,9 +701,9 @@
 
          IF(CUT_CELL_AT(IJK)) THEN
             POS_Z = zero
-            IF(DO_K) POS_Z = DES_POS_NEW(L,3)
+            IF(DO_K) POS_Z = DES_POS_NEW(3,L)
             CALL GET_DEL_H_DES(IJK,'SCALAR', &
-            & DES_POS_NEW(L,1),  DES_POS_NEW(L,2), &
+            & DES_POS_NEW(1,L),  DES_POS_NEW(2,L), &
             & POS_Z, &
             & DIST, NORM1, NORM2, NORM3, .true.)
 
@@ -716,7 +716,7 @@
 
             IF(CUT_CELL_AT(IJK)) then
                DES_POS_NEW(:,L) = DES_POS_OLD(:,L)
-               DES_POS_NEW(:,L) = DES_POS_OLD(:,L) !+ rand_vel(L, :)*dtsolid
+               DES_POS_NEW(:,L) = DES_POS_OLD(:,L) !+ rand_vel(:, L)*dtsolid
                DES_VEL_NEW(:,L) = 0.8d0*DES_VEL_NEW(:,L)
                !DES_VEL_NEW(:,L) = VELP_INT(:)
             ELSE
@@ -772,14 +772,14 @@
                IF(DMP_LOG.OR.myPE.eq.pe_IO) THEN
 
                   WRITE(UNIT_LOG, 2001) L, D_GRIDUNITS(:), DES_VEL_NEW(:,L)
-                  WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'rand_vel = ', rand_vel(L,:)
+                  WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'rand_vel = ', rand_vel(:,L)
                   WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(:,L)
                   WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(:,L)
                   WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'FC          = ', FC(:,L)
 
                   WRITE(*, 2001) L, D_GRIDUNITS(:), DES_VEL_NEW(:,L)
 
-                  WRITE(*, '(A,2x,3(g17.8))') 'rand_vel = ', rand_vel(L,:)
+                  WRITE(*, '(A,2x,3(g17.8))') 'rand_vel = ', rand_vel(:,L)
                   WRITE(*, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(:,L)
                   WRITE(*, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(:,L)
                   WRITE(*, '(A,2x,3(g17.8))') 'FC          = ', FC(:,L)
@@ -979,9 +979,9 @@
       do lp = pstart,pend
          if (pea(lp,1)) then
             lijk = pijk(lp,4)
-            write(100,*)lijk,des_pos_new(lp,1),des_pos_new(lp,2), &
+            write(100,*)lijk,des_pos_new(1,lp),des_pos_new(2,lp), &
                des_vel_new(1,lp),des_vel_new(2,lp),ep_g(lijk),&
-               fc(1,lp),fc(2,lp),tow(lp,1)
+               fc(1,lp),fc(2,lp),tow(1,lp)
          endif
       enddo
       close (100)
