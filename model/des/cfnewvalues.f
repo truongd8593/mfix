@@ -99,8 +99,8 @@
             DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + &
                DES_VEL_NEW(:,L)*DTSOLID
 ! following is equivalent to x=xold + vold*dt + 1/2acc*dt^2
-!         DES_POS_NEW(:,L) = DES_POS_OLD(L,:) + 0.5d0*&
-!             (DES_VEL_NEW(:,L)+DES_VEL_OLD(L,:))*DTSOLID
+!         DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + 0.5d0*&
+!             (DES_VEL_NEW(:,L)+DES_VEL_OLD(:,L))*DTSOLID
 
 
             OMEGA_NEW(:,L)   = OMEGA_OLD(:,L) + TOW(:,L)*OMOI(L)*DTSOLID
@@ -349,7 +349,7 @@
          DES_VEL_NEW(:,L)*DTSOLID
 
 
-         UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(:,L), DES_VEL_NEW(:,L)))
+         UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(1:,L), DES_VEL_NEW(1:,L)))
 
          RAD_EFF = DES_RADIUS(L)
                !RAD_EFF = (DES_STAT_WT(L)**(1.d0/3.d0))*DES_RADIUS(L)
@@ -644,7 +644,7 @@
 
          IF(DES_FIXED_BED) DES_VEL_NEW(:,L) = ZERO
 
-         !MPPIC_VPTAU(:,L) = DES_VEL_NEW(:,L)
+         !MPPIC_VPTAU(L,:) = DES_VEL_NEW(:,L)
 
          VELP_INT(:) = DES_VEL_NEW(:,L)
 
@@ -666,20 +666,20 @@
             SIG_U = 0.005D0      !*MEANVEL(IDIM)
             RAND_VEL(IDIM, L)  = SIG_U*RAND_VEL(IDIM, L)*DES_VEL_NEW(IDIM,L)
             IF(DES_FIXED_BED) RAND_VEL(IDIM,L) = ZERO
-            !rand_vel(idim, L)  = sig_u*rand_vel(L, idim)/part_taup
+            !rand_vel(idim, L)  = sig_u*rand_vel(idim, L)/part_taup
             !rand_vel(idim, L)  = sig_u* mean_free_path*rand_vel(idim, L)/part_taup
-            DES_VEL_NEW(idim,L) = DES_VEL_NEW(idim,L) + rand_vel(idim,L)
+            DES_VEL_NEW(idim,L) = DES_VEL_NEW(idim,L) + rand_vel(idim, L)
          enddo
 
          !DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + VELP_INT(:)*DTSOLID
 
-                                !if(mod(L,400).eq.0) write(*,'(A,2x,10(2x,g17.8))') 'rand vel = ', rand_vel(1,:), sig_u
+                                !if(mod(L,400).eq.0) write(*,'(A,2x,10(2x,g17.8))') 'rand vel = ', rand_vel(:,1), sig_u
 
 
          IF(.not.DES_ONEWAY_COUPLED.and.(.not.des_fixed_bed)) CALL MPPIC_APPLY_PS_GRAD_PART(L)
 
 
-         UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(:,L), DES_VEL_NEW(:,L)))
+         UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(1:,L), DES_VEL_NEW(1:,L)))
 
          !IF(UPRIMEMOD*DTSOLID.GT.MEAN_FREE_PATH) then
          !   DES_VEL_NEW(:,L) = (DES_VEL_NEW(:,L)/UPRIMEMOD)*MEAN_FREE_PATH/DTSOLID
@@ -721,7 +721,7 @@
                !DES_VEL_NEW(:,L) = VELP_INT(:)
             ELSE
                DES_POS_NEW(:,L) = DES_POS_OLD(:,L)
-               !DES_POS_NEW(:,L) = DES_POS_OLD(:,L) !+ rand_vel(L, :)*dtsolid
+               !DES_POS_NEW(:,L) = DES_POS_OLD(:,L) !+ rand_vel(:, L)*dtsolid
                DES_VEL_NEW(:,L) = 0.8d0*DES_VEL_NEW(:,L)
                !DES_VEL_NEW(:,L) = VELP_INT(:)
             ENDIF
@@ -773,14 +773,14 @@
 
                   WRITE(UNIT_LOG, 2001) L, D_GRIDUNITS(:), DES_VEL_NEW(:,L)
                   WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'rand_vel = ', rand_vel(:,L)
-                  WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(:,L)
+                  WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(:,l)
                   WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(:,L)
                   WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'FC          = ', FC(:,L)
 
                   WRITE(*, 2001) L, D_GRIDUNITS(:), DES_VEL_NEW(:,L)
 
                   WRITE(*, '(A,2x,3(g17.8))') 'rand_vel = ', rand_vel(:,L)
-                  WRITE(*, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(:,L)
+                  WRITE(*, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(:,l)
                   WRITE(*, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(:,L)
                   WRITE(*, '(A,2x,3(g17.8))') 'FC          = ', FC(:,L)
                   read(*,*)
@@ -981,7 +981,7 @@
             lijk = pijk(lp,4)
             write(100,*)lijk,des_pos_new(1,lp),des_pos_new(2,lp), &
                des_vel_new(1,lp),des_vel_new(2,lp),ep_g(lijk),&
-               fc(1,lp),fc(2,lp),tow(1,lp)
+               fc(1,lp),fc(2,lp),tow(lp,1)
          endif
       enddo
       close (100)

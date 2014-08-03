@@ -142,7 +142,7 @@ INTEGER :: cc,dd,ii,jj,iii,jjj,ddd
          end if
          do lneighindx=2,lneighcnt+1
             lneigh = neighbours(lcurpar,lneighindx)
-            write(44,'(I4.4,2(2x,F12.4))') iglobal_id(lneigh),des_pos_new(lneigh,1),des_pos_new(lneigh,2)
+            write(44,'(I4.4,2(2x,F12.4))') iglobal_id(lneigh),des_pos_new(1,lneigh),des_pos_new(2,lneigh)
          end do
       end do
       close(44)

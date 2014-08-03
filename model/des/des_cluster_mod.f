@@ -16,7 +16,7 @@
 
 
 !-----------------------------------------------
-! Modules      
+! Modules
 !-----------------------------------------------
       USE param
       USE param1
@@ -28,7 +28,7 @@
       use mpi_utility
       use desmpi_wrapper
       use desmpi
-      use compar 
+      use compar
       use desmpi
       use parallel
       use sendrecv
@@ -53,10 +53,10 @@
       END TYPE PARTICLE_TYPE
 !-----------------------------------------------<<<
 
-! Basic particle link-list.      
+! Basic particle link-list.
       TYPE(PARTICLE_TYPE), POINTER :: PSEARCH_HISTORY_LL
 
-!----------------------------------------------->>>      
+!----------------------------------------------->>>
       TYPE CLUSTER_TYPE
 ! Cluster index.
          INTEGER :: ID
@@ -64,10 +64,10 @@
          INTEGER :: ParticleCount
 ! Successor in cluster link-list.
          TYPE (CLUSTER_TYPE), POINTER :: next_cluster
-! Particle link-list         
+! Particle link-list
          TYPE (PARTICLE_TYPE), POINTER :: PARTICLE_LL
       END TYPE CLUSTER_TYPE
-!-----------------------------------------------<<<      
+!-----------------------------------------------<<<
 
 ! Cluster link-list.
       TYPE(CLUSTER_TYPE), POINTER :: CLUSTER_LL
@@ -88,7 +88,7 @@
       TYPE cType
 ! Number of particles in cluster.
          INTEGER :: size
-! Particle link-list         
+! Particle link-list
          TYPE (pType), POINTER :: particle
       END TYPE cType
 
@@ -134,7 +134,7 @@
          module procedure sendClusterData_1d
       end interface
 
-      
+
       contains
 
 !......................................................................!
@@ -150,13 +150,13 @@
       NULLIFY(cluster%PARTICLE_LL)
 
       if(ClusterCount == 0) then
-! no clusters have been created/identified              
+! no clusters have been created/identified
          if(associated(CLUSTER_LL)) then
             print*, ' Error - cluster pointer already associated!'
             CALL MFIX_EXIT(myPE)
          else
             ClusterCount = 1
-            Cluster%ParticleCount = 0 
+            Cluster%ParticleCount = 0
             cluster%ID = ClusterCount
 ! create first cluster of linked list of clusters. with cluster_ll
 ! always being the 'first' in the list
@@ -168,15 +168,15 @@
             CALL MFIX_EXIT(myPE)
          else
             ClusterCount = ClusterCount + 1
-            Cluster%ParticleCount = 0 
+            Cluster%ParticleCount = 0
             cluster%ID = ClusterCount
 ! establish the link between the new cluster and existing cluster list
             cluster%next_cluster => CLUSTER_LL
 ! reassign/point cluster_ll to be 'first' in the linked list
             CLUSTER_LL => cluster
-! as a result the linked list of clusters is created from 'bottom-up' 
+! as a result the linked list of clusters is created from 'bottom-up'
 ! with the new cluster always being inserted before any existing
-! clusters 
+! clusters
          endif
       ENDIF
 
@@ -189,10 +189,10 @@
       SUBROUTINE GetTopCluster(cluster)
 
       TYPE(CLUSTER_TYPE), INTENT(INOUT), POINTER :: cluster
-      
+
       NULLIFY(cluster)
-      
-! first check that a list has been formed      
+
+! first check that a list has been formed
       if(.NOT.associated(CLUSTER_LL) .AND. ClusterCount == 0) then
          write(*,"(//,3x,A,//)") 'No clusters to delete!'
       elseif(.NOT.associated(CLUSTER_LL) .AND. ClusterCount /= 0) then
@@ -200,8 +200,8 @@
       elseif(associated(CLUSTER_LL) .AND. ClusterCount == 0) then
          write(*,"(//,3x,A,//)") ' Error with ClusterCount and pointer - Er:2'
       else
-! now identify top cluster              
-         CALL getNextCluster(cluster) 
+! now identify top cluster
+         CALL getNextCluster(cluster)
       endif
       END SUBROUTINE GetTopCluster
 
@@ -213,7 +213,7 @@
 
       TYPE(CLUSTER_TYPE), INTENT(INOUT), POINTER :: cluster
 
-! dbg      
+! dbg
 !      write(*,"(/A,I7)")' Deleting top cluster: ',cluster%ID
       CALL DELETE_PARTICLES_IN_CLUSTER(cluster)
 
@@ -257,10 +257,10 @@
       else
          do cL =1, ClusterCount
             CALL getNextCluster(cluster)
-! dbg            
+! dbg
 !            write(*,"(/A,I7)")' Deleting cluster: ',cluster%ID
             CALL DELETE_PARTICLES_IN_CLUSTER(cluster)
- 
+
             if(associated(cluster%next_cluster)) then
                CLUSTER_LL => cluster%next_cluster
             else
@@ -274,7 +274,7 @@
          enddo
 
          if(cDeleted == ClusterCount) then
-! dbg                 
+! dbg
 !            write(*,"(4X,A,I7)")'Number of clusters deleted: ',cDeleted
             ClusterCount = 0
          else
@@ -310,7 +310,7 @@
       else
          do pL =1, cluster%ParticleCount
             CALL GetNextParticle(cluster, particle)
-! dbg            
+! dbg
 !            write(*,"(6X,A,I7)")' Deleting particle: ',particle%ID
 
             if(associated(particle%next_particle)) then
@@ -325,7 +325,7 @@
          enddo
 
          if(pDeleted == cluster%ParticleCount) then
-! dbg                 
+! dbg
 !            if(pDeleted >1 ) &
 !               write(*,"(4X,A,I7)")'Number of deleted particles: ',&
 !               pDeleted
@@ -379,7 +379,7 @@
       TYPE(CLUSTER_TYPE), INTENT(INOUT), POINTER :: cluster
 
       if(.NOT.associated(cluster)) then
-! point cluster to first cluster in linked list of clusters              
+! point cluster to first cluster in linked list of clusters
          cluster => CLUSTER_LL
       elseif(associated(cluster%next_cluster)) then
          cluster => cluster%next_cluster
@@ -427,7 +427,7 @@
 !      print *, '----------> addparticle_to_psearchhistory'
 
       if(pSearchHistoryCount == 0) then
-! no particles in search list have been created/identified              
+! no particles in search list have been created/identified
          if(associated(PSEARCH_HISTORY_LL)) then
                  print*, ' Error - particle history pointer already &
                     & associated!'
@@ -453,12 +453,12 @@
             particle%next_particle => PSEARCH_HISTORY_LL
 ! reassign/point psearch_history_ll to be 'first' in the linked list
             PSEARCH_HISTORY_LL => particle
-! as a result the linked list of particles is created from 'bottom-up' 
+! as a result the linked list of particles is created from 'bottom-up'
 ! with the new particle  always being inserted before any existing
-! particles 
+! particles
 ! dbg
 !            print *, 'Add particle in history ', pID
-            
+
          endif
       ENDIF
 
@@ -477,7 +477,7 @@
 !     print *, '----------> gettopparticle_in_psearchhistory'
 
       if(.NOT.associated(particle)) then
-! point particle to first particle in linked list of particles              
+! point particle to first particle in linked list of particles
          particle => PSEARCH_HISTORY_LL
       elseif(associated(particle%next_particle)) then
 ! this will never happen if we nullify particle at start of this
@@ -515,9 +515,9 @@
             ' Error with pSearchHistoryCount and pointer - Er:2'
       else
          CALL GetTopParticle_In_PSearchHistory(particle)
-! dbg         
+! dbg
 !         write(*,"(A,I7)")' Deleting particle: ',particle%ID
-   
+
          if(associated(particle%next_particle)) then
             PSEARCH_HISTORY_LL => particle%next_particle
          else
@@ -554,7 +554,7 @@
 
       if(.NOT.associated(PSEARCH_HISTORY_LL) .AND. &
          pSearchHistoryCount == 0) then
-! dbg         
+! dbg
 !         write(*,"(//,3x,A,//)") 'No particles in history to delete!'
       elseif(.NOT.associated(PSEARCH_HISTORY_LL) .AND. &
          pSearchHistoryCount /= 0) then
@@ -566,11 +566,11 @@
             ' Error with pSearchHistoryCount and pointer - Er:2'
       else
          do pL =1, pSearchHistoryCount
-        
+
             CALL GetTopParticle_In_PSearchHistory(particle)
-! dbg            
+! dbg
 !            write(*,"(/A,I7)")' Deleting particle: ',particle%ID
-    
+
             if(associated(particle%next_particle)) then
                PSEARCH_HISTORY_LL => particle%next_particle
             else
@@ -583,7 +583,7 @@
          enddo
 
          if(pDeleted == pSearchHistoryCount) then
-! dbg                 
+! dbg
 !            write(*,"(4X,A,I7)")'Number of particles deleted: ',pDeleted
             pSearchHistoryCount = 0
          else
@@ -668,7 +668,7 @@
 ! Calculate and report cluster stats.
       if(myPE == clusterPE) then
          open (unit=203, file='clusterInfo.dat', &
-            status='unknown', position='append') 
+            status='unknown', position='append')
          if(clusterCount_all == 0) then
             write(203,"(/3X,'Time: ',F9.6,3x,'No clusters to print.')")&
                time
@@ -758,7 +758,7 @@
                      nullify(pThis)
                   endif
                enddo
-! This is where the above loop is checked against the previously 
+! This is where the above loop is checked against the previously
 ! calculated cluster size. They should match.
                if(lc3 /= cThis%size) then
                   write(*,"(3x,'Error processing particles. ', &
@@ -925,7 +925,7 @@
       call global_sum(cCnt ,cCnt_all)
       call des_mpi_barrier()
       if(dbg_level >= 1) call dbg_print_clusters(1)
-      if(dbg_level >= 2) write(202,"(5x,'check 1')") 
+      if(dbg_level >= 2) write(202,"(5x,'check 1')")
 
 ! Create an array identifying the number of particles in each cluster.
       allocate(pCnt(cCnt(myPE)))
@@ -936,7 +936,7 @@
       enddo
       if(dbg_level >= 2) then
          call dbg_print_clusters(2)
-         write(202,"(5x,'check 2')") 
+         write(202,"(5x,'check 2')")
       endif
 
 ! Calculate the total number of clusters in the entire domain.
@@ -955,14 +955,14 @@
       endif
       if(dbg_level >= 2) then
          call dbg_print_clusters(3)
-         write(202,"(5x,'check 3')") 
+         write(202,"(5x,'check 3')")
       endif
 
 ! Populate pCnt_all on clusterPE.
       call des_mpi_gatherv(pCnt, cCnt(myPE), pCnt_all, cCnt_all,       &
          pCnt_dsp, clusterPE, ierr)
       if(dbg_level >= 1) call dbg_print_clusters(4)
-      if(dbg_level >= 2) write(202,"(5x,'check 4')") 
+      if(dbg_level >= 2) write(202,"(5x,'check 4')")
       call des_mpi_barrier()
 
 
@@ -988,7 +988,7 @@
          recv_sum = 1
       endif
       if(dbg_level >= 1) call dbg_print_clusters(5)
-      if(dbg_level >= 2) write(202,"(5x,'check 5')") 
+      if(dbg_level >= 2) write(202,"(5x,'check 5')")
 
 
       allocate( gp_dsp(cCnt_sum) ); gp_dsp(:) = 0
@@ -998,14 +998,14 @@
          enddo
       endif
       if(dbg_level >= 1) call dbg_print_clusters(6)
-      if(dbg_level >= 2) write(202,"(5x,'check 6')") 
+      if(dbg_level >= 2) write(202,"(5x,'check 6')")
 
 
 ! Transfer global particle IDs:
       call getClusterParticleData(iglobal_id, gpIDs_all, gpIDs)
       if(dbg_level >= 2) then
          call dbg_print_clusters(7)
-         write(202,"(5x,'check 7')") 
+         write(202,"(5x,'check 7')")
       endif
 
 
@@ -1013,13 +1013,13 @@
       call getClusterParticleData(PEA(:,4), gpPEA_all, gpPEA)
       if(dbg_level >= 2) then
          call dbg_print_clusters(7)
-         write(202,"(5x,'check 7')") 
+         write(202,"(5x,'check 7')")
          call dbg_print_clusters(9)
-         write(202,"(5x,'check 9')") 
+         write(202,"(5x,'check 9')")
          call dbg_print_clusters(10)
          write(202,"(5x,'check 10')")
          call dbg_print_clusters(11)
-         write(202,"(5x,'check 11')") 
+         write(202,"(5x,'check 11')")
       elseif(dbg_level >= 1) then
          call dbg_print_clusters(11)
       endif
@@ -1046,7 +1046,7 @@
                   if(dbg_level >= 1) &
                      write(*,"(3x,'Merge: ',I5,' and ',I5)") lc1, lc3
                endif
-            enddo lp_lc4 
+            enddo lp_lc4
             enddo lp_lc3
             enddo lp_lc2
             enddo lp_lc1
@@ -1057,7 +1057,7 @@
 
 ! Merge any clusters that share common particles. Common particles are
 ! identified by their global particle IDs. Note that if two processes
-! contain a common particle, the particle should be 'real' on one 
+! contain a common particle, the particle should be 'real' on one
 ! process and a ghost on the other.
             merging = .true.
             do while(merging)
@@ -1098,7 +1098,7 @@
             endif
 
 
-! Allocate the clusters pointer array. This array is populated with 
+! Allocate the clusters pointer array. This array is populated with
 ! data used to map particles to send/recv data. Ghost particles are not
 ! included in the map so that cluster analysis only contains data from
 ! real particles.
@@ -1296,7 +1296,7 @@
                   do lc1 = 1, cCnt_all(proc)
                      write(*,"(7x,'Particles in cluster ',I4,': ',I6)")&
                         lc1, pCnt_all(lc1 + pCnt_dsp(proc))
-                  enddo 
+                  enddo
                else
                   write(*,"(3x,'Process ',I2,' reports no clusters.')")&
                      proc
@@ -1348,7 +1348,7 @@
             do lc1 = 1, cCnt_sum
                write(*,"(7x,' Cluster ',I4,': ',I6)") &
                   lc1, gp_dsp(lc1)
-            enddo 
+            enddo
             write(*,*)''
          endif
 
@@ -1479,7 +1479,7 @@
                   gpIDs_all(gp_dsp(lc2) + lc3), lc2, proc
             endif
          enddo
-         enddo 
+         enddo
          enddo
          write(*,*)''
 
@@ -1577,7 +1577,7 @@
       if(allocated(recv_dsp)) deallocate(recv_dsp)
 
       if(mype /= clusterPE ) then
-         if(allocated(clusters)) deallocate(clusters) 
+         if(allocated(clusters)) deallocate(clusters)
       else
          if(allocated(clusters)) then
             do lc1=1,size(clusters)
@@ -1628,7 +1628,7 @@
 ! Cluster object getting a new partilced added.
       Type(cType), pointer, intent(inout) :: this
 
-! The particle map is used for locating a particle in send/recv data. 
+! The particle map is used for locating a particle in send/recv data.
       integer, intent(in) :: lMap
 ! The global ID of the particle. Used mainly for debugging.
       integer, intent(in) :: lID
@@ -1654,7 +1654,7 @@
             return
          endif
       else
-! If this isn't the first particle, then the cluster should have a 
+! If this isn't the first particle, then the cluster should have a
 ! valid particle in the link list.
          if(.not.associated(this%particle)) then
             write(*,"(3x,'Fatal Error (001) adding particle.')")
@@ -1705,7 +1705,7 @@
       integer ierr
 
 ! The receive buffer should be unallocated. Deallocate it otherwise.
-! This array is only important on clusterPE. 
+! This array is only important on clusterPE.
       if(allocated(lrbuff)) then
          if(myPE == clusterPE) write(*,"(3x,&
             &'Error in getClusterParticleData_1i: ',&
@@ -1790,11 +1790,11 @@
       integer ierr
 
 ! Get the upper and lower array bounds of the incoming data.
-      lbnd = lbound(lData,2)
-      ubnd = ubound(lData,2)
+      lbnd = lbound(lData,1)
+      ubnd = ubound(lData,1)
 
 ! The receive buffer should be unallocated. Deallocate it otherwise.
-! This array is only important on clusterPE. 
+! This array is only important on clusterPE.
       if(allocated(lrbuff)) then
          if(myPE == 0) write(*,"(3x,&
             &'Error in getClusterParticleData_2i: ', &
@@ -1803,11 +1803,11 @@
       endif
 
 ! Allocate the receive buffer (and returned data set)
-      allocate(lrbuff(recv_sum,lbnd:ubnd))
+      allocate(lrbuff(lbnd:ubnd,recv_sum))
 ! Allocate the temporary send buffer.
       allocate(lsbuff(send_cnt))
 ! Allocate the local return data set
-      if(present(lOut)) allocate(lOut(send_cnt,lbnd:ubnd))
+      if(present(lOut)) allocate(lOut(lbnd:ubnd,send_cnt))
 
 ! Populate the send buffer. The send buffer only contains data about
 ! particles that belong to clusters.
@@ -1822,17 +1822,17 @@
                do lc1 = 1, cluster%ParticleCount
                   lc3 = lc3 + 1
                   CALL GetNextParticle(cluster, particle)
-                  lsbuff(lc3) = lData(particle%ID,lc4)
+                  lsbuff(lc3) = lData(lc4,particle%ID)
                enddo
             enddo
          endif
 
 ! Invoke MPI routines.
          call des_mpi_gatherv(lsbuff,        send_cnt,             &
-                              lrbuff(:,lc4), recv_cnt, recv_dsp,   &
+                              lrbuff(lc4, :), recv_cnt, recv_dsp,   &
                               clusterPE, ierr)
 ! Store the local return data set.
-         if(present(lOut)) lOut(:,lc4) = lsbuff
+         if(present(lOut)) lOut(lc4,:) = lsbuff
 
       enddo
 
@@ -1881,7 +1881,7 @@
       integer ierr
 
 ! The receive buffer should be unallocated. Deallocate it otherwise.
-! This array is only important on clusterPE. 
+! This array is only important on clusterPE.
       if(allocated(lrbuff)) then
          if(myPE == 0) write(*,"(3x,&
             &'Error in getClusterParticleData_1d: ', &
@@ -1967,11 +1967,11 @@
       integer ierr
 
 ! Get the upper and lower array bounds of the incoming data.
-      lbnd = lbound(lData,2)
-      ubnd = ubound(lData,2)
+      lbnd = lbound(lData,1)
+      ubnd = ubound(lData,1)
 
 ! The receive buffer should be unallocated. Deallocate it otherwise.
-! This array is only important on clusterPE. 
+! This array is only important on clusterPE.
       if(allocated(lrbuff)) then
          if(myPE == 0) write(*,"(3x,&
             &'Error in getClusterParticleData_2d: ', &
@@ -1980,11 +1980,11 @@
       endif
 
 ! Allocate the receive buffer (and returned data set)
-      allocate(lrbuff(recv_sum,lbnd:ubnd))
+      allocate(lrbuff(lbnd:ubnd,recv_sum))
 ! Allocate the temporary send buffer.
       allocate(lsbuff(send_cnt))
 ! Allocate the local return data set
-      if(present(lOut)) allocate(lOut(send_cnt,lbnd:ubnd))
+      if(present(lOut)) allocate(lOut(lbnd:ubnd,send_cnt))
 
 ! Populate the send buffer. The send buffer only contains data about
 ! particles that belong to clusters.
@@ -1999,18 +1999,18 @@
                do lc1 = 1, cluster%ParticleCount
                   lc3 = lc3 + 1
                   CALL GetNextParticle(cluster, particle)
-                  lsbuff(lc3) = lData(particle%ID,lc4)
+                  lsbuff(lc3) = lData(lc4,particle%ID)
                enddo
             enddo
          endif
 
 ! Invoke MPI routines.
          call des_mpi_gatherv(lsbuff,        send_cnt,             &
-                              lrbuff(:,lc4), recv_cnt, recv_dsp,   &
+                              lrbuff(lc4,:), recv_cnt, recv_dsp,   &
                               clusterPE, ierr)
 
 ! Store the local return data set.
-         if(present(lOut)) lOut(:,lc4) = lsbuff
+         if(present(lOut)) lOut(lc4,:) = lsbuff
 
       enddo
 
@@ -2064,7 +2064,7 @@
       integer ierr
 
 ! The receive buffer should be unallocated. Deallocate it otherwise.
-! This array is only important on clusterPE. 
+! This array is only important on clusterPE.
       if(allocated(lrbuff)) then
          if(myPE == 0) write(*,"(3x,&
             &'Error in getClusterParticleData_1l: ',&
@@ -2165,7 +2165,7 @@
       integer ierr
 
 ! The receive buffer should be unallocated. Deallocate it otherwise.
-! This array is only important on clusterPE. 
+! This array is only important on clusterPE.
       if(allocated(lrbuff)) then
          if(myPE == 0) write(*,"(3x,&
             &'Error in getClusterFieldData_1d: ', &
@@ -2264,7 +2264,7 @@
       integer ierr
 
 ! The receive buffer should be unallocated. Deallocate it otherwise.
-! This array is only important on clusterPE. 
+! This array is only important on clusterPE.
       if(allocated(lrbuff)) then
          if(myPE == 0) write(*,"(3x,&
             &'Error in getClusterFieldData_3d: ', &

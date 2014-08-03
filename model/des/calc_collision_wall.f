@@ -180,9 +180,9 @@
             ENDIF
             WRITE(*,'(5X,A,I10)') 'On Particle ', LL
             WRITE(*,'(5X,A,2(ES15.7))') &
-               'X,Y POS: ', DES_POS_NEW(LL,1), DES_POS_NEW(LL,2)
+               'X,Y POS: ', DES_POS_NEW(1,LL), DES_POS_NEW(2,LL)
             WRITE(*,'(5X,A,2(ES15.7))') &
-               'X,Y VEL: ', DES_VEL_NEW(LL,1), DES_VEL_NEW(LL,2)
+               'X,Y VEL: ', DES_VEL_NEW(1,LL), DES_VEL_NEW(2,LL)
          ENDIF
 
 ! Initializing local variables

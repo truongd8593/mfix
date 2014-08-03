@@ -85,7 +85,7 @@
 ! calculating distance between surface of search particle and base
 ! particle
                R_LM = des_radius(SearchParticle)+des_radius(BaseParticle)
-               Dist(:) = des_pos_new(SearchParticle,:) - des_pos_new(BaseParticle,:)
+               Dist(:) = des_pos_new(:,SearchParticle) - des_pos_new(:,BaseParticle)
                Distmod = sqrt(des_dotprdct(dist,dist))
                DistApart= (distmod-R_LM)
 ! checking if search particle and base particle form a cluster based on

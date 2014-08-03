@@ -102,8 +102,8 @@
       INTEGER :: LB, UB
       INTEGER :: PC, LC1, LC2
 
-      LB = LBOUND(DATA,1)
-      UB = UBOUND(DATA,1)
+      LB = LBOUND(DATA,2)
+      UB = UBOUND(DATA,2)
       NOC=''; WRITE(NOC,*) (UB-LB)+1
 
       IF(bDist_IO) THEN
@@ -117,7 +117,7 @@
             PC = PC+1
             IF(PEA(LC1,4)) CYCLE
             DO LC2=LB, UB
-               WRITE(DES_UNIT,1001,ADVANCE="NO") real(DATA(LC2,LC1))
+               WRITE(DES_UNIT,1001,ADVANCE="NO") real(DATA(LC1,LC2))
             ENDDO
          ENDDO
          WRITE(DES_UNIT,1002)
@@ -129,7 +129,7 @@
          allocate (ltemp_array(GLOBAL_CNT,(UB-LB)+1))
 
          DO LC1 = LB, UB
-            CALL DES_GATHER(DATA(LC1,:))
+            CALL DES_GATHER(DATA(:,LC1))
             ltemp_array(:,LC1) = drootbuf(:)
          ENDDO
 

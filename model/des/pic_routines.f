@@ -961,12 +961,12 @@
             if(NO_K) then !2-D
                call interpolator(gstencil(1:onew,1:onew,1,1:dimn), &
                psgradstencil(1:onew,1:onew,1,1:dimn), &
-               des_pos_new(np,1:dimn),PS_GRAD(np,1:dimn),  &
+               des_pos_new(1:dimn,np),PS_GRAD(np,1:dimn),  &
                onew,interp_scheme,weightp)
             else !3-D, diff in psgradstencil size
                call interpolator(gstencil(1:onew,1:onew,1:onew,1:dimn), &
                psgradstencil(1:onew,1:onew,1:onew,1:dimn), &
-               des_pos_new(np,1:dimn),PS_GRAD(np,1:dimn),  &
+               des_pos_new(1:dimn,np),PS_GRAD(np,1:dimn),  &
                onew,interp_scheme,weightp)
             endif
 
@@ -1337,7 +1337,7 @@
          pc = pc+1
          IF(PEA(LL,4)) CYCLE
 
-         WRITE(1000,'(10( 2x, g17.8))') (DES_POS_NEW(LL, IDIM), IDIM = 1, DIMN), (PS_GRAD(LL, IDIM) , IDIM = 1, DIMN), (AVGSOLVEL_P (LL, IDIM) , IDIM = 1, DIMN), 1-EPg_P(LL)
+         WRITE(1000,'(10( 2x, g17.8))') (DES_POS_NEW(IDIM, LL), IDIM = 1, DIMN), (PS_GRAD(LL, IDIM) , IDIM = 1, DIMN), (AVGSOLVEL_P (IDIM, LL) , IDIM = 1, DIMN), 1-EPg_P(LL)
       ENDDO
                close(1000, status='keep')
 

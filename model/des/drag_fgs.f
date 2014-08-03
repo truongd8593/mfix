@@ -730,7 +730,7 @@
 
             desposnew(:) = des_pos_new(:,np)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
-            vel_fp(:,np) = velfp(:)
+            vel_fp(1:3,np) = velfp(1:3)
 
 ! Calculate the particle centered drag coefficient (F_GP) using the
 ! particle velocity and the interpolated gas velocity.  Note F_GP
@@ -746,17 +746,17 @@
             IF(MPPIC .AND. MPPIC_PDRAG_IMPLICIT) THEN
 ! implicit treatment of the drag term for mppic
 !------------------------------------------------------------------<<<< Handan Liu
-               D_FORCE(:) = F_GP(NP)*(VEL_FP(:,NP))
+               D_FORCE(1:3) = F_GP(NP)*(VEL_FP(1:3,NP))
             ELSE
 ! default case
                !GD_FORCE(:,NP) = F_GP(NP)*(VEL_FP(:,NP)-VEL_NEW)
-               D_FORCE(:) = F_GP(NP)*(VEL_FP(:,NP)-VEL_NEW)
+               D_FORCE(1:3) = F_GP(NP)*(VEL_FP(1:3,NP)-VEL_NEW)
             ENDIF
 
 ! Update the contact forces (FC) on the particle to include gas
 ! pressure and gas-solids drag
-            FC(:,NP) = FC(:,NP) + D_FORCE(:)
-            GD_FORCE(:,NP) = D_FORCE(:)
+            FC(:3,NP) = FC(:3,NP) + D_FORCE(:3)
+            GD_FORCE(:3,NP) = D_FORCE(:3)
 
             IF(.NOT.MODEL_B) THEN
 ! P_force is evaluated as -dp/dx
@@ -1010,7 +1010,7 @@
             if(pea(np,4)) cycle
             desposnew(:) = des_pos_new(:,np)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
-            vel_fp(:,np) = velfp(:)
+            vel_fp(1:3,np) = velfp(1:3)
 !===================================================================>> Handan Liu
 !
 ! Calculate the particle centered drag coefficient (F_GP) using the

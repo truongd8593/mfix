@@ -85,11 +85,11 @@
 ! Particle velocities: All x-components, all y-components, and for 3D
 ! simulations, all z-components
          do li = 1,dimn
-            call des_writepar(lres_unit,des_vel_new(li,:),pip,lnext_rec)
+            call des_writepar(lres_unit,des_vel_new(:,li),pip,lnext_rec)
          end do
 ! Rotational velocities: 1 degree of fredom for 2D, 3 DOF for 3D
          do li = 1,ltor_dimn
-            call des_writepar(lres_unit,omega_new(li,:),pip,lnext_rec)
+            call des_writepar(lres_unit,omega_new(:,li),pip,lnext_rec)
          end do
 ! Particle radi
          call des_writepar(lres_unit,des_radius,pip,lnext_rec)
@@ -246,11 +246,11 @@
          end do
 ! Translational velocities (one coordinate at a time).
          do li = 1,dimn
-            call des_gatherwrite(lres_unit,des_vel_new(li,:),lglocnt,lnext_rec)
+            call des_gatherwrite(lres_unit,des_vel_new(:,li),lglocnt,lnext_rec)
          end do
 ! Rotational velocity.
          do li = 1,ltor_dimn
-            call des_gatherwrite(lres_unit,omega_new(li,:),lglocnt,lnext_rec)
+            call des_gatherwrite(lres_unit,omega_new(:,li),lglocnt,lnext_rec)
          end do
 ! Particle radi.
          call des_gatherwrite(lres_unit,des_radius,lglocnt,lnext_rec)

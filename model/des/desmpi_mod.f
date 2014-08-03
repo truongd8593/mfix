@@ -1349,7 +1349,7 @@
 ! Pradeep remove ********************
 !             print * ,"--------------------------------------------------------------------"
 !             print * , "inside pack par cross" ,mype
-!             print *, "particle moved is", iglobal_id(lcurpar),des_pos_new(lcurpar,:)
+!             print *, "particle moved is", iglobal_id(lcurpar),des_pos_new(:,lcurpar)
 !             print *, "number of neighbours",neighbours(lcurpar,1)
 !             do lneighindx = 2,neighbours(lcurpar,1)+1
 !             print *, "neighbourid" , iglobal_id(neighbours(lcurpar,lneighindx))

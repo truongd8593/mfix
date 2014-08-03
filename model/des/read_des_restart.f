@@ -112,12 +112,12 @@
 ! Particle velocities: All x-components, all y-components, and for 3D
 ! simulations, all z-components
          do li = 1,dimn
-            call in_bin_512(lres_unit,des_vel_new(li,:),pip,lnext_rec)
+            call in_bin_512(lres_unit,des_vel_new(:,li),pip,lnext_rec)
          end do
 
 ! Rotational velocities: 1 degree of fredom for 2D, 3 DOF for 3D
          do li = 1,ltor_dimn
-            call in_bin_512(lres_unit,omega_new(li,:),pip,lnext_rec)
+            call in_bin_512(lres_unit,omega_new(:,li),pip,lnext_rec)
          end do
 ! Particle radi
          call in_bin_512(lres_unit,des_radius,pip,lnext_rec)
@@ -282,11 +282,11 @@
          end do
 ! Translational velocities (one coordinate at a time).
          do li = 1,dimn
-            call des_readscatter(lres_unit,des_vel_new(li,:),lglocnt,lnext_rec)
+            call des_readscatter(lres_unit,des_vel_new(:,li),lglocnt,lnext_rec)
          end do
 ! Rotational velocity.
          do li = 1,ltor_dimn
-            call des_readscatter(lres_unit,omega_new(li,:),lglocnt,lnext_rec)
+            call des_readscatter(lres_unit,omega_new(:,li),lglocnt,lnext_rec)
          end do
 ! Particle radi.
          call des_readscatter(lres_unit,des_radius,lglocnt,lnext_rec)
@@ -447,19 +447,19 @@
          iErr=0
 
 
-         if(DES_POS_NEW(lc1,1) .lt. xe(istart1_all(myPE)-1))           &
+         if(DES_POS_NEW(1,lc1) .lt. xe(istart1_all(myPE)-1))           &
             iErr = iErr +      1
-         if(DES_POS_NEW(lc1,1) .ge. xe(iend1_all(myPE)))               &
+         if(DES_POS_NEW(1,lc1) .ge. xe(iend1_all(myPE)))               &
             iErr = iErr +     10
-         if(DES_POS_NEW(lc1,2) .lt. yn(jstart1_all(myPE)-1))           &
+         if(DES_POS_NEW(2,lc1) .lt. yn(jstart1_all(myPE)-1))           &
             iErr = iErr +    100
-         if(DES_POS_NEW(lc1,2) .ge. yn(jend1_all(myPE)))               &
+         if(DES_POS_NEW(2,lc1) .ge. yn(jend1_all(myPE)))               &
             iErr = iErr +   1000
 
          if(dimn .gt. 3) then
-            if(DES_POS_NEW(lc1,3) .lt. zt(kstart1_all(myPE)-1))        &
+            if(DES_POS_NEW(3,lc1) .lt. zt(kstart1_all(myPE)-1))        &
                iErr = iErr +  10000
-            if(DES_POS_NEW(lc1,3) .ge. zt(kend1_all(myPE)))            &
+            if(DES_POS_NEW(3,lc1) .ge. zt(kend1_all(myPE)))            &
                iErr = iErr + 100000
         endif
 
@@ -548,7 +548,7 @@
       PN(1,NP) = 0
       PV(:,NP) = .TRUE.
       PFT(NP,:,:) = ZERO
-      PPOS(NP,:) = ZERO
+      PPOS(:,NP) = ZERO
 
 ! Note that if particle NP has any neighbors then the particle NP will
 ! still exist in the neighbor's neighbours list.  This information would
