@@ -216,6 +216,11 @@
 ! mansoori, modified_mansoori.  default = lebowitz
 ! for m = 1 then carnahan and starling rdf used
       CHARACTER(64) :: RDF_TYPE 
+      INTEGER :: RDF_TYPE_ENUM
+      INTEGER,PARAMETER :: LEBOWITZ=0
+      INTEGER,PARAMETER :: MODIFIED_LEBOWITZ=1
+      INTEGER,PARAMETER :: MANSOORI=2
+      INTEGER,PARAMETER :: MODIFIED_MANSOORI=3
 
 ! If .TRUE. use Yu and Standish correlation to compute ep_star
       LOGICAL :: YU_STANDISH

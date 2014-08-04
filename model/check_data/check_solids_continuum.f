@@ -10,7 +10,7 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-      USE constant 
+      USE constant
       USE run
       USE physprop
 
@@ -35,7 +35,7 @@
 ! initialization of various dependent constants
       SIN_PHI = UNDEFINED   ! friction
       SIN2_PHI = UNDEFINED   ! schaeffer
-      F_PHI = UNDEFINED    ! commented schaeffer section 
+      F_PHI = UNDEFINED    ! commented schaeffer section
       TAN_PHI_W = UNDEFINED   ! friction or jenkins
 
 ! Initialize the error manager.
@@ -52,16 +52,16 @@
       ENDIF
 
 ! CHECK MU_s0
-      IF (MU_S0 < ZERO) THEN 
+      IF (MU_S0 < ZERO) THEN
          WRITE(ERR_MSG, 1001) 'MU_s0', MU_s0
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF 
+      ENDIF
 
 ! CHECK DIF_s0
-      IF (DIF_S0 < ZERO) THEN 
+      IF (DIF_S0 < ZERO) THEN
          WRITE(ERR_MSG, 1001) 'DIF_s0', DIF_s0
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF 
+      ENDIF
 
 
 ! Constant solids viscosity is employed
@@ -69,41 +69,41 @@
 ! many of the solids phase transport coefficients that are needed for
 ! the granular energy equation will have be skipped in calc_mu_s. so
 ! do not evaluate granular energy if the solids viscosity is set to
-! a constant. 
+! a constant.
          IF(GRANULAR_ENERGY) THEN
             WRITE(ERR_MSG,1100)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
-! needed by default solids-solids drag model 
-         IF (SMAX >=2) THEN 
+! needed by default solids-solids drag model
+         IF (SMAX >=2) THEN
             IF (C_E == UNDEFINED) THEN
-               WRITE(ERR_MSG,1101) 
+               WRITE(ERR_MSG,1101)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ELSEIF (C_F == UNDEFINED) THEN
-               WRITE(ERR_MSG,1102) 
+               WRITE(ERR_MSG,1102)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ENDIF
-      ELSE 
-! PDE granular energy. Check kinetic theory specifications. 
+      ELSE
+! PDE granular energy. Check kinetic theory specifications.
          IF (GRANULAR_ENERGY) THEN
             CALL CHECK_KT_TYPE
          ELSE
 ! Algebraic granular energy equation
             IF (C_E == UNDEFINED) THEN
-               WRITE(ERR_MSG,1101) 
+               WRITE(ERR_MSG,1101)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
 ! needed by default solids-solids drag model
             IF (SMAX >=2) THEN
                IF (C_F == UNDEFINED) THEN
-                  WRITE(ERR_MSG,1102) 
+                  WRITE(ERR_MSG,1102)
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
                ENDIF
             ENDIF
          ENDIF
-      ENDIF   
-          
+      ENDIF
+
  1100 FORMAT('Error 1100: Constant viscosity is specified but', /&
          'GRANULAR_ENERGY=.TRUE. Please correct the mfix.dat file')
  1101 FORMAT('Error 1101: Coefficient of restitution (C_E) not ',      &
@@ -112,11 +112,11 @@
          'specified.',/'Please correct the mfix.dat file.')
 !
 
-! If frictional stress modeling check various dependent/conflicting 
+! If frictional stress modeling check various dependent/conflicting
 ! settings
 
-! plastic/frictional stress model 
-      IF (FRICTION) THEN 
+! plastic/frictional stress model
+      IF (FRICTION) THEN
          IF(SCHAEFFER) THEN
             WRITE(ERR_MSG, 1200)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -139,11 +139,11 @@
          ELSEIF(PHI_W == UNDEFINED) THEN
             WRITE(ERR_MSG, 1204)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-! PHI & PHI_W are given in degrees but calculated in radian within 
-! the fortran codes 
-         SIN_PHI = SIN(PHI*PI/180.D0) 
-         TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
+         ENDIF
+! PHI & PHI_W are given in degrees but calculated in radian within
+! the fortran codes
+         SIN_PHI = SIN(PHI*PI/180.D0)
+         TAN_PHI_W = TAN(PHI_W*PI/180.D0)
       ENDIF
  1201 FORMAT('Error 1201: The FRICTION solids stress model requires ', &
          /,'GRANULAR_ENERGY=.TRUE. Please correct the mfix.dat file.')
@@ -153,7 +153,7 @@
          ' specified.',/'Please correct the mfix.dat file.')
 
 
-! plastic/frictional stress model 
+! plastic/frictional stress model
       IF(SCHAEFFER) THEN
          IF(FRICTION) THEN
             WRITE(ERR_MSG, 1200)
@@ -162,10 +162,10 @@
             WRITE(ERR_MSG, 1203)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
-! PHI is given in degrees but calculated in radian within 
-! the fortran codes 
+! PHI is given in degrees but calculated in radian within
+! the fortran codes
          lsin_phi = sin(phi*PI/180.d0)
-         SIN2_PHI = lSIN_PHI*lSIN_PHI    
+         SIN2_PHI = lSIN_PHI*lSIN_PHI
          F_PHI = (3.0D0 - 2.0D0*SIN2_PHI)/3.0D0    ! employed in commented
       ENDIF
  1200 FORMAT('Error 1200: FRICTION and SCHAEFFER models cannot be ',&
@@ -198,7 +198,7 @@
  1302 FORMAT('Error 1302: FEDORS_LANDEL correlation is for binary ',   &
          'mixtures (MMAX=2).',/'Please correct the mfix.dat file.')
 
- 
+
 ! Set the flags for blending stresses.
       IF(BLENDING_STRESS) THEN
 ! Turn off the default if SIGM_BLEND is set.
@@ -210,13 +210,13 @@
 
 
       IF(MODEL_B) THEN
-         DO LC = 1, MMAX 
-            IF(.NOT.CLOSE_PACKED(LC)) THEN 
+         DO LC = 1, MMAX
+            IF(.NOT.CLOSE_PACKED(LC)) THEN
                WRITE(ERR_MSG, 1400) LC
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDDO 
-      ENDIF 
+            ENDIF
+         ENDDO
+      ENDIF
  1400 FORMAT('Error 1400: Solids phase ',I2,' is not CLOSE_PACKED.',/, &
          'All solids phases must be CLOSE_PACKED with MODEL_B=.TURE.',/ &
          'Please correct the mfix.dat file.')
@@ -240,29 +240,39 @@
 
 
 ! Check name of radial distribution function
-      IF (RDF_TYPE /= 'LEBOWITZ') THEN
-         IF(RDF_TYPE /= 'MODIFIED_LEBOWITZ' .AND. &
-            RDF_TYPE /= 'MANSOORI' .AND. &
-            RDF_TYPE /= 'MODIFIED_MANSOORI') THEN
-            
-            WRITE(ERR_MSG, 1600) 
+      SELECT CASE(trim(adjustl(RDF_TYPE)))
+
+      CASE ('LEBOWITZ')
+         RDF_TYPE_ENUM = LEBOWITZ
+
+      CASE ('MODIFIED_LEBOWITZ')
+         RDF_TYPE_ENUM = MODIFIED_LEBOWITZ
+
+      CASE ('MANSOORI')
+         RDF_TYPE_ENUM = MANSOORI
+
+      CASE ('MODIFIED_MANSOORI')
+         RDF_TYPE_ENUM = MODIFIED_MANSOORI
+
+      CASE DEFAULT
+            WRITE(ERR_MSG, 1600)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-      ENDIF
+       END SELECT
+
  1600 FORMAT('Error 1600: Unknown RDF_TYPE',/'Please ',  &
          'correct the mfix.dat file.')
- 
+
 
  1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
             'correct the mfix.dat file.')
  1001 FORMAT('Error 1001: Illegal or unphysical input: ',A,' = ',A,/   &
          'Please correct the mfix.dat file.')
- 
+
 
       CALL FINL_ERR_MSG
-      
 
-      RETURN  
+
+      RETURN
       END SUBROUTINE CHECK_SOLIDS_CONTINUUM
 
 
@@ -282,7 +292,7 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-      USE constant 
+      USE constant
       USE run
       USE physprop
 
@@ -344,7 +354,7 @@
       CASE ('IA_NONEP')
          KT_TYPE_ENUM = IA_2005
          IF (C_E == UNDEFINED) THEN
-            WRITE(ERR_MSG,1003) 
+            WRITE(ERR_MSG,1003)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
 
@@ -353,7 +363,7 @@
       CASE ('GD_99')
          KT_TYPE_ENUM = GD_1999
          IF (C_E == UNDEFINED) THEN
-            WRITE(ERR_MSG,1003) 
+            WRITE(ERR_MSG,1003)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ELSEIF(SMAX > 1) THEN
             WRITE(ERR_MSG,1002) TRIM(KT_TYPE)
@@ -365,7 +375,7 @@
       CASE ('GTSH')
          KT_TYPE_ENUM = GTSH_2012
          IF (C_E == UNDEFINED) THEN
-            WRITE(ERR_MSG,1002) 
+            WRITE(ERR_MSG,1002)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ELSEIF(SMAX > 1) THEN
             WRITE(ERR_MSG,1002) TRIM(KT_TYPE)
@@ -378,11 +388,11 @@
          KT_TYPE_ENUM = GHD_2007
 ! This variable is only used for GHD at this point...
 ! Define restitution coefficient matrix
-         DO I = 1, SMAX 
+         DO I = 1, SMAX
             DO J = 1, SMAX
                IF(r_p(I,J) == UNDEFINED) THEN
                   IF(C_E == UNDEFINED) THEN
-                     WRITE(ERR_MSG,1003) 
+                     WRITE(ERR_MSG,1003)
                      CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
                   ELSE
                      r_p(I,J) = C_e
@@ -405,12 +415,12 @@
          ENDIF
 
 ! Automatically set SPECIES_EQ(MMAX) = .FALSE. to avoid potential
-! checks/loops over the mmax species type eqn which has no meaning         
+! checks/loops over the mmax species type eqn which has no meaning
          SPECIES_EQ(MMAX) = .FALSE.
          NMAX_s(MMAX) = 1
 
-! currently set to avoid an overflow error in write_res0 
-! legacy variable?         
+! currently set to avoid an overflow error in write_res0
+! legacy variable?
          NMAX(MMAX) = 1
 
  1030 FORMAT('Error 1030: KT_TYPE = "GHD" is restricted to DRAG_TYPE', &
@@ -420,7 +430,7 @@
          'GHD theory that',/'solves for mixture equations.',/'Please', &
          'correct the mifx.dat file.')
  1032 FORMAT('Warning 1032: GHD theory may not be valid for more ',    &
-         'than two solids phases',/'it requires further development.') 
+         'than two solids phases',/'it requires further development.')
 
 
 !``````````````````````````````````````````````````````````````````````
@@ -431,14 +441,14 @@
             WRITE(ERR_MSG,1040) 'K_EPSILON = .TRUE.'
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ELSEIF (C_E == UNDEFINED) THEN
-            WRITE(ERR_MSG,1003) 
+            WRITE(ERR_MSG,1003)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ELSEIF(C_F == UNDEFINED .AND. SMAX>=2) THEN
             WRITE(ERR_MSG, 1004)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
  1040 FORMAT('Error 1040: KT_TYPE = "AHMADI" requires ',A,/       &
-         'Please correct the mfix.dat file.')  
+         'Please correct the mfix.dat file.')
 
 
 !``````````````````````````````````````````````````````````````````````
@@ -449,14 +459,14 @@
             WRITE(ERR_MSG,1050) 'K_EPSILON = .TRUE.'
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ELSEIF (C_E == UNDEFINED) THEN
-            WRITE(ERR_MSG,1003) 
+            WRITE(ERR_MSG,1003)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ELSEIF(C_F == UNDEFINED .AND. SMAX>=2) THEN
             WRITE(ERR_MSG, 1004)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
  1050 FORMAT('Error 1050: KT_TYPE = "SIMONIN" requires ',A,/      &
-         'Please correct the mfix.dat file.')  
+         'Please correct the mfix.dat file.')
 
 
 ! Lun is the default implementation.
@@ -464,9 +474,9 @@
       CASE ('LUN_1984')
          KT_TYPE_ENUM = LUN_1984
 ! this version of the restitution coefficient is needed by most KT_TYPE
-! models. it is also needed in default solids-solids drag model      
+! models. it is also needed in default solids-solids drag model
          IF (C_E == UNDEFINED) THEN
-            WRITE(ERR_MSG,1003) 
+            WRITE(ERR_MSG,1003)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ELSEIF(C_F == UNDEFINED .AND. SMAX>=2) THEN
             WRITE(ERR_MSG, 1004)
