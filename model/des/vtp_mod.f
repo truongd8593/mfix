@@ -102,8 +102,8 @@
       INTEGER :: LB, UB
       INTEGER :: PC, LC1, LC2
 
-      LB = LBOUND(DATA,2)
-      UB = UBOUND(DATA,2)
+      LB = LBOUND(DATA,1)
+      UB = UBOUND(DATA,1)
       NOC=''; WRITE(NOC,*) (UB-LB)+1
 
       IF(bDist_IO) THEN
@@ -126,11 +126,11 @@
 
          allocate (dProcBuf(LOCAL_CNT) )
          allocate (dRootBuf(GLOBAL_CNT))
-         allocate (ltemp_array(GLOBAL_CNT,(UB-LB)+1))
+         allocate (ltemp_array((UB-LB)+1,GLOBAL_CNT))
 
          DO LC1 = LB, UB
-            CALL DES_GATHER(DATA(:,LC1))
-            ltemp_array(:,LC1) = drootbuf(:)
+            CALL DES_GATHER(DATA(LC1,:))
+            ltemp_array(LC1,:) = drootbuf(:)
          ENDDO
 
          IF(myPE == PE_IO) THEN
@@ -138,7 +138,7 @@
             DO LC1=1, GLOBAL_CNT
                DO LC2=LB, UB
                   WRITE(DES_UNIT,1001,ADVANCE="NO") &
-                     real(ltemp_array(LC1,LC2))
+                     real(ltemp_array(LC2,LC1))
                ENDDO
             ENDDO
             WRITE(DES_UNIT,1002)

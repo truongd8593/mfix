@@ -246,11 +246,11 @@
          end do
 ! Translational velocities (one coordinate at a time).
          do li = 1,dimn
-            call des_gatherwrite(lres_unit,des_vel_new(:,li),lglocnt,lnext_rec)
+            call des_gatherwrite(lres_unit,des_vel_new(li,:),lglocnt,lnext_rec)
          end do
 ! Rotational velocity.
          do li = 1,ltor_dimn
-            call des_gatherwrite(lres_unit,omega_new(:,li),lglocnt,lnext_rec)
+            call des_gatherwrite(lres_unit,omega_new(li,:),lglocnt,lnext_rec)
          end do
 ! Particle radi.
          call des_gatherwrite(lres_unit,des_radius,lglocnt,lnext_rec)
