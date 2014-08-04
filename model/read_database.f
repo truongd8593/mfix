@@ -145,7 +145,7 @@
             ICpoR_TcH = calc_ICpoR(xTc, lM, lN, IER)
 ! Store the integrals in global variables.
             ICpoR_l(lM,lN) = ICpoR_TrL
-            ICpoR_h(lM,lN) = ICpoR_TcL - ICpoR_TcH - ICpoR_TrL
+            ICpoR_h(lM,lN) = ICpoR_TcH - (ICpoR_TcL - ICpoR_TrL)
          ENDIF
 
          ErrorFlag = .TRUE.
@@ -305,7 +305,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE writeCp(lM, lN, lName, lMW)
 
-
+      use param1
       USE physprop
       USE compar
 
@@ -344,8 +344,8 @@
 
       write(*,"(5x,'Temperature',8x,'Cp',11x,'ICp')")
 
-      T = 300
-      DO WHILE(T <= Thigh(lM,lN))
+      T = Tcom(lM,lN) - 100.0
+      DO WHILE(T <= Tcom(lM,lN) - SMALL_NUMBER)
 
          IER1 = 0
          IER2 = 0
@@ -359,7 +359,26 @@
          IF(IER2 /= 0) write(*,"(3x,'ICp Error!',$)")
          write(*,"('')")
 
-         T = T + 100.0
+         T = T + 5.0
+      ENDDO
+
+
+      T = Tcom(lM,lN) + SMALL_NUMBER
+      DO WHILE(T <= Tcom(lM,lN) + 100.0)
+
+         IER1 = 0
+         IER2 = 0
+
+         write(*,"(7x,g11.5,$)") T
+         lCP  = calc_CpoR(T, lM, lN, IER1) * RGAS / lMW
+         lICP = calc_ICpoR(T, lM, lN, IER2) * RGAS / lMW
+         write(*,"(2(3x,g11.5),$)")lCP, lICP
+
+         IF(IER1 /= 0) write(*,"(3x,'Cp Error!',$)")
+         IF(IER2 /= 0) write(*,"(3x,'ICp Error!',$)")
+         write(*,"('')")
+
+         T = T + 5.0
       ENDDO
 
       write(*,"('')")
