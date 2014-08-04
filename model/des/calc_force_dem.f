@@ -192,110 +192,109 @@
 !----------------------------------------------------------------->>>
 
       DO CC = 1, COLLISION_NUM
-            LL = COLLISIONS(1,CC)
-            I  = COLLISIONS(2,CC)
+         LL = COLLISIONS(1,CC)
+         I  = COLLISIONS(2,CC)
 
-            ALREADY_NEIGHBOURS=PV_COLL(CC)
+         ALREADY_NEIGHBOURS=PV_COLL(CC)
 
-            R_LM = DES_RADIUS(LL) + DES_RADIUS(I)
-            DIST(:) = DES_POS_NEW(:,I) - DES_POS_NEW(:,LL)
-            DISTMOD = dot_product(DIST,DIST)
+         R_LM = DES_RADIUS(LL) + DES_RADIUS(I)
+         DIST(:) = DES_POS_NEW(:,I) - DES_POS_NEW(:,LL)
+         DISTMOD = dot_product(DIST,DIST)
 
-            ! compute particle-particle VDW cohesive short-range forces
-            IF(USE_COHESION .AND. VAN_DER_WAALS) call calc_cohesion()
+! compute particle-particle VDW cohesive short-range forces
+         IF(USE_COHESION .AND. VAN_DER_WAALS) call calc_cohesion()
 
-            IF(DISTMOD > (R_LM + SMALL_NUMBER)**2) THEN
-               PV_COLL(CC) = .false.
-               PFT_COLL(:,CC) = 0.0
-               PFN_COLL(:,CC) = 0.0
-               CYCLE
-            ENDIF
-            PV_COLL(CC) = .true.
+         IF(DISTMOD > (R_LM + SMALL_NUMBER)**2) THEN
+            PV_COLL(CC) = .false.
+            PFT_COLL(:,CC) = 0.0
+            PFN_COLL(:,CC) = 0.0
+            CYCLE
+         ENDIF
 
-            IF(DISTMOD == 0) THEN
-               WRITE(*,'(5X,A,I10,I10)') 'DISTMOD is zero between particle-pair ',LL, I
-               STOP "division by zero"
-            ENDIF
-            DISTMOD = SQRT(DISTMOD)
-            NORMAL(:)= DIST(:)/DISTMOD
+         PV_COLL(CC) = .true.
 
-            ! Overlap calculation changed from history based to current position
-            OVERLAP_N = R_LM-DISTMOD
+         IF(DISTMOD == 0) THEN
+            WRITE(*,8550) LL, I
+            STOP "division by zero"
+ 8550 FORMAT('DISTMOD is zero betwen particles:',2(2x,I10))
+         ENDIF
+         DISTMOD = SQRT(DISTMOD)
+         NORMAL(:)= DIST(:)/DISTMOD
 
-            IF (report_excess_overlap) call print_excess_overlap
+! Overlap calculation changed from history based to current position
+         OVERLAP_N = R_LM-DISTMOD
 
-            ! Calculate the components of translational relative velocity for a
-            ! contacting particle pair and the tangent to the plane of contact
-            CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, &
-                 V_REL_TANG, NORMAL, DISTMOD)
+         IF (report_excess_overlap) call print_excess_overlap
 
-            IF(ALREADY_NEIGHBOURS) THEN
-               OVERLAP_T(:) = DTSOLID*V_REL_TANG(:)
-            ELSE
-               DTSOLID_TMP = OVERLAP_N/MAX(V_REL_TRANS_NORM,SMALL_NUMBER)
-               OVERLAP_T(:) = MIN(DTSOLID,DTSOLID_TMP)*V_REL_TANG(:)
-            ENDIF
+! Calculate the components of translational relative velocity for a
+! contacting particle pair and the tangent to the plane of contact
+         CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, &
+              V_REL_TANG, NORMAL, DISTMOD)
 
-            phaseLL = PIJK(LL,5)
-            phaseI = PIJK(I,5)
+         IF(ALREADY_NEIGHBOURS) THEN
+            OVERLAP_T(:) = DTSOLID*V_REL_TANG(:)
+         ELSE
+            DTSOLID_TMP = OVERLAP_N/MAX(V_REL_TRANS_NORM,SMALL_NUMBER)
+            OVERLAP_T(:) = MIN(DTSOLID,DTSOLID_TMP)*V_REL_TANG(:)
+         ENDIF
 
-            ! T.Li : Hertz vs linear spring-dashpot contact model
-            IF (DES_COLL_MODEL_ENUM .EQ. HERTZIAN) THEN
-               sqrt_overlap = SQRT(OVERLAP_N)
-               KN_DES = hert_kn(phaseLL,phaseI)*sqrt_overlap
-               KT_DES = hert_kt(phaseLL,phaseI)*sqrt_overlap
-               sqrt_overlap = SQRT(sqrt_overlap)
-               ETAN_DES = DES_ETAN(phaseLL,phaseI)*sqrt_overlap
-               ETAT_DES = DES_ETAT(phaseLL,phaseI)*sqrt_overlap
-            ELSE
-               KN_DES = KN
-               KT_DES = KT
-               ETAN_DES = DES_ETAN(phaseLL,phaseI)
-               ETAT_DES = DES_ETAT(phaseLL,phaseI)
-            ENDIF
+         phaseLL = PIJK(LL,5)
+         phaseI = PIJK(I,5)
 
-            ! Calculate the normal contact force
-            FNS1(:) = -KN_DES * OVERLAP_N * NORMAL(:)
-            FNS2(:) = -ETAN_DES * V_REL_TRANS_NORM*NORMAL(:)
-            FN(:,LL) = FNS1(:) + FNS2(:)
+! Hertz spring-dashpot contact model
+         IF (DES_COLL_MODEL_ENUM .EQ. HERTZIAN) THEN
+            sqrt_overlap = SQRT(OVERLAP_N)
+            KN_DES = hert_kn(phaseLL,phaseI)*sqrt_overlap
+            KT_DES = hert_kt(phaseLL,phaseI)*sqrt_overlap
+            sqrt_overlap = SQRT(sqrt_overlap)
+            ETAN_DES = DES_ETAN(phaseLL,phaseI)*sqrt_overlap
+            ETAT_DES = DES_ETAT(phaseLL,phaseI)*sqrt_overlap
 
-            call calc_tangential_displacement
+! Linear spring-dashpot contact model
+         ELSE
+            KN_DES = KN
+            KT_DES = KT
+            ETAN_DES = DES_ETAN(phaseLL,phaseI)
+            ETAT_DES = DES_ETAT(phaseLL,phaseI)
+         ENDIF
 
-            ! Calculate the tangential contact force
-            FTS1(:) = -KT_DES * PFT_TMP(:)
-            FTS2(:) = -ETAT_DES * V_REL_TANG
-            FT(:,LL) = FTS1(:) + FTS2(:)
+! Calculate the normal contact force
+         FNS1(:) = -KN_DES * OVERLAP_N * NORMAL(:)
+         FNS2(:) = -ETAN_DES * V_REL_TRANS_NORM*NORMAL(:)
+         FN(:,LL) = FNS1(:) + FNS2(:)
 
-            ! Check for Coulombs friction law and limit the maximum value of the
-            ! tangential force on a particle in contact with another particle/wall
-            PARTICLE_SLIDE = .FALSE.
-            CALL CFSLIDE(V_REL_TANG(:),PARTICLE_SLIDE,MEW,FT(:,LL),FN(:,LL))
+         call calc_tangential_displacement
 
-            ! Calculate the total force FC and torque TOW on a particle in a
-            ! particle-particle collision
-            CALL CFFCTOW(DES_RADIUS(LL), DES_RADIUS(I), NORMAL, DISTMOD, FC(:,LL), FN(:,LL), FT(:,LL), TOW(:,LL))
+! Calculate the tangential contact force
+         FTS1(:) = -KT_DES * PFT_TMP(:)
+         FTS2(:) = -ETAT_DES * V_REL_TANG
+         FT(:,LL) = FTS1(:) + FTS2(:)
 
-            ! Save the tangential displacement history with the correction of
-            ! Coulomb's law
-            IF (PARTICLE_SLIDE) THEN
-               ! Since FT might be corrected during the call to cfslide, the tangental
-               ! displacement history needs to be changed accordingly
-               PFT_COLL(:,CC) = -( FT(:,LL) - FTS2(:) ) / KT_DES
-            ELSE
-               PFT_COLL(:,CC) = PFT_TMP(:)
-            ENDIF
+! Check for Coulombs friction law and limit the maximum value of the
+! tangential force on a particle in contact with another particle/wall
+         PARTICLE_SLIDE = .FALSE.
+         CALL CFSLIDE(V_REL_TANG(:), PARTICLE_SLIDE, MEW,           &
+             FT(:,LL), FN(:,LL))
 
-   ENDDO
+! Calculate the total force FC and torque TOW on a particle in a
+! particle-particle collision
+         CALL CFFCTOW(DES_RADIUS(LL), DES_RADIUS(I), NORMAL,        &
+            DISTMOD, FC(:,LL), FN(:,LL), FT(:,LL), TOW(:,LL))
+! Save tangential displacement history with Coulomb's law correction
+         IF (PARTICLE_SLIDE) THEN
+! Since FT might be corrected during the call to cfslide, the tangental
+! displacement history needs to be changed accordingly
+            PFT_COLL(:,CC) = -( FT(:,LL) - FTS2(:) ) / KT_DES
+         ELSE
+            PFT_COLL(:,CC) = PFT_TMP(:)
+         ENDIF
+      ENDDO
 
-   ! Calculate gas-solids drag force on particle
-   IF(DES_CONTINUUM_COUPLED) THEN
-      CALL CALC_DES_DRAG_GS
-   ENDIF
+! Calculate gas-solids drag force on particle
+      IF(DES_CONTINUUM_COUPLED) CALL CALC_DES_DRAG_GS
 
-   ! Calculate solids-solids drag force on particle
-   IF (DES_CONTINUUM_HYBRID) THEN
-      CALL CALC_DES_DRAG_SS
-   ENDIF
+! Calculate solids-solids drag force on particle
+      IF(DES_CONTINUUM_HYBRID) CALL CALC_DES_DRAG_SS
 
 ! just for post-processing mag. of cohesive forces on each particle
       IF(USE_COHESION)THEN

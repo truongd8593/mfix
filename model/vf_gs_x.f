@@ -29,6 +29,7 @@
       USE drag  
       USE discretelement
       
+      use run, only: SOLIDS_MODEL
       use run, only: DEM_SOLIDS, PIC_SOLIDS 
 
       IMPLICIT NONE
@@ -47,7 +48,7 @@
 ! Index of continuum solids phases 
       INTEGER :: M
 ! Index of discrete solids 'phases'
-      INTEGER :: DM
+      INTEGER :: DM, MTOT
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -56,52 +57,42 @@
       INCLUDE 'fun_avg2.inc'
 !----------------------------------------------- 
 
+      MTOT = merge(MMAX, MMAX+DES_MMAX, DES_CONTINUUM_HYBRID)
+
+      M_LP: DO M = 1, MTOT
+         IF(SOLIDS_MODEL(M) == 'DEM' .AND. DES_ONEWAY_COUPLED) THEN
+            VxF_GS(:,M) = ZERO
+            CYCLE M_LP
+         ENDIF
+
+         DO IJK = ijkstart3, ijkend3
+            IF(IP_AT_E(IJK)) THEN
+               VXF_GS(IJK,M) = ZERO
+            ELSE
+               I = I_OF(IJK)
+               IJKE = EAST_OF(IJK)
+               VXF_GS(IJK,M) = VOL_U(IJK) * &
+                  AVG_X(F_GS(IJK,M),F_GS(IJKE,M),I)
+            ENDIF
+         ENDDO            ! end do loop (ijk=ijkstart3,ijkend3)
+      ENDDO M_LP          ! end do loop (m=1,mmax)
+
 
       IF (DES_CONTINUUM_HYBRID) THEN
-! initialize every call 
          DO DM = 1, DES_MMAX
-            VXF_GDS(:,DM) = ZERO
-!!$omp  parallel do private(I,IJK,IJKE)
             DO IJK = ijkstart3, ijkend3
-               IF (.NOT.IP_AT_E(IJK)) THEN
+               IF (IP_AT_E(IJK)) THEN
+                  VXF_GDS(IJK,DM) = ZERO
+               ELSE
                   I = I_OF(IJK)
                   IJKE = EAST_OF(IJK)
-                  VXF_GDS(IJK,DM) = AVG_X(F_GDS(IJK,DM),F_GDS(IJKE,DM),I)*VOL_U(IJK)
+                  VXF_GDS(IJK,DM) = VOL_U(IJK) * &
+                     AVG_X(F_GDS(IJK,DM),F_GDS(IJKE,DM),I)
                ENDIF
-            ENDDO               ! end do loop (ijk=ijkstart3,ijkend3)
-         ENDDO                  ! end do loop (dm=1,des_mmax)
-                                ! initialize every call (redundant with solve_vel_star)
-      ELSE
-         
-         DO M = 1, MMAX
-            VXF_GS(:,M) = ZERO 
-!!$omp  parallel do private(I,IJK,IJKE)
-            DO IJK = ijkstart3, ijkend3
-               IF (.NOT.IP_AT_E(IJK)) then 
-                  I = I_OF(IJK)
-                  IJKE = EAST_OF(IJK)
-                  VXF_GS(IJK,M) = AVG_X(F_GS(IJK,M),F_GS(IJKE,M),I)*VOL_U(IJK)
-               ENDIF
-            ENDDO               ! end do loop (ijk=ijkstart3,ijkend3)
-         ENDDO                  ! end do loop (m=1,mmax)
+            ENDDO      ! end do loop (ijk=ijkstart3,ijkend3)
+         ENDDO         ! end do loop (dm=1,des_mmax)
+      ENDIF
 
-      
-      ENDIF                     ! end if (des_continuum_hybrid)
-
-      IF((PIC_SOLIDS.OR.DEM_SOLIDS).AND.(.NOT.DES_ONEWAY_COUPLED)) then 
-         DO M = MMAX+1, DES_MMAX+MMAX
-            VXF_GS(:,M) = ZERO 
-!!$omp  parallel do private(I,IJK,IJKE)
-            DO IJK = ijkstart3, ijkend3
-               IF (.NOT.IP_AT_E(IJK).AND.(.NOT.DES_ONEWAY_COUPLED)) THEN
-                  I = I_OF(IJK)
-                  IJKE = EAST_OF(IJK)
-                  VXF_GS(IJK,M) = AVG_X(F_GS(IJK,M),F_GS(IJKE,M),I)*VOL_U(IJK)
-               ENDIF
-            ENDDO               ! end do loop (ijk=ijkstart3,ijkend3)
-         ENDDO                  ! end do loop (M = MMAX+1, DES_MMAX+MMAX)
-      end IF
-      
       RETURN  
       END SUBROUTINE VF_GS_X
 

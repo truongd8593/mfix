@@ -1572,7 +1572,7 @@
 ! defining array form of average solids velocity
                   VELDS_ARR(1) = DES_U_S(IJK,DM)
                   VELDS_ARR(2) = DES_V_S(IJK,DM)
-                  IF(DO_K) VELDS_ARR(3) = DES_W_S(IJK,DM)
+                  VELDS_ARR(3) = merge(DES_W_S(IJK,DM), ZERO, DO_K)
 
                   DO CM = 1, MMAX
                      IF(CUT_U_TREATMENT_AT(IJK_U)) THEN
@@ -1609,6 +1609,8 @@
                         VREL = SQRT((VELCS_ARR(1)-VELDS_ARR(1))**2+&
                                     (VELCS_ARR(2)-VELDS_ARR(2))**2+&
                                     (VELCS_ARR(3)-VELDS_ARR(3))**2)
+                     ELSE
+                        VELCS_ARR(3) = ZERO
                      ENDIF
 ! ----------------------------------------------------------------<<<
 
@@ -1931,6 +1933,8 @@
 ! calculating the relative velocity in 3D
                      VREL = SQRT((USCM-USDM)**2 + (VSCM-VSDM)**2 +&
                                  (WSCM-WSDM)**2)
+                  ELSE
+                     WSDM = ZERO
                   ENDIF
 
 ! setting aliases for easy reference
