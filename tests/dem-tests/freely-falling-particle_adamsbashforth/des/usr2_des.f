@@ -141,17 +141,17 @@
       endif
 
 ! Calculate the absolute relative error.
-       Pos_rErr = (ABS(lPos_Y - DES_POS_new(1,2))/ABS(lPos_Y))*100
-       Vel_rErr = (ABS(lVel_Y - DES_VEL_new(1,2))/ABS(lVel_Y))*100
+       Pos_rErr = (ABS(lPos_Y - DES_POS_new(2,1))/ABS(lPos_Y))*100
+       Vel_rErr = (ABS(lVel_Y - DES_VEL_new(2,1))/ABS(lVel_Y))*100
 
 ! Write the results to a file.
       WRITE(uPos,"(3x,F15.8,5x,I1,5X,F15.8,2(3x,F15.8))") lTime, &
-         lStage, lPos_Y,DES_POS_new(1,2),Pos_rErr
+         lStage, lPos_Y,DES_POS_new(2,1),Pos_rErr
       CLOSE(uPos)
 
 
       WRITE(uVel,"(3x,F15.8,5x,I1,5X,F15.8,2(3x,F15.8))")lTime, &
-         lStage, lVel_Y, DES_VEL_new(1,2),Vel_rErr
+         lStage, lVel_Y, DES_VEL_new(2,1),Vel_rErr
       CLOSE(uVel)
 
       END SUBROUTINE WRITE_DES_Out
