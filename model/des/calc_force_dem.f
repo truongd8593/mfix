@@ -85,8 +85,6 @@
       DOUBLE PRECISION :: WALL_POS(3), WALL_VEL(3)
 ! set to T when a sliding contact occurs
       LOGICAL :: PARTICLE_SLIDE
-! logic flag telling whether contact pair is old (previously detected)
-      LOGICAL :: ALREADY_NEIGHBOURS
 
       LOGICAL, PARAMETER :: report_excess_overlap = .FALSE.
 !$      double precision omp_start, omp_end
@@ -196,8 +194,6 @@
          LL = COLLISIONS(1,CC)
          I  = COLLISIONS(2,CC)
 
-         ALREADY_NEIGHBOURS=PV_COLL(CC)
-
          R_LM = DES_RADIUS(LL) + DES_RADIUS(I)
          DIST(:) = DES_POS_NEW(:,I) - DES_POS_NEW(:,LL)
          DISTMOD = dot_product(DIST,DIST)
@@ -211,8 +207,6 @@
             PFN_COLL(:,CC) = 0.0
             CYCLE
          ENDIF
-
-         PV_COLL(CC) = .true.
 
          IF(DISTMOD == 0) THEN
             WRITE(*,8550) LL, I
@@ -232,11 +226,12 @@
          CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, &
               V_REL_TANG, NORMAL, DISTMOD)
 
-         IF(ALREADY_NEIGHBOURS) THEN
+         IF(PV_COLL(CC)) THEN
             OVERLAP_T(:) = DTSOLID*V_REL_TANG(:)
          ELSE
             DTSOLID_TMP = OVERLAP_N/MAX(V_REL_TRANS_NORM,SMALL_NUMBER)
             OVERLAP_T(:) = MIN(DTSOLID,DTSOLID_TMP)*V_REL_TANG(:)
+            PV_COLL(CC) = .true.
          ENDIF
 
          phaseLL = PIJK(LL,5)

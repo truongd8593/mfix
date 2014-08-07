@@ -154,8 +154,6 @@
 
 ! Total, normal and tangetial forces
       Allocate(  FC (DIMN,NPARTICLES) )
-      Allocate(  FTAN (DIMN) )
-      Allocate(  FNORM (DIMN) )
 
 ! Torque
       IF(DO_K) THEN
@@ -190,7 +188,7 @@
       COLLISION_MAX = 1024
       Allocate(  COLLISIONS (2,COLLISION_MAX) )
       Allocate(  COLLISIONS_OLD (2,COLLISION_MAX) )
-!      Allocate(  FC_COLL  (3,COLLISION_MAX) )
+      Allocate(  FC_COLL  (3,COLLISION_MAX) )
       Allocate(  PV_COLL (COLLISION_MAX) )
       Allocate(  PV_COLL_OLD (COLLISION_MAX) )
       Allocate(  PFT_COLL (3,COLLISION_MAX) )
@@ -535,9 +533,9 @@
            int_tmp(:,1:collision_max) = collisions_old(:,1:collision_max)
            call move_alloc(int_tmp,collisions_old)
 
-!           allocate(real_tmp(3,2*collision_max))
-!           real_tmp(:,1:collision_max) = fc_coll(:,1:collision_max)
-!           call move_alloc(real_tmp,fc_coll)
+           allocate(real_tmp(3,2*collision_max))
+           real_tmp(:,1:collision_max) = fc_coll(:,1:collision_max)
+           call move_alloc(real_tmp,fc_coll)
 
            allocate(bool_tmp(2*collision_max))
            bool_tmp(1:collision_max) = pv_coll(1:collision_max)
