@@ -1218,8 +1218,6 @@
                ighost_cnt = ighost_cnt-1
                pea(lcurpar,1:4) = .false.
                fc(:,lcurpar) = 0.0
-               fn(:,lcurpar) = 0.0
-               ft(:,lcurpar) = 0.0
                pn(:,lcurpar) = 0 ; pv(:,lcurpar) = .false.
                pft(lcurpar,:,:) = 0
                des_pos_new(:,lcurpar)=0
@@ -1313,10 +1311,6 @@
             lbuf = lbuf+ltordimn
             dsendbuf(lbuf:lbuf+dimn-1,pface) = fc(:,lcurpar)
             lbuf = lbuf+dimn
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = fn(:,lcurpar)
-            lbuf = lbuf+dimn
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = ft(:,lcurpar)
-            lbuf = lbuf+dimn
             dsendbuf(lbuf:lbuf+ltordimn-1,pface) = tow(1:ltordimn,lcurpar)
             lbuf = lbuf+ltordimn
 
@@ -1371,8 +1365,6 @@
                ighost_cnt = ighost_cnt + 1
             end if
             fc(:,lcurpar) = 0.
-            fn(:,lcurpar) = 0.0
-            ft(:,lcurpar) = 0.0
             neighbours(lcurpar,:)=0
             pn(:,lcurpar) = 0
             pv(:,lcurpar) = .false.
@@ -1492,10 +1484,6 @@
          rot_acc_old(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
          lbuf = lbuf + ltordimn
          fc(:,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-         lbuf = lbuf + dimn
-         fn(:,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-         lbuf = lbuf + dimn
-         ft(:,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
          lbuf = lbuf + dimn
          tow(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
          lbuf = lbuf + ltordimn

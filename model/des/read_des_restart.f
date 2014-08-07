@@ -540,8 +540,6 @@
       OMOI(NP) = ZERO
 
       FC(:,NP) = ZERO
-      FN(:,NP) = ZERO
-      FT(:,NP) = ZERO
       TOW(:,NP) = ZERO
 
       PN(:,NP) = -1

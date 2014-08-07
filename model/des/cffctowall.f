@@ -7,7 +7,7 @@
 !  Reviewer: Rahul Garg                               Date: 02-Aug-07!
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-      SUBROUTINE CFFCTOWALL(L, NORM, DIST_LI)
+      SUBROUTINE CFFCTOWALL(L, NORM, DIST_LI, FN, FT)
 
 !-----------------------------------------------
 ! Modules
@@ -26,32 +26,29 @@
 ! unit normal vector along the line of contact pointing from
 ! particle L to wall
       DOUBLE PRECISION, INTENT(IN) :: NORM(3)
+! normal and tangential force
+      DOUBLE PRECISION, INTENT(IN) :: FN(3), FT(3)
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! local variable for calculating torque on particle
       DOUBLE PRECISION :: CROSSP(3)
-! temporary variable for particle L tangential force
-      DOUBLE PRECISION FT_TMP(3)
 ! distance from the contact point to the particle center
       DOUBLE PRECISION DIST_CL
 !------------------------------------------------
 
 ! total contact force
-      FC(:,L) = FC(:,L) + FN(:,L) + FT(:,L)
-
-! temporary holder of tangential force
-      FT_TMP(:) = FT(:,L)
+      FC(:,L) = FC(:,L) + FN(:) + FT(:)
 
 ! calculate the distance from the particle center to the wall
       DIST_CL = DIST_LI - DES_RADIUS(L)
 
 ! total torque
       IF(DO_K) THEN
-         CALL DES_CROSSPRDCT(CROSSP, NORM, FT_TMP)
+         CALL DES_CROSSPRDCT(CROSSP, NORM, FT)
          TOW(:,L) = TOW(:,L) + DIST_CL*CROSSP(:)
       ELSE
-         CROSSP(1) = NORM(1)*FT_TMP(2) - NORM(2)*FT_TMP(1)
+         CROSSP(1) = NORM(1)*FT(2) - NORM(2)*FT(1)
          TOW(1,L) =  TOW(1,L) + DIST_CL*CROSSP(1)
       ENDIF
 

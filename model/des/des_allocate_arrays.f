@@ -154,8 +154,6 @@
 
 ! Total, normal and tangetial forces
       Allocate(  FC (DIMN,NPARTICLES) )
-      Allocate(  FN (DIMN,NPARTICLES) )
-      Allocate(  FT (DIMN,NPARTICLES) )
       Allocate(  FTAN (DIMN) )
       Allocate(  FNORM (DIMN) )
 

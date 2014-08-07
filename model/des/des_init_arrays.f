@@ -59,8 +59,6 @@
       ROT_ACC_OLD(:,:) = ZERO
 
       FC(:,:) = ZERO
-      FN(:,:) = ZERO
-      FT(:,:) = ZERO
       TOW(:,:) = ZERO
 
       PN(:,:) = -1

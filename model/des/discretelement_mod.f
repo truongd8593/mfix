@@ -398,8 +398,6 @@
 
 ! Total, normal and tangetial forces
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC    !(3,PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FN    !(3,PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FT    !(3,PARTICLES)
 
 ! There is no need to maintain FN and FT arrays. This can be accomplished by FTAN and FNORM.
 

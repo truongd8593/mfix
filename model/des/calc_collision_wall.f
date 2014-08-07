@@ -103,6 +103,8 @@
       DOUBLE PRECISION :: FTS1(3), FTS2(3)
 ! temporary storage of tangential DISPLACEMENT
       DOUBLE PRECISION :: PFT_TMP(3)
+! normal/tangential force
+      DOUBLE PRECISION :: FN(3), FT(3)
 ! magnitude of normal/tangential force used for reporting only
       DOUBLE PRECISION :: FTMD, FNMD
 
@@ -336,7 +338,7 @@
 ! Calculate the normal contact force
                      FNS1(:) = -KN_DES_W * OVERLAP_N*NORMAL(:)
                      FNS2(:) = -ETAN_DES_W * V_REL_TRANS_NORM*NORMAL(:)
-                     FN(:,LL) = FNS1(:) + FNS2(:)
+                     FN(:) = FNS1(:) + FNS2(:)
 
                      IF(USE_VDH_DEM_MODEL) then
 
@@ -389,23 +391,23 @@
 ! Calculate the tangential contact force
                      FTS1(:)  = -KT_DES_W * PFT_TMP(:)
                      FTS2(:)  = -ETAT_DES_W * V_REL_TANG(:)
-                     FT(:,LL) = FTS1(:) + FTS2(:)
+                     FT(:) = FTS1(:) + FTS2(:)
 
 
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with a wall
-                     CALL CFSLIDE(V_REL_TANG, PARTICLE_SLIDE, MEW_W,FT(:,LL),FN(:,LL))
+                     CALL CFSLIDE(V_REL_TANG, PARTICLE_SLIDE, MEW_W,FT(:),FN(:))
 
 ! Calculate the total force FC and torque TOW on a particle in a
 ! particle-wall collision
-                     CALL CFFCTOWALL(LL, NORMAL, DISTMOD)
+                     CALL CFFCTOWALL(LL, NORMAL, DISTMOD, FN, FT)
 
 
 ! Save the tangential displacement history with the correction of Coulomb's law
                      IF (PARTICLE_SLIDE) THEN
 ! Since FT might be corrected during the call to cfslide, the tangental
 ! displacement history needs to be changed accordingly
-                        PFT_WALL(LL,NI,:) = -( FT(:,LL) - FTS2(:) ) / KT_DES_W
+                        PFT_WALL(LL,NI,:) = -( FT(:) - FTS2(:) ) / KT_DES_W
                      ELSE
                         PFT_WALL(LL,NI,:) = PFT_TMP(:)
                      ENDIF
