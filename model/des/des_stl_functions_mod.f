@@ -75,7 +75,7 @@
               count_facet_type_po = count_facet_type_po + 1
       ENDDO
       !CALL DEBUG_WRITE_GRID_FACEINFO
-      CALL DEBUG_write_stl_from_grid_facet(WRITE_FACETS_EACH_CELL=.false.)
+      !CALL DEBUG_write_stl_from_grid_facet(WRITE_FACETS_EACH_CELL=.false.)
 
 !      call DEBUG_write_all_readin_facets
 
