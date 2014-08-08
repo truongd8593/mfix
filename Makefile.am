@@ -236,7 +236,6 @@ common_SOURCES = \
 	model/des/cfupdateold.f \
 	model/des/cfwallcontact.f \
 	model/des/cfwallposvel.f \
-	model/des/check_des_hybrid.f \
 	model/des/des_allocate_arrays.f \
 	model/des/des_bc_mod.f \
 	model/des/des_cluster_identification.f \
@@ -258,7 +257,6 @@ common_SOURCES = \
 	model/des/des_thermo_newvalues.f \
 	model/des/des_thermo_rad.f \
 	model/des/des_time_march.f \
-	model/des/des_wallbc_preprocessing.f \
 	model/des/desgrid_functions.inc \
 	model/des/desgrid_mod.f \
 	model/des/desmpi_mod.f \
@@ -280,7 +278,8 @@ common_SOURCES = \
 	model/des/pic_bc_routines.f \
 	model/des/pic_routines.f \
 	model/des/randomno_mod.f \
-	model/des/read_des_restart.f \
+	model/des/read_res0_des.f \
+	model/des/read_res1_des_mod.f \
 	model/des/sendrecvnode_mod.f \
 	model/des/set_bc_dem.f \
 	model/des/set_bc_dem_mi.f \
@@ -293,11 +292,9 @@ common_SOURCES = \
 	model/des/softspring_funcs_cutcell_mod.f \
 	model/des/solid_drag.f \
 	model/des/vtp_mod.f \
-	model/des/walledgecontact.f \
-	model/des/wallfacecontact.f \
-	model/des/wallnodecontact.f \
 	model/des/write_des_data.f \
-	model/des/write_des_restart.f \
+	model/des/write_res0_des.f \
+	model/des/write_res1_des_mod.f \
 	model/dgtsl.f \
 	model/dif_u_is.f \
 	model/dif_v_is.f \
