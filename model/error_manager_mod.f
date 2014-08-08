@@ -382,11 +382,10 @@
          CT_FLAG = .FALSE.
       ENDIF
 
-! Set the current caller.
-      CALLER = CALLERS(CALL_DEPTH)
-
 ! Write out header infomration.
       IF(H_FLAG) THEN
+! Set the current caller.
+         CALLER = CALLERS(CALL_DEPTH)
          IF(D_FLAG) THEN
             IF(SCR_LOG) WRITE(*,2000) trim(CALLER)
             IF(DMP_LOG) WRITE(UNIT_LOG,2000) trim(CALLER)
