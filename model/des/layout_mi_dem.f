@@ -32,13 +32,19 @@
 ! provided by this subroutine is will be obtained from the *_DES.RES file.
 ! This is done due to this routine's strong dependence on the 
 ! RANDOM_NUMBER() subroutine.
-      IF(RUN_TYPE /= 'NEW') RETURN
+      IF(RUN_TYPE == 'NEW') THEN
 
-      SELECT CASE (BC_PLANE(BCV))
-      CASE('N','S'); CALL LAYOUT_DEM_MI_NS(BCV, BCV_I, MAX_DIA)
-      CASE('E','W'); CALL LAYOUT_DEM_MI_EW(BCV, BCV_I, MAX_DIA)
-      CASE('T','B'); CALL LAYOUT_DEM_MI_TB(BCV, BCV_I, MAX_DIA)
-      END SELECT
+         SELECT CASE (BC_PLANE(BCV))
+         CASE('N','S'); CALL LAYOUT_DEM_MI_NS(BCV, BCV_I, MAX_DIA)
+         CASE('E','W'); CALL LAYOUT_DEM_MI_EW(BCV, BCV_I, MAX_DIA)
+         CASE('T','B'); CALL LAYOUT_DEM_MI_TB(BCV, BCV_I, MAX_DIA)
+         END SELECT
+
+      ELSE
+         CALL SET_DEM_MI_OWNER(BCV, BCV_I)
+      ENDIF
+
+
 
       CALL FINL_ERR_MSG
 
@@ -940,3 +946,90 @@
  8006 FORMAT(4x,'LC = ',I4,3x,A1,' =',I3,3x,A1,' =',f8.4)
 
       END SUBROUTINE LAYOUT_DEM_MI_TB
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: SET_DEM_MI_OWNER                                        !
+!  Author: J.Musser                                   Date: 08-Aug-14  !
+!                                                                      !
+!  Purpose: Set the owner of the background mesh used for seeding new  !
+!  particles into the domain. The mesh is stored and read from the RES !
+!  file, however, the owers need to be set per-run in case the DMP     !
+!  partitions changed.                                                 !
+!                                                                      !
+!  Comments:                                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE SET_DEM_MI_OWNER(BCV, BCV_I)
+
+      use bc, only: BC_PLANE
+      use des_bc, only: DEM_MI
+
+      use compar
+      use geometry
+      use indices
+
+      use funits, only: DMP_LOG
+
+! Module procedures
+!---------------------------------------------------------------------//
+      use mpi_utility, only: GLOBAL_ALL_SUM
+      use error_manager
+
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! passed arguments giving index information of the boundary
+      INTEGER, INTENT(IN) :: BCV
+      INTEGER, INTENT(IN) :: BCV_I
+
+! Generic loop counter
+      INTEGER :: LC1, OCCUPANTS
+      INTEGER :: IJK, I, J, K
+
+      INCLUDE '../function.inc'
+
+      OCCUPANTS = DEM_MI(BCV_I)%OCCUPANTS
+      allocate(DEM_MI(BCV_I)%OWNER(OCCUPANTS))
+
+      DEM_MI(BCV_I)%OWNER = 0
+
+      SELECT CASE (BC_PLANE(BCV))
+      CASE('N','S')
+
+         J = DEM_MI(BCV_I)%L
+         DO LC1=1,OCCUPANTS
+            I = DEM_MI(BCV_I)%W(LC1)
+            K = DEM_MI(BCV_I)%H(LC1)
+            IF(IS_ON_myPE_owns(I,J,K)) &
+               DEM_MI(BCV_I)%OWNER(LC1) = myPE
+         ENDDO
+
+      CASE('E','W')
+
+         I = DEM_MI(BCV_I)%L
+         DO LC1=1,OCCUPANTS
+            J = DEM_MI(BCV_I)%W(LC1)
+            K = DEM_MI(BCV_I)%H(LC1)
+            IF(IS_ON_myPE_owns(I,J,K)) &
+               DEM_MI(BCV_I)%OWNER(LC1) = myPE
+         ENDDO
+
+      CASE('T','B')
+
+         K = DEM_MI(BCV_I)%L
+         DO LC1=1,OCCUPANTS
+            I = DEM_MI(BCV_I)%W(LC1)
+            J = DEM_MI(BCV_I)%H(LC1)
+            IF(IS_ON_myPE_owns(I,J,K)) &
+               DEM_MI(BCV_I)%OWNER(LC1) = myPE
+         ENDDO
+
+      END SELECT
+
+      CALL GLOBAL_ALL_SUM(DEM_MI(BCV_I)%OWNER(:))
+
+      RETURN
+      END SUBROUTINE SET_DEM_MI_OWNER

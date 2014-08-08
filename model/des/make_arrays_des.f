@@ -94,7 +94,7 @@
 
       ELSEIF(RUN_TYPE == 'RESTART_1') THEN !  Read Restart
 
-         call des_read_restart
+         CALL READ_RES0_DES
 
          IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,G17.8)') &
             'DES_RES file read at Time= ', TIME
@@ -105,6 +105,7 @@
          omega_old(:,:)   = omega_new(:,:)
          des_pos_old(:,:) = des_pos_new(:,:)
          des_vel_old(:,:) = des_vel_new(:,:)
+         IF(ENERGY_EQ) DES_T_s_OLD(:) = DES_T_s_NEW(:)
 
       ELSEIF (RUN_TYPE == 'RESTART_2') THEN
          IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A)') &

@@ -166,7 +166,7 @@
                DES_RES_TIME = &
                   ( INT((S_TIME+0.1d0*DTSOLID)/DES_RES_DT) &
                   + 1 )*DES_RES_DT
-                  call des_write_restart
+                  CALL WRITE_RES0_DES
 ! Write RES1 here since it won't be called in time_march.  This will
 ! also keep track of TIME
                CALL WRITE_RES1

@@ -1,104 +1,59 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !     Subroutine: DES_TIME_MARCH                                       !
+!     Author: Jay Boyalakuntla                        Date: 21-Jun-04  !
 !                                                                      !
 !     Purpose: Main DEM driver routine                                 !
 !                                                                      !
-!     Author: Jay Boyalakuntla                        Date: 21-Jun-04  !
-!     Reviewer: Sreekanth Pannala                     Date: 09-Nov-06  !
-!     Reviewer: Rahul Garg                            Date: 01-Aug-07  !
-!                                                                      !
-!     Comments:                                                        !
-!        Called in model/time_march.f to do DEM calculations.          !
-!        do_nsearch has to be set for calling neighbour. Since         !
-!        this flag is used during exchange it has to be set before     !
-!        calling particle_in_cell (Pradeep G.)                         !
-!                                                                      !
-!     Reviewer: Rahul Garg                            Date: 01-Aug-12  !
-!     Comments:                                                        !
-!        Moved the MPPIC time integrator to a separate subroutine to   !
-!        decrease the clutter.                                         !
-!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
       SUBROUTINE DES_TIME_MARCH
 
-!------------------------------------------------
-! Modules
-!------------------------------------------------
-      USE param
-      USE param1
-      USE run
-      USE output
-      USE physprop
-      USE fldvar
-      USE geometry
-      USE pgcor
-      USE pscor
-      USE cont
-      USE tau_g
-      USE tau_s
-      USE visc_g
-      USE visc_s
-      USE funits
-      USE vshear
-      USE scalars
-      USE drag
-      USE rxns
-      USE compar
-      USE time_cpu
-      USE discretelement
-      USE constant
-      USE sendrecv
-      USE des_bc
-      USE cutcell
-      USE mfix_pic
-      Use des_thermo
-      Use des_rxns
-      Use interpolation
+      use run, only: TIME, TSTOP, DT
+      use run, only: CALL_USR
+      use run, only: ENERGY_EQ
+      use run, only: RUN_TYPE
+      use run, only: ANY_SPECIES_EQ
+
+      use output, only: SPX_DT
+      USE fldvar, only: EP_g, ROP_g, ROP_s
+
+      use mfix_pic, only: MPPIC
+      use des_bc, only: DEM_BCMI, DEM_BCMO
+
+      use discretelement
+      use sendrecv
+      use mpi_utility
+      use error_manager
 
       IMPLICIT NONE
 !------------------------------------------------
 ! Local variables
 !------------------------------------------------
-! indices for grid 
-      INTEGER :: I, J, K, IJK
-! particle loop counter index
-      INTEGER :: NP
+! Total number of particles
+      INTEGER, SAVE :: NP=0
+
 ! time step loop counter index
       INTEGER :: NN
 ! loop counter index for any initial particle settling incoupled cases
       INTEGER :: FACTOR
-! boundary condition loop counter index
-      INTEGER :: BCV_I
-! accounted for particles
-      INTEGER :: PC
 
 ! Local variables to keep track of time when dem restart and des
 ! write data need to be written when des_continuum_coupled is F
-      DOUBLE PRECISION DES_RES_TIME, DES_SPX_TIME
+      DOUBLE PRECISION :: DES_RES_TIME, DES_SPX_TIME
 
 ! Temporary variables when des_continuum_coupled is T to track
 ! changes in solid time step 
-      DOUBLE PRECISION TMP_DTS, DTSOLID_TMP
-      CHARACTER*5 FILENAME
+      DOUBLE PRECISION :: TMP_DTS, DTSOLID_TMP
 
 ! Temporary variable used to track reporting frequency for the
 ! maximum overlap and maximum no. neighbors for given NN loop
-      DOUBLE PRECISION DES_TMP_TIME
+      DOUBLE PRECISION :: DES_TMP_TIME
 
 ! Logical to see whether this is the first entry to this routine
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 
-! Identifies that the indicated particle is of interest for debugging
-      LOGICAL FOCUS
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
-!-----------------------------------------------
+! Numbers to calculate wall time spent in DEM calculations.
+      DOUBLE PRECISION :: WALL_TIME, TMP_WALL
 
       IF(MPPIC) THEN
          CALL PIC_TIME_MARCH
@@ -175,6 +130,7 @@
       S_TIME = TIME
       TMP_DTS = ZERO
       DTSOLID_TMP = ZERO
+      TMP_WALL = WALL_TIME()
 
       IF(DES_CONTINUUM_COUPLED) THEN
          IF(DT.GE.DTSOLID) THEN
@@ -184,13 +140,17 @@
             DTSOLID_TMP = DTSOLID
             DTSOLID = DT
          ENDIF
-         IF(DMP_LOG) WRITE(UNIT_LOG, 1999) factor, s_time, dt, dtsolid, pip
-         IF(DMP_LOG) WRITE(*, 1999) factor, s_time, dt, dtsolid, pip
+
+         NP = PIP - IGHOST_CNT
+         CALL GLOBAL_ALL_SUM(NP)
+
+         WRITE(ERR_MSG, 1000) trim(iVal(factor)), trim(iVAL(NP))
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+
+ 1000 FORMAT(/'DEM NITs: ',A,3x,'Total PIP: ', A)
 
       ELSE
          FACTOR = CEILING(real((TSTOP-TIME)/DTSOLID))
-         IF(DMP_LOG) WRITE(*,'(1X,A)')&
-            '---------- START DES_TIME_MARCH ---------->'
          IF(DMP_LOG) WRITE(*,'(3X,A,X,I10,X,A)') &
             'DEM SIMULATION will be called', FACTOR, 'times'
 ! Initialization for des_spx_time, des_res_time         
@@ -310,7 +270,7 @@
                DES_RES_TIME = &
                   ( INT((S_TIME+0.1d0*DTSOLID)/DES_RES_DT) &
                   + 1 )*DES_RES_DT
-                  call des_write_restart
+                  CALL WRITE_RES0_DES
 ! Write RES1 here since it won't be called in time_march.  This will
 ! also keep track of TIME
                CALL WRITE_RES1
@@ -372,12 +332,18 @@
          call send_recv(des_v_s,2)
          if(do_K) call send_recv(des_w_s,2)
          call send_recv(rop_s,2)
+
+         TMP_WALL = WALL_TIME() - TMP_WALL
+         IF(TMP_WALL > 1.0d-10) THEN
+            WRITE(ERR_MSG, 9000) trim(iVal(dble(FACTOR)/TMP_WALL))
+         ELSE
+            WRITE(ERR_MSG, 9000) '+Inf'
+         ENDIF
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+
+ 9000 FORMAT('    NITs/SEC = ',A)
+
       ENDIF
 
- 1999    FORMAT(/1X,70('- '),//,10X,  &
-         & 'DEM SIMULATION CALLED ', 2x, i5, 2x, 'times this fluid step', /10x &
-         & 'S_TIME, DT, DTSOLID and PIP = ', 3(2x,g17.8),2x, i10)
-
       RETURN
-
       END SUBROUTINE DES_TIME_MARCH

@@ -1,4 +1,4 @@
-      MODULE RES_DES
+      MODULE WRITE_RES1_DES
 
       use desmpi
       use compar, only: myPE
@@ -6,12 +6,15 @@
 
       use cdist, only: bDist_IO
 
+      IMPLICIT NONE
+
       PRIVATE
 
       PUBLIC :: INIT_WRITE_RES_DES
       PUBLIC :: FINL_WRITE_RES_DES
 
       PUBLIC :: WRITE_RES_DES
+      PUBLIC :: WRITE_RES_DES_NPA
 
       INTERFACE WRITE_RES_DES
          MODULE PROCEDURE WRITE_RES_DES_0I
@@ -22,7 +25,11 @@
          MODULE PROCEDURE WRITE_RES_DES_1L
       END INTERFACE
 
-
+      INTERFACE WRITE_RES_DES_NPA
+         MODULE PROCEDURE WRITE_RES_DES_NPA_1I
+         MODULE PROCEDURE WRITE_RES_DES_NPA_1D
+         MODULE PROCEDURE WRITE_RES_DES_NPA_1L
+      END INTERFACE
 
       INTEGER, PARAMETER :: RDES_UNIT = 901
 
@@ -81,22 +88,19 @@
       INTEGER, INTENT(OUT) :: lNEXT_REC
 
 ! Number of real particles on local rank
-      INTEGER :: lParCnt
+      INTEGER :: lParCnt, lPROC
 ! Total number of real particles.
       INTEGER :: lGloCnt
 
       INTEGER :: lGatherCnts(0:NUMPEs-1)
 
-      CHARACTER(len=32) :: lFNAME
 
+      CALL OPEN_RES_DES(BASE)
 
       lNEXT_REC = 1
 
-      IF(bDIST_IO) THEN
 
-         WRITE(lFNAME,'(A,I4.4,A)') BASE//'_DES_',myPE,'.RES'
-         OPEN(UNIT=RDES_UNIT, FILE=lFNAME, FORM='UNFORMATTED',         &
-            STATUS='UNKNOWN', ACCESS='DIRECT', RECL=OPEN_N1)
+      IF(bDIST_IO) THEN
 
          allocate (dPROCBUF(PIP)) ! local process particle count
          allocate (iPROCBUF(PIP)) ! local process particle count
@@ -137,12 +141,6 @@
          DO lPROC = 1,NUMPES-1
             iDISPLS(lPROC) = iDISPLS(lPROC-1) + iGatherCnts(lPROC-1)
          ENDDO
-
-         IF(myPE == PE_IO) THEN
-            WRITE(lFNAME,'(A,A)') BASE//'_DES.RES'
-            OPEN(UNIT=RDES_UNIT, FILE=lFNAME, FORM='UNFORMATTED',      &
-               STATUS='UNKNOWN', ACCESS='DIRECT', RECL=OPEN_N1)
-         ENDIF
 
          OUT_COUNT = lGLOCNT
 
@@ -277,6 +275,8 @@
       use desmpi, only: iProcBuf
       use discretelement, only: PEA
 
+      IMPLICIT NONE
+
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       DOUBLE PRECISION, INTENT(IN) :: INPUT_D(:)
 
@@ -300,7 +300,6 @@
 
       RETURN
       END SUBROUTINE WRITE_RES_DES_1D
-
 
 
 !``````````````````````````````````````````````````````````````````````!
@@ -349,15 +348,88 @@
             iProcBuf(LC1) = merge(1,0,INPUT_L(LC2))
             LC1 = LC1 + 1
          ENDDO
-         CALL OUT_BIN_512(RDES_UNIT, iProcBuf, OUT_COUNT, lNEXT_REC)
+         CALL OUT_BIN_512i(RDES_UNIT, iProcBuf, OUT_COUNT, lNEXT_REC)
       ELSE
          CALL DES_GATHER(INPUT_L)
          IF(myPE == PE_IO) &
-            CALL OUT_BIN_512(RDES_UNIT,iRootBuf, OUT_COUNT, lNEXT_REC)
+            CALL OUT_BIN_512i(RDES_UNIT,iRootBuf, OUT_COUNT, lNEXT_REC)
       ENDIF
 
       RETURN
       END SUBROUTINE WRITE_RES_DES_1L
 
 
-      END MODULE RES_DES
+!``````````````````````````````````````````````````````````````````````!
+! Subroutine: WRITE_RES_DES_NPA_1I                                     !
+!                                                                      !
+! Purpose: Write an array of integers to RES file. Note that data is   !
+! not collected and hsould be on rank 0.                               !
+!``````````````````````````````````````````````````````````````````````!
+      SUBROUTINE WRITE_RES_DES_NPA_1I(lNEXT_REC, INPUT_I)
+
+      INTEGER, INTENT(INOUT) :: lNEXT_REC
+      INTEGER, INTENT(IN) :: INPUT_I(:)
+
+      INTEGER :: lSIZE
+
+      lSIZE = size(INPUT_I)
+
+      IF(bDIST_IO .OR. myPE == PE_IO) &
+         CALL OUT_BIN_512i(RDES_UNIT, INPUT_I, lSIZE, lNEXT_REC)
+
+      RETURN
+      END SUBROUTINE WRITE_RES_DES_NPA_1I
+
+!``````````````````````````````````````````````````````````````````````!
+! Subroutine: WRITE_RES_DES_NPA_1D                                     !
+!                                                                      !
+! Purpose: Write an array of double percision values to RES file. Note !
+! that data is not collected and should be on rank 0.                  !
+!``````````````````````````````````````````````````````````````````````!
+      SUBROUTINE WRITE_RES_DES_NPA_1D(lNEXT_REC, INPUT_D)
+
+      INTEGER, INTENT(INOUT) :: lNEXT_REC
+      DOUBLE PRECISION, INTENT(IN) :: INPUT_D(:)
+
+      INTEGER :: lSIZE
+
+      lSIZE = size(INPUT_D)
+
+      IF(bDIST_IO .OR. myPE == PE_IO) &
+         CALL OUT_BIN_512(RDES_UNIT, INPUT_D, lSIZE, lNEXT_REC)
+
+      RETURN
+      END SUBROUTINE WRITE_RES_DES_NPA_1D
+
+
+!``````````````````````````````````````````````````````````````````````!
+! Subroutine: WRITE_RES_DES_NPA_1L                                     !
+!                                                                      !
+! Purpose: Write an array of integers to RES file. Note that data is   !
+! not collected and hsould be on rank 0.                               !
+!``````````````````````````````````````````````````````````````````````!
+      SUBROUTINE WRITE_RES_DES_NPA_1L(lNEXT_REC, INPUT_L)
+
+      INTEGER, INTENT(INOUT) :: lNEXT_REC
+      LOGICAL, INTENT(IN) :: INPUT_L(:)
+
+      INTEGER, ALLOCATABLE :: INPUT_I(:)
+
+      INTEGER :: lSIZE, LC1
+
+      lSIZE = size(INPUT_L)
+      ALLOCATE(INPUT_I(lSIZE))
+
+      DO LC1=1, lSIZE
+         INPUT_I(LC1) = merge(1,0,INPUT_L(LC1))
+      ENDDO
+
+      IF(bDIST_IO .OR. myPE == PE_IO) &
+         CALL OUT_BIN_512i(RDES_UNIT, INPUT_I, lSIZE, lNEXT_REC)
+
+      IF(allocated(INPUT_I)) deallocate(INPUT_I)
+
+      RETURN
+      END SUBROUTINE WRITE_RES_DES_NPA_1L
+
+      END MODULE WRITE_RES1_DES
