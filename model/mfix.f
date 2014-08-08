@@ -397,12 +397,7 @@
 
 ! Compute the CPU time and write it out in the .OUT file.
       CPUTIME_USED = CPU1 - CPU0 - CPU_IO
-      if(myPE.eq.root) then
-      WRITE(*,*) &
-         '************** CPU TIME for IO **********************',&
-         CPU_IO
-      endif
-      CALL WRITE_OUT3 (CPUTIME_USED,WALL_TIME() - WALL0)
+      CALL WRITE_OUT3 (CPUTIME_USED,WALL_TIME() - WALL0, CPU_IO)
 
 ! JFD: cartesian grid implementation
       IF(WRITE_DASHBOARD) THEN
