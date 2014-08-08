@@ -517,6 +517,7 @@
 
       SUBROUTINE collision_add(ii,jj)
         USE discretelement
+        USE geometry
         IMPLICIT NONE
         INTEGER, INTENT(IN) :: ii,jj
         LOGICAL, DIMENSION(:), ALLOCATABLE :: bool_tmp
@@ -539,7 +540,11 @@
            real_tmp(:,1:collision_max) = fc_coll(:,1:collision_max)
            call move_alloc(real_tmp,fc_coll)
 
-           allocate(real_tmp(3,2*collision_max))
+           IF(DO_K) THEN
+              allocate(real_tmp(1,2*collision_max))
+           ELSE
+              allocate(real_tmp(3,2*collision_max))
+           ENDIF
            real_tmp(:,1:collision_max) = tow_coll(:,1:collision_max)
            call move_alloc(real_tmp,tow_coll)
 
