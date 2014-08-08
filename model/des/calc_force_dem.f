@@ -106,8 +106,7 @@
 !$omp   private(ll,fts1,fts2,fns1,fns2,pft_tmp,                   &
 !$omp          PARTICLE_SLIDE,nlim,                               &
 !$omp          n_nocon,ni,iw,wallcontact,i,                       &
-!$omp          already_neighbours, neigh_l,                       &
-!$omp          WALL_POS,WALL_VEL,                                 &
+!$omp          WALL_POS,WALL_VEL,neigh_l,                         &
 !$omp          r_lm,dist,distmod,normal,ii,                       &
 !$omp          v_rel_trans_norm, v_rel_tang,                      &
 !$omp          overlap_n,overlap_t,dtsolid_tmp,phasell,           &
