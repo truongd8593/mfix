@@ -158,8 +158,10 @@
 ! Torque
       IF(DO_K) THEN
          Allocate(  TOW (DIMN,NPARTICLES) )
+         Allocate(  TOW_COLL (DIMN,COLLISION_MAX) )
       ELSE
          Allocate(  TOW (1,NPARTICLES) )
+         Allocate(  TOW_COLL (1,COLLISION_MAX) )
       ENDIF
 
 ! Accumulated spring force
@@ -536,6 +538,10 @@
            allocate(real_tmp(3,2*collision_max))
            real_tmp(:,1:collision_max) = fc_coll(:,1:collision_max)
            call move_alloc(real_tmp,fc_coll)
+
+           allocate(real_tmp(3,2*collision_max))
+           real_tmp(:,1:collision_max) = tow_coll(:,1:collision_max)
+           call move_alloc(real_tmp,tow_coll)
 
            allocate(bool_tmp(2*collision_max))
            bool_tmp(1:collision_max) = pv_coll(1:collision_max)

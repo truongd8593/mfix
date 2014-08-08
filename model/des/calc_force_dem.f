@@ -30,7 +30,7 @@
 ! particle no. indices
       INTEGER :: I, LL, CC
 ! loop counters (neighbor particles, walls, dimension)
-      INTEGER :: II, IW, IDIMN
+      INTEGER :: II, JJ, IW, IDIMN
 ! loop counter and indices for neighbor information
       INTEGER :: NI, NLIM, N_NOCON, NEIGH_L
 ! the overlap occuring between particle-particle or particle-wall
@@ -275,7 +275,12 @@
 ! Calculate the total force FC and torque TOW on a particle in a
 ! particle-particle collision
          CALL CFFCTOW(DES_RADIUS(LL), DES_RADIUS(I), NORMAL,        &
+!            DISTMOD, FC_COLL(:,CC), FN(:), FT(:), TOW_COLL(:,CC))
             DISTMOD, FC(:,LL), FN(:), FT(:), TOW(:,LL))
+
+!FC(:,LL) = FC(:,LL) + fc_coll(:,cc)
+!TOW(:,LL) = TOW(:,LL) + tow_coll(:,cc)
+
 ! Save tangential displacement history with Coulomb's law correction
          IF (PARTICLE_SLIDE) THEN
 ! Since FT might be corrected during the call to cfslide, the tangental
@@ -286,6 +291,27 @@
          ENDIF
       ENDDO
 
+!      print *, "collision_num = ", collision_num
+
+      CC = 0
+      if (.false.) then
+      DO LL = 1, MAX_PIP
+!         print *,"LL = ",LL
+         IF(.NOT.PEA(LL,1)) CYCLE
+         IF(PEA(LL,4)) CYCLE
+
+         DO WHILE (CC+1 < COLLISION_NUM)
+            CC = CC+1
+            II = COLLISIONS(1,CC)
+            JJ = COLLISIONS(2,CC)
+!            print *,"collision #",CC," of ",collision_num," has values ",ii,jj
+            IF (LL < II) CYCLE
+!            print *,"UPDATE"
+            FC(:,LL) = FC(:,LL) + FC_COLL(:,CC)
+            TOW(:,LL) = TOW(:,LL) + TOW_COLL(:,CC)
+         ENDDO
+      ENDDO
+   endif
 ! Calculate gas-solids drag force on particle
       IF(DES_CONTINUUM_COUPLED) CALL CALC_DES_DRAG_GS
 
@@ -473,7 +499,7 @@
 !------------------------------------------------
 
 ! total contact force
-      FC_tmp(:) = FC_tmp(:) + FN_tmp(:) + FT_tmp(:)
+      FC_tmp(:) = FC_tmp(:) + (FN_tmp(:) + FT_tmp(:))
 
 ! calculate the distance from the particle center to the contact point,
 ! which is taken as the radical line
