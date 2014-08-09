@@ -141,7 +141,7 @@
             WRITE(*,'(5X,A,3(ES17.9))')&
                'new particle vel = ', DES_VEL_NEW(:,L)
             WRITE(*,1003)
-            STOP
+            STOP -1
          ENDIF
 
 ! Reset total contact force and torque
