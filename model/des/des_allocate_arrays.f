@@ -541,9 +541,9 @@
            call move_alloc(real_tmp,fc_coll)
 
            IF(DO_K) THEN
-              allocate(real_tmp(1,2*collision_max))
-           ELSE
               allocate(real_tmp(3,2*collision_max))
+           ELSE
+              allocate(real_tmp(1,2*collision_max))
            ENDIF
            real_tmp(:,1:collision_max) = tow_coll(:,1:collision_max)
            call move_alloc(real_tmp,tow_coll)
