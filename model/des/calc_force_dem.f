@@ -290,16 +290,18 @@
       ENDDO
 
       CC = 1
-      DO LL = 1, MAX_PIP
+OUTER: DO LL = 1, MAX_PIP
          IF(.NOT.PEA(LL,1)) CYCLE
          IF(PEA(LL,4)) CYCLE
 
          II = COLLISIONS(1,CC)
          JJ = COLLISIONS(2,CC)
 
+         if (COLLISION_NUM .eq. CC) EXIT
+
          DO WHILE (II < LL)
-            if (COLLISION_NUM .eq. CC) EXIT
             CC = CC+1
+            if (COLLISION_NUM < CC) EXIT OUTER
             II = COLLISIONS(1,CC)
             JJ = COLLISIONS(2,CC)
          ENDDO
@@ -307,12 +309,12 @@
          DO WHILE (II .eq. LL)
             FC(:,LL) = FC(:,LL) + FC_COLL(:,CC)
             TOW(:,LL) = TOW(:,LL) + TOW_COLL(:,CC)
-            if (COLLISION_NUM .eq. CC) EXIT
             CC = CC+1
+            if (COLLISION_NUM < CC) EXIT OUTER
             II = COLLISIONS(1,CC)
             JJ = COLLISIONS(2,CC)
          ENDDO
-      ENDDO
+      ENDDO OUTER
 
 ! Calculate gas-solids drag force on particle
       IF(DES_CONTINUUM_COUPLED) CALL CALC_DES_DRAG_GS
