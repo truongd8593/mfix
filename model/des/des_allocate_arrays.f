@@ -158,10 +158,8 @@
 ! Torque
       IF(DO_K) THEN
          Allocate(  TOW (DIMN,NPARTICLES) )
-         Allocate(  TOW_COLL (DIMN,COLLISION_MAX) )
       ELSE
          Allocate(  TOW (1,NPARTICLES) )
-         Allocate(  TOW_COLL (1,COLLISION_MAX) )
       ENDIF
 
 ! Accumulated spring force
@@ -197,6 +195,12 @@
       Allocate(  PFT_COLL_OLD (3,COLLISION_MAX) )
       Allocate(  PFN_COLL (3,COLLISION_MAX) )
       Allocate(  PFN_COLL_OLD (3,COLLISION_MAX) )
+! Torque
+      IF(DO_K) THEN
+         Allocate(  TOW_COLL (DIMN,COLLISION_MAX) )
+      ELSE
+         Allocate(  TOW_COLL (1,COLLISION_MAX) )
+      ENDIF
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
