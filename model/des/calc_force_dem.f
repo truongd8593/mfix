@@ -189,6 +189,9 @@
 ! Check particle LL neighbour contacts
 !----------------------------------------------------------------->>>
 
+      FC_COLL(:,:) = 0
+      TOW_COLL(:,:) = 0
+
       DO CC = 1, COLLISION_NUM
          LL = COLLISIONS(1,CC)
          I  = COLLISIONS(2,CC)
@@ -274,11 +277,7 @@
 ! Calculate the total force FC and torque TOW on a particle in a
 ! particle-particle collision
          CALL CFFCTOW(DES_RADIUS(LL), DES_RADIUS(I), NORMAL,        &
-!            DISTMOD, FC_COLL(:,CC), FN(:), FT(:), TOW_COLL(:,CC))
-            DISTMOD, FC(:,LL), FN(:), FT(:), TOW(:,LL))
-
-!FC(:,LL) = FC(:,LL) + fc_coll(:,cc)
-!TOW(:,LL) = TOW(:,LL) + tow_coll(:,cc)
+            DISTMOD, FC_COLL(:,CC), FN(:), FT(:), TOW_COLL(:,CC))
 
 ! Save tangential displacement history with Coulomb's law correction
          IF (PARTICLE_SLIDE) THEN
@@ -290,27 +289,31 @@
          ENDIF
       ENDDO
 
-!      print *, "collision_num = ", collision_num
-
-      CC = 0
-      if (.false.) then
+      CC = 1
       DO LL = 1, MAX_PIP
-!         print *,"LL = ",LL
          IF(.NOT.PEA(LL,1)) CYCLE
          IF(PEA(LL,4)) CYCLE
 
-         DO WHILE (CC+1 < COLLISION_NUM)
+         II = COLLISIONS(1,CC)
+         JJ = COLLISIONS(2,CC)
+
+         DO WHILE (II < LL)
+            if (COLLISION_NUM .eq. CC) EXIT
             CC = CC+1
             II = COLLISIONS(1,CC)
             JJ = COLLISIONS(2,CC)
-!            print *,"collision #",CC," of ",collision_num," has values ",ii,jj
-            IF (LL < II) CYCLE
-!            print *,"UPDATE"
+         ENDDO
+
+         DO WHILE (II .eq. LL)
             FC(:,LL) = FC(:,LL) + FC_COLL(:,CC)
             TOW(:,LL) = TOW(:,LL) + TOW_COLL(:,CC)
+            if (COLLISION_NUM .eq. CC) EXIT
+            CC = CC+1
+            II = COLLISIONS(1,CC)
+            JJ = COLLISIONS(2,CC)
          ENDDO
       ENDDO
-   endif
+
 ! Calculate gas-solids drag force on particle
       IF(DES_CONTINUUM_COUPLED) CALL CALC_DES_DRAG_GS
 
@@ -487,18 +490,17 @@
 ! unit normal vector along the line of contact pointing from
 ! particle L to particle II
       DOUBLE PRECISION, INTENT(IN) :: NORM(3)
-      DOUBLE PRECISION, DIMENSION(3), INTENT(INOUT) :: FC_tmp, FN_tmp, FT_tmp, TOW_tmp
+      DOUBLE PRECISION, DIMENSION(3), INTENT(IN) :: FN_tmp, FT_tmp
+      DOUBLE PRECISION, DIMENSION(3), INTENT(OUT) :: FC_tmp, TOW_tmp
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! local variable for calculating torque on particle
-      DOUBLE PRECISION :: CROSSP(3)
 ! distance from the contact point to the particle center
       DOUBLE PRECISION :: DIST_CL
 !------------------------------------------------
 
 ! total contact force
-      FC_tmp(:) = FC_tmp(:) + (FN_tmp(:) + FT_tmp(:))
+      FC_tmp(:) = FN_tmp(:) + FT_tmp(:)
 
 ! calculate the distance from the particle center to the contact point,
 ! which is taken as the radical line
@@ -508,11 +510,9 @@
 
 ! total torque
       IF(DO_K) THEN
-         CALL DES_CROSSPRDCT(CROSSP, NORM, FT_TMP)
-         TOW_tmp(:)  = TOW_tmp(:)  + DIST_CL*CROSSP(:)
+         CALL DES_CROSSPRDCT(TOW_tmp(:), DIST_CL*NORM, FT_TMP)
       ELSE
-         CROSSP(1) = NORM(1)*FT_TMP(2) - NORM(2)*FT_TMP(1)
-         TOW_tmp(1)  = TOW_tmp(1)  + DIST_CL*CROSSP(1)
+         TOW_tmp(1)  = DIST_CL*(NORM(1)*FT_TMP(2) - NORM(2)*FT_TMP(1))
       ENDIF
 
       RETURN
