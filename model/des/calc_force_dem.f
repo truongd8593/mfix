@@ -297,7 +297,7 @@ OUTER: DO LL = 1, MAX_PIP
          II = COLLISIONS(1,CC)
          JJ = COLLISIONS(2,CC)
 
-         if (COLLISION_NUM .eq. CC) EXIT
+         if (COLLISION_NUM < CC) EXIT
 
          DO WHILE (II < LL)
             CC = CC+1
