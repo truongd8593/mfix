@@ -19,7 +19,7 @@ libodepack_a_SOURCES = model/ODEPACK.F
 mfix_LDADD = libodepack.a
 
 EXTRA_DIST =  build-aux config doc regression_tests tests tools tutorials visualization_tools
-EXTRA_DIST += CHANGES Readme.pdf readme README_MFIX_for_T3E README_POSTMFIX
+EXTRA_DIST += CHANGES Readme.pdf readme README_POSTMFIX
 
 $(top_srcdir)/model/mfix_directory_path.inc:
 	echo "     CHARACTER(len=132) :: MFIX_PATH = '${abs_top_srcdir}/model'" > $@
