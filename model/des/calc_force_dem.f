@@ -56,13 +56,10 @@
 ! particle center and wall at current and previous time steps
       DOUBLE PRECISION :: DISTMOD
 ! unit normal vector along the line of contact between contacting
-! particles or particle-wall at current and previous time steps
-      DOUBLE PRECISION :: NORMAL(3), NORM_OLD(3)
+! particles or particle-wall at current time step
+      DOUBLE PRECISION :: NORMAL(3)
 ! tangent to the plane of contact at current time step
       DOUBLE PRECISION :: V_REL_TANG(3)
-! variables for tangential displacement calculation:
-! unit vector for axis of rotation and its magnitude
-      DOUBLE PRECISION :: TMP_AX(3), TMP_MAG
 ! normal and tangential forces
       DOUBLE PRECISION :: FN(3), FT(3)
       DOUBLE PRECISION :: FNS1(3), FNS2(3)
@@ -261,7 +258,7 @@
          FNS2(:) = -ETAN_DES * V_REL_TRANS_NORM*NORMAL(:)
          FN(:) = FNS1(:) + FNS2(:)
 
-         call calc_tangential_displacement
+         call calc_tangential_displacement(pft_tmp(:),pfn_coll(:,cc),pft_coll(:,cc))
 
 ! Calculate the tangential contact force
          FTS1(:) = -KT_DES * PFT_TMP(:)
@@ -281,7 +278,7 @@
 
 ! Save tangential displacement history with Coulomb's law correction
          IF (PARTICLE_SLIDE) THEN
-! Since FT might be corrected during the call to cfslide, the tangental
+! Since FT might be corrected during the call to cfslide, the tangential
 ! displacement history needs to be changed accordingly
             PFT_COLL(:,CC) = -( FT(:) - FTS2(:) ) / KT_DES
          ELSE
@@ -403,18 +400,31 @@ OUTER: DO LL = 1, MAX_PIP
 !           tangential relative velocity with respect to contact time.
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        SUBROUTINE CALC_TANGENTIAL_DISPLACEMENT
+        SUBROUTINE CALC_TANGENTIAL_DISPLACEMENT(PFT,norm_old,sigmat_old)
 
           implicit none
 
-! tangent to the plane of contact at current and previous time step
-! (used for 2D calculations)
-      DOUBLE PRECISION :: TANG_OLD(3),TANG_NEW(3)
+! tangential displacement
+          DOUBLE PRECISION, DIMENSION(3), INTENT(OUT) :: pft
 
 ! local variables for the accumulated tangential displacement that occurs
 ! for the particle-particle or particle-wall collision (current time
 ! step and previous time step)
-      DOUBLE PRECISION :: SIGMAT(3),SIGMAT_OLD(3)
+      DOUBLE PRECISION, DIMENSION(3), INTENT(IN) :: SIGMAT_OLD
+
+      DOUBLE PRECISION, DIMENSION(3) :: SIGMAT
+
+! unit normal vector along the line of contact between contacting
+! particles or particle-wall at previous time step
+      DOUBLE PRECISION, DIMENSION(3), INTENT(IN) :: NORM_OLD
+
+! variables for tangential displacement calculation:
+! unit vector for axis of rotation and its magnitude
+      DOUBLE PRECISION :: TMP_AX(3), TMP_MAG
+
+! tangent to the plane of contact at current and previous time step
+! (used for 2D calculations)
+      DOUBLE PRECISION :: TANG_OLD(3),TANG_NEW(3)
 
                   IF(USE_VDH_DEM_MODEL) then
 ! Calculate the tangential displacement which is integration of
@@ -422,8 +432,7 @@ OUTER: DO LL = 1, MAX_PIP
 ! Correction in the tangential direction is imposed
 
 ! New procedure: van der Hoef et al. (2006)
-                     sigmat_old(:) = pft_coll(:,cc)
-                     norm_old(:) = pfn_coll(:,cc)
+
 ! calculate the unit vector for axis of rotation
                      if(DO_K)then
                         call des_crossprdct(tmp_ax,norm_old,normal)
@@ -450,13 +459,11 @@ OUTER: DO LL = 1, MAX_PIP
                      endif
 
 ! Save the old normal direction
-                     PFT_TMP(:)   = SIGMAT(:)
+                     PFT(:)   = SIGMAT(:)
                   ELSE
                      ! Old procedure
-                     PFT_COLL(:,CC) = PFT_COLL(:,CC) + OVERLAP_T(:)
-                     PFT_TMP(:) = PFT_COLL(:,CC) ! update pft_tmp before it is used
-                     PFT_TMP(:) = PFT_COLL(:,CC) - &
-                     dot_product(PFT_TMP,NORMAL)*NORMAL(:)
+                     sigmat = sigmat_old + OVERLAP_T(:)
+                     pft(:) = sigmat - dot_product(sigmat,NORMAL)*NORMAL(:)
                   ENDIF
 
         END SUBROUTINE CALC_TANGENTIAL_DISPLACEMENT
