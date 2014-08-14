@@ -245,67 +245,68 @@
 
       DO IJK = ijkstart3, ijkend3
 
-          IF (FLUID_AT(IJK)) THEN 
-               IJKW = WEST_OF(IJK) 
-               IJKS = SOUTH_OF(IJK)
-               IJKE = EAST_OF(IJK) 
-               IJKN = NORTH_OF(IJK) 
+         IF (FLUID_AT(IJK)) THEN 
+            IJKW = WEST_OF(IJK) 
+            IJKS = SOUTH_OF(IJK)
+            IJKE = EAST_OF(IJK) 
+            IJKN = NORTH_OF(IJK) 
 
-               F(:,:) = ZERO
+            F(:,:) = ZERO
 
-               DO M = 1, MMAX
-                    A(M)=A_M(IJK,0,M)
-                    BB(M)=B_M(IJK,M)
+            DO M = 1, MMAX
+               A(M)=A_M(IJK,0,M)
+               BB(M)=B_M(IJK,M)
 
-                    DO L = 1, MMAX
-                         IF ( L .NE. M ) THEN
-                              LM = FUNLM(L,M)                    
-                              F(M,L)=-VxTCSS(IJK,LM)
-                         ENDIF
-                         F(L,M) = F(M,L)
-                    ENDDO
-
-                    SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IJKE,M)+A_M(IJK,W,M)*VAR_S(&
-                              IJKW,M)+A_M(IJK,N,M)*VAR_S(IJKN,M)+A_M(IJK,S,M)*VAR_S(&
-                              IJKS,M)) 
-
-                    IF (DO_K) THEN 
-                         IJKB = BOTTOM_OF(IJK) 
-                         IJKT = TOP_OF(IJK)
-                         SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKT,M)+&
-                                   A_M(IJK,B,M)*VAR_S(IJKB,M)) 
-                    ENDIF 
+               DO L = 1, MMAX
+                  IF ( L .NE. M ) THEN
+                     LM = FUNLM(L,M)                    
+                     F(M,L)=-VxTCSS(IJK,LM)
+                  ENDIF
+                  F(L,M) = F(M,L)
                ENDDO
 
-               DO M = 1, MMAX
-                    SUM_A = ZERO
-                    SUM_B = ZERO
+               SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IJKE,M)+&
+                  A_M(IJK,W,M)*VAR_S(IJKW,M)+&
+                  A_M(IJK,N,M)*VAR_S(IJKN,M)+&
+                  A_M(IJK,S,M)*VAR_S(IJKS,M)) 
 
-                    DO L = 1, MMAX
-                         SUM_A_LPRIME = ZERO
-                         SUM_B_LPRIME = ZERO
+               IF (DO_K) THEN 
+                  IJKB = BOTTOM_OF(IJK) 
+                  IJKT = TOP_OF(IJK)
+                  SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKT,M)+&
+                     A_M(IJK,B,M)*VAR_S(IJKB,M)) 
+               ENDIF 
+            ENDDO
 
-                         DO LP = 1, MMAX
-                              IF ( LP .NE. M) THEN
-                                   SUM_A_LPRIME=SUM_A_LPRIME+F(L,LP)
-                                   SUM_B_LPRIME=SUM_B_LPRIME+F(L,LP)*VAR_S(IJK,LP)
-                              ENDIF
-                         ENDDO
+            DO M = 1, MMAX
+               SUM_A = ZERO
+               SUM_B = ZERO
 
-                         DEN = A(L) + SUM_A_LPRIME + F(L,M)
+               DO L = 1, MMAX
+                  SUM_A_LPRIME = ZERO
+                  SUM_B_LPRIME = ZERO
 
-                         IF ( DEN .NE. ZERO) THEN
-                              SUM_A = SUM_A + ((F(L,M)*(A(L)+SUM_A_LPRIME))/DEN)
-                              SUM_B = SUM_B + F(L,M)*(SAXF(L) + BB(L)+SUM_B_LPRIME &
-                                   )/DEN
-                         ENDIF
-                    ENDDO
+                  DO LP = 1, MMAX
+                     IF ( LP .NE. M) THEN
+                        SUM_A_LPRIME=SUM_A_LPRIME+F(L,LP)
+                        SUM_B_LPRIME=SUM_B_LPRIME+F(L,LP)*VAR_S(IJK,LP)
+                     ENDIF
+                  ENDDO
 
-                    A_M(IJK,0,M)= SUM_A+A(M)
-                    B_M(IJK,M)  = SUM_B+BB(M)
+                  DEN = A(L) + SUM_A_LPRIME + F(L,M)
+
+                  IF ( DEN .NE. ZERO) THEN
+                     SUM_A = SUM_A + ((F(L,M)*(A(L)+SUM_A_LPRIME))/DEN)
+                     SUM_B = SUM_B + F(L,M)*(SAXF(L) + BB(L)+&
+                        SUM_B_LPRIME)/DEN
+                  ENDIF
                ENDDO
 
-          ENDIF 
+               A_M(IJK,0,M)= SUM_A+A(M)
+               B_M(IJK,M)  = SUM_B+BB(M)
+            ENDDO
+
+         ENDIF 
       ENDDO 
 
       RETURN  
@@ -403,102 +404,99 @@
 
             F = ZERO
             DO M=0, MMAX
-               IF (MOMENTUM_X_EQ(M)) THEN
-                  A(M) = A_M(IJK,0,M)
-                  BB(M)= B_M(IJK,M)
+               A(M) = A_M(IJK,0,M)
+               BB(M)= B_M(IJK,M)
 
 ! locally storing vol x avg gas-solids drag coefficient at momentum cell
 ! center
-                  IF (M .NE. 0) THEN
-                     IF (MOMENTUM_X_EQ(0)) F(M,0)=-VXF(IJK,M)
-                     F(0,M) = F(M,0)
-                  ENDIF
+               IF (M .NE. 0) THEN
+                  F(M,0)=-VXF(IJK,M)
+                  F(0,M) = F(M,0)
+               ENDIF
 
 ! locally storing vol x avg solids-solids drag coefficient at momentum cell
 ! center
-                  DO L =1, MMAX
-                     IF ((L .NE. M) .AND. (M .NE. 0) .AND. MOMENTUM_X_EQ(L)) THEN
-                        LM = FUNLM(L,M)
-                        IF (.NOT.IP_AT_E(IJK)) THEN 
-                           I = I_OF(IJK) 
-                           IJKE = EAST_OF(IJK) 
-                           F(M,L) = -AVG_X(F_SS(IJK,LM),F_SS(IJKE,LM),I)*VOL_U(IJK) 
-                        ENDIF 
-                     ENDIF
-                     F(L,M)=F(M,L)
-                  ENDDO
-
-                  IF (M == 0) THEN
-                     SAXF(M) = -(A_M(IJK,E,M)*VAR_G(IPJK)+A_M(IJK,W,M)*VAR_G(IMJK&
-                               )+A_M(IJK,N,M)*VAR_G(IJPK)+A_M(IJK,S,M)*VAR_G(IJMK)) 
-                  ELSE
-                     SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IPJK,M)+A_M(IJK,W,M)*VAR_S(&
-                          IMJK,M)+A_M(IJK,N,M)*VAR_S(IJPK,M)+A_M(IJK,S,M)*VAR_S(&
-                          IJMK,M))
+               DO L =1, MMAX
+                  IF ((L .NE. M) .AND. (M .NE. 0)) THEN
+                     LM = FUNLM(L,M)
+                     IF (.NOT.IP_AT_E(IJK)) THEN 
+                        I = I_OF(IJK) 
+                        IJKE = EAST_OF(IJK) 
+                        F(M,L) = -AVG_X(F_SS(IJK,LM),F_SS(IJKE,LM),I)*VOL_U(IJK) 
+                     ENDIF 
                   ENDIF
+                  F(L,M)=F(M,L)
+               ENDDO
 
-                  IF (DO_K) THEN 
-                     IJKM = KM_OF(IJK) 
-                     IJKP = KP_OF(IJK) 
-                     IF (M ==0) THEN
-                        SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_G(IJKP)+A_M(IJK,B,M)*&
-                           VAR_G(IJKM))
-                     ELSE
-                        SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKP,M)+A_M(IJK,B,M)*&
-                           VAR_S(IJKM,M)) 
-                     ENDIF
-                  ENDIF 
-               ENDIF   ! end if momentum_x_eq(M)
-            ENDDO     ! end do loop for M over 0 to MMAX
-     
-            DO M=0,MMAX
+               IF (M == 0) THEN
+                  SAXF(M) = -(A_M(IJK,E,M)*VAR_G(IPJK)+A_M(IJK,W,M)*VAR_G(IMJK&
+                            )+A_M(IJK,N,M)*VAR_G(IJPK)+A_M(IJK,S,M)*VAR_G(IJMK)) 
+               ELSE
+                  SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IPJK,M)+A_M(IJK,W,M)*VAR_S(&
+                       IMJK,M)+A_M(IJK,N,M)*VAR_S(IJPK,M)+A_M(IJK,S,M)*VAR_S(&
+                       IJMK,M))
+               ENDIF
+
+               IF (DO_K) THEN 
+                  IJKM = KM_OF(IJK) 
+                  IJKP = KP_OF(IJK) 
+                  IF (M ==0) THEN
+                     SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_G(IJKP)+A_M(IJK,B,M)*&
+                        VAR_G(IJKM))
+                  ELSE
+                     SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKP,M)+A_M(IJK,B,M)*&
+                        VAR_S(IJKM,M)) 
+                  ENDIF
+               ENDIF 
+           ENDDO   ! end do loop for M over 0 to MMAX
+ 
+           DO M=0,MMAX
                IF (MOMENTUM_X_EQ(M)) THEN
                   SUM_A = ZERO
                   SUM_B = ZERO
-                  DO L =0,MMAX
-                     SUM_A_LPRIME = ZERO
-                     SUM_B_LPRIME = ZERO
-                     DO LP=0,MMAX
-                        IF ( LP .NE. M) THEN
-                           SUM_A_LPRIME=SUM_A_LPRIME+F(L,LP)
-                           IF (LP == 0) THEN
-                              SUM_B_LPRIME=SUM_B_LPRIME+F(L,LP)*VAR_G(IJK)
-                           ELSE
-                               SUM_B_LPRIME=SUM_B_LPRIME+F(L,LP)*VAR_S(IJK,LP)
+
+                  DO L =0,MMAX  
+! - should only need to loop for L/=M. since the resulting term should 
+!   evaluate to zero anyway, don't bother to add an explicit conditional. 
+! - if phase L's momentum equation is not solved then do not evaluate the
+!   outer sum for phase L (as phase L has no momentum equation). however,
+!   the inner sum may include terms from phase L as all phases still see 
+!   phase L and therefore experience drag with phase L
+                     IF (MOMENTUM_X_EQ(L)) THEN
+                        SUM_A_LPRIME = ZERO
+                        SUM_B_LPRIME = ZERO
+
+                        DO LP=0,MMAX    ! only need to loop for LP/=L; but
+                                        ! evaluates to zero so don't bother
+                                        ! with an explicit conditional
+                           IF ( LP .NE. M) THEN
+                              SUM_A_LPRIME=SUM_A_LPRIME+F(L,LP)
+                              IF (LP == 0) THEN
+                                 SUM_B_LPRIME=SUM_B_LPRIME+F(L,LP)*VAR_G(IJK)
+                              ELSE
+                                  SUM_B_LPRIME=SUM_B_LPRIME+F(L,LP)*VAR_S(IJK,LP)
+                              ENDIF
                            ENDIF
+                        ENDDO
+
+                        DEN = A(L) + SUM_A_LPRIME + F(L,M)
+                        IF ( DEN .NE. ZERO) THEN
+                           SUM_A = SUM_A + ((F(L,M)*(A(L)+SUM_A_LPRIME))/DEN)
+                           SUM_B = SUM_B + F(L,M)*(SAXF(L) + BB(L)+SUM_B_LPRIME &
+                                 )/DEN
                         ENDIF
-                     ENDDO
-                     DEN = A(L) + SUM_A_LPRIME + F(L,M)
-                     IF ( DEN .NE. ZERO) THEN
-                        SUM_A = SUM_A + ((F(L,M)*(A(L)+SUM_A_LPRIME))/DEN)
-                        SUM_B = SUM_B + F(L,M)*(SAXF(L) + BB(L)+SUM_B_LPRIME &
-                              )/DEN
-                     ENDIF
-                  ENDDO
+                     ELSE
+                        SUM_A = SUM_A + F(L,M)
+                        IF (L == 0) THEN
+                           SUM_B = SUM_B + F(L,M)*VAR_G(IJK)
+                        ELSE
+                           SUM_B = SUM_B + F(L,M)*VAR_S(IJK,L)
+                        ENDIF
+                     ENDIF   ! end if momentum_x_eq(L)
+                  ENDDO   !end do loop for L over 0 to mmax
 
                   A_M(IJK,0,M) = SUM_A+A(M)
                   B_M(IJK,M)  =  SUM_B+BB(M)
-
-                  DO L = 0, MMAX
-                     IF(.NOT.MOMENTUM_X_EQ(L))THEN
-                        IF( L /= M) THEN
-                           IF(L == 0)THEN
-                              A_M(IJK,0,M) = A_M(IJK,0,M) - VXF(IJK,M)
-                              B_M(IJK,M)   = B_M(IJK,M)  - VXF(IJK,M) * VAR_G(IJK) 
-                           ELSE IF(M .NE. 0) THEN
-                              LM = FUNLM(L,M)
-                              IF (.NOT.IP_AT_E(IJK)) THEN 
-                                 I = I_OF(IJK) 
-                                 IJKE = EAST_OF(IJK) 
-                                 F(M,L) = -AVG_X(F_SS(IJK,LM),F_SS(IJKE,LM),I)*VOL_U(IJK) 
-                                 A_M(IJK,0,M) = A_M(IJK,0,M) + F(M,L) 
-                                 B_M(IJK,M)   = B_M(IJK,M) + F(M,L) * VAR_S(IJK, L)   
-                              ENDIF 
-                           ENDIF
-                        ENDIF
-                     ENDIF
-                  ENDDO   ! end do loop for L over 0 to MMAX   
-
                ENDIF    ! end if momentum_x_eq(M)
             ENDDO       ! end do loop for M over 0 to MMAX
 
@@ -600,52 +598,50 @@
 
             F = ZERO
             DO M = 0, MMAX
-               IF (MOMENTUM_Y_EQ(M)) THEN
-                  A(M)=A_M(IJK,0,M)
-                  BB(M)=B_M(IJK,M)
+               A(M)=A_M(IJK,0,M)
+               BB(M)=B_M(IJK,M)
 
 ! locally storing vol x avg gas-solids drag coefficient at momentum cell
 ! center
-                  IF (M .NE. 0) THEN
-                     IF (MOMENTUM_Y_EQ(0)) F(M,0)=-VXF(IJK,M)
-                     F(0,M)=F(M,0)
-                  ENDIF
+               IF (M .NE. 0) THEN
+                  F(M,0)=-VXF(IJK,M)
+                  F(0,M)=F(M,0)
+               ENDIF
 
 ! locally storing vol x avg solids-solids drag coefficient at momentum cell
 ! center
-                  DO L =1, MMAX
-                     IF ((L .NE. M) .AND. (M .NE. 0).AND. MOMENTUM_Y_EQ(L)) THEN
-                        LM = FUNLM(L,M)
-                        IF (.NOT.IP_AT_N(IJK)) THEN 
-                           J = J_OF(IJK)
-                           IJKN = NORTH_OF(IJK) 
-                           F(M,L)=-AVG_Y(F_SS(IJK,LM),F_SS(IJKN,LM),J)*VOL_V(IJK)
-                        ENDIF
+               DO L =1, MMAX
+                  IF ((L .NE. M) .AND. (M .NE. 0)) THEN
+                     LM = FUNLM(L,M)
+                     IF (.NOT.IP_AT_N(IJK)) THEN 
+                        J = J_OF(IJK)
+                        IJKN = NORTH_OF(IJK) 
+                        F(M,L)=-AVG_Y(F_SS(IJK,LM),F_SS(IJKN,LM),J)*VOL_V(IJK)
                      ENDIF
-                     F(L,M)=F(M,L)
-                  ENDDO
-
-                  IF (M == 0) THEN
-                     SAXF(M) = -(A_M(IJK,E,M)*VAR_G(IPJK)+A_M(IJK,W,M)*VAR_G(IMJK&
-                           )+A_M(IJK,N,M)*VAR_G(IJPK)+A_M(IJK,S,M)*VAR_G(IJMK)) 
-                  ELSE
-                     SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IPJK,M)+A_M(IJK,W,M)*VAR_S(&
-                          IMJK,M)+A_M(IJK,N,M)*VAR_S(IJPK,M)+A_M(IJK,S,M)*VAR_S(&
-                          IJMK,M))
                   ENDIF
+                  F(L,M)=F(M,L)
+               ENDDO
 
-                  IF (DO_K) THEN 
-                     IJKM = KM_OF(IJK) 
-                     IJKP = KP_OF(IJK) 
-                     IF (M == 0) THEN
-                        SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_G(IJKP)+A_M(IJK,B,M)*&
-                           VAR_G(IJKM)) 
-                     ELSE
-                        SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKP,M)+A_M(IJK,B,M)*&
-                           VAR_S(IJKM,M))
-                     ENDIF 
+               IF (M == 0) THEN
+                  SAXF(M) = -(A_M(IJK,E,M)*VAR_G(IPJK)+A_M(IJK,W,M)*VAR_G(IMJK&
+                        )+A_M(IJK,N,M)*VAR_G(IJPK)+A_M(IJK,S,M)*VAR_G(IJMK)) 
+               ELSE
+                  SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IPJK,M)+A_M(IJK,W,M)*VAR_S(&
+                       IMJK,M)+A_M(IJK,N,M)*VAR_S(IJPK,M)+A_M(IJK,S,M)*VAR_S(&
+                       IJMK,M))
+               ENDIF
+
+               IF (DO_K) THEN 
+                  IJKM = KM_OF(IJK) 
+                  IJKP = KP_OF(IJK) 
+                  IF (M == 0) THEN
+                     SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_G(IJKP)+A_M(IJK,B,M)*&
+                        VAR_G(IJKM)) 
+                  ELSE
+                     SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKP,M)+A_M(IJK,B,M)*&
+                        VAR_S(IJKM,M))
                   ENDIF 
-               ENDIF   ! end if momentum_y_eq(M) 
+               ENDIF 
             ENDDO     ! end do loop for M over 0 to MMAX
 
 
@@ -653,51 +649,42 @@
                IF (MOMENTUM_Y_EQ(M)) THEN
                   SUM_A = ZERO
                   SUM_B = ZERO
+
                   DO L =0,MMAX
-                     SUM_A_LPRIME = ZERO
-                     SUM_B_LPRIME = ZERO
-                     DO LP=0,MMAX
-                        IF ( LP .NE. M) THEN
-                           SUM_A_LPRIME=SUM_A_LPRIME+F(L,LP)
-                           IF (LP == 0) THEN
-                              SUM_B_LPRIME=SUM_B_LPRIME+F(L,LP)*VAR_G(IJK)
-                           ELSE
-                              SUM_B_LPRIME=SUM_B_LPRIME+F(L,LP)*VAR_S(IJK,LP)
+                     IF(MOMENTUM_Y_EQ(L)) THEN
+                        SUM_A_LPRIME = ZERO
+                        SUM_B_LPRIME = ZERO
+
+                        DO LP=0,MMAX
+                           IF ( LP .NE. M) THEN
+                              SUM_A_LPRIME=SUM_A_LPRIME+F(L,LP)
+                              IF (LP == 0) THEN
+                                 SUM_B_LPRIME=SUM_B_LPRIME+F(L,LP)*VAR_G(IJK)
+                              ELSE
+                                 SUM_B_LPRIME=SUM_B_LPRIME+F(L,LP)*VAR_S(IJK,LP)
+                              ENDIF
                            ENDIF
+                        ENDDO
+
+                        DEN = A(L) + SUM_A_LPRIME + F(L,M)   
+                        IF ( DEN .NE. ZERO) THEN
+                           SUM_A = SUM_A + ((F(L,M)*(A(L)+SUM_A_LPRIME))/DEN)
+                           SUM_B = SUM_B + F(L,M)*(SAXF(L) + BB(L)+SUM_B_LPRIME &
+                                   )/DEN
                         ENDIF
-                     ENDDO
-                     DEN = A(L) + SUM_A_LPRIME + F(L,M)   
-                     IF ( DEN .NE. ZERO) THEN
-                        SUM_A = SUM_A + ((F(L,M)*(A(L)+SUM_A_LPRIME))/DEN)
-                        SUM_B = SUM_B + F(L,M)*(SAXF(L) + BB(L)+SUM_B_LPRIME &
-                                )/DEN
-                     ENDIF
-                  ENDDO
+                     ELSE
+                        SUM_A = SUM_A + F(L,M)
+                        IF (L == 0) THEN
+                           SUM_B = SUM_B + F(L,M)*VAR_G(IJK)
+                        ELSE
+                           SUM_B = SUM_B + F(L,M)*VAR_S(IJK,L)
+                        ENDIF
+                     ENDIF   ! end if momentum_y_eq(l)
+                  ENDDO   !end do loop for L over 0 to mmax
 
                   A_M(IJK,0,M)=SUM_A+A(M)
                   B_M(IJK,M) = SUM_B+BB(M)
-
-                  DO L = 0, MMAX
-                     IF(.NOT.MOMENTUM_Y_EQ(L))THEN
-                        IF( L /= M) THEN
-                           IF(L == 0)THEN
-                              A_M(IJK,0,M) = A_M(IJK,0,M) - VXF(IJK,M)
-                              B_M(IJK,M)   = B_M(IJK,M)  - VXF(IJK,M) * VAR_G(IJK) 
-                           ELSE IF(M .NE. 0) THEN
-                              LM = FUNLM(L,M)
-                              IF (.NOT.IP_AT_N(IJK)) THEN 
-                                 J = J_OF(IJK)  
-                                 IJKN = NORTH_OF(IJK) 
-                                 F(M,L)=-AVG_Y(F_SS(IJK,LM),F_SS(IJKN,LM),J)*VOL_V(IJK)
-                                 A_M(IJK,0,M) = A_M(IJK,0,M) + F(M,L) 
-                                 B_M(IJK,M)   = B_M(IJK,M) + F(M,L) * VAR_S(IJK, L)             
-                              ENDIF 
-                           ENDIF
-                        ENDIF
-                     ENDIF
-                  ENDDO   ! end do loop for L over 0 to MMAX  
-     
-               ENDIF    ! end if momentum_Y_eq(M)
+               ENDIF    ! end if momentum_y_eq(M)
             ENDDO       ! end do loop for M over 0 to MMAX
 
          ENDIF      ! end if flow_at_n(ijk)
@@ -798,52 +785,50 @@
 
             F = ZERO
             DO M=0, MMAX
-               IF (MOMENTUM_Z_EQ(M)) THEN
-                  A(M)=A_M(IJK,0,M)
-                  BB(M)=B_M(IJK,M)
+               A(M)=A_M(IJK,0,M)
+               BB(M)=B_M(IJK,M)
 
 ! locally storing vol x avg gas-solids drag coefficient at momentum cell
 ! center
-                  IF (M .NE. 0) THEN
-                     IF (MOMENTUM_Z_EQ(0))F(M,0)=-VXF(IJK,M)
-                     F(0,M)=F(M,0)
-                  ENDIF
+               IF (M .NE. 0) THEN
+                  F(M,0)=-VXF(IJK,M)
+                  F(0,M)=F(M,0)
+               ENDIF
 
 ! locally storing vol x avg solids-solids drag coefficient at momentum cell
 ! center
-                  DO L =1, MMAX
-                     IF ((L .NE. M) .AND. (M .NE. 0) .AND. MOMENTUM_Z_EQ(L) ) THEN
-                        LM = FUNLM(L,M)
-                        IF (.NOT.IP_AT_T(IJK)) THEN 
-                           K = K_OF(IJK) 
-                           IJKT = TOP_OF(IJK) 
-                           F(M,L) = -AVG_Z(F_SS(IJK,LM),F_SS(IJKT,LM),K)*VOL_W(IJK) 
-                        ENDIF 
-                     ENDIF
-                     F(L,M)=F(M,L)
-                  ENDDO
-
-                  IF (M == 0) THEN
-                     SAXF(M) = -(A_M(IJK,E,M)*VAR_G(IPJK)+A_M(IJK,W,M)*VAR_G(IMJK&
-                          )+A_M(IJK,N,M)*VAR_G(IJPK)+A_M(IJK,S,M)*VAR_G(IJMK)) 
-                  ELSE
-                     SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IPJK,M)+A_M(IJK,W,M)*VAR_S(&
-                          IMJK,M)+A_M(IJK,N,M)*VAR_S(IJPK,M)+A_M(IJK,S,M)*VAR_S(&
-                          IJMK,M))
+               DO L =1, MMAX
+                  IF ((L .NE. M) .AND. (M .NE. 0)) THEN
+                     LM = FUNLM(L,M)
+                     IF (.NOT.IP_AT_T(IJK)) THEN 
+                        K = K_OF(IJK) 
+                        IJKT = TOP_OF(IJK) 
+                        F(M,L) = -AVG_Z(F_SS(IJK,LM),F_SS(IJKT,LM),K)*VOL_W(IJK) 
+                     ENDIF 
                   ENDIF
+                  F(L,M)=F(M,L)
+               ENDDO
 
-                  IF (DO_K) THEN
-                     IJKM = KM_OF(IJK) 
-                     IJKP = KP_OF(IJK) 
-                     IF (M == 0) THEN
-                        SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_G(IJKP)+A_M(IJK,B,M)*&
-                                  VAR_G(IJKM)) 
-                     ELSE
-                        SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKP,M)+A_M(IJK,B,M)*&
-                                  VAR_S(IJKM,M)) 
-                     ENDIF
-                  ENDIF 
-               ENDIF   ! end if momentum_z_eq(M) 
+               IF (M == 0) THEN
+                  SAXF(M) = -(A_M(IJK,E,M)*VAR_G(IPJK)+A_M(IJK,W,M)*VAR_G(IMJK&
+                       )+A_M(IJK,N,M)*VAR_G(IJPK)+A_M(IJK,S,M)*VAR_G(IJMK)) 
+               ELSE
+                  SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IPJK,M)+A_M(IJK,W,M)*VAR_S(&
+                       IMJK,M)+A_M(IJK,N,M)*VAR_S(IJPK,M)+A_M(IJK,S,M)*VAR_S(&
+                       IJMK,M))
+               ENDIF
+
+               IF (DO_K) THEN
+                  IJKM = KM_OF(IJK) 
+                  IJKP = KP_OF(IJK) 
+                  IF (M == 0) THEN
+                     SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_G(IJKP)+A_M(IJK,B,M)*&
+                               VAR_G(IJKM)) 
+                  ELSE
+                     SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKP,M)+A_M(IJK,B,M)*&
+                               VAR_S(IJKM,M)) 
+                  ENDIF
+               ENDIF 
             ENDDO     ! end do loop for M over 0 to MMAX
            
 
@@ -851,51 +836,41 @@
                IF (MOMENTUM_Z_EQ(M)) THEN
                   SUM_A = ZERO
                   SUM_B = ZERO
-                  DO L =0,MMAX
-                     SUM_A_LPRIME = ZERO
-                     SUM_B_LPRIME = ZERO
-                     DO LP=0,MMAX
-                        IF ( LP .NE. M) THEN
-                           SUM_A_LPRIME=SUM_A_LPRIME+F(L,LP)
-                           IF (LP == 0) THEN
-                              SUM_B_LPRIME=SUM_B_LPRIME+F(L,LP)*VAR_G(IJK)
-                           ELSE
-                              SUM_B_LPRIME=SUM_B_LPRIME+F(L,LP)*VAR_S(IJK,LP)
-                           ENDIF
-                        ENDIF
-                     ENDDO
 
-                     DEN = A(L) + SUM_A_LPRIME + F(L,M)   
-                     IF ( DEN .NE. ZERO) THEN
-                        SUM_A = SUM_A + ((F(L,M)*(A(L)+SUM_A_LPRIME))/DEN)
-                        SUM_B = SUM_B + F(L,M)*(SAXF(L) + BB(L)+SUM_B_LPRIME &
-                        )/DEN
-                     ENDIF
-                  ENDDO
+                  DO L =0,MMAX
+                     IF (MOMENTUM_Z_EQ(L)) THEN
+                        SUM_A_LPRIME = ZERO
+                        SUM_B_LPRIME = ZERO
+
+                        DO LP=0,MMAX
+                           IF ( LP .NE. M) THEN
+                              SUM_A_LPRIME=SUM_A_LPRIME+F(L,LP)
+                              IF (LP == 0) THEN
+                                 SUM_B_LPRIME=SUM_B_LPRIME+F(L,LP)*VAR_G(IJK)
+                              ELSE
+                                 SUM_B_LPRIME=SUM_B_LPRIME+F(L,LP)*VAR_S(IJK,LP)
+                              ENDIF
+                           ENDIF
+                        ENDDO
+
+                        DEN = A(L) + SUM_A_LPRIME + F(L,M)   
+                        IF ( DEN .NE. ZERO) THEN
+                           SUM_A = SUM_A + ((F(L,M)*(A(L)+SUM_A_LPRIME))/DEN)
+                           SUM_B = SUM_B + F(L,M)*(SAXF(L) + BB(L)+SUM_B_LPRIME &
+                           )/DEN
+                        ENDIF
+                     ELSE
+                        SUM_A = SUM_A + F(L,M)
+                        IF (L == 0) THEN
+                           SUM_B = SUM_B + F(L,M)*VAR_G(IJK)
+                        ELSE
+                           SUM_B = SUM_B + F(L,M)*VAR_S(IJK,L)
+                        ENDIF
+                     ENDIF   ! end if momentum_z_eq(L)
+                  ENDDO   ! end do loop for L over 0 to mmax
 
                   A_M(IJK,0,M)=SUM_A+A(M)
                   B_M(IJK,M) = SUM_B+BB(M)
-
-                  DO L = 0, MMAX
-                     IF(.NOT.MOMENTUM_Z_EQ(L))THEN
-                        IF( L /= M) THEN
-                           IF(L == 0)THEN
-                              A_M(IJK,0,M) = A_M(IJK,0,M) - VXF(IJK,M)
-                              B_M(IJK,M)   = B_M(IJK,M)  - VXF(IJK,M) * VAR_G(IJK) 
-                           ELSE IF(M .NE. 0) THEN
-                              LM = FUNLM(L,M)
-                              IF (.NOT.IP_AT_T(IJK)) THEN 
-                                 K = K_OF(IJK) 
-                                 IJKT = TOP_OF(IJK) 
-                                 F(M,L) = -AVG_Z(F_SS(IJK,LM),F_SS(IJKT,LM),K)*VOL_W(IJK) 
-                                 A_M(IJK,0,M) = A_M(IJK,0,M) + F(M,L) 
-                                 B_M(IJK,M)   = B_M(IJK,M) + F(M,L) * VAR_S(IJK, L)   
-                              ENDIF 
-                           ENDIF
-                        ENDIF
-                     ENDIF
-                  ENDDO   ! end do loop for L over 0 to MMAX  
-     
                ENDIF    ! end if momentum_Z_eq(M) 
             ENDDO       ! end do loop for M over 0 to MMAX
 
