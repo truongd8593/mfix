@@ -311,7 +311,6 @@
       IF(USE_COHESION) THEN
 ! Matrix location of particle  (should be allocated in case user wishes
 ! to invoke routines in /cohesion subdirectory
-         Allocate(  FCohesive (DIMN,NPARTICLES) )
          Allocate(  PostCohesive (NPARTICLES) )
       ENDIF
 ! END COHESION

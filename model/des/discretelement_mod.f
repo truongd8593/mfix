@@ -639,9 +639,7 @@
       DOUBLE PRECISION WALL_VDW_OUTER_CUTOFF
       DOUBLE PRECISION Asperities ! average radius of asperities (default zero)
 
-! Store cohesive forces
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FCohesive
-                        !(PARTICLES,3)
+! Store postcohesive
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PostCohesive
                         !(PARTICLES)
 ! Store cluster information array for postprocessing

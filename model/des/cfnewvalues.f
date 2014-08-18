@@ -84,8 +84,6 @@
 ! des_check_new_particle.f
          IF(.NOT.PEA(L,2))THEN
             FC(:,L) = FC(:,L)/PMASS(L) + GRAV(:)
-            IF(USE_COHESION .AND. VAN_DER_WAALS) &
-               FC(:,L) = FC(:,L) + Fcohesive(:,L)/PMASS(L)
          ELSE
             FC(:,L) = ZERO
             TOW(:,L) = ZERO
@@ -141,7 +139,7 @@
             WRITE(*,'(5X,A,3(ES17.9))')&
                'new particle vel = ', DES_VEL_NEW(:,L)
             WRITE(*,1003)
-            STOP -1
+            STOP 1
          ENDIF
 
 ! Reset total contact force and torque

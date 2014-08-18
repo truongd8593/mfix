@@ -25,8 +25,10 @@
       LOGICAL, INTENT(OUT) :: PARTICLE_SLIDE
 ! Coefficient of friction
       DOUBLE PRECISION, INTENT(IN) :: MU
+! normal force
+      DOUBLE PRECISION, DIMENSION(3), INTENT(IN) :: FN_tmp
 ! tangential force
-      DOUBLE PRECISION, DIMENSION(3), INTENT(INOUT) :: FT_tmp, FN_tmp
+      DOUBLE PRECISION, DIMENSION(3), INTENT(INOUT) :: FT_tmp
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

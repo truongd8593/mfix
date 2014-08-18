@@ -104,7 +104,6 @@
 
 ! Cohesion VDW forces
       IF(USE_COHESION) THEN
-         Fcohesive(:,:) = ZERO
          PostCohesive (:) = ZERO
       ENDIF
 

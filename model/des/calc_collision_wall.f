@@ -143,26 +143,26 @@
 
 
 
-!$omp   parallel default(shared)                                  &
-!$omp   private(ll,fts1,fts2,fns1,fns2,pft_tmp,                   &
-!$omp          PARTICLE_SLIDE,nlim,                               &
-!$omp          n_nocon,ni,iw,wallcontact,i,                       &
-!$omp          already_neighbours, report_excess_overlap,neigh_l, &
-!$omp          WALL_POS,WALL_VEL,                                 &
-!$omp          r_lm,dist,distmod,frac_overlap1,normal,            &
-!$omp          v_rel_trans_norm,V_REL_TANG,                       &
-!$omp          overlap_n,overlap_t,dtsolid_tmp,phasell,           &
-!$omp          sqrt_overlap,kn_des_w,kt_des_w,etan_des_w,         &
-!$omp          etat_des_w,sigmat_old,norm_old,tmp_ax,tmp_mag,     &
-!$omp          tang_old,tang_new,sigmat,                          &
-!$omp          ftmd,fnmd,                                         &
-!$omp          ii,frac_overlap2,                                  &
-!$omp          phasei,kn_des,kt_des,etan_des,etat_des,            &
-!!$omp          Idimn,force_coh,eq_radius,distapart,norm_dist,maggravity)
-!!$omp do reduction(max:NEIGH_MAX,OVERLAP_MAX) schedule (dynamic,50)
-! Revised by Handan Liu on Jan 17 2013
-!$omp          Idimn,force_coh,eq_radius,distapart,norm_dist)
-!$omp do reduction(max:NEIGH_MAX) schedule (dynamic,50)
+! !$omp   parallel default(shared)                                  &
+! !$omp   private(ll,fts1,fts2,fns1,fns2,pft_tmp,                   &
+! !$omp          PARTICLE_SLIDE,nlim,                               &
+! !$omp          n_nocon,ni,iw,wallcontact,i,                       &
+! !$omp          already_neighbours, report_excess_overlap,neigh_l, &
+! !$omp          WALL_POS,WALL_VEL,                                 &
+! !$omp          r_lm,dist,distmod,frac_overlap1,normal,            &
+! !$omp          v_rel_trans_norm,V_REL_TANG,                       &
+! !$omp          overlap_n,overlap_t,dtsolid_tmp,phasell,           &
+! !$omp          sqrt_overlap,kn_des_w,kt_des_w,etan_des_w,         &
+! !$omp          etat_des_w,sigmat_old,norm_old,tmp_ax,tmp_mag,     &
+! !$omp          tang_old,tang_new,sigmat,                          &
+! !$omp          ftmd,fnmd,                                         &
+! !$omp          ii,frac_overlap2,                                  &
+! !$omp          phasei,kn_des,kt_des,etan_des,etat_des,            &
+! !!$omp          Idimn,force_coh,eq_radius,distapart,norm_dist,maggravity)
+! !!$omp do reduction(max:NEIGH_MAX,OVERLAP_MAX) schedule (dynamic,50)
+! ! Revised by Handan Liu on Jan 17 2013
+! !$omp          Idimn,force_coh,eq_radius,distapart,norm_dist)
+! !$omp do reduction(max:NEIGH_MAX) schedule (dynamic,50)
 
 
 ! Looping over all particles in the processor
@@ -242,15 +242,11 @@
                              ( Asperities/(Asperities+DES_RADIUS(LL)) + &
                              ONE/(ONE+Asperities/DistApart)**2 )
                         ELSE
-
                             FORCE_COH = 4d0 * PI * WALL_SURFACE_ENERGY * DES_RADIUS(LL) * &
                               ( Asperities/(Asperities+DES_RADIUS(LL)) + &
                               ONE/(ONE+Asperities/VDW_INNER_CUTOFF)**2 )
                         ENDIF
-                        DO IDIMN=1,DIMN
-                           Norm_Dist = DIST(IDIMN)/DISTMOD
-                           Fcohesive(IDIMN, LL) = Fcohesive(IDIMN, LL) + Norm_Dist*FORCE_COH
-                        ENDDO
+                        FC(:, LL) = FC(:, LL) + Dist(:)*FORCE_COH/DISTMOD
                      ENDIF
                   ENDIF ! for using VDW cohesion model
 
@@ -422,7 +418,7 @@
         ENDIF   ! endif(.not.pea(LL,2) and .not. pea(ll,3))
 
       ENDDO
-!$omp end parallel
+!!$omp end parallel
 
 
  1000 FORMAT(5X,'---------- START CALC_FORCE_DES ---------->')
