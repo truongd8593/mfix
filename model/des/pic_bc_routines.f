@@ -295,7 +295,6 @@
       !Old and new position of the parcel
       double precision, dimension(dimn) :: pt_old, pt_new
 
-      Logical :: checked_facet_already
       !distance parcel travelled out of domain along the facet normal
       double precision :: dist_from_facet
       INTEGER, Parameter :: MAX_FACET_CONTS = 500
@@ -380,13 +379,7 @@
                ! Neighboring cells will share facets with same facet ID
                ! So it is important to make sure a facet is checked (for speed)
                ! and accounted (for accuracy) only once
-               checked_facet_already = .false.
-               DO COUNT2 = 1, CONTACT_FACET_COUNT
-                  checked_facet_already = (NF.eq.LIST_OF_CHECKED_FACETS(count2))
-                  IF(checked_facet_already) exit
-               enddo
-
-               IF(checked_facet_already) CYCLE
+               if (ANY(NF.eq.LIST_OF_CHECKED_FACETS(1:CONTACT_FACET_COUNT))) CYCLE
 
                CONTACT_FACET_COUNT = CONTACT_FACET_COUNT + 1
                LIST_OF_CHECKED_FACETS(CONTACT_FACET_COUNT) = NF
