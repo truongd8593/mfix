@@ -381,10 +381,6 @@
 ! number of 'solids phases'
       INTEGER DES_MMAX
 
-! Particle shape factor (non-spherical drag calculations).
-      DOUBLE PRECISION :: DES_PSI_s(DIM_M)
-
-
 ! Old and new particle positions, velocities (translational and
 ! rotational)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_POS_OLD  !(PARTICLES,3)

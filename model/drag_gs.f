@@ -93,7 +93,7 @@
       DOUBLE PRECISION :: ROs_loc(2*DIM_M)
 ! tmp local variable for the particle shape factor of solids
 ! phase M (continuous or discrete)
-      DOUBLE PRECISION :: PSIs_loc(2*DIM_M)
+      DOUBLE PRECISION :: SFAC_loc(2*DIM_M)
 ! correction factors for implementing polydisperse drag model 
 ! proposed by van der Hoef et al. (2005)
       DOUBLE PRECISION :: F_cor, tmp_sum, tmp_fac
@@ -106,7 +106,7 @@
 ! temporary local variables to use for dummy arguments in subroutines
 ! void fraction, gas density, gas bulk density, solids volume fraction
 ! particle diameter, particle density     
-      DOUBLE PRECISION :: EPG, ROg, ROPg, EP_SM, DPM, ROs, PSIs
+      DOUBLE PRECISION :: EPG, ROg, ROPg, EP_SM, DPM, ROs, SFAC
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -143,7 +143,7 @@
                      DP_loc(DM) = DES_D_p0(DM)
                      EPs_loc(DM) = DES_ROP_S(IJK,DM)/DES_RO_S(DM) 
                      ROs_loc(DM) = DES_RO_S(DM)
-                     ! PSIs_loc(CM) = DES_PSI_s(CM)
+                     SFAC_loc(DM) = SHAPE_FACTOR(DM)
                   ENDDO
                ELSE
                   MAXM = SMAX
@@ -151,7 +151,7 @@
                      DP_loc(CM) = D_p(IJK,CM)
                      EPs_loc(CM) = EP_S(IJK,CM)
                      ROs_loc(CM) = RO_S(IJK,CM)
-                     PSIs_loc(CM) = PSI_s(CM)
+                     SFAC_loc(CM) = SHAPE_FACTOR(CM)
                   ENDDO
                ENDIF
             ELSE   ! des_continuum_hybrid branch
@@ -168,14 +168,14 @@
                      DP_loc(DM) = DES_D_p0(DM)         
                      EPs_loc(DM) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
                      ROs_loc(DM) = DES_RO_S(DM)
-                     !PSIs_loc(DM) = DES_PSI_s(CM)
+                     SFAC_loc(DM) = SHAPE_FACTOR(DM + SMAX)
                   ENDDO
                   DO CM = 1,SMAX
                      L = DES_MMAX + CM
                      DP_loc(L) = D_P(IJK,CM)
                      EPs_loc(L) = EP_S(IJK,CM)
                      ROs_loc(L) = RO_S(IJK,CM)
-                     !PSIs_loc(L) = PSI_s(CM)
+                     SFAC_loc(L) = SHAPE_FACTOR(CM)
                   ENDDO
                ELSE
 ! the subroutine is being called to calculate the drag coefficient on
@@ -185,14 +185,14 @@
                      DP_loc(CM) = D_p(IJK,CM)         
                      EPs_loc(CM) = EP_S(IJK,CM)
                      ROs_loc(CM) = RO_S(IJK,CM)
-                     !PSIs_loc(CM) = PSI_s(CM)
+                     SFAC_loc(CM) = SHAPE_FACTOR(CM)
                   ENDDO
                   DO DM = 1,DES_MMAX
                      L = SMAX + DM
                      DP_loc(L) = DES_D_p0(DM)
                      EPs_loc(L) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
                      ROs_loc(L) = DES_RO_S(DM)
-                     !PSIs_loc(L) = DES_PSI_s(CM)
+                     SFAC_loc(L) = SHAPE_FACTOR(L)
                   ENDDO          
                ENDIF
             ENDIF   ! end if/else (.not.des_continuum_hybrid)
@@ -266,7 +266,7 @@
             EP_SM = EPs_loc(M)
             DPM = DP_loc(M)
             ROs = ROs_loc(M)
-            PSIs= PSIs_loc(M)
+            SFAC= SFAC_loc(M)
 
 ! determine the drag coefficient
             IF (EP_SM <= ZERO) THEN 
@@ -283,23 +283,23 @@
                SELECT CASE(DRAG_TYPE_ENUM)
                CASE (SYAM_OBRIEN)
                   CALL DRAG_SYAM_OBRIEN(DgA,EPG,Mu,ROg,VREL,&
-                      DPM,PSIs,ROs)
+                      DPM,SFAC,ROs)
                CASE (GIDASPOW)
                   CALL DRAG_GIDASPOW(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                       DPM,PSIs,ROs)
+                       DPM,SFAC,ROs)
                CASE (GIDASPOW_PCF)
                   CALL DRAG_GIDASPOW(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                       DPA,PSIs,ROs)
+                       DPA,SFAC,ROs)
                CASE (GIDASPOW_BLEND)
                   CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                       DPM,PSIs,ROs)
+                       DPM,SFAC,ROs)
                CASE (GIDASPOW_BLEND_PCF)
                   CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                       DPA,PSIs,ROs)
+                       DPA,SFAC,ROs)
                CASE (WEN_YU)
-                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROg,ROPg,VREL,DPM,PSIs,ROs)
+                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROg,ROPg,VREL,DPM,SFAC,ROs)
                CASE (WEN_YU_PCF)
-                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROg,ROPg,VREL,DPA,PSIs,ROs)
+                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROg,ROPg,VREL,DPA,SFAC,ROs)
                 CASE (KOCH_HILL)
                   CALL DRAG_KOCH_HILL(DgA,EPg,Mu,ROPg,VREL,&
                        DPM,DPM,phis)
@@ -439,7 +439,7 @@
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
-      DOUBLE PRECISION FUNCTION FUN_C_DS(RE, DPM, ROg, ROs, PSIs, Mug)
+      DOUBLE PRECISION FUNCTION FUN_C_DS(RE, DPM, ROg, ROs, SFAC, Mug)
 
 !-----------------------------------------------
 ! Modules
@@ -457,7 +457,7 @@
 ! Dummy arguments
 !-----------------------------------------------
       DOUBLE PRECISION, INTENT(IN) :: RE ! Reynolds number 
-      DOUBLE PRECISION, INTENT(IN) :: DPM,ROg,ROs,PSIs,MUg
+      DOUBLE PRECISION, INTENT(IN) :: DPM,ROg,ROs,SFAC,MUg
 !-----------------------------------------------
 
       SELECT CASE(CD_FUNCTION_ENUM)
@@ -478,7 +478,7 @@
 !------------------------------------------------------------------>>
       CASE(DELLINO_2005) 
          FUN_C_DS = (0.69d0*GRAVITY*(DPM**3)*ROg*1.33d0*(ROs-ROg))/    &
-         (Mug**2*((GRAVITY*(PSIs**1.6d0)*(DPM**3)*ROg*(ROs-ROg)) /     &
+         (Mug**2*((GRAVITY*(SFAC**1.6d0)*(DPM**3)*ROg*(ROs-ROg)) /     &
          Mug**2)**1.0412d0)
          RETURN
 
@@ -506,7 +506,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
       SUBROUTINE DRAG_SYAM_OBRIEN(lDgA,EPg,Mug,ROg,VREL,&
-                 DPM,PSIs,ROs)
+                 DPM,SFAC,ROs)
 
 !-----------------------------------------------
 ! Modules
@@ -532,7 +532,7 @@
 ! particle diameter of solids phase M
       DOUBLE PRECISION, INTENT(IN) :: DPM
 ! Particle shape factor
-      DOUBLE PRECISION, INTENT(IN) :: PSIs
+      DOUBLE PRECISION, INTENT(IN) :: SFAC
 ! particle density of solids phase M
       DOUBLE PRECISION, INTENT(IN) :: ROs
 ! Drag coefficient x Re
@@ -589,7 +589,7 @@
 !                      EXP(-A2*(RE-RE_C)**2 - A3*(EPg-EP_C)**2)* &
 !                      RE*(1. - EPg)) 
 !------------------End cluster correction ----------------------------
-      C_d = FUN_C_DS(RE/V_RM, DPM, ROg, ROs, PSIs, MUg)
+      C_d = FUN_C_DS(RE/V_RM, DPM, ROg, ROs, SFAC, MUg)
 
       lDgA = 0.75D0*Mug*EPg*C_d/(V_RM*DPM*DPM)
 
@@ -610,7 +610,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
       SUBROUTINE DRAG_GIDASPOW(lDgA,EPg,Mug,ROg,ROPg,VREL,&
-                 DPM,PSIs,ROs)
+                 DPM,SFAC,ROs)
 
 !-----------------------------------------------
 ! Modules
@@ -638,7 +638,7 @@
 ! average particle diameter if PCF
       DOUBLE PRECISION, INTENT(IN) :: DPM
 ! Particle shape factor
-      DOUBLE PRECISION, INTENT(IN) :: PSIs
+      DOUBLE PRECISION, INTENT(IN) :: SFAC
 ! particle density of solids phase M
       DOUBLE PRECISION, INTENT(IN) :: ROs
 !-----------------------------------------------
@@ -665,7 +665,7 @@
       ELSE
 ! Dilute phase - EP_g >= 0.8
          IF(RE <= 1000D0)THEN
-            C_d = FUN_C_DS(RE, DPM, ROg, ROs, PSIs, Mug)
+            C_d = FUN_C_DS(RE, DPM, ROg, ROs, SFAC, Mug)
          ELSE
             C_d = 0.44D0
          ENDIF
@@ -696,7 +696,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
       SUBROUTINE DRAG_GIDASPOW_BLEND(lDgA,EPg,Mug,ROg,ROPg,VREL,&
-                 DPM,PSIs,ROs)
+                 DPM,SFAC,ROs)
 
 !-----------------------------------------------
 ! Modules
@@ -724,7 +724,7 @@
 ! average particle diameter if PCF
       DOUBLE PRECISION, INTENT(IN) :: DPM
 ! Particle shape factor
-      DOUBLE PRECISION, INTENT(IN) :: PSIs
+      DOUBLE PRECISION, INTENT(IN) :: SFAC
 ! particle density of solids phase M
       DOUBLE PRECISION, INTENT(IN) :: ROs
 !-----------------------------------------------
@@ -754,7 +754,7 @@
 
 ! Dilute phase - EP_g >= 0.8
       IF(RE <= 1000D0)THEN
-         C_d = FUN_C_DS(RE, DPM, ROg, ROs, PSIs, Mug)
+         C_d = FUN_C_DS(RE, DPM, ROg, ROs, SFAC, Mug)
       ELSE
          C_d = 0.44D0
       ENDIF
@@ -782,7 +782,7 @@
 !        Series 62: 100-111.                                           C
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-      SUBROUTINE DRAG_WEN_YU(lDgA,EPg,Mug,ROg,ROPg,VREL,DPM,PSIs,ROs)
+      SUBROUTINE DRAG_WEN_YU(lDgA,EPg,Mug,ROg,ROPg,VREL,DPM,SFAC,ROs)
                                                          
 !-----------------------------------------------
 ! Modules
@@ -810,7 +810,7 @@
 ! average particle diameter if PCF
       DOUBLE PRECISION, INTENT(IN) :: DPM
 ! Particle shape factor
-      DOUBLE PRECISION, INTENT(IN) :: PSIs
+      DOUBLE PRECISION, INTENT(IN) :: SFAC
 ! Particle density
       DOUBLE PRECISION, INTENT(IN) :: ROs
 !-----------------------------------------------
@@ -831,7 +831,7 @@
       RE = merge(DPM*VREL*ROPg/Mug, LARGE_NUMBER, MUg > ZERO)
 
       IF(RE <= 1000.0D0)THEN
-         C_d = FUN_C_DS(RE, DPM, ROg, ROs, PSIs, Mug)
+         C_d = FUN_C_DS(RE, DPM, ROg, ROs, SFAC, Mug)
       ELSE
          C_d = 0.44D0
       ENDIF

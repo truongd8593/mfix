@@ -50,7 +50,7 @@
       INTEGER :: INERT_SPECIES(DIM_M)
 
 ! Particle shape factor
-      DOUBLE PRECISION :: PSI_s(DIM_M)
+      DOUBLE PRECISION :: SHAPE_FACTOR(DIM_M)
 
 ! Specified constant solids viscosity
       DOUBLE PRECISION MU_s0

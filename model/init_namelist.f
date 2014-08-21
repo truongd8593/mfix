@@ -1356,7 +1356,7 @@
 !  <description>Partice shape factor. </description>
 !  <arg index="1" id="Solids phase index" min="1" max="DIM_M"/>
 !  <dependent keyword="CD_FUNCTION" value="C_DS_DEL"/>
-      PSI_s(:DIM_M) = UNDEFINED
+      SHAPE_FACTOR(:DIM_M) = UNDEFINED
 !</keyword>
 
 

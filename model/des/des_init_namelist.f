@@ -730,14 +730,6 @@
 !</keyword>
 
 
-!<keyword category="Discrete Element" required="false">
-!  <description> ! Particle shape factor.
-!  </description> 
-      DES_PSI_s(:DIM_M) = UNDEFINED
-!</keyword>
-
-
-
 ! des wall boundaries: wall velocities. I think they probably 
 ! defined for the Lees-Edwards BC's
       DES_BC_Uw_s(:,:) = ZERO
