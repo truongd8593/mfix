@@ -79,40 +79,52 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! S. Dartevelle, LANL, Feb.2004:
-! Average volume fraction at momentum cell centers
-      DOUBLE PRECISION :: EPGA
-! Usual Indices
-      INTEGER :: LM, M, L, LPL, LP
-      INTEGER :: DM
-      INTEGER :: INN
-      INTEGER :: I, IJK, IJKE
-! Average solid volume fraction at momentum cell centers
-      DOUBLE PRECISION :: EPSA(DIMENSION_M)
-! ratio of drag and A0 or A_solid and other sum of Solid-Solid drag
-      DOUBLE PRECISION :: other_ratio_1, FOA1
-! sum of All Solid-Gas VolxDrag
-      DOUBLE PRECISION :: SUM_VXF_GS
 ! What phase momentum equation is activated?
 !    pass1 is true when at least one solids phase momentum equation is solved
 !    and the gas/fluid (m=0) phase momentum equation is solved
 !    pass2 is true when at least one solids phase momentum equation is solved
 !    but the gas/fluid (m=0) phase momentum equation is NOT solved
       LOGICAL :: Pass1, Pass2
+! Usual Indices
+      INTEGER :: LM, M, L, LPL, LP
+      INTEGER :: DM
+      INTEGER :: INN
+      INTEGER :: I, IJK, IJKE
+! Number of solids to use as LOOP counter
+      INTEGER :: LC_MMAX
+! Average solid volume fraction at momentum cell centers
+      DOUBLE PRECISION :: EPSA(DIMENSION_M)
+! Average volume fraction at momentum cell centers
+      DOUBLE PRECISION :: EPGA
+! local alias for face area
+      DOUBLE PRECISION :: AREA_FACE
+! sum of All Solid-Gas VolxDrag
+      DOUBLE PRECISION :: SUM_VXF_GS
 ! sum of Solid M - All other Solid drag
       DOUBLE PRECISION :: SUM_VXF_SS(DIMENSION_M)
-! numerator needed for solid phase M time EPSA
-      DOUBLE PRECISION :: numeratorxEP(DIMENSION_M)
-! denominator needed for solid phase M
-      DOUBLE PRECISION :: denominator(DIMENSION_M)
-! denominator needed for solid phase M
-      DOUBLE PRECISION :: other_denominator(DIMENSION_M)
 ! sum of Solid L - All other Solid VolxDrag but M
       DOUBLE PRECISION :: SUM_VXF_SS_wt_M
+! numerator and demoninator needed for evaluation of pressure correction 
+! coefficient for GAS phase
+      DOUBLE PRECISION :: DEN_MGas, NUM_MGas
+! component of the total numerator needed for evaluation of pressure
+! correction coefficient for SOLIDS phase M. specifically, for when the
+! sum L is over solids phase only 
+      DOUBLE PRECISION :: NUM_MSol_LSol(DIMENSION_M)
+! component of the total denominator needed for evaluation of pressure
+! correction coefficient for SOLIDS phase M.  specifically, for when the
+! sum L is over solids phases only
+      DOUBLE PRECISION :: DEN_MSol_LSol(DIMENSION_M)
+! component of the total numerator needed for evaluation of pressure
+! correction coefficient for SOLIDS phase M.  specifically, for when the
+! sum L is over gas phase only
+     DOUBLE PRECISION :: NUM_MSol_LGas
+! component of the total denominator needed for evaluation of pressure
+! correction coefficient for SOLIDS phase M.  specifically, for when the
+! sum L is over gas phase only
+      DOUBLE PRECISION :: DEN_MSol_LGas
 ! Temporary variable to store A matrix for local manipulation
       DOUBLE PRECISION :: AM0(DIMENSION_3, 0:DIMENSION_M)
-! Number of solids to use in for the LOOP counter
-      INTEGER :: LC_MMAX
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -146,9 +158,9 @@
 ! DEM or PIC simulation. Otherwise, use the number of TFM solids.
          LC_MMAX = merge(DES_MMAX, MMAX, DES_CONTINUUM_COUPLED)
       ENDIF
-         
 
-! Determine which calculations are needed      
+! Determine which calculations are needed. This is a first pass filter
+! that works well for1 solids phase. 
       DO M = 1, MMAX
          IF (MOMENTUM_X_EQ(0) .AND. MOMENTUM_X_EQ(M)) THEN
 ! there is at least one solids phase x-momentum equation and the gas phase
@@ -169,17 +181,21 @@
 ! Gas (m=0) and at least one solids phase (m>0) x-momentum equation
 ! are solved 
 ! ---------------------------------------------------------------->>>
-!!$omp   parallel do private(I,IJK, IJKE, EPGA, EPSA, numeratorxEP, &
-!!$omp&  M, L, Lp, LpL, LM, other_ratio_1, FOA1, SUM_VXF_SS, &
-!!$omp&  SUM_VXF_SS_wt_M, SUM_VXF_GS, other_denominator, denominator ),&
+!!$omp   parallel do private(I,IJK, IJKE, EPGA, EPSA, AREA_FACE, &
+!!$omp&  M, L, Lp, LpL, LM, SUM_VXF_SS, SUM_VXF_SS_wt_M, SUM_VXF_GS, &
+!!$omp&  DEN_MGas, NUM_MGas, DEN_MSol_LGas, DEN_MSol_LSol,&
+!!$omp&  NUM_MSol_LGas, NUM_MSol_LSol),&
 !!$omp&  schedule(static)
   DO IJK = ijkstart3, ijkend3
 
-     IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN   !impermeable
+! impermeable
+     IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN   
         DO M= 0, MMAX
           D_E(IJK,M) = ZERO
         ENDDO
      ELSE
+
+        AREA_FACE = merge(ONE, AYZ(IJK), CARTESIAN_GRID)
         I = I_OF(IJK)
         IJKE = EAST_OF(IJK)
         EPGA = AVG_X(EP_G(IJK),EP_G(IJKE),I)
@@ -187,109 +203,115 @@
         SUM_VXF_GS = ZERO
         DO M= 1, MMAX
           EPSA(M) = AVG_X(EP_S(IJK,M),EP_S(IJKE,M),I)
-          SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)              !Gas - All Solids VolxDrag summation
+! Gas - All Solids VolxDrag summation
+          SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)              
           SUM_VXF_SS(M) = ZERO
           DO L = 1, MMAX
             IF (L .NE. M) THEN
               LM = FUNLM(L,M)
-              SUM_VXF_SS(M) = SUM_VXF_SS(M) + VXF_SS(IJK,LM) !Solid M - All other Solids VolxDrag summation
+! Solids M - All other Solids VolxDrag summation
+              SUM_VXF_SS(M) = SUM_VXF_SS(M) + VXF_SS(IJK,LM)   
             ENDIF
           ENDDO
         ENDDO
 
-        other_ratio_1  = ZERO
+! calculating DEN_MGas and NUM_MGas
+        DEN_MGas  = ZERO
+        NUM_MGas = ZERO
         DO M= 1, MMAX
-           other_ratio_1 = other_ratio_1 +&
-                      ( VXF_GS(IJK,M)*( (-AM0(IJK,M))+SUM_VXF_SS(M) )/&
-                                      ( (-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
-                      )
+          IF (MOMENTUM_X_EQ(M)) THEN        
+            NUM_MGas = NUM_MGas + (EPSA(M)*VXF_GS(IJK,M)/&
+              ((-AM0(IJK,M)) + VXF_GS(IJK,M) + SUM_VXF_SS(M) + &
+              SMALL_NUMBER))
+            DEN_MGas = DEN_MGas + (VXF_GS(IJK,M)* &
+              ((-AM0(IJK,M))+SUM_VXF_SS(M))/&
+              ((-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+&
+              SMALL_NUMBER))
+          ELSE
+            DEN_MGas = DEN_MGas + VXF_GS(IJK,M)
+          ENDIF
         ENDDO
 
-! Model B        
+! Model B
+! -------------------------------------------------------------------
         IF (MODEL_B) THEN   
 ! Linking velocity correction coefficient to pressure - GAS Phase
-          IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
-            IF(.NOT.CARTESIAN_GRID) THEN
-               D_E(IJK,0) = P_SCALE*AYZ(IJK)/( (-AM0(IJK,0))+other_ratio_1 )
-            ELSE
-               D_E(IJK,0) = P_SCALE         /( (-AM0(IJK,0))+other_ratio_1 )
-            ENDIF
+          IF ( (-AM0(IJK,0))>SMALL_NUMBER .OR. &
+                    DEN_MGas>SMALL_NUMBER ) THEN
+             D_E(IJK,0) = P_SCALE*AREA_FACE/((-AM0(IJK,0))+DEN_MGas)
           ELSE
              D_E(IJK,0) = ZERO
           ENDIF
-! Linking velocity correction coefficient to pressure - SOLID Phase
+! Linking velocity correction coefficient to pressure - SOLIDs Phase
           DO M = 1, MMAX
-            IF ( MOMENTUM_X_EQ(M) .AND. (  ((-AM0(IJK,M))>SMALL_NUMBER) .OR. &
-                 (VXF_GS(IJK,M)>SMALL_NUMBER) ) ) THEN
-               D_E(IJK,M) = D_E(IJK,0)*(&
-                                VXF_GS(IJK,M)/((-AM0(IJK,M))+VXF_GS(IJK,M))&
-                            )
+            IF (MOMENTUM_X_EQ(M) .AND.((-AM0(IJK,M))>SMALL_NUMBER .OR. &
+                                       VXF_GS(IJK,M)>SMALL_NUMBER)) THEN
+              D_E(IJK,M) = D_E(IJK,0)*(VXF_GS(IJK,M)/&
+                           ((-AM0(IJK,M))+VXF_GS(IJK,M)))
             ELSE
-               D_E(IJK,M) = ZERO
+              D_E(IJK,M) = ZERO
             ENDIF
           ENDDO
 
-! Model A          
+! Model A
+! -------------------------------------------------------------------
         ELSE                
-          FOA1 = ZERO
+
+! Linking velocity correction coefficient to pressure - GAS Phase
+          IF ( (-AM0(IJK,0))>SMALL_NUMBER .OR. &
+                    DEN_MGas>SMALL_NUMBER ) THEN
+             D_E(IJK,0) = P_SCALE*AREA_FACE*(EPGA+NUM_MGas)/&
+                          ((-AM0(IJK,0))+DEN_MGas)
+          ELSE
+             D_E(IJK,0) = ZERO
+          ENDIF
+
+
           DO M= 1, MMAX
-            FOA1 = FOA1 + (EPSA(M)*VXF_GS(IJK,M)/&
-                             ( (-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
-                          )
-            other_denominator(M) = VXF_GS(IJK,M)*( ((-AM0(IJK,0))+(SUM_VXF_GS - VXF_GS(IJK,M)))/&
-                                                   ((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)&
-                                                 )
-            numeratorxEP(M) = ZERO
-            denominator(M)  = ZERO
+! calculating NUM_MSol_LGas and DEN_MSol_LGas
+            NUM_MSol_LGas = VXF_GS(IJK,M)*EPGA/&
+               ((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)
+            DEN_MSol_LGas = VXF_GS(IJK,M)*( &
+               ((-AM0(IJK,0)) + (SUM_VXF_GS - VXF_GS(IJK,M)))/&
+               ((-AM0(IJK,0)) + SUM_VXF_GS + SMALL_NUMBER) )
+
+! calculating NUM_MSol_LSol and DEN_MSol_LSol
+            NUM_MSol_LSol(M) = ZERO
+            DEN_MSol_LSol(M)  = ZERO
             DO L = 1, MMAX
               IF (L .NE. M) THEN
                 LM = FUNLM(L,M)
-                numeratorxEP(M) = numeratorxEP(M) + (&
-                                                      VXF_SS(IJK,LM)*EPSA(L)/&
-                                                      ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
-                                                    ) 
                 SUM_VXF_SS_wt_M = ZERO
                 DO Lp = 1, MMAX
                   IF ( (Lp .NE. L) .AND. (Lp .NE. M) ) THEN
                     LpL = FUNLM(Lp,L)
-                    SUM_VXF_SS_wt_M = SUM_VXF_SS_wt_M + VXF_SS(IJK,LpL)   !Solid L - All other Solids VolxDrag but M summation
+! Solids L - All other Solids VolxDrag but M summation
+                    SUM_VXF_SS_wt_M = SUM_VXF_SS_wt_M + VXF_SS(IJK,LpL)  
                   ENDIF
                 ENDDO
-                denominator(M) = denominator(M) + (&
-                                                     VXF_SS(IJK,LM)*(&
-                                                       ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
-                                                       ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
-                                                     )&
-                                                  )
-              ENDIF
+
+                IF(MOMENTUM_X_EQ(L)) THEN                
+                  NUM_MSol_LSol(M) = NUM_MSol_LSol(M) + &
+                     ( VXF_SS(IJK,LM)*EPSA(L)/&
+                     ((-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+&
+                     SMALL_NUMBER) ) 
+                  DEN_MSol_LSol(M) = DEN_MSol_LSol(M) + VXF_SS(IJK,LM)*(&
+                     ((-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M)/&
+                     ((-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+ &
+                     SMALL_NUMBER) ) 
+                ELSE
+                  DEN_MSol_LSol(M) = DEN_MSol_LSol(M) + VXF_SS(IJK,LM)
+                ENDIF
+              ENDIF  ! end if (l.ne.m)
             ENDDO  ! end do (l=1,mmax)
-          ENDDO   ! end do (m=1,mmax)
-! Linking velocity correction coefficient to pressure - GAS Phase
-          IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
-            IF(.NOT.CARTESIAN_GRID) THEN
-               D_E(IJK,0) = P_SCALE*AYZ(IJK)*(EPGA+FOA1)/( (-AM0(IJK,0))+other_ratio_1 )
-            ELSE
-               D_E(IJK,0) = P_SCALE         *(EPGA+FOA1)/( (-AM0(IJK,0))+other_ratio_1 )
-            ENDIF
-          ELSE
-            D_E(IJK,0) = ZERO
-          ENDIF
-! Linking velocity correction coefficient to pressure - SOLID Phase
-          DO M = 1, MMAX
-            IF ( MOMENTUM_X_EQ(M) .AND. ( (-AM0(IJK,M)>SMALL_NUMBER)        .OR. &
-                 (other_denominator(M)>SMALL_NUMBER) .OR. &
-                 (denominator(M)>SMALL_NUMBER) ) ) THEN
-              IF(.NOT.CARTESIAN_GRID) THEN
-                 D_E(IJK,M) = P_SCALE*AYZ(IJK)*(&
-                           ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
-                           ( (-AM0(IJK,M))+other_denominator(M)+denominator(M) )&
-                                                    )
-              ELSE
-                 D_E(IJK,M) = P_SCALE           *(&
-                           ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
-                           ( (-AM0(IJK,M))+other_denominator(M)+denominator(M) )&
-                                                    )
-              ENDIF
+
+! Linking velocity correction coefficient to pressure - SOLIDs Phase
+            IF (MOMENTUM_X_EQ(M) .AND. (-AM0(IJK,M)>SMALL_NUMBER .OR. &
+                                      DEN_MSol_LGas>SMALL_NUMBER .OR. &
+                                   DEN_MSol_LSol(M)>SMALL_NUMBER)) THEN
+              D_E(IJK,M) = P_SCALE*AREA_FACE*&
+                (EPSA(M) + NUM_MSol_LSol(M) + NUM_MSol_LGas)/&
+                ((-AM0(IJK,M)) + DEN_MSol_LGas + DEN_MSol_LSol(M))
             ELSE
               D_E(IJK,M) = ZERO
             ENDIF
@@ -299,7 +321,6 @@
 
      ENDIF   ! end if/else branch(ip_at_e(ijk) .or. mflow_at_e(ijk))
    ENDDO  ! end do loop (ijk=ijkstart3,ijkend3)          
-
 ! end pass1 branch
 ! ----------------------------------------------------------------<<<
 
@@ -310,12 +331,15 @@
 ! simulation should be directed for proper evaluation of pressure
 ! correction terms
 ! ---------------------------------------------------------------->>>
-!!$omp   parallel do private(IJK, I, IJKE, EPGA, M, SUM_VXF_GS), &
+!!$omp   parallel do private(IJK, I, IJKE, EPGA, M, SUM_VXF_GS,&
+!!$omp&  AREA_FACE), &
 !!$omp&  schedule(static)
    DO IJK = ijkstart3, ijkend3
      IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN   !impermeable
        D_E(IJK,0) = ZERO
      ELSE
+
+       AREA_FACE = merge(ONE, AYZ(IJK), CARTESIAN_GRID)
        I = I_OF(IJK)
        IJKE = EAST_OF(IJK)
        EPGA = AVG_X(EP_G(IJK),EP_G(IJKE),I)
@@ -323,7 +347,8 @@
        SUM_VXF_GS = ZERO
        IF (.NOT. QMOMK) THEN
           DO M= 1, LC_MMAX
-            SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)              !Gas - All Solids VolxDrag summation
+! Gas - All Solids VolxDrag summation
+            SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)
           ENDDO
        ELSE
           DO INN = 1, QMOMK_NN
@@ -335,19 +360,11 @@
            ENDDO
        ENDIF
 
-       IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
+       IF ((-AM0(IJK,0))>SMALL_NUMBER .OR. SUM_VXF_GS>SMALL_NUMBER) THEN
          IF (MODEL_B) THEN
-            IF(.NOT.CARTESIAN_GRID) THEN
-               D_E(IJK,0) = P_SCALE*AYZ(IJK)/((-AM0(IJK,0))+SUM_VXF_GS)
-            ELSE
-               D_E(IJK,0) = P_SCALE         /((-AM0(IJK,0))+SUM_VXF_GS)
-            ENDIF
+            D_E(IJK,0) = P_SCALE*AREA_FACE/((-AM0(IJK,0))+SUM_VXF_GS)
          ELSE
-            IF(.NOT.CARTESIAN_GRID) THEN
-               D_E(IJK,0) = P_SCALE*AYZ(IJK)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS)
-            ELSE
-               D_E(IJK,0) = P_SCALE         *EPGA/((-AM0(IJK,0))+SUM_VXF_GS)
-            ENDIF
+            D_E(IJK,0) = P_SCALE*AREA_FACE*EPGA/((-AM0(IJK,0))+SUM_VXF_GS)
          ENDIF   !end if/else branch Model_B/Model_A 
        ELSE
          D_E(IJK,0) = ZERO
@@ -362,9 +379,10 @@
  ELSEIF (Pass2) THEN
 ! at least one solids phase x-momentum equation is solved but the gas
 ! phase (m=0) x-momentum equation is not solved
+
 ! ---------------------------------------------------------------->>>
 !!$omp    parallel do private(IJK, I, IJKE, EPSA, L, Lp, M, SUM_VXF_SS, &
-!!$omp&   numeratorxEP, denominator, SUM_VXF_SS_wt_M), &
+!!$omp&   NUM_MSol_LSol, DEN_MSol_LSol, SUM_VXF_SS_wt_M, AREA_FACE), &
 !!$omp&  schedule(static)
    DO IJK = ijkstart3, ijkend3
      IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK) .OR. MODEL_B) THEN
@@ -372,6 +390,8 @@
          D_E(IJK,M) = ZERO
        ENDDO
      ELSE
+
+       AREA_FACE = merge(ONE, AYZ(IJK), CARTESIAN_GRID)
        I = I_OF(IJK)
        IJKE = EAST_OF(IJK)
 
@@ -381,54 +401,55 @@
          DO L = 1, MMAX
            IF (L .NE. M) THEN
              LM = FUNLM(L,M)
-             SUM_VXF_SS(M) = SUM_VXF_SS(M) + VXF_SS(IJK,LM)  !Solid M - All other Solids VolxDrag summation
+! Solids M - All other Solids VolxDrag summation
+             SUM_VXF_SS(M) = SUM_VXF_SS(M) + VXF_SS(IJK,LM)  
            ENDIF
          ENDDO
        ENDDO
 
        DO M= 1, MMAX
-         numeratorxEP(M) = ZERO
-         denominator(M)  = ZERO
+! calculating NUM_MSol_LSol and DEN_MSol_LSol
+         NUM_MSol_LSol(M) = ZERO
+         DEN_MSol_LSol(M)  = ZERO
          DO L = 1, MMAX
            IF (L .NE. M) THEN
              LM = FUNLM(L,M)
-             numeratorxEP(M) = numeratorxEP(M) + (&
-                                                    VXF_SS(IJK,LM)*EPSA(L)/&
-                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
-                                                  )
              SUM_VXF_SS_wt_M = ZERO
              DO Lp = 1, MMAX
                IF ( (Lp .NE. L) .AND. (Lp .NE. M) ) THEN
                  LpL = FUNLM(Lp,L)
-                 SUM_VXF_SS_wt_M = SUM_VXF_SS_wt_M + VXF_SS(IJK,LpL)     !Solid L - All other Solids VolxDrag but M summation
+! Solids L - All other Solids VolxDrag but M summation
+                 SUM_VXF_SS_wt_M = SUM_VXF_SS_wt_M + VXF_SS(IJK,LpL)     
                ENDIF
              ENDDO
-             denominator(M) = denominator(M) + (&
-                                                  VXF_SS(IJK,LM)*(&
-                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
-                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
-                                                                 )&
-                                                )
-           ENDIF
-         ENDDO
-       ENDDO
+             IF (MOMENTUM_X_EQ(L)) THEN
+               NUM_MSol_LSol(M) = NUM_MSol_LSol(M) + &
+                  (VXF_SS(IJK,LM)*EPSA(L)/&
+                  ((-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+&
+                  SMALL_NUMBER))             
+               DEN_MSol_LSol(M) = DEN_MSol_LSol(M) + VXF_SS(IJK,LM)*(&
+                  ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
+                  ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+&
+                  SMALL_NUMBER ))
+             ELSE
+               DEN_MSol_LSol(M) = DEN_MSol_LSol(M) + VXF_SS(IJK,LM)
+             ENDIF
+           ENDIF   ! end if (L.ne.M)
+         ENDDO  ! end do (l=1,mmax)
 
-! Linking velocity correction coefficient to pressure - SOLID Phase (Model_A only)
-       DO M = 1, MMAX
-         IF ( MOMENTUM_X_EQ(M) .AND. ( (-AM0(IJK,M)>SMALL_NUMBER) .OR. &
-              (VXF_GS(IJK,M)>SMALL_NUMBER) .OR. &
-              (denominator(M)>SMALL_NUMBER) ) ) THEN
-            IF(.NOT.CARTESIAN_GRID) THEN
-               D_E(IJK,M) = P_SCALE*AYZ(IJK)*( EPSA(M) + numeratorxEP(M) )/&
-                                             ( (-AM0(IJK,M))+VXF_GS(IJK,M)+denominator(M) )
-            ELSE
-               D_E(IJK,M) = P_SCALE         *( EPSA(M) + numeratorxEP(M) )/&
-                                             ( (-AM0(IJK,M))+VXF_GS(IJK,M)+denominator(M) )
-            ENDIF
+! Linking velocity correction coefficient to pressure - SOLIDs Phase (Model_A only)
+         IF (MOMENTUM_X_EQ(M) .AND. (-AM0(IJK,M)>SMALL_NUMBER .OR. &
+                                   VXF_GS(IJK,M)>SMALL_NUMBER .OR. &
+                                DEN_MSol_LSol(M)>SMALL_NUMBER)) THEN
+           D_E(IJK,M) = P_SCALE*AREA_FACE*&
+             (EPSA(M) + NUM_MSol_LSol(M))/&
+             ((-AM0(IJK,M))+VXF_GS(IJK,M)+DEN_MSol_LSol(M))
          ELSE
            D_E(IJK,M) = ZERO
          ENDIF
        ENDDO  ! end do (m=1,mmax)
+
+
      ENDIF   ! end if/else branch(ip_at_e(ijk) .or. mflow_at_e(ijk) .or. model_b)
    ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 ! end pass2 branch
@@ -517,41 +538,52 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! S. Dartevelle, LANL, Feb.2004:
-! Average volume fraction at momentum cell centers
-      DOUBLE PRECISION :: EPGA 
-! Usual Indices
-      INTEGER :: LM, M, L, LPL, LP
-      INTEGER :: DM
-      INTEGER :: INN
-      INTEGER :: J, IJK, IJKN
-! Average solid volume fraction at momentum cell centers
-      DOUBLE PRECISION :: EPSA(DIMENSION_M) 
-! ratio of drag and A0 or A_solid and other sum of Solid-Solid drag
-      DOUBLE PRECISION :: other_ratio_1, FOA1
-! sum of All Solid-Gas VolxDrag
-      DOUBLE PRECISION :: SUM_VXF_GS 
 ! What phase momentum equation is activated?
 !    pass1 is true when at least one solids phase momentum equation is solved
 !    and the gas/fluid (m=0) phase momentum equation is solved
 !    pass2 is true when at least one solids phase momentum equation is solved
 !    but the gas/fluid (m=0) phase momentum equation is NOT solved
       LOGICAL :: Pass1, Pass2
+! Usual Indices
+      INTEGER :: LM, M, L, LPL, LP
+      INTEGER :: DM
+      INTEGER :: INN
+      INTEGER :: J, IJK, IJKN
+! Number of solids phases to use as loop counter      
+      INTEGER :: LC_MMAX
+! Average volume fraction at momentum cell centers
+      DOUBLE PRECISION :: EPGA 
+! Average solid volume fraction at momentum cell centers
+      DOUBLE PRECISION :: EPSA(DIMENSION_M) 
+! local alias for face area
+      DOUBLE PRECISION :: AREA_FACE
+! sum of All Solid-Gas VolxDrag
+      DOUBLE PRECISION :: SUM_VXF_GS 
 ! sum of Solid M - All other Solid drag
       DOUBLE PRECISION :: SUM_VXF_SS(DIMENSION_M)  
-! numerator needed for solid phase M time EPSA
-      DOUBLE PRECISION :: numeratorxEP(DIMENSION_M)
-! denominator needed for solid phase M
-      DOUBLE PRECISION :: denominator(DIMENSION_M)
-! denominator needed for solid phase M
-      DOUBLE PRECISION :: other_denominator(DIMENSION_M)
 ! sum of Solid L - All other Solid VolxDrag but M
       DOUBLE PRECISION :: SUM_VXF_SS_wt_M
+! numerator and demoninator needed for evaluation of pressure correction 
+! coefficient for GAS phase
+      DOUBLE PRECISION :: DEN_MGas, NUM_MGas
+! component of the total numerator needed for evaluation of pressure
+! correction coefficient for SOLIDS phase M. specifically, for when the
+! sum L is over solids phase only 
+      DOUBLE PRECISION :: NUM_MSol_LSol(DIMENSION_M)
+! component of the total denominator needed for evaluation of pressure
+! correction coefficient for SOLIDS phase M.  specifically, for when the
+! sum L is over solids phases only
+      DOUBLE PRECISION :: DEN_MSol_LSol(DIMENSION_M)
+! component of the total numerator needed for evaluation of pressure
+! correction coefficient for SOLIDS phase M.  specifically, for when the
+! sum L is over gas phase only
+     DOUBLE PRECISION :: NUM_MSol_LGas
+! component of the total denominator needed for evaluation of pressure
+! correction coefficient for SOLIDS phase M.  specifically, for when the
+! sum L is over gas phase only
+      DOUBLE PRECISION :: DEN_MSol_LGas
 ! Temporary variable to store A matrix for local manipulation
       DOUBLE PRECISION :: AM0(DIMENSION_3, 0:DIMENSION_M)
-! Number of solids to use in for the LOOP counter
-      INTEGER :: LC_MMAX
-
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -606,9 +638,10 @@
 ! Gas (m=0) and at least one solids phase (m>0) y-momentum equation are
 ! solved
 ! ---------------------------------------------------------------->>>
-!!$omp   parallel do private(J,IJK, IJKN, EPGA, EPSA, numeratorxEP, &
-!!$omp&  M, L, Lp, LpL, LM, other_ratio_1, FOA1, SUM_VXF_SS, &
-!!$omp&  SUM_VXF_SS_wt_M, SUM_VXF_GS, other_denominator, denominator ),&
+!!$omp   parallel do private(J,IJK, IJKN, EPGA, EPSA, AREA_FACE, &
+!!$omp&  M, L, Lp, LpL, LM, SUM_VXF_SS, SUM_VXF_SS_wt_M, SUM_VXF_GS, &
+!!$omp&  DEN_MGas, NUM_MGas, DEN_MSol_LGas, DEN_MSol_LSol ,&
+!!$omp&  NUM_MSol_LSol, NUM_MSol_LGas),&
 !!$omp&  schedule(static)
    DO IJK = ijkstart3, ijkend3
      IF (IP_AT_N(IJK) .OR. MFLOW_AT_N(IJK)) THEN   !impermeable
@@ -616,6 +649,8 @@
            D_N(IJK,M) = ZERO
         ENDDO
      ELSE
+
+        AREA_FACE = merge(ONE, AXZ(IJK), CARTESIAN_GRID)
         J = J_OF(IJK)
         IJKN = NORTH_OF(IJK)
         EPGA = AVG_Y(EP_G(IJK),EP_G(IJKN),J)
@@ -623,109 +658,115 @@
         SUM_VXF_GS = ZERO
         DO M= 1, MMAX
           EPSA(M) = AVG_Y(EP_S(IJK,M),EP_S(IJKN,M),J)
-          SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)              !Gas - All Solids VolxDrag summation
+! Gas - All Solids VolxDrag summation
+          SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)
           SUM_VXF_SS(M) = ZERO
           DO L = 1, MMAX
             IF (L .NE. M) THEN
               LM = FUNLM(L,M)
-              SUM_VXF_SS(M) = SUM_VXF_SS(M) + VXF_SS(IJK,LM) !Solid M - All other Solids VolxDrag summation
+! Solids M - All other Solids VolxDrag summation
+              SUM_VXF_SS(M) = SUM_VXF_SS(M) + VXF_SS(IJK,LM) 
             ENDIF
           ENDDO
         ENDDO
 
-        other_ratio_1  = ZERO
+
+! calculating DEN_MGas and NUM_MGas
+        NUM_MGas = ZERO        
+        DEN_MGas  = ZERO
         DO M= 1, MMAX
-          other_ratio_1 = other_ratio_1 +&
-                      ( VXF_GS(IJK,M)*( (-AM0(IJK,M))+SUM_VXF_SS(M) )/&
-                                      ( (-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
-                      )
+          IF(MOMENTUM_Y_EQ(M)) THEN
+             NUM_MGas = NUM_MGas + (EPSA(M)*VXF_GS(IJK,M)/&
+                ((-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+&
+                SMALL_NUMBER) )
+             DEN_MGas = DEN_MGas + (VXF_GS(IJK,M)* &
+                ((-AM0(IJK,M))+SUM_VXF_SS(M))/&
+                ((-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+&
+                SMALL_NUMBER))
+          ELSE
+            DEN_MGas = DEN_MGas + VXF_GS(IJK,M)
+          ENDIF
         ENDDO
 
-! Model B       
+! Model B
+! -------------------------------------------------------------------
         IF (MODEL_B) THEN   
 ! Linking velocity correction coefficient to pressure - GAS Phase
-          IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
-            IF(.NOT.CARTESIAN_GRID) THEN
-               D_N(IJK,0) = P_SCALE*AXZ(IJK)/( (-AM0(IJK,0))+other_ratio_1 )
-            ELSE
-               D_N(IJK,0) = P_SCALE         /( (-AM0(IJK,0))+other_ratio_1 )
-            ENDIF
+          IF ( (-AM0(IJK,0))>SMALL_NUMBER .OR. &
+                    DEN_MGas>SMALL_NUMBER ) THEN
+            D_N(IJK,0) = P_SCALE*AREA_FACE/((-AM0(IJK,0))+DEN_MGas)
           ELSE
             D_N(IJK,0) = ZERO
           ENDIF
-! Linking velocity correction coefficient to pressure - SOLID Phase
+! Linking velocity correction coefficient to pressure - SOLIDs Phase
           DO M = 1, MMAX
-            IF( MOMENTUM_Y_EQ(M) .AND. (  ((-AM0(IJK,M))>SMALL_NUMBER) .OR. &
-                (VXF_GS(IJK,M)>SMALL_NUMBER) ) ) THEN
-              D_N(IJK,M) = D_N(IJK,0)*(&
-                                       VXF_GS(IJK,M)/((-AM0(IJK,M))+VXF_GS(IJK,M))&
-                                      )
+            IF(MOMENTUM_Y_EQ(M) .AND. ((-AM0(IJK,M))>SMALL_NUMBER .OR. &
+                                       VXF_GS(IJK,M)>SMALL_NUMBER)) THEN
+              D_N(IJK,M) = D_N(IJK,0)*(VXF_GS(IJK,M)/&
+                           ((-AM0(IJK,M))+VXF_GS(IJK,M)))
             ELSE
               D_N(IJK,M) = ZERO
             ENDIF
           ENDDO
 
 ! Model A
+! -------------------------------------------------------------------
         ELSE
-          FOA1 = ZERO
+ 
+! Linking velocity correction coefficient to pressure - GAS Phase
+          IF ( (-AM0(IJK,0))>SMALL_NUMBER .OR. &
+                    DEN_MGas>SMALL_NUMBER ) THEN
+            D_N(IJK,0) = P_SCALE*AREA_FACE*(EPGA+NUM_MGas)/&
+                         ((-AM0(IJK,0))+DEN_MGas ) 
+          ELSE
+            D_N(IJK,0) = ZERO
+          ENDIF
+
           DO M= 1, MMAX
-            FOA1 = FOA1 + (EPSA(M)*VXF_GS(IJK,M)/&
-                             ( (-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
-                          )
-            other_denominator(M) = VXF_GS(IJK,M)*( ((-AM0(IJK,0))+(SUM_VXF_GS - VXF_GS(IJK,M)))/&
-                                                   ((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)&
-                                                 )
-            numeratorxEP(M) = ZERO
-            denominator(M)  = ZERO
+! calculating NUM_MSol_LGas and DEN_MSol_LGas
+            NUM_MSol_LGas = VXF_GS(IJK,M)*EPGA/&
+              ((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)
+            DEN_MSol_LGas = VXF_GS(IJK,M)*( &
+              ((-AM0(IJK,0))+(SUM_VXF_GS - VXF_GS(IJK,M)))/&
+              ((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER) )
+      
+! calculating NUM_MSol_LSol and DEN_MSol_LSol
+            NUM_MSol_LSol(M) = ZERO
+            DEN_MSol_LSol(M)  = ZERO
             DO L = 1, MMAX
               IF (L .NE. M) THEN
                 LM = FUNLM(L,M)
-                numeratorxEP(M) = numeratorxEP(M) + (&
-                                                      VXF_SS(IJK,LM)*EPSA(L)/&
-                                                      ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
-                                                     ) 
                 SUM_VXF_SS_wt_M = ZERO
                 DO Lp = 1, MMAX
                   IF ( (Lp .NE. L) .AND. (Lp .NE. M) ) THEN
                     LpL = FUNLM(Lp,L)
-                    SUM_VXF_SS_wt_M = SUM_VXF_SS_wt_M + VXF_SS(IJK,LpL)     !Solid L - All other Solids VolxDrag but M summation
+! Solids L - All other Solids VolxDrag but M summation
+                    SUM_VXF_SS_wt_M = SUM_VXF_SS_wt_M + VXF_SS(IJK,LpL)     
                   ENDIF
                 ENDDO
-                denominator(M) = denominator(M) + (&
-                                                     VXF_SS(IJK,LM)*(&
-                                                     ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
-                                                     ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
-                                                                    )&
-                                                   )
-              ENDIF
+
+                IF(MOMENTUM_Y_EQ(L)) THEN
+                  NUM_MSol_LSol(M) = NUM_MSol_LSol(M) + &
+                     (VXF_SS(IJK,LM)*EPSA(L)/&
+                     ((-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+&
+                     SMALL_NUMBER )) 
+                  DEN_MSol_LSol(M) = DEN_MSol_LSol(M) + VXF_SS(IJK,LM)*(&
+                     ((-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
+                     ((-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+&
+                     SMALL_NUMBER) )
+                ELSE
+                  DEN_MSol_LSol(M) = DEN_MSol_LSol(M) + VXF_SS(IJK,LM)
+                ENDIF
+              ENDIF  ! end if (l.ne.m)
             ENDDO  ! end do (l=1,mmax)
-          ENDDO   ! end do (m=1,mmax)
-! Linking velocity correction coefficient to pressure - GAS Phase
-          IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
-            IF(.NOT.CARTESIAN_GRID) THEN
-               D_N(IJK,0) = P_SCALE*AXZ(IJK)*(EPGA+FOA1)/( (-AM0(IJK,0))+other_ratio_1 ) 
-            ELSE
-               D_N(IJK,0) = P_SCALE          *(EPGA+FOA1)/( (-AM0(IJK,0))+other_ratio_1 )
-            ENDIF
-          ELSE
-            D_N(IJK,0) = ZERO
-          ENDIF
-! Linking velocity correction coefficient to pressure - SOLID Phase
-          DO M = 1, MMAX
-            IF ( MOMENTUM_Y_EQ(M) .AND. ( (-AM0(IJK,M)>SMALL_NUMBER) .OR. &
-                 (other_denominator(M)>SMALL_NUMBER) .OR. &
-                 (denominator(M)>SMALL_NUMBER) ) ) THEN
-              IF(.NOT.CARTESIAN_GRID) THEN
-                D_N(IJK,M) = P_SCALE*AXZ(IJK)*(&
-                           ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
-                           ( (-AM0(IJK,M))+other_denominator(M)+denominator(M) )&
-                                               )
-              ELSE
-                D_N(IJK,M) = P_SCALE         *(&
-                         ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
-                         ( (-AM0(IJK,M))+other_denominator(M)+denominator(M) )&
-                                              )
-              ENDIF
+
+! Linking velocity correction coefficient to pressure - SOLIDs Phase
+            IF (MOMENTUM_Y_EQ(M) .AND. (-AM0(IJK,M)>SMALL_NUMBER .OR. &
+                                      DEN_MSol_LGas>SMALL_NUMBER .OR. &
+                                   DEN_MSol_LSol(M)>SMALL_NUMBER)) THEN
+              D_N(IJK,M) = P_SCALE*AREA_FACE*&
+                (EPSA(M) + NUM_MSol_LSol(M) + NUM_MSol_LGas)/&
+                ((-AM0(IJK,M))+DEN_MSol_LGas+DEN_MSol_LSol(M))
             ELSE
               D_N(IJK,M) = ZERO
             ENDIF
@@ -745,12 +786,15 @@
 ! simulation should be directed for proper evaluation of pressure 
 ! correction terms
 ! ---------------------------------------------------------------->>>
-!!$omp   parallel do private(IJK, J, IJKN, EPGA, M, SUM_VXF_GS), &
+!!$omp   parallel do private(IJK, J, IJKN, EPGA, M, SUM_VXF_GS,&
+!!$omp&  AREA_FACE), &
 !!$omp&  schedule(static)
    DO IJK = ijkstart3, ijkend3
      IF (IP_AT_N(IJK) .OR. MFLOW_AT_N(IJK)) THEN   !impermeable
        D_N(IJK,0) = ZERO
      ELSE
+
+       AREA_FACE = merge(ONE, AXZ(IJK), CARTESIAN_GRID)
        J = J_OF(IJK)
        IJKN = NORTH_OF(IJK)
        EPGA = AVG_Y(EP_G(IJK),EP_G(IJKN),J)
@@ -758,7 +802,8 @@
        SUM_VXF_GS = ZERO
        IF (.NOT. QMOMK) THEN
           DO M= 1, LC_MMAX
-            SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)  !Gas - All Solids VolxDrag summation
+! Gas - All Solids VolxDrag summation
+            SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)
           ENDDO
        ELSE
           DO INN = 1, QMOMK_NN
@@ -770,19 +815,11 @@
            ENDDO
        ENDIF
 
-       IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
+       IF ((-AM0(IJK,0))>SMALL_NUMBER .OR. SUM_VXF_GS>SMALL_NUMBER) THEN
          IF (MODEL_B) THEN
-            IF(.NOT.CARTESIAN_GRID) THEN
-               D_N(IJK,0) = P_SCALE*AXZ(IJK)/((-AM0(IJK,0))+SUM_VXF_GS)
-            ELSE
-               D_N(IJK,0) = P_SCALE         /((-AM0(IJK,0))+SUM_VXF_GS)
-            ENDIF
+           D_N(IJK,0) = P_SCALE*AREA_FACE/((-AM0(IJK,0))+SUM_VXF_GS)
          ELSE
-            IF(.NOT.CARTESIAN_GRID) THEN
-               D_N(IJK,0) = P_SCALE*AXZ(IJK)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS)
-            ELSE
-               D_N(IJK,0) = P_SCALE         *EPGA/((-AM0(IJK,0))+SUM_VXF_GS)
-            ENDIF
+           D_N(IJK,0) = P_SCALE*AREA_FACE*EPGA/((-AM0(IJK,0))+SUM_VXF_GS)
          ENDIF   !end if/else branch Model_B/Model_A 
        ELSE
          D_N(IJK,0) = ZERO
@@ -799,7 +836,7 @@
 ! phase (m=0) y-momentum equation is not solved
 ! ---------------------------------------------------------------->>>
 !!$omp    parallel do private(IJK, J, IJKN, EPSA, L, Lp, M, SUM_VXF_SS, &
-!!$omp&   numeratorxEP, denominator, SUM_VXF_SS_wt_M), &
+!!$omp&   NUM_MSol_LSol, DEN_MSol_LSol, SUM_VXF_SS_wt_M, AREA_FACE), &
 !!$omp&  schedule(static)
    DO IJK = ijkstart3, ijkend3
      IF (IP_AT_N(IJK) .OR. MFLOW_AT_N(IJK) .OR. MODEL_B) THEN
@@ -807,6 +844,8 @@
          D_N(IJK,M) = ZERO
        ENDDO
      ELSE
+
+       AREA_FACE = merge(ONE, AXZ(IJK), CARTESIAN_GRID)
        J = J_OF(IJK)
        IJKN = NORTH_OF(IJK)
 
@@ -816,53 +855,54 @@
          DO L = 1, MMAX
            IF (L .NE. M) THEN
              LM = FUNLM(L,M)
-             SUM_VXF_SS(M) = SUM_VXF_SS(M) + VXF_SS(IJK,LM)  !Solid M - All other Solids VolxDrag summation
+! Solids M - All other Solids VolxDrag summation
+             SUM_VXF_SS(M) = SUM_VXF_SS(M) + VXF_SS(IJK,LM) 
            ENDIF
          ENDDO
        ENDDO
+       
        DO M= 1, MMAX
-         numeratorxEP(M) = ZERO
-         denominator(M)  = ZERO
+! calculating NUM_MSol_LSol and DEN_MSol_LSol
+         NUM_MSol_LSol(M) = ZERO
+         DEN_MSol_LSol(M)  = ZERO
          DO L = 1, MMAX
            IF (L .NE. M) THEN
              LM = FUNLM(L,M)
-             numeratorxEP(M) = numeratorxEP(M) + (&
-                                                    VXF_SS(IJK,LM)*EPSA(L)/&
-                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
-                                                  )
              SUM_VXF_SS_wt_M = ZERO
              DO Lp = 1, MMAX
                IF ( (Lp .NE. L) .AND. (Lp .NE. M) ) THEN
                  LpL = FUNLM(Lp,L)
-                 SUM_VXF_SS_wt_M = SUM_VXF_SS_wt_M + VXF_SS(IJK,LpL)     !Solid L - All other Solids VolxDrag but M summation
+! Solids L - All other Solids VolxDrag but M summation
+                 SUM_VXF_SS_wt_M = SUM_VXF_SS_wt_M + VXF_SS(IJK,LpL)
                ENDIF
              ENDDO
-             denominator(M) = denominator(M) + (&
-                                                  VXF_SS(IJK,LM)*(&
-                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
-                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
-                                                                 )&
-                                                )
-           ENDIF
-         ENDDO
-       ENDDO
-
-! Linking velocity correction coefficient to pressure - SOLID Phase (Model_A only)
-       DO M = 1, MMAX
-         IF ( MOMENTUM_Y_EQ(M) .AND. ( (-AM0(IJK,M)>SMALL_NUMBER) .OR. &
-              (VXF_GS(IJK,M)>SMALL_NUMBER) .OR. &
-              (denominator(M)>SMALL_NUMBER) ) ) THEN
-            IF(.NOT.CARTESIAN_GRID) THEN
-               D_N(IJK,M) = P_SCALE*AXZ(IJK)*( EPSA(M) + numeratorxEP(M) )/&
-                                             ( (-AM0(IJK,M))+VXF_GS(IJK,M)+denominator(M) )
-            ELSE
-               D_N(IJK,M) = P_SCALE         *( EPSA(M) + numeratorxEP(M) )/&
-                                             ( (-AM0(IJK,M))+VXF_GS(IJK,M)+denominator(M) )
-            ENDIF
+             IF(MOMENTUM_Y_EQ(L)) THEN             
+               NUM_MSol_LSol(M) = NUM_MSol_LSol(M) + &
+                  (VXF_SS(IJK,LM)*EPSA(L)/&
+                  ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+&
+                  SMALL_NUMBER ))
+               DEN_MSol_LSol(M) = DEN_MSol_LSol(M) + VXF_SS(IJK,LM)*(&
+                  ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
+                  ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+&
+                  SMALL_NUMBER ))
+             ELSE
+               DEN_MSol_LSol(M) = DEN_MSol_LSol(M) + VXF_SS(IJK,LM)
+             ENDIF
+           ENDIF   ! end if (l.ne.m)
+         ENDDO  ! end do (l=1,mmax)
+         
+! Linking velocity correction coefficient to pressure - SOLIDs Phase (Model_A only)         
+         IF (MOMENTUM_Y_EQ(M) .AND. (-AM0(IJK,M)>SMALL_NUMBER .OR. &
+                                   VXF_GS(IJK,M)>SMALL_NUMBER .OR. &
+                                DEN_MSol_LSol(M)>SMALL_NUMBER)) THEN
+           D_N(IJK,M) = P_SCALE*AREA_FACE*&
+              (EPSA(M) + NUM_MSol_LSol(M))/&
+              ((-AM0(IJK,M))+VXF_GS(IJK,M)+DEN_MSol_LSol(M))
          ELSE
            D_N(IJK,M) = ZERO
          ENDIF
        ENDDO  ! end do (m=1,mmax)
+
      ENDIF   ! end if/else branch(ip_at_n(ijk) .or. mflow_at_n(ijk) .or. model_b)
    ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 ! end pass2 branch
@@ -951,40 +991,52 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! S. Dartevelle, LANL, Feb.2004:
-! Average volume fraction at momentum cell centers
-      DOUBLE PRECISION :: EPGA 
-! Usual Indices
-      INTEGER :: LM, M, L, LPL, LP
-      INTEGER :: DM
-      INTEGER :: INN
-      INTEGER :: IJK, IJKT, K
-! Average solid volume fraction at momentum cell centers
-      DOUBLE PRECISION :: EPSA(DIMENSION_M) 
-! ratio of drag and A0 or A_solid and other sum of Solid-Solid drag
-      DOUBLE PRECISION :: other_ratio_1, FOA1
-! sum of All Solid-Gas VolxDrag
-      DOUBLE PRECISION :: SUM_VXF_GS
 ! What phase momentum equation is activated?
 !    pass1 is true when at least one solids phase momentum equation is solved
 !    and the gas/fluid (m=0) phase momentum equation is solved
 !    pass2 is true when at least one solids phase momentum equation is solved
 !    but the gas/fluid (m=0) phase momentum equation is NOT solved
       LOGICAL :: Pass1, Pass2
+! Usual Indices
+      INTEGER :: LM, M, L, LPL, LP
+      INTEGER :: DM
+      INTEGER :: INN
+      INTEGER :: IJK, IJKT, K
+! Number of solids to use as loop counter
+      INTEGER :: LC_MMAX
+! Average solid volume fraction at momentum cell centers
+      DOUBLE PRECISION :: EPSA(DIMENSION_M) 
+! Average volume fraction at momentum cell centers
+      DOUBLE PRECISION :: EPGA 
+! local alias for face area
+      DOUBLE PRECISION :: AREA_FACE
+! sum of All Solid-Gas VolxDrag
+      DOUBLE PRECISION :: SUM_VXF_GS
 ! sum of Solid M - All other Solid drag
       DOUBLE PRECISION :: SUM_VXF_SS(DIMENSION_M)
-! numerator needed for solid phase M time EPSA
-      DOUBLE PRECISION :: numeratorxEP(DIMENSION_M)
-! denominator needed for solid phase M
-      DOUBLE PRECISION :: denominator(DIMENSION_M)
-! denominator needed for solid phase M
-      DOUBLE PRECISION :: other_denominator(DIMENSION_M)
 ! sum of Solid L - All other Solid VolxDrag but M
       DOUBLE PRECISION :: SUM_VXF_SS_wt_M
+! numerator and demoninator needed for evaluation of pressure correction 
+! coefficient for GAS phase
+      DOUBLE PRECISION :: DEN_MGas, NUM_MGas
+! component of the total numerator needed for evaluation of pressure
+! correction coefficient for SOLIDS phase M. specifically, for when the
+! sum L is over solids phase only 
+      DOUBLE PRECISION :: NUM_MSol_LSol(DIMENSION_M)
+! component of the total denominator needed for evaluation of pressure
+! correction coefficient for SOLIDS phase M.  specifically, for when the
+! sum L is over solids phases only
+      DOUBLE PRECISION :: DEN_MSol_LSol(DIMENSION_M)
+! component of the total numerator needed for evaluation of pressure
+! correction coefficient for SOLIDS phase M.  specifically, for when the
+! sum L is over gas phase only
+      DOUBLE PRECISION :: NUM_MSol_LGas
+! component of the total denominator needed for evaluation of pressure
+! correction coefficient for SOLIDS phase M.  specifically, for when the
+! sum L is over gas phase only
+      DOUBLE PRECISION :: DEN_MSol_LGas
 ! Temporary variable to store A matrix for local manipulation
       DOUBLE PRECISION :: AM0(DIMENSION_3, 0:DIMENSION_M)
-! Number of solids to use in for the LOOP counter
-      INTEGER :: LC_MMAX
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -1039,9 +1091,10 @@
 ! Gas (m=0) and at least one solids phase (m>0) z-momentum equation are
 ! solved
 ! ---------------------------------------------------------------->>>
-!!$omp   parallel do private(K,IJK, IJKT, EPGA, EPSA, numeratorxEP, &
-!!$omp&  M, L, Lp, LpL, LM, other_ratio_1, FOA1, SUM_VXF_SS, &
-!!$omp&  SUM_VXF_SS_wt_M, SUM_VXF_GS, other_denominator, denominator ),&
+!!$omp   parallel do private(K,IJK, IJKT, EPGA, EPSA, AREA_FACE, &
+!!$omp&  M, L, Lp, LpL, LM, SUM_VXF_SS, SUM_VXF_SS_wt_M, SUM_VXF_GS,  &
+!!$omp&  DEN_MGas, NUM_MGas, DEN_MSol_LGas, DEN_MSol_LSol, &
+!!$omp&  NUM_MSol_LSol, NUM_MSol_LGas),&
 !!$omp&  schedule(static)
    DO IJK = ijkstart3, ijkend3
 
@@ -1050,6 +1103,8 @@
            D_T(IJK,M) = ZERO
         ENDDO
      ELSE
+
+        AREA_FACE = merge(ONE, AXY(IJK), CARTESIAN_GRID)
         K = K_OF(IJK)
         IJKT = TOP_OF(IJK)
         EPGA = AVG_Z(EP_G(IJK),EP_G(IJKT),K)
@@ -1057,112 +1112,118 @@
         SUM_VXF_GS = ZERO
         DO M= 1, MMAX
           EPSA(M) = AVG_Z(EP_S(IJK,M),EP_S(IJKT,M),K)
-          SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)              !Gas - All Solids VolxDrag summation
+! Gas - All Solids VolxDrag summation
+          SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)
           SUM_VXF_SS(M) = ZERO
           DO L = 1, MMAX
             IF (L .NE. M) THEN
               LM = FUNLM(L,M)
-              SUM_VXF_SS(M) = SUM_VXF_SS(M) + VXF_SS(IJK,LM) !Solid M - All other Solids VolxDrag summation
+! Solid M - All other Solids VolxDrag summation
+              SUM_VXF_SS(M) = SUM_VXF_SS(M) + VXF_SS(IJK,LM) 
             ENDIF
           ENDDO
         ENDDO
 
-        other_ratio_1  = ZERO
+! calculating DEN_MGas and NUM_MGas
+        DEN_MGas  = ZERO
+        NUM_MGas = ZERO
         DO M= 1, MMAX
-          other_ratio_1 = other_ratio_1 +&
-                       ( VXF_GS(IJK,M)*( (-AM0(IJK,M))+SUM_VXF_SS(M) )/&
-                                       ( (-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
-                       )
+          IF(MOMENTUM_Z_EQ(M)) THEN
+            NUM_MGas = NUM_MGas + (EPSA(M)*VXF_GS(IJK,M)/&
+              ((-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+&
+              SMALL_NUMBER))
+            DEN_MGas = DEN_MGas + (VXF_GS(IJK,M)*&
+              ((-AM0(IJK,M))+SUM_VXF_SS(M))/&
+              ((-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+&
+              SMALL_NUMBER))
+          ELSE
+            DEN_MGas = DEN_MGas + VXF_GS(IJK,M)
+          ENDIF
         ENDDO
 
 ! Model B
+! -------------------------------------------------------------------
         IF (MODEL_B) THEN   
 ! Linking velocity correction coefficient to pressure - GAS Phase
-          IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
-             IF(.NOT.CARTESIAN_GRID) THEN
-                D_T(IJK,0) = P_SCALE*AXY(IJK)/( (-AM0(IJK,0))+other_ratio_1 )
-             ELSE
-                D_T(IJK,0) = P_SCALE         /( (-AM0(IJK,0))+other_ratio_1 )
-             ENDIF
+          IF ( (-AM0(IJK,0))>SMALL_NUMBER .OR. &
+                    DEN_MGas>SMALL_NUMBER ) THEN
+             D_T(IJK,0) = P_SCALE*AREA_FACE/((-AM0(IJK,0))+DEN_MGas)
           ELSE
              D_T(IJK,0) = ZERO
           ENDIF
-! Linking velocity correction coefficient to pressure - SOLID Phase
+! Linking velocity correction coefficient to pressure - SOLIDs Phase
           DO M = 1, MMAX
-             IF ( MOMENTUM_Z_EQ(M) .AND. (  ((-AM0(IJK,M))>SMALL_NUMBER) .OR. &
-                  (VXF_GS(IJK,M)>SMALL_NUMBER) ) ) THEN
-               D_T(IJK,M) = D_T(IJK,0)*(&
-                                        VXF_GS(IJK,M)/((-AM0(IJK,M))+VXF_GS(IJK,M))&
-                                       )
+             IF ( MOMENTUM_Z_EQ(M) .AND. ((-AM0(IJK,M))>SMALL_NUMBER .OR. &
+                                          VXF_GS(IJK,M)>SMALL_NUMBER)) THEN
+               D_T(IJK,M) = D_T(IJK,0)*(VXF_GS(IJK,M)/&
+                            ((-AM0(IJK,M))+VXF_GS(IJK,M)))
              ELSE
                D_T(IJK,M) = ZERO
              ENDIF
           ENDDO
+
 ! Model A
+! -------------------------------------------------------------------
         ELSE
-          FOA1 = ZERO
+
+! Linking velocity correction coefficient to pressure - GAS Phase
+          IF ((-AM0(IJK,0))>SMALL_NUMBER .OR. &
+                   DEN_MGas>SMALL_NUMBER) THEN
+            D_T(IJK,0) = P_SCALE*AREA_FACE*(EPGA+NUM_MGas)/&
+                         ((-AM0(IJK,0))+DEN_MGas)
+          ELSE
+            D_T(IJK,0) = ZERO
+          ENDIF
+
           DO M= 1, MMAX
-            FOA1 = FOA1 + (EPSA(M)*VXF_GS(IJK,M)/&
-                              ( (-AM0(IJK,M))+VXF_GS(IJK,M)+SUM_VXF_SS(M)+SMALL_NUMBER )&
-                           )
-            other_denominator(M) = VXF_GS(IJK,M)*( ((-AM0(IJK,0))+(SUM_VXF_GS - VXF_GS(IJK,M)))/&
-                                                   ((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)&
-                                                  )
-            numeratorxEP(M) = ZERO
-            denominator(M)  = ZERO
+! calculating NUM_MSol_LGas and DEN_MSol_LGas
+            NUM_MSol_LGas = VXF_GS(IJK,M)*EPGA/&
+               ((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)
+            DEN_MSol_LGas = VXF_GS(IJK,M)*(&
+               ((-AM0(IJK,0)) + (SUM_VXF_GS - VXF_GS(IJK,M)))/&
+               ((-AM0(IJK,0)) + SUM_VXF_GS+SMALL_NUMBER))
+
+! calculating NUM_MSol_LSol and DEN_MSol_LSol
+            NUM_MSol_LSol(M) = ZERO
+            DEN_MSol_LSol(M)  = ZERO
             DO L = 1, MMAX
               IF (L .NE. M) THEN
                 LM = FUNLM(L,M)
-                numeratorxEP(M) = numeratorxEP(M) + (&
-                                                     VXF_SS(IJK,LM)*EPSA(L)/&
-                                                     ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
-                                                     ) 
                 SUM_VXF_SS_wt_M = ZERO
                 DO Lp = 1, MMAX
                   IF ( (Lp .NE. L) .AND. (Lp .NE. M) ) THEN
                     LpL = FUNLM(Lp,L)
-                    SUM_VXF_SS_wt_M = SUM_VXF_SS_wt_M + VXF_SS(IJK,LpL)     !Solid L - All other Solids VolxDrag but M summation
+! Solids L - All other Solids VolxDrag but M summation
+                    SUM_VXF_SS_wt_M = SUM_VXF_SS_wt_M + VXF_SS(IJK,LpL)
                   ENDIF
                 ENDDO
-                denominator(M) = denominator(M) + (&
-                                                      VXF_SS(IJK,LM)*(&
-                                                      ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
-                                                      ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
-                                                                     )&
-                                                   )
-              ENDIF
-            ENDDO  ! end do (l=1,mmax)
-          ENDDO   ! end do (m=1,mmax)
-! Linking velocity correction coefficient to pressure - GAS Phase
-          IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR.  (other_ratio_1>SMALL_NUMBER) ) THEN
-            IF(.NOT.CARTESIAN_GRID) THEN
-               D_T(IJK,0) = P_SCALE*AXY(IJK)*(EPGA+FOA1)/( (-AM0(IJK,0))+other_ratio_1 )
-            ELSE
-               D_T(IJK,0) = P_SCALE         *(EPGA+FOA1)/( (-AM0(IJK,0))+other_ratio_1 )
-            ENDIF
-          ELSE
-            D_T(IJK,0) = ZERO
-          ENDIF
-! Linking velocity correction coefficient to pressure - SOLID Phase
-          DO M = 1, MMAX
-            IF ( MOMENTUM_Z_EQ(M) .AND. ( (-AM0(IJK,M)>SMALL_NUMBER) .OR. &
-                 (other_denominator(M)>SMALL_NUMBER) .OR. &
-                 (denominator(M)>SMALL_NUMBER) ) ) THEN
-              IF(.NOT.CARTESIAN_GRID) THEN
-                 D_T(IJK,M) = P_SCALE*AXY(IJK)*(&
-                          ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
-                          ( (-AM0(IJK,M))+other_denominator(M)+denominator(M) )&
-                                                     )
-              ELSE
-                 D_T(IJK,M) = P_SCALE        *(&
-                         ( EPSA(M) + numeratorxEP(M) + (VXF_GS(IJK,M)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS+SMALL_NUMBER)) )/&
-                         ( (-AM0(IJK,M))+other_denominator(M)+denominator(M) )&
-                                                    )
-              ENDIF
 
+                IF(MOMENTUM_Z_EQ(L)) THEN
+                  NUM_MSol_LSol(M) = NUM_MSol_LSol(M) + &
+                     (VXF_SS(IJK,LM)*EPSA(L)/&
+                     ((-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+&
+                     SMALL_NUMBER) ) 
+                  DEN_MSol_LSol(M) = DEN_MSol_LSol(M) + VXF_SS(IJK,LM)*(&
+                     ((-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
+                     ((-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+&
+                     SMALL_NUMBER) )
+                ELSE
+                  DEN_MSol_LSol(M) = DEN_MSol_LSol(M) + VXF_SS(IJK,LM)
+                ENDIF
+              ENDIF  ! end if (l.ne.m)
+            ENDDO  ! end do (l=1,mmax)
+
+! Linking velocity correction coefficient to pressure - SOLIDs Phase
+            IF ( MOMENTUM_Z_EQ(M) .AND. (-AM0(IJK,M)>SMALL_NUMBER .OR. &
+                                       DEN_MSol_LGas>SMALL_NUMBER .OR. &
+                                    DEN_MSol_LSol(M)>SMALL_NUMBER)) THEN
+              D_T(IJK,M) = P_SCALE*AREA_FACE*&
+                 (EPSA(M) + NUM_MSol_LSol(M) + NUM_MSol_LGas)/&
+                 ((-AM0(IJK,M))+DEN_MSol_LGas+DEN_MSol_LSol(M))
             ELSE
               D_T(IJK,M) = ZERO
             ENDIF
+
           ENDDO   ! end do (m=1,mmax)
 
         ENDIF    !end if/else branch Model_B/Model_A 
@@ -1179,12 +1240,15 @@
 ! simulation should be directed for proper evaluation of pressure 
 ! correction terms.
 ! ---------------------------------------------------------------->>>
-!!$omp   parallel do private(IJK, K, IJKT, EPGA, M, SUM_VXF_GS), &
+!!$omp   parallel do private(IJK, K, IJKT, EPGA, M, SUM_VXF_GS,&
+!!$omp&  AREA_FACE), &
 !!$omp&  schedule(static)
    DO IJK = ijkstart3, ijkend3
      IF (IP_AT_T(IJK) .OR. MFLOW_AT_T(IJK)) THEN   !impermeable
        D_T(IJK,0) = ZERO
      ELSE
+             
+       AREA_FACE = merge(ONE, AXY(IJK), CARTESIAN_GRID)
        K = K_OF(IJK)
        IJKT = TOP_OF(IJK)
        EPGA = AVG_Z(EP_G(IJK),EP_G(IJKT),K)
@@ -1192,7 +1256,8 @@
        SUM_VXF_GS = ZERO
        IF (.NOT. QMOMK) THEN
           DO M= 1, LC_MMAX
-            SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)              !Gas - All Solids VolxDrag summation
+! Gas - All Solids VolxDrag summation
+            SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)
           ENDDO
        ELSE
           DO INN = 1, QMOMK_NN
@@ -1204,19 +1269,11 @@
           ENDDO
        ENDIF
 
-       IF ( ((-AM0(IJK,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
+       IF ((-AM0(IJK,0))>SMALL_NUMBER .OR. SUM_VXF_GS>SMALL_NUMBER) THEN
          IF (MODEL_B) THEN
-            IF(.NOT.CARTESIAN_GRID) THEN
-               D_T(IJK,0) = P_SCALE*AXY(IJK)/((-AM0(IJK,0))+SUM_VXF_GS)
-            ELSE
-               D_T(IJK,0) = P_SCALE         /((-AM0(IJK,0))+SUM_VXF_GS)
-            ENDIF
+            D_T(IJK,0) = P_SCALE*AREA_FACE/((-AM0(IJK,0))+SUM_VXF_GS)
          ELSE
-            IF(.NOT.CARTESIAN_GRID) THEN
-               D_T(IJK,0) = P_SCALE*AXY(IJK)*EPGA/((-AM0(IJK,0))+SUM_VXF_GS)
-            ELSE
-               D_T(IJK,0) = P_SCALE         *EPGA/((-AM0(IJK,0))+SUM_VXF_GS)
-            ENDIF
+            D_T(IJK,0) = P_SCALE*AREA_FACE*EPGA/((-AM0(IJK,0))+SUM_VXF_GS)
          ENDIF   !end if/else branch Model_B/Model_A 
        ELSE
          D_T(IJK,0) = ZERO
@@ -1233,7 +1290,7 @@
 ! phase (m=0) z-momentum equation is not solved
 ! ---------------------------------------------------------------->>>
 !!$omp    parallel do private(IJK, K, IJKT, EPSA, L, Lp, M, SUM_VXF_SS, &
-!!$omp&   numeratorxEP, denominator, SUM_VXF_SS_wt_M), &
+!!$omp&   NUM_MSol_LSol, DEN_MSol_LSol, SUM_VXF_SS_wt_M,AREA_FACE), &
 !!$omp&  schedule(static)
    DO IJK = ijkstart3, ijkend3
      IF (IP_AT_T(IJK) .OR. MFLOW_AT_T(IJK) .OR. MODEL_B) THEN
@@ -1241,6 +1298,8 @@
          D_T(IJK,M) = ZERO
        ENDDO
      ELSE
+
+       AREA_FACE = merge(ONE, AXY(IJK), CARTESIAN_GRID)
        K = K_OF(IJK)
        IJKT = TOP_OF(IJK)
 
@@ -1250,50 +1309,49 @@
          DO L = 1, MMAX
            IF (L .NE. M) THEN
              LM = FUNLM(L,M)
-             SUM_VXF_SS(M) = SUM_VXF_SS(M) + VXF_SS(IJK,LM)  !Solid M - All other Solids VolxDrag summation
+! Solids M - All other Solids VolxDrag summation
+             SUM_VXF_SS(M) = SUM_VXF_SS(M) + VXF_SS(IJK,LM)  
            ENDIF
          ENDDO
        ENDDO
 
        DO M= 1, MMAX
-         numeratorxEP(M) = ZERO
-         denominator(M)  = ZERO
+! calculating NUM_MSol_LSol and DEN_MSol_LSol
+         NUM_MSol_LSol(M) = ZERO
+         DEN_MSol_LSol(M)  = ZERO
          DO L = 1, MMAX
            IF (L .NE. M) THEN
              LM = FUNLM(L,M)
-             numeratorxEP(M) = numeratorxEP(M) + (&
-                                                    VXF_SS(IJK,LM)*EPSA(L)/&
-                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
-                                                  )
              SUM_VXF_SS_wt_M = ZERO
              DO Lp = 1, MMAX
                IF ( (Lp .NE. L) .AND. (Lp .NE. M) ) THEN
                  LpL = FUNLM(Lp,L)
-                 SUM_VXF_SS_wt_M = SUM_VXF_SS_wt_M + VXF_SS(IJK,LpL)     !Solid L - All other Solids VolxDrag but M summation
+! Solids L - All other Solids VolxDrag but M summation
+                 SUM_VXF_SS_wt_M = SUM_VXF_SS_wt_M + VXF_SS(IJK,LpL)
                ENDIF
              ENDDO
-             denominator(M) = denominator(M) + (&
-                                                  VXF_SS(IJK,LM)*(&
-                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
-                                                   ( (-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+SMALL_NUMBER )&
-                                                                 )&
-                                                )
-           ENDIF
-         ENDDO
-       ENDDO
+             IF (MOMENTUM_Z_EQ(L)) THEN
+               NUM_MSol_LSol(M) = NUM_MSol_LSol(M) + &
+                 (VXF_SS(IJK,LM)*EPSA(L)/&
+                 ((-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+&
+                 SMALL_NUMBER))
+               DEN_MSol_LSol(M) = DEN_MSol_LSol(M) + VXF_SS(IJK,LM)*(&
+                 ((-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS_wt_M )/&
+                 ((-AM0(IJK,L))+VXF_GS(IJK,L)+SUM_VXF_SS(L)+&
+                 SMALL_NUMBER ))
+              ELSE
+                DEN_MSol_LSol(M) = DEN_MSol_LSol(M) + VXF_SS(IJK,LM)
+              ENDIF
+           ENDIF  ! end if (l.ne.m)
+         ENDDO  ! end do (l=1,mmax)
 
-! Linking velocity correction coefficient to pressure - SOLID Phase (Model_A only)
-       DO M = 1, MMAX
-         IF ( MOMENTUM_Z_EQ(M) .AND. ( (-AM0(IJK,M)>SMALL_NUMBER) .OR. &
-              (VXF_GS(IJK,M)>SMALL_NUMBER) .OR. &
-              (denominator(M)>SMALL_NUMBER) ) ) THEN
-            IF(.NOT.CARTESIAN_GRID) THEN
-               D_T(IJK,M) = P_SCALE*AXY(IJK)*( EPSA(M) + numeratorxEP(M) )/&
-                                             ( (-AM0(IJK,M))+VXF_GS(IJK,M)+denominator(M) )
-            ELSE
-             D_T(IJK,M) = P_SCALE         *( EPSA(M) + numeratorxEP(M) )/&
-                                          ( (-AM0(IJK,M))+VXF_GS(IJK,M)+denominator(M) )
-            ENDIF
+! Linking velocity correction coefficient to pressure - SOLIDs Phase (Model_A only)
+         IF (MOMENTUM_Z_EQ(M) .AND. (-AM0(IJK,M)>SMALL_NUMBER .OR. &
+                                   VXF_GS(IJK,M)>SMALL_NUMBER .OR. &
+                                DEN_MSol_LSol(M)>SMALL_NUMBER)) THEN
+           D_T(IJK,M) = P_SCALE*AREA_FACE*&
+             (EPSA(M) + NUM_MSol_LSol(M))/&
+             ((-AM0(IJK,M))+VXF_GS(IJK,M)+DEN_MSol_LSol(M))
          ELSE
            D_T(IJK,M) = ZERO
          ENDIF
