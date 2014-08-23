@@ -31,8 +31,6 @@
       INTEGER :: lNEXT_REC
       INTEGER :: lDIMN
 
-      LOGICAL :: LOGICAL_TMP
-
       DOUBLE PRECISION :: VERSION 
 
 !-----------------------------------------------
@@ -100,6 +98,7 @@
          ENDDO
       ENDDO
 
+      CALL WRITE_RES_DES(lNEXT_REC, COLLISION_NUM)
       DO LC1=1, COLLISION_NUM
          CALL WRITE_RES_DES(lNEXT_REC, PV_COLL(LC1))
          DO LC2=1, lDIMN
