@@ -620,6 +620,14 @@ dist_mfix_SOURCES += model/usr_write_out0.f
 dist_postmfix_SOURCES += model/usr_write_out0.f
 endif
 
+if USR_DRAG
+nodist_mfix_SOURCES += usr_drag.f
+nodist_postmfix_SOURCES += usr_drag.f
+else
+dist_mfix_SOURCES += model/usr_drag.f
+dist_postmfix_SOURCES += model/usr_drag.f
+endif
+
 if USR_RATES
 nodist_mfix_SOURCES += species.inc usr_rates.f
 nodist_postmfix_SOURCES += species.inc usr_rates.f

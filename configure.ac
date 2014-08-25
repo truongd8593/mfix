@@ -38,6 +38,7 @@ AM_CONDITIONAL([USR3], [test "$ac_cv_file_usr3_f" = yes])
 AM_CONDITIONAL([USR_MOD], [test "$ac_cv_file_usr_mod_f" = yes])
 AM_CONDITIONAL([USR_WRITE_OUT0], [test "$ac_cv_file_usr_write_out0_f" = yes])
 AM_CONDITIONAL([USR_RATES], [test "$ac_cv_file_usr_rates_f" = yes])
+AM_CONDITIONAL([USR_DRAG], [test "$ac_cv_file_usr_drag_f" = yes])
 
 if test "$ac_cv_file_usr_rates_f" = yes; then
    if test "$ac_cv_file_mfix_dat" = no; then
