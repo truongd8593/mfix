@@ -142,6 +142,7 @@
       INTEGER,PARAMETER :: KOCH_HILL_PCF=8
       INTEGER,PARAMETER :: BVK=9
       INTEGER,PARAMETER :: HYS=10
+      INTEGER,PARAMETER :: USER_DRAG=11
 
 ! filtered/subgrid corrections to the drag coefficient & granular 
 ! stress terms including granular viscosity and solids pressure

@@ -24,16 +24,5 @@
 ! Temporary storage: Volume x average at momentum cell centers
 !      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  VxF_gs
  
-! Number specifying the C_Ds function to use.
-      INTEGER :: CD_FUNCTION_ENUM
-
-! Enumerated list of C_Ds functions for calculating either the
-! 1) Single sphere drag correlation 
-! 2) Single sphere drag correlation multipling Reynolds number or
-      INTEGER, PARAMETER :: SCHILLER_1933 = 1  ! Schiller and Naumann (1933)
-      INTEGER, PARAMETER :: DALLA_1948    = 2  ! Dalla Valle (1948)
-      INTEGER, PARAMETER :: DELLINO_2005  = 3  ! Dellino et al. (2005)
-      INTEGER, PARAMETER :: TURTON_1986   = 4  ! Turton and Levenspiel (1986)
-
 
       END MODULE drag

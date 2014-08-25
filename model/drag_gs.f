@@ -18,36 +18,35 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE DRAG_GS(M, DISCRETE_FLAG, IER) 
+      SUBROUTINE DRAG_GS(M, DISCRETE_FLAG, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE fldvar
       USE geometry
       USE indices
       USE physprop
       USE run
       USE constant
-      USE compar  
-      USE drag  
-      USE sendrecv 
+      USE compar
+      USE drag
+      USE sendrecv
       USE discretelement
-      USE ur_facs 
+      USE ur_facs
       USE funits
-      USE MMS
-
+      USE mms
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
 ! Solids phase index
-      INTEGER, INTENT(IN) :: M 
-! Error index 
-      INTEGER, INTENT(INOUT) :: IER 
+      INTEGER, INTENT(IN) :: M
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
 ! Flag used only when the hybrid model is invoked and notifies the
 ! routine that the solid phase index M refers to the indice of a
 ! discrete 'phase' not a continuous phase so that the appropriate
@@ -60,29 +59,29 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! indices 
+! indices
       INTEGER :: I, IJK, IMJK, IJMK, IJKM
 ! cell center value of U_sm, V_sm, W_sm
       DOUBLE PRECISION :: USCM, VSCM, WSCM
-! cell center value of x, y and z-particle velocity 
+! cell center value of x, y and z-particle velocity
       DOUBLE PRECISION :: USCM_HYS, VSCM_HYS, WSCM_HYS
 ! cell center value of U_g, V_g, W_g
       DOUBLE PRECISION :: UGC, VGC, WGC
-! magnitude of gas-solids relative velocity 
-      DOUBLE PRECISION :: VREL 
+! magnitude of gas-solids relative velocity
+      DOUBLE PRECISION :: VREL
 ! gas laminar viscosity redefined here to set viscosity at pressure
 ! boundaries
       DOUBLE PRECISION :: Mu
-! particle drag coefficient 
-      DOUBLE PRECISION :: DgA  
+! drag coefficient
+      DOUBLE PRECISION :: DgA
 ! current value of F_gs (i.e., without underrelaxation)
-      DOUBLE PRECISION F_gstmp 
+      DOUBLE PRECISION F_gstmp
 ! indices of solids phases (continuous, discrete)
       INTEGER :: CM, DM, L
 ! temporary shift of total number of solids phases to account for both
 ! discrete and continuous solids phases used for the hybrid mdoel
       INTEGER :: MAXM
-! tmp local variable for the particle diameter of solids 
+! tmp local variable for the particle diameter of solids
 ! phase M (continuous or discrete)
       DOUBLE PRECISION :: DP_loc(2*DIM_M)
 ! tmp local variable for the solids volume fraction of solids
@@ -91,10 +90,7 @@
 ! tmp local variable for the particle density of solids
 ! phase M (continuous or discrete)
       DOUBLE PRECISION :: ROs_loc(2*DIM_M)
-! tmp local variable for the particle shape factor of solids
-! phase M (continuous or discrete)
-      DOUBLE PRECISION :: SFAC_loc(2*DIM_M)
-! correction factors for implementing polydisperse drag model 
+! correction factors for implementing polydisperse drag model
 ! proposed by van der Hoef et al. (2005)
       DOUBLE PRECISION :: F_cor, tmp_sum, tmp_fac
 ! average particle diameter in polydisperse systems
@@ -105,8 +101,8 @@
       DOUBLE PRECISION :: phis
 ! temporary local variables to use for dummy arguments in subroutines
 ! void fraction, gas density, gas bulk density, solids volume fraction
-! particle diameter, particle density     
-      DOUBLE PRECISION :: EPG, ROg, ROPg, EP_SM, DPM, ROs, SFAC
+! particle diameter, particle density
+      DOUBLE PRECISION :: EPG, ROg, ROPg, EP_SM, DPM, ROs
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -122,28 +118,28 @@
 !$omp           UGC, VGC, WGC, USCM, VSCM, WSCM, VREL, USCM_HYS,     &
 !$omp           VSCM_HYS, WSCM_HYS, tmp_sum, tmp_fac, Y_i, F_cor,    &
 !$omp           EP_SM, EPs_loc, ROs_loc, DP_loc, DPA, DPM, ROs,      &
-!$omp           phis, EPg, ROg, ROPg, Mu, DgA, F_gstmp) 
+!$omp           phis, EPg, ROg, ROPg, Mu, DgA, F_gstmp)
+
 
       DO IJK = ijkstart3, ijkend3
 
-         IF (FLUIDorP_FLOW_AT(IJK)) THEN 
+         IF (FLUIDorP_FLOW_AT(IJK)) THEN
 
-            I = I_OF(IJK) 
-            IMJK = IM_OF(IJK) 
-            IJMK = JM_OF(IJK) 
-            IJKM = KM_OF(IJK) 
+            I = I_OF(IJK)
+            IMJK = IM_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IJKM = KM_OF(IJK)
 
 ! assign local variables for DP_locm EPs_loc, and MAXM.  The former
-! represent arrays for the particle diameter, solids volume fraction, 
-! and the latter the number of particle types                 
+! represent arrays for the particle diameter, solids volume fraction,
+! and the latter the number of particle types
             IF (.NOT.DES_CONTINUUM_HYBRID) THEN
                IF (DES_CONTINUUM_COUPLED) THEN
                   MAXM = DES_MMAX
                   DO DM = 1,MAXM
                      DP_loc(DM) = DES_D_p0(DM)
-                     EPs_loc(DM) = DES_ROP_S(IJK,DM)/DES_RO_S(DM) 
+                     EPs_loc(DM) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
                      ROs_loc(DM) = DES_RO_S(DM)
-                     SFAC_loc(DM) = SHAPE_FACTOR(DM)
                   ENDDO
                ELSE
                   MAXM = SMAX
@@ -151,7 +147,6 @@
                      DP_loc(CM) = D_p(IJK,CM)
                      EPs_loc(CM) = EP_S(IJK,CM)
                      ROs_loc(CM) = RO_S(IJK,CM)
-                     SFAC_loc(CM) = SHAPE_FACTOR(CM)
                   ENDDO
                ENDIF
             ELSE   ! des_continuum_hybrid branch
@@ -165,51 +160,47 @@
 ! a discrete particle 'phase' so populate DP, EPS starting with discrete
 ! phases
                   DO DM = 1,DES_MMAX
-                     DP_loc(DM) = DES_D_p0(DM)         
+                     DP_loc(DM) = DES_D_p0(DM)
                      EPs_loc(DM) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
                      ROs_loc(DM) = DES_RO_S(DM)
-                     SFAC_loc(DM) = SHAPE_FACTOR(DM + SMAX)
                   ENDDO
                   DO CM = 1,SMAX
                      L = DES_MMAX + CM
                      DP_loc(L) = D_P(IJK,CM)
                      EPs_loc(L) = EP_S(IJK,CM)
                      ROs_loc(L) = RO_S(IJK,CM)
-                     SFAC_loc(L) = SHAPE_FACTOR(CM)
                   ENDDO
                ELSE
 ! the subroutine is being called to calculate the drag coefficient on
 ! a continous solids phase so populate DP, EPS starting with continuous
 ! phases
                   DO CM = 1,SMAX
-                     DP_loc(CM) = D_p(IJK,CM)         
+                     DP_loc(CM) = D_p(IJK,CM)
                      EPs_loc(CM) = EP_S(IJK,CM)
                      ROs_loc(CM) = RO_S(IJK,CM)
-                     SFAC_loc(CM) = SHAPE_FACTOR(CM)
                   ENDDO
                   DO DM = 1,DES_MMAX
                      L = SMAX + DM
                      DP_loc(L) = DES_D_p0(DM)
                      EPs_loc(L) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
                      ROs_loc(L) = DES_RO_S(DM)
-                     SFAC_loc(L) = SHAPE_FACTOR(L)
-                  ENDDO          
+                  ENDDO
                ENDIF
             ENDIF   ! end if/else (.not.des_continuum_hybrid)
 
 ! Calculate velocity components at i, j, k
-            UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I) 
-            VGC = AVG_Y_N(V_G(IJMK),V_G(IJK)) 
-            WGC = AVG_Z_T(W_G(IJKM),W_G(IJK)) 
+            UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
+            VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
+            WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
             IF((DES_CONTINUUM_COUPLED .AND. .NOT.DES_CONTINUUM_HYBRID) .OR. &
                (DES_CONTINUUM_HYBRID .AND. DISCRETE_FLAG)) THEN
 ! note given current dem setup these are not defined for p_flow_at!
                USCM = DES_U_S(IJK,M)
                VSCM = DES_V_S(IJK,M)
                WSCM = DES_W_S(IJK,M)
-            ELSE               
-               USCM = AVG_X_E(U_S(IMJK,M),U_S(IJK,M),I) 
-               VSCM = AVG_Y_N(V_S(IJMK,M),V_S(IJK,M)) 
+            ELSE
+               USCM = AVG_X_E(U_S(IMJK,M),U_S(IJK,M),I)
+               VSCM = AVG_Y_N(V_S(IJMK,M),V_S(IJK,M))
                WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M))
             ENDIF
 ! magnitude of gas-solids relative velocity
@@ -242,9 +233,9 @@
             DO L = 1, MAXM
 ! this is slightly /= one-ep_g due to round-off
                phis = phis + EPs_loc(L)
-            ENDDO 
+            ENDDO
 
-! calculate the average paricle diameter and particle ratio            
+! calculate the average paricle diameter and particle ratio
             DPA = ZERO
             tmp_sum = ZERO
             tmp_fac = ZERO
@@ -252,10 +243,10 @@
                IF (phis .GT. ZERO) THEN
                   tmp_fac = EPs_loc(L)/phis
                   tmp_sum = tmp_sum + tmp_fac/DP_loc(L)
-               ELSE
+                ELSE
                   tmp_sum = tmp_sum + ONE/DP_loc(L) ! not important, but will avoid NaN's in empty cells
-               ENDIF
-            ENDDO 
+                ENDIF
+            ENDDO
             DPA = ONE / tmp_sum
             Y_i = DP_loc(M)/DPA
 
@@ -266,49 +257,55 @@
             EP_SM = EPs_loc(M)
             DPM = DP_loc(M)
             ROs = ROs_loc(M)
-            SFAC= SFAC_loc(M)
+
 
 ! determine the drag coefficient
-            IF (EP_SM <= ZERO) THEN 
-               DgA = ZERO 
-            ELSEIF (EPg == ZERO) THEN  
+            IF (EP_SM <= ZERO) THEN
+               DgA = ZERO
+            ELSEIF (EPg == ZERO) THEN
 ! this case will already be caught in most drag subroutines whenever
 ! RE==0 (for correlations in which RE includes EPg). however, this will
 ! prevent potential divisions by zero in some models by setting it now.
                DgA = ZERO
 ! Force a ZERO drag coefficient for MMS cases.
             ELSEIF (USE_MMS) THEN
-               DgA = ZERO   
+               DgA = ZERO
             ELSE
                SELECT CASE(DRAG_TYPE_ENUM)
+
                CASE (SYAM_OBRIEN)
-                  CALL DRAG_SYAM_OBRIEN(DgA,EPG,Mu,ROg,VREL,&
-                      DPM,SFAC,ROs)
+                  CALL DRAG_SYAM_OBRIEN(DgA,EPG,Mu,ROg,VREL,DPM)
+
                CASE (GIDASPOW)
-                  CALL DRAG_GIDASPOW(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                       DPM,SFAC,ROs)
+                  CALL DRAG_GIDASPOW(DgA,EPg,Mu,ROg,ROPg,VREL,DPM)
+
                CASE (GIDASPOW_PCF)
-                  CALL DRAG_GIDASPOW(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                       DPA,SFAC,ROs)
+                  CALL DRAG_GIDASPOW(DgA,EPg,Mu,ROg,ROPg,VREL,DPA)
+
                CASE (GIDASPOW_BLEND)
-                  CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                       DPM,SFAC,ROs)
+                  CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,DPM)
+
                CASE (GIDASPOW_BLEND_PCF)
-                  CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                       DPA,SFAC,ROs)
+                  CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,DPA)
+
                CASE (WEN_YU)
-                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROg,ROPg,VREL,DPM,SFAC,ROs)
+                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROPg,VREL,DPM)
+
                CASE (WEN_YU_PCF)
-                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROg,ROPg,VREL,DPA,SFAC,ROs)
-                CASE (KOCH_HILL)
-                  CALL DRAG_KOCH_HILL(DgA,EPg,Mu,ROPg,VREL,&
-                       DPM,DPM,phis)
+                  CALL DRAG_WEN_YU(DgA,EPg,Mu,ROPg,VREL,DPA)
+
+               CASE (KOCH_HILL)
+                  CALL DRAG_KOCH_HILL(DgA,EPg,Mu,ROPg,VREL,DPM,DPM,phis)
+
                CASE (KOCH_HILL_PCF)
-                  CALL DRAG_KOCH_HILL(DgA,EPg,Mu,ROPg,VREL,&
-                       DPM,DPA,phis)
+                  CALL DRAG_KOCH_HILL(DgA,EPg,Mu,ROPg,VREL,DPM,DPA,phis)
+
                CASE (BVK)
-                  CALL DRAG_BVK(DgA,EPg,Mu,ROPg,VREL,&
-                       DPM,DPA,phis)
+                  CALL DRAG_BVK(DgA,EPg,Mu,ROPg,VREL,DPM,DPA,phis)
+
+               CASE (USER_DRAG)
+                  CALL DRAG_USR(IJK,M,DgA,EPg,Mu,ROg,VREL,DPM,ROs)
+
                CASE (HYS)
 ! calculate velocity components of each solids phase
                   USCM_HYS = ZERO
@@ -322,27 +319,29 @@
                            AVG_Y_N(V_S(IJMK,L),V_S(IJK,L)))
                         WSCM_HYS = WSCM_HYS + EPs_loc(L)*(WGC - &
                            AVG_Z_T(W_S(IJKM,L),W_S(IJK,L)))
-                     ENDDO 
+                     ENDDO
                      USCM_HYS = USCM_HYS/phis
                      VSCM_HYS = VSCM_HYS/phis
                      WSCM_HYS = WSCM_HYS/phis
                   ENDIF
 ! magnitude of gas-solids relative velocity
                   VREL = SQRT(USCM_HYS**2 +VSCM_HYS**2 +WSCM_HYS**2)
+
                   CALL DRAG_HYS(DgA,EPg,Mu,ROPg,VREL,&
                        DP_loc(:),DPA,Y_i,EPs_loc(:),phis,M,MAXM,IJK)
+
                CASE DEFAULT
-                  CALL START_LOG 
+                  CALL START_LOG
                   IF(.NOT.DMP_LOG) call open_pe_log(ier)
                   IF(DMP_LOG) WRITE (*, '(A,A)') &
                      'Unknown DRAG_TYPE: ', DRAG_TYPE
                   WRITE (UNIT_LOG, '(A,A)') 'Unknown DRAG_TYPE: ', DRAG_TYPE
-                  CALL END_LOG 
-                  CALL mfix_exit(myPE)  
+                  CALL END_LOG
+                  CALL mfix_exit(myPE)
                END SELECT   ! end selection of drag_type
             ENDIF   ! end if/elseif/else (ep_sm <= zero, ep_g==0)
 
-! modify the drag coefficient to account for subgrid domain effects  
+! modify the drag coefficient to account for subgrid domain effects
             IF (SUBGRID_TYPE /= UNDEFINED_C) THEN
                IF (TRIM(SUBGRID_TYPE) .EQ. 'IGCI') THEN
                   CALL SUBGRID_DRAG_IGCI(DgA,EPg,Mu,ROg,DPM,ROs,IJK)
@@ -369,20 +368,20 @@
                   DRAG_TYPE_ENUM == KOCH_HILL_PCF .OR. &
                   DRAG_TYPE_ENUM == BVK) THEN
 ! see erratum by Beetstra et al. (2007) : the correction factor differs
-! for model A versus model B. 
+! for model A versus model B.
 ! application of the correction factor for model A is found from
 ! the correction factor for model B and neglects the Y_i**3 term
                   IF(Model_B) THEN
                      IF (M == 1) THEN
-                        F_cor = (EPg*Y_i + phis*Y_i**2) 
+                        F_cor = (EPg*Y_i + phis*Y_i**2)
                      ELSE
                         F_cor = (EPg*Y_i + phis*Y_i**2 + &
-                           0.064d0*EPg*Y_i**3) 
+                           0.064d0*EPg*Y_i**3)
                      ENDIF
                   ELSE
                      F_cor = Y_i
                   ENDIF
-                  DgA = ONE/(Y_i*Y_i) * DgA * F_cor 
+                  DgA = ONE/(Y_i*Y_i) * DgA * F_cor
                ENDIF
 
 ! Calculate the drag coefficient (Model B coeff = Model A coeff/EP_g); all other models, eg., Wen_Yu
@@ -409,13 +408,13 @@
                   F_gs(IJK,MMAX) = F_gs(IJK,MMAX) + F_gs(IJK,M)
                ENDIF
             ENDIF
-         
+
          ELSE   ! .not.(fluidorp_flow_at(ijk)) branch
 
             IF (DES_CONTINUUM_HYBRID .AND. DISCRETE_FLAG) THEN
                F_GDS(IJK,M) = ZERO
             ELSE
-               F_GS(IJK,M) = ZERO 
+               F_GS(IJK,M) = ZERO
             ENDIF
 
             IF(KT_TYPE_ENUM == GHD_2007) F_gs(IJK, MMAX) = ZERO
@@ -424,74 +423,62 @@
 
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 
-      RETURN  
-      END SUBROUTINE DRAG_GS 
+      RETURN
+      END SUBROUTINE DRAG_GS
 
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Function(s): FUN_C_Ds                                               C
+!  Function(s): C_DsxRe                                                C
 !  Purpose:                                                            C
 !     Calculate single sphere drag correlation multiplied by           C
 !     the Reynolds number or                                           C
-!     Calculate the single sphere drag correlation                     C
+!     Calculate the single sphere drag correlation                     C      
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
-      DOUBLE PRECISION FUNCTION FUN_C_DS(RE, DPM, ROg, ROs, SFAC, Mug)
-
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      use param1, only: SMALL_NUMBER
-      use constant, only: GRAVITY
-      use drag, only: CD_FUNCTION_ENUM
-      use drag, only: SCHILLER_1933
-      use drag, only: DALLA_1948
-      use drag, only: DELLINO_2005
-      use drag, only: TURTON_1986
-
+! Dalla Valle (1948)
+!----------------------------------------------------------------->>>
+      DOUBLE PRECISION FUNCTION C_DSXRE_DV(RE)
+      USE param
+      USE param1
       IMPLICIT NONE
-!-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
-      DOUBLE PRECISION, INTENT(IN) :: RE ! Reynolds number 
-      DOUBLE PRECISION, INTENT(IN) :: DPM,ROg,ROs,SFAC,MUg
-!-----------------------------------------------
+      DOUBLE PRECISION, INTENT(IN) :: RE ! Reynolds number
 
-      SELECT CASE(CD_FUNCTION_ENUM)
+      C_DSXRE_DV = (0.63D0*SQRT(RE) + 4.8D0)**2
+      RETURN
+      END FUNCTION C_DSXRE_DV
+!-----------------------------------------------------------------<<<
+
+! Turton and Levenspiel (1986)
+!----------------------------------------------------------------->>>
+      DOUBLE PRECISION FUNCTION C_DSXRE_TL(RE)
+      USE param
+      USE param1
+      IMPLICIT NONE
+      DOUBLE PRECISION, INTENT(IN) :: RE ! Reynolds number
+
+      C_DSXRE_TL = 24.D0*(1.D0 + 0.173D0*RE**0.657D0) + &
+         0.413D0*RE**2.09D0/(RE**1.09D0 + 16300.D0)
+      RETURN
+      END FUNCTION C_DSXRE_TL
+!-----------------------------------------------------------------<<<
 
 
 ! Schiller and Naumann (1933)
-!------------------------------------------------------------------>>
-      CASE(SCHILLER_1933)
-         FUN_C_DS = 24.D0*(1.0d0 + 0.15d0*RE**0.687d0) / &
-            (RE+SMALL_NUMBER)
+!----------------------------------------------------------------->>>
+      DOUBLE PRECISION FUNCTION C_DS_SN(RE)
+      USE param
+      USE param1
+      IMPLICIT NONE
+      DOUBLE PRECISION, INTENT(IN) :: RE ! Reynolds number
 
-! Dalla Valle (1948) (C_DSXRE)
-!------------------------------------------------------------------>>
-      CASE(DALLA_1948)
-         FUN_C_DS = (0.63D0*SQRT(RE) + 4.8D0)**2
-
-! Dellino et al. (2005)
-!------------------------------------------------------------------>>
-      CASE(DELLINO_2005) 
-         FUN_C_DS = (0.69d0*GRAVITY*(DPM**3)*ROg*1.33d0*(ROs-ROg))/    &
-         (Mug**2*((GRAVITY*(SFAC**1.6d0)*(DPM**3)*ROg*(ROs-ROg)) /     &
-         Mug**2)**1.0412d0)
-         RETURN
-
-! Turton and Levenspiel (1986) (C_DSXRE)
-!------------------------------------------------------------------>>
-      CASE(TURTON_1986)
-         FUN_C_DS = 24.D0*(1.D0 + 0.173D0*RE**0.657D0) + &
-            0.413D0*RE**2.09D0/(RE**1.09D0 + 16300.D0)
-
-      END SELECT
-
+      C_DS_SN = 24.D0*(1.D0 + 0.15D0*RE**0.687D0)/(RE+SMALL_NUMBER)
       RETURN
-      END FUNCTION FUN_C_DS
+      END FUNCTION C_DS_SN
+!-----------------------------------------------------------------<<<
+
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -506,77 +493,70 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
       SUBROUTINE DRAG_SYAM_OBRIEN(lDgA,EPg,Mug,ROg,VREL,&
-                 DPM,SFAC,ROs)
+                 DPM)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1
-      USE constant, only : drag_c1, drag_d1, c, GRAVITY
-
+      USE constant, only : drag_c1, drag_d1, c
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
 ! drag coefficient
       DOUBLE PRECISION, INTENT(OUT) :: ldGA
-! gas volume fraction 
+! gas volume fraction
       DOUBLE PRECISION, INTENT(IN) :: EPg
-! gas laminar viscosity 
+! gas laminar viscosity
       DOUBLE PRECISION, INTENT(IN) :: Mug
 ! gas density
       DOUBLE PRECISION, INTENT(IN) :: ROg
-! Magnitude of gas-solids relative velocity 
+! Magnitude of gas-solids relative velocity
       DOUBLE PRECISION, INTENT(IN) :: VREL
 ! particle diameter of solids phase M
       DOUBLE PRECISION, INTENT(IN) :: DPM
-! Particle shape factor
-      DOUBLE PRECISION, INTENT(IN) :: SFAC
-! particle density of solids phase M
-      DOUBLE PRECISION, INTENT(IN) :: ROs
-! Drag coefficient x Re
-      DOUBLE PRECISION :: C_d      
 !-----------------------------------------------
 ! Local parameters
 !-----------------------------------------------
 !     Parameters in the Cluster-effect model
 !     PARAMETER (a1 = 250.)   !for G_s = 98 kg/m^2.s
 !     PARAMETER (a1 = 1500.)  !for G_s = 147 kg/m^2.s
-!     a1 depends upon solids flux.  It has been represented by C(1) 
+!     a1 depends upon solids flux.  It has been represented by C(1)
 !     defined in the data file.
-      DOUBLE PRECISION, PARAMETER :: A2 = 0.005D0 
-      DOUBLE PRECISION, PARAMETER :: A3 = 90.0D0 
-      DOUBLE PRECISION, PARAMETER :: RE_C = 5.D0 
-      DOUBLE PRECISION, PARAMETER :: EP_C = 0.92D0 
+      DOUBLE PRECISION, PARAMETER :: A2 = 0.005D0
+      DOUBLE PRECISION, PARAMETER :: A3 = 90.0D0
+      DOUBLE PRECISION, PARAMETER :: RE_C = 5.D0
+      DOUBLE PRECISION, PARAMETER :: EP_C = 0.92D0
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! Variables which are function of EP_g
       DOUBLE PRECISION :: A, B
-! Ratio of settling velocity of a multiparticle system to 
+! Ratio of settling velocity of a multiparticle system to
 ! that of a single particle
-      DOUBLE PRECISION :: V_rm 
-! Reynolds number 
+      DOUBLE PRECISION :: V_rm
+! Reynolds number
       DOUBLE PRECISION :: RE
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
 ! Single sphere drag coefficient x Re
-      DOUBLE PRECISION, EXTERNAL :: FUN_C_DS
+      DOUBLE PRECISION, EXTERNAL :: C_DSXRE_DV
 !-----------------------------------------------
 
       IF(Mug > ZERO) THEN
          RE = DPM*VREL*ROg/Mug
       ELSE
-         RE = LARGE_NUMBER 
+         RE = LARGE_NUMBER
       ENDIF
 
 ! Calculate V_rm
-      A = EPg**4.14D0 
-      IF (EPg <= 0.85D0) THEN 
-         B = drag_c1*EPg**1.28D0 
-      ELSE 
+      A = EPg**4.14D0
+      IF (EPg <= 0.85D0) THEN
+         B = drag_c1*EPg**1.28D0
+      ELSE
         B = EPg**drag_d1
       ENDIF
 
@@ -584,21 +564,20 @@
            SQRT((3.6D-3)*RE*RE+0.12D0*RE*(2.D0*B-A)+A*A) )
 
 !------------------Begin cluster correction --------------------------
-! uncomment the following four lines ... 
+! uncomment the following four lines ...
 !       V_RM = V_RM * (ONE + C(1)*&
 !                      EXP(-A2*(RE-RE_C)**2 - A3*(EPg-EP_C)**2)* &
-!                      RE*(1. - EPg)) 
+!                      RE*(1. - EPg))
 !------------------End cluster correction ----------------------------
-      C_d = FUN_C_DS(RE/V_RM, DPM, ROg, ROs, SFAC, MUg)
 
-      lDgA = 0.75D0*Mug*EPg*C_d/(V_RM*DPM*DPM)
+      lDgA = 0.75D0*Mug*EPg*C_DSXRE_DV(RE/V_RM)/(V_RM*DPM*DPM)
 
       IF (RE == ZERO) lDgA = ZERO
 
       RETURN
       END SUBROUTINE DRAG_SYAM_OBRIEN
 
-      
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: DRAG_GIDASPOW                                           C
@@ -610,62 +589,58 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
       SUBROUTINE DRAG_GIDASPOW(lDgA,EPg,Mug,ROg,ROPg,VREL,&
-                 DPM,SFAC,ROs)
+                 DPM)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1
-
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
 ! drag coefficient
       DOUBLE PRECISION, INTENT(OUT) :: lDgA
-! gas volume fraction 
+! gas volume fraction
       DOUBLE PRECISION, INTENT(IN) :: EPg
-! gas laminar viscosity 
+! gas laminar viscosity
       DOUBLE PRECISION, INTENT(IN) :: Mug
 ! gas density
       DOUBLE PRECISION, INTENT(IN) :: ROg
 ! gas density*EP_g
-      DOUBLE PRECISION, INTENT(IN) :: ROPg      
-! Magnitude of gas-solids relative velocity 
+      DOUBLE PRECISION, INTENT(IN) :: ROPg
+! Magnitude of gas-solids relative velocity
       DOUBLE PRECISION, INTENT(IN) :: VREL
 ! particle diameter of solids phase M or
 ! average particle diameter if PCF
       DOUBLE PRECISION, INTENT(IN) :: DPM
-! Particle shape factor
-      DOUBLE PRECISION, INTENT(IN) :: SFAC
-! particle density of solids phase M
-      DOUBLE PRECISION, INTENT(IN) :: ROs
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Reynolds number 
+! Reynolds number
       DOUBLE PRECISION :: RE
-! Single sphere drag coefficient 
-      DOUBLE PRECISION :: C_d 
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-! Single sphere drag coefficient: Schiller and Naumann
-      DOUBLE PRECISION, EXTERNAL :: FUN_C_DS
+! Single sphere drag coefficient
+      DOUBLE PRECISION :: C_d
 !-----------------------------------------------
 
+      IF(Mug > ZERO) THEN
 ! Note the presence of gas volume fraction in ROPG
-      RE = merge(DPM*VREL*ROPg/Mug, LARGE_NUMBER, MUg > ZERO)
+         RE = DPM*VREL*ROPg/Mug
+      ELSE
+         RE = LARGE_NUMBER
+      ENDIF
 
-! Dense phase 
+! Dense phase
       IF(EPg <= 0.8D0) THEN
          lDgA = 150D0*(ONE-EPg)*Mug / (EPg*DPM**2) + &
                 1.75D0*ROg*VREL/DPM
       ELSE
 ! Dilute phase - EP_g >= 0.8
          IF(RE <= 1000D0)THEN
-            C_d = FUN_C_DS(RE, DPM, ROg, ROs, SFAC, Mug)
+! this could be replaced with the function C_DS_SN
+            C_d = (24.D0/(RE+SMALL_NUMBER)) * &
+                  (ONE + 0.15D0 * RE**0.687D0)
          ELSE
             C_d = 0.44D0
          ENDIF
@@ -673,7 +648,7 @@
       ENDIF
 
       IF (RE == ZERO) lDgA = ZERO
-    
+
       RETURN
       END SUBROUTINE DRAG_GIDASPOW
 
@@ -696,12 +671,12 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
       SUBROUTINE DRAG_GIDASPOW_BLEND(lDgA,EPg,Mug,ROg,ROPg,VREL,&
-                 DPM,SFAC,ROs)
+                 DPM)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1
       USE constant, only : PI
       IMPLICIT NONE
@@ -710,51 +685,46 @@
 !-----------------------------------------------
 ! drag coefficient
       DOUBLE PRECISION, INTENT(OUT) :: lDgA
-! gas volume fraction 
+! gas volume fraction
       DOUBLE PRECISION, INTENT(IN) :: EPg
-! gas laminar viscosity 
+! gas laminar viscosity
       DOUBLE PRECISION, INTENT(IN) :: Mug
 ! gas density
       DOUBLE PRECISION, INTENT(IN) :: ROg
 ! gas density*EP_g
-      DOUBLE PRECISION, INTENT(IN) :: ROPg      
-! Magnitude of gas-solids relative velocity 
+      DOUBLE PRECISION, INTENT(IN) :: ROPg
+! Magnitude of gas-solids relative velocity
       DOUBLE PRECISION, INTENT(IN) :: VREL
 ! particle diameter of solids phase M or
 ! average particle diameter if PCF
       DOUBLE PRECISION, INTENT(IN) :: DPM
-! Particle shape factor
-      DOUBLE PRECISION, INTENT(IN) :: SFAC
-! particle density of solids phase M
-      DOUBLE PRECISION, INTENT(IN) :: ROs
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Reynolds number 
+! Reynolds number
       DOUBLE PRECISION :: RE
-! Single sphere drag coefficient 
-      DOUBLE PRECISION :: C_d 
+! Single sphere drag coefficient
+      DOUBLE PRECISION :: C_d
 ! Gidaspow switch function variables
       DOUBLE PRECISION :: Ergun
       DOUBLE PRECISION :: WenYu
-      DOUBLE PRECISION :: PHI_gs      
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-! Single sphere drag coefficient: Schiller and Naumann
-      DOUBLE PRECISION, EXTERNAL :: FUN_C_DS
+      DOUBLE PRECISION :: PHI_gs
 !-----------------------------------------------
 
+      IF(Mug > ZERO) THEN
 ! Note the presence of gas volume fraction in ROPG
-      RE = merge(DPM*VREL*ROPg/Mug, LARGE_NUMBER, MUg > ZERO)
+         RE = DPM*VREL*ROPg/Mug
+      ELSE
+         RE = LARGE_NUMBER
+      ENDIF
 
 ! Dense phase - EP_g <= 0.8
       Ergun = 150D0*(ONE-EPg)*Mug / (EPg*DPM**2) + &
                1.75D0*ROg*VREL/DPM
-
 ! Dilute phase - EP_g >= 0.8
       IF(RE <= 1000D0)THEN
-         C_d = FUN_C_DS(RE, DPM, ROg, ROs, SFAC, Mug)
+         C_d = (24.D0/(RE+SMALL_NUMBER)) * &
+           (ONE + 0.15D0 * RE**0.687D0)
       ELSE
          C_d = 0.44D0
       ENDIF
@@ -782,63 +752,56 @@
 !        Series 62: 100-111.                                           C
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-      SUBROUTINE DRAG_WEN_YU(lDgA,EPg,Mug,ROg,ROPg,VREL,DPM,SFAC,ROs)
-                                                         
+
+      SUBROUTINE DRAG_WEN_YU(lDgA,EPg,Mug,ROPg,VREL,DPM)
+
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1
-
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
 ! drag coefficient
       DOUBLE PRECISION, INTENT(OUT) :: lDgA
-! gas volume fraction 
+! gas volume fraction
       DOUBLE PRECISION, INTENT(IN) :: EPg
-! gas laminar viscosity 
+! gas laminar viscosity
       DOUBLE PRECISION, INTENT(IN) :: Mug
-! gas density
-      DOUBLE PRECISION, INTENT(IN) :: ROg
 ! gas density*EP_g
       DOUBLE PRECISION, INTENT(IN) :: ROPg
-! Magnitude of gas-solids relative velocity 
+! Magnitude of gas-solids relative velocity
       DOUBLE PRECISION, INTENT(IN) :: VREL
 ! particle diameter of solids phase M or
 ! average particle diameter if PCF
       DOUBLE PRECISION, INTENT(IN) :: DPM
-! Particle shape factor
-      DOUBLE PRECISION, INTENT(IN) :: SFAC
-! Particle density
-      DOUBLE PRECISION, INTENT(IN) :: ROs
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Reynolds number 
+! Reynolds number
       DOUBLE PRECISION :: RE
-! Single sphere drag coefficient 
-      DOUBLE PRECISION :: C_d 
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-! Single sphere drag coefficient: Schiller and Naumann
-      DOUBLE PRECISION, EXTERNAL :: FUN_C_DS
+! Single sphere drag coefficient
+      DOUBLE PRECISION :: C_d
 !-----------------------------------------------
 
+      IF(Mug > ZERO) THEN
 ! Note the presence of gas volume fraction in ROPG
-      RE = merge(DPM*VREL*ROPg/Mug, LARGE_NUMBER, MUg > ZERO)
+         RE = DPM*VREL*ROPg/Mug
+      ELSE
+         RE = LARGE_NUMBER
+      ENDIF
 
       IF(RE <= 1000.0D0)THEN
-         C_d = FUN_C_DS(RE, DPM, ROg, ROs, SFAC, Mug)
+         C_d = (24.D0/(RE+SMALL_NUMBER)) * (ONE + 0.15D0*RE**0.687D0)
       ELSE
          C_d = 0.44D0
       ENDIF
 
       lDgA = 0.75D0 * C_d * VREL * ROPg * EPg**(-2.65D0) / DPM
       IF (RE == ZERO) lDgA = ZERO
-      
+
       RETURN
       END SUBROUTINE DRAG_WEN_YU
 
@@ -871,7 +834,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1
       USE run, only : filter_size_ratio, SUBGRID_WALL
       USE constant, only : GRAVITY
@@ -882,9 +845,9 @@
 !-----------------------------------------------
 ! drag coefficient
       DOUBLE PRECISION, INTENT(INOUT) :: lDgA
-! gas volume fraction 
+! gas volume fraction
       DOUBLE PRECISION, INTENT(IN) :: EPg
-! gas laminar viscosity 
+! gas laminar viscosity
       DOUBLE PRECISION, INTENT(IN) :: Mug
 ! gas density
       DOUBLE PRECISION, INTENT(IN) :: ROg
@@ -893,7 +856,7 @@
 ! particle density of solids phase M
       DOUBLE PRECISION, INTENT(IN) :: ROs
 ! current cell index
-      INTEGER, INTENT(IN) :: IJK     
+      INTEGER, INTENT(IN) :: IJK
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -905,7 +868,7 @@
 ! particle terminal settling velocity from stokes' formulation
       DOUBLE PRECISION :: vt
 ! filter size which is a function of each grid cell volume
-      DOUBLE PRECISION :: filtersize      
+      DOUBLE PRECISION :: filtersize
 ! inverse Froude number, or dimensionless filter size
       DOUBLE PRECISION :: Inv_Froude
 ! total solids volume fraction
@@ -962,8 +925,8 @@
       ENDIF
 
 ! a filter function needed in Igci Filtered/subgrid Model [dimensionless]
-      f_filter = (Inv_Froude**1.6) / ((Inv_Froude**1.6)+0.4d0) 
-      h_phip2=h_phip*GG_phip     
+      f_filter = (Inv_Froude**1.6) / ((Inv_Froude**1.6)+0.4d0)
+      h_phip2=h_phip*GG_phip
       c_function=-h_phip2*f_filter
       F_Subgrid =(ONE + c_function)
 
@@ -974,7 +937,7 @@
       lDgA = F_SubgridWall*F_Subgrid * lDgA
 
       RETURN
-      END SUBROUTINE SUBGRID_DRAG_IGCI      
+      END SUBROUTINE SUBGRID_DRAG_IGCI
 
 
 
@@ -1007,7 +970,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1
       USE run, only : filter_size_ratio, SUBGRID_WALL
       USE constant, only : GRAVITY
@@ -1018,13 +981,13 @@
 !-----------------------------------------------
 ! drag coefficient
       DOUBLE PRECISION, INTENT(INOUT) :: lDgA
-! gas volume fraction 
+! gas volume fraction
       DOUBLE PRECISION, INTENT(IN) :: EPg
-! gas laminar viscosity 
+! gas laminar viscosity
       DOUBLE PRECISION, INTENT(IN) :: Mug
 ! gas density
       DOUBLE PRECISION, INTENT(IN) :: ROg
-! Magnitude of gas-solids relative velocity 
+! Magnitude of gas-solids relative velocity
       DOUBLE PRECISION, INTENT(IN) :: VREL
 ! particle diameter of solids phase M
       DOUBLE PRECISION, INTENT(IN) :: DPM
@@ -1043,7 +1006,7 @@
 ! particle terminal settling velocity from stokes' formulation
       DOUBLE PRECISION :: vt
 ! filter size which is a function of each grid cell volume
-      DOUBLE PRECISION :: filtersize      
+      DOUBLE PRECISION :: filtersize
 ! inverse Froude number, or dimensionless filter size
       DOUBLE PRECISION :: Inv_Froude
 ! dimensionless slip velocity = VREL/vt
@@ -1171,7 +1134,7 @@
          h1 = ((1.6d0*Vslip+4.d0)/(7.9d0*Vslip+0.08d0))*EPs + &
             (0.9394d0 - (0.22d0/(0.6d0*Vslip+0.01d0)))
          IF (EPs .LE. 0.25d0) THEN
-            henv = (9.d0*(ONE+EPs)*(EPs**0.15)) / & 
+            henv = (9.d0*(ONE+EPs)*(EPs**0.15)) / &
                (10.d0*(EPs**0.45) + 4.2d0)
          ELSEIF (EPs .GT. 0.25d0 .AND. EPs .LE. 0.52d0) THEN
             henv = (0.91d0*((0.52d0-EPs)**0.4))/(ONE-(EPs**0.6))
@@ -1187,9 +1150,9 @@
       ENDIF
 
       IF (Inv_Froude .LT. 1.028d0) THEN
-! for very small filtered size, the drag wont be changed: 
+! for very small filtered size, the drag wont be changed:
 ! F_Subgrid = 1.0 - H where H = 0.0
-         F_Subgrid = ONE                           
+         F_Subgrid = ONE
       ELSE
 ! MIN(henv,hlin) is H in Milioli paper, 2013
          F_Subgrid = ONE - MIN(henv,hlin)
@@ -1237,7 +1200,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1
       USE constant, only : GRAVITY
       USE cutcell, only : DWALL
@@ -1255,7 +1218,7 @@
 !-----------------------------------------------
 ! Local parameters
 !-----------------------------------------------
-! values are only correct for FREE-Slip walls 
+! values are only correct for FREE-Slip walls
       DOUBLE PRECISION, PARAMETER :: a22=6.0d0, b22=0.295d0
 !-----------------------------------------------
 ! Local variables
@@ -1267,12 +1230,12 @@
       lSubgridWall = ONE
 
 ! dimensionless distance to the Wall
-      x_d = DWALL(IJK) * GRAVITY / vt**2    
-      
+      x_d = DWALL(IJK) * GRAVITY / vt**2
+
 ! decrease exponentionally away from the wall
 ! more complex model could be implemented with JJ wall model
       lSubgridWall = ONE / ( ONE + a22 * (EXP(-b22*x_d)) )
-               
+
       RETURN
       END SUBROUTINE SUBGRID_DRAG_WALL
 
@@ -1304,7 +1267,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1312,24 +1275,24 @@
 !-----------------------------------------------
 ! drag coefficient
       DOUBLE PRECISION, INTENT(OUT) :: lDgA
-! gas volume fraction 
+! gas volume fraction
       DOUBLE PRECISION, INTENT(IN) :: EPg
-! gas laminar viscosity 
+! gas laminar viscosity
       DOUBLE PRECISION, INTENT(IN) :: Mug
 ! gas density*EP_g
-      DOUBLE PRECISION, INTENT(IN) :: ROPg      
-! Magnitude of gas-solids relative velocity 
+      DOUBLE PRECISION, INTENT(IN) :: ROPg
+! Magnitude of gas-solids relative velocity
       DOUBLE PRECISION, INTENT(IN) :: VREL
-! particle diameter of solids phase M 
+! particle diameter of solids phase M
       DOUBLE PRECISION, INTENT(IN) :: DPM
 ! average particle diameter if pcf otherwise DPM again
       DOUBLE PRECISION, INTENT(IN) :: DPA
-! total solids volume fraction of solids phases 
-      DOUBLE PRECISION, INTENT(IN) :: PHIS      
+! total solids volume fraction of solids phases
+      DOUBLE PRECISION, INTENT(IN) :: PHIS
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Reynolds number 
+! Reynolds number
       DOUBLE PRECISION :: RE
 ! transition Reynolds numbers
       DOUBLE PRECISION :: Re_Trans_1, Re_Trans_2
@@ -1354,8 +1317,8 @@
 ! Note the presence of gas volume fraction in ROPG and factor of 1/2
          RE = 0.5D0*DPA*VREL*ROPG/Mug        ! if pcf DPA otherwise DPM
       ELSE
-         RE = LARGE_NUMBER 
-      ENDIF      
+         RE = LARGE_NUMBER
+      ENDIF
 
       F_STOKES = 18.D0*Mug*EPg*EPg/DPM**2    ! use DPM
       w = EXP(-10.0D0*(0.4D0-phis)/phis)
@@ -1389,7 +1352,7 @@
       ELSE
          F_3 = 0.0673D0 + 0.212D0*phis +0.0232D0/(1.0-phis)**5
       ENDIF
-   
+
       Re_Trans_1 = (F_2 - 1.0D0)/(3.0D0/8.0D0 - F_3)
       Re_Trans_2 = (F_3 + dsqrt(F_3*F_3 - 4.0D0*F_1 &
            *(F_0-F_2))) / (2.0D0*F_1)
@@ -1407,10 +1370,10 @@
 
       lDgA = F * F_STOKES
       IF (RE == ZERO) lDgA = ZERO
-  
+
       RETURN
       END SUBROUTINE DRAG_KOCH_HILL
-       
+
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -1430,7 +1393,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1438,39 +1401,39 @@
 !-----------------------------------------------
 ! drag coefficient
       DOUBLE PRECISION, INTENT(OUT) :: lDgA
-! gas volume fraction 
+! gas volume fraction
       DOUBLE PRECISION, INTENT(IN) :: EPg
-! gas laminar viscosity 
+! gas laminar viscosity
       DOUBLE PRECISION, INTENT(IN) :: Mug
 ! gas density*EP_g
-      DOUBLE PRECISION, INTENT(IN) :: ROPg      
-! magnitude of gas-solids relative velocity 
+      DOUBLE PRECISION, INTENT(IN) :: ROPg
+! magnitude of gas-solids relative velocity
       DOUBLE PRECISION, INTENT(IN) :: VREL
 ! particle diameter of solids phase M or
       DOUBLE PRECISION, INTENT(IN) :: DPM
-! average particle diameter 
+! average particle diameter
       DOUBLE PRECISION, INTENT(IN) :: DPA
-! total solids volume fraction of solids phases 
-      DOUBLE PRECISION, INTENT(IN) :: PHIS      
+! total solids volume fraction of solids phases
+      DOUBLE PRECISION, INTENT(IN) :: PHIS
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Reynolds number 
+! Reynolds number
       DOUBLE PRECISION :: RE
 ! Stokes Drag Force
       DOUBLE PRECISION :: F_STOKES
 ! dimensionless drag force F
-      DOUBLE PRECISION :: F      
+      DOUBLE PRECISION :: F
 !-----------------------------------------------
 
       IF(Mug > ZERO) THEN
 ! Note the presence of gas volume fraction in ROPG
          RE = DPA*VREL*ROPg/Mug        ! use DPA
       ELSE
-         RE = LARGE_NUMBER 
-      ENDIF      
+         RE = LARGE_NUMBER
+      ENDIF
 
-! eq(9) BVK J. fluid. Mech. 528, 2005 
+! eq(9) BVK J. fluid. Mech. 528, 2005
 ! (this F_Stokes is /= of Koch_Hill by a factor of ep_g)
       F_STOKES = 18D0*Mug*EPg/DPM**2   ! use DPM
 
@@ -1480,11 +1443,11 @@
              (ONE+10.d0**(3d0*phis)/RE**(0.5+2.d0*phis))
 
       lDgA = F*F_STOKES
-      IF (RE == ZERO) lDgA = ZERO      
-   
+      IF (RE == ZERO) lDgA = ZERO
+
       RETURN
       END SUBROUTINE DRAG_BVK
-       
+
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -1504,7 +1467,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1
       USE drag, only : beta_ij
       USE run, only : LAM_HYS
@@ -1514,28 +1477,28 @@
 !-----------------------------------------------
 ! drag coefficient
       DOUBLE PRECISION, INTENT(OUT) :: lDgA
-! gas volume fraction 
+! gas volume fraction
       DOUBLE PRECISION, INTENT(IN) :: EPg
-! gas laminar viscosity 
+! gas laminar viscosity
       DOUBLE PRECISION, INTENT(IN) :: Mug
 ! gas density*EP_g
       DOUBLE PRECISION, INTENT(IN) :: ROPg
-! magnitude of gas-solids relative velocity 
+! magnitude of gas-solids relative velocity
       DOUBLE PRECISION, INTENT(IN) :: VREL
-! local variable for the particle diameter 
-      DOUBLE PRECISION :: DPM(2*DIM_M)      
-! average particle diameter 
+! local variable for the particle diameter
+      DOUBLE PRECISION :: DPM(2*DIM_M)
+! average particle diameter
       DOUBLE PRECISION, INTENT(IN) :: DPA
 ! diameter ratio in polydisperse systems
       DOUBLE PRECISION, INTENT(IN) :: Y_i
-! local variable for the solids volume fraction 
+! local variable for the solids volume fraction
       DOUBLE PRECISION :: EP_sM(2*DIM_M)
-! total solids volume fraction of solids phases 
-      DOUBLE PRECISION, INTENT(IN) :: PHIS 
+! total solids volume fraction of solids phases
+      DOUBLE PRECISION, INTENT(IN) :: PHIS
 ! current solids phase index and fluid cell index
       INTEGER, INTENT(IN) :: M, IJK
 ! maximum number of solids phases
-      INTEGER, INTENT(IN) :: MAXM      
+      INTEGER, INTENT(IN) :: MAXM
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -1543,7 +1506,7 @@
       DOUBLE PRECISION :: DPmin
 ! Index for particles of other species
       INTEGER :: L
-! Reynolds number 
+! Reynolds number
       DOUBLE PRECISION :: RE
 ! Stokes Drag Force
       DOUBLE PRECISION :: F_STOKES
@@ -1551,7 +1514,7 @@
       DOUBLE PRECISION :: F
 ! Polydisperse correction factor for YS drag relation
       DOUBLE PRECISION :: a_YS
-! Lubrication interaction prefactor in YS drag relation	
+! Lubrication interaction prefactor in YS drag relation
       DOUBLE PRECISION :: alpha_YS
 ! Friction coefficient for a particle of type i (HYS drag relation)
       DOUBLE PRECISION :: beta_i_HYS
@@ -1559,7 +1522,7 @@
       DOUBLE PRECISION :: beta_j_HYS
 ! Stokes drag of a particle of type j
       DOUBLE PRECISION :: FSTOKES_j
-! Diameter ratio for particle of type j 
+! Diameter ratio for particle of type j
       DOUBLE PRECISION :: Y_i_J
 ! Variable for Beetstra et. al. drag relation
       DOUBLE PRECISION :: F_D_BVK
@@ -1568,25 +1531,25 @@
 !-----------------------------------------------
 
       IF (Mug > ZERO) THEN
-! Note the presence of gas volume fraction in ROPG              
+! Note the presence of gas volume fraction in ROPG
          RE = DPA*VREL*ROPg/Mug   ! use DPA
       ELSE
          RE = LARGE_NUMBER
       ENDIF
 
 ! (this F_Stokes is /= of Koch_Hill by a factor of ep_g/ep_sm)
-! (this F_Stokes is /= of BVK by a factor of 1/ep_sm)      
+! (this F_Stokes is /= of BVK by a factor of 1/ep_sm)
       F_STOKES = 18D0*Mug*EPg*EP_SM(M)/DPM(M)**2   ! use DPM
 
 ! Find smallest diameter if number of particle types is greater than 1
-      Dpmin= DPM(1)               
+      Dpmin= DPM(1)
       IF (MAXM > 1) THEN
          DO L=2,MAXM
             Dpmin = MIN(Dpmin,DPM(L))
          ENDDO
       ENDIF
 
-      a_YS = 1d0 - 2.66d0*phis + 9.096d0*phis**2 - 11.338d0*phis**3 
+      a_YS = 1d0 - 2.66d0*phis + 9.096d0*phis**2 - 11.338d0*phis**3
 
 ! Calculate the prefactor of the off-diagonal friction coefficient
 ! Use default value of lamdba if there are no particle asparities
@@ -1606,20 +1569,20 @@
                        (a_YS*Y_i+(1d0-a_YS)*Y_i**2)
       F_YS = F_YS*F_STOKES
       beta_i_HYS = F_YS
-              
+
       DO L= 1,MAXM
          IF (L /= M) THEN
             Y_i_J = DPM(L)/DPA
             beta_j_HYS = 1.d0/EPg + (F_D_BVK - 1.d0/EPg) * &
                (a_YS*Y_i_J + (1d0-a_YS)*Y_i_J**2)
             FSTOKES_j = 18.D0*Mug*EP_sM(L)*EPg/&
-               DPM(L)**2 
+               DPM(L)**2
 
             beta_j_HYS = beta_j_HYS*FSTOKES_j
-                      
+
 ! Calculate off-diagonal friction coefficient
             beta_ij(IJK,M,L) = ZERO
-                      
+
 ! This if statement prevents NaN values from appearing for beta_ij
             IF (EP_sM(M) > ZERO .AND. EP_SM(L) > ZERO) &
                beta_ij(IJK,M,L) = (2.d0*alpha_YS*EP_sM(M)*EP_sM(L))/ &

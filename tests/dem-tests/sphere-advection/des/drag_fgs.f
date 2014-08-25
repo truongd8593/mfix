@@ -1235,9 +1235,6 @@
 ! tmp local variable for the particle density of solids
 ! phase M (continuous or discrete)
       DOUBLE PRECISION :: ROs_loc(2*DIM_M)
-! tmp local variable for the shape factor of solids
-! phase M (continuous or discrete)
-      DOUBLE PRECISION :: SFAC_loc(2*DIM_M)
 ! correction factors for implementing polydisperse drag model
 ! proposed by van der Hoef et al. (2005)
       DOUBLE PRECISION :: F_cor, tmp_sum, tmp_fac
@@ -1249,7 +1246,7 @@
       DOUBLE PRECISION :: phis
 ! aliases for void fraction, gas density, gas bulk density,
 ! solids volume fraction, particle diameter, particle density
-      DOUBLE PRECISION :: EPG, ROg, ROPg, EP_SM, DPM, ROs, SFAC
+      DOUBLE PRECISION :: EPG, ROg, ROPg, EP_SM, DPM, ROs
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
@@ -1272,7 +1269,6 @@
             DP_loc(DM) = DES_D_p0(DM)
             EPs_loc(DM) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
             ROs_loc(DM) = DES_RO_S(DM)
-            SFAC_loc(DM) = SHAPE_FACTOR(DM)
          ENDDO
       ELSE   ! des_continuum_hybrid branch
 ! For the hybrid model the diameters and solids volume fractions of
@@ -1285,14 +1281,12 @@
             DP_loc(DM) = DES_D_p0(DM)
             EPs_loc(DM) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
             ROs_loc(DM) = DES_RO_S(DM)
-            SFAC_loc(DM) = SHAPE_FACTOR(DM+SMAX)
          ENDDO
          DO CM = 1,SMAX
             L = DES_MMAX + CM
             DP_loc(L) = D_P(IJK,CM)
             EPs_loc(L) = EP_S(IJK,CM)
             ROs_loc(L) = RO_S(IJK,CM)
-            SFAC_loc(L) = SHAPE_FACTOR(CM)
          ENDDO
       ENDIF   ! end if/else (.not.des_continuum_hybrid)
 
@@ -1363,7 +1357,7 @@
       EP_SM = EPs_loc(M)
       DPM = DP_loc(M)
       ROs = ROs_loc(M)
-      SFAC = SFAC_loc(M)
+
 
 ! determine the drag coefficient
       IF (EP_SM <= ZERO) THEN
@@ -1379,35 +1373,27 @@
 ! determine the drag coefficient
          SELECT CASE(DRAG_TYPE_ENUM)
          CASE (SYAM_OBRIEN)
-            CALL DRAG_SYAM_OBRIEN(DgA,EPG,Mu,ROg,VREL,&
-                DPM,SFAC,ROs)
+            CALL DRAG_SYAM_OBRIEN(DgA,EPG,Mu,ROg,VREL,DPM)
          CASE (GIDASPOW)
-            CALL DRAG_GIDASPOW(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                 DPM,SFAC,ROs)
+            CALL DRAG_GIDASPOW(DgA,EPg,Mu,ROg,ROPg,VREL,DPM)
          CASE (GIDASPOW_PCF)
-            CALL DRAG_GIDASPOW(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                 DPA,SFAC,ROs)
+            CALL DRAG_GIDASPOW(DgA,EPg,Mu,ROg,ROPg,VREL,DPA)
          CASE (GIDASPOW_BLEND)
-            CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                 DPM,SFAC,ROs)
+            CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,DPM)
          CASE (GIDASPOW_BLEND_PCF)
-            CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                 DPA,SFAC,ROs)
+            CALL DRAG_GIDASPOW_BLEND(DgA,EPg,Mu,ROg,ROPg,VREL,DPA)
          CASE (WEN_YU)
-            CALL DRAG_WEN_YU(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                 DPM,SFAC,ROs)
+            CALL DRAG_WEN_YU(DgA,EPg,Mu,ROg,ROPg,VREL,DPM)
          CASE (WEN_YU_PCF)
-            CALL DRAG_WEN_YU(DgA,EPg,Mu,ROg,ROPg,VREL,&
-                 DPA,SFAC,ROs)
+            CALL DRAG_WEN_YU(DgA,EPg,Mu,ROg,ROPg,VREL,DPA)
          CASE (KOCH_HILL)
-            CALL DRAG_KOCH_HILL(DgA,EPg,Mu,ROPg,VREL,&
-                 DPM,DPM,phis)
+            CALL DRAG_KOCH_HILL(DgA,EPg,Mu,ROPg,VREL,DPM,DPM,phis)
          CASE (KOCH_HILL_PCF)
-            CALL DRAG_KOCH_HILL(DgA,EPg,Mu,ROPg,VREL,&
-                 DPM,DPA,phis)
+            CALL DRAG_KOCH_HILL(DgA,EPg,Mu,ROPg,VREL,DPM,DPA,phis)
          CASE (BVK)
-            CALL DRAG_BVK(DgA,EPg,Mu,ROPg,VREL,&
-                 DPM,DPA,phis)
+            CALL DRAG_BVK(DgA,EPg,Mu,ROPg,VREL,DPM,DPA,phis)
+         CASE (USER_DRAG)
+            CALL DRAG_USR(IJK, M, DgA, EPg, Mu, ROg, VREL, DPM, ROs)
          CASE DEFAULT
             CALL START_LOG
             IF(DMP_LOG) WRITE (*, '(A,A)') &
