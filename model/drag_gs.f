@@ -588,8 +588,7 @@
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
-      SUBROUTINE DRAG_GIDASPOW(lDgA,EPg,Mug,ROg,ROPg,VREL,&
-                 DPM)
+      SUBROUTINE DRAG_GIDASPOW(lDgA,EPg,Mug,ROg,ROPg,VREL, DPM)
 
 !-----------------------------------------------
 ! Modules
@@ -615,6 +614,10 @@
 ! particle diameter of solids phase M or
 ! average particle diameter if PCF
       DOUBLE PRECISION, INTENT(IN) :: DPM
+
+! 
+      DOUBLE PRECISION, EXTERNAL :: C_DS_SN
+
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -624,12 +627,9 @@
       DOUBLE PRECISION :: C_d
 !-----------------------------------------------
 
-      IF(Mug > ZERO) THEN
+
 ! Note the presence of gas volume fraction in ROPG
-         RE = DPM*VREL*ROPg/Mug
-      ELSE
-         RE = LARGE_NUMBER
-      ENDIF
+      RE = merge(DPM*VREL*ROPg/Mug, LARGE_NUMBER, MUg > ZERO)
 
 ! Dense phase
       IF(EPg <= 0.8D0) THEN
@@ -639,8 +639,7 @@
 ! Dilute phase - EP_g >= 0.8
          IF(RE <= 1000D0)THEN
 ! this could be replaced with the function C_DS_SN
-            C_d = (24.D0/(RE+SMALL_NUMBER)) * &
-                  (ONE + 0.15D0 * RE**0.687D0)
+            C_d = C_DS_SN(RE)
          ELSE
             C_d = 0.44D0
          ENDIF
