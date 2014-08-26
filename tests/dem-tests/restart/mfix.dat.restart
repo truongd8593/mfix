@@ -15,7 +15,7 @@
   UNITS = 'CGS'
 
   TIME =  0.0 
-  TSTOP = 0.3974
+  TSTOP = 0.33549
 
   DT = 1.0e-4
   DT_MAX = 2E-4
@@ -96,7 +96,6 @@
   DES_EN_WALL_INPUT = 0.9  0.9 ! e1w  e2w
 
   DES_NEIGHBOR_SEARCH = 4      ! Grid based neighbor search
-  NEIGHBOR_SEARCH_N   = 9999   ! Steps between neighbor search
   MN = 20                      ! Maximum number of neighbors
 
 

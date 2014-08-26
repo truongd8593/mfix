@@ -4,11 +4,11 @@ rm -f DEM_RESTART* POST_posvel.dat
 ../../../model/make_mfix --serial --debug --compiler=gcc_default.sh --opt=O0 -j
 cp mfix.dat.norestart mfix.dat
 time -p ./mfix.exe
-diff POST_posvel.dat AUTOTEST/POST_posvel.dat
+diff -q POST_posvel.dat AUTOTEST/POST_posvel.dat
 
 rm -f DEM_RESTART* POST_posvel.dat
 cp mfix.dat.restart mfix.dat
 time -p ./mfix.exe
 cp mfix.dat.restart2 mfix.dat
 time -p ./mfix.exe
-diff POST_posvel.dat AUTOTEST/POST_posvel.dat
+diff -q POST_posvel.dat AUTOTEST/POST_posvel.dat

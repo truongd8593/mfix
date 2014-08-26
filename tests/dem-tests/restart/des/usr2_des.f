@@ -43,17 +43,9 @@
       DOUBLE PRECISION, SAVE :: OUT_TIME
       DOUBLE PRECISION, PARAMETER :: OUT_dT = 0.0001d0
 
-
-      IF(FIRST_PASS) THEN
+      if ( 0.335 < time .and. time < 0.336 ) then
          CALL WRITE_DES_Tp(S_TIME)
-         OUT_TIME = OUT_dT
-         FIRST_PASS = .FALSE.
-      ELSE
-         IF(S_TIME >= OUT_TIME) THEN
-            CALL WRITE_DES_Tp(S_TIME)
-            OUT_TIME = OUT_TIME + OUT_dT
-         ENDIF
-      ENDIF
+      endif
 
       RETURN
 
