@@ -118,14 +118,15 @@
       END SUBROUTINE ALLOCATE_DES_STL_ARRAYS
 
 
-      SUBROUTINE TestTriangleAABB(vert0, vert1, vert2, tri_norm, &
+      SUBROUTINE TestTriangleAABB(vertices, tri_norm, &
       box_origin, box_extents, sa_exist, sa, i,j,k)
       USE stl
       Implicit none
 
       !Separating axis test algorithm from Realtimecollision book by
       !Christer Ericson
-      double precision, intent(in), dimension(3) :: vert0, vert1, vert2, tri_norm
+      double precision, intent(in), dimension(3) :: tri_norm
+      double precision, intent(in), dimension(3,3) :: vertices
       double precision, intent(in), dimension(3) :: box_origin, box_extents
       logical, intent(out) :: sa_exist
 !      double precision, intent(out) :: proj_box, proj_tri(3)
@@ -135,6 +136,7 @@
       double precision :: p0, p1, p2, r, e0, e1, e2
 
       double precision :: c_orig(3), c(3)
+      double precision, dimension(3) :: vert0, vert1, vert2
 
       !box face normals
       double precision, dimension(3) :: u0, u1, u2
@@ -152,6 +154,10 @@
       sa_exist = .false.
       sa = 0
       tol_tri_aabb_proj = 1e-06
+
+      vert0 = vertices(1,:)
+      vert1 = vertices(2,:)
+      vert2 = vertices(3,:)
 
       !Initially set e0, e1, and e2 to box extents
 
@@ -1160,7 +1166,7 @@
 
       !Do the separating axis test to check if a separating axis exist. If the separating
       !axis exsit then the cell and facet cannot intersect, so return without adding.
-      CALL TestTriangleAABB(vertex(1,:,N), vertex(2,:,N), vertex(3,:,N), norm_face(:,N), &
+      CALL TestTriangleAABB(vertex(:,:,N), norm_face(:,N), &
       box_origin(:), box_extents(:), sa_exist, sep_axis,i,j,k )
 
       IF (I .eq. 2.and.j.eq.3.and.k.eq.2.and..not.sa_exist.and..false.) then
