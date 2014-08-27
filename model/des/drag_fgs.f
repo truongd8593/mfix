@@ -1525,12 +1525,12 @@
       SS_DRAG(:,:,:) = ZERO
       SD_FORCE(:,:) = ZERO
 
-!$omp parallel do default(shared)                                 &
-!$omp private(ijk,i,j,k,imjk,ijmk,ijkm,ijk_u,ijk_v,ijk_w,         &
-!$omp         velds_arr,velcs_arr,vrel,ss_drag,ldss,              &
-!$omp         dm,cm,m,l,epg,eps,ep_sm,epsodp,oeps,                &
-!$omp         d_pm,d_pl,ro_l,ro_m,g0_ml)                          &
-!$omp schedule (guided,50)
+!!$omp parallel do default(shared)                                 &
+!!$omp private(ijk,i,j,k,imjk,ijmk,ijkm,ijk_u,ijk_v,ijk_w,         &
+!!$omp         velds_arr,velcs_arr,vrel,ss_drag,ldss,              &
+!!$omp         dm,cm,m,l,epg,eps,ep_sm,epsodp,oeps,                &
+!!$omp         d_pm,d_pl,ro_l,ro_m,g0_ml)                          &
+!!$omp schedule (guided,50)
       DO IJK = IJKSTART3, IJKEND3
          I = I_OF(IJK)
          J = J_OF(IJK)
@@ -1654,11 +1654,11 @@
          ENDIF      ! end if(pinc(ijk).gt.0)
 
       ENDDO         ! end do loop (ijk=ijkstart3, ijkend3)
-!$omp end parallel do
+!!$omp end parallel do
 
 
-!$omp parallel do private(np,ijk,m,ss_drag)                       &
-!$omp schedule (guided,100)
+!!$omp parallel do private(np,ijk,m,ss_drag)                       &
+!!$omp schedule (guided,100)
       DO NP = 1, MAX_PIP
 ! skipping indices that do not represent particles and ghost particles
          if(.not.pea(np,1)) cycle
@@ -1674,7 +1674,7 @@
 !-----------------------------------------------------------------<<<
 
       ENDDO   ! end do loop (np=1,max_pip)
-!$omp end parallel do
+!!$omp end parallel do
 
 
 
