@@ -133,19 +133,6 @@
       lambda_x = ZERO
 !</keyword>
 
-
-!<keyword category="category name" required="true/false"                  
-!                                    legacy="true/false">                 
-!  <description></description>                                            
-!  <arg index="" id="" min="" max=""/>                                    
-!  <dependent keyword="" value="DEFINED"/>                                
-!  <conflict keyword="" value="DEFINED"/>                                 
-!  <valid value="" note="" alias=""/>                                     
-!  <range min="" max="" />                                                
-!  MFIX_KEYWORD=INIT_VALUE                                                
-!</keyword> 
-
-
 !<keyword category="cartesian grid" required="false">
 !  <description>coefficient lambda_y in equation (1) ('normal' form) or y-component of normal vector defining plane in equation (5) ('degenerate' form).</description>
 !  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>                                    
@@ -648,7 +635,10 @@
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>value of first dx in a segment (x-direction). a negative value will copy dx from previous segment (if available).</description>
+!  <description>value of first dx in a segment (x-direction). a negative /
+!      RO_s(m) ) over all solids phases is equal to ( 1.0 - IC_EP_g(ic)). e
+!      value will copy dx from previous segment (if available).
+!  </description>
       FIRST_DX = ZERO
 !</keyword>
 

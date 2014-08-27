@@ -395,7 +395,7 @@
 !  <description>Youngs modulus for the particle. Needed when using the Hertzian
 ! spring-dashpot model for soft-spring collision modelling under DEM.
 !</description>
-!  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
+!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
 !  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
       E_YOUNG(:DIM_M) = UNDEFINED
 !</keyword>
@@ -405,7 +405,7 @@
 !  <description>Poissons ratio for the particle. Needed when using the Hertzian
 ! spring-dashpot model for soft-spring collision modelling under DEM.
 !</description>
-!  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
+!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
 !  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
       V_POISSON(:DIM_M) = UNDEFINED
 !</keyword>
@@ -413,13 +413,13 @@
 !<keyword category="Discrete Element" required="false">
 !  <description>Particle diameter associated with discrete solids 
 ! phase M</description>
-!  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
+!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
       DES_D_P0(:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
 !  <description>Particle density associated with discrete solids phase M</description>
-!  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
+!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
       DES_RO_S(:DIM_M) = UNDEFINED
 !</keyword>
 
@@ -725,7 +725,7 @@
 
 !<keyword category="Discrete Element" required="false">
 !  <description>Emissivity of solids phase M.</description>
-!  <arg index="1" id="Discerte solid phase" min="1" max="DES_MMAX"/>
+!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
       DES_Em(:DIM_M) = UNDEFINED
 !</keyword>
 
