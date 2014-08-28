@@ -299,40 +299,21 @@ ENDDO
 
       magGravity = SQRT(dot_product(GRAV,GRAV))
 
-      CC = 1
-OUTER: DO LL = 1, MAX_PIP
-         IF(.NOT.PEA(LL,1)) CYCLE
-         IF(PEA(LL,4)) CYCLE
+      DO CC = 1, COLLISION_NUM
+         LL = COLLISIONS(1,CC)
+         I  = COLLISIONS(2,CC)
 
-         II = COLLISIONS(1,CC)
-         JJ = COLLISIONS(2,CC)
-
-         if (COLLISION_NUM < CC) EXIT
-
-         DO WHILE (II < LL)
-            CC = CC+1
-            if (COLLISION_NUM < CC) EXIT OUTER
-            II = COLLISIONS(1,CC)
-            JJ = COLLISIONS(2,CC)
-         ENDDO
-
-         DO WHILE (II .eq. LL)
-            FC(:,LL) = FC(:,LL) + FC_COLL(:,CC)
-            TOW(:,LL) = TOW(:,LL) + TOW_COLL(:,CC)
+         FC(:,LL) = FC(:,LL) + FC_COLL(:,CC)
+         TOW(:,LL) = TOW(:,LL) + TOW_COLL(:,CC)
 
 ! just for post-processing mag. of cohesive forces on each particle
-            IF(USE_COHESION)THEN
-               PostCohesive(LL) =  dot_product(FC_COLL(:, CC),FC_COLL(:, CC))
-               if(magGravity> ZERO) PostCohesive(LL) =  SQRT(PostCohesive(LL)) / &
-                    (PMASS(LL)*magGravity)
-            ENDIF ! for cohesion model
+         IF(USE_COHESION)THEN
+            PostCohesive(LL) =  dot_product(FC_COLL(:, CC),FC_COLL(:, CC))
+            if(magGravity> ZERO) PostCohesive(LL) =  SQRT(PostCohesive(LL)) / &
+                 (PMASS(LL)*magGravity)
+         ENDIF ! for cohesion model
 
-            CC = CC+1
-            if (COLLISION_NUM < CC) EXIT OUTER
-            II = COLLISIONS(1,CC)
-            JJ = COLLISIONS(2,CC)
-         ENDDO
-      ENDDO OUTER
+      ENDDO
 
 ! Calculate gas-solids drag force on particle
       IF(DES_CONTINUUM_COUPLED) CALL CALC_DES_DRAG_GS
