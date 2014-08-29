@@ -518,69 +518,110 @@
       RETURN
       END SUBROUTINE ALLOCATE_PIC_MIO
 
+
+!``````````````````````````````````````````````````````````````````````!
+! Subroutine: COLLISION_ADD                                            !
+!                                                                      !
+! Purpose: Adds a neighbor pair to the collisions array.               !
+!                                                                      !
+!``````````````````````````````````````````````````````````````````````!
       SUBROUTINE collision_add(ii,jj)
-        USE discretelement
-        USE geometry
-        IMPLICIT NONE
-        INTEGER, INTENT(IN) :: ii,jj
-        LOGICAL, DIMENSION(:), ALLOCATABLE :: bool_tmp
-        INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
-        DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: real_tmp
+      USE discretelement
+      USE geometry
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: ii,jj
+      LOGICAL, DIMENSION(:), ALLOCATABLE :: bool_tmp
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: real_tmp
 
-        collision_num = collision_num +1
+      collision_num = collision_num +1
 
-        ! if we run out of space, reallocate to double the size of the arrays
-        if (collision_num.gt.collision_max) then
-           allocate(int_tmp(2,2*collision_max))
-           int_tmp(:,1:collision_max) = collisions(:,1:collision_max)
-           call move_alloc(int_tmp,collisions)
+! Reallocate to double the size of the arrays if needed.
+      IF(COLLISION_NUM > COLLISION_MAX) THEN
+         COLLISION_MAX = COLLISION_MAX*2
+         CALL COLLISION_GROW
+      ENDIF
 
-           allocate(int_tmp(2,2*collision_max))
-           int_tmp(:,1:collision_max) = collisions_old(:,1:collision_max)
-           call move_alloc(int_tmp,collisions_old)
+      collisions(1,collision_num) = ii
+      collisions(2,collision_num) = jj
+      pv_coll(collision_num) = .false.
+      pft_coll(:,collision_num) = 0.0
+      pfn_coll(:,collision_num) = 0.0
 
-           allocate(real_tmp(3,2*collision_max))
-           real_tmp(:,1:collision_max) = fc_coll(:,1:collision_max)
-           call move_alloc(real_tmp,fc_coll)
-
-           IF(DO_K) THEN
-              allocate(real_tmp(3,2*collision_max))
-           ELSE
-              allocate(real_tmp(1,2*collision_max))
-           ENDIF
-           real_tmp(:,1:collision_max) = tow_coll(:,1:collision_max)
-           call move_alloc(real_tmp,tow_coll)
-
-           allocate(bool_tmp(2*collision_max))
-           bool_tmp(1:collision_max) = pv_coll(1:collision_max)
-           call move_alloc(bool_tmp,pv_coll)
-
-           allocate(bool_tmp(2*collision_max))
-           bool_tmp(1:collision_max) = pv_coll_old(1:collision_max)
-           call move_alloc(bool_tmp,pv_coll_old)
-
-           allocate(real_tmp(3,2*collision_max))
-           real_tmp(:,1:collision_max) = pft_coll_old(:,1:collision_max)
-           call move_alloc(real_tmp,pft_coll_old)
-
-           allocate(real_tmp(3,2*collision_max))
-           real_tmp(:,1:collision_max) = pft_coll(:,1:collision_max)
-           call move_alloc(real_tmp,pft_coll)
-
-           allocate(real_tmp(3,2*collision_max))
-           real_tmp(:,1:collision_max) = pfn_coll_old(:,1:collision_max)
-           call move_alloc(real_tmp,pfn_coll_old)
-
-           allocate(real_tmp(3,2*collision_max))
-           real_tmp(:,1:collision_max) = pfn_coll(:,1:collision_max)
-           call move_alloc(real_tmp,pfn_coll)
-
-           collision_max = 2*collision_max
-        endif
-
-        collisions(1,collision_num) = ii
-        collisions(2,collision_num) = jj
-        pv_coll(collision_num) = .false.
-        pft_coll(:,collision_num) = 0.0
-        pfn_coll(:,collision_num) = 0.0
+      RETURN
       END SUBROUTINE collision_add
+
+
+!``````````````````````````````````````````````````````````````````````!
+! Subroutine: COLLISION_GROW                                           !
+!                                                                      !
+! Purpose: Grow collision arrays to collision_max. Note that collision !
+! max should be increased before calling this routine. Also, no        !
+! assumption to the previous array size is made as needed for restarts.!
+!``````````````````````````````````````````````````````````````````````!
+      SUBROUTINE COLLISION_GROW
+
+      USE discretelement
+
+      IMPLICIT NONE
+
+      LOGICAL, DIMENSION(:), ALLOCATABLE :: bool_tmp
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: real_tmp
+
+      INTEGER :: lSIZE1, lSIZE2
+
+      lSIZE2 = size(collisions,2)
+      allocate(int_tmp(2,COLLISION_MAX))
+      int_tmp(:,1:lSIZE2) = collisions(:,1:lSIZE2)
+      call move_alloc(int_tmp,collisions)
+
+      lSIZE2 = size(collisions_old,2)
+      allocate(int_tmp(2,COLLISION_MAX))
+      int_tmp(:,1:lSIZE2) = collisions_old(:,1:lSIZE2)
+      call move_alloc(int_tmp,collisions_old)
+
+      lSIZE2 = size(FC_COLL,2)
+      allocate(real_tmp(3,COLLISION_MAX))
+      real_tmp(:,1:lSIZE2) = fc_coll(:,1:lSIZE2)
+      call move_alloc(real_tmp,fc_coll)
+
+      lSIZE1 = size(TOW_COLL,1)
+      lSIZE2 = size(TOW_COLL,2)
+      allocate(real_tmp(lSIZE1,COLLISION_MAX))
+      real_tmp(:,1:lSIZE2) = tow_coll(:,1:lSIZE2)
+      call move_alloc(real_tmp,tow_coll)
+
+      lSIZE1 = size(pv_coll,1)
+      allocate(bool_tmp(COLLISION_MAX))
+      bool_tmp(1:lSIZE1) = pv_coll(1:lSIZE1)
+      call move_alloc(bool_tmp,pv_coll)
+
+      lSIZE1 = size(pv_coll_old,1)
+      allocate(bool_tmp(COLLISION_MAX))
+      bool_tmp(1:lSIZE1) = pv_coll_old(1:lSIZE1)
+      call move_alloc(bool_tmp,pv_coll_old)
+
+      lSIZE1 = size(pft_coll_old,1)
+      allocate(real_tmp(3,COLLISION_MAX))
+      real_tmp(:,1:lSIZE1) = pft_coll_old(:,1:lSIZE1)
+      call move_alloc(real_tmp,pft_coll_old)
+
+      lSIZE2 = size(pft_coll,2)
+      allocate(real_tmp(3,COLLISION_MAX))
+      real_tmp(:,1:lSIZE2) = pft_coll(:,1:lSIZE2)
+      call move_alloc(real_tmp,pft_coll)
+
+      lSIZE2 = size(pfn_coll_old,2)
+      allocate(real_tmp(3,COLLISION_MAX))
+      real_tmp(:,1:lSIZE2) = pfn_coll_old(:,1:lSIZE2)
+      call move_alloc(real_tmp,pfn_coll_old)
+
+      lSIZE2 = size(pfn_coll,2)
+      allocate(real_tmp(3,COLLISION_MAX))
+      real_tmp(:,1:lSIZE2) = pfn_coll(:,1:lSIZE2)
+      call move_alloc(real_tmp,pfn_coll)
+
+      RETURN
+      END SUBROUTINE COLLISION_GROW
+                                        

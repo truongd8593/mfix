@@ -187,8 +187,16 @@
       FC_COLL(:,:) = 0
       TOW_COLL(:,:) = 0
 
-!$omp parallel do default(none) private(cc,ll,i,dist,distmod,r_lm,normal,overlap_n,v_rel_tang,v_rel_trans_norm,sqrt_overlap,kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,etat_des,fns1,fns2,fts1,fts2,pft_tmp,fn,ft,particle_slide,eq_radius,distapart,force_coh) &
-!$omp     shared(collisions,collision_num,des_pos_new,des_radius,des_coll_model_enum,kn,kt,pv_coll,pft_coll,pfn_coll,pijk,des_etan,des_etat,mew,fc_coll,tow_coll,use_cohesion,van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,hamaker_constant,asperities,surface_energy)
+!$omp parallel do default(none) private(cc,ll,i,dist,distmod,r_lm,     &
+!$omp    normal,overlap_n,v_rel_tang,v_rel_trans_norm,sqrt_overlap,    &
+!$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
+!$omp    etat_des,fns1,fns2,fts1,fts2,pft_tmp,fn,ft,particle_slide,    &
+!$omp    eq_radius,distapart,force_coh)                                &
+!$omp    shared(collisions,collision_num,des_pos_new,des_radius,       &
+!$omp    des_coll_model_enum,kn,kt,pv_coll,pft_coll,pfn_coll,pijk,     &
+!$omp    des_etan,des_etat,mew,fc_coll,tow_coll,use_cohesion,          &
+!$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
+!$omp    hamaker_constant,asperities,surface_energy)
       DO CC = 1, COLLISION_NUM
          LL = COLLISIONS(1,CC)
          I  = COLLISIONS(2,CC)
@@ -266,7 +274,9 @@
          FNS2(:) = -ETAN_DES * V_REL_TRANS_NORM*NORMAL(:)
          FN(:) = FNS1(:) + FNS2(:)
 
-         call calc_tangential_displacement(pft_tmp(:),normal(:),pfn_coll(:,cc),pft_coll(:,cc),overlap_n,v_rel_trans_norm,v_rel_tang(:),PV_COLL(CC))
+         call calc_tangential_displacement(pft_tmp(:),normal(:),       &
+            pfn_coll(:,cc),pft_coll(:,cc),overlap_n,                   &
+            v_rel_trans_norm,v_rel_tang(:),PV_COLL(CC))
          PV_COLL(CC) = .true.
 
 ! Calculate the tangential contact force
@@ -277,12 +287,12 @@
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with another particle/wall
          PARTICLE_SLIDE = .FALSE.
-         CALL CFSLIDE(V_REL_TANG(:), PARTICLE_SLIDE, MEW,           &
+         CALL CFSLIDE(V_REL_TANG(:), PARTICLE_SLIDE, MEW,              &
              FT(:), FN(:))
 
 ! Calculate the total force FC and torque TOW on a particle in a
 ! particle-particle collision
-         CALL CFFCTOW(DES_RADIUS(LL), DES_RADIUS(I), NORMAL,        &
+         CALL CFFCTOW(DES_RADIUS(LL), DES_RADIUS(I), NORMAL,           &
             DISTMOD, FC_COLL(:,CC), FN(:), FT(:), TOW_COLL(:,CC))
 
 ! Save tangential displacement history with Coulomb's law correction
@@ -293,8 +303,7 @@
          ELSE
             PFT_COLL(:,CC) = PFT_TMP(:)
          ENDIF
-
-ENDDO
+      ENDDO
 !$omp end parallel do
 
       magGravity = SQRT(dot_product(GRAV,GRAV))

@@ -73,8 +73,7 @@
 ! variables used to read initial particle properties
       double precision, dimension(:,:),allocatable:: dpar_pos,dpar_vel
       double precision, dimension(:),allocatable::dpar_den,dpar_rad
-! Variables used for reading restart file
-      integer,dimension(:),allocatable:: irestartmap
+
       integer,dimension(:),allocatable  :: itempglobal_id
 
 ! generic interface definition
