@@ -1030,7 +1030,9 @@
                pea(lcurpar,1:4) = .false.
                fc(:,lcurpar) = 0.0
                pn(:,lcurpar) = 0 ; pv(:,lcurpar) = .false.
+               pn_wall(:,lcurpar) = 0 ; pv_wall(:,lcurpar) = .false.
                pft(lcurpar,:,:) = 0
+               pft_wall(lcurpar,:,:) = 0
                des_pos_new(:,lcurpar)=0
                des_pos_old(:,lcurpar)=0
                des_vel_new(:,lcurpar)=0
@@ -1162,6 +1164,18 @@
                ltmpbuf=ltmpbuf+dimn
             enddo
             lbuf = lbuf+(2+dimn)*maxneighbors
+
+            dsendbuf(lbuf,pface) = pn_wall(1,lcurpar);ltmpbuf=lbuf+1
+            do lcontactindx = 2,pn_wall(1,lcurpar)+1
+               lcontact = pn_wall(lcontactindx,lcurpar)
+               dsendbuf(ltmpbuf,pface) = iglobal_id(lcontact)
+               ltmpbuf=ltmpbuf+1
+               dsendbuf(ltmpbuf,pface) = merge(1,0,pv_wall(lcontactindx,lcurpar))
+               ltmpbuf=ltmpbuf+1
+               dsendbuf(ltmpbuf:ltmpbuf+dimn-1,pface) = pft_wall(lcurpar,lcontactindx,1:dimn)
+               ltmpbuf=ltmpbuf+dimn
+            enddo
+            lbuf = lbuf+(2+dimn)*maxneighbors
 ! Pradeep remove ********************
 !             print * ,"--------------------------------------------------------------------"
 !             print * , "inside pack par cross" ,mype
@@ -1189,8 +1203,11 @@
             fc(:,lcurpar) = 0.
             neighbours(lcurpar,:)=0
             pn(:,lcurpar) = 0
+            pn_wall(:,lcurpar) = 0
             pv(:,lcurpar) = .false.
+            pv_wall(:,lcurpar) = .false.
             pft(lcurpar,:,:) = 0
+            pft_wall(lcurpar,:,:) = 0
 
             lparcnt = lparcnt + 1
          end do
@@ -1417,6 +1434,41 @@
             ltmpbuf=ltmpbuf+dimn
          enddo
          pn(1,llocpar)=lcount
+         lbuf = lbuf+(2+dimn)*maxneighbors
+
+! loop through contact list and find local particle number using neighbor list
+         pn_wall(1,llocpar) = drecvbuf(lbuf,pface);ltmpbuf=lbuf+1
+         pv_wall(1,llocpar) = .false.
+         lcount = 0
+         do lcontactindx = 2,pn_wall(1,llocpar)+1
+            lcontactfound = .false.
+            lcontactid = drecvbuf(ltmpbuf,pface)
+            ltmpbuf=ltmpbuf+1
+            do lneighindx = 2,neighbours(llocpar,1)+1
+               if (iglobal_id(neighbours(llocpar,lneighindx)).eq.lcontactid) then
+                  lcontact = neighbours(llocpar,lneighindx)
+                  lcontactfound = .true.
+                  exit
+               endif
+            enddo
+            if (.not.lcontactfound) then
+!check for wall contact and if not print warning message
+               if(lcontactid .lt. 0) then
+                  lcontact = max_pip + (-1) * lcontactid
+               else
+                  WRITE(*,702) lcontactid
+                  ltmpbuf = ltmpbuf + 1 + dimn ! necessary as pv_wall and pft_wall not yet read for this particle
+                  cycle
+               endif
+            endif
+            lcount = lcount+1
+            pn_wall(lcount+1,llocpar) = lcontact
+            pv_wall(lcount+1,llocpar) = merge(.true.,.false.,drecvbuf(ltmpbuf,pface).gt.0.5)
+            ltmpbuf=ltmpbuf+1
+            pft_wall(llocpar,lcount+1,1:dimn) = drecvbuf(ltmpbuf:ltmpbuf+dimn-1,pface)
+            ltmpbuf=ltmpbuf+dimn
+         enddo
+         pn_wall(1,llocpar)=lcount
          lbuf = lbuf+(2+dimn)*maxneighbors
 
 !debuging print PRADEEP remove
@@ -2045,6 +2097,32 @@
             pn(lcount+1,lcurpar) = lcontact
          enddo
          pn(1,lcurpar) = lcount
+
+! loop through contact list and find local particle number using neighbor list
+         lcount = 0
+         do lcontactindx = 2,pn_wall(1,lcurpar)+1
+            lcontactfound = .false.
+            lcontactid = pn_wall(lcontactindx,lcurpar)
+            do lneighindx = 2,neighbours(lcurpar,1)+1
+               if (iglobal_id(neighbours(lcurpar,lneighindx)).eq.lcontactid) then
+                  lcontact = neighbours(lcurpar,lneighindx)
+                  lcontactfound = .true.
+                  exit
+               endif
+            enddo
+            if (.not.lcontactfound) then
+! check for wall contact and if not print warning message
+               if(lcontactid .lt. 0) then
+                  lcontact = max_pip + (-1) * lcontactid
+               else
+                  WRITE(*,801)
+                  cycle
+               endif
+            endif
+            lcount = lcount+1
+            pn_wall(lcount+1,lcurpar) = lcontact
+         enddo
+         pn_wall(1,lcurpar) = lcount
       enddo
 
  800  FORMAT(/2X,'From: DES_RESTART_NEIGH: ',/2X,&
