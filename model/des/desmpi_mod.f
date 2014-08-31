@@ -1058,10 +1058,13 @@
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      integer :: ltot_ind,lindx,ijk
+      integer :: ltot_ind,lindx,ijk,cc,ii,ll,kk
       integer :: lneighindx,lcontactindx,lneigh,lcontact,lijk,&
                  lpicloc,lparcnt,lcurpar
-      integer :: lpacketsize,lbuf,ltordimn,ltmpbuf
+      integer :: lpacketsize,lbuf,ltordimn,ltmpbuf,num_collisions_to_send,lcollisionsize
+
+      logical, allocatable, dimension(:) :: going_to_send
+
 !-----------------------------------------------
 ! include statement functions
 !-----------------------------------------------
@@ -1074,11 +1077,19 @@
       lpacketsize = 9*dimn + ltordimn*4 + maxneighbors * (dimn+5) + 15
       ltot_ind = irecvindices(1,pface)
       lparcnt = 0
+
+      allocate(going_to_send(max_pip))
+      going_to_send(:) = .false.
+
       do lindx = 2,ltot_ind+1
          lijk = irecvindices(lindx,pface)
          do lpicloc = 1,dg_pic(lijk)%isize
             lcurpar = dg_pic(lijk)%p(lpicloc)
+
             if (pea(lcurpar,4)) cycle ! if ghost particle then cycle
+
+            going_to_send(lcurpar) = .true.
+
             lbuf = lparcnt*lpacketsize + ibufoffset
             dsendbuf(lbuf,pface) = iglobal_id(lcurpar)
             lbuf = lbuf+1
@@ -1184,8 +1195,56 @@
             lparcnt = lparcnt + 1
          end do
       end do
+
+      lbuf = lparcnt*lpacketsize + ibufoffset
+
+      num_collisions_to_send = 0
+      do cc = 1, collision_num
+         LL = COLLISIONS(1,CC)
+         if (going_to_send(LL)) then
+            num_collisions_to_send = num_collisions_to_send + 1
+         endif
+      enddo
+
+      dsendbuf(lbuf,pface) = num_collisions_to_send
+      lbuf = lbuf+1
+
+      do cc = 1, collision_num
+         lcurpar = COLLISIONS(1,CC)
+         if (.not. going_to_send(lcurpar)) cycle
+
+         dsendbuf(lbuf,pface) = iglobal_id(lcurpar)
+         lbuf = lbuf+1
+!         dsendbuf(lbuf,pface) = dg_ijkconv(lijk,pface,ineighproc(pface))
+!         lbuf = lbuf+1
+         dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijkprv(lcurpar),pface,ineighproc(pface))
+         lbuf = lbuf+1
+
+         lneigh = COLLISIONS(2,CC)
+
+         dsendbuf(lbuf,pface) = iglobal_id(lneigh)
+         lbuf = lbuf+1
+!         dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijk(lneigh),pface,ineighproc(pface))
+!         lbuf = lbuf+1
+         dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijkprv(lneigh),pface,ineighproc(pface))
+         lbuf = lbuf+1
+
+         dsendbuf(lbuf,pface) = merge(1,0,pv_coll(CC))
+         lbuf = lbuf+1
+         do ii=1,DIMN
+            dsendbuf(lbuf,pface) = PFN_COLL(II,CC)
+            lbuf = lbuf+1
+            dsendbuf(lbuf,pface) = PFT_COLL(II,CC)
+            lbuf = lbuf+1
+         enddo
+      enddo
+
+      deallocate(going_to_send)
+
+      lcollisionsize = 6 + 2*DIMN
+
       dsendbuf(1,pface) = lparcnt
-      isendcnt(pface) = lparcnt*lpacketsize+ibufoffset
+      isendcnt(pface) = lparcnt*lpacketsize+num_collisions_to_send*lcollisionsize+ibufoffset + 3
 
 ! following unused variables are not sent across the processor
 ! well_depth
@@ -1218,6 +1277,7 @@
       logical :: lfound
       integer :: lpacketsize,lbuf,ltordimn,ltmpbuf,lcount
       logical :: lcontactfound,lneighfound
+      integer :: cc,ii,kk,num_collisions_sent
 !-----------------------------------------------
 ! include statement functions
 !-----------------------------------------------
@@ -1377,6 +1437,52 @@
 
       end do
 
+      lbuf = lparcnt*lpacketsize + ibufoffset
+
+      num_collisions_sent = drecvbuf(lbuf,pface)
+      lbuf=lbuf+1
+
+      do cc = 1, num_collisions_sent
+
+         lparid = drecvbuf(lbuf,pface)
+         lbuf=lbuf+1
+
+         lparijk = drecvbuf(lbuf,pface)
+         lbuf=lbuf+1
+
+         if (.not. locate_par(lparid,lparijk,llocpar)) then
+            print *,"at buffer location",lbuf," pface = ",pface
+            print *,"COULD NOT FIND PARTICLE ",lparid," IN IJK ",lparijk
+            call des_mpi_stop
+         endif
+
+         lneighid = drecvbuf(lbuf,pface)
+         lbuf=lbuf+1
+
+         lneighijk = drecvbuf(lbuf,pface)
+         lbuf=lbuf+1
+
+         if (.not. locate_par(lneighid,lneighijk,lneigh)) then
+            if (.not. exten_locate_par(lneighid,lparijk,lneigh)) then
+               print *,"at buffer location",lbuf," pface = ",pface
+               print *,"COULD NOT FIND NEIGHBOR ",lneighid," IN IJK ",lneighijk
+               call des_mpi_stop
+            endif
+         endif
+
+         call collision_add(llocpar,lneigh)
+
+         pv_coll(collision_num) = merge(.true.,.false.,0.5 < drecvbuf(lbuf,pface))
+         lbuf=lbuf+1
+
+         do ii=1,DIMN
+            pfn_coll(ii,collision_num) = drecvbuf(lbuf,pface)
+            lbuf=lbuf+1
+            pft_coll(ii,collision_num) = drecvbuf(lbuf,pface)
+            lbuf=lbuf+1
+         enddo
+      enddo
+
  700 FORMAT(/2X,'From: DESMPI_UNPACK_PARCROSS: ',/2X,&
          'ERROR: Unable to locate particles moving from ',I4.4,&
          ' to ', I4.4)
@@ -1386,7 +1492,6 @@
  702 FORMAT(/2X,'From: DESMPI_UNPACK_PARCROSS: ',/2X,&
          'WARNING: Unable to locate neighbor for particles ',&
          'crossing boundary.'/2X,'Contact particle ID =',I10)
-
 
       END SUBROUTINE desmpi_unpack_parcross
 
