@@ -1284,7 +1284,7 @@
 
 ! loop through particles and locate them and make changes
       ltordimn = merge(1,3,NO_K)
-      lpacketsize = 9*dimn + ltordimn*4 + maxneighbors * (dimn+5) + 15
+      lpacketsize = 9*dimn + ltordimn*4 + maxneighbors * (dimn+7) + 15
       lparcnt = drecvbuf(1,pface)
 
 ! if mppic make sure enough space available
