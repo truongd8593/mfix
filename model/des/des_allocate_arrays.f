@@ -163,11 +163,9 @@
       ENDIF
 
 ! Accumulated spring force
-      Allocate(  PFT (NPARTICLES,0:MAXNEIGHBORS,DIMN) )
       Allocate(  PFT_WALL (NPARTICLES,6,DIMN) )
 
 ! Save the normal direction at previous time step
-      Allocate(  PFN (NPARTICLES,MAXNEIGHBORS,DIMN) )
       Allocate(  PFN_WALL (NPARTICLES,6,DIMN) )
 
 ! Tracking variables for particle contact history

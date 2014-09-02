@@ -1031,7 +1031,6 @@
                fc(:,lcurpar) = 0.0
                pn(:,lcurpar) = 0 ; pv(:,lcurpar) = .false.
                pn_wall(:,lcurpar) = 0 ; pv_wall(:,lcurpar) = .false.
-               pft(lcurpar,:,:) = 0
                pft_wall(lcurpar,:,:) = 0
                des_pos_new(:,lcurpar)=0
                des_pos_old(:,lcurpar)=0
@@ -1076,7 +1075,7 @@
 
 ! pack the particle crossing the boundary
       ltordimn = merge(1,3,NO_K)
-      lpacketsize = 9*dimn + ltordimn*4 + maxneighbors * (dimn+5) + 15
+      lpacketsize = 9*dimn + ltordimn*4 + maxneighbors * (dimn+7) + 15
       ltot_ind = irecvindices(1,pface)
       lparcnt = 0
 
@@ -1160,10 +1159,8 @@
                ltmpbuf=ltmpbuf+1
                dsendbuf(ltmpbuf,pface) = merge(1,0,pv(lcontactindx,lcurpar))
                ltmpbuf=ltmpbuf+1
-               dsendbuf(ltmpbuf:ltmpbuf+dimn-1,pface) = pft(lcurpar,lcontactindx,1:dimn)
-               ltmpbuf=ltmpbuf+dimn
             enddo
-            lbuf = lbuf+(2+dimn)*maxneighbors
+            lbuf = lbuf+2*maxneighbors
 
             dsendbuf(lbuf,pface) = pn_wall(1,lcurpar);ltmpbuf=lbuf+1
             do lcontactindx = 2,pn_wall(1,lcurpar)+1
@@ -1176,21 +1173,6 @@
                ltmpbuf=ltmpbuf+dimn
             enddo
             lbuf = lbuf+(2+dimn)*maxneighbors
-! Pradeep remove ********************
-!             print * ,"--------------------------------------------------------------------"
-!             print * , "inside pack par cross" ,mype
-!             print *, "particle moved is", iglobal_id(lcurpar),des_pos_new(:,lcurpar)
-!             print *, "number of neighbours",neighbours(lcurpar,1)
-!             do lneighindx = 2,neighbours(lcurpar,1)+1
-!             print *, "neighbourid" , iglobal_id(neighbours(lcurpar,lneighindx))
-!             end do
-!             print *, "number of contacts ", pn(1,lcurpar)
-!             do lcontactindx = 2,pn(1,lcurpar)+1
-!             print *, "contactid" , iglobal_id(pn(lcontactindx,lcurpar))
-!             print *, "contact status", pv(lcontactindx,lcurpar)
-!             print *, "accumulated force ",pft(lcurpar,lcontactindx,1),pft(lcurpar,lcontactindx,2)
-!             end do
-!             print * ,"--------------------------------------------------------------------"
 
 ! In case of mppic remove the particles else
 ! Convert the particle as ghost and set the forces zero
@@ -1206,7 +1188,6 @@
             pn_wall(:,lcurpar) = 0
             pv(:,lcurpar) = .false.
             pv_wall(:,lcurpar) = .false.
-            pft(lcurpar,:,:) = 0
             pft_wall(lcurpar,:,:) = 0
 
             lparcnt = lparcnt + 1
@@ -1422,7 +1403,7 @@
                   lcontact = max_pip + (-1) * lcontactid
                else
                   WRITE(*,702) lcontactid
-                  ltmpbuf = ltmpbuf + 1 + dimn ! necessary as pv and pft not yet read for this particle
+                  ltmpbuf = ltmpbuf + 1 ! necessary as pv and pft not yet read for this particle
                   cycle
                endif
             endif
@@ -1430,11 +1411,9 @@
             pn(lcount+1,llocpar) = lcontact
             pv(lcount+1,llocpar) = merge(.true.,.false.,drecvbuf(ltmpbuf,pface).gt.0.5)
             ltmpbuf=ltmpbuf+1
-            pft(llocpar,lcount+1,1:dimn) = drecvbuf(ltmpbuf:ltmpbuf+dimn-1,pface)
-            ltmpbuf=ltmpbuf+dimn
          enddo
          pn(1,llocpar)=lcount
-         lbuf = lbuf+(2+dimn)*maxneighbors
+         lbuf = lbuf+2*maxneighbors
 
 ! loop through contact list and find local particle number using neighbor list
          pn_wall(1,llocpar) = drecvbuf(lbuf,pface);ltmpbuf=lbuf+1
@@ -1470,22 +1449,6 @@
          enddo
          pn_wall(1,llocpar)=lcount
          lbuf = lbuf+(2+dimn)*maxneighbors
-
-!debuging print PRADEEP remove
-!          print * ,"--------------------------------------------------------------------"
-!          print * , "inside unpack par cross"
-!          print *, "particle moved is", iglobal_id(llocpar)
-!          print *, "number of neighbours",neighbours(llocpar,1)
-!          do lneighindx = 2,neighbours(llocpar,1)+1
-!          print *, "neighbourid" , iglobal_id(neighbours(llocpar,lneighindx))
-!          end do
-!          print *, "number of contacts ", pn(1,llocpar)
-!          do lcontactindx = 2,pn(1,llocpar)+1
-!          print *, "contactid" , iglobal_id(pn(lcontactindx,llocpar))
-!          print *, "contact status", pv(lcontactindx,llocpar)
-!          print *, "accumulated force ",pft(llocpar,lcontactindx,1),pft(llocpar,lcontactindx,2)
-!          end do
-!          print * ,"--------------------------------------------------------------------"
 
       end do
 

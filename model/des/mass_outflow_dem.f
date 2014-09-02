@@ -148,7 +148,6 @@
       PN_WALL(1,NP) = 0
       PV(:,NP) = .FALSE.
       PV_WALL(:,NP) = .FALSE.
-      PFT(NP,:,:) = ZERO
       PFT_WALL(NP,:,:) = ZERO
       PPOS(:,NP) = ZERO
 

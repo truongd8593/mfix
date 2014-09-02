@@ -244,9 +244,6 @@
 
       DO LL = 1, MAX_PIP
 
-         FORCE_HISTORY = PFT(LL,0,:)
-         PFT(LL,0,:) = ZERO
-
          IF(LL.EQ.FOCUS_PARTICLE) DEBUG_DES = .TRUE.
 
 ! skipping non-existent particles or ghost particles

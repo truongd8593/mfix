@@ -88,7 +88,6 @@
          CALL READ_RES_pARRAY(lNEXT_REC, PV_WALL(LC1,:))
 
          DO LC2=1, lDIMN
-            CALL READ_RES_pARRAY(lNEXT_REC, PFT(:,LC1,LC2))
             CALL READ_RES_pARRAY(lNEXT_REC, PFT_WALL(:,LC1,LC2))
          ENDDO
       ENDDO

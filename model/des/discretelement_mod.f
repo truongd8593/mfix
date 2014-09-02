@@ -399,10 +399,8 @@
 
 ! Save the accumulated tangential displacement that occurs during
 ! collision (particle-particle or particle-wall)
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFT !(PARTICLES,3,MAXNEIGHBORS)
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFT_WALL !(PARTICLES,3,MAXNEIGHBORS)
 ! Save the normal direction at previous time step
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFN ! (PARTICLES,3,MAXNEIGHBORS)
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFN_WALL ! (PARTICLES,3,MAXNEIGHBORS)
 
 ! Variables used to track/store particle contact history

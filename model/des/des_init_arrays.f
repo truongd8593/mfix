@@ -67,7 +67,6 @@
       PN_WALL(1,:) = 0
       PV(:,:) = .TRUE.
       PV_WALL(:,:) = .TRUE.
-      PFT(:,:,:) = ZERO
       PFT_WALL(:,:,:) = ZERO
       PPOS(:,:) = ZERO
 
