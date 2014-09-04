@@ -111,7 +111,7 @@
 ! particles may have 'settled' according to above.  In the granular
 ! case, the initial state won't be written until after the particles
 ! have moved without this call.
-               CALL WRITE_DES_DATA
+               IF(PRINT_DES_DATA) CALL WRITE_DES_DATA
 
                IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,X,ES15.5)') &
                   'DES data file written at time =', S_TIME

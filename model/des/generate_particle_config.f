@@ -22,7 +22,7 @@
       USE des_linked_list_funcs
       USE cutcell, only : CARTESIAN_GRID
       USE discretelement, only: dimn, xe, yn, zt
-      USE discretelement, only: particles, pip
+      USE discretelement, only: particles, pip, DEBUG_DES
 
       USE mpi_utility
 
@@ -37,7 +37,8 @@
       INTEGER :: IJK, ICELL, IPE
       type(particle), pointer :: part => null()
 
-      INTEGER :: LPIP_ALL(0:NUMPES-1),LORIG_ALL(0:Numpes-1), LDEL_ALL(0:Numpes-1), LREM_ALL(0:Numpes-1)
+      INTEGER :: LPIP_ALL(0:NUMPES-1),LORIG_ALL(0:Numpes-1)
+      INTEGER :: LDEL_ALL(0:Numpes-1), LREM_ALL(0:Numpes-1)
 
       Logical :: write_vtp_files, indomain
 ! Initialize the error manager.
@@ -49,26 +50,21 @@
       IF(MPPIC) THEN
          CALL GENERATE_PARTICLE_CONFIG_MPPIC
       ELSE
-         write(err_msg, '(A)') 'GENERATING INITIAL LATTICE CONFIGURATION FOR DEM MODEL'
-         call flush_err_msg(footer = .false.)
-
          CALL GENERATE_PARTICLE_CONFIG_DEM
-
-         write(err_msg, '(/, 70("."), /,A,/,70("-"))') 'Done generating initial lattice configuration'
-         call flush_err_msg(header = .false., footer = .false.)
       ENDIF
 
       LORIG_ALL = 0
 
 
-
       IF(CARTESIAN_GRID) then
-         write(err_msg, '(A, /, A,/)') 'Cartesian grid detected in gener particle configuration', &
-              'Deleting particles found outside the domain'
-         call flush_err_msg(header = .false., footer = .false.)
+         write(ERR_MSG, 3000)
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+ 3000 FORMAT('Cartesian grid detected with particle configuration,'/&
+         'deleting particles located outsidte the domain.')
 
          indomain = .true.
-         IF(WRITE_VTP_FILES) CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("BEFORE_DELETION", indomain)
+         IF(WRITE_VTP_FILES .AND. DEBUG_DES) &
+            CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("BEFORE_DELETION", indomain)
 
          IF(MPPIC) THEN
             write(err_msg, '(A)') 'Now Marking particles to be deleted'
@@ -83,13 +79,15 @@
             CALL MARK_PARTS_TOBE_DEL_DEM_STL
          END IF
 
-         write(err_msg, '(A)') 'Finished marking particles to be deleted'
-         call flush_err_msg(header = .false., footer = .false.)
+         write(ERR_MSG,"('Finished marking particles to delete.')")
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
-         IF(WRITE_VTP_FILES) CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("AFTER_DELETION", indomain)
+         IF(WRITE_VTP_FILES .AND. DEBUG_DES) &
+            CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("AFTER_DELETION", indomain)
 
          indomain = .false.
-         IF(WRITE_VTP_FILES) CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("DELETED", indomain)
+         IF(WRITE_VTP_FILES .AND. DEBUG_DES) &
+            CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("DELETED", indomain)
 
       ENDIF
 
