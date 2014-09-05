@@ -132,6 +132,7 @@
 
 ! Invoke MPI initialization routines and get rank info.
       CALL PARALLEL_INIT
+      CALL GEN_LOG_BASENAME
 
 ! we want only PE_IO to write out common error messages
       DMP_LOG = (myPE == PE_IO)
@@ -441,6 +442,44 @@
          ' Time step number (NSTEP) =',I7,/1X,70('*')/)
 
       END PROGRAM MFIX
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutien: GEN_LOG_BASENAME                                        !
+!  Author: Aytekin Gel                                Date: 19-SEP-03  !
+!                                                                      !
+!  Purpose: Generate the file base for DMP logs.                       !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE GEN_LOG_BASENAME
+
+      use compar, only: myPE
+      use compar, only: fbname
+
+      implicit none
+
+! Variables for generating file basename with processor id
+      INTEGER :: i1, i10, i100, i1000, i10000
+
+! PAR_I/O Generate file basename for LOG files
+      i10000 = int(myPE/10000)
+      i1000  = int((myPE-i10000*10000)/1000)
+      i100   = int((myPE-i10000*10000-i1000*1000)/100)
+      i10    = int((myPE-i10000*10000-i1000*1000-i100*100)/10)
+      i1     = int((myPE-i10000*10000-i1000*1000-i100*100-i10*10)/1)
+
+      i10000 = i10000 + 48
+      i1000  = i1000  + 48
+      i100   = i100   + 48
+      i10    = i10    + 48
+      i1     = i1     + 48
+
+      fbname=char(i10000)//char(i1000)//char(i100)//char(i10)//char(i1)
+
+      RETURN
+      END SUBROUTINE GEN_LOG_BASENAME
+
+
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
