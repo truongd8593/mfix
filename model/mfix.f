@@ -138,7 +138,7 @@
       DMP_LOG = (myPE == PE_IO)
 
 ! set the version.release of the software
-      ID_VERSION = '2013-2'
+      ID_VERSION = '2014-1'
 
 ! set automatic restart flag to false
 !      AUTOMATIC_RESTART = .FALSE.

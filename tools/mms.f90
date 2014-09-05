@@ -579,6 +579,11 @@
 
       DO; READ(UNIT_TEMP,'(A)',END=100) FILENAME
 
+! Skip BLAS and DGTSV. This is needed as the file extension was changed
+! from .F to .f and duplicates get included in the make file.
+        IF(index(FILENAME,'BLAS')  /= 0) CYCLE
+        IF(index(FILENAME,'DGTSV') /= 0) CYCLE
+
 ! Store the file name.
          FILE_COUNT = FILE_COUNT + 1
          ALL_FILES(FILE_COUNT) = FILENAME
@@ -648,7 +653,7 @@
 
  5050 FORMAT(/'$(DPO)blas90.a : $(DPO)BLAS.o',/'	ar cr $(DPO)', &
          'blas90.a $(DPO)BLAS.o',/'$(DPO)BLAS.o : BLAS.f',/            &
-         '	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.F -o $(DPO)BLAS.o')
+         '	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.f -o $(DPO)BLAS.o')
 
 
       WRITE(OUT, 5051)
@@ -656,7 +661,7 @@
 
  5051 FORMAT(/'$(DPO)dgtsv90.a : $(DPO)DGTSV.o',/'	ar cr $(DPO)', &
          'dgtsv90.a $(DPO)DGTSV.o',/'$(DPO)DGTSV.o : DGTSV.f',/        &
-         '	$(FORTRAN_CMD) $(FORT_FLAGS) DGTSV.F -o $(DPO)DGTSV.o')
+         '	$(FORTRAN_CMD) $(FORT_FLAGS) DGTSV.f -o $(DPO)DGTSV.o')
 
 
       WRITE(OUT, 5052)

@@ -143,27 +143,7 @@ for arg in $input; do
 
 # Clean out the last build.
 #-------------------------------------------------------------------------->>
-    "--clean" | "-c")
-      log=${MFIX_SRC}/${MAKEFILE}
-      if ! test -f ${log}; then
-        echo "Unable to locate previous build log."
-        echo "Cannot remove previous build directory"
-        exit -1
-      fi
-      build_dir=$(grep "DPO=" ${log} | cut -d "=" -f2)
-      echo "Cleaning previous build: ${build_dir}"
-
-      if test ! -d ${build_dir}; then
-        echo "Nothing to clean"
-      else
-        /bin/rm -rf ${build_dir}
-        if test $? = 0; then
-          echo "Previous build directory removed."
-        else
-          echo "Error removing previous build directory."
-          exit -1
-        fi
-      fi;;
+    "--clean" | "-c") CLEAN_OBJS=1;;
 
 # Specify default compile options.
 #-------------------------------------------------------------------------->>
@@ -171,7 +151,8 @@ for arg in $input; do
 
       EXPERT=0
       FORCE_COMPILE=0
-      COMP_FILE="gnu_default.sh"
+      COMP_FILE="${MFIX_CONFIG}/compilers/gcc_default.sh"
+      REQ_COMP=0
 
       if test -z ${USE_SMP}; then USE_SMP=0; fi
       if test -z ${USE_DMP}; then USE_DMP=0; fi
