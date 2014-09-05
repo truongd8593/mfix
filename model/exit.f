@@ -10,8 +10,10 @@
 
       implicit none
 
+! Rank ID
       INTEGER, OPTIONAL, INTENT(IN) :: myID
-
+! Logical showing that a file unit is open.
+      LOGICAL :: isOpen
 ! The value passed via the dummy argument or the process ID.
       INTEGER :: myID_l
 ! Process ID (myPE) converted to a character string.
@@ -23,7 +25,10 @@
 
 ! Write out that this routine was called.
       IF(myPE == PE_IO) WRITE(*,1000)
-      IF(DMP_LOG) WRITE(UNIT_LOG,1001) trim(adjustl(myID_c))
+      IF(DMP_LOG) THEN
+         INQUIRE(UNIT=UNIT_LOG,OPENED=isOpen)
+         IF(isOPEN) WRITE(UNIT_LOG,1001) trim(adjustl(myID_c))
+      ENDIF
 
 ! Terminate MPI.
       CALL exitMPI(myID_l)
@@ -39,12 +44,12 @@
       CALL exit(-1)
 
  1000 FORMAT(2/,1x,70('*'),/' Fatal error reported on one or more',    &
-     ' processes. The .LOG file',/' may contain additional',           &
-     ' information about the failure.',/1x,70('*'))
+        ' processes. The .LOG file',/' may contain additional',        &
+        ' information about the failure.',/1x,70('*'))
 
- 1001 FORMAT(2/,1x,70('*'),/' Fatal error reported on PE ',&
-      A,'. The .LOG file may contain',/' additional ',     &
-     'information about the failure.',/1x,70('*'))
+ 1001 FORMAT(2/,1x,70('*'),/' Fatal error reported on PE ',  &
+         A,'. The .LOG file may contain',/' additional ',     &
+        'information about the failure.',/1x,70('*'))
 
  1002 FORMAT(2/,1x,'Program Terminated.',2/)
 
