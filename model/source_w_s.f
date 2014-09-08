@@ -58,6 +58,7 @@
       USE cutcell
       USE quadric
       USE mms
+      USE bodyforce
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -107,13 +108,11 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-      INCLUDE 'b_force2.inc'
 !-----------------------------------------------
 
       DO M = 1, MMAX

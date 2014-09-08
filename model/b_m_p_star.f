@@ -37,7 +37,8 @@
       USE toleranc
       USE geometry
       USE indices
-      USE compar
+      USE compar 
+      USE bodyforce
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -79,13 +80,11 @@
 !                      Source terms (Volumetric)
       DOUBLE PRECISION V0, Vmt, Vbf
 !-----------------------------------------------
-      INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-      INCLUDE 'b_force2.inc'
 !
       I = I_OF(IJK)
       J = J_OF(IJK)
@@ -172,6 +171,7 @@
       USE geometry
       USE indices
       USE compar
+      USE bodyforce
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -215,13 +215,11 @@
       DOUBLE PRECISION V0, Vmt, Vbf
 !
 !-----------------------------------------------
-      INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-      INCLUDE 'b_force2.inc'
 !
       I = I_OF(IJK)
       J = J_OF(IJK)
@@ -308,6 +306,7 @@
       USE geometry
       USE indices
       USE compar
+      USE bodyforce
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -351,13 +350,11 @@
       DOUBLE PRECISION V0, Vmt, Vbf
 !
 !-----------------------------------------------
-      INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-      INCLUDE 'b_force2.inc'
 !
       I = I_OF(IJK)
       J = J_OF(IJK)
@@ -443,6 +440,7 @@
       USE geometry
       USE indices
       USE compar
+      USE bodyforce
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -486,13 +484,11 @@
       DOUBLE PRECISION V0, Vmt, Vbf
 !
 !-----------------------------------------------
-      INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-      INCLUDE 'b_force2.inc'
 !
       IM = IM1(I_OF(IJK))
       J = J_OF(IJK)
@@ -579,6 +575,7 @@
       USE geometry
       USE indices
       USE compar
+      USE bodyforce
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -621,13 +618,11 @@
 !                      Source terms (Volumetric)
       DOUBLE PRECISION V0, Vmt, Vbf
 !-----------------------------------------------
-      INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-      INCLUDE 'b_force2.inc'
 !
       I = I_OF(IJK)
       JM = JM1(J_OF(IJK))
@@ -714,6 +709,7 @@
       USE geometry
       USE indices
       USE compar
+      USE bodyforce
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -756,13 +752,11 @@
 !                      Source terms (Volumetric)
       DOUBLE PRECISION V0, Vmt, Vbf
 !-----------------------------------------------
-      INCLUDE 'b_force1.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-      INCLUDE 'b_force2.inc'
 !
       I = I_OF(IJK)
       J = J_OF(IJK)

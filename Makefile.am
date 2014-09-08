@@ -86,12 +86,11 @@ common_SOURCES = \
 	model/adjust_theta.f \
 	model/allocate_arrays.f \
 	model/ambm_mod.f \
-	model/b_force1.inc \
-	model/b_force2.inc \
 	model/b_m_p_star.f \
 	model/bc_mod.f \
 	model/bc_phi.f \
 	model/bc_theta.f \
+	model/bodyforce_mod.f \
 	model/bound_x.f \
 	model/boundfunijk3_mod.f \
 	model/boundfunijk_mod.f \

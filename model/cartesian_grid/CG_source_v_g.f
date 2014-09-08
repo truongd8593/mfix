@@ -136,13 +136,11 @@
 !=======================================================================
 
 !-----------------------------------------------
-      INCLUDE '../b_force1.inc'
       INCLUDE '../ep_s1.inc'
       INCLUDE '../fun_avg1.inc'
       INCLUDE '../function.inc'
       INCLUDE '../fun_avg2.inc'
       INCLUDE '../ep_s2.inc'
-      INCLUDE '../b_force2.inc'
 
       IF(CG_SAFE_MODE(4)==1) RETURN
 
@@ -476,13 +474,11 @@
 
       LOGICAL :: PRINT_FLAG
 !-----------------------------------------------
-      INCLUDE '../b_force1.inc'
       INCLUDE '../ep_s1.inc'
       INCLUDE '../fun_avg1.inc'
       INCLUDE '../function.inc'
       INCLUDE '../fun_avg2.inc'
       INCLUDE '../ep_s2.inc'
-      INCLUDE '../b_force2.inc'
 
       IF(CG_SAFE_MODE(4)==1) RETURN
 

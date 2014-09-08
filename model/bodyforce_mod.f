@@ -20,20 +20,44 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
+module bodyforce
+
+contains
+
 !  Body force on gas at i+1/2, j, k
-      BFX_g(IJK) = GRAVITY_X
+double precision function BFX_g(IJK)
+      integer ijk
+      BFX_g = GRAVITY_X
+end function
 !
 !  Body force on gas at i, j+1/2, k
-      BFY_g(IJK) = GRAVITY_Y
+double precision function BFY_g(IJK)
+      integer ijk
+      BFY_g = GRAVITY_Y
+end function
 !
 !  Body force on gas at i, j, k+1/2
-      BFZ_g(IJK) = GRAVITY_Z
+double precision function BFZ_g(IJK)
+      integer ijk
+      BFZ_g = GRAVITY_Z
+end function
 !
 !  Body force on solids m at i+1/2, j, k
-      BFX_s(IJK, M) = GRAVITY_X
+double precision function BFX_s(IJK,M)
+      integer ijk,m
+      BFX_s = GRAVITY_X
+end function
 !
 !  Body force on solids m at i, j+1/2, k
-      BFY_s(IJK, M) = GRAVITY_Y
+double precision function BFY_s(IJK,M)
+      integer ijk,m
+      BFY_s = GRAVITY_Y
+end function
 !
 !  Body force on solids m at i, j, k+1/2
-      BFZ_s(IJK, M) = GRAVITY_Z
+double precision function BFZ_s(IJK,M)
+      integer ijk,m
+      BFZ_s = GRAVITY_Z
+end function
+
+end module bodyforce

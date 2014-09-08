@@ -50,6 +50,7 @@
       USE mpi_utility
       USE sendrecv
       USE discretelement
+      USE bodyforce
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -78,9 +79,7 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'sc_p_g1.inc'
-      INCLUDE 'b_force1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'b_force2.inc'
       INCLUDE 'sc_p_g2.inc'
 !-----------------------------------------------
 
