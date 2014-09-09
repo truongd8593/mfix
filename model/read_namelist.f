@@ -211,6 +211,7 @@
          STRING=''; STRING = '&QMOMK_INPUT_DATA '//&
             trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
          READ(STRING, NML=QMOMK_INPUT_DATA, IOSTAT=IOS)
+         IF(IOS == 0) CYCLE READ_LP
 
 ! At this point, the keyword was not identified therefore it is 
 ! either depreciated or unknown.
