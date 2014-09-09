@@ -512,7 +512,7 @@
 !</keyword>
 
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Output Control" required="false">
 !  <description>Allows writing of discrete particle data to output 
 ! files. 
 ! Relevant to both granular and coupled simulations. </description>
