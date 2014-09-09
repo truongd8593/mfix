@@ -8,12 +8,20 @@ if test ${REQ_COMP} = 1; then
     exit;;
   esac
 
+# Differentiate MFIX and POSTMFIX compilations
+  case "$EXEC_FILE" in
+    mfix.exe)  exec_label="MFIX";;
+    post_mfix) exec_label="POSTMFIX";;
+    *) echo "Error: Unknown executable file: $EXEC_FILE"
+    exit;;
+  esac
+
   case $mfix_os in
     LINUX)
       echo
       echo
       echo "=============================================================="
-      echo " MFIX Compilation directives for following compilers:"
+      echo " $exec_label Compilation directives for following compilers:"
       echo "=============================================================="
       echo "  [1] GCC (gfortran) version 4.3 and above "
       echo "  [2] Portland Group (pgf90) version 11.7 and above"
@@ -40,7 +48,7 @@ if test ${REQ_COMP} = 1; then
         echo
       fi
       echo " "
-      echo -n "Select the compiler to compile MFIX? [1] "
+      echo -n "Select the compiler to compile $exec_label? [1] "
       read compiler
 
       case $compiler in
@@ -76,12 +84,12 @@ if test ${REQ_COMP} = 1; then
       echo " $opsys on Windows Detected"
       echo
       echo "=============================================================="
-      echo "MFIX Compilation directives available for following compilers:"
+      echo "$exec_label Compilation directives available for following compilers:"
       echo "=============================================================="
       echo " [1] g95"
       echo " [2] gfortran"
       echo " "
-      echo -n "Select the compiler to compile MFIX? [2] "
+      echo -n "Select the compiler to compile $exec_label? [2] "
       read compiler
 
       case $compiler in

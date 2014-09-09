@@ -101,7 +101,7 @@ if test $result = 0; then
   echo
   echo "**********************************************"
   echo " Compilation successful: ${EXEC_FILE} created"
-  echo " To run MFIX type: ./${EXEC_FILE}"
+  echo " To run POSTMFIX type: ./${EXEC_FILE}"
   echo "**********************************************"
   echo
 else
