@@ -741,9 +741,16 @@
       DOUBLE PRECISION :: xa,ya,za,xb,yb,zb,xc,yc,zc
       DOUBLE PRECISION :: Xi,Yi,Zi
       DOUBLE PRECISION :: DFC,DFC_MAX,Fa,Fb,F4,F6,F7,F8
-      LOGICAL :: CLIP_FLAG
+      LOGICAL :: CLIP_FLAG,CAD,F_TEST
 
       include "../function.inc"
+
+! When inputing geometry from CAD (STL or MSH file), the snapping procedure is 
+! dependent on the value of F at the cell corners
+! For other gemoetry inputs (say quadrics), This is not needed, and the value
+! of F_TEST is set to .TRUE. here
+      CAD = USE_MSH.OR.USE_STL
+      F_TEST = .TRUE.
 
 !======================================================================
 !  Get coordinates of eight nodes
@@ -814,7 +821,8 @@
 
          DFC = DABS(Xi-xa) ! DISTANCE FROM CORNER (NODE 7)
 
-         IF(DFC < DFC_MAX.AND.F_AT(IMJK)/=ZERO) THEN
+         IF(CAD) F_TEST = (F_AT(IMJK)/=ZERO)
+         IF(DFC < DFC_MAX.AND.F_TEST) THEN
             IF(PRINT_WARNINGS) THEN
                WRITE(*,*)'MERGING X-INTERSECTION ALONG EDGE 7 ONTO NODE 7'
                WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
@@ -836,7 +844,8 @@
 
          DFC = DABS(Xi-xb) ! DISTANCE FROM CORNER (NODE 8)
 
-         IF(DFC < DFC_MAX.AND.F_AT(IJK)/=ZERO) THEN
+         IF(CAD) F_TEST = (F_AT(IJK)/=ZERO)
+         IF(DFC < DFC_MAX.AND.F_TEST) THEN
             IF(PRINT_WARNINGS) THEN
                WRITE(*,*)'MERGING X-INTERSECTION ALONG EDGE 7 ONTO NODE 8'
                WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
@@ -881,7 +890,8 @@
 
          DFC = DABS(Yi-ya) ! DISTANCE FROM CORNER (NODE 6)
 
-         IF(DFC < DFC_MAX.AND.F_AT(IJMK)/=ZERO) THEN
+         IF(CAD) F_TEST = (F_AT(IJMK)/=ZERO)
+         IF(DFC < DFC_MAX.AND.F_TEST) THEN
             IF(PRINT_WARNINGS) THEN
                WRITE(*,*)'MERGING Y-INTERSECTION ALONG EDGE 6 ONTO NODE 6'
                WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
@@ -903,7 +913,8 @@
 
          DFC = DABS(Yi-yb) ! DISTANCE FROM CORNER (NODE 8)
 
-         IF(DFC < DFC_MAX.AND.F_AT(IJK)/=ZERO) THEN
+         IF(CAD) F_TEST = (F_AT(IJK)/=ZERO)
+         IF(DFC < DFC_MAX.AND.F_TEST) THEN
             IF(PRINT_WARNINGS) THEN
                WRITE(*,*)'MERGING Y-INTERSECTION ALONG EDGE 6 ONTO NODE 8'
                WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
@@ -946,7 +957,8 @@
 
             DFC = DABS(Zi-Za) ! DISTANCE FROM CORNER (NODE 4)
 
-            IF(DFC < DFC_MAX.AND.F_AT(IJKM)/=ZERO) THEN
+            IF(CAD) F_TEST = (F_AT(IJKM)/=ZERO)
+            IF(DFC < DFC_MAX.AND.F_TEST) THEN
                IF(PRINT_WARNINGS) THEN
                   WRITE(*,*)'MERGING Z-INTERSECTION ALONG EDGE 11 ONTO NODE 4'
                   WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
@@ -969,7 +981,8 @@
 
             DFC = DABS(Zi-Zb) ! DISTANCE FROM CORNER (NODE 8)
 
-            IF(DFC < DFC_MAX.AND.F_AT(IJK)/=ZERO) THEN
+            IF(CAD) F_TEST = (F_AT(IJK)/=ZERO)
+            IF(DFC < DFC_MAX.AND.F_TEST) THEN
                IF(PRINT_WARNINGS) THEN
                   WRITE(*,*)'MERGING Z-INTERSECTION ALONG EDGE 11 ONTO NODE 8'
                   WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
