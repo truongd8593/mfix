@@ -8,7 +8,7 @@
 
 input=$@
 
-MFIX_VERSION="2013-2"
+MFIX_VERSION="2014-1"
 EXEC_FILE="mfix.exe"
 MAKEFILE="Makefile"
 DPO_BASE=".."
@@ -43,13 +43,15 @@ FORCE_COMPILE=0
 USE_DEBUG=0
 
 # SMP/DMP Variables
-USE_SMP=
-USE_DMP=
+USE_SMP=0
+USE_DMP=0
 
 # Auto-compile
 #  0 : User provides all input
 #  1 : Use last build
 AUTOCOMPILE=0
+
+CLEAN_OBJS=0
 
 # Set based upon user input.
 COMP_FILE=
@@ -85,7 +87,7 @@ EXT_LIST="f F inc"
 . $MFIX_CONFIG/parse_args.sh
 
 # Load compiler and library information.
-if test ${AUTOCOMPILE} -le 1; then
+if test ${AUTOCOMPILE} -ne 1; then
 
 # Collect user information.
 # > Build options
@@ -120,9 +122,16 @@ fi
 # Update source code if needed.
 . ${MFIX_CONFIG}/swap_build.sh
 
-# Construct the makefile
-. ${MFIX_CONFIG}/build_Makefile.sh
+# Clean out old object files.
+if test ${CLEAN_OBJS} -eq 1; then
+  /bin/rm -rf ${DPO}
+  mkdir ${DPO}
+fi
 
+# Construct the makefile
+if test ${AUTOCOMPILE} -ne 1; then
+  . ${MFIX_CONFIG}/build_Makefile.sh
+fi
 
 echo "make -j -f ${MAKEFILE} $inline_objs"
 make ${MAKE_ARGS} -f "${MAKEFILE}" $inline_objs
@@ -135,7 +144,7 @@ result=$?
 
 if test $result = 0; then
   /bin/cp -f ${EXEC_FILE} ${RUN_DIR}
-  if test ${USE_DMP} = 1; then
+  if test ${USE_DMP} -eq 1; then
     echo
     echo "**********************************************"
     echo " Compilation successful: ${EXEC_FILE} created"
