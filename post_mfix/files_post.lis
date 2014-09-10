@@ -6,7 +6,7 @@
 ../model/cont_mod.f
 correl_mod.f
 ../model/des/des_bc_mod.f
-../model/depreciated.f
+../model/deprecated.f
 ../model/drag_mod.f
 ../model/energy_mod.f
 ../model/fldvar_mod.f

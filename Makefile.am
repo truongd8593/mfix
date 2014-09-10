@@ -224,7 +224,7 @@ common_SOURCES = \
 	model/cp_fun1.inc \
 	model/cp_fun2.inc \
 	model/dbg_mod.f \
-	model/depreciated.f \
+	model/deprecated.f \
 	model/des/calc_collision_wall.f \
 	model/des/calc_force_dem.f \
 	model/des/calc_rrate_des.f \
