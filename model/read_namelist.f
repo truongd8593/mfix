@@ -214,8 +214,8 @@
          IF(IOS == 0) CYCLE READ_LP
 
 ! At this point, the keyword was not identified therefore it is 
-! either depreciated or unknown.
-        CALL DEPRECIATED_OR_UNKNOWN(LINE_NO, LINE_STRING(1:LINE_LEN))
+! either deprecated or unknown.
+        CALL DEPRECATED_OR_UNKNOWN(LINE_NO, LINE_STRING(1:LINE_LEN))
 
       ENDDO READ_LP
 

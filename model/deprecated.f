@@ -1,12 +1,14 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!     Module name: READ_NAMELIST(POST)                                 !
-!     Author: P. Nicoletti                            Date: 25-NOV-91  !
+!     Module name: DEPRECATED_OR_UNKNOWN                               !
+!     Author: J.Musser                                Date:  5-SEPT-14 !
 !                                                                      !
-!     Purpose: Read in the NAMELIST variables                          !
+!     Purpose: This routine is called when a keyword was not matched   !
+!     to any of the keywords in the namelist files. This routine       !
+!     reports if the keyword was deprecated or incorrect.              !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DEPRECIATED_OR_UNKNOWN(LINE_NO, INPUT)
+      SUBROUTINE DEPRECATED_OR_UNKNOWN(LINE_NO, INPUT)
 
       use param
       use param1
@@ -66,9 +68,9 @@
       DOUBLE PRECISION :: pvel_mean, PVEL_StDev,VOL_FRAC(DIM_M)
       CHARACTER*64 :: REACTION_MODEL
 
-! These are depreciated keywords. Some are no longer in the code and
+! These are deprecated keywords. Some are no longer in the code and
 ! others are used, but no longer specifed in the mfix.dat file.
-      NAMELIST / DEPRECIATED / RO_s, BC_APPLY_TO_MPPIC, COHESION_DEBUG,&
+      NAMELIST / DEPRECATED / RO_s, BC_APPLY_TO_MPPIC, COHESION_DEBUG,&
          DES_BC_MASSFLOW_s, DES_BC_ROP_s,DES_BC_T_s,DES_BC_TYPE,       &
          DES_BC_VOLFLOW_s,DES_BC_X_e,DES_BC_X_w, DES_BC_Y_n,DES_BC_Y_s,&
          DES_BC_Z_b,DES_BC_Z_t,DES_CALC_BEDHEIGHT,QLM,QLN,DES_COND_EQ, &
@@ -87,15 +89,15 @@
 
 
 
-      STRING = '&DEPRECIATED '//trim(adjustl(INPUT))//'/'
-      READ(STRING,NML=DEPRECIATED,ERR=999, END=999)
+      STRING = '&DEPRECATED '//trim(adjustl(INPUT))//'/'
+      READ(STRING,NML=DEPRECATED,ERR=999, END=999)
 
       IF(myPE == 0) WRITE(*,2000) trim(iVAL(LINE_NO)), trim(INPUT)
       CALL MFIX_EXIT(myPE)
 
- 2000 FORMAT(//1X,70('*')/' From DEPRECIATED_OR_UNKNOWN:',/1x,         &
+ 2000 FORMAT(//1X,70('*')/' From DEPRECATED_OR_UNKNOWN:',/1x,          &
          'Error 2000: A keyword pair on line ',A,' of the mfix.dat ',  &
-         'file was',/' identified as being depreciated.',//3x,A,//1x,  &
+         'file was',/' identified as being deprecated.',//3x,A,//1x,   &
          'Please see the user documentation and update the mfix.dat ', &
          'file.',/1X,70('*')//)
 
@@ -103,7 +105,7 @@
       CALL MFIX_EXIT(myPE)
 
 
- 2001 FORMAT(//1X,70('*')/' From: DEPRECIATED_OR_UNKNOWN',/1x,         &
+ 2001 FORMAT(//1X,70('*')/' From: DEPRECATED_OR_UNKNOWN',/1x,          &
          'Error 2001: Unable to process line ',A,' of the mfix.dat ',  &
          'file.',2/3x,A,2/1x,'Possible causes are',/3x,'*  Incorrect', &
          ' or illegal keyword format',/3x'*  Unknown or mistyped name',&
@@ -111,4 +113,4 @@
          2/1x,'Please see the user documentation and update the ',     &
          'mfix.dat file. ',/1X,70('*')//)
 
-      END SUBROUTINE DEPRECIATED_OR_UNKNOWN
+      END SUBROUTINE DEPRECATED_OR_UNKNOWN
