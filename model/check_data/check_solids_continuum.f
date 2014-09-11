@@ -262,6 +262,22 @@
  1600 FORMAT('Error 1600: Unknown RDF_TYPE',/'Please ',  &
          'correct the mfix.dat file.')
 
+! If the default (LEBOWITZ) is not set for a monodisperse case, then
+! flag the error and exit. Otherwise, change it to CARNAHAN-STARLING.
+      IF(MMAX == 1) THEN
+         IF(RDF_TYPE_ENUM /= LEBOWITZ) THEN
+            WRITE(ERR_MSG, 1601) trim(adjustl(RDF_TYPE))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+ 1601 FORMAT('Error 1601: The RDF_TYPE should NOT be sepecified when ',&
+         'MMAX = 1',/'because Carnahan-Starling is the only available',&
+         ' radial distribution',/'function for monodisperse systems. ',&
+         'Please correct the mfix.dat file.')
+
+         ELSE
+            RDF_TYPE_ENUM = CARNAHAN_STARLING
+         ENDIF
+      ENDIF
 
  1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
             'correct the mfix.dat file.')
