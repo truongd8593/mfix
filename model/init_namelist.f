@@ -92,7 +92,7 @@
 !</keyword>
 
 !<keyword category="Run Control" required=.TRUE.>
-!  <description>type of run.</description>
+!  <description>Type of run.</description>
 !  <valid value="new" note="new run."/>
 !  <valid value="RESTART_1" note="Traditional restart."/>
 !  <valid value="RESTART_2"
@@ -343,14 +343,14 @@
 
 !<keyword category="Run Control" required=.FALSE.>
 !  <description>
-!    use fedors and landel correlation to compute maximum
+!    Use Fedors and Landel correlation to compute maximum
 !    packing for a binary (only) mixture of powders.
 !  </description>
       FEDORS_LANDEL = .FALSE.
 !</keyword>
 
 !<keyword category="Run Control" required=.FALSE.>
-!  <description>call user-defined subroutines.</description>
+!  <description>Call user-defined subroutines.</description>
 !  <valid value=".TRUE." note="call user-defined subroutines."/>
 !  <valid value=".FALSE." note="do not call user-defined subroutines."/>
       CALL_USR = .FALSE.
@@ -367,7 +367,7 @@
 
 !<keyword category="Run Control" required=.FALSE.>
 !  <description>
-!    when activated the k-epsilon turbulence model (for single
+!    When activated the k-epsilon turbulence model (for single
 !    -phase flow) is solved using standard wall functions.
 !  </description>
 !  <conflict keyword="L_SCALE0" value="DEFINED"/>
@@ -479,7 +479,7 @@
 
 !<keyword category="Run Control" required=.FALSE.>
 !  <description>
-!    when activated the added (or virtual) mass force effectively
+!    When activated the added (or virtual) mass force effectively
 !    acts to increase the inertia of the dispersed phase, which
 !    tends to stabilize simulations of bubbly gas-liquid flows.
 !  </description>
@@ -539,7 +539,7 @@
 
 
 !#####################################################################!
-!                           Physcial Parameters                       !
+!                           Physical Parameters                       !
 !#####################################################################!
 
 !<keyword category="Physical Parameters" required=.FALSE.>
@@ -553,7 +553,7 @@
 !</keyword>
 
 !<keyword category="Physical Parameters" required=.FALSE.>
-!  <description>coefficient of restitution for particle-particle collisions.</description>
+!  <description>Coefficient of restitution for particle-particle collisions.</description>
       C_E = UNDEFINED
 !</keyword>
 
@@ -567,18 +567,18 @@
 !</keyword>
 
 !<keyword category="Physical Parameters" required=.FALSE.>
-!  <description>coefficient of restitution for particle-wall collisions.</description>
+!  <description>Coefficient of restitution for particle-wall collisions.</description>
       E_W = 1.D0
 !</keyword>
 
 !<keyword category="Physical Parameters" required=.FALSE.>
-!  <description>specularity coefficient associated with particle-wall collisions.</description>
+!  <description>Specularity coefficient associated with particle-wall collisions.</description>
       PHIP = 0.6D0
 !</keyword>
 
 !<keyword category="Physical Parameters" required=.FALSE.>
 !  <description>
-!    output the variable specularity coefficient when bc_jj_m is
+!    Output the variable specularity coefficient when bc_jj_m is
 !    .TRUE.. The specularity coefficient will be stored in reactionrates
 !    array for post-processing by post-mfix. user needs to set nrr to 1
 !    for this purpose. be careful with this setting when reacting flow
@@ -589,7 +589,7 @@
 
 !<keyword category="Physical Parameters" required=.FALSE.>
 !  <description>
-!    specify the value of specularity coefficient when the
+!    Specify the value of specularity coefficient when the
 !    normalized slip velocity goes to zero when bc_jj_m is
 !    .TRUE.. this variable is calculated internally in the
 !    code. do not modify unless an accurate number is known.
@@ -600,14 +600,14 @@
 
 !<keyword category="Physical Parameters" required=.FALSE.>
 !  <description>
-!    coefficient of friction between the particles of two solids phases.
+!    Coefficient of friction between the particles of two solids phases.
 !  </description>
       C_F = UNDEFINED
 !</keyword>
 
 !<keyword category="Physical Parameters" required=.FALSE.>
 !  <description>
-!     angle of internal friction (in degrees). set this value
+!     Angle of internal friction (in degrees). set this value
 !     to zero to turn off plastic regime stress calculations.
 !  </description>
       PHI = UNDEFINED
@@ -617,14 +617,14 @@
 !  <description>
 !    Angle of internal friction (in degrees) at walls. Set this
 !    value to non-zero (phi_w = 11.31 means tan_phi_w = mu = 0.2)
-!    when using jenkins or bc_jj_m boundary condition.
+!    when using Jenkins or bc_jj_m boundary condition.
 !  </description>
       PHI_W = UNDEFINED
 !</keyword>
 
 !<keyword category="Physical Parameters" required=.FALSE.>
 !  <description>
-!    minimum solids fraction above which friction sets in.  (when
+!    Minimum solids fraction above which friction sets in.  (when
 !    friction = .TRUE.)</description>
 !  <dependents>friction</dependents>
       EPS_F_MIN = 0.5D0
@@ -645,7 +645,7 @@
 
 !<keyword category="Physical Parameters" required=.FALSE.>
 !  <description>
-!    used in calculating the initial slope of segregation: see
+!    Used in calculating the initial slope of segregation: see
 !    Gera et al. (2004) - recommended value 0.3. increasing this
 !    coefficient results in decrease in segregation of particles
 !    in binary mixtures.
@@ -655,7 +655,7 @@
 
 !<keyword category="Physical Parameters" required=.FALSE.>
 !  <description>
-!    value of turbulent length initialized. this may be overwritten
+!    Value of turbulent length initialized. this may be overwritten
 !    in specific regions with the keyword ic_l_scale.
 !</description>
 !  <conflict keyword="K_EPSILON" value=".TRUE."/>
@@ -664,24 +664,24 @@
 
 !<keyword category="Physical Parameters" required=.FALSE.>
 !  <description>
-!    maximum value of the turbulent viscosity of the fluid.
+!    Maximum value of the turbulent viscosity of the fluid.
 !  </description>
       MU_GMAX = UNDEFINED
 !</keyword>
 
 !<keyword category="Physical Parameters" required=.FALSE.>
-!  <description>excluded volume in boyle-massoudi stress.</description>
+!  <description>Excluded volume in Boyle-Massoudi stress.</description>
 !  <valid value="0.0" note="b-m stress is turned off."/>
       V_EX = ZERO
 !</keyword>
 
 !<keyword category="Physical Parameters" required=.FALSE.>
-!  <description>reference pressure.</description>
+!  <description>Reference pressure.</description>
       P_REF = ZERO
 !</keyword>
 
 !<keyword category="Physical Parameters" required=.FALSE.>
-!  <description>scale factor for pressure.</description>
+!  <description>Scale factor for pressure.</description>
       P_SCALE = ONE
 !</keyword>
 
@@ -716,7 +716,7 @@
 
 
 !<keyword category="Physical Parameters" required=.FALSE.>
-!  <description>disperse phase number where the added mass applies.</description>
+!  <description>Disperse phase number where the added mass applies.</description>
       M_AM = UNDEFINED_I
 !</keyword>
 
@@ -730,47 +730,47 @@
 
 
 !<keyword category="Numerical Parameters" required=.FALSE.>
-!  <description>maximum number of iterations.</description>
+!  <description>Maximum number of iterations.</description>
       MAX_NIT = 500
 !</keyword>
 
 !<keyword category="Numerical Parameters" required=.FALSE.>
-!  <description>factor to normalize the gas continuity equation residual.</description>
+!  <description>Factor to normalize the gas continuity equation residual.</description>
       NORM_G = UNDEFINED
 !</keyword>
 
 !<keyword category="Numerical Parameters" required=.FALSE.>
-!  <description>factor to normalize the solids continuity equation residual.</description>
+!  <description>Factor to normalize the solids continuity equation residual.</description>
       NORM_S = UNDEFINED
 !</keyword>
 
 !<keyword category="Numerical Parameters" required=.FALSE.>
-!  <description>maximum residual at convergence (continuity+momentum).</description>
+!  <description>Maximum residual at convergence (continuity+momentum).</description>
       TOL_RESID = 1.0D-3
 !</keyword>
 
 !<keyword category="Numerical Parameters" required=.FALSE.>
-!  <description>maximum residual at convergence (granular energy).</description>
+!  <description>Maximum residual at convergence (granular energy).</description>
       TOL_RESID_Th = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required=.FALSE.>
-!  <description>maximum residual at convergence (energy).</description>
+!  <description>Maximum residual at convergence (energy).</description>
       TOL_RESID_T = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required=.FALSE.>
-!  <description>maximum residual at convergence (species balance).</description>
+!  <description>Maximum residual at convergence (species balance).</description>
       TOL_RESID_X = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required=.FALSE.>
-!  <description>maximum residual at convergence (scalar balances.)</description>
+!  <description>Maximum residual at convergence (scalar balances.)</description>
       TOL_RESID_Scalar = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required=.FALSE.>
-!  <description>maximum residual at convergence (K_Epsilon Model)</description>
+!  <description>Maximum residual at convergence (K_Epsilon Model)</description>
       TOL_RESID_K_Epsilon = 1.0D-4
 !</keyword>
 
@@ -874,7 +874,7 @@
 !</keyword>
 
 !<keyword category="Numerical Parameters" required=.FALSE.>
-!  <description>discretization scheme of equations.</description>
+!  <description>Discretization scheme of equations.</description>
 !  <valid value="1" note="first-order upwinding (using down-wind factors)."/>
 !  <valid value="3" note="smart."/>
 !  <valid value="2" note="superbee (recommended method)."/>
@@ -889,7 +889,7 @@
 
 !<keyword category="Numerical Parameters" required=.FALSE.>
 !  <description>
-!    four point fourth order interpolation and is upstream biased. if
+!    Four point fourth order interpolation and is upstream biased. if
 !    this scheme is chosen and discretize(*) < 2, discretize(*) is
 !    defaulted to 2. if you chose this scheme, set the c_fac value
 !    between 0 and 1.
@@ -900,7 +900,7 @@
 
 !<keyword category="Numerical Parameters" required=.FALSE.>
 !  <description>
-!    factor used in the universal limiter (when fpfoi is set .TRUE.) and
+!    Factor used in the universal limiter (when fpfoi is set .TRUE.) and
 !    can be any value in the set (0,1). the choice of 1 will give
 !    (diffusion) first order upwinding and as this value becomes closer
 !    to 0 the scheme becomes more compressive.
@@ -912,12 +912,12 @@
 
 
 !<keyword category="Numerical Parameters" required=.FALSE.>
-!  <description>temporal discretization scheme.</description>
+!  <description>Temporal discretization scheme.</description>
 !  <valid value=".FALSE."
 !    note="Implicit Euler based temporal discretization scheme employed
 !      (first order accurate in time)."/>
 !  <valid value=".TRUE."
-!    note="crank-nicholson based temporal discretization scheme employed
+!    note="Crank-Nicholson based temporal discretization scheme employed
 !      (second order accurate in time excluding the restart timestep
 !      which is first order)."/>
       CN_ON = .FALSE.
@@ -926,7 +926,7 @@
 
 !<keyword category="Numerical Parameters" required=.FALSE.>
 !  <description>
-!    chi-scheme, proposed by darwish and moukalled (2003), is activated.
+!    Chi-scheme, proposed by Darwish and Moukalled (2003), is activated.
 !    this scheme guarantees that the set of differenced species mass
 !    balance equations has the property that the sum of mass fractions
 !    add up to one. when a flux limiter is used with (higher order)
@@ -987,21 +987,21 @@
 
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
-!  <description>coordinates used in the simulation.</description>
+!  <description>Coordinates used in the simulation.</description>
 !  <valid value="cartesian" note="cartesian coordinates."/>
 !  <valid value="cylindrical" note="cylindrical coordinates."/>
       COORDINATES = UNDEFINED_C
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
-!  <description>(do not use.)</description>
+!  <description>(Do not use.)</description>
 !  <valid value=".FALSE." note="x (r) direction is considered."/>
 !  <valid value=".TRUE." note="x (r) direction is not considered."/>
       NO_I = .FALSE.
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
-!  <description>number of cells in the x (r) direction.</description>
+!  <description>Number of cells in the x (r) direction.</description>
       IMAX = UNDEFINED_I
 !</keyword>
 
@@ -1024,12 +1024,12 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
-!  <description>reactor length in the x (r) direction.</description>
+!  <description>Reactor length in the x (r) direction.</description>
       XLENGTH = UNDEFINED
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
-!  <description>(do not use.)</description>
+!  <description>(Do not use.)</description>
 !  <valid value=".FALSE. note="y direction is considered."/>
 !  <valid value=".TRUE." note="y direction is not considered."/>
       NO_J = .FALSE.
@@ -1037,7 +1037,7 @@
 
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
-!  <description>number of cells in the y direction.</description>
+!  <description>Number of cells in the y direction.</description>
       JMAX = UNDEFINED_I
 !</keyword>
 
@@ -1052,19 +1052,19 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
-!  <description>reactor length in the y direction.</description>
+!  <description>Reactor length in the y direction.</description>
       YLENGTH = UNDEFINED
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
-!  <description></description>
+!  <description></Description>
 !  <valid value=".FALSE." note="z(theta) direction is considered."/>
 !  <valid value=".TRUE." note="z(theta) direction is not considered."/>
       NO_K = .FALSE.
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
-!  <description>number of cells in the z (() direction.</description>
+!  <description>Number of cells in the z (() direction.</description>
       KMAX = UNDEFINED_I
 !</keyword>
 
@@ -1079,7 +1079,7 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
-!  <description>reactor length in the z (theta) direction.</description>
+!  <description>Reactor length in the z (theta) direction.</description>
       ZLENGTH = UNDEFINED
 !</keyword>
 
@@ -1096,7 +1096,7 @@
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
 !  <description>
-!    flag for making the x-direction cyclic with pressure drop. if the
+!    Flag for making the x-direction cyclic with pressure drop. if the
 !    keyword flux_g is given a value this becomes a cyclic boundary
 !    condition with specified mass flux. no other boundary conditions
 !    for the x-direction should be specified.
@@ -1108,7 +1108,7 @@
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
 !  <description>
-!    fluid pressure drop across xlength when a cyclic boundary condition
+!    Fluid pressure drop across xlength when a cyclic boundary condition
 !    with pressure drop is imposed in the x-direction.
 !  </description>
       DELP_X = UNDEFINED
@@ -1116,7 +1116,7 @@
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
 !  <description>
-!    flag for making the y-direction cyclic without pressure drop. no
+!    Flag for making the y-direction cyclic without pressure drop. no
 !    other boundary conditions for the y-direction should be specified.
 !  </description>
 !  <valid value=".FALSE." note="no cyclic condition at y-boundary."/>
@@ -1126,7 +1126,7 @@
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
 !  <description>
-!    flag for making the y-direction cyclic with pressure drop. if the
+!    Flag for making the y-direction cyclic with pressure drop. if the
 !    keyword flux_g is given a value this becomes a cyclic boundary
 !    condition with specified mass flux. no other boundary conditions
 !    for the y-direction should be specified.
@@ -1138,7 +1138,7 @@
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
 !  <description>
-!    fluid pressure drop across ylength when a cyclic boundary condition
+!    Fluid pressure drop across ylength when a cyclic boundary condition
 !    with pressure drop is imposed in the y-direction.
 !  </description>
       DELP_Y = UNDEFINED
@@ -1146,7 +1146,7 @@
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
 !  <description>
-!    flag for making the z-direction cyclic without pressure drop. no
+!    Flag for making the z-direction cyclic without pressure drop. no
 !    other boundary conditions for the z-direction should be specified.
 !  </description>
 !  <valid value=".FALSE." note="no cyclic condition at z-boundary."/>
@@ -1156,7 +1156,7 @@
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
 !  <description>
-!    flag for making the z-direction cyclic with pressure drop. if the
+!    Flag for making the z-direction cyclic with pressure drop. if the
 !    keyword flux_g is given a value this becomes a cyclic boundary
 !    condition with specified mass flux. no other boundary conditions
 !    for the z-direction should be specified.
@@ -1168,7 +1168,7 @@
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
 !  <description>
-!    fluid pressure drop across zlength when a cyclic boundary condition
+!    Fluid pressure drop across zlength when a cyclic boundary condition
 !    with pressure drop is imposed in the z-direction.
 !  </description>
       DELP_Z = UNDEFINED
@@ -1176,7 +1176,7 @@
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
 !  <description>
-!    if .TRUE. imposes a mean shear on the flow field as a linear
+!    If .TRUE. imposes a mean shear on the flow field as a linear
 !    function of _x_ coordinate. this feature should only be used when
 !    cyclic_x=.TRUE. also, the keyword v-sh needs to be set.
 !  </description>
@@ -1197,7 +1197,7 @@
 
 !<keyword category="Geometry and Discretization" required=.FALSE.>
 !  <description>
-!    if a value is specified (in units of g/cm2.s), the domain-averaged gas
+!    If a value is specified (in units of g/cm2.s), the domain-averaged gas
 !    flux is held constant at that value in simulations over a periodic
 !    domain.  a pair of boundaries specified as periodic with fixed
 !    pressure drop is then treated as periodic with fixed mass flux.
@@ -1228,32 +1228,32 @@
 !</keyword>
 
 !<keyword category="Gas Phase" required=.FALSE.>
-!  <description>specified constant gas viscosity.</description>
+!  <description>Specified constant gas viscosity.</description>
       MU_G0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required=.FALSE.>
-!  <description>specified constant gas conductivity.</description>
+!  <description>Specified constant gas conductivity.</description>
       K_G0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required=.FALSE.>
-!  <description>specified constant gas specific heat.</description>
+!  <description>Specified constant gas specific heat.</description>
       C_PG0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required=.FALSE.>
-!  <description>specified constant gas diffusivity.</description>
+!  <description>Specified constant gas diffusivity.</description>
       DIF_G0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required=.FALSE.>
-!  <description>average molecular weight of gas.</description>
+!  <description>Average molecular weight of gas.</description>
       MW_AVG = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required=.FALSE.>
-!  <description>molecular weight of gas species n.</description>
+!  <description>Molecular weight of gas species n.</description>
 !  <arg index="1" id="Species" min="1" max="DIM_N_G"/>
       MW_G(:DIM_N_G) = UNDEFINED
 !</keyword>
@@ -1281,7 +1281,7 @@
 
 
 !<keyword category="Solids Phase" required=.FALSE.>
-!  <description>number of solids phases.</description>
+!  <description>Number of solids phases.</description>
       MMAX = 1
 !</keyword>
 
@@ -1331,7 +1331,7 @@
 !</keyword>
 
 !<keyword category="Solids Phase" required=.FALSE.>
-!  <description>specified constant granular viscosity. if this value is
+!  <description>Specified constant granular viscosity. if this value is
 !    specified, then the kinetic theory calculation is turned off and
 !    p_s = 0 and lambda_s = -2/3 mu_s0.
 !  </description>
@@ -1339,19 +1339,19 @@
 !</keyword>
 
 !<keyword category="Solids Phase" required=.FALSE.>
-!  <description>specified constant solids conductivity.</description>
+!  <description>Specified constant solids conductivity.</description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       K_S0(:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Solids Phase" required=.FALSE.>
-!  <description>specified constant solids specific heat.</description>
+!  <description>Specified constant solids specific heat.</description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       C_PS0(:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Solids Phase" required=.FALSE.>
-!  <description>specified constant solids diffusivity.</description>
+!  <description>Specified constant solids diffusivity.</description>
       DIF_S0 = UNDEFINED
 !</keyword>
 
@@ -1386,7 +1386,7 @@
 !</keyword>
 
 !<keyword category="Solids Phase" required=.FALSE.>
-!  <description>packed bed void fraction.</description>
+!  <description>Packed bed void fraction.</description>
       EP_STAR = UNDEFINED
 !</keyword>
 
@@ -1401,12 +1401,12 @@
 
 
 !<keyword category="Solids Phase" required=.FALSE.>
-!  <description>specified constant granular viscosity. if this value is
+!  <description>Specified constant granular viscosity. if this value is
 !    specified, then the kinetic theory calculation is turned off and
 !    p_s = 0 and lambda_s = -2/3 mu_s0.
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-!  <valid value='TFM' note='Two-fluid Model (coninuum).' />
+!  <valid value='TFM' note='Two-fluid Model (continuum).' />
 !  <valid value='DEM' note='Discrete Element Model' />
 !  <valid value='PIC' note='Multiphase-Particle in Cell' />
       SOLIDS_MODEL(:DIM_M) = 'TFM'
@@ -1422,73 +1422,73 @@
       DO LC = 1, DIMENSION_IC
 
 !<keyword category="Initial Condition" required=.FALSE.>
-!  <description>x coordinate of the west face.</description>
+!  <description>X coordinate of the west face.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
          IC_X_W(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Initial Condition" required=.FALSE.>
-!  <description>x coordinate of the east face.</description>
+!  <description>X coordinate of the east face.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
          IC_X_E(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Initial Condition" required=.FALSE.>
-!  <description>y coordinate of the south face.</description>
+!  <description>Y coordinate of the south face.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
          IC_Y_S(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Initial Condition" required=.FALSE.>
-!  <description>y coordinate of the north face.</description>
+!  <description>Y coordinate of the north face.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
          IC_Y_N(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Initial Condition" required=.FALSE.>
-!  <description>z coordinate of the bottom face.</description>
+!  <description>Z coordinate of the bottom face.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
          IC_Z_B(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Initial Condition" required=.FALSE.>
-!  <description>z coordinate of the top face.</description>
+!  <description>Z coordinate of the top face.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
          IC_Z_T(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Initial Condition" required=.FALSE.>
-!  <description>i index of the west-most wall.</description>
+!  <description>I index of the west-most wall.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
          IC_I_W(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Initial Condition" required=.FALSE.>
-!  <description>i index of the east-most wall.</description>
+!  <description>I index of the east-most wall.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
          IC_I_E(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Initial Condition" required=.FALSE.>
-!  <description>j index of the south-most wall.</description>
+!  <description>J index of the south-most wall.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
          IC_J_S(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Initial Condition" required=.FALSE.>
-!  <description>j index of the north-most wall.</description>
+!  <description>J index of the north-most wall.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
          IC_J_N(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Initial Condition" required=.FALSE.>
-!  <description>k index of the bottom-most wall.</description>
+!  <description>K index of the bottom-most wall.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
          IC_K_B(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Initial Condition" required=.FALSE.>
-!  <description>k index of the top-most wall.</description>
+!  <description>K index of the top-most wall.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
          IC_K_T(LC) = UNDEFINED_I
 !</keyword>
@@ -1726,73 +1726,73 @@
 
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>x coordinate of the west face or edge.</description>
+!  <description>X coordinate of the west face or edge.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
          BC_X_W(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>x coordinate of the east face or edge.</description>
+!  <description>X coordinate of the east face or edge.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
          BC_X_E(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>y coordinate of the south face or edge.</description>
+!  <description>Y coordinate of the south face or edge.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
          BC_Y_S(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>y coordinate of the north face or edge.</description>
+!  <description>Y coordinate of the north face or edge.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
          BC_Y_N(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>z coordinate of the bottom face or edge.</description>
+!  <description>Z coordinate of the bottom face or edge.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
          BC_Z_B(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>z coordinate of the top face or edge.</description>
+!  <description>Z coordinate of the top face or edge.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
          BC_Z_T(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>i index of the west-most cell.</description>
+!  <description>I index of the west-most cell.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
          BC_I_W(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>i index of the east-most cell.</description>
+!  <description>I index of the east-most cell.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
          BC_I_E(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>j index of the south-most cell.</description>
+!  <description>J index of the south-most cell.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
          BC_J_S(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>j index of the north-most cell.</description>
+!  <description>J index of the north-most cell.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
          BC_J_N(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>k index of the bottom-most cell.</description>
+!  <description>K index of the bottom-most cell.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
          BC_K_B(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>k index of the top-most cell.</description>
+!  <description>K index of the top-most cell.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
          BC_K_T(LC) = UNDEFINED_I
 !</keyword>
@@ -2163,39 +2163,39 @@
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>x-component of gas velocity at the BC plane.</description>
+!  <description>X-component of gas velocity at the BC plane.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
          BC_U_G(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>x-component of solids-phase velocity at the BC plane.</description>
+!  <description>X-component of solids-phase velocity at the BC plane.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
 !  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          BC_U_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>y-component of gas velocity at the BC plane.</description>
+!  <description>Y-component of gas velocity at the BC plane.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
          BC_V_G(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>y-component of solids-phase velocity at the BC plane.</description>
+!  <description>Y-component of solids-phase velocity at the BC plane.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
 !  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          BC_V_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>z-component of gas velocity at the BC plane.</description>
+!  <description>Z-component of gas velocity at the BC plane.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
          BC_W_G(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required=.FALSE.>
-!  <description>z-component of solids-phase velocity at the BC plane.</description>
+!  <description>Z-component of solids-phase velocity at the BC plane.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
 !  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          BC_W_S(LC,:DIM_M) = UNDEFINED
@@ -2364,73 +2364,73 @@
 
 
 !<keyword category="Internal Surface" required=.FALSE.>
-!  <description>x coordinate of the west face or edge.</description>
+!  <description>X coordinate of the west face or edge.</description>
 !  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
          IS_X_W(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Internal Surface" required=.FALSE.>
-!  <description>x coordinate of the east face or edge.</description>
+!  <description>X coordinate of the east face or edge.</description>
 !  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
          IS_X_E(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Internal Surface" required=.FALSE.>
-!  <description>y coordinate of the south face or edge</description>
+!  <description>Y coordinate of the south face or edge</description>
 !  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
          IS_Y_S(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Internal Surface" required=.FALSE.>
-!  <description>y coordinate of the north face or edge</description>
+!  <description>Y coordinate of the north face or edge</description>
 !  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
          IS_Y_N(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Internal Surface" required=.FALSE.>
-!  <description>z coordinate of the bottom face or edge</description>
+!  <description>Z coordinate of the bottom face or edge</description>
 !  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
          IS_Z_B(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Internal Surface" required=.FALSE.>
-!  <description>z coordinate of the top face or edge</description>
+!  <description>Z coordinate of the top face or edge</description>
 !  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
          IS_Z_T(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Internal Surface" required=.FALSE.>
-!  <description>i index of the west-most cell.</description>
+!  <description>I index of the west-most cell.</description>
 !  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
          IS_I_W(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Internal Surface" required=.FALSE.>
-!  <description>i index of the east-most cell</description>
+!  <description>I index of the east-most cell</description>
 !  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
          IS_I_E(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Internal Surface" required=.FALSE.>
-!  <description>j index of the south-most cell</description>
+!  <description>J index of the south-most cell</description>
 !  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
          IS_J_S(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Internal Surface" required=.FALSE.>
-!  <description>j index of the north-most cell</description>
+!  <description>J index of the north-most cell</description>
 !  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
          IS_J_N(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Internal Surface" required=.FALSE.>
-!  <description>k index of the bottom-most cell</description>
+!  <description>K index of the bottom-most cell</description>
 !  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
          IS_K_B(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Internal Surface" required=.FALSE.>
-!  <description>k index of the top-most cell</description>
+!  <description>K index of the top-most cell</description>
 !  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
          IS_K_T(LC) = UNDEFINED_I
 !</keyword>
@@ -2440,7 +2440,7 @@
 !  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
 !  <valid value="IMPERMEABLE"
 !    note="No gas or solids flow through the surface." alias="IP"/>
-!  <valid value="SEMIPERMEABLE" aliase='SP'
+!  <valid value="SEMIPERMEABLE" alias='SP'
 !    note="Gas flows through the surface with an additional resistance.
 !      Solids velocity through the surface is set to zero or to a user-
 !      specified fixed value (i.e., solids momentum equation for this
@@ -2449,7 +2449,7 @@
 !</keyword>
 
 !<keyword category="Internal Surface" required=.FALSE.>
-!  <description>permeability</description>
+!  <description>Permeability</description>
 !  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
          IS_PC(LC,1) = UNDEFINED
 !</keyword>
@@ -2476,92 +2476,92 @@
       DO LC = 1, DIMENSION_PS
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>x coordinate of the west face or edge.</description>
+!  <description>X coordinate of the west face or edge.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
          PS_X_W(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>x coordinate of the east face or edge.</description>
+!  <description>X coordinate of the east face or edge.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
          PS_X_E(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>y coordinate of the south face or edge.</description>
+!  <description>Y coordinate of the south face or edge.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
          PS_Y_S(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>y coordinate of the north face or edge.</description>
+!  <description>Y coordinate of the north face or edge.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
          PS_Y_N(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>z coordinate of the bottom face or edge.</description>
+!  <description>Z coordinate of the bottom face or edge.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
          PS_Z_B(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>z coordinate of the top face or edge.</description>
+!  <description>Z coordinate of the top face or edge.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
          PS_Z_T(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>i index of the west-most cell.</description>
+!  <description>I index of the west-most cell.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
          PS_I_W(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>i index of the east-most cell.</description>
+!  <description>I index of the east-most cell.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
          PS_I_E(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>j index of the south-most cell.</description>
+!  <description>J index of the south-most cell.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
          PS_J_S(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>j index of the north-most cell.</description>
+!  <description>J index of the north-most cell.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
          PS_J_N(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>k index of the bottom-most cell.</description>
+!  <description>K index of the bottom-most cell.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
          PS_K_B(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>k index of the top-most cell.</description>
+!  <description>K index of the top-most cell.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
          PS_K_T(LC) = UNDEFINED_I
 !</keyword>
 
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>x-component of incoming gas velocity.</description>
+!  <description>X-component of incoming gas velocity.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
          PS_U_G(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>y-component of incoming gas velocity.</description>
+!  <description>Y-component of incoming gas velocity.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
          PS_V_G(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>z-component of incoming gas velocity.</description>
+!  <description>Z-component of incoming gas velocity.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
          PS_W_G(LC) = UNDEFINED
 !</keyword>
@@ -2585,21 +2585,21 @@
 !</keyword>
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>x-component of incoming solids velocity.</description>
+!  <description>X-component of incoming solids velocity.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
 !  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          PS_U_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>y-component of incoming solids velocity.</description>
+!  <description>Y-component of incoming solids velocity.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
 !  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          PS_V_S(LC,:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Point Source" required=.FALSE.>
-!  <description>z-component of incoming solids velocity.</description>
+!  <description>Z-component of incoming solids velocity.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
 !  <arg index="2" id="Phase" min="1" max="DIM_M"/>
          PS_W_S(LC,:DIM_M) = UNDEFINED
@@ -2635,7 +2635,7 @@
 !#####################################################################!
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>interval at which restart (.res) file is updated.</description>
+!  <description>Interval at which restart (.res) file is updated.</description>
       RES_DT = UNDEFINED
 !</keyword>
 
@@ -2711,85 +2711,85 @@
 !</keyword>
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>UDF Hook: x coordinate of the west face or edge.</description>
+!  <description>Udf Hook: x coordinate of the west face or edge.</description>
 !  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
          USR_X_W(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>UDF Hook: x coordinate of the east face or edge.</description>
+!  <description>Udf Hook: x coordinate of the east face or edge.</description>
 !  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
          USR_X_E(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>UDF Hook: y coordinate of the south face or edge.</description>
+!  <description>Udf Hook: y coordinate of the south face or edge.</description>
 !  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
          USR_Y_S(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>UDF Hook: y coordinate of the north face or edge.</description>
+!  <description>Udf Hook: y coordinate of the north face or edge.</description>
 !  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
          USR_Y_N(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>UDF Hook: z coordinate of the bottom face or edge.</description>
+!  <description>Udf Hook: z coordinate of the bottom face or edge.</description>
 !  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
          USR_Z_B(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>UDF Hook: z coordinate of the top face or edge.</description>
+!  <description>Udf Hook: z coordinate of the top face or edge.</description>
 !  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
          USR_Z_T(LC) = UNDEFINED
 !</keyword>
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>UDF Hook: i index of the west-most cell.</description>
+!  <description>Udf Hook: i index of the west-most cell.</description>
 !  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
          USR_I_W(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>UDF Hook: i index of the east-most cell.</description>
+!  <description>Udf Hook: i index of the east-most cell.</description>
 !  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
          USR_I_E(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>UDF Hook: j index of the south-most cell.</description>
+!  <description>Udf Hook: j index of the south-most cell.</description>
 !  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
          USR_J_S(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>UDF Hook: j index of the north-most cell.</description>
+!  <description>Udf Hook: j index of the north-most cell.</description>
 !  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
          USR_J_N(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>UDF Hook: k index of the bottom-most cell.</description>
+!  <description>Udf Hook: k index of the bottom-most cell.</description>
 !  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
          USR_K_B(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>UDF Hook: k index of the top-most cell.</description>
+!  <description>Udf Hook: k index of the top-most cell.</description>
 !  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
          USR_K_T(LC) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>UDF Hook: Type of user-defined ouput: Binary of ASCII.</description>
+!  <description>Udf Hook: Type of user-defined output: Binary of ASCII.</description>
 !  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
          USR_TYPE(LC) = UNDEFINED_C
 !</keyword>
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>UDF Hook:
+!  <description>Udf Hook:
 !    Variables to be written in the user-defined output files.
 !  </description>
 !  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
@@ -2797,7 +2797,7 @@
 !</keyword>
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>UDF Hook:
+!  <description>Udf Hook:
 !    Format for writing user-defined (ASCII) output file.
 !  </description>
 !  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
@@ -2805,7 +2805,7 @@
 !</keyword>
 
 !<keyword category="Output Control" required=.FALSE.>
-!  <description>UDF Hook: File extension for the user-defined output.</description>
+!  <description>Udf Hook: File extension for the user-defined output.</description>
 !  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
          USR_EXT(LC) = UNDEFINED_C
 !</keyword>
@@ -2885,7 +2885,7 @@
 !</keyword>
 
 !<keyword category="Chemical Reactions" required=.FALSE.>
-!  <description>Flag to use legacy chemcial reaction UDFs.</description>
+!  <description>Flag to use legacy chemical reaction UDFs.</description>
       USE_RRATES = .FALSE.
 !</keyword>
 
@@ -2948,17 +2948,17 @@
 
 
 !<keyword category="Parallelization Control" required=.FALSE.>
-!  <description>number of grid blocks in x-direction.</description>
+!  <description>Number of grid blocks in x-direction.</description>
       NODESI = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Parallelization Control" required=.FALSE.>
-!  <description>number of grid blocks in y-direction.</description>
+!  <description>Number of grid blocks in y-direction.</description>
       NODESJ = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Parallelization Control" required=.FALSE.>
-!  <description>number of grid blocks in z-direction.</description>
+!  <description>Number of grid blocks in z-direction.</description>
       NODESK = UNDEFINED_I
 !</keyword>
 
@@ -2989,17 +2989,17 @@
 
 
 !<keyword category="Batch Queue Environment" required=.FALSE.>
-!  <description>enables clean termination feature.</description>
+!  <description>Enables clean termination feature.</description>
       CHK_BATCHQ_END = .FALSE.
 !</keyword>
 
 !<keyword category="Batch Queue Environment" required=.FALSE.>
-!  <description>total wall-clock duration of the job, in seconds.</description>
+!  <description>Total wall-clock duration of the job, in seconds.</description>
       BATCH_WALLCLOCK = 9000.0    ! set to 2.5 hrs for jaguarcnl w/ nproc<=512
 !</keyword>
 
 !<keyword category="Batch Queue Environment" required=.FALSE.>
-!  <description>buffer time when initiating clean termination, in seconds.</description>
+!  <description>Buffer time when initiating clean termination, in seconds.</description>
       TERM_BUFFER = 180.0         ! set to 3 minutes prior to end of job
 !</keyword>
 
@@ -3011,17 +3011,17 @@
 
 
 !<keyword category="Direct Quadrature Method of Moments (DQMOM)" required=.FALSE.>
-!  <description>variable to decide if the population balance equations are solved.</description>
+!  <description>Variable to decide if the population balance equations are solved.</description>
       Call_DQMOM = .FALSE.
 !</keyword>
 
 !<keyword category="Direct Quadrature Method of Moments (DQMOM)" required=.FALSE.>
-!  <description>success-factor for aggregation.</description>
+!  <description>Success-factor for aggregation.</description>
       AGGREGATION_EFF=0.D0
 !</keyword>
 
 !<keyword category="Direct Quadrature Method of Moments (DQMOM)" required=.FALSE.>
-!  <description>success-factor for breakage.</description>
+!  <description>Success-factor for breakage.</description>
       BREAKAGE_EFF=0.D0
 !</keyword>
 
@@ -3047,7 +3047,7 @@
 !</keyword>
 
 !<keyword category="category name" required=.FALSE.>
-!  <description>ATUO_RESTART counter.</description>
+!  <description>AUTO_RESTART counter.</description>
       ITER_RESTART = 1
 !</keyword>
 
