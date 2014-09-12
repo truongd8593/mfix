@@ -84,7 +84,7 @@
 !  <range min="1.0" max="+Inf" />
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Cartesian Grid" required="false">
 !  <description>Flag to use triangular facet representation for
 ! particle/parcel-wall interactions. If PIC model is used, then
 ! this flag is forced to true. For DEM model, it will be made default,
@@ -98,29 +98,29 @@
 
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Use discrete particle model for solids.
-! Must be true to invoke DEM, MPPIC, hybrid models.
-! Default is DEM model, to turn on MPPIC model, set MPPIC to
-! true as well. </description>
-      DISCRETE_ELEMENT = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>To switch between pure granular or  coupled simulations of carried and dispersed phase flows. </description>
+!  <description>
+!    To switch between pure granular or coupled simulations of carried
+!    and dispersed phase flows.
+!  </description>
 !  <valid value=".true." note="Performs coupled simulations. "/>
       DES_CONTINUUM_COUPLED = .FALSE.
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Use an interpolation suite to calculate the drag force on
-! each particle based on particle location rather than cell averages.</description>
+!  <description>
+!    Use an interpolation suite to calculate the drag force on each 
+!    particle based on particle location rather than cell averages.
+!  </description>
       DES_INTERP_ON = .FALSE.
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Use interpolation to compute dispersed phase average fields,
-! such as, solids volume fraction, solids velocity fields. if false, the average fields are obtained by simple arithmetic averaging.</description>
-!  <valid value=".true." note="if drag is interpolated
+!  <description>
+!    Use interpolation to compute dispersed phase average fields, such
+!    as, solids volume fraction, solids velocity fields. If false, the
+!    average fields are obtained by simple arithmetic averaging.
+!  </description>
+!  <valid value=".true." note="If drag is interpolated
 ! (i.e., des_interp_on = .true.), then it is forced to
 ! true for backward compatibility.
 ! Additionally, if MPPIC or Cut-cells are used (DEM or MPPIC), then
@@ -128,7 +128,7 @@
       DES_INTERP_MEAN_FIELDS = .false.
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Output Control" required="false">
 !  <description> Reports mass based on Lagrangian particles
 ! and continuum representation. Useful to ensure mass conservation
 ! between Lagrangian and continuum representations. Recommended
@@ -160,17 +160,13 @@
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Invoke the hybrid scheme.</description>
-      DES_CONTINUUM_HYBRID = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
 !  <description>Flag to set the neighbor search algorithm
 ! Relevant to DEM model only.</description>
 !  <valid value="1" note="N-Square search algorithm (most expensive)"/>
 !  <valid value="2-4" note="Grid-Based Neighbor Search (Recommended)"/>
       DES_NEIGHBOR_SEARCH = 4
 !</keyword>
+
 !<keyword category="Discrete Element" required="false">
 !  <description> Flag to use van der Hoef et al. (2006)
 ! model for adjusting the rotation of the
@@ -202,7 +198,7 @@
       FACTOR_RLM = 1.2
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Geometry and Discretization" required="false">
 !  <description>Number of des grid cells in the I- direction.
 ! If left undefined, then it is set by MFIX such that its size
 ! equals three times the maximum particle diameter with a minimum of
@@ -210,7 +206,7 @@
       DESGRIDSEARCH_IMAX = UNDEFINED_I
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Geometry and Discretization" required="false">
 !  <description>Number of des grid cells in the J- direction.
 ! If left undefined, then it is set by MFIX such that its size
 ! equals three times the maximum particle diameter with a minimum of
@@ -219,7 +215,7 @@
 !</keyword>
 
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Geometry and Discretization" required="false">
 !  <description>Number of des grid cells in the K- direction.
 ! If left undefined, then it is set by MFIX such that its size
 ! equals three times the maximum particle diameter with a minimum of
@@ -369,7 +365,7 @@
 ! <dependent keyword="DES_COLL_MODEL" value="LSD"/>
 ! <range min="0.0" max="1.0" />
 ! <valid value="UNDEFINED" note="For LSD model, if left undefined, MFIX
-! will will revert to default value of 0.5" />
+! will revert to default value of 0.5" />
       DES_ETAT_W_FAC = UNDEFINED
 !</keyword>
 
@@ -410,29 +406,6 @@
       V_POISSON(:DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Particle diameter associated with discrete solids
-! phase M</description>
-!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
-      DES_D_P0(:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Particle density associated with discrete solids phase M</description>
-!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
-      DES_RO_S(:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Number of solid phases with discrete
-! representation. When DES_CONTINUUM_HYBRID is false, no need to set
-! this variable as it is set equal to MMAX. Only relevant
-! when DES_CONTINUUM_HYBRID  is true so as to differentiate
-! between discrete and continuum representation of solids phase
-!</description>
-!  <dependent keyword="DES_CONTINUUM_HYBRID" value=".TRUE."/>
-      DES_MMAX = UNDEFINED_I
-!</keyword>
 
 !<keyword category="Discrete Element" required="false">
 !  <description>Lees-Edwards boundary condition to simulate
@@ -464,66 +437,93 @@
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Logical to force the inlet to operate with an ordered boundary condition.  this may be useful during long simulations or if the inlet appears to be taking a long time to randomly place particles.</description>
+!  <description>
+!    Logical to force the inlet to operate with an ordered boundary 
+!    condition. This may be useful during long simulations or if the 
+!    inlet appears to be taking a long time to randomly place particles.
+!  </description>
       FORCE_ORD_BC = .FALSE.
 !</keyword>
 
 ! for cohesion: van der waals
 !<keyword category="Discrete Element" required="false">
-!  <description>Hamaker constant used for particle-particle interactions</description>
+!  <description>
+!    Hamaker constant used in particle-particle cohesive interactions.
+!  </description>
 !  <dependent keyword="USE_COHESION" value=".TRUE."/>
       HAMAKER_CONSTANT = UNDEFINED
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Hamaker constant used in particle-wall interactions.</description>
+!  <description>
+!    Hamaker constant used in particle-wall cohesive interactions.
+!  </description>
 !  <dependent keyword="USE_COHESION" value=".TRUE."/>
       WALL_HAMAKER_CONSTANT = UNDEFINED
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Maximum separation distance above which van der waals forces are not implemented.</description>
+!  <description>
+!    Maximum separation distance above which van der Waals forces are 
+!    not implemented.
+!  </description>
 !  <dependent keyword="USE_COHESION" value=".TRUE."/>
       VDW_OUTER_CUTOFF = UNDEFINED
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Minimum separation distance below which van der waals forces are calculated using a surface adhesion model.</description>
+!  <description>
+!    Minimum separation distance below which van der Waals forces are 
+!   c alculated using a surface adhesion model.
+!  </description>
 !  <dependent keyword="USE_COHESION" value=".TRUE."/>
       VDW_INNER_CUTOFF = UNDEFINED
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Maximum separation distance above which van der waals forces are not implemented (particle-wall interactions).</description>
+!  <description>
+!    Maximum separation distance above which van der Waals forces are
+!    not implemented (particle-wall interactions).
+!  </description>
 !  <dependent keyword="USE_COHESION" value=".TRUE."/>
       WALL_VDW_OUTER_CUTOFF = ZERO
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Minimum separation distance below which van der waals forces are calculated using a surface adhesion model (particle-wall interactions).</description>
+!  <description>
+!    Minimum separation distance below which van der Waals forces are
+!    calculated using a surface adhesion model (particle-wall 
+!    interactions).
+!  </description>
 !  <dependent keyword="USE_COHESION" value=".TRUE."/>
       WALL_VDW_INNER_CUTOFF = UNDEFINED
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Mean radius of surface asperities that influence the cohesive force following a model by rumpf (1990).</description>
+!  <description>
+!    Mean radius of surface asperities that influence the cohesive force
+!    following a model. See H. Rumpf, Particle Technology, Chapman & Hall,
+!    London/New York, 1990.
+!  </description>
 !  <dependent keyword="USE_COHESION" value=".TRUE."/>
       Asperities = ZERO
 !</keyword>
 
 
 !<keyword category="Output Control" required="false">
-!  <description>Allows writing of discrete particle data to output
-! files.
-! Relevant to both granular and coupled simulations. </description>
+!  <description>
+!    Allows writing of discrete particle data to output files. Relevant
+!    to both granular and coupled simulations.
+!  </description>
       PRINT_DES_DATA = .FALSE.
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>If print_des_data, this is the frequency at
-! which particle data is written out. This only applies to
-! pure granular simulations. For coupled simulation, the
-! output frequency is controlled by spx_dt(1).</description>
+!<keyword category="Output Control" required="false">
+!  <description>
+!    The frequency at which particle data is written. This only applies
+!    to pure granular simulations. For coupled simulation, the output
+!    frequency is controlled by SPX_DT(1).
+!  </description>
 !  <dependent keyword="PRINT_DES_DATA" value=".True."/>
 !  <dependent keyword="DES_CONTINUUM_COUPLED" value=".False."/>
 !  <conflict keyword="DES_CONTINUUM_COUPLED" value=".True."/>
@@ -531,47 +531,56 @@
       DES_SPX_DT = LARGE_NUMBER
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-! <description>This is the frequency
-! at which des.res and .res files will be written.
-! This only applies to pure granular simulations.
-! For coupled simulation the restart frequency is controlled
-! by Res_dt.</description>
+!<keyword category="Output Control" required="false">
+!  <description>
+!    The frequency at which _DES.RES file is written. This only applies
+!    to pure granular simulations as the restart frequency is governed
+!    by RES_DT for coupled simulations.
+!  </description>
 !  <dependent keyword="DES_CONTINUUM_COUPLED" value=".False."/>
 !  <conflict keyword="DES_CONTINUUM_COUPLED" value=".True."/>
 !  <conflict keyword="MPPIC" value=".True."/>
       DES_RES_DT = LARGE_NUMBER
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>If undefined the default vtp files are written.</description>
-!  <valid value="TECPLOT" note="If tecplot is specified then several .dat files are written including DES_DATA.dat & AVG_EPS.dat. See write_des_data.f for details."/>
-      DES_OUTPUT_TYPE = UNDEFINED_C
+!<keyword category="Output Control" required="false">
+!  <description> The output file format for DES data.</description>
+!  <valid value="PARAVIEW" note="ParaView formatted files (.vtp)"/>
+!  <valid value="TECPLOT" note="Tecplot formatted files (.dat)"/>
+      DES_OUTPUT_TYPE = "PARAVIEW"
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Print out additional information from dem model.</description>
+!<keyword category="Output Control" required="false">
+!  <description>
+!    Runtime flag to generate debugging information. Additional data for
+!    FOCUS_PARTICLE is saved.
+!  </description>
       DEBUG_DES = .FALSE.
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Specify particle number for particle level debugging
-! details. </description>
+!<keyword category="Output Control" required="false">
+!  <description>
+!    Specify particle number for particle level debugging details.
+!  </description>
+!  <dependent keyword="DEBUG_DES" value=".TRUE."/>
       FOCUS_PARTICLE = 0
 !</keyword>
 
 
-! flag whether to invoke cluster identification algorithm
 !<keyword category="Discrete Element" required="false">
-!  <description>Flag to turn on on-the-fly cluster data calculations.
-! </description>
+!  <description>
+!    Flag to turn on runtime cluster data calculations. These routines are
+!    very time consuming and can dramaticaly slow down simulations.
+!  </description>
 !  <conflict keyword="MPPIC" value=".TRUE."/>
       DES_CALC_CLUSTER = .FALSE.
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-!  <description>The physical distance relative to a particle for
-! peforming cluster statistics calculations.</description>
+!  <description>
+!    The physical distance relative to a particle for peforming cluster
+!    statistics calculations.
+!  </description>
 !  <conflict keyword="MPPIC" value=".TRUE."/>
 !  <dependent keyword="DES_CALC_CLUSTER" value=".TRUE."/>
       CLUSTER_LENGTH_CUTOFF = UNDEFINED
@@ -579,41 +588,43 @@
 
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Automatically generate an initial
-! particle configuration (position), otherwise use particle input.dat
-! Now uses the conventional flag used by continuum solver. Once defined,
-! this feature will determine the total number of particles in the
-! system and their initial placement.
-! The particle_input.dat file (if present in the run directory)
-! is ignored.</description>
+!  <description>
+!    Automatically generate the initial particle position and velocity
+!    data based on the parameters specified for each initial condition
+!    (IC) region.
+!  </description>
+!  <valid value=".TRUE." note="Generate particle configurion based
+!    on the initial condition parameters. Data provided in the
+!    particle_input.dat file, if present, is ignored. "/>
+!  <valid value=".FALSE." note="Particle position and velocity data are
+!    provided in the particle_input.dat file. A runtime error occurs if
+!    this file is not provided."/>
       GENER_PART_CONFIG = .FALSE.
 !</keyword>
 
 
 !<keyword category="Discrete Element" required="false">
-!  <description>Turn on snider's version of frictional model. Does not run very stably.</description>
+!  <description>
+!    Turn on snider's version of frictional model. Does not run very stably.
+!  </description>
       MPPIC_SOLID_STRESS_SNIDER = .false.
 !</keyword>
 
+
 !<keyword category="Discrete Element" required="false">
 !  <description>
-!</description>
-!  <dependent keyword="MPPIC" value=".TRUE."/>
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false">
-!  <description> First coefficient of restitution for the frictional stress
-! model in the MPPIC model. See the MPPIC documentation for more details.
-!</description>
+!    First coefficient of restitution for the frictional stress model
+!    in the MPPIC model. See the MPPIC documentation for more details.
+!  </description>
 !  <dependent keyword="MPPIC" value=".TRUE."/>
       MPPIC_COEFF_EN1 = UNDEFINED
 !</keyword>
 
 
 !<keyword category="Discrete Element" required="false">
-!  <description> Second coefficient of restitution for the frictional stress
-! model in the MPPIC model. See the MPPIC documentation for more details.
+!  <description>
+!    Second coefficient of restitution for the frictional stress model
+!    in the MPPIC model. See the MPPIC documentation for more details.
 !</description>
 !  <dependent keyword="MPPIC" value=".TRUE."/>
       MPPIC_COEFF_EN2 = UNDEFINED
@@ -621,8 +632,9 @@
 
 
 !<keyword category="Discrete Element" required="false">
-!  <description> Normal coefficient of restitution for parcel-wall collisions
-! in the MPPIC model.
+!  <description>
+!    Normal coefficient of restitution for parcel-wall collisions
+!    in the MPPIC model.
 !</description>
 !  <dependent keyword="MPPIC" value=".TRUE."/>
       MPPIC_COEFF_EN_WALL = UNDEFINED
