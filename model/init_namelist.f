@@ -614,6 +614,18 @@
       DEF_COR  =  .FALSE.
 !</keyword>
 
+!<keyword category="Numerical Parameters" required="false">
+!  <description>
+!    Chi-scheme, proposed by Darwish and Moukalled (2003), is activated.
+!    this scheme guarantees that the set of differenced species mass
+!    balance equations has the property that the sum of mass fractions
+!    add up to one. when a flux limiter is used with (higher order)
+!    spatial discretization schemes it is not guaranteed that the mass
+!    fractions add up to one. this problem may be rectified by
+!    activating the chi-scheme.
+!  </description>
+      Chi_scheme = .FALSE.
+!</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
@@ -651,19 +663,6 @@
       CN_ON = .FALSE.
 !</keyword>
 
-
-!<keyword category="Numerical Parameters" required="false">
-!  <description>
-!    Chi-scheme, proposed by Darwish and Moukalled (2003), is activated.
-!    this scheme guarantees that the set of differenced species mass
-!    balance equations has the property that the sum of mass fractions
-!    add up to one. when a flux limiter is used with (higher order)
-!    spatial discretization schemes it is not guaranteed that the mass
-!    fractions add up to one. this problem may be rectified by
-!    activating the chi-scheme.
-!  </description>
-      Chi_scheme = .FALSE.
-!</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>

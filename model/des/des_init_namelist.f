@@ -38,166 +38,46 @@
 
       INCLUDE 'desnamelist.inc'
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Total number of particles to be read in from the
-! user provided particle configuration file. Only valid when
-! GENER_PART_CONFIG is set to False. When GENER_PART_CONFIG is True,
-! then Particle count is  automatically calculated by MFIX.
-! For an inflow case beginning with no solids inventory,
-! Particles can be specified as 0.  </description>
-!  <range min="0" max="+Inf" />
-      PARTICLES = UNDEFINED_I
-!</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Maximum number of neighbors per particle.
-!  Relevant only for DEM model. </description>
-!  <range min="0" max="+Inf" />
-      MN = 10
-!</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Only needed if des_continuum_coupled is True
-! and DEM model is used.
-! Number of times a pure granular simulation is run before
-! the coupled DEM simulation is started. It is used to obtain
-! an initial settled configuration. </description>
-!  <range min="0" max="+Inf" />
-      NFACTOR = 10
-!</keyword>
+!#####################################################################!
+!                             Run Control                             !
+!#####################################################################!
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Run one-way coupled simulations. The fluid does not
-! see the particles in terms of drag force. The effect of particle volume
-! is still felt by the fluid through non-unity voidage values.
-! </description>
-      DES_ONEWAY_COUPLED = .FALSE.
-!</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Expand the size of the particle arrays by
-! an arbitrary factor (multiple of the number of particles). Serves
-! as a knob to allocate more particles than initially specified in the
-! particle configuration file. </description>
-!  <dependent keyword="PARTICLES" value="DEFINED"/>
-      PARTICLES_FACTOR = 1.2D0
-!  <range min="1.0" max="+Inf" />
-!</keyword>
+
+
+!#####################################################################!
+!                           Physical Parameters                       !
+!#####################################################################!
+
+
+
+!#####################################################################!
+!                          Numerical Parameters                       !
+!#####################################################################!
+
+
+
+
+!#####################################################################!
+!                      Geometry and Discretization                    !
+!#####################################################################!
 
 !<keyword category="Cartesian Grid" required="false">
-!  <description>Flag to use triangular facet representation for
-! particle/parcel-wall interactions. If PIC model is used, then
-! this flag is forced to true. For DEM model, it will be made default,
-! but currently setting it to false as cohesion model has not been extended
-! to new routines. Expand the size of the particle arrays by
-! an arbitrary factor (multiple of the number of particles). Serves
-! as a knob to allocate more particles than initially specified in the
-! particle configuration file. </description>
+!  <description>
+!    Flag to use triangular facet representation for particle/parcel-
+!    wall interactions. If PIC model is used, then this flag is forced
+!    to true. For DEM model, it will be made default, but currently
+!    setting it to false as cohesion model has not been extended to
+!    new routines. Expand the size of the particle arrays by an 
+!    arbitrary factor (multiple of the number of particles). Serves
+!    as a knob to allocate more particles than initially specified 
+!    in the particle configuration file.
+!  </description>
       USE_STL_DES  = .false.
 !</keyword>
 
-
-!<keyword category="Discrete Element" required="false">
-!  <description>
-!    To switch between pure granular or coupled simulations of carried
-!    and dispersed phase flows.
-!  </description>
-!  <valid value=".true." note="Performs coupled simulations. "/>
-      DES_CONTINUUM_COUPLED = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>
-!    Use an interpolation suite to calculate the drag force on each 
-!    particle based on particle location rather than cell averages.
-!  </description>
-      DES_INTERP_ON = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>
-!    Use interpolation to compute dispersed phase average fields, such
-!    as, solids volume fraction, solids velocity fields. If false, the
-!    average fields are obtained by simple arithmetic averaging.
-!  </description>
-!  <valid value=".true." note="If drag is interpolated
-! (i.e., des_interp_on = .true.), then it is forced to
-! true for backward compatibility.
-! Additionally, if MPPIC or Cut-cells are used (DEM or MPPIC), then
-! also the mean field interpolation is forced. "/>
-      DES_INTERP_MEAN_FIELDS = .false.
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description> Reports mass based on Lagrangian particles
-! and continuum representation. Useful to ensure mass conservation
-! between Lagrangian and continuum representations. Recommended
-! use for debugging purposes. </description>
-!  <dependent keyword="DES_INTERP_MEAN_FIELDS" value=".TRUE."/>
-      DES_REPORT_MASS_INTERP = .false.
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false" dem="true">
-!  <description>Time stepping scheme (relevant to DEM model only).
-! MPPIC is only limited to EULER scheme. </description>
-!  <valid value="EULER" note="First-Order Euler Scheme."/>
-!  <valid value="ADAMS BASHFORTH" note="Second order ADAMS BASHFORTH scheme"/>
-      DES_INTG_METHOD = 'EULER'
-!</keyword>
-
-!<keyword category="Discrete Element" required="false" dem="true">
-!  <description>Switch to turn cohesion model (limited to DEM model only)
-! on and off.</description>
-!  <conflict keyword="MPPIC" value=".TRUE."/>
-      USE_COHESION = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false" dem="true">
-!  <description>Flag to turn on the use hamaker van der waals forces.</description>
-!  <dependent keyword="USE_COHESION" value=".TRUE."/>
-      VAN_DER_WAALS = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false" dem="true">
-!  <description>Flag to set the neighbor search algorithm
-! Relevant to DEM model only.</description>
-!  <valid value="1" note="N-Square search algorithm (most expensive)"/>
-!  <valid value="2-4" note="Grid-Based Neighbor Search (Recommended)"/>
-      DES_NEIGHBOR_SEARCH = 4
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description> Flag to use van der Hoef et al. (2006)
-! model for adjusting the rotation of the
-! contact plane. See the MFIX-DEM documentation. </description>
-      USE_VDH_DEM_MODEL = .false.
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Maximum number of steps through a Dem loop
-! before a neighbor search will be performed.
-! (search may be called earlier based on other logic).</description>
-!  <range min="0.0" max="+Inf" />
-      NEIGHBOR_SEARCH_N = 25
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Ratio of the distance (imaginary sphere radius)
-! to particle radius that is allowed before a neighbor search is performed. This works in conjunction with the logic imposed by
-! NEIGHBOR_SEARCH_N in deciding calls to the neighbor search
-! algorithm. </description>
-      NEIGHBOR_SEARCH_RAD_RATIO = 1.0D0
-!</keyword>
-
-!<keyword category="Discrete Element" required="false" dem="true">
-!  <description>
-!    Effectively increase the radius of a particle (multiple of the sum
-!    of particle radii) during the  building of particle neighbor list.
-!  </description>
-      FACTOR_RLM = 1.2
-!</keyword>
 
 !<keyword category="Geometry and Discretization" required="false"
 !  dem="true" pic="true">
@@ -231,304 +111,25 @@
 !</keyword>
 
 
-!<keyword category="Discrete Element" required="false" dem="true">
+
+!#####################################################################!
+!                          Output Control                             !
+!#####################################################################!
+
+!<keyword category="Output Control" required="false" 
+!  dem="true" pic="true">
 !  <description>
-!    Collision model for the soft-sphere approach used in DEM model.
-!    All models require specifying the following parameters: DES_EN_INPUT,
-!    DES_EN_WALL_INPUT, MEW, and MEW_W.
+!    Reports mass based on Lagrangian particles and continuum 
+!    representation. Useful to ensure mass conservation between 
+!    Lagrangian and continuum representations. Recommended use for 
+!    debugging purposes. 
 !  </description>
-!  <valid value="LSD" note="The linear spring-dashpot model.
-!    Requires: KN, KN_W, KT_FAC, KT_W_FAC, DES_ETAT_FAC, DES_ETAT_W_FAC."/>
-!  <valid value="HERTZIAN" note="The Hertzian model.
-!    Requires: DES_ET_INPUT, DES_ET_WALL_INPUT, E_YOUNG, EW_YOUNG
-!    V_POISSON, VW_POISSON."/>
-      DES_COLL_MODEL = 'LSD'
+!  <dependent keyword="DES_INTERP_MEAN_FIELDS" value=".TRUE."/>
+      DES_REPORT_MASS_INTERP = .FALSE.
 !</keyword>
 
-
-!<keyword category="Discrete Element" required="false" dem="true">
-!  <description>
-!    Normal spring constant for inter-particle collisions needed when 
-!    using the linear spring-dashpot collision model.
-!  </description>
-      KN = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false" dem="true">
-!  <description>
-!    Ratio of the tangential spring constant to normal spring constant
-!    for inter-particle collisions. Use it to specify the tangential
-!    spring constant for particle-particle collisions as kt_fac*kn.
-!    Required when using the linear spring-dashpot collision model.
-!  </description>
-!  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
-!  <range min="0.0" max="1.0" />
-      KT_FAC = 2.d0/7.d0
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false" dem=.true.>
-!  <description>
-!    Normal spring constant for particle-wall collisions. Needed when
-!    using the linear spring-dashpot collision model.
-!  </description>
-      KN_W = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false" dem="true">
-!  <description>
-!    Ratio of the tangential spring constant to normal spring constant 
-!    for particle-wall collisions. Use it to specify the tangential 
-!    spring constant for particle-wall collisions as kt_w_fac*kn_w.
-!    Needed when using the linear spring-dashpot collision model.
-!  </description>!
-!  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
-!  <range min="0.0" max="1.0" />
-      KT_W_FAC = 2.d0/7.d0
-!</keyword>
-
-!<keyword category="Discrete Element" required="false" dem="true"
-!  <description>
-!    Inter-particle Coulomb friction coefficient.
-!  </description>
-! <range min="0.0" max="1.0" />
-      MEW = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>
-!    Particle-wall Coulomb friction coefficient.
-!  </description>
-! <range min="0.0" max="1.0" />
-      MEW_W = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false" dem="true">
-!  <description>
-!    The normal restitution coefficient for inter-particle collisions
-!    used to determine the inter-particle normal damping factor.
-!
-!    Values should be defined for a single dimensional array. For
-!    example, a simulation with three solids phases (MMAX=3) needs
-!    six values: en11, en12, en13; en22 en 23; en33.
-!  </description>
-!  <range min="0.0" max="1.0" />
-      DES_EN_INPUT(:) = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false" dem="true">
-!  <description>
-!    The normal restitution coefficient for particle-wall collisions 
-!    used to determine the particle-wall normal damping factor.
-! 
-!    Values should be defined in a single dimensional array. For
-!    example, a simulation with three solids phases (MMAX=3) needs
-!    thre values: enw1, enw2, enw3.
-!  </description>
-!  <range min="0.0" max="1.0" />
-      DES_EN_WALL_INPUT(:) = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false" dem="true">
-!  <description>
-!    Tangential restitution coefficient for interparticle collisions.
-!    Values are defined in a one dimensional array. This is required
-!    input when using the Hertzian collision model.
-! </description>
-! <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
-! <range min="0.0" max="1.0" />
-      DES_ET_INPUT(:) = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false" dem="true">
-!  <description>
-!    Tangential restitution coefficient for particle wall collisions.
-!    Values are defined in a one dimensional array. The is required
-!    input when using the Hertzian collision model.
-!  </description>
-! <range min="0.0" max="1.0" />
-! <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
-      DES_ET_WALL_INPUT(:) = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false" dem="true">
-!  <description>
-!    Ratio of the tangential damping factor to the normal damping factor
-!    for inter-particle collisions.  Required for the linear spring-
-!    dashpot model collision model 
-!  </description>
-!  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
-!  <range min="0.0" max="1.0" />
-!  <valid value="UNDEFINED" note="For LSD model, if left undefined, MFIX
-! will will revert to default value of 0.5" />
-      DES_ETAT_FAC = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false">
-! <description>Ratio of the tangential damping factor to the
-! normal damping factor for particle-wall collisions.
-! Required for the linear spring-dashpot model for soft-spring collision
-! modelling under DEM.
-! For the Hertzian model, the tangential damping coefficients
-! have to be explicity specified and specification of this
-! variable is not required. </description>
-! <dependent keyword="DES_COLL_MODEL" value="LSD"/>
-! <range min="0.0" max="1.0" />
-! <valid value="UNDEFINED" note="For LSD model, if left undefined, MFIX
-! will revert to default value of 0.5" />
-      DES_ETAT_W_FAC = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Youngs modulus for the wall. Needed when using the Hertzian
-! spring-dashpot model for soft-spring collision modelling under DEM.
-!</description>
-!  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
-      EW_YOUNG = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Poisson ratio for the wall. Needed when using the Hertzian
-! spring-dashpot model for soft-spring collision modelling under DEM.
-!</description>
-!  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
-      VW_POISSON = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Youngs modulus for the particle. Needed when using the Hertzian
-! spring-dashpot model for soft-spring collision modelling under DEM.
-!</description>
-!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
-!  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
-      E_YOUNG(:DIM_M) = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Poissons ratio for the particle. Needed when using the Hertzian
-! spring-dashpot model for soft-spring collision modelling under DEM.
-!</description>
-!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
-!  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
-      V_POISSON(:DIM_M) = UNDEFINED
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Lees-Edwards boundary condition to simulate
-! homogeneous shear problem with periodic boundary conditions.
-! Not supported in this version. </description>
-      DES_LE_BC = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Relative velocity needed for Lees-Edwards BC.
-! Not supported in this version. </description>
-!  <dependent keyword="DES_LE_BC" value=".TRUE."/>
-      DES_LE_REL_VEL = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Direction of shear for Lees-Edwards BC.
-! Not supported in this version. </description>
-!  <dependent keyword="DES_LE_BC" value=".TRUE."/>
-      DES_LE_SHEAR_DIR = UNDEFINED_C
-!</keyword>
-
-
-!<keyword category="Discrete Element" required="false">
-!  <description>Maximum number of particles that may exist
-! within a simulation. This quantity is used for calculating
-! the size of arrays for allocation.</description>
-      MAX_PIS = UNDEFINED_I
-!</keyword>
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>
-!    Logical to force the inlet to operate with an ordered boundary 
-!    condition. This may be useful during long simulations or if the 
-!    inlet appears to be taking a long time to randomly place particles.
-!  </description>
-      FORCE_ORD_BC = .FALSE.
-!</keyword>
-
-! for cohesion: van der waals
-!<keyword category="Discrete Element" required="false">
-!  <description>
-!    Hamaker constant used in particle-particle cohesive interactions.
-!  </description>
-!  <dependent keyword="USE_COHESION" value=".TRUE."/>
-      HAMAKER_CONSTANT = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>
-!    Hamaker constant used in particle-wall cohesive interactions.
-!  </description>
-!  <dependent keyword="USE_COHESION" value=".TRUE."/>
-      WALL_HAMAKER_CONSTANT = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>
-!    Maximum separation distance above which van der Waals forces are 
-!    not implemented.
-!  </description>
-!  <dependent keyword="USE_COHESION" value=".TRUE."/>
-      VDW_OUTER_CUTOFF = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>
-!    Minimum separation distance below which van der Waals forces are 
-!   c alculated using a surface adhesion model.
-!  </description>
-!  <dependent keyword="USE_COHESION" value=".TRUE."/>
-      VDW_INNER_CUTOFF = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>
-!    Maximum separation distance above which van der Waals forces are
-!    not implemented (particle-wall interactions).
-!  </description>
-!  <dependent keyword="USE_COHESION" value=".TRUE."/>
-      WALL_VDW_OUTER_CUTOFF = ZERO
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>
-!    Minimum separation distance below which van der Waals forces are
-!    calculated using a surface adhesion model (particle-wall 
-!    interactions).
-!  </description>
-!  <dependent keyword="USE_COHESION" value=".TRUE."/>
-      WALL_VDW_INNER_CUTOFF = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>
-!    Mean radius of surface asperities that influence the cohesive force
-!    following a model. See H. Rumpf, Particle Technology, Chapman & Hall,
-!    London/New York, 1990.
-!  </description>
-!  <dependent keyword="USE_COHESION" value=".TRUE."/>
-      Asperities = ZERO
-!</keyword>
-
-
-!<keyword category="Output Control" required="false">
+!<keyword category="Output Control" required="false" 
+!  dem="true" pic="true">
 !  <description>
 !    Allows writing of discrete particle data to output files. Relevant
 !    to both granular and coupled simulations.
@@ -561,7 +162,8 @@
       DES_RES_DT = LARGE_NUMBER
 !</keyword>
 
-!<keyword category="Output Control" required="false">
+!<keyword category="Output Control" required="false"
+!   dem="true" pic="true">
 !  <description> The output file format for DES data.</description>
 !  <valid value="PARAVIEW" note="ParaView formatted files (.vtp)"/>
 !  <valid value="TECPLOT" note="Tecplot formatted files (.dat)"/>
@@ -584,28 +186,55 @@
       FOCUS_PARTICLE = 0
 !</keyword>
 
-
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Output Control" required="false" pic="true">
 !  <description>
-!    Flag to turn on runtime cluster data calculations. These routines are
-!    very time consuming and can dramaticaly slow down simulations.
+!    Flag to print processor level parcel seeding statistics for inflow 
+!    BC with PIC model.
 !  </description>
-!  <conflict keyword="MPPIC" value=".TRUE."/>
-      DES_CALC_CLUSTER = .FALSE.
+!  <dependent keyword="MPPIC" value=".TRUE."/>
+      PIC_REPORT_SEEDING_STATS = .false.
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Output Control" required="false" pic="true">
 !  <description>
-!    The physical distance relative to a particle for peforming cluster
-!    statistics calculations.
+!     Flag to print processor level parcel deletion statistics for 
+!     outflow BC with PIC model. Not recommended for production runs.
 !  </description>
-!  <conflict keyword="MPPIC" value=".TRUE."/>
-!  <dependent keyword="DES_CALC_CLUSTER" value=".TRUE."/>
-      CLUSTER_LENGTH_CUTOFF = UNDEFINED
+!  <dependent keyword="MPPIC" value=".TRUE."/>
+      PIC_REPORT_DELETION_STATS = .false.
 !</keyword>
 
 
-!<keyword category="Discrete Element" required="false">
+
+
+!#####################################################################!
+! DEM/PIC COMMON:      Discrete Element Simulation                    !
+!#####################################################################!
+
+
+!<keyword category="Discrete Element Simulation" required="false">
+!  <description>
+!    Number of particles to be read in from the particle_input.dat file.
+!    This value is overwritten when using automatic particle generation.
+!    A simulation with a mass inflow BC can start without solids by 
+!    setting PARTICLES = 0.
+!  </description>
+!  <range min="0" max="+Inf" />
+      PARTICLES = UNDEFINED_I
+!</keyword>
+
+
+!<keyword category="Discrete Element Simulation" required="false">
+!  <description>
+!    Maximum number of particles that may exist within a simulation.
+!    This quantity is used for calculating the size of arrays for
+!    allocation. Requred input if PARTICLES is UNDEFINED.
+!  </description>
+      MAX_PIS = UNDEFINED_I
+!</keyword>
+
+
+!<keyword category="Discrete Element Simulation" required="false">
 !  <description>
 !    Automatically generate the initial particle position and velocity
 !    data based on the parameters specified for each initial condition
@@ -621,15 +250,490 @@
 !</keyword>
 
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Discrete Element Simulation" required="false">
+!  <description>Expand the size of the particle arrays by
+! an arbitrary factor (multiple of the number of particles). Serves
+! as a knob to allocate more particles than initially specified in the
+! particle configuration file. </description>
+!  <dependent keyword="PARTICLES" value="DEFINED"/>
+      PARTICLES_FACTOR = 1.2D0
+!  <range min="1.0" max="+Inf" />
+!</keyword>
+
+!<keyword category="Discrete Element Simulation" required="false">
 !  <description>
-!    Turn on snider's version of frictional model. Does not run very stably.
+!    To switch between pure granular or coupled simulations of carried
+!    and dispersed phase flows.
+!  </description>
+!  <valid value=".true." note="Performs coupled simulations. "/>
+      DES_CONTINUUM_COUPLED = .FALSE.
+!</keyword>
+
+!<keyword category="Discrete Element Simulation" required="false">
+!  <description>Run one-way coupled simulations. The fluid does not
+! see the particles in terms of drag force. The effect of particle volume
+! is still felt by the fluid through non-unity voidage values.
+! </description>
+      DES_ONEWAY_COUPLED = .FALSE.
+!</keyword>
+
+!<keyword category="Discrete Element Simulation" required="false">
+!  <description>
+!    Use an interpolation suite to calculate the drag force on each 
+!    particle based on particle location rather than cell averages.
+!  </description>
+      DES_INTERP_ON = .FALSE.
+!</keyword>
+
+!<keyword category="Discrete Element Simulation" required="false">
+!  <description>
+!    Use interpolation to compute dispersed phase average fields, such
+!    as, solids volume fraction, solids velocity fields. If false, the
+!    average fields are obtained by simple arithmetic averaging.
+!  </description>
+!  <valid value=".true." note="If drag is interpolated
+! (i.e., des_interp_on = .true.), then it is forced to
+! true for backward compatibility.
+! Additionally, if MPPIC or Cut-cells are used (DEM or MPPIC), then
+! also the mean field interpolation is forced. "/>
+      DES_INTERP_MEAN_FIELDS = .false.
+!</keyword>
+
+!<keyword category="Discrete Element Simulation" required="false" dem="true">
+!  <description>
+!    Time stepping scheme.
+!  </description>
+!  <valid value="EULER"
+!    note="First-Order Euler Scheme."/>
+!  <valid value="ADAMS BASHFORTH" 
+!    note="Second order ADAMS BASHFORTH scheme (DEM only)"/>
+      DES_INTG_METHOD = 'EULER'
+!</keyword>
+
+!#####################################################################!
+! DEM ONLY:            Discrete Element Model                         !
+!#####################################################################!
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    The number of iterations of a pure granular simulation to let
+!    the initial particle configuration settle before a coupled 
+!    gas-solild is started.
+!  </description>
+!  <range min="0" max="+Inf" />
+      NFACTOR = 10
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Flag to set the neighbor search algorithm.
+!  </description>
+!  <valid value="1" note="N-Square search algorithm (most expensive)"/>
+!  <valid value="2-4" note="Grid-Based Neighbor Search (Recommended)"/>
+      DES_NEIGHBOR_SEARCH = 4
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>Maximum number of steps through a Dem loop
+! before a neighbor search will be performed.
+! (search may be called earlier based on other logic).</description>
+!  <range min="0.0" max="+Inf" />
+      NEIGHBOR_SEARCH_N = 25
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Ratio of the distance (imaginary sphere radius) to particle radius
+!    that is allowed before a neighbor search is performed. This works
+!    in conjunction with the logic imposed by NEIGHBOR_SEARCH_N in 
+!    deciding calls to the neighbor search algorithm.
+!  </description>
+      NEIGHBOR_SEARCH_RAD_RATIO = 1.0D0
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Effectively increase the radius of a particle (multiple of the sum
+!    of particle radii) during the  building of particle neighbor list.
+!  </description>
+      FACTOR_RLM = 1.2
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Maximum number of neighbors per particle.
+!  </description>
+!  <range min="0" max="+Inf" />
+      MN = 10
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Flag to use van der Hoef et al. (2006) model for adjusting the 
+!    rotation of the contact plane. See the MFIX-DEM documentation.
+!  </description>
+      USE_VDH_DEM_MODEL = .FALSE.
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Collision model for the soft-sphere approach used in DEM model.
+!    All models require specifying the following parameters: DES_EN_INPUT,
+!    DES_EN_WALL_INPUT, MEW, and MEW_W.
+!  </description>
+!  <valid value="LSD" note="The linear spring-dashpot model.
+!    Requires: KN, KN_W, KT_FAC, KT_W_FAC, DES_ETAT_FAC, DES_ETAT_W_FAC."/>
+!  <valid value="HERTZIAN" note="The Hertzian model.
+!    Requires: DES_ET_INPUT, DES_ET_WALL_INPUT, E_YOUNG, EW_YOUNG
+!    V_POISSON, VW_POISSON."/>
+      DES_COLL_MODEL = 'LSD'
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false" dem="true">
+!  <description>
+!    Normal spring constant for inter-particle collisions needed when 
+!    using the linear spring-dashpot collision model.
+!  </description>
+      KN = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false" dem="true">
+!  <description>
+!    Ratio of the tangential spring constant to normal spring constant
+!    for inter-particle collisions. Use it to specify the tangential
+!    spring constant for particle-particle collisions as kt_fac*kn.
+!    Required when using the linear spring-dashpot collision model.
+!  </description>
+!  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
+!  <range min="0.0" max="1.0" />
+      KT_FAC = 2.d0/7.d0
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false" dem=.true.>
+!  <description>
+!    Normal spring constant for particle-wall collisions. Needed when
+!    using the linear spring-dashpot collision model.
+!  </description>
+      KN_W = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false" dem="true">
+!  <description>
+!    Ratio of the tangential spring constant to normal spring constant 
+!    for particle-wall collisions. Use it to specify the tangential 
+!    spring constant for particle-wall collisions as kt_w_fac*kn_w.
+!    Needed when using the linear spring-dashpot collision model.
+!  </description>!
+!  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
+!  <range min="0.0" max="1.0" />
+      KT_W_FAC = 2.d0/7.d0
+!</keyword>
+
+!<keyword category="Discrete Element Model" required="false" dem="true"
+!  <description>
+!    Inter-particle Coulomb friction coefficient.
+!  </description>
+! <range min="0.0" max="1.0" />
+      MEW = UNDEFINED
+!</keyword>
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Particle-wall Coulomb friction coefficient.
+!  </description>
+! <range min="0.0" max="1.0" />
+      MEW_W = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false" dem="true">
+!  <description>
+!    The normal restitution coefficient for inter-particle collisions
+!    used to determine the inter-particle normal damping factor.
+!
+!    Values should be defined for a single dimensional array. For
+!    example, a simulation with three solids phases (MMAX=3) needs
+!    six values: en11, en12, en13; en22 en 23; en33.
+!  </description>
+!  <range min="0.0" max="1.0" />
+      DES_EN_INPUT(:) = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false" dem="true">
+!  <description>
+!    The normal restitution coefficient for particle-wall collisions 
+!    used to determine the particle-wall normal damping factor.
+! 
+!    Values should be defined in a single dimensional array. For
+!    example, a simulation with three solids phases (MMAX=3) needs
+!    thre values: enw1, enw2, enw3.
+!  </description>
+!  <range min="0.0" max="1.0" />
+      DES_EN_WALL_INPUT(:) = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false" dem="true">
+!  <description>
+!    Tangential restitution coefficient for interparticle collisions.
+!    Values are defined in a one dimensional array. This is required
+!    input when using the Hertzian collision model.
+! </description>
+! <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
+! <range min="0.0" max="1.0" />
+      DES_ET_INPUT(:) = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false" dem="true">
+!  <description>
+!    Tangential restitution coefficient for particle wall collisions.
+!    Values are defined in a one dimensional array. The is required
+!    input when using the Hertzian collision model.
+!  </description>
+! <range min="0.0" max="1.0" />
+! <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
+      DES_ET_WALL_INPUT(:) = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false" dem="true">
+!  <description>
+!    Ratio of the tangential damping factor to the normal damping factor
+!    for inter-particle collisions.  Required for the linear spring-
+!    dashpot model collision model 
+!  </description>
+!  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
+!  <range min="0.0" max="1.0" />
+!  <valid value="UNDEFINED" note="For LSD model, if left undefined, MFIX
+! will will revert to default value of 0.5" />
+      DES_ETAT_FAC = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+! <description>Ratio of the tangential damping factor to the
+! normal damping factor for particle-wall collisions.
+! Required for the linear spring-dashpot model for soft-spring collision
+! modelling under DEM.
+! For the Hertzian model, the tangential damping coefficients
+! have to be explicity specified and specification of this
+! variable is not required. </description>
+! <dependent keyword="DES_COLL_MODEL" value="LSD"/>
+! <range min="0.0" max="1.0" />
+! <valid value="UNDEFINED" note="For LSD model, if left undefined, MFIX
+! will revert to default value of 0.5" />
+      DES_ETAT_W_FAC = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>Youngs modulus for the wall. Needed when using the Hertzian
+! spring-dashpot model for soft-spring collision modelling under DEM.
+!</description>
+!  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
+      EW_YOUNG = UNDEFINED
+!</keyword>
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>Poisson ratio for the wall. Needed when using the Hertzian
+! spring-dashpot model for soft-spring collision modelling under DEM.
+!</description>
+!  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
+      VW_POISSON = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>Youngs modulus for the particle. Needed when using the Hertzian
+! spring-dashpot model for soft-spring collision modelling under DEM.
+!</description>
+!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
+!  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
+      E_YOUNG(:DIM_M) = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>Poissons ratio for the particle. Needed when using the Hertzian
+! spring-dashpot model for soft-spring collision modelling under DEM.
+!</description>
+!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
+!  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
+      V_POISSON(:DIM_M) = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Flag to enable/disable cohesion model.
+!  </description>
+      USE_COHESION = .FALSE.
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Flag to turn on the use hamaker van der waals forces.
+!  </description>
+!  <dependent keyword="USE_COHESION" value=".TRUE."/>
+      VAN_DER_WAALS = .FALSE.
+!</keyword>
+
+
+! for cohesion: van der waals
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Hamaker constant used in particle-particle cohesive interactions.
+!  </description>
+!  <dependent keyword="USE_COHESION" value=".TRUE."/>
+      HAMAKER_CONSTANT = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Hamaker constant used in particle-wall cohesive interactions.
+!  </description>
+!  <dependent keyword="USE_COHESION" value=".TRUE."/>
+      WALL_HAMAKER_CONSTANT = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Maximum separation distance above which van der Waals forces are 
+!    not implemented.
+!  </description>
+!  <dependent keyword="USE_COHESION" value=".TRUE."/>
+      VDW_OUTER_CUTOFF = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Minimum separation distance below which van der Waals forces are 
+!   c alculated using a surface adhesion model.
+!  </description>
+!  <dependent keyword="USE_COHESION" value=".TRUE."/>
+      VDW_INNER_CUTOFF = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Maximum separation distance above which van der Waals forces are
+!    not implemented (particle-wall interactions).
+!  </description>
+!  <dependent keyword="USE_COHESION" value=".TRUE."/>
+      WALL_VDW_OUTER_CUTOFF = ZERO
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Minimum separation distance below which van der Waals forces are
+!    calculated using a surface adhesion model (particle-wall 
+!    interactions).
+!  </description>
+!  <dependent keyword="USE_COHESION" value=".TRUE."/>
+      WALL_VDW_INNER_CUTOFF = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Mean radius of surface asperities that influence the cohesive force
+!    following a model. See H. Rumpf, Particle Technology, Chapman & Hall,
+!    London/New York, 1990.
+!  </description>
+!  <dependent keyword="USE_COHESION" value=".TRUE."/>
+      Asperities = ZERO
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Flag to turn on runtime cluster data calculations. These routines
+!    are very time consuming and can dramaticaly slow down simulations.
+!  </description>
+!  <conflict keyword="MPPIC" value=".TRUE."/>
+      DES_CALC_CLUSTER = .FALSE.
+!</keyword>
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    The physical distance relative to a particle for peforming cluster
+!    statistics calculations.
+!  </description>
+!  <conflict keyword="MPPIC" value=".TRUE."/>
+!  <dependent keyword="DES_CALC_CLUSTER" value=".TRUE."/>
+      CLUSTER_LENGTH_CUTOFF = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Specify the nusselt number correlation used for particle-gas 
+!    convection.
+!  </description>
+!  <valid value="RANZ_1952" note="Ranz, W.E. and Marshall, W.R. (1952).
+!    Chemical Engineering Progress, 48: 141-146 and 173-180"/>
+      DES_CONV_CORR = 'RANZ_1952'
+!</keyword>
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Minimum separation distance between the surfaces of two contacting
+!    particles.
+!  </description>
+      DES_MIN_COND_DIST = UNDEFINED
+!</keyword>
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Fluid lens proportion constant used to calculate the radius of
+!    the fluid lens that surrounds a particle. used in the 
+!    particle-fluid-particle conduction model.
+!  </description>
+      FLPC = 1.0d0/5.0d0
+!</keyword>
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>Emissivity of solids phase M.</description>
+!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
+      DES_Em(:DIM_M) = UNDEFINED
+!</keyword>
+
+
+
+!#####################################################################!
+!                          Particle In Cell                           !
+!#####################################################################!
+
+
+!<keyword category="Particle In Cell" required="false">
+!  <description>
+!    Turn on snider's version of frictional model.
+!    Does not run very stably.
 !  </description>
       MPPIC_SOLID_STRESS_SNIDER = .false.
 !</keyword>
 
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Particle In Cell" required="false">
 !  <description>
 !    First coefficient of restitution for the frictional stress model
 !    in the MPPIC model. See the MPPIC documentation for more details.
@@ -639,7 +743,7 @@
 !</keyword>
 
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Particle In Cell" required="false">
 !  <description>
 !    Second coefficient of restitution for the frictional stress model
 !    in the MPPIC model. See the MPPIC documentation for more details.
@@ -649,7 +753,7 @@
 !</keyword>
 
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Particle In Cell" required="false">
 !  <description>
 !    Normal coefficient of restitution for parcel-wall collisions
 !    in the MPPIC model.
@@ -659,7 +763,7 @@
 !</keyword>
 
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Particle In Cell" required="false">
 !  <description> Tangential coefficient of restitution for
 ! parcel-wall collisions in the MPPIC model.
 ! Currently not implemented in the code.
@@ -669,7 +773,7 @@
 !</keyword>
 
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Particle In Cell" required="false">
 !  <description> Turn on the implicit treatment for interphase drag force.
 ! Valid only for MPPIC model..
 !</description>
@@ -677,59 +781,52 @@
       MPPIC_PDRAG_IMPLICIT = .false.
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description> Variable to decide if special treatment is needed or not
-!in the direction of gravity in the frictional stress tensor
-! Valid only for MPPIC model. See the MPPIC documenation.
-!</description>
+!<keyword category="Particle In Cell" required="false">
+!  <description>
+!     Variable to decide if special treatment is needed or not in the 
+!     direction of gravity in the frictional stress tensor. See the
+!     MPPIC documenation for details.
+!  </description>
 !  <dependent keyword="MPPIC" value=".TRUE."/>
       MPPIC_GRAV_TREATMENT = .true.
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description> Flag to print processor level parcel seeding statistics
-! for inflow BC with PIC model.
-!</description>
+!<keyword category="Particle In Cell" required="false">
+!  <description>
+!    A run time flag to report minimum value and location of gas
+!    voidage. This is useful only for debugging and is not
+!    recommended for production runs.
+!  </description>
 !  <dependent keyword="MPPIC" value=".TRUE."/>
-      PIC_REPORT_SEEDING_STATS = .false.
+      PIC_REPORT_MIN_EPG = .FALSE.
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description> Flag to print processor level parcel deletion statistics
-! for outflow BC with PIC model. Not recommended for production runs.
-!</description>
-!  <dependent keyword="MPPIC" value=".TRUE."/>
-      PIC_REPORT_DELETION_STATS = .false.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description> A run time flag to report minimum value and location
-! of gas voidage. This is useful only for debugging and is not recommended for
-! production runs.
-!</description>
-!  <dependent keyword="MPPIC" value=".TRUE."/>
-      PIC_REPORT_MIN_EPG = .false.
-!</keyword>
-
-!<keyword category="Discrete Element" required="false">
-!  <description>P_s term in the frictional stress model of Snider</description>
+!<keyword category="Particle In Cell" required="false">
+!  <description>
+!    P_s term in the frictional stress model of Snider.
+!  </description>
 !  <dependent keyword="MPPIC" value=".TRUE."/>
       PSFAC_FRIC_PIC = 100
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Beta term in the frictional stress model of Snider</description>
+!<keyword category="Particle In Cell" required="false">
+!  <description>
+!    Beta term in the frictional stress model of Snider.
+!  </description>
 !  <dependent keyword="MPPIC" value=".TRUE."/>
       FRIC_EXP_PIC = 2.5
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Non-singularity term (epsilon) in the frictional stress model of snider</description>
+!<keyword category="Particle In Cell" required="false">
+!  <description>
+!    Non-singularity term (epsilon) in the frictional stress model of
+!    Snider.
+!  </description>
 !  <dependent keyword="MPPIC" value=".TRUE."/>
       FRIC_NON_SING_FAC = 1E-07
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Particle In Cell" required="false">
 !  <description>CFL number used to decide maximum time
 ! step size for parcels evolution equations.
 ! Relevant to MPPIC model only.
@@ -738,27 +835,28 @@
       CFL_PIC = 0.1
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Specify the nusselt number correlation used for particle-gas convection. (only ranz_1952 is presently included.)</description>
-      DES_CONV_CORR = 'RANZ_1952'
-!</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Minimum separation distance between the surfaces of two contacting particles.</description>
-      DES_MIN_COND_DIST = UNDEFINED
-!</keyword>
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
+!                            UNSUPPORTED KEYWORDS                      !
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Fluid lens proportion constant used to calculate the radius of the fluid lens that surrounds a particle. used in the particle-fluid-particle conduction model.</description>
-      FLPC = 1.0d0/5.0d0
-!</keyword>
+! Logical to force the inlet to operate with an ordered boundary 
+! condition. This may be useful during long simulations or if the 
+! inlet appears to be taking a long time to randomly place particles.
+      FORCE_ORD_BC = .FALSE.
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Emissivity of solids phase M.</description>
-!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
-      DES_Em(:DIM_M) = UNDEFINED
-!</keyword>
+! Lees-Edwards boundary condition to simulate homogeneous shear 
+! problem with periodic boundary conditions. Not supported in this
+! version.
+      DES_LE_BC = .FALSE.
 
+! Relative velocity needed for Lees-Edwards BC.
+! Not supported in this version.
+      DES_LE_REL_VEL = UNDEFINED
+
+! Direction of shear for Lees-Edwards BC.
+! Not supported in this version. </description>
+      DES_LE_SHEAR_DIR = UNDEFINED_C
 
 ! des wall boundaries: wall velocities. I think they probably
 ! defined for the Lees-Edwards BC's
