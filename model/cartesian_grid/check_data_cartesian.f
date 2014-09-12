@@ -435,6 +435,24 @@
                CALL BUILD_CONE_FOR_C2C(Q)
 
 
+            CASE ('TORUS_INT','TORUS_EXT')      ! Torus - Hard coded in define_quadrics.f    
+               IF((Torus_R1(Q) <= ZERO).OR.(Torus_R1(Q)==UNDEFINED)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: TORUS:', Q, &
+                        ' HAS INVALID RADIUS R1:',Torus_R1(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)             
+               ENDIF
+               IF((Torus_R2(Q) <= ZERO).OR.(Torus_R2(Q)==UNDEFINED)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: TORUS:', Q, &
+                        ' HAS INVALID RADIUS R2:',Torus_R2(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)             
+               ENDIF
+
             CASE DEFAULT
                IF(MyPE == PE_IO) THEN
                   WRITE(*,*)'INPUT ERROR: QUADRIC:', Q, &

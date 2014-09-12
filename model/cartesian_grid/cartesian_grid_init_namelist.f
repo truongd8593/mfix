@@ -116,6 +116,8 @@
 !  <valid value="sphere_int" note="Sphere, internal flow. Needs to define radius(QID)."/>
 !  <valid value="sphere_ext" note="Sphere, external flow. Needs to define radius(QID)."/>
 !  <valid value="C2C" note="Cylinder-to-cylinder conical junction, internal flow. Needs to be defined between two cylinders."/>
+!  <valid value="Torus_int" note="Torus, internal flow. Needs to define Torus_R1(QID) and Torus_R2(QID).A torus is not a quadric surface but is defined as a basic shape."/>
+!  <valid value="Torus_ext" note="Torus, external flow. Needs to define Torus_R1(QID) and Torus_R2(QID)."/>
       quadric_form = 'NORMAL'
 !</keyword>
 
@@ -187,6 +189,20 @@
 !  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       Half_angle = ZERO
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Torus Radius 1 (used when quadric_form = Torus_*), R1>R2 for a ring.</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      Torus_R1 = ZERO
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Torus Radius 2 (used when quadric_form = Torus_*), R1>R2 for a ring.</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      Torus_R2 = ZERO
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">

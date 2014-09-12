@@ -98,7 +98,7 @@
 
       IMPLICIT NONE
  
-      DOUBLE PRECISION :: x1,x2,x3
+      DOUBLE PRECISION :: x1,x2,x3,xt,yt,zt,R1,R2
       DOUBLE PRECISION :: f,fq,fxe,fxw,fyn,fys,fzt,fzb,fclip
       DOUBLE PRECISION :: fxmin,fxmax,fymin,fymax,fzmin,fzmax
       DOUBLE PRECISION, DIMENSION(1,3) :: X_VECTOR,XMT
@@ -132,6 +132,30 @@
          IF(TRIM(quadric_form(Q_ID))=='PLANE') THEN
 
             f = lambda_x(Q_ID)*x1 + lambda_y(Q_ID)*x2 +lambda_z(Q_ID)*x3 + dquadric(Q_ID)
+
+         ELSEIF(TRIM(quadric_form(Q_ID))=='TORUS_INT') THEN
+
+            xt = x1-t_x(Q_ID)
+            yt = x2-t_y(Q_ID)
+            zt = x3-t_z(Q_ID)
+                
+            R1 = Torus_R1(Q_ID)
+            R2 = Torus_R2(Q_ID)
+                   
+            f = -(4*(xt**2+zt**2)*R1**2-(xt**2+yt**2+zt**2+R1**2-R2**2)**2)
+
+
+         ELSEIF(TRIM(quadric_form(Q_ID))=='TORUS_EXT') THEN
+
+            xt = x1-t_x(Q_ID)
+            yt = x2-t_y(Q_ID)
+            zt = x3-t_z(Q_ID)
+                
+            R1 = Torus_R1(Q_ID)
+            R2 = Torus_R2(Q_ID)
+                   
+            f = 4*(xt**2+zt**2)*R1**2-(xt**2+yt**2+zt**2+R1**2-R2**2)**2
+
 
          ELSE
 

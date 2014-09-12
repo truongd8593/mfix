@@ -24,6 +24,8 @@
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: theta_x,theta_y,theta_z
 !     Radius for either Spere or Cylinder (pre-defined quadrics)
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: Radius
+!     Radii for Torus 
+      DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: Torus_R1, Torus_R2
 !     Half-angle for cone (pre-defined quadrics)
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: Half_angle
 !     Normal vector components for plane (pre-defined quadrics)
