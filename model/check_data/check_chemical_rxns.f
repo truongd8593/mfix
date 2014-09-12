@@ -129,7 +129,7 @@
 ! Reaction Names from mfix.dat file:
       CHARACTER(len=32), INTENT(IN) ::  NAME(DIMENSION_RXN)
 ! Chemical equations:
-      CHARACTER(len=256), INTENT(IN) :: CHEM_EQ(DIMENSION_RXN)
+      CHARACTER(len=512), INTENT(IN) :: CHEM_EQ(DIMENSION_RXN)
 ! User defined heat of reacation:
       DOUBLE PRECISION, INTENT(IN) :: DH(DIMENSION_RXN)
 ! User defined heat of reaction partitions.

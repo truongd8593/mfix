@@ -32,7 +32,7 @@
 ! Reaction names
       CHARACTER(len=32),  DIMENSION(:),   ALLOCATABLE :: RXN_NAME
 ! chemical Equations
-      CHARACTER(len=256), DIMENSION(:),   ALLOCATABLE :: RXN_CHEM_EQ
+      CHARACTER(len=512), DIMENSION(:),   ALLOCATABLE :: RXN_CHEM_EQ
 ! User defined heat of reaction
       DOUBLE PRECISION,   DIMENSION(:),   ALLOCATABLE :: usrDH
 ! User defined heat of reaction partitions.
@@ -46,7 +46,7 @@
 ! Reaction names
       CHARACTER(len=32),  DIMENSION(:),   ALLOCATABLE :: DES_RXN_NAME
 ! chemical Equations
-      CHARACTER(len=256), DIMENSION(:),   ALLOCATABLE :: DES_RXN_CHEM_EQ
+      CHARACTER(len=512), DIMENSION(:),   ALLOCATABLE :: DES_RXN_CHEM_EQ
 ! User defined heat of reaction
       DOUBLE PRECISION,   DIMENSION(:),   ALLOCATABLE :: DES_usrDH
 ! User defined heat of reaction partitions.
