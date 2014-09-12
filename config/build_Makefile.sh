@@ -18,8 +18,8 @@ fi
 
 # Include any NetCDF definitions.
 if test ${USE_NETCDF} = 1; then
-  LIB_FLAGS="${LIB_FLAGS} ${NETCDF_LIBS}"
-  FORT_FLAGS="${FORT_FLAGS} ${NETCDF_INCS}"
+  FORT_FLAGS="${FORT_FLAGS} -I${NETCDF_INCLUDE}"
+  LIB_FLAGS="${LIB_FLAGS} -L${NETCDF_LIB} -lnetcdff"
 fi
 
 
@@ -62,7 +62,7 @@ for dir in $(find . -type d); do
     for file in $(echo ${list}); do
       echo "${dir}/${file}" >> ${mlist}
     done
-    if test "${dir}" != "."; then 
+    if test "${dir}" != "."; then
 #      echo "leaving $(pwd)"
       cd ..
     fi

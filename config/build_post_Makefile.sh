@@ -11,8 +11,8 @@ if test -f ${tmpMFILE}; then rm ${tmpMFILE}; fi
 
 # Include any NetCDF definitions.
 if test ${USE_NETCDF} = 1; then
-  LIB_FLAGS="${LIB_FLAGS} ${NETCDF_LIBS}"
-  FORT_FLAGS="${FORT_FLAGS} ${NETCDF_INCS}"
+  FORT_FLAGS="${FORT_FLAGS} -I${NETCDF_INCLUDE}"
+  LIB_FLAGS="${LIB_FLAGS} -L${NETCDF_LIB} -lnetcdff"
 fi
 
 

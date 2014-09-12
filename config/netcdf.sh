@@ -3,8 +3,6 @@ netcdf_msg=
 
 if test ${USE_NETCDF} = 1; then
   echo "NetCDF is enabled."
-  NETCDF_INCS="-I${NETCDF_HOME}/include"
-  NETCDF_LIBS="-L${NETCDF_HOME}/lib -lnetcdff"
   netcdf_msg="Updated"
 else
   MFIX_NETCDF=${MFIX_NETCDF}/donothing

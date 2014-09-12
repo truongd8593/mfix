@@ -95,9 +95,9 @@ echo " --enable-tau         Enable TAU profiling support. Specify the location"
 echo "                      of the TAU library by setting the TAUROOT"
 echo "                      environment variable."
 echo ""
-echo " --enable-netcdf      Enable NetCDF support. Specify the location of"
-echo "                      the NetCDF library by setting the NETCDF_HOME "
-echo "                      environment variable"
+echo " --enable-netcdf      Enable NetCDF support. Set NETCDF_INCLUDE to directory"
+echo "                      of NetCDF include files and set NETCDF_LIB to directory of"
+echo "                      NetCDF shared library"
 echo ""
 echo " --mpi=PATH           MPI instalation directory"
 echo " --mpi_include=PATH   MPI include directory"
@@ -377,8 +377,12 @@ for arg in $input; do
 # Enable NetCDF output
 #-------------------------------------------------------------------------->>
     "--enable-netcdf" )
-      if test -z ${NETCDF_HOME}; then
-        echo "  Fatal Error: NETCDFROOT not set!"
+      if test -z ${NETCDF_INCLUDE}; then
+        echo "Error: Building with NetCDF support requires NETCDF_INCLUDE set to directory of NetCDF Fortran include files (netcdf.f90 or netcdf.mod)"
+        exit -1
+      fi
+      if test -z ${NETCDF_LIB}; then
+        echo "Error: Building with NetCDF support requires NETCDF_LIB set to directory of libnetcdff.so"
         exit -1
       fi
       USE_NETCDF=1
