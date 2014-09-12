@@ -64,18 +64,6 @@
          END SUBROUTINE DLSODA
       END INTERFACE
 
-
-! Legacy Variables:
-!---------------------------------------------------------------------//
-! Former keyword for invoking stiff solver.
-      LOGICAL :: CALL_DI
-! Keyword for using ISAT tables with stiff solver. (disabled)
-      LOGICAL :: CALL_ISAT
-! Time step for isat calculation. (disabled)
-      DOUBLE PRECISION :: ISATdt
-! Flag to invoke the variable solids diameter model.
-      LOGICAL :: CALL_GROW
-
       contains
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC

@@ -526,16 +526,6 @@
 !#####################################################################!
 
 !<keyword category="Physical Parameters" required="false">
-!  <description>User defined constants.</description>
-      C(:DIMENSION_C) = UNDEFINED
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>Name of user-defined constant. (20 character max)</description>
-      C_NAME(:DIMENSION_C) = '....................'
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
 !  <description>Coefficient of restitution for particle-particle collisions.</description>
       C_E = UNDEFINED
 !</keyword>
@@ -554,31 +544,33 @@
       E_W = 1.D0
 !</keyword>
 
-!<keyword category="Physical Parameters" required="false">
-!  <description>Specularity coefficient associated with particle-wall collisions.</description>
+!<keyword category="Physical Parameters" required="false" tfm="true">
+!  <description>
+!    Specularity coefficient associated with particle-wall collisions.
+!  </description>
       PHIP = 0.6D0
 !</keyword>
 
 
-!<keyword category="Physical Parameters" required="false">
+!<keyword category="Physical Parameters" required="false" tfm="true">
 !  <description>
-!    Specify the value of specularity coefficient when the
-!    normalized slip velocity goes to zero when bc_jj_m is
-!    .TRUE.. this variable is calculated internally in the
-!    code. do not modify unless an accurate number is known.
+!    Specify the value of specularity coefficient when the normalized
+!     slip velocity goes to zero when BC_JJ_M is .TRUE.. This variable
+!     is calculated internally in the code. Do not modify unless an 
+!     accurate number is known.
 !  </description>
-!  <dependents>bc_jj_m</dependents>
+!  <dependents>BC_JJ_M</dependents>
       phip0 = undefined
 !</keyword>
 
-!<keyword category="Physical Parameters" required="false">
+!<keyword category="Physical Parameters" required="false" tfm="true">
 !  <description>
 !    Coefficient of friction between the particles of two solids phases.
 !  </description>
       C_F = UNDEFINED
 !</keyword>
 
-!<keyword category="Physical Parameters" required="false">
+!<keyword category="Physical Parameters" required="false" tfm="true">
 !  <description>
 !     Angle of internal friction (in degrees). set this value
 !     to zero to turn off plastic regime stress calculations.
@@ -586,7 +578,7 @@
       PHI = UNDEFINED
 !</keyword>
 
-!<keyword category="Physical Parameters" required="false">
+!<keyword category="Physical Parameters" required="false" tfm="true">
 !  <description>
 !    Angle of internal friction (in degrees) at walls. Set this
 !    value to non-zero (phi_w = 11.31 means tan_phi_w = mu = 0.2)
@@ -595,7 +587,7 @@
       PHI_W = UNDEFINED
 !</keyword>
 
-!<keyword category="Physical Parameters" required="false">
+!<keyword category="Physical Parameters" required="false" tfm="true">
 !  <description>
 !    Minimum solids fraction above which friction sets in.  (when
 !    friction = .TRUE.)</description>
@@ -603,7 +595,7 @@
       EPS_F_MIN = 0.5D0
 !</keyword>
 
-!<keyword category="Physical Parameters" required="false">
+!<keyword category="Physical Parameters" required="false" tfm="true">
 !  <description>
 !    Maximum solids volume fraction at packing for polydisperse
 !    systems (more than one solids phase used). The value of
@@ -616,7 +608,7 @@
       EP_S_MAX(:DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="Physical Parameters" required="false">
+!<keyword category="Physical Parameters" required="false" tfm="true">
 !  <description>
 !    Used in calculating the initial slope of segregation: see
 !    Gera et al. (2004) - recommended value 0.3. increasing this
@@ -642,7 +634,7 @@
       MU_GMAX = UNDEFINED
 !</keyword>
 
-!<keyword category="Physical Parameters" required="false">
+!<keyword category="Physical Parameters" required="false" tfm="true">
 !  <description>Excluded volume in Boyle-Massoudi stress.</description>
 !  <valid value="0.0" note="b-m stress is turned off."/>
       V_EX = ZERO
@@ -1158,7 +1150,7 @@
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
 !    If .TRUE. imposes a mean shear on the flow field as a linear
-!    function of _x_ coordinate. this feature should only be used when
+!    function of X coordinate. this feature should only be used when
 !    cyclic_x=.TRUE. also, the keyword v-sh needs to be set.
 !  </description>
 !  <dependents>cyclic_x v_sh</dependents>
@@ -1168,11 +1160,11 @@
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
-!    Specifies the mean _y_ velocity component at the eastern boundary
-!    of the domain (v_sh), and the mean _y_ velocity (-v_sh) at the
+!    Specifies the mean Y velocity component at the eastern boundary
+!    of the domain (v_sh), and the mean Y velocity (-v_sh) at the
 !    western boundary of the domain.
 !  </description>
-      V_sh=0d0
+      V_sh = 0.0d0
 !</keyword>
 
 
@@ -1260,127 +1252,6 @@
 !                            Solids Phase                             !
 !#####################################################################!
 
-
-!<keyword category="Solids Phase" required="false">
-!  <description>Number of solids phases.</description>
-      MMAX = 1
-!</keyword>
-
-!<keyword category="Solids Phase" required="false">
-!  <description>Initial particle diameters.</description>
-!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-      D_P0(:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Solids Phase" required="false">
-!  <description>Specified constant solids density.</description>
-!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-      RO_S0(:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Solids Phase" required="false">
-!  <description>Baseline species mass fraction.</description>
-!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-!  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
-!  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
-!  <dependent keyword="RO_Xs0" value="DEFINED"/>
-!  <dependent keyword="INERT_SPECIES" value="DEFINED"/>
-!  <conflict keyword="RO_s0" value="DEFINED"/>
-      X_s0(:DIM_M,:DIM_N_s) = UNDEFINED
-!</keyword>
-
-!<keyword category="Solids Phase" required="false">
-!  <description>Specified constant solids species density.</description>
-!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-!  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
-!  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
-!  <dependent keyword="X_s0" value="DEFINED"/>
-!  <dependent keyword="INERT_SPECIES" value="DEFINED"/>
-!  <conflict keyword="RO_s0" value="DEFINED"/>
-      RO_Xs0(:DIM_M,:DIM_N_s) = UNDEFINED
-!</keyword>
-
-!<keyword category="Solids Phase" required="false">
-!  <description>Index of inert solids phase species.</description>
-!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-!  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
-!  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
-!  <dependent keyword="X_s0" value="DEFINED"/>
-!  <dependent keyword="RO_Xs0" value="DEFINED"/>
-!  <conflict keyword="RO_s0" value="DEFINED"/>
-      INERT_SPECIES(:DIM_M) = UNDEFINED_I
-!</keyword>
-
-!<keyword category="Solids Phase" required="false">
-!  <description>Specified constant granular viscosity. if this value is
-!    specified, then the kinetic theory calculation is turned off and
-!    p_s = 0 and lambda_s = -2/3 mu_s0.
-!  </description>
-      MU_S0 = UNDEFINED
-!</keyword>
-
-!<keyword category="Solids Phase" required="false">
-!  <description>Specified constant solids conductivity.</description>
-!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-      K_S0(:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Solids Phase" required="false">
-!  <description>Specified constant solids specific heat.</description>
-!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-      C_PS0(:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Solids Phase" required="false">
-!  <description>Specified constant solids diffusivity.</description>
-      DIF_S0 = UNDEFINED
-!</keyword>
-
-!<keyword category="Solids Phase" required="false">
-!  <description>Molecular weight of solids phase-m, species n.</description>
-!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-!  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
-      MW_S(:DIM_M,:DIM_N_s) = UNDEFINED
-!</keyword>
-
-!<keyword category="Solids Phase" required="false">
-!  <description>Number of species comprising solids phase m.</description>
-!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-      NMAX_s(:DIM_M) = UNDEFINED_I
-!</keyword>
-
-!<keyword category="Solids Phase" required="false">
-!  <description>
-!    Name of solids phase m, species n as it appears in the materials
-!    database.
-!</description>
-!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-!  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
-      SPECIES_s(:DIM_M,:DIM_N_s) = UNDEFINED_C
-!</keyword>
-
-!<keyword category="Solids Phase" required="false">
-!  <description>User defined name for solids phase m, species n</description>
-!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-!  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
-      SPECIES_ALIAS_s(:DIM_M,:DIM_N_s) = UNDEFINED_C
-!</keyword>
-
-!<keyword category="Solids Phase" required="false">
-!  <description>Packed bed void fraction.</description>
-      EP_STAR = UNDEFINED
-!</keyword>
-
-!<keyword category="Solids Phase" required="false">
-!  <description>
-!    Indicates that the solids phase forms a packed bed with a void
-!    fraction ep_star.
-!  </description>
-!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-      CLOSE_PACKED(:DIM_M) = .TRUE.
-!</keyword>
-
-
 !<keyword category="Solids Phase" required="false">
 !  <description>
 !    Defines the model used for the solids phase. For TFM/DEM
@@ -1394,6 +1265,126 @@
       SOLIDS_MODEL(:DIM_M) = 'TFM'
 !</keyword>
 
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true" pic="true">
+!  <description>Number of solids phases.</description>
+      MMAX = 1
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true" pic="true">
+!  <description>Initial particle diameters.</description>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+      D_P0(:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true" pic="true">
+!  <description>Specified constant solids density.</description>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+      RO_S0(:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
+!  <description>Baseline species mass fraction.</description>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+!  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
+!  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
+!  <dependent keyword="RO_Xs0" value="DEFINED"/>
+!  <dependent keyword="INERT_SPECIES" value="DEFINED"/>
+!  <conflict keyword="RO_s0" value="DEFINED"/>
+      X_s0(:DIM_M,:DIM_N_s) = UNDEFINED
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
+!  <description>Specified constant solids species density.</description>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+!  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
+!  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
+!  <dependent keyword="X_s0" value="DEFINED"/>
+!  <dependent keyword="INERT_SPECIES" value="DEFINED"/>
+!  <conflict keyword="RO_s0" value="DEFINED"/>
+      RO_Xs0(:DIM_M,:DIM_N_s) = UNDEFINED
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
+!  <description>Index of inert solids phase species.</description>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+!  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
+!  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
+!  <dependent keyword="X_s0" value="DEFINED"/>
+!  <dependent keyword="RO_Xs0" value="DEFINED"/>
+!  <conflict keyword="RO_s0" value="DEFINED"/>
+      INERT_SPECIES(:DIM_M) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true">
+!  <description>Specified constant granular viscosity. if this value is
+!    specified, then the kinetic theory calculation is turned off and
+!    p_s = 0 and lambda_s = -2/3 mu_s0.
+!  </description>
+      MU_S0 = UNDEFINED
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
+!  <description>Specified constant solids conductivity.</description>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+      K_S0(:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
+!  <description>Specified constant solids specific heat.</description>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+      C_PS0(:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true">
+!  <description>Specified constant solids diffusivity.</description>
+      DIF_S0 = UNDEFINED
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
+!  <description>Molecular weight of solids phase-m, species n.</description>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+!  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
+      MW_S(:DIM_M,:DIM_N_s) = UNDEFINED
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
+!  <description>Number of species comprising solids phase m.</description>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+      NMAX_s(:DIM_M) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
+!  <description>
+!    Name of solids phase M, species N as it appears in the materials
+!    database.
+!</description>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+!  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
+      SPECIES_s(:DIM_M,:DIM_N_s) = UNDEFINED_C
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
+!  <description>
+!    User defined name for solids phase M, species N.
+!  </description>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+!  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
+      SPECIES_ALIAS_s(:DIM_M,:DIM_N_s) = UNDEFINED_C
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true">
+!  <description>Packed bed void fraction.</description>
+      EP_STAR = UNDEFINED
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true">
+!  <description>
+!    Indicates that the solids phase forms a packed bed with a void
+!    fraction ep_star.
+!  </description>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+      CLOSE_PACKED(:DIM_M) = .TRUE.
+!</keyword>
 
 
 !#####################################################################!
@@ -2782,6 +2773,16 @@
       CALL_USR = .FALSE.
 !</keyword>
 
+!<keyword category="Physical Parameters" required="false">
+!  <description>User defined constants.</description>
+      C(:DIMENSION_C) = UNDEFINED
+!</keyword>
+
+!<keyword category="Physical Parameters" required="false">
+!  <description>Name of user-defined constant. (20 character max)</description>
+      C_NAME(:DIMENSION_C) = '....................'
+!</keyword>
+
       DO LC=1, DIMENSION_USR
 !<keyword category="UDF Control" required="false">
 !  <description>
@@ -2940,38 +2941,6 @@
 !  <dependent keyword="USE_RRATES" value=".TRUE."/>
       NMAX = UNDEFINED_I
 !</keyword>
-
-!<keyword category="Chemical Reactions" legacy=.TRUE.>
-!  <description>Flag for previous stiff solver.</description>
-      CALL_DI   = .FALSE.
-!</keyword>
-
-!<keyword category="Chemical Reactions" required="false" legacy=.TRUE.>
-!  <description>
-!   Flag to specify variable solids diameter in original stiff chem solver.
-!   (Non-Functional, Removed in 2013-2 Release)
-!  </description>
-      CALL_GROW = .FALSE.
-!</keyword>
-
-!<keyword category="Chemical Reactions" required="false" legacy=.TRUE.>
-!  <description>
-!   Flag to use ISAT tables with original DI solver.
-!   (Non-Functional, Removed in 2013-2 Release)
-!  </description>
-      CALL_ISAT = .FALSE.      ! Legacy Keyword
-!  </description>
-!</keyword>
-
-!<keyword category="Chemical Reactions" required="false" legacy=.TRUE.>
-!  <description>
-!   Specified constant call to ISAT functions.
-!   (Non-Functional, Removed in 2013-2 Release)
-!  </description>
-      ISATdt = UNDEFINED
-!  </description>
-!</keyword>
-
 
 
 !#####################################################################!

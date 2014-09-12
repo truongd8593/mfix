@@ -60,6 +60,10 @@
       INTEGER :: NEXT_RECA 
 ! file version id
       CHARACTER :: VERSION*512 
+
+! Place holder for deprecated variables:
+      LOGICAL, PARAMETER :: CALL_ISAT = .FALSE.
+
 !-----------------------------------------------
 
       NEXT_RECA = 5 
