@@ -238,7 +238,7 @@
       K_Epsilon = .FALSE.
 !</keyword>
 
-!<keyword category="Physical Parameters" required="false">
+!<keyword category="Run Control" required="false">
 !  <description>
 !    Value of turbulent length initialized. this may be overwritten
 !    in specific regions with the keyword IC_L_SCALE.
@@ -247,7 +247,7 @@
       L_SCALE0 = ZERO
 !</keyword>
 
-!<keyword category="Physical Parameters" required="false">
+!<keyword category="Run Control" required="false">
 !  <description>
 !    Maximum value of the turbulent viscosity of the fluid.
 !  </description>
@@ -267,7 +267,7 @@
 !     * Erratum (2007), AIChE Journal, Volume 53:3020
 !  </description>
 !
-!  <valid value="SYAM_OBRIEN" note="Syamlal M, O\'Brien TJ (1988).
+!  <valid value="SYAM_OBRIEN" note="Syamlal M, OBrien TJ (1988).
 !   International Journal of Multiphase Flow 14:473-481.
 !   Two additional parameters may be specified: DRAG_C1, DRAG_D1"/>
 !
@@ -1127,11 +1127,11 @@
 !</keyword>
 
 !#####################################################################!
-!                          Solids Model - TFM                         !
+!                           Two Fluid Model                           !
 !#####################################################################!
 
 
-!<keyword category="Solids Model - TFM" required="false">
+!<keyword category="Two Fluid Model" required="false">
 !  <description>Solids phase stress model.</description>
 !  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
 !  <valid value="AHMADI"
@@ -1157,7 +1157,7 @@
 ! Use: KT_TYPE = "SIMONIN"
       SIMONIN = .FALSE.
 
-!<keyword category="Solids Model - TFM" required="false">
+!<keyword category="Two Fluid Model" required="false">
 !  <description>Jenkins small frictional boundary condition.</description>
 !  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
 !  <dependent keyword="PHI_W" value="DEFINED"/>
@@ -1167,7 +1167,7 @@
       JENKINS = .FALSE.
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false">
+!<keyword category="Two Fluid Model" required="false">
 !  <description>Solids stress model selection.</description>
 !  <valid value=".FALSE." note="Use the Schaeffer solids stress model."/>
 !  <valid value=".TRUE."  note="Use the Princeton solids stress model"/>
@@ -1177,7 +1177,7 @@
       FRICTION = .FALSE.
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false">
+!<keyword category="Two Fluid Model" required="false">
 !  <description>
 !    For a term appearing in the frictional stress model
 !    invoked with friction = .TRUE.
@@ -1189,7 +1189,7 @@
       SAVAGE = 1
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false">
+!<keyword category="Two Fluid Model" required="false">
 !  <description>Schaeffer frictional stress tensor formulation. </description>
 !  <dependent keyword="PHI" value="DEFINED"/>
 !  <valid value=".TRUE." note="Use the Schaeffer model"/>
@@ -1197,7 +1197,7 @@
       SCHAEFFER = .TRUE.
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Blend the Schaeffer stresses with that of algebraic kinetic theory
 !    around EP_STAR.
@@ -1205,7 +1205,7 @@
       BLENDING_STRESS = .FALSE.
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false" tfm="ture">
+!<keyword category="Two Fluid Model" required="false" tfm="ture">
 !  <description>
 !    Hyperbolic tangent function for blending frictional stress models.
 !  </description>
@@ -1214,7 +1214,7 @@
       TANH_BLEND = .TRUE.
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    A scaled and truncated sigmoidal function for blending
 !    frictional stress  models.
@@ -1224,7 +1224,7 @@
       SIGM_BLEND = .FALSE.
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Correlation to compute maximum packing for polydisperse systems.
 !  </description>
@@ -1235,7 +1235,7 @@
       YU_STANDISH = .FALSE.
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Use Fedors and Landel correlation to compute maximum
 !    packing for a binary (only) mixture of powders.
@@ -1243,7 +1243,7 @@
       FEDORS_LANDEL = .FALSE.
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false">
+!<keyword category="Two Fluid Model" required="false">
 !  <description>
 !    Radial distribution function at contact for polydisperse systems.
 !    Do not specify any RDF for monodisperse systems because Carnahan-
@@ -1272,7 +1272,7 @@
       RDF_TYPE = 'LEBOWITZ'
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Flag to include the added (or virtual) mass force. This force
 !    acts to increase the inertia of the dispersed phase, which
@@ -1281,21 +1281,21 @@
       Added_Mass = .FALSE.
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    The disperse phase number where the added mass applies.
 !  </description>
       M_AM = UNDEFINED_I
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Coefficient of restitution for particle-particle collisions.
 !  </description>
       C_E = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false">
+!<keyword category="Two Fluid Model" required="false">
 !  <description>
 !    GHD Theory: Coefficient of restitution for particle-particle collisions.
 !  </description>
@@ -1304,12 +1304,12 @@
       r_p(:DIM_M, :DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false">
+!<keyword category="Two Fluid Model" required="false">
 !  <description>Coefficient of restitution for particle-wall collisions.</description>
       E_W = 1.D0
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Specularity coefficient associated with particle-wall collisions.
 !  </description>
@@ -1317,7 +1317,7 @@
 !</keyword>
 
 
-!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Specify the value of specularity coefficient when the normalized
 !     slip velocity goes to zero when BC_JJ_M is .TRUE.. This variable
@@ -1328,14 +1328,14 @@
       phip0 = undefined
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Coefficient of friction between the particles of two solids phases.
 !  </description>
       C_F = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !     Angle of internal friction (in degrees). set this value
 !     to zero to turn off plastic regime stress calculations.
@@ -1343,7 +1343,7 @@
       PHI = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Angle of internal friction (in degrees) at walls. Set this
 !    value to non-zero (phi_w = 11.31 means tan_phi_w = mu = 0.2)
@@ -1352,7 +1352,7 @@
       PHI_W = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Minimum solids fraction above which friction sets in.  (when
 !    friction = .TRUE.)</description>
@@ -1360,7 +1360,7 @@
       EPS_F_MIN = 0.5D0
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Maximum solids volume fraction at packing for polydisperse
 !    systems (more than one solids phase used). The value of
@@ -1373,7 +1373,7 @@
       EP_S_MAX(:DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Used in calculating the initial slope of segregation: see
 !    Gera et al. (2004) - recommended value 0.3. increasing this
@@ -1384,7 +1384,7 @@
 !</keyword>
 
 
-!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>Excluded volume in Boyle-Massoudi stress.</description>
 !  <valid value="0.0" note="b-m stress is turned off."/>
       V_EX = ZERO
