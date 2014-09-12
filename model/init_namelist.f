@@ -7,7 +7,7 @@
 !                                                                      !
 !  Keyword Documentation Format:                                       !
 !                                                                      !
-!<keyword category="category name" required="true"/FALSE                 !
+!<keyword category="category name" required="true"/FALSE               !
 !                                    legacy=TRUE/FALSE>                !
 !  <description></description>                                         !
 !  <arg index="" id="" max="" min=""/>                                 !
@@ -205,7 +205,7 @@
       SPECIES_EQ(:DIM_M) = .TRUE.
 !</keyword>
 
-!<keyword category="Run Control" required="false">
+!<keyword category="Run Control" required="false" tfm="true">
 !  <description>Granular energy formulation selection.</description>
 !  <valid value=".FALSE."
 !    note="Use algebraic granular energy equation formulation."/>
@@ -230,117 +230,6 @@
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>Solids phase stress model.</description>
-!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
-!  <valid value="AHMADI"
-!    note="Cao and Ahmadi (1995). Int. J. Multiphase Flow 21(6), 1203."/>
-!  <valid value="GD_99"
-!     note="Garzo and Dufty (1999). Phys. Rev. E 59(5), 5895."/>
-!  <valid value="GHD"
-!    note="Garzo, Hrenya and Dufty (2007). Phys. Rev. E 76(3), 31304"/>
-!  <valid value="IA_NONEP"
-!     note="Iddir & Arastoopour (2005). AIChE J. 51(6), 1620"/>
-!  <valid value="LUN_1984"
-!    note="Lun et al (1984). J. Fluid Mech., 140, 223."/>
-!  <valid value="SIMONIN"
-!    note="Simonin (1996). VKI Lecture Series, 1996-2"/>
-      KT_TYPE = "LUN_1984"
-!</keyword>
-
-! Retired keyword for specifying Ahmadi KT Theory.
-! Use: KT_TYPE = "AHMADI"
-      AHMADI = .FALSE.
-
-! Retired keyword for specifying Simonin KT Theory.
-! Use: KT_TYPE = "SIMONIN"
-      SIMONIN = .FALSE.
-
-!<keyword category="Run Control" required="false">
-!  <description>Jenkins small frictional boundary condition.</description>
-!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
-!  <dependent keyword="PHI_W" value="DEFINED"/>
-!  <valid value=".FALSE." note=""/>
-!  <valid value=".TRUE."
-!    note="Use the Jenkins small frictional boundary condition."/>
-      JENKINS = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>Solids stress model selection.</description>
-!  <valid value=".FALSE." note="Use the Schaeffer solids stress model."/>
-!  <valid value=".TRUE."  note="Use the Princeton solids stress model"/>
-!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
-!  <dependent keyword="PHI" value="DEFINED"/>
-!  <dependent keyword="PHI_W" value="DEFINED"/>
-      FRICTION = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    For a term appearing in the frictional stress model
-!    invoked with friction = .TRUE.
-!  </description>
-!  <valid value="0" note="Use S:S in the frictional stress model."/>
-!  <valid value="1" note="Use an alternate form suggested by Savage."/>
-!  <valid value="2" note="An appropriate combination of above."/>
-!  <dependent keyword="friction" value=".TRUE."/>
-      SAVAGE = 1
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>Schaeffer frictional stress tensor formulation. </description>
-!  <dependent keyword="PHI" value="DEFINED"/>
-!  <valid value=".TRUE." note="Use the Schaeffer model"/>
-!  <valid value=".FALSE." note="Do not use the Schaeffer model."/>
-      SCHAEFFER = .TRUE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    Blend the Schaeffer stresses with that of kinetic theory around Ep*.
-!  </description>
-      BLENDING_STRESS = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    Hyperbolic tangent function for blending frictional stress models.
-!  </description>
-!  <dependent keyword="BLENDING_STRESS" value=".TRUE."/>
-!  <conflict keyword="SIGM_BLEND" value=".TRUE."/>
-      TANH_BLEND = .TRUE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    A scaled and truncated sigmoidal function for blending
-!    frictional stress  models.
-!  </description>
-!  <dependent keyword="BLENDING_STRESS" value=".TRUE."/>
-!  <conflict keyword="TANH_BLEND" value=".TRUE."/>
-      SIGM_BLEND = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    Correlation to compute maximum packing for polydisperse systems.
-!  </description>
-!  <valid value=".TRUE."
-!    note="Use the Yu and Standish correlation."/>
-!  <valid value=".FALSE."
-!    note="Do not use the Yu and Standish correlation."/>
-      YU_STANDISH = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    Use Fedors and Landel correlation to compute maximum
-!    packing for a binary (only) mixture of powders.
-!  </description>
-      FEDORS_LANDEL = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
 !  <description>
 !    When activated the k-epsilon turbulence model (for single
 !    -phase flow) is solved using standard wall functions.
@@ -349,6 +238,21 @@
       K_Epsilon = .FALSE.
 !</keyword>
 
+!<keyword category="Physical Parameters" required="false">
+!  <description>
+!    Value of turbulent length initialized. this may be overwritten
+!    in specific regions with the keyword IC_L_SCALE.
+!</description>
+!  <conflict keyword="K_EPSILON" value=".TRUE."/>
+      L_SCALE0 = ZERO
+!</keyword>
+
+!<keyword category="Physical Parameters" required="false">
+!  <description>
+!    Maximum value of the turbulent viscosity of the fluid.
+!  </description>
+      MU_GMAX = UNDEFINED
+!</keyword>
 
 !<keyword category="Run Control" required="false">
 !  <description>
@@ -363,7 +267,7 @@
 !     * Erratum (2007), AIChE Journal, Volume 53:3020
 !  </description>
 !
-!  <valid value="SYAM_OBRIEN" note="Syamlal M, O'Brien TJ (1988).
+!  <valid value="SYAM_OBRIEN" note="Syamlal M, O\'Brien TJ (1988).
 !   International Journal of Multiphase Flow 14:473-481.
 !   Two additional parameters may be specified: DRAG_C1, DRAG_D1"/>
 !
@@ -447,7 +351,7 @@
 !  <description>
 !    Ratio of filter size to computational cell size.
 !  </description>
-      filter_size_ratio = 2.0D0
+      FILTER_SIZE_RATIO = 2.0D0
 !</keyword>
 
 !<keyword category="Run Control" required="false">
@@ -455,51 +359,6 @@
 !  <valid value=".FALSE." note="Do not include wall correction."/>
 !  <valid value=".TRUE." note="Include subgrid wall correction."/>
       SUBGRID_Wall = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    Radial distribution function at contact for polydisperse systems.
-!    Do not specify any RDF for monodisperse systems because Carnahan-
-!    Starling is the model only available.
-!
-!    Carnahan, N.F. and Starling K.E., (1969).
-!    The Journal of Chemical Physics, Vol. 51(2):635-636.
-!  </description>
-!
-!  <valid value="LEBOWITZ" note="Lebowitz, J.L. (1964)
-!   The Physical Review, A133, 895-899"/>
-!
-!  <valid value="MODIFIED_LEBOWITZ" note="
-!    Iddir, H. Y., Modeling of the mulitphase mixture of particles
-!    using the kinetic theory approach. Doctoral Dissertation,
-!    Illinois Institute of Technology, Chicago, Illinois, 2004,
-!    (chapter 2, equations 2-49 through 2-52.)"/>
-!
-!  <valid value="MANSOORI" note="
-!   Mansoori, GA, Carnahan N.F., Starling, K.E. Leland, T.W. (1971).
-!    The Journal of Chemical Physics, Vol. 54:1523-1525."/>
-!
-!  <valid value="MODIFIED_MANSOORI" note="van Wachem, B.G.M., Schouten, J.C.,
-!    van den Bleek, C.M., Krishna, R. and Sinclair, J. L. (2001)
-!    AIChE Journal 47:1035–1051."/>
-      RDF_TYPE = 'LEBOWITZ'
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    Flag to include the added (or virtual) mass force. This force
-!    acts to increase the inertia of the dispersed phase, which
-!    tends to stabilize simulations of bubbly gas-liquid flows.
-!  </description>
-      Added_Mass = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    The disperse phase number where the added mass applies.
-!  </description>
-      M_AM = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Run Control" required="false">
@@ -525,120 +384,6 @@
 !                           Physical Parameters                       !
 !#####################################################################!
 
-!<keyword category="Physical Parameters" required="false">
-!  <description>Coefficient of restitution for particle-particle collisions.</description>
-      C_E = UNDEFINED
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>
-!    GHD Theory: Coefficient of restitution for particle-particle collisions.
-!  </description>
-!  <arg index="1" id="Phase" min="0" max="DIM_M"/>
-!  <arg index="2" id="Phase" min="0" max="DIM_M"/>
-      r_p(:DIM_M, :DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>Coefficient of restitution for particle-wall collisions.</description>
-      E_W = 1.D0
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false" tfm="true">
-!  <description>
-!    Specularity coefficient associated with particle-wall collisions.
-!  </description>
-      PHIP = 0.6D0
-!</keyword>
-
-
-!<keyword category="Physical Parameters" required="false" tfm="true">
-!  <description>
-!    Specify the value of specularity coefficient when the normalized
-!     slip velocity goes to zero when BC_JJ_M is .TRUE.. This variable
-!     is calculated internally in the code. Do not modify unless an 
-!     accurate number is known.
-!  </description>
-!  <dependents>BC_JJ_M</dependents>
-      phip0 = undefined
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false" tfm="true">
-!  <description>
-!    Coefficient of friction between the particles of two solids phases.
-!  </description>
-      C_F = UNDEFINED
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false" tfm="true">
-!  <description>
-!     Angle of internal friction (in degrees). set this value
-!     to zero to turn off plastic regime stress calculations.
-!  </description>
-      PHI = UNDEFINED
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false" tfm="true">
-!  <description>
-!    Angle of internal friction (in degrees) at walls. Set this
-!    value to non-zero (phi_w = 11.31 means tan_phi_w = mu = 0.2)
-!    when using Jenkins or bc_jj_m boundary condition.
-!  </description>
-      PHI_W = UNDEFINED
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false" tfm="true">
-!  <description>
-!    Minimum solids fraction above which friction sets in.  (when
-!    friction = .TRUE.)</description>
-!  <dependents>friction</dependents>
-      EPS_F_MIN = 0.5D0
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false" tfm="true">
-!  <description>
-!    Maximum solids volume fraction at packing for polydisperse
-!    systems (more than one solids phase used). The value of
-!    EP_star may change during the computation if solids phases
-!    with different particle diameters are specified and
-!    Yu_Standish or Fedors_Landel correlations are used.
-!  </description>
-!  <arg index="1" id="Phase" min="0" max="DIM_M"/>
-!  <range min="0" max="1-ep_star" />
-      EP_S_MAX(:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false" tfm="true">
-!  <description>
-!    Used in calculating the initial slope of segregation: see
-!    Gera et al. (2004) - recommended value 0.3. increasing this
-!    coefficient results in decrease in segregation of particles
-!    in binary mixtures.
-!  </description>
-      SEGREGATION_SLOPE_COEFFICIENT=0.D0
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>
-!    Value of turbulent length initialized. this may be overwritten
-!    in specific regions with the keyword IC_L_SCALE.
-!</description>
-!  <conflict keyword="K_EPSILON" value=".TRUE."/>
-      L_SCALE0 = ZERO
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>
-!    Maximum value of the turbulent viscosity of the fluid.
-!  </description>
-      MU_GMAX = UNDEFINED
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false" tfm="true">
-!  <description>Excluded volume in Boyle-Massoudi stress.</description>
-!  <valid value="0.0" note="b-m stress is turned off."/>
-      V_EX = ZERO
-!</keyword>
 
 !<keyword category="Physical Parameters" required="false">
 !  <description>Reference pressure.</description>
@@ -695,32 +440,44 @@
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Factor to normalize the gas continuity equation residual.</description>
+!  <description>
+!    Factor to normalize the gas continuity equation residual.
+!  </description>
       NORM_G = UNDEFINED
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Factor to normalize the solids continuity equation residual.</description>
+!  <description>
+!    Factor to normalize the solids continuity equation residual.
+!  </description>
       NORM_S = UNDEFINED
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Maximum residual at convergence (continuity+momentum).</description>
+!  <description>
+!    Maximum residual at convergence (continuity+momentum).
+!  </description>
       TOL_RESID = 1.0D-3
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Maximum residual at convergence (granular energy).</description>
+!  <description>
+!    Maximum residual at convergence (granular energy).
+!  </description>
       TOL_RESID_Th = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Maximum residual at convergence (energy).</description>
+!  <description>
+!    Maximum residual at convergence (energy).
+!  </description>
       TOL_RESID_T = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Maximum residual at convergence (species balance).</description>
+!  <description>
+!    Maximum residual at convergence (species balance).
+!  </description>
       TOL_RESID_X = 1.0D-4
 !</keyword>
 
@@ -763,6 +520,26 @@
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
+!  <description>LEQ Solver selection.</description>
+!  <arg index="1" id="Equation ID Number" min="1" max="9"/>
+!  <valid value="1" note="SOR"/>
+!  <valid value="2" note="BiCGSTAB"/>
+!  <valid value="3" note="GMRES"/>
+!  <valid value="5" note="CG"/>
+      LEQ_METHOD(:) = 2
+!</keyword>
+
+
+!<keyword category="Numerical Parameters" required="false">
+!  <description>Linear Equation tolerance.</description>
+!  <arg index="1" id="Equation ID Number" min="1" max="9"/>
+!  <dependent keyword="LEQ_METHOD" value="2"/>
+!  <dependent keyword="LEQ_METHOD" value="3"/>
+      LEQ_TOL(:) = 1.0D-4
+!</keyword>
+
+
+!<keyword category="Numerical Parameters" required="false">
 !  <description>Number of iterations in the linear equation solver.</description>
 !  <arg index="1" id="Equation ID Number" min="1" max="9"/>
       LEQ_IT(1) = 20
@@ -776,14 +553,14 @@
       LEQ_IT(9) = 15
 !</keyword>
 
+
 !<keyword category="Numerical Parameters" required="false">
-!  <description>LEQ Solver selection.</description>
+!  <description>Linear precondition used for LEQ solver sweeps.</description>
 !  <arg index="1" id="Equation ID Number" min="1" max="9"/>
-!  <valid value="1" note="SOR"/>
-!  <valid value="2" note="BiCGSTAB"/>
-!  <valid value="3" note="GMRES"/>
-!  <valid value="5" note="CG"/>
-      LEQ_METHOD(:) = 2
+!  <valid value="NONE" note="No preconditioner"/>
+!  <valid value="LINE" note="Line relaxation"/>
+!  <valid value="DIAG" note="Diagonal Scaling"/>
+      LEQ_PC(:) = 'LINE'
 !</keyword>
 
 
@@ -800,24 +577,6 @@
 
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Linear Equation tolerance.</description>
-!  <arg index="1" id="Equation ID Number" min="1" max="9"/>
-!  <dependent keyword="LEQ_METHOD" value="2"/>
-!  <dependent keyword="LEQ_METHOD" value="3"/>
-      LEQ_TOL(:) = 1.0D-4
-!</keyword>
-
-
-!<keyword category="Numerical Parameters" required="false">
-!  <description>Linear precondition used for LEQ solver sweeps.</description>
-!  <arg index="1" id="Equation ID Number" min="1" max="9"/>
-!  <valid value="NONE" note="No preconditioner"/>
-!  <valid value="LINE" note="Line relaxation"/>
-!  <valid value="DIAG" note="Diagonal Scaling"/>
-      LEQ_PC(:) = 'LINE'
-!</keyword>
-
-!<keyword category="Numerical Parameters" required="false">
 !  <description>Under relaxation factors.</description>
 !  <arg index="1" id="Equation ID Number" min="1" max="9"/>
       UR_FAC(1)  = 0.8D0             !pressure
@@ -829,17 +588,6 @@
       UR_FAC(7)  = 1.0D0             !X
       UR_FAC(8)  = 0.5D0             !Th
       UR_FAC(9)  = 0.8D0             !Scalar
-!</keyword>
-
-!<keyword category="Numerical Parameters" required="false">
-!  <description>
-!    Use deferred correction method for implementing higher order
-!    discretization.
-!  </description>
-!  <valid value=".FALSE." note="use down-wind factor method (default)."/>
-!  <valid value=".TRUE."
-!    note="use deferred correction method for implementing higher order discretization."/>
-      DEF_COR  =  .FALSE.
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
@@ -855,6 +603,17 @@
 !  <valid value="0" note="first-order upwinding."/>
       DISCRETIZE(:) = 0
 !</keyword>
+
+!<keyword category="Numerical Parameters" required="false">
+!  <description>
+!    Use deferred correction method for implementing higher order
+!    discretization.
+!  </description>
+!  <valid value=".FALSE." note="Use down-wind factor method (default)."/>
+!  <valid value=".TRUE."  note="use deferred correction method."/>
+      DEF_COR  =  .FALSE.
+!</keyword>
+
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
@@ -923,29 +682,39 @@
 
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Solve transpose of linear system. (BICGSTAB ONLY).</description>
+!  <description>
+!    Solve transpose of linear system. (BICGSTAB ONLY).
+!  </description>
 !  <dependent keyword="LEQ_METHOD" value="2"/>
       DO_TRANSPOSE = .FALSE.
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Frequency to check for convergence. (BICGSTAB ONLY)</description>
+!  <description>
+!    Frequency to check for convergence. (BICGSTAB ONLY)
+!  </description>
 !  <dependent keyword="LEQ_METHOD" value="2"/>
       icheck_bicgs = 1
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Sets optimal LEQ flags for parallel runs.</description>
+!  <description>
+!    Sets optimal LEQ flags for parallel runs.
+!  </description>
       OPT_PARALLEL = .FALSE.
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Use do-loop assignment over direct vector assignment.</description>
+!  <description>
+!    Use do-loop assignment over direct vector assignment.
+!  </description>
       USE_DOLOOP = .FALSE.
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Calculate dot-products more efficiently (Serial runs only.)</description>
+!  <description>
+!    Calculate dot-products more efficiently (Serial runs only.)
+!  </description>
       IS_SERIAL = .TRUE.
 !</keyword>
 
@@ -1182,13 +951,9 @@
 
 
 
-
 !#####################################################################!
 !                               Gas Phase                             !
 !#####################################################################!
-
-
-
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
@@ -1315,13 +1080,6 @@
       INERT_SPECIES(:DIM_M) = UNDEFINED_I
 !</keyword>
 
-!<keyword category="Solids Phase" required="false" tfm="true">
-!  <description>Specified constant granular viscosity. if this value is
-!    specified, then the kinetic theory calculation is turned off and
-!    p_s = 0 and lambda_s = -2/3 mu_s0.
-!  </description>
-      MU_S0 = UNDEFINED
-!</keyword>
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>Specified constant solids conductivity.</description>
@@ -1335,10 +1093,6 @@
       C_PS0(:DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Phase" required="false" tfm="true">
-!  <description>Specified constant solids diffusivity.</description>
-      DIF_S0 = UNDEFINED
-!</keyword>
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>Molecular weight of solids phase-m, species n.</description>
@@ -1372,6 +1126,281 @@
       SPECIES_ALIAS_s(:DIM_M,:DIM_N_s) = UNDEFINED_C
 !</keyword>
 
+!#####################################################################!
+!                          Solids Model - TFM                         !
+!#####################################################################!
+
+
+!<keyword category="Solids Model - TFM" required="false">
+!  <description>Solids phase stress model.</description>
+!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
+!  <valid value="AHMADI"
+!    note="Cao and Ahmadi (1995). Int. J. Multiphase Flow 21(6), 1203."/>
+!  <valid value="GD_99"
+!     note="Garzo and Dufty (1999). Phys. Rev. E 59(5), 5895."/>
+!  <valid value="GHD"
+!    note="Garzo, Hrenya and Dufty (2007). Phys. Rev. E 76(3), 31304"/>
+!  <valid value="IA_NONEP"
+!     note="Iddir & Arastoopour (2005). AIChE J. 51(6), 1620"/>
+!  <valid value="LUN_1984"
+!    note="Lun et al (1984). J. Fluid Mech., 140, 223."/>
+!  <valid value="SIMONIN"
+!    note="Simonin (1996). VKI Lecture Series, 1996-2"/>
+      KT_TYPE = "LUN_1984"
+!</keyword>
+
+! Retired keyword for specifying Ahmadi KT Theory.
+! Use: KT_TYPE = "AHMADI"
+      AHMADI = .FALSE.
+
+! Retired keyword for specifying Simonin KT Theory.
+! Use: KT_TYPE = "SIMONIN"
+      SIMONIN = .FALSE.
+
+!<keyword category="Solids Model - TFM" required="false">
+!  <description>Jenkins small frictional boundary condition.</description>
+!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
+!  <dependent keyword="PHI_W" value="DEFINED"/>
+!  <valid value=".FALSE." note=""/>
+!  <valid value=".TRUE."
+!    note="Use the Jenkins small frictional boundary condition."/>
+      JENKINS = .FALSE.
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false">
+!  <description>Solids stress model selection.</description>
+!  <valid value=".FALSE." note="Use the Schaeffer solids stress model."/>
+!  <valid value=".TRUE."  note="Use the Princeton solids stress model"/>
+!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
+!  <dependent keyword="PHI" value="DEFINED"/>
+!  <dependent keyword="PHI_W" value="DEFINED"/>
+      FRICTION = .FALSE.
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false">
+!  <description>
+!    For a term appearing in the frictional stress model
+!    invoked with friction = .TRUE.
+!  </description>
+!  <valid value="0" note="Use S:S in the frictional stress model."/>
+!  <valid value="1" note="Use an alternate form suggested by Savage."/>
+!  <valid value="2" note="An appropriate combination of above."/>
+!  <dependent keyword="friction" value=".TRUE."/>
+      SAVAGE = 1
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false">
+!  <description>Schaeffer frictional stress tensor formulation. </description>
+!  <dependent keyword="PHI" value="DEFINED"/>
+!  <valid value=".TRUE." note="Use the Schaeffer model"/>
+!  <valid value=".FALSE." note="Do not use the Schaeffer model."/>
+      SCHAEFFER = .TRUE.
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!  <description>
+!    Blend the Schaeffer stresses with that of algebraic kinetic theory
+!    around EP_STAR.
+!  </description>
+      BLENDING_STRESS = .FALSE.
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false" tfm="ture">
+!  <description>
+!    Hyperbolic tangent function for blending frictional stress models.
+!  </description>
+!  <dependent keyword="BLENDING_STRESS" value=".TRUE."/>
+!  <conflict keyword="SIGM_BLEND" value=".TRUE."/>
+      TANH_BLEND = .TRUE.
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!  <description>
+!    A scaled and truncated sigmoidal function for blending
+!    frictional stress  models.
+!  </description>
+!  <dependent keyword="BLENDING_STRESS" value=".TRUE."/>
+!  <conflict keyword="TANH_BLEND" value=".TRUE."/>
+      SIGM_BLEND = .FALSE.
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!  <description>
+!    Correlation to compute maximum packing for polydisperse systems.
+!  </description>
+!  <valid value=".TRUE."
+!    note="Use the Yu and Standish correlation."/>
+!  <valid value=".FALSE."
+!    note="Do not use the Yu and Standish correlation."/>
+      YU_STANDISH = .FALSE.
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!  <description>
+!    Use Fedors and Landel correlation to compute maximum
+!    packing for a binary (only) mixture of powders.
+!  </description>
+      FEDORS_LANDEL = .FALSE.
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false">
+!  <description>
+!    Radial distribution function at contact for polydisperse systems.
+!    Do not specify any RDF for monodisperse systems because Carnahan-
+!    Starling is the model only available.
+!
+!    Carnahan, N.F. and Starling K.E., (1969).
+!    The Journal of Chemical Physics, Vol. 51(2):635-636.
+!  </description>
+!
+!  <valid value="LEBOWITZ" note="Lebowitz, J.L. (1964)
+!   The Physical Review, A133, 895-899"/>
+!
+!  <valid value="MODIFIED_LEBOWITZ" note="
+!    Iddir, H. Y., Modeling of the mulitphase mixture of particles
+!    using the kinetic theory approach. Doctoral Dissertation,
+!    Illinois Institute of Technology, Chicago, Illinois, 2004,
+!    (chapter 2, equations 2-49 through 2-52.)"/>
+
+!  <valid value="MANSOORI" note="
+!   Mansoori, GA, Carnahan N.F., Starling, K.E. Leland, T.W. (1971).
+!    The Journal of Chemical Physics, Vol. 54:1523-1525."/>
+!
+!  <valid value="MODIFIED_MANSOORI" note="van Wachem, B.G.M., Schouten, J.C.,
+!    van den Bleek, C.M., Krishna, R. and Sinclair, J. L. (2001)
+!    AIChE Journal 47:1035–1051."/>
+      RDF_TYPE = 'LEBOWITZ'
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!  <description>
+!    Flag to include the added (or virtual) mass force. This force
+!    acts to increase the inertia of the dispersed phase, which
+!    tends to stabilize simulations of bubbly gas-liquid flows.
+!  </description>
+      Added_Mass = .FALSE.
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!  <description>
+!    The disperse phase number where the added mass applies.
+!  </description>
+      M_AM = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!  <description>
+!    Coefficient of restitution for particle-particle collisions.
+!  </description>
+      C_E = UNDEFINED
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false">
+!  <description>
+!    GHD Theory: Coefficient of restitution for particle-particle collisions.
+!  </description>
+!  <arg index="1" id="Phase" min="0" max="DIM_M"/>
+!  <arg index="2" id="Phase" min="0" max="DIM_M"/>
+      r_p(:DIM_M, :DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false">
+!  <description>Coefficient of restitution for particle-wall collisions.</description>
+      E_W = 1.D0
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!  <description>
+!    Specularity coefficient associated with particle-wall collisions.
+!  </description>
+      PHIP = 0.6D0
+!</keyword>
+
+
+!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!  <description>
+!    Specify the value of specularity coefficient when the normalized
+!     slip velocity goes to zero when BC_JJ_M is .TRUE.. This variable
+!     is calculated internally in the code. Do not modify unless an 
+!     accurate number is known.
+!  </description>
+!  <dependents>BC_JJ_M</dependents>
+      phip0 = undefined
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!  <description>
+!    Coefficient of friction between the particles of two solids phases.
+!  </description>
+      C_F = UNDEFINED
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!  <description>
+!     Angle of internal friction (in degrees). set this value
+!     to zero to turn off plastic regime stress calculations.
+!  </description>
+      PHI = UNDEFINED
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!  <description>
+!    Angle of internal friction (in degrees) at walls. Set this
+!    value to non-zero (phi_w = 11.31 means tan_phi_w = mu = 0.2)
+!    when using Jenkins or bc_jj_m boundary condition.
+!  </description>
+      PHI_W = UNDEFINED
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!  <description>
+!    Minimum solids fraction above which friction sets in.  (when
+!    friction = .TRUE.)</description>
+!  <dependents>friction</dependents>
+      EPS_F_MIN = 0.5D0
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!  <description>
+!    Maximum solids volume fraction at packing for polydisperse
+!    systems (more than one solids phase used). The value of
+!    EP_star may change during the computation if solids phases
+!    with different particle diameters are specified and
+!    Yu_Standish or Fedors_Landel correlations are used.
+!  </description>
+!  <arg index="1" id="Phase" min="0" max="DIM_M"/>
+!  <range min="0" max="1-ep_star" />
+      EP_S_MAX(:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!  <description>
+!    Used in calculating the initial slope of segregation: see
+!    Gera et al. (2004) - recommended value 0.3. increasing this
+!    coefficient results in decrease in segregation of particles
+!    in binary mixtures.
+!  </description>
+      SEGREGATION_SLOPE_COEFFICIENT=0.D0
+!</keyword>
+
+
+!<keyword category="Solids Model - TFM" required="false" tfm="true">
+!  <description>Excluded volume in Boyle-Massoudi stress.</description>
+!  <valid value="0.0" note="b-m stress is turned off."/>
+      V_EX = ZERO
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true">
+!  <description>Specified constant granular viscosity. if this value is
+!    specified, then the kinetic theory calculation is turned off and
+!    p_s = 0 and lambda_s = -2/3 mu_s0.
+!  </description>
+      MU_S0 = UNDEFINED
+!</keyword>
+!<keyword category="Solids Phase" required="false" tfm="true">
+!  <description>Specified constant solids diffusivity.</description>
+      DIF_S0 = UNDEFINED
+!</keyword>
 !<keyword category="Solids Phase" required="false" tfm="true">
 !  <description>Packed bed void fraction.</description>
       EP_STAR = UNDEFINED
@@ -1388,7 +1417,7 @@
 
 
 !#####################################################################!
-!                         Initial Conditions                          !
+!                category="Physical Paramters"                      !
 !#####################################################################!
 
 
@@ -2773,12 +2802,12 @@
       CALL_USR = .FALSE.
 !</keyword>
 
-!<keyword category="Physical Parameters" required="false">
+!<keyword category="UDF Control" required="false">
 !  <description>User defined constants.</description>
       C(:DIMENSION_C) = UNDEFINED
 !</keyword>
 
-!<keyword category="Physical Parameters" required="false">
+!<keyword category="UDF Control" required="false">
 !  <description>Name of user-defined constant. (20 character max)</description>
       C_NAME(:DIMENSION_C) = '....................'
 !</keyword>

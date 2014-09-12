@@ -138,7 +138,7 @@
 !</keyword>
 
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Discrete Element" required="false" dem="true">
 !  <description>Time stepping scheme (relevant to DEM model only).
 ! MPPIC is only limited to EULER scheme. </description>
 !  <valid value="EULER" note="First-Order Euler Scheme."/>
@@ -146,20 +146,20 @@
       DES_INTG_METHOD = 'EULER'
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Discrete Element" required="false" dem="true">
 !  <description>Switch to turn cohesion model (limited to DEM model only)
 ! on and off.</description>
 !  <conflict keyword="MPPIC" value=".TRUE."/>
       USE_COHESION = .FALSE.
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Discrete Element" required="false" dem="true">
 !  <description>Flag to turn on the use hamaker van der waals forces.</description>
 !  <dependent keyword="USE_COHESION" value=".TRUE."/>
       VAN_DER_WAALS = .FALSE.
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
+!<keyword category="Discrete Element" required="false" dem="true">
 !  <description>Flag to set the neighbor search algorithm
 ! Relevant to DEM model only.</description>
 !  <valid value="1" note="N-Square search algorithm (most expensive)"/>
@@ -191,168 +191,186 @@
       NEIGHBOR_SEARCH_RAD_RATIO = 1.0D0
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Effectively increase the radius of a particle
-!(multiple of the sum of particle radii) during the  building of
-! particle neighbor list. Relevant to DEM model only. </description>
+!<keyword category="Discrete Element" required="false" dem="true">
+!  <description>
+!    Effectively increase the radius of a particle (multiple of the sum
+!    of particle radii) during the  building of particle neighbor list.
+!  </description>
       FACTOR_RLM = 1.2
 !</keyword>
 
-!<keyword category="Geometry and Discretization" required="false">
-!  <description>Number of des grid cells in the I- direction.
-! If left undefined, then it is set by MFIX such that its size
-! equals three times the maximum particle diameter with a minimum of
-! 1 cell.   </description>
+!<keyword category="Geometry and Discretization" required="false"
+!  dem="true" pic="true">
+!  <description>
+!    Number of des grid cells in the I-direction. If left undefined,
+!    then it is set by MFIX such that its size equals three times the
+!    maximum particle diameter with a minimum of 1 cell.
+!  </description>
       DESGRIDSEARCH_IMAX = UNDEFINED_I
 !</keyword>
 
-!<keyword category="Geometry and Discretization" required="false">
-!  <description>Number of des grid cells in the J- direction.
-! If left undefined, then it is set by MFIX such that its size
-! equals three times the maximum particle diameter with a minimum of
-! 1 cell.   </description>
+!<keyword category="Geometry and Discretization" required="false"
+!  dem="true" pic="true">
+!  <description>
+!    Number of des grid cells in the J-direction. If left undefined,
+!    then it is set by MFIX such that its size equals three times 
+!    the maximum particle diameter with a minimum of 1 cell.
+!  </description>
       DESGRIDSEARCH_JMAX = UNDEFINED_I
 !</keyword>
 
 
-!<keyword category="Geometry and Discretization" required="false">
-!  <description>Number of des grid cells in the K- direction.
-! If left undefined, then it is set by MFIX such that its size
-! equals three times the maximum particle diameter with a minimum of
-! 1 cell.   </description>
+!<keyword category="Geometry and Discretization" required="false"
+!  dem="true" pic="true">
+!  <description>
+!    Number of des grid cells in the K-direction. If left undefined,
+!    then it is set by MFIX such that its size equals three times
+!    the maximum particle diameter with a minimum of 1 cell.
+!  </description>
       DESGRIDSEARCH_KMAX = UNDEFINED_I
 !</keyword>
 
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Collision model for the soft-sphere approach used in
-! DEM model. All models require specifying the following parameters:
-! des_en_input, des_en_wall_input, mew, and mew_w. </description>
-!  <valid value="LSD" note="The linear spring-dashpot model. Requires
-! additional initialization for kn, kn_w, kt_fac, kt w_fac, des_etat_fac,
-! & des_etat_w_fac. "/>
-!  <valid value="HERTZIAN" note="The Hertzian model. Requires
-! additional initialization for  des_et_input, des_et_wall_input, e_young,
-! ew_young, v_poisson, & vw_poisson. "/>
+!<keyword category="Discrete Element" required="false" dem="true">
+!  <description>
+!    Collision model for the soft-sphere approach used in DEM model.
+!    All models require specifying the following parameters: DES_EN_INPUT,
+!    DES_EN_WALL_INPUT, MEW, and MEW_W.
+!  </description>
+!  <valid value="LSD" note="The linear spring-dashpot model.
+!    Requires: KN, KN_W, KT_FAC, KT_W_FAC, DES_ETAT_FAC, DES_ETAT_W_FAC."/>
+!  <valid value="HERTZIAN" note="The Hertzian model.
+!    Requires: DES_ET_INPUT, DES_ET_WALL_INPUT, E_YOUNG, EW_YOUNG
+!    V_POISSON, VW_POISSON."/>
       DES_COLL_MODEL = 'LSD'
 !</keyword>
 
-! particle properties
-!<keyword category="Discrete Element" required="false">
-!  <description>Normal spring constant for inter-particle collisions
-!  needed when using the default (linear spring-dashpot)
-! collision model.</description>
+
+!<keyword category="Discrete Element" required="false" dem="true">
+!  <description>
+!    Normal spring constant for inter-particle collisions needed when 
+!    using the linear spring-dashpot collision model.
+!  </description>
       KN = UNDEFINED
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Ratio of the tangential spring constant to
-! normal spring constant for inter-particle collisions.
-! Use it to specify the tangential spring constant for
-! particle-particle collisions as kt_fac*kn. Required
-! when using the default (linear spring-dashpot) collision
-! model.</description>
+
+!<keyword category="Discrete Element" required="false" dem="true">
+!  <description>
+!    Ratio of the tangential spring constant to normal spring constant
+!    for inter-particle collisions. Use it to specify the tangential
+!    spring constant for particle-particle collisions as kt_fac*kn.
+!    Required when using the linear spring-dashpot collision model.
+!  </description>
 !  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
 !  <range min="0.0" max="1.0" />
       KT_FAC = 2.d0/7.d0
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-!  <description>Normal spring constant for particle-wall
-! collisions. Needed when using the default (linear spring-dashpot)
-! collision model.</description>
+
+!<keyword category="Discrete Element" required="false" dem=.true.>
+!  <description>
+!    Normal spring constant for particle-wall collisions. Needed when
+!    using the linear spring-dashpot collision model.
+!  </description>
       KN_W = UNDEFINED
 !</keyword>
 
 
-!<keyword category="Discrete Element" required="false">
-! <description>Ratio of the tangential spring constant
-! to normal spring constant for particle-wall collisions.
-! Use it to specify the tangential spring constant for
-! particle-wall collisions as kt_w_fac*kn_w.
-! Needed when using the default (linear spring-dashpot)
-! collision model.</description>!
-! <dependent keyword="DES_COLL_MODEL" value="LSD"/>
+!<keyword category="Discrete Element" required="false" dem="true">
+!  <description>
+!    Ratio of the tangential spring constant to normal spring constant 
+!    for particle-wall collisions. Use it to specify the tangential 
+!    spring constant for particle-wall collisions as kt_w_fac*kn_w.
+!    Needed when using the linear spring-dashpot collision model.
+!  </description>!
+!  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
 !  <range min="0.0" max="1.0" />
       KT_W_FAC = 2.d0/7.d0
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-! <description>Inter-particle Coulomb friction coefficient
-! required for DEM model.</description>
+!<keyword category="Discrete Element" required="false" dem="true"
+!  <description>
+!    Inter-particle Coulomb friction coefficient.
+!  </description>
 ! <range min="0.0" max="1.0" />
       MEW = UNDEFINED
 !</keyword>
 
 !<keyword category="Discrete Element" required="false">
-! <description>Particle-wall friction coefficient required for
-! DEM model.</description>
+!  <description>
+!    Particle-wall Coulomb friction coefficient.
+!  </description>
 ! <range min="0.0" max="1.0" />
       MEW_W = UNDEFINED
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-! <description>The normal restitution coefficient for
-! interparticle collisions that is used to determine the
-! inter-particle normal damping factor. Values are stored as a one
-! dimensional array (see MFIX-DEM doc). So
-! if MAX=3, then 6 values are needed, which
-! are defined as follows: en11 en12 en13 en22
-! en23 en33.</description>
-! <range min="0.0" max="1.0" />
+
+!<keyword category="Discrete Element" required="false" dem="true">
+!  <description>
+!    The normal restitution coefficient for inter-particle collisions
+!    used to determine the inter-particle normal damping factor.
+!
+!    Values should be defined for a single dimensional array. For
+!    example, a simulation with three solids phases (MMAX=3) needs
+!    six values: en11, en12, en13; en22 en 23; en33.
+!  </description>
+!  <range min="0.0" max="1.0" />
       DES_EN_INPUT(:) = UNDEFINED
 !</keyword>
 
 
-!<keyword category="Discrete Element" required="false">
-! <description>Normal restitution coefficient for particle
-! wall collisions that is used to determine the
-! particle-wall normal damping factor (see
-! cfassign.f for details). Values are stored as
-! a one dimensional array. So, if MMAX=3,
-! then 3 values are needed, which are
-! defined as follows: enw1 enw2 enw3.
-! </description>
-! <range min="0.0" max="1.0" />
+!<keyword category="Discrete Element" required="false" dem="true">
+!  <description>
+!    The normal restitution coefficient for particle-wall collisions 
+!    used to determine the particle-wall normal damping factor.
+! 
+!    Values should be defined in a single dimensional array. For
+!    example, a simulation with three solids phases (MMAX=3) needs
+!    thre values: enw1, enw2, enw3.
+!  </description>
+!  <range min="0.0" max="1.0" />
       DES_EN_WALL_INPUT(:) = UNDEFINED
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-! <description>Tangential restitution coefficient for
-! interparticle collisions. Values are stored as
-! a one dimensional array. Only needed
-! when using the Hertzian collision model.
+
+!<keyword category="Discrete Element" required="false" dem="true">
+!  <description>
+!    Tangential restitution coefficient for interparticle collisions.
+!    Values are defined in a one dimensional array. This is required
+!    input when using the Hertzian collision model.
 ! </description>
 ! <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
 ! <range min="0.0" max="1.0" />
       DES_ET_INPUT(:) = UNDEFINED
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-! <description>Tangential restitution coefficient for particle
-! wall collisions. Values are stored as a one
-! dimensional array. Only needed when using
-! the Hertzian collision model.
-! </description>
+
+!<keyword category="Discrete Element" required="false" dem="true">
+!  <description>
+!    Tangential restitution coefficient for particle wall collisions.
+!    Values are defined in a one dimensional array. The is required
+!    input when using the Hertzian collision model.
+!  </description>
 ! <range min="0.0" max="1.0" />
 ! <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
       DES_ET_WALL_INPUT(:) = UNDEFINED
 !</keyword>
 
-!<keyword category="Discrete Element" required="false">
-! <description>Ratio of the tangential damping factor to the
-! normal damping factor for inter-particle collisions.
-! Required for the linear spring-dashpot model for soft-spring collision
-! modelling under DEM.
-! For the Hertzian model, the tangential damping coefficients
-! have to be explicity specified and this variable is not
-! required. </description>
-! <dependent keyword="DES_COLL_MODEL" value="LSD"/>
-! <range min="0.0" max="1.0" />
-! <valid value="UNDEFINED" note="For LSD model, if left undefined, MFIX
+
+!<keyword category="Discrete Element" required="false" dem="true">
+!  <description>
+!    Ratio of the tangential damping factor to the normal damping factor
+!    for inter-particle collisions.  Required for the linear spring-
+!    dashpot model collision model 
+!  </description>
+!  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
+!  <range min="0.0" max="1.0" />
+!  <valid value="UNDEFINED" note="For LSD model, if left undefined, MFIX
 ! will will revert to default value of 0.5" />
       DES_ETAT_FAC = UNDEFINED
 !</keyword>
+
 
 !<keyword category="Discrete Element" required="false">
 ! <description>Ratio of the tangential damping factor to the
