@@ -63,6 +63,9 @@
       logical :: doingPost
       integer :: n_spx_res
 
+! Place holder for deprecated keywords:
+      LOGICAL :: CALL_ISAT
+
 ! declare global scratch arrays:
 ! declare integer Global SCRatch array
       INTEGER, ALLOCATABLE, DIMENSION(:) :: IGTEMP1, iGTEMP2
@@ -1055,11 +1058,9 @@
             NEXT_RECA = NEXT_RECA + 1 
          ENDIF
          call bcast(STIFF_CHEMISTRY,PE_IO)
-         call bcast(CALL_ISAT,PE_IO)
+         !call bcast(CALL_ISAT,PE_IO)
       ELSE
          STIFF_CHEMISTRY = .FALSE.
-         CALL_DI = .FALSE.
-         CALL_ISAT = .FALSE.
       ENDIF 
 
 ! ------------------------------------------------------------------------

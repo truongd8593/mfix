@@ -1,18 +1,11 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: CHECK_DATA_CHEM                                        C
-!  Purpose: check the chemical rxns namelist variables for             C
-!           CALL_DI or CALL_ISAT                                       C
-!                                                                      C
-!  Author: NAN XIE                              Date: 02-Aug-04        C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!  Variables referenced:  CALL_DI , CALL_ISAT , ISATdt                 C
-!  Variables modified: None                                            C
-!                                                                      C
-!  Local variables: None                                               C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: CHECK_DATA_CHEM                                        !
+!  Author: J.Musser                                   Date: 02-Aug-13  !
+!                                                                      !
+!  Purpose: Check the chemical rxns namelist variables.                !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_ODEPACK_STIFF_CHEM
 
 ! Global Variables:
@@ -40,15 +33,6 @@
 ! Run time logicals for identifying cells owned by myPE
       use stiff_chem, only: notOwner
 
-! Legacy Global Variables:
-!---------------------------------------------------------------------//
-! Run time logical for using ISAT (legacy)
-      use stiff_chem, only: CALL_ISAT
-! Run time logical for using direct integration (legacy)
-      use stiff_chem, only: CALL_DI
-! Time step for using ISAT (legacy)
-      use stiff_chem, only: ISATDT
-
 ! Full access to the following modules:
 !---------------------------------------------------------------------//
       use compar
@@ -67,24 +51,6 @@
 
 
       CALL INIT_ERR_MSG('CHECK_ODEPACK_STIFF_CHEM')
-
-! Error - ISAT is no longer available.
-      IF(CALL_ISAT) THEN
-         WRITE(ERR_MSG,1001)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
-
-      IF(CALL_DI) THEN
-         WRITE(ERR_MSG,1002) 'CALL_DI'
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
-
-! Message - ISATDT is no longer used.
-      IF(ISATdt /= UNDEFINED) THEN
-         WRITE(ERR_MSG,1002) 'ISATdt'
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
-
 
 ! Verify that there is sufficient run complexity to use the stiff solver
       IF(STIFF_CHEMISTRY) THEN
@@ -132,16 +98,6 @@
 
       CALL FINL_ERR_MSG
 
-
- 1001 FORMAT('Error 1001: ISAT functionality has been disabled.',/     &
-         'Chemcial reactions may be included using the urs_rates.f ',  &
-         'UDF and if',/'desired the stiff chemistry solve may be ',    &
-         'invoked setting the keyword',/'STIFF_CHEMISTRY. Check the ', &
-         'user documentation and correct the',/' mfix.dat file.')
-
- 1002 FORMAT('Error 1002: ',A,' is a legacy variable that is no ',     &
-         'longer available.',/'Check the user documentation and ',     &
-         'correct the mfix.dat file.')
 
 
  1004 FORMAT('Error 1004: ',                                           &

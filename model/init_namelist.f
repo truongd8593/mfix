@@ -7,8 +7,8 @@
 !                                                                      !
 !  Keyword Documentation Format:                                       !
 !                                                                      !
-!<keyword category="category name" required="true"/.FALSE.             !
-!                                    legacy=.TRUE./.FALSE.>            !
+!<keyword category="category name" required="true"/FALSE               !
+!                                    legacy=TRUE/FALSE>                !
 !  <description></description>                                         !
 !  <arg index="" id="" max="" min=""/>                                 !
 !  <dependent keyword="" value="DEFINED"/>                             !
@@ -152,33 +152,9 @@
 
 !<keyword category="Run Control" required="false">
 !  <description>
-!    Reduce the time step if the residuals stop decreasing.
-!  </description>
-!  <valid value=".FALSE." note="Continue iterating if residuals stall."/>
-!  <valid value=".TRUE."  note="Reduce time step if residuals stall."/>
-      DETECT_STALL = .TRUE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
 !    Flag to restart the code when DT < DT_MIN.
 !  </description>
       AUTO_RESTART = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    Shared gas-pressure formulation. See Syamlal, M. and Pannala, S.
-!    “Multiphase continuum formulation for gas-solids reacting flows,”
-!    chapter in Computational Gas-Solids Flows and Reacting Systems:
-!    Theory, Methods and Practice, S. Pannala, M. Syamlal and T.J.
-!    O’Brien (editors), IGI Global, Hershey, PA, 2011.
-!  </description>
-!  <valid value=".FALSE." note="Use Model A"/>
-!  <valid value=".TRUE."  note="Use Model B. Bouillard, J.X.,
-!    Lyczkowski, R.W., Folga, S., Gidaspow, D., Berry, G.F. (1989).
-!    Canadian Journal of Chemical Engineering 67:218–229."/>
-      MODEL_B = .FALSE.
 !</keyword>
 
 !<keyword category="Run Control" required="false">
@@ -229,7 +205,7 @@
       SPECIES_EQ(:DIM_M) = .TRUE.
 !</keyword>
 
-!<keyword category="Run Control" required="false">
+!<keyword category="Run Control" required="false" tfm="true">
 !  <description>Granular energy formulation selection.</description>
 !  <valid value=".FALSE."
 !    note="Use algebraic granular energy equation formulation."/>
@@ -239,130 +215,18 @@
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>Solids phase stress model.</description>
-!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
-!  <valid value="AHMADI"
-!    note="Cao and Ahmadi (1995). Int. J. Multiphase Flow 21(6), 1203."/>
-!  <valid value="GD_99"
-!     note="Garzo and Dufty (1999). Phys. Rev. E 59(5), 5895."/>
-!  <valid value="GHD"
-!    note="Garzo, Hrenya and Dufty (2007). Phys. Rev. E 76(3), 31304"/>
-!  <valid value="IA_NONEP"
-!     note="Iddir & Arastoopour (2005). AIChE J. 51(6), 1620"/>
-!  <valid value="LUN_1984"
-!    note="Lun et al (1984). J. Fluid Mech., 140, 223."/>
-!  <valid value="SIMONIN"
-!    note="Simonin (1996). VKI Lecture Series, 1996-2"/>
-      KT_TYPE = "LUN_1984"
-!</keyword>
-
-! Retired keyword for specifying Ahmadi KT Theory.
-! Use: KT_TYPE = "AHMADI"
-      AHMADI = .FALSE.
-
-! Retired keyword for specifying Simonin KT Theory.
-! Use: KT_TYPE = "SIMONIN"
-      SIMONIN = .FALSE.
-
-!<keyword category="Run Control" required="false">
-!  <description>Jenkins small frictional boundary condition.</description>
-!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
-!  <dependent keyword="PHI_W" value="DEFINED"/>
-!  <valid value=".FALSE." note=""/>
-!  <valid value=".TRUE."
-!    note="Use the Jenkins small frictional boundary condition."/>
-      JENKINS = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>Solids stress model selection.</description>
-!  <valid value=".FALSE." note="Use the Schaeffer solids stress model."/>
-!  <valid value=".TRUE."  note="Use the Princeton solids stress model"/>
-!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
-!  <dependent keyword="PHI" value="DEFINED"/>
-!  <dependent keyword="PHI_W" value="DEFINED"/>
-      FRICTION = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
 !  <description>
-!    For a term appearing in the frictional stress model
-!    invoked with friction = .TRUE.
+!    Shared gas-pressure formulation. See Syamlal, M. and Pannala, S.
+!    "Multiphase continuum formulation for gas-solids reacting flows,"
+!    chapter in Computational Gas-Solids Flows and Reacting Systems:
+!    Theory, Methods and Practice, S. Pannala, M. Syamlal and T.J.
+!    O'Brien (editors), IGI Global, Hershey, PA, 2011.
 !  </description>
-!  <valid value="0" note="Use S:S in the frictional stress model."/>
-!  <valid value="1" note="Use an alternate form suggested by Savage."/>
-!  <valid value="2" note="An appropriate combination of above."/>
-!  <dependent keyword="friction" value=".TRUE."/>
-      SAVAGE = 1
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>Schaeffer frictional stress tensor formulation. </description>
-!  <dependent keyword="PHI" value="DEFINED"/>
-!  <valid value=".TRUE." note="Use the Schaeffer model"/>
-!  <valid value=".FALSE." note="Do not use the Schaeffer model."/>
-      SCHAEFFER = .TRUE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    Blend the Schaeffer stresses with that of kinetic theory around Ep*.
-!  </description>
-      BLENDING_STRESS = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    Hyperbolic tangent function for blending frictional stress models.
-!  </description>
-!  <dependent keyword="BLENDING_STRESS" value=".TRUE."/>
-!  <conflict keyword="SIGM_BLEND" value=".TRUE."/>
-      TANH_BLEND = .TRUE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    A scaled and truncated sigmoidal function for blending
-!    frictional stress  models.
-!  </description>
-!  <dependent keyword="BLENDING_STRESS" value=".TRUE."/>
-!  <conflict keyword="TANH_BLEND" value=".TRUE."/>
-      SIGM_BLEND = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    Correlation to compute maximum packing for polydisperse systems.
-!  </description>
-!  <valid value=".TRUE."
-!    note="Use the Yu and Standish correlation."/>
-!  <valid value=".FALSE."
-!    note="Do not use the Yu and Standish correlation."/>
-      YU_STANDISH = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    Use Fedors and Landel correlation to compute maximum
-!    packing for a binary (only) mixture of powders.
-!  </description>
-      FEDORS_LANDEL = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>Call user-defined subroutines.</description>
-!  <valid value=".TRUE." note="call user-defined subroutines."/>
-!  <valid value=".FALSE." note="do not call user-defined subroutines."/>
-      CALL_USR = .FALSE.
-!</keyword>
-
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    The number of user defined chemical reactions stored
-!    in the *.SPA file.
-!  </description>
-      nRR = 0
+!  <valid value=".FALSE." note="Use Model A"/>
+!  <valid value=".TRUE."  note="Use Model B. Bouillard, J.X.,
+!    Lyczkowski, R.W., Folga, S., Gidaspow, D., Berry, G.F. (1989).
+!    Canadian Journal of Chemical Engineering 67:218-229."/>
+      MODEL_B = .FALSE.
 !</keyword>
 
 !<keyword category="Run Control" required="false">
@@ -374,6 +238,21 @@
       K_Epsilon = .FALSE.
 !</keyword>
 
+!<keyword category="Run Control" required="false">
+!  <description>
+!    Value of turbulent length initialized. this may be overwritten
+!    in specific regions with the keyword IC_L_SCALE.
+!</description>
+!  <conflict keyword="K_EPSILON" value=".TRUE."/>
+      L_SCALE0 = ZERO
+!</keyword>
+
+!<keyword category="Run Control" required="false">
+!  <description>
+!    Maximum value of the turbulent viscosity of the fluid.
+!  </description>
+      MU_GMAX = UNDEFINED
+!</keyword>
 
 !<keyword category="Run Control" required="false">
 !  <description>
@@ -388,7 +267,7 @@
 !     * Erratum (2007), AIChE Journal, Volume 53:3020
 !  </description>
 !
-!  <valid value="SYAM_OBRIEN" note="Syamlal M, O'Brien TJ (1988).
+!  <valid value="SYAM_OBRIEN" note="Syamlal M, OBrien TJ (1988).
 !   International Journal of Multiphase Flow 14:473-481.
 !   Two additional parameters may be specified: DRAG_C1, DRAG_D1"/>
 !
@@ -439,7 +318,7 @@
       drag_d1 = 2.65d0
 !</keyword>
 
-!<keyword category="Physical Parameters" required="false">
+!<keyword category="Run Control" required="false">
 !  <description>
 !    If use_def_lam_hys is set to .FALSE. the user is able to specify a
 !    value for the lubrication cutoff distance (lam_hys).  in practice
@@ -454,40 +333,6 @@
 
 !<keyword category="Run Control" required="false">
 !  <description>
-!    Radial distribution function at contact for polydisperse systems.
-!    Do not specify any RDF for monodisperse systems because Carnahan-
-!    Starling is the model only available.
-!
-!    Carnahan, N.F. and Starling K.E., (1969).
-!    The Journal of Chemical Physics, Vol. 51(2):635-636.
-!  </description>
-!
-!  <valid value="LEBOWITZ" note="Lebowitz, J.L. (1964)
-!   The Physical Review, A133, 895-899"/>
-!
-!  <valid value="MODIFIED_LEBOWITZ" note=""/>
-!
-!  <valid value="MANSOORI" note="
-!   Mansoori, GA, Carnahan N.F., Starling, K.E. Leland, T.W. (1971).
-!    The Journal of Chemical Physics, Vol. 54:1523-1525."/>
-!
-!  <valid value="MODIFIED_MANSOORI" note="van Wachem, B.G.M., Schouten, J.C.,
-!    van den Bleek, C.M., Krishna, R. and Sinclair, J. L. (2001)
-!    AIChE Journal 47:1035–1051."/>
-      RDF_TYPE = 'LEBOWITZ'
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    When activated the added (or virtual) mass force effectively
-!    acts to increase the inertia of the dispersed phase, which
-!    tends to stabilize simulations of bubbly gas-liquid flows.
-!  </description>
-      Added_Mass = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
 !    Subgrid models.
 !  </description>
 !
@@ -497,7 +342,7 @@
 !
 !  <valid value="Milioli" note="
 !   Milioli, C.C., Milioli, F. E., Holloway, W., Agrawal, K. and
-!   Sundaresan, S. (2013). AIChE Journal, 59:3265–3275."/>
+!   Sundaresan, S. (2013). AIChE Journal, 59:3265-3275."/>
 !
       SUBGRID_TYPE = UNDEFINED_C
 !</keyword>
@@ -506,31 +351,28 @@
 !  <description>
 !    Ratio of filter size to computational cell size.
 !  </description>
-      filter_size_ratio = 2.0D0
+      FILTER_SIZE_RATIO = 2.0D0
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>Flag for subgrid wall effects.</description>
-!  <valid value=".FALSE." note="Do not include wall effects."/>
-!  <valid value=".TRUE." note="Include subgrid wall effects."/>
+!  <description>Flag for subgrid wall correction.</description>
+!  <valid value=".FALSE." note="Do not include wall correction."/>
+!  <valid value=".TRUE." note="Include subgrid wall correction."/>
       SUBGRID_Wall = .FALSE.
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>Provide detailed logging of negative density errors.</description>
-!  <valid value=".FALSE." note="Do not log negative density errors."/>
-!  <valid value=".TRUE." note="Log negative density errors."/>
-      REPORT_NEG_DENSITY = .FALSE.
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>Number of user-defined scalar transport equations to solve.</description>
+!  <description> The number of user-defined scalar transport equations
+!    to solve.
+!  </description>
 !  <range min="0" max="DIM_SCALAR" />
       NScalar = 0
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>The phase convecting the indexed scalar transport equation.</description>
+!  <description>
+!    The phase convecting the indexed scalar transport equation.
+!  </description>
 !  <arg index="1" id="Scalar Equation" min="0" max="DIM_SCALAR"/>
 !  <range min="0" max="DIM_M" />
       Phase4Scalar(:DIM_SCALAR) = UNDEFINED_I
@@ -542,138 +384,6 @@
 !                           Physical Parameters                       !
 !#####################################################################!
 
-!<keyword category="Physical Parameters" required="false">
-!  <description>User defined constants.</description>
-      C(:DIMENSION_C) = UNDEFINED
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>Name of user-defined constant. (20 character max)</description>
-      C_NAME(:DIMENSION_C) = '....................'
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>Coefficient of restitution for particle-particle collisions.</description>
-      C_E = UNDEFINED
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>
-!    GHD Theory: Coefficient of restitution for particle-particle collisions.
-!  </description>
-!  <arg index="1" id="Phase" min="0" max="DIM_M"/>
-!  <arg index="2" id="Phase" min="0" max="DIM_M"/>
-      r_p(:DIM_M, :DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>Coefficient of restitution for particle-wall collisions.</description>
-      E_W = 1.D0
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>Specularity coefficient associated with particle-wall collisions.</description>
-      PHIP = 0.6D0
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>
-!    Output the variable specularity coefficient when bc_jj_m is
-!    .TRUE.. The specularity coefficient will be stored in reactionrates
-!    array for post-processing by post-mfix. user needs to set nrr to 1
-!    for this purpose. be careful with this setting when reacting flow
-!    is simulated.
-!  </description>
-      PHIP_OUT_JJ=.FALSE.
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>
-!    Specify the value of specularity coefficient when the
-!    normalized slip velocity goes to zero when bc_jj_m is
-!    .TRUE.. this variable is calculated internally in the
-!    code. do not modify unless an accurate number is known.
-!  </description>
-!  <dependents>bc_jj_m</dependents>
-      phip0 = undefined
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>
-!    Coefficient of friction between the particles of two solids phases.
-!  </description>
-      C_F = UNDEFINED
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>
-!     Angle of internal friction (in degrees). set this value
-!     to zero to turn off plastic regime stress calculations.
-!  </description>
-      PHI = UNDEFINED
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>
-!    Angle of internal friction (in degrees) at walls. Set this
-!    value to non-zero (phi_w = 11.31 means tan_phi_w = mu = 0.2)
-!    when using Jenkins or bc_jj_m boundary condition.
-!  </description>
-      PHI_W = UNDEFINED
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>
-!    Minimum solids fraction above which friction sets in.  (when
-!    friction = .TRUE.)</description>
-!  <dependents>friction</dependents>
-      EPS_F_MIN = 0.5D0
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>
-!    Maximum solids volume fraction at packing for polydisperse
-!    systems (more than one solids phase used). The value of
-!    EP_star may change during the computation if solids phases
-!    with different particle diameters are specified and
-!    Yu_Standish or Fedors_Landel correlations are used.
-!  </description>
-!  <arg index="1" id="Phase" min="0" max="DIM_M"/>
-!  <range min="0" max="1-ep_star" />
-      EP_S_MAX(:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>
-!    Used in calculating the initial slope of segregation: see
-!    Gera et al. (2004) - recommended value 0.3. increasing this
-!    coefficient results in decrease in segregation of particles
-!    in binary mixtures.
-!  </description>
-      SEGREGATION_SLOPE_COEFFICIENT=0.D0
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>
-!    Value of turbulent length initialized. this may be overwritten
-!    in specific regions with the keyword ic_l_scale.
-!</description>
-!  <conflict keyword="K_EPSILON" value=".TRUE."/>
-      L_SCALE0 = ZERO
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>
-!    Maximum value of the turbulent viscosity of the fluid.
-!  </description>
-      MU_GMAX = UNDEFINED
-!</keyword>
-
-!<keyword category="Physical Parameters" required="false">
-!  <description>Excluded volume in Boyle-Massoudi stress.</description>
-!  <valid value="0.0" note="b-m stress is turned off."/>
-      V_EX = ZERO
-!</keyword>
 
 !<keyword category="Physical Parameters" required="false">
 !  <description>Reference pressure.</description>
@@ -715,11 +425,6 @@
 !</keyword>
 
 
-!<keyword category="Physical Parameters" required="false">
-!  <description>Disperse phase number where the added mass applies.</description>
-      M_AM = UNDEFINED_I
-!</keyword>
-
 
 
 
@@ -735,32 +440,44 @@
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Factor to normalize the gas continuity equation residual.</description>
+!  <description>
+!    Factor to normalize the gas continuity equation residual.
+!  </description>
       NORM_G = UNDEFINED
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Factor to normalize the solids continuity equation residual.</description>
+!  <description>
+!    Factor to normalize the solids continuity equation residual.
+!  </description>
       NORM_S = UNDEFINED
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Maximum residual at convergence (continuity+momentum).</description>
+!  <description>
+!    Maximum residual at convergence (continuity+momentum).
+!  </description>
       TOL_RESID = 1.0D-3
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Maximum residual at convergence (granular energy).</description>
+!  <description>
+!    Maximum residual at convergence (granular energy).
+!  </description>
       TOL_RESID_Th = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Maximum residual at convergence (energy).</description>
+!  <description>
+!    Maximum residual at convergence (energy).
+!  </description>
       TOL_RESID_T = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Maximum residual at convergence (species balance).</description>
+!  <description>
+!    Maximum residual at convergence (species balance).
+!  </description>
       TOL_RESID_X = 1.0D-4
 !</keyword>
 
@@ -785,13 +502,33 @@
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    The code declares divergence if the velocity anywhere in the domain
-!    exceeds a maximum value.  this maximum value is automatically
-!    determined from the boundary values. the user may scale the maximum
-!    value by adjusting this scale factor.
+!    Reduce the time step if the residuals stop decreasing.
 !  </description>
-      MAX_INLET_VEL_FAC = ONE
+!  <valid value=".FALSE." note="Continue iterating if residuals stall."/>
+!  <valid value=".TRUE."  note="Reduce time step if residuals stall."/>
+      DETECT_STALL = .TRUE.
 !</keyword>
+
+
+!<keyword category="Numerical Parameters" required="false">
+!  <description>LEQ Solver selection.</description>
+!  <arg index="1" id="Equation ID Number" min="1" max="9"/>
+!  <valid value="1" note="SOR"/>
+!  <valid value="2" note="BiCGSTAB"/>
+!  <valid value="3" note="GMRES"/>
+!  <valid value="5" note="CG"/>
+      LEQ_METHOD(:) = 2
+!</keyword>
+
+
+!<keyword category="Numerical Parameters" required="false">
+!  <description>Linear Equation tolerance.</description>
+!  <arg index="1" id="Equation ID Number" min="1" max="9"/>
+!  <dependent keyword="LEQ_METHOD" value="2"/>
+!  <dependent keyword="LEQ_METHOD" value="3"/>
+      LEQ_TOL(:) = 1.0D-4
+!</keyword>
+
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>Number of iterations in the linear equation solver.</description>
@@ -807,14 +544,14 @@
       LEQ_IT(9) = 15
 !</keyword>
 
+
 !<keyword category="Numerical Parameters" required="false">
-!  <description>LEQ Solver selection.</description>
+!  <description>Linear precondition used for LEQ solver sweeps.</description>
 !  <arg index="1" id="Equation ID Number" min="1" max="9"/>
-!  <valid value="1" note="SOR"/>
-!  <valid value="2" note="BiCGSTAB"/>
-!  <valid value="3" note="GMRES"/>
-!  <valid value="5" note="CG"/>
-      LEQ_METHOD(:) = 2
+!  <valid value="NONE" note="No preconditioner"/>
+!  <valid value="LINE" note="Line relaxation"/>
+!  <valid value="DIAG" note="Diagonal Scaling"/>
+      LEQ_PC(:) = 'LINE'
 !</keyword>
 
 
@@ -831,24 +568,6 @@
 
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Linear Equation tolerance.</description>
-!  <arg index="1" id="Equation ID Number" min="1" max="9"/>
-!  <dependent keyword="LEQ_METHOD" value="2"/>
-!  <dependent keyword="LEQ_METHOD" value="3"/>
-      LEQ_TOL(:) = 1.0D-4
-!</keyword>
-
-
-!<keyword category="Numerical Parameters" required="false">
-!  <description>Linear precondition used for LEQ solver sweeps.</description>
-!  <arg index="1" id="Equation ID Number" min="1" max="9"/>
-!  <valid value="NONE" note="No preconditioner"/>
-!  <valid value="LINE" note="Line relaxation"/>
-!  <valid value="DIAG" note="Diagonal Scaling"/>
-      LEQ_PC(:) = 'LINE'
-!</keyword>
-
-!<keyword category="Numerical Parameters" required="false">
 !  <description>Under relaxation factors.</description>
 !  <arg index="1" id="Equation ID Number" min="1" max="9"/>
       UR_FAC(1)  = 0.8D0             !pressure
@@ -860,17 +579,6 @@
       UR_FAC(7)  = 1.0D0             !X
       UR_FAC(8)  = 0.5D0             !Th
       UR_FAC(9)  = 0.8D0             !Scalar
-!</keyword>
-
-!<keyword category="run control" required="false">
-!  <description>
-!    Use deferred correction method for implementing higher order
-!    discretization.
-!  </description>
-!  <valid value=".FALSE." note="use down-wind factor method (default)."/>
-!  <valid value=".TRUE."
-!    note="use deferred correction method for implementing higher order discretization."/>
-      DEF_COR  =  .FALSE.
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
@@ -889,6 +597,29 @@
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
+!    Use deferred correction method for implementing higher order
+!    discretization.
+!  </description>
+!  <valid value=".FALSE." note="Use down-wind factor method (default)."/>
+!  <valid value=".TRUE."  note="use deferred correction method."/>
+      DEF_COR  =  .FALSE.
+!</keyword>
+
+!<keyword category="Numerical Parameters" required="false">
+!  <description>
+!    Chi-scheme, proposed by Darwish and Moukalled (2003), is activated.
+!    this scheme guarantees that the set of differenced species mass
+!    balance equations has the property that the sum of mass fractions
+!    add up to one. when a flux limiter is used with (higher order)
+!    spatial discretization schemes it is not guaranteed that the mass
+!    fractions add up to one. this problem may be rectified by
+!    activating the chi-scheme.
+!  </description>
+      Chi_scheme = .FALSE.
+!</keyword>
+
+!<keyword category="Numerical Parameters" required="false">
+!  <description>
 !    Four point fourth order interpolation and is upstream biased. if
 !    this scheme is chosen and discretize(*) < 2, discretize(*) is
 !    defaulted to 2. if you chose this scheme, set the c_fac value
@@ -897,6 +628,17 @@
 !  <dependent keyword="c_fac" value="DEFINED"/>
       FPFOI = .FALSE.
 !</keyword>
+
+!<keyword category="Numerical Parameters" required="false">
+!  <description>
+!    The code declares divergence if the velocity anywhere in the domain
+!    exceeds a maximum value.  this maximum value is automatically
+!    determined from the boundary values. the user may scale the maximum
+!    value by adjusting this scale factor.
+!  </description>
+      MAX_INLET_VEL_FAC = ONE
+!</keyword>
+
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
@@ -917,25 +659,13 @@
 !    note="Implicit Euler based temporal discretization scheme employed
 !      (first order accurate in time)."/>
 !  <valid value=".TRUE."
-!    note="Crank-Nicholson based temporal discretization scheme employed
-!      (second order accurate in time excluding the restart timestep
-!      which is first order)."/>
+!    note="Two-step implicit Runge-Kutta method based temporal
+!      discretization scheme employed (second order accurate in time
+!      excluding the pressure terms and restart timestep which are
+!      first order accurate)."/>
       CN_ON = .FALSE.
 !</keyword>
 
-
-!<keyword category="Numerical Parameters" required="false">
-!  <description>
-!    Chi-scheme, proposed by Darwish and Moukalled (2003), is activated.
-!    this scheme guarantees that the set of differenced species mass
-!    balance equations has the property that the sum of mass fractions
-!    add up to one. when a flux limiter is used with (higher order)
-!    spatial discretization schemes it is not guaranteed that the mass
-!    fractions add up to one. this problem may be rectified by
-!    activating the chi-scheme.
-!  </description>
-      Chi_scheme = .FALSE.
-!</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
@@ -954,29 +684,39 @@
 
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Solve transpose of linear system. (BICGSTAB ONLY).</description>
+!  <description>
+!    Solve transpose of linear system. (BICGSTAB ONLY).
+!  </description>
 !  <dependent keyword="LEQ_METHOD" value="2"/>
       DO_TRANSPOSE = .FALSE.
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Frequency to check for convergence. (BICGSTAB ONLY)</description>
+!  <description>
+!    Frequency to check for convergence. (BICGSTAB ONLY)
+!  </description>
 !  <dependent keyword="LEQ_METHOD" value="2"/>
       icheck_bicgs = 1
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Sets optimal LEQ flags for parallel runs.</description>
+!  <description>
+!    Sets optimal LEQ flags for parallel runs.
+!  </description>
       OPT_PARALLEL = .FALSE.
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Use do-loop assignment over direct vector assignment.</description>
+!  <description>
+!    Use do-loop assignment over direct vector assignment.
+!  </description>
       USE_DOLOOP = .FALSE.
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Calculate dot-products more efficiently (Serial runs only.)</description>
+!  <description>
+!    Calculate dot-products more efficiently (Serial runs only.)
+!  </description>
       IS_SERIAL = .TRUE.
 !</keyword>
 
@@ -997,7 +737,7 @@
 !  <description>(Do not use.)</description>
 !  <valid value=".FALSE." note="x (r) direction is considered."/>
 !  <valid value=".TRUE." note="x (r) direction is not considered."/>
-      NO_I = .FALSE.
+!     NO_I = .FALSE.
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
@@ -1032,7 +772,7 @@
 !  <description>(Do not use.)</description>
 !  <valid value=".FALSE. note="y direction is considered."/>
 !  <valid value=".TRUE." note="y direction is not considered."/>
-      NO_J = .FALSE.
+!     NO_J = .FALSE.
 !</keyword>
 
 
@@ -1057,9 +797,13 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
-!  <description></Description>
-!  <valid value=".FALSE." note="z(theta) direction is considered."/>
-!  <valid value=".TRUE." note="z(theta) direction is not considered."/>
+!  <description>
+!    Flag to disable the third dimension (i.e., 2D simulation).
+!      * Z axis in Carteisan coordinate system
+!      * Theta in Cylindrical coordinate system
+!  </description>
+!  <valid value=".FALSE." note="3D simulation."/>
+!  <valid value=".TRUE."  note="2D simulation."/>
       NO_K = .FALSE.
 !</keyword>
 
@@ -1177,7 +921,7 @@
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
 !    If .TRUE. imposes a mean shear on the flow field as a linear
-!    function of _x_ coordinate. this feature should only be used when
+!    function of X coordinate. this feature should only be used when
 !    cyclic_x=.TRUE. also, the keyword v-sh needs to be set.
 !  </description>
 !  <dependents>cyclic_x v_sh</dependents>
@@ -1187,11 +931,11 @@
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
-!    Specifies the mean _y_ velocity component at the eastern boundary
-!    of the domain (v_sh), and the mean _y_ velocity (-v_sh) at the
+!    Specifies the mean Y velocity component at the eastern boundary
+!    of the domain (v_sh), and the mean Y velocity (-v_sh) at the
 !    western boundary of the domain.
 !  </description>
-      V_sh=0d0
+      V_sh = 0.0d0
 !</keyword>
 
 
@@ -1209,13 +953,9 @@
 
 
 
-
 !#####################################################################!
 !                               Gas Phase                             !
 !#####################################################################!
-
-
-
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
@@ -1279,25 +1019,37 @@
 !                            Solids Phase                             !
 !#####################################################################!
 
-
 !<keyword category="Solids Phase" required="false">
+!  <description>
+!    Defines the model used for the solids phase. For TFM/DEM
+!    hybrid simulations, firt define all TFM solids, then
+!    define the DEM solids phases.
+!  </description>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+!  <valid value='TFM' note='Two-fluid Model (continuum).' />
+!  <valid value='DEM' note='Discrete Element Model' />
+!  <valid value='PIC' note='Multiphase-Particle in Cell' />
+      SOLIDS_MODEL(:DIM_M) = 'TFM'
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true" pic="true">
 !  <description>Number of solids phases.</description>
       MMAX = 1
 !</keyword>
 
-!<keyword category="Solids Phase" required="false">
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true" pic="true">
 !  <description>Initial particle diameters.</description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       D_P0(:DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Phase" required="false">
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true" pic="true">
 !  <description>Specified constant solids density.</description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       RO_S0(:DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Phase" required="false">
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>Baseline species mass fraction.</description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
@@ -1308,7 +1060,7 @@
       X_s0(:DIM_M,:DIM_N_s) = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Phase" required="false">
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>Specified constant solids species density.</description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
@@ -1319,7 +1071,7 @@
       RO_Xs0(:DIM_M,:DIM_N_s) = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Phase" required="false">
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>Index of inert solids phase species.</description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
@@ -1330,47 +1082,36 @@
       INERT_SPECIES(:DIM_M) = UNDEFINED_I
 !</keyword>
 
-!<keyword category="Solids Phase" required="false">
-!  <description>Specified constant granular viscosity. if this value is
-!    specified, then the kinetic theory calculation is turned off and
-!    p_s = 0 and lambda_s = -2/3 mu_s0.
-!  </description>
-      MU_S0 = UNDEFINED
-!</keyword>
 
-!<keyword category="Solids Phase" required="false">
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>Specified constant solids conductivity.</description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       K_S0(:DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Phase" required="false">
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>Specified constant solids specific heat.</description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       C_PS0(:DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Phase" required="false">
-!  <description>Specified constant solids diffusivity.</description>
-      DIF_S0 = UNDEFINED
-!</keyword>
 
-!<keyword category="Solids Phase" required="false">
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>Molecular weight of solids phase-m, species n.</description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
       MW_S(:DIM_M,:DIM_N_s) = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Phase" required="false">
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>Number of species comprising solids phase m.</description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       NMAX_s(:DIM_M) = UNDEFINED_I
 !</keyword>
 
-!<keyword category="Solids Phase" required="false">
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>
-!    Name of solids phase m, species n as it appears in the materials
+!    Name of solids phase M, species N as it appears in the materials
 !    database.
 !</description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
@@ -1378,19 +1119,296 @@
       SPECIES_s(:DIM_M,:DIM_N_s) = UNDEFINED_C
 !</keyword>
 
-!<keyword category="Solids Phase" required="false">
-!  <description>User defined name for solids phase m, species n</description>
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
+!  <description>
+!    User defined name for solids phase M, species N.
+!  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
       SPECIES_ALIAS_s(:DIM_M,:DIM_N_s) = UNDEFINED_C
 !</keyword>
 
-!<keyword category="Solids Phase" required="false">
+!#####################################################################!
+!                           Two Fluid Model                           !
+!#####################################################################!
+
+
+!<keyword category="Two Fluid Model" required="false">
+!  <description>Solids phase stress model.</description>
+!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
+!  <valid value="AHMADI"
+!    note="Cao and Ahmadi (1995). Int. J. Multiphase Flow 21(6), 1203."/>
+!  <valid value="GD_99"
+!     note="Garzo and Dufty (1999). Phys. Rev. E 59(5), 5895."/>
+!  <valid value="GHD"
+!    note="Garzo, Hrenya and Dufty (2007). Phys. Rev. E 76(3), 31304"/>
+!  <valid value="IA_NONEP"
+!     note="Iddir & Arastoopour (2005). AIChE J. 51(6), 1620"/>
+!  <valid value="LUN_1984"
+!    note="Lun et al (1984). J. Fluid Mech., 140, 223."/>
+!  <valid value="SIMONIN"
+!    note="Simonin (1996). VKI Lecture Series, 1996-2"/>
+      KT_TYPE = "LUN_1984"
+!</keyword>
+
+! Retired keyword for specifying Ahmadi KT Theory.
+! Use: KT_TYPE = "AHMADI"
+      AHMADI = .FALSE.
+
+! Retired keyword for specifying Simonin KT Theory.
+! Use: KT_TYPE = "SIMONIN"
+      SIMONIN = .FALSE.
+
+!<keyword category="Two Fluid Model" required="false">
+!  <description>Jenkins small frictional boundary condition.</description>
+!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
+!  <dependent keyword="PHI_W" value="DEFINED"/>
+!  <valid value=".FALSE." note=""/>
+!  <valid value=".TRUE."
+!    note="Use the Jenkins small frictional boundary condition."/>
+      JENKINS = .FALSE.
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false">
+!  <description>Solids stress model selection.</description>
+!  <valid value=".FALSE." note="Use the Schaeffer solids stress model."/>
+!  <valid value=".TRUE."  note="Use the Princeton solids stress model"/>
+!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
+!  <dependent keyword="PHI" value="DEFINED"/>
+!  <dependent keyword="PHI_W" value="DEFINED"/>
+      FRICTION = .FALSE.
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false">
+!  <description>
+!    For a term appearing in the frictional stress model
+!    invoked with friction = .TRUE.
+!  </description>
+!  <valid value="0" note="Use S:S in the frictional stress model."/>
+!  <valid value="1" note="Use an alternate form suggested by Savage."/>
+!  <valid value="2" note="An appropriate combination of above."/>
+!  <dependent keyword="friction" value=".TRUE."/>
+      SAVAGE = 1
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false">
+!  <description>Schaeffer frictional stress tensor formulation. </description>
+!  <dependent keyword="PHI" value="DEFINED"/>
+!  <valid value=".TRUE." note="Use the Schaeffer model"/>
+!  <valid value=".FALSE." note="Do not use the Schaeffer model."/>
+      SCHAEFFER = .TRUE.
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>
+!    Blend the Schaeffer stresses with that of algebraic kinetic theory
+!    around EP_STAR.
+!  </description>
+      BLENDING_STRESS = .FALSE.
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false" tfm="ture">
+!  <description>
+!    Hyperbolic tangent function for blending frictional stress models.
+!  </description>
+!  <dependent keyword="BLENDING_STRESS" value=".TRUE."/>
+!  <conflict keyword="SIGM_BLEND" value=".TRUE."/>
+      TANH_BLEND = .TRUE.
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>
+!    A scaled and truncated sigmoidal function for blending
+!    frictional stress  models.
+!  </description>
+!  <dependent keyword="BLENDING_STRESS" value=".TRUE."/>
+!  <conflict keyword="TANH_BLEND" value=".TRUE."/>
+      SIGM_BLEND = .FALSE.
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>
+!    Correlation to compute maximum packing for polydisperse systems.
+!  </description>
+!  <valid value=".TRUE."
+!    note="Use the Yu and Standish correlation."/>
+!  <valid value=".FALSE."
+!    note="Do not use the Yu and Standish correlation."/>
+      YU_STANDISH = .FALSE.
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>
+!    Use Fedors and Landel correlation to compute maximum
+!    packing for a binary (only) mixture of powders.
+!  </description>
+      FEDORS_LANDEL = .FALSE.
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false">
+!  <description>
+!    Radial distribution function at contact for polydisperse systems.
+!    Do not specify any RDF for monodisperse systems because Carnahan-
+!    Starling is the model only available.
+!
+!    Carnahan, N.F. and Starling K.E., (1969).
+!    The Journal of Chemical Physics, Vol. 51(2):635-636.
+!  </description>
+!
+!  <valid value="LEBOWITZ" note="Lebowitz, J.L. (1964)
+!   The Physical Review, A133, 895-899"/>
+!
+!  <valid value="MODIFIED_LEBOWITZ" note="
+!    Iddir, H. Y., Modeling of the mulitphase mixture of particles
+!    using the kinetic theory approach. Doctoral Dissertation,
+!    Illinois Institute of Technology, Chicago, Illinois, 2004,
+!    (chapter 2, equations 2-49 through 2-52.)"/>
+
+!  <valid value="MANSOORI" note="
+!   Mansoori, GA, Carnahan N.F., Starling, K.E. Leland, T.W. (1971).
+!    The Journal of Chemical Physics, Vol. 54:1523-1525."/>
+!
+!  <valid value="MODIFIED_MANSOORI" note="van Wachem, B.G.M., Schouten, J.C.,
+!    van den Bleek, C.M., Krishna, R. and Sinclair, J. L. (2001)
+!    AIChE Journal 47:1035–1051."/>
+      RDF_TYPE = 'LEBOWITZ'
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>
+!    Flag to include the added (or virtual) mass force. This force
+!    acts to increase the inertia of the dispersed phase, which
+!    tends to stabilize simulations of bubbly gas-liquid flows.
+!  </description>
+      Added_Mass = .FALSE.
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>
+!    The disperse phase number where the added mass applies.
+!  </description>
+      M_AM = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>
+!    Coefficient of restitution for particle-particle collisions.
+!  </description>
+      C_E = UNDEFINED
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false">
+!  <description>
+!    GHD Theory: Coefficient of restitution for particle-particle collisions.
+!  </description>
+!  <arg index="1" id="Phase" min="0" max="DIM_M"/>
+!  <arg index="2" id="Phase" min="0" max="DIM_M"/>
+      r_p(:DIM_M, :DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false">
+!  <description>Coefficient of restitution for particle-wall collisions.</description>
+      E_W = 1.D0
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>
+!    Specularity coefficient associated with particle-wall collisions.
+!  </description>
+      PHIP = 0.6D0
+!</keyword>
+
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>
+!    Specify the value of specularity coefficient when the normalized
+!     slip velocity goes to zero when BC_JJ_M is .TRUE.. This variable
+!     is calculated internally in the code. Do not modify unless an 
+!     accurate number is known.
+!  </description>
+!  <dependents>BC_JJ_M</dependents>
+      phip0 = undefined
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>
+!    Coefficient of friction between the particles of two solids phases.
+!  </description>
+      C_F = UNDEFINED
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>
+!     Angle of internal friction (in degrees). set this value
+!     to zero to turn off plastic regime stress calculations.
+!  </description>
+      PHI = UNDEFINED
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>
+!    Angle of internal friction (in degrees) at walls. Set this
+!    value to non-zero (phi_w = 11.31 means tan_phi_w = mu = 0.2)
+!    when using Jenkins or bc_jj_m boundary condition.
+!  </description>
+      PHI_W = UNDEFINED
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>
+!    Minimum solids fraction above which friction sets in.  (when
+!    friction = .TRUE.)</description>
+!  <dependents>friction</dependents>
+      EPS_F_MIN = 0.5D0
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>
+!    Maximum solids volume fraction at packing for polydisperse
+!    systems (more than one solids phase used). The value of
+!    EP_star may change during the computation if solids phases
+!    with different particle diameters are specified and
+!    Yu_Standish or Fedors_Landel correlations are used.
+!  </description>
+!  <arg index="1" id="Phase" min="0" max="DIM_M"/>
+!  <range min="0" max="1-ep_star" />
+      EP_S_MAX(:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>
+!    Used in calculating the initial slope of segregation: see
+!    Gera et al. (2004) - recommended value 0.3. increasing this
+!    coefficient results in decrease in segregation of particles
+!    in binary mixtures.
+!  </description>
+      SEGREGATION_SLOPE_COEFFICIENT=0.D0
+!</keyword>
+
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>Excluded volume in Boyle-Massoudi stress.</description>
+!  <valid value="0.0" note="b-m stress is turned off."/>
+      V_EX = ZERO
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>Specified constant granular viscosity. if this value is
+!    specified, then the kinetic theory calculation is turned off and
+!    p_s = 0 and lambda_s = -2/3 mu_s0.
+!  </description>
+      MU_S0 = UNDEFINED
+!</keyword>
+!<keyword category="Two Fluid Model" required="false" tfm="true">
+!  <description>Specified constant solids diffusivity.</description>
+      DIF_S0 = UNDEFINED
+!</keyword>
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>Packed bed void fraction.</description>
       EP_STAR = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Phase" required="false">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Indicates that the solids phase forms a packed bed with a void
 !    fraction ep_star.
@@ -1400,22 +1418,8 @@
 !</keyword>
 
 
-!<keyword category="Solids Phase" required="false">
-!  <description>Specified constant granular viscosity. if this value is
-!    specified, then the kinetic theory calculation is turned off and
-!    p_s = 0 and lambda_s = -2/3 mu_s0.
-!  </description>
-!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-!  <valid value='TFM' note='Two-fluid Model (continuum).' />
-!  <valid value='DEM' note='Discrete Element Model' />
-!  <valid value='PIC' note='Multiphase-Particle in Cell' />
-      SOLIDS_MODEL(:DIM_M) = 'TFM'
-!</keyword>
-
-
-
 !#####################################################################!
-!                         Initial Conditions                          !
+!                category="Physical Paramters"                      !
 !#####################################################################!
 
 
@@ -2656,6 +2660,14 @@
 !</keyword>
 
 !<keyword category="Output Control" required="false">
+!  <description>
+!    The number of user defined chemical reactions stored
+!    in the *.SPA file.
+!  </description>
+      nRR = 0
+!</keyword>
+
+!<keyword category="Output Control" required="false">
 !  <description> Interval at which standard output (.OUT) file is updated.
 !    Only run configuration information is written if left undefined. Otherwise
 !    all field variables for the entire domain are written in ASCII
@@ -2703,139 +2715,56 @@
 !</keyword>
 
 
-      DO LC=1, DIMENSION_USR
 !<keyword category="Output Control" required="false">
-!  <description> Intervals at which subroutine write_usr1 is called. </description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_DT(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Udf Hook: x coordinate of the west face or edge.</description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_X_W(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Udf Hook: x coordinate of the east face or edge.</description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_X_E(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Udf Hook: y coordinate of the south face or edge.</description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_Y_S(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Udf Hook: y coordinate of the north face or edge.</description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_Y_N(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Udf Hook: z coordinate of the bottom face or edge.</description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_Z_B(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Udf Hook: z coordinate of the top face or edge.</description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_Z_T(LC) = UNDEFINED
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Udf Hook: i index of the west-most cell.</description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_I_W(LC) = UNDEFINED_I
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Udf Hook: i index of the east-most cell.</description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_I_E(LC) = UNDEFINED_I
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Udf Hook: j index of the south-most cell.</description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_J_S(LC) = UNDEFINED_I
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Udf Hook: j index of the north-most cell.</description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_J_N(LC) = UNDEFINED_I
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Udf Hook: k index of the bottom-most cell.</description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_K_B(LC) = UNDEFINED_I
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Udf Hook: k index of the top-most cell.</description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_K_T(LC) = UNDEFINED_I
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Udf Hook: Type of user-defined output: Binary of ASCII.</description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_TYPE(LC) = UNDEFINED_C
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Udf Hook:
-!    Variables to be written in the user-defined output files.
+!  <description>
+!    Provide detailed logging of negative density errors.
 !  </description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_VAR(LC) = UNDEFINED_C
+!  <valid value=".FALSE." note="Do not log negative density errors."/>
+!  <valid value=".TRUE." note="Log negative density errors."/>
+      REPORT_NEG_DENSITY = .FALSE.
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Udf Hook:
-!    Format for writing user-defined (ASCII) output file.
-!  </description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_FORMAT(LC) = UNDEFINED_C
-!</keyword>
-
-!<keyword category="Output Control" required="false">
-!  <description>Udf Hook: File extension for the user-defined output.</description>
-!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
-         USR_EXT(LC) = UNDEFINED_C
-!</keyword>
-      ENDDO
-
-
-!<keyword category="Output Control" required="false">
-!  <description> Frequency to perform an overall species mass balance.
-!    Leaving undefined suppresses the mass balance calculations which
-!    can slightly extend run time.
+!  <description>
+!    Frequency to perform an overall species mass balance. Leaving
+!    undefined suppresses the mass balance calculations which can 
+!    slightly extend run time.
 !  </description>
       REPORT_MASS_BALANCE_DT = UNDEFINED
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Use distributed IO :: Each rank generates RES/SPx files.</description>
-!  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
+!  <description>
+!    Output the variable specularity coefficient when BC_JJ_M is
+!    .TRUE.. The specularity coefficient will be stored in reactionrates
+!    array for post-processing by post-mfix. user needs to set nrr to 1
+!    for this purpose. be careful with this setting when reacting flow
+!    is simulated.
+!  </description>
+      PHIP_OUT_JJ=.FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>
+!    Use distributed IO :: Each MPI process generates RES/SPx files.
+!  </description>
       bDist_IO = .FALSE.
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Restart a unified IO run as distributed IO.</description>
+!  <description>
+!    Restart a serial IO run (only one RES file was created) with
+!    distributed IO.
+!  </description>
 !  <dependent keyword="RUN_TYPE" value="RESTART_2"/>
 !  <dependent keyword="bDist_IO" value=".TRUE."/>
       bStart_with_one_RES = .FALSE.
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Flag to write variable in NetCDF output file. NetCDF support
-!    is not included in MFIX by default. The executable must be compiled and
+!  <description>
+!    Flag to write variable in NetCDF output file. NetCDF support is not
+!    included in MFIX by default. The executable must be compiled and
 !    linked with an appropriate NetCDF library to use this functionality.
 !
 !    Variable Index List:
@@ -2859,6 +2788,141 @@
 !  <valid value=".FALSE." note="Do not include variable in NetCDF output."/>
       bWrite_netCDF(:20) = .FALSE.
 !</keyword>
+
+
+!#####################################################################!
+!                           UDF  Control                              !
+!#####################################################################!
+
+!<keyword category="UDF Control" required="false">
+!  <description>
+!    Flag to enable user-defined subroutines: USR0, USR1, USR2, USR3,
+!    USR0_DES, USR1_DES, USR2_DES, USR3_DES, USR4_DES.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined subroutines."/>
+!  <valid value=".FALSE." note="Do NOT call user-defined subroutines."/>
+      CALL_USR = .FALSE.
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>User defined constants.</description>
+      C(:DIMENSION_C) = UNDEFINED
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Name of user-defined constant. (20 character max)</description>
+      C_NAME(:DIMENSION_C) = '....................'
+!</keyword>
+
+      DO LC=1, DIMENSION_USR
+!<keyword category="UDF Control" required="false">
+!  <description>
+!    Intervals at which subroutine write_usr1 is called.
+!  </description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_DT(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Udf Hook: x coordinate of the west face or edge.</description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_X_W(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Udf Hook: x coordinate of the east face or edge.</description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_X_E(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Udf Hook: y coordinate of the south face or edge.</description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_Y_S(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Udf Hook: y coordinate of the north face or edge.</description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_Y_N(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Udf Hook: z coordinate of the bottom face or edge.</description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_Z_B(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Udf Hook: z coordinate of the top face or edge.</description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_Z_T(LC) = UNDEFINED
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Udf Hook: i index of the west-most cell.</description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_I_W(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Udf Hook: i index of the east-most cell.</description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_I_E(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Udf Hook: j index of the south-most cell.</description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_J_S(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Udf Hook: j index of the north-most cell.</description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_J_N(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Udf Hook: k index of the bottom-most cell.</description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_K_B(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Udf Hook: k index of the top-most cell.</description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_K_T(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Udf Hook: Type of user-defined output: Binary of ASCII.</description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_TYPE(LC) = UNDEFINED_C
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Udf Hook:
+!    Variables to be written in the user-defined output files.
+!  </description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_VAR(LC) = UNDEFINED_C
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Udf Hook:
+!    Format for writing user-defined (ASCII) output file.
+!  </description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_FORMAT(LC) = UNDEFINED_C
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>Udf Hook: File extension for the user-defined output.</description>
+!  <arg index="1" id="USR" max="DIMENSION_USR" min="1"/>
+         USR_EXT(LC) = UNDEFINED_C
+!</keyword>
+      ENDDO
 
 
 !#####################################################################!
@@ -2909,38 +2973,6 @@
       NMAX = UNDEFINED_I
 !</keyword>
 
-!<keyword category="Chemical Reactions" legacy=.TRUE.>
-!  <description>Flag for previous stiff solver.</description>
-      CALL_DI   = .FALSE.
-!</keyword>
-
-!<keyword category="Chemical Reactions" required="false" legacy=.TRUE.>
-!  <description>
-!   Flag to specify variable solids diameter in original stiff chem solver.
-!   (Non-Functional, Removed in 2013-2 Release)
-!  </description>
-      CALL_GROW = .FALSE.
-!</keyword>
-
-!<keyword category="Chemical Reactions" required="false" legacy=.TRUE.>
-!  <description>
-!   Flag to use ISAT tables with original DI solver.
-!   (Non-Functional, Removed in 2013-2 Release)
-!  </description>
-      CALL_ISAT = .FALSE.      ! Legacy Keyword
-!  </description>
-!</keyword>
-
-!<keyword category="Chemical Reactions" required="false" legacy=.TRUE.>
-!  <description>
-!   Specified constant call to ISAT functions.
-!   (Non-Functional, Removed in 2013-2 Release)
-!  </description>
-      ISATdt = UNDEFINED
-!  </description>
-!</keyword>
-
-
 
 !#####################################################################!
 !                    Parallelization Control                          !
@@ -2989,7 +3021,11 @@
 
 
 !<keyword category="Batch Queue Environment" required="false">
-!  <description>Enables clean termination feature.</description>
+!  <description>
+!    Enables controlled termination feature when running under batch
+!    queue system to force MFIX to cleanly terminate before the end
+!    of wall clock allocated in the batch session.
+!  </description>
       CHK_BATCHQ_END = .FALSE.
 !</keyword>
 
@@ -2999,7 +3035,12 @@
 !</keyword>
 
 !<keyword category="Batch Queue Environment" required="false">
-!  <description>Buffer time when initiating clean termination, in seconds.</description>
+!  <description>
+!    Buffer time specified to allow MFIX to write out the files and
+!    cleanly terminate before queue wall clock time limit is reached
+!    such that (BATCH_WALLCLOCK-TERM_BUFFER) is less than then batch
+!    queue wall clock time limit, in seconds.
+!  </description>
       TERM_BUFFER = 180.0         ! set to 3 minutes prior to end of job
 !</keyword>
 
