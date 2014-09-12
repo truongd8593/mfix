@@ -17,6 +17,7 @@
       lambda_x, lambda_y, lambda_z, dquadric, &
       theta_x, theta_y, theta_z, &
       Radius, Half_angle,n_x,n_y,n_z, &
+      Torus_R1,Torus_R2, &
       t_x, t_y, t_z, &
       clip_xmin, clip_xmax, clip_ymin, clip_ymax, clip_zmin, clip_zmax, &
       piece_xmin, piece_xmax, piece_ymin, piece_ymax, piece_zmin, piece_zmax, &
