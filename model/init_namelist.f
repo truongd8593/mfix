@@ -509,15 +509,6 @@
       DETECT_STALL = .TRUE.
 !</keyword>
 
-!<keyword category="Numerical Parameters" required="false">
-!  <description>
-!    The code declares divergence if the velocity anywhere in the domain
-!    exceeds a maximum value.  this maximum value is automatically
-!    determined from the boundary values. the user may scale the maximum
-!    value by adjusting this scale factor.
-!  </description>
-      MAX_INLET_VEL_FAC = ONE
-!</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>LEQ Solver selection.</description>
@@ -637,6 +628,17 @@
 !  <dependent keyword="c_fac" value="DEFINED"/>
       FPFOI = .FALSE.
 !</keyword>
+
+!<keyword category="Numerical Parameters" required="false">
+!  <description>
+!    The code declares divergence if the velocity anywhere in the domain
+!    exceeds a maximum value.  this maximum value is automatically
+!    determined from the boundary values. the user may scale the maximum
+!    value by adjusting this scale factor.
+!  </description>
+      MAX_INLET_VEL_FAC = ONE
+!</keyword>
+
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
@@ -1389,23 +1391,23 @@
       V_EX = ZERO
 !</keyword>
 
-!<keyword category="Solids Phase" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>Specified constant granular viscosity. if this value is
 !    specified, then the kinetic theory calculation is turned off and
 !    p_s = 0 and lambda_s = -2/3 mu_s0.
 !  </description>
       MU_S0 = UNDEFINED
 !</keyword>
-!<keyword category="Solids Phase" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>Specified constant solids diffusivity.</description>
       DIF_S0 = UNDEFINED
 !</keyword>
-!<keyword category="Solids Phase" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>Packed bed void fraction.</description>
       EP_STAR = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Phase" required="false" tfm="true">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Indicates that the solids phase forms a packed bed with a void
 !    fraction ep_star.
