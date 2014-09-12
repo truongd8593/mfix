@@ -659,9 +659,10 @@
 !    note="Implicit Euler based temporal discretization scheme employed
 !      (first order accurate in time)."/>
 !  <valid value=".TRUE."
-!    note="Crank-Nicholson based temporal discretization scheme employed
-!      (second order accurate in time excluding the restart timestep
-!      which is first order)."/>
+!    note="Two-step implicit Runge-Kutta method based temporal
+!      discretization scheme employed (second order accurate in time
+!      excluding the pressure terms and restart timestep which are
+!      first order accurate)."/>
       CN_ON = .FALSE.
 !</keyword>
 
@@ -3020,7 +3021,11 @@
 
 
 !<keyword category="Batch Queue Environment" required="false">
-!  <description>Enables clean termination feature.</description>
+!  <description>
+!    Enables controlled termination feature when running under batch
+!    queue system to force MFIX to cleanly terminate before the end
+!    of wall clock allocated in the batch session.
+!  </description>
       CHK_BATCHQ_END = .FALSE.
 !</keyword>
 
@@ -3030,7 +3035,12 @@
 !</keyword>
 
 !<keyword category="Batch Queue Environment" required="false">
-!  <description>Buffer time when initiating clean termination, in seconds.</description>
+!  <description>
+!    Buffer time specified to allow MFIX to write out the files and
+!    cleanly terminate before queue wall clock time limit is reached
+!    such that (BATCH_WALLCLOCK-TERM_BUFFER) is less than then batch
+!    queue wall clock time limit, in seconds.
+!  </description>
       TERM_BUFFER = 180.0         ! set to 3 minutes prior to end of job
 !</keyword>
 
