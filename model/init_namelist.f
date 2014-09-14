@@ -86,14 +86,14 @@
 
 !<keyword category="Run Control" required="true">
 !  <description> Simulation input/output units.</description>
-!  <valid value="cgs" note="all input and output in cgs units (g, cm, s, cal)."/>
-!  <valid value="si" note="all input and output in si units (kg, m, s, j)."/>
+!  <valid value="cgs" note="All input and output in CGS units (g, cm, s, cal)."/>
+!  <valid value="si" note="All input and output in SI units (kg, m, s, j)."/>
       UNITS = UNDEFINED_C
 !</keyword>
 
 !<keyword category="Run Control" required="true">
 !  <description>Type of run.</description>
-!  <valid value="new" note="new run."/>
+!  <valid value="new" note="A new run."/>
 !  <valid value="RESTART_1" note="Traditional restart."/>
 !  <valid value="RESTART_2"
 !    note="Start a new run with initial conditions from a .RES file
@@ -110,7 +110,7 @@
 !<keyword category="Run Control" required="false">
 !  <description>Stop-time of the run.</description>
 !  <range min="0.0" max="+Inf" />
-      TSTOP = UNDEFINED
+      TSTOP = UNDEFINED
 !</keyword>
 
 !<keyword category="Run Control" required="false">
@@ -240,7 +240,7 @@
 
 !<keyword category="Run Control" required="false">
 !  <description>
-!    Value of turbulent length initialized. this may be overwritten
+!    Value of turbulent length initialized. This may be overwritten
 !    in specific regions with the keyword IC_L_SCALE.
 !</description>
 !  <conflict keyword="K_EPSILON" value=".TRUE."/>
@@ -320,8 +320,8 @@
 
 !<keyword category="Run Control" required="false">
 !  <description>
-!    If use_def_lam_hys is set to .FALSE. the user is able to specify a
-!    value for the lubrication cutoff distance (lam_hys).  in practice
+!    If USE_DEF_LAM_HYS is set to .FALSE. the user is able to specify a
+!    value for the lubrication cutoff distance (LAM_HYS).  In practice
 !    this number should be on the order of the mean free path of the
 !    gas for smooth particles, or the rms roughness of a particle if
 !    they are rough (if particle roughness is larger than the mean
@@ -331,7 +331,7 @@
       LAM_HYS = UNDEFINED
 !</keyword>
 
-!<keyword category="Run Control" required="false">
+!<keyword category="Run Control" required="false" tfm="true">
 !  <description>
 !    Subgrid models.
 !  </description>
@@ -347,14 +347,14 @@
       SUBGRID_TYPE = UNDEFINED_C
 !</keyword>
 
-!<keyword category="Run Control" required="false">
+!<keyword category="Run Control" required="false" tfm="true">
 !  <description>
 !    Ratio of filter size to computational cell size.
 !  </description>
       FILTER_SIZE_RATIO = 2.0D0
 !</keyword>
 
-!<keyword category="Run Control" required="false">
+!<keyword category="Run Control" required="false" tfm="true">
 !  <description>Flag for subgrid wall correction.</description>
 !  <valid value=".FALSE." note="Do not include wall correction."/>
 !  <valid value=".TRUE." note="Include subgrid wall correction."/>
@@ -396,7 +396,7 @@
 !</keyword>
 
 !<keyword category="Physical Parameters" required="false">
-!  <description>gravitational acceleration. </description>
+!  <description>Gravitational acceleration. </description>
       GRAVITY = UNDEFINED
 !</keyword>
 
@@ -455,47 +455,53 @@
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Maximum residual at convergence (continuity+momentum).
+!    Maximum residual at convergence (Continuity+Momentum).
 !  </description>
       TOL_RESID = 1.0D-3
 !</keyword>
 
-!<keyword category="Numerical Parameters" required="false">
-!  <description>
-!    Maximum residual at convergence (granular energy).
-!  </description>
-      TOL_RESID_Th = 1.0D-4
-!</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Maximum residual at convergence (energy).
+!    Maximum residual at convergence (Energy).
 !  </description>
       TOL_RESID_T = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Maximum residual at convergence (species balance).
+!    Maximum residual at convergence (Species Balance).
 !  </description>
       TOL_RESID_X = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Maximum residual at convergence (scalar balances.)</description>
+!  <description>
+!    Maximum residual at convergence (Granular Energy).
+!  </description>
+      TOL_RESID_Th = 1.0D-4
+!</keyword>
+
+!<keyword category="Numerical Parameters" required="false">
+!  <description>
+!    Maximum residual at convergence (Scalar Equations.)
+!  </description>
       TOL_RESID_Scalar = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Maximum residual at convergence (K_Epsilon Model)</description>
+!  <description>
+!    Maximum residual at convergence (K_Epsilon Model)
+!  </description>
       TOL_RESID_K_Epsilon = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description> Minimum residual for declaring divergence.
-!    This parameter is useful for incompressible fluid simulations because
-!    velocity residuals can take large values for the second iteration (e.g., 1e+8)
-!    before drop down to smaller values for third  third iteration (e.g., 0.1).
+!  <description>
+!    Minimum residual for declaring divergence. This parameter is useful
+!    for incompressible fluid simulations because velocity residuals can
+!    take large values for the second iteration (e.g., 1e+8) before
+!    dropping down to smaller values for third  third iteration.
 !  </description>
       TOL_DIVERGE = 1.0D+4
 !</keyword>
@@ -513,13 +519,12 @@
 !<keyword category="Numerical Parameters" required="false">
 !  <description>LEQ Solver selection.</description>
 !  <arg index="1" id="Equation ID Number" min="1" max="9"/>
-!  <valid value="1" note="SOR"/>
-!  <valid value="2" note="BiCGSTAB"/>
-!  <valid value="3" note="GMRES"/>
-!  <valid value="5" note="CG"/>
+!  <valid value="1" note="SOR - Successive over-relaxation"/>
+!  <valid value="2" note="BiCGSTAB - Biconjugate gradient stabilized."/>
+!  <valid value="3" note="GMRES - Generalized minimal residual method"/>
+!  <valid value="5" note="CG - Conjugate gradient"/>
       LEQ_METHOD(:) = 2
 !</keyword>
-
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>Linear Equation tolerance.</description>
@@ -529,9 +534,10 @@
       LEQ_TOL(:) = 1.0D-4
 !</keyword>
 
-
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Number of iterations in the linear equation solver.</description>
+!  <description>
+!    Number of iterations in the linear equation solver.
+!  </description>
 !  <arg index="1" id="Equation ID Number" min="1" max="9"/>
       LEQ_IT(1) = 20
       LEQ_IT(2) = 20
@@ -544,16 +550,16 @@
       LEQ_IT(9) = 15
 !</keyword>
 
-
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Linear precondition used for LEQ solver sweeps.</description>
+!  <description>
+!    Linear precondition used for LEQ solver sweeps.
+!  </description>
 !  <arg index="1" id="Equation ID Number" min="1" max="9"/>
 !  <valid value="NONE" note="No preconditioner"/>
 !  <valid value="LINE" note="Line relaxation"/>
 !  <valid value="DIAG" note="Diagonal Scaling"/>
       LEQ_PC(:) = 'LINE'
 !</keyword>
-
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>Linear equation sweep direction.</description>
@@ -582,16 +588,34 @@
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
+!  <description>
+!    The implicitness calculation of the gas-solids drag coefficient
+!    may be underrelaxed by changing ur_f_gs, which takes values
+!    between 0 to 1:
+!  </description>
+!  <range min="0" max="1" />
+      UR_F_gs = 1.0D0
+!</keyword>
+
+!<keyword category="Numerical Parameters" required="false">
+!  <description>
+!    Under relaxation factor for conductivity coefficient associated
+!    with other solids phases for IA Theory.
+!  </description>
+      UR_Kth_sml = 1.0D0
+!</keyword>
+
+!<keyword category="Numerical Parameters" required="false">
 !  <description>Discretization scheme of equations.</description>
-!  <valid value="1" note="first-order upwinding (using down-wind factors)."/>
-!  <valid value="3" note="smart."/>
-!  <valid value="2" note="superbee (recommended method)."/>
-!  <valid value="5" note="quickest (does not work)."/>
-!  <valid value="4" note="ultra-quick."/>
-!  <valid value="7" note="van leer."/>
-!  <valid value="6" note="muscl."/>
+!  <valid value="0" note="First-order upwinding."/>
+!  <valid value="1" note="First-order upwinding (using down-wind factors)."/>
+!  <valid value="3" note="Smart."/>
+!  <valid value="2" note="Superbee (recommended method)."/>
+!  <valid value="5" note="QUICKEST (does not work)."/>
+!  <valid value="4" note="ULTRA-QUICK."/>
+!  <valid value="7" note="van Leer."/>
+!  <valid value="6" note="MUSCL."/>
 !  <valid value="8" note="minmod."/>
-!  <valid value="0" note="first-order upwinding."/>
       DISCRETIZE(:) = 0
 !</keyword>
 
@@ -601,57 +625,49 @@
 !    discretization.
 !  </description>
 !  <valid value=".FALSE." note="Use down-wind factor method (default)."/>
-!  <valid value=".TRUE."  note="use deferred correction method."/>
+!  <valid value=".TRUE."  note="Use deferred correction method."/>
       DEF_COR  =  .FALSE.
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Chi-scheme, proposed by Darwish and Moukalled (2003), is activated.
-!    this scheme guarantees that the set of differenced species mass
-!    balance equations has the property that the sum of mass fractions
-!    add up to one. when a flux limiter is used with (higher order)
-!    spatial discretization schemes it is not guaranteed that the mass
-!    fractions add up to one. this problem may be rectified by
-!    activating the chi-scheme.
+!    This scheme guarantees that the set of differenced species mass
+!    balance equations maintain the property that the sum of species
+!    mass fractions sum to one. This property is not guaranteed when
+!    a flux limiter is used with higher order spatial discretization
+!    schemes. Note: The chi-scheme is implemented for SMART and MUSCL
+!    discretization schemes.
+!    Darwish, M.S., Moukalled, F. (2003). International Journal of
+!    Heat and Mass Transfer, 46(4):599-611.
 !  </description>
+!  <valid value=".FALSE." note="Do not use the chi-scheme."/>
+!  <valid value=".TRUE."  note="Use the chi-scheme correction."/>
       Chi_scheme = .FALSE.
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Four point fourth order interpolation and is upstream biased. if
-!    this scheme is chosen and discretize(*) < 2, discretize(*) is
-!    defaulted to 2. if you chose this scheme, set the c_fac value
-!    between 0 and 1.
+!    Four point fourth order interpolation and is upstream biased.
+!    Notes: 
+!    * DISCRETIZE(*) defaults to Superbee if this scheme is chosen
+!      and DISCRETIZE(*) < 2.
+!    * Set C_FAC between 0 and 1 when using this scheme.
 !  </description>
-!  <dependent keyword="c_fac" value="DEFINED"/>
+!  <dependent keyword="C_FAC" value="DEFINED"/>
       FPFOI = .FALSE.
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    The code declares divergence if the velocity anywhere in the domain
-!    exceeds a maximum value.  this maximum value is automatically
-!    determined from the boundary values. the user may scale the maximum
-!    value by adjusting this scale factor.
-!  </description>
-      MAX_INLET_VEL_FAC = ONE
-!</keyword>
-
-
-!<keyword category="Numerical Parameters" required="false">
-!  <description>
-!    Factor used in the universal limiter (when fpfoi is set .TRUE.) and
-!    can be any value in the set (0,1). the choice of 1 will give
-!    (diffusion) first order upwinding and as this value becomes closer
-!    to 0 the scheme becomes more compressive.
+!    Factor between zero and one used in the universal limiter when 
+!    using four point, fourth order interpolation (FPFOI).
+!    * Choosing one gives (diffusive) first order upwinding.
+!    * The scheme becomes more compressive as values near zero.
 !  </description>
 !  <range min="0.0" max="1.0" />
 !  <dependent keyword="fpfoi" value=".TRUE."/>
       C_FAC = UNDEFINED
 !</keyword>
-
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>Temporal discretization scheme.</description>
@@ -666,22 +682,15 @@
       CN_ON = .FALSE.
 !</keyword>
 
-
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    The implicitness calculation of the gas-solids drag coefficient
-!    may be underrelaxed by changing ur_f_gs, which takes values
-!    between 0 to 1:
+!    The code declares divergence if the velocity anywhere in the domain
+!    exceeds a maximum value.  This maximum value is automatically
+!    determined from the boundary values. The user may scale the maximum
+!    value by adjusting this scale factor.
 !  </description>
-!  <range min="0" max="1" />
-      UR_F_gs = 1.0D0
+      MAX_INLET_VEL_FAC = ONE
 !</keyword>
-
-!<keyword category="Numerical Parameters" required="false">
-!  <description>Unknown</description>
-      UR_Kth_sml = 1.0D0
-!</keyword>
-
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
@@ -728,8 +737,8 @@
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>Coordinates used in the simulation.</description>
-!  <valid value="cartesian" note="cartesian coordinates."/>
-!  <valid value="cylindrical" note="cylindrical coordinates."/>
+!  <valid value="cartesian" note="Cartesian coordinates."/>
+!  <valid value="cylindrical" note="Cylindrical coordinates."/>
       COORDINATES = UNDEFINED_C
 !</keyword>
 
@@ -799,7 +808,7 @@
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
 !    Flag to disable the third dimension (i.e., 2D simulation).
-!      * Z axis in Carteisan coordinate system
+!      * Z axis in Cartesian coordinate system
 !      * Theta in Cylindrical coordinate system
 !  </description>
 !  <valid value=".FALSE." note="3D simulation."/>
@@ -808,7 +817,7 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
-!  <description>Number of cells in the z (() direction.</description>
+!  <description>Number of cells in the z direction.</description>
       KMAX = UNDEFINED_I
 !</keyword>
 
@@ -830,7 +839,7 @@
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
-!    Flag for making the x-direction cyclic without pressure drop. no other
+!    Flag for making the x-direction cyclic without pressure drop. No other
 !    boundary conditions for the x-direction should be specified.
 !</description>
 !  <valid value=".FALSE." note="no cyclic condition at x-boundary."/>
@@ -852,7 +861,7 @@
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
-!    Fluid pressure drop across xlength when a cyclic boundary condition
+!    Fluid pressure drop across XLENGTH when a cyclic boundary condition
 !    with pressure drop is imposed in the x-direction.
 !  </description>
       DELP_X = UNDEFINED
@@ -860,29 +869,29 @@
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
-!    Flag for making the y-direction cyclic without pressure drop. no
+!    Flag for making the y-direction cyclic without pressure drop. No
 !    other boundary conditions for the y-direction should be specified.
 !  </description>
-!  <valid value=".FALSE." note="no cyclic condition at y-boundary."/>
-!  <valid value=".TRUE." note="cyclic condition at x-boundary."/>
+!  <valid value=".FALSE." note="No cyclic condition at y-boundary."/>
+!  <valid value=".TRUE." note="Cyclic condition at x-boundary."/>
       CYCLIC_Y = .FALSE.
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
-!    Flag for making the y-direction cyclic with pressure drop. if the
-!    keyword flux_g is given a value this becomes a cyclic boundary
-!    condition with specified mass flux. no other boundary conditions
+!    Flag for making the y-direction cyclic with pressure drop. If the
+!    keyword FLUX_G is given a value this becomes a cyclic boundary
+!    condition with specified mass flux. No other boundary conditions
 !    for the y-direction should be specified.
 !  </description>
-!  <valid value=".FALSE." note="no cyclic condition at y-boundary."/>
-!  <valid value=".TRUE." note="cyclic condition with pressure drop at y-boundary."/>
+!  <valid value=".FALSE." note="No cyclic condition at y-boundary."/>
+!  <valid value=".TRUE." note="Cyclic condition with pressure drop at y-boundary."/>
       CYCLIC_Y_PD = .FALSE.
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
-!    Fluid pressure drop across ylength when a cyclic boundary condition
+!    Fluid pressure drop across YLENGTH when a cyclic boundary condition
 !    with pressure drop is imposed in the y-direction.
 !  </description>
       DELP_Y = UNDEFINED
@@ -890,7 +899,7 @@
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
-!    Flag for making the z-direction cyclic without pressure drop. no
+!    Flag for making the z-direction cyclic without pressure drop. No
 !    other boundary conditions for the z-direction should be specified.
 !  </description>
 !  <valid value=".FALSE." note="no cyclic condition at z-boundary."/>
@@ -900,19 +909,20 @@
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
-!    Flag for making the z-direction cyclic with pressure drop. if the
-!    keyword flux_g is given a value this becomes a cyclic boundary
-!    condition with specified mass flux. no other boundary conditions
+!    Flag for making the z-direction cyclic with pressure drop. If the
+!    keyword FLUX_G is given a value this becomes a cyclic boundary
+!    condition with specified mass flux. No other boundary conditions
 !    for the z-direction should be specified.
 !  </description>
-!  <valid value=".FALSE." note="no cyclic condition at z-boundary."/>
-!  <valid value=".TRUE." note="cyclic condition with pressure drop at z-boundary."/>
+!  <valid value=".FALSE." note="No cyclic condition at z-boundary."/>
+!  <valid value=".TRUE." note="Cyclic condition with pressure drop at 
+!    z-boundary."/>
       CYCLIC_Z_PD = .FALSE.
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
-!    Fluid pressure drop across zlength when a cyclic boundary condition
+!    Fluid pressure drop across ZLENGTH when a cyclic boundary condition
 !    with pressure drop is imposed in the z-direction.
 !  </description>
       DELP_Z = UNDEFINED
@@ -920,9 +930,9 @@
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
-!    If .TRUE. imposes a mean shear on the flow field as a linear
-!    function of X coordinate. this feature should only be used when
-!    cyclic_x=.TRUE. also, the keyword v-sh needs to be set.
+!    Imposes a mean shear on the flow field as a linear function of the
+!    x coordinate. This feature should only be used when CYCLIC_X is 
+!    .TRUE. and the keyword V_SH is set.
 !  </description>
 !  <dependents>cyclic_x v_sh</dependents>
       SHEAR = .FALSE.
@@ -931,8 +941,8 @@
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
-!    Specifies the mean Y velocity component at the eastern boundary
-!    of the domain (v_sh), and the mean Y velocity (-v_sh) at the
+!    Specifies the mean y velocity component at the eastern boundary
+!    of the domain (V_SH), and the mean Y velocity (-V_SH) at the
 !    western boundary of the domain.
 !  </description>
       V_sh = 0.0d0
@@ -943,7 +953,7 @@
 !  <description>
 !    If a value is specified (in units of g/cm2.s), the domain-averaged gas
 !    flux is held constant at that value in simulations over a periodic
-!    domain.  a pair of boundaries specified as periodic with fixed
+!    domain.  A pair of boundaries specified as periodic with fixed
 !    pressure drop is then treated as periodic with fixed mass flux.
 !    Even for this case a pressure drop must also be specified, which
 !    is used as the initial guess in the simulations.
@@ -959,8 +969,8 @@
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Specified constant gas density. this value may be set to zero to
-!    make the drag zero and to simulate granular flow in a vacuum. for
+!    Specified constant gas density. The value may be set to zero to
+!    make the drag zero and to simulate granular flow in a vacuum. For
 !    this case, users may turn off solving for gas momentum equations
 !    to accelerate convergence.
 !  </description>
@@ -993,7 +1003,7 @@
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
-!  <description>Molecular weight of gas species n.</description>
+!  <description>Molecular weight of gas species.</description>
 !  <arg index="1" id="Species" min="1" max="DIM_N_G"/>
       MW_G(:DIM_N_G) = UNDEFINED
 !</keyword>
@@ -1004,12 +1014,17 @@
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
-!  <description>Name of gas phase species n as it appears in the materials database.</description>
+!  <description>
+!    Name of gas phase species as it appears in the materials database.
+!  </description>
       SPECIES_g = UNDEFINED_C
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
-!  <description>User defined name for gas phase species n.</description>
+!  <description>
+!    User defined name for gas phase species. Aliases are used in
+!    specifying chemical equations and must be unique.
+!  </description>
       SPECIES_ALIAS_g = UNDEFINED_C
 !</keyword>
 
@@ -1032,12 +1047,14 @@
       SOLIDS_MODEL(:DIM_M) = 'TFM'
 !</keyword>
 
-!<keyword category="Solids Phase" required="false" tfm="true" dem="true" pic="true">
+!<keyword category="Solids Phase" required="false"
+!  tfm="true" dem="true" pic="true">
 !  <description>Number of solids phases.</description>
       MMAX = 1
 !</keyword>
 
-!<keyword category="Solids Phase" required="false" tfm="true" dem="true" pic="true">
+!<keyword category="Solids Phase" required="false"
+!  tfm="true" dem="true" pic="true">
 !  <description>Initial particle diameters.</description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       D_P0(:DIM_M) = UNDEFINED
