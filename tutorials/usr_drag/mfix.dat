@@ -9,8 +9,8 @@
 # References:                                                          #
 #                                                                      #
 # Fabio Dioguardi, Pierfrancesco Dellino, Daniela Mele, Integration    #
-#   of a new shape-dependent particle–fluid drag coefficient law in    #
-#   the multiphase Eulerian–Lagrangian code MFIX-DEM, Powder Tech,     #
+#   of a new shape-dependent particle-fluid drag coefficient law in    #
+#   the multiphase Eulerian-Lagrangian code MFIX-DEM, Powder Tech,     #
 #   Volume 260, July 2014, Pages 68-77, ISSN 0032-5910,                #
 #   http://dx.doi.org/10.1016/j.powtec.2014.03.071.                    #
 #                                                                      #
