@@ -110,7 +110,7 @@
 !<keyword category="Run Control" required="false">
 !  <description>Stop-time of the run.</description>
 !  <range min="0.0" max="+Inf" />
-      TSTOP = UNDEFINED
+      TSTOP = UNDEFINED
 !</keyword>
 
 !<keyword category="Run Control" required="false">
