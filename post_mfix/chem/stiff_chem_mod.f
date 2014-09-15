@@ -34,14 +34,4 @@
       INTEGER :: STIFF_CHEM_MAX_STEPS
 
 
-! Legacy Variables:
-!---------------------------------------------------------------------//
-! Former keyword for invoking stiff solver.
-      LOGICAL :: CALL_DI
-! Keyword for using ISAT tables with stiff solver. (disabled)
-      LOGICAL :: CALL_ISAT
-! Time step for isat calculation. (disabled)
-      DOUBLE PRECISION :: ISATdt
-
-
       END MODULE STIFF_CHEM
