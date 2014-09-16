@@ -677,13 +677,13 @@
 
          IF(BC_V_S(BCV,M) == UNDEFINED) THEN
             BC_V_S(BCV,M) = ZERO
-            IF(BC_ROP_S(BCV,M) /= ZERO .AND. .NOT.NO_I) &
+            IF(BC_ROP_S(BCV,M) /= ZERO .AND. .NOT.NO_J) &
                WRITE(ERR_MSG, 1300) trim(iVar('BC_V_s',BCV,M))
          ENDIF
 
          IF(BC_W_S(BCV,M) == UNDEFINED) THEN
             BC_W_S(BCV,M) = ZERO
-            IF(BC_ROP_S(BCV,M) /= ZERO .AND. .NOT.NO_I) &
+            IF(BC_ROP_S(BCV,M) /= ZERO .AND. .NOT.NO_K) &
                WRITE(ERR_MSG, 1300) trim(iVar('BC_W_s',BCV,M))
          ENDIF 
       ENDDO
