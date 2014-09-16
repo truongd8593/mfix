@@ -62,7 +62,7 @@
       CHARACTER :: VERSION*512 
 
 ! Place holder for deprecated variables:
-      LOGICAL, PARAMETER :: CALL_ISAT = .FALSE.
+      LOGICAL, PARAMETER :: lCALL_ISAT = .FALSE.
 
 !-----------------------------------------------
 
@@ -369,9 +369,9 @@
       WRITE (UNIT_RES, REC=NEXT_RECA) K_epsilon  
       NEXT_RECA = NEXT_RECA + 1 
 
-! Version 1.7 -- write STIFF_CHEMISTRY and CALL_ISAT
+! Version 1.7 -- write STIFF_CHEMISTRY and lCALL_ISAT
 ! ------------------------------------------------------------------------
-      WRITE (UNIT_RES, REC=NEXT_RECA) STIFF_CHEMISTRY, CALL_ISAT
+      WRITE (UNIT_RES, REC=NEXT_RECA) STIFF_CHEMISTRY, lCALL_ISAT
       NEXT_RECA = NEXT_RECA + 1 
 
 ! Version 1.8 -- write densities of each solids species
