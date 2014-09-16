@@ -87,35 +87,43 @@
 !<keyword category="Run Control" required="true">
 !  <description> Simulation input/output units.</description>
 !  <valid value="cgs" note="All input and output in CGS units (g, cm, s, cal)."/>
-!  <valid value="si" note="All input and output in SI units (kg, m, s, j)."/>
+!  <valid value="si" note="All input and output in SI units (kg, m, s, J)."/>
       UNITS = UNDEFINED_C
 !</keyword>
 
 !<keyword category="Run Control" required="true">
 !  <description>Type of run.</description>
-!  <valid value="new" note="A new run."/>
-!  <valid value="RESTART_1" note="Traditional restart."/>
+!  <valid value="new" note="A new run. There should be no .RES, .SPx,
+!    .OUT, or .LOG files in the run directory."/>
+!  <valid value="RESTART_1" note="Traditional restart. The run continues
+!    from the last time the .RES file was updated and new data is added
+!    to the SPx files."/>
 !  <valid value="RESTART_2"
 !    note="Start a new run with initial conditions from a .RES file
-!      created from another run."/>
+!      created from another run. No other data files (SPx) should be
+!      in the run directory."/>
       RUN_TYPE = UNDEFINED_C
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>Start-time of the run.</description>
+!  <description>
+!    Simulation start time. This is typically zero.
+!  </description>
 !  <range min="0.0" max="+Inf" />
       TIME = UNDEFINED
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>Stop-time of the run.</description>
+!  <description>
+!    Simulation stop time.
+!  </description>
 !  <range min="0.0" max="+Inf" />
       TSTOP = UNDEFINED
 !</keyword>
 
 !<keyword category="Run Control" required="false">
 !  <description>
-!    Starting time step. If left undefined, a steady-state
+!    Initial time step size. If left undefined, a steady-state
 !    calculation is performed.
 !  </description>
 !  <dependent keyword="TIME" value="DEFINED"/>
@@ -125,7 +133,7 @@
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>Maximum time step.</description>
+!  <description>Maximum time step size.</description>
 !  <dependent keyword="TIME" value="DEFINED"/>
 !  <dependent keyword="TSTOP" value="DEFINED"/>
 !  <range min="0.0" max="+Inf" />
@@ -133,7 +141,7 @@
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description>Minimum time step.</description>
+!  <description>Minimum time step size.</description>
 !  <dependent keyword="TIME" value="DEFINED"/>
 !  <dependent keyword="TSTOP" value="DEFINED"/>
 !  <range min="0.0" max="+Inf" />
@@ -142,7 +150,10 @@
 
 !<keyword category="Run Control" required="false">
 !  <description>
-!    Factor for adjusting time step. Must be less than 1.
+!    Factor for adjusting time step.
+!    * The value must be less than or equal to 1.0.
+!    * A value of 1.0 keeps the time step consant which may help overcome
+!      initial non-convergence.
 !  </description>
 !  <dependent keyword="TIME" value="DEFINED"/>
 !  <dependent keyword="TSTOP" value="DEFINED"/>
@@ -214,28 +225,26 @@
       GRANULAR_ENERGY = .FALSE.
 !</keyword>
 
-!<keyword category="Run Control" required="false">
-!  <description>
-!    Shared gas-pressure formulation. See Syamlal, M. and Pannala, S.
-!    "Multiphase continuum formulation for gas-solids reacting flows,"
-!    chapter in Computational Gas-Solids Flows and Reacting Systems:
-!    Theory, Methods and Practice, S. Pannala, M. Syamlal and T.J.
-!    O'Brien (editors), IGI Global, Hershey, PA, 2011.
-!  </description>
-!  <valid value=".FALSE." note="Use Model A"/>
-!  <valid value=".TRUE."  note="Use Model B. Bouillard, J.X.,
-!    Lyczkowski, R.W., Folga, S., Gidaspow, D., Berry, G.F. (1989).
-!    Canadian Journal of Chemical Engineering 67:218-229."/>
-      MODEL_B = .FALSE.
-!</keyword>
 
 !<keyword category="Run Control" required="false">
 !  <description>
-!    When activated the k-epsilon turbulence model (for single
-!    -phase flow) is solved using standard wall functions.
+!    The K-Epsilon turbulence model (for single-phase flow).
+!    o Numerical parameters (like under-relaxation) are the same as the
+!      ones for SCALAR (index = 9).
+!    o The maximum value of gas turbulent viscosity, MU_GMAX, must be
+!      defined. There is no default and the code will not run if MU_GMAX
+!      is not set. A value MU_GMAX =1.E+03 is recommended.
+!      (see calc_mu_g.f)
+!    o All walls must be defined (NSW, FSW or PSW) in order to use
+!      standard wall functions. If a user does not specify a wall type,
+!      the simulation will not contain the typical turbulent profile in
+!      wall-bounded flows.
 !  </description>
 !  <conflict keyword="L_SCALE0" value="DEFINED"/>
-      K_Epsilon = .FALSE.
+!  <valid value=".TRUE."  note="Enable the K-epsilon turbulent model
+!    (for single-phase flow) using standard wall functions."/>
+!  <valid value=".FALSE." note="Do not use K-epsilon turbulent model"/>
+      K_EPSILON = .FALSE.
 !</keyword>
 
 !<keyword category="Run Control" required="false">
@@ -252,6 +261,23 @@
 !    Maximum value of the turbulent viscosity of the fluid.
 !  </description>
       MU_GMAX = UNDEFINED
+!</keyword>
+
+!<keyword category="Run Control" required="false">
+!  <description> The number of user-defined scalar transport equations
+!    to solve.
+!  </description>
+!  <range min="0" max="DIM_SCALAR" />
+      NScalar = 0
+!</keyword>
+
+!<keyword category="Run Control" required="false">
+!  <description>
+!    The phase convecting the indexed scalar transport equation.
+!  </description>
+!  <arg index="1" id="Scalar Equation" min="0" max="DIM_SCALAR"/>
+!  <range min="0" max="DIM_M" />
+      Phase4Scalar(:DIM_SCALAR) = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Run Control" required="false">
@@ -362,20 +388,18 @@
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description> The number of user-defined scalar transport equations
-!    to solve.
-!  </description>
-!  <range min="0" max="DIM_SCALAR" />
-      NScalar = 0
-!</keyword>
-
-!<keyword category="Run Control" required="false">
 !  <description>
-!    The phase convecting the indexed scalar transport equation.
+!    Shared gas-pressure formulation. See Syamlal, M. and Pannala, S.
+!    "Multiphase continuum formulation for gas-solids reacting flows,"
+!    chapter in Computational Gas-Solids Flows and Reacting Systems:
+!    Theory, Methods and Practice, S. Pannala, M. Syamlal and T.J.
+!    O'Brien (editors), IGI Global, Hershey, PA, 2011.
 !  </description>
-!  <arg index="1" id="Scalar Equation" min="0" max="DIM_SCALAR"/>
-!  <range min="0" max="DIM_M" />
-      Phase4Scalar(:DIM_SCALAR) = UNDEFINED_I
+!  <valid value=".FALSE." note="Use Model A"/>
+!  <valid value=".TRUE."  note="Use Model B. Bouillard, J.X.,
+!    Lyczkowski, R.W., Folga, S., Gidaspow, D., Berry, G.F. (1989).
+!    Canadian Journal of Chemical Engineering 67:218-229."/>
+      MODEL_B = .FALSE.
 !</keyword>
 
 
@@ -435,13 +459,20 @@
 
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Maximum number of iterations.</description>
+!  <description>
+!    Maximum number of iterations [500].
+!  </description>
       MAX_NIT = 500
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
 !    Factor to normalize the gas continuity equation residual.
+!    NORM_G=0 invokes a normalization method based on the dominant
+!    term in the continuity equation. This setting may speed up
+!    calculations, especially near a steady state and incompressible
+!    fluids. But, the number of iterations for the gas phase pressure
+!    should be increased, LEQ_IT(1), to ensure mass balance
 !  </description>
       NORM_G = UNDEFINED
 !</keyword>
@@ -449,13 +480,18 @@
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
 !    Factor to normalize the solids continuity equation residual.
+!    NORM_S = 0 invokes a normalization method based on the dominant
+!    term in the continuity equation. This setting may speed up
+!    calculations, especially near a steady state and incompressible
+!    fluids. But, the number of iterations for the solids volume
+!    fraction should be increased, LEQ_IT(2), to ensure mass balance.
 !  </description>
       NORM_S = UNDEFINED
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Maximum residual at convergence (Continuity+Momentum).
+!    Maximum residual at convergence (Continuity + Momentum) [1.0d-3].
 !  </description>
       TOL_RESID = 1.0D-3
 !</keyword>
@@ -463,52 +499,54 @@
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Maximum residual at convergence (Energy).
+!    Maximum residual at convergence (Energy) [1.0d-4].
 !  </description>
       TOL_RESID_T = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Maximum residual at convergence (Species Balance).
+!    Maximum residual at convergence (Species Balance) [1.0d-4].
 !  </description>
       TOL_RESID_X = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Maximum residual at convergence (Granular Energy).
+!    Maximum residual at convergence (Granular Energy) [1.0d-4].
 !  </description>
       TOL_RESID_Th = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Maximum residual at convergence (Scalar Equations.)
+!    Maximum residual at convergence (Scalar Equations) [1.0d-4].
 !  </description>
       TOL_RESID_Scalar = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Maximum residual at convergence (K_Epsilon Model)
+!    Maximum residual at convergence (K_Epsilon Model) [1.0d-4].
 !  </description>
       TOL_RESID_K_Epsilon = 1.0D-4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Minimum residual for declaring divergence. This parameter is useful
-!    for incompressible fluid simulations because velocity residuals can
-!    take large values for the second iteration (e.g., 1e+8) before
-!    dropping down to smaller values for third  third iteration.
+!    Minimum residual for declaring divergence [1.0d+4].
+!    This parameter is useful for incompressible fluid simulations
+!    because velocity residuals can take large values for the second
+!    iteration (e.g., 1e+8) before dropping down to smaller values for
+!    the third iteration.
 !  </description>
       TOL_DIVERGE = 1.0D+4
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Reduce the time step if the residuals stop decreasing.
+!    Reduce the time step if the residuals stop decreasing. Disabling this
+!    feature may help overcome initial non-convergence.
 !  </description>
 !  <valid value=".FALSE." note="Continue iterating if residuals stall."/>
 !  <valid value=".TRUE."  note="Reduce time step if residuals stall."/>
@@ -517,7 +555,10 @@
 
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>LEQ Solver selection.</description>
+!  <description>
+!    LEQ Solver selection. BiCGSTAB is the default method for all
+!    equation types. 
+!  </description>
 !  <arg index="1" id="Equation ID Number" min="1" max="9"/>
 !  <valid value="1" note="SOR - Successive over-relaxation"/>
 !  <valid value="2" note="BiCGSTAB - Biconjugate gradient stabilized."/>
@@ -527,7 +568,9 @@
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Linear Equation tolerance.</description>
+!  <description>
+!    Linear Equation tolerance [1.0d-4].
+!  </description>
 !  <arg index="1" id="Equation ID Number" min="1" max="9"/>
 !  <dependent keyword="LEQ_METHOD" value="2"/>
 !  <dependent keyword="LEQ_METHOD" value="3"/>
@@ -537,6 +580,9 @@
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
 !    Number of iterations in the linear equation solver.
+!    o 20 iterations for equation types 1-2
+!    o  5 iterations for equation types 3-5
+!    o 15 iterations for equation types 6-9
 !  </description>
 !  <arg index="1" id="Equation ID Number" min="1" max="9"/>
       LEQ_IT(1) = 20
@@ -552,17 +598,10 @@
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Linear precondition used for LEQ solver sweeps.
+!    Linear equation sweep direction. This applies when using GMRES or
+!    when using the LINE preconditioner with BiCGSTAB or CG methods.
+!    'RSRS' is the default for all equation types.
 !  </description>
-!  <arg index="1" id="Equation ID Number" min="1" max="9"/>
-!  <valid value="NONE" note="No preconditioner"/>
-!  <valid value="LINE" note="Line relaxation"/>
-!  <valid value="DIAG" note="Diagonal Scaling"/>
-      LEQ_PC(:) = 'LINE'
-!</keyword>
-
-!<keyword category="Numerical Parameters" required="false">
-!  <description>Linear equation sweep direction.</description>
 !  <arg index="1" id="Equation ID Number" min="1" max="9"/>
 !  <valid value="RSRS" note="(Red/Black Sweep, Send Receive) repeated twice"/>
 !  <valid value="ISIS" note="(Sweep in I, Send Receive) repeated twice"/>
@@ -572,9 +611,26 @@
       LEQ_SWEEP(:) = 'RSRS'
 !</keyword>
 
+!<keyword category="Numerical Parameters" required="false">
+!  <description>
+!    Linear precondition used by the BiCGSTAB and CG LEQ solvers. 'LINE'
+!    is the default for all equation types.
+!  </description>
+!  <arg index="1" id="Equation ID Number" min="1" max="9"/>
+!  <valid value="NONE" note="No preconditioner"/>
+!  <valid value="LINE" note="Line relaxation"/>
+!  <valid value="DIAG" note="Diagonal Scaling"/>
+      LEQ_PC(:) = 'LINE'
+!</keyword>
+
 
 !<keyword category="Numerical Parameters" required="false">
-!  <description>Under relaxation factors.</description>
+!  <description>
+!    Under relaxation factors.
+!    o 0.8 for equation types 1,6,9
+!    o 0.5 for equation types 2,3,4,5,8
+!    o 1.0 for equation types 7
+!  </description>
 !  <arg index="1" id="Equation ID Number" min="1" max="9"/>
       UR_FAC(1)  = 0.8D0             !pressure
       UR_FAC(2)  = 0.5D0             !rho, ep
@@ -591,7 +647,9 @@
 !  <description>
 !    The implicitness calculation of the gas-solids drag coefficient
 !    may be underrelaxed by changing ur_f_gs, which takes values
-!    between 0 to 1:
+!    between 0 to 1.
+!    o  0 updates F_GS every time step
+!    o  1 updates F_GS every iteration
 !  </description>
 !  <range min="0" max="1" />
       UR_F_gs = 1.0D0
@@ -600,7 +658,7 @@
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
 !    Under relaxation factor for conductivity coefficient associated
-!    with other solids phases for IA Theory.
+!    with other solids phases for IA Theory [1.0].
 !  </description>
       UR_Kth_sml = 1.0D0
 !</keyword>
@@ -677,7 +735,7 @@
 !  <valid value=".TRUE."
 !    note="Two-step implicit Runge-Kutta method based temporal
 !      discretization scheme employed (second order accurate in time
-!      excluding the pressure terms and restart timestep which are
+!      excluding the pressure terms and restart time step which are
 !      first order accurate)."/>
       CN_ON = .FALSE.
 !</keyword>
@@ -687,7 +745,7 @@
 !    The code declares divergence if the velocity anywhere in the domain
 !    exceeds a maximum value.  This maximum value is automatically
 !    determined from the boundary values. The user may scale the maximum
-!    value by adjusting this scale factor.
+!    value by adjusting this scale factor [1.0d0].
 !  </description>
       MAX_INLET_VEL_FAC = ONE
 !</keyword>
@@ -779,20 +837,20 @@
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>(Do not use.)</description>
-!  <valid value=".FALSE. note="y direction is considered."/>
-!  <valid value=".TRUE." note="y direction is not considered."/>
+!  <valid value=".FALSE. note="y-direction is considered."/>
+!  <valid value=".TRUE." note="y-direction is not considered."/>
 !     NO_J = .FALSE.
 !</keyword>
 
 
 !<keyword category="Geometry and Discretization" required="false">
-!  <description>Number of cells in the y direction.</description>
+!  <description>Number of cells in the y-direction.</description>
       JMAX = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
-!    Cell sizes in the y direction. Enter values from DY(0) to
+!    Cell sizes in the y-direction. Enter values from DY(0) to
 !    DY(IMAX-1). (Use uniform mesh size with second-order
 !    discretization methods.)
 !  </description>
@@ -801,7 +859,7 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
-!  <description>Reactor length in the y direction.</description>
+!  <description>Reactor length in the y-direction.</description>
       YLENGTH = UNDEFINED
 !</keyword>
 
@@ -817,7 +875,7 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
-!  <description>Number of cells in the z direction.</description>
+!  <description>Number of cells in the z-direction.</description>
       KMAX = UNDEFINED_I
 !</keyword>
 
@@ -850,7 +908,7 @@
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
 !    Flag for making the x-direction cyclic with pressure drop. if the
-!    keyword flux_g is given a value this becomes a cyclic boundary
+!    keyword FLUX_G is given a value this becomes a cyclic boundary
 !    condition with specified mass flux. no other boundary conditions
 !    for the x-direction should be specified.
 !  </description>
@@ -969,36 +1027,49 @@
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Specified constant gas density. The value may be set to zero to
-!    make the drag zero and to simulate granular flow in a vacuum. For
-!    this case, users may turn off solving for gas momentum equations
-!    to accelerate convergence.
+!    Specified constant gas density [g/cm^3 in CGS]. An equation of
+!    state -the ideal gas law by default- is used to calculate the gas
+!    density if this parameter is undefined. The value may be set to
+!    zero to make the drag zero and to simulate granular flow in a
+!    vacuum. For this case, users may turn off solving for gas momentum
+!    equations to accelerate convergence.
 !  </description>
       RO_G0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
-!  <description>Specified constant gas viscosity.</description>
+!  <description>
+!    Specified constant gas viscosity [poise or g/(cm.s) in CGS].
+!  </description>
       MU_G0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
-!  <description>Specified constant gas conductivity.</description>
+!  <description>
+!    Specified constant gas conductivity [cal/(s.cm.K) in CGS].
+!  </description>
       K_G0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
-!  <description>Specified constant gas specific heat.</description>
+!  <description>
+!    Specified constant gas specific heat [cal/(g.s.K) in CGS].
+!  </description>
       C_PG0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
-!  <description>Specified constant gas diffusivity.</description>
+!  <description>
+!    Specified constant gas diffusivity [g/(cm.s) in CGS].
+!  </description>
       DIF_G0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
-!  <description>Average molecular weight of gas.</description>
+!  <description>
+!    Average molecular weight of gas. Used in calculating the gas density
+!    for non-reacting flows when the gas composition is not defined.
+!  </description>
       MW_AVG = UNDEFINED
 !</keyword>
 
@@ -1055,19 +1126,30 @@
 
 !<keyword category="Solids Phase" required="false"
 !  tfm="true" dem="true" pic="true">
-!  <description>Initial particle diameters.</description>
+!  <description>
+!    Initial particle diameters [cm in CGS].
+!  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       D_P0(:DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Phase" required="false" tfm="true" dem="true" pic="true">
-!  <description>Specified constant solids density.</description>
+!<keyword category="Solids Phase" required="false" 
+!  tfm="true" dem="true" pic="true">
+!  <description>
+!    Specified constant solids density [g/cm^3 in CGS]. Reacting flows
+!    may use variable solids density by leaving this parameter
+!    undefined and specifying X_S0 and RO_XS0 as well as the index
+!    of the inert species.
+!  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       RO_S0(:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
-!  <description>Baseline species mass fraction.</description>
+!  <description>
+!    Baseline species mass fraction. Specifically, the mass fraction
+!    of an unreacted sample (e.g., proximate analysis).
+!  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
 !  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
@@ -1078,7 +1160,9 @@
 !</keyword>
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
-!  <description>Specified constant solids species density.</description>
+!  <description>
+!    Specified constant solids species density [g/cm^3 in CGS].
+!  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
 !  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
@@ -1089,7 +1173,10 @@
 !</keyword>
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
-!  <description>Index of inert solids phase species.</description>
+!  <description>
+!    Index of inert solids phase species. This species should not be a
+!    product or reactant of any chemical reaction.
+!  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
 !  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
@@ -1101,27 +1188,35 @@
 
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
-!  <description>Specified constant solids conductivity.</description>
+!  <description>
+!    Specified constant solids conductivity [cal/(s.cm.K) in CGS].
+!  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       K_S0(:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
-!  <description>Specified constant solids specific heat.</description>
+!  <description>
+!    Specified constant solids specific heat [cal/(g.s.K) in CGS].
+!  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       C_PS0(:DIM_M) = UNDEFINED
 !</keyword>
 
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
-!  <description>Molecular weight of solids phase-m, species n.</description>
+!  <description>
+!    Molecular weight of solids phase species.
+!  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
       MW_S(:DIM_M,:DIM_N_s) = UNDEFINED
 !</keyword>
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
-!  <description>Number of species comprising solids phase m.</description>
+!  <description>
+!    Number of species comprising the solids phase.
+!  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       NMAX_s(:DIM_M) = UNDEFINED_I
 !</keyword>
@@ -1138,7 +1233,8 @@
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>
-!    User defined name for solids phase M, species N.
+!    User defined name for solids phase species. Aliases are used in
+!    specifying chemical equations and must be unique.
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
@@ -1151,7 +1247,10 @@
 
 
 !<keyword category="Two Fluid Model" required="false">
-!  <description>Solids phase stress model.</description>
+!  <description>
+!    Solids phase stress model. This is only needed when solving the
+!    granular energy PDE (GRANULAR_ENERGY = .TRUE.).
+!  </description>
 !  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
 !  <valid value="AHMADI"
 !    note="Cao and Ahmadi (1995). Int. J. Multiphase Flow 21(6), 1203."/>
@@ -1177,17 +1276,23 @@
       SIMONIN = .FALSE.
 
 !<keyword category="Two Fluid Model" required="false">
-!  <description>Jenkins small frictional boundary condition.</description>
+!  <description>
+!    This flag effects how the momentum and granular energy boundary
+!    conditions are implemented. This feature requires that PHI_W is
+!    specified.
+!  </description>
 !  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
 !  <dependent keyword="PHI_W" value="DEFINED"/>
-!  <valid value=".FALSE." note=""/>
+!  <valid value=".FALSE." note="Use standard boundary conditions."/>
 !  <valid value=".TRUE."
 !    note="Use the Jenkins small frictional boundary condition."/>
       JENKINS = .FALSE.
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false">
-!  <description>Solids stress model selection.</description>
+!  <description>
+!    Solids stress model selection.
+!  </description>
 !  <valid value=".FALSE." note="Use the Schaeffer solids stress model."/>
 !  <valid value=".TRUE."  note="Use the Princeton solids stress model"/>
 !  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
@@ -1236,7 +1341,7 @@
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    A scaled and truncated sigmoidal function for blending
-!    frictional stress  models.
+!    frictional stress models.
 !  </description>
 !  <dependent keyword="BLENDING_STRESS" value=".TRUE."/>
 !  <conflict keyword="TANH_BLEND" value=".TRUE."/>
@@ -1280,7 +1385,7 @@
 !    using the kinetic theory approach. Doctoral Dissertation,
 !    Illinois Institute of Technology, Chicago, Illinois, 2004,
 !    (chapter 2, equations 2-49 through 2-52.)"/>
-
+!
 !  <valid value="MANSOORI" note="
 !   Mansoori, GA, Carnahan N.F., Starling, K.E. Leland, T.W. (1971).
 !    The Journal of Chemical Physics, Vol. 54:1523-1525."/>
@@ -1365,8 +1470,8 @@
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Angle of internal friction (in degrees) at walls. Set this
-!    value to non-zero (phi_w = 11.31 means tan_phi_w = mu = 0.2)
-!    when using Jenkins or bc_jj_m boundary condition.
+!    value to non-zero (PHI_W = 11.31 means TAN_PHI_W = MU = 0.2)
+!    when using Jenkins or BC_JJ_M boundary condition.
 !  </description>
       PHI_W = UNDEFINED
 !</keyword>
@@ -1383,12 +1488,12 @@
 !  <description>
 !    Maximum solids volume fraction at packing for polydisperse
 !    systems (more than one solids phase used). The value of
-!    EP_star may change during the computation if solids phases
+!    EP_STAR may change during the computation if solids phases
 !    with different particle diameters are specified and
 !    Yu_Standish or Fedors_Landel correlations are used.
 !  </description>
 !  <arg index="1" id="Phase" min="0" max="DIM_M"/>
-!  <range min="0" max="1-ep_star" />
+!  <range min="0" max="1-EP_STAR" />
       EP_S_MAX(:DIM_M) = UNDEFINED
 !</keyword>
 
@@ -1410,33 +1515,42 @@
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
-!  <description>Specified constant granular viscosity. if this value is
+!  <description>Specified constant granular viscosity. If this value is
 !    specified, then the kinetic theory calculation is turned off and
-!    p_s = 0 and lambda_s = -2/3 mu_s0.
+!    P_S = 0 and LAMBDA_S = -2/3 MU_S0.
 !  </description>
       MU_S0 = UNDEFINED
 !</keyword>
+
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>Specified constant solids diffusivity.</description>
       DIF_S0 = UNDEFINED
 !</keyword>
 !<keyword category="Two Fluid Model" required="false" tfm="true">
-!  <description>Packed bed void fraction.</description>
+!  <description>
+!    Packed bed void fraction. Used to calculate plastic stresses (for
+!    contribution to viscosity) and when to implement plastic pressure,
+!    P_STAR. Specifically, if EP_G < EP_STAR, then plastic pressure is
+!    employed in the momentum equations.
+!  </description>
       EP_STAR = UNDEFINED
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Indicates that the solids phase forms a packed bed with a void
-!    fraction ep_star.
+!    Flag to enable/disable a phase from forming a packed bed.
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+!  <valid value=".TRUE." note="The phase forms a packed bed with void
+!    fraction EP_STAR."/>
+!  <valid value=".FALSE." note="The phase can exceed close pack conditions
+!    so that it maybe behave like a liquid."/>
       CLOSE_PACKED(:DIM_M) = .TRUE.
 !</keyword>
 
 
 !#####################################################################!
-!                category="Physical Paramters"                      !
+!                   Initial Conditions Section                        !
 !#####################################################################!
 
 
@@ -1572,6 +1686,7 @@
 !<keyword category="Initial Condition" required="false">
 !  <description>
 !    Initial solids volume fraction of solids phase-m in the IC region.
+!    This may be specified in place of IC_ROP_s.
 !  </description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
 !  <arg index="2" id="Phase" min="1" max="DIM_M"/>

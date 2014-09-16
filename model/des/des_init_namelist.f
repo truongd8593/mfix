@@ -79,38 +79,6 @@
 !</keyword>
 
 
-!<keyword category="Geometry and Discretization" required="false"
-!  dem="true" pic="true">
-!  <description>
-!    Number of des grid cells in the I-direction. If left undefined,
-!    then it is set by MFIX such that its size equals three times the
-!    maximum particle diameter with a minimum of 1 cell.
-!  </description>
-      DESGRIDSEARCH_IMAX = UNDEFINED_I
-!</keyword>
-
-!<keyword category="Geometry and Discretization" required="false"
-!  dem="true" pic="true">
-!  <description>
-!    Number of des grid cells in the J-direction. If left undefined,
-!    then it is set by MFIX such that its size equals three times 
-!    the maximum particle diameter with a minimum of 1 cell.
-!  </description>
-      DESGRIDSEARCH_JMAX = UNDEFINED_I
-!</keyword>
-
-
-!<keyword category="Geometry and Discretization" required="false"
-!  dem="true" pic="true">
-!  <description>
-!    Number of des grid cells in the K-direction. If left undefined,
-!    then it is set by MFIX such that its size equals three times
-!    the maximum particle diameter with a minimum of 1 cell.
-!  </description>
-      DESGRIDSEARCH_KMAX = UNDEFINED_I
-!</keyword>
-
-
 
 !#####################################################################!
 !                          Output Control                             !
@@ -228,7 +196,7 @@
 !  <description>
 !    Maximum number of particles that may exist within a simulation.
 !    This quantity is used for calculating the size of arrays for
-!    allocation. Requred input if PARTICLES is UNDEFINED.
+!    allocation. Required input if PARTICLES is UNDEFINED.
 !  </description>
       MAX_PIS = UNDEFINED_I
 !</keyword>
@@ -240,7 +208,7 @@
 !    data based on the parameters specified for each initial condition
 !    (IC) region.
 !  </description>
-!  <valid value=".TRUE." note="Generate particle configurion based
+!  <valid value=".TRUE." note="Generate particle configuration based
 !    on the initial condition parameters. Data provided in the
 !    particle_input.dat file, if present, is ignored. "/>
 !  <valid value=".FALSE." note="Particle position and velocity data are
@@ -292,7 +260,7 @@
 !    average fields are obtained by simple arithmetic averaging.
 !  </description>
 !  <valid value=".true." note="If drag is interpolated
-! (i.e., des_interp_on = .true.), then it is forced to
+! (i.e., DES_INTERP_ON = .TRUE.), then it is forced to
 ! true for backward compatibility.
 ! Additionally, if MPPIC or Cut-cells are used (DEM or MPPIC), then
 ! also the mean field interpolation is forced. "/>
@@ -318,12 +286,21 @@
 !  <description>
 !    The number of iterations of a pure granular simulation to let
 !    the initial particle configuration settle before a coupled 
-!    gas-solild is started.
+!    gas-solid is started.
 !  </description>
 !  <range min="0" max="+Inf" />
       NFACTOR = 10
 !</keyword>
 
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Maximum number of steps through a DEM loop before a neighbor
+!    search will be performed. The search may be called earlier
+!    based on other logic.
+!  </description>
+!  <range min="0.0" max="+Inf" />
+      NEIGHBOR_SEARCH_N = 25
+!</keyword>
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
@@ -334,13 +311,35 @@
       DES_NEIGHBOR_SEARCH = 4
 !</keyword>
 
+!<keyword category="Discrete Element Model" required="false"
+!  dem="true" pic="true">
+!  <description>
+!    Number of des grid cells in the I-direction. If left undefined,
+!    then it is set by MFIX such that its size equals three times the
+!    maximum particle diameter with a minimum of 1 cell.
+!  </description>
+      DESGRIDSEARCH_IMAX = UNDEFINED_I
+!</keyword>
 
-!<keyword category="Discrete Element Model" required="false">
-!  <description>Maximum number of steps through a Dem loop
-! before a neighbor search will be performed.
-! (search may be called earlier based on other logic).</description>
-!  <range min="0.0" max="+Inf" />
-      NEIGHBOR_SEARCH_N = 25
+!<keyword category="Discrete Element Model" required="false"
+!  dem="true" pic="true">
+!  <description>
+!    Number of des grid cells in the J-direction. If left undefined,
+!    then it is set by MFIX such that its size equals three times 
+!    the maximum particle diameter with a minimum of 1 cell.
+!  </description>
+      DESGRIDSEARCH_JMAX = UNDEFINED_I
+!</keyword>
+
+
+!<keyword category="Discrete Element Model" required="false"
+!  dem="true" pic="true">
+!  <description>
+!    Number of des grid cells in the K-direction. If left undefined,
+!    then it is set by MFIX such that its size equals three times
+!    the maximum particle diameter with a minimum of 1 cell.
+!  </description>
+      DESGRIDSEARCH_KMAX = UNDEFINED_I
 !</keyword>
 
 
@@ -358,7 +357,7 @@
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
 !    Effectively increase the radius of a particle (multiple of the sum
-!    of particle radii) during the  building of particle neighbor list.
+!    of particle radii) during the building of particle neighbor list.
 !  </description>
       FACTOR_RLM = 1.2
 !</keyword>
@@ -410,7 +409,7 @@
 !  <description>
 !    Ratio of the tangential spring constant to normal spring constant
 !    for inter-particle collisions. Use it to specify the tangential
-!    spring constant for particle-particle collisions as kt_fac*kn.
+!    spring constant for particle-particle collisions as KT_FAC*KN.
 !    Required when using the linear spring-dashpot collision model.
 !  </description>
 !  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
@@ -432,9 +431,9 @@
 !  <description>
 !    Ratio of the tangential spring constant to normal spring constant 
 !    for particle-wall collisions. Use it to specify the tangential 
-!    spring constant for particle-wall collisions as kt_w_fac*kn_w.
+!    spring constant for particle-wall collisions as KT_W_FAC*KN_W.
 !    Needed when using the linear spring-dashpot collision model.
-!  </description>!
+!  </description>
 !  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
 !  <range min="0.0" max="1.0" />
       KT_W_FAC = 2.d0/7.d0
@@ -478,7 +477,7 @@
 ! 
 !    Values should be defined in a single dimensional array. For
 !    example, a simulation with three solids phases (MMAX=3) needs
-!    thre values: enw1, enw2, enw3.
+!    three values: enw1, enw2, enw3.
 !  </description>
 !  <range min="0.0" max="1.0" />
       DES_EN_WALL_INPUT(:) = UNDEFINED
@@ -487,7 +486,7 @@
 
 !<keyword category="Discrete Element Model" required="false" dem="true">
 !  <description>
-!    Tangential restitution coefficient for interparticle collisions.
+!    Tangential restitution coefficient for inter-particle collisions.
 !    Values are defined in a one dimensional array. This is required
 !    input when using the Hertzian collision model.
 ! </description>
@@ -500,7 +499,7 @@
 !<keyword category="Discrete Element Model" required="false" dem="true">
 !  <description>
 !    Tangential restitution coefficient for particle wall collisions.
-!    Values are defined in a one dimensional array. The is required
+!    Values are defined in a one dimensional array. This is required
 !    input when using the Hertzian collision model.
 !  </description>
 ! <range min="0.0" max="1.0" />
@@ -518,19 +517,20 @@
 !  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
 !  <range min="0.0" max="1.0" />
 !  <valid value="UNDEFINED" note="For LSD model, if left undefined, MFIX
-! will will revert to default value of 0.5" />
+!   reverts to default value of 0.5" />
       DES_ETAT_FAC = UNDEFINED
 !</keyword>
 
 
 !<keyword category="Discrete Element Model" required="false">
-! <description>Ratio of the tangential damping factor to the
-! normal damping factor for particle-wall collisions.
-! Required for the linear spring-dashpot model for soft-spring collision
-! modelling under DEM.
-! For the Hertzian model, the tangential damping coefficients
-! have to be explicity specified and specification of this
-! variable is not required. </description>
+! <description>
+!    Ratio of the tangential damping factor to the normal damping 
+!    factor for particle-wall collisions. Required for the linear
+!    spring-dashpot model for soft-spring collision modelling under
+!    DEM. For the Hertzian model, the tangential damping coefficients
+!    have to be explicitly specified and specification of this
+!    variable is not required.
+! </description>
 ! <dependent keyword="DES_COLL_MODEL" value="LSD"/>
 ! <range min="0.0" max="1.0" />
 ! <valid value="UNDEFINED" note="For LSD model, if left undefined, MFIX
@@ -586,7 +586,7 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    Flag to turn on the use hamaker van der waals forces.
+!    Flag to turn on the use Hamaker van der Waals forces.
 !  </description>
 !  <dependent keyword="USE_COHESION" value=".TRUE."/>
       VAN_DER_WAALS = .FALSE.
@@ -625,7 +625,7 @@
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
 !    Minimum separation distance below which van der Waals forces are 
-!   c alculated using a surface adhesion model.
+!    calculated using a surface adhesion model.
 !  </description>
 !  <dependent keyword="USE_COHESION" value=".TRUE."/>
       VDW_INNER_CUTOFF = UNDEFINED
@@ -667,7 +667,7 @@
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
 !    Flag to turn on runtime cluster data calculations. These routines
-!    are very time consuming and can dramaticaly slow down simulations.
+!    are very time consuming and can dramatically slow down simulations.
 !  </description>
 !  <conflict keyword="MPPIC" value=".TRUE."/>
       DES_CALC_CLUSTER = .FALSE.
@@ -675,7 +675,7 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    The physical distance relative to a particle for peforming cluster
+!    The physical distance relative to a particle for performing cluster
 !    statistics calculations.
 !  </description>
 !  <conflict keyword="MPPIC" value=".TRUE."/>
@@ -686,7 +686,7 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    Specify the nusselt number correlation used for particle-gas 
+!    Specify the Nusselt number correlation used for particle-gas 
 !    convection.
 !  </description>
 !  <valid value="RANZ_1952" note="Ranz, W.E. and Marshall, W.R. (1952).
@@ -705,8 +705,8 @@
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
 !    Fluid lens proportion constant used to calculate the radius of
-!    the fluid lens that surrounds a particle. used in the 
-!    particle-fluid-particle conduction model.
+!    the fluid lens that surrounds a particle. This parameter is used
+!    in the  particle-fluid-particle conduction model.
 !  </description>
       FLPC = 1.0d0/5.0d0
 !</keyword>
@@ -785,7 +785,7 @@
 !  <description>
 !     Variable to decide if special treatment is needed or not in the 
 !     direction of gravity in the frictional stress tensor. See the
-!     MPPIC documenation for details.
+!     MPPIC documentation for details.
 !  </description>
 !  <dependent keyword="MPPIC" value=".TRUE."/>
       MPPIC_GRAV_TREATMENT = .true.
