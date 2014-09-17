@@ -1108,7 +1108,7 @@
 !<keyword category="Solids Phase" required="false">
 !  <description>
 !    Defines the model used for the solids phase. For TFM/DEM
-!    hybrid simulations, firt define all TFM solids, then
+!    hybrid simulations, first define all TFM solids, then
 !    define the DEM solids phases.
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
