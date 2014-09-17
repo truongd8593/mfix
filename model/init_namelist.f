@@ -1381,7 +1381,7 @@
 !   The Physical Review, A133, 895-899"/>
 !
 !  <valid value="MODIFIED_LEBOWITZ" note="
-!    Iddir, H. Y., Modeling of the mulitphase mixture of particles
+!    Iddir, H. Y., Modeling of the multiphase mixture of particles
 !    using the kinetic theory approach. Doctoral Dissertation,
 !    Illinois Institute of Technology, Chicago, Illinois, 2004,
 !    (chapter 2, equations 2-49 through 2-52.)"/>
