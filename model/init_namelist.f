@@ -152,7 +152,7 @@
 !  <description>
 !    Factor for adjusting time step.
 !    * The value must be less than or equal to 1.0.
-!    * A value of 1.0 keeps the time step consant which may help overcome
+!    * A value of 1.0 keeps the time step constant which may help overcome
 !      initial non-convergence.
 !  </description>
 !  <dependent keyword="TIME" value="DEFINED"/>
@@ -557,7 +557,7 @@
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
 !    LEQ Solver selection. BiCGSTAB is the default method for all
-!    equation types. 
+!    equation types.
 !  </description>
 !  <arg index="1" id="Equation ID Number" min="1" max="9"/>
 !  <valid value="1" note="SOR - Successive over-relaxation"/>
@@ -706,7 +706,7 @@
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
 !    Four point fourth order interpolation and is upstream biased.
-!    Notes: 
+!    Notes:
 !    * DISCRETIZE(*) defaults to Superbee if this scheme is chosen
 !      and DISCRETIZE(*) < 2.
 !    * Set C_FAC between 0 and 1 when using this scheme.
@@ -717,7 +717,7 @@
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Factor between zero and one used in the universal limiter when 
+!    Factor between zero and one used in the universal limiter when
 !    using four point, fourth order interpolation (FPFOI).
 !    * Choosing one gives (diffusive) first order upwinding.
 !    * The scheme becomes more compressive as values near zero.
@@ -973,7 +973,7 @@
 !    for the z-direction should be specified.
 !  </description>
 !  <valid value=".FALSE." note="No cyclic condition at z-boundary."/>
-!  <valid value=".TRUE." note="Cyclic condition with pressure drop at 
+!  <valid value=".TRUE." note="Cyclic condition with pressure drop at
 !    z-boundary."/>
       CYCLIC_Z_PD = .FALSE.
 !</keyword>
@@ -989,7 +989,7 @@
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
 !    Imposes a mean shear on the flow field as a linear function of the
-!    x coordinate. This feature should only be used when CYCLIC_X is 
+!    x coordinate. This feature should only be used when CYCLIC_X is
 !    .TRUE. and the keyword V_SH is set.
 !  </description>
 !  <dependents>cyclic_x v_sh</dependents>
@@ -1133,7 +1133,7 @@
       D_P0(:DIM_M) = UNDEFINED
 !</keyword>
 
-!<keyword category="Solids Phase" required="false" 
+!<keyword category="Solids Phase" required="false"
 !  tfm="true" dem="true" pic="true">
 !  <description>
 !    Specified constant solids density [g/cm^3 in CGS]. Reacting flows
@@ -1445,7 +1445,7 @@
 !  <description>
 !    Specify the value of specularity coefficient when the normalized
 !     slip velocity goes to zero when BC_JJ_M is .TRUE.. This variable
-!     is calculated internally in the code. Do not modify unless an 
+!     is calculated internally in the code. Do not modify unless an
 !     accurate number is known.
 !  </description>
 !  <dependents>BC_JJ_M</dependents>
@@ -2859,7 +2859,7 @@
 !<keyword category="Output Control" required="false">
 !  <description>
 !    Frequency to perform an overall species mass balance. Leaving
-!    undefined suppresses the mass balance calculations which can 
+!    undefined suppresses the mass balance calculations which can
 !    slightly extend run time.
 !  </description>
       REPORT_MASS_BALANCE_DT = UNDEFINED
