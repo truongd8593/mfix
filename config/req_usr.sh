@@ -34,7 +34,7 @@ if test ${REQ_OPT} = 1; then
   echo "[0] Level 0: No optimization - Debug mode"
   echo "[1] Level 1: O1 optimization - Low"
   echo "[2] Level 2: O2 optimization - Moderate"
-  echo "[3] Level 3: O3 optimiaztion - Aggressive"
+  echo "[3] Level 3: O3 optimization - Aggressive"
   echo " "
   echo -n "Select the level of optimization [3] : "
   read level_of_optimization
