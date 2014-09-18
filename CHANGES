@@ -1,72 +1,112 @@
-Changes from MFIX2013-1 (Date: 03/05/2013) to MFIX2013-2 (Date: 09/18/2013)
+Changes from MFIX2013-2 (Date: 09/18/2013) to MFIX2014-1 (Date: 09/18/2014)
 
+
+Note for MFIX 2013-2 users
+--------------------------
+
+Some feature improvements are fairly aggressive and required major
+changes to the code. As a result, backward compatibility is not
+guaranteed for either input or restart files. Please contact the
+development team through the mailing list (See User Guide [1]) if you
+have difficulties running a previous model with the new release.
 
 New features added:
 -------------------
 
-* Stiff chemistry model
-  o The stiff chemistry solver was completely overhauled to eliminate any user coding.
-    This capability can now be activated with a single keyword.
+* Variable solids density
+  o The material density of a solids phase changes as a result of
+    chemical reactions (changing species composition) with the
+    assumption that the solids volume fraction remains constant.
 
-* Point Source
-  o The ability to specify mass inlet point source anywhere in the domain was added.
-    This can be useful when modeling a small side inlet, without having to resolve the
-    actual geometry.
-
-* Subgrid models
-  o The two-fluid Igci and Milioli filtered models were implemented and can be activated by new keywords.
-
-* DEM cluster detection
-  o An algorithm to detect clusters and collect information was implemented.
-
+* DEM Complex boundaries
+  o The DEM/Cartesian cut-cell implementation was updated such that
+    boundaries (walls) can be defined through STL files. This change
+    allows for greater geometry complexity with better particle-wall
+    collision detection.
 
 Changes in existing features:
 -----------------------------
 
-* Parallel execution
-  o The SMP directives have been updated in key-subroutines. The SMP compilation
-    options (including hybrid SMP+DMP) have been turned back on. Please note that
-    the reported CPU time may be inaccurate in SMP mode.
+* DEM code refactoring for better performance gave a 4x speedup
+  compared to the Release 2013-2 (for tutorials/FluidBed_DES with 38,400
+  particles running in serial.)
 
-* Bug fixes and enhancements:
-  o Cyclic boundaries with pressure drop: flags CYCLIC_AT_E/N/T were corrected
+* DEM particle configuration is based on initial condition settings
+  (e.g., IC_EP_s).
 
+* Cartesian grid cut-cell re-indexing method was implemented to
+  re-order cells when a large number of inactive cells are
+  generated. This provides a more efficient way of looping through
+  computational cells which can substantially speedup the code
+  execution for complex geometries.
 
+* The make_mfix build script was completely overhauled.
+
+  o Build script was split into several files/scripts.
+
+  o Build settings can be passed as build arguments.
+
+  o Parallel-make build support.
+
+  o Automatic Makefile generation at build time for dependency
+    detection.
+
+  o Each supported system and compiler has its own settings file
+    allowing for easier modification and maintenance.
+
+* Improved checks for user input
+
+  o Checks on solids model specifications are restricted to the solids
+    model type so that unnecessary data is no longer needed. This
+    improvement applies mainly to DEM and PIC solids models.
+
+  o Error messages are consistently managed based on user input
+    settings. If FULL_LOG is specified, error messages are written the
+    LOG file and sent to std-out. Otherwise, error messages are only
+    written to the LOG file.
 
 * Documentation:
 ----------------
 
-* Updated documents:
-  o Readme file [1]
+* Updated documentation:
+  o Readme file renamed to MFIX User Guide  [1]
 
 
-Under Development:
+Community Involvement:
 ------------------
 
-* Variable solids density 
-  o Ability to have solids density vary as a function of species composition (Eulerian/Eulerian solver)
 
+* Improved center-line treatment for cylindrical coordinate systems.
+
+  Bakshi, A., Altantzis, C., Ghoniem, A.F. (2014). "Towards accurate
+  three-dimensional simulation of dense multi-phase flows using
+  cylindrical coordinates," Powder Technology, 264:242-255.
+
+
+* A shape dependent particle-fluid drag coefficient was used to create
+  a tutorial for the new user defined drag functions (see
+  mfix/tutorials/usr_drag).
+
+  Dioguardi, F., Dellino, P., Mele, D. (2014). "Integration of a new
+  shape-dependent particle-fluid drag coefficient law in the
+  multiphase Eulerian-Lagrangian code MFIX-DEM," Powder Technology,
+  260:68-77.
 
 
 Project Metrics:
 ----------------
 
-* Change from 2013-1 Release:
-  o 13 files were removed due to stiff-solver overhaul (net count)
-  o Over 3,000 new lines of code (net count)
+* Change from 2013-2 Release:
+  o TBD
 
-* 2013-2 Total count:
-  o Files: 526
-  o Lines: 195,755
-  o Blank Lines: 26,750
-  o Code Lines: 116,321
-  o Comment Lines: 56,292
-  o Statements: 85,702
-
-
+* 2014-1 Total count:
+  o Files: TBD
+  o Lines: TBD
+  o Blank Lines: TBD
+  o Code Lines: TBD
+  o Comment Lines: TBD
+  o Statements: TBD
 
 References:
 -----------
-[1] https://mfix.netl.doe.gov/documentation/Readme.pdf
-
-
+[1] https://mfix.netl.doe.gov/documentation/mfixuserguide.pdf
