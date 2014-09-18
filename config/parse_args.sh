@@ -4,7 +4,7 @@ show_version() {
 echo
 echo "======================================================================"
 echo ""
-echo "            MFIX: Multiphase Flow with Intephase eXchanges"
+echo "            MFIX: Multiphase Flow with Interphase eXchanges"
 echo ""
 echo "                            mfix.netl.doe.gov"
 echo ""
