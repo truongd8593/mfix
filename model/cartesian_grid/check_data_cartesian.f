@@ -1338,7 +1338,8 @@
       ENDIF
 
 
-      IF((TRIM(QUADRIC_FORM(QM1))=='X_CYL_INT').AND.(TRIM(QUADRIC_FORM(QP1))=='X_CYL_INT')) THEN
+      IF((TRIM(QUADRIC_FORM(QM1))=='X_CYL_INT').AND.  &
+         (TRIM(QUADRIC_FORM(QP1))=='X_CYL_INT')) THEN       !Internal flow x-direction
 
          QUADRIC_FORM(Q) = 'X_CONE'
 
@@ -1392,7 +1393,64 @@
          ENDIF
 
 
-      ELSEIF((TRIM(QUADRIC_FORM(QM1))=='Y_CYL_INT').AND.(TRIM(QUADRIC_FORM(QP1))=='Y_CYL_INT')) THEN
+      ELSEIF((TRIM(QUADRIC_FORM(QM1))=='X_CYL_EXT').AND.  &
+         (TRIM(QUADRIC_FORM(QP1))=='X_CYL_EXT')) THEN     !External flow x-direction
+
+         QUADRIC_FORM(Q) = 'X_CONE'
+
+         aligned = (t_y(QM1)==t_y(QP1)).AND.(t_z(QM1)==t_z(QP1)) 
+         IF(.NOT.aligned) THEN
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
+            call mfix_exit(myPE)
+         ENDIF
+
+         R1 = RADIUS(QM1)
+         R2 = RADIUS(QP1)
+         IF(R1==R2) THEN
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' HAVE THE SAME RADIUS'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
+            call mfix_exit(myPE)
+         ENDIF
+
+         x1 = piece_xmax(QM1)
+         x2 = piece_xmin(QP1)
+         IF(x2<=x1) THEN
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT PIECED PROPERLY'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
+            call mfix_exit(myPE)
+         ENDIF
+
+         tan_half_angle = (R2-R1)/(x2-x1)
+
+         HALF_ANGLE(Q) = DATAN(tan_half_angle)/PI*180.0D0
+         lambda_x(Q) = ONE
+         lambda_y(Q) = -ONE/(tan_half_angle)**2
+         lambda_z(Q) = -ONE/(tan_half_angle)**2 
+         dquadric(Q) = ZERO
+
+         piece_xmin(Q) = x1
+         piece_xmax(Q) = x2
+
+         t_x(Q) = x1 - R1/tan_half_angle 
+         t_y(Q) = t_y(QM1)
+         t_z(Q) = t_z(QM1)
+
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*) ' QUADRIC:',Q, ' WAS DEFINED AS ',  TRIM(QUADRIC_FORM(Q))
+            WRITE(*,*) ' WITH AN HALF-ANGLE OF ', HALF_ANGLE(Q), 'DEG.'
+         ENDIF
+
+
+
+      ELSEIF((TRIM(QUADRIC_FORM(QM1))=='Y_CYL_INT').AND.  &
+             (TRIM(QUADRIC_FORM(QP1))=='Y_CYL_INT')) THEN     !Internal flow y-direction
 
          QUADRIC_FORM(Q) = 'Y_CONE'
 
@@ -1444,9 +1502,65 @@
             WRITE(*,*) ' QUADRIC:',Q, ' WAS DEFINED AS ',  TRIM(QUADRIC_FORM(Q))
             WRITE(*,*) ' WITH AN HALF-ANGLE OF ', HALF_ANGLE(Q), 'DEG.'
          ENDIF
+
+      ELSEIF((TRIM(QUADRIC_FORM(QM1))=='Y_CYL_EXT').AND.  &
+             (TRIM(QUADRIC_FORM(QP1))=='Y_CYL_EXT')) THEN     !External flow y-direction
+
+         QUADRIC_FORM(Q) = 'Y_CONE'
+
+         aligned = (t_x(QM1)==t_x(QP1)).AND.(t_z(QM1)==t_z(QP1)) 
+         IF(.NOT.aligned) THEN
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
+            call mfix_exit(myPE)
+         ENDIF
+
+         R1 = RADIUS(QM1)
+         R2 = RADIUS(QP1)
+         IF(R1==R2) THEN
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' HAVE THE SAME RADIUS'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
+            call mfix_exit(myPE)
+         ENDIF
+
+         y1 = piece_ymax(QM1)
+         y2 = piece_ymin(QP1)
+         IF(y2<=y1) THEN
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT PIECED PROPERLY'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
+            call mfix_exit(myPE)
+         ENDIF
+
+         tan_half_angle = (R2-R1)/(y2-y1)
+
+         HALF_ANGLE(Q) = DATAN(tan_half_angle)/PI*180.0D0
+         lambda_x(Q) = -ONE/(tan_half_angle)**2
+         lambda_y(Q) = ONE
+         lambda_z(Q) = -ONE/(tan_half_angle)**2
+         dquadric(Q) = ZERO
+
+         piece_ymin(Q) = y1
+         piece_ymax(Q) = y2
+
+         t_x(Q) = t_x(QM1)
+         t_y(Q) = y1 - R1/tan_half_angle
+         t_z(Q) = t_z(QM1)
+
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*) ' QUADRIC:',Q, ' WAS DEFINED AS ',  TRIM(QUADRIC_FORM(Q))
+            WRITE(*,*) ' WITH AN HALF-ANGLE OF ', HALF_ANGLE(Q), 'DEG.'
+         ENDIF
+
        
 
-      ELSEIF((TRIM(QUADRIC_FORM(QM1))=='Z_CYL_INT').AND.(TRIM(QUADRIC_FORM(QP1))=='Z_CYL_INT')) THEN
+      ELSEIF((TRIM(QUADRIC_FORM(QM1))=='Z_CYL_INT').AND.  &
+             (TRIM(QUADRIC_FORM(QP1))=='Z_CYL_INT')) THEN     !Internal flow z-direction
 
          QUADRIC_FORM(Q) = 'Z_CONE'
 
@@ -1498,6 +1612,61 @@
             WRITE(*,*) ' QUADRIC:',Q, ' WAS DEFINED AS ',  TRIM(QUADRIC_FORM(Q))
             WRITE(*,*) ' WITH AN HALF-ANGLE OF ', HALF_ANGLE(Q), 'DEG.'
          ENDIF
+
+      ELSEIF((TRIM(QUADRIC_FORM(QM1))=='Z_CYL_EXT').AND.  &
+             (TRIM(QUADRIC_FORM(QP1))=='Z_CYL_EXT')) THEN     !External flow z-direction
+
+         QUADRIC_FORM(Q) = 'Z_CONE'
+
+         aligned = (t_x(QM1)==t_x(QP1)).AND.(t_y(QM1)==t_y(QP1)) 
+         IF(.NOT.aligned) THEN
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
+            call mfix_exit(myPE)
+         ENDIF
+
+         R1 = RADIUS(QM1)
+         R2 = RADIUS(QP1)
+         IF(R1==R2) THEN
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' HAVE THE SAME RADIUS'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
+            call mfix_exit(myPE)
+         ENDIF
+
+         z1 = piece_zmax(QM1)
+         z2 = piece_zmin(QP1)
+         IF(z2<=z1) THEN
+            IF(MyPE == PE_IO) THEN
+               WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT PIECED PROPERLY'
+               WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+            ENDIF
+            call mfix_exit(myPE)
+         ENDIF
+
+         tan_half_angle = (R2-R1)/(z2-z1)
+
+         HALF_ANGLE(Q) = DATAN(tan_half_angle)/PI*180.0D0
+         lambda_x(Q) = -ONE/(tan_half_angle)**2
+         lambda_y(Q) = -ONE/(tan_half_angle)**2
+         lambda_z(Q) = ONE
+         dquadric(Q) = ZERO
+
+         piece_zmin(Q) = z1
+         piece_zmax(Q) = z2
+
+         t_x(Q) = t_x(QM1)
+         t_y(Q) = t_y(QM1)
+         t_z(Q) = z1 - R1/tan_half_angle
+
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*) ' QUADRIC:',Q, ' WAS DEFINED AS ',  TRIM(QUADRIC_FORM(Q))
+            WRITE(*,*) ' WITH AN HALF-ANGLE OF ', HALF_ANGLE(Q), 'DEG.'
+         ENDIF
+
 
       ELSE
          IF(MyPE == PE_IO) THEN
