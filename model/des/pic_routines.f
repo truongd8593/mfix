@@ -413,7 +413,7 @@
 ! dt's in each direction  based on cfl_pic for the mppic case
 
       DOUBLE PRECISION  MEANUS(DIMN, DES_MMAX), RELVEL(DIMN), MEANVEL(DIMN), VEL_NEW(DIMN)
-      INTEGER :: TOT_CASE, case1_count, case2_count, case3_count, case4_count
+!      INTEGER :: TOT_CASE, case1_count, case2_count, case3_count, case4_count
 
       LOGICAL :: INSIDE_DOMAIN
 !-----------------------------------------------
@@ -484,7 +484,7 @@
                   if(INSIDE_DOMAIN) then
                      VEL_NEW(IDIM) = MEANUS(IDIM,M) - COEFF_EN*RELVEL(IDIM)
                   endif
-                  case4_count = case4_count + 1
+!                  case4_count = case4_count + 1
                ELSE
                   !do nothing
                ENDIF
@@ -531,21 +531,21 @@
                   !   VEL_NEW(IDIM) = -COEFF_EN*VEL_ORIG(IDIM)
                   !ENDIF
 
-                  case1_count = case1_count + 1
+!                  case1_count = case1_count + 1
                ELSE
                   !do nothing
                   VEL_NEW(IDIM) = COEFF_EN2 * VEL_ORIG(IDIM)
                   !turning on the above would make the model uncondtionally stable
-                  case1_count = case1_count + 1
+!                  case1_count = case1_count + 1
 
                ENDIF
             ENDIF
          ELSE
             IF(MEANUS(IDIM,M)*DELUP(IDIM).GT.ZERO) THEN
                VEL_NEW(IDIM) = MEANUS(IDIM,M) - COEFF_EN*RELVEL(IDIM)
-               case2_count = case2_count + 1
+!               case2_count = case2_count + 1
             ELSE
-               case3_count = case3_count + 1
+!               case3_count = case3_count + 1
                !DO NOTHING
             ENDIF
          ENDIF
@@ -579,7 +579,7 @@
          read(*,*)
       ENDIF
 
-      TOT_CASE = case1_count + case2_count + case3_count + case4_count
+      !TOT_CASE = case1_count + case2_count + case3_count + case4_count
       !IF(TOT_CASE.GT.0) THEN
       !WRITE(*,'(A, 4(2x,i10))') 'CASE COUNT NUMBERS  = ', case1_count ,case2_count ,case3_count ,case4_count
       !WRITE(*,'(A, 4(2x,g12.7))') 'CASE COUNT %AGE = ', real(case1_count)*100./real(tot_case),real(case2_count)*100./real(tot_case), real(case3_count)*100./real(tot_case), real(case4_count)*100./real(tot_case)
