@@ -299,14 +299,14 @@
       double precision :: dist_from_facet
       INTEGER, Parameter :: MAX_FACET_CONTS = 500
       INTEGER :: list_of_checked_facets(max_facet_conts)
-      INTEGER :: FOCUS_CELLID
+!      INTEGER :: FOCUS_CELLID
 
       double precision :: veldotnorm
       INCLUDE '../function.inc'
 
       CALL INIT_ERR_MSG("PIC_APPLY_WALLBC_STL")
 
-      FOCUS_CELLID = funijk(14,24,2)
+!      FOCUS_CELLID = funijk(14,24,2)
 
       DO LL = 1, MAX_PIP
 
