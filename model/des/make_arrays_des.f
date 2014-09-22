@@ -234,6 +234,8 @@
       use mpi_utility
       use geometry, only: NO_K
 
+      use error_manager
+
       implicit none
 !-----------------------------------------------
 ! Local variables
@@ -243,31 +245,50 @@
 ! index of particle
       INTEGER :: lcurpar
 ! local unit
-      integer :: lunit
+      INTEGER, PARAMETER :: lunit=10
 ! local filename
       character(30) lfilename
-
+! IO Status:
+      INTEGER :: IOS
+! Flag to indicate if file exists.
+      LOGICAL :: lEXISTS
+! Read dimension: 2D vs 3D data
       integer :: RDMN
 !-----------------------------------------------
 
 
+      CALL INIT_ERR_MSG("READ_PAR_INPUT")
+
+
+      IOS = 0
       RDMN = merge(2,3,NO_K)
 
-      IF(DMP_LOG) WRITE(UNIT_LOG,'(/2X,A)') &
-       'Reading particle configuration from the supplied input file'
-
-      lunit = 10
-
-! based on distributed or single IO open the input file
-      IF (bdist_io) THEN
-         write(lfilename,'("particle_input_",I4.4,".dat")')mype
-         open(unit=lunit, file=lfilename, form="formatted")
+! Setup the file name based on distributed or serial IO.
+      IF(bDIST_IO) THEN
+         lFILENAME = ''
+         WRITE(lFILENAME,'("particle_input_",I4.4,".dat")') myPE
       ELSE
-         IF (mype .eq. pe_io) THEN
-            lfilename= "particle_input.dat"
-            open(unit=lunit, file=lfilename, form="formatted")
+         lFILENAME= "particle_input.dat"
+      ENDIF
+
+! Check the the file exists and open it.
+      IF(bDIST_IO .OR. myPE == PE_IO) THEN
+         INQUIRE(FILE=lFILENAME, EXIST=lEXISTS)
+         IF(.NOT.LEXISTS) THEN
+            WRITE(ERR_MSG, 1100)
+            CALL FLUSH_ERR_MSG
+            IOS = 1
+         ELSE
+            OPEN(UNIT=lUNIT, FILE=lFILENAME, FORM="FORMATTED")
          ENDIF
       ENDIF
+
+! Collect the error message and quit.
+      CALL GLOBAL_ALL_SUM(IOS)
+      IF(IOS /= 0) CALL MFIX_EXIT(myPE)
+
+ 1100 FORMAT('Error 1100: FATAL - DEM particle input file not found!')
+
 
 ! Read the file
 !----------------------------------------------------------------->>>
@@ -282,35 +303,64 @@
                (des_vel_new(k,lcurpar),k=1,RDMN)
          ENDDO
 
-!-----------------------------------------------------------------<<<
-      ELSE   ! else branch if not bdist_IO
+
+! Serial IO (not bDIST_IO)
+      ELSE
 !----------------------------------------------------------------->>>
 
 ! Read into temporary variable and scatter
-         IF (mype .eq. pe_io) THEN
-! temporary variable
-            ALLOCATE (dpar_pos(particles,3))
-            ALLOCATE (dpar_vel(particles,3))
-            ALLOCATE (dpar_rad(particles))
-            ALLOCATE (dpar_den(particles))
-! Initialize
-            dpar_pos=0.0
-            dpar_vel=0.0
-            dpar_rad=0.0
-            dpar_den = 0.0
+         IF (myPE .eq. PE_IO) THEN
+
+! Allocate and initialize temporary variables.
+            ALLOCATE (dpar_pos(particles,3)); dpar_pos=0.0
+            ALLOCATE (dpar_vel(particles,3)); dpar_vel=0.0
+            ALLOCATE (dpar_rad(particles));   dpar_rad=0.0
+            ALLOCATE (dpar_den(particles));   dpar_den = 0.0
+
+! Loop through the input file.
             DO lcurpar = 1, particles
-               read (lunit,*) (dpar_pos(lcurpar,k),k=1,RDMN),&
-               dpar_rad(lcurpar), &
+               read (lunit,*,IOSTAT=IOS)                               &
+               (dpar_pos(lcurpar,k),k=1,RDMN),dpar_rad(lcurpar),       &
                dpar_den(lcurpar),(dpar_vel(lcurpar,k),k=1,RDMN)
+
+! Report read errors.
+               IF(IOS > 0) THEN
+                  WRITE(ERR_MSG,1200)
+                  CALL FLUSH_ERR_MSG
+                  EXIT
+ 1200 FORMAT('Error 1200: Error reported when reading particle input ',&
+         'file.',/'A common error is 2D input for 3D cases.')
+
+! Report End-of-File errors.
+               ELSEIF(IOS < 0) THEN
+                  WRITE(ERR_MSG,1201) &
+                     trim(iVal(lcurpar)), trim(iVal(Particles))
+                  CALL FLUSH_ERR_MSG
+                  EXIT
+ 1201 FORMAT('Error 1201: Error reported when reading particle input ',&
+         'file.',/'End-of-File found for particle ',A,' and ',A,1X,    &
+         'entries are expected.')
+
+               ENDIF
 
             ENDDO
          ENDIF
-         call des_scatter_particle
-         IF(mype.eq.pe_io) deallocate (dpar_pos,dpar_vel,dpar_rad,dpar_den)
+
+         CALL GLOBAL_ALL_SUM(IOS)
+         IF(IOS /= 0) CALL MFIX_EXIT(myPE)
+
+         CALL DES_SCATTER_PARTICLE
+
+         IF(myPE == PE_IO) &
+            deallocate (dpar_pos,dpar_vel,dpar_rad,dpar_den)
+
       ENDIF   ! end if/else bdist_io
 !-----------------------------------------------------------------<<<
 
-      IF(bdist_io .or. mype.eq.pe_io) close(lunit)
+      IF(bDIST_IO .OR. myPE == PE_IO) CLOSE(lUNIT)
+
+
+      CALL FINL_ERR_MSG()
 
       RETURN
 
