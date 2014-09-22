@@ -333,7 +333,7 @@
 !    Quantity for calibrating Syamlal-O'Brien drag correlation using Umf
 !    data.  This are determined using the Umf spreadsheet.
 !  </description>
-      drag_c1 = 0.8d0
+      DRAG_C1 = 0.8d0
 !</keyword>
 
 !<keyword category="Run Control" required="false">
@@ -341,13 +341,12 @@
 !    Quantity for calibrating Syamlal-O'Brien drag correlation using Umf
 !    data.  This are determined using the Umf spreadsheet.
 !  </description>
-      drag_d1 = 2.65d0
+      DRAG_D1 = 2.65d0
 !</keyword>
 
 !<keyword category="Run Control" required="false">
 !  <description>
-!    If USE_DEF_LAM_HYS is set to .FALSE. the user is able to specify a
-!    value for the lubrication cutoff distance (LAM_HYS).  In practice
+!    The lubrication cutoff distance for HYS drag model.  In practice
 !    this number should be on the order of the mean free path of the
 !    gas for smooth particles, or the rms roughness of a particle if
 !    they are rough (if particle roughness is larger than the mean
@@ -467,9 +466,10 @@
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Factor to normalize the gas continuity equation residual.
-!    NORM_G=0 invokes a normalization method based on the dominant
-!    term in the continuity equation. This setting may speed up
+!    Factor to normalize the gas continuity equation residual. The
+!    residual from the first iteration is used if NORM_G is left
+!    undefined. NORM_G=0 invokes a normalization method based on the
+!    dominant term in the continuity equation. This setting may speed up
 !    calculations, especially near a steady state and incompressible
 !    fluids. But, the number of iterations for the gas phase pressure
 !    should be increased, LEQ_IT(1), to ensure mass balance
@@ -479,9 +479,10 @@
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
-!    Factor to normalize the solids continuity equation residual.
-!    NORM_S = 0 invokes a normalization method based on the dominant
-!    term in the continuity equation. This setting may speed up
+!    Factor to normalize the solids continuity equation residual. The
+!    residual from the first iteration is used if NORM_S is left
+!    undefined. NORM_S = 0 invokes a normalization method based on the
+!    dominant term in the continuity equation. This setting may speed up
 !    calculations, especially near a steady state and incompressible
 !    fluids. But, the number of iterations for the solids volume
 !    fraction should be increased, LEQ_IT(2), to ensure mass balance.
@@ -2779,9 +2780,9 @@
 !  <description>Interval at which .SPX files are updated. </description>
 !  <valid value="SP1" note="void fraction (EP_G"/>
 !  <valid value="SP2" note="Gas pressure (P_G), and Solids pressure (P_star)"/>
-!  <valid value="SP3" note="Gas veloicty (U_G, V_G, W_G)"/>
-!  <valid value="SP4" note="Solids veloicty (U_S, V_S, W_S)"/>
-!  <valid value="SP5" note="Solids builk density (ROP_s)"/>
+!  <valid value="SP3" note="Gas velocity (U_G, V_G, W_G)"/>
+!  <valid value="SP4" note="Solids velocity (U_S, V_S, W_S)"/>
+!  <valid value="SP5" note="Solids bulk density (ROP_s)"/>
 !  <valid value="SP6" note="Gas and solids temperature (T_G, T_S)"/>
 !  <valid value="SP7" note="Gas and solids mass fractions (X_G, X_S)"/>
 !  <valid value="SP8" note="Granular temperature (THETA_M)"/>
@@ -2903,9 +2904,9 @@
 !     1: void fraction (EP_G)
 !     2: Gas pressure (P_G)
 !     3: Solids pressure (P_star)
-!     4: Gas veloicty (U_G, V_G, W_G)
-!     5: Solids veloicty (U_S, V_S, W_S)
-!     6: Solids builk density (ROP_s)
+!     4: Gas velocity (U_G, V_G, W_G)
+!     5: Solids velocity (U_S, V_S, W_S)
+!     6: Solids bulk density (ROP_s)
 !     7: Gas temperature (T_G)
 !     8: Gas and solids temperature (T_S)
 !     9: Gas mass fractions (X_G)
