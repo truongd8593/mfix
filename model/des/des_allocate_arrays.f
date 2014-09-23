@@ -187,18 +187,15 @@
       Allocate(  COLLISIONS (2,COLLISION_MAX) )
       Allocate(  COLLISIONS_OLD (2,COLLISION_MAX) )
       Allocate(  FC_COLL  (3,COLLISION_MAX) )
+      Allocate(  FT_COLL  (3,COLLISION_MAX) )
+      Allocate(  DIST_COLL (COLLISION_MAX) )
+      Allocate(  NORM_COLL (3,COLLISION_MAX) )
       Allocate(  PV_COLL (COLLISION_MAX) )
       Allocate(  PV_COLL_OLD (COLLISION_MAX) )
       Allocate(  PFT_COLL (3,COLLISION_MAX) )
       Allocate(  PFT_COLL_OLD (3,COLLISION_MAX) )
       Allocate(  PFN_COLL (3,COLLISION_MAX) )
       Allocate(  PFN_COLL_OLD (3,COLLISION_MAX) )
-! Torque
-      IF(DO_K) THEN
-         Allocate(  TOW_COLL (DIMN,COLLISION_MAX) )
-      ELSE
-         Allocate(  TOW_COLL (1,COLLISION_MAX) )
-      ENDIF
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
@@ -566,6 +563,7 @@
       LOGICAL, DIMENSION(:), ALLOCATABLE :: bool_tmp
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: real_tmp
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: real_scalar_tmp
 
       INTEGER :: lSIZE1, lSIZE2
 
@@ -584,11 +582,20 @@
       real_tmp(:,1:lSIZE2) = fc_coll(:,1:lSIZE2)
       call move_alloc(real_tmp,fc_coll)
 
-      lSIZE1 = size(TOW_COLL,1)
-      lSIZE2 = size(TOW_COLL,2)
-      allocate(real_tmp(lSIZE1,COLLISION_MAX))
-      real_tmp(:,1:lSIZE2) = tow_coll(:,1:lSIZE2)
-      call move_alloc(real_tmp,tow_coll)
+      lSIZE2 = size(FT_COLL,2)
+      allocate(real_tmp(3,COLLISION_MAX))
+      real_tmp(:,1:lSIZE2) = ft_coll(:,1:lSIZE2)
+      call move_alloc(real_tmp,ft_coll)
+
+      lSIZE1 = size(norm_coll,2)
+      allocate(real_tmp(3,COLLISION_MAX))
+      real_tmp(:,1:lSIZE1) = norm_coll(:,1:lSIZE1)
+      call move_alloc(real_tmp,norm_coll)
+
+      lSIZE1 = size(dist_coll,1)
+      allocate(real_scalar_tmp(COLLISION_MAX))
+      real_scalar_tmp(1:lSIZE1) = dist_coll(1:lSIZE1)
+      call move_alloc(real_scalar_tmp,dist_coll)
 
       lSIZE1 = size(pv_coll,1)
       allocate(bool_tmp(COLLISION_MAX))
@@ -600,7 +607,7 @@
       bool_tmp(1:lSIZE1) = pv_coll_old(1:lSIZE1)
       call move_alloc(bool_tmp,pv_coll_old)
 
-      lSIZE1 = size(pft_coll_old,1)
+      lSIZE1 = size(pft_coll_old,2)
       allocate(real_tmp(3,COLLISION_MAX))
       real_tmp(:,1:lSIZE1) = pft_coll_old(:,1:lSIZE1)
       call move_alloc(real_tmp,pft_coll_old)
