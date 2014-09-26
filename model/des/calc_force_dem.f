@@ -97,8 +97,7 @@
 !$omp   private(ll,fts1,fts2,fns1,fns2,pft_tmp,                   &
 !$omp          PARTICLE_SLIDE,nlim,                               &
 !$omp          n_nocon,ni,iw,wallcontact,i,                       &
-!$omp          WALL_POS,WALL_VEL,neigh_l,                         &
-!$omp          r_lm,dist,normal,ii,                       &
+!$omp          WALL_POS,WALL_VEL,neigh_l,r_lm,dist,ii,            &
 !$omp          v_rel_trans_norm, v_rel_tang,                      &
 !$omp          overlap_n,dtsolid_tmp,phasell,                     &
 !$omp          sqrt_overlap,kn_des_w,kt_des_w,etan_des_w,         &
@@ -180,17 +179,18 @@
 !----------------------------------------------------------------->>>
 
       FC_COLL(:,:) = 0
+      FT_COLL(:,:) = 0
 
 !$omp parallel do default(none) private(cc,ll,i,dist,r_lm,     &
-!$omp    normal,overlap_n,v_rel_tang,v_rel_trans_norm,sqrt_overlap,    &
+!$omp    overlap_n,v_rel_tang,v_rel_trans_norm,sqrt_overlap,    &
 !$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
-!$omp    etat_des,fns1,fns2,fts1,fts2,pft_tmp,fn,ft,particle_slide,    &
+!$omp    etat_des,fns1,fns2,fts1,fts2,pft_tmp,fn,particle_slide,    &
 !$omp    eq_radius,distapart,force_coh)                                &
 !$omp    shared(collisions,collision_num,des_pos_new,des_radius,       &
 !$omp    des_coll_model_enum,kn,kt,pv_coll,pft_coll,pfn_coll,pijk,     &
-!$omp    des_etan,des_etat,mew,fc_coll,use_cohesion,          &
-!$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
-!$omp    hamaker_constant,asperities,surface_energy)
+!$omp    des_etan,des_etat,mew,fc_coll,use_cohesion,dist_coll,         &
+!$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,norm_coll,    &
+!$omp    hamaker_constant,asperities,surface_energy,ft_coll)
       DO CC = 1, COLLISION_NUM
          LL = COLLISIONS(1,CC)
          I  = COLLISIONS(2,CC)
@@ -286,7 +286,7 @@
 
 ! Calculate the total force FC of a collision
 ! total contact force ( FC_COLL may already include cohesive force)
-      FC_COLL(:,CC) = FC_COLL(:,CC) + FN(:) + FT_COLL(:,CC)
+         FC_COLL(:,CC) = FC_COLL(:,CC) + FN(:) + FT_COLL(:,CC)
 
 ! Save tangential displacement history with Coulomb's law correction
          IF (PARTICLE_SLIDE) THEN
@@ -306,13 +306,13 @@
          I  = COLLISIONS(2,CC)
 
          FC(:,LL) = FC(:,LL) + FC_COLL(:,CC)
-         FC(:,I) = FC(:,I) + FC_COLL(:,CC)
+         FC(:,I) = FC(:,I) - FC_COLL(:,CC)
 
-! calculate the distance from the particle center to the contact point,
+! calculate the distance from the particles' centers to the contact point,
 ! which is taken as the radical line
 ! dist_ci+dist_cl=dist_li; dist_ci^2+a^2=ri^2;  dist_cl^2+a^2=rl^2
-      DIST_CL = (DIST_COLL(CC)**2 + DES_RADIUS(LL)**2 - DES_RADIUS(I)**2)/(2.d0*DIST_COLL(CC))
-      DIST_CI = (DIST_COLL(CC)**2 - DES_RADIUS(LL)**2 + DES_RADIUS(I)**2)/(2.d0*DIST_COLL(CC))
+      DIST_CL = DIST_COLL(CC)/2.d0 + (DES_RADIUS(LL)**2 - DES_RADIUS(I)**2)/(2.d0*DIST_COLL(CC))
+      DIST_CI = DIST_COLL(CC) - DIST_CL
 ! total torque
       IF(DO_K) THEN
          ! for particle i flip the signs of both norm and ft, so we get the same

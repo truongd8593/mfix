@@ -459,7 +459,7 @@
 !-----------------------------------------------
       integer lcurpar,lmaxneigh,lkoffset
       integer lijk,lic,ljc,lkc,li,lj,lk,ltotpic,lpicloc,lneigh,lneighcnt
-      double precision lsearch_rad,ldist
+      double precision lsearch_rad,ldistsquared
       double precision :: ldistvec(3)
       double precision :: lcurpar_pos(3)
       double precision :: lcur_off
@@ -529,11 +529,11 @@
             ltotpic =dg_pic(lijk)%isize
             do lpicloc = 1,ltotpic
                lneigh = dg_pic(lijk)%p(lpicloc)
-               if (lneigh.eq.lcurpar) cycle
+               if (lneigh <= lcurpar) cycle
                lsearch_rad = factor_RLM*(des_radius(lcurpar)+des_radius(lneigh))
                ldistvec = lcurpar_pos(:)-des_pos_new(:,lneigh)
-               ldist = sqrt(dot_product(ldistvec,ldistvec))
-               if (ldist.gt.lsearch_rad) cycle
+               ldistsquared = dot_product(ldistvec,ldistvec)
+               if (ldistsquared.gt.lsearch_rad*lsearch_rad) cycle
                lneighcnt = lneighcnt + 1
                if(lneighcnt .gt. MN) then
                   write(*,'(A,I7,A,I3,A)') 'Particle ', &

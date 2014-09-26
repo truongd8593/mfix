@@ -774,7 +774,7 @@
 ! sum of mass_sol1 and mass_sol2 across all processors
       DOUBLE PRECISION :: MASS_SOL1_ALL, MASS_SOL2_ALL
 
-      DOUBLE PRECISION :: TEMP1(MAX_PIP)
+      DOUBLE PRECISION :: TEMP1,temp2
 
 ! for error messages
       INTEGER :: IER
@@ -942,6 +942,8 @@
             IF(MPPIC) WTP = DES_STAT_WT(NP)
             MASS_SOL1 = MASS_SOL1 + PMASS(NP)*WTP
 
+            temp2 = DES_RO_S(M)*PVOL(NP)*WTP
+
             DO K = 1, merge(1, ONEW, NO_K)
                DO J = 1, ONEW
                   DO I = 1, ONEW
@@ -961,10 +963,10 @@
                      !TEMP1 = WEIGHTP(I,J,K)*DES_RO_S(M)*PVOL(NP)*WTP
 ! Changed TEMP1 as an array TEMP1(NP) to ensure different TEMP1
 ! for each particle in an ijk cell <June 18 2013>
-                     TEMP1(NP) = WEIGHT_FT(I,J,K)*DES_RO_S(M)*PVOL(NP)*WTP
-                     DES_ROPS_NODE(CUR_IJK,M) = DES_ROPS_NODE(CUR_IJK,M) + TEMP1(NP)
+                     TEMP1 = WEIGHT_FT(I,J,K)*temp2
+                     DES_ROPS_NODE(CUR_IJK,M) = DES_ROPS_NODE(CUR_IJK,M) + TEMP1
                      DES_VEL_NODE(CUR_IJK,:,M) = &
-                        DES_VEL_NODE(CUR_IJK,:,M) + TEMP1(NP)*DES_VEL_NEW(:,NP)
+                        DES_VEL_NODE(CUR_IJK,:,M) + TEMP1*DES_VEL_NEW(:,NP)
                   ENDDO
                ENDDO
             ENDDO
