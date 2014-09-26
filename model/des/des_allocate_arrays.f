@@ -600,9 +600,9 @@
       bool_tmp(1:lSIZE1) = pv_coll_old(1:lSIZE1)
       call move_alloc(bool_tmp,pv_coll_old)
 
-      lSIZE1 = size(pft_coll_old,1)
+      lSIZE2 = size(pft_coll_old,2)
       allocate(real_tmp(3,COLLISION_MAX))
-      real_tmp(:,1:lSIZE1) = pft_coll_old(:,1:lSIZE1)
+      real_tmp(:,1:lSIZE2) = pft_coll_old(:,1:lSIZE2)
       call move_alloc(real_tmp,pft_coll_old)
 
       lSIZE2 = size(pft_coll,2)
@@ -622,4 +622,3 @@
 
       RETURN
       END SUBROUTINE COLLISION_GROW
-                                        
