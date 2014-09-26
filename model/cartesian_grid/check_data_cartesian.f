@@ -3045,7 +3045,7 @@
 
 
 
-      DOUBLE PRECISION Function F(POS,ALPHAC,D_Target,L,N,TOL)
+      DOUBLE PRECISION Function F(POS,ALPHAC,D_Target,L,N)
       USE constant 
       USE mpi_utility    
 
@@ -3113,7 +3113,7 @@
 
       DOUBLE PRECISION :: f1,f2,f3
       DOUBLE PRECISION :: ALPHA1,ALPHA2,ALPHA3,D_Target,L,TOL,DU
-      DOUBLE PRECISION, PARAMETER :: ALPHAMAX = 1000.0D0  ! maximum  value of cell ratio
+      DOUBLE PRECISION, PARAMETER :: ALPHAMAX = 10.0D0  ! maximum  value of cell ratio
       INTEGER :: N,niter
       DOUBLE PRECISION, EXTERNAL :: F
       CHARACTER (LEN=5) :: POS
@@ -3151,8 +3151,9 @@
       ENDIF
 
 
-      f1 = F(POS,ALPHA1,D_Target,L,N,TOL)
-      f2 = F(POS,ALPHA2,D_Target,L,N,TOL)
+      f1 = F(POS,ALPHA1,D_Target,L,N)
+      f2 = F(POS,ALPHA2,D_Target,L,N)
+
 
 !======================================================================
 !  The cell ratio is solution of F(alpha) = zero. The root is found by 
@@ -3175,7 +3176,7 @@
            
             ALPHA3 = ALPHA1 - f1*(ALPHA2-ALPHA1)/(f2-f1)  ! secant point
 
-            f3 = F(POS,ALPHA3,D_Target,L,N,TOL)
+            f3 = F(POS,ALPHA3,D_Target,L,N)
 
             if(f1*f3<0) then            ! Reduce size of interval 
               ALPHA2 = ALPHA3
