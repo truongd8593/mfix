@@ -574,120 +574,120 @@ dist_mfix_SOURCES += $(common_SOURCES)
 dist_postmfix_SOURCES += $(common_SOURCES)
 
 if USR0
-nodist_mfix_SOURCES += usr0.f
-nodist_postmfix_SOURCES += usr0.f
+dist_mfix_SOURCES += usr0.f
+dist_postmfix_SOURCES += usr0.f
 else
 dist_mfix_SOURCES += model/usr0.f
 dist_postmfix_SOURCES += model/usr0.f
 endif
 
 if USR1
-nodist_mfix_SOURCES += usr1.f
-nodist_postmfix_SOURCES += usr1.f
+dist_mfix_SOURCES += usr1.f
+dist_postmfix_SOURCES += usr1.f
 else
 dist_mfix_SOURCES += model/usr1.f
 dist_postmfix_SOURCES += model/usr1.f
 endif
 
 if USR2
-nodist_mfix_SOURCES += usr2.f
-nodist_postmfix_SOURCES += usr2.f
+dist_mfix_SOURCES += usr2.f
+dist_postmfix_SOURCES += usr2.f
 else
 dist_mfix_SOURCES += model/usr2.f
 dist_postmfix_SOURCES += model/usr2.f
 endif
 
 if USR3
-nodist_mfix_SOURCES += usr3.f
-nodist_postmfix_SOURCES += usr3.f
+dist_mfix_SOURCES += usr3.f
+dist_postmfix_SOURCES += usr3.f
 else
 dist_mfix_SOURCES += model/usr3.f
 dist_postmfix_SOURCES += model/usr3.f
 endif
 
 if USR_MOD
-nodist_mfix_SOURCES += usr_mod.f
-nodist_postmfix_SOURCES += usr_mod.f
+dist_mfix_SOURCES += usr_mod.f
+dist_postmfix_SOURCES += usr_mod.f
 else
 dist_mfix_SOURCES += model/usr_mod.f
 dist_postmfix_SOURCES += model/usr_mod.f
 endif
 
 if USR_WRITE_OUT0
-nodist_mfix_SOURCES += usr_write_out0.f
-nodist_postmfix_SOURCES += usr_write_out0.f
+dist_mfix_SOURCES += usr_write_out0.f
+dist_postmfix_SOURCES += usr_write_out0.f
 else
 dist_mfix_SOURCES += model/usr_write_out0.f
 dist_postmfix_SOURCES += model/usr_write_out0.f
 endif
 
 if USR_DRAG
-nodist_mfix_SOURCES += usr_drag.f
-nodist_postmfix_SOURCES += usr_drag.f
+dist_mfix_SOURCES += usr_drag.f
+dist_postmfix_SOURCES += usr_drag.f
 else
 dist_mfix_SOURCES += model/usr_drag.f
 dist_postmfix_SOURCES += model/usr_drag.f
 endif
 
 if USR_RATES
-nodist_mfix_SOURCES += species.inc usr_rates.f
-nodist_postmfix_SOURCES += species.inc usr_rates.f
+dist_mfix_SOURCES += species.inc usr_rates.f
+dist_postmfix_SOURCES += species.inc usr_rates.f
 else
 dist_mfix_SOURCES += model/usr_rates.f
 dist_postmfix_SOURCES += model/usr_rates.f
 endif
 
 if DES_USR0_DES
-nodist_mfix_SOURCES += des/usr0_des.f
-nodist_postmfix_SOURCES += des/usr0_des.f
+dist_mfix_SOURCES += des/usr0_des.f
+dist_postmfix_SOURCES += des/usr0_des.f
 else
 dist_mfix_SOURCES += model/des/usr0_des.f
 dist_postmfix_SOURCES += model/des/usr0_des.f
 endif
 
 if DES_USR1_DES
-nodist_mfix_SOURCES += des/usr1_des.f
-nodist_postmfix_SOURCES += des/usr1_des.f
+dist_mfix_SOURCES += des/usr1_des.f
+dist_postmfix_SOURCES += des/usr1_des.f
 else
 dist_mfix_SOURCES += model/des/usr1_des.f
 dist_postmfix_SOURCES += model/des/usr1_des.f
 endif
 
 if DES_USR2_DES
-nodist_mfix_SOURCES += des/usr2_des.f
-nodist_postmfix_SOURCES += des/usr2_des.f
+dist_mfix_SOURCES += des/usr2_des.f
+dist_postmfix_SOURCES += des/usr2_des.f
 else
 dist_mfix_SOURCES += model/des/usr2_des.f
 dist_postmfix_SOURCES += model/des/usr2_des.f
 endif
 
 if DES_USR3_DES
-nodist_mfix_SOURCES += des/usr3_des.f
-nodist_postmfix_SOURCES += des/usr3_des.f
+dist_mfix_SOURCES += des/usr3_des.f
+dist_postmfix_SOURCES += des/usr3_des.f
 else
 dist_mfix_SOURCES += model/des/usr3_des.f
 dist_postmfix_SOURCES += model/des/usr3_des.f
 endif
 
 if DES_USR4_DES
-nodist_mfix_SOURCES += des/usr4_des.f
-nodist_postmfix_SOURCES += des/usr4_des.f
+dist_mfix_SOURCES += des/usr4_des.f
+dist_postmfix_SOURCES += des/usr4_des.f
 else
 dist_mfix_SOURCES += model/des/usr4_des.f
 dist_postmfix_SOURCES += model/des/usr4_des.f
 endif
 
 if DES_USR_RATES_DES
-nodist_mfix_SOURCES += des/usr_rates_des.f
-nodist_postmfix_SOURCES += des/usr_rates_des.f
+dist_mfix_SOURCES += des/usr_rates_des.f
+dist_postmfix_SOURCES += des/usr_rates_des.f
 else
 dist_mfix_SOURCES += model/des/usr_rates_des.f
 dist_postmfix_SOURCES += model/des/usr_rates_des.f
 endif
 
 if DQMOM_USR_DQMOM
-nodist_mfix_SOURCES += dqmom/usr_dqmom.f
-nodist_postmfix_SOURCES += dqmom/usr_dqmom.f
+dist_mfix_SOURCES += dqmom/usr_dqmom.f
+dist_postmfix_SOURCES += dqmom/usr_dqmom.f
 else
 dist_mfix_SOURCES += model/dqmom/usr_dqmom.f
 dist_postmfix_SOURCES += model/dqmom/usr_dqmom.f
