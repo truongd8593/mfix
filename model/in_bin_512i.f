@@ -20,14 +20,14 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE IN_BIN_512I(IUNIT, ARRAY, N, NEXT_REC) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE IN_BIN_512I(IUNIT, ARRAY, N, NEXT_REC)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE machine 
+      USE machine
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -69,40 +69,40 @@
 !-----------------------------------------------
 !
 !
-      NWORDS = NWORDS_I 
-      IF (N <= NWORDS) THEN 
-         READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=1,N) 
-         NEXT_REC = NEXT_REC + 1 
-         RETURN  
-      ENDIF 
+      NWORDS = NWORDS_I
+      IF (N <= NWORDS) THEN
+         READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=1,N)
+         NEXT_REC = NEXT_REC + 1
+         RETURN
+      ENDIF
 !
-      NSEG = N/NWORDS 
-      NREM = MOD(N,NWORDS) 
-      N1 = 1 
-      N2 = NWORDS 
+      NSEG = N/NWORDS
+      NREM = MOD(N,NWORDS)
+      N1 = 1
+      N2 = NWORDS
 !
 ! read the full 512 byte segments
 !
-      DO LC = 1, NSEG 
-         READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=N1,N2) 
-         N1 = N1 + NWORDS 
-         N2 = N2 + NWORDS 
-         NEXT_REC = NEXT_REC + 1 
-      END DO 
-      IF (NREM /= 0) THEN 
-         READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=N1,N) 
-         NEXT_REC = NEXT_REC + 1 
-      ENDIF 
+      DO LC = 1, NSEG
+         READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=N1,N2)
+         N1 = N1 + NWORDS
+         N2 = N2 + NWORDS
+         NEXT_REC = NEXT_REC + 1
+      END DO
+      IF (NREM /= 0) THEN
+         READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=N1,N)
+         NEXT_REC = NEXT_REC + 1
+      ENDIF
 !
-      RETURN  
-      END SUBROUTINE IN_BIN_512I 
+      RETURN
+      END SUBROUTINE IN_BIN_512I
 !
 !
       subroutine convert_from_io_i(arr_io,arr_internal,n)
 !
       use geometry
       use indices
-      USE compar 
+      USE compar
 !
       implicit none
 !
@@ -129,7 +129,7 @@
 !
       use geometry
       use indices
-      USE compar   
+      USE compar
 !
       implicit none
 !
@@ -143,7 +143,7 @@
             do i = 1,imax2
                ijk    = funijk_gl(i,j,k)
                ijk_io = funijk_io(i,j,k)
-               arr_io(ijk_io) = arr_internal(ijk) 
+               arr_io(ijk_io) = arr_internal(ijk)
             end do
          end do
       end do
@@ -156,7 +156,7 @@
 !
       use geometry
       use indices
-      USE compar 
+      USE compar
 !
       implicit none
 !
@@ -170,7 +170,7 @@
             do i = 1,imax2
                ijk    = funijk_gl(i,j,k)
                ijk_io = funijk_io(i,j,k)
-               arr_io(ijk_io) = arr_internal(ijk) 
+               arr_io(ijk_io) = arr_internal(ijk)
             end do
          end do
       end do
@@ -178,5 +178,5 @@
       return
       end
 
-!// Comments on the modifications for DMP version implementation      
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization

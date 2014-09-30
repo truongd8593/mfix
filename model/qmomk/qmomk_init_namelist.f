@@ -11,14 +11,14 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
 SUBROUTINE qmomk_init_namelist
- 
+
   USE param1
   USE qmom_kinetic_equation
-  Implicit none 
+  Implicit none
   INCLUDE 'qmomknamelist.inc'
-      
+
   QMOMK = .FALSE.
-  QMOMK_TYPE = 'QMOM' 
+  QMOMK_TYPE = 'QMOM'
   QMOMK_WALL_BC_TYPE = 'SPECULAR_REFLECTIVE'
   QMOMK_COLLISIONS = 'BGK'
   QMOMK_COUPLED = .TRUE.

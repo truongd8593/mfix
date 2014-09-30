@@ -24,14 +24,14 @@
 !-----------------------------------------------
       USE param1
       USE constant, only : GRAVITY_X, GRAVITY_Y, GRAVITY_Z
-      USE discretelement 
+      USE discretelement
       USE mfix_pic
       use geometry, only: DO_K
       use error_manager
 ! Flag: DEM solids present.
       use run, only: DEM_SOLIDS
 ! Runtime flag specifying MPPIC solids
-      use run, only: PIC_SOLIDS     
+      use run, only: PIC_SOLIDS
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -42,14 +42,14 @@
 
       CALL INIT_ERR_MSG("CFASSIGN")
 
-! The common assignments are done in this routine. 
-! The model spcific assignmets are moved to the specific subroutines 
+! The common assignments are done in this routine.
+! The model spcific assignmets are moved to the specific subroutines
 
       GRAV(1) = GRAVITY_X
       GRAV(2) = GRAVITY_Y
       GRAV(3) = GRAVITY_Z
 
-! compute the volume of nodes needed in drag_fgs.f 
+! compute the volume of nodes needed in drag_fgs.f
       CALL COMPUTE_VOLUME_OF_NODES
 
       IF(DEM_SOLIDS) CALL CFASSIGN_DEM
@@ -77,13 +77,13 @@
 
       SUBROUTINE CFASSIGN_PIC
 
-      
+
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
       USE param1
       USE constant, only: Pi
-      USE discretelement, only: des_mmax, dtsolid 
+      USE discretelement, only: des_mmax, dtsolid
       USE discretelement, only: DES_RO_s, DES_D_P0
       USE physprop, only: MU_g0
       USE mfix_pic, only : dtpic_taup, des_tau_p
@@ -92,7 +92,7 @@
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-      INTEGER :: M 
+      INTEGER :: M
 
       CALL INIT_ERR_MSG("CFASSIGN_PIC")
 
@@ -106,20 +106,20 @@
 
       DTSOLID = MINVAL(DES_TAU_P(1:DES_MMAX))
       DTPIC_TAUP = DTSOLID      !maximum dt for point-particles based on taup
-      
-      WRITE(ERR_MSG, 1000) DTSolid 
+
+      WRITE(ERR_MSG, 1000) DTSolid
       CALL FLUSH_ERR_MSG(Header = .false.)
-      
+
  1000 format('MPPIC: Point-particle ',&
-      'approximation for particle-particle and ', /, & 
+      'approximation for particle-particle and ', /, &
       'particle-wall collisions', /, &
-      'DTSOLID based on particle time response Taup', /, & 
+      'DTSOLID based on particle time response Taup', /, &
       'DTSOLID = ', 2x, E17.10)
 
 ! Finalize the error manager.
       CALL FINL_ERR_MSG
 
-      END SUBROUTINE CFASSIGN_PIC 
+      END SUBROUTINE CFASSIGN_PIC
 
 
 
@@ -137,9 +137,9 @@
 !  Reviewer: Rahul Garg                               Date: 25-Mar-14  C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CFASSIGN_DEM 
+      SUBROUTINE CFASSIGN_DEM
 
-      
+
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
@@ -151,7 +151,7 @@
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-      INTEGER :: I, J, K, L, M 
+      INTEGER :: I, J, K, L, M
       INTEGER :: COUNT_E
       DOUBLE PRECISION :: MASS_I, MASS_J, &
                           MASS_EFF, RED_MASS_EFF
@@ -169,7 +169,7 @@
 
 ! Finalize the error manager.
       CALL FINL_ERR_MSG
-      END SUBROUTINE CFASSIGN_DEM 
+      END SUBROUTINE CFASSIGN_DEM
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 ! subroutine: compute_volume_of_nodes                                      C

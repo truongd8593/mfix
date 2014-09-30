@@ -32,20 +32,20 @@
 	integer :: communicator
 
 !	-----------------
-!	generic interface 
+!	generic interface
 !	-----------------
 	interface sendrecv_begin
 	module procedure &
 		sendrecv_begin_1d, &
 		sendrecv_begin_1i, &
-		sendrecv_begin_1c 
+		sendrecv_begin_1c
 	end interface
 
 	interface sendrecv_end
 	module procedure &
 		sendrecv_end_1d, &
 		sendrecv_end_1i, &
-		sendrecv_end_1c  
+		sendrecv_end_1c
 	end interface
 
         interface send_recv
@@ -81,7 +81,7 @@
 	jsize = (j2-j1+1)
 	isize = (i2-i1+1)
 
-	
+
 	if (mod(ijk,isize*jsize).ne.0) then
 		k = int( ijk/(isize*jsize) ) + k1
 	else
@@ -142,7 +142,7 @@
 	jsize = (j2-j1+1)
 	isize = (i2-i1+1)
 
-	
+
 	if (mod(ijk,isize*jsize).ne.0) then
 		k = int( ijk/(isize*jsize) ) + k1
 	else
@@ -276,13 +276,13 @@
 	return
 	end subroutine send_recv_1i
 
-! Re-initialize send/receive after re-indexing 
+! Re-initialize send/receive after re-indexing
 	subroutine sendrecv_re_init_after_re_indexing(comm, idebug )
         implicit none
 	integer, intent(in) :: comm
 	integer, intent(in), optional :: idebug
-   	return	
+   	return
 	end subroutine sendrecv_re_init_after_re_indexing
 
-	
+
 	end module sendrecv

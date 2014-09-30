@@ -18,4 +18,4 @@
 !
 
 
-      END MODULE scales                                                                          
+      END MODULE scales

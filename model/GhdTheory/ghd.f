@@ -1,13 +1,13 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
+!
 !  Subroutine name: ghd_model
 !
 !  Purpose: find transport coefficients of GHD polydisperse KT
-!           for known inputs.  
+!           for known inputs.
 !
 !  Literature / References
 !     C. Hrenya handnotes and Garzo, Hrenya, Dufty papers (PRE, 2007)
-!                                                         
+!
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       SUBROUTINE  GHD_MODEL (S, SIGMAI,IJK, alpha, MI, phii, T, Zeta0, &
@@ -15,8 +15,8 @@
                              Lij, Dij, Dq)
 
 !-----------------------------------------------
-! Modules 
-!-----------------------------------------------  
+! Modules
+!-----------------------------------------------
       USE drag
       Implicit NONE
 !-----------------------------------------------
@@ -59,7 +59,7 @@
       double precision v0                    !commonly used quantities: v0, mu, sigma
       double precision mu(s,s)
       double precision sigma(s,s)
-      double precision chi_ij                
+      double precision chi_ij
       double precision chi(s,s)              !radial distribution function at contact for each pair
       double precision group1(s,s), group2(s,s)
       double precision theta(s)
@@ -92,7 +92,7 @@
          m = m + mi(i)
          Beta_tot = Beta_tot + F_GS(IJK,s)
       enddo
-      do i=1,s 
+      do i=1,s
         if(n .eq. 0) then  ! do not do any calculation if total solids concentration is zero.
           Ti(:)      = T
           zeta0      = 0.d0
@@ -131,7 +131,7 @@
          niTi = niTi + ni(i)*Ti(i)
       enddo
 
-      do j=1,s                                   
+      do j=1,s
            group1(1,j)  = chi(1,j)*ni(j)*mu(j,1)* &
                             sigma(1,j)**2*(1d0+alpha(1,j))
            group2(1,j)  = mu(j,1)/2.d0*(1d0+alpha(1,j))

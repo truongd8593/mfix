@@ -1,21 +1,21 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
+!
 !  subroutine name: bulk_viscosity(s,mi,alpha,ni,v0,mu,sigma,chi,theta,kappa)
 !
 !  author:  C. Hrenya, Jan 2009
 !
 !  Purpose: find bulk viscosity according to GHD polydisperse KT
 !
-!  Literature/References:  
+!  Literature/References:
 !     C. Hrenya handwritten notes & Garzo, Hrenya, Dufty papers (PRE, 2007)
-!                                                         
+!
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       subroutine bulk_viscosity(s,mi,alpha,ni,v0,mu,sigma,chi, &
                                 theta,kappa)
       Implicit NONE
 
-      integer s 
+      integer s
 
       double precision mi(s),alpha(s,s),ni(s),v0,mu(s,s),sigma(s,s), &
                        chi(s,s),theta(s),kappa

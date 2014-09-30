@@ -15,37 +15,37 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE VF_GS_Y(VXF_GS, IER) 
+      SUBROUTINE VF_GS_Y(VXF_GS, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE indices
       USE physprop
-      USE compar   
-      USE drag   
+      USE compar
+      USE drag
       USE discretelement
       use run, only: SOLIDS_MODEL
 
-      use run, only: DEM_SOLIDS, PIC_SOLIDS 
+      use run, only: DEM_SOLIDS, PIC_SOLIDS
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
 !-----------------------------------------------
-! Error index 
-      INTEGER, INTENT(INOUT) :: IER 
-! Volume x Drag 
-      DOUBLE PRECISION, INTENT(INOUT) :: VxF_gs(DIMENSION_3, DIMENSION_M) 
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
+! Volume x Drag
+      DOUBLE PRECISION, INTENT(INOUT) :: VxF_gs(DIMENSION_3, DIMENSION_M)
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-! Indices 
-      INTEGER :: J, IJK, IJKN 
-! Index of continuum solids phases 
-      INTEGER :: M 
+! Indices
+      INTEGER :: J, IJK, IJKN
+! Index of continuum solids phases
+      INTEGER :: M
 ! Index of discrete solids 'phases'
       INTEGER :: DM, MTOT
 !-----------------------------------------------
@@ -132,16 +132,16 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error index 
+! Error index
       INTEGER, INTENT(INOUT) :: IER
-! Volume x Drag 
+! Volume x Drag
       DOUBLE PRECISION, INTENT(INOUT) :: VxF_SS(DIMENSION_3, DIMENSION_LM)
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Indices 
+! Indices
       INTEGER :: J, IJK, IJKN
-! Index of continuum solids phases 
+! Index of continuum solids phases
       INTEGER :: L, M, LM
 ! Index of discrete solids 'phases'
       INTEGER :: DM
@@ -153,8 +153,8 @@
       INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
-! initialize every call 
-      VXF_SS(:,:) = ZERO 
+! initialize every call
+      VXF_SS(:,:) = ZERO
 
       DO M = 1, MMAX
          DO L = 1, MMAX
@@ -175,8 +175,8 @@
       ENDDO   ! end do loop (m=1,mmax)
 
       IF (DES_CONTINUUM_HYBRID) THEN
-! initialize every call 
-         VXF_SDS(:,:,:) = ZERO                 
+! initialize every call
+         VXF_SDS(:,:,:) = ZERO
          DO M = 1, MMAX
             DO DM = 1, DES_MMAX
 !!$omp  parallel do private(J,IJK,IJKN)

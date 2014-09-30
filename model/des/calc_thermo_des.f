@@ -51,7 +51,7 @@
 
 ! Functions
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
       INCLUDE '../function.inc'
 
 

@@ -2,7 +2,7 @@
 
       Use param
       Use param1
-      USE funits 
+      USE funits
       USE compar
 
       IMPLICIT NONE
@@ -133,7 +133,7 @@
       RxN%nSpecies = 0
       RxN%nPhases = 0
 
-! Verify that the reactants are separated by --> or = signs. If the 
+! Verify that the reactants are separated by --> or = signs. If the
 ! chemical equation is NONE, the reaction is skipped.
       CALL checkSplit(lName, lChemEq, rEnd, pStart, Skip)
       IF(Skip) THEN
@@ -194,7 +194,7 @@
 ! The user specified the heat of reaction.
       IF(.NOT.RxN%Calc_DH) THEN
 ! Allocate and initialize the heat of reaction storage array.
-         Allocate( RxN%HoR( 0:lM ))         
+         Allocate( RxN%HoR( 0:lM ))
          RxN%HoR(:) = ZERO
          DO M=0,lM
 ! The phase is referenced by the reaction and heat of reaction is
@@ -309,7 +309,7 @@
       INTEGER hArr, tArr
 ! Postion of the head and tail of equal signs (=, ==, ===, ...)
       INTEGER hEqs, tEqs
-! Position of the head/tail of a reverse arrow (<--) 
+! Position of the head/tail of a reverse arrow (<--)
       INTEGER hRArr, tRArr
 ! A flag generated to point out the location of the entry error.
       CHARACTER*512 FLAG
@@ -538,7 +538,7 @@
          rPOS = (lPOS-1) + INDEX(lChemEq(lPOS:lEnd),"+", BACK=.FALSE.)
 ! A plus sign was found.
          IF(rPOS .GT. lPOS) THEN
-! Extract the entry and split it into the species alias and 
+! Extract the entry and split it into the species alias and
 ! stoichiometric coefficient.
             CALL splitAliasAndCoeff(lName, lChemEq, lPOS, rPOS-1,      &
                lAlias(lNo), lCoeff(lNo))
@@ -546,7 +546,7 @@
             MORE = .TRUE.
 ! No plus sign was found. This is the last entry.
          ELSE
-! Extract the entry and split it into the species alias and 
+! Extract the entry and split it into the species alias and
 ! stoichiometric coefficient.
             CALL splitAliasAndCoeff(lName, lChemEq, lPOS, lEnd,        &
                lAlias(lNo), lCoeff(lNo))
@@ -1100,7 +1100,7 @@
          IF(flg1 < flg2) THEN
             FILL1 = flg1 - 1
             FILL2 = (flg2-flg1) - 1
-         ELSE         
+         ELSE
             FILL1 = flg2 - 1
             FILL2 = (flg1-flg2) - 1
          ENDIF
@@ -1124,4 +1124,4 @@
 
       END FUNCTION setFlag
 
-      END MODULE parse                                                                           
+      END MODULE parse

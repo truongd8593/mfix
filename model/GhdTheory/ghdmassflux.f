@@ -67,10 +67,10 @@
 ! Terms in the calculation of Joi-X,Y,Z
       DOUBLE PRECISION :: ordinDiffTermX, ordinDiffTermY, ordinDiffTermZ
       DOUBLE PRECISION :: massMobilityTermX, massMobilityTermY, &
-                          massMobilityTermZ 
+                          massMobilityTermZ
       DOUBLE PRECISION :: massMobilityTermXvelupdate, &
                           massMobilityTermYvelupdate, &
-                          massMobilityTermZvelupdate 
+                          massMobilityTermZvelupdate
       DOUBLE PRECISION :: thermalDiffTermX, thermalDiffTermY, &
                           thermalDiffTermZ
       DOUBLE PRECISION :: ropsx, ropsy, ropsz, ropsmmx, ropsmmy, &
@@ -83,7 +83,7 @@
       DOUBLE PRECISION :: massMobilityTermNoDragX, &
                           massMobilityTermNoDragY, &
                           massMobilityTermNoDragZ
-      DOUBLE PRECISION :: gradTx, gradTy, gradTz 
+      DOUBLE PRECISION :: gradTx, gradTy, gradTz
       DOUBLE PRECISION :: DiTE_H, DiTE_A, DiTN_H, DiTN_A, DiTT_H, DiTT_A
       DOUBLE PRECISION :: DijE_H, DijE_A, DijN_H, DijN_A, DijT_H, DijT_A
       DOUBLE PRECISION :: DijFE_H, DijFE_A, DijFN_H, DijFN_A, DijFT_H, DijFT_A
@@ -123,7 +123,7 @@
             ThetaN = AVG_Y(THETA_M(IJK,MMAX),THETA_M(IJKN,MMAX),J)
             ThetaT = AVG_Z(THETA_M(IJK,MMAX),THETA_M(IJKT,MMAX),K)
 
-! Thermal diffusion evaluated at cell faces (all used transport coef. 
+! Thermal diffusion evaluated at cell faces (all used transport coef.
 ! will be evaluated this way)
             DiTE_H = AVG_X_S(DiT(IJK,M)*ROP_S(IJK,MMAX)/Theta_m(IJK,MMAX),&
                DiT(IJKE,M)*ROP_S(IJKE,MMAX)/Theta_m(IJKE,MMAX),I)
@@ -460,12 +460,12 @@
                           ropsmmT
       DOUBLE PRECISION :: EPSA1, EPSA2, fluxpred
       DOUBLE PRECISION :: EPSw, EPSe, EPSn, EPSs, EPSt, EPSb
-      DOUBLE PRECISION :: niE, niN, niT      
-      DOUBLE PRECISION :: Njc, njn, NjE, NjT 
+      DOUBLE PRECISION :: niE, niN, niT
+      DOUBLE PRECISION :: Njc, njn, NjE, NjT
       DOUBLE PRECISION :: tmpdragc, tmpdragn, tmpdrage, tmpdragt
       DOUBLE PRECISION :: tmpdragx, tmpdragy, tmpdragz
       DOUBLE PRECISION :: tmpVel, counter
-      DOUBLE PRECISION :: Mi, Ni, Mj, Nj 
+      DOUBLE PRECISION :: Mi, Ni, Mj, Nj
       DOUBLE PRECISION :: DIJFE, DIJFN, DIJFT
       DOUBLE PRECISION :: prefactorx, prefactory, prefactorz
       integer :: kk, maxFluxS
@@ -477,7 +477,7 @@
                           DijN_H(smax,smax), DijN_A(smax,smax)
       double precision :: beta_cell(smax), beta_ij_cell(smax,smax)
 
-      integer :: ntrial 
+      integer :: ntrial
       double precision tolx, tolf
 !-----------------------------------------------
 !     Function subroutines
@@ -681,7 +681,7 @@
               enddo
             ENDIF ! for a granular case (no gas and no drag)
           ENDIF   ! end if (.not.ip_at_n or .not.sip_at_n)
-          
+
           if(smax==2) then ! only for binary, how to implement for smax > 2?
             JoiY(IJK,2)=-JoiY(IJK,1)
           elseif(smax > 2) then
@@ -772,7 +772,7 @@
               enddo
             ENDIF ! for a granular case (no gas and no drag)
           ENDIF   ! end if (.not.ip_at_t or .not.sip_at_t)
-          
+
           if(smax==2) then ! only for binary, how to implement for smax > 2?
             JoiZ(IJK,2)=-JoiZ(IJK,1)
           elseif(smax > 2) then
@@ -808,7 +808,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      subroutine UrNEWT(ntrial, x, s, ijk, tolx, tolf, epgN, rogN, &  
+      subroutine UrNEWT(ntrial, x, s, ijk, tolx, tolf, epgN, rogN, &
                         mugN, Vg, vrelSq, rosN, dp, DijN, JoiM)
 
       Implicit NONE
@@ -889,7 +889,7 @@
       DOUBLE PRECISION, INTENT(OUT) :: FVEC(s), FJAC(s,s)
       DOUBLE PRECISION, INTENT(IN) :: epgN, rogN, mugN, Vg
       DOUBLE PRECISION, INTENT(IN) :: vrelSq(s), rosN(s), dp(s)
-      DOUBLE PRECISION, INTENT(IN) :: DijN(s,s), JoiM(s)      
+      DOUBLE PRECISION, INTENT(IN) :: DijN(s,s), JoiM(s)
 !-----------------------------------------------
 ! Local parameters
 !-----------------------------------------------
@@ -970,7 +970,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      
+
       SUBROUTINE VELOCITY_UPDATE(FVEC, s, rosi, Diji, Joii, &
                                  beta_celli, beta_ij_celli, &
                                  velocity)
@@ -986,8 +986,8 @@
       DOUBLE PRECISION, INTENT(IN) :: rosi(s), Diji(s,s), &
                                       Joii(s), beta_celli(s), &
                                       beta_ij_celli(s,s), velocity
-! vector function       
-      DOUBLE PRECISION, INTENT(OUT) :: FVEC(s) 
+! vector function
+      DOUBLE PRECISION, INTENT(OUT) :: FVEC(s)
 !-----------------------------------------------
 ! Local parameters
 !-----------------------------------------------

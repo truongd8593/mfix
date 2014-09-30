@@ -402,10 +402,10 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_DISCRETE_THERMO")
 
-! Check the number of processors. DES reactive chemistry is currently 
+! Check the number of processors. DES reactive chemistry is currently
 ! limited to serial runs.
       IF(ANY_SPECIES_EQ) THEN
-         IF((NODESI*NODESJ*NODESK) /= 1) THEN 
+         IF((NODESI*NODESJ*NODESK) /= 1) THEN
             WRITE(ERR_MSG, 9001)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF

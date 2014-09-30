@@ -5,13 +5,13 @@
     integer,               intent( in) :: xtype
     integer,               intent(out) :: varid
     integer                            :: MFIX_nf90_def_var_Scalar
-    
+
     ! Dummy - shouldn't get used
     integer, dimension(1) :: dimids
-    
+
     MFIX_nf90_def_var_Scalar = 1
   end function MFIX_nf90_def_var_Scalar
-  ! ----- 
+  ! -----
   function MFIX_nf90_def_var_oneDim(ncid, name, xtype, dimids, varid)
     integer,               intent( in) :: ncid
     character (len = *),   intent( in) :: name
@@ -19,12 +19,12 @@
     integer,               intent( in) :: dimids
     integer,               intent(out) :: varid
     integer                            :: MFIX_nf90_def_var_oneDim
-    
+
     integer, dimension(1) :: dimidsA
     dimidsA(1) = dimids
     MFIX_nf90_def_var_oneDim = 1
   end function MFIX_nf90_def_var_oneDim
-  ! ----- 
+  ! -----
   function MFIX_nf90_def_var_ManyDims(ncid, name, xtype, dimids, varid)
     integer,               intent( in) :: ncid
     character (len = *),   intent( in) :: name
@@ -32,7 +32,7 @@
     integer, dimension(:), intent( in) :: dimids
     integer,               intent(out) :: varid
     integer                            :: MFIX_nf90_def_var_ManyDims
-    
+
     MFIX_nf90_def_var_ManyDims = 1
   end function MFIX_nf90_def_var_ManyDims
 
@@ -43,7 +43,7 @@
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_put_var_text
 
- 
+
      MFIX_nf90_put_var_text = 1
    end function MFIX_nf90_put_var_text
 
@@ -52,7 +52,7 @@
      character (len = *),             intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_text
- 
+
 
      MFIX_nf90_get_var_text = 1
    end function MFIX_nf90_get_var_text
@@ -64,9 +64,9 @@
                                       intent( in) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_put_var_1D_text
- 
+
      integer, parameter                    :: numDims = 1
- 
+
      MFIX_nf90_put_var_1D_text = 1
 
    end function MFIX_nf90_put_var_1D_text
@@ -78,9 +78,9 @@
                                       intent( in) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_put_var_2D_text
- 
+
      integer, parameter                    :: numDims = 2
- 
+
      MFIX_nf90_put_var_2D_text = 1
 
    end function MFIX_nf90_put_var_2D_text
@@ -92,7 +92,7 @@
                                       intent( in) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_put_var_3D_text
- 
+
      integer, parameter                    :: numDims = 3
         MFIX_nf90_put_var_3D_text = 1
 
@@ -106,7 +106,7 @@
                                       intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_1D_text
- 
+
      integer, parameter                  :: numDims = 1
        MFIX_nf90_get_var_1D_text = 1
    end function MFIX_nf90_get_var_1D_text
@@ -118,7 +118,7 @@
                                       intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_2D_text
- 
+
      integer, parameter                  :: numDims = 2
        MFIX_nf90_get_var_2D_text = 1
    end function MFIX_nf90_get_var_2D_text
@@ -130,7 +130,7 @@
                                       intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_3D_text
- 
+
      integer, parameter                  :: numDims = 3
       MFIX_nf90_get_var_3D_text = 1
    end function MFIX_nf90_get_var_3D_text
@@ -142,7 +142,7 @@
                                       intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_4D_text
- 
+
      integer, parameter                  :: numDims = 4
        MFIX_nf90_get_var_4D_text = 1
    end function MFIX_nf90_get_var_4D_text
@@ -154,9 +154,9 @@
                                       intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_5D_text
- 
+
      integer, parameter                  :: numDims = 5
- 
+
        MFIX_nf90_get_var_5D_text = 1
    end function MFIX_nf90_get_var_5D_text
 
@@ -167,7 +167,7 @@
                                       intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_6D_text
- 
+
      integer, parameter                  :: numDims = 6
         MFIX_nf90_get_var_6D_text = 1
    end function MFIX_nf90_get_var_6D_text
@@ -179,7 +179,7 @@
                                       intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_7D_text
- 
+
      integer, parameter                  :: numDims = 7
        MFIX_nf90_get_var_7D_text = 1
    end function MFIX_nf90_get_var_7D_text
@@ -192,7 +192,7 @@
      integer , intent( in) :: values
      integer, dimension(:), optional, intent( in) :: start
      integer                                      :: MFIX_nf90_put_var_FourByteInt
-  
+
      MFIX_nf90_put_var_FourByteInt = 1
    end function MFIX_nf90_put_var_FourByteInt
 
@@ -203,8 +203,8 @@
      real , intent( in) :: values
      integer, dimension(:), optional, intent( in) :: start
      integer                                      :: MFIX_nf90_put_var_FourByteReal
- 
-  
+
+
      MFIX_nf90_put_var_FourByteReal =1
    end function MFIX_nf90_put_var_FourByteReal
 
@@ -214,8 +214,8 @@
      double precision, intent( in) :: values
      integer, dimension(:), optional, intent( in) :: start
      integer                                      :: MFIX_nf90_put_var_EightByteReal
- 
-  
+
+
      MFIX_nf90_put_var_EightByteReal = 1
    end function MFIX_nf90_put_var_EightByteReal
 
@@ -226,10 +226,10 @@
      integer , intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start
      integer                                      :: MFIX_nf90_get_var_TwoByteInt
- 
+
      integer                               :: counter
- 
-  
+
+
      MFIX_nf90_get_var_TwoByteInt = 1
    end function MFIX_nf90_get_var_TwoByteInt
 
@@ -239,7 +239,7 @@
      integer , intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start
      integer                                      :: MFIX_nf90_get_var_FourByteInt
- 
+
      integer                               :: counter
      integer                               :: defaultInteger
 
@@ -252,8 +252,8 @@
 !     integer , intent(out) :: values
 !     integer, dimension(:), optional, intent( in) :: start
 !     integer                                      :: MFIX_nf90_get_var_EightByteInt
-! 
-! 
+!
+!
 !     MFIX_nf90_get_var_EightByteInt = 1
 !   end function MFIX_nf90_get_var_EightByteInt
 
@@ -263,8 +263,8 @@
      real , intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start
      integer                                      :: MFIX_nf90_get_var_FourByteReal
- 
- 
+
+
      MFIX_nf90_get_var_FourByteReal = 1
    end function MFIX_nf90_get_var_FourByteReal
 
@@ -274,7 +274,7 @@
      double precision, intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start
      integer                                      :: MFIX_nf90_get_var_EightByteReal
- 
+
      MFIX_nf90_get_var_EightByteReal = 1
    end function MFIX_nf90_get_var_EightByteReal
 
@@ -285,9 +285,9 @@
                                       intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_1D_TwoByteInt
- 
+
      MFIX_nf90_get_var_1D_TwoByteInt = 1
-     
+
    end function MFIX_nf90_get_var_1D_TwoByteInt
 
 
@@ -297,7 +297,7 @@
                                       intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_2D_TwoByteInt
- 
+
        MFIX_nf90_get_var_2D_TwoByteInt = 1
    end function MFIX_nf90_get_var_2D_TwoByteInt
 
@@ -308,14 +308,14 @@
                                       intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_3D_TwoByteInt
- 
+
         MFIX_nf90_get_var_3D_TwoByteInt = 1
    end function MFIX_nf90_get_var_3D_TwoByteInt
 
 
 
 
- 
+
 
 
    function MFIX_nf90_get_var_1D_FourByteInt(ncid, varid, values, start, count, stride, map)
@@ -334,7 +334,7 @@
                                       intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_2D_FourByteInt
- 
+
       MFIX_nf90_get_var_2D_FourByteInt = 1
    end function MFIX_nf90_get_var_2D_FourByteInt
 
@@ -366,7 +366,7 @@
                                       intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_2D_FourByteReal
- 
+
        MFIX_nf90_get_var_2D_FourByteReal = 1
    end function MFIX_nf90_get_var_2D_FourByteReal
 
@@ -388,7 +388,7 @@
                                       intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_1D_EightByteReal
- 
+
        MFIX_nf90_get_var_1D_EightByteReal = 1
    end function MFIX_nf90_get_var_1D_EightByteReal
 
@@ -399,7 +399,7 @@
                                       intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_2D_EightByteReal
- 
+
        MFIX_nf90_get_var_2D_EightByteReal = 1
    end function MFIX_nf90_get_var_2D_EightByteReal
 
@@ -410,7 +410,7 @@
                                       intent(out) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_3D_EightByteReal
- 
+
         MFIX_nf90_get_var_3D_EightByteReal = 1
    end function MFIX_nf90_get_var_3D_EightByteReal
 
@@ -436,7 +436,7 @@
                                       intent( in) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_put_var_1D_FourByteInt
- 
+
        MFIX_nf90_put_var_1D_FourByteInt = 1
    end function MFIX_nf90_put_var_1D_FourByteInt
 
@@ -447,7 +447,7 @@
                                       intent( in) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_put_var_2D_FourByteInt
- 
+
        MFIX_nf90_put_var_2D_FourByteInt = 1
    end function MFIX_nf90_put_var_2D_FourByteInt
 
@@ -476,7 +476,7 @@
                                       intent( in) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_put_var_1D_FourByteReal
- 
+
         MFIX_nf90_put_var_1D_FourByteReal = 1
    end function MFIX_nf90_put_var_1D_FourByteReal
 
@@ -487,7 +487,7 @@
                                       intent( in) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_put_var_2D_FourByteReal
- 
+
        MFIX_nf90_put_var_2D_FourByteReal = 1
    end function MFIX_nf90_put_var_2D_FourByteReal
 
@@ -510,7 +510,7 @@
                                       intent( in) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_put_var_1D_EightByteReal
- 
+
        MFIX_nf90_put_var_1D_EightByteReal = 1
    end function MFIX_nf90_put_var_1D_EightByteReal
 

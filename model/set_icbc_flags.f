@@ -44,8 +44,8 @@
       include 'function.inc'
 
 ! Initialize the icbc_flag array.
-      DO K = kStart3, kEnd3       
-      DO J = jStart3, jEnd3 
+      DO K = kStart3, kEnd3
+      DO J = jStart3, jEnd3
       DO I = iStart3, iEnd3
 
          IJK = FUNIJK(I,J,K)
@@ -55,49 +55,49 @@
 
 ! If at domain boundaries then set default values (wall or, if
 ! specified, cyclic)
-         IF (DO_K) THEN 
+         IF (DO_K) THEN
             IF(K==KMIN3 .OR. K==KMIN2 .OR. K==KMAX2 .OR. K==KMAX3)THEN
-               IF (CYCLIC_Z_PD) THEN 
-                  ICBC_FLAG(IJK) = 'C--' 
-               ELSEIF (CYCLIC_Z) THEN 
-                  ICBC_FLAG(IJK) = 'c--' 
-               ELSE 
-                  ICBC_FLAG(IJK) = 'W--' 
-               ENDIF 
-            ENDIF 
-         ENDIF 
-
-         IF(DO_J)THEN 
-            IF(J==JMIN3 .OR. J==JMIN2 .OR. J==JMAX2 .OR. J==JMAX3)THEN 
-               IF (CYCLIC_Y_PD) THEN 
-                  ICBC_FLAG(IJK) = 'C--' 
-               ELSEIF (CYCLIC_Y) THEN 
-                  ICBC_FLAG(IJK) = 'c--' 
-               ELSE 
-                 ICBC_FLAG(IJK) = 'W--' 
-               ENDIF 
+               IF (CYCLIC_Z_PD) THEN
+                  ICBC_FLAG(IJK) = 'C--'
+               ELSEIF (CYCLIC_Z) THEN
+                  ICBC_FLAG(IJK) = 'c--'
+               ELSE
+                  ICBC_FLAG(IJK) = 'W--'
+               ENDIF
             ENDIF
-         ENDIF 
+         ENDIF
 
-         IF(DO_I)THEN 
-            IF(I==IMIN3 .OR. I==IMIN2 .OR. I==IMAX2 .OR. I==IMAX3)THEN 
-               IF (CYCLIC_X_PD) THEN 
-                  ICBC_FLAG(IJK) = 'C--' 
-               ELSEIF (CYCLIC_X) THEN 
-                  ICBC_FLAG(IJK) = 'c--' 
-               ELSE 
-                  ICBC_FLAG(IJK) = 'W--' 
-               ENDIF 
-            ENDIF 
+         IF(DO_J)THEN
+            IF(J==JMIN3 .OR. J==JMIN2 .OR. J==JMAX2 .OR. J==JMAX3)THEN
+               IF (CYCLIC_Y_PD) THEN
+                  ICBC_FLAG(IJK) = 'C--'
+               ELSEIF (CYCLIC_Y) THEN
+                  ICBC_FLAG(IJK) = 'c--'
+               ELSE
+                 ICBC_FLAG(IJK) = 'W--'
+               ENDIF
+            ENDIF
+         ENDIF
+
+         IF(DO_I)THEN
+            IF(I==IMIN3 .OR. I==IMIN2 .OR. I==IMAX2 .OR. I==IMAX3)THEN
+               IF (CYCLIC_X_PD) THEN
+                  ICBC_FLAG(IJK) = 'C--'
+               ELSEIF (CYCLIC_X) THEN
+                  ICBC_FLAG(IJK) = 'c--'
+               ELSE
+                  ICBC_FLAG(IJK) = 'W--'
+               ENDIF
+            ENDIF
             IF (I==1 .AND. CYLINDRICAL .AND. XMIN==ZERO) &
                ICBC_FLAG(IJK) = 'S--'
-         ENDIF 
+         ENDIF
 ! corner cells are wall cells
          IF ((I==IMIN3 .OR. I==IMIN2 .OR. I==IMAX2 .OR. I==IMAX3) .AND. &
              (J==JMIN3 .OR. J==JMIN2 .OR. J==JMAX2 .OR. J==JMIN3) .AND. &
-             (K==KMIN3 .OR. K==KMIN2 .OR. K==KMAX2 .OR. K==KMAX3)) THEN 
-            IF (ICBC_FLAG(IJK) /= 'S--') ICBC_FLAG(IJK) = 'W--' 
-         ENDIF 
+             (K==KMIN3 .OR. K==KMIN2 .OR. K==KMAX2 .OR. K==KMAX3)) THEN
+            IF (ICBC_FLAG(IJK) /= 'S--') ICBC_FLAG(IJK) = 'W--'
+         ENDIF
 
       ENDDO ! end do loop (i=istart3, iend3)
       ENDDO ! end do loop (j=jstart3, jend3)
@@ -115,7 +115,7 @@
 !  Author: P. Nicoletti                               Date: 10-DEC-91  !
 !                                                                      !
 !  Purpose: Verify that data was not given for undefined BC regions.   !
-!  Note that the error message may be incomplete 
+!  Note that the error message may be incomplete
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_ICBC_FLAG
@@ -144,13 +144,13 @@
       CALL INIT_ERR_MSG("CHECK_ICBC_FLAG")
 
 ! First check for any errors.
-      DO K = kStart2, kEnd2 
-      DO J = jStart2, jEnd2 
+      DO K = kStart2, kEnd2
+      DO J = jStart2, jEnd2
       DO I = iStart2, iEnd2
-         IF(ICBC_FLAG(FUNIJK(I,J,K)) == '   ') ERROR = .TRUE. 
-      ENDDO 
-      ENDDO 
-      ENDDO 
+         IF(ICBC_FLAG(FUNIJK(I,J,K)) == '   ') ERROR = .TRUE.
+      ENDDO
+      ENDDO
+      ENDDO
 
 ! Sync up the error flag across all processes.
       CALL GLOBAL_ALL_OR(ERROR)
@@ -166,16 +166,16 @@
          CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
 
          DO K = kStart2, kEnd2
-         DO J = jStart2, jEnd2 
+         DO J = jStart2, jEnd2
          DO I = iStart2, iEnd2
             IF(ICBC_FLAG(FUNIJK(I,J,K)) == '   ') THEN
                WRITE(ERR_MSG,1101) I, J, K
                CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
             ENDIF
 
-         ENDDO 
-         ENDDO 
-         ENDDO 
+         ENDDO
+         ENDDO
+         ENDDO
 
          WRITE(ERR_MSG, 1102)
          CALL FLUSH_ERR_MSG(HEADER=.FALSE., ABORT=.TRUE.)
@@ -188,15 +188,15 @@
 ! Clean up and return.
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
  1100 FORMAT('Error 1100 (PE ',A,') : No initial or boundary ',        &
          'condtions specified in','the following cells:',/             &
          '    I       J       K')
 
- 1101 FORMAT(I5,3X,I5,3X,I5) 
+ 1101 FORMAT(I5,3X,I5,3X,I5)
 
- 1102 FORMAT('Please correct the mfix.dat file.') 
+ 1102 FORMAT('Please correct the mfix.dat file.')
 
       END SUBROUTINE CHECK_ICBC_FLAG
 
@@ -220,7 +220,7 @@
       use ic, only: IC_K_B, IC_K_T
 
       use sendrecv
-      use mpi_utility      
+      use mpi_utility
       use error_manager
 
       IMPLICIT NONE
@@ -246,15 +246,15 @@
 
 !  Set ICBC flag
          DO K = IC_K_B(ICV), IC_K_T(ICV)
-         DO J = IC_J_S(ICV), IC_J_N(ICV) 
-         DO I = IC_I_W(ICV), IC_I_E(ICV) 
+         DO J = IC_J_S(ICV), IC_J_N(ICV)
+         DO I = IC_I_W(ICV), IC_I_E(ICV)
             IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
             IF(DEAD_CELL_AT(I,J,K)) CYCLE
             IJK = FUNIJK(I,J,K)
             WRITE(ICBC_FLAG(IJK)(1:3),"('.',I2.2)") MOD(ICV,100)
-         ENDDO 
-         ENDDO 
-         ENDDO 
+         ENDDO
+         ENDDO
+         ENDDO
 
 
       ENDDO IC_LP
@@ -266,15 +266,15 @@
 ! Clean up and return.
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
  1100 FORMAT('Error 1100 (PE ',A,') : No initial or boundary ',        &
          'condtions specified in','the following cells:',/             &
          '    I       J       K')
 
- 1101 FORMAT(I5,3X,I5,3X,I5) 
+ 1101 FORMAT(I5,3X,I5,3X,I5)
 
- 1102 FORMAT('Please correct the mfix.dat file.') 
+ 1102 FORMAT('Please correct the mfix.dat file.')
 
       END SUBROUTINE SET_IC_FLAGS
 
@@ -289,14 +289,14 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_BC_FLAGS_WALL
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE fldvar
       USE physprop
       USE bc
       USE indices
-      USE funits 
+      USE funits
       USE compar
       USE sendrecv
 
@@ -318,7 +318,7 @@
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
-      LOGICAL , EXTERNAL :: COMPARE 
+      LOGICAL , EXTERNAL :: COMPARE
 
 ! Total number of valid BC types
       INTEGER, PARAMETER :: DIM_BCTYPE = 21
@@ -338,37 +338,37 @@
 
          IF(BC_TYPE(BCV)=='FREE_SLIP_WALL' .OR. &
             BC_TYPE(BCV)=='NO_SLIP_WALL'   .OR. &
-            BC_TYPE(BCV)=='PAR_SLIP_WALL') THEN 
+            BC_TYPE(BCV)=='PAR_SLIP_WALL') THEN
 
-            DO K = BC_K_B(BCV), BC_K_T(BCV) 
-            DO J = BC_J_S(BCV), BC_J_N(BCV) 
+            DO K = BC_K_B(BCV), BC_K_T(BCV)
+            DO J = BC_J_S(BCV), BC_J_N(BCV)
             DO I = BC_I_W(BCV), BC_I_E(BCV)
 
                IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                IF(DEAD_CELL_AT(I,J,K)) CYCLE
 
-               IJK = FUNIJK(I,J,K) 
+               IJK = FUNIJK(I,J,K)
 
                SELECT CASE (TRIM(BC_TYPE(BCV)))
                CASE('FREE_SLIP_WALL'); ICBC_FLAG(IJK)(1:1) = 'S'
                CASE('NO_SLIP_WALL');   ICBC_FLAG(IJK)(1:1) = 'W'
                CASE('PAR_SLIP_WALL');  ICBC_FLAG(IJK)(1:1) = 's'
-               END SELECT 
+               END SELECT
                WRITE (ICBC_FLAG(IJK)(2:3),"(I2.2)") MOD(BCV,100)
-            ENDDO 
-            ENDDO 
-            ENDDO 
+            ENDDO
+            ENDDO
+            ENDDO
 
-         ENDIF 
+         ENDIF
       ENDDO
- 
+
       CALL SEND_RECV(ICBC_FLAG,2)
 
       CALL FINL_ERR_MSG
 
       RETURN
       END SUBROUTINE SET_BC_FLAGS_WALL
-      
+
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -377,21 +377,21 @@
 !  Author: P. Nicoletti                               Date: 10-DEC-91  !
 !                                                                      !
 !  Purpose: Find and validate i, j, k locations for flow BC's. Also    !
-!           set value of bc_plane for flow BC's.                       !      
+!           set value of bc_plane for flow BC's.                       !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE SET_BC_FLAGS_FLOW 
+      SUBROUTINE SET_BC_FLAGS_FLOW
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE fldvar
       USE physprop
       USE bc
       USE indices
-      USE funits 
+      USE funits
       USE compar
-      USE sendrecv 
+      USE sendrecv
 
       use mpi_utility
       use sendrecv
@@ -417,9 +417,9 @@
 
 
 ! FIND THE FLOW SURFACES
-      ERROR = .FALSE. 
+      ERROR = .FALSE.
 
-      DO BCV = 1, DIMENSION_BC 
+      DO BCV = 1, DIMENSION_BC
 
          IF(.NOT.BC_DEFINED(BCV)) CYCLE
 
@@ -427,10 +427,10 @@
             BC_TYPE(BCV)=='MASS_OUTFLOW' .OR. &
             BC_TYPE(BCV)=='P_INFLOW'     .OR. &
             BC_TYPE(BCV)=='P_OUTFLOW'    .OR. &
-            BC_TYPE(BCV)=='OUTFLOW') THEN 
+            BC_TYPE(BCV)=='OUTFLOW') THEN
 
             X_CONSTANT = (BC_X_W(BCV) == BC_X_E(BCV))
-            Y_CONSTANT = (BC_Y_S(BCV) == BC_Y_N(BCV)) 
+            Y_CONSTANT = (BC_Y_S(BCV) == BC_Y_N(BCV))
             Z_CONSTANT = (BC_Z_B(BCV) == BC_Z_T(BCV))
 
             IF(X_CONSTANT .AND. BC_X_W(BCV)/=UNDEFINED)                &
@@ -463,14 +463,14 @@
 ! this as an error. The next triple-loop will take care of reporting the
 ! error.
             ERROR = .FALSE.
-            DO K = BC_K_B(BCV), BC_K_T(BCV) 
-            DO J = BC_J_S(BCV), BC_J_N(BCV) 
-            DO I = BC_I_W(BCV), BC_I_E(BCV) 
+            DO K = BC_K_B(BCV), BC_K_T(BCV)
+            DO J = BC_J_S(BCV), BC_J_N(BCV)
+            DO I = BC_I_W(BCV), BC_I_E(BCV)
 
                IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                IF(DEAD_CELL_AT(I,J,K)) CYCLE
 
-               IJK = FUNIJK(I,J,K) 
+               IJK = FUNIJK(I,J,K)
 
 ! Verify that the FLOW BC is overwriting a wall.
                IF(WALL_ICBC_FLAG(IJK)) THEN
@@ -489,9 +489,9 @@
                   ERROR = .TRUE.
                ENDIF
 
-            ENDDO 
-            ENDDO 
-            ENDDO 
+            ENDDO
+            ENDDO
+            ENDDO
 
 ! Sync the error flag over all ranks.
             CALL GLOBAL_ALL_OR(ERROR)
@@ -507,14 +507,14 @@
  1200 FORMAT('Error 1200: Boundary condition ',I3,' overlaps with ',&
          'another BC.'2/7x,'I',7x,'J',7x,'K',3x,'ICBC')
 
-               DO K = BC_K_B(BCV), BC_K_T(BCV) 
-               DO J = BC_J_S(BCV), BC_J_N(BCV) 
-               DO I = BC_I_W(BCV), BC_I_E(BCV) 
+               DO K = BC_K_B(BCV), BC_K_T(BCV)
+               DO J = BC_J_S(BCV), BC_J_N(BCV)
+               DO I = BC_I_W(BCV), BC_I_E(BCV)
 
                   IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                   IF(DEAD_CELL_AT(I,J,K)) CYCLE
 
-                  IJK = FUNIJK(I,J,K) 
+                  IJK = FUNIJK(I,J,K)
 
 ! Verify that the FLOW BC is overwriting a wall.
                   IF(.NOT.WALL_ICBC_FLAG(IJK)) THEN
@@ -525,8 +525,8 @@
  1201 FORMAT(1x,3(2x,I6),3x,A3)
 
                ENDDO
-               ENDDO 
-               ENDDO 
+               ENDDO
+               ENDDO
 
                WRITE(ERR_MSG,"('Please correct the mfix.dat file.')")
                CALL FLUSH_ERR_MSG(HEADER=.FALSE., ABORT=.TRUE.)
@@ -540,5 +540,5 @@
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
       END SUBROUTINE SET_BC_FLAGS_FLOW

@@ -6,31 +6,31 @@
 !  introducing the drag as a source term. Face centered.               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-     
+
       SUBROUTINE SOLID_DRAG(A_M, B_M, VELDIR, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE matrix 
+      USE param
+      USE param1
+      USE matrix
       USE geometry
       USE physprop
       USE indices
-      USE compar    
-      USE discretelement 
-      
+      USE compar
+      USE discretelement
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
 !-----------------------------------------------
-! Septadiagonal matrix A_m       
+! Septadiagonal matrix A_m
       DOUBLE PRECISION :: A_M(DIMENSION_3, -3:3, 0:DIMENSION_M)
-! Vector b_m       
+! Vector b_m
       DOUBLE PRECISION :: B_M(DIMENSION_3, 0:DIMENSION_M)
 ! flag/index used to specify which gas phase momentum equation
-! (x,y,z) is currently being solved 
+! (x,y,z) is currently being solved
       INTEGER :: VELDIR
 ! Error index
       INTEGER :: IER
@@ -43,21 +43,21 @@
       INTEGER :: CM, DM
 ! Face center values of u_sm (i+1/2), v_sm (j+1/2) and w_sm (k+1/2)
       DOUBLE PRECISION :: USFCM, VSFCM, WSFCM
-! Volume of x, y, or z cell on staggered grid      
+! Volume of x, y, or z cell on staggered grid
       DOUBLE PRECISION :: VCELL
-! temporary variables for matrix A_M and vector B_M that are 
+! temporary variables for matrix A_M and vector B_M that are
 ! used for local calculations
       DOUBLE PRECISION tmp_A, tmp_B
-! Averaging factor 
-! (=0.25 in 3D and =0.5 in 2D)      
+! Averaging factor
+! (=0.25 in 3D and =0.5 in 2D)
       DOUBLE PRECISION :: AVG_FACTOR
 !-----------------------------------------------
-! Include statement functions      
+! Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
       INCLUDE '../fun_avg1.inc'
       INCLUDE '../fun_avg2.inc'
-!-----------------------------------------------      
+!-----------------------------------------------
 
       AVG_FACTOR = merge(0.5d0, 0.25D0, DO_K)
 
@@ -71,7 +71,7 @@
                      K = K_OF(IJK)
 
 ! currently no difference between interpolated and non-interpolated
-! implementation of solid-solid drag                  
+! implementation of solid-solid drag
                      USFCM = AVG_X(DES_U_S(IJK,DM),DES_U_S(EAST_OF(IJK),DM),I)
                      tmp_A =  - VXF_SDS(IJK,CM,DM)
                      tmp_B =  - VXF_SDS(IJK,CM,DM)*USFCM
@@ -117,7 +117,7 @@
                      K = K_OF(IJK)
 
 ! currently no difference between interpolated and non-interpolated
-! implementation of solid-solid drag                  
+! implementation of solid-solid drag
                      WSFCM = AVG_Z(DES_W_S(IJK,DM),DES_W_S(TOP_OF(IJK),DM),K)
                      tmp_A =  - VXF_SDS(IJK,CM,DM)
                      tmp_B =  - VXF_SDS(IJK,CM,DM)*WSFCM

@@ -244,10 +244,10 @@
 
       IMPLICIT NONE
 
-! Septadiagonal matrix A_m 
-      DOUBLE PRECISION, intent(in) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
-! Vector b_m 
-      DOUBLE PRECISION, intent(in) :: B_m(DIMENSION_3, 0:DIMENSION_M) 
+! Septadiagonal matrix A_m
+      DOUBLE PRECISION, intent(in) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
+! Vector b_m
+      DOUBLE PRECISION, intent(in) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 
       INTEGER, intent(in) :: M
 
@@ -255,9 +255,9 @@
 
       INTEGER, intent(in), optional :: PASS
 
-! Septadiagonal matrix A_m 
-      DOUBLE PRECISION :: lA_m(-3:3) 
-! Vector b_m 
+! Septadiagonal matrix A_m
+      DOUBLE PRECISION :: lA_m(-3:3)
+! Vector b_m
       DOUBLE PRECISION :: lB_m
 ! Neighbor info for debugging.
       INTEGER :: NBGHS(-3:3)
@@ -284,7 +284,7 @@
          ENDIF
          CALL MFIX_EXIT(myPE)
       ENDIF
- 
+
       AmFName=''
       BmFName=''
       IF(present(VAR) .AND. present(PASS)) THEN
@@ -600,7 +600,7 @@
 
 
 !----------------------------------------------------------------------!
-!                            	                                         !
+!                                                                        !
 !                                                                      !
 !                                                                      !
 !----------------------------------------------------------------------!
@@ -740,7 +740,7 @@
 
 
 !----------------------------------------------------------------------!
-!                            	                                         !
+!                                                                        !
 !                                                                      !
 !                                                                      !
 !----------------------------------------------------------------------!
@@ -764,7 +764,7 @@
 
 
 !----------------------------------------------------------------------!
-!                            	                                         !
+!                                                                        !
 !                                                                      !
 !                                                                      !
 !----------------------------------------------------------------------!
@@ -824,7 +824,7 @@
 
       RETURN
       END SUBROUTINE arrayExtract_prnt
-   
+
 
 !----------------------------------------------------------------------!
 !                                                                      !

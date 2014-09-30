@@ -7,7 +7,7 @@
 !     - convert physical locations to i, j, k's (GET_FLOW_BC)          !
 !     - compute area of boundary surfaces (GET_BC_AREA)                !
 !     - convert mass and volumetric flows to velocities (FLOW_TO_VEL)  !
-!     - check specification of physical quantities                     ! 
+!     - check specification of physical quantities                     !
 !                                                                      !
 !  Comments:                                                           !
 !                                                                      !
@@ -67,7 +67,7 @@
       MMAX_TOT = SMAX + DES_MMAX
 
 ! Loop over each defined BC and check the user data.
-      DO BCV = 1, DIMENSION_BC 
+      DO BCV = 1, DIMENSION_BC
 
          IF(.NOT.BC_DEFINED(BCV)) CYCLE
 
@@ -92,7 +92,7 @@
 ! Cleanup and exit.
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE SET_BC_FLOW
 
@@ -142,28 +142,28 @@
 
 
 ! Check that gas phase velocities are defined.
-      IF(BC_U_G(BCV) == UNDEFINED) THEN 
+      IF(BC_U_G(BCV) == UNDEFINED) THEN
          IF(NO_I) THEN
-            BC_U_G(BCV) = ZERO 
-         ELSE 
+            BC_U_G(BCV) = ZERO
+         ELSE
             WRITE(ERR_MSG,1000) trim(iVar('BC_U_g',BCV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
+         ENDIF
       ENDIF
 
-      IF (BC_V_G(BCV) == UNDEFINED) THEN 
-         IF (NO_J) THEN 
-            BC_V_G(BCV) = ZERO 
-         ELSE 
+      IF (BC_V_G(BCV) == UNDEFINED) THEN
+         IF (NO_J) THEN
+            BC_V_G(BCV) = ZERO
+         ELSE
             WRITE(ERR_MSG,1000) trim(iVar('BC_V_g',BCV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-      ENDIF 
+         ENDIF
+      ENDIF
 
-      IF(BC_W_G(BCV) == UNDEFINED) THEN 
-         IF (NO_K) THEN 
-            BC_W_G(BCV) = ZERO 
-         ELSE 
+      IF(BC_W_G(BCV) == UNDEFINED) THEN
+         IF (NO_K) THEN
+            BC_W_G(BCV) = ZERO
+         ELSE
             WRITE(ERR_MSG,1000) trim(iVar('BC_W_g',BCV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
@@ -173,105 +173,105 @@
       DO M = 1, M_TOT
          IF(BC_U_S(BCV,M) == UNDEFINED) THEN
             IF(SKIP(M) .OR. NO_I) THEN
-               BC_U_S(BCV,M) = ZERO 
-            ELSE 
+               BC_U_S(BCV,M) = ZERO
+            ELSE
                WRITE(ERR_MSG,1000) trim(iVar('BC_U_s',BCV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
 
          IF(BC_V_S(BCV,M) == UNDEFINED) THEN
-            IF(SKIP(M) .OR. NO_J) THEN 
+            IF(SKIP(M) .OR. NO_J) THEN
                BC_V_S(BCV,M) = ZERO
-            ELSE 
+            ELSE
                WRITE(ERR_MSG,1000) trim(iVar('BC_V_s',BCV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
- 
-         IF(BC_W_S(BCV,M) == UNDEFINED) THEN 
-            IF(SKIP(M) .OR. NO_K) THEN 
-               BC_W_S(BCV,M) = ZERO 
-            ELSE 
+            ENDIF
+         ENDIF
+
+         IF(BC_W_S(BCV,M) == UNDEFINED) THEN
+            IF(SKIP(M) .OR. NO_K) THEN
+               BC_W_S(BCV,M) = ZERO
+            ELSE
                WRITE(ERR_MSG,1000) trim(iVar('BC_W_s',BCV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
       ENDDO
 
 ! Check that gas phase velocities are consistent.
       SELECT CASE (BC_PLANE(BCV))
 
-      CASE ('W')  
+      CASE ('W')
          IF(BC_U_G(BCV) > ZERO) THEN
             WRITE(ERR_MSG,1300) trim(iVar('BC_U_g',BCV)), '<'
             CALL FLUSH_ERR_MSG
-         ENDIF 
+         ENDIF
          DO M = 1, M_TOT
-            IF(BC_U_S(BCV,M) > ZERO) THEN 
+            IF(BC_U_S(BCV,M) > ZERO) THEN
                WRITE(ERR_MSG, 1300) trim(iVar('BC_U_s',BCV,M)), '<'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-            ENDIF 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
          ENDDO
 
       CASE('E')
          IF(BC_U_G(BCV) < ZERO) THEN
             WRITE(ERR_MSG,1300) trim(iVar('BC_U_g',BCV)), '>'
             CALL FLUSH_ERR_MSG
-         ENDIF 
+         ENDIF
          DO M = 1, M_TOT
-            IF(BC_U_S(BCV,M) < ZERO) THEN 
+            IF(BC_U_S(BCV,M) < ZERO) THEN
                WRITE(ERR_MSG, 1300) trim(iVar('BC_U_s',BCV,M)), '>'
-              CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-            ENDIF 
+              CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
          ENDDO
 
-      CASE('S')  
-         IF(BC_V_G(BCV) > ZERO) THEN 
+      CASE('S')
+         IF(BC_V_G(BCV) > ZERO) THEN
             WRITE(ERR_MSG,1300) trim(iVar('BC_V_g',BCV)), '<'
             CALL FLUSH_ERR_MSG
-         ENDIF 
+         ENDIF
          DO M = 1, M_TOT
-            IF(BC_V_S(BCV,M) > ZERO) THEN 
+            IF(BC_V_S(BCV,M) > ZERO) THEN
                WRITE(ERR_MSG, 1300) trim(iVar('BC_V_s',BCV,M)), '<'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-            ENDIF 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
          ENDDO
 
-      CASE('N')  
-         IF(BC_V_G(BCV) < ZERO) THEN 
+      CASE('N')
+         IF(BC_V_G(BCV) < ZERO) THEN
             WRITE(ERR_MSG,1300) trim(iVar('BC_V_g',BCV)), '>'
             CALL FLUSH_ERR_MSG
-         ENDIF 
+         ENDIF
          DO M = 1, M_TOT
-            IF(BC_V_S(BCV,M) < ZERO) THEN 
+            IF(BC_V_S(BCV,M) < ZERO) THEN
                WRITE(ERR_MSG, 1300) trim(iVar('BC_V_s',BCV,M)), '>'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-            ENDIF 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
          ENDDO
 
-      CASE('B')  
-         IF(BC_W_G(BCV) > ZERO) THEN 
+      CASE('B')
+         IF(BC_W_G(BCV) > ZERO) THEN
             WRITE(ERR_MSG,1300) trim(iVar('BC_W_g',BCV)), '<'
             CALL FLUSH_ERR_MSG
-         ENDIF 
+         ENDIF
          DO M = 1, M_TOT
-            IF(BC_W_S(BCV,M) > ZERO) THEN 
+            IF(BC_W_S(BCV,M) > ZERO) THEN
                WRITE(ERR_MSG, 1300) trim(iVar('BC_W_s',BCV,M)), '<'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-            ENDIF 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
          ENDDO
 
-      CASE('T')  
-         IF(BC_W_G(BCV) < ZERO) THEN 
+      CASE('T')
+         IF(BC_W_G(BCV) < ZERO) THEN
             WRITE(ERR_MSG,1300) trim(iVar('BC_W_g',BCV)), '>'
             CALL FLUSH_ERR_MSG
-         ENDIF 
+         ENDIF
          DO M = 1, M_TOT
-            IF(BC_W_S(BCV,M) < ZERO) THEN 
+            IF(BC_W_S(BCV,M) < ZERO) THEN
                WRITE(ERR_MSG, 1300) trim(iVar('BC_W_s',BCV,M)), '>'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-            ENDIF 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
          ENDDO
 
       END SELECT
@@ -311,15 +311,15 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_BC_VEL_OUTFLOW(M_TOT, SKIP, BCV)
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE fldvar
       USE physprop
       USE run
       USE bc
       USE indices
-      USE funits 
+      USE funits
       USE scalars
       USE compar
       USE sendrecv
@@ -346,28 +346,28 @@
 
 
 ! Check that gas phase velocities are defined.
-      IF(BC_U_G(BCV) == UNDEFINED) THEN 
+      IF(BC_U_G(BCV) == UNDEFINED) THEN
          IF(NO_I) THEN
-            BC_U_G(BCV) = ZERO 
-         ELSE 
+            BC_U_G(BCV) = ZERO
+         ELSE
             WRITE(ERR_MSG,1000) trim(iVar('BC_U_g',BCV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
+         ENDIF
       ENDIF
 
-      IF (BC_V_G(BCV) == UNDEFINED) THEN 
-         IF (NO_J) THEN 
-            BC_V_G(BCV) = ZERO 
-         ELSE 
+      IF (BC_V_G(BCV) == UNDEFINED) THEN
+         IF (NO_J) THEN
+            BC_V_G(BCV) = ZERO
+         ELSE
             WRITE(ERR_MSG,1000) trim(iVar('BC_V_g',BCV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
+         ENDIF
       ENDIF
 
-      IF(BC_W_G(BCV) == UNDEFINED) THEN 
-         IF (NO_K) THEN 
-            BC_W_G(BCV) = ZERO 
-         ELSE 
+      IF(BC_W_G(BCV) == UNDEFINED) THEN
+         IF (NO_K) THEN
+            BC_W_G(BCV) = ZERO
+         ELSE
             WRITE(ERR_MSG,1000) trim(iVar('BC_W_g',BCV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
@@ -377,106 +377,106 @@
       DO M = 1, M_TOT
          IF(BC_U_S(BCV,M) == UNDEFINED) THEN
             IF(SKIP(M) .OR. NO_I) THEN
-               BC_U_S(BCV,M) = ZERO 
-            ELSE 
+               BC_U_S(BCV,M) = ZERO
+            ELSE
                WRITE(ERR_MSG,1000) trim(iVar('BC_U_s',BCV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
 
          IF(BC_V_S(BCV,M) == UNDEFINED) THEN
-            IF(SKIP(M) .OR. NO_J) THEN 
+            IF(SKIP(M) .OR. NO_J) THEN
                BC_V_S(BCV,M) = ZERO
-            ELSE 
+            ELSE
                WRITE(ERR_MSG,1000) trim(iVar('BC_V_s',BCV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
- 
-         IF(BC_W_S(BCV,M) == UNDEFINED) THEN 
-            IF(SKIP(M) .OR. NO_K) THEN 
-               BC_W_S(BCV,M) = ZERO 
-            ELSE 
+            ENDIF
+         ENDIF
+
+         IF(BC_W_S(BCV,M) == UNDEFINED) THEN
+            IF(SKIP(M) .OR. NO_K) THEN
+               BC_W_S(BCV,M) = ZERO
+            ELSE
                WRITE(ERR_MSG,1000) trim(iVar('BC_W_s',BCV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
       ENDDO
 
 
 ! Check that gas phase velocities are consistent.
       SELECT CASE (BC_PLANE(BCV))
 
-      CASE ('W')  
+      CASE ('W')
          IF(BC_U_G(BCV) < ZERO) THEN
             WRITE(ERR_MSG,1300) trim(iVar('BC_U_g',BCV)), '>'
             CALL FLUSH_ERR_MSG
-         ENDIF 
+         ENDIF
          DO M = 1, M_TOT
-            IF(BC_U_S(BCV,M) < ZERO) THEN 
+            IF(BC_U_S(BCV,M) < ZERO) THEN
                WRITE(ERR_MSG, 1300) trim(iVar('BC_U_s',BCV,M)), '>'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-            ENDIF 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
          ENDDO
 
       CASE('E')
          IF(BC_U_G(BCV) > ZERO) THEN
             WRITE(ERR_MSG,1300) trim(iVar('BC_U_g',BCV)), '<'
             CALL FLUSH_ERR_MSG
-         ENDIF 
+         ENDIF
          DO M = 1, M_TOT
-            IF(BC_U_S(BCV,M) > ZERO) THEN 
+            IF(BC_U_S(BCV,M) > ZERO) THEN
                WRITE(ERR_MSG, 1300) trim(iVar('BC_U_s',BCV,M)), '<'
-              CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-            ENDIF 
+              CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
          ENDDO
 
-      CASE('S')  
-         IF(BC_V_G(BCV) < ZERO) THEN 
+      CASE('S')
+         IF(BC_V_G(BCV) < ZERO) THEN
             WRITE(ERR_MSG,1300) trim(iVar('BC_V_g',BCV)), '>'
             CALL FLUSH_ERR_MSG
-         ENDIF 
+         ENDIF
          DO M = 1, M_TOT
-            IF(BC_V_S(BCV,M) < ZERO) THEN 
+            IF(BC_V_S(BCV,M) < ZERO) THEN
                WRITE(ERR_MSG, 1300) trim(iVar('BC_V_s',BCV,M)), '>'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-            ENDIF 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
          ENDDO
 
-      CASE('N')  
-         IF(BC_V_G(BCV) > ZERO) THEN 
+      CASE('N')
+         IF(BC_V_G(BCV) > ZERO) THEN
             WRITE(ERR_MSG,1300) trim(iVar('BC_V_g',BCV)), '<'
             CALL FLUSH_ERR_MSG
-         ENDIF 
+         ENDIF
          DO M = 1, M_TOT
-            IF(BC_V_S(BCV,M) > ZERO) THEN 
+            IF(BC_V_S(BCV,M) > ZERO) THEN
                WRITE(ERR_MSG, 1300) trim(iVar('BC_V_s',BCV,M)), '<'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-            ENDIF 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
          ENDDO
 
-      CASE('B')  
-         IF(BC_W_G(BCV) < ZERO) THEN 
+      CASE('B')
+         IF(BC_W_G(BCV) < ZERO) THEN
             WRITE(ERR_MSG,1300) trim(iVar('BC_W_g',BCV)), '>'
             CALL FLUSH_ERR_MSG
-         ENDIF 
+         ENDIF
          DO M = 1, M_TOT
-            IF(BC_W_S(BCV,M) < ZERO) THEN 
+            IF(BC_W_S(BCV,M) < ZERO) THEN
                WRITE(ERR_MSG, 1300) trim(iVar('BC_W_s',BCV,M)), '>'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-            ENDIF 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
          ENDDO
 
-      CASE('T')  
-         IF(BC_W_G(BCV) > ZERO) THEN 
+      CASE('T')
+         IF(BC_W_G(BCV) > ZERO) THEN
             WRITE(ERR_MSG,1300) trim(iVar('BC_W_g',BCV)), '<'
             CALL FLUSH_ERR_MSG
-         ENDIF 
+         ENDIF
          DO M = 1, M_TOT
-            IF(BC_W_S(BCV,M) > ZERO) THEN 
+            IF(BC_W_S(BCV,M) > ZERO) THEN
                WRITE(ERR_MSG, 1300) trim(iVar('BC_W_s',BCV,M)), '<'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-            ENDIF 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
          ENDDO
 
       END SELECT
@@ -491,6 +491,6 @@
 
 
  1000 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,&
-         ') not specified',/1X,70('*')/) 
+         ') not specified',/1X,70('*')/)
 
       END SUBROUTINE CHECK_BC_VEL_OUTFLOW

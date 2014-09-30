@@ -15,8 +15,8 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      INTEGER FUNCTION SEEK_END (LINE, MAXCOL) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      INTEGER FUNCTION SEEK_END (LINE, MAXCOL)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
       IMPLICIT NONE
 !-----------------------------------------------
@@ -24,14 +24,14 @@
 !-----------------------------------------------
 !
 !                   maximum column of input data line to search
-      INTEGER MAXCOL 
+      INTEGER MAXCOL
 !
 !                   input data line
-      CHARACTER LINE*(*) 
+      CHARACTER LINE*(*)
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: L 
+      INTEGER :: L
 !-----------------------------------------------
 !
 !     The function SEEK_END returns the index to where the last
@@ -39,9 +39,9 @@
 !     if no trailing blank characters in the line
 !
 !
-      SEEK_END = 0 
-      DO L = 1, MAXCOL 
-         IF (LINE(L:L) /= ' ') SEEK_END = L 
-      END DO 
-      RETURN  
-      END FUNCTION SEEK_END 
+      SEEK_END = 0
+      DO L = 1, MAXCOL
+         IF (LINE(L:L) /= ' ') SEEK_END = L
+      END DO
+      RETURN
+      END FUNCTION SEEK_END

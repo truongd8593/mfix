@@ -1,6 +1,6 @@
 ! TO DO:
-! 1. Check the formulation based on MCP.  
-! 2. The pressure correction should be based on sum of close-packed 
+! 1. Check the formulation based on MCP.
+! 2. The pressure correction should be based on sum of close-packed
 !    solids?
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -10,21 +10,21 @@
 !           corrections.                                               C
 !                                                                      C
 !  Notes: see mark_phase_4_cor for more details                        C
-!                                                                      C      
+!                                                                      C
 !  Author: M. Syamlal                                 Date: 5-JUL-96   C
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_VOL_FR(P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER) 
+      SUBROUTINE CALC_VOL_FR(P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE run
       USE geometry
       USE indices
@@ -33,8 +33,8 @@
       USE constant
       USE pgcor
       USE pscor
-      USE compar 
-      USE sendrecv 
+      USE compar
+      USE sendrecv
       USE discretelement
       USE mpi_utility
       use fldvar, only: RO_S
@@ -63,24 +63,24 @@
 ! volume fraction of close-packed region
       DOUBLE PRECISION :: EPcp
 ! volume fraction of solids phase
-      DOUBLE PRECISION :: EPS      
+      DOUBLE PRECISION :: EPS
 ! sum of volume fractions
       DOUBLE PRECISION :: SUMVF
 ! Whichever phase is given by MF becomes the phase whose volume fraction
 ! is corrected based on all other phases present.  Generally MF gets
 ! defined as 0 so that the gas phase void fraction becomes corrected
-! based on the summation of the volume fractions of all other phases       
+! based on the summation of the volume fractions of all other phases
       INTEGER :: MF
 ! Whichever phase is given by MCPl becomes the phase whose volume
 ! fraction is corrected based on value of maximum close packing and all
 ! other solids phase that can close pack.  This is basically a local
-! variable for MCP but only in cells where close packed conditions 
-! exist.   
+! variable for MCP but only in cells where close packed conditions
+! exist.
       INTEGER :: MCPl
 ! Index of solids phase
       INTEGER :: M
 ! Indices
-      INTEGER :: IJK      
+      INTEGER :: IJK
 
 ! Arrays for storing errors:
 ! 110 - Negative volume fraciton
@@ -105,33 +105,33 @@
 !!$omp&  schedule(static)
 
       DO IJK = ijkstart3, ijkend3
-         IF (FLUID_AT(IJK)) THEN 
+         IF (FLUID_AT(IJK)) THEN
 
 ! calculate the volume fraction of the solids phase based on the volume
 ! fractions of all other solids phases and on the value of maximum
 ! packing when that solids phase continuity was not solved for the
 ! indicated cell.
 !----------------------------------------------------------------->>>
-            IF (PHASE_4_P_S(IJK) /= UNDEFINED_I) THEN 
+            IF (PHASE_4_P_S(IJK) /= UNDEFINED_I) THEN
 ! for the current cell check if a solids phase continuity was skipped.
 ! this value will either be undefined (no cell was skipped in any
 ! solids continuity equations) or be a solids phase index (indicated
 ! solids continuity was skipped) for a solids phase that does close pack
 ! (i.e., close_packed=T) and the cell exhibits close packing conditions.
 ! note: this branch is never entered given the existing version of
-! mark_phase_4_cor.                    
+! mark_phase_4_cor.
                MCPl   = PHASE_4_P_s(IJK)
 
 ! finding the value of maximum close packing based on the expression for
-! plastic pressure                    
+! plastic pressure
                EPCP = 1. - INV_H(P_STAR(IJK),EP_g_blend_end(ijk))
-! summing the solids volume fraction of all continuum solids phases 
+! summing the solids volume fraction of all continuum solids phases
 ! that are marked as close_packed except for the solids phase which
 ! is also marked by phase_4_p_s (skipping its own continuity)
-               SUMVF = ZERO 
-               DO M = 1, MMAX 
-                  IF (CLOSE_PACKED(M) .AND. M/=MCPl) SUMVF = SUMVF + EP_S(IJK,M) 
-               ENDDO 
+               SUMVF = ZERO
+               DO M = 1, MMAX
+                  IF (CLOSE_PACKED(M) .AND. M/=MCPl) SUMVF = SUMVF + EP_S(IJK,M)
+               ENDDO
 ! sum of solids volume fraction from the DEM
                IF (DES_CONTINUUM_HYBRID) THEN
                   DO M = 1,DES_MMAX
@@ -139,15 +139,15 @@
                      SUMVF = SUMVF + EPS
                   ENDDO
                ENDIF
-               ROP_S(IJK,MCPl) = (EPCP - SUMVF)*RO_S(IJK,MCPl) 
-            ENDIF 
+               ROP_S(IJK,MCPl) = (EPCP - SUMVF)*RO_S(IJK,MCPl)
+            ENDIF
 !-----------------------------------------------------------------<<<
 
 
-! calculate the volume fraction of the 'solids' phase based on the 
-! volume fractions of all other phases (including gas) if the gas 
-! continuity was solved rather than that phases own continuity. 
-! if the gas continuity was not solved then calculate the void 
+! calculate the volume fraction of the 'solids' phase based on the
+! volume fractions of all other phases (including gas) if the gas
+! continuity was solved rather than that phases own continuity.
+! if the gas continuity was not solved then calculate the void
 ! fraction of the gas phase based on all other solids phases.
 !----------------------------------------------------------------->>>
 ! for the current cell check if the gas phase continuity was solved for
@@ -158,35 +158,35 @@
 ! for a solids phase that does not close pack (i.e., close_packed=F) and
 ! is in greater concentration than the gas phase.
 ! Note: MF will always be set to 0 here given the existing version of
-! mark_phase_4_cor            
-            MF = PHASE_4_P_G(IJK)  
+! mark_phase_4_cor
+            MF = PHASE_4_P_G(IJK)
 
-            SUMVF = ZERO 
-            IF (0 /= MF) THEN 
+            SUMVF = ZERO
+            IF (0 /= MF) THEN
 ! if gas continuity was solved rather than the solids phase, then
 ! include the gas phase void fraction in the summation here.
-               EP_G(IJK) = ROP_G(IJK)/RO_G(IJK) 
-               SUMVF = SUMVF + EP_G(IJK) 
-            ENDIF 
+               EP_G(IJK) = ROP_G(IJK)/RO_G(IJK)
+               SUMVF = SUMVF + EP_G(IJK)
+            ENDIF
 
 ! modified for GHD theory
             IF(KT_TYPE_ENUM == GHD_2007) THEN
               ROP_S(IJK,MMAX) = ZERO  ! mixture density
-              DO M = 1, SMAX 
-! volume of particle M based on fixed diamter Dp0              
-                 VOL_M = PI*D_P0(M)**3/6d0 
+              DO M = 1, SMAX
+! volume of particle M based on fixed diamter Dp0
+                 VOL_M = PI*D_P0(M)**3/6d0
                  IF (M /= MF) THEN
-                   SUMVF = SUMVF + EP_S(IJK,M) 
-                   ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + RO_S(IJK,M)*EP_S(IJK,M) 
+                   SUMVF = SUMVF + EP_S(IJK,M)
+                   ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + RO_S(IJK,M)*EP_S(IJK,M)
                  ENDIF
-              ENDDO 
+              ENDDO
             ELSE
-! summing the solids volume fraction of all continuum solids phases 
+! summing the solids volume fraction of all continuum solids phases
 ! except for the continuum solids phase which was marked by phase_4_p_g
-! (skipping its continuity while solving gas continuity) 
-              DO M = 1, MMAX 
-                 IF (M /= MF) SUMVF = SUMVF + EP_S(IJK,M) 
-              ENDDO 
+! (skipping its continuity while solving gas continuity)
+              DO M = 1, MMAX
+                 IF (M /= MF) SUMVF = SUMVF + EP_S(IJK,M)
+              ENDDO
             ENDIF   ! end if/else trim(kt_type)=='ghd'
 
 ! sum of solids volume fraction from the DEM
@@ -197,20 +197,20 @@
                ENDDO
             ENDIF
 
-            IF (0 == MF) THEN 
+            IF (0 == MF) THEN
 ! if no gas phase continuity was solved in the current cell then correct
 ! the void fraction of the gas phase based on the total solids volume
 ! fraction of all solids phases
-               EP_G(IJK) = ONE - SUMVF 
+               EP_G(IJK) = ONE - SUMVF
 
 ! Set error flag for negative volume fraction.
                IF (EP_G(IJK) < ZERO) Err_l(myPE) = 110
 
-               ROP_G(IJK) = EP_G(IJK)*RO_G(IJK) 
-            ELSE 
+               ROP_G(IJK) = EP_G(IJK)*RO_G(IJK)
+            ELSE
 ! else correct the volume fraction of the solids phase that was marked
-               ROP_S(IJK,MF) = (ONE - SUMVF)*RO_S(IJK,MF) 
-            ENDIF 
+               ROP_S(IJK,MF) = (ONE - SUMVF)*RO_S(IJK,MF)
+            ENDIF
 !-----------------------------------------------------------------<<<
 
          ENDIF    ! end if (fluid_at(ijk))
@@ -223,8 +223,8 @@
       CALL global_all_sum(Err_l, Err_g)
       IER = maxval(Err_g)
 
-      
-      RETURN  
-      END SUBROUTINE CALC_VOL_FR 
+
+      RETURN
+      END SUBROUTINE CALC_VOL_FR
 
 

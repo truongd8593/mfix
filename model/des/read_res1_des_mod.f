@@ -827,7 +827,7 @@
          CALL BCAST(INPUT_D, PE_IO)
       ENDIF
       lNEXT_REC = lNEXT_REC + 1
-      
+
       RETURN
       END SUBROUTINE READ_RES_DES_0D
 
@@ -954,14 +954,14 @@
       INTEGER, ALLOCATABLE :: lBUF_I(:)
       INTEGER, ALLOCATABLE :: lCOUNT(:)
 
-         
+
       allocate(iPROCBUF(pPROCCNT))
       allocate(iROOTBUF(pROOTCNT))
 
       iDISPLS = pDISPLS
       iScr_RecvCNT = pRECV
       iScatterCNTS = pSCATTER
-         
+
       IF(bDIST_IO) THEN
          CALL IN_BIN_512i(RDES_UNIT, OUTPUT_I, pIN_COUNT, lNEXT_REC)
       ELSE
@@ -1225,7 +1225,7 @@
 
       allocate(dPROCBUF(cPROCCNT))
       allocate(dROOTBUF(cROOTCNT))
-      
+
       iDISPLS = cDISPLS
       iScr_RecvCNT = cRECV
       iScatterCNTS = cSCATTER
@@ -1289,7 +1289,7 @@
 
       allocate(iPROCBUF(cPROCCNT))
       allocate(iROOTBUF(cROOTCNT))
-      
+
       iDISPLS = cDISPLS
       iScr_RecvCNT = cRECV
       iScatterCNTS = cSCATTER

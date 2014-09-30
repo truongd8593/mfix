@@ -5,7 +5,7 @@
 !                                                                      C
 !  Author:M. Syamlal                                  Date: 13-FEB-98  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
-!           
+!
 !  Updated with the dilute mixture approximation for calculation of    C
 !  multicomponent diffusion coefficients                               C
 !  Author:N. Reuge                                    Date: 11-APR-07  C
@@ -20,15 +20,15 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_DIF_G(IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE CALC_DIF_G(IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE physprop
       USE fldvar
       USE geometry
@@ -50,7 +50,7 @@
 
 !                      Indices
       INTEGER          IJK, N, N1, N2
-      
+
       DOUBLE PRECISION Dab(3,3), SUMJ, Tg0, Pg0
 
 !-----------------------------------------------
@@ -71,7 +71,7 @@
 
 !********Gas diffusion coef for a system of 3 species***************
 ! Species: SiH4, H2 & N2
-! Calculated using relation derived from Chapman and Enskog's theory 
+! Calculated using relation derived from Chapman and Enskog's theory
 ! of gases - Reid, Prausnitz and Poling (1987)
 
 ! Binary diffusion coefficient SiH4/H2 at 873 K
@@ -101,52 +101,52 @@
 
 !*******************************************************************
 
-      IF (DIF_G0 /= UNDEFINED) RETURN  
-         
+      IF (DIF_G0 /= UNDEFINED) RETURN
+
 !!!!$omp  parallel do private(ijk) &
 !!!!$omp& schedule(dynamic,chunk_size)
 
 ! Default calculation of diffusivities
 ! Influence of gas temperature and gas pressure from Fuller relation
       DO N = 1, NMAX(0)
-         DO IJK = IJKSTART3, IJKEND3 
+         DO IJK = IJKSTART3, IJKEND3
             IF (FLUID_AT(IJK)) THEN
                DIF_G(IJK,N) = ROP_G(IJK)*Dab(1,2)*(T_g(IJK)/Tg0)**1.75 * &
                               Pg0/(P_g(IJK)+P_REF)
-            ELSE 
-               DIF_G(IJK,N) = ZERO 
-            ENDIF 
-         ENDDO 
-      ENDDO 
-         
+            ELSE
+               DIF_G(IJK,N) = ZERO
+            ENDIF
+         ENDDO
+      ENDDO
+
 
 !*******************************************************************
-! Caculation of diffusivities using the dilute mixture approximation for 
+! Caculation of diffusivities using the dilute mixture approximation for
 ! multicomponent diffusion - Curtiss-Hirschfelder, Wilke & Blanc
 ! Valid if the mass fraction of the carrier species > 0.9
 
 ! Influence of gas temperature and gas pressure from Fuller relation
-!      DO N = 1, NMAX(0) 
-!         DO IJK = IJKSTART3, IJKEND3 	 
-!            IF (FLUID_AT(IJK)) THEN 
+!      DO N = 1, NMAX(0)
+!         DO IJK = IJKSTART3, IJKEND3
+!            IF (FLUID_AT(IJK)) THEN
 !               IF ((1.0-X_g(IJK,N)) > 1.e-8) THEN
-!                  SUMJ = ZERO      
+!                  SUMJ = ZERO
 !                  DO N2 = 1, NMAX(0)
 !                     IF (N2 /= N) SUMJ = SUMJ+X_g(IJK,N2)/Dab(N,N2)
-!                  ENDDO 
+!                  ENDDO
 !                  DIF_G(IJK,N) = ROP_G(IJK)*(1-X_g(IJK,N))/SUMJ * &
 !                                 (T_g(IJK)/Tg0)**1.75*Pg0/P_g(IJK)
 !               ELSE
-!                  DIF_G(IJK,N) = ROP_G(IJK)*Dab(1,2) 
+!                  DIF_G(IJK,N) = ROP_G(IJK)*Dab(1,2)
 !               ENDIF
-!            ELSE 
-!               DIF_G(IJK,N) = ZERO 
-!            ENDIF 
-!         ENDDO 
-!      ENDDO 
+!            ELSE
+!               DIF_G(IJK,N) = ZERO
+!            ENDIF
+!         ENDDO
+!      ENDDO
 !****************************************************************************
 
 
-      RETURN  
-      END SUBROUTINE CALC_DIF_G 
+      RETURN
+      END SUBROUTINE CALC_DIF_G
 

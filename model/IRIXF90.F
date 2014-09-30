@@ -74,7 +74,7 @@
       ID_HOUR   = DAT(5)
       ID_MINUTE = DAT(6)
       ID_SECOND = DAT(7)
-      
+
 !     For SGI only
       CALL GETHOSTNAME(ID_NODE,64)
 !
@@ -116,7 +116,7 @@
 !
 !
 !                      TA(1) = user cpu time   TA(2) = system cpu time
-!     REAL             TA(2) 
+!     REAL             TA(2)
 !
 !                      XT = TA(1) + TA(2)
 !     REAL             XT
@@ -128,20 +128,20 @@
 !      XT = MPI_WTIME()
 !      XT  = ETIME(TA)
 !     CPU = XT
-      
-      
+
+
 !-------------------------------------------F90
 !                       clock cycle
        INTEGER           COUNT
 
 !                       number of cycles per second
        INTEGER           COUNT_RATE
-      
+
 !                       max number of cycles, after which count is reset to 0
        INTEGER           COUNT_MAX
 
        CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
-      
+
        CPU           = DBLE(COUNT)/DBLE(COUNT_RATE)
 !
       RETURN
@@ -219,7 +219,7 @@
       implicit none
 !
       integer    :: iunit , lc  , nb , ier
-      CHARACTER  :: EXT*4 , file_name*64 
+      CHARACTER  :: EXT*4 , file_name*64
       character  :: ext_end*35
 
       ext_end = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -227,18 +227,18 @@
 !
 ! DETERMINE THE FIRST BLANK CHARCATER IN RUN_NAME
 !
-      DO LC = 1, LEN(RUN_NAME) 
-         IF (RUN_NAME(LC:LC) == ' ') THEN 
-            NB = LC 
-            GO TO 125 
-         ENDIF 
-      END DO 
-      WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG' 
-      STOP  
+      DO LC = 1, LEN(RUN_NAME)
+         IF (RUN_NAME(LC:LC) == ' ') THEN
+            NB = LC
+            GO TO 125
+         ENDIF
+      END DO
+      WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG'
+      STOP
  125  continue
       lc  = iunit - unit_spx
       ext = '.SPx'
-      ext(4:4) = ext_end(LC:LC)         
+      ext(4:4) = ext_end(LC:LC)
       close (unit=iunit)
 
       CALL OPEN_FILE (RUN_NAME, NB, UNIT_SPX + LC, EXT, FILE_NAME, &
@@ -257,18 +257,18 @@
       implicit none
 !
       integer    :: iunit , lc , nb , ier
-      CHARACTER  :: EXT*4 , file_name*64 
+      CHARACTER  :: EXT*4 , file_name*64
 !
 ! DETERMINE THE FIRST BLANK CHARCATER IN RUN_NAME
 !
-      DO LC = 1, LEN(RUN_NAME) 
-         IF (RUN_NAME(LC:LC) == ' ') THEN 
-            NB = LC 
-            GO TO 125 
-         ENDIF 
-      END DO 
-      WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG' 
-      STOP  
+      DO LC = 1, LEN(RUN_NAME)
+         IF (RUN_NAME(LC:LC) == ' ') THEN
+            NB = LC
+            GO TO 125
+         ENDIF
+      END DO
+      WRITE (*, *) 'RUN_NAME TOOOOOOO LOOOONG'
+      STOP
  125  continue
       close (unit=iunit)
 !

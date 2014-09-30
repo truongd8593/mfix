@@ -39,7 +39,7 @@
       CPC3H8(XXX)= (2.41d0 + 57.2D-3*XXX - 17.53D-6*XXX**2)/44.d0
       CPC6H6(XXX)= (-0.409d0 + 77.62D-3*XXX - 26.4D-6*XXX**2)/78.d0
 !
-!     SPECIFIC HEAT OF COAL -- IGT Coal COnversion Systems Technical Data 
+!     SPECIFIC HEAT OF COAL -- IGT Coal COnversion Systems Technical Data
 !     Book (Sec. IA30.6, pp 3-4)
 !
       CPFC(XXX)= -0.1315d0 + 1.341D-3*XXX - 1.087D-6*XXX*XXX &
@@ -54,7 +54,7 @@
       CPH2(XXX)     = ( 6.62d0 + 0.00081d0*XXX )/2.02d0
       CPSi2H6(XXX)  = 43.68d0/62.22d0
       CPN2(XXX)     = ( 6.5d0 + 0.001d0*XXX )/28.01d0
-      
+
       CPSi(XXX)     = 0.1442d0  !?
       CPAl2O3(XXX)  = 0.1442d0  !?
 !QX

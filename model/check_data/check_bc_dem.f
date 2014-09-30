@@ -12,11 +12,11 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-! User specified BC 
+! User specified BC
       use bc, only: BC_TYPE
 ! User specifed: BC geometry
       use bc, only: BC_EP_s
-! Use specified flag for ignoring PO BC for discrete solids 
+! Use specified flag for ignoring PO BC for discrete solids
       USE bc, only: BC_PO_APPLY_TO_DES
 ! Solids phase identifier
       use run, only: SOLIDS_MODEL

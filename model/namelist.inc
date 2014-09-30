@@ -3,18 +3,18 @@
 ! 1.1 Run control section
 ! ---------------------------------------------------------------->>>
              RUN_NAME, DESCRIPTION, UNITS, RUN_TYPE, TIME, TSTOP,&
-	     Dt, DT_MAX, DT_MIN, DT_FAC, DETECT_STALL,&
-             AUTO_RESTART,&	     
+             Dt, DT_MAX, DT_MIN, DT_FAC, DETECT_STALL,&
+             AUTO_RESTART,&
              ENERGY_EQ, SPECIES_EQ, CALL_USR, &
              MOMENTUM_X_EQ, MOMENTUM_Y_EQ, MOMENTUM_Z_EQ, &
-	     Call_DQMOM, AGGREGATION_EFF,BREAKAGE_EFF, NScalar, &
-	     Phase4Scalar, &
-	     K_Epsilon, SIMONIN, AHMADI, JENKINS, & 
+             Call_DQMOM, AGGREGATION_EFF,BREAKAGE_EFF, NScalar, &
+             Phase4Scalar, &
+             K_Epsilon, SIMONIN, AHMADI, JENKINS, &
              FRICTION, SAVAGE, SCHAEFFER,&
              BLENDING_STRESS, TANH_BLEND, SIGM_BLEND, &
              SHEAR, V_sh,&
              DRAG_TYPE, MODEL_B, lam_HYS, drag_c1, drag_d1, &
-             SUBGRID_TYPE, filter_size_ratio, SUBGRID_Wall, & 
+             SUBGRID_TYPE, filter_size_ratio, SUBGRID_Wall, &
              GRANULAR_ENERGY, KT_TYPE, RDF_TYPE, &
              YU_STANDISH, FEDORS_LANDEL, Added_Mass, M_AM, &
 
@@ -30,7 +30,7 @@
              USR_X_w , USR_X_e , USR_Y_s , USR_Y_n ,&
              USR_Z_b , USR_Z_t, NLOG, FULL_LOG, &
              RESID_STRING,GROUP_RESID, &
-	     report_mass_balance_dt, nRR, &
+             report_mass_balance_dt, nRR, &
 
 ! see output_mod for details
              DBGPRN_LAYOUT, ENABLE_DMP_LOG, &
@@ -43,14 +43,14 @@
              GRAVITY, GRAVITY_X,GRAVITY_Y,GRAVITY_Z,P_ref, P_scale, &
              e, C_e, r_p, C_f, C, C_NAME, Phi, Phi_w, L_scale0, MU_gmax,&
              PHIP, e_w, EPS_f_min, V_ex, SEGREGATION_SLOPE_COEFFICIENT,&
-	     ep_s_max, M_MAX,&
+             ep_s_max, M_MAX,&
              MAX_NIT, NORM_g, NORM_s, &
-	     TOL_RESID, TOL_RESID_T, TOL_RESID_X,&
-	     TOL_RESID_Th, TOL_RESID_Scalar, TOL_DIVERGE, &
-	     MAX_INLET_VEL_FAC, &
+             TOL_RESID, TOL_RESID_T, TOL_RESID_X,&
+             TOL_RESID_Th, TOL_RESID_Scalar, TOL_DIVERGE, &
+             MAX_INLET_VEL_FAC, &
              DISCRETIZE, LEQ_IT, LEQ_METHOD, &
-	     LEQ_SWEEP, LEQ_TOL, LEQ_PC, DO_TRANSPOSE, &
-	     UR_FAC, UR_F_gs, UR_Kth_sml, &	     
+             LEQ_SWEEP, LEQ_TOL, LEQ_PC, DO_TRANSPOSE, &
+             UR_FAC, UR_F_gs, UR_Kth_sml, &
              DEF_COR, FPFOI, C_FAC, &
              chi_scheme, CN_ON, &
              BC_JJ_M, PHIP_OUT_JJ, PHIP0, &
@@ -88,8 +88,8 @@
              IC_X_g, IC_X_s, IC_TYPE, IC_P_star, IC_L_scale,&
              IC_GAMA_Rg, IC_T_Rg, IC_GAMA_Rs, IC_T_Rs,&
              IC_Theta_m, IC_Scalar, IC_K_Turb_G, IC_E_Turb_G, &
-	     IC_EP_s, IC_DES_FIT_TO_REGION, IC_PIC_CONST_NPC, &
-	     IC_PIC_CONST_STATWT, &
+             IC_EP_s, IC_DES_FIT_TO_REGION, IC_PIC_CONST_NPC, &
+             IC_PIC_CONST_STATWT, &
 ! ----------------------------------------------------------------<<<
 
 ! 1.8 Boundary conditions section
@@ -116,8 +116,8 @@
              BC_Theta_m,&
              BC_hw_Scalar, BC_Scalarw, BC_C_Scalar,&
              BC_Scalar,&
-	     BC_K_Turb_G, BC_E_Turb_G, &
-	     Flux_g, &
+             BC_K_Turb_G, BC_E_Turb_G, &
+             Flux_g, &
              BC_PIC_MI_CONST_NPC,BC_PIC_MI_CONST_STATWT, &
 ! ----------------------------------------------------------------<<<
 
@@ -149,8 +149,8 @@
 ! ---------------------------------------------------------------->>>
              NODESI , NODESJ , NODESK, &
              DEBUG_RESID, &
-	     IS_SERIAL, USE_DOLOOP, minimize_dotproducts, &
-	     icheck_bicgs, &
+             IS_SERIAL, USE_DOLOOP, minimize_dotproducts, &
+             icheck_bicgs, &
              solver_statistics, opt_parallel , &
 
 ! Additional Debug Flags

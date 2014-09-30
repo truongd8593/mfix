@@ -82,6 +82,6 @@
 
       RATES(:) = ZERO
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE USR_RATES

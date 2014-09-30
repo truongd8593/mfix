@@ -142,7 +142,7 @@
 ! Largest discrete particle diameter.
       use discretelement, only: MAX_RADIUS
 
-! Runtime Flag: Invoke Square Well 
+! Runtime Flag: Invoke Square Well
       use discretelement, only: SQUARE_WELL
 ! Runtime Flag: Invoke Van der Waals model.
       use discretelement, only: VAN_DER_WAALS
@@ -175,7 +175,7 @@
 
 ! Override the following settings if cohesion not used.
       IF(.NOT.USE_COHESION) THEN
-!No more square well in the code 
+!No more square well in the code
          SQUARE_WELL = .FALSE.
          VAN_DER_WAALS = .FALSE.
          WALL_VDW_OUTER_CUTOFF = ZERO
@@ -452,7 +452,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
-! Check for particle-particle tangential spring constant factors. 
+! Check for particle-particle tangential spring constant factors.
       IF(KT_FAC == UNDEFINED) THEN
          WRITE (ERR_MSG, 2100) 'KT_FAC'
          CALL FLUSH_ERR_MSG()
@@ -470,7 +470,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
-! Check for particle-wall tangential spring constant factors. 
+! Check for particle-wall tangential spring constant factors.
       IF(KT_W_FAC == UNDEFINED) THEN
          WRITE (ERR_MSG, 2100) 'KT_W_FAC'
          CALL FLUSH_ERR_MSG()

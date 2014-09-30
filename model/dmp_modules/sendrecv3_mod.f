@@ -60,20 +60,20 @@
         integer :: communicator
 
 !       -----------------
-!       generic interface 
+!       generic interface
 !       -----------------
         interface sendrecv3_begin
         module procedure &
                 sendrecv3_begin_1d, &
                 sendrecv3_begin_1i, &
-                sendrecv3_begin_1c 
+                sendrecv3_begin_1c
         end interface
 
         interface sendrecv3_end
         module procedure &
                 sendrecv3_end_1d, &
                 sendrecv3_end_1i, &
-                sendrecv3_end_1c  
+                sendrecv3_end_1c
         end interface
 
         interface send_recv3
@@ -118,7 +118,7 @@
         jsize = (j2-j1+1)
         isize = (i2-i1+1)
 
-        
+
         if (mod(ijk,isize*jsize).ne.0) then
                 k = int( ijk/(isize*jsize) ) + k1
         else
@@ -185,7 +185,7 @@
         jsize = (j2-j1+1)
         isize = (i2-i1+1)
 
-        
+
         if (mod(ijk,isize*jsize).ne.0) then
                 k = int( ijk/(isize*jsize) ) + k1
         else
@@ -275,7 +275,7 @@
 !       inline functions
 !       ----------------
         integer :: message_tag
-        
+
 !//DEEP moved include function before message_tag declaration
         include '../function.inc'
 
@@ -464,7 +464,7 @@
                 ' imax4, maxval(iend4_all(:)) ', &
                   imax4, maxval(iend4_all(:)) )
 
-        
+
 
         call assert( jmin1 .le. jmax1, &
                 '** sendrecv3_init: jmin1,jmax1 ', jmin1,jmax1 )
@@ -472,22 +472,22 @@
                 '** sendrecv3_init: jmin2,jmax2 ', jmin2,jmax2 )
         call assert( jmin3 .le. jmax3, &
                 '** sendrecv3_init: jmin3,jmax3 ', jmin3,jmax3 )
-        
+
         call assert( kmin1 .le. kmax1, &
                 '** sendrecv3_init: kmin1,kmax1 ', kmin1,kmax1 )
         call assert( kmin2 .le. kmax2, &
                 '** sendrecv3_init: kmin2,kmax2 ', kmin2,kmax2 )
         call assert( kmin3 .le. kmax3, &
                 '** sendrecv3_init: kmin3,kmax3 ', kmin3,kmax3 )
-        
+
         call assert( imin1 .le. imax1, &
                 '** sendrecv3_init: imin1,imax1 ', imin1,imax1 )
         call assert( imin2 .le. imax2, &
                 '** sendrecv3_init: imin2,imax2 ', imin2,imax2 )
         call assert( imin3 .le. imax3, &
                 '** sendrecv3_init: imin3,imax3 ', imin3,imax3 )
-        
-        
+
+
 !---------------
 !EFD extra layer
 !---------------
@@ -497,8 +497,8 @@
                 '** sendrecv3_init: imin4,imax4 ', imin4,imax4 )
         call assert( kmin4 .le. kmax4, &
                 '** sendrecv3_init: kmin4,kmax4 ', kmin4,kmax4 )
-        
-        
+
+
 
 
 
@@ -519,7 +519,7 @@
         j2 = max(j2,jmax4)
         i1 = min(i1,imin4)
         i2 = max(i2,imax4)
-        
+
 
         allocate( ijk2proc( i1:i2, j1:j2, k1:k2 ) )
 
@@ -570,13 +570,13 @@
         enddo
         endif ! Local Function
 
-        
+
         if (lidebug.ge.1) then
            call write_debug( name, 'imap ', imap )
            call write_debug( name, 'jmap ', jmap )
            call write_debug( name, 'kmap ', kmap )
         endif
-            
+
 
 !       ----------------------------
 !       set up table ijk2proc(:,:,:)
@@ -683,7 +683,7 @@
 
         enddo
 
-           
+
 
    allocate( ncount(0:numPEs-1) )
 
@@ -760,7 +760,7 @@ do ilayer=nlayers,nlayers
         j2 = ubound(ijk2proc,2)
         i1 = lbound(ijk2proc,1)
         i2 = ubound(ijk2proc,1)
-        
+
 
         do k=kstartx(iproc),kendx(iproc)
         do j=jstartx(iproc),jendx(iproc)
@@ -781,7 +781,7 @@ do ilayer=nlayers,nlayers
 
           jproc = ijk2proc( ii,jj,kk )
 
-          ismine = (jproc .eq. myPE) 
+          ismine = (jproc .eq. myPE)
           if (ismine) then
                 ncount(iproc) = ncount(iproc) + 1
           endif
@@ -791,7 +791,7 @@ do ilayer=nlayers,nlayers
         enddo
 
     endif
-   enddo 
+   enddo
 
 
 !  --------------
@@ -878,8 +878,8 @@ do ilayer=nlayers,nlayers
 
            do j=jstartx(iproc),jendx(iproc)
            do i=istartx(iproc),iendx(iproc)
-   
-             
+
+
              ii = imap(i)
              jj = jmap(j)
              kk = kmap(k)
@@ -888,11 +888,11 @@ do ilayer=nlayers,nlayers
              if (ismine) then
                  icount = icount + 1
               ijk = funijk(ii,jj,kk)
-   
+
               ipos = xsend(iter)-1 + icount
               sendijk( ipos ) = ijk
              endif
-   
+
           enddo
           enddo
 
@@ -931,7 +931,7 @@ do ilayer=nlayers,nlayers
         i1 = lbound(ijk2proc,1)
         i2 = ubound(ijk2proc,1)
 
-      
+
         do k=kstartx(myPE),kendx(myPE)
         do j=jstartx(myPE),jendx(myPE)
         do i=istartx(myPE),iendx(myPE)
@@ -955,7 +955,7 @@ do ilayer=nlayers,nlayers
 
           iproc = ijk2proc(ii,jj,kk)
           is_halobc = (iproc.eq.-1)
-          ismine = (iproc.eq.myPE) 
+          ismine = (iproc.eq.myPE)
           if (.not.ismine) then
 
               isvalid = (0 .le. iproc) .and. &
@@ -975,7 +975,7 @@ do ilayer=nlayers,nlayers
 
    ntotal = 0
    do iproc=0,numPEs-1
-     ntotal = ntotal + ncount(iproc) 
+     ntotal = ntotal + ncount(iproc)
    enddo
 
    nrecv = count( ncount(:) .ne. 0)
@@ -1004,10 +1004,10 @@ do ilayer=nlayers,nlayers
    do iter=1,nrecv
       iproc = recvproc(iter)
       src = iproc
-      dest = myPE 
+      dest = myPE
       recvtag(iter) = message_tag( src, dest )
    enddo
- 
+
 
 ! ----------------------------
 ! second pass to fill in array
@@ -1052,18 +1052,18 @@ do ilayer=nlayers,nlayers
 
            do j=jstartx(myPE),jendx(myPE)
            do i=istartx(myPE),iendx(myPE)
-   
+
              ii = imap(i)
              jj = jmap(j)
              kk = kmap(k)
-   
+
              iproc = ijk2proc(ii,jj,kk)
              is_halobc = (iproc.eq.-1)
-   
+
              ismine = (iproc.eq.myPE)
              if ((.not.ismine) .and. (iproc.eq.jproc)) then
-   
-   
+
+
                 ijk = funijk( i,j,k)
                 recvijk( ipos ) = ijk
                 ipos = ipos + 1
@@ -1136,16 +1136,16 @@ do ilayer=nlayers,nlayers
 
 enddo ! do ilayer
 
-        
+
         deallocate( ncount )
         deallocate( ijk2proc )
-        
+
         deallocate( istartx )
         deallocate( jstartx )
         deallocate( kstartx )
-        deallocate( iendx ) 
-        deallocate( jendx ) 
-        deallocate( kendx ) 
+        deallocate( iendx )
+        deallocate( jendx )
+        deallocate( kendx )
 
         nullify( ncount )
         nullify( ijk2proc )
@@ -1157,7 +1157,7 @@ enddo ! do ilayer
         nullify( jendx )
         nullify( kendx )
 
-        
+
 
     if (lidebug.ge.1) then
 
@@ -1295,9 +1295,9 @@ enddo ! do ilayer
     allocate( recvrequest( isize ) )
     allocate( recv_persistent_request1( isize ) )
     allocate( recv_persistent_request2( isize ) )
-        
+
 ! -----------------------------------
-! preallocate buffers for common case 
+! preallocate buffers for common case
 ! -----------------------------------
         recvsize1 = xrecv1( nrecv1+1)-1
         recvsize2 = xrecv2( nrecv2+1)-1
@@ -1313,7 +1313,7 @@ enddo ! do ilayer
 
 
  if (use_persistent_message) then
-  
+
    datatype = MPI_DOUBLE_PRECISION
 
    do layer=nlayers,nlayers
@@ -1381,21 +1381,21 @@ enddo ! do ilayer
                 icount = j2-j1+1
                 source = recvproc( ii )
                 tag = recvtag( ii )
-     
-     
+
+
                 if (lidebug.ge.2) then
-     
+
                      call write_debug(name, 'mpi_recv_init: ii,j1,j2 ', &
                                              ii,j1,j2 )
                      call write_debug(name, 'icount, source, tag ', &
                                              icount,source,tag )
                 endif
-     
+
 
                 call MPI_RECV_INIT( drecvbuffer(j1), icount, datatype, &
                                         source, tag, comm, request, ierror )
                 call MPI_Check( 'sendrecv3_begin_1d:MPI_IRECV ', ierror )
-     
+
                 recv_persistent_request(ii) = request
              enddo
 
@@ -1406,21 +1406,21 @@ enddo ! do ilayer
                   dest = sendproc( ii )
                   tag = sendtag( ii )
                   icount = j2-j1+1
-      
+
                   if (lidebug.ge.2) then
-      
+
                       call write_debug(name, 'mpi_send_init: ii,j1,j2 ', &
                                          ii,j1,j2)
                       call write_debug(name, 'icount, dest, tag ', &
                                          icount,dest,tag )
                   endif
-      
-      
+
+
                   call MPI_SEND_INIT( dsendbuffer(j1), icount, datatype, &
                                         dest, tag, &
                                         comm, request, ierror )
                  call MPI_Check( 'sendrecv3_begin_1d:MPI_SEND_INIT ', ierror )
-      
+
                  send_persistent_request( ii ) = request
               enddo
          enddo
@@ -1430,7 +1430,7 @@ enddo ! do ilayer
         if (lidebug.ge.1) then
            call write_debug(name, ' end of sendrecv3_init ', myPE )
         endif
-        
+
         end subroutine sendrecv3_init
 
 
@@ -1540,7 +1540,7 @@ enddo ! do ilayer
           recv_persistent_request => recv_persistent_request3
 
         endif
-          
+
 
 !   --------------------------
 !   post asynchronous receives
@@ -1668,7 +1668,7 @@ enddo ! do ilayer
 !       -----------------------------
         j1 = xsend(1)
         j2 = xsend(nsend+1)-1
-           
+
         do jj=j1,j2
               ijk = sendijk( jj )
               dsendbuffer( jj )  = X(ijk)
@@ -1821,7 +1821,7 @@ enddo ! do ilayer
           sendijk => sendijk3
           xsend => xsend3
         endif
-          
+
 
 !   --------------------------
 !   post asynchronous receives
@@ -2049,7 +2049,7 @@ enddo ! do ilayer
           sendijk => sendijk3
           xsend => xsend3
         endif
-          
+
 
 !   --------------------------
 !   post asynchronous receives
@@ -2242,7 +2242,7 @@ enddo ! do ilayer
 !       inline function
 !       ---------------
         include '../function.inc'
-        
+
 !       --------------------------
 !       wait for sends to complete
 !       --------------------------
@@ -2314,7 +2314,7 @@ enddo ! do ilayer
              X(ijk) = drecvbuffer(jj)
            enddo
         enddo
-      else 
+      else
            if (use_persistent_message) then
               call MPI_WAITALL( nrecv, recv_persistent_request, recv_status, ierror )
            else
@@ -2387,7 +2387,7 @@ enddo ! do ilayer
 !       inline function
 !       ---------------
         include '../function.inc'
-        
+
 !       --------------------------
 !       wait for sends to complete
 !       --------------------------
@@ -2457,7 +2457,7 @@ enddo ! do ilayer
 
            enddo
         enddo
-      else 
+      else
            call MPI_WAITALL( nrecv, recvrequest, recv_status, ierror )
            call MPI_Check( 'sendrecv3_end_1c:MPI_WAITALL recv ', ierror )
 
@@ -2533,7 +2533,7 @@ enddo ! do ilayer
 !       inline function
 !       ---------------
         include '../function.inc'
-        
+
 !       --------------------------
 !       wait for sends to complete
 !       --------------------------
@@ -2593,7 +2593,7 @@ enddo ! do ilayer
              X(ijk) = irecvbuffer(jj)
            enddo
         enddo
-      else 
+      else
            call MPI_WAITALL( nrecv, recvrequest, recv_status, ierror )
            call MPI_Check( 'sendrecv3_end_1i:MPI_WAITALL recv ', ierror )
 
@@ -2635,7 +2635,7 @@ enddo ! do ilayer
         call sendrecv3_begin(X,layer,lidebug)
         call sendrecv3_end( X, lidebug )
 
-        return 
+        return
         end subroutine send_recv3_1c
 
         subroutine send_recv3_1d( X, ilayer, idebug )
@@ -2659,7 +2659,7 @@ enddo ! do ilayer
         call sendrecv3_begin(X,layer,lidebug)
         call sendrecv3_end( X, lidebug )
 
-        return 
+        return
         end subroutine send_recv3_1d
 
         subroutine send_recv3_2d( X, ilayer, idebug )
@@ -2739,8 +2739,8 @@ enddo ! do ilayer
         call sendrecv3_begin(X,layer,lidebug)
         call sendrecv3_end( X, lidebug )
 
-        return 
+        return
         end subroutine send_recv3_1i
 
-        
+
         end module sendrecv3

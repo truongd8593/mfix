@@ -2,51 +2,51 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !                          check_netcdf                             !
 !
-	subroutine MFIX_check_netcdf( status )
- 	use netcdf
-    	integer, intent ( in) :: status
+        subroutine MFIX_check_netcdf( status )
+        use netcdf
+        integer, intent ( in) :: status
 
-    	if (status /= nf90_noerr) then
-	    write (*,*) ' ******************************************'
-	    write (*,*) trim(nf90_strerror(status))
- 	    write (*,*) ' ******************************************'
-   	end if
-	end subroutine MFIX_check_netcdf
+        if (status /= nf90_noerr) then
+            write (*,*) ' ******************************************'
+            write (*,*) trim(nf90_strerror(status))
+            write (*,*) ' ******************************************'
+        end if
+        end subroutine MFIX_check_netcdf
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
         function MFIX_nf90_create(path, cmode, ncid, initialsize, chunksize)
 
-	use netcdf
+        use netcdf
 
-	character (len = *), intent(in   ) :: path
-	integer,             intent(in   ) :: cmode
-	integer,             intent(  out) :: ncid
-	integer, optional,   intent(in   ) :: initialsize
-	integer, optional,   intent(inout) :: chunksize
-	integer                            :: MFIX_nf90_create
+        character (len = *), intent(in   ) :: path
+        integer,             intent(in   ) :: cmode
+        integer,             intent(  out) :: ncid
+        integer, optional,   intent(in   ) :: initialsize
+        integer, optional,   intent(inout) :: chunksize
+        integer                            :: MFIX_nf90_create
 
-	integer :: fileSize, chunk
+        integer :: fileSize, chunk
 
-	MFIX_nf90_create = nf90_create(path, cmode, ncid, initialsize, chunksize)
+        MFIX_nf90_create = nf90_create(path, cmode, ncid, initialsize, chunksize)
 
-	return
-	end function MFIX_nf90_create
+        return
+        end function MFIX_nf90_create
 
 
-	function MFIX_nf90_def_dim(ncid, name, len, dimid)
+        function MFIX_nf90_def_dim(ncid, name, len, dimid)
 
-	use netcdf
+        use netcdf
 
-	integer,             intent( in) :: ncid
-	character (len = *), intent( in) :: name
-	integer,             intent( in) :: len
-	integer,             intent(out) :: dimid
-	integer                          :: MFIX_nf90_def_dim
+        integer,             intent( in) :: ncid
+        character (len = *), intent( in) :: name
+        integer,             intent( in) :: len
+        integer,             intent(out) :: dimid
+        integer                          :: MFIX_nf90_def_dim
 
-	MFIX_nf90_def_dim = nf90_def_dim(ncid, name, len, dimid)
-	end function MFIX_nf90_def_dim
+        MFIX_nf90_def_dim = nf90_def_dim(ncid, name, len, dimid)
+        end function MFIX_nf90_def_dim
 
 
   function MFIX_nf90_enddef(ncid, h_minfree, v_align, v_minfree, r_align)
@@ -116,16 +116,16 @@
     MFIX_nf90_inq_varid = nf90_inq_varid(ncid, name, varid)
   end function MFIX_nf90_inq_varid
 
-	function MFIX_nf90_close(ncid)
+        function MFIX_nf90_close(ncid)
 
-	use netcdf
+        use netcdf
 
-	integer,             intent( in) :: ncid
-	integer				 :: MFIX_nf90_close
+        integer,             intent( in) :: ncid
+        integer                          :: MFIX_nf90_close
 
-	MFIX_nf90_close = nf90_close(ncid)
+        MFIX_nf90_close = nf90_close(ncid)
 
-	end function MFIX_nf90_close
+        end function MFIX_nf90_close
 
 
    subroutine MFIX_ncvinq(ncid,varid,varnam,vartyp,nvdims,vdims,nvatts,rcode)

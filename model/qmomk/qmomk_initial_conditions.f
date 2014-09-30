@@ -9,28 +9,28 @@
       SUBROUTINE QMOMK_INITIAL_CONDITIONS
 
 !-----------------------------------------------
-!     M o d u l e s 
+!     M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1  
+      USE param
+      USE param1
       USE constant
       USE physprop
       USE fldvar
       USE geometry
-      USE compar 
+      USE compar
       USE indices
       USE qmom_kinetic_equation
       USE qmomk_quadrature
       USE qmomk_parameters
       USE ic
-      
+
       IMPLICIT NONE
-      
+
       DOUBLE PRECISION Tinit, InitVal
       INTEGER :: I, J, K, M, L, IJK
-      
+
       INCLUDE '../function.inc'
-               
+
       DO IJK = IJKSTART3, IJKEND3
 
         IF(.NOT.FLUID_AT(IJK)) cycle
@@ -38,7 +38,7 @@
           ! A.P.
           ! Initializing weights as volume_fraction/number_of_nodes
           ! Note that MFIX doesn't initialize the volume fraction in
-          ! boundaries, and QMOM need a positive value there. 
+          ! boundaries, and QMOM need a positive value there.
           ! Here the boundaries are not considered, and they will
           ! be initialized separetely in the correspoding module
 
@@ -58,7 +58,7 @@
           QMOMK_U0(6, IJK, M) = +InitVal + U_S(IJK, M)
           QMOMK_U0(7, IJK, M) = -InitVal + U_S(IJK, M)
           QMOMK_U0(8, IJK, M) = +InitVal + U_S(IJK, M)
-          
+
           QMOMK_V0(1, IJK, M) = -InitVal + V_S(IJK, M)
           QMOMK_V0(2, IJK, M) = -InitVal + V_S(IJK, M)
           QMOMK_V0(3, IJK, M) = +InitVal + V_S(IJK, M)
@@ -67,7 +67,7 @@
           QMOMK_V0(6, IJK, M) = -InitVal + V_S(IJK, M)
           QMOMK_V0(7, IJK, M) = +InitVal + V_S(IJK, M)
           QMOMK_V0(8, IJK, M) = +InitVal + V_S(IJK, M)
-             
+
           QMOMK_W0(1, IJK, M) = -InitVal + W_S(IJK, M)
           QMOMK_W0(2, IJK, M) = -InitVal + W_S(IJK, M)
           QMOMK_W0(3, IJK, M) = -InitVal + W_S(IJK, M)
@@ -78,17 +78,17 @@
           QMOMK_W0(8, IJK, M) = +InitVal + W_S(IJK, M)
         END DO
       END DO
-      
+
       DO IJK = IJKSTART3, IJKEND3
        DO M = 1, MMAX
          IF (FLUID_AT(IJK)) THEN
            CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N0(:,IJK,M), QMOMK_U0(:,IJK,M), QMOMK_V0(:,IJK,M), QMOMK_W0(:,IJK,M), QMOMK_M0(:,IJK,M))
-         
+
            CALL EIGHT_NODE_3D (QMOMK_M0(:,IJK,M), QMOMK_N0(:,IJK,M), QMOMK_U0(:,IJK,M), QMOMK_V0(:,IJK,M), QMOMK_W0(:,IJK,M))
-         
+
            CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N0(:,IJK,M), QMOMK_U0(:,IJK,M), QMOMK_V0(:,IJK,M), QMOMK_W0(:,IJK,M), QMOMK_M0(:,IJK,M))
          END IF
        END DO
       END DO
-      
+
       END SUBROUTINE QMOMK_INITIAL_CONDITIONS

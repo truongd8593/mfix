@@ -42,7 +42,7 @@
       DOUBLE PRECISION :: DES_RES_TIME, DES_SPX_TIME
 
 ! Temporary variables when des_continuum_coupled is T to track
-! changes in solid time step 
+! changes in solid time step
       DOUBLE PRECISION :: TMP_DTS, DTSOLID_TMP
 
 ! Temporary variable used to track reporting frequency for the
@@ -73,7 +73,7 @@
          IF(PARTICLES /= 0) THEN
             IF(DO_NSEARCH) CALL NEIGHBOUR
 
-! To do only des in the 1st time step only for a new run so the 
+! To do only des in the 1st time step only for a new run so the
 ! particles settle down before the coupling is turned on
             IF(RUN_TYPE == 'NEW') THEN
                IF(DES_CONTINUUM_COUPLED.AND.(.NOT.USE_COHESION)) THEN
@@ -93,9 +93,9 @@
 ! set the flag do_nsearch before calling particle in cell (for mpi)
                      IF(MOD(FACTOR,NEIGHBOR_SEARCH_N).EQ.0) &
                         DO_NSEARCH = .TRUE.
-! find particles on grid                        
+! find particles on grid
                      CALL PARTICLES_IN_CELL
-! perform neighbor search                     
+! perform neighbor search
                      IF(DO_NSEARCH) CALL NEIGHBOUR
 
                   ENDDO
@@ -120,13 +120,13 @@
             IF(DMP_LOG) WRITE(UNIT_LOG,'(1X,A)')&
                '<---------- END FIRST PASS DES_TIME_MARCH ----------'
 
-         ENDIF   ! end if particles /= 0         
+         ENDIF   ! end if particles /= 0
       ENDIF    ! end if first pass
 ! end if first_pass
 !-----------------------------------------------------------------<<<
 
 
-! In case of restarts assign S_TIME from MFIX TIME 
+! In case of restarts assign S_TIME from MFIX TIME
       S_TIME = TIME
       TMP_DTS = ZERO
       DTSOLID_TMP = ZERO
@@ -153,7 +153,7 @@
          FACTOR = CEILING(real((TSTOP-TIME)/DTSOLID))
          IF(DMP_LOG) WRITE(*,'(3X,A,X,I10,X,A)') &
             'DEM SIMULATION will be called', FACTOR, 'times'
-! Initialization for des_spx_time, des_res_time         
+! Initialization for des_spx_time, des_res_time
          IF(RUN_TYPE .EQ. 'NEW') THEN
             DES_SPX_TIME =  S_TIME
             DES_RES_TIME =  S_TIME
@@ -188,9 +188,9 @@
 ! If the current time in the discrete loop exceeds the current time in
 ! the continuum simulation, exit the discrete loop
             IF((S_TIME+DTSOLID).GT.(TIME+DT)) THEN
-! If next time step in the discrete loop will exceed the current time 
+! If next time step in the discrete loop will exceed the current time
 ! in the continuum simulation, modify the discrete time step so final
-! time will match 
+! time will match
                TMP_DTS = DTSOLID
                DTSOLID = TIME + DT - S_TIME
             ENDIF
@@ -205,10 +205,10 @@
                IF(DMP_LOG) WRITE(*,'(3X,A,X,I10,X,A,X,ES15.7)') &
                'DEM LOOP NO. =', NN, ' S_TIME =', S_TIME
             ENDIF
-         ENDIF   ! end if/else (des_continuum_coupled) 
+         ENDIF   ! end if/else (des_continuum_coupled)
 
 ! communication between processors have to take place all the time;
-! regardless of number of particles 
+! regardless of number of particles
          CALL CALC_FORCE_DEM
 ! Calculate energy sources and rates of formation/consumption of
 ! solids phase species.
@@ -234,10 +234,10 @@
             CALL NEIGHBOUR
          ENDIF
 
-! Update time to reflect changes 
+! Update time to reflect changes
          S_TIME = S_TIME + DTSOLID
 
-! When coupled, all write calls are made in time_march (the continuum 
+! When coupled, all write calls are made in time_march (the continuum
 ! portion) according to user settings for spx_time and res_time.
 ! The following section targets data writes for DEM only cases:
          IF(.NOT.DES_CONTINUUM_COUPLED) THEN
@@ -245,7 +245,7 @@
             TIME = S_TIME
 
 ! Write data using des_spx_time and des_res_time; note the time will
-! reflect current position of particles  
+! reflect current position of particles
             IF(PRINT_DES_DATA) THEN
                IF ( (S_TIME+0.1d0*DTSOLID >= DES_SPX_TIME) .OR. &
                     (S_TIME+0.1d0*DTSOLID >= TSTOP) .OR. &
@@ -254,7 +254,7 @@
                      ( INT((S_TIME+0.1d0*DTSOLID)/DES_SPX_DT) &
                      + 1 )*DES_SPX_DT
 ! Granular temperature subroutine should be called/calculated when
-! writing DES data 
+! writing DES data
                   CALL DES_GRANULAR_TEMPERATURE
                   IF (DES_CALC_BEDHEIGHT) CALL CALC_DES_BEDHEIGHT
                   IF (DES_CALC_CLUSTER) CALL IDENTIFY_SYSTEM_CLUSTERS()
@@ -298,18 +298,18 @@
 
       ENDDO     ! end do NN = 1, FACTOR
 ! END DEM time loop
-!-----------------------------------------------------------------<<<      
+!-----------------------------------------------------------------<<<
 
       IF(CALL_USR) CALL USR3_DES
 
-! When coupled the granular temperature subroutine is only calculated at end 
-! of the current DEM simulation 
+! When coupled the granular temperature subroutine is only calculated at end
+! of the current DEM simulation
       IF(DES_CONTINUUM_COUPLED) THEN
          CALL DES_GRANULAR_TEMPERATURE()
          IF (DES_CALC_BEDHEIGHT) CALL CALC_DES_BEDHEIGHT()
 ! the call to identify clusters is now done in time_march, uncomment
 ! line below to compute clusters each fluid time step.
-!         IF (DES_CALC_CLUSTER) CALL IDENTIFY_SYSTEM_CLUSTERS()     
+!         IF (DES_CALC_CLUSTER) CALL IDENTIFY_SYSTEM_CLUSTERS()
       ENDIF
 
 ! When coupled, and if needed, reset the discrete time step accordingly

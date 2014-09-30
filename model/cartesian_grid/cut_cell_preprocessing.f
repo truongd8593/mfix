@@ -745,7 +745,7 @@
 
       include "../function.inc"
 
-! When inputing geometry from CAD (STL or MSH file), the snapping procedure is 
+! When inputing geometry from CAD (STL or MSH file), the snapping procedure is
 ! dependent on the value of F at the cell corners
 ! For other gemoetry inputs (say quadrics), This is not needed, and the value
 ! of F_TEST is set to .TRUE. here

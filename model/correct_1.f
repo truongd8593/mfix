@@ -27,7 +27,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CORRECT_1(IER) 
+      SUBROUTINE CORRECT_1(IER)
 
 !-----------------------------------------------
 ! Modules
@@ -39,10 +39,10 @@
       USE ur_facs, only: ur_fac
       USE indices
       USE geometry
-      USE compar 
-      USE sendrecv 
+      USE compar
+      USE sendrecv
       USE cutcell, only: cartesian_grid, cut_cell_at, cg_ur_fac
-      USE visc_s, only: ep_star_array 
+      USE visc_s, only: ep_star_array
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -60,30 +60,30 @@
       INTEGER :: IJK, IJKE, IJKN, IJKT
 ! solids index
       INTEGER :: M
-! solids volume fraction at maximum packing      
+! solids volume fraction at maximum packing
       DOUBLE PRECISION :: EP_S_CP
 !-----------------------------------------------
 ! Include statement functions
-!----------------------------------------------- 
+!-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'ep_s2.inc'
-!----------------------------------------------- 
+!-----------------------------------------------
 
-      IF (MCP == UNDEFINED_I) THEN 
+      IF (MCP == UNDEFINED_I) THEN
 ! this error should be caught earlier in the routines so that this
 ! branch should never be entered
          RETURN
-      ELSE  
-! the lowest solids phase index of those solids phases that can close 
+      ELSE
+! the lowest solids phase index of those solids phases that can close
 ! pack (i.e. close_packed=T) and the index of the solids phase that is
-! used to form the solids correction equation. 
+! used to form the solids correction equation.
          M = MCP
       ENDIF
 
 
 ! by definition M must be close_packed (this is a redundant check)
-      IF (CLOSE_PACKED(M)) THEN 
+      IF (CLOSE_PACKED(M)) THEN
 
 ! Correct solids volume fraction
 ! ---------------------------------------------------------------->>>
@@ -93,21 +93,21 @@
             IF (FLUID_AT(IJK)) THEN
 
                EPCOR = EP_S(IJK,M) + EPP(IJK)
-               EP_S_CP = ONE - EP_STAR_ARRAY(IJK) 
-               IF (EPCOR>EP_S_CP .AND. EPP(IJK)>ZERO) THEN 
-                  EPP(IJK) = UR_FAC(2)*EPP(IJK) 
+               EP_S_CP = ONE - EP_STAR_ARRAY(IJK)
+               IF (EPCOR>EP_S_CP .AND. EPP(IJK)>ZERO) THEN
+                  EPP(IJK) = UR_FAC(2)*EPP(IJK)
 
                   IF(CARTESIAN_GRID) THEN
-! JFD: Using a low value of CG_UR_FAC(2) for the cut cell tends to 
+! JFD: Using a low value of CG_UR_FAC(2) for the cut cell tends to
 ! stabilize code (limits occurrence of negative void fraction)
-                     IF(CUT_CELL_AT(IJK)) EPP(IJK) = CG_UR_FAC(2)*EPP(IJK) 
+                     IF(CUT_CELL_AT(IJK)) EPP(IJK) = CG_UR_FAC(2)*EPP(IJK)
                   ENDIF
 
-                  EPCOR = EP_S(IJK,M) + EPP(IJK) 
-               ENDIF 
-               ROP_S(IJK,M) = MAX(ZERO,RO_S(IJK,M)*EPCOR) 
-            ENDIF 
-         ENDDO 
+                  EPCOR = EP_S(IJK,M) + EPP(IJK)
+               ENDIF
+               ROP_S(IJK,M) = MAX(ZERO,RO_S(IJK,M)*EPCOR)
+            ENDIF
+         ENDDO
 ! end correct solids volume fraction
 ! ----------------------------------------------------------------<<<
 
@@ -116,34 +116,34 @@
 !!$omp    parallel do &
 !!$omp&   private( IJK, PP_P, IJKE, IJKN, IJKT )
          DO IJK = ijkstart3, ijkend3
-            IF (FLUID_AT(IJK)) THEN 
+            IF (FLUID_AT(IJK)) THEN
 
                PP_P = K_CP(IJK)*EPP(IJK)
-               IF (FLOW_AT_E(IJK)) THEN 
-                  IJKE = EAST_OF(IJK) 
+               IF (FLOW_AT_E(IJK)) THEN
+                  IJKE = EAST_OF(IJK)
                   U_S(IJK,M)=U_S(IJK,M)-E_E(IJK)*&
-                     (K_CP(IJKE)*EPP(IJKE)-PP_P) 
+                     (K_CP(IJKE)*EPP(IJKE)-PP_P)
                ENDIF
-               IF (FLOW_AT_N(IJK)) THEN 
-                  IJKN = NORTH_OF(IJK) 
+               IF (FLOW_AT_N(IJK)) THEN
+                  IJKN = NORTH_OF(IJK)
                   V_S(IJK,M)=V_S(IJK,M)-E_N(IJK)*&
-                     (K_CP(IJKN)*EPP(IJKN)-PP_P) 
+                     (K_CP(IJKN)*EPP(IJKN)-PP_P)
                ENDIF
-               IF (DO_K) THEN 
-                  IF (FLOW_AT_T(IJK)) THEN 
-                     IJKT = TOP_OF(IJK) 
+               IF (DO_K) THEN
+                  IF (FLOW_AT_T(IJK)) THEN
+                     IJKT = TOP_OF(IJK)
                      W_S(IJK,M) = W_S(IJK,M) - E_T(IJK)*&
-                        (K_CP(IJKT)*EPP(IJKT)-PP_P) 
-                  ENDIF 
-               ENDIF 
-            ENDIF 
-         ENDDO 
+                        (K_CP(IJKT)*EPP(IJKT)-PP_P)
+                  ENDIF
+               ENDIF
+            ENDIF
+         ENDDO
 ! end correct solids velocities
 ! ----------------------------------------------------------------<<<
-         
+
       ENDIF   ! end if (close_packed)
 
-      RETURN  
-      END SUBROUTINE CORRECT_1 
+      RETURN
+      END SUBROUTINE CORRECT_1
 
 

@@ -185,34 +185,34 @@
 !
 !
       subroutine flush(n)
-	use dflib
-	integer n,i
-	i = commitqq(n)
-	return
-	end
+        use dflib
+        integer n,i
+        i = commitqq(n)
+        return
+        end
 !
       subroutine itime(it)
-	integer it(3)
-	it(1) = 1
-	it(2) = 1
-	it(3) = 1
-	return
-	end
+        integer it(3)
+        it(1) = 1
+        it(2) = 1
+        it(3) = 1
+        return
+        end
 !
       subroutine gethostname(id_node,n)
-	character*64 id_node
-	integer n
-	id_node = 'pc'
-	return
-	end
+        character*64 id_node
+        integer n
+        id_node = 'pc'
+        return
+        end
 !
       real function etime(ta)
-	real ta(2)
-	ta(1) = 1.0
-	ta(2) = 3.0
-	etime = ta(1) + ta(2)
-	return
-	end
+        real ta(2)
+        ta(1) = 1.0
+        ta(2) = 3.0
+        etime = ta(1) + ta(2)
+        return
+        end
 !
 !
       subroutine pc_quickwin

@@ -31,84 +31,84 @@
 
 ! Packed bed (close packed) void fraction
       DOUBLE PRECISION :: EP_star
-      
+
 ! parameters used in the correlation to calculate the local maximum
-! solids volume fraction for a polydisperse powder: ep_s_max_ratio, 
-! d_p_ratio and ep_s_max, m_max      
+! solids volume fraction for a polydisperse powder: ep_s_max_ratio,
+! d_p_ratio and ep_s_max, m_max
       DOUBLE PRECISION :: ep_s_max_ratio(DIM_M, DIM_M), &
                           d_p_ratio(DIM_M, DIM_M)
 ! maximum packing volume fraction for indicate particulate phase
 ! its value will default to 1-ep_star
-      DOUBLE PRECISION :: ep_s_max(DIM_M)  
-! Index to rearrange particles from coarsest to finest for use in 
+      DOUBLE PRECISION :: ep_s_max(DIM_M)
+! Index to rearrange particles from coarsest to finest for use in
 ! function CALC_ep_star(IJK,IER)
       INTEGER :: M_MAX(DIM_M)
 
 
 ! SWITCH enables us to turn on/off modifications to certain kinetic
-! theory models for granular solids (i.e. no gas) that have been 
+! theory models for granular solids (i.e. no gas) that have been
 ! adjusted to account for the presence of a fluid phase. If one wants
 ! to simulate gas-particle flow then set SWITCH=1. As a result, the
 ! effects of drag on particle viscosity/conductivity will be
-! incorporated. Additional gas-solids terms may also have been 
+! incorporated. Additional gas-solids terms may also have been
 ! introduced into the granular energy balance depending on the KT
-! model (see source_granular_energy for details). If we want to 
+! model (see source_granular_energy for details). If we want to
 ! simulate pure granular flow without the effects of an interstitial
-! gas, set SWITCH=0.  
+! gas, set SWITCH=0.
       DOUBLE PRECISION, PARAMETER :: SWITCH=1.d0
 
-! ALPHA is a parameter introduced into the theory of Lun_1984 for 
+! ALPHA is a parameter introduced into the theory of Lun_1984 for
 ! calculating solids viscosity. It also appears when invoking the
-! solids frictional model FRICTION, which uses the Lun et al. 
-! theory. The factor (2+alpha)/3 was eliminated in the complete 
-! analysis of Lun et al. but was introduced as an adjustable 
+! solids frictional model FRICTION, which uses the Lun et al.
+! theory. The factor (2+alpha)/3 was eliminated in the complete
+! analysis of Lun et al. but was introduced as an adjustable
 ! parameter. To recover the original theory alpha should be set to
-! 1. For details see Johnson and Jackson, 1987. 
+! 1. For details see Johnson and Jackson, 1987.
       DOUBLE PRECISION, PARAMETER :: ALPHA = 1.6d0
 
 
 ! parameter used in the solids-solids drag model invoked in the
-! default KT (Lun_1984). For details see Gera et al., 2004 
-      DOUBLE PRECISION :: SEGREGATION_SLOPE_COEFFICIENT 
+! default KT (Lun_1984). For details see Gera et al., 2004
+      DOUBLE PRECISION :: SEGREGATION_SLOPE_COEFFICIENT
 
 ! SWITCH_IA enforces consistency in the solids viscosity and
 ! conductivity so that the results using 2 or more identical
 ! solids phases are the same as an equivalent single solids
-! phase. Set to false to use original (published) theory of 
-! Iddir-Arastoopour. 
+! phase. Set to false to use original (published) theory of
+! Iddir-Arastoopour.
       LOGICAL, PARAMETER :: SWITCH_IA = .TRUE.
- 
+
 ! parameter in the theory of GTSH that is related to length scale
 ! of lubrication effects. For details see GTSH, 2012.
       DOUBLE PRECISION, PARAMETER :: EpM = 0.01d0
 
-! PHIP = Specularity coefficient associated with particle wall 
+! PHIP = Specularity coefficient associated with particle wall
 ! collisions
       DOUBLE PRECISION :: PHIP
-! PHIP0 specularity coefficient for r->0 
+! PHIP0 specularity coefficient for r->0
       double precision :: phip0
 ! k4phi k=7/2*mu*(1+e_w)
-      double precision :: k4phi 
-! e_w = particle-wall coefficient of restitution	
+      double precision :: k4phi
+! e_w = particle-wall coefficient of restitution
       DOUBLE PRECISION :: e_w
- 
+
 ! Parameters used in the solids frictional model FRICTION:
 ! - Fr, N_Pc, D_Pc, and EPS_F_min are all used in the equation for
 !   Pc, the critical solids pressure:
-!     Fr = Constant with dyne/cm2 units of pressure. It will be 
+!     Fr = Constant with dyne/cm2 units of pressure. It will be
 !          automatically converted to Pa in calc_mu_s.f
 !     N_Pc = exponent in numerator
 !     D_Pc = exponent in denominator
-!     EPS_f_min = minimum solids fraction above which friction 
+!     EPS_f_min = minimum solids fraction above which friction
 !                 kicks in
 ! - N_Pf appears as an exponent in the equation of state for Pf, the
 !   frictional pressure:
-! - delta is a small deviation in void fraction near packing where 
+! - delta is a small deviation in void fraction near packing where
 !   Pc and dPc/deps are calculated.
       DOUBLE PRECISION :: EPS_f_min
       DOUBLE PRECISION :: Fr, N_Pc, D_Pc, N_Pf, delta
       PARAMETER(Fr = 0.5d0, N_Pc=2d0, D_Pc=5d0, N_Pf=1.03d0, delta=1d-2)
- 
+
 ! Coefficient of restitution
       DOUBLE PRECISION C_e
 
@@ -138,7 +138,7 @@
 
 ! tan(PHI_w)
       DOUBLE PRECISION tan_Phi_w
- 
+
 ! Default value for characteristic length for turbulence
       DOUBLE PRECISION L_scale0
 
@@ -148,11 +148,11 @@
 ! Excluded volume (Boyle-Massoudi stress tensor)
       DOUBLE PRECISION V_ex
 
-! Coefficients for calibrating Syamlal-O'Brien drag correlation with 
+! Coefficients for calibrating Syamlal-O'Brien drag correlation with
 ! Umf data
       DOUBLE PRECISION drag_c1, drag_d1
 
-! success-factor for aggregation and breakage  
+! success-factor for aggregation and breakage
       DOUBLE PRECISION :: AGGREGATION_EFF
       DOUBLE PRECISION :: BREAKAGE_EFF
 

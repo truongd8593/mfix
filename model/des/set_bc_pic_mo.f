@@ -121,7 +121,7 @@
          DO J = J_s, J_n
          DO I = I_w, I_e
 ! Skip cells that this rank does not own or are considered dead.
-! Limit only to fluid cells 
+! Limit only to fluid cells
             IF(.NOT.IS_ON_myPE_wobnd(I,J,K)) CYCLE
             IJK = FUNIJK(I,J,K)
 

@@ -11,7 +11,7 @@
 	subroutine parallel_init()
 	numPEs = 1
 	myPE = 0
-	
+
 	return
 	end subroutine parallel_init
 
@@ -29,4 +29,4 @@
 
 
 	end module parallel_mpi
-	
+

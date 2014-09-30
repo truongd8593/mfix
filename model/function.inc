@@ -110,19 +110,19 @@
 !                      FLUID_AT or P_FLOW_AT (simplified check)
       LOGICAL          FLUIDorP_FLOW_AT
 !
-!                      P_FLOW_AT 
+!                      P_FLOW_AT
       LOGICAL          P_FLOW_AT
 !
-!                      P_OUTFLOW_AT 
+!                      P_OUTFLOW_AT
       LOGICAL          P_OUTFLOW_AT
 !
-!                      MASS_OUTFLOW_AT 
+!                      MASS_OUTFLOW_AT
       LOGICAL          MASS_OUTFLOW_AT
 !
-!                      OUTFLOW_AT 
+!                      OUTFLOW_AT
       LOGICAL          OUTFLOW_AT
 !
-!                      FLOW_AT 
+!                      FLOW_AT
       LOGICAL          FLOW_AT
 !
 !                      Logical function to identify default walls
@@ -199,8 +199,8 @@
 !
 !                      Logical function to identify No IS at Top of the cell
       LOGICAL          NO_IS_AT_T
-!\\   Added to determine whether I am on my PE  
-!\\   Logical function to determine whether I am on my PE's domain 
+!\\   Added to determine whether I am on my PE
+!\\   Logical function to determine whether I am on my PE's domain
       LOGICAL          IS_ON_myPE_owns
 !\\   Logical function to determine whether I am on my PE's domain + one &
 !                                                       extra ghost layer
@@ -214,7 +214,7 @@
 !                      Maximum of zero or input
       DOUBLE PRECISION ZMAX
 !
-! 
+!
 !//FUNIJK is moved to compar for debugging purposes - Sreekanth-10/26/99
 !     FUNIJK (LI, LJ, LK) = c0 + LI + (LJ-jstart3_all(myPE))*c1 + (LK-kstart3_all(myPE))* c2
 !      funijk(li,lj,lk) = lj + c0 + li*c1 + lk*c2
@@ -227,12 +227,12 @@
 !     FUNIJK_PROC(LI, LJ, LK, LIPROC) = 1 + (LI - istart3_all(LIPROC))+ &
 !     (LJ-jstart3_all(LIPROC))*(iend3_all(LIPROC)-istart3_all(LIPROC)+1) &
 !     + (LK-kstart3_all(LIPROC))*(jend3_all(LIPROC)-jstart3_all(LIPROC)+1)* &
-!     (iend3_all(LIPROC)-istart3_all(LIPROC)+1) 
+!     (iend3_all(LIPROC)-istart3_all(LIPROC)+1)
 
       FUNIJK_PROC(LI, LJ, LK, LIPROC) = 1 + (LJ - jstart3_all(LIPROC))+ &
       (LI-Istart3_all(LIPROC))*(jend3_all(LIPROC)-jstart3_all(LIPROC)+1) &
       + (LK-kstart3_all(LIPROC))*(jend3_all(LIPROC)-jstart3_all(LIPROC)+1)* &
-      (iend3_all(LIPROC)-istart3_all(LIPROC)+1) 
+      (iend3_all(LIPROC)-istart3_all(LIPROC)+1)
 
 !     FUNIJK_GL (LI, LJ, LK) = 1 + (LI - imin3) + (LJ-jmin3)*(imax3-imin3+1) &
 !     + (LK-kmin3)*(jmax3-jmin3+1)*(imax3-imin3+1)
@@ -244,25 +244,25 @@
       + (LK-kmin2)*(jmax2-jmin2+1)*(imax2-imin2+1)
 
       IS_ON_myPE_plus2layers (LI, LJ, LK) = LI.ge.istart3.and.LI.le.iend3.and. &
-				LJ.ge.jstart3.and.LJ.le.jend3.and. &
+                                LJ.ge.jstart3.and.LJ.le.jend3.and. &
                                 LK.ge.kstart3.and.LK.le.kend3
 
 !      IS_ON_myPE_plus2layers (LI, LJ, LK) = LI.ge.istart3.and.LI.le.iend3.and. &
-!				LJ.ge.jstart3.and.LJ.le.jend3.and. &
+!                               LJ.ge.jstart3.and.LJ.le.jend3.and. &
 !                                LK.ge.kstart3.and.LK.le.kend3.and. &
 !                                (.NOT.DEAD_CELL_AT(LI,LJ,LK))
 
 
-      IS_ON_myPE_plus1layer (LI, LJ, LK) = LI.ge.istart2.and.LI.le.iend2.and. & 
-      					   LJ.ge.jstart2.and.LJ.le.jend2.and. & 
-      					   LK.ge.kstart2.and.LK.le.kend2
+      IS_ON_myPE_plus1layer (LI, LJ, LK) = LI.ge.istart2.and.LI.le.iend2.and. &
+                                           LJ.ge.jstart2.and.LJ.le.jend2.and. &
+                                           LK.ge.kstart2.and.LK.le.kend2
 
       IS_ON_myPE_owns (LI, LJ, LK) = LI.ge.istart.and.LI.le.iend.and. &
-				LJ.ge.jstart.and.LJ.le.jend.and. &
+                                LJ.ge.jstart.and.LJ.le.jend.and. &
                                 LK.ge.kstart.and.LK.le.kend
 
 !      IS_ON_myPE_owns (LI, LJ, LK) = LI.ge.istart.and.LI.le.iend.and. &
-!				LJ.ge.jstart.and.LJ.le.jend.and. &
+!                               LJ.ge.jstart.and.LJ.le.jend.and. &
 !                                LK.ge.kstart.and.LK.le.kend.and. &
 !                                (.NOT.DEAD_CELL_AT(LI,LJ,LK))
 
@@ -364,7 +364,7 @@
       PS_WALL_AT(IJK)  = FLAG(IJK) .EQ. 102
       CYCLIC_AT(IJK)   = FLAG(IJK) .EQ. 106 .OR. &
                         FLAG(IJK) .EQ. 107
-      WALL_AT(IJK)     = FLAG(IJK) .GE. 100 
+      WALL_AT(IJK)     = FLAG(IJK) .GE. 100
       IP_AT_E(IJK)     = FLAG_E(IJK) .LT. 1000
       IP_AT_N(IJK)     = FLAG_N(IJK) .LT. 1000
       IP_AT_T(IJK)     = FLAG_T(IJK) .LT. 1000
@@ -394,5 +394,5 @@
       DEFAULT_WALL_AT(IJK) = ICBC_FLAG(IJK)(2:3) .EQ. '--' .AND. &
                              (ICBC_FLAG(IJK)(1:1) .NE. 'c'  .AND. &
                              ICBC_FLAG(IJK)(1:1) .NE. 'C')
-      
+
       ZMAX (XXX)       = MAX(XXX, ZERO)

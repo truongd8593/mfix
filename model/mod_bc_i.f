@@ -16,8 +16,8 @@
 
       USE geometry, only: ICBC_FLAG
 
-      USE compar 
-      USE mpi_utility 
+      USE compar
+      USE mpi_utility
 
       use error_manager
 
@@ -69,20 +69,20 @@
 
 ! Flow on west boundary (fluid cell on east).
          IF(WALL_ICBC_FLAG(IJK) .AND. ICBC_FLAG(IPJK)(1:1)=='.') THEN
-            I_W = I_W 
-            I_E = I_E 
+            I_W = I_W
+            I_E = I_E
             BC_PLANE(BCV) = 'E'
 
 ! Flow on east boundary (fluid cell on west).
          ELSEIF(WALL_ICBC_FLAG(IPJK) .AND. ICBC_FLAG(IJK)(1:1)=='.') THEN
-            I_W = I_W + 1 
-            I_E = I_E + 1 
+            I_W = I_W + 1
+            I_E = I_E + 1
             BC_PLANE(BCV) = 'W'
 
 ! Set the plane of a value we know to be wrong so we can detect the error.
          ELSE
             BC_PLANE(BCV) = '.'
-         ENDIF 
+         ENDIF
       ENDIF
 
 ! The owner distributes the new Iw/Ie coordinates to the other ranks.
@@ -97,7 +97,7 @@
          CALL BCAST(IJK, OWNER)
 
          WRITE(ERR_MSG, 1100) BCV, I_W, I_E, J_S, K_B,                 &
-            IJK, ICBC_FLAG(IJK),  IPJK, ICBC_FLAG(IPJK) 
+            IJK, ICBC_FLAG(IJK),  IPJK, ICBC_FLAG(IPJK)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
@@ -135,8 +135,8 @@
          IF(.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND.                       &
             ICBC_FLAG(IJK_FLUID)(1:1) == '.')) ERROR = .TRUE.
 
-      ENDDO 
-      ENDDO 
+      ENDDO
+      ENDDO
 
 ! Sync up the error flag across all processes.
       CALL GLOBAL_ALL_OR(ERROR)
@@ -169,9 +169,9 @@
                   I_WALL,  J, K, IJK_WALL, ICBC_FLAG(IJK_WALL),        &
                   I_FLUID, J, K, IJK_FLUID, ICBC_FLAG(IJK_FLUID)
                CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-            ENDIF 
-         ENDDO 
-         ENDDO 
+            ENDIF
+         ENDDO
+         ENDDO
 
          WRITE(ERR_MSG,"('Please correct the mfix.dat file.')")
          CALL FLUSH_ERR_MSG(HEADER=.FALSE., ABORT=.TRUE.)
@@ -188,5 +188,5 @@
       CALL FINL_ERR_MSG
 
       RETURN
-      END SUBROUTINE MOD_BC_I 
-      
+      END SUBROUTINE MOD_BC_I
+

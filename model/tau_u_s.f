@@ -35,15 +35,15 @@
 ! trace of rate of strain tensor
       USE visc_s, only: trd_s
 
-! dilute threshold      
-      USE toleranc, only: dil_ep_s 
-      
+! dilute threshold
+      USE toleranc, only: dil_ep_s
+
 ! kinetic theories
       USE run, only: kt_type_enum, ghd_2007
 ! runtime flag for treating the system as if shearing
       USE run, only: shear
 
-! shear velocity      
+! shear velocity
       Use vshear, only: VSH
 
 ! primarily needed for function.inc
@@ -65,31 +65,31 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! TAU_U_s 
+! TAU_U_s
       DOUBLE PRECISION, INTENT(OUT) :: TAU_U_s(DIMENSION_3, DIMENSION_M)
-! Error index 
+! Error index
       INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------      
-! Indices 
-      INTEGER :: I, J, JM, K, KM, IJK, IJKE, IPJK, IP, IMJK, IJKN,& 
-                 IJKNE, IJKS, IJKSE, IPJMK, IJMK, IJKT, IJKTE,& 
-                 IJKB, IJKBE, IJKM, IPJKM 
-! Phase index 
+!-----------------------------------------------
+! Indices
+      INTEGER :: I, J, JM, K, KM, IJK, IJKE, IPJK, IP, IMJK, IJKN,&
+                 IJKNE, IJKS, IJKSE, IPJMK, IJMK, IJKT, IJKTE,&
+                 IJKB, IJKBE, IJKM, IPJKM
+! Phase index
       INTEGER :: M, L
-! Average volume fraction 
+! Average volume fraction
       DOUBLE PRECISION :: EPSA, EPStmp
-! Average EP_s*viscosity 
-      DOUBLE PRECISION :: EPMU_ste, EPMU_sbe, EPMUSA 
-! Average dW/Xdz 
-      DOUBLE PRECISION :: dWoXdz 
-! Source terms (Surface) 
-      DOUBLE PRECISION :: Sbv, Ssx, Ssy, Ssz 
-! Source terms (Volumetric) 
-      DOUBLE PRECISION :: Vtzb 
-! error message 
-      CHARACTER*80     LINE 
+! Average EP_s*viscosity
+      DOUBLE PRECISION :: EPMU_ste, EPMU_sbe, EPMUSA
+! Average dW/Xdz
+      DOUBLE PRECISION :: dWoXdz
+! Source terms (Surface)
+      DOUBLE PRECISION :: Sbv, Ssx, Ssy, Ssz
+! Source terms (Volumetric)
+      DOUBLE PRECISION :: Vtzb
+! error message
+      CHARACTER*80     LINE
 
 ! for cartesian grid implementation:
       INTEGER :: IM,JP,KP
@@ -105,7 +105,7 @@
       DOUBLE PRECISION :: UW_s,VW_s,WW_s
       INTEGER :: N_SUM
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT  
+      CHARACTER(LEN=9) :: BCT
 
 !-----------------------------------------------
 ! Include statement functions
@@ -117,17 +117,17 @@
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
-      DO M = 1, MMAX 
+      DO M = 1, MMAX
         IF(KT_TYPE_ENUM == GHD_2007 .AND. M /= MMAX) CYCLE
 
 ! update to true velocity
-        IF (SHEAR) THEN        
+        IF (SHEAR) THEN
 !!$omp  parallel do private(IJK)
           DO IJK = IJKSTART3, IJKEND3
-            IF (FLUID_AT(IJK)) THEN 
+            IF (FLUID_AT(IJK)) THEN
               V_S(IJK,m)=V_S(IJK,m)+VSH(IJK)
             ENDIF
-          ENDDO     
+          ENDDO
         ENDIF
 
 
@@ -143,39 +143,39 @@
 ! Skip walls where some values are undefined.
           IF(WALL_AT(IJK)) cycle
 
-          I = I_OF(IJK) 
-          IJKE = EAST_OF(IJK) 
+          I = I_OF(IJK)
+          IJKE = EAST_OF(IJK)
 
           IF (KT_TYPE_ENUM == GHD_2007) THEN
-            EPStmp = ZERO                
+            EPStmp = ZERO
             DO L = 1, SMAX
-              EPStmp = EPStmp + AVG_X(EP_S(IJK,L),EP_S(IJKE,L),I) 
+              EPStmp = EPStmp + AVG_X(EP_S(IJK,L),EP_S(IJKE,L),I)
             ENDDO
             EPSA = EPStmp
-          ELSE                  
-            EPSA = AVG_X(EP_S(IJK,M),EP_S(IJKE,M),I) 
-          ENDIF 
+          ELSE
+            EPSA = AVG_X(EP_S(IJK,M),EP_S(IJKE,M),I)
+          ENDIF
 
-          IF ( .NOT.SIP_AT_E(IJK) .AND. EPSA>DIL_EP_S) THEN 
-            IP = IP1(I) 
-            J = J_OF(IJK) 
-            JM = JM1(J) 
-            K = K_OF(IJK) 
-            KM = KM1(K) 
-            IPJK = IP_OF(IJK) 
-            IMJK = IM_OF(IJK) 
-            IJKN = NORTH_OF(IJK) 
-            IJKNE = EAST_OF(IJKN) 
-            IJKS = SOUTH_OF(IJK) 
-            IJKSE = EAST_OF(IJKS) 
-            IPJMK = JM_OF(IPJK) 
-            IJMK = JM_OF(IJK) 
-            IJKT = TOP_OF(IJK) 
-            IJKTE = EAST_OF(IJKT) 
-            IJKB = BOTTOM_OF(IJK) 
-            IJKBE = EAST_OF(IJKB) 
-            IJKM = KM_OF(IJK) 
-            IPJKM = IP_OF(IJKM) 
+          IF ( .NOT.SIP_AT_E(IJK) .AND. EPSA>DIL_EP_S) THEN
+            IP = IP1(I)
+            J = J_OF(IJK)
+            JM = JM1(J)
+            K = K_OF(IJK)
+            KM = KM1(K)
+            IPJK = IP_OF(IJK)
+            IMJK = IM_OF(IJK)
+            IJKN = NORTH_OF(IJK)
+            IJKNE = EAST_OF(IJKN)
+            IJKS = SOUTH_OF(IJK)
+            IJKSE = EAST_OF(IJKS)
+            IPJMK = JM_OF(IPJK)
+            IJMK = JM_OF(IJK)
+            IJKT = TOP_OF(IJK)
+            IJKTE = EAST_OF(IJKT)
+            IJKB = BOTTOM_OF(IJK)
+            IJKBE = EAST_OF(IJKB)
+            IJKM = KM_OF(IJK)
+            IPJKM = IP_OF(IJKM)
 
             IF((.NOT.CARTESIAN_GRID).OR.(CG_SAFE_MODE(3)==1)) THEN
 ! NON CARTESIAN GRID CASE
@@ -184,30 +184,30 @@
 
 ! bulk viscosity term
               SBV = (LAMBDA_S(IJKE,M)*TRD_S(IJKE,M)-&
-                     LAMBDA_S(IJK,M)*TRD_S(IJK,M))*AYZ(IJK) 
+                     LAMBDA_S(IJK,M)*TRD_S(IJK,M))*AYZ(IJK)
 
 ! shear stress terms
               SSX = MU_S(IJKE,M)*(U_S(IPJK,M)-U_S(IJK,M))*ODX(IP)*AYZ_U(IJK)&
-                  - MU_S(IJK,M)*(U_S(IJK,M)-U_S(IMJK,M))*ODX(I)*AYZ_U(IMJK) 
+                  - MU_S(IJK,M)*(U_S(IJK,M)-U_S(IMJK,M))*ODX(I)*AYZ_U(IMJK)
               SSY = AVG_X_H(AVG_Y_H(MU_S(IJK,M),MU_S(IJKN,M),J),&
                             AVG_Y_H(MU_S(IJKE,M),MU_S(IJKNE,M),J),I)*&
                     (V_S(IPJK,M)-V_S(IJK,M))*ODX_E(I)*AXZ_U(IJK) - &
                     AVG_X_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJK,M),JM),&
                             AVG_Y_H(MU_S(IJKSE,M),MU_S(IJKE,M),JM),I)*&
-                    (V_S(IPJMK,M)-V_S(IJMK,M))*ODX_E(I)*AXZ_U(IJMK) 
+                    (V_S(IPJMK,M)-V_S(IJMK,M))*ODX_E(I)*AXZ_U(IJMK)
 !?              IF(DO_K) THEN
                 EPMU_STE = AVG_X_H(AVG_Z_H(MU_S(IJK,M),MU_S(IJKT,M),K),&
                                    AVG_Z_H(MU_S(IJKE,M),MU_S(IJKTE,M),K),I)
                 EPMU_SBE = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJK,M),KM),&
                                    AVG_Z_H(MU_S(IJKBE,M),MU_S(IJKE,M),KM),I)
                 SSZ = EPMU_STE*(W_S(IPJK,M)-W_S(IJK,M))*ODX_E(I)*AXY_U(IJK) - &
-                      EPMU_SBE*(W_S(IPJKM,M)-W_S(IJKM,M))*ODX_E(I)*AXY_U(IJKM) 
+                      EPMU_SBE*(W_S(IPJKM,M)-W_S(IJKM,M))*ODX_E(I)*AXY_U(IJKM)
 !?              ELSE
 !?                SSZ = ZERO
 !?              ENDIF
 ! ----------------------------------------------------------------<<<
 
-            ELSE 
+            ELSE
 
 ! CARTESIAN GRID CASE
 ! ---------------------------------------------------------------->>>
@@ -215,10 +215,10 @@
 
 ! bulk viscosity term
               SBV = (LAMBDA_S(IJKE,M)*TRD_S(IJKE,M)) * AYZ_U(IJK) - &
-                    (LAMBDA_S(IJK,M) *TRD_S(IJK,M) ) * AYZ_U(IMJK) 
+                    (LAMBDA_S(IJK,M) *TRD_S(IJK,M) ) * AYZ_U(IMJK)
 
 ! shear stress terms
-              IF(.NOT.CUT_U_CELL_AT(IJK))   THEN            
+              IF(.NOT.CUT_U_CELL_AT(IJK))   THEN
                 SSX = MU_S(IJKE,M)*(U_S(IPJK,M)-U_S(IJK,M))*ONEoDX_E_U(IJK)*AYZ_U(IJK) - &
                       MU_S(IJK,M)*(U_S(IJK,M)-U_S(IMJK,M))*ONEoDX_E_U(IMJK)*AYZ_U(IMJK)
                 SSY = AVG_X_H(AVG_Y_H(MU_S(IJK,M),MU_S(IJKN,M),J),&
@@ -229,7 +229,7 @@
                       (V_S(IPJMK,M)-V_S(IJMK,M))*ONEoDX_E_V(IJMK)*AXZ_U(IJMK)
                 IF(DO_K) THEN
                   EPMU_STE = AVG_X_H(AVG_Z_H(MU_S(IJK,M),MU_S(IJKT,M),K),&
-                                     AVG_Z_H(MU_S(IJKE,M),MU_S(IJKTE,M),K),I) 
+                                     AVG_Z_H(MU_S(IJKE,M),MU_S(IJKTE,M),K),I)
                   EPMU_SBE = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJK,M),KM),&
                                      AVG_Z_H(MU_S(IJKBE,M),MU_S(IJKE,M),KM),I)
                   SSZ = EPMU_STE*(W_S(IPJK,M)-W_S(IJK,M))*ONEoDX_E_W(IJK)*AXY_U(IJK) - &
@@ -247,7 +247,7 @@
                   BCT = 'NONE'
                 ENDIF
 
-                SELECT CASE (BCT) 
+                SELECT CASE (BCT)
                   CASE ('CG_NSW')
                      CUT_TAU_US = .TRUE.
                      NOC_US     = .TRUE.
@@ -278,9 +278,9 @@
                         NOC_US     = .FALSE.
                      ENDIF
                   CASE ('NONE')
-                     TAU_U_S(IJK,M) = ZERO 
-                     CYCLE   
-                END SELECT 
+                     TAU_U_S(IJK,M) = ZERO
+                     CYCLE
+                END SELECT
 
                 IF(CUT_TAU_US) THEN
                   MU_S_CUT =  (VOL(IJK)*MU_S(IJK,M) + &
@@ -339,7 +339,7 @@
                    SSY_CUT = - MU_S_CUT * (V_S(IJK,M) - VW_s) / DEL_H * &
                              (Nx*Ny) * Area_U_CUT(IJK)
                 ELSE
-                   SSY_CUT =  ZERO     
+                   SSY_CUT =  ZERO
                 ENDIF
 
                 SSY = AVG_X_H(AVG_Y_H(MU_S(IJK,M),MU_S(IJKN,M),J),&
@@ -350,7 +350,7 @@
                       dvdx_at_S*AXZ_U(IJMK) + SSY_CUT
 
 ! SSZ:
-                IF(DO_K) THEN  
+                IF(DO_K) THEN
                    W_NODE_AT_TE = ((.NOT.BLOCKED_W_CELL_AT(IPJK)).AND.(.NOT.WALL_W_AT(IPJK)))
                    W_NODE_AT_TW = ((.NOT.BLOCKED_W_CELL_AT(IJK)).AND.(.NOT.WALL_W_AT(IJK)))
                    W_NODE_AT_BE = ((.NOT.BLOCKED_W_CELL_AT(IPJKM)).AND.(.NOT.WALL_W_AT(IPJKM)))
@@ -381,7 +381,7 @@
                       Sy = Y_W(IPJKM) - Y_W(IJKM)
                       Sz = Z_W(IPJKM) - Z_W(IJKM)
                       CALL GET_DEL_H(IJK,'U_MOMENTUM',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
-                      dwdx_at_B =  (W_S(IPJKM,M) - W_S(IJKM,M)) * ONEoDX_E_W(IJKM) 
+                      dwdx_at_B =  (W_S(IPJKM,M) - W_S(IJKM,M)) * ONEoDX_E_W(IJKM)
                       IF(NOC_US) dwdx_at_B = dwdx_at_B  - ((Wi-WW_s) * &
                                     ONEoDX_E_W(IJKM)/DEL_H*(Sy*Ny+Sz*Nz))
                    ELSE
@@ -392,15 +392,15 @@
                       CALL GET_DEL_H(IJK,'U_MOMENTUM',X_W(IJK),Y_W(IJK),&
                                      Z_W(IJK),Del_H,Nx,Ny,Nz)
                       SSZ_CUT = - MU_S_CUT * (W_S(IJK,M) - WW_s) / &
-                                DEL_H * (Nx*Nz) * Area_U_CUT(IJK) 
+                                DEL_H * (Nx*Nz) * Area_U_CUT(IJK)
                    ELSE
                       SSZ_CUT =  ZERO
                    ENDIF
 
                    EPMU_STE = AVG_X_H(AVG_Z_H(MU_S(IJK,M),MU_S(IJKT,M),K),&
-                                      AVG_Z_H(MU_S(IJKE,M),MU_S(IJKTE,M),K),I) 
+                                      AVG_Z_H(MU_S(IJKE,M),MU_S(IJKTE,M),K),I)
                    EPMU_SBE = AVG_X_H(AVG_Z_H(MU_S(IJKB,M),MU_S(IJK,M),KM),&
-                                      AVG_Z_H(MU_S(IJKBE,M),MU_S(IJKE,M),KM),I) 
+                                      AVG_Z_H(MU_S(IJKBE,M),MU_S(IJKE,M),KM),I)
                    SSZ =   EPMU_STE*dwdx_at_T*AXY_U(IJK)  &
                          - EPMU_SBE*dwdx_at_B*AXY_U(IJKM) &
                          + SSZ_CUT
@@ -414,40 +414,40 @@
 
 
 ! Special terms for cylindrical coordinates
-            IF (CYLINDRICAL) THEN 
+            IF (CYLINDRICAL) THEN
 ! modify Ssz: integral of (1/x) (d/dz) (mu*(-w/x))
                SSZ = SSZ - &
                   (EPMU_STE*(HALF*(W_S(IPJK,M)+W_S(IJK,M))*OX_E(I))*AXY_U(IJK)-&
                    EPMU_SBE*(HALF*(W_S(IPJKM,M)+W_S(IJKM,M))*OX_E(I))*AXY_U(IJKM))
 
 ! -(2mu/x)*(1/x)*dw/dz part of Tau_zz/X
-                EPMUSA = AVG_X(MU_S(IJK,M),MU_S(IJKE,M),I) 
+                EPMUSA = AVG_X(MU_S(IJK,M),MU_S(IJKE,M),I)
                 DWOXDZ = HALF*((W_S(IJK,M)-W_S(IJKM,M))*OX(I)*ODZ(K)+(W_S(&
-                     IPJK,M)-W_S(IPJKM,M))*OX(IP)*ODZ(K)) 
-                VTZB = -2.d0*EPMUSA*OX_E(I)*DWOXDZ 
-            ELSE 
-                VTZB = ZERO 
-            ENDIF 
+                     IPJK,M)-W_S(IPJKM,M))*OX(IP)*ODZ(K))
+                VTZB = -2.d0*EPMUSA*OX_E(I)*DWOXDZ
+            ELSE
+                VTZB = ZERO
+            ENDIF
 
 ! Add the terms
-            TAU_U_S(IJK,M) = SBV + SSX + SSY + SSZ + VTZB*VOL_U(IJK) 
-          ELSE 
-            TAU_U_S(IJK,M) = ZERO 
+            TAU_U_S(IJK,M) = SBV + SSX + SSY + SSZ + VTZB*VOL_U(IJK)
+          ELSE
+            TAU_U_S(IJK,M) = ZERO
           ENDIF   ! end if/else .not.sip_at_e .and. epsa>dil_ep_s
         ENDDO   ! end do ijk
 
         IF (SHEAR) THEN
-!!$omp  parallel do private(IJK) 
+!!$omp  parallel do private(IJK)
           DO IJK = IJKSTART3, IJKEND3
-            IF (FLUID_AT(IJK)) THEN   
+            IF (FLUID_AT(IJK)) THEN
               V_S(IJK,m)=V_S(IJK,m)-VSH(IJK)
             ENDIF
           ENDDO
         ENDIF
-       
+
       ENDDO
 
       call send_recv(tau_u_s,2)
-      RETURN  
-      END SUBROUTINE CALC_TAU_U_S 
+      RETURN
+      END SUBROUTINE CALC_TAU_U_S
 

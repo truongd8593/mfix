@@ -25,19 +25,19 @@
       SUBROUTINE GET_POLY_DATA
 
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE physprop
       USE fldvar
       USE run
       USE scalars
-      USE funits 
+      USE funits
       USE rxns
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE progress_bar
       USE polygon
       IMPLICIT NONE
@@ -54,13 +54,13 @@
             WRITE(*,"('(PE ',I3,'): input data file, ',A11,' is missing: run aborted')") &
             myPE,'poly.dat'
          ENDIF
-         CALL MFIX_EXIT(MYPE) 
+         CALL MFIX_EXIT(MYPE)
       ENDIF
-!     
-!     
+!
+!
 !     OPEN poly.dat ASCII FILE
-!     
-      OPEN(UNIT=333, FILE='poly.dat', STATUS='OLD', ERR=910) 
+!
+      OPEN(UNIT=333, FILE='poly.dat', STATUS='OLD', ERR=910)
 
       NSKIP = 13
       DO N=1,NSKIP
@@ -74,7 +74,7 @@
          IF(DABS(POLY_SIGN(POLY))/=ONE) THEN
             WRITE(*,*)'ERROR WHILE READIND poly.dat:'
             WRITE(*,*)'POLYGON SIGN MUST BE +1.0 or -1.0.'
-            CALL MFIX_EXIT(myPE) 
+            CALL MFIX_EXIT(myPE)
          ENDIF
          DO V = 1,N_VERTEX(POLY)
             READ(333,*,ERR=920,END=930) X_VERTEX(POLY,V),Y_VERTEX(POLY,V),BC_ID_P(POLY,V)
@@ -87,29 +87,29 @@
 
       WRITE(*,2010) 'Polygon geometry successfully read for ', N_POLYGON, ' polygon(s).'
 
-      RETURN  
+      RETURN
 
 !======================================================================
 !     HERE IF AN ERROR OCCURED OPENNING/READING THE FILE
 !======================================================================
-!     
- 910  CONTINUE 
-      WRITE (*, 1500) 
-      CALL MFIX_EXIT(myPE) 
- 920  CONTINUE 
-      WRITE (*, 1600) 
-      CALL MFIX_EXIT(myPE) 
- 930  CONTINUE 
-      WRITE (*, 1700) 
-      CALL MFIX_EXIT(myPE) 
-!     
+!
+ 910  CONTINUE
+      WRITE (*, 1500)
+      CALL MFIX_EXIT(myPE)
+ 920  CONTINUE
+      WRITE (*, 1600)
+      CALL MFIX_EXIT(myPE)
+ 930  CONTINUE
+      WRITE (*, 1700)
+      CALL MFIX_EXIT(myPE)
+!
  1500 FORMAT(/1X,70('*')//' From: GET_POLY_DATA',/' Message: ',&
-      'Unable to open poly.dat file',/1X,70('*')/) 
+      'Unable to open poly.dat file',/1X,70('*')/)
  1600 FORMAT(/1X,70('*')//' From: GET_POLY_DATA',/' Message: ',&
-      'Error while reading poly.dat file',/1X,70('*')/) 
+      'Error while reading poly.dat file',/1X,70('*')/)
  1700 FORMAT(/1X,70('*')//' From: GET_POLY_DATA',/' Message: ',&
-      'End of file reached while reading poly.dat file',/1X,70('*')/) 
- 2000 FORMAT(1X,A) 
+      'End of file reached while reading poly.dat file',/1X,70('*')/)
+ 2000 FORMAT(1X,A)
  2010 FORMAT(1X,A,I4,A)
 
       END SUBROUTINE GET_POLY_DATA
@@ -126,10 +126,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE EVAL_POLY_FCT(x1,x2,x3,Q,f_pol,CLIP_FLAG,BCID)
-    
+
       USE param
       USE param1
       USE parallel
@@ -137,14 +137,14 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE fldvar
       USE quadric
       USE cutcell
       USE polygon
-      
+
       IMPLICIT NONE
       DOUBLE PRECISION x1,x2,x3
       DOUBLE PRECISION f_pol,f_test
@@ -169,15 +169,15 @@
       INTEGER :: BCID
 
 !======================================================================
-! This subroutine checks whether a point P(x1,x2,x3) lies inside any 
+! This subroutine checks whether a point P(x1,x2,x3) lies inside any
 ! of the N_POLGON polygon(s), using the Shimrat's algorithm:
-! 1) Draw a horizontal line from point P to -infinity (here taken as 
+! 1) Draw a horizontal line from point P to -infinity (here taken as
 !    the minimum x-location of the polygon vertices)
 ! 2) Count the number of intersection(s) with all edges (COUNTER)
 ! 3) If COUNTER is even, the point is outside
 !    If COUNTER is odd,  the point is inside
 ! Once the point's location is determined, a value is assigned to f_pol:
-!    fpol = 0 if point lies on top of one of the polygon's edges 
+!    fpol = 0 if point lies on top of one of the polygon's edges
 !                (within tolerance TOL_POLY)
 !    fpol = POLY_SIGN(POLY) if point lies inside the polygon
 !    fpol = - POLY_SIGN(POLY) if point lies outside the polygon
@@ -209,7 +209,7 @@
          IF(CLIP_X.AND.CLIP_Y) THEN
 
             COUNTER = 0
- 
+
             DO EDGE = 1, N_EDGE
 
                XV1 = X_VERTEX(POLY,EDGE)
@@ -224,22 +224,22 @@
                IF(DMIN1(D1,D2)<TOL_POLY) THEN
                   F_POL = ZERO
                   BCID = BC_ID_P(POLY,EDGE)
-                  RETURN 
+                  RETURN
                ENDIF
 
                IF(DABS(YV2 - YV1) < TOL_POLY) THEN
                   test1 = (DABS(x2 - YV1) < TOL_POLY)
-                  x_west = DMIN1(XV1,XV2) 
-                  x_east = DMAX1(XV1,XV2) 
+                  x_west = DMIN1(XV1,XV2)
+                  x_east = DMAX1(XV1,XV2)
                   test2 = (x_west <= x1).AND.( x1 <= x_east)
                   IF (test1.and.test2) THEN
                      F_POL = ZERO
                      BCID = BC_ID_P(POLY,EDGE)
-                     RETURN 
+                     RETURN
                   ENDIF
                ELSE
-                  y_south = DMIN1(YV1,YV2) 
-                  y_north = DMAX1(YV1,YV2) 
+                  y_south = DMIN1(YV1,YV2)
+                  y_north = DMAX1(YV1,YV2)
                   test1 = (y_south <= x2).AND.( x2 <= y_north)
                   IF(test1) THEN
                      slope = (XV2 - XV1) / (YV2 - YV1)
@@ -252,11 +252,11 @@
                      ENDIF
 
                      IF (x_star < x1 - TOL_xstar) THEN
-                        COUNTER =COUNTER + 1 
+                        COUNTER =COUNTER + 1
                      ELSEIF(DABS(x_star - x1) <= TOL_xstar) THEN
                         F_POL = ZERO
                         BCID = BC_ID_P(POLY,EDGE)
-                        RETURN 
+                        RETURN
                      ENDIF
                   ENDIF
                ENDIF
@@ -264,12 +264,12 @@
 
 
 
-            IF((COUNTER/2) * 2 == COUNTER) THEN    
+            IF((COUNTER/2) * 2 == COUNTER) THEN
                F_POLY(POLY) = -POLY_SIGN(POLY)    ! even ==> outside
-            ELSE                                   
+            ELSE
                F_POLY(POLY) = POLY_SIGN(POLY)     ! odd  ==> inside
             ENDIF
- 
+
          ELSE
             F_POLY(POLY) = -POLY_SIGN(POLY)       ! outside
          ENDIF
@@ -285,5 +285,5 @@
 
       RETURN
 
-      
+
       END SUBROUTINE EVAL_POLY_FCT

@@ -20,32 +20,32 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_TAU_U_G(TAU_U_G, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE CALC_TAU_U_G(TAU_U_G, IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !  Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
-      USE matrix 
-      USE scales 
+      USE param
+      USE param1
+      USE parallel
+      USE matrix
+      USE scales
       USE constant
       USE physprop
       USE fldvar
       USE visc_g
       USE rxns
       USE run
-      USE toleranc 
+      USE toleranc
       USE geometry
       USE indices
       USE is
-      USE compar  
-      USE sendrecv  
+      USE compar
+      USE sendrecv
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -62,45 +62,45 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-! 
-! 
-!                      Error index 
-      INTEGER          IER 
-! 
-!                      TAU_U_g 
-      DOUBLE PRECISION TAU_U_g(DIMENSION_3) 
-! 
-!                      Indices 
-      INTEGER          I, J, JM, K, KM, IJK, IJKE, IPJK, IP, IMJK, IJKN,& 
-                       IJKNE, IJKS, IJKSE, IPJMK, IJMK, IJKT, IJKTE,& 
-                       IJKB, IJKBE, IJKM, IPJKM 
-! 
-!                      Phase index 
-      INTEGER          M 
-! 
-!                      Average volume fraction 
-      DOUBLE PRECISION EPGA 
-! 
-!                      Average density 
-      DOUBLE PRECISION ROPGA 
-! 
-!                      Average viscosity 
-      DOUBLE PRECISION MUGA 
-! 
-!                      Average viscosity 
-      DOUBLE PRECISION EPMU_gte, EPMU_gbe, EPMUGA 
-! 
-!                      Average dW/Xdz 
-      DOUBLE PRECISION dWoXdz 
-! 
-!                      Source terms (Surface) 
-      DOUBLE PRECISION Sbv, Ssx, Ssy, Ssz 
-! 
-!                      Source terms (Volumetric) 
-      DOUBLE PRECISION Vtzb 
-! 
-!                      error message 
-      CHARACTER*80     LINE 
+!
+!
+!                      Error index
+      INTEGER          IER
+!
+!                      TAU_U_g
+      DOUBLE PRECISION TAU_U_g(DIMENSION_3)
+!
+!                      Indices
+      INTEGER          I, J, JM, K, KM, IJK, IJKE, IPJK, IP, IMJK, IJKN,&
+                       IJKNE, IJKS, IJKSE, IPJMK, IJMK, IJKT, IJKTE,&
+                       IJKB, IJKBE, IJKM, IPJKM
+!
+!                      Phase index
+      INTEGER          M
+!
+!                      Average volume fraction
+      DOUBLE PRECISION EPGA
+!
+!                      Average density
+      DOUBLE PRECISION ROPGA
+!
+!                      Average viscosity
+      DOUBLE PRECISION MUGA
+!
+!                      Average viscosity
+      DOUBLE PRECISION EPMU_gte, EPMU_gbe, EPMUGA
+!
+!                      Average dW/Xdz
+      DOUBLE PRECISION dWoXdz
+!
+!                      Source terms (Surface)
+      DOUBLE PRECISION Sbv, Ssx, Ssy, Ssz
+!
+!                      Source terms (Volumetric)
+      DOUBLE PRECISION Vtzb
+!
+!                      error message
+      CHARACTER*80     LINE
 !
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -118,11 +118,11 @@
       DOUBLE PRECISION :: UW_g,VW_g,WW_g
       INTEGER :: N_SUM
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT  
+      CHARACTER(LEN=9) :: BCT
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
- 
+
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
@@ -138,29 +138,29 @@
 !!!!$omp&  EPMUGA,DWOXDZ,VTZB )
 !!!!$omp&  schedule(static)
       DO IJK = IJKSTART3, IJKEND3
-         I = I_OF(IJK) 
-         IJKE = EAST_OF(IJK) 
-         EPGA = AVG_X(EP_G(IJK),EP_G(IJKE),I) 
-         IF ( .NOT.IP_AT_E(IJK) .AND. EPGA>DIL_EP_S) THEN 
-            IP = IP1(I) 
-            J = J_OF(IJK) 
-            JM = JM1(J) 
-            K = K_OF(IJK) 
-            KM = KM1(K) 
-            IPJK = IP_OF(IJK) 
-            IMJK = IM_OF(IJK) 
-            IJKN = NORTH_OF(IJK) 
-            IJKNE = EAST_OF(IJKN) 
-            IJKS = SOUTH_OF(IJK) 
-            IJKSE = EAST_OF(IJKS) 
-            IPJMK = JM_OF(IPJK) 
-            IJMK = JM_OF(IJK) 
-            IJKT = TOP_OF(IJK) 
-            IJKTE = EAST_OF(IJKT) 
-            IJKB = BOTTOM_OF(IJK) 
-            IJKBE = EAST_OF(IJKB) 
-            IJKM = KM_OF(IJK) 
-            IPJKM = IP_OF(IJKM) 
+         I = I_OF(IJK)
+         IJKE = EAST_OF(IJK)
+         EPGA = AVG_X(EP_G(IJK),EP_G(IJKE),I)
+         IF ( .NOT.IP_AT_E(IJK) .AND. EPGA>DIL_EP_S) THEN
+            IP = IP1(I)
+            J = J_OF(IJK)
+            JM = JM1(J)
+            K = K_OF(IJK)
+            KM = KM1(K)
+            IPJK = IP_OF(IJK)
+            IMJK = IM_OF(IJK)
+            IJKN = NORTH_OF(IJK)
+            IJKNE = EAST_OF(IJKN)
+            IJKS = SOUTH_OF(IJK)
+            IJKSE = EAST_OF(IJKS)
+            IPJMK = JM_OF(IPJK)
+            IJMK = JM_OF(IJK)
+            IJKT = TOP_OF(IJK)
+            IJKTE = EAST_OF(IJKT)
+            IJKB = BOTTOM_OF(IJK)
+            IJKBE = EAST_OF(IJKB)
+            IJKM = KM_OF(IJK)
+            IPJKM = IP_OF(IJKM)
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -170,47 +170,47 @@
 !
 !         bulk viscosity term
                SBV = (LAMBDA_GT(IJKE)*TRD_G(IJKE)-LAMBDA_GT(IJK)*TRD_G(IJK))*AYZ(&
-                  IJK) 
+                  IJK)
 !
 !         shear stress terms
                SSX = MU_GT(IJKE)*(U_G(IPJK)-U_G(IJK))*ODX(IP)*AYZ_U(IJK) - MU_GT(&
-                  IJK)*(U_G(IJK)-U_G(IMJK))*ODX(I)*AYZ_U(IMJK) 
+                  IJK)*(U_G(IJK)-U_G(IMJK))*ODX(I)*AYZ_U(IMJK)
                SSY = AVG_X_H(AVG_Y_H(MU_GT(IJK),MU_GT(IJKN),J),AVG_Y_H(MU_GT(IJKE)&
                   ,MU_GT(IJKNE),J),I)*(V_G(IPJK)-V_G(IJK))*ODX_E(I)*AXZ_U(IJK) - &
                   AVG_X_H(AVG_Y_H(MU_GT(IJKS),MU_GT(IJK),JM),AVG_Y_H(MU_GT(IJKSE),&
-                  MU_GT(IJKE),JM),I)*(V_G(IPJMK)-V_G(IJMK))*ODX_E(I)*AXZ_U(IJMK) 
+                  MU_GT(IJKE),JM),I)*(V_G(IPJMK)-V_G(IJMK))*ODX_E(I)*AXZ_U(IJMK)
                EPMU_GTE = AVG_X_H(AVG_Z_H(MU_GT(IJK),MU_GT(IJKT),K),AVG_Z_H(MU_GT(&
-                  IJKE),MU_GT(IJKTE),K),I) 
+                  IJKE),MU_GT(IJKTE),K),I)
                EPMU_GBE = AVG_X_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJK),KM),AVG_Z_H(MU_GT&
-                  (IJKBE),MU_GT(IJKE),KM),I) 
+                  (IJKBE),MU_GT(IJKE),KM),I)
                SSZ = EPMU_GTE*(W_G(IPJK)-W_G(IJK))*ODX_E(I)*AXY_U(IJK) - EPMU_GBE*&
-                  (W_G(IPJKM)-W_G(IJKM))*ODX_E(I)*AXY_U(IJKM) 
+                  (W_G(IPJKM)-W_G(IJKM))*ODX_E(I)*AXY_U(IJKM)
 
             ELSE ! CARTESIAN GRID CASE
 
 !         bulk viscosity term
                SBV =  (LAMBDA_GT(IJKE)*TRD_G(IJKE)) * AYZ_U(IJK) &
-                     -(LAMBDA_GT(IJK) *TRD_G(IJK) ) * AYZ_U(IMJK) 
+                     -(LAMBDA_GT(IJK) *TRD_G(IJK) ) * AYZ_U(IMJK)
 
 !         shear stress terms
-               IF(.NOT.CUT_U_CELL_AT(IJK))   THEN      
+               IF(.NOT.CUT_U_CELL_AT(IJK))   THEN
 
                   SSX = MU_GT(IJKE)*(U_G(IPJK)-U_G(IJK))*ONEoDX_E_U(IJK)*AYZ_U(IJK) - MU_GT(&
-                  IJK)*(U_G(IJK)-U_G(IMJK))*ONEoDX_E_U(IMJK)*AYZ_U(IMJK) 
+                  IJK)*(U_G(IJK)-U_G(IMJK))*ONEoDX_E_U(IMJK)*AYZ_U(IMJK)
 
                   SSY = AVG_X_H(AVG_Y_H(MU_GT(IJK),MU_GT(IJKN),J),AVG_Y_H(MU_GT(IJKE)&
                   ,MU_GT(IJKNE),J),I)*(V_G(IPJK)-V_G(IJK))*ONEoDX_E_V(IJK)*AXZ_U(IJK) - &
                   AVG_X_H(AVG_Y_H(MU_GT(IJKS),MU_GT(IJK),JM),AVG_Y_H(MU_GT(IJKSE),&
-                  MU_GT(IJKE),JM),I)*(V_G(IPJMK)-V_G(IJMK))*ONEoDX_E_V(IJMK)*AXZ_U(IJMK) 
+                  MU_GT(IJKE),JM),I)*(V_G(IPJMK)-V_G(IJMK))*ONEoDX_E_V(IJMK)*AXZ_U(IJMK)
 
                   IF(DO_K) THEN
                      EPMU_GTE = AVG_X_H(AVG_Z_H(MU_GT(IJK),MU_GT(IJKT),K),AVG_Z_H(MU_GT(&
-                     IJKE),MU_GT(IJKTE),K),I) 
+                     IJKE),MU_GT(IJKTE),K),I)
                      EPMU_GBE = AVG_X_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJK),KM),AVG_Z_H(MU_GT&
-                     (IJKBE),MU_GT(IJKE),KM),I) 
+                     (IJKBE),MU_GT(IJKE),KM),I)
 
                      SSZ = EPMU_GTE*(W_G(IPJK)-W_G(IJK))*ONEoDX_E_W(IJK)*AXY_U(IJK) - EPMU_GBE*&
-                     (W_G(IPJKM)-W_G(IJKM))*ONEoDX_E_W(IJKM)*AXY_U(IJKM) 
+                     (W_G(IPJKM)-W_G(IJKM))*ONEoDX_E_W(IJKM)*AXY_U(IJKM)
 
                   ELSE
                      SSZ = ZERO
@@ -219,14 +219,14 @@
                ELSE
 
                   BCV = BC_U_ID(IJK)
-             
+
                   IF(BCV > 0 ) THEN
                      BCT = BC_TYPE(BCV)
                   ELSE
                      BCT = 'NONE'
                   ENDIF
 
-                  SELECT CASE (BCT)  
+                  SELECT CASE (BCT)
 
                      CASE ('CG_NSW')
                         CUT_TAU_UG = .TRUE.
@@ -258,9 +258,9 @@
                            WW_g = ZERO
                         ENDIF
                      CASE ('NONE')
-                        TAU_U_G(IJK) = ZERO 
-                        CYCLE 
-                  END SELECT 
+                        TAU_U_G(IJK) = ZERO
+                        CYCLE
+                  END SELECT
 
                   IF(CUT_TAU_UG) THEN
                      MU_GT_CUT =  (VOL(IJK)*MU_GT(IJK) + VOL(IPJK)*MU_GT(IJKE))/(VOL(IJK) + VOL(IPJK))
@@ -274,7 +274,7 @@
 
                   SSX = MU_GT(IJKE)*(U_G(IPJK)-U_G(IJK))*ONEoDX_E_U(IJK)*AYZ_U(IJK) - MU_GT(&
                         IJK)*(U_G(IJK)-U_G(IMJK))*ONEoDX_E_U(IMJK)*AYZ_U(IMJK) &
-                      - MU_GT_CUT * (U_g(IJK) - UW_g) / DEL_H * (Nx**2) * Area_U_CUT(IJK)     
+                      - MU_GT_CUT * (U_g(IJK) - UW_g) / DEL_H * (Nx**2) * Area_U_CUT(IJK)
 
 !           SSY:
 
@@ -297,7 +297,7 @@
 
                      dvdx_at_N =  (V_G(IPJK) - V_G(IJK)) * ONEoDX_E_V(IJK)
 
-                     IF(NOC_UG) dvdx_at_N = dvdx_at_N - ((Vi-VW_g)*ONEoDX_E_V(IJK)/DEL_H*(Sy*Ny+Sz*Nz))    
+                     IF(NOC_UG) dvdx_at_N = dvdx_at_N - ((Vi-VW_g)*ONEoDX_E_V(IJK)/DEL_H*(Sy*Ny+Sz*Nz))
 
                   ELSE
                      dvdx_at_N =  ZERO
@@ -317,7 +317,7 @@
 
                      dvdx_at_S =  (V_G(IPJMK) - V_G(IJMK)) * ONEoDX_E_V(IJMK)
 
-                     IF(NOC_UG) dvdx_at_S = dvdx_at_S - ((Vi-VW_g)*ONEoDX_E_V(IJMK)/DEL_H*(Sy*Ny+Sz*Nz))      
+                     IF(NOC_UG) dvdx_at_S = dvdx_at_S - ((Vi-VW_g)*ONEoDX_E_V(IJMK)/DEL_H*(Sy*Ny+Sz*Nz))
 
                   ELSE
                      dvdx_at_S =  ZERO
@@ -325,9 +325,9 @@
 
                     IF(V_NODE_AT_NW) THEN
                        CALL GET_DEL_H(IJK,'U_MOMENTUM',X_V(IJK),Y_V(IJK),Z_V(IJK),Del_H,Nx,Ny,Nz)
-                       SSY_CUT = - MU_GT_CUT * (V_G(IJK) - VW_g) / DEL_H * (Nx*Ny) * Area_U_CUT(IJK)        
+                       SSY_CUT = - MU_GT_CUT * (V_G(IJK) - VW_g) / DEL_H * (Nx*Ny) * Area_U_CUT(IJK)
                     ELSE
-                       SSY_CUT =  ZERO     
+                       SSY_CUT =  ZERO
                     ENDIF
 
 
@@ -339,7 +339,7 @@
 
 !           SSZ:
 
-                  IF(DO_K) THEN  
+                  IF(DO_K) THEN
 
                      W_NODE_AT_TE = ((.NOT.BLOCKED_W_CELL_AT(IPJK)).AND.(.NOT.WALL_W_AT(IPJK)))
                      W_NODE_AT_TW = ((.NOT.BLOCKED_W_CELL_AT(IJK)).AND.(.NOT.WALL_W_AT(IJK)))
@@ -358,9 +358,9 @@
 
                         CALL GET_DEL_H(IJK,'U_MOMENTUM',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
 
-                        dwdx_at_T =  (W_G(IPJK) - W_G(IJK)) * ONEoDX_E_W(IJK)  
+                        dwdx_at_T =  (W_G(IPJK) - W_G(IJK)) * ONEoDX_E_W(IJK)
 
-                        IF(NOC_UG) dwdx_at_T = dwdx_at_T - ((Wi-WW_g) * ONEoDX_E_W(IJK)/DEL_H*(Sy*Ny+Sz*Nz))      
+                        IF(NOC_UG) dwdx_at_T = dwdx_at_T - ((Wi-WW_g) * ONEoDX_E_W(IJK)/DEL_H*(Sy*Ny+Sz*Nz))
 
                      ELSE
                         dwdx_at_T =  ZERO
@@ -379,9 +379,9 @@
 
                         CALL GET_DEL_H(IJK,'U_MOMENTUM',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
 
-                        dwdx_at_B =  (W_G(IPJKM) - W_G(IJKM)) * ONEoDX_E_W(IJKM) 
+                        dwdx_at_B =  (W_G(IPJKM) - W_G(IJKM)) * ONEoDX_E_W(IJKM)
 
-                        IF(NOC_UG) dwdx_at_B = dwdx_at_B - ((Wi-WW_g) * ONEoDX_E_W(IJKM)/DEL_H*(Sy*Ny+Sz*Nz))    
+                        IF(NOC_UG) dwdx_at_B = dwdx_at_B - ((Wi-WW_g) * ONEoDX_E_W(IJKM)/DEL_H*(Sy*Ny+Sz*Nz))
 
                      ELSE
                         dwdx_at_B =  ZERO
@@ -389,15 +389,15 @@
 
                      IF(W_NODE_AT_TW) THEN
                         CALL GET_DEL_H(IJK,'U_MOMENTUM',X_W(IJK),Y_W(IJK),Z_W(IJK),Del_H,Nx,Ny,Nz)
-                        SSZ_CUT = - MU_GT_CUT * (W_G(IJK) - WW_g) / DEL_H * (Nx*Nz) * Area_U_CUT(IJK) 
+                        SSZ_CUT = - MU_GT_CUT * (W_G(IJK) - WW_g) / DEL_H * (Nx*Nz) * Area_U_CUT(IJK)
                      ELSE
                         SSZ_CUT =  ZERO
                      ENDIF
 
                      EPMU_GTE = AVG_X_H(AVG_Z_H(MU_GT(IJK),MU_GT(IJKT),K),AVG_Z_H(MU_GT(&
-                        IJKE),MU_GT(IJKTE),K),I) 
+                        IJKE),MU_GT(IJKTE),K),I)
                      EPMU_GBE = AVG_X_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJK),KM),AVG_Z_H(MU_GT&
-                        (IJKBE),MU_GT(IJKE),KM),I) 
+                        (IJKBE),MU_GT(IJKE),KM),I)
                      SSZ =   EPMU_GTE*dwdx_at_T*AXY_U(IJK)  &
                            - EPMU_GBE*dwdx_at_B*AXY_U(IJKM) &
                            + SSZ_CUT
@@ -412,20 +412,20 @@
 
 !  Original terms
 !            SSX = MU_GT(IJKE)*(U_G(IPJK)-U_G(IJK))*ODX(IP)*AYZ_U(IJK) - MU_GT(&
-!               IJK)*(U_G(IJK)-U_G(IMJK))*ODX(I)*AYZ_U(IMJK) 
+!               IJK)*(U_G(IJK)-U_G(IMJK))*ODX(I)*AYZ_U(IMJK)
 
 !            SSY = AVG_X_H(AVG_Y_H(MU_GT(IJK),MU_GT(IJKN),J),AVG_Y_H(MU_GT(IJKE)&
 !               ,MU_GT(IJKNE),J),I)*(V_G(IPJK)-V_G(IJK))*ODX_E(I)*AXZ_U(IJK) - &
 !               AVG_X_H(AVG_Y_H(MU_GT(IJKS),MU_GT(IJK),JM),AVG_Y_H(MU_GT(IJKSE),&
-!               MU_GT(IJKE),JM),I)*(V_G(IPJMK)-V_G(IJMK))*ODX_E(I)*AXZ_U(IJMK) 
+!               MU_GT(IJKE),JM),I)*(V_G(IPJMK)-V_G(IJMK))*ODX_E(I)*AXZ_U(IJMK)
 
 
 !            EPMU_GTE = AVG_X_H(AVG_Z_H(MU_GT(IJK),MU_GT(IJKT),K),AVG_Z_H(MU_GT(&
-!               IJKE),MU_GT(IJKTE),K),I) 
+!               IJKE),MU_GT(IJKTE),K),I)
 !            EPMU_GBE = AVG_X_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJK),KM),AVG_Z_H(MU_GT&
-!               (IJKBE),MU_GT(IJKE),KM),I) 
+!               (IJKBE),MU_GT(IJKE),KM),I)
 !            SSZ = EPMU_GTE*(W_G(IPJK)-W_G(IJK))*ODX_E(I)*AXY_U(IJK) - EPMU_GBE*&
-!               (W_G(IPJKM)-W_G(IJKM))*ODX_E(I)*AXY_U(IJKM) 
+!               (W_G(IPJKM)-W_G(IJKM))*ODX_E(I)*AXY_U(IJKM)
 
             ENDIF ! CARTESIAN GRID
 !=======================================================================
@@ -433,36 +433,36 @@
 !=======================================================================
 !
 !         Special terms for cylindrical coordinates
-            IF (CYLINDRICAL) THEN 
+            IF (CYLINDRICAL) THEN
 !
 !           modify Ssz: integral of (1/x) (d/dz) (mu*(-w/x))
                SSZ = SSZ - (EPMU_GTE*(HALF*(W_G(IPJK)+W_G(IJK))*OX_E(I))*AXY_U(&
                   IJK)-EPMU_GBE*(HALF*(W_G(IPJKM)+W_G(IJKM))*OX_E(I))*AXY_U(&
-                  IJKM)) 
+                  IJKM))
 !
 !           -(2mu/x)*(1/x)*dw/dz part of Tau_zz/X
-               EPMUGA = AVG_X(MU_G(IJK),MU_G(IJKE),I) 
+               EPMUGA = AVG_X(MU_G(IJK),MU_G(IJKE),I)
                DWOXDZ = HALF*((W_G(IJK)-W_G(IJKM))*OX(I)*ODZ(K)+(W_G(IPJK)-W_G(&
-                  IPJKM))*OX(IP)*ODZ(K)) 
-               VTZB = -2.d0*EPMUGA*OX_E(I)*DWOXDZ 
-            ELSE 
-               VTZB = ZERO 
-            ENDIF 
+                  IPJKM))*OX(IP)*ODZ(K))
+               VTZB = -2.d0*EPMUGA*OX_E(I)*DWOXDZ
+            ELSE
+               VTZB = ZERO
+            ENDIF
 !
 !         Add the terms
-            TAU_U_G(IJK) = SBV + SSX + SSY + SSZ + VTZB*VOL_U(IJK) 
-         ELSE 
-            TAU_U_G(IJK) = ZERO 
-         ENDIF 
-      END DO 
+            TAU_U_G(IJK) = SBV + SSX + SSY + SSZ + VTZB*VOL_U(IJK)
+         ELSE
+            TAU_U_G(IJK) = ZERO
+         ENDIF
+      END DO
 
       call send_recv(tau_u_g,2)
 
-      RETURN  
+      RETURN
 
-      END SUBROUTINE CALC_TAU_U_G 
-      
-!// Comments on the modifications for DMP version implementation      
+      END SUBROUTINE CALC_TAU_U_G
+
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 

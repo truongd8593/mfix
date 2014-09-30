@@ -1,27 +1,27 @@
 MODULE ChiScheme
-!  Purpose: Determine factors for Chi-scheme of Darwish and Moukalled  
-!           to ensure consistency of equation sets (e.g., species mass 
-!           fractions add up to 1)                                                 
-!                                                                      
-!  Author: M. Syamlal                                 Date: 1-AUG-03   
-!  Reviewer:                                          Date:            
-!                                                                      
-!                                                                      
-!  Literature/Document References: Darwish, M. and Moukalled, F., 
+!  Purpose: Determine factors for Chi-scheme of Darwish and Moukalled
+!           to ensure consistency of equation sets (e.g., species mass
+!           fractions add up to 1)
+!
+!  Author: M. Syamlal                                 Date: 1-AUG-03
+!  Reviewer:                                          Date:
+!
+!
+!  Literature/Document References: Darwish, M. and Moukalled, F.,
 !   "The Chi-shemes: a new consistent high-resolution formulation based on
 !    the normalized variable methodology," Comput. Methods Appl. Mech. Engrg.,
 !    192, 1711-1730 (2003)
-!                                                                      
+!
 
 ! To initiate Chi-Scheme
-!   call set_chi( ...) 
+!   call set_chi( ...)
 !
 ! and to terminate Chi-Scheme
 !   call unset_chi(ier)
 !
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE run
       USE geometry
       USE indices
@@ -33,12 +33,12 @@ MODULE ChiScheme
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Chi_n
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Chi_t
 
-      
+
    LOGICAL :: ChiScheme_allocated = .false.
    LOGICAL :: Chi_flag = .false.
-      
+
    CONTAINS
-      SUBROUTINE Set_Chi(DISCR, PHI, Nmax, U, V, W, IER) 
+      SUBROUTINE Set_Chi(DISCR, PHI, Nmax, U, V, W, IER)
 !
 !                      Error index
       INTEGER          IER
@@ -46,7 +46,7 @@ MODULE ChiScheme
 !                      discretization method
       INTEGER          DISCR
 !
-!                      Second dimension of Phi array 
+!                      Second dimension of Phi array
       INTEGER          NMax
 !
 !                      convected quantity
@@ -71,9 +71,9 @@ MODULE ChiScheme
       if(Chi_flag)then
         ! Error: Chi-Scheme is already active.  This routine cannot be called
         ! again before unsetting the flag
-	Print *, 'Module ChiScheme: Cannot call Set_Chi again, before Unset_chi'
-	call Mfix_Exit(0)    
-      
+        Print *, 'Module ChiScheme: Cannot call Set_Chi again, before Unset_chi'
+        call Mfix_Exit(0)
+
       else
       ! Set Chi_flag to indicate that future calls to calc_Xsi will use
       ! the Chi-Scheme for discretization
@@ -86,19 +86,19 @@ MODULE ChiScheme
       Allocate( Chi_e_temp(DIMENSION_3) , &
                 Chi_n_temp(DIMENSION_3) , &
                 Chi_t_temp(DIMENSION_3)  )
-      
+
 !  Start Chi calculations
       DO N = 1, Nmax
 
-        CALL CALC_CHI(DISCR, PHI(1,N), U, V, W, Chi_e_temp, Chi_n_temp, Chi_t_temp,0) 
+        CALL CALC_CHI(DISCR, PHI(1,N), U, V, W, Chi_e_temp, Chi_n_temp, Chi_t_temp,0)
 
 !!!$omp    parallel do private(IJK)
         DO IJK = ijkstart3, ijkend3
           Chi_e(IJK) = MIN(Chi_e(IJK), Chi_e_temp(IJK))
           Chi_n(IJK) = MIN(Chi_n(IJK), Chi_n_temp(IJK))
           Chi_t(IJK) = MIN(Chi_t(IJK), Chi_t_temp(IJK))
-	ENDDO
-	
+        ENDDO
+
       ENDDO
 
 !  End Chi calculations
@@ -112,15 +112,15 @@ MODULE ChiScheme
                   Chi_t_temp  )
 
 
-      RETURN  
+      RETURN
       END SUBROUTINE Set_Chi
-      
-      
-      SUBROUTINE Unset_Chi(IER) 
+
+
+      SUBROUTINE Unset_Chi(IER)
         INTEGER          IER
         Chi_flag = .false.
-      RETURN  
-      END SUBROUTINE Unset_Chi 
-      
-END MODULE CHIScheme                                                      
+      RETURN
+      END SUBROUTINE Unset_Chi
+
+END MODULE CHIScheme
 

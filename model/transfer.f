@@ -18,15 +18,15 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE TRANSFER(B_M, VAR, M, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE TRANSFER(B_M, VAR, M, IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE indices
       IMPLICIT NONE
@@ -53,10 +53,10 @@
 !
 !-----------------------------------------------
 !
-      IJK = 1 
-      IF (IJKMAX2 > 0) THEN 
-         VAR(:IJKMAX2) = B_M(:IJKMAX2,M) 
-         IJK = IJKMAX2 + 1 
-      ENDIF 
-      RETURN  
-      END SUBROUTINE TRANSFER 
+      IJK = 1
+      IF (IJKMAX2 > 0) THEN
+         VAR(:IJKMAX2) = B_M(:IJKMAX2,M)
+         IJK = IJKMAX2 + 1
+      ENDIF
+      RETURN
+      END SUBROUTINE TRANSFER

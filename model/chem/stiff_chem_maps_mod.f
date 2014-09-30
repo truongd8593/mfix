@@ -95,7 +95,7 @@
                lVars(Node) = X_S(IJK,M,N);  Node = Node + 1
             ENDDO
          ENDIF
-      ENDDO   
+      ENDDO
 
       RETURN
       END SUBROUTINE mapMFIXtoODE
@@ -237,7 +237,7 @@
       DO M = 1, MMAX
          IF(ROP_s(IJK,M) > 1.0d-8) &
             T_S(IJK,M) = lVars(Node);              Node = Node + 1
-      ENDDO   
+      ENDDO
 
 ! Only map back what was calculated.
       DO M = 1, MMAX
@@ -253,7 +253,7 @@
             IF(SOLVE_ROs(M)) RO_S(IJK,M) = EOSS(BASE_ROs(M), &
                X_s0(M,INERT_SPECIES(M)), X_s(IJK,M,INERT_SPECIES(M)))
          ENDIF
-      ENDDO   
+      ENDDO
 
 ! Calculate the gas volume fraction from solids volume fractions. Only
 ! update it's value if the solids equations are being solved.
@@ -261,7 +261,7 @@
          ONE - sum(ROP_S(IJK,1:MMAX)/RO_S(IJK,1:MMAX))
 
 ! Gas phase bulk density is updated within the stiff solver (lVar(1)).
-! Now that the gas phase volume fraction is updated, the gas phase 
+! Now that the gas phase volume fraction is updated, the gas phase
 ! density can be backed out. RO_g * EP_g = ROP_g
       IF(EP_g(IJK) > small_number) THEN
          RO_g(IJK) = ROP_g(IJK) / EP_g(IJK)

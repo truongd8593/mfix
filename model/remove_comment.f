@@ -10,7 +10,7 @@
 !                     OUT > LINE ::  "MW_g( 3 ) =  32.0         "      !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE REMOVE_COMMENT(LINE, LSTART, MAXCOL) 
+      SUBROUTINE REMOVE_COMMENT(LINE, LSTART, MAXCOL)
 
       IMPLICIT NONE
 
@@ -26,13 +26,13 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Loop index
-      INTEGER :: L 
+      INTEGER :: L
 
-      DO L = LSTART, MAXCOL 
-         LINE(L:L) = ' ' 
-      END DO 
+      DO L = LSTART, MAXCOL
+         LINE(L:L) = ' '
+      END DO
 
-      RETURN  
+      RETURN
       END SUBROUTINE REMOVE_COMMENT
 
 
@@ -62,7 +62,7 @@
 ! String size
       INTEGER :: sSize
 ! Loop index
-      INTEGER :: L 
+      INTEGER :: L
 ! Search positions
       INTEGER :: POS, lP, rP
 ! Flag for space replacement

@@ -18,26 +18,26 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE ADJUST_A_U_G(A_M, B_M, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE ADJUST_A_U_G(A_M, B_M, IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !  Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
-      USE matrix 
+      USE param
+      USE param1
+      USE parallel
+      USE matrix
       USE fldvar
       USE geometry
       USE run
       USE indices
       USE usr       !just to ensure that this module gets compiled early on
       USE compar
-      USE sendrecv  
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -65,44 +65,44 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
 !
-      M = 0 
-      IF (.NOT.MOMENTUM_X_EQ(0)) RETURN  
+      M = 0
+      IF (.NOT.MOMENTUM_X_EQ(0)) RETURN
 !
 !!!!$omp parallel do private(I,IP,IJK,IJKE,IMJK)
       DO IJK = ijkstart3, ijkend3
-         IF (ABS(A_M(IJK,0,M)) < SMALL_NUMBER) THEN 
-            A_M(IJK,E,M) = ZERO 
-            A_M(IJK,W,M) = ZERO 
-            A_M(IJK,N,M) = ZERO 
-            A_M(IJK,S,M) = ZERO 
-            A_M(IJK,T,M) = ZERO 
-            A_M(IJK,B,M) = ZERO 
-            A_M(IJK,0,M) = -ONE 
-            IF (B_M(IJK,M) < ZERO) THEN 
-               IJKE = EAST_OF(IJK) 
-               IP = IP1(I_OF(IJK)) 
-               IF (ROP_G(IJKE)*AYZ_U(IJK) > SMALL_NUMBER) THEN 
+         IF (ABS(A_M(IJK,0,M)) < SMALL_NUMBER) THEN
+            A_M(IJK,E,M) = ZERO
+            A_M(IJK,W,M) = ZERO
+            A_M(IJK,N,M) = ZERO
+            A_M(IJK,S,M) = ZERO
+            A_M(IJK,T,M) = ZERO
+            A_M(IJK,B,M) = ZERO
+            A_M(IJK,0,M) = -ONE
+            IF (B_M(IJK,M) < ZERO) THEN
+               IJKE = EAST_OF(IJK)
+               IP = IP1(I_OF(IJK))
+               IF (ROP_G(IJKE)*AYZ_U(IJK) > SMALL_NUMBER) THEN
                   B_M(IJK,M) = SQRT((-B_M(IJK,M)/(ROP_G(IJKE)*AVG_X_E(ONE,ZERO,&
-                     IP)*AYZ_U(IJK)))) 
-               ELSE 
-                  B_M(IJK,M) = ZERO 
-               ENDIF 
-            ELSE IF (B_M(IJK,M) > ZERO) THEN 
-               I = I_OF(IJK) 
-               IMJK = IM_OF(IJK) 
-               IF (ROP_G(IJK)*AYZ_U(IMJK) > SMALL_NUMBER) THEN 
+                     IP)*AYZ_U(IJK))))
+               ELSE
+                  B_M(IJK,M) = ZERO
+               ENDIF
+            ELSE IF (B_M(IJK,M) > ZERO) THEN
+               I = I_OF(IJK)
+               IMJK = IM_OF(IJK)
+               IF (ROP_G(IJK)*AYZ_U(IMJK) > SMALL_NUMBER) THEN
                   B_M(IJK,M) = SQRT(B_M(IJK,M)/(ROP_G(IJK)*AVG_X_E(ZERO,ONE,I)*&
-                     AYZ_U(IMJK))) 
-               ELSE 
-                  B_M(IJK,M) = ZERO 
-               ENDIF 
-            ENDIF 
-         ENDIF 
-      END DO 
-            
-      RETURN  
-      END SUBROUTINE ADJUST_A_U_G 
-      
-!// Comments on the modifications for DMP version implementation      
+                     AYZ_U(IMJK)))
+               ELSE
+                  B_M(IJK,M) = ZERO
+               ENDIF
+            ENDIF
+         ENDIF
+      END DO
+
+      RETURN
+      END SUBROUTINE ADJUST_A_U_G
+
+!// Comments on the modifications for DMP version implementation
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !// 400 Added sendrecv module for COMMunication

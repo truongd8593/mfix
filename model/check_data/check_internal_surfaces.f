@@ -7,7 +7,7 @@
 !           physical locations to i, j, k's.                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_INTERNAL_SURFACES 
+      SUBROUTINE CHECK_INTERNAL_SURFACES
 
 
 ! Global Variables:
@@ -54,14 +54,14 @@
                CALL CHECK_IS_SEMIPERMEABLE(ISV)
             END SELECT
 ! Check that nothing is specifed for undefined IS regtions.
-         ELSE 
+         ELSE
             CALL CHECK_IS_OVERFLOW(ISV)
          ENDIF
-      ENDDO 
+      ENDDO
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
       END SUBROUTINE CHECK_INTERNAL_SURFACES
 
 
@@ -74,18 +74,18 @@
 !  is valid.                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_IS_GEOMETRY 
+      SUBROUTINE CHECK_IS_GEOMETRY
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE fldvar
       USE physprop
       USE run
       USE is
       USE indices
-      USE funits 
-      USE compar 
+      USE funits
+      USE compar
 
 ! Flag: At least one IS is defined.
       use is, only: ANY_IS_DEFINED
@@ -108,7 +108,7 @@
 ! Surface indictors
       LOGICAL X_CONSTANT, Y_CONSTANT, Z_CONSTANT
 ! Total number of valid IS types
-      INTEGER, PARAMETER :: DIM_ISTYPE = 4 
+      INTEGER, PARAMETER :: DIM_ISTYPE = 4
 ! Valid internal surface types
       CHARACTER*16, DIMENSION(1:DIM_ISTYPE) :: VALID_IS_TYPE = (/&
          'IMPERMEABLE     ', 'IP              ',&
@@ -121,21 +121,21 @@
       ANY_IS_DEFINED = .FALSE.
 
 ! DETERMINE WHICH INTERNAL SURFACE INDICES HAVE VALUES
-      L50: DO ISV = 1, DIMENSION_IS 
+      L50: DO ISV = 1, DIMENSION_IS
 
-         IS_DEFINED(ISV) = .FALSE. 
-         IF (IS_X_W(ISV) /= UNDEFINED)   IS_DEFINED(ISV) = .TRUE. 
-         IF (IS_X_E(ISV) /= UNDEFINED)   IS_DEFINED(ISV) = .TRUE. 
-         IF (IS_Y_S(ISV) /= UNDEFINED)   IS_DEFINED(ISV) = .TRUE. 
-         IF (IS_Y_N(ISV) /= UNDEFINED)   IS_DEFINED(ISV) = .TRUE. 
-         IF (IS_Z_B(ISV) /= UNDEFINED)   IS_DEFINED(ISV) = .TRUE. 
-         IF (IS_Z_T(ISV) /= UNDEFINED)   IS_DEFINED(ISV) = .TRUE. 
-         IF (IS_I_W(ISV) /= UNDEFINED_I) IS_DEFINED(ISV) = .TRUE. 
-         IF (IS_I_E(ISV) /= UNDEFINED_I) IS_DEFINED(ISV) = .TRUE. 
-         IF (IS_J_S(ISV) /= UNDEFINED_I) IS_DEFINED(ISV) = .TRUE. 
-         IF (IS_J_N(ISV) /= UNDEFINED_I) IS_DEFINED(ISV) = .TRUE. 
-         IF (IS_K_B(ISV) /= UNDEFINED_I) IS_DEFINED(ISV) = .TRUE. 
-         IF (IS_K_T(ISV) /= UNDEFINED_I) IS_DEFINED(ISV) = .TRUE. 
+         IS_DEFINED(ISV) = .FALSE.
+         IF (IS_X_W(ISV) /= UNDEFINED)   IS_DEFINED(ISV) = .TRUE.
+         IF (IS_X_E(ISV) /= UNDEFINED)   IS_DEFINED(ISV) = .TRUE.
+         IF (IS_Y_S(ISV) /= UNDEFINED)   IS_DEFINED(ISV) = .TRUE.
+         IF (IS_Y_N(ISV) /= UNDEFINED)   IS_DEFINED(ISV) = .TRUE.
+         IF (IS_Z_B(ISV) /= UNDEFINED)   IS_DEFINED(ISV) = .TRUE.
+         IF (IS_Z_T(ISV) /= UNDEFINED)   IS_DEFINED(ISV) = .TRUE.
+         IF (IS_I_W(ISV) /= UNDEFINED_I) IS_DEFINED(ISV) = .TRUE.
+         IF (IS_I_E(ISV) /= UNDEFINED_I) IS_DEFINED(ISV) = .TRUE.
+         IF (IS_J_S(ISV) /= UNDEFINED_I) IS_DEFINED(ISV) = .TRUE.
+         IF (IS_J_N(ISV) /= UNDEFINED_I) IS_DEFINED(ISV) = .TRUE.
+         IF (IS_K_B(ISV) /= UNDEFINED_I) IS_DEFINED(ISV) = .TRUE.
+         IF (IS_K_T(ISV) /= UNDEFINED_I) IS_DEFINED(ISV) = .TRUE.
 
 
          IF(.NOT.IS_DEFINED(ISV)) CYCLE L50
@@ -143,54 +143,54 @@
          ANY_IS_DEFINED = .TRUE.
 
          IF (IS_X_W(ISV)==UNDEFINED .AND. IS_I_W(ISV)==UNDEFINED_I) THEN
-            IF (NO_I) THEN 
-               IS_X_W(ISV) = ZERO 
-            ELSE 
+            IF (NO_I) THEN
+               IS_X_W(ISV) = ZERO
+            ELSE
                WRITE(ERR_MSG,1101) ISV, 'IS_X_w and IS_I_w '
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-            ENDIF 
-         ENDIF 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDIF
 
          IF(IS_X_E(ISV)==UNDEFINED .AND. IS_I_E(ISV)==UNDEFINED_I) THEN
-            IF(NO_I) THEN 
-               IS_X_E(ISV) = XLENGTH 
-            ELSE 
+            IF(NO_I) THEN
+               IS_X_E(ISV) = XLENGTH
+            ELSE
                WRITE(ERR_MSG,1101) ISV, 'IS_X_e and IS_I_e '
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)		  
-            ENDIF 
-         ENDIF 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDIF
          IF(IS_Y_S(ISV)==UNDEFINED .AND. IS_J_S(ISV)==UNDEFINED_I) THEN
-            IF(NO_J) THEN 
-               IS_Y_S(ISV) = ZERO 
-            ELSE 
+            IF(NO_J) THEN
+               IS_Y_S(ISV) = ZERO
+            ELSE
                WRITE(ERR_MSG,1101) ISV, 'IS_Y_s and IS_J_s '
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)		  
-            ENDIF 
-         ENDIF 
-         IF(IS_Y_N(ISV)==UNDEFINED .AND. IS_J_N(ISV)==UNDEFINED_I) THEN 
-            IF(NO_J) THEN 
-               IS_Y_N(ISV) = YLENGTH 
-            ELSE 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDIF
+         IF(IS_Y_N(ISV)==UNDEFINED .AND. IS_J_N(ISV)==UNDEFINED_I) THEN
+            IF(NO_J) THEN
+               IS_Y_N(ISV) = YLENGTH
+            ELSE
                WRITE(ERR_MSG,1101) ISV, 'IS_Y_n and IS_J_n '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
          IF(IS_Z_B(ISV)==UNDEFINED .AND. IS_K_B(ISV)==UNDEFINED_I) THEN
-            IF(NO_K) THEN 
-               IS_Z_B(ISV) = ZERO 
-            ELSE 
+            IF(NO_K) THEN
+               IS_Z_B(ISV) = ZERO
+            ELSE
                WRITE(ERR_MSG,1101) ISV, 'IS_Z_b and IS_K_b '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
          IF(IS_Z_T(ISV)==UNDEFINED .AND. IS_K_T(ISV)==UNDEFINED_I) THEN
-            IF(NO_K) THEN 
-               IS_Z_T(ISV) = ZLENGTH 
-            ELSE 
+            IF(NO_K) THEN
+               IS_Z_T(ISV) = ZLENGTH
+            ELSE
                WRITE(ERR_MSG,1101) ISV, 'IS_Z_t and IS_K_t '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
 
  1101 FORMAT('Error 1101: Internal surface ',I3,' is ill-defined.',/   &
          A,' are not specified.',/'Please correct the mfix.dat file.')
@@ -207,23 +207,23 @@
                SELECT CASE(IS_TYPE(ISV)(1:1))
                CASE('X', 'Y', 'Z'); CYCLE L50
                CASE DEFAULT
-                  WRITE(ERR_MSG, 1102) ISV, IS_TYPE(ISV)(1:1) 
-                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
+                  WRITE(ERR_MSG, 1102) ISV, IS_TYPE(ISV)(1:1)
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
                END SELECT
 
  1102 FORMAT('Error 1102: Internal surface ',I3,' has an invalid ',&
          'prefix: 'A,/'Please correct the mfix.dat file.')
 
-            ENDIF 
-         END DO 
+            ENDIF
+         END DO
          WRITE(ERR_MSG, 1103) trim(iVar('IS_TYPE',ISV)),               &
             trim(IS_TYPE(ISV)), VALID_IS_TYPE
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
  1103 FORMAT('Error 1103: Illegal entry: ',A,' = ',A,/'Valid entries:',&
          ' '4(/5X,A,2x,A))
 
-      ENDDO L50 
+      ENDDO L50
 
       CALL FINL_ERR_MSG
 
@@ -273,23 +273,23 @@
 ! Check that the Darcy coefficient is specifed and valid.
       IF(IS_PC(ISV,1) == UNDEFINED) THEN
          WRITE(ERR_MSG, 1000) trim(iVar('IS_PC',ISV,1))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-      ENDIF 
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
 
       IF(IS_PC(ISV,1) == ZERO) THEN
          WRITE(ERR_MSG, 1001) trim(iVar('IS_PC',ISV,1)), '0.0'
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-      ENDIF 
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
 
 ! Check that the inertial resistance factor is specified.
       IF(IS_PC(ISV,2) == UNDEFINED) THEN
          WRITE(ERR_MSG, 1000) trim(iVar('IS_PC',ISV,2))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-      ENDIF 
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
  1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
          'correct the mfix.dat file.')
@@ -341,18 +341,18 @@
 ! Check that the Darcy coefficient is undefined.
       IF(IS_PC(ISV,1) /= UNDEFINED) THEN
          WRITE(ERR_MSG, 1100) trim(iVar('IS_PC',ISV,1))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
 ! Check that the inertial resistance factor is undefined.
-      IF(IS_PC(ISV,2) /= ZERO) THEN 
+      IF(IS_PC(ISV,2) /= ZERO) THEN
          WRITE(ERR_MSG, 1100) trim(iVar('IS_PC',ISV,2))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-      ENDIF 
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
  1100 FORMAT('Error 1100: ',A,' specified in an undefined IS region')
 

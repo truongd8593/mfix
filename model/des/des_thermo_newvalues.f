@@ -41,7 +41,7 @@
 
 ! Functions
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
       INCLUDE '../function.inc'
 
 
@@ -106,7 +106,7 @@
 ! Update the sum of particle temperatures in fluid cell IJK.
             SUM_T_s = SUM_T_s + DES_T_s_NEW(NP)
          ENDDO lNP_LP ! End loop over all particles
-! Average solids temperature in fluid cell IJK. The average method 
+! Average solids temperature in fluid cell IJK. The average method
 ! (over particles) will need changed for Hybrid model (area? volume?).
          avgDES_T_s(IJK) = SUM_T_s/PINC(IJK)
 
@@ -160,7 +160,7 @@
 
 ! Functions
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
       INCLUDE '../function.inc'
 
       IF(.NOT.ENERGY_EQ) RETURN
@@ -188,7 +188,7 @@
 ! Update the sum of particle temperatures in fluid cell IJK.
             SUM_T_s = SUM_T_s + DES_T_s_NEW(NP)
          ENDDO lNP_LP ! End loop over all particles
-! Average solids temperature in fluid cell IJK. The average method 
+! Average solids temperature in fluid cell IJK. The average method
 ! (over particles) will need changed for Hybrid model (area? volume?).
          avgDES_T_s(IJK) = SUM_T_s/PINC(IJK)
 

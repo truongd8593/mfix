@@ -204,7 +204,7 @@
                WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M))
             ENDIF
 ! magnitude of gas-solids relative velocity
-            VREL = SQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2) 
+            VREL = SQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 
 ! Laminar viscosity at a pressure boundary is given the value of the
 ! fluid cell next to it. This applies just to the calculation of the
@@ -434,7 +434,7 @@
 !  Purpose:                                                            C
 !     Calculate single sphere drag correlation multiplied by           C
 !     the Reynolds number or                                           C
-!     Calculate the single sphere drag correlation                     C      
+!     Calculate the single sphere drag correlation                     C
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
@@ -615,7 +615,7 @@
 ! average particle diameter if PCF
       DOUBLE PRECISION, INTENT(IN) :: DPM
 
-! 
+!
       DOUBLE PRECISION, EXTERNAL :: C_DS_SN
 
 !-----------------------------------------------

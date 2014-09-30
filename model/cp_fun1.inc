@@ -26,7 +26,7 @@
                       CPN2, CPNH3, CPTAR, CPC2H4, CPC2H6, CPC3H8, &
                       CPC6H6, CPFC, CPVM, CPM, CPA
       DOUBLE PRECISION :: CPSiH4, CPSiH2, CPSi2H6, &
-                          CPSi, CPAl2O3 
+                          CPSi, CPAl2O3
 !QX
       DOUBLE PRECISION :: CPGAS, CPBIO, CPBIOCHAR
 !

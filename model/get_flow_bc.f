@@ -2,7 +2,7 @@
 !                                                                      C
 !  Subroutine: GET_FLOW_BC                                             C
 !  Purpose: Find and validate i, j, k locations for flow BC's. Also    C
-!           set value of bc_plane for flow BC's.                       C      
+!           set value of bc_plane for flow BC's.                       C
 !                                                                      C
 !  Author: P. Nicoletti                               Date: 10-DEC-91  C
 !  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 27-JAN-92  C
@@ -24,7 +24,7 @@
 !                   ERROR, X_CONSTANT, Y_CONSTANT, Z_CONSTANT          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE GET_FLOW_BC 
+      SUBROUTINE GET_FLOW_BC
 
       IMPLICIT NONE
 
@@ -32,5 +32,5 @@
 ! Stub file: TBR/JM
 
       RETURN
-      END SUBROUTINE GET_FLOW_BC 
+      END SUBROUTINE GET_FLOW_BC
 

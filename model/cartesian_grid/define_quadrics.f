@@ -9,10 +9,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE DEFINE_QUADRICS
-    
+
       USE param
       USE param1
       USE parallel
@@ -26,7 +26,7 @@
       USE quadric
       USE cutcell
       USE vtk
-      
+
       IMPLICIT NONE
       DOUBLE PRECISION:: x1,x2,x3
       DOUBLE PRECISION, DIMENSION(3,3) :: Rx,Ry,Rz,C_QUADRIC,R_QUADRIC
@@ -48,7 +48,7 @@
         CALL BUILD_Y_ROTATION_MATRIX(Theta_y(QUADRIC_ID), Ry)
         CALL BUILD_Z_ROTATION_MATRIX(Theta_z(QUADRIC_ID), Rz)
         R_QUADRIC = MATMUL(Rz,MATMUL(Ry,Rx))
-!       Build A-matrices  
+!       Build A-matrices
         A_QUADRIC(:,:,QUADRIC_ID) = MATMUL(TRANSPOSE(R_QUADRIC),MATMUL(C_QUADRIC,R_QUADRIC))
 
       END DO
@@ -59,7 +59,7 @@
 
       RETURN
 
-      
+
       END SUBROUTINE DEFINE_QUADRICS
 
 
@@ -86,7 +86,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
         SUBROUTINE GET_F_QUADRIC(x1,x2,x3,Q_ID,f,CLIP_FLAG)
- 
+
       USE parallel
       USE compar
       USE sendrecv
@@ -94,10 +94,10 @@
       USE cutcell
 
       USE quadric
-  
+
 
       IMPLICIT NONE
- 
+
       DOUBLE PRECISION :: x1,x2,x3,xt,yt,zt,R1,R2
       DOUBLE PRECISION :: f,fq,fxe,fxw,fyn,fys,fzt,fzb,fclip
       DOUBLE PRECISION :: fxmin,fxmax,fymin,fymax,fzmin,fzmax
@@ -114,7 +114,7 @@
        PIECE_X = (piece_xmin(Q_ID) <= x1).AND.( x1 <= piece_xmax(Q_ID))
        PIECE_Y = (piece_ymin(Q_ID) <= x2).AND.( x2 <= piece_ymax(Q_ID))
        PIECE_Z = (piece_zmin(Q_ID) <= x3).AND.( x3 <= piece_zmax(Q_ID))
- 
+
        PIECE_FLAG = (PIECE_X.AND.PIECE_Y.AND.PIECE_Z)
 
        IF(.NOT.PIECE_FLAG) THEN
@@ -125,7 +125,7 @@
        CLIP_X = (clip_xmin(Q_ID) <= x1).AND.( x1 <= clip_xmax(Q_ID))
        CLIP_Y = (clip_ymin(Q_ID) <= x2).AND.( x2 <= clip_ymax(Q_ID))
        CLIP_Z = (clip_zmin(Q_ID) <= x3).AND.( x3 <= clip_zmax(Q_ID))
- 
+
        CLIP_FLAG = (CLIP_X.AND.CLIP_Y.AND.CLIP_Z)
 
 
@@ -138,10 +138,10 @@
             xt = x1-t_x(Q_ID)
             yt = x2-t_y(Q_ID)
             zt = x3-t_z(Q_ID)
-                
+
             R1 = Torus_R1(Q_ID)
             R2 = Torus_R2(Q_ID)
-                   
+
             f = -(4*(xt**2+zt**2)*R1**2-(xt**2+yt**2+zt**2+R1**2-R2**2)**2)
 
 
@@ -150,31 +150,31 @@
             xt = x1-t_x(Q_ID)
             yt = x2-t_y(Q_ID)
             zt = x3-t_z(Q_ID)
-                
+
             R1 = Torus_R1(Q_ID)
             R2 = Torus_R2(Q_ID)
-                   
+
             f = 4*(xt**2+zt**2)*R1**2-(xt**2+yt**2+zt**2+R1**2-R2**2)**2
 
 
          ELSE
 
-            CALL BUILD_1x3_MATRIX(x1,x2,x3,X_VECTOR) 
+            CALL BUILD_1x3_MATRIX(x1,x2,x3,X_VECTOR)
 
             XMT = X_VECTOR - T_QUADRIC(:,:,Q_ID)
             TXMT = TRANSPOSE(XMT)
- 
+
             TEMP_1x1 = MATMUL(XMT,MATMUL(A_QUADRIC(:,:,Q_ID),TXMT))
 
             f = TEMP_1x1(1,1) + dquadric(Q_ID)
 
          ENDIF
 
-! Each clipping limit is treated as a plane. For example, fxmin is 
+! Each clipping limit is treated as a plane. For example, fxmin is
 ! the equation of the plane describing x=xmin, and a value of fxmin
 ! is compared with the current value of f to determine if the location
 ! is part of the computational domain. The comparison (min of max)
-! follows the same logis as the 'AND' (max) , or 'OR' (min) 
+! follows the same logis as the 'AND' (max) , or 'OR' (min)
 ! logic when combining two quadrics.
 ! The clipping procedure is ignored when CLIP_FLAG is .FALSE.
 ! This will happen when we are in a 'PIECEWISE' group
@@ -276,12 +276,12 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE REASSSIGN_QUADRIC(x1,x2,x3,GROUP,Q_ID)
- 
+
       USE compar
       USE quadric
 
       IMPLICIT NONE
- 
+
       DOUBLE PRECISION x1,x2,x3
       INTEGER :: I,Q_ID,GROUP,GS,P
       LOGICAL :: PIECE_X,PIECE_Y,PIECE_Z,PIECE_FLAG
@@ -290,7 +290,7 @@
       Q_ID = 0
 
       GS = GROUP_SIZE(GROUP)
-      GR = TRIM(GROUP_RELATION(GROUP)) 
+      GR = TRIM(GROUP_RELATION(GROUP))
 
       IF( GR /= 'PIECEWISE') RETURN
 
@@ -300,7 +300,7 @@
 
          PIECE_X = (piece_xmin(I) <= x1).AND.( x1 <= piece_xmax(I))
          PIECE_Y = (piece_ymin(I) <= x2).AND.( x2 <= piece_ymax(I))
-         PIECE_Z = (piece_zmin(I) <= x3).AND.( x3 <= piece_zmax(I))      
+         PIECE_Z = (piece_zmin(I) <= x3).AND.( x3 <= piece_zmax(I))
 
          PIECE_FLAG = (PIECE_X.AND.PIECE_Y.AND.PIECE_Z)
 
@@ -309,7 +309,7 @@
       ENDDO
 
       IF(Q_ID == 0 ) THEN
-         WRITE(*,*)' No Quadric defined at current location x,y,z=', x1,x2,x3 
+         WRITE(*,*)' No Quadric defined at current location x,y,z=', x1,x2,x3
          WRITE(*,*)' Please Check piecewise limits of quadric(s)'
          WRITE(*,*)' Mfix will exit now.'
          CALL MFIX_EXIT(myPE)
@@ -317,7 +317,7 @@
 
       RETURN
 
-      
+
       END SUBROUTINE REASSSIGN_QUADRIC
 
 
@@ -334,22 +334,22 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE BUILD_1x3_MATRIX(scalar1,scalar2,scalar3,M1x3)
-    
+
       IMPLICIT NONE
-      
+
       DOUBLE PRECISION:: scalar1,scalar2,scalar3
       DOUBLE PRECISION, DIMENSION(1,3) :: M1x3
       M1x3(1,1) = scalar1
-      M1x3(1,2) = scalar2      
-      M1x3(1,3) = scalar3            
+      M1x3(1,2) = scalar2
+      M1x3(1,3) = scalar3
 
       RETURN
-      
+
   END SUBROUTINE BUILD_1x3_MATRIX
-    
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -364,15 +364,15 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE BUILD_C_QUADRIC_MATRIX(lambda1,lambda2,lambda3,C_QUADRIC)
-    
+
       USE param1, only: one, zero
       USE constant, only: pi
 
       IMPLICIT NONE
-      
+
       DOUBLE PRECISION:: lambda1,lambda2,lambda3
       DOUBLE PRECISION, DIMENSION(3,3) :: C_QUADRIC
 
@@ -384,9 +384,9 @@
                                           ZERO     ,   ZERO      ,  lambda3   /),&
                                                                                   (/3,3/)))
       RETURN
-      
+
       END SUBROUTINE BUILD_C_QUADRIC_MATRIX
-    
+
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -401,15 +401,15 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE BUILD_X_ROTATION_MATRIX(Theta, R)
-    
+
       USE param1, only: one, zero
       USE constant, only: pi
 
       IMPLICIT NONE
-      
+
       DOUBLE PRECISION:: Theta
       DOUBLE PRECISION, DIMENSION(3,3) :: R
 
@@ -424,9 +424,9 @@
                                                                                   (/3,3/)))
 
       RETURN
-      
+
       END SUBROUTINE BUILD_X_ROTATION_MATRIX
-    
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: BUILD_Y_ROTATION_MATRIX                                C
@@ -439,15 +439,15 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE BUILD_Y_ROTATION_MATRIX(Theta, R)
-    
+
       USE param1, only: one, zero
       USE constant, only: pi
 
       IMPLICIT NONE
-      
+
       DOUBLE PRECISION:: Theta
       DOUBLE PRECISION, DIMENSION(3,3) :: R
 
@@ -462,7 +462,7 @@
                                                                                 (/3,3/)))
 
       RETURN
-      
+
       END SUBROUTINE BUILD_Y_ROTATION_MATRIX
 
 
@@ -478,15 +478,15 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE BUILD_Z_ROTATION_MATRIX(Theta, R)
-    
+
       USE param1, only: one, zero
       USE constant, only: pi
 
       IMPLICIT NONE
-      
+
       DOUBLE PRECISION:: Theta
       DOUBLE PRECISION, DIMENSION(3,3) :: R
 
@@ -501,7 +501,7 @@
                                                                                  (/3,3/)))
 
       RETURN
-      
+
       END SUBROUTINE BUILD_Z_ROTATION_MATRIX
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -516,10 +516,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CROSS_PRODUCT(A,B,C)
-      
+
       IMPLICIT NONE
       DOUBLE PRECISION, DIMENSION(3) :: A,B,C
 
@@ -528,7 +528,7 @@
       C(3) = A(1) * B(2) - A(2) * B(1)
 
       RETURN
-      
+
       END SUBROUTINE CROSS_PRODUCT
 
 

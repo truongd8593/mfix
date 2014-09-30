@@ -31,7 +31,7 @@
       INTEGER :: lNEXT_REC
       INTEGER :: lDIMN
 
-      DOUBLE PRECISION :: VERSION 
+      DOUBLE PRECISION :: VERSION
 
 
 ! Set the version of the DES RES file.
@@ -73,7 +73,7 @@
          CALL WRITE_RES_pARRAY(lNEXT_REC, DES_T_s_NEW)
 
       IF(ANY_SPECIES_EQ) THEN
-         DO LC1=1, DIMENSION_N_S 
+         DO LC1=1, DIMENSION_N_S
             CALL WRITE_RES_pARRAY(lNEXT_REC, DES_X_s(:,LC1))
          ENDDO
       ENDIF

@@ -3,7 +3,7 @@
 !  Module name: des_stl_functions                                      !
 !  Author: Rahul Garg                                 Date: 24-Oct-13  !
 !                                                                      !
-!  Purpose: This module containd routines for geometric interaction    ! 
+!  Purpose: This module containd routines for geometric interaction    !
 !  required for STL files.                                             !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
@@ -20,7 +20,7 @@
 !  Author: Rahul Garg                                 Date: 24-Oct-13  !
 !                                                                      !
 !  Purpose:                                                            !
-!                                                                      ! 
+!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DES_STL_PREPROCESSING
       USE stl
@@ -39,7 +39,7 @@
       !max_des_facets  = 2*(2*(imax*jmax) + 2*(jmax*kmax) + 2*(kmax*imax))
       !allocate(vertex_des(max_des_facets))
 
-      CALL ALLOCATE_DES_STL_ARRAYS 
+      CALL ALLOCATE_DES_STL_ARRAYS
 
 ! Pre-procssing for the des in order to assign facets to grid cells.
       WRITE(ERR_MSG,"('Pre-Processing geometry for DES.')")
@@ -47,9 +47,9 @@
       N_FACETS_DES = 0
 
 ! Set N_facets_des to add any more facets needed by dem and not to.
-! contaminate the Eulerian-Eulerian CG stuff 
+! contaminate the Eulerian-Eulerian CG stuff
       IF(USE_STL) N_FACETS_DES = N_FACETS
-      !set all the facets generated so far as normal facet types 
+      !set all the facets generated so far as normal facet types
       STL_FACET_TYPE(1:N_FACETS) = FACET_TYPE_NORMAL
 ! Triangulate default walls (bounding box of the simulation)
       CALL CG_DES_CONVERT_TO_FACETS
@@ -65,13 +65,13 @@
       count_facet_type_po     = 0
       count_facet_type_mi     = 0
       DO NF = 1, N_FACETS_DES
-         if(stl_facet_type(nf).eq.facet_type_normal) & 
+         if(stl_facet_type(nf).eq.facet_type_normal) &
               count_facet_type_normal = count_facet_type_normal + 1
-         
-         if(stl_facet_type(nf).eq.facet_type_mi) & 
+
+         if(stl_facet_type(nf).eq.facet_type_mi) &
               count_facet_type_mi = count_facet_type_mi + 1
-         
-         if(stl_facet_type(nf).eq.facet_type_po) & 
+
+         if(stl_facet_type(nf).eq.facet_type_po) &
               count_facet_type_po = count_facet_type_po + 1
       ENDDO
       !CALL DEBUG_WRITE_GRID_FACEINFO
@@ -93,7 +93,7 @@
 !  Author: Rahul Garg                                 Date: 24-Oct-13  !
 !                                                                      !
 !  Purpose:                                                            !
-!                                                                      ! 
+!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE ALLOCATE_DES_STL_ARRAYS
       USE param
@@ -113,7 +113,7 @@
 
       ALLOCATE(NO_NEIGHBORING_FACET_DES(DIMENSION_3))
       NO_NEIGHBORING_FACET_DES = .false.
-      
+
       Allocate(stl_facet_type(DIM_STL))
       END SUBROUTINE ALLOCATE_DES_STL_ARRAYS
 
@@ -435,7 +435,7 @@
 !  Author: Rahul Garg                                 Date: 24-Oct-13  !
 !                                                                      !
 !  Purpose:                                                            !
-!                                                                      ! 
+!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       Subroutine intersectLnPlane(ref_line, dir_line, ref_plane, norm_plane, line_param)
       USE discretelement, only: dimn
@@ -463,21 +463,21 @@
 
       subroutine set_facet_type_normal(facet_type)
         USE discretelement, only: Facet_type_normal
-        Implicit none 
+        Implicit none
         integer, intent(out) :: facet_type
         facet_type = FACET_type_NORMAL
       end subroutine set_facet_type_normal
-      
-      subroutine set_facet_type_po(facet_type)        
+
+      subroutine set_facet_type_po(facet_type)
         USE discretelement, only: Facet_type_po
-        Implicit none 
+        Implicit none
         integer, intent(out) :: facet_type
         facet_type = FACET_type_PO
       end subroutine set_facet_type_po
-      
-      subroutine set_facet_type_mi(facet_type)       
+
+      subroutine set_facet_type_mi(facet_type)
         USE discretelement, only: Facet_type_mi
-        Implicit none 
+        Implicit none
         integer, intent(out) :: facet_type
         facet_type = FACET_type_MI
       end subroutine set_facet_type_mi
@@ -489,7 +489,7 @@
 !  Author: Rahul Garg                                 Date: 24-Oct-13  !
 !                                                                      !
 !  Purpose:                                                            !
-!                                                                      ! 
+!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       Subroutine CG_DES_CONVERT_TO_FACETS
       USE param1
@@ -500,15 +500,15 @@
       USE geometry
       USE compar
       USE error_manager
-      USE cutcell 
+      USE cutcell
       USE bc
-      
+
       USE constant, only: PI
       use discretelement, only: DES_PERIODIC_WALLS_X, DES_PERIODIC_WALLS_Y, &
            & DES_PERIODIC_WALLS_Z, DIMN
-      
-      use discretelement, only: stl_facet_type, facet_type_normal, facet_type_po, & 
-           & facet_type_mi 
+
+      use discretelement, only: stl_facet_type, facet_type_normal, facet_type_po, &
+           & facet_type_mi
       Implicit None
       INTEGER :: I, J, K, L, IJK, NF, COUNT
       INTEGER :: I1, I2, J1, J2, K1, K2
@@ -517,47 +517,47 @@
       double precision :: wall_norm(3), NORM_ANG
 
 
-      !temp array for storing facet normals 
+      !temp array for storing facet normals
       double precision, dimension(:,:), allocatable :: norm_face_temp
-      !temp array for storing facet vertices  
+      !temp array for storing facet vertices
       double precision, dimension(:,:,:), allocatable :: vertex_temp
-      
-      !id's of the new generated facets stored cell-wise 
+
+      !id's of the new generated facets stored cell-wise
       Integer, dimension(:,:), allocatable :: facet_id_cellwise
-      !nummber of new generated facets cell-wise 
+      !nummber of new generated facets cell-wise
       Integer, dimension(:), allocatable :: facet_count_cellwise
 
-      !Temp array for storing facet type 
-      integer, dimension(:), allocatable :: facet_type_temp 
+      !Temp array for storing facet type
+      integer, dimension(:), allocatable :: facet_type_temp
 
-      !temp facet count 
-      Integer :: count_facet_temp 
+      !temp facet count
+      Integer :: count_facet_temp
 
       INCLUDE '../function.inc'
 
       CALL INIT_ERR_MSG("CG_DES_CONVERT_TO_FACETS")
 
-      new_facets_max = (iend3-istart3+1)*(jend3-jstart3+1) + & 
+      new_facets_max = (iend3-istart3+1)*(jend3-jstart3+1) + &
       & (jend3-jstart3+1)*(kend3-kstart3+1) + &
-      & (kend3-kstart3+1)*(iend3-istart3+1) 
-      new_facets_max = 2*2*new_facets_max 
+      & (kend3-kstart3+1)*(iend3-istart3+1)
+      new_facets_max = 2*2*new_facets_max
       !first  "2" multiplicative factor since two similar faces.
-      !second "2" multiplicative factor since each cell is 
-      !broken into two facets 
-      Allocate(facet_type_temp(  new_facets_max  )) 
-      Allocate(norm_face_temp(3, new_facets_max  )) 
+      !second "2" multiplicative factor since each cell is
+      !broken into two facets
+      Allocate(facet_type_temp(  new_facets_max  ))
+      Allocate(norm_face_temp(3, new_facets_max  ))
       allocate(vertex_temp(3,3, new_facets_max   ))
       Allocate(facet_id_cellwise((iend3-istart3+1)*(jend3-jstart3+1)* &
-      & (kend3-kstart3+1), 4 + merge(0,2,no_k) + & 
+      & (kend3-kstart3+1), 4 + merge(0,2,no_k) + &
       & merge(2,0,IMAX.eq.1) + merge(2,0,JMAX.eq.1) + &
       & merge(2,0,KMAX.eq.1)))
-  
+
       Allocate(facet_count_cellwise((iend3-istart3+1)*(jend3-jstart3+1)* &
            & (kend3-kstart3+1)))
 
-      COUNT_FACET_TEMP = 0 
+      COUNT_FACET_TEMP = 0
       facet_id_cellwise = -1
-      facet_count_cellwise = 0 
+      facet_count_cellwise = 0
       facet_type_temp = FACET_TYPE_NORMAL
 
       I = IMIN1 !West Face
@@ -591,7 +591,7 @@
 
             facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
             facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
-         
+
             VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
             VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
             VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
@@ -613,7 +613,7 @@
 
             facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
             facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
-          
+
             VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
             VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
             VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
@@ -695,11 +695,11 @@
             VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
             VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
 
-            
+
          enddo
       enddo
 
-      IF(DO_K) THEN      
+      IF(DO_K) THEN
          K = KMIN1 !bottom face
          DO J = JMIN1, JMAX1
             IF(DES_PERIODIC_WALLS_Z) EXIT
@@ -767,179 +767,179 @@
          enddo
       endif
 
-! Now deactivate the facets that are on the outlfow plane 
-      DO L = 1, DIMENSION_BC 
-         IF (BC_DEFINED(L)) THEN 
+! Now deactivate the facets that are on the outlfow plane
+      DO L = 1, DIMENSION_BC
+         IF (BC_DEFINED(L)) THEN
             IF (BC_TYPE(L)=='NO_SLIP_WALL' .OR. BC_TYPE(L)=='FREE_SLIP_WALL'&
-                 .OR. BC_TYPE(L)=='PAR_SLIP_WALL' .or. bc_type(L) .eq. 'CG_NSW') THEN 
-               !do nothing 
-            ELSEIF (BC_TYPE(L)=='P_OUTFLOW' ) THEN 
-               IF(.not.BC_PO_APPLY_TO_DES(L)) THEN 
-                  write(err_msg,'(/2x,A,2x,i4,2x,A,/2x,A)') & 
+                 .OR. BC_TYPE(L)=='PAR_SLIP_WALL' .or. bc_type(L) .eq. 'CG_NSW') THEN
+               !do nothing
+            ELSEIF (BC_TYPE(L)=='P_OUTFLOW' ) THEN
+               IF(.not.BC_PO_APPLY_TO_DES(L)) THEN
+                  write(err_msg,'(/2x,A,2x,i4,2x,A,/2x,A)') &
                        'Pressure outflow  BC # ', L, &
                        ' will not be applied to the discrete phase', &
                        'i.e., particles will not exit the domain from this boundary plane'
-                  
+
                   CALL flush_err_msg
-                  
+
                   CYCLE
                ENDIF
-               I1 = BC_I_W(L) 
-               I2 = BC_I_E(L) 
-               J1 = BC_J_S(L) 
-               J2 = BC_J_N(L) 
-               K1 = BC_K_B(L) 
-               K2 = BC_K_T(L) 
-               DO K = K1, K2 
-                  DO J = J1, J2 
-                     DO I = I1, I2  
+               I1 = BC_I_W(L)
+               I2 = BC_I_E(L)
+               J1 = BC_J_S(L)
+               J2 = BC_J_N(L)
+               K1 = BC_K_B(L)
+               K2 = BC_K_T(L)
+               DO K = K1, K2
+                  DO J = J1, J2
+                     DO I = I1, I2
                         IF (.NOT.IS_ON_myPE_plus2layers(I, J, K)) CYCLE
                         !IF (DEAD_CELL_AT(I,J,K)) CYCLE ! skip dead cells
                         INEW = I
-                        JNEW = J 
-                        KNEW = K 
+                        JNEW = J
+                        KNEW = K
 
-                        WALL_NORM(:) = ZERO 
-                        SELECT CASE (TRIM(BC_PLANE(L)))  
-                        CASE ('E') 
+                        WALL_NORM(:) = ZERO
+                        SELECT CASE (TRIM(BC_PLANE(L)))
+                        CASE ('E')
                            INEW = I+1
                            WALL_NORM(1) = ONE
                            !the normal points into the fluid
-                        CASE ('W')  
-                           INEW = I-1 
+                        CASE ('W')
+                           INEW = I-1
                            WALL_NORM(1) = -ONE
-                        CASE ('N')  
+                        CASE ('N')
                            JNEW = J+1
                            WALL_NORM(2) = ONE
-                        CASE ('S')  
+                        CASE ('S')
                            JNEW = J-1
                            WALL_NORM(2) = -ONE
-                        CASE ('T')  
+                        CASE ('T')
                            KNEW = K+1
                            WALL_NORM(3) = ONE
-                        CASE ('B')  
+                        CASE ('B')
                            KNEW = K-1
                            WALL_NORM(3) = -ONE
-                        END SELECT 
+                        END SELECT
 
 
-! If a pressure outflow BC is specified, then it is important 
-! to flag fluid cells from where particles can exit. Recall that 
+! If a pressure outflow BC is specified, then it is important
+! to flag fluid cells from where particles can exit. Recall that
 ! earlier all fluid (emphasis on fluid) cells next to ghost cells
 ! were set up as normal walls for particle reflection. Now need to
-! look at the specified exits and RE-flag (emphasis on RE) the 
-! fluid cells appropriately. 
-! in the mfix convention, if the northmost face (Y=ylength) is 
-! specified 
+! look at the specified exits and RE-flag (emphasis on RE) the
+! fluid cells appropriately.
+! in the mfix convention, if the northmost face (Y=ylength) is
+! specified
 ! as PO, then J1 = J2 = IMAX+2 or IMAX2, which is the ghost cell.
 ! Since the BC plane is at the bottom of this ghost cell, BC_PLane
-! is set as 'S' in the native mfix pre-processing. 
+! is set as 'S' in the native mfix pre-processing.
 
-                        IJK = FUNIJK(INEW,JNEW,KNEW) 
-! This is the cell where the new bc will go 
+                        IJK = FUNIJK(INEW,JNEW,KNEW)
+! This is the cell where the new bc will go
 
 ! plus 1 layer is the extent of the conversion above, so limiting
                         ! to plus 1 layer here
-                        !write(*,*) 'IJK =', INEW, JNEW, KNEW, IJK,facet_id_cellwise(IJK,1) 
+                        !write(*,*) 'IJK =', INEW, JNEW, KNEW, IJK,facet_id_cellwise(IJK,1)
                         IF (.NOT.IS_ON_myPE_plus1layer(INEW, JNEW, KNEW)) CYCLE
                         IF(.not.fluid_at(ijk)) cycle
-                        
+
                         DO COUNT = 1, facet_count_cellwise(IJK)
                            NF = facet_id_cellwise(IJK,COUNT)
-                           NORM_ANG = 180.d0*(ACOS(DOT_PRODUCT( & 
+                           NORM_ANG = 180.d0*(ACOS(DOT_PRODUCT( &
                                 & WALL_NORM(1:DIMN), norm_face_temp(1:DIMN, NF))))/PI
                            IF(NORM_ANG.eq.zero) FACET_TYPE_TEMP(NF) = FACET_TYPE_PO
                         ENDDO
-                        
+
                      end DO
                   end DO
                end DO
-               
-            ELSEIF (BC_TYPE(L)=='MASS_INFLOW' ) THEN 
-               IF(BC_MI_AS_WALL_FOR_DES(L)) THEN 
+
+            ELSEIF (BC_TYPE(L)=='MASS_INFLOW' ) THEN
+               IF(BC_MI_AS_WALL_FOR_DES(L)) THEN
                   !This is the default particle-wall behavior for
-                  !inflow plane. The facets defined above will not 
+                  !inflow plane. The facets defined above will not
                   !be reflagged as MI
                   CYCLE
                ENDIF
-               
-               write(err_msg,'(/2x,A,2x,i4,2x,A,/2x,A)') & 
+
+               write(err_msg,'(/2x,A,2x,i4,2x,A,/2x,A)') &
                     'Inflow plane for MI BC # ', L, &
                     'will not be treated as a wall for discrete phase', &
                     'De-activating the facets in this MIs plane'
                CALL flush_err_msg
 
-               I1 = BC_I_W(L) 
-               I2 = BC_I_E(L) 
-               J1 = BC_J_S(L) 
-               J2 = BC_J_N(L) 
-               K1 = BC_K_B(L) 
-               K2 = BC_K_T(L) 
-               DO K = K1, K2 
-                  DO J = J1, J2 
-                     DO I = I1, I2  
+               I1 = BC_I_W(L)
+               I2 = BC_I_E(L)
+               J1 = BC_J_S(L)
+               J2 = BC_J_N(L)
+               K1 = BC_K_B(L)
+               K2 = BC_K_T(L)
+               DO K = K1, K2
+                  DO J = J1, J2
+                     DO I = I1, I2
                         IF (.NOT.IS_ON_myPE_plus2layers(I, J, K)) CYCLE
 
                         !IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
-                        
-                        INEW = I
-                        JNEW = J 
-                        KNEW = K 
-                        
-                        WALL_NORM(:) = ZERO 
 
-                        SELECT CASE (TRIM(BC_PLANE(L)))  
-                        CASE ('E') 
+                        INEW = I
+                        JNEW = J
+                        KNEW = K
+
+                        WALL_NORM(:) = ZERO
+
+                        SELECT CASE (TRIM(BC_PLANE(L)))
+                        CASE ('E')
                            INEW = I+1
                            WALL_NORM(1) = ONE
                            !the normal points into the fluid
-                        CASE ('W')  
-                           INEW = I-1 
+                        CASE ('W')
+                           INEW = I-1
                            WALL_NORM(1) = -ONE
-                        CASE ('N')  
+                        CASE ('N')
                            JNEW = J+1
                            WALL_NORM(2) = ONE
-                        CASE ('S')  
+                        CASE ('S')
                            JNEW = J-1
                            WALL_NORM(2) = -ONE
-                        CASE ('T')  
+                        CASE ('T')
                            KNEW = K+1
                            WALL_NORM(3) = ONE
-                        CASE ('B')  
+                        CASE ('B')
                            KNEW = K-1
                            WALL_NORM(3) = -ONE
-                        END SELECT 
+                        END SELECT
                         IJK = FUNIJK(INEW,JNEW,KNEW)
-                        ! This is the cell where the new bc will go 
+                        ! This is the cell where the new bc will go
 
                         ! plus 1 layer is the extent of the conversion above, so limiting
                         ! to plus 1 layer here
                         IF (.NOT.IS_ON_myPE_plus1layer(INEW, JNEW, KNEW)) CYCLE
                         IF(.not.fluid_at(ijk)) cycle
-                        
+
                         DO COUNT = 1, facet_count_cellwise(IJK)
                            NF = facet_id_cellwise(IJK,COUNT)
-                           NORM_ANG = 180.d0*(ACOS(DOT_PRODUCT( & 
+                           NORM_ANG = 180.d0*(ACOS(DOT_PRODUCT( &
                                 & WALL_NORM(1:DIMN), norm_face_temp(1:DIMN, NF))))/PI
                            IF(NORM_ANG.eq.zero) FACET_TYPE_TEMP(NF) = FACET_TYPE_MI
                         ENDDO
 
-                        
+
                      end DO
                   end DO
                end DO
             ELSE
-               
-               WRITE(ERR_MSG, '(2(/2x,A))') 'Error with DES BC pre-processing', & 
+
+               WRITE(ERR_MSG, '(2(/2x,A))') 'Error with DES BC pre-processing', &
                     'THIS WALL BC', BC_TYPE(L),'  Is not supported for discrete phase'
-               
+
                CALL flush_err_msg(Abort = .true.)
-               
+
             end IF
-               
+
          end IF
       end DO
-      
+
       DO COUNT = 1, COUNT_FACET_TEMP
          N_FACETS_DES = N_FACETS_DES + 1
          NF = N_FACETS_DES
@@ -950,7 +950,7 @@
          STL_FACET_TYPE(NF) = facet_type_temp(COUNT)
       ENDDO
 
-      DEAllocate(norm_face_temp, vertex_temp, facet_type_temp, & 
+      DEAllocate(norm_face_temp, vertex_temp, facet_type_temp, &
            & facet_id_cellwise, facet_count_cellwise)
 
       CALL FINL_ERR_MSG
@@ -962,7 +962,7 @@
 !  Author: Rahul Garg                                 Date: 24-Oct-13  !
 !                                                                      !
 !  Purpose:                                                            !
-!                                                                      ! 
+!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       Subroutine BIN_FACETS_TO_GRID_DES
 
@@ -982,7 +982,7 @@
 
       INTEGER :: IJK2,CURRENT_I,CURRENT_J,CURRENT_K
 
-      include "../function.inc"    
+      include "../function.inc"
 
 !      CHARACTER (LEN=3) :: CAD_PROPAGATE_ORDER
 
@@ -1266,7 +1266,7 @@
 !  Author: Rahul Garg                                 Date: 24-Oct-13  !
 !                                                                      !
 !  Purpose:                                                            !
-!                                                                      ! 
+!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DEBUG_WRITE_GRID_FACEINFO
       USE param
@@ -1321,7 +1321,7 @@
 !  Author: Rahul Garg                                 Date: 24-Oct-13  !
 !                                                                      !
 !  Purpose:                                                            !
-!                                                                      ! 
+!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       Subroutine  DEBUG_write_all_readin_facets
       USE stl
@@ -1363,7 +1363,7 @@
 !  Author: Rahul Garg                                 Date: 24-Oct-13  !
 !                                                                      !
 !  Purpose:                                                            !
-!                                                                      ! 
+!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       Subroutine  DEBUG_write_stl_from_grid_facet(WRITE_FACETS_EACH_CELL)
       use run
@@ -1372,7 +1372,7 @@
       USE geometry
       USE indices
       USE compar
-      USE discretelement, only: STL_FACET_TYPE, FACET_TYPE_NORMAL, & 
+      USE discretelement, only: STL_FACET_TYPE, FACET_TYPE_NORMAL, &
            FACET_TYPE_MI, FACET_TYPE_PO, COUNT_FACET_TYPE_NORMAL, &
            COUNT_FACET_TYPE_MI, COUNT_FACET_TYPE_PO
 
@@ -1407,8 +1407,8 @@
          write(filename_po,'(A,"_GEOM_OTHER_FROM_GRID_FACETS",".stl")')  &
               trim(run_name)
       endif
-      
-      if(count_facet_type_po.ge.1) then 
+
+      if(count_facet_type_po.ge.1) then
          OPEN(UNIT=443, FILE=trim(filename_po))
          write(443,*)'solid vcg'
       endif
@@ -1427,7 +1427,7 @@
                   write(filename, '(A,"_geom_nor_", i3.3, "_", i3.3, "_", i3.3,"_" , i8.8, ".stl")') trim(run_name) , I,J,K,CELL_ID
                   OPEN(UNIT=446, FILE=filename)
                   write(446,*)'solid vcg'
-                  
+
                   write(filename_po, '(A,"_geom_other_", i3.3, "_", i3.3, "_", i3.3,"_" , i8.8, ".stl")') trim(run_name) , I,J,K,CELL_ID
                   OPEN(UNIT=445, FILE=filename_po)
                   write(445,*)'solid vcg'
@@ -1437,10 +1437,10 @@
                   N = LIST_FACET_AT_DES(CELL_ID)%FACET_LIST(COUNT)
 
                   if(write_each_cell) then
-                     if(stl_facet_type(N).eq.facet_type_normal) then 
+                     if(stl_facet_type(N).eq.facet_type_normal) then
                         w_unit  = 446
                      else
-                     !elseif(stl_facet_type(N).eq.facet_type_po) then 
+                     !elseif(stl_facet_type(N).eq.facet_type_po) then
                         w_unit  = 445
                      endif
                      write(w_unit,*) '   facet normal ', NORM_FACE(:,N)
@@ -1452,16 +1452,16 @@
                      write(w_unit,*) '   endfacet'
 
                   end if
-                  
+
                   if (facet_written(n)) cycle
-                  
-                  if(stl_facet_type(N).eq.facet_type_normal) then 
+
+                  if(stl_facet_type(N).eq.facet_type_normal) then
                      w_unit  = 444
                   else
-                  !elseif(stl_facet_type(N).eq.facet_type_po) then 
+                  !elseif(stl_facet_type(N).eq.facet_type_po) then
                      w_unit  = 443
                   endif
-                  
+
                   write(w_unit,*) '   facet normal ', NORM_FACE(:,N)
                   write(w_unit,*) '      outer loop'
                   write(w_unit,*) '         vertex ', VERTEX(1,1:3,N)
@@ -1475,7 +1475,7 @@
                if(write_each_cell) then
                   write(445,*)'endsolid vcg'
                   close(445)
-                                    
+
                   write(446,*)'endsolid vcg'
                   close(446)
                endif
@@ -1486,7 +1486,7 @@
       write(444,*)'endsolid vcg'
       close(444)
 
-      if(count_facet_type_po.gt.0) then 
+      if(count_facet_type_po.gt.0) then
          write(443,*)'endsolid vcg'
          close(443)
       ENDIF
@@ -1507,9 +1507,9 @@
 !  Author: Rahul Garg                                 Date: 24-Oct-13  !
 !                                                                      !
 !  Purpose: Return the coordinate of the I/J/K for direction IDIR.     !
-!                                                                      ! 
+!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      DOUBLE PRECISION FUNCTION GET_NODES(I, J, K, IDIR) 
+      DOUBLE PRECISION FUNCTION GET_NODES(I, J, K, IDIR)
 
 ! Scalar grid face locations.
       use discretelement, only: XE, YN, ZT
@@ -1518,7 +1518,7 @@
 ! Flag: Use Kth direction.
       use geometry, only: DO_K, ZLENGTH
 
-      use error_manager 
+      use error_manager
 
       IMPLICIT NONE
 
@@ -1550,6 +1550,6 @@
       RETURN
       END FUNCTION GET_NODES
 
-      END MODULE DES_STL_FUNCTIONS      
+      END MODULE DES_STL_FUNCTIONS
 
 

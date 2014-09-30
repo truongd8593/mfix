@@ -93,7 +93,7 @@
 ! Finalize the error manager.
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
  1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
          'correct the mfix.dat file.')

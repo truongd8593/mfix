@@ -9,10 +9,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SEND_RECEIVE_CUT_CELL_VARIABLES
-    
+
       USE param
       USE param1
       USE parallel
@@ -20,7 +20,7 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
@@ -259,7 +259,7 @@
 
       RETURN
 
-      
+
       END SUBROUTINE SEND_RECEIVE_CUT_CELL_VARIABLES
 
 
@@ -276,10 +276,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SEND_RECEIVE_1D_LOGICAL(L1D,NLAYERS)
-    
+
       USE param
       USE param1
       USE parallel
@@ -287,7 +287,7 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
@@ -303,7 +303,7 @@
       IF((NLAYERS/=1).AND.(NLAYERS/=2)) THEN
          WRITE(*,*)' NLAYERS=',NLAYERS
          WRITE(*,*)' SEND_RECEIVE_1D_LOGICAL ERROR: NLAYER MUST BE EQUAL TO 1 or 2'
-         CALL MFIX_EXIT(MYPE)             
+         CALL MFIX_EXIT(MYPE)
       ENDIF
 
       DO IJK = IJKSTART3, IJKEND3
@@ -327,7 +327,7 @@
 
       RETURN
 
-      
+
       END SUBROUTINE SEND_RECEIVE_1D_LOGICAL
 
 

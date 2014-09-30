@@ -32,8 +32,8 @@
    30 continue
       return
       end
- 
- 
+
+
       subroutine  ccopy(n,cx,incx,cy,incy)
 !
 !     copies a vector, x, to a vector, y.
@@ -107,7 +107,7 @@
       cdotc = ctemp
       return
       end
- 
+
 
       complex function cdotu(n,cx,incx,cy,incy)
 !
@@ -192,7 +192,7 @@
       return
       end
 
- 
+
       subroutine crotg(ca,cb,c,s)
       complex ca,cb,s
       real c
@@ -213,8 +213,8 @@
    20 continue
       return
       end
- 
- 
+
+
       subroutine  cscal(n,ca,cx,incx)
 !
 !     scales a vector by a constant.
@@ -243,8 +243,8 @@
    30 continue
       return
       end
- 
- 
+
+
       subroutine  csscal(n,sa,cx,incx)
 !
 !     scales a complex vector by a real constant.
@@ -274,8 +274,8 @@
    30 continue
       return
       end
- 
- 
+
+
       subroutine  cswap (n,cx,incx,cy,incy)
 !
 !     interchanges two vectors.
@@ -312,8 +312,8 @@
    30 continue
       return
       end
- 
- 
+
+
       subroutine daxpy(n,da,dx,incx,dy,incy)
 !
 !     constant times a vector plus a vector.
@@ -362,7 +362,7 @@
    50 continue
       return
       end
- 
+
       subroutine  dcopy(n,dx,incx,dy,incy)
 !
 !     copies a vector, x, to a vector, y.
@@ -413,8 +413,8 @@
    50 continue
       return
       end
- 
- 
+
+
       subroutine  drot (n,dx,incx,dy,incy,c,s)
 !
 !     applies a plane rotation.
@@ -566,8 +566,8 @@
 !
       END
 
- 
- 
+
+
       subroutine drotg(da,db,c,s)
 !
 !     construct givens plane rotation.
@@ -595,8 +595,8 @@
       db = z
       return
       end
- 
- 
+
+
       SUBROUTINE DROTM (N,DX,INCX,DY,INCY,DPARAM)
 !
 !     APPLY THE MODIFIED GIVENS TRANSFORMATION, H, TO THE 2 BY N MATRIX
@@ -705,8 +705,8 @@
   140     CONTINUE
           RETURN
           END
- 
- 
+
+
       SUBROUTINE DROTMG (DD1,DD2,DX1,DY1,DPARAM)
 !
 !     CONSTRUCT THE MODIFIED GIVENS TRANSFORMATION MATRIX H WHICH ZEROS
@@ -876,8 +876,8 @@
           DPARAM(1)=DFLAG
           RETURN
       END
- 
- 
+
+
 ! *DECK DSDOT
       DOUBLE PRECISION FUNCTION DSDOT (N, SX, INCX, SY, INCY)
 !***BEGIN PROLOGUE  DSDOT
@@ -953,9 +953,9 @@
       RETURN
       END
 
- 
- 
- 
+
+
+
       subroutine  dscal(n,da,dx,incx)
 !
 !     scales a vector by a constant.
@@ -999,8 +999,8 @@
    50 continue
       return
       end
- 
- 
+
+
       subroutine  dswap (n,dx,incx,dy,incy)
 !
 !     interchanges two vectors.
@@ -1185,7 +1185,7 @@
       return
       end
 
- 
+
       real function sasum(n,sx,incx)
 !
 !     takes the sum of the absolute values.
@@ -1268,7 +1268,7 @@
       return
       end
 
- 
+
       subroutine saxpy(n,sa,sx,incx,sy,incy)
 !
 !     constant times a vector plus a vector.
@@ -1317,8 +1317,8 @@
    50 continue
       return
       end
- 
- 
+
+
       subroutine scopy(n,sx,incx,sy,incy)
 !
 !     copies a vector, x, to a vector, y.
@@ -1369,8 +1369,8 @@
    50 continue
       return
       end
- 
- 
+
+
       subroutine srot (n,sx,incx,sy,incy,c,s)
 !
 !     applies a plane rotation.
@@ -1408,8 +1408,8 @@
    30 continue
       return
       end
- 
- 
+
+
       subroutine srotg(sa,sb,c,s)
 !
 !     construct givens plane rotation.
@@ -1437,8 +1437,8 @@
       sb = z
       return
       end
- 
- 
+
+
       SUBROUTINE SROTM (N,SX,INCX,SY,INCY,SPARAM)
 !
 !     APPLY THE MODIFIED GIVENS TRANSFORMATION, H, TO THE 2 BY N MATRIX
@@ -1545,8 +1545,8 @@
   140     CONTINUE
           RETURN
           END
- 
- 
+
+
       SUBROUTINE SROTMG (SD1,SD2,SX1,SY1,SPARAM)
 !
 !     CONSTRUCT THE MODIFIED GIVENS TRANSFORMATION MATRIX H WHICH ZEROS
@@ -1713,8 +1713,8 @@
           SPARAM(1)=SFLAG
           RETURN
       END
- 
- 
+
+
       subroutine sscal(n,sa,sx,incx)
 !
 !     scales a vector by a constant.
@@ -1758,8 +1758,8 @@
    50 continue
       return
       end
- 
- 
+
+
       subroutine sswap (n,sx,incx,sy,incy)
 !
 !     interchanges two vectors.
@@ -1816,9 +1816,9 @@
    50 continue
       return
       end
- 
- 
- 
+
+
+
        REAL             FUNCTION SCNRM2( N, X, INCX )
 !     .. Scalar Arguments ..
       INTEGER                           INCX, N

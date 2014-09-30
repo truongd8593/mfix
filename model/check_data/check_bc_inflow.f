@@ -65,7 +65,7 @@
       INTEGER :: INERT
 
       DOUBLE PRECISION, EXTERNAL :: EOSS
-      LOGICAL , EXTERNAL :: COMPARE 
+      LOGICAL , EXTERNAL :: COMPARE
 
 
       CALL INIT_ERR_MSG("CHECK_BC_MASS_INFLOW")
@@ -156,7 +156,7 @@
          BC_EP_S(BCV,1) = ONE - BC_EP_g(BCV)
       ENDIF
 
-! Bulk density or solids volume fraction must be explicitly defined 
+! Bulk density or solids volume fraction must be explicitly defined
 ! if there are more than one solids phase.
       IF(M_TOT > 1 .AND. .NOT.COMPARE(BC_EP_g(BCV),ONE)) THEN
          DO M = 1, M_TOT
@@ -232,7 +232,7 @@
                BC_X_S(BCV,M,:) = ZERO
                BC_X_S(BCV,M,1) = ONE
             ENDIF
-         ENDIF 
+         ENDIF
 
 ! Set the solids density for the BC region.
          IF(.NOT.SOLVE_ROs(M)) THEN
@@ -245,7 +245,7 @@
             IF(BC_X_S(BCV,M,INERT) == ZERO) THEN
                WRITE(ERR_MSG,1213) M, BCV
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
+            ENDIF
 
 ! Calculate the solids density.
             BC_ROs(M) = EOSS(BASE_ROs(M), X_s0(M,INERT),               &
@@ -302,11 +302,11 @@
          IF(ENERGY_EQ .AND. BC_T_S(BCV,M)==UNDEFINED) THEN
             IF(SKIP(M)) THEN
                BC_T_S(BCV,M) = BC_T_G(BCV)
-            ELSE 
+            ELSE
                WRITE(ERR_MSG, 1000) trim(iVar('BC_T_s',BCV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
 
 ! Check granular energy dependency
          IF(GRANULAR_ENERGY) THEN
@@ -316,9 +316,9 @@
                ELSE
                   WRITE(ERR_MSG,1000) trim(iVar('BC_Theta_m',BCV,M))
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-               ENDIF 
+               ENDIF
             ENDIF
-         ENDIF 
+         ENDIF
       ENDDO
 
 ! Check K-Epsilon BCs.
@@ -330,15 +330,15 @@
          ELSEIF(BC_E_Turb_G(BCV) == UNDEFINED) THEN
             WRITE(ERR_MSG, 1000) trim(iVar('BC_E_Turb_G',BCV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
+         ENDIF
       ENDIF
 
 ! Check scalar equation BCs.
       DO N = 1, NScalar
-         IF(BC_Scalar(BCV,N) == UNDEFINED) THEN 
+         IF(BC_Scalar(BCV,N) == UNDEFINED) THEN
             WRITE(ERR_MSG, 1001) trim(iVar('BC_Scalar',BCV,N))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
+         ENDIF
       ENDDO
 
       CALL FINL_ERR_MSG
@@ -376,15 +376,15 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE fldvar
       USE physprop
       USE run
       USE bc
       USE indices
-      USE funits 
+      USE funits
       USE scalars
       USE compar
       USE sendrecv
@@ -412,36 +412,36 @@
       DOUBLE PRECISION SUM, SUM_EP
 
       DOUBLE PRECISION, EXTERNAL :: EOSS
-      LOGICAL , EXTERNAL :: COMPARE 
+      LOGICAL , EXTERNAL :: COMPARE
 
 
 
       CALL INIT_ERR_MSG("CHECK_BC_P_INFLOW")
 
 
-      IF (BC_EP_G(BCV) == UNDEFINED) THEN 
-         WRITE(ERR_MSG,1000) 'BC_EP_g', BCV 
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-      ENDIF 
+      IF (BC_EP_G(BCV) == UNDEFINED) THEN
+         WRITE(ERR_MSG,1000) 'BC_EP_g', BCV
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
 
-      IF (BC_P_G(BCV) == UNDEFINED) THEN 
-         WRITE(ERR_MSG,1000) 'BC_P_g', BCV 
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-      ELSEIF (BC_P_G(BCV)<=ZERO .AND. RO_G0==UNDEFINED) THEN 
+      IF (BC_P_G(BCV) == UNDEFINED) THEN
+         WRITE(ERR_MSG,1000) 'BC_P_g', BCV
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF (BC_P_G(BCV)<=ZERO .AND. RO_G0==UNDEFINED) THEN
          WRITE(ERR_MSG, 1101) BCV, trim(iVal(BC_P_G(BCV)))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
  1101 FORMAT('Error 1101: Pressure must be greater than zero for ',    &
          'compressible flow',/' >>>  BC_P_g(',I3,') = ',A,/'Please ',  &
          'correct the mfix.dat file.')
 
-      ENDIF 
+      ENDIF
 
       IF((ENERGY_EQ .OR. RO_G0==UNDEFINED .OR. MU_G0==UNDEFINED) .AND. &
          BC_T_G(BCV) == UNDEFINED) THEN
-         WRITE(ERR_MSG,1000) 'BC_T_g', BCV 
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-      ENDIF 
+         WRITE(ERR_MSG,1000) 'BC_T_g', BCV
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
 
 ! Sum together defiend gas phase species mass fractions.
       SUM = ZERO
@@ -451,7 +451,7 @@
          ELSE
             BC_X_G(BCV,N) = ZERO
          ENDIF
-      ENDDO 
+      ENDDO
 
 ! Enforce that the species mass fractions must sum to one.
       IF(.NOT.COMPARE(ONE,SUM)) THEN
@@ -487,7 +487,7 @@
       ENDIF
 
 
-! Bulk density or solids volume fraction must be explicitly defined 
+! Bulk density or solids volume fraction must be explicitly defined
 ! if there are more than one solids phase.
       IF(M_TOT > 1) THEN
          DO M = 1, M_TOT
@@ -559,7 +559,7 @@
                BC_X_S(BCV,M,:) = ZERO
                BC_X_S(BCV,M,1) = ONE
             ENDIF
-         ENDIF 
+         ENDIF
 
 
 ! Set the solids density for the BC region.
@@ -573,7 +573,7 @@
             IF(BC_X_S(BCV,M,INERT) == ZERO) THEN
                WRITE(ERR_MSG,1213) M, BCV
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
+            ENDIF
 
 ! Calculate the solids density.
             BC_ROs(M) = EOSS(BASE_ROs(M), X_s0(M,INERT),               &
@@ -630,11 +630,11 @@
          IF(ENERGY_EQ .AND. BC_T_S(BCV,M)==UNDEFINED) THEN
             IF(SKIP(M)) THEN
                BC_T_S(BCV,M) = BC_T_G(BCV)
-            ELSE 
+            ELSE
                WRITE(ERR_MSG, 1000) trim(iVar('BC_T_s',BCV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
 
 ! Check granular energy dependency
          IF(GRANULAR_ENERGY) THEN
@@ -644,21 +644,21 @@
                ELSE
                   WRITE(ERR_MSG,1000) trim(iVar('BC_Theta_m',BCV,M))
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-               ENDIF 
+               ENDIF
             ENDIF
-         ENDIF 
+         ENDIF
       ENDDO
 
 ! Check that velocities are also specified. These are essentially used
 ! as initial conditions for the boundary region. If they are not
-! specified then a deafult value is set here otherwise check_data_20 
+! specified then a deafult value is set here otherwise check_data_20
 ! will complain and cause MFIX to exit.
       IF(BC_U_G(BCV) == UNDEFINED) THEN
-         BC_U_G(BCV) = ZERO 
+         BC_U_G(BCV) = ZERO
          IF(.NOT.NO_I) WRITE(ERR_MSG, 1300) trim(iVar('BC_U_g',BCV))
-      ENDIF 
+      ENDIF
 
-      IF(BC_V_G(BCV) == UNDEFINED) THEN 
+      IF(BC_V_G(BCV) == UNDEFINED) THEN
          BC_V_G(BCV) = ZERO
          IF(.NOT.NO_J) WRITE(ERR_MSG, 1300) trim(iVar('BC_V_g',BCV))
       ENDIF
@@ -673,7 +673,7 @@
             BC_U_S(BCV,M) = ZERO
             IF(BC_ROP_S(BCV,M) /= ZERO .AND. .NOT.NO_I) &
                WRITE(ERR_MSG, 1300) trim(iVar('BC_U_s',BCV,M))
-         ENDIF 
+         ENDIF
 
          IF(BC_V_S(BCV,M) == UNDEFINED) THEN
             BC_V_S(BCV,M) = ZERO
@@ -685,7 +685,7 @@
             BC_W_S(BCV,M) = ZERO
             IF(BC_ROP_S(BCV,M) /= ZERO .AND. .NOT.NO_K) &
                WRITE(ERR_MSG, 1300) trim(iVar('BC_W_s',BCV,M))
-         ENDIF 
+         ENDIF
       ENDDO
 
  1300 FORMAT('Warning 1300: ',A,' was undefined for BC',I3'. This ',   &

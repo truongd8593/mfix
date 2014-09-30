@@ -20,18 +20,18 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      DOUBLE PRECISION FUNCTION EOSG (MW, PG, TG) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      DOUBLE PRECISION FUNCTION EOSG (MW, PG, TG)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE constant
       USE physprop
-      USE scales 
+      USE scales
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -39,22 +39,22 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      DOUBLE PRECISION MW, PG, TG 
+      DOUBLE PRECISION MW, PG, TG
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      DOUBLE PRECISION :: XXX 
+      DOUBLE PRECISION :: XXX
 !-----------------------------------------------
       INCLUDE 'sc_p_g1.inc'
       INCLUDE 'sc_p_g2.inc'
 !
-      EOSG = UNSCALE(PG)*MW/(GAS_CONST*TG) 
+      EOSG = UNSCALE(PG)*MW/(GAS_CONST*TG)
 !
-      RETURN  
-      END FUNCTION EOSG 
+      RETURN
+      END FUNCTION EOSG
 !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -77,18 +77,18 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      DOUBLE PRECISION FUNCTION DROODP_G (ROG, PG) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      DOUBLE PRECISION FUNCTION DROODP_G (ROG, PG)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE constant
       USE physprop
-      USE scales 
+      USE scales
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -99,7 +99,7 @@
 !                      gas density
 !
 !                      Gas pressure
-      DOUBLE PRECISION ROG, PG 
+      DOUBLE PRECISION ROG, PG
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
@@ -109,7 +109,7 @@
 !-----------------------------------------------
 !
 !
-      DROODP_G = ROG/(PG + P_REF) 
+      DROODP_G = ROG/(PG + P_REF)
 !
-      RETURN  
-      END FUNCTION DROODP_G 
+      RETURN
+      END FUNCTION DROODP_G

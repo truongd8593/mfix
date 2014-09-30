@@ -19,7 +19,7 @@
       use compar, only: NODESJ  ! Partitions along y-axis
       use compar, only: NODESK  ! Partitions along z-axis
 ! Domain partitions in various directions.
-      use geometry, only: IMAX 
+      use geometry, only: IMAX
       use geometry, only: JMAX
       use geometry, only: KMAX
 
@@ -43,7 +43,7 @@
 !---------------------------------------------------------------------//
 ! The minimum number of computational cell layers requried.
       INTEGER, PARAMETER :: DMP_MIN = 4
-      
+
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_DMP_PREREQS")
 
@@ -58,7 +58,7 @@
          ENDIF
       ENDIF
 
-! Initialize NODE values if undefined. If this is a DMP run, then a 
+! Initialize NODE values if undefined. If this is a DMP run, then a
 ! warning message is passed to the user.
       IF (NODESI .EQ. UNDEFINED_I) THEN
          IF(numPEs > 1) THEN
@@ -106,7 +106,7 @@
          ENDIF
       ENDIF
 
-! Verify that the number of requested processes (munPEs) matches 
+! Verify that the number of requested processes (munPEs) matches
 ! the domain decomposition (nodesi * nodesj * nodesk).
       IF(numPEs .NE. (NODESi*NODESj*NODESk)) THEN
          WRITE(ERR_MSG,1003) numPEs, (NODESi*NODESj*NODESk)
@@ -116,7 +116,7 @@
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
 
  1000 FORMAT('Error 1000: No DMP grid partitioning data provided in ', &

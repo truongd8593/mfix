@@ -6,15 +6,15 @@
 !  Purpose: open all the files for this run                            !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX) 
+      SUBROUTINE OPEN_FILES(RUN_NAME, RUN_TYPE, N_SPX)
 
-      USE machine 
-      USE funits 
-      USE compar 
+      USE machine
+      USE funits
+      USE compar
       USE cdist
 
       use error_manager
-      
+
       IMPLICIT NONE
 
 ! Error index: 0 - no error, 1 could not open file
@@ -47,7 +47,7 @@
       IER = 0
 
 ! Initialize the generic SPx extension.
-      EXT = '.SPx' 
+      EXT = '.SPx'
 
 ! Generic SPx end characters in order.
       EXT_END = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -68,13 +68,13 @@
       ENDIF
 
 
-! Open the RES and SPx files. By default, only PE_IO opens these files, 
+! Open the RES and SPx files. By default, only PE_IO opens these files,
 ! but all ranks open a rank-specific copy for distributed IO runs.
-      SELECT CASE (TRIM(RUN_TYPE))  
+      SELECT CASE (TRIM(RUN_TYPE))
 
 ! Open the RES and SPx files for a new run.
 !......................................................................
-      CASE ('NEW')  
+      CASE ('NEW')
 
          IF(myPE==PE_IO .OR.  bDist_IO) THEN
 
@@ -94,10 +94,10 @@
             ENDIF
 
 ! Open the SPx files.
-            DO LC = 1, N_SPX 
+            DO LC = 1, N_SPX
                EXT(4:4) = ext_end(LC:LC)
                CALL OPEN_FILE(RUN_NAME, NB, UNIT_SPX+LC, EXT,FILE_NAME,&
-                  'NEW', 'DIRECT', 'UNFORMATTED', OPEN_N1, IER(myPE)) 
+                  'NEW', 'DIRECT', 'UNFORMATTED', OPEN_N1, IER(myPE))
 ! Report errors.
                IF (IER(myPE) == 100) THEN
                   WRITE(ERR_MSG, 1000)EXT(2:4), 'NEW', trim(FILE_NAME)
@@ -109,7 +109,7 @@
                   CALL FLUSH_ERR_MSG
                   GO TO 100
                ENDIF
-            ENDDO 
+            ENDDO
          ENDIF
 
 
@@ -134,10 +134,10 @@
             ENDIF
 
 ! Open the SPx files.
-            DO LC = 1, N_SPX 
+            DO LC = 1, N_SPX
                EXT(4:4) = EXT_END(LC:LC)
                CALL OPEN_FILE (RUN_NAME,NB, UNIT_SPX+LC,EXT, FILE_NAME,&
-                  'OLD', 'DIRECT', 'UNFORMATTED', OPEN_N1, IER(myPE)) 
+                  'OLD', 'DIRECT', 'UNFORMATTED', OPEN_N1, IER(myPE))
 ! Report errors.
                IF (IER(myPE) == 101) THEN
                   WRITE(ERR_MSG, 1001) EXT(2:4), 'RESTART_1',         &
@@ -150,19 +150,19 @@
                   CALL FLUSH_ERR_MSG
                   GO TO 100
                ENDIF
-            END DO 
+            END DO
          ENDIF
 
 
 ! Open the RES and SPx files for a typical restart run.
 !......................................................................
-      CASE ('RESTART_2')  
+      CASE ('RESTART_2')
 ! Open the RES file.
          CSTATUS = 'OLD'
          IF(myPE == PE_IO .OR. bDist_IO) THEN
             IF(bStart_with_one_res) CSTATUS = 'UNKNOWN'
             CALL OPEN_FILE (RUN_NAME, NB, UNIT_RES, '.RES', FILE_NAME, &
-               CSTATUS,'DIRECT', 'UNFORMATTED', OPEN_N1, IER(myPE)) 
+               CSTATUS,'DIRECT', 'UNFORMATTED', OPEN_N1, IER(myPE))
 ! Report errors.
             IF (IER(myPE) == 101) THEN
                WRITE(ERR_MSG, 1001)'RES', 'RESTART_2',trim(FILE_NAME)
@@ -176,10 +176,10 @@
             ENDIF
 
 ! Open the SPx files.
-            DO LC = 1, N_SPX 
+            DO LC = 1, N_SPX
                EXT(4:4) = EXT_END(LC:LC)
                CALL OPEN_FILE (RUN_NAME,NB,UNIT_SPX+LC, EXT, FILE_NAME,&
-                  'NEW' , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER(myPE)) 
+                  'NEW' , 'DIRECT', 'UNFORMATTED', OPEN_N1, IER(myPE))
 ! Report errors.
                IF (IER(myPE) == 100) THEN
                   WRITE(ERR_MSG, 1000)EXT(2:4), 'RESTART_2',          &
@@ -195,12 +195,12 @@
             END DO
          ENDIF
 
-      CASE DEFAULT 
+      CASE DEFAULT
          WRITE(ERR_MSG, 3000)
          CALL FLUSH_ERR_MSG
          GO TO 100
 
-      END SELECT 
+      END SELECT
 
 ! If an error was detected, abort the run.
   100 IF(ERROR_OPENING(IER)) CALL MFIX_EXIT(myPE)
@@ -208,7 +208,7 @@
 ! Initialize the error manager.
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
  1000 FORMAT('Error 1000: ',A,' file detected but RUN_TYPE=',A/,       &
          'Cannot open file: ',A)
@@ -249,7 +249,7 @@
       RETURN
       END FUNCTION ERROR_OPENING
 
-      END SUBROUTINE OPEN_FILES 
+      END SUBROUTINE OPEN_FILES
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -279,7 +279,7 @@
 ! Total number of MPI ranks.
       USE compar, only: numPEs
 ! Flag: My rank reports errors.
-      use funits, only: DMP_LOG    
+      use funits, only: DMP_LOG
 
       IMPLICIT NONE
 
@@ -331,6 +331,6 @@
       NB = len_trim(LOGFILE)+1
       CALL OPEN_FILE(LOGFILE, NB, UNIT_LOG, '.LOG', FILE_NAME,         &
          'APPEND', 'SEQUENTIAL', 'FORMATTED', 132,  IER)
-        
+
       RETURN
-      END SUBROUTINE OPEN_PE_LOG 
+      END SUBROUTINE OPEN_PE_LOG

@@ -116,5 +116,5 @@
 ! Evaluate the solids EOS.
       EOSS = pBase * Xs0_INERT / max(Xs_INERT, 1.0d-8)
 
-      RETURN  
+      RETURN
       END FUNCTION EOSS

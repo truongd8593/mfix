@@ -1,6 +1,6 @@
 !--------------------------------------------------------------------
 ! Purpose:
-! Contains following subroutines: 
+! Contains following subroutines:
 !    partition, gridmap_init
 !--------------------------------------------------------------------
        module gridmap
@@ -69,7 +69,7 @@
       ENDIF
 
 ! Get Domain size from ADJUST_IJK_SIZE Subroutine
-      IF(DOMAIN_SIZE_ADJUSTED) THEN         
+      IF(DOMAIN_SIZE_ADJUSTED) THEN
          isize1_all = isize_all
          jsize1_all = jsize_all
          ksize1_all = ksize_all
@@ -96,12 +96,12 @@
 
 ! Get Domain size from gridmap.dat
 ! This works only in the j-direction   <-------------------------
-      IF(.NOT.DOMAIN_SIZE_ADJUSTED) THEN         
+      IF(.NOT.DOMAIN_SIZE_ADJUSTED) THEN
          INQUIRE(FILE='gridmap.dat',EXIST=PRESENT)
          IF(PRESENT) THEN
-            IF(MyPE == PE_IO) THEN 
+            IF(MyPE == PE_IO) THEN
                WRITE(*,*)'Reading gridmap from grimap.dat...'
-               OPEN(UNIT=777, FILE='gridmap.dat', STATUS='OLD') 
+               OPEN(UNIT=777, FILE='gridmap.dat', STATUS='OLD')
 
                READ (777, *) NODESI,NODESJ,NODESK
                DO IPROC = 0,NODESI-1
@@ -162,7 +162,7 @@
          'axis.')
 
       END SUBROUTINE PARTITION
- 
+
 
 !----------------------------------------------------------------------!
 ! Purpose: Initializing all the variables from the information         !
@@ -188,7 +188,7 @@
       LOGICAL , EXTERNAL :: COMPARE
 
       include '../function.inc'
-!----------------------------------------------- 
+!-----------------------------------------------
 
 
 !......................................................................!
@@ -248,19 +248,19 @@
       IF(.NOT.ALLOCATED(iend3_all))      allocate( iend3_all(0:numPEs-1) )
       IF(.NOT.ALLOCATED(jend3_all))      allocate( jend3_all(0:numPEs-1) )
       IF(.NOT.ALLOCATED(kend3_all))      allocate( kend3_all(0:numPEs-1) )
-	 
+
       IF(.NOT.ALLOCATED(iend4_all))      allocate( iend4_all(0:numPEs-1) )
       IF(.NOT.ALLOCATED(jend4_all))      allocate( jend4_all(0:numPEs-1) )
       IF(.NOT.ALLOCATED(kend4_all))      allocate( kend4_all(0:numPEs-1) )
-	 
+
       IF(.NOT.ALLOCATED(displs))         allocate( displs(0:numPEs-1) )
 
 
       CALL PARTITION(CYC_XL, CYC_YL, CYC_ZL)
 
-! The upper and lower bounds are prescribed such that two ghost 
+! The upper and lower bounds are prescribed such that two ghost
 ! layers are allowed at the physical boundaries - this is consistent
-! with our present approach - need to be generalized if only one ghost 
+! with our present approach - need to be generalized if only one ghost
 ! layer is needed
       do iproc=0,numPEs-1
          istart2_all(iproc) = max(imin1-1,min(imax1+1,istart1_all(iproc)-1))
@@ -330,7 +330,7 @@
          endif
       enddo
 
-! for higher order methods        
+! for higher order methods
       if(.not.fpfoi) then
          do iproc=0,numPEs-1
             istart4_all(iproc) = istart3_all(iproc)
@@ -364,7 +364,7 @@
       displs(0) = 0
       do iproc=1,numPEs-1
          displs(iproc) = displs(iproc-1)+ijksize3_all(iproc-1)
-!	write(*,*) 'displ',displs(iproc),iproc, ijksize3_all(iproc)
+!       write(*,*) 'displ',displs(iproc),iproc, ijksize3_all(iproc)
       enddo
 
 
@@ -412,7 +412,7 @@
       NCPP_UNIFORM_BACKED_UP = .TRUE.
 
       IF(SHORT_GRIDMAP_INIT) THEN
-!        do iproc=0,numPEs-1      
+!        do iproc=0,numPEs-1
 !           NCPP_UNIFORM(iproc) = ijksize3_all(iproc)
 !        enddo
          RETURN
@@ -521,7 +521,7 @@
          jend = jend1
          kstart = kstart1
          kend = kend1
-    
+
          if(istart3.eq.imin3) istart = istart2
          if(iend3.eq.imax3) iend = iend2
          if(jstart3.eq.jmin3) jstart = jstart2
@@ -578,8 +578,8 @@
 
 ! Save IJK value of (I,J,K) cell in an array
 ! IJK_ARRAY_OF(I,J,K) will replace the use of FUNIJK(I,J,K)
-        DO ii = istart3,iend3                                                           
-           DO jj = jstart3,jend3                                                        
+        DO ii = istart3,iend3
+           DO jj = jstart3,jend3
               DO kk = kstart3,kend3
                  IJK_ARRAY_OF(ii,jj,kk)=FUNIJK_0(ii,jj,kk)
               ENDDO

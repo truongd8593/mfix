@@ -25,8 +25,8 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE USR1 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE USR1
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
       Use usr
       IMPLICIT NONE
@@ -43,5 +43,5 @@
 !
 !  Insert user-defined code here
 !
-      RETURN  
-      END SUBROUTINE USR1 
+      RETURN
+      END SUBROUTINE USR1

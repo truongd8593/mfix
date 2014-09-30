@@ -213,7 +213,7 @@
          READ(STRING, NML=QMOMK_INPUT_DATA, IOSTAT=IOS)
          IF(IOS == 0) CYCLE READ_LP
 
-! At this point, the keyword was not identified therefore it is 
+! At this point, the keyword was not identified therefore it is
 ! either deprecated or unknown.
         CALL DEPRECATED_OR_UNKNOWN(LINE_NO, LINE_STRING(1:LINE_LEN))
 

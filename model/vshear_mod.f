@@ -4,10 +4,10 @@
 
 
 
-	MODULE vshear
+        MODULE vshear
 
         Use param
         Use param1
-        DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  VSH     
-        DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  VSHE  	
-	END MODULE vshear
+        DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  VSH
+        DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  VSHE
+        END MODULE vshear

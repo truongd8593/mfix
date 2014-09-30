@@ -233,7 +233,7 @@
  1203 FORMAT('   > X_s(',I6,',INERT) = ',g11.5)
 
  9999 FORMAT(1x,70('*')/)
-    
+
       END SUBROUTINE CHECK_SET_ROs
 
       END SUBROUTINE SET_RO_S

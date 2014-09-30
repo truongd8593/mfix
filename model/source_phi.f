@@ -22,54 +22,54 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOURCE_PHI(S_P, S_C, EP, PHI, M, A_M, B_M, IER) 
+      SUBROUTINE SOURCE_PHI(S_P, S_C, EP, PHI, M, A_M, B_M, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
-      USE matrix 
-      USE scales 
+      USE param
+      USE param1
+      USE parallel
+      USE matrix
+      USE scales
       USE physprop
       USE fldvar
       USE visc_s
       USE rxns
       USE run
-      USE toleranc 
+      USE toleranc
       USE geometry
       USE indices
       USE is
       USE tau_s
-      USE compar  
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
 !-----------------------------------------------
-! Source term on LHS.  Must be positive. 
-      DOUBLE PRECISION, INTENT(IN) :: S_p(DIMENSION_3) 
-! Source term on RHS 
-      DOUBLE PRECISION, INTENT(IN) :: S_C(DIMENSION_3) 
-! Phase volume fraction 
-      DOUBLE PRECISION, INTENT(IN) :: EP(DIMENSION_3) 
-! Phi 
-      DOUBLE PRECISION, INTENT(IN) :: Phi(DIMENSION_3) 
+! Source term on LHS.  Must be positive.
+      DOUBLE PRECISION, INTENT(IN) :: S_p(DIMENSION_3)
+! Source term on RHS
+      DOUBLE PRECISION, INTENT(IN) :: S_C(DIMENSION_3)
+! Phase volume fraction
+      DOUBLE PRECISION, INTENT(IN) :: EP(DIMENSION_3)
+! Phi
+      DOUBLE PRECISION, INTENT(IN) :: Phi(DIMENSION_3)
 ! phase index
-      INTEGER, INTENT(IN) :: M      
-! Septadiagonal matrix A_m 
-      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
-! Vector b_m 
-      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M) 
-! Error index 
-      INTEGER, INTENT(INOUT) :: IER 
+      INTEGER, INTENT(IN) :: M
+! Septadiagonal matrix A_m
+      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
+! Vector b_m
+      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Indices 
-      INTEGER :: IJK, IMJK, IJMK, IJKM 
-! error message 
-      CHARACTER*80     LINE(2) 
+! Indices
+      INTEGER :: IJK, IMJK, IJMK, IJKM
+! error message
+      CHARACTER*80     LINE(2)
 
 !-----------------------------------------------
 ! Include statement functions
@@ -81,20 +81,20 @@
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
-      DO IJK = ijkstart3, ijkend3 
+      DO IJK = ijkstart3, ijkend3
 
-         IF (FLUID_AT(IJK)) THEN 
+         IF (FLUID_AT(IJK)) THEN
 
 ! dilute flow
-            IF (EP(IJK) <= DIL_EP_S) THEN 
-               A_M(IJK,E,M) = ZERO 
-               A_M(IJK,W,M) = ZERO 
-               A_M(IJK,N,M) = ZERO 
-               A_M(IJK,S,M) = ZERO 
-               A_M(IJK,T,M) = ZERO 
-               A_M(IJK,B,M) = ZERO 
-               A_M(IJK,0,M) = -ONE 
-               B_M(IJK,M) = ZERO 
+            IF (EP(IJK) <= DIL_EP_S) THEN
+               A_M(IJK,E,M) = ZERO
+               A_M(IJK,W,M) = ZERO
+               A_M(IJK,N,M) = ZERO
+               A_M(IJK,S,M) = ZERO
+               A_M(IJK,T,M) = ZERO
+               A_M(IJK,B,M) = ZERO
+               A_M(IJK,0,M) = -ONE
+               B_M(IJK,M) = ZERO
 
 ! use the average boundary cell values to compute phi (sof, Aug 23 2005)
                IMJK = IM_OF(IJK)
@@ -103,7 +103,7 @@
                IF (EP(WEST_OF(IJK)) > DIL_EP_S .AND. &
                    .NOT.IS_AT_E(IMJK)) A_M(IJK,W,M) = ONE
                IF (EP(EAST_OF(IJK)) > DIL_EP_S .AND. &
-                   .NOT.IS_AT_E(IJK)) A_M(IJK,E,M) = ONE 
+                   .NOT.IS_AT_E(IJK)) A_M(IJK,E,M) = ONE
                IF (EP(SOUTH_OF(IJK)) > DIL_EP_S .AND. &
                    .NOT.IS_AT_N(IJMK)) A_M(IJK,S,M) = ONE
                IF (EP(NORTH_OF(IJK)) > DIL_EP_S .AND. &
@@ -112,9 +112,9 @@
                   IF (EP(BOTTOM_OF(IJK)) > DIL_EP_S .AND. &
                      .NOT.IS_AT_T(IJKM)) A_M(IJK,B,M) = ONE
                   IF (EP(TOP_OF(IJK)) > DIL_EP_S .AND. &
-                     .NOT.IS_AT_T(IJK)) A_M(IJK,T,M) = ONE 
-               ENDIF 
-                  
+                     .NOT.IS_AT_T(IJK)) A_M(IJK,T,M) = ONE
+               ENDIF
+
                IF((A_M(IJK,W,M)+A_M(IJK,E,M)+&
                   A_M(IJK,S,M)+A_M(IJK,N,M)+ &
                   A_M(IJK,B,M)+A_M(IJK,T,M)) == ZERO) THEN
@@ -126,7 +126,7 @@
                ENDIF
 
 ! Normal case
-            ELSE 
+            ELSE
 
 ! Collect the terms
                A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+&
@@ -147,8 +147,8 @@
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 
 
-      RETURN  
-      END SUBROUTINE SOURCE_PHI 
+      RETURN
+      END SUBROUTINE SOURCE_PHI
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -161,7 +161,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE POINT_SOURCE_PHI(PHI, PS_PHI, PS_FLOW,  &
-         M, A_M, B_M, IER) 
+         M, A_M, B_M, IER)
 
       use compar
 
@@ -180,32 +180,32 @@
 ! Dummy arguments
 !-----------------------------------------------
 
-! Vector b_m 
-      DOUBLE PRECISION, INTENT(IN) :: PHI(DIMENSION_3) 
+! Vector b_m
+      DOUBLE PRECISION, INTENT(IN) :: PHI(DIMENSION_3)
 
 
 ! maximum term in b_m expression
       DOUBLE PRECISION, INTENT(IN) :: PS_PHI(DIMENSION_BC)
 
 ! maximum term in b_m expression
-      DOUBLE PRECISION, INTENT(IN) :: PS_FLOW(DIMENSION_BC) 
+      DOUBLE PRECISION, INTENT(IN) :: PS_FLOW(DIMENSION_BC)
 
       INTEGER, intent(in) :: M
 
-! Septadiagonal matrix A_m 
-      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
+! Septadiagonal matrix A_m
+      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 
-! Vector b_m 
-      DOUBLE PRECISION, intent(INOUT) :: B_M(DIMENSION_3, 0:DIMENSION_M) 
+! Vector b_m
+      DOUBLE PRECISION, intent(INOUT) :: B_M(DIMENSION_3, 0:DIMENSION_M)
 
-! Error index 
-      INTEGER, intent(INOUT) :: IER 
+! Error index
+      INTEGER, intent(INOUT) :: IER
 
-!----------------------------------------------- 
+!-----------------------------------------------
 ! Local Variables
-!----------------------------------------------- 
+!-----------------------------------------------
 
-! Indices 
+! Indices
       INTEGER :: IJK, I, J, K
       INTEGER :: PSV, N
 
@@ -218,7 +218,7 @@
       INCLUDE 'function.inc'
 !-----------------------------------------------
 
-! External function. Integrates the temperature-dependent specific 
+! External function. Integrates the temperature-dependent specific
 ! heat from zero to T.
       DOUBLE PRECISION, EXTERNAL :: calc_ICpoR
 
@@ -245,7 +245,7 @@
                pSource = PS_FLOW(PSV) * (VOL(IJK)/PS_VOLUME(PSV))
 
                A_M(IJK,0,M) = A_M(IJK,0,M) - pSource
-               B_M(IJK,M) = B_M(IJK,M) - PS_PHI(PSV) * pSource 
+               B_M(IJK,M) = B_M(IJK,M) - PS_PHI(PSV) * pSource
 
             endif
 

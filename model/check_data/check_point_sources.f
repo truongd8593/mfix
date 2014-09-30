@@ -112,18 +112,18 @@
 ! Determine which point source indices have values.
       PSV_LP: do PSV = 1, DIMENSION_PS
 
-         IF (PS_X_W(PSV) /= UNDEFINED)   PS_DEFINED(PSV) = .TRUE. 
-         IF (PS_X_E(PSV) /= UNDEFINED)   PS_DEFINED(PSV) = .TRUE. 
-         IF (PS_Y_S(PSV) /= UNDEFINED)   PS_DEFINED(PSV) = .TRUE. 
-         IF (PS_Y_N(PSV) /= UNDEFINED)   PS_DEFINED(PSV) = .TRUE. 
-         IF (PS_Z_B(PSV) /= UNDEFINED)   PS_DEFINED(PSV) = .TRUE. 
-         IF (PS_Z_T(PSV) /= UNDEFINED)   PS_DEFINED(PSV) = .TRUE. 
-         IF (PS_I_W(PSV) /= UNDEFINED_I) PS_DEFINED(PSV) = .TRUE. 
-         IF (PS_I_E(PSV) /= UNDEFINED_I) PS_DEFINED(PSV) = .TRUE. 
-         IF (PS_J_S(PSV) /= UNDEFINED_I) PS_DEFINED(PSV) = .TRUE. 
-         IF (PS_J_N(PSV) /= UNDEFINED_I) PS_DEFINED(PSV) = .TRUE. 
-         IF (PS_K_B(PSV) /= UNDEFINED_I) PS_DEFINED(PSV) = .TRUE. 
-         IF (PS_K_T(PSV) /= UNDEFINED_I) PS_DEFINED(PSV) = .TRUE. 
+         IF (PS_X_W(PSV) /= UNDEFINED)   PS_DEFINED(PSV) = .TRUE.
+         IF (PS_X_E(PSV) /= UNDEFINED)   PS_DEFINED(PSV) = .TRUE.
+         IF (PS_Y_S(PSV) /= UNDEFINED)   PS_DEFINED(PSV) = .TRUE.
+         IF (PS_Y_N(PSV) /= UNDEFINED)   PS_DEFINED(PSV) = .TRUE.
+         IF (PS_Z_B(PSV) /= UNDEFINED)   PS_DEFINED(PSV) = .TRUE.
+         IF (PS_Z_T(PSV) /= UNDEFINED)   PS_DEFINED(PSV) = .TRUE.
+         IF (PS_I_W(PSV) /= UNDEFINED_I) PS_DEFINED(PSV) = .TRUE.
+         IF (PS_I_E(PSV) /= UNDEFINED_I) PS_DEFINED(PSV) = .TRUE.
+         IF (PS_J_S(PSV) /= UNDEFINED_I) PS_DEFINED(PSV) = .TRUE.
+         IF (PS_J_N(PSV) /= UNDEFINED_I) PS_DEFINED(PSV) = .TRUE.
+         IF (PS_K_B(PSV) /= UNDEFINED_I) PS_DEFINED(PSV) = .TRUE.
+         IF (PS_K_T(PSV) /= UNDEFINED_I) PS_DEFINED(PSV) = .TRUE.
 
 ! Skip consistency checks if nothing was defined.
          IF (.NOT.PS_DEFINED(PSV)) cycle PSV_LP
@@ -133,52 +133,52 @@
 
          IF(PS_X_W(PSV)==UNDEFINED .AND. PS_I_W(PSV)==UNDEFINED_I) THEN
             IF(NO_I) THEN
-               PS_X_W(PSV) = ZERO 
-            ELSE 
+               PS_X_W(PSV) = ZERO
+            ELSE
                WRITE(ERR_MSG,1101) PSV, 'PS_X_w and PS_I_w '
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ENDIF
          IF(PS_X_E(PSV)==UNDEFINED .AND. PS_I_E(PSV)==UNDEFINED_I) THEN
-            IF(NO_I) THEN 
-               PS_X_E(PSV) = XLENGTH 
-            ELSE 
+            IF(NO_I) THEN
+               PS_X_E(PSV) = XLENGTH
+            ELSE
                WRITE(ERR_MSG,1101) PSV, 'PS_X_e and PS_I_e '
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)      
-            ENDIF 
-         ENDIF 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDIF
          IF(PS_Y_S(PSV)==UNDEFINED .AND. PS_J_S(PSV)==UNDEFINED_I) THEN
-            IF(NO_J) THEN 
-               PS_Y_S(PSV) = ZERO 
-            ELSE 
+            IF(NO_J) THEN
+               PS_Y_S(PSV) = ZERO
+            ELSE
                WRITE(ERR_MSG,1101) PSV, 'PS_Y_s and PS_J_s '
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)      
-            ENDIF 
-         ENDIF 
-         IF(PS_Y_N(PSV)==UNDEFINED .AND. PS_J_N(PSV)==UNDEFINED_I) THEN 
-            IF(NO_J) THEN 
-               PS_Y_N(PSV) = YLENGTH 
-            ELSE 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDIF
+         IF(PS_Y_N(PSV)==UNDEFINED .AND. PS_J_N(PSV)==UNDEFINED_I) THEN
+            IF(NO_J) THEN
+               PS_Y_N(PSV) = YLENGTH
+            ELSE
                WRITE(ERR_MSG,1101) PSV, 'PS_Y_n and PS_J_n '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
          IF(PS_Z_B(PSV)==UNDEFINED .AND. PS_K_B(PSV)==UNDEFINED_I) THEN
-            IF(NO_K) THEN 
-               PS_Z_B(PSV) = ZERO 
-            ELSE 
+            IF(NO_K) THEN
+               PS_Z_B(PSV) = ZERO
+            ELSE
                WRITE(ERR_MSG,1101) PSV, 'PS_Z_b and PS_K_b '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
          IF(PS_Z_T(PSV)==UNDEFINED .AND. PS_K_T(PSV)==UNDEFINED_I) THEN
-            IF(NO_K) THEN 
-               PS_Z_T(PSV) = ZLENGTH 
-            ELSE 
+            IF(NO_K) THEN
+               PS_Z_T(PSV) = ZLENGTH
+            ELSE
                WRITE(ERR_MSG,1101) PSV, 'PS_Z_t and PS_K_t '
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
 
  1101 FORMAT('Error 1101: Point source ',I3,' is ill-defined.',/A,     &
          ' are not specified.',/'Please correct the mfix.dat file.')
@@ -308,7 +308,7 @@
             ELSE
                PS_X_G(PSV,N) = ZERO
             ENDIF
-         ENDDO 
+         ENDDO
 
 ! Enforce that the species mass fractions must sum to one.
          IF(.NOT.COMPARE(ONE,SUM)) THEN
@@ -334,7 +334,7 @@
                PS_X_G(PSV,1) = ONE
             ENDIF
 
-         ENDIF 
+         ENDIF
 
 ! Verify that a temperature is provided.
          IF(ENERGY_EQ)THEN
@@ -479,7 +479,7 @@
 ! Mass flow is specified:
          ELSE
 
-! Currently, only TFM solids can be used with point sources. However, 
+! Currently, only TFM solids can be used with point sources. However,
 ! the could be implemented for PIC solids as well.
             SELECT CASE(SOLIDS_MODEL(M))
             CASE ('DEM','PIC')
@@ -506,7 +506,7 @@
                ELSE
                   PS_X_S(PSV,M,N) = ZERO
                ENDIF
-            ENDDO 
+            ENDDO
 
 ! Enforce that the species mass fractions must sum to one.
             IF(.NOT.COMPARE(ONE,SUM)) THEN
@@ -532,7 +532,7 @@
                   PS_X_S(PSV,M,2:) = ZERO
                ENDIF
 
-            ENDIF 
+            ENDIF
 
 ! Verify that a temperature is provided.
             IF(ENERGY_EQ)THEN
@@ -640,7 +640,7 @@
             WRITE(ERR_MSG,1010) trim(iVar('PS_X_G',PSV,N))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
-      ENDDO 
+      ENDDO
 
       DO M=1, DIM_M
          IF(PS_MASSFLOW_S(PSV,M) /= UNDEFINED) THEN
@@ -664,13 +664,13 @@
                WRITE(ERR_MSG,1010) trim(iVar('PS_X_S',PSV,M,N))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
-         ENDDO 
+         ENDDO
       ENDDO
 
       CALL FINL_ERR_MSG
 
       RETURN
 
- 1010 FORMAT('Error 1010: ',A,' specified in an undefined PS region.') 
+ 1010 FORMAT('Error 1010: ',A,' specified in an undefined PS region.')
 
       END SUBROUTINE CHECK_PS_OVERFLOW

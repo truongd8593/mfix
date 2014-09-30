@@ -20,23 +20,23 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      DOUBLE PRECISION FUNCTION VAVG_U_S (M) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      DOUBLE PRECISION FUNCTION VAVG_U_S (M)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE fldvar
       USE bc
       USE geometry
       USE physprop
       USE indices
-      USE compar        
-      USE mpi_utility   
+      USE compar
+      USE mpi_utility
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -46,16 +46,16 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       INTEGER          M
-! 
-!                      Indices 
-      INTEGER          IJK 
-! 
-!                      Integral of U_s*EP_s for entire volume 
-      DOUBLE PRECISION SUM_U_s 
-! 
-!                      Total volume of computational cells 
-      DOUBLE PRECISION SUM_VOL 
-! 
+!
+!                      Indices
+      INTEGER          IJK
+!
+!                      Integral of U_s*EP_s for entire volume
+      DOUBLE PRECISION SUM_U_s
+!
+!                      Total volume of computational cells
+      DOUBLE PRECISION SUM_VOL
+!
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
@@ -63,26 +63,26 @@
 !
 !  Integrate the velocity values for the whole domain,
 !
-      SUM_U_S = ZERO 
-      SUM_VOL = ZERO 
+      SUM_U_S = ZERO
+      SUM_VOL = ZERO
 
 !!!!$omp   parallel do private(IJK) reduction(+:SUM_VOL,SUM_U_S)
       DO IJK = IJKSTART3, IJKEND3
       IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK), J_OF(IJK), K_OF(IJK))) CYCLE
-         IF (FLUID_AT(IJK)) THEN 
-            SUM_VOL = SUM_VOL + VOL_U(IJK) 
-            SUM_U_S = SUM_U_S + U_S(IJK,M)*EP_S(IJK,M)*VOL_U(IJK) 
-         ENDIF 
-      END DO 
+         IF (FLUID_AT(IJK)) THEN
+            SUM_VOL = SUM_VOL + VOL_U(IJK)
+            SUM_U_S = SUM_U_S + U_S(IJK,M)*EP_S(IJK,M)*VOL_U(IJK)
+         ENDIF
+      END DO
 
       CALL GLOBAL_ALL_SUM(SUM_VOL)
       CALL GLOBAL_ALL_SUM(SUM_U_S)
-      VAVG_U_S = SUM_U_S/SUM_VOL 
+      VAVG_U_S = SUM_U_S/SUM_VOL
 !
-      RETURN  
-      END FUNCTION VAVG_U_S 
+      RETURN
+      END FUNCTION VAVG_U_S
 
-!// Comments on the modifications for DMP version implementation      
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !// 400 Added mpi_utility module and other global reduction (sum) calls

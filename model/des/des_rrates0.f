@@ -28,19 +28,19 @@
       SUBROUTINE DES_RRATES0(NP, pM, IJK, INTERP_IJK, INTERP_WEIGHTS, &
          FOCUS)
 
-      USE compar 
+      USE compar
       USE constant
       USE des_thermo
       USE des_rxns
       USE discretelement
       USE energy
       USE fldvar
-      USE funits 
+      USE funits
       USE geometry
       USE indices
-      USE parallel 
-      USE param 
-      USE param1 
+      USE parallel
+      USE param
+      USE param1
       Use parse
       USE physprop
       USE run
@@ -70,7 +70,7 @@
       INTEGER :: L, M ! Global Phase index loop counters
       INTEGER :: N    ! Global species index
       INTEGER :: lN   ! Local reaction speices index/loop counter
-      INTEGER :: LM   ! 
+      INTEGER :: LM   !
 
       INTEGER :: mXfr ! Global phase index for mass transfer
 
@@ -93,10 +93,10 @@
       DOUBLE PRECISION :: lRPhase(DIMENSION_LM+DIMENSION_M-1)
 
 ! Reaction limiters. If a species mass fraction is less than this
-! value, then the reaction is suppressed. 
+! value, then the reaction is suppressed.
       DOUBLE PRECISION :: speciesLimiter
 
-! External functions 
+! External functions
 !---------------------------------------------------------------------//
 ! Enthalpy calculations (cal/gram)
       DOUBLE PRECISION, EXTERNAL :: CALC_H
@@ -141,7 +141,7 @@
             M = DES_Reaction(H)%Species(lN)%pMap
 ! Global species index.
             N = DES_Reaction(H)%Species(lN)%sMap
-! Index for interphase mass transfer. For a gas/solid reaction, the 
+! Index for interphase mass transfer. For a gas/solid reaction, the
 ! index is stored with the gas phase.
             mXfr = DES_Reaction(H)%Species(lN)%mXfr
             lRate = DES_RATES(H) * DES_Reaction(H)%Species(lN)%MWxStoich
@@ -206,7 +206,7 @@
                llHORg = llHORg - RxH
                lHORs = lHORs + RxH
 
-! Convert the heat of reaction to the appropriate units (if SI), and 
+! Convert the heat of reaction to the appropriate units (if SI), and
 ! store in the global array.
                IF(UNITS == 'SI') THEN
                   lHORg = lHORg + 4.183925d3*llHORg
@@ -245,7 +245,7 @@
          ENDDO
       ENDIF
 
-! Integrate over solids time step and store in global array. This 
+! Integrate over solids time step and store in global array. This
 ! needs updated when interpolation is reintroduced into thermo code.
 !---------------------------------------------------------------------//
       DES_R_gp(IJK,:) = DES_R_gp(IJK,:) + lRgp(:) * DTSOLID

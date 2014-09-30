@@ -18,10 +18,10 @@
 
 !-----------------------------------------------
 ! Modules
-!-----------------------------------------------      
+!-----------------------------------------------
       USE compar
       USE funits
-!----------------------------------------------- 
+!-----------------------------------------------
 
 ! temporary storage of dimension (IJK)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: &
@@ -30,19 +30,19 @@
 ! temporary storage array of dimension (IJK, LM)
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: &
          ArrayLM
-      
+
 ! temporary storage for 4th order scheme
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: TMP4
 
 ! temporary storage of dimension (ijk)
       INTEGER, DIMENSION(:), ALLOCATABLE :: ARRAY1I
 
-      character*3, dimension(:), pointer :: ARRAY1C     
-   
+      character*3, dimension(:), pointer :: ARRAY1C
+
       LOGICAL :: tmp_array_locked = .false.
       LOGICAL :: tmp_array2_locked = .FALSE.
       LOGICAL :: tmp4_array_locked = .false.
-      
+
       CONTAINS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -64,7 +64,7 @@
       SUBROUTINE unlock_tmp_array
       tmp_array_locked = .false.
       END SUBROUTINE unlock_tmp_array
-      
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
@@ -84,7 +84,7 @@
       SUBROUTINE unlock_tmp_array2
       tmp_array2_locked = .false.
       END SUBROUTINE unlock_tmp_array2
-     
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
@@ -104,7 +104,7 @@
       SUBROUTINE unlock_tmp4_array
       tmp4_array_locked = .false.
       END SUBROUTINE unlock_tmp4_array
-      
+
 
       END MODULE tmp_array
 

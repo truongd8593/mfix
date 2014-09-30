@@ -19,14 +19,14 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE K_Epsilon_PROP( IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE K_Epsilon_PROP( IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1
       USE parallel
       USE physprop
@@ -42,7 +42,7 @@
       USE constant
       Use vshear
       USE turb
-      USE toleranc 
+      USE toleranc
       USE compar
       USE TAU_G
       USE sendrecv
@@ -63,12 +63,12 @@
       INTEGER          IER
 
       INTEGER          L
-!                 
+!
 !-----------------------------------------------
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
-      DOUBLE PRECISION, PARAMETER :: F2O3 = 2.D0/3.D0 
+      DOUBLE PRECISION, PARAMETER :: F2O3 = 2.D0/3.D0
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -79,9 +79,9 @@
                       IM, JM, KM
       INTEGER          IMJPK, IMJMK, IMJKP, IMJKM, IPJKM, IPJMK, IJMKP, &
                       IJMKM, IJPKM, II, I1, J1, K1
-!		    
+!
 !                      Solids phase
-      INTEGER          M  
+      INTEGER          M
 !
 !
 !                      U_g at the north face of the THETA cell-(i, j+1/2, k)
@@ -130,14 +130,14 @@
 !
 !                      Second invariant of the deviator of D_g
       DOUBLE PRECISION I2_devD_g
-! 
-!                      Cell center value of U_g 
-      DOUBLE PRECISION UGC 
-! 
-!                      Cell center value of V_g 
-      DOUBLE PRECISION VGC 
-! 
-!                      Cell center value of W_g 
+!
+!                      Cell center value of U_g
+      DOUBLE PRECISION UGC
+!
+!                      Cell center value of V_g
+      DOUBLE PRECISION VGC
+!
+!                      Cell center value of W_g
       DOUBLE PRECISION WGC
 !
 !                      Local DO-LOOP counters
@@ -145,7 +145,7 @@
 !
 !                      trace_g and eddy viscosity
       DOUBLE PRECISION Trace_G, Mu_gas_t
-! 
+!
 !
       DOUBLE PRECISION C_Eps_Pope, Xsi_Pope, UG(3,3), D_g
 !
@@ -156,7 +156,7 @@
       DOUBLE PRECISION Ceps_1, Ceps_2, C_Eps_3, Check_Log
       DOUBLE PRECISION Pos_PI_kq_2, Neg_PI_kq_2
       DOUBLE PRECISION Pos_PI_q_2, Neg_PI_q_2
-! Modif. for Sof Local Var.      
+! Modif. for Sof Local Var.
       DOUBLE PRECISION USX1, USX3, USX4
       DOUBLE PRECISION USX2, USTIME, XKSTEP, RES_TIME
 !
@@ -187,82 +187,82 @@
         C_Eps_3 = 1.2D0 ! for Simonin model
         C_Eps_Pope = 0.79D0 ! for Pope Correction.
 
-!	
+!
 !  ---  Remember to include all the local variables here for parallel
 !  ---- processing
 !!!$omp  parallel do private(ijk, L)
       DO IJK = IJKSTART3, IJKEND3
          IF (FLUID_AT(IJK)) THEN
-!	  
-!	
+!
+!
 !------------------
 ! Part copied from calc_mu_g.f to calculate the rate of strain Sii tensor
 ! of the gas phase.
 ! Sof@fluent.com
 !------------------
 !
-            I = I_OF(IJK) 
-            J = J_OF(IJK) 
-            K = K_OF(IJK) 
-            IM = IM1(I) 
-            JM = JM1(J) 
-            KM = KM1(K) 
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
+            IM = IM1(I)
+            JM = JM1(J)
+            KM = KM1(K)
 
-            IMJK = IM_OF(IJK) 
-            IPJK = IP_OF(IJK) 
-            IJMK = JM_OF(IJK) 
-            IJPK = JP_OF(IJK) 
+            IMJK = IM_OF(IJK)
+            IPJK = IP_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IJPK = JP_OF(IJK)
             IJKM = KM_OF(IJK)
-            IJKP = KP_OF(IJK) 
-            IMJPK = IM_OF(IJPK) 
-            IMJMK = IM_OF(IJMK) 
-            IMJKP = IM_OF(IJKP) 
-            IMJKM = IM_OF(IJKM) 
-            IPJKM = IP_OF(IJKM) 
-            IPJMK = IP_OF(IJMK) 
-            IJMKP = JM_OF(IJKP) 
-            IJMKM = JM_OF(IJKM) 
-            IJPKM = JP_OF(IJKM) 
+            IJKP = KP_OF(IJK)
+            IMJPK = IM_OF(IJPK)
+            IMJMK = IM_OF(IJMK)
+            IMJKP = IM_OF(IJKP)
+            IMJKM = IM_OF(IJKM)
+            IPJKM = IP_OF(IJKM)
+            IPJMK = IP_OF(IJMK)
+            IJMKP = JM_OF(IJKP)
+            IJMKM = JM_OF(IJKM)
+            IJPKM = JP_OF(IJKM)
 !
 !         Find fluid velocity values at faces of the cell
             U_G_N = AVG_Y(AVG_X_E(U_G(IMJK),U_G(IJK),I),AVG_X_E(U_G(IMJPK),U_G(&
-               IJPK),I),J)                       !i, j+1/2, k 
+               IJPK),I),J)                       !i, j+1/2, k
             U_G_S = AVG_Y(AVG_X_E(U_G(IMJMK),U_G(IJMK),I),AVG_X_E(U_G(IMJK),U_G&
-               (IJK),I),JM)                      !i, j-1/2, k 
+               (IJK),I),JM)                      !i, j-1/2, k
             U_G_T = AVG_Z(AVG_X_E(U_G(IMJK),U_G(IJK),I),AVG_X_E(U_G(IMJKP),U_G(&
-               IJKP),I),K)                       !i, j, k+1/2 
+               IJKP),I),K)                       !i, j, k+1/2
             U_G_B = AVG_Z(AVG_X_E(U_G(IMJKM),U_G(IJKM),I),AVG_X_E(U_G(IMJK),U_G&
-               (IJK),I),KM)                      !i, j, k-1/2            
-	    V_G_E = AVG_X(AVG_Y_N(V_G(IJMK),V_G(IJK)),AVG_Y_N(V_G(IPJMK),V_G(&
-               IPJK)),I)                         !i+1/2, j, k 
+               (IJK),I),KM)                      !i, j, k-1/2
+            V_G_E = AVG_X(AVG_Y_N(V_G(IJMK),V_G(IJK)),AVG_Y_N(V_G(IPJMK),V_G(&
+               IPJK)),I)                         !i+1/2, j, k
             V_G_W = AVG_X(AVG_Y_N(V_G(IMJMK),V_G(IMJK)),AVG_Y_N(V_G(IJMK),V_G(&
-               IJK)),IM)                         !i-1/2, j, k 
+               IJK)),IM)                         !i-1/2, j, k
             V_G_T = AVG_Z(AVG_Y_N(V_G(IJMK),V_G(IJK)),AVG_Y_N(V_G(IJMKP),V_G(&
-               IJKP)),K)                         !i, j, k+1/2 
+               IJKP)),K)                         !i, j, k+1/2
             V_G_B = AVG_Z(AVG_Y_N(V_G(IJMKM),V_G(IJKM)),AVG_Y_N(V_G(IJMK),V_G(&
-               IJK)),KM)                         !i, j, k-1/2 
+               IJK)),KM)                         !i, j, k-1/2
             W_G_N = AVG_Y(AVG_Z_T(W_G(IJKM),W_G(IJK)),AVG_Z_T(W_G(IJPKM),W_G(&
-               IJPK)),J)                         !i, j+1/2, k 
+               IJPK)),J)                         !i, j+1/2, k
             W_G_S = AVG_Y(AVG_Z_T(W_G(IJMKM),W_G(IJMK)),AVG_Z_T(W_G(IJKM),W_G(&
-               IJK)),JM)                         !i, j-1/2, k 
+               IJK)),JM)                         !i, j-1/2, k
             W_G_E = AVG_X(AVG_Z_T(W_G(IJKM),W_G(IJK)),AVG_Z_T(W_G(IPJKM),W_G(&
-               IPJK)),I)                         !i+1/2, j, k 
+               IPJK)),I)                         !i+1/2, j, k
             W_G_W = AVG_X(AVG_Z_T(W_G(IMJKM),W_G(IMJK)),AVG_Z_T(W_G(IJKM),W_G(&
-               IJK)),IM)                         !i-1/2, j, k 
+               IJK)),IM)                         !i-1/2, j, k
 !
-            IF (CYLINDRICAL) THEN 
+            IF (CYLINDRICAL) THEN
 !                                                !i, j, k
-               U_G_C = AVG_X_E(U_G(IMJK),U_G(IJK),I) 
+               U_G_C = AVG_X_E(U_G(IMJK),U_G(IJK),I)
 !                                                !i, j, k
-               W_G_C = AVG_Z_T(W_G(IJKM),W_G(IJK)) 
-            ELSE 
-               U_G_C = ZERO 
-               W_G_C = ZERO 
-            ENDIF 
+               W_G_C = AVG_Z_T(W_G(IJKM),W_G(IJK))
+            ELSE
+               U_G_C = ZERO
+               W_G_C = ZERO
+            ENDIF
 !
 !         Calculate velocity components at i, j, k to be used in wall functions
-            UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I) 
-            VGC = AVG_Y_N(V_G(IJMK),V_G(IJK)) 
+            UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
+            VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
             WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
 
 !=======================================================================
@@ -271,7 +271,7 @@
 
             IF(.NOT.CUT_CELL_AT(IJK)) THEN
 !
-!	Velocity derivives computed for the Pope Approximation.
+!       Velocity derivives computed for the Pope Approximation.
 !
                UG(1,1) = (U_G(IJK)-U_G(IMJK))*ODX(I)
                UG(1,2) = (U_G_N - U_G_S)*ODY(J)
@@ -282,26 +282,26 @@
                UG(3,1) = (W_G_E - W_G_W)*ODX(I)
                UG(3,2) = (W_G_N-W_G_S)*ODY(J)
                UG(3,3) = (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K)) + U_G_C*OX(I)
-! 
+!
 !
 !         Find components of fluid phase strain rate
 !         tensor, D_g, at center of the cell - (i, j, k)
-               D_G(1,1) = (U_G(IJK)-U_G(IMJK))*ODX(I) 
-               D_G(1,2) = HALF*((U_G_N - U_G_S)*ODY(J)+(V_G_E-V_G_W)*ODX(I)) 
+               D_G(1,1) = (U_G(IJK)-U_G(IMJK))*ODX(I)
+               D_G(1,2) = HALF*((U_G_N - U_G_S)*ODY(J)+(V_G_E-V_G_W)*ODX(I))
                D_G(1,3) = HALF*((W_G_E - W_G_W)*ODX(I)+(U_G_T-U_G_B)*(OX(I)*ODZ(K)&
-                  )-W_G_C*OX(I)) 
-               D_G(2,1) = D_G(1,2) 
-               D_G(2,2) = (V_G(IJK)-V_G(IJMK))*ODY(J) 
-               D_G(2,3)=HALF*((V_G_T-V_G_B)*(OX(I)*ODZ(K))+(W_G_N-W_G_S)*ODY(J)) 
-               D_G(3,1) = D_G(1,3) 
-               D_G(3,2) = D_G(2,3) 
-               D_G(3,3) = (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K)) + U_G_C*OX(I) 
+                  )-W_G_C*OX(I))
+               D_G(2,1) = D_G(1,2)
+               D_G(2,2) = (V_G(IJK)-V_G(IJMK))*ODY(J)
+               D_G(2,3)=HALF*((V_G_T-V_G_B)*(OX(I)*ODZ(K))+(W_G_N-W_G_S)*ODY(J))
+               D_G(3,1) = D_G(1,3)
+               D_G(3,2) = D_G(2,3)
+               D_G(3,3) = (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K)) + U_G_C*OX(I)
 
 
 
             ELSE  ! CUT_CELL
 
-               CALL CG_CALC_VEL_G_GRAD(IJK,UG, IER) 
+               CALL CG_CALC_VEL_G_GRAD(IJK,UG, IER)
 
                DO P = 1,3
                   DO Q = 1,3
@@ -338,15 +338,15 @@
 !
 ! This IF statment is to ensure that we are using the turbulent viscosity
 ! and NOT the effective viscosity.
-!	
+!
             IF (MU_GT(IJK) .GE. MU_g(IJK)) THEN
                Mu_gas_t = MU_GT(IJK) - MU_g(IJK)
             ELSE
                Mu_gas_t = ZERO
-            ENDIF  
+            ENDIF
 !
 !        Calculate Tau(i,j)*dUi/dXj (production term in the K Equation
-   
+
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -360,7 +360,7 @@
                                   (OX(I)*ODZ(K))-W_G_C*OX(I)) +              &
                                   D_G(2,1) * (V_G_E-V_G_W)*ODX(I) +          &
                                   D_G(2,2) * D_G(2,2) +                      &
-                                  D_G(2,3) * (V_G_T-V_G_B)*(OX(I)*ODZ(K)) +  &      
+                                  D_G(2,3) * (V_G_T-V_G_B)*(OX(I)*ODZ(K)) +  &
                                   D_G(3,1) * (W_G_E - W_G_W)*ODX(I) +        &
                                   D_G(3,2) * (W_G_N-W_G_S)*ODY(J) +          &
                                   D_G(3,3) * D_G(3,3)) -                     &
@@ -371,8 +371,8 @@
 
 !               Tauij_gDUi_gODxj = 2D0*Mu_gas_t*(                             &
 !                                  D_G(1,1) * UG(1,1)  +                      &
-!                                  D_G(1,2) * UG(1,2)  +                      &      
-!                                  D_G(1,3) * UG(1,3)  +                      &      
+!                                  D_G(1,2) * UG(1,2)  +                      &
+!                                  D_G(1,3) * UG(1,3)  +                      &
 !                                  D_G(2,1) * UG(2,1)  +                      &
 !                                  D_G(2,2) * UG(2,2)  +                      &
 !                                  D_G(2,3) * UG(2,3)  +                      &
@@ -400,21 +400,21 @@
                Pos_Tauij_gDUi_gODxj = ZERO
                Neg_Tauij_gDUi_gODxj = Tauij_gDUi_gODxj
             ENDIF
-!	       
+!
 !
 ! Interaction terms in the K-Epsilon equations FOR USE Simonin and Ahmadi models
 !
             IF(SIMONIN) THEN
-	       Pos_PI_kq_2 = F_GS(IJK,1)*K_12(IJK)
+               Pos_PI_kq_2 = F_GS(IJK,1)*K_12(IJK)
                Neg_PI_kq_2 = F_GS(IJK,1)*2.0D0* K_Turb_G(IJK)
-	    ELSE IF(AHMADI) THEN
+            ELSE IF(AHMADI) THEN
                Pos_PI_kq_2 = F_GS(IJK,1)*3.0D0*Theta_m(IJK,M)
                Neg_PI_kq_2 = F_GS(IJK,1)*2.0D0* K_Turb_G(IJK)
-	       C_Eps_3 = zero ! no extra terms in epsilon equation for Ahmadi model !
-	    ELSE
+               C_Eps_3 = zero ! no extra terms in epsilon equation for Ahmadi model !
+            ELSE
                Pos_PI_kq_2 = ZERO
                Neg_PI_kq_2 = ZERO
-	    ENDIF
+            ENDIF
 
             IF(K_Turb_G(IJK) > Small_number .AND. E_Turb_G(IJK) > Small_number) THEN
 !
@@ -428,7 +428,7 @@
                                    Neg_PI_kq_2)/K_Turb_G(IJK)
 !
 ! Implementing wall functions targeted to fluid cells next to walls...
-! Setting Source and sink terms in the K equation since the production 
+! Setting Source and sink terms in the K equation since the production
 ! in the K eq. due to shear should include the LOG law of the wall.
 !
                IF(WALL_AT(JP_OF(IJK)).OR.WALL_AT(JM_OF(IJK))) THEN
@@ -437,28 +437,28 @@
                               RO_G(IJK)*SQRT(K_Turb_G(IJK))*DY(J)/      &
                               2.0D+0/Mu_g(IJK))
                   IF(Check_Log .LE. ZERO) THEN
-	             K_Turb_G_c (IJK) = zero
-	             K_Turb_G_p (IJK) = zero
-	          ELSE
+                     K_Turb_G_c (IJK) = zero
+                     K_Turb_G_p (IJK) = zero
+                  ELSE
                      K_Turb_G_c (IJK) = SQRT(C_mu)*2.D+0/DY(J)*               &
                                         MAX(ABS(UGC),ABS(WGC))*               &
-	                                EP_g(IJK)*RO_G(IJK)*K_Turb_G(IJK)     &
+                                        EP_g(IJK)*RO_G(IJK)*K_Turb_G(IJK)     &
                                         /Check_Log
- 
+
                      K_Turb_G_p (IJK) = ((EP_g(IJK)*RO_G(IJK)                 &
                        *C_mu**0.75*K_Turb_G(IJK)**1.5/DY(J)*2.0D+0/Kappa)     &
                         )/K_Turb_G(IJK)
                   ENDIF !for check_log less than zero
-	  
+
                ELSE IF(WALL_AT(KP_OF(IJK)).OR.WALL_AT(KM_OF(IJK))) THEN
 !
                   Check_Log = LOG(9.81*C_mu**0.25*                            &
                               RO_G(IJK)*SQRT(K_Turb_G(IJK))/                  &
                               (ODZ(K)*OX(I)*2.0D+0)/Mu_g(IJK))
                   IF(Check_Log .LE. ZERO) THEN
-	             K_Turb_G_c (IJK) = zero
-	             K_Turb_G_p (IJK) = zero
-	          ELSE 
+                     K_Turb_G_c (IJK) = zero
+                     K_Turb_G_p (IJK) = zero
+                  ELSE
                      K_Turb_G_c (IJK) = SQRT(C_mu)*(ODZ(K)*OX(I)*2.0D+0)*     &
                                         MAX(ABS(UGC),ABS(VGC))                &
                                        *EP_g(IJK)*RO_G(IJK)*K_Turb_G(IJK)     &
@@ -468,67 +468,67 @@
                                       *C_mu**0.75*K_Turb_G(IJK)**1.5/Kappa*   &
                                       (ODZ(K)*OX(I)*2.0D+0))                  &
                                       )/K_Turb_G(IJK)
-	          ENDIF !for check_log less than zero
-	  
-               ENDIF !For walls			    
+                  ENDIF !for check_log less than zero
+
+               ENDIF !For walls
 !
-!				
+!
 ! For Cylindrical cases, wall_at (IP) is a wall cell, but wall_at (IM) is
 ! the axis of symmetry where wall functions obviously don't apply.
-!          
+!
           IF(CYLINDRICAL) THEN
-	    IF (WALL_AT(IP_OF(IJK)))  THEN
+            IF (WALL_AT(IP_OF(IJK)))  THEN
 !!
               Check_Log = LOG(9.81*C_mu**0.25*                          &
                      RO_G(IJK)*SQRT(K_Turb_G(IJK))*DX(I)/               &
                        2.0D+0/Mu_g(IJK))
-		               
-	      IF(Check_Log .LE. ZERO) THEN
-	        K_Turb_G_c (IJK) = zero
-	        K_Turb_G_p (IJK) = zero
-	      ELSE		       
+
+              IF(Check_Log .LE. ZERO) THEN
+                K_Turb_G_c (IJK) = zero
+                K_Turb_G_p (IJK) = zero
+              ELSE
                 K_Turb_G_c (IJK) = SQRT(C_mu)*2.D+0/DX(I)*              &
                             MAX(ABS(VGC),ABS(WGC))            &
-	                   *EP_g(IJK)*RO_G(IJK)*K_Turb_G(IJK)           &
+                           *EP_g(IJK)*RO_G(IJK)*K_Turb_G(IJK)           &
                           /Check_Log
- 
+
                 K_Turb_G_p (IJK) = ((EP_g(IJK)*RO_G(IJK)                &
                   *C_mu**0.75*K_Turb_G(IJK)**1.5/DX(I)*2.0D+0/Kappa)    &
-		  )/K_Turb_G(IJK)
-		
-              ENDIF !for check_log less than zero         
-	    ENDIF  ! for wall cells in I direction
+                  )/K_Turb_G(IJK)
+
+              ENDIF !for check_log less than zero
+            ENDIF  ! for wall cells in I direction
           ELSE IF (WALL_AT(IP_OF(IJK)).OR.WALL_AT(IM_OF(IJK))) THEN
 !!
             Check_Log = LOG(9.81*C_mu**0.25*                            &
                      RO_G(IJK)*SQRT(K_Turb_G(IJK))*DX(I)/               &
                        2.0D+0/Mu_g(IJK))
-		               
-	    IF(Check_Log .LE. ZERO) THEN
-	      K_Turb_G_c (IJK) = zero
-	      K_Turb_G_p (IJK) = zero
-	    ELSE	
+
+            IF(Check_Log .LE. ZERO) THEN
+              K_Turb_G_c (IJK) = zero
+              K_Turb_G_p (IJK) = zero
+            ELSE
               K_Turb_G_c (IJK) = SQRT(C_mu)*2.D+0/DX(I)*                &
                MAX(ABS(VGC),ABS(WGC))*                        &
-	       EP_g(IJK)*RO_G(IJK)*K_Turb_G(IJK)                        &
+               EP_g(IJK)*RO_G(IJK)*K_Turb_G(IJK)                        &
                               /Check_Log
 
               K_Turb_G_p (IJK) = ((EP_g(IJK)*RO_G(IJK)                  &
                   *C_mu**0.75*K_Turb_G(IJK)**1.5/DX(I)*2.0D+0/Kappa)    &
-		)/K_Turb_G(IJK)
+                )/K_Turb_G(IJK)
             ENDIF !for check_log less than zero
-          ENDIF ! for cylindrical  
+          ENDIF ! for cylindrical
 
 
 
-         IF(CUT_CELL_AT(IJK)) THEN 
+         IF(CUT_CELL_AT(IJK)) THEN
 !
             Check_Log = LOG(9.81*C_mu**0.25*                          &
                             RO_G(IJK)*SQRT(K_Turb_G(IJK))*DELH_Scalar(IJK)/Mu_g(IJK))
             IF(Check_Log .LE. ZERO) THEN
-	      K_Turb_G_c (IJK) = zero
-	      K_Turb_G_p (IJK) = zero
-	    ELSE
+              K_Turb_G_c (IJK) = zero
+              K_Turb_G_p (IJK) = zero
+            ELSE
 !              K_Turb_G_c (IJK) = SQRT(C_mu)/DELH_Scalar(IJK)*               &
 !              MAX(ABS(UGC),ABS(VGC),ABS(WGC))*                        &
 !              EP_g(IJK)*RO_G(IJK)*K_Turb_G(IJK)                        &
@@ -537,35 +537,35 @@
 
               K_Turb_G_c (IJK) = SQRT(C_mu)/DELH_Scalar(IJK)*               &
               DSQRT(UGC**2 + VGC**2 + WGC**2) *                        &
-	      EP_g(IJK)*RO_G(IJK)*K_Turb_G(IJK)                        &
+              EP_g(IJK)*RO_G(IJK)*K_Turb_G(IJK)                        &
                             /Check_Log
- 
+
               K_Turb_G_p (IJK) = (EP_g(IJK)*RO_G(IJK)                 &
                 *C_mu**0.75*K_Turb_G(IJK)**1.5)/(DELH_Scalar(IJK)*Kappa)     &
                  /K_Turb_G(IJK)
-	    ENDIF !for check_log less than zero
-	  
+            ENDIF !for check_log less than zero
+
 
          ENDIF
 
 
 
-!	 
+!
 !            Diffusion coefficient for turbulent kinetic energy (K)
-!            
+!
              Dif_K_Turb_G(IJK) = EP_g(IJK)* (MU_G(IJK) + Mu_gas_t /Sigma_k)
 !
 ! Add here Dissipation of Turbulence source terms
-!	     
+!
              E_Turb_G_c (IJK) = (Ceps_1 *EP_g(IJK)*Pos_Tauij_gDUi_gODxj &
                                 *E_Turb_G(IJK)/K_Turb_G(IJK) +          &
                                 C_Eps_3*Pos_PI_kq_2*                    &
                                 E_Turb_G(IJK)/K_Turb_G(IJK))           !&
-!				
+!
 ! Pope Correction in Xsi_Pope, Add it to E_Turb_G_c to use this option.
 !
-	                       ! + C_Eps_Pope*RO_G(IJK)*EP_g(IJK)*&
-			       !  ZMAX(Xsi_Pope)
+                               ! + C_Eps_Pope*RO_G(IJK)*EP_g(IJK)*&
+                               !  ZMAX(Xsi_Pope)
 !
              E_Turb_G_p (IJK) = -Ceps_1 *EP_g(IJK)*Neg_Tauij_gDUi_gODxj &
                                  /K_Turb_G(IJK) +                       &
@@ -576,22 +576,22 @@
 !
 !
 !            Diffusion coefficient for Dissipation of turbulent energy (Epsilon)
-!            
+!
              Dif_E_Turb_G(IJK) =EP_g(IJK)* (MU_G(IJK) + Mu_gas_t /Sigma_E)
 
         ELSE
-	  K_Turb_G_c (IJK) = zero
-	  K_Turb_G_p (IJK) = zero
-	  E_Turb_G_c (IJK) = zero
-	  E_Turb_G_p (IJK) = zero
-	  Dif_K_Turb_G(IJK) = zero
-	  Dif_E_Turb_G(IJK) = zero
-	  
+          K_Turb_G_c (IJK) = zero
+          K_Turb_G_p (IJK) = zero
+          E_Turb_G_c (IJK) = zero
+          E_Turb_G_p (IJK) = zero
+          Dif_K_Turb_G(IJK) = zero
+          Dif_E_Turb_G(IJK) = zero
+
         ENDIF !for K_turb_G and E_Turb_G having very small numbers
-	
-         ENDIF 
+
+         ENDIF
       END DO
 !
 !
-      RETURN  
-      END SUBROUTINE K_Epsilon_PROP 
+      RETURN
+      END SUBROUTINE K_Epsilon_PROP

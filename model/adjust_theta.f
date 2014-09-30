@@ -13,7 +13,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE ADJUST_THETA(M, IER) 
+      SUBROUTINE ADJUST_THETA(M, IER)
 
 !-----------------------------------------------
 ! Modules
@@ -27,9 +27,9 @@
       USE fldvar, only: ro_s
 ! particle diameter of solids phase m
       USE fldvar, only: d_p
-! number of solids phases      
+! number of solids phases
       USE physprop, only: smax
-! kt types      
+! kt types
       USE run, only: kt_type
       USE run, only: kt_type_enum
       USE run, only: lun_1984
@@ -43,7 +43,7 @@
       USE compar
       USE geometry
       USE indices
-      
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -71,17 +71,17 @@
       INCLUDE 'function.inc'
 !-----------------------------------------------
 
-      IER = 0 
+      IER = 0
       smallTheta = (to_SI)**4 * ZERO_EP_S
 
       DO IJK = IJKSTART3, IJKEND3
-        IF ( FLUID_AT(IJK) ) THEN 
+        IF ( FLUID_AT(IJK) ) THEN
 
           SELECT CASE(KT_TYPE_ENUM)
             CASE (LUN_1984, SIMONIN_1996, AHMADI_1995, GD_1999, &
                   GTSH_2012)
               IF (THETA_M(IJK,M) < smallTheta) &
-                 THETA_M(IJK,M) = smallTheta 
+                 THETA_M(IJK,M) = smallTheta
 
             CASE (IA_2005)
               D_PM = D_P(IJK,M)
@@ -97,7 +97,7 @@
               ENDDO
               M_PM = M_PM/DBLE(SMAX)
               IF (THETA_M(IJK,M) < smallTheta*M_PM) &
-                THETA_M(IJK,M) = smallTheta*M_PM 
+                THETA_M(IJK,M) = smallTheta*M_PM
 
             CASE DEFAULT
 ! should never hit this
@@ -106,8 +106,8 @@
                call mfix_exit(myPE)
           END SELECT   ! end selection of kt_type_enum
         ENDIF   ! end if (fluid_at)
-      ENDDO  ! end do ijk 
+      ENDDO  ! end do ijk
 
-      RETURN  
+      RETURN
       END SUBROUTINE ADJUST_THETA
 

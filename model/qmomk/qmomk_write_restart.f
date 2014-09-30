@@ -12,7 +12,7 @@
 
 SUBROUTINE QMOMK_WRITE_RESTART
 
-  USE param1      
+  USE param1
   USE qmom_kinetic_equation
   USE run
 
@@ -23,7 +23,7 @@ SUBROUTINE QMOMK_WRITE_RESTART
   REWIND (901)
 
   ! Only weights and abscissas are necessary for restarting a calculation
-  ! Moments are NOT necessary because they are calculated directly from 
+  ! Moments are NOT necessary because they are calculated directly from
   ! weights and abscissas - Alberto Passalacqua
 
   WRITE (901) QMOMK_N1

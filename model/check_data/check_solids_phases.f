@@ -124,7 +124,7 @@
       ENDIF
 
 
-! The cluster calculation only works at the particle level 
+! The cluster calculation only works at the particle level
 ! (i.e., for DEM simulations)
       IF(DES_CALC_CLUSTER) THEN
          IF(TFM_SOLIDS .OR. PIC_SOLIDS) THEN

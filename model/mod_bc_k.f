@@ -15,8 +15,8 @@
 
       USE geometry, only: ICBC_FLAG
 
-      USE compar 
-      USE mpi_utility 
+      USE compar
+      USE mpi_utility
 
       use error_manager
 
@@ -58,20 +58,20 @@
 
       IF(myPE == OWNER) THEN
 
-         IJK  = FUNIJK(I_W, J_S, K_B) 
-         IJKP = FUNIJK(I_W, J_S, K_B+1) 
-      
+         IJK  = FUNIJK(I_W, J_S, K_B)
+         IJKP = FUNIJK(I_W, J_S, K_B+1)
+
          IF(WALL_ICBC_FLAG(IJK) .AND. ICBC_FLAG(IJKP)(1:1)=='.')THEN
-            K_B = K_B 
-            K_T = K_T 
-            BC_PLANE(BCV) = 'T' 
+            K_B = K_B
+            K_T = K_T
+            BC_PLANE(BCV) = 'T'
          ELSEIF(WALL_ICBC_FLAG(IJKP) .AND. ICBC_FLAG(IJK)(1:1)=='.')THEN
-            K_B = K_B + 1 
-            K_T = K_T + 1 
+            K_B = K_B + 1
+            K_T = K_T + 1
             BC_PLANE(BCV) = 'B'
          ELSE
             BC_PLANE(BCV) = '.'
-         ENDIF 
+         ENDIF
       ENDIF
 
 ! The owner distributes the new Iw/Ie coordinates to the other ranks.
@@ -85,7 +85,7 @@
          CALL BCAST(IJK, OWNER)
 
          WRITE(ERR_MSG, 1100) BCV, K_B, K_T, I_W, J_S,                 &
-            IJK, ICBC_FLAG(IJK),  IJKP, ICBC_FLAG(IJKP) 
+            IJK, ICBC_FLAG(IJK),  IJKP, ICBC_FLAG(IJKP)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
@@ -101,7 +101,7 @@
       BC_K_T(BCV) = K_T
 
 ! Set up the I-indices for checking the entire BC region.
-      K_WALL = BC_K_B(BCV) 
+      K_WALL = BC_K_B(BCV)
       K_FLUID = merge(K_WALL-1, K_WALL+1, BC_PLANE(BCV)=='B')
 
 
@@ -115,7 +115,7 @@
          IF(DEAD_CELL_AT(I,J,K_FLUID)) CYCLE
          IF(DEAD_CELL_AT(I,J,K_WALL )) CYCLE
 
-         IJK_WALL = FUNIJK(I,J,K_WALL) 
+         IJK_WALL = FUNIJK(I,J,K_WALL)
          IJK_FLUID = FUNIJK(I,J,K_FLUID)
 
          IF(.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND.                       &
@@ -147,7 +147,7 @@
             IF(DEAD_CELL_AT(I,J,K_FLUID)) CYCLE
             IF(DEAD_CELL_AT(I,J,K_WALL )) CYCLE
 
-            IJK_WALL = FUNIJK(I,J,K_WALL) 
+            IJK_WALL = FUNIJK(I,J,K_WALL)
             IJK_FLUID = FUNIJK(I,J,K_FLUID)
 
             IF(.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND.                    &
@@ -172,5 +172,5 @@
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
       END SUBROUTINE MOD_BC_K

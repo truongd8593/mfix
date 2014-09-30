@@ -12,7 +12,7 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Domain partitions in various directions.
-!      use geometry, only: IMAX 
+!      use geometry, only: IMAX
 !      use geometry, only: JMAX
 !      use geometry, only: KMAX
 ! Runtime flag specifying 2D simulations
@@ -26,7 +26,7 @@
       USE constant
       USE physprop
       USE fldvar
-      USE toleranc 
+      USE toleranc
       USE mfix_pic
       USE cutcell
 
@@ -55,11 +55,11 @@
 !-----------------------------------------------
 !-----------------------------------------------
 ! Include statement functions
-!----------------------------------------------- 
+!-----------------------------------------------
       INCLUDE '../ep_s1.inc'
       INCLUDE '../function.inc'
       INCLUDE '../ep_s2.inc'
-!----------------------------------------------- 
+!-----------------------------------------------
 
 
 
@@ -67,7 +67,7 @@
       CALL INIT_ERR_MSG("CHECK_SOLIDS_MPPIC")
 
 
-        
+
 
       IF(MPPIC_COEFF_EN1 == UNDEFINED) THEN
          WRITE(ERR_MSG, 1000) 'MPPIC_COEFF_EN1'
@@ -115,6 +115,6 @@
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE CHECK_SOLIDS_MPPIC

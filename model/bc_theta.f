@@ -31,14 +31,14 @@
 
 !-----------------------------------------------
 ! Modules
-!-----------------------------------------------      
-      USE param 
-      USE param1 
-      USE parallel 
-      USE matrix 
-      USE scales 
+!-----------------------------------------------
+      USE param
+      USE param1
+      USE parallel
+      USE matrix
+      USE scales
       USE constant
-      USE toleranc 
+      USE toleranc
       USE run
       USE physprop
       USE fldvar
@@ -47,8 +47,8 @@
       USE output
       USE indices
       USE bc
-      USE compar         
-      USE mpi_utility    
+      USE compar
+      USE mpi_utility
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -71,7 +71,7 @@
                  IM, JM, KM
 ! Granular energy coefficient
       DOUBLE PRECISION :: Gw, Hw, Cw
-!----------------------------------------------- 
+!-----------------------------------------------
 ! Include statements functions
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
@@ -79,7 +79,7 @@
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-!----------------------------------------------- 
+!-----------------------------------------------
 
 
 ! Setup Johnson and Jackson Pseudo-thermal temp B.C.
@@ -102,14 +102,14 @@
 
                 IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                 IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
-                IJK   = FUNIJK(I, J, K)      
+                IJK   = FUNIJK(I, J, K)
                 IF (FLOW_AT(IJK)) CYCLE !checks for pressure outlets
                 IM    = Im1(I)
                 JM    = Jm1(J)
                 KM    = Km1(K)
 ! Setting the temperature to zero - recall the center coefficient
-! and source vector are negative. The off-diagonal coefficients 
-! are positive.                         
+! and source vector are negative. The off-diagonal coefficients
+! are positive.
                 A_m(IJK, e, M) =  ZERO
                 A_m(IJK, w, M) =  ZERO
                 A_m(IJK, n, M) =  ZERO
@@ -119,36 +119,36 @@
                 A_m(IJK, 0, M) = -ONE
                 b_m(IJK, M)    =  ZERO
 
-! Checking if the west wall                
+! Checking if the west wall
                 IF(FLUID_AT(EAST_OF(IJK)))THEN
                    IF(EP_s(EAST_OF(IJK),M).LE.DIL_EP_s)THEN
                       A_m(IJK, e, M) = ONE
                    ELSE
                       IF (BC_JJ_PS(L).EQ.3) THEN
-! Setting the wall temperature equal to the adjacent fluid cell 
-! temperature (i.e. zero flux)                              
+! Setting the wall temperature equal to the adjacent fluid cell
+! temperature (i.e. zero flux)
                          Gw = 1d0
                          Hw = 0d0
-                         Cw = 0d0 
+                         Cw = 0d0
                       ELSE
-! Setting the wall temperature based on Johnson and Jackson 
-! Pseudo-thermal temp B.C.                               
+! Setting the wall temperature based on Johnson and Jackson
+! Pseudo-thermal temp B.C.
                          CALL CALC_THETA_BC(IJK,EAST_OF(IJK),'E',&
                             M,L,gw,hw,cw)
-! Overwriting calculated value of cw                            
-                        IF (BC_JJ_PS(L).EQ.2) cw=0d0 
+! Overwriting calculated value of cw
+                        IF (BC_JJ_PS(L).EQ.2) cw=0d0
                       ENDIF
- 
+
                       A_m(IJK, e, M) = -(HALF*hw - oDX_E(I)*gw)
                       A_m(IJK, 0, M) = -(HALF*hw + oDX_E(I)*gw)
- 
+
                       IF (BC_JJ_PS(L) .EQ. 1) THEN
                         b_m(IJK, M) = -cw
                       ELSE
                         b_m(IJK,M) = ZERO
                       ENDIF
                    ENDIF
- 
+
                 ELSEIF(FLUID_AT(WEST_OF(IJK)))THEN
                    IF(EP_s(WEST_OF(IJK),M).LE.DIL_EP_s)THEN
                       A_m(IJK, w, M) = ONE
@@ -162,17 +162,17 @@
                            M,L,gw,hw,cw)
                         IF (BC_JJ_PS(L).EQ.2) cw=0d0
                      ENDIF
- 
+
                      A_m(IJK, w, M) = -(HALF*hw - oDX_E(IM)*gw)
                      A_m(IJK, 0, M) = -(HALF*hw + oDX_E(IM)*gw)
- 
+
                      IF (BC_JJ_PS(L) .EQ. 1) THEN
                         b_m(IJK, M) = -cw
                      ELSE
                         b_m(IJK,M) = ZERO
                      ENDIF
                    ENDIF
- 
+
                 ELSEIF(FLUID_AT(NORTH_OF(IJK)))THEN
                    IF(EP_s(NORTH_OF(IJK),M).LE.DIL_EP_s)THEN
                       A_m(IJK, n, M) = ONE
@@ -181,22 +181,22 @@
                         Gw = 1d0
                         Hw = 0d0
                         Cw = 0d0
-                     ELSE 
+                     ELSE
                         CALL CALC_THETA_BC(IJK,NORTH_OF(IJK),'N',&
                            M,L,gw,hw,cw)
                         IF (BC_JJ_PS(L).EQ.2) cw=0d0
                      ENDIF
- 
+
                      A_m(IJK, n, M) = -(HALF*hw - oDY_N(J)*gw)
                      A_m(IJK, 0, M) = -(HALF*hw + oDY_N(J)*gw)
- 
+
                      IF (BC_JJ_PS(L) .EQ. 1) THEN
                         b_m(IJK, M) = -cw
                      ELSE
                         b_m(IJK,M) = ZERO
                      ENDIF
                    ENDIF
- 
+
                 ELSEIF(FLUID_AT(SOUTH_OF(IJK)))THEN
                    IF(EP_s(SOUTH_OF(IJK),M).LE.DIL_EP_s)THEN
                       A_m(IJK, s, M) = ONE
@@ -208,19 +208,19 @@
                      ELSE
                         CALL CALC_THETA_BC(IJK,SOUTH_OF(IJK),'S',&
                            M,L,gw,hw,cw)
-                        IF (BC_JJ_PS(L).EQ.2) cw=0d0 
+                        IF (BC_JJ_PS(L).EQ.2) cw=0d0
                      ENDIF
- 
+
                      A_m(IJK, s, M) = -(HALF*hw - oDY_N(JM)*gw)
                      A_m(IJK, 0, M) = -(HALF*hw + oDY_N(JM)*gw)
- 
+
                      IF (BC_JJ_PS(L) .EQ. 1) THEN
                         b_m(IJK, M) = -cw
                      ELSE
                         b_m(IJK,M) = ZERO
                      ENDIF
                    ENDIF
- 
+
                 ELSEIF(FLUID_AT(TOP_OF(IJK)))THEN
                    IF(EP_s(TOP_OF(IJK),M).LE.DIL_EP_s)THEN
                       A_m(IJK, t, M) = ONE
@@ -234,17 +234,17 @@
                            M,L,gw,hw,cw)
                         IF (BC_JJ_PS(L).EQ.2) cw=0d0
                      ENDIF
- 
+
                      A_m(IJK, t, M) = -(HALF*hw - oX(I)*oDZ_T(K)*gw)
                      A_m(IJK, 0, M) = -(HALF*hw + oX(I)*oDZ_T(K)*gw)
- 
+
                      IF (BC_JJ_PS(L) .EQ. 1) THEN
                         b_m(IJK, M) = -cw
                      ELSE
                         b_m(IJK,M) = ZERO
                      ENDIF
                    ENDIF
- 
+
                 ELSEIF(FLUID_AT(BOTTOM_OF(IJK)))THEN
                    IF(EP_s(BOTTOM_OF(IJK),M).LE.DIL_EP_s)THEN
                       A_m(IJK, b , M) = ONE
@@ -258,10 +258,10 @@
                            M,L,gw,hw,cw)
                         IF (BC_JJ_PS(L).EQ.2) cw=0d0
                      ENDIF
- 
+
                      A_m(IJK, b, M) = -(HALF*hw - oX(I)*oDZ_T(KM)*gw)
                      A_m(IJK, 0, M) = -(HALF*hw + oX(I)*oDZ_T(KM)*gw)
- 
+
                      IF (BC_JJ_PS(L) .EQ. 1) THEN
                         b_m(IJK, M) = -cw
                      ELSE
@@ -281,8 +281,8 @@
 
       RETURN
       END SUBROUTINE BC_THETA
- 
- 
+
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: CALC_THETA_BC                                           C
@@ -303,8 +303,8 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE constant
       USE physprop
       USE fldvar
@@ -314,10 +314,10 @@
       USE geometry
       USE indices
       USE bc
-      USE compar 
-      USE toleranc        
+      USE compar
+      USE toleranc
       USE mpi_utility
-      USE rxns            
+      USE rxns
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -329,7 +329,7 @@
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
 ! Index corresponding to boundary condition
-      INTEGER, INTENT(IN) ::  L      
+      INTEGER, INTENT(IN) ::  L
 ! Granular energy coefficient
       DOUBLE PRECISION, INTENT(INOUT) :: Gw, Hw, Cw
 !-----------------------------------------------
@@ -372,40 +372,40 @@
       DOUBLE PRECISION :: g0(DIMENSION_M)
 ! Sum of eps*G_0
       DOUBLE PRECISION :: g0EPs_avg, G_0
-!----------------------------------------------- 
+!-----------------------------------------------
 ! External functions
-!----------------------------------------------- 
-! Variable specularity coefficient  
-      DOUBLE PRECISION :: PHIP_JJ 
-!----------------------------------------------- 
+!-----------------------------------------------
+! Variable specularity coefficient
+      DOUBLE PRECISION :: PHIP_JJ
+!-----------------------------------------------
 ! Include statements functions
-!----------------------------------------------- 
+!-----------------------------------------------
       INCLUDE 'ep_s1.inc'
       INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-!----------------------------------------------- 
+!-----------------------------------------------
 
 ! Note: EP_s, MU_g, and RO_g are undefined at IJK1 (wall cell).
 !       Hence IJK2 (fluid cell) is used in averages.
 
       smallTheta = (to_SI)**4 * ZERO_EP_S
 
-! set location independent quantities      
+! set location independent quantities
       EPg_avg = EP_g(IJK2)
       ep_star_avg = EP_star_array(IJK2)
       Mu_g_avg = Mu_g(IJK2)
       RO_g_avg = RO_g(IJK2)
       g0EPs_avg = ZERO
 
-! added for Simonin model (sof)         
+! added for Simonin model (sof)
       IF(KT_TYPE_ENUM == SIMONIN_1996 .OR. &
          KT_TYPE_ENUM == AHMADI_1995) THEN
          K_12_avg = K_12(IJK2)
          Tau_12_avg = Tau_12(IJK2)
       ELSE
-         K_12_avg = ZERO    
+         K_12_avg = ZERO
          Tau_12_avg = ZERO
       ENDIF
 
@@ -418,14 +418,14 @@
       ENDDO
 
 
-      IF(FCELL .EQ. 'N')THEN 
+      IF(FCELL .EQ. 'N')THEN
          DO MM = 1, SMAX
             TH_avg(MM) = AVG_Y(Theta_m(IJK1,MM),Theta_m(IJK2,MM),J_OF(IJK1))
             IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta ! for some corner cells
 
 ! added for IA (2005) theory:
 ! include -1 since normal vector is pointing south (-y)
-! velocity at wall (i,j+1/2,k relative to ijk1) dot with the normal 
+! velocity at wall (i,j+1/2,k relative to ijk1) dot with the normal
 ! vector at the wall
             VWDOTN(MM) = -1.d0*V_S(IJK1,MM)
 
@@ -459,19 +459,19 @@
                      AVG_Z_T(W_s(KM_OF(IJK2),M), W_s(IJK2,M)),&
                      J_OF(IJK1))
 
-! slip velocity at the wall 
+! slip velocity at the wall
          VSLIPSQ=(WSCM-BC_Ww_s(L, M))**2 + (USCM-BC_Uw_s(L, M))**2
-  
 
-      ELSEIF(FCELL .EQ. 'S')THEN 
+
+      ELSEIF(FCELL .EQ. 'S')THEN
          DO MM = 1, SMAX
             TH_avg(MM) = AVG_Y(Theta_m(IJK2, MM),Theta_m(IJK1, MM),J_OF(IJK2))
             IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta ! for some corner cells
 
 ! added for IA (2005) theory:
 ! include 1 since normal vector is pointing north (+y)
-! velocity at wall (i,j+1/2,k relative to ijk2) dot with the normal 
-! vector at the wall. 
+! velocity at wall (i,j+1/2,k relative to ijk2) dot with the normal
+! vector at the wall.
             VWDOTN(MM) = 1.d0*V_S(IJK2,MM)
 
 ! gradient in number density at wall (i,j+1/2,k relative to ijk2) dot
@@ -480,12 +480,12 @@
 ! to ijk2
             IJK3 = SOUTH_OF(IJK2)
             GNUWDOTN(MM) = 1.d0*(6.d0/(PI*DP_avg(MM)))*&
-                 (EP_s(IJK2,MM)-EP_s(IJK3,MM))*oDY_N(J_OF(IJK3)) 
+                 (EP_s(IJK2,MM)-EP_s(IJK3,MM))*oDY_N(J_OF(IJK3))
 
 ! gradient in granular temperature at wall (i,j+1/2,k relative to ijk2)
 ! dot with the normal vector at the wall.
             GTWDOTN(MM) = 1.d0*(Theta_m(IJK2,MM)-Theta_m(IJK3,MM))*&
-                 oDY_N(J_OF(IJK3)) 
+                 oDY_N(J_OF(IJK3))
          ENDDO
 
 ! Calculate velocity components at i, j+1/2, k (relative to IJK2)
@@ -504,7 +504,7 @@
                      AVG_Z_T(W_s(KM_OF(IJK1),M), W_s(IJK1,M)),&
                      J_OF(IJK2))
 
-! slip velocity at the wall 
+! slip velocity at the wall
          VSLIPSQ=(WSCM-BC_Ww_s(L, M))**2 + (USCM-BC_Uw_s(L, M))**2
 
 
@@ -515,9 +515,9 @@
 
 ! added for IA (2005) theory:
 ! include -1 since normal vector is pointing west (-x)
-! velocity at wall (i+1/2,j,k relative to ijk1) dot with the normal 
-! vector at the wall. 
-            VWDOTN(MM) = -1.d0*U_S(IJK1,MM)    
+! velocity at wall (i+1/2,j,k relative to ijk1) dot with the normal
+! vector at the wall.
+            VWDOTN(MM) = -1.d0*U_S(IJK1,MM)
 
 ! gradient in number density at wall (i+1/2,j,k relative to ijk1) dot
 ! with the normal vector at the wall. since nu is undefined at ijk1,
@@ -525,12 +525,12 @@
 ! to ijk2
             IJK3 = EAST_OF(IJK2)
             GNUWDOTN(MM) = -1.d0*(6.d0/(PI*DP_avg(MM)))*&
-                 (EP_s(IJK3,MM)-EP_s(IJK2,MM))*oDX_E(I_OF(IJK2)) 
+                 (EP_s(IJK3,MM)-EP_s(IJK2,MM))*oDX_E(I_OF(IJK2))
 
-! gradient in granular temperature at wall (i+1/2,j,k relative to ijk1) 
+! gradient in granular temperature at wall (i+1/2,j,k relative to ijk1)
 ! dot with the normal vector at the wall.
             GTWDOTN(MM) = -1.d0*(Theta_m(IJK3,MM)-Theta_m(IJK2,MM))*&
-                 oDX_E(I_OF(IJK2)) 
+                 oDX_E(I_OF(IJK2))
          ENDDO
 
 ! Calculate velocity components at i+1/2, j, k (relative to IJK1)
@@ -549,10 +549,10 @@
                      AVG_Z_T(W_s(KM_OF(IJK2),M), W_s(IJK2,M)),&
                      I_OF(IJK1))
 
-! slip velocity at the wall 
+! slip velocity at the wall
          VSLIPSQ=(WSCM-BC_Ww_s(L, M))**2 + (VSCM-BC_Vw_s(L, M))**2
- 
- 
+
+
       ELSEIF(FCELL== 'W')THEN
           DO MM = 1, SMAX
             TH_avg(MM) = AVG_X(Theta_m(IJK2,MM),Theta_m(IJK1,MM),I_OF(IJK2))
@@ -560,8 +560,8 @@
 
 ! added for IA (2005) theory:
 ! include 1 since normal vector is pointing west (+x)
-! velocity at wall (i+1/2,j,k relative to ijk2) dot with the normal 
-! vector at the wall.  
+! velocity at wall (i+1/2,j,k relative to ijk2) dot with the normal
+! vector at the wall.
             VWDOTN(MM) = 1.d0*U_S(IJK2,MM)
 
 ! gradient in number density at wall (i+1/2,j,k relative to ijk2) dot
@@ -570,12 +570,12 @@
 ! to ijk2
             IJK3 = WEST_OF(IJK2)
             GNUWDOTN(MM) = 1.d0*(6.d0/(PI*DP_avg(MM)))*&
-                 (EP_s(IJK2,MM)-EP_s(IJK3,MM))*oDX_E(I_OF(IJK3)) 
+                 (EP_s(IJK2,MM)-EP_s(IJK3,MM))*oDX_E(I_OF(IJK3))
 
-! gradient in granular temperature at wall (i+1/2,j,k relative to ijk2) 
+! gradient in granular temperature at wall (i+1/2,j,k relative to ijk2)
 ! dot with the normal vector at the wall.
             GTWDOTN(MM) = 1.d0*(Theta_m(IJK2,MM)-Theta_m(IJK3,MM))*&
-                 oDX_E(I_OF(IJK3))  
+                 oDX_E(I_OF(IJK3))
          ENDDO
 
 ! Calculate velocity components at i+1/2, j, k (relative to IJK2)
@@ -594,10 +594,10 @@
                      AVG_Z_T(W_s(KM_OF(IJK1),M), W_s(IJK1,M)),&
                      I_OF(IJK2))
 
-! slip velocity at the wall 
+! slip velocity at the wall
          VSLIPSQ=(WSCM-BC_Ww_s(L, M))**2 + (VSCM-BC_Vw_s(L, M))**2
- 
- 
+
+
       ELSEIF(FCELL== 'T')THEN
          DO MM = 1, SMAX
             TH_avg(MM) = AVG_Z(Theta_m(IJK1,MM),Theta_m(IJK2,MM),K_OF(IJK1))
@@ -605,8 +605,8 @@
 
 ! added for IA (2005) theory:
 ! include -1 since normal vector is pointing in bottom dir (-z)
-! velocity at wall (i,j,k+1/2 relative to ijk1) dot with the normal 
-! vector at the wall.  
+! velocity at wall (i,j,k+1/2 relative to ijk1) dot with the normal
+! vector at the wall.
             VWDOTN(MM) = -1.d0*W_S(IJK1,MM)
 
 ! gradient in number density at wall (i,j,k+1/2 relative to ijk1) dot
@@ -617,10 +617,10 @@
             GNUWDOTN(MM) = -1.d0*(6.d0/(PI*DP_avg(MM)))*&
                  (EP_s(IJK3,MM)-EP_s(IJK2,MM))*oX(I_of(IJK2))*oDZ_T(K_OF(IJK2))
 
-! gradient in granular temperature at wall (i,j,k+1/2 relative to ijk1) 
+! gradient in granular temperature at wall (i,j,k+1/2 relative to ijk1)
 ! dot with the normal vector at the wall.
             GNUWDOTN(MM) = -1.d0*(Theta_m(IJK3,MM)-Theta_m(IJK2,MM))*&
-                 oX(I_of(IJK2))*oDZ_T(K_OF(IJK2))  
+                 oX(I_of(IJK2))*oDZ_T(K_OF(IJK2))
          ENDDO
 
 ! Calculate velocity components at i, j, k+1/2 (relative to IJK1)
@@ -639,10 +639,10 @@
                      K_OF(IJK1))
          WSCM = W_s(IJK1,M)
 
-! slip velocity at the wall          
+! slip velocity at the wall
          VSLIPSQ=(VSCM-BC_Vw_s(L, M))**2 + (USCM-BC_Uw_s(L, M))**2
- 
- 
+
+
       ELSEIF(FCELL== 'B')THEN
          DO MM = 1, SMAX
             TH_avg(MM) = AVG_Z(Theta_m(IJK2,MM),Theta_m(IJK1,MM),K_OF(IJK2))
@@ -650,8 +650,8 @@
 
 ! added for IA (2005) theory:
 ! include 1 since normal vector is pointing in bottom dir (+z)
-! velocity at wall (i,j,k+1/2 relative to ijk2) dot with the normal 
-! vector at the wall 
+! velocity at wall (i,j,k+1/2 relative to ijk2) dot with the normal
+! vector at the wall
             VWDOTN(MM) = 1.d0*W_S(IJK2,MM)
 
 ! gradient in number density at wall (i,j,k+1/2 relative to ijk2) dot
@@ -662,10 +662,10 @@
             GNUWDOTN(MM) = 1.d0*(6.d0/(PI*DP_avg(MM)))*&
                  (EP_s(IJK2,MM)-EP_s(IJK3,MM))*oX(I_of(IJK3))*oDZ_T(K_OF(IJK3))
 
-! gradient in granular temperature at wall (i,j,k+1/2 relative to ijk2) 
+! gradient in granular temperature at wall (i,j,k+1/2 relative to ijk2)
 ! dot with the normal vector at the wall.
             GTWDOTN(MM) = 1.d0*(Theta_m(IJK2,MM)-Theta_m(IJK3,MM))*&
-                 oX(I_of(IJK3))*oDZ_T(K_OF(IJK3))     
+                 oX(I_of(IJK3))*oDZ_T(K_OF(IJK3))
          ENDDO
 
 ! Calculate velocity components at i, j, k+1/2 (relative to IJK2)
@@ -684,13 +684,13 @@
                      K_OF(IJK2))
          WSCM = W_s(IJK2,M)
 
-! slip velocity at the wall 
+! slip velocity at the wall
          VSLIPSQ=(VSCM-BC_Vw_s(L, M))**2 + (USCM-BC_Uw_s(L, M))**2
 
       ELSE
          WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
          CALL WRITE_ERROR('CALC_THETA_BC', LINE, 1)
-         call exitMPI(myPE)          
+         call exitMPI(myPE)
       ENDIF
 
 ! magnitude of gas-solids relative velocity
@@ -702,7 +702,7 @@
                        GNUWDOTN,GTWDOTN,M,Gw,Hw,Cw,L)
 
 ! Output the variable specularity coefficient.  Currently only works
-! for one solids phase                       
+! for one solids phase
       IF(BC_JJ_M .and. PHIP_OUT_JJ) THEN
          IF(PHIP_OUT_ITER.eq.1) THEN
             ReactionRates(IJK1,1)= PHIP_JJ(dsqrt(VSLIPSQ),TH_avg(1))
@@ -711,7 +711,7 @@
 
       RETURN
       END SUBROUTINE CALC_THETA_BC
- 
+
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -762,30 +762,30 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE physprop
       USE run
       USE constant
       USE fldvar
-      USE toleranc 
+      USE toleranc
       USE bc
       USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
-!-----------------------------------------------      
+!-----------------------------------------------
 ! Radial distribution function of solids phase M with each
-! other solids phase 
-      DOUBLE PRECISION, INTENT(IN) :: g0(DIMENSION_M) 
+! other solids phase
+      DOUBLE PRECISION, INTENT(IN) :: g0(DIMENSION_M)
 ! Average solids volume fraction of each solids phase
       DOUBLE PRECISION, INTENT(IN) :: EPS(DIMENSION_M)
 ! Average solids and gas volume fraction
       DOUBLE PRECISION, INTENT(IN) :: EPG, ep_star_avg
-! Sum of eps*G_0 
-      DOUBLE PRECISION, INTENT(INOUT) :: g0EPs_avg 
+! Sum of eps*G_0
+      DOUBLE PRECISION, INTENT(INOUT) :: g0EPs_avg
 ! Average theta_m
-      DOUBLE PRECISION, INTENT(INOUT) :: TH (DIMENSION_M)      
+      DOUBLE PRECISION, INTENT(INOUT) :: TH (DIMENSION_M)
 ! Average gas viscosity
       DOUBLE PRECISION, INTENT(IN) :: Mu_g_avg
 ! Average gas density
@@ -813,12 +813,12 @@
 ! Coefficients in JJ boundary conditions
 ! Gw = granular conductivity (w particle mass)
 ! Hw = dissipation due to particle-wall collision
-! Cw = generation due to particle-wall slip     
-      DOUBLE PRECISION, INTENT(INOUT) :: GW, HW, CW 
+! Cw = generation due to particle-wall slip
+      DOUBLE PRECISION, INTENT(INOUT) :: GW, HW, CW
 ! Index corresponding to boundary condition
       INTEGER, INTENT(IN) :: L
 !-----------------------------------------------
-! Local Variables      
+! Local Variables
 !-----------------------------------------------
 ! Solids phase index
       INTEGER :: LL
@@ -857,14 +857,14 @@
       DOUBLE PRECISION :: Ps, PsoTheta
 ! Error message
       CHARACTER*80     LINE
-!----------------------------------------------- 
-! Function subroutines
-!----------------------------------------------- 
-! variable specularity coefficient
-      DOUBLE PRECISION :: PHIP_JJ 
-      DOUBLE PRECISION :: S_star 
 !-----------------------------------------------
- 
+! Function subroutines
+!-----------------------------------------------
+! variable specularity coefficient
+      DOUBLE PRECISION :: PHIP_JJ
+      DOUBLE PRECISION :: S_star
+!-----------------------------------------------
+
       IF(TH(M) .LE. ZERO)THEN
          TH(M) = 1D-8
          IF (myPE.eq.PE_IO) THEN
@@ -875,11 +875,11 @@
       ENDIF
 
 ! common variables
-      D_PM = DP_avg(M)        
+      D_PM = DP_avg(M)
       M_PM = (PI/6.d0)*(D_PM**3.)*ROS_avg(M)
       NU_PM = (EPS(M)*ROS_avg(M))/M_PM
 
-! This is from Wen-Yu correlation, you can put here your own single particle drag 
+! This is from Wen-Yu correlation, you can put here your own single particle drag
       Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
       IF (Re_g .lt. 1000.d0) THEN
          C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
@@ -896,7 +896,7 @@
 ! -------------------------------------------------------------------
       SELECT CASE (KT_TYPE_ENUM)
 
-      CASE (LUN_1984) 
+      CASE (LUN_1984)
          Kgran = 75d0*ROs_avg(M)*DP_avg(M)*DSQRT(Pi*TH(M))/&
             (48*Eta*(41d0-33d0*Eta))
 
@@ -909,14 +909,14 @@
                (ROs_avg(M)*g0EPs_avg*TH(M) + &
                1.2d0*DgA/ROs_avg(M)* Kgran)
          ENDIF
- 
+
 ! mth solids phase granular conductivity includes particle mass
          K_1 = Kgran_star/g0(M)*( &
             ( ONE + (12d0/5.d0)*Eta*g0EPs_avg ) * &
             ( ONE + (12d0/5.d0)*Eta*Eta*(4d0*Eta-3d0) *g0EPs_avg ) + &
             (64d0/(25d0*Pi)) * (41d0-33d0*Eta) *(Eta*g0EPs_avg)**2 )
-            
-! defining granular pressure (for Jenkins BC)    
+
+! defining granular pressure (for Jenkins BC)
          PsoTheta = ROs_avg(M)*EPS(M)*(ONE+4.D0*Eta*g0EPs_avg)
          Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+4.D0*Eta*g0EPs_avg)
 
@@ -925,7 +925,7 @@
 ! particle relaxation time
          Tau_12_st = ROs_avg(M)/(DgA+small_number)
          Zeta_c  = (ONE+ C_e)*(49.d0-33.d0*C_e)/100.d0
-         Omega_c = 3.d0*(ONE+ C_e)**2 *(2.d0*C_e-ONE)/5.d0 
+         Omega_c = 3.d0*(ONE+ C_e)**2 *(2.d0*C_e-ONE)/5.d0
          Tau_2_c = DP_avg(M)/(6.d0*EPS(M)*g0(M) &
             *DSQRT(16.d0*(TH(M)+Small_number)/PI))
 
@@ -943,7 +943,7 @@
 ! defining granular pressure (for Jenkins BC)
          PsoTheta = ROs_avg(M)*EPS(M)*(ONE+4.D0*Eta*g0EPs_avg)
          Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+4.D0*Eta*g0EPs_avg)
-    
+
 
       CASE (AHMADI_1995)
 ! mth solids phase granular conductivity includes particle mass
@@ -990,7 +990,7 @@
 
             IF ( LL .eq. M) THEN
                K_s_sum = K_s_sum + K_s_MM
-! Kth_sL_LM is zero when LL=M because it cancels with terms from K_s_LM 
+! Kth_sL_LM is zero when LL=M because it cancels with terms from K_s_LM
 ! Kvel_s_LM should be zero when LL=M (same solids phase)
 ! Knu_s_LM should be zero when LL=M (same solids phase)
             ELSE
@@ -1022,7 +1022,7 @@
                K_common_term = DPSUMo2**3 * M_PL*M_PM/(2.d0*MPSUM)*&
                   (1.d0+C_E)*g0(LL) * (M_PM*M_PL)**1.5
 
-! solids phase 'conductivity' associated with the 
+! solids phase 'conductivity' associated with the
 ! gradient in granular temperature of species M
                K_sM_LM = - K_common_term*NU_PM*NU_PL*(&
                   ((DPSUMo2*DSQRT(PI)/16.d0)*(3.d0/2.d0)*Bp_lm*R5p_lm)+&
@@ -1043,7 +1043,7 @@
 
 ! These lines were commented because they are not currently used
 ! solids phase 'conductivity' associated with the gradient in granular
-! temperature of species L 
+! temperature of species L
 !               Kth_sL_LM = K_common_term*NU_PM*NU_PL*(&
 !                  (-(DPSUMo2*DSQRT(PI)/16.d0)*(3.d0/2.d0)*Bp_lm*R5p_lm)+&
 !                  (-(M_PL/(8.d0*MPSUM))*(1.d0-C_E)*(DPSUMo2*PI/6.d0)*&
@@ -1067,7 +1067,7 @@
 !                  R0p_lm*( (TH(M)*TH(LL))**(5./2.) )*&
 !                  (VWDOTN(M)-VWDOTN(LL))
 
-! solids phase 'conductivity' associated with the difference in the 
+! solids phase 'conductivity' associated with the difference in the
 ! gradient in number densities
 !               Knu_s_LM = K_common_term*(((DPSUMo2*DSQRT(PI)/16.d0)*&
 !                  Bp_lm*R5p_lm)+((M_PL/(8.d0*MPSUM))*(1.d0-C_E)*&
@@ -1082,12 +1082,12 @@
 
             ENDIF   ! end if( LL .eq. M)/else
          ENDDO  ! end do LL = 1, SMAX
-               
+
 ! mth solids phase granular conductivity DOES NOT include particle mass
          K_1 = K_s_sum
 
 ! Note that the velocity term is not included here because it should
-! become zero when dotted with the outward normal (i.e. no solids 
+! become zero when dotted with the outward normal (i.e. no solids
 ! flux through the wall; assuming that the solids velocity at the
 ! wall in the normal direction is zero)
 !         CW = CW + Kvel_s_sum
@@ -1095,25 +1095,25 @@
 ! Note that the gradient in number density at the wall must be
 ! approximated with interior points since there is no value of
 ! number density associated with the wall location; the ghost
-! cell values are undefined for volume fraction.  
+! cell values are undefined for volume fraction.
 !         CW = CW + Knu_s_sum
 
 ! The gradient in temperature of phase LL at the wall
 !         CW = CW + Kth_s_sum
 
 
-      CASE (GD_1999) 
+      CASE (GD_1999)
 ! Note: k_boltz = M_PM
-         D_PM = DP_avg(M)        
+         D_PM = DP_avg(M)
          M_PM = (PI/6.d0)*(D_PM**3.)*ROS_avg(M)
          NU_PM = (EPS(M)*ROS_avg(M))/M_PM
 
 ! Find pressure in the Mth solids phase
          press_star = ONE + 2.d0*(1.d0+C_E)*EPS(M)*G0(M)
- 
-! find conductivity  
+
+! find conductivity
          eta0 = 5.0d0*M_PM*DSQRT(TH(M)/PI) / (16.d0*D_PM*D_PM)
- 
+
          c_star = 32.0d0*(1.0d0 - C_E)*(1.d0 - 2.0d0*C_E*C_E) &
             / (81.d0 - 17.d0*C_E + 30.d0*C_E*C_E*(1.0d0-C_E))
 
@@ -1145,9 +1145,9 @@
                (ROS_avg(M)*G0(M)*EPS(M)*TH(M) + &
                1.2d0*DgA*kappa0/ROs_avg(M))     ! Note dgA is ~F_gs/ep_s
          ENDIF
-  
-! kgran_star includes particle mass     
-! mth solids phase granular conductivity includes particle mass         
+
+! kgran_star includes particle mass
+! mth solids phase granular conductivity includes particle mass
          K_1 = Kgran_star * kappa_star
 
 ! transport coefficient of the Mth solids phase associated
@@ -1163,19 +1163,19 @@
 !            (1.d0+C_E) )
 !         Kphis = (TH(M)*Kgran_star/NU_PM)*qmu_star
 
-! defining granular pressure (for Jenkins BC)    
+! defining granular pressure (for Jenkins BC)
          PsoTheta = ROs_avg(M)*EPS(M)*(ONE+2.d0*(ONE+C_E)*g0EPs_avg)
                     ! ~ROs_avg(m)*EPS(M)*press_star
          Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+2.d0*(ONE+C_E)*g0EPs_avg)
                     ! ~ROs_avg(m)*EPS(M)*TH(M)*press_star
 
-      CASE (GTSH_2012)  
-         D_PM = DP_avg(M)        
+      CASE (GTSH_2012)
+         D_PM = DP_avg(M)
          M_PM = (PI/6.d0)*(D_PM**3.)*ROS_avg(M)
          NU_PM = (EPS(M)*ROS_avg(M))/M_PM
          Chi = g0(M)
          vfrac = EPS(M)
-         
+
          Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
          Re_T = RO_g_avg*D_PM*dsqrt(TH(M)) / Mu_g_avg
          mu2_0 = dsqrt(2d0*pi) * Chi * (one-C_E**2)  ! eq. (6.22) GTSH theory
@@ -1183,7 +1183,7 @@
          mu4_1 = (6.46875d0+0.9375d0*C_E**2)*mu2_0 + 2d0*dsqrt(2d0*pi)* &
                   Chi*(one+C_E)  ! this is done to avoid /0 in case c_e = 1.0
          A2_gtshW = zero ! for eps = zero
-         if((vfrac> small_number) .and. (TH(M) > small_number)) then 
+         if((vfrac> small_number) .and. (TH(M) > small_number)) then
             zeta_star = 4.5d0*dsqrt(2d0*Pi)*(RO_g_avg/ROs_avg(M))**2*Re_g**2 * &
                         S_star(vfrac,Chi) / (vfrac*(one-vfrac)**2 * Re_T**4)
             A2_gtshW = (5d0*mu2_0 - mu4_0) / (mu4_1 - 5d0* &
@@ -1206,7 +1206,7 @@
          K_1 = KthK*(one+1.2d0*vfrac*Chi*(one+C_E)) + (10.24d0/pi* &
                 vfrac**2*Chi*(one+C_E)*(one+0.4375d0*A2_gtshW)*Kth0)
 
-! defining granular pressure (for Jenkins BC)    
+! defining granular pressure (for Jenkins BC)
          PsoTheta = ROs_avg(M)*EPS(M)*(ONE+2.d0*(ONE+C_E)*g0EPs_avg)
          Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+2.d0*(ONE+C_E)*g0EPs_avg)
 
@@ -1217,32 +1217,32 @@
          WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
          call mfix_exit(myPE)
       END SELECT
- 
+
 
 ! setting the coefficients for JJ BC
 ! -------------------------------------------------------------------
 ! GW = granular conductivity
 ! Hw = dissipation due to particle-wall collision
-! Cw = generation due to particle-wall slip      
+! Cw = generation due to particle-wall slip
       SELECT CASE (KT_TYPE_ENUM)
          CASE (LUN_1984, SIMONIN_1996, AHMADI_1995, GD_1999)
 ! KTs without particle mass in their definition of granular temperature
 ! and with mass in their conductivity
 ! and theta = granular temperature
-            GW = K_1 
+            GW = K_1
 
 ! Jenkins BC implemented for these KT models
             IF(JENKINS) THEN
                HW = 3.D0/8.D0*DSQRT(3.D0*TH(M))*((1d0-e_w))*&
                     PsoTheta
 
-! As I understand from soil mechanic papers, the coefficient mu in 
+! As I understand from soil mechanic papers, the coefficient mu in
 ! Jenkins paper is tan_Phi_w. T.  See for example, G.I. Tardos, PT,
 ! 92 (1997), 61-74, equation (1). sof
                CW = tan_Phi_w*tan_Phi_w*(ONE+e_w)*21.d0/16.d0*&
                     DSQRT(3.D0*TH(M)) * Ps
- 
-           ELSE            
+
+           ELSE
                HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*&
                   (1d0-e_w*e_w)*&
                   ROs_avg(M)*EPS(M)*g0(M)*DSQRT(TH(M))
@@ -1253,7 +1253,7 @@
                ELSE
                   CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*&
                      PHIP_JJ(DSQRT(vslipsq),TH(M))*ROs_avg(M)*&
-                     EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ  
+                     EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
                ENDIF
             ENDIF   ! end if(Jenkins)/else
 
@@ -1262,7 +1262,7 @@
 ! KTs with particle mass in their definition of granular temperature
 ! and without mass in their conductivity
 ! and theta = granular temperature/mass
-            GW = M_PM * K_1 
+            GW = M_PM * K_1
 
             HW = (Pi*DSQRT(3d0)/(4.D0*(ONE-ep_star_avg)))*&
                (1d0-e_w*e_w)*&
@@ -1274,15 +1274,15 @@
             ELSE
                CW = (Pi*DSQRT(3d0)/(6.D0*(ONE-ep_star_avg)))*&
                   PHIP_JJ(DSQRT(vslipsq),TH(M))*ROs_avg(M)*&
-                  EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ  
+                  EPS(M)*g0(M)*DSQRT(TH(M))*VSLIPSQ
             ENDIF
 
 
          CASE (IA_2005)
 ! KTs with particle mass in their definition of granular temperature
 ! and without mass in their conductivity
-! and theta = granular temperature                
-            GW = M_PM * K_1 
+! and theta = granular temperature
+            GW = M_PM * K_1
 
             HW = (PI*DSQRT(3.d0)/(4.d0*(ONE-ep_star_avg)))*&
                (1.d0-e_w*e_w)*&

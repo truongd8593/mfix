@@ -8,7 +8,7 @@
 !                                                                           C
 !  Revision Number: 01                                                      C
 !  Purpose: (1) allow to use Bauer & Schlunder's (1978) model in CGS or SI  C
-!           (2) If fluid_at(IJK) condition for the Bauer & Schlunder's modelC 
+!           (2) If fluid_at(IJK) condition for the Bauer & Schlunder's modelC
 !  Author:  S. Dartevelle                             Date: 10-July-02      C
 !  Reviewer:                                          Date: dd-mmm-yy       C
 !                                                                           C
@@ -21,24 +21,24 @@
 !                                                                           C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_K_S(M, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE CALC_K_S(M, IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
-      USE physprop 
-      USE fldvar 
-      USE geometry 
-      USE indices 
-      USE constant 
-      USE toleranc  
-      USE compar 
-      USE sendrecv 
-      USE run 
+      USE param
+      USE param1
+      USE parallel
+      USE physprop
+      USE fldvar
+      USE geometry
+      USE indices
+      USE constant
+      USE toleranc
+      USE compar
+      USE sendrecv
+      USE run
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -52,8 +52,8 @@
 
 ! define two
       DOUBLE PRECISION, PARAMETER          :: TWO = 2.0d0
-      
-! microscopic conductivity of ash in cal/s.cm.K 
+
+! microscopic conductivity of ash in cal/s.cm.K
 ! (not modified by the gas phase)
       DOUBLE PRECISION Ks_micro
       PARAMETER (Ks_micro = 0.5258D-2)    !(2.2 J/s.m.K)
@@ -85,11 +85,11 @@
       INCLUDE 'ep_s2.inc'
 
 
-      IF (K_S0(M) /= UNDEFINED) RETURN  
+      IF (K_S0(M) /= UNDEFINED) RETURN
 
 !!!!$omp parallel do private(IJK,B,R_km,BoR,L_rm,Kg_micro) &
 !!!!$omp& schedule(dynamic,chunk_size)
-      DO IJK = ijkstart3, ijkend3            
+      DO IJK = ijkstart3, ijkend3
 
 ! All calculations are in CGS (1 cal = 4.183925J)
          IF (FLUID_AT(IJK)) THEN
@@ -98,7 +98,7 @@
             ELSE
                Kg_micro = K_g(IJK)     ! K_g already in CGS units (cal/s.cm.K)
             ENDIF
- 
+
 ! Bauer & Schlunder's (1978) theory:
             IF( EP_s(IJK,M) >  DIL_EP_s) THEN
                B = 1.25D0 * ((ONE - EP_g(IJK))/EP_g(IJK))**(10.D0/9.D0)
@@ -110,13 +110,13 @@
 ! K_s is the macroscopic conductivity that has been modified by the presence of
 ! the gas phase (cal/s.cm.K)
                K_S(IJK,M) = (Phi_k*R_km + (ONE-Phi_k)*L_rm)*&
-                  Kg_micro/SQRT(ONE - EP_g(IJK)) 
+                  Kg_micro/SQRT(ONE - EP_g(IJK))
             ELSE
                K_S(IJK, M) = ZERO
             ENDIF
 
 ! An approximate average value for the solids conductivity is 2.5*K_g
-!	  K_S(IJK,M) = 2.5*Kg_micro            !in CGS system
+!         K_S(IJK,M) = 2.5*Kg_micro            !in CGS system
 
          ELSE   ! else branch if(fluid_at(ijk))
             K_S(IJK,M) = ZERO

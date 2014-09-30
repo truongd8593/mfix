@@ -29,7 +29,7 @@
 !                      Small value for species mass fraction for disregarding
 !                      residual calculation
       DOUBLE PRECISION, PARAMETER          ::  ZERO_X_gs = 1.0D-7
- 
+
 !                      Dilute flow threshold.  When the volume fraction of a
 !                      certain phase in a cell is smaller than this value the
 !                      momentum equation for that phase is not solved in the cell.
@@ -94,4 +94,4 @@
 !
 
 
-      END MODULE toleranc                                                                        
+      END MODULE toleranc

@@ -20,23 +20,23 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_K_G(IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE CALC_K_G(IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE physprop
       USE fldvar
       USE geometry
       USE indices
       USE constant
       USE compar
-      USE run 
+      USE run
       USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
@@ -54,27 +54,27 @@
       INCLUDE 'function.inc'
 
 
-      IF (K_G0 /= UNDEFINED) RETURN  
+      IF (K_G0 /= UNDEFINED) RETURN
 
 !!!!$omp parallel do private(ijk) &
 !!!!$omp& schedule(dynamic,chunk_size)
 
-      DO IJK = ijkstart3, ijkend3      
-         IF (FLUID_AT(IJK)) THEN 
-! Gas conductivity (air) 
+      DO IJK = ijkstart3, ijkend3
+         IF (FLUID_AT(IJK)) THEN
+! Gas conductivity (air)
 ! Bird, Stewart, and Lightfoot (1960) -- Temperature dependence from formula
 ! 8.3-12 on p. 255 and conductivity value at 300 K from p. 263
             K_G(IJK) = 6.02D-5*SQRT(T_G(IJK)/300.D0)           ! cal/(s.cm.K)
-         ELSE 
-            K_G(IJK) = ZERO 
+         ELSE
+            K_G(IJK) = ZERO
          ENDIF
 ! 1 cal = 4.183925D0 J
          IF (UNITS == 'SI') K_G(IJK) = 418.3925D0*K_G(IJK)      !J/s.m.K
 
-      ENDDO 
+      ENDDO
 
-      CALL send_recv(K_G, 2)     
-      
-      RETURN  
-      END SUBROUTINE CALC_K_G 
+      CALL send_recv(K_G, 2)
+
+      RETURN
+      END SUBROUTINE CALC_K_G
 

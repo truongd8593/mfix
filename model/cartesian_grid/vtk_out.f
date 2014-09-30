@@ -10,10 +10,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE WRITE_VTU_FILE  
-    
+  SUBROUTINE WRITE_VTU_FILE
+
       USE param
       USE param1
       USE parallel
@@ -21,7 +21,7 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
@@ -31,12 +31,12 @@
       USE physprop
       USE pgcor
       USE vtk
-      USE rxns      
+      USE rxns
       USE output
       USE scalars
-      USE stl 
+      USE stl
 
-      USE mpi_utility     
+      USE mpi_utility
       USE parallel_mpi
 
 
@@ -81,27 +81,27 @@
       DZ(KEND3+1) = DZ(KEND3)
 
 !     Location of U-momentum cells for original (uncut grid)
-      IF (DO_I) THEN 
+      IF (DO_I) THEN
         XG_E(1) = ZERO
-        DO I = IMIN1, IMAX2 
-           XG_E(I) = XG_E(I-1) + DX(I) 
-        END DO 
+        DO I = IMIN1, IMAX2
+           XG_E(I) = XG_E(I-1) + DX(I)
+        END DO
       ENDIF
 
 !     Location of V-momentum cells for original (uncut grid)
-      IF (DO_J) THEN 
+      IF (DO_J) THEN
         YG_N(1) = ZERO
-        DO J = JMIN1, JMAX2 
-           YG_N(J) = YG_N(J-1) + DY(J) 
-        END DO 
+        DO J = JMIN1, JMAX2
+           YG_N(J) = YG_N(J-1) + DY(J)
+        END DO
       ENDIF
 
 !     Location of W-momentum cells for original (uncut grid)
-      IF (DO_K) THEN 
+      IF (DO_K) THEN
         ZG_T(1) = ZERO
-        DO K = KMIN1, KMAX2 
-           ZG_T(K) = ZG_T(K-1) + DZ(K) 
-        END DO 
+        DO K = KMIN1, KMAX2
+           ZG_T(K) = ZG_T(K-1) + DZ(K)
+        END DO
       ELSE
          ZG_T = ZERO
       ENDIF
@@ -117,11 +117,11 @@
          DO L = 1, DIM_VTK_VAR
 
             SELECT CASE (VTK_VAR(L))
-              
+
                CASE (1)
                   CALL WRITE_SCALAR_IN_VTU_BIN('EP_G',EP_G,PASS)
 
-                
+
                CASE (2)
                   CALL WRITE_SCALAR_IN_VTU_BIN('P_G',P_G,PASS)
                   CALL WRITE_SCALAR_IN_VTU_BIN('P_S',P_S,PASS)
@@ -130,21 +130,21 @@
                CASE (3)
                   CALL WRITE_VECTOR_IN_VTU_BIN('Gas_Velocity',U_G,V_G,W_G,PASS)
 
-               
+
                CASE (4)
                   DO M = 1,MMAX
                      WRITE(SUBM,*)M
                      CALL WRITE_VECTOR_IN_VTU_BIN('Solids_Velocity_'//ADJUSTL(SUBM),U_S(:,M),V_S(:,M),W_S(:,M),PASS)
                   END DO
 
-               
+
                CASE (5)
                   DO M = 1,MMAX
                      WRITE(SUBM,*)M
                      CALL WRITE_SCALAR_IN_VTU_BIN('Solids_density_'//ADJUSTL(SUBM),ROP_S(:,M),PASS)
                   END DO
 
-               
+
                CASE (6)
                   CALL WRITE_SCALAR_IN_VTU_BIN('Gas_temperature',T_g,PASS)
                   DO M = 1,MMAX
@@ -152,7 +152,7 @@
                      CALL WRITE_SCALAR_IN_VTU_BIN('Solids_temperature_'//ADJUSTL(SUBM),T_S(:,M),PASS)
                   END DO
 
-               
+
                CASE (7)
                   SPECIES_COUNTER = 0
                   DO N = 1,NMAX(0)
@@ -169,7 +169,7 @@
                      CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,X_g(:,N),PASS)
                   END DO
 
-                  DO M = 1, MMAX 
+                  DO M = 1, MMAX
                      WRITE(SUBM,*)M
                      DO N = 1,NMAX(M)
                         WRITE(SUBN,*)N
@@ -184,16 +184,16 @@
                         VAR_NAME = VAR_NAME(1:LT)//'_Solids_mass_fractions_'//TRIM(ADJUSTL(SUBM))//'_'//ADJUSTL(SUBN)
                      CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,X_s(:,M,N),PASS)
                      END DO
-                  END DO  
+                  END DO
 
-               
+
                CASE (8)
                   DO M = 1,MMAX
                      WRITE(SUBM,*)M
                      CALL WRITE_SCALAR_IN_VTU_BIN('Granular_temperature_'//ADJUSTL(SUBM),Theta_m(:,M),PASS)
                   END DO
 
-               
+
                CASE (9)
                   DO N = 1,NSCALAR
                      WRITE(SUBN,*)N
@@ -212,23 +212,23 @@
 
                CASE (11)
                   IF(K_EPSILON) THEN
-                     CALL WRITE_SCALAR_IN_VTU_BIN('K_Turb_G',K_Turb_G,PASS)                
-                     CALL WRITE_SCALAR_IN_VTU_BIN('E_Turb_G',E_Turb_G,PASS)                                
+                     CALL WRITE_SCALAR_IN_VTU_BIN('K_Turb_G',K_Turb_G,PASS)
+                     CALL WRITE_SCALAR_IN_VTU_BIN('E_Turb_G',E_Turb_G,PASS)
 
                   ENDIF
 
                CASE (12)
                   CALL CALC_VORTICITY
 
-                  CALL WRITE_SCALAR_IN_VTU_BIN('VORTICITY_MAG',VORTICITY,PASS)                
-                  CALL WRITE_SCALAR_IN_VTU_BIN('LAMBDA_2',LAMBDA2,PASS)                
-                
+                  CALL WRITE_SCALAR_IN_VTU_BIN('VORTICITY_MAG',VORTICITY,PASS)
+                  CALL WRITE_SCALAR_IN_VTU_BIN('LAMBDA_2',LAMBDA2,PASS)
 
-               
+
+
                CASE (100)
 
                   CALL WRITE_SCALAR_IN_VTU_BIN('PARTITION',PARTITION,PASS)
-                  
+
                CASE (101)
                   Allocate(DP_BC_ID(DIMENSION_3))
                   DP_BC_ID = DFLOAT(BC_ID)
@@ -238,13 +238,13 @@
 
                CASE (102)
                   CALL WRITE_SCALAR_IN_VTU_BIN('DISTANCE_TO_WALL',DWALL,PASS)
-    
+
                CASE (103)
                   IF(DISCRETE_ELEMENT.AND.USE_STL) THEN
                      ALLOCATE(FACET_COUNT_DES(DIMENSION_3))
-                     
-                     DO IJK = IJKSTART3, IJKEND3 
-                        FACET_COUNT_DES(IJK) = LIST_FACET_AT_DES(IJK)%COUNT_FACETS 
+
+                     DO IJK = IJKSTART3, IJKEND3
+                        FACET_COUNT_DES(IJK) = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
                      ENDDO
 
                      CALL WRITE_SCALAR_IN_VTU_BIN('FACET_COUNT', FACET_COUNT_DES,PASS)
@@ -254,8 +254,8 @@
                CASE (104)
                   IF(DISCRETE_ELEMENT.AND.USE_STL) THEN
                      ALLOCATE(NEIGHBORING_FACET(DIMENSION_3))
-                     
-                     DO IJK = IJKSTART3, IJKEND3 
+
+                     DO IJK = IJKSTART3, IJKEND3
                         NEIGHBORING_FACET(IJK) = 1.0
                         IF(NO_NEIGHBORING_FACET_DES(IJK)) NEIGHBORING_FACET(IJK) = 0.0
                      ENDDO
@@ -346,7 +346,7 @@
                   write(*,30) '100: Processor assigned to scalar cell (Partition)'
                   write(*,30) '101: Boundary condition flag for scalar cell (BC_ID)'
                   write(*,30) 'MFiX will exit now.'
-                  CALL MFIX_EXIT(myPE) 
+                  CALL MFIX_EXIT(myPE)
 
                END SELECT
 
@@ -372,10 +372,10 @@
 
 10    FORMAT(A,$)
 20    FORMAT(A,1X/)
-30    FORMAT(1X,A)    
+30    FORMAT(1X,A)
       RETURN
-      
-      END SUBROUTINE WRITE_VTU_FILE 
+
+      END SUBROUTINE WRITE_VTU_FILE
 
 
 
@@ -391,10 +391,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_VTU_FILE_BIN
-    
+
       USE param
       USE param1
       USE parallel
@@ -402,7 +402,7 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE output
@@ -412,18 +412,18 @@
       USE vtk
       use cdist
 
-     
+
       IMPLICIT NONE
       DOUBLE PRECISION:: Xw,Xe,Yn,Ys
       INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
       INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
       LOGICAL :: VTU_FRAME_FILE_EXISTS
-      INTEGER :: ISTAT 
+      INTEGER :: ISTAT
 
       include "../function.inc"
 
 ! Only open the file form head node when not using distributed I/O
-      IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN 
+      IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN
 
 
       IF(TIME_DEPENDENT_FILENAME) THEN
@@ -434,35 +434,35 @@
             CLOSE(VTU_FRAME_UNIT)
          ENDIF
          IF(RESET_FRAME_AT_TIME_ZERO.AND.TIME==ZERO) FRAME=-1
-         FRAME = FRAME + 1 
+         FRAME = FRAME + 1
       ENDIF
 
 
 
 
-      IF (BDIST_IO) THEN 
+      IF (BDIST_IO) THEN
 ! For distributed I/O, define the file name for each processor
          IF(TIME_DEPENDENT_FILENAME) THEN
             WRITE(VTU_FILENAME,20) TRIM(RUN_NAME),FRAME,MYPE
          ELSE
             WRITE(VTU_FILENAME,25) TRIM(RUN_NAME),MYPE
          ENDIF
-      ELSE 
-         IF(MYPE.EQ.PE_IO) THEN 
+      ELSE
+         IF(MYPE.EQ.PE_IO) THEN
             IF(TIME_DEPENDENT_FILENAME) THEN
                WRITE(VTU_FILENAME,30) TRIM(RUN_NAME),FRAME
             ELSE
                WRITE(VTU_FILENAME,35) TRIM(RUN_NAME)
             ENDIF
-         END IF  
-      END IF 
+         END IF
+      END IF
 
 
 ! Add the VTU directory path if necessary
 
       IF(TRIM(VTU_DIR)/='.') VTU_FILENAME='./'//TRIM(VTU_DIR)//'/'//VTU_FILENAME
 
-! Echo 
+! Echo
       IF (FULL_LOG) THEN
          IF (.NOT.BDIST_IO) THEN
             WRITE(*,10)' WRITING VTU FILE : ', TRIM(VTU_FILENAME),' .'
@@ -478,9 +478,9 @@
       OPEN(UNIT     = VTU_UNIT,           &
            FILE     = TRIM(VTU_FILENAME), &
            FORM     = 'UNFORMATTED',      &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
-                                             ! use 'BINARY' if 'UNFORMATTED' is not supported 
+                                             ! use 'BINARY' if 'UNFORMATTED' is not supported
            ACCESS   = 'STREAM',           &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
-                                             ! use 'SEQUENTIAL' if 'STREAM' is not supported 
+                                             ! use 'SEQUENTIAL' if 'STREAM' is not supported
            ACTION   = 'WRITE',            &
            CONVERT  = 'BIG_ENDIAN',       &
            IOSTAT=ISTAT)
@@ -523,7 +523,7 @@
 ! For distributed I/O, open .pvtu file that combines all *.vtu files for a given FRAME
 ! this is a simple ASCII file
 
-      IF (myPE == PE_IO.AND.BDIST_IO) THEN    
+      IF (myPE == PE_IO.AND.BDIST_IO) THEN
 
          IF(TIME_DEPENDENT_FILENAME) THEN
             WRITE(PVTU_FILENAME,40) TRIM(RUN_NAME),FRAME
@@ -584,10 +584,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_GEOMETRY_IN_VTU_BIN(PASS)
-    
+
       USE param
       USE param1
       USE parallel
@@ -595,9 +595,9 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
@@ -605,7 +605,7 @@
       USE vtk
       USE cdist
 
-     
+
       IMPLICIT NONE
 
       INTEGER :: IJK,I,J,K,L
@@ -619,8 +619,8 @@
       REAL*4 :: float,SP_X,SP_Y,SP_Z
       INTEGER :: int
 
-      INTEGER ::     nbytes_xyz,nbytes_connectivity,nbytes_offset,nbytes_type 
-      INTEGER ::     offset_xyz,offset_connectivity,offset_offset,offset_type 
+      INTEGER ::     nbytes_xyz,nbytes_connectivity,nbytes_offset,nbytes_type
+      INTEGER ::     offset_xyz,offset_connectivity,offset_offset,offset_type
 
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
@@ -659,7 +659,7 @@
          END DO
          nbytes_connectivity = nbytes_connectivity * sizeof(int)
 
-         
+
          nbytes_offset       = NUMBER_OF_VTK_CELLS * sizeof(int)
 
          nbytes_type         = NUMBER_OF_VTK_CELLS * sizeof(int)
@@ -711,7 +711,7 @@
 
          ELSEIF(PASS==WRITE_DATA) THEN
 
-            WRITE(BUFFER,110)'      </CellData>'                          
+            WRITE(BUFFER,110)'      </CellData>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             WRITE(BUFFER,110)'    </Piece>'
@@ -785,7 +785,7 @@
          NUMBER_OF_CELLS = 0
          NUMBER_OF_BLOCKED_CELLS  = 0
 
-         DO IJK = 1, IJKEND3   
+         DO IJK = 1, IJKEND3
             IF (INTERIOR_CELL_AT(IJK)) THEN
                NUMBER_OF_CELLS = NUMBER_OF_CELLS + 1
                IF (BLOCKED_CELL_AT(IJK))  NUMBER_OF_BLOCKED_CELLS  = NUMBER_OF_BLOCKED_CELLS + 1
@@ -808,7 +808,7 @@
             ENDIF
          END DO
          nbytes_connectivity = nbytes_connectivity * sizeof(int)
-         
+
          nbytes_offset       = NUMBER_OF_VTK_CELLS * sizeof(int)
 
          nbytes_type         = NUMBER_OF_VTK_CELLS * sizeof(int)
@@ -862,7 +862,7 @@
 
          ELSEIF(PASS==WRITE_DATA) THEN
 
-            WRITE(BUFFER,110)'      </CellData>'                          
+            WRITE(BUFFER,110)'      </CellData>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             WRITE(BUFFER,110)'    </Piece>'
@@ -937,7 +937,7 @@
 130   FORMAT(10X,15(I12,2X))
 
       RETURN
-      
+
       END SUBROUTINE WRITE_GEOMETRY_IN_VTU_BIN
 
 
@@ -953,10 +953,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,VAR,PASS)
-    
+
       USE param
       USE param1
       USE parallel
@@ -964,9 +964,9 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
@@ -1001,7 +1001,7 @@
 ! For each scalar, write a tag, with corresponding offset
 
          nbytes_scalar = NUMBER_OF_VTK_CELLS * sizeof(float)
- 
+
          IF(PASS==WRITE_HEADER) THEN
 !           For each scalar, write a tag, with corresponding offset
 
@@ -1019,16 +1019,16 @@
 !           and write the data, always preceded by its size in number of bytes
 
             IF (myPE == PE_IO) THEN
-               allocate (GLOBAL_VAR(ijkmax3))     
+               allocate (GLOBAL_VAR(ijkmax3))
             ELSE
-               allocate (GLOBAL_VAR(1))     
+               allocate (GLOBAL_VAR(1))
             ENDIF
 
             IF(RE_INDEXING) THEN
                CALL UNSHIFT_DP_ARRAY(VAR,TMP_VAR)
-               CALL gather (TMP_VAR,GLOBAL_VAR,root)  
+               CALL gather (TMP_VAR,GLOBAL_VAR,root)
             ELSE
-               CALL gather (VAR,GLOBAL_VAR,root)    
+               CALL gather (VAR,GLOBAL_VAR,root)
             ENDIF
 
             IF (myPE /= PE_IO) RETURN
@@ -1043,7 +1043,7 @@
             ENDDO
 
 
-            Deallocate (GLOBAL_VAR) 
+            Deallocate (GLOBAL_VAR)
 
          ENDIF
 
@@ -1052,7 +1052,7 @@
 
 
          nbytes_scalar = NUMBER_OF_VTK_CELLS * sizeof(float)
- 
+
          IF(PASS==WRITE_HEADER) THEN
 !           For each scalar, write a tag, with corresponding offset
 
@@ -1100,7 +1100,7 @@
 
 
       RETURN
-      
+
       END SUBROUTINE WRITE_SCALAR_IN_VTU_BIN
 
 
@@ -1118,10 +1118,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VECTOR_IN_VTU_BIN(VAR_NAME,VARX,VARY,VARZ,PASS)
-    
+
       USE param
       USE param1
       USE parallel
@@ -1129,9 +1129,9 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
@@ -1139,7 +1139,7 @@
       USE vtk
       USE cdist
       USE output
-      
+
       IMPLICIT NONE
       INTEGER :: IJK,L
 
@@ -1164,7 +1164,7 @@
       IF (.NOT.BDIST_IO) THEN
 
          nbytes_vector = NUMBER_OF_VTK_CELLS * 3 * sizeof(float)
- 
+
          IF(PASS==WRITE_HEADER) THEN
 !           For each vector, write a tag, with corresponding offset
 
@@ -1180,28 +1180,28 @@
 
             IF (myPE == PE_IO) THEN
                allocate (GLOBAL_VARX(ijkmax3))
-               allocate (GLOBAL_VARY(ijkmax3))     
-               allocate (GLOBAL_VARZ(ijkmax3))          
+               allocate (GLOBAL_VARY(ijkmax3))
+               allocate (GLOBAL_VARZ(ijkmax3))
             ELSE
                allocate (GLOBAL_VARX(1))
-               allocate (GLOBAL_VARY(1))     
-               allocate (GLOBAL_VARZ(1))          
+               allocate (GLOBAL_VARY(1))
+               allocate (GLOBAL_VARZ(1))
             ENDIF
-            
+
             IF(RE_INDEXING) THEN
                CALL UNSHIFT_DP_ARRAY(VARX,TMP_VAR)
                call gather (TMP_VAR,GLOBAL_VARX,root)
 
-               CALL UNSHIFT_DP_ARRAY(VARY,TMP_VAR) 
-               call gather (TMP_VAR,GLOBAL_VARY,root) 
+               CALL UNSHIFT_DP_ARRAY(VARY,TMP_VAR)
+               call gather (TMP_VAR,GLOBAL_VARY,root)
 
                CALL UNSHIFT_DP_ARRAY(VARZ,TMP_VAR)
-               call gather (TMP_VAR,GLOBAL_VARZ,root)  
+               call gather (TMP_VAR,GLOBAL_VARZ,root)
 
             ELSE
                call gather (VARX,GLOBAL_VARX,root)
-               call gather (VARY,GLOBAL_VARY,root) 
-               call gather (VARZ,GLOBAL_VARZ,root)  
+               call gather (VARY,GLOBAL_VARY,root)
+               call gather (VARZ,GLOBAL_VARZ,root)
             ENDIF
 
 
@@ -1218,8 +1218,8 @@
 
 
             Deallocate (GLOBAL_VARX)
-            Deallocate (GLOBAL_VARY)   
-            Deallocate (GLOBAL_VARZ) 
+            Deallocate (GLOBAL_VARY)
+            Deallocate (GLOBAL_VARZ)
 
          ENDIF
 
@@ -1228,7 +1228,7 @@
 
 
          nbytes_vector = NUMBER_OF_VTK_CELLS * 3 * sizeof(float)
- 
+
          IF(PASS==WRITE_HEADER) THEN
 !           For each vector, write a tag, with corresponding offset
 
@@ -1271,7 +1271,7 @@
 
 
       RETURN
-      
+
       END SUBROUTINE WRITE_VECTOR_IN_VTU_BIN
 
 
@@ -1289,7 +1289,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CLOSE_VTU_FILE_BIN
 
@@ -1299,11 +1299,11 @@
       use cdist
 
       IMPLICIT NONE
-    
+
       INTEGER:: N
       CHARACTER (LEN=32)  :: VTU_NAME
 
-      IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN 
+      IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN
 
 ! Write last tags and close the vtu file
        WRITE(BUFFER,110)'  </AppendedData>'
@@ -1315,7 +1315,7 @@
       CLOSE(VTU_UNIT)
 
 ! Update pvtu file and close
-      IF (myPE == PE_IO.AND.BDIST_IO) THEN       
+      IF (myPE == PE_IO.AND.BDIST_IO) THEN
          WRITE(PVTU_UNIT,100) '      </PCellData>'
 
          DO N = 0,NumPEs-1
@@ -1360,10 +1360,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VTU_FILE_ASCII
-    
+
       USE param
       USE param1
       USE parallel
@@ -1371,7 +1371,7 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
@@ -1381,11 +1381,11 @@
       USE physprop
       USE pgcor
       USE vtk
-      USE rxns      
+      USE rxns
       USE output
       USE scalars
 
-      USE mpi_utility     
+      USE mpi_utility
       USE parallel_mpi
 
 
@@ -1421,27 +1421,27 @@
       DZ(KEND3+1) = DZ(KEND3)
 
 !     Location of U-momentum cells for original (uncut grid)
-      IF (DO_I) THEN 
+      IF (DO_I) THEN
         XG_E(1) = ZERO
-        DO I = IMIN1, IMAX2 
-           XG_E(I) = XG_E(I-1) + DX(I) 
-        END DO 
+        DO I = IMIN1, IMAX2
+           XG_E(I) = XG_E(I-1) + DX(I)
+        END DO
       ENDIF
 
 !     Location of V-momentum cells for original (uncut grid)
-      IF (DO_J) THEN 
+      IF (DO_J) THEN
         YG_N(1) = ZERO
-        DO J = JMIN1, JMAX2 
-           YG_N(J) = YG_N(J-1) + DY(J) 
-        END DO 
+        DO J = JMIN1, JMAX2
+           YG_N(J) = YG_N(J-1) + DY(J)
+        END DO
       ENDIF
 
 !     Location of W-momentum cells for original (uncut grid)
-      IF (DO_K) THEN 
+      IF (DO_K) THEN
         ZG_T(1) = ZERO
-        DO K = KMIN1, KMAX2 
-           ZG_T(K) = ZG_T(K-1) + DZ(K) 
-        END DO 
+        DO K = KMIN1, KMAX2
+           ZG_T(K) = ZG_T(K-1) + DZ(K)
+        END DO
       ELSE
          ZG_T = ZERO
       ENDIF
@@ -1454,11 +1454,11 @@
       DO L = 1, DIM_VTK_VAR
 
          SELECT CASE (VTK_VAR(L))
-           
+
             CASE (1)
                CALL WRITE_SCALAR_IN_VTU_ASCII('EP_G',EP_G)
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-             
+
             CASE (2)
                CALL WRITE_SCALAR_IN_VTU_ASCII('P_G',P_G)
                CALL WRITE_SCALAR_IN_VTU_ASCII('P_S',P_S)
@@ -1467,21 +1467,21 @@
             CASE (3)
                CALL WRITE_VECTOR_IN_VTU_ASCII('Gas_Velocity',U_G,V_G,W_G)
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-            
+
             CASE (4)
                DO M = 1,MMAX
                   WRITE(SUBM,*)M
                   CALL WRITE_VECTOR_IN_VTU_ASCII('Solids_Velocity_'//ADJUSTL(SUBM),U_S(:,M),V_S(:,M),W_S(:,M))
                END DO
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-            
+
             CASE (5)
                DO M = 1,MMAX
                   WRITE(SUBM,*)M
                   CALL WRITE_SCALAR_IN_VTU_ASCII('Solids_density_'//ADJUSTL(SUBM),ROP_S(:,M))
                END DO
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-            
+
             CASE (6)
                CALL WRITE_SCALAR_IN_VTU_ASCII('Gas_temperature',T_g)
                DO M = 1,MMAX
@@ -1489,7 +1489,7 @@
                   CALL WRITE_SCALAR_IN_VTU_ASCII('Solids_temperature_'//ADJUSTL(SUBM),T_S(:,M))
                END DO
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-            
+
             CASE (7)
                SPECIES_COUNTER = 0
                DO N = 1,NMAX(0)
@@ -1501,7 +1501,7 @@
                   CALL WRITE_SCALAR_IN_VTU_ASCII(VAR_NAME,X_g(:,N))
                END DO
 
-               DO M = 1, MMAX 
+               DO M = 1, MMAX
                   WRITE(SUBM,*)M
                   DO N = 1,NMAX(M)
                      WRITE(SUBN,*)N
@@ -1511,16 +1511,16 @@
                      VAR_NAME = VAR_NAME(1:LT)//'_Solids_mass_fractions_'//TRIM(ADJUSTL(SUBM))//'_'//ADJUSTL(SUBN)
                   CALL WRITE_SCALAR_IN_VTU_ASCII(VAR_NAME,X_g(:,N))
                   END DO
-               END DO  
+               END DO
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-            
+
             CASE (8)
                DO M = 1,MMAX
                   WRITE(SUBM,*)M
                   CALL WRITE_SCALAR_IN_VTU_ASCII('Granular_temperature_'//ADJUSTL(SUBM),Theta_m(:,M))
                END DO
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-            
+
             CASE (9)
                SPECIES_COUNTER = 0
                DO N = 1,NSCALAR
@@ -1533,19 +1533,19 @@
 
             CASE (11)
                IF(K_EPSILON) THEN
-                  CALL WRITE_SCALAR_IN_VTU_ASCII('K_Turb_G',K_Turb_G)                
-                  CALL WRITE_SCALAR_IN_VTU_ASCII('E_Turb_G',E_Turb_G)                                
+                  CALL WRITE_SCALAR_IN_VTU_ASCII('K_Turb_G',K_Turb_G)
+                  CALL WRITE_SCALAR_IN_VTU_ASCII('E_Turb_G',E_Turb_G)
                   IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
                ENDIF
 
             CASE (12)
                CALL CALC_VORTICITY
 
-               CALL WRITE_SCALAR_IN_VTU_ASCII('VORTICITY_MAG',VORTICITY)                
-               CALL WRITE_SCALAR_IN_VTU_ASCII('LAMBDA_2',LAMBDA2)                
-             
+               CALL WRITE_SCALAR_IN_VTU_ASCII('VORTICITY_MAG',VORTICITY)
+               CALL WRITE_SCALAR_IN_VTU_ASCII('LAMBDA_2',LAMBDA2)
+
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-            
+
             CASE (100)
 
                CALL WRITE_SCALAR_IN_VTU_ASCII('PARTITION',PARTITION)
@@ -1557,7 +1557,7 @@
                CALL WRITE_SCALAR_IN_VTU_ASCII('BC_ID',DP_BC_ID)
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
                DeAllocate(DP_BC_ID)
- 
+
             CASE(999)
                Allocate(IJK_ARRAY(DIMENSION_3))
                DO IJK = IJKSTART3, IJKEND3
@@ -1640,7 +1640,7 @@
                write(*,30) '100: Processor assigned to scalar cell (Partition)'
                write(*,30) '101: Boundary condition flag for scalar cell (BC_ID)'
                write(*,30) 'MFiX will exit now.'
-               CALL MFIX_EXIT(myPE) 
+               CALL MFIX_EXIT(myPE)
 
             END SELECT
 
@@ -1663,9 +1663,9 @@
 
 10    FORMAT(A,$)
 20    FORMAT(A,1X/)
-30    FORMAT(1X,A)    
+30    FORMAT(1X,A)
       RETURN
-      
+
       END SUBROUTINE WRITE_VTU_FILE_ASCII
 
 
@@ -1682,10 +1682,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_VTU_FILE_ASCII
-    
+
       USE param
       USE param1
       USE parallel
@@ -1693,7 +1693,7 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE output
@@ -1703,20 +1703,20 @@
       USE vtk
       use cdist
 
-     
+
       IMPLICIT NONE
       DOUBLE PRECISION:: Xw,Xe,Yn,Ys
       INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
       INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
       LOGICAL :: VTU_FRAME_FILE_EXISTS
-      INTEGER :: ISTAT 
+      INTEGER :: ISTAT
 
       include "../function.inc"
 
 
 !      print*,'Entering Open_vtu_file from myPE=',MyPE, (myPE /= PE_IO.AND.(.NOT.BDIST_IO))
 
-      IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN 
+      IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN
 
 
       IF(TIME_DEPENDENT_FILENAME) THEN
@@ -1727,27 +1727,27 @@
             CLOSE(VTU_FRAME_UNIT)
          ENDIF
          IF(RESET_FRAME_AT_TIME_ZERO.AND.TIME==ZERO) FRAME=-1
-         FRAME = FRAME + 1 
+         FRAME = FRAME + 1
       ENDIF
 
 
 
 ! Define file name
-      IF (BDIST_IO) THEN 
+      IF (BDIST_IO) THEN
          IF(TIME_DEPENDENT_FILENAME) THEN
             WRITE(VTU_FILENAME,20) TRIM(RUN_NAME),FRAME,MYPE
          ELSE
             WRITE(VTU_FILENAME,25) TRIM(RUN_NAME),MYPE
          ENDIF
-      ELSE 
-         IF(MYPE.EQ.PE_IO) THEN 
+      ELSE
+         IF(MYPE.EQ.PE_IO) THEN
             IF(TIME_DEPENDENT_FILENAME) THEN
                WRITE(VTU_FILENAME,30) TRIM(RUN_NAME),FRAME
             ELSE
                WRITE(VTU_FILENAME,35) TRIM(RUN_NAME)
             ENDIF
-         END IF  
-      END IF 
+         END IF
+      END IF
 
 
       IF(TRIM(VTU_DIR)/='.') VTU_FILENAME='./'//TRIM(VTU_DIR)//'/'//VTU_FILENAME
@@ -1842,10 +1842,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_PVD_FILE
-    
+
       USE param
       USE param1
       USE parallel
@@ -1853,7 +1853,7 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE output
@@ -1862,7 +1862,7 @@
       USE fldvar
       USE vtk
 
-     
+
       IMPLICIT NONE
       DOUBLE PRECISION:: Xw,Xe,Yn,Ys
       INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
@@ -1871,7 +1871,7 @@
 
       include "../function.inc"
 
-      IF (myPE /= PE_IO) RETURN 
+      IF (myPE /= PE_IO) RETURN
 
 
       PVD_FILENAME = TRIM(RUN_NAME) // '.pvd'
@@ -1906,7 +1906,7 @@
                WRITE(*,1003) TRIM(PVD_FILENAME)
                WRITE(UNIT_LOG, 1003) TRIM(PVD_FILENAME)
                CALL MFIX_EXIT(myPE)
-            ELSE 
+            ELSE
            ! If it already exists, go to the bottom of the file and prepare to append data (remove last two lines)
                OPEN(UNIT=PVD_UNIT,FILE = TRIM(PVD_FILENAME),POSITION="APPEND",STATUS='OLD')
                BACKSPACE(PVD_UNIT)
@@ -1961,10 +1961,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_GEOMETRY_IN_VTU_ASCII
-    
+
       USE param
       USE param1
       USE parallel
@@ -1972,9 +1972,9 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
@@ -1982,7 +1982,7 @@
       USE vtk
       USE cdist
 
-     
+
       IMPLICIT NONE
 
       INTEGER :: IJK,I,J,K,L
@@ -2050,7 +2050,7 @@
          DO IJK = 1,IJKMAX3
             IF (GLOBAL_INTERIOR_CELL_AT(IJK))  WRITE(VTU_UNIT,140) CELL_TYPE
          END DO
-     
+
 
       ELSEIF(BDIST_IO) THEN
 
@@ -2107,7 +2107,7 @@
          DO IJK = 1,IJKMAX3
             IF (INTERIOR_CELL_AT(IJK))  WRITE(VTU_UNIT,140) CELL_TYPE
          END DO
-     
+
 
 
       ENDIF
@@ -2132,7 +2132,7 @@
 
 
       RETURN
-      
+
       END SUBROUTINE WRITE_GEOMETRY_IN_VTU_ASCII
 
 
@@ -2150,10 +2150,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_SCALAR_IN_VTU_ASCII(VAR_NAME,VAR)
-    
+
       USE param
       USE param1
       USE parallel
@@ -2161,9 +2161,9 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
@@ -2183,12 +2183,12 @@
       IF (.NOT.BDIST_IO) THEN
 
          IF (myPE == PE_IO) THEN
-            allocate (GLOBAL_VAR(ijkmax3))     
+            allocate (GLOBAL_VAR(ijkmax3))
          ELSE
-            allocate (GLOBAL_VAR(1))     
+            allocate (GLOBAL_VAR(1))
          ENDIF
 
-         call gather (VAR,GLOBAL_VAR,root) 
+         call gather (VAR,GLOBAL_VAR,root)
 
 
          IF (myPE /= PE_IO) RETURN
@@ -2207,7 +2207,7 @@
          ENDDO
          WRITE(VTU_UNIT,100) '        </DataArray>'
 
-         Deallocate (GLOBAL_VAR)   
+         Deallocate (GLOBAL_VAR)
 
 
       ELSE ! BDIST_IO=.TRUE.
@@ -2240,7 +2240,7 @@
 
 
       RETURN
-      
+
       END SUBROUTINE WRITE_SCALAR_IN_VTU_ASCII
 
 
@@ -2257,10 +2257,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VECTOR_IN_VTU_ASCII(VAR_NAME,VARX,VARY,VARZ)
-    
+
       USE param
       USE param1
       USE parallel
@@ -2268,16 +2268,16 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
       USE fldvar
       USE vtk
       USE cdist
-      
+
       IMPLICIT NONE
       INTEGER :: IJK,L
 
@@ -2291,17 +2291,17 @@
 
          IF (myPE == PE_IO) THEN
             allocate (GLOBAL_VARX(ijkmax3))
-            allocate (GLOBAL_VARY(ijkmax3))     
-            allocate (GLOBAL_VARZ(ijkmax3))          
+            allocate (GLOBAL_VARY(ijkmax3))
+            allocate (GLOBAL_VARZ(ijkmax3))
          ELSE
             allocate (GLOBAL_VARX(1))
-            allocate (GLOBAL_VARY(1))     
-            allocate (GLOBAL_VARZ(1))          
+            allocate (GLOBAL_VARY(1))
+            allocate (GLOBAL_VARZ(1))
          ENDIF
 
          call gather (VARX,GLOBAL_VARX,root)
-         call gather (VARY,GLOBAL_VARY,root) 
-         call gather (VARZ,GLOBAL_VARZ,root)  
+         call gather (VARY,GLOBAL_VARY,root)
+         call gather (VARZ,GLOBAL_VARZ,root)
 
          IF (myPE /= PE_IO) RETURN
 
@@ -2315,8 +2315,8 @@
          WRITE(VTU_UNIT,100) '        </DataArray>'
 
          Deallocate (GLOBAL_VARX)
-         Deallocate (GLOBAL_VARY)   
-         Deallocate (GLOBAL_VARZ) 
+         Deallocate (GLOBAL_VARY)
+         Deallocate (GLOBAL_VARZ)
 
 
       ELSE ! BDIST_IO=.TRUE.
@@ -2343,7 +2343,7 @@
 
 
       RETURN
-      
+
       END SUBROUTINE WRITE_VECTOR_IN_VTU_ASCII
 
 
@@ -2360,7 +2360,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CLOSE_VTU_FILE_ASCII
 
@@ -2370,11 +2370,11 @@
       use cdist
 
       IMPLICIT NONE
-    
+
       INTEGER:: N
       CHARACTER (LEN=32)  :: VTU_NAME
 
-      IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN 
+      IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN
 
 !      print*,'VTU_UNIT,MyPE=',VTU_UNIT,MyPE
 
@@ -2430,10 +2430,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE UPDATE_AND_CLOSE_PVD_FILE
-    
+
       USE compar
       use cdist
       USE run
@@ -2443,7 +2443,7 @@
 
       CHARACTER (LEN=32)  :: FILENAME
 
-      IF (myPE /= PE_IO) RETURN 
+      IF (myPE /= PE_IO) RETURN
 
 
       IF(.NOT.BDIST_IO) THEN
@@ -2467,7 +2467,7 @@
 ! Write the closing tags
          WRITE(PVD_UNIT,110)'</Collection>'
          WRITE(PVD_UNIT,110)'</VTKFile>'
-         
+
          CLOSE(PVD_UNIT)
 
 
@@ -2493,10 +2493,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VTK_FILE
-    
+
       USE param
       USE param1
       USE parallel
@@ -2504,7 +2504,7 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
@@ -2514,7 +2514,7 @@
       USE physprop
       USE pgcor
       USE vtk
-      USE rxns      
+      USE rxns
       USE output
       USE scalars
 
@@ -2550,27 +2550,27 @@
       DZ(KMAX3+1) = DZ(KMAX3)
 
 !     Location of U-momentum cells for original (uncut grid)
-      IF (DO_I) THEN 
+      IF (DO_I) THEN
         XG_E(1) = ZERO
-        DO I = IMIN1, IMAX2 
-           XG_E(I) = XG_E(I-1) + DX(I) 
-        END DO 
+        DO I = IMIN1, IMAX2
+           XG_E(I) = XG_E(I-1) + DX(I)
+        END DO
       ENDIF
 
 !     Location of V-momentum cells for original (uncut grid)
-      IF (DO_J) THEN 
+      IF (DO_J) THEN
         YG_N(1) = ZERO
-        DO J = JMIN1, JMAX2 
-           YG_N(J) = YG_N(J-1) + DY(J) 
-        END DO 
+        DO J = JMIN1, JMAX2
+           YG_N(J) = YG_N(J-1) + DY(J)
+        END DO
       ENDIF
 
 !     Location of W-momentum cells for original (uncut grid)
-      IF (DO_K) THEN 
+      IF (DO_K) THEN
         ZG_T(1) = ZERO
-        DO K = KMIN1, KMAX2 
-           ZG_T(K) = ZG_T(K-1) + DZ(K) 
-        END DO 
+        DO K = KMIN1, KMAX2
+           ZG_T(K) = ZG_T(K-1) + DZ(K)
+        END DO
       ELSE
          ZG_T = ZERO
       ENDIF
@@ -2593,11 +2593,11 @@
       DO L = 1, DIM_VTK_VAR
 
          SELECT CASE (VTK_VAR(L))
-           
+
             CASE (1)
                CALL WRITE_SCALAR_IN_VTK('EP_G',EP_G)
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-             
+
             CASE (2)
                CALL WRITE_SCALAR_IN_VTK('P_G',P_G)
                CALL WRITE_SCALAR_IN_VTK('P_S',P_S)
@@ -2606,21 +2606,21 @@
             CASE (3)
                CALL WRITE_VECTOR_IN_VTK('Gas_Velocity',U_G,V_G,W_G)
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-            
+
             CASE (4)
                DO M = 1,MMAX
                   WRITE(SUBM,*)M
                   CALL WRITE_VECTOR_IN_VTK('Solids_Velocity_'//ADJUSTL(SUBM),U_S(:,M),V_S(:,M),W_S(:,M))
                END DO
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-            
+
             CASE (5)
                DO M = 1,MMAX
                   WRITE(SUBM,*)M
                   CALL WRITE_SCALAR_IN_VTK('Solids_density_'//ADJUSTL(SUBM),ROP_S(:,M))
                END DO
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-            
+
             CASE (6)
                CALL WRITE_SCALAR_IN_VTK('Gas_temperature',T_g)
                DO M = 1,MMAX
@@ -2628,7 +2628,7 @@
                   CALL WRITE_SCALAR_IN_VTK('Solids_temperature_'//ADJUSTL(SUBM),T_S(:,M))
                END DO
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-            
+
             CASE (7)
                SPECIES_COUNTER = 0
                DO N = 1,NMAX(0)
@@ -2640,7 +2640,7 @@
                   CALL WRITE_SCALAR_IN_VTK(VAR_NAME,X_g(:,N))
                END DO
 
-               DO M = 1, MMAX 
+               DO M = 1, MMAX
                   WRITE(SUBM,*)M
                   DO N = 1,NMAX(M)
                      WRITE(SUBN,*)N
@@ -2650,16 +2650,16 @@
                      VAR_NAME = VAR_NAME(1:LT)//'_Solids_mass_fractions_'//TRIM(ADJUSTL(SUBM))//'_'//ADJUSTL(SUBN)
                      CALL WRITE_SCALAR_IN_VTK(VAR_NAME,X_s(:,M,N))
                   END DO
-               END DO  
+               END DO
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-            
+
             CASE (8)
                DO M = 1,MMAX
                   WRITE(SUBM,*)M
                   CALL WRITE_SCALAR_IN_VTK('Granular_temperature_'//ADJUSTL(SUBM),Theta_m(:,M))
                END DO
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-            
+
             CASE (9)
                SPECIES_COUNTER = 0
                DO N = 1,NSCALAR
@@ -2672,23 +2672,23 @@
 
             CASE (11)
                IF(K_EPSILON) THEN
-                  CALL WRITE_SCALAR_IN_VTK('K_Turb_G',K_Turb_G)                
-                  CALL WRITE_SCALAR_IN_VTK('E_Turb_G',E_Turb_G)                
+                  CALL WRITE_SCALAR_IN_VTK('K_Turb_G',K_Turb_G)
+                  CALL WRITE_SCALAR_IN_VTK('E_Turb_G',E_Turb_G)
                   IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
                ENDIF
 
             CASE (12)
                CALL CALC_VORTICITY
 
-               CALL WRITE_SCALAR_IN_VTK('VORTICITY_MAG',VORTICITY)                
-               CALL WRITE_SCALAR_IN_VTK('LAMBDA_2',LAMBDA2)                
+               CALL WRITE_SCALAR_IN_VTK('VORTICITY_MAG',VORTICITY)
+               CALL WRITE_SCALAR_IN_VTK('LAMBDA_2',LAMBDA2)
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
-            
+
             CASE (100)
                CALL WRITE_SCALAR_IN_VTK('PARTITION',PARTITION)
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
             CASE (101)
-       
+
                Allocate(DP_BC_ID(DIMENSION_3))
                DP_BC_ID = DFLOAT(BC_ID)
 !               CALL WRITE_SCALAR_IN_VTK('BC_ID',DFLOAT(BC_ID))
@@ -2719,7 +2719,7 @@
                write(*,30) '100: Processor assigned to scalar cell (Partition)'
                write(*,30) '101: Boundary condition flag for scalar cell (BC_ID)'
                write(*,30) 'MFiX will exit now.'
-               CALL MFIX_EXIT(myPE) 
+               CALL MFIX_EXIT(myPE)
 
             END SELECT
 
@@ -2732,9 +2732,9 @@
 
 10    FORMAT(A,$)
 20    FORMAT(A,1X/)
-30    FORMAT(1X,A)    
+30    FORMAT(1X,A)
       RETURN
-      
+
       END SUBROUTINE WRITE_VTK_FILE
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -2748,10 +2748,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_VTK_FILE
-    
+
       USE param
       USE param1
       USE parallel
@@ -2759,7 +2759,7 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE output
@@ -2767,7 +2767,7 @@
       USE cutcell
       USE fldvar
       USE vtk
-      
+
       IMPLICIT NONE
       DOUBLE PRECISION:: Xw,Xe,Yn,Ys
       INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
@@ -2775,14 +2775,14 @@
 
       include "../function.inc"
 
-      IF (myPE /= PE_IO) RETURN 
+      IF (myPE /= PE_IO) RETURN
 
       IF(.NOT.WRITE_ANI_CUTCELL) THEN
 
          VTK_FILENAME = TRIM(RUN_NAME)
 
          IF(TIME_DEPENDENT_FILENAME) THEN
-            FRAME = FRAME + 1 
+            FRAME = FRAME + 1
             WRITE(FRAME_CHAR,*) FRAME
             FRAME_CHAR = ADJUSTL(FRAME_CHAR)
             VTK_FILENAME = TRIM(VTK_FILENAME) // '_' // TRIM(FRAME_CHAR) // '.vtk'
@@ -2795,7 +2795,7 @@
          ENDIF
 
       ELSE
-  
+
          VTK_FILENAME = 'ani_cutcell.vtk'
 
       ENDIF
@@ -2805,9 +2805,9 @@
       OPEN(UNIT     = VTK_UNIT,           &
            FILE     = TRIM(VTK_FILENAME), &
            FORM     = 'UNFORMATTED',    &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
-                                           ! use 'BINARY' if 'UNFORMATTED' is not supported 
+                                           ! use 'BINARY' if 'UNFORMATTED' is not supported
            ACCESS   = 'STREAM',   &        ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
-                                           ! use 'SEQUENTIAL' if 'STREAM' is not supported 
+                                           ! use 'SEQUENTIAL' if 'STREAM' is not supported
            ACTION   = 'WRITE', &
            CONVERT  = 'BIG_ENDIAN')
 
@@ -2839,10 +2839,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_GEOMETRY_IN_VTK
-    
+
       USE param
       USE param1
       USE parallel
@@ -2850,16 +2850,16 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
       USE fldvar
       USE vtk
 
-     
+
       IMPLICIT NONE
 
       INTEGER :: IJK,I,J,K,L
@@ -2921,7 +2921,7 @@
          WRITE(UNIT=VTK_UNIT)TRIM(BUFFER)//END_REC
 
       RETURN
-      
+
       END SUBROUTINE WRITE_GEOMETRY_IN_VTK
 
 
@@ -2937,10 +2937,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_SCALAR_IN_VTK(VAR_NAME,VAR)
-    
+
       USE param
       USE param1
       USE parallel
@@ -2948,15 +2948,15 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
       USE fldvar
       USE vtk
-      
+
       IMPLICIT NONE
       INTEGER :: I,IJK,L
 
@@ -2968,12 +2968,12 @@
 
 
       IF (myPE == PE_IO) THEN
-         allocate (GLOBAL_VAR(ijkmax3))     
+         allocate (GLOBAL_VAR(ijkmax3))
       ELSE
-         allocate (GLOBAL_VAR(1))     
+         allocate (GLOBAL_VAR(1))
       ENDIF
 
-      call gather (VAR,GLOBAL_VAR,root) 
+      call gather (VAR,GLOBAL_VAR,root)
 
 
       IF (myPE /= PE_IO) RETURN
@@ -2996,10 +2996,10 @@
       ENDDO
       WRITE(UNIT=VTK_UNIT)END_REC
 
-      Deallocate (GLOBAL_VAR)   
+      Deallocate (GLOBAL_VAR)
 
       RETURN
-      
+
       END SUBROUTINE WRITE_SCALAR_IN_VTK
 
 
@@ -3014,10 +3014,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VECTOR_IN_VTK(VAR_NAME,VARX,VARY,VARZ)
-    
+
       USE param
       USE param1
       USE parallel
@@ -3025,15 +3025,15 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
       USE fldvar
       USE vtk
-      
+
       IMPLICIT NONE
       INTEGER :: IJK,L
 
@@ -3046,17 +3046,17 @@
 
       IF (myPE == PE_IO) THEN
          allocate (GLOBAL_VARX(ijkmax3))
-         allocate (GLOBAL_VARY(ijkmax3))     
-         allocate (GLOBAL_VARZ(ijkmax3))          
+         allocate (GLOBAL_VARY(ijkmax3))
+         allocate (GLOBAL_VARZ(ijkmax3))
       ELSE
          allocate (GLOBAL_VARX(1))
-         allocate (GLOBAL_VARY(1))     
-         allocate (GLOBAL_VARZ(1))          
+         allocate (GLOBAL_VARY(1))
+         allocate (GLOBAL_VARZ(1))
       ENDIF
 
       call gather (VARX,GLOBAL_VARX,root)
-      call gather (VARY,GLOBAL_VARY,root) 
-      call gather (VARZ,GLOBAL_VARZ,root)  
+      call gather (VARY,GLOBAL_VARY,root)
+      call gather (VARZ,GLOBAL_VARZ,root)
 
       IF (myPE /= PE_IO) RETURN
 
@@ -3073,11 +3073,11 @@
 
 
       Deallocate (GLOBAL_VARX)
-      Deallocate (GLOBAL_VARY)   
-      Deallocate (GLOBAL_VARZ)      
+      Deallocate (GLOBAL_VARY)
+      Deallocate (GLOBAL_VARZ)
 
       RETURN
-      
+
       END SUBROUTINE WRITE_VECTOR_IN_VTK
 
 
@@ -3092,13 +3092,13 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CLOSE_VTK_FILE
-    
+
       USE vtk
 
-      IF (myPE /= PE_IO) RETURN 
+      IF (myPE /= PE_IO) RETURN
 
       CLOSE(VTK_UNIT)
 
@@ -3121,10 +3121,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_CUT_SURFACE_VTK
-    
+
       USE param
       USE param1
       USE parallel
@@ -3132,7 +3132,7 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
@@ -3141,7 +3141,7 @@
       USE vtk
       USE polygon
       USE stl
-      
+
       IMPLICIT NONE
 
       INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK,NODE
@@ -3195,18 +3195,18 @@
 
 
             NUMBER_OF_FACES = NUMBER_OF_FACES + 1
-     
+
             N_CUT_FACE_NODES = 0
 
             CALL GET_GLOBAL_CELL_NODE_COORDINATES(IJK,'SCALAR')
 
             DO L = 1, GLOBAL_NUMBER_OF_NODES(IJK)
-               IF(GLOBAL_CONNECTIVITY(IJK,L)>IJKMAX3) THEN   ! One of the new point          
+               IF(GLOBAL_CONNECTIVITY(IJK,L)>IJKMAX3) THEN   ! One of the new point
                   X_COPY = GLOBAL_X_NEW_POINT(GLOBAL_CONNECTIVITY(IJK,L)-IJKMAX3)
                   Y_COPY = GLOBAL_Y_NEW_POINT(GLOBAL_CONNECTIVITY(IJK,L)-IJKMAX3)
                   Z_COPY = GLOBAL_Z_NEW_POINT(GLOBAL_CONNECTIVITY(IJK,L)-IJKMAX3)
                   CORNER_POINT = .FALSE.
-               ELSE                                   ! An existing point          
+               ELSE                                   ! An existing point
                   DO NODE = 1,8
                   CORNER_POINT = .TRUE.
                      IF(GLOBAL_CONNECTIVITY(IJK,L) == IJK_OF_NODE(NODE)) THEN
@@ -3256,7 +3256,7 @@
 
             CALL REORDER_POLYGON(N_CUT_FACE_NODES,COORD_CUT_FACE_NODES,NORMAL)
 
-            NUMBER_OF_CUT_FACE_POINTS(NUMBER_OF_FACES) = N_CUT_FACE_NODES 
+            NUMBER_OF_CUT_FACE_POINTS(NUMBER_OF_FACES) = N_CUT_FACE_NODES
             POLY_COUNT = POLY_COUNT + N_CUT_FACE_NODES + 1
             DO NODE = 1,N_CUT_FACE_NODES
                NUMBER_OF_SURFACE_POINTS = NUMBER_OF_SURFACE_POINTS + 1
@@ -3291,9 +3291,9 @@
       WRITE(123,1001)'ASCII'
 
       IF(NO_K) THEN   ! 2D GEOMETRY
-         WRITE(123,1001)'DATASET UNSTRUCTURED_GRID'      
+         WRITE(123,1001)'DATASET UNSTRUCTURED_GRID'
       ELSE            ! 3D GEOMETRY
-         WRITE(123,1001)'DATASET POLYDATA'      
+         WRITE(123,1001)'DATASET POLYDATA'
       ENDIF
 
       WRITE(123,1010)'POINTS ',NUMBER_OF_SURFACE_POINTS,' float'
@@ -3301,13 +3301,13 @@
       DO POINT_ID = 1,NUMBER_OF_SURFACE_POINTS
          WRITE(123,1020) X_FACE_POINT(POINT_ID),Y_FACE_POINT(POINT_ID),Z_FACE_POINT(POINT_ID)
       ENDDO
-     
+
       IF(NO_K) THEN   ! 2D GEOMETRY
 
          WRITE(123,1030)'CELLS ',NUMBER_OF_FACES,POLY_COUNT
          DO FACE_ID = 1 , NUMBER_OF_FACES
             WRITE(123,1040) NUMBER_OF_CUT_FACE_POINTS(FACE_ID),(FACE_CONNECTIVITY(FACE_ID,L)-1,&
-            L=1,NUMBER_OF_CUT_FACE_POINTS(FACE_ID))         
+            L=1,NUMBER_OF_CUT_FACE_POINTS(FACE_ID))
          ENDDO
          WRITE(123,1030)'CELL_TYPES ',NUMBER_OF_FACES
          DO FACE_ID = 1 , NUMBER_OF_FACES
@@ -3315,11 +3315,11 @@
          ENDDO
 
       ELSE            ! 3D GEOMETRY
-      
+
          WRITE(123,1030)'POLYGONS ',NUMBER_OF_FACES,POLY_COUNT
          DO FACE_ID = 1 , NUMBER_OF_FACES
             WRITE(123,1040) NUMBER_OF_CUT_FACE_POINTS(FACE_ID),(FACE_CONNECTIVITY(FACE_ID,L)-1,&
-            L=1,NUMBER_OF_CUT_FACE_POINTS(FACE_ID))         
+            L=1,NUMBER_OF_CUT_FACE_POINTS(FACE_ID))
          ENDDO
 
       ENDIF
@@ -3333,17 +3333,17 @@
 1060  FORMAT(E16.8)
 1070  FORMAT(3(E16.8,2X))
 1080  FORMAT(I5)
-3000  FORMAT(1X,A) 
-3010  FORMAT(1X,A,F8.4) 
-3020  FORMAT(1X,A,I8) 
-3030  FORMAT(1X,A,A) 
+3000  FORMAT(1X,A)
+3010  FORMAT(1X,A,F8.4)
+3020  FORMAT(1X,A,I8)
+3030  FORMAT(1X,A,A)
       CLOSE (123)
 
 
       WRITE(*,3030)'WROTE BOUNDARY IN VTK FILE : ',FILENAME
       RETURN
 
-      
+
       END SUBROUTINE WRITE_CUT_SURFACE_VTK
 
 
@@ -3359,10 +3359,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GATHER_DATA
-    
+
       USE param
       USE param1
       USE parallel
@@ -3370,16 +3370,16 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
       USE fldvar
       USE vtk
 
-     
+
       IMPLICIT NONE
 
       INTEGER :: IJK,I,J,K,L
@@ -3412,42 +3412,42 @@
       IF(.NOT.GLOBAL_VAR_ALLOCATED) THEN
 
          IF (myPE == PE_IO) THEN
-            allocate (GLOBAL_I_OF(ijkmax3))     
-            allocate (GLOBAL_J_OF(ijkmax3))     
-            allocate (GLOBAL_K_OF(ijkmax3))     
-            allocate (GLOBAL_CONNECTIVITY(ijkmax3,15)) 
-            allocate (GLOBAL_NUMBER_OF_NODES(ijkmax3)) 
+            allocate (GLOBAL_I_OF(ijkmax3))
+            allocate (GLOBAL_J_OF(ijkmax3))
+            allocate (GLOBAL_K_OF(ijkmax3))
+            allocate (GLOBAL_CONNECTIVITY(ijkmax3,15))
+            allocate (GLOBAL_NUMBER_OF_NODES(ijkmax3))
             allocate (GLOBAL_INTERIOR_CELL_AT(ijkmax3))
-            allocate (GLOBAL_BLOCKED_CELL_AT(ijkmax3)) 
+            allocate (GLOBAL_BLOCKED_CELL_AT(ijkmax3))
             allocate (GLOBAL_STANDARD_CELL_AT(ijkmax3))
-            allocate (GLOBAL_CUT_CELL_AT(ijkmax3))    
-            allocate (GLOBAL_SNAP(ijkmax3))    
-            allocate (GLOBAL_X_NEW_POINT(ijkmax3))     
-            allocate (GLOBAL_Y_NEW_POINT(ijkmax3))     
+            allocate (GLOBAL_CUT_CELL_AT(ijkmax3))
+            allocate (GLOBAL_SNAP(ijkmax3))
+            allocate (GLOBAL_X_NEW_POINT(ijkmax3))
+            allocate (GLOBAL_Y_NEW_POINT(ijkmax3))
             allocate (GLOBAL_Z_NEW_POINT(ijkmax3))
-            allocate (GLOBAL_F_AT(ijkmax3))         
+            allocate (GLOBAL_F_AT(ijkmax3))
 
          ELSE
             allocate (GLOBAL_I_OF(1))
             allocate (GLOBAL_J_OF(1))
             allocate (GLOBAL_K_OF(1))
-            allocate (GLOBAL_CONNECTIVITY(1,15))     
-            allocate (GLOBAL_NUMBER_OF_NODES(1))    
-            allocate (GLOBAL_INTERIOR_CELL_AT(1))   
-            allocate (GLOBAL_BLOCKED_CELL_AT(1))    
-            allocate (GLOBAL_STANDARD_CELL_AT(1))   
-            allocate (GLOBAL_CUT_CELL_AT(1))    
-            allocate (GLOBAL_SNAP(1))     
-            allocate (GLOBAL_X_NEW_POINT(1))     
-            allocate (GLOBAL_Y_NEW_POINT(1))     
-            allocate (GLOBAL_Z_NEW_POINT(1))     
-            allocate (GLOBAL_F_AT(1))     
+            allocate (GLOBAL_CONNECTIVITY(1,15))
+            allocate (GLOBAL_NUMBER_OF_NODES(1))
+            allocate (GLOBAL_INTERIOR_CELL_AT(1))
+            allocate (GLOBAL_BLOCKED_CELL_AT(1))
+            allocate (GLOBAL_STANDARD_CELL_AT(1))
+            allocate (GLOBAL_CUT_CELL_AT(1))
+            allocate (GLOBAL_SNAP(1))
+            allocate (GLOBAL_X_NEW_POINT(1))
+            allocate (GLOBAL_Y_NEW_POINT(1))
+            allocate (GLOBAL_Z_NEW_POINT(1))
+            allocate (GLOBAL_F_AT(1))
          ENDIF
 
          GLOBAL_VAR_ALLOCATED = .TRUE.
- 
+
       ENDIF
-      
+
       IF(numPEs==1) THEN  ! Serial run
          GLOBAL_X_NEW_POINT(1:NUMBER_OF_NEW_POINTS) =  X_NEW_POINT(1:NUMBER_OF_NEW_POINTS)
          GLOBAL_Y_NEW_POINT(1:NUMBER_OF_NEW_POINTS) =  Y_NEW_POINT(1:NUMBER_OF_NEW_POINTS)
@@ -3474,32 +3474,32 @@
                I = I_OF(CONNECTIVITY(IJK,L))
                J = J_OF(CONNECTIVITY(IJK,L))
                K = K_OF(CONNECTIVITY(IJK,L))
-               SHIFTED_CONNECTIVITY(IJK,L) = funijk_gl(I,J,K) 
+               SHIFTED_CONNECTIVITY(IJK,L) = funijk_gl(I,J,K)
             ENDIF
          ENDDO
       ENDDO
 
-      
+
       GLOBAL_INTERIOR_CELL_AT  = .FALSE.
       GLOBAL_BLOCKED_CELL_AT   = .FALSE.
-      call gather (I_OF,GLOBAL_I_OF,root)    
-      call gather (J_OF,GLOBAL_J_OF,root)    
-      call gather (K_OF,GLOBAL_K_OF,root)    
-      call gather (SHIFTED_CONNECTIVITY,GLOBAL_CONNECTIVITY,root)    
-      call gather (NUMBER_OF_NODES,GLOBAL_NUMBER_OF_NODES,root)    
-      call gather (INTERIOR_CELL_AT,GLOBAL_INTERIOR_CELL_AT,root)  
-      call gather (BLOCKED_CELL_AT,GLOBAL_BLOCKED_CELL_AT,root)    
-      call gather (STANDARD_CELL_AT,GLOBAL_STANDARD_CELL_AT,root)  
-      call gather (CUT_CELL_AT,GLOBAL_CUT_CELL_AT,root)   
-      call gather (SNAP,GLOBAL_SNAP,root)   
-      call gather (F_AT,GLOBAL_F_AT,root)   
+      call gather (I_OF,GLOBAL_I_OF,root)
+      call gather (J_OF,GLOBAL_J_OF,root)
+      call gather (K_OF,GLOBAL_K_OF,root)
+      call gather (SHIFTED_CONNECTIVITY,GLOBAL_CONNECTIVITY,root)
+      call gather (NUMBER_OF_NODES,GLOBAL_NUMBER_OF_NODES,root)
+      call gather (INTERIOR_CELL_AT,GLOBAL_INTERIOR_CELL_AT,root)
+      call gather (BLOCKED_CELL_AT,GLOBAL_BLOCKED_CELL_AT,root)
+      call gather (STANDARD_CELL_AT,GLOBAL_STANDARD_CELL_AT,root)
+      call gather (CUT_CELL_AT,GLOBAL_CUT_CELL_AT,root)
+      call gather (SNAP,GLOBAL_SNAP,root)
+      call gather (F_AT,GLOBAL_F_AT,root)
 
       Deallocate(  SHIFTED_CONNECTIVITY )
 
       IF (myPE == PE_IO) THEN
 
          POLY_COUNTER = 0
-  
+
          NUMBER_OF_CELLS = 0
 
          NUMBER_OF_CUT_CELLS = 0
@@ -3508,7 +3508,7 @@
 
          NUMBER_OF_STANDARD_CELLS = 0
 
-         DO IJK = 1, IJKMAX3   
+         DO IJK = 1, IJKMAX3
 
             IF (GLOBAL_INTERIOR_CELL_AT(IJK)) THEN
 
@@ -3517,7 +3517,7 @@
                IF (GLOBAL_BLOCKED_CELL_AT(IJK))  NUMBER_OF_BLOCKED_CELLS  = NUMBER_OF_BLOCKED_CELLS + 1
                IF (GLOBAL_STANDARD_CELL_AT(IJK)) NUMBER_OF_STANDARD_CELLS = NUMBER_OF_STANDARD_CELLS + 1
                IF (GLOBAL_CUT_CELL_AT(IJK))      NUMBER_OF_CUT_CELLS = NUMBER_OF_CUT_CELLS + 1
-    
+
                IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK))   POLY_COUNTER = POLY_COUNTER + GLOBAL_NUMBER_OF_NODES(IJK) + 1
 
             ENDIF
@@ -3531,7 +3531,7 @@
 
       RETURN
 
-      
+
       END SUBROUTINE GATHER_DATA
 
 
@@ -3547,10 +3547,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE PRINT_GRID_STATISTICS
-    
+
       USE param
       USE param1
       USE parallel
@@ -3558,16 +3558,16 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
       USE fldvar
       USE vtk
 
-     
+
       IMPLICIT NONE
 
       INTEGER :: IJK,I,J,K,L
@@ -3589,7 +3589,7 @@
 
          IF(.NOT.GRID_INFO_PRINTED_ON_SCREEN) THEN
             WRITE(*,5) 'GRID STATISTICS:'
-            WRITE(*,5) 'NUMBER OF CELLS          = ', NUMBER_OF_CELLS 
+            WRITE(*,5) 'NUMBER OF CELLS          = ', NUMBER_OF_CELLS
             WRITE(*,10)'NUMBER OF STANDARD CELLS = ', &
                         NUMBER_OF_STANDARD_CELLS,DFLOAT(NUMBER_OF_STANDARD_CELLS) / DFLOAT(NUMBER_OF_CELLS) * 100.0D0
             WRITE(*,10)'NUMBER OF CUT CELLS      = ', &
@@ -3613,9 +3613,9 @@
 
       MIN_VOL =   LARGE_NUMBER
       MAX_VOL = - LARGE_NUMBER
-      MIN_AYZ =   LARGE_NUMBER 
-      MAX_AYZ = - LARGE_NUMBER 
-      MIN_AXZ =   LARGE_NUMBER 
+      MIN_AYZ =   LARGE_NUMBER
+      MAX_AYZ = - LARGE_NUMBER
+      MIN_AXZ =   LARGE_NUMBER
       MAX_AXZ = - LARGE_NUMBER
       MIN_AXY =   LARGE_NUMBER
       MAX_AXY = - LARGE_NUMBER
@@ -3658,9 +3658,9 @@
 
       MIN_VOL =   LARGE_NUMBER
       MAX_VOL = - LARGE_NUMBER
-      MIN_AYZ =   LARGE_NUMBER 
-      MAX_AYZ = - LARGE_NUMBER 
-      MIN_AXZ =   LARGE_NUMBER 
+      MIN_AYZ =   LARGE_NUMBER
+      MAX_AYZ = - LARGE_NUMBER
+      MIN_AXZ =   LARGE_NUMBER
       MAX_AXZ = - LARGE_NUMBER
       MIN_AXY =   LARGE_NUMBER
       MAX_AXY = - LARGE_NUMBER
@@ -3695,7 +3695,7 @@
          WRITE(UNIT_CUT_CELL_LOG,1000)  'RANGE OF AXZ                   = ', GLOBAL_MIN_AXZ,GLOBAL_MAX_AXZ
          WRITE(UNIT_CUT_CELL_LOG,1000)  'RANGE OF AYZ                   = ', GLOBAL_MIN_AYZ,GLOBAL_MAX_AYZ
          WRITE(UNIT_CUT_CELL_LOG,1000)  'RANGE OF VOLUME                = ', GLOBAL_MIN_VOL,GLOBAL_MAX_VOL
-         WRITE(UNIT_CUT_CELL_LOG,1010)  'NUMBER OF SMALL SCALAR CELLS   = ', NUMBER_OF_SMALL_CELLS 
+         WRITE(UNIT_CUT_CELL_LOG,1010)  'NUMBER OF SMALL SCALAR CELLS   = ', NUMBER_OF_SMALL_CELLS
          WRITE(UNIT_CUT_CELL_LOG,1000)  '################################################################'
       ENDIF
 
@@ -3711,9 +3711,9 @@
 
       MIN_VOL =   LARGE_NUMBER
       MAX_VOL = - LARGE_NUMBER
-      MIN_AYZ =   LARGE_NUMBER 
-      MAX_AYZ = - LARGE_NUMBER 
-      MIN_AXZ =   LARGE_NUMBER 
+      MIN_AYZ =   LARGE_NUMBER
+      MAX_AYZ = - LARGE_NUMBER
+      MIN_AXZ =   LARGE_NUMBER
       MAX_AXZ = - LARGE_NUMBER
       MIN_AXY =   LARGE_NUMBER
       MAX_AXY = - LARGE_NUMBER
@@ -3752,9 +3752,9 @@
 
       MIN_VOL =   LARGE_NUMBER
       MAX_VOL = - LARGE_NUMBER
-      MIN_AYZ =   LARGE_NUMBER 
-      MAX_AYZ = - LARGE_NUMBER 
-      MIN_AXZ =   LARGE_NUMBER 
+      MIN_AYZ =   LARGE_NUMBER
+      MAX_AYZ = - LARGE_NUMBER
+      MIN_AXZ =   LARGE_NUMBER
       MAX_AXZ = - LARGE_NUMBER
       MIN_AXY =   LARGE_NUMBER
       MAX_AXY = - LARGE_NUMBER
@@ -3796,7 +3796,7 @@
          WRITE(UNIT_CUT_CELL_LOG,1000)  'RANGE OF AYZ                   = ', GLOBAL_MIN_AYZ,GLOBAL_MAX_AYZ
          WRITE(UNIT_CUT_CELL_LOG,1000)  'RANGE OF CUT AREA              = ', GLOBAL_MIN_CUT,GLOBAL_MAX_CUT
          WRITE(UNIT_CUT_CELL_LOG,1000)  'RANGE OF VOLUME                = ', GLOBAL_MIN_VOL,GLOBAL_MAX_VOL
-         WRITE(UNIT_CUT_CELL_LOG,1010)  'NUMBER OF U WALL CELLS         = ', NUMBER_OF_U_WALL_CELLS 
+         WRITE(UNIT_CUT_CELL_LOG,1010)  'NUMBER OF U WALL CELLS         = ', NUMBER_OF_U_WALL_CELLS
          WRITE(UNIT_CUT_CELL_LOG,1000)  '################################################################'
       ENDIF
 !======================================================================
@@ -3806,9 +3806,9 @@
 
       MIN_VOL =   LARGE_NUMBER
       MAX_VOL = - LARGE_NUMBER
-      MIN_AYZ =   LARGE_NUMBER 
-      MAX_AYZ = - LARGE_NUMBER 
-      MIN_AXZ =   LARGE_NUMBER 
+      MIN_AYZ =   LARGE_NUMBER
+      MAX_AYZ = - LARGE_NUMBER
+      MIN_AXZ =   LARGE_NUMBER
       MAX_AXZ = - LARGE_NUMBER
       MIN_AXY =   LARGE_NUMBER
       MAX_AXY = - LARGE_NUMBER
@@ -3847,9 +3847,9 @@
 
       MIN_VOL =   LARGE_NUMBER
       MAX_VOL = - LARGE_NUMBER
-      MIN_AYZ =   LARGE_NUMBER 
-      MAX_AYZ = - LARGE_NUMBER 
-      MIN_AXZ =   LARGE_NUMBER 
+      MIN_AYZ =   LARGE_NUMBER
+      MAX_AYZ = - LARGE_NUMBER
+      MIN_AXZ =   LARGE_NUMBER
       MAX_AXZ = - LARGE_NUMBER
       MIN_AXY =   LARGE_NUMBER
       MAX_AXY = - LARGE_NUMBER
@@ -3891,7 +3891,7 @@
          WRITE(UNIT_CUT_CELL_LOG,1000)  'RANGE OF AYZ                   = ', GLOBAL_MIN_AYZ,GLOBAL_MAX_AYZ
          WRITE(UNIT_CUT_CELL_LOG,1000)  'RANGE OF CUT AREA              = ', GLOBAL_MIN_CUT,GLOBAL_MAX_CUT
          WRITE(UNIT_CUT_CELL_LOG,1000)  'RANGE OF VOLUME                = ', GLOBAL_MIN_VOL,GLOBAL_MAX_VOL
-         WRITE(UNIT_CUT_CELL_LOG,1010)  'NUMBER OF V WALL CELLS         = ', NUMBER_OF_V_WALL_CELLS 
+         WRITE(UNIT_CUT_CELL_LOG,1010)  'NUMBER OF V WALL CELLS         = ', NUMBER_OF_V_WALL_CELLS
          WRITE(UNIT_CUT_CELL_LOG,1000)  '################################################################'
       ENDIF
 
@@ -3904,9 +3904,9 @@
 
          MIN_VOL =   LARGE_NUMBER
          MAX_VOL = - LARGE_NUMBER
-         MIN_AYZ =   LARGE_NUMBER 
-         MAX_AYZ = - LARGE_NUMBER 
-         MIN_AXZ =   LARGE_NUMBER 
+         MIN_AYZ =   LARGE_NUMBER
+         MAX_AYZ = - LARGE_NUMBER
+         MIN_AXZ =   LARGE_NUMBER
          MAX_AXZ = - LARGE_NUMBER
          MIN_AXY =   LARGE_NUMBER
          MAX_AXY = - LARGE_NUMBER
@@ -3945,9 +3945,9 @@
 
          MIN_VOL =   LARGE_NUMBER
          MAX_VOL = - LARGE_NUMBER
-         MIN_AYZ =   LARGE_NUMBER 
-         MAX_AYZ = - LARGE_NUMBER 
-         MIN_AXZ =   LARGE_NUMBER 
+         MIN_AYZ =   LARGE_NUMBER
+         MAX_AYZ = - LARGE_NUMBER
+         MIN_AXZ =   LARGE_NUMBER
          MAX_AXZ = - LARGE_NUMBER
          MIN_AXY =   LARGE_NUMBER
          MAX_AXY = - LARGE_NUMBER
@@ -3989,7 +3989,7 @@
             WRITE(UNIT_CUT_CELL_LOG,1000)  'RANGE OF AYZ                   = ', GLOBAL_MIN_AYZ,GLOBAL_MAX_AYZ
             WRITE(UNIT_CUT_CELL_LOG,1000)  'RANGE OF CUT AREA              = ', GLOBAL_MIN_CUT,GLOBAL_MAX_CUT
             WRITE(UNIT_CUT_CELL_LOG,1000)  'RANGE OF VOLUME                = ', GLOBAL_MIN_VOL,GLOBAL_MAX_VOL
-            WRITE(UNIT_CUT_CELL_LOG,1010)  'NUMBER OF W WALL CELLS         = ', NUMBER_OF_W_WALL_CELLS 
+            WRITE(UNIT_CUT_CELL_LOG,1010)  'NUMBER OF W WALL CELLS         = ', NUMBER_OF_W_WALL_CELLS
             WRITE(UNIT_CUT_CELL_LOG,1000)  '################################################################'
          ENDIF
 
@@ -4014,7 +4014,7 @@
       call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
       call global_max(LOCAL_MAX_Q, GLOBAL_MAX_Q,  PE_IO, ierr )
       IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  ' RANGE OF U-MOMENTUM Alpha_Ut_c = ', GLOBAL_MIN_Q, GLOBAL_MAX_Q
-      IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  
+      IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)
 
       LOCAL_MIN_Q = MINVAL(Theta_Ue)
       LOCAL_MAX_Q = MAXVAL(Theta_Ue)
@@ -4033,7 +4033,7 @@
       call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
       call global_max(LOCAL_MAX_Q, GLOBAL_MAX_Q,  PE_IO, ierr )
       IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  ' RANGE OF U-MOMENTUM Theta_Ut   = ', GLOBAL_MIN_Q, GLOBAL_MAX_Q
-      IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  
+      IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)
 
       LOCAL_MIN_Q = MINVAL(Theta_U_ne)
       LOCAL_MAX_Q = MAXVAL(Theta_U_ne)
@@ -4046,7 +4046,7 @@
       call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
       call global_max(LOCAL_MAX_Q, GLOBAL_MAX_Q,  PE_IO, ierr )
       IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  ' RANGE OF U-MOMENTUM Theta_U_te = ', GLOBAL_MIN_Q, GLOBAL_MAX_Q
-      IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  
+      IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)
 
       LOCAL_MIN_Q = MINVAL(NOC_U_E)
       LOCAL_MAX_Q = MAXVAL(NOC_U_E)
@@ -4065,7 +4065,7 @@
       call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
       call global_max(LOCAL_MAX_Q, GLOBAL_MAX_Q,  PE_IO, ierr )
       IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  ' RANGE OF U-MOMENTUM NOC_U_T    = ', GLOBAL_MIN_Q, GLOBAL_MAX_Q
-      IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  
+      IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)
 
       LOCAL_MIN_Q = MINVAL(DELH_U)
       LOCAL_MAX_Q = MAXVAL(DELH_U)
@@ -4091,7 +4091,7 @@
       call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
       call global_max(LOCAL_MAX_Q, GLOBAL_MAX_Q,  PE_IO, ierr )
       IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  ' RANGE OF V-MOMENTUM Alpha_Vt_c = ', GLOBAL_MIN_Q, GLOBAL_MAX_Q
-      IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  
+      IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)
       LOCAL_MIN_Q = MINVAL(Theta_Ve)
       LOCAL_MAX_Q = MAXVAL(Theta_Ve)
       call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
@@ -4107,7 +4107,7 @@
       call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
       call global_max(LOCAL_MAX_Q, GLOBAL_MAX_Q,  PE_IO, ierr )
       IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  ' RANGE OF V-MOMENTUM Theta_Vt   = ', GLOBAL_MIN_Q, GLOBAL_MAX_Q
-      IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  
+      IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)
       LOCAL_MIN_Q = MINVAL(Theta_V_ne)
       LOCAL_MAX_Q = MAXVAL(Theta_V_ne)
       call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
@@ -4118,7 +4118,7 @@
       call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
       call global_max(LOCAL_MAX_Q, GLOBAL_MAX_Q,  PE_IO, ierr )
       IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  ' RANGE OF V-MOMENTUM Theta_V_nt = ', GLOBAL_MIN_Q, GLOBAL_MAX_Q
-      IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  
+      IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)
       LOCAL_MIN_Q = MINVAL(NOC_V_E)
       LOCAL_MAX_Q = MAXVAL(NOC_V_E)
       call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
@@ -4134,7 +4134,7 @@
       call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
       call global_max(LOCAL_MAX_Q, GLOBAL_MAX_Q,  PE_IO, ierr )
       IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  ' RANGE OF V-MOMENTUM NOC_V_T    = ', GLOBAL_MIN_Q, GLOBAL_MAX_Q
-      IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  
+      IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)
       LOCAL_MIN_Q = MINVAL(DELH_V)
       LOCAL_MAX_Q = MAXVAL(DELH_V)
       call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
@@ -4160,7 +4160,7 @@
          call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
          call global_max(LOCAL_MAX_Q, GLOBAL_MAX_Q,  PE_IO, ierr )
          IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  ' RANGE OF W-MOMENTUM Alpha_Wt_c = ', GLOBAL_MIN_Q, GLOBAL_MAX_Q
-         IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  
+         IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)
          LOCAL_MIN_Q = MINVAL(Theta_We)
          LOCAL_MAX_Q = MAXVAL(Theta_We)
          call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
@@ -4176,7 +4176,7 @@
          call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
          call global_max(LOCAL_MAX_Q, GLOBAL_MAX_Q,  PE_IO, ierr )
          IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  ' RANGE OF W-MOMENTUM Theta_Wt   = ', GLOBAL_MIN_Q, GLOBAL_MAX_Q
-         IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  
+         IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)
          LOCAL_MIN_Q = MINVAL(Theta_W_te)
          LOCAL_MAX_Q = MAXVAL(Theta_W_te)
          call global_min(LOCAL_MAX_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
@@ -4187,7 +4187,7 @@
          call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
          call global_max(LOCAL_MAX_Q, GLOBAL_MAX_Q,  PE_IO, ierr )
          IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  ' RANGE OF W-MOMENTUM Theta_W_tn = ', GLOBAL_MIN_Q, GLOBAL_MAX_Q
-         IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  
+         IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)
          LOCAL_MIN_Q = MINVAL(NOC_W_E)
          LOCAL_MAX_Q = MAXVAL(NOC_W_E)
          call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
@@ -4203,18 +4203,18 @@
          call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
          call global_max(LOCAL_MAX_Q, GLOBAL_MAX_Q,  PE_IO, ierr )
          IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  ' RANGE OF W-MOMENTUM NOC_W_T    = ', GLOBAL_MIN_Q, GLOBAL_MAX_Q
-         IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  
+         IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)
          LOCAL_MIN_Q = MINVAL(DELH_W)
          LOCAL_MAX_Q = MAXVAL(DELH_W)
          call global_min(LOCAL_MIN_Q, GLOBAL_MIN_Q,  PE_IO, ierr )
          call global_max(LOCAL_MAX_Q, GLOBAL_MAX_Q,  PE_IO, ierr )
          IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  ' RANGE OF W-MOMENTUM DELH_W     = ', GLOBAL_MIN_Q, GLOBAL_MAX_Q
          IF (myPE == PE_IO) WRITE(UNIT_CUT_CELL_LOG,1000)  '################################################################'
-   
+
       ENDIF
 
       RETURN
 
-      
+
       END SUBROUTINE PRINT_GRID_STATISTICS
 

@@ -155,7 +155,7 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! the associated bc no.      
+! the associated bc no.
 !      INTEGER :: BCV
 ! a random number between 0-1
       DOUBLE PRECISION RAND1, RAND2
@@ -380,7 +380,7 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! index of boundary condition 
+! index of boundary condition
       INTEGER, INTENT(IN) :: BCV_I
       DOUBLE PRECISION, INTENT(IN) :: ppar_pos(DIMN)
       DOUBLE PRECISION, INTENT(IN) :: ppar_rad
@@ -389,15 +389,15 @@
 ! Local variables
 !-----------------------------------------------
 ! particle number id of a potential overlapping/contacting particle
-      INTEGER NP2      
+      INTEGER NP2
 ! total number of particles in current ijk cell and loop counter
       INTEGER NPG, LL
 ! i, j, k indices along boundary used for loop counters
       INTEGER I, J, K, IJK
-! for parallel processing 
-      integer listart,liend,ljstart,ljend,lkstart,lkend 
+! for parallel processing
+      integer listart,liend,ljstart,ljend,lkstart,lkend
 
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
       DOUBLE PRECISION  DISTVEC(DIMN), DIST, R_LM
 !-----------------------------------------------
 ! Include statement functions
@@ -407,7 +407,7 @@
 
       TOUCHING = .FALSE.
 
-! For parallel processing the arrays has to be limited 
+! For parallel processing the arrays has to be limited
 !      select case (des_mi_class(bcv_i))
 !      case ('XW','XE', 'YZw','YZe')
 !         listart = gs_array(bcv_i,1)
@@ -430,7 +430,7 @@
 !         ljend = min(gs_array(bcv_i,4),jend)
 !         lkstart = gs_array(bcv_i,5)
 !         lkend = gs_array(bcv_i,6)
-!      end select 
+!      end select
 
       DO k = lkstart,lkend
       DO j = ljstart,ljend

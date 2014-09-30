@@ -1,8 +1,8 @@
 ! vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: Random Number Generation Utilities                     C
-!  Purpose: Removed from interpolation mod and added built-in random   
-!           number routines instead of Pope's                          
+!  Purpose: Removed from interpolation mod and added built-in random
+!           number routines instead of Pope's
 !                                                                      C
 !                                                                      C
 !  Author: Sreekanth Pannala and Rahul Garg           Date: 23-Oct-08  C
@@ -11,27 +11,27 @@
 
     USE constant
 
-    IMPLICIT NONE 
+    IMPLICIT NONE
 
-    PRIVATE 
+    PRIVATE
     PUBLIC :: uni_rno, nor_rno
 
 
-    CONTAINS 
- 
+    CONTAINS
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
       SUBROUTINE UNI_RNO(Y)
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
-      IMPLICIT NONE 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      IMPLICIT NONE
 
 !-----------------------------------------------
 ! Local variables
-!----------------------------------------------- 
+!-----------------------------------------------
       double precision, intent(out), dimension(:) :: y
       double precision rmean, variance, sigma
       integer i, nsize
-!----------------------------------------------- 
+!-----------------------------------------------
 
       nsize = size(y(:))
 
@@ -61,15 +61,15 @@
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
       SUBROUTINE NOR_RNO(Y, mean, sigma)
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       IMPLICIT NONE
 
 !-----------------------------------------------
 ! Local variables
-!----------------------------------------------- 
+!-----------------------------------------------
       double precision, intent(out), dimension(:) :: y
       double precision mean, sigma
 
@@ -79,8 +79,8 @@
 ! no. of times this routine has been called
       integer, save :: COUNTER = 0
 ! so all components are written
-      integer fileunit 
-!----------------------------------------------- 
+      integer fileunit
+!-----------------------------------------------
       COUNTER = COUNTER + 1
       fileunit = 20 + COUNTER
 
@@ -108,7 +108,7 @@
       !write(*,'(7X,A,2X,ES15.5)') 'computed mean =', lmean
 
       !write(fileunit,'(A)') 'FROM NOR_RNO'
-! specific to the call from init_particles_jn            
+! specific to the call from init_particles_jn
       !write(fileunit,'(A,I5,A)') 'FOR DIRECTION = ', &
       !   COUNTER, ' where (1=X,2=Y,3=Z)'
       !write(fileunit,'(5X,A,5X,A)') 'particle no.', 'velocity component'
@@ -130,20 +130,20 @@
       RETURN
       END SUBROUTINE NOR_RNO
 
-      
-      
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
       SUBROUTINE init_random_seed
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
       IMPLICIT NONE
 
 !-----------------------------------------------
 ! Local variables
-!----------------------------------------------- 
+!-----------------------------------------------
       INTEGER              :: isize,idate(8)
       INTEGER,ALLOCATABLE  :: iseed(:)
-!----------------------------------------------- 
+!-----------------------------------------------
 
       CALL DATE_AND_TIME(VALUES=idate)
       CALL RANDOM_SEED(SIZE=isize)

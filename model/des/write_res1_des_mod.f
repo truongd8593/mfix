@@ -482,7 +482,7 @@
 
       use desmpi, only: iProcBuf
       use discretelement, only: PEA
- 
+
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       LOGICAL, INTENT(IN) :: INPUT_L(:)
 

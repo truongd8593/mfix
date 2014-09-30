@@ -1,25 +1,25 @@
 
-      SUBROUTINE Deallocate_CUT_CELL_ARRAYS  
-      
+      SUBROUTINE Deallocate_CUT_CELL_ARRAYS
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
-!  Module name: Deallocate_CUT_CELL_ARRAYS                                      
+!
+!  Module name: Deallocate_CUT_CELL_ARRAYS
 !  Purpose: Deallocate arrays
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
-!  Reviewer: 
-!                                                                     
+!  Reviewer:
+!
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1
       Use indices
 
       USE cutcell
 
       IMPLICIT NONE
-      
+
 
       Deallocate(  INTERSECT_X  )
       Deallocate(  INTERSECT_Y  )
@@ -97,8 +97,8 @@
 
       Deallocate(  SNAP )
 
- 
+
       RETURN
-      END SUBROUTINE Deallocate_CUT_CELL_ARRAYS 
-      
+      END SUBROUTINE Deallocate_CUT_CELL_ARRAYS
+
 

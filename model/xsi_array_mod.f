@@ -21,19 +21,19 @@ MODULE xsi_array
 
 
    LOGICAL :: xsi_array_locked = .false.
-      
+
    CONTAINS
       SUBROUTINE lock_xsi_array
         IF(xsi_array_locked)Then
-	  Write(*,*)'Error:  Multiple use of xsi_array (xsi_array_mod.f)'
-	  CALL MFIX_EXIT(myPE)
-	Else
-	  xsi_array_locked = .true.
-	Endif
+          Write(*,*)'Error:  Multiple use of xsi_array (xsi_array_mod.f)'
+          CALL MFIX_EXIT(myPE)
+        Else
+          xsi_array_locked = .true.
+        Endif
       END SUBROUTINE lock_xsi_array
-      
+
       SUBROUTINE unlock_xsi_array
         xsi_array_locked = .false.
       END SUBROUTINE unlock_xsi_array
-      
+
 END MODULE xsi_array

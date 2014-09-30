@@ -31,7 +31,7 @@
 ! None
 
 ! Local variables
-!-----------------------------------------------  
+!-----------------------------------------------
 ! Index of neighbor particle of particle I such that I < J
       INTEGER IJK
 ! Index value of particle
@@ -116,7 +116,7 @@
             ENDDO
 
 ! Update the particle's mass.
-! The mass of the particle is updated first so that it can be used in 
+! The mass of the particle is updated first so that it can be used in
 ! updating the species mass percent of the particle.
 !---------------------------------------------------------------------//
             dMdt = SUM_DES_Rs
@@ -170,7 +170,7 @@
             ENDIF
 
 ! Update one over the particle's moment of inertia
-            OMOI(NP) = 5.0d0 / (2.0d0 * PMASS(NP) * DES_RADIUS(NP)**2) 
+            OMOI(NP) = 5.0d0 / (2.0d0 * PMASS(NP) * DES_RADIUS(NP)**2)
 
          ENDDO lNP_LP ! End loop over all particles
       ENDDO IJK_LP ! End loop over fluid cells

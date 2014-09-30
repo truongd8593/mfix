@@ -37,7 +37,7 @@
       use physprop
 
       use coeff, only: DENSITY  ! Density
-      use coeff, only: SP_HEAT  ! Specific heat 
+      use coeff, only: SP_HEAT  ! Specific heat
       use coeff, only: PSIZE    ! Particle diameter
 
       implicit none

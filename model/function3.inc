@@ -37,13 +37,13 @@
 !
 !                      DUMMY INDICES
       INTEGER          LI3, LJ3, LK3, LIPROC3, IJK3
-! 
+!
       FUNIJK3(LI3,LJ3,LK3) = LJ3 + c0_3 + LI3*c1_3 + LK3*c2_3
 
       FUNIJK3_PROC(LI3, LJ3, LK3, LIPROC3) = 1 + (LJ3 - jstart4_all(LIPROC3))+ &
       (LI3-Istart4_all(LIPROC3))*(jend4_all(LIPROC3)-jstart4_all(LIPROC3)+1) &
       + (LK3-kstart4_all(LIPROC3))*(jend4_all(LIPROC3)-jstart4_all(LIPROC3)+1)* &
-      (iend4_all(LIPROC3)-istart4_all(LIPROC3)+1) 
+      (iend4_all(LIPROC3)-istart4_all(LIPROC3)+1)
 
       FUNIJK3_GL (LI3, LJ3, LK3) = 1 + (LJ3 - jmin4) + (LI3-imin4)*(jmax4-jmin4+1) &
       + (LK3-kmin4)*(jmax4-jmin4+1)*(imax4-imin4+1)

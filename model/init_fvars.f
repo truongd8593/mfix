@@ -9,7 +9,7 @@
 !  Literature/Document References:                                     !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE INIT_FVARS 
+      SUBROUTINE INIT_FVARS
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -104,5 +104,5 @@
       IF(allocated(Scalar)) Scalar = ZERO
       IF(allocated(ReactionRates)) ReactionRates = ZERO
 
-      RETURN  
+      RETURN
       END SUBROUTINE INIT_FVARS

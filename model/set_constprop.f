@@ -9,12 +9,12 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SET_CONSTPROP 
+      SUBROUTINE SET_CONSTPROP
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1, only: zero, half, one, undefined
       USE fldvar
       USE visc_s
@@ -27,7 +27,7 @@
       use constant, only: ep_star, l_scale0
       USE run
       USE drag, only: f_gs, f_ss
-      USE compar 
+      USE compar
       use kintheory
       use mms, only: use_mms
 
@@ -35,7 +35,7 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! indices      
+! indices
       INTEGER :: IJK, M, N, I, J
       DOUBLE PRECISION :: old_value, DP_TMP(SMAX)
 !-----------------------------------------------
@@ -88,22 +88,22 @@
          A2_gtsh = ZERO
          xsi_gtsh = zero
       ENDIF
-     
+
 ! Set specified constant physical properties values
       DO IJK = ijkstart3, ijkend3
 
 ! All wall cells: FLAG >= 100
          IF (WALL_AT(IJK) .AND. .NOT.USE_MMS) THEN
-            RO_G(IJK) = ZERO 
-            MU_G(IJK) = ZERO 
-            K_G(IJK) = ZERO 
-            C_PG(IJK) = ZERO 
-            MW_MIX_G(IJK) = ZERO 
+            RO_G(IJK) = ZERO
+            MU_G(IJK) = ZERO
+            K_G(IJK) = ZERO
+            C_PG(IJK) = ZERO
+            MW_MIX_G(IJK) = ZERO
          ELSE
 ! Fluid and inflow/outflow cells: FLAG < 100
-            IF (RO_G0 /= UNDEFINED) RO_G(IJK) = RO_G0 
-            IF (C_PG0 /= UNDEFINED) C_PG(IJK) = C_PG0 
-            IF (MW_AVG /= UNDEFINED) MW_MIX_G(IJK) = MW_AVG 
+            IF (RO_G0 /= UNDEFINED) RO_G(IJK) = RO_G0
+            IF (C_PG0 /= UNDEFINED) C_PG(IJK) = C_PG0
+            IF (MW_AVG /= UNDEFINED) MW_MIX_G(IJK) = MW_AVG
 
 ! Strictly fluid cells: FLAG = 1
             IF(FLUID_AT(IJK) .OR. USE_MMS) THEN
@@ -112,7 +112,7 @@
                   MU_GT(IJK) = MU_G0
                   LAMBDA_GT(IJK) = -(2.0d0/3.0d0)*MU_G0
                ENDIF
-               IF (K_G0 /= UNDEFINED) K_G(IJK) = K_G0 
+               IF (K_G0 /= UNDEFINED) K_G(IJK) = K_G0
                IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = DIF_G0
             ELSE
 ! ONLY inflow/outflow cells: FLAG .NE. 1 and FLAG < 100
@@ -125,21 +125,21 @@
                IF (K_G0 /= UNDEFINED) K_G(IJK) = ZERO
                IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = ZERO
             ENDIF
-         ENDIF 
+         ENDIF
 
-      ENDDO 
+      ENDDO
 
 
-      DO M = 1, MMAX 
+      DO M = 1, MMAX
          DO IJK = ijkstart3, ijkend3
 ! All wall cells: FLAG >= 100
-            IF (WALL_AT(IJK) .AND. .NOT.USE_MMS) THEN 
-               P_S(IJK,M) = ZERO 
-               MU_S(IJK,M) = ZERO 
-               LAMBDA_S(IJK,M) = ZERO 
-               ALPHA_S(IJK,M) = ZERO 
-               K_S(IJK,M) = ZERO 
-               C_PS(IJK,M) = ZERO 
+            IF (WALL_AT(IJK) .AND. .NOT.USE_MMS) THEN
+               P_S(IJK,M) = ZERO
+               MU_S(IJK,M) = ZERO
+               LAMBDA_S(IJK,M) = ZERO
+               ALPHA_S(IJK,M) = ZERO
+               K_S(IJK,M) = ZERO
+               C_PS(IJK,M) = ZERO
                D_p(IJK,M) = ZERO
                RO_S(IJK,M) = ZERO
             ELSE
@@ -150,32 +150,32 @@
 
 ! Strictly fluid cells: FLAG = 1
                IF(FLUID_AT(IJK) .OR. USE_MMS) THEN
-                  IF (MU_S0 /= UNDEFINED) THEN 
-                     P_S(IJK,M) = ZERO 
-                     MU_S(IJK,M) = MU_S0 
-                     LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M) 
-                     ALPHA_S(IJK,M) = ZERO 
-                  ENDIF 
+                  IF (MU_S0 /= UNDEFINED) THEN
+                     P_S(IJK,M) = ZERO
+                     MU_S(IJK,M) = MU_S0
+                     LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)
+                     ALPHA_S(IJK,M) = ZERO
+                  ENDIF
                   IF (K_S0(M) /= UNDEFINED) K_S(IJK,M) = K_S0(M)
                   IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
                ELSE
 ! ONLY inflow/outflow cells: FLAG .NE. 1 and FLAG < 100
 ! initialize transport coefficients to zero in inflow/outflow cells
-                  IF (MU_S0 /= UNDEFINED) THEN 
-                     P_S(IJK,M) = ZERO 
+                  IF (MU_S0 /= UNDEFINED) THEN
+                     P_S(IJK,M) = ZERO
                      MU_S(IJK,M) = ZERO
                      LAMBDA_S(IJK,M) = ZERO
                      ALPHA_S(IJK,M) = ZERO
                   ENDIF
                   IF (K_S0(M) /= UNDEFINED) K_S(IJK,M) = ZERO
-                  IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = ZERO 
+                  IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = ZERO
                ENDIF
-            ENDIF 
+            ENDIF
 
 
 ! set ep_star_array to user input ep_star in all cells.
             EP_star_array(ijk) = ep_star
-! initializing blending stress parameters 
+! initializing blending stress parameters
             IF(BLENDING_STRESS.AND.TANH_BLEND) THEN
                ep_g_blend_start(ijk) = ep_star_array(ijk) * 0.99d0
                ep_g_blend_end(ijk)   = ep_star_array(ijk) * 1.01d0
@@ -193,47 +193,47 @@
 
       IF (RO_G0 == ZERO .AND. MMAX > 0) THEN
          IF(allocated(F_GS)) F_GS = ZERO
-      ENDIF 
-     
+      ENDIF
+
 
 ! Initializing parameters needed if a correlation is used to compute
 ! ep_star: initializing the indexing system.
       IF(YU_STANDISH .OR. FEDORS_LANDEL) THEN
          DO M = 1, SMAX
             IF(EP_S_MAX(M) == UNDEFINED) EP_S_MAX(M) = ONE-EP_STAR
-         ENDDO 
+         ENDDO
 
          IF (.NOT.CALL_DQMOM) THEN
 
 ! refer to Syam's dissertation
             IF (SMAX == 2) THEN
                ep_s_max_ratio(1,2) = ep_s_max(1)/ &
-                  (ep_s_max(1)+(1.-ep_s_max(1))*ep_s_max(2)) 
+                  (ep_s_max(1)+(1.-ep_s_max(1))*ep_s_max(2))
             ENDIF
 
-! initialize local variables            
+! initialize local variables
             DO I = 1, SMAX
                DP_TMP(I) = D_P0(I)
                M_MAX(I) = I
             ENDDO
-            
-! Rearrange the indices from coarsest particles to finest to be 
+
+! Rearrange the indices from coarsest particles to finest to be
 ! used in CALC_ep_star. Done here because it may need to be done
 ! for auto_restart
             DO I = 1, SMAX
-               DO J = I, SMAX                  
+               DO J = I, SMAX
                   IF(DP_TMP(I) < DP_TMP(J)) THEN
                      old_value = DP_TMP(I)
                      DP_TMP(I) = DP_TMP(J)
                      DP_TMP(J) = old_value
-                  ENDIF                  
+                  ENDIF
                ENDDO
             ENDDO
 
             DO I = 1, SMAX
                DO J = 1, SMAX
                   IF(DP_TMP(I) == D_P0(J) .AND. D_P0(I) .NE. D_P0(J)) THEN
-                     M_MAX(I) = J 
+                     M_MAX(I) = J
                   ENDIF
                ENDDO
             ENDDO
@@ -245,5 +245,5 @@
          M_MAX(:) = ZERO
       ENDIF
 
-      RETURN  
+      RETURN
       END SUBROUTINE SET_CONSTPROP

@@ -1,11 +1,11 @@
       MODULE rxns
- 
+
       Use param
       Use param1
       Use rxn_com
 
 ! reaction rates
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  ReactionRates 
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  ReactionRates
 
 ! number of ReactionRates
       INTEGER nRR

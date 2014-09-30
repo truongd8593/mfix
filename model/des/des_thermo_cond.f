@@ -82,7 +82,7 @@
 
 ! Functions
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
 ! Particle I has no neighbors therefore no conduction can take place.
       IF(NEIGHBOURS(I,1).LE.0) RETURN
@@ -111,7 +111,7 @@
 
          DeltaTp = DES_T_s_NEW(J) - DES_T_s_NEW(I)
 
-! Calculate the particle-particle conduction 
+! Calculate the particle-particle conduction
 ! REF: Batchelor and O'Brien, 1977 (MODIFIED)
 !---------------------------------------------------------------------//
          IF(CENTER_DIST < (MAX_RAD + MIN_RAD)) THEN
@@ -126,7 +126,7 @@
             Q_Source(J)  = Q_Source(J) - Q_pp
          ENDIF
 
-! Calculate the particle-fluid-particle conduction 
+! Calculate the particle-fluid-particle conduction
 ! REF: Rong and Horio, 1999 (MODIFIED)
 !---------------------------------------------------------------------//
 ! Calculate the radius of the fluid lens surrounding the larger particle
@@ -144,7 +144,7 @@
          IF(RD_OUT .GT. ZERO)THEN
 ! Calculate the distance from the line connecting the particles' centers
 ! to the point of contact between the two particles. This value is
-! zero if the particles are not touching and is the radius of the 
+! zero if the particles are not touching and is the radius of the
 ! shared contact area otherwise.
             RD_IN = ZERO
             IF(CENTER_DIST < (MAX_RAD + MIN_RAD) ) &
@@ -206,7 +206,7 @@
 ! Check to ensure that VALUE is less than or equal to one. If VALUE is
 ! greater than one, the triangle inequality has been violated. Therefore
 ! there is no intersection between the fluid lens surrounding the larger
-! particle and the surface of the smaller particle. 
+! particle and the surface of the smaller particle.
 ! Thus, there is no particle-fluid-particle heat transfer.
       IF( VALUE .GT. 1.0d0) THEN
          RADIUS = -1.0d0
@@ -294,7 +294,7 @@
       DOUBLE PRECISION :: H
 ! Simpson's Rule evaluated on the left and right intervals
       DOUBLE PRECISION :: lS, rS
-! Value of the function F evaluate at the midpoints of the left and 
+! Value of the function F evaluate at the midpoints of the left and
 ! right intervals
       DOUBLE PRECISION :: rF, lF
 ! Local error bound
@@ -306,7 +306,7 @@
       LOGICAL, SAVE :: ADPT_SIMPSON_ERR = .FALSE.
 
 ! Initialize variables
-      V(:,:) = 0.0d0   ! 
+      V(:,:) = 0.0d0   !
       ADPT_SIMPSON = 0.0d0   ! Integral value
       H = (B-A)/2.0d0 ! Dynamic interval length
 ! Calculate Simpson's Rule over the interval [A,B]

@@ -30,7 +30,7 @@
 ! enter the system, if any. This routine only needs to be called if a
 ! run is new.  If a run is a RESTART_1, all of the setup information
 ! provided by this subroutine is will be obtained from the *_DES.RES file.
-! This is done due to this routine's strong dependence on the 
+! This is done due to this routine's strong dependence on the
 ! RANDOM_NUMBER() subroutine.
       IF(RUN_TYPE == 'NEW') THEN
 
@@ -179,7 +179,7 @@
 
 
 ! Dimension of grid cell for seeding particles; this may be larger than
-! than the particle diameter but not smaller: 
+! than the particle diameter but not smaller:
       DEM_MI(BCV_I)%WINDOW = MIN(PLEN/WMAX, QLEN/HMAX)
       WINDOW = DEM_MI(BCV_I)%WINDOW
       if(dFlag) write(*,"(2x,'Windows size: ',g11.5)") WINDOW
@@ -214,7 +214,7 @@
 ! Get the Jth index of the fluid cell
       CALL CALC_CELL_INTERSECT(ZERO, BC_Y_s(BCV), DY, JMAX, J)
 
-! If the computationsl cell adjacent to the DEM_MI mesh cell is a 
+! If the computationsl cell adjacent to the DEM_MI mesh cell is a
 ! fluid cell and has not been cut, store the ID of the cell owner.
       DO H=1,HMAX
       DO W=1,WMAX
@@ -477,7 +477,7 @@
 
 
 ! Dimension of grid cell for seeding particles; this may be larger than
-! than the particle diameter but not smaller: 
+! than the particle diameter but not smaller:
       DEM_MI(BCV_I)%WINDOW = MIN(PLEN/WMAX, QLEN/HMAX)
       WINDOW = DEM_MI(BCV_I)%WINDOW
       if(dFlag) write(*,"(2x,'Windows size: ',g11.5)") WINDOW
@@ -512,7 +512,7 @@
 ! Get the Jth index of the fluid cell
       CALL CALC_CELL_INTERSECT(XMIN, BC_X_w(BCV), DX, IMAX, I)
 
-! If the computationsl cell adjacent to the DEM_MI mesh cell is a 
+! If the computationsl cell adjacent to the DEM_MI mesh cell is a
 ! fluid cell and has not been cut, store the ID of the cell owner.
       DO H=1,HMAX
       DO W=1,WMAX
@@ -777,7 +777,7 @@
 
 
 ! Dimension of grid cell for seeding particles; this may be larger than
-! than the particle diameter but not smaller: 
+! than the particle diameter but not smaller:
       DEM_MI(BCV_I)%WINDOW = MIN(PLEN/WMAX, QLEN/HMAX)
       WINDOW = DEM_MI(BCV_I)%WINDOW
       if(dFlag) write(*,"(2x,'Windows size: ',g11.5)") WINDOW
@@ -807,7 +807,7 @@
 ! Get the Jth index of the fluid cell
       CALL CALC_CELL_INTERSECT(ZERO, BC_Z_b(BCV), DZ, KMAX, K)
 
-! If the computationsl cell adjacent to the DEM_MI mesh cell is a 
+! If the computationsl cell adjacent to the DEM_MI mesh cell is a
 ! fluid cell and has not been cut, store the ID of the cell owner.
       DO H=1,HMAX
       DO W=1,WMAX

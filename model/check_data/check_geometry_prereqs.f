@@ -62,15 +62,15 @@
 
 ! If no variation in a direction is considered, the number of cells in
 ! that direction should be 1
-      IF(NO_I) THEN 
+      IF(NO_I) THEN
          WRITE(ERR_MSG, 1100) 'I','I','east and west'
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF 
+      ENDIF
 
-      IF(NO_J) THEN 
+      IF(NO_J) THEN
          WRITE(ERR_MSG, 1100) 'J','J','north and south'
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF 
+      ENDIF
 
  1100 FORMAT('Error 1100: Illegal geometry: NO_',A1,' is disabled. ',  &
          'The same functionality',/'is acheived with one cell (',A1,   &
@@ -88,7 +88,7 @@
 
       SELECT CASE(trim(COORDINATES))
       CASE ('CYLINDRICAL')
-         CYLINDRICAL = .TRUE. 
+         CYLINDRICAL = .TRUE.
          IF(CYCLIC_X .OR. CYCLIC_X_PD) THEN
             WRITE(ERR_MSG, 1102)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -98,7 +98,7 @@
          'coordinates',/'Please correct the mfix.dat file.')
 
       CASE ('CARTESIAN')
-         CYLINDRICAL = .FALSE. 
+         CYLINDRICAL = .FALSE.
 
       CASE DEFAULT
          WRITE(ERR_MSG, 1103)
@@ -123,16 +123,16 @@
          'mfix.dat file.')
 
          IF(DZ(1)==UNDEFINED) THEN
-            IF(ZLENGTH==UNDEFINED) THEN 
-               IF(CYLINDRICAL) THEN 
-                  DZ(1) = 8.*ATAN(ONE) 
-                  ZLENGTH = 8.*ATAN(ONE) 
-               ELSE 
-                  DZ(1) = ONE 
-                  ZLENGTH = ONE 
+            IF(ZLENGTH==UNDEFINED) THEN
+               IF(CYLINDRICAL) THEN
+                  DZ(1) = 8.*ATAN(ONE)
+                  ZLENGTH = 8.*ATAN(ONE)
+               ELSE
+                  DZ(1) = ONE
+                  ZLENGTH = ONE
                ENDIF
             ELSE
-               DZ(1) = ZLENGTH 
+               DZ(1) = ZLENGTH
             ENDIF
          ELSE
             IF(ZLENGTH==UNDEFINED) THEN
@@ -146,13 +146,13 @@
   1111 FORMAT('Error 1111: Illegal geometry: ',A,' are not equal.',/   &
            'Please correct the mfix.dat file.')
 
-            ENDIF 
-         ENDIF 
-      ENDIF 
+            ENDIF
+         ENDIF
+      ENDIF
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
 
 

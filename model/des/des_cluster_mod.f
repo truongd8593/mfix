@@ -688,7 +688,7 @@
                avgEpg = zero
                avgVel_g = zero
                avgVel_s = zero
-       	       avgRe = zero
+               avgRe = zero
 
                posMin = large_number;  lMin = 0
                posMax = zero;          lMax = 0

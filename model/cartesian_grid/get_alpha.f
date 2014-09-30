@@ -10,10 +10,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_3D_ALPHA_U_CUT_CELL
-    
+
       USE param
       USE param1
       USE parallel
@@ -21,13 +21,13 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE bc
       USE quadric
       USE cutcell
-      
+
       IMPLICIT NONE
       DOUBLE PRECISION:: x1,x2,x3,x_plane,y1,y2,y_plane,z1,z2
       DOUBLE PRECISION:: Xe,Ye,Ze,Xn,Yn,Zn,Xt,Yt,Zt
@@ -39,9 +39,9 @@
       INTEGER, DIMENSION(DIMENSION_I,DIMENSION_J) :: MyFlag
       INTEGER, DIMENSION(DIMENSION_I,DIMENSION_J,DIMENSION_K) :: My_IJK
       DOUBLE PRECISION :: f_sw,f_se,f_ne,f_nw,f_c,f_u
-      DOUBLE PRECISION :: DELH_ec , DELH_e   
-      DOUBLE PRECISION :: DELH_nc , DELH_n   
-      DOUBLE PRECISION :: DELH_tc , DELH_t   
+      DOUBLE PRECISION :: DELH_ec , DELH_e
+      DOUBLE PRECISION :: DELH_nc , DELH_n
+      DOUBLE PRECISION :: DELH_tc , DELH_t
       DOUBLE PRECISION :: XG,YG,XH,YH,delta_G,delta_H,delta_G_bar,delta_H_bar
       LOGICAL :: V_NODE_AT_NE,V_NODE_AT_NW
       LOGICAL :: W_NODE_AT_TE,W_NODE_AT_TW
@@ -58,8 +58,8 @@
       DELH_U = UNDEFINED
 
 
-      Theta_Ue  = HALF           
-      Theta_Ue_bar = HALF        
+      Theta_Ue  = HALF
+      Theta_Ue_bar = HALF
       Theta_U_ne  = HALF
       Theta_U_nw  = HALF
       Theta_U_te  = HALF
@@ -82,17 +82,17 @@
       DO IJK = IJKSTART3, IJKEND3
          IF(INTERIOR_CELL_AT(IJK)) THEN
 
-            I = I_OF(IJK) 
-            J = J_OF(IJK) 
-            K = K_OF(IJK) 
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
 
-            IM = I - 1 
-            JM = J - 1 
+            IM = I - 1
+            JM = J - 1
             KM = K - 1
 
-            IP = I + 1 
-            JP = J + 1 
-            KP = K + 1 
+            IP = I + 1
+            JP = J + 1
+            KP = K + 1
 
             IMJK = FUNIJK(IM,J,K)
             IPJK = FUNIJK(IP,J,K)
@@ -118,7 +118,7 @@
             V_NODE_AT_NE = ((.NOT.BLOCKED_V_CELL_AT(IPJK)).AND.(.NOT.WALL_V_AT(IPJK)))
 
             IF(V_NODE_AT_NW.AND.V_NODE_AT_NE) THEN
-                Theta_U_ne(IJK) = (X_U_nc(IJK) - X_V(IJK) ) / (X_V(IPJK) - X_V(IJK)) 
+                Theta_U_ne(IJK) = (X_U_nc(IJK) - X_V(IJK) ) / (X_V(IPJK) - X_V(IJK))
                 Theta_U_nw(IJK) = ONE - Theta_U_ne(IJK)
             ELSE IF (V_NODE_AT_NE.AND.(.NOT.V_NODE_AT_NW)) THEN
                IF(NO_K) THEN
@@ -126,7 +126,7 @@
                ELSE
                   Xi = HALF * (Xn_U_int(IJK) + Xn_U_int(IJKM))
                ENDIF
-               Theta_U_ne(IJK) = (X_U_nc(IJK) - Xi) / (X_V(IPJK) - Xi) 
+               Theta_U_ne(IJK) = (X_U_nc(IJK) - Xi) / (X_V(IPJK) - Xi)
                Theta_U_nw(IJK) = ONE - Theta_U_ne(IJK)
             ELSE IF ((.NOT.V_NODE_AT_NE).AND.V_NODE_AT_NW) THEN
                IF(NO_K) THEN
@@ -134,7 +134,7 @@
                ELSE
                   Xi = HALF * (Xn_U_int(IJK) + Xn_U_int(IJKM))
                ENDIF
-               Theta_U_ne(IJK) = (X_U_nc(IJK) - X_V(IJK) ) / (Xi - X_V(IJK)) 
+               Theta_U_ne(IJK) = (X_U_nc(IJK) - X_V(IJK) ) / (Xi - X_V(IJK))
                Theta_U_nw(IJK) = ONE - Theta_U_ne(IJK)
             ELSE
                Theta_U_ne(IJK) = ZERO
@@ -157,16 +157,16 @@
                W_NODE_AT_TE = ((.NOT.BLOCKED_W_CELL_AT(IPJK)).AND.(.NOT.WALL_W_AT(IPJK)))
 
                IF(W_NODE_AT_TW.AND.W_NODE_AT_TE) THEN
-                  Theta_U_te(IJK) = (X_U_tc(IJK) - X_W(IJK) ) / (X_W(IPJK) - X_W(IJK)) 
+                  Theta_U_te(IJK) = (X_U_tc(IJK) - X_W(IJK) ) / (X_W(IPJK) - X_W(IJK))
                   Theta_U_tw(IJK) = ONE - Theta_U_te(IJK)
 
                ELSE IF (W_NODE_AT_TE.AND.(.NOT.W_NODE_AT_TW)) THEN
                   Xi = HALF * (Xn_U_int(IJK) + Xn_U_int(IJMK))
-                  Theta_U_te(IJK) = (X_U_tc(IJK) - Xi) / (X_W(IPJK) - Xi) 
+                  Theta_U_te(IJK) = (X_U_tc(IJK) - Xi) / (X_W(IPJK) - Xi)
                   Theta_U_tw(IJK) = ONE - Theta_U_te(IJK)
                ELSE IF ((.NOT.W_NODE_AT_TE).AND.W_NODE_AT_TW) THEN
                   Xi = HALF * (Xn_U_int(IJK) + Xn_U_int(IJMK))
-                  Theta_U_te(IJK) = (X_U_tc(IJK) - X_W(IJK) ) / (Xi - X_W(IJK)) 
+                  Theta_U_te(IJK) = (X_U_tc(IJK) - X_W(IJK) ) / (Xi - X_W(IJK))
                   Theta_U_tw(IJK) = ONE - Theta_U_te(IJK)
                ELSE
                   Theta_U_te(IJK) = ZERO
@@ -196,7 +196,7 @@
                   WRITE(*,*) 'DELH_U=', DELH_U(IJK)
                   WRITE(*,*) 'AYZ=', AYZ(IJK)
                   WRITE(*,*) 'MFIX WILL EXIT NOW.'
-                  CALL MFIX_EXIT(MYPE) 
+                  CALL MFIX_EXIT(MYPE)
                ENDIF
 
 
@@ -208,8 +208,8 @@
 ! Xe has not moved based on definition of Theta_Ue
 
                Xe = X_NODE(8)
-               Ye = Theta_Ue_bar(IJK) * Y_U(IJK) + Theta_Ue(IJK) * Y_U(IPJK) 
-               Ze = Theta_Ue_bar(IJK) * Z_U(IJK) + Theta_Ue(IJK) * Z_U(IPJK) 
+               Ye = Theta_Ue_bar(IJK) * Y_U(IJK) + Theta_Ue(IJK) * Y_U(IPJK)
+               Ze = Theta_Ue_bar(IJK) * Z_U(IJK) + Theta_Ue(IJK) * Z_U(IPJK)
 
                CALL GET_DEL_H(IJK,'U_MOMENTUM',X_U_ec(IJK),Y_U_ec(IJK),Z_U_ec(IJK),DELH_ec,Nx,Ny,Nz)
                CALL GET_DEL_H(IJK,'U_MOMENTUM',Xe,Ye,Ze,DELH_e,Nx,Ny,Nz)
@@ -228,14 +228,14 @@
                IF(ALPHA_Ue_c(IJK)<ZERO) THEN
                  WRITE(*,*) 'NEGATIVE ALPHA_Ue_c at IJK=',IJK
                  WRITE(*,*) 'MFIX WILL EXIT NOW.'
-                 CALL MFIX_EXIT(MYPE) 
+                 CALL MFIX_EXIT(MYPE)
                ENDIF
 
 !======================================================================
 !  Get Non-Ortogonality correction factor at East face
 !======================================================================
 
-               Sx = X_U(IPJK) - X_U(IJK)                                    
+               Sx = X_U(IPJK) - X_U(IJK)
                Sy = Y_U(IPJK) - Y_U(IJK)
                Sz = Z_U(IPJK) - Z_U(IJK)
 
@@ -261,7 +261,7 @@
 ! Location of the interpolated velocity along North face
 ! Yn has not moved based on definition of Theta_Un
 
-          
+
                Xn = Theta_Un_bar(IJK) * X_U(IJK) + Theta_Un(IJK) * X_U(IJPK)
                Yn = Y_NODE(8)
                Zn = Theta_Un_bar(IJK) * Z_U(IJK) + Theta_Un(IJK) * Z_U(IJPK)
@@ -280,13 +280,13 @@
                IF(WALL_U_AT(IJK).AND.WALL_U_AT(IJPK)) ALPHA_Un_c(IJK) = ZERO
                IF(J == JEND1) ALPHA_Un_c(IJK) = ONE
 
-               IF(ALPHA_Un_c(IJK)<ZERO) ALPHA_Un_c(IJK) = ONE   
+               IF(ALPHA_Un_c(IJK)<ZERO) ALPHA_Un_c(IJK) = ONE
 
 !======================================================================
 !  Get Non-Ortogonality correction factor at North face
 !======================================================================
 
-               Sx = X_U(IJPK) - X_U(IJK)                                   
+               Sx = X_U(IJPK) - X_U(IJK)
                Sy = Y_U(IJPK) - Y_U(IJK)
                Sz = Z_U(IJPK) - Z_U(IJK)
 
@@ -313,9 +313,9 @@
 
 ! Location of the interpolated velocity along Top face
 ! Zt has not moved based on definition of Theta_Ut
-          
+
                   Xt = Theta_Ut_bar(IJK) * X_U(IJK) + Theta_Ut(IJK) * X_U(IJKP)
-                  Yt = Theta_Ut_bar(IJK) * Y_U(IJK) + Theta_Ut(IJK) * Y_U(IJKP)  
+                  Yt = Theta_Ut_bar(IJK) * Y_U(IJK) + Theta_Ut(IJK) * Y_U(IJKP)
                   Zt = Z_NODE(8)
 
                   CALL GET_DEL_H(IJK,'U_MOMENTUM',X_U_tc(IJK),Y_U_tc(IJK),Z_U_tc(IJK),DELH_tc,Nx,Ny,Nz)
@@ -331,13 +331,13 @@
                   IF(WALL_U_AT(IJK).AND.WALL_U_AT(IJKP)) ALPHA_Ut_c(IJK) = ZERO
                   IF(K == KEND1) ALPHA_Ut_c(IJK) = ONE
 
-                  IF(ALPHA_Ut_c(IJK)<ZERO) ALPHA_Ut_c(IJK) = ONE   
+                  IF(ALPHA_Ut_c(IJK)<ZERO) ALPHA_Ut_c(IJK) = ONE
 
 !======================================================================
 !  Get Non-Ortogonality correction factor at Top face
 !======================================================================
 
-                  Sx = X_U(IJKP) - X_U(IJK)                                   
+                  Sx = X_U(IJKP) - X_U(IJK)
                   Sy = Y_U(IJKP) - Y_U(IJK)
                   Sz = Z_U(IJKP) - Z_U(IJK)
 
@@ -352,7 +352,7 @@
 
             ENDIF
 
-   
+
 
 !======================================================================
 !  Get Surfaces used to compute pressure gradient
@@ -372,7 +372,7 @@
 
                   CASE(2)
 
-                     A_UPG_E(IJK) = AYZ_U(IJK)       
+                     A_UPG_E(IJK) = AYZ_U(IJK)
                      A_UPG_W(IJK) = AYZ_U(IMJK)
 
                   CASE DEFAULT
@@ -381,9 +381,9 @@
                      WRITE(*,*)'PG_OPTION SHOULD BE SET EQUAL TO 0, 1 OR 2.'
                      WRITE(*,*)'PLEASE VERIFY MFIX.DAT FILE AND TRY AGAIN.'
                      WRITE(*,*) 'MFIX WILL EXIT NOW.'
-                     CALL MFIX_EXIT(myPE) 
+                     CALL MFIX_EXIT(myPE)
 
-               END SELECT  
+               END SELECT
 
 
                IF (BLOCKED_CELL_AT(IJK).OR.BLOCKED_CELL_AT(IPJK)) THEN
@@ -391,11 +391,11 @@
                      WALL_U_AT(IJK) = .TRUE.
                      FLAG_E(IJK) = 0
                      IF(PRINT_WARNINGS) THEN
-                        WRITE(*,*) 'WARNING: ONLY ONE PRESSURE NODE DETECTED IN U-MOMENTUM CELL IJK =',IJK 
+                        WRITE(*,*) 'WARNING: ONLY ONE PRESSURE NODE DETECTED IN U-MOMENTUM CELL IJK =',IJK
                         WRITE(*,*) 'RESETTING U-MOMENTUM CELL AS U_WALL CELL.'
                      ENDIF
 !                     write(*,*) 'MFiX will exit now.'
-!                     CALL MFIX_EXIT(myPE) 
+!                     CALL MFIX_EXIT(myPE)
                   ENDIF
                ENDIF
 
@@ -421,7 +421,7 @@
 
       RETURN
 
-      
+
       END SUBROUTINE GET_3D_ALPHA_U_CUT_CELL
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -436,10 +436,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_3D_ALPHA_V_CUT_CELL
-    
+
       USE param
       USE param1
       USE parallel
@@ -447,13 +447,13 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE bc
       USE quadric
       USE cutcell
-      
+
       IMPLICIT NONE
       DOUBLE PRECISION:: x1,x2,x3,x_plane,y1,y2,y_plane,z1,z2
       DOUBLE PRECISION:: Xe,Ye,Ze,Xn,Yn,Zn,Xt,Yt,Zt
@@ -465,10 +465,10 @@
       INTEGER, DIMENSION(DIMENSION_I,DIMENSION_J) :: MyFlag
       INTEGER, DIMENSION(DIMENSION_I,DIMENSION_J,DIMENSION_K) :: My_IJK
       DOUBLE PRECISION :: f_sw,f_se,f_ne,f_nw,f_c,f_v
-      DOUBLE PRECISION :: DELH_ec , DELH_e   
-      DOUBLE PRECISION :: DELH_nc , DELH_n   
-      DOUBLE PRECISION :: DELH_tc , DELH_t   
-      DOUBLE PRECISION :: XG,YG,XH,YH,delta_G,delta_H,delta_G_bar,delta_H_bar       
+      DOUBLE PRECISION :: DELH_ec , DELH_e
+      DOUBLE PRECISION :: DELH_nc , DELH_n
+      DOUBLE PRECISION :: DELH_tc , DELH_t
+      DOUBLE PRECISION :: XG,YG,XH,YH,delta_G,delta_H,delta_G_bar,delta_H_bar
       LOGICAL :: U_NODE_AT_NE, U_NODE_AT_SE
       LOGICAL :: W_NODE_AT_NT, W_NODE_AT_ST
       INTEGER :: BCV
@@ -507,17 +507,17 @@
       DO IJK = IJKSTART3, IJKEND3
          IF(INTERIOR_CELL_AT(IJK)) THEN
 
-            I = I_OF(IJK) 
-            J = J_OF(IJK) 
-            K = K_OF(IJK) 
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
 
-            IM = I - 1 
-            JM = J - 1 
+            IM = I - 1
+            JM = J - 1
             KM = K - 1
 
-            IP = I + 1 
-            JP = J + 1 
-            KP = K + 1 
+            IP = I + 1
+            JP = J + 1
+            KP = K + 1
 
             IMJK = FUNIJK(IM,J,K)
             IPJK = FUNIJK(IP,J,K)
@@ -536,7 +536,7 @@
             U_NODE_AT_SE = ((.NOT.BLOCKED_U_CELL_AT(IJK)).AND.(.NOT.WALL_U_AT(IJK)))
 
             IF(U_NODE_AT_SE.AND.U_NODE_AT_NE) THEN
-               Theta_V_ne(IJK) = (Y_V_ec(IJK) - Y_U(IJK)    ) / (Y_U(IJPK) - Y_U(IJK)) 
+               Theta_V_ne(IJK) = (Y_V_ec(IJK) - Y_U(IJK)    ) / (Y_U(IJPK) - Y_U(IJK))
                Theta_V_se(IJK) = ONE - Theta_V_ne(IJK)
             ELSE IF (U_NODE_AT_SE.AND.(.NOT.U_NODE_AT_NE)) THEN
                IF(NO_K) THEN
@@ -544,7 +544,7 @@
                ELSE
                   Yi = HALF * (Ye_V_int(IJK) + Ye_V_int(IJKM))
                ENDIF
-               Theta_V_ne(IJK) = (Y_V_ec(IJK) - Y_U(IJK)    ) / (Yi - Y_U(IJK)) 
+               Theta_V_ne(IJK) = (Y_V_ec(IJK) - Y_U(IJK)    ) / (Yi - Y_U(IJK))
                Theta_V_se(IJK) = ONE - Theta_V_ne(IJK)
             ELSE IF ((.NOT.U_NODE_AT_SE).AND.U_NODE_AT_NE) THEN
                IF(NO_K) THEN
@@ -552,7 +552,7 @@
                ELSE
                   Yi = HALF * (Ye_V_int(IJK) + Ye_V_int(IJKM))
                ENDIF
-               Theta_V_ne(IJK) = (Y_V_ec(IJK) - Yi    ) / (Y_U(IJPK) - Yi) 
+               Theta_V_ne(IJK) = (Y_V_ec(IJK) - Yi    ) / (Y_U(IJPK) - Yi)
                Theta_V_se(IJK) = ONE - Theta_V_ne(IJK)
             ELSE
                Theta_V_ne(IJK) = ZERO
@@ -588,15 +588,15 @@
 
 
                IF(W_NODE_AT_ST.AND.W_NODE_AT_NT) THEN
-                  Theta_V_nt(IJK) = (Y_V_tc(IJK) - Y_W(IJK)    ) / (Y_W(IJPK) - Y_W(IJK)) 
+                  Theta_V_nt(IJK) = (Y_V_tc(IJK) - Y_W(IJK)    ) / (Y_W(IJPK) - Y_W(IJK))
                   Theta_V_st(IJK) = ONE - Theta_V_nt(IJK)
                ELSE IF (W_NODE_AT_ST.AND.(.NOT.W_NODE_AT_NT)) THEN
                   Yi = HALF * (Ye_V_int(IJK) + Ye_V_int(IMJK))
-                  Theta_V_nt(IJK) = (Y_V_tc(IJK) - Y_W(IJK)    ) / (Yi - Y_W(IJK)) 
+                  Theta_V_nt(IJK) = (Y_V_tc(IJK) - Y_W(IJK)    ) / (Yi - Y_W(IJK))
                   Theta_V_st(IJK) = ONE - Theta_V_nt(IJK)
                ELSE IF ((.NOT.W_NODE_AT_ST).AND.W_NODE_AT_NT) THEN
                   Yi = HALF * (Ye_V_int(IJK) + Ye_V_int(IMJK))
-                  Theta_V_nt(IJK) = (Y_V_tc(IJK) - Yi ) / (Y_W(IJPK) - Yi) 
+                  Theta_V_nt(IJK) = (Y_V_tc(IJK) - Yi ) / (Y_W(IJPK) - Yi)
                   Theta_V_st(IJK) = ONE - Theta_V_nt(IJK)
                ELSE
                   Theta_V_nt(IJK) = ZERO
@@ -627,7 +627,7 @@
                  WRITE(*,*) 'DELH_V=', DELH_V(IJK)
                  WRITE(*,*) 'AYZ=', AXZ(IJK)
                  WRITE(*,*) 'MFIX WILL EXIT NOW.'
-                 CALL MFIX_EXIT(MYPE) 
+                 CALL MFIX_EXIT(MYPE)
               ENDIF
 
 !======================================================================
@@ -665,7 +665,7 @@
                IF(WALL_V_AT(IJK).AND.WALL_V_AT(IPJK)) ALPHA_Ve_c(IJK) = ZERO
                IF(I == IEND1) ALPHA_Ve_c(IJK) = ONE
 
-               IF(ALPHA_Ve_c(IJK)<ZERO) ALPHA_Ve_c(IJK) = ONE   
+               IF(ALPHA_Ve_c(IJK)<ZERO) ALPHA_Ve_c(IJK) = ONE
 
 !======================================================================
 !  Get Non-Ortogonality correction factor at East face
@@ -688,9 +688,9 @@
 ! Location of the interpolated velocity along north face
 ! Yn has not moved based on definition of Theta_V
 
-               Xn = Theta_Vn_bar(IJK) * X_V(IJK) + Theta_Vn(IJK) * X_V(IJPK)  
+               Xn = Theta_Vn_bar(IJK) * X_V(IJK) + Theta_Vn(IJK) * X_V(IJPK)
                Yn = Y_NODE(8)
-               Zn = Theta_Vn_bar(IJK) * Z_V(IJK) + Theta_Vn(IJK) * Z_V(IJPK)  
+               Zn = Theta_Vn_bar(IJK) * Z_V(IJK) + Theta_Vn(IJK) * Z_V(IJPK)
 
                CALL GET_DEL_H(IJK,'V_MOMENTUM',X_V_nc(IJK),Y_V_nc(IJK),Z_V_nc(IJK),DELH_nc,Nx,Ny,Nz)
 
@@ -709,7 +709,7 @@
                IF(ALPHA_Vn_c(IJK)<ZERO) THEN
                  WRITE(*,*) 'NEGATIVE ALPHA_Vn_c at IJK=',IJK
                  WRITE(*,*) 'MFIX WILL EXIT NOW.'
-                 CALL MFIX_EXIT(MYPE) 
+                 CALL MFIX_EXIT(MYPE)
                ENDIF
 
 !======================================================================
@@ -745,9 +745,9 @@
 
 ! Location of the interpolated velocity along Top face
 ! Zt has not moved based on definition of Theta_Ut
-          
+
                   Xt = Theta_Vt_bar(IJK) * X_V(IJK) + Theta_Vt(IJK) * X_V(IJKP)
-                  Yt = Theta_Vt_bar(IJK) * Y_V(IJK) + Theta_Vt(IJK) * Y_V(IJKP)  
+                  Yt = Theta_Vt_bar(IJK) * Y_V(IJK) + Theta_Vt(IJK) * Y_V(IJKP)
                   Zt = Z_NODE(8)
 
                   CALL GET_DEL_H(IJK,'V_MOMENTUM',X_V_tc(IJK),Y_V_tc(IJK),Z_V_tc(IJK),DELH_tc,Nx,Ny,Nz)
@@ -764,13 +764,13 @@
                   IF(WALL_V_AT(IJK).AND.WALL_V_AT(IJKP)) ALPHA_Vt_c(IJK) = ZERO
                   IF(K == KEND1) ALPHA_Vt_c(IJK) = ONE
 
-                  IF(ALPHA_Vt_c(IJK)<ZERO) ALPHA_Vt_c(IJK) = ONE   
+                  IF(ALPHA_Vt_c(IJK)<ZERO) ALPHA_Vt_c(IJK) = ONE
 
 !======================================================================
 !  Get Non-Ortogonality correction factor at Top face
 !======================================================================
 
-                  Sx = X_V(IJKP) - X_V(IJK)                                   
+                  Sx = X_V(IJKP) - X_V(IJK)
                   Sy = Y_V(IJKP) - Y_V(IJK)
                   Sz = Z_V(IJKP) - Z_V(IJK)
 
@@ -804,8 +804,8 @@
 
                   CASE(2)
 
-                     A_VPG_N(IJK) = AXZ_V(IJK)       
-                     A_VPG_S(IJK) = AXZ_V(IJMK)       
+                     A_VPG_N(IJK) = AXZ_V(IJK)
+                     A_VPG_S(IJK) = AXZ_V(IJMK)
 
 
                   CASE DEFAULT
@@ -814,9 +814,9 @@
                      WRITE(*,*)'PG_OPTION SHOULD BE SET EQUAL TO 0, 1 OR 2.'
                      WRITE(*,*)'PLEASE VERIFY MFIX.DAT FILE AND TRY AGAIN.'
                      WRITE(*,*) 'MFIX WILL EXIT NOW.'
-                     CALL MFIX_EXIT(myPE) 
+                     CALL MFIX_EXIT(myPE)
 
-               END SELECT  
+               END SELECT
 
 
                IF (BLOCKED_CELL_AT(IJK).OR.BLOCKED_CELL_AT(IJPK)) THEN
@@ -824,14 +824,14 @@
                      WALL_V_AT(IJK) = .TRUE.
                      FLAG_N(IJK) = 0
                      IF(PRINT_WARNINGS) THEN
-                        WRITE(*,*) 'WARNING: ONLY ONE PRESSURE NODE DETECTED IN V-MOMENTUM CELL IJK =',IJK 
+                        WRITE(*,*) 'WARNING: ONLY ONE PRESSURE NODE DETECTED IN V-MOMENTUM CELL IJK =',IJK
                         WRITE(*,*) 'RESETTING U-MOMENTUM CELL AS V_WALL CELL.'
                      ENDIF
 !                     write(*,*) 'MFiX will exit now.'
 !                     CALL MFIX_EXIT(myPE)
                   ENDIF
                ENDIF
-      
+
             ELSE
 
                A_VPG_N(IJK) = AXZ_V(IJK)
@@ -853,7 +853,7 @@
       RETURN
 
 
-      
+
       END SUBROUTINE GET_3D_ALPHA_V_CUT_CELL
 
 
@@ -869,10 +869,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_3D_ALPHA_W_CUT_CELL
-    
+
       USE param
       USE param1
       USE parallel
@@ -880,13 +880,13 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE bc
       USE quadric
       USE cutcell
-      
+
       IMPLICIT NONE
       DOUBLE PRECISION:: x1,x2,x3,x_plane,y1,y2,y_plane,z1,z2
       DOUBLE PRECISION:: Xe,Ye,Ze,Xn,Yn,Zn,Xt,Yt,Zt
@@ -898,10 +898,10 @@
       INTEGER, DIMENSION(DIMENSION_I,DIMENSION_J) :: MyFlag
       INTEGER, DIMENSION(DIMENSION_I,DIMENSION_J,DIMENSION_K) :: My_IJK
       DOUBLE PRECISION :: f_sw,f_se,f_ne,f_nw,f_c,f_v
-      DOUBLE PRECISION :: DELH_ec , DELH_e   
-      DOUBLE PRECISION :: DELH_nc , DELH_n   
-      DOUBLE PRECISION :: DELH_tc , DELH_t   
-      DOUBLE PRECISION :: XG,YG,XH,YH,delta_G,delta_H,delta_G_bar,delta_H_bar       
+      DOUBLE PRECISION :: DELH_ec , DELH_e
+      DOUBLE PRECISION :: DELH_nc , DELH_n
+      DOUBLE PRECISION :: DELH_tc , DELH_t
+      DOUBLE PRECISION :: XG,YG,XH,YH,delta_G,delta_H,delta_G_bar,delta_H_bar
       LOGICAL :: U_NODE_AT_TE, U_NODE_AT_BE
       LOGICAL :: V_NODE_AT_TN, V_NODE_AT_BN
       INTEGER :: BCV
@@ -939,17 +939,17 @@
       DO IJK = IJKSTART3, IJKEND3
          IF(INTERIOR_CELL_AT(IJK)) THEN
 
-            I = I_OF(IJK) 
-            J = J_OF(IJK) 
-            K = K_OF(IJK) 
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
 
-            IM = I - 1 
-            JM = J - 1 
+            IM = I - 1
+            JM = J - 1
             KM = K - 1
 
-            IP = I + 1 
-            JP = J + 1 
-            KP = K + 1 
+            IP = I + 1
+            JP = J + 1
+            KP = K + 1
 
             IMJK = FUNIJK(IM,J,K)
             IPJK = FUNIJK(IP,J,K)
@@ -970,15 +970,15 @@
 
 
             IF(U_NODE_AT_TE.AND.U_NODE_AT_BE) THEN
-               Theta_W_te(IJK) = (Z_W_ec(IJK) - Z_U(IJK)    ) / (Z_U(IJKP) - Z_U(IJK)) 
+               Theta_W_te(IJK) = (Z_W_ec(IJK) - Z_U(IJK)    ) / (Z_U(IJKP) - Z_U(IJK))
                Theta_W_be(IJK) = ONE - Theta_W_te(IJK)
             ELSE IF (U_NODE_AT_BE.AND.(.NOT.U_NODE_AT_TE)) THEN
                Zi = HALF * (Zt_W_int(IJK) + Zt_W_int(IJMK))
-               Theta_W_te(IJK) = (Z_W_ec(IJK) - Z_U(IJK)    ) / (Zi - Z_U(IJK)) 
+               Theta_W_te(IJK) = (Z_W_ec(IJK) - Z_U(IJK)    ) / (Zi - Z_U(IJK))
                Theta_W_be(IJK) = ONE - Theta_W_te(IJK)
             ELSE IF ((.NOT.U_NODE_AT_BE).AND.U_NODE_AT_TE) THEN
                Zi = HALF * (Zt_W_int(IJK) + Zt_W_int(IJMK))
-               Theta_W_te(IJK) = (Z_W_ec(IJK) - Zi) / (Z_U(IJKP) - Zi) 
+               Theta_W_te(IJK) = (Z_W_ec(IJK) - Zi) / (Z_U(IJKP) - Zi)
                Theta_W_be(IJK) = ONE - Theta_W_te(IJK)
             ELSE
                Theta_W_te(IJK) = ZERO
@@ -999,15 +999,15 @@
 
 
             IF(V_NODE_AT_TN.AND.V_NODE_AT_BN) THEN
-               Theta_W_tn(IJK) = (Z_W_nc(IJK) - Z_V(IJK)    ) / (Z_V(IJKP) - Z_V(IJK)) 
+               Theta_W_tn(IJK) = (Z_W_nc(IJK) - Z_V(IJK)    ) / (Z_V(IJKP) - Z_V(IJK))
                Theta_W_bn(IJK) = ONE - Theta_W_tn(IJK)
             ELSE IF (V_NODE_AT_BN.AND.(.NOT.V_NODE_AT_TN)) THEN
                Zi = HALF * (Zt_W_int(IJK) + Zt_W_int(IMJK))
-               Theta_W_tn(IJK) = (Z_W_nc(IJK) - Z_V(IJK)    ) / (Zi - Z_V(IJK)) 
+               Theta_W_tn(IJK) = (Z_W_nc(IJK) - Z_V(IJK)    ) / (Zi - Z_V(IJK))
                Theta_W_bn(IJK) = ONE - Theta_W_bn(IJK)
             ELSE IF ((.NOT.V_NODE_AT_BN).AND.V_NODE_AT_TN) THEN
                Zi = HALF * (Zt_W_int(IJK) + Zt_W_int(IMJK))
-               Theta_W_tn(IJK) = (Z_W_nc(IJK) - Zi) / (Z_V(IJKP) - Zi) 
+               Theta_W_tn(IJK) = (Z_W_nc(IJK) - Zi) / (Z_V(IJKP) - Zi)
                Theta_W_bn(IJK) = ONE - Theta_W_bn(IJK)
             ELSE
                Theta_W_tn(IJK) = ZERO
@@ -1038,7 +1038,7 @@
                BCT = ''
             ENDIF
 
-            
+
             IF(BCT =='CG_NSW'.OR.BCT =='CG_PSW') THEN
 
                CALL GET_DEL_H(IJK,'W_MOMENTUM',X_W(IJK),Y_W(IJK),Z_W(IJK),DELH_W(IJK),Nx,Ny,Nz)
@@ -1048,7 +1048,7 @@
                   WRITE(*,*) 'DELH_W=', DELH_W(IJK)
                   WRITE(*,*) 'AXY=', AXY(IJK)
                   WRITE(*,*) 'MFIX WILL EXIT NOW.'
-                  CALL MFIX_EXIT(MYPE) 
+                  CALL MFIX_EXIT(MYPE)
                ENDIF
 
 !======================================================================
@@ -1084,7 +1084,7 @@
                IF(WALL_W_AT(IJK).AND.WALL_W_AT(IPJK)) ALPHA_We_c(IJK) = ZERO
                IF(I == IEND1) ALPHA_We_c(IJK) = ONE
 
-               IF(ALPHA_We_c(IJK)<ZERO) ALPHA_We_c(IJK) = ONE   
+               IF(ALPHA_We_c(IJK)<ZERO) ALPHA_We_c(IJK) = ONE
 
 !======================================================================
 !  Get Non-Ortogonality correction factor at East face
@@ -1117,9 +1117,9 @@
 ! Location of the interpolated velocity along north face
 ! Yn has not moved based on definition of Theta_V
 
-               Xn = Theta_Wn_bar(IJK) * X_W(IJK) + Theta_Wn(IJK) * X_W(IJPK)  
+               Xn = Theta_Wn_bar(IJK) * X_W(IJK) + Theta_Wn(IJK) * X_W(IJPK)
                Yn = Y_NODE(8)
-               Zn = Theta_Wn_bar(IJK) * Z_W(IJK) + Theta_Wn(IJK) * Z_W(IJPK)  
+               Zn = Theta_Wn_bar(IJK) * Z_W(IJK) + Theta_Wn(IJK) * Z_W(IJPK)
 
                CALL GET_DEL_H(IJK,'W_MOMENTUM',X_W_nc(IJK),Y_W_nc(IJK),Z_W_nc(IJK),DELH_nc,Nx,Ny,Nz)
 
@@ -1134,8 +1134,8 @@
                IF(BLOCKED_W_CELL_AT(IJPK)) ALPHA_Wn_c(IJK) = ZERO
                IF(WALL_W_AT(IJK).AND.WALL_W_AT(IJPK)) ALPHA_Wn_c(IJK) = ZERO
                IF(J == JEND1) ALPHA_Wn_c(IJK) = ONE
-      
-               IF(ALPHA_Wn_c(IJK)<ZERO) ALPHA_Wn_c(IJK) = ONE   
+
+               IF(ALPHA_Wn_c(IJK)<ZERO) ALPHA_Wn_c(IJK) = ONE
 
 !======================================================================
 !  Get Non-Ortogonality correction factor at North face
@@ -1157,9 +1157,9 @@
 
 ! Location of the interpolated velocity along Top face
 ! Zt has not moved based on definition of Theta_Ut
-          
+
                Xt = Theta_Wt_bar(IJK) * X_W(IJK) + Theta_Wt(IJK) * X_W(IJKP)
-               Yt = Theta_Wt_bar(IJK) * Y_W(IJK) + Theta_Wt(IJK) * Y_W(IJKP)  
+               Yt = Theta_Wt_bar(IJK) * Y_W(IJK) + Theta_Wt(IJK) * Y_W(IJKP)
                Zt = Z_NODE(8)
 
 
@@ -1180,20 +1180,20 @@
                IF(ALPHA_Wt_c(IJK)<ZERO) THEN
                   WRITE(*,*) 'NEGATIVE ALPHA_Wt_c at IJK=',IJK
                   WRITE(*,*) 'MFIX WILL EXIT NOW.'
-                  CALL MFIX_EXIT(MYPE) 
+                  CALL MFIX_EXIT(MYPE)
                ENDIF
 
 !======================================================================
 !  Get Non-Ortogonality correction factor at Top face
 !======================================================================
 
-               Sx = X_W(IJKP) - X_W(IJK)                                   
+               Sx = X_W(IJKP) - X_W(IJK)
                Sy = Y_W(IJKP) - Y_W(IJK)
                Sz = Z_W(IJKP) - Z_W(IJK)
 
                NOC_W_T(IJK) = (Sx * Nx + Sy * Ny)/(Sz * DELH_t)
 
-       
+
 
                IF(BLOCKED_W_CELL_AT(IJKP)) NOC_W_T(IJK) = ZERO
                IF(WALL_W_AT(IJK).AND.WALL_W_AT(IJKP)) NOC_W_T(IJK) = ZERO
@@ -1222,8 +1222,8 @@
 
                   CASE(2)
 
-                     A_WPG_T(IJK) = AXY_W(IJK)      
-                     A_WPG_B(IJK) = AXY_W(IJKM)  
+                     A_WPG_T(IJK) = AXY_W(IJK)
+                     A_WPG_B(IJK) = AXY_W(IJKM)
 
                   CASE DEFAULT
 
@@ -1231,9 +1231,9 @@
                      WRITE(*,*)'PG_OPTION SHOULD BE SET EQUAL TO 0, 1 OR 2.'
                      WRITE(*,*)'PLEASE VERIFY MFIX.DAT FILE AND TRY AGAIN.'
                      WRITE(*,*) 'MFIX WILL EXIT NOW.'
-                     CALL MFIX_EXIT(myPE) 
+                     CALL MFIX_EXIT(myPE)
 
-               END SELECT  
+               END SELECT
 
 
                IF (BLOCKED_CELL_AT(IJK).OR.BLOCKED_CELL_AT(IJKP)) THEN
@@ -1241,15 +1241,15 @@
                      WALL_W_AT(IJK) = .TRUE.
                      FLAG_T(IJK) = 0
                      IF(PRINT_WARNINGS) THEN
-                        WRITE(*,*) 'WARNING: ONLY ONE PRESSURE NODE DETECTED IN W-MOMENTUM CELL IJK =',IJK 
+                        WRITE(*,*) 'WARNING: ONLY ONE PRESSURE NODE DETECTED IN W-MOMENTUM CELL IJK =',IJK
                         WRITE(*,*) 'RESETTING U-MOMENTUM CELL AS W_WALL CELL.'
                      ENDIF
 !                     write(*,*) 'MFiX will exit now.'
 !                     CALL MFIX_EXIT(myPE)
                   ENDIF
                ENDIF
-          
-       
+
+
             ELSE
 
                A_WPG_T(IJK) = AXY_W(IJK)
@@ -1269,5 +1269,5 @@
 
 
       RETURN
-      
+
       END SUBROUTINE GET_3D_ALPHA_W_CUT_CELL

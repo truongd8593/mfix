@@ -471,7 +471,7 @@
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
-      use param1, only: ZERO, HALF, ONE, UNDEFINED 
+      use param1, only: ZERO, HALF, ONE, UNDEFINED
 
 ! Module procedures
 !---------------------------------------------------------------------//
@@ -591,7 +591,7 @@
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
       END SUBROUTINE ALLOCATE_ARRAYS_GEOMETRY
 
 
@@ -608,16 +608,16 @@
 !           neighboring cell type, i.e. wall or fluid.                 !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE ALLOCATE_ARRAYS_INCREMENTS 
+      SUBROUTINE ALLOCATE_ARRAYS_INCREMENTS
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE indices
       USE geometry
       USE compar
       USE physprop
       USE fldvar
-      USE funits 
+      USE funits
 
 ! Module procedures
 !---------------------------------------------------------------------//
@@ -703,5 +703,5 @@
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
       END SUBROUTINE ALLOCATE_ARRAYS_INCREMENTS

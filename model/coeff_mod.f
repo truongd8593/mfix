@@ -11,7 +11,7 @@
 ! Flags used by PHYSICAL_PROP :: (0:DIMENSION_M)
 !```````````````````````````````````````````````````````````````````````
       LOGICAL, ALLOCATABLE :: DENSITY(:)  ! Density
-      LOGICAL, ALLOCATABLE :: SP_HEAT(:)  ! Specific heat 
+      LOGICAL, ALLOCATABLE :: SP_HEAT(:)  ! Specific heat
       LOGICAL, ALLOCATABLE :: PSIZE(:)    ! Particle diameter
 
 
@@ -130,8 +130,8 @@
       VISC(0) = RECALC_VISC_G
 ! Specific heat and thermal conductivity.
       if(ENERGY_EQ) then
-         if(C_PG0 == UNDEFINED) SP_HEAT(0) = .TRUE. 
-         if(K_G0  == UNDEFINED) COND(0) = .TRUE. 
+         if(C_PG0 == UNDEFINED) SP_HEAT(0) = .TRUE.
+         if(K_G0  == UNDEFINED) COND(0) = .TRUE.
       endif
 ! Species diffusivity.
       if(SPECIES_EQ(0)) DIFF(0) = .TRUE.
@@ -140,7 +140,7 @@
 ! Interphase transfer terms.
 !```````````````````````````````````````````````````````````````````````
        if(.NOT.QMOMK .AND. .NOT.USE_MMS) DRAGCOEF(0:MMAX,0:MMAX)=.TRUE.
- 
+
 ! Coefficients for solids phase parameters.
 !```````````````````````````````````````````````````````````````````````
       IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
@@ -152,7 +152,7 @@
 
 ! Solids viscosity. CALC_MU_s must be invoked every iteration, even if
 ! MU_s0 /= UNDEFINED, so that initialization of global variables occurs.
-         VISC(1:MMAX) = .TRUE. 
+         VISC(1:MMAX) = .TRUE.
 
 ! Specific heat and thermal conductivity.
          if(ENERGY_EQ) THEN

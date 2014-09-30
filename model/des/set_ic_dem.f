@@ -46,7 +46,7 @@
       INTEGER :: NP
       INTEGER :: NINDX
 
-      LOGICAL , EXTERNAL :: COMPARE 
+      LOGICAL , EXTERNAL :: COMPARE
 
 
       include "../function.inc"

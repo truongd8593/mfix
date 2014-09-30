@@ -21,4 +21,4 @@
       LOGICAL :: JUST_FLUSH = .TRUE.
 
 
-      END MODULE machine                                                                         
+      END MODULE machine

@@ -74,7 +74,7 @@
       ID_HOUR   = DAT(5)
       ID_MINUTE = DAT(6)
       ID_SECOND = DAT(7)
-      
+
 !     For SGI only
       CALL GETHOSTNAME(ID_NODE,64)
 !
@@ -119,12 +119,12 @@
 
 !                       number of cycles per second
       INTEGER           COUNT_RATE
-      
+
 !                       max number of cycles, after which count is reset to 0
       INTEGER           COUNT_MAX
 
       CALL SYSTEM_CLOCK(COUNT, COUNT_RATE, COUNT_MAX)
-      
+
       CPU           = DBLE(COUNT)/DBLE(COUNT_RATE)
 !
       RETURN
@@ -194,14 +194,14 @@
 !
       subroutine flush_bin(iunit)
       implicit none
-      integer :: iunit 
+      integer :: iunit
       call flush(iunit)
       return
       end
 !
       subroutine flush_res(iunit)
       implicit none
-      integer :: iunit 
+      integer :: iunit
       call flush(iunit)
       return
       end

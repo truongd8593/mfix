@@ -11,11 +11,11 @@
 SUBROUTINE QMOMK_READ_RESTART
 
   USE param
-  USE param1       
+  USE param1
   USE constant
   USE fldvar
   USE cont
-  USE geometry  
+  USE geometry
   USE indices
   USE run
   USE compar
@@ -27,7 +27,7 @@ SUBROUTINE QMOMK_READ_RESTART
 
   INTEGER :: M, IJK
 
-  INCLUDE '../function.inc'  
+  INCLUDE '../function.inc'
 
   OPEN (UNIT=901, FILE=TRIM(RUN_NAME)//'_QMOMK.RES', FORM='Unformatted', STATUS='unknown')
 
@@ -41,7 +41,7 @@ SUBROUTINE QMOMK_READ_RESTART
   READ (901) QMOMK_W1
 
   PRINT *,'QMOMK: Updating moments after restart...'
-  
+
   DO M = 1, MMAX
     DO IJK = ijkstart3, ijkend3
      IF (FLUID_AT(IJK))  THEN
@@ -51,7 +51,7 @@ SUBROUTINE QMOMK_READ_RESTART
      END IF
     END DO
   END DO
-  
+
   QMOMK_N0 = QMOMK_N1
   QMOMK_U0 = QMOMK_U1
   QMOMK_V0 = QMOMK_V1

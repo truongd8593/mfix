@@ -63,7 +63,7 @@
       DOUBLE PRECISION EPs_TMP(DIM_M)
 
 ! Minimum/maximum solids velocity at inlet.  Also used in the iterative
-! steps as the starting and ending velocities 
+! steps as the starting and ending velocities
       DOUBLE PRECISION  MIN_VEL, MAX_VEL
 
       DOUBLE PRECISION  MINIPV, MAXIPV
@@ -101,7 +101,7 @@
 ! The max diameter of incoming particles at this inlet
          MAX_DIA = ZERO
 
-! Determine if the inlet is mono or polydisperse               
+! Determine if the inlet is mono or polydisperse
          DO M=1, SMAX + DES_MMAX
             IF(SOLIDS_MODEL(M) /= 'DEM') CYCLE
             IF(BC_ROP_s(BCV,M) == UNDEFINED) CYCLE
@@ -137,7 +137,7 @@
 ! was already corrected for cut cells and velocity was recalculated
 ! to ensure user-specified mass or volumetric flow rates.
             VOL_FLOW = VEL_TMP(M) * BC_AREA(BCV) * BC_EP_S(BCV,M+SMAX)
-! Calculate the number of particles of mass phase M are injected per 
+! Calculate the number of particles of mass phase M are injected per
 ! second for each solid phase present at the boundary
             NPMpSEC(M) = VOL_FLOW / (PI/6.d0*DES_D_P0(M)**3)
 ! Write some debugging information if needed.
@@ -226,7 +226,7 @@
                CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
                FATAL = .TRUE.
 
-! Report the amount of changes imposed on the BC in setting a 
+! Report the amount of changes imposed on the BC in setting a
 ! uniform inlet velocity.
             ELSE
                WRITE(ERR_MSG,1205) BCV, MAX_VEL, EPs_ERR

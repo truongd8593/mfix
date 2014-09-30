@@ -20,9 +20,9 @@ MODULE qmom_kinetic_equation
 
   !     Old values of quadrature weights (NN, Nx, Ny, Nz, phase)
   DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: QMOMK_N0
-  !     Old values of moments 
+  !     Old values of moments
   DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: QMOMK_M0
-  !     Old values of abscissas 
+  !     Old values of abscissas
   DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: QMOMK_U0
   DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: QMOMK_V0
   DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: QMOMK_W0
@@ -52,8 +52,8 @@ MODULE qmom_kinetic_equation
   LOGICAL QMOMK_COUPLED
   LOGICAL PRINT_QMOMK_DATA
 
-  
-  CHARACTER(64) QMOMK_TYPE 
+
+  CHARACTER(64) QMOMK_TYPE
   !     Strings
 
   !     Collision operator
@@ -64,13 +64,13 @@ MODULE qmom_kinetic_equation
   !     Accepted values: SPECULAR_REFLECTIVE
   CHARACTER(64) QMOMK_WALL_BC_TYPE
   !     Integers
-  
+
   INTEGER QMOMK_COLLISIONS_ORDER
 
   !     QMOMB time step
   DOUBLE PRECISION :: QMOMK_DT
-  
+
   !     QMOMB CFL number
   DOUBLE PRECISION :: QMOMK_CFL
-  
+
 END MODULE qmom_kinetic_equation

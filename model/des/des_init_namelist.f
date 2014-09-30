@@ -70,9 +70,9 @@
 !    wall interactions. If PIC model is used, then this flag is forced
 !    to true. For DEM model, it will be made default, but currently
 !    setting it to false as cohesion model has not been extended to
-!    new routines. Expand the size of the particle arrays by an 
+!    new routines. Expand the size of the particle arrays by an
 !    arbitrary factor (multiple of the number of particles). Serves
-!    as a knob to allocate more particles than initially specified 
+!    as a knob to allocate more particles than initially specified
 !    in the particle configuration file.
 !  </description>
       USE_STL_DES  = .false.
@@ -84,19 +84,19 @@
 !                          Output Control                             !
 !#####################################################################!
 
-!<keyword category="Output Control" required="false" 
+!<keyword category="Output Control" required="false"
 !  dem="true" pic="true">
 !  <description>
-!    Reports mass based on Lagrangian particles and continuum 
-!    representation. Useful to ensure mass conservation between 
-!    Lagrangian and continuum representations. Recommended use for 
-!    debugging purposes. 
+!    Reports mass based on Lagrangian particles and continuum
+!    representation. Useful to ensure mass conservation between
+!    Lagrangian and continuum representations. Recommended use for
+!    debugging purposes.
 !  </description>
 !  <dependent keyword="DES_INTERP_MEAN_FIELDS" value=".TRUE."/>
       DES_REPORT_MASS_INTERP = .FALSE.
 !</keyword>
 
-!<keyword category="Output Control" required="false" 
+!<keyword category="Output Control" required="false"
 !  dem="true" pic="true">
 !  <description>
 !    Allows writing of discrete particle data to output files. Relevant
@@ -156,7 +156,7 @@
 
 !<keyword category="Output Control" required="false" pic="true">
 !  <description>
-!    Flag to print processor level parcel seeding statistics for inflow 
+!    Flag to print processor level parcel seeding statistics for inflow
 !    BC with PIC model.
 !  </description>
 !  <dependent keyword="MPPIC" value=".TRUE."/>
@@ -165,7 +165,7 @@
 
 !<keyword category="Output Control" required="false" pic="true">
 !  <description>
-!     Flag to print processor level parcel deletion statistics for 
+!     Flag to print processor level parcel deletion statistics for
 !     outflow BC with PIC model. Not recommended for production runs.
 !  </description>
 !  <dependent keyword="MPPIC" value=".TRUE."/>
@@ -184,7 +184,7 @@
 !  <description>
 !    Number of particles to be read in from the particle_input.dat file.
 !    This value is overwritten when using automatic particle generation.
-!    A simulation with a mass inflow BC can start without solids by 
+!    A simulation with a mass inflow BC can start without solids by
 !    setting PARTICLES = 0.
 !  </description>
 !  <range min="0" max="+Inf" />
@@ -247,7 +247,7 @@
 
 !<keyword category="Discrete Element Simulation" required="false">
 !  <description>
-!    Use an interpolation suite to calculate the drag force on each 
+!    Use an interpolation suite to calculate the drag force on each
 !    particle based on particle location rather than cell averages.
 !  </description>
       DES_INTERP_ON = .FALSE.
@@ -273,7 +273,7 @@
 !  </description>
 !  <valid value="EULER"
 !    note="First-Order Euler Scheme."/>
-!  <valid value="ADAMS BASHFORTH" 
+!  <valid value="ADAMS BASHFORTH"
 !    note="Second order ADAMS BASHFORTH scheme (DEM only)"/>
       DES_INTG_METHOD = 'EULER'
 !</keyword>
@@ -285,7 +285,7 @@
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
 !    The number of iterations of a pure granular simulation to let
-!    the initial particle configuration settle before a coupled 
+!    the initial particle configuration settle before a coupled
 !    gas-solid is started.
 !  </description>
 !  <range min="0" max="+Inf" />
@@ -325,7 +325,7 @@
 !  dem="true" pic="true">
 !  <description>
 !    Number of des grid cells in the J-direction. If left undefined,
-!    then it is set by MFIX such that its size equals three times 
+!    then it is set by MFIX such that its size equals three times
 !    the maximum particle diameter with a minimum of 1 cell.
 !  </description>
       DESGRIDSEARCH_JMAX = UNDEFINED_I
@@ -347,7 +347,7 @@
 !  <description>
 !    Ratio of the distance (imaginary sphere radius) to particle radius
 !    that is allowed before a neighbor search is performed. This works
-!    in conjunction with the logic imposed by NEIGHBOR_SEARCH_N in 
+!    in conjunction with the logic imposed by NEIGHBOR_SEARCH_N in
 !    deciding calls to the neighbor search algorithm.
 !  </description>
       NEIGHBOR_SEARCH_RAD_RATIO = 1.0D0
@@ -374,7 +374,7 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    Flag to use van der Hoef et al. (2006) model for adjusting the 
+!    Flag to use van der Hoef et al. (2006) model for adjusting the
 !    rotation of the contact plane. See the MFIX-DEM documentation.
 !  </description>
       USE_VDH_DEM_MODEL = .FALSE.
@@ -398,7 +398,7 @@
 
 !<keyword category="Discrete Element Model" required="false" dem="true">
 !  <description>
-!    Normal spring constant for inter-particle collisions needed when 
+!    Normal spring constant for inter-particle collisions needed when
 !    using the linear spring-dashpot collision model.
 !  </description>
       KN = UNDEFINED
@@ -429,8 +429,8 @@
 
 !<keyword category="Discrete Element Model" required="false" dem="true">
 !  <description>
-!    Ratio of the tangential spring constant to normal spring constant 
-!    for particle-wall collisions. Use it to specify the tangential 
+!    Ratio of the tangential spring constant to normal spring constant
+!    for particle-wall collisions. Use it to specify the tangential
 !    spring constant for particle-wall collisions as KT_W_FAC*KN_W.
 !    Needed when using the linear spring-dashpot collision model.
 !  </description>
@@ -472,9 +472,9 @@
 
 !<keyword category="Discrete Element Model" required="false" dem="true">
 !  <description>
-!    The normal restitution coefficient for particle-wall collisions 
+!    The normal restitution coefficient for particle-wall collisions
 !    used to determine the particle-wall normal damping factor.
-! 
+!
 !    Values should be defined in a single dimensional array. For
 !    example, a simulation with three solids phases (MMAX=3) needs
 !    three values: enw1, enw2, enw3.
@@ -512,7 +512,7 @@
 !  <description>
 !    Ratio of the tangential damping factor to the normal damping factor
 !    for inter-particle collisions.  Required for the linear spring-
-!    dashpot model collision model 
+!    dashpot model collision model
 !  </description>
 !  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
 !  <range min="0.0" max="1.0" />
@@ -524,7 +524,7 @@
 
 !<keyword category="Discrete Element Model" required="false">
 ! <description>
-!    Ratio of the tangential damping factor to the normal damping 
+!    Ratio of the tangential damping factor to the normal damping
 !    factor for particle-wall collisions. Required for the linear
 !    spring-dashpot model for soft-spring collision modelling under
 !    DEM. For the Hertzian model, the tangential damping coefficients
@@ -614,7 +614,7 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    Maximum separation distance above which van der Waals forces are 
+!    Maximum separation distance above which van der Waals forces are
 !    not implemented.
 !  </description>
 !  <dependent keyword="USE_COHESION" value=".TRUE."/>
@@ -624,7 +624,7 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    Minimum separation distance below which van der Waals forces are 
+!    Minimum separation distance below which van der Waals forces are
 !    calculated using a surface adhesion model.
 !  </description>
 !  <dependent keyword="USE_COHESION" value=".TRUE."/>
@@ -645,7 +645,7 @@
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
 !    Minimum separation distance below which van der Waals forces are
-!    calculated using a surface adhesion model (particle-wall 
+!    calculated using a surface adhesion model (particle-wall
 !    interactions).
 !  </description>
 !  <dependent keyword="USE_COHESION" value=".TRUE."/>
@@ -686,7 +686,7 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    Specify the Nusselt number correlation used for particle-gas 
+!    Specify the Nusselt number correlation used for particle-gas
 !    convection.
 !  </description>
 !  <valid value="RANZ_1952" note="Ranz, W.E. and Marshall, W.R. (1952).
@@ -783,7 +783,7 @@
 
 !<keyword category="Particle In Cell" required="false">
 !  <description>
-!     Variable to decide if special treatment is needed or not in the 
+!     Variable to decide if special treatment is needed or not in the
 !     direction of gravity in the frictional stress tensor. See the
 !     MPPIC documentation for details.
 !  </description>
@@ -840,12 +840,12 @@
 !                            UNSUPPORTED KEYWORDS                      !
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
 
-! Logical to force the inlet to operate with an ordered boundary 
-! condition. This may be useful during long simulations or if the 
+! Logical to force the inlet to operate with an ordered boundary
+! condition. This may be useful during long simulations or if the
 ! inlet appears to be taking a long time to randomly place particles.
       FORCE_ORD_BC = .FALSE.
 
-! Lees-Edwards boundary condition to simulate homogeneous shear 
+! Lees-Edwards boundary condition to simulate homogeneous shear
 ! problem with periodic boundary conditions. Not supported in this
 ! version.
       DES_LE_BC = .FALSE.

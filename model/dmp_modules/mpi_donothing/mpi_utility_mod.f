@@ -24,11 +24,11 @@
 
 	interface allgather
 	module  procedure allgather_1i
-	end interface 
+	end interface
 
 	interface gatherv
 	module  procedure gatherv_1d
-	end interface 
+	end interface
 
 !==============================================================================
 !  JFD: End of Interfaces used for vtk file writting (Cartesian grid):
@@ -40,21 +40,21 @@
                           scatter_1r, scatter_2r, scatter_3r, &
                           scatter_1d, scatter_2d, scatter_3d, &
 			  scatter_1c,scatter_1l
-	end interface 
+	end interface
 
 	interface gather
 	module  procedure gather_1i, gather_2i, gather_3i, &
                           gather_1r, gather_2r, gather_3r, &
                           gather_1d, gather_2d, gather_3d, &
 			  gather_1c, gather_1l
-	end interface 
+	end interface
 
 	interface bcast
 	module  procedure bcast_0i, bcast_1i, bcast_2i, bcast_3i, &
                           bcast_0r, bcast_1r, bcast_2r, bcast_3r, &
                           bcast_0d, bcast_1d, bcast_2d, bcast_3d, &
 			  bcast_0l, bcast_1l, bcast_0c, bcast_1c
-	end interface 
+	end interface
 
         interface global_sum
         module  procedure global_sum_0i, global_sum_1i, global_sum_2i, global_sum_3i, &
@@ -192,7 +192,7 @@
 	end subroutine scatter_1i
 
         subroutine scatter_2i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:,:) :: gbuf       
+        integer, intent(in), dimension(:,:) :: gbuf
         integer, intent(out), dimension(:,:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
 	lbuf = gbuf
@@ -200,7 +200,7 @@
 	end subroutine scatter_2i
 
         subroutine scatter_3i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:,:,:) :: gbuf       
+        integer, intent(in), dimension(:,:,:) :: gbuf
         integer, intent(out), dimension(:,:,:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
 	lbuf = gbuf
@@ -208,16 +208,16 @@
 	end subroutine scatter_3i
 
 	subroutine scatter_1r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:) :: gbuf       
+        real, intent(in), dimension(:) :: gbuf
         real, intent(out), dimension(:) :: lbuf
 	integer, optional, intent(in) :: mroot, idebug
 	lbuf = gbuf
 	return
 	end subroutine scatter_1r
 
-	
+
         subroutine scatter_2r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:,:) :: gbuf       
+        real, intent(in), dimension(:,:) :: gbuf
         real, intent(out), dimension(:,:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
 	lbuf = gbuf
@@ -225,7 +225,7 @@
 	end subroutine scatter_2r
 
         subroutine scatter_3r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:,:,:) :: gbuf       
+        real, intent(in), dimension(:,:,:) :: gbuf
         real, intent(out), dimension(:,:,:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
 	lbuf = gbuf
@@ -234,16 +234,16 @@
 
 
 	subroutine scatter_1d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:) :: gbuf       
+        double precision, intent(in), dimension(:) :: gbuf
         double precision, intent(out), dimension(:) :: lbuf
 	integer, optional, intent(in) :: mroot, idebug
 	lbuf = gbuf
 	return
 	end subroutine scatter_1d
 
-	
+
         subroutine scatter_2d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:,:) :: gbuf       
+        double precision, intent(in), dimension(:,:) :: gbuf
         double precision, intent(out), dimension(:,:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
 	lbuf = gbuf
@@ -251,7 +251,7 @@
 	end subroutine scatter_2d
 
         subroutine scatter_3d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:,:,:) :: gbuf       
+        double precision, intent(in), dimension(:,:,:) :: gbuf
         double precision, intent(out), dimension(:,:,:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
 	lbuf = gbuf
@@ -282,14 +282,14 @@
 !	Logic is similar to the scatter routines above.
 
 	subroutine gather_1i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:) :: lbuf       
+        integer, intent(in), dimension(:) :: lbuf
         integer, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 	gbuf = lbuf
 	return
 	end subroutine gather_1i
 
-	
+
         subroutine gather_2i( lbuf, gbuf, mroot, idebug )
         integer, intent(in), dimension(:,:) :: lbuf
         integer, intent(out), dimension(:,:) :: gbuf
@@ -314,7 +314,7 @@
 	return
 	end subroutine gather_1r
 
-	
+
         subroutine gather_2r( lbuf, gbuf, mroot, idebug )
         real, intent(in), dimension(:,:) :: lbuf
         real, intent(out), dimension(:,:) :: gbuf
@@ -340,7 +340,7 @@
 	return
 	end subroutine gather_1d
 
-	
+
         subroutine gather_2d( lbuf, gbuf, mroot, idebug )
         double precision, intent(in), dimension(:,:) :: lbuf
         double precision, intent(out), dimension(:,:) :: gbuf
@@ -377,7 +377,7 @@
 
 
 !	Routines to broadcast information from processor 0 in buffer to all
-!	the processors	
+!	the processors
 
         subroutine bcast_0i( buffer, mroot, idebug )
         integer, intent(inout) :: buffer
@@ -387,12 +387,12 @@
 
 
 	subroutine bcast_1i( buffer, mroot, idebug )
-        integer, intent(inout), dimension(:) :: buffer       
+        integer, intent(inout), dimension(:) :: buffer
 	integer, optional, intent(in) :: mroot, idebug
 	return
 	end subroutine bcast_1i
 
-	
+
         subroutine bcast_2i( buffer, mroot, idebug )
         integer, intent(inout), dimension(:,:) :: buffer
         integer, optional, intent(in) :: mroot, idebug
@@ -420,7 +420,7 @@
 	return
 	end subroutine bcast_1r
 
-	
+
         subroutine bcast_2r( buffer, mroot, idebug )
         real, intent(inout), dimension(:,:) :: buffer
         integer, optional, intent(in) :: mroot, idebug
@@ -450,7 +450,7 @@
 	return
 	end subroutine bcast_1d
 
-	
+
         subroutine bcast_2d( buffer, mroot, idebug )
         double precision, intent(inout), dimension(:,:) :: buffer
         integer, optional, intent(in) :: mroot, idebug
@@ -514,7 +514,7 @@
 
 
 	subroutine global_sum_1i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:) :: lbuf       
+        integer, intent(in), dimension(:) :: lbuf
         integer, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -555,7 +555,7 @@
 
 
 	subroutine global_sum_1r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:) :: lbuf       
+        real, intent(in), dimension(:) :: lbuf
         real, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -596,7 +596,7 @@
 
 
 	subroutine global_sum_1d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:) :: lbuf       
+        double precision, intent(in), dimension(:) :: lbuf
         double precision, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -729,7 +729,7 @@
 
 
 	subroutine global_all_sum_1i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:) :: lbuf       
+        integer, intent(in), dimension(:) :: lbuf
         integer, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -770,7 +770,7 @@
 
 
 	subroutine global_all_sum_1r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:) :: lbuf       
+        real, intent(in), dimension(:) :: lbuf
         real, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -811,7 +811,7 @@
 
 
 	subroutine global_all_sum_1d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:) :: lbuf       
+        double precision, intent(in), dimension(:) :: lbuf
         double precision, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -852,7 +852,7 @@
 
 
 	subroutine global_min_1i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:) :: lbuf       
+        integer, intent(in), dimension(:) :: lbuf
         integer, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -893,7 +893,7 @@
 
 
 	subroutine global_min_1r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:) :: lbuf       
+        real, intent(in), dimension(:) :: lbuf
         real, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -934,7 +934,7 @@
 
 
 	subroutine global_min_1d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:) :: lbuf       
+        double precision, intent(in), dimension(:) :: lbuf
         double precision, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -1070,7 +1070,7 @@
 
 
 	subroutine global_all_min_1i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:) :: lbuf       
+        integer, intent(in), dimension(:) :: lbuf
         integer, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -1111,7 +1111,7 @@
 
 
 	subroutine global_all_min_1r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:) :: lbuf       
+        real, intent(in), dimension(:) :: lbuf
         real, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -1152,7 +1152,7 @@
 
 
 	subroutine global_all_min_1d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:) :: lbuf       
+        double precision, intent(in), dimension(:) :: lbuf
         double precision, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -1193,7 +1193,7 @@
 
 
 	subroutine global_max_1i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:) :: lbuf       
+        integer, intent(in), dimension(:) :: lbuf
         integer, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -1234,7 +1234,7 @@
 
 
 	subroutine global_max_1r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:) :: lbuf       
+        real, intent(in), dimension(:) :: lbuf
         real, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -1275,7 +1275,7 @@
 
 
 	subroutine global_max_1d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:) :: lbuf       
+        double precision, intent(in), dimension(:) :: lbuf
         double precision, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -1410,7 +1410,7 @@
 
 
 	subroutine global_all_max_1i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:) :: lbuf       
+        integer, intent(in), dimension(:) :: lbuf
         integer, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -1451,7 +1451,7 @@
 
 
 	subroutine global_all_max_1r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:) :: lbuf       
+        real, intent(in), dimension(:) :: lbuf
         real, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 
@@ -1492,7 +1492,7 @@
 
 
 	subroutine global_all_max_1d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:) :: lbuf       
+        double precision, intent(in), dimension(:) :: lbuf
         double precision, intent(out), dimension(:) :: gbuf
 	integer, optional, intent(in) :: mroot, idebug
 

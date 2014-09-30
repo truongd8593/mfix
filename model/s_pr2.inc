@@ -41,6 +41,6 @@
 ! inverse of Neg_H.  function EP_g(P_s)
       !INV_H(XXX,YYY) = (to_SI*a_ps_jackson * YYY + XXX*EP_g_cp)/(to_SI*a_ps_jackson + XXX)
 
-! Differentiate P_s w.r.t. EP_s.  function dP_s/dEP_s (EP_s)       
+! Differentiate P_s w.r.t. EP_s.  function dP_s/dEP_s (EP_s)
       !dPodEP_s(XXX,YYY) = to_SI*a_ps_jackson * (YYY - EP_g_cp)/(XXX - EP_g_cp)**2
 

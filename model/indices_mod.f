@@ -7,9 +7,9 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       MODULE indices
- 
+
       Use param1, only: MAX_CLASS
- 
+
 ! Increments used for index computation
       INTEGER :: INCREMENT_FOR_n (MAX_CLASS)
       INTEGER :: INCREMENT_FOR_s (MAX_CLASS)
@@ -36,10 +36,10 @@
       INTEGER :: INCREMENT3_FOR_kp(MAX_CLASS)
 
 ! Store LM index values
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: STORE_LM 
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: STORE_LM
 
 ! Identification of the cell class
-      INTEGER, DIMENSION(:), ALLOCATABLE :: CELL_CLASS 
+      INTEGER, DIMENSION(:), ALLOCATABLE :: CELL_CLASS
 
 ! Maps between IJK and the base I/J/K indices
       INTEGER, DIMENSION(:), ALLOCATABLE :: I_OF ! IJK --> I
@@ -68,5 +68,5 @@
       INTEGER, DIMENSION(:), ALLOCATABLE :: IJK_OF_BACKGROUND
 ! Save original IJKEND3 value of Background grid
       INTEGER :: BACKGROUND_IJKEND3
- 
+
       END MODULE indices

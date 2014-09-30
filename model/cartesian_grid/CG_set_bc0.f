@@ -21,27 +21,27 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CG_SET_BC0 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE CG_SET_BC0
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
-      USE compar     
-      USE mpi_utility 
+      USE compar
+      USE mpi_utility
       USE physprop
       USE bc
       USE fldvar
       USE indices
       USE run
-      USE funits 
-      USE scales 
+      USE funits
+      USE scales
       USE scalars
-      USE boundfunijk 
+      USE boundfunijk
       USE toleranc
       USE sendrecv
 
@@ -63,33 +63,33 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
- 
-! 
-!                      Local index for boundary condition 
-      INTEGER          L 
-! 
-!                      indices 
+
+!
+!                      Local index for boundary condition
+      INTEGER          L
+!
+!                      indices
       INTEGER          I, J, K, IJK, M, N ,IJKW,IJKS,IJKB
-! 
-!                      Local index for setting U velocity b.c. 
-      INTEGER          IJK1 
-! 
-!                      Local index for setting V velocity b.c. 
-      INTEGER          IJK2 
-! 
-!                      Local index for setting W velocity b.c. 
-      INTEGER          IJK3 
-! 
-!                      Dummy variable for gas pressure 
-      DOUBLE PRECISION PJ 
-! 
+!
+!                      Local index for setting U velocity b.c.
+      INTEGER          IJK1
+!
+!                      Local index for setting V velocity b.c.
+      INTEGER          IJK2
+!
+!                      Local index for setting W velocity b.c.
+      INTEGER          IJK3
+!
+!                      Dummy variable for gas pressure
+      DOUBLE PRECISION PJ
+!
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW 
+      DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW
 !-----------------------------------------------
 !----------------------------------------------
-!// Temporary variable to gather fluid_at. 
+!// Temporary variable to gather fluid_at.
       INTEGER, DIMENSION(:), ALLOCATABLE :: FLAG_G
 !// Logical function to identify a fluid cell in global coordiantes
       LOGICAL          FLUID_AT_G
@@ -131,94 +131,94 @@
          IF(L>0) THEN
             IF(BC_TYPE(L)=='CG_PO') THEN
 
-               P_STAR(IJK) = ZERO 
-               P_G(IJK) = SCALE(BC_P_G(L)) 
+               P_STAR(IJK) = ZERO
+               P_G(IJK) = SCALE(BC_P_G(L))
    !
-               IF (BC_EP_G(L) /= UNDEFINED) EP_G(IJK) = BC_EP_G(L) 
+               IF (BC_EP_G(L) /= UNDEFINED) EP_G(IJK) = BC_EP_G(L)
                IF (BC_T_G(L) /= UNDEFINED) then
-                  T_G(IJK) = BC_T_G(L) 
+                  T_G(IJK) = BC_T_G(L)
                ELSE
                   T_g(IJK) = TMIN
                ENDIF
 
-               N = 1 
-               IF (NMAX(0) > 0) THEN 
+               N = 1
+               IF (NMAX(0) > 0) THEN
                   WHERE (BC_X_G(L,:NMAX(0)) /= UNDEFINED) X_G(IJK,:&
-                         NMAX(0)) = BC_X_G(L,:NMAX(0)) 
-                  N = NMAX(0) + 1 
-               ENDIF 
-      
-               IF (NScalar > 0) THEN 
+                         NMAX(0)) = BC_X_G(L,:NMAX(0))
+                  N = NMAX(0) + 1
+               ENDIF
+
+               IF (NScalar > 0) THEN
                   WHERE (BC_Scalar(L,:NScalar) /= UNDEFINED)&
-                  Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar) 
-               ENDIF  
-      
-               IF (K_Epsilon) THEN 
-                  IF (BC_K_Turb_G(L) /= UNDEFINED) K_Turb_G(IJK) = BC_K_Turb_G(L) 
+                  Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar)
+               ENDIF
+
+               IF (K_Epsilon) THEN
+                  IF (BC_K_Turb_G(L) /= UNDEFINED) K_Turb_G(IJK) = BC_K_Turb_G(L)
                   IF (BC_E_Turb_G(L) /= UNDEFINED) E_Turb_G(IJK) = BC_E_Turb_G(L)
                ENDIF
-      
-               DO M = 1, MMAX 
-                  IF (BC_ROP_S(L,M) /= UNDEFINED) ROP_S(IJK,M) = BC_ROP_S(L,M) 
-                  IF(BC_T_S(L,M)/=UNDEFINED)T_S(IJK,M)=BC_T_S(L,M) 
-                  IF (BC_THETA_M(L,M) /= UNDEFINED) THETA_M(IJK,M)= BC_THETA_M(L,M) 
-                  N = 1 
-                  IF (NMAX(M) > 0) THEN 
+
+               DO M = 1, MMAX
+                  IF (BC_ROP_S(L,M) /= UNDEFINED) ROP_S(IJK,M) = BC_ROP_S(L,M)
+                  IF(BC_T_S(L,M)/=UNDEFINED)T_S(IJK,M)=BC_T_S(L,M)
+                  IF (BC_THETA_M(L,M) /= UNDEFINED) THETA_M(IJK,M)= BC_THETA_M(L,M)
+                  N = 1
+                  IF (NMAX(M) > 0) THEN
                      WHERE (BC_X_S(L,M,:NMAX(M)) /= UNDEFINED) X_S(&
-                            IJK,M,:NMAX(M)) = BC_X_S(L,M,:NMAX(M)) 
-                     N = NMAX(M) + 1 
-                  ENDIF 
-               END DO 
+                            IJK,M,:NMAX(M)) = BC_X_S(L,M,:NMAX(M))
+                     N = NMAX(M) + 1
+                  ENDIF
+               END DO
 
             ELSEIF(BC_TYPE(L)=='CG_MI') THEN
 
-               P_STAR(IJK) = ZERO 
+               P_STAR(IJK) = ZERO
    !
-               EP_G(IJK) = BC_EP_G(L) 
-               P_G(IJK) = SCALE(BC_P_G(L)) 
-               T_G(IJK) = BC_T_G(L) 
-    
-               IF (NMAX(0) > 0) THEN 
-                  X_G(IJK,:NMAX(0)) = BC_X_G(L,:NMAX(0)) 
-               ENDIF 
-      
-               IF (NScalar > 0) THEN 
-                  Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar) 
-               ENDIF  
-      
-               IF (K_Epsilon) THEN 
-                  K_Turb_G(IJK) = BC_K_Turb_G(L) 
+               EP_G(IJK) = BC_EP_G(L)
+               P_G(IJK) = SCALE(BC_P_G(L))
+               T_G(IJK) = BC_T_G(L)
+
+               IF (NMAX(0) > 0) THEN
+                  X_G(IJK,:NMAX(0)) = BC_X_G(L,:NMAX(0))
+               ENDIF
+
+               IF (NScalar > 0) THEN
+                  Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar)
+               ENDIF
+
+               IF (K_Epsilon) THEN
+                  K_Turb_G(IJK) = BC_K_Turb_G(L)
                   E_Turb_G(IJK) = BC_E_Turb_G(L)
                ENDIF
-      
-               DO M = 1, MMAX 
-                  ROP_S(IJK,M) = BC_ROP_S(L,M) 
-                  T_S(IJK,M) = BC_T_S(L,M) 
-                  THETA_M(IJK,M) = BC_THETA_M(L,M) 
-    
-                  IF (NMAX(M) > 0) THEN 
-                     X_S(IJK,M,:NMAX(M)) = BC_X_S(L,M,:NMAX(M)) 
-                  ENDIF 
-         
-               END DO 
+
+               DO M = 1, MMAX
+                  ROP_S(IJK,M) = BC_ROP_S(L,M)
+                  T_S(IJK,M) = BC_T_S(L,M)
+                  THETA_M(IJK,M) = BC_THETA_M(L,M)
+
+                  IF (NMAX(M) > 0) THEN
+                     X_S(IJK,M,:NMAX(M)) = BC_X_S(L,M,:NMAX(M))
+                  ENDIF
+
+               END DO
 
                IF(BC_U_g(L)/=UNDEFINED) THEN
                   U_G(IJK) =  BC_U_g(L)
                ELSE
-                  U_G(IJK) =  BC_VELMAG_g(L)*NORMAL_S(IJK,1)  
+                  U_G(IJK) =  BC_VELMAG_g(L)*NORMAL_S(IJK,1)
                ENDIF
 
 
                IF(BC_V_g(L)/=UNDEFINED) THEN
                   V_G(IJK) =  BC_V_g(L)
                ELSE
-                  V_G(IJK) =  BC_VELMAG_g(L)*NORMAL_S(IJK,2)  
+                  V_G(IJK) =  BC_VELMAG_g(L)*NORMAL_S(IJK,2)
                ENDIF
 
                IF(BC_W_g(L)/=UNDEFINED) THEN
                   W_G(IJK) =  BC_W_g(L)
                ELSE
-                  W_G(IJK) =  BC_VELMAG_g(L)*NORMAL_S(IJK,3)  
+                  W_G(IJK) =  BC_VELMAG_g(L)*NORMAL_S(IJK,3)
                ENDIF
 
                IJKW = WEST_OF(IJK)
@@ -229,47 +229,47 @@
                   IF(BC_U_g(L)/=UNDEFINED) THEN
                      U_G(IJKW) =  BC_U_g(L)
                   ELSE
-                     U_G(IJKW) =  BC_VELMAG_g(L)*NORMAL_S(IJK,1)  
+                     U_G(IJKW) =  BC_VELMAG_g(L)*NORMAL_S(IJK,1)
                   ENDIF
-               ENDIF           
+               ENDIF
 
                IF(FLUID_AT(IJKS)) THEN
                   IF(BC_V_g(L)/=UNDEFINED) THEN
                      V_G(IJKS) =  BC_V_g(L)
                   ELSE
-                     V_G(IJKS) =  BC_VELMAG_g(L)*NORMAL_S(IJK,2)  
+                     V_G(IJKS) =  BC_VELMAG_g(L)*NORMAL_S(IJK,2)
                   ENDIF
-               ENDIF           
+               ENDIF
 
                IF(FLUID_AT(IJKB)) THEN
                   IF(BC_W_g(L)/=UNDEFINED) THEN
                      W_G(IJKB) =  BC_W_g(L)
                   ELSE
-                     W_G(IJKB) =  BC_VELMAG_g(L)*NORMAL_S(IJK,3)  
+                     W_G(IJKB) =  BC_VELMAG_g(L)*NORMAL_S(IJK,3)
                   ENDIF
-               ENDIF           
+               ENDIF
 
    !
-               M = 1 
+               M = 1
 
                DO M=1,MMAX
 
                   IF(BC_U_s(L,M)/=UNDEFINED) THEN
                      U_S(IJK,M) =  BC_U_S(L,M)
                   ELSE
-                     U_S(IJK,M) =  BC_VELMAG_S(L,M)*NORMAL_S(IJK,1)  
+                     U_S(IJK,M) =  BC_VELMAG_S(L,M)*NORMAL_S(IJK,1)
                   ENDIF
 
                   IF(BC_V_S(L,M)/=UNDEFINED) THEN
                      V_S(IJK,M) =  BC_V_S(L,M)
                   ELSE
-                     V_S(IJK,M) =  BC_VELMAG_S(L,M)*NORMAL_S(IJK,2)  
+                     V_S(IJK,M) =  BC_VELMAG_S(L,M)*NORMAL_S(IJK,2)
                   ENDIF
 
                   IF(BC_W_S(L,M)/=UNDEFINED) THEN
                      W_S(IJK,M) =  BC_W_S(L,M)
                   ELSE
-                     W_S(IJK,M) =  BC_VELMAG_S(L,M)*NORMAL_S(IJK,3)  
+                     W_S(IJK,M) =  BC_VELMAG_S(L,M)*NORMAL_S(IJK,3)
                   ENDIF
 
                   IJKW = WEST_OF(IJK)
@@ -280,56 +280,56 @@
                      IF(BC_U_S(L,M)/=UNDEFINED) THEN
                         U_S(IJKW,M) =  BC_U_S(L,M)
                      ELSE
-                        U_S(IJKW,M) =  BC_VELMAG_S(L,M)*NORMAL_S(IJK,1)  
+                        U_S(IJKW,M) =  BC_VELMAG_S(L,M)*NORMAL_S(IJK,1)
                      ENDIF
-                  ENDIF           
+                  ENDIF
 
                   IF(FLUID_AT(IJKS)) THEN
                      IF(BC_V_S(L,M)/=UNDEFINED) THEN
                         V_S(IJKS,M) =  BC_V_S(L,M)
                      ELSE
-                        V_S(IJKS,M) =  BC_VELMAG_S(L,M)*NORMAL_S(IJK,2)  
+                        V_S(IJKS,M) =  BC_VELMAG_S(L,M)*NORMAL_S(IJK,2)
                      ENDIF
-                  ENDIF           
+                  ENDIF
 
                   IF(FLUID_AT(IJKB)) THEN
                      IF(BC_W_S(L,M)/=UNDEFINED) THEN
                         W_S(IJKB,M) =  BC_W_S(L,M)
                      ELSE
-                        W_S(IJKB,M) =  BC_VELMAG_S(L,M)*NORMAL_S(IJK,3)  
+                        W_S(IJKB,M) =  BC_VELMAG_S(L,M)*NORMAL_S(IJK,3)
                      ENDIF
-                  ENDIF  
+                  ENDIF
 
                ENDDO
-    
-   !            IF (MMAX > 0) THEN 
-   !               U_S(IJK,:MMAX) = BC_U_S(L,:MMAX) 
-   !               V_S(IJK,:MMAX) = BC_V_S(L,:MMAX) 
-   !               W_S(IJK,:MMAX) = BC_W_S(L,:MMAX) 
+
+   !            IF (MMAX > 0) THEN
+   !               U_S(IJK,:MMAX) = BC_U_S(L,:MMAX)
+   !               V_S(IJK,:MMAX) = BC_V_S(L,:MMAX)
+   !               W_S(IJK,:MMAX) = BC_W_S(L,:MMAX)
    !
    !               IF(FLUID_AT(IJKW)) THEN
-   !                  U_S(IJKW,:MMAX) = BC_U_S(L,:MMAX) 
-   !               ENDIF           
+   !                  U_S(IJKW,:MMAX) = BC_U_S(L,:MMAX)
+   !               ENDIF
    !
    !               IF(FLUID_AT(IJKS)) THEN
-   !                  V_S(IJKS,:MMAX) = BC_V_S(L,:MMAX) 
-   !               ENDIF           
+   !                  V_S(IJKS,:MMAX) = BC_V_S(L,:MMAX)
+   !               ENDIF
    !
    !               IF(FLUID_AT(IJKB)) THEN
-   !                  W_S(IJKB,:MMAX) = BC_W_S(L,:MMAX) 
-   !               ENDIF 
-   !               M = MMAX + 1 
-   !            ENDIF 
+   !                  W_S(IJKB,:MMAX) = BC_W_S(L,:MMAX)
+   !               ENDIF
+   !               M = MMAX + 1
+   !            ENDIF
 
 
                IF (MW_AVG == UNDEFINED) THEN
-                  MW_MIX_G(IJK) = CALC_MW(X_G,DIMENSION_3,IJK,NMAX(0),MW_G) 
+                  MW_MIX_G(IJK) = CALC_MW(X_G,DIMENSION_3,IJK,NMAX(0),MW_G)
                ELSE
                   MW_MIX_G(IJK) = MW_AVG
                ENDIF
                IF (RO_G0 == UNDEFINED) RO_G(IJK) = EOSG(MW_MIX_G&
-                  (IJK),P_G(IJK),T_G(IJK)) 
-               ROP_G(IJK) = EP_G(IJK)*RO_G(IJK) 
+                  (IJK),P_G(IJK),T_G(IJK))
+               ROP_G(IJK) = EP_G(IJK)*RO_G(IJK)
 
 
             ENDIF
@@ -357,8 +357,8 @@
                   WRITE(*,*) '         DEFAULT WALLS ARE NOT ALLOWED WITH CUT-CELLS.'
                   WRITE(*,*) '         THE DEFAULT WALL WAS REMOVED ALONG THIS CELL.'
                   WRITE(*,*) ''
-               ENDIF   
-!               CALL MFIX_EXIT(MYPE) 
+               ENDIF
+!               CALL MFIX_EXIT(MYPE)
 
             ENDIF
 
@@ -371,10 +371,10 @@
 
 
 
-      RETURN  
-      END SUBROUTINE CG_SET_BC0 
+      RETURN
+      END SUBROUTINE CG_SET_BC0
 
-!// Comments on the modifications for DMP version implementation      
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
 !// 020 New local variables for parallelization: FLAG_G , FLUID_AT_G
 !// 360 Check if i,j,k resides on current processor

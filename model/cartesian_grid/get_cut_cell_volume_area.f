@@ -2,7 +2,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: GET_CUT_CELL_VOLUME_AND_AREAS                          C
-!  Purpose: Compute volume and face areas of a cut cell                C      
+!  Purpose: Compute volume and face areas of a cut cell                C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
 !  Reviewer:                                          Date:            C
@@ -10,10 +10,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_CUT_CELL_VOLUME_AND_AREAS(IJK,TYPE_OF_CELL,N_NODES,CONNECT,X_NP,Y_NP,Z_NP)
-    
+
       USE param
       USE param1
       USE parallel
@@ -21,7 +21,7 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
@@ -29,7 +29,7 @@
       USE polygon
       USE stl
       USE bc
-      
+
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
       INTEGER :: I,J,K,IJK,L,NODE
@@ -53,7 +53,7 @@
       DOUBLE PRECISION, DIMENSION(3) :: CENTROID_EAST,CENTROID_NORTH,CENTROID_TOP
       DOUBLE PRECISION, DIMENSION(3) :: CENTROID_WEST,CENTROID_SOUTH,CENTROID_BOTTOM
       DOUBLE PRECISION, DIMENSION(3) :: CENTROID_CUT
-      DOUBLE PRECISION :: DEL_H,Nx,Ny,Nz,VOLUME,NORM      
+      DOUBLE PRECISION :: DEL_H,Nx,Ny,Nz,VOLUME,NORM
       DOUBLE PRECISION :: DIFFERENCE
       INTEGER :: N_NODES
       INTEGER :: NDIFF,SPACE
@@ -62,7 +62,7 @@
 
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: F_CUT_FACE
       INTEGER , DIMENSION(1):: MIN_LOC
-      
+
       INTEGER, DIMENSION(15) :: TEMP_CONNECTIVITY
 
       LOGICAL :: CLIP_FLAG,INTERSECT_FLAG,PRINT_FLAG,INSIDE_FACET
@@ -74,18 +74,18 @@
       include "../function.inc"
 
 !======================================================================
-!  Filter the connectivity to identify nodes belonging to 
+!  Filter the connectivity to identify nodes belonging to
 !  East, North, Top, and cut faces
 !======================================================================
 
-      I = I_OF(IJK) 
-      J = J_OF(IJK) 
-      K = K_OF(IJK) 
+      I = I_OF(IJK)
+      J = J_OF(IJK)
+      K = K_OF(IJK)
 
-      IM = I - 1 
-      JM = J - 1 
+      IM = I - 1
+      JM = J - 1
       KM = K - 1
-    
+
       IMJK   = FUNIJK(IM,J,K)
       IJMK   = FUNIJK(I,JM,K)
       IJKM   = FUNIJK(I,J,KM)
@@ -116,13 +116,13 @@
 
 
       DO L = 1, N_NODES
-         IF(CONNECT(IJK,L)>IJKEND3) THEN   ! One of the new point          
+         IF(CONNECT(IJK,L)>IJKEND3) THEN   ! One of the new point
             X_COPY = X_NP(CONNECT(IJK,L)-IJKEND3)
             Y_COPY = Y_NP(CONNECT(IJK,L)-IJKEND3)
             Z_COPY = Z_NP(CONNECT(IJK,L)-IJKEND3)
             CORNER_POINT = .FALSE.
 
-         ELSE                                   ! An existing point          
+         ELSE                                   ! An existing point
             CORNER_POINT = .TRUE.
             DO NODE = N_N1,N_N2
                IF(CONNECT(IJK,L) == IJK_OF_NODE(NODE)) THEN
@@ -183,21 +183,21 @@
             COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,2) = Y_COPY
             COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,3) = Z_COPY
          ENDIF
-         
+
          IF (X_COPY > (X_NODE(8) - TOL_F) ) THEN ! belongs to East face
             N_EAST_FACE_NODES = N_EAST_FACE_NODES + 1
             COORD_EAST_FACE_NODES(N_EAST_FACE_NODES,1) = X_COPY
             COORD_EAST_FACE_NODES(N_EAST_FACE_NODES,2) = Y_COPY
             COORD_EAST_FACE_NODES(N_EAST_FACE_NODES,3) = Z_COPY
          ENDIF
-         
+
          IF (Y_COPY > (Y_NODE(8) - TOL_F) ) THEN ! belongs to North face
             N_NORTH_FACE_NODES = N_NORTH_FACE_NODES + 1
             COORD_NORTH_FACE_NODES(N_NORTH_FACE_NODES,1) = X_COPY
             COORD_NORTH_FACE_NODES(N_NORTH_FACE_NODES,2) = Y_COPY
             COORD_NORTH_FACE_NODES(N_NORTH_FACE_NODES,3) = Z_COPY
          ENDIF
-         
+
          IF (Z_COPY > (Z_NODE(8) - TOL_F) ) THEN ! belongs to Top face
             N_TOP_FACE_NODES = N_TOP_FACE_NODES + 1
             COORD_TOP_FACE_NODES(N_TOP_FACE_NODES,1) = X_COPY
@@ -360,15 +360,15 @@
             CASE DEFAULT
                WRITE(*,*)'SUBROUTINE: GET_CUT_CELL_VOLUME_AND_AREAS'
                WRITE(*,*)'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
-               WRITE(*,*)'ACCEPTABLE TYPES ARE:' 
-               WRITE(*,*)'SCALAR' 
-               WRITE(*,*)'U_MOMENTUM' 
-               WRITE(*,*)'V_MOMENTUM' 
-               WRITE(*,*)'W_MOMENTUM' 
+               WRITE(*,*)'ACCEPTABLE TYPES ARE:'
+               WRITE(*,*)'SCALAR'
+               WRITE(*,*)'U_MOMENTUM'
+               WRITE(*,*)'V_MOMENTUM'
+               WRITE(*,*)'W_MOMENTUM'
                CALL MFIX_EXIT(myPE)
          END SELECT
-         RETURN 
-      
+         RETURN
+
       ELSE
          IF( N_CUT_FACE_NODES == N_TOP_FACE_NODES) THEN
             DIFFERENCE = ZERO
@@ -417,7 +417,7 @@
 
       CALL GET_POLYGON_AREA_AND_CENTROID(N_CUT_FACE_NODES,COORD_CUT_FACE_NODES,CUT_AREA,CENTROID_CUT,IERROR)
 
-      CALL STORE_CUT_FACE_INFO(IJK,TYPE_OF_CELL,N_CUT_FACE_NODES,COORD_CUT_FACE_NODES,X_MEAN,Y_MEAN,Z_MEAN)     
+      CALL STORE_CUT_FACE_INFO(IJK,TYPE_OF_CELL,N_CUT_FACE_NODES,COORD_CUT_FACE_NODES,X_MEAN,Y_MEAN,Z_MEAN)
 
       CALL GET_DEL_H(IJK,TYPE_OF_CELL,X_MEAN,Y_MEAN,Z_MEAN,Del_H,Nx,Ny,Nz)
 
@@ -461,7 +461,7 @@
 
             REFP_S(IJK,:)   = CENTROID_CUT(:)
 
-  
+
             CALL GET_DEL_H(IJK,TYPE_OF_CELL,X_MEAN,Y_MEAN,Z_MEAN,Del_H,Nx,Ny,Nz)
             IF(DEL_H == UNDEFINED) DEL_H = ZERO
             DELH_Scalar(IJK) = DEL_H
@@ -502,7 +502,7 @@
                AXZ(IJK) = ZERO
                AXY(IJK) = ZERO
                VOL(IJK) = ZERO
-               
+
 
             ELSEIF(VOL(IJK) < TOL_SMALL_CELL * DX(I)*DY(J)*DZ(K) ) THEN
                SMALL_CELL_AT(IJK) = .TRUE.
@@ -552,7 +552,7 @@
                N_BC = 0
 !               BC_ID(IJK) = 0
                DO Q_ID = 1, N_QUADRIC
-                  DO NODE = 1,N_CUT_FACE_NODES       
+                  DO NODE = 1,N_CUT_FACE_NODES
 
                      CALL GET_F_QUADRIC(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
                      Q_ID,F_CUT_FACE(Q_ID),CLIP_FLAG)
@@ -572,11 +572,11 @@
 
 
 
-            IF(N_POLYGON>0) THEN            
+            IF(N_POLYGON>0) THEN
                DO NODE = 1,N_CUT_FACE_NODES
                   CALL EVAL_POLY_FCT(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
                   Q_ID,F_CUT_FACE(1),CLIP_FLAG,BCID)
-                   IF(F_CUT_FACE(1)==ZERO) THEN 
+                   IF(F_CUT_FACE(1)==ZERO) THEN
                      BC_ID(IJK) = BCID
                      IF(BC_ID(IJK)>0) THEN
                         IF(BC_TYPE(BC_ID(IJK))  == 'CG_MI') EXIT
@@ -586,7 +586,7 @@
             ENDIF
 
 
-            IF(N_USR_DEF>0) THEN   
+            IF(N_USR_DEF>0) THEN
                DO NODE = 1,N_CUT_FACE_NODES
                   CALL EVAL_USR_FCT(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
                   BCID,F_CUT_FACE(1),CLIP_FLAG)
@@ -607,13 +607,13 @@
                      CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),&
                                                 COORD_CUT_FACE_NODES(NODE,3),NF,INSIDE_FACET)
                      IF(INSIDE_FACET) THEN
-                        BC_ID(IJK) = BC_ID_STL_FACE(NF) 
+                        BC_ID(IJK) = BC_ID_STL_FACE(NF)
                         IF(BC_ID(IJK)>0) THEN
                            IF(BC_TYPE(BC_ID(IJK))  == 'CG_MI') EXIT
                         ENDIF
                      ENDIF
                   ENDDO
-               ENDDO 
+               ENDDO
             ENDIF
 
 
@@ -622,7 +622,7 @@
                IF (BC_TYPE(BC_ID(IJK))(1:2)  /= 'CG')  THEN
                   WRITE(*,'(/1X,A)')'ERROR: INVALID BOUNDARY CONDITION ASSIGNED TO A CUT CELL.'
                   WRITE(*,'(/1X,A,I9,I6)')'IJK, MyPE = ', IJK,myPE
-                  WRITE(*,'(1X,A,I6)')'BC_ID  = ',BC_ID(IJK) 
+                  WRITE(*,'(1X,A,I6)')'BC_ID  = ',BC_ID(IJK)
                   WRITE(*,'(1X,A,A)')'BC_TYPE = ',BC_TYPE(BC_ID(IJK))
                   WRITE(*,'(1X,A)')'VALID BC_TYPE FOR CUT CELLS ARE: CG_NSW, CG_FSW, CG_PSW, CG_MI, and CG_PO'
                   WRITE(*,'(/1X,A)')'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
@@ -694,7 +694,7 @@
 
             REFP_U(IJK,:)   = CENTROID_CUT(:)
 
-  
+
             CALL GET_DEL_H(IJK,TYPE_OF_CELL,X_MEAN,Y_MEAN,Z_MEAN,Del_H,Nx,Ny,Nz)
             IF(DEL_H == UNDEFINED) DEL_H = ZERO
 
@@ -721,7 +721,7 @@
 
             IF(AYZ(IJK) <= TOL_SMALL_AREA*DY(J)*DZ(K)) THEN
                WALL_U_AT(IJK) = .TRUE.
-               
+
                NUMBER_OF_U_WALL_CELLS = NUMBER_OF_U_WALL_CELLS + 1
 
                X_U(IJK) = CENTROID_CUT(1)
@@ -735,7 +735,7 @@
                N_BC = 0
                BC_U_ID(IJK) = 0
                DO Q_ID = 1, N_QUADRIC
-                  DO NODE = 1,N_CUT_FACE_NODES       
+                  DO NODE = 1,N_CUT_FACE_NODES
 
                      CALL GET_F_QUADRIC(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
                      Q_ID,F_CUT_FACE(Q_ID),CLIP_FLAG)
@@ -756,11 +756,11 @@
 
             ENDIF
 
-            IF(N_POLYGON>0) THEN            
+            IF(N_POLYGON>0) THEN
                DO NODE = 1,N_CUT_FACE_NODES
                   CALL EVAL_POLY_FCT(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
                   Q_ID,F_CUT_FACE(1),CLIP_FLAG,BCID)
-                   IF(F_CUT_FACE(1)==ZERO) THEN 
+                   IF(F_CUT_FACE(1)==ZERO) THEN
                      BC_U_ID(IJK) = BCID
                      IF(BC_U_ID(IJK)>0) THEN
                         IF(BC_TYPE(BC_U_ID(IJK))  == 'CG_MI') EXIT
@@ -770,7 +770,7 @@
             ENDIF
 
 
-            IF(N_USR_DEF>0) THEN   
+            IF(N_USR_DEF>0) THEN
                DO NODE = 1,N_CUT_FACE_NODES
                   CALL EVAL_USR_FCT(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
                   BCID,F_CUT_FACE(1),CLIP_FLAG)
@@ -791,13 +791,13 @@
                      CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),&
                                                 COORD_CUT_FACE_NODES(NODE,3),NF,INSIDE_FACET)
                      IF(INSIDE_FACET) THEN
-                        BC_U_ID(IJK) = BC_ID_STL_FACE(NF) 
+                        BC_U_ID(IJK) = BC_ID_STL_FACE(NF)
                         IF(BC_U_ID(IJK)>0) THEN
                            IF(BC_TYPE(BC_U_ID(IJK))  == 'CG_MI') EXIT
                         ENDIF
                      ENDIF
                   ENDDO
-               ENDDO 
+               ENDDO
             ENDIF
 
 
@@ -851,7 +851,7 @@
 
             REFP_V(IJK,:)   = CENTROID_CUT(:)
 
-  
+
             CALL GET_DEL_H(IJK,TYPE_OF_CELL,X_MEAN,Y_MEAN,Z_MEAN,Del_H,Nx,Ny,Nz)
             IF(DEL_H == UNDEFINED) DEL_H = ZERO
 
@@ -893,7 +893,7 @@
                N_BC = 0
                BC_V_ID(IJK) = 0
                DO Q_ID = 1, N_QUADRIC
-                  DO NODE = 1,N_CUT_FACE_NODES       
+                  DO NODE = 1,N_CUT_FACE_NODES
 
                      CALL GET_F_QUADRIC(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
                      Q_ID,F_CUT_FACE(Q_ID),CLIP_FLAG)
@@ -906,7 +906,7 @@
                   IF(BC_V_ID(IJK)>0) THEN
                       IF(BC_TYPE(BC_V_ID(IJK))  == 'CG_MI') EXIT
 !                     IF(BC_TYPE(BC_V_ID(IJK))  == 'CG_NSW') EXIT
-                  ENDIF 
+                  ENDIF
 
                ENDDO
 
@@ -914,11 +914,11 @@
             ENDIF
 
 
-            IF(N_POLYGON>0) THEN            
+            IF(N_POLYGON>0) THEN
                DO NODE = 1,N_CUT_FACE_NODES
                   CALL EVAL_POLY_FCT(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
                   Q_ID,F_CUT_FACE(1),CLIP_FLAG,BCID)
-                   IF(F_CUT_FACE(1)==ZERO) THEN 
+                   IF(F_CUT_FACE(1)==ZERO) THEN
                      BC_V_ID(IJK) = BCID
                      IF(BC_V_ID(IJK)>0) THEN
                         IF(BC_TYPE(BC_V_ID(IJK))  == 'CG_MI') EXIT
@@ -928,7 +928,7 @@
             ENDIF
 
 
-            IF(N_USR_DEF>0) THEN   
+            IF(N_USR_DEF>0) THEN
                DO NODE = 1,N_CUT_FACE_NODES
                   CALL EVAL_USR_FCT(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
                   BCID,F_CUT_FACE(1),CLIP_FLAG)
@@ -949,13 +949,13 @@
                      CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),&
                                                 COORD_CUT_FACE_NODES(NODE,3),NF,INSIDE_FACET)
                      IF(INSIDE_FACET) THEN
-                        BC_V_ID(IJK) = BC_ID_STL_FACE(NF) 
+                        BC_V_ID(IJK) = BC_ID_STL_FACE(NF)
                         IF(BC_V_ID(IJK)>0) THEN
                            IF(BC_TYPE(BC_V_ID(IJK))  == 'CG_MI') EXIT
                         ENDIF
                      ENDIF
                   ENDDO
-               ENDDO 
+               ENDDO
             ENDIF
 
 
@@ -1001,7 +1001,7 @@
 
             REFP_W(IJK,:)   = CENTROID_CUT(:)
 
-  
+
             CALL GET_DEL_H(IJK,TYPE_OF_CELL,X_MEAN,Y_MEAN,Z_MEAN,Del_H,Nx,Ny,Nz)
             IF(DEL_H == UNDEFINED) DEL_H = ZERO
 
@@ -1036,7 +1036,7 @@
                N_BC = 0
                BC_W_ID(IJK) = 0
                DO Q_ID = 1, N_QUADRIC
-                  DO NODE = 1,N_CUT_FACE_NODES       
+                  DO NODE = 1,N_CUT_FACE_NODES
                      CALL GET_F_QUADRIC(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
                      Q_ID,F_CUT_FACE(Q_ID),CLIP_FLAG)
                      IF(DABS(F_CUT_FACE(Q_ID)) < TOL_F) THEN
@@ -1052,11 +1052,11 @@
             ENDIF
 
 
-            IF(N_POLYGON>0) THEN            
+            IF(N_POLYGON>0) THEN
                DO NODE = 1,N_CUT_FACE_NODES
                   CALL EVAL_POLY_FCT(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
                   Q_ID,F_CUT_FACE(1),CLIP_FLAG,BCID)
-                   IF(F_CUT_FACE(1)==ZERO) THEN 
+                   IF(F_CUT_FACE(1)==ZERO) THEN
                      BC_W_ID(IJK) = BCID
                      IF(BC_W_ID(IJK)>0) THEN
                         IF(BC_TYPE(BC_W_ID(IJK))  == 'CG_MI') EXIT
@@ -1067,7 +1067,7 @@
 
 
 
-            IF(N_USR_DEF>0) THEN   
+            IF(N_USR_DEF>0) THEN
                DO NODE = 1,N_CUT_FACE_NODES
                   CALL EVAL_USR_FCT(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
                   BCID,F_CUT_FACE(1),CLIP_FLAG)
@@ -1088,34 +1088,34 @@
                      CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),&
                                                 COORD_CUT_FACE_NODES(NODE,3),NF,INSIDE_FACET)
                      IF(INSIDE_FACET) THEN
-                        BC_W_ID(IJK) = BC_ID_STL_FACE(NF) 
+                        BC_W_ID(IJK) = BC_ID_STL_FACE(NF)
                         IF(BC_W_ID(IJK)>0) THEN
                            IF(BC_TYPE(BC_W_ID(IJK))  == 'CG_MI') EXIT
                         ENDIF
                      ENDIF
                   ENDDO
-               ENDDO 
+               ENDDO
             ENDIF
 
 
          CASE DEFAULT
             WRITE(*,*)'SUBROUTINE: GET_CUT_CELL_VOLUME_AND_AREAS'
             WRITE(*,*)'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
-            WRITE(*,*)'ACCEPTABLE TYPES ARE:' 
-            WRITE(*,*)'SCALAR' 
-            WRITE(*,*)'U_MOMENTUM' 
-            WRITE(*,*)'V_MOMENTUM' 
-            WRITE(*,*)'W_MOMENTUM' 
+            WRITE(*,*)'ACCEPTABLE TYPES ARE:'
+            WRITE(*,*)'SCALAR'
+            WRITE(*,*)'U_MOMENTUM'
+            WRITE(*,*)'V_MOMENTUM'
+            WRITE(*,*)'W_MOMENTUM'
             CALL MFIX_EXIT(myPE)
       END SELECT
-          
+
 
 999        FORMAT(A,I6,3(F12.8))
 
 
       RETURN
 
-      
+
       END SUBROUTINE GET_CUT_CELL_VOLUME_AND_AREAS
 
 
@@ -1130,10 +1130,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_POLYGON_AREA_AND_CENTROID(NP,COORD,AREA,CENTROID,IERROR)
-    
+
       USE param
       USE param1
       USE parallel
@@ -1141,12 +1141,12 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
       USE cutcell
-      
+
       IMPLICIT NONE
       INTEGER :: I,J,K,L,N,NP,NC,NEW_NP
       INTEGER :: LONGEST,LAST,LASTM,IERROR
@@ -1211,7 +1211,7 @@
 !           WRITE(*,*)'NODE 1: (X,Y,Z)=', COORD(1,1),COORD(1,2),COORD(1,3)
 !           WRITE(*,*)'NODE 2: (X,Y,Z)=', COORD(2,1),COORD(2,2),COORD(2,3)
 !           WRITE(*,*)'MFiX will exit now.'
-!           CALL MFIX_EXIT(myPE)  
+!           CALL MFIX_EXIT(myPE)
          ENDIF
       ELSEIF( NP > 6 ) THEN
          WRITE(*,*)'CRITICAL ERROR: POLYGON WITH MORE THAN 6 POINTS.',NP
@@ -1219,7 +1219,7 @@
             print*,COORD(N,:)
          ENDDO
          WRITE(*,*)'MFiX will exit now.'
-         CALL MFIX_EXIT(myPE)  
+         CALL MFIX_EXIT(myPE)
       ENDIF
 
 
@@ -1240,7 +1240,7 @@
 !======================================================================
 !   Accumulate sum of cross products
 !======================================================================
-      
+
       SUMCP = ZERO
 
       DO N = 1,NP
@@ -1257,7 +1257,7 @@
 !======================================================================
 !   Alternate computation: Split the polygon into triangles
 !======================================================================
- 
+
       SUM_AR = ZERO
       SUM_A  = ZERO
       DO N = 1,NP-2
@@ -1274,7 +1274,7 @@
 1010  FORMAT(A,3(F12.8))
 
       RETURN
-      
+
       END SUBROUTINE GET_POLYGON_AREA_AND_CENTROID
 
 
@@ -1290,10 +1290,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE REORDER_POLYGON(NP,COORD,NORMAL,IERROR)
-    
+
       USE param
       USE param1
       USE parallel
@@ -1301,12 +1301,12 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
       USE cutcell
-      
+
       IMPLICIT NONE
       INTEGER :: I,J,K,L,N,NP,NC,NEW_NP
       INTEGER :: LONGEST,LAST,LASTM
@@ -1377,7 +1377,7 @@
          Yc = Yc + COORD(N,2)
          Zc = Zc + COORD(N,3)
       ENDDO
-      
+
       Xc = Xc / DFLOAT(NP)
       Yc = Yc / DFLOAT(NP)
       Zc = Zc / DFLOAT(NP)
@@ -1400,12 +1400,12 @@
          RETURN
 
          WRITE(*,*)'ERROR IN REORDER_POLYGON: NORMAL UNIT VECTOR HAS ZERO NORM'
-         WRITE(*,*)'THIS USUALLY HAPPENS WHEN NODES WERE IMPROPERLY MERGED.'           
+         WRITE(*,*)'THIS USUALLY HAPPENS WHEN NODES WERE IMPROPERLY MERGED.'
          WRITE(*,*)'TO PREVENT THIS, INCREASE TOL_SNAP, OR DECREASE TOL_MERGE.'
          WRITE(*,*)'CURRENT VALUE OF TOL_SNAP  = ', TOL_SNAP
          WRITE(*,*)'CURRENT VALUE OF TOL_MERGE = ', TOL_MERGE
-         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'               
-         CALL MFIX_EXIT(MYPE) 
+         WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         CALL MFIX_EXIT(MYPE)
       ELSE
          NORMAL = NORMAL / NORM
       ENDIF
@@ -1418,12 +1418,12 @@
       ELSE
          IF(ABS(NORMAL(2)) > ABS(NORMAL(3))) LONGEST = 2
       ENDIF
- 
+
 !======================================================================
 !   Reorder nodes to create a convex polygon
 !======================================================================
       SELECT CASE(LONGEST)
-   
+
          CASE(1)
             DO I = 1, NP-1
                ANGLE_REF = ATAN2 (COORD(I,3) - Zc,COORD(I,2) - Yc)
@@ -1440,7 +1440,7 @@
                   ENDIF
                END DO
             END DO
-  
+
          CASE(2)
             DO I = 1, NP-1
                ANGLE_REF = ATAN2 (COORD(I,1) - Xc,COORD(I,3) - Zc)
@@ -1458,7 +1458,7 @@
                END DO
             END DO
 
-         CASE(3) 
+         CASE(3)
             DO I = 1, NP-1
                ANGLE_REF = ATAN2 (COORD(I,2) - Yc,COORD(I,1) - Xc)
                DO K = I+1,NP
@@ -1484,7 +1484,7 @@
 
       RETURN
 
-      
+
       END SUBROUTINE REORDER_POLYGON
 
 
@@ -1501,11 +1501,11 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SORT(Array, NUM_ROWS,COL1,COL2)
-    
-     
+
+
       IMPLICIT NONE
 
       INTEGER :: M,N,NUM_ROWS,COL,COL1,COL2,Saved_index
@@ -1534,14 +1534,14 @@
 
       RETURN
 
-      
+
       END SUBROUTINE SORT
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: GET_INTERPOLATION_TERMS_G                              C
-!  Purpose: gets terms involved in velocity interpolation  (Gas phase) C      
+!  Purpose: gets terms involved in velocity interpolation  (Gas phase) C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
 !  Reviewer:                                          Date:            C
@@ -1549,10 +1549,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_INTERPOLATION_TERMS_G(IJK,TYPE_OF_CELL,ALPHA_CUT,AW,HW,VELW)
-    
+
       USE param
       USE param1
       USE parallel
@@ -1560,14 +1560,14 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
       USE cutcell
       USE polygon
       USE bc
-      
+
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
       INTEGER :: IJK
@@ -1596,7 +1596,7 @@
             IF(BCV>0) THEN
                BCT = BC_TYPE(BCV)
                SELECT CASE(BCT)
-               
+
                   CASE('CG_NSW')
                      AW   = ALPHA_CUT
                      HW   = ZERO
@@ -1622,10 +1622,10 @@
                         HW   = BC_HW_G(BCV)
                         VELW = BC_UW_G(BCV)
                      ENDIF
-     
+
                END SELECT
 
-            ENDIF      
+            ENDIF
 
 
          CASE('V_MOMENTUM')
@@ -1634,9 +1634,9 @@
             IF(BCV>0) THEN
                BCT = BC_TYPE(BCV)
                SELECT CASE(BCT)
-               
+
                   CASE('CG_NSW')
-                     AW   = ALPHA_CUT 
+                     AW   = ALPHA_CUT
                      HW   = ZERO
                      VELW = ZERO
 
@@ -1660,10 +1660,10 @@
                         HW   = BC_HW_G(BCV)
                         VELW = BC_VW_G(BCV)
                      ENDIF
-     
+
                END SELECT
 
-            ENDIF      
+            ENDIF
 
 
          CASE('W_MOMENTUM')
@@ -1672,9 +1672,9 @@
             IF(BCV>0) THEN
                BCT = BC_TYPE(BCV)
                SELECT CASE(BCT)
-               
+
                   CASE('CG_NSW')
-                     AW   = ALPHA_CUT 
+                     AW   = ALPHA_CUT
                      HW   = ZERO
                      VELW = ZERO
 
@@ -1697,25 +1697,25 @@
                         HW   = BC_HW_G(BCV)
                         VELW = BC_WW_G(BCV)
                      ENDIF
-     
+
                END SELECT
 
-            ENDIF      
+            ENDIF
 
 
 
          CASE DEFAULT
             WRITE(*,*)'SUBROUTINE: GET_INTERPOLATION_TERMS_G'
             WRITE(*,*)'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
-            WRITE(*,*)'ACCEPTABLE TYPES ARE:' 
-            WRITE(*,*)'U_MOMENTUM' 
-            WRITE(*,*)'V_MOMENTUM' 
-            WRITE(*,*)'W_MOMENTUM' 
+            WRITE(*,*)'ACCEPTABLE TYPES ARE:'
+            WRITE(*,*)'U_MOMENTUM'
+            WRITE(*,*)'V_MOMENTUM'
+            WRITE(*,*)'W_MOMENTUM'
             CALL MFIX_EXIT(myPE)
       END SELECT
 
       RETURN
-      
+
       END SUBROUTINE GET_INTERPOLATION_TERMS_G
 
 
@@ -1724,7 +1724,7 @@
 !                                                                      C
 !  Module name: GET_INTERPOLATION_TERMS_S                              C
 !  Purpose: gets terms involved in velocity interpolation              C
-!  (Solids phase)                                                      C      
+!  (Solids phase)                                                      C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
 !  Reviewer:                                          Date:            C
@@ -1732,10 +1732,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_INTERPOLATION_TERMS_S(IJK,M,TYPE_OF_CELL,ALPHA_CUT,AW,HW,VELW)
-    
+
       USE param
       USE param1
       USE parallel
@@ -1743,14 +1743,14 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
       USE cutcell
       USE polygon
       USE bc
-      
+
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
       INTEGER :: IJK,M
@@ -1779,7 +1779,7 @@
             IF(BCV>0) THEN
                BCT = BC_TYPE(BCV)
                SELECT CASE(BCT)
-               
+
                   CASE('CG_NSW')
                      AW   = ALPHA_CUT
                      HW   = ZERO
@@ -1805,10 +1805,10 @@
                         HW   = BC_HW_S(BCV,M)
                         VELW = BC_UW_S(BCV,M)
                      ENDIF
-     
+
                END SELECT
 
-            ENDIF      
+            ENDIF
 
 
          CASE('V_MOMENTUM')
@@ -1817,9 +1817,9 @@
             IF(BCV>0) THEN
                BCT = BC_TYPE(BCV)
                SELECT CASE(BCT)
-               
+
                   CASE('CG_NSW')
-                     AW   = ALPHA_CUT 
+                     AW   = ALPHA_CUT
                      HW   = ZERO
                      VELW = ZERO
 
@@ -1843,10 +1843,10 @@
                         HW   = BC_HW_S(BCV,M)
                         VELW = BC_VW_S(BCV,M)
                      ENDIF
-     
+
                END SELECT
 
-            ENDIF      
+            ENDIF
 
 
          CASE('W_MOMENTUM')
@@ -1855,9 +1855,9 @@
             IF(BCV>0) THEN
                BCT = BC_TYPE(BCV)
                SELECT CASE(BCT)
-               
+
                   CASE('CG_NSW')
-                     AW   = ALPHA_CUT 
+                     AW   = ALPHA_CUT
                      HW   = ZERO
                      VELW = ZERO
 
@@ -1880,25 +1880,25 @@
                         HW   = BC_HW_S(BCV,M)
                         VELW = BC_WW_S(BCV,M)
                      ENDIF
-     
+
                END SELECT
 
-            ENDIF      
+            ENDIF
 
 
 
          CASE DEFAULT
             WRITE(*,*)'SUBROUTINE: GET_INTERPOLATION_TERMS_S'
             WRITE(*,*)'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
-            WRITE(*,*)'ACCEPTABLE TYPES ARE:' 
-            WRITE(*,*)'U_MOMENTUM' 
-            WRITE(*,*)'V_MOMENTUM' 
-            WRITE(*,*)'W_MOMENTUM' 
+            WRITE(*,*)'ACCEPTABLE TYPES ARE:'
+            WRITE(*,*)'U_MOMENTUM'
+            WRITE(*,*)'V_MOMENTUM'
+            WRITE(*,*)'W_MOMENTUM'
             CALL MFIX_EXIT(myPE)
       END SELECT
 
       RETURN
-      
+
       END SUBROUTINE GET_INTERPOLATION_TERMS_S
 
 

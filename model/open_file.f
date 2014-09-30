@@ -20,7 +20,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE OPEN_FILE(FILENAME, NB, IUNIT, EXT, FULL_NAME,        &
-         OPEN_STAT, OPEN_ACCESS, OPEN_FORM, IRECL, IER) 
+         OPEN_STAT, OPEN_ACCESS, OPEN_FORM, IRECL, IER)
 
       use cdist
       use compar
@@ -47,12 +47,12 @@
       INTEGER, INTENT(IN) :: IUNIT
 ! Record length
       INTEGER, INTENT(IN) :: IRECL
-! Integer Error index: 
+! Integer Error index:
 ! 000 - no error
 ! 100 - NEW run with existing files in directory
 ! 101 - OLD run missing RES and/or SPx files
 ! 102 - Unknown OPEN_STAT
-      INTEGER, INTENT(OUT) :: IER 
+      INTEGER, INTENT(OUT) :: IER
 
 ! Local Variables
 !---------------------------------------------------------------------//
@@ -97,7 +97,7 @@
       ENDIF
 
 ! Open direct access files.
-      IF (OPEN_ACCESS == 'DIRECT') THEN 
+      IF (OPEN_ACCESS == 'DIRECT') THEN
          OPEN (UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS=OPEN_STAT,     &
             RECL=IRECL, ACCESS=OPEN_ACCESS, FORM=OPEN_FORM, IOSTAT=IER)
       ELSE
@@ -112,13 +112,13 @@
          ELSEIF(OPEN_STAT == 'APPEND' .OR. OPEN_STAT == 'UNKNOWN') THEN
             OPEN(UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS='UNKNOWN',   &
                ACCESS=OPEN_ACCESS, FORM=OPEN_FORM, POSITION='APPEND',  &
-               IOSTAT=IER)         
+               IOSTAT=IER)
          ELSE
             IER = 102
          ENDIF
-      ENDIF 
+      ENDIF
 
-      RETURN  
+      RETURN
 
  1000 FORMAT(A,'_',I5.5,A4)
  1001 FORMAT(A,A4)

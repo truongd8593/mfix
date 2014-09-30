@@ -295,10 +295,10 @@ C
 C     on the interval from t = 0.0 to t = 4.E10, with initial conditions
 C     y1 = 1.0, y2 = y3 = 0. The problem is stiff.
 C
-C     The following coding solves this problem with DLSODE, using 
-C     MF = 21 and printing results at t = .4, 4., ..., 4.E10.  It uses 
-C     ITOL = 2 and ATOL much smaller for y2 than for y1 or y3 because y2 
-C     has much smaller values.  At the end of the run, statistical 
+C     The following coding solves this problem with DLSODE, using
+C     MF = 21 and printing results at t = .4, 4., ..., 4.E10.  It uses
+C     ITOL = 2 and ATOL much smaller for y2 than for y1 or y3 because y2
+C     has much smaller values.  At the end of the run, statistical
 C     quantities of interest are printed.
 C
 C        EXTERNAL  FEX, JEX
@@ -389,7 +389,7 @@ C     inputs.
 C
 C *Portability:
 C     Since NEQ is dimensioned inside DLSODE, some compilers may object
-C     to a call to DLSODE with NEQ a scalar variable.  In this event, 
+C     to a call to DLSODE with NEQ a scalar variable.  In this event,
 C     use DIMENSION NEQ(1).  Similar remarks apply to RTOL and ATOL.
 C
 C     Note to Cray users:
@@ -877,9 +877,9 @@ C
 C     Optional Outputs
 C     ----------------
 C     As optional additional output from DLSODE, the variables listed
-C     below are quantities related to the performance of DLSODE which 
+C     below are quantities related to the performance of DLSODE which
 C     are available to the user.  These are communicated by way of the
-C     work arrays, but also have internal mnemonic names as shown. 
+C     work arrays, but also have internal mnemonic names as shown.
 C     Except where stated otherwise, all of these outputs are defined on
 C     any successful return from DLSODE, and on any return with ISTATE =
 C     -1, -2, -4, -5, or -6.  On an illegal input return (ISTATE = -3),
@@ -1021,7 +1021,7 @@ C
 C     If DLSODE is to be used in an overlay situation, the user must
 C     declare, in the primary overlay, the variables in:
 C     (1) the call sequence to DLSODE,
-C     (2) the internal COMMON block /DLS001/, of length 255 
+C     (2) the internal COMMON block /DLS001/, of length 255
 C         (218 double precision words followed by 37 integer words).
 C
 C     If DLSODE is used on a system in which the contents of internal
@@ -1157,7 +1157,7 @@ C 19930326  Added comment about non-reentrancy.  (FNF)
 C 19930723  Changed D1MACH to DUMACH. (FNF)
 C 19930801  Removed ILLIN and NTREP from Common (affects driver logic);
 C           minor changes to prologue and internal comments;
-C           changed Hollerith strings to quoted strings; 
+C           changed Hollerith strings to quoted strings;
 C           changed internal comments to mixed case;
 C           replaced XERRWD with new version using character type;
 C           changed dummy dimensions from 1 to *. (ACH)
@@ -1648,7 +1648,7 @@ C-----------------------------------------------------------------------
 C Block I.
 C The following block handles all error returns due to illegal input
 C (ISTATE = -3), as detected before calling the core integrator.
-C First the error message routine is called.  If the illegal input 
+C First the error message routine is called.  If the illegal input
 C is a negative ISTATE, the run is aborted (apparent infinite loop).
 C-----------------------------------------------------------------------
  601  MSG = 'DLSODE-  ISTATE (=I1) illegal '
@@ -9667,7 +9667,7 @@ C          The argument HL0 is the current value of the scalar appearing
 C          in the linear system.  If the old value, as of the last
 C          JAC call, is needed, it must have been saved by JAC in WP.
 C          On return, PSOL should set the error flag IER as follows:
-C	     IER = 0 if PSOL was successful,
+C            IER = 0 if PSOL was successful,
 C            IER .gt. 0 on a recoverable error, meaning that the
 C                   time step will be retried,
 C            IER .lt. 0 on an unrecoverable error, meaning that the
@@ -15818,7 +15818,7 @@ C (a) variables which are local to any subroutine but whose values must
 C     be preserved between calls to the routine ("own" variables), and
 C (b) variables which are communicated between subroutines.
 C The block DLS001 is declared in subroutines DLSODIS, DIPREPI, DPREPI,
-C DINTDY, DSTODI, DPRJIS, and DSOLSS.  
+C DINTDY, DSTODI, DPRJIS, and DSOLSS.
 C The block DLSS01 is declared in subroutines DLSODIS, DAINVGS,
 C DIPREPI, DPREPI, DPRJIS, and DSOLSS.
 C Groups of variables are replaced by dummy arrays in the Common
@@ -23684,7 +23684,7 @@ C                     indicate that DHESL will divide by zero if called.
 C
 C     Modification of LINPACK, by Peter Brown, LLNL.
 C     Written 7/20/83.  This version dated 6/20/01.
-C    
+C
 C     BLAS called: DAXPY, IDAMAX
 C-----------------------------------------------------------------------
       INTEGER IDAMAX, J, K, KM1, KP1, L, NM1

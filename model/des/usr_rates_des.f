@@ -95,6 +95,6 @@
 
       DES_RATES(:) = ZERO
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE USR_RATES_DES

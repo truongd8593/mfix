@@ -63,7 +63,7 @@
          enddo
 
 
-! Calculate the number of cells comprising the point source. This 
+! Calculate the number of cells comprising the point source. This
 ! information is used to allocate some temp arrays.
 !---------------------------------------------------------------------//
          PS_SIZE = (PS_I_E(PSV) - PS_I_W(PSV) + 1) * &
@@ -72,7 +72,7 @@
 
          if(PS_SIZE < 1) then
              eMsg = ''; write(eMsg,"('Invalid PS size: ', I4)")PS_SIZE
-             goto 500 
+             goto 500
          endif
 
 
@@ -187,7 +187,7 @@
          CpxMFLOW = ZERO
          do N = 1, NMAX(lM)
             CpxMFLOW = CpxMFLOW + PS_X(N) * (GAS_CONST_cal / lMW(N)) * &
-              calc_CpoR(PS_T, lM, N, IER) 
+              calc_CpoR(PS_T, lM, N, IER)
          enddo
       else
          CpxMFLOW = Cp0

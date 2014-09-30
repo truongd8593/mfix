@@ -1,13 +1,13 @@
       MODULE quadric
- 
 
-      Use param 
+
+      Use param
       Use param1
 
-!     Maximum of the number of quadrics that can be read 
+!     Maximum of the number of quadrics that can be read
       INTEGER, PARAMETER          :: DIM_QUADRIC = 100
 !     Nnumber of quadrics
-      INTEGER                     :: N_QUADRIC 
+      INTEGER                     :: N_QUADRIC
 !     Current Quadric
       INTEGER :: QUADRIC_ID
 !     form of quadric : 'normal' or one of the pre-defined quadrics
@@ -24,7 +24,7 @@
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: theta_x,theta_y,theta_z
 !     Radius for either Spere or Cylinder (pre-defined quadrics)
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: Radius
-!     Radii for Torus 
+!     Radii for Torus
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: Torus_R1, Torus_R2
 !     Half-angle for cone (pre-defined quadrics)
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: Half_angle

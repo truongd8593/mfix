@@ -81,12 +81,12 @@
          IF(D_P0(M) /= UNDEFINED)THEN
             WRITE(ERR_MSG,1002) trim(iVar('D_p0',M))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-      ENDDO 
+         ENDIF
+      ENDDO
 
 ! Check K_s0
       DO M=1, MMAX_L
-         IF (K_S0(M) < ZERO) THEN 
+         IF (K_S0(M) < ZERO) THEN
             WRITE(ERR_MSG, 1001) trim(iVar('K_s0',M)), iVal(K_s0(M))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
@@ -133,7 +133,7 @@
 ! Finalize the error messges
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
  1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
          'correct the mfix.dat file.')
@@ -442,7 +442,7 @@
 ! If true, a call to the thermochemical database is made.
       LOGICAL EEQ_CPS
 
-! Flag that the solids phase species equations are solved and the 
+! Flag that the solids phase species equations are solved and the
 ! molecular weight for a species are not given in the data file.
 ! If true, a call to the thermochemical database is made.
       LOGICAL SEQ_MWs
@@ -547,12 +547,12 @@
          ENDIF
 
 ! Verify that no additional species information was given.
-         DO N = NMAX(M) + 1, DIM_N_S 
+         DO N = NMAX(M) + 1, DIM_N_S
             IF(MW_S(M,N) /= UNDEFINED) THEN
                WRITE(ERR_MSG, 1002) trim(iVar('MW_s',M,N))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDDO 
+            ENDIF
+         ENDDO
       ENDDO ! Loop over solids phases
 
       CALL FINL_ERR_MSG
@@ -647,7 +647,7 @@
          ENDIF
       ENDDO
 
-! Check MW_s if solids species are present    
+! Check MW_s if solids species are present
       DO M = 1, MMAX_LL
 ! Initialize flag indicating the database was read for a species.
          DO N = 1, NMAX(M)
@@ -656,11 +656,11 @@
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ENDDO ! Loop over species
-         DO N = NMAX(M) + 1, DIM_N_S 
-            IF(MW_S(M,N) /= UNDEFINED) THEN 
+         DO N = NMAX(M) + 1, DIM_N_S
+            IF(MW_S(M,N) /= UNDEFINED) THEN
                WRITE(ERR_MSG,1002) trim(iVar('MW_s',M,N))
-            ENDIF 
-         ENDDO 
+            ENDIF
+         ENDDO
       ENDDO ! Loop over solids phases
 
 ! Set the legacy database flag. (Also in check_gas_phase.f)
@@ -685,7 +685,7 @@
       END SUBROUTINE CHECK_SOLIDS_SPECIES_LEGACY
 
 
- 
+
 !----------------------------------------------------------------------!
 !  Subroutine: CHECK_SOLIDS_DENSITY                                    !
 !  Purpose: check the solid phase density input                        !
@@ -815,7 +815,7 @@
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
                ELSEIF(X_s0(M,N) < ZERO .OR. X_s0(M,N) >= ONE) THEN
                   WRITE(ERR_MSG,1001) trim(iVar('X_s0',M,N)),        &
-                     trim(iVal(X_s0(M,N))) 
+                     trim(iVal(X_s0(M,N)))
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
                ENDIF
             ENDDO
@@ -879,7 +879,7 @@
 ! Finalize the error messges
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
  1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
             'correct the mfix.dat file.')

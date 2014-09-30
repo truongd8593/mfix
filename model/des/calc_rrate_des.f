@@ -74,7 +74,7 @@
       ENDIF
 
 
-      DO IJK = IJKSTART3, IJKEND3 
+      DO IJK = IJKSTART3, IJKEND3
          DEM_to_TFM = DT * VOL(IJK)
          R_gp(IJK,:) = R_gp(IJK,:) + &
             DES_R_gp(IJK,:)/DEM_to_TFM

@@ -298,7 +298,7 @@
       Homogns_all = 0;
       CALL global_sum(Homogns, Homogns_all)
 
-! Collect stats on the number of cells with heterogeneous and 
+! Collect stats on the number of cells with heterogeneous and
 ! homogeneous reactions.
       Hetrgns_all = 0
       CALL global_sum(Hetrgns, Hetrgns_all)

@@ -108,7 +108,7 @@
 
       write(*,*)'check 3'
 
- 
+
       CALL READ_RES_DES(lNEXT_REC, DEM_BCMI)
       DO LC1=1, DEM_BCMI
          CALL READ_RES_DES(lNEXT_REC, DEM_MI_TIME(LC1))

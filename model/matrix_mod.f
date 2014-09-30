@@ -31,4 +31,4 @@
       INTEGER          b
       PARAMETER (b =-3)
 
-      END MODULE matrix                                                                          
+      END MODULE matrix

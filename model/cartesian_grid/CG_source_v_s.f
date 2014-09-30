@@ -12,15 +12,15 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CG_SOURCE_V_S(A_M, B_M, M, IER) 
+      SUBROUTINE CG_SOURCE_V_S(A_M, B_M, M, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param, only: dimension_3, dimension_m 
+      USE param, only: dimension_3, dimension_m
       USE param1, only: zero, undefined
 
-! number of solids phases      
+! number of solids phases
       USE physprop, only: smax, mmax
 ! virtual (added) mass coefficient Cv
       USE physprop, only: cv
@@ -33,7 +33,7 @@
 
       USE geometry
       USE indices
-      USE compar    
+      USE compar
 
       USE cutcell
       USE quadric
@@ -44,23 +44,23 @@
 !-----------------------------------------------
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
-! Septadiagonal matrix A_m 
+! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-! Vector b_m 
+! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index 
-      INTEGER, INTENT(INOUT) :: IER 
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Indices 
+! Indices
       INTEGER :: I, J, K, IJK,IMJK, IJMK, IJKM, IJKN
 ! Solids phase index
       INTEGER :: L
-! average volume fraction 
-      DOUBLE PRECISION EPSA, EPStmp      
+! average volume fraction
+      DOUBLE PRECISION EPSA, EPStmp
 ! virtual (added) mass
-      DOUBLE PRECISION :: F_vir, ROP_MA 
+      DOUBLE PRECISION :: F_vir, ROP_MA
       DOUBLE PRECISION :: Vgn, Vgs, Uge, Ugw, Ugc, Vge, &
                           Vgw, Wgt, Wgb, Wgc,Vgt, Vgb
 !
@@ -76,7 +76,7 @@
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !-----------------------------------------------
-! Include statement functions 
+! Include statement functions
 !-----------------------------------------------
       INCLUDE '../ep_s1.inc'
       INCLUDE '../fun_avg1.inc'
@@ -90,7 +90,7 @@
       IF(KT_TYPE_ENUM /= GHD_2007 .OR. &
          (KT_TYPE_ENUM == GHD_2007 .AND. M==MMAX)) THEN
 
-         IF (MOMENTUM_Y_EQ(M)) THEN 
+         IF (MOMENTUM_Y_EQ(M)) THEN
 
 !!$omp  parallel do private(I, J, K, IJK, IJKN, &
 !!$omp&                     EPSA,EPStmp,ROP_MA,F_vir) &
@@ -100,23 +100,23 @@
 ! Skip walls where some values are undefined.
                IF(WALL_AT(IJK)) cycle
 
-               I = I_OF(IJK) 
-               J = J_OF(IJK) 
+               I = I_OF(IJK)
+               J = J_OF(IJK)
                K = K_OF(IJK)
                IMJK = IM_OF(IJK)
                IJMK = JM_OF(IJK)
-               IJKM = KM_OF(IJK) 
+               IJKM = KM_OF(IJK)
                IJKN = NORTH_OF(IJK)
 
                IF (KT_TYPE_ENUM == GHD_2007) THEN   ! with ghd theory, m = mmax
-                  EPStmp = ZERO     
+                  EPStmp = ZERO
                   DO L = 1, SMAX
                      EPStmp = EPStmp + AVG_Y(EP_S(IJK,L),EP_S(IJKN,L),J)
                   ENDDO
                   EPSA = EPStmp
-               ELSE                  
-                  EPSA = AVG_Y(EP_S(IJK,M),EP_S(IJKN,M),J) 
-               ENDIF 
+               ELSE
+                  EPSA = AVG_Y(EP_S(IJK,M),EP_S(IJKN,M),J)
+               ENDIF
 
 
 ! Impermeable internal surface
@@ -158,7 +158,7 @@
                            VW_s = BC_VW_S(BCV,M)
                            MU_S_CUT = (VOL(IJK)*MU_S(IJK,M) + VOL(IJKN)*MU_S(IJKN,M))/(VOL(IJK) + VOL(IJKN))
                            A_M(IJK,0,M) = A_M(IJK,0,M)  - MU_S_CUT * Area_V_CUT(IJK)/DELH_V(IJK)
-                           B_M(IJK,M) = B_M(IJK,M) - MU_S_CUT * VW_s * Area_V_CUT(IJK)/DELH_V(IJK) 
+                           B_M(IJK,M) = B_M(IJK,M) - MU_S_CUT * VW_s * Area_V_CUT(IJK)/DELH_V(IJK)
                         ELSEIF(BC_HW_S(BCV,M)==ZERO) THEN   ! same as FSW
                            NOC_VS = .FALSE.
                            VW_s = ZERO
@@ -166,13 +166,13 @@
                            NOC_VS = .FALSE.
                            VW_s = BC_VW_S(BCV,M)
                            MU_S_CUT = (VOL(IJK)*MU_S(IJK,M) + VOL(IJKN)*MU_S(IJKN,M))/(VOL(IJK) + VOL(IJKN))
-                           A_M(IJK,0,M) = A_M(IJK,0,M) - MU_S_CUT * Area_V_CUT(IJK)*(BC_HW_S(BCV,M)) 
+                           A_M(IJK,0,M) = A_M(IJK,0,M) - MU_S_CUT * Area_V_CUT(IJK)*(BC_HW_S(BCV,M))
                            B_M(IJK,M) = B_M(IJK,M) - MU_S_CUT * VW_s * Area_V_CUT(IJK)*(BC_HW_S(BCV,M))
                         ENDIF
                      CASE ('NONE', 'CG_MI')
                         NOC_VS = .FALSE.
 
-                  END SELECT 
+                  END SELECT
 
 
                   IF(NOC_VS) THEN
@@ -188,25 +188,25 @@
                      Ve = Theta_Ve_bar(IJK)  * V_S(IJK,M)  + Theta_Ve(IJK)  * V_S(IPJK,M)
                      Vw = Theta_Ve_bar(IMJK) * V_S(IMJK,M) + Theta_Ve(IMJK) * V_S(IJK,M)
 
-                     IJKN = NORTH_OF(IJK) 
-                     IF (WALL_AT(IJK)) THEN 
-                        IJKC = IJKN 
-                     ELSE 
-                        IJKC = IJK 
+                     IJKN = NORTH_OF(IJK)
+                     IF (WALL_AT(IJK)) THEN
+                        IJKC = IJKN
+                     ELSE
+                        IJKC = IJK
                      ENDIF
 
-                     JP = JP1(J) 
-                     IJKE = EAST_OF(IJK) 
-                     IJKNE = EAST_OF(IJKN) 
-                     IM = IM1(I) 
-                     IJKW = WEST_OF(IJK) 
-                     IJKWN = NORTH_OF(IJKW) 
-                     IMJPK = JP_OF(IMJK) 
-                     KM = KM1(K) 
-                     IJKT = TOP_OF(IJK) 
-                     IJKTN = NORTH_OF(IJKT) 
-                     IJKB = BOTTOM_OF(IJK) 
-                     IJKBN = NORTH_OF(IJKB) 
+                     JP = JP1(J)
+                     IJKE = EAST_OF(IJK)
+                     IJKNE = EAST_OF(IJKN)
+                     IM = IM1(I)
+                     IJKW = WEST_OF(IJK)
+                     IJKWN = NORTH_OF(IJKW)
+                     IMJPK = JP_OF(IMJK)
+                     KM = KM1(K)
+                     IJKT = TOP_OF(IJK)
+                     IJKTN = NORTH_OF(IJKT)
+                     IJKB = BOTTOM_OF(IJK)
+                     IJKBN = NORTH_OF(IJKB)
 
                      MU_S_E = AVG_Y_H(AVG_X_H(MU_S(IJKC,M),MU_S(IJKE,M),I),&
                               AVG_X_H(MU_S(IJKN,M),MU_S(IJKNE,M),I),J)
@@ -218,7 +218,7 @@
                      B_NOC =   MU_S_N * Axz_V(IJK)  * (Vn-VW_s) * NOC_V_N(IJK)   *2.0d0&
                              - MU_S_S * Axz_V(IJMK) * (Vs-VW_s) * NOC_V_N(IJMK)  *2.0d0&
                              + MU_S_E * Ayz_V(IJK)  * (Ve-VW_s) * NOC_V_E(IJK)   &
-                             - MU_S_W * Ayz_V(IMJK) * (Vw-VW_s) * NOC_V_E(IMJK)  
+                             - MU_S_W * Ayz_V(IMJK) * (Vw-VW_s) * NOC_V_E(IMJK)
 
                      IF(DO_K) THEN
 
@@ -231,7 +231,7 @@
                                  AVG_Z_H(MU_S(IJKBN,M),MU_S(IJKN,M),KM),J)
 
                         B_NOC = B_NOC + MU_S_T * Axy_V(IJK)  * (Vt-VW_s) * NOC_V_T(IJK)   &
-                                      - MU_S_B * Axy_V(IJKM) * (Vb-VW_s) * NOC_V_T(IJKM) 
+                                      - MU_S_B * Axy_V(IJKM) * (Vb-VW_s) * NOC_V_T(IJKM)
 
                      ENDIF
                      B_M(IJK,M) = B_M(IJK,M) + B_NOC
@@ -242,7 +242,7 @@
 ! VIRTUAL MASS SECTION (explicit terms)
 ! adding transient term dVg/dt to virtual mass term
                      F_vir = ZERO
-                     IF(Added_Mass.AND. M==M_AM ) THEN         
+                     IF(Added_Mass.AND. M==M_AM ) THEN
                         F_vir = ( (V_g(IJK) - V_gO(IJK)) )*ODT*VOL_V(IJK)
                         IM = I - 1
                         JM = J - 1
@@ -268,7 +268,7 @@
                         Vgn = Theta_Vn_bar(IJK)  * V_g(IJK)  + Theta_Vn(IJK)  * V_g(IJPK)
                         Vgs = Theta_Vn_bar(IJMK) * V_g(IJMK) + Theta_Vn(IJMK) * V_g(IJK)
                         IF(DO_K) THEN
-                           IJPKM = KM_OF(IJPK) 
+                           IJPKM = KM_OF(IJPK)
                            Vgt = Theta_Vt_bar(IJK)  * V_g(IJK)  + Theta_Vt(IJK)  * V_g(IJKP)
                            Vgb = Theta_Vt_bar(IJKM) * V_g(IJKM) + Theta_Vt(IJKM) * V_g(IJK)
                            Wgt = Theta_V_nt(IJK)  * W_g(IJK)  + Theta_V_st(IJK)  * W_g(IJPK)
@@ -290,12 +290,12 @@
 
 
                ENDIF ! end if sip or ip or dilute flow branch
-            ENDDO   ! end do ijk 
+            ENDDO   ! end do ijk
          ENDIF   ! end if momentum_y_eq
       ENDIF   ! end if for GHD Theory
 
-      RETURN  
-      END SUBROUTINE CG_SOURCE_V_S 
+      RETURN
+      END SUBROUTINE CG_SOURCE_V_S
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -311,19 +311,19 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CG_SOURCE_V_S_BC(A_M, B_M, M, IER) 
+      SUBROUTINE CG_SOURCE_V_S_BC(A_M, B_M, M, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
       USE param, only: dimension_3, dimension_m
-      USE param1, only: zero, one, undefined 
+      USE param1, only: zero, one, undefined
 
-      USE matrix 
+      USE matrix
       USE fldvar
       USE bc
 
-      USE compar   
+      USE compar
       USE geometry
       USE indices
 
@@ -334,22 +334,22 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Solids phase 
-      INTEGER, INTENT(IN) :: M 
-! Septadiagonal matrix A_m 
-      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
-! Vector b_m 
-      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M) 
-! Error index 
-      INTEGER, INTENT(INOUT) :: IER 
+! Solids phase
+      INTEGER, INTENT(IN) :: M
+! Septadiagonal matrix A_m
+      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
+! Vector b_m
+      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
-!----------------------------------------------- 
-! Boundary condition 
-      INTEGER :: L 
-! Indices 
-      INTEGER :: I, J, K, JM, I1, I2, J1, J2, K1, K2, IJK,& 
-                 IM, KM, IJKS, IJMK, IJPK 
+!-----------------------------------------------
+! Boundary condition
+      INTEGER :: L
+! Indices
+      INTEGER :: I, J, K, JM, I1, I2, J1, J2, K1, K2, IJK,&
+                 IM, KM, IJKS, IJMK, IJPK
 ! for cartesian grid:
       DOUBLE PRECISION :: Del_H,Nx,Ny,Nz,Um,Vm,Wm,VdotN
       INTEGER :: BCV
@@ -373,121 +373,121 @@
             BCT = 'NONE'
          ENDIF
 
-         SELECT CASE (BCT) 
+         SELECT CASE (BCT)
             CASE ('CG_NSW')
                IF(WALL_V_AT(IJK)) THEN
-                  A_M(IJK,E,M) = ZERO 
-                  A_M(IJK,W,M) = ZERO 
-                  A_M(IJK,N,M) = ZERO 
-                  A_M(IJK,S,M) = ZERO 
-                  A_M(IJK,T,M) = ZERO 
-                  A_M(IJK,B,M) = ZERO 
-                  A_M(IJK,0,M) = -ONE 
+                  A_M(IJK,E,M) = ZERO
+                  A_M(IJK,W,M) = ZERO
+                  A_M(IJK,N,M) = ZERO
+                  A_M(IJK,S,M) = ZERO
+                  A_M(IJK,T,M) = ZERO
+                  A_M(IJK,B,M) = ZERO
+                  A_M(IJK,0,M) = -ONE
                   B_M(IJK,M) = ZERO
-               ENDIF 
+               ENDIF
 
 
             CASE ('CG_FSW')
                IF(WALL_V_AT(IJK)) THEN
-                  A_M(IJK,E,M) = ZERO 
-                  A_M(IJK,W,M) = ZERO 
-                  A_M(IJK,N,M) = ZERO 
-                  A_M(IJK,S,M) = ZERO 
-                  A_M(IJK,T,M) = ZERO 
-                  A_M(IJK,B,M) = ZERO 
-                  A_M(IJK,0,M) = -ONE 
+                  A_M(IJK,E,M) = ZERO
+                  A_M(IJK,W,M) = ZERO
+                  A_M(IJK,N,M) = ZERO
+                  A_M(IJK,S,M) = ZERO
+                  A_M(IJK,T,M) = ZERO
+                  A_M(IJK,B,M) = ZERO
+                  A_M(IJK,0,M) = -ONE
 !                  B_M(IJK,M) = - V_s(V_MASTER_OF(IJK),M)    ! Velocity of master node
-                  B_M(IJK,M) = ZERO 
+                  B_M(IJK,M) = ZERO
                   IF(DABS(NORMAL_V(IJK,2))/=ONE) THEN
-                     IF (V_MASTER_OF(IJK) == EAST_OF(IJK)) THEN 
-                        A_M(IJK,E,M) = ONE 
-                     ELSEIF (V_MASTER_OF(IJK) == WEST_OF(IJK)) THEN 
-                        A_M(IJK,W,M) = ONE 
-                     ELSEIF (V_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN 
-                        A_M(IJK,N,M) = ONE 
-                     ELSEIF (V_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN 
-                        A_M(IJK,S,M) = ONE 
-                     ELSEIF (V_MASTER_OF(IJK) == TOP_OF(IJK)) THEN 
-                        A_M(IJK,T,M) = ONE 
-                     ELSEIF (V_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN 
-                        A_M(IJK,B,M) = ONE 
-                     ENDIF 
+                     IF (V_MASTER_OF(IJK) == EAST_OF(IJK)) THEN
+                        A_M(IJK,E,M) = ONE
+                     ELSEIF (V_MASTER_OF(IJK) == WEST_OF(IJK)) THEN
+                        A_M(IJK,W,M) = ONE
+                     ELSEIF (V_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN
+                        A_M(IJK,N,M) = ONE
+                     ELSEIF (V_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN
+                        A_M(IJK,S,M) = ONE
+                     ELSEIF (V_MASTER_OF(IJK) == TOP_OF(IJK)) THEN
+                        A_M(IJK,T,M) = ONE
+                     ELSEIF (V_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN
+                        A_M(IJK,B,M) = ONE
+                     ENDIF
                   ENDIF
-               ENDIF  
+               ENDIF
 
 
             CASE ('CG_PSW')
                IF(WALL_V_AT(IJK)) THEN
-                  A_M(IJK,E,M) = ZERO 
-                  A_M(IJK,W,M) = ZERO 
-                  A_M(IJK,N,M) = ZERO 
-                  A_M(IJK,S,M) = ZERO 
-                  A_M(IJK,T,M) = ZERO 
-                  A_M(IJK,B,M) = ZERO 
+                  A_M(IJK,E,M) = ZERO
+                  A_M(IJK,W,M) = ZERO
+                  A_M(IJK,N,M) = ZERO
+                  A_M(IJK,S,M) = ZERO
+                  A_M(IJK,T,M) = ZERO
+                  A_M(IJK,B,M) = ZERO
                   A_M(IJK,0,M) = -ONE
                   IF(BC_HW_S(BCV,M)==UNDEFINED) THEN   ! same as NSW
                      B_M(IJK,M) = -BC_VW_S(BCV,M)
                   ELSEIF(BC_HW_S(BCV,M)==ZERO) THEN   ! same as FSW
-                     B_M(IJK,M) = ZERO 
+                     B_M(IJK,M) = ZERO
                      IF(DABS(NORMAL_V(IJK,2))/=ONE) THEN
-                        IF (V_MASTER_OF(IJK) == EAST_OF(IJK)) THEN 
-                           A_M(IJK,E,M) = ONE 
-                        ELSEIF (V_MASTER_OF(IJK) == WEST_OF(IJK)) THEN 
-                           A_M(IJK,W,M) = ONE 
-                        ELSEIF (V_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN 
-                           A_M(IJK,N,M) = ONE 
-                        ELSEIF (V_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN 
-                           A_M(IJK,S,M) = ONE 
-                        ELSEIF (V_MASTER_OF(IJK) == TOP_OF(IJK)) THEN 
-                           A_M(IJK,T,M) = ONE 
-                        ELSEIF (V_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN 
-                           A_M(IJK,B,M) = ONE 
-                        ENDIF 
+                        IF (V_MASTER_OF(IJK) == EAST_OF(IJK)) THEN
+                           A_M(IJK,E,M) = ONE
+                        ELSEIF (V_MASTER_OF(IJK) == WEST_OF(IJK)) THEN
+                           A_M(IJK,W,M) = ONE
+                        ELSEIF (V_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN
+                           A_M(IJK,N,M) = ONE
+                        ELSEIF (V_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN
+                           A_M(IJK,S,M) = ONE
+                        ELSEIF (V_MASTER_OF(IJK) == TOP_OF(IJK)) THEN
+                           A_M(IJK,T,M) = ONE
+                        ELSEIF (V_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN
+                           A_M(IJK,B,M) = ONE
+                        ENDIF
                      ENDIF
                   ELSE                              ! partial slip  (WARNING:currently same as FSW)
-                     B_M(IJK,M) = ZERO 
+                     B_M(IJK,M) = ZERO
                      IF(DABS(NORMAL_V(IJK,2))/=ONE) THEN
-                        IF (V_MASTER_OF(IJK) == EAST_OF(IJK)) THEN 
-                           A_M(IJK,E,M) = ONE 
-                        ELSEIF (V_MASTER_OF(IJK) == WEST_OF(IJK)) THEN 
-                           A_M(IJK,W,M) = ONE 
-                        ELSEIF (V_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN 
-                           A_M(IJK,N,M) = ONE 
-                        ELSEIF (V_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN 
-                           A_M(IJK,S,M) = ONE 
-                        ELSEIF (V_MASTER_OF(IJK) == TOP_OF(IJK)) THEN 
-                           A_M(IJK,T,M) = ONE 
-                        ELSEIF (V_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN 
-                           A_M(IJK,B,M) = ONE 
-                        ENDIF 
+                        IF (V_MASTER_OF(IJK) == EAST_OF(IJK)) THEN
+                           A_M(IJK,E,M) = ONE
+                        ELSEIF (V_MASTER_OF(IJK) == WEST_OF(IJK)) THEN
+                           A_M(IJK,W,M) = ONE
+                        ELSEIF (V_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN
+                           A_M(IJK,N,M) = ONE
+                        ELSEIF (V_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN
+                           A_M(IJK,S,M) = ONE
+                        ELSEIF (V_MASTER_OF(IJK) == TOP_OF(IJK)) THEN
+                           A_M(IJK,T,M) = ONE
+                        ELSEIF (V_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN
+                           A_M(IJK,B,M) = ONE
+                        ENDIF
                      ENDIF
                   ENDIF
                ENDIF
 
 
             CASE ('CG_MI')
-               A_M(IJK,E,M) = ZERO 
-               A_M(IJK,W,M) = ZERO 
-               A_M(IJK,N,M) = ZERO 
-               A_M(IJK,S,M) = ZERO 
-               A_M(IJK,T,M) = ZERO 
-               A_M(IJK,B,M) = ZERO 
-               A_M(IJK,0,M) = -ONE 
-               IF(BC_V_s(BCV,M)/=UNDEFINED) THEN  
+               A_M(IJK,E,M) = ZERO
+               A_M(IJK,W,M) = ZERO
+               A_M(IJK,N,M) = ZERO
+               A_M(IJK,S,M) = ZERO
+               A_M(IJK,T,M) = ZERO
+               A_M(IJK,B,M) = ZERO
+               A_M(IJK,0,M) = -ONE
+               IF(BC_V_s(BCV,M)/=UNDEFINED) THEN
                   B_M(IJK,M) = - BC_V_s(BCV,M)
                ELSE
                   B_M(IJK,M) = - BC_VELMAG_s(BCV,M)*NORMAL_V(IJK,2)
                ENDIF
                IJKS = SOUTH_OF(IJK)
                IF(FLUID_AT(IJKS)) THEN
-                  A_M(IJKS,E,M) = ZERO 
-                  A_M(IJKS,W,M) = ZERO 
-                  A_M(IJKS,N,M) = ZERO 
-                  A_M(IJKS,S,M) = ZERO 
-                  A_M(IJKS,T,M) = ZERO 
-                  A_M(IJKS,B,M) = ZERO 
-                  A_M(IJKS,0,M) = -ONE 
-                  IF(BC_V_s(BCV,M)/=UNDEFINED) THEN  
+                  A_M(IJKS,E,M) = ZERO
+                  A_M(IJKS,W,M) = ZERO
+                  A_M(IJKS,N,M) = ZERO
+                  A_M(IJKS,S,M) = ZERO
+                  A_M(IJKS,T,M) = ZERO
+                  A_M(IJKS,B,M) = ZERO
+                  A_M(IJKS,0,M) = -ONE
+                  IF(BC_V_s(BCV,M)/=UNDEFINED) THEN
                      B_M(IJKS,M) = - BC_V_s(BCV,M)
                   ELSE
                      B_M(IJKS,M) = - BC_VELMAG_s(BCV,M)*NORMAL_V(IJK,2)
@@ -496,27 +496,27 @@
 
 
             CASE ('CG_PO')
-               A_M(IJK,E,M) = ZERO 
-               A_M(IJK,W,M) = ZERO 
-               A_M(IJK,N,M) = ZERO 
-               A_M(IJK,S,M) = ZERO 
-               A_M(IJK,T,M) = ZERO 
-               A_M(IJK,B,M) = ZERO 
-               A_M(IJK,0,M) = -ONE 
-               B_M(IJK,M) = ZERO 
+               A_M(IJK,E,M) = ZERO
+               A_M(IJK,W,M) = ZERO
+               A_M(IJK,N,M) = ZERO
+               A_M(IJK,S,M) = ZERO
+               A_M(IJK,T,M) = ZERO
+               A_M(IJK,B,M) = ZERO
+               A_M(IJK,0,M) = -ONE
+               B_M(IJK,M) = ZERO
 
                IJKS = SOUTH_OF(IJK)
                IF(FLUID_AT(IJKS)) THEN
 
-                  A_M(IJK,S,M) = ONE 
-                  A_M(IJK,0,M) = -ONE 
+                  A_M(IJK,S,M) = ONE
+                  A_M(IJK,0,M) = -ONE
                   B_M(IJK,M) = ZERO
                ENDIF
 
          END SELECT   ! end select bc_type
 
 
-! this is straight repeat of section of above code...?  
+! this is straight repeat of section of above code...?
          BCV = BC_ID(IJK)
          IF(BCV > 0 ) THEN
             BCT = BC_TYPE(BCV)
@@ -525,30 +525,30 @@
          ENDIF
 
 
-         SELECT CASE (BCT)  
+         SELECT CASE (BCT)
             CASE ('CG_MI')
-               A_M(IJK,E,M) = ZERO 
-               A_M(IJK,W,M) = ZERO 
-               A_M(IJK,N,M) = ZERO 
-               A_M(IJK,S,M) = ZERO 
-               A_M(IJK,T,M) = ZERO 
-               A_M(IJK,B,M) = ZERO 
-               A_M(IJK,0,M) = -ONE 
-               IF(BC_V_s(BCV,M)/=UNDEFINED) THEN  
+               A_M(IJK,E,M) = ZERO
+               A_M(IJK,W,M) = ZERO
+               A_M(IJK,N,M) = ZERO
+               A_M(IJK,S,M) = ZERO
+               A_M(IJK,T,M) = ZERO
+               A_M(IJK,B,M) = ZERO
+               A_M(IJK,0,M) = -ONE
+               IF(BC_V_s(BCV,M)/=UNDEFINED) THEN
                   B_M(IJK,M) = - BC_V_s(BCV,M)
                ELSE
                   B_M(IJK,M) = - BC_VELMAG_s(BCV,M)*NORMAL_S(IJK,2)
                ENDIF
                IJKS = SOUTH_OF(IJK)
                IF(FLUID_AT(IJKS)) THEN
-                  A_M(IJKS,E,M) = ZERO 
-                  A_M(IJKS,W,M) = ZERO 
-                  A_M(IJKS,N,M) = ZERO 
-                  A_M(IJKS,S,M) = ZERO 
-                  A_M(IJKS,T,M) = ZERO 
-                  A_M(IJKS,B,M) = ZERO 
-                  A_M(IJKS,0,M) = -ONE 
-                  IF(BC_V_s(BCV,M)/=UNDEFINED) THEN  
+                  A_M(IJKS,E,M) = ZERO
+                  A_M(IJKS,W,M) = ZERO
+                  A_M(IJKS,N,M) = ZERO
+                  A_M(IJKS,S,M) = ZERO
+                  A_M(IJKS,T,M) = ZERO
+                  A_M(IJKS,B,M) = ZERO
+                  A_M(IJKS,0,M) = -ONE
+                  IF(BC_V_s(BCV,M)/=UNDEFINED) THEN
                      B_M(IJKS,M) = - BC_V_s(BCV,M)
                   ELSE
                      B_M(IJKS,M) = - BC_VELMAG_s(BCV,M)*NORMAL_S(IJK,2)
@@ -557,23 +557,23 @@
 
 
             CASE ('CG_PO')
-               A_M(IJK,E,M) = ZERO 
-               A_M(IJK,W,M) = ZERO 
-               A_M(IJK,N,M) = ZERO 
-               A_M(IJK,S,M) = ZERO 
-               A_M(IJK,T,M) = ZERO 
-               A_M(IJK,B,M) = ZERO 
-               A_M(IJK,0,M) = -ONE 
-               B_M(IJK,M) = ZERO 
+               A_M(IJK,E,M) = ZERO
+               A_M(IJK,W,M) = ZERO
+               A_M(IJK,N,M) = ZERO
+               A_M(IJK,S,M) = ZERO
+               A_M(IJK,T,M) = ZERO
+               A_M(IJK,B,M) = ZERO
+               A_M(IJK,0,M) = -ONE
+               B_M(IJK,M) = ZERO
                IJKS = SOUTH_OF(IJK)
                IF(FLUID_AT(IJKS)) THEN
-                  A_M(IJK,S,M) = ONE 
-                  A_M(IJK,0,M) = -ONE 
+                  A_M(IJK,S,M) = ONE
+                  A_M(IJK,0,M) = -ONE
                ENDIF
 
-         END SELECT 
-    
+         END SELECT
+
       ENDDO
 
-      RETURN 
-      END SUBROUTINE CG_SOURCE_V_S_BC 
+      RETURN
+      END SUBROUTINE CG_SOURCE_V_S_BC

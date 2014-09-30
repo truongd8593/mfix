@@ -18,7 +18,7 @@
       SUBROUTINE TRANSPORT_COEFF_GHD (M, IER)
 
 !-----------------------------------------------
-! Modules 
+! Modules
 !-----------------------------------------------
       USE param
       USE param1
@@ -39,26 +39,26 @@
 ! Index
       INTEGER :: IJK, I, J, K
 ! Solids phase
-      INTEGER :: M, L 
+      INTEGER :: M, L
 ! Error index
-      INTEGER :: IER  
+      INTEGER :: IER
 ! particles properties and GHD transport coefficients
       DOUBLE PRECISION :: SIGMAI(smax), Mi(smax), phii(smax)
-      DOUBLE PRECISION :: Ti(smax), tmpDT(smax) 
+      DOUBLE PRECISION :: Ti(smax), tmpDT(smax)
       DOUBLE PRECISION :: tmpZeta0, tmpZetaU, TMix
       DOUBLE PRECISION :: tmpP, tmpKappa, tmpEta, tmpLambda
       DOUBLE PRECISION :: tmpLij(smax,smax), tmpDij(smax,smax), &
                           tmpDF(smax,smax), tmpDijQ(smax,smax)
-!----------------------------------------------- 
+!-----------------------------------------------
 ! Function subroutines
-!----------------------------------------------- 
+!-----------------------------------------------
 
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
 !-----------------------------------------------
-     
+
       DO 200 IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
          J = J_OF(IJK)
@@ -73,7 +73,7 @@
                Ti(M)= THETA_M(IJK,M)
             ENDDO
             TMix = THETA_M(IJK,MMAX)
-               
+
             CALL GHD_MODEL(SMAX, SIGMAI, IJK, r_p(:smax,:smax), Mi, &
                      phii, TMix, tmpZeta0, tmpZetaU, Ti, tmpP, &
                      tmpKappa, tmpEta, tmpDT, tmpDF, tmpLambda, &
@@ -97,7 +97,7 @@
                    Lij(IJK,M,L) = tmpLij(M,L)
 ! ordinary diffucsion coefficient
                    Dij(IJK,M,L) = tmpDij(M,L)
-! Dufour coefficient:	   
+! Dufour coefficient:
                    DijQ(IJK,M,L) = tmpDijQ(M,L)
                  ENDDO
                ENDDO

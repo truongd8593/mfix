@@ -17,17 +17,17 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE INIT_RESID(IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE INIT_RESID(IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !  Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE physprop
       USE residual
       IMPLICIT NONE
@@ -37,27 +37,27 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-! 
-! 
-!                      Error index 
-      INTEGER          IER 
-! 
-!                      residual number 
-      INTEGER          L 
-! 
-!                      Phase index 
-      INTEGER          M 
-! 
+!
+!
+!                      Error index
+      INTEGER          IER
+!
+!                      residual number
+      INTEGER          L
+!
+!                      Phase index
+      INTEGER          M
+!
 !-----------------------------------------------
 !
-      L = 1 
-      IF (NRESID > 0) THEN 
-         M = 0 
-         IF (MMAX + 1 > 0) THEN 
-            RESID(:NRESID,:MMAX) = ZERO 
-            M = MMAX + 1 
-         ENDIF 
-         L = NRESID + 1 
-      ENDIF 
-      RETURN  
-      END SUBROUTINE INIT_RESID 
+      L = 1
+      IF (NRESID > 0) THEN
+         M = 0
+         IF (MMAX + 1 > 0) THEN
+            RESID(:NRESID,:MMAX) = ZERO
+            M = MMAX + 1
+         ENDIF
+         L = NRESID + 1
+      ENDIF
+      RETURN
+      END SUBROUTINE INIT_RESID

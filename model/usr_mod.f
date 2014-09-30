@@ -15,7 +15,7 @@
 !       user defined subroutines (usr0, usr1, and usr2) set call_usr to true in
 !       mfix.dat.
 !
-!                       a dummy variable listed in usrnlst.inc   
+!                       a dummy variable listed in usrnlst.inc
         DOUBLE PRECISION DUMMY_DP
 
-      END MODULE usr                                                                             
+      END MODULE usr

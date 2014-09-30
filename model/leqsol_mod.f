@@ -39,7 +39,7 @@
 !                      linear equation solver tolerance
       DOUBLE PRECISION LEQ_TOL(9)
 !
-!		       Preconditioner option
+!                      Preconditioner option
       CHARACTER*4 ::   LEQ_PC(9)
 !
 !                      Option to minimize dot products
@@ -62,4 +62,4 @@
 !
 !
 
-      END MODULE leqsol                                                                          
+      END MODULE leqsol

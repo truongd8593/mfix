@@ -24,9 +24,9 @@
 ! Particle properties
 !--------------------------
 ! Particle temperature at current time step (S_TIME)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_T_s_OLD !(PARTICLES) 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_T_s_OLD !(PARTICLES)
 ! Particle temperature at previous time step (S_TIME - DT_SOLID)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_T_s_NEW !(PARTICLES) 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_T_s_NEW !(PARTICLES)
 
 ! DES specific heat of particles by particle
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_C_ps

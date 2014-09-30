@@ -1,20 +1,20 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
+!
 !  subroutine name: call mass_mobility(s,mi,ni,rho,zeta0,theta,nu,DF)
 !
 !  author:  C. Hrenya, Feb 2009
 !
 !  Purpose: find mass mobility coefficient according to GHD polydisperse KT
 !
-!  Literature/References:  
+!  Literature/References:
 !     C. Hrenya handwritten notes & Garzo, Hrenya, Dufty papers (PRE, 2007)
-!                                                         
+!
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       subroutine mass_mobility(s,mi,ni,rho,zeta0,theta,nu,DF)
       Implicit NONE
 
-      integer s, indx(s) 
+      integer s, indx(s)
 
       double precision mi(s),sigmai(s),ni(s),n,rho, &
                       zeta0,theta(s),nu(s,s),DF(s,s)
@@ -48,10 +48,10 @@
          enddo
       enddo
 
-! this extra kk loop and addition of Amat0 and bmat0 is necessary 
+! this extra kk loop and addition of Amat0 and bmat0 is necessary
 ! since x & b in Ax=b are s by s matrices rather than vectors of length s,
 ! whereas LUBSKB is specific to x & b vectors of length s
-      do kk=1,s 
+      do kk=1,s
          do i=1,s
             do j=1,s
                 Amat0(i,j) = Amat(i,j)

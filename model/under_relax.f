@@ -17,19 +17,19 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE UNDER_RELAX_S(VAR, A_M, B_M, M, UR, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE UNDER_RELAX_S(VAR, A_M, B_M, M, UR, IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE indices
-      USE compar  
-      USE sendrecv   
+      USE compar
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -67,21 +67,21 @@
       INCLUDE 'function.inc'
 !
 !
-      F1 = ONE/UR 
-      F2 = F1 - ONE 
+      F1 = ONE/UR
+      F2 = F1 - ONE
 !
 !!!$omp    parallel do private(IJK,AP)
-      DO IJK = ijkstart3, ijkend3 
-         IF (FLUID_AT(IJK)) THEN 
-            AP = A_M(IJK,0,M) 
-            IF (AP /= (-ONE)) THEN 
-               A_M(IJK,0,M) = AP*F1 
-               B_M(IJK,M) = B_M(IJK,M) + AP*VAR(IJK)*F2 
-            ENDIF 
-         ENDIF 
-      END DO 
-      RETURN  
-      END SUBROUTINE UNDER_RELAX_S 
+      DO IJK = ijkstart3, ijkend3
+         IF (FLUID_AT(IJK)) THEN
+            AP = A_M(IJK,0,M)
+            IF (AP /= (-ONE)) THEN
+               A_M(IJK,0,M) = AP*F1
+               B_M(IJK,M) = B_M(IJK,M) + AP*VAR(IJK)*F2
+            ENDIF
+         ENDIF
+      END DO
+      RETURN
+      END SUBROUTINE UNDER_RELAX_S
 !
 !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -103,19 +103,19 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE UNDER_RELAX_U(VAR, A_M, B_M, M, UR, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE UNDER_RELAX_U(VAR, A_M, B_M, M, UR, IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE indices
-      USE compar  
-      USE sendrecv  
+      USE compar
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -153,21 +153,21 @@
       INCLUDE 'function.inc'
 !
 !
-      F1 = ONE/UR 
-      F2 = F1 - ONE 
+      F1 = ONE/UR
+      F2 = F1 - ONE
 !
 !!!$omp    parallel do private(IJK,AP)
-      DO IJK = ijkstart3, ijkend3 
-         IF (FLOW_AT_E(IJK)) THEN 
-            AP = A_M(IJK,0,M) 
-            IF (AP /= (-ONE)) THEN 
-               A_M(IJK,0,M) = AP*F1 
-               B_M(IJK,M) = B_M(IJK,M) + AP*VAR(IJK)*F2 
-            ENDIF 
-         ENDIF 
-      END DO 
-      RETURN  
-      END SUBROUTINE UNDER_RELAX_U 
+      DO IJK = ijkstart3, ijkend3
+         IF (FLOW_AT_E(IJK)) THEN
+            AP = A_M(IJK,0,M)
+            IF (AP /= (-ONE)) THEN
+               A_M(IJK,0,M) = AP*F1
+               B_M(IJK,M) = B_M(IJK,M) + AP*VAR(IJK)*F2
+            ENDIF
+         ENDIF
+      END DO
+      RETURN
+      END SUBROUTINE UNDER_RELAX_U
 !
 !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -189,19 +189,19 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE UNDER_RELAX_V(VAR, A_M, B_M, M, UR, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE UNDER_RELAX_V(VAR, A_M, B_M, M, UR, IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE indices
-      USE compar   
-      USE sendrecv  
+      USE compar
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -239,21 +239,21 @@
       INCLUDE 'function.inc'
 !
 !
-      F1 = ONE/UR 
-      F2 = F1 - ONE 
+      F1 = ONE/UR
+      F2 = F1 - ONE
 !
 !!!$omp    parallel do private(IJK,AP)
       DO IJK = ijkstart3, ijkend3
-         IF (FLOW_AT_N(IJK)) THEN 
-            AP = A_M(IJK,0,M) 
-            IF (AP /= (-ONE)) THEN 
-               A_M(IJK,0,M) = AP*F1 
-               B_M(IJK,M) = B_M(IJK,M) + AP*VAR(IJK)*F2 
-            ENDIF 
-         ENDIF 
-      END DO 
-      RETURN  
-      END SUBROUTINE UNDER_RELAX_V 
+         IF (FLOW_AT_N(IJK)) THEN
+            AP = A_M(IJK,0,M)
+            IF (AP /= (-ONE)) THEN
+               A_M(IJK,0,M) = AP*F1
+               B_M(IJK,M) = B_M(IJK,M) + AP*VAR(IJK)*F2
+            ENDIF
+         ENDIF
+      END DO
+      RETURN
+      END SUBROUTINE UNDER_RELAX_V
 !
 !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -275,19 +275,19 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE UNDER_RELAX_W(VAR, A_M, B_M, M, UR, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE UNDER_RELAX_W(VAR, A_M, B_M, M, UR, IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE indices
-      USE compar   
-      USE sendrecv   
+      USE compar
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -325,22 +325,22 @@
       INCLUDE 'function.inc'
 !
 !
-      F1 = ONE/UR 
-      F2 = F1 - ONE 
+      F1 = ONE/UR
+      F2 = F1 - ONE
 !
 !!!$omp    parallel do private(IJK,AP)
       DO IJK = ijkstart3, ijkend3
-         IF (FLOW_AT_T(IJK)) THEN 
-            AP = A_M(IJK,0,M) 
-            IF (AP /= (-ONE)) THEN 
-               A_M(IJK,0,M) = AP*F1 
-               B_M(IJK,M) = B_M(IJK,M) + AP*VAR(IJK)*F2 
-            ENDIF 
-         ENDIF 
-      END DO 
-      RETURN  
-      END SUBROUTINE UNDER_RELAX_W 
+         IF (FLOW_AT_T(IJK)) THEN
+            AP = A_M(IJK,0,M)
+            IF (AP /= (-ONE)) THEN
+               A_M(IJK,0,M) = AP*F1
+               B_M(IJK,M) = B_M(IJK,M) + AP*VAR(IJK)*F2
+            ENDIF
+         ENDIF
+      END DO
+      RETURN
+      END SUBROUTINE UNDER_RELAX_W
 
-!// Comments on the modifications for DMP version implementation      
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

@@ -14,20 +14,20 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CALC_RESID_C(VAR, A_M, B_M, M, NUM, DEN, &
-         RESID, MAX_RESID, IJK_RESID, IER) 
+         RESID, MAX_RESID, IJK_RESID, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE matrix 
-      USE parallel 
+      USE param
+      USE param1
+      USE matrix
+      USE parallel
       USE geometry
       USE indices
       USE compar
-      USE mpi_utility 
-      USE run 
+      USE mpi_utility
+      USE run
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -55,11 +55,11 @@
 !-----------------------------------------------
 ! Indices
       INTEGER :: IJK, IJKW, IJKS, IJKB, IJKE, IJKN, IJKT
-      INTEGER :: I, J, K      
+      INTEGER :: I, J, K
 ! Numerators and denominators
       DOUBLE PRECISION :: NUM1, DEN1
 ! Number of fluid cells
-      INTEGER :: NCELLS 
+      INTEGER :: NCELLS
 ! Error message
       CHARACTER*80     LINE
 ! New local variables for DMP version
@@ -74,10 +74,10 @@
 !-----------------------------------------------
 
 ! initializing values
-      NUM = ZERO 
-      DEN = ZERO 
-      MAX_RESID = -ONE 
-      NCELLS = 0 
+      NUM = ZERO
+      DEN = ZERO
+      MAX_RESID = -ONE
+      NCELLS = 0
 
 !!$omp parallel do private( IJK )
       DO IJK = ijkstart3, ijkend3
@@ -86,44 +86,44 @@
 
 !!$omp  parallel do private( IJK, IJKW, IJKS, IJKB, IJKE, IJKN, IJKT,  &
 !!$omp&  NUM1, DEN1) &
-!!$omp&  REDUCTION(+:NUM,DEN,NCELLS)  
+!!$omp&  REDUCTION(+:NUM,DEN,NCELLS)
       DO IJK = ijkstart3, ijkend3
-         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
-         IF (FLUID_AT(IJK)) THEN 
-            IJKW = WEST_OF(IJK) 
-            IJKS = SOUTH_OF(IJK) 
+         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+         IF (FLUID_AT(IJK)) THEN
+            IJKW = WEST_OF(IJK)
+            IJKS = SOUTH_OF(IJK)
             IJKE = EAST_OF(IJK)
-            IJKN = NORTH_OF(IJK) 
+            IJKN = NORTH_OF(IJK)
 
 ! evaluating the residual at cell ijk:
 !   RESp = B-sum(Anb*VARnb)-Ap*VARp
 !   (where nb = neighbor cells and p = center/0 cell)
             NUM1 = B_M(IJK,M) - (A_M(IJK,0,M)*VAR(IJK)+A_M(IJK,E,M)*VAR(IJKE)+&
                A_M(IJK,W,M)*VAR(IJKW)+A_M(IJK,N,M)*VAR(IJKN)+A_M(IJK,S,M)*VAR(&
-               IJKS)) 
+               IJKS))
 
-            IF (DO_K) THEN 
-               IJKB = BOTTOM_OF(IJK) 
-               IJKT = TOP_OF(IJK) 
-               NUM1 = NUM1 - (A_M(IJK,T,M)*VAR(IJKT)+A_M(IJK,B,M)*VAR(IJKB)) 
-            ENDIF 
+            IF (DO_K) THEN
+               IJKB = BOTTOM_OF(IJK)
+               IJKT = TOP_OF(IJK)
+               NUM1 = NUM1 - (A_M(IJK,T,M)*VAR(IJKT)+A_M(IJK,B,M)*VAR(IJKB))
+            ENDIF
 
-            NUM1 = ABS(NUM1) 
-            DEN1 = ABS(A_M(IJK,0,M)*VAR(IJK)) 
+            NUM1 = ABS(NUM1)
+            DEN1 = ABS(A_M(IJK,0,M)*VAR(IJK))
 ! storing value of residual at each ijk location
             RESID_IJK(IJK) = NUM1
 
 ! adding to terms that are accumulated
-            NCELLS = NCELLS + 1 
-            NUM = NUM + NUM1 
-            DEN = DEN + DEN1 
-         ENDIF 
-      ENDDO 
+            NCELLS = NCELLS + 1
+            NUM = NUM + NUM1
+            DEN = DEN + DEN1
+         ENDIF
+      ENDDO
 
       IF(.not.debug_resid) RETURN
 
 ! Collecting all the information among all the procesors -
-! determining the global sum     
+! determining the global sum
       call global_all_sum(NUM)
       call global_all_sum(DEN)
       call global_all_sum(NCELLS)
@@ -131,7 +131,7 @@
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
       DO IJK = ijkstart3, ijkend3
-         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
+         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
          IF (RESID_IJK(IJK) > MAX_RESID) THEN
             IJK_RESID = IJK
             MAX_RESID = RESID_IJK( IJK_RESID )
@@ -166,21 +166,21 @@
 
 ! Normalizing the residual
       IF (DEN > ZERO) THEN
-         RESID = NUM/DEN 
-         MAX_RESID = NCELLS*MAX_RESID/DEN 
-      ELSEIF (NUM == ZERO) THEN 
-         RESID = ZERO 
-         MAX_RESID = ZERO 
-         IJK_RESID = 0 
-      ELSE 
-         RESID = UNDEFINED 
-         MAX_RESID = UNDEFINED 
-!         WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
-!         CALL WRITE_ERROR ('CALC_RESID_C', LINE, 1) 
-      ENDIF 
+         RESID = NUM/DEN
+         MAX_RESID = NCELLS*MAX_RESID/DEN
+      ELSEIF (NUM == ZERO) THEN
+         RESID = ZERO
+         MAX_RESID = ZERO
+         IJK_RESID = 0
+      ELSE
+         RESID = UNDEFINED
+         MAX_RESID = UNDEFINED
+!         WRITE (LINE, *) 'Warning: All center coefficients are zero.'
+!         CALL WRITE_ERROR ('CALC_RESID_C', LINE, 1)
+      ENDIF
 
-      RETURN  
-      END SUBROUTINE CALC_RESID_C 
+      RETURN
+      END SUBROUTINE CALC_RESID_C
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -199,20 +199,20 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CALC_RESID_S(VAR, A_M, B_M, M, NUM, DEN, &
-         RESID, MAX_RESID, IJK_RESID, TOL, IER) 
+         RESID, MAX_RESID, IJK_RESID, TOL, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE matrix 
-      USE parallel 
+      USE param
+      USE param1
+      USE matrix
+      USE parallel
       USE geometry
       USE indices
-      USE compar      
+      USE compar
       USE mpi_utility
-      USE run 
+      USE run
 
       USE fldvar
       USE physprop
@@ -251,7 +251,7 @@
 ! Numerators and denominators
       DOUBLE PRECISION :: NUM1, DEN1
 ! Number of fluid cells
-      INTEGER :: NCELLS 
+      INTEGER :: NCELLS
 ! Error message
       CHARACTER*80     LINE
 ! New local variables for DMP version
@@ -268,10 +268,10 @@
 !-----------------------------------------------
 
 ! initializing
-      NUM = ZERO 
-      DEN = ZERO 
-      MAX_RESID = -ONE 
-      NCELLS = 0 
+      NUM = ZERO
+      DEN = ZERO
+      MAX_RESID = -ONE
+      NCELLS = 0
 
 !!$omp parallel do private( IJK )
       DO IJK = ijkstart3, ijkend3
@@ -281,16 +281,16 @@
 !!$omp    parallel do &
 !!$omp&   private(   IJK, IMJK, IJMK, IPJK, IJPK, IJKM, IJKP, &
 !!$omp&   NUM1, DEN1) &
-!!$omp&   REDUCTION(+:NUM, DEN,NCELLS)  
+!!$omp&   REDUCTION(+:NUM, DEN,NCELLS)
 
       DO IJK = ijkstart3, ijkend3
          IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
 
-         IF (FLUID_AT(IJK) .AND. ABS(VAR(IJK)) > TOL) THEN 
-            IMJK = IM_OF(IJK) 
-            IJMK = JM_OF(IJK) 
-            IPJK = IP_OF(IJK) 
-            IJPK = JP_OF(IJK) 
+         IF (FLUID_AT(IJK) .AND. ABS(VAR(IJK)) > TOL) THEN
+            IMJK = IM_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IPJK = IP_OF(IJK)
+            IJPK = JP_OF(IJK)
 
             if(M/=0) then
                if(EP_S(IJK,M) <= DIL_EP_s) CYCLE
@@ -299,27 +299,27 @@
 
 ! evaluating the residual at cell ijk:
 !   RESp = B-sum(Anb*VARnb)-Ap*VARp
-!   (where nb = neighbor cells and p = center/0 cell)            
+!   (where nb = neighbor cells and p = center/0 cell)
             NUM1 = B_M(IJK,M) - (A_M(IJK,0,M)*VAR(IJK)+A_M(IJK,E,M)*VAR(IPJK)+&
                A_M(IJK,W,M)*VAR(IMJK)+A_M(IJK,N,M)*VAR(IJPK)+A_M(IJK,S,M)*VAR(&
-               IJMK)) 
-            IF (DO_K) THEN 
-               IJKM = KM_OF(IJK) 
-               IJKP = KP_OF(IJK) 
-               NUM1 = NUM1 - (A_M(IJK,T,M)*VAR(IJKP)+A_M(IJK,B,M)*VAR(IJKM)) 
-            ENDIF 
+               IJMK))
+            IF (DO_K) THEN
+               IJKM = KM_OF(IJK)
+               IJKP = KP_OF(IJK)
+               NUM1 = NUM1 - (A_M(IJK,T,M)*VAR(IJKP)+A_M(IJK,B,M)*VAR(IJKM))
+            ENDIF
 
-            NUM1 = ABS(NUM1) 
-            DEN1 = ABS(A_M(IJK,0,M)*VAR(IJK)) 
-! storing value of residual at each ijk location            
+            NUM1 = ABS(NUM1)
+            DEN1 = ABS(A_M(IJK,0,M)*VAR(IJK))
+! storing value of residual at each ijk location
             RESID_IJK(IJK) = NUM1
 
 ! adding to terms that are accumulated
-            NCELLS = NCELLS + 1 
-            NUM = NUM + NUM1 
-            DEN = DEN + DEN1 
-         ENDIF 
-      ENDDO 
+            NCELLS = NCELLS + 1
+            NUM = NUM + NUM1
+            DEN = DEN + DEN1
+         ENDIF
+      ENDDO
 
       IF(.not.debug_resid) RETURN
 
@@ -333,7 +333,7 @@
       MAX_RESID = RESID_IJK( IJK_RESID )
       DO IJK = ijkstart3, ijkend3
       IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
-         IF (RESID_IJK(IJK) > MAX_RESID) THEN               
+         IF (RESID_IJK(IJK) > MAX_RESID) THEN
                IJK_RESID = IJK
                MAX_RESID = RESID_IJK( IJK_RESID )
          ENDIF
@@ -366,22 +366,22 @@
       enddo
 
 ! Normalizing the residual
-      IF (DEN > ZERO) THEN 
-         RESID = NUM/DEN 
-         MAX_RESID = NCELLS*MAX_RESID/DEN 
-      ELSEIF (NUM == ZERO) THEN 
-         RESID = ZERO 
-         MAX_RESID = ZERO 
-         IJK_RESID = 0 
-      ELSE 
-         RESID = UNDEFINED 
-         MAX_RESID = UNDEFINED 
+      IF (DEN > ZERO) THEN
+         RESID = NUM/DEN
+         MAX_RESID = NCELLS*MAX_RESID/DEN
+      ELSEIF (NUM == ZERO) THEN
+         RESID = ZERO
+         MAX_RESID = ZERO
+         IJK_RESID = 0
+      ELSE
+         RESID = UNDEFINED
+         MAX_RESID = UNDEFINED
 !         WRITE(LINE,*)'Message: All center coefficients are zero.'
 !         CALL WRITE_ERROR('CALC_RESID_S', LINE, 1)
-      ENDIF 
+      ENDIF
 
-      RETURN  
-      END SUBROUTINE CALC_RESID_S 
+      RETURN
+      END SUBROUTINE CALC_RESID_S
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -403,20 +403,20 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CALC_RESID_PP(B_M, NORM, NUM, DEN, RESID, MAX_RESID, &
-         IJK_RESID, IER) 
+         IJK_RESID, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE matrix 
-      USE parallel 
+      USE param
+      USE param1
+      USE matrix
+      USE parallel
       USE geometry
       USE indices
-      USE compar   
-      USE mpi_utility   
-      USE run 
+      USE compar
+      USE mpi_utility
+      USE run
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -424,7 +424,7 @@
 ! Vector b_m
       DOUBLE PRECISION, INTENT(IN) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Normalization factor
-      DOUBLE PRECISION, INTENT(IN) :: NORM      
+      DOUBLE PRECISION, INTENT(IN) :: NORM
 ! Numerator and denominator
       DOUBLE PRECISION, INTENT(OUT) :: NUM, DEN
 ! Average value of Residual
@@ -440,9 +440,9 @@
 !-----------------------------------------------
 ! Indices
       INTEGER :: IJK
-      INTEGER :: I, J, K      
+      INTEGER :: I, J, K
 ! Number of fluid cells
-      INTEGER :: NCELLS 
+      INTEGER :: NCELLS
 ! Numerators and denominators
       DOUBLE PRECISION :: NUM1, DEN1
 ! Error message
@@ -459,49 +459,49 @@
 !-----------------------------------------------
 
 ! initializing values
-      NUM = ZERO 
-      DEN = ZERO 
-      MAX_RESID = -ONE 
-      NCELLS = 0 
-      DEN1 = ONE 
+      NUM = ZERO
+      DEN = ZERO
+      MAX_RESID = -ONE
+      NCELLS = 0
+      DEN1 = ONE
       IJK_RESID = 1
 
-      DO IJK = ijkstart3, ijkend3 
+      DO IJK = ijkstart3, ijkend3
          IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
-         IF (FLUID_AT(IJK)) THEN 
+         IF (FLUID_AT(IJK)) THEN
 
-! evaluating the residual at cell ijk: 
-            NUM1 = ABS(B_M(IJK,0)) 
-            IF (NUM1 > MAX_RESID) THEN 
-               MAX_RESID = NUM1 
-               IJK_RESID = IJK 
-            ENDIF 
+! evaluating the residual at cell ijk:
+            NUM1 = ABS(B_M(IJK,0))
+            IF (NUM1 > MAX_RESID) THEN
+               MAX_RESID = NUM1
+               IJK_RESID = IJK
+            ENDIF
 
-! adding to terms that are accumulated            
-            NCELLS = NCELLS + 1 
-            NUM = NUM + NUM1 
-            DEN = DEN + DEN1 
-         ENDIF 
-      ENDDO 
+! adding to terms that are accumulated
+            NCELLS = NCELLS + 1
+            NUM = NUM + NUM1
+            DEN = DEN + DEN1
+         ENDIF
+      ENDDO
 
 
       IF(.not.debug_resid) THEN
-! Collecting all the information among all the procesors              
+! Collecting all the information among all the procesors
          call global_all_sum(NUM)
          call global_all_sum(DEN)
 
-! Normalizing the residual         
+! Normalizing the residual
          IF (DEN*NORM > ZERO) THEN
 ! if norm=1 then this simply becomes an unscaled 'average' residual
-            RESID = NUM/(DEN*NORM) 
-         ELSEIF (NUM == ZERO) THEN 
-            RESID = ZERO 
-         ELSE 
-            RESID = LARGE_NUMBER 
-         ENDIF 
+            RESID = NUM/(DEN*NORM)
+         ELSEIF (NUM == ZERO) THEN
+            RESID = ZERO
+         ELSE
+            RESID = LARGE_NUMBER
+         ENDIF
       ELSE   ! if(debug_resid) branch
 
-! Collecting all the information among all the procesors - 
+! Collecting all the information among all the procesors -
 ! determining the global sum
          call global_all_sum(NUM)
          call global_all_sum(DEN)
@@ -531,27 +531,27 @@
             if(MAX_RESID_GL(nproc).eq.MAX_RESID.and.IJK_RESID_GL(nproc).lt.IJK_RESID) then
                IJK_RESID = IJK_RESID_GL(nproc)
             endif
-         enddo   
-         
-! Normalizing the residual         
-         IF (DEN*NORM > ZERO) THEN 
-            RESID = NUM/(DEN*NORM) 
-            MAX_RESID = NCELLS*MAX_RESID/(DEN*NORM) 
-         ELSEIF (NUM == ZERO) THEN 
-            RESID = ZERO 
-            MAX_RESID = ZERO 
-            IJK_RESID = 0 
-         ELSE 
-            RESID = LARGE_NUMBER 
-            MAX_RESID = LARGE_NUMBER 
-!            WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
-!             CALL WRITE_ERROR ('CALC_RESID_pp', LINE, 1) 
-         ENDIF 
+         enddo
+
+! Normalizing the residual
+         IF (DEN*NORM > ZERO) THEN
+            RESID = NUM/(DEN*NORM)
+            MAX_RESID = NCELLS*MAX_RESID/(DEN*NORM)
+         ELSEIF (NUM == ZERO) THEN
+            RESID = ZERO
+            MAX_RESID = ZERO
+            IJK_RESID = 0
+         ELSE
+            RESID = LARGE_NUMBER
+            MAX_RESID = LARGE_NUMBER
+!            WRITE (LINE, *) 'Warning: All center coefficients are zero.'
+!             CALL WRITE_ERROR ('CALC_RESID_pp', LINE, 1)
+         ENDIF
 
       ENDIF   ! end if/else debug_resid branch
 
-      RETURN  
-      END SUBROUTINE CALC_RESID_PP 
+      RETURN
+      END SUBROUTINE CALC_RESID_PP
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -567,23 +567,23 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_RESID_MB(INIT, ErrorPercent) 
+      SUBROUTINE CALC_RESID_MB(INIT, ErrorPercent)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE fldvar
-      USE parallel 
+      USE parallel
       USE geometry
       USE indices
       USE run
       USE bc
       USE constant
       USE physprop
-      USE compar   
-      USE mpi_utility   
+      USE compar
+      USE mpi_utility
       USE residual
       USE rxns
       USE mflux
@@ -598,12 +598,12 @@
       DOUBLE PRECISION, INTENT(OUT) :: ErrorPercent(0:MMAX)
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------    
+!-----------------------------------------------
 ! phase index
       INTEGER :: M
 ! boundary index
       INTEGER :: L
-! indices      
+! indices
       INTEGER :: IJK
 ! locally define dt, so that this routine works when dt is not defined
       DOUBLE PRECISION :: dt_local
@@ -628,8 +628,8 @@
       endif
 
       IF(init == 0) THEN
-! Initialize this routine              
-! ---------------------------------------------------------------->>> 
+! Initialize this routine
+! ---------------------------------------------------------------->>>
 
 ! Accumulation
         if(dt == UNDEFINED)then
@@ -645,8 +645,8 @@
           endif
         ENDDO
         RETURN
-! end initialization        
-! ----------------------------------------------------------------<<<        
+! end initialization
+! ----------------------------------------------------------------<<<
 
       ELSE
 
@@ -656,29 +656,29 @@
           Accum_new = - Accumulation(SUM_R_g) * dt_local
         else
           Accum_new = Accumulation(ROP_g) - Accumulation(SUM_R_g) * dt_local
-        endif 
-        
+        endif
+
         flux_out = zero
         flux_in = zero
         DO L = 1, DIMENSION_BC
           IF (BC_DEFINED(L)) THEN
-!            call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), & 
+!            call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), &
 !            BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), U_g, V_g, W_g, &
-!            ROP_g, fin, fout, IER) 
+!            ROP_g, fin, fout, IER)
             IF(.NOT.Added_Mass) THEN
-              call Calc_mass_fluxHR(BC_I_W(L), BC_I_E(L), BC_J_S(L), & 
+              call Calc_mass_fluxHR(BC_I_W(L), BC_I_E(L), BC_J_S(L), &
                  BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), &
-                 Flux_gE, Flux_gN, Flux_gT, fin, fout, IER)  
+                 Flux_gE, Flux_gN, Flux_gT, fin, fout, IER)
             ELSE
-              call Calc_mass_fluxHR(BC_I_W(L), BC_I_E(L), BC_J_S(L), & 
+              call Calc_mass_fluxHR(BC_I_W(L), BC_I_E(L), BC_J_S(L), &
                  BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), Flux_gSE,&
-                 Flux_gSN, Flux_gST, fin, fout, IER)  
+                 Flux_gSN, Flux_gST, fin, fout, IER)
             ENDIF
             flux_out = flux_out + fout  * dt_local
             flux_in = flux_in + fin * dt_local
-          ENDIF 
+          ENDIF
         END DO
-        
+
         Err = (accum_new - Accum_resid_g) - (flux_in - flux_out)
         denom = max(abs(accum_new), abs(Accum_resid_g), abs(flux_in), abs(flux_out))
         IF (denom /= ZERO) THEN
@@ -693,28 +693,28 @@
           else
             Accum_new = Accumulation(ROP_s(1,M)) - Accumulation(SUM_R_s(1,M)) * dt_local
           endif
-        
+
           flux_out = zero
           flux_in = zero
           DO L = 1, DIMENSION_BC
             IF (BC_DEFINED(L)) THEN
 !              call Calc_mass_flux(BC_I_W(L), BC_I_E(L), BC_J_S(L), BC_J_N(L), &
 !              BC_K_B(L), BC_K_T(L), BC_PLANE(L), U_s(1,M), V_s(1,M), W_s(1,M), &
-!              ROP_s(1,M), fin, fout, IER)  
+!              ROP_s(1,M), fin, fout, IER)
               IF(.NOT.Added_Mass .OR. M /= M_AM) THEN
                 call Calc_mass_fluxHR(BC_I_W(L), BC_I_E(L), BC_J_S(L), &
                    BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), &
                    Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), fin, fout, IER)
-              ELSE 
+              ELSE
                 call Calc_mass_fluxHR(BC_I_W(L), BC_I_E(L), BC_J_S(L), &
                    BC_J_N(L), BC_K_B(L), BC_K_T(L), BC_PLANE(L), &
-                   Flux_sSE, Flux_sSN, Flux_sST, fin, fout, IER)  
+                   Flux_sSE, Flux_sSN, Flux_sST, fin, fout, IER)
               ENDIF
               flux_out = flux_out + fout  * dt_local
               flux_in = flux_in + fin * dt_local
-            ENDIF 
+            ENDIF
           ENDDO
-        
+
           Err = (accum_new - Accum_resid_s(M)) - (flux_in - flux_out)
           denom = max(abs(accum_new), abs(Accum_resid_s(M)), abs(flux_in), abs(flux_out))
           if(denom /= ZERO) THEN
@@ -728,8 +728,8 @@
 
       ENDIF   ! end if/else (init==0)
 
-      RETURN  
-      END SUBROUTINE CALC_RESID_MB 
+      RETURN
+      END SUBROUTINE CALC_RESID_MB
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -744,20 +744,20 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CALC_RESID_U(U_M, V_M, W_M, A_M, B_M, M, NUM, DEN, &
-         RESID, MAX_RESID, IJK_RESID, IER) 
+         RESID, MAX_RESID, IJK_RESID, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE matrix 
-      USE parallel 
+      USE param
+      USE param1
+      USE matrix
+      USE parallel
       USE geometry
       USE indices
-      USE compar 
-      USE mpi_utility 
-      USE run 
+      USE compar
+      USE mpi_utility
+      USE run
       USE fldvar
       USE physprop
       USE toleranc
@@ -799,7 +799,7 @@
 ! Numerators and denominators
       DOUBLE PRECISION :: NUM1, DEN1
 ! Number of fluid cells
-      INTEGER :: NCELLS 
+      INTEGER :: NCELLS
 ! Error message
       CHARACTER*80     LINE
 ! New local variables for DMP version
@@ -821,11 +821,11 @@
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
-! initializing      
-      NUM = ZERO 
-      DEN = ZERO 
-      MAX_RESID = -ONE 
-      NCELLS = 0 
+! initializing
+      NUM = ZERO
+      DEN = ZERO
+      MAX_RESID = -ONE
+      NCELLS = 0
 
 !!$omp parallel do private( IJK )
       DO IJK = ijkstart3, ijkend3
@@ -834,7 +834,7 @@
 
 !!$omp  parallel do private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
 !!$omp&   NUM1, DEN1,VEL) &
-!!$omp&  REDUCTION(+:NUM, DEN,NCELLS )  
+!!$omp&  REDUCTION(+:NUM, DEN,NCELLS )
       DO IJK = ijkstart3, ijkend3
         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
 
@@ -846,44 +846,44 @@
             if(EPSA <= DIL_EP_s) CYCLE
          endif
 
-         IF (.NOT.IP_AT_E(IJK)) THEN 
-            IMJK = IM_OF(IJK) 
-            IJMK = JM_OF(IJK) 
-            IPJK = IP_OF(IJK) 
-            IJPK = JP_OF(IJK) 
+         IF (.NOT.IP_AT_E(IJK)) THEN
+            IMJK = IM_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IPJK = IP_OF(IJK)
+            IJPK = JP_OF(IJK)
 
 ! evaluating the residual at cell ijk:
 !   RESp = B-sum(Anb*VARnb)-Ap*VARp
-!   (where nb = neighbor cells and p = center/0 cell)            
+!   (where nb = neighbor cells and p = center/0 cell)
             NUM1 = B_M(IJK,M) - (A_M(IJK,0,M)*U_M(IJK)+&
                A_M(IJK,E,M)*U_M(IPJK)+A_M(IJK,W,M)*U_M(IMJK)+&
-               A_M(IJK,N,M)*U_M(IJPK)+A_M(IJK,S,M)*U_M(IJMK)) 
-            IF (DO_K) THEN 
-               IJKM = KM_OF(IJK) 
-               IJKP = KP_OF(IJK) 
-               NUM1 = NUM1 - (A_M(IJK,T,M)*U_M(IJKP)+A_M(IJK,B,M)*U_M(IJKM)) 
-            ENDIF 
+               A_M(IJK,N,M)*U_M(IJPK)+A_M(IJK,S,M)*U_M(IJMK))
+            IF (DO_K) THEN
+               IJKM = KM_OF(IJK)
+               IJKP = KP_OF(IJK)
+               NUM1 = NUM1 - (A_M(IJK,T,M)*U_M(IJKP)+A_M(IJK,B,M)*U_M(IJKM))
+            ENDIF
 
 ! Ignore momentum residual in stagnant regions.  Need an alternative
 ! criteria for residual scaling for such cases.
-            VEL = SQRT(U_M(IJK)**2+V_M(IJK)**2+W_M(IJK)**2) 
-            IF (VEL > SMALL_NUMBER) THEN 
-               NUM1 = ABS(NUM1) 
-               DEN1 = ABS(A_M(IJK,0,M)*VEL) 
+            VEL = SQRT(U_M(IJK)**2+V_M(IJK)**2+W_M(IJK)**2)
+            IF (VEL > SMALL_NUMBER) THEN
+               NUM1 = ABS(NUM1)
+               DEN1 = ABS(A_M(IJK,0,M)*VEL)
 ! storing value of residual at each ijk location
                RESID_IJK(IJK) = NUM1
 ! adding to terms that are accumulated
-               NCELLS = NCELLS + 1 
-               NUM = NUM + NUM1 
-               DEN = DEN + DEN1 
-            ENDIF 
-         ENDIF 
-      ENDDO 
+               NCELLS = NCELLS + 1
+               NUM = NUM + NUM1
+               DEN = DEN + DEN1
+            ENDIF
+         ENDIF
+      ENDDO
 
       IF(.not.debug_resid) RETURN
 
 ! Collecting all the information among all the procesors -
-! determining the global sum     
+! determining the global sum
       call global_all_sum(NUM)
       call global_all_sum(DEN)
       call global_all_sum(NCELLS)
@@ -915,7 +915,7 @@
 ! Collecting all the information among all the procesors
       call global_all_sum(MAX_RESID_L, MAX_RESID_GL)
       call global_all_sum(IJK_RESID_L, IJK_RESID_GL)
-      
+
 ! Determining the global IJK location w.r.t. serial version
       IJK_RESID = IJKMAX2
       do nproc=0,NumPEs-1
@@ -926,22 +926,22 @@
       ENDDO
 
 ! Normalizing the residual
-      IF (DEN > ZERO) THEN 
-         RESID = NUM/DEN 
-         MAX_RESID = NCELLS*MAX_RESID/DEN 
-      ELSEIF (NUM == ZERO) THEN 
-         RESID = ZERO 
-         MAX_RESID = ZERO 
-         IJK_RESID = 0 
-      ELSE 
-         RESID = LARGE_NUMBER 
-         MAX_RESID = LARGE_NUMBER 
-!         WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
-!         CALL WRITE_ERROR ('CALC_RESID_U', LINE, 1) 
-      ENDIF 
+      IF (DEN > ZERO) THEN
+         RESID = NUM/DEN
+         MAX_RESID = NCELLS*MAX_RESID/DEN
+      ELSEIF (NUM == ZERO) THEN
+         RESID = ZERO
+         MAX_RESID = ZERO
+         IJK_RESID = 0
+      ELSE
+         RESID = LARGE_NUMBER
+         MAX_RESID = LARGE_NUMBER
+!         WRITE (LINE, *) 'Warning: All center coefficients are zero.'
+!         CALL WRITE_ERROR ('CALC_RESID_U', LINE, 1)
+      ENDIF
 
-      RETURN  
-      END SUBROUTINE CALC_RESID_U 
+      RETURN
+      END SUBROUTINE CALC_RESID_U
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -956,20 +956,20 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CALC_RESID_V(U_M, V_M, W_M, A_M, B_M, M, NUM, DEN, &
-         RESID, MAX_RESID, IJK_RESID, IER) 
+         RESID, MAX_RESID, IJK_RESID, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE matrix 
-      USE parallel 
+      USE param
+      USE param1
+      USE matrix
+      USE parallel
       USE geometry
       USE indices
-      USE compar   
-      USE mpi_utility  
-      USE run 
+      USE compar
+      USE mpi_utility
+      USE run
       USE fldvar
       USE physprop
       USE toleranc
@@ -1011,7 +1011,7 @@
 ! Numerators and denominators
       DOUBLE PRECISION :: NUM1, DEN1
 ! Number of fluid cells
-      INTEGER :: NCELLS 
+      INTEGER :: NCELLS
 ! Error message
       CHARACTER*80     LINE
 ! New local variables for DMP version
@@ -1032,11 +1032,11 @@
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
-! initializing      
-      NUM = ZERO 
-      DEN = ZERO 
-      MAX_RESID = -ONE 
-      NCELLS = 0 
+! initializing
+      NUM = ZERO
+      DEN = ZERO
+      MAX_RESID = -ONE
+      NCELLS = 0
 
 !!$omp parallel do private( IJK )
       DO IJK = ijkstart3, ijkend3
@@ -1045,8 +1045,8 @@
 
 !!$omp  parallel do private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
 !!$omp&  VEL,  NUM1, DEN1) &
-!!$omp&  REDUCTION(+:NUM, DEN, NCELLS)  
-      DO IJK = ijkstart3, ijkend3 
+!!$omp&  REDUCTION(+:NUM, DEN, NCELLS)
+      DO IJK = ijkstart3, ijkend3
         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
 
 ! Skip walls where some values are undefined.
@@ -1054,54 +1054,54 @@
 
 
          if(m/=0) then
-            EPSA = AVG_Y(EP_S(IJK,M),EP_S(NORTH_OF(IJK),M),J_OF(IJK)) 
+            EPSA = AVG_Y(EP_S(IJK,M),EP_S(NORTH_OF(IJK),M),J_OF(IJK))
             if(EPSA <= DIL_EP_s) CYCLE
          endif
 
-         IF (.NOT.IP_AT_N(IJK)) THEN 
-            IMJK = IM_OF(IJK) 
-            IJMK = JM_OF(IJK) 
-            IPJK = IP_OF(IJK) 
-            IJPK = JP_OF(IJK) 
+         IF (.NOT.IP_AT_N(IJK)) THEN
+            IMJK = IM_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IPJK = IP_OF(IJK)
+            IJPK = JP_OF(IJK)
 
 ! evaluating the residual at cell ijk:
 !   RESp = B-sum(Anb*VARnb)-Ap*VARp
 !   (where nb = neighbor cells and p = center/0 cell)
             NUM1 = B_M(IJK,M) - (A_M(IJK,0,M)*V_M(IJK)+&
                A_M(IJK,E,M)*V_M(IPJK)+A_M(IJK,W,M)*V_M(IMJK)+&
-               A_M(IJK,N,M)*V_M(IJPK)+A_M(IJK,S,M)*V_M(IJMK)) 
-            IF (DO_K) THEN 
-               IJKM = KM_OF(IJK) 
-               IJKP = KP_OF(IJK) 
-               NUM1 = NUM1 - (A_M(IJK,T,M)*V_M(IJKP)+A_M(IJK,B,M)*V_M(IJKM)) 
-            ENDIF 
+               A_M(IJK,N,M)*V_M(IJPK)+A_M(IJK,S,M)*V_M(IJMK))
+            IF (DO_K) THEN
+               IJKM = KM_OF(IJK)
+               IJKP = KP_OF(IJK)
+               NUM1 = NUM1 - (A_M(IJK,T,M)*V_M(IJKP)+A_M(IJK,B,M)*V_M(IJKM))
+            ENDIF
 
 ! Ignore momentum residual in stagnant regions.  Need an alternative
 ! criteria for residual scaling for such cases.
-            VEL = SQRT(U_M(IJK)**2+V_M(IJK)**2+W_M(IJK)**2) 
-            IF (VEL > SMALL_NUMBER) THEN 
-               NUM1 = ABS(NUM1) 
+            VEL = SQRT(U_M(IJK)**2+V_M(IJK)**2+W_M(IJK)**2)
+            IF (VEL > SMALL_NUMBER) THEN
+               NUM1 = ABS(NUM1)
                DEN1 = ABS(A_M(IJK,0,M)*VEL)
 ! storing value of residual at each ijk location
                RESID_IJK(IJK) = NUM1
 ! adding to terms that are accumulated
-               NCELLS = NCELLS + 1 
-               NUM = NUM + NUM1 
-               DEN = DEN + DEN1 
-            ENDIF 
-         ENDIF 
-      ENDDO 
+               NCELLS = NCELLS + 1
+               NUM = NUM + NUM1
+               DEN = DEN + DEN1
+            ENDIF
+         ENDIF
+      ENDDO
 
       if(.not.debug_resid) return
 
 ! Collecting all the information among all the procesors -
-! determining the global sum     
+! determining the global sum
       call global_all_sum(NUM)
       call global_all_sum(DEN)
       call global_all_sum(NCELLS)
-      
+
       IJK_RESID = 1
-      MAX_RESID = RESID_IJK( IJK_RESID )      
+      MAX_RESID = RESID_IJK( IJK_RESID )
       DO IJK = ijkstart3, ijkend3
       IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
           IF (RESID_IJK( IJK ) > MAX_RESID) THEN
@@ -1127,7 +1127,7 @@
 ! Collecting all the information among all the procesors
       call global_all_sum(MAX_RESID_L, MAX_RESID_GL)
       call global_all_sum(IJK_RESID_L, IJK_RESID_GL)
-      
+
 ! Determining the global IJK location w.r.t. serial version
       IJK_RESID = IJKMAX2
       do nproc=0,NumPEs-1
@@ -1137,22 +1137,22 @@
       enddo
 
 ! Normalizing the residual
-      IF (DEN > ZERO) THEN 
-         RESID = NUM/DEN 
-         MAX_RESID = NCELLS*MAX_RESID/DEN 
-      ELSEIF (NUM == ZERO) THEN 
-         RESID = ZERO 
-         MAX_RESID = ZERO 
-         IJK_RESID = 0 
-      ELSE 
-         RESID = LARGE_NUMBER 
-         MAX_RESID = LARGE_NUMBER 
-!         WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
-!         CALL WRITE_ERROR ('CALC_RESID_V', LINE, 1) 
-      ENDIF 
+      IF (DEN > ZERO) THEN
+         RESID = NUM/DEN
+         MAX_RESID = NCELLS*MAX_RESID/DEN
+      ELSEIF (NUM == ZERO) THEN
+         RESID = ZERO
+         MAX_RESID = ZERO
+         IJK_RESID = 0
+      ELSE
+         RESID = LARGE_NUMBER
+         MAX_RESID = LARGE_NUMBER
+!         WRITE (LINE, *) 'Warning: All center coefficients are zero.'
+!         CALL WRITE_ERROR ('CALC_RESID_V', LINE, 1)
+      ENDIF
 
-      RETURN  
-      END SUBROUTINE CALC_RESID_V 
+      RETURN
+      END SUBROUTINE CALC_RESID_V
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -1171,20 +1171,20 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CALC_RESID_W(U_M, V_M, W_M, A_M, B_M, M, NUM, DEN, &
-         RESID, MAX_RESID, IJK_RESID, IER) 
+         RESID, MAX_RESID, IJK_RESID, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE matrix 
-      USE parallel 
+      USE param
+      USE param1
+      USE matrix
+      USE parallel
       USE geometry
       USE indices
-      USE compar   
-      USE mpi_utility  
-      USE run 
+      USE compar
+      USE mpi_utility
+      USE run
       USE fldvar
       USE physprop
       USE toleranc
@@ -1226,7 +1226,7 @@
 ! Numerators and denominators
       DOUBLE PRECISION :: NUM1, DEN1
 ! Number of fluid cells
-      INTEGER :: NCELLS 
+      INTEGER :: NCELLS
 ! Error message
       CHARACTER*80     LINE
 ! New local variables for DMP version
@@ -1248,10 +1248,10 @@
 !-----------------------------------------------
 
 ! initializing
-      NUM = ZERO 
-      DEN = ZERO 
-      MAX_RESID = -ONE 
-      NCELLS = 0 
+      NUM = ZERO
+      DEN = ZERO
+      MAX_RESID = -ONE
+      NCELLS = 0
 
 !!$omp parallel do private( IJK )
       DO IJK = ijkstart3, ijkend3
@@ -1260,7 +1260,7 @@
 
 !!$omp  parallel do private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
 !!$omp&  VEL,  NUM1, DEN1) &
-!!$omp&  REDUCTION(+:NUM, DEN,NCELLS )  
+!!$omp&  REDUCTION(+:NUM, DEN,NCELLS )
       DO IJK = ijkstart3, ijkend3
         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
 
@@ -1269,48 +1269,48 @@
 
 
          if(m/=0) then
-            EPSA = AVG_Z(EP_S(IJK,M),EP_S(TOP_OF(IJK),M),K_OF(IJK)) 
+            EPSA = AVG_Z(EP_S(IJK,M),EP_S(TOP_OF(IJK),M),K_OF(IJK))
             if(EPSA <= DIL_EP_s) CYCLE
          endif
 
-         IF (.NOT.IP_AT_T(IJK)) THEN 
+         IF (.NOT.IP_AT_T(IJK)) THEN
             IMJK = IM_OF(IJK)
-            IJMK = JM_OF(IJK) 
-            IPJK = IP_OF(IJK) 
-            IJPK = JP_OF(IJK) 
+            IJMK = JM_OF(IJK)
+            IPJK = IP_OF(IJK)
+            IJPK = JP_OF(IJK)
 
 ! evaluating the residual at cell ijk:
 !   RESp = B-sum(Anb*VARnb)-Ap*VARp
-!   (where nb = neighbor cells and p = center/0 cell)            
+!   (where nb = neighbor cells and p = center/0 cell)
             NUM1 = B_M(IJK,M) - (A_M(IJK,0,M)*W_M(IJK)+&
                A_M(IJK,E,M)*W_M(IPJK)+A_M(IJK,W,M)*W_M(IMJK)+&
-               A_M(IJK,N,M)*W_M(IJPK)+A_M(IJK,S,M)*W_M(IJMK)) 
-            IF (DO_K) THEN 
-               IJKM = KM_OF(IJK) 
-               IJKP = KP_OF(IJK) 
-               NUM1 = NUM1 - (A_M(IJK,T,M)*W_M(IJKP)+A_M(IJK,B,M)*W_M(IJKM)) 
-            ENDIF 
+               A_M(IJK,N,M)*W_M(IJPK)+A_M(IJK,S,M)*W_M(IJMK))
+            IF (DO_K) THEN
+               IJKM = KM_OF(IJK)
+               IJKP = KP_OF(IJK)
+               NUM1 = NUM1 - (A_M(IJK,T,M)*W_M(IJKP)+A_M(IJK,B,M)*W_M(IJKM))
+            ENDIF
 
 ! Ignore momentum residual in stagnant regions.  Need an alternative
 ! criteria for residual scaling for such cases.
-            VEL = SQRT(U_M(IJK)**2+V_M(IJK)**2+W_M(IJK)**2) 
-            IF (VEL > SMALL_NUMBER) THEN 
-               NUM1 = ABS(NUM1) 
-               DEN1 = ABS(A_M(IJK,0,M)*VEL) 
+            VEL = SQRT(U_M(IJK)**2+V_M(IJK)**2+W_M(IJK)**2)
+            IF (VEL > SMALL_NUMBER) THEN
+               NUM1 = ABS(NUM1)
+               DEN1 = ABS(A_M(IJK,0,M)*VEL)
 ! storing value of residual at each ijk location
                RESID_IJK(IJK) = NUM1
 ! adding to terms that are accumulated
-               NCELLS = NCELLS + 1 
-               NUM = NUM + NUM1 
-               DEN = DEN + DEN1 
-            ENDIF 
-         ENDIF 
-      ENDDO 
+               NCELLS = NCELLS + 1
+               NUM = NUM + NUM1
+               DEN = DEN + DEN1
+            ENDIF
+         ENDIF
+      ENDDO
 
       if(.not.debug_resid) return
 
 ! Collecting all the information among all the procesors -
-! determining the global sum     
+! determining the global sum
       call global_all_sum(NUM)
       call global_all_sum(DEN)
       call global_all_sum(NCELLS)
@@ -1318,8 +1318,8 @@
       IJK_RESID = 1
       MAX_RESID = RESID_IJK( IJK_RESID )
       DO IJK = ijkstart3, ijkend3
-      IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE      
-      
+      IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
+
           IF (RESID_IJK( IJK ) > MAX_RESID) THEN
               IJK_RESID = IJK
               MAX_RESID = RESID_IJK( IJK_RESID )
@@ -1343,32 +1343,32 @@
 ! Collecting all the information among all the procesors
       call global_all_sum(MAX_RESID_L, MAX_RESID_GL)
       call global_all_sum(IJK_RESID_L, IJK_RESID_GL)
-      
+
 ! Determining the global IJK location w.r.t. serial version
       IJK_RESID = IJKMAX2
-      
+
       do nproc=0,NumPEs-1
         if(MAX_RESID_GL(nproc).eq.MAX_RESID.and.IJK_RESID_GL(nproc).lt.IJK_RESID) then
           IJK_RESID = IJK_RESID_GL(nproc)
         endif
       enddo
 
-! Normalizing the residual      
-      IF (DEN > ZERO) THEN 
-         RESID = NUM/DEN 
-         MAX_RESID = NCELLS*MAX_RESID/DEN 
-      ELSE IF (NUM == ZERO) THEN 
-         RESID = ZERO 
-         MAX_RESID = ZERO 
-         IJK_RESID = 0 
-      ELSE 
-         RESID = LARGE_NUMBER 
-         MAX_RESID = LARGE_NUMBER 
-!         WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
-!         CALL WRITE_ERROR ('CALC_RESID_W', LINE, 1) 
-      ENDIF 
+! Normalizing the residual
+      IF (DEN > ZERO) THEN
+         RESID = NUM/DEN
+         MAX_RESID = NCELLS*MAX_RESID/DEN
+      ELSE IF (NUM == ZERO) THEN
+         RESID = ZERO
+         MAX_RESID = ZERO
+         IJK_RESID = 0
+      ELSE
+         RESID = LARGE_NUMBER
+         MAX_RESID = LARGE_NUMBER
+!         WRITE (LINE, *) 'Warning: All center coefficients are zero.'
+!         CALL WRITE_ERROR ('CALC_RESID_W', LINE, 1)
+      ENDIF
 
-      RETURN  
-      END SUBROUTINE CALC_RESID_W 
-      
+      RETURN
+      END SUBROUTINE CALC_RESID_W
+
 

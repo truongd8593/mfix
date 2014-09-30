@@ -131,8 +131,8 @@
 !                      z-component of solids phase velocity in a
 !                      specified boundary region
       DOUBLE PRECISION BC_W_s (DIMENSION_BC, DIM_M)
-! 
-! JFD: For cut cells, define the magnitude of velocity that will be enforced 
+!
+! JFD: For cut cells, define the magnitude of velocity that will be enforced
 !      perpendicular to the cut face, for CG_MI boundary condition
 !
 !                      magnitude of gas velocity in a specified
@@ -149,15 +149,15 @@
       CHARACTER*16     BC_TYPE (DIMENSION_BC)
 
 
-!                      FLAG to specify if this PO BC applies to solid phase 
-!                      in discrete implementation or not. For example, setting 
-!                      Pressure outflow only for gas-phase. 
+!                      FLAG to specify if this PO BC applies to solid phase
+!                      in discrete implementation or not. For example, setting
+!                      Pressure outflow only for gas-phase.
 
       LOGICAL          BC_PO_APPLY_TO_DES (DIMENSION_BC)
 
-!                      FLAG to specify if this MI BC plane will be 
-!                      seen as a wall by discrete phase (default behavior) 
-!                      or allow the particles to go through the inflow plane 
+!                      FLAG to specify if this MI BC plane will be
+!                      seen as a wall by discrete phase (default behavior)
+!                      or allow the particles to go through the inflow plane
 
       LOGICAL          BC_MI_AS_WALL_FOR_DES (DIMENSION_BC)
 
@@ -215,7 +215,7 @@
 !                      Area of boundary surfaces
       DOUBLE PRECISION BC_AREA (DIMENSION_BC)
 !
-!                      Volume of boundary cells 
+!                      Volume of boundary cells
       DOUBLE PRECISION BC_VOL (DIMENSION_BC)
 !
 !                      Gas species mass fractions in a boundary region
@@ -248,8 +248,8 @@
 !                      Pressure drop specified for cyclic b.c. in Z
       DOUBLE PRECISION DELP_Z
 !
-!                      Specified mass flux (e.g., g/cm^2.s) in the cyclic 
-!                      direction with specified pressure drop (only one 
+!                      Specified mass flux (e.g., g/cm^2.s) in the cyclic
+!                      direction with specified pressure drop (only one
 !                      direction is allowed).
       DOUBLE PRECISION Flux_g
 !
@@ -297,7 +297,7 @@
 !
 !                      Wall velocity for partial slip condition -- solids
       DOUBLE PRECISION BC_Ww_s (DIMENSION_BC, DIM_M)
- 
+
 !
 !                      Coefficient in heat transfer boundary condition -- gas
       DOUBLE PRECISION BC_hw_T_g (DIMENSION_BC)
@@ -316,8 +316,8 @@
 !
 !                      Coefficient in heat transfer boundary condition -- solids
       DOUBLE PRECISION BC_C_T_s (DIMENSION_BC, DIM_M)
- 
- 
+
+
 !
 !                      Coefficient in granular temp boundary condition -- solids
       DOUBLE PRECISION BC_hw_Theta_m (DIMENSION_BC, DIM_M)
@@ -327,7 +327,7 @@
 !
 !                      Coefficient in granualr tempearure boundary condition -- solids
       DOUBLE PRECISION BC_C_Theta_m (DIMENSION_BC, DIM_M)
- 
+
 !
 !                      Coefficient in mass transfer boundary condition -- gas
       DOUBLE PRECISION BC_hw_X_g (DIMENSION_BC, DIM_N_g)
@@ -350,7 +350,7 @@
 !
 !   User-defined Scalars
 !
-! 
+!
 !                      scalar value in a boundary region
       DOUBLE PRECISION BC_Scalar (DIMENSION_BC, DIM_scalar)
 
@@ -359,9 +359,9 @@
       DOUBLE PRECISION BC_hw_Scalar (DIMENSION_BC, DIM_scalar)
 
 !
-!                      Coefficient in boundary condition 
+!                      Coefficient in boundary condition
       DOUBLE PRECISION BC_C_Scalar (DIMENSION_BC, DIM_scalar)
-      
+
 !
 !                      Wall value in boundary  condition
       DOUBLE PRECISION BC_ScalarW (DIMENSION_BC, DIM_scalar)
@@ -369,7 +369,7 @@
 !
 !   K and Epsilon for Gas turbulence
 !
-! 
+!
 !                      K & Epsilon values in a boundary region
       DOUBLE PRECISION BC_K_Turb_G (DIMENSION_BC)
       DOUBLE PRECISION BC_E_Turb_G (DIMENSION_BC)
@@ -378,13 +378,13 @@
 
 
 ! Flag to specify the constant number of particles per cell
-! for the PIC solids 
+! for the PIC solids
 ! Statistical weight of parcels will be calculated by the code
       INTEGER :: BC_PIC_MI_CONST_NPC(DIMENSION_BC, DIM_M)
-      
+
 ! Flag to specify the constant statistical weight.
 ! for the PIC solids
 ! Number of computational particles/parcels will be calculated by the code
       DOUBLE PRECISION :: BC_PIC_MI_CONST_STATWT(DIMENSION_BC, DIM_M)
 
-      END MODULE bc                                                                              
+      END MODULE bc

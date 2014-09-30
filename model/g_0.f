@@ -116,7 +116,7 @@
                EP_star_array(IJK2), DIR, L)
 
 
-! Prevent G_0 from becoming negative when the solids volume fraction 
+! Prevent G_0 from becoming negative when the solids volume fraction
 ! approachs a maximum packing.  This may occur during non-converged
 ! iterations when the local solids volume fraction exceeds the maximum.
             IF(SUM_EPS >= (ONE-EPg_STAR_AVG))                          &
@@ -204,7 +204,7 @@
                (ONE-SUM_EPS/(ONE-EPg_STAR_AVG))) )
 
 
-! Carnahan, N.F. and Starling K.E. (1969). 
+! Carnahan, N.F. and Starling K.E. (1969).
 ! The Journal of Chemical Physics, Vol. 51(2):635-636.
          CASE(CARNAHAN_STARLING)
 !---------------------------------------------------------------------//
@@ -336,7 +336,7 @@
             SUM_EPS = SUM_EPS + EPS
          END DO
 
-! Prevent G_0 from becoming negative when the solids volume fraction 
+! Prevent G_0 from becoming negative when the solids volume fraction
 ! approachs a maximum packing.  This may occur during non-converged
 ! iterations when the local solids volume fraction exceeds the maximum.
          IF(SUM_EPS >= (ONE-EP_star_array(IJK)))                       &
@@ -412,7 +412,7 @@
 
 
 
-! Carnahan, N.F. and Starling K.E. (1969). 
+! Carnahan, N.F. and Starling K.E. (1969).
 ! The Journal of Chemical Physics, Vol. 51(2):635-636.
       CASE(CARNAHAN_STARLING)
 !---------------------------------------------------------------------//

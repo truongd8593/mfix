@@ -21,7 +21,7 @@ MODULE qmomk_tools
   PUBLIC :: transpose3
   PUBLIC :: multiplyMatrix3
 
-CONTAINS 
+CONTAINS
 
   SUBROUTINE DET3 (A, det)
 
@@ -31,7 +31,7 @@ CONTAINS
     DOUBLE PRECISION, INTENT(OUT) :: det
 
     det = a(1,1)*a(2,2)*a(3,3) + a(1,2)*a(2,3)*a(3,1) +  a(1,3)*a(2,1)*a(2,3) &
-         - a(3,1)*a(2,2)*a(1,3) - a(3,2)*a(2,3)*a(1,1) - a(3,3)*a(2,1)*a(1,2) 
+         - a(3,1)*a(2,2)*a(1,3) - a(3,2)*a(2,3)*a(1,1) - a(3,3)*a(2,1)*a(1,2)
 
   END SUBROUTINE DET3
 

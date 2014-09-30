@@ -31,7 +31,7 @@
 ! Number of spcies comprising each phase
       use physprop, only: NMAX
 
-! 
+!
       use param1, only: UNDEFINED_I
 
       use rxn_com, only: checkSpeciesInc
@@ -64,7 +64,7 @@
       CALL checkDuplicateAliases(NMAX(0), SPECIES_ALIAS_g(:), &
          lMMAX, NMAX(1:lMMAX), SPECIES_ALIAS_s(:,:))
 
-! Verify that species aliases in the datafile match those in the 
+! Verify that species aliases in the datafile match those in the
 ! species.inc file.
       CALL checkSpeciesInc(NMAX(0), SPECIES_ALIAS_g(:), lMMAX,         &
          NMAX(1:lMMAX), SPECIES_ALIAS_s(:,:), NO_OF_RXNS, RXN_NAME(:), &

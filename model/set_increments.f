@@ -11,16 +11,16 @@
 !           neighboring cell type, i.e. wall or fluid.                 !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE SET_INCREMENTS 
+      SUBROUTINE SET_INCREMENTS
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE indices
       USE geometry
       USE compar
       USE physprop
       USE fldvar
-      USE funits 
+      USE funits
 
 ! Module procedures
 !---------------------------------------------------------------------//
@@ -46,7 +46,7 @@
       INTEGER :: L
 ! Index denoting cell class
       INTEGER :: ICLASS
-! Array of sum of increments to make the class determination faster. 
+! Array of sum of increments to make the class determination faster.
       INTEGER :: DENOTE_CLASS(MAX_CLASS)
 ! Error Flag
       INTEGER :: IER
@@ -82,7 +82,7 @@
             IM1(I) = IMAP_C(IMAP_C(I)-1)
          ELSE
             IM1(I) = MAX(ISTART3, I - 1)
-            IP1(I) = MIN(IEND3,   I + 1) 
+            IP1(I) = MIN(IEND3,   I + 1)
          ENDIF
       ENDDO
 
@@ -98,8 +98,8 @@
          ELSE
             JM1(J) = MAX(JSTART3,J - 1)
             JP1(J) = MIN(JEND3,  J + 1)
-         ENDIF 
-      ENDDO 
+         ENDIF
+      ENDDO
 
 
       DO K = KSTART3, KEND3
@@ -113,8 +113,8 @@
          ELSE
             KM1(K) = MAX(KSTART3,K - 1)
             KP1(K) = MIN(KEND3,K + 1)
-         ENDIF 
-      ENDDO 
+         ENDIF
+      ENDDO
 
 ! Loop over all cells
       DO K = KSTART3, KEND3
@@ -124,15 +124,15 @@
          IJK = FUNIJK(I,J,K)  ! Find value of IJK
 
          I_OF(IJK) = I
-         J_OF(IJK) = J 
-         K_OF(IJK) = K 
+         J_OF(IJK) = J
+         K_OF(IJK) = K
 
-      ENDDO 
-      ENDDO 
-      ENDDO 
+      ENDDO
+      ENDDO
+      ENDDO
 
-      
-      ICLASS = 0 
+
+      ICLASS = 0
 
 
 ! Loop over all cells (minus the ghost layers)
@@ -144,13 +144,13 @@
 
 ! Find the the effective cell-center indices for all neighbor cells
          CALL SET_INDEX1A (I, J, K, IJK, IMJK, IPJK, IJMK, IJPK, IJKM, &
-            IJKP, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT) 
+            IJKP, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT)
 
-         ICLASS = ICLASS + 1               !Increment the ICLASS counter 
+         ICLASS = ICLASS + 1               !Increment the ICLASS counter
          IF(ICLASS > MAX_CLASS) THEN
             WRITE(ERR_MSG, 1200) trim(iVal(MAX_CLASS))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
+         ENDIF
 
  1200 FORMAT('Error 1200: The number of classes has exceeded the ',    &
          'maximum: ',A,/'Increase the MAX_CLASS parameter in param1',  &
@@ -191,46 +191,46 @@
              + INCREMENT_FOR_T(ICLASS) + INCREMENT_FOR_B(ICLASS) + &
             INCREMENT_FOR_IM(ICLASS) + INCREMENT_FOR_IP(ICLASS) + &
             INCREMENT_FOR_JM(ICLASS) + INCREMENT_FOR_JP(ICLASS) + &
-            INCREMENT_FOR_KM(ICLASS) + INCREMENT_FOR_KP(ICLASS) 
+            INCREMENT_FOR_KM(ICLASS) + INCREMENT_FOR_KP(ICLASS)
 
-         CELL_CLASS(IJK) = ICLASS 
+         CELL_CLASS(IJK) = ICLASS
 
 ! Place the cell in a class based on its DENOTE_CLASS(ICLASS) value
-         DO IC = 1, ICLASS - 1             !Loop over previous and present classes 
+         DO IC = 1, ICLASS - 1             !Loop over previous and present classes
 !                                                !IF a possible match in cell types
-            IF(DENOTE_CLASS(ICLASS) == DENOTE_CLASS(IC)) THEN 
+            IF(DENOTE_CLASS(ICLASS) == DENOTE_CLASS(IC)) THEN
 !                                                !is found, compare all increments
-               IF(INCREMENT_FOR_N(ICLASS) /= INCREMENT_FOR_N(IC)) CYCLE  
-               IF(INCREMENT_FOR_S(ICLASS) /= INCREMENT_FOR_S(IC)) CYCLE  
-               IF(INCREMENT_FOR_E(ICLASS) /= INCREMENT_FOR_E(IC)) CYCLE  
-               IF(INCREMENT_FOR_W(ICLASS) /= INCREMENT_FOR_W(IC)) CYCLE  
-               IF(INCREMENT_FOR_T(ICLASS) /= INCREMENT_FOR_T(IC)) CYCLE  
-               IF(INCREMENT_FOR_B(ICLASS) /= INCREMENT_FOR_B(IC)) CYCLE  
-               IF(INCREMENT_FOR_IM(ICLASS) /= INCREMENT_FOR_IM(IC)) CYCLE  
+               IF(INCREMENT_FOR_N(ICLASS) /= INCREMENT_FOR_N(IC)) CYCLE
+               IF(INCREMENT_FOR_S(ICLASS) /= INCREMENT_FOR_S(IC)) CYCLE
+               IF(INCREMENT_FOR_E(ICLASS) /= INCREMENT_FOR_E(IC)) CYCLE
+               IF(INCREMENT_FOR_W(ICLASS) /= INCREMENT_FOR_W(IC)) CYCLE
+               IF(INCREMENT_FOR_T(ICLASS) /= INCREMENT_FOR_T(IC)) CYCLE
+               IF(INCREMENT_FOR_B(ICLASS) /= INCREMENT_FOR_B(IC)) CYCLE
+               IF(INCREMENT_FOR_IM(ICLASS) /= INCREMENT_FOR_IM(IC)) CYCLE
                IF(INCREMENT_FOR_IP(ICLASS) /= INCREMENT_FOR_IP(IC)) CYCLE
                IF(INCREMENT_FOR_JM(ICLASS) /= INCREMENT_FOR_JM(IC)) CYCLE
                IF(INCREMENT_FOR_JP(ICLASS) /= INCREMENT_FOR_JP(IC)) CYCLE
                IF(INCREMENT_FOR_KM(ICLASS) /= INCREMENT_FOR_KM(IC)) CYCLE
                IF(INCREMENT_FOR_KP(ICLASS) /= INCREMENT_FOR_KP(IC)) CYCLE
-               CELL_CLASS(IJK) = IC        !Assign cell to a class 
-               ICLASS = ICLASS - 1 
-               CYCLE  L100                 !Go to next cell 
-            ENDIF 
+               CELL_CLASS(IJK) = IC        !Assign cell to a class
+               ICLASS = ICLASS - 1
+               CYCLE  L100                 !Go to next cell
+            ENDIF
          END DO
 
-      ENDDO L100 
-      ENDDO 
-      ENDDO 
+      ENDDO L100
+      ENDDO
+      ENDDO
 
-      DO M = 1, MMAX 
-      DO L = M, MMAX 
-         IF(L == M) THEN 
-            STORE_LM(L,M) = 0 
-         ELSE 
-            STORE_LM(L,M) = M + (L - 2)*(L - 1)/2 
-            STORE_LM(M,L) = M + (L - 2)*(L - 1)/2 
-         ENDIF 
-      ENDDO 
+      DO M = 1, MMAX
+      DO L = M, MMAX
+         IF(L == M) THEN
+            STORE_LM(L,M) = 0
+         ELSE
+            STORE_LM(L,M) = M + (L - 2)*(L - 1)/2
+            STORE_LM(M,L) = M + (L - 2)*(L - 1)/2
+         ENDIF
+      ENDDO
       ENDDO
 
 
@@ -241,17 +241,17 @@
          allocate(NORTH_ARRAY_OF(ijkstart3:ijkend3))
          allocate(BOTTOM_ARRAY_OF(ijkstart3:ijkend3))
          allocate(TOP_ARRAY_OF(ijkstart3:ijkend3))
-   
+
          allocate(IM_ARRAY_OF(ijkstart3:ijkend3))
          allocate(IP_ARRAY_OF(ijkstart3:ijkend3))
          allocate(JM_ARRAY_OF(ijkstart3:ijkend3))
          allocate(JP_ARRAY_OF(ijkstart3:ijkend3))
          allocate(KM_ARRAY_OF(ijkstart3:ijkend3))
          allocate(KP_ARRAY_OF(ijkstart3:ijkend3))
-      ENDIF   
+      ENDIF
 
       INCREMENT_ARRAYS_ALLOCATED = .TRUE.
-                
+
       DO IJK = ijkstart3,ijkend3
          WEST_ARRAY_OF(ijk)   = WEST_OF_0(IJK)
          EAST_ARRAY_OF(ijk)   = EAST_OF_0(IJK)
@@ -266,17 +266,17 @@
          JP_ARRAY_OF(ijk) = JP_OF_0(IJK)
          KM_ARRAY_OF(ijk) = KM_OF_0(IJK)
          KP_ARRAY_OF(ijk) = KP_OF_0(IJK)
-      ENDDO     
+      ENDDO
 
-   
+
 !      print*,'from set_increment:iclass=',iclass
 
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 !
-      END SUBROUTINE SET_INCREMENTS 
+      END SUBROUTINE SET_INCREMENTS
 
 
 
@@ -303,20 +303,20 @@
       SUBROUTINE RE_INDEX_ARRAYS
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE indices
       USE geometry
       USE compar
       USE physprop
       USE fldvar
-      USE funits 
+      USE funits
       USE scalars
       USE run
       USE visc_g
-      
+
       USE pgcor, only :       PHASE_4_P_G
       USE pscor, only :       PHASE_4_P_S
 
@@ -327,7 +327,7 @@
 
       USE sendrecv
 
-      USE mpi_utility 
+      USE mpi_utility
       USE parallel
 
       use bc, only: IJK_P_G
@@ -366,9 +366,9 @@
       INTEGER, ALLOCATABLE, DIMENSION(:,:,:) :: TEMP_IJK_ARRAY_OF
       INTEGER, ALLOCATABLE, DIMENSION(:)     :: TEMP_I_OF,TEMP_J_OF,TEMP_K_OF
 
-   	INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
-   	INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
-   	INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
+        INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
+        INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
+        INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
 
       INTEGER :: ISIZE, IREMAIN,JSIZE, JREMAIN,KSIZE, KREMAIN
 
@@ -412,7 +412,7 @@
       INTEGER                 ICLASS
 !
 !                             Array of sum of increments to make the class
-!                             determination faster. 
+!                             determination faster.
       INTEGER                 DENOTE_CLASS(MAX_CLASS)
 
    INTEGER :: I_SIZE,J_SIZE,K_SIZE
@@ -503,8 +503,8 @@
 
          IF(.NOT.(ANY_CUT_TREATMENT(IJK)&
             .OR.ANY_STANDARD_CELL(IJK)&
-            .OR.ANY_GLOBAL_GHOST_CELL)) THEN  
-     
+            .OR.ANY_GLOBAL_GHOST_CELL)) THEN
+
             DEAD_CELL_AT(I,J,K) = .TRUE.
 
             IF(I==IMIN1)  DEAD_CELL_AT(IMIN3:IMIN2,J,K) = .TRUE.           ! Extend dead cells to global ghost layers
@@ -539,7 +539,7 @@
 
 
       IF(NO_K) THEN                                                                            ! Extend dead cells to corners of ghost layers                  <---------------------  SHOULD IT BE SKIPPED  ??
-         DO K =  KMIN3, KMAX3,-1  
+         DO K =  KMIN3, KMAX3,-1
             IF(DEAD_CELL_AT(IMAX1  ,JMAX1  ,K))  DEAD_CELL_AT(IMAX2:IMAX3    ,JMAX2:JMAX3    ,K) = .TRUE.
             IF(DEAD_CELL_AT(IMAX1  ,JMIN1,K))  DEAD_CELL_AT(IMAX2:IMAX3    ,JMIN3:JMIN2,K) = .TRUE.
             IF(DEAD_CELL_AT(IMIN1,JMAX1  ,K))  DEAD_CELL_AT(IMIN3:IMIN2,JMAX2:JMAX3    ,K) = .TRUE.
@@ -840,7 +840,7 @@
 
 
       IJK_ARRAY_OF = TEMP_IJK_ARRAY_OF
-      
+
 !      FUNIJK = IJK_ARRAY_OF
 
       I_OF = TEMP_I_OF
@@ -851,7 +851,7 @@
 ! Save the old value of IJKEND3
       BACKGROUND_IJKEND3 = IJKEND3
 
-      IJKEND3 = NEW_IJK - 1 
+      IJKEND3 = NEW_IJK - 1
 
 
 
@@ -1342,7 +1342,7 @@
          IJK = sendijk1( send_pos )
          IF(IJK_OF_BACKGROUND(IJK)/=-999)  n_total = n_total + 1  ! count active cells
       ENDDO
-      
+
 
       allocate( new_sendijk1( max(1,n_total) ) )
       allocate( new_xsend1(nsend1+1) )
@@ -1375,7 +1375,7 @@
 
          IF(new_send_size(n)>0) THEN
             new_nsend1 = new_nsend1 + 1
-            new_xsend1(new_nsend1) = placeholder 
+            new_xsend1(new_nsend1) = placeholder
             placeholder = placeholder + new_send_size(n)
 
             new_sendtag1(new_nsend1) = sendtag1(n)
@@ -1388,9 +1388,9 @@
          ENDIF
 
       ENDDO
- 
+
       new_xsend1(new_nsend1+1)= nj2 + 1
-  
+
 
       nsend1 = new_nsend1
       sendtag1 => new_sendtag1
@@ -1445,7 +1445,7 @@
 
          IF(new_send_size(n)>0) THEN
             new_nsend2 = new_nsend2 + 1
-            new_xsend2(new_nsend2) = placeholder 
+            new_xsend2(new_nsend2) = placeholder
             placeholder = placeholder + new_send_size(n)
 
             new_sendtag2(new_nsend2) = sendtag2(n)
@@ -1460,7 +1460,7 @@
          ENDIF
 
       ENDDO
- 
+
       new_xsend2(new_nsend2+1)= nj2 + 1
 
 !      print*, 'MyPE, Laxt value of xsend2=',MyPE,new_nsend2,new_xsend2(new_nsend2+1)
@@ -1524,7 +1524,7 @@
 
          IF(new_recv_size(n)>0) THEN
             new_nrecv1 = new_nrecv1 + 1
-            new_xrecv1(new_nrecv1) = placeholder 
+            new_xrecv1(new_nrecv1) = placeholder
             placeholder = placeholder + new_recv_size(n)
 
             new_recvtag1(new_nrecv1) = recvtag1(n)
@@ -1591,7 +1591,7 @@
 
          IF(new_recv_size(n)>0) THEN
             new_nrecv2 = new_nrecv2 + 1
-            new_xrecv2(new_nrecv2) = placeholder 
+            new_xrecv2(new_nrecv2) = placeholder
             placeholder = placeholder + new_recv_size(n)
 
             new_recvtag2(new_nrecv2) = recvtag2(n)
@@ -1627,7 +1627,7 @@
 ! Layer 1
 
       nullify(new_sendijk1)
-  
+
       print *, 'sendijk1=',size(sendijk1)
       allocate( new_sendijk1( size(sendijk1) ) )
 
@@ -1643,16 +1643,16 @@
          DO jj=j1,j2
             ijk = sendijk1( jj )
 
-            IF(IJK_OF_BACKGROUND(IJK)/=-999) THEN      
+            IF(IJK_OF_BACKGROUND(IJK)/=-999) THEN
                new_sendijk1(jj) = IJK_OF_BACKGROUND(IJK)
-	    ELSE
+            ELSE
                new_sendijk1(jj) = sendijk1( j1 )
             ENDIF
          ENDDO
 
 
       ENDDO
- 
+
       sendijk1 => new_sendijk1
 
       IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: Re-assigning send and receive arrays for Send layer 2...'
@@ -1681,14 +1681,14 @@
 
             IF(IJK_OF_BACKGROUND(IJK)/=-999) THEN      ! Only keep active cells
                new_sendijk2(jj) = IJK_OF_BACKGROUND(IJK)
-	    ELSE
-	       new_sendijk2(jj) = sendijk2( j1 )
+            ELSE
+               new_sendijk2(jj) = sendijk2( j1 )
             ENDIF
          ENDDO
 
 
       ENDDO
- 
+
       sendijk2 => new_sendijk2
 
       IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: Re-assigning send and receive arrays for Receive layer 1...'
@@ -1718,8 +1718,8 @@
 
             IF(IJK_OF_BACKGROUND(IJK)/=-999) THEN      ! Only keep active cells
                new_recvijk1(jj) = IJK_OF_BACKGROUND(IJK)
-	    ELSE
-	       new_recvijk1(jj) = recvijk1( j1 )
+            ELSE
+               new_recvijk1(jj) = recvijk1( j1 )
             ENDIF
          ENDDO
 
@@ -1751,8 +1751,8 @@
 
             IF(IJK_OF_BACKGROUND(IJK)/=-999) THEN      ! Only keep active cells
                new_recvijk2(jj) = IJK_OF_BACKGROUND(IJK)
-	    ELSE
-	       new_recvijk2(jj) = recvijk2( j1 )
+            ELSE
+               new_recvijk2(jj) = recvijk2( j1 )
             ENDIF
          ENDDO
 
@@ -1787,12 +1787,12 @@
 !   Re-assign cell classes
 !======================================================================
 
-      IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: Re-assigning cell classes...'     
+      IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: Re-assigning cell classes...'
 
 !      print*, 'before class reassignment:, iclass =',iclass
 
 
-      ICLASS = 0 
+      ICLASS = 0
 !
 !     Loop over all cells (minus the ghost layers)
       DO K = KSTART3, KEND3
@@ -1804,7 +1804,7 @@
 
 !          Find the the effective cell-center indices for all neighbor cells
 !               CALL SET_INDEX1A (I, J, K, IJK, IMJK, IPJK, IJMK, IJPK, IJKM, &
-!                  IJKP, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT) 
+!                  IJKP, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT)
 
                IJKN = NORTH_ARRAY_OF(IJK)
                IJKS = SOUTH_ARRAY_OF(IJK)
@@ -1815,29 +1815,29 @@
 
                IMJK = IM_ARRAY_OF(IJK)
                IPJK = IP_ARRAY_OF(IJK)
-               IJMK = JM_ARRAY_OF(IJK) 
+               IJMK = JM_ARRAY_OF(IJK)
                IJPK = JP_ARRAY_OF(IJK)
                IJKM = KM_ARRAY_OF(IJK)
                IJKP = KP_ARRAY_OF(IJK)
 
 !
-               ICLASS = ICLASS + 1               !Increment the ICLASS counter 
-               IF (ICLASS > MAX_CLASS) THEN 
-                  IF(DMP_LOG)WRITE (UNIT_LOG, 2000) MAX_CLASS 
-                  CALL MFIX_EXIT(myPE) 
-               ENDIF 
-               INCREMENT_FOR_N(ICLASS) = IJKN - IJK 
-               INCREMENT_FOR_S(ICLASS) = IJKS - IJK 
-               INCREMENT_FOR_E(ICLASS) = IJKE - IJK 
-               INCREMENT_FOR_W(ICLASS) = IJKW - IJK 
-               INCREMENT_FOR_T(ICLASS) = IJKT - IJK 
-               INCREMENT_FOR_B(ICLASS) = IJKB - IJK 
-               INCREMENT_FOR_IM(ICLASS) = IMJK - IJK 
-               INCREMENT_FOR_IP(ICLASS) = IPJK - IJK 
-               INCREMENT_FOR_JM(ICLASS) = IJMK - IJK 
-               INCREMENT_FOR_JP(ICLASS) = IJPK - IJK 
-               INCREMENT_FOR_KM(ICLASS) = IJKM - IJK 
-               INCREMENT_FOR_KP(ICLASS) = IJKP - IJK 
+               ICLASS = ICLASS + 1               !Increment the ICLASS counter
+               IF (ICLASS > MAX_CLASS) THEN
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 2000) MAX_CLASS
+                  CALL MFIX_EXIT(myPE)
+               ENDIF
+               INCREMENT_FOR_N(ICLASS) = IJKN - IJK
+               INCREMENT_FOR_S(ICLASS) = IJKS - IJK
+               INCREMENT_FOR_E(ICLASS) = IJKE - IJK
+               INCREMENT_FOR_W(ICLASS) = IJKW - IJK
+               INCREMENT_FOR_T(ICLASS) = IJKT - IJK
+               INCREMENT_FOR_B(ICLASS) = IJKB - IJK
+               INCREMENT_FOR_IM(ICLASS) = IMJK - IJK
+               INCREMENT_FOR_IP(ICLASS) = IPJK - IJK
+               INCREMENT_FOR_JM(ICLASS) = IJMK - IJK
+               INCREMENT_FOR_JP(ICLASS) = IJPK - IJK
+               INCREMENT_FOR_KM(ICLASS) = IJKM - IJK
+               INCREMENT_FOR_KP(ICLASS) = IJKP - IJK
 
 
                INCREMENT_FOR_NB(1,ICLASS) = INCREMENT_FOR_E(ICLASS)
@@ -1861,42 +1861,42 @@
                    + INCREMENT_FOR_T(ICLASS) + INCREMENT_FOR_B(ICLASS) + &
                   INCREMENT_FOR_IM(ICLASS) + INCREMENT_FOR_IP(ICLASS) + &
                   INCREMENT_FOR_JM(ICLASS) + INCREMENT_FOR_JP(ICLASS) + &
-                  INCREMENT_FOR_KM(ICLASS) + INCREMENT_FOR_KP(ICLASS) 
+                  INCREMENT_FOR_KM(ICLASS) + INCREMENT_FOR_KP(ICLASS)
 !
-               CELL_CLASS(IJK) = ICLASS 
+               CELL_CLASS(IJK) = ICLASS
 !
 !
 !          Place the cell in a class based on its DENOTE_CLASS(ICLASS) value
-               DO IC = 1, ICLASS - 1             !Loop over previous and present classes 
+               DO IC = 1, ICLASS - 1             !Loop over previous and present classes
 !                                                !IF a possible match in cell types
-                  IF (DENOTE_CLASS(ICLASS) == DENOTE_CLASS(IC)) THEN 
+                  IF (DENOTE_CLASS(ICLASS) == DENOTE_CLASS(IC)) THEN
 !                                                !is found, compare all increments
-                     IF (INCREMENT_FOR_N(ICLASS) /= INCREMENT_FOR_N(IC)) CYCLE  
-                     IF (INCREMENT_FOR_S(ICLASS) /= INCREMENT_FOR_S(IC)) CYCLE  
-                     IF (INCREMENT_FOR_E(ICLASS) /= INCREMENT_FOR_E(IC)) CYCLE  
-                     IF (INCREMENT_FOR_W(ICLASS) /= INCREMENT_FOR_W(IC)) CYCLE  
-                     IF (INCREMENT_FOR_T(ICLASS) /= INCREMENT_FOR_T(IC)) CYCLE  
-                     IF (INCREMENT_FOR_B(ICLASS) /= INCREMENT_FOR_B(IC)) CYCLE  
+                     IF (INCREMENT_FOR_N(ICLASS) /= INCREMENT_FOR_N(IC)) CYCLE
+                     IF (INCREMENT_FOR_S(ICLASS) /= INCREMENT_FOR_S(IC)) CYCLE
+                     IF (INCREMENT_FOR_E(ICLASS) /= INCREMENT_FOR_E(IC)) CYCLE
+                     IF (INCREMENT_FOR_W(ICLASS) /= INCREMENT_FOR_W(IC)) CYCLE
+                     IF (INCREMENT_FOR_T(ICLASS) /= INCREMENT_FOR_T(IC)) CYCLE
+                     IF (INCREMENT_FOR_B(ICLASS) /= INCREMENT_FOR_B(IC)) CYCLE
                      IF (INCREMENT_FOR_IM(ICLASS) /= INCREMENT_FOR_IM(IC)) &
-                        CYCLE  
+                        CYCLE
                      IF (INCREMENT_FOR_IP(ICLASS) /= INCREMENT_FOR_IP(IC)) &
-                        CYCLE  
+                        CYCLE
                      IF (INCREMENT_FOR_JM(ICLASS) /= INCREMENT_FOR_JM(IC)) &
-                        CYCLE  
+                        CYCLE
                      IF (INCREMENT_FOR_JP(ICLASS) /= INCREMENT_FOR_JP(IC)) &
-                        CYCLE  
+                        CYCLE
                      IF (INCREMENT_FOR_KM(ICLASS) /= INCREMENT_FOR_KM(IC)) &
-                        CYCLE  
+                        CYCLE
                      IF (INCREMENT_FOR_KP(ICLASS) /= INCREMENT_FOR_KP(IC)) &
-                        CYCLE  
-                     CELL_CLASS(IJK) = IC        !Assign cell to a class 
-                     ICLASS = ICLASS - 1 
-                     CYCLE  L100                 !Go to next cell 
-                  ENDIF 
-               END DO 
-            END DO L100 
-         END DO 
-      END DO 
+                        CYCLE
+                     CELL_CLASS(IJK) = IC        !Assign cell to a class
+                     ICLASS = ICLASS - 1
+                     CYCLE  L100                 !Go to next cell
+                  ENDIF
+               END DO
+            END DO L100
+         END DO
+      END DO
 
 
       IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: New number of classes = ', ICLASS
@@ -1975,7 +1975,7 @@
 !     WRITE FOLLOWING IF THERE IS AN ERROR IN MODULE
 2000 FORMAT(/70('*')//'From: SET_INCREMENTS'/'Message: The number of',&
          'classes has exceeded the maximum allowed (',I8,').  Increase',&
-         'MAX_CLASS in PARAM1.INC') 
+         'MAX_CLASS in PARAM1.INC')
 !
 
       END SUBROUTINE RE_INDEX_ARRAYS
@@ -2002,16 +2002,16 @@
       SUBROUTINE RECORD_NEW_IJK_CELL(I,J,K,IJK,NEW_IJK,TEMP_IJK_ARRAY_OF,TEMP_I_OF,TEMP_J_OF,TEMP_K_OF)
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE indices
       USE geometry
       USE compar
       USE physprop
       USE fldvar
-      USE funits 
+      USE funits
       USE scalars
       USE run
 
@@ -2049,9 +2049,9 @@
 
       NEW_IJK = NEW_IJK + 1
 
-     
+
       RETURN
- 
+
       END SUBROUTINE RECORD_NEW_IJK_CELL
 
 
@@ -2077,7 +2077,7 @@
       SUBROUTINE BUBBLE_SORT_1D_INT_ARRAY(ARRAY,I1,I2)
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE indices
       USE geometry
@@ -2126,7 +2126,7 @@
       SUBROUTINE SHIFT_DP_ARRAY(ARRAY)
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE indices
       USE geometry
@@ -2187,7 +2187,7 @@
       SUBROUTINE SHIFT_INT_ARRAY(ARRAY,DEFAULT_VALUE)
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE indices
       USE geometry
@@ -2250,7 +2250,7 @@
       SUBROUTINE SHIFT_LOG_ARRAY(ARRAY,DEFAULT_VALUE)
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE indices
       USE geometry
@@ -2314,7 +2314,7 @@
       SUBROUTINE UNSHIFT_DP_ARRAY(ARRAY_1,ARRAY_2)
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE indices
       USE geometry
@@ -2339,7 +2339,7 @@
 !======================================================================
 
       DO IJK = IJKSTART3,IJKEND3
-          
+
           ARRAY_2(BACKGROUND_IJK_OF(IJK)) = ARRAY_1(IJK)
 
       ENDDO
@@ -2368,7 +2368,7 @@
       SUBROUTINE SHIFT_CONNECTIVITY_FOR_BDIST_IO
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE indices
       USE geometry
@@ -2393,7 +2393,7 @@
       INCLUDE 'function.inc'
 
 !======================================================================
-!   
+!
 !   The array BACKGROUND_IJK_OF(IJK) points to the original cell
 !======================================================================
 
@@ -2404,7 +2404,7 @@
       DO IJK = 1,IJKEND3
          IF (INTERIOR_CELL_AT(IJK))      THEN
             IF (.NOT.BLOCKED_CELL_AT(IJK)) THEN
-            
+
                BCK_IJK = BACKGROUND_IJK_OF(IJK)   ! Get the original IJK
 
                NN = NUMBER_OF_NODES(IJK)          ! Get the number of nodes for this cell, this was already shifted above
@@ -2434,7 +2434,7 @@
       SUBROUTINE SHIFT_LIST_OF_FACETS_DES
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE indices
       USE geometry
@@ -2469,21 +2469,21 @@
       ALLOCATE(COPY_OF_LIST_FACET_AT_DES(DIMENSION_3))
 
       DO IJK = 1,DIMENSION_3
-      
+
          IF(ALLOCATED(LIST_FACET_AT_DES(IJK)%FACET_LIST)) THEN
-	    NF = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-	    
-	    COPY_OF_LIST_FACET_AT_DES(IJK)%COUNT_FACETS = NF
-	    ALLOCATE(COPY_OF_LIST_FACET_AT_DES(IJK)%FACET_LIST(NF))
+            NF = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+
+            COPY_OF_LIST_FACET_AT_DES(IJK)%COUNT_FACETS = NF
+            ALLOCATE(COPY_OF_LIST_FACET_AT_DES(IJK)%FACET_LIST(NF))
             COPY_OF_LIST_FACET_AT_DES(IJK)%FACET_LIST(1:NF) = LIST_FACET_AT_DES(IJK)%FACET_LIST(1:NF)
-	    
-	 ELSE
-	 
-            COPY_OF_LIST_FACET_AT_DES(IJK)%COUNT_FACETS = 0	 
-	 
-	 ENDIF
-         
-      
+
+         ELSE
+
+            COPY_OF_LIST_FACET_AT_DES(IJK)%COUNT_FACETS = 0
+
+         ENDIF
+
+
       ENDDO
 
 
@@ -2491,20 +2491,20 @@
 
          BCK_IJK = BACKGROUND_IJK_OF(IJK)   ! Get the original IJK
 
-         
+
          NF = COPY_OF_LIST_FACET_AT_DES(BCK_IJK)%COUNT_FACETS
-      
+
 
          IF(ALLOCATED(LIST_FACET_AT_DES(IJK)%FACET_LIST)) DEALLOCATE(LIST_FACET_AT_DES(IJK)%FACET_LIST)
 
          LIST_FACET_AT_DES(IJK)%COUNT_FACETS = NF
 
          IF(NF>0) THEN
-	 
+
             ALLOCATE(LIST_FACET_AT_DES(IJK)%FACET_LIST(NF))
-	    LIST_FACET_AT_DES(IJK)%FACET_LIST(1:NF) = COPY_OF_LIST_FACET_AT_DES(BCK_IJK)%FACET_LIST(1:NF)
-	 
-	 ENDIF
+            LIST_FACET_AT_DES(IJK)%FACET_LIST(1:NF) = COPY_OF_LIST_FACET_AT_DES(BCK_IJK)%FACET_LIST(1:NF)
+
+         ENDIF
 
 
       ENDDO
@@ -2515,16 +2515,16 @@
       END SUBROUTINE SHIFT_LIST_OF_FACETS_DES
 
 
-      SUBROUTINE WRITE_INT_TABLE(FILE_UNIT,ARRAY, ARRAY_SIZE, LSTART, LEND, NCOL) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE WRITE_INT_TABLE(FILE_UNIT,ARRAY, ARRAY_SIZE, LSTART, LEND, NCOL)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE funits 
+      USE param
+      USE param1
+      USE funits
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -2545,7 +2545,7 @@
 !
 !                      Ending array index
       INTEGER ::         LEND
-!//EFD Nov/11, avoid use of (*) 
+!//EFD Nov/11, avoid use of (*)
 !//      DOUBLE PRECISION ARRAY(*)
       INTEGER :: ARRAY(ARRAY_SIZE)
 !
@@ -2556,11 +2556,11 @@
 !
 !                      Number of columns in the table.  When this is changed
 !                      remember to change the FORMAT statement also.
-!                      
-
-      INTEGER :: NCOL 
 !
-         
+
+      INTEGER :: NCOL
+!
+
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -2574,23 +2574,23 @@
       INTEGER          L, L1, L2, L3
 !-----------------------------------------------
 !
-      NROW = (LEND - LSTART + 1)/NCOL 
+      NROW = (LEND - LSTART + 1)/NCOL
 !
-      L2 = LSTART - 1 
-      DO L = 1, NROW 
-         L1 = L2 + 1 
-         L2 = L1 + NCOL - 1 
-         WRITE (FILE_UNIT, 1020) (ARRAY(L3),L3=L1,L2) 
-      END DO 
-      IF (NROW*NCOL < LEND - LSTART + 1) THEN 
-         L1 = L2 + 1 
-         L2 = LEND 
-         WRITE (FILE_UNIT, 1020) (ARRAY(L3),L3=L1,L2) 
-      ENDIF 
-      RETURN  
+      L2 = LSTART - 1
+      DO L = 1, NROW
+         L1 = L2 + 1
+         L2 = L1 + NCOL - 1
+         WRITE (FILE_UNIT, 1020) (ARRAY(L3),L3=L1,L2)
+      END DO
+      IF (NROW*NCOL < LEND - LSTART + 1) THEN
+         L1 = L2 + 1
+         L2 = LEND
+         WRITE (FILE_UNIT, 1020) (ARRAY(L3),L3=L1,L2)
+      ENDIF
+      RETURN
 !
- 1020 FORMAT(14X,50(I12,1X)) 
-      END SUBROUTINE WRITE_INT_TABLE 
+ 1020 FORMAT(14X,50(I12,1X))
+      END SUBROUTINE WRITE_INT_TABLE
 
 
 
@@ -2601,16 +2601,16 @@
       SUBROUTINE WRITE_IJK_VALUES
 
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE indices
       USE geometry
       USE compar
       USE physprop
       USE fldvar
-      USE funits 
+      USE funits
       USE scalars
       USE run
       USE visc_g
@@ -2619,7 +2619,7 @@
 
       USE sendrecv
 
-      USE mpi_utility 
+      USE mpi_utility
       USE parallel
 
       USE cdist
@@ -2652,9 +2652,9 @@
       INTEGER, ALLOCATABLE, DIMENSION(:,:,:) :: TEMP_IJK_ARRAY_OF
       INTEGER, ALLOCATABLE, DIMENSION(:)     :: TEMP_I_OF,TEMP_J_OF,TEMP_K_OF
 
-   	INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
-   	INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
-   	INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
+        INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
+        INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
+        INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
 
       INTEGER :: ISIZE, IREMAIN,JSIZE, JREMAIN,KSIZE, KREMAIN
 
@@ -2698,7 +2698,7 @@
       INTEGER                 ICLASS
 !
 !                             Array of sum of increments to make the class
-!                             determination faster. 
+!                             determination faster.
       INTEGER                 DENOTE_CLASS(MAX_CLASS)
 
 
@@ -2720,7 +2720,7 @@
 
 !      IF(NO_K) THEN
 
-         IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: Writing IJK value in files...'     
+         IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: Writing IJK value in files...'
 
           IJK_FILE_UNIT = 1000 + MyPE
           WRITE(CHAR_MyPE,'(I6)')MyPE
@@ -2761,15 +2761,15 @@
                 IF(DEAD_CELL_AT(I,J,K)) TEMP_IJK_ARRAY_OF(I,J,K) = 0
              ENDDO
                 IF(RE_INDEXING) THEN
-		   WRITE(IJK_FILE_UNIT,230) J,(TEMP_IJK_ARRAY_OF(I,J,K),I=ISTART3,IEND3)
-		ELSE
-		   WRITE(IJK_FILE_UNIT,230) J,(FUNIJK(I,J,K),I=ISTART3,IEND3)
-		ENDIF
-		
+                   WRITE(IJK_FILE_UNIT,230) J,(TEMP_IJK_ARRAY_OF(I,J,K),I=ISTART3,IEND3)
+                ELSE
+                   WRITE(IJK_FILE_UNIT,230) J,(FUNIJK(I,J,K),I=ISTART3,IEND3)
+                ENDIF
+
           ENDDO
 
           WRITE(IJK_FILE_UNIT,210) ('======',I=ISTART3,IEND3)
-          WRITE(IJK_FILE_UNIT,220) (I,I=ISTART3,IEND3) 
+          WRITE(IJK_FILE_UNIT,220) (I,I=ISTART3,IEND3)
 
        ELSE
           DO IJK=IJKSTART3,IJKEND3
@@ -2789,25 +2789,25 @@
 
          WRITE(IJK_FILE_UNIT,*)''
 
-         WRITE(IJK_FILE_UNIT,*)' Layer    = ',1 
+         WRITE(IJK_FILE_UNIT,*)' Layer    = ',1
          WRITE(IJK_FILE_UNIT,*)' nsend1    = ', nsend1
          WRITE(IJK_FILE_UNIT,*)' sendproc1 = ', sendproc1(1:nsend1)
          WRITE(IJK_FILE_UNIT,*)' sendtag1  = ', sendtag1(1:nsend1)
          WRITE(IJK_FILE_UNIT,*)' xsend1    = ', xsend1(1:nsend1)
          WRITE(IJK_FILE_UNIT,*)' size      = ', size(sendijk1)
-         WRITE(IJK_FILE_UNIT,*)' sendijk1  = '  
-         CALL WRITE_INT_TABLE(IJK_FILE_UNIT,sendijk1, size(sendijk1), 1, size(sendijk1),5) 
-         WRITE(IJK_FILE_UNIT,*)''  
+         WRITE(IJK_FILE_UNIT,*)' sendijk1  = '
+         CALL WRITE_INT_TABLE(IJK_FILE_UNIT,sendijk1, size(sendijk1), 1, size(sendijk1),5)
+         WRITE(IJK_FILE_UNIT,*)''
 
          WRITE(IJK_FILE_UNIT,*)' nrecv1    = ', nrecv1
          WRITE(IJK_FILE_UNIT,*)' recvproc1 = ', recvproc1(1:nrecv1)
          WRITE(IJK_FILE_UNIT,*)' recvtag1  = ', recvtag1(1:nrecv1)
          WRITE(IJK_FILE_UNIT,*)' xrecv1    = ', xrecv1(1:nrecv1)
          WRITE(IJK_FILE_UNIT,*)' size      = ', size(recvijk1)
-         WRITE(IJK_FILE_UNIT,*)' recvijk1  = '  
-         CALL WRITE_INT_TABLE(IJK_FILE_UNIT,recvijk1, size(recvijk1), 1, size(recvijk1), 5) 
-         WRITE(IJK_FILE_UNIT,*)''  
-         WRITE(IJK_FILE_UNIT,*)'' 
+         WRITE(IJK_FILE_UNIT,*)' recvijk1  = '
+         CALL WRITE_INT_TABLE(IJK_FILE_UNIT,recvijk1, size(recvijk1), 1, size(recvijk1), 5)
+         WRITE(IJK_FILE_UNIT,*)''
+         WRITE(IJK_FILE_UNIT,*)''
 
          WRITE(IJK_FILE_UNIT,*)' Layer    = ',2
          WRITE(IJK_FILE_UNIT,*)' nsend2    = ', nsend2
@@ -2815,18 +2815,18 @@
          WRITE(IJK_FILE_UNIT,*)' sendtag2  = ', sendtag2(1:nsend2)
          WRITE(IJK_FILE_UNIT,*)' xsend2    = ', xsend2(1:nsend2)
          WRITE(IJK_FILE_UNIT,*)' size      = ', size(sendijk2)
-         WRITE(IJK_FILE_UNIT,*)' sendijk2  = '  
-         CALL WRITE_INT_TABLE(IJK_FILE_UNIT,sendijk2, size(sendijk2), 1, size(sendijk2),5) 
-         WRITE(IJK_FILE_UNIT,*)''  
+         WRITE(IJK_FILE_UNIT,*)' sendijk2  = '
+         CALL WRITE_INT_TABLE(IJK_FILE_UNIT,sendijk2, size(sendijk2), 1, size(sendijk2),5)
+         WRITE(IJK_FILE_UNIT,*)''
 
          WRITE(IJK_FILE_UNIT,*)' nrecv2    = ', nrecv2
          WRITE(IJK_FILE_UNIT,*)' recvproc2 = ', recvproc2(1:nrecv2)
          WRITE(IJK_FILE_UNIT,*)' recvtag2  = ', recvtag2(1:nrecv2)
          WRITE(IJK_FILE_UNIT,*)' xrecv2    = ', xrecv2(1:nrecv2)
          WRITE(IJK_FILE_UNIT,*)' size      = ', size(recvijk2)
-         WRITE(IJK_FILE_UNIT,*)' recvijk2  = '  
-         CALL WRITE_INT_TABLE(IJK_FILE_UNIT,recvijk2, size(recvijk2), 1, size(recvijk2), 5) 
-         WRITE(IJK_FILE_UNIT,*)''  
+         WRITE(IJK_FILE_UNIT,*)' recvijk2  = '
+         CALL WRITE_INT_TABLE(IJK_FILE_UNIT,recvijk2, size(recvijk2), 1, size(recvijk2), 5)
+         WRITE(IJK_FILE_UNIT,*)''
 
 
          CLOSE(IJK_FILE_UNIT)

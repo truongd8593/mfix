@@ -28,26 +28,26 @@
 !  Local variables: L, IJK1, IJK2, IJK3                                C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE SET_BC0 
+      SUBROUTINE SET_BC0
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
-      USE compar     
-      USE mpi_utility 
+      USE compar
+      USE mpi_utility
       USE physprop
       USE constant
       USE bc
       USE fldvar
       USE indices
       USE run
-      USE funits 
-      USE scales 
+      USE funits
+      USE scales
       USE scalars
-      USE boundfunijk 
+      USE boundfunijk
       USE toleranc
       USE sendrecv
       USE mms
@@ -57,22 +57,22 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Local index for boundary condition 
-      INTEGER ::  L 
-! indices 
-      INTEGER :: I, J, K, IJK, M, N 
-! Local index for setting U velocity b.c. 
-      INTEGER :: IJK1 
-! Local index for setting V velocity b.c. 
-      INTEGER :: IJK2 
-! Local index for setting W velocity b.c. 
-      INTEGER :: IJK3 
+! Local index for boundary condition
+      INTEGER ::  L
+! indices
+      INTEGER :: I, J, K, IJK, M, N
+! Local index for setting U velocity b.c.
+      INTEGER :: IJK1
+! Local index for setting V velocity b.c.
+      INTEGER :: IJK2
+! Local index for setting W velocity b.c.
+      INTEGER :: IJK3
 ! number densities for use in GHD theory only
       DOUBLE PRECISION :: nM, nTOT
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: EOSG, CALC_MW 
+      DOUBLE PRECISION, EXTERNAL :: EOSG, CALC_MW
 !----------------------------------------------
 ! Include statement functions
 !----------------------------------------------
@@ -87,20 +87,20 @@
       CALL SET_IJK_P_G
 
       IF(USE_MMS) THEN
-! IJK_P_G is set as UNDEFINED for MMS since current IJK_P_G setting 
+! IJK_P_G is set as UNDEFINED for MMS since current IJK_P_G setting
 ! is not a second order operation.
          IJK_P_G = UNDEFINED_I
 ! Calculate MMS variables. Better place might be inside interate before
 ! every time-step. (?)
-         CALL CALCULATE_MMS 
+         CALL CALCULATE_MMS
          CALL CALCULATE_MMS_SOURCE
       END IF
 
-! Set the boundary conditions - Defining the field variables at the 
+! Set the boundary conditions - Defining the field variables at the
 ! boundaries according to the user specifications. These are not the
 ! real values in the wall cells, only initial guesses.
-      DO L = 1, DIMENSION_BC 
-         IF (BC_DEFINED(L)) THEN 
+      DO L = 1, DIMENSION_BC
+         IF (BC_DEFINED(L)) THEN
 
 ! setting wall (nsw, fsw, psw) boundary conditions
 !----------------------------------------------------------------->>>
@@ -114,7 +114,7 @@
 
                   IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
-                  IJK = BOUND_FUNIJK(I,J,K) 
+                  IJK = BOUND_FUNIJK(I,J,K)
 
                   IF (WALL_AT(IJK)) THEN
 ! this conditional is probably unnecessary since this section already
@@ -133,7 +133,7 @@
                         WHERE(BC_Thetaw_m(L,:MMAX) /= UNDEFINED)       &
                         Theta_m(IJK,:MMAX) = BC_Thetaw_m(L,:MMAX)
 
-                     DO M = 1, SMAX 
+                     DO M = 1, SMAX
                         IF(NMAX(M) > 0)                                &
                            WHERE (BC_Xw_s(L,M,:NMAX(M)) /= UNDEFINED)  &
                            X_s(IJK,M,:NMAX(M)) = BC_Xw_s(L,M,:NMAX(M))
@@ -141,88 +141,88 @@
 
                      IF(NScalar > 0)                                   &
                         WHERE (BC_ScalarW(L,:NScalar) /= UNDEFINED)    &
-                          Scalar(IJK,:NScalar) = BC_ScalarW(L,:NScalar) 
+                          Scalar(IJK,:NScalar) = BC_ScalarW(L,:NScalar)
                   ENDIF   ! end if (wall_at(ijk))
 
                ENDDO   ! end do (i=bc_i_w(l),bc_i_e(l))
                ENDDO   ! end do (j=bc_j_s(l),bc_j_n(l))
                ENDDO   ! end do (k=bc_k_b(l),bc_k_t(l))
-! end setting (FSW, NSW or PSW)               
+! end setting (FSW, NSW or PSW)
 !-----------------------------------------------------------------<<<
 
             ELSE   ! else branch of if(FSW, NSW or PSW)
 
 
-! setting all other 'non-wall' boundary conditions 
+! setting all other 'non-wall' boundary conditions
 !----------------------------------------------------------------->>>
 
 
 ! initializing for time dependent mass inflow
-               BC_JET_G(L) = UNDEFINED 
-               IF (BC_DT_0(L) /= UNDEFINED) THEN 
-                  BC_TIME(L) = TIME + BC_DT_0(L) 
-                  BC_OUT_N(L) = 0 
-                  BC_MOUT_G(L) = ZERO 
-                  BC_VOUT_G(L) = ZERO 
-                  IF (SMAX > 0) THEN 
-                     BC_MOUT_S(L,:SMAX) = ZERO 
-                     BC_VOUT_S(L,:SMAX) = ZERO 
-                  ENDIF 
-                  BC_JET_G(L) = BC_JET_G0(L) 
-                  IF (BC_JET_G(L) /= UNDEFINED) THEN 
-                     SELECT CASE (TRIM(BC_PLANE(L)))  
-                     CASE ('W')  
-                        BC_U_G(L) = BC_JET_G(L) 
-                     CASE ('E')  
-                        BC_U_G(L) = BC_JET_G(L) 
-                     CASE ('S')  
-                        BC_V_G(L) = BC_JET_G(L) 
-                     CASE ('N')  
-                        BC_V_G(L) = BC_JET_G(L) 
-                     CASE ('B')  
-                        BC_W_G(L) = BC_JET_G(L) 
-                     CASE ('T')  
-                        BC_W_G(L) = BC_JET_G(L) 
-                     END SELECT 
-                  ENDIF 
-               ELSE 
-                  BC_TIME(L) = UNDEFINED 
-               ENDIF 
+               BC_JET_G(L) = UNDEFINED
+               IF (BC_DT_0(L) /= UNDEFINED) THEN
+                  BC_TIME(L) = TIME + BC_DT_0(L)
+                  BC_OUT_N(L) = 0
+                  BC_MOUT_G(L) = ZERO
+                  BC_VOUT_G(L) = ZERO
+                  IF (SMAX > 0) THEN
+                     BC_MOUT_S(L,:SMAX) = ZERO
+                     BC_VOUT_S(L,:SMAX) = ZERO
+                  ENDIF
+                  BC_JET_G(L) = BC_JET_G0(L)
+                  IF (BC_JET_G(L) /= UNDEFINED) THEN
+                     SELECT CASE (TRIM(BC_PLANE(L)))
+                     CASE ('W')
+                        BC_U_G(L) = BC_JET_G(L)
+                     CASE ('E')
+                        BC_U_G(L) = BC_JET_G(L)
+                     CASE ('S')
+                        BC_V_G(L) = BC_JET_G(L)
+                     CASE ('N')
+                        BC_V_G(L) = BC_JET_G(L)
+                     CASE ('B')
+                        BC_W_G(L) = BC_JET_G(L)
+                     CASE ('T')
+                        BC_W_G(L) = BC_JET_G(L)
+                     END SELECT
+                  ENDIF
+               ELSE
+                  BC_TIME(L) = UNDEFINED
+               ENDIF
 
 
-               DO K = BC_K_B(L), BC_K_T(L) 
-               DO J = BC_J_S(L), BC_J_N(L) 
+               DO K = BC_K_B(L), BC_K_T(L)
+               DO J = BC_J_S(L), BC_J_N(L)
                DO I = BC_I_W(L), BC_I_E(L)
 
                   IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                         IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
-                  IJK = BOUND_FUNIJK(I,J,K) 
+                  IJK = BOUND_FUNIJK(I,J,K)
 
 ! this conditional may still be necessary to avoid cyclic boundaries.
-! cyclic boundaries would fall under this branch but are considered 
+! cyclic boundaries would fall under this branch but are considered
 ! 'wall_at'
-                  IF (.NOT.WALL_AT(IJK)) THEN 
+                  IF (.NOT.WALL_AT(IJK)) THEN
 
 ! setting p_outflow_at or outflow_at boundary conditions
 ! ---------------------------------------------------------------->>>
                      IF(P_OUTFLOW_AT(IJK) .OR. OUTFLOW_AT(IJK)) THEN
 
 ! Why check if the bc quantity for the field variable is defined before
-! performing the assignment?: 
+! performing the assignment?:
 ! For a new run the field variable will be undefined in these locations
 ! so any check is irrelevant. However, for a restart run the field
 ! variable in the boundary cell may have an existing value based on the
 ! flow field. In this case, the check acts to maintain the existing value
-! unless given a user defined BC value. This is unlike the PI, MI and MO 
+! unless given a user defined BC value. This is unlike the PI, MI and MO
 ! treatment where the values of field variables in boundary cells are
-! strictly overwritten regardless if the BC is defined. In addition, 
-! check_data_07 basically ensures such quantities will be defined for 
+! strictly overwritten regardless if the BC is defined. In addition,
+! check_data_07 basically ensures such quantities will be defined for
 ! MI or PI if they are required.
 
-                        P_STAR(IJK) = ZERO 
-                        P_G(IJK) = SCALE(BC_P_G(L)) 
+                        P_STAR(IJK) = ZERO
+                        P_G(IJK) = SCALE(BC_P_G(L))
                         IF (BC_EP_G(L) /= UNDEFINED)                   &
-                           EP_G(IJK) = BC_EP_G(L) 
+                           EP_G(IJK) = BC_EP_G(L)
 ! unless gas flow is entering back into the domain and ep_g in the
 ! boundary cell is defined, t_g will be set to its adjacent fluid cell
 ! value in set_bc1. so why do this here? if during the initial start-up,
@@ -234,49 +234,49 @@
 
                         IF (NMAX(0) > 0)                               &
                            WHERE (BC_X_G(L,:NMAX(0)) /= UNDEFINED)     &
-                           X_G(IJK,:NMAX(0)) = BC_X_G(L,:NMAX(0)) 
+                           X_G(IJK,:NMAX(0)) = BC_X_G(L,:NMAX(0))
 
                         IF (NScalar > 0)                               &
                            WHERE (BC_Scalar(L,:NScalar) /= UNDEFINED)  &
                            Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar)
-   
-                        IF (K_Epsilon) THEN 
+
+                        IF (K_Epsilon) THEN
                            IF (BC_K_Turb_G(L) /= UNDEFINED)            &
                               K_Turb_G(IJK) = BC_K_Turb_G(L)
                            IF (BC_E_Turb_G(L) /= UNDEFINED)            &
                               E_Turb_G(IJK) = BC_E_Turb_G(L)
                         ENDIF
- 
-                        DO M = 1, SMAX 
+
+                        DO M = 1, SMAX
                            IF (BC_ROP_S(L,M) /= UNDEFINED)             &
                               ROP_S(IJK,M) = BC_ROP_S(L,M)
                            IF(BC_T_S(L,M) /= UNDEFINED)                &
-                              T_S(IJK,M)=BC_T_S(L,M) 
+                              T_S(IJK,M)=BC_T_S(L,M)
                            IF (BC_THETA_M(L,M) /= UNDEFINED)           &
-                              THETA_M(IJK,M) = BC_THETA_M(L,M) 
+                              THETA_M(IJK,M) = BC_THETA_M(L,M)
 
                            IF (NMAX(M) > 0)                            &
                               WHERE (BC_X_S(L,M,:NMAX(M)) /= UNDEFINED)&
                               X_S(IJK,M,:NMAX(M)) = BC_X_S(L,M,:NMAX(M))
-                        ENDDO 
+                        ENDDO
 
 ! for GHD theory to compute mixture BC of velocity and density
                         IF(KT_TYPE_ENUM == GHD_2007) THEN
                            ROP_S(IJK,MMAX) = ZERO
                            nTOT = ZERO
                            THETA_M(IJK,MMAX) = ZERO
-                           DO M = 1, SMAX 
+                           DO M = 1, SMAX
                               IF (BC_ROP_S(L,M) /= UNDEFINED) THEN
                                  ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) +   &
-                                    BC_ROP_S(L,M) 
+                                    BC_ROP_S(L,M)
                                  nM = BC_ROP_S(L,M)*6d0 /              &
                                     (PI*D_p(IJK,M)**3*RO_S(IJK,M))
                                  nTOT = nTOT + nM
                               IF (BC_THETA_M(L,M) /= UNDEFINED)        &
                                  THETA_M(IJK,MMAX) = THETA_M(IJK,MMAX)+&
-                                    nM*BC_THETA_M(L,M) 
+                                    nM*BC_THETA_M(L,M)
                             ENDIF
-                          ENDDO 
+                          ENDDO
                           IF(ROP_S(IJK,MMAX) > ZERO) THETA_M(IJK,MMAX)=&
                              THETA_M(IJK,MMAX) / nTOT
 
@@ -285,7 +285,7 @@
                            P_G(IJK) = SCALE(MMS_P_G(IJK))
                            EP_G(IJK) = MMS_EP_G(IJK)
                            T_G(IJK) = MMS_T_G(IJK)
-   
+
                            M = 1 ! Single solid phase for MMS cases
                            ROP_S(IJK,M) = MMS_ROP_S(IJK)
                            T_S(IJK,M) = MMS_T_S(IJK)
@@ -297,7 +297,7 @@
 ! ----------------------------------------------------------------<<<
 
                      ELSE   ! else branch of if(P_outflow_at .or. outflow_at)
-                            
+
 ! setting for p_inflow, mass_inflow or mass_outflow boundary
 ! conditions
 ! ---------------------------------------------------------------->>>
@@ -305,118 +305,118 @@
 ! Unlike PO or O boundary condition branch above, in this branch no
 ! checks are made to determine if the BC is defined before it is
 ! assigned to the field variable. However, check_data_07 generally
-! ensures such BC quantities will be defined if they are needed for 
+! ensures such BC quantities will be defined if they are needed for
 ! PI and MI boundaries.
-                        P_STAR(IJK) = ZERO 
-                        P_G(IJK) = SCALE(BC_P_G(L)) 
+                        P_STAR(IJK) = ZERO
+                        P_G(IJK) = SCALE(BC_P_G(L))
                         EP_G(IJK) = BC_EP_G(L)
-                        T_G(IJK) = BC_T_G(L) 
+                        T_G(IJK) = BC_T_G(L)
 
                         IF (NMAX(0) > 0)                               &
-                          X_G(IJK,:NMAX(0)) = BC_X_G(L,:NMAX(0)) 
+                          X_G(IJK,:NMAX(0)) = BC_X_G(L,:NMAX(0))
 
                         IF (NScalar > 0)                               &
-                          Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar) 
+                          Scalar(IJK,:NScalar) = BC_Scalar(L,:NScalar)
 
-                        IF (K_Epsilon) THEN 
-                          K_Turb_G(IJK) = BC_K_Turb_G(L) 
+                        IF (K_Epsilon) THEN
+                          K_Turb_G(IJK) = BC_K_Turb_G(L)
                           E_Turb_G(IJK) = BC_E_Turb_G(L)
                         ENDIF
 
-                        DO M = 1, SMAX 
-                          ROP_S(IJK,M) = BC_ROP_S(L,M) 
-                          T_S(IJK,M) = BC_T_S(L,M) 
-                          THETA_M(IJK,M) = BC_THETA_M(L,M) 
+                        DO M = 1, SMAX
+                          ROP_S(IJK,M) = BC_ROP_S(L,M)
+                          T_S(IJK,M) = BC_T_S(L,M)
+                          THETA_M(IJK,M) = BC_THETA_M(L,M)
                           IF (NMAX(M) > 0)                             &
-                             X_S(IJK,M,:NMAX(M)) = BC_X_S(L,M,:NMAX(M)) 
-                        ENDDO 
+                             X_S(IJK,M,:NMAX(M)) = BC_X_S(L,M,:NMAX(M))
+                        ENDDO
 
-! Changed to make consistent approach                       
-                        IJK1 = IJK 
-                        IJK2 = IJK 
-                        IJK3 = IJK 
-                        SELECT CASE (TRIM(BC_PLANE(L)))  
-                          CASE ('W')  
-                            IJK1 = BOUND_FUNIJK(IM1(I),J,K) 
-                          CASE ('S')  
-                            IJK2 = BOUND_FUNIJK(I,JM1(J),K) 
-                          CASE ('B')  
-                            IJK3 = BOUND_FUNIJK(I,J,KM1(K)) 
-                        END SELECT 
+! Changed to make consistent approach
+                        IJK1 = IJK
+                        IJK2 = IJK
+                        IJK3 = IJK
+                        SELECT CASE (TRIM(BC_PLANE(L)))
+                          CASE ('W')
+                            IJK1 = BOUND_FUNIJK(IM1(I),J,K)
+                          CASE ('S')
+                            IJK2 = BOUND_FUNIJK(I,JM1(J),K)
+                          CASE ('B')
+                            IJK3 = BOUND_FUNIJK(I,J,KM1(K))
+                        END SELECT
 
 ! When the boundary plane is W, S, or B the velocity components
 ! need to be set for the boundary cell and adjacent fluid cell.
-                        U_G(IJK) = BC_U_G(L) 
-                        V_G(IJK) = BC_V_G(L) 
-                        W_G(IJK) = BC_W_G(L) 
-                        U_G(IJK1) = BC_U_G(L) 
-                        V_G(IJK2) = BC_V_G(L) 
-                        W_G(IJK3) = BC_W_G(L) 
- 
-                        IF (MMAX > 0) THEN 
-                           U_S(IJK,:SMAX) = BC_U_S(L,:SMAX) 
-                           V_S(IJK,:SMAX) = BC_V_S(L,:SMAX) 
-                           W_S(IJK,:SMAX) = BC_W_S(L,:SMAX) 
-                           U_S(IJK1,:SMAX) = BC_U_S(L,:SMAX) 
-                           V_S(IJK2,:SMAX) = BC_V_S(L,:SMAX) 
-                           W_S(IJK3,:SMAX) = BC_W_S(L,:SMAX) 
-                        ENDIF 
+                        U_G(IJK) = BC_U_G(L)
+                        V_G(IJK) = BC_V_G(L)
+                        W_G(IJK) = BC_W_G(L)
+                        U_G(IJK1) = BC_U_G(L)
+                        V_G(IJK2) = BC_V_G(L)
+                        W_G(IJK3) = BC_W_G(L)
+
+                        IF (MMAX > 0) THEN
+                           U_S(IJK,:SMAX) = BC_U_S(L,:SMAX)
+                           V_S(IJK,:SMAX) = BC_V_S(L,:SMAX)
+                           W_S(IJK,:SMAX) = BC_W_S(L,:SMAX)
+                           U_S(IJK1,:SMAX) = BC_U_S(L,:SMAX)
+                           V_S(IJK2,:SMAX) = BC_V_S(L,:SMAX)
+                           W_S(IJK3,:SMAX) = BC_W_S(L,:SMAX)
+                        ENDIF
 
 ! for GHD theory to compute mixture BC of velocity and density
                         IF(KT_TYPE_ENUM == GHD_2007) THEN
                            ROP_S(IJK,MMAX) = ZERO
-                           nTOT = ZERO 
-                           THETA_M(IJK,MMAX) = ZERO 
-                           U_S(IJK,MMAX) =  ZERO 
-                           V_S(IJK,MMAX) =  ZERO 
-                           W_S(IJK,MMAX) =  ZERO 
-                           U_S(IJK1,MMAX) =  ZERO 
-                           V_S(IJK2,MMAX) =  ZERO 
-                           W_S(IJK3,MMAX) =  ZERO 
-                           DO M = 1, SMAX 
-                              ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + BC_ROP_S(L,M) 
+                           nTOT = ZERO
+                           THETA_M(IJK,MMAX) = ZERO
+                           U_S(IJK,MMAX) =  ZERO
+                           V_S(IJK,MMAX) =  ZERO
+                           W_S(IJK,MMAX) =  ZERO
+                           U_S(IJK1,MMAX) =  ZERO
+                           V_S(IJK2,MMAX) =  ZERO
+                           W_S(IJK3,MMAX) =  ZERO
+                           DO M = 1, SMAX
+                              ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + BC_ROP_S(L,M)
                               nM = BC_ROP_S(L,M)*6d0/(PI*D_p(IJK,M)**3*RO_S(IJK,M))
                               nTOT = nTOT + nM
-                              THETA_M(IJK,MMAX) = THETA_M(IJK,MMAX) + nM*BC_THETA_M(L,M) 
-                              U_S(IJK,MMAX) = U_S(IJK,MMAX) + BC_ROP_S(L,M)*BC_U_S(L,M) 
-                              V_S(IJK,MMAX) = V_S(IJK,MMAX) + BC_ROP_S(L,M)*BC_V_S(L,M) 
-                              W_S(IJK,MMAX) = W_S(IJK,MMAX) + BC_ROP_S(L,M)*BC_W_S(L,M) 
-                              SELECT CASE (TRIM(BC_PLANE(L)))    
-                                CASE ('W')  
-                                  U_S(IJK1,MMAX) = U_S(IJK1,MMAX) + BC_ROP_S(L,M)*BC_U_S(L,M)     
-                                CASE ('S')  
-                                  V_S(IJK2,MMAX) = V_S(IJK2,MMAX) + BC_ROP_S(L,M)*BC_V_S(L,M)     
-                                CASE ('B')  
-                                  W_S(IJK3,MMAX) = W_S(IJK3,MMAX) + BC_ROP_S(L,M)*BC_W_S(L,M) 
-                              END SELECT 
-                           ENDDO 
+                              THETA_M(IJK,MMAX) = THETA_M(IJK,MMAX) + nM*BC_THETA_M(L,M)
+                              U_S(IJK,MMAX) = U_S(IJK,MMAX) + BC_ROP_S(L,M)*BC_U_S(L,M)
+                              V_S(IJK,MMAX) = V_S(IJK,MMAX) + BC_ROP_S(L,M)*BC_V_S(L,M)
+                              W_S(IJK,MMAX) = W_S(IJK,MMAX) + BC_ROP_S(L,M)*BC_W_S(L,M)
+                              SELECT CASE (TRIM(BC_PLANE(L)))
+                                CASE ('W')
+                                  U_S(IJK1,MMAX) = U_S(IJK1,MMAX) + BC_ROP_S(L,M)*BC_U_S(L,M)
+                                CASE ('S')
+                                  V_S(IJK2,MMAX) = V_S(IJK2,MMAX) + BC_ROP_S(L,M)*BC_V_S(L,M)
+                                CASE ('B')
+                                  W_S(IJK3,MMAX) = W_S(IJK3,MMAX) + BC_ROP_S(L,M)*BC_W_S(L,M)
+                              END SELECT
+                           ENDDO
                            IF(ROP_S(IJK,MMAX) > ZERO) THEN
-                              THETA_M(IJK,MMAX) = THETA_M(IJK,MMAX) / nTOT 
+                              THETA_M(IJK,MMAX) = THETA_M(IJK,MMAX) / nTOT
                               U_S(IJK,MMAX) = U_S(IJK,MMAX) / ROP_S(IJK,MMAX)
                               V_S(IJK,MMAX) = V_S(IJK,MMAX) / ROP_S(IJK,MMAX)
-                              W_S(IJK,MMAX) = W_S(IJK,MMAX) / ROP_S(IJK,MMAX) 
-                              SELECT CASE (TRIM(BC_PLANE(L)))   
-                                CASE ('W')   
-                                  U_S(IJK1,MMAX) = U_S(IJK1,MMAX) / ROP_S(IJK,MMAX)   
-                                CASE ('S')   
-                                  V_S(IJK2,MMAX) = V_S(IJK2,MMAX) / ROP_S(IJK,MMAX)  
-                                CASE ('B')   
-                                  W_S(IJK3,MMAX) = W_S(IJK3,MMAX) / ROP_S(IJK,MMAX) 
-                              END SELECT 
+                              W_S(IJK,MMAX) = W_S(IJK,MMAX) / ROP_S(IJK,MMAX)
+                              SELECT CASE (TRIM(BC_PLANE(L)))
+                                CASE ('W')
+                                  U_S(IJK1,MMAX) = U_S(IJK1,MMAX) / ROP_S(IJK,MMAX)
+                                CASE ('S')
+                                  V_S(IJK2,MMAX) = V_S(IJK2,MMAX) / ROP_S(IJK,MMAX)
+                                CASE ('B')
+                                  W_S(IJK3,MMAX) = W_S(IJK3,MMAX) / ROP_S(IJK,MMAX)
+                              END SELECT
                            ENDIF
                         ENDIF  ! end if (trim(kt_type) ='ghd')
 
 ! Set MMS BCs when MI boundary condition is used.
-                        IF (USE_MMS) THEN                           
+                        IF (USE_MMS) THEN
                            P_G(IJK) = SCALE(MMS_P_G(IJK))
-                           EP_G(IJK) = MMS_EP_G(IJK) 
+                           EP_G(IJK) = MMS_EP_G(IJK)
                            T_G(IJK) = MMS_T_G(IJK)
 
-                           DO M = 1, SMAX 
+                           DO M = 1, SMAX
                              ROP_S(IJK,M) = MMS_ROP_S(IJK)
-                             T_S(IJK,M) = MMS_T_S(IJK) 
-                             THETA_M(IJK,M) = MMS_THETA_M(IJK) 
-                           ENDDO    
+                             T_S(IJK,M) = MMS_T_S(IJK)
+                             THETA_M(IJK,M) = MMS_THETA_M(IJK)
+                           ENDDO
 
                            IJK1 = IJK
                            IJK2 = IJK
@@ -437,29 +437,29 @@
                           U_G(IJK1) = MMS_U_G(IJK1)
                           V_G(IJK2) = MMS_V_G(IJK2)
                           W_G(IJK3) = MMS_W_G(IJK3)
-   
-                          IF (MMAX > 0) THEN 
+
+                          IF (MMAX > 0) THEN
                              U_S(IJK,:SMAX) = MMS_U_S(IJK)
                              V_S(IJK,:SMAX) = MMS_V_S(IJK)
                              W_S(IJK,:SMAX) = MMS_W_S(IJK)
                              U_S(IJK1,:SMAX) = MMS_U_S(IJK1)
                              V_S(IJK2,:SMAX) = MMS_V_S(IJK2)
                              W_S(IJK3,:SMAX) = MMS_W_S(IJK3)
-                          ENDIF 
+                          ENDIF
                         ENDIF ! end if(USE_MMS)
 
                      ENDIF     ! end if/else branch of if(P_outflow_at or outflow_at)
 ! end setting for p_inflow, mass_inflow or mass_outflow boundary
 ! conditions
-! ----------------------------------------------------------------<<<                     
+! ----------------------------------------------------------------<<<
                   ENDIF       ! end if (not wall_at)
-     
+
                ENDDO   ! do i
                ENDDO   ! do j
                ENDDO   ! do k
 
             ENDIF      ! end if/else branch if(FSW, NSW or PSW)
-! end setting all boundary conditions             
+! end setting all boundary conditions
 !-----------------------------------------------------------------<<<
 
          ENDIF         ! if (bc_defined)
@@ -471,8 +471,8 @@
       call send_recv(P_G,2)
       call send_recv(X_G,2)
 
-      RETURN  
-      END SUBROUTINE SET_BC0 
+      RETURN
+      END SUBROUTINE SET_BC0
 
 
 
@@ -568,7 +568,7 @@
          l2 = UNDEFINED_I; u2=l2
          l1 = UNDEFINED_I; u1=l1
 
-! If there are cyclic boundaries, flag a cell along the positive 
+! If there are cyclic boundaries, flag a cell along the positive
 ! domain extreme in the cyclic direction (e.g., JMAX1).
       IF(CYCLIC_Y .OR. CYCLIC_Y_PD .OR. CYCLIC_Y_MF) THEN
 
@@ -596,7 +596,7 @@
 
       ENDIF
 
-! No cyclic boundaries or pressure outflows. The IJ plane is used in 
+! No cyclic boundaries or pressure outflows. The IJ plane is used in
 ! this case to maximize search region for 2D problems.
       IF(l3 == UNDEFINED_I) THEN
          Map = 'KIJ_MAP'
@@ -646,8 +646,8 @@
          WRITE(*, 9000) MAP(1:1), l3, MAP(2:2),                        &
             l2, u2, MAP(3:3), l1, u1
 
-         WRITE(*, 9999) 
-         WRITE(UNIT_LOG, 9999) 
+         WRITE(*, 9999)
+         WRITE(UNIT_LOG, 9999)
 
       ENDIF
 
@@ -754,7 +754,7 @@
 
          lp2: do lc2 = lS2, lE2
          lp1: do lc1 = lS1, lE1
-! Map the loop counters to I/J/K indices. 
+! Map the loop counters to I/J/K indices.
             CALL lMAP(lc1, lc2, ll3, I, J, K)
 
 ! Only the rank that owns this I/J/K proceeds.
@@ -834,7 +834,7 @@
          write(*,"( 5x,'Owner Rank: ',A)")trim(adjustl(cInt))
          cInt=''; write(cInt,*) IJK_P_G
          write(*,"(5x, 'IJK: ',A)", advance='no') trim(adjustl(cInt))
-         write(*,"(' :: ')", advance='no') 
+         write(*,"(' :: ')", advance='no')
          cInt=''; write(cInt,*) I
          write(*,"('(',A)",advance='no') trim(adjustl(cInt))
          cInt=''; write(cInt,*) J

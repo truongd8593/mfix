@@ -6,11 +6,11 @@
 !  The off-diagonal coefficients calculated here must be positive. The C
 !  center coefficient and the source vector are negative;              C
 
-!  The diffusion at the flow boundaries is prevented by setting the 
-!  diffusion coefficients at boundary cells to zero and then using a 
+!  The diffusion at the flow boundaries is prevented by setting the
+!  diffusion coefficients at boundary cells to zero and then using a
 !  harmonic average to calculate the boundary diffusivity.  The value
 !  diffusivities at the boundaries are checked in check_data_30.  Ensure
-!  that harmonic avergaing is used in this routine. 
+!  that harmonic avergaing is used in this routine.
 !  See source_phi                                                      C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 21-APR-97  C
@@ -26,18 +26,18 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CONV_DIF_PHI(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE CONV_DIF_PHI(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !  Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1
-      USE run 
+      USE run
       USE geometry
       USE compar
       USE sendrecv
@@ -63,10 +63,10 @@
       INTEGER          Disc
 !
 !                      Velocity components
-      DOUBLE PRECISION Uf(DIMENSION_3), Vf(DIMENSION_3), Wf(DIMENSION_3) 
+      DOUBLE PRECISION Uf(DIMENSION_3), Vf(DIMENSION_3), Wf(DIMENSION_3)
 !
 !                      Mass flux components
-      DOUBLE PRECISION Flux_E(DIMENSION_3), Flux_N(DIMENSION_3), Flux_T(DIMENSION_3) 
+      DOUBLE PRECISION Flux_E(DIMENSION_3), Flux_N(DIMENSION_3), Flux_T(DIMENSION_3)
 !
 !                      Phase index
       INTEGER          M
@@ -85,26 +85,26 @@
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!	IF DEFERRED CORRECTION IS USED WITH THE SCALAR TRANSPORT EQN.
+!       IF DEFERRED CORRECTION IS USED WITH THE SCALAR TRANSPORT EQN.
 !
-	IF(DEF_COR)THEN
-	  CALL CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
-	  if (DISC > 1) CALL CONV_DIF_PHI_DC(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
-	ELSE
+        IF(DEF_COR)THEN
+          CALL CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
+          if (DISC > 1) CALL CONV_DIF_PHI_DC(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
+        ELSE
 !
-!	NO DEFERRED CORRECTION IS USED WITH THE SCALAR TRANSPORT EQN.
+!       NO DEFERRED CORRECTION IS USED WITH THE SCALAR TRANSPORT EQN.
 !
-	  IF (DISC == 0) THEN                        
+          IF (DISC == 0) THEN
             CALL CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
-	  ELSE
-            CALL CONV_DIF_PHI1(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER) 
+          ELSE
+            CALL CONV_DIF_PHI1(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
           ENDIF
-	ENDIF 
-	
+        ENDIF
+
         CALL DIF_PHI_IS (DIF, A_M, B_M, M, IER)
 
-        RETURN  
-      END SUBROUTINE CONV_DIF_PHI 
+        RETURN
+      END SUBROUTINE CONV_DIF_PHI
 !
 !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -129,20 +129,20 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !  Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
-      USE matrix 
-      USE toleranc 
+      USE param
+      USE param1
+      USE parallel
+      USE matrix
+      USE toleranc
       USE run
       USE geometry
       USE compar
@@ -173,10 +173,10 @@
       INTEGER          Disc
 !
 !                      Velocity components
-      DOUBLE PRECISION Uf(DIMENSION_3), Vf(DIMENSION_3), Wf(DIMENSION_3) 
+      DOUBLE PRECISION Uf(DIMENSION_3), Vf(DIMENSION_3), Wf(DIMENSION_3)
 !
 !                      Mass flux components
-      DOUBLE PRECISION Flux_E(DIMENSION_3), Flux_N(DIMENSION_3), Flux_T(DIMENSION_3) 
+      DOUBLE PRECISION Flux_E(DIMENSION_3), Flux_N(DIMENSION_3), Flux_T(DIMENSION_3)
 !
 !                      Phase index
       INTEGER          M
@@ -217,23 +217,23 @@
 !!!$omp&             IJKP, IJKT,  V_f, D_f,                    &
 !!!$omp&             IMJK, IM, IJKW,                                  &
 !!!$omp&             IJMK, JM, IJKS,                                  &
-!!!$omp&             IJKM, KM,  IJKB)                     
+!!!$omp&             IJKM, KM,  IJKB)
       DO IJK = ijkstart3, ijkend3
 !
        I = I_OF(IJK)
        J = J_OF(IJK)
        K = K_OF(IJK)
 !
-         IF (FLUID_AT(IJK)) THEN 
+         IF (FLUID_AT(IJK)) THEN
 !
-            IPJK = IP_OF(IJK) 
-            IJPK = JP_OF(IJK) 
-            IJKE = EAST_OF(IJK) 
-            IJKN = NORTH_OF(IJK) 
+            IPJK = IP_OF(IJK)
+            IJPK = JP_OF(IJK)
+            IJKE = EAST_OF(IJK)
+            IJKN = NORTH_OF(IJK)
 !
 !
 !           East face (i+1/2, j, k)
-            V_F = UF(IJK) 
+            V_F = UF(IJK)
             D_F = AVG_X_H(DIF(IJK),DIF(IJKE),I)*ODX_E(I)*AYZ(IJK)
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -247,18 +247,18 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 
-            IF (V_F >= ZERO) THEN 
-               A_M(IJK,E,M) = D_F 
-               A_M(IPJK,W,M) = D_F + FLUX_E(IJK) 
-            ELSE 
-               A_M(IJK,E,M) = D_F - FLUX_E(IJK) 
-               A_M(IPJK,W,M) = D_F 
-            ENDIF 
+            IF (V_F >= ZERO) THEN
+               A_M(IJK,E,M) = D_F
+               A_M(IPJK,W,M) = D_F + FLUX_E(IJK)
+            ELSE
+               A_M(IJK,E,M) = D_F - FLUX_E(IJK)
+               A_M(IPJK,W,M) = D_F
+            ENDIF
 !
 !
 !           North face (i, j+1/2, k)
-            V_F = VF(IJK) 
-            D_F = AVG_Y_H(DIF(IJK),DIF(IJKN),J)*ODY_N(J)*AXZ(IJK) 
+            V_F = VF(IJK)
+            D_F = AVG_Y_H(DIF(IJK),DIF(IJKN),J)*ODY_N(J)*AXZ(IJK)
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -270,20 +270,20 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-            IF (V_F >= ZERO) THEN 
-               A_M(IJK,N,M) = D_F 
-               A_M(IJPK,S,M) = D_F + FLUX_N(IJK) 
-            ELSE 
-               A_M(IJK,N,M) = D_F - FLUX_N(IJK) 
-               A_M(IJPK,S,M) = D_F 
-            ENDIF 
+            IF (V_F >= ZERO) THEN
+               A_M(IJK,N,M) = D_F
+               A_M(IJPK,S,M) = D_F + FLUX_N(IJK)
+            ELSE
+               A_M(IJK,N,M) = D_F - FLUX_N(IJK)
+               A_M(IJPK,S,M) = D_F
+            ENDIF
 !
 !           Top face (i, j, k+1/2)
-            IF (DO_K) THEN 
-               IJKP = KP_OF(IJK) 
-               IJKT = TOP_OF(IJK) 
-               V_F = WF(IJK) 
-               D_F = AVG_Z_H(DIF(IJK),DIF(IJKT),K)*OX(I)*ODZ_T(K)*AXY(IJK) 
+            IF (DO_K) THEN
+               IJKP = KP_OF(IJK)
+               IJKT = TOP_OF(IJK)
+               V_F = WF(IJK)
+               D_F = AVG_Z_H(DIF(IJK),DIF(IJKT),K)*OX(I)*ODZ_T(K)*AXY(IJK)
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -295,23 +295,23 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-               IF (V_F >= ZERO) THEN 
-                  A_M(IJK,T,M) = D_F 
-                  A_M(IJKP,B,M) = D_F + FLUX_T(IJK) 
-               ELSE 
-                  A_M(IJK,T,M) = D_F - FLUX_T(IJK) 
-                  A_M(IJKP,B,M) = D_F 
-               ENDIF 
-            ENDIF 
+               IF (V_F >= ZERO) THEN
+                  A_M(IJK,T,M) = D_F
+                  A_M(IJKP,B,M) = D_F + FLUX_T(IJK)
+               ELSE
+                  A_M(IJK,T,M) = D_F - FLUX_T(IJK)
+                  A_M(IJKP,B,M) = D_F
+               ENDIF
+            ENDIF
 !
 !
 !           West face (i-1/2, j, k)
-            IMJK = IM_OF(IJK) 
-            IF (.NOT.FLUID_AT(IMJK)) THEN 
-               IM = IM1(I) 
-               IJKW = WEST_OF(IJK) 
-               V_F = UF(IMJK) 
-               D_F = AVG_X_H(DIF(IJKW),DIF(IJK),IM)*ODX_E(IM)*AYZ(IMJK) 
+            IMJK = IM_OF(IJK)
+            IF (.NOT.FLUID_AT(IMJK)) THEN
+               IM = IM1(I)
+               IJKW = WEST_OF(IJK)
+               V_F = UF(IMJK)
+               D_F = AVG_X_H(DIF(IJKW),DIF(IJK),IM)*ODX_E(IM)*AYZ(IMJK)
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -323,20 +323,20 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-               IF (V_F >= ZERO) THEN 
-                  A_M(IJK,W,M) = D_F + FLUX_E(IMJK) 
-               ELSE 
-                  A_M(IJK,W,M) = D_F 
-               ENDIF 
-            ENDIF 
+               IF (V_F >= ZERO) THEN
+                  A_M(IJK,W,M) = D_F + FLUX_E(IMJK)
+               ELSE
+                  A_M(IJK,W,M) = D_F
+               ENDIF
+            ENDIF
 !
 !           South face (i, j-1/2, k)
-            IJMK = JM_OF(IJK) 
-            IF (.NOT.FLUID_AT(IJMK)) THEN 
-               JM = JM1(J) 
-               IJKS = SOUTH_OF(IJK) 
-               V_F = VF(IJMK) 
-               D_F = AVG_Y_H(DIF(IJKS),DIF(IJK),JM)*ODY_N(JM)*AXZ(IJMK) 
+            IJMK = JM_OF(IJK)
+            IF (.NOT.FLUID_AT(IJMK)) THEN
+               JM = JM1(J)
+               IJKS = SOUTH_OF(IJK)
+               V_F = VF(IJMK)
+               D_F = AVG_Y_H(DIF(IJKS),DIF(IJK),JM)*ODY_N(JM)*AXZ(IJMK)
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -348,22 +348,22 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-               IF (V_F >= ZERO) THEN 
-                  A_M(IJK,S,M) = D_F + FLUX_N(IJMK) 
-               ELSE 
-                  A_M(IJK,S,M) = D_F 
-               ENDIF 
-            ENDIF 
+               IF (V_F >= ZERO) THEN
+                  A_M(IJK,S,M) = D_F + FLUX_N(IJMK)
+               ELSE
+                  A_M(IJK,S,M) = D_F
+               ENDIF
+            ENDIF
 !
 !           Bottom face (i, j, k-1/2)
-            IF (DO_K) THEN 
-               IJKM = KM_OF(IJK) 
-               IF (.NOT.FLUID_AT(IJKM)) THEN 
-                  KM = KM1(K) 
-                  IJKB = BOTTOM_OF(IJK) 
-                  V_F = WF(IJKM) 
+            IF (DO_K) THEN
+               IJKM = KM_OF(IJK)
+               IF (.NOT.FLUID_AT(IJKM)) THEN
+                  KM = KM1(K)
+                  IJKB = BOTTOM_OF(IJK)
+                  V_F = WF(IJKM)
                   D_F = AVG_Z_H(DIF(IJKB),DIF(IJK),KM)*OX(I)*ODZ_T(KM)*AXY(&
-                     IJKM) 
+                     IJKM)
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -375,19 +375,19 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-                  IF (V_F >= ZERO) THEN 
-                     A_M(IJK,B,M) = D_F + FLUX_T(IJKM) 
-                  ELSE 
-                     A_M(IJK,B,M) = D_F 
-                  ENDIF 
-               ENDIF 
-            ENDIF 
+                  IF (V_F >= ZERO) THEN
+                     A_M(IJK,B,M) = D_F + FLUX_T(IJKM)
+                  ELSE
+                     A_M(IJK,B,M) = D_F
+                  ENDIF
+               ENDIF
+            ENDIF
 !
          ENDIF
-      END DO 
+      END DO
 !
-      RETURN  
-      END SUBROUTINE CONV_DIF_PHI0 
+      RETURN
+      END SUBROUTINE CONV_DIF_PHI0
 
 !
 !
@@ -413,20 +413,20 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CONV_DIF_PHI_DC(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE CONV_DIF_PHI_DC(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !  Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
-      USE matrix 
-      USE toleranc 
+      USE param
+      USE param1
+      USE parallel
+      USE matrix
+      USE toleranc
       USE run
       USE geometry
       USE compar
@@ -453,10 +453,10 @@
       INTEGER          Disc
 !
 !                      Velocity components
-      DOUBLE PRECISION Uf(DIMENSION_3), Vf(DIMENSION_3), Wf(DIMENSION_3) 
+      DOUBLE PRECISION Uf(DIMENSION_3), Vf(DIMENSION_3), Wf(DIMENSION_3)
 !
 !                      Mass flux components
-      DOUBLE PRECISION Flux_E(DIMENSION_3), Flux_N(DIMENSION_3), Flux_T(DIMENSION_3) 
+      DOUBLE PRECISION Flux_E(DIMENSION_3), Flux_N(DIMENSION_3), Flux_T(DIMENSION_3)
 !
 !                      Phase index
       INTEGER          M
@@ -488,28 +488,28 @@
 !                      Difusion parameter
       DOUBLE PRECISION D_f
 !
-!	FACE VELOCITY
-	DOUBLE PRECISION V_F
+!       FACE VELOCITY
+        DOUBLE PRECISION V_F
 !
-!	DEFERRED CORRCTION CONTRIBUTION FORM HIGH ORDER METHOD
-	DOUBLE PRECISION PHI_HO
+!       DEFERRED CORRCTION CONTRIBUTION FORM HIGH ORDER METHOD
+        DOUBLE PRECISION PHI_HO
 !
-!	LOW ORDER APPROXIMATION 
-	DOUBLE PRECISION PHI_LO
+!       LOW ORDER APPROXIMATION
+        DOUBLE PRECISION PHI_LO
 !
-!	DEFERRED CORRECTION CONTRIBUTIONS FROM EACH FACE
-	DOUBLE PRECISION  EAST_DC
-	DOUBLE PRECISION  WEST_DC
-	DOUBLE PRECISION  NORTH_DC
-	DOUBLE PRECISION  SOUTH_DC
+!       DEFERRED CORRECTION CONTRIBUTIONS FROM EACH FACE
+        DOUBLE PRECISION  EAST_DC
+        DOUBLE PRECISION  WEST_DC
+        DOUBLE PRECISION  NORTH_DC
+        DOUBLE PRECISION  SOUTH_DC
         DOUBLE PRECISION  TOP_DC
         DOUBLE PRECISION  BOTTOM_DC
 !
 !
 !---------------------------------------------------------------
-!	EXTERNAL FUNCTIONS
+!       EXTERNAL FUNCTIONS
 !---------------------------------------------------------------
-	DOUBLE PRECISION , EXTERNAL :: FPFOI_OF
+        DOUBLE PRECISION , EXTERNAL :: FPFOI_OF
 !---------------------------------------------------------------
 !
 !
@@ -530,7 +530,7 @@
 ! Send recv the third ghost layer
       IF ( FPFOI ) THEN
          Do IJK = ijkstart3, ijkend3
-	    I = I_OF(IJK)
+            I = I_OF(IJK)
             J = J_OF(IJK)
             K = K_OF(IJK)
             IJK4 = funijk3(I,J,K)
@@ -540,10 +540,10 @@
       ENDIF
 
 ! loezos
-	incr=0		
+        incr=0
 ! loezos
 
-      CALL CALC_XSI (DISC, PHI, UF, VF, WF, XSI_E, XSI_N, XSI_T,incr) 
+      CALL CALC_XSI (DISC, PHI, UF, VF, WF, XSI_E, XSI_N, XSI_T,incr)
 !
 !
 !  Calculate convection-diffusion fluxes through each of the faces
@@ -555,7 +555,7 @@
 !!!$omp&             IMJK, IJKW,                                  &
 !!!$omp&             IJMK, IJKS,                                  &
 !!!$omp&             IJKM, IJKB, PHI_HO, PHI_LO,        &
-!!!$omp&             EAST_DC, WEST_DC, NORTH_DC, SOUTH_DC, TOP_DC, BOTTOM_DC)                     
+!!!$omp&             EAST_DC, WEST_DC, NORTH_DC, SOUTH_DC, TOP_DC, BOTTOM_DC)
 !
       DO IJK = ijkstart3, ijkend3
 !
@@ -564,7 +564,7 @@
        J = J_OF(IJK)
        K = K_OF(IJK)
 !
-         IF (FLUID_AT(IJK)) THEN 
+         IF (FLUID_AT(IJK)) THEN
 !
 !
             IPJK = IP_OF(IJK)
@@ -573,8 +573,8 @@
             IJMK = JM_OF(IJK)
             IJKP = KP_OF(IJK)
             IJKM = KM_OF(IJK)
-            IJKE = EAST_OF(IJK) 
-            IJKN = NORTH_OF(IJK) 
+            IJKE = EAST_OF(IJK)
+            IJKN = NORTH_OF(IJK)
 !
 !           Third Ghost layer information
             IPPP  = IP_OF(IP_OF(IPJK))
@@ -593,120 +593,120 @@
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE East face (i+1/2, j, k)
 !
-		V_F = UF(IJK)
-		IF(V_F >= ZERO)THEN
-		   PHI_LO = PHI(IJK)
+                V_F = UF(IJK)
+                IF(V_F >= ZERO)THEN
+                   PHI_LO = PHI(IJK)
                    IF ( FPFOI ) &
-                      PHI_HO = FPFOI_OF(PHI(IPJK), PHI(IJK), & 
+                      PHI_HO = FPFOI_OF(PHI(IPJK), PHI(IJK), &
                             PHI(IMJK), PHI(IM_OF(IMJK)))
-		ELSE
-		   PHI_LO = PHI(IPJK)
+                ELSE
+                   PHI_LO = PHI(IPJK)
                    IF ( FPFOI ) &
-                      PHI_HO = FPFOI_OF(PHI(IJK), PHI(IPJK), & 
+                      PHI_HO = FPFOI_OF(PHI(IJK), PHI(IPJK), &
                             PHI(IP_OF(IPJK)), TMP4(IPPP4))
-		ENDIF
+                ENDIF
                 IF (.NOT. FPFOI ) &
                       PHI_HO = XSI_E(IJK)*PHI(IPJK)+(1.0-XSI_E(IJK))*PHI(IJK)
-		EAST_DC = FLUX_E(IJK)*(PHI_LO - PHI_HO)
+                EAST_DC = FLUX_E(IJK)*(PHI_LO - PHI_HO)
 !
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE North face (i, j+1/2, k)
 !
-		V_F = VF(IJK)
-		IF(V_F >= ZERO)THEN
-		   PHI_LO = PHI(IJK)
+                V_F = VF(IJK)
+                IF(V_F >= ZERO)THEN
+                   PHI_LO = PHI(IJK)
                    IF ( FPFOI ) &
-                      PHI_HO = FPFOI_OF(PHI(IJPK), PHI(IJK), & 
+                      PHI_HO = FPFOI_OF(PHI(IJPK), PHI(IJK), &
                             PHI(IJMK), PHI(JM_OF(IJMK)))
-		ELSE
-		   PHI_LO = PHI(IJPK)
+                ELSE
+                   PHI_LO = PHI(IJPK)
                    IF ( FPFOI ) &
-                      PHI_HO = FPFOI_OF(PHI(IJK), PHI(IJPK), & 
+                      PHI_HO = FPFOI_OF(PHI(IJK), PHI(IJPK), &
                             PHI(JP_OF(IJPK)), TMP4(JPPP4))
-		ENDIF
+                ENDIF
                 IF (.NOT. FPFOI ) &
-		     PHI_HO = XSI_N(IJK)*PHI(IJPK)+(1.0-XSI_N(IJK))*PHI(IJK)
-		NORTH_DC = FLUX_N(IJK)*(PHI_LO - PHI_HO)
+                     PHI_HO = XSI_N(IJK)*PHI(IJPK)+(1.0-XSI_N(IJK))*PHI(IJK)
+                NORTH_DC = FLUX_N(IJK)*(PHI_LO - PHI_HO)
 !
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE Top face (i, j, k+1/2)
 !
               IF (DO_K) THEN
-                IJKP = KP_OF(IJK) 
+                IJKP = KP_OF(IJK)
                 IJKT = TOP_OF(IJK)
-	        V_F = WF(IJK)
-		IF(V_F >= ZERO)THEN
+                V_F = WF(IJK)
+                IF(V_F >= ZERO)THEN
                    PHI_LO = PHI(IJK)
                    IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IJKP),  PHI(IJK), &
                             PHI(IJKM), PHI(KM_OF(IJKM)))
-	        ELSE
-		   PHI_LO = PHI(IJKP)
+                ELSE
+                   PHI_LO = PHI(IJKP)
                    IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IJK), PHI(IJKP),  &
                             PHI(KP_OF(IJKP)), TMP4(KPPP4))
-	        ENDIF
+                ENDIF
                 IF (.NOT. FPFOI ) &
                      PHI_HO = XSI_T(IJK)*PHI(IJKP)+(1.0-XSI_T(IJK))*PHI(IJK)
                 TOP_DC = FLUX_T(IJK)*(PHI_LO - PHI_HO)
-	      ELSE
-	          TOP_DC = ZERO	    
+              ELSE
+                  TOP_DC = ZERO
               ENDIF
 !
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE West face (i-1/2, j, k)
 !
-	    	IMJK = IM_OF(IJK)
-	    	IJKW = WEST_OF(IJK)
-	    	V_F = UF(IMJK)
-	    	IF(V_F >= ZERO)THEN
-		   PHI_LO = PHI(IMJK)
+                IMJK = IM_OF(IJK)
+                IJKW = WEST_OF(IJK)
+                V_F = UF(IMJK)
+                IF(V_F >= ZERO)THEN
+                   PHI_LO = PHI(IMJK)
                    IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IJK), PHI(IMJK), &
                             PHI(IM_OF(IMJK)), TMP4(IMMM4))
-		ELSE
-		   PHI_LO = PHI(IJK)
+                ELSE
+                   PHI_LO = PHI(IJK)
                    IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IMJK), PHI(IJK), &
                             PHI(IPJK), PHI(IP_OF(IPJK)))
                 ENDIF
                 IF (.NOT. FPFOI ) &
-		      PHI_HO = XSI_E(IMJK)*PHI(IJK)+(ONE-XSI_E(IMJK))*PHI(IMJK)
-		WEST_DC = FLUX_E(IMJK)*(PHI_LO - PHI_HO)
+                      PHI_HO = XSI_E(IMJK)*PHI(IJK)+(ONE-XSI_E(IMJK))*PHI(IMJK)
+                WEST_DC = FLUX_E(IMJK)*(PHI_LO - PHI_HO)
 !
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE South face (i, j-1/2, k)
 !
-            	IJMK = JM_OF(IJK) 
-            	IJKS = SOUTH_OF(IJK)
-		V_F = VF(IJMK)
-		IF(V_F >= ZERO)THEN
-		   PHI_LO = PHI(IJMK)
+                IJMK = JM_OF(IJK)
+                IJKS = SOUTH_OF(IJK)
+                V_F = VF(IJMK)
+                IF(V_F >= ZERO)THEN
+                   PHI_LO = PHI(IJMK)
                    IF ( FPFOI ) &
-                      PHI_HO = FPFOI_OF(PHI(IJK), PHI(IJMK), & 
+                      PHI_HO = FPFOI_OF(PHI(IJK), PHI(IJMK), &
                             PHI(JM_OF(IJMK)), TMP4(JMMM4))
-		ELSE
-		   PHI_LO = PHI(IJK)
+                ELSE
+                   PHI_LO = PHI(IJK)
                    IF ( FPFOI ) &
-                      PHI_HO = FPFOI_OF(PHI(IJMK), PHI(IJK), & 
+                      PHI_HO = FPFOI_OF(PHI(IJMK), PHI(IJK), &
                             PHI(IJPK), PHI(JP_OF(IJPK)))
                 ENDIF
                 IF (.NOT. FPFOI ) &
-            	      PHI_HO = XSI_N(IJMK)*PHI(IJK)+(ONE-XSI_N(IJMK))*PHI(IJMK)
-		SOUTH_DC = FLUX_N(IJMK)*(PHI_LO - PHI_HO)
+                      PHI_HO = XSI_N(IJMK)*PHI(IJK)+(ONE-XSI_N(IJMK))*PHI(IJMK)
+                SOUTH_DC = FLUX_N(IJMK)*(PHI_LO - PHI_HO)
 !
 !
 !           DEFERRED CORRECTION CONTRIBUTION AT THE Bottom face (i, j, k-1/2)
-              IF (DO_K) THEN 
-                 IJKM = KM_OF(IJK) 
+              IF (DO_K) THEN
+                 IJKM = KM_OF(IJK)
                  IJKB = BOTTOM_OF(IJK)
-		 V_F = WF(IJKM)
-		 IF(V_F >= ZERO)THEN
+                 V_F = WF(IJKM)
+                 IF(V_F >= ZERO)THEN
                    PHI_LO = PHI(IJKM)
                    IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IJK), PHI(IJKM), &
                             PHI(KM_OF(IJKM)), TMP4(KMMM4))
-		 ELSE
+                 ELSE
                    PHI_LO = PHI(IJK)
                    IF ( FPFOI ) &
                       PHI_HO = FPFOI_OF(PHI(IJKM), PHI(IJK), &
@@ -714,25 +714,25 @@
                  ENDIF
                  IF (.NOT. FPFOI ) &
                       PHI_HO = XSI_T(IJKM)*PHI(IJK)+(1.0-XSI_T(IJKM))*PHI(IJKM)
-		 BOTTOM_DC = FLUX_T(IJKM)*(PHI_LO - PHI_HO)
-	      ELSE
-		   BOTTOM_DC = ZERO
-	      ENDIF
+                 BOTTOM_DC = FLUX_T(IJKM)*(PHI_LO - PHI_HO)
+              ELSE
+                   BOTTOM_DC = ZERO
+              ENDIF
 
 !
-!	    CONTRIBUTION DUE TO DEFERRED CORRECTION
+!           CONTRIBUTION DUE TO DEFERRED CORRECTION
 !
-		B_M(IJK,M) = B_M(IJK,M)+WEST_DC-EAST_DC+SOUTH_DC-NORTH_DC&
-				+BOTTOM_DC-TOP_DC
+                B_M(IJK,M) = B_M(IJK,M)+WEST_DC-EAST_DC+SOUTH_DC-NORTH_DC&
+                                +BOTTOM_DC-TOP_DC
 !
-         ENDIF 
-      END DO 
+         ENDIF
+      END DO
       call unlock_tmp4_array
       call unlock_xsi_array
 !
 !
-      RETURN  
-      END SUBROUTINE CONV_DIF_PHI_DC 
+      RETURN
+      END SUBROUTINE CONV_DIF_PHI_DC
 !
 !
 
@@ -760,20 +760,20 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CONV_DIF_PHI1(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE CONV_DIF_PHI1(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !  Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
-      USE matrix 
-      USE toleranc 
+      USE param
+      USE param1
+      USE parallel
+      USE matrix
+      USE toleranc
       USE run
       USE geometry
       USE compar
@@ -806,10 +806,10 @@
       INTEGER          Disc
 !
 !                      Velocity components
-      DOUBLE PRECISION Uf(DIMENSION_3), Vf(DIMENSION_3), Wf(DIMENSION_3) 
+      DOUBLE PRECISION Uf(DIMENSION_3), Vf(DIMENSION_3), Wf(DIMENSION_3)
 !
 !                      Mass flux components
-      DOUBLE PRECISION Flux_E(DIMENSION_3), Flux_N(DIMENSION_3), Flux_T(DIMENSION_3) 
+      DOUBLE PRECISION Flux_E(DIMENSION_3), Flux_N(DIMENSION_3), Flux_T(DIMENSION_3)
 !
 !                      Phase index
       INTEGER          M
@@ -853,18 +853,18 @@
 !
 
 ! loezos
-	incr=0		
-! loezos	
- 
-      CALL CALC_XSI (DISC, PHI, UF, VF, WF, XSI_E, XSI_N, XSI_T,incr) 
+        incr=0
+! loezos
+
+      CALL CALC_XSI (DISC, PHI, UF, VF, WF, XSI_E, XSI_N, XSI_T,incr)
 
 ! loezos
-!update V to true velocity      
+!update V to true velocity
 
       IF (SHEAR) THEN
-	 DO IJK = ijkstart3, ijkend3
-         IF (FLUID_AT(IJK)) THEN  
-	   VF(IJK)=VF(IJK)+VSH(IJK)	
+         DO IJK = ijkstart3, ijkend3
+         IF (FLUID_AT(IJK)) THEN
+           VF(IJK)=VF(IJK)+VSH(IJK)
           END IF
         END DO
       END IF
@@ -879,26 +879,26 @@
 !!!$omp&             IJKP, IJKT,    D_f,                        &
 !!!$omp&             IMJK, IM, IJKW,                                   &
 !!!$omp&             IJMK, JM,  IJKS,                                  &
-!!!$omp&             IJKM, KM,  IJKB )                      
+!!!$omp&             IJKM, KM,  IJKB )
 !
 !
 !
       DO IJK = ijkstart3, ijkend3
 !
-       I = I_OF(IJK) 
-       J = J_OF(IJK) 
-       K = K_OF(IJK) 
+       I = I_OF(IJK)
+       J = J_OF(IJK)
+       K = K_OF(IJK)
 !
-         IF (FLUID_AT(IJK)) THEN 
+         IF (FLUID_AT(IJK)) THEN
 !
-            IPJK = IP_OF(IJK) 
-            IJPK = JP_OF(IJK) 
-            IJKE = EAST_OF(IJK) 
-            IJKN = NORTH_OF(IJK) 
+            IPJK = IP_OF(IJK)
+            IJPK = JP_OF(IJK)
+            IJKE = EAST_OF(IJK)
+            IJKN = NORTH_OF(IJK)
 !
 !
 !           East face (i+1/2, j, k)
-            D_F = AVG_X_H(DIF(IJK),DIF(IJKE),I)*ODX_E(I)*AYZ(IJK) 
+            D_F = AVG_X_H(DIF(IJK),DIF(IJKE),I)*ODX_E(I)*AYZ(IJK)
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -911,13 +911,13 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 !
-            A_M(IJK,E,M) = D_F - XSI_E(IJK)*FLUX_E(IJK) 
+            A_M(IJK,E,M) = D_F - XSI_E(IJK)*FLUX_E(IJK)
 !
-            A_M(IPJK,W,M) = D_F + (ONE - XSI_E(IJK))*FLUX_E(IJK) 
+            A_M(IPJK,W,M) = D_F + (ONE - XSI_E(IJK))*FLUX_E(IJK)
 !
 !
 !           North face (i, j+1/2, k)
-            D_F = AVG_Y_H(DIF(IJK),DIF(IJKN),J)*ODY_N(J)*AXZ(IJK) 
+            D_F = AVG_Y_H(DIF(IJK),DIF(IJKN),J)*ODY_N(J)*AXZ(IJK)
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -930,17 +930,17 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 !
-            A_M(IJK,N,M) = D_F - XSI_N(IJK)*FLUX_N(IJK) 
+            A_M(IJK,N,M) = D_F - XSI_N(IJK)*FLUX_N(IJK)
 !
-            A_M(IJPK,S,M) = D_F + (ONE - XSI_N(IJK))*FLUX_N(IJK) 
+            A_M(IJPK,S,M) = D_F + (ONE - XSI_N(IJK))*FLUX_N(IJK)
 !
 !
 !           Top face (i, j, k+1/2)
-            IF (DO_K) THEN 
-               IJKP = KP_OF(IJK) 
-               IJKT = TOP_OF(IJK) 
+            IF (DO_K) THEN
+               IJKP = KP_OF(IJK)
+               IJKT = TOP_OF(IJK)
 !
-               D_F = AVG_Z_H(DIF(IJK),DIF(IJKT),K)*OX(I)*ODZ_T(K)*AXY(IJK) 
+               D_F = AVG_Z_H(DIF(IJK),DIF(IJKT),K)*OX(I)*ODZ_T(K)*AXY(IJK)
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -953,18 +953,18 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 !
-               A_M(IJK,T,M) = D_F - XSI_T(IJK)*FLUX_T(IJK) 
+               A_M(IJK,T,M) = D_F - XSI_T(IJK)*FLUX_T(IJK)
 !
-               A_M(IJKP,B,M)=D_F+(ONE-XSI_T(IJK))*FLUX_T(IJK) 
-            ENDIF 
+               A_M(IJKP,B,M)=D_F+(ONE-XSI_T(IJK))*FLUX_T(IJK)
+            ENDIF
 !
 !           West face (i-1/2, j, k)
-            IMJK = IM_OF(IJK) 
-            IF (.NOT.FLUID_AT(IMJK)) THEN 
-               IM = IM1(I) 
-               IJKW = WEST_OF(IJK) 
+            IMJK = IM_OF(IJK)
+            IF (.NOT.FLUID_AT(IMJK)) THEN
+               IM = IM1(I)
+               IJKW = WEST_OF(IJK)
 !
-               D_F = AVG_X_H(DIF(IJKW),DIF(IJK),IM)*ODX_E(IM)*AYZ(IMJK) 
+               D_F = AVG_X_H(DIF(IJKW),DIF(IJK),IM)*ODX_E(IM)*AYZ(IMJK)
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -978,16 +978,16 @@
 !=======================================================================
 
 !
-               A_M(IJK,W,M) = D_F + (ONE - XSI_E(IMJK))*FLUX_E(IMJK) 
-            ENDIF 
+               A_M(IJK,W,M) = D_F + (ONE - XSI_E(IMJK))*FLUX_E(IMJK)
+            ENDIF
 !
 !           South face (i, j-1/2, k)
-            IJMK = JM_OF(IJK) 
-            IF (.NOT.FLUID_AT(IJMK)) THEN 
-               JM = JM1(J) 
-               IJKS = SOUTH_OF(IJK) 
+            IJMK = JM_OF(IJK)
+            IF (.NOT.FLUID_AT(IJMK)) THEN
+               JM = JM1(J)
+               IJKS = SOUTH_OF(IJK)
 !
-               D_F = AVG_Y_H(DIF(IJKS),DIF(IJK),JM)*ODY_N(JM)*AXZ(IJMK) 
+               D_F = AVG_Y_H(DIF(IJKS),DIF(IJK),JM)*ODY_N(JM)*AXZ(IJMK)
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -1001,18 +1001,18 @@
 !=======================================================================
 
 !
-               A_M(IJK,S,M) = D_F + (ONE - XSI_N(IJMK))*FLUX_N(IJMK) 
-            ENDIF 
+               A_M(IJK,S,M) = D_F + (ONE - XSI_N(IJMK))*FLUX_N(IJMK)
+            ENDIF
 !
 !           Bottom face (i, j, k-1/2)
-            IF (DO_K) THEN 
-               IJKM = KM_OF(IJK) 
-               IF (.NOT.FLUID_AT(IJKM)) THEN 
-                  KM = KM1(K) 
-                  IJKB = BOTTOM_OF(IJK) 
+            IF (DO_K) THEN
+               IJKM = KM_OF(IJK)
+               IF (.NOT.FLUID_AT(IJKM)) THEN
+                  KM = KM1(K)
+                  IJKB = BOTTOM_OF(IJK)
 !
                   D_F = AVG_Z_H(DIF(IJKB),DIF(IJK),KM)*OX(I)*ODZ_T(KM)*AXY(&
-                     IJKM) 
+                     IJKM)
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -1025,27 +1025,27 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 !
-                  A_M(IJK,B,M) = D_F + (ONE - XSI_T(IJKM))*FLUX_T(IJKM) 
-               ENDIF 
-            ENDIF 
+                  A_M(IJK,B,M) = D_F + (ONE - XSI_T(IJKM))*FLUX_T(IJKM)
+               ENDIF
+            ENDIF
 !
-         ENDIF 
-      END DO 
+         ENDIF
+      END DO
 
-! loezos 
+! loezos
        IF (SHEAR) THEN
-	 DO IJK = ijkstart3, ijkend3
-          IF (FLUID_AT(IJK)) THEN  	 
-	   VF(IJK)=VF(IJK)-VSH(IJK)	
-	  END IF
-         END DO 	
+         DO IJK = ijkstart3, ijkend3
+          IF (FLUID_AT(IJK)) THEN
+           VF(IJK)=VF(IJK)-VSH(IJK)
+          END IF
+         END DO
         END IF
-! loezos      
+! loezos
       call unlock_xsi_array
 
 !
-      RETURN  
-      END SUBROUTINE CONV_DIF_PHI1 
+      RETURN
+      END SUBROUTINE CONV_DIF_PHI1
 !
 !
 !
@@ -1067,26 +1067,26 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE DIF_PHI_IS(DIF, A_M, B_M, M, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE DIF_PHI_IS(DIF, A_M, B_M, M, IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !  Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
-      USE matrix 
-      USE toleranc 
+      USE param
+      USE param1
+      USE parallel
+      USE matrix
+      USE toleranc
       USE run
       USE geometry
       USE compar
       USE sendrecv
       USE indices
-      USE scales 
+      USE scales
       USE constant
       USE physprop
       USE fldvar
@@ -1134,18 +1134,18 @@
 !
 ! Make user defined internal surfaces non-conducting
 !
-      DO L = 1, DIMENSION_IS 
-         IF (IS_DEFINED(L)) THEN 
-            I1 = IS_I_W(L) 
-            I2 = IS_I_E(L) 
-            J1 = IS_J_S(L) 
-            J2 = IS_J_N(L) 
-            K1 = IS_K_B(L) 
-            K2 = IS_K_T(L) 
+      DO L = 1, DIMENSION_IS
+         IF (IS_DEFINED(L)) THEN
+            I1 = IS_I_W(L)
+            I2 = IS_I_E(L)
+            J1 = IS_J_S(L)
+            J2 = IS_J_N(L)
+            K1 = IS_K_B(L)
+            K2 = IS_K_T(L)
 
 !       Limit I1, I2 and all to local processor first ghost layer
 
-	    IF(I1.LE.IEND2)   I1 = MAX(I1, ISTART2)
+            IF(I1.LE.IEND2)   I1 = MAX(I1, ISTART2)
 
             IF(J1.LE.JEND2)   J1 = MAX(J1, JSTART2)
 
@@ -1158,51 +1158,51 @@
             IF(K2.GE.KSTART2) K2 = MIN(K2, KEND2)
 
 !     End of limiting to the first ghost cells of the processor....
-            DO K = K1, K2 
-               DO J = J1, J2 
-                  DO I = I1, I2 
+            DO K = K1, K2
+               DO J = J1, J2
+                  DO I = I1, I2
                      IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
-                     IJK = FUNIJK(I,J,K) 
+                     IJK = FUNIJK(I,J,K)
 !
-                     SELECT CASE (TRIM(IS_PLANE(L)))  
-                     CASE ('E')  
-                        IJKE = EAST_OF(IJK) 
-                        IPJK = IP_OF(IJK) 
+                     SELECT CASE (TRIM(IS_PLANE(L)))
+                     CASE ('E')
+                        IJKE = EAST_OF(IJK)
+                        IPJK = IP_OF(IJK)
 !
-                        D_F = AVG_X_H(DIF(IJK),DIF(IJKE),I)*ODX_E(I)*AYZ(IJK) 
+                        D_F = AVG_X_H(DIF(IJK),DIF(IJKE),I)*ODX_E(I)*AYZ(IJK)
 !
-                        A_M(IJK,E,M) = A_M(IJK,E,M) - D_F 
-                        A_M(IPJK,W,M) = A_M(IPJK,W,M) - D_F 
+                        A_M(IJK,E,M) = A_M(IJK,E,M) - D_F
+                        A_M(IPJK,W,M) = A_M(IPJK,W,M) - D_F
 !
-                     CASE ('N')  
-                        IJKN = NORTH_OF(IJK) 
-                        IJPK = JP_OF(IJK) 
+                     CASE ('N')
+                        IJKN = NORTH_OF(IJK)
+                        IJPK = JP_OF(IJK)
 !
-                        D_F = AVG_Y_H(DIF(IJK),DIF(IJKN),J)*ODY_N(J)*AXZ(IJK) 
+                        D_F = AVG_Y_H(DIF(IJK),DIF(IJKN),J)*ODY_N(J)*AXZ(IJK)
 !
-                        A_M(IJK,N,M) = A_M(IJK,N,M) - D_F 
-                        A_M(IJPK,S,M) = A_M(IJPK,S,M) - D_F 
+                        A_M(IJK,N,M) = A_M(IJK,N,M) - D_F
+                        A_M(IJPK,S,M) = A_M(IJPK,S,M) - D_F
 !
-                     CASE ('T')  
-                        IF (DO_K) THEN 
-                           IJKT = TOP_OF(IJK) 
-                           IJKP = KP_OF(IJK) 
+                     CASE ('T')
+                        IF (DO_K) THEN
+                           IJKT = TOP_OF(IJK)
+                           IJKP = KP_OF(IJK)
 !
                            D_F = AVG_Z_H(DIF(IJK),DIF(IJKT),K)*OX(I)*ODZ_T(K)*&
-                              AXY(IJK) 
+                              AXY(IJK)
 !
-                           A_M(IJK,T,M) = A_M(IJK,T,M) - D_F 
-                           A_M(IJKP,B,M) = A_M(IJKP,B,M) - D_F 
+                           A_M(IJK,T,M) = A_M(IJK,T,M) - D_F
+                           A_M(IJKP,B,M) = A_M(IJKP,B,M) - D_F
 !
-                        ENDIF 
-                     CASE DEFAULT 
+                        ENDIF
+                     CASE DEFAULT
 !
-                     END SELECT 
-                  END DO 
-               END DO 
-            END DO 
-         ENDIF 
-      END DO 
+                     END SELECT
+                  END DO
+               END DO
+            END DO
+         ENDIF
+      END DO
 !
-      RETURN  
-      END SUBROUTINE DIF_PHI_IS 
+      RETURN
+      END SUBROUTINE DIF_PHI_IS

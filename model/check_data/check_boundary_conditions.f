@@ -7,7 +7,7 @@
 !     - convert physical locations to i, j, k's (GET_FLOW_BC)          !
 !     - compute area of boundary surfaces (GET_BC_AREA)                !
 !     - convert mass and volumetric flows to velocities (FLOW_TO_VEL)  !
-!     - check specification of physical quantities                     ! 
+!     - check specification of physical quantities                     !
 !                                                                      !
 !  Comments:                                                           !
 !                                                                      !
@@ -74,7 +74,7 @@
       MMAX_TOT = SMAX + DES_MMAX
 
 ! Loop over each defined BC and check the user data.
-      DO BCV = 1, DIMENSION_BC 
+      DO BCV = 1, DIMENSION_BC
 
          IF (BC_DEFINED(BCV)) THEN
 
@@ -138,7 +138,7 @@
 ! Cleanup and exit.
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE CHECK_BOUNDARY_CONDITIONS
 
@@ -207,84 +207,84 @@
          WRITE(ERR_MSG,1100) trim(iVar('BC_U_g',BCV))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
-      IF(BC_V_G(BCV) /= UNDEFINED) THEN 
+      IF(BC_V_G(BCV) /= UNDEFINED) THEN
          WRITE(ERR_MSG,1100) trim(iVar('BC_V_g',BCV))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-      ENDIF 
-      IF (BC_W_G(BCV) /= UNDEFINED) THEN 
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+      IF (BC_W_G(BCV) /= UNDEFINED) THEN
          WRITE(ERR_MSG,1100) trim(iVar('BC_W_g',BCV))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-      ENDIF 
-      IF (BC_EP_G(BCV) /= UNDEFINED) THEN 
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+      IF (BC_EP_G(BCV) /= UNDEFINED) THEN
          WRITE(ERR_MSG,1100) trim(iVar('BC_EP_g',BCV))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-      ENDIF 
-      IF (BC_P_G(BCV) /= UNDEFINED) THEN 
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+      IF (BC_P_G(BCV) /= UNDEFINED) THEN
          WRITE(ERR_MSG,1100) trim(iVar('BC_P_g',BCV))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-      ENDIF 
-      IF (BC_T_G(BCV) /= UNDEFINED) THEN 
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+      IF (BC_T_G(BCV) /= UNDEFINED) THEN
          WRITE(ERR_MSG,1100) trim(iVar('BC_T_g',BCV))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-      ENDIF 
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
 
-      DO N = 1, DIMENSION_N_G 
+      DO N = 1, DIMENSION_N_G
          IF(BC_X_G(BCV,N) /= UNDEFINED) THEN
             WRITE(ERR_MSG,1100) trim(iVar('BC_X_g',BCV,N))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-         ENDIF 
-      ENDDO 
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDDO
 
 ! Check solids phase variables.
       DO M = 1, DIM_M
-         IF(BC_ROP_S(BCV,M) /= UNDEFINED) THEN 
+         IF(BC_ROP_S(BCV,M) /= UNDEFINED) THEN
             WRITE(ERR_MSG,1100) trim(iVar('BC_ROP_s',BCV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-         ENDIF 
-         IF(BC_EP_S(BCV,M) /= UNDEFINED) THEN 
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+         IF(BC_EP_S(BCV,M) /= UNDEFINED) THEN
             WRITE(ERR_MSG,1100) trim(iVar('BC_EP_s',BCV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-         ENDIF 
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
          IF(BC_U_S(BCV,M) /= UNDEFINED) THEN
             WRITE(ERR_MSG,1100) trim(iVar('BC_U_s',BCV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-         ENDIF 
-         IF(BC_V_S(BCV,M) /= UNDEFINED) THEN 
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+         IF(BC_V_S(BCV,M) /= UNDEFINED) THEN
             WRITE(ERR_MSG,1100) trim(iVar('BC_V_s',BCV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-         ENDIF 
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
 
-         IF(BC_W_S(BCV,M) /= UNDEFINED) THEN 
+         IF(BC_W_S(BCV,M) /= UNDEFINED) THEN
             WRITE(ERR_MSG,1100) trim(iVar('BC_W_s',BCV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-         ENDIF 
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
          IF(BC_T_S(BCV,M) /= UNDEFINED) THEN
             WRITE(ERR_MSG,1100) trim(iVar('BC_T_s',BCV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-         ENDIF 
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
 
-         DO N = 1, DIMENSION_N_S 
+         DO N = 1, DIMENSION_N_S
             IF(BC_X_S(BCV,M,N) /= UNDEFINED) THEN
                WRITE(ERR_MSG,1100) trim(iVar('BC_X_s',BCV,M,N))
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-            ENDIF 
-         ENDDO 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDDO
 
-      ENDDO 
+      ENDDO
 
 ! Check scalar equation variables.
       DO N = 1, DIM_SCALAR
          IF(BC_Scalar(BCV,N) /= UNDEFINED) THEN
             WRITE(ERR_MSG,1100) trim(iVar('BC_Scalar',BCV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-      ENDDO 
+         ENDIF
+      ENDDO
 
-  
+
       CALL FINL_ERR_MSG
 
 
-      RETURN  
+      RETURN
 
  1100 FORMAT('Error 1100:',A,' specified for an undefined BC location')
 

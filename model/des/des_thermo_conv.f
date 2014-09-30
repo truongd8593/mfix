@@ -55,7 +55,7 @@
       DOUBLE PRECISION Sa
 ! Convection source
       DOUBLE PRECISION Qcv
-      
+
 
 ! Obtain the temperature of the gas. --> Not interpolated.
       Tg = T_g(IJK)
@@ -144,7 +144,7 @@
 
 ! Functions
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
       INCLUDE '../fun_avg1.inc'
       INCLUDE '../function.inc'
@@ -182,7 +182,7 @@
             IF(K_G(IJK) > ZERO) THEN
                N_Pr = (C_PG(IJK)*MU_G(IJK))/K_G(IJK)
             ELSE
-               N_Pr = LARGE_NUMBER 
+               N_Pr = LARGE_NUMBER
             ENDIF
 
 ! Calculate the particle Reynolds Number
@@ -239,9 +239,9 @@
 
 ! Passed Variables
 !---------------------------------------------------------------------//
-! Source term on LHS.  Must be positive. 
+! Source term on LHS.  Must be positive.
       DOUBLE PRECISION, INTENT(INOUT) :: S_P(DIMENSION_3)
-! Source term on RHS 
+! Source term on RHS
       DOUBLE PRECISION, INTENT(INOUT) :: S_C(DIMENSION_3)
 
 ! Local variables
@@ -293,5 +293,5 @@
 
 
       RETURN
-      END SUBROUTINE ZERO_ENERGY_SOURCE 
+      END SUBROUTINE ZERO_ENERGY_SOURCE
 

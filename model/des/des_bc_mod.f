@@ -27,12 +27,12 @@
 ! This array contains integers representing the mass/solid phase indices
 ! present at a specific boundary condtion in proportion to their
 ! respective number fraction at the inlet (i.e., it represents the
-! particle number distribution of incoming solids at the inlet).  The 
-! array is scaled in size according to the parameter NUMFRAC_LIMIT.  
+! particle number distribution of incoming solids at the inlet).  The
+! array is scaled in size according to the parameter NUMFRAC_LIMIT.
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: DEM_BC_POLY_LAYOUT
 
 ! Particle injection time scale; used when pi_factor > 1 to keep track
-! of time needed for next injection     
+! of time needed for next injection
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DEM_MI_TIME
 
 ! Logical that can be flagged in the mfix.dat file to force the inlet
@@ -41,15 +41,15 @@
 ! time to randomly place particles.
       LOGICAL :: FORCE_ORD_BC
 
-! Particle injection factor; how many solid time steps (dtsolid) pass 
+! Particle injection factor; how many solid time steps (dtsolid) pass
 ! before the next injection of a particle. if pi_count is greater than
 ! 1, then pi_factor is set to 1 (i.e. multiple particles enter every
-! solids time step). 
+! solids time step).
       INTEGER, DIMENSION(:), ALLOCATABLE :: PI_FACTOR   !(DES_BCMI)
 
 ! Particle injection count (injection number); how many particles are
 ! injected in one solids time step. pi_count is set to one if
-! less than 1 particle enters per solids time step.     
+! less than 1 particle enters per solids time step.
       INTEGER, DIMENSION(:), ALLOCATABLE :: PI_COUNT   !(DES_BCMI)
 
 
@@ -83,7 +83,7 @@
       END TYPE DEM_MI_
 
 ! Construct an array of integers in values from 1 to a calculated factor
-! in a random order, which is used when placing new particles.        
+! in a random order, which is used when placing new particles.
 !      TYPE(DEM_MI_DATA), DIMENSION(:), ALLOCATABLE :: MI_ORDER
 
 ! Array linking all of the reaction data.
@@ -110,7 +110,7 @@
 ! corresponds to one of the six planes in a cubic domain. Each wall
 ! corresponds to a number as follows west=1, east=2, bottom=3, top=4,
 ! south=5, north=6. See cfwallposvel for details. To specify a y or z
-! velocity to the west wall set des_bc_vw_s(1,M) or des_bc_ww_s(1,M), 
+! velocity to the west wall set des_bc_vw_s(1,M) or des_bc_ww_s(1,M),
 ! respectively (note an x velocity is not valid for a west or east wall).
 ! Since these are user input, they are allocated here with a constant
 ! preset size, but their actual size is represented by &

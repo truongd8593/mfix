@@ -67,7 +67,7 @@
       contains
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                         C  
+!                                                                         C
 !     Module name: MCHEM_TIME_MARCH                                       C
 !     Purpose: Called in time_march.f to do rxns calcs                    C
 !                                                                         C
@@ -475,7 +475,7 @@
 
       DO N=1,NMAX(0)
          CALL send_recv(X_G(:,N),2)
-         CALL BOUND_X (X_G(1,N), IJKMAX2, IER) 
+         CALL BOUND_X (X_G(1,N), IJKMAX2, IER)
       ENDDO
 
       DO M = 1, MMAX
@@ -486,9 +486,9 @@
 ! Solids phase species mass fractions.
          DO N=1,NMAX(M)
             CALL send_recv(X_S(:,M,N),2)
-            CALL BOUND_X (X_S(1,M,N), IJKMAX2, IER) 
+            CALL BOUND_X (X_S(1,M,N), IJKMAX2, IER)
          ENDDO
-      ENDDO   
+      ENDDO
 
       DO IJK = ijkStart3, ijkEnd3
          IF(.NOT.FLUID_AT(IJK)) CYCLE

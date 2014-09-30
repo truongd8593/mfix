@@ -132,4 +132,4 @@
 ! debugging tasks
       LOGICAL          DBGPRN_LAYOUT
 
-      END MODULE output                                                                          
+      END MODULE output

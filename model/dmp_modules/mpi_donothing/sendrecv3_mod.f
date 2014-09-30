@@ -60,20 +60,20 @@
         integer :: communicator
 
 !       -----------------
-!       generic interface 
+!       generic interface
 !       -----------------
         interface sendrecv3_begin
         module procedure &
                 sendrecv3_begin_1d, &
                 sendrecv3_begin_1i, &
-                sendrecv3_begin_1c 
+                sendrecv3_begin_1c
         end interface
 
         interface sendrecv3_end
         module procedure &
                 sendrecv3_end_1d, &
                 sendrecv3_end_1i, &
-                sendrecv3_end_1c  
+                sendrecv3_end_1c
         end interface
 
         interface send_recv3
@@ -118,7 +118,7 @@
         jsize = (j2-j1+1)
         isize = (i2-i1+1)
 
-        
+
         if (mod(ijk,isize*jsize).ne.0) then
                 k = int( ijk/(isize*jsize) ) + k1
         else
@@ -185,7 +185,7 @@
         jsize = (j2-j1+1)
         isize = (i2-i1+1)
 
-        
+
         if (mod(ijk,isize*jsize).ne.0) then
                 k = int( ijk/(isize*jsize) ) + k1
         else
@@ -304,7 +304,7 @@
         character(len=*),  dimension(:), intent(inout) :: X
         integer, intent(in), optional :: ilayer,idebug
 
-        return 
+        return
         end subroutine send_recv3_1c
 
         subroutine send_recv3_1d( X, ilayer, idebug )
@@ -313,7 +313,7 @@
         double precision,  dimension(:), intent(inout) :: X
         integer, intent(in), optional :: ilayer,idebug
 
-        return 
+        return
         end subroutine send_recv3_1d
 
         subroutine send_recv3_2d( X, ilayer, idebug )
@@ -340,8 +340,8 @@
         integer,  dimension(:), intent(inout) :: X
         integer, intent(in), optional :: ilayer,idebug
 
-        return 
+        return
         end subroutine send_recv3_1i
 
-        
+
         end module sendrecv3

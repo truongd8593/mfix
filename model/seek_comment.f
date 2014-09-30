@@ -21,8 +21,8 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      INTEGER FUNCTION SEEK_COMMENT (LINE, MAXCOL) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      INTEGER FUNCTION SEEK_COMMENT (LINE, MAXCOL)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
       IMPLICIT NONE
 !-----------------------------------------------
@@ -40,16 +40,16 @@
 !-----------------------------------------------
 !
 !                   the number of designated comment characters
-      INTEGER, PARAMETER :: DIM_COMMENT = 2 
+      INTEGER, PARAMETER :: DIM_COMMENT = 2
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !
 !                   loop indicies
-      INTEGER :: L, L2 
+      INTEGER :: L, L2
 !
 !                   the comment characters
-      CHARACTER, DIMENSION(DIM_COMMENT) :: COMMENT_CHAR 
+      CHARACTER, DIMENSION(DIM_COMMENT) :: COMMENT_CHAR
 !-----------------------------------------------
 !
 !     The function SEEK_COMMENT returns the index to where a comment
@@ -57,17 +57,17 @@
 !     if no-comment characters in the line
 !
 !
-      DATA COMMENT_CHAR/'#', '!'/ 
+      DATA COMMENT_CHAR/'#', '!'/
 !
-      DO L = 1, MAXCOL 
-         DO L2 = 1, DIM_COMMENT 
-            IF (LINE(L:L) == COMMENT_CHAR(L2)) THEN 
-               SEEK_COMMENT = L 
-               RETURN  
-            ENDIF 
-         END DO 
-      END DO 
-      SEEK_COMMENT = MAXCOL + 1 
+      DO L = 1, MAXCOL
+         DO L2 = 1, DIM_COMMENT
+            IF (LINE(L:L) == COMMENT_CHAR(L2)) THEN
+               SEEK_COMMENT = L
+               RETURN
+            ENDIF
+         END DO
+      END DO
+      SEEK_COMMENT = MAXCOL + 1
 !
-      RETURN  
-      END FUNCTION SEEK_COMMENT 
+      RETURN
+      END FUNCTION SEEK_COMMENT

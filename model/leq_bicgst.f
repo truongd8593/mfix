@@ -18,7 +18,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE LEQ_BICGSt(VNAME, VNO, VAR, A_M, B_m,  cmethod, TOL, PC, ITMAX,IER)
-      
+
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -103,7 +103,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE LEQ_BICGS0t(VNAME, VNO, VAR, A_M, B_m,  cmethod, TOL, ITMAX,  &
-                            MATVECt, MSOLVEt, IER ) 
+                            MATVECt, MSOLVEt, IER )
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
@@ -152,7 +152,7 @@
                                 R,Rtilde, P,Phat, Svec, Shat, Tvec,V
       DOUBLE PRECISION, DIMENSION(0:ITMAX+1) :: alpha,beta,omega,rho
       DOUBLE PRECISION :: TxS, TxT, oam,RtildexV,                   &
-		      RtildexR, aijmax, Rnorm=0, Rnorm0, Snorm, TOLMIN, pnorm
+                      RtildexR, aijmax, Rnorm=0, Rnorm0, Snorm, TOLMIN, pnorm
       LOGICAL :: isconverged
       INTEGER :: i, ii, j, k, ijk, itemp, iter
 !AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
@@ -185,7 +185,7 @@
 
 !-----------------------------------------------
       INCLUDE 'function.inc'
-!     
+!
       is_serial = numPEs.eq.1.and.is_serial
 
       alpha(:)  = zero
@@ -230,11 +230,11 @@
       TOLMIN = EPSILON( one )
 
       if (do_unit_scaling) then
-!     
+!
 !     Scale matrix to have unit diagonal
 !
 !AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
-! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 233)     
+! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 233)
 !$omp parallel do private(ijk2,i,j,k,oam,aijmax) collapse (3)
          do k = kstart2,kend2
             do i = istart2,iend2
@@ -244,7 +244,7 @@
                   aijmax = maxval(abs(A_M(:,ijk2)) )
 
                   OAM = one/aijmax
-                  
+
                   A_M(:,IJK2) = A_M(:,IJK2)*OAM
 
                   B_M(IJK2) = B_M(IJK2)*OAM
@@ -306,16 +306,16 @@
       if (idebugl >= 1) then
          if(myPE.eq.0) print*,'leq_bicgs, initial: ', Vname,' resid ', Rnorm0
       endif
-!     
+!
 !     Main loop
-!     
+!
       iter = 1
       do i=1,itmax
 
          if(is_serial) then
             if (use_doloop) then
                RtildexR = zero
-!AIKE PFUPGRADE 091409	       
+!AIKE PFUPGRADE 091409
 !!$omp        parallel do private(ijk2) reduction(+:RtildexR)
                do ijk2=ijkstart3,ijkend3
                   RtildexR = RtildexR + Rtilde(ijk2) * R(ijk2)
@@ -349,7 +349,7 @@
 
          if (i .eq. 1) then
             if (use_doloop) then
-!AIKE PFUPGRADE 091409	 	    
+!AIKE PFUPGRADE 091409
 !!$omp        parallel do private(ijk2)
                do ijk2=ijkstart3,ijkend3
                   P(ijk2) = R(ijk2)
@@ -360,7 +360,7 @@
          else
             beta(i-1) = ( rho(i-1)/rho(i-2) )*( alpha(i-1) / omega(i-1) )
             if (use_doloop) then
-!AIKE PFUPGRADE 091409	
+!AIKE PFUPGRADE 091409
 !!$omp        parallel do private(ijk2)
                do ijk2=ijkstart3,ijkend3
                   P(ijk2) = R(ijk2) + beta(i-1)*( P(ijk2) - omega(i-1)*V(ijk2) )
@@ -370,19 +370,19 @@
             endif
          endif ! i.eq.1
 
-!     
+!
 !     Solve M Phat(:) = P(:)
 !     V(:) = A*Phat(:)
-!     
+!
 
          call MSOLVEt( Vname, P, A_m, Phat, CMETHOD)
 
          call MATVECt( Vname, Phat, A_m, V )
-         
+
          if(is_serial) then
             if (use_doloop) then
                RtildexV = zero
-!AIKE PFUPGRADE 091409		       
+!AIKE PFUPGRADE 091409
 !!$omp         parallel do private(ijk2) reduction(+:RtildexV)
                do ijk2=ijkstart3,ijkend3
                   RtildexV = RtildexV + Rtilde(ijk2) * V(ijk2)
@@ -399,7 +399,7 @@
          alpha(i) = rho(i-1) / RtildexV
 
          if (use_doloop) then
-!AIKE PFUPGRADE 091409	
+!AIKE PFUPGRADE 091409
 !!$omp     parallel do private(ijk2)
             do ijk2=ijkstart3,ijkend3
                Svec(ijk2) = R(ijk2) - alpha(i) * V(ijk2)
@@ -409,14 +409,14 @@
          endif ! use_doloop
 
          if(.not.minimize_dotproducts) then
-!     
+!
 !     Check norm of Svec(:); if small enough:
 !     set X(:) = X(:) + alpha(i)*Phat(:) and stop
-!     
+!
             if(is_serial) then
                if (use_doloop) then
                   Snorm = zero
-!AIKE PFUPGRADE 091409			  
+!AIKE PFUPGRADE 091409
 !!$omp       parallel do private(ijk2) reduction(+:Snorm)
                   do ijk2=ijkstart3,ijkend3
                      Snorm = Snorm + Svec(ijk2) * Svec(ijk2)
@@ -433,7 +433,7 @@
 
             if (Snorm <= TOLMIN) then
                if (use_doloop) then
-!AIKE PFUPGRADE 091409		       
+!AIKE PFUPGRADE 091409
 !!$omp          parallel do private(ijk2)
                   do ijk2=ijkstart3,ijkend3
                      Var(ijk2) = Var(ijk2) + alpha(i)*Phat(ijk2)
@@ -443,16 +443,16 @@
                endif            ! use_doloop
 
                if (idebugl >= 1) then
-!     
+!
 !     Recompute residual norm
-!     
+!
                   call MATVECt( Vname, Var, A_m, R )
 
 !     Rnorm = sqrt( dot_product_par( Var, Var ) )
 !     print*,'leq_bicgs, initial: ', Vname,' Vnorm ', Rnorm
 
                   if (use_doloop) then
-!AIKE PFUPGRADE 091409			  
+!AIKE PFUPGRADE 091409
 !!$omp          parallel do private(ijk2)
                      do ijk2=ijkstart3,ijkend3
                         R(ijk2) = B_m(ijk2) - R(ijk2)
@@ -464,13 +464,13 @@
                   if(is_serial) then
                      if (use_doloop) then
                         Rnorm = zero
-!AIKE PFUPGRADE 091409				
+!AIKE PFUPGRADE 091409
 !!$omp            parallel do private(ijk2) reduction(+:Rnorm)
                         do ijk2=ijkstart3,ijkend3
                            Rnorm = Rnorm + R(ijk2)*R(ijk2)
                         enddo
                      else
-                        Rnorm =  dot_product( R, R ) 
+                        Rnorm =  dot_product( R, R )
                      endif
                      Rnorm = sqrt( Rnorm )
                   else
@@ -481,22 +481,22 @@
 
                EXIT
             endif               ! Snorm <= TOLMIN
-            
+
          endif                  ! .not.minimize_dotproducts
 
-!     
+!
 !     Solve M Shat(:) = Svec(:)
 !     Tvec(:) = A * Shat(:)
-!     
+!
          call MSOLVEt( Vname, Svec, A_m, Shat, CMETHOD)
-         
+
          call MATVECt( Vname, Shat, A_m, Tvec )
 
          if(is_serial) then
             if (use_doloop) then
                TxS = zero
                TxT = zero
-!AIKE PFUPGRADE 091409		       
+!AIKE PFUPGRADE 091409
 !!$omp  parallel do private(ijk2) reduction(+:TxS,TxT)
                do ijk2=ijkstart3,ijkend3
                   TxS = TxS + Tvec(ijk2)  * Svec(ijk2)
@@ -521,7 +521,7 @@
 
 
          if (use_doloop) then
-!AIKE PFUPGRADE 091409		 
+!AIKE PFUPGRADE 091409
 !!$omp    parallel do private(ijk2)
             do ijk2=ijkstart3,ijkend3
                Var(ijk2) = Var(ijk2) +                           &
@@ -538,7 +538,7 @@
             if(is_serial) then
                if (use_doloop) then
                   Rnorm = zero
-!AIKE PFUPGRADE 091409			  
+!AIKE PFUPGRADE 091409
 !!$omp       parallel do private(ijk2) reduction(+:Rnorm)
                   do ijk2=ijkstart3,ijkend3
                      Rnorm = Rnorm + R(ijk2) * R(ijk2)
@@ -564,7 +564,7 @@
 
 !     Check convergence; continue if necessary
 !     for continuation, it is necessary that omega(i) .ne. 0
-!     
+!
             isconverged = (Rnorm <= TOL*Rnorm0)
 
             if (isconverged) then
@@ -582,7 +582,7 @@
       if (idebugl >= 1) then
          call MATVECt( Vname, Var, A_m, R )
          if (use_doloop) then
-!AIKE PFUPGRADE 091409		 
+!AIKE PFUPGRADE 091409
 !!$omp  parallel do private(ijk2)
             do ijk2=ijkstart3,ijkend3
                R(ijk2) = R(ijk2) - B_m(ijk2)
@@ -594,7 +594,7 @@
          if(is_serial) then
             if (use_doloop) then
                Rnorm = zero
-!AIKE PFUPGRADE 091409		       
+!AIKE PFUPGRADE 091409
 !!$omp         parallel do private(ijk2) reduction(+:Rnorm)
                do ijk2=ijkstart3,ijkend3
                   Rnorm = Rnorm + R(ijk2) * R(ijk2)
@@ -611,7 +611,7 @@
 
          if(myPE.eq.0)  print*,'leq_bicgs ratio : ', Vname,' ',iter,     &
          ' L-2', Rnorm/Rnorm0
-      endif 
+      endif
 
       isconverged = (real(Rnorm) <= TOL*Rnorm0);
 !     write(*,*) '***',iter, isconverged, Rnorm, TOL, Rnorm0, myPE
@@ -625,7 +625,7 @@
       endif
 
       call send_recv(var,2)
-      
+
       return
       end subroutine LEQ_BICGS0t
 
@@ -696,7 +696,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      INTEGER :: NSTART, NEND 
+      INTEGER :: NSTART, NEND
       DOUBLE PRECISION, DIMENSION (JSTART:JEND) :: CC,DD,EE,BB
       INTEGER :: INFO, IJK, J, K, IM1JK, IP1JK
 
@@ -726,14 +726,14 @@
 
 !     CALL DGTSL( JEND-JSTART+1, CC, DD, EE, BB, INFO )
       CALL DGTSV( JEND-JSTART+1, 1, CC(JSTART+1), DD, EE, BB,  JEND-JSTART+1, INFO )
-      
+
       IF (INFO.NE.0) THEN
          RETURN
       ENDIF
-      
+
       DO J=NSTART, NEND
          IJK = FUNIJK(I,J,K)
-         Var(IJK) =  BB(J) 
+         Var(IJK) =  BB(J)
       ENDDO
 
       RETURN
@@ -837,19 +837,19 @@
       INFO = 0
 !     CALL DGTSL( JEND-JSTART+1, CC, DD, EE, BB, INFO )
       CALL DGTSV( JEND-JSTART+1, 1, CC(JSTART+1), DD, EE, BB,  JEND-JSTART+1, INFO )
-      
+
       IF (INFO.NE.0) THEN
          write(*,*) 'leq_iksweep',INFO, myPE
          RETURN
       ENDIF
-      
+
       DO J=NSTART, NEND
 
          IJK = FUNIJK(I,J,K)
          Var(IJK) = BB(J)
 
       ENDDO
-      
+
       RETURN
       END SUBROUTINE  LEQ_IKSWEEPt
 
@@ -918,7 +918,7 @@
 
 !
       INTEGER          I,  J, K, IJK, ITER, IJK2
-      INTEGER          II,  JJ, KK      
+      INTEGER          II,  JJ, KK
       DOUBLE PRECISION oAm
 
       integer :: im1jk,ip1jk, ijm1k,ijp1k, ijkm1,ijkp1
@@ -951,7 +951,7 @@
                   ip1jk = ip_of(ijk2)
                   ijm1k = jm_of(ijk2)
                   ijp1k = jp_of(ijk2)
-!     
+!
                   ijkm1 = km_of(ijk2)
                   ijkp1 = kp_of(ijk2)
 
@@ -971,7 +971,7 @@
       else
          k = 1
 !AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
-! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 971)	 
+! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 971)
 !$omp parallel do private(i,j,ijk2,im1jk,ip1jk,ijm1k,ijp1k) collapse (2)
          do i = istart,iend
             do j = jstart,jend
@@ -1057,11 +1057,11 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-!     
+!
       INTEGER ::   IJK, I , J, K , ITER, NITER, IJK2
       INTEGER ::   I1 , K1 , I2, K2, IK, ISIZE, KSIZE
       INTEGER ::   ICASE
-      
+
 !     CHARACTER*4, PARAMETER :: CMETHOD = 'II'
 !     sweep direction
       CHARACTER*4 :: CMETHOD
@@ -1077,8 +1077,8 @@
       INCLUDE 'function.inc'
 
 !!$      double precision omp_start, omp_end
-!!$      double precision omp_get_wtime	      
-!       by Tingwen      
+!!$      double precision omp_get_wtime
+!       by Tingwen
 !!$      omp_start=omp_get_wtime()
 
       IF (SETGUESS) THEN
@@ -1105,9 +1105,9 @@
       NITER = LEN( CMETHOD )
 
       DO ITER=1,NITER
-!     
+!
 !     Perform sweeps
-!     
+!
          CH = CMETHOD( ITER:ITER )
          DO_ISWEEP = (CH .EQ. 'I') .OR. (CH .EQ. 'i')
          DO_JSWEEP = (CH .EQ. 'J') .OR. (CH .EQ. 'j')
@@ -1118,9 +1118,9 @@
          IF (NO_K) THEN
 ! 2D run no need to enable openmp parallel
             IF ( DO_ISWEEP ) THEN
-!!$omp   parallel do private(I)   
+!!$omp   parallel do private(I)
                DO I=istart,iend,1
-                  CALL LEQ_ISWEEPt( I, Vname, Var, A_m, B_m )                  
+                  CALL LEQ_ISWEEPt( I, Vname, Var, A_m, B_m )
                ENDDO
             ENDIF
 
@@ -1144,7 +1144,7 @@
                         k = int( ik/isize ) + k1 -1
                      endif
                      i = (ik-1-(k-k1)*isize) + i1 + mod(k,2)
-                     if(i.gt.i2) i=i-i2 + i1 -1                     
+                     if(i.gt.i2) i=i-i2 + i1 -1
                      CALL LEQ_IKSWEEPt( I,K, Vname, Var, A_m, B_m )
                   ENDDO
                ENDDO
@@ -1217,7 +1217,7 @@
 
       ENDDO
 !!$      omp_end=omp_get_wtime()
-!!$      write(*,*)'leq_msolvet:',omp_end - omp_start		
+!!$      write(*,*)'leq_msolvet:',omp_end - omp_start
       RETURN
       END SUBROUTINE LEQ_MSOLVEt
 
@@ -1451,16 +1451,16 @@
 !-----------------------------------------------
 !     D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!     
+!
 !     Septadiagonal matrix A_m
       DOUBLE PRECISION A_m(-3:3, ijkstart3:ijkend3)
-!     
+!
 !     Vector b_m
       DOUBLE PRECISION B_m(ijkstart3:ijkend3)
-!     
+!
 !     Variable name
       CHARACTER*(*)    Vname
-!     
+!
 !     Variable
       DOUBLE PRECISION Var(ijkstart3:ijkend3)
       integer :: ijk
@@ -1507,22 +1507,22 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!     
+!
 !     Septadiagonal matrix A_m
       DOUBLE PRECISION A_m(-3:3, ijkstart3:ijkend3)
-!     
+!
 !     Vector b_m
       DOUBLE PRECISION B_m(ijkstart3:ijkend3)
-!     
+!
 !     Variable name
       CHARACTER*(*)    Vname
-!     
+!
 !     Variable
       DOUBLE PRECISION Var(ijkstart3:ijkend3)
 
       CHARACTER*4 :: CMETHOD
 
-      integer :: i,j,k, ijk, ijk2 
+      integer :: i,j,k, ijk, ijk2
 
       include 'function.inc'
 

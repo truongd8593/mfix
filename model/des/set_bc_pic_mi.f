@@ -63,7 +63,7 @@
       DOUBLE PRECISION EPs_TMP(DIM_M)
 
 ! Minimum/maximum solids velocity at inlet.  Also used in the iterative
-! steps as the starting and ending velocities 
+! steps as the starting and ending velocities
       DOUBLE PRECISION  MIN_VEL, MAX_VEL
 
       DOUBLE PRECISION  MINIPV, MAXIPV
@@ -85,30 +85,30 @@
       if(dFlag) write(*,"(2/,2x,'PIC inlet count: ',I4)") PIC_BCMI
 
 
-      PIC_BCMI_INCL_CUTCELL(:) = .false. 
-      
+      PIC_BCMI_INCL_CUTCELL(:) = .false.
+
 ! Loop over BCs that are flagged for PIC mass inflow.
       DO BCV_I = 1, PIC_BCMI
 
 ! Get the user defined BC ID.
          BCV = PIC_BCMI_MAP(BCV_I)
-         
+
          PIC_BCMI_OFFSET (BCV_I,:) = 1
-         PIC_BCMI_NORMDIR(BCV_I,:) = ZERO 
+         PIC_BCMI_NORMDIR(BCV_I,:) = ZERO
 
          SELECT CASE(BC_PLANE(BCV))
          CASE('E'); PIC_BCMI_NORMDIR(BCV_I,1) =  ONE
          CASE('W')
             PIC_BCMI_NORMDIR(BCV_I,1) = -ONE
             PIC_BCMI_OFFSET (BCV_I,1) = 0
-            
+
          CASE('N'); PIC_BCMI_NORMDIR(BCV_I,2) =  ONE
          CASE('S')
             PIC_BCMI_NORMDIR(BCV_I,2) = -ONE
             PIC_BCMI_OFFSET (BCV_I,2) = 0
 
          CASE('T'); PIC_BCMI_NORMDIR(BCV_I,3) =  ONE
-         CASE('B') 
+         CASE('B')
             PIC_BCMI_NORMDIR(BCV_I,3) = -ONE
             PIC_BCMI_OFFSET (BCV_I,3) =  0
          END SELECT
@@ -123,7 +123,7 @@
 ! The max diameter of incoming particles at this inlet
          MAX_DIA = ZERO
 
-! Determine if the inlet is mono or polydisperse               
+! Determine if the inlet is mono or polydisperse
          DO M=1, DES_MMAX
             IF(SOLIDS_MODEL(M) /= 'PIC') CYCLE
             IF(BC_ROP_s(BCV,M) == UNDEFINED) CYCLE
@@ -136,14 +136,14 @@
       ENDDO
 
       CALL SET_PIC_BCMI_IJK
-      
+
       CALL FINL_ERR_MSG
 
 
       RETURN
       END SUBROUTINE SET_BC_PIC_MI
 
-      
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Subroutine: SET_BC_PIC                                              !
@@ -166,7 +166,7 @@
       use pic_bc, only: PIC_BCMI_INCL_CUTCELL
       USE discretelement, only : DES_MMAX
       use funits, only: DMP_LOG
-      
+
       USE cutcell, only: CUT_CELL_AT
 
       use mpi_utility
@@ -199,7 +199,7 @@
 
 
       dFlag = (DMP_LOG .AND. setDBG)
-      
+
       if(dFlag) write(*,"(2/,2x,'From: SET_PIC_BCMI_IJK')")
 
 
@@ -275,14 +275,14 @@
          DO J = J_s, J_n
          DO I = I_w, I_e
 ! Skip cells that this rank does not own or are considered dead.
-! Limit only to fluid cells 
+! Limit only to fluid cells
             IF(.NOT.IS_ON_myPE_wobnd(I,J,K)) CYCLE
             IJK = FUNIJK(I,J,K)
 
             IF(.NOT.FLUID_AT(IJK)) CYCLE
-            
-            !do not include this cell if the IO BC has been set to 
-            !not include cutcells 
+
+            !do not include this cell if the IO BC has been set to
+            !not include cutcells
             IF(CUT_CELL_AT(IJK).AND.(.NOT.PIC_BCMI_INCL_CUTCELL(BCV_I))) CYCLE
             LOC_PIC_BCMI_IJK(LC) = IJK
             LC = LC+1
@@ -308,7 +308,7 @@
          allocate(pic_bcmi_rnp(LC-1, DES_MMAX))
 
          PIC_BCMI_IJK(1:LC-1) = LOC_PIC_BCMI_IJK(1:LC-1)
-         
+
          pic_bcmi_cnp(1:LC-1,:) = 0.d0
          pic_bcmi_rnp(1:LC-1,:) = 0.d0
       ELSE

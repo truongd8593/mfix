@@ -20,15 +20,15 @@
 !  Local variables: None                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
- 
- 
+
+
       MODULE geometry
- 
- 
+
+
       Use param
       Use param1
- 
- 
+
+
 !
 !                      Coordinates: CARTESIAN, CYLINDRICAL
       CHARACTER*16     COORDINATES
@@ -129,64 +129,64 @@
       INTEGER          IJKMAX1
 !
 !                      Cell flags.
-      INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG 
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG
 !
 !                      Cell flags with 3rd layer.
-      INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG3 
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG3
 !
 !                      Flag for the East surface
-      INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG_E 
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG_E
 !
 !                      Flag for North surface
-      INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG_N 
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG_N
 !
 !                      Flag for Top surface
-      INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG_T 
+      INTEGER, DIMENSION(:), ALLOCATABLE ::           FLAG_T
 !
 !                      Cell flags (bc/ic conditions)
 !//PG allocatable type causes PG internal error, Ed's soln: pointers
 !      CHARACTER*3, DIMENSION(:), ALLOCATABLE :: ICBC_FLAG
-      character*3,  dimension(:), pointer :: icbc_flag      
+      character*3,  dimension(:), pointer :: icbc_flag
 !
 !                      1 / dx_i
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oDX 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oDX
 !
 !                      1 / dy_j
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oDY 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oDY
 !
 !                      1 / dz_k
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oDZ 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oDZ
 !
 !                      1 / dx_i+1/2
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oDX_E 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oDX_E
 !
 !                      1 / dy_j+1/2
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oDY_N 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oDY_N
 !
 !                      1 / dz_k+1/2
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oDZ_T 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oDZ_T
 !
 !                      Radial location at cell center (x_i).
 !                      X = 1 in Cartesian coordinates.
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  X 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  X
 !
 !                      Radial location at East face (x_i+1/2).
 !                      X_E = 1 in Cartesian coordinates.
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  X_E 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  X_E
 !
 !                      Reciprocal of radial location at cell center (1/x_i).
 !                      oX = 1 in Cartesian coordinates.
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oX 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oX
 !
 !                      Reciprocal of radial location at East face (1/x_i+1/2).
 !                      oX_E = 1 in Cartesian coordinates.
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oX_E 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oX_E
 !
 !                      Azimuthal location at cell center (z_k).
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  Z 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  Z
 !
 !                      Azimuthal location at top face (z_k+1/2).
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  Z_T 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  Z_T
 !
 !                      one or more periodic boundary condition is used
       LOGICAL          CYCLIC
@@ -222,88 +222,88 @@
       LOGICAL          CYLINDRICAL
 !
 !                      Factor for x direction averaging of U velocity: FX_i
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FX 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FX
 !
 !                      1 - FX_i
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FX_bar 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FX_bar
 !
 !                      Factor for x direction averaging of scalars: FX_i+1/2
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FX_E 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FX_E
 !
 !                      1 - FX_i+1/2
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FX_E_bar 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FX_E_bar
 !
 !                      Factor for y direction averaging of scalars: FY_j+1/2
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FY_N 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FY_N
 !
 !                      1 - FY_j+1/2
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FY_N_bar 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FY_N_bar
 !
 !                      Factor for z direction averaging of scalars: FZ_k+1/2
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FZ_T 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FZ_T
 !
 !                      1 - FZ_k+1/2
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FZ_T_bar 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FZ_T_bar
 !
 !                      East face area - scalar cell
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AYZ 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AYZ
 !
 !                      North face area - scalar cell
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AXZ 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AXZ
 !
 !                      Top face area - scalar cell
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AXY 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AXY
 !
 !                      Cell volume - scalar cell
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  VOL 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  VOL
 !
 !                      East face area - U cell
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AYZ_U 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AYZ_U
 !
 !                      North face area - U cell
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AXZ_U 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AXZ_U
 !
 !                      Top face area - U cell
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AXY_U 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AXY_U
 !
 !                      Cell volume - U cell
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  VOL_U 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  VOL_U
 !
 !                      East face area - V cell
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AYZ_V 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AYZ_V
 !
 !                      North face area - V cell
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AXZ_V 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AXZ_V
 !
 !                      Top face area - V cell
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AXY_V 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AXY_V
 !
 !                      Cell volume - V cell
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  VOL_V 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  VOL_V
 !
 !                      East face area - W cell
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AYZ_W 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AYZ_W
 !
 !                      North face area - W cell
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AXZ_W 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AXZ_W
 !
 !                      Top face area - W cell
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AXY_W 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AXY_W
 !
 !                      Cell volume - W cell
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  VOL_W 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  VOL_W
 !
 !
-          common /geometry_i/imin1, imax1, jmin1, jmax1 !for Linux 
+          common /geometry_i/imin1, imax1, jmin1, jmax1 !for Linux
 
 !     ADDED FOLLOWING VARIABLES TO TAKE CARE OF THE NEW CONVENTION - Pannala - 08/11/99
 
       INTEGER IMIN3,JMIN3,KMIN3,IMAX3,JMAX3,KMAX3, IMIN2, JMIN2, KMIN2
- 
+
 !     ADDED FOLLOWING VARIABLES TO TAKE CARE OF 4th order discretization in parallel
 
       INTEGER IMIN4,JMIN4,KMIN4,IMAX4,JMAX4,KMAX4, IJKMAX4, IJKMIN4
- 
+
 !!!HPF$ align FLAG(:) with TT(:)
 !!!HPF$ align FLAG_E(:) with TT(:)
 !!!HPF$ align FLAG_N(:) with TT(:)
@@ -327,6 +327,6 @@
 !!!HPF$ align VOL_W(:) with TT(:)
 
       END MODULE geometry
-      
-!// Comments on the modifications for DMP version implementation      
+
+!// Comments on the modifications for DMP version implementation
 !//PG allocatable type causes PG internal error, Ed's soln: pointers

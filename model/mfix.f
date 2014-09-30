@@ -13,13 +13,13 @@
 !! Energy Technology Laboratory, NETL, for describing the hydrodynamics,
 !! heat transfer, and chemical reactions in fluid-solid systems.
 !!
-!! It has been used for describing bubbling and circulating fluidized 
-!! beds and spouted beds. MFiX calculations give transient data on the 
+!! It has been used for describing bubbling and circulating fluidized
+!! beds and spouted beds. MFiX calculations give transient data on the
 !! three-dimensional distribution of pressure, velocity, temperature,
 !! and species mass fractions. MFiX code is based on a generally
-!! accepted set of multiphase flow equations. The code is used as a 
+!! accepted set of multiphase flow equations. The code is used as a
 !! "test-stand" for testing and developing multiphase flow constitutive
-!!  equations. 
+!!  equations.
 !!
 !! \section Notice
 !! Neither the United States Government nor any agency thereof, nor any
@@ -30,7 +30,7 @@
 !! privately owned rights.
 !!
 !! * MFIX is provided without any user support for applications in the
-!!   user's immediate organization. It should not be redistributed in 
+!!   user's immediate organization. It should not be redistributed in
 !!   whole or in part.
 !!
 !! * The use of MFIX is to be acknowledged in any published paper based
@@ -44,21 +44,21 @@
 !!   accounts of practical applications of this software.
 !!
 !! \section Disclaimer
-!! This report was prepared as an account of work sponsored by an agency 
-!! of the United States Government. Neither the United States Government 
-!! nor any agency thereof, nor any of their employees, makes any 
-!! warranty, express or implied, or assumes any legal liability or 
+!! This report was prepared as an account of work sponsored by an agency
+!! of the United States Government. Neither the United States Government
+!! nor any agency thereof, nor any of their employees, makes any
+!! warranty, express or implied, or assumes any legal liability or
 !! responsibility for the accuracy, completeness, or usefulness of any
-!! information, apparatus, product, or process disclosed, or represents 
+!! information, apparatus, product, or process disclosed, or represents
 !! that its use would not infringe privately owned rights. Reference
 !! herein to any specific commercial product, process, or service by
 !! trade name, trademark, manufacturer, or otherwise does not
-!! necessarily constitute or imply its endorsement, recommendation, or 
-!! favoring by the United States Government or any agency thereof. The 
-!! views and opinions of authors expressed herein do not necessarily 
-!! state or reflect those of the United States Government or any 
+!! necessarily constitute or imply its endorsement, recommendation, or
+!! favoring by the United States Government or any agency thereof. The
+!! views and opinions of authors expressed herein do not necessarily
+!! state or reflect those of the United States Government or any
 !! agency thereof.
-                           
+
       PROGRAM MFIX
 
 !-----------------------------------------------
@@ -379,9 +379,9 @@
       IF(DISCRETE_ELEMENT) CALL MAKE_ARRAYS_DES
       IF(QMOMK) CALL QMOMK_MAKE_ARRAYS
 
-! Set the inflow/outflow BCs for DEM solids 
+! Set the inflow/outflow BCs for DEM solids
       IF(DEM_SOLIDS) CALL SET_BC_DEM
-! Set the inflow/outflow BC for PIC solids 
+! Set the inflow/outflow BC for PIC solids
       IF(PIC_SOLIDS) CALL SET_BC_PIC
 
 ! Set the inital properties of each particle.

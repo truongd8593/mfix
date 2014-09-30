@@ -1,5 +1,5 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
+!
 !  subroutine name: thermal_mobility(s,mi,alpha,ni,mu,sigma,chi,zeta0,
 !                                theta,Ti,DF,gammaij,omega,Lij)
 !
@@ -7,19 +7,19 @@
 !
 !  Purpose: find thermal mobility coefficient according to GHD polydisperse KT
 !
-!  Literature/References:  
+!  Literature/References:
 !     C. Hrenya handwritten notes & Garzo, Hrenya, Dufty papers (PRE, 2007)
 !
 !  Modifications:
 !     Sof: removed /ni in sum1, which yield zero based on Bill's mods.
-!                                                         
+!
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       subroutine thermal_mobility(s,mi,alpha,ni,mu,sigma,chi,zeta0, &
                                  theta,Ti,DF,gammaij,omega,Lij)
       Implicit NONE
 
-      integer s, indx(s) 
+      integer s, indx(s)
 
       double precision mi(s),alpha(s,s),ni(s),mu(s,s),sigma(s,s), &
                       chi(s,s),zeta0,theta(s),Ti(s),DF(s,s), &
@@ -50,7 +50,7 @@
 !calculate summation used in l_bar (b vector) - p. 19 of CMH notes
       do i=1,s
          do j=1,s
-            sum1(i,j) = 0.d0          
+            sum1(i,j) = 0.d0
          enddo
       enddo
       do i=1,s
@@ -64,18 +64,18 @@
       enddo
 
 !calculate l_bar (p 19 of CMH notes)
-      do i=1,s     
+      do i=1,s
          do j=1,s
-            l_bar(i,j) = -2.5d0*ni(i)*Ti(i)**2/mi(i)*sum1(i,j) 
+            l_bar(i,j) = -2.5d0*ni(i)*Ti(i)**2/mi(i)*sum1(i,j)
             Amat(i,j) = gammaij(i,j) - 0.5d0*zeta0*kronecker(i,j)     !A matrix for solution of lkj (p 19 CMH notes)
             bmat(i,j) = l_bar(i,j)                                    !B matrix for solution of lkj (p 19 CMH notes)
          enddo
       enddo
 
-! this extra kk loop and addition of Amat0 and bmat0 is necessary 
+! this extra kk loop and addition of Amat0 and bmat0 is necessary
 ! since x & b in Ax=b are s by s matrices rather than vectors of length s,
 ! whereas LUBSKB is specific to x & b vectors of length s
-      do kk=1,s 
+      do kk=1,s
          do i=1,s
             do j=1,s
                 Amat0(i,j) = Amat(i,j)
@@ -96,7 +96,7 @@
 !kinetic contribution to thermal mobility (p 19 CMH notes)
       do i = 1,s
          do j=1,s
-            Lkin(i,j) = lkj(i,j) + 2.5d0*Ti(i)/mi(i)*DF(i,j) 
+            Lkin(i,j) = lkj(i,j) + 2.5d0*Ti(i)/mi(i)*DF(i,j)
          enddo
       enddo
 
@@ -115,7 +115,7 @@
                  *(2.d0/mi(p)*Lkin(p,j)+5.d0*Ti(i)/mi(i)/mi(p)* &
                  DF(p,j))+48.d0*pi/15.d0*ni(i)*(2.d0*mu(p,i)/mi(p)* &
                  Lkin(p,j)-5.d0*(2.d0*mu(i,p)-mu(p,i))*Ti(i)/mi(i)/ &
-                 mi(p)*DF(p,j))) 
+                 mi(p)*DF(p,j)))
             enddo
             Lij(i,j) = Lkin(i,j) + Lcol(i,j)          !thermal mobility (p 19 CMH notes)
          enddo

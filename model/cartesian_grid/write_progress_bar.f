@@ -24,19 +24,19 @@
       SUBROUTINE WRITE_PROGRESS_BAR(I,I_MAX,JUSTIFICATION)
 
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE physprop
       USE fldvar
       USE run
       USE scalars
-      USE funits 
+      USE funits
       USE rxns
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE progress_bar
       IMPLICIT NONE
 
@@ -49,7 +49,7 @@
       DOUBLE PRECISION :: PERCENT,PTEST
 
       IF(.NOT.PRINT_PROGRESS_BAR)  RETURN
-      
+
       IF(myPE /= PE_IO) RETURN
 
       ISKIP = INT(BAR_RESOLUTION * 0.01 *FLOAT(I_MAX))
@@ -105,7 +105,7 @@
             WRITE(*,*)'C : CENTER JUSTIFICATION'
             WRITE(*,*)'R : RIGHT JUSTIFICATION'
             WRITE(*,*)'N : NO TEXT'
-            call mfix_exit(myPE) 
+            call mfix_exit(myPE)
       END SELECT
 
       IF(PERCENT>=100.0) THEN
@@ -148,26 +148,26 @@
       SUBROUTINE ERASE_PROGRESS_BAR(BAR_WIDTH,BAR_STATUS,JUSTIFICATION)
 
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE parallel
       USE sendrecv
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE physprop
       USE fldvar
       USE run
       USE scalars
-      USE funits 
+      USE funits
       USE rxns
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       IMPLICIT NONE
 
       INTEGER :: I,BAR_WIDTH,NERASE
       CHARACTER (LEN=4) :: BAR_STATUS
       CHARACTER (LEN=1) :: JUSTIFICATION
-      
+
       IF(myPE /= PE_IO) RETURN
 
       IF(BAR_STATUS=='DONE') THEN
@@ -195,14 +195,14 @@
             WRITE(*,*)'C : CENTER JUSTIFICATION'
             WRITE(*,*)'R : RIGHT JUSTIFICATION'
             WRITE(*,*)'N : NO TEXT'
-            call mfix_exit(myPE) 
+            call mfix_exit(myPE)
       END SELECT
 
       DO I = 1,NERASE
          WRITE(*,10)CHAR(8)
       ENDDO
 10    FORMAT(A,$)
-   
+
       RETURN
       END SUBROUTINE ERASE_PROGRESS_BAR
 

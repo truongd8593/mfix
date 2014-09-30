@@ -10,9 +10,9 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-SUBROUTINE qmomk_allocate_arrays 
+SUBROUTINE qmomk_allocate_arrays
 
-  USE param 
+  USE param
   USE param1
   USE indices
   USE geometry
