@@ -830,7 +830,7 @@
 !$omp           IJPKP,IPJKP,IPJPKP,gst_tmp,vst_tmp,nindx,np,wtp,m,      &
 !$omp           JUNK_VAL,desposnew,weight_ft,icur,jcur,kcur,            &
 !$omp           I1, I2, J1, J2, K1, K2, IDIM,IJK2,NORM_FACTOR,          &
-!$omp           RESID_ROPS,RESID_VEL,COUNT_NODES_OUTSIDE)
+!$omp           RESID_ROPS,RESID_VEL,COUNT_NODES_OUTSIDE,TEMP1)
 !$omp do reduction(+:MASS_SOL1) reduction(+:DES_ROPS_NODE,DES_VEL_NODE)
       !IJKLOOP: DO IJK = IJKSTART3,IJKEND3      ! Removed by Handan Liu
       DO IJK = IJKSTART3,IJKEND3
