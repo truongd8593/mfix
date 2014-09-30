@@ -30,7 +30,7 @@ AC_OPENMP()
 
 # Checks for source files.
 
-AC_CHECK_FILES(usr0.f usr1.f usr2.f usr3.f usr_mod.f usr_write_out0.f usr_rates.f mfix.dat)
+AC_CHECK_FILES(usr0.f usr1.f usr2.f usr3.f usr_mod.f usr_write_out0.f usr_rates.f mfix.dat usr_drag.f)
 AM_CONDITIONAL([USR0], [test "$ac_cv_file_usr0_f" = yes])
 AM_CONDITIONAL([USR1], [test "$ac_cv_file_usr1_f" = yes])
 AM_CONDITIONAL([USR2], [test "$ac_cv_file_usr2_f" = yes])
@@ -47,7 +47,7 @@ if test "$ac_cv_file_usr_rates_f" = yes; then
 	fi
 fi
 
-AC_CHECK_FILES(des/usr0_des.f des/usr1_des.f des/usr2_des.f des/usr3_des.f des/usr4_des.f des/usr_rates_des.f dqmom/usr_dqmom.f)
+AC_CHECK_FILES(des/usr0_des.f des/usr1_des.f des/usr2_des.f des/usr3_des.f des/usr4_des.f des/usr_rates_des.f dqmom/usr_dqmom.f write_usr0.f write_usr1.f)
 AM_CONDITIONAL([DES_USR0_DES], [test "$ac_cv_file_des_usr0_des_f" = yes])
 AM_CONDITIONAL([DES_USR1_DES], [test "$ac_cv_file_des_usr1_des_f" = yes])
 AM_CONDITIONAL([DES_USR2_DES], [test "$ac_cv_file_des_usr2_des_f" = yes])
@@ -55,6 +55,8 @@ AM_CONDITIONAL([DES_USR3_DES], [test "$ac_cv_file_des_usr3_des_f" = yes])
 AM_CONDITIONAL([DES_USR4_DES], [test "$ac_cv_file_des_usr4_des_f" = yes])
 AM_CONDITIONAL([DES_USR_RATES_DES], [test "$ac_cv_file_des_usr_rates_des_f" = yes])
 AM_CONDITIONAL([DQMOM_USR_DQMOM], [test "$ac_cv_file_dqmom_usr_dqmom_f" = yes])
+AM_CONDITIONAL([WRITE_USR0], [test "$ac_cv_file_write_usr0_f" = yes])
+AM_CONDITIONAL([WRITE_USR1], [test "$ac_cv_file_write_usr1_f" = yes])
 
 # Checks for typedefs, structures, and compiler characteristics.
 # AC_HEADER_STDBOOL

@@ -17,9 +17,10 @@ nodist_postmfix_SOURCES =
 noinst_LIBRARIES = libodepack.a
 libodepack_a_SOURCES = model/ODEPACK.F
 mfix_LDADD = libodepack.a
+postmfix_LDADD = libodepack.a
 
 EXTRA_DIST =  build-aux config doc regression_tests tests tools tutorials visualization_tools
-EXTRA_DIST += CHANGES mfix_user_guide.pdf readme 
+EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
 
 $(top_srcdir)/model/mfix_directory_path.inc:
 	echo "     CHARACTER(len=132) :: MFIX_PATH = '${abs_top_srcdir}/model'" > $@
@@ -196,7 +197,10 @@ common_SOURCES = \
 	model/check_mass_balance.f \
 	model/check_mod.f \
 	model/check_plane.f \
+	model/chem/stiff_chem_dbg_mod.f \
 	model/chem/stiff_chem_maps_mod.f \
+	model/chem/stiff_chem_mod.f \
+	model/chem/stiff_chem_rrates.f \
 	model/chem/stiff_chem_stats_mod.f \
 	model/chischeme_mod.f \
 	model/cn_extrapol.f \
@@ -538,8 +542,6 @@ common_SOURCES = \
 	model/write_spx0.f \
 	model/write_spx1.f \
 	model/write_table.f \
-	model/write_usr0.f \
-	model/write_usr1.f \
 	model/xerbla.f \
 	model/xsi1.inc \
 	model/xsi2.inc \
@@ -574,133 +576,144 @@ dist_mfix_SOURCES += $(common_SOURCES)
 dist_postmfix_SOURCES += $(common_SOURCES)
 
 if USR0
-dist_mfix_SOURCES += usr0.f
-dist_postmfix_SOURCES += usr0.f
+nodist_mfix_SOURCES += usr0.f
+nodist_postmfix_SOURCES += usr0.f
 else
 dist_mfix_SOURCES += model/usr0.f
 dist_postmfix_SOURCES += model/usr0.f
 endif
 
 if USR1
-dist_mfix_SOURCES += usr1.f
-dist_postmfix_SOURCES += usr1.f
+nodist_mfix_SOURCES += usr1.f
+nodist_postmfix_SOURCES += usr1.f
 else
 dist_mfix_SOURCES += model/usr1.f
 dist_postmfix_SOURCES += model/usr1.f
 endif
 
 if USR2
-dist_mfix_SOURCES += usr2.f
-dist_postmfix_SOURCES += usr2.f
+nodist_mfix_SOURCES += usr2.f
+nodist_postmfix_SOURCES += usr2.f
 else
 dist_mfix_SOURCES += model/usr2.f
 dist_postmfix_SOURCES += model/usr2.f
 endif
 
 if USR3
-dist_mfix_SOURCES += usr3.f
-dist_postmfix_SOURCES += usr3.f
+nodist_mfix_SOURCES += usr3.f
+nodist_postmfix_SOURCES += usr3.f
 else
 dist_mfix_SOURCES += model/usr3.f
 dist_postmfix_SOURCES += model/usr3.f
 endif
 
 if USR_MOD
-dist_mfix_SOURCES += usr_mod.f
-dist_postmfix_SOURCES += usr_mod.f
+nodist_mfix_SOURCES += usr_mod.f
+nodist_postmfix_SOURCES += usr_mod.f
 else
 dist_mfix_SOURCES += model/usr_mod.f
 dist_postmfix_SOURCES += model/usr_mod.f
 endif
 
 if USR_WRITE_OUT0
-dist_mfix_SOURCES += usr_write_out0.f
-dist_postmfix_SOURCES += usr_write_out0.f
+nodist_mfix_SOURCES += usr_write_out0.f
+nodist_postmfix_SOURCES += usr_write_out0.f
 else
 dist_mfix_SOURCES += model/usr_write_out0.f
 dist_postmfix_SOURCES += model/usr_write_out0.f
 endif
 
 if USR_DRAG
-dist_mfix_SOURCES += usr_drag.f
-dist_postmfix_SOURCES += usr_drag.f
+nodist_mfix_SOURCES += usr_drag.f
+nodist_postmfix_SOURCES += usr_drag.f
 else
 dist_mfix_SOURCES += model/usr_drag.f
 dist_postmfix_SOURCES += model/usr_drag.f
 endif
 
 if USR_RATES
-dist_mfix_SOURCES += species.inc usr_rates.f
-dist_postmfix_SOURCES += species.inc usr_rates.f
+nodist_mfix_SOURCES += species.inc usr_rates.f
+nodist_postmfix_SOURCES += species.inc usr_rates.f
 else
 dist_mfix_SOURCES += model/usr_rates.f
 dist_postmfix_SOURCES += model/usr_rates.f
 endif
 
 if DES_USR0_DES
-dist_mfix_SOURCES += des/usr0_des.f
-dist_postmfix_SOURCES += des/usr0_des.f
+nodist_mfix_SOURCES += des/usr0_des.f
+nodist_postmfix_SOURCES += des/usr0_des.f
 else
 dist_mfix_SOURCES += model/des/usr0_des.f
 dist_postmfix_SOURCES += model/des/usr0_des.f
 endif
 
 if DES_USR1_DES
-dist_mfix_SOURCES += des/usr1_des.f
-dist_postmfix_SOURCES += des/usr1_des.f
+nodist_mfix_SOURCES += des/usr1_des.f
+nodist_postmfix_SOURCES += des/usr1_des.f
 else
 dist_mfix_SOURCES += model/des/usr1_des.f
 dist_postmfix_SOURCES += model/des/usr1_des.f
 endif
 
 if DES_USR2_DES
-dist_mfix_SOURCES += des/usr2_des.f
-dist_postmfix_SOURCES += des/usr2_des.f
+nodist_mfix_SOURCES += des/usr2_des.f
+nodist_postmfix_SOURCES += des/usr2_des.f
 else
 dist_mfix_SOURCES += model/des/usr2_des.f
 dist_postmfix_SOURCES += model/des/usr2_des.f
 endif
 
 if DES_USR3_DES
-dist_mfix_SOURCES += des/usr3_des.f
-dist_postmfix_SOURCES += des/usr3_des.f
+nodist_mfix_SOURCES += des/usr3_des.f
+nodist_postmfix_SOURCES += des/usr3_des.f
 else
 dist_mfix_SOURCES += model/des/usr3_des.f
 dist_postmfix_SOURCES += model/des/usr3_des.f
 endif
 
 if DES_USR4_DES
-dist_mfix_SOURCES += des/usr4_des.f
-dist_postmfix_SOURCES += des/usr4_des.f
+nodist_mfix_SOURCES += des/usr4_des.f
+nodist_postmfix_SOURCES += des/usr4_des.f
 else
 dist_mfix_SOURCES += model/des/usr4_des.f
 dist_postmfix_SOURCES += model/des/usr4_des.f
 endif
 
 if DES_USR_RATES_DES
-dist_mfix_SOURCES += des/usr_rates_des.f
-dist_postmfix_SOURCES += des/usr_rates_des.f
+nodist_mfix_SOURCES += des/usr_rates_des.f
+nodist_postmfix_SOURCES += des/usr_rates_des.f
 else
 dist_mfix_SOURCES += model/des/usr_rates_des.f
 dist_postmfix_SOURCES += model/des/usr_rates_des.f
 endif
 
 if DQMOM_USR_DQMOM
-dist_mfix_SOURCES += dqmom/usr_dqmom.f
-dist_postmfix_SOURCES += dqmom/usr_dqmom.f
+nodist_mfix_SOURCES += dqmom/usr_dqmom.f
+nodist_postmfix_SOURCES += dqmom/usr_dqmom.f
 else
 dist_mfix_SOURCES += model/dqmom/usr_dqmom.f
 dist_postmfix_SOURCES += model/dqmom/usr_dqmom.f
 endif
 
+if WRITE_USR0
+nodist_mfix_SOURCES += write_usr0.f
+nodist_postmfix_SOURCES += write_usr0.f
+else
+dist_mfix_SOURCES += model/write_usr0.f
+dist_postmfix_SOURCES += model/write_usr0.f
+endif
 
+if WRITE_USR1
+nodist_mfix_SOURCES += write_usr1.f
+nodist_postmfix_SOURCES += write_usr1.f
+else
+dist_mfix_SOURCES += model/write_usr1.f
+dist_postmfix_SOURCES += model/write_usr1.f
+endif
 
 # The following files conflict with definitions in postmfix_SOURCES
 dist_mfix_SOURCES += \
 	model/check_data/check_odepack_stiff_chem.f \
-	model/chem/stiff_chem_dbg_mod.f \
-	model/chem/stiff_chem_mod.f \
-	model/chem/stiff_chem_rrates.f \
 	model/get_data.f \
 	model/in_bin_512.f \
 	model/in_bin_512i.f \
@@ -727,7 +740,6 @@ dist_postmfix_SOURCES += \
 	post_mfix/calc_quantities.f \
 	post_mfix/calc_ro_g.f \
 	post_mfix/calc_vol.f \
-	post_mfix/chem/stiff_chem_mod.f \
 	post_mfix/correl_mod.f \
 	post_mfix/deallocate_arrays.f \
 	post_mfix/examine_data.f \
