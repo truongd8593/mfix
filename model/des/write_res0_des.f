@@ -127,7 +127,7 @@
       WRITE(ERR_MSG, 1000) trim(iVal(S_TIME))
       CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
  
- 1000 FORMAT('DES restart data writeen at time = ',A)
+ 1000 FORMAT('DES restart data written at time = ',A)
 
       RETURN
       END SUBROUTINE WRITE_RES0_DES

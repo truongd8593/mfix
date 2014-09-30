@@ -156,9 +156,10 @@
 ! When no particles are present, skip the startup routines that loop over particles.
 ! That is, account for a setup that starts with no particles in the system.
          IF(PARTICLES /= 0) THEN
-            IF(DO_NSEARCH) CALL NEIGHBOUR
 
-! To do only des in the 1st time step only for a new run so the 
+            CALL NEIGHBOUR
+
+! To do only des in the 1st time step only for a new run so the
 ! particles settle down before the coupling is turned on
             IF(RUN_TYPE == 'NEW') THEN
                IF(DES_CONTINUUM_COUPLED.AND.(.NOT.USE_COHESION)) THEN
@@ -176,11 +177,10 @@
 ! update particle position/velocity
                      CALL CFNEWVALUES
 ! set the flag do_nsearch before calling particle in cell (for mpi)
-                     IF(MOD(FACTOR,NEIGHBOR_SEARCH_N).EQ.0) &
-                        DO_NSEARCH = .TRUE.
-! find particles on grid                        
+                     DO_NSEARCH = (MOD(FACTOR,NEIGHBOR_SEARCH_N)==0)
+! find particles on grid
                      CALL PARTICLES_IN_CELL
-! perform neighbor search                     
+! perform neighbor search
                      IF(DO_NSEARCH) CALL NEIGHBOUR
 
                   ENDDO
@@ -203,15 +203,10 @@
             ENDIF   ! end if on new run type
 
 
-         ENDIF   ! end if particles /= 0    
+         ENDIF   ! end if particles /= 0
 
       ENDIF
 !--------------------------------------------------------------------<<<
-
-
-
-
-
 
 
 
