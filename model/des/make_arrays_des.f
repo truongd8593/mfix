@@ -34,6 +34,8 @@
       INTEGER :: I, J, K, L, IJK, PC, SM_CELL
       INTEGER :: lface, lcurpar, lpip_all(0:numpes-1), lglobal_id  , lparcnt
 
+      INTEGER :: FACTOR
+
 ! MPPIC related quantities
       DOUBLE PRECISION :: DTPIC_TMPX, DTPIC_TMPY, DTPIC_TMPZ
 !-----------------------------------------------
@@ -140,6 +142,78 @@
 ! do_nsearch should be set before calling particle in cell
       DO_NSEARCH =.TRUE.
       CALL PARTICLES_IN_CELL
+
+
+
+
+! Relocated from des_time_march
+!-------------------------------------------------------------------->>>
+      IF(.NOT.MPPIC) THEN
+         IF(DMP_LOG) WRITE(UNIT_LOG,'(1X,A)')&
+            '---------- FIRST PASS DES_TIME_MARCH ---------->'
+         S_TIME = ZERO
+
+! When no particles are present, skip the startup routines that loop over particles.
+! That is, account for a setup that starts with no particles in the system.
+         IF(PARTICLES /= 0) THEN
+            IF(DO_NSEARCH) CALL NEIGHBOUR
+
+! To do only des in the 1st time step only for a new run so the 
+! particles settle down before the coupling is turned on
+            IF(RUN_TYPE == 'NEW') THEN
+               IF(DES_CONTINUUM_COUPLED.AND.(.NOT.USE_COHESION)) THEN
+                  DES_CONTINUUM_COUPLED = .FALSE.
+                  DO FACTOR = 1, NFACTOR
+                     IF (FACTOR .EQ. 1) THEN
+                        IF (DMP_LOG) &
+                           WRITE(UNIT_LOG,'(3X,A,/,5X,A,X,I10,X,A)') &
+                           'FIRST PASS in DES_TIME_MARCH for new runs',&
+                           'DEM settling period performed', NFACTOR, &
+                           'times'
+                     ENDIF
+! calculate forces
+                     CALL CALC_FORCE_DEM
+! update particle position/velocity
+                     CALL CFNEWVALUES
+! set the flag do_nsearch before calling particle in cell (for mpi)
+                     IF(MOD(FACTOR,NEIGHBOR_SEARCH_N).EQ.0) &
+                        DO_NSEARCH = .TRUE.
+! find particles on grid                        
+                     CALL PARTICLES_IN_CELL
+! perform neighbor search                     
+                     IF(DO_NSEARCH) CALL NEIGHBOUR
+
+                  ENDDO
+                  DES_CONTINUUM_COUPLED = .TRUE.
+                  IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A)') &
+                     'END DEM settling period'
+               ENDIF   ! end if coupled and no cohesion
+! Calculate the average solids temperature in each fluid cell
+               CALL SET_INIT_avgTs
+
+! this write_des_data is needed to properly show the initial state of
+! the simulation (granular or coupled). In the coupled case, the
+! particles may have 'settled' according to above.  In the granular
+! case, the initial state won't be written until after the particles
+! have moved without this call.
+               IF(PRINT_DES_DATA) CALL WRITE_DES_DATA
+
+               IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,X,ES15.5)') &
+                  'DES data file written at time =', S_TIME
+            ENDIF   ! end if on new run type
+
+
+         ENDIF   ! end if particles /= 0    
+
+      ENDIF
+!--------------------------------------------------------------------<<<
+
+
+
+
+
+
+
 
 ! Set parameters for cohesion models.  This call needs to be after the
 ! particle's radius is assigned (i.e., after particles are identified).

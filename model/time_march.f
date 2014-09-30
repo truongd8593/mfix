@@ -79,6 +79,7 @@
       USE bc
       USE coeff
       USE stiff_chem, only : STIFF_CHEMISTRY, STIFF_CHEM_SOLVER
+      use mfix_pic, only: MPPIC
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -276,13 +277,18 @@
       CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP,&
           DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S, IER)
 
-! uncoupled discrete element simulations do not need to be within
-! the two fluid model time-loop
+
+! Uncoupled discrete element simulations do not need to be within
+! the two fluid model time-loop.
       IF(DISCRETE_ELEMENT.AND.(.NOT.DES_CONTINUUM_COUPLED))  THEN
-         IF(WRITE_VTK_FILES) THEN
-            CALL WRITE_VTU_FILE
+         IF(WRITE_VTK_FILES) CALL WRITE_VTU_FILE
+
+         IF(MPPIC) THEN
+            CALL PIC_TIME_MARCH
+         ELSE
+            CALL DES_TIME_MARCH
          ENDIF
-         CALL DES_TIME_MARCH
+
          CALL CPU_TIME(CPU_STOP)
          CPU_STOP = CPU_STOP - CPU00
          IF(myPE.EQ.PE_IO) &
@@ -290,6 +296,7 @@
          CALL PARALLEL_FIN
          STOP
       ENDIF
+
 
 ! The TIME loop begins here.............................................
  100  CONTINUE
@@ -637,9 +644,15 @@
 ! Edit the routine and specify a reporting interval to activate it.
       Call check_mass_balance (1)
 
-! DES
-      IF (DISCRETE_ELEMENT.AND.DES_CONTINUUM_COUPLED) CALL DES_TIME_MARCH
 
+! Lagrangian solids models:
+      IF (DISCRETE_ELEMENT.AND.DES_CONTINUUM_COUPLED) THEN
+         IF(MPPIC) THEN
+            CALL PIC_TIME_MARCH
+         ELSE
+            CALL DES_TIME_MARCH
+         ENDIF
+      ENDIF
 
 ! Alberto Passalacqua: QMOMK
       IF (QMOMK) CALL QMOMK_TIME_MARCH

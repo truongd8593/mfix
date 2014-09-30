@@ -28,6 +28,9 @@
       USE physprop
       USE sendrecv
       USE des_bc
+
+      use error_manager
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -48,6 +51,13 @@
 ! Invoke at own risk
       IF (.FALSE.) CALL WRITE_DES_THETA
       IF (.FALSE.) CALL WRITE_DES_BEDHEIGHT
+
+! Notify that output was written.
+      WRITE(ERR_MSG, 1000) trim(iVal(S_TIME))
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+
+ 1000 FORMAT('DES particle data writeen at time = ',A)
+
 
       RETURN
       END SUBROUTINE WRITE_DES_DATA
