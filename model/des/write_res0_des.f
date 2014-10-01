@@ -19,8 +19,8 @@
       use mfix_pic, only: MPPIC
       use mfix_pic, only: DES_STAT_WT
 
+      use error_manager
       use write_res1_des
-
       use mpi_utility
 
       implicit none
@@ -97,8 +97,6 @@
          ENDDO
       ENDDO
 
-
-!----------------------------------------------------------------------------------------------
       DO LC1=1,2
          CALL WRITE_RES_cARRAY(lNEXT_REC, COLLISIONS(LC1,:), pLOC2GLB=.TRUE.)
       ENDDO
@@ -108,9 +106,6 @@
          CALL WRITE_RES_cARRAY(lNEXT_REC,PFN_COLL(LC2,:))
          CALL WRITE_RES_cARRAY(lNEXT_REC,PFT_COLL(LC2,:))
       ENDDO
-!----------------------------------------------------------------------------------------------
-
-
 
       CALL WRITE_RES_DES(lNEXT_REC, DEM_BCMI)
       DO LC1=1, DEM_BCMI
@@ -127,6 +122,12 @@
       ENDDO
 
       CALL FINL_WRITE_RES_DES
+
+! Notify that output was written.
+      WRITE(ERR_MSG, 1000) trim(iVal(S_TIME))
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+
+ 1000 FORMAT('DES restart data written at time = ',A)
 
       RETURN
       END SUBROUTINE WRITE_RES0_DES

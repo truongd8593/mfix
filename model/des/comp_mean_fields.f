@@ -265,8 +265,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 !-----------------------------------------------
 
 ! initializing
@@ -776,8 +774,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
       INCLUDE '../ep_s1.inc'
       INCLUDE '../ep_s2.inc'
 !-----------------------------------------------
