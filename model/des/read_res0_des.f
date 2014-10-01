@@ -1,16 +1,11 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvc
-!
-!  module name: des_read_restart
-!  purpose: writing des data for restart
-!
-!  Author  : Pradeep G
-!  Purpose : Reads either single restart file or multiple restart files
-!            (based on bdist_io) flag
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^c
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: DES_READ_RESTART                                        !
+!  Purpose : Reads either single restart file or multiple restart      !
+!  fles (based on bdist_io) flag.                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE READ_RES0_DES
 
-! Modules
-!-----------------------------------------------
       use param1
       use compar
       use discretelement
@@ -24,12 +19,9 @@
       use mpi_utility
 
       use read_res1_des
+      use error_manager
 
       implicit none
-!-----------------------------------------------
-! local variables
-!-----------------------------------------------
-!-----------------------------------------------
 
       INTEGER :: LC1, LC2
       INTEGER :: lDIMN, lNEXT_REC
@@ -92,22 +84,14 @@
          ENDDO
       ENDDO
 
-      write(*,*)'check 1'
-
 ! Collision/neighbor data is read and used to setup cARRAY reads.
       CALL READ_PAR_COL(lNEXT_REC)
-
-
-      write(*,*)'check 2'
 
       CALL READ_RES_cARRAY(lNEXT_REC, PV_COLL(:))
       DO LC1=1, lDIMN
          CALL READ_RES_cARRAY(lNEXT_REC, PFN_COLL(LC1,:))
          CALL READ_RES_cARRAY(lNEXT_REC, PFT_COLL(LC1,:))
       ENDDO
-
-      write(*,*)'check 3'
-
 
       CALL READ_RES_DES(lNEXT_REC, DEM_BCMI)
       DO LC1=1, DEM_BCMI
@@ -130,9 +114,11 @@
          CALL READ_RES_DES(lNEXT_REC, DEM_MI(LC1)%Q(:))
       ENDDO
 
-
-
       CALL FINL_READ_RES_DES
+
+
+      WRITE(ERR_MSG,"('DES restart file read at Time = ',g11.5)") TIME
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
       RETURN
       END SUBROUTINE READ_RES0_DES
