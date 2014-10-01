@@ -1,4 +1,4 @@
-Changes from MFIX2013-2 (Date: 09/18/2013) to MFIX2014-1 (Date: 09/18/2014)
+Changes from MFIX2013-2 (Date: 09/18/2013) to MFIX2014-1 (Date: 10/01/2014)
 
 
 Note for MFIX 2013-2 users
@@ -97,15 +97,15 @@ Project Metrics:
 ----------------
 
 * Change from 2013-2 Release:
-  o TBD
+  o 46 files and about 6,000 lines of code were added (net count)
 
 * 2014-1 Total count:
-  o Files: TBD
-  o Lines: TBD
-  o Blank Lines: TBD
-  o Code Lines: TBD
-  o Comment Lines: TBD
-  o Statements: TBD
+  o Files: 572
+  o Lines: 211,825
+  o Blank Lines: 32,272
+  o Code Lines: 120,990
+  o Comment Lines: 62,139
+  o Statements: 87,625
 
 References:
 -----------
