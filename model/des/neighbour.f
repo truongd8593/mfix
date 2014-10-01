@@ -21,12 +21,13 @@
       USE discretelement
       use desgrid
       Use des_thermo
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 
-INTEGER :: cc,dd,ii,jj,iii,jjj,ddd
+      INTEGER :: cc,dd,ii,jj,iii,jjj,ddd
 
 !-----------------------------------------------
 ! Reset PPOS and NEIGHBOURS back to initialized values

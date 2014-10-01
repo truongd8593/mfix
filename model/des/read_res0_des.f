@@ -24,6 +24,7 @@
       use mpi_utility
 
       use read_res1_des
+      use error_manager
 
       implicit none
 !-----------------------------------------------
@@ -92,13 +93,8 @@
          ENDDO
       ENDDO
 
-      write(*,*)'check 1'
-
 ! Collision/neighbor data is read and used to setup cARRAY reads.
       CALL READ_PAR_COL(lNEXT_REC)
-
-
-      write(*,*)'check 2'
 
       CALL READ_RES_cARRAY(lNEXT_REC, PV_COLL(:))
       DO LC1=1, lDIMN
@@ -106,9 +102,6 @@
          CALL READ_RES_cARRAY(lNEXT_REC, PFT_COLL(LC1,:))
       ENDDO
 
-      write(*,*)'check 3'
-
- 
       CALL READ_RES_DES(lNEXT_REC, DEM_BCMI)
       DO LC1=1, DEM_BCMI
          CALL READ_RES_DES(lNEXT_REC, DEM_MI_TIME(LC1))
@@ -130,9 +123,10 @@
          CALL READ_RES_DES(lNEXT_REC, DEM_MI(LC1)%Q(:))
       ENDDO
 
-
-
       CALL FINL_READ_RES_DES
+
+      WRITE(ERR_MSG,"('DES restart file read at Time = ',g11.5)") TIME
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
       RETURN
       END SUBROUTINE READ_RES0_DES

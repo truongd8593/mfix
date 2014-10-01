@@ -1,20 +1,12 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: MAKE_ARRAYS_DES                                        C
-!  Purpose: DES - allocating DES arrays
-!                                                                      C
-!                                                                      C
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!  Reviewer: Rahul Garg                               Date: 01-Aug-07  C
-!  Comments: Added some calls that are necessary if INTERPOLATION IS ON C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Module name: MAKE_ARRAYS_DES                                        !
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  !
+!                                                                      !
+!  Purpose: DES - allocating DES arrays 
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE MAKE_ARRAYS_DES
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
       USE param1
       USE funits
       USE run
@@ -27,6 +19,9 @@
       USE des_rxns
       USE des_thermo
       USE des_stl_functions
+
+      use error_manager
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -43,7 +38,6 @@
 !-----------------------------------------------
       INCLUDE '../function.inc'
 
-
 ! cfassign and des_init_bc called before reading the particle info
       CALL CFASSIGN
 
@@ -52,28 +46,15 @@
       call desgrid_init
       call desmpi_init
 
-
-
-      IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(1X,A)')&
-         '---------- START MAKE_ARRAYS_DES ---------->'
-
-
-! If no particles are in the system then there is no need to read
-! particle_input.dat or call generate_particle_config. Note, if no
-! particles are in the system and no dem inlet is specified, then
-! the run will have already been aborted from checks conducted in
-! check_des_bc
-      IF(RUN_TYPE == 'NEW' .and. particles /= 0) THEN ! Fresh run
-
-         IF(.NOT.GENER_PART_CONFIG) THEN
-            CALL READ_PAR_INPUT
-         ELSE
+! Set the initial particle data.
+      IF(RUN_TYPE == 'NEW' .and. PARTICLES /= 0) THEN
+         IF(GENER_PART_CONFIG) THEN
             CALL COPY_PARTICLE_CONFIG_FROMLISTS
-            !Copy the particle config residing in linked lists to des arrats
+         ELSE
+            CALL READ_PAR_INPUT
          ENDIF
 
-! Further initialization now the particles have been specified
-! for run type new set the global id for the particles and set the ghost cnt
+! Set the global ID for the particles and set the ghost cnt
          ighost_cnt = 0
          lpip_all = 0
          lpip_all(mype) = pip
@@ -87,32 +68,31 @@
          end do
          call global_all_max(imax_global_id)
 
-! setting the old values
+! Initialize old values
          omega_old(:,:)   = zero
          omega_new(:,:)   = zero
          des_pos_old(:,:) = des_pos_new(:,:)
          des_vel_old(:,:) = des_vel_new(:,:)
 
-
-      ELSEIF(RUN_TYPE == 'RESTART_1') THEN !  Read Restart
+! Read the restart file.
+      ELSEIF(RUN_TYPE == 'RESTART_1') THEN
 
          CALL READ_RES0_DES
-
-         IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,G17.8)') &
-            'DES_RES file read at Time= ', TIME
          imax_global_id = maxval(iglobal_id(1:pip))
          call global_all_max(imax_global_id)
 
-! setting the old values
+! Initizlie the old values.
          omega_old(:,:)   = omega_new(:,:)
          des_pos_old(:,:) = des_pos_new(:,:)
          des_vel_old(:,:) = des_vel_new(:,:)
          IF(ENERGY_EQ) DES_T_s_OLD(:) = DES_T_s_NEW(:)
 
-      ELSEIF (RUN_TYPE == 'RESTART_2') THEN
-         IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A)') &
-            'Restart 2 is not implemented with DES'
-         CALL MFIX_EXIT(myPE)
+      ELSE
+
+         WRITE(ERR_MSG, 1100)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+ 1100 FORMAT('Error 1100: Unsupported RUN_TYPE for DES.')
+
       ENDIF
 
 ! setting the global id for walls. this is required to handle
@@ -124,8 +104,6 @@
 ! setting additional particle properties now that the particles
 ! have been identified
       DO L = 1, MAX_PIP
-! If RESTART_1 is being used with DEM inlets/outlets, then it is possible
-! that the particle arrays have indices without data (without particles).
 ! Skip 'empty' locations when populating the particle property arrays.
          IF(.NOT.PEA(L,1)) CYCLE
          IF(PEA(L,4)) CYCLE
@@ -138,305 +116,21 @@
          IF(DES_POS_NEW(2,L).LE.YLENGTH/2.d0) MARK_PART(L) = 0
       ENDDO
 
+      CALL SET_PHASE_INDEX
+      CALL INIT_PARTICLES_IN_CELL
 
 ! do_nsearch should be set before calling particle in cell
       DO_NSEARCH =.TRUE.
       CALL PARTICLES_IN_CELL
 
-
-
-
-! Relocated from des_time_march
-!-------------------------------------------------------------------->>>
-      IF(.NOT.MPPIC) THEN
-         IF(DMP_LOG) WRITE(UNIT_LOG,'(1X,A)')&
-            '---------- FIRST PASS DES_TIME_MARCH ---------->'
-         S_TIME = ZERO
-
-! When no particles are present, skip the startup routines that loop over particles.
-! That is, account for a setup that starts with no particles in the system.
-         IF(PARTICLES /= 0) THEN
-
-            CALL NEIGHBOUR
-
-! To do only des in the 1st time step only for a new run so the
-! particles settle down before the coupling is turned on
-            IF(RUN_TYPE == 'NEW') THEN
-               IF(DES_CONTINUUM_COUPLED.AND.(.NOT.USE_COHESION)) THEN
-                  DES_CONTINUUM_COUPLED = .FALSE.
-                  DO FACTOR = 1, NFACTOR
-                     IF (FACTOR .EQ. 1) THEN
-                        IF (DMP_LOG) &
-                           WRITE(UNIT_LOG,'(3X,A,/,5X,A,X,I10,X,A)') &
-                           'FIRST PASS in DES_TIME_MARCH for new runs',&
-                           'DEM settling period performed', NFACTOR, &
-                           'times'
-                     ENDIF
-! calculate forces
-                     CALL CALC_FORCE_DEM
-! update particle position/velocity
-                     CALL CFNEWVALUES
-! set the flag do_nsearch before calling particle in cell (for mpi)
-                     DO_NSEARCH = (MOD(FACTOR,NEIGHBOR_SEARCH_N)==0)
-! find particles on grid
-                     CALL PARTICLES_IN_CELL
-! perform neighbor search
-                     IF(DO_NSEARCH) CALL NEIGHBOUR
-
-                  ENDDO
-                  DES_CONTINUUM_COUPLED = .TRUE.
-                  IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A)') &
-                     'END DEM settling period'
-               ENDIF   ! end if coupled and no cohesion
-! Calculate the average solids temperature in each fluid cell
-               CALL SET_INIT_avgTs
-
-! this write_des_data is needed to properly show the initial state of
-! the simulation (granular or coupled). In the coupled case, the
-! particles may have 'settled' according to above.  In the granular
-! case, the initial state won't be written until after the particles
-! have moved without this call.
-               IF(PRINT_DES_DATA) CALL WRITE_DES_DATA
-
-               IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,X,ES15.5)') &
-                  'DES data file written at time =', S_TIME
-            ENDIF   ! end if on new run type
-
-
-         ENDIF   ! end if particles /= 0
-
-      ENDIF
-!--------------------------------------------------------------------<<<
-
-
-
-! Set parameters for cohesion models.  This call needs to be after the
-! particle's radius is assigned (i.e., after particles are identified).
-      IF(USE_COHESION) THEN
-         IF (VAN_DER_WAALS) THEN
-! Surface energy set so that force stays constant at inner cut off
-            SURFACE_ENERGY=HAMAKER_CONSTANT/&
-            (24.d0*Pi*VDW_INNER_CUTOFF*VDW_INNER_CUTOFF)
-            WALL_SURFACE_ENERGY=WALL_HAMAKER_CONSTANT/&
-            (24.d0*Pi*WALL_VDW_INNER_CUTOFF*WALL_VDW_INNER_CUTOFF)
-         ENDIF
-      ENDIF
-
-! If cut-cell then remove the particles that are outside of the cut-cell
-! faces. Call this after particles_in_cell so that the particles are
-! already assigned grid id's.  Are MPPIC grid id's set in
-! generate_particle_config.  If so, does this still need to be here?
-      IF(TRIM(RUN_TYPE) == 'RESTART_1'.AND. CARTESIAN_GRID) THEN
-         open(1000, file='parts_out.dat', form="formatted")
-         DO L = 1, PIP
-            SM_CELL = 0.d0
-            IF(.NOT.FLUID_AT(PIJK(L,4))) THEN
-               IF(SMALL_CELL_AT(PIJK(L,4))) SM_CELL = 1.d0
-               WRITE(1000, '(10(2x,g17.8))')&
-                  SM_CELL, (DES_POS_NEW(I, L), I=1,3),&
-                  (DES_VEL_NEW(I, L), I=1,3), REAL(L)
-            ENDIF
-         ENDDO
-         close(1000, status = 'keep')
+      IF(DEM_SOLIDS) THEN
+         CALL NEIGHBOUR
+         CALL INIT_SETTLING_DEM
       ENDIF
 
 
-      IF(MPPIC) THEN
-         DTPIC_CFL = LARGE_NUMBER
-         PC = 1
-         DO L = 1, MAX_PIP
-            IF(PC.GT.PIP) EXIT
-            IF(.NOT.PEA(L,1)) CYCLE
-            PC = PC+1
-            IF(PEA(L,4)) CYCLE
-
-            DTPIC_TMPX = (CFL_PIC*DX(PIJK(L,1)))/&
-               (ABS(DES_VEL_NEW(1,L))+SMALL_NUMBER)
-            DTPIC_TMPY = (CFL_PIC*DY(PIJK(L,2)))/&
-               (ABS(DES_VEL_NEW(2,L))+SMALL_NUMBER)
-            DTPIC_TMPZ = LARGE_NUMBER
-            IF(DO_K) DTPIC_TMPZ = (CFL_PIC*DZ(PIJK(L,3)))/&
-               (ABS(DES_VEL_NEW(3,L))+SMALL_NUMBER)
-
-            DTPIC_CFL = MIN(DTPIC_CFL, DTPIC_TMPX, DTPIC_TMPY, DTPIC_TMPZ)
-         ENDDO
-         CALL global_all_max(DTPIC_CFL)
-
-         DTPIC_MAX = MIN(DTPIC_CFL, DTPIC_TAUP)
-
-         DTSOLID = DTPIC_MAX
-
-         IF(DMP_LOG) THEN
-            WRITE(*,'(A40, 2x, 2(2x,g17.8))') &
-               'DTPIC BASED ON CFL AND TAUP = ', dtpic_cfl, dtpic_taup
-            WRITE(*,'(A40, 2x, 2(2x,g17.8))') 'DTSOLID SET TO ', DTSOLID
-         ENDIF
-
-      ENDIF
-
-
-      IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(1X,A)')&
-         '<---------- END MAKE_ARRAYS_DES ----------'
+      IF(MPPIC) CALL CALC_DTPIC
 
 
       RETURN
-
       END SUBROUTINE MAKE_ARRAYS_DES
-
-
-!------------------------------------------------------------------------
-! Subroutine       : read_par_input
-! Purpose          : reads the particle input and broadcasts the particle
-!                    to respective processors
-!------------------------------------------------------------------------
-
-      subroutine read_par_input
-
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE discretelement
-      use funits
-      use compar
-      use desmpi
-      use cdist
-      use mpi_utility
-      use geometry, only: NO_K
-
-      use error_manager
-
-      implicit none
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-! indices
-      integer :: i,j,k
-! index of particle
-      INTEGER :: lcurpar
-! local unit
-      INTEGER, PARAMETER :: lunit=10
-! local filename
-      character(30) lfilename
-! IO Status:
-      INTEGER :: IOS
-! Flag to indicate if file exists.
-      LOGICAL :: lEXISTS
-! Read dimension: 2D vs 3D data
-      integer :: RDMN
-!-----------------------------------------------
-
-
-      CALL INIT_ERR_MSG("READ_PAR_INPUT")
-
-
-      IOS = 0
-      RDMN = merge(2,3,NO_K)
-
-! Setup the file name based on distributed or serial IO.
-      IF(bDIST_IO) THEN
-         lFILENAME = ''
-         WRITE(lFILENAME,'("particle_input_",I4.4,".dat")') myPE
-      ELSE
-         lFILENAME= "particle_input.dat"
-      ENDIF
-
-! Check the the file exists and open it.
-      IF(bDIST_IO .OR. myPE == PE_IO) THEN
-         INQUIRE(FILE=lFILENAME, EXIST=lEXISTS)
-         IF(.NOT.LEXISTS) THEN
-            WRITE(ERR_MSG, 1100)
-            CALL FLUSH_ERR_MSG
-            IOS = 1
-         ELSE
-            OPEN(UNIT=lUNIT, FILE=lFILENAME, FORM="FORMATTED")
-         ENDIF
-      ENDIF
-
-! Collect the error message and quit.
-      CALL GLOBAL_ALL_SUM(IOS)
-      IF(IOS /= 0) CALL MFIX_EXIT(myPE)
-
- 1100 FORMAT('Error 1100: FATAL - DEM particle input file not found!')
-
-
-! Read the file
-!----------------------------------------------------------------->>>
-! In distributed IO the first line of the file will be number of
-! particles in that processor
-      IF (bdist_io) then
-         read(lunit,*) pip
-         DO lcurpar = 1,pip
-            pea(lcurpar,1) = .true.
-            read (lunit,*) (des_pos_new(k,lcurpar),k=1,RDMN),&
-               des_radius(lcurpar), ro_sol(lcurpar),&
-               (des_vel_new(k,lcurpar),k=1,RDMN)
-         ENDDO
-
-
-! Serial IO (not bDIST_IO)
-      ELSE
-!----------------------------------------------------------------->>>
-
-! Read into temporary variable and scatter
-         IF (myPE .eq. PE_IO) THEN
-
-! Allocate and initialize temporary variables.
-            ALLOCATE (dpar_pos(particles,3)); dpar_pos=0.0
-            ALLOCATE (dpar_vel(particles,3)); dpar_vel=0.0
-            ALLOCATE (dpar_rad(particles));   dpar_rad=0.0
-            ALLOCATE (dpar_den(particles));   dpar_den = 0.0
-
-! Loop through the input file.
-            DO lcurpar = 1, particles
-               read (lunit,*,IOSTAT=IOS)                               &
-               (dpar_pos(lcurpar,k),k=1,RDMN),dpar_rad(lcurpar),       &
-               dpar_den(lcurpar),(dpar_vel(lcurpar,k),k=1,RDMN)
-
-! Report read errors.
-               IF(IOS > 0) THEN
-                  WRITE(ERR_MSG,1200)
-                  CALL FLUSH_ERR_MSG
-                  EXIT
- 1200 FORMAT('Error 1200: Error reported when reading particle input ',&
-         'file.',/'A common error is 2D input for 3D cases.')
-
-! Report End-of-File errors.
-               ELSEIF(IOS < 0) THEN
-                  WRITE(ERR_MSG,1201) &
-                     trim(iVal(lcurpar)), trim(iVal(Particles))
-                  CALL FLUSH_ERR_MSG
-                  EXIT
- 1201 FORMAT('Error 1201: Error reported when reading particle input ',&
-         'file.',/'End-of-File found for particle ',A,' and ',A,1X,    &
-         'entries are expected.')
-
-               ENDIF
-
-            ENDDO
-         ENDIF
-
-         CALL GLOBAL_ALL_SUM(IOS)
-         IF(IOS /= 0) CALL MFIX_EXIT(myPE)
-
-         CALL DES_SCATTER_PARTICLE
-
-         IF(myPE == PE_IO) &
-            deallocate (dpar_pos,dpar_vel,dpar_rad,dpar_den)
-
-      ENDIF   ! end if/else bdist_io
-!-----------------------------------------------------------------<<<
-
-      IF(bDIST_IO .OR. myPE == PE_IO) CLOSE(lUNIT)
-
-
-      CALL FINL_ERR_MSG()
-
-      RETURN
-
-  999 IF(dmp_log)write(unit_log,"(/1X,70('*')//,A,/10X,A,/1X,70('*')/)")&
-         ' From: read_par_input -',&
-         ' particle_input.dat file is missing.  Terminating run.'
-      CALL MFIX_EXIT(myPE)
-
-      END SUBROUTINE READ_PAR_INPUT
-
