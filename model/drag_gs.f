@@ -39,6 +39,7 @@
       USE ur_facs
       USE funits
       USE mms
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -107,9 +108,7 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 

@@ -27,7 +27,8 @@
       USE run
       USE indices
       USE compar
-      USE sendrecv
+      USE sendrecv  
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -48,9 +49,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
       DO M = 1, MMAX

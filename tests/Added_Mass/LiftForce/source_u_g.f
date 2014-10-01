@@ -39,18 +39,7 @@
       USE is
       USE matrix
       USE mms
-      USE parallel
-      USE param
-      USE param1
-      USE physprop
-      USE quadric
-      USE run
-      USE rxns
-      USE scales
-      USE sendrecv
-      USE tau_g
-      USE toleranc
-      USE visc_g
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -105,9 +94,7 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
@@ -421,7 +408,8 @@
       USE tau_g
       USE bc
       USE output
-      USE compar
+      USE compar    
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -447,9 +435,7 @@
 !-----------------------------------------------
 ! Include statements functions
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
 ! Set reference phase to gas

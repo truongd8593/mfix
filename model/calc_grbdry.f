@@ -37,6 +37,7 @@
       USE compar
       USE toleranc
       USE mpi_utility
+      USE fun_avg
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -119,9 +120,7 @@
 ! Include statements functions
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
@@ -1258,6 +1257,7 @@
       USE compar
       Use cutcell
       use toleranc
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -1326,9 +1326,7 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 

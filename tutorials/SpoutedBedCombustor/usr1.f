@@ -39,6 +39,7 @@
       USE constant
       USE compar 
       USE funits    
+      USE fun_avg
       Use usr
       IMPLICIT NONE
 !-----------------------------------------------
@@ -51,9 +52,7 @@
       DOUBLE PRECISION DIFF, EP_g2
       DOUBLE PRECISION Sc1o3, UGC, VGC, WGC, USCM, VSCM, WSCM, VREL, Re
       INCLUDE 'usrnlst.inc' 
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !
 !
 !  Include files defining statement functions here

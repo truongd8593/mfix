@@ -491,7 +491,7 @@
       USE geometry
       USE indices
       USE compar
-
+      USE fun_avg
       IMPLICIT NONE
 
 ! Dummy Arguments:
@@ -510,9 +510,7 @@
       INTEGER :: IJK
 
 
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !
       IF(DIR == 'X')THEN
         AVG_XYZ = AVG_X(V1, V2, L)

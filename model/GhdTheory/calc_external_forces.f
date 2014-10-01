@@ -37,6 +37,7 @@
       USE bc
       use scales
       use bodyforce
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 !     Local variables
@@ -79,8 +80,6 @@
 !     Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3

@@ -36,8 +36,9 @@
       USE sendrecv
       USE discretelement
       USE qmom_kinetic_equation
-      USE drag
-
+      USE drag 
+      USE fun_avg
+      
       IMPLICIT NONE
 !-----------------------------------------------
 !     G l o b a l   P a r a m e t e r s
@@ -69,8 +70,6 @@
  !
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
       AVG_FACTOR = 0.25D0*(DIMN-2) + 0.5D0*(3-DIMN)
       DES_ON_TMP = DES_INTERP_ON
       IF(UV.EQ.1) THEN

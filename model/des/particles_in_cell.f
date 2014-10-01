@@ -733,6 +733,7 @@
       USE cutcell
       USE mfix_pic
       USE mpi_utility
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -794,8 +795,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 !-----------------------------------------------
 
 ! initializing
@@ -1289,6 +1288,7 @@
       USE cutcell
       USE mfix_pic
       use desmpi_wrapper
+      USE fun_avg
       implicit none
 !-----------------------------------------------
 ! Local variables
@@ -1305,8 +1305,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
       INCLUDE '../ep_s1.inc'
       INCLUDE '../ep_s2.inc'
 !-----------------------------------------------

@@ -34,6 +34,7 @@
       USE geometry
       USE indices
       USE compar
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -135,9 +136,7 @@
 !                      Calculated for Cylindrical coordinates only.
       DOUBLE PRECISION W_s_C
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !
 !
 !
@@ -1032,6 +1031,7 @@
       USE geometry
       USE indices
       USE compar
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1134,9 +1134,7 @@
        DOUBLE PRECISION odelta_Z
 
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !
 !         Define I, J, K
 !     IJK is the cell whose coordinates are i-1/2, j-1/2 and k-1/2

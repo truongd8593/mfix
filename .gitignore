@@ -13,3 +13,5 @@ model/mfix_directory_path.inc
 model/files.lis
 OBJ*/
 tmp.*
+*~
+.dirstamp

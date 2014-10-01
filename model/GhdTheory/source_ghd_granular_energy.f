@@ -41,6 +41,7 @@
       USE constant
       USE toleranc
       USE compar        !//d
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -98,8 +99,6 @@
 !     Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
       INCLUDE '../ep_s1.inc'
       INCLUDE '../ep_s2.inc'
 !-----------------------------------------------

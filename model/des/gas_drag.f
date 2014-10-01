@@ -35,7 +35,8 @@
       USE compar
       USE sendrecv
       USE discretelement
-      USE drag
+      USE drag       
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -75,8 +76,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 !-----------------------------------------------
 
 !!$      double precision omp_start, omp_end

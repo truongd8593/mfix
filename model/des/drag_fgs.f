@@ -83,6 +83,7 @@
       USE compar
       USE sendrecv
       USE discretelement
+      USE fun_avg
       implicit none
 !-----------------------------------------------
 ! Local variables
@@ -98,8 +99,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 !-----------------------------------------------
       MPG_CYCLIC(1:3) = ZERO
 
@@ -202,6 +201,7 @@
       USE sendrecv
       USE discretelement
       USE cutcell
+      USE fun_avg
       implicit none
 !-----------------------------------------------
 ! Local variables
@@ -217,8 +217,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 !-----------------------------------------------
 
       IF(CARTESIAN_GRID) THEN
@@ -340,6 +338,7 @@
       use desmpi
       USE cutcell
       USE mfix_pic
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -374,8 +373,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 !-----------------------------------------------
 
 
@@ -1467,6 +1464,7 @@
       USE discretelement
       use desmpi
       USE cutcell
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -1513,9 +1511,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE '../fun_avg1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg2.inc'
       INCLUDE '../ep_s1.inc'
       INCLUDE '../ep_s2.inc'
 !-----------------------------------------------
@@ -1723,6 +1719,7 @@
       USE interpolation
       use desmpi
       USE cutcell
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -1732,9 +1729,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE '../fun_avg1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg2.inc'
 !-----------------------------------------------
 
 ! currently only non-interpolated version available
@@ -1818,6 +1813,7 @@
       USE discretelement
       use desmpi
       USE cutcell
+      USE fun_avg
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -1859,9 +1855,7 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE '../ep_s1.inc'
-      INCLUDE '../fun_avg1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg2.inc'
       INCLUDE '../ep_s2.inc'
 !-----------------------------------------------
 

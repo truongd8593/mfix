@@ -19,7 +19,8 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-     USE param1, only: zero, half, one
+      USE param1, only: zero, half, one
+      USE fun_avg
 
 ! number of solids phases
       USE physprop, only: smax, mmax
@@ -106,9 +107,7 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 

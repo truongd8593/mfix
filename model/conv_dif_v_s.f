@@ -123,6 +123,7 @@
       USE compar
       USE mflux
       USE cutcell
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -152,9 +153,7 @@
 ! Include statment functions
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
@@ -390,6 +389,7 @@
       USE sendrecv3
       USE mflux
       USE cutcell
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -453,9 +453,7 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
       INCLUDE 'function3.inc'
 !-----------------------------------------------
@@ -810,6 +808,7 @@
       USE compar
       USE mflux
       USE cutcell
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -853,9 +852,7 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 

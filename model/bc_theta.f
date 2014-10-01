@@ -47,8 +47,9 @@
       USE output
       USE indices
       USE bc
-      USE compar
-      USE mpi_utility
+      USE compar         
+      USE mpi_utility    
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -75,12 +76,9 @@
 ! Include statements functions
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
-
 
 ! Setup Johnson and Jackson Pseudo-thermal temp B.C.
       DO L = 1, DIMENSION_BC
@@ -317,7 +315,8 @@
       USE compar
       USE toleranc
       USE mpi_utility
-      USE rxns
+      USE rxns            
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -381,9 +380,7 @@
 ! Include statements functions
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 

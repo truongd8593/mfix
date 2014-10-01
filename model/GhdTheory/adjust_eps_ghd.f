@@ -42,6 +42,7 @@
       USE compar
       USE sendrecv
       USE ghdtheory
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -64,8 +65,6 @@
       LOGICAL          DiluteCellE, DiluteCellN, DiluteCellT
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
       INCLUDE '../ep_s1.inc'
       INCLUDE '../ep_s2.inc'
 !

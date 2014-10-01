@@ -35,6 +35,7 @@
       USE constant
       USE toleranc
       USE drag
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -95,8 +96,6 @@
 !     Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 !-----------------------------------------------
 
 
@@ -441,6 +440,7 @@
       USE run
       USE constant
       USE toleranc
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -488,11 +488,8 @@
 !-----------------------------------------------
       INCLUDE '../function.inc'
       INCLUDE '../ep_s1.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
       INCLUDE '../ep_s2.inc'
 !-----------------------------------------------
-
 
 ! for Newton method
       ntrial = 100

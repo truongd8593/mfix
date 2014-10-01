@@ -125,8 +125,9 @@
       USE physprop
       USE fldvar
       USE output
-      USE compar
-      USE mflux
+      USE compar 
+      USE mflux    
+      USE fun_avg
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -174,9 +175,7 @@
 !=======================================================================
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 
 !
@@ -434,6 +433,7 @@
       USE sendrecv
       USE sendrecv3
       USE mflux
+      USE fun_avg
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -512,15 +512,10 @@
         DOUBLE PRECISION , EXTERNAL :: FPFOI_OF
 !---------------------------------------------------------------
 !
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'function3.inc'
 
-
       call lock_tmp4_array
-
-
       call lock_tmp_array
       call lock_xsi_array
 
@@ -913,7 +908,8 @@
       Use xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar
-      USE mflux
+      USE mflux   
+      USE fun_avg
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -968,14 +964,10 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-
 
       call lock_tmp_array
       call lock_xsi_array
-
 
 !
 !  Calculate convection factors

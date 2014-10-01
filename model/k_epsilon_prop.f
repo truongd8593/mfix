@@ -48,6 +48,7 @@
       USE sendrecv
 
       USE cutcell
+      USE fun_avg
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -164,10 +165,8 @@
       DOUBLE PRECISION ::V_G_NW,V_G_SW
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg2.inc'
 !
       IF( .NOT. K_Epsilon) RETURN
 !

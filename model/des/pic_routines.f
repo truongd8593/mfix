@@ -26,6 +26,7 @@
       USE pic_bc
       USE error_manager
       USE fldvar, only: P_g
+      USE fun_avg
       IMPLICIT NONE
 !------------------------------------------------
 ! Local variables
@@ -59,8 +60,6 @@
       LOGICAL FOCUS
 
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 
       CALL INIT_ERR_MSG("PIC_TIME_MARCH")
 
@@ -390,6 +389,7 @@
       USE mfix_pic
       USE cutcell
       USE fldvar, only: ep_g
+      USE fun_avg
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: L
 !-----------------------------------------------
@@ -424,8 +424,6 @@
 !-----------------------------------------------
 
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 
       M = PIJK(L,5)
       IJK = PIJK(L,4)
@@ -622,6 +620,7 @@
       USE cutcell
       USE interpolation
       USE mfix_pic
+      USE fun_avg
       implicit none
 
       ! general i, j, k indices
@@ -638,8 +637,6 @@
       double precision :: vol_ijkp, vol_ipjkp, vol_ijpkp, vol_ipjpkp
 
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 
       if(MPPIC_SOLID_STRESS_SNIDER) then
 
@@ -1237,6 +1234,7 @@
       USE compar
       USE discretelement
       use desmpi
+      USE fun_avg
 
       IMPLICIT NONE
       integer, intent(in) :: funit
@@ -1244,8 +1242,6 @@
 
       integer :: ijk, i, j,k
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 
       write(funit,*)'VARIABLES= ',' "I" ',' "J" ',' "K" ',' "DES_ROPS_NODE" '
 

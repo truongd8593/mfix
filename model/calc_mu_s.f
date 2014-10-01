@@ -2108,6 +2108,7 @@
       USE physprop
       USE run
       USE constant
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -2140,8 +2141,6 @@
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3
@@ -2297,6 +2296,7 @@
       USE physprop
       USE run
       USE constant
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -2327,8 +2327,6 @@
       INCLUDE 'function.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3
@@ -2689,6 +2687,7 @@
       USE compar
       USE geometry
       USE indices
+      USE fun_avg
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -2774,10 +2773,8 @@
 !     Include statement functions
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
       IF(MU_s0 == UNDEFINED) THEN ! fixes a bug noted by VTech

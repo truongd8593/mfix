@@ -59,6 +59,7 @@
       USE turb
       USE sendrecv
       USE mms
+      USE fun_avg
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -122,10 +123,8 @@
 ! Include statment functions
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
 ! solids phase index used throughout routine...

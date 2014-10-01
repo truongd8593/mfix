@@ -148,6 +148,7 @@
       USE compar
       USE sendrecv
       USE indices
+      USE fun_avg
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -205,9 +206,7 @@
       DOUBLE PRECISION D_f
 !
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !
 !  Calculate convection-diffusion fluxes through each of the faces
 !
@@ -435,6 +434,7 @@
       USE indices
       Use xsi_array
       Use tmp_array
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -515,11 +515,8 @@
 !
 !
 !---------------------------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
       INCLUDE 'function3.inc'
-      INCLUDE 'fun_avg2.inc'
-
 
       call lock_xsi_array
       call lock_tmp4_array
@@ -781,6 +778,7 @@
       USE indices
       USE vshear
       Use xsi_array
+      USE fun_avg
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -843,9 +841,7 @@
 !      DOUBLE PRECISION XSI_e(DIMENSION_3), XSI_n(DIMENSION_3),&
 !                       XSI_t(DIMENSION_3)
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       call lock_xsi_array
 !
 !  Calculate convection factors
@@ -1093,6 +1089,7 @@
       USE visc_s
       USE output
       USE is
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1127,9 +1124,7 @@
       DOUBLE PRECISION D_f
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
 ! Make user defined internal surfaces non-conducting

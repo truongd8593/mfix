@@ -53,6 +53,7 @@
 
 ! for sendrecv calls
       USE sendrecv
+      USE fun_avg
 
 ! for cutcell:
 ! wall velocity for slip conditions
@@ -111,9 +112,7 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 

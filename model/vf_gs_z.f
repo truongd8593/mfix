@@ -28,6 +28,7 @@
       USE compar
       USE drag
       USE discretelement
+      USE fun_avg
       use run, only: SOLIDS_MODEL
 
       use run, only: DEM_SOLIDS, PIC_SOLIDS
@@ -51,9 +52,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
       MTOT = merge(MMAX, MMAX+DES_MMAX, DES_CONTINUUM_HYBRID)
@@ -127,6 +126,7 @@
       USE compar
       USE drag
       USE discretelement
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -147,9 +147,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
 ! initialize every call

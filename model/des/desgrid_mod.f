@@ -96,6 +96,151 @@
 
       contains
 
+! following functions are to get proc number from I,J,K position
+        integer function procijk(fi,fj,fk)
+          implicit none
+          integer fi,fj,fk
+          procijk =fi+fj*nodesi+fk*nodesi*nodesj
+        end function procijk
+
+        integer function iofproc(fijk)
+          implicit none
+          integer fijk
+          iofproc = mod(mod(fijk,nodesi*nodesj),nodesi)
+        end function iofproc
+
+        integer function jofproc(fijk)
+          implicit none
+          integer fijk
+          jofproc = mod(fijk - iofproc(fijk),nodesi*nodesj)/nodesi
+        end function jofproc
+
+        integer function kofproc(fijk)
+          implicit none
+          integer fijk
+          kofproc = (fijk-iofproc(fijk)-jofproc(fijk)*nodesi)/(nodesi*nodesj)
+        end function kofproc
+
+! functions for desgrid indices
+        integer function dg_funijk(fi,fj,fk)
+          implicit none
+          integer fi,fj,fk
+          dg_funijk = fj+fi*dg_c1_lo+fk*dg_c2_lo+dg_c3_lo
+        end function dg_funijk
+
+        integer function dg_funijk_gl(fi,fj,fk)
+          implicit none
+          integer fi,fj,fk
+          dg_funijk_gl = fj+fi*dg_c1_gl+fk*dg_c2_gl+dg_c3_gl
+        end function dg_funijk_gl
+
+        integer function dg_funijk_proc(fi,fj,fk,fproc)
+          implicit none
+          integer fi,fj,fk,fproc
+          dg_funijk_proc = fj+fi*dg_c1_all(fproc)+fk*dg_c2_all(fproc)+dg_c3_all(fproc)
+        end function dg_funijk_proc
+
+! to find surrounding cells
+        integer function dg_funim(fijk)
+          implicit none
+          integer fijk
+          dg_funim = fijk - dg_c1_lo
+        end function dg_funim
+
+        integer function dg_funip(fijk)
+          implicit none
+          integer fijk
+          dg_funip = fijk + dg_c1_lo
+        end function dg_funip
+
+        integer function dg_funjm(fijk)
+          implicit none
+          integer fijk
+          dg_funjm = fijk - 1
+        end function dg_funjm
+
+        integer function dg_funjp(fijk)
+          implicit none
+          integer fijk
+          dg_funjp = fijk + 1
+        end function dg_funjp
+
+        integer function dg_funkm(fijk)
+          implicit none
+          integer fijk
+          dg_funkm = fijk - dg_c2_lo
+        end function dg_funkm
+
+        integer function dg_funkp(fijk)
+          implicit none
+          integer fijk
+          dg_funkp = fijk + dg_c2_lo
+        end function dg_funkp
+
+! following are used to find the i,j,k values from global ijk and local ijk
+        integer function dg_jof_gl(fijk)
+          implicit none
+          integer fijk
+          dg_jof_gl = mod(mod(fijk-1,dg_c2_gl),dg_c1_gl)+dg_jmin2
+        end function dg_jof_gl
+
+        integer function dg_iof_gl(fijk)
+          implicit none
+          integer fijk
+          dg_iof_gl = (mod(fijk-dg_jof_gl(fijk)+dg_jmin2-1,dg_c2_gl))/dg_c1_gl + dg_imin2
+        end function dg_iof_gl
+
+        integer function dg_kof_gl(fijk)
+          implicit none
+          integer fijk
+          dg_kof_gl = (fijk-dg_c3_gl-dg_iof_gl(fijk)*dg_c1_gl-dg_jof_gl(fijk))/dg_c2_gl
+        end function dg_kof_gl
+
+        integer function dg_jof_lo(fijk)
+          implicit none
+          integer fijk
+          dg_jof_lo = mod(mod(fijk-1,dg_c2_lo),dg_c1_lo)+dg_jstart2
+        end function dg_jof_lo
+
+        integer function dg_iof_lo(fijk)
+          implicit none
+          integer fijk
+          dg_iof_lo = (mod(fijk-dg_jof_lo(fijk)+dg_jstart2-1,dg_c2_lo))/dg_c1_lo + dg_istart2
+        end function dg_iof_lo
+
+        integer function dg_kof_lo(fijk)
+          implicit none
+          integer fijk
+          dg_kof_lo = (fijk-dg_c3_lo-dg_iof_lo(fijk)*dg_c1_lo-dg_jof_lo(fijk))/dg_c2_lo
+        end function dg_kof_lo
+
+! converting ijk from current proc to another
+        integer function dg_ijkconv(fijk,fface,fto_proc)
+          implicit none
+          integer fijk,fto_proc,fface
+          dg_ijkconv = dg_funijk_proc(dg_iof_lo(fijk)+dg_cycoffset(fface,1), &
+               dg_jof_lo(fijk)+dg_cycoffset(fface,2), &
+               dg_kof_lo(fijk)+dg_cycoffset(fface,3), fto_proc)
+        end function dg_ijkconv
+
+! location i,j,k from position
+        integer function iofpos(fpos)
+          implicit none
+          double precision fpos
+          iofpos = floor((fpos-dg_xstart)*dg_dxinv) + dg_istart1
+        end function iofpos
+
+        integer function jofpos(fpos)
+          implicit none
+          double precision fpos
+          jofpos = floor((fpos-dg_ystart)*dg_dyinv) + dg_jstart1
+        end function jofpos
+
+        integer function kofpos(fpos)
+          implicit none
+          double precision fpos
+          kofpos = floor((fpos-dg_zstart)*dg_dzinv) + dg_kstart1
+        end function kofpos
 
 !------------------------------------------------------------------------
 ! Subroutine       : desgrid_init
@@ -113,11 +258,6 @@
       integer :: lijkproc,liproc,ljproc,lkproc,lis,lie,ljs,lje,lks,lke
       integer :: lijk
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include 'desgrid_functions.inc'
-!-----------------------------------------------
-
 
 ! set indices for all processors
      allocate (dg_istart1_all(0:numpes-1), dg_iend1_all(0:numpes-1))
@@ -369,10 +509,6 @@
       logical, save :: first_pass = .true.
       integer :: lallocstat,lallocerr
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include 'desgrid_functions.inc'
-!-----------------------------------------------
 
 ! locate the particles including ghost cells
       lparcount = 1
@@ -464,10 +600,6 @@
       double precision :: lcurpar_pos(3)
       double precision :: lcur_off
       integer il_off,iu_off,jl_off,ju_off,kl_off,ku_off
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include 'desgrid_functions.inc'
 !-----------------------------------------------
 
 ! loop through neighbours and build the contact particles list for particles
@@ -566,10 +698,6 @@
 !-----------------------------------------------
       integer lproc,liproc,ljproc,lkproc
       character (30) filename
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include 'desgrid_functions.inc'
 !-----------------------------------------------
 
       write(filename,'("dbg_desgridn",I4.4,".dat")') mype

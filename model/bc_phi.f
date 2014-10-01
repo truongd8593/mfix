@@ -29,6 +29,7 @@
       USE bc
       USE compar
       USE cutcell, only : CARTESIAN_GRID, CG_SAFE_MODE
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -68,12 +69,8 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
-
-
 
 ! Set up the default walls (i.e., bc_type='dummy' or undefined/default
 ! boundaries) as non-conducting...
@@ -490,6 +487,7 @@
       USE bc
       USE compar
       USE cutcell
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -534,11 +532,8 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
-
 
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)

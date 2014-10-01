@@ -26,6 +26,7 @@
       USE compar
       USE sendrecv
       USE physprop
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -46,8 +47,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 !-----------------------------------------------
 
 

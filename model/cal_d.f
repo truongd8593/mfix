@@ -23,6 +23,7 @@
       USE bc
       USE vshear
       USE compar
+      USE fun_avg
 
       DOUBLE PRECISION V_sh,dis
 !     DOUBLE PRECISION xdist(IMAX2,JMAX2)
@@ -38,11 +39,8 @@
 
       INTEGER I1,J1,I,J
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
-
 
       IF (NO_K) THEN
 

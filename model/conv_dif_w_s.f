@@ -124,6 +124,7 @@
       USE compar
       USE mflux
       USE cutcell
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -152,9 +153,7 @@
 !-----------------------------------------------
 ! Include statment functions
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
 ! Calculate convection-diffusion fluxes through each of the faces
@@ -383,6 +382,7 @@
       USE sendrecv3
       USE mflux
       USE cutcell
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -445,9 +445,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'function3.inc'
 !-----------------------------------------------
 
@@ -792,6 +790,7 @@
       USE compar
       USE mflux
       USE cutcell
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -834,9 +833,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------'
 
       call lock_tmp_array

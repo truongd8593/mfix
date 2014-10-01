@@ -222,6 +222,7 @@
       USE constant
       USE toleranc
       use kintheory
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -250,8 +251,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
@@ -345,6 +344,7 @@
       USE constant
       USE toleranc
       use kintheory
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -376,8 +376,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s1.inc'
       INCLUDE 'ep_s2.inc'
 !-----------------------------------------------

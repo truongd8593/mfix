@@ -44,8 +44,9 @@
       USE is
       USE tau_g
       USE bc
-      USE compar
-      USE sendrecv
+      USE compar    
+      USE sendrecv  
+      USE fun_avg
 
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -142,9 +143,7 @@
 
 !-----------------------------------------------
       INCLUDE '../ep_s1.inc'
-      INCLUDE '../fun_avg1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg2.inc'
       INCLUDE '../ep_s2.inc'
 
       IF(CG_SAFE_MODE(3)==1) RETURN
@@ -428,7 +427,8 @@
       USE tau_g
       USE bc
       USE output
-      USE compar
+      USE compar    
+      USE fun_avg
 
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -483,9 +483,7 @@
       LOGICAL :: PRINT_FLAG
 !-----------------------------------------------
       INCLUDE '../ep_s1.inc'
-      INCLUDE '../fun_avg1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg2.inc'
       INCLUDE '../ep_s2.inc'
 
       IF(CG_SAFE_MODE(3)==1) RETURN

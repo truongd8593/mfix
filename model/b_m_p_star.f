@@ -39,6 +39,7 @@
       USE indices
       USE compar 
       USE bodyforce
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -81,9 +82,7 @@
       DOUBLE PRECISION V0, Vmt, Vbf
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
       I = I_OF(IJK)
@@ -172,6 +171,7 @@
       USE indices
       USE compar
       USE bodyforce
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -216,9 +216,7 @@
 !
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
       I = I_OF(IJK)
@@ -307,6 +305,7 @@
       USE indices
       USE compar
       USE bodyforce
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -351,9 +350,7 @@
 !
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
       I = I_OF(IJK)
@@ -441,6 +438,7 @@
       USE indices
       USE compar
       USE bodyforce
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -485,9 +483,7 @@
 !
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
       IM = IM1(I_OF(IJK))
@@ -576,6 +572,7 @@
       USE indices
       USE compar
       USE bodyforce
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -619,9 +616,7 @@
       DOUBLE PRECISION V0, Vmt, Vbf
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
       I = I_OF(IJK)
@@ -710,6 +705,7 @@
       USE indices
       USE compar
       USE bodyforce
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -753,9 +749,7 @@
       DOUBLE PRECISION V0, Vmt, Vbf
 !-----------------------------------------------
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
       INCLUDE 'ep_s2.inc'
 !
       I = I_OF(IJK)

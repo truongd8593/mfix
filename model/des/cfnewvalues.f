@@ -183,6 +183,7 @@
       USE mfix_pic
       USE randomno
       use geometry, only: DO_K, NO_K
+      USE fun_avg
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -227,8 +228,6 @@
 !-----------------------------------------------
 
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 
       PC = 1
       FOCUS_PARTICLE = -1
@@ -524,6 +523,7 @@
       USE mfix_pic
       USE randomno
       USE cutcell
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -570,8 +570,6 @@
 !-----------------------------------------------
 
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
       OUTER_STABILITY_COND = .false.
       DES_FIXED_BED = .false.
       PC = 1

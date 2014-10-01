@@ -35,10 +35,10 @@
       USE compar
       USE sendrecv
       USE toleranc
+      USE fun_avg
       USE usr
 
       IMPLICIT NONE
-
 
       INTEGER, INTENT(IN) :: IJK
 
@@ -80,12 +80,10 @@
       INCLUDE 'species.inc'
 
       INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
 
       INCLUDE 'function.inc'
 
       INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg2.inc'
 
       INCLUDE 'usrnlst.inc'
 !`````````````````````````````````````````````````````````````````````//

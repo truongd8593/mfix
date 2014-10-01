@@ -37,6 +37,7 @@
       USE indices
       USE compar
       USE sendrecv
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -60,9 +61,7 @@
 !                      Vector b_m
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !
       M = 0
       IF (.NOT.MOMENTUM_Y_EQ(0)) RETURN

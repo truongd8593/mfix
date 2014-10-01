@@ -113,6 +113,7 @@
       USE indices
       Use param1
       Use physprop
+      USE fun_avg
 
       IMPLICIT NONE
 
@@ -146,9 +147,7 @@
 !---------------------------------------------------------------------//
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
-      INCLUDE '../fun_avg1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg2.inc'
 
 ! Initialization
       IMJK  = IM_OF(IJK)

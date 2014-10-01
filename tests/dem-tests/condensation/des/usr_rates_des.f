@@ -51,6 +51,7 @@
       USE rxns
       USE run
       USE usr
+      USE fun_avg
 
       IMPLICIT NONE
 
@@ -85,9 +86,7 @@
       DOUBLE PRECISION H2O_xfr
 
       INCLUDE '../species.inc'
-      INCLUDE '../fun_avg1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../fun_avg2.inc'
       INCLUDE '../usrnlst.inc'
 
 ! Alias particle temperature.

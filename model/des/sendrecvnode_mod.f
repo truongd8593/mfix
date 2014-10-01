@@ -60,7 +60,6 @@
 ! include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE 'desgrid_functions.inc'
 !-----------------------------------------------
 
 ! set flags for interprocessor boundaries and set the corresponding to proc

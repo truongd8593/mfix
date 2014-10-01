@@ -293,10 +293,6 @@
       integer listart1,liend1,ljstart1,ljend1,lkstart1,lkend1
       integer listart2,liend2,ljstart2,ljend2,lkstart2,lkend2
 !-----------------------------------------------
-! include statement functions
-!-----------------------------------------------
-      INCLUDE 'desgrid_functions.inc'
-!-----------------------------------------------
 
 ! set flags for interprocessor boundaries and set the corresponding to proc
       lijkproc = mype
@@ -856,10 +852,6 @@
       integer :: lijk,lindx,ltot_ind,lpicloc,lpar_cnt,lcurpar
       integer :: ltordimn,lpacketsize,lbuf
 !-----------------------------------------------
-! include statement functions
-!-----------------------------------------------
-      INCLUDE 'desgrid_functions.inc'
-!-----------------------------------------------
       ltordimn = merge(1,3,NO_K)
       lpacketsize = 2*dimn + ltordimn+ 5
       lpar_cnt = 0
@@ -1069,7 +1061,6 @@
 !-----------------------------------------------
 ! include statement functions
 !-----------------------------------------------
-      INCLUDE 'desgrid_functions.inc'
       INCLUDE '../function.inc'
 !-----------------------------------------------
 
@@ -1276,10 +1267,6 @@
       integer :: lpacketsize,lbuf,ltordimn,ltmpbuf,lcount
       logical :: lcontactfound,lneighfound
       integer :: cc,ii,kk,num_collisions_sent
-!-----------------------------------------------
-! include statement functions
-!-----------------------------------------------
-      INCLUDE 'desgrid_functions.inc'
 !-----------------------------------------------
 
 ! loop through particles and locate them and make changes
@@ -1531,10 +1518,6 @@
 !-----------------------------------------------
       integer :: lpicloc,lcurpar
 !-----------------------------------------------
-! include statement functions
-!-----------------------------------------------
-      INCLUDE 'desgrid_functions.inc'
-!-----------------------------------------------
 
       locate_par = .false.
       if (pijk .lt. dg_ijkstart2 .or. pijk .gt. dg_ijkend2) then
@@ -1574,10 +1557,6 @@
 !-----------------------------------------------
       integer :: lpicloc,lcurpar
       integer :: lijk,li,lj,lk,lic,ljc,lkc,lkoffset
-!-----------------------------------------------
-! include statement functions
-!-----------------------------------------------
-      INCLUDE 'desgrid_functions.inc'
 !-----------------------------------------------
       exten_locate_par = .false.
       lic = dg_iof_lo(pijk)
@@ -2155,10 +2134,6 @@
       integer lstart,lsize
       double precision xpos,ypos
       integer li,lj,lparcount
-!-----------------------------------------------
-! include statement functions
-!-----------------------------------------------
-      INCLUDE 'desgrid_functions.inc'
 !-----------------------------------------------
 
       write(filename,'("dbg_desmpi",I4.4,".dat")') mype

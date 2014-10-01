@@ -353,7 +353,8 @@
       USE run
       USE compar
       USE drag
-      USE fldvar
+      USE fldvar       
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -387,9 +388,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
 !!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
@@ -547,7 +546,8 @@
       USE run
       USE compar
       USE drag
-      USE fldvar
+      USE fldvar   
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -580,10 +580,8 @@
       CHARACTER*80     LINE
 !-----------------------------------------------
 ! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
+!-----------------------------------------------  
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
 !!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
@@ -734,7 +732,8 @@
       USE run
       USE compar
       USE drag
-      USE fldvar
+      USE fldvar 
+      USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -768,9 +767,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
 !!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, &
