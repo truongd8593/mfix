@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name:  BODY_FORCE.INC                                        C
+!  Module name:  BODYFORCE_MOD                                         C
 !  Purpose: Include file for all body force statement functions        C
 !                                                                      C
 !  Author: M. Syamlal                                 Date:  6-MAR-92  C
@@ -20,44 +20,52 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-module bodyforce
+MODULE bodyforce
 
-contains
+  USE constant
 
-!  Body force on gas at i+1/2, j, k
-double precision function BFX_g(IJK)
-      integer ijk
-      BFX_g = GRAVITY_X
-end function
-!
-!  Body force on gas at i, j+1/2, k
-double precision function BFY_g(IJK)
-      integer ijk
-      BFY_g = GRAVITY_Y
-end function
-!
-!  Body force on gas at i, j, k+1/2
-double precision function BFZ_g(IJK)
-      integer ijk
-      BFZ_g = GRAVITY_Z
-end function
-!
-!  Body force on solids m at i+1/2, j, k
-double precision function BFX_s(IJK,M)
-      integer ijk,m
-      BFX_s = GRAVITY_X
-end function
-!
-!  Body force on solids m at i, j+1/2, k
-double precision function BFY_s(IJK,M)
-      integer ijk,m
-      BFY_s = GRAVITY_Y
-end function
-!
-!  Body force on solids m at i, j, k+1/2
-double precision function BFZ_s(IJK,M)
-      integer ijk,m
-      BFZ_s = GRAVITY_Z
-end function
+CONTAINS
 
-end module bodyforce
+  !  Body force on gas at i+1/2, j, k
+  DOUBLE PRECISION FUNCTION BFX_g(IJK)
+    IMPLICIT NONE
+    INTEGER ijk
+    BFX_g = GRAVITY_X
+  END FUNCTION BFX_g
+
+  !  Body force on gas at i, j+1/2, k
+  DOUBLE PRECISION FUNCTION BFY_g(IJK)
+    IMPLICIT NONE
+    INTEGER ijk
+    BFY_g = GRAVITY_Y
+  END FUNCTION BFY_g
+
+  !  Body force on gas at i, j, k+1/2
+  DOUBLE PRECISION FUNCTION BFZ_g(IJK)
+    IMPLICIT NONE
+    INTEGER ijk
+    BFZ_g = GRAVITY_Z
+  END FUNCTION BFZ_g
+
+  !  Body force on solids m at i+1/2, j, k
+  DOUBLE PRECISION FUNCTION BFX_s(IJK,M)
+    IMPLICIT NONE
+    INTEGER ijk,m
+    BFX_s = GRAVITY_X
+  END FUNCTION BFX_s
+
+  !  Body force on solids m at i, j+1/2, k
+  DOUBLE PRECISION FUNCTION BFY_s(IJK,M)
+    IMPLICIT NONE
+    INTEGER ijk,m
+    BFY_s = GRAVITY_Y
+  END FUNCTION BFY_s
+
+  !  Body force on solids m at i, j, k+1/2
+  DOUBLE PRECISION FUNCTION BFZ_s(IJK,M)
+    IMPLICIT NONE
+    INTEGER ijk,m
+    BFZ_s = GRAVITY_Z
+  END FUNCTION BFZ_s
+
+END MODULE bodyforce
