@@ -40,11 +40,7 @@
 !-----------------------------------------------
       INCLUDE 'species.inc'
 
-      INCLUDE 'ep_s1.inc'
-
       INCLUDE 'function.inc'
-
-      INCLUDE 'ep_s2.inc'
 
       INCLUDE 'usrnlst.inc'
 

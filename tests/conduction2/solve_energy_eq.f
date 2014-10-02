@@ -95,9 +95,7 @@
       INTEGER          J1, J2, J3, J4, IJK1, IJK2, IJK3, IJK4, L
 !-----------------------------------------------
       INCLUDE 'radtn1.inc'
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
       INCLUDE 'radtn2.inc'
 
       call lock_ambm
