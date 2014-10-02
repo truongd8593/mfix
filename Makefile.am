@@ -434,8 +434,6 @@ common_SOURCES = \
 	model/rxn_com_mod.f \
 	model/rxns_mod.f \
 	model/solids_pressure_mod.f \
-	model/sc_p_g1.inc \
-	model/sc_p_g2.inc \
 	model/scalar_prop.f \
 	model/scalars_mod.f \
 	model/scales_mod.f \

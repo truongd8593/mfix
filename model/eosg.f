@@ -48,11 +48,9 @@
 !-----------------------------------------------
       DOUBLE PRECISION :: XXX
 !-----------------------------------------------
-      INCLUDE 'sc_p_g1.inc'
-      INCLUDE 'sc_p_g2.inc'
-!
+
       EOSG = UNSCALE(PG)*MW/(GAS_CONST*TG)
-!
+
       RETURN
       END FUNCTION EOSG
 !

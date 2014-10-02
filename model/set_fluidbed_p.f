@@ -78,9 +78,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'sc_p_g1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'sc_p_g2.inc'
 !-----------------------------------------------
 
 ! If any initial pressures are unspecified skip next section

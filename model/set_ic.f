@@ -33,7 +33,7 @@
       USE scalars
       USE compar
       USE run
-      USE sendrecv 
+      USE sendrecv
       USE solids_pressure
       IMPLICIT NONE
 !-----------------------------------------------
@@ -74,9 +74,7 @@
 !-----------------------------------------------
 ! Include statement function
 !-----------------------------------------------
-      INCLUDE 'sc_p_g1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'sc_p_g2.inc'
 !-----------------------------------------------
 
 !  Set the initial conditions.

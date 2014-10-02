@@ -38,6 +38,7 @@ post3d_mod.f
 ../model/rxns_mod.f
 ../model/scalars_mod.f
 ../model/scales_mod.f
+../model/solids_pressure_mod.f
 ../model/tau_g_mod.f
 ../model/tau_s_mod.f
 ../model/time_cpu_mod.f
