@@ -125,9 +125,7 @@
 !=======================================================================
 
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 !
 !
 !!!!$omp  parallel do private( IJK, I, IJKE, EPGA, IP, J, JM, K, KM,  &

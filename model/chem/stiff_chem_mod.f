@@ -361,9 +361,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_ODE_COEFF(lNEQ, IJK)
 
-      use fldvar, only : ROP_s
+      use fldvar, only : ROP_s, RO_s, EP_S
       use physprop, only : MMAX
-      use fldvar, only: RO_s
       use run, only : SPECIES_EQ
 
       implicit none
@@ -374,9 +373,6 @@
       INTEGER :: M
 
       LOGICAL :: USE_SOLIDS_ODEs
-
-      INCLUDE '../ep_s1.inc'
-      INCLUDE '../ep_s2.inc'
 
 ! Initialize.
       USE_SOLIDS_ODEs = .FALSE.

@@ -59,9 +59,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 ! returning if mcp is not defined.
@@ -146,9 +144,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 ! returning if mcp is not defined.
@@ -232,9 +228,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 ! returning if mcp is not defined.

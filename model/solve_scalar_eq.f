@@ -94,10 +94,8 @@
 !-----------------------------------------------
       LOGICAL , EXTERNAL :: IS_SMALL
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-
+      
       call lock_ambm
       call lock_tmp_array
 

@@ -81,14 +81,12 @@
 !                      Source terms (Volumetric)
       DOUBLE PRECISION V0, Vmt, Vbf
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!
-      I = I_OF(IJK)
-      J = J_OF(IJK)
-      K = K_OF(IJK)
-      IJKE = EAST_OF(IJK)
+
+      I = I_OF(IJK) 
+      J = J_OF(IJK) 
+      K = K_OF(IJK) 
+      IJKE = EAST_OF(IJK) 
 !
       A = ZERO
       B = ZERO
@@ -215,14 +213,12 @@
       DOUBLE PRECISION V0, Vmt, Vbf
 !
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!
-      I = I_OF(IJK)
-      J = J_OF(IJK)
-      K = K_OF(IJK)
-      IJKN = NORTH_OF(IJK)
+
+      I = I_OF(IJK) 
+      J = J_OF(IJK) 
+      K = K_OF(IJK) 
+      IJKN = NORTH_OF(IJK) 
 !
       A = ZERO
       B = ZERO
@@ -349,14 +345,12 @@
       DOUBLE PRECISION V0, Vmt, Vbf
 !
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!
-      I = I_OF(IJK)
-      J = J_OF(IJK)
-      K = K_OF(IJK)
-      IJKT = TOP_OF(IJK)
+
+      I = I_OF(IJK) 
+      J = J_OF(IJK) 
+      K = K_OF(IJK) 
+      IJKT = TOP_OF(IJK) 
 !
       A = ZERO
       B = ZERO
@@ -482,15 +476,13 @@
       DOUBLE PRECISION V0, Vmt, Vbf
 !
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!
-      IM = IM1(I_OF(IJK))
-      J = J_OF(IJK)
-      K = K_OF(IJK)
-      IJKW = WEST_OF(IJK)
-      IMJK = IM_OF(IJK)
+
+      IM = IM1(I_OF(IJK)) 
+      J = J_OF(IJK) 
+      K = K_OF(IJK) 
+      IJKW = WEST_OF(IJK) 
+      IMJK = IM_OF(IJK) 
 !
       A = ZERO
       B = ZERO
@@ -615,15 +607,13 @@
 !                      Source terms (Volumetric)
       DOUBLE PRECISION V0, Vmt, Vbf
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!
-      I = I_OF(IJK)
-      JM = JM1(J_OF(IJK))
-      K = K_OF(IJK)
-      IJKS = SOUTH_OF(IJK)
-      IJMK = JM_OF(IJK)
+
+      I = I_OF(IJK) 
+      JM = JM1(J_OF(IJK)) 
+      K = K_OF(IJK) 
+      IJKS = SOUTH_OF(IJK) 
+      IJMK = JM_OF(IJK) 
 !
       A = ZERO
       B = ZERO
@@ -748,15 +738,13 @@
 !                      Source terms (Volumetric)
       DOUBLE PRECISION V0, Vmt, Vbf
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!
-      I = I_OF(IJK)
-      J = J_OF(IJK)
-      KM = KM1(K_OF(IJK))
-      IJKB = BOTTOM_OF(IJK)
-      IJKM = KM_OF(IJK)
+
+      I = I_OF(IJK) 
+      J = J_OF(IJK) 
+      KM = KM1(K_OF(IJK)) 
+      IJKB = BOTTOM_OF(IJK) 
+      IJKM = KM_OF(IJK) 
 !
       A = ZERO
       B = ZERO

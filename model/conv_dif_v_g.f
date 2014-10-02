@@ -181,11 +181,8 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 
-!
 !  Calculate convection-diffusion fluxes through each of the faces
 !
 !     Fluid phase

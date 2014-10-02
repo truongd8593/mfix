@@ -55,9 +55,7 @@
       DOUBLE PRECISION SUM_VOL
 !
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 !
 !  Integrate the velocity values for the whole domain
 !

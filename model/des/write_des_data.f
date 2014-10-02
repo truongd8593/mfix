@@ -278,8 +278,6 @@
 !-----------------------------------------------
 
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s1.inc'
-      INCLUDE '../ep_s2.inc'
 
 ! Set output dimnensions
       wDIMN = merge(2,3,NO_K)

@@ -409,14 +409,8 @@
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: EOSG
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
-!-----------------------------------------------
-
-
-      IF (RVEL_G >=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN
+               
+      IF (RVEL_G >=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN 
 ! initially ep_g may be undefined (the initial step of a new run) but
 ! otherwise ep_g should always be defined. so this if effectively checks
 ! for backflow, and if backflow occurs skip these assignments.

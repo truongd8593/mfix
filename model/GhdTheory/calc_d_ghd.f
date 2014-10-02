@@ -97,9 +97,7 @@
       DOUBLE PRECISION  EPStmp
 !-----------------------------------------------
 !-----------------------------------------------
-      INCLUDE '../ep_s1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s2.inc'
 
    Pass1 = .FALSE.     !initialization
    Pass2 = .FALSE.
@@ -352,9 +350,7 @@
       DOUBLE PRECISION  EPStmp
 !-----------------------------------------------
 !-----------------------------------------------
-      INCLUDE '../ep_s1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s2.inc'
 
    Pass1 = .FALSE.     !initialization
    Pass2 = .FALSE.
@@ -607,9 +603,7 @@
       DOUBLE PRECISION  EPStmp
 !-----------------------------------------------
 !-----------------------------------------------
-      INCLUDE '../ep_s1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s2.inc'
 
    Pass1 = .FALSE.     !initialization
    Pass2 = .FALSE.

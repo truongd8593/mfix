@@ -103,10 +103,7 @@
 ! Compare two numbers.
       LOGICAL, EXTERNAL :: COMPARE
 
-      INCLUDE '../ep_s1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s2.inc'
-
 
 ! Alias particle temperature.
       lTp = DES_T_s_NEW(NP)

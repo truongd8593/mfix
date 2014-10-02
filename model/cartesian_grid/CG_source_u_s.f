@@ -81,9 +81,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE '../ep_s1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s2.inc'
 !-----------------------------------------------
 
       IF(CG_SAFE_MODE(3)==1) RETURN

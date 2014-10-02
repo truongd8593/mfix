@@ -45,11 +45,9 @@
       INTEGER           REC_POINTER(N_SPX) , L , NT
       LOGICAL           READ_SPX(N_SPX) , AT_EOF(N_SPX)
       INTEGER           I, J, K, IJK
-!
-      INCLUDE 'ep_s1.inc'
+
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!
+
       IF (.NOT.DO_XFORMS) THEN
          WRITE (*,'(A,$)')& 
                  ' Enter time to start and end time averaging > '

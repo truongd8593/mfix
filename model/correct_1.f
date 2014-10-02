@@ -33,7 +33,7 @@
 ! Modules
 !-----------------------------------------------
       USE param1, only: one, zero, undefined_i
-      USE fldvar, only: u_s, v_s, w_s, rop_s, ro_s
+      USE fldvar, only: u_s, v_s, w_s, rop_s, ro_s, ep_s
       USE physprop, only: close_packed
       USE pscor, only: mcp, epp, k_cp, e_e, e_n, e_t
       USE ur_facs, only: ur_fac
@@ -64,11 +64,9 @@
       DOUBLE PRECISION :: EP_S_CP
 !-----------------------------------------------
 ! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
+!----------------------------------------------- 
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!-----------------------------------------------
+!----------------------------------------------- 
 
       IF (MCP == UNDEFINED_I) THEN
 ! this error should be caught earlier in the routines so that this

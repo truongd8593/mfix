@@ -70,10 +70,7 @@
       INTEGER          LM
 
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-
 
       IF (DISCRETE_ELEMENT) RETURN
 

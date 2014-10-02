@@ -173,8 +173,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s1.inc'
-      INCLUDE '../ep_s2.inc'
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("Particles_in_cell")
@@ -399,8 +397,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s1.inc'
-      INCLUDE '../ep_s2.inc'
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("PARTICLES_IN_CELL --> REPORT_PIC_STATS")

@@ -305,8 +305,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -430,8 +428,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 !$omp parallel do default(shared)                                    &
@@ -537,7 +533,9 @@
 ! granular temperature
       USE fldvar, only: theta_m
 ! viscous solids pressure
-      USE fldvar, only: p_s_v
+      USE fldvar, only: p_s_v, ep_s
+! solid volume fraction
+      USE fldvar, only: ep_s
 ! viscous solids transport coefficients
       USE visc_s, only: mu_s_v, mu_b_v, lambda_s_v
 ! number of solids phases
@@ -588,8 +586,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -760,8 +756,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -909,8 +903,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -1100,8 +1092,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -1314,8 +1304,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -1560,8 +1548,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -1946,8 +1932,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -2139,8 +2123,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3
@@ -2325,8 +2307,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3
@@ -2658,6 +2638,8 @@
       USE fldvar, only: rop_s, ro_s, d_p
 ! k and epsilon for gas turbulence
       USE fldvar, only: e_turb_g, k_turb_g
+! solid volume fraction
+      USE fldvar, only: ep_s
 
 ! excluded volume for boyle-massoudi stress tensor
       USE constant, only: v_ex
@@ -2772,9 +2754,7 @@
 !-----------------------------------------------
 !     Include statement functions
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       IF(MU_s0 == UNDEFINED) THEN ! fixes a bug noted by VTech

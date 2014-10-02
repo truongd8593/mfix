@@ -30,13 +30,11 @@
       Use geometry
       Use compar
       IMPLICIT NONE
-!
+
       INTEGER I, J, K, IJK, M, IPJK
-!
-      INCLUDE 'ep_s1.inc'
+
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!
+
       IF(U_s(IJK, M) .GT. ZERO) THEN
         VFLOW_sx = DY(J) * X_E(I) * DZ(K) * U_s(IJK, M) * EP_s(IJK, M)
       ELSE

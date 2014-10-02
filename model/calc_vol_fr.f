@@ -37,7 +37,7 @@
       USE sendrecv
       USE discretelement
       USE mpi_utility
-      use fldvar, only: RO_S
+      use fldvar, only: RO_S, EP_S
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -91,11 +91,9 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 's_pr1.inc'
       INCLUDE 'function.inc'
       INCLUDE 's_pr2.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 ! Initialize error flag.

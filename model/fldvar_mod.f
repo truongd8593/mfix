@@ -185,8 +185,19 @@
       DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: EP_SS
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: ERR_ARRAY
 
+! Function to calculate the solids phase M volume fraction.
 
+CONTAINS
 
+ ! Solids volume fraction function
+DOUBLE PRECISION FUNCTION EP_s(IJK, xxM)
+  IMPLICIT NONE
+  INTEGER xxM           ! Solids phase dummy index
+  INTEGER IJK
+
+  EP_s = ROP_s(IJK, xxM)/RO_S(IJK,xxM)
+END FUNCTION
+ 
 !!!HPF$ align EP_g(:) with TT(:)
 !!!HPF$ align EP_go(:) with TT(:)
 !!!HPF$ align P_g(:) with TT(:)

@@ -60,13 +60,7 @@
       DOUBLE PRECISION, DIMENSION(NO_OF_RXNS), INTENT(OUT) :: RATES
 
       INCLUDE 'species.inc'
-
-      INCLUDE 'ep_s1.inc'
-
       INCLUDE 'function.inc'
-
-      INCLUDE 'ep_s2.inc'
-
       INCLUDE 'usrnlst.inc'
 
 ! Reaction specific variables:

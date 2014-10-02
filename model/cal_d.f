@@ -38,9 +38,7 @@
                        cnter3(IMIN3:IMAX3,JSTART3:JEND3,KSTART3:KEND3)
 
       INTEGER I1,J1,I,J
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 
       IF (NO_K) THEN
 

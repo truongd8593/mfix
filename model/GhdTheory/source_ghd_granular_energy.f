@@ -99,8 +99,6 @@
 !     Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s1.inc'
-      INCLUDE '../ep_s2.inc'
 !-----------------------------------------------
 
       I = I_OF(IJK)

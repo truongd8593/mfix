@@ -135,9 +135,7 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 !-----------------------------------------------
-      INCLUDE '../ep_s1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s2.inc'
 
       IF(CG_SAFE_MODE(5)==1) RETURN
 
@@ -474,9 +472,7 @@
       CHARACTER(LEN=9) :: BCT
 
 !-----------------------------------------------
-      INCLUDE '../ep_s1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s2.inc'
 
       IF(CG_SAFE_MODE(5)==1) RETURN
 

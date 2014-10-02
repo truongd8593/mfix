@@ -86,9 +86,9 @@
 ! particle diameter, bulk density, material density
       USE fldvar, only: d_p, rop_s, ro_s
 ! granular temperature
-      USE fldvar, only: theta_m
-! dilute threshold
-      USE toleranc, only: dil_ep_s
+      USE fldvar, only: theta_m, ep_s
+! dilute threshold      
+      USE toleranc, only: dil_ep_s 
 
       Use kintheory
 
@@ -135,9 +135,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 ! section largely based on tau_w_g:

@@ -27,8 +27,7 @@
 ! x,y,z-components of solids velocity
       USE fldvar, only: u_s, v_s, w_s
 ! solids phase particle bulk density and material density
-! (needed for ep_s2.inc)
-      USE fldvar, only: rop_s, ro_s
+      USE fldvar, only: rop_s, ro_s, ep_s
 
 ! viscous solids transport coefficients
       USE visc_s, only: mu_s, lambda_s
@@ -111,9 +110,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO M = 1, MMAX

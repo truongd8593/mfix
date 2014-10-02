@@ -164,10 +164,8 @@
       INTEGER :: P,Q
       DOUBLE PRECISION ::V_G_NW,V_G_SW
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!
+
       IF( .NOT. K_Epsilon) RETURN
 !
 ! M should be forced to be equal to one to get some info. from solids phase.

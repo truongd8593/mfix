@@ -487,8 +487,6 @@
 !     Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s1.inc'
-      INCLUDE '../ep_s2.inc'
 !-----------------------------------------------
 
 ! for Newton method

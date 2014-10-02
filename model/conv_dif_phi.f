@@ -1123,9 +1123,7 @@
 !                      Difusion parameter
       DOUBLE PRECISION D_f
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 !
 ! Make user defined internal surfaces non-conducting
 !

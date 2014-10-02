@@ -152,9 +152,7 @@
 !-----------------------------------------------
 ! Include statment functions
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 ! Calculate convection-diffusion fluxes through each of the faces
@@ -452,9 +450,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
       INCLUDE 'function3.inc'
 !-----------------------------------------------
 
@@ -851,9 +847,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       call lock_tmp_array

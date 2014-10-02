@@ -65,9 +65,7 @@
       LOGICAL          DiluteCellE, DiluteCellN, DiluteCellT
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s1.inc'
-      INCLUDE '../ep_s2.inc'
-!
+!   
 ! First set solids cell-center density in very dilute cells to zero
 !
       DO IJK = ijkstart3, ijkend3

@@ -444,7 +444,7 @@
 
       use fldvar, only: ROP_s
       use fldvar, only: RO_s
-      use fldvar, only: D_p
+      use fldvar, only: D_p, EP_S
 
       implicit none
 
@@ -455,10 +455,7 @@
 ! Map from true index to map.
       INTEGER :: lM
 
-      include 'ep_s1.inc'
       include 'function.inc'
-      include 'ep_s2.inc'
-
 
       IF(.NOT.CALL_DQMOM) return
 

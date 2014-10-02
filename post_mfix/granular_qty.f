@@ -52,11 +52,9 @@
       REAL        TIME_REAL(N_SPX), TIME_NOW
       REAL        TIME_IN_RES
       DOUBLE PRECISION K_1m, Tmp(DIMENSION_3)
-!
-      INCLUDE 'ep_s1.inc'
+
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!
+
       CALL READ_RES1
       TIME_IN_RES = TIME
 !

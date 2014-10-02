@@ -69,13 +69,11 @@
       DOUBLE PRECISION, EXTERNAL :: BLEND_FUNCTION
 !-----------------------------------------------
 ! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
+!----------------------------------------------- 
       INCLUDE 's_pr1.inc'
       INCLUDE 'function.inc'
       INCLUDE 's_pr2.inc'
-      INCLUDE 'ep_s2.inc'
-!-----------------------------------------------
+!----------------------------------------------- 
 
 ! initializing
       KCP(:) = ZERO
@@ -313,13 +311,11 @@
       DOUBLE PRECISION :: G_0
       DOUBLE PRECISION :: DG_0DNU
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
+! Include statement functions      
+!----------------------------------------------- 
       INCLUDE 's_pr1.inc'
       INCLUDE 'function.inc'
       INCLUDE 's_pr2.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       g0 = G_0(IJK, M, M)

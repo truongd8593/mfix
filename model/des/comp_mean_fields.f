@@ -59,8 +59,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s1.inc'
-      INCLUDE '../ep_s2.inc'
 !-----------------------------------------------
 
       SOLVOLINC(:,:) = ZERO
@@ -774,8 +772,6 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s1.inc'
-      INCLUDE '../ep_s2.inc'
 !-----------------------------------------------
 
 !$omp parallel do if(ijkend3 .ge. 2000) default(shared)        &

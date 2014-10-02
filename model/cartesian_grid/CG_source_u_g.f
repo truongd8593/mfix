@@ -142,9 +142,7 @@
 
 
 !-----------------------------------------------
-      INCLUDE '../ep_s1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s2.inc'
 
       IF(CG_SAFE_MODE(3)==1) RETURN
 
@@ -482,9 +480,7 @@
 
       LOGICAL :: PRINT_FLAG
 !-----------------------------------------------
-      INCLUDE '../ep_s1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s2.inc'
 
       IF(CG_SAFE_MODE(3)==1) RETURN
 

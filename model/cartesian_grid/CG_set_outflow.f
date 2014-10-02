@@ -102,9 +102,7 @@
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: EOSG
 !-----------------------------------------------
-      INCLUDE '../ep_s1.inc'
       INCLUDE '../function.inc'
-      INCLUDE '../ep_s2.inc'
 !
 !      print*,'top of cg_set_outflow'
       DO IJK = IJKSTART3, IJKEND3

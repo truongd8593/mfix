@@ -122,9 +122,7 @@
 !-----------------------------------------------
 ! Include statment functions
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 ! solids phase index used throughout routine...

@@ -61,9 +61,7 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
-!-----------------------------------------------
+!-----------------------------------------------   
 
       DO IJK = ijkstart3, ijkend3
           I = I_OF(IJK)
@@ -251,9 +249,7 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
-!-----------------------------------------------
+!-----------------------------------------------   
 
       DO IJK = ijkstart3, ijkend3
           I = I_OF(IJK)
@@ -376,9 +372,7 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
-!-----------------------------------------------
+!-----------------------------------------------   
 !
       DO IJK = ijkstart3, ijkend3
           I = I_OF(IJK)

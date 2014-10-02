@@ -67,12 +67,8 @@
       DOUBLE PRECISION , EXTERNAL :: avg_xyz
 ! Radial distribution functions
       DOUBLE PRECISION , EXTERNAL :: G_0, G_0CS
-
-      INCLUDE 'ep_s1.inc'
+!-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-
-
 
       IF(IJK1 == IJK2)THEN
          G_0AVG = G_0(IJK1, M1, M2)
@@ -291,10 +287,8 @@
 !---------------------------------------------------------------------//
 ! Other radial distribution functions
       DOUBLE PRECISION , EXTERNAL :: G_0CS
-
-      INCLUDE 'ep_s1.inc'
+!-----------------------------------------------
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 
       SUM_EPS = ZERO
       EPg = EP_G(IJK)

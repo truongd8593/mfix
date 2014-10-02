@@ -75,10 +75,8 @@
 !-----------------------------------------------
 ! Include statements functions
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!-----------------------------------------------
+!----------------------------------------------- 
 
 ! Setup Johnson and Jackson Pseudo-thermal temp B.C.
       DO L = 1, DIMENSION_BC
@@ -378,11 +376,9 @@
       DOUBLE PRECISION :: PHIP_JJ
 !-----------------------------------------------
 ! Include statements functions
-!-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
+!----------------------------------------------- 
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!-----------------------------------------------
+!----------------------------------------------- 
 
 ! Note: EP_s, MU_g, and RO_g are undefined at IJK1 (wall cell).
 !       Hence IJK2 (fluid cell) is used in averages.

@@ -108,9 +108,7 @@
 !-----------------------------------------------
       LOGICAL , EXTERNAL :: IS_SMALL
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 
       IF( .NOT. K_Epsilon) RETURN
 

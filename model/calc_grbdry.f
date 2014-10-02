@@ -119,9 +119,7 @@
 !-----------------------------------------------
 ! Include statements functions
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 ! Note: EP_s, MU_g, and RO_g are undefined at IJK1 (wall cell).
@@ -1324,11 +1322,9 @@
       DOUBLE PRECISION F_HW
 !-----------------------------------------------
 ! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
+!----------------------------------------------- 
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!-----------------------------------------------
+!-----------------------------------------------       
 
 !  Note:  EP_s, MU_g, and RO_g are undefined at IJK1 (wall cell).  Hence
 !         IJK2 (fluid cell) is used in averages.

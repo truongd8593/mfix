@@ -1279,9 +1279,6 @@
       logical finish
       INCLUDE '../function.inc'
 
-!      INCLUDE '../ep_s1.inc'
-!      INCLUDE '../ep_s2.inc'
-
       WRITE(filename,'(A,"_",I5.5,".dat")') TRIM(RUN_NAME)//'_U_S_',myPE
       OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown')
       IF(DIMN.eq.2) then

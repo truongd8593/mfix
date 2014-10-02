@@ -224,8 +224,6 @@ common_SOURCES = \
 	model/corner_mod.f \
 	model/correct_0.f \
 	model/correct_1.f \
-	model/cp_fun1.inc \
-	model/cp_fun2.inc \
 	model/dbg_mod.f \
 	model/deprecated.f \
 	model/des/calc_collision_wall.f \
@@ -261,7 +259,6 @@ common_SOURCES = \
 	model/des/des_thermo_newvalues.f \
 	model/des/des_thermo_rad.f \
 	model/des/des_time_march.f \
-	model/des/desgrid_functions.inc \
 	model/des/desgrid_mod.f \
 	model/des/desmpi_mod.f \
 	model/des/desnamelist.inc \
@@ -320,8 +317,6 @@ common_SOURCES = \
 	model/energy_mod.f \
 	model/eosg.f \
 	model/eoss.f \
-	model/ep_s1.inc \
-	model/ep_s2.inc \
 	model/equal.f \
 	model/error_manager_mod.f \
 	model/error_routine.f \

@@ -115,11 +115,9 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 's_pr1.inc'
       INCLUDE 'function.inc'
       INCLUDE 's_pr2.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 
@@ -393,11 +391,9 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
       INCLUDE 's_pr1.inc'
       INCLUDE 'function.inc'
       INCLUDE 's_pr2.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       call lock_xsi_array

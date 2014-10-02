@@ -80,10 +80,7 @@
       DOUBLE PRECISION Kg_micro
 !-----------------------------------------------
 
-      INCLUDE 'ep_s1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-
 
       IF (K_S0(M) /= UNDEFINED) RETURN
 
