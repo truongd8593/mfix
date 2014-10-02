@@ -47,8 +47,9 @@
       INTEGER I, J, K, IJK
 ! variables that count/store the number of particles in i, j, k cell
       INTEGER:: npic, pos
-! particle x,y,z position
-      DOUBLE PRECISION XPOS, YPOS, ZPOS
+
+      INTEGER :: RECOVERED
+      INTEGER :: DELETED
 
 !-----------------------------------------------
 ! Include statement functions
@@ -63,11 +64,9 @@
 ! boundaries as well as updates ghost particles information
       CALL DES_PAR_EXCHANGE
 
-! Assigning PIJK(L,1), PIJK(L,2) and PIJK(L,3) the i, j, k indices
-! of particle L (locating particle on fluid grid). Also determine
-! composite ijk index.
+! Use an incremental approach to determine the new particle location.
 !-----------------------------------------------------------------------
-!$omp parallel default(shared) private(L,XPOS,YPOS,ZPOS,I,J,K,IJK)
+!$omp parallel default(shared) private(L, I, J, K, IJK)
 !$omp do reduction(+:PINC) schedule (guided,50)
 
       DO L = 1, MAX_PIP
@@ -76,60 +75,45 @@
 ! skipping ghost particles
          IF(PEA(L,4)) CYCLE
 
-! Assigning local aliases for particle position
-         XPOS = DES_POS_NEW(1,L)
-         YPOS = DES_POS_NEW(2,L)
-         ZPOS = merge(0.0d0, DES_POS_NEW(3,L), NO_K)
-
-! Using an incremental approach to determine the new location of the
-! particles.
          I = PIJK(L,1)
-         J = PIJK(L,2)
-         K = PIJK(L,3)
-
-         IF(XPOS >= XE(I-1) .and. XPOS < XE(I)) THEN
-            PIJK(L,1) = I
-         ELSEIF(XPOS >= XE(I)) THEN
-            PIJK(L,1) = I+1
-         ELSE
-            PIJK(L,1) = I-1
+         IF(DES_POS_NEW(1,L) < XE(I-1)) THEN
+            I = I-1
+         ELSEIF(DES_POS_NEW(1,L) >= XE(I)) THEN
+            I = I+1
          ENDIF
 
-         IF(YPOS >= YN(J-1) .and. YPOS < YN(J)) THEN
-            PIJK(L,2) = J
-         ELSEIF(YPOS >= YN(J))THEN
-            PIJK(L,2) = J+1
-         ELSE
-            PIJK(L,2) = J-1
+         J = PIJK(L,2)
+         IF(DES_POS_NEW(2,L)< YN(J-1)) THEN
+            J = J-1
+         ELSEIF(DES_POS_NEW(2,L) >= YN(J))THEN
+            J = J+1
          ENDIF
 
          IF(NO_K) THEN
-            PIJK(L,3) = 1
+            K = 1
          ELSE
-            IF(ZPOS >= ZT(K-1) .and. ZPOS < ZT(K)) THEN
-               PIJK(L,3) = K
-            ELSEIF(ZPOS >= ZT(K)) THEN
-               PIJK(L,3) = K+1
-            ELSE
-               PIJK(L,3) = K-1
+            K = PIJK(L,3)
+            IF(DES_POS_NEW(3,L) < ZT(K-1)) THEN
+               K = K-1
+            ELSEIF(DES_POS_NEW(3,L) >= ZT(K)) THEN
+               K = K+1
             ENDIF
          ENDIF
 
-! Assigning PIJK(L,4) now that particles have been located on the fluid
-         I = PIJK(L,1)
-         J = PIJK(L,2)
-         K = PIJK(L,3)
-
+! Calculate the fluid cell index.
          IJK = FUNIJK(I,J,K)
-
-         PIJK(L,4) = IJK
+! Increment the number of particles in cell IJK
          PINC(IJK) = PINC(IJK) + 1
+! Assign PIJK(L,1:4)
+         PIJK(L,1) = I
+         PIJK(L,2) = J
+         PIJK(L,3) = K
+         PIJK(L,4) = IJK
 
       ENDDO
 !$omp end parallel
 
-      IF(DEM_SOLIDS) CALL CHECK_CELL_MOVEMENT_DEM
-      IF(PIC_SOLIDS) CALL CHECK_CELL_MOVEMENT_PIC
+      CALL CHECK_CELL_MOVEMENT(RECOVERED, DELETED)
 
 ! Assigning the variable PIC(IJK)%p(:). For each computational fluid
 ! cell compare the number of current particles in the cell to what was
@@ -175,7 +159,7 @@
 ! Calculate mean fields using either interpolation or cell averaging.
       CALL COMP_MEAN_FIELDS
 
-      IF(MPPIC) CALL REPORT_PIC_STATS
+      IF(MPPIC) CALL REPORT_PIC_STATS(RECOVERED, DELETED)
 
       RETURN
       END SUBROUTINE PARTICLES_IN_CELL

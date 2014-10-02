@@ -50,65 +50,31 @@
 
       CALL INIT_ERR_MSG("DES_ALLOCATE_ARRAYS")
 
-      write(err_msg, 1000) Particles
- 1000 FORMAT('Total number of particles = ', 2x, i15)
-      CALL FLUSH_ERR_MSG(footer = .false.)
-
       NWALLS = merge(4,6,NO_K)
       MAXNEIGHBORS = MN + 1 + NWALLS
 
-! defining the local variables nparticles
-!----------------------------------------------------------------->>>
-
-! +nwalls is included since calc_force_des temporarily uses the variables
-! pos, vel, etc at elements beyond the array index given by particles.
-! unclear why additional array space is needed via particles_factor
-      NPARTICLES = PARTICLES * PARTICLES_FACTOR + NWALLS
-
-! J.Musser : Dynamic Particle Info
-! no real need to print this information out
-      IF(MAX_PIS /= UNDEFINED_I .AND. MAX_PIS .GT. NPARTICLES) THEN
-         !WRITE(ERR_MSG, 1001) MAX_PIS, NPARTICLES, MAX_PIS
-         !CALL FLUSH_ERR_MSG(header = .false., footer = .false.)
-         NPARTICLES = MAX_PIS
+! Grab the larger of PARTICLES and MAX_PIS
+      IF(MAX_PIS == UNDEFINED) THEN
+         NPARTICLES = PARTICLES
+      ELSE
+         NPARTICLES = max(MAX_PIS, PARTICLES)
       ENDIF
-
- 1001 FORMAT(/,'User supplied MAX_PIS (',I15,') > cummulative size ',&
-         'of particle arrays, NPARTILCES ( ', I15 , ')', /, &
-         'Therefore, setting NPARTICLES to ',I15)
-
 
 ! For parallel processing the array size required should be either
 ! specified by the user or could be determined from total particles
-! with some factor
-      NPARTICLES = (NPARTICLES/numPEs)
-
-! minimum size for nparticles
-      IF(NPARTICLES.LT.1000) NPARTICLES = 1000
-
-      IF(NPARTICLES .LT. PIP) then
-         write(err_msg, 1002) mype, Nparticles, pip
-         CALL FLUSH_ERR_MSG(header = .false., footer = .false., Abort = .true.)
-      endif
- 1002 FORMAT(/,'Error 1002: For processor:', 2x, i5, /, &
-      'Particle array size determined (', 2x, I15, &
-      ') is less than number of particles (', 2x, i15, ')', /, &
-      'Increase MAX_PIS or particles_factor in the input file')
+! with some factor.
+      NPARTICLES = (NPARTICLES/numPEs)*PARTICLES_FACTOR+NWALLS
+      IF(NPARTICLES < 1000) NPARTICLES = 1000
 
 ! max_pip adjusted to accomodate temporary variables used for walls
 ! and DES_MPI stuff
-
       MAX_PIP = NPARTICLES - 2*NWALLS - 3
 
-      WRITE(err_msg, 1003)  NPARTICLES, MAX_PIP
+      WRITE(ERR_MSG,1000) trim(iVal(NPARTICLES)), trim(iVal(MAX_PIP))
+      CALL FLUSH_ERR_MSG(HEADER = .FALSE., FOOTER = .FALSE.)
 
- 1003 FORMAT('Particle array size on each proc = ',I15, /,&
-      'Maximum possible physical particles (MAX_PIP) on each proc = ',I15,/, &
-      'Note that this value of MAX_PIP is only ',&
-      'relevant for a new run',/,'For restarts, max_pip ',&
-      'will be set later on')
-
-      CALL FLUSH_ERR_MSG(header = .false., footer = .false.)
+ 1000 FORMAT('DES Particle array size: ',A,/&
+        'DES maximum particles per process: ',A)
 
 ! DES Allocatable arrays
 !-----------------------------------------------
@@ -234,7 +200,7 @@
       Allocate(  DES_V_s (DIMENSION_3, DES_MMAX) )
       Allocate(  DES_W_s (DIMENSION_3, DES_MMAX) )
 
- ! Volume of nodes
+! Volume of nodes
        ALLOCATE(DES_VOL_NODE(DIMENSION_3))
 
 ! Variables for hybrid model
@@ -369,13 +335,9 @@
 ! End Species Allocation
 ! ----------------------------------------------------------------<<<
 
-      IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(1X,A)')&
-         '<---------- END DES_ALLOCATE_ARRAYS ----------'
+      CALL FINL_ERR_MSG
 
       RETURN
-      write(err_msg, '(A,/)') ''
-      call flush_err_msg(header = .false.)
-      CALL FINL_ERR_MSG
       END SUBROUTINE DES_ALLOCATE_ARRAYS
 
 

@@ -45,7 +45,7 @@
 
       variance = 0.0
       do i = 1, nsize
-         write(20,*) i, y(i)
+!         write(20,*) i, y(i)
          variance = variance + (y(i)-rmean)**2
       end do
 

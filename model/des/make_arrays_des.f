@@ -38,6 +38,8 @@
 !-----------------------------------------------
       INCLUDE '../function.inc'
 
+      CALL INIT_ERR_MSG("MAKE_ARRAYS_DES")
+
 ! cfassign and des_init_bc called before reading the particle info
       CALL CFASSIGN
 
@@ -47,11 +49,14 @@
       call desmpi_init
 
 ! Set the initial particle data.
-      IF(RUN_TYPE == 'NEW' .and. PARTICLES /= 0) THEN
-         IF(GENER_PART_CONFIG) THEN
-            CALL COPY_PARTICLE_CONFIG_FROMLISTS
-         ELSE
-            CALL READ_PAR_INPUT
+      IF(RUN_TYPE == 'NEW') THEN
+
+         IF(PARTICLES /= 0) THEN
+            IF(GENER_PART_CONFIG) THEN
+               CALL COPY_PARTICLE_CONFIG_FROMLISTS
+            ELSE
+               CALL READ_PAR_INPUT
+            ENDIF
          ENDIF
 
 ! Set the global ID for the particles and set the ghost cnt
@@ -131,6 +136,7 @@
 
       IF(MPPIC) CALL CALC_DTPIC
 
+      CALL FINL_ERR_MSG
 
       RETURN
       END SUBROUTINE MAKE_ARRAYS_DES

@@ -638,7 +638,8 @@
       Call check_mass_balance (1)
 
 ! DES
-      IF (DISCRETE_ELEMENT.AND.DES_CONTINUUM_COUPLED) CALL DES_TIME_MARCH
+      IF (DEM_SOLIDS) CALL DES_TIME_MARCH
+      IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
 
 
 ! Alberto Passalacqua: QMOMK
