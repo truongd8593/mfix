@@ -54,7 +54,7 @@
       MAXNEIGHBORS = MN + 1 + NWALLS
 
 ! Grab the larger of PARTICLES and MAX_PIS
-      IF(MAX_PIS == UNDEFINED) THEN
+      IF(MAX_PIS == UNDEFINED_I) THEN
          NPARTICLES = PARTICLES
       ELSE
          NPARTICLES = max(MAX_PIS, PARTICLES)
