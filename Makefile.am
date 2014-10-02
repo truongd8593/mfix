@@ -227,6 +227,7 @@ common_SOURCES = \
 	model/dbg_mod.f \
 	model/deprecated.f \
 	model/des/calc_collision_wall.f \
+	model/des/calc_dtpic.f \
 	model/des/calc_force_dem.f \
 	model/des/calc_rrate_des.f \
 	model/des/calc_thermo_des.f \
@@ -238,6 +239,8 @@ common_SOURCES = \
 	model/des/cfupdateold.f \
 	model/des/cfwallcontact.f \
 	model/des/cfwallposvel.f \
+	model/des/check_cell_movement.f \
+	model/des/comp_mean_fields.f \
 	model/des/des_allocate_arrays.f \
 	model/des/des_bc_mod.f \
 	model/des/des_cluster_identification.f \
@@ -266,6 +269,7 @@ common_SOURCES = \
 	model/des/drag_fgs.f \
 	model/des/gas_drag.f \
 	model/des/generate_particle_config.f \
+	model/des/init_settling_dem.f \
 	model/des/interpolation_mod.f \
 	model/des/layout_mi_dem.f \
 	model/des/make_arrays_des.f \
@@ -279,6 +283,8 @@ common_SOURCES = \
 	model/des/pic_bc_routines.f \
 	model/des/pic_routines.f \
 	model/des/randomno_mod.f \
+	model/des/read_particle_input.f \
+	model/des/set_phase_index.f \
 	model/des/read_res0_des.f \
 	model/des/read_res1_des_mod.f \
 	model/des/sendrecvnode_mod.f \
