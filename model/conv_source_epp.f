@@ -82,6 +82,7 @@
       USE pscor
       USE compar
       USE sendrecv
+      USE solids_pressure
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -115,11 +116,8 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 's_pr1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 's_pr2.inc'
 !-----------------------------------------------
-
 
       IF (MCP == UNDEFINED_I) THEN
 ! this error should be caught earlier in the routines so that this
@@ -349,6 +347,7 @@
       USE vshear
       USE compar
       USE sendrecv
+      USE solids_pressure
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -391,9 +390,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 's_pr1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 's_pr2.inc'
 !-----------------------------------------------
 
       call lock_xsi_array

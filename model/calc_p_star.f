@@ -42,6 +42,7 @@
       USE compar
       USE run
       USE visc_s
+      USE solids_pressure
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -70,9 +71,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 's_pr1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 's_pr2.inc'
 !-----------------------------------------------
 
 !!$omp parallel do private(ijk)

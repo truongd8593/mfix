@@ -38,6 +38,7 @@
       USE discretelement
       USE mpi_utility
       use fldvar, only: RO_S, EP_S
+      USE solids_pressure
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -91,9 +92,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 's_pr1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 's_pr2.inc'
 !-----------------------------------------------
 
 ! Initialize error flag.

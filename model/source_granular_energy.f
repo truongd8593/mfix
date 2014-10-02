@@ -64,6 +64,7 @@
       USE kintheory
       USE mms
       USE fun_avg
+      USE solids_pressure
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -109,9 +110,7 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 's_pr1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 's_pr2.inc'
 !-----------------------------------------------
 
       I = I_OF(IJK)
@@ -285,7 +284,7 @@
       USE toleranc
       USE residual
       use kintheory
-      USE compar   
+      USE compar
       USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------

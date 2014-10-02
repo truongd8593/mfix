@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: Solids_pr                                              C
+!  Module name: solids_pressure                                        C
 !  Purpose: To compute solids pressure and its inverse                 C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 17-FEB-93  C
@@ -22,17 +22,44 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
+MODULE solids_pressure
+
+  USE constant
+  USE param1
+
+!     parameters for P_s = a_ps*(EP_star - EP_g)**b_ps
+  DOUBLE PRECISION, PARAMETER          :: a_ps = 1D25
+  INTEGER, PARAMETER                   :: b_ps = 10
+
+!     coefficient in Jackson's model (dyne/cm^2)
+!      DOUBLE PRECISION, PARAMETER          :: A_ps_jackson = 0.5D0*100D0*2D0*981D0*0.4D0
+!     voidage of random close-packed bed
+!      DOUBLE PRECISION, PARAMETER          :: EP_g_cp = 0.35D0
+
+CONTAINS
+
 ! Solids pressure in plastic-flow stress formulation. MFIX default model
 
 ! function P_s(EP_g,Ep_star)
-      Neg_H(XXX,YYY) = to_SI*a_ps * (MAX(ZERO, (YYY - XXX )))**b_ps
+  DOUBLE PRECISION FUNCTION Neg_H(XXX,YYY)
+    IMPLICIT NONE
+    DOUBLE PRECISION :: XXX, YYY
+    Neg_H = to_SI*a_ps * (MAX(ZERO, (YYY - XXX )))**b_ps
+  END FUNCTION Neg_H
 
 ! inverse of Neg_H.  function EP_g(P_s)
-      INV_H(XXX,YYY) = YYY - ( XXX/(to_SI*a_ps) )**(ONE/dble(b_ps))
+  DOUBLE PRECISION FUNCTION INV_H(XXX,YYY)
+    IMPLICIT NONE
+    DOUBLE PRECISION :: XXX, YYY
+    INV_H = YYY - ( XXX/(to_SI*a_ps) )**(ONE/dble(b_ps))
+  END FUNCTION INV_H
 
 ! Differentiate P_s w.r.t. EP_s.  function dP_s/dEP_s (EP_s)
-      dPodEP_s(XXX,YYY) = to_SI*a_ps * dble(b_ps)*(MAX(ZERO, (YYY - (ONE - XXX) )))**(b_ps-1)
-
+  DOUBLE PRECISION FUNCTION dPodEP_s(XXX,YYY)
+    IMPLICIT NONE
+    DOUBLE PRECISION :: XXX, YYY
+    dPodEP_s = to_SI*a_ps * dble(b_ps)*(MAX(ZERO, (YYY - (ONE - XXX) )))**(b_ps-1)
+  END FUNCTION dPodEP_s
 
 ! Solids pressure in plastic-flow stress formulation. Jackson's model
 ! function P_s(EP_g,Ep_star)
@@ -44,3 +71,4 @@
 ! Differentiate P_s w.r.t. EP_s.  function dP_s/dEP_s (EP_s)
       !dPodEP_s(XXX,YYY) = to_SI*a_ps_jackson * (YYY - EP_g_cp)/(XXX - EP_g_cp)**2
 
+END MODULE solids_pressure
