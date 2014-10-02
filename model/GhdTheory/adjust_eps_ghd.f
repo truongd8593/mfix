@@ -24,7 +24,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE ADJUST_EPS_GHD
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
 !-----------------------------------------------
@@ -43,6 +43,7 @@
       USE sendrecv
       USE ghdtheory
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -63,9 +64,7 @@
 !                      are set to zero.
       DOUBLE PRECISION epsMixE, epsMixN, epsMixT, epSolid, epSolidE(smax), epSolidN(smax), epSolidT(smax)
       LOGICAL          DiluteCellE, DiluteCellN, DiluteCellT
-!-----------------------------------------------
-      INCLUDE '../function.inc'
-!   
+!
 ! First set solids cell-center density in very dilute cells to zero
 !
       DO IJK = ijkstart3, ijkend3

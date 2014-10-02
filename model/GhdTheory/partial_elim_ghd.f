@@ -38,6 +38,7 @@
       USE drag
       USE fldvar       
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -78,8 +79,6 @@
 !                      error message
       CHARACTER*80     LINE
 !-----------------------------------------------
-!      INCLUDE '../function.inc'
-      INCLUDE '../function.inc'
 
 !!!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
 !!!$omp&  a, bb,F, Saxf,SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME,L, M,LP, den) &
@@ -240,6 +239,7 @@
       USE drag
       USE fldvar   
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -285,8 +285,6 @@
 !                      error message
       CHARACTER*80     LINE
 !-----------------------------------------------
-!      INCLUDE '../function.inc'
-      INCLUDE '../function.inc'
 
 !!!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
 !!!$omp&  a, bb,F, Saxf,SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME,L, M,LP, DEN) &
@@ -444,6 +442,7 @@
       USE drag
       USE fldvar 
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -483,9 +482,6 @@
 !                      error message
       CHARACTER*80     LINE
 !-----------------------------------------------
-!      INCLUDE '../function.inc'
-      INCLUDE '../function.inc'
- 
 !!!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, &
 !!!$omp&  a, bb, F, Saxf,SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME,L, M,LP, DEN) &
 !!!$omp&  schedule(static)

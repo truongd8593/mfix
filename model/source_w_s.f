@@ -60,6 +60,7 @@
       USE mms
       USE bodyforce
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -106,10 +107,6 @@
                           Wgw, Wgn, Wgs, Wgt, Wgb
 ! error message
       CHARACTER*80     LINE
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO M = 1, MMAX
@@ -515,8 +512,6 @@
       RETURN
       END SUBROUTINE SOURCE_W_S
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: SOURCE_W_s_BC                                           C
@@ -560,6 +555,8 @@
       USE output
       USE compar  
       USE fun_avg
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -581,10 +578,6 @@
       INTEGER :: I, J, K, KM, I1, I2, J1, J2, K1, K2, IJK,&
                  IM, JM, IJKB, IJKM, IJKP
 !-----------------------------------------------
-! Include statements functions
-!----------------------------------------------- 
-      INCLUDE 'function.inc'
-!----------------------------------------------- 
 
 ! Setting the default boundary conditions
       J1 = 1
@@ -1008,8 +1001,6 @@
       RETURN
       END SUBROUTINE SOURCE_W_S_BC
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: JJ_BC_W_s                                               C
@@ -1047,6 +1038,8 @@
       USE bc
       USE output
       USE compar
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -1068,10 +1061,6 @@
       INTEGER :: I, J, K, IJK, JM, IM, IJKP
 ! coefficients for granular bc
       DOUBLE PRECISION :: hw, gw, cw
-!-----------------------------------------------
-! Include statements functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO K = K1, K2
@@ -1202,7 +1191,6 @@
       RETURN
       END SUBROUTINE JJ_BC_W_S
 
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: POINT_SOURCE_W_S                                        C
@@ -1225,6 +1213,8 @@
       use physprop
       use ps
       use run
+      use functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1244,10 +1234,6 @@
       INTEGER :: lKT, lKB
 ! terms of bm expression
       DOUBLE PRECISION :: pSource
-!-----------------------------------------------
-! Include statements functions
-!-----------------------------------------------
-      include 'function.inc'
 !-----------------------------------------------
       do M=1, MMAX
 

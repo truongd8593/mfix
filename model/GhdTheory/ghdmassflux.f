@@ -36,6 +36,7 @@
       USE toleranc
       USE drag
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -91,13 +92,6 @@
 !-----------------------------------------------
 !     Function subroutines
 !-----------------------------------------------
-
-!-----------------------------------------------
-!     Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
-!-----------------------------------------------
-
 
       DO M = 1, SMAX
         DO 200 IJK = ijkstart3, ijkend3
@@ -441,6 +435,7 @@
       USE constant
       USE toleranc
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -481,12 +476,6 @@
       double precision tolx, tolf
 !-----------------------------------------------
 !     Function subroutines
-!-----------------------------------------------
-
-!-----------------------------------------------
-!     Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! for Newton method

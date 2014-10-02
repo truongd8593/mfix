@@ -58,6 +58,8 @@
       USE quadric
       USE cutcell
 
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -102,10 +104,6 @@
       INTEGER :: N_SUM
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO M = 1, MMAX
@@ -422,5 +420,3 @@
       call send_recv(tau_w_s,2)
       RETURN
       END SUBROUTINE CALC_TAU_W_S
-
-

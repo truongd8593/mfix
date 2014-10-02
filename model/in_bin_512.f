@@ -93,24 +93,22 @@
          READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=N1,N)
          NEXT_REC = NEXT_REC + 1
       ENDIF
-!
+
       RETURN
       END SUBROUTINE IN_BIN_512
-!
-!
+
       subroutine convert_from_io_dp(arr_io,arr_internal,n)
-!
+
       use geometry
       use indices
       USE compar
-!
+      USE functions
+
       implicit none
-!
+
       double precision   arr_io(*) , arr_internal(*)
       integer            n,i,j,k,ijk,ijk_io
-!
-      include 'function.inc'
-!
+
       do k = 1,kmax2
          do j = 1,jmax2
             do i = 1,imax2
@@ -120,24 +118,22 @@
             end do
          end do
       end do
-!
+
       return
       end
-!
-!
+
       subroutine convert_to_io_dp(arr_internal,arr_io,n)
-!
+
       use geometry
       use indices
       USE compar
-!
+      USE functions
+
       implicit none
-!
+
       double precision   arr_io(*) , arr_internal(*)
       integer            n,i,j,k,ijk,ijk_io
-!
-      include 'function.inc'
-!
+
       do k = 1,kmax2
          do j = 1,jmax2
             do i = 1,imax2

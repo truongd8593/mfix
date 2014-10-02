@@ -117,6 +117,7 @@
       USE sendrecv
       USE indices
       USE leqsol
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -183,9 +184,6 @@
 
       logical, parameter :: do_unit_scaling = .true.
 
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!
       is_serial = numPEs.eq.1.and.is_serial
 
       alpha(:)  = zero
@@ -662,6 +660,7 @@
       USE funits
       USE sendrecv
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -699,8 +698,6 @@
       INTEGER :: NSTART, NEND
       DOUBLE PRECISION, DIMENSION (JSTART:JEND) :: CC,DD,EE,BB
       INTEGER :: INFO, IJK, J, K, IM1JK, IP1JK
-
-      INCLUDE 'function.inc'
 
       NEND = JEND
       NSTART = JSTART
@@ -770,6 +767,7 @@
       USE indices
       USE sendrecv
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -806,8 +804,6 @@
 
       DOUBLE PRECISION, DIMENSION (JSTART:JEND) :: CC,DD,EE, BB
       INTEGER :: NSTART, NEND, INFO, IJK, J,  IM1JK, IP1JK, IJKM1, IJKP1
-
-      INCLUDE 'function.inc'
 
       NEND = JEND
       NSTART = JSTART
@@ -885,6 +881,7 @@
       USE indices
       USE sendrecv
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -928,11 +925,6 @@
 
       integer :: i1,i2, j1,j2, k1,k2, isize,jsize
 
-
-
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-
       if (do_k) then
 
 !AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
@@ -971,7 +963,7 @@
       else
          k = 1
 !AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
-! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 971)
+! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 971)        
 !$omp parallel do private(i,j,ijk2,im1jk,ip1jk,ijm1k,ijp1k) collapse (2)
          do i = istart,iend
             do j = jstart,jend
@@ -1028,6 +1020,7 @@
       USE compar
       USE indices
       USE sendrecv
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1071,10 +1064,6 @@
       LOGICAL, PARAMETER :: USE_IKLOOP = .FALSE.
 
       LOGICAL, PARAMETER :: SETGUESS = .TRUE.
-
-
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 
 !!$      double precision omp_start, omp_end
 !!$      double precision omp_get_wtime
@@ -1252,6 +1241,7 @@
       USE funits
       USE compar
       USE indices
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1286,8 +1276,6 @@
 
       DOUBLE PRECISION, DIMENSION (IMAX2) :: CC,DD,EE,BB
       INTEGER :: NN, INFO, IJK, I
-
-      INCLUDE 'function.inc'
 
       NN = IMAX2
 
@@ -1355,6 +1343,7 @@
       USE funits
       USE compar
       USE indices
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1389,8 +1378,6 @@
 
       DOUBLE PRECISION, DIMENSION (KMAX2) :: CC,DD,EE,BB
       INTEGER :: NN, INFO, IJK, K
-
-      INCLUDE 'function.inc'
 
       NN = KMAX2
 
@@ -1497,8 +1484,8 @@
       USE compar
       USE indices
       USE sendrecv
-
-      use parallel
+      USE parallel
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1523,8 +1510,6 @@
       CHARACTER*4 :: CMETHOD
 
       integer :: i,j,k, ijk, ijk2
-
-      include 'function.inc'
 
       if (use_doloop) then
 !AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade

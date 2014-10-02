@@ -50,6 +50,7 @@
       USE compar
       USE mflux
       USE discretelement
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -73,10 +74,6 @@
       INTEGER :: FIJK
 ! alias for gas and solids velocity
       DOUBLE PRECISION :: RVEL_G, RVEL_S(DIMENSION_M)
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO K = K1, K2
@@ -409,8 +406,8 @@
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: EOSG
 !-----------------------------------------------
-               
-      IF (RVEL_G >=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN 
+
+      IF (RVEL_G >=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN
 ! initially ep_g may be undefined (the initial step of a new run) but
 ! otherwise ep_g should always be defined. so this if effectively checks
 ! for backflow, and if backflow occurs skip these assignments.

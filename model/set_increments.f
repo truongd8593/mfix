@@ -20,7 +20,8 @@
       USE compar
       USE physprop
       USE fldvar
-      USE funits
+      USE funits 
+      USE functions
 
 ! Module procedures
 !---------------------------------------------------------------------//
@@ -52,8 +53,6 @@
       INTEGER :: IER
 ! Flags for using the 'real' I/J/K value (not cyclic.)
       LOGICAL :: SHIFT
-
-      INCLUDE 'function.inc'
 !......................................................................!
 
 
@@ -334,6 +333,7 @@
       use discretelement, only: DISCRETE_ELEMENT
 
       USE cdist
+      USE functions
 
       use stiff_chem, only: STIFF_CHEMISTRY,notOwner
 
@@ -419,13 +419,6 @@
 
    INTEGER :: clock_start,clock_end,clock_rate
    DOUBLE PRECISION :: elapsed_time,dummysum
-
-
-
-
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-
 
 !======================================================================
 !   Loop through useful cells and save their index
@@ -2132,6 +2125,7 @@
       USE geometry
       USE compar
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
 
@@ -2143,9 +2137,6 @@
       INTEGER ::IJK, NEW_IJK
 !
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: ARRAY, BUFFER
-
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 
 !======================================================================
 !   To remove dead cells, the number of useful cells was calculated in
@@ -2193,6 +2184,7 @@
       USE geometry
       USE compar
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
 
@@ -2205,9 +2197,6 @@
 !
       INTEGER, DIMENSION(DIMENSION_3) :: ARRAY, BUFFER
       INTEGER :: DEFAULT_VALUE
-
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 
 !======================================================================
 !   To remove dead cells, the number of useful cells was calculated in
@@ -2256,6 +2245,7 @@
       USE geometry
       USE compar
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
 
@@ -2268,9 +2258,6 @@
 !
       LOGICAL, DIMENSION(DIMENSION_3) :: ARRAY, BUFFER
       LOGICAL :: DEFAULT_VALUE
-
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 
 !======================================================================
 !   To remove dead cells, the number of useful cells was calculated in
@@ -2320,6 +2307,7 @@
       USE geometry
       USE compar
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
 
@@ -2332,10 +2320,6 @@
 !
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: ARRAY_1, ARRAY_2
 
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-
-!======================================================================
 !======================================================================
 
       DO IJK = IJKSTART3,IJKEND3
@@ -2374,6 +2358,7 @@
       USE geometry
       USE compar
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
 
@@ -2388,9 +2373,6 @@
       INTEGER, DIMENSION(DIMENSION_3,15) ::TEMP_CONNECTIVITY
 
       INTEGER :: DEFAULT_VALUE
-
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 
 !======================================================================
 !
@@ -2441,6 +2423,7 @@
       USE compar
       USE cutcell
       USE stl
+      USE functions
 
       IMPLICIT NONE
 
@@ -2452,10 +2435,6 @@
       INTEGER ::IJK, BCK_IJK,NF
 !
       TYPE (FACETS_TO_CELL), DIMENSION (:), ALLOCATABLE ::  COPY_OF_LIST_FACET_AT_DES
-
-
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 
 !======================================================================
 !   To remove dead cells, the number of useful cells was calculated in
@@ -2623,6 +2602,7 @@
       USE parallel
 
       USE cdist
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -2704,12 +2684,6 @@
 
    INTEGER :: clock_start,clock_end,clock_rate
    DOUBLE PRECISION :: elapsed_time,dummysum
-
-
-
-
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 
       allocate(TEMP_IJK_ARRAY_OF(ISTART3-1:IEND3+1,JSTART3-1:JEND3+1,KSTART3-1:KEND3+1))
       TEMP_IJK_ARRAY_OF = IJK_ARRAY_OF

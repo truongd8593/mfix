@@ -66,15 +66,13 @@
       USE run
       USE compar
       USE discretelement
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
       INTEGER :: L, I, J, K, IJK, IJK2, M
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! initializing
@@ -189,6 +187,8 @@
       USE compar
       USE mpi_utility
       USE discretelement
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -197,10 +197,6 @@
 ! Indices
       INTEGER :: IJK
       LOGICAL :: ALL_IS_ERROR
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !!$omp   parallel do private(IJK)

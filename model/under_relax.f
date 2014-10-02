@@ -30,6 +30,8 @@
       USE indices
       USE compar
       USE sendrecv
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -63,10 +65,7 @@
 !
 !                      center coefficient
       DOUBLE PRECISION ap
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!
-!
+
       F1 = ONE/UR
       F2 = F1 - ONE
 !
@@ -116,6 +115,8 @@
       USE indices
       USE compar
       USE sendrecv
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -149,10 +150,7 @@
 !
 !                      center coefficient
       DOUBLE PRECISION ap
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!
-!
+
       F1 = ONE/UR
       F2 = F1 - ONE
 !
@@ -202,6 +200,8 @@
       USE indices
       USE compar
       USE sendrecv
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -235,10 +235,7 @@
 !
 !                      center coefficient
       DOUBLE PRECISION ap
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!
-!
+
       F1 = ONE/UR
       F2 = F1 - ONE
 !
@@ -288,6 +285,8 @@
       USE indices
       USE compar
       USE sendrecv
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -321,10 +320,7 @@
 !
 !                      center coefficient
       DOUBLE PRECISION ap
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!
-!
+
       F1 = ONE/UR
       F2 = F1 - ONE
 !

@@ -55,6 +55,7 @@
       USE compar
       USE sendrecv
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -96,8 +97,6 @@
 !          total solids volume fraction
       DOUBLE PRECISION  EPStmp
 !-----------------------------------------------
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 
    Pass1 = .FALSE.     !initialization
    Pass2 = .FALSE.
@@ -309,6 +308,7 @@
       USE compar
       USE sendrecv
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -349,8 +349,6 @@
 !          total solids volume fraction
       DOUBLE PRECISION  EPStmp
 !-----------------------------------------------
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 
    Pass1 = .FALSE.     !initialization
    Pass2 = .FALSE.
@@ -562,6 +560,7 @@
       USE compar
       USE sendrecv
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -602,8 +601,6 @@
 !          tmp variable for total solids volume fraction
       DOUBLE PRECISION  EPStmp
 !-----------------------------------------------
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 
    Pass1 = .FALSE.     !initialization
    Pass2 = .FALSE.

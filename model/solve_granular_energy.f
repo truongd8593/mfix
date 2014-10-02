@@ -48,6 +48,7 @@
       USE mflux
       USE mpi_utility
       USE mms
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -60,7 +61,7 @@
 ! phase index
       INTEGER :: M, L
 ! Cp * Flux
-      DOUBLE PRECISION CpxFlux_E(DIMENSION_3), CpxFlux_N(DIMENSION_3), CpxFlux_T(DIMENSION_3)
+      DOUBLE PRECISION CpxFlux_E(DIMENSION_3), CpxFlux_N(DIMENSION_3), CpxFlux_T(DIMENSION_3) 
 ! previous time step term
       DOUBLE PRECISION :: apo
 ! source terms which appear appear in the center coefficient (lhs) and
@@ -105,10 +106,6 @@
 ! Septadiagonal matrix A_m, vector b_m
 !      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
-!-----------------------------------------------
-! include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       call lock_ambm       ! locks arrays a_m and b_m

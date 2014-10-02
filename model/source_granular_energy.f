@@ -65,6 +65,7 @@
       USE mms
       USE fun_avg
       USE solids_pressure
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -107,10 +108,6 @@
 ! External functions
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: G_0
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       I = I_OF(IJK)
@@ -286,6 +283,7 @@
       use kintheory
       USE compar
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -341,10 +339,6 @@
       DOUBLE PRECISION :: S10_lhs, S16_lhs,&
                           S11_sum_lhs, S12_sum_lhs, S13_sum_lhs,&
                           S17_sum_lhs, S18_sum_lhs, S20_sum_lhs
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       I = I_OF(IJK)
@@ -623,6 +617,7 @@
       use kintheory
       USE compar
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -668,10 +663,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: G_0
       DOUBLE PRECISION, EXTERNAL :: G_gtsh
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       I = I_OF(IJK)

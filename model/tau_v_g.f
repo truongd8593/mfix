@@ -47,6 +47,8 @@
       USE sendrecv    
       USE compar     
       USE fun_avg
+      USE functions
+
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -114,8 +116,6 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 
 !!!!$omp  parallel do private( IJK, I, IJKE, EPGA,  J,  K, KM,  &
 !!!!$omp&  IMJK,IJKN,IJKNE,IJMK,IJKT,  &

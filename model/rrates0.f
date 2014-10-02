@@ -102,10 +102,9 @@
       use discretelement, only: DES_CONTINUUM_HYBRID
 ! Small value for species mass fractions
       use toleranc, only: ZERO_X_gs
-
+      use functions
 
       implicit none
-
 
 ! Dummy Arguments:
 !`````````````````````````````````````````````````````````````````````//
@@ -160,13 +159,6 @@
       DOUBLE PRECISION, EXTERNAL :: CALC_H
 ! Comparing two double precision numbers.
       LOGICAL, EXTERNAL :: COMPARE
-
-
-! Included Files:
-!`````````````````````````````````````````````````````````````````````//
-! Functions for evaluating fluid cell properties.
-      include 'function.inc'
-
 
 ! Initialize global storage arrays to zero
 !---------------------------------------------------------------------//

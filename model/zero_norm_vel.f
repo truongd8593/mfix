@@ -30,6 +30,8 @@
       USE compar
       USE discretelement
       USE mfix_pic
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -39,11 +41,6 @@
 ! Indicies
       INTEGER :: IJK, IMJK, IJMK, IJKM
       INTEGER :: M
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!-----------------------------------------------
 
 !!$omp  parallel do private( IMJK, IJMK, IJKM)
 

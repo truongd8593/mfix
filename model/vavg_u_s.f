@@ -37,6 +37,7 @@
       USE indices
       USE compar
       USE mpi_utility
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -55,10 +56,7 @@
 !
 !                      Total volume of computational cells
       DOUBLE PRECISION SUM_VOL
-!
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!
+
 !  Integrate the velocity values for the whole domain,
 !
       SUM_U_S = ZERO

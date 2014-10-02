@@ -29,6 +29,8 @@
       USE drag
       USE discretelement
       USE fun_avg
+      USE functions
+
       use run, only: SOLIDS_MODEL
 
       use run, only: DEM_SOLIDS, PIC_SOLIDS
@@ -49,10 +51,6 @@
       INTEGER :: M
 ! Index of discrete solids 'phases'
       INTEGER :: DM, MTOT
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       MTOT = merge(MMAX, MMAX+DES_MMAX, DES_CONTINUUM_HYBRID)
@@ -127,6 +125,8 @@
       USE drag
       USE discretelement
       USE fun_avg
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -144,10 +144,6 @@
       INTEGER :: L, M, LM
 ! Index of discrete solids phases
       INTEGER :: DM
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! initialize every call

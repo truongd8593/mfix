@@ -44,9 +44,11 @@
       USE geometry
       USE indices
       USE is
-      USE compar  
-      USE sendrecv  
+      USE compar
+      USE sendrecv
       USE fun_avg
+      USE functions
+
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -124,10 +126,6 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!
-!
 !!!!$omp  parallel do private( IJK, I, IJKE, EPGA, IP, J, JM, K, KM,  &
 !!!!$omp&  IPJK,IMJK,IJKN,IJKNE,IJKS,IJKSE,IPJMK,IJMK,IJKT,IJKTE,  &
 !!!!$omp&  IJKB,IJKBE,IJKM,IPJKM, &
@@ -462,4 +460,3 @@
 !// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
-

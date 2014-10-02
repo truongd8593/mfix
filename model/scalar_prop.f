@@ -18,7 +18,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE SCALAR_PROP( IER)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
 !-----------------------------------------------
@@ -35,6 +35,7 @@
       USE toleranc
       USE compar
       USE sendrecv
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -49,8 +50,6 @@
       INTEGER          L,IJK
 !
 !-----------------------------------------------
-
-      INCLUDE 'function.inc'
 
       IF(NScalar == 0) RETURN
 !

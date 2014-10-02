@@ -38,6 +38,7 @@
       USE indices
       USE compar
       USE mpi_utility
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -60,10 +61,7 @@
       DOUBLE PRECISION SUM_VOL
 
       LOGICAL, EXTERNAL :: isNan
-!
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!
+
 !  Integrate the velocity values for the whole domain
 !
       SUM_V_G = ZERO
@@ -92,8 +90,6 @@
       RETURN
       END FUNCTION VAVG_V_G
 
-
-
       DOUBLE PRECISION FUNCTION VAVG_Flux_V_G ()
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
@@ -112,7 +108,8 @@
       USE indices
       USE compar
       USE mpi_utility
-      Use mflux
+      USE mflux
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -133,10 +130,7 @@
 !
 !                      Total volume of computational cells
       DOUBLE PRECISION SUM_AREA
-!
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!
+
 !  Integrate the velocity values for the whole domain
 !
       SUM_V_G = ZERO

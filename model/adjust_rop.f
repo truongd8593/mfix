@@ -26,6 +26,7 @@
       USE geometry
       USE indices
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -39,10 +40,6 @@
 !-----------------------------------------------
 ! Indices
       INTEGER :: IJK
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3

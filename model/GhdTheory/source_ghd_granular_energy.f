@@ -42,6 +42,7 @@
       USE toleranc
       USE compar        !//d
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -91,15 +92,6 @@
 !                      Source terms to be kept on LHS
       DOUBLE PRECISION SOURCELHS, PressureLhs, CollDissipation, BulkViscLhs, DissDivULhs,VSLIP
       DOUBLE PRECISION UGC, USCM, VGC, VSCM, WGC, WSCM
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-
-!-----------------------------------------------
-!     Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
-!-----------------------------------------------
 
       I = I_OF(IJK)
       J = J_OF(IJK)

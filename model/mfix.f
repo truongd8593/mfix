@@ -82,6 +82,7 @@
       USE quadric
       USE dashboard
       USE qmom_kinetic_equation
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -115,10 +116,6 @@
 !$      INTEGER mp_numthreads, omp_get_num_threads
 !$      INTEGER omp_get_thread_num
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
       DOUBLE PRECISION :: WALL_TIME
 !-----------------------------------------------
 
@@ -521,6 +518,7 @@
       USE funits
       USE run
       USE time_cpu
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -545,8 +543,6 @@
       logical :: amgdbg = .TRUE.
 
       character fname*80
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 
       k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
       i_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)* &
@@ -825,6 +821,7 @@
       USE funits
       USE run
       USE time_cpu
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -850,9 +847,6 @@
 
       character fname*80
 !-----------------------------------------------
-
-      INCLUDE 'function.inc'
-
 
       k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
       i_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1))) &

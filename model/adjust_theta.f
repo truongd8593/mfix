@@ -43,6 +43,7 @@
       USE compar
       USE geometry
       USE indices
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -64,11 +65,6 @@
       DOUBLE PRECISION :: M_PM, D_PM
 ! small value of theta_m
       DOUBLE PRECISION :: smallTheta
-
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       IER = 0

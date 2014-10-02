@@ -39,6 +39,8 @@ CONTAINS
     USE chischeme
     USE compar
     USE sendrecv
+    USE functions
+
     IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -88,10 +90,9 @@ CONTAINS
          ULTRA_QUICK, QUICKEST, SUPERBEE, SMART, MUSCL, CHI_SMART,     &
          CHI_MUSCL, CENTRAL_SCHEME
 
-    INCLUDE 'function.inc'
 
-    IF (SHEAR) THEN
-   ! calculate XSI_E,XSI_N,XSI_T when periodic shear BCs are used
+        IF (SHEAR) THEN
+! calculate XSI_E,XSI_N,XSI_T when periodic shear BCs are used
 
        call CXS(incr,DISCR,U,V,W,PHI,XSI_E,XSI_N,XSI_T)
 
@@ -589,33 +590,27 @@ CONTAINS
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-    USE param
-    USE param1
-    USE run
-    USE geometry
-    USE indices
-    USE vshear
-    USE compar
-    USE sendrecv
-    IMPLICIT NONE
+      USE param
+      USE param1
+      USE run
+      USE geometry
+      USE indices
+      USE vshear
+      USE compar
+      USE sendrecv
+      USE functions
+      IMPLICIT NONE
 
-    INTEGER incr,IJK,IJKC,IJKD,IJKU,I,DISCR
-    DOUBLE PRECISION V(DIMENSION_3), U(DIMENSION_3), W(DIMENSION_3)
-    DOUBLE PRECISION PHI(DIMENSION_3),DWFE,DWFN,DWFT
-    DOUBLE PRECISION PHICU,PHIDU,PHIUU,PHICV,PHIDV,PHIUV
-    DOUBLE PRECISION PHICW,PHIDW,PHIUW
-    DOUBLE PRECISION XSI_E(DIMENSION_3), XSI_N(DIMENSION_3)
-    DOUBLE PRECISION XSI_T(DIMENSION_3),SRT
+        INTEGER incr,IJK,IJKC,IJKD,IJKU,I,DISCR
+        DOUBLE PRECISION V(DIMENSION_3), U(DIMENSION_3), W(DIMENSION_3)
+        DOUBLE PRECISION PHI(DIMENSION_3),DWFE,DWFN,DWFT
+        DOUBLE PRECISION PHICU,PHIDU,PHIUU,PHICV,PHIDV,PHIUV
+        DOUBLE PRECISION PHICW,PHIDW,PHIUW
+        DOUBLE PRECISION XSI_E(DIMENSION_3), XSI_N(DIMENSION_3)
+        DOUBLE PRECISION XSI_T(DIMENSION_3),SRT
 
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-
-!-----------------------------------------------
-    INCLUDE 'function.inc'
-
-    IF (INCR .eq. 2) THEN               !V momentum balance
-       SRT=(2d0*V_sh/XLENGTH)
+        IF (INCR .eq. 2) THEN                   !V momentum balance
+        SRT=(2d0*V_sh/XLENGTH)
 
 !!!$omp    parallel do private(IJK, IJKC,IJKD,IJKU,DWFE,DWFN,DWFT,&
 !!!$omp&        PHICU,PHIDU,PHIUU,PHICV,PHIDV,PHIUV,PHICW,PHIDW,PHIUW,I)&
@@ -868,14 +863,16 @@ CONTAINS
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-    USE param
-    USE param1
-    USE run
-    USE geometry
-    USE indices
-    USE vshear
-    USE compar
-    USE sendrecv
+
+      USE param
+      USE param1
+      USE run
+      USE geometry
+      USE indices
+      USE vshear
+      USE compar
+      USE sendrecv
+      USE functions
 
     IMPLICIT NONE
 
@@ -904,20 +901,19 @@ CONTAINS
     DOUBLE PRECISION , EXTERNAL :: PHI_C_OF,  MINMOD, VANLEER, &
          ULTRA_QUICK, QUICKEST, SUPERBEE, SMART, MUSCL
 !-----------------------------------------------
-    INCLUDE 'function.inc'
 
-    SELECT CASE (DISCR)                    !first order upwinding
-    CASE (:1)
+      SELECT CASE (DISCR)                        !first order upwinding
+      CASE (:1)
 
-       DWFE=0d0
-       DWFN=0d0
-       DWFT=0d0
-    CASE (2)                               !Superbee
-       PHI_C = PHI_C_OF(PHIUU,PHICU,PHIDU)
-       DWFE = SUPERBEE(PHI_C)
+            DWFE=0d0
+            DWFN=0d0
+            DWFT=0d0
+      CASE (2)                                   !Superbee
+            PHI_C = PHI_C_OF(PHIUU,PHICU,PHIDU)
+            DWFE = SUPERBEE(PHI_C)
 
-       PHI_C = PHI_C_OF(PHIUV,PHICV,PHIDV)
-       DWFN = SUPERBEE(PHI_C)
+            PHI_C = PHI_C_OF(PHIUV,PHICV,PHIDV)
+            DWFN = SUPERBEE(PHI_C)
 
        IF (DO_K) THEN
           PHI_C = PHI_C_OF(PHIUW,PHICW,PHIDW)

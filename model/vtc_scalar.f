@@ -31,6 +31,7 @@
       USE physprop
       USE compar
       USE kintheory
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !     Local variables
@@ -46,10 +47,6 @@
 !
 !                      Volume x interphase transfer coefficient
       DOUBLE PRECISION VxTC_ss(DIMENSION_3, DIMENSION_LM)
-!-----------------------------------------------
-!     Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 !
       DO M = 1, MMAX

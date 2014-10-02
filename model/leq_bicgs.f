@@ -132,6 +132,8 @@
       USE indices
       USE leqsol
       USE cutcell
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments/procedure
@@ -206,16 +208,13 @@
          FUNCTION DOT_PRODUCT_PAR2( R1, R2, R3, R4 )
          use compar
          USE param
+         USE functions
          DOUBLE PRECISION, INTENT(IN), DIMENSION(ijkstart3:ijkend3) :: &
                                        R1, R2, R3, R4
          DOUBLE PRECISION, DIMENSION(2) :: DOT_PRODUCT_PAR2
          END FUNCTION DOT_PRODUCT_PAR2
       END INTERFACE
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       allocate(R(DIMENSION_3))
@@ -720,6 +719,7 @@
       USE funits
       USE sendrecv
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -740,10 +740,6 @@
       DOUBLE PRECISION, DIMENSION (JSTART:JEND) :: CC, DD, EE, BB
       INTEGER :: NSTART, NEND, INFO
       INTEGER :: IJK, J, K, IM1JK, IP1JK
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       NEND = JEND
@@ -809,6 +805,7 @@
       USE indices
       USE sendrecv
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -829,10 +826,6 @@
       DOUBLE PRECISION, DIMENSION(JSTART:JEND) :: CC, DD, EE, BB
       INTEGER :: NSTART, NEND, INFO
       INTEGER :: IJK, J, IM1JK, IP1JK, IJKM1, IJKP1
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       NEND = JEND
@@ -903,6 +896,7 @@
       USE funits
       USE compar
       USE indices
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -922,10 +916,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION, DIMENSION (ISTART:IEND) :: CC, DD, EE, BB
       INTEGER :: NSTART, NEND, INFO, IJK, I
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       NEND = IEND
@@ -990,6 +980,7 @@
       USE funits
       USE compar
       USE indices
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1009,10 +1000,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION, DIMENSION (KSTART:KEND) :: CC, DD, EE, BB
       INTEGER :: NEND, NSTART, INFO, IJK, K
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       NEND = KEND
@@ -1080,6 +1067,7 @@
       USE sendrecv
       USE mpi_utility
       USE cutcell
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1101,10 +1089,6 @@
 ! Variable
       INTEGER :: I, J, K, IJK
       integer :: im1jk, ip1jk, ijm1k, ijp1k, ijkm1, ijkp1
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       IF(RE_INDEXING) THEN
@@ -1223,6 +1207,7 @@
       USE compar
       USE indices
       USE sendrecv
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1261,10 +1246,6 @@
       LOGICAL :: DO_ISWEEP, DO_JSWEEP, DO_KSWEEP
       LOGICAL :: DO_SENDRECV, DO_REDBLACK, DO_ALL
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 !!$      double precision omp_start, omp_end
 !!$      double precision omp_get_wtime
@@ -1623,6 +1604,7 @@
       use parallel
 !      USE cutcell, only: RE_INDEXING,INTERIOR_CELL_AT
       USE cutcell
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1644,10 +1626,6 @@
 ! Local variables
 !-----------------------------------------------
       integer :: i,j,k, ijk
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include 'function.inc'
 !-----------------------------------------------
 
       if (use_doloop) then   ! mfix.dat keyword default=false
@@ -1698,7 +1676,8 @@
       use geometry
       use compar
       use indices
-      Use cutcell
+      use cutcell
+      use functions
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
@@ -1715,10 +1694,6 @@
       DOUBLE PRECISION, allocatable, Dimension(:) :: r1_g, r2_g
       double precision :: prod
       integer :: i, j, k, ijk
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include 'function.inc'
 !-----------------------------------------------
 
       if(do_global_sum) then
@@ -1805,6 +1780,7 @@
       use geometry
       use compar
       use indices
+      use functions
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
@@ -1820,10 +1796,6 @@
       DOUBLE PRECISION, allocatable, Dimension(:,:) :: r_temp, rg_temp
       double precision, Dimension(2) :: prod, dot_product_par2
       integer :: i, j, k, ijk
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include 'function.inc'
 !-----------------------------------------------
 
       if(do_global_sum) then

@@ -32,6 +32,7 @@
       USE run
       USE constant
       USE toleranc
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -51,12 +52,6 @@
                           tmpDF(smax,smax), tmpDijQ(smax,smax)
 !-----------------------------------------------
 ! Function subroutines
-!-----------------------------------------------
-
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3

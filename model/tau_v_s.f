@@ -58,6 +58,8 @@
       USE quadric
       USE cutcell
 
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -102,13 +104,8 @@
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!-----------------------------------------------
       DO M = 1, MMAX
         IF(KT_TYPE_ENUM == GHD_2007 .AND. M /= MMAX) CYCLE
-
 
 !!$omp  parallel do private( IJK, I, IJKE, EPSA, EPStmp,  J,  K, KM,  &
 !!$omp& JP,IM,IJPK,IJKW,IJKNW,IMJPK,IJKTN,IJKBN,IJPKM, &
@@ -420,5 +417,3 @@
       call send_recv(tau_v_s,2)
       RETURN
       END SUBROUTINE CALC_TAU_V_S
-
-

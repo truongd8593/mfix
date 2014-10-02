@@ -37,11 +37,10 @@
       use run, only: RUN_TYPE
 
       use mpi_utility
+      use functions
 
       implicit none
       INTEGER :: I, J, K, IJK
-
-      include 'function.inc'
 
 ! Initialize the icbc_flag array.
       DO K = kStart3, kEnd3
@@ -127,15 +126,13 @@
       use sendrecv
 
       use error_manager
+      use functions
 
       IMPLICIT NONE
 
       LOGICAL :: ERROR = .FALSE.
 
       INTEGER :: I, J ,K, IJK, IER
-
-      INCLUDE 'function.inc'
-
 
       IF(RUN_TYPE(1:3) /= 'NEW') RETURN
 
@@ -222,6 +219,7 @@
       use sendrecv
       use mpi_utility
       use error_manager
+      use functions
 
       IMPLICIT NONE
 
@@ -230,9 +228,6 @@
 !-----------------------------------------------
       INTEGER :: ICV
       INTEGER :: I, J, K, IJK
-
-      INCLUDE 'function.inc'
-
 
       CALL INIT_ERR_MSG("SET_IC_FLAGS")
 
@@ -299,6 +294,7 @@
       USE funits
       USE compar
       USE sendrecv
+      USE functions
 
       use error_manager
 
@@ -324,11 +320,6 @@
       INTEGER, PARAMETER :: DIM_BCTYPE = 21
 
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!-----------------------------------------------
-
 
       CALL INIT_ERR_MSG("SET_BC_FLAGS_WALL")
 
@@ -395,7 +386,7 @@
 
       use mpi_utility
       use sendrecv
-
+      use functions
 
       use error_manager
 
@@ -410,8 +401,6 @@
       LOGICAL :: ERROR
 ! surface indictors
       LOGICAL :: X_CONSTANT, Y_CONSTANT, Z_CONSTANT
-
-      include "function.inc"
 
       CALL INIT_ERR_MSG("SET_BC_FLAGS_FLOW")
 

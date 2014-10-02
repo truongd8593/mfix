@@ -38,6 +38,7 @@
       USE indices
       USE compar
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -59,10 +60,7 @@
       DOUBLE PRECISION SUM_VOL
 
       LOGICAL, EXTERNAL :: isNan
-!
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!
+
 !  Integrate the velocity values for the whole domain,
 !
       SUM_U_G = ZERO
@@ -113,6 +111,8 @@
       USE compar
       USE mpi_utility
       USE mflux
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -132,10 +132,7 @@
 !
 !                      Total area of computational cells
       DOUBLE PRECISION SUM_AREA
-!
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!
+
 !  Integrate the velocity values for the whole domain,
 !
       SUM_U_G = ZERO

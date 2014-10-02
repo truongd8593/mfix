@@ -52,6 +52,8 @@
       USE mms
       USE bodyforce
       USE fun_avg
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -99,10 +101,6 @@
       DOUBLE PRECISION F_vir
 ! error message
       CHARACTER*80     LINE
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Set reference phase to gas
@@ -404,8 +402,6 @@
       RETURN
       END SUBROUTINE SOURCE_W_G
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: SOURCE_W_g_BC                                           C
@@ -447,6 +443,8 @@
       USE output
       USE compar
       USE fun_avg
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -477,10 +475,6 @@
 ! Turbulent shear at walls
       DOUBLE PRECISION W_F_Slip
 
-!-----------------------------------------------
-! Include statment functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Set reference phase to gas
@@ -1021,8 +1015,6 @@
       RETURN
       END SUBROUTINE SOURCE_W_G_BC
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: POINT_SOURCE_W_G                                        C
@@ -1044,6 +1036,7 @@
       use physprop
       use ps
       use run
+      use functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1063,10 +1056,6 @@
       INTEGER :: lKT, lKB
 ! terms of bm expression
       DOUBLE PRECISION :: pSource
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Set reference phase to gas

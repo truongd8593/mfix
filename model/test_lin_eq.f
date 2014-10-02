@@ -31,6 +31,7 @@
       USE geometry
       USE indices
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -57,10 +58,7 @@
       DOUBLE PRECISION LEQTOL
       CHARACTER*4 ::   LEQPC
       REAL  :: Harvest
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!
-!
+
 !  Initialize the random number generator
 !
       CALL RANDOM_SEED

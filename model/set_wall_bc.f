@@ -43,6 +43,7 @@
       USE run
       USE funits
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -62,10 +63,6 @@
       INTEGER :: J1, J2
 ! Starting and ending K index
       INTEGER :: K1, K2
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 
@@ -234,6 +231,7 @@
       USE run
       USE funits
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -257,10 +255,6 @@
       INTEGER :: I1, I2, J1, J2, K1, K2
 ! Local index for a fluid cell near the wall cell
       INTEGER :: LFLUID
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Limit I1, I2 and all to local processor first ghost layer
@@ -308,12 +302,12 @@
 ! Wall cell at North
                      IF (WALL_AT(IJPK)) THEN
                         V_G(IJK) = SIGN0*V_G(LFLUID)
-                        IF(BC_JJ_PSL==0) CALL EQUAL(V_S,IJK,SIGN0,V_S,LFLUID)
+                        IF(BC_JJ_PSL==0) CALL EQUAL(V_S,IJK,SIGN0,V_S,LFLUID) 
                      ENDIF
 ! Wall cell at Top
                      IF (WALL_AT(IJKP)) THEN
                         W_G(IJK) = SIGN0*W_G(LFLUID)
-                        IF(BC_JJ_PSL==0) CALL EQUAL(W_S,IJK,SIGN0,W_S,LFLUID)
+                        IF(BC_JJ_PSL==0) CALL EQUAL(W_S,IJK,SIGN0,W_S,LFLUID) 
                      ENDIF
                   ENDIF
 
@@ -407,4 +401,3 @@
 
       RETURN
       END SUBROUTINE SET_WALL_BC1
-

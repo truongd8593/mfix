@@ -17,6 +17,7 @@
       use compar
       use geometry
       use mpi_utility
+      use functions
 
       implicit none
 
@@ -34,9 +35,6 @@
       DOUBLE PRECISION, allocatable :: gData_dp(:)
 
       LOGICAL, parameter :: dbg_PS = .FALSE.
-
-      INCLUDE 'function.inc'
-
 
       if(.NOT.POINT_SOURCE) return
 
@@ -275,6 +273,7 @@
       use rxns
       use ps
       use mpi_utility
+      use functions
 
       IMPLICIT NONE
 
@@ -290,10 +289,6 @@
 
       INTEGER, allocatable :: lFlags_i(:,:)
       INTEGER, allocatable :: gFlags_i(:,:)
-
-
-      INCLUDE 'function.inc'
-
 
       if(myPE == PE_IO) then
          write(*,"(3/,3x,'Debug Point Source Index: ',I3)") lPSV

@@ -145,6 +145,7 @@
       use toleranc, only: OMW_MAX
 ! Run time flag for generating negative gas density log files
       use run, only: REPORT_NEG_DENSITY
+      use functions
 
       implicit none
 
@@ -163,8 +164,6 @@
 
 ! Flag to write log header
       LOGICAL wHeader
-
-      include 'function.inc'
 
 ! Initialize:
       wHeader = .TRUE.
@@ -227,6 +226,7 @@
       use run, only: REPORT_NEG_DENSITY
 ! Minimum solids volume fraction
       use toleranc, only: DIL_EP_s
+      use functions
 
       implicit none
 
@@ -244,8 +244,6 @@
 
 ! Equation of State - Solid
       DOUBLE PRECISION, EXTERNAL :: EOSS
-
-      include 'function.inc'
 
       M_LP: DO M=1, MMAX
          IF(.NOT.SOLVE_ROs(M)) cycle M_LP
@@ -305,6 +303,7 @@
       use fldvar, only: T_g
 ! Units: CGS/SI
       use run, only: UNITS
+      use functions
 
       implicit none
 
@@ -324,8 +323,6 @@
 
 ! Function to evaluate Cp polynomial.
       DOUBLE PRECISION, EXTERNAL :: calc_CpoR
-
-      include 'function.inc'
 
 !-----------------------------------------------------------------------
 
@@ -378,6 +375,7 @@
       use toleranc, only: OMW_MAX
       use fldvar, only: T_s
       use fldvar, only: X_s
+      use functions
 
       implicit none
 
@@ -393,8 +391,6 @@
 
 ! Function to evaluate Cp polynomial.
       DOUBLE PRECISION, EXTERNAL :: calc_CpoR
-
-      include 'function.inc'
 
 ! Ensure that the database was read. This *should* have been caught by
 ! check_data_05 but this call remains to prevent an accident.
@@ -445,6 +441,7 @@
       use fldvar, only: ROP_s
       use fldvar, only: RO_s
       use fldvar, only: D_p, EP_S
+      use functions
 
       implicit none
 
@@ -454,8 +451,6 @@
 
 ! Map from true index to map.
       INTEGER :: lM
-
-      include 'function.inc'
 
       IF(.NOT.CALL_DQMOM) return
 

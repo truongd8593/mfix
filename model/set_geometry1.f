@@ -16,7 +16,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE SET_GEOMETRY1
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
 !...Switches: -xf
 !
 !  Include param.inc file to specify parameter values
@@ -31,6 +31,7 @@
       USE geometry
       USE indices
       USE compar
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -47,9 +48,6 @@
       INTEGER          I, J, K, IP, JP, KP, IJK
 !
 !-----------------------------------------------
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!
 !
 !                      Indices
 !
@@ -70,7 +68,7 @@
 
 !
          VOL(IJK) = DX(I)*DY(J)*(X(I)*DZ(K))
-         VOL_U(IJK) = HALF*(DX(I)+DX(IP))*DY(J)*(HALF*(X(I)+X(IP))*DZ(K))
+         VOL_U(IJK) = HALF*(DX(I)+DX(IP))*DY(J)*(HALF*(X(I)+X(IP))*DZ(K)) 
          VOL_V(IJK) = DX(I)*HALF*(DY(J)+DY(JP))*(X(I)*DZ(K))
          VOL_W(IJK) = DX(I)*DY(J)*(X(I)*HALF*(DZ(K)+DZ(KP)))
 !
