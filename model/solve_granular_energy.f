@@ -108,9 +108,7 @@
 !-----------------------------------------------
 ! include statement functions
 !-----------------------------------------------
-      INCLUDE 'radtn1.inc'
       INCLUDE 'function.inc'
-      INCLUDE 'radtn2.inc'
 !-----------------------------------------------
 
       call lock_ambm       ! locks arrays a_m and b_m

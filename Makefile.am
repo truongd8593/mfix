@@ -418,8 +418,6 @@ common_SOURCES = \
 	model/qmomk/qmomk_write_restart.f \
 	model/qmomk/qmomknamelist.inc \
 	model/radial_vel_correction.f \
-	model/radtn1.inc \
-	model/radtn2.inc \
 	model/read_database.f \
 	model/read_namelist.f \
 	model/read_res0.f \
