@@ -197,6 +197,7 @@
       USE pgcor
       Use xsi_array
       USE compar
+      USE xsi
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

@@ -120,7 +120,6 @@ common_SOURCES = \
 	model/calc_trd_s.f \
 	model/calc_u_friction.f \
 	model/calc_vol_fr.f \
-	model/calc_xsi.f \
 	model/cartesian_grid/CG_set_bc0.f \
 	model/cartesian_grid/CG_set_outflow.f \
 	model/cartesian_grid/CG_source_u_g.f \
@@ -537,9 +536,8 @@ common_SOURCES = \
 	model/write_spx1.f \
 	model/write_table.f \
 	model/xerbla.f \
-	model/xsi1.inc \
-	model/xsi2.inc \
 	model/xsi_array_mod.f \
+	model/xsi_mod.f \
 	model/zero_array.f \
 	model/zero_norm_vel.f
 

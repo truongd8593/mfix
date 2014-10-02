@@ -47,13 +47,13 @@
 !
 !
 !
-      IF (DISCRETIZE(1) == 0) THEN               ! 0 & 1 => first order upwinding
-         CALL CONV_ROP0 (ROP_g, U_g, V_g, W_g, ROP_gE, ROP_gN, ROP_gT, IER)
+      IF (DISCRETIZE(1) == 0) THEN               ! 0 & 1 => first order upwinding 
+         CALL CONV_ROP0 (ROP_g, U_g, V_g, W_g, ROP_gE, ROP_gN, ROP_gT, IER) 
       ELSE
-         CALL CONV_ROP1 (DISCRETIZE(1), ROP_g, U_g, V_g, W_g, ROP_gE, ROP_gN, ROP_gT, IER)
+         CALL CONV_ROP1 (DISCRETIZE(1), ROP_g, U_g, V_g, W_g, ROP_gE, ROP_gN, ROP_gT, IER) 
       ENDIF
 
-      IF (DISCRETIZE(2) == 0) THEN               ! 0 & 1 => first order upwinding
+      IF (DISCRETIZE(2) == 0) THEN               ! 0 & 1 => first order upwinding 
         DO M = 1, MMAX
           CALL CONV_ROP0 (ROP_s(1, M), U_s(1, M), V_s(1, M), W_s(1, M), &
                           ROP_sE(1, M), ROP_sN(1, M), ROP_sT(1, M), IER)
@@ -119,7 +119,7 @@
       DOUBLE PRECISION U(DIMENSION_3), V(DIMENSION_3), W(DIMENSION_3)
 !
 !                      Face value of density (for calculating convective fluxes)
-      DOUBLE PRECISION ROP_E(DIMENSION_3), ROP_N(DIMENSION_3), ROP_T(DIMENSION_3)
+      DOUBLE PRECISION ROP_E(DIMENSION_3), ROP_N(DIMENSION_3), ROP_T(DIMENSION_3) 
 !
 !                      Error index
       INTEGER          IER
@@ -240,7 +240,8 @@
       USE physprop
       USE geometry
       USE indices
-      Use xsi_array
+      USE xsi
+      USE xsi_array
       USE compar
       IMPLICIT NONE
 !-----------------------------------------------
@@ -263,7 +264,7 @@
       DOUBLE PRECISION U(DIMENSION_3), V(DIMENSION_3), W(DIMENSION_3)
 !
 !                      Face value of density (for calculating convective fluxes)
-      DOUBLE PRECISION ROP_E(DIMENSION_3), ROP_N(DIMENSION_3), ROP_T(DIMENSION_3)
+      DOUBLE PRECISION ROP_E(DIMENSION_3), ROP_N(DIMENSION_3), ROP_T(DIMENSION_3) 
 !
 !                      Error index
       INTEGER          IER

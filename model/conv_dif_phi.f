@@ -435,6 +435,7 @@
       Use xsi_array
       Use tmp_array
       USE fun_avg
+      USE xsi
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -777,7 +778,8 @@
       USE sendrecv
       USE indices
       USE vshear
-      Use xsi_array
+      USE xsi
+      USE xsi_array
       USE fun_avg
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION

@@ -130,7 +130,7 @@
       USE fldvar
       USE output
       USE compar
-      USE mflux 
+      USE mflux
       USE fun_avg
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -446,8 +446,9 @@
       USE compar
       USE sendrecv
       USE sendrecv3
-      USE mflux 
+      USE mflux
       USE fun_avg
+      USE xsi
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -931,11 +932,13 @@
       USE fldvar
       USE output
       USE vshear
-      Use xsi_array
+      USE xsi
+      USE xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
-      USE compar  
-      USE mflux 
+      USE compar
+      USE mflux
       USE fun_avg
+      USE xsi
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================

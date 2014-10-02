@@ -130,7 +130,7 @@
       USE fldvar
       USE output
       USE compar
-      USE mflux  
+      USE mflux
       USE fun_avg
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -440,7 +440,8 @@
       USE physprop
       USE fldvar
       USE output
-      Use xsi_array
+      USE xsi
+      USE xsi_array
       USE vshear
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar
@@ -919,11 +920,12 @@
       USE physprop
       USE fldvar
       USE output
-      Use xsi_array
+      USE xsi
+      USE xsi_array
       USE vshear
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
-      USE compar 
-      USE mflux   
+      USE compar
+      USE mflux
       USE fun_avg
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION

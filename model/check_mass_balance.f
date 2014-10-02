@@ -693,6 +693,7 @@
       USE compar
       Use xsi_array
       USE mpi_utility
+      USE xsi
       IMPLICIT NONE
 
 !

@@ -380,7 +380,8 @@
       USE toleranc
       USE fldvar
       USE output
-      Use xsi_array
+      USE xsi
+      USE xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar
       USE sendrecv
@@ -397,7 +398,7 @@
 ! Septadiagonal matrix A_V_s
       DOUBLE PRECISION, INTENT(INOUT) :: A_V_s(DIMENSION_3, -3:3, M:M)
 ! Vector b_m
-      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
+      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M) 
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
@@ -799,7 +800,8 @@
       USE fldvar
       USE output
       USE vshear
-      Use xsi_array
+      USE xsi
+      USE xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar
       USE mflux

@@ -38,7 +38,7 @@
       INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 
-      IF (DISCRETIZE(2) == 0) THEN               ! 0 & 1 => first order upwinding
+      IF (DISCRETIZE(2) == 0) THEN               ! 0 & 1 => first order upwinding 
          CALL CONV_ROP_S0 (A_M, M, IER)
       ELSE
          CALL CONV_ROP_S1 (A_M, M, IER)
@@ -215,6 +215,7 @@
       USE pscor
       Use xsi_array
       USE compar
+      USE xsi
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments

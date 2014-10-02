@@ -343,6 +343,7 @@
       USE indices
       USE pgcor
       USE pscor
+      USE xsi
       USE xsi_array
       USE vshear
       USE compar
