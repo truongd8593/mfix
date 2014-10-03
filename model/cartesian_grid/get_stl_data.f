@@ -1108,6 +1108,7 @@
 !      USE quadric
       USE cutcell
       USE stl
+      USE functions
       IMPLICIT NONE
 
       INTEGER :: POLY,V,N,NF,NSKIP,N_FACES,CLOSEST_FACET,Q,BCID,C,COUNTER
@@ -1127,8 +1128,6 @@
 
       INTEGER :: IM,IP,JM,JP,KM,KP
       INTEGER :: IMJK,IPJK,IJMK,IJPK,IJKM,IJKP
-
-      include "../function.inc"
 
       IF(NODE==15) print*,'Warning: eval stl at node 15'
 

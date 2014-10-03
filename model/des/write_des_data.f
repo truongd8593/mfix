@@ -220,10 +220,11 @@
       USE physprop
       USE sendrecv
       USE des_bc
-      use compar
-      use cdist
-      use desmpi
-      use mpi_utility
+      USE compar
+      USE cdist
+      USE desmpi
+      USE mpi_utility
+      USE functions
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -271,13 +272,6 @@
       real,dimension(:,:), allocatable :: ltemp_array
 
       INTEGER :: wDIMN
-
-!-----------------------------------------------
-! Functions
-!-----------------------------------------------
-!-----------------------------------------------
-
-      INCLUDE '../function.inc'
 
 ! Set output dimnensions
       wDIMN = merge(2,3,NO_K)
@@ -550,6 +544,7 @@
       USE physprop
       USE sendrecv
       USE des_bc
+      USE functions
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -569,9 +564,6 @@
 ! output file for the granular temperature data
       CHARACTER*50  :: FNAME_GT
 !-----------------------------------------------
-
-      INCLUDE '../function.inc'
-
 
       FNAME_GT = TRIM(RUN_NAME)//'_DES_THETA.dat'
       IF (FIRST_PASS) THEN

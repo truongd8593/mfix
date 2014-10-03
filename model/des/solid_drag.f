@@ -21,6 +21,7 @@
       USE compar
       USE discretelement
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -52,10 +53,6 @@
 ! Averaging factor
 ! (=0.25 in 3D and =0.5 in 2D)
       DOUBLE PRECISION :: AVG_FACTOR
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       AVG_FACTOR = merge(0.5d0, 0.25D0, DO_K)

@@ -21,6 +21,7 @@
       Use param1
       Use physprop
       use run, only: ENERGY_EQ
+      use functions
 
       IMPLICIT NONE
 
@@ -42,8 +43,6 @@
 ! Functions
 !---------------------------------------------------------------------//
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-      INCLUDE '../function.inc'
-
 
       IF(.NOT.ENERGY_EQ) RETURN
 
@@ -143,6 +142,7 @@
       Use param1
       Use physprop
       use run, only: ENERGY_EQ
+      use functions
       IMPLICIT NONE
 
 ! Passed variables
@@ -161,7 +161,6 @@
 ! Functions
 !---------------------------------------------------------------------//
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-      INCLUDE '../function.inc'
 
       IF(.NOT.ENERGY_EQ) RETURN
 

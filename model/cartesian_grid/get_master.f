@@ -26,13 +26,12 @@
       USE bc
       USE quadric
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,IJKE,IJKW,IJKN,IJKS,IJKT,IJKB,IJKC,D,DIR(18),DMAX
       LOGICAL :: U_NODE,V_NODE,W_NODE,VEL_NODE,MASTER_FOUND
       INTEGER :: NC,L,BCV
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,*)'FINDING MASTER CELLS FOR U-MOMENTUM CELLS...'
@@ -182,13 +181,12 @@
       USE bc
       USE quadric
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,IJKE,IJKW,IJKN,IJKS,IJKT,IJKB,IJKC,D,DIR(18),DMAX
       LOGICAL :: U_NODE,V_NODE,W_NODE,VEL_NODE,MASTER_FOUND
       INTEGER :: NC,BCV
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'FINDING MASTER CELLS FOR V-MOMENTUM CELLS...'
@@ -326,13 +324,12 @@
       USE bc
       USE quadric
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,IJKE,IJKW,IJKN,IJKS,IJKT,IJKB,IJKC,D,DIR(18),DMAX
       LOGICAL :: U_NODE,V_NODE,W_NODE,VEL_NODE,MASTER_FOUND
       INTEGER :: NC,BCV
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'FINDING MASTER CELLS FOR W-MOMENTUM CELLS...'

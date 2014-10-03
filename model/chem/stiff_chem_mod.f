@@ -88,11 +88,11 @@
       use output,   only : FULL_LOG
       use run,      only : TIME
 
-
       use mpi_utility
 
       use stiff_chem_dbg
       use stiff_chem_stats
+      use functions
 
       implicit none
 
@@ -152,8 +152,6 @@
 
       LOGICAL :: lReset
       LOGICAL :: lIncpt
-
-      INCLUDE '../function.inc'
 
       lErr_l = .FALSE.
 
@@ -451,6 +449,7 @@
       use compar
       use mpi_utility
       use sendrecv
+      use functions
 
       implicit none
 
@@ -461,8 +460,6 @@
 
 ! Error flag - Unused but needed for call to BOUND_X.
       INTEGER :: IER
-
-      INCLUDE '../function.inc'
 
       CALL send_recv(EP_G,2)
       CALL send_recv(RO_G,2)

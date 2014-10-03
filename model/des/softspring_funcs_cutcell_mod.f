@@ -51,6 +51,7 @@
       USE stl
       USE compar
       USE des_stl_functions
+      USE functions
       Implicit none
 
       DOUBLE PRECISION, INTENT(IN) :: POSITION(DIMN), RADIUS
@@ -67,9 +68,6 @@
       LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
       IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP, &
       LOC_MAX_PIP, focus_particle
-
-      INCLUDE '../function.inc'
-
 
       FOCUS_PARTICLE = -1
 
@@ -190,6 +188,7 @@
       USE indices
       USE stl
       USE des_stl_functions
+      USE functions
       Implicit none
 
       INTEGER :: LL
@@ -236,8 +235,6 @@
 
       DOUBLE PRECISION :: MAX_DISTSQ
       INTEGER :: MAX_NF
-
-      INCLUDE '../function.inc'
 
       DES_LOC_DEBUG = .false. ;      DEBUG_DES = .false.
       FOCUS_PARTICLE = -1

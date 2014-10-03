@@ -40,15 +40,13 @@
       use indices
 
       use error_manager
+      use functions
 
       implicit none
 
 ! Local Variables:
 !---------------------------------------------------------------------//
       INTEGER :: I, J, K, IJK
-
-      include '../function.inc'
-
 
       CALL INIT_ERR_MSG('CHECK_ODEPACK_STIFF_CHEM')
 

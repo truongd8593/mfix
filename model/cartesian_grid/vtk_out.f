@@ -10,7 +10,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VTU_FILE
 
@@ -208,16 +208,16 @@
 
                CASE (11)
                   IF(K_EPSILON) THEN
-                     CALL WRITE_SCALAR_IN_VTU_BIN('K_Turb_G',K_Turb_G,PASS)                
-                     CALL WRITE_SCALAR_IN_VTU_BIN('E_Turb_G',E_Turb_G,PASS)                                
+                     CALL WRITE_SCALAR_IN_VTU_BIN('K_Turb_G',K_Turb_G,PASS)
+                     CALL WRITE_SCALAR_IN_VTU_BIN('E_Turb_G',E_Turb_G,PASS)
 
                   ENDIF
 
                CASE (12)
                   CALL CALC_VORTICITY
 
-                  CALL WRITE_SCALAR_IN_VTU_BIN('VORTICITY_MAG',VORTICITY,PASS)                
-                  CALL WRITE_SCALAR_IN_VTU_BIN('LAMBDA_2',LAMBDA2,PASS)                
+                  CALL WRITE_SCALAR_IN_VTU_BIN('VORTICITY_MAG',VORTICITY,PASS)
+                  CALL WRITE_SCALAR_IN_VTU_BIN('LAMBDA_2',LAMBDA2,PASS)
 
 
 
@@ -240,7 +240,7 @@
                      ALLOCATE(FACET_COUNT_DES(DIMENSION_3))
 
                      DO IJK = IJKSTART3, IJKEND3
-                        FACET_COUNT_DES(IJK) = LIST_FACET_AT_DES(IJK)%COUNT_FACETS 
+                        FACET_COUNT_DES(IJK) = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
                      ENDDO
 
                      CALL WRITE_SCALAR_IN_VTU_BIN('FACET_COUNT', FACET_COUNT_DES,PASS)
@@ -387,7 +387,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_VTU_FILE_BIN
 
@@ -472,9 +472,9 @@
       OPEN(UNIT     = VTU_UNIT,           &
            FILE     = TRIM(VTU_FILENAME), &
            FORM     = 'UNFORMATTED',      &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
-                                             ! use 'BINARY' if 'UNFORMATTED' is not supported 
+                                             ! use 'BINARY' if 'UNFORMATTED' is not supported
            ACCESS   = 'STREAM',           &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
-                                             ! use 'SEQUENTIAL' if 'STREAM' is not supported 
+                                             ! use 'SEQUENTIAL' if 'STREAM' is not supported
            ACTION   = 'WRITE',            &
            CONVERT  = 'BIG_ENDIAN',       &
            IOSTAT=ISTAT)
@@ -578,7 +578,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_GEOMETRY_IN_VTU_BIN(PASS)
 
@@ -613,8 +613,8 @@
       REAL*4 :: float,SP_X,SP_Y,SP_Z
       INTEGER :: int
 
-      INTEGER ::     nbytes_xyz,nbytes_connectivity,nbytes_offset,nbytes_type 
-      INTEGER ::     offset_xyz,offset_connectivity,offset_offset,offset_type 
+      INTEGER ::     nbytes_xyz,nbytes_connectivity,nbytes_offset,nbytes_type
+      INTEGER ::     offset_xyz,offset_connectivity,offset_offset,offset_type
 
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
@@ -702,7 +702,7 @@
 
          ELSEIF(PASS==WRITE_DATA) THEN
 
-            WRITE(BUFFER,110)'      </CellData>'                          
+            WRITE(BUFFER,110)'      </CellData>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             WRITE(BUFFER,110)'    </Piece>'
@@ -853,7 +853,7 @@
 
          ELSEIF(PASS==WRITE_DATA) THEN
 
-            WRITE(BUFFER,110)'      </CellData>'                          
+            WRITE(BUFFER,110)'      </CellData>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             WRITE(BUFFER,110)'    </Piece>'
@@ -944,7 +944,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,VAR,PASS)
 
@@ -1107,7 +1107,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VECTOR_IN_VTU_BIN(VAR_NAME,VARX,VARY,VARZ,PASS)
 
@@ -1276,7 +1276,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CLOSE_VTU_FILE_BIN
 
@@ -1347,7 +1347,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VTU_FILE_ASCII
 
@@ -1519,16 +1519,16 @@
 
             CASE (11)
                IF(K_EPSILON) THEN
-                  CALL WRITE_SCALAR_IN_VTU_ASCII('K_Turb_G',K_Turb_G)                
-                  CALL WRITE_SCALAR_IN_VTU_ASCII('E_Turb_G',E_Turb_G)                                
+                  CALL WRITE_SCALAR_IN_VTU_ASCII('K_Turb_G',K_Turb_G)
+                  CALL WRITE_SCALAR_IN_VTU_ASCII('E_Turb_G',E_Turb_G)
                   IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
                ENDIF
 
             CASE (12)
                CALL CALC_VORTICITY
 
-               CALL WRITE_SCALAR_IN_VTU_ASCII('VORTICITY_MAG',VORTICITY)                
-               CALL WRITE_SCALAR_IN_VTU_ASCII('LAMBDA_2',LAMBDA2)                
+               CALL WRITE_SCALAR_IN_VTU_ASCII('VORTICITY_MAG',VORTICITY)
+               CALL WRITE_SCALAR_IN_VTU_ASCII('LAMBDA_2',LAMBDA2)
 
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
 
@@ -1668,7 +1668,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_VTU_FILE_ASCII
 
@@ -1825,7 +1825,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_PVD_FILE
 
@@ -1942,7 +1942,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_GEOMETRY_IN_VTU_ASCII
 
@@ -2129,7 +2129,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_SCALAR_IN_VTU_ASCII(VAR_NAME,VAR)
 
@@ -2235,7 +2235,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VECTOR_IN_VTU_ASCII(VAR_NAME,VARX,VARY,VARZ)
 
@@ -2337,7 +2337,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CLOSE_VTU_FILE_ASCII
 
@@ -2407,7 +2407,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE UPDATE_AND_CLOSE_PVD_FILE
 
@@ -2470,7 +2470,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VTK_FILE
 
@@ -2648,16 +2648,16 @@
 
             CASE (11)
                IF(K_EPSILON) THEN
-                  CALL WRITE_SCALAR_IN_VTK('K_Turb_G',K_Turb_G)                
-                  CALL WRITE_SCALAR_IN_VTK('E_Turb_G',E_Turb_G)                
+                  CALL WRITE_SCALAR_IN_VTK('K_Turb_G',K_Turb_G)
+                  CALL WRITE_SCALAR_IN_VTK('E_Turb_G',E_Turb_G)
                   IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
                ENDIF
 
             CASE (12)
                CALL CALC_VORTICITY
 
-               CALL WRITE_SCALAR_IN_VTK('VORTICITY_MAG',VORTICITY)                
-               CALL WRITE_SCALAR_IN_VTK('LAMBDA_2',LAMBDA2)                
+               CALL WRITE_SCALAR_IN_VTK('VORTICITY_MAG',VORTICITY)
+               CALL WRITE_SCALAR_IN_VTK('LAMBDA_2',LAMBDA2)
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
 
             CASE (100)
@@ -2724,7 +2724,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_VTK_FILE
 
@@ -2780,9 +2780,9 @@
       OPEN(UNIT     = VTK_UNIT,           &
            FILE     = TRIM(VTK_FILENAME), &
            FORM     = 'UNFORMATTED',    &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
-                                           ! use 'BINARY' if 'UNFORMATTED' is not supported 
+                                           ! use 'BINARY' if 'UNFORMATTED' is not supported
            ACCESS   = 'STREAM',   &        ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
-                                           ! use 'SEQUENTIAL' if 'STREAM' is not supported 
+                                           ! use 'SEQUENTIAL' if 'STREAM' is not supported
            ACTION   = 'WRITE', &
            CONVERT  = 'BIG_ENDIAN')
 
@@ -2814,7 +2814,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_GEOMETRY_IN_VTK
 
@@ -2910,7 +2910,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_SCALAR_IN_VTK(VAR_NAME,VAR)
 
@@ -2985,7 +2985,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VECTOR_IN_VTK(VAR_NAME,VARX,VARY,VARZ)
 
@@ -3061,7 +3061,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CLOSE_VTK_FILE
 
@@ -3090,7 +3090,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_CUT_SURFACE_VTK
 
@@ -3169,12 +3169,12 @@
             CALL GET_GLOBAL_CELL_NODE_COORDINATES(IJK,'SCALAR')
 
             DO L = 1, GLOBAL_NUMBER_OF_NODES(IJK)
-               IF(GLOBAL_CONNECTIVITY(IJK,L)>IJKMAX3) THEN   ! One of the new point          
+               IF(GLOBAL_CONNECTIVITY(IJK,L)>IJKMAX3) THEN   ! One of the new point
                   X_COPY = GLOBAL_X_NEW_POINT(GLOBAL_CONNECTIVITY(IJK,L)-IJKMAX3)
                   Y_COPY = GLOBAL_Y_NEW_POINT(GLOBAL_CONNECTIVITY(IJK,L)-IJKMAX3)
                   Z_COPY = GLOBAL_Z_NEW_POINT(GLOBAL_CONNECTIVITY(IJK,L)-IJKMAX3)
                   CORNER_POINT = .FALSE.
-               ELSE                                   ! An existing point          
+               ELSE                                   ! An existing point
                   DO NODE = 1,8
                   CORNER_POINT = .TRUE.
                      IF(GLOBAL_CONNECTIVITY(IJK,L) == IJK_OF_NODE(NODE)) THEN
@@ -3224,7 +3224,7 @@
 
             CALL REORDER_POLYGON(N_CUT_FACE_NODES,COORD_CUT_FACE_NODES,NORMAL)
 
-            NUMBER_OF_CUT_FACE_POINTS(NUMBER_OF_FACES) = N_CUT_FACE_NODES 
+            NUMBER_OF_CUT_FACE_POINTS(NUMBER_OF_FACES) = N_CUT_FACE_NODES
             POLY_COUNT = POLY_COUNT + N_CUT_FACE_NODES + 1
             DO NODE = 1,N_CUT_FACE_NODES
                NUMBER_OF_SURFACE_POINTS = NUMBER_OF_SURFACE_POINTS + 1
@@ -3327,7 +3327,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GATHER_DATA
 
@@ -3512,7 +3512,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE PRINT_GRID_STATISTICS
 

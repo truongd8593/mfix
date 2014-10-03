@@ -23,6 +23,7 @@
       use run, only: ANY_SPECIES_EQ, SPECIES_EQ
       use physprop, only: SMAX, NMAX
       use run, only: SOLVE_ROs
+      use functions
 
       IMPLICIT NONE
 
@@ -52,9 +53,7 @@
 ! Logical for Adams-Bashfort integration.
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 
-! Functions
 !---------------------------------------------------------------------//
-      INCLUDE '../function.inc'
 
       IF(.NOT.ANY_SPECIES_EQ) RETURN
 

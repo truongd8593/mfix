@@ -102,6 +102,7 @@
       USE indices
       USE param1
       USE physprop
+      USE functions
 
       IMPLICIT NONE
 
@@ -123,7 +124,6 @@
 ! Logical for local debug warnings
       LOGICAL DES_LOC_DEBUG
 !-----------------------------------------------
-      INCLUDE '../function.inc'
 
       PEA(NP,:) = .FALSE.
 

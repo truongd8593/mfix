@@ -25,6 +25,7 @@
       Use interpolation
       Use param1
       Use run
+      USE functions
 
       IMPLICIT NONE
 
@@ -52,8 +53,6 @@
 ! Functions
 !---------------------------------------------------------------------//
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-      INCLUDE '../function.inc'
-
 
 ! This is a quick work-around to keep the thermo routines from causes
 ! issues while the "check_data" routines are rewritten. Moving forward

@@ -23,13 +23,12 @@ SUBROUTINE QMOMK_INIT_BC
   USE qmom_kinetic_equation
   USE qmomk_quadrature
   USE qmomk_bc
+  USE functions
 
   IMPLICIT NONE
 
   INTEGER :: I, J, K, IJK, IJK2, IPJK, M, L
   INTEGER :: I1, I2, J1, J2, K1, K2
-
-  INCLUDE '../function.inc'
 
   DO L = 1, DIMENSION_BC
       IF (BC_DEFINED(L)) THEN

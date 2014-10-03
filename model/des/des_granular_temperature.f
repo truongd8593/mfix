@@ -27,6 +27,7 @@
       USE sendrecv
       USE physprop
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -44,12 +45,6 @@
 ! squared particle velocity v.v
       DOUBLE PRECISION :: SQR_VEL
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
-!-----------------------------------------------
-
-
 
 ! Calculate a local species granular temperature for current instant of
 ! time.  Note that the following calculation of species granular
@@ -189,6 +184,7 @@
       USE des_bc
       USE physprop
       USE fldvar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -209,10 +205,6 @@
       DOUBLE PRECISION :: EP_SM
 ! tmp variables for calculations
       DOUBLE PRECISION :: tmp_num(DES_MMAX), tmp_den(DES_MMAX)
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! calculation of bed height following the formulation of Goldschmidt et

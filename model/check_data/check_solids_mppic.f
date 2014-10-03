@@ -29,7 +29,7 @@
       USE toleranc
       USE mfix_pic
       USE cutcell
-
+      USE functions
 
       USE mpi_utility
 
@@ -48,19 +48,13 @@
 !---------------------------------------------------------------------//
       INTEGER :: M
       INTEGER :: I, J, K, IJK
-
-
 !-----------------------------------------------
-! Functions
-!-----------------------------------------------
-!-----------------------------------------------
-! Include statement functions
-!----------------------------------------------- 
-      INCLUDE '../function.inc'
-!----------------------------------------------- 
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_MPPIC")
+
+
+
 
       IF(MPPIC_COEFF_EN1 == UNDEFINED) THEN
          WRITE(ERR_MSG, 1000) 'MPPIC_COEFF_EN1'

@@ -171,6 +171,7 @@
 
       use mpi_utility
       use error_manager
+      use functions
 
       IMPLICIT NONE
 
@@ -190,13 +191,7 @@
       INTEGER :: I,J,K,IJK
       INTEGER :: I_w, I_e, J_s, J_n, K_b, K_t
 
-
-      INCLUDE '../function.inc'
-
-
       CALL INIT_ERR_MSG("SET_PIC_BCMI_IJK")
-
-
 
       dFlag = (DMP_LOG .AND. setDBG)
 

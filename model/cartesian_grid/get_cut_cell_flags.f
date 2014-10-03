@@ -39,6 +39,7 @@
 
       USE cutcell
       USE quadric
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,L
@@ -67,8 +68,6 @@
       DOUBLE PRECISION :: DIST, NORM1, NORM2, NORM3,Diagonal
       INTEGER :: IJK2, I1, I2, J1, J2, K1, K2, II, JJ, KK
       LOGICAL :: COND_1, COND_2
-
-      include "../function.inc"
 
       allocate(X_OLD_POINT(DIMENSION_MAX_CUT_CELL))
       allocate(Y_OLD_POINT(DIMENSION_MAX_CUT_CELL))
@@ -671,6 +670,7 @@
       USE cutcell
       USE polygon
       USE stl
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
@@ -685,8 +685,6 @@
       DOUBLE PRECISION :: MIN_CUT,MAX_CUT
       DOUBLE PRECISION :: F_NODE_02
       INTEGER :: BCID
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'INTERSECTING GEOMETRY WITH U-MOMENTUM CELLS...'
@@ -925,6 +923,7 @@
       USE cutcell
       USE polygon
       USE stl
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
@@ -939,8 +938,6 @@
       DOUBLE PRECISION :: MIN_CUT,MAX_CUT
       DOUBLE PRECISION :: F_NODE_02
       INTEGER :: BCID
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,*)'INTERSECTING GEOMETRY WITH V-MOMENTUM CELLS...'
@@ -1177,6 +1174,7 @@
       USE cutcell
       USE polygon
       USE stl
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
@@ -1190,8 +1188,6 @@
       DOUBLE PRECISION :: MIN_CUT,MAX_CUT
       DOUBLE PRECISION :: F_NODE_02
       INTEGER :: BCID
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'INTERSECTING GEOMETRY WITH W-MOMENTUM CELLS...'
@@ -1403,13 +1399,11 @@
       USE quadric
       USE cutcell
       Use vtk
-
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,IM,IP,JM,JP,KM,KP
       INTEGER :: IMJK,IPJK,IJMK,IJPK,IJKM,IJKP
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,*)'SETTING CUT CELL TREATMENT FLAGS...'
@@ -1553,6 +1547,7 @@
       USE sendrecv
       USE quadric
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,I23,J23,K23
@@ -1561,8 +1556,6 @@
       INTEGER :: TOTAL_NUMBER_OF_INTERSECTIONS
       INTEGER :: NODE
       LOGICAL :: CLIP_FLAG
-      include "../function.inc"
-
 
 !     EAST BOUNDARY
       I = IEND1
@@ -1924,8 +1917,7 @@
 
       USE cutcell
       USE quadric
-
-
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,II,JJ,KK
@@ -1940,14 +1932,9 @@
 
       LOGICAL, DIMENSION(DIMENSION_3) ::POSITIVE_F_AT
 
-      include "../function.inc"
-
-
       POTENTIAL_CUT_CELL_AT=.TRUE.
 
-
       RETURN  ! This subroutine is currently disabled
-
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'ESTIMATING POTENTIAL SCALAR CUT CELLS...'

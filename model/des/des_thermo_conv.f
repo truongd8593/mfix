@@ -111,9 +111,10 @@
       Use fldvar
       USE geometry
       USE indices
-      Use param1
-      Use physprop
+      USE param1
+      USE physprop
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 
@@ -146,8 +147,6 @@
 ! Functions
 !---------------------------------------------------------------------//
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-
-      INCLUDE '../function.inc'
 
 ! Initialization
       IMJK  = IM_OF(IJK)
@@ -233,6 +232,7 @@
       Use physprop
 
       use run, only: ODT
+      use functions
 
       IMPLICIT NONE
 
@@ -251,7 +251,6 @@
       DOUBLE PRECISION :: DEM_to_TFM
 
 !---------------------------------------------------------------------//
-      INCLUDE '../function.inc'
 
 ! Loop over fluid cells.
       IJK_LP: DO IJK = IJKSTART3, IJKEND3

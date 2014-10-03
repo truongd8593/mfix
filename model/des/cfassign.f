@@ -214,6 +214,7 @@
       USE sendrecv
       USE discretelement
       USE cutcell
+      USE functions
       implicit none
 !-----------------------------------------------
 ! Local Variables
@@ -235,10 +236,6 @@
 ! used for reporting information
       integer :: FLUID_IND, CUTCELL_IND, WALL_IND
       character*100 :: filename
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       avg_factor = merge(0.25d0, 0.125d0, NO_K)

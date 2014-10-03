@@ -24,6 +24,7 @@
       use sendrecv
       use desmpi_wrapper
       use desgrid
+      use functions
 !-----------------------------------------------
 
       integer :: itotalneigh,itotalindx
@@ -49,17 +50,13 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      integer ijk,lijkproc,ljproc,lkproc
-      integer li2,lj2,lk2
+      integer ijk,lijkproc,liproc,ljproc,lkproc
+      integer li,lj,lk,li2,lj2,lk2
       integer liproc_start,liproc_end,ljproc_start,ljproc_end,lkproc_start,lkproc_end
       integer lci,lcj,lck,lproc,lcount
       integer linode,ljnode,lknode
       integer linode_start,linode_end,ljnode_start,ljnode_end,lknode_start,lknode_end
       logical lpresent
-!-----------------------------------------------
-! include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! set flags for interprocessor boundaries and set the corresponding to proc
@@ -268,6 +265,9 @@
 !------------------------------------------------------------------------
       subroutine des_dbgnodesr()
 !-----------------------------------------------
+
+      use functions
+
       implicit none
 !-----------------------------------------------
 ! local variables
@@ -275,10 +275,6 @@
       character (30) filename
       integer ijk
       integer lcount,lcount2,lstart,lend
-!-----------------------------------------------
-! include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! pradeep remove print the flags

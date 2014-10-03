@@ -38,6 +38,7 @@
       USE cutcell
       USE quadric
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -76,10 +77,6 @@
       DOUBLE PRECISION :: VW_s
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       IF(CG_SAFE_MODE(4)==1) RETURN
@@ -327,6 +324,7 @@
       USE cutcell
       USE quadric
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -352,10 +350,6 @@
       DOUBLE PRECISION :: Del_H,Nx,Ny,Nz,Um,Vm,Wm,VdotN
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       IF(CG_SAFE_MODE(4)==1) RETURN

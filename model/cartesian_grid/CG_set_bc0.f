@@ -44,6 +44,7 @@
       USE boundfunijk
       USE toleranc
       USE sendrecv
+      USE functions
 
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -96,8 +97,6 @@
 
       INTEGER, DIMENSION(8) :: ACCEPTABLE_DEFAULT_WALL=-1
       LOGICAL :: GLOBAL_CORNER
-
-      INCLUDE '../function.inc'
 
 !
 !  Define global corners as acceptable default walls

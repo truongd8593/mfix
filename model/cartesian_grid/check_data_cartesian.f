@@ -812,6 +812,7 @@
       USE vtk
       USE polygon
       USE dashboard
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -826,8 +827,6 @@
 ! External Functions
 !-----------------------------------------------
       LOGICAL , EXTERNAL :: COMPARE
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 !======================================================================
 ! Boundary conditions
@@ -1720,7 +1719,7 @@
       USE cutcell
       USE fldvar
       USE vtk
-
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1752,10 +1751,6 @@
       LOGICAL , EXTERNAL :: COMPARE
 !-----------------------------------------------
 !
-
-      include "../function.inc"
-
-
 
       DO BCV = 1, DIMENSION_BC
 
@@ -1946,6 +1941,7 @@
       USE vtk
 
       USE ps
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1980,10 +1976,6 @@
       LOGICAL , EXTERNAL :: COMPARE
 !-----------------------------------------------
 !
-
-      include "../function.inc"
-
-
 
 !      print*,'Entering test',MyPE
       CALL MPI_BARRIER(MPI_COMM_WORLD,mpierr)
@@ -2189,6 +2181,7 @@
       USE vtk
 
       USE ps
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -2221,9 +2214,6 @@
       LOGICAL , EXTERNAL :: COMPARE
 !-----------------------------------------------
 !
-
-      include "../function.inc"
-
 
 ! Find the last Point source that is defined. New point sources
 ! will be added after that.

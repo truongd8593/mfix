@@ -32,6 +32,7 @@
       USE vtk
       use cdist
       USE fldvar
+      USE functions
 
       IMPLICIT NONE
 
@@ -39,8 +40,6 @@
       INTEGER :: I,J,K, COUNT
       INTEGER :: SAFE_MODE_COUNT
       DOUBLE PRECISION :: CPU_PP_START,CPU_PP_END
-
-      include "../function.inc"
 
       IF(.NOT.CG_HEADER_WAS_PRINTED) CALL PRINT_CG_HEADER
 
@@ -510,6 +509,7 @@
       USE quadric
       USE cutcell
       USE polygon
+      USE functions
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -517,8 +517,6 @@
       DOUBLE PRECISION :: xa,ya,za,xb,yb,zb,xc,yc,zc,Fc
       DOUBLE PRECISION :: Xi,Yi,Zi,Xc_backup,Yc_backup,Zc_backup
       LOGICAL :: INTERSECT_FLAG,CLIP_FLAG
-
-      include "../function.inc"
 
       Xi = UNDEFINED
       Yi = UNDEFINED
@@ -732,6 +730,7 @@
       USE cutcell
       USE polygon
       USE STL
+      USE functions
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -743,7 +742,6 @@
       DOUBLE PRECISION :: DFC,DFC_MAX,Fa,Fb,F4,F6,F7,F8
       LOGICAL :: CLIP_FLAG,CAD,F_TEST
 
-      include "../function.inc"
 
 ! When inputing geometry from CAD (STL or MSH file), the snapping procedure is
 ! dependent on the value of F at the cell corners
@@ -1111,11 +1109,8 @@
       USE polygon
       USE stl
 
-
       USE mpi_utility
-
-
-
+      USE functions
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -1145,9 +1140,6 @@
 
 
 !      CHARACTER (LEN=3) :: CAD_PROPAGATE_ORDER
-
-      include "../function.inc"
-
 
       INTERSECT_X = .FALSE.
       INTERSECT_Y = .FALSE.

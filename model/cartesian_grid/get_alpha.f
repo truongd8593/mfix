@@ -27,6 +27,7 @@
       USE bc
       USE quadric
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
       DOUBLE PRECISION:: x1,x2,x3,x_plane,y1,y2,y_plane,z1,z2
@@ -47,8 +48,6 @@
       LOGICAL :: W_NODE_AT_TE,W_NODE_AT_TW
       INTEGER :: BCV
       CHARACTER(LEN=9) ::BCT
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'COMPUTING INTERPOLATION FACTORS IN U-MOMENTUM CELLS...'
@@ -453,6 +452,7 @@
       USE bc
       USE quadric
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
       DOUBLE PRECISION:: x1,x2,x3,x_plane,y1,y2,y_plane,z1,z2
@@ -473,8 +473,6 @@
       LOGICAL :: W_NODE_AT_NT, W_NODE_AT_ST
       INTEGER :: BCV
       CHARACTER(LEN=9) ::BCT
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'COMPUTING INTERPOLATION FACTORS IN V-MOMENTUM CELLS...'
@@ -886,6 +884,7 @@
       USE bc
       USE quadric
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
       DOUBLE PRECISION:: x1,x2,x3,x_plane,y1,y2,y_plane,z1,z2
@@ -906,9 +905,6 @@
       LOGICAL :: V_NODE_AT_TN, V_NODE_AT_BN
       INTEGER :: BCV
       CHARACTER(LEN=9) ::BCT
-
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'COMPUTING INTERPOLATION FACTORS IN W-MOMENTUM CELLS...'

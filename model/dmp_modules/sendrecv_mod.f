@@ -1154,14 +1154,14 @@
 ! Purpose:
 !
 !--------------------------------------------------------------------
-      subroutine sendrecv_begin_1d( X, ilayer, idebug )
+      subroutine sendrecv_begin_1d( XX, ilayer, idebug )
 
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
       integer, intent(in),optional :: ilayer
-      double precision, intent(inout), dimension(:) :: X
+      double precision, intent(inout), dimension(:) :: XX
       integer, intent(in), optional :: idebug
 !-----------------------------------------------
 ! Local variables
@@ -1339,7 +1339,7 @@
 
             do jj=j1,j2
                ijk = sendijk( jj )
-               dsendbuffer( jj )  = X(ijk)
+               dsendbuffer( jj )  = XX(ijk)
             enddo
 
             if (lidebug.ge.2) then
@@ -1366,7 +1366,7 @@
 
                do jj=j1,j2
                   ijk = sendijk( jj )
-                  dsendbuffer(jj) = X(ijk)
+                  dsendbuffer(jj) = XX(ijk)
                enddo
 
                dest = sendproc( ii )
@@ -1398,14 +1398,14 @@
 ! Purpose:
 !
 !--------------------------------------------------------------------
-      subroutine sendrecv_begin_1i( X, ilayer, idebug )
+      subroutine sendrecv_begin_1i( XX, ilayer, idebug )
 
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
       integer, intent(in),optional :: ilayer
-      integer, intent(inout), dimension(:) :: X
+      integer, intent(inout), dimension(:) :: XX
       integer, intent(in), optional :: idebug
 !-----------------------------------------------
 ! Local variables
@@ -1556,7 +1556,7 @@
 
             do jj=j1,j2
                ijk = sendijk( jj )
-               isendbuffer(jj) = X(ijk)
+               isendbuffer(jj) = XX(ijk)
             enddo
 
             dest = sendproc( ii )
@@ -1585,16 +1585,17 @@
 ! Purpose:
 !
 !--------------------------------------------------------------------
-      subroutine sendrecv_begin_1c( X, ilayer, idebug )
-      implicit none
+      subroutine sendrecv_begin_1c( XX, ilayer, idebug )
 
       use functions
+
+      implicit none
 
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
       integer, intent(in),optional :: ilayer
-      character(len=*), intent(inout), dimension(:) :: X
+      character(len=*), intent(inout), dimension(:) :: XX
       integer, intent(in), optional :: idebug
 !-----------------------------------------------
 ! Local variables
@@ -1634,8 +1635,8 @@
          layer = ilayer
       endif
 
-      jpos = lbound(X,1)
-      clen = len( X( jpos ) )
+      jpos = lbound(XX,1)
+      clen = len( XX( jpos ) )
 
       if (layer.eq.1) then
          nrecv = nrecv1
@@ -1756,7 +1757,7 @@
                ijk = sendijk( jj )
                do ic=1,clen
                   jpos = (jj-1)*clen + ic
-                  csendbuffer(jpos) = X(ijk)(ic:ic)
+                  csendbuffer(jpos) = XX(ijk)(ic:ic)
                enddo
             enddo
 
@@ -1786,7 +1787,7 @@
 ! Purpose:
 !
 !--------------------------------------------------------------------
-      subroutine sendrecv_end_1d( X, idebug )
+      subroutine sendrecv_end_1d( XX, idebug )
 
       use functions
 
@@ -1794,7 +1795,7 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      double precision, intent(inout), dimension(:) :: X
+      double precision, intent(inout), dimension(:) :: XX
       integer, intent(in), optional :: idebug
 
 !-----------------------------------------------
@@ -1888,7 +1889,7 @@
 
                do jj=j1,j2
                   ijk = recvijk( jj )
-                  X(ijk) = drecvbuffer(jj)
+                  XX(ijk) = drecvbuffer(jj)
                enddo
             enddo   ! end do (ii=nrecv)
 
@@ -1912,7 +1913,7 @@
             j2 = xrecv( nrecv +1)-1
             do jj=j1,j2
                ijk = recvijk( jj )
-               X(ijk) = drecvbuffer(jj)
+               XX(ijk) = drecvbuffer(jj)
             enddo
          endif   ! end if/else (use_waitany)
       endif   ! end if (nrecv.ge.1)
@@ -1925,7 +1926,7 @@
 ! Purpose:
 !
 !--------------------------------------------------------------------
-      subroutine sendrecv_end_1c( X, idebug )
+      subroutine sendrecv_end_1c( XX, idebug )
 
       use functions
 
@@ -1934,7 +1935,7 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      character(len=*), intent(inout), dimension(:) :: X
+      character(len=*), intent(inout), dimension(:) :: XX
       integer, intent(in), optional :: idebug
 
 !-----------------------------------------------
@@ -1979,8 +1980,8 @@
          lidebug = idebug
       endif
 
-      jpos = lbound(X,1)
-      clen = len(X(jpos))
+      jpos = lbound(XX,1)
+      clen = len(XX(jpos))
 
       if (nsend.ge.1) then
          if (lidebug.ge.1) then
@@ -2027,7 +2028,7 @@
 
                   do ic=1,clen
                      jpos = (jj-1)*clen + ic
-                     X(ijk)(ic:ic) = crecvbuffer(jpos)
+                     XX(ijk)(ic:ic) = crecvbuffer(jpos)
                   enddo
                enddo
             enddo   ! end do (ii=1,nrecv)
@@ -2047,7 +2048,7 @@
                ijk = recvijk( jj )
                do ic=1,clen
                   jpos = (jj-1)*clen + ic
-                  X(ijk)(ic:ic) = crecvbuffer(jpos)
+                  XX(ijk)(ic:ic) = crecvbuffer(jpos)
                enddo
             enddo
          endif   ! end if/else (use_waitany)
@@ -2064,7 +2065,7 @@
 ! Purpose:
 !
 !--------------------------------------------------------------------
-      subroutine sendrecv_end_1i( X, idebug )
+      subroutine sendrecv_end_1i( XX, idebug )
 
       use functions
 
@@ -2072,7 +2073,7 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      integer, intent(inout), dimension(:) :: X
+      integer, intent(inout), dimension(:) :: XX
       integer, intent(in), optional :: idebug
 !-----------------------------------------------
       interface
@@ -2157,7 +2158,7 @@
 
                do jj=j1,j2
                   ijk = recvijk( jj )
-                  X(ijk) = irecvbuffer(jj)
+                  XX(ijk) = irecvbuffer(jj)
                enddo
             enddo    ! end do (ii=1,nrecv)
          else
@@ -2171,7 +2172,7 @@
             j2 = xrecv( nrecv +1)-1
             do jj=j1,j2
                ijk = recvijk( jj )
-               X(ijk) = irecvbuffer(jj)
+               XX(ijk) = irecvbuffer(jj)
             enddo
          endif   ! end if/else (use_waitany)
 
@@ -2189,12 +2190,12 @@
 ! Purpose:
 !
 !--------------------------------------------------------------------
-      subroutine send_recv_1c( X, ilayer, idebug )
+      subroutine send_recv_1c( XX, ilayer, idebug )
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      character(len=*),  dimension(:), intent(inout) :: X
+      character(len=*),  dimension(:), intent(inout) :: XX
       integer, intent(in), optional :: ilayer,idebug
 !-----------------------------------------------
 ! Local variables
@@ -2212,8 +2213,8 @@
          layer = ilayer
       endif
 
-      call sendrecv_begin(X,layer,lidebug)
-      call sendrecv_end( X, lidebug )
+      call sendrecv_begin(XX,layer,lidebug)
+      call sendrecv_end( XX, lidebug )
 
       return
       end subroutine send_recv_1c
@@ -2223,12 +2224,12 @@
 ! Purpose:
 !
 !--------------------------------------------------------------------
-      subroutine send_recv_1d( X, ilayer, idebug )
+      subroutine send_recv_1d( XX, ilayer, idebug )
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      double precision,  dimension(:), intent(inout) :: X
+      double precision,  dimension(:), intent(inout) :: XX
       integer, intent(in), optional :: ilayer,idebug
 !-----------------------------------------------
 ! Local variables
@@ -2246,8 +2247,8 @@
          layer = ilayer
       endif
 
-      call sendrecv_begin(X,layer,lidebug)
-      call sendrecv_end( X, lidebug )
+      call sendrecv_begin(XX,layer,lidebug)
+      call sendrecv_end( XX, lidebug )
 
       return
       end subroutine send_recv_1d
@@ -2257,12 +2258,12 @@
 ! Purpose:
 !
 !--------------------------------------------------------------------
-      subroutine send_recv_2d( X, ilayer, idebug )
+      subroutine send_recv_2d( XX, ilayer, idebug )
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      double precision,  dimension(:,:), intent(inout) :: X
+      double precision,  dimension(:,:), intent(inout) :: XX
       integer, intent(in), optional :: ilayer,idebug
 !-----------------------------------------------
 ! Local variables
@@ -2281,9 +2282,9 @@
          layer = ilayer
       endif
 
-      do j=lbound(X,2),ubound(X,2)
-         call sendrecv_begin(X(:,j),layer,lidebug)
-         call sendrecv_end( X(:,j), lidebug )
+      do j=lbound(XX,2),ubound(XX,2)
+         call sendrecv_begin(XX(:,j),layer,lidebug)
+         call sendrecv_end( XX(:,j), lidebug )
       enddo
 
       return
@@ -2294,12 +2295,12 @@
 ! Purpose:
 !
 !--------------------------------------------------------------------
-      subroutine send_recv_3d( X, ilayer, idebug )
+      subroutine send_recv_3d( XX, ilayer, idebug )
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      double precision,  dimension(:,:,:), intent(inout) :: X
+      double precision,  dimension(:,:,:), intent(inout) :: XX
       integer, intent(in), optional :: ilayer,idebug
 !-----------------------------------------------
 ! Local variables
@@ -2317,10 +2318,10 @@
          layer = ilayer
       endif
 
-      do k=lbound(X,3),ubound(X,3)
-         do j=lbound(X,2),ubound(X,2)
-            call sendrecv_begin(X(:,j,k),layer,lidebug)
-            call sendrecv_end( X(:,j,k), lidebug )
+      do k=lbound(XX,3),ubound(XX,3)
+         do j=lbound(XX,2),ubound(XX,2)
+            call sendrecv_begin(XX(:,j,k),layer,lidebug)
+            call sendrecv_end( XX(:,j,k), lidebug )
          enddo
       enddo
 
@@ -2332,12 +2333,12 @@
 ! Purpose:
 !
 !--------------------------------------------------------------------
-      subroutine send_recv_1i( X, ilayer, idebug )
+      subroutine send_recv_1i( XX, ilayer, idebug )
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      integer,  dimension(:), intent(inout) :: X
+      integer,  dimension(:), intent(inout) :: XX
       integer, intent(in), optional :: ilayer,idebug
 !-----------------------------------------------
 ! Local variables
@@ -2354,8 +2355,8 @@
          layer = ilayer
       endif
 
-      call sendrecv_begin(X,layer,lidebug)
-      call sendrecv_end( X, lidebug )
+      call sendrecv_begin(XX,layer,lidebug)
+      call sendrecv_end( XX, lidebug )
 
       return
       end subroutine send_recv_1i

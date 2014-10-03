@@ -29,6 +29,7 @@
       USE sendrecv
       USE quadric
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -38,9 +39,6 @@
       DOUBLE PRECISION :: Nx,Ny,Nz
 
       DOUBLE PRECISION :: old_Del_H,oldNx,oldNy,oldNz
-
-
-      include "../function.inc"
 
       SELECT CASE (TYPE_OF_CELL)
          CASE('SCALAR')
@@ -192,6 +190,7 @@
       USE sendrecv
       USE quadric
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -202,9 +201,6 @@
 
       DOUBLE PRECISION :: old_Del_H,oldNx,oldNy,oldNz
       LOGICAL :: ALLOW_NEG_DIST
-
-
-      include "../function.inc"
 
       SELECT CASE (TYPE_OF_CELL)
          CASE('SCALAR')
@@ -367,6 +363,7 @@
       USE sendrecv
       USE quadric
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -381,10 +378,6 @@
 
       DOUBLE PRECISION :: F_Q
       LOGICAL:: CLIP_FLAG
-
-
-      include "../function.inc"
-
 
      IF(NO_K) THEN  ! 2D case
 
@@ -641,6 +634,7 @@
       USE sendrecv
       USE quadric
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
 !      CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -653,9 +647,6 @@
 
       INTEGER :: N_CUT_CELLS
       INTEGER :: LIST_OF_CUT_CELLS(DIMENSION_3)
-
-
-      include "../function.inc"
 
 !======================================================================
 !  Get a list of cut cells

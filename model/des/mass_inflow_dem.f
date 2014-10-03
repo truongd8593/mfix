@@ -264,6 +264,7 @@
       use constant, only: PI
 
       use indices
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -284,8 +285,6 @@
 
 ! Global phase index
       INTEGER :: BC_M
-
-      INCLUDE '../function.inc'
 
 ! Shift the phase index by SMAX to refernece global variables.
       BC_M = lM + SMAX
@@ -375,6 +374,7 @@
       USE indices
       USE param1
       USE physprop
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -399,10 +399,6 @@
 
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
       DOUBLE PRECISION  DISTVEC(DIMN), DIST, R_LM
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       TOUCHING = .FALSE.

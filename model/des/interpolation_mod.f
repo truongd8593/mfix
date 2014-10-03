@@ -401,6 +401,7 @@ MODULE interpolation
       USE indices
       USE param
       USE param1
+      USE functions
 
       IMPLICIT NONE
 
@@ -443,8 +444,6 @@ MODULE interpolation
 ! Lagrange polynomial is used. Higher order isn't necessary.
       CHARACTER*5 :: INTP_SCHM = 'LPI'
 !-----------------------------------------------
-
-      INCLUDE '../function.inc'
 
 ! Obtain the starting cell index values for interpolation around
 ! particle NP

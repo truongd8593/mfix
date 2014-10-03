@@ -33,6 +33,7 @@
       use desgrid
       use desmpi
       USE mfix_pic
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -55,10 +56,6 @@
       DOUBLE PRECISION EP_SM
 ! total solids volume fraction of continuum solids phases
       DOUBLE PRECISION SUM_EPS
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       SOLVOLINC(:,:) = ZERO
@@ -259,10 +256,6 @@
           DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
           DOUBLE PRECISION, DIMENSION(2,2,2) :: weight_ft
           DOUBLE PRECISION :: desposnew(3)
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! initializing
@@ -755,6 +748,7 @@
       USE discretelement
       USE cutcell
       USE mfix_pic
+      USE functions
       use desmpi_wrapper
       implicit none
 !-----------------------------------------------
@@ -768,10 +762,6 @@
       DOUBLE PRECISION EP_SM
 ! total solids volume fraction of continuum solids phases
       DOUBLE PRECISION SUM_EPS
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 !$omp parallel do if(ijkend3 .ge. 2000) default(shared)        &

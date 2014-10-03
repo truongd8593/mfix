@@ -1427,14 +1427,14 @@ enddo ! do ilayer
 
 
 
-        subroutine sendrecv3_begin_1d( X, ilayer, idebug )
+        subroutine sendrecv3_begin_1d( XX, ilayer, idebug )
 
         use functions
 
         implicit none
 
         integer, intent(in),optional :: ilayer
-        double precision, intent(inout), dimension(:) :: X
+        double precision, intent(inout), dimension(:) :: XX
         integer, intent(in), optional :: idebug
 
 !       interface
@@ -1661,7 +1661,7 @@ enddo ! do ilayer
 
         do jj=j1,j2
               ijk = sendijk( jj )
-              dsendbuffer( jj )  = X(ijk)
+              dsendbuffer( jj )  = XX(ijk)
         enddo
 
 
@@ -1695,7 +1695,7 @@ enddo ! do ilayer
 
             do jj=j1,j2
                 ijk = sendijk( jj )
-                dsendbuffer(jj) = X(ijk)
+                dsendbuffer(jj) = XX(ijk)
             enddo
 
             dest = sendproc( ii )
@@ -1723,14 +1723,14 @@ enddo ! do ilayer
         end subroutine sendrecv3_begin_1d
 
 
-        subroutine sendrecv3_begin_1i( X, ilayer, idebug )
+        subroutine sendrecv3_begin_1i( XX, ilayer, idebug )
 
         use functions
 
         implicit none
 
         integer, intent(in),optional :: ilayer
-        integer, intent(inout), dimension(:) :: X
+        integer, intent(inout), dimension(:) :: XX
         integer, intent(in), optional :: idebug
 
 !       interface
@@ -1920,7 +1920,7 @@ enddo ! do ilayer
 
             do jj=j1,j2
                 ijk = sendijk( jj )
-                isendbuffer(jj) = X(ijk)
+                isendbuffer(jj) = XX(ijk)
             enddo
 
             dest = sendproc( ii )
@@ -1946,14 +1946,14 @@ enddo ! do ilayer
         end subroutine sendrecv3_begin_1i
 
 
-        subroutine sendrecv3_begin_1c( X, ilayer, idebug )
+        subroutine sendrecv3_begin_1c( XX, ilayer, idebug )
 
           use functions
 
         implicit none
 
         integer, intent(in),optional :: ilayer
-        character(len=*), intent(inout), dimension(:) :: X
+        character(len=*), intent(inout), dimension(:) :: XX
         integer, intent(in), optional :: idebug
 
 !       interface
@@ -1997,8 +1997,8 @@ enddo ! do ilayer
            layer = ilayer
         endif
 
-        jpos = lbound(X,1)
-        clen = len( X( jpos ) )
+        jpos = lbound(XX,1)
+        clen = len( XX( jpos ) )
 
         if (layer.eq.1) then
           nrecv = nrecv1
@@ -2158,7 +2158,7 @@ enddo ! do ilayer
                 ijk = sendijk( jj )
                 do ic=1,clen
                     jpos = (jj-1)*clen + ic
-                    csendbuffer(jpos) = X(ijk)(ic:ic)
+                    csendbuffer(jpos) = XX(ijk)(ic:ic)
                 enddo
             enddo
 
@@ -2186,13 +2186,13 @@ enddo ! do ilayer
         end subroutine sendrecv3_begin_1c
 
 
-        subroutine sendrecv3_end_1d( X, idebug )
+        subroutine sendrecv3_end_1d( XX, idebug )
 
           use functions
 
         implicit none
 
-        double precision, intent(inout), dimension(:) :: X
+        double precision, intent(inout), dimension(:) :: XX
         integer, intent(in), optional :: idebug
 
         interface
@@ -2301,7 +2301,7 @@ enddo ! do ilayer
 
            do jj=j1,j2
              ijk = recvijk( jj )
-             X(ijk) = drecvbuffer(jj)
+             XX(ijk) = drecvbuffer(jj)
            enddo
         enddo
       else
@@ -2316,7 +2316,7 @@ enddo ! do ilayer
            j2 = xrecv( nrecv +1)-1
            do jj=j1,j2
                ijk = recvijk( jj )
-               X(ijk) = drecvbuffer(jj)
+               XX(ijk) = drecvbuffer(jj)
            enddo
         endif
 
@@ -2327,13 +2327,13 @@ enddo ! do ilayer
         end subroutine sendrecv3_end_1d
 
 
-        subroutine sendrecv3_end_1c( X, idebug )
+        subroutine sendrecv3_end_1c( XX, idebug )
 
           use functions
 
         implicit none
 
-        character(len=*), intent(inout), dimension(:) :: X
+        character(len=*), intent(inout), dimension(:) :: XX
         integer, intent(in), optional :: idebug
 
         interface
@@ -2385,8 +2385,8 @@ enddo ! do ilayer
            lidebug = idebug
         endif
 
-        jpos = lbound(X,1)
-        clen = len(X(jpos))
+        jpos = lbound(XX,1)
+        clen = len(XX(jpos))
 
         if (nsend .ge.1) then
 
@@ -2439,7 +2439,7 @@ enddo ! do ilayer
 
                do ic=1,clen
                 jpos = (jj-1)*clen + ic
-                X(ijk)(ic:ic) = crecvbuffer(jpos)
+                XX(ijk)(ic:ic) = crecvbuffer(jpos)
                enddo
 
 
@@ -2456,7 +2456,7 @@ enddo ! do ilayer
 
                do ic=1,clen
                 jpos = (jj-1)*clen + ic
-                X(ijk)(ic:ic) = crecvbuffer(jpos)
+                XX(ijk)(ic:ic) = crecvbuffer(jpos)
                enddo
 
 
@@ -2473,13 +2473,13 @@ enddo ! do ilayer
         end subroutine sendrecv3_end_1c
 
 
-        subroutine sendrecv3_end_1i( X, idebug )
+        subroutine sendrecv3_end_1i( XX, idebug )
 
           use functions
 
         implicit none
 
-        integer, intent(inout), dimension(:) :: X
+        integer, intent(inout), dimension(:) :: XX
         integer, intent(in), optional :: idebug
 
         interface
@@ -2576,7 +2576,7 @@ enddo ! do ilayer
 
            do jj=j1,j2
              ijk = recvijk( jj )
-             X(ijk) = irecvbuffer(jj)
+             XX(ijk) = irecvbuffer(jj)
            enddo
         enddo
       else
@@ -2587,7 +2587,7 @@ enddo ! do ilayer
            j2 = xrecv( nrecv +1)-1
            do jj=j1,j2
                ijk = recvijk( jj )
-               X(ijk) = irecvbuffer(jj)
+               XX(ijk) = irecvbuffer(jj)
            enddo
         endif
 
@@ -2600,10 +2600,10 @@ enddo ! do ilayer
         end subroutine sendrecv3_end_1i
 
 
-        subroutine send_recv3_1c( X, ilayer, idebug )
+        subroutine send_recv3_1c( XX, ilayer, idebug )
         implicit none
 
-        character(len=*),  dimension(:), intent(inout) :: X
+        character(len=*),  dimension(:), intent(inout) :: XX
         integer, intent(in), optional :: ilayer,idebug
 
         integer :: lidebug, layer
@@ -2618,16 +2618,16 @@ enddo ! do ilayer
            layer = ilayer
         endif
 
-        call sendrecv3_begin(X,layer,lidebug)
-        call sendrecv3_end( X, lidebug )
+        call sendrecv3_begin(XX,layer,lidebug)
+        call sendrecv3_end( XX, lidebug )
 
         return
         end subroutine send_recv3_1c
 
-        subroutine send_recv3_1d( X, ilayer, idebug )
+        subroutine send_recv3_1d( XX, ilayer, idebug )
         implicit none
 
-        double precision,  dimension(:), intent(inout) :: X
+        double precision,  dimension(:), intent(inout) :: XX
         integer, intent(in), optional :: ilayer,idebug
 
         integer :: lidebug, layer
@@ -2642,16 +2642,16 @@ enddo ! do ilayer
            layer = ilayer
         endif
 
-        call sendrecv3_begin(X,layer,lidebug)
-        call sendrecv3_end( X, lidebug )
+        call sendrecv3_begin(XX,layer,lidebug)
+        call sendrecv3_end( XX, lidebug )
 
         return
         end subroutine send_recv3_1d
 
-        subroutine send_recv3_2d( X, ilayer, idebug )
+        subroutine send_recv3_2d( XX, ilayer, idebug )
         implicit none
 
-        double precision,  dimension(:,:), intent(inout) :: X
+        double precision,  dimension(:,:), intent(inout) :: XX
         integer, intent(in), optional :: ilayer,idebug
 
         integer :: lidebug, layer
@@ -2667,18 +2667,18 @@ enddo ! do ilayer
            layer = ilayer
         endif
 
-        do j=lbound(X,2),ubound(X,2)
-          call sendrecv3_begin(X(:,j),layer,lidebug)
-          call sendrecv3_end( X(:,j), lidebug )
+        do j=lbound(XX,2),ubound(XX,2)
+          call sendrecv3_begin(XX(:,j),layer,lidebug)
+          call sendrecv3_end( XX(:,j), lidebug )
         enddo
 
         return
         end subroutine send_recv3_2d
 
-        subroutine send_recv3_3d( X, ilayer, idebug )
+        subroutine send_recv3_3d( XX, ilayer, idebug )
         implicit none
 
-        double precision,  dimension(:,:,:), intent(inout) :: X
+        double precision,  dimension(:,:,:), intent(inout) :: XX
         integer, intent(in), optional :: ilayer,idebug
 
         integer :: lidebug, layer
@@ -2694,20 +2694,20 @@ enddo ! do ilayer
            layer = ilayer
         endif
 
-        do k=lbound(X,3),ubound(X,3)
-        do j=lbound(X,2),ubound(X,2)
-          call sendrecv3_begin(X(:,j,k),layer,lidebug)
-          call sendrecv3_end( X(:,j,k), lidebug )
+        do k=lbound(XX,3),ubound(XX,3)
+        do j=lbound(XX,2),ubound(XX,2)
+          call sendrecv3_begin(XX(:,j,k),layer,lidebug)
+          call sendrecv3_end( XX(:,j,k), lidebug )
         enddo
         enddo
 
         return
         end subroutine send_recv3_3d
 
-        subroutine send_recv3_1i( X, ilayer, idebug )
+        subroutine send_recv3_1i( XX, ilayer, idebug )
         implicit none
 
-        integer,  dimension(:), intent(inout) :: X
+        integer,  dimension(:), intent(inout) :: XX
         integer, intent(in), optional :: ilayer,idebug
 
         integer :: lidebug, layer
@@ -2722,8 +2722,8 @@ enddo ! do ilayer
            layer = ilayer
         endif
 
-        call sendrecv3_begin(X,layer,lidebug)
-        call sendrecv3_end( X, lidebug )
+        call sendrecv3_begin(XX,layer,lidebug)
+        call sendrecv3_end( XX, lidebug )
 
         return
         end subroutine send_recv3_1i

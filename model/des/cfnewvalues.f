@@ -182,8 +182,9 @@
       USE cutcell
       USE mfix_pic
       USE randomno
-      use geometry, only: DO_K, NO_K
+      USE geometry, only: DO_K, NO_K
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -226,8 +227,6 @@
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
 !-----------------------------------------------
-
-      INCLUDE '../function.inc'
 
       PC = 1
       FOCUS_PARTICLE = -1
@@ -524,6 +523,7 @@
       USE randomno
       USE cutcell
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -569,7 +569,6 @@
 
 !-----------------------------------------------
 
-      INCLUDE '../function.inc'
       OUTER_STABILITY_COND = .false.
       DES_FIXED_BED = .false.
       PC = 1

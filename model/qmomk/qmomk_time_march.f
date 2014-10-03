@@ -40,8 +40,9 @@ SUBROUTINE QMOMK_TIME_MARCH
   USE qmomk_collision
   USE qmomk_parameters
   USE drag
-  USE ur_facs 
+  USE ur_facs
   USE fun_avg
+  USE functions
 
   IMPLICIT NONE
 
@@ -63,8 +64,6 @@ SUBROUTINE QMOMK_TIME_MARCH
   DOUBLE PRECISION, DIMENSION(QMOMK_NMOM) :: F_x_coll_left, F_x_coll_right
   DOUBLE PRECISION, DIMENSION(QMOMK_NMOM) :: F_y_coll_left, F_y_coll_right
   DOUBLE PRECISION, DIMENSION(QMOMK_NMOM) :: F_z_coll_left, F_z_coll_right
-
-  INCLUDE '../function.inc'
 
   IF (FIRST_PASS) THEN
      FIRST_PASS = .FALSE.

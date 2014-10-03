@@ -509,6 +509,7 @@
 
       use discretelement, only: stl_facet_type, facet_type_normal, facet_type_po, &
            & facet_type_mi
+      use functions
       Implicit None
       INTEGER :: I, J, K, L, IJK, NF, COUNT
       INTEGER :: I1, I2, J1, J2, K1, K2
@@ -532,8 +533,6 @@
 
       !temp facet count
       Integer :: count_facet_temp
-
-      INCLUDE '../function.inc'
 
       CALL INIT_ERR_MSG("CG_DES_CONVERT_TO_FACETS")
 
@@ -973,6 +972,7 @@
       USE indices
       USE geometry
       USE mpi_utility
+      USE functions
       implicit none
       INTEGER :: IJK,I,J,K, I1, I2, J1, J2, K1, K2, N, II, JJ, KK, count_fac
       INTEGER :: IM,IP,JM,JP,KM,KP,IMJK,IPJK,IJMK,IJPK,IJKM,IJKP
@@ -981,8 +981,6 @@
       DOUBLE PRECISION:: x1,y1,z1,x2,y2,z2,x3,y3,z3
 
       INTEGER :: IJK2,CURRENT_I,CURRENT_J,CURRENT_K
-
-      include "../function.inc"
 
 !      CHARACTER (LEN=3) :: CAD_PROPAGATE_ORDER
 
@@ -1137,6 +1135,7 @@
       USE mpi_utility
       USE error_manager
       USE run
+      USE functions
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: I,j,k,IJK, N
       !Local variables
@@ -1148,7 +1147,6 @@
 
       CHARACTER*100 :: FNAME
       integer :: stl_unit, fid
-      INCLUDE '../function.inc'
 
       stl_unit = 1001
       IF (I.lt.IMIN1.OR.I.gt.IMAX1) RETURN
@@ -1276,15 +1274,13 @@
       USE indices
       USE compar
       USE stl
+      USE functions
 
       IMPLICIT NONE
 
       INTEGER :: CELL_ID, I, J, K, COUNT, COUNT_FACETS, IJK
 
       CHARACTER*100 :: FILENAME
-
-      INCLUDE '../function.inc'
-
 
       IF(nodesI*nodesJ*nodesK.gt.1) then
          write(filename,'(A,"_FACETS_GRID_CELL_",I5.5,".dat")')  trim(run_name), myPE
@@ -1369,6 +1365,7 @@
       use run
       USE stl
 
+      USE functions
       USE geometry
       USE indices
       USE compar
@@ -1383,8 +1380,6 @@
       CHARACTER*200 :: FILENAME, filename_po
       LOGICAL :: write_each_cell
       LOGICAL, DIMENSION(:), allocatable :: FACET_WRITTEN
-
-      INCLUDE '../function.inc'
 
       ALLOCATE (FACET_WRITTEN(DIM_STL))
 

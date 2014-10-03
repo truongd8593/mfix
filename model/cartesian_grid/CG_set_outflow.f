@@ -43,6 +43,7 @@
       USE run
       USE compar        !//d
       USE mflux
+      USE functions
 
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -102,7 +103,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: EOSG
 !-----------------------------------------------
-      INCLUDE '../function.inc'
 !
 !      print*,'top of cg_set_outflow'
       DO IJK = IJKSTART3, IJKEND3

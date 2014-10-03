@@ -23,13 +23,12 @@
       USE qmomk_quadrature
       USE qmomk_parameters
       USE ic
+      USE functions
 
       IMPLICIT NONE
 
       DOUBLE PRECISION Tinit, InitVal
       INTEGER :: I, J, K, M, L, IJK
-
-      INCLUDE '../function.inc'
 
       DO IJK = IJKSTART3, IJKEND3
 

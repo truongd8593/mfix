@@ -29,6 +29,7 @@
       USE polygon
       USE stl
       USE bc
+      USE functions
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -70,8 +71,6 @@
 
       LOGICAL :: CORNER_POINT
       INTEGER :: NODE_OF_CORNER,IERROR
-
-      include "../function.inc"
 
 !======================================================================
 !  Filter the connectivity to identify nodes belonging to
@@ -1567,6 +1566,7 @@
       USE cutcell
       USE polygon
       USE bc
+      USE functions
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -1574,8 +1574,6 @@
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
       DOUBLE PRECISION :: ALPHA_CUT,AW,HW,VELW
-
-      include "../function.inc"
 
 !======================================================================
 ! The alpha correction term is only used for No-slip walls
@@ -1750,6 +1748,7 @@
       USE cutcell
       USE polygon
       USE bc
+      USE functions
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -1757,8 +1756,6 @@
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
       DOUBLE PRECISION :: ALPHA_CUT,AW,HW,VELW
-
-      include "../function.inc"
 
 !======================================================================
 ! The alpha correction term is only used for No-slip walls

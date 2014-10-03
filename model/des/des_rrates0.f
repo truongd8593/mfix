@@ -49,6 +49,7 @@
       USE usr
 ! Small value for species mass fractions
       use toleranc, only: ZERO_X_gs
+      use functions
 
       IMPLICIT NONE
 
@@ -102,8 +103,6 @@
       DOUBLE PRECISION, EXTERNAL :: CALC_H
 ! Compare two numbers.
       LOGICAL, EXTERNAL :: COMPARE
-
-      INCLUDE '../function.inc'
 
 ! Alias particle temperature.
       lTp = DES_T_s_NEW(NP)

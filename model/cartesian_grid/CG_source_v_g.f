@@ -48,8 +48,9 @@
       USE compar
       USE sendrecv
       USE ghdtheory
-      USE drag  
+      USE drag
       USE fun_avg
+      USE functions
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -135,9 +136,6 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 
       IF(CG_SAFE_MODE(4)==1) RETURN
 
@@ -421,6 +419,7 @@
       USE output
       USE compar
       USE fun_avg
+      USE functions
 
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -472,7 +471,6 @@
 
       LOGICAL :: PRINT_FLAG
 !-----------------------------------------------
-      INCLUDE '../function.inc'
 
       IF(CG_SAFE_MODE(4)==1) RETURN
 

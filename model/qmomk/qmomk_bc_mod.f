@@ -19,6 +19,7 @@ MODULE qmomk_bc
   USE bc
   USE qmom_kinetic_equation
   USE qmomk_quadrature
+  USE functions
 
   IMPLICIT NONE
 
@@ -39,8 +40,6 @@ CONTAINS
    LOGICAL, INTENT(IN) :: INIT
 
    INTEGER :: I, J, K, M, IJK, LFLUID
-
-   INCLUDE '../function.inc'
 
    IF (INIT) THEN
      DO K = K1, K2
@@ -225,8 +224,6 @@ CONTAINS
    LOGICAL, INTENT(IN) :: INIT
 
    INTEGER :: I, J, K, M, IJK, LFLUID
-
-   INCLUDE '../function.inc'
 
    IF (INIT) THEN
      DO K = K1, K2
@@ -413,8 +410,6 @@ CONTAINS
 
    INTEGER :: I, J, K, M, IJK, IJK2, LFLUID
    DOUBLE PRECISION :: InitVal
-
-   INCLUDE '../function.inc'
 
    IF (INIT) THEN
     DO K = BC_K_B(L), BC_K_T(L)
@@ -839,8 +834,6 @@ CONTAINS
   INTEGER :: IJK, IJK_CYCLIC, I, J, K, IJKN, IJKS, IJKE, IJKW, IJKT, IJKB, M
   DOUBLE PRECISION, DIMENSION(QMOMK_NN) :: QMOMK_N_TMP, QMOMK_U_TMP
   DOUBLE PRECISION, DIMENSION(QMOMK_NN) :: QMOMK_V_TMP, QMOMK_W_TMP
-
-  INCLUDE '../function.inc'
 
   IF (INIT) THEN
     DO M = 1, MMAX

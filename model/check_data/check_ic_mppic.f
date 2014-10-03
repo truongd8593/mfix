@@ -61,6 +61,7 @@
       USE constant, only: PI
 
       USE mpi_utility
+      USE functions
 
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
@@ -81,10 +82,6 @@
       INTEGER :: I, J, K, IJK, ICV, M, COUNT_IC
 !temporary variable for Dimension_3
       INTEGER :: DIM3_TEMP
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 
       IF (.NOT.GENER_PART_CONFIG) RETURN
 

@@ -26,6 +26,7 @@
       USE fldvar
       USE quadric
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: I,J,K,IJK,IP,IM,JP,JM,KP,KM,IJKE,IJKN,IJKT,IJKW,IJKS,IJKB
@@ -34,8 +35,6 @@
       DOUBLE PRECISION :: LAMBDA_1,LAMBDA_2,LAMBDA_3
       DOUBLE PRECISION,DIMENSION(3,3) :: OMEGA,SS,AA
       DOUBLE PRECISION,DIMENSION(4) :: POLY
-
-      include "../function.inc"
 
       DO IJK = IJKSTART3, IJKEND3
 

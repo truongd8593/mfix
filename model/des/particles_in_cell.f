@@ -32,6 +32,7 @@
       USE des_rxns
       USE run
       USE error_manager
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -51,10 +52,6 @@
       INTEGER :: RECOVERED
       INTEGER :: DELETED
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! following quantities are reset every call to particles_in_cell
@@ -196,6 +193,7 @@
       use sendrecv
 
       USE error_manager
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -212,7 +210,6 @@
 ! IER for error reporting
       INTEGER :: IER
 
-      INCLUDE '../function.inc'
       CALL INIT_ERR_MSG("INIT_PARTICLES_IN_CELL")
 
 ! following quantities are reset every call to particles_in_cell

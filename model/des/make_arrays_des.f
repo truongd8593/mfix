@@ -13,15 +13,14 @@
       USE compar
       USE discretelement
       USE cutcell
-      use desmpi
-      use mpi_utility
+      USE desmpi
+      USE mpi_utility
       USE geometry
       USE des_rxns
       USE des_thermo
       USE des_stl_functions
-
       use error_manager
-
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -33,11 +32,6 @@
 
 ! MPPIC related quantities
       DOUBLE PRECISION :: DTPIC_TMPX, DTPIC_TMPY, DTPIC_TMPZ
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
-
       CALL INIT_ERR_MSG("MAKE_ARRAYS_DES")
 
 ! cfassign and des_init_bc called before reading the particle info

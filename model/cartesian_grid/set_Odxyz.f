@@ -27,14 +27,13 @@
       USE sendrecv
       USE quadric
       USE cutcell
-      Use vtk
+      USE vtk
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
       INTEGER :: IP,JP,KP,IPJK,IJPK,IJKP
       INTEGER :: IJK1,IJK2
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          IF(NO_K) THEN
@@ -159,14 +158,13 @@
       USE sendrecv
       USE quadric
       USE cutcell
-      Use vtk
+      USE vtk
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
       INTEGER :: IP,JP,KP,IPJK,IJPK,IJKP
       INTEGER :: IJK1,IJK2
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          IF(NO_K) THEN
@@ -295,14 +293,13 @@
       USE sendrecv
       USE quadric
       USE cutcell
-      Use vtk
+      USE vtk
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
       INTEGER :: IP,JP,KP,IPJK,IJPK,IJKP
       INTEGER :: IJK1,IJK2
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'COMPUTING 1/DX, 1/DY, 1/DZ FOR W-MOMENTUM CELLS...'

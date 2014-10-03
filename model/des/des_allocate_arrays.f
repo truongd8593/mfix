@@ -26,6 +26,7 @@
       Use des_thermo
       Use des_rxns
       USE cutcell
+      USE functions
 
       use run, only: ENERGY_EQ
       use run, only: ANY_SPECIES_EQ
@@ -42,10 +43,6 @@
       INTEGER :: I, J, K, IJK, M
 ! the number of particles in the system
       INTEGER :: NPARTICLES
-!-----------------------------------------------
-! Include statment functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("DES_ALLOCATE_ARRAYS")

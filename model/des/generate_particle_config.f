@@ -236,18 +236,13 @@
       USE indices
       USE geometry
       USE compar
-      use error_manager
+      USE error_manager
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK
       LOGICAL :: DELETE_PART
       type(particle), pointer :: part => null()
-
-
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 
 ! This call will delete the particles outside the domain. It will then
 ! re-arrange the arrays such that the active particles are in a block.
@@ -306,18 +301,13 @@
       USE indices
       USE geometry
       USE compar
-      use error_manager
+      USE error_manager
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK
       LOGICAL :: DELETE_PART
       type(particle), pointer :: part => null()
-
-
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 
 ! This call will delete the particles outside the domain. It will then
 ! re-arrange the arrays such that the active particles are in a block.
@@ -370,15 +360,12 @@
       USE mpi_utility
       USE discretelement, only:DES_GETINDEXFROMPOS
       USE error_manager
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: I, J, K, IJK, M
       LOGICAL :: DELETE_PART
       type(particle), pointer :: part => null()
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("BIN_PARTICLES_TO_CELL")
@@ -497,6 +484,7 @@
 
       USE DES_LINKED_LIST_Data, only : orig_part_list, particle
       USE des_linked_list_funcs
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -526,13 +514,7 @@
 
       type(particle), pointer :: part_list_byic, part => NULL(), part_old => NULL()
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
-
       CALL INIT_ERR_MSG("GENERATE_PARTICLE_CONFIG_DEM")
-
 
 ! initializing particle count
       lproc_parcount = 0
@@ -896,7 +878,8 @@
       USE mpi_utility
 
       USE randomno
-      use error_manager
+      USE error_manager
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -925,11 +908,6 @@
       double precision, dimension(:,:), allocatable :: pvel_temp
 
       type(particle), pointer :: part_list_byic, part => null()
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
-
 
       CALL INIT_ERR_MSG("GENERATE_PARTICLE_CONFIG_MPPIC")
       !ALLOCATE(CNP_ARRAY(DIM3_TEMP, DES_MMAX))

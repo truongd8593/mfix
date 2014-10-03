@@ -36,6 +36,7 @@
       use geometry
 
       use error_manager
+      use functions
 
       IMPLICIT NONE
 
@@ -48,12 +49,7 @@
 
       LOGICAL , EXTERNAL :: COMPARE
 
-
-      include "../function.inc"
-
-
       IF(RUN_TYPE /= 'NEW') RETURN
-
 
       CALL INIT_ERR_MSG("SET_IC_DEM")
 

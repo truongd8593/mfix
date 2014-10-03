@@ -22,12 +22,11 @@ SUBROUTINE QMOMK_READ_RESTART
   USE physprop
   USE qmom_kinetic_equation
   USE qmomk_quadrature
+  USE functions
 
   IMPLICIT NONE
 
   INTEGER :: M, IJK
-
-  INCLUDE '../function.inc'
 
   OPEN (UNIT=901, FILE=TRIM(RUN_NAME)//'_QMOMK.RES', FORM='Unformatted', STATUS='unknown')
 
