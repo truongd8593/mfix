@@ -332,7 +332,7 @@ common_SOURCES = \
 	model/fun_avg_mod.f \
 	model/function.inc \
 	model/function3.inc \
-	model/function_mod.f \
+	model/functions_mod.f \
 	model/funits_mod.f \
 	model/g_0.f \
 	model/geometry_mod.f \
