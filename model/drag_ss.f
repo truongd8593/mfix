@@ -35,6 +35,7 @@
       USE drag
       USE discretelement
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -72,10 +73,6 @@
 ! External Functions
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: G_0
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       LM = FUNLM(L,M)
@@ -254,6 +251,7 @@
       USE compar
       USE geometry
       USE indices
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -285,10 +283,6 @@
 ! Function subroutines
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: G_0
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3

@@ -2,7 +2,7 @@
 !  Module name: MAKE_ARRAYS_DES                                        !
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  !
 !                                                                      !
-!  Purpose: DES - allocating DES arrays 
+!  Purpose: DES - allocating DES arrays
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE INIT_SETTLING_DEM
@@ -36,7 +36,7 @@
 ! Skip this routine if there are no particles.
       IF(PARTICLES == 0) RETURN
 ! Skip this routine if not a new run.
-      IF(RUN_TYPE /= 'NEW') RETURN 
+      IF(RUN_TYPE /= 'NEW') RETURN
 ! Skip if not coupled.
       IF(.NOT.DES_CONTINUUM_COUPLED) RETURN
 ! Skip if using cohesion. (Why?)

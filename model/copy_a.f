@@ -32,6 +32,7 @@
       USE geometry
       USE indices
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -53,8 +54,7 @@
 !                      Indices
       INTEGER          IJK
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
+
       IJK = 1
       IF (IJKMAX2 > 0) THEN
          A_M(:IJKMAX2,W,0) = A_VEL(:IJKMAX2,W)
@@ -104,6 +104,7 @@
       USE indices
       USE physprop
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -125,8 +126,7 @@
 !                      Indices
       INTEGER          IJK, M
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
+
       IJK = 1
       IF (IJKMAX2 > 0) THEN
          A_M(:IJKMAX2,W,M) = A_VEL(:IJKMAX2,W,M)

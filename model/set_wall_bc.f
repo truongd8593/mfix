@@ -302,12 +302,12 @@
 ! Wall cell at North
                      IF (WALL_AT(IJPK)) THEN
                         V_G(IJK) = SIGN0*V_G(LFLUID)
-                        IF(BC_JJ_PSL==0) CALL EQUAL(V_S,IJK,SIGN0,V_S,LFLUID) 
+                        IF(BC_JJ_PSL==0) CALL EQUAL(V_S,IJK,SIGN0,V_S,LFLUID)
                      ENDIF
 ! Wall cell at Top
                      IF (WALL_AT(IJKP)) THEN
                         W_G(IJK) = SIGN0*W_G(LFLUID)
-                        IF(BC_JJ_PSL==0) CALL EQUAL(W_S,IJK,SIGN0,W_S,LFLUID) 
+                        IF(BC_JJ_PSL==0) CALL EQUAL(W_S,IJK,SIGN0,W_S,LFLUID)
                      ENDIF
                   ENDIF
 

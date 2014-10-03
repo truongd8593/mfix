@@ -39,6 +39,7 @@
       USE indices
       USE compar
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -63,8 +64,7 @@
       DOUBLE PRECISION Accumulation
 !
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
+
       SMASS = ZERO
       DO M = 1, MMAX
          SMASS = SMASS + Accumulation(ROP_s(1, M))

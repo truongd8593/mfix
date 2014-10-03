@@ -75,6 +75,7 @@
       USE geometry
       USE indices
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -96,8 +97,7 @@
 !-----------------------------------------------
       INTEGER :: IJK
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
+
       IS_SMALL = .FALSE.
       DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN

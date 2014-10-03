@@ -40,6 +40,7 @@
       USE residual
       USE run
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -77,8 +78,7 @@
 
 !
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
+
       DIR_G = 1
       NC_G = LARGE_NUMBER
       IJK_NC_G = 0

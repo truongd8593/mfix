@@ -46,6 +46,7 @@
       USE compar
       USE drag
       USE fldvar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -76,10 +77,6 @@
                           Saxf(0:DIMENSION_M)
 ! error message
       CHARACTER*80     LINE
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !!$omp  parallel do private( IJKW, IJKS, IJKB, IJKE, IJKN, IJKT,  &
@@ -205,6 +202,7 @@
       USE compar
       USE drag
       USE fldvar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -233,10 +231,6 @@
                           Saxf(DIMENSION_M)
 ! error message
       CHARACTER*80     LINE
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !!$omp  parallel do private( IJKW, IJKS, IJKB, IJKE, IJKN, IJKT,  &
@@ -353,8 +347,9 @@
       USE run
       USE compar
       USE drag
-      USE fldvar       
+      USE fldvar
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -385,10 +380,6 @@
                           Saxf(0:DIMENSION_M)
 ! error message
       CHARACTER*80     LINE
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
@@ -546,8 +537,9 @@
       USE run
       USE compar
       USE drag
-      USE fldvar   
+      USE fldvar
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -578,10 +570,6 @@
                           Saxf(0:DIMENSION_M)
 ! error message
       CHARACTER*80     LINE
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------  
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
@@ -732,8 +720,9 @@
       USE run
       USE compar
       USE drag
-      USE fldvar 
+      USE fldvar
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -764,10 +753,6 @@
                           Saxf(0:DIMENSION_M)
 !                      error message
       CHARACTER*80     LINE
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, &

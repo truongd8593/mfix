@@ -10,7 +10,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VTU_FILE
 
@@ -39,11 +39,11 @@
       USE mpi_utility
       USE parallel_mpi
 
-
       USE pgcor
       USE pscor
       USE discretelement, Only :  DISCRETE_ELEMENT
       USE mfix_pic
+      USE functions
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xw,Xe,Yn,Ys
@@ -70,11 +70,7 @@
       INTEGER :: WRITE_HEADER = 1
       INTEGER :: WRITE_DATA   = 2
 
-
-      include "../function.inc"
-
       IF(.NOT.CARTESIAN_GRID) RETURN
-
 
       DX(IEND3+1) = DX(IEND3)
       DY(JEND3+1) = DY(JEND3)
@@ -212,16 +208,16 @@
 
                CASE (11)
                   IF(K_EPSILON) THEN
-                     CALL WRITE_SCALAR_IN_VTU_BIN('K_Turb_G',K_Turb_G,PASS)
-                     CALL WRITE_SCALAR_IN_VTU_BIN('E_Turb_G',E_Turb_G,PASS)
+                     CALL WRITE_SCALAR_IN_VTU_BIN('K_Turb_G',K_Turb_G,PASS)                
+                     CALL WRITE_SCALAR_IN_VTU_BIN('E_Turb_G',E_Turb_G,PASS)                                
 
                   ENDIF
 
                CASE (12)
                   CALL CALC_VORTICITY
 
-                  CALL WRITE_SCALAR_IN_VTU_BIN('VORTICITY_MAG',VORTICITY,PASS)
-                  CALL WRITE_SCALAR_IN_VTU_BIN('LAMBDA_2',LAMBDA2,PASS)
+                  CALL WRITE_SCALAR_IN_VTU_BIN('VORTICITY_MAG',VORTICITY,PASS)                
+                  CALL WRITE_SCALAR_IN_VTU_BIN('LAMBDA_2',LAMBDA2,PASS)                
 
 
 
@@ -244,7 +240,7 @@
                      ALLOCATE(FACET_COUNT_DES(DIMENSION_3))
 
                      DO IJK = IJKSTART3, IJKEND3
-                        FACET_COUNT_DES(IJK) = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+                        FACET_COUNT_DES(IJK) = LIST_FACET_AT_DES(IJK)%COUNT_FACETS 
                      ENDDO
 
                      CALL WRITE_SCALAR_IN_VTU_BIN('FACET_COUNT', FACET_COUNT_DES,PASS)
@@ -391,7 +387,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_VTU_FILE_BIN
 
@@ -411,7 +407,7 @@
       USE fldvar
       USE vtk
       use cdist
-
+      USE functions
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xw,Xe,Yn,Ys
@@ -419,8 +415,6 @@
       INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
       LOGICAL :: VTU_FRAME_FILE_EXISTS
       INTEGER :: ISTAT
-
-      include "../function.inc"
 
 ! Only open the file form head node when not using distributed I/O
       IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN
@@ -478,9 +472,9 @@
       OPEN(UNIT     = VTU_UNIT,           &
            FILE     = TRIM(VTU_FILENAME), &
            FORM     = 'UNFORMATTED',      &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
-                                             ! use 'BINARY' if 'UNFORMATTED' is not supported
+                                             ! use 'BINARY' if 'UNFORMATTED' is not supported 
            ACCESS   = 'STREAM',           &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
-                                             ! use 'SEQUENTIAL' if 'STREAM' is not supported
+                                             ! use 'SEQUENTIAL' if 'STREAM' is not supported 
            ACTION   = 'WRITE',            &
            CONVERT  = 'BIG_ENDIAN',       &
            IOSTAT=ISTAT)
@@ -584,7 +578,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_GEOMETRY_IN_VTU_BIN(PASS)
 
@@ -604,7 +598,7 @@
       USE fldvar
       USE vtk
       USE cdist
-
+      USE functions
 
       IMPLICIT NONE
 
@@ -619,15 +613,12 @@
       REAL*4 :: float,SP_X,SP_Y,SP_Z
       INTEGER :: int
 
-      INTEGER ::     nbytes_xyz,nbytes_connectivity,nbytes_offset,nbytes_type
-      INTEGER ::     offset_xyz,offset_connectivity,offset_offset,offset_type
+      INTEGER ::     nbytes_xyz,nbytes_connectivity,nbytes_offset,nbytes_type 
+      INTEGER ::     offset_xyz,offset_connectivity,offset_offset,offset_type 
 
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
       INTEGER :: WRITE_DATA   = 2
-
-      include "../function.inc"
-
 
 ! First a series of tags is written for the geometry (PASS=WRITE_HEADER)
 !  - Coordinates
@@ -711,7 +702,7 @@
 
          ELSEIF(PASS==WRITE_DATA) THEN
 
-            WRITE(BUFFER,110)'      </CellData>'
+            WRITE(BUFFER,110)'      </CellData>'                          
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             WRITE(BUFFER,110)'    </Piece>'
@@ -862,7 +853,7 @@
 
          ELSEIF(PASS==WRITE_DATA) THEN
 
-            WRITE(BUFFER,110)'      </CellData>'
+            WRITE(BUFFER,110)'      </CellData>'                          
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             WRITE(BUFFER,110)'    </Piece>'
@@ -953,7 +944,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,VAR,PASS)
 
@@ -974,6 +965,7 @@
       USE vtk
       USE cdist
       USE output
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: I,IJK,L
@@ -992,9 +984,6 @@
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
       INTEGER :: WRITE_DATA   = 2
-
-
-      include "../function.inc"
 
       IF (.NOT.BDIST_IO) THEN
 
@@ -1118,7 +1107,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VECTOR_IN_VTU_BIN(VAR_NAME,VARX,VARY,VARZ,PASS)
 
@@ -1139,6 +1128,7 @@
       USE vtk
       USE cdist
       USE output
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,L
@@ -1157,9 +1147,6 @@
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
       INTEGER :: WRITE_DATA   = 2
-
-
-      include "../function.inc"
 
       IF (.NOT.BDIST_IO) THEN
 
@@ -1289,7 +1276,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CLOSE_VTU_FILE_BIN
 
@@ -1360,7 +1347,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VTU_FILE_ASCII
 
@@ -1392,6 +1379,7 @@
       USE pgcor
       USE pscor
       USE mfix_pic
+      USE functions
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xw,Xe,Yn,Ys
@@ -1411,8 +1399,6 @@
       CHARACTER (LEN=64) :: VAR_NAME
 
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, COUNT_DES_BC,IJK_ARRAY
-
-      include "../function.inc"
 
       IF(.NOT.CARTESIAN_GRID) RETURN
 
@@ -1533,16 +1519,16 @@
 
             CASE (11)
                IF(K_EPSILON) THEN
-                  CALL WRITE_SCALAR_IN_VTU_ASCII('K_Turb_G',K_Turb_G)
-                  CALL WRITE_SCALAR_IN_VTU_ASCII('E_Turb_G',E_Turb_G)
+                  CALL WRITE_SCALAR_IN_VTU_ASCII('K_Turb_G',K_Turb_G)                
+                  CALL WRITE_SCALAR_IN_VTU_ASCII('E_Turb_G',E_Turb_G)                                
                   IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
                ENDIF
 
             CASE (12)
                CALL CALC_VORTICITY
 
-               CALL WRITE_SCALAR_IN_VTU_ASCII('VORTICITY_MAG',VORTICITY)
-               CALL WRITE_SCALAR_IN_VTU_ASCII('LAMBDA_2',LAMBDA2)
+               CALL WRITE_SCALAR_IN_VTU_ASCII('VORTICITY_MAG',VORTICITY)                
+               CALL WRITE_SCALAR_IN_VTU_ASCII('LAMBDA_2',LAMBDA2)                
 
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
 
@@ -1682,7 +1668,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_VTU_FILE_ASCII
 
@@ -1702,7 +1688,7 @@
       USE fldvar
       USE vtk
       use cdist
-
+      use functions
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xw,Xe,Yn,Ys
@@ -1710,9 +1696,6 @@
       INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
       LOGICAL :: VTU_FRAME_FILE_EXISTS
       INTEGER :: ISTAT
-
-      include "../function.inc"
-
 
 !      print*,'Entering Open_vtu_file from myPE=',MyPE, (myPE /= PE_IO.AND.(.NOT.BDIST_IO))
 
@@ -1842,7 +1825,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_PVD_FILE
 
@@ -1861,15 +1844,13 @@
       USE cutcell
       USE fldvar
       USE vtk
-
+      USE functions
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xw,Xe,Yn,Ys
       INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
       INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
       LOGICAL :: PVD_EXISTS,VTU_FRAME_FILE_EXISTS
-
-      include "../function.inc"
 
       IF (myPE /= PE_IO) RETURN
 
@@ -1961,7 +1942,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_GEOMETRY_IN_VTU_ASCII
 
@@ -1981,7 +1962,7 @@
       USE fldvar
       USE vtk
       USE cdist
-
+      USE functions
 
       IMPLICIT NONE
 
@@ -1992,8 +1973,6 @@
       INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: SHIFTED_CONNECTIVITY
       INTEGER :: CELL_TYPE
-
-      include "../function.inc"
 
       IF (myPE == PE_IO.AND.(.NOT.BDIST_IO)) THEN
 
@@ -2150,7 +2129,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_SCALAR_IN_VTU_ASCII(VAR_NAME,VAR)
 
@@ -2170,6 +2149,7 @@
       USE fldvar
       USE vtk
       USE cdist
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: I,IJK,L
@@ -2177,8 +2157,6 @@
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VAR
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VAR(:)
-
-      include "../function.inc"
 
       IF (.NOT.BDIST_IO) THEN
 
@@ -2257,7 +2235,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VECTOR_IN_VTU_ASCII(VAR_NAME,VARX,VARY,VARZ)
 
@@ -2277,6 +2255,7 @@
       USE fldvar
       USE vtk
       USE cdist
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,L
@@ -2284,8 +2263,6 @@
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VARX,VARY,VARZ
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VARX(:),GLOBAL_VARY(:),GLOBAL_VARZ(:)
-
-      include "../function.inc"
 
       IF (.NOT.BDIST_IO) THEN
 
@@ -2360,7 +2337,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CLOSE_VTU_FILE_ASCII
 
@@ -2430,7 +2407,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE UPDATE_AND_CLOSE_PVD_FILE
 
@@ -2493,7 +2470,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VTK_FILE
 
@@ -2521,6 +2498,7 @@
       USE pgcor
       USE pscor
       USE mfix_pic
+      USE functions
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xw,Xe,Yn,Ys
@@ -2540,8 +2518,6 @@
       CHARACTER (LEN=64) :: VAR_NAME
 
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, COUNT_DES_BC
-
-      include "../function.inc"
 
       IF(.NOT.CARTESIAN_GRID) RETURN
 
@@ -2672,16 +2648,16 @@
 
             CASE (11)
                IF(K_EPSILON) THEN
-                  CALL WRITE_SCALAR_IN_VTK('K_Turb_G',K_Turb_G)
-                  CALL WRITE_SCALAR_IN_VTK('E_Turb_G',E_Turb_G)
+                  CALL WRITE_SCALAR_IN_VTK('K_Turb_G',K_Turb_G)                
+                  CALL WRITE_SCALAR_IN_VTK('E_Turb_G',E_Turb_G)                
                   IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
                ENDIF
 
             CASE (12)
                CALL CALC_VORTICITY
 
-               CALL WRITE_SCALAR_IN_VTK('VORTICITY_MAG',VORTICITY)
-               CALL WRITE_SCALAR_IN_VTK('LAMBDA_2',LAMBDA2)
+               CALL WRITE_SCALAR_IN_VTK('VORTICITY_MAG',VORTICITY)                
+               CALL WRITE_SCALAR_IN_VTK('LAMBDA_2',LAMBDA2)                
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
 
             CASE (100)
@@ -2748,7 +2724,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_VTK_FILE
 
@@ -2767,13 +2743,12 @@
       USE cutcell
       USE fldvar
       USE vtk
+      USE functions
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xw,Xe,Yn,Ys
       INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
       INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
-
-      include "../function.inc"
 
       IF (myPE /= PE_IO) RETURN
 
@@ -2805,9 +2780,9 @@
       OPEN(UNIT     = VTK_UNIT,           &
            FILE     = TRIM(VTK_FILENAME), &
            FORM     = 'UNFORMATTED',    &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
-                                           ! use 'BINARY' if 'UNFORMATTED' is not supported
+                                           ! use 'BINARY' if 'UNFORMATTED' is not supported 
            ACCESS   = 'STREAM',   &        ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
-                                           ! use 'SEQUENTIAL' if 'STREAM' is not supported
+                                           ! use 'SEQUENTIAL' if 'STREAM' is not supported 
            ACTION   = 'WRITE', &
            CONVERT  = 'BIG_ENDIAN')
 
@@ -2839,7 +2814,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_GEOMETRY_IN_VTK
 
@@ -2858,7 +2833,7 @@
       USE cutcell
       USE fldvar
       USE vtk
-
+      USE functions
 
       IMPLICIT NONE
 
@@ -2868,8 +2843,6 @@
       INTEGER :: iproc,IERR
       INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: SHIFTED_CONNECTIVITY
-
-      include "../function.inc"
 
       IF (myPE /= PE_IO) RETURN
 
@@ -2937,7 +2910,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_SCALAR_IN_VTK(VAR_NAME,VAR)
 
@@ -2956,6 +2929,7 @@
       USE cutcell
       USE fldvar
       USE vtk
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: I,IJK,L
@@ -2963,9 +2937,6 @@
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VAR
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VAR(:)
-
-      include "../function.inc"
-
 
       IF (myPE == PE_IO) THEN
          allocate (GLOBAL_VAR(ijkmax3))
@@ -3014,7 +2985,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VECTOR_IN_VTK(VAR_NAME,VARX,VARY,VARZ)
 
@@ -3033,6 +3004,7 @@
       USE cutcell
       USE fldvar
       USE vtk
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,L
@@ -3040,9 +3012,6 @@
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VARX,VARY,VARZ
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VARX(:),GLOBAL_VARY(:),GLOBAL_VARZ(:)
-
-      include "../function.inc"
-
 
       IF (myPE == PE_IO) THEN
          allocate (GLOBAL_VARX(ijkmax3))
@@ -3092,7 +3061,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CLOSE_VTK_FILE
 
@@ -3121,7 +3090,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_CUT_SURFACE_VTK
 
@@ -3141,6 +3110,7 @@
       USE vtk
       USE polygon
       USE stl
+      USE functions
 
       IMPLICIT NONE
 
@@ -3171,8 +3141,6 @@
       LOGICAL :: CORNER_POINT
       INTEGER :: NODE_OF_CORNER
 
-      include "../function.inc"
-
       IF(myPE/=0) RETURN
 
 !======================================================================
@@ -3201,12 +3169,12 @@
             CALL GET_GLOBAL_CELL_NODE_COORDINATES(IJK,'SCALAR')
 
             DO L = 1, GLOBAL_NUMBER_OF_NODES(IJK)
-               IF(GLOBAL_CONNECTIVITY(IJK,L)>IJKMAX3) THEN   ! One of the new point
+               IF(GLOBAL_CONNECTIVITY(IJK,L)>IJKMAX3) THEN   ! One of the new point          
                   X_COPY = GLOBAL_X_NEW_POINT(GLOBAL_CONNECTIVITY(IJK,L)-IJKMAX3)
                   Y_COPY = GLOBAL_Y_NEW_POINT(GLOBAL_CONNECTIVITY(IJK,L)-IJKMAX3)
                   Z_COPY = GLOBAL_Z_NEW_POINT(GLOBAL_CONNECTIVITY(IJK,L)-IJKMAX3)
                   CORNER_POINT = .FALSE.
-               ELSE                                   ! An existing point
+               ELSE                                   ! An existing point          
                   DO NODE = 1,8
                   CORNER_POINT = .TRUE.
                      IF(GLOBAL_CONNECTIVITY(IJK,L) == IJK_OF_NODE(NODE)) THEN
@@ -3256,7 +3224,7 @@
 
             CALL REORDER_POLYGON(N_CUT_FACE_NODES,COORD_CUT_FACE_NODES,NORMAL)
 
-            NUMBER_OF_CUT_FACE_POINTS(NUMBER_OF_FACES) = N_CUT_FACE_NODES
+            NUMBER_OF_CUT_FACE_POINTS(NUMBER_OF_FACES) = N_CUT_FACE_NODES 
             POLY_COUNT = POLY_COUNT + N_CUT_FACE_NODES + 1
             DO NODE = 1,N_CUT_FACE_NODES
                NUMBER_OF_SURFACE_POINTS = NUMBER_OF_SURFACE_POINTS + 1
@@ -3359,7 +3327,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GATHER_DATA
 
@@ -3378,7 +3346,7 @@
       USE cutcell
       USE fldvar
       USE vtk
-
+      USE functions
 
       IMPLICIT NONE
 
@@ -3388,9 +3356,6 @@
       INTEGER :: iproc,IERR
       INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: SHIFTED_CONNECTIVITY
-
-      include "../function.inc"
-
 
 !======================================================================
 !  parallel processing
@@ -3547,7 +3512,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C
+!                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE PRINT_GRID_STATISTICS
 
@@ -3566,7 +3531,7 @@
       USE cutcell
       USE fldvar
       USE vtk
-
+      USE functions
 
       IMPLICIT NONE
 
@@ -3581,9 +3546,6 @@
       DOUBLE PRECISION :: MIN_AXY, MAX_AXY, GLOBAL_MIN_AXY,GLOBAL_MAX_AXY
       DOUBLE PRECISION :: MIN_CUT, MAX_CUT, GLOBAL_MIN_CUT,GLOBAL_MAX_CUT
       DOUBLE PRECISION :: LOCAL_MIN_Q,LOCAL_MAX_Q, GLOBAL_MIN_Q,GLOBAL_MAX_Q
-
-
-      include "../function.inc"
 
       IF (myPE == PE_IO) THEN
 

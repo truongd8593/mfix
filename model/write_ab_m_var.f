@@ -31,6 +31,7 @@
       USE compar
       USE mpi_utility
       USE indices
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -66,7 +67,6 @@
 !-----------------------------------------------
 !
       integer i, j, k
-      include 'function.inc'
 
       if (myPE == PE_IO) then
          allocate (array1(ijkmax3))

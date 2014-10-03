@@ -20,7 +20,7 @@
       USE compar
       USE physprop
       USE fldvar
-      USE funits 
+      USE funits
       USE functions
 
 ! Module procedures

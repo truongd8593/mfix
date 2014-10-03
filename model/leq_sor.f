@@ -27,6 +27,7 @@
       USE compar
       USE sendrecv
       USE leqsol
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -67,10 +68,6 @@
       INTEGER :: ITER
 
       DOUBLE PRECISION oAm
-!-------------------------------------------------
-! Include statement functions
-!-------------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !!$omp parallel do private(IJK,OAM)

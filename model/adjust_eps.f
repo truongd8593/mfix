@@ -35,6 +35,7 @@
       USE compar
 ! for sendrecv calls
       USE sendrecv
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -47,10 +48,6 @@
       DOUBLE PRECISION :: EPSUM
 ! Sum of solids volume fractions
       DOUBLE PRECISION :: epsMix, epSolid
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 

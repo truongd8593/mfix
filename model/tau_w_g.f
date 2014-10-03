@@ -44,8 +44,8 @@
       USE geometry
       USE indices
       USE is
-      USE sendrecv  
-      USE compar 
+      USE sendrecv
+      USE compar
       USE fun_avg
       USE functions
 

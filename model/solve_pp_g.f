@@ -158,6 +158,7 @@
       use physprop
       use ps
       use run
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -180,10 +181,6 @@
 ! terms of bm expression
       DOUBLE PRECISION pSource
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
       PS_LP: do PSV = 1, DIMENSION_PS
 

@@ -25,8 +25,9 @@
       USE run
       USE indices
       USE compar
-      USE sendrecv  
+      USE sendrecv
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -44,10 +45,6 @@
       INTEGER :: IJK, IJKN, IJMK
 ! Phase index
       INTEGER :: M
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO M = 1, MMAX

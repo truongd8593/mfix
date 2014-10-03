@@ -25,6 +25,7 @@
       USE stl
       USE des_stl_functions
       USE mpi_utility
+      USE functions
       Implicit none
 
       DOUBLE PRECISION, INTENT(IN) :: POSITION(DIMN)
@@ -51,8 +52,6 @@
       logical :: ontriangle
       !The line and plane intersection point
       double precision, dimension(dimn) :: point_onplane
-
-      INCLUDE '../function.inc'
 
       FOCUS_PARTICLE = -1
 
@@ -271,8 +270,8 @@
       USE mpi_utility
       use error_manager
       USE pic_bc
+      USE functions
       Implicit none
-
 
       INTEGER I, J, K, IJK, NF, LL
 
@@ -302,7 +301,6 @@
 !      INTEGER :: FOCUS_CELLID
 
       double precision :: veldotnorm
-      INCLUDE '../function.inc'
 
       CALL INIT_ERR_MSG("PIC_APPLY_WALLBC_STL")
 
@@ -591,6 +589,7 @@
       USE param1
       USE physprop
       USE mfix_pic
+      USE functions
 
       IMPLICIT NONE
 
@@ -612,7 +611,6 @@
 ! Logical for local debug warnings
       LOGICAL DES_LOC_DEBUG
 !-----------------------------------------------
-      INCLUDE '../function.inc'
 
       PEA(NP,:) = .FALSE.
 
@@ -657,6 +655,7 @@
       USE mpi_utility
       USE randomno
       use error_manager
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -695,11 +694,6 @@
            prev_spotlist => NULL(), &
            temp_spotlist => NULL()
 
-
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("PIC_MI_BC")
@@ -1040,6 +1034,7 @@
       USE discretelement
       use mpi_utility
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
 
@@ -1052,10 +1047,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION :: XPOS, YPOS, ZPOS
       INTEGER :: I, J, K, IJK
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       I = PIJK(LL,1)

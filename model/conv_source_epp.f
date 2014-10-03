@@ -83,6 +83,7 @@
       USE compar
       USE sendrecv
       USE solids_pressure
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -113,10 +114,6 @@
       CHARACTER*80     LINE(1)
 ! terms of bm expression
       DOUBLE PRECISION :: bma, bme, bmw, bmn, bms, bmt, bmb, bmr
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       IF (MCP == UNDEFINED_I) THEN
@@ -349,6 +346,7 @@
       USE compar
       USE sendrecv
       USE solids_pressure
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -388,10 +386,6 @@
 !      DOUBLE PRECISION :: XSI_e(DIMENSION_3), &
 !                          XSI_n(DIMENSION_3),&
 !                          XSI_t(DIMENSION_3)
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       call lock_xsi_array
@@ -597,6 +591,7 @@
       use ps
       use pscor
       use run
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -621,10 +616,6 @@
 ! terms of bm expression
       DOUBLE PRECISION :: pSource
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       IF (MCP == UNDEFINED_I) THEN

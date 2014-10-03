@@ -30,6 +30,7 @@
       USE compar
       use kintheory
       use mms, only: use_mms
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -38,10 +39,6 @@
 ! indices
       INTEGER :: IJK, M, N, I, J
       DOUBLE PRECISION :: old_value, DP_TMP(SMAX)
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Initialize transport coefficients to zero everywhere

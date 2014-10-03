@@ -35,7 +35,7 @@
       USE compar
       USE sendrecv
       USE discretelement
-      USE drag       
+      USE drag
       USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------

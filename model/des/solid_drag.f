@@ -18,10 +18,10 @@
       USE geometry
       USE physprop
       USE indices
-      USE compar    
-      USE discretelement 
+      USE compar
+      USE discretelement
       USE fun_avg
-      
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -56,7 +56,7 @@
 ! Include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-!-----------------------------------------------      
+!-----------------------------------------------
 
       AVG_FACTOR = merge(0.5d0, 0.25D0, DO_K)
 

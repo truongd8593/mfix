@@ -124,6 +124,7 @@
       USE mflux
       USE cutcell
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -149,10 +150,6 @@
       DOUBLE PRECISION :: D_f
 ! for cartesian grid:
       DOUBLE PRECISION :: AW,HW,VELW
-!-----------------------------------------------
-! Include statment functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Calculate convection-diffusion fluxes through each of the faces
@@ -391,6 +388,7 @@
       USE mflux
       USE cutcell
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -453,7 +451,6 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
       INCLUDE 'function3.inc'
 !-----------------------------------------------
 
@@ -806,6 +803,7 @@
       USE mflux
       USE cutcell
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -845,10 +843,6 @@
 ! the z directional velocity
 !      DOUBLE PRECISION :: WW(DIMENSION_3)
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       call lock_tmp_array

@@ -2,7 +2,7 @@
 !  Module name: MAKE_ARRAYS_DES                                        !
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  !
 !                                                                      !
-!  Purpose: DES - allocating DES arrays 
+!  Purpose: DES - allocating DES arrays
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_DTPIC

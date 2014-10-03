@@ -47,9 +47,10 @@
       USE output
       USE indices
       USE bc
-      USE compar         
-      USE mpi_utility    
+      USE compar
+      USE mpi_utility
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -73,10 +74,6 @@
 ! Granular energy coefficient
       DOUBLE PRECISION :: Gw, Hw, Cw
 !-----------------------------------------------
-! Include statements functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!----------------------------------------------- 
 
 ! Setup Johnson and Jackson Pseudo-thermal temp B.C.
       DO L = 1, DIMENSION_BC
@@ -313,8 +310,9 @@
       USE compar
       USE toleranc
       USE mpi_utility
-      USE rxns            
+      USE rxns
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -375,10 +373,6 @@
 ! Variable specularity coefficient
       DOUBLE PRECISION :: PHIP_JJ
 !-----------------------------------------------
-! Include statements functions
-!----------------------------------------------- 
-      INCLUDE 'function.inc'
-!----------------------------------------------- 
 
 ! Note: EP_s, MU_g, and RO_g are undefined at IJK1 (wall cell).
 !       Hence IJK2 (fluid cell) is used in averages.

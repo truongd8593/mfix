@@ -22,9 +22,7 @@
       INTEGER, INTENT(IN) :: BCV_I      ! BC loop counter
       DOUBLE PRECISION, INTENT(IN) :: MAX_DIA
 
-
       CALL INIT_ERR_MSG("LAYOUT_MI_DEM")
-
 
 ! This subroutine determines the pattern that the particles will need to
 ! enter the system, if any. This routine only needs to be called if a
@@ -44,15 +42,10 @@
          CALL SET_DEM_MI_OWNER(BCV, BCV_I)
       ENDIF
 
-
-
       CALL FINL_ERR_MSG
 
       RETURN
       END SUBROUTINE LAYOUT_MI_DEM
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -89,6 +82,7 @@
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -137,9 +131,6 @@
 
       LOGICAL, parameter :: setDBG = .FALSE.
       LOGICAL :: dFlag
-
-
-      INCLUDE '../function.inc'
 
 !-----------------------------------------------
 
@@ -389,6 +380,7 @@
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -437,9 +429,6 @@
 
       LOGICAL, parameter :: setDBG = .FALSE.
       LOGICAL :: dFlag
-
-
-      INCLUDE '../function.inc'
 
 !-----------------------------------------------
 
@@ -687,6 +676,7 @@
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -735,9 +725,6 @@
 
       LOGICAL, parameter :: setDBG = .FALSE.
       LOGICAL :: dFlag
-
-
-      INCLUDE '../function.inc'
 
 !-----------------------------------------------
 
@@ -976,6 +963,7 @@
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -988,8 +976,6 @@
 ! Generic loop counter
       INTEGER :: LC1, OCCUPANTS
       INTEGER :: IJK, I, J, K
-
-      INCLUDE '../function.inc'
 
       OCCUPANTS = DEM_MI(BCV_I)%OCCUPANTS
       allocate(DEM_MI(BCV_I)%OWNER(OCCUPANTS))

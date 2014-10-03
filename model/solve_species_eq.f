@@ -48,6 +48,7 @@
       USE sendrecv
       USE mflux
       use ps
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -102,10 +103,6 @@
 !-----------------------------------------------
       LOGICAL , EXTERNAL :: IS_SMALL
       DOUBLE PRECISION , EXTERNAL :: Check_conservation
-!-----------------------------------------------
-! Local statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       call lock_ambm       ! locks arrys a_m and b_m

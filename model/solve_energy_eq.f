@@ -53,6 +53,7 @@
       USE sendrecv
       USE ps
       USE mms
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -102,10 +103,6 @@
 ! Septadiagonal matrix A_m, vector b_m
 !      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       call lock_ambm         ! locks arrys a_m and b_m

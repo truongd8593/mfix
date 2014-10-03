@@ -34,6 +34,7 @@
       USE pgcor
       USE pscor
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -57,10 +58,6 @@
       INTEGER :: I, J, K, IJK, IMJK, IJMK, IJKM
 ! error message
       CHARACTER*80     LINE
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !!$omp  parallel do private( I, J, K, IJK, IMJK, IJMK, IJKM,  DEL_V, &
@@ -142,6 +139,7 @@
       use physprop
       use ps
       use run
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -166,10 +164,6 @@
 ! terms of bm expression
       DOUBLE PRECISION :: pSource
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
       PS_LP: do PSV = 1, DIMENSION_PS
 

@@ -119,6 +119,7 @@
       USE sendrecv
       USE indices
       USE leqsol
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments/procedure
@@ -183,10 +184,6 @@
          END FUNCTION DOT_PRODUCT_PAR
       END INTERFACE
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       is_serial = numPEs.eq.1.and.is_serial

@@ -23,6 +23,7 @@
       USE compar
       USE sendrecv
       USE discretelement
+      USE functions
 
       IMPLICIT NONE
 
@@ -70,7 +71,6 @@
       INTEGER          LM
 
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 
       IF (DISCRETE_ELEMENT) RETURN
 

@@ -553,7 +553,7 @@
       USE tau_s
       USE bc
       USE output
-      USE compar  
+      USE compar
       USE fun_avg
       USE functions
 

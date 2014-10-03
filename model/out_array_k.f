@@ -34,6 +34,7 @@
       USE indices
       USE funits
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -63,7 +64,6 @@
 
 !
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 !
 ! NOTE:  IF NCOL IS CHANGED TO A NUMBER GREATER THAN 30, THEN THE "30"
 !        IN FORMATS 5050 AND 5100 MUST BE CHANGED TO THAT NUMBER.

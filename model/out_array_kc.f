@@ -36,6 +36,7 @@
       USE funits
       USE compar
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -75,8 +76,6 @@
       INTEGER          IJK , IJ2
 !
 !-----------------------------------------------
-
-      INCLUDE 'function.inc'
 
 !
 ! NOTE:  IF NCOL IS CHANGED TO A NUMBER OTHER THAN 24, THEN THE "24"

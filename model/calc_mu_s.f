@@ -104,6 +104,7 @@
       USE compar
       USE geometry
       USE indices
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -124,10 +125,6 @@
 ! Functions
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: BLEND_FUNCTION
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      Include 'function.inc'
 !-----------------------------------------------
 
 ! GHD Theory is called only for the mixture granular energy, i.e. for m == mmax
@@ -276,6 +273,7 @@
       USE physprop
       USE run
       USE constant
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -301,10 +299,6 @@
       DOUBLE PRECISION :: SUM_EPS_CP
 ! factor in frictional-flow stress terms
       DOUBLE PRECISION :: qxP_s
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -386,6 +380,7 @@
       USE run
       USE constant
       USE trace
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -424,10 +419,6 @@
 !-----------------------------------------------
 ! radial distribution function
       DOUBLE PRECISION, EXTERNAL :: G_0
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !$omp parallel do default(shared)                                    &
@@ -555,6 +546,7 @@
       USE compar
       USE geometry
       USE indices
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -582,10 +574,6 @@
 ! dg0/dep
       DOUBLE PRECISION, EXTERNAL :: DG_0DNU
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -723,6 +711,7 @@
       USE toleranc
       USE turb
       USE drag
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -752,10 +741,6 @@
 ! dg0/dep
       DOUBLE PRECISION, EXTERNAL :: DG_0DNU
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -870,6 +855,7 @@
       USE toleranc
       USE turb
       USE drag
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -899,10 +885,6 @@
 ! dg0/dep
       DOUBLE PRECISION, EXTERNAL :: DG_0DNU
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -1054,6 +1036,7 @@
       USE toleranc
       USE drag
       use kintheory
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1088,10 +1071,6 @@
       DOUBLE PRECISION, EXTERNAL :: G_0
 ! dg0/dep
       DOUBLE PRECISION, EXTERNAL :: DG_0DNU
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -1263,6 +1242,7 @@
       USE toleranc
       USE drag
       use kintheory
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1300,10 +1280,6 @@
       DOUBLE PRECISION, EXTERNAL :: S_star
       DOUBLE PRECISION, EXTERNAL :: K_phi
       DOUBLE PRECISION, EXTERNAL :: R_d
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -1509,6 +1485,7 @@
       USE drag
       USE kintheory
       USE ur_facs
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1544,10 +1521,6 @@
 !-----------------------------------------------
 ! radial distribution function
       DOUBLE PRECISION, EXTERNAL :: G_0
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -1901,6 +1874,7 @@
       USE run
       USE constant
       USE trace
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1928,10 +1902,6 @@
 !-----------------------------------------------
 ! radial distribution function
       DOUBLE PRECISION, EXTERNAL :: G_0
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -2093,6 +2063,7 @@
       USE run
       USE constant
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -2119,10 +2090,6 @@
       DOUBLE PRECISION :: vt
 ! the filter size which is a function of each grid cell volume
       DOUBLE PRECISION :: filtersize
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3
@@ -2279,6 +2246,7 @@
       USE run
       USE constant
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -2303,10 +2271,6 @@
       DOUBLE PRECISION :: vt
 ! the filter size which is a function of each grid cell volume
       DOUBLE PRECISION :: filtersize
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3
@@ -2501,6 +2465,7 @@
       USE compar
       USE geometry
       USE indices
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -2512,10 +2477,6 @@
 !-----------------------------------------------
 ! cell index
       INTEGER :: IJK
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !     $omp parallel do private(IJK)
@@ -2546,6 +2507,7 @@
       USE compar
       USE geometry
       USE indices
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -2557,10 +2519,6 @@
 !-----------------------------------------------
 ! cell index
       INTEGER :: IJK
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !     $omp parallel do private(IJK)
@@ -2670,6 +2628,7 @@
       USE geometry
       USE indices
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -2751,10 +2710,6 @@
 !     Functions
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: G_0
-!-----------------------------------------------
-!     Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       IF(MU_s0 == UNDEFINED) THEN ! fixes a bug noted by VTech

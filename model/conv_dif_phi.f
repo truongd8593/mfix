@@ -149,6 +149,7 @@
       USE sendrecv
       USE indices
       USE fun_avg
+      USE functions
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -206,7 +207,6 @@
       DOUBLE PRECISION D_f
 !
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 !
 !  Calculate convection-diffusion fluxes through each of the faces
 !
@@ -436,6 +436,7 @@
       Use tmp_array
       USE fun_avg
       USE xsi
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -516,7 +517,6 @@
 !
 !
 !---------------------------------------------------------------
-      INCLUDE 'function.inc'
       INCLUDE 'function3.inc'
 
       call lock_xsi_array
@@ -781,6 +781,7 @@
       USE xsi
       USE xsi_array
       USE fun_avg
+      USE functions
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -843,7 +844,6 @@
 !      DOUBLE PRECISION XSI_e(DIMENSION_3), XSI_n(DIMENSION_3),&
 !                       XSI_t(DIMENSION_3)
 !-----------------------------------------------
-      INCLUDE 'function.inc'
       call lock_xsi_array
 !
 !  Calculate convection factors
@@ -1092,6 +1092,7 @@
       USE output
       USE is
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1125,7 +1126,6 @@
 !                      Difusion parameter
       DOUBLE PRECISION D_f
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 !
 ! Make user defined internal surfaces non-conducting
 !

@@ -51,6 +51,7 @@
       USE sendrecv
       USE discretelement
       USE bodyforce
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -75,10 +76,6 @@
 ! External functions
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: EOSG
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! If any initial pressures are unspecified skip next section

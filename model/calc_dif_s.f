@@ -34,6 +34,7 @@
       USE compar
       USE sendrecv
       USE run
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -53,7 +54,6 @@
       DOUBLE PRECISION Dab
 
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 
       Dab = ZERO       !cm^2/s
       IF(UNITS == 'SI') Dab = Dab*0.0001D0   !m^2/s

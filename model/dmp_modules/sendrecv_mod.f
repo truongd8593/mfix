@@ -17,6 +17,7 @@
       use geometry
       use compar
       use indices
+      use functions
       implicit none
 !-----------------------------------------------
 
@@ -265,10 +266,6 @@
 ! Inline functions
 !-----------------------------------------------
       integer :: message_tag
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include '../function.inc'
 !-----------------------------------------------
 
       message_tag(src,dest) = message_tag_offset + (1+src + dest*numPEs)
@@ -1192,10 +1189,6 @@
 !       end interface
 
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include '../function.inc'
-!-----------------------------------------------
       lidebug = 0
 
       if (present(idebug)) then
@@ -1440,10 +1433,6 @@
 !       end interface
 
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include '../function.inc'
-!-----------------------------------------------
 
       lidebug = 0
       if (present(idebug)) then
@@ -1599,6 +1588,8 @@
       subroutine sendrecv_begin_1c( X, ilayer, idebug )
       implicit none
 
+      use functions
+
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
@@ -1631,10 +1622,6 @@
 !
 !       end interface
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include '../function.inc'
 !-----------------------------------------------
 
       lidebug = 0
@@ -1801,6 +1788,8 @@
 !--------------------------------------------------------------------
       subroutine sendrecv_end_1d( X, idebug )
 
+      use functions
+
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
@@ -1840,10 +1829,6 @@
       integer, dimension(MPI_STATUS_SIZE) :: recv_status_any
       integer, dimension(:,:), pointer :: recv_status
       integer, dimension(:,:), pointer :: send_status
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include '../function.inc'
 !-----------------------------------------------
 
 
@@ -1942,6 +1927,8 @@
 !--------------------------------------------------------------------
       subroutine sendrecv_end_1c( X, idebug )
 
+      use functions
+
       implicit none
 
 !-----------------------------------------------
@@ -1983,10 +1970,6 @@
       integer, dimension(MPI_STATUS_SIZE) :: recv_status_any
       integer, dimension(:,:), pointer :: recv_status
       integer, dimension(:,:), pointer :: send_status
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include '../function.inc'
 !-----------------------------------------------
 
 
@@ -2083,6 +2066,8 @@
 !--------------------------------------------------------------------
       subroutine sendrecv_end_1i( X, idebug )
 
+      use functions
+
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
@@ -2121,10 +2106,6 @@
       integer, dimension(MPI_STATUS_SIZE) :: recv_status_any
       integer, dimension(:,:), pointer :: recv_status
       integer, dimension(:,:), pointer :: send_status
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include '../function.inc'
 !-----------------------------------------------
 
 
@@ -2383,6 +2364,9 @@
 
 ! Re-initialize send/receive after re-indexing
         subroutine sendrecv_re_init_after_re_indexing(comm, idebug )
+
+        use functions
+
         implicit none
 
         integer, intent(in) :: comm
@@ -2434,10 +2418,6 @@
 !       inline functions
 !       ----------------
         integer :: message_tag
-
-!//DEEP moved include function before message_tag declaration
-        include '../function.inc'
-
 
 !  NEW SEND_RECV INIT HERE
       if (use_persistent_message) then

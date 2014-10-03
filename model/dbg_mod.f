@@ -240,6 +240,7 @@
 !      use indices
 !      use run
 !      use sendrecv
+      use functions
 
 
       IMPLICIT NONE
@@ -270,9 +271,6 @@
       INTEGER, parameter :: BmUnit = 9658
 
       INTEGER :: IJK, I, J, K, OWNER
-
-
-      include 'function.inc'
 
 ! If the initialization routine was not called, flag the error and exit.
       IF(initNotCalled)THEN
@@ -966,6 +964,7 @@
       use run
       use sendrecv
       USE mpi_utility
+      USE functions
 
       implicit none
 
@@ -983,8 +982,6 @@
       INTEGER :: I, J, K, IJK, dbgIJK
 ! Debugging message.
       CHARACTER(len=64) :: MSG
-
-      include 'function.inc'
 
       MSG='Entered arrayExtract_int'
       if(dbgMode) CALL DBG_WRITE(trim(MSG),FLUSH=.TRUE.)
@@ -1075,6 +1072,7 @@
       use run
       use sendrecv
       USE mpi_utility
+      USE functions
 
       implicit none
 
@@ -1093,9 +1091,6 @@
       INTEGER :: I, J, K, IJK, dbgIJK
 ! Debugging message.
       CHARACTER(len=64) :: MSG
-
-      include 'function.inc'
-
 
       MSG='Entered arrayExtract_dbl'
       CALL DBG_WRITE(trim(MSG), flush=.TRUE.)
@@ -1184,6 +1179,7 @@
       use run
       use sendrecv
       USE mpi_utility
+      USE functions
 
       implicit none
 
@@ -1201,8 +1197,6 @@
       INTEGER :: I, J, K, IJK, dbgIJK
 ! Debugging message.
       CHARACTER(len=64) :: MSG
-
-      include 'function.inc'
 
       MSG='Entered arrayExtract_log'
       if(dbgMode) CALL DBG_WRITE(trim(MSG),FLUSH=.TRUE.)

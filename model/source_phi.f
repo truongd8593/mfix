@@ -42,8 +42,9 @@
       USE indices
       USE is
       USE tau_s
-      USE compar  
+      USE compar
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -72,10 +73,6 @@
 ! error message
       CHARACTER*80     LINE(2)
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3
@@ -171,6 +168,7 @@
 ! To be removed upon complete integration of point source routines.
       use bc
       use usr
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -209,10 +207,6 @@
 ! terms of bm expression
       DOUBLE PRECISION pSource, lMass
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! External function. Integrates the temperature-dependent specific

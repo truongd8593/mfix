@@ -39,6 +39,7 @@
       USE output
       USE check
       USE mflux
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -76,7 +77,6 @@
 !     functions
       DOUBLE PRECISION Accumulation, Accumulation_sp
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 
       if(report_mass_balance_dt == UNDEFINED) return
 
@@ -514,6 +514,7 @@
       USE indices
       USE compar
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 
 !
@@ -541,8 +542,6 @@
 !
 !                      Indices
       INTEGER          I, J, K, IJK
-
-      INCLUDE 'function.inc'
 
       flux_in = zero
       flux_out = zero
@@ -694,6 +693,7 @@
       Use xsi_array
       USE mpi_utility
       USE xsi
+      USE functions
       IMPLICIT NONE
 
 !
@@ -725,8 +725,6 @@
 !
 !                      Indices
       INTEGER          I, J, K, IJK
-
-      INCLUDE 'function.inc'
 
       call lock_xsi_array
 
@@ -870,6 +868,7 @@
       USE indices
       USE compar
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -888,7 +887,6 @@
       DOUBLE PRECISION SUM
 !
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 
       SUM = ZERO
 !
@@ -914,6 +912,7 @@
       USE indices
       USE matrix
       USE compar
+      USE functions
       IMPLICIT NONE
 !
 !                      Septadiagonal matrix A_m
@@ -929,7 +928,6 @@
 !
 !                      Indices
       INTEGER          IJK, IMJK, IJMK, IJKM, IPJK, IJPK, IJKP
-      INCLUDE 'function.inc'
 
           IMJK = IM_OF(IJK)
           IJMK = JM_OF(IJK)

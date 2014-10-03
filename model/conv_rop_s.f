@@ -38,7 +38,7 @@
       INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 
-      IF (DISCRETIZE(2) == 0) THEN               ! 0 & 1 => first order upwinding 
+      IF (DISCRETIZE(2) == 0) THEN               ! 0 & 1 => first order upwinding
          CALL CONV_ROP_S0 (A_M, M, IER)
       ELSE
          CALL CONV_ROP_S1 (A_M, M, IER)
@@ -84,6 +84,7 @@
       USE pgcor
       USE pscor
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -100,10 +101,6 @@
 ! Indices
       INTEGER :: I, J, K, IJK, IPJK, IJPK, IJKP
       INTEGER :: IMJK, IJMK, IJKM
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Calculate convection-diffusion fluxes through each of the faces
@@ -216,6 +213,7 @@
       Use xsi_array
       USE compar
       USE xsi
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -238,10 +236,6 @@
 ! xsi_array: convection weighting factors
 !      DOUBLE PRECISION :: XSI_e(DIMENSION_3), XSI_n(DIMENSION_3),&
 !                          XSI_t(DIMENSION_3)
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
        call lock_xsi_array

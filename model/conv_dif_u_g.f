@@ -132,6 +132,7 @@
       USE compar
       USE mflux
       USE fun_avg
+      USE functions
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -177,9 +178,6 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 
 !  Calculate convection-diffusion fluxes through each of the faces
 !
@@ -449,6 +447,7 @@
       USE mflux
       USE fun_avg
       USE xsi
+      USE functions
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -527,7 +526,6 @@
         DOUBLE PRECISION , EXTERNAL :: FPFOI_OF
 !---------------------------------------------------------------
 !
-      INCLUDE 'function.inc'
       INCLUDE 'function3.inc'
 
       call lock_tmp4_array
@@ -939,6 +937,7 @@
       USE mflux
       USE fun_avg
       USE xsi
+      USE functions
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -994,8 +993,6 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 
       call lock_tmp_array
       call lock_xsi_array

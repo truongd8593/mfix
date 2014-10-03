@@ -25,6 +25,7 @@
       USE constant
       USE toleranc
       use kintheory
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -58,10 +59,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION G_0
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!-----------------------------------------------   
 
       DO IJK = ijkstart3, ijkend3
           I = I_OF(IJK)
@@ -221,6 +218,7 @@
       USE toleranc
       use kintheory
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -246,10 +244,6 @@
       DOUBLE PRECISION S_star
       DOUBLE PRECISION G_gtsh
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!-----------------------------------------------   
 
       DO IJK = ijkstart3, ijkend3
           I = I_OF(IJK)
@@ -341,6 +335,7 @@
       USE toleranc
       use kintheory
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -369,10 +364,6 @@
       DOUBLE PRECISION S_star
       DOUBLE PRECISION G_gtsh
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!-----------------------------------------------   
 !
       DO IJK = ijkstart3, ijkend3
           I = I_OF(IJK)

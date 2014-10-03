@@ -42,6 +42,7 @@
       USE bc
       USE cutcell
       USE quadric
+      USE functions
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -78,7 +79,6 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 !
 !
 !!!!$omp  parallel do private( IJK, I,J,K, IM,IMJK,IJMK,IJKM ) &
@@ -323,6 +323,7 @@
       USE bc
       USE cutcell
       USE quadric
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -355,7 +356,6 @@
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 !
 !
 !!!!$omp  parallel do private( IJK, I,J,K, IM,IMJK,IJMK,IJKM ) &

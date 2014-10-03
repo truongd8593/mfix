@@ -51,6 +51,7 @@
       USE sendrecv
       USE sendrecv3
       USE boundfunijk
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -64,7 +65,6 @@
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-      INCLUDE 'function.inc'
       INCLUDE 'function3.inc'
 !-----------------------------------------------
 
@@ -371,6 +371,7 @@
       USE compar
       USE sendrecv
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -381,10 +382,6 @@
 !
       INTEGER, DIMENSION(:), allocatable :: FLAG_TEMP
       INTEGER :: flag_size
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 

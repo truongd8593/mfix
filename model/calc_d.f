@@ -56,8 +56,9 @@
       USE sendrecv
       USE cutcell
       USE qmom_kinetic_equation
-      USE discretelement      
+      USE discretelement
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -126,10 +127,6 @@
       DOUBLE PRECISION :: DEN_MSol_LGas
 ! Temporary variable to store A matrix for local manipulation
       DOUBLE PRECISION :: AM0(DIMENSION_3, 0:DIMENSION_M)
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Initializing
@@ -516,8 +513,9 @@
       USE sendrecv
       USE cutcell
       USE qmom_kinetic_equation
-      USE discretelement      
+      USE discretelement
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -582,10 +580,6 @@
       DOUBLE PRECISION :: DEN_MSol_LGas
 ! Temporary variable to store A matrix for local manipulation
       DOUBLE PRECISION :: AM0(DIMENSION_3, 0:DIMENSION_M)
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! initializing
@@ -968,6 +962,7 @@
       USE qmom_kinetic_equation
       USE discretelement
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1032,10 +1027,6 @@
       DOUBLE PRECISION :: DEN_MSol_LGas
 ! Temporary variable to store A matrix for local manipulation
       DOUBLE PRECISION :: AM0(DIMENSION_3, 0:DIMENSION_M)
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! initializing

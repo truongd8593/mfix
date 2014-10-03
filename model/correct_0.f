@@ -71,6 +71,7 @@
       USE compar
       USE cutcell
       USE quadric
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -98,10 +99,6 @@
 !-----------------------------------------------
 ! Indices
       INTEGER :: IJK, IJKE, IJKN, IJKT
-!-----------------------------------------------
-! Include statement function
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Underrelax pressure correction.  Velocity corrections should not be
@@ -173,6 +170,7 @@
       USE compar
       USE cutcell
       USE quadric
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -198,10 +196,6 @@
       INTEGER :: M
 ! Indices
       INTEGER :: IJK, IJKE, IJKN, IJKT
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 ! Velocity corrections should not be underrelaxed, so that
 ! the continuity eq. is satisfied.

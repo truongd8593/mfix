@@ -60,7 +60,7 @@
 ! include statement functions
 !-----------------------------------------------
       INCLUDE '../function.inc'
-!----------------------------------------------- 
+!-----------------------------------------------
 
 ! set flags for interprocessor boundaries and set the corresponding to proc
       liproc = iofproc(mype)

@@ -35,6 +35,7 @@
       use compar
       use geometry
       use indices
+      use functions
 
       implicit none
 
@@ -53,8 +54,6 @@
 
 ! Function for evaluating solids density.
       DOUBLE PRECISION, EXTERNAL :: EOSS
-
-      INCLUDE 'function.inc'
 
 ! Loop over all solids
       DO M=1,MMAX

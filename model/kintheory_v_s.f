@@ -87,15 +87,16 @@
       USE fldvar, only: d_p, rop_s, ro_s
 ! granular temperature
       USE fldvar, only: theta_m, ep_s
-! dilute threshold      
+! dilute threshold
       USE toleranc, only: dil_ep_s
 
       Use kintheory
 
       USE geometry
       USE indices
-      USE compar 
+      USE compar
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -130,10 +131,6 @@
       DOUBLE PRECISION :: ssvx, ssvy, ssvz, ssx, ssy, ssz, ssbv
 ! Source terms (Volumetric)
       DOUBLE PRECISION :: DS1, DS2, DS3, DS4, DS1plusDS2
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! section largely based on tau_v_g:

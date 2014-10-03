@@ -38,6 +38,7 @@
       USE compar
       USE run
       USE sendrecv
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -51,8 +52,6 @@
 !                      Indices
       INTEGER          IJK
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-
 
       IF (K_G0 /= UNDEFINED) RETURN
 

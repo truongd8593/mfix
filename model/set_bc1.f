@@ -51,6 +51,7 @@
       USE run
       USE funits
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -71,10 +72,6 @@
       INTEGER :: K1, K2
 ! local solids velocity for mixture (for ghd)
       DOUBLE PRECISION :: lvel_s
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Set the boundary conditions

@@ -28,6 +28,7 @@
       USE constant
       USE indices
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -37,10 +38,6 @@
 ! External functions
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: CALC_MW
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       IF (MW_AVG /= UNDEFINED) RETURN

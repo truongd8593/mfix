@@ -35,6 +35,7 @@
       USE corner
       USE funits
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -67,8 +68,7 @@
       LOGICAL          dir(-3:3), NotCorner
 !
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
+
       NCORN = 0
 !
       DO IJK = ijkstart3, ijkend3

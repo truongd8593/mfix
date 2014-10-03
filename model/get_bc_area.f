@@ -144,6 +144,7 @@
       USE sendrecv
       USE mpi_utility
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -163,10 +164,6 @@
       INTEGER ::  I, J, K , IJK, IJK2
 
       CHARACTER(LEN=9) :: BCT
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO BCV = 1, DIMENSION_BC

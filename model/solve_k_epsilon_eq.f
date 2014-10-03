@@ -55,6 +55,7 @@
 
       USE cutcell
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -108,7 +109,6 @@
 !-----------------------------------------------
       LOGICAL , EXTERNAL :: IS_SMALL
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 
       IF( .NOT. K_Epsilon) RETURN
 

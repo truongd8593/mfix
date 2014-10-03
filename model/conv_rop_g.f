@@ -82,6 +82,7 @@
       USE indices
       USE pgcor
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -96,10 +97,6 @@
 ! Indices
       INTEGER :: I, J, K, IJK, IPJK, IJPK, IJKP
       INTEGER :: IMJK, IJMK, IJKM
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 
@@ -198,6 +195,7 @@
       Use xsi_array
       USE compar
       USE xsi
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -218,10 +216,6 @@
 ! xsi_array: convection weighting factors
 !      DOUBLE PRECISION :: XSI_e(DIMENSION_3), XSI_n(DIMENSION_3),&
 !                          XSI_t(DIMENSION_3)
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       call lock_xsi_array

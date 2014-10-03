@@ -41,6 +41,7 @@
       USE compar
       USE sendrecv
       USE solids_pressure
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -68,10 +69,6 @@
       DOUBLE PRECISION :: DG_0DNU
       DOUBLE PRECISION :: DZETAoDEPs
       DOUBLE PRECISION, EXTERNAL :: BLEND_FUNCTION
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! initializing
@@ -289,6 +286,7 @@
       USE visc_s
       USE trace
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -309,10 +307,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION :: G_0
       DOUBLE PRECISION :: DG_0DNU
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       g0 = G_0(IJK, M, M)

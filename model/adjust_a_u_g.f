@@ -37,8 +37,9 @@
       USE indices
       USE usr       !just to ensure that this module gets compiled early on
       USE compar
-      USE sendrecv  
+      USE sendrecv
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -62,8 +63,7 @@
 !                      Vector b_m
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
+
       M = 0
       IF (.NOT.MOMENTUM_X_EQ(0)) RETURN
 !

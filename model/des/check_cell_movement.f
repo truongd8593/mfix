@@ -46,7 +46,7 @@
       RECOVERED = 0
       DELETED = 0
 
-! Set an error flag if any errors are found. Preform a global collection 
+! Set an error flag if any errors are found. Preform a global collection
 ! to sync error flags. If needed, reort errors.
 !.......................................................................
 !$omp parallel default(shared) private(L, I, J, K, IJK)
@@ -65,7 +65,7 @@
          IF(DO_K .AND. (K > KEND1 .OR. K < KSTART1)) IER = 1
       ENDDO
 !$omp end parallel
-     
+
       CALL GLOBAL_ALL_SUM(IER)
       IF(IER == 0) RETURN
 
@@ -116,7 +116,7 @@
       CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
 
  1100 FORMAT('Error 1100: Particles detected in a ghost cell:',/' ')
- 
+
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
          IF(.NOT.PEA(L,1) .OR. any(PEA(L,2:4))) CYCLE
@@ -219,7 +219,7 @@
       INTEGER :: L, I, J, K, IJK
 ! Integer error flag.
       INTEGER :: IER
-! Position 
+! Position
       DOUBLE PRECISION :: lPOS
 ! Number of deleted particles found on the local process
       INTEGER :: lDELETED

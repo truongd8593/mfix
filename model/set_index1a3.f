@@ -49,6 +49,7 @@
       USE fldvar
       USE indices
       USE boundfunijk3
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -66,9 +67,7 @@
 !-----------------------------------------------
       LOGICAL :: COMPARE
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
-!
+
       IMJK = UNDEFINED_I
       IPJK = UNDEFINED_I
       IJMK = UNDEFINED_I

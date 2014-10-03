@@ -37,9 +37,10 @@
       USE toleranc
       USE geometry
       USE indices
-      USE compar 
+      USE compar
       USE bodyforce
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -81,12 +82,11 @@
 !                      Source terms (Volumetric)
       DOUBLE PRECISION V0, Vmt, Vbf
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 
-      I = I_OF(IJK) 
-      J = J_OF(IJK) 
-      K = K_OF(IJK) 
-      IJKE = EAST_OF(IJK) 
+      I = I_OF(IJK)
+      J = J_OF(IJK)
+      K = K_OF(IJK)
+      IJKE = EAST_OF(IJK)
 !
       A = ZERO
       B = ZERO
@@ -170,6 +170,7 @@
       USE compar
       USE bodyforce
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -213,12 +214,11 @@
       DOUBLE PRECISION V0, Vmt, Vbf
 !
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 
-      I = I_OF(IJK) 
-      J = J_OF(IJK) 
-      K = K_OF(IJK) 
-      IJKN = NORTH_OF(IJK) 
+      I = I_OF(IJK)
+      J = J_OF(IJK)
+      K = K_OF(IJK)
+      IJKN = NORTH_OF(IJK)
 !
       A = ZERO
       B = ZERO
@@ -302,6 +302,7 @@
       USE compar
       USE bodyforce
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -345,12 +346,11 @@
       DOUBLE PRECISION V0, Vmt, Vbf
 !
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 
-      I = I_OF(IJK) 
-      J = J_OF(IJK) 
-      K = K_OF(IJK) 
-      IJKT = TOP_OF(IJK) 
+      I = I_OF(IJK)
+      J = J_OF(IJK)
+      K = K_OF(IJK)
+      IJKT = TOP_OF(IJK)
 !
       A = ZERO
       B = ZERO
@@ -433,6 +433,7 @@
       USE compar
       USE bodyforce
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -476,13 +477,12 @@
       DOUBLE PRECISION V0, Vmt, Vbf
 !
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 
-      IM = IM1(I_OF(IJK)) 
-      J = J_OF(IJK) 
-      K = K_OF(IJK) 
-      IJKW = WEST_OF(IJK) 
-      IMJK = IM_OF(IJK) 
+      IM = IM1(I_OF(IJK))
+      J = J_OF(IJK)
+      K = K_OF(IJK)
+      IJKW = WEST_OF(IJK)
+      IMJK = IM_OF(IJK)
 !
       A = ZERO
       B = ZERO
@@ -565,6 +565,7 @@
       USE compar
       USE bodyforce
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -607,13 +608,12 @@
 !                      Source terms (Volumetric)
       DOUBLE PRECISION V0, Vmt, Vbf
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 
-      I = I_OF(IJK) 
-      JM = JM1(J_OF(IJK)) 
-      K = K_OF(IJK) 
-      IJKS = SOUTH_OF(IJK) 
-      IJMK = JM_OF(IJK) 
+      I = I_OF(IJK)
+      JM = JM1(J_OF(IJK))
+      K = K_OF(IJK)
+      IJKS = SOUTH_OF(IJK)
+      IJMK = JM_OF(IJK)
 !
       A = ZERO
       B = ZERO
@@ -696,6 +696,7 @@
       USE compar
       USE bodyforce
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -738,13 +739,12 @@
 !                      Source terms (Volumetric)
       DOUBLE PRECISION V0, Vmt, Vbf
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 
-      I = I_OF(IJK) 
-      J = J_OF(IJK) 
-      KM = KM1(K_OF(IJK)) 
-      IJKB = BOTTOM_OF(IJK) 
-      IJKM = KM_OF(IJK) 
+      I = I_OF(IJK)
+      J = J_OF(IJK)
+      KM = KM1(K_OF(IJK))
+      IJKB = BOTTOM_OF(IJK)
+      IJKM = KM_OF(IJK)
 !
       A = ZERO
       B = ZERO

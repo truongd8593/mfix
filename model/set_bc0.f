@@ -51,6 +51,7 @@
       USE toleranc
       USE sendrecv
       USE mms
+      USE functions
 
       IMPLICIT NONE
 
@@ -73,10 +74,6 @@
 ! External functions
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: EOSG, CALC_MW
-!----------------------------------------------
-! Include statement functions
-!----------------------------------------------
-      INCLUDE 'function.inc'
 !----------------------------------------------
 
 
@@ -694,6 +691,7 @@
 
       use indices
       use mpi_utility
+      use functions
 
       implicit none
 
@@ -721,8 +719,6 @@
       INTEGER :: lpCnt
 
       CHARACTER(len=32) :: cInt
-
-      include 'function.inc'
 
 ! Initialize Error Flag
       iErr = 2000

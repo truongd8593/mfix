@@ -21,7 +21,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CALC_DIF_G(IER)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !-----------------------------------------------
 !   M o d u l e s
@@ -38,6 +37,7 @@
       USE compar
       USE sendrecv
       USE run
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -54,8 +54,6 @@
       DOUBLE PRECISION Dab(3,3), SUMJ, Tg0, Pg0
 
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-
 
 ! Default gas diffusion coefficient
 ! Bird, Stewart, and Lightfoot (1960) -- CO2--N2 at 298.2 K

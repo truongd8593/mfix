@@ -236,6 +236,11 @@
 !       Routine to scatter gbuf available on root to all the processors
 
         subroutine scatter_1i( lbuf, gbuf, mroot, idebug )
+
+        use functions
+
+        implicit none
+
         integer, intent(in), dimension(:) :: gbuf
         integer, intent(out), dimension(:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
@@ -245,7 +250,6 @@
         integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
-        include '../function.inc'
 
 !       check to see whether there is root
 
@@ -376,6 +380,11 @@
         end subroutine scatter_3i
 
         subroutine scatter_1r( lbuf, gbuf, mroot, idebug )
+
+        use functions
+
+        implicit none
+
         real, intent(in), dimension(:) :: gbuf
         real, intent(out), dimension(:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
@@ -385,7 +394,6 @@
         integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
-        include '../function.inc'
 
         if (.not. present(mroot)) then
            lroot = 0
@@ -514,6 +522,10 @@
 
 
         subroutine scatter_1d( lbuf, gbuf, mroot, idebug )
+
+        use functions
+        implicit none
+
         double precision, intent(in), dimension(:) :: gbuf
         double precision, intent(out), dimension(:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
@@ -523,7 +535,6 @@
         integer :: sendtype, recvtype, ijk1,ijk2,recvcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
-        include '../function.inc'
 
         if (.not. present(mroot)) then
            lroot = 0
@@ -652,6 +663,10 @@
 
 
         subroutine scatter_1c( lbuf, gbuf, mroot, idebug )
+
+        use functions
+        implicit none
+
         character(len=*), intent(in), dimension(:) :: gbuf
         character(len=*), intent(out), dimension(:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
@@ -663,7 +678,6 @@
         integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
         integer :: lenchar, icount
-        include '../function.inc'
 
 !       check to see whether there is root
 
@@ -721,6 +735,10 @@
 
 
         subroutine scatter_1l( lbuf, gbuf, mroot, idebug )
+
+        use functions
+        implicit none
+
         logical, intent(in), dimension(:) :: gbuf
         logical, intent(out), dimension(:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
@@ -730,7 +748,6 @@
         integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
-        include '../function.inc'
 
 !       check to see whether there is root
 
@@ -796,6 +813,10 @@
 !       Logic is similar to the scatter routines above.
 
         subroutine gather_1i( lbuf, gbuf, mroot, idebug )
+
+        use functions
+        implicit none
+
         integer, intent(in), dimension(:) :: lbuf
         integer, intent(out), dimension(:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
@@ -808,7 +829,6 @@
         integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
-        include '../function.inc'
 
 !       check to see whether there is root
 
@@ -963,6 +983,10 @@
         end subroutine gather_3i
 
         subroutine gather_1r( lbuf, gbuf, mroot, idebug )
+
+        use functions
+        implicit none
+
         real, intent(in), dimension(:) :: lbuf
         real, intent(out), dimension(:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
@@ -975,7 +999,6 @@
         integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
-        include '../function.inc'
 
         if (.not. present(mroot)) then
            lroot = 0
@@ -1131,6 +1154,10 @@
 
 
         subroutine gather_1d( lbuf, gbuf, mroot, idebug )
+
+        use functions
+        implicit none
+
         double precision, intent(in), dimension(:) :: lbuf
         double precision, intent(out), dimension(:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
@@ -1143,8 +1170,6 @@
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
         integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
-
-        include '../function.inc'
 
         if (.not. present(mroot)) then
            lroot = 0
@@ -1297,6 +1322,10 @@
 
 
         subroutine gather_1c( lbuf, gbuf, mroot, idebug )
+
+        use functions
+        implicit none
+
         character(len=*), intent(in), dimension(:) :: lbuf
         character(len=*), intent(out), dimension(:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
@@ -1311,7 +1340,6 @@
         integer :: lenchar, icount
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
-        include '../function.inc'
 
 !       check to see whether there is root
 
@@ -1372,6 +1400,10 @@
 
 
         subroutine gather_1l( lbuf, gbuf, mroot, idebug )
+
+        use functions
+        implicit none
+
         logical, intent(in), dimension(:) :: lbuf
         logical, intent(out), dimension(:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
@@ -1384,7 +1416,6 @@
         integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
-        include '../function.inc'
 
 !       check to see whether there is root
 

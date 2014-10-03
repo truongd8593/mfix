@@ -30,11 +30,6 @@
         integer :: nrecv3,nsend3
         integer, parameter :: nlayers = 3
 
-
-
-
-
-
         logical,parameter :: localfunc=.false.
 
         logical,parameter :: use_persistent_message=.true.
@@ -223,6 +218,9 @@
         subroutine sendrecv3_init(        &
                 comm,                    &
                 cyclic_i,cyclic_j,cyclic_k, idebug )
+
+                use functions
+
         implicit none
 
         integer, intent(in) :: comm
@@ -276,13 +274,7 @@
 !       ----------------
         integer :: message_tag
 
-!//DEEP moved include function before message_tag declaration
-        include '../function.inc'
-
         message_tag(src,dest) = message_tag_offset + (1+src + dest*10*numPEs)
-!//DEEP_BEFORE
-!       include 'function.inc'
-
 
         nullify( &
                 recvproc1, recvtag1, xrecv1, recvijk1, &
@@ -1436,6 +1428,9 @@ enddo ! do ilayer
 
 
         subroutine sendrecv3_begin_1d( X, ilayer, idebug )
+
+        use functions
+
         implicit none
 
         integer, intent(in),optional :: ilayer
@@ -1470,11 +1465,6 @@ enddo ! do ilayer
 
         integer ::  layer, datatype, comm, recvsize, sendsize, &
                 ijk,jj,j1,j2, request, ii,count,source,dest, tag, ierror
-
-
-
-
-        include '../function.inc'
 
          lidebug = 0
 
@@ -1734,6 +1724,9 @@ enddo ! do ilayer
 
 
         subroutine sendrecv3_begin_1i( X, ilayer, idebug )
+
+        use functions
+
         implicit none
 
         integer, intent(in),optional :: ilayer
@@ -1768,8 +1761,6 @@ enddo ! do ilayer
 
         integer ::  layer, datatype, comm, recvsize, sendsize, &
                 ijk,jj,j1,j2, request, ii,count,source,dest, tag, ierror
-
-        include '../function.inc'
 
         lidebug = 0
         if (present(idebug)) then
@@ -1956,6 +1947,9 @@ enddo ! do ilayer
 
 
         subroutine sendrecv3_begin_1c( X, ilayer, idebug )
+
+          use functions
+
         implicit none
 
         integer, intent(in),optional :: ilayer
@@ -1992,8 +1986,6 @@ enddo ! do ilayer
                 ijk,jj,j1,j2, request, ii,count,source,dest, tag, ierror
 
         integer :: ic, clen, jpos
-
-        include '../function.inc'
 
         lidebug = 0
         if (present(idebug)) then
@@ -2195,6 +2187,9 @@ enddo ! do ilayer
 
 
         subroutine sendrecv3_end_1d( X, idebug )
+
+          use functions
+
         implicit none
 
         double precision, intent(inout), dimension(:) :: X
@@ -2237,11 +2232,6 @@ enddo ! do ilayer
 
         integer, dimension(MPI_STATUS_SIZE) :: recv_status
         integer, dimension(:,:), pointer :: send_status
-
-!       ---------------
-!       inline function
-!       ---------------
-        include '../function.inc'
 
 !       --------------------------
 !       wait for sends to complete
@@ -2338,6 +2328,9 @@ enddo ! do ilayer
 
 
         subroutine sendrecv3_end_1c( X, idebug )
+
+          use functions
+
         implicit none
 
         character(len=*), intent(inout), dimension(:) :: X
@@ -2382,11 +2375,6 @@ enddo ! do ilayer
 
         integer, dimension(MPI_STATUS_SIZE) :: recv_status
         integer, dimension(:,:), pointer :: send_status
-
-!       ---------------
-!       inline function
-!       ---------------
-        include '../function.inc'
 
 !       --------------------------
 !       wait for sends to complete
@@ -2486,6 +2474,9 @@ enddo ! do ilayer
 
 
         subroutine sendrecv3_end_1i( X, idebug )
+
+          use functions
+
         implicit none
 
         integer, intent(inout), dimension(:) :: X
@@ -2528,11 +2519,6 @@ enddo ! do ilayer
 
         integer, dimension(MPI_STATUS_SIZE) :: recv_status
         integer, dimension(:,:), pointer :: send_status
-
-!       ---------------
-!       inline function
-!       ---------------
-        include '../function.inc'
 
 !       --------------------------
 !       wait for sends to complete

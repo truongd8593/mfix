@@ -116,6 +116,7 @@
       USE funits
       USE gridmap
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! External functions
@@ -197,10 +198,6 @@
       LOGICAL ALL_IS_BM_ZERO, ALL_IS_ERROR, ALL_IS_CONVERGED
 
       CHARACTER*40 NAME
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 
@@ -671,6 +668,7 @@
       USE debug
       USE compar
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -692,10 +690,6 @@
       integer :: nerror, all_nerror
       logical :: is_in_k, is_in_j, is_in_i, is_in
       logical :: is_bc_k, is_bc_j, is_bc_i, is_bc, is_ok
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include 'function.inc'
 !-----------------------------------------------
 
       kstartl = kstart2

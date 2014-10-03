@@ -30,6 +30,7 @@
       USE compar
       USE cutcell, only : CARTESIAN_GRID, CG_SAFE_MODE
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -66,10 +67,6 @@
 ! Indices
       INTEGER :: I, J, K, I1, I2, J1, J2, K1, K2, IJK, &
                  IM, JM, KM
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Set up the default walls (i.e., bc_type='dummy' or undefined/default
@@ -488,6 +485,7 @@
       USE compar
       USE cutcell
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -529,10 +527,6 @@
 
       LOGICAL :: ALONG_GLOBAL_GHOST_LAYER
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3

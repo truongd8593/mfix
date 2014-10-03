@@ -114,6 +114,7 @@
       USE geometry
       USE indices
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -139,8 +140,6 @@
 !                      Indices
       INTEGER          IJK, IMJK, IJMK, IJKM
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-
 
 !
 !  Interpolate the face value of density for calculating the convection fluxes
@@ -225,6 +224,7 @@
       USE indices
       USE compar
       use fldvar, only: RO_S
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -251,8 +251,6 @@
 !                      Indices
       INTEGER          IJK, IMJK, IJMK, IJKM, M_AM
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-
 
 !
 !  Interpolate the face value of density for calculating the convection fluxes

@@ -108,7 +108,8 @@
       USE indices
       USE compar
       USE mpi_utility
-      Use mflux
+      USE mflux
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -130,7 +131,6 @@
       DOUBLE PRECISION SUM_AREA
 !
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 !
 !  Integrate the velocity values for the whole domain,
 !

@@ -49,6 +49,7 @@
 
       USE cutcell
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -164,7 +165,6 @@
       INTEGER :: P,Q
       DOUBLE PRECISION ::V_G_NW,V_G_SW
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 
       IF( .NOT. K_Epsilon) RETURN
 !

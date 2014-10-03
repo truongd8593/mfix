@@ -35,6 +35,7 @@
       USE indices
       USE funits
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -60,7 +61,6 @@
       character*4,  allocatable :: array1c(:)
 
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 !
 !//d      call lock_tmp_array
 

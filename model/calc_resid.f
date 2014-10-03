@@ -28,6 +28,7 @@
       USE compar
       USE mpi_utility
       USE run
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -67,10 +68,6 @@
       DOUBLE PRECISION :: MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
       INTEGER :: IJK_RESID_GL(0:numPEs-1), IJK_RESID_L(0:numPEs-1)
       INTEGER :: nproc
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! initializing values
@@ -217,6 +214,7 @@
       USE fldvar
       USE physprop
       USE toleranc
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -259,10 +257,6 @@
       DOUBLE PRECISION :: MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
       INTEGER :: IJK_RESID_GL(0:numPEs-1), IJK_RESID_L(0:numPEs-1)
       INTEGER :: nproc
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! initializing
@@ -415,6 +409,7 @@
       USE compar
       USE mpi_utility
       USE run
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -450,10 +445,6 @@
       DOUBLE PRECISION :: MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
       INTEGER :: IJK_RESID_GL(0:numPEs-1), IJK_RESID_L(0:numPEs-1)
       INTEGER :: nproc
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! initializing values
@@ -585,6 +576,7 @@
       USE residual
       USE rxns
       USE mflux
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -613,10 +605,6 @@
 ! Functions
 !-----------------------------------------------
       DOUBLE PRECISION Accumulation
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       if(dt == UNDEFINED)then
@@ -760,6 +748,7 @@
       USE physprop
       USE toleranc
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -810,10 +799,6 @@
 ! Solids volume fraction at face
       DOUBLE PRECISION :: EPSA
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! initializing
@@ -969,6 +954,7 @@
       USE physprop
       USE toleranc
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1018,10 +1004,6 @@
 ! Solids volume fraction at face
       DOUBLE PRECISION :: EPSA
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! initializing
@@ -1181,6 +1163,7 @@
       USE physprop
       USE toleranc
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1230,10 +1213,6 @@
 ! Solids volume fraction at face
       DOUBLE PRECISION :: EPSA
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! initializing

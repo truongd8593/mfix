@@ -39,6 +39,7 @@
       USE indices
       USE energy
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -75,10 +76,9 @@
 !                      Indices
       INTEGER          I1, I2, J1, J2, K1, K2
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
+
       LOSS = ZERO
-!
+
       DO L = 1, DIMENSION_BC
          IF (BC_DEFINED(L)) THEN
             IF (BC_TYPE(L)=='NO_SLIP_WALL' .OR. BC_TYPE(L)=='FREE_SLIP_WALL'&

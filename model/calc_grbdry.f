@@ -38,6 +38,7 @@
       USE toleranc
       USE mpi_utility
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -116,10 +117,6 @@
 !  Function subroutines
 !-----------------------------------------------
       DOUBLE PRECISION F_HW
-!-----------------------------------------------
-! Include statements functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Note: EP_s, MU_g, and RO_g are undefined at IJK1 (wall cell).
@@ -1256,6 +1253,7 @@
       Use cutcell
       use toleranc
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -1321,10 +1319,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION F_HW
 !-----------------------------------------------
-! Include statement functions
-!----------------------------------------------- 
-      INCLUDE 'function.inc'
-!-----------------------------------------------       
 
 !  Note:  EP_s, MU_g, and RO_g are undefined at IJK1 (wall cell).  Hence
 !         IJK2 (fluid cell) is used in averages.

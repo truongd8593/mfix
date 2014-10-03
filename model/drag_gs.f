@@ -40,6 +40,7 @@
       USE funits
       USE mms
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -104,10 +105,6 @@
 ! void fraction, gas density, gas bulk density, solids volume fraction
 ! particle diameter, particle density
       DOUBLE PRECISION :: EPG, ROg, ROPg, EP_SM, DPM, ROs
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !$omp  parallel do default(shared)                                   &

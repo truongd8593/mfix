@@ -35,6 +35,7 @@
       USE run
       USE sendrecv
       USE solids_pressure
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -71,10 +72,6 @@
       DOUBLE PRECISION :: WSX (DIMENSION_M)
 ! number density for GHD theory
       DOUBLE PRECISION :: nM, nTOT
-!-----------------------------------------------
-! Include statement function
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !  Set the initial conditions.

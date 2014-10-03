@@ -26,7 +26,7 @@
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
-
+      use functions
 
       IMPLICIT NONE
 
@@ -53,7 +53,6 @@
 ! Flag for using the 'real' I/J/K value (not cyclic.)
       LOGICAL :: SHIFT
 
-      INCLUDE 'function.inc'
       INCLUDE 'function3.inc'
 !......................................................................!
 

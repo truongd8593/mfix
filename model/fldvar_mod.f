@@ -197,7 +197,7 @@ DOUBLE PRECISION FUNCTION EP_s(IJK, xxM)
 
   EP_s = ROP_s(IJK, xxM)/RO_S(IJK,xxM)
 END FUNCTION
- 
+
 !!!HPF$ align EP_g(:) with TT(:)
 !!!HPF$ align EP_go(:) with TT(:)
 !!!HPF$ align P_g(:) with TT(:)

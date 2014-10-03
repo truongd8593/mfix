@@ -1042,6 +1042,9 @@
 ! Parameter        : pface - value from 1 to 6 represents faces
 !------------------------------------------------------------------------
       subroutine desmpi_pack_parcross(pface)
+
+      use functions
+
 !-----------------------------------------------
       implicit none
 !-----------------------------------------------
@@ -1051,17 +1054,13 @@
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      integer :: ltot_ind,lindx,ijk,cc,ii,ll,kk
+      integer :: ltot_ind,lindx,ijk,cc,ii,ll,kk,li,lj,lk
       integer :: lneighindx,lcontactindx,lneigh,lcontact,lijk,&
                  lpicloc,lparcnt,lcurpar
       integer :: lpacketsize,lbuf,ltordimn,ltmpbuf,num_collisions_to_send,lcollisionsize
 
       logical, allocatable, dimension(:) :: going_to_send
 
-!-----------------------------------------------
-! include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! pack the particle crossing the boundary
@@ -1591,17 +1590,15 @@
 ! Parameters       : None
 !------------------------------------------------------------------------
       subroutine des_addnodevalues_mean_fields()
+
+      use functions
 !-----------------------------------------------
       implicit none
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      integer :: lm,ijk,lface,lijkmin,lijkmax
+      integer :: lm,li,lj,lk,ijk,lface,lijkmin,lijkmax
       integer :: linode,ljnode,lknode,lijknode
-!-----------------------------------------------
-! include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! fill the temporary buffer
@@ -1668,17 +1665,15 @@
 ! Parameters       : None
 !------------------------------------------------------------------------
       subroutine des_addnodevalues()
+
+      use functions
 !-----------------------------------------------
       implicit none
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      integer :: lm,ijk,lface,lijkmin,lijkmax
+      integer :: lm,li,lj,lk,ijk,lface,lijkmin,lijkmax
       integer :: linode,ljnode,lknode,lijknode
-!-----------------------------------------------
-! include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! fill the temporary buffer
@@ -1744,17 +1739,15 @@
 ! Parameters       : None
 !------------------------------------------------------------------------
       subroutine des_addnodevalues2()
+
+      use functions
 !-----------------------------------------------
       implicit none
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      integer :: lm,ijk,lface,lijkmin,lijkmax
+      integer :: li,lj,lk,lm,ijk,lface,lijkmin,lijkmax
       integer :: linode,ljnode,lknode,lijknode
-!-----------------------------------------------
-! include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! fill the temporary buffer

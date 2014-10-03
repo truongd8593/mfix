@@ -52,6 +52,7 @@
       USE constant
       USE indices
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -67,8 +68,6 @@
 !
 !-----------------------------------------------
 
-      INCLUDE 'function.inc'
-!
       I = I_OF(IJK)
       J = J_OF(IJK)
       K = K_OF(IJK)

@@ -32,6 +32,7 @@
       USE geometry
       USE indices
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -63,8 +64,7 @@
 !                      Source vector
       DOUBLE PRECISION b_m(DIMENSION_3, 0:DIMENSION_M)
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
+
       IER = 0
       DO IJK = ijkstart3, ijkend3
          IF (.NOT.WALL_AT(IJK)) THEN
@@ -186,6 +186,7 @@
       USE geometry
       USE indices
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -206,7 +207,6 @@
 !                      Septadiagonal matrix A_m
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !-----------------------------------------------
-      INCLUDE 'function.inc'
       IER = 0
       DO IJK = ijkstart3, ijkend3
         !No need to check the matrix entries for cyclic

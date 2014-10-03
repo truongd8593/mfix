@@ -39,6 +39,7 @@
       USE compar
       USE sendrecv
       USE run
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -79,8 +80,6 @@
 !                      Transform K_g(IJK) into the CGS if we work with SI
       DOUBLE PRECISION Kg_micro
 !-----------------------------------------------
-
-      INCLUDE 'function.inc'
 
       IF (K_S0(M) /= UNDEFINED) RETURN
 

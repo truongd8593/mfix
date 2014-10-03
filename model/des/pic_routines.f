@@ -27,6 +27,7 @@
       USE error_manager
       USE fldvar, only: P_g
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !------------------------------------------------
 ! Local variables
@@ -58,8 +59,6 @@
       Integer :: PIC_ITERS
 ! Identifies that the indicated particle is of interest for debugging
       LOGICAL FOCUS
-
-      INCLUDE '../function.inc'
 
       CALL INIT_ERR_MSG("PIC_TIME_MARCH")
 
@@ -218,6 +217,7 @@
       use desmpi
       !USE cutcell
       USE mfix_pic
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -230,11 +230,6 @@
 
 ! index of solid phase that particle NP belongs to
       INTEGER :: M
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
-
 
       DO IJK = ijkstart3, ijkend3
             I = I_OF(IJK)
@@ -296,6 +291,7 @@
       use desmpi
       USE cutcell
       USE mfix_pic
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -308,10 +304,6 @@
 
 ! index of solid phase that particle NP belongs to
       INTEGER :: M
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
@@ -390,6 +382,7 @@
       USE cutcell
       USE fldvar, only: ep_g
       USE fun_avg
+      USE functions
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: L
 !-----------------------------------------------
@@ -417,13 +410,6 @@
 
       LOGICAL :: INSIDE_DOMAIN
 !-----------------------------------------------
-! Functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-
-!-----------------------------------------------
-
-      INCLUDE '../function.inc'
 
       M = PIJK(L,5)
       IJK = PIJK(L,4)
@@ -621,6 +607,7 @@
       USE interpolation
       USE mfix_pic
       USE fun_avg
+      USE functions
       implicit none
 
       ! general i, j, k indices
@@ -635,8 +622,6 @@
 
       double precision :: vol_ijk, vol_ipjk, vol_ijpk, vol_ipjpk
       double precision :: vol_ijkp, vol_ipjkp, vol_ijpkp, vol_ipjpkp
-
-      INCLUDE '../function.inc'
 
       if(MPPIC_SOLID_STRESS_SNIDER) then
 
@@ -999,6 +984,7 @@
       USE indices
       USE compar
       USE mfix_pic
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -1011,11 +997,6 @@
       INTEGER :: I, J, K, IM, I1, I2, J1, J2, K1, K2, IJK,&
                  JM, KM, IJKW, IMJK, IPJK, IP, IJK_WALL
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
-!-----------------------------------------------
-
 
 ! Set the default boundary conditions
       IF (DO_K) THEN
@@ -1083,6 +1064,7 @@
       USE indices
       USE compar
       USE mfix_pic
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -1094,10 +1076,6 @@
 ! Indices
       INTEGER          I,  J, K, JM, I1, I2, J1, J2, K1, K2, IJK,&
                        IM, KM, IJKS, IJMK, IJPK, IJK_WALL
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! Set the default boundary conditions
@@ -1164,6 +1142,7 @@
       USE indices
       USE compar
       USE mfix_pic
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -1175,10 +1154,6 @@
 ! Indices
       INTEGER :: I, J, K, KM, I1, I2, J1, J2, K1, K2, IJK,&
                  IM, JM, IJKB, IJKM, IJKP, IJK_WALL
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! Set the default boundary conditions
@@ -1234,6 +1209,7 @@
       USE compar
       USE discretelement
       use desmpi
+      USE functions
       USE fun_avg
 
       IMPLICIT NONE
@@ -1241,7 +1217,6 @@
       double precision, dimension(:), intent(in)  :: bufin
 
       integer :: ijk, i, j,k
-      INCLUDE '../function.inc'
 
       write(funit,*)'VARIABLES= ',' "I" ',' "J" ',' "K" ',' "DES_ROPS_NODE" '
 
@@ -1272,12 +1247,12 @@
       USE fldvar, only : ep_g
       USE discretelement
       USE mfix_pic
+      USE functions
       implicit none
       integer :: i, j, k, ijk, fluid_ind, LL, PC, IDIM
       double precision :: zcor
       character*100 :: filename
       logical finish
-      INCLUDE '../function.inc'
 
       WRITE(filename,'(A,"_",I5.5,".dat")') TRIM(RUN_NAME)//'_U_S_',myPE
       OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown')

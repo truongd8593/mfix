@@ -45,6 +45,7 @@
       USE constant
       USE cutcell
       USE quadric
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -82,10 +83,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: DROODP_G
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       call lock_xsi_array

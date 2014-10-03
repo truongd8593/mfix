@@ -43,6 +43,7 @@
       USE sendrecv
       USE cutcell, only: cartesian_grid, cut_cell_at, cg_ur_fac
       USE visc_s, only: ep_star_array
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -63,10 +64,6 @@
 ! solids volume fraction at maximum packing
       DOUBLE PRECISION :: EP_S_CP
 !-----------------------------------------------
-! Include statement functions
-!----------------------------------------------- 
-      INCLUDE 'function.inc'
-!----------------------------------------------- 
 
       IF (MCP == UNDEFINED_I) THEN
 ! this error should be caught earlier in the routines so that this

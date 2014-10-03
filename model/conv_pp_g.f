@@ -47,6 +47,7 @@
       USE pgcor
       USE compar
       USE mflux
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -66,10 +67,6 @@
       INTEGER :: M
 ! local value of A_m
       DOUBLE PRECISION :: am
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 

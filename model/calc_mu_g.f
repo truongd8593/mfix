@@ -60,6 +60,7 @@
       USE sendrecv
       USE mms
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -119,10 +120,6 @@
 ! W_g at the center of the THETA cell-(i, j, k).
 ! Calculated for Cylindrical coordinates only.
       DOUBLE PRECISION :: W_g_C
-!-----------------------------------------------
-! Include statment functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! solids phase index used throughout routine...

@@ -15,9 +15,6 @@
 !       and d for double precision. 0 for scalar, 1 for vector, 2 for
 !       2-D array and similarly 3.
 
-
-
-
       interface dbgprn
         module  procedure  dbgprn_0i,dbgprn_1i, &
                            dbgprn_0r,dbgprn_1r
@@ -93,6 +90,10 @@
       end subroutine dbgprn_1r
 
       subroutine prnfield_1d (gbuf,varname,flagl)
+
+      use functions
+      implicit none
+
       double precision, intent(in), dimension(:) :: gbuf
       character(len=3), intent(in)   :: flagl
       character(len=*), intent(in)   :: varname
@@ -100,7 +101,6 @@
       integer :: i,j,k
 !      integer, optional, intent(in) :: mroot, idebug
       integer ijk
-      include '../function.inc'
 
        OPEN(unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
        write(ldbg,"('Dumping variable : ',A10)") varname
@@ -120,6 +120,10 @@
 
 
       subroutine prnfield_1r (gbuf,varname,flagl)
+
+      use functions
+      implicit none
+
       real, intent(in), dimension(:) :: gbuf
       character(len=3), intent(in)   :: flagl
       character(len=*), intent(in)   :: varname
@@ -127,7 +131,6 @@
       integer :: i,j,k
 !      integer, optional, intent(in) :: mroot, idebug
       integer ijk
-      include '../function.inc'
 
        OPEN(unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
        write(ldbg,"('Dumping variable : ',A10)") varname
@@ -146,6 +149,10 @@
       end subroutine prnfield_1r
 
       subroutine prnfield_2d (gbuf,varname,flagl)
+
+      use functions
+      implicit none
+
       double precision, intent(in), dimension(:,:) :: gbuf
       character(len=3), intent(in)   :: flagl
       character(len=*), intent(in)   :: varname
@@ -153,7 +160,6 @@
       integer :: i,j,k
 !      integer, optional, intent(in) :: mroot, idebug
       integer ijk
-      include '../function.inc'
 
        OPEN(unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
        write(ldbg,"('Dumping variable : ',A10)") varname

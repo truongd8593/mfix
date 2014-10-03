@@ -34,6 +34,7 @@
       USE physprop
       USE geometry
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -49,10 +50,6 @@
       INTEGER :: M
 ! ijk index of fluid cell adjacent to boundary cell
       INTEGER :: IJK2
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       BC_OUT_N(L) = BC_OUT_N(L) + 1

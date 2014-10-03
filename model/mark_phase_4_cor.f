@@ -34,6 +34,7 @@
       USE constant
       USE compar
       USE visc_s
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -111,10 +112,6 @@
 ! phase_4_p_g or phase_4_p_s are changed from their default setting.
 ! if true for that index, then switch.
       LOGICAL          SW_g(0:DIMENSION_M), SW_s(DIMENSION_M)
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Initializiations

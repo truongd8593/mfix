@@ -66,6 +66,7 @@
       USE indices
       USE compar
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -80,8 +81,6 @@
 !                    Indices
       INTEGER :: M, IJK
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
 !
 !!!$omp    parallel do private(IJK)
       DO ijk = IJKSTART3, IJKEND3

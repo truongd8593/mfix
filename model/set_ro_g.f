@@ -34,6 +34,7 @@
       USE constant
       USE indices
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -43,10 +44,6 @@
 ! External functions
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: EOSG
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 

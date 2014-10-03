@@ -53,6 +53,7 @@
       USE mms
       USE bodyforce
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -99,10 +100,6 @@
       DOUBLE PRECISION :: SRT
 ! error message
       CHARACTER*80     LINE
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Set reference phase to gas
@@ -392,6 +389,7 @@
       USE output
       USE compar
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -414,10 +412,6 @@
       INTEGER :: M
 ! Turbulent shear stress
       DOUBLE PRECISION :: W_F_Slip
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Set reference phase to gas
@@ -933,6 +927,7 @@
       use physprop
       use ps
       use run
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -954,10 +949,6 @@
       INTEGER :: lJN, lJS
 ! terms of bm expression
       DOUBLE PRECISION :: pSource
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Set reference phase to gas

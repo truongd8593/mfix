@@ -20,6 +20,7 @@
       USE mpi_utility
 
       use error_manager
+      USE functions
 
       IMPLICIT NONE
 
@@ -46,9 +47,6 @@
       LOGICAL :: ERROR
       INTEGER :: I_FLUID, IJK_FLUID
       INTEGER :: I_WALL,  IJK_WALL
-
-      INCLUDE 'function.inc'
-
 
       CALL INIT_ERR_MSG("MOD_BC_I")
 

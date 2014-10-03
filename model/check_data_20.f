@@ -45,6 +45,7 @@
       USE sendrecv
       USE discretelement
       USE mfix_pic
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -65,10 +66,6 @@
       LOGICAL :: NONZERO
 ! 1.0 - sum of all volume fractions
       DOUBLE PRECISION DIF
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       call send_recv(p_g,2)

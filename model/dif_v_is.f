@@ -41,8 +41,9 @@
       USE output
       USE indices
       USE is
-      USE compar 
+      USE compar
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -78,7 +79,6 @@
       DOUBLE PRECISION D_f
 !
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 !
 !
 ! Make user defined internal surfaces non-conducting

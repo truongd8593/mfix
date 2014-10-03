@@ -43,6 +43,7 @@
       USE run
       USE visc_s
       USE solids_pressure
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -68,10 +69,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION :: CALC_EP_STAR
       DOUBLE PRECISION, EXTERNAL :: BLEND_FUNCTION
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !!$omp parallel do private(ijk)
@@ -152,6 +149,7 @@
       USE compar
       USE run
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -187,10 +185,6 @@
 ! phases from coarsest to finest
        DOUBLE PRECISION :: DP_TMP(MMAX), EPs_TMP(MMAX), &
                            EPs_max_TMP(MMAX), old_value
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 
@@ -411,6 +405,7 @@
       USE run
       USE visc_s
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -428,10 +423,6 @@
       Double Precision, Save:: scale
 ! Midpoint
       Double Precision, Save:: ep_mid_point
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Tan hyperbolic blending of stresses

@@ -19,6 +19,7 @@
       USE mpi_utility
 
       use error_manager
+      USE functions
 
       IMPLICIT NONE
 
@@ -40,8 +41,6 @@
 
 
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-
 
       CALL INIT_ERR_MSG("MOD_BC_J")
 

@@ -153,6 +153,7 @@ MODULE ChiScheme
       USE vshear
       USE compar
       USE sendrecv
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -195,9 +196,6 @@ MODULE ChiScheme
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: PHI_C_OF, CHI4SMART, CHI4MUSCL
-
-      INCLUDE 'function.inc'
-
 
         IF (SHEAR) THEN
 ! calculate CHI_E,CHI_N,CHI_T when periodic shear BCs are used
@@ -348,3 +346,4 @@ MODULE ChiScheme
       END SUBROUTINE CALC_CHI
 
 END MODULE CHIScheme
+

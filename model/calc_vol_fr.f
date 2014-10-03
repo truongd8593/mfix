@@ -39,6 +39,7 @@
       USE mpi_utility
       use fldvar, only: RO_S, EP_S
       USE solids_pressure
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -89,10 +90,6 @@
       INTEGER :: Err_l(0:numPEs-1)  ! local
       INTEGER :: Err_g(0:numPEs-1)  ! global
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Initialize error flag.

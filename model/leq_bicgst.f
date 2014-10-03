@@ -963,7 +963,7 @@
       else
          k = 1
 !AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
-! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 971)        
+! PGF90-S-0155-ijk may not appear in a PRIVATE clause (leq_bicgst.f: 971)
 !$omp parallel do private(i,j,ijk2,im1jk,ip1jk,ijm1k,ijp1k) collapse (2)
          do i = istart,iend
             do j = jstart,jend

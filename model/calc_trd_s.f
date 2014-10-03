@@ -37,6 +37,7 @@
       USE physprop
       USE compar
       USE sendrecv
+      USE functions
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -80,9 +81,6 @@
 !=======================================================================
 
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
-!
       DO M = 1, MMAX
 !!!!$omp    parallel do private(ijk,i,j,k,im,imjk,ijmk,ijkm)
          DO IJK = ijkstart3, ijkend3
@@ -313,6 +311,7 @@
       USE bc
       USE cutcell
       USE quadric
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -348,7 +347,6 @@
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 !
 !
 !!!!$omp  parallel do private( IJK, I,J,K, IM,IMJK,IJMK,IJKM ) &

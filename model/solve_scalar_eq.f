@@ -49,6 +49,7 @@
       Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, VxGama => Array4
       USE compar
       USE mflux
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -94,8 +95,7 @@
 !-----------------------------------------------
       LOGICAL , EXTERNAL :: IS_SMALL
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-      
+
       call lock_ambm
       call lock_tmp_array
 

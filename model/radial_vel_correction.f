@@ -17,6 +17,7 @@
       use fldvar
       use constant
       use mpi_utility
+      use functions
 
       IMPLICIT NONE
 
@@ -39,8 +40,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, &
                                     VAVG_U_S, VAVG_V_S, VAVG_W_S
-
-      INCLUDE 'function.inc'
 
       IF(NO_K .OR. KMAX==1) RETURN
 

@@ -61,7 +61,7 @@
 ! phase index
       INTEGER :: M, L
 ! Cp * Flux
-      DOUBLE PRECISION CpxFlux_E(DIMENSION_3), CpxFlux_N(DIMENSION_3), CpxFlux_T(DIMENSION_3) 
+      DOUBLE PRECISION CpxFlux_E(DIMENSION_3), CpxFlux_N(DIMENSION_3), CpxFlux_T(DIMENSION_3)
 ! previous time step term
       DOUBLE PRECISION :: apo
 ! source terms which appear appear in the center coefficient (lhs) and

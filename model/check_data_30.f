@@ -43,6 +43,7 @@
       USE mpi_utility
       USE discretelement
       USE mms
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -149,7 +150,6 @@
       INTEGER          IER
 !
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 
 ! For DM parallel runs we redo these checks again from here so that all processors can write
 ! log files.  There is a goto statement at the end to start from statement no. 1.

@@ -34,6 +34,7 @@
       USE compar
       USE sendrecv
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -56,10 +57,6 @@
 !-----------------------------------------------
 ! Indices
       INTEGER :: IJK
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! returning if mcp is not defined.
@@ -119,6 +116,7 @@
       USE compar
       USE sendrecv
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -141,10 +139,6 @@
 !-----------------------------------------------
 ! Indices
       INTEGER :: IJK
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! returning if mcp is not defined.
@@ -203,6 +197,7 @@
       USE compar
       USE sendrecv
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -225,10 +220,6 @@
 !-----------------------------------------------
 ! Indices
       INTEGER :: IJK
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! returning if mcp is not defined.
