@@ -94,8 +94,9 @@
                WRITE(ERR_MSG,1101)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
-! needed by default solids-solids drag model
-            IF (SMAX >=2) THEN
+! needed by default solids-solids drag model. SMAX may be 1 for
+! hybrid simulations and C_F is still needed.
+            IF (SMAX >=2 .OR. DEM_SOLIDS) THEN
                IF (C_F == UNDEFINED) THEN
                   WRITE(ERR_MSG,1102)
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
