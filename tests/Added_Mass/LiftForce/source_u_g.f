@@ -39,6 +39,13 @@
       USE is
       USE matrix
       USE mms
+      use physprop
+      use run
+      use rxns
+      use scales
+      use tau_g
+      use toleranc
+      use visc_g
       USE fun_avg
       IMPLICIT NONE
 !-----------------------------------------------
