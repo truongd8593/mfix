@@ -347,6 +347,8 @@ common_SOURCES = \
 	model/get_stats.f \
 	model/get_walls_bc.f \
 	model/ic_mod.f \
+	model/in_binary_512_mod.f \
+	model/in_binary_512i_mod.f \
 	model/indices_mod.f \
 	model/init_ab_m.f \
 	model/init_fvars.f \
@@ -707,8 +709,6 @@ endif
 dist_mfix_SOURCES += \
 	model/check_data/check_odepack_stiff_chem.f \
 	model/get_data.f \
-	model/in_bin_512.f \
-	model/in_bin_512i.f \
 	model/out_array.f \
 	model/out_array_c.f \
 	model/out_array_k.f \

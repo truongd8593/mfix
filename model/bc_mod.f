@@ -146,7 +146,7 @@
 !
 !                      Type of boundary: MASS_INFLOW, MASS_OUTFLOW,
 !                      P_INFLOW, P_OUTFLOW, FREE_SLIP_WALL, NO_SLIP_WALL
-      CHARACTER*16     BC_TYPE (DIMENSION_BC)
+      CHARACTER(LEN=16)     BC_TYPE (DIMENSION_BC)
 
 
 !                      FLAG to specify if this PO BC applies to solid phase

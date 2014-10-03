@@ -192,6 +192,8 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_PAR_POS(lNEXT_REC)
 
+      USE in_binary_512
+
       implicit none
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
@@ -481,6 +483,8 @@
 ! read data to the correct rank.                                       !
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_PAR_COL(lNEXT_REC)
+
+      USE in_binary_512i
 
       implicit none
 
@@ -788,6 +792,8 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_DES_1I(lNEXT_REC, INPUT_I)
 
+      USE in_binary_512i
+
       IMPLICIT NONE
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
@@ -838,6 +844,8 @@
 ! Purpose: Write scalar integers to RES file.                          !
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_DES_1D(lNEXT_REC, INPUT_D)
+
+      USE in_binary_512
 
       IMPLICIT NONE
 
@@ -896,6 +904,8 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_DES_1L(lNEXT_REC, INPUT_L)
 
+      USE in_binary_512i
+
       IMPLICIT NONE
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
@@ -939,6 +949,7 @@
 
       use desmpi, only: iRootBuf
       use desmpi, only: iProcBuf
+      USE in_binary_512i
 
       IMPLICIT NONE
 
@@ -1006,6 +1017,7 @@
 
       use desmpi, only: dRootBuf
       use desmpi, only: dProcBuf
+      USE in_binary_512
 
       IMPLICIT NONE
 
@@ -1069,6 +1081,7 @@
 
       use desmpi, only: iRootBuf
       use desmpi, only: iProcBuf
+      USE in_binary_512i
 
       IMPLICIT NONE
 
@@ -1145,6 +1158,7 @@
 
       use desmpi, only: iRootBuf
       use desmpi, only: iProcBuf
+      USE in_binary_512i
 
       IMPLICIT NONE
 
@@ -1208,6 +1222,7 @@
 
       use desmpi, only: dRootBuf
       use desmpi, only: dProcBuf
+      USE in_binary_512
 
       IMPLICIT NONE
 
@@ -1272,6 +1287,7 @@
 
       use desmpi, only: iRootBuf
       use desmpi, only: iProcBuf
+      USE in_binary_512i
 
       IMPLICIT NONE
 

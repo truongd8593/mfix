@@ -94,16 +94,16 @@
       DOUBLE PRECISION USR_DT (DIMENSION_USR)
 !
 !                      Type of user-defined output: BINARY or ASCII.
-      CHARACTER*6      USR_TYPE (DIMENSION_USR)
+      CHARACTER(LEN=6)      USR_TYPE (DIMENSION_USR)
 !
 !                      Variables to be written in the user-defined output file.
-      CHARACTER*60     USR_VAR (DIMENSION_USR)
+      CHARACTER(LEN=60)     USR_VAR (DIMENSION_USR)
 !
 !                      Format for writing user-defined (ASCII) output file.
-      CHARACTER*60     USR_FORMAT (DIMENSION_USR)
+      CHARACTER(LEN=60)     USR_FORMAT (DIMENSION_USR)
 !
 !                      Extension for the user-defined output file.
-      CHARACTER*16     USR_EXT (DIMENSION_USR)
+      CHARACTER(LEN=16)     USR_EXT (DIMENSION_USR)
 !
 !                      Interval in number of time steps at which LOG file
 !                      is written

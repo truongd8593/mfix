@@ -46,6 +46,7 @@
       USE mpi_utility      ! for gather
       USE sendrecv         ! for filling the boundary information
       USE stiff_chem
+      USE in_binary_512i
 
       IMPLICIT NONE
 !-----------------------------------------------

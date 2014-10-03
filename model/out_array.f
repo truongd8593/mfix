@@ -37,6 +37,7 @@
       USE funits
       USE compar
       USE functions
+      USE in_binary_512
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

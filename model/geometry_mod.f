@@ -31,7 +31,7 @@
 
 !
 !                      Coordinates: CARTESIAN, CYLINDRICAL
-      CHARACTER*16     COORDINATES
+      CHARACTER(LEN=16)     COORDINATES
 !
 !                      Indicates whether x or r direction is not
 !                      considered
@@ -145,8 +145,8 @@
 !
 !                      Cell flags (bc/ic conditions)
 !//PG allocatable type causes PG internal error, Ed's soln: pointers
-!      CHARACTER*3, DIMENSION(:), ALLOCATABLE :: ICBC_FLAG
-      character*3,  dimension(:), pointer :: icbc_flag
+!      CHARACTER(LEN=3), DIMENSION(:), ALLOCATABLE :: ICBC_FLAG
+      character(LEN=3),  dimension(:), pointer :: icbc_flag
 !
 !                      1 / dx_i
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  oDX

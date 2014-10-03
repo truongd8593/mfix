@@ -525,6 +525,7 @@
         USE mpi_utility      !//d pnicol : for gatherWriteSpx
         USE sendrecv         !//d pnicol : for gatherWriteSpx
         USE cutcell
+        USE in_binary_512
         IMPLICIT NONE
         integer uspxL, NEXT_REC
         double precision, dimension(ijkmax2) :: array1
@@ -560,6 +561,7 @@
      USE mpi_utility      !//d pnicol : for gatherWriteSpx
      USE sendrecv         !//d pnicol : for gatherWriteSpx
      USE MFIX_netcdf
+     USE in_binary_512
 
      IMPLICIT NONE
 
@@ -603,6 +605,7 @@
      USE mpi_utility      !//d pnicol : for gatherWriteSpx
      USE sendrecv         !//d pnicol : for gatherWriteSpx
      USE MFIX_netcdf
+     USE in_binary_512i
 
      IMPLICIT NONE
 

@@ -43,6 +43,7 @@
       USE cdist
       USE mpi_utility
       USE sendrecv
+      USE in_binary_512
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -251,6 +252,7 @@
           USE cdist
         USE mpi_utility
         USE sendrecv
+        USE in_binary_512
         IMPLICIT NONE
         double precision, dimension(ijkmax2) :: array1
         double precision, dimension(ijkmax3) :: array2
@@ -290,6 +292,7 @@
       USE mpi_utility
       USE sendrecv
       USE MFIX_netcdf
+      USE in_binary_512
 
       IMPLICIT NONE
 

@@ -51,7 +51,8 @@
 ! Local variables
 !-----------------------------------------------
       integer ijk,lijkproc,liproc,ljproc,lkproc
-      integer li,lj,lk,li2,lj2,lk2
+      integer li,lj,lk
+      integer li2,lj2,lk2
       integer liproc_start,liproc_end,ljproc_start,ljproc_end,lkproc_start,lkproc_end
       integer lci,lcj,lck,lproc,lcount
       integer linode,ljnode,lknode

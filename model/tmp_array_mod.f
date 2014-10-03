@@ -37,7 +37,7 @@
 ! temporary storage of dimension (ijk)
       INTEGER, DIMENSION(:), ALLOCATABLE :: ARRAY1I
 
-      character*3, dimension(:), pointer :: ARRAY1C
+      character(LEN=3), dimension(:), pointer :: ARRAY1C
 
       LOGICAL :: tmp_array_locked = .false.
       LOGICAL :: tmp_array2_locked = .FALSE.

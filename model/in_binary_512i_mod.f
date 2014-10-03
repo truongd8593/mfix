@@ -20,6 +20,10 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
+MODULE IN_BINARY_512I
+
+CONTAINS
+
       SUBROUTINE IN_BIN_512I(IUNIT, ARRAY, N, NEXT_REC)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
@@ -170,6 +174,8 @@
 !
       return
       end
+
+END MODULE IN_BINARY_512I
 
 !// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization

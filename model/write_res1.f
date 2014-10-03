@@ -223,6 +223,7 @@
       USE sendrecv         !//d pnicol : for gather
 
       USE cutcell
+      USE in_binary_512
 
       IMPLICIT NONE
 
@@ -283,6 +284,7 @@
         USE mpi_utility
         USE MFIX_netcdf
         USE energy
+        USE in_binary_512
 !       USE tmp_array
 
 

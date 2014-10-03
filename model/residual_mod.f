@@ -70,8 +70,8 @@
       DOUBLE PRECISION :: RESID_GRP(6)
 !
 !                      Residuals to be printed out
-      CHARACTER*4      RESID_STRING(MAX_RESID_INDEX)
-      CHARACTER*8      RESID_GRP_STRING(6)
+      CHARACTER(LEN=4)      RESID_STRING(MAX_RESID_INDEX)
+      CHARACTER(LEN=8)      RESID_GRP_STRING(6)
 !
 !                      Indices of residuals to be printed out
       INTEGER          RESID_INDEX(MAX_RESID_INDEX, 2)

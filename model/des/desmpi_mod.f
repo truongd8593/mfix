@@ -1054,7 +1054,8 @@
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      integer :: ltot_ind,lindx,ijk,cc,ii,ll,kk,li,lj,lk
+      integer :: li, lj, lk
+      integer :: ltot_ind,lindx,ijk,cc,ii,ll,kk
       integer :: lneighindx,lcontactindx,lneigh,lcontact,lijk,&
                  lpicloc,lparcnt,lcurpar
       integer :: lpacketsize,lbuf,ltordimn,ltmpbuf,num_collisions_to_send,lcollisionsize
@@ -1597,7 +1598,8 @@
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      integer :: lm,li,lj,lk,ijk,lface,lijkmin,lijkmax
+      integer :: li, lj, lk
+      integer :: lm,ijk,lface,lijkmin,lijkmax
       integer :: linode,ljnode,lknode,lijknode
 !-----------------------------------------------
 
@@ -1672,7 +1674,8 @@
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      integer :: lm,li,lj,lk,ijk,lface,lijkmin,lijkmax
+      integer :: li, lj, lk
+      integer :: lm,ijk,lface,lijkmin,lijkmax
       integer :: linode,ljnode,lknode,lijknode
 !-----------------------------------------------
 
@@ -1746,7 +1749,8 @@
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      integer :: li,lj,lk,lm,ijk,lface,lijkmin,lijkmax
+      integer :: li, lj, lk
+      integer :: lm,ijk,lface,lijkmin,lijkmax
       integer :: linode,ljnode,lknode,lijknode
 !-----------------------------------------------
 

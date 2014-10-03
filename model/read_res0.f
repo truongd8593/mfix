@@ -40,6 +40,8 @@
       USE mpi_utility
       USE fldvar
       USE stiff_chem
+      USE in_binary_512
+      USE in_binary_512i
 
       IMPLICIT NONE
 !-----------------------------------------------
