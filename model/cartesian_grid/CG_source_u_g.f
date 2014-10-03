@@ -680,17 +680,17 @@
 !                           A_M(IJK,0,M) = -(HALF*BC_HW_G(BCV)+ODY_N(JM))
 !                           B_M(IJK,M) = -BC_HW_G(BCV)*BC_UW_G(BCV)
                         ELSEIF (U_MASTER_OF(IJK) == TOP_OF(IJK)) THEN
-                              A_M(IJK,0,M)=-(HALF*BC_HW_G(L)+ONEoDZ_T_U(IJK))
-                              A_M(IJK,T,M)=-(HALF*BC_HW_G(L)-ONEoDZ_T_U(IJK))
-                              B_M(IJK,M) = -BC_HW_G(L)*BC_UW_G(L)
+                              A_M(IJK,0,M)=-(HALF*BC_HW_G(BCV)+ONEoDZ_T_U(IJK))
+                              A_M(IJK,T,M)=-(HALF*BC_HW_G(BCV)-ONEoDZ_T_U(IJK))
+                              B_M(IJK,M) = -BC_HW_G(BCV)*BC_UW_G(BCV)
 
 !                              A_M(IJK,0,M)=-(HALF*BC_HW_G(L)+ODZ_T(K)*OX_E(I))
 !                              A_M(IJK,T,M)=-(HALF*BC_HW_G(L)-ODZ_T(K)*OX_E(I))
 !                              B_M(IJK,M) = -BC_HW_G(L)*BC_UW_G(L)
                         ELSEIF (U_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN
-                              A_M(IJK,B,M) = -(HALF*BC_HW_G(L)-ONEoDZ_T_U(IJKM))
-                              A_M(IJK,0,M) = -(HALF*BC_HW_G(L)+ONEoDZ_T_U(IJKM))
-                              B_M(IJK,M) = -BC_HW_G(L)*BC_UW_G(L)
+                              A_M(IJK,B,M) = -(HALF*BC_HW_G(BCV)-ONEoDZ_T_U(IJKM))
+                              A_M(IJK,0,M) = -(HALF*BC_HW_G(BCV)+ONEoDZ_T_U(IJKM))
+                              B_M(IJK,M) = -BC_HW_G(BCV)*BC_UW_G(BCV)
 
 !                              A_M(IJK,B,M) = -(HALF*BC_HW_G(L)-ODZ_T(KM)*OX_E(I&
 !                                 ))
