@@ -80,7 +80,7 @@
       INTEGER I, J, K, IJK, M, IJKP
 
       IF(W_s(IJK, M) .GT. ZERO) THEN
-        MFLOW_sz = DX(I) * DY(J) * W_s(IJK, M) * ROP_s(IJK, M) 
+        MFLOW_sz = DX(I) * DY(J) * W_s(IJK, M) * ROP_s(IJK, M)
       ELSE
         IJKP = KP_OF(IJK)
         MFLOW_sz = DX(I) * DY(J) * W_s(IJK, M) * ROP_s(IJKP, M)
@@ -125,7 +125,7 @@
       INTEGER IJK, M, IJKP
 
       IF(W_s(IJK, M) .GT. ZERO) THEN
-        FLUX_sz = W_s(IJK, M) * ROP_s(IJK, M) 
+        FLUX_sz = W_s(IJK, M) * ROP_s(IJK, M)
       ELSE
         IJKP = KP_OF(IJK)
         FLUX_sz = W_s(IJK, M) * ROP_s(IJKP, M)

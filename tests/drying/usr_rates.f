@@ -58,6 +58,6 @@
          RATES(Drying) = ZERO
       ENDIF
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE USR_RATES

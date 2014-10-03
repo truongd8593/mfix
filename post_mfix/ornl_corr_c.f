@@ -14,11 +14,11 @@
       use functions
 
       implicit none
-      
+
 
       integer :: minlag , maxlag
       integer :: i , j , k , ijk , L , spx_num , nt , nstep_1
-      integer :: lagstep 
+      integer :: lagstep
 
       real*8    :: time_series(*)
 
@@ -98,7 +98,7 @@
       use functions
 
       implicit none
-      
+
 
       integer :: minlag , maxlag , lagstep
       integer :: i , j , k , ijk , L , spx_num , nt , nstep_1
@@ -183,11 +183,11 @@
       use functions
 
       implicit none
-      
+
 
       integer :: minlag , maxlag
       integer :: i , j , k , ijk , L , spx_num , nt , nstep_1
-      integer :: lagstep 
+      integer :: lagstep
 
       real*8    :: time_series(100000)
 
@@ -270,11 +270,11 @@
       use functions
 
       implicit none
-      
+
 
       integer :: minlag , maxlag
       integer :: i , j , k , ijk , L , spx_num , nt , nstep_1
-      integer :: lagstep 
+      integer :: lagstep
 
       real*8    :: time_series(*)
 

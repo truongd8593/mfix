@@ -34,7 +34,7 @@
       logical read_spx(*)
 !                loop counter
       INTEGER    LC,l1
-      
+
 !
 !                file version ID
       CHARACTER  VERSION*512

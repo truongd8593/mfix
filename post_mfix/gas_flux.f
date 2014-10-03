@@ -36,14 +36,14 @@
       Use physprop
       Use compar
       Use functions
-      
+
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
 !
       DOUBLE PRECISION  TAVG(DIMENSION_3,3)
       REAL              TIME_REAL(N_SPX)
       REAL              TIME_FOUND, TIME_NOW
-      INTEGER           NSTEP_1 
+      INTEGER           NSTEP_1
       INTEGER           NX , NY , NZ
       INTEGER           REC_POINTER(N_SPX) , L , NT
       LOGICAL           READ_SPX(N_SPX) , AT_EOF(N_SPX)

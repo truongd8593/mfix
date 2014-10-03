@@ -1,10 +1,10 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: USR3                                                   C
-!  Purpose: This routine is called after the time loop ends and is   
-!           user-definable.  The user may insert code in this routine   
-!           or call appropriate user defined subroutines.  
-!           This routine is not called from an IJK loop, hence  
+!  Purpose: This routine is called after the time loop ends and is
+!           user-definable.  The user may insert code in this routine
+!           or call appropriate user defined subroutines.
+!           This routine is not called from an IJK loop, hence
 !           all indices are undefined.                                 C
 !                                                                      C
 !  Author:                                            Date: dd-mmm-yy  C
@@ -24,8 +24,8 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE USR3 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE USR3
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
       Use usr
       IMPLICIT NONE
@@ -45,8 +45,8 @@
 
       CALL WRITE_VELOCITY_PROFILES
 
-      RETURN  
-      END SUBROUTINE USR3 
+      RETURN
+      END SUBROUTINE USR3
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -59,10 +59,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VELOCITY_PROFILES
-    
+
       USE param
       USE param1
       USE parallel
@@ -70,14 +70,14 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE fldvar
       USE quadric
       USE cutcell
       USE functions
-      
+
       IMPLICIT NONE
       INTEGER :: I,J,K,IJK
       INTEGER I1,I2,J1,J2,N,NP
@@ -119,9 +119,9 @@
 
       N = 0
 
-      DO J = J1,J2 
+      DO J = J1,J2
          DO I = I1,I2
-              
+
             IJK = FUNIJK(I,J,K)
 
             XU = X_U(IJK)
@@ -173,15 +173,15 @@
 
       N = 0
 
-      DO J = J1,J2 
+      DO J = J1,J2
          DO I = I1,I2
-               
+
             IJK = FUNIJK(I,J,K)
 
             XV = X_V(IJK)
             YV = Y_V(IJK)
- 
-            left_boundary = YV / DTAN(angle) 
+
+            left_boundary = YV / DTAN(angle)
             half_width = LREF / DSIN(angle)
 
             x_norm = ( XV - left_boundary  - half_width ) / (half_width)
@@ -228,7 +228,7 @@
 
       RETURN
 
-      
+
       END SUBROUTINE WRITE_VELOCITY_PROFILES
 
 

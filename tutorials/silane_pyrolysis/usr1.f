@@ -24,21 +24,21 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE USR1 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE USR1
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE fldvar
       USE physprop
       USE geometry
       USE indices
       USE run
-      USE toleranc 
+      USE toleranc
       USE constant
-      USE compar 
-      USE funits    
+      USE compar
+      USE funits
       USE fun_avg
       USE usr
       USE functions
@@ -52,11 +52,11 @@
       INTEGER IJK, M, I, IMJK, IJMK, IJKM
       DOUBLE PRECISION DIFF, EP_g2
       DOUBLE PRECISION Sc1o3, UGC, VGC, WGC, USCM, VSCM, WSCM, VREL, Re
-      INCLUDE 'usrnlst.inc' 
+      INCLUDE 'usrnlst.inc'
 
-      DO M = 1, MMAX 
-         DO IJK = IJKSTART3, IJKEND3 
-            IF (FLUID_AT(IJK)) THEN 
+      DO M = 1, MMAX
+         DO IJK = IJKSTART3, IJKEND3
+            IF (FLUID_AT(IJK)) THEN
 	      I = I_OF(IJK)
               IMJK  = IM_OF(IJK)
               IJMK  = JM_OF(IJK)
@@ -85,6 +85,6 @@
             ENDIF
          END DO
       END DO
-      RETURN  
-      END SUBROUTINE USR1 
+      RETURN
+      END SUBROUTINE USR1
 

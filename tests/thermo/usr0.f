@@ -24,7 +24,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE USR0 
+      SUBROUTINE USR0
 
       use rxns
       use usr
@@ -45,5 +45,5 @@
       CLOSE(678)
 
 
-      RETURN  
-      END SUBROUTINE USR0 
+      RETURN
+      END SUBROUTINE USR0

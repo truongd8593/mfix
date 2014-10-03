@@ -46,5 +46,5 @@
          DES_RATES(EX_RXN) = 0.0d0
       ENDIF
 
-      RETURN  
+      RETURN
       END SUBROUTINE USR_RATES_DES

@@ -30,7 +30,7 @@
       Use geometry
       Use compar
       Use functions
-      
+
       IMPLICIT NONE
 !
 !              Passed value of IJK index

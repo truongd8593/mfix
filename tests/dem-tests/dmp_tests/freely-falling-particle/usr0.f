@@ -24,9 +24,9 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE USR0 
+      SUBROUTINE USR0
 
-      use compar 
+      use compar
       use desmpi
       use discretelement
       use mpi_utility
@@ -85,10 +85,10 @@
       call global_sum(lgathercnts,igathercnts)
 
 ! Set the gather displacement array.
-      idispls(0) = 0 
-      do lproc = 1, numpes-1 
-         idispls(lproc) = idispls(lproc-1) + igathercnts(lproc-1)  
-      end do 
+      idispls(0) = 0
+      do lproc = 1, numpes-1
+         idispls(lproc) = idispls(lproc-1) + igathercnts(lproc-1)
+      end do
 
 ! Record local data
       filename = ''
@@ -100,8 +100,8 @@
          write(201,"(/3x,'Global',3x,'Local',11x,'Position')")
          write(201,"(5x,'ID',6x,'ID',7x,'X',9x,'Y',9x,'Z')")
          do lc1 = 1, max_pip
-            if(.not.pea(lc1,1)) cycle 
-            if(pea(lc1,4)) cycle 
+            if(.not.pea(lc1,1)) cycle
+            if(pea(lc1,4)) cycle
             write(201,"(3x,I6,2x,I6,3(2x,F8.4))") iglobal_id(lc1), lc1, &
                 des_pos_new(lc1,1), des_pos_new(lc1,2), des_pos_new(lc1,3)
          end do
@@ -233,7 +233,7 @@
       if(allocated(lMass   )) deallocate( lMass    )
       if(allocated(lPhase  )) deallocate( lPhase   )
 
- 
+
       return
 
-      END SUBROUTINE USR0 
+      END SUBROUTINE USR0

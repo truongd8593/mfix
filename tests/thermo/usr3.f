@@ -6,7 +6,7 @@
 !  Purpose: Write out the heat of reactions calculated in RATES0.      !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE USR3 
+      SUBROUTINE USR3
 
       use energy
       use rxns
@@ -39,7 +39,7 @@
       WRITE(lUnit,1100) 'Reaction','HORg', 'HORs1', 'HORs2', 'HORs3'
 
 ! This case has ten fulid cells and ten reactions. Each fluid cell has
-! a reaction rate of "ONE" for a single reaction and "ZERO" for all 
+! a reaction rate of "ONE" for a single reaction and "ZERO" for all
 ! other reactions. Note that the first 49 IJK values are for ghost
 ! cells and therefore 49 is added to the reaction loop counter to
 ! map between the rates array and the fluid cells.
@@ -64,4 +64,4 @@
  1200 FORMAT(3X,A,4(3X,G12.3))
  1300 FORMAT(90('-'),/3X,A,16X,G12.3,3(3X,G12.3))
 
-      END SUBROUTINE USR3 
+      END SUBROUTINE USR3

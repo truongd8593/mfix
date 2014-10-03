@@ -277,7 +277,7 @@
        lag(ll) = k
        ! The following line was
        !   ccf(ll) = (ck / (dble(endidx - k - begidx + 1)**2)) / scale
-       ! and gave wrong scaling. <- 2001-12-06 ceaf    
+       ! and gave wrong scaling. <- 2001-12-06 ceaf
        ccf(ll) = ck / (dble(endidx - k - begidx + 1) * scale)
        ll = ll + 1
       enddo ! k
@@ -483,14 +483,14 @@
       integer*4 i,j,k !........................................ counters
 
       if (lstp.eq.0) lstp = 1
-      k = 1 ! initialize write index 
+      k = 1 ! initialize write index
       do i=lmin,lmax,lstp
        s2 = 0.d0
        s3 = 0.d0
        do j=ibeg,iend-i,1
         d = TS(j+i) - TS(j)
         s2 = s2 + d**2
-        s3 = s3 + d**3	 
+        s3 = s3 + d**3
        enddo ! j
        lag(k) = i
        tsym(k) = 0.d0
@@ -572,7 +572,7 @@
       endidx = iend
 
 ! --- Estimate temporal-symmetry function ---
-      k = 1 ! initialize write index 
+      k = 1 ! initialize write index
       do l=lmin,lmax,lstp
        sum = 0.d0
        do j=begidx,(endidx-l),1

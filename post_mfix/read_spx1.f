@@ -80,7 +80,7 @@
 
       num_recs = 1 + ijkmax2 / nwords_r
       if (mod(ijkmax2,nwords_r) .eq. 0) num_recs = num_recs - 1
- 
+
 !
 ! ".SP1" FILE         EP_g    [ ROP_g , RO_g must be calculated ...
 !                                        not written out ]
@@ -321,11 +321,11 @@
             RETURN
          END IF
          AT_EOF(9) = .FALSE.
-         READ (UNIT_SPX + 9, REC=NEXT_REC) TIME_REAL(9), NSTEP 
-         NEXT_REC = NEXT_REC + 1 
-         DO LC = 1, NScalar 
-            CALL IN_BIN_R (UNIT_SPX + 9,Scalar(1,LC) , IJKMAX2,NEXT_REC) 
-         END DO 
+         READ (UNIT_SPX + 9, REC=NEXT_REC) TIME_REAL(9), NSTEP
+         NEXT_REC = NEXT_REC + 1
+         DO LC = 1, NScalar
+            CALL IN_BIN_R (UNIT_SPX + 9,Scalar(1,LC) , IJKMAX2,NEXT_REC)
+         END DO
          REC_POINTER(9) = NEXT_REC
       ENDIF
 
@@ -349,7 +349,7 @@
            CALL IN_BIN_R(UNIT_SPX+10,ReactionRates(1,N),IJKMAX2, &
 							NEXT_REC)
          end do
-         REC_POINTER(10) = NEXT_REC 
+         REC_POINTER(10) = NEXT_REC
       END IF
 !
 ! ".SP11" FILE         Scalar
@@ -365,11 +365,11 @@
             RETURN
          END IF
          AT_EOF(11) = .FALSE.
-         READ (UNIT_SPX + 11, REC=NEXT_REC) TIME_REAL(11), NSTEP 
-         NEXT_REC = NEXT_REC + 1 
-         
-	 IF(K_Epsilon) THEN 
-           CALL IN_BIN_R (UNIT_SPX + 11,K_Turb_G , IJKMAX2,NEXT_REC) 
+         READ (UNIT_SPX + 11, REC=NEXT_REC) TIME_REAL(11), NSTEP
+         NEXT_REC = NEXT_REC + 1
+
+	 IF(K_Epsilon) THEN
+           CALL IN_BIN_R (UNIT_SPX + 11,K_Turb_G , IJKMAX2,NEXT_REC)
            CALL IN_BIN_R (UNIT_SPX + 11,E_Turb_G , IJKMAX2,NEXT_REC)
 	 ENDIF
          REC_POINTER(11) = NEXT_REC

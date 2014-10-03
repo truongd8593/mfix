@@ -180,7 +180,7 @@
 
 ! --- Normalize if requested ---
 ! ... Normalize by sum of power ...
-      if (nrm.eq.1) then 
+      if (nrm.eq.1) then
        ! find sum
        sum = 0.
        do k=1,n2
@@ -192,7 +192,7 @@
        enddo ! k
       endif
 ! ... Standardize by data variance ...
-      if (nrm.eq.2) then 
+      if (nrm.eq.2) then
        ! find data mean
        sum = 0.
 ! 2005-01-03 ceaf: changed loop to 1,ei from nb*n to calculate
@@ -259,7 +259,7 @@
 !*   2002-02-11 ceaf => removed external and declaration statement for *
 !*              bitrev - caused compilation errors on some systems     *
 !*   2006-03-01 sp => Changed real*4 to real*8 to match the calling    *
-!*              routine                                                * 
+!*              routine                                                *
 !***********************************************************************
 
       subroutine fft(yr,yi,nu,dir,hng)
@@ -301,7 +301,7 @@
       n2 = n / 2
       nu1 = nu - 1
       k = 0
-     
+
       do l = 1, nu
  1     do i = 1,n2
         a = int(k / (2 ** nu1))

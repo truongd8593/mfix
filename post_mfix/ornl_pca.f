@@ -66,7 +66,7 @@
       integer*4 offdiag !...... flag to signal significant off-diagonals
 ! ... Intermediate quantities in computation ...
       real*8 app,aqq,apq,lambda,mu,temp,sine,cosine,omega
-      real*8 co2,si2,sico,sico2          
+      real*8 co2,si2,sico,sico2
 
       RHO = 1.0d-16
 
@@ -117,7 +117,7 @@
        endif
        sine = omega / sqrt(2 * (1 + sqrt(1 - omega ** 2)))
        cosine = sqrt(1 - sine ** 2)
-    
+
        do i=1,N
         temp = a(i,p) * cosine - a(i,q) * sine
         a(i,q) = a(i,p) * sine + a(i,q) * cosine
@@ -144,7 +144,7 @@
       p = p + 1
       if (p.le.(q-1)) goto 45  ! inner loop until p > (q - 1)
       enddo ! q
-      
+
       if ((nu.le.nufinal).and.offdiag.eq.0) then ! outer loop
        goto 41  ! exit loop
       else
@@ -226,7 +226,7 @@
       integer*4 npact !.......... actual number of data points processed
       real*8 avg !................................................. mean
       real*8 TSc(MAXREC) !......................... centered time series
-      integer*4 nwin !............. number of embedded trajectory points      
+      integer*4 nwin !............. number of embedded trajectory points
 ! ... NOTICE: Keep the covariance matrices at least real*8.
       real*8 covin(MAXDIM,MAXDIM) !............ covariance matrix, input
       real*8 covout(MAXDIM,MAXDIM) !.......... covariance matrix, output
@@ -322,7 +322,7 @@
 
       subroutine traeigen(TS,ibeg,iend,embdim,embdel,eigvec,comp,TSc)
 
-      implicit none  
+      implicit none
 
       integer*4 MAXDIM !.......... maximal allowable embedding dimension
       parameter (MAXDIM=100)
@@ -343,7 +343,7 @@
       real*8 avg !..................................... time-series mean
 
 ! --- Determine number of embedded data points ---
-      itpts = (iend - ibeg + 1) - (embdim - 1) * embdel 
+      itpts = (iend - ibeg + 1) - (embdim - 1) * embdel
 
 ! --- Calculate time-series mean ---
       avg = 0.

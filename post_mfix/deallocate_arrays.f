@@ -1,11 +1,11 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
-!  Module name: DEallocate_ARRAYS                                     
+!
+!  Module name: DEallocate_ARRAYS
 !  Purpose: deallocate arrays
 !                                                                      C
-!  Author: M. Syamlal                                Date: 17-DEC-98 
-!  Reviewer: 
-!                                                                     
+!  Author: M. Syamlal                                Date: 17-DEC-98
+!  Reviewer:
+!
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       SUBROUTINE Deallocate_ARRAYS
@@ -13,7 +13,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1
       Use ambm
       Use cont
@@ -46,8 +46,8 @@
 ! Local variables
 !-----------------------------------------------
       INTEGER M
-!-----------------------------------------------      
-      
+!-----------------------------------------------
+
 !ambm
       Deallocate( A_m )
       Deallocate( B_m )
@@ -84,7 +84,7 @@
 !      Deallocate(  RO_SVo )
       Deallocate(  EP_SS )
       Deallocate(  ERR_ARRAY )
-         
+
       Deallocate(  T_g  )
       Deallocate(  T_s  )
       Deallocate(  T_go  )
@@ -114,12 +114,12 @@
       Deallocate(  P_staro  )
       Deallocate(  THETA_m  )
       Deallocate(  THETA_mo  )
-      
+
       IF(DIMENSION_Scalar /= 0)then
         Deallocate(  Scalar  )
         Deallocate(  Scalaro  )
       ENDIF
-      
+
       IF(K_Epsilon)then
         Deallocate(  K_Turb_G  )
         Deallocate(  E_Turb_G  )
@@ -180,7 +180,7 @@
       Deallocate(  Jp1  )
       Deallocate(  Km1  )
       Deallocate(  Kp1  )
-      
+
 !pgcor
       Deallocate(  d_e )
       Deallocate(  d_n )
@@ -215,7 +215,7 @@
       deallocate( NUM_RESID )   ! added 17-mar-2008
       deallocate( den_resid )   ! added 17-mar-2008
       deallocate( resid_pack )  ! added 17-mar-2008
- 
+
 !rxns
       if (nRR .gt. 0) Deallocate( ReactionRates )
       Deallocate(  R_gp  )
@@ -225,12 +225,12 @@
       Deallocate(  SUM_R_g  )
       Deallocate(  SUM_R_s  )
       Deallocate(  R_phase  )
-      
+
 !scalars
       IF(DIMENSION_Scalar /= 0)then
         Deallocate(  Scalar_c  )
         Deallocate(  Scalar_p  )
-        Deallocate(  Dif_Scalar  )      
+        Deallocate(  Dif_Scalar  )
       ENDIF
 
 !dqmom
@@ -256,7 +256,7 @@
       Deallocate(  TAU_U_s )
       Deallocate(  TAU_V_s )
       Deallocate(  TAU_W_s )
-      
+
 !tmp_array
       Deallocate(  Array1 )
       Deallocate(  Array2 )
@@ -303,12 +303,12 @@
       Deallocate(  I2_devD_s )
       Deallocate(  TrM_s )
       Deallocate(  TrDM_s )
-      
+
 !xsi_array
       Deallocate(  Xsi_e )
       Deallocate(  Xsi_n )
       Deallocate(  Xsi_t )
-      
+
 !vshear
       Deallocate(  VSH )
       Deallocate(  VSHE )
@@ -321,7 +321,7 @@
 
 !kintheory
 !kinetic theory terms Iddir & Arastoopour (2005)
-      IF (TRIM(KT_TYPE) == 'IA_NONEP') THEN      
+      IF (TRIM(KT_TYPE) == 'IA_NONEP') THEN
         Deallocate(  trD_s2_ip)
         Deallocate(  MU_sM_ip)
         Deallocate(  MU_sL_ip)
@@ -337,7 +337,7 @@
         Deallocate(  EDvel_sL_ip)
         Deallocate(  ED_ss_ip)
       ENDIF
-!kinetic theory terms Iddir & Arastoopour (2005) or Garzo Dufty (1999)      
+!kinetic theory terms Iddir & Arastoopour (2005) or Garzo Dufty (1999)
       IF (TRIM(KT_TYPE) == 'IA_NONEP' .OR. TRIM(KT_TYPE) == 'GD99') THEN
         Deallocate(  EDvel_sM_ip)
         Deallocate(  EDT_s_ip)
@@ -345,7 +345,7 @@
 
 ! ghdtheory
 ! GHD theory
-      IF (TRIM(KT_TYPE) == 'GHD') THEN      
+      IF (TRIM(KT_TYPE) == 'GHD') THEN
          Deallocate(  Flux_nE)
          Deallocate(  Flux_nN)
          Deallocate(  Flux_nT)
@@ -378,7 +378,7 @@
       Deallocate(  Jp1_3 )
       Deallocate(  Km1_3 )
       Deallocate(  Kp1_3 )
- 
+
 !mflux
       Deallocate(  Flux_gE)
       Deallocate(  Flux_sE)
@@ -442,7 +442,7 @@
       deallocate( jmap_c )
       deallocate( kmap_c )
 
-   
+
       RETURN
-      END SUBROUTINE Deallocate_ARRAYS 
-      
+      END SUBROUTINE Deallocate_ARRAYS
+

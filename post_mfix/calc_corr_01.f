@@ -35,7 +35,7 @@
         Use correl
         Use compar
         Use functions
-	
+
       IMPLICIT NONE
 !
 !                      A flag to check whether the subroutine is called for
@@ -68,12 +68,12 @@
 !  subroutine is called the first time, do initializations.
 !
         IF(STARTED .NE. RAND_NO)THEN
-      
+
           Allocate(  SUM_EP_g (DIMENSION_3) )
           Allocate(  SUM_EPxEP_g (DIMENSION_3) )
           Allocate(  SUM_V_g (DIMENSION_3) )
           Allocate(  SUM_VxV_g (DIMENSION_3) )
-      
+
           Allocate(  AVG_EP_g (DIMENSION_3) )
           Allocate(  SDV_EP_g (DIMENSION_3) )
           Allocate(  AVG_V_g  (DIMENSION_3) )
@@ -120,7 +120,7 @@
           IJK = FUNIJK(I, J, K)
           IF( FLUID_AT(IJK) ) THEN
             AVG_EP_g(IJK) = SUM_EP_g(IJK) / NSUM
-            SDV_2 = SUM_EPxEP_g(IJK) / NSUM - AVG_EP_g(IJK)**2 
+            SDV_2 = SUM_EPxEP_g(IJK) / NSUM - AVG_EP_g(IJK)**2
             SDV_2 = MAX(ZERO,SDV_2)
             SDV_EP_g(IJK) = SQRT( SDV_2 )
             AVG_V_g(IJK) = SUM_V_g(IJK) / NSUM

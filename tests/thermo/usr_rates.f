@@ -53,9 +53,9 @@
 !
 ! This is overly complicated but done so that the table generated in
 ! usr3 for this test case can be populated without directly modifying
-! any real source code. 
+! any real source code.
       L = IJK - 49
       RATES(L) = ONE
 
-      RETURN  
+      RETURN
       END SUBROUTINE USR_RATES

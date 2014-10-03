@@ -9,7 +9,7 @@
 !           all indices are undefined.                                 C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE USR0 
+      SUBROUTINE USR0
 
       use run
       use usr
@@ -34,10 +34,10 @@
       write(*,"(3x,'End of slip: ',g18.8)") end_slip
 
       if(tstop < end_slip) then
-         write(*,"(/3x,'Simulation too short. It will not catch')") 
-         write(*,"( 3x,'the end of particle/wall slip.')") 
+         write(*,"(/3x,'Simulation too short. It will not catch')")
+         write(*,"( 3x,'the end of particle/wall slip.')")
          call mfix_exit(0)
       endif
 
       return
-      END SUBROUTINE USR0 
+      END SUBROUTINE USR0

@@ -92,5 +92,5 @@
         WRITE (*,*)' WARNING: Some variables were not found !'
       END IF
 !
-      RETURN  
+      RETURN
       END

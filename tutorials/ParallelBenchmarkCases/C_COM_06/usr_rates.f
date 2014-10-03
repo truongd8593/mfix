@@ -54,14 +54,14 @@
       DOUBLE PRECISION :: Pg_atmMW    ! Gas pressure * MW ()
 
 ! Gas phase species partial pressures (atm)
-      DOUBLE PRECISION :: Pg_O2       ! Oxygen 
+      DOUBLE PRECISION :: Pg_O2       ! Oxygen
       DOUBLE PRECISION :: Pg_CO2      ! Carbon dioxide
       DOUBLE PRECISION :: Pg_CO       ! Carbon monoxide
       DOUBLE PRECISION :: Pg_CO2_star ! (reverse reaction)
       DOUBLE PRECISION :: dPg_CO2     ! Pg_CO2 - Pg_CO2_star
 
 ! Gas phase concentrations (mol/cm^3)
-      DOUBLE PRECISION :: c_O2        ! Oxygen 
+      DOUBLE PRECISION :: c_O2        ! Oxygen
       DOUBLE PRECISION :: c_CO        ! Carbon monoxide
       DOUBLE PRECISION :: c_H2O       ! Water vapor (artificial)
 

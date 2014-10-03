@@ -49,5 +49,5 @@
 
       lDgA = 0.75 * C_d * VREL * (EPg * ROg) * EPg**(-2.65) / DPM
 
-      RETURN  
+      RETURN
       END SUBROUTINE DRAG_USR

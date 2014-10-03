@@ -162,7 +162,7 @@
       IF(STRING(1:1) .EQ. '?') THEN
         CALL HELP(10)
         GOTO 10
-      ELSEIF(STRING(1:1) .EQ. 'e' .OR. STRING(1:1) .EQ. 'E' .OR. & 
+      ELSEIF(STRING(1:1) .EQ. 'e' .OR. STRING(1:1) .EQ. 'E' .OR. &
              STRING(1:1) .EQ. 'q' .OR. STRING(1:1) .EQ. 'Q') THEN
         usr_done = .true.
         IF (usr_fname(1:1) .NE. '*') CLOSE(40)
@@ -239,34 +239,34 @@
 
 !                   1       2      3         4      5      6
       DATA VAR_DAT/'EP_g', 'P_g', 'P_star', 'U_g', 'V_g', 'W_g', &
-      
-!                   7      8      9      10       11     12 
+
+!                   7      8      9      10       11     12
                    'U_s', 'V_s', 'W_s', 'ROP_s', 'T_g', 'T_s', &
-     
+
 !                   13      14     15     16          17
                    'T_s2', 'X_g', 'X_s', 'XFLOW_gx', 'XFLOW_gy', &
-     
-!                   18          19          20          21     
+
+!                   18          19          20          21
                    'XFLOW_gz', 'XFLOW_sx', 'XFLOW_sy', 'XFLOW_sz', &
-     
-!                   22          23          24          25     
+
+!                   22          23          24          25
                    'MFLOW_gx', 'MFLOW_gy', 'MFLOW_gz', 'MFLOW_sx', &
-     
-!                   26          27         28           29     
+
+!                   26          27         28           29
                    'MFLOW_sy', 'MFLOW_sz', 'VFLOW_gx', 'VFLOW_gy', &
-     
+
 !                   30          31          32          33
                    'VFLOW_gz', 'VFLOW_sx', 'VFLOW_sy', 'VFLOW_sz', &
-     
-!                   34        35        36         37     
+
+!                   34        35        36         37
                    'MASS_g', 'MASS_s', 'FLUX_gx', 'FLUX_gy', &
-     
+
 !                   38         39         40         41
                    'FLUX_gz', 'FLUX_sx', 'FLUX_sy', 'FLUX_sz' ,&
-     
+
 !                   42      43     44    45     46     47
                    'KE_g', 'KE_s','P_s','PE_g','PE_s','BERN_s', &
-     
+
 !                   48		49
          	   'Theta_m', 'Scalar' /
 !
@@ -533,7 +533,7 @@
          (VAR_NO .GE. 28 .AND. VAR_NO .LE. 30) .OR.&
          (VAR_NO .GE. 36 .AND. VAR_NO .LE. 38) .OR.&
          (VAR_NO .EQ. 42                     ) &
-                                                 ) THEN  
+                                                 ) THEN
         READ_SPX(3) = .TRUE.    ! U_g, V_g, W_g
       ENDIF
       IF((VAR_NO .GE.  7 .AND. VAR_NO .LE.  9) .OR.&
@@ -568,7 +568,7 @@
       IF(VAR_NO .GE. 14 .AND. VAR_NO .LE. 21) THEN
         READ_SPX(7) = .TRUE.    ! X_g, X_s
       ENDIF
-      
+
       IF(VAR_NO .EQ. 48 ) THEN
         READ_SPX(8) = .TRUE.    ! Theta_m
       ENDIF
@@ -903,7 +903,7 @@
 
       integer :: var_no , nsize , m , n , mIJK , lIJK
       real    :: arr(nsize)
-      real    :: DELm , DELl , FAC1 , FAC2 
+      real    :: DELm , DELl , FAC1 , FAC2
 
       integer :: i , j , k , ijk
 
@@ -975,7 +975,7 @@
                  *(U_s(IJK,M)**2 + V_s(IJK,M)**2 + W_s(IJK,M)**2)
             if (var_no .eq. 44) then
                 arr(ijk) = P_s(IJK,M)
-                if (EP_g(IJK) .LT. EP_star) arr(ijk) = P_star(IJK)                
+                if (EP_g(IJK) .LT. EP_star) arr(ijk) = P_star(IJK)
             end if
             if (var_no .eq. 45) arr(ijk) = GRAVITY * YDIST_SC(J) &
                                 * CALC_RO_g(IJK) * EP_g(IJK)
@@ -1229,7 +1229,7 @@
       implicit none
 
       real :: time_in_res , time_found
- 
+
       IF (usr_t1 .LT. TIME_IN_RES) THEN
          CALL SEEK_TIME(READ_SPX,usr_t1,REC_POINTER,TIME_FOUND)
          IF (TIME_FOUND .LT. ZERO) THEN
@@ -1339,15 +1339,15 @@
       implicit none
 !
 
-      real :: usr_t1_a           
-      real :: usr_t2_a     
+      real :: usr_t1_a
+      real :: usr_t2_a
 
-      logical :: usr_tavg_a   
+      logical :: usr_tavg_a
 
-      character :: usr_var_a*8 , output_flag*1     
+      character :: usr_var_a*8 , output_flag*1
 
-      integer   :: usr_m_a          
-      integer   :: usr_n_a          
+      integer   :: usr_m_a
+      integer   :: usr_n_a
 
       integer   :: usr_i1_a
       integer   :: usr_i2_a
@@ -1364,7 +1364,7 @@
       if (output_flag .ne. '*') goto 100
 
       write (*,*) ' '
-      write (*,*) ' time        : ' , usr_t1_a , ' to ' , usr_t2_a 
+      write (*,*) ' time        : ' , usr_t1_a , ' to ' , usr_t2_a
       if (usr_tavg_a) write (*,*) '                     time averaged'
 
       write (*,*) ' variable    : ' , usr_var_a
@@ -1389,7 +1389,7 @@
 
 
       write (40,*) ' '
-      write (40,*) ' time        : ' , usr_t1_a , ' to ' , usr_t2_a 
+      write (40,*) ' time        : ' , usr_t1_a , ' to ' , usr_t2_a
       if (usr_tavg_a) write (40,*) '                     time averaged'
 
       write (40,*) ' '

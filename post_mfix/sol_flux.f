@@ -41,14 +41,14 @@
       DOUBLE PRECISION  TAVG(DIMENSION_3,3)
       REAL              TIME_REAL(N_SPX)
       REAL              TIME_FOUND, TIME_NOW
-      INTEGER           FILE1_INDEX , FILE2_INDEX , NSTEP_1 
+      INTEGER           FILE1_INDEX , FILE2_INDEX , NSTEP_1
       INTEGER           NX , NY , NZ
       INTEGER           REC_POINTER(N_SPX) , L , NT
       LOGICAL           READ_SPX(N_SPX) , AT_EOF(N_SPX)
       INTEGER           I, J, K, IJK
 
       IF (.NOT.DO_XFORMS) THEN
-         WRITE (*,'(A,$)')& 
+         WRITE (*,'(A,$)')&
                  ' Enter time to start and end time averaging > '
          READ  (*,*) TIME_START, TIME_END
          WRITE (*,'(A,$)')' Enter solids phase number > '

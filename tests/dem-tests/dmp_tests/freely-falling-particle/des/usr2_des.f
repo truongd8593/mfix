@@ -62,7 +62,7 @@
 !......................................................................!
       SUBROUTINE WRITE_DES_Out(lTime)
 
-      use compar 
+      use compar
       use desmpi
       use discretelement
       use mpi_utility
@@ -102,7 +102,7 @@
       double precision              :: aPos_Y   ,  aVel_Y
       double precision              :: Pos_rErr ,  Vel_rErr
 
-! Variables related to gather 
+! Variables related to gather
       integer llocalcnt
       integer lglocnt
       integer lgathercnts(0:numpes-1)
@@ -135,10 +135,10 @@
       call global_sum(lgathercnts,igathercnts)
 
 ! Set the gather displacement array.
-      idispls(0) = 0 
-      do lproc = 1,numpes-1 
-         idispls(lproc) = idispls(lproc-1) + igathercnts(lproc-1)  
-      end do 
+      idispls(0) = 0
+      do lproc = 1,numpes-1
+         idispls(lproc) = idispls(lproc-1) + igathercnts(lproc-1)
+      end do
 
 ! Allocate local storage variables.
       allocate( lRad   (lglocnt) )

@@ -51,6 +51,6 @@
 
       RATES(Ozone_Decomp) = (ONE - EP_g(IJK)) * C(1) * c_O3
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE USR_RATES

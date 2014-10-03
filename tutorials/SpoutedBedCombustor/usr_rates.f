@@ -57,14 +57,14 @@
       DOUBLE PRECISION Pg_atmMW    ! Gas pressure * MW ()
 
 ! Gas phase species partial pressures (atm)
-      DOUBLE PRECISION Pg_O2       ! Oxygen 
+      DOUBLE PRECISION Pg_O2       ! Oxygen
       DOUBLE PRECISION Pg_CO2      ! Carbon dioxide
       DOUBLE PRECISION Pg_CO       ! Carbon monoxide
       DOUBLE PRECISION Pg_CO2_star ! (reverse reaction)
       DOUBLE PRECISION dPg_CO2     ! Pg_CO2 - Pg_CO2_star
 
 ! Gas phase concentrations (mol/cm^3)
-      DOUBLE PRECISION c_O2        ! Oxygen 
+      DOUBLE PRECISION c_O2        ! Oxygen
       DOUBLE PRECISION c_CO        ! Carbon monoxide
       DOUBLE PRECISION c_H2O       ! Water vapor (artificial)
 
@@ -292,7 +292,7 @@
 
 
 !  Write the reaction rate data into .SPA file and for visualizing.
-!---------------------------------------------------------------------//       
+!---------------------------------------------------------------------//
       IF(nRR >= Combustion_s1) &!   2FC1 + O2 --> 2CO
          ReactionRates(IJK,Combustion_s1) = RATES(Combustion_s1)
       IF(nRR >= Combustion_s2) &!   2FC2 + O2 --> 2CO
@@ -313,6 +313,6 @@
          ReactionRates(IJK,Ash_to_Ash) = RATES(Ash_to_Ash)
 
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE USR_RATES

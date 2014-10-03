@@ -85,7 +85,7 @@
       REAL CALC_RO_g
 
       IF(U_g(IJK) .GT. ZERO) THEN
-        MFLOW_gx = DY(J) * X_E(I) * DZ(K) * U_g(IJK) * EP_g(IJK)& 
+        MFLOW_gx = DY(J) * X_E(I) * DZ(K) * U_g(IJK) * EP_g(IJK)&
                    * CALC_RO_g(IJK)
       ELSE
         IPJK = IP_OF(IJK)

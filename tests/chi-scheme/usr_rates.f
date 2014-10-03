@@ -56,6 +56,6 @@
       RATES(O2_to_O3) = EP_g(IJK) * c(1) * c_O2 / 3.0d0
 
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE USR_RATES

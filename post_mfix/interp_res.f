@@ -38,7 +38,7 @@
       Use gridmap ! added
       Use functions
           use tmp_array        ! 16-jun-2004
-      
+
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
 !
@@ -63,7 +63,7 @@
 
       DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE ::  &
         Scalar_OLD
-          
+
       DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE ::  &
         ReactionRates_OLD
 
@@ -78,7 +78,7 @@
 
       DOUBLE PRECISION , DIMENSION(:,:,:), ALLOCATABLE ::  &
         X_s_OLD
-        
+
       DOUBLE PRECISION TIME_OLD
       REAL &
         XDIST_SC_OLD(DIM_I), XDIST_VEC_OLD(DIM_I), &
@@ -86,7 +86,7 @@
         ZDIST_SC_OLD(DIM_K), ZDIST_VEC_OLD(DIM_K)
       INTEGER &
         NMAX_OLD(0:DIMENSION_M), IMAX2_OLD, JMAX2_OLD, KMAX2_OLD,&
-        IJMAX2_OLD, MMAX_OLD, FLAG_OLD(DIMENSION_3) 
+        IJMAX2_OLD, MMAX_OLD, FLAG_OLD(DIMENSION_3)
       INTEGER &
         I_OLD, J_OLD, K_OLD, IV_OLD, JV_OLD, KV_OLD, IJK_OLD, &
         IM_OLD, JM_OLD, KM_OLD, IP_OLD, JP_OLD, KP_OLD, &
@@ -113,12 +113,12 @@
         Allocate(  K_TURB_G_OLD(DIMENSION_3) )
         Allocate(  E_TURB_G_OLD(DIMENSION_3) )
       endif
-      
+
       Allocate(  X_g_OLD(DIMENSION_3, DIMENSION_N_g) )
-      
+
       if(Nscalar > 0) Allocate( Scalar_OLD(DIMENSION_3, NScalar) )
       if(nRR > 0) Allocate( ReactionRates_OLD(DIMENSION_3,nRR) )
-      
+
       Allocate(  T_s_OLD(DIMENSION_3, DIMENSION_M) )
       Allocate(  THETA_M_OLD(DIMENSION_3, DIMENSION_M) )
       Allocate(  ROP_s_OLD(DIMENSION_3, DIMENSION_M) )
@@ -127,7 +127,7 @@
       Allocate(  W_s_OLD(DIMENSION_3, DIMENSION_M) )
       Allocate(  GAMA_RS_OLD(DIMENSION_3, DIMENSION_M) )
       Allocate(  T_RS_OLD(DIMENSION_3, DIMENSION_M) )
-      
+
       Allocate(  X_s_OLD(DIMENSION_3, DIMENSION_M, DIMENSION_N_s) )
 
 
@@ -178,29 +178,29 @@
 !
 !       Version 1.3
 
-        DO LC = 1, NScalar 
-          Scalar_OLD (IJK, LC) = Scalar (IJK, LC) 
+        DO LC = 1, NScalar
+          Scalar_OLD (IJK, LC) = Scalar (IJK, LC)
         END DO
 !
 
         if(k_epsilon) then
-          k_turb_g_OLD (IJK) = k_turb_g (IJK) 
-          e_turb_g_OLD (IJK) = e_turb_g (IJK) 
+          k_turb_g_OLD (IJK) = k_turb_g (IJK)
+          e_turb_g_OLD (IJK) = e_turb_g (IJK)
         endif
 !
-!       Version 1.4 -- write radiation variables in write_res1 
-        GAMA_RG_OLD(IJK) = GAMA_RG(IJK) 
-        T_RG_OLD(IJK) = T_RG(IJK) 
+!       Version 1.4 -- write radiation variables in write_res1
+        GAMA_RG_OLD(IJK) = GAMA_RG(IJK)
+        T_RG_OLD(IJK) = T_RG(IJK)
 
-        DO LC = 1, MMAX 
+        DO LC = 1, MMAX
           GAMA_RS_OLD(IJK, LC) = GAMA_RS(IJK, LC)
           T_RS_OLD(IJK, LC) = T_RS(IJK, LC)
-        ENDDO 
+        ENDDO
 
 !
 !       Version 1.5
-        DO LC = 1, nRR 
-          ReactionRates_OLD (IJK, LC) = ReactionRates (IJK, LC) 
+        DO LC = 1, nRR
+          ReactionRates_OLD (IJK, LC) = ReactionRates (IJK, LC)
         END DO
 
 
@@ -232,7 +232,7 @@
 !  Read the new data file
 !
       CALL DEALLOCATE_ARRAYS
-      
+
       CALL INIT_NAMELIST
       NODESI = 1
       NODESJ = 1
@@ -255,8 +255,8 @@
 !
 ! set smax value since check_data_01 and constant_prop are not called in post_mfix.
       SMAX = MMAX
-      !CALL CHECK_DATA_04                         ! solid phase section 
-      !CALL CHECK_DATA_05                         ! gas phase section 
+      !CALL CHECK_DATA_04                         ! solid phase section
+      !CALL CHECK_DATA_05                         ! gas phase section
 !
 !  Open new RES files
 !
@@ -303,7 +303,7 @@
           IV_OLD= GET_INDEX &
                (XDIST_VEC(I), XDIST_VEC_OLD, IMAX2_OLD, EXT_I, I1,'X_E')
         ENDIF
-        
+
         IF(J .EQ. 1)THEN
           J_OLD = 1
           JV_OLD = 1
@@ -318,7 +318,7 @@
           JV_OLD= GET_INDEX &
                (YDIST_VEC(J), YDIST_VEC_OLD, JMAX2_OLD, EXT_J, J1,'Y_N')
         ENDIF
-        
+
         IF(K .EQ. 1)THEN
           K_OLD = 1
           KV_OLD = 1
@@ -333,7 +333,7 @@
           KV_OLD= GET_INDEX &
                (ZDIST_VEC(K), ZDIST_VEC_OLD, KMAX2_OLD, EXT_K, K1,'Z_T')
         ENDIF
-        
+
         IJK_OLD  = I_OLD + (J_OLD - 1) * IMAX2_OLD &
                   + (K_OLD - 1) * IJMAX2_OLD
 !
@@ -370,7 +370,7 @@
             IF(FLAG_OLD(IJK_OLD) .LT. 100)EXIT
 380       CONTINUE
         ENDIF
-        
+
         IVJK_OLD = IV_OLD + (J_OLD - 1) * IMAX2_OLD &
                   + (K_OLD - 1) * IJMAX2_OLD
         IJVK_OLD = I_OLD + (JV_OLD - 1) * IMAX2_OLD &
@@ -454,28 +454,28 @@
 !
 !       Version 1.3
 
-        DO LC = 1, NScalar 
-          Scalar (IJK, LC) = Scalar_OLD (IJK_OLD, LC) 
+        DO LC = 1, NScalar
+          Scalar (IJK, LC) = Scalar_OLD (IJK_OLD, LC)
         END DO
         if(k_epsilon) then
-          k_turb_g (IJK) = k_turb_g_OLD (IJK_OLD) 
-          e_turb_g (IJK) = e_turb_g_OLD (IJK_OLD) 
+          k_turb_g (IJK) = k_turb_g_OLD (IJK_OLD)
+          e_turb_g (IJK) = e_turb_g_OLD (IJK_OLD)
         endif
 !
-!       Version 1.4 -- write radiation variables in write_res1 
+!       Version 1.4 -- write radiation variables in write_res1
         GAMA_RG(IJK) = GAMA_RG_OLD(IJK_OLD)
         T_RG(IJK) = T_RG_OLD(IJK_OLD)
 
-        DO LC = 1, MMAX 
-          GAMA_RS(IJK, LC) = GAMA_RS_OLD(IJK_OLD, LC) 
+        DO LC = 1, MMAX
+          GAMA_RS(IJK, LC) = GAMA_RS_OLD(IJK_OLD, LC)
           T_RS(IJK, LC) = T_RS_OLD(IJK_OLD, LC)
-        ENDDO 
+        ENDDO
 
 !
 !       Version 1.5
 
-        DO LC = 1, nRR 
-          ReactionRates (IJK, LC) = ReactionRates_OLD (IJK_OLD, LC) 
+        DO LC = 1, nRR
+          ReactionRates (IJK, LC) = ReactionRates_OLD (IJK_OLD, LC)
         END DO
 
 500   CONTINUE
@@ -490,7 +490,7 @@
          RUN_NAME = 'N'
          IF (RESET_TIME) RUN_NAME = 'Y'
       END IF
-      IF(RUN_NAME(1:1) .EQ. 'Y' .OR. RUN_NAME(1:1) .EQ. 'y') THEN 
+      IF(RUN_NAME(1:1) .EQ. 'Y' .OR. RUN_NAME(1:1) .EQ. 'y') THEN
         TIME = ZERO
         NSTEP = 0
       ELSE

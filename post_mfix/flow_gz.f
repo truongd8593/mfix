@@ -186,7 +186,7 @@
       REAL CALC_RO_g
 !
       IF(W_g(IJK) .GT. ZERO) THEN
-        XFLOW_gz = DX(I) * DY(J) * W_g(IJK) * EP_g(IJK)& 
+        XFLOW_gz = DX(I) * DY(J) * W_g(IJK) * EP_g(IJK)&
                    * CALC_RO_g(IJK) * X_g(IJK, N)
       ELSE
         IJKP = KP_OF(IJK)

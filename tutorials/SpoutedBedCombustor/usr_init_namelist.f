@@ -18,14 +18,14 @@
 !
       SUBROUTINE USR_INIT_NAMELIST
 !
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       IMPLICIT NONE
-      INCLUDE 'usrnlst.inc' 
+      INCLUDE 'usrnlst.inc'
 !
 !
       PAFC = UNDEFINED
       PAA  = UNDEFINED
 !
       RETURN
-      END SUBROUTINE USR_INIT_NAMELIST 
+      END SUBROUTINE USR_INIT_NAMELIST

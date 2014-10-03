@@ -25,17 +25,17 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE USR0 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE USR0
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE physprop
       USE constant
-      USE funits    
+      USE funits
       Use usr
       IMPLICIT NONE
-      INCLUDE 'usrnlst.inc' 
+      INCLUDE 'usrnlst.inc'
 !-----------------------------------------------
 !
 !  Include files defining common blocks here
@@ -54,7 +54,7 @@
 
 !     allocate array declared in usrnlst.inc
       Allocate(  N_Sh (DIMENSION_3, DIMENSION_M) )
-      
+
         IF(PAFC .EQ. UNDEFINED ) &
           CALL ERROR_ROUTINE ('USR0', 'PAFC not specified', 1, 1)
 !
@@ -71,5 +71,5 @@
 !
 !  Function of the ash-layer void fraction
       f_EP_A = (0.25 + 0.75 * ( 1.0 - PAA )) ** 2.5
-      RETURN  
-      END SUBROUTINE USR0 
+      RETURN
+      END SUBROUTINE USR0

@@ -57,6 +57,6 @@
          RATES(Phase_Change) = ZERO
       ENDIF
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE USR_RATES

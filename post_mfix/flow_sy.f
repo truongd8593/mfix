@@ -80,7 +80,7 @@
       INTEGER I, J, K, IJK, M, IJPK
 
       IF(V_s(IJK, M) .GT. ZERO) THEN
-        MFLOW_sy = DX(I) * X(I) * DZ(K) * V_s(IJK, M) * ROP_s(IJK, M) 
+        MFLOW_sy = DX(I) * X(I) * DZ(K) * V_s(IJK, M) * ROP_s(IJK, M)
       ELSE
         IJPK = JP_OF(IJK)
         MFLOW_sy = DX(I) * X(I) * DZ(K) * V_s(IJK, M) * ROP_s(IJPK, M)
@@ -125,7 +125,7 @@
       INTEGER IJK, M, IJPK
 
       IF(V_s(IJK, M) .GT. ZERO) THEN
-        FLUX_sy = V_s(IJK, M) * ROP_s(IJK, M) 
+        FLUX_sy = V_s(IJK, M) * ROP_s(IJK, M)
       ELSE
         IJPK = JP_OF(IJK)
         FLUX_sy = V_s(IJK, M) * ROP_s(IJPK, M)

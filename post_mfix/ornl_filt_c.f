@@ -8,12 +8,12 @@
       use usr_input
 
       implicit none
-      
+
 
       integer*4 :: ibeg, iend, fo
       integer :: nt
 
-      real*8  :: cf, sr 
+      real*8  :: cf, sr
       real*8    :: time_series(*)
 
       real*8, allocatable    :: scratch(:), fts(:)

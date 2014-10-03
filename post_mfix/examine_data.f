@@ -20,13 +20,13 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      
+
       ! format_one
       subroutine format_one(spec,nPrec,sLen)
       implicit none
       character*(*) :: spec
       integer       :: nPrec,w,sLen
-      
+
       if (nPrec.lt.0) then
          spec = '(a,g12.5)'
 	 sLen = 12
@@ -39,13 +39,13 @@
       end if
       return
       end subroutine format_one
-      
+
       ! format_oneB
       subroutine format_oneB(spec,nPrec,sLen)
       implicit none
       character*(*) :: spec
       integer       :: nPrec,w,sLen
-      
+
       if (nPrec.lt.0) then
          spec = '(1x,g12.5)'
 	 sLen = 13
@@ -58,14 +58,14 @@
       end if
       return
       end subroutine format_oneB
-      
-      
+
+
       ! format_oneC
       subroutine format_oneC(spec,nPrec,sLen)
       implicit none
       character*(*) :: spec
       integer       :: nPrec,w,sLen
-      
+
       if (nPrec.lt.0) then
          spec = '(1x,1a8,a,g12.5)'
 	 sLen = 21
@@ -78,13 +78,13 @@
       end if
       return
       end subroutine format_oneC
-      
+
       ! format_two
       subroutine format_two(spec,nPrec1,nPrec2,sLen)
       implicit none
       character*(*) :: spec
       integer       :: nPrec1,nPrec2,w1,w2,sLen
-      
+
       if (nPrec1.lt.0) then
          spec = '(a,g12.5,a,g12.5)'
 	 sLen = 24
@@ -100,13 +100,13 @@
       end if
       return
       end subroutine format_two
-      
+
       ! format_twoB
       subroutine format_twoB(spec,nPrec1,nPrec2,sLen)
       implicit none
       character*(*) :: spec
       integer       :: nPrec1,nPrec2,w1,w2,sLen
-      
+
       if (nPrec1.lt.0) then
          spec = '(1X,A,1A8,A,G12.5,A,G12.5)'
 	 sLen = 24
@@ -123,13 +123,13 @@
       end if
       return
       end subroutine format_twoB
-      
+
        ! format_twoC
       subroutine format_twoC(spec,nPrec1,nPrec2,sLen)
       implicit none
       character*(*) :: spec
       integer       :: nPrec1,nPrec2,w1,w2,sLen
-      
+
       if (nPrec1.lt.0) then
          spec = '(1X,G12.5,2X,G12.5)'
 	 sLen = 27
@@ -146,14 +146,14 @@
       end if
       return
       end subroutine format_twoC
-      
-      
+
+
       ! format_four
       subroutine format_four(spec,nPrec1,nPrec2,nPrec3,nPrec4,sLen)
       implicit none
       character*(*) :: spec
       integer       :: nPrec1,nPrec2,nPrec3,nPrec4,w1,w2,w3,w4,sLen
-      
+
       if (nPrec1.lt.0) then
          spec = '(1X,4(G12.5,2X))'
 	 sLen = 57 ! = 1 + 4*14
@@ -163,7 +163,7 @@
          w3 = nPrec3 + 8
          w4 = nPrec4 + 8
          spec = &
-         '(1x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4)' 
+         '(1x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4)'
 	 !123  67 90123456 89 12 4567  01 3456789  23 56
 	 write (spec(6:7),'(i2.2)')   w1
 	 write (spec(9:10),'(i2.2)')   nPrec1
@@ -178,15 +178,15 @@
       return
       end subroutine format_four
 
-           
-      
+
+
       ! format_five
       subroutine format_five(spec,nPrec1,nPrec2,nPrec3,nPrec4,nPrec5,sLen)
       implicit none
       character*(*) :: spec
       integer       :: nPrec1,nPrec2,nPrec3,nPrec4,nPrec5,w1,w2,sLen
       integer       :: w3,w4,w5
-      
+
       if (nPrec1.lt.0) then
          spec = '(1X,5(G12.5,2X))'
 	 sLen = 71 ! = 1 + 5*14
@@ -197,7 +197,7 @@
          w4 = nPrec4 + 8
          w5 = nPrec5 + 8
          spec = &
-         '(1x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4)' 
+         '(1x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4)'
 	 !123 56 89012345 78 01234567 90 23456789 12 45678901 34 67890
 	 write (spec(6:7),'(i2.2)')   w1
 	 write (spec(9:10),'(i2.2)')   nPrec1
@@ -217,8 +217,8 @@
 
 !        WRITE(LINE,'(1X,5(G12.5,2X))')TIME_NOW, XTMP, YTMP, ZTMP, &
 !                                      VALUE_TMP
-      
-      
+
+
       SUBROUTINE EXAMINE_DATA
 !
       Use param
@@ -235,7 +235,7 @@
       Use compar
       use post_precision
       Use functions
-      
+
       IMPLICIT NONE
       INTEGER  N_VAR
       PARAMETER (N_VAR=52)
@@ -257,8 +257,8 @@
       REAL         XTMP, YTMP, ZTMP, VALUE_TMP
       INTEGER      IJK1
       INTEGER      M_LOCAL, mIJK, lIJK, IER
-      INTEGER      I, J, K, IJK, M, N   
-      REAL         DELm, DELl, FAC1, FAC2 
+      INTEGER      I, J, K, IJK, M, N
+      REAL         DELm, DELl, FAC1, FAC2
 !
       REAL              TIME_REAL(N_SPX), TIME_FOUND, TIME_NOW , TIME_OLD
       INTEGER           REC_POINTER(N_SPX)
@@ -276,38 +276,38 @@
 !
 !                   1       2      3         4      5      6
       DATA VAR_DAT/'EP_g', 'P_g', 'P_star', 'U_g', 'V_g', 'W_g', &
-      
-!                   7      8      9      10       11     12 
+
+!                   7      8      9      10       11     12
                    'U_s', 'V_s', 'W_s', 'ROP_s', 'T_g', 'T_s', &
-     
+
 !                   13      14     15     16          17
                    'T_s2', 'X_g', 'X_s', 'XFLOW_gx', 'XFLOW_gy', &
-     
-!                   18          19          20          21     
+
+!                   18          19          20          21
                    'XFLOW_gz', 'XFLOW_sx', 'XFLOW_sy', 'XFLOW_sz', &
-     
-!                   22          23          24          25     
+
+!                   22          23          24          25
                    'MFLOW_gx', 'MFLOW_gy', 'MFLOW_gz', 'MFLOW_sx', &
-     
-!                   26          27         28           29     
+
+!                   26          27         28           29
                    'MFLOW_sy', 'MFLOW_sz', 'VFLOW_gx', 'VFLOW_gy', &
-     
+
 !                   30          31          32          33
                    'VFLOW_gz', 'VFLOW_sx', 'VFLOW_sy', 'VFLOW_sz', &
-     
-!                   34        35        36         37     
+
+!                   34        35        36         37
                    'MASS_g', 'MASS_s', 'FLUX_gx', 'FLUX_gy', &
-     
+
 !                   38         39         40         41
                    'FLUX_gz', 'FLUX_sx', 'FLUX_sy', 'FLUX_sz' ,&
-     
+
 !                   42      43     44    45     46     47
                    'KE_g', 'KE_s','P_s','PE_g','PE_s','BERN_s', &
-     
+
 !                   48		49          50          51
          	   'Theta_m', 'Scalar' , 'RRates' , 'K_Turb_G', &
 
-!                   52		   
+!                   52
 		   'E_Turb_G'/
 
 
@@ -367,7 +367,7 @@
          REC_POINTER(L) = 4
       END DO
 !
-!  
+!
       IF (DO_XFORMS) THEN
         M          = M_USE
         N          = N_USE
@@ -380,9 +380,9 @@
       ' Interactive data retrieval program. Type ? any time for help,'
       WRITE(*,*)&
       ' or press RETURN to select default values shown in parenthesis.'
-      
+
       WRITE(*,*)
-      
+
 9     write (*,'(A,$)') ' Write output using user-supplied precision? (T/F) '
 !      read  (*,*) bPrecision
         READ(*,'(1A60)',ERR=9) STRING
@@ -393,11 +393,11 @@
         L3 = 1
         CALL GET_SUBSTR(STRING, L3, SUBSTR)
         IF(SUBSTR(1:1) .NE. ' ')READ(SUBSTR,*,ERR=9)bPrecision
-      
+
       nPrec_location = -1  ! default value if not using precision
       nPrec_time     = -1  ! default value if not using precision
       nPrec_variable =  5  ! default value if not using precision
-      
+
       if (bPrecision) then
          write (*,'(A,$)') ' Enter precision for location values: '
 	 read  (*,*) nPrec_location
@@ -421,7 +421,7 @@
       IF(STRING(1:1) .EQ. '?') THEN
         CALL HELP(10)
         GOTO 10
-      ELSEIF(STRING(1:1) .EQ. 'e' .OR. STRING(1:1) .EQ. 'E' .OR. & 
+      ELSEIF(STRING(1:1) .EQ. 'e' .OR. STRING(1:1) .EQ. 'E' .OR. &
              STRING(1:1) .EQ. 'q' .OR. STRING(1:1) .EQ. 'Q') THEN
         IF(FILE_NAME(1:1) .NE. '*') CLOSE(40)
         bRead_all = .true.
@@ -691,7 +691,7 @@
          (VAR_NO .GE. 28 .AND. VAR_NO .LE. 30) .OR.&
          (VAR_NO .GE. 36 .AND. VAR_NO .LE. 38) .OR.&
          (VAR_NO .EQ. 42                     ) &
-                                                 ) THEN  
+                                                 ) THEN
         READ_SPX(3) = .TRUE.    ! U_g, V_g, W_g
       ENDIF
       IF((VAR_NO .GE.  7 .AND. VAR_NO .LE.  9) .OR.&
@@ -732,7 +732,7 @@
          (ANY_SOLVE_ROs.AND.(VAR_NO .GE. 31 .AND. VAR_NO .LE. 33))) THEN
         READ_SPX(7) = .TRUE.    ! X_g, X_s
       ENDIF
-      
+
       IF(VAR_NO .EQ. 48 ) THEN
         READ_SPX(8) = .TRUE.    ! Theta_m
       ENDIF
@@ -1193,7 +1193,7 @@
         WRITE(LINE,'(A,I2)') ' Species = ', N
         CALL WRITE_LINE(FILE_NAME, LINE, 13)
       ENDIF
-      IF(VAR_NO .EQ. 50) THEN 
+      IF(VAR_NO .EQ. 50) THEN
         WRITE(LINE,'(A,I2)') ' Rrates = ', N
         CALL WRITE_LINE(FILE_NAME, LINE, 12)
       ENDIF
@@ -1259,7 +1259,7 @@
          (VAR_NO .GE. 25 .AND. VAR_NO .LE. 27) .OR. &
          (VAR_NO .GE. 31 .AND. VAR_NO .LE. 33) .OR.&
          (VAR_NO .EQ. 35                     ) .OR.&
-         (VAR_NO .GE. 39 .AND. VAR_NO .LE. 41) .OR. &   
+         (VAR_NO .GE. 39 .AND. VAR_NO .LE. 41) .OR. &
          (VAR_NO .EQ. 43                     ) .OR.&
          (VAR_NO .EQ. 44                     ) .OR.&
          (VAR_NO .EQ. 46                     ) .OR.&
@@ -1411,8 +1411,8 @@
        ELSEIF(VAR_NO .EQ. 52)THEN
           VALUE_TMP = E_Turb_G(IJK)
         ENDIF
-	
-	
+
+
         IF(TIME_AVERAGE)THEN
           VALUE(IJK) = VALUE(IJK) + VALUE_TMP
         ELSE
@@ -1753,7 +1753,7 @@
 	  call format_four(spec,nPrec_location,nPrec_location, &
 	                        nPrec_location, &
 	                        nPrec_variable,nPrec_length)
-				
+
           WRITE(LINE,spec)XTMP, YTMP, ZTMP, VALUE(IJK)
           CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
 250     CONTINUE

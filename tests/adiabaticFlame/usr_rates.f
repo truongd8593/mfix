@@ -60,6 +60,6 @@
       RATES(CH4_Comb) = C(1) * EP_g(IJK) * c_O2 * c_CH4
 
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE USR_RATES

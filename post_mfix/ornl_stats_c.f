@@ -14,7 +14,7 @@
       use functions
 
       implicit none
-      
+
       real*8  :: vmin , vmax , vavg , variance , skw , krt
       real*8  :: dev  , AAD , tOrb  , tDev
 

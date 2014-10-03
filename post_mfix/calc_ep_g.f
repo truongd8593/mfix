@@ -42,7 +42,7 @@
       Use indices
       Use compar
       Use functions
-      
+
       IMPLICIT NONE
 !
 !  Local variables

@@ -1,10 +1,10 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: USR3                                                   C
-!  Purpose: This routine is called after the time loop ends and is   
-!           user-definable.  The user may insert code in this routine   
-!           or call appropriate user defined subroutines.  
-!           This routine is not called from an IJK loop, hence  
+!  Purpose: This routine is called after the time loop ends and is
+!           user-definable.  The user may insert code in this routine
+!           or call appropriate user defined subroutines.
+!           This routine is not called from an IJK loop, hence
 !           all indices are undefined.                                 C
 !                                                                      C
 !  Author:                                            Date: dd-mmm-yy  C
@@ -24,11 +24,11 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE USR3 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE USR3
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE fldvar
       USE geometry
       USE indices
@@ -58,5 +58,5 @@
       Open(5,File='POST_Conversion.dat')
       write(5,'(//A,G12.5//)')' Conversion = ', conv
       Close(5)
-      RETURN  
-      END SUBROUTINE USR3 
+      RETURN
+      END SUBROUTINE USR3

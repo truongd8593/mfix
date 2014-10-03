@@ -24,12 +24,12 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE USR1 
+      SUBROUTINE USR1
 
       USE usr
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE physprop
       USE geometry
       USE fldvar
@@ -39,7 +39,7 @@
       USE compar
       USE run
       USE turb
-      USE sendrecv  
+      USE sendrecv
       USE discretelement
       USE functions
 
@@ -52,8 +52,8 @@
       double precision nu, ftauf, wnot, kx, ky, kmag
 
       DO IJK = ijkstart3, ijkend3
-         I = I_OF(IJK) 
-         J = J_OF(IJK) 
+         I = I_OF(IJK)
+         J = J_OF(IJK)
          XX = XE(I)
          YY = YN(J)
          XM = XE(I) - 0.5d0*DX(I)
@@ -71,5 +71,5 @@
 
       END DO
 
-      RETURN  
-      END SUBROUTINE USR1 
+      RETURN
+      END SUBROUTINE USR1

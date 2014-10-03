@@ -52,6 +52,6 @@
 
       RATES(AtoR) = EP_g(IJK) * C(1) * (c_A)**C(2)
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE USR_RATES

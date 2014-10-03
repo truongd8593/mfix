@@ -48,7 +48,7 @@
       subroutine hpf(TS,foo,ibeg,iend,sr,cf,fo,fts)
 
       implicit none
- 
+
       real*8 PI
       parameter (PI=3.14159265359)
 
@@ -153,7 +153,7 @@
       subroutine lpf(TS,foo,ibeg,iend,sr,cf,fo,fts)
 
       implicit none
- 
+
       real*8 PI
       parameter (PI=3.14159265359)
 

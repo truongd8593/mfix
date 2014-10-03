@@ -12,10 +12,10 @@
       use usr_input
 
       implicit none
-     
+
 
       integer*4 :: nu, nb, nrm, ibeg, iend
-      integer :: nt,k 
+      integer :: nt,k
 
       real*8  :: sr, ol, hng
       real*8  :: time_series(*)

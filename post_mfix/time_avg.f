@@ -40,7 +40,7 @@
       LOGICAL :: AT_EOF(N_SPX), READ_SPX(N_SPX),SELECT
       INTEGER :: REC_POINTER(N_SPX), REC_POINTER_t(N_SPX)
       INTEGER :: NSTEP_1 , ERROR_CODE , solmax
-      CHARACTER   :: IANS*1 , line*13 
+      CHARACTER   :: IANS*1 , line*13
       REAL    :: TIME_REAL(N_SPX)
       LOGICAL :: ERROR
 
@@ -109,7 +109,7 @@
             allocate (tavg(ijkmax2,MMAX,1))
          else if (l_spx .eq. 6) then     ! T_g , T_s
             allocate (tavg(ijkmax2,1,1))
-            allocate (tavgs(ijkmax2,MMAX,1))        
+            allocate (tavgs(ijkmax2,MMAX,1))
          else if (l_spx .eq. 7) then     ! X_g , X_s
             allocate (tavg(ijkmax2,nmax(0),1))
             solmax = 0
@@ -120,17 +120,17 @@
          else if (l_spx .eq. 8) then     ! THETA_m
             allocate (tavg(ijkmax2,MMAX,1))
          else if (l_spx .eq. 9 .and. nscalar.gt.0) then      ! Scalars
-            allocate (tavg(ijkmax2,nscalar,1))      
+            allocate (tavg(ijkmax2,nscalar,1))
          else if (l_spx .eq. 10 .and. nRR.gt.0) then     ! ReactionRate
-            allocate (tavg(ijkmax2,nRR,1))      
+            allocate (tavg(ijkmax2,nRR,1))
          else if (l_spx .eq. 9 .and. nscalar.eq.0) then      ! Scalars
-            allocate (tavg(ijkmax2,1,1))        
+            allocate (tavg(ijkmax2,1,1))
          else if (l_spx .eq. 10 .and. nRR.eq.0) then     ! ReactionRate
-            allocate (tavg(ijkmax2,1,1))        
+            allocate (tavg(ijkmax2,1,1))
          else if (l_spx .eq. 11 .and. k_Epsilon) then        ! turbulence
-            allocate (tavg(ijkmax2,2,1))    
+            allocate (tavg(ijkmax2,2,1))
          else
-            allocate (tavg(ijkmax2,1,1))    
+            allocate (tavg(ijkmax2,1,1))
          end if
 
          tavg(:,:,:) = 0.0

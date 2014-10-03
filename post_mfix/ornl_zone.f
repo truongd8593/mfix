@@ -14,7 +14,7 @@
       use functions
 
       implicit none
-      
+
 
       integer   :: i , j , k , ijk , L , spx_num , nt , nstep_1
 

@@ -24,7 +24,7 @@
 !
 !
       Use machine
-      
+
       IMPLICIT NONE
 !
 ! passed arguments
@@ -1135,7 +1135,7 @@
             do i = 1,imax2
                ijk    = funijk(i,j,k)
                ijk_io = funijk_io(i,j,k)
-               arr_io(ijk_io) = arr_internal(ijk) 
+               arr_io(ijk_io) = arr_internal(ijk)
             end do
          end do
       end do
@@ -1188,7 +1188,7 @@
             do i = 1,imax2
                ijk    = funijk(i,j,k)
                ijk_io = funijk_io(i,j,k)
-               arr_io(ijk_io) = arr_internal(ijk) 
+               arr_io(ijk_io) = arr_internal(ijk)
             end do
          end do
       end do
@@ -1214,7 +1214,7 @@
             do i = 1,imax2
                ijk    = funijk(i,j,k)
                ijk_io = funijk_io(i,j,k)
-               arr_io(ijk_io) = arr_internal(ijk) 
+               arr_io(ijk_io) = arr_internal(ijk)
             end do
          end do
       end do
