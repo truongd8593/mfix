@@ -159,7 +159,7 @@ CONTAINS
 
       implicit none
 
-      character*4   arr_io(*) , arr_internal(*)
+      character(LEN=4)   arr_io(*) , arr_internal(*)
       integer       n,i,j,k,ijk,ijk_io
 
       do k = 1,kmax2

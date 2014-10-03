@@ -538,7 +538,7 @@
 
       IF(numPEs .GT. 1) THEN
 ! Calculate any load imbalance.
-         IMBALANCE = DFLOAT(maxval(ijksize3_all)- minval(ijksize3_all)) /    &
+         IMBALANCE = DBLE(maxval(ijksize3_all)- minval(ijksize3_all)) /    &
             minval(ijksize3_all)*100.0
 ! Calculate potential speedup based on Amdahl's Law
          IF(IMBALANCE == 0)THEN

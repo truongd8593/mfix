@@ -55,7 +55,7 @@
       INTEGER          L, L1
 !
 !                      error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80)     LINE
 !
 !                      LOGICAL
       LOGICAL          STRING_DEFINED

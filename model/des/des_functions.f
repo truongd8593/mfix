@@ -145,7 +145,7 @@
 ! direction
       DOUBLE PRECISION, DIMENSION(:), INTENT (IN) :: GRID_POS
 ! given axis (x, y, or z) and associated index (i, j, or k)
-      CHARACTER*1, INTENT (IN) :: AXIS, AXIS_INDEX
+      CHARACTER(LEN=1), INTENT (IN) :: AXIS, AXIS_INDEX
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------

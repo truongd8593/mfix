@@ -158,7 +158,7 @@ MODULE interpolation
 !-----------------------------------------------
     INTEGER, DIMENSION(3), INTENT(in):: pc   ! i,j,k indices of particle - 1
     INTEGER, INTENT(out):: IW, IE, JS, JN, KB, KTP
-    CHARACTER*5, INTENT(in) :: isch   ! interpolation scheme
+    CHARACTER(LEN=5), INTENT(in) :: isch   ! interpolation scheme
     INTEGER, INTENT(in) :: dimprob   ! dimension of system = DIMN
     INTEGER, OPTIONAL :: ordernew   ! interpolation order
 
@@ -442,7 +442,7 @@ MODULE interpolation
       DOUBLE PRECISION INTERP_scalar
 ! Interpolatin scheme. It is 'hard coded' so that only a second order
 ! Lagrange polynomial is used. Higher order isn't necessary.
-      CHARACTER*5 :: INTP_SCHM = 'LPI'
+      CHARACTER(LEN=5) :: INTP_SCHM = 'LPI'
 !-----------------------------------------------
 
 ! Obtain the starting cell index values for interpolation around
@@ -600,7 +600,7 @@ MODULE interpolation
     INTEGER, INTENT(out):: ib, ie, jb, je, kb, ke
     INTEGER, INTENT(in) :: dimprob
     INTEGER, OPTIONAL :: ordernew
-    CHARACTER*5, INTENT(in) :: isch
+    CHARACTER(LEN=5), INTENT(in) :: isch
     INTEGER :: ob2rtmp, ob2ltmp, ordertemp, ordernewtmp
     ob2l = (order+1)/2
     ob2r = order/2
@@ -698,7 +698,7 @@ MODULE interpolation
     REAL(prcn), INTENT(in):: ppos
     REAL(prcn), INTENT(out):: interp_scl
     INTEGER, INTENT(in):: order
-    CHARACTER*5, INTENT(in) :: isch
+    CHARACTER(LEN=5), INTENT(in) :: isch
     REAL(prcn), DIMENSION(:), POINTER, OPTIONAL:: weight_pointer
 
     REAL(prcn), DIMENSION(:), ALLOCATABLE:: zetacsi
@@ -809,7 +809,7 @@ MODULE interpolation
     REAL(prcn), INTENT(in):: ppos
     REAL(prcn), DIMENSION(:), INTENT(out):: interp_vec
     INTEGER, INTENT(in) :: order
-    CHARACTER*5 :: fun
+    CHARACTER(LEN=5) :: fun
     REAL(prcn), DIMENSION(:), POINTER, OPTIONAL:: weight_pointer
 
     INTEGER:: vec_size, nv, i
@@ -864,7 +864,7 @@ MODULE interpolation
     REAL(prcn), DIMENSION(2), INTENT(in):: ppos
     REAL(prcn), INTENT(out):: interp_scl
     INTEGER, INTENT(in):: order
-    CHARACTER*5, INTENT(in) :: isch
+    CHARACTER(LEN=5), INTENT(in) :: isch
     REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
 
     REAL(prcn), DIMENSION(:,:), ALLOCATABLE:: zetacsi
@@ -1054,7 +1054,7 @@ MODULE interpolation
     REAL(prcn), DIMENSION(2), INTENT(in):: ppos
     REAL(prcn), DIMENSION(:), INTENT(out):: interp_vec
     INTEGER, INTENT(in):: order
-    CHARACTER*5 :: fun
+    CHARACTER(LEN=5) :: fun
     REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
 
     INTEGER :: vec_size
@@ -1114,7 +1114,7 @@ MODULE interpolation
     REAL(prcn), DIMENSION(3), INTENT(in):: ppos
     REAL(prcn), INTENT(out):: interp_scl
     INTEGER, INTENT(in):: order
-    CHARACTER*5, INTENT(in) :: isch
+    CHARACTER(LEN=5), INTENT(in) :: isch
     REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
 
     REAL(prcn), DIMENSION(:,:), ALLOCATABLE:: zetacsi
@@ -1358,7 +1358,7 @@ MODULE interpolation
     REAL(prcn), DIMENSION(3), INTENT(in):: ppos
     REAL(prcn), DIMENSION(:), INTENT(out):: interp_vec
     INTEGER, INTENT(in):: order
-    CHARACTER*5 :: fun
+    CHARACTER(LEN=5) :: fun
     REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
 
     INTEGER :: vec_size

@@ -76,7 +76,7 @@
                           F(0:DIMENSION_M,0:DIMENSION_M),&
                           Saxf(0:DIMENSION_M)
 ! error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 
 !!$omp  parallel do private( IJKW, IJKS, IJKB, IJKE, IJKN, IJKT,  &
@@ -230,7 +230,7 @@
                           F(DIMENSION_M,DIMENSION_M),&
                           Saxf(DIMENSION_M)
 ! error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 
 !!$omp  parallel do private( IJKW, IJKS, IJKB, IJKE, IJKN, IJKT,  &
@@ -379,7 +379,7 @@
                           F(0:DIMENSION_M,0:DIMENSION_M),&
                           Saxf(0:DIMENSION_M)
 ! error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 
 !!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
@@ -569,7 +569,7 @@
                           F(0:DIMENSION_M,0:DIMENSION_M),&
                           Saxf(0:DIMENSION_M)
 ! error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 
 !!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
@@ -752,7 +752,7 @@
                           F(0:DIMENSION_M,0:DIMENSION_M),&
                           Saxf(0:DIMENSION_M)
 !                      error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 
 !!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, &

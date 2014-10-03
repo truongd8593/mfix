@@ -52,7 +52,7 @@
             WRITE(*,'(7X,A)') &
                  'FROM CFSLIDE.F ---------->'
             WRITE(*,'(9X,A)') 'PARTICLE_SLIDE = T'
-            WRITE(*,'(9X,A,2(ES15.7,X))')&
+            WRITE(*,'(9X,A,2(ES15.7,1X))')&
                  'FTMD, mu*FNMD = ', FTMD, MU*FNMD
             WRITE(*,'(7X,A)') '<----------END CFSLIDE.F'
          ENDIF

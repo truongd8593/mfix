@@ -110,7 +110,7 @@
 ! Total number of valid IS types
       INTEGER, PARAMETER :: DIM_ISTYPE = 4
 ! Valid internal surface types
-      CHARACTER*16, DIMENSION(1:DIM_ISTYPE) :: VALID_IS_TYPE = (/&
+      CHARACTER(LEN=16), DIMENSION(1:DIM_ISTYPE) :: VALID_IS_TYPE = (/&
          'IMPERMEABLE     ', 'IP              ',&
          'SEMIPERMEABLE   ', 'SP              '/)
 !......................................................................!

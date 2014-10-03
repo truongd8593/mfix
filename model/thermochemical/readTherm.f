@@ -6,7 +6,8 @@
       DOUBLE PRECISION Thigh, Tlow, Tcom, MW
       DOUBLE PRECISION Cp1, Cp2, h1, h2, T, Hf298oR
       DOUBLE PRECISION, EXTERNAL :: calc_CpoR, calc_H0oR
-      CHARACTER PATH*132, SPECIES*18
+      CHARACTER(LEN=132) :: PATH
+      CHARACTER(LEN=18) :: SPECIES
       integer i, funit, IER
       CHARACTER(len=142) FILENAME
       CHARACTER(len=10) :: THERM = 'BURCAT.THR'
@@ -85,7 +86,7 @@
 
 !     Assoiciate a simple species name with that in BURCAT.THR file
       INTEGER, PARAMETER :: Max = 3
-      CHARACTER, DIMENSION(2,Max) :: SPECIES_ALIAS*18
+      CHARACTER(LEN=18), DIMENSION(2,Max) :: SPECIES_ALIAS
       SPECIES_ALIAS = RESHAPE ( (/ &
 !        common name             BURCAT.THR name
 !        123456789012345678     123456789012345678

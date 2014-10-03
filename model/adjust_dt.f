@@ -45,7 +45,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       DOUBLE PRECISION :: NITOS_NEW
-      CHARACTER, DIMENSION(1) :: LINE*70
+      CHARACTER(LEN=70), DIMENSION(1) :: LINE
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------

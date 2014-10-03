@@ -77,7 +77,7 @@
       DOUBLE PRECISION a(0:DIMENSION_M), BB(0:DIMENSION_M), F(0:DIMENSION_M,0:DIMENSION_M),&
                        Saxf(0:DIMENSION_M)
 !                      error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 
 !!!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
@@ -283,7 +283,7 @@
                        Saxf(0:DIMENSION_M)
 !
 !                      error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 
 !!!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
@@ -480,7 +480,7 @@
       DOUBLE PRECISION a(0:DIMENSION_M), BB(0:DIMENSION_M), F(0:DIMENSION_M,0:DIMENSION_M),&
                        Saxf(0:DIMENSION_M)
 !                      error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 !!!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, &
 !!!$omp&  a, bb, F, Saxf,SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME,L, M,LP, DEN) &

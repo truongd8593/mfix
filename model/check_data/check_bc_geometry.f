@@ -48,7 +48,7 @@
 ! Total number of valid BC types
       INTEGER, PARAMETER :: DIM_BCTYPE = 21
 ! Valid boundary condition types
-      CHARACTER*16, DIMENSION(1:DIM_BCTYPE) ::VALID_BC_TYPE = (/&
+      CHARACTER(LEN=16), DIMENSION(1:DIM_BCTYPE) ::VALID_BC_TYPE = (/&
            'MASS_INFLOW     ', 'MI              ',&
            'MASS_OUTFLOW    ', 'MO              ',&
            'P_INFLOW        ', 'PI              ',&

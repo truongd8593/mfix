@@ -68,12 +68,12 @@
       INTEGER, INTENT(IN) :: METHOD
 ! sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
-      CHARACTER*4, INTENT(IN) :: SWEEP
+      CHARACTER(LEN=4), INTENT(IN) :: SWEEP
 ! convergence tolerance for leq solver (leq_tol)
       DOUBLE PRECISION, INTENT(IN) :: TOL1
 ! preconditioner (leq_pc)
 !     options = 'line' (default), 'diag', 'none'
-      CHARACTER*4, INTENT(IN) :: PC
+      CHARACTER(LEN=4), INTENT(IN) :: PC
 ! error index
       INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
@@ -96,7 +96,7 @@
 ! indices
       INTEGER :: II, IJK
 ! for constructing local character strings
-      CHARACTER*80 :: LINE0, LINE1
+      CHARACTER(LEN=80) :: LINE0, LINE1
 !-----------------------------------------------
 
 

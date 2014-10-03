@@ -275,7 +275,7 @@
       implicit none
 
 ! Message buffer.
-      CHARACTER*64 :: lMsg0, lMsg1
+      CHARACTER(LEN=64) :: lMsg0, lMsg1
 
       DOUBLE PRECISION :: lODE_EndTime, lODE_RunTime
 

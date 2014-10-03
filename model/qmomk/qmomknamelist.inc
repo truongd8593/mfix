@@ -1,9 +1,9 @@
        NAMELIST / QMOMK_INPUT_DATA /&
 
-!	    USE qmom_kinetic_equation
-! start Alberto 
+!           USE qmom_kinetic_equation
+! start Alberto
         QMOMK, QMOMK_WALL_BC_TYPE, QMOMK_COLLISIONS, QMOMK_COLLISIONS_ORDER, &
-	 QMOMK_COUPLED, QMOMK_CFL, PRINT_QMOMK_DATA, QMOMK_TYPE
+         QMOMK_COUPLED, QMOMK_CFL, PRINT_QMOMK_DATA, QMOMK_TYPE
 ! end Alberto
 
 !
@@ -18,4 +18,4 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      
+

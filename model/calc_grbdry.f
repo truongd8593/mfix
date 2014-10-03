@@ -111,7 +111,7 @@
 ! Sum of eps*G_0
       DOUBLE PRECISION :: g0EPs_avg
 ! Error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80) :: LINE
 
 !-----------------------------------------------
 !  Function subroutines
@@ -1311,7 +1311,7 @@
 ! Sum of eps*G_0
       DOUBLE PRECISION g0EPs_avg
 ! Error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80) :: LINE
 ! Radial distribution function
       DOUBLE PRECISION g_0AVG
 !-----------------------------------------------

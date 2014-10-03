@@ -105,12 +105,12 @@
 ! Error index
       INTEGER :: IER
 ! DISTIO variable for specifying the mfix version
-      CHARACTER :: version*512
+      CHARACTER(LEN=512) :: version
 ! environment variable
-      CHARACTER :: omp_num_threads*512
+      CHARACTER(LEN=512) :: omp_num_threads
       INTEGER :: length
       INTEGER :: status
-      CHARACTER :: arg*512
+      CHARACTER(LEN=512) :: arg
 
 !$      INTEGER num_threads, threads_specified, omp_id
 !$      INTEGER mp_numthreads, omp_get_num_threads
@@ -542,7 +542,7 @@
 !
       logical :: amgdbg = .TRUE.
 
-      character fname*80
+      character(LEN=80) :: fname
 
       k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
       i_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)* &
@@ -845,7 +845,7 @@
 !
       logical :: amgdbg = .TRUE.
 
-      character fname*80
+      character(LEN=80) :: fname
 !-----------------------------------------------
 
       k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3

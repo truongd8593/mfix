@@ -121,7 +121,7 @@
       DOUBLE PRECISION :: Tau_2, zeta_c_2, MU_2_T_Kin, Mu_2_Col
       DOUBLE PRECISION :: Tmp_Ahmadi_Const
 ! Error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80) :: LINE
 ! Other local terms
       DOUBLE PRECISION :: dpc_dphi
 ! Local variable for rdf

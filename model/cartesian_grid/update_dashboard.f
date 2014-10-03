@@ -142,7 +142,7 @@
       WRITE(111,30) ' | Sm      |         |         |         |         |                           |'
       ENDIF
       WRITE(111,50)' NIT     ',NIT,NIT_MIN,NIT_MAX
-      CALL WRITE_SIMPLE_PROGRESS_BAR(dfloat(NIT),dfloat(NIT_MAX))
+      CALL WRITE_SIMPLE_PROGRESS_BAR(dble(NIT),dble(NIT_MAX))
       IF (RESID_INDEX(8,1) == UNDEFINED_I) THEN
          WRITE (111,55) ' Max res ',RESID_STRING(8)
       ENDIF
