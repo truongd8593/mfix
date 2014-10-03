@@ -858,7 +858,7 @@
 ! Generic loop counters
       INTEGER lc1, lc2, lc3, lc4
 
-      character*30 filename
+      character(LEN=30) :: filename
 
 ! Local process data:
 !----------------------->>
@@ -1199,7 +1199,7 @@
 ! Generic write buffers.
       CHARACTER(len=120) wbuff, wbuff2
 ! String for generating filenames.
-      CHARACTER*30 filename
+      CHARACTER(LEN=30) :: filename
 
 ! Generic cluster pointer.
       Type(cType), pointer :: cThis
@@ -1475,7 +1475,7 @@
          do lc3 = 1, pCnt_all(lc2)
             if(gpPEA_all(gp_dsp(lc2) + lc3)) then
                write(*,"(3x,'Particle ',I8,' in cluster ',I6, &
-                  &' is a ghost on process ',I2'.')")          &
+                  &' is a ghost on process ',I2,'.')")        &
                   gpIDs_all(gp_dsp(lc2) + lc3), lc2, proc
             endif
          enddo
@@ -1504,7 +1504,7 @@
          if(dbg >= 2) then
             do lc1=1, clusterCount_all
                filename = ''
-               write(filename,"('dbg_cluster_',I3.3'.txt')")lc1
+               write(filename,"('dbg_cluster_',I3.3,'.txt')")lc1
                open(unit=201, file=filename, status='replace')
                write(201,"(3x,'Time:',F10.6)") Time
 

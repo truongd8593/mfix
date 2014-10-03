@@ -24,7 +24,7 @@
       IMPLICIT NONE
 !
       INTEGER SELECTION
-      character :: sel*2
+      character(LEN=2) :: sel
 !
       WRITE (*,*) ' '
       WRITE (*,'(A,$)') ' Enter menu selection > '

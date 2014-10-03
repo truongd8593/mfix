@@ -56,7 +56,7 @@
       INTEGER :: IC_K_t (DIMENSION_IC)
 
 ! Type of initial condition: PATCH
-      CHARACTER*16 :: IC_TYPE(DIMENSION_IC)
+      CHARACTER(LEN=16) :: IC_TYPE(DIMENSION_IC)
 
 ! Initial gas phase volume fraction
       DOUBLE PRECISION :: IC_EP_g (DIMENSION_IC)

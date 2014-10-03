@@ -178,6 +178,6 @@
       DOUBLE PRECISION C (DIMENSION_C)
 
 ! Names of user defined constants (for output file only)
-      CHARACTER*20     C_NAME (DIMENSION_C)
+      CHARACTER(LEN=20) :: C_NAME (DIMENSION_C)
 
       END MODULE constant

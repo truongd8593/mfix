@@ -227,7 +227,7 @@
 
                CASE (101)
                   Allocate(DP_BC_ID(DIMENSION_3))
-                  DP_BC_ID = DFLOAT(BC_ID)
+                  DP_BC_ID = DBLE(BC_ID)
                   CALL WRITE_SCALAR_IN_VTU_BIN('BC_ID',DP_BC_ID,PASS)
 
                   DeAllocate(DP_BC_ID)
@@ -264,7 +264,7 @@
                CASE(999)
                   Allocate(IJK_ARRAY(DIMENSION_3))
                   DO IJK = IJKSTART3, IJKEND3
-                     IJK_ARRAY(IJK) = DFLOAT(IJK)
+                     IJK_ARRAY(IJK) = DBLE(IJK)
                   ENDDO
                   CALL WRITE_SCALAR_IN_VTU_BIN('IJK',IJK_ARRAY,PASS)
                   DeAllocate(IJK_ARRAY)
@@ -610,7 +610,7 @@
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: SHIFTED_CONNECTIVITY
       INTEGER :: CELL_TYPE
 
-      REAL*4 :: float,SP_X,SP_Y,SP_Z
+      REAL(4) :: float,SP_X,SP_Y,SP_Z
       INTEGER :: int
 
       INTEGER ::     nbytes_xyz,nbytes_connectivity,nbytes_offset,nbytes_type
@@ -977,7 +977,7 @@
 
 
       INTEGER :: int
-      REAL*4 :: float
+      REAL(4) :: float
 
       INTEGER :: nbytes_scalar
 
@@ -1140,7 +1140,7 @@
 
 
       INTEGER :: int
-      REAL*4 :: float
+      REAL(4) :: float
 
       INTEGER :: nbytes_vector
 
@@ -1539,7 +1539,7 @@
 
             CASE (101)
                Allocate(DP_BC_ID(DIMENSION_3))
-               DP_BC_ID = DFLOAT(BC_ID)
+               DP_BC_ID = DBLE(BC_ID)
                CALL WRITE_SCALAR_IN_VTU_ASCII('BC_ID',DP_BC_ID)
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
                DeAllocate(DP_BC_ID)
@@ -1547,7 +1547,7 @@
             CASE(999)
                Allocate(IJK_ARRAY(DIMENSION_3))
                DO IJK = IJKSTART3, IJKEND3
-                  IJK_ARRAY(IJK) = DFLOAT(IJK)
+                  IJK_ARRAY(IJK) = DBLE(IJK)
                ENDDO
                CALL WRITE_SCALAR_IN_VTU_ASCII('IJK',IJK_ARRAY)
                CALL WRITE_SCALAR_IN_VTU_ASCII('F_AT',F_AT)
@@ -2666,8 +2666,8 @@
             CASE (101)
 
                Allocate(DP_BC_ID(DIMENSION_3))
-               DP_BC_ID = DFLOAT(BC_ID)
-!               CALL WRITE_SCALAR_IN_VTK('BC_ID',DFLOAT(BC_ID))
+               DP_BC_ID = DBLE(BC_ID)
+!               CALL WRITE_SCALAR_IN_VTK('BC_ID',DBLE(BC_ID))
                CALL WRITE_SCALAR_IN_VTK('BC_ID',DP_BC_ID)
                IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
                DeAllocate(DP_BC_ID)
@@ -3553,11 +3553,11 @@
             WRITE(*,5) 'GRID STATISTICS:'
             WRITE(*,5) 'NUMBER OF CELLS          = ', NUMBER_OF_CELLS
             WRITE(*,10)'NUMBER OF STANDARD CELLS = ', &
-                        NUMBER_OF_STANDARD_CELLS,DFLOAT(NUMBER_OF_STANDARD_CELLS) / DFLOAT(NUMBER_OF_CELLS) * 100.0D0
+                        NUMBER_OF_STANDARD_CELLS,DBLE(NUMBER_OF_STANDARD_CELLS) / DBLE(NUMBER_OF_CELLS) * 100.0D0
             WRITE(*,10)'NUMBER OF CUT CELLS      = ', &
-                        NUMBER_OF_CUT_CELLS,DFLOAT(NUMBER_OF_CUT_CELLS) / DFLOAT(NUMBER_OF_CELLS) * 100.0D0
+                        NUMBER_OF_CUT_CELLS,DBLE(NUMBER_OF_CUT_CELLS) / DBLE(NUMBER_OF_CELLS) * 100.0D0
             WRITE(*,10)'NUMBER OF BLOCKED CELLS  = ', &
-                        NUMBER_OF_BLOCKED_CELLS,DFLOAT(NUMBER_OF_BLOCKED_CELLS) / DFLOAT(NUMBER_OF_CELLS) * 100.0D0
+                        NUMBER_OF_BLOCKED_CELLS,DBLE(NUMBER_OF_BLOCKED_CELLS) / DBLE(NUMBER_OF_CELLS) * 100.0D0
 
 5           FORMAT(1X,A,I8)
 10          FORMAT(1X,A,I8,' (',F6.2,' % of Total)')
@@ -4179,4 +4179,3 @@
 
 
       END SUBROUTINE PRINT_GRID_STATISTICS
-

@@ -26,7 +26,7 @@
       DOUBLE PRECISION :: RO_s
       LOGICAL :: BC_APPLY_TO_MPPIC(DIMENSION_BC)
       INTEGER :: COHESION_DEBUG, DES_MMAX,DES_NMAX_s(DIM_M),DIMN
-      CHARACTER*16 DES_BC_TYPE(DIMENSION_BC)
+      CHARACTER(LEN=16) :: DES_BC_TYPE(DIMENSION_BC)
       DOUBLE PRECISION :: DES_BC_MASSFLOW_s(DIMENSION_BC, DIM_M)
       DOUBLE PRECISION :: DES_BC_ROP_s (DIMENSION_BC, DIM_M)
       DOUBLE PRECISION :: DES_BC_T_s (DIMENSION_IC, DIM_M)
@@ -66,7 +66,7 @@
       DOUBLE PRECISION :: MQUAD_FACTOR,STATWT_PIC(DIM_M), ISATdt
       DOUBLE PRECISION :: RADIUS_RATIO,WALL_RADIUS_RATIO
       DOUBLE PRECISION :: pvel_mean, PVEL_StDev,VOL_FRAC(DIM_M)
-      CHARACTER*64 :: REACTION_MODEL
+      CHARACTER(LEN=64) :: REACTION_MODEL
 
       LOGICAL :: DISCRETE_ELEMENT, MPPIC, DES_CONTINUUM_HYBRID
 
@@ -111,7 +111,7 @@
  2001 FORMAT(//1X,70('*')/' From: DEPRECATED_OR_UNKNOWN',/1x,          &
          'Error 2001: Unable to process line ',A,' of the mfix.dat ',  &
          'file.',2/3x,A,2/1x,'Possible causes are',/3x,'*  Incorrect', &
-         ' or illegal keyword format',/3x'*  Unknown or mistyped name',&
+         ' or illegal keyword format',/3x,'*  Unknown or mistyped name',&
          /3x,'*  The dimensioned item is too small (array overflow).', &
          2/1x,'Please see the user documentation and update the ',     &
          'mfix.dat file. ',/1X,70('*')//)

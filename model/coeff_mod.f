@@ -236,30 +236,30 @@
 
 
       write(*,"(/3x,'Interphase drag:')")
-      write(*,"( 5x,'ref',$)")
+      write(*,"( 5x,'ref')",ADVANCE="NO")
       DO M=0, MMAX
-         write(*,"(2x,I3,$)")M
+         write(*,"(2x,I3)",ADVANCE="NO")M
       ENDDO
       write(*,"('')")
 
       DO M=0, MMAX
-         write(*,"( 5x,I3,$)") M
+         write(*,"( 5x,I3)",ADVANCE="NO") M
          DO MM=0, MMAX
-            write(*,"(2x,L3,$)")DRAGCOEF(M, MM)
+            write(*,"(2x,L3)",ADVANCE="NO")DRAGCOEF(M, MM)
          ENDDO
          write(*,"('')")
       ENDDO
 
       write(*,"(/3x,'Interphase heat transfer:')")
-      write(*,"( 5x,'ref',$)")
+      write(*,"( 5x,'ref')",ADVANCE="NO")
       DO M=0, MMAX
-         write(*,"(2x,I3,$)")M
+         write(*,"(2x,I3)",ADVANCE="NO")M
       ENDDO
       write(*,"('')")
       DO M=0, MMAX
-         write(*,"( 5x,I3,$)") M
+         write(*,"( 5x,I3)",ADVANCE="NO") M
          DO MM=0, MMAX
-            write(*,"(2x,L3,$)")HEAT_TR(M, MM)
+            write(*,"(2x,L3)",ADVANCE="NO")HEAT_TR(M, MM)
          ENDDO
          write(*,"('')")
       ENDDO

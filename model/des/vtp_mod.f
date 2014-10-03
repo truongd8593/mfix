@@ -18,7 +18,7 @@
       INTEGER, PARAMETER :: PVD_UNIT = 2050
 
 ! formatted file name
-      CHARACTER*64 :: FNAME_VTP
+      CHARACTER(LEN=64) :: FNAME_VTP
 
       INTERFACE VTP_WRITE_DATA
          MODULE PROCEDURE VTP_WRITE_DP1
@@ -262,7 +262,7 @@
 ! logical used for testing is the data file already exists
       LOGICAL :: EXISTS_VTP
 ! status of the vtp file to be written
-      CHARACTER*8 :: STATUS_VTP
+      CHARACTER(LEN=8) :: STATUS_VTP
 
 
 ! Initial the global count.
@@ -380,15 +380,15 @@
 ! logical used for testing is the data file already exists
       LOGICAL :: EXISTS_PVD
 ! status of the vtp file to be written
-      CHARACTER*8 :: STATUS_PVD
+      CHARACTER(LEN=8) :: STATUS_PVD
 ! Generic input limited to 256 characters
-      CHARACTER*256 INPUT
+      CHARACTER(LEN=256) INPUT
 
 ! formatted file name
-      CHARACTER*64 :: FNAME_PVD = ''
+      CHARACTER(LEN=64) :: FNAME_PVD = ''
 
 ! formatted solids time
-      CHARACTER*12 :: S_TIME_CHAR = ''
+      CHARACTER(LEN=12) :: S_TIME_CHAR = ''
 
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
 

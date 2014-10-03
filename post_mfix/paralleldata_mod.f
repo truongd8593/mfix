@@ -39,11 +39,11 @@
       integer :: np  ! mumber of processors for this run
 
 
-      character :: fname_scav*80 , fname_dist*80
+      character(LEN=80) :: fname_scav, fname_dist
 
-      character :: ext*35
+      character(LEN=35) :: ext
 
-      character :: pbuffer*512
+      character(LEN=512) :: pbuffer
 
       integer , allocatable :: cellcount(:)
 

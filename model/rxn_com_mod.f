@@ -31,11 +31,11 @@
 ! Grouping of reaction information.
       TYPE REACTION_BLOCK
 ! Name of reaction construct from data file.
-         CHARACTER*32 Name
+         CHARACTER(LEN=32) :: Name
 ! User defined chemical equation from data file.
-         CHARACTER*512 ChemEq
+         CHARACTER(LEN=512) :: ChemEq
 ! Reaction classification: Homogeneous, Heterogeneous, Catalytic.
-         CHARACTER*16 Classification
+         CHARACTER(LEN=16) :: Classification
 ! Indicates if the automated heat of reaction is to be calculated (T) or
 ! if the user has supplied a heat of reaction (F).
          LOGICAL Calc_DH
@@ -413,10 +413,9 @@
 ! Optional file unit.
       INTEGER, OPTIONAL :: fUNIT
 
-      CHARACTER*72, OUTPUT
-      CHARACTER*72, full, divided, empty
+      CHARACTER(LEN=72) :: OUTPUT, full, divided, empty
 
-      CHARACTER*32 lSP
+      CHARACTER(LEN=32) :: lSP
 
       INTEGER lN, M, N
       INTEGER lS, lE

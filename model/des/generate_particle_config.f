@@ -1223,7 +1223,7 @@
 
 2023  FORMAT(/5x, &
            'For solid phase M:                          ',  I5, /5x, &
-           'Total number of parcels                    = ', I15, /5x &
+           'Total number of parcels                    = ', I15, /5x, &
            'Total number of implied physical particles = ', ES15.7)
 
       WRITE(ERR_MSG,*) ''
@@ -1268,7 +1268,7 @@
       logical , intent(in) :: writeindomain
       !facet id and particle id
       Integer ::  vtp_unit , i,j,k,l, nparts, pvd_unit, ipe
-      CHARACTER*100 :: vtp_fname, pvd_fname
+      CHARACTER(LEN=100) :: vtp_fname, pvd_fname
 
       type(particle), pointer :: part => null()
       real,dimension(:,:), allocatable :: ltemp_array
@@ -1277,7 +1277,7 @@
 
 
 ! formatted solids time
-      CHARACTER*12 :: S_TIME_CHAR = ''
+      CHARACTER(LEN=12) :: S_TIME_CHAR = ''
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("WRITE_PARTICLE_VTP_FILE")
       vtp_unit = 1002

@@ -25,7 +25,7 @@
             INTEGER :: LIM1, LIM2
             DOUBLE PRECISION :: PART_POS
             DOUBLE PRECISION, DIMENSION(:) :: GRID_POS
-            CHARACTER*1 :: AXIS,AXIS_INDEX
+            CHARACTER(LEN=1) :: AXIS,AXIS_INDEX
          END FUNCTION DES_GETINDEXFROMPOS
       END INTERFACE
 
@@ -142,7 +142,7 @@
 ! options are :
 !    TECPLOT - data is written in Tecplot format
 !    undefined - data is written in ParaView format (default)
-      CHARACTER*64 DES_OUTPUT_TYPE
+      CHARACTER(LEN=64) :: DES_OUTPUT_TYPE
 
 ! Used sporadically to control screen dumps (for debug purposes)
       LOGICAL :: DEBUG_DES
@@ -203,7 +203,7 @@
 ! Collision model, options are as follows
 !   linear spring dashpot model (default/undefined)
 !   'hertzian' model
-      CHARACTER*64 DES_COLL_MODEL
+      CHARACTER(LEN=64) :: DES_COLL_MODEL
       INTEGER DES_COLL_MODEL_ENUM
       INTEGER,PARAMETER ::  HERTZIAN=0
       INTEGER,PARAMETER ::  LSD=1
@@ -211,7 +211,7 @@
 ! Integration method, options are as follows
 !   'euler' first-order scheme (default)
 !   'adams_bashforth' second-order scheme (by T.Li)
-      CHARACTER*64 DES_INTG_METHOD
+      CHARACTER(LEN=64) :: DES_INTG_METHOD
       LOGICAL INTG_ADAMS_BASHFORTH
       LOGICAL INTG_EULER
 
@@ -316,7 +316,7 @@
 !   2D options are DUDY or DVDX
 !   3D options are DUDY, DUDZ, DVDX, DVDZ, DWDX or DWDY
 !   Note that all other directions are treated as periodic boundaries
-      CHARACTER*4 DES_LE_SHEAR_DIR
+      CHARACTER(LEN=4) :: DES_LE_SHEAR_DIR
 ! End LE BC
 !-----------------------------------------------------------------<<<
 

@@ -50,13 +50,13 @@
       DOUBLE PRECISION, DIMENSION(DIMENSION_3,-3:3) :: Am
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: Bm, X_ACT, X_SOL
       DOUBLE PRECISION :: ERR, ERRMAX, ERRSUM, XSUM
-      CHARACTER, DIMENSION(8) :: LINE*80
+      CHARACTER(LEN=80), DIMENSION(8) :: LINE
 !
 !                      linear equation solver method and iterations
       INTEGER          LEQMETHOD, LEQIT
-      CHARACTER*4 ::   LEQSWEEP
+      CHARACTER(LEN=4) ::   LEQSWEEP
       DOUBLE PRECISION LEQTOL
-      CHARACTER*4 ::   LEQPC
+      CHARACTER(LEN=4) ::   LEQPC
       REAL  :: Harvest
 
 !  Initialize the random number generator

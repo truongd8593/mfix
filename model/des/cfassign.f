@@ -235,7 +235,7 @@
       double precision :: vol_node_uncorr
 ! used for reporting information
       integer :: FLUID_IND, CUTCELL_IND, WALL_IND
-      character*100 :: filename
+      character(LEN=100) :: filename
 !-----------------------------------------------
 
       avg_factor = merge(0.25d0, 0.125d0, NO_K)

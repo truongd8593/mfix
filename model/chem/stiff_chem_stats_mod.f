@@ -182,7 +182,7 @@
       countINCPT = 0
 
       if(myPE == PE_IO) &
-         write(*,"(/3x,'Integrating stiff chemistry...',$)")
+         write(*,"(/3x,'Integrating stiff chemistry...')",ADVANCE="NO")
 
       RETURN
       END SUBROUTINE INIT_STIFF_CHEM_STATS

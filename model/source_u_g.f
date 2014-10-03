@@ -101,7 +101,7 @@
                           Uss, Wsb, Wst, Wse, Usb, Ust
       DOUBLE PRECISION :: F_vir
 ! error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80) :: LINE
 !-----------------------------------------------
 
 ! Set reference phase to gas

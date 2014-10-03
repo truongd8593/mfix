@@ -626,7 +626,7 @@
          ENDIF
       ENDDO
 
- 1101 FORMAT('Error 1101: Illegal input for boundary condition: 'I3,/  &
+ 1101 FORMAT('Error 1101: Illegal input for boundary condition: ',I3,/ &
          A,' should not be specified for DEM/PIC simulations.',/       &
          'Please correct the mfix.dat file.')
 

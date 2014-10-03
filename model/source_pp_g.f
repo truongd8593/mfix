@@ -73,7 +73,7 @@
 ! loezos: used for including shearing
       integer :: incr
 ! error message
-      CHARACTER*80     LINE(1)
+      CHARACTER(LEN=80) :: LINE(1)
 ! temporary use of global arrays:
 ! xsi_array: convection weighting factors
 !      DOUBLE PRECISION XSI_e(DIMENSION_3), XSI_n(DIMENSION_3),&

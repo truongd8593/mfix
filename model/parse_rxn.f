@@ -59,7 +59,7 @@
 ! Positions of braces {...}
       INTEGER bIDX, eIDX
 ! Reaction Name
-      CHARACTER*128 INPUT
+      CHARACTER(LEN=128) :: INPUT
 ! Index of reaction.
       INTEGER IDX
 ! Integer for phase loops
@@ -394,7 +394,7 @@
 ! End of search location for reaction name.
       INTEGER, INTENT(IN) :: rPOS
 ! Name of reaction pulled from input.
-      CHARACTER*32, INTENT(OUT) :: lNAME
+      CHARACTER(LEN=32) , INTENT(OUT) :: lNAME
 
       INTEGER NAME_LEN
 

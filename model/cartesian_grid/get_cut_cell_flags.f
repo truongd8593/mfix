@@ -118,7 +118,7 @@
          END DO
       ENDIF
 
-      PARTITION = DFLOAT(myPE)       ! ASSIGN processor ID (for vizualisation)
+      PARTITION = DBLE(myPE)       ! ASSIGN processor ID (for vizualisation)
 
       CALL SET_GEOMETRY1   ! INITIALIZE ALL VOLUMES AND AREAS
 

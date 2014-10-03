@@ -187,7 +187,7 @@
 
 
  1100 FORMAT('Error 1100: Illegal entry: ',A,' = ',A,/'Valid entries:',&
-         ' '10(/5X,A,2x,A),/5X,A)
+         ' ',10(/5X,A,2x,A),/5X,A)
 
       END SUBROUTINE CHECK_BC_GEOMETRY
 

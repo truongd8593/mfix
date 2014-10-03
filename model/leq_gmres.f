@@ -197,7 +197,7 @@
       LOGICAL IS_BM_ZERO, IS_ERROR, IS_CONVERGED
       LOGICAL ALL_IS_BM_ZERO, ALL_IS_ERROR, ALL_IS_CONVERGED
 
-      CHARACTER*40 NAME
+      CHARACTER(LEN=40) :: NAME
 !-----------------------------------------------
 
 

@@ -124,7 +124,7 @@ CONTAINS
       end do
 
       return
-      end
+    end subroutine convert_from_io_dp
 
       subroutine convert_to_io_dp(arr_internal,arr_io,n)
 
@@ -149,7 +149,7 @@ CONTAINS
       end do
 !
       return
-      end
+    end subroutine convert_to_io_dp
 
 END MODULE IN_BINARY_512
 

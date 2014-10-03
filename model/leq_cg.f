@@ -53,7 +53,7 @@
       DOUBLE PRECISION, INTENT(IN) :: TOL
 ! preconditioner (leq_pc)
 !     options = 'line' (default), 'diag', 'none'
-      CHARACTER*4, INTENT(IN) ::  PC
+      CHARACTER(LEN=4), INTENT(IN) ::  PC
 ! maximum number of iterations (generally leq_it)
       INTEGER, INTENT(IN) :: ITMAX
 ! error indicator

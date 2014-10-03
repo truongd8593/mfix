@@ -88,7 +88,7 @@
 !                      linear equation solver method and iterations
       INTEGER          LEQM, LEQI
 
-      character*8      Vname
+      character(LEN=8) :: Vname
 
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s

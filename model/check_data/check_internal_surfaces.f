@@ -212,7 +212,7 @@
                END SELECT
 
  1102 FORMAT('Error 1102: Internal surface ',I3,' has an invalid ',&
-         'prefix: 'A,/'Please correct the mfix.dat file.')
+         'prefix: ',A,/'Please correct the mfix.dat file.')
 
             ENDIF
          END DO
@@ -221,7 +221,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
  1103 FORMAT('Error 1103: Illegal entry: ',A,' = ',A,/'Valid entries:',&
-         ' '4(/5X,A,2x,A))
+         ' ',4(/5X,A,2x,A))
 
       ENDDO L50
 

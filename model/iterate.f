@@ -96,12 +96,12 @@
       DOUBLE PRECISION :: Vavg
       DOUBLE PRECISION :: errorpercent(0:MMAX)
       LOGICAL :: ABORT_IER
-      CHARACTER*4 TUNIT
+      CHARACTER(LEN=4) :: TUNIT
 
 ! Flag indicating which error message to print when run diverges.
       INTEGER :: lErrMsg
 ! Error Message
-      CHARACTER*32 :: lMsg
+      CHARACTER(LEN=32) :: lMsg
 
 !-----------------------------------------------
 ! External functions
@@ -645,7 +645,7 @@
 ! Dummy arguments
 !-----------------------------------------------
       DOUBLE PRECISION, INTENT(INOUT) :: TLEFT
-      CHARACTER TUNIT*4
+      CHARACTER(LEN=4) :: TUNIT
 !-----------------------------------------------
 
       IF (TLEFT < 3600.0d0) THEN

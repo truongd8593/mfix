@@ -86,7 +86,7 @@
 ! Shearing variables
       DOUBLE PRECISION :: Source_diff,Diffco_e,Diffco_w
 ! error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80) :: LINE
 
 ! for cartesian grid implementation:
       DOUBLE PRECISION :: DEL_H,Nx,Ny,Nz

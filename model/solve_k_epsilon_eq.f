@@ -103,7 +103,7 @@
 !                      small value of K or E, 1 cm2/s2 = 1e-4 m2/s2 = 1e-4 m2/s3
       DOUBLE PRECISION smallTheta
 !
-      character*8      Vname
+      character(LEN=8) :: Vname
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------

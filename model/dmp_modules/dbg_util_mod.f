@@ -108,9 +108,9 @@
          write(ldbg,"('K = ',I5)") K                !//AIKEPARDBG
          write(ldbg,"(12X,14(I3,11X))") (I,i=Istart3,Iend3)  !//AIKEPARDBG
           DO J = jstart3, Jend3                            !//AIKEPARDBG
-            write(ldbg,"(I3,')',$)") J               !//AIKEPARDBG
+            write(ldbg,"(I3,')')",ADVANCE="NO") J               !//AIKEPARDBG
             DO I = istart3, Iend3                          !//AIKEPARDBG
-              write(ldbg,"(2X,E12.4,$)") gbuf(FUNIJK(I,J,K)) !//AIKEPARDBG
+              write(ldbg,"(2X,E12.4)",ADVANCE="NO") gbuf(FUNIJK(I,J,K)) !//AIKEPARDBG
             END DO                                       !//AIKEPARDBG
             write(ldbg,"(/)")                        !//AIKEPARDBG
           END DO                                         !//AIKEPARDBG
@@ -138,9 +138,9 @@
          write(ldbg,"('K = ',I5)") K                !//AIKEPARDBG
          write(ldbg,"(12X,14(I3,11X))") (I,i=Istart3,Iend3)  !//AIKEPARDBG
           DO J = jstart3, Jend3                            !//AIKEPARDBG
-            write(ldbg,"(I3,')',$)") J               !//AIKEPARDBG
+            write(ldbg,"(I3,')')",ADVANCE="NO") J               !//AIKEPARDBG
             DO I = istart3, Iend3                          !//AIKEPARDBG
-              write(ldbg,"(2X,E12.4,$)") gbuf(FUNIJK(I,J,K)) !//AIKEPARDBG
+              write(ldbg,"(2X,E12.4)",ADVANCE="NO") gbuf(FUNIJK(I,J,K)) !//AIKEPARDBG
             END DO                                       !//AIKEPARDBG
             write(ldbg,"(/)")                        !//AIKEPARDBG
           END DO                                         !//AIKEPARDBG
@@ -167,9 +167,9 @@
          write(ldbg,"('K = ',I5)") K                !//AIKEPARDBG
          write(ldbg,"(12X,14(I3,11X))") (I,i=Istart3,Iend3)  !//AIKEPARDBG
           DO J = jstart3, Jend3                            !//AIKEPARDBG
-            write(ldbg,"(I3,')',$)") J               !//AIKEPARDBG
+            write(ldbg,"(I3,')')",ADVANCE="NO") J               !//AIKEPARDBG
             DO I = istart3, Iend3                          !//AIKEPARDBG
-              write(ldbg,"(2X,E12.4,$)") gbuf(FUNIJK(I,J,K),1) !//AIKEPARDBG
+              write(ldbg,"(2X,E12.4)",ADVANCE="NO") gbuf(FUNIJK(I,J,K),1) !//AIKEPARDBG
             END DO                                       !//AIKEPARDBG
             write(ldbg,"(/)")                        !//AIKEPARDBG
           END DO                                         !//AIKEPARDBG

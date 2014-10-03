@@ -603,7 +603,7 @@
 
       INTEGER L, N, IOS, aPOS, a2POS
 
-      CHARACTER*12, PARAMETER :: Numbers = '.0123456789'
+      CHARACTER(LEN=12), PARAMETER :: Numbers = '.0123456789'
 
 ! A flag generated to point out the location of the entry error.
       CHARACTER(LEN=512) FLAG

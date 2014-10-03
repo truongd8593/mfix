@@ -113,7 +113,10 @@
       DOUBLE PRECISION V0, Vpm, Vmt, Vbf, Vcf, Vtza
 !
 !                      error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80) :: LINE
+!
+!     FOR CALL_DI and CALL_ISAT = .true.
+      DOUBLE PRECISION SUM_R_G_temp(DIMENSION_3)
 
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION

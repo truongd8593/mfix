@@ -313,7 +313,7 @@
         integer   :: varid_kturbg , varid_eturbg
 
 
-        character :: fname*80 , var_name*80
+        character(LEN=80) :: fname, var_name
 
         double precision :: the_time
 

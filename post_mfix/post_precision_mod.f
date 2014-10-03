@@ -6,6 +6,6 @@ module post_precision
       integer :: nPrec_variable =  5
       integer :: nPrec_length   =  0
 
-      character :: spec*80
+      character(LEN=80) :: spec
 
 end module post_precision

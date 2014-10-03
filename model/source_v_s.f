@@ -110,7 +110,7 @@
       DOUBLE PRECISION :: VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
       DOUBLE PRECISION :: SRT
 ! error message
-      CHARACTER*80     LINE(2)
+      CHARACTER(LEN=80) :: LINE(2)
 !-----------------------------------------------
 
 

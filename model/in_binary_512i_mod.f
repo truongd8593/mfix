@@ -123,7 +123,7 @@ CONTAINS
       end do
 
       return
-      end
+    end subroutine convert_from_io_i
 
       subroutine convert_to_io_i(arr_internal,arr_io,n)
 
@@ -148,7 +148,7 @@ CONTAINS
       end do
 
       return
-      end
+    end subroutine convert_to_io_i
 
       subroutine convert_to_io_c(arr_internal,arr_io,n)
 
@@ -173,7 +173,7 @@ CONTAINS
       end do
 !
       return
-      end
+    end subroutine convert_to_io_c
 
 END MODULE IN_BINARY_512I
 

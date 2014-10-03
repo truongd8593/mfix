@@ -46,7 +46,7 @@
 !-----------------------------------------------
 !
 !                       array to print out
-      CHARACTER*4       ARRAY(*)
+      CHARACTER(LEN=4) :: ARRAY(*)
 !
 !                       message to print out
       CHARACTER*(*)     MESSAGE
@@ -59,7 +59,7 @@
 !                       K
       INTEGER           K
 
-      character*4,  allocatable :: array1c(:)
+      character(LEN=4),  allocatable :: array1c(:)
 
 !-----------------------------------------------
 !

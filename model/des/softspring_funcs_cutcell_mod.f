@@ -579,7 +579,7 @@
       !facet id and particle id
       Integer, intent(in) :: fid, pid
       Integer :: stl_unit, vtp_unit , k
-      CHARACTER*100 :: stl_fname, vtp_fname
+      CHARACTER(LEN=100) :: stl_fname, vtp_fname
       real :: temp_array(3)
 
       stl_unit = 1001

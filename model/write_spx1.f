@@ -80,7 +80,7 @@
       INTEGER  NUM_REC
 
       INTEGER  uspx   ! UNIT_SPX + offset from post_mfix
-      CHARACTER, DIMENSION(1) :: LINE*50   !error message
+      CHARACTER(LEN=50), DIMENSION(1) :: LINE   !error message
       double precision, dimension(DIMENSION_3) :: TMP_VAR
 !-----------------------------------------------
       uspx = UNIT_SPX + unit_add
@@ -695,7 +695,7 @@
         integer   :: varid_x , varid_y , varid_z , L , dimids(4)
         integer   :: varid_flag , coords_dimid , varid_coords , coords
 
-        character :: fname*80
+        character(LEN=80) :: fname
 
         double precision, dimension(:) , allocatable :: xloc
         double precision, dimension(:) , allocatable :: yloc
@@ -847,7 +847,8 @@
         integer   :: varid_kturbg , varid_eturbg
 
 
-        character :: fname*80 , var_name*80 , fname_index*9
+        character(LEN=80) :: fname, var_name
+        character(LEN=9) :: fname_index
 
         double precision, dimension(:) , allocatable :: arr1
         double precision, dimension(:) , allocatable :: arr2

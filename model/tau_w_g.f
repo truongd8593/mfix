@@ -100,7 +100,7 @@
       DOUBLE PRECISION Vxz
 !
 !                      error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80) :: LINE
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================

@@ -60,11 +60,11 @@
 ! Pointer to the next record
       INTEGER :: NEXT_RECA
 ! file version id
-      CHARACTER :: VERSION*512
 
 ! Place holder for deprecated variables:
       LOGICAL, PARAMETER :: lCALL_ISAT = .FALSE.
 
+      CHARACTER(LEN=512) :: VERSION
 !-----------------------------------------------
 
       NEXT_RECA = 5

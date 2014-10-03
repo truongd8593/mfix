@@ -165,7 +165,7 @@
       SHIFT = merge(-ONE, ONE, BC_PLANE(BCV) == 'N')
       DEM_MI(BCV_I)%OFFSET = BC_Y_s(BCV) + MAX_DIA*SHIFT
       DEM_MI(BCV_I)%L = J + int(SHIFT)
-      if(dFlag) write(*,"(2x,'Offset: '3x,I4,3x,g11.5)") &
+      if(dFlag) write(*,"(2x,'Offset: ',3x,I4,3x,g11.5)") &
          DEM_MI(BCV_I)%L, DEM_MI(BCV_I)%OFFSET
 
 
@@ -461,7 +461,7 @@
       SHIFT = merge(-ONE, ONE, BC_PLANE(BCV) == 'E')
       DEM_MI(BCV_I)%OFFSET = BC_X_w(BCV) + MAX_DIA*SHIFT
       DEM_MI(BCV_I)%L = I + int(SHIFT)
-      if(dFlag) write(*,"(2x,'Offset: '3x,I4,3x,g11.5)") &
+      if(dFlag) write(*,"(2x,'Offset: ',3x,I4,3x,g11.5)") &
          DEM_MI(BCV_I)%L, DEM_MI(BCV_I)%OFFSET
 
 
@@ -759,7 +759,7 @@
       SHIFT = merge(-ONE, ONE, BC_PLANE(BCV) == 'T')
       DEM_MI(BCV_I)%OFFSET = BC_Z_b(BCV) + MAX_DIA*SHIFT
       DEM_MI(BCV_I)%L = K + int(SHIFT)
-      if(dFlag) write(*,"(2x,'Offset: '3x,I4,3x,g11.5)") &
+      if(dFlag) write(*,"(2x,'Offset: ',3x,I4,3x,g11.5)") &
          DEM_MI(BCV_I)%L, DEM_MI(BCV_I)%OFFSET
 
 

@@ -86,10 +86,10 @@
       DOUBLE PRECISION, DIMENSION(6) :: LOC
 !                      Coefficient of restitution (old symbol)
       DOUBLE PRECISION :: E
-      CHARACTER, DIMENSION(3) :: LEGEND*3
-      CHARACTER, DIMENSION(0:9) :: DISCR_NAME*12
-      CHARACTER, DIMENSION(0:9) :: DISCR_NAME1*12
-      CHARACTER, DIMENSION(1:4) :: LEQ_METHOD_NAME*8
+      CHARACTER(LEN=3), DIMENSION(3) :: LEGEND
+      CHARACTER(LEN=12), DIMENSION(0:9) :: DISCR_NAME
+      CHARACTER(LEN=12), DIMENSION(0:9) :: DISCR_NAME1
+      CHARACTER(LEN=8), DIMENSION(1:4) :: LEQ_METHOD_NAME
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -635,7 +635,7 @@
  1111 FORMAT(/7X,'* Virtual mass force is applied to momentum equations.')
  1105 FORMAT(/7X,'* Simonin model is solved')
  1106 FORMAT(/7X,'* Ahmadi model is solved')
- 1107 FORMAT(/7X,'** Note: When Simonin or Ahmadi model is solved, K-Epsilon' &
+ 1107 FORMAT(/7X,'** Note: When Simonin or Ahmadi model is solved, K-Epsilon', &
                   ' and granular energy are automatically solved.')
  1108 FORMAT(/7X,'* Schaeffer frictional model is solved')
  1109 FORMAT(/7X,'* Savage frictional model is solved')
@@ -882,8 +882,8 @@
       IMPLICIT NONE
       integer ijk
 !
-      character*3, allocatable :: array1(:)   !//d
-      character*4, dimension(:), allocatable :: array2, array3
+      character(LEN=3), allocatable :: array1(:)   !//d
+      character(LEN=4), dimension(:), allocatable :: array2, array3
 
       if (myPE .eq. PE_IO) then
          allocate (array1(ijkmax3))

@@ -105,7 +105,7 @@
                           Ugs, Wgb, Wgt, Wge, Ugb, Ugt
       DOUBLE PRECISION :: F_vir
 ! error message
-      CHARACTER*80     LINE(2)
+      CHARACTER(LEN=80) :: LINE(2)
 !-----------------------------------------------
 
       DO M = 1, MMAX

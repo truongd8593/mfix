@@ -350,13 +350,13 @@
          IER1 = 0
          IER2 = 0
 
-         write(*,"(7x,g11.5,$)") T
+         write(*,"(7x,g11.5)",ADVANCE="NO") T
          lCP  = calc_CpoR(T, lM, lN, IER1) * RGAS / lMW
          lICP = calc_ICpoR(T, lM, lN, IER2) * RGAS / lMW
-         write(*,"(2(3x,g11.5),$)")lCP, lICP
+         write(*,"(2(3x,g11.5))",ADVANCE="NO")lCP, lICP
 
-         IF(IER1 /= 0) write(*,"(3x,'Cp Error!',$)")
-         IF(IER2 /= 0) write(*,"(3x,'ICp Error!',$)")
+         IF(IER1 /= 0) write(*,"(3x,'Cp Error!')",ADVANCE="NO")
+         IF(IER2 /= 0) write(*,"(3x,'ICp Error!')",ADVANCE="NO")
          write(*,"('')")
 
          T = T + 5.0
@@ -369,13 +369,13 @@
          IER1 = 0
          IER2 = 0
 
-         write(*,"(7x,g11.5,$)") T
+         write(*,"(7x,g11.5)",ADVANCE="NO") T
          lCP  = calc_CpoR(T, lM, lN, IER1) * RGAS / lMW
          lICP = calc_ICpoR(T, lM, lN, IER2) * RGAS / lMW
-         write(*,"(2(3x,g11.5),$)")lCP, lICP
+         write(*,"(2(3x,g11.5))",ADVANCE="NO")lCP, lICP
 
-         IF(IER1 /= 0) write(*,"(3x,'Cp Error!',$)")
-         IF(IER2 /= 0) write(*,"(3x,'ICp Error!',$)")
+         IF(IER1 /= 0) write(*,"(3x,'Cp Error!')",ADVANCE="NO")
+         IF(IER2 /= 0) write(*,"(3x,'ICp Error!')",ADVANCE="NO")
          write(*,"('')")
 
          T = T + 5.0

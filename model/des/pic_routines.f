@@ -41,7 +41,7 @@
 !     Temporary variables when des_continuum_coupled is T to track
 !     changes in solid time step
       DOUBLE PRECISION TMP_DTS, DTSOLID_TMP
-      CHARACTER*5 FILENAME
+      CHARACTER(LEN=5) :: FILENAME
 
 
 !     Logical to see whether this is the first entry to this routine
@@ -153,7 +153,7 @@
                      ( INT((S_TIME+0.1d0*DTSOLID)/DES_SPX_DT) &
                      + 1 )*DES_SPX_DT
                   CALL WRITE_DES_DATA
-                  IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,X,ES15.5)') &
+                  IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,1X,ES15.5)') &
                      'DES data file written at time =', S_TIME
                ENDIF
             ENDIF
@@ -168,7 +168,7 @@
 ! Write RES1 here since it won't be called in time_march.  This will
 ! also keep track of TIME
                CALL WRITE_RES1
-               IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,X,ES15.5)') &
+               IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,1X,ES15.5)') &
                'DES.RES and .RES files written at time =', S_TIME
             ENDIF
          ENDIF  ! end if (.not.des_continuum_coupled)
@@ -1251,7 +1251,7 @@
       implicit none
       integer :: i, j, k, ijk, fluid_ind, LL, PC, IDIM
       double precision :: zcor
-      character*100 :: filename
+      character(LEN=100) :: filename
       logical finish
 
       WRITE(filename,'(A,"_",I5.5,".dat")') TRIM(RUN_NAME)//'_U_S_',myPE

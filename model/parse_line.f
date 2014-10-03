@@ -497,10 +497,10 @@
       INTEGER          LSUB, L
 !
 !                      Operator symbol (Legal values: *, /)
-      CHARACTER        OPERATION*1
+      CHARACTER(LEN=1) :: OPERATION
 !
 !                      Substring taken from LINE
-      CHARACTER        SUB_STR*80
+      CHARACTER(LEN=80) :: SUB_STR
 !
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s

@@ -86,7 +86,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
- 1101 FORMAT('Error 1101: Insufficient grid information for 'A1,'-',   &
+ 1101 FORMAT('Error 1101: Insufficient grid information for ',A1,'-',   &
          'axis. You must',/'specify at least two of the following: ',  &
          A1,'LENGTH, D',A1,', and ',A1,'MAX','Please correct the ',    &
          'mfix.dat file.')
@@ -183,7 +183,7 @@
          CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
 
          DO LC = 1, NA
-            WRITE(ERR_MSG,"(4x,A' = ',A)") trim(iVar('D'//AXIS,LC)),   &
+            WRITE(ERR_MSG,"(4x,A,' = ',A)") trim(iVar('D'//AXIS,LC)),   &
                trim(iVal(DA(LC)))
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
          ENDDO

@@ -86,7 +86,7 @@
 ! Source terms (Volumetric)
       DOUBLE PRECISION :: Vxz
 ! error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80) :: LINE
 
 ! for cartesian grid implementation:
       INTEGER :: IP,JP,KM

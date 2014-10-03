@@ -431,7 +431,6 @@ common_SOURCES = \
 	model/run_mod.f \
 	model/rxn_com_mod.f \
 	model/rxns_mod.f \
-	model/solids_pressure_mod.f \
 	model/scalar_prop.f \
 	model/scalars_mod.f \
 	model/scales_mod.f \
@@ -463,6 +462,7 @@ common_SOURCES = \
 	model/set_ro_s.f \
 	model/set_wall_bc.f \
 	model/shift_dxyz.f \
+	model/solids_pressure_mod.f \
 	model/solve_continuity.f \
 	model/solve_energy_eq.f \
 	model/solve_epp.f \

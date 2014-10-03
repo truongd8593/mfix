@@ -66,7 +66,7 @@
       INTEGER NEXT_REC
 !
 !                file version id
-      CHARACTER  VERSION*512
+      CHARACTER(LEN=512) :: VERSION
 !
 !                version number
       REAL       VERSION_NUMBER
@@ -376,7 +376,7 @@
         integer   :: varid_kturbg , varid_eturbg
 
 
-        character :: fname*80 , var_name*80
+        character(LEN=80) :: fname, var_name
 
         double precision :: the_time
 
@@ -387,7 +387,7 @@
 
         integer xyz_id , xyz_dim
 
-        character varname*80
+        character(LEN=80) :: varname
         integer vartype,nvdims,vdims(10),nvatts,rcode
 
         double precision, allocatable :: array1(:)

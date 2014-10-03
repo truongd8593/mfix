@@ -178,7 +178,7 @@
       double precision, intent(in), dimension(dimn) :: position, velocity
       Integer, intent(in) :: fid
       Integer :: stl_unit, vtp_unit , k
-      CHARACTER*100 :: stl_fname, vtp_fname
+      CHARACTER(LEN=100) :: stl_fname, vtp_fname
       real :: temp_array(3)
 
       stl_unit = 1001
@@ -940,12 +940,12 @@
 
  2001 FORMAT(/,5X,  &
       & 'ERROR IN PIC_FIND_EMPTY_SPOT', /5X, &
-      & 'NO MORE EMPTY SPOT IN THE PARTICLE ARRAY TO ADD A NEW PARTICLE',/5X &
+      & 'NO MORE EMPTY SPOT IN THE PARTICLE ARRAY TO ADD A NEW PARTICLE',/5X, &
       & 'TERMINAL ERROR: STOPPING')
 
  2002 FORMAT(/,5X,  &
       & 'ERROR IN PIC_FIND_EMPTY_SPOT', /5X, &
-      & 'COULD NOT FIND A SPOT FOR ADDING NEW PARTICLE',/5X &
+      & 'COULD NOT FIND A SPOT FOR ADDING NEW PARTICLE',/5X, &
       & 'INCREASE THE SIZE OF THE INITIAL ARRAYS', 5X, &
       & 'TERMINAL ERROR: STOPPING')
 

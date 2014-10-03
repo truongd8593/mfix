@@ -71,7 +71,7 @@
 ! Indices
       INTEGER :: IJK, IMJK, IJMK, IJKM
 ! error message
-      CHARACTER*80     LINE(2)
+      CHARACTER(LEN=80) :: LINE(2)
 
 !-----------------------------------------------
 

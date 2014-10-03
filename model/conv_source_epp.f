@@ -111,7 +111,7 @@
 ! Mass source
       DOUBLE PRECISION :: Src
 ! error message
-      CHARACTER*80     LINE(1)
+      CHARACTER(LEN=80) :: LINE(1)
 ! terms of bm expression
       DOUBLE PRECISION :: bma, bme, bmw, bmn, bms, bmt, bmb, bmr
 !-----------------------------------------------
@@ -380,7 +380,7 @@
 ! terms of bm expression
       DOUBLE PRECISION :: bma, bme, bmw, bmn, bms, bmt, bmb, bmr
 ! error message
-      CHARACTER*80     LINE(1)
+      CHARACTER(LEN=80) :: LINE(1)
 ! temporary use of global arrays:
 ! xsi_array: convection weighting factors
 !      DOUBLE PRECISION :: XSI_e(DIMENSION_3), &

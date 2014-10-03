@@ -42,7 +42,7 @@
 ! Local variables
 !-----------------------------------------------
       INTEGER :: G,I,J,IJK,Q,BCV
-      Character*80  Line(1)
+      Character(LEN=80) :: Line(1)
       DOUBLE PRECISION :: norm, tan_half_angle
       CHARACTER(LEN=9) :: GR
 !-----------------------------------------------
@@ -820,7 +820,7 @@
       INTEGER :: I,J,IJK,IJKW,IJKS,IJKB,M,N
       INTEGER :: IJKWW,IJKSS,IJKBB
       INTEGER :: BCV,BCV_U,BCV_V,BCV_W
-      Character*80  Line(1)
+      Character(LEN=80) :: Line(1)
 !-----------------------------------------------
       DOUBLE PRECISION SUM, SUM_EP
 !-----------------------------------------------
@@ -1320,7 +1320,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       INTEGER :: Q,QM1,QP1
-      Character*80  Line(1)
+      Character(LEN=80) :: Line(1)
       DOUBLE PRECISION :: x1,x2,y1,y2,z1,z2,R1,R2
       DOUBLE PRECISION :: norm, tan_half_angle
       LOGICAL :: aligned
@@ -2578,7 +2578,7 @@
             L = CPX(N) - CPX(N-1)  ! Size of the current segment
 
             IF(ERX(N)/=ONE) THEN
-               CELL_RATIO = ERX(N)**(ONE/DFLOAT(NCX(N)-1))                     ! Ratio between two consecutive cells
+               CELL_RATIO = ERX(N)**(ONE/DBLE(NCX(N)-1))                     ! Ratio between two consecutive cells
                DX(I1) = L * (ONE - CELL_RATIO) / (ONE - CELL_RATIO**NCX(N))     ! First cell size
 
                DO I = I1+1,I2                                                   ! All other cell sizes, geometric series
@@ -2770,7 +2770,7 @@
             L = CPY(N) - CPY(N-1)  ! Size of the current segment
 
             IF(ERY(N)/=ONE) THEN
-               CELL_RATIO = ERY(N)**(ONE/DFLOAT(NCY(N)-1))                     ! Ratio between two consecutive cells
+               CELL_RATIO = ERY(N)**(ONE/DBLE(NCY(N)-1))                     ! Ratio between two consecutive cells
                DY(J1) = L * (ONE - CELL_RATIO) / (ONE - CELL_RATIO**NCY(N))     ! First cell size
 
                DO J = J1+1,J2                                                   ! All other cell sizes, geometric series
@@ -2964,7 +2964,7 @@
             L = CPZ(N) - CPZ(N-1)  ! Size of the current segment
 
             IF(ERZ(N)/=ONE) THEN
-               CELL_RATIO = ERZ(N)**(ONE/DFLOAT(NCZ(N)-1))                     ! Ratio between two consecutive cells
+               CELL_RATIO = ERZ(N)**(ONE/DBLE(NCZ(N)-1))                     ! Ratio between two consecutive cells
                DZ(K1) = L * (ONE - CELL_RATIO) / (ONE - CELL_RATIO**NCZ(N))     ! First cell size
 
                DO K = K1+1,K2                                                   ! All other cell sizes, geometric series
@@ -3044,7 +3044,7 @@
       INTEGER:: N
       CHARACTER (LEN=5) :: POS
 
-      DU = L / DFLOAT(N)    ! Cell size if uniform distribution
+      DU = L / DBLE(N)    ! Cell size if uniform distribution
 
       IF(ALPHAC==ONE) THEN
          D = DU
@@ -3109,7 +3109,7 @@
       CHARACTER (LEN=5) :: POS
 
 
-      DU = L / DFLOAT(N)                  ! Cell size if uniform distribution
+      DU = L / DBLE(N)                  ! Cell size if uniform distribution
 
       IF(DU==D_TARGET) THEN
          ALPHA3 = 1.0
@@ -3690,7 +3690,7 @@
             WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,numPEs-1
-               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DFLOAT(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
 
 
@@ -3750,11 +3750,11 @@
 !            MINVAL_NCPP_OLD = MINVAL(NCPP_OLD)
 !            AVG_NCPP_OLD    = SUM(NCPP_OLD)/NUMPES
 
-!            LIP_OLD = DFLOAT(MAXVAL_NCPP_OLD-AVG_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)*100.0D0
+!            LIP_OLD = DBLE(MAXVAL_NCPP_OLD-AVG_NCPP_OLD)/DBLE(AVG_NCPP_OLD)*100.0D0
 
-!            P = DFLOAT(MAXVAL_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)
+!            P = DBLE(MAXVAL_NCPP_OLD)/DBLE(AVG_NCPP_OLD)
 
-!            MAXSPEEDUP_OLD = DFLOAT(NumPes)*(ONE-LIP_OLD/100.0D0)
+!            MAXSPEEDUP_OLD = DBLE(NumPes)*(ONE-LIP_OLD/100.0D0)
 
 
 
@@ -3762,11 +3762,11 @@
             MINVAL_NCPP_OLD = MINVAL(NCPP_UNIFORM)
             AVG_NCPP_OLD    = SUM(NCPP_UNIFORM)/NUMPES
 
-            LIP_OLD = DFLOAT(MAXVAL_NCPP_OLD-AVG_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)*100.0D0
+            LIP_OLD = DBLE(MAXVAL_NCPP_OLD-AVG_NCPP_OLD)/DBLE(AVG_NCPP_OLD)*100.0D0
 
-            P = DFLOAT(MAXVAL_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)
+            P = DBLE(MAXVAL_NCPP_OLD)/DBLE(AVG_NCPP_OLD)
 
-            MAXSPEEDUP_OLD = DFLOAT(NumPes)*(ONE-LIP_OLD/100.0D0)
+            MAXSPEEDUP_OLD = DBLE(NumPes)*(ONE-LIP_OLD/100.0D0)
 
 
 
@@ -3775,11 +3775,11 @@
             MINVAL_NCPP = MINVAL(NCPP_WITH_GHOST)
             AVG_NCPP    = SUM(NCPP_WITH_GHOST(0:NumPEs-1))/NUMPES
 
-            LIP = DFLOAT(MAXVAL_NCPP-AVG_NCPP)/DFLOAT(AVG_NCPP)*100.0D0
+            LIP = DBLE(MAXVAL_NCPP-AVG_NCPP)/DBLE(AVG_NCPP)*100.0D0
 
-            P = DFLOAT(MAXVAL_NCPP)/DFLOAT(AVG_NCPP)
+            P = DBLE(MAXVAL_NCPP)/DBLE(AVG_NCPP)
 
-!            MAXSPEEDUP = DFLOAT(NumPes)*(ONE-LIP/100.0D0)
+!            MAXSPEEDUP = DBLE(NumPes)*(ONE-LIP/100.0D0)
 
 
             WRITE (*, 1000) '================================================='
@@ -3796,7 +3796,7 @@
             WRITE (*, 1000) ''
             WRITE (*, 1030) 'LOAD IMBALANCE (%)    : ',LIP_OLD,LIP
             WRITE (*, 1000) ''
-!            WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DFLOAT(NumPEs),DFLOAT(NumPEs)
+!            WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DBLE(NumPEs),DBLE(NumPEs)
 !            WRITE (*, 1030) 'MAX SPEEDUP           : ',MAXSPEEDUP_OLD,MAXSPEEDUP
 !            WRITE (*, 1030) 'MAX EFFICIENCY (%)    : ',100.0D0 - LIP_OLD,100.0D0 - LIP
 
@@ -4299,7 +4299,7 @@
             WRITE (*, 1000) '   I-NODE       I-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESI-1
-               WRITE (*, 1020) IPROC,ISIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC),DFLOAT(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,ISIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC),DBLE(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
@@ -4317,7 +4317,7 @@
             WRITE (*, 1000) '   I-NODE       I-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESI-1
-               WRITE (*, 1020) IPROC,ISIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DFLOAT(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,ISIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
@@ -4370,7 +4370,7 @@
             WRITE (*, 1000) '   J-NODE       J-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESJ-1
-               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC),DFLOAT(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC),DBLE(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
@@ -4388,7 +4388,7 @@
             WRITE (*, 1000) '   J-NODE       J-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESJ-1
-               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DFLOAT(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
@@ -4440,7 +4440,7 @@
             WRITE (*, 1000) '   K-NODE       K-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESK-1
-               WRITE (*, 1020) IPROC,KSIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC),DFLOAT(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,KSIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC),DBLE(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
@@ -4458,7 +4458,7 @@
             WRITE (*, 1000) '   K-NODE       K-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESK-1
-               WRITE (*, 1020) IPROC,KSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DFLOAT(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,KSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
@@ -4658,8 +4658,8 @@
       MAXVAL_NCPP = MAXVAL(NCPP_WITH_GHOST)
       MINVAL_NCPP = MINVAL(NCPP_WITH_GHOST)
 
-      LIP = DFLOAT(MAXVAL_NCPP-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
-!      LIP = DFLOAT(MAXVAL_NCPP-MINVAL_NCPP)/DFLOAT(MINVAL_NCPP)*100.0D0
+      LIP = DBLE(MAXVAL_NCPP-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
+!      LIP = DBLE(MAXVAL_NCPP-MINVAL_NCPP)/DBLE(MINVAL_NCPP)*100.0D0
 
 
       IPROC_OF_MAX = MAXLOC(NCPP_WITH_GHOST,1)-1
@@ -5197,7 +5197,7 @@
             WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,numPEs-1
-               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DFLOAT(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
 
 
@@ -5259,26 +5259,26 @@
          MINVAL_NCPP_OLD = MINVAL(NCPP_OLD_WITH_GHOST)
          AVG_NCPP_OLD    = SUM(NCPP_OLD_WITH_GHOST)/NUMPES
 
-!         LIP_OLD = DFLOAT(MAXVAL_NCPP_OLD-AVG_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)*100.0D0
-         LIP_OLD = DFLOAT(MAXVAL_NCPP_OLD-MINVAL_NCPP_OLD)/DFLOAT(MINVAL_NCPP_OLD)*100.0D0
+!         LIP_OLD = DBLE(MAXVAL_NCPP_OLD-AVG_NCPP_OLD)/DBLE(AVG_NCPP_OLD)*100.0D0
+         LIP_OLD = DBLE(MAXVAL_NCPP_OLD-MINVAL_NCPP_OLD)/DBLE(MINVAL_NCPP_OLD)*100.0D0
 
-!         P = DFLOAT(MAXVAL_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)
-         P = DFLOAT(MINVAL_NCPP_OLD)/DFLOAT(MAXVAL_NCPP_OLD)
+!         P = DBLE(MAXVAL_NCPP_OLD)/DBLE(AVG_NCPP_OLD)
+         P = DBLE(MINVAL_NCPP_OLD)/DBLE(MAXVAL_NCPP_OLD)
 
-!         MAXSPEEDUP_OLD = DFLOAT(NumPes)*(ONE-LIP_OLD/100.0D0)
+!         MAXSPEEDUP_OLD = DBLE(NumPes)*(ONE-LIP_OLD/100.0D0)
          MAXSPEEDUP_OLD = ONE / ((ONE-P) + P/NumPes)
 
          MAXVAL_NCPP = MAXVAL(NCPP_WITH_GHOST)
          MINVAL_NCPP = MINVAL(NCPP_WITH_GHOST)
          AVG_NCPP    = SUM(NCPP_WITH_GHOST(0:NumPEs-1))/NUMPES
 
-!         LIP = DFLOAT(MAXVAL_NCPP-AVG_NCPP)/DFLOAT(AVG_NCPP)*100.0D0
-         LIP = DFLOAT(MAXVAL_NCPP-MINVAL_NCPP)/DFLOAT(MINVAL_NCPP)*100.0D0
+!         LIP = DBLE(MAXVAL_NCPP-AVG_NCPP)/DBLE(AVG_NCPP)*100.0D0
+         LIP = DBLE(MAXVAL_NCPP-MINVAL_NCPP)/DBLE(MINVAL_NCPP)*100.0D0
 
-!         P = DFLOAT(MAXVAL_NCPP)/DFLOAT(AVG_NCPP)
-         P = DFLOAT(MINVAL_NCPP)/DFLOAT(MAXVAL_NCPP)
+!         P = DBLE(MAXVAL_NCPP)/DBLE(AVG_NCPP)
+         P = DBLE(MINVAL_NCPP)/DBLE(MAXVAL_NCPP)
 
-!         MAXSPEEDUP = DFLOAT(NumPes)*(ONE-LIP/100.0D0)
+!         MAXSPEEDUP = DBLE(NumPes)*(ONE-LIP/100.0D0)
          MAXSPEEDUP = ONE / ((ONE-P) + P/NumPes)
 
          WRITE (*, 1000) '================================================='
@@ -5295,9 +5295,9 @@
          WRITE (*, 1000) ''
          WRITE (*, 1030) 'LOAD IMBALANCE (%)    : ',LIP_OLD,LIP
          WRITE (*, 1000) ''
-!         WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DFLOAT(NumPEs),DFLOAT(NumPEs)
+!         WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DBLE(NumPEs),DBLE(NumPEs)
 !         WRITE (*, 1030) 'MAX SPEEDUP           : ',MAXSPEEDUP_OLD,MAXSPEEDUP
-!         WRITE (*, 1030) 'MAX EFFICIENCY (%)    : ',MAXSPEEDUP_OLD/DFLOAT(NumPEs)*100.0,MAXSPEEDUP/DFLOAT(NumPEs)*100.0
+!         WRITE (*, 1030) 'MAX EFFICIENCY (%)    : ',MAXSPEEDUP_OLD/DBLE(NumPEs)*100.0,MAXSPEEDUP/DBLE(NumPEs)*100.0
 
          WRITE (*, 1000) '================================================='
 
@@ -5448,8 +5448,8 @@
       MAXVAL_NCPP = MAXVAL(NCPP_WITH_GHOST)
       MINVAL_NCPP = MINVAL(NCPP_WITH_GHOST)
 
-!      LIP = DFLOAT(MAXVAL_NCPP-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
-      LIP = DFLOAT(MAXVAL_NCPP-MINVAL_NCPP)/DFLOAT(MINVAL_NCPP)*100.0D0
+!      LIP = DBLE(MAXVAL_NCPP-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
+      LIP = DBLE(MAXVAL_NCPP-MINVAL_NCPP)/DBLE(MINVAL_NCPP)*100.0D0
 
 
       IPROC_OF_MAX = MAXLOC(NCPP_WITH_GHOST,1)-1

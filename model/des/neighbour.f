@@ -115,7 +115,7 @@ INTEGER :: cc,dd,ii,jj,iii,jjj,ddd
       INTEGER :: LNEIGH
 ! local counter of number of neighbors of l particle
       INTEGER :: LNEIGHINDX
-      character*30 filename
+      character(LEN=30) :: filename
 !-----------------------------------------------
 
       write(filename,'("dbg_neighbor",I4.4,".dat")') mype

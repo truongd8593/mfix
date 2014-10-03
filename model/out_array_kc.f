@@ -46,7 +46,7 @@
 !-----------------------------------------------
 !
 !                      2D array to print out
-      CHARACTER*4      ARRAY(*)
+      CHARACTER(LEN=4) :: ARRAY(*)
 !
 !                      K plane
 !//EFD use K_plane instead of K
@@ -57,7 +57,7 @@
 !
 !
 !                      A line of characters to print
-      CHARACTER*132    LINE
+      CHARACTER(LEN=132) :: LINE
 !
 !                      number of columns to print out across the page
       INTEGER          NCOL

@@ -243,18 +243,18 @@
 
 ! output file for basic DES variables including: position, velocity,
 ! radius, density, mark (flag)
-      CHARACTER*50     :: FNAME_DATA
+      CHARACTER(LEN=50)     :: FNAME_DATA
 
 ! output file for extra DES variables including:
 ! solids time (S_TIME), maximum neighbor count, maximum overlap
 ! granular energy and granular temperature
-      CHARACTER*50     :: FNAME_EXTRA
+      CHARACTER(LEN=50)     :: FNAME_EXTRA
 
 ! output file for axial solids volume fraction and granular temp
-      CHARACTER*50     :: FNAME_EPS
+      CHARACTER(LEN=50)     :: FNAME_EPS
 
 ! tmp character value
-      CHARACTER*150    :: TMP_CHAR
+      CHARACTER(LEN=150)    :: TMP_CHAR
 
 ! dummy indices
       INTEGER L, I, J, K, M, IJK
@@ -435,7 +435,7 @@
 ! logical used for testing is the data files already exists
       LOGICAL :: F_EXISTS
 ! output file for the bed height data
-      CHARACTER*50     :: FNAME_BH
+      CHARACTER(LEN=50)     :: FNAME_BH
 ! file unit for the bed height data
       INTEGER, PARAMETER :: BH_UNIT = 2010
 ! dummy index values
@@ -562,7 +562,7 @@
 ! file unit for the granular temperature data
       INTEGER, PARAMETER :: GT_UNIT = 2020
 ! output file for the granular temperature data
-      CHARACTER*50  :: FNAME_GT
+      CHARACTER(LEN=50)  :: FNAME_GT
 !-----------------------------------------------
 
       FNAME_GT = TRIM(RUN_NAME)//'_DES_THETA.dat'
@@ -597,10 +597,10 @@
 
       WRITE(GT_UNIT,*) ''
       WRITE(GT_UNIT,'(A6,ES24.16)') 'Time=', S_TIME
-      WRITE(GT_UNIT,'(A6,2X,3(A6,2X),A8,$)') 'IJK', &
+      WRITE(GT_UNIT,'(A6,2X,3(A6,2X),A8)',ADVANCE="NO") 'IJK', &
          'I', 'J', 'K', 'NP'
       DO M = 1,DES_MMAX
-         WRITE(GT_UNIT,'(7X,A6,I1,$)') 'THETA_',M
+         WRITE(GT_UNIT,'(7X,A6,I1)',ADVANCE="NO") 'THETA_',M
       ENDDO
       WRITE(GT_UNIT,*) ''
       DO IJK = IJKSTART3, IJKEND3

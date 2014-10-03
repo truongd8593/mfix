@@ -21,16 +21,16 @@
 
 ! Main filename to be used for output files  Name must
 ! still be legal after extensions are added to it.
-      CHARACTER*60 :: RUN_NAME
+      CHARACTER(LEN=60) :: RUN_NAME
 
 ! Brief description of the problem.
-      CHARACTER*60 :: DESCRIPTION
+      CHARACTER(LEN=60) :: DESCRIPTION
 
 ! Units for data input and output: CGS.
-      CHARACTER*16 :: UNITS
+      CHARACTER(LEN=16) :: UNITS
 
 ! Type of run: NEW, RESTART
-      CHARACTER*16 :: RUN_TYPE
+      CHARACTER(LEN=16) :: RUN_TYPE
 
 ! Variable which triggers automatic restart
       LOGICAL :: AUTOMATIC_RESTART
@@ -39,10 +39,10 @@
       INTEGER :: ITER_RESTART
 
 ! computer node name/id
-      CHARACTER*64 :: ID_NODE
+      CHARACTER(LEN=64) :: ID_NODE
 
 ! version.release of software
-      CHARACTER*10 :: ID_VERSION
+      CHARACTER(LEN=10) :: ID_VERSION
 
 ! Start-time of the run.
       DOUBLE PRECISION :: TIME

@@ -106,7 +106,7 @@
       DOUBLE PRECISION :: F_vir, ROP_MA, Uge, Ugw, Vgb, Vgt, Wge, &
                           Wgw, Wgn, Wgs, Wgt, Wgb
 ! error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80) :: LINE
 !-----------------------------------------------
 
       DO M = 1, MMAX

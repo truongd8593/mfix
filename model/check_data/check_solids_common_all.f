@@ -679,7 +679,7 @@
  1002 FORMAT('Error 1002: Illegal input: ',A,' specified out of range.'&
          ,/'Please correct the mfix.dat file.')
 
- 2000 FORMAT('Error 2000: Invalid input. ',A,' must be 'A,/'when ',    &
+ 2000 FORMAT('Error 2000: Invalid input. ',A,' must be ',A,/'when ',   &
          'USE_RRATES is .TRUE.'/,'Please correct the mfix.dat file')
 
       END SUBROUTINE CHECK_SOLIDS_SPECIES_LEGACY

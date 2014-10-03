@@ -52,7 +52,7 @@
 ! Pointer to the next record
       INTEGER    NEXT_RECA
 ! file version id
-      CHARACTER  VERSION*512
+      CHARACTER(LEN=512) :: VERSION
 ! version number
       REAL       VERSION_NUMBER
 ! Temporary arrays

@@ -57,7 +57,7 @@
 ! Indices
       INTEGER :: I, J, K, IJK, IMJK, IJMK, IJKM
 ! error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80) :: LINE
 !-----------------------------------------------
 
 !!$omp  parallel do private( I, J, K, IJK, IMJK, IJMK, IJKM,  DEL_V, &

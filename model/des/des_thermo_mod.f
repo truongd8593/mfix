@@ -16,7 +16,7 @@
 
 ! Heat transfer correlation specified in mfix.dat
 ! Default [RANZ_1952]
-      CHARACTER*24 :: DES_CONV_CORR
+      CHARACTER(LEN=24) :: DES_CONV_CORR
 
       INTEGER :: DES_CONV_CORR_ENUM
       INTEGER, PARAMETER :: RANZ_1952 = 0

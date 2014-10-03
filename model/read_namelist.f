@@ -63,7 +63,7 @@
 ! LINE_STRING(1:MAXCOL) has valid input data
       INTEGER, PARAMETER :: MAXCOL = 80
 ! Holds one line in the input file
-      CHARACTER :: LINE_STRING*132
+      CHARACTER(LEN=512) :: LINE_STRING
 ! Length of noncomment string
       INTEGER :: LINE_LEN
 ! Line number

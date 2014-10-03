@@ -95,7 +95,7 @@
       DOUBLE PRECISION Sbv, Ssx, Ssy, Ssz
 !
 !                      error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80) :: LINE
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================

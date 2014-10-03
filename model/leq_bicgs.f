@@ -64,7 +64,7 @@
       DOUBLE PRECISION, INTENT(IN) :: TOL
 ! preconditioner (leq_pc)
 !     options = 'line' (default), 'diag', 'none'
-      CHARACTER*4, INTENT(IN) ::  PC
+      CHARACTER(LEN=4), INTENT(IN) ::  PC
 ! maximum number of iterations (generally leq_it)
       INTEGER, INTENT(IN) :: ITMAX
 ! error indicator
@@ -1225,7 +1225,7 @@
       DOUBLE PRECISION, INTENT(INOUT) :: Var(DIMENSION_3)
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
-      CHARACTER*4, INTENT(IN) :: CMETHOD
+      CHARACTER(LEN=4), INTENT(IN) :: CMETHOD
 !-----------------------------------------------
 ! Local parameters
 !-----------------------------------------------
@@ -1241,7 +1241,7 @@
       INTEGER :: ISIZE, JSIZE, KSIZE
       INTEGER :: ICASE
 
-!     CHARACTER*4, PARAMETER :: CMETHOD = 'II'
+!     CHARACTER(LEN=4), PARAMETER :: CMETHOD = 'II'
       CHARACTER :: CH
       LOGICAL :: DO_ISWEEP, DO_JSWEEP, DO_KSWEEP
       LOGICAL :: DO_SENDRECV, DO_REDBLACK, DO_ALL
@@ -1552,7 +1552,7 @@
 !      DOUBLE PRECISION, INTENT(OUT) :: Var(ijkstart3:ijkend3)
       DOUBLE PRECISION, INTENT(OUT) :: Var(DIMENSION_3)
 ! sweep direction
-      CHARACTER*4, INTENT(IN) :: CMETHOD
+      CHARACTER(LEN=4), INTENT(IN) :: CMETHOD
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -1621,7 +1621,7 @@
 !      DOUBLE PRECISION, INTENT(OUT) :: Var(ijkstart3:ijkend3)
       DOUBLE PRECISION, INTENT(OUT) :: Var(DIMENSION_3)
 ! sweep direction
-      CHARACTER*4, INTENT(IN) :: CMETHOD
+      CHARACTER(LEN=4), INTENT(IN) :: CMETHOD
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

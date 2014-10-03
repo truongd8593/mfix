@@ -44,7 +44,7 @@
 !                      convergence tolerance
       DOUBLE PRECISION ::  TOL
 !                      Preconditioner
-      CHARACTER*4   ::  PC
+      CHARACTER(LEN=4)   ::  PC
 !                      Septadiagonal matrix A_m
       DOUBLE PRECISION, DIMENSION(-3:3,ijkstart3:ijkend3) :: A_m
 !                      Vector b_m
@@ -1055,9 +1055,9 @@
       INTEGER ::   I1 , K1 , I2, K2, IK, ISIZE, KSIZE
       INTEGER ::   ICASE
 
-!     CHARACTER*4, PARAMETER :: CMETHOD = 'II'
+!     CHARACTER(LEN=4), PARAMETER :: CMETHOD = 'II'
 !     sweep direction
-      CHARACTER*4 :: CMETHOD
+      CHARACTER(LEN=4) :: CMETHOD
       CHARACTER :: CH
       LOGICAL :: DO_ISWEEP, DO_JSWEEP, DO_KSWEEP
       LOGICAL :: DO_SENDRECV, DO_REDBLACK
@@ -1452,7 +1452,7 @@
       DOUBLE PRECISION Var(ijkstart3:ijkend3)
       integer :: ijk
 
-      CHARACTER*4 :: CMETHOD
+      CHARACTER(LEN=4) :: CMETHOD
 
 !     do nothing or no preconditioning
 
@@ -1507,7 +1507,7 @@
 !     Variable
       DOUBLE PRECISION Var(ijkstart3:ijkend3)
 
-      CHARACTER*4 :: CMETHOD
+      CHARACTER(LEN=4) :: CMETHOD
 
       integer :: i,j,k, ijk, ijk2
 

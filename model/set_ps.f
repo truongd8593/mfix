@@ -25,7 +25,7 @@
 
       INTEGER PSV
 
-      CHARACTER*64 eMsg
+      CHARACTER(LEN=64) :: eMsg
 
       DOUBLE PRECISION lSum
 
