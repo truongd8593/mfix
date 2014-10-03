@@ -44,7 +44,7 @@
       CHARACTER(LEN=4)  :: TUNIT,CPU_TUNIT
 !     temporary array to hold time data
       INTEGER DAT(8)
-      CHARACTER*10 DATE, TIM, ZONE
+      CHARACTER(LEN=10) DATE, TIM, ZONE
       LOGICAL :: Sm_flag
 
 ! Intel Linux compiler supports this function thru it's portability library

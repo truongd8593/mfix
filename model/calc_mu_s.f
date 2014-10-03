@@ -1921,7 +1921,7 @@
                   dp_avg = dp_avg + D_p(IJK,MM)
                      IF (CLOSE_PACKED(MM)) SUM_EPS_CP=SUM_EPS_CP+EP_S(IJK,MM)
                   END DO
-                  dp_avg = dp_avg/DFLOAT(SMAX)
+                  dp_avg = dp_avg/DBLE(SMAX)
 ! end of part copied
 
                   IF (SAVAGE.EQ.1) THEN !form of Savage (not to be used with GHD theory)

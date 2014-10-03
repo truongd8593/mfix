@@ -108,7 +108,7 @@
           RETURN
         endif
       enddo
-      m = m/dfloat(s)
+      m = m/dble(s)
       v0 = dsqrt(2.d0*T/m)
 
       do i=1,s

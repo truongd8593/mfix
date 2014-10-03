@@ -205,6 +205,7 @@
 
       use mpi_utility
       use error_manager
+      use functions
 
       IMPLICIT NONE
 
@@ -227,8 +228,6 @@
       INTEGER :: lRECOVERED
 ! Local parameter to print verbose messages about particles.
       LOGICAL, PARAMETER :: lDEBUG = .FALSE.
-
-      include "../function.inc"
 
 !.......................................................................
 
@@ -382,6 +381,7 @@
 
       use mpi_utility
       USE error_manager
+      USE functions
 
       IMPLICIT NONE
 
@@ -400,10 +400,6 @@
       INTEGER :: EPg_MIN_loc(0:numpes-1, 4), EPg_MIN_loc2(1)
       DOUBLE PRECISION :: EPg_MIN(0:numpes-1), EPg_min2
 
-
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("REPORT_PIC_STATS")

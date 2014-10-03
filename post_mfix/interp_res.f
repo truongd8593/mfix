@@ -36,6 +36,7 @@
       Use funits
       Use compar
       Use gridmap ! added
+      Use functions
           use tmp_array        ! 16-jun-2004
       
       IMPLICIT NONE
@@ -95,11 +96,7 @@
 
       INTEGER I, J, K, IJK, M, N
 !
-      INCLUDE 'function.inc'
-!
       WRITE(*,*)' Processing data. Please wait. '
-
-
 
       Allocate(  EP_g_OLD(DIMENSION_3) )
       Allocate(  P_g_OLD(DIMENSION_3) )

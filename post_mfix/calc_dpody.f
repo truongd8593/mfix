@@ -31,6 +31,7 @@
       Use physprop
       Use geometry
       Use compar
+      Use functions
 
       IMPLICIT NONE
 !
@@ -44,8 +45,6 @@
 !
       INTEGER          NCOUNT
       DOUBLE PRECISION DPoDY
-!
-      INCLUDE 'function.inc'
 !
       DO J = JMIN1,JMAX1
          DPoDY = 0.0

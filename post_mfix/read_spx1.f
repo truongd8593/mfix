@@ -42,6 +42,7 @@
 
       Use indices
       Use compar
+      Use functions
 
       IMPLICIT NONE
 !
@@ -77,8 +78,6 @@
       common /fast_sp7/ gas_species_index , solid_species_index , &
                          solid_index , bRead_all
 
-      include 'function.inc'
- 
       num_recs = 1 + ijkmax2 / nwords_r
       if (mod(ijkmax2,nwords_r) .eq. 0) num_recs = num_recs - 1
  

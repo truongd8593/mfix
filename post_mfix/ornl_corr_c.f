@@ -11,6 +11,7 @@
       use indices
       use compar
       use usr_input
+      use functions
 
       implicit none
       
@@ -23,8 +24,6 @@
 
       real*8, allocatable    :: acf(:,:)
       integer, allocatable   :: lags(:)
-
-      include 'function.inc'
 
       write (*,*) ' enter minlag , maxlag'
       read  (*,*) minlag , maxlag
@@ -96,6 +95,7 @@
       use indices
       use compar
       use usr_input
+      use functions
 
       implicit none
       
@@ -108,10 +108,6 @@
       real*8, allocatable    :: ccf(:,:)
       integer, allocatable   :: lags(:)
 
-
-      include 'function.inc'
-
-!
       write (*,*) ' enter minlag , maxlag, lagstep'
       read  (*,*) minlag , maxlag, lagstep
 !
@@ -184,6 +180,7 @@
       use indices
       use compar
       use usr_input
+      use functions
 
       implicit none
       
@@ -197,9 +194,6 @@
       real*8, allocatable    :: tlag(:)
       real*8, allocatable    :: tsym(:)
 
-      include 'function.inc'
-
-!
       write (*,*) ' enter minlag , maxlag'
       read  (*,*) minlag , maxlag
 
@@ -273,6 +267,7 @@
       use indices
       use compar
       use usr_input
+      use functions
 
       implicit none
       
@@ -286,9 +281,6 @@
       real*8, allocatable    :: tlag(:)
       real*8, allocatable    :: tsym(:)
 
-      include 'function.inc'
-
-!
       write (*,*) ' enter minlag , maxlag'
       read  (*,*) minlag , maxlag
 

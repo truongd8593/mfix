@@ -11,6 +11,7 @@
       use indices
       use compar
       use usr_input
+      use functions
 
       implicit none
       
@@ -21,8 +22,6 @@
       integer :: i , j , k , ijk
 
       real*8    :: time_series(*)
-
-      include 'function.inc'
 
       call simple_statistics(time_series,1,nt,vmin,vmax,vavg, &
                       variance,skw,krt,dev,AAD,tOrb,nOrb,tDev)

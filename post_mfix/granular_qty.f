@@ -32,6 +32,7 @@
       Use constant
       Use funits
       Use compar
+      Use functions
 !
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
@@ -52,8 +53,6 @@
       REAL        TIME_REAL(N_SPX), TIME_NOW
       REAL        TIME_IN_RES
       DOUBLE PRECISION K_1m, Tmp(DIMENSION_3)
-
-      INCLUDE 'function.inc'
 
       CALL READ_RES1
       TIME_IN_RES = TIME

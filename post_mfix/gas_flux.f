@@ -35,6 +35,7 @@
       Use post3d
       Use physprop
       Use compar
+      Use functions
       
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
@@ -47,8 +48,6 @@
       INTEGER           REC_POINTER(N_SPX) , L , NT
       LOGICAL           READ_SPX(N_SPX) , AT_EOF(N_SPX)
       INTEGER           I, J, K, IJK
-!
-      INCLUDE 'function.inc'
 !
       IF (.NOT.DO_XFORMS) THEN
          WRITE (*,'(A,$)') &

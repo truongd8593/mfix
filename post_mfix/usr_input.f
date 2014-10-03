@@ -897,6 +897,7 @@
       use compar
       use constant
       use post3d
+      use functions
 
       implicit none
 
@@ -917,8 +918,6 @@
       REAL FLUX_sx, FLUX_sy, FLUX_sz
       REAL CALC_RO_g
 !
-      include 'function.inc'
-
       if (var_no .eq.  1) arr(:) = EP_g(:)
       if (var_no .eq.  2) arr(:) = P_g(:)
       if (var_no .eq.  3) arr(:) = P_star(:)
@@ -1025,6 +1024,7 @@
       use indices
       use compar
       use usr_input
+      use functions
 
       implicit none
 !
@@ -1034,8 +1034,6 @@
       real    :: value(*)
       real, allocatable :: dist(:)
       real    :: dz_t , dy_n , dx_e
-
-      include 'function.inc'
 
       DZ_T(K) = HALF * (DZ(K) + DZ(Kp1(K)))
       DY_N(J) = HALF * (DY(J) + DY(Jp1(J)))

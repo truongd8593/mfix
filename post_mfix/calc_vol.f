@@ -33,14 +33,13 @@
       Use physprop
       Use post3d
       Use compar
+      Use functions
 
       IMPLICIT NONE
 !
       REAL     DX_E, DY_N, DZ_T
       INTEGER  I, J, K, IJK
 !
-      INCLUDE 'function.inc'
-
 
       DZ_T(K) = HALF * (DZ(K) + DZ(Kp1(K)))
       DY_N(J) = HALF * (DY(J) + DY(Jp1(J)))

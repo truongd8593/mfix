@@ -37,6 +37,7 @@
       Use physprop
       Use correl
       Use compar
+      Use functions
       
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
@@ -49,8 +50,6 @@
       LOGICAL           READ_SPX(N_SPX) , AT_EOF(N_SPX) , FINISH
       LOGICAL           INTER
       INTEGER           I, J, K, IJK
-!
-      INCLUDE 'function.inc'
 !
       INTER = .FALSE.
       IF (.NOT.DO_XFORMS) THEN

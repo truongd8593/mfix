@@ -234,6 +234,7 @@
       Use scalars
       Use compar
       use post_precision
+      Use functions
       
       IMPLICIT NONE
       INTEGER  N_VAR
@@ -273,7 +274,6 @@
       REAL FLUX_sx, FLUX_sy, FLUX_sz
       REAL CALC_RO_g
 !
-      INCLUDE 'function.inc'
 !                   1       2      3         4      5      6
       DATA VAR_DAT/'EP_g', 'P_g', 'P_star', 'U_g', 'V_g', 'W_g', &
       

@@ -362,7 +362,7 @@
 ! for all solids phases
       DOUBLE PRECISION :: GTWDOTN (DIMENSION_M)
 ! Error message
-      CHARACTER*80     LINE(1)
+      CHARACTER(LEN=80)     LINE(1)
 ! Radial distribution function
       DOUBLE PRECISION :: g0(DIMENSION_M)
 ! Sum of eps*G_0
@@ -843,7 +843,7 @@
 ! Solids pressure and pressure divided by granular temperature
       DOUBLE PRECISION :: Ps, PsoTheta
 ! Error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 ! Function subroutines
 !-----------------------------------------------

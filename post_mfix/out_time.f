@@ -33,6 +33,7 @@
       Use indices
       Use geometry
       Use compar
+      Use functions
       IMPLICIT NONE
 !
 !     Passed Arguments
@@ -43,8 +44,6 @@
 !     Local Variables
 !
       INTEGER IJK
-!
-      INCLUDE 'function.inc'
 !
       IJK = FUNIJK(LOC_X,LOC_Y,LOC_Z)
       IF (VAR_INDEX.EQ.01) WRITE (39+L,*) TIME_REAL,EP_g(IJK)

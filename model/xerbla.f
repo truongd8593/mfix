@@ -4,7 +4,7 @@
 
 !     ..    Scalar Arguments ..
       INTEGER            INFO
-      CHARACTER*6        SRNAME
+      CHARACTER(LEN=6)        SRNAME
 !     ..
 !
 !  Purpose

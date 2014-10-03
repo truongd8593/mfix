@@ -34,6 +34,7 @@
         Use indices
         Use correl
         Use compar
+        Use functions
 	
       IMPLICIT NONE
 !
@@ -57,8 +58,6 @@
 !
 !                       indices
       INTEGER           I, J, K, IJK
-!
-      INCLUDE 'function.inc'
 !
 !  If finish command is not given, do summations for correlations.
 !

@@ -36,6 +36,7 @@
       Use post3d
       Use physprop
       Use compar
+      Use functions
       
       IMPLICIT NONE
 !
@@ -50,8 +51,6 @@
 !
       INTEGER           NT, NI
       INTEGER           I, J, IJK
-!
-      INCLUDE 'function.inc'
 !
       WRITE (*,*) ' Enter start-time and end-time'
       READ  (*,*) TIME_START, TIME_LAST
@@ -157,6 +156,7 @@
       Use post3d
       Use physprop
       Use compar
+      Use functions
       
       IMPLICIT NONE
       INTEGER MAX_COUNT
@@ -179,8 +179,6 @@
 !
       INTEGER           FC_COUNT(MAX_COUNT)
       INTEGER           IJK
-!
-      INCLUDE 'function.inc'
 !
       WRITE (*,*) ' Enter start-time and end-time'
       READ  (*,*) TIME_START, TIME_LAST

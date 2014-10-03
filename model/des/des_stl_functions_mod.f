@@ -1145,7 +1145,7 @@
       Logical :: sa_exist
       integer :: sep_axis
 
-      CHARACTER*100 :: FNAME
+      CHARACTER(LEN=100) :: FNAME
       integer :: stl_unit, fid
 
       stl_unit = 1001
@@ -1280,7 +1280,7 @@
 
       INTEGER :: CELL_ID, I, J, K, COUNT, COUNT_FACETS, IJK
 
-      CHARACTER*100 :: FILENAME
+      CHARACTER(LEN=100) :: FILENAME
 
       IF(nodesI*nodesJ*nodesK.gt.1) then
          write(filename,'(A,"_FACETS_GRID_CELL_",I5.5,".dat")')  trim(run_name), myPE
@@ -1325,7 +1325,7 @@
       IMPLICIT NONE
 
       INTEGER ::  CELL_ID, N, I, J, K, COUNT, COUNT_FACETS, IJK
-      CHARACTER*100 :: FILENAME
+      CHARACTER(LEN=100) :: FILENAME
 
 
       OPEN(UNIT=444, FILE='geometry_from_readin_facets.stl')
@@ -1377,7 +1377,7 @@
 
       LOGICAL, INTENT(IN),optional  :: WRITE_FACETS_EACH_CELL
       INTEGER ::  CELL_ID, N, I, J, K, COUNT, COUNT_FACETS, IJK, W_UNIT
-      CHARACTER*200 :: FILENAME, filename_po
+      CHARACTER(LEN=200) :: FILENAME, filename_po
       LOGICAL :: write_each_cell
       LOGICAL, DIMENSION(:), allocatable :: FACET_WRITTEN
 
@@ -1518,7 +1518,7 @@
       IMPLICIT NONE
 
       INTEGER, INTENT(in) :: I, J, K
-      CHARACTER*1, INTENT(in) :: Idir
+      CHARACTER(LEN=1), INTENT(in) :: Idir
 
       SELECT CASE((TRIM(IDIR)))
 

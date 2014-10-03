@@ -34,7 +34,7 @@
 ! boundary condition or internal surface index
       INTEGER, INTENT(IN) ::  BC
 ! BC or IS
-      CHARACTER*2, INTENT(IN) :: NAME
+      CHARACTER(LEN=2), INTENT(IN) :: NAME
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

@@ -495,7 +495,8 @@
       Use indices
       Use funits
       Use compar
-!
+      Use functions
+
       IMPLICIT NONE
 !
 ! passed arguments
@@ -513,9 +514,7 @@
 !
 !                       loop counter
       INTEGER           L
-!
-      INCLUDE 'function.inc'
-!
+
       DO 100 L = 1,KMAX2
          IJK = FUNIJK (1,1,L)
          WRITE (UNIT_OUT,1100) MESSAGE , L
@@ -558,7 +557,8 @@
       Use indices
       Use funits
       Use compar
-!
+      Use functions
+
       IMPLICIT NONE
 !
 ! passed arguments
@@ -576,8 +576,6 @@
 !
 !                       loop counter
       INTEGER           L
-!
-      INCLUDE 'function.inc'
 !
       DO 100 L = 1,KMAX2
          IJK = FUNIJK (1,1,L)
@@ -620,7 +618,8 @@
       Use indices
       Use funits
       Use compar
-!
+      Use functions
+
       IMPLICIT NONE
 !
 ! passed arguments
@@ -645,8 +644,6 @@
 !
 !                      start 'IJ' and end 'IJ' for a given 'J' to print out
       INTEGER          IJ1 , IJ2
-!
-      INCLUDE 'function.inc'
 !
 ! NOTE:  IF NCOL IS CHANGED TO A NUMBER GREATER THAN 30, THEN THE "30"
 !        IN FORMATS 5050 AND 5100 MUST BE CHANGED TO THAT NUMBER.
@@ -703,7 +700,8 @@
       Use indices
       Use funits
       Use compar
-!
+      Use functions
+
       IMPLICIT NONE
 !
 ! passed arguments
@@ -728,8 +726,6 @@
 !
 !                      start 'IJ' and end 'IJ' for a given 'J' to print out
       INTEGER          IJ1 , IJ2
-!
-      INCLUDE 'function.inc'
 !
 ! NOTE:  IF NCOL IS CHANGED TO A NUMBER GREATER THAN 30, THEN THE "30"
 !        IN FORMATS 5050 AND 5100 MUST BE CHANGED TO THAT NUMBER.
@@ -1101,13 +1097,12 @@
       use geometry
       use indices
       use compar
+      use functions
 !
       implicit none
 !
       double precision   arr_io(*) , arr_internal(*)
       integer            n,i,j,k,ijk,ijk_io
-!
-      include 'function.inc'
 !
       do k = 1,kmax2
          do j = 1,jmax2
@@ -1128,13 +1123,12 @@
       use geometry
       use indices
       use compar
+      use functions
 !
       implicit none
 !
       double precision   arr_io(*) , arr_internal(*)
       integer            n,i,j,k,ijk,ijk_io
-!
-      include 'function.inc'
 !
       do k = 1,kmax2
          do j = 1,jmax2
@@ -1156,13 +1150,12 @@
       use geometry
       use indices
       use compar
+      use functions
 !
       implicit none
 !
       integer   arr_io(*) , arr_internal(*)
       integer   n,i,j,k,ijk,ijk_io
-!
-      include 'function.inc'
 !
       do k = 1,kmax2
          do j = 1,jmax2
@@ -1183,13 +1176,12 @@
       use geometry
       use indices
       use compar
+      use functions
 !
       implicit none
 !
       integer   arr_io(*) , arr_internal(*)
       integer   n,i,j,k,ijk,ijk_io
-!
-      include 'function.inc'
 !
       do k = 1,kmax2
          do j = 1,jmax2
@@ -1210,13 +1202,12 @@
       use geometry
       use indices
       use compar
+      use functions
 !
       implicit none
 !
       character*3   arr_io(*) , arr_internal(*)
       integer       n,i,j,k,ijk,ijk_io
-!
-      include 'function.inc'
 !
       do k = 1,kmax2
          do j = 1,jmax2

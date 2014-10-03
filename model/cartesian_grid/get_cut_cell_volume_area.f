@@ -1377,9 +1377,9 @@
          Zc = Zc + COORD(N,3)
       ENDDO
 
-      Xc = Xc / DFLOAT(NP)
-      Yc = Yc / DFLOAT(NP)
-      Zc = Zc / DFLOAT(NP)
+      Xc = Xc / DBLE(NP)
+      Yc = Yc / DBLE(NP)
+      Zc = Zc / DBLE(NP)
 
 !======================================================================
 !   Find unit normal vector

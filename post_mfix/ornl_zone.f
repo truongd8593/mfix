@@ -11,6 +11,7 @@
       use indices
       use compar
       use usr_input
+      use functions
 
       implicit none
       
@@ -22,8 +23,6 @@
       real*8    :: time_series(*)
 
       logical :: ask_for_times , init_read_res
-
-      include 'function.inc'
 
       ask_for_times = .true.
       init_read_res = .true.
