@@ -51,6 +51,7 @@
       USE sendrecv
       USE sendrecv3
       USE boundfunijk
+      USE function3
       USE functions
       IMPLICIT NONE
 !-----------------------------------------------
@@ -62,10 +63,6 @@
       INTEGER :: L
 ! Temporary storage for FLAG value
       INTEGER :: FLAGX
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function3.inc'
 !-----------------------------------------------
 
 !  Cell flag definitions

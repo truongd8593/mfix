@@ -436,6 +436,7 @@
       Use tmp_array
       USE fun_avg
       USE xsi
+      USE function3
       USE functions
       IMPLICIT NONE
 !-----------------------------------------------
@@ -517,7 +518,6 @@
 !
 !
 !---------------------------------------------------------------
-      INCLUDE 'function3.inc'
 
       call lock_xsi_array
       call lock_tmp4_array
@@ -1092,6 +1092,7 @@
       USE output
       USE is
       USE fun_avg
+      USE function3
       USE functions
       IMPLICIT NONE
 !-----------------------------------------------

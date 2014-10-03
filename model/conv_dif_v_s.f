@@ -386,6 +386,7 @@
       USE mflux
       USE cutcell
       USE fun_avg
+      USE function3
       USE functions
       IMPLICIT NONE
 !-----------------------------------------------
@@ -446,10 +447,6 @@
 ! External functions
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: FPFOI_OF
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function3.inc'
 !-----------------------------------------------
 
       call lock_tmp4_array

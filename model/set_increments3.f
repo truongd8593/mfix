@@ -26,10 +26,10 @@
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
+      use function3
       use functions
 
       IMPLICIT NONE
-
 
 ! Local Variables:
 !---------------------------------------------------------------------//
@@ -52,8 +52,6 @@
       INTEGER :: IER
 ! Flag for using the 'real' I/J/K value (not cyclic.)
       LOGICAL :: SHIFT
-
-      INCLUDE 'function3.inc'
 !......................................................................!
 
 

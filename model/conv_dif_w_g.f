@@ -431,6 +431,7 @@
       USE sendrecv3
       USE mflux
       USE fun_avg
+      USE function3
       USE functions
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -510,8 +511,6 @@
         DOUBLE PRECISION , EXTERNAL :: FPFOI_OF
 !---------------------------------------------------------------
 !
-      INCLUDE 'function3.inc'
-
       call lock_tmp4_array
       call lock_tmp_array
       call lock_xsi_array

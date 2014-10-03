@@ -331,7 +331,7 @@ common_SOURCES = \
 	model/flow_to_vel.f \
 	model/fun_avg_mod.f \
 	model/function.inc \
-	model/function3.inc \
+	model/function3_mod.f \
 	model/functions_mod.f \
 	model/funits_mod.f \
 	model/g_0.f \
