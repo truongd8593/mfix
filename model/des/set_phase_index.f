@@ -71,7 +71,7 @@
 
 ! Point of no return: Report errors and abort
 !----------------------------------------------------------------------
-      CALL INIT_ERR_MSG("SET_PHAASE_INDEX")
+      CALL INIT_ERR_MSG("SET_PHASE_INDEX")
 
       CALL OPEN_PE_LOG(IER)
 

@@ -108,8 +108,8 @@
 
 ! Copy of the input keyword values into discrete solids arrays. We may be
 ! able to remove the DES_ specific variables moving forward.
-         DES_D_p0(M) = D_p0(M)
-         DES_RO_s(M) = RO_s0(M)
+         DES_D_p0(M) = D_p0(lM)
+         DES_RO_s(M) = RO_s0(lM)
 ! Determine the maximum particle size in the system (MAX_RADIUS), which
 ! in turn is used for various tasks
          MAX_RADIUS = MAX(MAX_RADIUS, 0.5d0*DES_D_P0(M))
