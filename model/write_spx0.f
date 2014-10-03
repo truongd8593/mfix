@@ -1,86 +1,72 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: WRITE_SPX0(L, unit_add)                                C
-!  Purpose: write out the initial restart records (REAL)               C
-!                                                                      C
-!  Author: P. Nicoletti                               Date: 13-DEC-91  C
-!  Reviewer: P. Nicoletti, W. Rogers, M. Syamlal      Date: 24-JAN-92  C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: RUN_NAME, ID_MONTH, ID_DAY, ID_YEAR, ID_HOUR  C
-!                        ID_MINUTE, ID_SECOND                          C
-!  Variables modified: None                                            C
-!                                                                      C
-!  Local variables: LC, VERSION                                        C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-      SUBROUTINE WRITE_SPX0(L, unit_add)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE run
-      USE funits
-      USE cdist
-      USE compar           !//
-      USE mpi_utility      !//
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: WRITE_SPX0(L, unit_add)                                !
+!  Author: P. Nicoletti                               Date: 13-DEC-91  !
+!                                                                      !
+!  Purpose: Write out the initial single percision data files.         !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE WRITE_SPX0(L, UNIT_ADD)
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! User defined run_name
+      use run, only: RUN_NAME
+! Calendar information for start of run.
+      use run, only: ID_MONTH, ID_DAY, ID_YEAR
+! Time information for start of run.
+      use run, only: ID_HOUR, ID_MINUTE, ID_SECOND
+! Base file unit for SPx files.
+      use funits, only: UNIT_SPX
+! Flag: Use distributed I/O
+      USE cdist, only: bDIST_IO
+! Rank of current process.
+      use compar, only: myPE
+! Rank assigned to serial I/O
+      use compar, only: PE_IO
+
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER L
 
-!              offset for use in post_mfix
-      INTEGER  unit_add
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!                file version ID
+! Passed Variables:
+!----------------------------------------------------------------------!
+! Index of SPx file.
+      INTEGER, INTENT(IN) :: L
+! Offset for use in post_mfix
+      INTEGER, INTENT(IN) :: UNIT_ADD
+
+! Local Variables:
+!----------------------------------------------------------------------!
+! File version ID
       CHARACTER :: VERSION*512
-      INTEGER  uspx   ! UNIT_SPX + offset from post_mfix
-!-----------------------------------------------
-!
-      uspx = UNIT_SPX + unit_add
+! UNIT_SPX + offset from post_mfix
+      INTEGER :: USPX
+! Generic SPx end characters.
+      CHARACTER(len=15), PARAMETER :: EXT_END = '123456789ABCDEF'
 
-!
-! if DISTIO is true then write headers in all local files (DEM)
-!  i.e. if DISTIO is disabled and this is not the IO node then
-!   return, otherwise write the distributed files.
-!
+!......................................................................!
 
-!
-      if (myPE.ne.PE_IO .and. .not.bDist_IO) return    !//
-!
+! Serial I/O: only PE_IO writes to a single file [default]
+! Distributed I/O: all ranks write their own output file.
+      IF(myPE /= PE_IO .AND. .NOT.bDIST_IO) RETURN
+
+! Construct the file version string.
       VERSION = 'SPx = 02.00'
-      WRITE (VERSION(3:3), 1000) L
-      WRITE (uspx + L, REC=1) VERSION
-      WRITE (uspx + L, REC=2) RUN_NAME, ID_MONTH, ID_DAY, ID_YEAR, ID_HOUR&
-         , ID_MINUTE, ID_SECOND
-!
+      WRITE(VERSION(3:3),"(A1)") EXT_END(L:L)
+
+! Calculate the SPx file unit
+      USPX = UNIT_SPX + UNIT_ADD + L
+
+! Write the SPx file header.
+      WRITE(USPX, REC=1) VERSION
+      WRITE(USPX, REC=2) RUN_NAME, ID_MONTH, ID_DAY, ID_YEAR,          &
+         ID_HOUR, ID_MINUTE, ID_SECOND
+
 !  The first field contains the pointer to the next record.
 !  The second field contains the number of records written each time step
-!  (The 4 and -1 will be overwritten in WRITE_SPX1)
-!
-      WRITE (uspx + L, REC=3) 4, -1
-      if(unit_add == 0) CALL FLUSH (uspx + L)
- 1000 FORMAT(I1)
+!  (The 4 and -1 are overwritten in WRITE_SPX1)
+      WRITE (USPX, REC=3) 4, -1
+
+      IF(UNIT_ADD == 0) CALL FLUSH(USPX)
+
       RETURN
       END SUBROUTINE WRITE_SPX0
