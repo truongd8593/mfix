@@ -84,6 +84,7 @@
       USE sendrecv
       USE discretelement
       USE fun_avg
+      USE functions
       implicit none
 !-----------------------------------------------
 ! Local variables
@@ -95,10 +96,6 @@
       INTEGER :: X_COUNT, Y_COUNT, Z_COUNT
 ! mean pressure gradient for the case of periodic boundaries
       DOUBLE PRECISION :: MPG_CYCLIC(3)
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
       MPG_CYCLIC(1:3) = ZERO
 
@@ -202,6 +199,7 @@
       USE discretelement
       USE cutcell
       USE fun_avg
+      USE functions
       implicit none
 !-----------------------------------------------
 ! Local variables
@@ -213,10 +211,6 @@
       DOUBLE PRECISION :: TEMP1, TEMP2
 ! mean pressure gradient for the case of periodic boundaries
       DOUBLE PRECISION :: MPG_CYCLIC(3)
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       IF(CARTESIAN_GRID) THEN
@@ -339,6 +333,7 @@
       USE cutcell
       USE mfix_pic
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -369,10 +364,6 @@
 ! discrete 'phase' not a continuous phase so that the appropriate
 ! variables are referenced.
       LOGICAL :: DISCRETE_FLAG
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 
@@ -573,6 +564,7 @@
       use desmpi
       USE cutcell
       USE mfix_pic
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -611,10 +603,6 @@
           DOUBLE PRECISION :: D_FORCE(3)
           DOUBLE PRECISION, DIMENSION(3) :: VEL_NEW
 !
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 !!$      double precision omp_start, omp_end
 !!$      double precision omp_get_wtime
@@ -836,9 +824,10 @@
       USE discretelement
       USE drag
       USE interpolation
-      use desmpi
+      USE desmpi
       USE cutcell
       USE mfix_pic
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -888,10 +877,6 @@
       DOUBLE PRECISION :: velfp(3), desposnew(3)
       DOUBLE PRECISION, DIMENSION(3) :: VEL_NEW
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 !!$      double precision omp_start, omp_end
@@ -1191,6 +1176,7 @@
       USE sendrecv
       USE discretelement
       USE ur_facs
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1244,10 +1230,6 @@
 ! aliases for void fraction, gas density, gas bulk density,
 ! solids volume fraction, particle diameter, particle density
       DOUBLE PRECISION :: EPG, ROg, ROPg, EP_SM, DPM, ROs
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! values based on current particle
@@ -1473,9 +1455,10 @@
       USE compar
       USE sendrecv
       USE discretelement
-      use desmpi
+      USE desmpi
       USE cutcell
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -1519,10 +1502,6 @@
 ! External Functions
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: G_0
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 
@@ -1726,19 +1705,16 @@
       USE discretelement
       USE drag
       USE interpolation
-      use desmpi
+      USE desmpi
       USE cutcell
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! indices
       INTEGER :: IJK
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! currently only non-interpolated version available
@@ -1820,9 +1796,10 @@
       USE compar
       USE drag
       USE discretelement
-      use desmpi
+      USE desmpi
       USE cutcell
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -1860,10 +1837,6 @@
 ! External Functions
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: G_0
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 

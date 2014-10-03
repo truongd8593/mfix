@@ -32,8 +32,9 @@
       USE fldvar
       USE geometry
       USE indices
-      Use usr
-      USe compar
+      USE usr
+      USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !
@@ -46,8 +47,6 @@
       INTEGER IJK, IJK2, IJK1
 !
 !  Include files defining statement functions here
-!
-      INCLUDE 'function.inc'
 !
 !  Insert user-defined code here
 !

@@ -29,6 +29,7 @@
 
       USE toleranc
       USE usr
+      USE functions
 
       IMPLICIT NONE
 
@@ -39,9 +40,6 @@
 
 !-----------------------------------------------
       INCLUDE 'species.inc'
-
-      INCLUDE 'function.inc'
-
       INCLUDE 'usrnlst.inc'
 
 ! Reaction specific variables:

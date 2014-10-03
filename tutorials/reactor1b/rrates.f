@@ -42,6 +42,7 @@
       USE funits 
       USE compar        !//d
       USE sendrecv      !// 400
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -68,8 +69,6 @@
       DOUBLE PRECISION :: refT_L
 
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-      
       IER =0
       R_tmp = UNDEFINED
 !

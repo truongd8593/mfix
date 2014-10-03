@@ -52,6 +52,7 @@
       USE toleranc
       USE usr
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 
@@ -60,9 +61,6 @@
       DOUBLE PRECISION, DIMENSION(NO_OF_RXNS), INTENT(OUT) :: RATES
 
       INCLUDE 'species.inc'
-
-      INCLUDE 'function.inc'
-
       INCLUDE 'usrnlst.inc'
 
 ! Reaction specific variables:

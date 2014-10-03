@@ -41,6 +41,7 @@
       USE fun_avg
 
       USE usr
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -55,8 +56,6 @@
 
 !-----------------------------------------------
       INCLUDE 'species.inc'
-
-      INCLUDE 'function.inc'
 
       N_Sh = ZERO
       DO IJK = IJKSTART3, IJKEND3

@@ -52,6 +52,7 @@
       USE run
       USE usr
       USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 
@@ -90,9 +91,6 @@
       DOUBLE PRECISION Tp, Dp0
 
       INCLUDE '../species.inc'
-
-      INCLUDE '../function.inc'
-
       INCLUDE '../usrnlst.inc'
 
 ! Alias particle temperature.

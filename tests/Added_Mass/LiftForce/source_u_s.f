@@ -63,6 +63,7 @@
       USE quadric
       USE mms
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -112,10 +113,6 @@
       DOUBLE PRECISION :: F_Lift, Vsw, Vse, Vsc, U_slip, gradVg
 ! error message
       CHARACTER*80     LINE(2)
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO M = 1, MMAX
@@ -540,6 +537,7 @@
       USE output
       USE compar   
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -560,10 +558,6 @@
 ! Indices
       INTEGER :: I, J, K, I1, I2, J1, J2, K1, K2, IJK,&
                  IM, JM, KM, IJKW, IMJK, IPJK, IP
-!-----------------------------------------------
-! Include statements functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Setting the default boundary conditions
@@ -1019,6 +1013,7 @@
       USE bc
       USE output
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -1040,10 +1035,6 @@
       INTEGER :: I, J, K, IJK, JM, KM, IPJK
 ! coefficients for granular bc
       DOUBLE PRECISION :: hw, gw, cw
-!-----------------------------------------------
-! Include statements functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       DO K = K1, K2
@@ -1195,6 +1186,7 @@
       use physprop
       use ps
       use run
+      use functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1216,10 +1208,6 @@
       INTEGER :: lIE, lIW
 ! terms of bm expression
       DOUBLE PRECISION :: pSource
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include 'function.inc'
 !-----------------------------------------------
 
       do M=1 , MMAX

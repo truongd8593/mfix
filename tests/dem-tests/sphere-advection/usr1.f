@@ -41,6 +41,7 @@
       USE turb
       USE sendrecv  
       USE discretelement
+      USE functions
 
       IMPLICIT NONE
 
@@ -49,9 +50,6 @@
 
 ! Cycle length (time)
       DOUBLE PRECISION, PARAMETER :: T_per=0.25d0
-
-      INCLUDE 'function.inc'
-
 
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK) 

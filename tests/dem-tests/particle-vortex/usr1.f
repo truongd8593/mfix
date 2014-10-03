@@ -26,7 +26,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE USR1 
 
-      Use usr
+      USE usr
       USE param 
       USE param1 
       USE parallel 
@@ -41,6 +41,7 @@
       USE turb
       USE sendrecv  
       USE discretelement
+      USE functions
 
       IMPLICIT NONE
 
@@ -49,9 +50,6 @@
       DOUBLE PRECISION XX, YY, ZZ, XM, YM, ZM
       DOUBLE PRECISION, PARAMETER :: T_per=0.25d0
       double precision nu, ftauf, wnot, kx, ky, kmag
-
-
-      INCLUDE 'function.inc'
 
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK) 

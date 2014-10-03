@@ -37,6 +37,7 @@
       USE toleranc
       USE fun_avg
       USE usr
+      USE functions
 
       IMPLICIT NONE
 
@@ -78,9 +79,6 @@
 
 !`````````````````````````````````````````````````````````````````````//
       INCLUDE 'species.inc'
-
-      INCLUDE 'function.inc'
-
       INCLUDE 'usrnlst.inc'
 !`````````````````````````````````````````````````````````````````````//
 

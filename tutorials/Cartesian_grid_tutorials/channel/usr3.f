@@ -45,11 +45,8 @@
 
       CALL WRITE_VELOCITY_PROFILES
 
-
-
       RETURN  
       END SUBROUTINE USR3 
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -79,6 +76,7 @@
       USE fldvar
       USE quadric
       USE cutcell
+      USE functions
       
       IMPLICIT NONE
       INTEGER :: I,J,K,IJK
@@ -98,9 +96,6 @@
       DOUBLE PRECISION, DIMENSION(ARRAY_SIZE) :: v_error
       DOUBLE PRECISION, DIMENSION(ARRAY_SIZE,10) :: Temp_Array
       CHARACTER(LEN=3) :: BC
-
-
-      include "function.inc"      
 
       OPEN(UNIT = 777, FILE= 'extract_velocity.inp')
       READ(777,*)BC

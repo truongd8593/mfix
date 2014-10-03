@@ -39,14 +39,15 @@
       USE is
       USE matrix
       USE mms
-      use physprop
-      use run
-      use rxns
-      use scales
-      use tau_g
-      use toleranc
-      use visc_g
+      USE physprop
+      USE run
+      USE rxns
+      USE scales
+      USE tau_g
+      USE toleranc
+      USE visc_g
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -97,10 +98,6 @@
       DOUBLE PRECISION :: F_Lift, Vgw, Vge, Vgc, U_slip, gradVg
 ! error message
       CHARACTER*80     LINE
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Set reference phase to gas
@@ -415,6 +412,7 @@
       USE output
       USE compar    
       USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -437,10 +435,6 @@
       INTEGER :: M
 ! Turbulent shear stress
       DOUBLE PRECISION  :: W_F_Slip
-!-----------------------------------------------
-! Include statements functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Set reference phase to gas
@@ -1033,6 +1027,7 @@
       use physprop
       use ps
       use run
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1053,10 +1048,6 @@
       INTEGER :: lIE, lIW
 ! terms of bm expression
       DOUBLE PRECISION :: pSource
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Set reference phase to gas

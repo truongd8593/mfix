@@ -56,6 +56,7 @@
 ! following two modules used in this modified routine.
       USE matrix
       USE constant
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -94,7 +95,6 @@
       DOUBLE PRECISION jump
       INTEGER          J1, J2, J3, J4, IJK1, IJK2, IJK3, IJK4, L
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 
       call lock_ambm
       call lock_tmp_array

@@ -40,7 +40,8 @@
       USE compar 
       USE funits    
       USE fun_avg
-      Use usr
+      USE usr
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !
@@ -52,7 +53,6 @@
       DOUBLE PRECISION DIFF, EP_g2
       DOUBLE PRECISION Sc1o3, UGC, VGC, WGC, USCM, VSCM, WSCM, VREL, Re
       INCLUDE 'usrnlst.inc' 
-      INCLUDE 'function.inc'
 
       DO M = 1, MMAX 
          DO IJK = IJKSTART3, IJKEND3 

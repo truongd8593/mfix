@@ -330,7 +330,6 @@ common_SOURCES = \
 	model/fldvar_mod.f \
 	model/flow_to_vel.f \
 	model/fun_avg_mod.f \
-	model/function.inc \
 	model/function3_mod.f \
 	model/functions_mod.f \
 	model/funits_mod.f \
@@ -744,7 +743,6 @@ dist_postmfix_SOURCES += \
 	post_mfix/flow_sx.f \
 	post_mfix/flow_sy.f \
 	post_mfix/flow_sz.f \
-	post_mfix/function.inc \
 	post_mfix/gas_flux.f \
 	post_mfix/get_file_name.f \
 	post_mfix/get_file_status.f \
