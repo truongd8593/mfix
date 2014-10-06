@@ -3096,6 +3096,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CLOSE_VTK_FILE
     
+      USE compar, only:myPE, PE_IO 
       USE vtk
 
       IF (myPE /= PE_IO) RETURN 
