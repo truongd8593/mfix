@@ -29,7 +29,7 @@
 !-----------------------------------------------
 !
 !                   input line to change to uppercase
-      CHARACTER*(*) LINE_STRING
+      CHARACTER(len=*) LINE_STRING
 !
 !                   number of characters to look at in LINE_STRING
       INTEGER       MAXCOL
@@ -104,7 +104,7 @@
       CHARACTER, PARAMETER          :: CRET = CHAR(13)
 
 !                   input line to change to uppercase
-      CHARACTER*(*) LINE_STRING
+      CHARACTER(len=*) LINE_STRING
 !
 !                   number of characters to look at in LINE_STRING
       INTEGER       MAXCOL

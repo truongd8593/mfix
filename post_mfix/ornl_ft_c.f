@@ -14,13 +14,13 @@
       implicit none
 
 
-      integer*4 :: nu, nb, nrm, ibeg, iend
+      integer(kind=4) :: nu, nb, nrm, ibeg, iend
       integer :: nt,k
 
-      real*8  :: sr, ol, hng
-      real*8  :: time_series(*)
+      real(kind=8)  :: sr, ol, hng
+      real(kind=8)  :: time_series(*)
 
-      real*8, allocatable    :: f(:), p(:)
+      real(kind=8), allocatable    :: f(:), p(:)
 
       allocate (f(nt))
       allocate (p(nt))

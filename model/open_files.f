@@ -20,9 +20,9 @@
 ! Error index: 0 - no error, 1 could not open file
       INTEGER :: IER(0:numPEs-1)
 ! RUN_NAME (as specified in input file)
-      CHARACTER*(*) :: RUN_NAME
+      CHARACTER(LEN=*) :: RUN_NAME
 ! Run_type (as specified in input file)
-      CHARACTER*(*) :: RUN_TYPE
+      CHARACTER(LEN=*) :: RUN_TYPE
 ! Number of single precision output files (param.inc)
       INTEGER :: N_SPX
 ! local variables

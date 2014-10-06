@@ -20,7 +20,7 @@
 
       real      :: time_in_res , time_now , value, time_prev
       real      :: arr(*)
-      real*8    :: time_series(*)
+      real(kind=8)    :: time_series(*)
 
       logical :: ask_for_times , init_read_res
 

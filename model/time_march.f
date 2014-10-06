@@ -131,7 +131,7 @@
       DOUBLE PRECISION :: WALL_START ! wall time at the beginning
       DOUBLE PRECISION :: WALL_NOW   ! wall time at the end of each timestep
       DOUBLE PRECISION :: WALL_LEFT
-      CHARACTER*4 TUNIT
+      CHARACTER(LEN=4) TUNIT
 
 !-----------------------------------------------
 ! External functions

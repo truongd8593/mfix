@@ -17,7 +17,7 @@
 ! Passed Variables: Dummy argument format required by ODEPACK.
 !---------------------------------------------------------------------//
 ! Input data line
-      CHARACTER*(*), intent(INOUT) :: LINE
+      CHARACTER(len=*), intent(INOUT) :: LINE
 !Start of comments
       INTEGER, intent(IN) :: LSTART
 ! Maximum column of input data line to search

@@ -27,7 +27,7 @@
 
         character(LEN=80) :: filename
 
-        write(filename,'("debug",f4.3)') dble(myPE)/dble(1000)
+        write(filename,'("debug",f6.3)') dble(myPE)/dble(1000)
         print*,'filename ', filename
 
         open(unit_log, file=filename, access='sequential',form='formatted')
@@ -279,7 +279,7 @@
 
         subroutine write_error( name, line, lmax )
         integer, intent(in) :: lmax
-        character*(*) name,line(*)
+        character(len=*) name,line(*)
 
         integer :: L
 

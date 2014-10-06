@@ -129,21 +129,27 @@
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Coefficient lambda_x in equation (1) ('normal' form) or x-component of normal vector defining plane in equation (5) ('degenerate' form).</description>
+!  <description> Coefficient lambda_x in equation (1) ('normal' form)
+! or x-component of normal vector defining plane in equation (5)
+! ('degenerate' form).</description>
 !  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       lambda_x = ZERO
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Coefficient lambda_y in equation (1) ('normal' form) or y-component of normal vector defining plane in equation (5) ('degenerate' form).</description>
+!  <description>Coefficient lambda_y in equation (1) ('normal' form)
+!  or y-component of normal vector defining plane in equation (5)
+!  ('degenerate' form).</description>
 !  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       lambda_y = ZERO
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Coefficient lambda_z in equation (1) ('normal' form) or z-component of normal vector defining plane in equation (5) ('degenerate' form).</description>
+!  <description>Coefficient lambda_z in equation (1) ('normal' form)
+!  or z-component of normal vector defining plane in equation (5)
+!  ('degenerate' form).</description>
 !  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       lambda_z = ZERO
@@ -333,7 +339,9 @@
 
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Flag defining the type of cells that are outside of the zone defined by [clip_xmin;clip_xmax], [clip_ymin;clip_ymax],[clip_zmin;clip_zmax].</description>
+!  <description>Flag defining the type of cells that are outside of
+!  the zone defined by [clip_xmin;clip_xmax],
+!  [clip_ymin;clip_ymax],[clip_zmin;clip_zmax].</description>
 !  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
 !  <valid value=".false." note="remove cells from computational domain."/>
@@ -400,19 +408,22 @@
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Tolerance used to detect small cells (expressed as a fraction of cell volume, between 0.0 and 1.0).</description>
+!  <description>Tolerance used to detect small cells (expressed as a
+!  fraction of cell volume, between 0.0 and 1.0).</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       TOL_SMALL_CELL = 0.01D0  ! 1% of original cell volume
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Tolerance used to remove duplicate nodes (expressed as a fraction of cell diagonal, between 0.0 and 1.0).</description>
+!  <description>Tolerance used to remove duplicate nodes (expressed as
+!  a fraction of cell diagonal, between 0.0 and 1.0).</description>
       TOL_MERGE      = 1.0D-12 ! fraction of original cell diagonal
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Tolerance used to detect small faces (expressed as a fraction of original face area, between 0.0 and 1.0).</description>
+!  <description>Tolerance used to detect small faces (expressed as a
+!  fraction of original face area, between 0.0 and 1.0).</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       TOL_SMALL_AREA = 0.01D0  ! 1% of original face area
 !</keyword>
@@ -448,7 +459,9 @@
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Smallest angle accepted for valid stl triangles (in degrees). triangles having an angle smaller that this value will be ignored.</description>
+!  <description>Smallest angle accepted for valid stl triangles (in
+!  degrees). triangles having an angle smaller that this value will be
+!  ignored.</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       STL_SMALL_ANGLE = 5.0   ! Degrees
 !</keyword>
@@ -473,7 +486,10 @@
 
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Defines value of f_stl outside of the stl geometry. a value of 1.0 means the domain outside of the stl geometry is excluded from computation, i.e., an internal flow is computed.</description>
+!  <description>Defines value of f_stl outside of the stl geometry. a
+!  value of 1.0 means the domain outside of the stl geometry is
+!  excluded from computation, i.e., an internal flow is
+!  computed.</description>
 !  <valid value="-1.0" note="model an external flow"/>
 !  <valid value="1.0" note="model an internal flow"/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
@@ -517,7 +533,10 @@
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Defines value of f outside of the .msh geometry. a value of 1.0 means the domain outside of the .msh geometry is excluded from computation, i.e., an internal flow is computed.</description>
+!  <description>Defines value of f outside of the .msh geometry. a
+!  value of 1.0 means the domain outside of the .msh geometry is
+!  excluded from computation, i.e., an internal flow is
+!  computed.</description>
 !  <valid value="-1.0" note="model an external flow"/>
 !  <valid value="1.0" note="model an internal flow"/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
@@ -549,7 +568,10 @@
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Ray propagation order used to determine whether any point is located inside or outside of the stl surface. a value of ijk means the propagation occurs in the i, followed by j, and k directions. other available orders are jki and kij</description>
+!  <description>Ray propagation order used to determine whether any
+!  point is located inside or outside of the stl surface. a value of
+!  ijk means the propagation occurs in the i, followed by j, and k
+!  directions. other available orders are jki and kij</description>
 !  <valid value="ijk" note="propagation occurs in the i, followed by j, and k directions"/>
 !  <valid value="jki" note="propagation occurs in the j, followed by k, and i directions"/>
 !  <valid value="kij" note="propagation occurs in the k, followed by i, and j directions"/>
@@ -564,7 +586,10 @@
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Flag to detect and treat corner cells the same way as in the original mfix version (i.e. without cut cells). if set to .true., some cut cells may be treated as corner cells.</description>
+!  <description>Flag to detect and treat corner cells the same way as
+!  in the original mfix version (i.e. without cut cells). if set to
+!  .true., some cut cells may be treated as corner
+!  cells.</description>
 !  <valid value=".true." note="some cut cells may be treated as corner cells."/>
 !  <valid value=".false." note=""/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>

@@ -50,11 +50,11 @@
 !                      Vector b_m
       DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3) :: B_m
 !                      Variable name
-      CHARACTER*(*) ::    Vname
+      CHARACTER(LEN=*) ::    Vname
 !                      Variable
       DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3) :: Var
 !                    sweep direction
-      CHARACTER*(*) :: CMETHOD
+      CHARACTER(LEN=*) :: CMETHOD
 !
 !-------------------------------------------------
       DOUBLE PRECISION DNRM2
@@ -137,11 +137,11 @@
 !                      Vector b_m
       DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3) :: B_m
 !                      Variable name
-      CHARACTER*(*) ::    Vname
+      CHARACTER(LEN=*) ::    Vname
 !                      Variable
       DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3) :: Var
 !                    sweep direction
-      CHARACTER*(*) :: CMETHOD
+      CHARACTER(LEN=*) :: CMETHOD
 !
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -679,7 +679,7 @@
       DOUBLE PRECISION B_m(ijkstart3:ijkend3)
 !
 !                      Variable name
-      CHARACTER*(*)    Vname
+      CHARACTER(LEN=*)    Vname
 
 !
 !                      Variable
@@ -785,7 +785,7 @@
       DOUBLE PRECISION B_m(ijkstart3:ijkend3)
 !
 !                      Variable name
-      CHARACTER*(*)    Vname
+      CHARACTER(LEN=*)    Vname
 
 !
 !                      Variable
@@ -898,7 +898,7 @@
       DOUBLE PRECISION AVar(ijkstart3:ijkend3)
 !
 !                      Variable name
-      CHARACTER*(*)    Vname
+      CHARACTER(LEN=*)    Vname
 !
 !                      Variable
       DOUBLE PRECISION Var(ijkstart3:ijkend3)
@@ -1036,7 +1036,7 @@
       DOUBLE PRECISION B_m(ijkstart3:ijkend3)
 !
 !                      Variable name
-      CHARACTER*(*)    Vname
+      CHARACTER(LEN=*)    Vname
 !
 !                      Variable
       DOUBLE PRECISION Var(ijkstart3:ijkend3)
@@ -1259,7 +1259,7 @@
       DOUBLE PRECISION B_m(ijkstart3:ijkend3)
 !
 !                      Variable name
-      CHARACTER*(*)    Vname
+      CHARACTER(LEN=*)    Vname
 !
 !                      Variable
       DOUBLE PRECISION Var(ijkstart3:ijkend3)
@@ -1361,7 +1361,7 @@
       DOUBLE PRECISION B_m(ijkstart3:ijkend3)
 !
 !                      Variable name
-      CHARACTER*(*)    Vname
+      CHARACTER(LEN=*)    Vname
 
 !
 !                      Variable
@@ -1446,7 +1446,7 @@
       DOUBLE PRECISION B_m(ijkstart3:ijkend3)
 !
 !     Variable name
-      CHARACTER*(*)    Vname
+      CHARACTER(LEN=*)    Vname
 !
 !     Variable
       DOUBLE PRECISION Var(ijkstart3:ijkend3)
@@ -1502,7 +1502,7 @@
       DOUBLE PRECISION B_m(ijkstart3:ijkend3)
 !
 !     Variable name
-      CHARACTER*(*)    Vname
+      CHARACTER(LEN=*)    Vname
 !
 !     Variable
       DOUBLE PRECISION Var(ijkstart3:ijkend3)

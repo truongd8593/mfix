@@ -32,7 +32,7 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! variable number
 !     Note: not really used beyond this subroutine. here it is
 !     used for potentially adjusting the tolerances but it is

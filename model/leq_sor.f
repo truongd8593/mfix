@@ -33,7 +33,7 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! variable number (not really used here; see calling subroutine)
       INTEGER, INTENT(IN) :: VNO
 ! variable

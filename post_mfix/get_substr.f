@@ -24,7 +24,7 @@
 !
       IMPLICIT NONE
 !
-      CHARACTER*(*) STRING, SUBSTR
+      CHARACTER(LEN=*) STRING, SUBSTR
       INTEGER       L, LMAX1, LMAX2, L1, Ls
       LOGICAL       FINISH
 !

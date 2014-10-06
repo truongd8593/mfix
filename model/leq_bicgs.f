@@ -40,7 +40,7 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! variable number (not really used here; see calling subroutine)
       INTEGER, INTENT(IN) :: VNO
 ! variable
@@ -59,7 +59,7 @@
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
 ! Note: this setting only seems to matter when leq_pc='line'
-      CHARACTER*(*), INTENT(IN) :: CMETHOD
+      CHARACTER(LEN=*), INTENT(IN) :: CMETHOD
 ! convergence tolerance (generally leq_tol)
       DOUBLE PRECISION, INTENT(IN) :: TOL
 ! preconditioner (leq_pc)
@@ -139,7 +139,7 @@
 ! Dummy arguments/procedure
 !-----------------------------------------------
 ! variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! variable number (not really used here-see calling subroutine)
       INTEGER, INTENT(IN) :: VNO
 ! variable
@@ -156,7 +156,7 @@
       DOUBLE PRECISION, DIMENSION(DIMENSION_3), INTENT(INOUT) :: B_m
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
-      CHARACTER*(*), INTENT(IN) :: CMETHOD
+      CHARACTER(LEN=*), INTENT(IN) :: CMETHOD
 ! convergence tolerance (generally leq_tol)
       DOUBLE PRECISION, INTENT(IN) :: TOL
 ! maximum number of iterations (generally leq_it)
@@ -727,7 +727,7 @@
 !  Line position
       INTEGER, INTENT(IN) :: I
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! Variable
       DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
 ! Septadiagonal matrix A_m
@@ -813,7 +813,7 @@
 ! Line position
       INTEGER, INTENT(IN) :: I, K
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! Variable
       DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
 ! Septadiagonal matrix A_m
@@ -904,7 +904,7 @@
 ! Line position
       INTEGER, INTENT(IN) :: J, K
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! Variable
       DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
 ! Septadiagonal matrix A_m
@@ -988,7 +988,7 @@
 ! Line position
       INTEGER, INTENT(IN) :: I, J
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! Variable
       DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
 ! Septadiagonal matrix A_m
@@ -1073,7 +1073,7 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! Variable
 !      DOUBLE PRECISION, INTENT(IN) :: Var(ijkstart3:ijkend3)
       DOUBLE PRECISION, INTENT(IN) :: Var(DIMENSION_3)
@@ -1213,7 +1213,7 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! Vector b_m
 !      DOUBLE PRECISION, INTENT(IN) :: B_m(ijkstart3:ijkend3)
       DOUBLE PRECISION, INTENT(IN) :: B_m(DIMENSION_3)
@@ -1541,7 +1541,7 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! Vector b_m
 !      DOUBLE PRECISION, INTENT(IN) :: B_m(ijkstart3:ijkend3)
       DOUBLE PRECISION, INTENT(IN) :: B_m(DIMENSION_3)
@@ -1610,7 +1610,7 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! Vector b_m
 !      DOUBLE PRECISION, INTENT(IN) :: B_m(ijkstart3:ijkend3)
       DOUBLE PRECISION, INTENT(IN) :: B_m(DIMENSION_3)
@@ -1700,7 +1700,8 @@
          prod = 0.0d0
 
          IF(RE_INDEXING) THEN
-!         IF(.FALSE.) THEN                  ! Somehow, looping in his order leads to smaller time step than k,i,j nested loop below ....
+!         IF(.FALSE.) THEN    
+            ! Somehow, looping in this order leads to smaller time step than k,i,j nested loop below ....
             DO IJK = IJKSTART3,IJKEND3
                IF(INTERIOR_CELL_AT(IJK)) prod = prod + r1(ijk)*r2(ijk)
             ENDDO

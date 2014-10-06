@@ -362,7 +362,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
- 2010 FORMAT('Error 2010: Invalid input. ',A,' must be 'A,/'when ',    &
+ 2010 FORMAT('Error 2010: Invalid input. ',A,' must be ',A,/'when ',    &
          'using the SUBGRID model.'/,'Please correct the mfix.dat',    &
          ' file.')
 

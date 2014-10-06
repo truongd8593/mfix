@@ -51,22 +51,22 @@
 
       implicit none
 
-      integer*4 MAXDIM !.................... maximal embedding dimension
+      integer(kind=4) MAXDIM !.................... maximal embedding dimension
       parameter (MAXDIM=100)
 
 ! ... NOTICE: Keep all reals at least double precision. ...
-      real*8 sgn_d !............. external SGN function (algebraic sign)
-      real*8 A(MAXDIM,MAXDIM) !........... real symmetric matrix (input)
+      real(kind=8) sgn_d !............. external SGN function (algebraic sign)
+      real(kind=8) A(MAXDIM,MAXDIM) !........... real symmetric matrix (input)
       integer N !.............................. matrix dimension (input)
-      real*8 B(MAXDIM,MAXDIM) !..... transformation of matrix A (output)
-      real*8 eigvec(MAXDIM,MAXDIM) !................ eigenvectors (output)
-      real*8 RHO !................ small value to represent off-diagonal
-      real*8 nu, nufinal !........ dummy values used in norm computation
-      integer*4 i,j,q,p !.............................. counting indices
-      integer*4 offdiag !...... flag to signal significant off-diagonals
+      real(kind=8) B(MAXDIM,MAXDIM) !..... transformation of matrix A (output)
+      real(kind=8) eigvec(MAXDIM,MAXDIM) !................ eigenvectors (output)
+      real(kind=8) RHO !................ small value to represent off-diagonal
+      real(kind=8) nu, nufinal !........ dummy values used in norm computation
+      integer(kind=4) i,j,q,p !.............................. counting indices
+      integer(kind=4) offdiag !...... flag to signal significant off-diagonals
 ! ... Intermediate quantities in computation ...
-      real*8 app,aqq,apq,lambda,mu,temp,sine,cosine,omega
-      real*8 co2,si2,sico,sico2
+      real(kind=8) app,aqq,apq,lambda,mu,temp,sine,cosine,omega
+      real(kind=8) co2,si2,sico,sico2
 
       RHO = 1.0d-16
 
@@ -201,8 +201,8 @@
 !***********************************************************************
 !* Changes:                                                            *
 !*   2001-03-06 ceaf => changed TS to real*4, retained all others as   *
-!*              real*8; renamed variable first->ibeg, last->iend       *
-!*   2001-12-20 ceaf => changed TS to real*8                           *
+!*              real(kind=8); renamed variable first->ibeg, last->iend       *
+!*   2001-12-20 ceaf => changed TS to real(kind=8)                           *
 !***********************************************************************
 
       subroutine neigen(TS,ibeg,iend,embdim,embdel,eigvec,eigval)
@@ -210,27 +210,27 @@
       implicit none
       external matdiag !................. matrix diagonalization routine
 
-      integer*4 MAXDIM !.......... maximal allowable embedding dimension
+      integer(kind=4) MAXDIM !.......... maximal allowable embedding dimension
       parameter (MAXDIM=100) ! used for eigvec,eigval,covin,covout
-      integer*4 MAXREC !........... maximal allowable time-series length
+      integer(kind=4) MAXREC !........... maximal allowable time-series length
       parameter (MAXREC=100000) ! used for TSc
 
-      real*8 TS(*) !................................ time series (input)
-      integer*4 embdim !.................... embedding dimension (input)
-      integer*4 embdel !........................ embedding delay (input)
-      integer*4 ibeg !..... temporal index for starting analysis (input)
-      integer*4 iend !..... temporal index for stopping analysis (input)
-      real*8 eigvec(MAXDIM,MAXDIM) !.............. eigenvectors (output)
-      real*8 eigval(MAXDIM) !........... eigenvalues (sigma**2) (output)
-      integer*4 i,j,k !......................................... indices
-      integer*4 npact !.......... actual number of data points processed
-      real*8 avg !................................................. mean
-      real*8 TSc(MAXREC) !......................... centered time series
-      integer*4 nwin !............. number of embedded trajectory points
-! ... NOTICE: Keep the covariance matrices at least real*8.
-      real*8 covin(MAXDIM,MAXDIM) !............ covariance matrix, input
-      real*8 covout(MAXDIM,MAXDIM) !.......... covariance matrix, output
-      integer*4 ipoint,index1,index2 !......................... pointers
+      real(kind=8) TS(*) !................................ time series (input)
+      integer(kind=4) embdim !.................... embedding dimension (input)
+      integer(kind=4) embdel !........................ embedding delay (input)
+      integer(kind=4) ibeg !..... temporal index for starting analysis (input)
+      integer(kind=4) iend !..... temporal index for stopping analysis (input)
+      real(kind=8) eigvec(MAXDIM,MAXDIM) !.............. eigenvectors (output)
+      real(kind=8) eigval(MAXDIM) !........... eigenvalues (sigma**2) (output)
+      integer(kind=4) i,j,k !......................................... indices
+      integer(kind=4) npact !.......... actual number of data points processed
+      real(kind=8) avg !................................................. mean
+      real(kind=8) TSc(MAXREC) !......................... centered time series
+      integer(kind=4) nwin !............. number of embedded trajectory points
+! ... NOTICE: Keep the covariance matrices at least real(kind=8).
+      real(kind=8) covin(MAXDIM,MAXDIM) !............ covariance matrix, input
+      real(kind=8) covout(MAXDIM,MAXDIM) !.......... covariance matrix, output
+      integer(kind=4) ipoint,index1,index2 !......................... pointers
 
 ! --- Center time series ---
       npact = iend - ibeg + 1
@@ -315,32 +315,32 @@
 !***********************************************************************
 !* Changes:                                                            *
 !*   2001-03-06 ceaf => changed TS to real*4, retained all others as   *
-!*              real*8; renamed variable first->ibeg, last->iend       *
+!*              real(kind=8); renamed variable first->ibeg, last->iend       *
 !*   2001-03-20 ceaf => incorporated centering of TS for calling ease  *
-!*   2001-12-20 ceaf => changed TS and TSc to real*8                   *
+!*   2001-12-20 ceaf => changed TS and TSc to real(kind=8)                   *
 !***********************************************************************
 
       subroutine traeigen(TS,ibeg,iend,embdim,embdel,eigvec,comp,TSc)
 
       implicit none
 
-      integer*4 MAXDIM !.......... maximal allowable embedding dimension
+      integer(kind=4) MAXDIM !.......... maximal allowable embedding dimension
       parameter (MAXDIM=100)
-      integer*4 MAXREC !........... maximal allowable time-series length
+      integer(kind=4) MAXREC !........... maximal allowable time-series length
       parameter (MAXREC=100000)
 
-      real*8 TS(*) !................................ time series (input)
-      integer*4 ibeg !..... temporal index for starting analysis (input)
-      integer*4 iend !..... temporal index for stopping analysis (input)
-      integer*4 embdim !.................... embedding dimension (input)
-      integer*4 embdel !........................ embedding delay (input)
-      real*8 eigvec(MAXDIM,MAXDIM) !............... eigenvectors (input)
-      integer*4 comp !..... selected principal component for TSc (input)
-      real*8 TSc(MAXREC) !..... output principal component comp (output)
-      integer*4 itpts !... number of trajectory component points to save
-      integer*4 tidx !. temporal index in TS of current embedding window
-      integer*4 icount,j !............................. counting indices
-      real*8 avg !..................................... time-series mean
+      real(kind=8) TS(*) !................................ time series (input)
+      integer(kind=4) ibeg !..... temporal index for starting analysis (input)
+      integer(kind=4) iend !..... temporal index for stopping analysis (input)
+      integer(kind=4) embdim !.................... embedding dimension (input)
+      integer(kind=4) embdel !........................ embedding delay (input)
+      real(kind=8) eigvec(MAXDIM,MAXDIM) !............... eigenvectors (input)
+      integer(kind=4) comp !..... selected principal component for TSc (input)
+      real(kind=8) TSc(MAXREC) !..... output principal component comp (output)
+      integer(kind=4) itpts !... number of trajectory component points to save
+      integer(kind=4) tidx !. temporal index in TS of current embedding window
+      integer(kind=4) icount,j !............................. counting indices
+      real(kind=8) avg !..................................... time-series mean
 
 ! --- Determine number of embedded data points ---
       itpts = (iend - ibeg + 1) - (embdim - 1) * embdel

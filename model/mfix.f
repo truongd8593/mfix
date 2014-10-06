@@ -535,7 +535,6 @@
 ! indices
       INTEGER :: i, j, k, ijk, ijk_GL, ijk_PROC, ijk_IO
 !
-      integer :: i_of_g, j_of_g, k_of_g
       integer :: indxA, indxA_gl, indxB, indxB_gl, indxC, indxC_gl
       integer :: indxD, indxD_gl, indxE, indxE_gl, indxF, indxF_gl
       integer :: indxG, indxG_gl, indxH, indxH_gl
@@ -543,13 +542,6 @@
       logical :: amgdbg = .TRUE.
 
       character(LEN=80) :: fname
-
-      k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
-      i_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)* &
-                           (jmax3-jmin3+1))) - 1)/(jmax3-jmin3+1)) + imin3
-      j_of_g(ijk) = ijk - (i_of_g(ijk)-imin3)*(jmax3-jmin3+1) - &
-                     (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1)) - 1 + jmin3
-
 
 !DISTIO
 !      fname = "layout_xxxx.txt"
@@ -838,7 +830,6 @@
 ! indices
       INTEGER :: i, j, k, ijk, ijk_GL, ijk_PROC, ijk_IO
 !
-      integer :: i_of_g, j_of_g, k_of_g
       integer :: indxA, indxA_gl, indxB, indxB_gl, indxC, indxC_gl
       integer :: indxD, indxD_gl, indxE, indxE_gl, indxF, indxF_gl
       integer :: indxG, indxG_gl, indxH, indxH_gl
@@ -847,12 +838,6 @@
 
       character(LEN=80) :: fname
 !-----------------------------------------------
-
-      k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
-      i_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1))) &
-                     - 1)/(jmax3-jmin3+1)) + imin3
-      j_of_g(ijk) = ijk - (i_of_g(ijk)-imin3)*(jmax3-jmin3+1) - &
-                     (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1)) - 1 + jmin3
 
 !DISTIO
 !      fname = "p_info_xxxx.txt"

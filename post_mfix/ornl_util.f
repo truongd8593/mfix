@@ -52,15 +52,15 @@
 
       subroutine hist_nonculled_i(vec,ibeg,iend,nsym,hist,nrec)
 
-      integer*4 vec(1:*) !.......................... data vector (input)
-      integer*4 ibeg !...... index of first record in vec to use (input)
-      integer*4 iend !....... index of last record in vec to use (input)
-      integer*4 nsym !.........  maximal expected integer in vec (input)
-      real*8 hist(0:*) !............ frequency histogram of vec (output)
-      integer*4 nrec !........ number of records in [ibeg,iend] (output)
-      integer*4 i,j !.......................................... counters
-      integer*4 begidx !..................... first record in vec to use
-      integer*4 endidx !...................... last record in vec to use
+      integer(kind=4) vec(1:*) !.......................... data vector (input)
+      integer(kind=4) ibeg !...... index of first record in vec to use (input)
+      integer(kind=4) iend !....... index of last record in vec to use (input)
+      integer(kind=4) nsym !.........  maximal expected integer in vec (input)
+      real(kind=8) hist(0:*) !............ frequency histogram of vec (output)
+      integer(kind=4) nrec !........ number of records in [ibeg,iend] (output)
+      integer(kind=4) i,j !.......................................... counters
+      integer(kind=4) begidx !..................... first record in vec to use
+      integer(kind=4) endidx !...................... last record in vec to use
 
 ! --- Sanity and range checks ---
       nrec = (iend - ibeg + 1)
@@ -98,7 +98,7 @@
 
 !***********************************************************************
 !* ID => midpoints_d                                                   *
-!* Function => midpoints of successive vector elements (real*8)        *
+!* Function => midpoints of successive vector elements (real(kind=8))        *
 !* Date => 2001-12-20                                                  *
 !* Last modified => 2001-12-20 22:35Z                                  *
 !***********************************************************************
@@ -122,10 +122,10 @@
 
       subroutine midpoints_d(vec,lvec,mp)
 
-      real*8 vec(1:*) !............................. data vector (input)
-      integer*4 lvec !............................ length of vec (input)
-      real*8 mp(1:*) !. midpoints of successive elements of vec (output)
-      integer*4 l !............................................. counter
+      real(kind=8) vec(1:*) !............................. data vector (input)
+      integer(kind=4) lvec !............................ length of vec (input)
+      real(kind=8) mp(1:*) !. midpoints of successive elements of vec (output)
+      integer(kind=4) l !............................................. counter
 
 ! --- Find midpoints ---
       do l=1,(lvec-1)
@@ -137,7 +137,7 @@
 
 !***********************************************************************
 !* ID => midpoints_s                                                   *
-!* Function => midpoints of successive vector elements (real*4)        *
+!* Function => midpoints of successive vector elements (real(kind=4))        *
 !* Date => 2001-02-19                                                  *
 !* Last modified => 2001-02-19 07:55Z                                  *
 !***********************************************************************
@@ -161,10 +161,10 @@
 
       subroutine midpoints_s(vec,lvec,mp)
 
-      real*8 vec(1:*) !............................. data vector (input)
-      integer*4 lvec !............................ length of vec (input)
-      real*8 mp(1:*) !. midpoints of successive elements of vec (output)
-      integer*4 l !............................................. counter
+      real(kind=8) vec(1:*) !............................. data vector (input)
+      integer(kind=4) lvec !............................ length of vec (input)
+      real(kind=8) mp(1:*) !. midpoints of successive elements of vec (output)
+      integer(kind=4) l !............................................. counter
 
 ! --- Find midpoints ---
       do l=1,(lvec-1)
@@ -195,9 +195,9 @@
 !*   a => number                                                       *
 !***********************************************************************
 
-      real*8 function sgn_d(a)
+      real(kind=8) function sgn_d(a)
 
-      real*8 a
+      real(kind=8) a
 
       sgn_d = 1.
       if (a.lt.0.) sgn_d = -1.

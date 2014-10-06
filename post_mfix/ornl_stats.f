@@ -65,38 +65,38 @@
 !***********************************************************************
 !* Changes:                                                            *
 !*   2001-02-28 ceaf => changed TS to real*4, retained all others as   *
-!*              real*8; renamed variable first->ibeg, last->iend       *
+!*              real(kind=8); renamed variable first->ibeg, last->iend       *
 !*   2001-03-20 ceaf => changed double to dble                         *
-!*   2001-12-20 ceaf => changed TS to real*8                           *
+!*   2001-12-20 ceaf => changed TS to real(kind=8)                           *
 !***********************************************************************
 
       subroutine simple_statistics(TS,ibeg,iend,min,max,avg,var,skw,    &
      & krt,dev,AAD,tOrb,nOrb,tDev)
 
-      real*8 TS(1:*) !.............................. time series (input)
-      integer*4 ibeg !................ first record in TS to use (input)
-      integer*4 iend !................. last record in TS to use (input)
-      real*8 min !..................................... minimum (output)
-      real*8 max !..................................... maximum (output)
-      real*8 avg !........................................ mean (output)
-      real*8 var !.................................... variance (output)
-      real*8 skw !.................................... skewness (output)
-      real*8 krt !.................................... kurtosis (output)
-      real*8 dev !.......................... standard deviation (output)
-      real*8 AAD !........ average absolute deviation from mean (output)
-      real*8 tOrb !....................... average orbital time (output)
-      integer*4 nOrb !........................ number of orbits (output)
-      real*8 tDev !............................. deviation time (output)
-      integer*4 lk !............................................ counter
-      integer*4 nCross !......... number of upward crossings through avg
-      integer*4 nrec !................. number of records in [ibeg,iend]
-      integer*4 TCount !............................... timestep counter
-      real*8 old !...... previous point for comparison of mean crossings
-      real*8 ratio !............................. interpolation distance
-      real*8 sum !.................................................. sum
-      real*8 prod !............................................. product
-      real*8 tMin !....................... temporal index of first orbit
-      real*8 tMax !........................ temporal index of last orbit
+      real(kind=8) TS(1:*) !.............................. time series (input)
+      integer(kind=4) ibeg !................ first record in TS to use (input)
+      integer(kind=4) iend !................. last record in TS to use (input)
+      real(kind=8) min !..................................... minimum (output)
+      real(kind=8) max !..................................... maximum (output)
+      real(kind=8) avg !........................................ mean (output)
+      real(kind=8) var !.................................... variance (output)
+      real(kind=8) skw !.................................... skewness (output)
+      real(kind=8) krt !.................................... kurtosis (output)
+      real(kind=8) dev !.......................... standard deviation (output)
+      real(kind=8) AAD !........ average absolute deviation from mean (output)
+      real(kind=8) tOrb !....................... average orbital time (output)
+      integer(kind=4) nOrb !........................ number of orbits (output)
+      real(kind=8) tDev !............................. deviation time (output)
+      integer(kind=4) lk !............................................ counter
+      integer(kind=4) nCross !......... number of upward crossings through avg
+      integer(kind=4) nrec !................. number of records in [ibeg,iend]
+      integer(kind=4) TCount !............................... timestep counter
+      real(kind=8) old !...... previous point for comparison of mean crossings
+      real(kind=8) ratio !............................. interpolation distance
+      real(kind=8) sum !.................................................. sum
+      real(kind=8) prod !............................................. product
+      real(kind=8) tMin !....................... temporal index of first orbit
+      real(kind=8) tMax !........................ temporal index of last orbit
 
 ! --- Sanity and range checks ---
       nrec = iend - ibeg + 1

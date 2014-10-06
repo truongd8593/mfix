@@ -4286,7 +4286,9 @@
             ISIZE_ALL = ISIZE_OLD
 
 ! Get load imbalance before optimization
-            CALL GET_LIP_WITH_GHOST_LAYERS(NODESI,GLOBAL_NUC_I(IMIN1:IMAX1),IMIN1,IMAX1,ISIZE_ALL,NCPP_OLD,NCPP_OLD_WITH_GHOST,LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
+            CALL GET_LIP_WITH_GHOST_LAYERS(NODESI,GLOBAL_NUC_I(IMIN1:IMAX1),IMIN1, &
+                                           IMAX1,ISIZE_ALL,NCPP_OLD,NCPP_OLD_WITH_GHOST, &
+                                           LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
 
             TOTAL_NUC  = SUM(NCPP_OLD_WITH_GHOST(0:NODESI-1))
             IDEAL_NCPP = TOTAL_NUC / NODESI
@@ -4299,7 +4301,8 @@
             WRITE (*, 1000) '   I-NODE       I-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESI-1
-               WRITE (*, 1020) IPROC,ISIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC),DBLE(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,ISIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC), &
+                    DBLE(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
@@ -4317,7 +4320,8 @@
             WRITE (*, 1000) '   I-NODE       I-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESI-1
-               WRITE (*, 1020) IPROC,ISIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,ISIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC), &
+                    DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 

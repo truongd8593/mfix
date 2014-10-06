@@ -36,7 +36,7 @@
 !-----------------------------------------------
 !
 !                      Legend
-      CHARACTER*(*)    LEGEND(3)
+      CHARACTER(LEN=*)    LEGEND(3)
 !
 !                      DX, DY, or DZ Array to be written
 

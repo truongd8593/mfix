@@ -33,7 +33,7 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! variable number (not really used here; see calling subroutine)
       INTEGER, INTENT(IN) :: VNO
 ! variable
@@ -47,7 +47,7 @@
       DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3), INTENT(INOUT) :: B_m
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
-      CHARACTER*(*), INTENT(IN) :: CMETHOD
+      CHARACTER(LEN=*), INTENT(IN) :: CMETHOD
 ! convergence tolerance (generally leq_tol)
       DOUBLE PRECISION, INTENT(IN) :: TOL
 ! maximum number of iterations (generally leq_it)
@@ -131,7 +131,7 @@
 ! Dummy arguments/procedure
 !-----------------------------------------------
 ! variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! variable number (not really used here-see calling subroutine)
       INTEGER, INTENT(IN) :: VNO
 ! variable
@@ -145,7 +145,7 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(ijkstart3:ijkend3)
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
-      CHARACTER*(*), INTENT(IN) :: CMETHOD
+      CHARACTER(LEN=*), INTENT(IN) :: CMETHOD
 ! convergence tolerance (generally leq_tol)
       DOUBLE PRECISION, INTENT(IN) :: TOL
 ! maximum number of iterations (generally leq_it)
@@ -676,7 +676,7 @@
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_M(IJKSTART3:IJKEND3, -3:3)
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: VNAME
+      CHARACTER(LEN=*), INTENT(IN) :: VNAME
 !-----------------------------------------------
 ! Local parameters
 !-----------------------------------------------

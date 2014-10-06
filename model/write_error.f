@@ -32,10 +32,10 @@
 !-----------------------------------------------
 !
 !                      Subroutine name
-      CHARACTER*(*)    Name
+      CHARACTER(LEN=*)    Name
 !
 !                      Message
-      CHARACTER*(*)    LINE(*)
+      CHARACTER(LEN=*)    LINE(*)
 !
 !                      Dimension of message array
       INTEGER          LMAX

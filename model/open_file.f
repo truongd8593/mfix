@@ -30,17 +30,17 @@
 ! Dummy Arguments
 !---------------------------------------------------------------------//
 ! FILENAME (without extension)
-      CHARACTER*(*), INTENT(IN) :: FILENAME
+      CHARACTER(LEN=*), INTENT(IN) :: FILENAME
 ! File extension.
-      CHARACTER*(*), INTENT(IN) :: EXT
+      CHARACTER(LEN=*), INTENT(IN) :: EXT
 ! FILENAME + EXTENSION
-      CHARACTER*(*), INTENT(INOUT) :: FULL_NAME
+      CHARACTER(LEN=*), INTENT(INOUT) :: FULL_NAME
 ! File status (NEW, OLD, UNKNOWN)
-      CHARACTER*(*), INTENT(IN) :: OPEN_STAT
+      CHARACTER(LEN=*), INTENT(IN) :: OPEN_STAT
 ! File access method ('SEQUENTIAL', 'DIRECT')
-      CHARACTER*(*), INTENT(IN) :: OPEN_ACCESS
+      CHARACTER(LEN=*), INTENT(IN) :: OPEN_ACCESS
 ! Open form ('FORMATTED' or 'UNFORMATTED')
-      CHARACTER*(*)   OPEN_FORM
+      CHARACTER(LEN=*)   OPEN_FORM
 ! Index to first blank character in FILENAME
       INTEGER, INTENT(IN) :: NB
 ! Unit number to open

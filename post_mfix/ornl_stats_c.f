@@ -15,13 +15,13 @@
 
       implicit none
 
-      real*8  :: vmin , vmax , vavg , variance , skw , krt
-      real*8  :: dev  , AAD , tOrb  , tDev
+      real(kind=8)  :: vmin , vmax , vavg , variance , skw , krt
+      real(kind=8)  :: dev  , AAD , tOrb  , tDev
 
       integer :: nOrb , L , spx_num , nt , nstep_1
       integer :: i , j , k , ijk
 
-      real*8    :: time_series(*)
+      real(kind=8)    :: time_series(*)
 
       call simple_statistics(time_series,1,nt,vmin,vmax,vavg, &
                       variance,skw,krt,dev,AAD,tOrb,nOrb,tDev)

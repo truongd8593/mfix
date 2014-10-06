@@ -31,7 +31,7 @@
 !-----------------------------------------------
 !
 !                   input data line
-      CHARACTER*(*) LINE
+      CHARACTER(LEN=*) :: LINE
 !
 !                   length of input data line
       INTEGER       LINE_LEN

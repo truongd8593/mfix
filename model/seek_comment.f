@@ -30,7 +30,7 @@
 !-----------------------------------------------
 !
 !                   input data line
-      CHARACTER*(*) LINE
+      CHARACTER(len=*) LINE
 !
 !                   maximum column of input data line to search
       INTEGER       MAXCOL

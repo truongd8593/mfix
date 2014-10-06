@@ -284,7 +284,10 @@
           flux_out_tot = zero
           DO L = 1, DIMENSION_BC
             if(flux_out_s(L,M) /= ZERO .OR. flux_in_s(L,M) /= ZERO) then
-              IF(DMP_LOG)WRITE(Unit_log, '(2X, I5, 1X, 3(G12.5, 1x))')L, flux_in_s(L,M), flux_out_s(L,M), (flux_in_s(L,M)-flux_out_s(L,M))
+              IF(DMP_LOG) THEN
+                 WRITE(Unit_log, '(2X, I5, 1X, 3(G12.5, 1x))')L, &
+                      flux_in_s(L,M), flux_out_s(L,M), (flux_in_s(L,M)-flux_out_s(L,M))
+              ENDIF
             endif
             flux = flux + flux_in_s(L,M) - flux_out_s(L,M)
             flux_in_tot = flux_in_tot + flux_in_s(L,M)
@@ -359,7 +362,8 @@
               Accumulation_delta = Accumulation_X_s(M,N) - Accumulation_old - Integral_R_s(M,N)
               IF(DMP_LOG)WRITE(UNIT_LOG, '(A)') 'Species Accumulation (g)'
               IF(DMP_LOG)WRITE(UNIT_LOG, '(4(A,G12.5))') '  Old = ', Accumulation_old, ', New = ', &
-                Accumulation_X_s(M,N), ', Production = ', Integral_R_s(M,N), ', net accu(New - Old - Production) = ', Accumulation_delta
+                Accumulation_X_s(M,N), ', Production = ', Integral_R_s(M,N), &
+                ', net accu(New - Old - Production) = ', Accumulation_delta
 
               IF(DMP_LOG)WRITE(UNIT_LOG, '(A)') 'Integral of boundary flux (g)'
               IF(DMP_LOG)WRITE(Unit_log, '(A, T8, A, T21, A, T34, A)')'  BC#', 'in', 'out', '(in - out)'

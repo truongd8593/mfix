@@ -10,13 +10,13 @@
       implicit none
 
 
-      integer*4 :: ibeg, iend, fo
+      integer(kind=4) :: ibeg, iend, fo
       integer :: nt
 
-      real*8  :: cf, sr
-      real*8    :: time_series(*)
+      real(kind=8)  :: cf, sr
+      real(kind=8)    :: time_series(*)
 
-      real*8, allocatable    :: scratch(:), fts(:)
+      real(kind=8), allocatable    :: scratch(:), fts(:)
 
       allocate ( scratch(nt))
       allocate ( fts(nt))

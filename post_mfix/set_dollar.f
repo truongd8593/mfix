@@ -23,7 +23,7 @@
 !
       IMPLICIT NONE
 !
-      CHARACTER*(*) LINE
+      CHARACTER(LEN=*) LINE
       INTEGER       LINE_LEN, L, LAST_CHAR
 !
       LAST_CHAR = LINE_LEN

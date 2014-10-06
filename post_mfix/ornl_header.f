@@ -10,7 +10,7 @@
       real    :: time_in_res
 
       real, allocatable :: arr(:)
-      real*8, allocatable :: time_series(:), time_series2(:), scratch(:)
+      real(kind=8), allocatable :: time_series(:), time_series2(:), scratch(:)
 
       allocate (arr(ijkmax2))
       allocate (time_series(100000))
