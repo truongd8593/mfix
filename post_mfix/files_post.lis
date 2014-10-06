@@ -11,7 +11,7 @@ correl_mod.f
 ../model/energy_mod.f
 ../model/fldvar_mod.f
 ../model/fun_avg_mod.f
-../model/functions_mod.f
+functions_mod.f
 ../model/funits_mod.f
 ../model/geometry_mod.f
 ../model/ic_mod.f
