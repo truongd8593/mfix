@@ -57,6 +57,10 @@
 
       CALL INIT_ERR_MSG('CHECK_CHEMICAL_RXNS')
 
+! Allocate the arrays as a work-around for Intel compiler with debug.
+      IF(NO_OF_RXNS == 0) allocate(RXN_NAME(1))
+      IF(NO_OF_DES_RXNS == 0) allocate(DES_RXN_NAME(1))
+
 ! Initialize the number of solids phases.
       lMMAX = SMAX + DES_MMAX
 
