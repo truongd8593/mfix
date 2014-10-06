@@ -82,7 +82,7 @@ dbg=
 if test "${USE_DEBUG}" = "1"; then dbg="-g"; fi
 
 # Common compile flags.
-common="-c -I. -grecord-gcc-switches -convert big_endian -assume byterecl  -diag-disable remark"
+common="-c -I. -grecord-gcc-switches -convert big_endian -assume byterecl"
 
 # To display the flags mfix.exe is compiled with, run:
 # >

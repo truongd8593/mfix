@@ -2,4 +2,4 @@
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-$script_dir/../../configure --host=x86_64-k1om-linux FC=ifort F77=ifort FFLAGS="-mmic" FCFLAGS="-diag-disable remark -openmp -mmic" LDFLAGS="-openmp -mmic"
+$script_dir/../../configure --host=x86_64-k1om-linux FC=ifort F77=ifort FFLAGS="-mmic" FCFLAGS="-openmp -mmic" LDFLAGS="-openmp -mmic"

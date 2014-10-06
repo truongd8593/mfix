@@ -2,4 +2,4 @@
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-$script_dir/../../configure FC=ifort F77=ifort FCFLAGS="-diag-disable remark" LDFLAGS=""
+$script_dir/../../configure FC=ifort F77=ifort FCFLAGS="" LDFLAGS=""
