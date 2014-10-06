@@ -7,4 +7,7 @@ Date (MM/DD/YYYY) | Description           | Severity |  Modified File(s)
                   | variables             |          |  cartesian_grid/CG_source_u_g.f
                   |                       |          |  cartesian_grid/vtk_out.f
 ==================================================================================================
+10/06/2014        | Fixed index error in  | Minor    |  check_data/check_solids_common_discrete.f
+                  | TFM/DEM hybrid        |          |
+==================================================================================================
 
