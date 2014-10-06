@@ -240,6 +240,11 @@
       INTEGER  N_VAR
       PARAMETER (N_VAR=52)
       INCLUDE 'xforms.inc'
+
+! This routine appears to need its own version of the funijk routine
+      INTEGER :: FUNIJK_LOC,LI, LJ, LK
+      FUNIJK_LOC(LI, LJ, LK) = LI + (LJ-1)*IMAX2 + (LK-1)*IJMAX2
+
 !
       CHARACTER*80 LINE
       CHARACTER*120 STRING, SUBSTR
@@ -305,10 +310,10 @@
                    'KE_g', 'KE_s','P_s','PE_g','PE_s','BERN_s', &
 
 !                   48		49          50          51
-         	   'Theta_m', 'Scalar' , 'RRates' , 'K_Turb_G', &
+                   'Theta_m', 'Scalar' , 'RRates' , 'K_Turb_G', &
 
 !                   52
-		   'E_Turb_G'/
+                   'E_Turb_G'/
 
 
       DZ_T(K) = HALF * (DZ(K) + DZ(Kp1(K)))
@@ -383,7 +388,8 @@
 
       WRITE(*,*)
 
-9     write (*,'(A,$)') ' Write output using user-supplied precision? (T/F) '
+9     write (*,'(A,$)') &
+         ' Write output using user-supplied precision? (T/F) '
 !      read  (*,*) bPrecision
         READ(*,'(1A60)',ERR=9) STRING
         IF(STRING(1:1) .EQ. '?') THEN
@@ -1207,7 +1213,7 @@
         DO 90 K = K1, K2
         DO 90 J = J1, J2
         DO 90 I = I1, I2
-          IJK = FUNIJK(I,J,K)
+          IJK = FUNIJK_LOC(I,J,K)
           VALUE(IJK) = ZERO
 90      CONTINUE
       ENDIF
@@ -1270,7 +1276,7 @@
           DO 102 K = KMIN1, KMAX2
           DO 102 J = JMIN1, JMAX2
           DO 102 I = IMIN1, IMAX2
-            IJK = FUNIJK(I, J, K)
+            IJK = FUNIJK_LOC(I, J, K)
             ROP_s(IJK, 1) = (ONE - EP_g(IJK)) * RO_s0(1)
 102       CONTINUE
         ENDIF
@@ -1290,7 +1296,7 @@
       DO 105 K = K1, K2
       DO 105 J = J1, J2
       DO 105 I = I1, I2
-        IJK = FUNIJK(I, J, K)
+        IJK = FUNIJK_LOC(I, J, K)
         IF(VAR_NO .EQ. 1) THEN
           VALUE_TMP = EP_g(IJK)
         ELSEIF(VAR_NO .EQ. 2)THEN
@@ -1389,8 +1395,8 @@
         ELSEIF(VAR_NO .EQ. 46)THEN
           VALUE_TMP = GRAVITY*YDIST_SC(J)*ROP_s(IJK,M)
         ELSEIF(VAR_NO .EQ. 47)THEN
-          mIJK= FUNIJK(I,J+1,K)
-          lIJK= FUNIJK(I,J-1,K)
+          mIJK= FUNIJK_LOC(I,J+1,K)
+          lIJK= FUNIJK_LOC(I,J-1,K)
           DELm=YDIST_SC(J+1)-YDIST_SC(J)
           DELl=YDIST_SC(J)-YDIST_SC(J-1)
           FAC1= (ROP_s(mIJK,M)-ROP_s(IJK,M))/DELm &
@@ -1429,7 +1435,7 @@
           DO 110 K = K1, K2
           DO 110 J = J1, J2
           DO 110 I = I1, I2
-            IJK = FUNIJK(I,J,K)
+            IJK = FUNIJK_LOC(I,J,K)
             VALUE(IJK) = VALUE(IJK) / REAL(NT)
 110       CONTINUE
           call format_twoB(spec,nPrec_time,nPrec_time,nPrec_length)
@@ -1448,7 +1454,7 @@
         K = K1
         DO 115 J = J1, J2
         DO 115 I = I1, I2
-          IJK = FUNIJK(I, J, K)
+          IJK = FUNIJK_LOC(I, J, K)
           IF(WALL_AT(IJK))THEN
             VALUE(IJK) = ZERO
             DIST(IJK)  = ZERO
@@ -1466,8 +1472,8 @@
         DO 116 K = K1+1, K2
         DO 116 J = J1, J2
         DO 116 I = I1, I2
-          IJK = FUNIJK(I, J, K)
-          IJK1 = FUNIJK(I, J, K1)
+          IJK = FUNIJK_LOC(I, J, K)
+          IJK1 = FUNIJK_LOC(I, J, K1)
           IF(.NOT.WALL_AT(IJK)) THEN
             IF(SUM) THEN
               VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK)
@@ -1487,7 +1493,7 @@
           K = K1
           DO 117 J = J1, J2
           DO 117 I = I1, I2
-            IJK = FUNIJK(I, J, K)
+            IJK = FUNIJK_LOC(I, J, K)
             IF(DIST(IJK) .NE. ZERO) THEN
               VALUE(IJK) = VALUE(IJK) / DIST(IJK)
             ELSEIF(VALUE(IJK) .NE. ZERO) THEN
@@ -1504,7 +1510,7 @@
         J = J1
         DO 118 K = K1, K2d
         DO 118 I = I1, I2
-          IJK = FUNIJK(I, J, K)
+          IJK = FUNIJK_LOC(I, J, K)
           IF(WALL_AT(IJK) .AND. .NOT.K_AVERAGE)THEN
             VALUE(IJK) = ZERO
             DIST(IJK)  = ZERO
@@ -1522,8 +1528,8 @@
         DO 119 K = K1, K2d
         DO 119 J = J1+1, J2
         DO 119 I = I1, I2
-          IJK = FUNIJK(I, J, K)
-          IJK1 = FUNIJK(I, J1, K)
+          IJK = FUNIJK_LOC(I, J, K)
+          IJK1 = FUNIJK_LOC(I, J1, K)
           IF(.NOT.WALL_AT(IJK) .OR. K_AVERAGE) THEN
             IF(SUM) THEN
               VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK)
@@ -1543,7 +1549,7 @@
           J = J1
           DO 120 K = K1, K2d
           DO 120 I = I1, I2
-            IJK = FUNIJK(I, J, K)
+            IJK = FUNIJK_LOC(I, J, K)
             IF(DIST(IJK) .NE. ZERO) THEN
               VALUE(IJK) = VALUE(IJK) / DIST(IJK)
             ELSEIF(VALUE(IJK) .NE. ZERO) THEN
@@ -1560,7 +1566,7 @@
         I = I1
         DO 121 K = K1, K2d
         DO 121 J = J1, J2d
-          IJK = FUNIJK(I, J, K)
+          IJK = FUNIJK_LOC(I, J, K)
           IF(WALL_AT(IJK) .AND. .NOT.J_AVERAGE .AND. .NOT.K_AVERAGE)THEN
             VALUE(IJK) = ZERO
             DIST(IJK)  = ZERO
@@ -1578,8 +1584,8 @@
         DO 122 K = K1, K2d
         DO 122 J = J1, J2d
         DO 122 I = I1+1, I2
-          IJK = FUNIJK(I, J, K)
-          IJK1 = FUNIJK(I1, J, K)
+          IJK = FUNIJK_LOC(I, J, K)
+          IJK1 = FUNIJK_LOC(I1, J, K)
           IF(.NOT.WALL_AT(IJK) .OR. J_AVERAGE .OR. K_AVERAGE) THEN
             IF(SUM) THEN
               VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK)
@@ -1599,7 +1605,7 @@
           I = I1
           DO 123 K = K1, K2d
           DO 123 J = J1, J2d
-            IJK = FUNIJK(I, J, K)
+            IJK = FUNIJK_LOC(I, J, K)
             IF(DIST(IJK) .NE. ZERO) THEN
               VALUE(IJK) = VALUE(IJK) / DIST(IJK)
             ELSEIF(VALUE(IJK) .NE. ZERO) THEN
@@ -1620,7 +1626,7 @@
           DO 128 K = K1, K2d
           DO 128 J = J1, J2d
           DO 128 I = I1, I2d
-            IJK = FUNIJK(I,J,K)
+            IJK = FUNIJK_LOC(I,J,K)
             IF(WALL_AT(IJK) .AND. &
               .NOT. (I_AVERAGE .OR. J_AVERAGE .OR. K_AVERAGE) )GOTO 128
             IF(VALUE(IJK) .GE. VALUE_TMP)GOTO 128
@@ -1641,7 +1647,7 @@
           DO 129 K = K1, K2d
           DO 129 J = J1, J2d
           DO 129 I = I1, I2d
-            IJK = FUNIJK(I,J,K)
+            IJK = FUNIJK_LOC(I,J,K)
             IF(WALL_AT(IJK) .AND. &
               .NOT. (I_AVERAGE .OR. J_AVERAGE .OR. K_AVERAGE) )GOTO 129
             IF(VALUE(IJK) .LE. VALUE_TMP)GOTO 129
@@ -1664,7 +1670,7 @@
                                       VALUE_TMP
         CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
       ELSEIF(DISPLAY .EQ. 8) THEN
-        IJK = FUNIJK(I1, J1, K1)
+        IJK = FUNIJK_LOC(I1, J1, K1)
         IF(TIME_AVERAGE) THEN
 	  call format_oneB(spec,nPrec_variable,nPrec_length)
           WRITE(LINE,spec)VALUE(IJK)
@@ -1681,7 +1687,7 @@
         WRITE(LINE,'(6X,A,13X,1A8)')'X', VAR
         CALL WRITE_LINE(FILE_NAME, LINE, 28)
         DO 130 I = I1, I2d
-          IJK = FUNIJK(I, J1, K1)
+          IJK = FUNIJK_LOC(I, J1, K1)
 	  call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
           IF(DIRECTION .EQ. 1)THEN
             WRITE(LINE,spec)XDIST_VEC(I), VALUE(IJK)
@@ -1697,7 +1703,7 @@
         WRITE(LINE,'(6X,A,13X,1A8)')'Y', VAR
         CALL WRITE_LINE(FILE_NAME, LINE, 28)
         DO 140 J = J1, J2d
-          IJK = FUNIJK(I1, J, K1)
+          IJK = FUNIJK_LOC(I1, J, K1)
 	  call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
           IF(DIRECTION .EQ. 2)THEN
             WRITE(LINE,spec)YDIST_VEC(J), VALUE(IJK)
@@ -1713,7 +1719,7 @@
         WRITE(LINE,'(6X,A,13X,1A8)')'Z', VAR
         CALL WRITE_LINE(FILE_NAME, LINE, 28)
         DO 150 K = K1, K2d
-          IJK = FUNIJK(I1, J1, K)
+          IJK = FUNIJK_LOC(I1, J1, K)
 	  call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
           IF(DIRECTION .EQ. 3)THEN
             WRITE(LINE,spec)ZDIST_VEC(K), VALUE(IJK)
@@ -1726,7 +1732,7 @@
         call format_one(spec,nPrec_time,nPrec_length)
         WRITE(LINE,spec)' Time = ',TIME_NOW
         CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
-        IJK = FUNIJK(I1, J1, K1)
+        IJK = FUNIJK_LOC(I1, J1, K1)
 	call format_oneC(spec,nPrec_variable,nPrec_length)
         WRITE(LINE,spec)VAR,' = ',VALUE(IJK)
         CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length + 3)
@@ -1739,7 +1745,7 @@
         DO 250 K = K1, K2d
         DO 250 J = J1, J2d
         DO 250 I = I1, I2d
-          IJK = FUNIJK(I,J,K)
+          IJK = FUNIJK_LOC(I,J,K)
           XTMP = XDIST_SC(I)
           YTMP = YDIST_SC(J)
           ZTMP = ZDIST_SC(K)

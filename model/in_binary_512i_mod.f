@@ -109,18 +109,31 @@ CONTAINS
 
       implicit none
 
-      integer   arr_io(*) , arr_internal(*)
+      integer, intent(in) :: arr_io(:)
+      integer, intent(out) :: arr_internal(:)
       integer   n,i,j,k,ijk,ijk_io
 
-      do k = 1,kmax2
+!     write(*,*) 'C0:',C0
+!     write(*,*) 'C1:',C1
+!     write(*,*) 'C2:',C2
+
+!     write(*,*) 'io:',size(arr_io)
+!     write(*,*) 'int:',size(arr_internal)
+
+     if(size(arr_io) == size(arr_internal)) then
+         arr_internal = arr_io
+     else
+         do k = 1,kmax2
          do j = 1,jmax2
-            do i = 1,imax2
-               ijk    = funijk_gl(i,j,k)
-               ijk_io = funijk_io(i,j,k)
-               arr_internal(ijk) = arr_io(ijk_io)
-            end do
+         do i = 1,imax2
+            ijk    = funijk_gl(i,j,k)
+            ijk_io = funijk_io(i,j,k)
+            arr_internal(ijk) = arr_io(ijk_io)
+           write(*,*)i,j,k,ijk, ijk_io
          end do
-      end do
+         end do
+         end do
+     endif
 
       return
     end subroutine convert_from_io_i

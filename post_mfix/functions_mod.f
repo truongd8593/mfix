@@ -232,7 +232,7 @@ CONTAINS
   INTEGER FUNCTION funijk_0(li,lj,lk)
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: LI, LJ, LK
-    funijk_0 = lj + c0 + li*c1 + lk*c2
+    funijk_0 = funijk_io(li,lj,lk)
   END FUNCTION funijk_0
 
   INTEGER FUNCTION funijk(li,lj,lk)
@@ -269,8 +269,9 @@ CONTAINS
   INTEGER FUNCTION FUNIJK_IO (LI, LJ, LK)
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: LI, LJ, LK
-    FUNIJK_IO = 1 + (LI - imin2) + (LJ-jmin2)*(imax2-imin2+1) &
-         + (LK-kmin2)*(jmax2-jmin2+1)*(imax2-imin2+1)
+!    FUNIJK_IO = 1 + (LI - imin2) + (LJ-jmin2)*(imax2-imin2+1) &
+!         + (LK-kmin2)*(jmax2-jmin2+1)*(imax2-imin2+1)
+     FUNIJK_IO = lj + c0 + li*c1 + lk*c2
   END FUNCTION FUNIJK_IO
 
   LOGICAL FUNCTION IS_ON_myPE_plus2layers (LI, LJ, LK)
