@@ -216,22 +216,22 @@
       write(*,"(/3x,'From DEBUG_COEFF:')")
 
       write(*,"(/3x,'Gas phase coefficients:')")
-      write(*,"( 5x,'Density (RO_g):',1x,1L)") DENSITY(0)
-      write(*,"( 5x,'Specific heat (C_pg):',1x,1L)") SP_HEAT(0)
-      write(*,"( 5x,'Viscosity: (MU_g)',1x,1L)") VISC(0)
-      write(*,"( 5x,'Thermal conductivity (K_g):',1x,1L)") COND(0)
-      write(*,"( 5x,'Species diffusivity: (DIF_G)',1x,1L)") DIFF(0)
+      write(*,"( 5x,'Density (RO_g):',1x,1L1)") DENSITY(0)
+      write(*,"( 5x,'Specific heat (C_pg):',1x,1L1)") SP_HEAT(0)
+      write(*,"( 5x,'Viscosity: (MU_g)',1x,1L1)") VISC(0)
+      write(*,"( 5x,'Thermal conductivity (K_g):',1x,1L1)") COND(0)
+      write(*,"( 5x,'Species diffusivity: (DIF_G)',1x,1L1)") DIFF(0)
 
 
       DO M=1, MMAX
          write(*,"(/3x,'Solids ',I1,' phase coefficients:')") M
-         write(*,"( 5x,'Density: (RO_s)',1x,1L)") DENSITY(M)
-         write(*,"( 5x,'Specific heat (C_ps):',1x,1L)") SP_HEAT(M)
-         write(*,"( 5x,'Viscosity (MU_s):',1x,1L)") VISC(M)
-         write(*,"( 5x,'Thermal conductivity (K_s):',1x,1L)") COND(M)
-         write(*,"( 5x,'Species diffusivity (DIF_s):',1x,1L)") DIFF(M)
-         write(*,"( 5x,'Gran. Dissipation (D_p):',1x,1L)") GRAN_DISS(M)
-         write(*,"( 5x,'Diameter (D_p):',1x,1L)") PSIZE(M)
+         write(*,"( 5x,'Density: (RO_s)',1x,1L1)") DENSITY(M)
+         write(*,"( 5x,'Specific heat (C_ps):',1x,1L1)") SP_HEAT(M)
+         write(*,"( 5x,'Viscosity (MU_s):',1x,1L1)") VISC(M)
+         write(*,"( 5x,'Thermal conductivity (K_s):',1x,1L1)") COND(M)
+         write(*,"( 5x,'Species diffusivity (DIF_s):',1x,1L1)") DIFF(M)
+         write(*,"( 5x,'Gran. Dissipation (D_p):',1x,1L1)") GRAN_DISS(M)
+         write(*,"( 5x,'Diameter (D_p):',1x,1L1)") PSIZE(M)
       ENDDO
 
 

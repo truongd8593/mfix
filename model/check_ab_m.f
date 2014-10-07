@@ -53,7 +53,7 @@
       LOGICAL          SRC
 !
 !                      Error message
-      CHARACTER*80     LINE(1)
+      CHARACTER(LEN=80) :: LINE(1)
 !
 !                      cell index
       INTEGER          IJK

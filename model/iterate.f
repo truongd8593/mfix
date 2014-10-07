@@ -118,6 +118,7 @@
 ! initializations
       DT_prev = DT
       NIT = 0
+      MUSTIT = 0
       RESG = ZERO
       RESS = ZERO
 
@@ -145,8 +146,7 @@
 
 
 ! Initialize the routine for holding gas mass flux constant with cyclic bc
-      IF(CYCLIC) CALL GoalSeekMassFlux(0, 0, .false.)
-
+      IF(CYCLIC) CALL GoalSeekMassFlux(NIT, MUSTIT, .false.)
 
 ! CPU time left
       IF (FULL_LOG) THEN
@@ -219,7 +219,7 @@
 
 ! Calculate coefficients, excluding density and reactions.
       CALL CALC_COEFF(IER, 1)
-      goto( 1000 ), IER_MANAGER(IER)
+      IF (IER_MANAGER(IER)) goto 1000
 
 ! Diffusion coefficient and source terms for user-defined scalars
       IF(NScalar /= 0) CALL SCALAR_PROP(IER)
@@ -239,7 +239,7 @@
 
 ! Calculate densities.
       CALL PHYSICAL_PROP(IER, 0)
-      goto( 1000 ), IER_MANAGER(IER)
+      IF (IER_MANAGER(IER)) goto 1000
 
 ! Calculate chemical reactions.
       CALL CALC_RRATE(IER)
@@ -282,7 +282,7 @@
             IF(KT_TYPE_ENUM == GHD_2007) CALL ADJUST_EPS_GHD
 
             CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER)
-            goto( 1000 ), IER_MANAGER(IER)
+            IF (IER_MANAGER(IER)) goto 1000
 
          ENDIF  ! endif (mmax >0)
 
@@ -309,7 +309,7 @@
 
 ! Recalculate densities.
       CALL PHYSICAL_PROP(IER, 0)
-      goto( 1000 ), IER_MANAGER(IER)
+      IF (IER_MANAGER(IER)) goto 1000
 
 ! Update wall velocities:
 ! modified by sof to force wall functions so even when NSW or FSW are
@@ -327,20 +327,20 @@
 ! Solve energy equations
       IF (ENERGY_EQ) THEN
          CALL SOLVE_ENERGY_EQ (IER)
-         goto( 1000 ), IER_MANAGER(IER)
+         IF (IER_MANAGER(IER)) goto 1000
       ENDIF
 
 ! Solve granular energy equation
       IF (GRANULAR_ENERGY) THEN
          IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
             CALL SOLVE_GRANULAR_ENERGY (IER)
-            goto( 1000 ), IER_MANAGER(IER)
+            IF (IER_MANAGER(IER)) goto 1000
          ENDIF
       ENDIF
 
 ! Solve species mass balance equations.
       CALL SOLVE_SPECIES_EQ (IER)
-      goto( 1000 ), IER_MANAGER(IER)
+      IF (IER_MANAGER(IER)) goto 1000
 
 ! Solve other scalar transport equations
       IF(NScalar /= 0) CALL SOLVE_Scalar_EQ (IER)
@@ -537,6 +537,7 @@
 ! Function: IER_Manager                                                !
 !                                                                      !
 ! Purpose: Identify and account for errors from called subroutines.    !
+!          Returns .TRUE. for lErr >= 100, otherwise .FALSE.           !
 !                                                                      !
 ! Reserved Error Blocks:                                               !
 !                                                                      !
@@ -547,19 +548,19 @@
 ! [ 140,  149]: SOLVE_GRANULAR_ENERGY                                  !
 !                                                                      !
 !----------------------------------------------------------------------!
-      INTEGER FUNCTION IER_MANAGER(lErr)
+      LOGICAL FUNCTION IER_MANAGER(lErr)
 
       INTEGER, intent(in) :: lErr
 
 ! Default case: do nothing.
       IF(IER < 100) THEN
-         IER_MANAGER = 0
+         IER_MANAGER = .FALSE.
          return
       ENDIF
 
 ! Errors with an index greater than 100 will force an exit from iterate
 ! and in turn, reduce the step-size, and restart the time-step.
-      IER_MANAGER = 1
+      IER_MANAGER = .TRUE.
       MUSTIT = 2
 
 ! Errors reported from PHYSICAL_PROP
@@ -620,7 +621,7 @@
       ENDIF
 
 
-      IF(DT == UNDEFINED) IER_MANAGER = 0
+      IF(DT == UNDEFINED) IER_MANAGER = .FALSE.
 
       return
       END FUNCTION IER_MANAGER

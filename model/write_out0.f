@@ -220,13 +220,13 @@
       IF(FPFOI) THEN
          WRITE (UNIT_OUT, 1159) (UR_FAC(L),LEQ_IT(L),&
                              LEQ_METHOD_NAME(LEQ_METHOD(L)),&
-	                     LEQ_SWEEP(L), LEQ_TOL(L), LEQ_PC(L),&
-			     DISCR_NAME1(DISCRETIZE(L)),L=1,9)
+                             LEQ_SWEEP(L), LEQ_TOL(L), LEQ_PC(L),&
+                             DISCR_NAME1(DISCRETIZE(L)),L=1,9)
       ELSE
          WRITE (UNIT_OUT, 1159) (UR_FAC(L),LEQ_IT(L),&
                              LEQ_METHOD_NAME(LEQ_METHOD(L)),&
-	                     LEQ_SWEEP(L), LEQ_TOL(L), LEQ_PC(L),&
-			     DISCR_NAME(DISCRETIZE(L)),L=1,9)
+                             LEQ_SWEEP(L), LEQ_TOL(L), LEQ_PC(L),&
+                             DISCR_NAME(DISCRETIZE(L)),L=1,9)
       ENDIF
 
       DO L = 1, DIMENSION_C
@@ -970,7 +970,7 @@
          '  Top              T                       t       ',/7X,&
          'For cells with internal surfaces on more than one side',/7X,&
          'the characters will be over-written in the above order',/1X,A1)
-	 RETURN
-	 END SUBROUTINE WRITE_FLAGS
+         RETURN
+         END SUBROUTINE WRITE_FLAGS
 
 

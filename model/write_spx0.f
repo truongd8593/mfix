@@ -37,7 +37,7 @@
 ! Local Variables:
 !----------------------------------------------------------------------!
 ! File version ID
-      CHARACTER :: VERSION*512
+      CHARACTER(LEN=512) :: VERSION
 ! UNIT_SPX + offset from post_mfix
       INTEGER :: USPX
 ! Generic SPx end characters.

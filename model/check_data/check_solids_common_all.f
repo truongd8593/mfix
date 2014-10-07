@@ -890,7 +890,7 @@
  1002 FORMAT('Error 1002: Illegal input: ',A,' specified out of range.'&
          ,/'Please correct the mfix.dat file.')
 
- 1300 FORMAT(//1X,70('*')/' From: CHECK_SOLIDS_COMMON',/,' Error 1300:'      &
+ 1300 FORMAT(//1X,70('*')/' From: CHECK_SOLIDS_COMMON',/,' Error 1300:',     &
          ' No solids density information for phase ',I2,'.')
 
       END SUBROUTINE CHECK_SOLIDS_DENSITY

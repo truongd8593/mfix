@@ -78,7 +78,7 @@
       SELECT CASE(JUSTIFICATION)
          CASE('L')
 
-            WRITE(*,15)TEXT,'|',PROGRESSBAR,'|'
+            WRITE(*,15,ADVANCE='NO')TEXT,'|',PROGRESSBAR,'|'
 
          CASE('C')
 
@@ -87,15 +87,15 @@
 
             PROGRESSBAR(P1:P2)= TEXT
 
-            WRITE(*,20)'|',PROGRESSBAR,'|'
+            WRITE(*,20,ADVANCE='NO')'|',PROGRESSBAR,'|'
 
          CASE('R')
 
-            WRITE(*,15)'|',PROGRESSBAR,'|',TEXT
+            WRITE(*,15,ADVANCE='NO')'|',PROGRESSBAR,'|',TEXT
 
          CASE('N')
 
-            WRITE(*,20)'|',PROGRESSBAR,'|'
+            WRITE(*,20,ADVANCE='NO')'|',PROGRESSBAR,'|'
 
          CASE DEFAULT
             WRITE(*,*)'SUBROUTINE: WRITE_PROGRESS_BAR.'
@@ -113,8 +113,8 @@
          WRITE(*,*)
       ENDIF
 
-15    FORMAT(A,A,A,A,$)
-20    FORMAT(A,A,A,$)
+15    FORMAT(A,A,A,A)
+20    FORMAT(A,A,A)
 
 
       RETURN
@@ -199,9 +199,9 @@
       END SELECT
 
       DO I = 1,NERASE
-         WRITE(*,10)CHAR(8)
+         WRITE(*,10,ADVANCE='NO')CHAR(8)
       ENDDO
-10    FORMAT(A,$)
+10    FORMAT(A)
 
       RETURN
       END SUBROUTINE ERASE_PROGRESS_BAR

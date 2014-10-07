@@ -366,14 +366,11 @@
 
      IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,20)' DONE.'
 
-10    FORMAT(A,$)
 20    FORMAT(A,1X/)
 30    FORMAT(1X,A)
       RETURN
 
       END SUBROUTINE WRITE_VTU_FILE
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -459,9 +456,9 @@
 ! Echo
       IF (FULL_LOG) THEN
          IF (.NOT.BDIST_IO) THEN
-            WRITE(*,10)' WRITING VTU FILE : ', TRIM(VTU_FILENAME),' .'
+            WRITE(*,10,ADVANCE='NO')' WRITING VTU FILE : ', TRIM(VTU_FILENAME),' .'
          ELSE
-            IF(myPE==PE_IO) WRITE(*,15)' EACH PROCESOR IS WRITING ITS OWN VTU FILE.'
+            IF(myPE==PE_IO) WRITE(*,15,ADVANCE='NO')' EACH PROCESOR IS WRITING ITS OWN VTU FILE.'
          ENDIF
       ENDIF
 
@@ -549,8 +546,8 @@
 100   FORMAT(A)
 110   FORMAT(A,E14.8,A)
 120   FORMAT(A,A)
-10    FORMAT(/1X,3A,$)
-15    FORMAT(/1X,A,$)
+10    FORMAT(/1X,3A)
+15    FORMAT(/1X,A)
 20    FORMAT(A,"_",I4.4,"_",I5.5,".vtu")
 25    FORMAT(A,"_",I5.5,".vtu")
 30    FORMAT(A,"_",I4.4,".vtu")
@@ -1078,22 +1075,17 @@
       ENDIF
 
 
-      IF (PASS==WRITE_DATA.AND.FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+      IF (PASS==WRITE_DATA.AND.FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
-10    FORMAT(A,$)
+10    FORMAT(A)
 90    FORMAT(A,A,A,I12,A)
 100   FORMAT(A)
 110   FORMAT(A,A,A)
 120   FORMAT(10X,E16.8E3)
 
-
-
       RETURN
 
       END SUBROUTINE WRITE_SCALAR_IN_VTU_BIN
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1248,9 +1240,9 @@
       ENDIF
 
 
-      IF (PASS==WRITE_DATA.AND.FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+      IF (PASS==WRITE_DATA.AND.FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
-10    FORMAT(A,$)
+10    FORMAT(A)
 90    FORMAT(A,A,A,I12,A)
 100   FORMAT(A)
 110   FORMAT(A,A,A)
@@ -1443,30 +1435,30 @@
 
             CASE (1)
                CALL WRITE_SCALAR_IN_VTU_ASCII('EP_G',EP_G)
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (2)
                CALL WRITE_SCALAR_IN_VTU_ASCII('P_G',P_G)
                CALL WRITE_SCALAR_IN_VTU_ASCII('P_S',P_S)
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (3)
                CALL WRITE_VECTOR_IN_VTU_ASCII('Gas_Velocity',U_G,V_G,W_G)
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (4)
                DO M = 1,MMAX
                   WRITE(SUBM,*)M
                   CALL WRITE_VECTOR_IN_VTU_ASCII('Solids_Velocity_'//ADJUSTL(SUBM),U_S(:,M),V_S(:,M),W_S(:,M))
                END DO
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (5)
                DO M = 1,MMAX
                   WRITE(SUBM,*)M
                   CALL WRITE_SCALAR_IN_VTU_ASCII('Solids_density_'//ADJUSTL(SUBM),ROP_S(:,M))
                END DO
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (6)
                CALL WRITE_SCALAR_IN_VTU_ASCII('Gas_temperature',T_g)
@@ -1474,7 +1466,7 @@
                   WRITE(SUBM,*)M
                   CALL WRITE_SCALAR_IN_VTU_ASCII('Solids_temperature_'//ADJUSTL(SUBM),T_S(:,M))
                END DO
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (7)
                SPECIES_COUNTER = 0
@@ -1498,14 +1490,14 @@
                   CALL WRITE_SCALAR_IN_VTU_ASCII(VAR_NAME,X_g(:,N))
                   END DO
                END DO
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (8)
                DO M = 1,MMAX
                   WRITE(SUBM,*)M
                   CALL WRITE_SCALAR_IN_VTU_ASCII('Granular_temperature_'//ADJUSTL(SUBM),Theta_m(:,M))
                END DO
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (9)
                SPECIES_COUNTER = 0
@@ -1515,13 +1507,13 @@
                   VAR_NAME = 'Scalar_'//ADJUSTL(SUBN)
                   CALL WRITE_SCALAR_IN_VTU_ASCII(VAR_NAME,Scalar(:,N))
                END DO
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (11)
                IF(K_EPSILON) THEN
                   CALL WRITE_SCALAR_IN_VTU_ASCII('K_Turb_G',K_Turb_G)
                   CALL WRITE_SCALAR_IN_VTU_ASCII('E_Turb_G',E_Turb_G)
-                  IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+                  IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
                ENDIF
 
             CASE (12)
@@ -1530,18 +1522,18 @@
                CALL WRITE_SCALAR_IN_VTU_ASCII('VORTICITY_MAG',VORTICITY)
                CALL WRITE_SCALAR_IN_VTU_ASCII('LAMBDA_2',LAMBDA2)
 
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (100)
 
                CALL WRITE_SCALAR_IN_VTU_ASCII('PARTITION',PARTITION)
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (101)
                Allocate(DP_BC_ID(DIMENSION_3))
                DP_BC_ID = DBLE(BC_ID)
                CALL WRITE_SCALAR_IN_VTU_ASCII('BC_ID',DP_BC_ID)
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
                DeAllocate(DP_BC_ID)
 
             CASE(999)
@@ -1647,7 +1639,7 @@
 
      IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,20)' DONE.'
 
-10    FORMAT(A,$)
+10    FORMAT(A)
 20    FORMAT(A,1X/)
 30    FORMAT(1X,A)
       RETURN
@@ -1738,7 +1730,7 @@
 !      print*,'From Open_vtu_file:',MyPE,BDIST_IO, TRIM(VTU_FILENAME)
 
       IF (FULL_LOG) THEN
-         WRITE(*,10)' WRITING VTU FILE : ', TRIM(VTU_FILENAME),' .'
+         WRITE(*,10,ADVANCE='NO')' WRITING VTU FILE : ', TRIM(VTU_FILENAME),' .'
       ENDIF
 
 
@@ -1802,7 +1794,7 @@
 100   FORMAT(A)
 110   FORMAT(A,E14.8,A)
 120   FORMAT(A,A)
-10    FORMAT(/1X,3A,$)
+10    FORMAT(/1X,3A)
 20    FORMAT(A,"_",I4.4,"_",I5.5,".vtu")
 25    FORMAT(A,"_",I5.5,".vtu")
 30    FORMAT(A,"_",I4.4,".vtu")
@@ -2572,30 +2564,30 @@
 
             CASE (1)
                CALL WRITE_SCALAR_IN_VTK('EP_G',EP_G)
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (2)
                CALL WRITE_SCALAR_IN_VTK('P_G',P_G)
                CALL WRITE_SCALAR_IN_VTK('P_S',P_S)
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (3)
                CALL WRITE_VECTOR_IN_VTK('Gas_Velocity',U_G,V_G,W_G)
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (4)
                DO M = 1,MMAX
                   WRITE(SUBM,*)M
                   CALL WRITE_VECTOR_IN_VTK('Solids_Velocity_'//ADJUSTL(SUBM),U_S(:,M),V_S(:,M),W_S(:,M))
                END DO
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (5)
                DO M = 1,MMAX
                   WRITE(SUBM,*)M
                   CALL WRITE_SCALAR_IN_VTK('Solids_density_'//ADJUSTL(SUBM),ROP_S(:,M))
                END DO
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (6)
                CALL WRITE_SCALAR_IN_VTK('Gas_temperature',T_g)
@@ -2603,7 +2595,7 @@
                   WRITE(SUBM,*)M
                   CALL WRITE_SCALAR_IN_VTK('Solids_temperature_'//ADJUSTL(SUBM),T_S(:,M))
                END DO
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (7)
                SPECIES_COUNTER = 0
@@ -2627,14 +2619,14 @@
                      CALL WRITE_SCALAR_IN_VTK(VAR_NAME,X_s(:,M,N))
                   END DO
                END DO
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (8)
                DO M = 1,MMAX
                   WRITE(SUBM,*)M
                   CALL WRITE_SCALAR_IN_VTK('Granular_temperature_'//ADJUSTL(SUBM),Theta_m(:,M))
                END DO
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (9)
                SPECIES_COUNTER = 0
@@ -2644,13 +2636,13 @@
                   VAR_NAME = 'Scalar_'//ADJUSTL(SUBN)
                   CALL WRITE_SCALAR_IN_VTK(VAR_NAME,Scalar(:,N))
                END DO
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (11)
                IF(K_EPSILON) THEN
                   CALL WRITE_SCALAR_IN_VTK('K_Turb_G',K_Turb_G)
                   CALL WRITE_SCALAR_IN_VTK('E_Turb_G',E_Turb_G)
-                  IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+                  IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
                ENDIF
 
             CASE (12)
@@ -2658,18 +2650,18 @@
 
                CALL WRITE_SCALAR_IN_VTK('VORTICITY_MAG',VORTICITY)
                CALL WRITE_SCALAR_IN_VTK('LAMBDA_2',LAMBDA2)
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
 
             CASE (100)
                CALL WRITE_SCALAR_IN_VTK('PARTITION',PARTITION)
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
             CASE (101)
 
                Allocate(DP_BC_ID(DIMENSION_3))
                DP_BC_ID = DBLE(BC_ID)
 !               CALL WRITE_SCALAR_IN_VTK('BC_ID',DBLE(BC_ID))
                CALL WRITE_SCALAR_IN_VTK('BC_ID',DP_BC_ID)
-               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10)'.'
+               IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
                DeAllocate(DP_BC_ID)
 
             CASE (0) ! do nothing
@@ -2706,7 +2698,7 @@
 
      IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,20)' DONE.'
 
-10    FORMAT(A,$)
+10    FORMAT(A)
 20    FORMAT(A,1X/)
 30    FORMAT(1X,A)
       RETURN
@@ -2766,7 +2758,7 @@
          ENDIF
 
          IF (FULL_LOG) THEN
-            WRITE(*,10)' WRITING VTK FILE : ', TRIM(VTK_FILENAME),' .'
+            WRITE(*,10,ADVANCE='NO')' WRITING VTK FILE : ', TRIM(VTK_FILENAME),' .'
          ENDIF
 
       ELSE
@@ -2796,7 +2788,7 @@
          WRITE(UNIT=VTK_UNIT)'DATASET UNSTRUCTURED_GRID'//END_REC
       ENDIF
 
-10    FORMAT(/1X,3A,$)
+10    FORMAT(/1X,3A)
 
       RETURN
 

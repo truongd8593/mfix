@@ -1,34 +1,34 @@
        NAMELIST / DES_INPUT_DATA /&
 
 ! USE discretelement
-	DISCRETE_ELEMENT, DES_CONTINUUM_COUPLED, DES_INTERP_ON, &
-	DES_ONEWAY_COUPLED, DES_INTERP_MEAN_FIELDS, & 
-	 DES_REPORT_MASS_INTERP, USE_STL_DES, &
+        DISCRETE_ELEMENT, DES_CONTINUUM_COUPLED, DES_INTERP_ON, &
+        DES_ONEWAY_COUPLED, DES_INTERP_MEAN_FIELDS, &
+         DES_REPORT_MASS_INTERP, USE_STL_DES, &
       DES_INTG_METHOD, DES_CONTINUUM_HYBRID,&
-	 PARTICLES, NFACTOR, USE_VDH_DEM_MODEL, &
-	GENER_PART_CONFIG, MN, PARTICLES_FACTOR, &
-	DES_NEIGHBOR_SEARCH, NEIGHBOR_SEARCH_N,&
+         PARTICLES, NFACTOR, USE_VDH_DEM_MODEL, &
+        GENER_PART_CONFIG, MN, PARTICLES_FACTOR, &
+        DES_NEIGHBOR_SEARCH, NEIGHBOR_SEARCH_N,&
         FACTOR_RLM, NEIGHBOR_SEARCH_RAD_RATIO,&
-	
+
 ! Used for grid/cell based search methods
         DESGRIDSEARCH_IMAX, DESGRIDSEARCH_JMAX, DESGRIDSEARCH_KMAX, &
 
-! Particle properties	
-        KN, KN_W, KT_FAC, KT_W_FAC, MEW, MEW_W, & 
+! Particle properties
+        KN, KN_W, KT_FAC, KT_W_FAC, MEW, MEW_W, &
         DES_EN_INPUT, DES_ET_INPUT, DES_ETAT_FAC, &
         DES_EN_WALL_INPUT, DES_ET_WALL_INPUT, DES_ETAT_W_FAC, &
-!      
-! Additional properties for Hertzian model: 
+!
+! Additional properties for Hertzian model:
         DES_COLL_MODEL, EW_YOUNG, VW_POISSON, E_YOUNG, V_POISSON,&
-	
+
 ! Lees Edwards BC (for DEM only)
         DES_LE_BC, DES_LE_REL_VEL, DES_LE_SHEAR_DIR,&
-	
+
 
 ! DES wall BC: wall translational velocity
 ! These need to be improved to work for arbitrary geoms
         DES_BC_Uw_s, DES_BC_Vw_s, DES_BC_Ww_s,&
-	
+
 ! DES flow boundary condition information: J.Musser
         MAX_PIS, FORCE_ORD_BC, &
 
@@ -38,8 +38,8 @@
         DES_OUTPUT_TYPE,  &
 
 ! DES Cohesion Information: M.Weber
-        USE_COHESION,VAN_DER_WAALS, HAMAKER_CONSTANT, & 
-	WALL_HAMAKER_CONSTANT, &
+        USE_COHESION,VAN_DER_WAALS, HAMAKER_CONSTANT, &
+        WALL_HAMAKER_CONSTANT, &
         VDW_INNER_CUTOFF, VDW_OUTER_CUTOFF, ASPERITIES, &
         WALL_VDW_INNER_CUTOFF, WALL_VDW_OUTER_CUTOFF,&
 
@@ -50,15 +50,15 @@
 ! DES Energy Equations: J.Musser
         DES_CONV_CORR, FLPC, DES_Em, DES_MIN_COND_DIST, &
 
-! MP-PIC related flags 
-	 MPPIC, MPPIC_SOLID_STRESS_SNIDER, PSFAC_FRIC_PIC,& 
-	 FRIC_EXP_PIC, FRIC_NON_SING_FAC,&
-	 CFL_PIC, MPPIC_COEFF_EN1, MPPIC_COEFF_EN2, MPPIC_PDRAG_IMPLICIT, &
-	 MPPIC_GRAV_TREATMENT, MPPIC_COEFF_EN_WALL, MPPIC_COEFF_ET_WALL, &
-	 PIC_REPORT_SEEDING_STATS, PIC_REPORT_DELETION_STATS, PIC_REPORT_MIN_EPG, & 
+! MP-PIC related flags
+         MPPIC, MPPIC_SOLID_STRESS_SNIDER, PSFAC_FRIC_PIC,&
+         FRIC_EXP_PIC, FRIC_NON_SING_FAC,&
+         CFL_PIC, MPPIC_COEFF_EN1, MPPIC_COEFF_EN2, MPPIC_PDRAG_IMPLICIT, &
+         MPPIC_GRAV_TREATMENT, MPPIC_COEFF_EN_WALL, MPPIC_COEFF_ET_WALL, &
+         PIC_REPORT_SEEDING_STATS, PIC_REPORT_DELETION_STATS, PIC_REPORT_MIN_EPG, &
 
 
 ! flag to convert des outside box to facets needed if outside box not part of stl geom
 
-	 des_convert_box_to_facets
+         des_convert_box_to_facets
 

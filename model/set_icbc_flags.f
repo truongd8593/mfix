@@ -494,7 +494,7 @@
                CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
 
  1200 FORMAT('Error 1200: Boundary condition ',I3,' overlaps with ',&
-         'another BC.'2/7x,'I',7x,'J',7x,'K',3x,'ICBC')
+         'another BC.',2/7x,'I',7x,'J',7x,'K',3x,'ICBC')
 
                DO K = BC_K_B(BCV), BC_K_T(BCV)
                DO J = BC_J_S(BCV), BC_J_N(BCV)

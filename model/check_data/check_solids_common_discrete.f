@@ -189,7 +189,7 @@
          WRITE(ERR_MSG,2010) trim(DES_OUTPUT_TYPE)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
- 2010 FORMAT('Error 2010:Invalid DES_OUTPUT_TYPE: ',A,/'Please '       &
+ 2010 FORMAT('Error 2010:Invalid DES_OUTPUT_TYPE: ',A,/'Please ',       &
          'correct the mfix.dat file.')
 
       END SELECT
@@ -209,7 +209,7 @@
          WRITE(ERR_MSG,2020) trim(DES_INTG_METHOD)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
- 2020 FORMAT('Error 2020:Invalid DES_INGT_METHOD: ',A,/'Please '      &
+ 2020 FORMAT('Error 2020:Invalid DES_INGT_METHOD: ',A,/'Please ',      &
          'correct the mfix.dat file.')
 
       END SELECT

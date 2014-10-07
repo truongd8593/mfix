@@ -126,22 +126,22 @@
       WRITE(111,30) ' |  Name   |  Value  |   Min   |   Max   | % of max|0%       Progress      100%|'
       WRITE(111,30) ' |_________|_________|_________|_________|_________|___________________________|'
       WRITE(111,30) ' |         |         |         |         |         |                           |'
-      WRITE(111,40)' Time    ',Time,Init_Time,Tstop
+      WRITE(111,40,ADVANCE='NO')' Time    ',Time,Init_Time,Tstop
       CALL WRITE_SIMPLE_PROGRESS_BAR(Time,TStop-Init_Time)
       IF(DT_DIR>0) THEN
-         WRITE(111,40)' DT (+)  ',DT,DTMIN,DTMAX
-!         WRITE(111,40)' DT      ',DT,DTMIN,DTMAX
+         WRITE(111,40,ADVANCE='NO')' DT (+)  ',DT,DTMIN,DTMAX
+!         WRITE(111,40,ADVANCE='NO')' DT      ',DT,DTMIN,DTMAX
       ELSE
-         WRITE(111,40)' DT (-)  ',DT,DTMIN,DTMAX
+         WRITE(111,40,ADVANCE='NO')' DT (-)  ',DT,DTMIN,DTMAX
       ENDIF
       CALL WRITE_SIMPLE_PROGRESS_BAR(DT,DTMAX)
       IF(Sm_flag) THEN
-         WRITE(111,40)' Sm      ',SMASS,SMMIN,SMMAX
+         WRITE(111,40,ADVANCE='NO')' Sm      ',SMASS,SMMIN,SMMAX
          CALL WRITE_SIMPLE_PROGRESS_BAR(SMASS,SMMAX)
       ELSE
       WRITE(111,30) ' | Sm      |         |         |         |         |                           |'
       ENDIF
-      WRITE(111,50)' NIT     ',NIT,NIT_MIN,NIT_MAX
+      WRITE(111,50,ADVANCE='NO')' NIT     ',NIT,NIT_MIN,NIT_MAX
       CALL WRITE_SIMPLE_PROGRESS_BAR(dble(NIT),dble(NIT_MAX))
       IF (RESID_INDEX(8,1) == UNDEFINED_I) THEN
          WRITE (111,55) ' Max res ',RESID_STRING(8)
@@ -153,8 +153,8 @@
 20    FORMAT(A, F9.3, 1X, A,T80,A)
 25    FORMAT(A,I6,T80,A)
 30    FORMAT(A)
-40    FORMAT(' |',A,'|',3(E9.2,'|'),$)
-50    FORMAT(' |',A,'|',3(I9,'|'),$)
+40    FORMAT(' |',A,'|',3(E9.2,'|'))
+50    FORMAT(' |',A,'|',3(I9,'|'))
 55    FORMAT(' |',A,'|',A7,'  |         |         |         |                           |')
 60    FORMAT(A,I2.2,':',I2.2,':',I2.2,A,I2.2,'/',I2.2,'/',I4)
       CLOSE(111)

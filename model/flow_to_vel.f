@@ -1324,7 +1324,7 @@
          '   e.g. in axisymmetric cylindrical coordinates ZLENGTH = 2*Pi'/1X,70&
          ('*')/)
 
- 1401 FORMAT(//1X,70('*')/' From: FLOW_TO_VEL',/,' Error 1401:'        &
+ 1401 FORMAT(//1X,70('*')/' From: FLOW_TO_VEL',/,' Error 1401:',       &
          ' Solids phase ',I2,' failed sanity check in BC region ',I3,  &
          '. ',/' Please check mfix.dat file.',/1X,70('*')//)
 

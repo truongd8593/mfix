@@ -688,7 +688,7 @@
          ENDIF
       ENDDO
 
- 1300 FORMAT('Warning 1300: ',A,' was undefined for BC',I3'. This ',   &
+ 1300 FORMAT('Warning 1300: ',A,' was undefined for BC',I3,'. This ',  &
          'variable',/'was set to zero to be used as the inital value ',&
          'in the BC region.')
 
