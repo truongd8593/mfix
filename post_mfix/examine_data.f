@@ -241,11 +241,17 @@
       PARAMETER (N_VAR=52)
       INCLUDE 'xforms.inc'
 
+! This routine appears to need its own version of the funijk routine
+      INTEGER :: FUNIJK_LOC,LI, LJ, LK
+      FUNIJK_LOC(LI, LJ, LK) = LI + (LJ-1)*IMAX2 + (LK-1)*IJMAX2
+
+!
       CHARACTER(LEN=80)  :: LINE
       CHARACTER(LEN=120)  :: STRING, SUBSTR
       CHARACTER(LEN=8)   :: VAR, VAR_DAT(N_VAR)
       CHARACTER(LEN=120) :: FILE_NAME
       INTEGER      L, L3, L4, LMAX, IANS, NSTEP_1
+      REAL         DX_E, DY_N, DZ_T
       REAL         DIST(DIMENSION_3), VALUE(DIMENSION_3)
       REAL         TIME_IN_RES
       INTEGER      DISPLAY, DIRECTION, NT
@@ -308,6 +314,12 @@
 
 !                   52
                    'E_Turb_G'/
+
+
+      DZ_T(K) = HALF * (DZ(K) + DZ(Kp1(K)))
+      DY_N(J) = HALF * (DY(J) + DY(Jp1(J)))
+      DX_E(I) = HALF * (DX(I) + DX(Ip1(I)))
+!
 
       integer :: gas_species_index , solid_species_index , solid_index
       logical :: bRead_all
@@ -1198,14 +1210,12 @@
       TIME_OLD = -1.
       IF(TIME_AVERAGE) THEN
         NT = 0
-        DO K = K1, K2
-           DO J = J1, J2
-              DO I = I1, I2
-                 IJK = FUNIJK_LOC(I,J,K)
-                 VALUE(IJK) = ZERO
-              ENDDO
-           ENDDO
-        ENDDO
+        DO 90 K = K1, K2
+        DO 90 J = J1, J2
+        DO 90 I = I1, I2
+          IJK = FUNIJK_LOC(I,J,K)
+          VALUE(IJK) = ZERO
+90      CONTINUE
       ENDIF
 !
       IF(MINMAX .EQ. 0) THEN
@@ -1263,15 +1273,13 @@
                                                   ) THEN
           ! loop over the entire domain because mass flux calculations
           ! need ROP_s outside i,j,k limits specified by the user
-          DO K = KMIN1, KMAX2
-             DO J = JMIN1, JMAX2
-                DO I = IMIN1, IMAX2
-                   IJK = FUNIJK_LOC(I, J, K)
-                   ROP_s(IJK, 1) = (ONE - EP_g(IJK)) * RO_s0(1)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDIF
+          DO 102 K = KMIN1, KMAX2
+          DO 102 J = JMIN1, JMAX2
+          DO 102 I = IMIN1, IMAX2
+            IJK = FUNIJK_LOC(I, J, K)
+            ROP_s(IJK, 1) = (ONE - EP_g(IJK)) * RO_s0(1)
+102       CONTINUE
+        ENDIF
       ENDIF
 !
 !     FIND THETA IF CALCULATING SOLIDS PRESSURE, P_s
@@ -1285,154 +1293,151 @@
       ENDIF
 !
       NT = NT + 1
-      DO K = K1, K2
-         DO J = J1, J2
-            DO I = I1, I2
-               IJK = FUNIJK_LOC(I, J, K)
-               IF(VAR_NO .EQ. 1) THEN
-                  VALUE_TMP = EP_g(IJK)
-               ELSEIF(VAR_NO .EQ. 2)THEN
-                  VALUE_TMP = P_g(IJK)
-               ELSEIF(VAR_NO .EQ. 3)THEN
-                  VALUE_TMP = P_star(IJK)
-               ELSEIF(VAR_NO .EQ. 4)THEN
-                  VALUE_TMP = U_g(IJK)
-               ELSEIF(VAR_NO .EQ. 5)THEN
-                  VALUE_TMP = V_g(IJK)
-               ELSEIF(VAR_NO .EQ. 6)THEN
-                  VALUE_TMP = W_g(IJK)
-               ELSEIF(VAR_NO .EQ. 7)THEN
-                  VALUE_TMP = U_s(IJK, M)
-               ELSEIF(VAR_NO .EQ. 8)THEN
-                  VALUE_TMP = V_s(IJK, M)
-               ELSEIF(VAR_NO .EQ. 9)THEN
-                  VALUE_TMP = W_s(IJK, M)
-               ELSEIF(VAR_NO .EQ. 10)THEN
-                  VALUE_TMP = ROP_s(IJK, M)
-               ELSEIF(VAR_NO .EQ. 11)THEN
-                  VALUE_TMP = T_g(IJK)
-               ELSEIF(VAR_NO .EQ. 12)THEN
-                  VALUE_TMP = T_s(IJK, M)
-               ELSEIF(VAR_NO .EQ. 13)THEN
-                  VALUE_TMP = T_s(IJK, 2)
-               ELSEIF(VAR_NO .EQ. 14)THEN
-                  VALUE_TMP = X_g(IJK, N)
-               ELSEIF(VAR_NO .EQ. 15)THEN
-                  VALUE_TMP = X_s(IJK, M, N)
-               ELSEIF(VAR_NO .EQ. 16)THEN
-                  VALUE_TMP = XFLOW_gx(I, J, K, IJK, N)
-               ELSEIF(VAR_NO .EQ. 17)THEN
-                  VALUE_TMP = XFLOW_gy(I, J, K, IJK, N)
-               ELSEIF(VAR_NO .EQ. 18)THEN
-                  VALUE_TMP = XFLOW_gz(I, J, K, IJK, N)
-               ELSEIF(VAR_NO .EQ. 19)THEN
-                  VALUE_TMP = XFLOW_sx(I, J, K, IJK, M, N)
-               ELSEIF(VAR_NO .EQ. 20)THEN
-                  VALUE_TMP = XFLOW_sy(I, J, K, IJK, M, N)
-               ELSEIF(VAR_NO .EQ. 21)THEN
-                  VALUE_TMP = XFLOW_sz(I, J, K, IJK, M, N)
-               ELSEIF(VAR_NO .EQ. 22)THEN
-                  VALUE_TMP = MFLOW_gx(I, J, K, IJK)
-               ELSEIF(VAR_NO .EQ. 23)THEN
-                  VALUE_TMP = MFLOW_gy(I, J, K, IJK)
-               ELSEIF(VAR_NO .EQ. 24)THEN
-                  VALUE_TMP = MFLOW_gz(I, J, K, IJK)
-               ELSEIF(VAR_NO .EQ. 25)THEN
-                  VALUE_TMP = MFLOW_sx(I, J, K, IJK, M)
-               ELSEIF(VAR_NO .EQ. 26)THEN
-                  VALUE_TMP = MFLOW_sy(I, J, K, IJK, M)
-               ELSEIF(VAR_NO .EQ. 27)THEN
-                  VALUE_TMP = MFLOW_sz(I, J, K, IJK, M)
-               ELSEIF(VAR_NO .EQ. 28)THEN
-                  VALUE_TMP = VFLOW_gx(I, J, K, IJK)
-               ELSEIF(VAR_NO .EQ. 29)THEN
-                  VALUE_TMP = VFLOW_gy(I, J, K, IJK)
-               ELSEIF(VAR_NO .EQ. 30)THEN
-                  VALUE_TMP = VFLOW_gz(I, J, K, IJK)
-               ELSEIF(VAR_NO .EQ. 31)THEN
-                  VALUE_TMP = VFLOW_sx(I, J, K, IJK, M)
-               ELSEIF(VAR_NO .EQ. 32)THEN
-                  VALUE_TMP = VFLOW_sy(I, J, K, IJK, M)
-               ELSEIF(VAR_NO .EQ. 33)THEN
-                  VALUE_TMP = VFLOW_sz(I, J, K, IJK, M)
-               ELSEIF(VAR_NO .EQ. 34)THEN
-                  VALUE_TMP = EP_g(IJK) * CALC_RO_g(IJK) * VOL(IJK)
-               ELSEIF(VAR_NO .EQ. 35)THEN
-                  VALUE_TMP = ROP_s(IJK, M) * VOL(IJK)
-               ELSEIF(VAR_NO .EQ. 36)THEN
-                  VALUE_TMP = FLUX_gx(IJK)
-               ELSEIF(VAR_NO .EQ. 37)THEN
-                  VALUE_TMP = FLUX_gy(IJK)
-               ELSEIF(VAR_NO .EQ. 38)THEN
-                  VALUE_TMP = FLUX_gz(IJK)
-               ELSEIF(VAR_NO .EQ. 39)THEN
-                  VALUE_TMP = FLUX_sx(IJK, M)
-               ELSEIF(VAR_NO .EQ. 40)THEN
-                  VALUE_TMP = FLUX_sy(IJK, M)
-               ELSEIF(VAR_NO .EQ. 41)THEN
-                  VALUE_TMP = FLUX_sz(IJK, M)
-               ELSEIF(VAR_NO .EQ. 42)THEN
-                  VALUE_TMP = 0.5*CALC_RO_g(IJK)*EP_g(IJK)&
-                       *(U_g(IJK)**2 + V_g(IJK)**2 + W_g(IJK)**2)
-               ELSEIF(VAR_NO .EQ. 43)THEN
-                  VALUE_TMP = 0.5*ROP_s(IJK,M)&
-                       *(U_s(IJK,M)**2 + V_s(IJK,M)**2 + W_s(IJK,M)**2)
-               ELSEIF(VAR_NO .EQ. 44)THEN
-                  VALUE_TMP = P_s(IJK,M)
-                  IF(EP_g(IJK) .LT. EP_star) THEN
-                     VALUE_TMP = P_star(IJK)
-                  ENDIF
-               ELSEIF(VAR_NO .EQ. 45)THEN
-                  VALUE_TMP = GRAVITY*YDIST_SC(J)*CALC_RO_g(IJK)*EP_g(IJK)
-               ELSEIF(VAR_NO .EQ. 46)THEN
-                  VALUE_TMP = GRAVITY*YDIST_SC(J)*ROP_s(IJK,M)
-               ELSEIF(VAR_NO .EQ. 47)THEN
-                  mIJK= FUNIJK_LOC(I,J+1,K)
-                  lIJK= FUNIJK_LOC(I,J-1,K)
-                  DELm=YDIST_SC(J+1)-YDIST_SC(J)
-                  DELl=YDIST_SC(J)-YDIST_SC(J-1)
-                  FAC1= (ROP_s(mIJK,M)-ROP_s(IJK,M))/DELm &
-                       +(ROP_s(IJK,M)-ROP_s(lIJK,M))/DELl
-                  FAC2=P_s(IJK,M)/(ROP_s(IJK,M)**2)
-                  !          IF(EP_g(IJK) .LT. EP_star) THEN
-                  !             FAC2=P_star(IJK)/(ROP_s(IJK,M)**2)
-                  !          ENDIF
-                  VALUE_TMP = DY(J)*FAC1*FAC2/2
-               ELSEIF(VAR_NO .EQ. 48)THEN
-                  VALUE_TMP = Theta_m(IJK, M)
-               ELSEIF(VAR_NO .EQ. 49)THEN
-                  VALUE_TMP = Scalar(IJK, N)
-               ELSEIF(VAR_NO .EQ. 50)THEN
-                  VALUE_TMP = ReactionRates(IJK, N)
-               ELSEIF(VAR_NO .EQ. 51)THEN
-                  VALUE_TMP = K_Turb_G(IJK)
-               ELSEIF(VAR_NO .EQ. 52)THEN
-                  VALUE_TMP = E_Turb_G(IJK)
-               ENDIF
+      DO 105 K = K1, K2
+      DO 105 J = J1, J2
+      DO 105 I = I1, I2
+        IJK = FUNIJK_LOC(I, J, K)
+        IF(VAR_NO .EQ. 1) THEN
+          VALUE_TMP = EP_g(IJK)
+        ELSEIF(VAR_NO .EQ. 2)THEN
+          VALUE_TMP = P_g(IJK)
+        ELSEIF(VAR_NO .EQ. 3)THEN
+          VALUE_TMP = P_star(IJK)
+        ELSEIF(VAR_NO .EQ. 4)THEN
+          VALUE_TMP = U_g(IJK)
+        ELSEIF(VAR_NO .EQ. 5)THEN
+          VALUE_TMP = V_g(IJK)
+        ELSEIF(VAR_NO .EQ. 6)THEN
+          VALUE_TMP = W_g(IJK)
+        ELSEIF(VAR_NO .EQ. 7)THEN
+          VALUE_TMP = U_s(IJK, M)
+        ELSEIF(VAR_NO .EQ. 8)THEN
+          VALUE_TMP = V_s(IJK, M)
+        ELSEIF(VAR_NO .EQ. 9)THEN
+          VALUE_TMP = W_s(IJK, M)
+        ELSEIF(VAR_NO .EQ. 10)THEN
+          VALUE_TMP = ROP_s(IJK, M)
+        ELSEIF(VAR_NO .EQ. 11)THEN
+          VALUE_TMP = T_g(IJK)
+        ELSEIF(VAR_NO .EQ. 12)THEN
+          VALUE_TMP = T_s(IJK, M)
+        ELSEIF(VAR_NO .EQ. 13)THEN
+          VALUE_TMP = T_s(IJK, 2)
+        ELSEIF(VAR_NO .EQ. 14)THEN
+          VALUE_TMP = X_g(IJK, N)
+        ELSEIF(VAR_NO .EQ. 15)THEN
+          VALUE_TMP = X_s(IJK, M, N)
+        ELSEIF(VAR_NO .EQ. 16)THEN
+          VALUE_TMP = XFLOW_gx(I, J, K, IJK, N)
+        ELSEIF(VAR_NO .EQ. 17)THEN
+          VALUE_TMP = XFLOW_gy(I, J, K, IJK, N)
+        ELSEIF(VAR_NO .EQ. 18)THEN
+          VALUE_TMP = XFLOW_gz(I, J, K, IJK, N)
+        ELSEIF(VAR_NO .EQ. 19)THEN
+          VALUE_TMP = XFLOW_sx(I, J, K, IJK, M, N)
+        ELSEIF(VAR_NO .EQ. 20)THEN
+          VALUE_TMP = XFLOW_sy(I, J, K, IJK, M, N)
+        ELSEIF(VAR_NO .EQ. 21)THEN
+          VALUE_TMP = XFLOW_sz(I, J, K, IJK, M, N)
+        ELSEIF(VAR_NO .EQ. 22)THEN
+          VALUE_TMP = MFLOW_gx(I, J, K, IJK)
+        ELSEIF(VAR_NO .EQ. 23)THEN
+          VALUE_TMP = MFLOW_gy(I, J, K, IJK)
+        ELSEIF(VAR_NO .EQ. 24)THEN
+          VALUE_TMP = MFLOW_gz(I, J, K, IJK)
+        ELSEIF(VAR_NO .EQ. 25)THEN
+          VALUE_TMP = MFLOW_sx(I, J, K, IJK, M)
+        ELSEIF(VAR_NO .EQ. 26)THEN
+          VALUE_TMP = MFLOW_sy(I, J, K, IJK, M)
+        ELSEIF(VAR_NO .EQ. 27)THEN
+          VALUE_TMP = MFLOW_sz(I, J, K, IJK, M)
+        ELSEIF(VAR_NO .EQ. 28)THEN
+          VALUE_TMP = VFLOW_gx(I, J, K, IJK)
+        ELSEIF(VAR_NO .EQ. 29)THEN
+          VALUE_TMP = VFLOW_gy(I, J, K, IJK)
+        ELSEIF(VAR_NO .EQ. 30)THEN
+          VALUE_TMP = VFLOW_gz(I, J, K, IJK)
+        ELSEIF(VAR_NO .EQ. 31)THEN
+          VALUE_TMP = VFLOW_sx(I, J, K, IJK, M)
+        ELSEIF(VAR_NO .EQ. 32)THEN
+          VALUE_TMP = VFLOW_sy(I, J, K, IJK, M)
+        ELSEIF(VAR_NO .EQ. 33)THEN
+          VALUE_TMP = VFLOW_sz(I, J, K, IJK, M)
+        ELSEIF(VAR_NO .EQ. 34)THEN
+          VALUE_TMP = EP_g(IJK) * CALC_RO_g(IJK) * VOL(IJK)
+        ELSEIF(VAR_NO .EQ. 35)THEN
+          VALUE_TMP = ROP_s(IJK, M) * VOL(IJK)
+        ELSEIF(VAR_NO .EQ. 36)THEN
+          VALUE_TMP = FLUX_gx(IJK)
+        ELSEIF(VAR_NO .EQ. 37)THEN
+          VALUE_TMP = FLUX_gy(IJK)
+        ELSEIF(VAR_NO .EQ. 38)THEN
+          VALUE_TMP = FLUX_gz(IJK)
+        ELSEIF(VAR_NO .EQ. 39)THEN
+          VALUE_TMP = FLUX_sx(IJK, M)
+        ELSEIF(VAR_NO .EQ. 40)THEN
+          VALUE_TMP = FLUX_sy(IJK, M)
+        ELSEIF(VAR_NO .EQ. 41)THEN
+          VALUE_TMP = FLUX_sz(IJK, M)
+        ELSEIF(VAR_NO .EQ. 42)THEN
+          VALUE_TMP = 0.5*CALC_RO_g(IJK)*EP_g(IJK)&
+                    *(U_g(IJK)**2 + V_g(IJK)**2 + W_g(IJK)**2)
+        ELSEIF(VAR_NO .EQ. 43)THEN
+          VALUE_TMP = 0.5*ROP_s(IJK,M)&
+              *(U_s(IJK,M)**2 + V_s(IJK,M)**2 + W_s(IJK,M)**2)
+        ELSEIF(VAR_NO .EQ. 44)THEN
+          VALUE_TMP = P_s(IJK,M)
+            IF(EP_g(IJK) .LT. EP_star) THEN
+              VALUE_TMP = P_star(IJK)
+            ENDIF
+        ELSEIF(VAR_NO .EQ. 45)THEN
+          VALUE_TMP = GRAVITY*YDIST_SC(J)*CALC_RO_g(IJK)*EP_g(IJK)
+        ELSEIF(VAR_NO .EQ. 46)THEN
+          VALUE_TMP = GRAVITY*YDIST_SC(J)*ROP_s(IJK,M)
+        ELSEIF(VAR_NO .EQ. 47)THEN
+          mIJK= FUNIJK_LOC(I,J+1,K)
+          lIJK= FUNIJK_LOC(I,J-1,K)
+          DELm=YDIST_SC(J+1)-YDIST_SC(J)
+          DELl=YDIST_SC(J)-YDIST_SC(J-1)
+          FAC1= (ROP_s(mIJK,M)-ROP_s(IJK,M))/DELm &
+               +(ROP_s(IJK,M)-ROP_s(lIJK,M))/DELl
+          FAC2=P_s(IJK,M)/(ROP_s(IJK,M)**2)
+!          IF(EP_g(IJK) .LT. EP_star) THEN
+!             FAC2=P_star(IJK)/(ROP_s(IJK,M)**2)
+!          ENDIF
+          VALUE_TMP = DY(J)*FAC1*FAC2/2
+        ELSEIF(VAR_NO .EQ. 48)THEN
+          VALUE_TMP = Theta_m(IJK, M)
+        ELSEIF(VAR_NO .EQ. 49)THEN
+          VALUE_TMP = Scalar(IJK, N)
+       ELSEIF(VAR_NO .EQ. 50)THEN
+          VALUE_TMP = ReactionRates(IJK, N)
+       ELSEIF(VAR_NO .EQ. 51)THEN
+          VALUE_TMP = K_Turb_G(IJK)
+       ELSEIF(VAR_NO .EQ. 52)THEN
+          VALUE_TMP = E_Turb_G(IJK)
+        ENDIF
 
-               IF(TIME_AVERAGE)THEN
-                  VALUE(IJK) = VALUE(IJK) + VALUE_TMP
-               ELSE
-                  VALUE(IJK) = VALUE_TMP
-               ENDIF
-            ENDDO
-         ENDDO
-      ENDDO
 
+        IF(TIME_AVERAGE)THEN
+          VALUE(IJK) = VALUE(IJK) + VALUE_TMP
+        ELSE
+          VALUE(IJK) = VALUE_TMP
+        ENDIF
+105   CONTINUE
+!
 106   IF(TIME_AVERAGE)THEN
         IF(TIME_NOW .GE. TIME_END .OR. END_AVERAGE)THEN
           IF(NT .EQ. 0) THEN
             WRITE(*,*)' Could not do time averaging'
             GOTO 10
           ENDIF
-          DO K = K1, K2
-             DO J = J1, J2
-                DO I = I1, I2
-                   IJK = FUNIJK_LOC(I,J,K)
-                   VALUE(IJK) = VALUE(IJK) / REAL(NT)
-                ENDDO
-             ENDDO
-          ENDDO
+          DO 110 K = K1, K2
+          DO 110 J = J1, J2
+          DO 110 I = I1, I2
+            IJK = FUNIJK_LOC(I,J,K)
+            VALUE(IJK) = VALUE(IJK) / REAL(NT)
+110       CONTINUE
           call format_twoB(spec,nPrec_time,nPrec_time,nPrec_length)
           WRITE(LINE,spec) &
            'Time average of ',VAR, ' from Time = ',TIME_START, &
@@ -1447,392 +1452,346 @@
 !
       IF(K_AVERAGE)THEN
         K = K1
-        DO J = J1, J2
-           DO I = I1, I2
-              IJK = FUNIJK_LOC(I, J, K)
-              IF(WALL_AT(IJK))THEN
-                 VALUE(IJK) = ZERO
-                 DIST(IJK)  = ZERO
-              ELSEIF(.NOT. SUM) THEN
-                 IF(DIRECTION .EQ. 3)THEN
-                    VALUE(IJK) = VALUE(IJK) * DZ_T(K)
-                    DIST(IJK)  = DZ_T(K)
-                 ELSE
-                    VALUE(IJK) = VALUE(IJK) * DZ(K)
-                    DIST(IJK)  = DZ(K)
-                 ENDIF
-              ENDIF
-           ENDDO
-        ENDDO
+        DO 115 J = J1, J2
+        DO 115 I = I1, I2
+          IJK = FUNIJK_LOC(I, J, K)
+          IF(WALL_AT(IJK))THEN
+            VALUE(IJK) = ZERO
+            DIST(IJK)  = ZERO
+          ELSEIF(.NOT. SUM) THEN
+            IF(DIRECTION .EQ. 3)THEN
+              VALUE(IJK) = VALUE(IJK) * DZ_T(K)
+              DIST(IJK)  = DZ_T(K)
+            ELSE
+              VALUE(IJK) = VALUE(IJK) * DZ(K)
+              DIST(IJK)  = DZ(K)
+            ENDIF
+          ENDIF
+115     CONTINUE
 !
-        DO K = K1+1, K2
-           DO J = J1, J2
-              DO I = I1, I2
-                 IJK = FUNIJK_LOC(I, J, K)
-                 IJK1 = FUNIJK_LOC(I, J, K1)
-                 IF(.NOT.WALL_AT(IJK)) THEN
-                    IF(SUM) THEN
-                       VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK)
-                    ELSE
-                       IF(DIRECTION .EQ. 3)THEN
-                          VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DZ_T(K)
-                          DIST(IJK1)  = DIST(IJK1)  + DZ_T(K)
-                       ELSE
-                          VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DZ(K)
-                          DIST(IJK1)  = DIST(IJK1)  + DZ(K)
-                       ENDIF
-                    ENDIF
-                 ENDIF
-              ENDDO
-           ENDDO
-        ENDDO
-
+        DO 116 K = K1+1, K2
+        DO 116 J = J1, J2
+        DO 116 I = I1, I2
+          IJK = FUNIJK_LOC(I, J, K)
+          IJK1 = FUNIJK_LOC(I, J, K1)
+          IF(.NOT.WALL_AT(IJK)) THEN
+            IF(SUM) THEN
+              VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK)
+            ELSE
+              IF(DIRECTION .EQ. 3)THEN
+                VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DZ_T(K)
+                DIST(IJK1)  = DIST(IJK1)  + DZ_T(K)
+              ELSE
+                VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DZ(K)
+                DIST(IJK1)  = DIST(IJK1)  + DZ(K)
+              ENDIF
+            ENDIF
+          ENDIF
+116     CONTINUE
+!
         IF(.NOT. SUM) THEN
           K = K1
-          DO J = J1, J2
-             DO I = I1, I2
-                IJK = FUNIJK_LOC(I, J, K)
-                IF(DIST(IJK) .NE. ZERO) THEN
-                   VALUE(IJK) = VALUE(IJK) / DIST(IJK)
-                ELSEIF(VALUE(IJK) .NE. ZERO) THEN
-                   WRITE(*,*)' Error in K-averaging'
-                ENDIF
-             ENDDO
-          ENDDO
-       ENDIF
-       K2d = K1
-    ELSE
-       K2d = K2
-    ENDIF
-
-    IF(J_AVERAGE)THEN
-       J = J1
-       DO K = K1, K2d
-          DO I = I1, I2
-             IJK = FUNIJK_LOC(I, J, K)
-             IF(WALL_AT(IJK) .AND. .NOT.K_AVERAGE)THEN
-                VALUE(IJK) = ZERO
-                DIST(IJK)  = ZERO
-             ELSEIF(.NOT. SUM) THEN
-                IF(DIRECTION .EQ. 2)THEN
-                   VALUE(IJK) = VALUE(IJK) * DY_N(J)
-                   DIST(IJK)  = DY_N(J)
-                ELSE
-                   VALUE(IJK) = VALUE(IJK) * DY(J)
-                   DIST(IJK)  = DY(J)
-                ENDIF
-             ENDIF
-          ENDDO
-       ENDDO
-
-       DO K = K1, K2d
-          DO J = J1+1, J2
-             DO I = I1, I2
-                IJK = FUNIJK_LOC(I, J, K)
-                IJK1 = FUNIJK_LOC(I, J1, K)
-                IF(.NOT.WALL_AT(IJK) .OR. K_AVERAGE) THEN
-                   IF(SUM) THEN
-                      VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK)
-                   ELSE
-                      IF(DIRECTION .EQ. 2)THEN
-                         VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DY_N(J)
-                         DIST(IJK1)  = DIST(IJK1)  + DY_N(J)
-                      ELSE
-                         VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DY(J)
-                         DIST(IJK1)  = DIST(IJK1)  + DY(J)
-                      ENDIF
-                   ENDIF
-                ENDIF
-             ENDDO
-          ENDDO
-       ENDDO
-
-       IF(.NOT.SUM) THEN
+          DO 117 J = J1, J2
+          DO 117 I = I1, I2
+            IJK = FUNIJK_LOC(I, J, K)
+            IF(DIST(IJK) .NE. ZERO) THEN
+              VALUE(IJK) = VALUE(IJK) / DIST(IJK)
+            ELSEIF(VALUE(IJK) .NE. ZERO) THEN
+              WRITE(*,*)' Error in K-averaging'
+            ENDIF
+117       CONTINUE
+        ENDIF
+        K2d = K1
+      ELSE
+        K2d = K2
+      ENDIF
+!
+      IF(J_AVERAGE)THEN
+        J = J1
+        DO 118 K = K1, K2d
+        DO 118 I = I1, I2
+          IJK = FUNIJK_LOC(I, J, K)
+          IF(WALL_AT(IJK) .AND. .NOT.K_AVERAGE)THEN
+            VALUE(IJK) = ZERO
+            DIST(IJK)  = ZERO
+          ELSEIF(.NOT. SUM) THEN
+            IF(DIRECTION .EQ. 2)THEN
+              VALUE(IJK) = VALUE(IJK) * DY_N(J)
+              DIST(IJK)  = DY_N(J)
+            ELSE
+              VALUE(IJK) = VALUE(IJK) * DY(J)
+              DIST(IJK)  = DY(J)
+            ENDIF
+          ENDIF
+118     CONTINUE
+!
+        DO 119 K = K1, K2d
+        DO 119 J = J1+1, J2
+        DO 119 I = I1, I2
+          IJK = FUNIJK_LOC(I, J, K)
+          IJK1 = FUNIJK_LOC(I, J1, K)
+          IF(.NOT.WALL_AT(IJK) .OR. K_AVERAGE) THEN
+            IF(SUM) THEN
+              VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK)
+            ELSE
+              IF(DIRECTION .EQ. 2)THEN
+                VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DY_N(J)
+                DIST(IJK1)  = DIST(IJK1)  + DY_N(J)
+              ELSE
+                VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DY(J)
+                DIST(IJK1)  = DIST(IJK1)  + DY(J)
+              ENDIF
+            ENDIF
+          ENDIF
+119     CONTINUE
+!
+        IF(.NOT.SUM) THEN
           J = J1
-          DO K = K1, K2d
-             DO I = I1, I2
-                IJK = FUNIJK_LOC(I, J, K)
-                IF(DIST(IJK) .NE. ZERO) THEN
-                   VALUE(IJK) = VALUE(IJK) / DIST(IJK)
-                ELSEIF(VALUE(IJK) .NE. ZERO) THEN
-                   WRITE(*,*)' Error in J-averaging'
-                ENDIF
-             ENDDO
-          ENDDO
-       ENDIF
-       J2d = J1
-    ELSE
-       J2d = J2
-    ENDIF
-
-    IF(I_AVERAGE)THEN
-       I = I1
-       DO K = K1, K2d
-          DO J = J1, J2d
-             IJK = FUNIJK_LOC(I, J, K)
-             IF(WALL_AT(IJK) .AND. .NOT.J_AVERAGE .AND. .NOT.K_AVERAGE)THEN
-                VALUE(IJK) = ZERO
-                DIST(IJK)  = ZERO
-             ELSEIF(.NOT. SUM) THEN
-                IF(DIRECTION .EQ. 1)THEN
-                   VALUE(IJK) = VALUE(IJK) * DX_E(I) * X_E(I)
-                   DIST(IJK)  = DX_E(I) * X_E(I)
-                ELSE
-                   VALUE(IJK) = VALUE(IJK) * DX(I) * X(I)
-                   DIST(IJK)  = DX(I) * X(I)
-                ENDIF
-             ENDIF
-          ENDDO
-       ENDDO
-
-       DO K = K1, K2d
-          DO J = J1, J2d
-             DO I = I1+1, I2
-                IJK = FUNIJK_LOC(I, J, K)
-                IJK1 = FUNIJK_LOC(I1, J, K)
-                IF(.NOT.WALL_AT(IJK) .OR. J_AVERAGE .OR. K_AVERAGE) THEN
-                   IF(SUM) THEN
-                      VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK)
-                   ELSE
-                      IF(DIRECTION .EQ. 1)THEN
-                         VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DX_E(I)* X_E(I)
-                         DIST(IJK1)  = DIST(IJK1)  + DX_E(I) * X_E(I)
-                      ELSE
-                         VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DX(I) * X(I)
-                         DIST(IJK1)  = DIST(IJK1)  + DX(I) * X(I)
-                      ENDIF
-                   ENDIF
-                ENDIF
-             ENDDO
-          ENDDO
-       ENDDO
-
-       IF(.NOT.SUM) THEN
+          DO 120 K = K1, K2d
+          DO 120 I = I1, I2
+            IJK = FUNIJK_LOC(I, J, K)
+            IF(DIST(IJK) .NE. ZERO) THEN
+              VALUE(IJK) = VALUE(IJK) / DIST(IJK)
+            ELSEIF(VALUE(IJK) .NE. ZERO) THEN
+              WRITE(*,*)' Error in J-averaging'
+            ENDIF
+120       CONTINUE
+        ENDIF
+        J2d = J1
+      ELSE
+        J2d = J2
+      ENDIF
+!
+      IF(I_AVERAGE)THEN
+        I = I1
+        DO 121 K = K1, K2d
+        DO 121 J = J1, J2d
+          IJK = FUNIJK_LOC(I, J, K)
+          IF(WALL_AT(IJK) .AND. .NOT.J_AVERAGE .AND. .NOT.K_AVERAGE)THEN
+            VALUE(IJK) = ZERO
+            DIST(IJK)  = ZERO
+          ELSEIF(.NOT. SUM) THEN
+            IF(DIRECTION .EQ. 1)THEN
+              VALUE(IJK) = VALUE(IJK) * DX_E(I) * X_E(I)
+              DIST(IJK)  = DX_E(I) * X_E(I)
+            ELSE
+              VALUE(IJK) = VALUE(IJK) * DX(I) * X(I)
+              DIST(IJK)  = DX(I) * X(I)
+            ENDIF
+          ENDIF
+121     CONTINUE
+!
+        DO 122 K = K1, K2d
+        DO 122 J = J1, J2d
+        DO 122 I = I1+1, I2
+          IJK = FUNIJK_LOC(I, J, K)
+          IJK1 = FUNIJK_LOC(I1, J, K)
+          IF(.NOT.WALL_AT(IJK) .OR. J_AVERAGE .OR. K_AVERAGE) THEN
+            IF(SUM) THEN
+              VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK)
+            ELSE
+              IF(DIRECTION .EQ. 1)THEN
+                VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DX_E(I)* X_E(I)
+                DIST(IJK1)  = DIST(IJK1)  + DX_E(I) * X_E(I)
+              ELSE
+                VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DX(I) * X(I)
+                DIST(IJK1)  = DIST(IJK1)  + DX(I) * X(I)
+              ENDIF
+            ENDIF
+          ENDIF
+122     CONTINUE
+!
+        IF(.NOT.SUM) THEN
           I = I1
-          DO K = K1, K2d
-             DO J = J1, J2d
-                IJK = FUNIJK_LOC(I, J, K)
-                IF(DIST(IJK) .NE. ZERO) THEN
-                   VALUE(IJK) = VALUE(IJK) / DIST(IJK)
-                ELSEIF(VALUE(IJK) .NE. ZERO) THEN
-                   WRITE(*,*)' Error in I-averaging'
-                ENDIF
-             ENDDO
-          ENDDO
-       ENDIF
-       I2d = I1
-    ELSE
-       I2d = I2
-    ENDIF
+          DO 123 K = K1, K2d
+          DO 123 J = J1, J2d
+            IJK = FUNIJK_LOC(I, J, K)
+            IF(DIST(IJK) .NE. ZERO) THEN
+              VALUE(IJK) = VALUE(IJK) / DIST(IJK)
+            ELSEIF(VALUE(IJK) .NE. ZERO) THEN
+              WRITE(*,*)' Error in I-averaging'
+            ENDIF
+123       CONTINUE
+        ENDIF
+        I2d = I1
+      ELSE
+        I2d = I2
+      ENDIF
 !
 !  Display data or write data to file
 !
-    IF(MINMAX .GE. 0) THEN
-       IF(MINMAX .EQ. 0)THEN
+      IF(MINMAX .GE. 0) THEN
+        IF(MINMAX .EQ. 0)THEN
           VALUE_TMP = 1E32
-          DO K = K1, K2d
-             DO J = J1, J2d
-                DO I = I1, I2d
-                   IJK = FUNIJK_LOC(I,J,K)
-                   IF(WALL_AT(IJK) .AND. &
-                        .NOT. (I_AVERAGE .OR. J_AVERAGE .OR. K_AVERAGE) ) CYCLE
-                   IF(VALUE(IJK) .GE. VALUE_TMP) CYCLE
-                   XTMP = XDIST_SC(I)
-                   YTMP = YDIST_SC(J)
-                   ZTMP = ZDIST_SC(K)
-                   IF(DIRECTION .EQ. 1) THEN
-                      XTMP = XDIST_VEC(I)
-                   ELSEIF(DIRECTION .EQ. 2) THEN
-                      YTMP = YDIST_VEC(J)
-                   ELSEIF(DIRECTION .EQ. 3) THEN
-                      ZTMP = ZDIST_VEC(K)
-                   ENDIF
-                   VALUE_TMP = VALUE(IJK)
-                ENDDO
-             ENDDO
-          ENDDO
-       ELSEIF(MINMAX .EQ. 1)THEN
+          DO 128 K = K1, K2d
+          DO 128 J = J1, J2d
+          DO 128 I = I1, I2d
+            IJK = FUNIJK_LOC(I,J,K)
+            IF(WALL_AT(IJK) .AND. &
+              .NOT. (I_AVERAGE .OR. J_AVERAGE .OR. K_AVERAGE) )GOTO 128
+            IF(VALUE(IJK) .GE. VALUE_TMP)GOTO 128
+            XTMP = XDIST_SC(I)
+            YTMP = YDIST_SC(J)
+            ZTMP = ZDIST_SC(K)
+            IF(DIRECTION .EQ. 1) THEN
+              XTMP = XDIST_VEC(I)
+            ELSEIF(DIRECTION .EQ. 2) THEN
+              YTMP = YDIST_VEC(J)
+            ELSEIF(DIRECTION .EQ. 3) THEN
+              ZTMP = ZDIST_VEC(K)
+            ENDIF
+            VALUE_TMP = VALUE(IJK)
+128       CONTINUE
+        ELSEIF(MINMAX .EQ. 1)THEN
           VALUE_TMP = -1E32
-          DO K = K1, K2d
-             DO J = J1, J2d
-                DO I = I1, I2d
-                   IJK = FUNIJK_LOC(I,J,K)
-                   IF(WALL_AT(IJK) .AND. &
-                        .NOT. (I_AVERAGE .OR. J_AVERAGE .OR. K_AVERAGE) ) CYCLE
-                   IF(VALUE(IJK) .LE. VALUE_TMP) CYCLE
-                   XTMP = XDIST_SC(I)
-                   YTMP = YDIST_SC(J)
-                   ZTMP = ZDIST_SC(K)
-                   IF(DIRECTION .EQ. 1) THEN
-                      XTMP = XDIST_VEC(I)
-                   ELSEIF(DIRECTION .EQ. 2) THEN
-                      YTMP = YDIST_VEC(J)
-                   ELSEIF(DIRECTION .EQ. 3) THEN
-                      ZTMP = ZDIST_VEC(K)
-                   ENDIF
-                   VALUE_TMP = VALUE(IJK)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDIF
-       call format_five(spec,nPrec_time,nPrec_location,nPrec_location, &
-            nPrec_location,nPrec_variable,nPrec_length)
-       WRITE(LINE,spec)TIME_NOW, XTMP, YTMP, ZTMP, &
-            VALUE_TMP
-       CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
-    ELSEIF(DISPLAY .EQ. 8) THEN
-       IJK = FUNIJK_LOC(I1, J1, K1)
-       IF(TIME_AVERAGE) THEN
+          DO 129 K = K1, K2d
+          DO 129 J = J1, J2d
+          DO 129 I = I1, I2d
+            IJK = FUNIJK_LOC(I,J,K)
+            IF(WALL_AT(IJK) .AND. &
+              .NOT. (I_AVERAGE .OR. J_AVERAGE .OR. K_AVERAGE) )GOTO 129
+            IF(VALUE(IJK) .LE. VALUE_TMP)GOTO 129
+            XTMP = XDIST_SC(I)
+            YTMP = YDIST_SC(J)
+            ZTMP = ZDIST_SC(K)
+            IF(DIRECTION .EQ. 1) THEN
+              XTMP = XDIST_VEC(I)
+            ELSEIF(DIRECTION .EQ. 2) THEN
+              YTMP = YDIST_VEC(J)
+            ELSEIF(DIRECTION .EQ. 3) THEN
+              ZTMP = ZDIST_VEC(K)
+            ENDIF
+            VALUE_TMP = VALUE(IJK)
+129       CONTINUE
+        ENDIF
+        call format_five(spec,nPrec_time,nPrec_location,nPrec_location, &
+                     nPrec_location,nPrec_variable,nPrec_length)
+        WRITE(LINE,spec)TIME_NOW, XTMP, YTMP, ZTMP, &
+                                      VALUE_TMP
+        CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
+      ELSEIF(DISPLAY .EQ. 8) THEN
+        IJK = FUNIJK_LOC(I1, J1, K1)
+        IF(TIME_AVERAGE) THEN
           call format_oneB(spec,nPrec_variable,nPrec_length)
           WRITE(LINE,spec)VALUE(IJK)
           CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length)
-       ELSE
+        ELSE
           call format_twoC(spec,nPrec_time,nPrec_variable,nPrec_length)
           WRITE(LINE,spec)TIME_NOW, VALUE(IJK)
           CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length)
-       ENDIF
-    ELSEIF(DISPLAY .EQ. 4 .OR. DISPLAY .EQ. 12) THEN
-       call format_one(spec,nPrec_time,nPrec_length)
-       WRITE(LINE,spec)' Time = ',TIME_NOW
-       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length + 8)
-       WRITE(LINE,'(6X,A,13X,1A8)')'X', VAR
-       CALL WRITE_LINE(FILE_NAME, LINE, 28)
-       DO I = I1, I2d
+        ENDIF
+      ELSEIF(DISPLAY .EQ. 4 .OR. DISPLAY .EQ. 12) THEN
+        call format_one(spec,nPrec_time,nPrec_length)
+        WRITE(LINE,spec)' Time = ',TIME_NOW
+        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length + 8)
+        WRITE(LINE,'(6X,A,13X,1A8)')'X', VAR
+        CALL WRITE_LINE(FILE_NAME, LINE, 28)
+        DO 130 I = I1, I2d
           IJK = FUNIJK_LOC(I, J1, K1)
           call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
           IF(DIRECTION .EQ. 1)THEN
-             WRITE(LINE,spec)XDIST_VEC(I), VALUE(IJK)
+            WRITE(LINE,spec)XDIST_VEC(I), VALUE(IJK)
           ELSE
-             WRITE(LINE,spec)XDIST_SC(I), VALUE(IJK)
+            WRITE(LINE,spec)XDIST_SC(I), VALUE(IJK)
           ENDIF
           CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
-       ENDDO
-    ELSEIF(DISPLAY .EQ. 2 .OR. DISPLAY .EQ. 10) THEN
-       call format_one(spec,nPrec_time,nPrec_length)
-       WRITE(LINE,spec)' Time = ',TIME_NOW
-       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
-       WRITE(LINE,'(6X,A,13X,1A8)')'Y', VAR
-       CALL WRITE_LINE(FILE_NAME, LINE, 28)
-       DO J = J1, J2d
+130     CONTINUE
+      ELSEIF(DISPLAY .EQ. 2 .OR. DISPLAY .EQ. 10) THEN
+        call format_one(spec,nPrec_time,nPrec_length)
+        WRITE(LINE,spec)' Time = ',TIME_NOW
+        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
+        WRITE(LINE,'(6X,A,13X,1A8)')'Y', VAR
+        CALL WRITE_LINE(FILE_NAME, LINE, 28)
+        DO 140 J = J1, J2d
           IJK = FUNIJK_LOC(I1, J, K1)
           call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
           IF(DIRECTION .EQ. 2)THEN
-             WRITE(LINE,spec)YDIST_VEC(J), VALUE(IJK)
+            WRITE(LINE,spec)YDIST_VEC(J), VALUE(IJK)
           ELSE
-             WRITE(LINE,spec)YDIST_SC(J), VALUE(IJK)
+            WRITE(LINE,spec)YDIST_SC(J), VALUE(IJK)
           ENDIF
           CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
-       ENDDO
-    ELSEIF(DISPLAY .EQ. 1 .OR. DISPLAY .EQ. 9) THEN
-       call format_one(spec,nPrec_time,nPrec_length)
-       WRITE(LINE,spec)' Time = ',TIME_NOW
-       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
-       WRITE(LINE,'(6X,A,13X,1A8)')'Z', VAR
-       CALL WRITE_LINE(FILE_NAME, LINE, 28)
-       DO K = K1, K2d
+140     CONTINUE
+      ELSEIF(DISPLAY .EQ. 1 .OR. DISPLAY .EQ. 9) THEN
+        call format_one(spec,nPrec_time,nPrec_length)
+        WRITE(LINE,spec)' Time = ',TIME_NOW
+        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
+        WRITE(LINE,'(6X,A,13X,1A8)')'Z', VAR
+        CALL WRITE_LINE(FILE_NAME, LINE, 28)
+        DO 150 K = K1, K2d
           IJK = FUNIJK_LOC(I1, J1, K)
           call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
           IF(DIRECTION .EQ. 3)THEN
-             WRITE(LINE,spec)ZDIST_VEC(K), VALUE(IJK)
+            WRITE(LINE,spec)ZDIST_VEC(K), VALUE(IJK)
           ELSE
-             WRITE(LINE,spec)ZDIST_SC(K), VALUE(IJK)
+            WRITE(LINE,spec)ZDIST_SC(K), VALUE(IJK)
           ENDIF
           CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
-       ENDDO
-    ELSEIF(DISPLAY .EQ. 0) THEN
-       call format_one(spec,nPrec_time,nPrec_length)
-       WRITE(LINE,spec)' Time = ',TIME_NOW
-       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
-       IJK = FUNIJK_LOC(I1, J1, K1)
-       call format_oneC(spec,nPrec_variable,nPrec_length)
-       WRITE(LINE,spec)VAR,' = ',VALUE(IJK)
-       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length + 3)
-    ELSE
-       call format_one(spec,nPrec_time,nPrec_length)
-       WRITE(LINE,spec)' Time = ',TIME_NOW
-       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
-       WRITE(LINE,'(6X,A,13X,A,13X,A,13X,1A8)')'X','Y','Z',VAR
-       CALL WRITE_LINE(FILE_NAME, LINE, 56)
-       DO K = K1, K2d
-          DO J = J1, J2d
-             DO I = I1, I2d
-                IJK = FUNIJK_LOC(I,J,K)
-                XTMP = XDIST_SC(I)
-                YTMP = YDIST_SC(J)
-                ZTMP = ZDIST_SC(K)
-                IF(DIRECTION .EQ. 1) THEN
-                   XTMP = XDIST_VEC(I)
-                ELSEIF(DIRECTION .EQ. 2) THEN
-                   YTMP = YDIST_VEC(J)
-                ELSEIF(DIRECTION .EQ. 3) THEN
-                   ZTMP = ZDIST_VEC(K)
-                ENDIF
-                call format_four(spec,nPrec_location,nPrec_location, &
-                     nPrec_location, &
-                     nPrec_variable,nPrec_length)
+150     CONTINUE
+      ELSEIF(DISPLAY .EQ. 0) THEN
+        call format_one(spec,nPrec_time,nPrec_length)
+        WRITE(LINE,spec)' Time = ',TIME_NOW
+        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
+        IJK = FUNIJK_LOC(I1, J1, K1)
+        call format_oneC(spec,nPrec_variable,nPrec_length)
+        WRITE(LINE,spec)VAR,' = ',VALUE(IJK)
+        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length + 3)
+      ELSE
+        call format_one(spec,nPrec_time,nPrec_length)
+        WRITE(LINE,spec)' Time = ',TIME_NOW
+        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
+        WRITE(LINE,'(6X,A,13X,A,13X,A,13X,1A8)')'X','Y','Z',VAR
+        CALL WRITE_LINE(FILE_NAME, LINE, 56)
+        DO 250 K = K1, K2d
+        DO 250 J = J1, J2d
+        DO 250 I = I1, I2d
+          IJK = FUNIJK_LOC(I,J,K)
+          XTMP = XDIST_SC(I)
+          YTMP = YDIST_SC(J)
+          ZTMP = ZDIST_SC(K)
+          IF(DIRECTION .EQ. 1) THEN
+            XTMP = XDIST_VEC(I)
+          ELSEIF(DIRECTION .EQ. 2) THEN
+            YTMP = YDIST_VEC(J)
+          ELSEIF(DIRECTION .EQ. 3) THEN
+            ZTMP = ZDIST_VEC(K)
+          ENDIF
+          call format_four(spec,nPrec_location,nPrec_location, &
+                                nPrec_location, &
+                                nPrec_variable,nPrec_length)
 
-                WRITE(LINE,spec)XTMP, YTMP, ZTMP, VALUE(IJK)
-                CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
-             ENDDO
-          ENDDO
-       ENDDO
-    ENDIF
-
-    IF (TIME_AVERAGE .AND. END_AVERAGE) THEN
-       IF (DO_XFORMS) THEN
-          IF (FILE_NAME(1:1) .NE. '*') CLOSE(40)
-          RETURN
-       ELSE
-          IF (FILE_NAME(1:1) .NE. '*') then
-             close (40)
-             open (unit=40,file=file_name,access='append')
-          end if
-          GOTO 10
-       END IF
-    END IF
-
-    IF(TIME_NOW .GE. TIME_END) THEN
-       IF (DO_XFORMS) THEN
-          IF (FILE_NAME(1:1) .NE. '*') CLOSE(UNIT=40)
-          RETURN
-       ELSE
-          IF (FILE_NAME(1:1) .NE. '*') then
-             close (40)
-             open (unit=40,file=file_name,access='append')
-          end if
-          GOTO 10
-       END IF
-    END IF
-
-    GOTO 100
-
-    CONTAINS
-
-      ! This routine appears to need its own version of the funijk routine
-      DOUBLE PRECISION FUNCTION FUNIJK_LOC(LI, LJ, LK)
-        IMPLICIT NONE
-        INTEGER, INTENT(IN) :: LI, LJ, LK
-        FUNIJK_LOC = LI + (LJ-1)*IMAX2 + (LK-1)*IJMAX2
-      END FUNCTION FUNIJK_LOC
-
-      DOUBLE PRECISION FUNCTION DZ_T(K)
-        IMPLICIT NONE
-        INTEGER, INTENT(IN) :: K
-        DZ_T = HALF * (DZ(K) + DZ(KP1(K)))
-      END FUNCTION DZ_T
-
-      DOUBLE PRECISION FUNCTION DY_N(J)
-        IMPLICIT NONE
-        INTEGER, INTENT(IN) :: J
-        DY_N = HALF * (DY(J) + DY(JP1(J)))
-      END FUNCTION DY_N
-
-      DOUBLE PRECISION FUNCTION DX_E(I)
-        IMPLICIT NONE
-        INTEGER, INTENT(IN) :: I
-        DX_E = HALF * (DX(I) + DX(IP1(I)))
-      END FUNCTION DX_E
-
+          WRITE(LINE,spec)XTMP, YTMP, ZTMP, VALUE(IJK)
+          CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
+250     CONTINUE
+      ENDIF
+!
+      IF (TIME_AVERAGE .AND. END_AVERAGE) THEN
+        IF (DO_XFORMS) THEN
+           IF (FILE_NAME(1:1) .NE. '*') CLOSE(40)
+           RETURN
+        ELSE
+           IF (FILE_NAME(1:1) .NE. '*') then
+              close (40)
+              open (unit=40,file=file_name,access='append')
+           end if
+           GOTO 10
+        END IF
+      END IF
+!
+      IF(TIME_NOW .GE. TIME_END) THEN
+        IF (DO_XFORMS) THEN
+           IF (FILE_NAME(1:1) .NE. '*') CLOSE(UNIT=40)
+           RETURN
+        ELSE
+           IF (FILE_NAME(1:1) .NE. '*') then
+              close (40)
+              open (unit=40,file=file_name,access='append')
+           end if
+           GOTO 10
+        END IF
+      END IF
+!
+      GOTO 100
       END
 !
       SUBROUTINE WRITE_LINE(FILE_NAME,LINE,NCHARS)

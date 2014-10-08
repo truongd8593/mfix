@@ -54,9 +54,7 @@
 !  <dependent keyword="COORDINATES" value="CARTESIAN"/>
 !  <conflict keyword="COORDINATES" value="CYLINDRICAL"/>
 !  <valid value=".false." note="do not use cartesian grid cut cell technique."/>
-!  <valid value=".true." note="use cartesian grid cut cell
-!  technique. one of the following methods must be used to define the
-!  geometry:"/>
+!  <valid value=".true." note="use cartesian grid cut cell technique. one of the following methods must be used to define the geometry:"/>
       CARTESIAN_GRID = .FALSE.
 !</keyword>
 
@@ -92,9 +90,7 @@
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Number of user-defined functions (currently limited to
-!  0 or 1). if set to 1, the geometry is defined in the user
-!  subroutine eval_usr_fct.f.</description>
+!  <description>Number of user-defined functions (currently limited to 0 or 1). if set to 1, the geometry is defined in the user subroutine eval_usr_fct.f.</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
 !  <valid value="0" note="Do not use user-defined function" alias=""/>
 !  <valid value="1" note="Use one user-defined function" alias=""/>
@@ -120,9 +116,7 @@
 !  <valid value="sphere_int" note="Sphere, internal flow. Needs to define radius(QID)."/>
 !  <valid value="sphere_ext" note="Sphere, external flow. Needs to define radius(QID)."/>
 !  <valid value="C2C" note="Cylinder-to-cylinder conical junction, internal flow. Needs to be defined between two cylinders."/>
-!  <valid value="Torus_int" note="Torus, internal flow. Needs to
-!  define Torus_R1(QID) and Torus_R2(QID).A torus is not a quadric
-!  surface but is defined as a basic shape."/>
+!  <valid value="Torus_int" note="Torus, internal flow. Needs to define Torus_R1(QID) and Torus_R2(QID).A torus is not a quadric surface but is defined as a basic shape."/>
 !  <valid value="Torus_ext" note="Torus, external flow. Needs to define Torus_R1(QID) and Torus_R2(QID)."/>
       quadric_form = 'NORMAL'
 !</keyword>
@@ -391,23 +385,15 @@
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-
 !  <description>Relation between current group and combination of all previous groups.</description>
-!  <valid value="or" note="a point belongs to the computational domain
-!  if f-value for the current group or f-value for the combination of
-!  previous groups is negative"/>
-!  <valid value="and" note="a point belongs to the computational
-!  domain if f-value for the current group and f-value for the
-!  combination of previous groups is negative"/>
+!  <valid value="or" note="a point belongs to the computational domain if f-value for the current group or f-value for the combination of previous groups is negative"/>
+!  <valid value="and" note="a point belongs to the computational domain if f-value for the current group and f-value for the combination of previous groups is negative"/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       RELATION_WITH_PREVIOUS = 'OR'
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Tolerance used to snap an intersection point onto an
-!  existing cell corner (expressed as a fraction of edge length,
-!  between 0.0 and 0.5). For stretched grids, three values can be
-!  entered in the x, y and z directions.</description>
+!  <description>Tolerance used to snap an intersection point onto an existing cell corner (expressed as a fraction of edge length, between 0.0 and 0.5). For stretched grids, three values can be entered in the x, y and z directions.</description>
 !  <range min="0.0" max="0.5" />
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       TOL_SNAP(1)    = 0.00D0  ! 0% of original edge length
@@ -416,9 +402,7 @@
       TOL_SNAP(3)    = UNDEFINED
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Tolerance used to limit acceptable values of normal
-!  distance to the wall (expressed as a fraction of cell diagonal,
-!  between 0.0 and 1.0).</description>
+!  <description>Tolerance used to limit acceptable values of normal distance to the wall (expressed as a fraction of cell diagonal, between 0.0 and 1.0).</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       TOL_DELH       = 0.00D0  ! 0% of original Diagonal
 !</keyword>
@@ -620,8 +604,7 @@
 
 !<keyword category="Output Control" required="false">
 !  <description>Write vtk files at regular intervals.</description>
-!  <valid value=".false." note="do not write vtk files. if there are
-!  cut cells, they will not be displayed from the usual .res file"/>
+!  <valid value=".false." note="do not write vtk files. if there are cut cells, they will not be displayed from the usual .res file"/>
 !  <valid value=".true." note="valid only if cartesian_grid = .true."/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       WRITE_VTK_FILES = .FALSE.
@@ -630,9 +613,7 @@
 !<keyword category="Output Control" required="false">
 !  <description>Use time-dependent vtk file names</description>
 !  <valid value=".false." note="the vtk file overwrites the previous file (recommended for steady-state computation)."/>
-!  <valid value=".true." note="a sequential integer is appended to the
-!  vtk filenames as they are written to create a series of files
-!  (recommended for transient computation)."/>
+!  <valid value=".true." note="a sequential integer is appended to the vtk filenames as they are written to create a series of files (recommended for transient computation)."/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       TIME_DEPENDENT_FILENAME = .TRUE.
 !</keyword>
@@ -695,9 +676,7 @@
 
 !<keyword category="cartesian grid" required="false">
 !  <description>Run code in safe mode.</description>
-!  <valid value="1" note="performs initial preprocessing but use all
-!  original mfix subroutines during flow solution (using only cell
-!  volumes and areas of cut cells)."/>
+!  <valid value="1" note="performs initial preprocessing but use all original mfix subroutines during flow solution (using only cell volumes and areas of cut cells)."/>
 !  <valid value="0" note="runs the code with modified subroutines for cut cell treatment."/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       CG_SAFE_MODE = 0
@@ -722,10 +701,9 @@
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Width of the progress bar (complete status), expressed
-!  in number of characters (between 10 and 80).</description> <range
-!  min="10" max="80" /> <dependent keyword="CARTESIAN_GRID"
-!  value=".TRUE."/>
+!  <description>Width of the progress bar (complete status), expressed in number of characters (between 10 and 80).</description>
+!  <range min="10" max="80" />
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       BAR_WIDTH = 50
 !</keyword>
 
@@ -736,17 +714,14 @@
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Update frequency of progress bar, expressed in percent
-!  of total length (between 1.0 and 100.0).</description> <range
-!  min="1.0" max="100.0" /> <dependent keyword="CARTESIAN_GRID"
-!  value=".TRUE."/>
+!  <description>Update frequency of progress bar, expressed in percent of total length (between 1.0 and 100.0).</description>
+!  <range min="1.0" max="100.0" />
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       BAR_RESOLUTION = 5.0
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Writes the file dashboard.txt at regular
-!  intervals. the file shows a summary of the simulation
-!  progress.</description>
+!  <description>Writes the file dashboard.txt at regular intervals. the file shows a summary of the simulation progress.</description>
       WRITE_DASHBOARD = .FALSE.
 !</keyword>
 
@@ -778,9 +753,7 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
-!  <description>Value of last dx in a segment (x-direction). a
-!  negative value will copy dx from next segment (if
-!  available).</description>
+!  <description>Value of last dx in a segment (x-direction). a negative value will copy dx from next segment (if available).</description>
       LAST_DX  = ZERO
 !</keyword>
 
@@ -801,16 +774,12 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
-!  <description>Value of first dy in a segment (y-direction). a
-!  negative value will copy dy from previous segment (if
-!  available).</description>
+!  <description>Value of first dy in a segment (y-direction). a negative value will copy dy from previous segment (if available).</description>
       FIRST_DY = ZERO
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
-!  <description>Value of last dy in a segment (y-direction). a
-!  negative value will copy dy from next segment (if
-!  available).</description>
+!  <description>Value of last dy in a segment (y-direction). a negative value will copy dy from next segment (if available).</description>
       LAST_DY  = ZERO
 !</keyword>
 
@@ -830,36 +799,29 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
-!  <description>Value of first dz in a segment (z-direction). a
-!  negative value will copy dz from previous segment (if
-!  available).</description>
+!  <description>Value of first dz in a segment (z-direction). a negative value will copy dz from previous segment (if available).</description>
       FIRST_DZ = ZERO
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
-!  <description>Value of last dz in a segment (z-direction). a
-!  negative value will copy dz from next segment (if
-!  available).</description>
+!  <description>Value of last dz in a segment (z-direction). a negative value will copy dz from next segment (if available).</description>
       LAST_DZ  = ZERO
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Turns on the re-indexing of cells. When true, inactive
-!  (dead) cells are removed from computational domain. </description>
+!  <description>Turns on the re-indexing of cells. When true, inactive (dead) cells are removed from computational domain. </description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       RE_INDEXING = .FALSE.
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Attempts to adjust grid partition. Each processor will
-!  be assigned its own size to minimize load imbalance </description>
+!  <description>Attempts to adjust grid partition. Each processor will be assigned its own size to minimize load imbalance  </description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       ADJUST_PROC_DOMAIN_SIZE = .FALSE.
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
-!  <description>Attempts to adjust grid partition. Each processor will
-!  be assigned its own size to minimize load imbalance </description>
+!  <description>Attempts to adjust grid partition. Each processor will be assigned its own size to minimize load imbalance  </description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       REPORT_BEST_DOMAIN_SIZE = .FALSE.
 !</keyword>

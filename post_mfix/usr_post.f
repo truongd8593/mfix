@@ -102,21 +102,21 @@
 !
       DO J = 2, JMAX1
 
-        NI = 0
-        SUMI = ZERO
+	NI = 0
+	SUMI = ZERO
 
         DO I = 2, IMAX1
-          IJK = funijk(I, J, 1)
+	  IJK = funijk(I, J, 1)
           IF(FLUID_AT(IJK)) THEN
-            IF(EP_g(IJK) < 0.5)THEN
-              NI = NI + 1
-              SUMI = SUMI + X_g(IJK, 1)
-            ENDIF
+	    IF(EP_g(IJK) < 0.5)THEN
+	      NI = NI + 1
+	      SUMI = SUMI + X_g(IJK, 1)
+	    ENDIF
           ENDIF
-        ENDDO
+	ENDDO
 
-        IF(NI /= 0) &
-          SUM(J) = SUM(J) + SUMI/REAL(NI)
+	IF(NI /= 0) &
+  	  SUM(J) = SUM(J) + SUMI/REAL(NI)
       ENDDO
 !
       GOTO 100

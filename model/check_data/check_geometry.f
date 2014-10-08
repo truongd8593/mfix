@@ -187,8 +187,8 @@
 
  1100 FORMAT('Error 1100: The des search grid is too fine in the ',A1, &
          '-direction. The',/'maximum particle diameter is larger than',&
-         ' the cell width:',/2x,'MAX DIAM:   ',g12.5,/2x,'CELL ',      &
-         'WIDTH: ',g12.5,/'Decrease the values for DESGRIDSEARCH in ', &
+         ' the cell width:',/2x,'MAX DIAM:   ',g11.5,/2x,'CELL ',      &
+         'WIDTH: ',g11.5,/'Decrease the values for DESGRIDSEARCH in ', &
          'the mfix.dat file.')
 
       RETURN

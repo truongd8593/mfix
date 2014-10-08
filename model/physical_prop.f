@@ -523,14 +523,14 @@
       endif
 
       if(tHeader) then
-         write(lUnit,"(/2x,'Simulation time: ',g12.5)") TIME
+         write(lUnit,"(/2x,'Simulation time: ',g11.5)") TIME
          tHeader = .FALSE.
       endif
 
       write(lUnit,1001) IJK, I_OF(IJK), J_OF(IJK), K_OF(IJK)
-      write(lUnit,"(6x,A,1X,g12.5)",ADVANCE='NO') 'RO_g:', RO_g(IJK)
-      write(lUnit,"(2x,A,1X,g12.5)",ADVANCE='NO') 'P_g:', P_g(IJK)
-      write(lUnit,"(2x,A,1X,g12.5)") 'T_g:', T_g(IJK)
+      write(lUnit,"(6x,A,1X,g11.5)",ADVANCE='NO') 'RO_g:', RO_g(IJK)
+      write(lUnit,"(2x,A,1X,g11.5)",ADVANCE='NO') 'P_g:', P_g(IJK)
+      write(lUnit,"(2x,A,1X,g11.5)") 'T_g:', T_g(IJK)
       if(CARTESIAN_GRID) then
          write(lUnit,"(6x,A,1X,L1)",ADVANCE='NO') 'Cut Cell:', CUT_CELL_AT(IJK)
          write(lUnit,"(6x,A,1X,L1)") 'Small Cell:', SMALL_CELL_AT(IJK)
@@ -617,17 +617,17 @@
       endif
 
       if(tHeader) then
-         write(lUnit,"(/2x,'Simulation time: ',g12.5,'  Phase: ',I2)")&
+         write(lUnit,"(/2x,'Simulation time: ',g11.5,'  Phase: ',I2)")&
              TIME, M
          tHeader = .FALSE.
       endif
 
       N = INERT_SPECIES(M)
       write(lUnit,1001) IJK, I_OF(IJK), J_OF(IJK), K_OF(IJK)
-      write(lUnit,"(6x,A,1X,g12.5)",advance='no') 'RO_s:', RO_s(IJK,M)
-      write(lUnit,"(2x,A,1X,g12.5)",advance='no') 'Base:', BASE_ROs(M)
-      write(lUnit,"(2x,A,1X,g12.5)",advance='no') 'X_s0:', X_s0(M,N)
-      write(lUnit,"(2x,A,1X,g12.5)") 'X_s:', X_s(IJK,M,N)
+      write(lUnit,"(6x,A,1X,g11.5)",advance='no') 'RO_s:', RO_s(IJK,M)
+      write(lUnit,"(2x,A,1X,g11.5)",advance='no') 'Base:', BASE_ROs(M)
+      write(lUnit,"(2x,A,1X,g11.5)",advance='no') 'X_s0:', X_s0(M,N)
+      write(lUnit,"(2x,A,1X,g11.5)") 'X_s:', X_s(IJK,M,N)
 
       if(CARTESIAN_GRID) then
          write(lUnit,"(6x,A,1X,L1)",ADVANCE='NO') 'Cut Cell:', CUT_CELL_AT(IJK)

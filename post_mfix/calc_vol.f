@@ -22,54 +22,40 @@
 !                   XI,XIH                                             C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-SUBROUTINE CALC_VOL
-  !
-  !
-  USE param
-  USE param1
-  USE geometry
-  USE indices
-  USE fldvar
-  USE physprop
-  USE post3d
-  USE compar
-  USE functions
+      SUBROUTINE CALC_VOL
+!
+!
+      Use param
+      Use param1
+      Use geometry
+      Use indices
+      Use fldvar
+      Use physprop
+      Use post3d
+      Use compar
+      Use functions
 
-  IMPLICIT NONE
-  INTEGER  I, J, K, IJK
+      IMPLICIT NONE
+!
+      REAL     DX_E, DY_N, DZ_T
+      INTEGER  I, J, K, IJK
+!
 
-  DO K = 1,KMAX2
-     DO J = 1,JMAX2
-        DO I = 1,IMAX2
-           IJK = FUNIJK(I,J,K)
-           VOL(IJK)    = DX(I)   * DY(J)   * X(I)*DZ(K)
-           VOL_U(IJK)  = DX_E(I) * DY(J)   * X_E(I)*DZ(K)
-           VOL_V(IJK)  = DX(I)   * DY_N(J) * X(I)*DZ(K)
-           VOL_W(IJK)  = DX(I)   * DY(J)   * X(I)*DZ_T(K)
-        END DO
-     END DO
-  END DO
-  !
-  RETURN
-
-CONTAINS
-
-  REAL FUNCTION DZ_T(K)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: K
-    DZ_T = HALF * (DZ(K) + DZ(KP1(K)))
-  END FUNCTION DZ_T
-
-  REAL FUNCTION DY_N(J)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: J
-    DY_N = HALF * (DY(J) + DY(JP1(J)))
-  END FUNCTION DY_N
-
-  REAL FUNCTION DX_E(I)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: I
-    DX_E = HALF * (DX(I) + DX(IP1(I)))
-  END FUNCTION DX_E
-
-END SUBROUTINE CALC_VOL
+      DZ_T(K) = HALF * (DZ(K) + DZ(Kp1(K)))
+      DY_N(J) = HALF * (DY(J) + DY(Jp1(J)))
+      DX_E(I) = HALF * (DX(I) + DX(Ip1(I)))
+!
+      DO K = 1,KMAX2
+      DO J = 1,JMAX2
+      DO I = 1,IMAX2
+        IJK = FUNIJK(I,J,K)
+        VOL(IJK)    = DX(I)   * DY(J)   * X(I)*DZ(K)
+        VOL_U(IJK)  = DX_E(I) * DY(J)   * X_E(I)*DZ(K)
+        VOL_V(IJK)  = DX(I)   * DY_N(J) * X(I)*DZ(K)
+        VOL_W(IJK)  = DX(I)   * DY(J)   * X(I)*DZ_T(K)
+      END DO
+      END DO
+      END DO
+!
+      RETURN
+      END

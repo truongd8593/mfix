@@ -69,7 +69,7 @@
       write (*,*) ' enter ending time for time averaging'
       read  (*,*) tend
 
-      WRITE (*,'(A)',ADVANCE='NO') 'Enter the RUN_NAME for time averaged data > '
+      WRITE (*,'(A,$)') 'Enter the RUN_NAME for time averaged data > '
       READ  (*,'(A60)') TEMP_FILE
 
       do i = 1,len(temp_file)

@@ -544,7 +544,7 @@
 
 
 100   FORMAT(A)
-110   FORMAT(A,E14.7,A)
+110   FORMAT(A,E14.8,A)
 120   FORMAT(A,A)
 10    FORMAT(/1X,3A)
 15    FORMAT(/1X,A)
@@ -1792,7 +1792,7 @@
 
 
 100   FORMAT(A)
-110   FORMAT(A,E14.7,A)
+110   FORMAT(A,E14.8,A)
 120   FORMAT(A,A)
 10    FORMAT(/1X,3A)
 20    FORMAT(A,"_",I4.4,"_",I5.5,".vtu")
@@ -2442,7 +2442,7 @@
 
 40    FORMAT(A,"_",I4.4,".pvtu")
 45    FORMAT(A,".pvtu")
-100   FORMAT(6X,A,E14.7,5A)
+100   FORMAT(6X,A,E14.8,5A)
 110   FORMAT(A)
 
 
@@ -2779,7 +2779,7 @@
            CONVERT  = 'BIG_ENDIAN')
 
       WRITE(UNIT=VTK_UNIT)'# vtk DataFile Version 2.0'//END_REC
-      WRITE(BUFFER,FMT='(A,A,E14.7)')TRIM(RUN_NAME),', Time = ',TIME
+      WRITE(BUFFER,FMT='(A,A,E14.8)')TRIM(RUN_NAME),', Time = ',TIME
       WRITE(UNIT=VTK_UNIT)TRIM(BUFFER)//END_REC
       WRITE(UNIT=VTK_UNIT)TRIM('BINARY')//END_REC
       IF(NO_K) THEN
@@ -3654,12 +3654,15 @@
          WRITE(UNIT_CUT_CELL_LOG,1000)  '################################################################'
       ENDIF
 
-1000 FORMAT(A,E14.7,2X,E14.7)
+
+1000 FORMAT(A,E14.8,2X,E14.8)
 1010 FORMAT(A,I8)
 
 !======================================================================
 !  U-Momentum Cell volumes and areas
 !======================================================================
+
+
 
       MIN_VOL =   LARGE_NUMBER
       MAX_VOL = - LARGE_NUMBER

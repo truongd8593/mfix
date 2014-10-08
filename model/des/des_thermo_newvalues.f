@@ -92,9 +92,9 @@
                IF(DMP_LOG) THEN
                   IF(NP == FOCUS_PARTICLE) THEN
                      WRITE(*,"(//5X,A)")'From: DES_THERMO_NEWVALUES -'
-                     WRITE(*,"(8X,A,D13.6)")'Tp:  ',DES_T_s_NEW(NP)
-                     WRITE(*,"(8X,A,D13.6)")'Tp0: ',DES_T_s_OLD(NP)
-                     WRITE(*,"(8X,A,D13.6)")'Qsrc:',Q_Source(NP)
+                     WRITE(*,"(8X,A,D12.6)")'Tp:  ',DES_T_s_NEW(NP)
+                     WRITE(*,"(8X,A,D12.6)")'Tp0: ',DES_T_s_OLD(NP)
+                     WRITE(*,"(8X,A,D12.6)")'Qsrc:',Q_Source(NP)
                      WRITE(*,"(5X,25('-')/)")
                   ENDIF
                ENDIF

@@ -165,7 +165,7 @@
       SHIFT = merge(-ONE, ONE, BC_PLANE(BCV) == 'N')
       DEM_MI(BCV_I)%OFFSET = BC_Y_s(BCV) + MAX_DIA*SHIFT
       DEM_MI(BCV_I)%L = J + int(SHIFT)
-      if(dFlag) write(*,"(2x,'Offset: ',3x,I4,3x,g12.5)") &
+      if(dFlag) write(*,"(2x,'Offset: ',3x,I4,3x,g11.5)") &
          DEM_MI(BCV_I)%L, DEM_MI(BCV_I)%OFFSET
 
 
@@ -173,7 +173,7 @@
 ! than the particle diameter but not smaller:
       DEM_MI(BCV_I)%WINDOW = MIN(PLEN/WMAX, QLEN/HMAX)
       WINDOW = DEM_MI(BCV_I)%WINDOW
-      if(dFlag) write(*,"(2x,'Windows size: ',g12.5)") WINDOW
+      if(dFlag) write(*,"(2x,'Windows size: ',g11.5)") WINDOW
 
 ! Setup the first direction.
       SHIFT = HALF*(PLEN - WMAX*WINDOW)
@@ -316,14 +316,14 @@
 
  8010 FORMAT(2/,2x,'Storing DEM_MI data:',/4X,'OWNER',5X,'W',5X,'H',   &
          5X,'L',7X,'P',12X,'Q',12X,'R')
- 8011 FORMAT(4x,I5,3(2X,I4),3(2x,g12.5))
+ 8011 FORMAT(4x,I5,3(2X,I4),3(2x,g11.5))
 
 
       if(dFlag) write(*,"(2/,2x,'Inlet area sizes:')")
       if(dFlag) write(*,9000) 'mfix.dat: ', PLEN * QLEN
       if(dFlag) write(*,9000) 'BC_AREA:  ', BC_AREA(BCV)
       if(dFlag) write(*,9000) 'DEM_MI:   ', OCCUPANTS * (WINDOW**2)
- 9000 FORMAT(2x,A,g12.5)
+ 9000 FORMAT(2x,A,g11.5)
 
 ! House keeping.
       IF( allocated(MESH_H)) deallocate(MESH_H)
@@ -461,7 +461,7 @@
       SHIFT = merge(-ONE, ONE, BC_PLANE(BCV) == 'E')
       DEM_MI(BCV_I)%OFFSET = BC_X_w(BCV) + MAX_DIA*SHIFT
       DEM_MI(BCV_I)%L = I + int(SHIFT)
-      if(dFlag) write(*,"(2x,'Offset: ',3x,I4,3x,g12.5)") &
+      if(dFlag) write(*,"(2x,'Offset: ',3x,I4,3x,g11.5)") &
          DEM_MI(BCV_I)%L, DEM_MI(BCV_I)%OFFSET
 
 
@@ -469,7 +469,7 @@
 ! than the particle diameter but not smaller:
       DEM_MI(BCV_I)%WINDOW = MIN(PLEN/WMAX, QLEN/HMAX)
       WINDOW = DEM_MI(BCV_I)%WINDOW
-      if(dFlag) write(*,"(2x,'Windows size: ',g12.5)") WINDOW
+      if(dFlag) write(*,"(2x,'Windows size: ',g11.5)") WINDOW
 
 ! Setup the first direction.
       SHIFT = HALF*(PLEN - WMAX*WINDOW)
@@ -612,14 +612,14 @@
 
  8010 FORMAT(2/,2x,'Storing DEM_MI data:',/4X,'OWNER',5X,'W',5X,'H',   &
          5X,'L',7X,'P',12X,'Q',12X,'R')
- 8011 FORMAT(4x,I5,3(2X,I4),3(2x,g12.5))
+ 8011 FORMAT(4x,I5,3(2X,I4),3(2x,g11.5))
 
 
       if(dFlag) write(*,"(2/,2x,'Inlet area sizes:')")
       if(dFlag) write(*,9000) 'mfix.dat: ', PLEN * QLEN
       if(dFlag) write(*,9000) 'BC_AREA:  ', BC_AREA(BCV)
       if(dFlag) write(*,9000) 'DEM_MI:   ', OCCUPANTS * (WINDOW**2)
- 9000 FORMAT(2x,A,g12.5)
+ 9000 FORMAT(2x,A,g11.5)
 
 ! House keeping.
       IF( allocated(MESH_H)) deallocate(MESH_H)
@@ -759,7 +759,7 @@
       SHIFT = merge(-ONE, ONE, BC_PLANE(BCV) == 'T')
       DEM_MI(BCV_I)%OFFSET = BC_Z_b(BCV) + MAX_DIA*SHIFT
       DEM_MI(BCV_I)%L = K + int(SHIFT)
-      if(dFlag) write(*,"(2x,'Offset: ',3x,I4,3x,g12.5)") &
+      if(dFlag) write(*,"(2x,'Offset: ',3x,I4,3x,g11.5)") &
          DEM_MI(BCV_I)%L, DEM_MI(BCV_I)%OFFSET
 
 
@@ -767,7 +767,7 @@
 ! than the particle diameter but not smaller:
       DEM_MI(BCV_I)%WINDOW = MIN(PLEN/WMAX, QLEN/HMAX)
       WINDOW = DEM_MI(BCV_I)%WINDOW
-      if(dFlag) write(*,"(2x,'Windows size: ',g12.5)") WINDOW
+      if(dFlag) write(*,"(2x,'Windows size: ',g11.5)") WINDOW
 
 ! Setup the first direction.
       SHIFT = HALF*(PLEN - WMAX*WINDOW)
@@ -905,14 +905,14 @@
 
  8010 FORMAT(2/,2x,'Storing DEM_MI data:',/4X,'OWNER',5X,'W',5X,'H',   &
          5X,'L',7X,'P',12X,'Q',12X,'R')
- 8011 FORMAT(4x,I5,3(2X,I4),3(2x,g12.5))
+ 8011 FORMAT(4x,I5,3(2X,I4),3(2x,g11.5))
 
 
       if(dFlag) write(*,"(2/,2x,'Inlet area sizes:')")
       if(dFlag) write(*,9000) 'mfix.dat: ', PLEN * QLEN
       if(dFlag) write(*,9000) 'BC_AREA:  ', BC_AREA(BCV)
       if(dFlag) write(*,9000) 'DEM_MI:   ', OCCUPANTS * (WINDOW**2)
- 9000 FORMAT(2x,A,g12.5)
+ 9000 FORMAT(2x,A,g11.5)
 
 ! House keeping.
       IF( allocated(MESH_H)) deallocate(MESH_H)

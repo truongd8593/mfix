@@ -33,6 +33,7 @@ MODULE interpolation
   END INTERFACE
 
   INTERFACE array_dot_product
+      Module procedure array_dot_product_1d
       Module procedure array_dot_product_2d
       Module procedure array_dot_product_3d
   END INTERFACE
@@ -93,33 +94,54 @@ MODULE interpolation
   FUNCTION array_dot_product_3d(A,B)  !3D Arrays
     Real(prcn):: array_dot_product_3d
 
-    Integer:: j, k, s2, s3
+    Integer:: i, j, k, s1, s2, s3
     Real(prcn), Dimension(:,:,:), Intent(in):: A, B
 
+    s1 = SIZE(A,1)
     s2 = SIZE(A,2)
     s3 = SIZE(A,3)
 
     array_dot_product_3d = zero
-    DO k = 1,s3
-       DO j = 1,s2
-          array_dot_product_3d = array_dot_product_3d + dot_product(A(:,j,k), B(:,j,k))
-       ENDDO
-    ENDDO
+    Do 10 i = 1,s1
+    Do 10 j = 1,s2
+    Do 10 k = 1,s3
+      array_dot_product_3d = array_dot_product_3d   &
+                            + A(i,j,k)*B(i,j,k)
+    10 Continue
   END FUNCTION array_dot_product_3d
 
   FUNCTION array_dot_product_2d(A,B)  !2D Arrays
     Real(prcn):: array_dot_product_2d
 
-    Integer:: j, s2
+    Integer:: i, j, s1, s2
     Real(prcn), Dimension(:,:), Intent(in):: A, B
 
+    s1 = SIZE(A,1)
     s2 = SIZE(A,2)
 
     array_dot_product_2d = zero
-    DO j = 1,s2
-       array_dot_product_2d = array_dot_product_2d + dot_product(A(:,j), B(:,j))
-    ENDDO
+    Do 10 i = 1,s1
+    Do 10 j = 1,s2
+      array_dot_product_2d = array_dot_product_2d   &
+                            + A(i,j)*B(i,j)
+    10 Continue
   END FUNCTION array_dot_product_2d
+
+  FUNCTION array_dot_product_1d(A,B)  !1D Arrays
+    Real(prcn):: array_dot_product_1d
+
+    Integer:: i, s1
+    Real(prcn), Dimension(:), Intent(in):: A, B
+
+    s1 = SIZE(A,1)
+
+    array_dot_product_1d = zero
+    Do 10 i = 1,s1
+      array_dot_product_1d = array_dot_product_1d   &
+                            + A(i)*B(i)
+    10 Continue
+  END FUNCTION array_dot_product_1d
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   SUBROUTINE set_interpolation_stencil(PC, IW, IE, JS, JN, KB, KTP,&
@@ -556,7 +578,7 @@ MODULE interpolation
          WRITE(*,"(5X,A)")'| Fluid Cell | Interp. Weight |'
          WRITE(*,"(5X,'|',12('-'),'|',16('-'),'|')")
          DO LC = 1, 2**DIMN
-            WRITE(*,"(5X,'|',2X,I8,2X,'|',2X,F13.10,2X,'|')")&
+            WRITE(*,"(5X,'|',2X,I8,2X,'|',2X,F12.10,2X,'|')")&
                INTP_IJK(LC), INTP_WEIGHTS(LC)
          ENDDO
          WRITE(*,"(5X,'|',29('-'),'|'//)")

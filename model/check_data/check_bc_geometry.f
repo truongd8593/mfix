@@ -351,7 +351,7 @@
       ENDIF
 
  1100 FORMAT('Error 1100: Invalid location specified for BC ',I3,'.',  &
-         3(/3x,A1,': ',g12.5,',',g12.5,8x,A1,': ',I8,',',I8),/         &
+         3(/3x,A1,': ',g11.5,',',g11.5,8x,A1,': ',I8,',',I8),/         &
          'Please correct the mfix.dat file.')
 
       CALL FINL_ERR_MSG
@@ -547,7 +547,7 @@
       ENDIF
 
  1100 FORMAT('Error 1100: Invalid location specified for BC ',I3,'.',  &
-         3(/3x,A1,': ',g12.5,',',g12.5,8x,A1,': ',I8,',',I8),/         &
+         3(/3x,A1,': ',g11.5,',',g11.5,8x,A1,': ',I8,',',I8),/         &
          'Please correct the mfix.dat file.')
 
       CALL FINL_ERR_MSG

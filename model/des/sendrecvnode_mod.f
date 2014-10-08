@@ -216,7 +216,9 @@
       character(len=80), parameter :: name = 'des_exchangenode'
       integer :: lindx,lcount,lcount2,lneigh,ltag,lerr,lsource,ldest
       integer :: lstart,lend,ltotal
+      integer :: message_tag
 !-----------------------------------------------
+      message_tag(lsource,ldest) = lsource+numpes*ldest+200
 
 ! steps pack the buffer call isend and irecv
       do lcount = 1,itotalneigh
@@ -256,15 +258,6 @@
          end do
       end if
       return
-
-      contains
-
-        integer function message_tag(lsource,ldest)
-          implicit none
-          integer, intent(in) :: lsource,ldest
-          message_tag = lsource+numpes*ldest+200
-        end function message_tag
-
       end subroutine des_exchangenode
 
 !------------------------------------------------------------------------

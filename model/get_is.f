@@ -169,7 +169,7 @@
       ENDIF
 
  1101 FORMAT('Error 1101: Invalid location specified for IS ',I3,'.',  &
-         3(/3x,A1,': ',g12.5,',',g12.5,8x,A1,': ',I8,',',I8),/         &
+         3(/3x,A1,': ',g11.5,',',g11.5,8x,A1,': ',I8,',',I8),/         &
          'Please correct the mfix.dat file.')
 
       CALL FINL_ERR_MSG
