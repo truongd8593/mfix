@@ -1678,8 +1678,7 @@
       ENDIF
 
       RETURN
-      END
-
+    END SUBROUTINE BUILD_CONE_FOR_C2C
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1868,13 +1867,10 @@
          ENDIF
       END DO
 
-
-
 100         FORMAT(1X,A,I8)
 110         FORMAT(1X,A,A)
 120         FORMAT(1X,A,F14.8,/)
 130         FORMAT(1X,A,I8,F14.8,/)
-
 
  1000 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Computed volumetric flow is not equal to specified value',/,&
@@ -1994,21 +1990,14 @@
                   NPS = PSV
                enddo PS_LP
 
-
 !               print *,'Last PS=',NPS
 
 ! Next loop through all cells, and when a cut-cell with CG_MI is found, add a point source in this cell
 
             DO IJK = ijkstart3, ijkend3
                BCV = BC_ID(IJK)
-
-
-
                IF(BCV>0) THEN
-
-
                   IF(CG_MI_CONVERTED_TO_PS(BCV).AND.INTERIOR_CELL_AT(IJK).AND.VOL(IJK)>ZERO) THEN
-
 
                      NPS = NPS + 1
 
@@ -2053,7 +2042,6 @@
                         PS_X_g(NPS,N)    = BC_X_g(BCV,N)
                      ENDDO
 
-
                      DO M=1, MMAX
                         PS_MASSFLOW_s(NPS,M) = BC_MASSFLOW_s(BCV,M) * VOL(IJK) / BC_VOL(BCV)
 
@@ -2085,19 +2073,10 @@
                      ENDDO
 
 !                     print*,'PS created:',NPS,PS_MASSFLOW_g(NPS),PS_VOLUME(NPS),BC_VOL(BCV)
-
-
-
                   ENDIF
                ENDIF
 
-
-
             ENDDO  ! IJK Loop
-
-
-
-
 
          endif  ! Work done by each processor in same order as rank
 
@@ -2124,22 +2103,15 @@
          call bcast(PS_T_s,iproc)
          call bcast(PS_VOLUME,iproc)
 
-
-
       enddo
-
-
 
       CALL MPI_BARRIER(MPI_COMM_WORLD,mpierr)
 !      print*,'Leaving test',MyPE
 !      call mfix_exit(myPE)
 
-
       RETURN
 
-
       END SUBROUTINE CONVERT_CG_MI_TO_PS
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -2156,8 +2128,6 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CONVERT_CG_MI_TO_PS_PE
-
-
 
       USE physprop
       USE scales
@@ -2227,8 +2197,6 @@
 !      ENDDO
 !      RETURN
 
-
-
       NPS = 0
 
       PS_LP: do PSV = 1, DIMENSION_PS
@@ -2243,14 +2211,10 @@
 ! Loop though each cell. When a CG_MI is found convert it to a single point source
 ! and change the BC_TYPE to Free-slip
 
-
       DO IJK = ijkstart3, ijkend3
          BCV = BC_ID(IJK)
          IF(BCV>0) THEN
-
-
             IF(CG_MI_CONVERTED_TO_PS(BCV).AND.INTERIOR_CELL_AT(IJK).AND.VOL(IJK)>ZERO) THEN
-
 
                NPS = NPS + 1
 
@@ -2288,8 +2252,6 @@
                ELSE
                   PS_W_g(NPS)    = BC_W_g(NPS)
                ENDIF
-
-
 
 ! This is a temporary setting for the solids phase and will need to be generalalized
                PS_MASSFLOW_s(NPS,1) = 0.0
@@ -2329,8 +2291,9 @@
 
 !                  PS_MASSFLOW_g(NPS) = ZERO
 
-
-               print*,'PS created:',NPS,PS_MASSFLOW_g(NPS),PS_VOLUME(NPS),PS_I_w(NPS),PS_J_n(NPS),PS_K_b(NPS),INTERIOR_CELL_AT(IJK),PS_U_g(NPS),PS_V_g(NPS),PS_W_g(NPS),CUT_CELL_AT(IJK),Normal_S(IJK,1),Normal_S(IJK,2),Normal_S(IJK,3)
+               print*,'PS created:',NPS,PS_MASSFLOW_g(NPS),PS_VOLUME(NPS),PS_I_w(NPS),PS_J_n(NPS),PS_K_b(NPS), &
+                    INTERIOR_CELL_AT(IJK),PS_U_g(NPS),PS_V_g(NPS),PS_W_g(NPS), &
+                    CUT_CELL_AT(IJK),Normal_S(IJK,1),Normal_S(IJK,2),Normal_S(IJK,3)
 !               ENDIF
 
 !               PS_DEFINED(NPS) = .FALSE.
@@ -2338,14 +2301,12 @@
          ENDIF
       ENDDO
 
-
 !      DO BCV = 1, DIMENSION_BC
 !         IF (BC_TYPE(BCV) == 'CG_MI') THEN
 !            BC_TYPE(BCV) = 'CG_NSW'
 !            print*,'Converted CG_MI to CG_FSW for BC#',BCV
 !         ENDIF
 !      ENDDO
-
 
 100         FORMAT(1X,A,I8)
 110         FORMAT(1X,A,A)
@@ -3690,9 +3651,9 @@
             WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,numPEs-1
-               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC), &
+                    DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
-
 
             DO IPROC = 0 ,numPEs-1
                NCPP_OLD(IPROC) = (imax3-imin3+1)*(JSIZE_ALL(IPROC)+4)
@@ -3721,26 +3682,9 @@
                CALL MFIX_EXIT(myPE)
             ENDIF
 
-
-
-
-
-
          ELSEIF(NODESK>1) THEN                            ! DOMAIN DECOMPOSITION IN K-DIRECTION
 
-
-
-
-
-
-
-
          ENDIF !(NODESI,NODESJ, OR NODESK)
-
-
-
-
-
 
          PRINT_STATISTICS = .TRUE.
 
@@ -4361,7 +4305,8 @@
             JSIZE_ALL = JSIZE_OLD
 
 ! Get load imbalance before optimization
-            CALL GET_LIP_WITH_GHOST_LAYERS(NODESJ,GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL,NCPP_OLD,NCPP_OLD_WITH_GHOST,LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
+            CALL GET_LIP_WITH_GHOST_LAYERS(NODESJ,GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL, &
+                 NCPP_OLD,NCPP_OLD_WITH_GHOST,LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
 
             TOTAL_NUC  = SUM(NCPP_OLD_WITH_GHOST(0:NODESJ-1))
             IDEAL_NCPP = TOTAL_NUC / NODESJ
@@ -4374,7 +4319,8 @@
             WRITE (*, 1000) '   J-NODE       J-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESJ-1
-               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC),DBLE(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC), &
+                    DBLE(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
@@ -4392,7 +4338,8 @@
             WRITE (*, 1000) '   J-NODE       J-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESJ-1
-               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC), &
+                    DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
@@ -4431,7 +4378,8 @@
             KSIZE_ALL = KSIZE_OLD
 
 ! Get load imbalance before optimization
-            CALL GET_LIP_WITH_GHOST_LAYERS(NODESK,GLOBAL_NUC_K(KMIN1:KMAX1),KMIN1,KMAX1,KSIZE_ALL,NCPP_OLD,NCPP_OLD_WITH_GHOST,LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
+            CALL GET_LIP_WITH_GHOST_LAYERS(NODESK,GLOBAL_NUC_K(KMIN1:KMAX1),KMIN1,KMAX1,KSIZE_ALL, &
+                 NCPP_OLD,NCPP_OLD_WITH_GHOST,LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
 
             TOTAL_NUC  = SUM(NCPP_OLD_WITH_GHOST(0:NODESK-1))
             IDEAL_NCPP = TOTAL_NUC / NODESK
@@ -4444,7 +4392,8 @@
             WRITE (*, 1000) '   K-NODE       K-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESK-1
-               WRITE (*, 1020) IPROC,KSIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC),DBLE(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,KSIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC), &
+                    DBLE(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
@@ -4462,7 +4411,8 @@
             WRITE (*, 1000) '   K-NODE       K-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESK-1
-               WRITE (*, 1020) IPROC,KSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,KSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC), &
+                    DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
@@ -5165,11 +5115,8 @@
 
            JSIZE_ALL = JSIZE_OLD
 
-
-
-
-
-      CALL GET_LIP_WITH_GHOST_LAYERS(NODESJ,GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL,NCPP_OLD,NCPP_OLD_WITH_GHOST,LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
+      CALL GET_LIP_WITH_GHOST_LAYERS(NODESJ,GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL, &
+           NCPP_OLD,NCPP_OLD_WITH_GHOST,LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
 
 
 !      print*,'INITIAL ESTIMATE OF LIP, before minimizing LIP:',LIP_OLD
@@ -5180,12 +5127,6 @@
 !            WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC)
 !         ENDDO
 !         WRITE (*, 1000) '================================================='
-
-
-
-
-
-
 
            CALL MINIMIZE_LOAD_IMBALANCE(nodesj,GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL,NCPP,NCPP_WITH_GHOST)
 
@@ -5201,7 +5142,8 @@
             WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,numPEs-1
-               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC), &
+                    DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
 
 

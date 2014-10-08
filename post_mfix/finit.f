@@ -85,7 +85,7 @@
          GOTO 20
       END IF
 !
-10    WRITE (*,'(A,$)') ' Enter the RUN_NAME to post_process > '
+10    WRITE (*,'(A)',ADVANCE='NO') ' Enter the RUN_NAME to post_process > '
       READ  (*,'(A)') RUN_NAME
       CALL MAKE_UPPER_CASE(RUN_NAME,60)
  20   IF(.NOT. OPEN_FILEP(RUN_NAME,'RESTART_1',N_SPX))GOTO 10

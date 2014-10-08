@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                         C
 !     Module name: DES_INIT_NAMELIST                                      C
-!     Purpose: DES - initialize the des-namelist                          C                                                                      C
+!     Purpose: DES - initialize the des-namelist                          C
 !                                                                         C
 !     Reviewer: Rahul Garg                               Date: 01-Aug-07  C
 !     Comments: Added some interpolation based inputs                     C

@@ -569,7 +569,8 @@
 !   Initialize Array mapping (I,J,K) to IJK
         INCREMENT_ARRAYS_ALLOCATED = .FALSE.
 
-        allocate(IJK_ARRAY_OF(istart3-1:iend3+1,jstart3-1:jend3+1,kstart3-1:kend3+1))   ! Must extend range such that neighbors (IM,JP etc...) stay in bound
+        ! Must extend range such that neighbors (IM,JP etc...) stay in bound
+        allocate(IJK_ARRAY_OF(istart3-1:iend3+1,jstart3-1:jend3+1,kstart3-1:kend3+1))
 
         allocate(DEAD_CELL_AT(imin3-1:imax3+1,jmin3-1:jmax3+1,kmin3-1:kmax3+1))
 

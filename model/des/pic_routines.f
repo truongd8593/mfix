@@ -576,7 +576,8 @@
       !TOT_CASE = case1_count + case2_count + case3_count + case4_count
       !IF(TOT_CASE.GT.0) THEN
       !WRITE(*,'(A, 4(2x,i10))') 'CASE COUNT NUMBERS  = ', case1_count ,case2_count ,case3_count ,case4_count
-      !WRITE(*,'(A, 4(2x,g12.7))') 'CASE COUNT %AGE = ', real(case1_count)*100./real(tot_case),real(case2_count)*100./real(tot_case), real(case3_count)*100./real(tot_case), real(case4_count)*100./real(tot_case)
+      !WRITE(*,'(A, 4(2x,g12.7))') 'CASE COUNT %AGE = ', real(case1_count)*100./real(tot_case), &
+      !     real(case2_count)*100./real(tot_case), real(case3_count)*100./real(tot_case), real(case4_count)*100./real(tot_case)
       !ENDIF
       RETURN
 
@@ -637,7 +638,8 @@
 
          DO IJK = IJKSTART3, IJKEND3
             IF(FLUID_AT(IJK)) THEN
-               PIC_P_S(IJK,1) = PSFAC_FRIC_PIC * ((1.d0 - EP_G(IJK))**FRIC_EXP_PIC)/ MAX(EP_G(IJK) - EP_STAR, FRIC_NON_SING_FAC*EP_G(IJK))
+               PIC_P_S(IJK,1) = PSFAC_FRIC_PIC * ((1.d0 - EP_G(IJK))**FRIC_EXP_PIC)/ MAX(EP_G(IJK) &
+                    - EP_STAR, FRIC_NON_SING_FAC*EP_G(IJK))
                !write(102,'(2(2x,i4),2(2x,g17.8))') I_OF(IJK), J_OF(IJK), EP_S(IJK,1), P_STAR(IJK)
             ELSE
                !So that ghost cells have higher pressure
@@ -892,8 +894,10 @@
                      sstencil(i,j,k) = sstencil(i,j,k) + ep_g(ijkp)*vol_ijkp + ep_g(ipjkp)*vol_ipjkp &
                      & + ep_g(ijpkp)*vol_ijpkp + ep_g(ipjpkp)*vol_ipjpkp
 
-                     psgradstencil(i,j,k,1) = psgradstencil(i,j,k,1)+PS_FORCE_PIC(ijkp,1)*VOL(ijkp) + PS_FORCE_PIC(ijpkp,1)*vol(ijpkp)
-                     psgradstencil(i,j,k,2) = psgradstencil(i,j,k,2)+PS_FORCE_PIC(ijkp,2)*vol(ijkp) + PS_FORCE_PIC(ipjkp,2)*vol(ipjkp)
+                     psgradstencil(i,j,k,1) = psgradstencil(i,j,k,1) &
+                          + PS_FORCE_PIC(ijkp,1)*VOL(ijkp) + PS_FORCE_PIC(ijpkp,1)*vol(ijpkp)
+                     psgradstencil(i,j,k,2) = psgradstencil(i,j,k,2) &
+                          + PS_FORCE_PIC(ijkp,2)*vol(ijkp) + PS_FORCE_PIC(ipjkp,2)*vol(ipjkp)
                      psgradstencil(i,j,k,3) = PS_FORCE_PIC(cur_ijk,3)*vol(cur_ijk)+&
                      & PS_FORCE_PIC(ijpk,3)*vol(ijpk)+PS_FORCE_PIC(ipjk,3)*vol(ipjk)+&
                      & PS_FORCE_PIC(ipjpk,3)*vol(ipjpk)
@@ -1267,10 +1271,12 @@
       WRITE(filename,'(A,"_",I5.5,".dat")') TRIM(RUN_NAME)//'_U_S_',myPE
       OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown')
       IF(DIMN.eq.2) then
-         write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ',' "EP_s " ', ' "U_S" ', ' "V_S" ',' "DES_U_s" ', ' "DES_V_s" '!, ' "P_S_FOR1" ', ' "P_S_FOR2" '
+         write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ', &
+              ' "EP_s " ', ' "U_S" ', ' "V_S" ',' "DES_U_s" ', ' "DES_V_s" '!, ' "P_S_FOR1" ', ' "P_S_FOR2" '
          write(1000,*)'ZONE F=POINT, I=', (IEND3-ISTART3)+1,  ', J=', JEND3-JSTART3+1, ', K=', KEND3-KSTART3 + 1
       else
-         write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ',' "EP_s " ', ' "U_S" ', ' "V_S" ', ' "W_S" ',' "DES_U_s" ', ' "DES_V_s" ', ' "DES_W_s" '!, &
+         write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ', &
+              ' "EP_s " ', ' "U_S" ', ' "V_S" ', ' "W_S" ',' "DES_U_s" ', ' "DES_V_s" ', ' "DES_W_s" '!, &
         ! & ' "P_S_FOR1" ', ' "P_S_FOR2" ', ' "P_S_FOR3" '
          write(1000,*)'ZONE F=POINT, I=', (IEND3-ISTART3)+1,  ', J=', JEND3-JSTART3+1, ', K=', KEND3-KSTART3 + 1
       ENDIF
@@ -1304,8 +1310,10 @@
       WRITE(FILENAME,'(A,"_",I5.5,".DAT")') TRIM(RUN_NAME)//'_PS_FORCE_',myPE
       OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown')
 
-      IF(DIMN.eq.3) write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ',' "DELPX" ', '"DELPY"', '"DELPZ" ',' "US_part" ', '"VS_part"' , '"WS_part"', '"EP_s_part"'
-      IF(DIMN.eq.2) write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "DELPX" ', '"DELPY"', ' "US_part" ', '"VS_part"' , '"EP_S_part"'
+      IF(DIMN.eq.3) write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ', &
+           ' "DELPX" ', '"DELPY"', '"DELPZ" ',' "US_part" ', '"VS_part"' , '"WS_part"', '"EP_s_part"'
+      IF(DIMN.eq.2) write(1000,*)'VARIABLES= ',' "X" ',' "Y" ', &
+           ' "DELPX" ', '"DELPY"', ' "US_part" ', '"VS_part"' , '"EP_S_part"'
 
       PC = 1
       DO LL = 1, MAX_PIP
@@ -1315,9 +1323,10 @@
          pc = pc+1
          IF(PEA(LL,4)) CYCLE
 
-         WRITE(1000,'(10( 2x, g17.8))') (DES_POS_NEW(IDIM, LL), IDIM = 1, DIMN), (PS_GRAD(LL, IDIM) , IDIM = 1, DIMN), (AVGSOLVEL_P (IDIM, LL) , IDIM = 1, DIMN), 1-EPg_P(LL)
+         WRITE(1000,'(10( 2x, g17.8))') (DES_POS_NEW(IDIM, LL), IDIM = 1, DIMN), &
+              (PS_GRAD(LL, IDIM) , IDIM = 1, DIMN), (AVGSOLVEL_P (IDIM, LL) , IDIM = 1, DIMN), 1-EPg_P(LL)
       ENDDO
-               close(1000, status='keep')
+      close(1000, status='keep')
 
       !write(*,*) 'want to quit ?', LL, mAX_PIP, PIP
       !read(*,*) finish

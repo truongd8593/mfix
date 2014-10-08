@@ -347,7 +347,7 @@
          NEXT_REC = NEXT_REC + 1
          DO N = 1, nRR
            CALL IN_BIN_R(UNIT_SPX+10,ReactionRates(1,N),IJKMAX2, &
-							NEXT_REC)
+                                                        NEXT_REC)
          end do
          REC_POINTER(10) = NEXT_REC
       END IF
@@ -368,10 +368,10 @@
          READ (UNIT_SPX + 11, REC=NEXT_REC) TIME_REAL(11), NSTEP
          NEXT_REC = NEXT_REC + 1
 
-	 IF(K_Epsilon) THEN
+         IF(K_Epsilon) THEN
            CALL IN_BIN_R (UNIT_SPX + 11,K_Turb_G , IJKMAX2,NEXT_REC)
            CALL IN_BIN_R (UNIT_SPX + 11,E_Turb_G , IJKMAX2,NEXT_REC)
-	 ENDIF
+         ENDIF
          REC_POINTER(11) = NEXT_REC
       ENDIF
 

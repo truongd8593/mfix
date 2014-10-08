@@ -147,10 +147,10 @@
 ! Total number of particles at BCV injected per second
          NPpSEC = sum(NPMpSEC)
 
- 1100 FORMAT(/2x,'Conversion Info: Phase ',I2,/4x,'Velocity: ',g11.5,/ &
+ 1100 FORMAT(/2x,'Conversion Info: Phase ',I2,/4x,'Velocity: ',g12.5,/ &
          4X,'NPMpSEC = ',F11.1)
 
-         if(dFlag) write(*,"(/2x,'Max Velocity:',3x,g11.5)") MAX_VEL
+         if(dFlag) write(*,"(/2x,'Max Velocity:',3x,g12.5)") MAX_VEL
          if(dFlag) write(*,"( 2x,'NPpSEC:',3x,F11.1)") NPpSEC
 
 ! The number of total particles per solid time step DTSOLID
@@ -178,8 +178,8 @@
          MAXIPV = MAX_DIA/( DTSOLID*dble(PI_FACTOR(BCV_I)) * dble(     &
             FLOOR(CEILING(real(OCCUPANTS)/2.0)/real(PI_COUNT(BCV_I)))))
 
-         if(dFlag) write(*,"(/2x,'MaxIPV:',3x,g11.5)") MAXIPV
-         if(dFlag) write(*,"( 2x,'MinIPV:',3x,g11.5)") MINIPV
+         if(dFlag) write(*,"(/2x,'MaxIPV:',3x,g12.5)") MAXIPV
+         if(dFlag) write(*,"( 2x,'MinIPV:',3x,g12.5)") MINIPV
 
          IF(MAX_VEL < MINIPV) THEN
             WRITE(ERR_MSG,1110) BCV, MAX_VEL, MINIPV
@@ -193,9 +193,8 @@
          'velocity normal to the flow plane.',//' > If MASSFLOW or ', &
          'VOLFLOW are defined, decrease the solids volume',/3x,       &
          'fraction to increase solids velocity.',//2x,'Max user-',    &
-         'specified BC velocity:   ',g11.5,/2x,'Minimum required ',   &
-         'solids Velocity: ',g11.5)
-
+         'specified BC velocity:   ',g12.5,/2x,'Minimum required ',   &
+         'solids Velocity: ',g12.5)
 
 ! Set all BC solids velocities to the largest velocity and recalculate
 ! BC_EP_s to determine the magnitude of the change.

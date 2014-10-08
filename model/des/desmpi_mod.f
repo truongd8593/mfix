@@ -515,10 +515,7 @@
 !-----------------------------------------------
       character(len=80), parameter :: name = 'desmpi_sendrecv_init'
       integer :: ldebug,ltag,lerr,lsource,ldest,lrecvface
-      integer :: message_tag
 !-----------------------------------------------
-
-      message_tag(lsource,ldest,lrecvface) = lsource+numpes*ldest+numpes*numpes*lrecvface+100
 
 ! set the debug flag
       ldebug = 0
@@ -542,7 +539,16 @@
          call mpi_check( name //':mpi_isend ', lerr )
       end if
       return
-      end subroutine desmpi_sendrecv_init
+
+    contains
+
+      integer function message_tag(lsource,ldest,lrecvface)
+        implicit none
+        integer, intent(in) :: lsource,ldest,lrecvface
+        message_tag = lsource+numpes*ldest+numpes*numpes*lrecvface+100
+      end function message_tag
+
+    end subroutine desmpi_sendrecv_init
 
 !------------------------------------------------------------------------
 ! Subroutine       : desmpi_sendrecv_wait

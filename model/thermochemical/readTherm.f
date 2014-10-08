@@ -445,7 +445,7 @@
       INTEGER :: I
 
       DO I = 1, len(C)
-        IF(C(I:I) == '	')C(I:I)=' '
+        IF(C(I:I) == CHAR(9)) C(I:I)=' '
       ENDDO
 
       RETURN
@@ -480,7 +480,7 @@
 ! Look at each entry of the string. Once a tab is located, the rest of
 ! the string is replaced by blank spaces.
       DO I = 1, len(C)
-        IF(C(I:I) == '	')tabFound = .TRUE.
+        IF(C(I:I) == CHAR(9) ) tabFound = .TRUE.
         if(tabFound) C(I:I)=' '
       ENDDO
 

@@ -192,8 +192,8 @@
       ENDIF
 
  1202 FORMAT('Error 1202: ',A1,'LENGTH and sum(D',A1,') are not ',     &
-         'consistent.',/3x,A1,'LENGTH = ',g11.5,3x,'sum(D',A1,') = ',  &
-         g11.5,/3x,'ERROR   = ',g11.5,3x,'ERR TOL = ',g11.5,/'  ')
+         'consistent.',/3x,A1,'LENGTH = ',g12.5,3x,'sum(D',A1,') = ',  &
+         g12.5,/3x,'ERROR   = ',g12.5,3x,'ERR TOL = ',g12.5,/'  ')
 
       DO LC = NA + 1, DIMEN
          IF(SHIFT .AND. DA(LC)/=UNDEFINED) THEN
