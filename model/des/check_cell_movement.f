@@ -145,7 +145,7 @@
          ENDIF
       ENDDO
 
- 1101 FORMAT('Particle ',I10,' moved into cell with ',A,' index ',I6,/ &
+ 1101 FORMAT('Particle ',A,' moved into cell with ',A,' index ',I6,/ &
          3x,A,'-Position: ',g11.4,6x,A,'-Velocity:',g11.4,/' ')
 
       WRITE(ERR_MSG, 1102)

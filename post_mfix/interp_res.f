@@ -262,7 +262,7 @@
 !
       CLOSE(UNIT_RES)
       IF (.NOT.DO_XFORMS) THEN
-         WRITE(*,'(/A,$)') ' Enter a new RUN_NAME > '
+         WRITE(*,'(/A)',ADVANCE='NO') ' Enter a new RUN_NAME > '
          READ(*,'(A)')RUN_NAME
       ELSE
          RUN_NAME = TEMP_FILE(1:60)
@@ -273,7 +273,7 @@
       CALL MAKE_UPPER_CASE(RUN_NAME, 60)
 200   DONE = OPEN_FILEP(RUN_NAME, 'NEW', 0)
       IF(.NOT.DONE) THEN
-        WRITE(*,'(/A,$)') &
+        WRITE(*,'(/A)',ADVANCE='NO') &
           ' Unable to open RES file. Enter a new RUN_NAME > '
         READ(*,'(A)')RUN_NAME
         GOTO 200
@@ -483,7 +483,7 @@
 !  Write the new RES file
 !
       IF (.NOT.DO_XFORMS) THEN
-         WRITE(*,'(/A,$)') &
+         WRITE(*,'(/A)',ADVANCE='NO') &
                ' Do you need time to be reset to 0.0 (Y/N) ?'
          READ(*,'(A)')RUN_NAME
       ELSE

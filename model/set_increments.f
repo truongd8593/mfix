@@ -489,7 +489,7 @@
                                   .OR.STANDARD_V_CELL_AT(IJK)&
                                   .OR.STANDARD_W_CELL_AT(IJK)
 
-         ANY_GLOBAL_GHOST_CELL =     (I < IMIN1).OR.(I > IMAX1)&                        ! only along global ghost cells (MIN and MAX indices)
+         ANY_GLOBAL_GHOST_CELL = (I < IMIN1).OR.(I > IMAX1)&  ! only along global ghost cells (MIN and MAX indices)
                            .OR.(J < JMIN1).OR.(J > JMAX1)&
                            .OR.(K < KMIN1).OR.(K > KMAX1)
 
@@ -500,7 +500,7 @@
 
             DEAD_CELL_AT(I,J,K) = .TRUE.
 
-            IF(I==IMIN1)  DEAD_CELL_AT(IMIN3:IMIN2,J,K) = .TRUE.           ! Extend dead cells to global ghost layers
+            IF(I==IMIN1)  DEAD_CELL_AT(IMIN3:IMIN2,J,K) = .TRUE. ! Extend dead cells to global ghost layers
             IF(I==IMAX1)  DEAD_CELL_AT(IMAX2:IMAX3,J,K) = .TRUE.
 
             IF(J==JMIN1)  DEAD_CELL_AT(I,JMIN3:JMIN2,K) = .TRUE.
@@ -518,7 +518,7 @@
 
       IF(.NOT.MINIMIZE_SEND_RECV) THEN
 
-         DEAD_CELL_AT(ISTART3:ISTART1,JSTART3:JEND3,KSTART3:KEND3) = .FALSE.           ! Try: Keep all send/recv layers
+         DEAD_CELL_AT(ISTART3:ISTART1,JSTART3:JEND3,KSTART3:KEND3) = .FALSE. ! Try: Keep all send/recv layers
          DEAD_CELL_AT(IEND1:IEND3,JSTART3:JEND3,KSTART3:KEND3) = .FALSE.
 
          DEAD_CELL_AT(ISTART3:IEND3,JSTART3:JSTART1,KSTART3:KEND3) = .FALSE.
@@ -531,7 +531,7 @@
 
 
 
-      IF(NO_K) THEN                                                                            ! Extend dead cells to corners of ghost layers                  <---------------------  SHOULD IT BE SKIPPED  ??
+      IF(NO_K) THEN  ! Extend dead cells to corners of ghost layers  <---------------------  SHOULD IT BE SKIPPED  ??
          DO K =  KMIN3, KMAX3,-1
             IF(DEAD_CELL_AT(IMAX1  ,JMAX1  ,K))  DEAD_CELL_AT(IMAX2:IMAX3    ,JMAX2:JMAX3    ,K) = .TRUE.
             IF(DEAD_CELL_AT(IMAX1  ,JMIN1,K))  DEAD_CELL_AT(IMAX2:IMAX3    ,JMIN3:JMIN2,K) = .TRUE.
@@ -1948,7 +1948,8 @@
             WRITE(*,1000)"============================================================================="
             WRITE(*,1070)'MAX # OF CELLS (BACKGRD)    = ',MAXVAL(NCPP_UNIFORM_ALL),'     AT PROCESSOR: ',MAXLOC(NCPP_UNIFORM_ALL)-1
             WRITE(*,1070)'MAX # OF CELLS (RE-INDEXED) = ',MAXVAL(NEW_IJKSIZE3_ALL),'     AT PROCESSOR: ',MAXLOC(NEW_IJKSIZE3_ALL)-1
-            WRITE(*,1080)'DIFFERENCE (%)              = ',DBLE(MAXVAL(NEW_IJKSIZE3_ALL)-MAXVAL(NCPP_UNIFORM_ALL))/DBLE(MAXVAL(NCPP_UNIFORM_ALL))*100.0
+            WRITE(*,1080)'DIFFERENCE (%)              = ', &
+                 DBLE(MAXVAL(NEW_IJKSIZE3_ALL)-MAXVAL(NCPP_UNIFORM_ALL))/DBLE(MAXVAL(NCPP_UNIFORM_ALL))*100.0
            WRITE(*,1000)"============================================================================="
          ENDIF
          call MPI_BARRIER(MPI_COMM_WORLD, mpierr)

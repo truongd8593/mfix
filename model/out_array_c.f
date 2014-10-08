@@ -49,7 +49,7 @@
       CHARACTER(LEN=4) :: ARRAY(*)
 !
 !                       message to print out
-      CHARACTER*(*)     MESSAGE
+      CHARACTER(LEN=*) :: MESSAGE
 !
 ! local variables
 !

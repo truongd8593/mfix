@@ -48,10 +48,10 @@
       INTEGER           I, J, K, IJK
 
       IF (.NOT.DO_XFORMS) THEN
-         WRITE (*,'(A,$)')&
+         WRITE (*,'(A)',ADVANCE='NO')&
                  ' Enter time to start and end time averaging > '
          READ  (*,*) TIME_START, TIME_END
-         WRITE (*,'(A,$)')' Enter solids phase number > '
+         WRITE (*,'(A)',ADVANCE='NO')' Enter solids phase number > '
          READ(*,*) M_USE
          CALL GET_FILE_NAME(TEMP_FILE)
       END IF

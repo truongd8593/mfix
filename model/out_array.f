@@ -50,7 +50,7 @@
       DOUBLE PRECISION  ARRAY(*)
 !
 !                       message to print out
-      CHARACTER*(*)     MESSAGE
+      CHARACTER(LEN=*) :: MESSAGE
 !
 ! local variables
 !

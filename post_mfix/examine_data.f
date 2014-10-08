@@ -24,18 +24,18 @@
       ! format_one
       subroutine format_one(spec,nPrec,sLen)
       implicit none
-      character*(*) :: spec
+      character(len=*) :: spec
       integer       :: nPrec,w,sLen
 
       if (nPrec.lt.0) then
          spec = '(a,g12.5)'
-	 sLen = 12
+         sLen = 12
       else
          w = nPrec + 8
          spec = '(a,exx.xxE4)'
-	 write (spec(5:6),'(i2.2)') w
-	 write (spec(8:9),'(i2.2)') nPrec
-	 sLen = w + 5
+         write (spec(5:6),'(i2.2)') w
+         write (spec(8:9),'(i2.2)') nPrec
+         sLen = w + 5
       end if
       return
       end subroutine format_one
@@ -43,18 +43,18 @@
       ! format_oneB
       subroutine format_oneB(spec,nPrec,sLen)
       implicit none
-      character*(*) :: spec
+      character(len=*) :: spec
       integer       :: nPrec,w,sLen
 
       if (nPrec.lt.0) then
          spec = '(1x,g12.5)'
-	 sLen = 13
+         sLen = 13
       else
          w = nPrec + 8
          spec = '(1x,exx.xxE4)'
-	 write (spec(6:7),'(i2.2)') w
-	 write (spec(9:10),'(i2.2)') nPrec
-	 sLen = w + 1
+         write (spec(6:7),'(i2.2)') w
+         write (spec(9:10),'(i2.2)') nPrec
+         sLen = w + 1
       end if
       return
       end subroutine format_oneB
@@ -63,18 +63,18 @@
       ! format_oneC
       subroutine format_oneC(spec,nPrec,sLen)
       implicit none
-      character*(*) :: spec
+      character(len=*) :: spec
       integer       :: nPrec,w,sLen
 
       if (nPrec.lt.0) then
          spec = '(1x,1a8,a,g12.5)'
-	 sLen = 21
+         sLen = 21
       else
          w = nPrec + 8
          spec = '(1x,1a8,a,exx.xxE4)'
-	 write (spec(12:13),'(i2.2)') w
-	 write (spec(15:16),'(i2.2)') nPrec
-	 sLen = w + 9
+         write (spec(12:13),'(i2.2)') w
+         write (spec(15:16),'(i2.2)') nPrec
+         sLen = w + 9
       end if
       return
       end subroutine format_oneC
@@ -82,21 +82,21 @@
       ! format_two
       subroutine format_two(spec,nPrec1,nPrec2,sLen)
       implicit none
-      character*(*) :: spec
+      character(len=*) :: spec
       integer       :: nPrec1,nPrec2,w1,w2,sLen
 
       if (nPrec1.lt.0) then
          spec = '(a,g12.5,a,g12.5)'
-	 sLen = 24
+         sLen = 24
       else
          w1 = nPrec1 + 8
          w2 = nPrec1 + 8
          spec = '(a,exx.xxE4,a,exx.xxE4)'
-	 write (spec(5:6),'(i2.2)') w1
-	 write (spec(8:9),'(i2.2)') nPrec1
-	 write (spec(16:17),'(i2.2)') w2
-	 write (spec(19:20),'(i2.2)') nPrec2
-	 sLen = w1 + w2 + 10
+         write (spec(5:6),'(i2.2)') w1
+         write (spec(8:9),'(i2.2)') nPrec1
+         write (spec(16:17),'(i2.2)') w2
+         write (spec(19:20),'(i2.2)') nPrec2
+         sLen = w1 + w2 + 10
       end if
       return
       end subroutine format_two
@@ -104,22 +104,22 @@
       ! format_twoB
       subroutine format_twoB(spec,nPrec1,nPrec2,sLen)
       implicit none
-      character*(*) :: spec
+      character(len=*) :: spec
       integer       :: nPrec1,nPrec2,w1,w2,sLen
 
       if (nPrec1.lt.0) then
          spec = '(1X,A,1A8,A,G12.5,A,G12.5)'
-	 sLen = 24
+         sLen = 24
       else
          w1 = nPrec1 + 8
          w2 = nPrec2 + 8
          spec = '(1x,a,1A8,A,exx.xxE4,a,exx.xxE4)'
-	 !       1234567890123456789012345678901
-	 write (spec(14:15),'(i2.2)') w1
-	 write (spec(17:18),'(i2.2)') nPrec1
-	 write (spec(25:26),'(i2.2)') w2
-	 write (spec(28:29),'(i2.2)') nPrec2
-	 sLen = w1 + w2 + 10
+         !       1234567890123456789012345678901
+         write (spec(14:15),'(i2.2)') w1
+         write (spec(17:18),'(i2.2)') nPrec1
+         write (spec(25:26),'(i2.2)') w2
+         write (spec(28:29),'(i2.2)') nPrec2
+         sLen = w1 + w2 + 10
       end if
       return
       end subroutine format_twoB
@@ -127,22 +127,22 @@
        ! format_twoC
       subroutine format_twoC(spec,nPrec1,nPrec2,sLen)
       implicit none
-      character*(*) :: spec
+      character(len=*) :: spec
       integer       :: nPrec1,nPrec2,w1,w2,sLen
 
       if (nPrec1.lt.0) then
          spec = '(1X,G12.5,2X,G12.5)'
-	 sLen = 27
+         sLen = 27
       else
          w1 = nPrec1 + 8
          w2 = nPrec2 + 8
          spec = '(1x,exx.xxE4,2x,exx.xxE4)'
-	 !       123456789012345678901234567890
-	 write (spec(6:7),'(i2.2)') w1
-	 write (spec(9:10),'(i2.2)') nPrec1
-	 write (spec(18:19),'(i2.2)') w2
-	 write (spec(21:22),'(i2.2)') nPrec2
-	 sLen = w1 + w2 + 3
+         !       123456789012345678901234567890
+         write (spec(6:7),'(i2.2)') w1
+         write (spec(9:10),'(i2.2)') nPrec1
+         write (spec(18:19),'(i2.2)') w2
+         write (spec(21:22),'(i2.2)') nPrec2
+         sLen = w1 + w2 + 3
       end if
       return
       end subroutine format_twoC
@@ -151,12 +151,12 @@
       ! format_four
       subroutine format_four(spec,nPrec1,nPrec2,nPrec3,nPrec4,sLen)
       implicit none
-      character*(*) :: spec
+      character(len=*) :: spec
       integer       :: nPrec1,nPrec2,nPrec3,nPrec4,w1,w2,w3,w4,sLen
 
       if (nPrec1.lt.0) then
          spec = '(1X,4(G12.5,2X))'
-	 sLen = 57 ! = 1 + 4*14
+         sLen = 57 ! = 1 + 4*14
       else
          w1 = nPrec1 + 8
          w2 = nPrec2 + 8
@@ -164,16 +164,16 @@
          w4 = nPrec4 + 8
          spec = &
          '(1x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4)'
-	 !123  67 90123456 89 12 4567  01 3456789  23 56
-	 write (spec(6:7),'(i2.2)')   w1
-	 write (spec(9:10),'(i2.2)')   nPrec1
-	 write (spec(18:19),'(i2.2)') w2
-	 write (spec(21:22),'(i2.2)') nPrec2
-	 write (spec(30:31),'(i2.2)') w3
-	 write (spec(33:34),'(i2.2)') nPrec3
-	 write (spec(42:43),'(i2.2)') w4
-	 write (spec(45:46),'(i2.2)') nPrec4
-	 sLen = w1 + w2 + w3 + w4 + 7
+         !123  67 90123456 89 12 4567  01 3456789  23 56
+         write (spec(6:7),'(i2.2)')   w1
+         write (spec(9:10),'(i2.2)')   nPrec1
+         write (spec(18:19),'(i2.2)') w2
+         write (spec(21:22),'(i2.2)') nPrec2
+         write (spec(30:31),'(i2.2)') w3
+         write (spec(33:34),'(i2.2)') nPrec3
+         write (spec(42:43),'(i2.2)') w4
+         write (spec(45:46),'(i2.2)') nPrec4
+         sLen = w1 + w2 + w3 + w4 + 7
       end if
       return
       end subroutine format_four
@@ -183,13 +183,13 @@
       ! format_five
       subroutine format_five(spec,nPrec1,nPrec2,nPrec3,nPrec4,nPrec5,sLen)
       implicit none
-      character*(*) :: spec
+      character(len=*) :: spec
       integer       :: nPrec1,nPrec2,nPrec3,nPrec4,nPrec5,w1,w2,sLen
       integer       :: w3,w4,w5
 
       if (nPrec1.lt.0) then
          spec = '(1X,5(G12.5,2X))'
-	 sLen = 71 ! = 1 + 5*14
+         sLen = 71 ! = 1 + 5*14
       else
          w1 = nPrec1 + 8
          w2 = nPrec2 + 8
@@ -198,18 +198,18 @@
          w5 = nPrec5 + 8
          spec = &
          '(1x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4)'
-	 !123 56 89012345 78 01234567 90 23456789 12 45678901 34 67890
-	 write (spec(6:7),'(i2.2)')   w1
-	 write (spec(9:10),'(i2.2)')   nPrec1
-	 write (spec(18:19),'(i2.2)') w2
-	 write (spec(21:22),'(i2.2)') nPrec2
-	 write (spec(30:31),'(i2.2)') w3
-	 write (spec(33:34),'(i2.2)') nPrec3
-	 write (spec(42:43),'(i2.2)') w4
-	 write (spec(45:46),'(i2.2)') nPrec4
-	 write (spec(54:55),'(i2.2)') w5
-	 write (spec(57:58),'(i2.2)') nPrec5
-	 sLen = w1 + w2 + w3 + w4 + w5 + 9
+         !123 56 89012345 78 01234567 90 23456789 12 45678901 34 67890
+         write (spec(6:7),'(i2.2)')   w1
+         write (spec(9:10),'(i2.2)')   nPrec1
+         write (spec(18:19),'(i2.2)') w2
+         write (spec(21:22),'(i2.2)') nPrec2
+         write (spec(30:31),'(i2.2)') w3
+         write (spec(33:34),'(i2.2)') nPrec3
+         write (spec(42:43),'(i2.2)') w4
+         write (spec(45:46),'(i2.2)') nPrec4
+         write (spec(54:55),'(i2.2)') w5
+         write (spec(57:58),'(i2.2)') nPrec5
+         sLen = w1 + w2 + w3 + w4 + w5 + 9
       end if
       return
       end subroutine format_five
@@ -246,10 +246,10 @@
       FUNIJK_LOC(LI, LJ, LK) = LI + (LJ-1)*IMAX2 + (LK-1)*IJMAX2
 
 !
-      CHARACTER*80 LINE
-      CHARACTER*120 STRING, SUBSTR
-      CHARACTER*8  VAR, VAR_DAT(N_VAR)
-      CHARACTER*120    FILE_NAME
+      CHARACTER(LEN=80)  :: LINE
+      CHARACTER(LEN=120)  :: STRING, SUBSTR
+      CHARACTER(LEN=8)   :: VAR, VAR_DAT(N_VAR)
+      CHARACTER(LEN=120) :: FILE_NAME
       INTEGER      L, L3, L4, LMAX, IANS, NSTEP_1
       REAL         DX_E, DY_N, DZ_T
       REAL         DIST(DIMENSION_3), VALUE(DIMENSION_3)
@@ -309,7 +309,7 @@
 !                   42      43     44    45     46     47
                    'KE_g', 'KE_s','P_s','PE_g','PE_s','BERN_s', &
 
-!                   48		49          50          51
+!                   48          49          50          51
                    'Theta_m', 'Scalar' , 'RRates' , 'K_Turb_G', &
 
 !                   52
@@ -388,7 +388,7 @@
 
       WRITE(*,*)
 
-9     write (*,'(A,$)') &
+9     write (*,'(A)',ADVANCE='NO') &
          ' Write output using user-supplied precision? (T/F) '
 !      read  (*,*) bPrecision
         READ(*,'(1A60)',ERR=9) STRING
@@ -405,10 +405,10 @@
       nPrec_variable =  5  ! default value if not using precision
 
       if (bPrecision) then
-         write (*,'(A,$)') ' Enter precision for location values: '
-	 read  (*,*) nPrec_location
-         write (*,'(A,$)') ' Enter precision for time values: '
-	 read  (*,*) nPrec_time
+         write (*,'(A)',ADVANCE='NO') ' Enter precision for location values: '
+         read  (*,*) nPrec_location
+         write (*,'(A)',ADVANCE='NO') ' Enter precision for time values: '
+         read  (*,*) nPrec_time
       end if
 !
 !  Read time
@@ -421,7 +421,7 @@
       bRead_all           = .true.
 
       WRITE(*,*)
-      WRITE(*,'(A,F7.3,A,F7.3,A,$)')&
+      WRITE(*,'(A,F7.3,A,F7.3,A)',ADVANCE='NO')&
        ' Time: (',TIME_START,',',TIME_END,') > '
       READ(*,'(1A60)',ERR=10) STRING
       IF(STRING(1:1) .EQ. '?') THEN
@@ -453,7 +453,7 @@
         ELSE
           SUBSTR(1:1) = 'N'
         ENDIF
-11      WRITE(*, '(A,1A1,A,$)')' Time average ? (',SUBSTR(1:1),') > '
+11      WRITE(*, '(A,1A1,A)',ADVANCE='NO')' Time average ? (',SUBSTR(1:1),') > '
         READ(*,'(1A60)',ERR=11) STRING
         IF(STRING(1:1) .EQ. '?') THEN
           CALL HELP(11)
@@ -479,7 +479,7 @@
         SUBSTR(1:8) = VAR
         SUBSTR(9:9) = ' '
       ENDIF
-      WRITE(*,'(A,1A9,A,$)')&
+      WRITE(*,'(A,1A9,A)',ADVANCE='NO')&
        ' Variable: (', SUBSTR(1:9), ') >'
       READ(*,'(1A60)') STRING
       IF(STRING(1:1) .EQ. '?') THEN
@@ -529,7 +529,7 @@
          (VAR_NO .EQ. 48                     ) &
                                                    )THEN
         IF(MMAX .GT. 1) THEN
-24        WRITE(*,'(A,I2,A,$)') ' Solids phase: (', M, ') > '
+24        WRITE(*,'(A,I2,A)',ADVANCE='NO') ' Solids phase: (', M, ') > '
           READ(*,'(1A60)',ERR=24) STRING
           IF(STRING(1:1) .EQ. '?') THEN
             CALL HELP(24)
@@ -550,7 +550,7 @@
       ENDIF
 !
       IF(VAR_NO .GE. 14 .AND. VAR_NO .LE. 21)THEN
-25      WRITE(*,'(A,I2,A,$)') ' Species: (', N, ') > '
+25      WRITE(*,'(A,I2,A)',ADVANCE='NO') ' Species: (', N, ') > '
         READ(*,'(1A60)',ERR=25) STRING
         IF(STRING(1:1) .EQ. '?') THEN
           CALL HELP(25)
@@ -581,7 +581,7 @@
           GOTO 20
         ENDIF
         IF(N .GT. NScalar)N = 1
-29      WRITE(*,'(A,I2,A,$)') ' Scalar: (', N, ') > '
+29      WRITE(*,'(A,I2,A)',ADVANCE='NO') ' Scalar: (', N, ') > '
         READ(*,'(1A60)',ERR=29) STRING
         IF(STRING(1:1) .EQ. '?') THEN
           CALL HELP(29)
@@ -604,7 +604,7 @@
           GOTO 20
         ENDIF
         IF(N .GT. nRR)N = 1
-229     WRITE(*,'(A,I2,A,$)') ' Reaction Rate: (', N, ') > '
+229     WRITE(*,'(A,I2,A)',ADVANCE='NO') ' Reaction Rate: (', N, ') > '
         READ(*,'(1A60)',ERR=229) STRING
         IF(STRING(1:1) .EQ. '?') THEN
           CALL HELP(32)
@@ -779,7 +779,7 @@
            ELSE
              SUBSTR(1:1) = 'N'
            ENDIF
-26         WRITE(*, '(A,1A1,A,$)')&
+26         WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
             ' P_g from RES file? (',SUBSTR(1:1),') > '
            READ(*,'(1A60)',ERR=26) STRING
            IF(STRING(1:1) .EQ. '?') THEN
@@ -797,7 +797,7 @@
            ELSE
              SUBSTR(1:1) = 'N'
            ENDIF
-27         WRITE(*, '(A,1A1,A,$)')&
+27         WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
              ' T_g from RES file? (',SUBSTR(1:1),') > '
            READ(*,'(1A60)',ERR=27) STRING
            IF(STRING(1:1) .EQ. '?') THEN
@@ -821,7 +821,7 @@
              ELSE
                SUBSTR(1:1) = 'N'
              ENDIF
-28           WRITE(*, '(A,1A1,A,$)')&
+28           WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
                ' X_g from RES file? (',SUBSTR(1:1),') > '
              READ(*,'(1A60)',ERR=28) STRING
              IF(STRING(1:1) .EQ. '?') THEN
@@ -852,8 +852,8 @@
 ! if doing user-specifiied precision output, get value for this variable
 !
       if (bPrecision) then
-          write (*,'(a,i2,a,$)') ' Enter precision ( ' , nPrec_variable , ') >'
-	  read (*,'(1a60)') string
+          write (*,'(a,i2,a)',ADVANCE='NO') ' Enter precision ( ' , nPrec_variable , ') >'
+          read (*,'(1a60)') string
           L3 = 1
           CALL GET_SUBSTR(STRING, L3, SUBSTR)
           IF(SUBSTR(1:1) .NE. ' ')READ(SUBSTR,*,ERR=30) nPrec_variable
@@ -861,7 +861,7 @@
 !
 !  Read I range
 !
-30    WRITE(*,'(A,I3,A,I3,A,$)')&
+30    WRITE(*,'(A,I3,A,I3,A)',ADVANCE='NO')&
        ' I range: (', I1, ',', I2, ') >'
       READ(*,'(1A60)') STRING
       IF(STRING(1:1) .EQ. '?') THEN
@@ -890,7 +890,7 @@
         ELSE
           SUBSTR(1:1) = 'N'
         ENDIF
-31      WRITE(*, '(A,1A1,A,$)')&
+31      WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
         ' Average or sum over I? (',SUBSTR(1:1),') > '
         READ(*,'(1A60)',ERR=31) STRING
         IF(STRING(1:1) .EQ. '?') THEN
@@ -906,7 +906,7 @@
 !
 !  Read J range
 !
-40    WRITE(*,'(A,I3,A,I3,A,$)')&
+40    WRITE(*,'(A,I3,A,I3,A)',ADVANCE='NO')&
        ' J range: (', J1,',',J2, ') >'
       READ(*,'(1A60)') STRING
       IF(STRING(1:1) .EQ. '?') THEN
@@ -935,7 +935,7 @@
         ELSE
           SUBSTR(1:1) = 'N'
         ENDIF
-41      WRITE(*, '(A,1A1,A,$)')&
+41      WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
         ' Average or sum over J? (',SUBSTR(1:1),') > '
         READ(*,'(1A60)',ERR=41) STRING
         IF(STRING(1:1) .EQ. '?') THEN
@@ -951,7 +951,7 @@
 !
 !  Read K range
 !
-50    WRITE(*,'(A,I3,A,I3,A,$)')&
+50    WRITE(*,'(A,I3,A,I3,A)',ADVANCE='NO')&
        ' K range: (', K1,',',K2,') >'
       READ(*,'(1A60)') STRING
       IF(STRING(1:1) .EQ. '?') THEN
@@ -980,7 +980,7 @@
         ELSE
           SUBSTR(1:1) = 'N'
         ENDIF
-51      WRITE(*, '(A,1A1,A,$)')&
+51      WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
         ' Average or sum over K? (',SUBSTR(1:1),') > '
         READ(*,'(1A60)',ERR=51) STRING
         IF(STRING(1:1) .EQ. '?') THEN
@@ -1017,7 +1017,7 @@
 !      END IF
 !
 !
-70    WRITE(*,'(A,1A30,A,$)') ' File: (', FILE_NAME,') >'
+70    WRITE(*,'(A,1A30,A)',ADVANCE='NO') ' File: (', FILE_NAME,') >'
       READ(*,'(1A60)') STRING
       IF (STRING(1:1) .EQ. '?') THEN
          CALL HELP(70)
@@ -1034,7 +1034,7 @@
             IF (FILE_NAME(1:1) .NE. '*') THEN
                INQUIRE (FILE=FILE_NAME,EXIST=FILE_EXIST)
                IF (FILE_EXIST .AND. .NOT.DO_XFORMS) THEN
-                  WRITE(*,'(A,$)')' File exists.  Over write? (1=Yes) >'
+                  WRITE(*,'(A)',ADVANCE='NO')' File exists.  Over write? (1=Yes) >'
                   READ(*,*)IANS
                   IF(IANS .NE. 1)GOTO 70
                ENDIF
@@ -1075,7 +1075,7 @@
           XTMP = XDIST_SC(I1)
         ENDIF
         DISPLAY = DISPLAY - 4
-	call format_one(spec,nPrec_location,nPrec_length)
+        call format_one(spec,nPrec_location,nPrec_length)
         WRITE(LINE,spec)' X = ', XTMP
         CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length + 5)
       ELSEIF(I_AVERAGE) THEN
@@ -1110,7 +1110,7 @@
           YTMP = YDIST_SC(J1)
         ENDIF
         DISPLAY = DISPLAY - 2
-	call format_one(spec,nPrec_location,nPrec_length)
+        call format_one(spec,nPrec_location,nPrec_length)
         WRITE(LINE,spec)' Y = ', YTMP
         CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+5)
       ELSEIF(J_AVERAGE) THEN
@@ -1145,7 +1145,7 @@
           ZTMP = ZDIST_SC(K1)
         ENDIF
         DISPLAY = DISPLAY - 1
-	call format_one(spec,nPrec_location,nPrec_length)
+        call format_one(spec,nPrec_location,nPrec_length)
         WRITE(LINE,spec)' Z = ', ZTMP
         CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+5)
       ELSEIF(K_AVERAGE) THEN
@@ -1270,9 +1270,9 @@
          (VAR_NO .EQ. 44                     ) .OR.&
          (VAR_NO .EQ. 46                     ) .OR.&
          (VAR_NO .EQ. 47                     ) &
-	                                          ) THEN
-	  ! loop over the entire domain because mass flux calculations
-	  ! need ROP_s outside i,j,k limits specified by the user
+                                                  ) THEN
+          ! loop over the entire domain because mass flux calculations
+          ! need ROP_s outside i,j,k limits specified by the user
           DO 102 K = KMIN1, KMAX2
           DO 102 J = JMIN1, JMAX2
           DO 102 I = IMIN1, IMAX2
@@ -1672,11 +1672,11 @@
       ELSEIF(DISPLAY .EQ. 8) THEN
         IJK = FUNIJK_LOC(I1, J1, K1)
         IF(TIME_AVERAGE) THEN
-	  call format_oneB(spec,nPrec_variable,nPrec_length)
+          call format_oneB(spec,nPrec_variable,nPrec_length)
           WRITE(LINE,spec)VALUE(IJK)
           CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length)
         ELSE
-	  call format_twoC(spec,nPrec_time,nPrec_variable,nPrec_length)
+          call format_twoC(spec,nPrec_time,nPrec_variable,nPrec_length)
           WRITE(LINE,spec)TIME_NOW, VALUE(IJK)
           CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length)
         ENDIF
@@ -1688,7 +1688,7 @@
         CALL WRITE_LINE(FILE_NAME, LINE, 28)
         DO 130 I = I1, I2d
           IJK = FUNIJK_LOC(I, J1, K1)
-	  call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
+          call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
           IF(DIRECTION .EQ. 1)THEN
             WRITE(LINE,spec)XDIST_VEC(I), VALUE(IJK)
           ELSE
@@ -1704,7 +1704,7 @@
         CALL WRITE_LINE(FILE_NAME, LINE, 28)
         DO 140 J = J1, J2d
           IJK = FUNIJK_LOC(I1, J, K1)
-	  call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
+          call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
           IF(DIRECTION .EQ. 2)THEN
             WRITE(LINE,spec)YDIST_VEC(J), VALUE(IJK)
           ELSE
@@ -1720,7 +1720,7 @@
         CALL WRITE_LINE(FILE_NAME, LINE, 28)
         DO 150 K = K1, K2d
           IJK = FUNIJK_LOC(I1, J1, K)
-	  call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
+          call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
           IF(DIRECTION .EQ. 3)THEN
             WRITE(LINE,spec)ZDIST_VEC(K), VALUE(IJK)
           ELSE
@@ -1733,7 +1733,7 @@
         WRITE(LINE,spec)' Time = ',TIME_NOW
         CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
         IJK = FUNIJK_LOC(I1, J1, K1)
-	call format_oneC(spec,nPrec_variable,nPrec_length)
+        call format_oneC(spec,nPrec_variable,nPrec_length)
         WRITE(LINE,spec)VAR,' = ',VALUE(IJK)
         CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length + 3)
       ELSE
@@ -1756,9 +1756,9 @@
           ELSEIF(DIRECTION .EQ. 3) THEN
             ZTMP = ZDIST_VEC(K)
           ENDIF
-	  call format_four(spec,nPrec_location,nPrec_location, &
-	                        nPrec_location, &
-	                        nPrec_variable,nPrec_length)
+          call format_four(spec,nPrec_location,nPrec_location, &
+                                nPrec_location, &
+                                nPrec_variable,nPrec_length)
 
           WRITE(LINE,spec)XTMP, YTMP, ZTMP, VALUE(IJK)
           CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
@@ -1796,8 +1796,8 @@
 !
       SUBROUTINE WRITE_LINE(FILE_NAME,LINE,NCHARS)
       IMPLICIT NONE
-      CHARACTER*(*) FILE_NAME, LINE
-      CHARACTER*81  LINE2
+      CHARACTER(LEN=*) :: FILE_NAME, LINE
+      CHARACTER(LEN=81):: LINE2
       INTEGER       NCHARS
 !
       INCLUDE 'xforms.inc'

@@ -61,7 +61,7 @@
          C_E = E_PASS
       ELSE
          IF (C_E .EQ. UNDEFINED) THEN
-            WRITE (*,'(A,$)')&
+            WRITE (*,'(A)',ADVANCE='NO')&
               ' Enter Coefficient of restitution value (e): '
             READ  (*,*) C_e
          END IF
@@ -70,7 +70,7 @@
       IF(.NOT.DO_XFORMS)THEN
          CALC_GT = .FALSE.
          CALC_GV = .FALSE.
-         WRITE (*,'(A,$)')&
+         WRITE (*,'(A)',ADVANCE='NO')&
            ' Do you need granular temperature ? (Y/N) '
          READ (*,'(A)') ANSWER
          IF(ANSWER .EQ. 'Y' .OR. ANSWER .EQ. 'y') CALC_GT = .TRUE.
@@ -89,7 +89,7 @@
 !
       IF(.NOT.DO_XFORMS)THEN
          CALC_GV = .FALSE.
-         WRITE (*,'(A,$)')&
+         WRITE (*,'(A)',ADVANCE='NO')&
            ' Do you need granular viscosity ? (Y/N) '
          READ (*,'(A)') ANSWER
          IF(ANSWER .EQ. 'Y' .OR. ANSWER .EQ. 'y') CALC_GV = .TRUE.
@@ -109,7 +109,7 @@
       IF(CALC_GT .OR. CALC_GV) THEN
         IF(MMAX .GT. 1) THEN
           IF (.NOT.DO_XFORMS) THEN
-             WRITE(*, '(A,$)')' Enter solids phase number: '
+             WRITE(*, '(A)',ADVANCE='NO')' Enter solids phase number: '
              READ(*, *)M_USE
           END IF
         ELSE
@@ -121,7 +121,7 @@
       MM = M_USE
 !
 10    IF (.NOT.DO_XFORMS) THEN
-         WRITE (*,'(A,$)') ' Enter TIME_START and TIME_END: '
+         WRITE (*,'(A)',ADVANCE='NO') ' Enter TIME_START and TIME_END: '
          READ (*, *)TIME_START, TIME_END
       END IF
 !

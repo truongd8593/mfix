@@ -47,7 +47,7 @@
       INTEGER L
 !
       IF (.NOT.DO_XFORMS) THEN
-         WRITE (*,'(A,$)') 'Enter time to retrieve from Spx files > '
+         WRITE (*,'(A)',ADVANCE='NO') 'Enter time to retrieve from Spx files > '
          READ  (*,*) TIME_FOR_OUT
          CALL GET_FILE_NAME(TEMP_FILE)
       END IF

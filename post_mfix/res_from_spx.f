@@ -38,7 +38,7 @@
       LOGICAL  AT_EOF(*), READ_SPX(*)
       INTEGER  REC_POINTER(*), REC_POINTER_t(N_SPX)
       INTEGER  NSTEP_1 , ERROR_CODE
-      CHARACTER*1 IANS
+      CHARACTER(LEN=1) IANS
       REAL     TIME_REAL(*)
       LOGICAL  PRINTED_MESS(N_SPX)
       LOGICAL  ERROR
@@ -47,7 +47,7 @@
 !
       ERROR = .FALSE.
 !
-      WRITE (*,'(A,$)') 'Enter time to retrieve from Spx files > '
+      WRITE (*,'(A)',ADVANCE='NO') 'Enter time to retrieve from Spx files > '
       READ  (*,*) TIME_FOR_RES
 !
       DO 10 L = 1,N_SPX
@@ -105,7 +105,7 @@
          WRITE (*,*) ' Create RESTART file anyway ? (Y for yes)'
          READ  (*,'(1A1)') IANS
          IF (IANS .NE. 'Y' .AND. IANS .NE. 'y') RETURN
-         WRITE (*,'(A,$)') ' Time and DT ? '
+         WRITE (*,'(A)',ADVANCE='NO') ' Time and DT ? '
          READ(*,*)TIME, DT
 
       END IF
@@ -116,7 +116,7 @@
       WRITE(*,'(A)')' The old restart file will be over-written.'
       WRITE(*,'(A,G12.5,A)')' The records in SPx files after time = ',&
        TIME_FOR_RES, ' will be irrecoverably lost!'
-      WRITE(*,'(A,$)')' Press Y to over write RES and SPX files '
+      WRITE(*,'(A)',ADVANCE='NO')' Press Y to over write RES and SPX files '
       READ(*,'(1a1)') IANS
       IF (IANS .NE. 'Y' .AND. IANS .NE. 'y') RETURN
 !
@@ -150,7 +150,7 @@
 !       ROUND OFF ERROR IN GOING FROM DOUBLE TO SINGLE PRECISION
         DO IJK = 1,IJKMAX2
           CALL CALC_EP_g(IJK)
-	END DO
+        END DO
       ELSE
          if(mmax .gt. 1.OR.ANY_SOLVE_ROs)Then
            WRITE(*,'(A)')' Cannot update SP5 file. Modify Post_mfix'
@@ -170,7 +170,7 @@
       CALL WRITE_RES1
 !
       WRITE(*,*)
-      WRITE(*,'(A,A,$)')' RES and SPx files over written.',&
+      WRITE(*,'(A,A)',ADVANCE='NO')' RES and SPx files over written.',&
         ' Press any key to continue.'
       READ(*,'(1a1)') IANS
       RETURN

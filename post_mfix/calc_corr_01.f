@@ -26,8 +26,8 @@
       SUBROUTINE CALC_CORR_01(FINISH,INTER)
 !
 !
-	Use param
-	Use param1
+        Use param
+        Use param1
         Use fldvar
         Use physprop
         Use geometry

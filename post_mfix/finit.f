@@ -39,7 +39,7 @@
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
 !
-      CHARACTER*30  FILE_NAME
+      CHARACTER(LEN=30)  FILE_NAME
       INTEGER L
       INTEGER REC_POINTER(N_SPX)
       LOGICAL READ_SPX(N_SPX)
@@ -426,7 +426,7 @@
 
       if (nArrays.eq.0) then
          write (*,*) fname_scav(1:nb+8) , ' : no time records added'
-	 if (kfile .gt. 0) write (*,*) ' '
+         if (kfile .gt. 0) write (*,*) ' '
          return
       end if
 
@@ -806,7 +806,7 @@
       implicit none
 
       integer :: nb,L
-      character*(*) :: run_name , fname
+      character(len=*) :: run_name , fname
 
       if (l .eq. 1) then
          fname = run_name(1:nb-1) // '.RES'

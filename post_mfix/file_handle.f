@@ -375,10 +375,10 @@
 ! passed arguments
 !
 !                   run_name (as specified in input file)
-      CHARACTER*(*) RUN_NAME
+      CHARACTER(LEN=*) RUN_NAME
 !
 !                   run type
-      CHARACTER*(*) RUN_TYPE
+      CHARACTER(LEN=*) RUN_TYPE
 !
 ! local variables
 !
@@ -505,7 +505,7 @@
       DOUBLE PRECISION  ARRAY(*)
 !
 !                       message to print out
-      CHARACTER*(*)     MESSAGE
+      CHARACTER(LEN=*) :: MESSAGE
 !
 ! local variables
 !
@@ -564,10 +564,10 @@
 ! passed arguments
 !
 !                       array to print out
-      CHARACTER*3       ARRAY(*)
+      CHARACTER(LEN=3) ::       ARRAY(*)
 !
 !                       message to print out
-      CHARACTER*(*)     MESSAGE
+      CHARACTER(LEN=*)     MESSAGE
 !
 ! local variables
 !
@@ -707,7 +707,7 @@
 ! passed arguments
 !
 !                      2D array to print out
-      CHARACTER*3      ARRAY(*)
+      CHARACTER(LEN=3) :: ARRAY(*)
 !
 ! local variables
 !
@@ -1206,7 +1206,7 @@
 !
       implicit none
 !
-      character*3   arr_io(*) , arr_internal(*)
+      character(len=3)   arr_io(*) , arr_internal(*)
       integer       n,i,j,k,ijk,ijk_io
 !
       do k = 1,kmax2

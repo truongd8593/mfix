@@ -156,7 +156,7 @@
 !  Read time
 !
 10    WRITE(*,*)
-      WRITE(*,'(A,F7.3,A,F7.3,A,$)')&
+      WRITE(*,'(A,F7.3,A,F7.3,A)',ADVANCE='NO')&
        ' Time: (',usr_t1,',',usr_t2,') > '
       READ(*,'(1A60)',ERR=10) STRING
       IF(STRING(1:1) .EQ. '?') THEN
@@ -197,7 +197,7 @@
         ELSE
           SUBSTR(1:1) = 'N'
         ENDIF
-11      WRITE(*, '(A,1A1,A,$)')' Time average ? (',SUBSTR(1:1),') > '
+11      WRITE(*, '(A,1A1,A)',ADVANCE='NO')' Time average ? (',SUBSTR(1:1),') > '
         READ(*,'(1A60)',ERR=11) STRING
         IF(STRING(1:1) .EQ. '?') THEN
           CALL HELP(11)
@@ -267,8 +267,8 @@
 !                   42      43     44    45     46     47
                    'KE_g', 'KE_s','P_s','PE_g','PE_s','BERN_s', &
 
-!                   48		49
-         	   'Theta_m', 'Scalar' /
+!                   48          49
+                   'Theta_m', 'Scalar' /
 !
 !  Read variable name
 !
@@ -279,7 +279,7 @@
       SUBSTR(1:8) = var
       SUBSTR(9:9) = ' '
 
-      WRITE(*,'(A,1A9,A,$)')&
+      WRITE(*,'(A,1A9,A)',ADVANCE='NO')&
        ' Variable: (', SUBSTR(1:9), ') >'
       READ(*,'(1A60)') STRING
       IF(STRING(1:1) .EQ. '?') THEN
@@ -355,7 +355,7 @@
          (VAR_NO .EQ. 48                     ) &
                                                    )THEN
         IF(MMAX .GT. 1) THEN
-24        WRITE(*,'(A,I2,A,$)') ' Solids phase: (', M, ') > '
+24        WRITE(*,'(A,I2,A)',ADVANCE='NO') ' Solids phase: (', M, ') > '
           READ(*,'(1A60)',ERR=24) STRING
           IF(STRING(1:1) .EQ. '?') THEN
             CALL HELP(24)
@@ -399,7 +399,7 @@
       n      = usr_n
 !
       IF(VAR_NO .GE. 14 .AND. VAR_NO .LE. 21)THEN
-25      WRITE(*,'(A,I2,A,$)') ' Species: (', N, ') > '
+25      WRITE(*,'(A,I2,A)',ADVANCE='NO') ' Species: (', N, ') > '
         READ(*,'(1A60)',ERR=25) STRING
         IF(STRING(1:1) .EQ. '?') THEN
           CALL HELP(25)
@@ -595,7 +595,7 @@
            ELSE
              SUBSTR(1:1) = 'N'
            ENDIF
-26         WRITE(*, '(A,1A1,A,$)')&
+26         WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
             ' P_g from RES file? (',SUBSTR(1:1),') > '
            READ(*,'(1A60)',ERR=26) STRING
            IF(STRING(1:1) .EQ. '?') THEN
@@ -613,7 +613,7 @@
            ELSE
              SUBSTR(1:1) = 'N'
            ENDIF
-27         WRITE(*, '(A,1A1,A,$)')&
+27         WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
              ' T_g from RES file? (',SUBSTR(1:1),') > '
            READ(*,'(1A60)',ERR=27) STRING
            IF(STRING(1:1) .EQ. '?') THEN
@@ -633,7 +633,7 @@
           ELSE
             SUBSTR(1:1) = 'N'
           ENDIF
-28        WRITE(*, '(A,1A1,A,$)')&
+28        WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
                ' X_g from RES file? (',SUBSTR(1:1),') > '
           READ(*,'(1A60)',ERR=28) STRING
           IF(STRING(1:1) .EQ. '?') THEN
@@ -683,7 +683,7 @@
       if (usr_must_i_avg) i_average = .true.
 
 
-30    WRITE(*,'(A,I3,A,I3,A,$)')&
+30    WRITE(*,'(A,I3,A,I3,A)',ADVANCE='NO')&
        ' I range: (', I1, ',', I2, ') >'
       READ(*,'(1A60)') STRING
       IF(STRING(1:1) .EQ. '?') THEN
@@ -712,7 +712,7 @@
         ELSE
           SUBSTR(1:1) = 'N'
         ENDIF
-31      WRITE(*, '(A,1A1,A,$)')&
+31      WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
         ' Average or sum over I? (',SUBSTR(1:1),') > '
         READ(*,'(1A60)',ERR=31) STRING
         IF(STRING(1:1) .EQ. '?') THEN
@@ -758,7 +758,7 @@
       if (usr_must_j_avg) j_average = .true.
 
 
-30    WRITE(*,'(A,I3,A,I3,A,$)')&
+30    WRITE(*,'(A,I3,A,I3,A)',ADVANCE='NO')&
        ' J range: (', j1, ',', j2, ') >'
       READ(*,'(1A60)') STRING
       IF(STRING(1:1) .EQ. '?') THEN
@@ -787,7 +787,7 @@
         ELSE
           SUBSTR(1:1) = 'N'
         ENDIF
-31      WRITE(*, '(A,1A1,A,$)')&
+31      WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
         ' Average or sum over J? (',SUBSTR(1:1),') > '
         READ(*,'(1A60)',ERR=31) STRING
         IF(STRING(1:1) .EQ. '?') THEN
@@ -833,7 +833,7 @@
       if (usr_must_k_avg) k_average = .true.
 
 
-30    WRITE(*,'(A,I3,A,I3,A,$)')&
+30    WRITE(*,'(A,I3,A,I3,A)',ADVANCE='NO')&
        ' K range: (', k1, ',', k2, ') >'
       READ(*,'(1A60)') STRING
       IF(STRING(1:1) .EQ. '?') THEN
@@ -862,7 +862,7 @@
         ELSE
           SUBSTR(1:1) = 'N'
         ENDIF
-31      WRITE(*, '(A,1A1,A,$)')&
+31      WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
         ' Average or sum over K? (',SUBSTR(1:1),') > '
         READ(*,'(1A60)',ERR=31) STRING
         IF(STRING(1:1) .EQ. '?') THEN
@@ -1018,7 +1018,7 @@
 ! ***************************************************************
 !
       subroutine spatial_averaging(value,i1,i2,j1,j2,k1,k2, &
-		usr_ii_avg,usr_jj_avg,usr_kk_avg)
+                usr_ii_avg,usr_jj_avg,usr_kk_avg)
 !
       use geometry
       use indices
@@ -1262,7 +1262,7 @@
 
       usr_done = .false.
 
-70    WRITE(*,'(A,1A30,A,$)') ' File: (', usr_fname,') >'
+70    WRITE(*,'(A,1A30,A)',ADVANCE='NO') ' File: (', usr_fname,') >'
       READ(*,'(1A60)') STRING
       IF (STRING(1:1) .EQ. '?') THEN
          CALL HELP(70)
@@ -1280,7 +1280,7 @@
             IF (usr_fname(1:1) .NE. '*') THEN
                INQUIRE (FILE=usr_fname,EXIST=FILE_EXIST)
                IF (FILE_EXIST) THEN
-                  WRITE(*,'(A,$)')' File exists.  Over write? (1=Yes) >'
+                  WRITE(*,'(A)',ADVANCE='NO')' File exists.  Over write? (1=Yes) >'
                   READ(*,*)IANS
                   IF(IANS .NE. 1)GOTO 70
                ENDIF

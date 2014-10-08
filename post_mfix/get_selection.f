@@ -27,13 +27,13 @@
       character(LEN=2) :: sel
 !
       WRITE (*,*) ' '
-      WRITE (*,'(A,$)') ' Enter menu selection > '
+      WRITE (*,'(A)',ADVANCE='NO') ' Enter menu selection > '
 !
 !      READ (*,'(I)',ERR=10) SELECTION
       READ (*,'(A2)',ERR=10) sel
       if (sel(2:2) .eq. ' ') then
          sel(2:2) = sel(1:1)
-	 sel(1:1) = '0'
+         sel(1:1) = '0'
       end if
       read(sel,'(i2)') selection
       RETURN

@@ -23,8 +23,8 @@
 !
         MODULE correl
 
-	Use param
-	Use param1
+        Use param
+        Use param1
 
 !                      Array for accumulating the sum of EP_g
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  SUM_EP_g

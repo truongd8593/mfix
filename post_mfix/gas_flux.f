@@ -50,7 +50,7 @@
       INTEGER           I, J, K, IJK
 !
       IF (.NOT.DO_XFORMS) THEN
-         WRITE (*,'(A,$)') &
+         WRITE (*,'(A)',ADVANCE='NO') &
                  ' Enter time to start and end time averaging > '
          READ  (*,*) TIME_START, TIME_END
          CALL GET_FILE_NAME(TEMP_FILE)

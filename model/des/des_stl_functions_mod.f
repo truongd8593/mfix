@@ -244,11 +244,13 @@
             write(*,'(A6,5(2x,g17.8))')'extents:',e0,e1,e2
             write(*,'(A6,5(2x,g17.8))')'sa:', count, sep_axis(count,:)
             write(*,'(A6,5(2x,g17.8))')'data:',  r, p0, p1, p2
-            write(*,'(A6,(2x,g17.8),"<",2(2x,g17.8), ">", 2x,g17.8)')'data2:', max(p0, p1, p2)*1e8, -r*1e8, min(p0, p1, p2)*1e8,r*1e8
+            write(*,'(A6,(2x,g17.8),"<",2(2x,g17.8), ">", 2x,g17.8)') 'data2:', &
+                 max(p0, p1, p2)*1e8, -r*1e8, min(p0, p1, p2)*1e8,r*1e8
 
             write(*,'(A6,5(2x,L2))') 'data2:', max(p0, p1, p2)< -r, min(p0, p1, p2) > r
 
-             write(*,'(A6,(2x,g17.8),"<",2(2x,g17.8), ">", 2x,g17.8)') 'data2:', (max(p0, p1, p2)+tol_tri_aabb_proj)*1e8, -r*1e8, min(p0, p1, p2)*1e8, (r+tol_tri_aabb_proj)*1e8
+             write(*,'(A6,(2x,g17.8),"<",2(2x,g17.8), ">", 2x,g17.8)') 'data2:', &
+                  (max(p0, p1, p2)+tol_tri_aabb_proj)*1e8, -r*1e8, min(p0, p1, p2)*1e8, (r+tol_tri_aabb_proj)*1e8
             write(*,'(A6,5(2x,L2))') 'data2:', max(p0, p1, p2)+tol_tri_aabb_proj< -r, min(p0, p1, p2) > r+tol_tri_aabb_proj
          endif
 
@@ -1419,11 +1421,13 @@
                IF(COUNT_FACETS.eq.0) cycle
 
                if(write_each_cell) then
-                  write(filename, '(A,"_geom_nor_", i3.3, "_", i3.3, "_", i3.3,"_" , i8.8, ".stl")') trim(run_name) , I,J,K,CELL_ID
+                  write(filename, '(A,"_geom_nor_", i3.3, "_", i3.3, "_", i3.3,"_" , i8.8, ".stl")') &
+                       trim(run_name) , I,J,K,CELL_ID
                   OPEN(UNIT=446, FILE=filename)
                   write(446,*)'solid vcg'
 
-                  write(filename_po, '(A,"_geom_other_", i3.3, "_", i3.3, "_", i3.3,"_" , i8.8, ".stl")') trim(run_name) , I,J,K,CELL_ID
+                  write(filename_po, '(A,"_geom_other_", i3.3, "_", i3.3, "_", i3.3,"_" , i8.8, ".stl")') &
+                       trim(run_name) , I,J,K,CELL_ID
                   OPEN(UNIT=445, FILE=filename_po)
                   write(445,*)'solid vcg'
                endif

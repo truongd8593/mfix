@@ -376,7 +376,8 @@
 !           tangential relative velocity with respect to contact time.
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        SUBROUTINE CALC_TANGENTIAL_DISPLACEMENT(PFT,norm,norm_old,sigmat_old,overlap_norm, relvel_tang_norm,relvel_tang, already_colliding)
+        SUBROUTINE CALC_TANGENTIAL_DISPLACEMENT(PFT,norm,norm_old,sigmat_old,overlap_norm, &
+             relvel_tang_norm,relvel_tang, already_colliding)
 
           implicit none
 

@@ -1343,20 +1343,18 @@
 
                   INTERSECT_FLAG = .FALSE.
 
-                  IF(.NOT.(INTERSECT_X(IJK).OR.INSIDE_FACET_a.OR.INSIDE_FACET_b)) CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                  IF(.NOT.(INTERSECT_X(IJK).OR.INSIDE_FACET_a.OR.INSIDE_FACET_b)) THEN
+                     CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                  ENDIF
 
                   IF(INTERSECT_FLAG) THEN
-
                      IF(INTERSECT_X(IJK)) THEN
-
                         IF(DABS(Xint(IJK)-xc)>TOL_STL) THEN
 
-                           INTERSECT_X(IJK) = .FALSE.        ! Ignore intersections when two intersections are detected on the same edge
-
+                           ! Ignore intersections when two intersections are detected on the same edge
+                           INTERSECT_X(IJK) = .FALSE.
                         ENDIF
-
                      ELSE
-
                         INTERSECT_X(IJK) = .TRUE.
                         Xint(IJK) = xc
 
@@ -1379,12 +1377,8 @@
                         IF(JP<=J2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPK,N)
                         IF(KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJKP,N)
                         IF(JP<=J2.AND.KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPKP,N)
-
-
                      ENDIF
-
                   ENDIF
-
 
                   IF(TYPE_OF_CELL=='U_MOMENTUM') THEN
                      IF(SNAP(IJK)) THEN
@@ -1393,16 +1387,12 @@
                      ENDIF
                   ENDIF
 
-
-
-
 !======================================================================
 !  Intersection with Edge 6 (node 6-8, Face East-Top):
 !======================================================================
                   xa = X_NODE(6)
                   ya = Y_NODE(6)
                   za = Z_NODE(6)
-
 
 ! Check if intersection occurs at corners
 
@@ -1424,7 +1414,9 @@
 
                   INTERSECT_FLAG = .FALSE.
 
-                  IF(.NOT.(INTERSECT_Y(IJK).OR.INSIDE_FACET_a.OR.INSIDE_FACET_b)) CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                  IF(.NOT.(INTERSECT_Y(IJK).OR.INSIDE_FACET_a.OR.INSIDE_FACET_b)) THEN
+                     CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                  ENDIF
 
 
                   IF(INTERSECT_FLAG) THEN
@@ -1502,7 +1494,9 @@
 
                      INTERSECT_FLAG = .FALSE.
 
-                  IF(.NOT.(INTERSECT_Z(IJK).OR.INSIDE_FACET_a.OR.INSIDE_FACET_b)) CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                     IF(.NOT.(INTERSECT_Z(IJK).OR.INSIDE_FACET_a.OR.INSIDE_FACET_b)) THEN
+                        CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                     ENDIF
 
                      IF(INTERSECT_FLAG) THEN
 

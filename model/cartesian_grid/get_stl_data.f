@@ -222,7 +222,8 @@
 
                   NF = NF + 1
 
-                  NORM_FACE(:,NF) = NORMAL*OUT_MSH_VALUE  ! Save and Reverse unit vector if needed (this will switch fluid and blocked cells)
+                  ! Save and Reverse unit vector if needed (this will switch fluid and blocked cells)
+                  NORM_FACE(:,NF) = NORMAL*OUT_MSH_VALUE
 
 
                   VERTEX(1,1,NF) = SCALE_MSH*V1x + TX_MSH
@@ -283,7 +284,8 @@
 
                   NF = NF + 1
 
-                  NORM_FACE(:,NF) = NORMAL*OUT_MSH_VALUE  ! Save and Reverse unit vector if needed (this will switch fluid and blocked cells)
+                  ! Save and Reverse unit vector if needed (this will switch fluid and blocked cells)
+                  NORM_FACE(:,NF) = NORMAL*OUT_MSH_VALUE
 
                   VERTEX(1,1,NF) = SCALE_MSH*V1x + TX_MSH
                   VERTEX(1,2,NF) = SCALE_MSH*V1y + TY_MSH
@@ -330,7 +332,8 @@
 
                   NF = NF + 1
 
-                  NORM_FACE(:,NF) = NORMAL*OUT_MSH_VALUE  ! Save and Reverse unit vector if needed (this will switch fluid and blocked cells)
+                  ! Save and Reverse unit vector if needed (this will switch fluid and blocked cells)
+                  NORM_FACE(:,NF) = NORMAL*OUT_MSH_VALUE
 
                   VERTEX(1,1,NF) = SCALE_MSH*V1x + TX_MSH
                   VERTEX(1,2,NF) = SCALE_MSH*V1y + TY_MSH

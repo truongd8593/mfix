@@ -178,13 +178,23 @@
 
       ENDDO
 
-      IF(DMP_LOG)       WRITE(UNIT_LOG,'(/5x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
-      IF(mype.eq.pe_IO) WRITE(*,'(/5x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
+      IF(DMP_LOG) THEN
+         WRITE(UNIT_LOG,'(/5x, A, 2(2x, i10))') &
+              'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
+      ENDIF
+
+      IF(mype.eq.pe_IO) THEN
+         WRITE(*,'(/5x, A, 2(2x, i10))') &
+              'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
+      ENDIF
 
 !      IJK_BOT = funijk(imin1, 2,kmin1)
 !      IJK_TOP = funijk(imin1, jmax1, kmin1)
-!      WRITE(*,'(/5X, A, 3(2x,g17.8))') 'MPPIC: PRES BOTTOM, TOP, AND DIFF KPA', P_G(IJK_BOT)/10000.d0, P_G(IJK_TOP)/10000.d0, (P_G(IJK_BOT) -  P_G(IJK_TOP))/10000.d0
-      !WRITE(*,'(/5X, A, 3(2x,g17.8))') 'PRES BOTTOM, TOP, AND DIFF ', P_G(IJK_BOT), P_G(IJK_TOP), P_G(IJK_BOT) -  P_G(IJK_TOP)
+!      WRITE(*,'(/5X, A, 3(2x,g17.8))') &
+!         'MPPIC: PRES BOTTOM, TOP, AND DIFF KPA', P_G(IJK_BOT)/10000.d0, &
+!         P_G(IJK_TOP)/10000.d0, (P_G(IJK_BOT) -  P_G(IJK_TOP))/10000.d0
+      !WRITE(*,'(/5X, A, 3(2x,g17.8))') &
+      !'PRES BOTTOM, TOP, AND DIFF ', P_G(IJK_BOT), P_G(IJK_TOP), P_G(IJK_BOT) -  P_G(IJK_TOP)
       IF(.NOT.DES_CONTINUUM_COUPLED)then
          if(dmp_log)write(unit_log,'(1X,A)')&
          '<---------- END MPPIC_TIME_MARCH ----------'

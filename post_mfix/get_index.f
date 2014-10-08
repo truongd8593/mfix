@@ -36,7 +36,7 @@
       IF( A .LT. ARRAY(1) .OR. A .GT. ARRAY(LMAX)) THEN
         IF(.NOT. EXT)THEN
           WRITE(*, '(A, A3, A, G12.5)')' Could not find ', AC, ' = ', A
-          WRITE(*, '(A,$)')' Enter Y to extrapolate > '
+          WRITE(*, '(A)',ADVANCE='NO')' Enter Y to extrapolate > '
           READ(*,'(A)')ANS
           IF(ANS .EQ. 'Y' .OR. ANS .EQ. 'y')THEN
             EXT = .TRUE.

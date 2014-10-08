@@ -299,8 +299,12 @@
                  WRITE(*,*)'REMOVING CUT CELL'
               ENDIF
 !              NUMBER_OF_CORNER_INTERSECTIONS = MAX_CORNER_INTERSECTIONS
-!              NUMBER_OF_CORNER_INTERSECTIONS = -NUMBER_OF_EDGE_INTERSECTIONS ! Force the total number of intersections to be zero, and therefore, the cell will be considered as a non-cut cell
-              NUMBER_OF_CORNER_INTERSECTIONS = -NUMBER_OF_EDGE_INTERSECTIONS -1  ! Force the total number of intersections to be -one, and therefore, the cell will be considered as a non-cut cell
+
+              ! Force the total number of intersections to be zero, and therefore, the cell will be considered as a non-cut cell
+!              NUMBER_OF_CORNER_INTERSECTIONS = -NUMBER_OF_EDGE_INTERSECTIONS
+
+              ! Force the total number of intersections to be -one, and therefore, the cell will be considered as a non-cut cell
+              NUMBER_OF_CORNER_INTERSECTIONS = -NUMBER_OF_EDGE_INTERSECTIONS -1
 
 
            ENDIF

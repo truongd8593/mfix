@@ -445,8 +445,8 @@
 
       IF (.NOT.SPX_MSG) THEN
          DO L = 1, N_SPX - ISPX
-            IF(DMP_LOG)WRITE (UNIT_LOG, '(A,$)') '   '
-            IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, '(A,$)') '   ' !//
+            IF(DMP_LOG)WRITE (UNIT_LOG, '(A)', ADVANCE='NO') '   '
+            IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, '(A)', ADVANCE='NO') '   ' !//
          ENDDO
          IF(DMP_LOG)WRITE (UNIT_LOG, 1015) DISK_TOT
          IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, 1015) DISK_TOT !//
@@ -600,7 +600,7 @@
       ENDDO
 
       WALL_NOW = WALL_TIME()
-      WALL_LEFT = (WALL_NOW-WALL_START)*(TSTOP-TIME)/max(TIME,0.000001)
+      WALL_LEFT = (WALL_NOW-WALL_START)*(TSTOP-TIME)/max(TIME,1.0d-6)
       CALL GET_TUNIT(WALL_LEFT,TUNIT)
       IF(DMP_LOG) WRITE (*, '(/" Wall time remaining = ",F9.3,1X,A)') &
          WALL_LEFT, TUNIT

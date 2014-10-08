@@ -60,7 +60,7 @@
 !
       call usr_set_array(ijkmax2,arr,usr_var_num,usr_m,usr_n)
       call spatial_averaging(arr,usr_i1,usr_i2,usr_j1,usr_j2, &
-		usr_k1,usr_k2,usr_i_avg,usr_j_avg,usr_k_avg)
+                usr_k1,usr_k2,usr_i_avg,usr_j_avg,usr_k_avg)
 
       IJK = FUNIJK(usr_i1,usr_j1,usr_k1)
       time_series(nt+1) = arr(ijk)
