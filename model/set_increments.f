@@ -316,6 +316,7 @@
       USE scalars
       USE run
       USE visc_g
+      USE energy
       
       USE pgcor, only :       PHASE_4_P_G
       USE pscor, only :       PHASE_4_P_S
@@ -973,6 +974,8 @@
       CALL SHIFT_DP_ARRAY(ROP_GO)
       CALL SHIFT_DP_ARRAY(T_G)
       CALL SHIFT_DP_ARRAY(T_GO)
+      CALL SHIFT_DP_ARRAY(GAMA_RG)
+      CALL SHIFT_DP_ARRAY(T_RG)
       DO N = 1, NMAX(0)
          CALL SHIFT_DP_ARRAY(X_G(:,N))
          CALL SHIFT_DP_ARRAY(X_GO(:,N))
@@ -1011,6 +1014,8 @@
          CALL SHIFT_DP_ARRAY(D_PO(:,M))
          CALL SHIFT_DP_ARRAY(T_S(:,M))
          CALL SHIFT_DP_ARRAY(T_SO(:,M))
+         CALL SHIFT_DP_ARRAY(GAMA_RS(:,M))
+         CALL SHIFT_DP_ARRAY(T_RS(:,M))
          DO N = 1, NMAX(M)
             CALL SHIFT_DP_ARRAY(X_S(:,M,N))
             CALL SHIFT_DP_ARRAY(X_SO(:,M,N))
