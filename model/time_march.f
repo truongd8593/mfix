@@ -128,6 +128,7 @@
       INTEGER :: CHKBATCHQ_FLAG
       LOGICAL :: bWrite_netCDF_files
 
+      DOUBLE PRECISION :: TIME_START
       DOUBLE PRECISION :: WALL_START ! wall time at the beginning
       DOUBLE PRECISION :: WALL_NOW   ! wall time at the end of each timestep
       DOUBLE PRECISION :: WALL_LEFT
@@ -144,9 +145,6 @@
       LOGICAL , EXTERNAL :: ADJUST_DT
       DOUBLE PRECISION :: WALL_TIME
 !-----------------------------------------------
-
-
-      WALL_START = WALL_TIME()
 
       IF(AUTOMATIC_RESTART) RETURN
 
@@ -256,7 +254,6 @@
       CALL ZERO_ARRAY (E_N, IER)
       CALL ZERO_ARRAY (E_T, IER)
 
-
 ! Initialize adjust_ur
       dummy = ADJUST_DT(100, 0)
 
@@ -290,6 +287,9 @@
          CALL PARALLEL_FIN
          STOP
       ENDIF
+
+      WALL_START = WALL_TIME()
+      TIME_START = TIME
 
 ! The TIME loop begins here.............................................
  100  CONTINUE
@@ -600,7 +600,7 @@
       ENDDO
 
       WALL_NOW = WALL_TIME()
-      WALL_LEFT = (WALL_NOW-WALL_START)*(TSTOP-TIME)/max(TIME,1.0d-6)
+      WALL_LEFT = (WALL_NOW-WALL_START)*(TSTOP-TIME)/max(TIME-TIME_START,1.0d-6)
       CALL GET_TUNIT(WALL_LEFT,TUNIT)
       IF(DMP_LOG) WRITE (*, '(/" Wall time remaining = ",F9.3,1X,A)') &
          WALL_LEFT, TUNIT
