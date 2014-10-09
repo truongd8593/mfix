@@ -479,8 +479,11 @@ CONTAINS
 
     DOUBLE PRECISION, DIMENSION(3) :: a1, a, vr, v1r, v2r, g1, g2
 
-    DOUBLE PRECISION :: C100, C010, C001,  C200, C110, C101, C020, C011, C002, C300, C210, C201, C120, C111, C102, C030, C021, C012, C003
-    DOUBLE PRECISION :: dp, d, g, gsqr, o, mu,  ni, ui, vi, wi, nj, uj, vj, wj, cross, denom, L11, L12, L13, L21, L22, L23, L31, L32, L33
+    DOUBLE PRECISION :: C100, C010, C001,  C200, C110, C101, C020, C011
+    DOUBLE PRECISION :: C002, C300, C210, C201, C120, C111, C102, C030, C021, C012, C003
+
+    DOUBLE PRECISION :: dp, d, g, gsqr, o, mu,  ni, ui, vi, wi, nj, uj, vj, wj
+    DOUBLE PRECISION :: cross, denom, L11, L12, L13, L21, L22, L23, L31, L32, L33
 
     INTEGER :: i, j
 
@@ -577,40 +580,47 @@ CONTAINS
           C010 = C010 + ni*nj*(pi*gsqr*o*L32)/2
           C001 = C001 + ni*nj*(pi*gsqr*o*L33)/2
 
-          C200 = C200 + ni*nj*(4*pi*(g**3)*(o**2)*(L31**2)+12*pi*gsqr*o*ui*L31+pi*(g**3)*(o**2)*(L21**2)+pi*(g**3)*(o**2)*(L11**2))/12
+          C200 = C200 + ni*nj*(4*pi*(g**3)*(o**2)*(L31**2)+12*pi*gsqr*o*ui*L31 &
+               + pi*(g**3)*(o**2)*(L21**2)+pi*(g**3)*(o**2)*(L11**2))/12
           C110 = C110 + ni*nj*((4*pi*(g**3)*(o**2)*L31+6*pi*gsqr*o*ui)*L32+6*pi*gsqr*o*vi*L31+pi*(g**3)*(o**2)*L21*L22 + &
                pi*(g**3)*(o**2)*L11*L12)/12
 
           C101 = C101 + ni*nj*((4*pi*(g**3)*(o**2)*L31+6*pi*gsqr*o*ui)*L33+6*pi*gsqr*o*wi*L31+pi*(g**3)*(o**2)*L21*L23 + &
                pi*(g**3)*(o**2)*L11*L13)/12
 
-          C020 = C020 + ni*nj*(4*pi*(g**3)*(o**2)*(L32**2)+12*pi*gsqr*o*vi*L32+pi*(g**3)*(o**2)*(L22**2)+pi*(g**3)*(o**2)*(L12**2))/12
+          C020 = C020 + ni*nj*(4*pi*(g**3)*(o**2)*(L32**2)+12*pi*gsqr*o*vi*L32 &
+               + pi*(g**3)*(o**2)*(L22**2)+pi*(g**3)*(o**2)*(L12**2))/12
 
           C011 = C011 + ni*nj*((4*pi*(g**3)*(o**2)*L32+6*pi*gsqr*o*vi)*L33+6*pi*gsqr*o*wi*L32+pi*(g**3)*(o**2)*L22*L23 + &
                pi*(g**3)*(o**2)*L12*L13)/12
 
-          C002 = C002 + ni*nj*(4*pi*(g**3)*(o**2)*(L33**2)+12*pi*gsqr*o*wi*L33+pi*(g**3)*(o**2)*(L23**2)+pi*(g**3)*(o**2)*(L13**2))/12
+          C002 = C002 + ni*nj*(4*pi*(g**3)*(o**2)*(L33**2)+12*pi*gsqr*o*wi*L33 &
+               + pi*(g**3)*(o**2)*(L23**2)+pi*(g**3)*(o**2)*(L13**2))/12
 
-          C300 = C300 + ni*nj*(2*pi*(g**4)*(o**3)*(L31**3)+8*pi*(g**3)*(o**2)*ui*(L31**2)+(pi*(g**4)*(o**3)*(L21**2)+pi*(g**4)*(o**3)*(L11**2) + &
-               12*pi*gsqr*o*(ui**2))*L31+2*pi*(g**3)*(o**2)*ui*(L21**2)+2*pi*(g**3)*(o**2)*ui*(L11**2))/8
+          C300 = C300 + ni*nj*(2*pi*(g**4)*(o**3)*(L31**3)+8*pi*(g**3)*(o**2)*ui*(L31**2) &
+               + (pi*(g**4)*(o**3)*(L21**2)+pi*(g**4)*(o**3)*(L11**2) + 12*pi*gsqr*o*(ui**2))*L31 &
+               + 2*pi*(g**3)*(o**2)*ui*(L21**2)+2*pi*(g**3)*(o**2)*ui*(L11**2))/8
 
-          C210 = C210 + ni*nj*((6*pi*(g**4)*(o**3)*(L31**2)+16*pi*(g**3)*(o**2)*ui*L31+pi*(g**4)*(o**3)*(L21**2)+pi*(g**4)*(o**3)*(L11**2) + &
-               12*pi*gsqr*o*(ui**2))*L32+8*pi*(g**3)*(o**2)*vi*(L31**2)+(2*pi*(g**4)*(o**3)*L21*L22+2*pi*(g**4)*(o**3)*L11*L12 + &
-               24*pi*(g**2)*o*ui*vi)*L31+4*pi*(g**3)*(o**2)*ui*L21*L22+2*pi*(g**3)*(o**2)*vi*(L21**2) + &
-               4*pi*(g**3)*(o**2)*ui*L11*L12+2*pi*(g**3)*(o**2)*vi*(L11**2))/(24)
+          C210 = C210 + ni*nj*((6*pi*(g**4)*(o**3)*(L31**2)+16*pi*(g**3)*(o**2)*ui*L31 &
+               + pi*(g**4)*(o**3)*(L21**2)+pi*(g**4)*(o**3)*(L11**2) + 12*pi*gsqr*o*(ui**2))*L32 &
+               + 8*pi*(g**3)*(o**2)*vi*(L31**2)+(2*pi*(g**4)*(o**3)*L21*L22+2*pi*(g**4)*(o**3)*L11*L12 &
+               + 24*pi*(g**2)*o*ui*vi)*L31+4*pi*(g**3)*(o**2)*ui*L21*L22+2*pi*(g**3)*(o**2)*vi*(L21**2) &
+               + 4*pi*(g**3)*(o**2)*ui*L11*L12+2*pi*(g**3)*(o**2)*vi*(L11**2))/(24)
 
-          C201 = C201 + ni*nj*((6*pi*(g**4)*(o**3)*(L31**2)+16*pi*(g**3)*(o**2)*ui*L31+pi*(g**4)*(o**3)*(L21**2)+pi*(g**4)*(o**3)*(L11**2) + &
-               12*pi*gsqr*o*(ui**2))*L33+8*pi*(g**3)*(o**2)*wi*(L31**2)+(2*pi*(g**4)*(o**3)*L21*L23+2*pi*(g**4)*(o**3)*L11*L13 + &
-               24*pi*gsqr*o*ui*wi)*L31+4*pi*(g**3)*(o**2)*ui*L21*L23+2*pi*(g**3)*(o**2)*wi*(L21**2) + &
-               4*pi*(g**3)*(o**2)*ui*L11*L13+2*pi*(g**3)*(o**2)*wi*(L11**2))/(24)
+          C201 = C201 + ni*nj*((6*pi*(g**4)*(o**3)*(L31**2)+16*pi*(g**3)*(o**2)*ui*L31 &
+               + pi*(g**4)*(o**3)*(L21**2)+pi*(g**4)*(o**3)*(L11**2) + 12*pi*gsqr*o*(ui**2))*L33 &
+               + 8*pi*(g**3)*(o**2)*wi*(L31**2)+(2*pi*(g**4)*(o**3)*L21*L23+2*pi*(g**4)*(o**3)*L11*L13 &
+               + 24*pi*gsqr*o*ui*wi)*L31+4*pi*(g**3)*(o**2)*ui*L21*L23+2*pi*(g**3)*(o**2)*wi*(L21**2) &
+               + 4*pi*(g**3)*(o**2)*ui*L11*L13+2*pi*(g**3)*(o**2)*wi*(L11**2))/(24)
 
           C120 = C120 + ni*nj*((6*pi*(g**4)*(o**3)*L31+8*pi*(g**3)*(o**2)*ui)*(L32**2)+(16*pi*(g**3)*(o**2)*vi*L31 + &
                2*pi*(g**4)*(o**3)*L21*L22+2*pi*(g**4)*(o**3)*L11*L12+24*pi*gsqr*o*ui*vi)*L32+(pi*(g**4)*(o**3)*(L22**2) + &
                pi*(g**4)*(o**3)*(L12**2)+12*pi*gsqr*o*(vi**2))*L31+2*pi*(g**3)*(o**2)*ui*(L22**2)+4*pi*(g**3)*(o**2)*vi*L21*L22 + &
                2*pi*(g**3)*(o**2)*ui*(L12**2)+4*pi*(g**3)*(o**2)*vi*L11*L12)/(24)
 
-          C111 = C111 + ni*nj*(((6*pi*(g**4)*(o**3)*L31+8*pi*(g**3)*(o**2)*ui)*L32+8*pi*(g**3)*(o**2)*vi*L31+pi*(g**4)*(o**3)*L21*L22 + &
-               pi*(g**4)*(o**3)*L11*L12+12*pi*gsqr*o*ui*vi)*L33+(8*pi*(g**3)*(o**2)*wi*L31+pi*(g**4)*(o**3)*L21*L23 + &
+          C111 = C111 + ni*nj*(((6*pi*(g**4)*(o**3)*L31+8*pi*(g**3)*(o**2)*ui)*L32 &
+               + 8*pi*(g**3)*(o**2)*vi*L31+pi*(g**4)*(o**3)*L21*L22 + pi*(g**4)*(o**3)*L11*L12 &
+               + 12*pi*gsqr*o*ui*vi)*L33+(8*pi*(g**3)*(o**2)*wi*L31+pi*(g**4)*(o**3)*L21*L23 + &
                pi*(g**4)*(o**3)*L11*L13+12*pi*gsqr*o*ui*wi)*L32+(pi*(g**4)*(o**3)*L22*L23+pi*(g**4)*(o**3)*L12*L13+ &
                12*pi*gsqr*o*vi*wi)*L31+(2*pi*(g**3)*(o**2)*ui*L22+2*pi*(g**3)*(o**2)*vi*L21)*L23 + &
                2*pi*(g**3)*(o**2)*wi*L21*L22+(2*pi*(g**3)*(o**2)*ui*L12+2*pi*(g**3)*(o**2)*vi*L11)*L13 + &
@@ -621,21 +631,24 @@ CONTAINS
                (pi*(g**4)*(o**3)*(L23**2)+pi*(g**4)*(o**3)*(L13**2)+12*pi*(g**2)*o*(wi**2))*L31+2*pi*(g**3)*(o**2)*ui*(L23**2)+ &
                4*pi*(g**3)*(o**2)*wi*L21*L23+2*pi*(g**3)*(o**2)*ui*(L13**2)+4*pi*(g**3)*(o**2)*wi*L11*L13)/(24)
 
-          C030 = C030 + ni*nj*(2*pi*(g**4)*(o**3)*(L32**3)+8*pi*(g**3)*(o**2)*vi*(L32**2)+(pi*(g**4)*(o**3)*(L22**2)+pi*(g**4)*(o**3)*(L12**2) + &
-               12*pi*(g**2)*o*(vi**2))*L32+2*pi*(g**3)*(o**2)*vi*(L22**2)+2*pi*(g**3)*(o**2)*vi*(L12**2))/8
+          C030 = C030 + ni*nj*(2*pi*(g**4)*(o**3)*(L32**3)+8*pi*(g**3)*(o**2)*vi*(L32**2) &
+               + (pi*(g**4)*(o**3)*(L22**2)+pi*(g**4)*(o**3)*(L12**2) + 12*pi*(g**2)*o*(vi**2))*L32 &
+               + 2*pi*(g**3)*(o**2)*vi*(L22**2)+2*pi*(g**3)*(o**2)*vi*(L12**2))/8
 
-          C021 = C021 + ni*nj*((6*pi*(g**4)*(o**3)*(L32**2)+16*pi*(g**3)*(o**2)*vi*L32+pi*(g**4)*(o**3)*(L22**2)+pi*(g**4)*(o**3)*(L12**2) + &
-               12*pi*gsqr*o*(vi**2))*L33+8*pi*(g**3)*(o**2)*wi*(L32**2)+(2*pi*(g**4)*(o**3)*L22*L23+2*pi*(g**4)*(o**3)*L12*L13 + &
-               24*pi*(g**2)*o*vi*wi)*L32+4*pi*(g**3)*(o**2)*vi*L22*L23+2*pi*(g**3)*(o**2)*wi*(L22**2) + &
-               4*pi*(g**3)*(o**2)*vi*L12*L13+2*pi*(g**3)*(o**2)*wi*(L12**2))/(24)
+          C021 = C021 + ni*nj*((6*pi*(g**4)*(o**3)*(L32**2)+16*pi*(g**3)*(o**2)*vi*L32 &
+               + pi*(g**4)*(o**3)*(L22**2)+pi*(g**4)*(o**3)*(L12**2) + 12*pi*gsqr*o*(vi**2))*L33 &
+               + 8*pi*(g**3)*(o**2)*wi*(L32**2)+(2*pi*(g**4)*(o**3)*L22*L23+2*pi*(g**4)*(o**3)*L12*L13 &
+               + 24*pi*(g**2)*o*vi*wi)*L32+4*pi*(g**3)*(o**2)*vi*L22*L23+2*pi*(g**3)*(o**2)*wi*(L22**2) &
+               + 4*pi*(g**3)*(o**2)*vi*L12*L13+2*pi*(g**3)*(o**2)*wi*(L12**2))/(24)
 
           C012 = C012 + ni*nj*((6*pi*(g**4)*(o**3)*L32+8*pi*(g**3)*(o**2)*vi)*(L33**2)+(16*pi*(g**3)*(o**2)*wi*L32 + &
                2*pi*(g**4)*(o**3)*L22*L23+2*pi*(g**4)*(o**3)*L12*L13+24*pi*gsqr*o*vi*wi)*L33+(pi*(g**4)*(o**3)*(L23**2) + &
                pi*(g**4)*(o**3)*(L13**2)+12*pi*gsqr*o*(wi**2))*L32+2*pi*(g**3)*(o**2)*vi*(L23**2)+4*pi*(g**3)*(o**2)*wi*L22*L23 + &
                2*pi*(g**3)*(o**2)*vi*(L13**2)+4*pi*(g**3)*(o**2)*wi*L12*L13)/(24)
 
-          C003 = C003 + ni*nj*(2*pi*(g**4)*(o**3)*(L33**3)+8*pi*(g**3)*(o**2)*wi*(L33**2)+(pi*(g**4)*(o**3)*(L23**2)+pi*(g**4)*(o**3)*(L13**2) + &
-               12*pi*gsqr*o*(wi**2))*L33+2*pi*(g**3)*(o**2)*wi*(L23**2)+2*pi*(g**3)*(o**2)*wi*(L13**2))/8;
+          C003 = C003 + ni*nj*(2*pi*(g**4)*(o**3)*(L33**3)+8*pi*(g**3)*(o**2)*wi*(L33**2) &
+               + (pi*(g**4)*(o**3)*(L23**2)+pi*(g**4)*(o**3)*(L13**2) + 12*pi*gsqr*o*(wi**2))*L33 &
+               + 2*pi*(g**3)*(o**2)*wi*(L23**2)+2*pi*(g**3)*(o**2)*wi*(L13**2))/8;
 
        END DO
     END DO
@@ -747,7 +760,10 @@ CONTAINS
        M1tmp = M1 + 0.5*h*Coll ;
        CALL EIGHT_NODE_3D (M1tmp, N1tmp, U1tmp, V1tmp, W1tmp) ! Projection step
        !     Collisions inside the same specie
-       CALL COLLISIONS_BOLTZMANN_TWO_SPECIES (N1tmp, U1tmp, V1tmp, W1tmp, N1tmp, U1tmp, V1tmp, W1tmp, m_1, m_1, dp1, dp1, e11, Colltmp)
+
+       CALL COLLISIONS_BOLTZMANN_TWO_SPECIES (N1tmp, U1tmp, V1tmp, W1tmp, &
+            N1tmp, U1tmp, V1tmp, W1tmp, m_1, m_1, dp1, dp1, e11, Colltmp)
+
        Coll = Colltmp
        !     Collisions between the two species
        CALL COLLISIONS_BOLTZMANN_TWO_SPECIES (N1tmp, U1tmp, V1tmp, W1tmp, N2, U2, V2, W2, m_1, m_2, dp1, dp2, e12, Colltmp)

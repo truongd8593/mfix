@@ -140,11 +140,11 @@
 
             IF (FULL_LOG) THEN
                IF(myPE.eq.PE_IO) then
-                  WRITE (*, '(12X,A,G11.5,9X,A)') &
+                  WRITE (*, '(12X,A,G12.5,9X,A)') &
                      ' Dt=', DT, ' Recovered            :-)'
                ENDIF
                CALL START_LOG
-               IF(DMP_LOG)WRITE (UNIT_LOG, '(12X,A,G11.5,9X,A)') &
+               IF(DMP_LOG)WRITE (UNIT_LOG, '(12X,A,G12.5,9X,A)') &
                   ' Dt=', DT, ' Recovered            :-)'
                CALL END_LOG
             ENDIF

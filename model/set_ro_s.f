@@ -219,7 +219,7 @@
          ' One or more fluid cells contain invalid species mass',/     &
          ' fractions which do NOT sum to one.'/,'   > myPE = ',I6)
 
- 1101 FORMAT('   > sum(X_s(',I6,')) = ',g11.5)
+ 1101 FORMAT('   > sum(X_s(',I6,')) = ',g12.5)
 
  1200 FORMAT(//1X,70('*')/' From: CHECK_SET_ROs',/,' Error 1200:',     &
          ' One or more fluid cells contain an invalid species mass',/  &
@@ -229,7 +229,7 @@
 
  1202 FORMAT('   > Inert species index: ',I4)
 
- 1203 FORMAT('   > X_s(',I6,',INERT) = ',g11.5)
+ 1203 FORMAT('   > X_s(',I6,',INERT) = ',g12.5)
 
  9999 FORMAT(1x,70('*')/)
 
