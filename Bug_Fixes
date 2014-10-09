@@ -10,4 +10,7 @@ Date (MM/DD/YYYY) | Description           | Severity |  Modified File(s)
 10/06/2014        | Fixed index error in  | Minor    |  check_data/check_solids_common_discrete.f
                   | TFM/DEM hybrid        |          |
 ==================================================================================================
+10/09/2014        | Shift radiation arrays| Minor    |  set_increments.f
+                  | when re-indexing      |          |
+==================================================================================================
 
