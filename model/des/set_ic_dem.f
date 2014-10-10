@@ -135,6 +135,9 @@
 
       ENDDO
 
+! Calculate the average solids temperature in each fluid cell
+      CALL SET_INIT_avgTs
+
       CALL FINL_ERR_MSG
 
       RETURN

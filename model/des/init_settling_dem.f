@@ -71,9 +71,6 @@
       CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
  1200 FORMAT('DEM settling period complete.')
 
-! Calculate the average solids temperature in each fluid cell
-      CALL SET_INIT_avgTs
-
 ! this write_des_data is needed to properly show the initial state of
 ! the simulation (granular or coupled). In the coupled case, the
 ! particles may have 'settled' according to above.  In the granular
