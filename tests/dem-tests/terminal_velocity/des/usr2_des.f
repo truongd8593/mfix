@@ -145,15 +145,15 @@
       ENDIF
 
 ! Calculate erors.
-      POS_ERR = (ABS(RK4_POS(2) - DES_POS_NEW(1,2))/ABS(RK4_POS(2)))*100
-      VEL_ERR = (ABS(RK4_VEL(2) - DES_VEL_NEW(1,2))/ABS(RK4_VEL(2)))*100
+      POS_ERR = (ABS(RK4_POS(2) - DES_POS_NEW(2,1))/ABS(RK4_POS(2)))*100
+      VEL_ERR = (ABS(RK4_VEL(2) - DES_VEL_NEW(2,1))/ABS(RK4_VEL(2)))*100
 
 ! Write the results to file.
       WRITE(uPOS,"(3x,F15.8,5X,F15.8,2(3x,F15.8))")                     &
-         lTime, RK4_POS(2), DES_POS_NEW(1,2), POS_ERR
+         lTime, RK4_POS(2), DES_POS_NEW(2,1), POS_ERR
 
       WRITE(uVEL,"(3x,F15.8,5X,F15.8,2(3x,F15.8))")                     &
-         lTime, RK4_VEL(2), DES_VEL_NEW(1,2), VEL_ERR
+         lTime, RK4_VEL(2), DES_VEL_NEW(2,1), VEL_ERR
 
       CLOSE(uPOS)
       CLOSE(uVEL)
