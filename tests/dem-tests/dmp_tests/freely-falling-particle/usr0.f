@@ -102,8 +102,8 @@
          do lc1 = 1, max_pip
             if(.not.pea(lc1,1)) cycle
             if(pea(lc1,4)) cycle
-            write(201,"(3x,I6,2x,I6,3(2x,F8.4))") iglobal_id(lc1), lc1, &
-                des_pos_new(lc1,1), des_pos_new(lc1,2), des_pos_new(lc1,3)
+            write(201,"(3x,I6,2x,I6,3(2x,F8.4))") iglobal_id(lc1),     &
+               lc1, des_pos_new(1:3,lc1)
          end do
       else
          write(201,"(3x,'No particles on this process.')")
@@ -146,7 +146,7 @@
       if (mype.eq.pe_io) lMass = drootbuf
 
 ! Gather particle position (Y-axis only)
-      call des_gather(des_pos_new(:,2))
+      call des_gather(des_pos_new(2,:))
       if (mype.eq.pe_io) h0 = drootbuf
 
       lGrav = -grav(2)
