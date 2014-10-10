@@ -69,6 +69,15 @@ AC_CONFIG_SRCDIR([model/mfix.f])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([subdir-objects foreign -Wall -Wno-portability])
 
+AC_ARG_ENABLE([mkl],
+[  --enable-mkl    Turn on Math Kernel Library support],
+[case "${enableval}" in
+  yes) mkl=true ;;
+  no)  mkl=false ;;
+  *) AC_MSG_ERROR([bad value ${enableval} for --enable-mkl]) ;;
+esac],[mkl=false])
+AM_CONDITIONAL([MKL], [test x$mkl = xtrue])
+
 AC_ARG_ENABLE([smp],
 [  --enable-smp    Turn on OpenMP support],
 [case "${enableval}" in

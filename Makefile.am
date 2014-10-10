@@ -5,6 +5,7 @@
 	$(FC) $(AM_FCFLAGS) $(FCFLAGS) -c $< -o $@
 
 AM_FCFLAGS = -I$(top_srcdir)/model
+AM_LDFLAGS =
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT)
 
@@ -44,8 +45,6 @@ species.inc:
 	RUN_DIR=. $(top_srcdir)/config/rxn_preproc.sh
 
 common_SOURCES = \
-	model/BLAS.f \
-	model/DGTSV.f \
 	model/GhdTheory/adjust_eps_ghd.f \
 	model/GhdTheory/bulk_viscosity.f \
 	model/GhdTheory/calc_d_ghd.f \
@@ -542,9 +541,17 @@ common_SOURCES = \
 	model/zero_array.f \
 	model/zero_norm_vel.f
 
+if MKL
+AM_FCFLAGS += -mkl
+AM_LDFLAGS += -mkl
+else
+common_SOURCES += model/BLAS.f
+common_SOURCES += model/DGTSV.f
+endif
+
 if OPENMP
 AM_FCFLAGS += $(OPENMP_FCFLAGS)
-AM_LDFLAGS = $(OPENMP_FCFLAGS)
+AM_LDFLAGS += $(OPENMP_FCFLAGS)
 endif
 
 if MPI

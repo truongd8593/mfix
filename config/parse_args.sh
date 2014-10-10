@@ -86,6 +86,7 @@ echo ""
 echo "Advanced Options:"
 echo ""
 echo " --codecov            Enable code coverage utility (Intel compiler)"
+echo " --mkl                Enable Intel Math Kernel Library (requires building with Intel Fortran compiler)"
 echo " --mic                Enable Intel MIC flags"
 echo " --skip-rxn           Skip the reaction preprocessor"
 echo ""
@@ -278,6 +279,10 @@ for arg in $input; do
       esac
       REQ_COMP=0;;
 
+# Enable MKL
+#-------------------------------------------------------------------------->>
+    "--mkl" )
+      USE_MKL=1;;
 
 # Enable force source file recompiling.
 #-------------------------------------------------------------------------->>
