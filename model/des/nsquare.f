@@ -126,6 +126,8 @@
                NEIGH_L = NEIGHBOURS(L,1)
                NEIGH_LL = NEIGHBOURS(LL,1)
 
+               call collision_add(L, LL)
+
                IF (NEIGH_L.LE.MN) THEN
                   NEIGHBOURS(L,NEIGH_L+1) = LL
                ELSE
