@@ -93,16 +93,17 @@ MODULE interpolation
   FUNCTION array_dot_product_3d(A,B)  !3D Arrays
     Real(prcn):: array_dot_product_3d
 
-    Integer:: j, k, s2, s3
+    Integer:: j, k, s1, s2, s3
     Real(prcn), Dimension(:,:,:), Intent(in):: A, B
 
+    s1 = SIZE(A,1)
     s2 = SIZE(A,2)
     s3 = SIZE(A,3)
 
     array_dot_product_3d = zero
     DO k = 1,s3
        DO j = 1,s2
-          array_dot_product_3d = array_dot_product_3d + dot_product(A(:,j,k), B(:,j,k))
+          array_dot_product_3d = array_dot_product_3d + dot_product(A(:,j,k), B(1:s1,j,k))
        ENDDO
     ENDDO
   END FUNCTION array_dot_product_3d
