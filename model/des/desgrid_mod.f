@@ -661,7 +661,11 @@
             ltotpic =dg_pic(lijk)%isize
             do lpicloc = 1,ltotpic
                lneigh = dg_pic(lijk)%p(lpicloc)
-               if (lneigh <= lcurpar) cycle
+! Only skip real particles otherwise the ghost particle calculations
+! are missed.
+               if (lneigh <= lcurpar) then
+                  if(.not.pea(lneigh,4)) cycle
+               endif
                lsearch_rad = factor_RLM*(des_radius(lcurpar)+des_radius(lneigh))
                ldistvec = lcurpar_pos(:)-des_pos_new(:,lneigh)
                ldistsquared = dot_product(ldistvec,ldistvec)
