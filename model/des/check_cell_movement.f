@@ -194,6 +194,8 @@
       use discretelement, only: PIP, MAX_PIP
 ! The I/J/K/IJK indicies of the fluid cell
       use discretelement, only: PIJK
+! The number of particles in cell IJK
+      use discretelement, only: PINC
 ! Particle positions New/Previous
       use discretelement, only: DES_POS_NEW, DES_POS_OLD
 ! The East/North/Top face loctions of fluid cells
@@ -235,6 +237,10 @@
       CALL INIT_ERR_MSG("CHECK_CELL_MOVEMENT_PIC")
       IF(lDEBUG) CALL OPEN_PE_LOG(IER)
 
+! Initialize the counters for deleted/recovered parcels.
+      lDELETED = 0
+      lRECOVERED = 0
+
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
          IF(.NOT.PEA(L,1) .OR. any(PEA(L,2:4))) CYCLE
@@ -269,6 +275,7 @@
 
                lDELETED = lDELETED + 1
                PEA(L,1) = .FALSE.
+               PINC(IJK) = PINC(IJK) - 1
 
                IF(lDEBUG) THEN
                   WRITE(ERR_MSG,1110) trim(iVal(L)),'I',trim(iVal(I)), &
@@ -295,8 +302,10 @@
                ENDIF
 
             ELSE
+
                lDELETED = lDELETED + 1
                PEA(L,1) = .FALSE.
+               PINC(IJK) = PINC(IJK) - 1
 
                IF(lDEBUG) THEN
                   WRITE(ERR_MSG,1110) trim(iVal(L)),'J',trim(iVal(J)), &
@@ -325,6 +334,7 @@
 
                lDELETED = lDELETED + 1
                PEA(L,1) = .FALSE.
+               PINC(IJK) = PINC(IJK) - 1
 
                IF(lDEBUG) THEN
                   WRITE(ERR_MSG,1110) trim(iVal(L)),'K',trim(iVal(K)), &
@@ -347,15 +357,15 @@
       CALL FINL_ERR_MSG
 
  1100 FORMAT('Warninge 1100: Particle ',A,' was recovered from a ',    &
-         'ghost cell.',2/2x,'Moved from cell with ',A1,' index: ',A,   &
+         'ghost cell.',2/2x,'Moved into cell with ',A1,' index: ',A,   &
          /2x,A1,'-Position OLD:',g11.4,/2x,A1,'-Position NEW:',g11.4,  &
          /2x,A1,'-Velocity:',g11.4)
 
  1110 FORMAT('Warninge 1110: Particle ',A,' was deleted from a ',      &
-         'ghost cell.',2/2x,'Moved from cell with ',A1,' index: ',A,   &
+         'ghost cell.',2/2x,'Moved into cell with ',A1,' index: ',A,   &
          /2x,A1,'-Position OLD:',g11.4,/2x,A1,'-Position NEW:',g11.4,  &
-         /A1,'-Velocity:',g11.4,/2x,'Fluid Cell: ',A,/2x,'Cut cell? ', &
-         L1,/2x,'Fluid at? ',L1)
+         /2X,A1,'-Velocity:',g11.4,/2x,'Fluid Cell: ',A,/2x,           &
+         'Cut cell? ',L1,/2x,'Fluid at? ',L1)
 
       RETURN
       END SUBROUTINE CHECK_CELL_MOVEMENT_PIC
