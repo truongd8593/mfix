@@ -328,8 +328,8 @@
 ! just for post-processing mag. of cohesive forces on each particle
          IF(USE_COHESION)THEN
             PostCohesive(LL) =  dot_product(FC_COLL(:, CC),FC_COLL(:, CC))
-            if(magGravity> ZERO) PostCohesive(LL) =  SQRT(PostCohesive(LL)) / &
-                 (PMASS(LL)*magGravity)
+            if(magGravity> ZERO .AND. PEA(LL,1)) PostCohesive(LL) =    &
+               SQRT(PostCohesive(LL)) / (PMASS(LL)*magGravity)
          ENDIF ! for cohesion model
 
       ENDDO
