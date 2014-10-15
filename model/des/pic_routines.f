@@ -67,7 +67,7 @@
       !compute the gas-phase pressure gradient at the beginning of the
       !des loop as the gas-phase pressure field will not change during
       !des calls
-      IF(DES_CONTINUUM_COUPLED)   CALL COMPUTE_PG_GRAD
+      IF(DES_CONTINUUM_COUPLED)   CALL CALC_PG_GRAD
 
       TEND_PIC_LOOP = MERGE(TIME+DT, TSTOP, DES_CONTINUUM_COUPLED)
       PIC_ITERS = 0
