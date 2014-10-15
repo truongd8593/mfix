@@ -1,38 +1,31 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Subroutine: CALC_FORCE_DEM                                          !
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  !
+!                                                                      !
 !  Purpose: Calculate contact force and torque on particle from        !
 !           particle-particle and particle-wall collisions. Treats     !
 !           wall interaction also as a two-particle interaction but    !
 !           accounting for the wall properties                         !
 !                                                                      !
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  !
-!  Reviewer: Sreekanth Pannala                        Date: 06-Dec-06  !
-!  Reviewer: Rahul Garg                               Date: 02-Aug-07  !
-!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
       SUBROUTINE CALC_FORCE_DEM
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       USE discretelement
       USE geometry, ONLY: DO_K
       USE constant, ONLY: Pi
 
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! percent of particle radius when excess overlap will be flagged
       DOUBLE PRECISION, PARAMETER :: flag_overlap = 0.20d0
 ! particle no. indices
       INTEGER :: I, LL, CC
-! loop counters (neighbor particles, walls, dimension)
-      INTEGER :: II, JJ, IW, IDIMN
 ! loop counter and indices for neighbor information
-      INTEGER :: NI, NLIM, N_NOCON, NEIGH_L
+      INTEGER :: NI, NLIM, N_NOCON
 ! the overlap occuring between particle-particle or particle-wall
 ! collision in the normal direction
       DOUBLE PRECISION :: OVERLAP_N
@@ -65,16 +58,11 @@
 ! store solids phase index of particle (i.e. pijk(np,5))
       INTEGER :: PHASEI, PHASELL
 ! local values used spring constants and damping coefficients
-      DOUBLE PRECISION :: ETAN_DES, ETAN_DES_W, ETAT_DES, ETAT_DES_W,&
-                          KN_DES, KN_DES_W, KT_DES, KT_DES_W
+      DOUBLE PRECISION :: ETAN_DES, ETAT_DES
+      DOUBLE PRECISION :: KN_DES, KT_DES
 ! local values used for calculating cohesive forces
       DOUBLE PRECISION :: FORCE_COH, EQ_RADIUS, DistApart, &
-                          Norm_Dist, magGravity
-! flag indicating when a particle is in contact with a given wall
-! (1=contact, 0=nocontact)
-      INTEGER :: WALLCONTACT
-! local variables to store wall position and velocity
-      DOUBLE PRECISION :: WALL_POS(3), WALL_VEL(3)
+                          magGravity
 ! set to T when a sliding contact occurs
       LOGICAL :: PARTICLE_SLIDE
 
@@ -88,28 +76,13 @@
       OVERLAP_MAX = ZERO
       NEIGH_MAX = -1
 
-! initialize cohesive forces
-      IF(USE_COHESION) THEN
-         PostCohesive (:) = ZERO
-      ENDIF
+! Initialize cohesive forces
+      IF(USE_COHESION) PostCohesive(:) = ZERO
 
-!$omp   parallel default(shared)                                  &
-!$omp   private(ll,fts1,fts2,fns1,fns2,pft_tmp,                   &
-!$omp          PARTICLE_SLIDE,nlim,                               &
-!$omp          n_nocon,ni,iw,wallcontact,i,                       &
-!$omp          WALL_POS,WALL_VEL,neigh_l,r_lm,dist,ii,            &
-!$omp          v_rel_trans_norm, v_rel_tang,                      &
-!$omp          overlap_n,dtsolid_tmp,phasell,                     &
-!$omp          sqrt_overlap,kn_des_w,kt_des_w,etan_des_w,         &
-!$omp          etat_des_w,                                        &
-!$omp          phasei,kn_des,kt_des,etan_des,etat_des,            &
-! Revised by Handan Liu on Jan 17 2013
-!$omp          Idimn,force_coh,eq_radius,distapart,norm_dist)
+!$omp parallel default(shared) private(LL, NLIM, N_NOCON, NI)
 !$omp do reduction(max:NEIGH_MAX) schedule (dynamic,50)
-
-
+!---------------------------------------------------------------------//
 ! Looping over all particles in the processor
-!----------------------------------------------------------------->>>
       DO LL = 1, MAX_PIP
 
 ! skipping non-existent particles
@@ -117,16 +90,7 @@
 ! skipping ghost particles
          IF(PEA(LL,4)) CYCLE
 
-! Initializing local variables
-         V_REL_TANG(:) = ZERO
-         FTS1(:) = ZERO
-         FTS2(:) = ZERO
-         FNS1(:) = ZERO
-         FNS2(:) = ZERO
-         PFT_TMP(:) = ZERO
-
 ! Check neighbor history of particle LL and update arrays as needed
-! ---------------------------------------------------------------->>>
          IF(PN_WALL(1,LL).GE.1) THEN
             NLIM = PN_WALL(1,LL)+1
             N_NOCON = 0
@@ -152,8 +116,8 @@
                ENDIF
             ENDDO
 
-            ! Initializing rest of the neighbor list which is not in contact and
-            ! clean up after the above array left shifts
+! Initializing rest of the neighbor list which is not in contact and
+! clean up after the above array left shifts
             IF (N_NOCON .GT. 0) THEN
                NLIM = MAX(2,PN_WALL(1,LL) + 2)
                PN_WALL(NLIM:6,LL) = -1
@@ -162,7 +126,6 @@
             ENDIF
             NEIGH_MAX = MAX(NEIGH_MAX,PN_WALL(1,LL))
          ENDIF
-
 
 ! Reset the flag array PV; during each call to calc_force_des this
 ! variable tracks whether particle LL has any current neighbors
@@ -175,16 +138,17 @@
 
       CALL CALC_COLLISION_WALL
 
+
 ! Check particle LL neighbour contacts
-!----------------------------------------------------------------->>>
+!---------------------------------------------------------------------//
 
       FC_COLL(:,:) = 0
       FT_COLL(:,:) = 0
 
-!$omp parallel do default(none) private(cc,ll,i,dist,r_lm,     &
-!$omp    overlap_n,v_rel_tang,v_rel_trans_norm,sqrt_overlap,    &
+!$omp parallel do default(none) private(cc,ll,i,dist,r_lm,             &
+!$omp    overlap_n,v_rel_tang,v_rel_trans_norm,sqrt_overlap,           &
 !$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
-!$omp    etat_des,fns1,fns2,fts1,fts2,pft_tmp,fn,particle_slide,    &
+!$omp    etat_des,fns1,fns2,fts1,fts2,pft_tmp,fn,particle_slide,       &
 !$omp    eq_radius,distapart,force_coh)                                &
 !$omp    shared(collisions,collision_num,des_pos_new,des_radius,       &
 !$omp    des_coll_model_enum,kn,kt,pv_coll,pft_coll,pfn_coll,pijk,     &
@@ -199,22 +163,23 @@
          DIST(:) = DES_POS_NEW(:,I) - DES_POS_NEW(:,LL)
          DIST_COLL(CC) = dot_product(DIST,DIST)
 
-! compute particle-particle VDW cohesive short-range forces
+! Cmpute particle-particle VDW cohesive short-range forces
          IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
             IF(DIST_COLL(CC) < (R_LM+VDW_OUTER_CUTOFF)**2) THEN
-               EQ_RADIUS = 2d0 * DES_RADIUS(LL)*DES_RADIUS(I) / &
-                    (DES_RADIUS(LL)+DES_RADIUS(I))  ! for use in cohesive force
+               EQ_RADIUS = 2d0 * DES_RADIUS(LL)*DES_RADIUS(I) /        &
+                    (DES_RADIUS(LL)+DES_RADIUS(I))
                IF(DIST_COLL(CC) > (VDW_INNER_CUTOFF+R_LM)**2) THEN
-                  DistApart = (SQRT(DIST_COLL(CC))-R_LM) ! distance between particle surface
-                  FORCE_COH = HAMAKER_CONSTANT * EQ_RADIUS / (12d0*DistApart**2) * &
-                       ( Asperities/(Asperities+EQ_RADIUS) + &
-                       ONE/(ONE+Asperities/DistApart)**2 )
+                  DistApart = (SQRT(DIST_COLL(CC))-R_LM)
+                  FORCE_COH = HAMAKER_CONSTANT * EQ_RADIUS /           &
+                     (12d0*DistApart**2) * (Asperities/(Asperities+    &
+                     EQ_RADIUS) + ONE/(ONE+Asperities/DistApart)**2 )
                ELSE
-                  FORCE_COH = 2d0 * PI * SURFACE_ENERGY * EQ_RADIUS * &
-                       ( Asperities/(Asperities+EQ_RADIUS) + &
-                       ONE/(ONE+Asperities/VDW_INNER_CUTOFF)**2 )
+                  FORCE_COH = 2d0 * PI * SURFACE_ENERGY * EQ_RADIUS *  &
+                    (Asperities/(Asperities+EQ_RADIUS) + ONE/          &
+                    (ONE+Asperities/VDW_INNER_CUTOFF)**2 )
                ENDIF
-               FC_COLL(:, LL) = FC_COLL(:, LL) + DIST(:)*FORCE_COH/SQRT(DIST_COLL(CC))
+               FC_COLL(:,LL) = FC_COLL(:,LL) +                         &
+                  DIST(:)*FORCE_COH/SQRT(DIST_COLL(CC))
             ENDIF
          ENDIF
 
@@ -240,8 +205,8 @@
 
 ! Calculate the components of translational relative velocity for a
 ! contacting particle pair and the tangent to the plane of contact
-         CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, &
-              V_REL_TANG, NORM_COLL(:,CC), DIST_COLL(CC))
+         CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, V_REL_TANG,            &
+            NORM_COLL(:,CC), DIST_COLL(CC))
 
          phaseLL = PIJK(LL,5)
          phaseI = PIJK(I,5)
@@ -311,23 +276,26 @@
 ! calculate the distance from the particles' centers to the contact point,
 ! which is taken as the radical line
 ! dist_ci+dist_cl=dist_li; dist_ci^2+a^2=ri^2;  dist_cl^2+a^2=rl^2
-      DIST_CL = DIST_COLL(CC)/2.d0 + (DES_RADIUS(LL)**2 - DES_RADIUS(I)**2)/(2.d0*DIST_COLL(CC))
+      DIST_CL = DIST_COLL(CC)/2.d0 + (DES_RADIUS(LL)**2 - &
+         DES_RADIUS(I)**2)/(2.d0*DIST_COLL(CC))
+
       DIST_CI = DIST_COLL(CC) - DIST_CL
 ! total torque
       IF(DO_K) THEN
-         ! for particle i flip the signs of both norm and ft, so we get the same
+! for particle i flip the signs of both norm and ft, so we get the same
          CALL DES_CROSSPRDCT(TOW_tmp(:), NORM_COLL(:,CC), FT_COLL(:,CC))
          TOW(:,LL) = TOW(:,LL) + DIST_CL*TOW_tmp(:)
          TOW(:,I) = TOW(:,I) + DIST_CI*TOW_tmp(:)
       ELSE
-         TOW_tmp(1) = (NORM_COLL(1,CC)*FT_COLL(2,CC) - NORM_COLL(2,CC)*FT_COLL(1,CC))
+         TOW_tmp(1) = (NORM_COLL(1,CC)*FT_COLL(2,CC) -                 &
+            NORM_COLL(2,CC)*FT_COLL(1,CC))
          TOW(1,LL) = TOW(1,LL) + DIST_CL*TOW_tmp(1)
          TOW(1,I)  = TOW(1,I)  + DIST_CI*TOW_tmp(1)
       ENDIF
 
 ! just for post-processing mag. of cohesive forces on each particle
          IF(USE_COHESION)THEN
-            PostCohesive(LL) =  dot_product(FC_COLL(:, CC),FC_COLL(:, CC))
+            PostCohesive(LL) = dot_product(FC_COLL(:,CC),FC_COLL(:,CC))
             if(magGravity> ZERO .AND. PEA(LL,1)) PostCohesive(LL) =    &
                SQRT(PostCohesive(LL)) / (PMASS(LL)*magGravity)
          ENDIF ! for cohesion model
@@ -348,48 +316,55 @@
 
       contains
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!
-!  Subroutine: print_excess_overlap
-!  Purpose: Print overlap warnings
-!
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        SUBROUTINE print_excess_overlap
-          IF (OVERLAP_N > flag_overlap*DES_RADIUS(LL) .OR. &
-               OVERLAP_N > flag_overlap*DES_RADIUS(I)) THEN
-             WRITE(*,'(5X,A,A,ES15.7)') &
-                  'WARNING: excessive overlap detected ', &
-                  'at time ', S_TIME
-             WRITE(*,'(7X,A,I10,2X,A,I5,2X,A)') &
-                  'between particles ', LL, 'and ',&
-                  I, 'with'
-             WRITE(*,'(7X,A,ES15.7,2X,A,ES15.7,2X,ES15.7)') &
-                  'overlap = ', OVERLAP_N, &
-                  ' radii = ', DES_RADIUS(LL), DES_RADIUS(I)
-          ENDIF
-        END SUBROUTINE print_excess_overlap
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: print_excess_overlap                                    !
+!                                                                      !
+!  Purpose: Print overlap warning messages.                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE PRINT_EXCESS_OVERLAP
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!
-!  Subroutine: CALC_TANGENTIAL_DISPLACEMENT
-!  Purpose: Calculate the tangential displacement which is integration of
-!           tangential relative velocity with respect to contact time.
-!
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        SUBROUTINE CALC_TANGENTIAL_DISPLACEMENT(PFT,norm,norm_old,sigmat_old,overlap_norm, &
-             relvel_tang_norm,relvel_tang, already_colliding)
+      use error_manager
 
-          implicit none
+      IF(OVERLAP_N > flag_overlap*DES_RADIUS(LL) .OR.                  &
+         OVERLAP_N > flag_overlap*DES_RADIUS(I)) THEN
+
+         WRITE(ERR_MSG,1000) trim(iVAL(LL)), trim(iVAL(I)), S_TIME,    &
+            DES_RADIUS(LL), DES_RADIUS(I), OVERLAP_N
+
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+      ENDIF
+
+ 1000 FORMAT('WARNING: Excessive overplay detected between ',          &
+         'particles ',A,' and ',/A,' at time ',g11.4,'.',/             &
+         'RADII:  ',g11.4,' and ',g11.4,4x,'OVERLAP: ',g11.4)
+
+      END SUBROUTINE PRINT_EXCESS_OVERLAP
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: CALC_TANGENTIAL_DISPLACEMENT                            !
+!                                                                      !
+!  Purpose: Calculate the tangential displacement which is the         !
+!  integration of tangential relative velocity with respect to         !
+!  contact time.                                                       !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE CALC_TANGENTIAL_DISPLACEMENT(PFT, NORM, NORM_OLD,     &
+         SIGMAT_OLD, OVERLAP_NORM, RELVEL_TANG_NORM, RELVEL_TANG,      &
+         ALREADY_COLLIDING)
+
+      IMPLICIT NONE
 
 ! tangential displacement
-          DOUBLE PRECISION, DIMENSION(3), INTENT(OUT) :: pft
+      DOUBLE PRECISION, DIMENSION(3), INTENT(OUT) :: PFT
 
 ! local variables for the accumulated tangential displacement that occurs
 ! for the particle-particle or particle-wall collision (current time
 ! step and previous time step)
       DOUBLE PRECISION, DIMENSION(3), INTENT(IN) :: SIGMAT_OLD
-
-      LOGICAL, INTENT(IN) :: already_colliding
+      LOGICAL, INTENT(IN) :: ALREADY_COLLIDING
 
 ! the overlap occuring between particle-particle or particle-wall
 ! collision in the tangential direction
@@ -399,8 +374,9 @@
 
 ! unit normal vector along the line of contact between contacting
 ! particles or particle-wall at previous time step
-      DOUBLE PRECISION, DIMENSION(3), INTENT(IN) :: NORM,NORM_OLD,relvel_tang
-      DOUBLE PRECISION, INTENT(IN) :: overlap_norm, relvel_tang_norm
+      DOUBLE PRECISION, DIMENSION(3), INTENT(IN) :: NORM, NORM_OLD
+      DOUBLE PRECISION, DIMENSION(3), INTENT(IN) :: RELVEL_TANG
+      DOUBLE PRECISION, INTENT(IN) :: OVERLAP_NORM, RELVEL_TANG_NORM
 
 ! variables for tangential displacement calculation:
 ! unit vector for axis of rotation and its magnitude
