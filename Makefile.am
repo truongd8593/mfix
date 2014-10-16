@@ -227,6 +227,7 @@ common_SOURCES = \
 	model/des/calc_collision_wall.f \
 	model/des/calc_dtpic.f \
 	model/des/calc_force_dem.f \
+	model/des/calc_pg_grad.f \
 	model/des/calc_rrate_des.f \
 	model/des/calc_thermo_des.f \
 	model/des/cfassign.f \
@@ -265,6 +266,7 @@ common_SOURCES = \
 	model/des/desnamelist.inc \
 	model/des/discretelement_mod.f \
 	model/des/drag_fgs.f \
+	model/des/drag_ss_dem.f \
 	model/des/gas_drag.f \
 	model/des/generate_particle_config.f \
 	model/des/init_settling_dem.f \
