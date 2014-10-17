@@ -143,6 +143,69 @@
 
 
 
+!$omp parallel do schedule(dynamic,50) default(none)                   &
+!$omp shared(MAX_PIP, PEA, PN_WALL, PV_WALL, PFT_WALL, PFN_WALL)       &
+!$omp private(LL, NLIM, N_NOCON, NI)
+!---------------------------------------------------------------------//
+! Looping over all particles in the processor
+      DO LL = 1, MAX_PIP
+
+! skipping non-existent particles
+         IF(.NOT.PEA(LL,1)) CYCLE
+! skipping ghost particles
+         IF(PEA(LL,4)) CYCLE
+
+! Check neighbor history of particle LL and update arrays as needed
+         IF(PN_WALL(1,LL).GE.1) THEN
+            NLIM = PN_WALL(1,LL)+1
+            N_NOCON = 0
+
+! For each particle listed as in contact with particle LL in array PN,
+! check the flag array PV to determine if particles remained in contact
+! after the previous call of CALC_FORCE_DES.
+            DO NI = 2, NLIM
+               IF(.NOT.PV_WALL(NI-N_NOCON,LL)) THEN
+! For each particle in PN(2:6,LL) that is no longer in
+! contact, shift the remaining particle contact information PN, PN,
+! PFT left by one and reduce PN(1,LL) by one.
+                  PN_WALL((NI-N_NOCON):6-1,LL) = &
+                     PN_WALL((NI-N_NOCON+1):6,LL)
+                  PV_WALL((NI-N_NOCON):(6-1),LL) = &
+                     PV_WALL((NI-N_NOCON+1):6,LL)
+                  PFT_WALL(LL,(NI-N_NOCON):(6-1),:) = &
+                     PFT_WALL(LL,(NI-N_NOCON+1):6,:)
+! Save the normal direction at previous time step
+                  PFN_WALL(LL,(NI-N_NOCON):(6-1),:) = &
+                     PFN_WALL(LL,(NI-N_NOCON+1):6,:)
+                  N_NOCON = N_NOCON + 1
+                  PN_WALL(1,LL) = PN_WALL(1,LL) - 1
+               ENDIF
+            ENDDO
+
+! Initializing rest of the neighbor list which is not in contact and
+! clean up after the above array left shifts
+            IF (N_NOCON .GT. 0) THEN
+               NLIM = MAX(2,PN_WALL(1,LL) + 2)
+               PN_WALL(NLIM:6,LL) = -1
+               PFT_WALL(LL,NLIM:6,:) = ZERO
+               PFN_WALL(LL,NLIM:6,:) = ZERO
+            ENDIF
+         ENDIF
+
+! Reset the flag array PV; during each call to calc_force_des this
+! variable tracks whether particle LL has any current neighbors
+! the array is used in the next call to calc_force_des to update
+! particle LL neighbor history above
+         PV_WALL(1:6,LL) = .FALSE.
+
+      ENDDO
+!$omp end parallel do
+
+
+
+
+
+
 ! !$omp   parallel default(shared)                                  &
 ! !$omp   private(ll,fts1,fts2,fns1,fns2,pft_tmp,                   &
 ! !$omp          PARTICLE_SLIDE,nlim,                               &
