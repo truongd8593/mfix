@@ -411,9 +411,6 @@
       LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PV !(PARTICLES,MAXNEIGHBORS)
       LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PV_WALL !(PARTICLES,MAXNEIGHBORS)
 
-! Gas-solids drag force on partaicle
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: GD_FORCE
-                        !(PARTICLES,3)
 
 ! Dynamic information related to computational (eulerian) fluid grid
 !----------------------------------------------------------------->>>

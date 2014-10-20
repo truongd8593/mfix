@@ -189,8 +189,6 @@
 
 ! force due to gas-pressure gradient
       ALLOCATE(P_FORCE(DIMENSION_3,DIMN))
-! force due to gas-solids drag on a particle
-      ALLOCATE(GD_FORCE(DIMN,NPARTICLES))
 
 ! Volume averaged solids volume in a computational fluid cell
       Allocate(  DES_U_s (DIMENSION_3, DES_MMAX) )

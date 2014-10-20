@@ -47,8 +47,6 @@
 !        in 'interpolator', which leads errors with OpenMP.
 ! 4. Set the intermediate variables 'gst_tmp & vst_tmp' as private to replace global variables
 !        'gstencil,vstencil' to avoid datarace and segmentation fault.
-! 5. Set the intermediate variable D_FORCE(:) in CALC_DES_DRAG_GS to replace
-!        GD_FORCE(:,np) in order to reduce the calculation time      at Jan 14 2013
 
 ! 2014-02-24 mmeredith combined the above into one DRAG_INTERPOLATION() subroutine
 
@@ -127,7 +125,6 @@
 
 ! initializing
       GS_DRAG(:,:,:) = ZERO
-      GD_FORCE(:,:) = ZERO
 
 ! computing F_gs (gas-solids drag coefficient) with the latest average
 ! fluid and solid velocity fields.  see comments below
@@ -247,8 +244,7 @@
 ! Update the contact forces (FC) on the particle to include
 ! gas pressure and gas-solids drag
 !----------------------------------------------------------------->>>
-         GD_FORCE(:,NP) = GS_DRAG(IJK,M,:)*PVOL(NP)
-         FC(:,NP) = FC(:,NP) + GD_FORCE(:,NP)
+         FC(:,NP) = FC(:,NP) + GS_DRAG(IJK,M,:)*PVOL(NP)
 
          IF(.NOT.MODEL_B) THEN
 ! Add the pressure gradient force
@@ -384,7 +380,6 @@
 ! RG: I do not understand the need for this large array. It is not
 ! used anywhere else except the same subroutine it is calculated.
 ! A local single rank array (like in the old implementation) was just fine
-      gd_force(:,:) = ZERO
       vel_fp = ZERO
 ! avg_factor=0.25 (in 3D) or =0.5 (in 2D)
       AVG_FACTOR = merge(0.50d0, 0.25d0, NO_K)
@@ -505,14 +500,12 @@
                D_FORCE(1:3) = F_GP(NP)*(VEL_FP(1:3,NP))
             ELSE
 ! default case
-               !GD_FORCE(:,NP) = F_GP(NP)*(VEL_FP(:,NP)-VEL_NEW)
                D_FORCE(1:3) = F_GP(NP)*(VEL_FP(1:3,NP)-VEL_NEW)
             ENDIF
 
 ! Update the contact forces (FC) on the particle to include gas
 ! pressure and gas-solids drag
             FC(:3,NP) = FC(:3,NP) + D_FORCE(:3)
-            GD_FORCE(:3,NP) = D_FORCE(:3)
 
             IF(.NOT.MODEL_B) THEN
 ! P_force is evaluated as -dp/dx
