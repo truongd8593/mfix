@@ -38,9 +38,6 @@
 ! the normal and tangential components of the translational relative
 ! velocity
       DOUBLE PRECISION :: V_REL_TRANS_NORM
-! time elapsed to travel the calculated normal overlap given the
-! normal relative velocity
-      DOUBLE PRECISION :: DTSOLID_TMP
 ! distance vector between two particle centers or between a particle
 ! center and wall at current and previous time steps
       DOUBLE PRECISION :: DIST(3)
@@ -309,6 +306,10 @@
       DOUBLE PRECISION :: OVERLAP_T(3)
 
       DOUBLE PRECISION, DIMENSION(3) :: SIGMAT
+
+! time elapsed to travel the calculated normal overlap given the
+! normal relative velocity
+      DOUBLE PRECISION :: DTSOLID_TMP
 
 ! unit normal vector along the line of contact between contacting
 ! particles or particle-wall at previous time step
