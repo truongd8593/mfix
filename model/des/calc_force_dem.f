@@ -94,6 +94,9 @@
          LL = COLLISIONS(1,CC)
          I  = COLLISIONS(2,CC)
 
+         IF(.NOT.PEA(LL,1)) CYCLE
+         IF(.NOT.PEA(I, 1)) CYCLE
+
          R_LM = DES_RADIUS(LL) + DES_RADIUS(I)
          DIST(:) = DES_POS_NEW(:,I) - DES_POS_NEW(:,LL)
          DIST_COLL(CC) = dot_product(DIST,DIST)
