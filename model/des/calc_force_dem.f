@@ -89,7 +89,7 @@
 !$omp    des_coll_model_enum,kn,kt,pv_coll,pft_coll,pfn_coll,pijk,     &
 !$omp    des_etan,des_etat,mew,fc_coll,use_cohesion,dist_coll,         &
 !$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,norm_coll,    &
-!$omp    hamaker_constant,asperities,surface_energy,ft_coll)
+!$omp    hamaker_constant,asperities,surface_energy,ft_coll, pea)
       DO CC = 1, COLLISION_NUM
          LL = COLLISIONS(1,CC)
          I  = COLLISIONS(2,CC)
