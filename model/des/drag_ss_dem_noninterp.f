@@ -1,20 +1,19 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: CALC_DES_DRAG_SS_NONINTERP                              C
-!  Purpose: This subroutine is called from the calc_des_force          C
-!           and is called from the DISCRETE phase.                     C
-!           This subroutine calculates the drag force exerted on the   C
-!           particles by a continuous solids phase using cell average  C
-!           quantities (i.e., non-interpolated version). The drag      C
-!           coefficient (F_SS) is calculated here during the discrete  C
-!           time step(s) and also during the continuum time step.      C
-!           Accordingly, the drag coefficient in each call will be     C
-!           based on the most currently available values (see notes)   C
-!                                                                      C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
-      SUBROUTINE CALC_DES_DRAG_SS_NONINTERP
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: DRAG_SS_DEM_NONINTERP                                   !
+!  Purpose: This subroutine is called from the calc_des_force          !
+!           and is called from the DISCRETE phase.                     !
+!           This subroutine calculates the drag force exerted on the   !
+!           particles by a continuous solids phase using cell average  !
+!           quantities (i.e., non-interpolated version). The drag      !
+!           coefficient (F_SS) is calculated here during the discrete  !
+!           time step(s) and also during the continuum time step.      !
+!           Accordingly, the drag coefficient in each call will be     !
+!           based on the most currently available values (see notes)   !
+!                                                                      !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE DRAG_SS_DEM_NONINTERP
 
 !-----------------------------------------------
 ! Modules
@@ -240,98 +239,7 @@
 
 
       RETURN
-      END SUBROUTINE CALC_DES_DRAG_SS_NONINTERP
-
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: CALC_DES_DRAG_SS                                        C
-!  Purpose: This routine is called from the DISCRETE side.             C
-!     It performs the following functions:                             C
-!     - If non-interpolated then execution of the code is directed     C
-!       to the subroutine calc_des_drag_ss_noninterp for the           C
-!       appropriate calculations (i.e. calculation of the solids-      C
-!       solids drag force on the particle)                             C
-!     - If interpolated, then it calculates the continuum-solids-      C
-!       particle drag coefficient (F_SP) based on the particle         C
-!       velocity and interpolated continuum solids velocity. This      C
-!       F_SP is used to calculate the continuum-solids particle-       C
-!       solids drag on the particle                                    C
-!     - The total contact force on the particle is then updated to     C
-!       include the solids-solids drag force and gas pressure force    C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
-      SUBROUTINE CALC_DES_DRAG_SS
-
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE constant
-      USE physprop
-      USE fldvar
-      USE run
-      USE geometry
-      USE indices
-      USE bc
-      USE compar
-      USE sendrecv
-      USE discretelement
-      USE drag
-      USE interpolation
-      use desmpi
-      USE cutcell
-      USE fun_avg
-      USE functions
-      IMPLICIT NONE
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-! indices
-      INTEGER :: IJK
-!-----------------------------------------------
-
-! currently only non-interpolated version available
-
-! NON-INTERPOLATED fluid-solids drag:
-! Calculate the solids solids drag force on a particle using the cell
-! averaged particle velocity and the cell average continuum solids
-! velocity
-!----------------------------------------------------------------->>>
-!      IF(.NOT.DES_INTERP_ON) THEN    !
-         CALL CALC_DES_DRAG_SS_NONINTERP
-         RETURN
-!      ENDIF
-! end non-interpolated version
-!-----------------------------------------------------------------<<<
-
-
-! INTERPOLATED solids-solids drag (the rest of this routine):
-! Calculate the solids solids drag coefficient using the particle
-! velocity and the mth phase continuum solids velocity interpolated
-! to particle position.
-!----------------------------------------------------------------->>>
-! initializations
-!      sd_force(:,:) = ZERO
-
-! interpolated version will require steps to
-! - interpolate mth phase continuum solids velocity and solids volume
-!   fraction to particle position
-! - create a routine (des_drag_sp) to calculate the mth phase continuum
-!   solids-particle drag coefficient (f_sp).
-! - update the contact force on the particle to include solids-solids
-!   drag
-
-!  loop over all solids phases and all cells and then overall particles
-!  to get mth phase solids velocity at particle position. in particle
-!  loop update contact force to include solids-solids drag
-
-!-----------------------------------------------------------------<<<
-
-      END SUBROUTINE CALC_DES_DRAG_SS
+      END SUBROUTINE DRAG_SS_DEM_NONINTERP
 
 
 
@@ -356,8 +264,8 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE DRAG_SS_TFM_NONINTERP
 
-      SUBROUTINE DES_DRAG_SS
 
 !-----------------------------------------------
 ! Modules
@@ -539,5 +447,5 @@
 !   momentum equations
 
 !-----------------------------------------------------------------<<<
-
-      END SUBROUTINE DES_DRAG_SS
+ 
+      END SUBROUTINE DRAG_SS_TFM_NONINTERP

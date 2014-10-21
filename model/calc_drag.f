@@ -130,15 +130,7 @@
 
 ! calculate drag between continuum phases and discrete particles
 ! (gas-particle & solids-particle)
-      IF (DES_CONTINUUM_COUPLED) THEN
-         CALL DES_DRAG_GS
-
-! calculate drag between continuum solids and discrete solids
-! for now non-interpolated solid-solid version is only option
-         IF(DES_CONTINUUM_HYBRID) THEN
-            CALL DES_DRAG_SS
-         ENDIF
-      ENDIF
+      IF (DES_CONTINUUM_COUPLED) CALL CALC_DRAG_DES_2FLUID
 
 
       RETURN

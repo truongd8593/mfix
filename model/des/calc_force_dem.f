@@ -237,11 +237,9 @@
 
       ENDDO
 
-! Calculate gas-solids drag force on particle
-      IF(DES_CONTINUUM_COUPLED) CALL CALC_DES_DRAG_GS
+! Calculate drag
+      CALL CALC_DRAG_DES
 
-! Calculate solids-solids drag force on particle
-      IF(DES_CONTINUUM_HYBRID) CALL CALC_DES_DRAG_SS
 
 ! Update the old values of particle position and velocity with the new
 ! values computed

@@ -225,6 +225,7 @@ common_SOURCES = \
 	model/dbg_mod.f \
 	model/deprecated.f \
 	model/des/calc_collision_wall.f \
+	model/des/calc_drag_des.f \
 	model/des/calc_dtpic.f \
 	model/des/calc_force_dem.f \
 	model/des/calc_pg_grad.f \
@@ -265,8 +266,10 @@ common_SOURCES = \
 	model/des/desmpi_mod.f \
 	model/des/desnamelist.inc \
 	model/des/discretelement_mod.f \
-	model/des/drag_fgs.f \
-	model/des/drag_ss_dem.f \
+	model/des/drag_gp_des.f \
+	model/des/drag_gs_des_interp0.f \
+	model/des/drag_gs_des_noninterp.f \
+	model/des/drag_ss_dem_noninterp.f \
 	model/des/gas_drag.f \
 	model/des/generate_particle_config.f \
 	model/des/init_settling_dem.f \
