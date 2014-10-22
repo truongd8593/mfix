@@ -18,11 +18,54 @@
       module softspring_funcs_cutcell
 
       PRIVATE
-      PUBLIC:: CHECK_IF_PARTICLE_OVELAPS_STL, CALC_DEM_FORCE_WITH_WALL_STL
-
+      PUBLIC:: CHECK_IF_PARTICLE_OVELAPS_STL, CALC_DEM_FORCE_WITH_WALL_STL, ADD_FACET
 
       CONTAINS
 
+        subroutine add_facet(cell_id, facet_id)
+          Use discretelement
+          USE stl
+          implicit none
+          INTEGER, INTENT(IN) :: cell_id, facet_id
+
+          INTEGER, DIMENSION(:), ALLOCATABLE :: int_tmp
+          DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: real_tmp
+
+          INTEGER :: lSIZE1, lSIZE2, ii
+
+          IF(STL_FACET_TYPE(facet_id).ne.FACET_TYPE_NORMAL) return !Skip this facet
+
+          DO ii = 1, cellneighbor_facet_num(cell_id)
+             IF(facet_id .eq. cellneighbor_facet(cell_id)%p(ii)) return
+          ENDDO
+
+          cellneighbor_facet_num(cell_id) = cellneighbor_facet_num(cell_id) + 1
+
+          IF(cellneighbor_facet_num(cell_id) > cellneighbor_facet_max(cell_id)) THEN
+             cellneighbor_facet_max(cell_id) = 2*cellneighbor_facet_max(cell_id)
+
+             lSIZE2 = size(cellneighbor_facet(cell_id)%p)
+             allocate(int_tmp(cellneighbor_facet_max(cell_id)))
+             int_tmp(1:lSIZE2) = cellneighbor_facet(cell_id)%p(1:lSIZE2)
+             call move_alloc(int_tmp,cellneighbor_facet(cell_id)%p)
+
+             lSIZE2 = size(cellneighbor_facet(cell_id)%minextent)
+             allocate(real_tmp(cellneighbor_facet_max(cell_id)))
+             real_tmp(1:lSIZE2) = cellneighbor_facet(cell_id)%minextent(1:lSIZE2)
+             call move_alloc(real_tmp,cellneighbor_facet(cell_id)%minextent)
+
+             lSIZE2 = size(cellneighbor_facet(cell_id)%maxextent)
+             allocate(real_tmp(cellneighbor_facet_max(cell_id)))
+             real_tmp(1:lSIZE2) = cellneighbor_facet(cell_id)%maxextent(1:lSIZE2)
+             call move_alloc(real_tmp,cellneighbor_facet(cell_id)%maxextent)
+
+          ENDIF
+
+          cellneighbor_facet(cell_id)%p(cellneighbor_facet_num(cell_id)) = facet_id
+          cellneighbor_facet(cell_id)%minextent(cellneighbor_facet_num(cell_id)) = minval(VERTEX(:,2,facet_id))
+          cellneighbor_facet(cell_id)%maxextent(cellneighbor_facet_num(cell_id)) = maxval(VERTEX(:,2,facet_id))
+
+        end subroutine add_facet
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -59,8 +102,6 @@
       LOGICAL, INTENT(OUT) :: OVERLAP_EXISTS
 
       INTEGER I, J, K, IJK, NF
-
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
       DOUBLE PRECISION :: RADSQ, DISTSQ, DIST(DIMN), CLOSEST_PT(DIMN)
       INTEGER :: COUNT_FAC, COUNT, contact_facet_count, NEIGH_CELLS, &
@@ -150,7 +191,7 @@
             CLOSEST_PT(:))
 
             DIST(:) = POSITION(:) - CLOSEST_PT(:)
-            DISTSQ = DES_DOTPRDCT(DIST, DIST)
+            DISTSQ = DOT_PRODUCT(DIST, DIST)
 
             IF(DISTSQ .GE. RADSQ) CYCLE !No overlap exists, move on to the next facet
 
@@ -227,9 +268,6 @@
       INTEGER, Parameter :: MAX_FACET_CONTS = 200
       INTEGER :: list_of_checked_facets(max_facet_conts)
 
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-
-
       DOUBLE PRECISION :: FORCE_HISTORY(DIMN), DTSOLID_TMP
 
 
@@ -266,13 +304,10 @@
             WRITE(*,'(A, 3(2x, g17.8))') 'POS = ', DES_POS_NEW(:, LL)
          ENDIF
 
-
-
          FTS1(:) = ZERO
          FTS2(:) = ZERO
          FNS1(:) = ZERO
          FNS2(:) = ZERO
-
 
 ! Check particle LL for wall contacts
 
@@ -285,80 +320,17 @@
 
          IF (COUNT_FAC.gt.0)   then
             NEIGH_CELLS = NEIGH_CELLS + 1
-            LIST_OF_CELLS(NEIGH_CELLS) = CELL_ID
          ENDIF
 
-         I_CELL = I_OF(CELL_ID)
-         J_CELL = J_OF(CELL_ID)
-         K_CELL = K_OF(CELL_ID)
+         DO CELL_COUNT = 1, cellneighbor_facet_num(cell_id)
 
-         IPLUS1  =  MIN (I_CELL + 1, IEND2)
-         IMINUS1 =  MAX (I_CELL - 1, ISTART2)
 
-         JPLUS1  =  MIN (J_CELL + 1, JEND2)
-         JMINUS1 =  MAX (J_CELL - 1, JSTART2)
+            NF = cellneighbor_facet(cell_id)%p(cell_count)
 
-         KPLUS1  =  MIN (K_CELL + 1, KEND2)
-         KMINUS1 =  MAX (K_CELL - 1, KSTART2)
+            if (cellneighbor_facet(cell_id)%minextent(cell_count) > des_pos_new(2, LL) + des_radius(LL)) cycle
+            if (cellneighbor_facet(cell_id)%maxextent(cell_count) < des_pos_new(2, LL) - des_radius(LL)) cycle
 
-         DO K = KMINUS1, KPLUS1
-            DO J = JMINUS1, JPLUS1
-               DO I = IMINUS1, IPLUS1
-                  IJK = FUNIJK(I,J,K)
-                  COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-                  IF(COUNT_FAC.EQ.0) CYCLE
-                  distsq = zero
-                  IF(DES_POS_NEW( 1 , LL) > XE(I)) DISTSQ = DISTSQ &
-                  + (DES_POS_NEW(1,LL)-XE(I))*(DES_POS_NEW(1,LL)-XE(I))
-
-                  IF(DES_POS_NEW( 1, LL) < XE(I) - DX(I)) DISTSQ = DISTSQ &
-                  + (XE(I) - DX(I) - DES_POS_NEW(1,LL))*(XE(I) - DX(I) - DES_POS_NEW(1,LL))
-
-                  IF(DES_POS_NEW( 2 , LL) > YN(J)) DISTSQ = DISTSQ &
-                  + (DES_POS_NEW(2,LL)-YN(J))* (DES_POS_NEW(2,LL)-YN(J))
-
-                  IF(DES_POS_NEW( 2 , LL) < YN(J) - DY(J)) DISTSQ = DISTSQ &
-                  + (YN(J) - DY(J) - DES_POS_NEW(2,LL))* (YN(J) - DY(J) - DES_POS_NEW(2,LL))
-
-                  IF(DES_POS_NEW( 3 , LL) > ZT(K)) DISTSQ = DISTSQ &
-                  + (DES_POS_NEW(3,LL)-ZT(K))*(DES_POS_NEW(3,LL)-ZT(K))
-
-                  IF(DES_POS_NEW( 3 , LL) < ZT(K) - DZ(K)) DISTSQ = DISTSQ &
-                  + (ZT(K) - DZ(K) - DES_POS_NEW(3,LL))*(ZT(K) - DZ(K) - DES_POS_NEW(3,LL))
-                  IF (DISTSQ < RADSQ) then
-                     NEIGH_CELLS_NONNAT = NEIGH_CELLS_NONNAT + 1
-                     NEIGH_CELLS = NEIGH_CELLS + 1
-                     LIST_OF_CELLS(NEIGH_CELLS) = IJK
-                  !WRITE(*,'(A10, 4(2x,i5))') 'WCELL  = ', IJK, I,J,K
-                  ENDIF
-               ENDDO
-            ENDDO
-         ENDDO
-
-         CONTACT_FACET_COUNT = 0
-
-!         MAX_DISTSQ = UNDEFINED
-
-         DO CELL_COUNT = 1, NEIGH_CELLS
-            IJK = LIST_OF_CELLS(CELL_COUNT)
-
-            DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-               NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
-! Neighboring cells will share facets with same facet ID
-! So it is important to make sure a facet is checked (for speed)
-! and accounted (for accuracy) only once
-               checked_facet_already = .false.
-               DO COUNT2 = 1, CONTACT_FACET_COUNT
-                  checked_facet_already = (NF.eq.LIST_OF_CHECKED_FACETS(count2))
-                  IF(checked_facet_already) exit
-               enddo
-
-               IF(checked_facet_already) CYCLE
-
-               CONTACT_FACET_COUNT = CONTACT_FACET_COUNT + 1
-               LIST_OF_CHECKED_FACETS(CONTACT_FACET_COUNT) = NF
-
-               IF(STL_FACET_TYPE(NF).ne.FACET_TYPE_NORMAL) cycle !Skip this facet
+            IF(STL_FACET_TYPE(NF).ne.FACET_TYPE_NORMAL) cycle !Skip this facet
                !Recall the facets on the MI plane are re-classified
                !as MI only when the user specifies BC_MI_AS_WALL_FOR_DES
                !as false. The default is to account for MI BC plane
@@ -377,8 +349,7 @@
                !non-fluid side of the plane, if the plane normal
                !is assumed to point toward the fluid side
 
-
-               line_t  = Undefined
+            line_t  = Undefined
                !-undefined, because non zero values will imply the sphere center
                !is on the non-fluid side of the plane. Since the testing
                !is with extended plane, this could very well happen even
@@ -401,40 +372,39 @@
 !                separating axis test take care of the other cases.
 
                !Assume the orthogonal projection detects an overlap
-               ortho_proj_cut = .true.
+            ortho_proj_cut = .true.
 
-               ref_line(1:dimn) = des_pos_new(1:dimn, LL)
-               dir_line(1:dimn) = NORM_FACE(1:dimn,NF)
-               !Since this is for checking static config, line's direction
-               !is the same as plane's normal. For moving particles,
-               !the line's normal will be along the point joining new
-               !and old positions.
+            ref_line(1:dimn) = des_pos_new(1:dimn, LL)
+            dir_line(1:dimn) = NORM_FACE(1:dimn,NF)
+            !Since this is for checking static config, line's direction
+            !is the same as plane's normal. For moving particles,
+            !the line's normal will be along the point joining new
+            !and old positions.
 
-               norm_plane(1:dimn) = NORM_FACE(1:dimn,NF)
-               ref_plane(1:dimn)  = VERTEX(1, 1:dimn,NF)
-               CALL intersectLnPlane(ref_line, dir_line, ref_plane, &
-                    norm_plane, line_t)
-               !k - rad >= tol_orth, where k = -line_t, then orthogonal
-               !projection is false. Substituting for k
+            norm_plane(1:dimn) = NORM_FACE(1:dimn,NF)
+            ref_plane(1:dimn)  = VERTEX(1, 1:dimn,NF)
+            CALL intersectLnPlane(ref_line, dir_line, ref_plane, &
+                 norm_plane, line_t)
+            !k - rad >= tol_orth, where k = -line_t, then orthogonal
+            !projection is false. Substituting for k
             !=> line_t + rad <= -tol_orth
-               !choosing tol_orth = 0.01% of des_radius = 0.0001*des_radius
-               if(line_t.le.zero.and. &
-                    (line_t+des_radius(LL).le.-0.0001d0*des_radius(LL))) ortho_proj_cut = .false.
-               !Orthogonal projection will detect false postitives even
-               !when the particle does not overlap the triangle.
-               !However, if the orthgonal projection shows no overlap, then
-               !that is a big fat nagative and overlaps are not possible.
-               if(.not.ortho_proj_cut) cycle
+            !choosing tol_orth = 0.01% of des_radius = 0.0001*des_radius
+            if(line_t.le.zero.and. &
+                 (line_t+des_radius(LL).le.-0.0001d0*des_radius(LL))) ortho_proj_cut = .false.
+            !Orthogonal projection will detect false postitives even
+            !when the particle does not overlap the triangle.
+            !However, if the orthgonal projection shows no overlap, then
+            !that is a big fat nagative and overlaps are not possible.
+            if(.not.ortho_proj_cut) cycle
 
-               CALL ClosestPtPointTriangle(DES_POS_NEW(:,LL), &
-                    VERTEX(1,:,NF), VERTEX(2,:,NF), VERTEX(3,:,NF), &
-                    CLOSEST_PT(:))
+            CALL ClosestPtPointTriangle(DES_POS_NEW(:,LL), &
+                 VERTEX(1,:,NF), VERTEX(2,:,NF), VERTEX(3,:,NF), &
+                 CLOSEST_PT(:))
 
-               DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(:,LL)
-               DISTSQ = DES_DOTPRDCT(DIST, DIST)
-               OVERLAP_N = ZERO
+            DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(:,LL)
+            DISTSQ = DOT_PRODUCT(DIST, DIST)
 
-               IF(DISTSQ .GE. RADSQ) CYCLE !No overlap exists
+            IF(DISTSQ .GE. RADSQ) CYCLE !No overlap exists
 
 !               IF(DISTSQ < MAX_DISTSQ)THEN
                   MAX_DISTSQ = DISTSQ
@@ -510,7 +480,7 @@
 ! Update the tangential history.
 !               PFT(LL,0,:) = FORCE_HISTORY(:) + OVERLAP_T*TANGENT(:)
 !               FORCE_HISTORY(:) = PFT(LL,0,:) - &
-!                  DES_DOTPRDCT(PFT(LL,0,:),NORMAL)*NORMAL(:)
+!                  DOT_PRODUCT(PFT(LL,0,:),NORMAL)*NORMAL(:)
 
 ! Calculate the tangential collision force.
 !               FTS1(:) = -KT_DES_W * FORCE_HISTORY(:)
@@ -520,10 +490,10 @@
 
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with a wall.
-               FTMD = sqrt(DES_DOTPRDCT(FTAN, FTAN))
-               FNMD = sqrt(DES_DOTPRDCT(FNORM,FNORM))
+               FTMD = sqrt(DOT_PRODUCT(FTAN, FTAN))
+               FNMD = sqrt(DOT_PRODUCT(FNORM,FNORM))
                IF (FTMD.GT.(MEW_W*FNMD)) THEN
-                  IF(DES_DOTPRDCT(TANGENT,TANGENT).EQ.zero) THEN
+                  IF(DOT_PRODUCT(TANGENT,TANGENT).EQ.zero) THEN
                      FTAN(:) =  MEW_W * FNMD * FTAN(:)/FTMD
                   ELSE
                      FTAN(:) = -MEW_W * FNMD * TANGENT(:)
@@ -545,7 +515,6 @@
                   TOW(1,LL) = TOW(1,LL) + DISTMOD*CROSSP(1)
                ENDIF
 
-            ENDDO
          ENDDO
 !         ENDIF
       ENDDO
@@ -603,7 +572,7 @@
            '<PointData Scalars="Diameter" Vectors="Velocity">'
       write(vtp_unit,"(12x,a)")&
            '<DataArray type="Float32" Name="Diameter" format="ascii">'
-      write (vtp_unit,"(15x,es12.6)") (2*des_radius(pid))
+      write (vtp_unit,"(15x,es13.6)") (2*des_radius(pid))
       write(vtp_unit,"(12x,a)") '</DataArray>'
 
       temp_array = zero
@@ -681,8 +650,6 @@
 ! distance from the contact point to the particle centers
       DOUBLE PRECISION DIST_CL, DIST_CI
 
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-
 ! translational relative velocity
       VRELTRANS(:) = DES_VEL_NEW(:,L)
 
@@ -703,14 +670,14 @@
       VRELTRANS(:) =  VRELTRANS(:) + V_ROT(:)
 
 ! normal component of relative velocity (scalar)
-      VRN = DES_DOTPRDCT(VRELTRANS,NORM)
+      VRN = DOT_PRODUCT(VRELTRANS,NORM)
 
 ! slip velocity of the contact point
 ! Equation (8) in Tsuji et al. 1992
       VSLIP(:) =  VRELTRANS(:) - VRN*NORM(:)
 
 ! the magnitude of the tangential vector
-      TANMOD = SQRT(DES_DOTPRDCT(VSLIP,VSLIP))
+      TANMOD = SQRT(DOT_PRODUCT(VSLIP,VSLIP))
       IF(TANMOD.NE.ZERO) THEN
 ! the unit vector in the tangential direction
          TANGNT(:) = VSLIP(:)/TANMOD
@@ -719,7 +686,7 @@
       ENDIF
 
 ! tangential component of relative surface velocity (scalar)
-      VRT  = DES_DOTPRDCT(VRELTRANS,TANGNT)
+      VRT  = DOT_PRODUCT(VRELTRANS,TANGNT)
 
       IF(DEBUG_DES) THEN
          WRITE(*,*) 'IN CFRELVEL_WALL2------------------------------'

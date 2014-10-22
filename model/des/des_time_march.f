@@ -24,6 +24,9 @@
       use sendrecv
       use mpi_utility
       use error_manager
+      use stl
+      use softspring_funcs_cutcell
+      use functions
 
       IMPLICIT NONE
 !------------------------------------------------
@@ -36,6 +39,9 @@
       INTEGER :: NN
 ! loop counter index for any initial particle settling incoupled cases
       INTEGER :: FACTOR
+
+      INTEGER :: II, JJ, KK, IJK, CELL_ID, I_CELL, J_CELL, K_CELL, COUNT, NF
+      INTEGER :: IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP
 
 ! Local variables to keep track of time when dem restart and des
 ! write data need to be written when des_continuum_coupled is F
@@ -98,6 +104,34 @@
 
       IF(CALL_USR) CALL USR0_DES
 
+      DO CELL_ID = IJKSTART3, IJKEND3
+
+         I_CELL = I_OF(CELL_ID)
+         J_CELL = J_OF(CELL_ID)
+         K_CELL = K_OF(CELL_ID)
+
+         IPLUS1  =  MIN (I_CELL + 1, IEND2)
+         IMINUS1 =  MAX (I_CELL - 1, ISTART2)
+
+         JPLUS1  =  MIN (J_CELL + 1, JEND2)
+         JMINUS1 =  MAX (J_CELL - 1, JSTART2)
+
+         KPLUS1  =  MIN (K_CELL + 1, KEND2)
+         KMINUS1 =  MAX (K_CELL - 1, KSTART2)
+
+         DO KK = KMINUS1, KPLUS1
+            DO JJ = JMINUS1, JPLUS1
+               DO II = IMINUS1, IPLUS1
+                  IJK = FUNIJK(II,JJ,KK)
+                  DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+                     NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
+                     call add_facet(cell_id,nf)
+                  ENDDO
+               ENDDO
+            ENDDO
+         ENDDO
+
+      ENDDO
 
 ! Main DEM time loop
 !----------------------------------------------------------------->>>

@@ -260,6 +260,8 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_COLL_OLD  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_COLL  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_COLL_OLD  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
+
+      INTEGER, DIMENSION(:), ALLOCATABLE :: CELLNEIGHBOR_FACET_NUM, CELLNEIGHBOR_FACET_MAX
       INTEGER :: COLLISION_NUM,OLD_COLLISION_NUM,COLLISION_MAX
 
 ! Quantities used for reporting: max no. neighbors and max overlap
@@ -419,9 +421,17 @@
       TYPE iap1
          INTEGER, DIMENSION(:), POINTER:: p
       END TYPE iap1
+
+      TYPE cnaa1
+         INTEGER, DIMENSION(:), ALLOCATABLE:: p
+         DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE:: minextent
+         DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE:: maxextent
+      END TYPE cnaa1
 ! in order to facilitate the parallel processing the PIC is defined
 ! as single array IJK
       TYPE(iap1), DIMENSION(:), ALLOCATABLE:: pic  ! (DIMENSION_3)
+
+      TYPE(cnaa1), DIMENSION(:), ALLOCATABLE :: CELLNEIGHBOR_FACET
 
 ! Store the number of particles in a computational fluid cell
       INTEGER, DIMENSION(:), ALLOCATABLE :: PINC  ! (DIMENSION_3)
