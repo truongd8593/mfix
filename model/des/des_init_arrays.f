@@ -82,8 +82,8 @@
       P_FORCE(:,:) = ZERO
 
       IF (DES_INTERP_ON) THEN
-         DRAG_AM(:,:) = ZERO
-         DRAG_BM(:,:,:) = ZERO
+         DRAG_AM(:) = ZERO
+         DRAG_BM(:,:) = ZERO
       ENDIF
 
       IF (DES_CONTINUUM_HYBRID) THEN

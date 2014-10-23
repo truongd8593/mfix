@@ -71,8 +71,6 @@
 !-----------------------------------------------
 ! solids phase index
       INTEGER :: M
-! (x,y,z) is currently being solved (x=1, y=2, z=3)
-      INTEGER :: VELDIR
 ! fluid cell index
       INTEGER :: IJK
 ! temporary velocity arrays
@@ -190,10 +188,9 @@
 ! calculate modifications to the A matrix center coefficient and B
 ! source vector for treating DEM drag terms
       IF(DES_CONTINUUM_COUPLED) THEN
-         VELDIR = 1
-         CALL GAS_DRAG(A_M, B_M, VXF_GS, VELDIR, IER)
+         CALL GAS_DRAG_U(A_M, B_M, VXF_GS, IER)
          IF (DES_CONTINUUM_HYBRID) &
-            CALL SOLID_DRAG(A_M, B_M, VELDIR, IER)
+            CALL SOLID_DRAG_U(A_M, B_M, IER)
       ENDIF
 
       IF(QMOMK .AND. QMOMK_COUPLED) THEN
@@ -326,10 +323,9 @@
       ENDIF
 
       IF(DES_CONTINUUM_COUPLED) THEN
-         VELDIR = 2
-         CALL GAS_DRAG(A_M, B_M, VXF_GS, VELDIR, IER)
+         CALL GAS_DRAG_V(A_M, B_M, VXF_GS, IER)
          IF (DES_CONTINUUM_HYBRID) &
-            CALL SOLID_DRAG(A_M, B_M, VELDIR, IER)
+            CALL SOLID_DRAG_V(A_M, B_M, IER)
       ENDIF
 
       IF(QMOMK .AND. QMOMK_COUPLED) THEN
@@ -462,10 +458,9 @@
 
          IF(DO_K) THEN
             IF(DES_CONTINUUM_COUPLED) THEN
-               VELDIR = 3
-               CALL GAS_DRAG(A_M, B_M, VXF_GS, VELDIR, IER)
+               CALL GAS_DRAG_W(A_M, B_M, VXF_GS, IER)
                IF (DISCRETE_ELEMENT .AND. DES_CONTINUUM_HYBRID) &
-                  CALL SOLID_DRAG(A_M, B_M, VELDIR, IER)
+                  CALL SOLID_DRAG_W(A_M, B_M, IER)
             ENDIF
             IF(QMOMK .AND. QMOMK_COUPLED) THEN
                CALL QMOMK_GAS_DRAG(A_M, B_M, IER, 0, 0, 1)

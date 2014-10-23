@@ -491,10 +491,10 @@
 ! START interpolation related data
 !----------------------------------------------------------------->>>
 ! the coefficient add to gas momentum A matrix  at cell corners
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::DRAG_AM
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::DRAG_AM
                         !(DIMENSION_3,DES_MMAX)
 ! the coefficient add to gas momentum B matrix  at cell corners
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE ::DRAG_BM
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::DRAG_BM
                         !(DIMENSION_3,3,DES_MMAX)
 ! fluid velocity at particle position
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::VEL_FP

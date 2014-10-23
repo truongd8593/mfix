@@ -1686,11 +1686,9 @@
 !-----------------------------------------------
 
 ! fill the temporary buffer
-      do lm = 1,DES_MMAX
-         call des_exchangenode(drag_am(:,lm),padd=.true.)
-         do li =1,dimn
-            call des_exchangenode(drag_bm(:,li,lm),padd=.true.)
-         end do
+      call des_exchangenode(drag_am, padd=.true.)
+      do li =1,dimn
+         call des_exchangenode(drag_bm(:,li), padd=.true.)
       end do
 
 ! adjust for periodic boundaries with no domain decomposition
@@ -1699,10 +1697,10 @@
          do lj = jstart2,jend2
             lijkmin = funijk(1,lj,lk)
             lijkmax = funijk(imax1,lj,lk)
-            drag_am(lijkmin,:) = drag_am(lijkmin,:)+drag_am(lijkmax,:)
-            drag_bm(lijkmin,:,:) = drag_bm(lijkmin,:,:)+drag_bm(lijkmax,:,:)
-            drag_am(lijkmax,:) = drag_am(lijkmin,:)
-            drag_bm(lijkmax,:,:) = drag_bm(lijkmin,:,:)
+            drag_am(lijkmin) = drag_am(lijkmin)+drag_am(lijkmax)
+            drag_bm(lijkmin,:) = drag_bm(lijkmin,:)+drag_bm(lijkmax,:)
+            drag_am(lijkmax) = drag_am(lijkmin)
+            drag_bm(lijkmax,:) = drag_bm(lijkmin,:)
          end do
          end do
       end if
@@ -1711,10 +1709,10 @@
          do li = istart2,iend2
             lijkmin = funijk(li,1,lk)
             lijkmax = funijk(li,jmax1,lk)
-            drag_am(lijkmin,:) = drag_am(lijkmin,:)+drag_am(lijkmax,:)
-            drag_bm(lijkmin,:,:) = drag_bm(lijkmin,:,:)+drag_bm(lijkmax,:,:)
-            drag_am(lijkmax,:) = drag_am(lijkmin,:)
-            drag_bm(lijkmax,:,:) = drag_bm(lijkmin,:,:)
+            drag_am(lijkmin) = drag_am(lijkmin)+drag_am(lijkmax)
+            drag_bm(lijkmin,:) = drag_bm(lijkmin,:)+drag_bm(lijkmax,:)
+            drag_am(lijkmax) = drag_am(lijkmin)
+            drag_bm(lijkmax,:) = drag_bm(lijkmin,:)
          end do
          end do
       end if
@@ -1723,10 +1721,10 @@
          do lj = jstart2,jend2
             lijkmin = funijk(li,lj,1)
             lijkmax = funijk(li,lj,kmax1)
-            drag_am(lijkmin,:) = drag_am(lijkmin,:)+drag_am(lijkmax,:)
-            drag_bm(lijkmin,:,:) = drag_bm(lijkmin,:,:)+drag_bm(lijkmax,:,:)
-            drag_am(lijkmax,:) = drag_am(lijkmin,:)
-            drag_bm(lijkmax,:,:) = drag_bm(lijkmin,:,:)
+            drag_am(lijkmin) = drag_am(lijkmin)+drag_am(lijkmax)
+            drag_bm(lijkmin,:) = drag_bm(lijkmin,:)+drag_bm(lijkmax,:)
+            drag_am(lijkmax) = drag_am(lijkmin)
+            drag_bm(lijkmax,:) = drag_bm(lijkmin,:)
          end do
          end do
       end if
