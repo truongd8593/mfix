@@ -256,11 +256,6 @@
 ! local values used spring constants and damping coefficients
       DOUBLE PRECISION ETAN_DES_W, ETAT_DES_W, KN_DES_W, KT_DES_W
 
-      !reference point and direction of the line
-      double precision, dimension(dimn) :: ref_line,  dir_line
-      !reference point and normal of the plane
-      double precision, dimension(dimn) :: ref_plane, norm_plane
-      !line is parameterized as p = p_ref + t * dir_line, t is line_param
       double precision :: line_t
       !flag to tell if the orthogonal projection of sphere center to
       !extended plane detects an overlap
@@ -273,6 +268,7 @@
 
       DOUBLE PRECISION :: MAX_DISTSQ
       INTEGER :: MAX_NF
+      DOUBLE PRECISION :: PARTICLE_MIN, PARTICLE_MAX
 
       DES_LOC_DEBUG = .false. ;      DEBUG_DES = .false.
       FOCUS_PARTICLE = -1
@@ -322,22 +318,21 @@
             NEIGH_CELLS = NEIGH_CELLS + 1
          ENDIF
 
+         particle_max = des_pos_new(2, LL) + des_radius(LL)
+         particle_min = des_pos_new(2, LL) - des_radius(LL)
+
          DO CELL_COUNT = 1, cellneighbor_facet_num(cell_id)
 
+            if (cellneighbor_facet(cell_id)%minextent(cell_count) > particle_max) cycle
+            if (cellneighbor_facet(cell_id)%maxextent(cell_count) < particle_min) cycle
 
             NF = cellneighbor_facet(cell_id)%p(cell_count)
 
-            if (cellneighbor_facet(cell_id)%minextent(cell_count) > des_pos_new(2, LL) + des_radius(LL)) cycle
-            if (cellneighbor_facet(cell_id)%maxextent(cell_count) < des_pos_new(2, LL) - des_radius(LL)) cycle
-
-            IF(STL_FACET_TYPE(NF).ne.FACET_TYPE_NORMAL) cycle !Skip this facet
                !Recall the facets on the MI plane are re-classified
                !as MI only when the user specifies BC_MI_AS_WALL_FOR_DES
                !as false. The default is to account for MI BC plane
                !as a wall and the facets making this plane are by
                !default classified as normal.
-
-
 
                !Checking all the facets is time consuming due to the
                !expensive separating axis test. Remove this facet from
@@ -349,7 +344,6 @@
                !non-fluid side of the plane, if the plane normal
                !is assumed to point toward the fluid side
 
-            line_t  = Undefined
                !-undefined, because non zero values will imply the sphere center
                !is on the non-fluid side of the plane. Since the testing
                !is with extended plane, this could very well happen even
@@ -371,31 +365,23 @@
 !                Therefore, only stick with this test when line_t is negative and let the
 !                separating axis test take care of the other cases.
 
-               !Assume the orthogonal projection detects an overlap
-            ortho_proj_cut = .true.
-
-            ref_line(1:dimn) = des_pos_new(1:dimn, LL)
-            dir_line(1:dimn) = NORM_FACE(1:dimn,NF)
             !Since this is for checking static config, line's direction
             !is the same as plane's normal. For moving particles,
             !the line's normal will be along the point joining new
             !and old positions.
 
-            norm_plane(1:dimn) = NORM_FACE(1:dimn,NF)
-            ref_plane(1:dimn)  = VERTEX(1, 1:dimn,NF)
-            CALL intersectLnPlane(ref_line, dir_line, ref_plane, &
-                 norm_plane, line_t)
+            line_t = DOT_PRODUCT(VERTEX(1, 1:dimn,NF) - des_pos_new(1:dimn, LL), NORM_FACE(1:dimn,NF))
             !k - rad >= tol_orth, where k = -line_t, then orthogonal
             !projection is false. Substituting for k
             !=> line_t + rad <= -tol_orth
             !choosing tol_orth = 0.01% of des_radius = 0.0001*des_radius
-            if(line_t.le.zero.and. &
-                 (line_t+des_radius(LL).le.-0.0001d0*des_radius(LL))) ortho_proj_cut = .false.
-            !Orthogonal projection will detect false postitives even
+
+            !Orthogonal projection will detect false positives even
             !when the particle does not overlap the triangle.
-            !However, if the orthgonal projection shows no overlap, then
-            !that is a big fat nagative and overlaps are not possible.
-            if(.not.ortho_proj_cut) cycle
+            !However, if the orthogonal projection shows no overlap, then
+            !that is a big fat negative and overlaps are not possible.
+            if((line_t.le.-1.0001d0*des_radius(LL))) cycle  ! no overlap
+
 
             CALL ClosestPtPointTriangle(DES_POS_NEW(:,LL), &
                  VERTEX(1,:,NF), VERTEX(2,:,NF), VERTEX(3,:,NF), &
@@ -425,7 +411,7 @@
                !intersection is with the face. When the intersection
                !is with edge or vertex, then the normal is
                !based on closest pt and sphere center. The
-               !definiton above of the normal is generic enough to
+               !definition above of the normal is generic enough to
                !account for differences between vertex, edge, and facet.
 
 ! Calculate the particle/wall overlap.
