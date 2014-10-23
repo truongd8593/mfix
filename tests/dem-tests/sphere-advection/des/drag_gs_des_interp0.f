@@ -171,8 +171,6 @@
                    DES_VEL_NEW(:,NP) = VEL_FP(:,NP)
 !......................................................................!
 
-
-
 ! Calculate the particle centered drag coefficient (F_GP) using the
 ! particle velocity and the interpolated gas velocity.  Note F_GP
 ! obtained from des_drag_gp subroutine is given as:
@@ -432,13 +430,13 @@
                      ovol = one/vcell
 
 !!$omp critical
-                     drag_am(cur_ijk,m) = drag_am(cur_ijk,m) + &
-                     f_gp(np)*weight_ft(i,j,k)*ovol*wtp
+                     drag_am(cur_ijk) = drag_am(cur_ijk) + &
+                        f_gp(np)*weight_ft(i,j,k)*ovol*wtp
 
-                     drag_bm(cur_ijk, 1:3,m) = &
-                     drag_bm(cur_ijk,1:3,m) + &
-                     f_gp(np) * vel_new(1:3) * &
-                     weight_ft(i,j,k)*ovol*wtp
+                     drag_bm(cur_ijk,1:3) = &
+                        drag_bm(cur_ijk,1:3) + &
+                        f_gp(np) * vel_new(1:3) * &
+                        weight_ft(i,j,k)*ovol*wtp
 !!$omp end critical
                   ENDDO
                ENDDO
@@ -481,12 +479,12 @@
 
             IF (.NOT.DES_CONTINUUM_HYBRID) THEN
                f_gs(ijk,:) = avg_factor*&
-                  (drag_am(ijk,:)   + drag_am(ijmk,:) +&
-                   drag_am(imjmk,:) + drag_am(imjk,:))
+                  (drag_am(ijk)   + drag_am(ijmk) +&
+                   drag_am(imjmk) + drag_am(imjk))
             ELSE
                f_gds(ijk,:) = avg_factor*&
-                  (drag_am(ijk,:)   + drag_am(ijmk,:) +&
-                   drag_am(imjmk,:) + drag_am(imjk,:))
+                  (drag_am(ijk)   + drag_am(ijmk) +&
+                   drag_am(imjmk) + drag_am(imjk))
             ENDIF
             IF(DO_K) THEN
                ijkm = funijk(imap_c(i),jmap_c(j),kmap_c(k-1))
@@ -495,12 +493,12 @@
                imjmkm = funijk(imap_c(i-1),jmap_c(j-1),kmap_c(k-1))
                IF(.NOT.DES_CONTINUUM_HYBRID) THEN
                   f_gs(ijk,:) = f_gs(ijk,:) + avg_factor*&
-                       (drag_am(ijkm,:) + drag_am(ijmkm,:) +&
-                        drag_am(imjmkm,:)+drag_am(imjkm,:) )
+                       (drag_am(ijkm) + drag_am(ijmkm) +&
+                        drag_am(imjmkm)+drag_am(imjkm) )
                ELSE
                   f_gds(ijk,:) = f_gds(ijk,:) + avg_factor*&
-                       (drag_am(ijkm,:) + drag_am(ijmkm,:) +&
-                        drag_am(imjmkm,:)+drag_am(imjkm,:) )
+                       (drag_am(ijkm) + drag_am(ijmkm) +&
+                        drag_am(imjmkm)+drag_am(imjkm) )
                ENDIF
             ENDIF   ! end if
          ELSE   ! else branch of if (fluid_at(ijk))
