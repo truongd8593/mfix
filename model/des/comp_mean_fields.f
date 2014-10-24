@@ -287,7 +287,7 @@
 !$omp   private(IJK,I,J,K,PCELL,COUNT_NODES_INSIDE,II,JJ,KK,IW, &
 !$omp           IE,JS,JN,KB,KTP,ONEW,CUR_IJK,IPJK,IJPK,IPJPK,IJKP,      &
 !$omp           IJPKP,IPJKP,IPJPKP,gst_tmp,vst_tmp,nindx,np,wtp,m,      &
-!$omp           JUNK_VAL,weight_ft,icur,jcur,kcur,vol_ratio             &
+!$omp           JUNK_VAL,weight_ft,icur,jcur,kcur,vol_ratio,            &
 !$omp           I1, I2, J1, J2, K1, K2, IDIM,IJK2,NORM_FACTOR,          &
 !$omp           RESID_ROPS,RESID_VEL,COUNT_NODES_OUTSIDE, TEMP1)
 !$omp do reduction(+:MASS_SOL1) reduction(+:DES_ROPS_NODE,DES_VEL_NODE)
