@@ -336,10 +336,10 @@
             ENDIF   ! end if/elseif/else (ep_sm <= zero, ep_g==0)
 
 ! modify the drag coefficient to account for subgrid domain effects
-            IF (SUBGRID_TYPE /= UNDEFINED_C) THEN
-               IF (TRIM(SUBGRID_TYPE) .EQ. 'IGCI') THEN
+            IF (SUBGRID_TYPE_ENUM .ne. UNDEFINED_SUBGRID_TYPE) THEN
+               IF (SUBGRID_TYPE_ENUM .EQ. IGCI) THEN
                   CALL SUBGRID_DRAG_IGCI(DgA,EPg,Mu,ROg,DPM,ROs,IJK)
-               ELSEIF (TRIM(SUBGRID_TYPE) .EQ. 'MILIOLI') THEN
+               ELSEIF (SUBGRID_TYPE_ENUM .EQ. MILIOLI) THEN
                   CALL SUBGRID_DRAG_MILIOLI(DgA,EPg,Mu,ROg,VREL,&
                        DPM,ROs,IJK)
                ENDIF

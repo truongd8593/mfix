@@ -475,7 +475,6 @@
       USE randomno
       USE mpi_utility
 
-      USE compar
       use error_manager
 
 
@@ -1355,9 +1354,9 @@
       part => orig_part_list
       DO WHILE (ASSOCIATED(part))
          if(part%INDOMAIN.and.writeindomain) then
-            write (vtp_unit,"(15x,es12.6)") (real(2.d0*part%rad))
+            write (vtp_unit,"(15x,es13.6)") (real(2.d0*part%rad))
          elseif(.not.part%INDOMAIN.and..not.writeindomain) then
-            write (vtp_unit,"(15x,es12.6)") (real(2.d0*part%rad))
+            write (vtp_unit,"(15x,es13.6)") (real(2.d0*part%rad))
          endif
          part => part%next
       ENDDO

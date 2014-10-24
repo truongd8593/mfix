@@ -72,7 +72,7 @@
       USE run, only: ghd_2007
       USE run, only: kt_type
 ! filtered subgrid model
-      USE run, only: subgrid_type
+      USE run, only: subgrid_type_enum, milioli, igci, undefined_subgrid_type
 ! frictional theories
       USE run, only: friction, schaeffer
 ! runtime flag for blending stress (only with schaeffer)
@@ -159,10 +159,10 @@
 ! if QMOMK then do not solve algebraic or PDE form of granular
 ! temperature governing equation
          IF(.NOT.GRANULAR_ENERGY) THEN
-            IF(SUBGRID_TYPE /= UNDEFINED_C) THEN
-               IF (TRIM(SUBGRID_TYPE) .EQ. 'IGCI') THEN
+            IF(SUBGRID_TYPE_ENUM .ne. UNDEFINED_SUBGRID_TYPE) THEN
+               IF (SUBGRID_TYPE_ENUM .EQ. IGCI) THEN
                   CALL SUBGRID_STRESS_IGCI(M, IER)
-               ELSEIF (TRIM(SUBGRID_TYPE) .EQ. 'MILIOLI') THEN
+               ELSEIF (SUBGRID_TYPE_ENUM .EQ. MILIOLI) THEN
                   CALL SUBGRID_STRESS_MILIOLI(M, IER)
                ENDIF
             ELSE

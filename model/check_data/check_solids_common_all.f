@@ -257,7 +257,7 @@
 ! Ratio of filter size to computational cell size
       USE run, only: FILTER_SIZE_RATIO
 ! User specifed subgrid model: IGCI or MILIOLI
-      USE run, only: SUBGRID_TYPE
+      USE run, only: SUBGRID_TYPE, SUBGRID_TYPE_ENUM, UNDEFINED_SUBGRID_TYPE, IGCI, MILIOLI
 ! Flag: Include wall effect term
       USE run, only: SUBGRID_WALL
 ! Initial turbulcence length scale
@@ -303,10 +303,18 @@
           'without',/'specifying a SUBGRID_TYPE.',/'Please correct ',  &
           'the mfix.dat file.')
 
-      IF(SUBGRID_TYPE /= 'IGCI' .AND. SUBGRID_TYPE /= 'MILIOLI') THEN
+      IF(SUBGRID_TYPE_ENUM .ne. IGCI .AND. SUBGRID_TYPE_ENUM .ne. MILIOLI) THEN
          WRITE(ERR_MSG,1001) 'SUBGRID_TYPE', SUBGRID_TYPE
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
+
+      SELECT CASE(trim(adjustl(SUBGRID_TYPE)))
+
+      CASE ('IGCI'); SUBGRID_TYPE_ENUM = IGCI
+      CASE ('MILIOLI'); SUBGRID_TYPE_ENUM = MILIOLI
+      CASE DEFAULT
+         SUBGRID_TYPE_ENUM = UNDEFINED_SUBGRID_TYPE
+      END SELECT
 
       IF(DRAG_TYPE /= 'WEN_YU')THEN
          WRITE(ERR_MSG, 2012)
