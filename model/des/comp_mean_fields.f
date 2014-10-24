@@ -251,11 +251,10 @@
                  COUNT_NODES_INSIDE_MAX, COUNT_TEMP
       double precision :: RESID_ROPS(DES_MMAX), &
                           RESID_VEL(3, DES_MMAX)
-      double precision :: NORM_FACTOR
+      double precision :: NORM_FACTOR, VOL_RATIO
 !Handan Liu added on Jan 17 2013
           DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
           DOUBLE PRECISION, DIMENSION(2,2,2) :: weight_ft
-          DOUBLE PRECISION :: desposnew(3)
 !-----------------------------------------------
 
 ! initializing
@@ -288,7 +287,7 @@
 !$omp   private(IJK,I,J,K,PCELL,COUNT_NODES_INSIDE,II,JJ,KK,IW, &
 !$omp           IE,JS,JN,KB,KTP,ONEW,CUR_IJK,IPJK,IJPK,IPJPK,IJKP,      &
 !$omp           IJPKP,IPJKP,IPJPKP,gst_tmp,vst_tmp,nindx,np,wtp,m,      &
-!$omp           JUNK_VAL,desposnew,weight_ft,icur,jcur,kcur,            &
+!$omp           JUNK_VAL,weight_ft,icur,jcur,kcur,vol_ratio             &
 !$omp           I1, I2, J1, J2, K1, K2, IDIM,IJK2,NORM_FACTOR,          &
 !$omp           RESID_ROPS,RESID_VEL,COUNT_NODES_OUTSIDE, TEMP1)
 !$omp do reduction(+:MASS_SOL1) reduction(+:DES_ROPS_NODE,DES_VEL_NODE)
@@ -393,8 +392,7 @@
                CALL MFIX_EXIT(myPE)
             ENDIF
 
-            desposnew(:) = des_pos_new(:,np)
-            call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,JUNK_VAL,weight_ft)
+            call DRAG_INTERPOLATION(gst_tmp,vst_tmp,des_pos_new(:,np),JUNK_VAL,weight_ft)
 !===================================================================>>> Handan Liu
 
             M = PIJK(NP,5)
@@ -594,15 +592,16 @@
 ! subsequent send receives, do not compute any value here as this will
 ! mess up the total mass value that is computed below to ensure mass conservation
 ! between Lagrangian and continuum representations
+                           VOL_RATIO = VOL(IJK2)/VOL_SURR
                            DO M = 1, DES_MMAX
                               DES_ROP_S(IJK2, M) = DES_ROP_S(IJK2, M) + &
-                                 DES_ROPS_NODE(IJK,M)*VOL(IJK2)/VOL_SURR
+                                 DES_ROPS_NODE(IJK,M)*VOL_RATIO
                               DES_U_S(IJK2, M) = DES_U_S(IJK2, M) + &
-                                 DES_VEL_NODE(IJK, 1, M)*VOL(IJK2)/VOL_SURR
+                                 DES_VEL_NODE(IJK, 1, M)*VOL_RATIO
                               DES_V_S(IJK2, M) = DES_V_S(IJK2, M) + &
-                                 DES_VEL_NODE(IJK, 2, M)*VOL(IJK2)/VOL_SURR
+                                 DES_VEL_NODE(IJK, 2, M)*VOL_RATIO
                               IF(DO_K) DES_W_S(IJK2, M) = DES_W_S(IJK2, M) + &
-                                 DES_VEL_NODE(IJK, 3, M)*VOL(IJK2)/VOL_SURR
+                                 DES_VEL_NODE(IJK, 3, M)*VOL_RATIO
                            ENDDO
                         ENDIF
                      ENDDO  ! end do (ii=i1,i2)
