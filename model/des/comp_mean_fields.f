@@ -562,6 +562,7 @@
             DO I = ISTART2, IEND1
                IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                IJK = funijk(I,J,K)
+               if (VOL_SURR(IJK).eq.ZERO) CYCLE ! no FLUID_AT any of the stencil points have
                I1 = I
                I2 = I+1
                J1 = J
