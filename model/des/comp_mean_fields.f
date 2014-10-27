@@ -165,7 +165,7 @@
              '----------')
 
  1004 FORMAT(5X,'WARNING: EP_G < 0 at IJK=', I10,' I=', I10, &
-         ' J=', I10,/5X,'EP_S=', ES15.9, ' & PINC (number of ',&
+         ' J=', I10,/5X,'EP_S=', ES16.9, ' & PINC (number of ',&
          'particles in cell)= ',I10)
 
 
@@ -235,12 +235,14 @@
 ! one over the solids volume fraction
       DOUBLE PRECISION :: OEPS
 
-      DOUBLE PRECISION :: VOL_SURR
       DOUBLE PRECISION :: MASS_SOL1, MASS_SOL2
 ! sum of mass_sol1 and mass_sol2 across all processors
       DOUBLE PRECISION :: MASS_SOL1_ALL, MASS_SOL2_ALL
 
       DOUBLE PRECISION :: TEMP1, TEMP2
+
+      DOUBLE PRECISION, DIMENSION(3) :: DES_VEL_DENSITY
+      DOUBLE PRECISION :: DES_ROP_DENSITY
 
 ! for error messages
       INTEGER :: IER
@@ -567,47 +569,33 @@
                K1 = K
                K2 = merge(K, K+1, NO_K)
 
-               VOL_SURR = ZERO
-
-! looping over stencil points (node values)
-               DO KK = K1, K2
-                  DO JJ = J1, J2
-                     DO II = I1, I2
-                        IF (DEAD_CELL_AT(II,JJ,KK)) CYCLE  ! skip dead cells
-                        IJK2 = funijk(IMAP_C(II), JMAP_C(JJ), KMAP_C(KK))
-                        IF(FLUID_AT(IJK2)) VOL_SURR = VOL_SURR+VOL(IJK2)
-                     ENDDO
-                  ENDDO
-               ENDDO
-
 ! looping over stencil points (NODE VALUES)
-               DO KK = K1, K2
-                  DO JJ = J1, J2
-                     DO II = I1, I2
-                        IF (DEAD_CELL_AT(II,JJ,KK)) CYCLE  ! skip dead cells
+               DO M = 1, DES_MMAX
 
-                        IJK2 = funijk(IMAP_C(II), JMAP_C(JJ), KMAP_C(KK))
-                        IF(FLUID_AT(IJK2).and.(IS_ON_myPE_wobnd(II, JJ, KK))) THEN
+                  DES_ROP_DENSITY = DES_ROPS_NODE(IJK, M)/VOL_SURR(IJK)
+                  DES_VEL_DENSITY(:) = DES_VEL_NODE(IJK, :, M)/VOL_SURR(IJK)
+
+                  DO KK = K1, K2
+                     DO JJ = J1, J2
+                        DO II = I1, I2
+                           IF (DEAD_CELL_AT(II,JJ,KK)) CYCLE  ! skip dead cells
+
+                           IJK2 = funijk(IMAP_C(II), JMAP_C(JJ), KMAP_C(KK))
+                           IF(FLUID_AT(IJK2).and.(IS_ON_myPE_wobnd(II, JJ, KK))) THEN
 ! Since the data in the ghost cells is spurious anyway and overwritten during
 ! subsequent send receives, do not compute any value here as this will
 ! mess up the total mass value that is computed below to ensure mass conservation
 ! between Lagrangian and continuum representations
-                           VOL_RATIO = VOL(IJK2)/VOL_SURR
-                           DO M = 1, DES_MMAX
-                              DES_ROP_S(IJK2, M) = DES_ROP_S(IJK2, M) + &
-                                 DES_ROPS_NODE(IJK,M)*VOL_RATIO
-                              DES_U_S(IJK2, M) = DES_U_S(IJK2, M) + &
-                                 DES_VEL_NODE(IJK, 1, M)*VOL_RATIO
-                              DES_V_S(IJK2, M) = DES_V_S(IJK2, M) + &
-                                 DES_VEL_NODE(IJK, 2, M)*VOL_RATIO
-                              IF(DO_K) DES_W_S(IJK2, M) = DES_W_S(IJK2, M) + &
-                                 DES_VEL_NODE(IJK, 3, M)*VOL_RATIO
-                           ENDDO
-                        ENDIF
-                     ENDDO  ! end do (ii=i1,i2)
-                  ENDDO  ! end do (jj=j1,j2)
-               ENDDO  ! end do (kk=k1,k2)
 
+                              DES_ROP_S(IJK2, M) = DES_ROP_S(IJK2, M) + DES_ROP_DENSITY*VOL(IJK2)
+                              DES_U_S(IJK2, M) = DES_U_S(IJK2, M) + DES_VEL_DENSITY(1)*VOL(IJK2)
+                              DES_V_S(IJK2, M) = DES_V_S(IJK2, M) + DES_VEL_DENSITY(2)*VOL(IJK2)
+                              IF(DO_K) DES_W_S(IJK2, M) = DES_W_S(IJK2, M) + DES_VEL_DENSITY(3)*VOL(IJK2)
+                           ENDIF
+                        ENDDO  ! end do (ii=i1,i2)
+                     ENDDO  ! end do (jj=j1,j2)
+                  ENDDO  ! end do (kk=k1,k2)
+               ENDDO
             ENDDO   ! end do (i=istart2,iend1)
          ENDDO   ! end do (j=jstart2,jend1)
       ENDDO   ! end do (k=kstart2,kend1)
@@ -813,7 +801,7 @@
  1004 FORMAT(/5X, 'Message from comp_epg_rop_g_from_rop_s', &
       /,5X,'Warning, EP_G = ', g17.8, 2x, 'LT Zero at IJK', I20, &
       /,5X,'I,J,K = ', I10, 2X, I10, 2x, I10, &
-      /,5X,'EP_S=', ES15.9, &
+      /,5X,'EP_S=', ES16.9, &
       /,5X,'PINC (number of particles in cell)= ',I10, &
       /,5X,'Cut cell ? ', L2,/)
 

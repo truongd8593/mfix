@@ -442,7 +442,7 @@
       use geometry, only: FLAG, FLAG3
       use geometry, only: FLAG_E, FLAG_N, FLAG_T
 ! Domain volumes and areas.
-      use geometry, only: VOL, AYZ, AXZ, AXY          ! Scalar grid
+      use geometry, only: VOL, VOL_SURR, AYZ, AXZ, AXY! Scalar grid
       use geometry, only: VOL_U, AYZ_U, AXZ_U, AXY_U  ! X-Momentum
       use geometry, only: VOL_V, AYZ_V, AXZ_V, AXY_V  ! Y-Momentum
       use geometry, only: VOL_W, AYZ_W, AXZ_W, AXY_W  ! Z-Momentum
@@ -552,6 +552,9 @@
       Allocate( AXZ (DIMENSION_3P), STAT=IER )
       Allocate( AXY (DIMENSION_3P), STAT=IER )
       IF(IER /= 0) goto 500
+
+      ! total volume of each cell's surrounding stencil cells
+      Allocate( VOL_SURR (DIMENSION_3), STAT=IER )
 
 ! Volume and face-areas of X-Momentumn grid.
       Allocate( VOL_U (DIMENSION_3),  STAT=IER )

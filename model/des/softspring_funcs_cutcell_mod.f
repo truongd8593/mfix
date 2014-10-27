@@ -247,7 +247,7 @@
       LOGICAL :: checked_facet_already,DES_LOC_DEBUG, PARTICLE_SLIDE, &
       test_overlap_and_exit
       INTEGER :: COUNT_FAC, COUNT, COUNT2, &
-      contact_facet_count, NEIGH_CELLS, NEIGH_CELLS_NONNAT, &
+      contact_facet_count, &
       LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count
       INTEGER :: IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL
 
@@ -308,15 +308,9 @@
 ! Check particle LL for wall contacts
 
          LIST_OF_CELLS(:) = -1
-         NEIGH_CELLS = 0
-         NEIGH_CELLS_NONNAT  = 0
          CELL_ID = PIJK(LL,4)
          COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
          RADSQ = DES_RADIUS(LL)*DES_RADIUS(LL)
-
-         IF (COUNT_FAC.gt.0)   then
-            NEIGH_CELLS = NEIGH_CELLS + 1
-         ENDIF
 
          particle_max = des_pos_new(2, LL) + des_radius(LL)
          particle_min = des_pos_new(2, LL) - des_radius(LL)

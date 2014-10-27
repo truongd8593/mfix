@@ -26,6 +26,7 @@
 ! Local variables
 !-----------------------------------------------
       INTEGER :: I, J, K, L, IJK, PC, SM_CELL
+      INTEGER :: I1, I2, J1, J2, K1, K2, II, JJ, KK, IJK2
       INTEGER :: lface, lcurpar, lpip_all(0:numpes-1), lglobal_id  , lparcnt
 
       INTEGER :: FACTOR
@@ -41,6 +42,36 @@
 ! since it relies on setting/checking of des_mio
       call desgrid_init
       call desmpi_init
+
+
+      VOL_SURR(:) = ZERO
+
+      ! initialize VOL_SURR array
+      DO K = KSTART2, KEND1
+         DO J = JSTART2, JEND1
+            DO I = ISTART2, IEND1
+               IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
+               IJK = funijk(I,J,K)
+               I1 = I
+               I2 = I+1
+               J1 = J
+               J2 = J+1
+               K1 = K
+               K2 = merge(K, K+1, NO_K)
+
+! looping over stencil points (node values)
+               DO KK = K1, K2
+                  DO JJ = J1, J2
+                     DO II = I1, I2
+                        IF (DEAD_CELL_AT(II,JJ,KK)) CYCLE  ! skip dead cells
+                        IJK2 = funijk(IMAP_C(II), JMAP_C(JJ), KMAP_C(KK))
+                        IF(FLUID_AT(IJK2)) VOL_SURR(IJK) = VOL_SURR(IJK)+VOL(IJK2)
+                     ENDDO
+                  ENDDO
+               ENDDO
+            ENDDO
+         ENDDO
+      ENDDO
 
 ! Set the initial particle data.
       IF(RUN_TYPE == 'NEW') THEN
