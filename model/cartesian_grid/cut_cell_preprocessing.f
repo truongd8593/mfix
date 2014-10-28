@@ -1134,7 +1134,7 @@
 
       INTEGER :: IJK2,CURRENT_I,CURRENT_J,CURRENT_K
 
-      INTEGER :: N_UNDEFINED, N_PROP
+      INTEGER :: N_UNDEFINED, NTOTAL_UNDEFINED,N_PROP
       INTEGER, PARAMETER :: N_PROPMAX=1000
       LOGICAL:: F_FOUND
 
@@ -1605,32 +1605,27 @@
 
       CASE ('   ')
 
+! After intersecting the edges of the background mesh with the STL facets,
+! the end points (i.e., cell corners) are assigned a value, called F_AT, where:
+! F_AT = zero if the corner point is on a facet (within some tolerance TOL_STL),
+! F_AT < zero if the corner point is inside  the fluid region,
+! F_AT > zero if the corner point is outside the fluid region.
+! At this point F_AT is only defined across edges that intersect the STL facets,
+! and it must be propagated to all cell corners to determine if uncut cells
+! are inside or outside the fluid region.
 
-         N_UNDEFINED = UNDEFINED_I
-
-         N_PROP = 0
-
-         DO WHILE(N_UNDEFINED>0)
-
-            N_UNDEFINED = 0
-
-            N_PROP = N_PROP + 1
-
-            DO IJK = IJKSTART3, IJKEND3
-
-               IF(INTERIOR_CELL_AT(IJK).AND.F_AT(IJK)==UNDEFINED) THEN
-
-                  N_UNDEFINED = N_UNDEFINED + 1
-
-               ENDIF
-
-            ENDDO
-
+! Only F_AT values that are defined and not zero are propagated to their direct
+! neighbors, if it is not already defined. The propagation is repeated 
+! at most N_PROPMAX. The loop is exited when all F_AT values are defined.
+! N_PROPMAX could be increased for very large domains.
+! The propagation of F_AT will stop anytime a boundary is encountered since F_AT
+! changes sign across a boundary.
+! 
+         DO N_PROP=1,N_PROPMAX
 
             DO IJK = IJKSTART3, IJKEND3
 
-               IF(INTERIOR_CELL_AT(IJK).AND.F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
-
+               IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
 
                      IMJK = IM_OF(IJK)
                      IF(F_AT(IMJK)==UNDEFINED.AND.F_AT(IMJK)/=ZERO)  F_AT(IMJK)=F_AT(IJK)
@@ -1650,34 +1645,37 @@
                      IJKP = KP_OF(IJK)
                      IF(F_AT(IJKP)==UNDEFINED.AND.F_AT(IJKP)/=ZERO)  F_AT(IJKP)=F_AT(IJK)
 
-
                ENDIF
 
+            ENDDO ! IJK Loop
+
+
+! Communicate F_AT accross processors for DMP runs
+            call send_recv(F_AT,2)
+
+! Count the number of undefined values of F_AT
+! and exit loop if all values of F_AT have been propagated            
+            N_UNDEFINED = 0
+            DO IJK = IJKSTART3, IJKEND3
+               IF(INTERIOR_CELL_AT(IJK).AND.F_AT(IJK)==UNDEFINED) N_UNDEFINED = N_UNDEFINED + 1
             ENDDO
 
+            call global_all_sum( N_UNDEFINED, NTOTAL_UNDEFINED )
+            IF(NTOTAL_UNDEFINED==0) EXIT
 
-!!!!            call send_recv(F_AT,2)
-
-            IF(N_PROP>N_PROPMAX.AND.N_UNDEFINED>0) THEN
-
-               WRITE(*,*)'WARNING: UNABLE TO PROPAGATE F_AT ARRAY FROM myPE=.', MyPE
-               WRITE(*,*)'         THIS USUALLY INDICATE A RANK WITH NO ACTIVE CELL'
-               WRITE(*,*)'         YOU MAY NEED TO ADJUST THE GRID PARTITIONNING'
-               WRITE(*,*)'         TO GET BETTER LOAD_BALANCE.'
-
-
-               exit
-!               CALL MFIX_EXIT(myPE)
-
-            ENDIF
-
-
-         ENDDO ! WHILE Loop
+         ENDDO ! N_PROP Loop
 
 
          call send_recv(F_AT,2)
 
-
+! If a process still has undefined values of F_AT, this probably means
+! that all cells belonging to that process are dead cells.
+         IF(N_UNDEFINED>0) THEN
+            WRITE(*,*)'WARNING: UNABLE TO PROPAGATE F_AT ARRAY FROM myPE=.', MyPE
+            WRITE(*,*)'         THIS USUALLY INDICATE A RANK WITH NO ACTIVE CELL'
+            WRITE(*,*)'         YOU MAY NEED TO ADJUST THE GRID PARTITIONNING'
+            WRITE(*,*)'         TO GET BETTER LOAD_BALANCE.'
+         ENDIF
 
 
 
