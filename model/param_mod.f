@@ -36,7 +36,7 @@
 ! Maximum number of items for specifying internal surfaces.
       INTEGER, PARAMETER :: DIMENSION_IS = 500
 ! Maximum number of items for specifying point sources
-      INTEGER, PARAMETER :: DIMENSION_PS = 500
+      INTEGER, PARAMETER :: DIMENSION_PS = 5000
 ! Maximum number of solids phases
       INTEGER, PARAMETER :: DIM_M = 10
 ! Maximum number of gas species
