@@ -5,7 +5,7 @@
 !     It performs the following functions.                             !
 !     - Calculates the fluid-solids drag force exerted on the          !
 !       particles by the fluid phase using cell average quantities.    !
-!       The gas solids drag coefficient (F_GS) is calculated from      !
+!       The gas solids drag coefficient (F_GDS) is calculated from     !
 !       the subroutine drag_gs, which is called during the continuum   !
 !       time step (from calc_drag) and during the discrete time(s)     !
 !       (from here).                                                   !
@@ -72,7 +72,7 @@
 ! initializing
       GS_DRAG(:,:,:) = ZERO
 
-! computing F_gs (gas-solids drag coefficient) with the latest average
+! computing F_GDS (gas-solids drag coefficient) with the latest average
 ! fluid and solid velocity fields.  see comments below
       DISCRETE_FLAG = .TRUE.   ! only matters if des_continuum_hybrid
       DO M = 1, DES_MMAX
@@ -158,12 +158,9 @@
 
                IF(EP_SM.GT.ZERO) THEN
                   IF (MPPIC .AND. MPPIC_PDRAG_IMPLICIT) THEN
-                     GS_DRAG(IJK,M, :) = F_GS(IJK,M)*VELG_ARR(:)
+                     GS_DRAG(IJK,M, :) = F_GDS(IJK,M)*VELG_ARR(:)
                   ELSEIF (DES_CONTINUUM_HYBRID) THEN
                      GS_DRAG(IJK,M,:) = -F_GDS(IJK,M)*&
-                        (VELDS_ARR(M,:)-VELG_ARR(:))
-                  ELSE ! default cuase
-                     GS_DRAG(IJK,M,:) = -F_GS(IJK,M)*&
                         (VELDS_ARR(M,:)-VELG_ARR(:))
                   ENDIF   ! end if/else (des_continuum_hybrid)
                   OEPS = ONE/EP_SM
@@ -209,7 +206,7 @@
                OEPS = ZERO
             ENDIF
             IF(MPPIC_PDRAG_IMPLICIT) THEN
-               F_gp(NP) = (F_GS(IJK,M)*PVOL(NP))*OEPS
+               F_gp(NP) = (F_GDS(IJK,M)*PVOL(NP))*OEPS
             ELSE
                F_gp(NP) = ZERO
             ENDIF
@@ -252,7 +249,7 @@
       INTEGER :: IER
 
 
-! Calculate the fluid solids drag coefficient (F_GS) using the cell
+! Calculate the fluid solids drag coefficient (F_GDS) using the cell
 ! averaged particle velocity and the cell average fluid velocity
 !---------------------------------------------------------------------//
       DISCRETE_FLAG = .TRUE.   ! only matters if des_continuum_hybrid

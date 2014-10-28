@@ -205,15 +205,20 @@
       Allocate(  DES_W_s (DIMENSION_3, DES_MMAX) )
 
 ! Volume of nodes
-       ALLOCATE(DES_VOL_NODE(DIMENSION_3))
+      ALLOCATE(DES_VOL_NODE(DIMENSION_3))
+
+      IF(DES_INTERP_ON) THEN
+         ALLOCATE(F_GDS(DIMENSION_3,1))
+         ALLOCATE(VXF_GDS(DIMENSION_3,1))
+      ELSE
+         ALLOCATE(F_GDS(DIMENSION_3,DES_MMAX))
+         ALLOCATE(VXF_GDS(DIMENSION_3,DES_MMAX))
+      ENDIF
 
 ! Variables for hybrid model
       IF (DES_CONTINUUM_HYBRID) THEN
-         ALLOCATE(F_GDS(DIMENSION_3,DES_MMAX))
          ALLOCATE(F_SDS(DIMENSION_3,DIMENSION_M,DES_MMAX))
-         ALLOCATE(VXF_GDS(DIMENSION_3,DES_MMAX))
          ALLOCATE(VXF_SDS(DIMENSION_3,DIMENSION_M,DES_MMAX))
-         ALLOCATE(SD_FORCE(DIMN,NPARTICLES))
       ENDIF
 ! Bulk density in a computational fluid cell / for communication with
 ! MFIX continuum

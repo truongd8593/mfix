@@ -8,7 +8,7 @@
 !           source term.  Face centered.                               !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE GAS_DRAG_U(A_M, B_M, VXF_GS, IER)
+      SUBROUTINE GAS_DRAG_U(A_M, B_M, IER)
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -47,8 +47,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_M(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_M(DIMENSION_3, 0:DIMENSION_M)
-! Volume times drag coefficient at cell face
-      DOUBLE PRECISION, INTENT(IN) :: VXF_GS(DIMENSION_3, DIMENSION_M)
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
 
@@ -113,7 +111,7 @@
 
 !$omp parallel do default(none) schedule(guided, 50)                   &
 !$omp shared(DES_MMAX, IJKSTART3, IJKEND3, I_OF, DES_CONTINUUM_HYBRID, &
-!$omp    DES_U_S, VxF_GDS, VxF_GS, A_M, B_M)                           &
+!$omp    DES_U_S, VxF_GDS, A_M, B_M)                                   &
 !$omp private(M, IJK, I, USFCM, tmp_A, tmp_B)
          DO M = 1, DES_MMAX
             DO IJK = IJKSTART3, IJKEND3
@@ -122,13 +120,8 @@
                I = I_OF(IJK)
                USFCM = AVG_X(DES_U_S(IJK,M),DES_U_S(EAST_OF(IJK),M),I)
 
-               IF (DES_CONTINUUM_HYBRID) THEN
-                  tmp_A =  - VXF_GDS(IJK,M)
-                  tmp_B =  - VXF_GDS(IJK,M)*USFCM
-               ELSE
-                  tmp_A =  - VXF_GS(IJK,M)
-                  tmp_B =  - VXF_GS(IJK,M)*USFCM
-               ENDIF
+               tmp_A =  - VXF_GDS(IJK,M)
+               tmp_B =  - VXF_GDS(IJK,M)*USFCM
 
                A_M(IJK,0,0) = A_M(IJK,0,0) + tmp_A
                B_M(IJK,0) = B_M(IJK,0) + tmp_B
@@ -152,7 +145,7 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE GAS_DRAG_V(A_M, B_M, VXF_GS, IER)
+      SUBROUTINE GAS_DRAG_V(A_M, B_M, IER)
 
 
 ! Global Variables:
@@ -194,8 +187,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_M(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_M(DIMENSION_3, 0:DIMENSION_M)
-! Volume times drag coefficient at cell face
-      DOUBLE PRECISION, INTENT(IN) :: VXF_GS(DIMENSION_3, DIMENSION_M)
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
 
@@ -259,7 +250,7 @@
 
 !$omp parallel do default(none) schedule(guided, 50)                   &
 !$omp shared(DES_MMAX, IJKSTART3, IJKEND3, J_OF, DES_CONTINUUM_HYBRID, &
-!$omp    DES_V_S, VxF_GDS, VxF_GS, A_M, B_M)                           &
+!$omp    DES_V_S, VxF_GDS, A_M, B_M)                                   &
 !$omp private(M, IJK, J, VSFCM, tmp_A, tmp_B)
          DO M = 1, DES_MMAX
             DO IJK = IJKSTART3, IJKEND3
@@ -268,13 +259,8 @@
                J = J_OF(IJK)
                VSFCM = AVG_Y(DES_V_S(IJK,M),DES_V_S(NORTH_OF(IJK),M),J)
 
-               IF(DES_CONTINUUM_HYBRID) THEN
-                   tmp_A =  - VXF_GDS(IJK,M)
-                   tmp_B =  - VXF_GDS(IJK,M)*VSFCM
-               ELSE
-                  tmp_A =  - VXF_GS(IJK,M)
-                  tmp_B =  - VXF_GS(IJK,M)*VSFCM
-               ENDIF
+               tmp_A =  - VXF_GDS(IJK,M)
+               tmp_B =  - VXF_GDS(IJK,M)*VSFCM
 
                A_M(IJK,0,0) = A_M(IJK,0,0) + tmp_A
                B_M(IJK,0) = B_M(IJK,0) + tmp_B
@@ -300,7 +286,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE GAS_DRAG_W(A_M, B_M, VXF_GS, IER)
+      SUBROUTINE GAS_DRAG_W(A_M, B_M, IER)
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -341,8 +327,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_M(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_M(DIMENSION_3, 0:DIMENSION_M)
-! Volume times drag coefficient at cell face
-      DOUBLE PRECISION, INTENT(IN) :: VXF_GS(DIMENSION_3, DIMENSION_M)
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
 
@@ -401,7 +385,7 @@
 
 !$omp parallel do default(none) schedule(guided, 50)                   &
 !$omp shared(DES_MMAX, IJKSTART3, IJKEND3, K_OF, DES_CONTINUUM_HYBRID, &
-!$omp    DES_W_S, VxF_GDS, VxF_GS, A_M, B_M)                           &
+!$omp    DES_W_S, VxF_GDS, A_M, B_M)                                   &
 !$omp private(M, IJK, K, WSFCM, tmp_A, tmp_B)
          DO M = 1, DES_MMAX
             DO IJK = IJKSTART3, IJKEND3
@@ -411,13 +395,8 @@
                K = K_OF(IJK)
                WSFCM = AVG_Z(DES_W_S(IJK,M),DES_W_S(TOP_OF(IJK),M),K)
 
-               IF (DES_CONTINUUM_HYBRID) THEN
-                  tmp_A =  - VXF_GDS(IJK,M)
-                  tmp_B =  - VXF_GDS(IJK,M)*WSFCM
-               ELSE
-                  tmp_A = - VXF_GS(IJK,M)
-                  tmp_B = - VXF_GS(IJK,M)*WSFCM
-               ENDIF
+               tmp_A =  - VXF_GDS(IJK,M)
+               tmp_B =  - VXF_GDS(IJK,M)*WSFCM
 
                A_M(IJK,0,0) = A_M(IJK,0,0) + tmp_A
                B_M(IJK,0) = B_M(IJK,0) + tmp_B

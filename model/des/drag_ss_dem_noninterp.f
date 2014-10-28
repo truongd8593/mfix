@@ -83,7 +83,6 @@
 
 ! initializing
       SS_DRAG(:,:,:) = ZERO
-      SD_FORCE(:,:) = ZERO
 
 !!$omp parallel do default(shared)                                 &
 !!$omp private(ijk,i,j,k,imjk,ijmk,ijkm,ijk_u,ijk_v,ijk_w,         &
@@ -229,8 +228,7 @@
 ! Update the contact forces (FC) on the particle to include
 ! solids-solids drag force
 !----------------------------------------------------------------->>>
-         SD_FORCE(:,NP) = SS_DRAG(IJK,M,:)*PVOL(NP)
-         FC(:,NP) = FC(:,NP) + SD_FORCE(:,NP)
+         FC(:,NP) = FC(:,NP) + SS_DRAG(IJK,M,:)*PVOL(NP)
 !-----------------------------------------------------------------<<<
 
       ENDDO   ! end do loop (np=1,max_pip)

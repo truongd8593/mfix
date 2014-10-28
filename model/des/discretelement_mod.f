@@ -454,10 +454,6 @@
 ! particle 'phases'
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: F_SDS
                         !(DIMENSION_3,MMAX,DES_MMAX)
-! Solids-solids drag force on particle (between continuous solids and
-! discrete particle)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: SD_FORCE
-                        !(PARTICLES,3)
 
 ! the following should probably be local to the subroutine
 ! solve_vel_star they are only needed when invoking the non-interpolated

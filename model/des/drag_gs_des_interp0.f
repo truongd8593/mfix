@@ -441,7 +441,7 @@
 ! quantities are needed at the time of this call.
       call des_addnodevalues
 !-----------------------------------------------------------------<<<
-! Calculate/update the cell centered drag coefficient F_GS for use
+! Calculate/update the cell centered drag coefficient F_GDS for use
 ! in the pressure correction equation
 !----------------------------------------------------------------->>>
 ! avg_factor=0.125 (in 3D) or =0.25 (in 2D)
@@ -464,36 +464,21 @@
             ijmk = funijk_map_c(i,j-1,k)
             imjmk = funijk_map_c(i-1,j-1,k)
 
-            IF (.NOT.DES_CONTINUUM_HYBRID) THEN
-               f_gs(ijk,:) = avg_factor*&
-                  (drag_am(ijk)   + drag_am(ijmk) +&
-                   drag_am(imjmk) + drag_am(imjk))
-            ELSE
-               f_gds(ijk,:) = avg_factor*&
-                  (drag_am(ijk)   + drag_am(ijmk) +&
-                   drag_am(imjmk) + drag_am(imjk))
-            ENDIF
+            f_gds(ijk,1) = avg_factor*&
+               (drag_am(ijk)   + drag_am(ijmk) +&
+                drag_am(imjmk) + drag_am(imjk))
+
             IF(DO_K) THEN
                ijkm = funijk_map_c(i,j,k-1)
                imjkm = funijk_map_c(i-1,j,k-1)
                ijmkm = funijk_map_c(i,j-1,k-1)
                imjmkm = funijk_map_c(i-1,j-1,k-1)
-               IF(.NOT.DES_CONTINUUM_HYBRID) THEN
-                  f_gs(ijk,:) = f_gs(ijk,:) + avg_factor*&
-                       (drag_am(ijkm) + drag_am(ijmkm) +&
-                        drag_am(imjmkm)+drag_am(imjkm) )
-               ELSE
                   f_gds(ijk,:) = f_gds(ijk,:) + avg_factor*&
                        (drag_am(ijkm) + drag_am(ijmkm) +&
                         drag_am(imjmkm)+drag_am(imjkm) )
-               ENDIF
             ENDIF   ! end if
          ELSE   ! else branch of if (fluid_at(ijk))
-            IF (DES_CONTINUUM_HYBRID) THEN
-               F_GDS(IJK,:) = ZERO
-            ELSE
-               F_GS(IJK,:) = ZERO
-            ENDIF
+            F_GDS(IJK,1) = ZERO
          ENDIF   ! end if/else (fluid_at(ijk))
 
       ENDDO   ! end do loop (ijk=ijkstart3,ijkend3)
