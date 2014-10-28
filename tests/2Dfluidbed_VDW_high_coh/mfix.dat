@@ -158,7 +158,7 @@
   NFACTOR = 10     ! length of dem settling period in no. of loops [10]
 
 ! Neighbor search parameters --------------------
-  DES_NEIGHBOR_SEARCH = 1     ! Particle neighbor search method [1]
+  DES_NEIGHBOR_SEARCH = 4     ! Particle neighbor search method [1]
   NEIGHBOR_SEARCH_N = 4     ! number of solids time steps between 
                             ! neighbor search [25]
   MN = 8     ! maximum number of neighbors allowed per particle [10]
