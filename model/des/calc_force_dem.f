@@ -116,7 +116,7 @@
                     (Asperities/(Asperities+EQ_RADIUS) + ONE/          &
                     (ONE+Asperities/VDW_INNER_CUTOFF)**2 )
                ENDIF
-               FC_COLL(:,LL) = FC_COLL(:,LL) +                         &
+               FC_COLL(:,CC) = FC_COLL(:,CC) +                         &
                   DIST(:)*FORCE_COH/SQRT(DIST_COLL(CC))
             ENDIF
          ENDIF

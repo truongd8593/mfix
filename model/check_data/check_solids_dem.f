@@ -157,11 +157,15 @@
       use discretelement, only: WALL_VDW_OUTER_CUTOFF
       use discretelement, only: WALL_HAMAKER_CONSTANT
       use discretelement, only: ASPERITIES
+      use discretelement, only: SURFACE_ENERGY
+      use discretelement, only: WALL_SURFACE_ENERGY
+
+
 ! Global Parameters:
 !---------------------------------------------------------------------//
       use param1, only: UNDEFINED
       use param1, only: ZERO
-
+      use constant, only: Pi
 
       use error_manager
 
@@ -242,6 +246,13 @@
             WRITE(ERR_MSG,1001) 'ASPERITIES', trim(iVal(ASPERITIES))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
+
+         SURFACE_ENERGY=HAMAKER_CONSTANT/&
+            (24.d0*Pi*VDW_INNER_CUTOFF**2)
+
+         WALL_SURFACE_ENERGY=WALL_HAMAKER_CONSTANT/&
+            (24.d0*Pi*WALL_VDW_INNER_CUTOFF**2)
+
       ENDIF
 
 
