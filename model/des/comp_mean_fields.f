@@ -205,8 +205,6 @@
 !-----------------------------------------------
 ! general i, j, k indices
       INTEGER :: I, J, K, IJK, &
-                 IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,&
-                 IPJPK, IPJKP, IJPKP, IPJPKP, &
                  II, JJ, KK
       INTEGER :: I1, I2, J1, J2, K1, K2
       INTEGER :: IDIM, IJK2
@@ -285,12 +283,11 @@
       CALL SET_INTERPOLATION_SCHEME(2)
 
 !Handan Liu added on Jan 17 2013; again on June 2013
-!$omp   parallel default(shared)                                        &
-!$omp   private(IJK,I,J,K,PCELL,COUNT_NODES_INSIDE,II,JJ,KK,IW, &
-!$omp           IE,JS,JN,KB,KTP,ONEW,CUR_IJK,IPJK,IJPK,IPJPK,IJKP,      &
-!$omp           IJPKP,IPJKP,IPJPKP,gst_tmp,vst_tmp,nindx,np,wtp,m,      &
-!$omp           JUNK_VAL,weight_ft,icur,jcur,kcur,vol_ratio,            &
-!$omp           I1, I2, J1, J2, K1, K2, IDIM,IJK2,NORM_FACTOR,          &
+!$omp   parallel default(shared)                                             &
+!$omp   private(IJK,I,J,K,PCELL,COUNT_NODES_INSIDE,II,JJ,KK,IW,              &
+!$omp           IE,JS,JN,KB,KTP,ONEW,CUR_IJK,gst_tmp,vst_tmp,nindx,np,wtp,m, &
+!$omp           JUNK_VAL,weight_ft,icur,jcur,kcur,vol_ratio,                 &
+!$omp           I1, I2, J1, J2, K1, K2, IDIM,IJK2,NORM_FACTOR,               &
 !$omp           RESID_ROPS,RESID_VEL,COUNT_NODES_OUTSIDE, TEMP1)
 !$omp do reduction(+:MASS_SOL1) reduction(+:DES_ROPS_NODE,DES_VEL_NODE)
       !IJKLOOP: DO IJK = IJKSTART3,IJKEND3      ! Removed by Handan Liu
@@ -343,15 +340,6 @@
                   JJ = JS + J-1
                   KK = KB + K-1
                   CUR_IJK = funijk(IMAP_C(II),JMAP_C(JJ),KMAP_C(KK))
-                  IPJK    = funijk(IMAP_C(II+1),JMAP_C(JJ),KMAP_C(KK))
-                  IJPK    = funijk(IMAP_C(II),JMAP_C(JJ+1),KMAP_C(KK))
-                  IPJPK   = funijk(IMAP_C(II+1),JMAP_C(JJ+1),KMAP_C(KK))
-                  IF(DO_K) THEN
-                     IJKP    = funijk(IMAP_C(II),JMAP_C(JJ),KMAP_C(KK+1))
-                     IJPKP   = funijk(IMAP_C(II),JMAP_C(JJ+1),KMAP_C(KK+1))
-                     IPJKP   = funijk(IMAP_C(II+1),JMAP_C(JJ),KMAP_C(KK+1))
-                     IPJPKP  = funijk(IMAP_C(II+1),JMAP_C(JJ+1),KMAP_C(KK+1))
-                  ENDIF
 
                   GST_TMP(I,J,K,1) = XE(II)
                   GST_TMP(I,J,K,2) = YN(JJ)
