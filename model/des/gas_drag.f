@@ -77,7 +77,7 @@
          AVG_FACTOR = merge(0.5d0, 0.25D0, NO_K)
 
 !$omp parallel do schedule(guided,50) default(none)                    &
-!$omp shared(IJKSTART3, IJKEND3, I_OF, J_OF,   &
+!$omp shared(IJKSTART3, IJKEND3, FUNIJK_MAP_C, I_OF, J_OF,             &
 !$omp    K_OF, DO_K, AVG_FACTOR, DRAG_AM, DRAG_BM, A_M, B_M, VOL_U)    &
 !$omp private(IJK, I, J, K, IJMK, IJKM, IJMKM, tmp_A, tmp_B)
          DO IJK = IJKSTART3, IJKEND3
@@ -222,7 +222,7 @@
          AVG_FACTOR = merge(0.5d0, 0.25D0, NO_K)
 
 !$omp parallel do schedule (guided,50) default(none)                   &
-!$omp shared(IJKSTART3, IJKEND3, I_OF, J_OF,   &
+!$omp shared(IJKSTART3, IJKEND3, FUNIJK_MAP_C, I_OF, J_OF,             &
 !$omp    K_OF, DO_K, AVG_FACTOR, DRAG_AM, DRAG_BM, A_M, B_M, VOL_V)    &
 !$omp private(IJK, I, J, K, IMJK, IJKM, IMJKM, tmp_A, tmp_B)
          DO IJK = IJKSTART3, IJKEND3

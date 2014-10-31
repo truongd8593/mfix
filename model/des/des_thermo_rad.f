@@ -67,9 +67,9 @@
 
       IF(FOCUS)THEN
          WRITE(*,"(//5X,A)")'From: DES_RADIATION -'
-         WRITE(*,"(8X,A,D12.6)")'Tp: ',DES_T_s_NEW(I)
-         WRITE(*,"(8X,A,D12.6)")'Tenv: ',Tenv
-         WRITE(*,"(8X,A,D12.6)")'Qrd: ',Qrd
+         WRITE(*,"(8X,A,D13.6)")'Tp: ',DES_T_s_NEW(I)
+         WRITE(*,"(8X,A,D13.6)")'Tenv: ',Tenv
+         WRITE(*,"(8X,A,D13.6)")'Qrd: ',Qrd
          WRITE(*,"(5X,25('-')/)")
       ENDIF
 
