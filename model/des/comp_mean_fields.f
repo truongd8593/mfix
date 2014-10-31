@@ -245,8 +245,6 @@
 ! for error messages
       INTEGER :: IER
 
-      DOUBLE PRECISION :: JUNK_VAL(3)
-
       INTEGER :: COUNT_NODES_OUTSIDE, COUNT_NODES_INSIDE, &
                  COUNT_NODES_INSIDE_MAX, COUNT_TEMP
       double precision :: RESID_ROPS(DES_MMAX), &
@@ -286,7 +284,7 @@
 !$omp   parallel default(shared)                                             &
 !$omp   private(IJK,I,J,K,PCELL,COUNT_NODES_INSIDE,II,JJ,KK,IW,              &
 !$omp           IE,JS,JN,KB,KTP,ONEW,CUR_IJK,gst_tmp,vst_tmp,nindx,np,wtp,m, &
-!$omp           JUNK_VAL,weight_ft,icur,jcur,kcur,vol_ratio,                 &
+!$omp           weight_ft,icur,jcur,kcur,vol_ratio,                          &
 !$omp           I1, I2, J1, J2, K1, K2, IDIM,IJK2,NORM_FACTOR,               &
 !$omp           RESID_ROPS,RESID_VEL,COUNT_NODES_OUTSIDE, TEMP1)
 !$omp do reduction(+:MASS_SOL1) reduction(+:DES_ROPS_NODE,DES_VEL_NODE)
@@ -382,7 +380,7 @@
                CALL MFIX_EXIT(myPE)
             ENDIF
 
-            call DRAG_INTERPOLATION(gst_tmp,vst_tmp,des_pos_new(:,np),JUNK_VAL,weight_ft)
+            call DRAG_WEIGHTFACTOR(gst_tmp,vst_tmp,des_pos_new(:,np),weight_ft)
 !===================================================================>>> Handan Liu
 
             M = PIJK(NP,5)
