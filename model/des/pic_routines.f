@@ -823,10 +823,10 @@
                   ii = iw + i-1
                   jj = js + j-1
                   kk = kb + k-1
-                  cur_ijk = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk))
-                  ipjk    = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk))
-                  ijpk    = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk))
-                  ipjpk   = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk))
+                  cur_ijk = funijk_map_c(ii,jj,kk)
+                  ipjk    = funijk_map_c(ii+1,jj,kk)
+                  ijpk    = funijk_map_c(ii,jj+1,kk)
+                  ipjpk   = funijk_map_c(ii+1,jj+1,kk)
 
                   vol_ijk = zero
                   vol_ipjk = zero
@@ -845,10 +845,10 @@
 
 
                   if(DO_K) then
-                     ijkp    = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk+1))
-                     ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
-                     ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
-                     ipjpkp  = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk+1))
+                     ijkp    = funijk_map_c(ii,jj,kk+1)
+                     ijpkp   = funijk_map_c(ii,jj+1,kk+1)
+                     ipjkp   = funijk_map_c(ii+1,jj,kk+1)
+                     ipjpkp  = funijk_map_c(ii+1,jj+1,kk+1)
 
 
                      if(fluid_at(ijkp))     vol_ijkp   = vol(ijkp)

@@ -68,7 +68,7 @@
                   DO JJ = J1, J2
                      DO II = I1, I2
                         IF (DEAD_CELL_AT(II,JJ,KK)) CYCLE  ! skip dead cells
-                        IJK2 = funijk(IMAP_C(II), JMAP_C(JJ), KMAP_C(KK))
+                        IJK2 = funijk_map_c(II, JJ, KK)
                         IF(FLUID_AT(IJK2)) VOL_SURR(IJK) = VOL_SURR(IJK)+VOL(IJK2)
                      ENDDO
                   ENDDO

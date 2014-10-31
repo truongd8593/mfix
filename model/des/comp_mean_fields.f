@@ -339,7 +339,7 @@
                   II = IW + I-1
                   JJ = JS + J-1
                   KK = KB + K-1
-                  CUR_IJK = funijk(IMAP_C(II),JMAP_C(JJ),KMAP_C(KK))
+                  CUR_IJK = funijk_map_c(II,JJ,KK)
 
                   GST_TMP(I,J,K,1) = XE(II)
                   GST_TMP(I,J,K,2) = YN(JJ)
@@ -403,10 +403,7 @@
 ! The interpolation is done using node. so one should use consistent
 ! numbering system in the current version imap_c is used instead of
 ! ip_of or im_of
-                     ICUR = IMAP_C(II)
-                     JCUR = JMAP_C(JJ)
-                     KCUR = KMAP_C(KK)
-                     CUR_IJK = funijk(ICUR, JCUR, KCUR)
+                     CUR_IJK = funijk_map_c(ii,jj,kk)
 
                      !TEMP1 = WEIGHTP(I,J,K)*DES_RO_S(M)*PVOL(NP)*WTP
 ! Changed TEMP1 as an array TEMP1(NP) to ensure different TEMP1
@@ -569,7 +566,7 @@
                         DO II = I1, I2
                            IF (DEAD_CELL_AT(II,JJ,KK)) CYCLE  ! skip dead cells
 
-                           IJK2 = funijk(IMAP_C(II), JMAP_C(JJ), KMAP_C(KK))
+                           IJK2 = funijk_map_c(II, JJ, KK)
                            IF(FLUID_AT(IJK2).and.(IS_ON_myPE_wobnd(II, JJ, KK))) THEN
 ! Since the data in the ghost cells is spurious anyway and overwritten during
 ! subsequent send receives, do not compute any value here as this will

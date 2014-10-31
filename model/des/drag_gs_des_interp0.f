@@ -124,10 +124,10 @@
                   ii = iw + i-1
                   jj = js + j-1
                   kk = kb + k-1
-                  cur_ijk = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk))
-                  ipjk    = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk))
-                  ijpk    = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk))
-                  ipjpk   = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk))
+                  cur_ijk = funijk_map_c(ii,jj,kk)
+                  ipjk    = funijk_map_c(ii+1,jj,kk)
+                  ijpk    = funijk_map_c(ii,jj+1,kk)
+                  ipjpk   = funijk_map_c(ii+1,jj+1,kk)
 
                   gst_tmp(i,j,k,1) = xe(ii)
                   gst_tmp(i,j,k,2) = yn(jj)
@@ -136,10 +136,10 @@
                   vst_tmp(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk))
 
                   if(DO_K) then
-                     ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
-                     ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
-                     ipjpkp  = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk+1))
-                     ijkp    = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk+1))
+                     ijpkp   = funijk_map_c(ii,jj+1,kk+1)
+                     ipjkp   = funijk_map_c(ii+1,jj,kk+1)
+                     ipjpkp  = funijk_map_c(ii+1,jj+1,kk+1)
+                     ijkp    = funijk_map_c(ii,jj,kk+1)
                                          vst_tmp(i,j,k,1) = vst_tmp(i,j,k,1) + avg_factor*(u_g(ijkp) + u_g(ijpkp))
                      vst_tmp(i,j,k,2) = vst_tmp(i,j,k,2) + avg_factor*(v_g(ijkp) + v_g(ipjkp))
                      vst_tmp(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
@@ -249,7 +249,6 @@
       INTEGER :: IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,&
                  IPJPK, IPJKP, IJPKP, IPJPKP, &
                  IMJMK, IMJKM, IJMKM, IMJMKM
-      INTEGER :: ICUR, JCUR, KCUR
 ! indices used for interpolation stencil (unclear why IE, JN, KTP are
 ! needed)
       INTEGER :: IW, IE, JS, JN, KB, KTP
@@ -314,7 +313,7 @@
 !!$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,                       &
 !!$omp         gst_tmp,vst_tmp,velfp,desposnew,ijpkp,ipjkp,            &
 !!$omp         ipjpkp,ijkp,nindx,focus,np,wtp,m,weight_ft,             &
-!!$omp             icur,jcur,kcur,vcell,ovol)
+!!$omp             vcell,ovol)
 !!$omp do reduction(+:drag_am) reduction(+:drag_bm)
       DO IJK = IJKSTART3,IJKEND3
          IF(.NOT.FLUID_AT(IJK) .OR. PINC(IJK)==0) cycle
@@ -342,10 +341,10 @@
                   ii = iw + i-1
                   jj = js + j-1
                   kk = kb + k-1
-                  cur_ijk = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk))
-                  ipjk    = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk))
-                  ijpk    = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk))
-                  ipjpk   = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk))
+                  cur_ijk = funijk_map_c(ii,jj,kk)
+                  ipjk    = funijk_map_c(ii+1,jj,kk)
+                  ijpk    = funijk_map_c(ii,jj+1,kk)
+                  ipjpk   = funijk_map_c(ii+1,jj+1,kk)
                   GST_TMP(I,J,K,1) = XE(II)
                   GST_TMP(I,J,K,2) = YN(JJ)
                   GST_TMP(I,J,K,3) = merge(DZ(1), ZT(KK), NO_K)
@@ -353,10 +352,10 @@
                   VST_TMP(I,J,K,2) = AVG_FACTOR*(V_G(CUR_IJK)+V_G(IPJK))
 
                   IF(DO_K) THEN
-                     IJPKP   = FUNIJK(IMAP_C(II),JMAP_C(JJ+1),KMAP_C(KK+1))
-                     IPJKP   = FUNIJK(IMAP_C(II+1),JMAP_C(JJ),KMAP_C(KK+1))
-                     IPJPKP  = FUNIJK(IMAP_C(II+1),JMAP_C(JJ+1),KMAP_C(KK+1))
-                     IJKP    = FUNIJK(IMAP_C(II),JMAP_C(JJ),KMAP_C(KK+1))
+                     IJPKP   = FUNIJK_MAP_C(II,JJ+1,KK+1)
+                     IPJKP   = FUNIJK_MAP_C(II+1,JJ,KK+1)
+                     IPJPKP  = FUNIJK_MAP_C(II+1,JJ+1,KK+1)
+                     IJKP    = FUNIJK_MAP_C(II,JJ,KK+1)
                      VST_TMP(I,J,K,1) = VST_TMP(I,J,K,1) + &
                      AVG_FACTOR*(U_G(IJKP) + U_G(IJPKP))
 
@@ -411,10 +410,7 @@
 ! The interpolation is done using node. so one should use consistent
 ! numbering system. in the current version imap_c is used instead of
 ! ip_of or im_of
-                     icur = imap_c(ii)
-                     jcur = jmap_c(jj)
-                     kcur = kmap_c(kk)
-                     cur_ijk = funijk(icur, jcur, kcur)
+                     cur_ijk = funijk_map_c(ii, jj, kk)
 
 ! Replacing the volume of cell to volume at the node
                      vcell = des_vol_node(cur_ijk)
@@ -464,9 +460,9 @@
             if (i.lt.istart2 .or. i.gt.iend2) cycle
             if (j.lt.jstart2 .or. j.gt.jend2) cycle
             if (k.lt.kstart2 .or. k.gt.kend2) cycle
-            imjk = funijk(imap_c(i-1),jmap_c(j),kmap_c(k))
-            ijmk = funijk(imap_c(i),jmap_c(j-1),kmap_c(k))
-            imjmk = funijk(imap_c(i-1),jmap_c(j-1),kmap_c(k))
+            imjk = funijk_map_c(i-1,j,k)
+            ijmk = funijk_map_c(i,j-1,k)
+            imjmk = funijk_map_c(i-1,j-1,k)
 
             IF (.NOT.DES_CONTINUUM_HYBRID) THEN
                f_gs(ijk,:) = avg_factor*&
@@ -478,10 +474,10 @@
                    drag_am(imjmk) + drag_am(imjk))
             ENDIF
             IF(DO_K) THEN
-               ijkm = funijk(imap_c(i),jmap_c(j),kmap_c(k-1))
-               imjkm = funijk(imap_c(i-1),jmap_c(j),kmap_c(k-1))
-               ijmkm = funijk(imap_c(i),jmap_c(j-1),kmap_c(k-1))
-               imjmkm = funijk(imap_c(i-1),jmap_c(j-1),kmap_c(k-1))
+               ijkm = funijk_map_c(i,j,k-1)
+               imjkm = funijk_map_c(i-1,j,k-1)
+               ijmkm = funijk_map_c(i,j-1,k-1)
+               imjmkm = funijk_map_c(i-1,j-1,k-1)
                IF(.NOT.DES_CONTINUUM_HYBRID) THEN
                   f_gs(ijk,:) = f_gs(ijk,:) + avg_factor*&
                        (drag_am(ijkm) + drag_am(ijmkm) +&

@@ -77,7 +77,7 @@
          AVG_FACTOR = merge(0.5d0, 0.25D0, NO_K)
 
 !$omp parallel do schedule(guided,50) default(none)                    &
-!$omp shared(IJKSTART3, IJKEND3, IMAP_C, JMAP_C, KMAP_C, I_OF, J_OF,   &
+!$omp shared(IJKSTART3, IJKEND3, I_OF, J_OF,   &
 !$omp    K_OF, DO_K, AVG_FACTOR, DRAG_AM, DRAG_BM, A_M, B_M, VOL_U)    &
 !$omp private(IJK, I, J, K, IJMK, IJKM, IJMKM, tmp_A, tmp_B)
          DO IJK = IJKSTART3, IJKEND3
@@ -88,14 +88,14 @@
             J = J_OF(IJK)
             K = K_OF(IJK)
 
-            IJMK = FUNIJK(IMAP_C(I), JMAP_C(J-1), KMAP_C(K))
+            IJMK = FUNIJK_MAP_C(I, J-1, K)
 
             tmp_A = -AVG_FACTOR*(DRAG_AM(IJK) + DRAG_AM(IJMK))
             tmp_B = -AVG_FACTOR*(DRAG_BM(IJK,1) + DRAG_BM(IJMK,1))
 
             IF(DO_K) THEN
-               IJKM = FUNIJK(IMAP_C(I), JMAP_C(J), KMAP_C(K-1))
-               IJMKM = FUNIJK(IMAP_C(I), JMAP_C(J-1), KMAP_C(K-1))
+               IJKM = FUNIJK_MAP_C(I, J, K-1)
+               IJMKM = FUNIJK_MAP_C(I, J-1, K-1)
                tmp_A = tmp_A - AVG_FACTOR*                             &
                   (DRAG_AM(IJKM) + DRAG_AM(IJMKM))
                tmp_B = tmp_B - AVG_FACTOR*                             &
@@ -222,7 +222,7 @@
          AVG_FACTOR = merge(0.5d0, 0.25D0, NO_K)
 
 !$omp parallel do schedule (guided,50) default(none)                   &
-!$omp shared(IJKSTART3, IJKEND3, IMAP_C, JMAP_C, KMAP_C, I_OF, J_OF,   &
+!$omp shared(IJKSTART3, IJKEND3, I_OF, J_OF,   &
 !$omp    K_OF, DO_K, AVG_FACTOR, DRAG_AM, DRAG_BM, A_M, B_M, VOL_V)    &
 !$omp private(IJK, I, J, K, IMJK, IJKM, IMJKM, tmp_A, tmp_B)
          DO IJK = IJKSTART3, IJKEND3
@@ -232,15 +232,15 @@
             J = J_OF(IJK)
             K = K_OF(IJK)
 
-            IMJK = FUNIJK(IMAP_C(I-1),JMAP_C(J),KMAP_C(K))
+            IMJK = FUNIJK_MAP_C(I-1,J,K)
 
             tmp_A = -AVG_FACTOR*(DRAG_AM(IJK) + DRAG_AM(IMJK))
             tmp_B = -AVG_FACTOR*(DRAG_BM(IJK,2) + DRAG_BM(IMJK,2))
 
             IF(DO_K) THEN
 
-               IJKM = FUNIJK(IMAP_C(I),JMAP_C(J),KMAP_C(K-1))
-               IMJKM = FUNIJK(IMAP_C(I-1),JMAP_C(J),KMAP_C(K-1))
+               IJKM = FUNIJK(I,J,K-1)
+               IMJKM = FUNIJK(I-1,J,K-1)
 
                tmp_A = tmp_A - AVG_FACTOR*                             &
                   (DRAG_AM(IJKM) + DRAG_AM(IMJKM))
@@ -371,7 +371,7 @@
          AVG_FACTOR = merge(0.5d0, 0.25D0, NO_K)
 
 !$omp parallel do schedule (guided,50) default(none)                   &
-!$omp shared(IJKSTART3, IJKEND3, IMAP_C, JMAP_C, KMAP_C, I_OF, J_OF,   &
+!$omp shared(IJKSTART3, IJKEND3, I_OF, J_OF,   &
 !$omp    K_OF, AVG_FACTOR, DRAG_AM, DRAG_BM, A_M, B_M, VOL_W)          &
 !$omp private(IJK, I, J, K, IMJK, IJMK, IMJMK, tmp_A, tmp_B)
          DO IJK = IJKSTART3, IJKEND3
@@ -381,9 +381,9 @@
             J = J_OF(IJK)
             K = K_OF(IJK)
 
-            IMJK = FUNIJK(IMAP_C(I-1),JMAP_C(J),KMAP_C(K))
-            IJMK = FUNIJK(IMAP_C(I),JMAP_C(J-1),KMAP_C(K))
-            IMJMK = FUNIJK(IMAP_C(I-1),JMAP_C(J-1),KMAP_C(K))
+            IMJK = FUNIJK(I-1,J,K)
+            IJMK = FUNIJK(I,J-1,K)
+            IMJMK = FUNIJK(I-1,J-1,K)
 
             tmp_A = -AVG_FACTOR*(DRAG_AM(IJK) + DRAG_AM(IMJK) +        &
                DRAG_AM(IJMK) + DRAG_AM(IMJMK))

@@ -106,7 +106,7 @@
 
 !       Integer Array of IJK values at each (I,J,K) cell
 
-        integer, allocatable, dimension(:,:,:) :: IJK_ARRAY_OF
+        integer, allocatable, dimension(:,:,:) :: IJK_ARRAY_OF,FUNIJK_MAP_C
 
 !        integer, allocatable, dimension(:,:,:) :: funijk
 

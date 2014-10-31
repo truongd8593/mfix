@@ -571,6 +571,7 @@
 
         ! Must extend range such that neighbors (IM,JP etc...) stay in bound
         allocate(IJK_ARRAY_OF(istart3-1:iend3+1,jstart3-1:jend3+1,kstart3-1:kend3+1))
+        allocate(FUNIJK_MAP_C(istart3-1:iend3+1,jstart3-1:jend3+1,kstart3-1:kend3+1))
 
         allocate(DEAD_CELL_AT(imin3-1:imax3+1,jmin3-1:jmax3+1,kmin3-1:kmax3+1))
 
@@ -582,6 +583,14 @@
            DO jj = jstart3,jend3
               DO kk = kstart3,kend3
                  IJK_ARRAY_OF(ii,jj,kk)=FUNIJK_0(ii,jj,kk)
+              ENDDO
+           ENDDO
+        ENDDO
+
+        DO ii = istart3,iend3
+           DO jj = jstart3,jend3
+              DO kk = kstart3,kend3
+                 FUNIJK_MAP_C(ii,jj,kk)=IJK_ARRAY_OF(IMAP_C(ii),JMAP_C(jj),KMAP_C(kk))
               ENDDO
            ENDDO
         ENDDO
