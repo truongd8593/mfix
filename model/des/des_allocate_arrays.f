@@ -165,8 +165,9 @@
       do ii = 1, DIMENSION_3
          cellneighbor_facet_max(ii) = 4
          allocate(cellneighbor_facet(ii)%p(cellneighbor_facet_max(ii)))
-         allocate(cellneighbor_facet(ii)%minextent(cellneighbor_facet_max(ii)))
-         allocate(cellneighbor_facet(ii)%maxextent(cellneighbor_facet_max(ii)))
+         allocate(cellneighbor_facet(ii)%extentdir(cellneighbor_facet_max(ii)))
+         allocate(cellneighbor_facet(ii)%extentmin(cellneighbor_facet_max(ii)))
+         allocate(cellneighbor_facet(ii)%extentmax(cellneighbor_facet_max(ii)))
          cellneighbor_facet_num(ii) = 0
       enddo
 

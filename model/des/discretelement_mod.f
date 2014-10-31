@@ -424,8 +424,9 @@
 
       TYPE cnaa1
          INTEGER, DIMENSION(:), ALLOCATABLE:: p
-         DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE:: minextent
-         DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE:: maxextent
+         INTEGER, DIMENSION(:), ALLOCATABLE:: extentdir
+         DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE:: extentmin
+         DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE:: extentmax
       END TYPE cnaa1
 ! in order to facilitate the parallel processing the PIC is defined
 ! as single array IJK
