@@ -537,9 +537,11 @@
 
 ! looping over all fluid cells
 !Handan Liu added here on Feb. 28 2013
-!$omp   parallel do default(shared)             &
-!$omp   private(K,J,I,IJK,I1,I2,J1,J2,K1,K2,    &
-!$omp                   II,JJ,KK,IJK2,M,VOL_SURR)   collapse (3)
+!$omp   parallel do default(none)             &
+!$omp   shared(ISTART2,KSTART2,JSTART2,IEND1,JEND1,KEND1,DEAD_CELL_AT,                &
+!$omp          DO_K,DES_MMAX,IMAP_C,DES_ROPS_NODE,DES_VEL_NODE,FUNIJK_MAP_C,VOL)      &
+!$omp   private(K,J,I,IJK,I1,I2,J1,J2,K1,K2,II,JJ,KK,IJK2,M,VOL_SURR,DES_ROP_DENSITY, &
+!$omp           DES_VEL_DENSITY,DES_ROP_S,DES_U_S,DES_V_S,DES_W_S)   collapse (3)
       DO K = KSTART2, KEND1
          DO J = JSTART2, JEND1
             DO I = ISTART2, IEND1
@@ -551,7 +553,7 @@
                J1 = J
                J2 = J+1
                K1 = K
-               K2 = merge(K, K+1, NO_K)
+               K2 = merge(K+1, K, DO_K)
 
 ! looping over stencil points (NODE VALUES)
                DO M = 1, DES_MMAX
