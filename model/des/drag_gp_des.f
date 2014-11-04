@@ -287,7 +287,7 @@
 !                                                                       C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
-      SUBROUTINE DRAG_WEIGHTFACTOR(GSTEN,VSTEN,DESPOS,WEIGHTFACTOR)
+      SUBROUTINE DRAG_WEIGHTFACTOR(GSTEN,DESPOS,WEIGHTFACTOR)
 
       use geometry, only: NO_K
 
@@ -297,7 +297,6 @@
 ! Local Variables
 !-----------------------------------------------
         DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(IN):: GSTEN
-        DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(IN):: VSTEN
         DOUBLE PRECISION, DIMENSION(3), INTENT(IN):: DESPOS
         DOUBLE PRECISION, DIMENSION(2,2,2), INTENT(OUT) :: WEIGHTFACTOR
         INTEGER :: II, JJ, KK

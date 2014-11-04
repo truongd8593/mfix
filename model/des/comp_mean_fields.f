@@ -251,7 +251,7 @@
                           RESID_VEL(3, DES_MMAX)
       double precision :: NORM_FACTOR, VOL_RATIO
 !Handan Liu added on Jan 17 2013
-          DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
+          DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp
           DOUBLE PRECISION, DIMENSION(2,2,2) :: weight_ft
 !-----------------------------------------------
 
@@ -283,7 +283,7 @@
 !Handan Liu added on Jan 17 2013; again on June 2013
 !$omp   parallel default(shared)                                             &
 !$omp   private(IJK,I,J,K,PCELL,COUNT_NODES_INSIDE,II,JJ,KK,IW,              &
-!$omp           IE,JS,JN,KB,KTP,ONEW,CUR_IJK,gst_tmp,vst_tmp,nindx,np,wtp,m, &
+!$omp           IE,JS,JN,KB,KTP,ONEW,CUR_IJK,gst_tmp,nindx,np,wtp,m, &
 !$omp           weight_ft,icur,jcur,kcur,vol_ratio,                          &
 !$omp           I1, I2, J1, J2, K1, K2, IDIM,IJK2,NORM_FACTOR,               &
 !$omp           RESID_ROPS,RESID_VEL,COUNT_NODES_OUTSIDE, TEMP1)
@@ -342,7 +342,6 @@
                   GST_TMP(I,J,K,1) = XE(II)
                   GST_TMP(I,J,K,2) = YN(JJ)
                   GST_TMP(I,J,K,3) = merge(DZ(1), ZT(KK), NO_K)
-                  VST_TMP(I,J,K,:) = ZERO
 !===================================================================>>> Handan Liu
 
                   IF(CARTESIAN_GRID) THEN
@@ -380,7 +379,7 @@
                CALL MFIX_EXIT(myPE)
             ENDIF
 
-            call DRAG_WEIGHTFACTOR(gst_tmp,vst_tmp,des_pos_new(:,np),weight_ft)
+            call DRAG_WEIGHTFACTOR(gst_tmp,des_pos_new(:,np),weight_ft)
 !===================================================================>>> Handan Liu
 
             M = PIJK(NP,5)
