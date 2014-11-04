@@ -236,4 +236,14 @@ usr_input_mod.f
 ../model/kintheory_energy_dissipation_ss.f
 ../model/check_data/check_geometry.f
 ../model/check_data/check_axis.f
+../model/check_data/check_geometry_prereqs.f
+../model/check_data/check_dmp_prereqs.f
+../model/check_data/check_solids_model_prereqs.f
+../model/check_data/check_gas_phase.f
+../model/check_data/check_solids_phases.f
+../model/check_data/check_solids_common_all.f
+../model/check_data/check_solids_common_discrete.f
+../model/check_data/check_solids_continuum.f
+../model/check_data/check_solids_dem.f
+../model/check_data/check_solids_mppic.f
 ../model/set_param.f

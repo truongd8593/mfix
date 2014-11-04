@@ -168,6 +168,10 @@
       Deallocate(  AXY_W  )
       Deallocate(  VOL_W  )
 
+      Deallocate(  IJK_ARRAY_OF, DEAD_CELL_AT  )
+      Deallocate(  ro_s, ro_so, dgA_s  )
+
+
 !indices
       Deallocate(  STORE_LM  )
       Deallocate(  CELL_CLASS  )

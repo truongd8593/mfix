@@ -37,7 +37,7 @@
       Use compar
       Use gridmap ! added
       Use functions
-          use tmp_array        ! 16-jun-2004
+      use tmp_array        ! 16-jun-2004
 
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
@@ -70,7 +70,7 @@
       DOUBLE PRECISION , DIMENSION(:,:), ALLOCATABLE ::  &
         THETA_M_OLD, &
         T_s_OLD, &
-        ROP_s_OLD, &
+        ROP_s_OLD, RO_s_OLD, &
         U_s_OLD, &
         V_s_OLD,&
         W_s_OLD, &
@@ -80,10 +80,9 @@
         X_s_OLD
 
       DOUBLE PRECISION TIME_OLD
-      REAL &
-        XDIST_SC_OLD(DIM_I), XDIST_VEC_OLD(DIM_I), &
-        YDIST_SC_OLD(DIM_J), YDIST_VEC_OLD(DIM_J),&
-        ZDIST_SC_OLD(DIM_K), ZDIST_VEC_OLD(DIM_K)
+      REAL :: XDIST_SC_OLD(DIM_I), XDIST_VEC_OLD(DIM_I)
+      REAL :: YDIST_SC_OLD(DIM_J), YDIST_VEC_OLD(DIM_J)
+      REAL :: ZDIST_SC_OLD(DIM_K), ZDIST_VEC_OLD(DIM_K)
       INTEGER &
         NMAX_OLD(0:DIMENSION_M), IMAX2_OLD, JMAX2_OLD, KMAX2_OLD,&
         IJMAX2_OLD, MMAX_OLD, FLAG_OLD(DIMENSION_3)
@@ -95,8 +94,12 @@
       LOGICAL EXT_I, EXT_J, EXT_K, DONE, SHIFT, INTERNAL
 
       INTEGER I, J, K, IJK, M, N
+
+
 !
       WRITE(*,*)' Processing data. Please wait. '
+
+
 
       Allocate(  EP_g_OLD(DIMENSION_3) )
       Allocate(  P_g_OLD(DIMENSION_3) )
@@ -122,6 +125,7 @@
       Allocate(  T_s_OLD(DIMENSION_3, DIMENSION_M) )
       Allocate(  THETA_M_OLD(DIMENSION_3, DIMENSION_M) )
       Allocate(  ROP_s_OLD(DIMENSION_3, DIMENSION_M) )
+      Allocate(  RO_s_OLD(DIMENSION_3, DIMENSION_M) )
       Allocate(  U_s_OLD(DIMENSION_3, DIMENSION_M) )
       Allocate(  V_s_OLD(DIMENSION_3, DIMENSION_M) )
       Allocate(  W_s_OLD(DIMENSION_3, DIMENSION_M) )
@@ -166,6 +170,7 @@
                W_g_OLD(IJK)     = W_g(IJK)
                DO M = 1, MMAX
                   ROP_s_OLD(IJK, M) = ROP_s(IJK, M)
+                  RO_s_OLD(IJK, M) = RO_s(IJK, M)
                   T_s_OLD(IJK, M)    = T_s(IJK, M)
                   U_s_OLD(IJK, M)   = U_s(IJK, M)
                   V_s_OLD(IJK, M)   = V_s(IJK, M)
@@ -208,16 +213,16 @@
       ENDDO
 
       DO I = 1, IMAX2
-         XDIST_SC_OLD(I)  = XDIST_SC(I)
-         XDIST_VEC_OLD(I) = XDIST_VEC(I)
+        XDIST_SC_OLD(I)  = XDIST_SC(I)
+        XDIST_VEC_OLD(I) = XDIST_VEC(I)
       ENDDO
       DO J = 1, JMAX2
-         YDIST_SC_OLD(J)  = YDIST_SC(J)
-         YDIST_VEC_OLD(J) = YDIST_VEC(J)
+        YDIST_SC_OLD(J)  = YDIST_SC(J)
+        YDIST_VEC_OLD(J) = YDIST_VEC(J)
       ENDDO
       DO K = 1, KMAX2
-         ZDIST_SC_OLD(K)  = ZDIST_SC(K)
-         ZDIST_VEC_OLD(K) = ZDIST_VEC(K)
+        ZDIST_SC_OLD(K)  = ZDIST_SC(K)
+        ZDIST_VEC_OLD(K) = ZDIST_VEC(K)
       ENDDO
       IMAX2_OLD  = IMAX2
       JMAX2_OLD  = JMAX2
@@ -225,42 +230,58 @@
       IJMAX2_OLD = IJMAX2
       MMAX_OLD   = MMAX
       DO M = 0, MMAX
-         NMAX_OLD(M) = NMAX(M)
+        NMAX_OLD(M) = NMAX(M)
       ENDDO
       TIME_OLD = TIME
       NSTEP_OLD = NSTEP
-      !
-      !  Read the new data file
-      !
+!
+!  Read the new data file
+!
       CALL DEALLOCATE_ARRAYS
 
       CALL INIT_NAMELIST
+      CALL READ_NAMELIST(1)
       NODESI = 1
       NODESJ = 1
       NODESK = 1
-      CALL READ_NAMELIST(1)
-      call set_max2
 
-      call gridmap_init
+      CALL INIT_ERROR_MANAGER
+! These checks verify that sufficient information was provided
+! to setup the domain indices and DMP gridmap.
+      CALL CHECK_GEOMETRY_PREREQS
+      CALL CHECK_DMP_PREREQS
+! Set up the physical domain indicies (cell index max/min values).
+      CALL SET_MAX2
+! Set constants
+      CALL SET_CONSTANTS
+! Partition the domain and set indices
+      CALL GRIDMAP_INIT
+! Check the minimum solids phase requirements.
+      CALL CHECK_SOLIDS_MODEL_PREREQS
 
-      CALL ALLOCATE_ARRAYS
-      !
-      !  Do initial calculations
-      !
+      CALL CHECK_GAS_PHASE
+      CALL CHECK_SOLIDS_PHASES
+      CALL SET_PARAMETERS
+! Basic geometry checks.
       SHIFT = .TRUE.
       CALL CHECK_GEOMETRY(SHIFT)
       CALL SET_GEOMETRY
+
+      CALL ALLOCATE_ARRAYS
+!
+!  Do initial calculations
+!
+
       CALL CALC_DISTANCE (XMIN,DX,IMAX2,XDIST_SC,XDIST_VEC)
       CALL CALC_DISTANCE (ZERO,DY,JMAX2,YDIST_SC,YDIST_VEC)
       CALL CALC_DISTANCE (ZERO,DZ,KMAX2,ZDIST_SC,ZDIST_VEC)
-      !
-      ! set smax value since check_data_01 and constant_prop are not called in post_mfix.
+!
+! set smax value since check_data_01 and constant_prop are not called in post_mfix.
       SMAX = MMAX
-      !CALL CHECK_DATA_04                         ! solid phase section
-      !CALL CHECK_DATA_05                         ! gas phase section
-      !
-      !  Open new RES files
-      !
+
+!
+!  Open new RES files
+!
       CLOSE(UNIT_RES)
       IF (.NOT.DO_XFORMS) THEN
          WRITE(*,'(/A)',ADVANCE='NO') ' Enter a new RUN_NAME > '
@@ -275,74 +296,74 @@
 200   DONE = OPEN_FILEP(RUN_NAME, 'NEW', 0)
       IF(.NOT.DONE) THEN
          WRITE(*,'(/A)',ADVANCE='NO') &
-              ' Unable to open RES file. Enter a new RUN_NAME > '
-         READ(*,'(A)')RUN_NAME
-         GOTO 200
+          ' Unable to open RES file. Enter a new RUN_NAME > '
+        READ(*,'(A)')RUN_NAME
+        GOTO 200
       ENDIF
-      !
-      !  Interpolate values for the new grid
-      !
+!
+!  Interpolate values for the new grid
+!
       DO K = 1, KMAX2
          DO J = 1, JMAX2
             DO I = 1, IMAX2
                IJK = FUNIJK(I, J, K)
                INTERNAL = .TRUE.
-               !
-               !  compute I, J, and K for the old coordinate system
-               !
+!
+!  compute I, J, and K for the old coordinate system
+!
                IF(I .EQ. 1)THEN
-                  I_OLD = 1
-                  IV_OLD = 1
-                  IF(.NOT.NO_I) INTERNAL = .FALSE.
+                 I_OLD = 1
+                 IV_OLD = 1
+                 IF(.NOT.NO_I) INTERNAL = .FALSE.
                ELSEIF(I .EQ. IMAX2) THEN
-                  I_OLD  = IMAX2_OLD
-                  IV_OLD = IMAX2_OLD
-                  IF(.NOT.NO_I) INTERNAL = .FALSE.
+                 I_OLD  = IMAX2_OLD
+                 IV_OLD = IMAX2_OLD
+                 IF(.NOT.NO_I) INTERNAL = .FALSE.
                ELSE
-                  I_OLD = GET_INDEX &
-                       (XDIST_SC(I), XDIST_SC_OLD, IMAX2_OLD, EXT_I, I1,'X')
-                  IV_OLD= GET_INDEX &
-                       (XDIST_VEC(I), XDIST_VEC_OLD, IMAX2_OLD, EXT_I, I1,'X_E')
+                 I_OLD = GET_INDEX &
+                      (XDIST_SC(I), XDIST_SC_OLD, IMAX2_OLD, EXT_I, I1,'X')
+                 IV_OLD= GET_INDEX &
+                      (XDIST_VEC(I), XDIST_VEC_OLD, IMAX2_OLD, EXT_I, I1,'X_E')
                ENDIF
 
                IF(J .EQ. 1)THEN
-                  J_OLD = 1
-                  JV_OLD = 1
-                  IF(.NOT.NO_J) INTERNAL = .FALSE.
+                 J_OLD = 1
+                 JV_OLD = 1
+                 IF(.NOT.NO_J) INTERNAL = .FALSE.
                ELSEIF(J .EQ. JMAX2) THEN
-                  J_OLD = JMAX2_OLD
-                  JV_OLD = JMAX2_OLD
-                  IF(.NOT.NO_J) INTERNAL = .FALSE.
+                 J_OLD = JMAX2_OLD
+                 JV_OLD = JMAX2_OLD
+                 IF(.NOT.NO_J) INTERNAL = .FALSE.
                ELSE
-                  J_OLD = GET_INDEX &
-                       (YDIST_SC(J), YDIST_SC_OLD, JMAX2_OLD, EXT_J, J1,'Y')
-                  JV_OLD= GET_INDEX &
-                       (YDIST_VEC(J), YDIST_VEC_OLD, JMAX2_OLD, EXT_J, J1,'Y_N')
+                 J_OLD = GET_INDEX &
+                      (YDIST_SC(J), YDIST_SC_OLD, JMAX2_OLD, EXT_J, J1,'Y')
+                 JV_OLD= GET_INDEX &
+                      (YDIST_VEC(J), YDIST_VEC_OLD, JMAX2_OLD, EXT_J, J1,'Y_N')
                ENDIF
 
                IF(K .EQ. 1)THEN
-                  K_OLD = 1
-                  KV_OLD = 1
-                  IF(.NOT.NO_K) INTERNAL = .FALSE.
+                 K_OLD = 1
+                 KV_OLD = 1
+                 IF(.NOT.NO_K) INTERNAL = .FALSE.
                ELSEIF(K .EQ. KMAX2) THEN
-                  K_OLD = KMAX2_OLD
-                  KV_OLD = KMAX2_OLD
-                  IF(.NOT.NO_K) INTERNAL = .FALSE.
+                 K_OLD = KMAX2_OLD
+                 KV_OLD = KMAX2_OLD
+                 IF(.NOT.NO_K) INTERNAL = .FALSE.
                ELSE
-                  K_OLD = GET_INDEX &
-                       (ZDIST_SC(K), ZDIST_SC_OLD, KMAX2_OLD, EXT_K, K1,'Z')
-                  KV_OLD= GET_INDEX &
-                       (ZDIST_VEC(K), ZDIST_VEC_OLD, KMAX2_OLD, EXT_K, K1,'Z_T')
+                 K_OLD = GET_INDEX &
+                      (ZDIST_SC(K), ZDIST_SC_OLD, KMAX2_OLD, EXT_K, K1,'Z')
+                 KV_OLD= GET_INDEX &
+                      (ZDIST_VEC(K), ZDIST_VEC_OLD, KMAX2_OLD, EXT_K, K1,'Z_T')
                ENDIF
 
                IJK_OLD  = I_OLD + (J_OLD - 1) * IMAX2_OLD &
-                    + (K_OLD - 1) * IJMAX2_OLD
-               !
-               !  If the old IJK location is a wall cell, search the near by cells
-               !  for a non-wall cell.  Although this interpolation will not be
-               !  accurate, it is essential for restarting a run, since non-zero values
-               !  are required for quantities such as void fraction, temperature etc.
-               !
+                  + (K_OLD - 1) * IJMAX2_OLD
+!
+!  If the old IJK location is a wall cell, search the near by cells
+!  for a non-wall cell.  Although this interpolation will not be
+!  accurate, it is essential for restarting a run, since non-zero values
+!  are required for quantities such as void fraction, temperature etc.
+!
                IF(FLAG_OLD(IJK_OLD) .GE. 100 .AND. INTERNAL) THEN
                   DO L = 1, 1000
                      IM_OLD = MAX((I_OLD - L), 1)
@@ -373,14 +394,14 @@
                ENDIF
 
                IVJK_OLD = IV_OLD + (J_OLD - 1) * IMAX2_OLD &
-                    + (K_OLD - 1) * IJMAX2_OLD
+                  + (K_OLD - 1) * IJMAX2_OLD
                IJVK_OLD = I_OLD + (JV_OLD - 1) * IMAX2_OLD &
-                    + (K_OLD - 1) * IJMAX2_OLD
+                  + (K_OLD - 1) * IJMAX2_OLD
                IJKV_OLD = I_OLD + (J_OLD - 1) * IMAX2_OLD &
-                    + (KV_OLD - 1) * IJMAX2_OLD
-               !
-               !  Set the values for the new arrays
-               !
+                  + (KV_OLD - 1) * IJMAX2_OLD
+!
+!  Set the values for the new arrays
+!
                EP_g(IJK)    = EP_g_OLD(IJK_OLD)
                P_g(IJK)     = P_g_OLD(IJK_OLD)
                P_star(IJK)  = P_star_OLD(IJK_OLD)
@@ -388,30 +409,31 @@
                ROP_g(IJK)   = ROP_g_OLD(IJK_OLD)
                T_g(IJK)     = T_g_OLD(IJK_OLD)
                DO N = 1, NMAX(0)
-                  IF(N .LE. NMAX_OLD(0))THEN
-                     X_g(IJK, N) = X_g_OLD(IJK_OLD, N)
-                  ELSE
-                     X_g(IJK, N) = ZERO
-                  ENDIF
+                 IF(N .LE. NMAX_OLD(0))THEN
+                   X_g(IJK, N) = X_g_OLD(IJK_OLD, N)
+                 ELSE
+                   X_g(IJK, N) = ZERO
+                 ENDIF
                ENDDO
                IF(U_g_OLD(IVJK_OLD) .NE. UNDEFINED) THEN
-                  U_g(IJK)     = U_g_OLD(IVJK_OLD)
+                 U_g(IJK)     = U_g_OLD(IVJK_OLD)
                ELSE
-                  U_g(IJK)     = ZERO
+                 U_g(IJK)     = ZERO
                ENDIF
                IF(V_g_OLD(IJVK_OLD) .NE. UNDEFINED) THEN
-                  V_g(IJK)     = V_g_OLD(IJVK_OLD)
+                 V_g(IJK)     = V_g_OLD(IJVK_OLD)
                ELSE
-                  V_g(IJK)     = ZERO
+                 V_g(IJK)     = ZERO
                ENDIF
                IF(W_g_OLD(IJKV_OLD) .NE. UNDEFINED) THEN
-                  W_g(IJK)     = W_g_OLD(IJKV_OLD)
+                 W_g(IJK)     = W_g_OLD(IJKV_OLD)
                ELSE
-                  W_g(IJK)     = ZERO
+                 W_g(IJK)     = ZERO
                ENDIF
                DO M = 1, MMAX
                   IF(M .LE. MMAX_OLD) THEN
                      ROP_s(IJK, M) = ROP_s_OLD(IJK_OLD, M)
+                   RO_s(IJK, M) = RO_s_OLD(IJK_OLD, M)
                      T_s(IJK, M)    = T_s_OLD(IJK_OLD, M)
                      IF(U_s_OLD(IVJK_OLD, M) .NE. UNDEFINED) THEN
                         U_s(IJK, M)   = U_s_OLD(IVJK_OLD, M)
@@ -442,6 +464,7 @@
                      ENDDO
                   ELSE
                      ROP_s(IJK, M)  = ZERO
+                   RO_s(IJK, M)  = ZERO
                      U_s(IJK, M)    = ZERO
                      V_s(IJK, M)    = ZERO
                      W_s(IJK, M)    = ZERO

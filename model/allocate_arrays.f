@@ -487,10 +487,18 @@
 ! Error Flag
       INTEGER :: IER
 ! Flag indicating that the arrays were previously allocated.
-      LOGICAL, SAVE :: ALREADY_ALLOCATED = .FALSE.
+      INTEGER, SAVE :: CALLED = -1
 !......................................................................!
 
-      IF(ALREADY_ALLOCATED) RETURN
+      CALLED = CALLED + 1
+
+      IF(CALLED > 0) THEN
+         IF(.NOT.bDoing_postmfix) THEN
+            RETURN 
+         ELSEIF(mod(CALLED,2) /= 0) THEN
+            RETURN
+         ENDIF
+      ENDIF
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("ALLOCATE_ARRAYS_GEOMETRY")
@@ -589,8 +597,6 @@
       ENDIF
 
  1100 FORMAT('Error 1100: Failure during array allocation.')
-
-      ALREADY_ALLOCATED = .TRUE.
 
       CALL FINL_ERR_MSG
 
