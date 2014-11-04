@@ -202,7 +202,7 @@
            '<PointData Scalars="Diameter" Vectors="Velocity">'
       write(vtp_unit,"(12x,a)")&
            '<DataArray type="Float32" Name="Diameter" format="ascii">'
-      write (vtp_unit,"(15x,es12.6)") (1.d0)
+      write (vtp_unit,"(15x,es13.6)") (1.d0)
       write(vtp_unit,"(12x,a)") '</DataArray>'
 
       temp_array = zero

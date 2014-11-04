@@ -26,34 +26,34 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE matrix
-      USE scales
-      USE constant
-      USE physprop
-      USE fldvar
-      USE visc_g
-      USE rxns
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE is
-      USE tau_g
       USE bc
-      USE vshear
-      USE compar
-      USE sendrecv
-      USE ghdtheory
-      USE drag
-      USE cutcell
-      USE quadric
-      USE mms
       USE bodyforce
+      USE compar
+      USE constant
+      USE cutcell
+      USE drag
+      USE fldvar
       USE fun_avg
       USE functions
+      USE geometry
+      USE ghdtheory
+      USE indices
+      USE is
+      USE matrix
+      USE mms
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE quadric
+      USE run
+      USE rxns
+      USE scales
+      USE sendrecv
+      USE tau_g
+      USE toleranc
+      USE visc_g
+      USE vshear
 
       IMPLICIT NONE
 !-----------------------------------------------

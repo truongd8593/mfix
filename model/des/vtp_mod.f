@@ -530,19 +530,8 @@
          BACKSPACE(PVD_UNIT)
 
 ! Force time formatting #####.######  (Forcing leading zeros)
-         IF(S_TIME .LT. 1.0d0)THEN
-            WRITE (S_TIME_CHAR,"(A,F7.6)")"00000",S_TIME
-         ELSEIF(S_TIME .LT. 10.0d0) THEN
-            WRITE (S_TIME_CHAR,"(A,F8.6)")"0000",S_TIME
-         ELSEIF(S_TIME .LT. 100.0d0) THEN
-            WRITE (S_TIME_CHAR,"(A,F9.6)")"000",S_TIME
-         ELSEIF(S_TIME .LT. 1000.0d0) THEN
-            WRITE (S_TIME_CHAR,"(A,F10.6)")"00",S_TIME
-         ELSEIF(S_TIME .LT. 10000.0d0)THEN
-            WRITE (S_TIME_CHAR,"(A,F11.6)")"0",S_TIME
-         ELSE
-            WRITE (S_TIME_CHAR,"(F12.6)")S_TIME
-         ENDIF
+
+         write(*,'(I5.5,F0.6)') int(S_TIME),S_TIME-int(S_TIME)
 
 ! Write the data to the file
          WRITE(PVD_UNIT,"(6X,A,A,A,A,A,A,A)")&

@@ -26,34 +26,34 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE matrix
-      USE scales
+      USE bc
+      USE bodyforce
+      USE compar
       USE constant
-      USE physprop
+      USE cutcell
+      USE drag
       USE fldvar
-      USE visc_g
-      USE rxns
-      USE run
-      USE toleranc
+      USE fun_avg
+      USE functions
       USE geometry
+      USE ghdtheory
       USE indices
       USE is
-      USE tau_g
-      USE bc
-      USE compar
-      USE sendrecv
-      USE ghdtheory
-      USE drag
-      USE cutcell
-      USE quadric
+      USE matrix
       USE mms
-      USE bodyforce
-      USE fun_avg
-      USE fldvar, ONLY: EP_s
-      USE functions
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE quadric
+      USE run
+      USE rxns
+      USE scales
+      USE sendrecv
+      USE tau_g
+      USE toleranc
+      USE visc_g
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments

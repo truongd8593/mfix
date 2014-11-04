@@ -76,19 +76,16 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_IS_GEOMETRY
 
+      USE compar
+      USE fldvar
+      USE funits
+      USE geometry
+      USE indices
+      USE is
       USE param
       USE param1
-      USE geometry
-      USE fldvar
       USE physprop
       USE run
-      USE is
-      USE indices
-      USE funits
-      USE compar
-
-! Flag: At least one IS is defined.
-      use is, only: ANY_IS_DEFINED
 
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//

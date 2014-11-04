@@ -109,6 +109,6 @@
 
  1102 FORMAT('Please correct the mfix.dat or particle_input.dat files.')
 
- 9000 FORMAT(I10,2(2x,g11.5))
+ 9000 FORMAT(I10,2(2x,g12.5))
 
       END SUBROUTINE SET_PHASE_INDEX
