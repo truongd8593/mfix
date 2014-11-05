@@ -12,9 +12,12 @@
       SUBROUTINE CALC_FORCE_DEM
 
 !---------------------------------------------------------------------//
+      USE constant, ONLY: Pi
+      USE des_thermo
+      USE des_thermo_cond
       USE discretelement
       USE geometry, ONLY: DO_K
-      USE constant, ONLY: Pi
+      USE physprop, ONLY: K_s0
 
       IMPLICIT NONE
 
@@ -31,6 +34,8 @@
       DOUBLE PRECISION :: OVERLAP_N
 ! square root of the overlap
       DOUBLE PRECISION :: SQRT_OVERLAP
+! heat conducted
+      DOUBLE PRECISION :: QQ
 ! distance vector between two particle centers or between a particle
 ! center and wall when the two surfaces are just at contact (i.e. no
 ! overlap)
@@ -199,6 +204,13 @@
          ELSE
             PFT_COLL(:,CC) = PFT_TMP(:)
          ENDIF
+
+         ! Calculate conduction and radiation for thermodynamic neighbors
+         QQ_COLL(CC) = ZERO
+         IF(K_s0(phaseLL) > ZERO) THEN
+            QQ_COLL(CC) = DES_CONDUCTION(LL, I, DIST_COLL(CC), phaseLL, PIJK(LL,4))
+         ENDIF
+
       ENDDO
 !$omp end parallel do
 
@@ -238,11 +250,15 @@
                SQRT(PostCohesive(LL)) / (PMASS(LL)*magGravity)
          ENDIF ! for cohesion model
 
+         IF(QQ_COLL(CC).ne.ZERO) THEN
+            Q_Source(LL) = Q_Source(LL) + QQ_COLL(CC)
+            Q_Source(I) = Q_Source(I) - QQ_COLL(CC)
+         ENDIF
+
       ENDDO
 
 ! Calculate drag
       CALL CALC_DRAG_DES
-
 
 ! Update the old values of particle position and velocity with the new
 ! values computed
