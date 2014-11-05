@@ -108,7 +108,6 @@
                RETURN
             ENDIF
 
-
          CASE('W_MOMENTUM')
 
             IF(.NOT.CUT_W_CELL_AT(IJK)) THEN
@@ -157,9 +156,9 @@
        K = K_OF(IJK)
 
        IF(NO_K) THEN
-          Diagonal = dsqrt(DX(I)**2 + DY(J)**2 )
+          Diagonal = sqrt(DX(I)**2 + DY(J)**2 )
        ELSE
-          Diagonal = dsqrt(DX(I)**2 + DY(J)**2 + DZ(K)**2)
+          Diagonal = sqrt(DX(I)**2 + DY(J)**2 + DZ(K)**2)
        ENDIF
 
       IF (DEL_H <= TOL_DELH * Diagonal) THEN
@@ -271,7 +270,6 @@
                RETURN
             ENDIF
 
-
          CASE('W_MOMENTUM')
 
             IF(.NOT.CUT_W_CELL_AT(IJK)) THEN
@@ -308,7 +306,6 @@
             CALL MFIX_EXIT(myPE)
       END SELECT
 
-
       DEL_H = Nx * (X0 - Xref) + Ny * (Y0 - Yref) + Nz * (Z0 - Zref)
 
 !======================================================================
@@ -320,7 +317,7 @@
        K = K_OF(IJK)
 
        IF(.NOT.ALLOW_NEG_DIST) THEN
-          Diagonal = dsqrt(DX(I)**2 + DY(J)**2 + DZ(K)**2)
+          Diagonal = sqrt(DX(I)**2 + DY(J)**2 + DZ(K)**2)
 
           IF (DEL_H <= TOL_DELH * Diagonal) THEN
              DEL_H = UNDEFINED
@@ -332,7 +329,6 @@
        ENDIF
 
       RETURN
-
 
       END SUBROUTINE GET_DEL_H_DES
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -369,10 +365,11 @@
       CHARACTER (LEN=*) :: TYPE_OF_CELL
       INTEGER :: IJK
       INTEGER :: N_CUT_FACE_NODES
-      DOUBLE PRECISION, DIMENSION(15,3) :: COORD_CUT_FACE_NODES
+      DOUBLE PRECISION, DIMENSION(3,15) :: COORD_CUT_FACE_NODES
       DOUBLE PRECISION :: X_MEAN,Y_MEAN,Z_MEAN,F_MEAN
       DOUBLE PRECISION, DIMENSION(3) :: N,V,N1,N2
       DOUBLE PRECISION :: NORM,N1_dot_N2
+      DOUBLE PRECISION, DIMENSION(3) :: VECTEMP,VECTEMP2
 
       INTEGER :: NODE, Q_ID
 
@@ -381,12 +378,11 @@
 
      IF(NO_K) THEN  ! 2D case
 
-        N(1) = COORD_CUT_FACE_NODES(1,2) - COORD_CUT_FACE_NODES(2,2) ! y1-y2
-        N(2) = COORD_CUT_FACE_NODES(2,1) - COORD_CUT_FACE_NODES(1,1) ! x2-x1
+        N(1) = COORD_CUT_FACE_NODES(2,1) - COORD_CUT_FACE_NODES(2,2) ! y1-y2
+        N(2) = COORD_CUT_FACE_NODES(1,2) - COORD_CUT_FACE_NODES(1,1) ! x2-x1
         N(3) = ZERO
 
      ELSE
-
 
 !======================================================================
 ! Make sure there are a least three points along the plane
@@ -405,47 +401,38 @@
 !  (unit vector must be pointing towards the fluid)
 !======================================================================
 
-
-
-        CALL CROSS_PRODUCT(COORD_CUT_FACE_NODES(2,:)-COORD_CUT_FACE_NODES(1,:),&
-                            COORD_CUT_FACE_NODES(3,:)-COORD_CUT_FACE_NODES(1,:),N)
+        VECTEMP  = COORD_CUT_FACE_NODES(:,2)-COORD_CUT_FACE_NODES(:,1)
+        VECTEMP2 = COORD_CUT_FACE_NODES(:,3)-COORD_CUT_FACE_NODES(:,1)
+        N = CROSS_PRODUCT(VECTEMP,VECTEMP2)
 
      ENDIF
 
-
-
-
-
-      NORM = DSQRT(N(1)**2 + N(2)**2 + N(3)**2)
+      NORM = sqrt(dot_product(n(:),n(:)))
       N = N / NORM
 
       V(1) = X_MEAN - COORD_CUT_FACE_NODES(1,1)
       V(2) = Y_MEAN - COORD_CUT_FACE_NODES(1,2)
       V(3) = Z_MEAN - COORD_CUT_FACE_NODES(1,3)
 
-
       IF (DOT_PRODUCT(N,V) < ZERO) N = - N
-
-
 
       IF(N_CUT_FACE_NODES > 3) THEN     ! FOR 3D geometry, check normal of plane defined by nodes 1,2, and 4
 
          N1 = N  ! Keep copy of previous N (nodes 1,2,3)
 
-         CALL CROSS_PRODUCT(COORD_CUT_FACE_NODES(2,:)-COORD_CUT_FACE_NODES(1,:),&
-                             COORD_CUT_FACE_NODES(4,:)-COORD_CUT_FACE_NODES(1,:),N2)
+        VECTEMP  = COORD_CUT_FACE_NODES(:,2)-COORD_CUT_FACE_NODES(:,1)
+        VECTEMP2 = COORD_CUT_FACE_NODES(:,4)-COORD_CUT_FACE_NODES(:,1)
 
+         N2 = CROSS_PRODUCT(VECTEMP,VECTEMP2)
 
-         NORM = DSQRT(N2(1)**2 + N2(2)**2 + N2(3)**2)
+         NORM = sqrt(dot_product(n2(:),n2(:)))
          N2 = N2 / NORM
 
          V(1) = X_MEAN - COORD_CUT_FACE_NODES(1,1)
-         V(2) = Y_MEAN - COORD_CUT_FACE_NODES(1,2)
-         V(3) = Z_MEAN - COORD_CUT_FACE_NODES(1,3)
-
+         V(2) = Y_MEAN - COORD_CUT_FACE_NODES(2,1)
+         V(3) = Z_MEAN - COORD_CUT_FACE_NODES(3,1)
 
          IF (DOT_PRODUCT(N2,V) < ZERO) N2 = - N2
-
 
       ENDIF
 
@@ -458,7 +445,6 @@
 
       ENDIF
 
-
 !======================================================================
 ! Store unit normal vector and reference point
 !======================================================================
@@ -467,24 +453,24 @@
          CASE('SCALAR')
 
             NORMAL_S(IJK,:) = N
-            REFP_S(IJK,:)   = COORD_CUT_FACE_NODES(1,:)
+            REFP_S(IJK,:)   = COORD_CUT_FACE_NODES(:,1)
 
             IF(DO_K) CALL TEST_DEL_H(IJK,'SCALAR') ! test for negative del_H
 
          CASE('U_MOMENTUM')
 
             NORMAL_U(IJK,:) = N
-            REFP_U(IJK,:)   = COORD_CUT_FACE_NODES(1,:)
+            REFP_U(IJK,:)   = COORD_CUT_FACE_NODES(:,1)
 
          CASE('V_MOMENTUM')
 
             NORMAL_V(IJK,:) = N
-            REFP_V(IJK,:)   = COORD_CUT_FACE_NODES(1,:)
+            REFP_V(IJK,:)   = COORD_CUT_FACE_NODES(:,1)
 
          CASE('W_MOMENTUM')
 
             NORMAL_W(IJK,:) = N
-            REFP_W(IJK,:)   = COORD_CUT_FACE_NODES(1,:)
+            REFP_W(IJK,:)   = COORD_CUT_FACE_NODES(:,1)
 
          CASE DEFAULT
             WRITE(*,*)'SUBROUTINE: STORE_CUT_FACE_INFO'
@@ -496,7 +482,6 @@
             WRITE(*,*)'W_MOMENTUM'
             CALL MFIX_EXIT(myPE)
       END SELECT
-
 
       RETURN
 
@@ -543,7 +528,6 @@
       LOGICAL :: ALLOW_NEG_DIST = .TRUE.  ! forces GET_DEL_H_DES to output negative delh
                                            ! i.e. do not let the subroutine overwrite negative values
 
-
 ! This subroutine tests values of del_H for nodes defining a cut cell.
 ! Only nodes that are in the fluid region are tested.
 ! Nodes belonging to the cut face should return zero (or near zero) values and are not tested.
@@ -589,9 +573,7 @@
                NORMAL_S(IJK,2) = -NORMAL_S(IJK,2)
                NORMAL_S(IJK,3) = -NORMAL_S(IJK,3)
 
-
             ENDIF
-
 
          ENDIF
       ENDDO
@@ -599,12 +581,6 @@
       RETURN
 
       END SUBROUTINE TEST_DEL_H
-
-
-
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -699,7 +675,7 @@
                Yref = REFP_S(IJK_CUT,2)
                Zref = REFP_S(IJK_CUT,3)
 
-               D_TO_CUT = DSQRT((X0 - Xref)**2 + (Y0 - Yref)**2 + (Z0 - Zref)**2)
+               D_TO_CUT = sqrt((X0 - Xref)**2 + (Y0 - Yref)**2 + (Z0 - Zref)**2)
 
                DWALL(IJK) = MIN(DWALL(IJK),D_TO_CUT)
 
@@ -710,7 +686,6 @@
       END DO
 
       RETURN
-
 
       END SUBROUTINE GET_DISTANCE_TO_WALL
 

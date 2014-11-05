@@ -305,7 +305,7 @@
       end subroutine TestTriangleAABB
 
 
-      Subroutine ClosestPtPointTriangle(pointp, pointa, pointb, pointc, closest_point)
+      Subroutine ClosestPtPointTriangle(pointp, points, closest_point)
       USE param1, only: zero, one
       USE discretelement, only: dimn
       !USE funits
@@ -323,12 +323,18 @@
       IMPLICIT NONE
       !point a, pointb, and pointc are the three nodes of the triangle
       !point p is the sphere center
-      double precision, intent(in), dimension(3) :: pointa, pointb, pointc
+      double precision, intent(in), dimension(3,3) :: points
       double precision, intent(in), dimension(dimn) :: pointp
       double precision, intent(out), dimension(dimn) ::  closest_point
       !Local variables
+      double precision, dimension(3) :: pointa, pointb, pointc
       double precision, dimension(dimn) :: ab, ac, ap, bp,cp
       double precision :: d1, d2, d3, d4, vc, v, d5, d6, vb, w, va, denom
+
+      pointa = points(1,:)
+      pointb = points(2,:)
+      pointc = points(3,:)
+
       ab = pointb - pointa
       ac = pointc - pointa
       ap = pointp - pointa

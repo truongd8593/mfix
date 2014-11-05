@@ -132,11 +132,8 @@
       Allocate(  PFN_WALL (NPARTICLES,6,DIMN) )
 
 ! Tracking variables for particle contact history
-      Allocate(  PN (MAXNEIGHBORS, NPARTICLES) )
       Allocate(  PN_WALL (6, NPARTICLES) )
-      Allocate(  PV (MAXNEIGHBORS, NPARTICLES) )
       Allocate(  PV_WALL (6, NPARTICLES) )
-
 
 ! Temporary variables to store wall position, velocity and normal vector
       Allocate(  WALL_NORMAL  (NWALLS,DIMN) )

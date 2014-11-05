@@ -39,13 +39,13 @@
       INTEGER :: N_CUT_FACE_NODES
       INTEGER :: N_EAST_FACE_NODES,N_NORTH_FACE_NODES,N_TOP_FACE_NODES
       INTEGER :: N_WEST_FACE_NODES,N_SOUTH_FACE_NODES,N_BOTTOM_FACE_NODES
-      DOUBLE PRECISION, DIMENSION(15,3) :: COORD_CUT_FACE_NODES
-      DOUBLE PRECISION, DIMENSION(15,3) :: COORD_EAST_FACE_NODES
-      DOUBLE PRECISION, DIMENSION(15,3) :: COORD_NORTH_FACE_NODES
-      DOUBLE PRECISION, DIMENSION(15,3) :: COORD_TOP_FACE_NODES
-      DOUBLE PRECISION, DIMENSION(15,3) :: COORD_WEST_FACE_NODES
-      DOUBLE PRECISION, DIMENSION(15,3) :: COORD_SOUTH_FACE_NODES
-      DOUBLE PRECISION, DIMENSION(15,3) :: COORD_BOTTOM_FACE_NODES
+      DOUBLE PRECISION, DIMENSION(3,15) :: COORD_CUT_FACE_NODES
+      DOUBLE PRECISION, DIMENSION(3,15) :: COORD_EAST_FACE_NODES
+      DOUBLE PRECISION, DIMENSION(3,15) :: COORD_NORTH_FACE_NODES
+      DOUBLE PRECISION, DIMENSION(3,15) :: COORD_TOP_FACE_NODES
+      DOUBLE PRECISION, DIMENSION(3,15) :: COORD_WEST_FACE_NODES
+      DOUBLE PRECISION, DIMENSION(3,15) :: COORD_SOUTH_FACE_NODES
+      DOUBLE PRECISION, DIMENSION(3,15) :: COORD_BOTTOM_FACE_NODES
       DOUBLE PRECISION :: X_COPY,Y_COPY,Z_COPY,F_COPY,MIN_ABS_FCOPY,MIN_FCOPY,F_COPY2,F_TEST,F_Q,F_MIN
       DOUBLE PRECISION :: X_MEAN,Y_MEAN,Z_MEAN,F_MEAN
       DOUBLE PRECISION :: AREA_EAST,AREA_NORTH,AREA_TOP
@@ -132,9 +132,9 @@
 
                   IF(SNAP(IJK_OF_NODE(NODE))) THEN
                      N_CUT_FACE_NODES = N_CUT_FACE_NODES + 1
-                     COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,1) = X_COPY
-                     COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,2) = Y_COPY
-                     COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,3) = Z_COPY
+                     COORD_CUT_FACE_NODES(1,N_CUT_FACE_NODES) = X_COPY
+                     COORD_CUT_FACE_NODES(2,N_CUT_FACE_NODES) = Y_COPY
+                     COORD_CUT_FACE_NODES(3,N_CUT_FACE_NODES) = Z_COPY
 
                      IF(N_QUADRIC>0) THEN
                         F_MIN = UNDEFINED
@@ -178,47 +178,47 @@
 
          IF (DABS(F_COPY) < TOL_F ) THEN ! belongs to cut face
             N_CUT_FACE_NODES = N_CUT_FACE_NODES + 1
-            COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,1) = X_COPY
-            COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,2) = Y_COPY
-            COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,3) = Z_COPY
+            COORD_CUT_FACE_NODES(1,N_CUT_FACE_NODES) = X_COPY
+            COORD_CUT_FACE_NODES(2,N_CUT_FACE_NODES) = Y_COPY
+            COORD_CUT_FACE_NODES(3,N_CUT_FACE_NODES) = Z_COPY
          ENDIF
 
          IF (X_COPY > (X_NODE(8) - TOL_F) ) THEN ! belongs to East face
             N_EAST_FACE_NODES = N_EAST_FACE_NODES + 1
-            COORD_EAST_FACE_NODES(N_EAST_FACE_NODES,1) = X_COPY
-            COORD_EAST_FACE_NODES(N_EAST_FACE_NODES,2) = Y_COPY
-            COORD_EAST_FACE_NODES(N_EAST_FACE_NODES,3) = Z_COPY
+            COORD_EAST_FACE_NODES(1,N_EAST_FACE_NODES) = X_COPY
+            COORD_EAST_FACE_NODES(2,N_EAST_FACE_NODES) = Y_COPY
+            COORD_EAST_FACE_NODES(3,N_EAST_FACE_NODES) = Z_COPY
          ENDIF
 
          IF (Y_COPY > (Y_NODE(8) - TOL_F) ) THEN ! belongs to North face
             N_NORTH_FACE_NODES = N_NORTH_FACE_NODES + 1
-            COORD_NORTH_FACE_NODES(N_NORTH_FACE_NODES,1) = X_COPY
-            COORD_NORTH_FACE_NODES(N_NORTH_FACE_NODES,2) = Y_COPY
-            COORD_NORTH_FACE_NODES(N_NORTH_FACE_NODES,3) = Z_COPY
+            COORD_NORTH_FACE_NODES(1,N_NORTH_FACE_NODES) = X_COPY
+            COORD_NORTH_FACE_NODES(2,N_NORTH_FACE_NODES) = Y_COPY
+            COORD_NORTH_FACE_NODES(3,N_NORTH_FACE_NODES) = Z_COPY
          ENDIF
 
          IF (Z_COPY > (Z_NODE(8) - TOL_F) ) THEN ! belongs to Top face
             N_TOP_FACE_NODES = N_TOP_FACE_NODES + 1
-            COORD_TOP_FACE_NODES(N_TOP_FACE_NODES,1) = X_COPY
-            COORD_TOP_FACE_NODES(N_TOP_FACE_NODES,2) = Y_COPY
-            COORD_TOP_FACE_NODES(N_TOP_FACE_NODES,3) = Z_COPY
+            COORD_TOP_FACE_NODES(1,N_TOP_FACE_NODES) = X_COPY
+            COORD_TOP_FACE_NODES(2,N_TOP_FACE_NODES) = Y_COPY
+            COORD_TOP_FACE_NODES(3,N_TOP_FACE_NODES) = Z_COPY
          ENDIF
 
          IF(I>=ISTART1) THEN
             IF (X_COPY < (X_NODE(1) + TOL_F) ) THEN ! belongs to West face
                N_WEST_FACE_NODES = N_WEST_FACE_NODES + 1
-               COORD_WEST_FACE_NODES(N_WEST_FACE_NODES,1) = X_COPY
-               COORD_WEST_FACE_NODES(N_WEST_FACE_NODES,2) = Y_COPY
-               COORD_WEST_FACE_NODES(N_WEST_FACE_NODES,3) = Z_COPY
+               COORD_WEST_FACE_NODES(1,N_WEST_FACE_NODES) = X_COPY
+               COORD_WEST_FACE_NODES(2,N_WEST_FACE_NODES) = Y_COPY
+               COORD_WEST_FACE_NODES(3,N_WEST_FACE_NODES) = Z_COPY
             ENDIF
          ENDIF
 
          IF(J>=JSTART1) THEN
             IF (Y_COPY < (Y_NODE(1) + TOL_F) ) THEN ! belongs to South face
                N_SOUTH_FACE_NODES = N_SOUTH_FACE_NODES + 1
-               COORD_SOUTH_FACE_NODES(N_SOUTH_FACE_NODES,1) = X_COPY
-               COORD_SOUTH_FACE_NODES(N_SOUTH_FACE_NODES,2) = Y_COPY
-               COORD_SOUTH_FACE_NODES(N_SOUTH_FACE_NODES,3) = Z_COPY
+               COORD_SOUTH_FACE_NODES(1,N_SOUTH_FACE_NODES) = X_COPY
+               COORD_SOUTH_FACE_NODES(2,N_SOUTH_FACE_NODES) = Y_COPY
+               COORD_SOUTH_FACE_NODES(3,N_SOUTH_FACE_NODES) = Z_COPY
             ENDIF
          ENDIF
 
@@ -226,9 +226,9 @@
             IF(K>=KSTART1) THEN
                IF (Z_COPY < (Z_NODE(1) + TOL_F) ) THEN ! belongs to Bottom face
                   N_BOTTOM_FACE_NODES = N_BOTTOM_FACE_NODES + 1
-                  COORD_BOTTOM_FACE_NODES(N_BOTTOM_FACE_NODES,1) = X_COPY
-                  COORD_BOTTOM_FACE_NODES(N_BOTTOM_FACE_NODES,2) = Y_COPY
-                  COORD_BOTTOM_FACE_NODES(N_BOTTOM_FACE_NODES,3) = Z_COPY
+                  COORD_BOTTOM_FACE_NODES(1,N_BOTTOM_FACE_NODES) = X_COPY
+                  COORD_BOTTOM_FACE_NODES(2,N_BOTTOM_FACE_NODES) = Y_COPY
+                  COORD_BOTTOM_FACE_NODES(3,N_BOTTOM_FACE_NODES) = Z_COPY
                ENDIF
             ENDIF
          ENDIF
@@ -244,8 +244,8 @@
          DIFFERENCE = ZERO
          DO NDIFF = 1,N_CUT_FACE_NODES
             DO SPACE = 1,3
-               DIFFERENCE = DIFFERENCE +DABS(COORD_CUT_FACE_NODES(NDIFF,SPACE) &
-                                           - COORD_EAST_FACE_NODES(NDIFF,SPACE))
+               DIFFERENCE = DIFFERENCE +DABS(COORD_CUT_FACE_NODES(SPACE,NDIFF) &
+                                           - COORD_EAST_FACE_NODES(SPACE,NDIFF))
             END DO
          END DO
          IF( DIFFERENCE < TOL_F ) THEN
@@ -263,8 +263,8 @@
          DIFFERENCE = ZERO
          DO NDIFF = 1,N_CUT_FACE_NODES
             DO SPACE = 1,3
-               DIFFERENCE = DIFFERENCE +DABS(COORD_CUT_FACE_NODES(NDIFF,SPACE) &
-                                           - COORD_WEST_FACE_NODES(NDIFF,SPACE))
+               DIFFERENCE = DIFFERENCE +DABS(COORD_CUT_FACE_NODES(SPACE,NDIFF) &
+                                           - COORD_WEST_FACE_NODES(SPACE,NDIFF))
             END DO
          END DO
          IF( DIFFERENCE < TOL_F ) THEN
@@ -282,8 +282,8 @@
          DIFFERENCE = ZERO
          DO NDIFF = 1,N_CUT_FACE_NODES
             DO SPACE = 1,3
-               DIFFERENCE = DIFFERENCE +DABS(COORD_CUT_FACE_NODES(NDIFF,SPACE) &
-                                           - COORD_NORTH_FACE_NODES(NDIFF,SPACE))
+               DIFFERENCE = DIFFERENCE +DABS(COORD_CUT_FACE_NODES(SPACE,NDIFF) &
+                                           - COORD_NORTH_FACE_NODES(SPACE,NDIFF))
             END DO
          END DO
          IF( DIFFERENCE < TOL_F ) THEN
@@ -301,8 +301,8 @@
          DIFFERENCE = ZERO
          DO NDIFF = 1,N_CUT_FACE_NODES
             DO SPACE = 1,3
-               DIFFERENCE = DIFFERENCE +DABS(COORD_CUT_FACE_NODES(NDIFF,SPACE) &
-                                           - COORD_SOUTH_FACE_NODES(NDIFF,SPACE))
+               DIFFERENCE = DIFFERENCE +DABS(COORD_CUT_FACE_NODES(SPACE,NDIFF) &
+                                           - COORD_SOUTH_FACE_NODES(SPACE,NDIFF))
             END DO
          END DO
          IF( DIFFERENCE < TOL_F ) THEN
@@ -373,8 +373,8 @@
             DIFFERENCE = ZERO
             DO NDIFF = 1,N_CUT_FACE_NODES
                DO SPACE = 1,3
-                  DIFFERENCE = DIFFERENCE +DABS(COORD_CUT_FACE_NODES(NDIFF,SPACE) &
-                                              - COORD_TOP_FACE_NODES(NDIFF,SPACE))
+                  DIFFERENCE = DIFFERENCE +DABS(COORD_CUT_FACE_NODES(SPACE,NDIFF) &
+                                              - COORD_TOP_FACE_NODES(SPACE,NDIFF))
                END DO
             END DO
             IF( DIFFERENCE < TOL_F ) THEN
@@ -391,8 +391,8 @@
             DIFFERENCE = ZERO
             DO NDIFF = 1,N_CUT_FACE_NODES
                DO SPACE = 1,3
-                  DIFFERENCE = DIFFERENCE +DABS(COORD_CUT_FACE_NODES(NDIFF,SPACE) &
-                                              - COORD_BOTTOM_FACE_NODES(NDIFF,SPACE))
+                  DIFFERENCE = DIFFERENCE +DABS(COORD_CUT_FACE_NODES(SPACE,NDIFF) &
+                                              - COORD_BOTTOM_FACE_NODES(SPACE,NDIFF))
                END DO
             END DO
             IF( DIFFERENCE < TOL_F ) THEN
@@ -451,15 +451,13 @@
                NORMAL_S(IJK,3) = ZERO
             ENDIF
 
-
-            NORM = DSQRT(NORMAL_S(IJK,1)**2 + NORMAL_S(IJK,2)**2 + NORMAL_S(IJK,3)**2)
+            NORM = sqrt(NORMAL_S(IJK,1)**2 + NORMAL_S(IJK,2)**2 + NORMAL_S(IJK,3)**2)
 
             IF(NORM==ZERO) NORM = UNDEFINED
 
             NORMAL_S(IJK,:) = NORMAL_S(IJK,:) / NORM
 
             REFP_S(IJK,:)   = CENTROID_CUT(:)
-
 
             CALL GET_DEL_H(IJK,TYPE_OF_CELL,X_MEAN,Y_MEAN,Z_MEAN,Del_H,Nx,Ny,Nz)
             IF(DEL_H == UNDEFINED) DEL_H = ZERO
@@ -553,7 +551,7 @@
                DO Q_ID = 1, N_QUADRIC
                   DO NODE = 1,N_CUT_FACE_NODES
 
-                     CALL GET_F_QUADRIC(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
+                     CALL GET_F_QUADRIC(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),COORD_CUT_FACE_NODES(3,NODE),&
                      Q_ID,F_CUT_FACE(Q_ID),CLIP_FLAG)
 
                      IF(DABS(F_CUT_FACE(Q_ID)) < TOL_F) THEN
@@ -568,9 +566,6 @@
                ENDDO
             ENDIF
 
-
-
-
             IF(N_POLYGON>0) THEN
                DO NODE = 1,N_CUT_FACE_NODES
                   CALL EVAL_POLY_FCT(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
@@ -583,7 +578,6 @@
                   ENDIF
                ENDDO
             ENDIF
-
 
             IF(N_USR_DEF>0) THEN
                DO NODE = 1,N_CUT_FACE_NODES
@@ -598,13 +592,12 @@
                ENDDO
             ENDIF
 
-
             IF(USE_STL.OR.USE_MSH) THEN
                DO NODE = 1,N_CUT_FACE_NODES
                   DO N=1,N_FACET_AT(IJK)
                      NF=LIST_FACET_AT(IJK,N)
-                     CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),&
-                                                COORD_CUT_FACE_NODES(NODE,3),NF,INSIDE_FACET)
+                     CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),&
+                                                COORD_CUT_FACE_NODES(3,NODE),NF,INSIDE_FACET)
                      IF(INSIDE_FACET) THEN
                         BC_ID(IJK) = BC_ID_STL_FACE(NF)
                         IF(BC_ID(IJK)>0) THEN
@@ -614,7 +607,6 @@
                   ENDDO
                ENDDO
             ENDIF
-
 
             IF (BC_ID(IJK)>0) THEN
 
@@ -628,10 +620,7 @@
                   call mfix_exit(myPE)
                ENDIF
 
-
             ENDIF
-
-
 
 !            Reordering connectivity such that polygon is defined appropriately for 2D vtk file
 
@@ -641,7 +630,6 @@
                END DO
                CONNECT(IJK,:) = TEMP_CONNECTIVITY
              ENDIF
-
 
          CASE('U_MOMENTUM')
 
@@ -685,7 +673,7 @@
             ENDIF
 
 
-            NORM = DSQRT(NORMAL_U(IJK,1)**2 + NORMAL_U(IJK,2)**2 + NORMAL_U(IJK,3)**2)
+            NORM = sqrt(NORMAL_U(IJK,1)**2 + NORMAL_U(IJK,2)**2 + NORMAL_U(IJK,3)**2)
 
             IF(NORM==ZERO) NORM = UNDEFINED
 
@@ -736,7 +724,7 @@
                DO Q_ID = 1, N_QUADRIC
                   DO NODE = 1,N_CUT_FACE_NODES
 
-                     CALL GET_F_QUADRIC(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
+                     CALL GET_F_QUADRIC(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),COORD_CUT_FACE_NODES(3,NODE),&
                      Q_ID,F_CUT_FACE(Q_ID),CLIP_FLAG)
 
                      IF(DABS(F_CUT_FACE(Q_ID)) < TOL_F) THEN
@@ -751,13 +739,11 @@
 
                ENDDO
 
-
-
             ENDIF
 
             IF(N_POLYGON>0) THEN
                DO NODE = 1,N_CUT_FACE_NODES
-                  CALL EVAL_POLY_FCT(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
+                  CALL EVAL_POLY_FCT(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),COORD_CUT_FACE_NODES(3,NODE),&
                   Q_ID,F_CUT_FACE(1),CLIP_FLAG,BCID)
                    IF(F_CUT_FACE(1)==ZERO) THEN
                      BC_U_ID(IJK) = BCID
@@ -771,7 +757,7 @@
 
             IF(N_USR_DEF>0) THEN
                DO NODE = 1,N_CUT_FACE_NODES
-                  CALL EVAL_USR_FCT(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
+                  CALL EVAL_USR_FCT(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),COORD_CUT_FACE_NODES(3,NODE),&
                   BCID,F_CUT_FACE(1),CLIP_FLAG)
                   IF(DABS(F_CUT_FACE(1)) < TOL_F) THEN
                      BC_U_ID(IJK) = BCID
@@ -787,8 +773,8 @@
                DO NODE = 1,N_CUT_FACE_NODES
                   DO N=1,N_FACET_AT(IJK)
                      NF=LIST_FACET_AT(IJK,N)
-                     CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),&
-                                                COORD_CUT_FACE_NODES(NODE,3),NF,INSIDE_FACET)
+                     CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),&
+                                                COORD_CUT_FACE_NODES(3,NODE),NF,INSIDE_FACET)
                      IF(INSIDE_FACET) THEN
                         BC_U_ID(IJK) = BC_ID_STL_FACE(NF)
                         IF(BC_U_ID(IJK)>0) THEN
@@ -842,7 +828,7 @@
             ENDIF
 
 
-            NORM = DSQRT(NORMAL_V(IJK,1)**2 + NORMAL_V(IJK,2)**2 + NORMAL_V(IJK,3)**2)
+            NORM = sqrt(NORMAL_V(IJK,1)**2 + NORMAL_V(IJK,2)**2 + NORMAL_V(IJK,3)**2)
 
             IF(NORM==ZERO) NORM = UNDEFINED
 
@@ -894,7 +880,7 @@
                DO Q_ID = 1, N_QUADRIC
                   DO NODE = 1,N_CUT_FACE_NODES
 
-                     CALL GET_F_QUADRIC(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
+                     CALL GET_F_QUADRIC(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),COORD_CUT_FACE_NODES(3,NODE),&
                      Q_ID,F_CUT_FACE(Q_ID),CLIP_FLAG)
 
                      IF(DABS(F_CUT_FACE(Q_ID)) < TOL_F) THEN
@@ -909,13 +895,11 @@
 
                ENDDO
 
-
             ENDIF
-
 
             IF(N_POLYGON>0) THEN
                DO NODE = 1,N_CUT_FACE_NODES
-                  CALL EVAL_POLY_FCT(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
+                  CALL EVAL_POLY_FCT(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),COORD_CUT_FACE_NODES(3,NODE),&
                   Q_ID,F_CUT_FACE(1),CLIP_FLAG,BCID)
                    IF(F_CUT_FACE(1)==ZERO) THEN
                      BC_V_ID(IJK) = BCID
@@ -929,7 +913,7 @@
 
             IF(N_USR_DEF>0) THEN
                DO NODE = 1,N_CUT_FACE_NODES
-                  CALL EVAL_USR_FCT(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
+                  CALL EVAL_USR_FCT(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),COORD_CUT_FACE_NODES(3,NODE),&
                   BCID,F_CUT_FACE(1),CLIP_FLAG)
                   IF(DABS(F_CUT_FACE(1)) < TOL_F) THEN
                      BC_V_ID(IJK) = BCID
@@ -945,8 +929,8 @@
                DO NODE = 1,N_CUT_FACE_NODES
                   DO N=1,N_FACET_AT(IJK)
                      NF=LIST_FACET_AT(IJK,N)
-                     CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),&
-                                                COORD_CUT_FACE_NODES(NODE,3),NF,INSIDE_FACET)
+                     CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),&
+                                                COORD_CUT_FACE_NODES(3,NODE),NF,INSIDE_FACET)
                      IF(INSIDE_FACET) THEN
                         BC_V_ID(IJK) = BC_ID_STL_FACE(NF)
                         IF(BC_V_ID(IJK)>0) THEN
@@ -992,7 +976,7 @@
             NORMAL_W(IJK,3) = AREA_TOP   - AREA_BOTTOM
 
 
-            NORM = DSQRT(NORMAL_W(IJK,1)**2 + NORMAL_W(IJK,2)**2 + NORMAL_W(IJK,3)**2)
+            NORM = sqrt(NORMAL_W(IJK,1)**2 + NORMAL_W(IJK,2)**2 + NORMAL_W(IJK,3)**2)
 
             IF(NORM==ZERO) NORM = UNDEFINED
 
@@ -1036,7 +1020,7 @@
                BC_W_ID(IJK) = 0
                DO Q_ID = 1, N_QUADRIC
                   DO NODE = 1,N_CUT_FACE_NODES
-                     CALL GET_F_QUADRIC(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
+                     CALL GET_F_QUADRIC(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),COORD_CUT_FACE_NODES(3,NODE),&
                      Q_ID,F_CUT_FACE(Q_ID),CLIP_FLAG)
                      IF(DABS(F_CUT_FACE(Q_ID)) < TOL_F) THEN
                         IF(BC_W_ID(IJK)/=BC_ID_Q(Q_ID)) N_BC = N_BC + 1
@@ -1053,7 +1037,7 @@
 
             IF(N_POLYGON>0) THEN
                DO NODE = 1,N_CUT_FACE_NODES
-                  CALL EVAL_POLY_FCT(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
+                  CALL EVAL_POLY_FCT(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),COORD_CUT_FACE_NODES(3,NODE),&
                   Q_ID,F_CUT_FACE(1),CLIP_FLAG,BCID)
                    IF(F_CUT_FACE(1)==ZERO) THEN
                      BC_W_ID(IJK) = BCID
@@ -1068,7 +1052,7 @@
 
             IF(N_USR_DEF>0) THEN
                DO NODE = 1,N_CUT_FACE_NODES
-                  CALL EVAL_USR_FCT(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),COORD_CUT_FACE_NODES(NODE,3),&
+                  CALL EVAL_USR_FCT(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),COORD_CUT_FACE_NODES(3,NODE),&
                   BCID,F_CUT_FACE(1),CLIP_FLAG)
                   IF(DABS(F_CUT_FACE(1)) < TOL_F) THEN
                      BC_W_ID(IJK) = BCID
@@ -1084,8 +1068,8 @@
                DO NODE = 1,N_CUT_FACE_NODES
                   DO N=1,N_FACET_AT(IJK)
                      NF=LIST_FACET_AT(IJK,N)
-                     CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(NODE,1),COORD_CUT_FACE_NODES(NODE,2),&
-                                                COORD_CUT_FACE_NODES(NODE,3),NF,INSIDE_FACET)
+                     CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),&
+                                                COORD_CUT_FACE_NODES(3,NODE),NF,INSIDE_FACET)
                      IF(INSIDE_FACET) THEN
                         BC_W_ID(IJK) = BC_ID_STL_FACE(NF)
                         IF(BC_W_ID(IJK)>0) THEN
@@ -1133,42 +1117,45 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_POLYGON_AREA_AND_CENTROID(NP,COORD,AREA,CENTROID,IERROR)
 
-      USE param
-      USE param1
-      USE parallel
+      USE compar
       USE constant
-      USE run
-      USE toleranc
+      USE cutcell
       USE geometry
       USE indices
-      USE compar
-      USE sendrecv
+      USE parallel
+      USE param
+      USE param1
       USE quadric
-      USE cutcell
+      USE run
+      USE sendrecv
+      USE toleranc
 
       IMPLICIT NONE
-      INTEGER :: I,J,K,L,N,NP,NC,NEW_NP
-      INTEGER :: LONGEST,LAST,LASTM,IERROR
 
+      INTEGER, INTENT(INOUT) :: NP,IERROR
+      DOUBLE PRECISION, INTENT(INOUT), DIMENSION(3) :: CENTROID
+      DOUBLE PRECISION, INTENT(INOUT) :: AREA
+      DOUBLE PRECISION, INTENT(INOUT), DIMENSION(3,15) :: COORD
+
+      INTEGER :: I,J,K,L,N,NC,NEW_NP
+      INTEGER :: LONGEST,LAST,LASTM
       DOUBLE PRECISION :: Xc,Yc,Zc,NORM,ANGLE,ANGLE_REF
-      DOUBLE PRECISION, DIMENSION(15,3) :: COORD,COORD_BCK
+      DOUBLE PRECISION, DIMENSION(3,15) :: COORD_BCK
       DOUBLE PRECISION, DIMENSION(3) :: NORMAL,SWAP,CP,SUMCP
-      DOUBLE PRECISION, DIMENSION(3) :: R,SUM_AR,CENTROID,AV
-      DOUBLE PRECISION :: AREA,A,SUM_A
-
-
+      DOUBLE PRECISION, DIMENSION(3) :: LASTM_VEC,LAST_VEC
+      DOUBLE PRECISION, DIMENSION(3) :: R,SUM_AR,AV
+      DOUBLE PRECISION :: A,SUM_A
       LOGICAL, DIMENSION(15) :: KEEP
       DOUBLE PRECISION, DIMENSION(15) :: D
-
 
 !======================================================================
 !   Remove duplicate points in the list
 !======================================================================
       IF(.FALSE.) THEN
       DO N=1,NP
-         D(N) = DSQRT(COORD(N,1)**2+COORD(N,2)**2+COORD(N,3)**2)
+         D(N) = sqrt(dot_product(COORD(:,N),COORD(:,N)))
          KEEP(N) = .TRUE.
-         COORD_BCK(N,:) = COORD(N,:)
+         COORD_BCK(:,N) = COORD(:,N)
       ENDDO
 
       DO N=1,NP-1
@@ -1182,7 +1169,7 @@
       DO N=1,NP
          IF(KEEP(N)) THEN
             NEW_NP = NEW_NP + 1
-            COORD(NEW_NP,:) = COORD_BCK(N,:)
+            COORD(:,NEW_NP) = COORD_BCK(:,N)
          ENDIF
       ENDDO
 
@@ -1196,9 +1183,9 @@
          RETURN
       ELSEIF( NP == 2 ) THEN
          IF(NO_K) THEN  ! 2D case
-            AREA = DSQRT((COORD(2,1)-COORD(1,1))**2 + (COORD(2,2)-COORD(1,2))**2) * ZLENGTH
-            CENTROID(1) = HALF * (COORD(1,1)+COORD(2,1))
-            CENTROID(2) = HALF * (COORD(1,2)+COORD(2,2))
+            AREA = sqrt((COORD(1,2)-COORD(1,1))**2 + (COORD(2,2)-COORD(2,1))**2) * ZLENGTH
+            CENTROID(1) = HALF * (COORD(1,1)+COORD(1,2))
+            CENTROID(2) = HALF * (COORD(2,1)+COORD(2,2))
             CENTROID(3) = ZERO
             RETURN
          ELSE
@@ -1207,15 +1194,15 @@
            RETURN
 !           WRITE(*,*)'CRITICAL ERROR: POLYGON WITH ONLY 2 POINTS in 3D.'
 !           WRITE(*,*)'LIST OF COORDINATES:'
-!           WRITE(*,*)'NODE 1: (X,Y,Z)=', COORD(1,1),COORD(1,2),COORD(1,3)
-!           WRITE(*,*)'NODE 2: (X,Y,Z)=', COORD(2,1),COORD(2,2),COORD(2,3)
+!           WRITE(*,*)'NODE 1: (X,Y,Z)=', COORD(1,1),COORD(2,1),COORD(3,1)
+!           WRITE(*,*)'NODE 2: (X,Y,Z)=', COORD(1,2),COORD(2,2),COORD(3,2)
 !           WRITE(*,*)'MFiX will exit now.'
 !           CALL MFIX_EXIT(myPE)
          ENDIF
       ELSEIF( NP > 6 ) THEN
          WRITE(*,*)'CRITICAL ERROR: POLYGON WITH MORE THAN 6 POINTS.',NP
          DO N=1,NP
-            print*,COORD(N,:)
+            print*,COORD(:,N)
          ENDDO
          WRITE(*,*)'MFiX will exit now.'
          CALL MFIX_EXIT(myPE)
@@ -1234,7 +1221,7 @@
 !   Duplicate last node to close the polygon
 !======================================================================
 
-      COORD(NP+1,:) = COORD(1,:)
+      COORD(:,NP+1) = COORD(:,1)
 
 !======================================================================
 !   Accumulate sum of cross products
@@ -1243,7 +1230,7 @@
       SUMCP = ZERO
 
       DO N = 1,NP
-         CALL CROSS_PRODUCT(COORD(N,:),COORD(N+1,:),CP)
+         CP = CROSS_PRODUCT(COORD(:,N),COORD(:,N+1))
          SUMCP = SUMCP + CP
       ENDDO
 
@@ -1262,9 +1249,11 @@
       DO N = 1,NP-2
          LAST  = N + 2
          LASTM = LAST - 1
-         R = (COORD(1,:)+COORD(LASTM,:)+COORD(LAST,:))/3.0D0
-         CALL CROSS_PRODUCT(COORD(LASTM,:)-COORD(1,:),COORD(LAST,:)-COORD(1,:),AV)
-         A = DSQRT(AV(1)**2 + AV(2)**2 + AV(3)**2)
+         R = (COORD(:,1)+COORD(:,LASTM)+COORD(:,LAST))/3.0D0
+         LASTM_VEC = COORD(:,LASTM)-COORD(:,1)
+         LAST_VEC  = COORD(:,LAST)-COORD(:,1)
+         AV = CROSS_PRODUCT(LASTM_VEC,LAST_VEC)
+         A = sqrt(dot_product(av(:),av(:)))
          SUM_AR = SUM_AR + A * R
          SUM_A  = SUM_A  + A
       ENDDO
@@ -1275,8 +1264,6 @@
       RETURN
 
       END SUBROUTINE GET_POLYGON_AREA_AND_CENTROID
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1312,9 +1299,9 @@
       INTEGER :: I_SWAP,IERROR
 
       DOUBLE PRECISION :: Xc,Yc,Zc,NORM,ANGLE,ANGLE_REF
-      DOUBLE PRECISION, DIMENSION(15,3) :: COORD,COORD_BCK
+      DOUBLE PRECISION, DIMENSION(3,15) :: COORD,COORD_BCK
       DOUBLE PRECISION, DIMENSION(3) :: NORMAL,SWAP,CP,SUMCP
-      DOUBLE PRECISION, DIMENSION(3) :: R,SUM_AR,CENTROID,AV
+      DOUBLE PRECISION, DIMENSION(3) :: R,SUM_AR,CENTROID,AV,VECTMP,VECTMP2
       DOUBLE PRECISION :: AREA,A,SUM_A
 
       LOGICAL, DIMENSION(15) :: KEEP
@@ -1326,9 +1313,9 @@
 !======================================================================
       IF(.FALSE.) THEN
       DO N=1,NP
-         D(N) = DSQRT(COORD(N,1)**2+COORD(N,2)**2+COORD(N,3)**2)
+         D(N) = sqrt(dot_product(COORD(:,N),COORD(:,N)))
          KEEP(N) = .TRUE.
-         COORD_BCK(N,:) = COORD(N,:)
+         COORD_BCK(:,N) = COORD(:,N)
       ENDDO
 
       DO N=1,NP-1
@@ -1342,7 +1329,7 @@
       DO N=1,NP
          IF(KEEP(N)) THEN
             NEW_NP = NEW_NP + 1
-            COORD(NEW_NP,:) = COORD_BCK(N,:)
+            COORD(:,NEW_NP) = COORD_BCK(:,N)
          ENDIF
       ENDDO
 
@@ -1372,9 +1359,9 @@
       Zc = ZERO
 
       DO N=1,NP
-         Xc = Xc + COORD(N,1)
-         Yc = Yc + COORD(N,2)
-         Zc = Zc + COORD(N,3)
+         Xc = Xc + COORD(1,N)
+         Yc = Yc + COORD(2,N)
+         Zc = Zc + COORD(3,N)
       ENDDO
 
       Xc = Xc / DBLE(NP)
@@ -1385,14 +1372,15 @@
 !   Find unit normal vector
 !======================================================================
 
-      CALL CROSS_PRODUCT(COORD(2,:)-COORD(1,:),COORD(3,:)-COORD(1,:),NORMAL)
+      VECTMP  = COORD(:,2)-COORD(:,1)
+      VECTMP2 = COORD(:,3)-COORD(:,1)
+      NORMAL = CROSS_PRODUCT(VECTMP,VECTMP2)
 
-      NORM = DSQRT(NORMAL(1)**2 + NORMAL(2)**2 + NORMAL(3)**2)
+      NORM = sqrt(dot_product(NORMAL(:),NORMAL(:)))
       IF(NORM==ZERO) THEN
 !         DO N=1,NP
-!            print*,N,COORD(N,:)
+!            print*,N,COORD(:,N)
 !         ENDDO
-
 
          IERROR = 1
 
@@ -1425,14 +1413,14 @@
 
          CASE(1)
             DO I = 1, NP-1
-               ANGLE_REF = ATAN2 (COORD(I,3) - Zc,COORD(I,2) - Yc)
+               ANGLE_REF = ATAN2 (COORD(3,I) - Zc,COORD(2,I) - Yc)
                DO K = I+1,NP
-                  ANGLE = ATAN2 (COORD(K,3) - Zc,COORD(K,2) - Yc)
+                  ANGLE = ATAN2 (COORD(3,K) - Zc,COORD(2,K) - Yc)
                   IF(ANGLE < ANGLE_REF) THEN
                      ANGLE_REF = ANGLE
-                     SWAP  = COORD(K,:)
-                     COORD(K,:) = COORD(I,:)
-                     COORD(I,:) = SWAP
+                     SWAP  = COORD(:,K)
+                     COORD(:,K) = COORD(:,I)
+                     COORD(:,I) = SWAP
                      I_SWAP = ORDER(K)
                      ORDER(K) = ORDER(I)
                      ORDER(I) = I_SWAP
@@ -1442,14 +1430,14 @@
 
          CASE(2)
             DO I = 1, NP-1
-               ANGLE_REF = ATAN2 (COORD(I,1) - Xc,COORD(I,3) - Zc)
+               ANGLE_REF = ATAN2 (COORD(1,I) - Xc,COORD(3,I) - Zc)
                DO K = I+1,NP
-                  ANGLE = ATAN2 (COORD(K,1) - Xc,COORD(K,3) - Zc)
+                  ANGLE = ATAN2 (COORD(1,K) - Xc,COORD(3,K) - Zc)
                   IF(ANGLE < ANGLE_REF) THEN
                      ANGLE_REF = ANGLE
-                     SWAP  = COORD(K,:)
-                     COORD(K,:) = COORD(I,:)
-                     COORD(I,:) = SWAP
+                     SWAP  = COORD(:,K)
+                     COORD(:,K) = COORD(:,I)
+                     COORD(:,I) = SWAP
                      I_SWAP = ORDER(K)
                      ORDER(K) = ORDER(I)
                      ORDER(I) = I_SWAP
@@ -1459,14 +1447,14 @@
 
          CASE(3)
             DO I = 1, NP-1
-               ANGLE_REF = ATAN2 (COORD(I,2) - Yc,COORD(I,1) - Xc)
+               ANGLE_REF = ATAN2 (COORD(2,I) - Yc,COORD(1,I) - Xc)
                DO K = I+1,NP
-                  ANGLE = ATAN2 (COORD(K,2) - Yc,COORD(K,1) - Xc)
+                  ANGLE = ATAN2 (COORD(2,K) - Yc,COORD(1,K) - Xc)
                   IF(ANGLE < ANGLE_REF) THEN
                      ANGLE_REF = ANGLE
-                     SWAP  = COORD(K,:)
-                     COORD(K,:) = COORD(I,:)
-                     COORD(I,:) = SWAP
+                     SWAP  = COORD(:,K)
+                     COORD(:,K) = COORD(:,I)
+                     COORD(:,I) = SWAP
                      I_SWAP = ORDER(K)
                      ORDER(K) = ORDER(I)
                      ORDER(I) = I_SWAP

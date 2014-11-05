@@ -55,6 +55,10 @@
       USE discretelement, only: DES_PERIODIC_WALLS_X
       USE discretelement, only: DES_PERIODIC_WALLS_Y
       USE discretelement, only: DES_PERIODIC_WALLS_Z
+! Flag: Solve variable solids density.
+      use run, only: SOLVE_ROs
+! Calculated baseline variable solids density.
+      use physprop, only: BASE_ROs
 
 ! Number of ranks.
       use run, only: SOLIDS_MODEL
@@ -109,7 +113,7 @@
 ! Copy of the input keyword values into discrete solids arrays. We may be
 ! able to remove the DES_ specific variables moving forward.
          DES_D_p0(M) = D_p0(lM)
-         DES_RO_s(M) = RO_s0(lM)
+         DES_RO_s(M) = merge(BASE_ROs(lM), RO_s0(lM), SOLVE_ROs(lM))
 ! Determine the maximum particle size in the system (MAX_RADIUS), which
 ! in turn is used for various tasks
          MAX_RADIUS = MAX(MAX_RADIUS, 0.5d0*DES_D_P0(M))

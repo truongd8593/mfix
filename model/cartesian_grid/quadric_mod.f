@@ -59,4 +59,33 @@
 !     Maximum number of iterations while finding intersection between geometry and grid
       INTEGER :: ITERMAX_INT
 
-      END MODULE quadric
+    CONTAINS
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Function name: CROSS_PRODUCT                                        C
+!  Purpose: Performs the cross product between two vectors             C
+!           C = A x B                                                  C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      FUNCTION CROSS_PRODUCT(A,B)
+
+        IMPLICIT NONE
+        DOUBLE PRECISION, DIMENSION(3) :: CROSS_PRODUCT
+        DOUBLE PRECISION, INTENT(IN), DIMENSION(3) :: A,B
+
+        CROSS_PRODUCT(1) = A(2) * B(3) - A(3) * B(2)
+        CROSS_PRODUCT(2) = A(3) * B(1) - A(1) * B(3)
+        CROSS_PRODUCT(3) = A(1) * B(2) - A(2) * B(1)
+
+      END FUNCTION CROSS_PRODUCT
+
+    END MODULE quadric

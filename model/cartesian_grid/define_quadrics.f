@@ -247,11 +247,8 @@
 
          ENDIF
 
-
-
       RETURN
       END SUBROUTINE GET_F_QUADRIC
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -503,32 +500,3 @@
       RETURN
 
       END SUBROUTINE BUILD_Z_ROTATION_MATRIX
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: CROSS_PRODUCT                                          C
-!  Purpose: Performs the cross product between two vectors             C
-!           C = A x B                                                  C
-!                                                                      C
-!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!  Revision Number #                                  Date: ##-###-##  C
-!  Author: #                                                           C
-!  Purpose: #                                                          C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE CROSS_PRODUCT(A,B,C)
-
-      IMPLICIT NONE
-      DOUBLE PRECISION, DIMENSION(3) :: A,B,C
-
-      C(1) = A(2) * B(3) - A(3) * B(2)
-      C(2) = A(3) * B(1) - A(1) * B(3)
-      C(3) = A(1) * B(2) - A(2) * B(1)
-
-      RETURN
-
-      END SUBROUTINE CROSS_PRODUCT
-
-
