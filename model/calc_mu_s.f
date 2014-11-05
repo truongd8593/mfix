@@ -1380,9 +1380,9 @@
                 1.5d0*dsqrt(EP_SM/2d0)+135d0/64d0*EP_SM*(dlog(EP_SM)+one) +&
                 11.26d0*EP_SM*(one-10.2*EP_SM+49.71d0*EP_SM**2-87.08d0* &
                 EP_SM**3) - EP_SM*dlog(epM)*(Chi+EP_SM*dChiOdphi)
-
-             Kphidphi = EP_SM*(0.212d0*0.142d0*EP_SM**0.788d0/&
-                (one-EP_SM)**4.454d0 - 4.454d0*K_phi(EP_SM)/(one-EP_SM))
+! corrections due to W. Fullmer
+             Kphidphi = EP_SM*(0.212d0*0.142d0/(EP_SM**0.788d0*&
+                (one-EP_SM)**4.454d0) + 4.454d0*K_phi(EP_SM)/(one-EP_SM))
              Kphidphi = zero  ! this is compatible with K_phi = zero
 
              Re_T = ro_g(ijk)*D_PM*dsqrt(theta_m(ijk,m)) / mu_g(ijk)
