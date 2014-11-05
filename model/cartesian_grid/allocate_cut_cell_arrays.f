@@ -21,7 +21,6 @@
       USE discretelement
 
       IMPLICIT NONE
-      INTEGER :: IJK
 
       DIMENSION_MAX_CUT_CELL = INT(FAC_DIM_MAX_CUT_CELL*DIMENSION_3G)
 

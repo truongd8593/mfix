@@ -41,8 +41,6 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! magnitude of tangent vector to plane of contact
-      DOUBLE PRECISION :: TANMOD
 ! translational relative velocity
       DOUBLE PRECISION :: VRELTRANS(3)
 ! rotational velocity at point of contact
@@ -133,8 +131,6 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! magnitude of tangent vector to plane of contact
-      DOUBLE PRECISION :: TANMOD
 ! translational relative velocity
       DOUBLE PRECISION :: VRELTRANS(3)
 ! rotational velocity at point of contact

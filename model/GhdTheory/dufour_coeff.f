@@ -29,7 +29,7 @@
                       omega(s,s),I_ilj(s,s,s),Dtl_dnj(s,s), &
                       dzeta0_dnj(s),dchi0il_dnj(s,s,s),Dq(s,s)
 
-      integer i,j,k,l,p,kk
+      integer i,j,l,p,kk
       double precision kronecker(s,s),integ1(s,s,s),integ2(s,s,s), &
                       integ(s,s,s),sum1(s,s),sum2(s,s), &
                       dq_bar(s,s),dqlj(s,s), &

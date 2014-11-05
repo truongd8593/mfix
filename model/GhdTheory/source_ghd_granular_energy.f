@@ -87,7 +87,8 @@
 !
 !                      Source terms to be kept on RHS
       DOUBLE PRECISION SOURCERHS, PressureRhs, ShearProduction, BulkViscRhs, DissDivURhs, phi_tot, &
-                       SOURCE_FLUID,chi_ij,SINK_FLUID
+                       SOURCE_FLUID,SINK_FLUID
+!    DOUBLE PRECISION chi_ij
 !
 !                      Source terms to be kept on LHS
       DOUBLE PRECISION SOURCELHS, PressureLhs, CollDissipation, BulkViscLhs, DissDivULhs,VSLIP

@@ -46,17 +46,8 @@
       USE functions
 
       IMPLICIT NONE
-      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
-      INTEGER :: I,J,K,L,M,N,R,IM,JM,KM,IP,JP,KP,IJK
-      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
+      INTEGER :: I,J,K,L,M,N,R,IJK
 
-      INTEGER sw,se,ne,nw
-      INTEGER, DIMENSION(10) :: additional_node
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  X_OF
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  Y_OF
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  Z_OF
-      INTEGER, DIMENSION(DIMENSION_3) ::  INDEX_OF_E_ADD_NODE
-      INTEGER, DIMENSION(DIMENSION_3) ::  INDEX_OF_N_ADD_NODE
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FACET_COUNT_DES, NEIGHBORING_FACET
 
       INTEGER :: SPECIES_COUNTER,LT
@@ -64,7 +55,7 @@
       CHARACTER (LEN=32) :: SUBM,SUBN,SUBR
       CHARACTER (LEN=64) :: VAR_NAME
 
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, COUNT_DES_BC,IJK_ARRAY
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, IJK_ARRAY
 
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
@@ -407,9 +398,6 @@
       USE functions
 
       IMPLICIT NONE
-      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
-      INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
-      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
       LOGICAL :: VTU_FRAME_FILE_EXISTS
       INTEGER :: ISTAT
 
@@ -428,9 +416,6 @@
          FRAME = FRAME + 1
       ENDIF
 
-
-
-
       IF (BDIST_IO) THEN
 ! For distributed I/O, define the file name for each processor
          IF(TIME_DEPENDENT_FILENAME) THEN
@@ -447,7 +432,6 @@
             ENDIF
          END IF
       END IF
-
 
 ! Add the VTU directory path if necessary
 
@@ -588,15 +572,12 @@
 
       IMPLICIT NONE
 
-      INTEGER :: IJK,I,J,K,L
-      INTEGER :: IJK_OFFSET,OFFSET
+      INTEGER :: IJK,L
+      INTEGER :: OFFSET
 
-      INTEGER :: iproc,IERR
-      INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: SHIFTED_CONNECTIVITY
       INTEGER :: CELL_TYPE
 
-      REAL(4) :: float,SP_X,SP_Y,SP_Z
+      REAL(4) :: float
       INTEGER :: int
 
       INTEGER ::     nbytes_xyz,nbytes_connectivity,nbytes_offset,nbytes_type
@@ -916,8 +897,6 @@
 
 100   FORMAT(A,I12,A,I12,A)
 110   FORMAT(A)
-120   FORMAT(10X,3(E16.8E3,2X))
-130   FORMAT(10X,15(I12,2X))
 
       RETURN
 
@@ -960,15 +939,13 @@
       USE functions
 
       IMPLICIT NONE
-      INTEGER :: I,IJK,L
+      INTEGER :: I,IJK
 
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VAR
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VAR(:)
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  TMP_VAR
 
-
-      INTEGER :: int
       REAL(4) :: float
 
       INTEGER :: nbytes_scalar
@@ -1077,9 +1054,6 @@
 
 10    FORMAT(A)
 90    FORMAT(A,A,A,I12,A)
-100   FORMAT(A)
-110   FORMAT(A,A,A)
-120   FORMAT(10X,E16.8E3)
 
       RETURN
 
@@ -1121,15 +1095,13 @@
       USE functions
 
       IMPLICIT NONE
-      INTEGER :: IJK,L
+      INTEGER :: IJK
 
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VARX,VARY,VARZ
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VARX(:),GLOBAL_VARY(:),GLOBAL_VARZ(:)
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  TMP_VAR
 
-
-      INTEGER :: int
       REAL(4) :: float
 
       INTEGER :: nbytes_vector
@@ -1247,17 +1219,10 @@
 
 10    FORMAT(A)
 90    FORMAT(A,A,A,I12,A)
-100   FORMAT(A)
-110   FORMAT(A,A,A)
-120   FORMAT(10X,3(E16.8E3,2X))
-
 
       RETURN
 
       END SUBROUTINE WRITE_VECTOR_IN_VTU_BIN
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1377,23 +1342,14 @@
       USE functions
 
       IMPLICIT NONE
-      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
-      INTEGER :: I,J,K,L,M,N,IM,JM,KM,IP,JP,KP,IJK
-      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
+      INTEGER :: I,J,K,L,M,N,IJK
 
-      INTEGER sw,se,ne,nw
-      INTEGER, DIMENSION(10) :: additional_node
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  X_OF
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  Y_OF
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  Z_OF
-      INTEGER, DIMENSION(DIMENSION_3) ::  INDEX_OF_E_ADD_NODE
-      INTEGER, DIMENSION(DIMENSION_3) ::  INDEX_OF_N_ADD_NODE
       INTEGER :: SPECIES_COUNTER,LT
 
       CHARACTER (LEN=32) :: SUBM,SUBN
       CHARACTER (LEN=64) :: VAR_NAME
 
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, COUNT_DES_BC,IJK_ARRAY
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, IJK_ARRAY
 
       IF(.NOT.CARTESIAN_GRID) RETURN
 
@@ -1686,9 +1642,6 @@
       use functions
 
       IMPLICIT NONE
-      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
-      INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
-      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
       LOGICAL :: VTU_FRAME_FILE_EXISTS
       INTEGER :: ISTAT
 
@@ -1842,13 +1795,9 @@
       USE functions
 
       IMPLICIT NONE
-      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
-      INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
-      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
-      LOGICAL :: PVD_EXISTS,VTU_FRAME_FILE_EXISTS
+      LOGICAL :: PVD_EXISTS
 
       IF (myPE /= PE_IO) RETURN
-
 
       PVD_FILENAME = TRIM(RUN_NAME) // '.pvd'
 
@@ -1911,21 +1860,9 @@
            ' and must be present for a restart run.',/10X,              &
          'Terminating run.',/1X,70('*')/)
 
-1004  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
-         ' Current VTU frame is ',I10,/10X,                              &
-         ' (from ',A,').',/1X,70('*')/)
-
-1005  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
-         ' Current VTU frame is ',I10,/10X,                              &
-           ' (from mfix.dat).',/1X,70('*')/)
-
-
-
       RETURN
 
       END SUBROUTINE OPEN_PVD_FILE
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1963,12 +1900,8 @@
 
       IMPLICIT NONE
 
-      INTEGER :: IJK,I,J,K,L
-      INTEGER :: IJK_OFFSET,OFFSET
-
-      INTEGER :: iproc,IERR
-      INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: SHIFTED_CONNECTIVITY
+      INTEGER :: IJK,L
+      INTEGER :: OFFSET
       INTEGER :: CELL_TYPE
 
       IF (myPE == PE_IO.AND.(.NOT.BDIST_IO)) THEN
@@ -2151,7 +2084,7 @@
       USE functions
 
       IMPLICIT NONE
-      INTEGER :: I,IJK,L
+      INTEGER :: I,IJK
 
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VAR
@@ -2257,7 +2190,7 @@
       USE functions
 
       IMPLICIT NONE
-      INTEGER :: IJK,L
+      INTEGER :: IJK
 
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VARX,VARY,VARZ
@@ -2501,23 +2434,14 @@
       USE functions
 
       IMPLICIT NONE
-      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
-      INTEGER :: I,J,K,L,M,N,IM,JM,KM,IP,JP,KP,IJK
-      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
+      INTEGER :: I,J,K,L,M,N
 
-      INTEGER sw,se,ne,nw
-      INTEGER, DIMENSION(10) :: additional_node
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  X_OF
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  Y_OF
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  Z_OF
-      INTEGER, DIMENSION(DIMENSION_3) ::  INDEX_OF_E_ADD_NODE
-      INTEGER, DIMENSION(DIMENSION_3) ::  INDEX_OF_N_ADD_NODE
       INTEGER :: SPECIES_COUNTER,LT
 
       CHARACTER (LEN=32) :: SUBM,SUBN
       CHARACTER (LEN=64) :: VAR_NAME
 
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, COUNT_DES_BC
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID
 
       IF(.NOT.CARTESIAN_GRID) RETURN
 
@@ -2746,9 +2670,6 @@
       USE functions
 
       IMPLICIT NONE
-      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
-      INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
-      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
 
       IF (myPE /= PE_IO) RETURN
 
@@ -2837,12 +2758,7 @@
 
       IMPLICIT NONE
 
-      INTEGER :: IJK,I,J,K,L
-      INTEGER :: IJK_OFFSET
-
-      INTEGER :: iproc,IERR
-      INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: SHIFTED_CONNECTIVITY
+      INTEGER :: IJK,L
 
       IF (myPE /= PE_IO) RETURN
 
@@ -2932,7 +2848,7 @@
       USE functions
 
       IMPLICIT NONE
-      INTEGER :: I,IJK,L
+      INTEGER :: I,IJK
 
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VAR
@@ -3007,7 +2923,7 @@
       USE functions
 
       IMPLICIT NONE
-      INTEGER :: IJK,L
+      INTEGER :: IJK
 
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VARX,VARY,VARZ
@@ -3115,10 +3031,9 @@
 
       IMPLICIT NONE
 
-      INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK,NODE
-      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
-      INTEGER :: POINT_ID,POLY_COUNT,FACE_ID,Q_ID,Q_ID2
-      INTEGER :: N_CUT_FACE_NODES,BCID2
+      INTEGER :: L,IJK,NODE
+      INTEGER :: POINT_ID,POLY_COUNT,FACE_ID,Q_ID
+      INTEGER :: N_CUT_FACE_NODES
 
       INTEGER NUMBER_OF_FACES
       INTEGER NUMBER_OF_SURFACE_POINTS
@@ -3133,9 +3048,9 @@
       DOUBLE PRECISION, DIMENSION(DIMENSION_MAX_CUT_CELL) ::  Y_FACE_POINT
       DOUBLE PRECISION, DIMENSION(DIMENSION_MAX_CUT_CELL) ::  Z_FACE_POINT
 
-      DOUBLE PRECISION :: X_COPY,Y_COPY,Z_COPY,F_COPY,F2
+      DOUBLE PRECISION :: X_COPY,Y_COPY,Z_COPY,F_COPY
 
-      LOGICAL :: CLIP_FLAG,INTERSECT_FLAG,PRINT_FLAG
+      LOGICAL :: CLIP_FLAG
 
       CHARACTER (LEN=32) :: FILENAME
 
@@ -3293,10 +3208,6 @@
 1020  FORMAT(3(E16.8,2X))
 1030  FORMAT(A,2(I8,2X))
 1040  FORMAT(20(I8,2X))
-1050  FORMAT(A,I8)
-1060  FORMAT(E16.8)
-1070  FORMAT(3(E16.8,2X))
-1080  FORMAT(I5)
 3000  FORMAT(1X,A)
 3010  FORMAT(1X,A,F8.4)
 3020  FORMAT(1X,A,I8)
@@ -3531,10 +3442,9 @@
 
       IMPLICIT NONE
 
-      INTEGER :: IJK,I,J,K,L
-      INTEGER :: IJK_OFFSET
+      INTEGER :: IJK
 
-      INTEGER :: iproc,IERR
+      INTEGER :: IERR
 
       DOUBLE PRECISION :: MIN_VOL, MAX_VOL, GLOBAL_MIN_VOL,GLOBAL_MAX_VOL
       DOUBLE PRECISION :: MIN_AYZ, MAX_AYZ, GLOBAL_MIN_AYZ,GLOBAL_MAX_AYZ

@@ -53,8 +53,6 @@
 !                      residual number
       INTEGER          L
 !
-!                      Phase index
-      INTEGER          M
 !                      Print Location of Max_Resid
       LOGICAL,PARAMETER:: Print_ijk=.FALSE.
 !

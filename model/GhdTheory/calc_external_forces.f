@@ -61,9 +61,6 @@
 !     mass, volume of species
       DOUBLE PRECISION Mj, Vj
 !
-!     mixture density at cell faces
-      DOUBLE PRECISION ropsE, ropsN, ropsT
-!
 !     drag force on a particle
       DOUBLE PRECISION dragFc, dragFe, dragFn, dragFt
 !

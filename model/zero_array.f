@@ -39,9 +39,6 @@
 !                      Error index
       INTEGER          IER
 !
-!                      cell index
-      INTEGER          IJK
-!
 !                      Array
 !// 504 1120 Modified the inherent dimensioning to absolute
 !      double precision, intent(inout), dimension(:) :: ARRAY
