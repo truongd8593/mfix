@@ -447,7 +447,7 @@
 
 ! Now calculate eq (7.26, 7.27) of GTSH theory. ! corrected by W. Fullmer
             rho_10 = 2d0*Chi*EP_SM*(C_E**2-one)
-            rho_11 = 25d0/102d0*EP_SM*Chi**2*(one-C_E**2)* &
+            rho_11 = 25d0/1024d0*EP_SM*Chi**2*(one-C_E**2)* &
                (one+3d0/128d0*A2_gtsh(ijk)) * (omega/10d0 - &
                (one+C_E)*nu0*(one/3d0-C_E)*A2_gtsh(ijk)/2d0) / &
                (nu_j + G_gtsh(EP_SM, Chi, IJK, M)/m_p + 1.5d0* &
