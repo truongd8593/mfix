@@ -333,13 +333,13 @@
       write(*,"(2/,3x,'Specific Heat report for ',A)")trim(lName)
 
       write(*,"(/12x,'Low',9x,'High')")
-      write(*,"(6x,'T',3x,g11.5,2x,g11.5)") Tlow(lM,lN), Thigh(lM,lN)
+      write(*,"(6x,'T',3x,g12.5,2x,g12.5)") Tlow(lM,lN), Thigh(lM,lN)
       DO lc=1,5
-         write(*,"(4x,'A(',I1,')',2(2x,g11.5))") lc, &
+         write(*,"(4x,'A(',I1,')',2(2x,g12.5))") lc, &
             Alow(lc,lM,lN), Ahigh(lc,lM,lN)
       ENDDO
       write(*,"('')")
-      write(*,"(5x,'Tcom: ',g11.5)")Tcom(lM,lN)
+      write(*,"(5x,'Tcom: ',g12.5)")Tcom(lM,lN)
       write(*,"('')")
 
       write(*,"(5x,'Temperature',8x,'Cp',11x,'ICp')")
@@ -350,10 +350,10 @@
          IER1 = 0
          IER2 = 0
 
-         write(*,"(7x,g11.5)",ADVANCE="NO") T
+         write(*,"(7x,g12.5)",ADVANCE="NO") T
          lCP  = calc_CpoR(T, lM, lN, IER1) * RGAS / lMW
          lICP = calc_ICpoR(T, lM, lN, IER2) * RGAS / lMW
-         write(*,"(2(3x,g11.5))",ADVANCE="NO")lCP, lICP
+         write(*,"(2(3x,g12.5))",ADVANCE="NO")lCP, lICP
 
          IF(IER1 /= 0) write(*,"(3x,'Cp Error!')",ADVANCE="NO")
          IF(IER2 /= 0) write(*,"(3x,'ICp Error!')",ADVANCE="NO")
@@ -369,10 +369,10 @@
          IER1 = 0
          IER2 = 0
 
-         write(*,"(7x,g11.5)",ADVANCE="NO") T
+         write(*,"(7x,g12.5)",ADVANCE="NO") T
          lCP  = calc_CpoR(T, lM, lN, IER1) * RGAS / lMW
          lICP = calc_ICpoR(T, lM, lN, IER2) * RGAS / lMW
-         write(*,"(2(3x,g11.5))",ADVANCE="NO")lCP, lICP
+         write(*,"(2(3x,g12.5))",ADVANCE="NO")lCP, lICP
 
          IF(IER1 /= 0) write(*,"(3x,'Cp Error!')",ADVANCE="NO")
          IF(IER2 /= 0) write(*,"(3x,'ICp Error!')",ADVANCE="NO")

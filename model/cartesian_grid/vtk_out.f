@@ -506,11 +506,6 @@
       BUFFER='  <UnstructuredGrid>'
       WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-
-
-
-
-
 ! For distributed I/O, open .pvtu file that combines all *.vtu files for a given FRAME
 ! this is a simple ASCII file
 
@@ -533,15 +528,13 @@
 
          WRITE(PVTU_UNIT,100) '  <PUnstructuredGrid GhostLevel="0">'
          WRITE(PVTU_UNIT,100) '      <PPoints>'
-         WRITE(PVTU_UNIT,100) '        <PDataArray type="Float32" Name="coordinates" NumberOfComponents="3" format="appended" offset=" 0" />'
+         WRITE(PVTU_UNIT,100) '        <PDataArray type="Float32" Name="coordinates" NumberOfComponents="3" &
+              &format="appended" offset=" 0" />'
          WRITE(PVTU_UNIT,100) '      </PPoints>'
          WRITE(PVTU_UNIT,100) ''
          WRITE(PVTU_UNIT,100) '      <PCellData Scalars="scalars">'
 
-
       ENDIF
-
-
 
 100   FORMAT(A)
 110   FORMAT(A,E14.7,A)
@@ -558,10 +551,6 @@
       RETURN
 
       END SUBROUTINE OPEN_VTU_FILE_BIN
-
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -668,7 +657,8 @@
             WRITE(BUFFER,110)'      <Points>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-            WRITE(BUFFER,100)'        <DataArray type="Float32" Name="coordinates" NumberOfComponents="3" format="appended" offset="',offset_xyz,'" />'
+            WRITE(BUFFER,100)'        <DataArray type="Float32" Name="coordinates" NumberOfComponents="3" &
+                 &format="appended" offset="',offset_xyz,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             WRITE(BUFFER,110)'      </Points>'
@@ -677,7 +667,8 @@
             WRITE(BUFFER,110)'      <Cells>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-            WRITE(BUFFER,100)'        <DataArray type="Int32" Name="connectivity" format="appended" offset="',offset_connectivity,'" />'
+            WRITE(BUFFER,100)'        <DataArray type="Int32" Name="connectivity" format="appended" offset="', &
+                 offset_connectivity,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             WRITE(BUFFER,100)'        <DataArray type="Int32" Name="offsets" format="appended" offset="',offset_offset,'" />'
@@ -720,16 +711,19 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)
 
 ! X,Y,Z coordinates
-            WRITE(VTU_UNIT) nbytes_xyz,(REAL(XG_E(GLOBAL_I_OF(IJK))),REAL(YG_N(GLOBAL_J_OF(IJK))),REAL(ZG_T(GLOBAL_K_OF(IJK))), IJK = 1,IJKMAX3), &
-                                       (REAL(GLOBAL_X_NEW_POINT(IJK)),REAL(GLOBAL_Y_NEW_POINT(IJK)),REAL(GLOBAL_Z_NEW_POINT(IJK)),IJK = 1,&
-                                        GLOBAL_NUMBER_OF_NEW_POINTS)
+            WRITE(VTU_UNIT) nbytes_xyz, &
+                 (REAL(XG_E(GLOBAL_I_OF(IJK))),REAL(YG_N(GLOBAL_J_OF(IJK))),REAL(ZG_T(GLOBAL_K_OF(IJK))), IJK = 1,IJKMAX3), &
+                 (REAL(GLOBAL_X_NEW_POINT(IJK)),REAL(GLOBAL_Y_NEW_POINT(IJK)),REAL(GLOBAL_Z_NEW_POINT(IJK)),IJK = 1, &
+                 GLOBAL_NUMBER_OF_NEW_POINTS)
 
 ! Conectivity
             WRITE(VTU_UNIT) nbytes_connectivity
 
             DO IJK = 1,IJKMAX3
                IF (GLOBAL_INTERIOR_CELL_AT(IJK))      THEN
-                  IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK)) WRITE(VTU_UNIT) (GLOBAL_CONNECTIVITY(IJK,L)-1,L=1,GLOBAL_NUMBER_OF_NODES(IJK))
+                  IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK)) THEN
+                     WRITE(VTU_UNIT) (GLOBAL_CONNECTIVITY(IJK,L)-1,L=1,GLOBAL_NUMBER_OF_NODES(IJK))
+                  ENDIF
                ENDIF
             END DO
 
@@ -808,8 +802,6 @@
          offset_offset       = offset_connectivity + sizeof(int) + nbytes_connectivity
          offset_type         = offset_offset       + sizeof(int) + nbytes_offset
 
-
-
          IF(PASS==WRITE_HEADER) THEN
 
             WRITE(BUFFER,100)'    <Piece NumberOfPoints="',NUMBER_OF_POINTS,'" NumberOfCells="',NUMBER_OF_VTK_CELLS,'" >'
@@ -818,7 +810,8 @@
             WRITE(BUFFER,110)'      <Points>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-            WRITE(BUFFER,100)'        <DataArray type="Float32" Name="coordinates" NumberOfComponents="3" format="appended" offset="',offset_xyz,'" />'
+            WRITE(BUFFER,100)'        <DataArray type="Float32" Name="coordinates" NumberOfComponents="3" &
+                 &format="appended" offset="',offset_xyz,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             WRITE(BUFFER,110)'      </Points>'
@@ -828,7 +821,8 @@
             WRITE(BUFFER,110)'      <Cells>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-            WRITE(BUFFER,100)'        <DataArray type="Int32" Name="connectivity" format="appended" offset="',offset_connectivity,'" />'
+            WRITE(BUFFER,100)'        <DataArray type="Int32" Name="connectivity" format="appended" offset="', &
+                 offset_connectivity,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             WRITE(BUFFER,100)'        <DataArray type="Int32" Name="offsets" format="appended" offset="',offset_offset,'" />'
@@ -840,7 +834,8 @@
             WRITE(BUFFER,110)'      </Cells>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-            VTU_offset =  offset_type       + sizeof(int) + nbytes_type  ! Store offset for first variable to be written
+            ! Store offset for first variable to be written
+            VTU_offset =  offset_type       + sizeof(int) + nbytes_type
 
             WRITE(BUFFER,110)'      <CellData>'                          ! Preparing CellData
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
@@ -995,7 +990,8 @@
                IF(VAR_NAME(I:I) == ' ') VAR_NAME(I:I) = '_'
             ENDDO
 
-            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="',TRIM(VAR_NAME),'" format="appended" offset="',VTU_offset,'" />'
+            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="', &
+                 TRIM(VAR_NAME),'" format="appended" offset="',VTU_offset,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             VTU_offset = VTU_offset + sizeof(float) + nbytes_scalar
@@ -1046,7 +1042,8 @@
                IF(VAR_NAME(I:I) == ' ') VAR_NAME(I:I) = '_'
             ENDDO
 
-            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="',TRIM(VAR_NAME),'" format="appended" offset="',VTU_offset,'" />'
+            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="', &
+                 TRIM(VAR_NAME),'" format="appended" offset="',VTU_offset,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 
@@ -1068,7 +1065,8 @@
 
 
          IF (myPE == PE_IO) THEN       ! Update pvtu file with variable name
-            WRITE(PVTU_UNIT,90) '        <DataArray type="Float32" Name="',TRIM(VAR_NAME),'" format="appended" offset="',VTU_offset,'" />'
+            WRITE(PVTU_UNIT,90) '        <DataArray type="Float32" Name="', &
+                 TRIM(VAR_NAME),'" format="appended" offset="',VTU_offset,'" />'
          ENDIF
 
 
@@ -1147,7 +1145,8 @@
          IF(PASS==WRITE_HEADER) THEN
 !           For each vector, write a tag, with corresponding offset
 
-            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="',TRIM(VAR_NAME),'"  NumberOfComponents="3" format="appended" offset="',VTU_offset,'" />'
+            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="', &
+                 TRIM(VAR_NAME),'"  NumberOfComponents="3" format="appended" offset="',VTU_offset,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 
@@ -1190,8 +1189,10 @@
             WRITE(VTU_UNIT) nbytes_vector
 
             DO IJK = 1,IJKMAX3
-               IF (GLOBAL_INTERIOR_CELL_AT(IJK))      THEN
-                  IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK))   WRITE(VTU_UNIT) REAL(GLOBAL_VARX(IJK)),REAL(GLOBAL_VARY(IJK)),REAL(GLOBAL_VARZ(IJK))
+               IF (GLOBAL_INTERIOR_CELL_AT(IJK)) THEN
+                  IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK)) THEN
+                     WRITE(VTU_UNIT) REAL(GLOBAL_VARX(IJK)),REAL(GLOBAL_VARY(IJK)),REAL(GLOBAL_VARZ(IJK))
+                  ENDIF
                ENDIF
             ENDDO
 
@@ -1212,7 +1213,8 @@
 !           For each vector, write a tag, with corresponding offset
 
 
-            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="',TRIM(VAR_NAME),'"  NumberOfComponents="3" format="appended" offset="',VTU_offset,'" />'
+            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="', &
+                 TRIM(VAR_NAME),'"  NumberOfComponents="3" format="appended" offset="',VTU_offset,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 
@@ -1234,7 +1236,8 @@
 
 
          IF (myPE == PE_IO) THEN       ! Update pvtu file with variable name
-            WRITE(PVTU_UNIT,90)'        <DataArray type="Float32" Name="',TRIM(VAR_NAME),'"  NumberOfComponents="3" format="appended" offset="',VTU_offset,'" />'
+            WRITE(PVTU_UNIT,90)'        <DataArray type="Float32" Name="', &
+                 TRIM(VAR_NAME),'"  NumberOfComponents="3" format="appended" offset="',VTU_offset,'" />'
          ENDIF
 
       ENDIF
@@ -1887,7 +1890,9 @@
                PVD_FILE_INITIALIZED=.TRUE.
             ENDIF
          ENDIF
-      ELSE ! When properly initialized, open the file and go to the bottom of the file and prepare to append data (remove last two lines)
+      ELSE
+         ! When properly initialized, open the file and go to the
+         ! bottom of the file and prepare to append data (remove last two lines)
          OPEN(UNIT=PVD_UNIT,FILE = TRIM(PVD_FILENAME),POSITION="APPEND",STATUS='OLD')
          BACKSPACE(PVD_UNIT)
          BACKSPACE(PVD_UNIT)
@@ -1990,7 +1995,9 @@
 
          DO IJK = 1,IJKMAX3
             IF (GLOBAL_INTERIOR_CELL_AT(IJK))      THEN
-               IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK)) WRITE(VTU_UNIT,130) (GLOBAL_CONNECTIVITY(IJK,L)-1,L=1,GLOBAL_NUMBER_OF_NODES(IJK))
+               IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK)) THEN
+                  WRITE(VTU_UNIT,130) (GLOBAL_CONNECTIVITY(IJK,L)-1,L=1,GLOBAL_NUMBER_OF_NODES(IJK))
+               ENDIF
             ENDIF
          END DO
 
@@ -2300,7 +2307,8 @@
          WRITE(VTU_UNIT,100) '        </DataArray>'
 
          IF (myPE == PE_IO) THEN       ! Update pvtu file with variable name
-            WRITE(PVTU_UNIT,110) '        <PDataArray type="Float32" Name="',TRIM(VAR_NAME),'" NumberOfComponents="3"  format="ascii"/>'
+            WRITE(PVTU_UNIT,110) '        <PDataArray type="Float32" Name="', &
+                 TRIM(VAR_NAME),'" NumberOfComponents="3"  format="ascii"/>'
          ENDIF
 
       ENDIF
@@ -4161,6 +4169,5 @@
       ENDIF
 
       RETURN
-
 
       END SUBROUTINE PRINT_GRID_STATISTICS

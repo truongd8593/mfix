@@ -363,8 +363,8 @@
 
  1000 FORMAT('Error 1000: Unable to locat paritcle inside domain:',/&
          3x,'Particle Number:',A)
- 1001 FORMAT(3x,'X POS: ',g11.5,/3x,'Y POS: ',g11.5)
- 1002 FORMAT(3x,'X POS: ',g11.5,/3x,'Y POS: ',g11.5,/3x,'Z POS: ',g11.5)
+ 1001 FORMAT(3x,'X POS: ',g12.5,/3x,'Y POS: ',g12.5)
+ 1002 FORMAT(3x,'X POS: ',g12.5,/3x,'Y POS: ',g12.5,/3x,'Z POS: ',g12.5)
 
 ! Send out the error flag and exit if needed.
       CALL BCAST(IER, PE_IO)
@@ -644,8 +644,8 @@
 
  1000 FORMAT('Error 1000: Unable to locat paritcle inside domain:',/&
          3x,'Particle Number:',A)
- 1001 FORMAT(3x,'X POS: ',g11.5,/3x,'Y POS: ',g11.5)
- 1002 FORMAT(3x,'X POS: ',g11.5,/3x,'Y POS: ',g11.5,/3x,'Z POS: ',g11.5)
+ 1001 FORMAT(3x,'X POS: ',g12.5,/3x,'Y POS: ',g12.5)
+ 1002 FORMAT(3x,'X POS: ',g12.5,/3x,'Y POS: ',g12.5,/3x,'Z POS: ',g12.5)
 
 ! Send out the error flag and exit if needed.
       CALL BCAST(IER, PE_IO)

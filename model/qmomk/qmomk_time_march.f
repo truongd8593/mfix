@@ -193,8 +193,10 @@ SUBROUTINE QMOMK_TIME_MARCH
                  Vrplus  = QMOMK_V0(:,IPJK,M)
                  Wrplus  = QMOMK_W0(:,IPJK,M)
 
-                 CALL KINETIC_FLUX_X_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, Nlplus, Ulplus, Vlplus, Wlplus, F_x_left)
-                 CALL KINETIC_FLUX_X_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, Nrplus, Urplus, Vrplus, Wrplus, F_x_right)
+                 CALL KINETIC_FLUX_X_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, &
+                      Nlplus, Ulplus, Vlplus, Wlplus, F_x_left)
+                 CALL KINETIC_FLUX_X_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, &
+                      Nrplus, Urplus, Vrplus, Wrplus, F_x_right)
 
                  ! y - direction
                  Nlminus = QMOMK_N0(:,IJMK,M)
@@ -217,10 +219,13 @@ SUBROUTINE QMOMK_TIME_MARCH
                  Vrplus  = QMOMK_V0(:,IJPK,M)
                  Wrplus  = QMOMK_W0(:,IJPK,M)
 
-                 CALL KINETIC_FLUX_Y_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, Nlplus, Ulplus, Vlplus, Wlplus, F_y_left)
-                 CALL KINETIC_FLUX_Y_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, Nrplus, Urplus, Vrplus, Wrplus, F_y_right)
+                 CALL KINETIC_FLUX_Y_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, &
+                      Nlplus, Ulplus, Vlplus, Wlplus, F_y_left)
+                 CALL KINETIC_FLUX_Y_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, &
+                      Nrplus, Urplus, Vrplus, Wrplus, F_y_right)
 
-                 QMOMK_M1(:,IJK,M) = QMOMK_M0(:,IJK,M) - 0.5*(QMOMK_DT/MINVAL(DX))*(F_x_right - F_x_left) - 0.5*(QMOMK_DT/MINVAL(DY))*(F_y_right - F_y_left)
+                 QMOMK_M1(:,IJK,M) = QMOMK_M0(:,IJK,M) &
+                      - 0.5*(QMOMK_DT/MINVAL(DX))*(F_x_right - F_x_left) - 0.5*(QMOMK_DT/MINVAL(DY))*(F_y_right - F_y_left)
 
 
               ELSE ! 3D case
@@ -245,8 +250,10 @@ SUBROUTINE QMOMK_TIME_MARCH
                  Vrplus  = QMOMK_V0(:,IPJK,M)
                  Wrplus  = QMOMK_W0(:,IPJK,M)
 
-                 CALL KINETIC_FLUX_X_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, Nlplus, Ulplus, Vlplus, Wlplus, F_x_left)
-                 CALL KINETIC_FLUX_X_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, Nrplus, Urplus, Vrplus, Wrplus, F_x_right)
+                 CALL KINETIC_FLUX_X_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, &
+                      Nlplus, Ulplus, Vlplus, Wlplus, F_x_left)
+                 CALL KINETIC_FLUX_X_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, &
+                      Nrplus, Urplus, Vrplus, Wrplus, F_x_right)
 
                  ! y - direction
                  Nlminus = QMOMK_N0(:,IJMK,M)
@@ -269,8 +276,10 @@ SUBROUTINE QMOMK_TIME_MARCH
                  Vrplus  = QMOMK_V0(:,IJPK,M)
                  Wrplus  = QMOMK_W0(:,IJPK,M)
 
-                 CALL KINETIC_FLUX_Y_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, Nlplus, Ulplus, Vlplus, Wlplus, F_y_left)
-                 CALL KINETIC_FLUX_Y_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, Nrplus, Urplus, Vrplus, Wrplus, F_y_right)
+                 CALL KINETIC_FLUX_Y_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, &
+                      Nlplus, Ulplus, Vlplus, Wlplus, F_y_left)
+                 CALL KINETIC_FLUX_Y_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, &
+                      Nrplus, Urplus, Vrplus, Wrplus, F_y_right)
 
                  ! z - direction
                  Nlminus = QMOMK_N0(:,IJKM,M)
@@ -293,8 +302,10 @@ SUBROUTINE QMOMK_TIME_MARCH
                  Vrplus  = QMOMK_V0(:,IJKP,M)
                  Wrplus  = QMOMK_W0(:,IJKP,M)
 
-                 CALL KINETIC_FLUX_Z_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, Nlplus, Ulplus, Vlplus, Wlplus, F_z_left)
-                 CALL KINETIC_FLUX_Z_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, Nrplus, Urplus, Vrplus, Wrplus, F_z_right)
+                 CALL KINETIC_FLUX_Z_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, &
+                      Nlplus, Ulplus, Vlplus, Wlplus, F_z_left)
+                 CALL KINETIC_FLUX_Z_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, &
+                      Nrplus, Urplus, Vrplus, Wrplus, F_z_right)
 
                  QMOMK_M1(:,IJK,M) = QMOMK_M0(:,IJK,M) - 0.5*(QMOMK_DT/MINVAL(DX))*(F_x_right - F_x_left) - &
                       0.5*(QMOMK_DT/MINVAL(DY))*(F_y_right - F_y_left) - 0.5*(QMOMK_DT/MINVAL(DZ))*(F_z_right - F_z_left)
@@ -308,8 +319,10 @@ SUBROUTINE QMOMK_TIME_MARCH
      DO M = 1, MMAX
         DO IJK = ijkstart3, ijkend3
            IF (FLUID_AT(IJK))  THEN
-              CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
-              CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
+              CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), &
+                   QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
+              CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), &
+                   QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
            END IF
         END DO
      END DO
@@ -351,9 +364,12 @@ SUBROUTINE QMOMK_TIME_MARCH
               QMOMK_V1 (IN,IJK,M) = drag_exp*QMOMK_V1 (IN,IJK,M) + (1.D0 - drag_exp)*(VGC - GRAVITY*QMOMK_TAU_DRAG(IN,IJK,M))
               QMOMK_W1 (IN,IJK,M) = drag_exp*QMOMK_W1 (IN,IJK,M) + (1.D0 - drag_exp)*WGC
            END DO
-           CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
-           CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
-           CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
+           CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), &
+                QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
+           CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), &
+                QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
+           CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), &
+                QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
           END IF
         END DO
      END DO
@@ -362,8 +378,10 @@ SUBROUTINE QMOMK_TIME_MARCH
         DO IJK = ijkstart3, ijkend3
           IF (FLUID_AT(IJK)) THEN
             CALL BIND_THETA(QMOMK_M1(:,IJK,M), MINVAL(QMOMK_TAU_DRAG(:,IJK,M)))
-            CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
-           CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
+            CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), &
+                 QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
+           CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), &
+                QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
           END IF
         END DO
      END DO
@@ -380,8 +398,10 @@ SUBROUTINE QMOMK_TIME_MARCH
                  mom0 = QMOMK_M1(1,IJK,M)
                  IF (mom0 > epsn) THEN
                     CALL COLLISIONS_BGK(QMOMK_M1(:,IJK,M), 0.5*QMOMK_DT, QMOMK_TCOL, D_p0 (M), C_e)
-                    CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
-                    CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
+                    CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), &
+                         QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
+                    CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), &
+                         QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
                  END IF
               END IF
            END DO
@@ -389,10 +409,12 @@ SUBROUTINE QMOMK_TIME_MARCH
      ELSE IF (QMOMK_COLLISIONS == 'BOLTZMANN' .AND. MMAX == 1) THEN
         DO IJK = ijkstart3, ijkend3
            IF (FLUID_AT(IJK)) THEN
-              CALL SOLVE_BOLTZMANN_COLLISIONS_ONE_SPECIE(QMOMK_M1(:,IJK,1), QMOMK_N1(:,IJK,1), QMOMK_U1(:,IJK,1), QMOMK_V1(:,IJK,1), QMOMK_W1(:,IJK,1), &
+              CALL SOLVE_BOLTZMANN_COLLISIONS_ONE_SPECIE(QMOMK_M1(:,IJK,1), QMOMK_N1(:,IJK,1), &
+                   QMOMK_U1(:,IJK,1), QMOMK_V1(:,IJK,1), QMOMK_W1(:,IJK,1), &
                    0.5*QMOMK_DT, C_e, D_p0 (1), QMOMK_COLLISIONS_ORDER)
               CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,1), QMOMK_N1(:,IJK,1), QMOMK_U1(:,IJK,1), QMOMK_V1(:,IJK,1), QMOMK_W1(:,IJK,1))
-              CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,1), QMOMK_U1(:,IJK,1), QMOMK_V1(:,IJK,1), QMOMK_W1(:,IJK,1), QMOMK_M1(:,IJK,1))
+              CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,1), &
+                   QMOMK_U1(:,IJK,1), QMOMK_V1(:,IJK,1), QMOMK_W1(:,IJK,1), QMOMK_M1(:,IJK,1))
            END IF
         END DO
      ELSE
@@ -403,11 +425,12 @@ SUBROUTINE QMOMK_TIME_MARCH
                     CALL SOLVE_BOLTZMANN_COLLISIONS_TWO_SPECIES(QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), &
                          QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), &
                          QMOMK_M1(:,IJK,M2), QMOMK_N1(:,IJK,M2), QMOMK_U1(:,IJK,M2), QMOMK_V1(:,IJK,M2), QMOMK_W1(:,IJK,M2), &
-                         0.5*QMOMK_DT, 1.D0/6.D0*Pi*(D_p0(M)**3)*RO_s(IJK,M), 1.D0/6.D0*Pi*(D_p0(M2)**3)*RO_s(IJK,M2),  D_p0(M), D_p0(M2), &
-                         C_e, C_e, QMOMK_COLLISIONS_ORDER)
+                         0.5*QMOMK_DT, 1.D0/6.D0*Pi*(D_p0(M)**3)*RO_s(IJK,M), 1.D0/6.D0*Pi*(D_p0(M2)**3)*RO_s(IJK,M2), &
+                         D_p0(M), D_p0(M2), C_e, C_e, QMOMK_COLLISIONS_ORDER)
                  END DO
                  CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
-                 CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
+                 CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), &
+                      QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
               END IF
            END DO
         END DO
@@ -467,8 +490,10 @@ SUBROUTINE QMOMK_TIME_MARCH
                  Vrplus  = QMOMK_V1(:,IPJK,M)
                  Wrplus  = QMOMK_W1(:,IPJK,M)
 
-                 CALL KINETIC_FLUX_X_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, Nlplus, Ulplus, Vlplus, Wlplus, F_x_left)
-                 CALL KINETIC_FLUX_X_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, Nrplus, Urplus, Vrplus, Wrplus, F_x_right)
+                 CALL KINETIC_FLUX_X_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, &
+                      Nlplus, Ulplus, Vlplus, Wlplus, F_x_left)
+                 CALL KINETIC_FLUX_X_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, &
+                      Nrplus, Urplus, Vrplus, Wrplus, F_x_right)
 
                  ! y - direction
                  Nlminus = QMOMK_N1(:,IJMK,M)
@@ -491,10 +516,13 @@ SUBROUTINE QMOMK_TIME_MARCH
                  Vrplus  = QMOMK_V1(:,IJPK,M)
                  Wrplus  = QMOMK_W1(:,IJPK,M)
 
-                 CALL KINETIC_FLUX_Y_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, Nlplus, Ulplus, Vlplus, Wlplus, F_y_left)
-                 CALL KINETIC_FLUX_Y_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, Nrplus, Urplus, Vrplus, Wrplus, F_y_right)
+                 CALL KINETIC_FLUX_Y_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, &
+                      Nlplus, Ulplus, Vlplus, Wlplus, F_y_left)
+                 CALL KINETIC_FLUX_Y_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, &
+                      Nrplus, Urplus, Vrplus, Wrplus, F_y_right)
 
-                 QMOMK_M1(:,IJK,M) = QMOMK_M0(:,IJK,M) - (QMOMK_DT/MINVAL(DX))*(F_x_right - F_x_left) - (QMOMK_DT/MINVAL(DY))*(F_y_right - F_y_left)
+                 QMOMK_M1(:,IJK,M) = QMOMK_M0(:,IJK,M) - (QMOMK_DT/MINVAL(DX))*(F_x_right - F_x_left) &
+                      - (QMOMK_DT/MINVAL(DY))*(F_y_right - F_y_left)
 
                  ! 3D case
               ELSE
@@ -519,8 +547,10 @@ SUBROUTINE QMOMK_TIME_MARCH
                  Vrplus  = QMOMK_V1(:,IPJK,M)
                  Wrplus  = QMOMK_W1(:,IPJK,M)
 
-                 CALL KINETIC_FLUX_X_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, Nlplus, Ulplus, Vlplus, Wlplus, F_x_left)
-                 CALL KINETIC_FLUX_X_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, Nrplus, Urplus, Vrplus, Wrplus, F_x_right)
+                 CALL KINETIC_FLUX_X_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, &
+                      Nlplus, Ulplus, Vlplus, Wlplus, F_x_left)
+                 CALL KINETIC_FLUX_X_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, &
+                      Nrplus, Urplus, Vrplus, Wrplus, F_x_right)
 
                  ! y - direction
                  Nlminus = QMOMK_N1(:,IJMK,M)
@@ -543,8 +573,10 @@ SUBROUTINE QMOMK_TIME_MARCH
                  Vrplus  = QMOMK_V1(:,IJPK,M)
                  Wrplus  = QMOMK_W1(:,IJPK,M)
 
-                 CALL KINETIC_FLUX_Y_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, Nlplus, Ulplus, Vlplus, Wlplus, F_y_left)
-                 CALL KINETIC_FLUX_Y_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, Nrplus, Urplus, Vrplus, Wrplus, F_y_right)
+                 CALL KINETIC_FLUX_Y_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, &
+                      Nlplus, Ulplus, Vlplus, Wlplus, F_y_left)
+                 CALL KINETIC_FLUX_Y_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, &
+                      Nrplus, Urplus, Vrplus, Wrplus, F_y_right)
 
                  ! z - direction
                  Nlminus = QMOMK_N1(:,IJKM,M)
@@ -567,8 +599,10 @@ SUBROUTINE QMOMK_TIME_MARCH
                  Vrplus  = QMOMK_V1(:,IJKP,M)
                  Wrplus  = QMOMK_W1(:,IJKP,M)
 
-                 CALL KINETIC_FLUX_Z_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, Nlplus, Ulplus, Vlplus, Wlplus, F_z_left)
-                 CALL KINETIC_FLUX_Z_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, Nrplus, Urplus, Vrplus, Wrplus, F_z_right)
+                 CALL KINETIC_FLUX_Z_TWENTY_EIGHT_NODES (Nlminus, Ulminus, Vlminus, Wlminus, &
+                      Nlplus, Ulplus, Vlplus, Wlplus, F_z_left)
+                 CALL KINETIC_FLUX_Z_TWENTY_EIGHT_NODES (Nrminus, Urminus, Vrminus, Wrminus, &
+                      Nrplus, Urplus, Vrplus, Wrplus, F_z_right)
 
                  QMOMK_M1(:,IJK,M) = QMOMK_M0(:,IJK,M) - (QMOMK_DT/MINVAL(DX))*(F_x_right - F_x_left) - &
                       (QMOMK_DT/MINVAL(DY))*(F_y_right - F_y_left) - (QMOMK_DT/MINVAL(DZ))*(F_z_right - F_z_left)
@@ -582,7 +616,8 @@ SUBROUTINE QMOMK_TIME_MARCH
         DO IJK = ijkstart3, ijkend3
            IF (FLUID_AT(IJK))  THEN
               CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
-              CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
+              CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), &
+                   QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
            END IF
         END DO
      END DO
@@ -596,8 +631,10 @@ SUBROUTINE QMOMK_TIME_MARCH
                  mom0 = QMOMK_M1(1,IJK,M)
                  IF (mom0 > epsn) THEN
                     CALL COLLISIONS_BGK(QMOMK_M1(:,IJK,M), QMOMK_DT, QMOMK_TCOL, D_p0 (M), C_e)
-                    CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
-                    CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
+                    CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), &
+                         QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
+                    CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), &
+                         QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
                  END IF
               END IF
            END DO
@@ -605,10 +642,12 @@ SUBROUTINE QMOMK_TIME_MARCH
      ELSE IF (QMOMK_COLLISIONS == 'BOLTZMANN' .AND. MMAX == 1) THEN
         DO IJK = ijkstart3, ijkend3
            IF (FLUID_AT(IJK)) THEN
-              CALL SOLVE_BOLTZMANN_COLLISIONS_ONE_SPECIE(QMOMK_M1(:,IJK,1), QMOMK_N1(:,IJK,1), QMOMK_U1(:,IJK,1), QMOMK_V1(:,IJK,1), QMOMK_W1(:,IJK,1), &
+              CALL SOLVE_BOLTZMANN_COLLISIONS_ONE_SPECIE(QMOMK_M1(:,IJK,1), QMOMK_N1(:,IJK,1), &
+                   QMOMK_U1(:,IJK,1), QMOMK_V1(:,IJK,1), QMOMK_W1(:,IJK,1), &
                    QMOMK_DT, C_e, D_p0 (1), QMOMK_COLLISIONS_ORDER)
               CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,1), QMOMK_N1(:,IJK,1), QMOMK_U1(:,IJK,1), QMOMK_V1(:,IJK,1), QMOMK_W1(:,IJK,1))
-              CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,1), QMOMK_U1(:,IJK,1), QMOMK_V1(:,IJK,1), QMOMK_W1(:,IJK,1), QMOMK_M1(:,IJK,1))
+              CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,1), &
+                   QMOMK_U1(:,IJK,1), QMOMK_V1(:,IJK,1), QMOMK_W1(:,IJK,1), QMOMK_M1(:,IJK,1))
            END IF
         END DO
      ELSE
@@ -625,7 +664,8 @@ SUBROUTINE QMOMK_TIME_MARCH
                          C_e, C_e, QMOMK_COLLISIONS_ORDER)
                  END DO
                  CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
-                 CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
+                 CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), &
+                      QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
               END IF
            END DO
         END DO
@@ -667,9 +707,11 @@ SUBROUTINE QMOMK_TIME_MARCH
                  QMOMK_V1 (IN,IJK,M) = drag_exp*QMOMK_V1 (IN,IJK,M) + (1.D0 - drag_exp)*(VGC - GRAVITY*QMOMK_TAU_DRAG(IN,IJK,M))
                  QMOMK_W1 (IN,IJK,M) = drag_exp*QMOMK_W1 (IN,IJK,M) + (1.D0 - drag_exp)*WGC
               END DO
-              CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
+              CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), &
+                   QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
               CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
-              CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
+              CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), &
+                   QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
            END IF
         END DO
      END DO
@@ -680,7 +722,8 @@ SUBROUTINE QMOMK_TIME_MARCH
          IF (FLUID_AT(IJK)) THEN
            CALL BIND_THETA(QMOMK_M1(:,IJK,M), MINVAL(QMOMK_TAU_DRAG(:,IJK,M)))
            CALL EIGHT_NODE_3D (QMOMK_M1(:,IJK,M), QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M))
-           CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
+           CALL MOMENTS_TWENTY_EIGHT_NODES (QMOMK_N1(:,IJK,M), &
+                QMOMK_U1(:,IJK,M), QMOMK_V1(:,IJK,M), QMOMK_W1(:,IJK,M), QMOMK_M1(:,IJK,M))
          END IF
        END DO
      END DO
