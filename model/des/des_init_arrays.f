@@ -61,11 +61,8 @@
       FC(:,:) = ZERO
       TOW(:,:) = ZERO
 
-      PN(:,:) = -1
       PN_WALL(:,:) = -1
-      PN(1,:) = 0
       PN_WALL(1,:) = 0
-      PV(:,:) = .TRUE.
       PV_WALL(:,:) = .TRUE.
       PFT_WALL(:,:,:) = ZERO
       PPOS(:,:) = ZERO
@@ -93,13 +90,10 @@
          VXF_SDS(:,:,:) = ZERO
       ENDIF
 
-
-
       GRAV(:) = ZERO
 
       NEIGHBOURS(:,:) = -1
       NEIGHBOURS(:,1) = 0
-
 
 ! Cohesion VDW forces
       IF(USE_COHESION) THEN

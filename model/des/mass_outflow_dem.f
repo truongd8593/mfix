@@ -142,11 +142,8 @@
       FC(:,NP) = ZERO
       TOW(:,NP) = ZERO
 
-      PN(:,NP) = -1
       PN_WALL(:,NP) = -1
-      PN(1,NP) = 0
       PN_WALL(1,NP) = 0
-      PV(:,NP) = .FALSE.
       PV_WALL(:,NP) = .FALSE.
       PFT_WALL(NP,:,:) = ZERO
       PPOS(:,NP) = ZERO

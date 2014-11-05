@@ -405,16 +405,10 @@
 !  (unit vector must be pointing towards the fluid)
 !======================================================================
 
-
-
         CALL CROSS_PRODUCT(COORD_CUT_FACE_NODES(2,:)-COORD_CUT_FACE_NODES(1,:),&
                             COORD_CUT_FACE_NODES(3,:)-COORD_CUT_FACE_NODES(1,:),N)
 
      ENDIF
-
-
-
-
 
       NORM = DSQRT(N(1)**2 + N(2)**2 + N(3)**2)
       N = N / NORM
