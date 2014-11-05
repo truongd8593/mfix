@@ -80,7 +80,7 @@
       call send_recv(rop_s,2)
       call send_recv( P_STAR, 2 )
       call send_recv( ROP_G, 2 )
-      call send_recv( ROP_S, 2 )
+      IF(GRANULAR_ENERGY) call send_recv( THETA_m, 2 )
       call send_recv( RO_G, 2 )
       call send_recv( T_G, 2 )
       call send_recv( T_S, 2 )
