@@ -89,7 +89,7 @@
 !$omp    overlap_n,v_rel_tang,v_rel_trans_norm,sqrt_overlap,           &
 !$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
 !$omp    etat_des,fns1,fns2,fts1,fts2,pft_tmp,fn,particle_slide,       &
-!$omp    eq_radius,distapart,force_coh)                                &
+!$omp    eq_radius,distapart,force_coh,qq_coll,k_s0)                   &
 !$omp    shared(collisions,collision_num,des_pos_new,des_radius,       &
 !$omp    des_coll_model_enum,kn,kt,pv_coll,pft_coll,pfn_coll,pijk,     &
 !$omp    des_etan,des_etat,mew,fc_coll,use_cohesion,dist_coll,         &
