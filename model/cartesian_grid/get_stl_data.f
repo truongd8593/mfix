@@ -30,28 +30,26 @@
 !   M o d u l e s
 !-----------------------------------------------
 
+      USE bc
+      USE compar
+      USE constant
+      USE fldvar
+      USE funits
+      USE mpi_utility
       USE param
       USE param1
       USE physprop
-      USE fldvar
-      USE run
-      USE scalars
-      USE funits
-      USE rxns
-      USE compar
-      USE mpi_utility
       USE progress_bar
+      USE quadric
+      USE run
+      USE rxns
+      USE scalars
       USE stl
       USE vtk
-      USE quadric
-      USE constant
-      USE bc
+
       IMPLICIT NONE
 
-
-
       INTEGER,PARAMETER :: MAX_POINTS = 10000000    ! Currently limited to 10 Million, increase if needed
-      INTEGER,PARAMETER :: MAX_FACES  = 10000000    ! Currently limited to 10 Million, increase if needed
       INTEGER,PARAMETER :: MAX_ZONES  = 1000        ! Currently limited to 1,000     , increase if needed
 
       INTEGER ::I,D,N,NF
@@ -62,13 +60,12 @@
 
       LOGICAL :: ALL_POINTS_READ,ALL_FACES_READ
 
-      INTEGER, DIMENSION(MAX_ZONES,3) ::POINT_ZONE_INFO,FACE_ZONE_INFO
-      DOUBLE PRECISION, DIMENSION(MAX_POINTS,3) ::POINT_COORDS
-      DOUBLE PRECISION, DIMENSION(MAX_FACES,3) ::FACE_CONNECTIVITY
+      INTEGER, ALLOCATABLE, DIMENSION(:,:) ::POINT_ZONE_INFO,FACE_ZONE_INFO
+      DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:,:) :: POINT_COORDS
 
-      CHARACTER(LEN=18),DIMENSION(MAX_ZONES,2) :: BC_LABEL_TEXT
+      CHARACTER(LEN=18), ALLOCATABLE, DIMENSION(:,:) :: BC_LABEL_TEXT
 
-      LOGICAL, DIMENSION(MAX_ZONES) :: BC_ASSIGNED
+      LOGICAL, ALLOCATABLE, DIMENSION(:) :: BC_ASSIGNED
 
       CHARACTER(LEN=18),DIMENSION(10) :: BUFF_CHAR
       INTEGER, DIMENSION(10) :: BUFF_INT
@@ -84,11 +81,15 @@
 
       LOGICAL :: PRESENT
 
-
       INTEGER :: BC_LABELS_TO_READ, BC_LABELS_READ,LABEL_TEST,BC_LABEL_ID,NFZ,ZID,L1,L2
       INTEGER :: N_BC_IGNORED
       INTEGER :: N_QUAD2TRI
 
+      ALLOCATE(POINT_COORDS(MAX_POINTS,3))
+      ALLOCATE(POINT_ZONE_INFO(MAX_ZONES,3))
+      ALLOCATE(FACE_ZONE_INFO(MAX_ZONES,3))
+      ALLOCATE(BC_LABEL_TEXT(MAX_ZONES,2))
+      ALLOCATE(BC_ASSIGNED(MAX_ZONES))
 
       WRITE(*,2000) 'READING geometry from geometry.msh...'
 
@@ -110,7 +111,6 @@
 
       OPEN(UNIT=444, FILE='checkgeometry.stl')
       write(444,*)'solid vcg'
-
 
       CALL SKIP(333,3)
 
@@ -156,7 +156,6 @@
 
       CALL SKIP(333,3)
 
-
 ! Reading FACES
 
       READ(333,*) (BUFF_CHAR(I),I=1,4)
@@ -201,7 +200,6 @@
                   CALL TEXT_HEX2INT(BUFF_CHAR(3),P2)
                   CALL TEXT_HEX2INT(BUFF_CHAR(4),P3)
 
-
                   V1x = POINT_COORDS(P1,1)
                   V1y = POINT_COORDS(P1,2)
                   V1z = POINT_COORDS(P1,3)
@@ -213,7 +211,6 @@
                   V3x = POINT_COORDS(P3,1)
                   V3y = POINT_COORDS(P3,2)
                   V3z = POINT_COORDS(P3,3)
-
 
                   CALL CROSS_PRODUCT(POINT_COORDS(P2,:)-POINT_COORDS(P1,:),POINT_COORDS(P3,:)-POINT_COORDS(P1,:),NORMAL)
 
@@ -249,7 +246,6 @@
                   write(444,*) '      endloop'
                   write(444,*) '   endfacet'
 
-
                ELSEIF(PPFACE==4) THEN
                   BACKSPACE(333)
                   READ(333,*) (BUFF_CHAR(I),I=1,5)
@@ -275,7 +271,6 @@
                   V3x = POINT_COORDS(P3,1)
                   V3y = POINT_COORDS(P3,2)
                   V3z = POINT_COORDS(P3,3)
-
 
                   CALL CROSS_PRODUCT(POINT_COORDS(P2,:)-POINT_COORDS(P1,:),POINT_COORDS(P3,:)-POINT_COORDS(P1,:),NORMAL)
 
@@ -324,7 +319,6 @@
                   V3y = POINT_COORDS(P4,2)
                   V3z = POINT_COORDS(P4,3)
 
-
                   CALL CROSS_PRODUCT(POINT_COORDS(P3,:)-POINT_COORDS(P1,:),POINT_COORDS(P4,:)-POINT_COORDS(P1,:),NORMAL)
 
                   NORM = DSQRT(NORMAL(1)**2 + NORMAL(2)**2 + NORMAL(3)**2)
@@ -349,7 +343,6 @@
 
                   BC_ID_STL_FACE(NF) = ZONE_ID
 
-
                   write(444,*) '   facet normal ', NORM_FACE(:,NF)
                   write(444,*) '      outer loop'
                   write(444,*) '         vertex ', VERTEX(1,1:3,NF)
@@ -357,8 +350,6 @@
                   write(444,*) '         vertex ', VERTEX(3,1:3,NF)
                   write(444,*) '      endloop'
                   write(444,*)'   endfacet'
-
-
 
                ENDIF
             ENDDO
@@ -383,7 +374,6 @@
 
       ENDDO
 
-
       write(444,*)'endsolid vcg'
 
       close(444)
@@ -394,9 +384,7 @@
          WRITE(*,*) ' and is provided for convenience (it is not used).'
       ENDIF
 
-
 ! Reading Boundary condition labels
-
 
       BC_LABELS_READ = 0
       BC_ASSIGNED = .FALSE.
@@ -425,7 +413,6 @@
 
          ENDIF
       ENDDO
-
 
       IF(MyPE == PE_IO) THEN
 
@@ -509,14 +496,12 @@
 
       N_FACETS = NF
 
-
       XMIN_STL = XMIN_MSH
       XMAX_STL = XMAX_MSH
       YMIN_STL = YMIN_MSH
       YMAX_STL = YMAX_MSH
       ZMIN_STL = ZMIN_MSH
       ZMAX_STL = ZMAX_MSH
-
 
       OUT_STL_VALUE = OUT_MSH_VALUE
 
@@ -553,7 +538,11 @@
 
       close(444)
 
-
+      DEALLOCATE(POINT_COORDS)
+      DEALLOCATE(POINT_ZONE_INFO)
+      DEALLOCATE(FACE_ZONE_INFO)
+      DEALLOCATE(BC_LABEL_TEXT)
+      DEALLOCATE(BC_ASSIGNED)
 
       RETURN
 
