@@ -201,9 +201,7 @@
          DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
             NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
 
-            CALL ClosestPtPointTriangle(POSITION(:), &
-            VERTEX(1,:,NF), VERTEX(2,:,NF), VERTEX(3,:,NF), &
-            CLOSEST_PT(:))
+            CALL ClosestPtPointTriangle(POSITION(:), VERTEX(:,:,NF), CLOSEST_PT(:))
 
             DIST(:) = POSITION(:) - CLOSEST_PT(:)
             DISTSQ = DOT_PRODUCT(DIST, DIST)
@@ -393,10 +391,7 @@
             !that is a big fat negative and overlaps are not possible.
             if((line_t.le.-1.0001d0*des_radius(LL))) cycle  ! no overlap
 
-
-            CALL ClosestPtPointTriangle(DES_POS_NEW(:,LL), &
-                 VERTEX(1,:,NF), VERTEX(2,:,NF), VERTEX(3,:,NF), &
-                 CLOSEST_PT(:))
+            CALL ClosestPtPointTriangle(DES_POS_NEW(:,LL), VERTEX(:,:,NF), CLOSEST_PT(:))
 
             DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(:,LL)
             DISTSQ = DOT_PRODUCT(DIST, DIST)

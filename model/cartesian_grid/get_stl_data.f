@@ -71,7 +71,7 @@
       INTEGER, DIMENSION(10) :: BUFF_INT
 
       INTEGER :: P1,P2,P3,P4
-      DOUBLE PRECISION, DIMENSION(3) :: NORMAL
+      DOUBLE PRECISION, DIMENSION(3) :: NORMAL, VECTMP, VECTMP2
       DOUBLE PRECISION ::NORM
 
       DOUBLE PRECISION ::v1x,v1y,v1z
@@ -85,7 +85,7 @@
       INTEGER :: N_BC_IGNORED
       INTEGER :: N_QUAD2TRI
 
-      ALLOCATE(POINT_COORDS(MAX_POINTS,3))
+      ALLOCATE(POINT_COORDS(3,MAX_POINTS))
       ALLOCATE(POINT_ZONE_INFO(MAX_ZONES,3))
       ALLOCATE(FACE_ZONE_INFO(MAX_ZONES,3))
       ALLOCATE(BC_LABEL_TEXT(MAX_ZONES,2))
@@ -142,7 +142,7 @@
          POINT_ZONE_INFO(ZONE,3) = N2
 
          DO N = N1,N2
-            READ(333,*) (POINT_COORDS(N,D),D=1,GRID_DIMENSION)
+            READ(333,*) (POINT_COORDS(D,N),D=1,GRID_DIMENSION)
          ENDDO
 
          IF(N2/=N_POINTS) THEN
@@ -200,21 +200,23 @@
                   CALL TEXT_HEX2INT(BUFF_CHAR(3),P2)
                   CALL TEXT_HEX2INT(BUFF_CHAR(4),P3)
 
-                  V1x = POINT_COORDS(P1,1)
-                  V1y = POINT_COORDS(P1,2)
-                  V1z = POINT_COORDS(P1,3)
+                  V1x = POINT_COORDS(1,P1)
+                  V1y = POINT_COORDS(2,P1)
+                  V1z = POINT_COORDS(3,P1)
 
-                  V2x = POINT_COORDS(P2,1)
-                  V2y = POINT_COORDS(P2,2)
-                  V2z = POINT_COORDS(P2,3)
+                  V2x = POINT_COORDS(1,P2)
+                  V2y = POINT_COORDS(2,P2)
+                  V2z = POINT_COORDS(3,P2)
 
-                  V3x = POINT_COORDS(P3,1)
-                  V3y = POINT_COORDS(P3,2)
-                  V3z = POINT_COORDS(P3,3)
+                  V3x = POINT_COORDS(1,P3)
+                  V3y = POINT_COORDS(2,P3)
+                  V3z = POINT_COORDS(3,P3)
 
-                  CALL CROSS_PRODUCT(POINT_COORDS(P2,:)-POINT_COORDS(P1,:),POINT_COORDS(P3,:)-POINT_COORDS(P1,:),NORMAL)
+                  VECTMP  = POINT_COORDS(:,P2)-POINT_COORDS(:,P1)
+                  VECTMP2 = POINT_COORDS(:,P3)-POINT_COORDS(:,P1)
+                  NORMAL = CROSS_PRODUCT(VECTMP,VECTMP2)
 
-                  NORM = DSQRT(NORMAL(1)**2 + NORMAL(2)**2 + NORMAL(3)**2)
+                  NORM = sqrt(dot_product(normal(:),normal(:)))
                   NORMAL = NORMAL / NORM
 
                   NF = NF + 1
@@ -260,21 +262,23 @@
 
 ! First triangle 1-2-3
 
-                  V1x = POINT_COORDS(P1,1)
-                  V1y = POINT_COORDS(P1,2)
-                  V1z = POINT_COORDS(P1,3)
+                  V1x = POINT_COORDS(1,P1)
+                  V1y = POINT_COORDS(2,P1)
+                  V1z = POINT_COORDS(3,P1)
 
-                  V2x = POINT_COORDS(P2,1)
-                  V2y = POINT_COORDS(P2,2)
-                  V2z = POINT_COORDS(P2,3)
+                  V2x = POINT_COORDS(1,P2)
+                  V2y = POINT_COORDS(2,P2)
+                  V2z = POINT_COORDS(3,P2)
 
-                  V3x = POINT_COORDS(P3,1)
-                  V3y = POINT_COORDS(P3,2)
-                  V3z = POINT_COORDS(P3,3)
+                  V3x = POINT_COORDS(1,P3)
+                  V3y = POINT_COORDS(2,P3)
+                  V3z = POINT_COORDS(3,P3)
 
-                  CALL CROSS_PRODUCT(POINT_COORDS(P2,:)-POINT_COORDS(P1,:),POINT_COORDS(P3,:)-POINT_COORDS(P1,:),NORMAL)
+                  VECTMP  = POINT_COORDS(:,P2)-POINT_COORDS(:,P1)
+                  VECTMP2 = POINT_COORDS(:,P3)-POINT_COORDS(:,P1)
+                  NORMAL = CROSS_PRODUCT(VECTMP,VECTMP2)
 
-                  NORM = DSQRT(NORMAL(1)**2 + NORMAL(2)**2 + NORMAL(3)**2)
+                  NORM = sqrt(dot_product(normal(:),normal(:)))
                   NORMAL = NORMAL / NORM
 
                   NF = NF + 1
@@ -307,21 +311,23 @@
 
 ! Second triangle 1-3-4
 
-                  V1x = POINT_COORDS(P1,1)
-                  V1y = POINT_COORDS(P1,2)
-                  V1z = POINT_COORDS(P1,3)
+                  V1x = POINT_COORDS(1,P1)
+                  V1y = POINT_COORDS(2,P1)
+                  V1z = POINT_COORDS(3,P1)
 
-                  V2x = POINT_COORDS(P3,1)
-                  V2y = POINT_COORDS(P3,2)
-                  V2z = POINT_COORDS(P3,3)
+                  V2x = POINT_COORDS(1,P3)
+                  V2y = POINT_COORDS(2,P3)
+                  V2z = POINT_COORDS(3,P3)
 
-                  V3x = POINT_COORDS(P4,1)
-                  V3y = POINT_COORDS(P4,2)
-                  V3z = POINT_COORDS(P4,3)
+                  V3x = POINT_COORDS(1,P4)
+                  V3y = POINT_COORDS(2,P4)
+                  V3z = POINT_COORDS(3,P4)
 
-                  CALL CROSS_PRODUCT(POINT_COORDS(P3,:)-POINT_COORDS(P1,:),POINT_COORDS(P4,:)-POINT_COORDS(P1,:),NORMAL)
+                  VECTMP  = POINT_COORDS(:,P3)-POINT_COORDS(:,P1)
+                  VECTMP2 = POINT_COORDS(:,P4)-POINT_COORDS(:,P1)
+                  NORMAL = CROSS_PRODUCT(VECTMP,VECTMP2)
 
-                  NORM = DSQRT(NORMAL(1)**2 + NORMAL(2)**2 + NORMAL(3)**2)
+                  NORM = sqrt(dot_product(normal(:),normal(:)))
                   NORMAL = NORMAL / NORM
 
                   NF = NF + 1
@@ -867,8 +873,8 @@
 
 
                dp  = x12*x13 + y12*y13 + z12*z13
-               d12 = dsqrt(x12**2+y12**2+z12**2)
-               d13 = dsqrt(x13**2+y13**2+z13**2)
+               d12 = sqrt(x12**2+y12**2+z12**2)
+               d13 = sqrt(x13**2+y13**2+z13**2)
 
                IF((d12*d13)>TOL_STL) THEN
                   cos_angle = dp/(d12*d13)
@@ -882,7 +888,7 @@
                   IGNORE_CURRENT_FACET = .TRUE.    ! Ignore small facets
                ENDIF
 
-               NORM = DSQRT(N1**2+N2**2+N3**2)
+               NORM = sqrt(N1**2+N2**2+N3**2)
 
                IF(NORM>TOL_STL) THEN
                   N1 = N1 /NORM
@@ -1298,8 +1304,8 @@
       ENDIF
 
 
-      d_ac = dsqrt((xc-xa)**2 + (yc-ya)**2 + (zc-za)**2)
-      d_bc = dsqrt((xc-xb)**2 + (yc-yb)**2 + (zc-zb)**2)
+      d_ac = sqrt((xc-xa)**2 + (yc-ya)**2 + (zc-za)**2)
+      d_bc = sqrt((xc-xb)**2 + (yc-yb)**2 + (zc-zb)**2)
 
 
       IF(d_ac<TOL_STL.OR.d_bc<TOL_STL) THEN
@@ -1363,7 +1369,7 @@
             Vx = VERTEX(VV,1,FACET)
             Vy = VERTEX(VV,2,FACET)
             Vz = VERTEX(VV,3,FACET)
-            D(VV) = DSQRT((Px - Vx)**2 + (Py - Vy)**2 + (Pz - Vz)**2 )
+            D(VV) = sqrt((Px - Vx)**2 + (Py - Vy)**2 + (Pz - Vz)**2 )
          ENDDO
 
          MINVAL_D = MINVAL(D)

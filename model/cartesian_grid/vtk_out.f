@@ -3115,7 +3115,7 @@
       INTEGER NUMBER_OF_FACES
       INTEGER NUMBER_OF_SURFACE_POINTS
 
-      DOUBLE PRECISION, DIMENSION(15,3) :: COORD_CUT_FACE_NODES
+      DOUBLE PRECISION, DIMENSION(3,15) :: COORD_CUT_FACE_NODES
       DOUBLE PRECISION, DIMENSION(3)    :: NORMAL
 
       INTEGER, DIMENSION(DIMENSION_MAX_CUT_CELL,6) ::  FACE_CONNECTIVITY
@@ -3178,17 +3178,14 @@
 
                         IF (GLOBAL_SNAP(IJK_OF_NODE(NODE))) THEN ! One of the snapped corner point which now belongs to the cut face
                            N_CUT_FACE_NODES = N_CUT_FACE_NODES + 1
-                           COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,1) = X_COPY
-                           COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,2) = Y_COPY
-                           COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,3) = Z_COPY
+                           COORD_CUT_FACE_NODES(1,N_CUT_FACE_NODES) = X_COPY
+                           COORD_CUT_FACE_NODES(2,N_CUT_FACE_NODES) = Y_COPY
+                           COORD_CUT_FACE_NODES(3,N_CUT_FACE_NODES) = Z_COPY
                         ENDIF
                      ENDIF
                   END DO
 
                ENDIF
-
-
-
 
                IF(CORNER_POINT) THEN
                   Q_ID = 1
@@ -3208,9 +3205,9 @@
 
                IF (ABS(F_COPY) < TOL_F ) THEN ! belongs to cut face
                   N_CUT_FACE_NODES = N_CUT_FACE_NODES + 1
-                  COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,1) = X_COPY
-                  COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,2) = Y_COPY
-                  COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,3) = Z_COPY
+                  COORD_CUT_FACE_NODES(1,N_CUT_FACE_NODES) = X_COPY
+                  COORD_CUT_FACE_NODES(2,N_CUT_FACE_NODES) = Y_COPY
+                  COORD_CUT_FACE_NODES(3,N_CUT_FACE_NODES) = Z_COPY
                ENDIF
 
             END DO
@@ -3232,17 +3229,15 @@
                   CALL MFIX_EXIT(myPE)
                ENDIF
 
-               X_FACE_POINT(NUMBER_OF_SURFACE_POINTS) = COORD_CUT_FACE_NODES(NODE,1)
-               Y_FACE_POINT(NUMBER_OF_SURFACE_POINTS) = COORD_CUT_FACE_NODES(NODE,2)
-               Z_FACE_POINT(NUMBER_OF_SURFACE_POINTS) = COORD_CUT_FACE_NODES(NODE,3)
+               X_FACE_POINT(NUMBER_OF_SURFACE_POINTS) = COORD_CUT_FACE_NODES(1,NODE)
+               Y_FACE_POINT(NUMBER_OF_SURFACE_POINTS) = COORD_CUT_FACE_NODES(2,NODE)
+               Z_FACE_POINT(NUMBER_OF_SURFACE_POINTS) = COORD_CUT_FACE_NODES(3,NODE)
                FACE_CONNECTIVITY(NUMBER_OF_FACES,NODE) = NUMBER_OF_SURFACE_POINTS
             ENDDO
 
          ENDIF
 
       END DO
-
-
 
       FILENAME= TRIM(RUN_NAME) // '_boundary.vtk'
       FILENAME = TRIM(FILENAME)
