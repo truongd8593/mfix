@@ -256,7 +256,7 @@ common_SOURCES = \
 	model/des/des_rrates0.f \
 	model/des/des_rxns_mod.f \
 	model/des/des_stl_functions_mod.f \
-	model/des/des_thermo_cond.f \
+	model/des/des_thermo_cond_mod.f \
 	model/des/des_thermo_conv.f \
 	model/des/des_thermo_mod.f \
 	model/des/des_thermo_newvalues.f \
