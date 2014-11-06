@@ -18,6 +18,7 @@
       USE discretelement
       USE geometry, ONLY: DO_K
       USE physprop, ONLY: K_s0
+      USE run
 
       IMPLICIT NONE
 
@@ -205,10 +206,12 @@
             PFT_COLL(:,CC) = PFT_TMP(:)
          ENDIF
 
-         ! Calculate conduction and radiation for thermodynamic neighbors
-         QQ_COLL(CC) = ZERO
-         IF(K_s0(phaseLL) > ZERO) THEN
-            QQ_COLL(CC) = DES_CONDUCTION(LL, I, DIST_COLL(CC), phaseLL, PIJK(LL,4))
+         IF (ENERGY_EQ) THEN
+            ! Calculate conduction and radiation for thermodynamic neighbors
+            QQ_COLL(CC) = ZERO
+            IF(K_s0(phaseLL) > ZERO) THEN
+               QQ_COLL(CC) = DES_CONDUCTION(LL, I, DIST_COLL(CC), phaseLL, PIJK(LL,4))
+            ENDIF
          ENDIF
 
       ENDDO
@@ -250,7 +253,7 @@
                SQRT(PostCohesive(LL)) / (PMASS(LL)*magGravity)
          ENDIF ! for cohesion model
 
-         IF(QQ_COLL(CC).ne.ZERO) THEN
+         IF(ENERGY_EQ .and. QQ_COLL(CC).ne.ZERO) THEN
             Q_Source(LL) = Q_Source(LL) + QQ_COLL(CC)
             Q_Source(I) = Q_Source(I) - QQ_COLL(CC)
          ENDIF
