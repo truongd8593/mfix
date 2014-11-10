@@ -12,6 +12,7 @@
       SUBROUTINE CALC_FORCE_DEM
 
 !---------------------------------------------------------------------//
+      USE calc_collision_wall
       USE constant, ONLY: Pi
       USE des_thermo
       USE des_thermo_cond
@@ -78,7 +79,7 @@
 ! Initialize cohesive forces
       IF(USE_COHESION) PostCohesive(:) = ZERO
 
-      CALL CALC_COLLISION_WALL
+      CALL CALC_DEM_FORCE_WITH_WALL_STL
 
 ! Check particle LL neighbour contacts
 !---------------------------------------------------------------------//

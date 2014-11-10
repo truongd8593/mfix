@@ -125,16 +125,6 @@
          Allocate(  TOW (1,NPARTICLES) )
       ENDIF
 
-! Accumulated spring force
-      Allocate(  PFT_WALL (NPARTICLES,6,DIMN) )
-
-! Save the normal direction at previous time step
-      Allocate(  PFN_WALL (NPARTICLES,6,DIMN) )
-
-! Tracking variables for particle contact history
-      Allocate(  PN_WALL (6, NPARTICLES) )
-      Allocate(  PV_WALL (6, NPARTICLES) )
-
 ! Temporary variables to store wall position, velocity and normal vector
       Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
 

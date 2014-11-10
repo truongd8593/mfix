@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: softspring_funcs_cutcell                               C
+!  Module name: CALC_COLLISION_WALL                                    C
 !                                                                      C
 !  Purpose: subroutines for particle-wall collisions when cutcell is   C
 !           used. Also contains rehack of routines for cfslide and     C
@@ -15,7 +15,7 @@
 !  Author: Rahul Garg                               Date: 1-Dec-2013   C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      module softspring_funcs_cutcell
+      module CALC_COLLISION_WALL
 
       PRIVATE
       PUBLIC:: CHECK_IF_PARTICLE_OVELAPS_STL, CALC_DEM_FORCE_WITH_WALL_STL, ADD_FACET
@@ -387,12 +387,21 @@
             !that is a big fat negative and overlaps are not possible.
             if((line_t.le.-1.0001d0*des_radius(LL))) cycle  ! no overlap
 
+            print *,"VERTEX(1,:,NF) = ",VERTEX(1,:,NF)
+            print *,"VERTEX(2,:,NF) = ",VERTEX(2,:,NF)
+            print *,"VERTEX(3,:,NF) = ",VERTEX(3,:,NF)
+
             CALL ClosestPtPointTriangle(DES_POS_NEW(:,LL), VERTEX(:,:,NF), CLOSEST_PT(:))
 
             DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(:,LL)
+            print *,"CLOSEST_PT(:) = ",CLOSEST_PT(:)
+            print *,"DES_POS_NEW(:,LL) = ",DES_POS_NEW(:,LL)
             DISTSQ = DOT_PRODUCT(DIST, DIST)
 
             IF(DISTSQ .GE. RADSQ) CYCLE !No overlap exists
+
+            print *,"DISTSQ = ",DISTSQ
+            print *,"RADSQ = ",RADSQ
 
 !               IF(DISTSQ < MAX_DISTSQ)THEN
                   MAX_DISTSQ = DISTSQ
@@ -406,6 +415,7 @@
 !         IF(MAX_DISTSQ /= UNDEFINED) THEN
 ! Assign the collision normal based on the facet with the
 ! largest overlap.
+!                  NORMAL(:) = DIST(:)/sqrt(DISTSQ)
                   NORMAL(:) = DIST(:)/max(sqrt(DISTSQ),0.0000001)
 
                   !NORMAL(:) = -NORM_FACE(:,MAX_NF)
@@ -692,5 +702,5 @@
       RETURN
       END SUBROUTINE CFRELVEL_WALL2
 
- end module softspring_funcs_cutcell
+    end module CALC_COLLISION_WALL
 

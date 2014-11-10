@@ -402,17 +402,6 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC    !(3,PARTICLES)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: TOW   !(3,PARTICLES)
 
-! Save the accumulated tangential displacement that occurs during
-! collision (particle-particle or particle-wall)
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFT_WALL !(PARTICLES,3,MAXNEIGHBORS)
-! Save the normal direction at previous time step
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFN_WALL ! (PARTICLES,3,MAXNEIGHBORS)
-
-! Variables used to track/store particle contact history
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PN_WALL !(PARTICLES,MAXNEIGHBORS)
-      LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PV_WALL !(PARTICLES,MAXNEIGHBORS)
-
-
 ! Dynamic information related to computational (eulerian) fluid grid
 !----------------------------------------------------------------->>>
 ! Dynamic variable. for each ijk computational fluid cell store the
