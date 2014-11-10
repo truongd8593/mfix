@@ -299,10 +299,6 @@
 
          IF( PEA(LL,2) .OR. PEA(LL,3)) CYCLE
 
-! If no neighboring facet in the surrounding 27 cells, then exit
-         IF (NO_NEIGHBORING_FACET_DES(PIJK(LL,4))) cycle
-
-
          IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN
             IJK = PIJK(LL,4)
             COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
@@ -410,7 +406,7 @@
 !         IF(MAX_DISTSQ /= UNDEFINED) THEN
 ! Assign the collision normal based on the facet with the
 ! largest overlap.
-                  NORMAL(:) = DIST(:)/sqrt(DISTSQ)
+                  NORMAL(:) = DIST(:)/max(sqrt(DISTSQ),0.0000001)
 
                   !NORMAL(:) = -NORM_FACE(:,MAX_NF)
                !facet's normal is correct normal only when the
