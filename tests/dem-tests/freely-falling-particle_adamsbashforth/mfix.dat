@@ -30,11 +30,13 @@
 
 # Geometry Section
   COORDINATES = 'Cartesian'
-  XLENGTH  = 30    IMAX = 10
-  YLENGTH  = 80    JMAX = 80
-  ZLENGTH  = 30    KMAX = 10
+  XLENGTH  = 30    IMAX = 1
+  YLENGTH  = 80    JMAX = 4
+  ZLENGTH  = 30    KMAX = 1
 !  NO_K     = .TRUE.
 
+  USE_STL = .T.
+  STL_BC_ID = 3
 
 # Gas-phase Section
   RO_g0 = 0.0
@@ -79,14 +81,16 @@
 # Boundary Conditions Section
   ! Flow boundary conditions
        !               Top
-!  BC_X_w            =   0.0
-!  BC_X_e            =  30.0
-!  BC_Y_s            =  80.0
-!  BC_Y_n            =  80.0
-!  BC_TYPE           =  'PO'
+  BC_X_w            =   0.0
+  BC_X_e            =  30.0
+  BC_Y_s            =  80.0
+  BC_Y_n            =  80.0
+  BC_Z_b            =   0.0
+  BC_Z_t            =  30.0
+  BC_TYPE           =  'PO'
 
 !  BC_EP_g           =   1.0
-!  BC_P_g            =   1.013E6
+  BC_P_g            =   1.013E6
 
   ! Wall boundary conditions
        !              bottom
