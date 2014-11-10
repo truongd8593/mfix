@@ -12,11 +12,7 @@
       USE softspring_funcs_cutcell
       use discretelement, only: USE_STL_DES
 
-      IF(USE_STL_DES) THEN
          CALL CALC_DEM_FORCE_WITH_WALL_STL
-      ELSE
-         CALL CALC_FORCE_DEM_WALL
-      ENDIF
 
 
       RETURN

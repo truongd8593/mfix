@@ -77,6 +77,46 @@
          ENDDO
       ENDDO
 
+      VERTEX(1,:,WEST_FACEID) = (/zero, zero, zero/)
+      VERTEX(2,:,WEST_FACEID) = (/zero, 2*YLENGTH, zero/)
+      VERTEX(3,:,WEST_FACEID) = (/zero, zero, 2*ZLENGTH/)
+
+      VERTEX(1,:,EAST_FACEID) = (/XLENGTH, zero, zero/)
+      VERTEX(2,:,EAST_FACEID) = (/XLENGTH, 2*YLENGTH, zero/)
+      VERTEX(3,:,EAST_FACEID) = (/XLENGTH, zero, 2*ZLENGTH/)
+
+      VERTEX(1,:,SOUTH_FACEID) = (/zero, zero, zero/)
+      VERTEX(2,:,SOUTH_FACEID) = (/2*XLENGTH, zero, zero/)
+      VERTEX(3,:,SOUTH_FACEID) = (/zero, zero, 2*ZLENGTH/)
+
+      VERTEX(1,:,NORTH_FACEID) = (/zero, YLENGTH, zero/)
+      VERTEX(2,:,NORTH_FACEID) = (/2*XLENGTH, YLENGTH, zero/)
+      VERTEX(3,:,NORTH_FACEID) = (/zero, YLENGTH, 2*ZLENGTH/)
+
+      VERTEX(1,:,BOTTOM_FACEID) = (/zero, zero, zero/)
+      VERTEX(2,:,BOTTOM_FACEID) = (/2*XLENGTH, zero, zero/)
+      VERTEX(3,:,BOTTOM_FACEID) = (/zero, 2*YLENGTH, zero/)
+
+      VERTEX(1,:,TOP_FACEID) = (/zero, zero, ZLENGTH/)
+      VERTEX(2,:,TOP_FACEID) = (/2*XLENGTH, zero, ZLENGTH/)
+      VERTEX(3,:,TOP_FACEID) = (/zero, 2*YLENGTH, ZLENGTH/)
+
+
+      NORM_FACE(:,WEST_FACEID) = (/one, zero, zero/)
+      NORM_FACE(:,EAST_FACEID) = (/-one, zero, zero/)
+      NORM_FACE(:,SOUTH_FACEID) = (/zero, one, zero/)
+      NORM_FACE(:,NORTH_FACEID) = (/zero, -one, zero/)
+      NORM_FACE(:,BOTTOM_FACEID) = (/zero, zero, one/)
+      NORM_FACE(:,TOP_FACEID) = (/zero, zero, -one/)
+
+
+      STL_FACET_TYPE(WEST_FACEID) = FACET_TYPE_NORMAL
+      STL_FACET_TYPE(EAST_FACEID) = FACET_TYPE_NORMAL
+      STL_FACET_TYPE(NORTH_FACEID) = FACET_TYPE_NORMAL
+      STL_FACET_TYPE(SOUTH_FACEID) = FACET_TYPE_NORMAL
+      STL_FACET_TYPE(TOP_FACEID) = FACET_TYPE_NORMAL
+      STL_FACET_TYPE(BOTTOM_FACEID) = FACET_TYPE_NORMAL
+
       ! initialize CELLNEIGHBOR_FACET array
       DO CELL_ID = IJKSTART3, IJKEND3
 
@@ -94,10 +134,30 @@
          KMINUS1 =  MAX (K_CELL - 1, KSTART2)
 
          IJK = FUNIJK(I_CELL,J_CELL,K_CELL)
-         DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-            NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
-            call add_facet(cell_id,nf)
-         ENDDO
+
+         if (I_CELL.eq.IMIN1) then
+            call add_facet(cell_id,WEST_FACEID)
+         endif
+
+         if (I_CELL.eq.IMAX1) then
+            call add_facet(cell_id,EAST_FACEID)
+         endif
+
+         if (J_CELL.eq.JMIN1) then
+            call add_facet(cell_id,SOUTH_FACEID)
+         endif
+
+         if (J_CELL.eq.JMAX1) then
+            call add_facet(cell_id,NORTH_FACEID)
+         endif
+
+         if (K_CELL.eq.KMIN1) then
+            call add_facet(cell_id,BOTTOM_FACEID)
+         endif
+
+         if (K_CELL.eq.KMAX1) then
+            call add_facet(cell_id,TOP_FACEID)
+         endif
 
          DO KK = KMINUS1, KPLUS1
             DO JJ = JMINUS1, JPLUS1
