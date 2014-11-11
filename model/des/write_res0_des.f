@@ -27,7 +27,7 @@
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      INTEGER :: LC1, LC2
+      INTEGER :: LC1
       INTEGER :: lNEXT_REC
       INTEGER :: lDIMN
 
@@ -90,8 +90,8 @@
 
       CALL WRITE_RES_cARRAY(lNEXT_REC, PV_COLL(:))
       DO LC1=1, lDIMN
-         CALL WRITE_RES_cARRAY(lNEXT_REC,PFN_COLL(LC2,:))
-         CALL WRITE_RES_cARRAY(lNEXT_REC,PFT_COLL(LC2,:))
+         CALL WRITE_RES_cARRAY(lNEXT_REC,PFN_COLL(LC1,:))
+         CALL WRITE_RES_cARRAY(lNEXT_REC,PFT_COLL(LC1,:))
       ENDDO
 
       CALL WRITE_RES_DES(lNEXT_REC, DEM_BCMI)
