@@ -147,7 +147,6 @@
   DES_NEIGHBOR_SEARCH = 1     ! Particle neighbor search method [1]
   NEIGHBOR_SEARCH_N = 25      ! number of solids time steps between 
                               ! neighbor search [25]
-  MN = 8     ! maximum number of neighbors allowed per particle [10]
   FACTOR_RLM =  1.2    ! factor by which the neighbor search radius
                        ! is increased [1.2]. so for cohesive simulations
                        ! it may be important to increase this value to

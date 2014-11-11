@@ -419,9 +419,6 @@
             IF(DISCRETE_ELEMENT.AND.PRINT_DES_DATA .AND. L.EQ.1 .AND. &
                .NOT.(TRIM(RUN_TYPE)=='NEW' .AND. PARTICLES /=0 .AND. &
                      NFACTOR >0 .AND. TIME == ZERO)) THEN
-! the call to identify clusters is done only when des data are written
-! move this call in des_time_march if higher frequency is required.
-                  IF (DES_CALC_CLUSTER) CALL IDENTIFY_SYSTEM_CLUSTERS()
                   CALL WRITE_DES_DATA
             ENDIF
 

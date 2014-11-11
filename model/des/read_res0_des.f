@@ -65,12 +65,6 @@
          ENDDO
       ENDIF
 
-      CALL READ_RES_pARRAY(lNEXT_REC, NEIGHBOURS(:,1))
-
-      DO LC1=2, MAXNEIGHBORS
-         CALL READ_RES_pARRAY(lNEXT_REC, NEIGHBOURS(:,LC1))
-      ENDDO
-
 ! Collision/neighbor data is read and used to setup cARRAY reads.
       CALL READ_PAR_COL(lNEXT_REC)
 

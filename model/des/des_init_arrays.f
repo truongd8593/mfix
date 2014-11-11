@@ -88,17 +88,9 @@
 
       GRAV(:) = ZERO
 
-      NEIGHBOURS(:,:) = -1
-      NEIGHBOURS(:,1) = 0
-
 ! Cohesion VDW forces
       IF(USE_COHESION) THEN
          PostCohesive (:) = ZERO
-      ENDIF
-
-      IF(DES_CALC_CLUSTER) THEN
-         InACluster(:) = .FALSE.
-         PostCluster(:) = ZERO
       ENDIF
 
 ! J.Musser: DEM particle tracking quantity
