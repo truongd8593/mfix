@@ -161,7 +161,6 @@
   DES_NEIGHBOR_SEARCH = 4     ! Particle neighbor search method [1]
   NEIGHBOR_SEARCH_N = 4     ! number of solids time steps between 
                             ! neighbor search [25]
-  MN = 8     ! maximum number of neighbors allowed per particle [10]
 
 ! Particle properties --------------------
 ! (particle-particle, particle-wall collision model parameters)

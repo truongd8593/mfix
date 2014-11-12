@@ -23,7 +23,6 @@
       use functions
       use mpi_utility
       use sendrecv
-      use softspring_funcs_cutcell
       use stl
 
       IMPLICIT NONE
@@ -160,7 +159,6 @@
 ! writing DES data
                   CALL DES_GRANULAR_TEMPERATURE
                   IF (DES_CALC_BEDHEIGHT) CALL CALC_DES_BEDHEIGHT
-                  IF (DES_CALC_CLUSTER) CALL IDENTIFY_SYSTEM_CLUSTERS()
                   CALL WRITE_DES_DATA
                ENDIF
             ENDIF
@@ -194,7 +192,6 @@
          IF (DES_CALC_BEDHEIGHT) CALL CALC_DES_BEDHEIGHT()
 ! the call to identify clusters is now done in time_march, uncomment
 ! line below to compute clusters each fluid time step.
-!         IF (DES_CALC_CLUSTER) CALL IDENTIFY_SYSTEM_CLUSTERS()
       ENDIF
 
 ! When coupled, and if needed, reset the discrete time step accordingly

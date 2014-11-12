@@ -48,7 +48,6 @@
       CALL INIT_ERR_MSG("DES_ALLOCATE_ARRAYS")
 
       NWALLS = merge(4,6,NO_K)
-      MAXNEIGHBORS = MN + 1 + NWALLS
 
 ! Grab the larger of PARTICLES and MAX_PIS
       IF(MAX_PIS == UNDEFINED_I) THEN
@@ -125,21 +124,8 @@
          Allocate(  TOW (1,NPARTICLES) )
       ENDIF
 
-! Accumulated spring force
-      Allocate(  PFT_WALL (NPARTICLES,6,DIMN) )
-
-! Save the normal direction at previous time step
-      Allocate(  PFN_WALL (NPARTICLES,6,DIMN) )
-
-! Tracking variables for particle contact history
-      Allocate(  PN_WALL (6, NPARTICLES) )
-      Allocate(  PV_WALL (6, NPARTICLES) )
-
 ! Temporary variables to store wall position, velocity and normal vector
       Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
-
-! Neighbor search
-      Allocate(  NEIGHBOURS (NPARTICLES, MAXNEIGHBORS) )
 
       OLD_COLLISION_NUM = 0
       COLLISION_NUM = 0
@@ -265,12 +251,6 @@
 ! variable for bed height of solids phase M
       ALLOCATE(BED_HEIGHT(DES_MMAX))
 
-! variable used to identify whether a particle had been put into a
-! cluster
-      IF (DES_CALC_CLUSTER) THEN
-         ALLOCATE(InACluster(NPARTICLES))
-      ENDIF
-
 ! ---------------------------------------------------------------->>>
 ! BEGIN COHESION
       IF(USE_COHESION) THEN
@@ -279,9 +259,7 @@
          Allocate(  PostCohesive (NPARTICLES) )
       ENDIF
 ! END COHESION
-      IF(DES_CALC_CLUSTER) Allocate(  PostCluster (NPARTICLES) )
 ! ----------------------------------------------------------------<<<
-
 
 ! ---------------------------------------------------------------->>>
 ! BEGIN Thermodynamic Allocation

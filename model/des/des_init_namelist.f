@@ -362,16 +362,6 @@
       FACTOR_RLM = 1.2
 !</keyword>
 
-
-!<keyword category="Discrete Element Model" required="false">
-!  <description>
-!    Maximum number of neighbors per particle.
-!  </description>
-!  <range min="0" max="+Inf" />
-      MN = 10
-!</keyword>
-
-
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
 !    Flag to use van der Hoef et al. (2006) model for adjusting the
@@ -662,27 +652,6 @@
 !  <dependent keyword="USE_COHESION" value=".TRUE."/>
       Asperities = ZERO
 !</keyword>
-
-
-!<keyword category="Discrete Element Model" required="false">
-!  <description>
-!    Flag to turn on runtime cluster data calculations. These routines
-!    are very time consuming and can dramatically slow down simulations.
-!  </description>
-!  <conflict keyword="MPPIC" value=".TRUE."/>
-      DES_CALC_CLUSTER = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element Model" required="false">
-!  <description>
-!    The physical distance relative to a particle for performing cluster
-!    statistics calculations.
-!  </description>
-!  <conflict keyword="MPPIC" value=".TRUE."/>
-!  <dependent keyword="DES_CALC_CLUSTER" value=".TRUE."/>
-      CLUSTER_LENGTH_CUTOFF = UNDEFINED
-!</keyword>
-
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>

@@ -83,7 +83,6 @@
 
   DES_NEIGHBOR_SEARCH =  4     ! Grid based neighbor search
   NEIGHBOR_SEARCH_N   = 20     ! Steps between neighbor search
-  MN = 20                      ! Maximum number of neighbors
 
   NFACTOR = 500                ! DEM settling period in no. of loops
 

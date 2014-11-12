@@ -92,7 +92,6 @@
 
   DES_NEIGHBOR_SEARCH =   4  ! Grid based neighbor search
   NEIGHBOR_SEARCH_N   = 100  ! Steps between neighbor search
-  MN = 14                    ! Maximum number of neighbors
 
 ! Solids phase 1:
 !---------------------------------------------------------------------//
