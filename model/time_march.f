@@ -215,7 +215,7 @@
       IF(WRITE_VTK_FILES) THEN
          VTK_TIME = UNDEFINED
          IF (VTK_DT /= UNDEFINED) THEN
-            IF (RUN_TYPE == 'NEW') THEN
+            IF (RUN_TYPE == 'NEW'.OR.RUN_TYPE=='RESTART_2') THEN
                VTK_TIME = TIME
             ELSE
                VTK_TIME = (INT((TIME + 0.1d0*DT)/VTK_DT)+1)*VTK_DT
@@ -419,9 +419,6 @@
             IF(DISCRETE_ELEMENT.AND.PRINT_DES_DATA .AND. L.EQ.1 .AND. &
                .NOT.(TRIM(RUN_TYPE)=='NEW' .AND. PARTICLES /=0 .AND. &
                      NFACTOR >0 .AND. TIME == ZERO)) THEN
-! the call to identify clusters is done only when des data are written
-! move this call in des_time_march if higher frequency is required.
-                  IF (DES_CALC_CLUSTER) CALL IDENTIFY_SYSTEM_CLUSTERS()
                   CALL WRITE_DES_DATA
             ENDIF
 

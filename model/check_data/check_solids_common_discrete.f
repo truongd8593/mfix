@@ -21,8 +21,6 @@
       USE mfix_pic, only: MPPIC
 ! Runtime Flag: Invoke TFM/DEM hybrid model.
       USE discretelement, only: DES_CONTINUUM_HYBRID
-! Runtime Flag: Invoke DEM cluster detection.
-      USE discretelement, only: DES_CALC_CLUSTER
 ! Runtime Flag: Utilize cutcell geometry.
       USE cutcell, only: CARTESIAN_GRID
 ! Runtime Flag: Interpolate DEM field quanties.
@@ -48,8 +46,6 @@
       USE discretelement, only: DES_OUTPUT_TYPE
 ! Max/Min particle radi
       USE discretelement, only: MAX_RADIUS, MIN_RADIUS
-! Max distance between two particles in a cluster.
-      USE discretelement, only: CLUSTER_LENGTH_CUTOFF
 ! Runtime Flag: Periodic boundaries
       USE discretelement, only: DES_PERIODIC_WALLS
       USE discretelement, only: DES_PERIODIC_WALLS_X

@@ -224,7 +224,7 @@ common_SOURCES = \
 	model/correct_1.f \
 	model/dbg_mod.f \
 	model/deprecated.f \
-	model/des/calc_collision_wall.f \
+	model/des/calc_collision_wall_mod.f \
 	model/des/calc_drag_des.f \
 	model/des/calc_dtpic.f \
 	model/des/calc_force_dem.f \
@@ -243,7 +243,6 @@ common_SOURCES = \
 	model/des/comp_mean_fields.f \
 	model/des/des_allocate_arrays.f \
 	model/des/des_bc_mod.f \
-	model/des/des_cluster_identification.f \
 	model/des/des_cluster_mod.f \
 	model/des/des_functions.f \
 	model/des/des_granular_temperature.f \
@@ -299,7 +298,6 @@ common_SOURCES = \
 	model/des/set_bc_pic_mo.f \
 	model/des/set_geometry_des.f \
 	model/des/set_ic_dem.f \
-	model/des/softspring_funcs_cutcell_mod.f \
 	model/des/solid_drag.f \
 	model/des/vtp_mod.f \
 	model/des/write_des_data.f \

@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: softspring_funcs_cutcell                               C
+!  Module name: CALC_COLLISION_WALL                                    C
 !                                                                      C
 !  Purpose: subroutines for particle-wall collisions when cutcell is   C
 !           used. Also contains rehack of routines for cfslide and     C
@@ -15,7 +15,7 @@
 !  Author: Rahul Garg                               Date: 1-Dec-2013   C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      module softspring_funcs_cutcell
+      module CALC_COLLISION_WALL
 
       PRIVATE
       PUBLIC:: CHECK_IF_PARTICLE_OVELAPS_STL, CALC_DEM_FORCE_WITH_WALL_STL, ADD_FACET
@@ -299,10 +299,6 @@
 
          IF( PEA(LL,2) .OR. PEA(LL,3)) CYCLE
 
-! If no neighboring facet in the surrounding 27 cells, then exit
-         IF (NO_NEIGHBORING_FACET_DES(PIJK(LL,4))) cycle
-
-
          IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN
             IJK = PIJK(LL,4)
             COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
@@ -410,7 +406,8 @@
 !         IF(MAX_DISTSQ /= UNDEFINED) THEN
 ! Assign the collision normal based on the facet with the
 ! largest overlap.
-                  NORMAL(:) = DIST(:)/sqrt(DISTSQ)
+!                  NORMAL(:) = DIST(:)/sqrt(DISTSQ)
+                  NORMAL(:) = DIST(:)/max(sqrt(DISTSQ),0.0000001)
 
                   !NORMAL(:) = -NORM_FACE(:,MAX_NF)
                !facet's normal is correct normal only when the
@@ -696,5 +693,5 @@
       RETURN
       END SUBROUTINE CFRELVEL_WALL2
 
- end module softspring_funcs_cutcell
+    end module CALC_COLLISION_WALL
 

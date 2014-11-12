@@ -89,7 +89,6 @@
   DES_EN_INPUT =      1.d0
   DES_EN_WALL_INPUT = 1.d0
 
-  MN = 20            ! Maximum number of neighbors
   NFACTOR = 0        ! No initial settling
 
 ! Solids phase 1:

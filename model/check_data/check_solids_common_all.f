@@ -776,7 +776,7 @@
 
 ! Verify that one -and only one- solids density model is in use.
          IF(RO_S0(M) == UNDEFINED .AND. .NOT.SOLVE_ROs(M)) THEN
-            WRITE(ERR_MSG, 1101) M
+            WRITE(ERR_MSG, 1100) M
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
  1100 FORMAT('Error 1101: No solids density information for phase ',  &
@@ -784,7 +784,7 @@
 
 ! Check if the constant solids phase density is physical.
          ELSEIF(RO_S0(M) /= UNDEFINED .AND. SOLVE_ROs(M)) THEN
-            WRITE(ERR_MSG, 1100) M
+            WRITE(ERR_MSG, 1101) M
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
  1101 FORMAT('Error 1101: Conflicting solids density input specified ',&
@@ -897,8 +897,5 @@
 
  1002 FORMAT('Error 1002: Illegal input: ',A,' specified out of range.'&
          ,/'Please correct the mfix.dat file.')
-
- 1300 FORMAT(//1X,70('*')/' From: CHECK_SOLIDS_COMMON',/,' Error 1300:',     &
-         ' No solids density information for phase ',I2,'.')
 
       END SUBROUTINE CHECK_SOLIDS_DENSITY

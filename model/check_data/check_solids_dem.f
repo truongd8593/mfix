@@ -12,8 +12,6 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Runtime Flag: Calculate clusters during a DEM simulation
-      use discretelement, only: DES_CALC_CLUSTER
-      use discretelement, only: CLUSTER_LENGTH_CUTOFF
       use discretelement, only: FACTOR_RLM
       use discretelement, only: MAX_RADIUS
 
@@ -27,14 +25,8 @@
 
       implicit none
 
-! Local Variables:
-!---------------------------------------------------------------------//
-      DOUBLE PRECISION :: CLUSTER_RLM
-! NONE
-
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_DEM")
-
 
 ! Particle-particle collision parameters.
       CALL CHECK_SOLIDS_DEM_COLLISION
@@ -42,26 +34,6 @@
       CALL CHECK_SOLIDS_DEM_COHESION
 ! Particle-particle conduction model parameters.
       CALL CHECK_SOLIDS_DEM_ENERGY
-
-
-      IF(DES_CALC_CLUSTER) THEN
-
-! Verify that a cutoff distance was provided.
-         IF(CLUSTER_LENGTH_CUTOFF .EQ. UNDEFINED) THEN
-            WRITE(ERR_MSG,1000) 'CLUSTER_LENGTH_CUTOFF'
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-
-! Verify that a cutoff distance lands with the neighbor search region.
-         CLUSTER_RLM = 1.d0 + CLUSTER_LENGTH_CUTOFF/(2.d0*MAX_RADIUS)
-         IF(FACTOR_RLM < CLUSTER_RLM) THEN
-            WRITE(ERR_MSG,2000)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-
- 2000 FORMAT('Error 2000: CLUSTER_LENGTH_CUTOFF exceeds of neighbor',  &
-         ' search',/'distance. Increase FACTOR_RLM.')
-      ENDIF
 
       CALL FINL_ERR_MSG
 
@@ -74,9 +46,6 @@
          'Please correct the mfix.dat file.')
 
       END SUBROUTINE CHECK_SOLIDS_DEM
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
