@@ -243,7 +243,6 @@ common_SOURCES = \
 	model/des/comp_mean_fields.f \
 	model/des/des_allocate_arrays.f \
 	model/des/des_bc_mod.f \
-	model/des/des_cluster_identification.f \
 	model/des/des_cluster_mod.f \
 	model/des/des_functions.f \
 	model/des/des_granular_temperature.f \
