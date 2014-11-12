@@ -78,11 +78,6 @@
 ! velocity and the fluid velocity interpolated to particle
 ! position.
 !----------------------------------------------------------------->>>
-! initializing
-! RG: I do not understand the need for this large array. It is not
-! used anywhere else except the same subroutine it is calculated.
-! A local single rank array (like in the old implementation) was just fine
-      vel_fp = ZERO
 ! avg_factor=0.25 (in 3D) or =0.5 (in 2D)
       AVG_FACTOR = merge(0.50d0, 0.25d0, NO_K)
 
@@ -151,7 +146,7 @@
             ENDDO
          ENDDO
 ! loop through particles in the cell
-! interpolate the fluid velocity (VEL_FP) to the particle's position.
+! interpolate the fluid velocity (VELFP) to the particle's position.
          DO nindx = 1,PINC(IJK)
             NP = PIC(ijk)%p(nindx)
 ! skipping indices that do not represent particles and ghost particles
@@ -160,7 +155,6 @@
 
             desposnew(:) = des_pos_new(:,np)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
-            vel_fp(1:3,np) = velfp(1:3)
 
 ! Calculate the particle centered drag coefficient (F_GP) using the
 ! particle velocity and the interpolated gas velocity.  Note F_GP
@@ -170,15 +164,15 @@
 !    beta(u_g-u_s)*vol_p/eps.
 ! Therefore, the drag force = f_gp*(u_g - u_s)
             VEL_NEW(:) = DES_VEL_NEW(:,NP)
-            CALL DES_DRAG_GP(NP, velfp(1:3), VEL_NEW)
+            CALL DES_DRAG_GP(NP, velfp, VEL_NEW)
 
 ! Calculate the gas-solids drag force on the particle
             IF(MPPIC .AND. MPPIC_PDRAG_IMPLICIT) THEN
 ! implicit treatment of the drag term for mppic
-               D_FORCE(1:3) = F_GP(NP)*(VEL_FP(1:3,NP))
+               D_FORCE(1:3) = F_GP(NP)*(VELFP)
             ELSE
 ! default case
-               D_FORCE(1:3) = F_GP(NP)*(VEL_FP(1:3,NP)-VEL_NEW)
+               D_FORCE(1:3) = F_GP(NP)*(VELFP-VEL_NEW)
             ENDIF
 
 ! Update the contact forces (FC) on the particle to include gas
@@ -210,7 +204,7 @@
 !       interpolated fluid velocity. It then determines the            C
 !       the contributions of fluid-particle drag to the center         C
 !       coefficient of the A matrix and the b (source) vector in the   C
-!       matrix equation (A*VEL_FP=b) equation for the fluid phase      C
+!       matrix equation (A*VELFP=b) equation for the fluid phase       C
 !       x, y and z momentum balances using F_GP.                       C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
@@ -297,7 +291,7 @@
 ! initializations
       drag_am = ZERO
       drag_bm = ZERO
-      vel_fp = ZERO
+
 ! avg_factor=0.25 (in 3D) or =0.5 (in 2D)
       AVG_FACTOR = merge(0.50d0, 0.25d0, NO_K)
 
@@ -371,7 +365,7 @@
             ENDDO
          ENDDO
 ! loop through particles in the cell
-! interpolate the fluid velocity (VEL_FP) to the particle's position.
+! interpolate the fluid velocity (VELFP) to the particle's position.
          DO nindx = 1,PINC(IJK)
             NP = PIC(ijk)%p(nindx)
 ! skipping indices that do not represent particles and ghost particles
@@ -379,7 +373,6 @@
             if(pea(np,4)) cycle
             desposnew(:) = des_pos_new(:,np)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
-            vel_fp(1:3,np) = velfp(1:3)
 !
 ! Calculate the particle centered drag coefficient (F_GP) using the
 ! particle velocity and the interpolated gas velocity.  Note F_GP
@@ -389,8 +382,7 @@
 !    beta(u_g-u_s)*vol_p/eps.
 ! Therefore, the drag force = f_gp*(u_g - u_s)
             VEL_NEW(:) = DES_VEL_NEW(:,NP)
-            CALL DES_DRAG_GP(NP, velfp(1:3), &
-               VEL_NEW)
+            CALL DES_DRAG_GP(NP, velfp, VEL_NEW)
 !-----------------------------------------------------------------<<<
 ! Calculate the corresponding gas solids drag force that is used in
 ! the gas phase momentum balances.
@@ -464,7 +456,7 @@
             ijmk = funijk_map_c(i,j-1,k)
             imjmk = funijk_map_c(i-1,j-1,k)
 
-            f_gds(ijk,1) = avg_factor*&
+            f_gds(ijk) = avg_factor*&
                (drag_am(ijk)   + drag_am(ijmk) +&
                 drag_am(imjmk) + drag_am(imjk))
 
@@ -473,12 +465,12 @@
                imjkm = funijk_map_c(i-1,j,k-1)
                ijmkm = funijk_map_c(i,j-1,k-1)
                imjmkm = funijk_map_c(i-1,j-1,k-1)
-                  f_gds(ijk,:) = f_gds(ijk,:) + avg_factor*&
-                       (drag_am(ijkm) + drag_am(ijmkm) +&
-                        drag_am(imjmkm)+drag_am(imjkm) )
+               f_gds(ijk) = f_gds(ijk) + avg_factor*&
+                  (drag_am(ijkm) + drag_am(ijmkm) +&
+                  drag_am(imjmkm)+drag_am(imjkm) )
             ENDIF   ! end if
          ELSE   ! else branch of if (fluid_at(ijk))
-            F_GDS(IJK,1) = ZERO
+            F_GDS(IJK) = ZERO
          ENDIF   ! end if/else (fluid_at(ijk))
 
       ENDDO   ! end do loop (ijk=ijkstart3,ijkend3)

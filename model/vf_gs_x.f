@@ -1,19 +1,12 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: VF_gs_X                                                 C
-!  Purpose: Calculate the average drag coefficient at i+1/2, j, k and  C
-!           multiply with u-momentum cell volume.                      C
-!                                                                      C
-!  Author: M. Syamlal                                 Date: 20-MAY-96  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!  Local variables:                                                    C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: VF_gs_X                                                 !
+!  Author: M. Syamlal                                 Date: 20-MAY-96  !
+!                                                                      !
+!  Purpose: Calculate the average drag coefficient at i+1/2, j, k and  !
+!           multiply with u-momentum cell volume.                      !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE VF_GS_X(VXF_GS, IER)
 
@@ -22,8 +15,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE geometry
-      USE indices
       USE physprop
       USE compar
       USE drag
@@ -31,17 +22,14 @@
       USE fun_avg
       USE functions
 
-      use run, only: SOLIDS_MODEL
-      use run, only: DEM_SOLIDS, PIC_SOLIDS
-
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
 ! Error index
-      INTEGER, INTENT(INOUT) :: IER
+      INTEGER, INTENT(OUT) :: IER
 ! Volume x Drag
-      DOUBLE PRECISION, INTENT(INOUT) :: VxF_gs(DIMENSION_3, DIMENSION_M)
+      DOUBLE PRECISION, INTENT(OUT) :: VxF_gs(DIMENSION_3, DIMENSION_M)
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -49,19 +37,11 @@
       INTEGER :: I, IJK, IJKE
 ! Index of continuum solids phases
       INTEGER :: M
-! Index of discrete solids 'phases'
-      INTEGER :: DM, MTOT
 !-----------------------------------------------
 
-      MTOT = merge(MMAX, MMAX+DES_MMAX, DES_CONTINUUM_HYBRID)
 
-      M_LP: DO M = 1, MTOT
-         IF(SOLIDS_MODEL(M) == 'DEM' .AND. DES_ONEWAY_COUPLED) THEN
-            VxF_GS(:,M) = ZERO
-            CYCLE M_LP
-         ENDIF
-
-         DO IJK = ijkstart3, ijkend3
+      DO M = 1, SMAX
+         DO IJK = IJKSTART3, IJKEND3
             IF(IP_AT_E(IJK)) THEN
                VXF_GS(IJK,M) = ZERO
             ELSE
@@ -70,23 +50,21 @@
                VXF_GS(IJK,M) = VOL_U(IJK) * &
                   AVG_X(F_GS(IJK,M),F_GS(IJKE,M),I)
             ENDIF
-         ENDDO            ! end do loop (ijk=ijkstart3,ijkend3)
-      ENDDO M_LP          ! end do loop (m=1,mmax)
+         ENDDO
+      ENDDO
 
-
-      IF (DES_CONTINUUM_HYBRID) THEN
-         DO DM = 1, DES_MMAX
-            DO IJK = ijkstart3, ijkend3
-               IF (IP_AT_E(IJK)) THEN
-                  VXF_GDS(IJK,DM) = ZERO
-               ELSE
-                  I = I_OF(IJK)
-                  IJKE = EAST_OF(IJK)
-                  VXF_GDS(IJK,DM) = VOL_U(IJK) * &
-                     AVG_X(F_GDS(IJK,DM),F_GDS(IJKE,DM),I)
-               ENDIF
-            ENDDO      ! end do loop (ijk=ijkstart3,ijkend3)
-         ENDDO         ! end do loop (dm=1,des_mmax)
+! Calculate the combined effect for all discrete solids.
+      IF(DISCRETE_ELEMENT .AND. .NOT.DES_ONEWAY_COUPLED) THEN
+         DO IJK = IJKSTART3, IJKEND3
+            IF(IP_AT_E(IJK)) THEN
+               VXF_GDS(IJK) = ZERO
+            ELSE
+               I = I_OF(IJK)
+               IJKE = EAST_OF(IJK)
+               VXF_GDS(IJK) = VOL_U(IJK) *                             &
+                  AVG_X(F_GDS(IJK),F_GDS(IJKE),I)
+            ENDIF
+         ENDDO
       ENDIF
 
       RETURN
@@ -131,9 +109,9 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! Error index
-      INTEGER, INTENT(INOUT) :: IER
+      INTEGER, INTENT(OUT) :: IER
 ! Volume x Drag
-      DOUBLE PRECISION, INTENT(INOUT) :: VxF_SS(DIMENSION_3, DIMENSION_LM)
+      DOUBLE PRECISION, INTENT(OUT) :: VxF_SS(DIMENSION_3, DIMENSION_LM)
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

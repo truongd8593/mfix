@@ -18,7 +18,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE DRAG_GS(M, DISCRETE_FLAG, IER)
+      SUBROUTINE DRAG_GS(M, IER)
 
 !-----------------------------------------------
 ! Modules
@@ -49,11 +49,6 @@
       INTEGER, INTENT(IN) :: M
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
-! Flag used only when the hybrid model is invoked and notifies the
-! routine that the solid phase index M refers to the indice of a
-! discrete 'phase' not a continuous phase so that the appropriate
-! variables are referenced.
-      LOGICAL, INTENT(IN) :: DISCRETE_FLAG
 !-----------------------------------------------
 ! Local parameters
 !-----------------------------------------------
@@ -124,81 +119,36 @@
             IJMK = JM_OF(IJK)
             IJKM = KM_OF(IJK)
 
-! assign local variables for DP_locm EPs_loc, and MAXM.  The former
-! represent arrays for the particle diameter, solids volume fraction,
-! and the latter the number of particle types
-            IF (.NOT.DES_CONTINUUM_HYBRID) THEN
-               IF (DES_CONTINUUM_COUPLED) THEN
-                  MAXM = DES_MMAX
-                  DO DM = 1,MAXM
-                     DP_loc(DM) = DES_D_p0(DM)
-                     EPs_loc(DM) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
-                     ROs_loc(DM) = DES_RO_S(DM)
-                  ENDDO
-               ELSE
-                  MAXM = SMAX
-                  DO CM = 1,MAXM
-                     DP_loc(CM) = D_p(IJK,CM)
-                     EPs_loc(CM) = EP_S(IJK,CM)
-                     ROs_loc(CM) = RO_S(IJK,CM)
-                  ENDDO
-               ENDIF
-            ELSE   ! des_continuum_hybrid branch
-! for the hybrid model store the diameters of both discrete and
-! continuous phases in a single new local variable.  likewise with the
-! solids volume fraction.  also change the loop limit to include all
-! solids phases (discrete+continuum)
+            MAXM = SMAX 
+            DO CM = 1,SMAX
+               DP_loc(CM) = D_p(IJK,CM)
+               EPs_loc(CM) = EP_S(IJK,CM)
+               ROs_loc(CM) = RO_S(IJK,CM)
+            ENDDO
+
+! Append DEM phase information to the end for hybrid runs and update
+! the number of solids 'phases' to loop over.
+            IF(DES_CONTINUUM_HYBRID) THEN
                MAXM = SMAX + DES_MMAX
-               IF (DISCRETE_FLAG) THEN
-! the subroutine is being called to calculate the drag coefficient on
-! a discrete particle 'phase' so populate DP, EPS starting with discrete
-! phases
-                  DO DM = 1,DES_MMAX
-                     DP_loc(DM) = DES_D_p0(DM)
-                     EPs_loc(DM) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
-                     ROs_loc(DM) = DES_RO_S(DM)
-                  ENDDO
-                  DO CM = 1,SMAX
-                     L = DES_MMAX + CM
-                     DP_loc(L) = D_P(IJK,CM)
-                     EPs_loc(L) = EP_S(IJK,CM)
-                     ROs_loc(L) = RO_S(IJK,CM)
-                  ENDDO
-               ELSE
-! the subroutine is being called to calculate the drag coefficient on
-! a continous solids phase so populate DP, EPS starting with continuous
-! phases
-                  DO CM = 1,SMAX
-                     DP_loc(CM) = D_p(IJK,CM)
-                     EPs_loc(CM) = EP_S(IJK,CM)
-                     ROs_loc(CM) = RO_S(IJK,CM)
-                  ENDDO
-                  DO DM = 1,DES_MMAX
-                     L = SMAX + DM
-                     DP_loc(L) = DES_D_p0(DM)
-                     EPs_loc(L) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
-                     ROs_loc(L) = DES_RO_S(DM)
-                  ENDDO
-               ENDIF
-            ENDIF   ! end if/else (.not.des_continuum_hybrid)
+               DO DM = 1,DES_MMAX
+                  L = SMAX + DM
+                  DP_loc(L) = DES_D_p0(DM)
+                  EPs_loc(L) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
+                  ROs_loc(L) = DES_RO_S(DM)
+               ENDDO
+            ENDIF
 
 ! Calculate velocity components at i, j, k
             UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
             VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
             WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
-            IF((DES_CONTINUUM_COUPLED .AND. .NOT.DES_CONTINUUM_HYBRID) .OR. &
-               (DES_CONTINUUM_HYBRID .AND. DISCRETE_FLAG)) THEN
-! note given current dem setup these are not defined for p_flow_at!
-               USCM = DES_U_S(IJK,M)
-               VSCM = DES_V_S(IJK,M)
-               WSCM = DES_W_S(IJK,M)
-            ELSE
-               USCM = AVG_X_E(U_S(IMJK,M),U_S(IJK,M),I)
-               VSCM = AVG_Y_N(V_S(IJMK,M),V_S(IJK,M))
-               WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M))
-            ENDIF
+
+            USCM = AVG_X_E(U_S(IMJK,M),U_S(IJK,M),I)
+            VSCM = AVG_Y_N(V_S(IJMK,M),V_S(IJK,M))
+            WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M))
+
 ! magnitude of gas-solids relative velocity
-            VREL = SQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
+            VREL = SQRT((UGC-USCM)**2 + (VGC-VSCM)**2 + (WGC-WSCM)**2)
 
 ! Laminar viscosity at a pressure boundary is given the value of the
 ! fluid cell next to it. This applies just to the calculation of the
@@ -387,13 +337,8 @@
             ENDIF   !end if/else trim(drag_type=='hys')
 
 ! Determine drag force coefficient accounting for any under relaxation
-            IF (DES_CONTINUUM_HYBRID .AND. DISCRETE_FLAG) THEN
-               F_GDS(IJK,M) = (ONE - UR_F_gs)*F_GDS(IJK,M) + &
-                  UR_F_gs*F_gstmp
-            ELSE
-               F_GS(IJK,M) = (ONE - UR_F_gs)*F_GS(IJK, M) + &
-                  UR_F_gs*F_gstmp
-            ENDIF
+            F_GS(IJK,M) = (ONE - UR_F_gs)*F_GS(IJK, M) + &
+               UR_F_gs*F_gstmp
 
             IF(KT_TYPE_ENUM == GHD_2007) THEN
                IF(M==1) THEN
@@ -405,12 +350,7 @@
 
          ELSE   ! .not.(fluidorp_flow_at(ijk)) branch
 
-            IF (DES_CONTINUUM_HYBRID .AND. DISCRETE_FLAG) THEN
-               F_GDS(IJK,M) = ZERO
-            ELSE
-               F_GS(IJK,M) = ZERO
-            ENDIF
-
+            F_GS(IJK,M) = ZERO
             IF(KT_TYPE_ENUM == GHD_2007) F_gs(IJK, MMAX) = ZERO
 
          ENDIF   ! end if (fluidorp_flow_at(ijk))

@@ -83,10 +83,11 @@
          DRAG_BM(:,:) = ZERO
       ENDIF
 
+      F_GDS(:) = ZERO
+      VXF_GDS(:) = ZERO
+
       IF (DES_CONTINUUM_HYBRID) THEN
-         F_GDS(:,:) = ZERO
          F_SDS(:,:,:) = ZERO
-         VXF_GDS(:,:) = ZERO
          VXF_SDS(:,:,:) = ZERO
       ENDIF
 

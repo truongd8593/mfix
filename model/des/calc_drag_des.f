@@ -30,28 +30,14 @@
       END SUBROUTINE CALC_DRAG_DES
 
 
-
-
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: DES_DRAG_GS                                             C
-!                                                                      C
-!  Purpose: This subroutine is only called from the CONTINUUM side.    C
-!     It performs the following functions:                             C
-!     - If non-interpolated, then execution of the code is directed    C
-!       to the subroutine drag_gs for the appropriate calculations     C
-!       (i.e., calculation of the fluid-solids drag coefficient)       C
-!     - If interpolated then, it calculates the fluid-particle         C
-!       drag coefficient (F_GP) based on the particle velocity and     C
-!       interpolated fluid velocity. It then determines the            C
-!       the contributions of fluid-particle drag to the center         C
-!       coefficient of the A matrix and the b (source) vector in the   C
-!       matrix equation (A*VEL_FP=b) equation for the fluid phase      C
-!       x, y and z momentum balances using F_GP.                       C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: DES_DRAG_GS                                             !
+!                                                                      !
+!  Purpose: This subroutine is only called from the CONTINUUM side. It !
+!  calls the correct routine for calculating the gas drag force.       !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_DRAG_DES_2FLUID
 
       use discretelement, only: DES_CONTINUUM_COUPLED

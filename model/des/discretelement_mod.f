@@ -448,7 +448,7 @@
 ! f_gs, f_ss, etc) are also being used to store the information between
 ! the gas and continuous solids phases.
 ! drag coefficient between gas phase and discrete particle 'phases'
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: F_GDS
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: F_GDS
                         !(DIMENSION_3,DES_MMAX)
 ! drag coefficient between continuous solids phases and discrete
 ! particle 'phases'
@@ -461,7 +461,7 @@
 ! in the gas-phase momentum balances, in the routine to determine
 ! coefficients for the pressure correction equation and in the partial
 ! elimination algorithm
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: VXF_GDS
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: VXF_GDS
                         !(DIMENSION_3,DES_MMAX)
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: VXF_SDS
                         !(DIMENSION_3,MMAX,DES_MMAX)
@@ -492,9 +492,6 @@
 ! the coefficient add to gas momentum B matrix  at cell corners
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::DRAG_BM
                         !(DIMENSION_3,3,DES_MMAX)
-! fluid velocity at particle position
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::VEL_FP
-                        !(PARTICLES,3)
 
 ! An intermediate array used in calculation of mean solids velocity
 ! by backward interpolation, i.e., when INTERP_DES_MEAN_FIELDS is true.

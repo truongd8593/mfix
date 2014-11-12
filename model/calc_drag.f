@@ -71,14 +71,6 @@
 !-----------------------------------------------
 ! Solids phase indices
       INTEGER :: M, L, DM
-! Flag only used when the hybrid model is invoked and notifies the
-! routine that the solid phase index M refers to the indice of a
-! discrete 'phase' not a continuous phase so that the appropriate
-! variables are referenced.  This is currently required until moves
-! are made to fully separate use of F_GS from DEM (i.e. strictly
-! assign F_GS for use with gas-continuum solids drag and assign a
-! new variable, like F_GDS, when refering to gas-discrete solids drag)
-      LOGICAL :: DISCRETE_FLAG
 !-----------------------------------------------
 
 ! Alberto Passalacqua:  QMOMB
@@ -87,11 +79,8 @@
 
 ! calculate drag between continuum phases (gas-solid & solids-solids)
       IF (.NOT.DES_CONTINUUM_COUPLED .OR. DES_CONTINUUM_HYBRID) THEN
-         DISCRETE_FLAG = .FALSE.   ! only matters if des_continuum_hybrid
          DO M = 1, SMAX
-            IF (DRAGD(0,M) .AND. RO_G0/=ZERO) THEN
-               CALL DRAG_GS (M, DISCRETE_FLAG, IER)
-            ENDIF
+            IF (DRAGD(0,M) .AND. RO_G0/=ZERO) CALL DRAG_GS(M, IER)
          ENDDO
 
          IF (GRANULAR_ENERGY) THEN

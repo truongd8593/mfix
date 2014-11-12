@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: GAS_DRAG                                                !
+!  Subroutine: GAS_DRAG_W                                              !
 !  Author: Jay Boyalakuntla                           Date: 12-Jun-04  !
 !                                                                      !
 !  Purpose: Account for the equal and opposite drag force on the gas   !
@@ -28,23 +28,34 @@
       use discretelement, only: DES_MMAX
 ! Gas source for coupling gas/solids flows.
       use discretelement, only: VxF_GDS
+! Volume of X-momentum cell
+      use geometry, only: VOL_U
+! Flag to calculate Z direction
+      use geometry, only: DO_K
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
-! Size of IJK arrays.
-      use param, only: DIMENSION_3
-! Number of solids phases.
-      use param, only: DIMENSION_M
-
-      use functions
-      use fun_avg
+! Size of IJK arrays and solids phase..
+      use param, only: DIMENSION_3, DIMENSION_M
+! Fluid grid loop bounds.
+      use compar, only: IJKStart3, IJKEnd3
+! The I, J, and K values that comprise an IJK
+      use indices, only: I_OF, J_OF, K_OF
+! Flag: Fluid exists at indexed cell
+      use functions, only: FLUID_AT
+! IJK of cell to east.
+      use functions, only: EAST_OF
+! IJK function for I,J,K that includes mapped indices.
+      use compar, only: FUNIJK_MAP_C
+! Function for averaging to a scalar cell's east face.
+      use fun_avg, only: AVG_X
 
       IMPLICIT NONE
 
 ! Dummy Arguments:
 !---------------------------------------------------------------------//
 ! Septadiagonal matrix A_m
-      DOUBLE PRECISION, INTENT(INOUT) :: A_M(DIMENSION_3, -3:3, 0:DIMENSION_M)
+      DOUBLE PRECISION, INTENT(INOUT) :: A_M(DIMENSION_3,-3:3,0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_M(DIMENSION_3, 0:DIMENSION_M)
 ! Error index
@@ -54,25 +65,23 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Grid cell indices
-      INTEGER :: I, J, K, IJK, IJMK, IJKM, IJMKM
-! Solids phase index
-      INTEGER :: M
-! Face center values of u_sm (i+1/2)
-      DOUBLE PRECISION :: USFCM
+      INTEGER :: I, J, K, IJK, IJMK, IJKM, IJMKM, IJKE
 ! temporary variables for matrix A_M and vector B_M
       DOUBLE PRECISION :: tmp_A, tmp_B
 ! Averaging factor
       DOUBLE PRECISION :: AVG_FACTOR
 !......................................................................!
 
+! Initialize error flag.
+      IER = 0
+
 ! Skip this routine if the gas/solids are only one-way coupled.
       IF(DES_ONEWAY_COUPLED) RETURN
-
 
 ! Average the interpoalted drag force from the cell corners to the cell face.
       IF(DES_INTERP_ON)THEN
 
-         AVG_FACTOR = merge(0.5d0, 0.25D0, NO_K)
+         AVG_FACTOR = merge(0.25d0, 0.5d0, DO_K)
 
 !$omp parallel do schedule(guided,50) default(none)                    &
 !$omp shared(IJKSTART3, IJKEND3, FUNIJK_MAP_C, I_OF, J_OF,             &
@@ -110,23 +119,17 @@
       ELSE
 
 !$omp parallel do default(none) schedule(guided, 50)                   &
-!$omp shared(DES_MMAX, IJKSTART3, IJKEND3, I_OF, DES_CONTINUUM_HYBRID, &
-!$omp    DES_U_S, VxF_GDS, A_M, B_M)                                   &
-!$omp private(M, IJK, I, USFCM, tmp_A, tmp_B)
-         DO M = 1, DES_MMAX
-            DO IJK = IJKSTART3, IJKEND3
-               IF(.NOT.FLUID_AT(IJK)) CYCLE
-
+!$omp shared(IJKSTART3,IJKEND3,I_OF, DRAG_AM, DRAG_BM, A_M, B_M, VOL_U)&
+!$omp private(IJK, I, IJKE)
+         DO IJK = IJKSTART3, IJKEND3
+            IF(FLUID_AT(IJK)) THEN
                I = I_OF(IJK)
-               USFCM = AVG_X(DES_U_S(IJK,M),DES_U_S(EAST_OF(IJK),M),I)
-
-               tmp_A =  - VXF_GDS(IJK,M)
-               tmp_B =  - VXF_GDS(IJK,M)*USFCM
-
-               A_M(IJK,0,0) = A_M(IJK,0,0) + tmp_A
-               B_M(IJK,0) = B_M(IJK,0) + tmp_B
-
-            ENDDO
+               IJKE = EAST_OF(IJK)
+               A_M(IJK,0,0) = A_M(IJK,0,0) - VOL_U(IJK) *              &
+                  AVG_X(DRAG_AM(IJK), DRAG_AM(IJKE), I)
+               B_M(IJK,0) = B_M(IJK,0) - VOL_U(IJK) *                  &
+                  AVG_X(DRAG_BM(IJK,1), DRAG_BM(IJKE,1), I)
+            ENDIF
          ENDDO
 !$omp end parallel do
       ENDIF
@@ -134,17 +137,16 @@
       END SUBROUTINE GAS_DRAG_U
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: GAS_DRAG                                                C
-!  Purpose: Account for the equal and opposite drag force on the gas   C
-!           phase due to particles by introducing the drag as a        C
-!           source term.  Face centered.                               C
-!                                                                      C
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: GAS_DRAG_V                                              !
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  !
+!                                                                      !
+!  Purpose: Account for the equal and opposite drag force on the gas   !
+!           phase due to particles by introducing the drag as a        !
+!           source term.  Face centered.                               !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE GAS_DRAG_V(A_M, B_M, IER)
 
 
@@ -166,20 +168,30 @@
       use discretelement, only: DES_MMAX
 ! Gas source for coupling gas/solids flows.
       use discretelement, only: VxF_GDS
+! Volume of Y-momentum cell
+      use geometry, only: VOL_V
+! Flag to calculate Z direction
+      use geometry, only: DO_K
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
-! Size of IJK arrays.
-      use param, only: DIMENSION_3
-! Number of solids phases.
-      use param, only: DIMENSION_M
-
-      use functions
-      use fun_avg
+! Size of IJK arrays and solids phase..
+      use param, only: DIMENSION_3, DIMENSION_M
+! Fluid grid loop bounds.
+      use compar, only: IJKStart3, IJKEnd3
+! The I, J, and K values that comprise an IJK
+      use indices, only: I_OF, J_OF, K_OF
+! Flag: Fluid exists at indexed cell
+      use functions, only: FLUID_AT
+! IJK of cell to north.
+      use functions, only: NORTH_OF
+! IJK function for I,J,K that includes mapped indices.
+      use compar, only: FUNIJK_MAP_C
+! Function for averaging to a scalar cell's north face.
+      use fun_avg, only: AVG_Y
 
 
       IMPLICIT NONE
-
 
 ! Dummy Arguments:
 !---------------------------------------------------------------------//
@@ -193,24 +205,22 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Grid cell indices
-      INTEGER :: I, J, K, IJK, IMJK, IJKM, IMJKM
-! Solids phase index
-      INTEGER :: M
-! Face center values of v_sm (j+1/2)
-      DOUBLE PRECISION :: VSFCM
+      INTEGER :: I, J, K, IJK, IMJK, IJKM, IMJKM, IJKN
 ! temporary variables for matrix A_M and vector B_M
       DOUBLE PRECISION tmp_A, tmp_B
 ! Averaging factor
       DOUBLE PRECISION :: AVG_FACTOR
 !......................................................................!
 
+! Initialize error flag.
+      IER = 0
 
 ! Skip this routine if the gas/solids are only one-way coupled.
       IF(DES_ONEWAY_COUPLED) RETURN
 
       IF(DES_INTERP_ON) THEN
 
-         AVG_FACTOR = merge(0.5d0, 0.25D0, NO_K)
+         AVG_FACTOR = merge(0.25d0, 0.5d0, DO_K)
 
 !$omp parallel do schedule (guided,50) default(none)                   &
 !$omp shared(IJKSTART3, IJKEND3, FUNIJK_MAP_C, I_OF, J_OF,             &
@@ -230,8 +240,8 @@
 
             IF(DO_K) THEN
 
-               IJKM = FUNIJK(I,J,K-1)
-               IMJKM = FUNIJK(I-1,J,K-1)
+               IJKM = FUNIJK_MAP_C(I,J,K-1)
+               IMJKM = FUNIJK_MAP_C(I-1,J,K-1)
 
                tmp_A = tmp_A - AVG_FACTOR*                             &
                   (DRAG_AM(IJKM) + DRAG_AM(IMJKM))
@@ -249,23 +259,17 @@
       ELSE
 
 !$omp parallel do default(none) schedule(guided, 50)                   &
-!$omp shared(DES_MMAX, IJKSTART3, IJKEND3, J_OF, DES_CONTINUUM_HYBRID, &
-!$omp    DES_V_S, VxF_GDS, A_M, B_M)                                   &
-!$omp private(M, IJK, J, VSFCM, tmp_A, tmp_B)
-         DO M = 1, DES_MMAX
-            DO IJK = IJKSTART3, IJKEND3
-               IF(.NOT.FLUID_AT(IJK)) CYCLE
-
+!$omp shared(IJKSTART3,IJKEND3,J_OF, DRAG_AM, DRAG_BM, A_M, B_M, VOL_V)&
+!$omp private(IJK, J, IJKN)
+         DO IJK = IJKSTART3, IJKEND3
+            IF(FLUID_AT(IJK)) THEN
                J = J_OF(IJK)
-               VSFCM = AVG_Y(DES_V_S(IJK,M),DES_V_S(NORTH_OF(IJK),M),J)
-
-               tmp_A =  - VXF_GDS(IJK,M)
-               tmp_B =  - VXF_GDS(IJK,M)*VSFCM
-
-               A_M(IJK,0,0) = A_M(IJK,0,0) + tmp_A
-               B_M(IJK,0) = B_M(IJK,0) + tmp_B
-
-            ENDDO
+               IJKN = NORTH_OF(IJK)
+               A_M(IJK,0,0) = A_M(IJK,0,0) - VOL_V(IJK) *              &
+                  AVG_Y(DRAG_AM(IJK), DRAG_AM(IJKN), J)
+               B_M(IJK,0) = B_M(IJK,0) - VOL_V(IJK) *                  &
+                  AVG_Y(DRAG_BM(IJK,2), DRAG_BM(IJKN,2), J)
+            ENDIF
          ENDDO
 !$omp end parallel do
 
@@ -274,18 +278,16 @@
       END SUBROUTINE GAS_DRAG_V
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: GAS_DRAG                                                C
-!  Purpose: Account for the equal and opposite drag force on the gas   C
-!           phase due to particles by introducing the drag as a        C
-!           source term.  Face centered.                               C
-!                                                                      C
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: GAS_DRAG_W                                              !
+!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  !
+!                                                                      !
+!  Purpose: Account for the equal and opposite drag force on the gas   !
+!           phase due to particles by introducing the drag as a        !
+!           source term.  Face centered.                               !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE GAS_DRAG_W(A_M, B_M, IER)
 
 ! Global Variables:
@@ -306,25 +308,34 @@
       use discretelement, only: DES_MMAX
 ! Gas source for coupling gas/solids flows.
       use discretelement, only: VxF_GDS
+! Volume of Z-momentum cell
+      use geometry, only: VOL_W
+! Flag to calculate Z direction
+      use geometry, only: DO_K
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
-! Size of IJK arrays.
-      use param, only: DIMENSION_3
-! Number of solids phases.
-      use param, only: DIMENSION_M
-
-      use functions
-      use fun_avg
-
+! Size of IJK arrays and solids phase..
+      use param, only: DIMENSION_3, DIMENSION_M
+! Fluid grid loop bounds.
+      use compar, only: IJKStart3, IJKEnd3
+! The I, J, and K values that comprise an IJK
+      use indices, only: I_OF, J_OF, K_OF
+! Flag: Fluid exists at indexed cell
+      use functions, only: FLUID_AT
+! IJK of cell to top.
+      use functions, only: TOP_OF
+! IJK function for I,J,K that includes mapped indices.
+      use compar, only: FUNIJK_MAP_C
+! Function for averaging to a scalar cell's north face.
+      use fun_avg, only: AVG_Z
 
       IMPLICIT NONE
-
 
 ! Dummy Arguments:
 !---------------------------------------------------------------------//
 ! Septadiagonal matrix A_m
-      DOUBLE PRECISION, INTENT(INOUT) :: A_M(DIMENSION_3, -3:3, 0:DIMENSION_M)
+      DOUBLE PRECISION, INTENT(INOUT) :: A_M(DIMENSION_3,-3:3,0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_M(DIMENSION_3, 0:DIMENSION_M)
 ! Error index
@@ -333,11 +344,7 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Grid cell indices
-      INTEGER :: I, J, K, IJK, IMJK, IJMK, IMJMK
-! Solids phase index
-      INTEGER :: M
-! Face center values of w_sm (k+1/2)
-      DOUBLE PRECISION :: WSFCM
+      INTEGER :: I, J, K, IJK, IMJK, IJMK, IMJMK, IJKT
 ! temporary variables for matrix A_M and vector B_M
       DOUBLE PRECISION tmp_A, tmp_B
 ! Averaging factor
@@ -345,17 +352,18 @@
       DOUBLE PRECISION :: AVG_FACTOR
 !......................................................................!
 
+! Initialize error flag.
+      IER = 0
 
 ! Skip this routine if the gas/solids are only one-way coupled.
       IF(DES_ONEWAY_COUPLED) RETURN
 
-
       IF(DES_INTERP_ON) THEN
 
-         AVG_FACTOR = merge(0.5d0, 0.25D0, NO_K)
+         AVG_FACTOR = 0.25d0
 
 !$omp parallel do schedule (guided,50) default(none)                   &
-!$omp shared(IJKSTART3, IJKEND3, I_OF, J_OF,   &
+!$omp shared(IJKSTART3, IJKEND3, FUNIJK_MAP_C, I_OF, J_OF,             &
 !$omp    K_OF, AVG_FACTOR, DRAG_AM, DRAG_BM, A_M, B_M, VOL_W)          &
 !$omp private(IJK, I, J, K, IMJK, IJMK, IMJMK, tmp_A, tmp_B)
          DO IJK = IJKSTART3, IJKEND3
@@ -365,9 +373,9 @@
             J = J_OF(IJK)
             K = K_OF(IJK)
 
-            IMJK = FUNIJK(I-1,J,K)
-            IJMK = FUNIJK(I,J-1,K)
-            IMJMK = FUNIJK(I-1,J-1,K)
+            IMJK = FUNIJK_MAP_C(I-1,J,K)
+            IJMK = FUNIJK_MAP_C(I,J-1,K)
+            IMJMK = FUNIJK_MAP_C(I-1,J-1,K)
 
             tmp_A = -AVG_FACTOR*(DRAG_AM(IJK) + DRAG_AM(IMJK) +        &
                DRAG_AM(IJMK) + DRAG_AM(IMJMK))
@@ -384,24 +392,17 @@
       ELSE
 
 !$omp parallel do default(none) schedule(guided, 50)                   &
-!$omp shared(DES_MMAX, IJKSTART3, IJKEND3, K_OF, DES_CONTINUUM_HYBRID, &
-!$omp    DES_W_S, VxF_GDS, A_M, B_M)                                   &
-!$omp private(M, IJK, K, WSFCM, tmp_A, tmp_B)
-         DO M = 1, DES_MMAX
-            DO IJK = IJKSTART3, IJKEND3
-
-               IF(FLUID_AT(IJK)) CYCLE
-
+!$omp shared(IJKSTART3,IJKEND3,K_OF, DRAG_AM, DRAG_BM, A_M, B_M, VOL_W)&
+!$omp private(IJK, K, IJKT)
+         DO IJK = IJKSTART3, IJKEND3
+            IF(FLUID_AT(IJK)) THEN
                K = K_OF(IJK)
-               WSFCM = AVG_Z(DES_W_S(IJK,M),DES_W_S(TOP_OF(IJK),M),K)
-
-               tmp_A =  - VXF_GDS(IJK,M)
-               tmp_B =  - VXF_GDS(IJK,M)*WSFCM
-
-               A_M(IJK,0,0) = A_M(IJK,0,0) + tmp_A
-               B_M(IJK,0) = B_M(IJK,0) + tmp_B
-
-            ENDDO
+               IJKT = TOP_OF(IJK)
+               A_M(IJK,0,0) = A_M(IJK,0,0) - VOL_W(IJK) *              &
+                  AVG_Z(DRAG_AM(IJK), DRAG_AM(IJKT), K)
+               B_M(IJK,0) = B_M(IJK,0) - VOL_W(IJK) *                  &
+                  AVG_Z(DRAG_BM(IJK,3), DRAG_BM(IJKT,3), K)
+            ENDIF
          ENDDO
 !$omp end parallel do
 
