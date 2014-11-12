@@ -1810,8 +1810,8 @@
 
       IF(.NOT.PVD_FILE_INITIALIZED) THEN
 
-         IF(RUN_TYPE == 'NEW')THEN
-            ! For a new run, the pvd file should not exist, and is created with appropriate header
+         IF(RUN_TYPE == 'NEW'.OR.RUN_TYPE=='RESTART_2')THEN
+            ! For a new or RESTART_2 run, the pvd file should not exist, and is created with appropriate header
             IF (.NOT.PVD_EXISTS) THEN
                OPEN(UNIT = PVD_UNIT, FILE = TRIM(PVD_FILENAME))
                WRITE(PVD_UNIT,100) '<?xml version="1.0"?>'
@@ -1825,7 +1825,7 @@
                CALL MFIX_EXIT(myPE)
             ENDIF
          ELSE
-            ! For a restart run, the pvd file must exist
+            ! For a restart_1 run, the pvd file must exist
             IF (.NOT.PVD_EXISTS) THEN
                ! If the pvd file does not exist, print error message and exits
                WRITE(*,1003) TRIM(PVD_FILENAME)

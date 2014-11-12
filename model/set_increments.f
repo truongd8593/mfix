@@ -2328,6 +2328,8 @@
 
 !======================================================================
 
+      ARRAY_2 = UNDEFINED
+
       DO IJK = IJKSTART3,IJKEND3
 
           ARRAY_2(BACKGROUND_IJK_OF(IJK)) = ARRAY_1(IJK)
@@ -2766,6 +2768,7 @@
 220       FORMAT(1x,' J/I | ',50(I6))
 230       FORMAT(1x,I4,' | ',50(I6))
 
+         IF(.NOT.IS_SERIAL) THEN
 
          WRITE(IJK_FILE_UNIT,*)''
 
@@ -2808,6 +2811,7 @@
          CALL WRITE_INT_TABLE(IJK_FILE_UNIT,recvijk2, size(recvijk2), 1, size(recvijk2), 5)
          WRITE(IJK_FILE_UNIT,*)''
 
+         ENDIF
 
          CLOSE(IJK_FILE_UNIT)
 

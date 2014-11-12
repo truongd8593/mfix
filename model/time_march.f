@@ -215,7 +215,7 @@
       IF(WRITE_VTK_FILES) THEN
          VTK_TIME = UNDEFINED
          IF (VTK_DT /= UNDEFINED) THEN
-            IF (RUN_TYPE == 'NEW') THEN
+            IF (RUN_TYPE == 'NEW'.OR.RUN_TYPE=='RESTART_2') THEN
                VTK_TIME = TIME
             ELSE
                VTK_TIME = (INT((TIME + 0.1d0*DT)/VTK_DT)+1)*VTK_DT
