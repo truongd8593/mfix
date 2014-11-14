@@ -18,7 +18,7 @@
       module softspring_funcs_cutcell
 
       PRIVATE
-      PUBLIC:: CHECK_IF_PARTICLE_OVELAPS_STL, CALC_DEM_FORCE_WITH_WALL_STL, ADD_FACET
+      PUBLIC:: CHECK_IF_PARTICLE_OVELAPS_STL, CALC_DEM_FORCE_WITH_WALL_STL, ADD_FACET, force_and_torque
 
       CONTAINS
 
@@ -247,15 +247,14 @@
 
       INTEGER :: LL
       INTEGER I, J,K, II, IW, IDIM, IJK, NF, wall_count
-      DOUBLE PRECISION OVERLAP_N, OVERLAP_T, SQRT_OVERLAP
+      DOUBLE PRECISION OVERLAP_N, SQRT_OVERLAP
 
-      DOUBLE PRECISION V_REL_TRANS_NORM, V_REL_TRANS_TANG, &
-      DISTSQ, RADSQ, CLOSEST_PT(DIMN)
+      DOUBLE PRECISION V_REL_TRANS_NORM, DISTSQ, RADSQ, CLOSEST_PT(DIMN)
 ! local normal and tangential forces
       DOUBLE PRECISION FNS1(DIMN), FNS2(DIMN)
       DOUBLE PRECISION FTS1(DIMN), FTS2(DIMN)
       DOUBLE PRECISION NORMAL(DIMN), TANGENT(DIMN), DIST(DIMN), DISTMOD
-      DOUBLE PRECISION, DIMENSION(DIMN) :: FTAN, FNORM
+      DOUBLE PRECISION, DIMENSION(DIMN) :: FTAN, FNORM, OVERLAP_T
 
       LOGICAL :: checked_facet_already,DES_LOC_DEBUG, PARTICLE_SLIDE, &
       test_overlap_and_exit
@@ -283,6 +282,8 @@
       INTEGER :: MAX_NF, axis
       DOUBLE PRECISION, DIMENSION(3) :: PARTICLE_MIN, PARTICLE_MAX
 
+      type(facet_linked_list), POINTER :: current_p, previous_p
+
       DES_LOC_DEBUG = .false. ;      DEBUG_DES = .false.
       FOCUS_PARTICLE = -1
 
@@ -298,6 +299,10 @@
 ! or is already marked as a potential exiting particle
 
          IF( PEA(LL,2) .OR. PEA(LL,3)) CYCLE
+
+! If no neighboring facet in the surrounding 27 cells, then exit
+         IF (NO_NEIGHBORING_FACET_DES(PIJK(LL,4))) cycle
+!         IF (NO_NEIGHBORING_FACET_DES(PIJK(LL,4))) cycle
 
          IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN
             IJK = PIJK(LL,4)
@@ -328,10 +333,17 @@
 
             axis = cellneighbor_facet(cell_id)%extentdir(cell_count)
 
-            if (cellneighbor_facet(cell_id)%extentmin(cell_count) > particle_max(axis)) cycle
-            if (cellneighbor_facet(cell_id)%extentmax(cell_count) < particle_min(axis)) cycle
-
             NF = cellneighbor_facet(cell_id)%p(cell_count)
+
+            if (cellneighbor_facet(cell_id)%extentmin(cell_count) > particle_max(axis)) then
+               call remove_collision()
+               cycle
+            endif
+
+            if (cellneighbor_facet(cell_id)%extentmax(cell_count) < particle_min(axis)) then
+               call remove_collision()
+               cycle
+            endif
 
                !Recall the facets on the MI plane are re-classified
                !as MI only when the user specifies BC_MI_AS_WALL_FOR_DES
@@ -385,14 +397,20 @@
             !when the particle does not overlap the triangle.
             !However, if the orthogonal projection shows no overlap, then
             !that is a big fat negative and overlaps are not possible.
-            if((line_t.le.-1.0001d0*des_radius(LL))) cycle  ! no overlap
+            if((line_t.le.-1.0001d0*des_radius(LL))) then  ! no overlap
+               call remove_collision()
+               CYCLE
+            ENDIF
 
             CALL ClosestPtPointTriangle(DES_POS_NEW(:,LL), VERTEX(:,:,NF), CLOSEST_PT(:))
 
             DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(:,LL)
             DISTSQ = DOT_PRODUCT(DIST, DIST)
 
-            IF(DISTSQ .GE. RADSQ) CYCLE !No overlap exists
+            IF(DISTSQ .GE. RADSQ) THEN !No overlap exists
+               call remove_collision()
+               CYCLE
+            ENDIF
 
 !               IF(DISTSQ < MAX_DISTSQ)THEN
                   MAX_DISTSQ = DISTSQ
@@ -402,10 +420,10 @@
 !            ENDDO
 !         ENDDO
 
-
 !         IF(MAX_DISTSQ /= UNDEFINED) THEN
 ! Assign the collision normal based on the facet with the
 ! largest overlap.
+!                  NORMAL(:) = DIST(:)/sqrt(DISTSQ)
                   NORMAL(:) = DIST(:)/max(sqrt(DISTSQ),0.0000001)
 
                   !NORMAL(:) = -NORM_FACE(:,MAX_NF)
@@ -422,7 +440,7 @@
 
 ! Calculate the translational relative velocity for a contacting particle pair
                CALL CFRELVEL_WALL2(LL, V_REL_TRANS_NORM, &
-                  V_REL_TRANS_TANG, TANGENT, NORMAL, DISTMOD)
+                  TANGENT, NORMAL, DISTMOD)
 
 ! Calculate the spring model parameters.
                phaseLL = PIJK(LL,5)
@@ -451,44 +469,64 @@
 ! wall collision is considered. Therefore, enduring contact can exist
 ! from facet-to-facet as long as the particle remains in contact with
 ! one or more facets.
-!               IF(abs(sum(FORCE_HISTORY)) .gt. small_number) THEN
-                  OVERLAP_T = V_REL_TRANS_TANG*DTSOLID
-!               ELSE
-!                  IF(V_REL_TRANS_NORM .GT. ZERO) THEN
-!                     DTSOLID_TMP = OVERLAP_N/(V_REL_TRANS_NORM)
-!                  ELSEIF(V_REL_TRANS_NORM .LT. ZERO) THEN
-!                     DTSOLID_TMP = DTSOLID
-!                  ELSE
-!                     DTSOLID_TMP = OVERLAP_N /                         &
-!                        (V_REL_TRANS_NORM+SMALL_NUMBER)
-!                  ENDIF
-!                  OVERLAP_T = V_REL_TRANS_TANG* MIN(DTSOLID,DTSOLID_TMP)
-!               ENDIF
+
+               if (.not. associated(particle_wall_collisions(LL)%pp)) then
+                  allocate(particle_wall_collisions(LL)%pp)
+                  current_p => particle_wall_collisions(LL)%pp
+                  current_p%PFT(:) = ZERO
+                  current_p%facet_id = nf
+               else
+                  current_p => particle_wall_collisions(LL)%pp
+                  do while (associated(current_p) .and. current_p%facet_id .ne. nf)
+                     previous_p => current_p
+                     current_p => current_p%next
+                  enddo
+
+                  if (.not. associated(current_p)) then
+                     allocate(current_p)
+                     previous_p%next => current_p
+                     current_p%PFT(:) = ZERO
+                     current_p%facet_id = nf
+                     exit
+                  endif
+               endif
+
+               IF(abs(sum(FORCE_HISTORY)) .gt. small_number) THEN
+                  OVERLAP_T(:) = TANGENT(:) * DTSOLID
+               ELSE
+                  IF(V_REL_TRANS_NORM .GT. ZERO) THEN
+                     DTSOLID_TMP = OVERLAP_N/(V_REL_TRANS_NORM)
+                  ELSEIF(V_REL_TRANS_NORM .LT. ZERO) THEN
+                     DTSOLID_TMP = DTSOLID
+                  ELSE
+                     DTSOLID_TMP = OVERLAP_N /                         &
+                        (V_REL_TRANS_NORM+SMALL_NUMBER)
+                  ENDIF
+                  OVERLAP_T(:) = TANGENT(:) * MIN(DTSOLID,DTSOLID_TMP)
+               ENDIF
 
 ! Update the tangential history.
-!               PFT(LL,0,:) = FORCE_HISTORY(:) + OVERLAP_T*TANGENT(:)
-!               FORCE_HISTORY(:) = PFT(LL,0,:) - &
-!                  DOT_PRODUCT(PFT(LL,0,:),NORMAL)*NORMAL(:)
+               current_p%PFT(:) = current_p%PFT(:) + OVERLAP_T(:)
+
+               FORCE_HISTORY(:) = current_p%PFT(:) - &
+                  DOT_PRODUCT(current_p%PFT(:),NORMAL)*NORMAL(:)
 
 ! Calculate the tangential collision force.
-!               FTS1(:) = -KT_DES_W * FORCE_HISTORY(:)
-               FTS1(:) = -KT_DES_W * OVERLAP_T*TANGENT(:)
-               FTS2(:) = -ETAT_DES_W * V_REL_TRANS_TANG * TANGENT(:)
+               FTS1(:) = -KT_DES_W * FORCE_HISTORY(:)
+               FTS2(:) = -ETAT_DES_W * TANGENT(:)
                FTAN(:) =  FTS1(:) + FTS2(:)
 
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with a wall.
-               FTMD = sqrt(DOT_PRODUCT(FTAN, FTAN))
-               FNMD = sqrt(DOT_PRODUCT(FNORM,FNORM))
-               IF (FTMD.GT.(MEW_W*FNMD)) THEN
-                  IF(DOT_PRODUCT(TANGENT,TANGENT).EQ.zero) THEN
-                     FTAN(:) =  MEW_W * FNMD * FTAN(:)/FTMD
+               FTMD = DOT_PRODUCT(FTAN, FTAN)
+               FNMD = DOT_PRODUCT(FNORM,FNORM)
+               IF (FTMD.GT.(MEW_W*MEW_W*FNMD)) THEN
+                  PARTICLE_SLIDE = .TRUE.
+                  IF(all(TANGENT.EQ.zero)) THEN
+                     FTAN(:) =  MEW_W * FTAN(:) * SQRT(FNMD/FTMD)
                   ELSE
-                     FTAN(:) = -MEW_W * FNMD * TANGENT(:)
+                     FTAN(:) = -MEW_W * TANGENT(:) * SQRT(FNMD/dot_product(TANGENT,TANGENT))
                   ENDIF
-! Updated the tangental displacement history.
-!                  PFT(LL,0,:) = -(FTAN(:) - FTS2(:)) / KT_DES_W
-
                ENDIF
 
 ! Add the collision force to the total forces acting on the particle.
@@ -503,11 +541,56 @@
                   TOW(1,LL) = TOW(1,LL) + DISTMOD*CROSSP(1)
                ENDIF
 
+! Save the tangential displacement history with the correction of Coulomb's law
+               IF (PARTICLE_SLIDE) THEN
+! Since FT might be corrected during the call to cfslide, the tangental
+! displacement history needs to be changed accordingly
+                  current_p%PFT(:) = -( FTAN(:) - FTS2(:) ) / KT_DES_W
+               ELSE
+                  current_p%PFT(:) = FORCE_HISTORY(:)
+               ENDIF
+               
+               PARTICLE_SLIDE = .FALSE.
+
          ENDDO
+
 !         ENDIF
       ENDDO
 
       RETURN
+
+       contains
+
+         subroutine remove_collision
+           implicit none
+
+               if (associated(particle_wall_collisions(LL)%pp)) then
+
+                  current_p => particle_wall_collisions(LL)%pp
+
+                  if (current_p%facet_id .eq. nf) then
+                     particle_wall_collisions(LL)%pp => current_p%next
+                     deallocate(current_p)
+                  else
+
+                     previous_p => current_p
+                     current_p => current_p%next
+
+                     do while (associated(current_p) .and. current_p%facet_id .ne. nf)
+                        previous_p => current_p
+                        current_p => current_p%next
+                     enddo
+
+                     if (associated(current_p)) then
+                        previous_p%next => current_p%next
+                        deallocate(current_p)
+                     endif
+
+                  endif
+               endif
+
+         end subroutine remove_collision
+
     END SUBROUTINE CALC_DEM_FORCE_WITH_WALL_STL
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -613,7 +696,7 @@
 !                                                                      !
 !                                                                      !
 !----------------------------------------------------------------------!
-      SUBROUTINE CFRELVEL_WALL2(L,  VRN, VRT, TANGNT, NORM, DIST_LI)
+      SUBROUTINE CFRELVEL_WALL2(LL,  VRN, VSLIP, NORM, DIST_LI)
 
       USE discretelement
       USE param1
@@ -621,33 +704,32 @@
       use geometry, only: DO_K
       IMPLICIT NONE
 
+      INTEGER, INTENT(IN) :: LL
+      DOUBLE PRECISION, DIMENSION(DIMN), INTENT(IN) :: NORM
+      DOUBLE PRECISION, DIMENSION(DIMN), INTENT(OUT):: VSLIP
+      DOUBLE PRECISION, INTENT(OUT):: VRN
+! distance between particles
+      DOUBLE PRECISION, INTENT(IN) :: DIST_LI
+
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER L
 
+      DOUBLE PRECISION, DIMENSION(DIMN) :: V_ROT, OMEGA_SUM, VRELTRANS
 
-      DOUBLE PRECISION TANGNT(DIMN), NORM(DIMN)
-      DOUBLE PRECISION TANMOD, VRN, VRT
-      DOUBLE PRECISION VRELTRANS(DIMN)
-      DOUBLE PRECISION VSLIP(DIMN), &
-                       V_ROT(DIMN), OMEGA_SUM(DIMN)
-
-! distance between particles
-      DOUBLE PRECISION DIST_LI
 ! distance from the contact point to the particle centers
       DOUBLE PRECISION DIST_CL, DIST_CI
 
 ! translational relative velocity
-      VRELTRANS(:) = DES_VEL_NEW(:,L)
+      VRELTRANS(:) = DES_VEL_NEW(:,LL)
 
 ! rotational contribution  : v_rot
 ! calculate the distance from the particle center to the wall
       DIST_CL = DIST_LI         !- DES_RADIUS(L)
       IF(DO_K) THEN
-         OMEGA_SUM(:) = OMEGA_NEW(:,L)*DIST_CL
+         OMEGA_SUM(:) = OMEGA_NEW(:,LL)*DIST_CL
       ELSE
-         OMEGA_SUM(1) = OMEGA_NEW(1,L)*DIST_CL
+         OMEGA_SUM(1) = OMEGA_NEW(1,LL)*DIST_CL
          OMEGA_SUM(2) = ZERO
          OMEGA_SUM(3) = ZERO
       ENDIF
@@ -655,7 +737,7 @@
       CALL DES_CROSSPRDCT(V_ROT, OMEGA_SUM, NORM)
 
 ! total relative velocity
-      VRELTRANS(:) =  VRELTRANS(:) + V_ROT(:)
+      VRELTRANS(:) =  DES_VEL_NEW(:,LL) + V_ROT(:)
 
 ! normal component of relative velocity (scalar)
       VRN = DOT_PRODUCT(VRELTRANS,NORM)
@@ -664,31 +746,6 @@
 ! Equation (8) in Tsuji et al. 1992
       VSLIP(:) =  VRELTRANS(:) - VRN*NORM(:)
 
-! the magnitude of the tangential vector
-      TANMOD = SQRT(DOT_PRODUCT(VSLIP,VSLIP))
-      IF(TANMOD.NE.ZERO) THEN
-! the unit vector in the tangential direction
-         TANGNT(:) = VSLIP(:)/TANMOD
-      ELSE
-         TANGNT(:) = ZERO
-      ENDIF
-
-! tangential component of relative surface velocity (scalar)
-      VRT  = DOT_PRODUCT(VRELTRANS,TANGNT)
-
-      IF(DEBUG_DES) THEN
-         WRITE(*,*) 'IN CFRELVEL_WALL2------------------------------'
-
-         WRITE(*,'(3(2x,g17.8))') 'VEL LL = ', DES_VEL_NEW(:,L)
-         WRITE(*,'(3(2x,g17.8))') 'OMEGA LL = ',OMEGA_NEW(:,L)
-         WRITE(*,'(3(2x,g17.8))') 'NORMAL = ', NORM(:)
-         WRITE(*,'(3(2x,g17.8))') 'TANGENT = ', TANGNT(:)
-
-         WRITE(*,*) 'DIST_CL, DIST_CI = ', DIST_CL, DIST_CI
-
-         WRITE(*,'(3(2x,g17.8))') 'VRN, VRT = ', VRN, VRT
-         WRITE(*,*) 'OUT OF CFRELVEL_WALL2 ---------------------------------'
-      ENDIF
       RETURN
       END SUBROUTINE CFRELVEL_WALL2
 

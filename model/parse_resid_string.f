@@ -112,6 +112,7 @@
          IF (STRING_DEFINED) THEN
 !
             RESID_INDEX(L,2) = ICHAR(RESID_STRING(L)(2:2)) - 48
+            print *,"RESID_INDEX(L,2) = ",RESID_INDEX(L,2)
             IF (RESID_INDEX(L,2)<0 .OR. RESID_INDEX(L,2)>MMAX) THEN
                WRITE (LINE, '(A, A1, A, A4, A)') 'Error: Phase index ', &
                   RESID_STRING(L)(2:2), ' in RESID_STRING ', RESID_STRING(L), &

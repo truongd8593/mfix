@@ -125,6 +125,8 @@
          Allocate(  TOW (1,NPARTICLES) )
       ENDIF
 
+      Allocate(  PARTICLE_WALL_COLLISIONS (NPARTICLES) )
+
 ! Accumulated spring force
       Allocate(  PFT_WALL (NPARTICLES,6,DIMN) )
 

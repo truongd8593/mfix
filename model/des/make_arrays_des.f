@@ -151,12 +151,14 @@
             call add_facet(cell_id,NORTH_FACEID)
          endif
 
-         if (K_CELL.eq.KMIN1) then
-            call add_facet(cell_id,BOTTOM_FACEID)
-         endif
+         if (DO_K) then
+            if (K_CELL.eq.KMIN1) then
+               call add_facet(cell_id,BOTTOM_FACEID)
+            endif
 
-         if (K_CELL.eq.KMAX1) then
-            call add_facet(cell_id,TOP_FACEID)
+            if (K_CELL.eq.KMAX1) then
+               call add_facet(cell_id,TOP_FACEID)
+            endif
          endif
 
          DO KK = KMINUS1, KPLUS1

@@ -12,7 +12,11 @@
       USE softspring_funcs_cutcell
       use discretelement, only: USE_STL_DES
 
+!      IF(USE_STL_DES) THEN
          CALL CALC_DEM_FORCE_WITH_WALL_STL
+!      ELSE
+!         CALL CALC_FORCE_DEM_WALL
+!      ENDIF
 
 
       RETURN
@@ -43,6 +47,8 @@
       USE compar
       USE constant
       USE cutcell
+      USE functions
+      USE softspring_funcs_cutcell
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -372,7 +378,6 @@
                         OVERLAP_T = MIN(DTSOLID,DTSOLID_TMP)*V_REL_TANG
                      ENDIF
 
-
                      phaseLL = PIJK(LL,5)
 
 ! T.Li : Hertz vs linear spring-dashpot contact model
@@ -435,6 +440,7 @@
                         pfn_WALL(ll,ni,:)   = normal(:)
                      else ! Old procedure
                         PFT_WALL(LL,NI,:) = PFT_WALL(LL,NI,:) + OVERLAP_T(:)
+
                         PFT_TMP(:) = PFT_WALL(LL,NI,:) ! update pft_tmp before it used
                      !remove the normal component from the tangential force
                      !due to change of normal direction
@@ -448,15 +454,27 @@
                      FTS2(:)  = -ETAT_DES_W * V_REL_TANG(:)
                      FT(:) = FTS1(:) + FTS2(:)
 
-
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with a wall
-                     CALL CFSLIDE(V_REL_TANG, PARTICLE_SLIDE, MEW_W,FT(:),FN(:))
+!                     CALL CFSLIDE(V_REL_TANG, PARTICLE_SLIDE, MEW_W,FT(:),FN(:))
+
+      FTMD = dot_product(FT(:),FT(:))
+      FNMD = dot_product(FN(:),FN(:))
+
+      IF (FTMD.GT.(MEW_W*MEW_W*FNMD)) THEN
+! tangential force based on sliding friction
+         PARTICLE_SLIDE = .TRUE.
+         IF(ALL(V_REL_TANG.EQ.0)) THEN
+            FT(:) =  MEW_W * FT(:) * SQRT(FNMD/FTMD)
+         ELSE
+            FT(:) = -MEW_W * V_REL_TANG(:) * SQRT(FNMD/dot_product(V_REL_TANG,V_REL_TANG))
+         ENDIF
+
+      ENDIF
 
 ! Calculate the total force FC and torque TOW on a particle in a
 ! particle-wall collision
                      CALL CFFCTOWALL(LL, NORMAL, DISTMOD, FN, FT)
-
 
 ! Save the tangential displacement history with the correction of Coulomb's law
                      IF (PARTICLE_SLIDE) THEN
@@ -466,7 +484,6 @@
                      ELSE
                         PFT_WALL(LL,NI,:) = PFT_TMP(:)
                      ENDIF
-
 
                      PARTICLE_SLIDE = .FALSE.
 
