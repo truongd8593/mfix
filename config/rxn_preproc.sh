@@ -21,6 +21,19 @@ all_aliases="_Blank"
 alias_count=0
 duplicate_aliases=""
 
+#ALPEMI MacOS Revised the following for MacOS compatability of sed
+# Check if file exists to trigger the alternative GNU based sed for MacOS.
+if test -r ${MFIX_CONFIG}/compilers/Load_MACHINE_TYPE.sh; then
+    source ${MFIX_CONFIG}/compilers/Load_MACHINE_TYPE.sh
+fi    
+sedcmd=sed
+if [ "$mfix_os" == "MacOS" ] 
+then
+   # Define an alternate GNU-sed for MacOS only
+   sedcmd=/usr/local/bin/gsed
+   echo "Using sed command replacement for MacOS: " $sedcmd
+fi
+
 format_err() {
   echo " "
   echo "  *********************************************************************"
@@ -142,16 +155,17 @@ else
 
 # Pull off SPECIES_ALIAS lines.
     p1g=$(echo $p | grep -i 'species_alias_g')
-    p1g=$(echo $p1g | sed 's/.*\(species_alias_g.*\)/\1/gI')
-    p1g=$(echo $p1g | sed 's/species_g.*//gI')
+#ALPEMI Revised sed command as $sedcmd for MacOS compatability    
+    p1g=$(echo $p1g | $sedcmd 's/.*\(species_alias_g.*\)/\1/gI')
+    p1g=$(echo $p1g | $sedcmd 's/species_g.*//gI')
 
     p1s=$(echo $p | grep -i "species_alias_s.*") # solids phases
-    p1s=$(echo $p1s | sed 's/.*\(species_alias_s.*\)/\1/gI')
-    p1s=$(echo $p1s | sed 's/species_s.*//gI')  
+    p1s=$(echo $p1s | $sedcmd 's/.*\(species_alias_s.*\)/\1/gI')
+    p1s=$(echo $p1s | $sedcmd 's/species_s.*//gI')  
 
     p1s_des=$(echo $p | grep -i "des_species_alias_s.*") # solids phases
-    p1s_des=$(echo $p1s_des | sed 's/.*\(des_species_alias_s.*\)/\1/gI')
-    p1s_des=$(echo $p1s_des | sed 's/des_species_s.*//gI')
+    p1s_des=$(echo $p1s_des | $sedcmd 's/.*\(des_species_alias_s.*\)/\1/gI')
+    p1s_des=$(echo $p1s_des | $sedcmd 's/des_species_s.*//gI')
 
 # Process gas phase species aliases.
 #-----------------------------------------------------------------------
