@@ -197,8 +197,11 @@
 
 ! Variables for hybrid model
       IF (DES_CONTINUUM_HYBRID) THEN
-         ALLOCATE(F_SDS(DIMENSION_3,DIMENSION_M,DES_MMAX))
-         ALLOCATE(VXF_SDS(DIMENSION_3,DIMENSION_M,DES_MMAX))
+         ALLOCATE(SDRAG_AM(DIMENSION_3,DIMENSION_M))
+         ALLOCATE(SDRAG_BM(DIMENSION_3, DIMN,DIMENSION_M))
+
+         ALLOCATE(F_SDS(DIMENSION_3,DIMENSION_M))
+         ALLOCATE(VXF_SDS(DIMENSION_3,DIMENSION_M))
       ENDIF
 ! Bulk density in a computational fluid cell / for communication with
 ! MFIX continuum

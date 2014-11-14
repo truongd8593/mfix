@@ -26,8 +26,8 @@
       use discretelement, only: DES_CONTINUUM_HYBRID
 ! Volume x average at momentum cell center drag for DEM/PIC
       use discretelement, only: VXF_GDS, VXF_SDS
-
-      use discretelement, only: DES_MMAX
+! Number of solids phases.
+      use physprop, only: MMAX
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -75,7 +75,7 @@
       IF(DES_CONTINUUM_COUPLED) THEN
          AM0(:,0) = AM0(:,0) - VXF_GDS(:)
          IF (DES_CONTINUUM_HYBRID) &
-            AM0(:,:) = AM0(:,:) - sum(VXF_SDS(:,:,1:DES_MMAX))
+            AM0(:,1:MMAX) = AM0(:,1:MMAX) - VXF_SDS(:,1:MMAX)
       ENDIF
 
       ANY_SOLIDS_X_MOMENTUM = any(MOMENTUM_X_EQ(1:MMAX))

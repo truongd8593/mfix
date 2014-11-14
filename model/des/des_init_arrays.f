@@ -79,12 +79,14 @@
          DRAG_BM(:,:) = ZERO
       ENDIF
 
-      F_GDS(:) = ZERO
-      VXF_GDS(:) = ZERO
+      F_GDS = ZERO
+      VXF_GDS = ZERO
 
       IF (DES_CONTINUUM_HYBRID) THEN
-         F_SDS(:,:,:) = ZERO
-         VXF_SDS(:,:,:) = ZERO
+         F_SDS = ZERO
+         VXF_SDS = ZERO
+         SDRAG_AM = ZERO
+         SDRAG_BM = ZERO
       ENDIF
 
       GRAV(:) = ZERO

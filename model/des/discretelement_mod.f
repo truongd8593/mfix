@@ -428,11 +428,9 @@
 ! the gas and continuous solids phases.
 ! drag coefficient between gas phase and discrete particle 'phases'
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: F_GDS
-                        !(DIMENSION_3,DES_MMAX)
 ! drag coefficient between continuous solids phases and discrete
 ! particle 'phases'
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: F_SDS
-                        !(DIMENSION_3,MMAX,DES_MMAX)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: F_SDS
 
 ! the following should probably be local to the subroutine
 ! solve_vel_star they are only needed when invoking the non-interpolated
@@ -441,25 +439,14 @@
 ! coefficients for the pressure correction equation and in the partial
 ! elimination algorithm
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: VXF_GDS
-                        !(DIMENSION_3,DES_MMAX)
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: VXF_SDS
-                        !(DIMENSION_3,MMAX,DES_MMAX)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: VXF_SDS
 
 ! the contribution of solids-particle drag to the mth phase continuum
 ! solids momentum A matrix (center coefficient)
-!      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: sdrag_am
-                        !(DIMENSION_3,MMAX,DES_MMAX)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: SDRAG_AM
 ! the contribution of solids-particle drag to the to mth phase continuum
 ! solids momentum B vector
-!      DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: sdrag_bm
-                        !(DIMENSION_3,3,MMAX,DES_MMAX)
-! mth phase continuum solids velocity at particle position
-!      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE ::vel_sp
-                        !(PARTICLES,3)
-! the solids-particle drag coefficient
-!      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: f_sp
-                        !(MMAX,PARTICLES)
-
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: SDRAG_BM
 !-----------------------------------------------------------------<<<
 
 

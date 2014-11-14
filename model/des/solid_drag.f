@@ -36,43 +36,29 @@
 ! Local Variables
 !-----------------------------------------------
 ! Indices
-      INTEGER :: IJK, I, J, K
+      INTEGER :: IJK, IJKE, I
 ! Solids phase indices
-      INTEGER :: CM, DM
-! Face center values of u_sm (i+1/2), v_sm (j+1/2) and w_sm (k+1/2)
-      DOUBLE PRECISION :: USFCM, VSFCM, WSFCM
-! Volume of x, y, or z cell on staggered grid
-      DOUBLE PRECISION :: VCELL
-! temporary variables for matrix A_M and vector B_M that are
-! used for local calculations
-      DOUBLE PRECISION tmp_A, tmp_B
-! Averaging factor
-! (=0.25 in 3D and =0.5 in 2D)
-      DOUBLE PRECISION :: AVG_FACTOR
+      INTEGER :: M
 !-----------------------------------------------
-
-      AVG_FACTOR = merge(0.5d0, 0.25D0, DO_K)
-
-      DO CM = 1, MMAX
-         DO DM = 1, DES_MMAX
-            DO IJK = IJKSTART3, IJKEND3
-               IF(FLUID_AT(IJK)) THEN
-                  I = I_OF(IJK)
-                  J = J_OF(IJK)
-                  K = K_OF(IJK)
 
 ! currently no difference between interpolated and non-interpolated
 ! implementation of solid-solid drag
-                  USFCM = AVG_X(DES_U_S(IJK,DM),DES_U_S(EAST_OF(IJK),DM),I)
-                  tmp_A =  - VXF_SDS(IJK,CM,DM)
-                  tmp_B =  - VXF_SDS(IJK,CM,DM)*USFCM
 
-                  A_M(IJK,0,CM) = A_M(IJK,0,CM) + tmp_A
-                  B_M(IJK,CM) = B_M(IJK,CM) + tmp_B
+      DO M = 1, MMAX
+         DO IJK = IJKSTART3, IJKEND3
+            IF(FLUID_AT(IJK)) THEN
+
+               I = I_OF(IJK)
+               IJKE = EAST_OF(IJK)
+
+               A_M(IJK,0,M) = A_M(IJK,0,M) - VOL_U(IJK) *              &
+                  AVG_X(SDRAG_AM(IJK,M), SDRAG_AM(IJKE,M), I)
+
+               B_M(IJK,M) = B_M(IJK,M) - VOL_U(IJK) *                  &
+                  AVG_X(SDRAG_BM(IJK,1,M), SDRAG_BM(IJKE,1,M), I)
 
                ENDIF   ! end if (fluid_at(ijk))
-            ENDDO   ! end do (ijk=ijkstart3,ijkend3)
-         ENDDO   ! end do (dm=1,des_mmax)
+         ENDDO   ! end do (ijk=ijkstart3,ijkend3)
       ENDDO   ! end do (cm=1,mmax)
 
 
@@ -118,44 +104,24 @@
 ! Local Variables
 !-----------------------------------------------
 ! Indices
-      INTEGER :: IJK, I, J, K
+      INTEGER :: IJK, IJKN, J
 ! Solids phase indices
-      INTEGER :: CM, DM
-! Face center values of u_sm (i+1/2), v_sm (j+1/2) and w_sm (k+1/2)
-      DOUBLE PRECISION :: USFCM, VSFCM, WSFCM
-! Volume of x, y, or z cell on staggered grid
-      DOUBLE PRECISION :: VCELL
-! temporary variables for matrix A_M and vector B_M that are
-! used for local calculations
-      DOUBLE PRECISION tmp_A, tmp_B
-! Averaging factor
-! (=0.25 in 3D and =0.5 in 2D)
-      DOUBLE PRECISION :: AVG_FACTOR
-!-----------------------------------------------
+      INTEGER :: M
 
-      AVG_FACTOR = merge(0.5d0, 0.25D0, DO_K)
-
-
-      DO CM = 1, MMAX
-         DO DM = 1, DES_MMAX
-            DO IJK = IJKSTART3, IJKEND3
-               IF(FLUID_AT(IJK)) THEN
-                  I = I_OF(IJK)
+      DO M = 1, MMAX
+         DO IJK = IJKSTART3, IJKEND3
+            IF(FLUID_AT(IJK)) THEN
                   J = J_OF(IJK)
-                  K = K_OF(IJK)
+                  IJKN = NORTH_OF(IJK)
 
-! currently no difference between interpolated and non-interpolated
-! implementation of solid-solid drag
-                  VSFCM = AVG_Y(DES_V_S(IJK,DM),DES_V_S(NORTH_OF(IJK),DM),J)
-                  tmp_A =  - VXF_SDS(IJK,CM,DM)
-                  tmp_B =  - VXF_SDS(IJK,CM,DM)*VSFCM
+                  A_M(IJK,0,M) = A_M(IJK,0,M) - VOL_V(IJK) *           &
+                     AVG_Y(SDRAG_AM(IJK,M), SDRAG_AM(IJKN,M), J)
 
-                  A_M(IJK,0,CM) = A_M(IJK,0,CM) + tmp_A
-                  B_M(IJK,CM) = B_M(IJK,CM) + tmp_B
+                  B_M(IJK,M) = B_M(IJK,M) - VOL_V(IJK) *               &
+                     AVG_Y(SDRAG_BM(IJK,2,M), SDRAG_BM(IJKN,2,M), J)
 
-               ENDIF   ! end if (fluid_at(ijk))
-            ENDDO   ! end do (ijk=ijkstart3,ijkend3)
-         ENDDO   ! end do (dm=1,des_mmax)
+            ENDIF   ! end if (fluid_at(ijk))
+         ENDDO   ! end do (ijk=ijkstart3,ijkend3)
       ENDDO   ! end do (cm=1,mmax)
 
 
@@ -202,43 +168,24 @@
 ! Local Variables
 !-----------------------------------------------
 ! Indices
-      INTEGER :: IJK, I, J, K
+      INTEGER :: IJK, IJKT, K
 ! Solids phase indices
-      INTEGER :: CM, DM
-! Face center values of u_sm (i+1/2), v_sm (j+1/2) and w_sm (k+1/2)
-      DOUBLE PRECISION :: USFCM, VSFCM, WSFCM
-! Volume of x, y, or z cell on staggered grid
-      DOUBLE PRECISION :: VCELL
-! temporary variables for matrix A_M and vector B_M that are
-! used for local calculations
-      DOUBLE PRECISION tmp_A, tmp_B
-! Averaging factor
-! (=0.25 in 3D and =0.5 in 2D)
-      DOUBLE PRECISION :: AVG_FACTOR
-!-----------------------------------------------
+      INTEGER :: M
 
-      AVG_FACTOR = merge(0.5d0, 0.25D0, DO_K)
 
-      DO CM = 1, MMAX
-         DO DM = 1, DES_MMAX
-            DO IJK = IJKSTART3, IJKEND3
-               IF(FLUID_AT(IJK)) THEN
-                  I = I_OF(IJK)
-                  J = J_OF(IJK)
-                  K = K_OF(IJK)
+      DO M = 1, MMAX
+         DO IJK = IJKSTART3, IJKEND3
+            IF(FLUID_AT(IJK)) THEN
+               IJKT = TOP_OF(IJK)
+               K = K_OF(IJK)
 
-! currently no difference between interpolated and non-interpolated
-! implementation of solid-solid drag
-                  WSFCM = AVG_Z(DES_W_S(IJK,DM),DES_W_S(TOP_OF(IJK),DM),K)
-                  tmp_A =  - VXF_SDS(IJK,CM,DM)
-                  tmp_B =  - VXF_SDS(IJK,CM,DM)*WSFCM
+               A_M(IJK,0,M) = A_M(IJK,0,M) + VOL_W(IJK) *              &
+                  AVG_Z(SDRAG_AM(IJK,M), SDRAG_AM(IJKT,M), K)
+               B_M(IJK,M) = B_M(IJK,M) + VOL_W(IJK) *                  &
+                  AVG_Z(SDRAG_BM(IJK,3,M), SDRAG_BM(IJKT,3,M), K) 
 
-                  A_M(IJK,0,CM) = A_M(IJK,0,CM) + tmp_A
-                  B_M(IJK,CM) = B_M(IJK,CM) + tmp_B
-
-               ENDIF   ! end if (fluid_at(ijk))
-            ENDDO   ! end do (ijk=ijkstart3,ijkend3)
-         ENDDO   ! end do (dm=1,des_mmax)
+            ENDIF   ! end if (fluid_at(ijk))
+         ENDDO   ! end do (ijk=ijkstart3,ijkend3)
       ENDDO   ! end do (cm=1,mmax)
 
 

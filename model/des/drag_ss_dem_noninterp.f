@@ -173,7 +173,7 @@
 ! Particle radius and volume.
       use discretelement, only: DES_RADIUS, PVOL
 ! Total forces acting on particle
-      use discretelement, only: FC
+      use discretelement, only: SDRAG_AM, SDRAG_BM, F_SDS
 ! Number of continuum solids phases
       use physprop, only: MMAX
 ! Diameter of continuum solids phases
@@ -229,9 +229,9 @@
 
       DO IJK = IJKSTART3, IJKEND3
 
-!         F_SDS(IJK,:) = ZERO
-!         DRAG_AM(IJK,1:MMAX) = ZERO
-!         DRAG_BM(IJK,:,1:MMAX) = ZERO
+         F_SDS(IJK,:) = ZERO
+         SDRAG_AM(IJK,:) = ZERO
+         SDRAG_BM(IJK,:,:) = ZERO
 
          IF(.NOT.FLUID_AT(IJK)) CYCLE
          IF(PINC(IJK) == 0) CYCLE
@@ -282,15 +282,15 @@
 ! Calculating the accumulated solids-solids drag force.
                lFORCE = OoVOL*lDss
 
-!              DRAG_AM(IJK,M) = DRAG_AM(IJK,M) + lFORCE
-!              DRAG_BM(IJK,:,M) = DRAG_BM(IJK,:,M) +                   &
-!                 lFORCE*DES_VEL_NEW(:,NP)
+              SDRAG_AM(IJK,M) = SDRAG_AM(IJK,M) + lFORCE
+              SDRAG_BM(IJK,:,M) = SDRAG_BM(IJK,:,M) +                  &
+                 lFORCE*DES_VEL_NEW(:,NP)
 
             ENDDO ! end do loop (M=1,MMAX)
 
          ENDDO ! END DO LOOP (NP=1,MAX_PIP)
 
-!        F_SDS(IJK,1:MMAX) = DRAG_AM(IJK,1:MMAX)
+        F_SDS(IJK,:) = SDRAG_AM(IJK,:)
 
       ENDDO ! END DO LOOP (IJK=IJKSTART3, IJKEND3)
 

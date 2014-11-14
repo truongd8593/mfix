@@ -131,8 +131,6 @@
       INTEGER :: J, IJK, IJKN
 ! Index of continuum solids phases
       INTEGER :: L, M, LM
-! Index of discrete solids 'phases'
-      INTEGER :: DM
 !-----------------------------------------------
 
 ! initialize every call
@@ -142,7 +140,6 @@
          DO L = 1, MMAX
             LM = FUNLM(L,M)
             IF (L .NE. M) THEN
-!!$omp  parallel do private(J,IJK,IJKN)
                DO IJK = ijkstart3, ijkend3
                   IF (.NOT.IP_AT_N(IJK)) THEN
                      J = J_OF(IJK)
@@ -158,20 +155,16 @@
 
       IF (DES_CONTINUUM_HYBRID) THEN
 ! initialize every call
-         VXF_SDS(:,:,:) = ZERO
          DO M = 1, MMAX
-            DO DM = 1, DES_MMAX
-!!$omp  parallel do private(J,IJK,IJKN)
-               DO IJK = ijkstart3, ijkend3
-                  IF (.NOT.IP_AT_N(IJK)) THEN
-                     J = J_OF(IJK)
-                     IJKN = NORTH_OF(IJK)
-                     VXF_SDS(IJK,M,DM) = AVG_Y(F_SDS(IJK,M,DM),F_SDS(IJKN,M,DM),J)*VOL_V(IJK)
-                  ELSE
-                     VXF_SDS(IJK,M,DM) = ZERO
-                  ENDIF
-               ENDDO      ! end do loop (ijk=ijkstart3,ijkend3)
-            ENDDO   ! end do loop (dm=1,des_mmax)
+            DO IJK = ijkstart3, ijkend3
+               IF (IP_AT_N(IJK)) THEN
+                  VXF_SDS(IJK,M) = ZERO
+               ELSE
+                  J = J_OF(IJK)
+                  IJKN = NORTH_OF(IJK)
+                  VXF_SDS(IJK,M) = AVG_Y(F_SDS(IJK,M),F_SDS(IJKN,M),J)*VOL_V(IJK)
+               ENDIF
+            ENDDO      ! end do loop (ijk=ijkstart3,ijkend3)
          ENDDO   ! end do loop (m=1,mmax)
       ENDIF   ! end if (discrete_element and des_continuum_hybrid)
 

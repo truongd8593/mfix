@@ -130,7 +130,6 @@
          DO L = 1, MMAX
             LM = FUNLM(L,M)
             IF (L .NE. M) THEN
-!!$omp  parallel do private(I,IJK,IJKE)
                DO IJK = ijkstart3, ijkend3
                   IF (.NOT.IP_AT_E(IJK)) THEN
                      I = I_OF(IJK)
@@ -145,20 +144,15 @@
       ENDDO   ! end do loop (m=1,mmax
 
       IF (DES_CONTINUUM_HYBRID) THEN
-! initialize every call
-         VXF_SDS(:,:,:) = ZERO
          DO M = 1, MMAX
-            DO DM = 1, DES_MMAX
-!!$omp  parallel do private(I,IJK,IJKE)
-               DO IJK = ijkstart3, ijkend3
-                  IF (.NOT.IP_AT_E(IJK)) THEN
-                     I = I_OF(IJK)
-                     IJKE = EAST_OF(IJK)
-                     VXF_SDS(IJK,M,DM) = AVG_X(F_SDS(IJK,M,DM),F_SDS(IJKE,M,DM),I)*VOL_U(IJK)
-                  ELSE
-                     VXF_SDS(IJK,M,DM) = ZERO
-                  ENDIF
-               ENDDO      ! end do loop (ijk=ijkstart3,ijkend3)
+            DO IJK = IJKSTART3, IJKEND3
+               IF (IP_AT_E(IJK)) THEN
+                  VXF_SDS(IJK,M) = ZERO
+               ELSE
+                  I = I_OF(IJK)
+                  IJKE = EAST_OF(IJK)
+                  VXF_SDS(IJK,M) = AVG_X(F_SDS(IJK,M),F_SDS(IJKE,M),I)*VOL_U(IJK)
+               ENDIF
             ENDDO   ! end do loop (dm=1,des_mmax)
          ENDDO   ! end do loop (m=1,mmax)
       ENDIF   ! end if (discrete_element and des_continuum_hybrid)
