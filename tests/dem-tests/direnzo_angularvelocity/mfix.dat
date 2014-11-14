@@ -136,7 +136,6 @@
   DES_CONTINUUM_COUPLED = .F.   ! false by default
   DES_NEIGHBOR_SEARCH = 1   ! Particle neighbor search method:
                             ! 1=n-square; 2=quadtree; 3=octree; 4=gridbased
-  MN = 2                    ! Maximum number of neighbors allowed per particle
   NEIGHBOR_SEARCH_N = 1     ! ~Maximum number of steps through DEM loop before
                             ! neighbor search is performed (default=25)
 
